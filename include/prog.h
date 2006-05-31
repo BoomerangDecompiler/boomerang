@@ -91,6 +91,7 @@ virtual				~Prog();
 		bool		createDotFile(const char*, bool bMainOnly = false) const;
 		// get the filename of this program
 		std::string	 getNameNoPath() const;
+		std::string  getNameNoPathNoExt() const;
 		// This pair of functions allows the user to iterate through all the procs
 		// The procs will appear in order of native address
 		Proc*		getFirstProc(PROGMAP::const_iterator& it);
@@ -248,6 +249,7 @@ virtual				~Prog();
 		double		readNativeFloat8(ADDRESS a) {return pBF->readNativeFloat8(a);}
 		QWord		readNative8(ADDRESS a) {return pBF->readNative8(a);}
 		Exp	  		*readNativeAs(ADDRESS uaddr, Type *type);
+		int			getTextDelta() { return pBF->getTextDelta(); }
 
 		bool		isDynamicLinkedProcPointer(ADDRESS dest) { return pBF->IsDynamicLinkedProcPointer(dest); }
 		const char*	GetDynamicProcName(ADDRESS uNative) { return pBF->GetDynamicProcName(uNative); }
@@ -270,12 +272,16 @@ virtual				~Prog();
 
 		Cluster		*getRootCluster() { return m_rootCluster; }
 		Cluster		*findCluster(const char *name) { return m_rootCluster->find(name); }
+		Cluster		*getDefaultCluster(const char *name);
 		bool		clusterUsed(Cluster *c);
 
 		// Add the given RTL to the front end's map from address to aldready-decoded-RTL
 		void		addDecodedRtl(ADDRESS a, RTL* rtl) {
 						pFE->addDecodedRtl(a, rtl); }
 
+		// This does extra processing on a constant.  The Exp* is expected to be a Const,
+		// and the ADDRESS is the native location from which the constant was read.
+		Exp			*addReloc(Exp *e, ADDRESS lc);
 
 protected:
 		BinaryFile*	pBF;					// Pointer to the BinaryFile object for the program

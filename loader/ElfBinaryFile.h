@@ -129,7 +129,9 @@ typedef struct {
 #define STT_NOTYPE	0			// Symbol table type: none
 #define STT_FUNC	2				// Symbol table type: function
 #define STT_SECTION	3
+#define STT_FILE 4
 #define STB_GLOBAL	1
+#define STB_WEAK	2
 
 typedef struct {
 	short d_tag;				/* how to interpret value */
@@ -192,13 +194,18 @@ virtual size_t		getImageSize();
 		void		dumpSymbols();				// For debugging
 
 virtual ADDRESS*	GetImportStubs(int& numImports);
+virtual std::vector<ADDRESS> GetExportedAddresses(bool funcsOnly = true);
+
 
 					// Relocation functions
 		bool		IsAddressRelocatable(ADDRESS uNative);
 		ADDRESS		GetRelocatedAddress(ADDRESS uNative);
 		//ADDRESS		ApplyRelocation(ADDRESS uNative, ADDRESS uWord);
 					// Get symbol associated with relocation at address, if any
-		const char* GetRelocSym(ADDRESS uNative);
+		//const char* GetRelocSym(ADDRESS uNative, ADDRESS *a = NULL, unsigned int *sz = NULL);
+		virtual bool IsRelocationAt(ADDRESS uNative);
+		virtual	const char *getFilenameSymbolFor(const char *sym);
+
 					// Write an ELF object file for a given procedure
 		void		writeObjectFile(std::string &path, const char* name, void *ptxt, int txtsz, RelocMap& reloc);
 					// Apply relocations; important when compiled without -fPIC

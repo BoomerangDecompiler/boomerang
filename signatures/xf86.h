@@ -493,3 +493,29 @@ ScrnInfoPtr xf86ConfigPciEntity(ScrnInfoPtr pScrn, int scrnFlag,
                                 resList res, EntityProc init,
                                 EntityProc enter, EntityProc leave,
                                 pointer private);
+
+int xf86GetLastScrnFlag(int entityIndex);
+void xf86SetLastScrnFlag(int entityIndex, int scrnIndex);
+Bool xf86IsEntityShared(int entityIndex);
+void xf86SetEntityShared(int entityIndex);
+Bool xf86IsEntitySharable(int entityIndex);
+void xf86SetEntitySharable(int entityIndex);
+Bool xf86IsPrimInitDone(int entityIndex);
+void xf86SetPrimInitDone(int entityIndex);
+void xf86ClearPrimInitDone(int entityIndex);
+int xf86AllocateEntityPrivateIndex(void);
+DevUnion *xf86GetEntityPrivate(int entityIndex, int privIndex);
+void xf86SetEntityInstanceForScreen(ScrnInfoPtr pScrn, int entityIndex, int instance);
+int xf86GetVerbosity(void);
+void xf86DrvMsgVerb(int scrnIndex, MessageType type, int verb, const char *format, ...);
+void xf86Msg(MessageType type, const char *format, ...);
+pointer XNFcalloc(unsigned int n);
+pointer Xcalloc(unsigned int n);
+pointer Xalloc(unsigned int n);
+
+// libc wrapper stuff
+typedef int xf86size_t;
+xf86size_t xf86strlen(const char *s);
+int xf86vsnprintf(char *s, xf86size_t len, const char *format, va_list ap);
+char *xf86strncpy(char *dest, const char *src, xf86size_t n);
+int xf86isspace(int c);

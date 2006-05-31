@@ -86,7 +86,12 @@ Proc::~Proc()
  *============================================================================*/
 Proc::Proc(Prog *prog, ADDRESS uNative, Signature *sig)
 	 : prog(prog), signature(sig), address(uNative), m_firstCaller(NULL) 
-{cluster = prog->getRootCluster();}
+{
+	if (sig)
+		cluster = prog->getDefaultCluster(sig->getName());
+	else
+		cluster = prog->getRootCluster();
+}
 
 /*==============================================================================
  * FUNCTION:		Proc::getName
@@ -625,10 +630,15 @@ void UserProc::generateCode(HLLCode *hll) {
 
 // print this userproc, maining for debugging
 void UserProc::print(std::ostream &out, bool html) {
-	signature->printToLog();
+	signature->print(out, html);
+	if (html)
+		out << "<br>";
+	out << "in cluster " << cluster->getName() << "\n";
+	if (html)
+		out << "<br>";
 	std::ostringstream ost;
 	printParams(ost, html);
-	dumpLocals(ost);
+	dumpLocals(ost, html);
 	out << ost.str().c_str();
 	printSymbolMap(out, html);
 	if (html)
@@ -4630,10 +4640,17 @@ char* UserProc::lookupSym(Exp* e) {
 }
 
 void UserProc::printSymbolMap(std::ostream &out, bool html) {
+	if (html)
+		out << "<br>";
 	out << "symbols:\n";
 	SymbolMapType::iterator it;
-	for (it = symbolMap.begin(); it != symbolMap.end(); it++)
+	for (it = symbolMap.begin(); it != symbolMap.end(); it++) {
 		out << "  " << it->first << " maps to " << it->second << "\n";
+		if (html)
+			out << "<br>";
+	}
+	if (html)
+		out << "<br>";
 	out << "end symbols\n";
 }
 

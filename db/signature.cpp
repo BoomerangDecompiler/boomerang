@@ -1094,6 +1094,7 @@ Signature *Signature::clone()
 	else n->preferedReturn = NULL;
 	n->preferedParams = preferedParams;
 	n->unknown = unknown;
+	n->sigFile = sigFile;
 	return n;
 }
 

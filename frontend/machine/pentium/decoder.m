@@ -58,11 +58,11 @@
 #define DIS_MEM64	(dis_Mem(Mem64))	// Probably needs changing
 #define DIS_MEM80	(dis_Mem(Mem80))	// Probably needs changing
 
-#define DIS_I32		(new Const(i32))
+#define DIS_I32		(addReloc(new Const(i32)))
 #define DIS_I16		(new Const(i16))
 #define DIS_I8		(new Const(i8))
 #define DIS_COUNT	(new Const(count))
-#define DIS_OFF		(new Const(off))
+#define DIS_OFF		(addReloc(new Const(off)))
 
 
 // Function to generate statements for the BSF/BSR series (Bit Scan Forward/
@@ -2144,21 +2144,22 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
 Exp* PentiumDecoder::dis_Mem(ADDRESS pc)
 {
 	Exp* expr = NULL;
+	lastDwordLc = -1;
 
 	match pc to 
 	| Abs32 (a) =>
 			// [a]
-			expr = Location::memOf(new Const(a));
+			expr = Location::memOf(addReloc(new Const(a)));
 	| Disp32 (d, base) => 
 			// m[ r[ base] + d]
 			expr = Location::memOf(new Binary(opPlus,
 					dis_Reg(24+base),
-					new Const(d)));
+					addReloc(new Const(d))));
 	| Disp8 (d, r32) => 
 			// m[ r[ r32] + d]
 			expr = Location::memOf(new Binary(opPlus,
 					dis_Reg(24+r32),
-					new Const(d)));
+					addReloc(new Const(d))));
 	| Index (base, index, ss) =>
 			// m[ r[base] + r[index] * ss]
 			expr = Location::memOf(new Binary(opPlus,
@@ -2177,12 +2178,12 @@ Exp* PentiumDecoder::dis_Mem(ADDRESS pc)
 						new Binary(opMult,
 							dis_Reg(24+index),
 							new Const(1<<ss)),
-						new Const(d))));
+						addReloc(new Const(d)))));
 	| Base32 (d, base) =>
 			// m[ r[ base] + d ]
 			expr = Location::memOf(new Binary(opPlus,
 					dis_Reg(24+base),
-					new Const(d)));
+					addReloc(new Const(d))));
 	| Index8 (d, base, index, ss) =>
 			// m[ r[ base ] + r[ index ] * ss + d ]
 			expr = Location::memOf(new Binary(opPlus,
@@ -2191,7 +2192,7 @@ Exp* PentiumDecoder::dis_Mem(ADDRESS pc)
 						new Binary(opMult,
 							dis_Reg(24+index),
 							new Const(1<<ss)),
-						new Const(d))));
+						addReloc(new Const(d)))));
 	| Base8 (d, base) =>
 			// m[ r[ base] + d ]
 			// Note: d should be sign extended; we do it here manually
@@ -2208,10 +2209,10 @@ Exp* PentiumDecoder::dis_Mem(ADDRESS pc)
 					new Binary(opMult,
 						dis_Reg(24+index),
 						new Const(1<<ss)),
-					new Const(d)));
+					addReloc(new Const(d))));
 	| IndirMem (d) =>
 			// [d] (Same as Abs32 using SIB)
-			expr = Location::memOf(new Const(d));
+			expr = Location::memOf(addReloc(new Const(d)));
 	endmatch
 	return expr;
 }
@@ -2306,6 +2307,7 @@ SWord PentiumDecoder::getWord (unsigned lc)
 DWord PentiumDecoder::getDword (unsigned lc)
 /* get4Bytes - returns the next 4-Byte word from image pointed to by lc. */
 {
+	lastDwordLc = lc - prog->getTextDelta();
 	return (DWord)(*(Byte *)lc + (*(Byte *)(lc+1) << 8) + (*(Byte *)(lc+2) << 16) + (*(Byte *)(lc+3) << 24));
 }
 
@@ -2431,3 +2433,12 @@ void genBSFR(ADDRESS pc, Exp* dest, Exp* modrm, int init, int size,
 		BSFRstate = 0;		// Ready for next time
 		
 }
+
+
+Exp *PentiumDecoder::addReloc(Exp *e)
+{
+	if (lastDwordLc != -1)
+		e = prog->addReloc(e, lastDwordLc);
+	return e;
+}
+

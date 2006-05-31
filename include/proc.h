@@ -288,7 +288,6 @@ protected:
 
 		friend class XMLProgParser;
 					LibProc() : Proc() { }
-
 };		// class LibProc
 
 enum ProcStatus {

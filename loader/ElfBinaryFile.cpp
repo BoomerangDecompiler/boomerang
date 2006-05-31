@@ -191,11 +191,14 @@ bool ElfBinaryFile::RealLoad(const char* sName)
         if (off) m_pSections[i].uHostAddr = (ADDRESS)(m_pImage + off);
         m_pSections[i].uNativeAddr = elfRead4(&pShdr->sh_addr);
         m_pSections[i].uSectionSize = elfRead4(&pShdr->sh_size);
-		if (m_pSections[i].uNativeAddr == 0 && strncmp(pName, ".rel.", 5)) {
+		if (m_pSections[i].uNativeAddr == 0 && strncmp(pName, ".rel", 4)) {
+			int align = elfRead4(&pShdr->sh_addralign);
+			if (align > 1) {
+				if (arbitaryLoadAddr % align)
+					arbitaryLoadAddr += align - (arbitaryLoadAddr % align);
+			}
 			m_pSections[i].uNativeAddr = arbitaryLoadAddr;
 			arbitaryLoadAddr += m_pSections[i].uSectionSize;
-			if (arbitaryLoadAddr % 0x10)
-				arbitaryLoadAddr += 0x10 - (arbitaryLoadAddr % 0x10);
 		}
         m_pSections[i].uType = elfRead4(&pShdr->sh_type);
 		m_sh_link[i] = elfRead4(&pShdr->sh_link);
@@ -229,11 +232,9 @@ bool ElfBinaryFile::RealLoad(const char* sName)
 
 	// assign arbitary addresses to .rel.* sections too
 	for (i=0; i < m_iNumSections; i++)
-		if (m_pSections[i].uNativeAddr == 0 && !strncmp(m_pSections[i].pSectionName, ".rel.", 5)) {
+		if (m_pSections[i].uNativeAddr == 0 && !strncmp(m_pSections[i].pSectionName, ".rel", 4)) {
 			m_pSections[i].uNativeAddr = arbitaryLoadAddr;
 			arbitaryLoadAddr += m_pSections[i].uSectionSize;
-			if (arbitaryLoadAddr % 0x10)
-				arbitaryLoadAddr += 0x10 - (arbitaryLoadAddr % 0x10);
 		}
 
     // Add symbol info. Note that some symbols will be in the main table only, and others in the dynamic table only.
@@ -396,6 +397,55 @@ void ElfBinaryFile::AddSyms(int secIndex) {
 	}
 	return;
 }
+
+std::vector<ADDRESS> ElfBinaryFile::GetExportedAddresses(bool funcsOnly)
+{
+	std::vector<ADDRESS> exported;
+
+	int i;
+	int secIndex = 0;
+	for (i=1; i < m_iNumSections; ++i) {
+		unsigned uType = m_pSections[i].uType;
+		if (uType == SHT_SYMTAB) {
+			secIndex = i;
+			break;
+		}
+	}
+	if (secIndex == 0)
+		return exported;
+	
+	int e_type = elfRead2(&((Elf32_Ehdr*)m_pImage)->e_type);
+    PSectionInfo pSect = &m_pSections[secIndex];
+    // Calc number of symbols
+    int nSyms = pSect->uSectionSize / pSect->uSectionEntrySize;
+    m_pSym = (Elf32_Sym*) pSect->uHostAddr;			// Pointer to symbols
+    int strIdx = m_sh_link[secIndex];				// sh_link points to the string table
+
+    // Index 0 is a dummy entry
+    for (int i = 1; i < nSyms; i++) {
+        ADDRESS val = (ADDRESS) elfRead4((int*)&m_pSym[i].st_value);
+        int name = elfRead4(&m_pSym[i].st_name);
+        if (name == 0)  /* Silly symbols with no names */ continue;
+        std::string str(GetStrPtr(strIdx, name));
+        // Hack off the "@@GLIBC_2.0" of Linux, if present
+        unsigned pos;
+        if ((pos = str.find("@@")) != std::string::npos)
+            str.erase(pos);
+		if (ELF32_ST_BIND(m_pSym[i].st_info) == STB_GLOBAL || ELF32_ST_BIND(m_pSym[i].st_info) == STB_WEAK) {
+			if (funcsOnly == false || ELF32_ST_TYPE(m_pSym[i].st_info) == STT_FUNC) {
+				if (e_type == E_REL) {
+					int nsec = elfRead2(&m_pSym[i].st_shndx);
+					if (nsec >= 0 && nsec < m_iNumSections)
+						val += GetSectionInfo(nsec)->uNativeAddr;
+				}
+				exported.push_back(val);
+			}
+		}
+	}
+	return exported;
+
+}
+
 
 // FIXME: this function is way off the rails. It seems to always overwrite the relocation entry with the 32 bit value
 // from the symbol table. Totally invalid for SPARC, and most X86 relocations!
@@ -1568,25 +1618,32 @@ void ElfBinaryFile::applyRelocations() {
 								elfWrite4(pRelWord, S+A);
 								break;
 							case 2:				// R_386_PC32: S + A - P
-								S = elfRead4((int*)&symOrigin[symTabIndex].st_value);
-								if (S == 0) {
-									// This means that the symbol doesn't exist in this module, and is not accessed
-									// through the PLT, i.e. it will be statically linked, e.g. strcmp. We have the
-									// name of the symbol right here in the symbol table entry, but the only way
-									// to communicate with the loader is through the target address of the call.
-									// So we use some very improbable addresses (e.g. -1, -2, etc) and give them entries
-									// in the symbol table
-									int nameOffset = elfRead4((int*)&symOrigin[symTabIndex].st_name);
-									char* pName = pStrSection + nameOffset;
-									S = GetAddressByName(pName);
-									if (S == (e_type == E_REL ? 0x8000000 : 0)) {
-										S = nextFakeLibAddr--;		// Allocate a new fake address
-										AddSymbol(S, pName);
-									}
-								} else if (e_type == E_REL) {
+								if (ELF32_ST_TYPE(symOrigin[symTabIndex].st_info) == STT_SECTION) {
 									nsec = elfRead2(&symOrigin[symTabIndex].st_shndx);
 									if (nsec >= 0 && nsec < m_iNumSections)
-										S += GetSectionInfo(nsec)->uNativeAddr;
+										S = GetSectionInfo(nsec)->uNativeAddr;
+								} else {
+									S = elfRead4((int*)&symOrigin[symTabIndex].st_value);
+									if (S == 0) {
+										// This means that the symbol doesn't exist in this module, and is not accessed
+										// through the PLT, i.e. it will be statically linked, e.g. strcmp. We have the
+										// name of the symbol right here in the symbol table entry, but the only way
+										// to communicate with the loader is through the target address of the call.
+										// So we use some very improbable addresses (e.g. -1, -2, etc) and give them entries
+										// in the symbol table
+										int nameOffset = elfRead4((int*)&symOrigin[symTabIndex].st_name);
+										char* pName = pStrSection + nameOffset;
+										// this is too slow, I'm just going to assume it is 0
+										//S = GetAddressByName(pName);
+										//if (S == (e_type == E_REL ? 0x8000000 : 0)) {
+											S = nextFakeLibAddr--;		// Allocate a new fake address
+											AddSymbol(S, pName);
+										//}
+									} else if (e_type == E_REL) {
+										nsec = elfRead2(&symOrigin[symTabIndex].st_shndx);
+										if (nsec >= 0 && nsec < m_iNumSections)
+											S += GetSectionInfo(nsec)->uNativeAddr;
+									}
 								}
 								A = elfRead4(pRelWord);
 								P = destNatOrigin + r_offset;
@@ -1607,6 +1664,110 @@ void ElfBinaryFile::applyRelocations() {
 			break;						// Not implemented
 	}
 }   
+
+bool ElfBinaryFile::IsRelocationAt(ADDRESS uNative) 
+{
+	int nextFakeLibAddr = -2;			// See R_386_PC32 below; -1 sometimes used for main
+	if (m_pImage == 0) return false;			// No file loaded
+    int machine = elfRead2(&((Elf32_Ehdr*)m_pImage)->e_machine);
+	int e_type = elfRead2(&((Elf32_Ehdr*)m_pImage)->e_type);
+    switch (machine) {
+        case EM_SPARC:
+			break;						// Not implemented yet
+		case EM_386: {
+			for (int i=1; i < m_iNumSections; ++i) {
+				SectionInfo* ps = &m_pSections[i];
+				if (ps->uType == SHT_REL) {
+					// A section such as .rel.dyn or .rel.plt (without an addend field).
+					// Each entry has 2 words: r_offet and r_info. The r_offset is just the offset from the beginning
+					// of the section (section given by the section header's sh_info) to the word to be modified.
+					// r_info has the type in the bottom byte, and a symbol table index in the top 3 bytes.
+					// A symbol table offset of 0 (STN_UNDEF) means use value 0. The symbol table involved comes from 
+					// the section header's sh_link field.
+					int* pReloc = (int*)ps->uHostAddr;
+					unsigned size = ps->uSectionSize;
+					// NOTE: the r_offset is different for .o files (E_REL in the e_type header field) than for exe's
+					// and shared objects!
+					ADDRESS destNatOrigin, destHostOrigin;
+					if (e_type == E_REL) {
+						int destSection = m_sh_info[i];
+						destNatOrigin	= m_pSections[destSection].uNativeAddr;
+						destHostOrigin	= m_pSections[destSection].uHostAddr;
+					}
+					int symSection = m_sh_link[i];			// Section index for the associated symbol table
+					int strSection = m_sh_link[symSection];	// Section index for the string section assoc with this
+					char* pStrSection = (char*)m_pSections[strSection].uHostAddr;
+					Elf32_Sym* symOrigin = (Elf32_Sym*) m_pSections[symSection].uHostAddr;
+					for (unsigned u=0; u < size; u+= 2*sizeof(unsigned)) {
+						unsigned r_offset = elfRead4(pReloc++);
+						unsigned info	= elfRead4(pReloc++);
+						unsigned char relType = (unsigned char) info;
+						unsigned symTabIndex = info >> 8;
+						ADDRESS pRelWord;				// Pointer to the word to be relocated
+						if (e_type == E_REL)
+							pRelWord = destNatOrigin + r_offset;
+						else {
+							SectionInfo* destSec = GetSectionInfoByAddr(r_offset);
+							pRelWord = destSec->uNativeAddr + r_offset;
+							destNatOrigin = 0;
+						}
+						if (uNative == pRelWord)
+							return true;
+					}
+				}
+			}
+		}
+		default:
+			break;						// Not implemented
+	}
+	return false;
+}   
+
+const char *ElfBinaryFile::getFilenameSymbolFor(const char *sym)
+{
+	int i;
+	int secIndex = 0;
+	for (i=1; i < m_iNumSections; ++i) {
+		unsigned uType = m_pSections[i].uType;
+		if (uType == SHT_SYMTAB) {
+			secIndex = i;
+			break;
+		}
+	}
+	if (secIndex == 0)
+		return NULL;
+	
+	int e_type = elfRead2(&((Elf32_Ehdr*)m_pImage)->e_type);
+    PSectionInfo pSect = &m_pSections[secIndex];
+    // Calc number of symbols
+    int nSyms = pSect->uSectionSize / pSect->uSectionEntrySize;
+    m_pSym = (Elf32_Sym*) pSect->uHostAddr;			// Pointer to symbols
+    int strIdx = m_sh_link[secIndex];				// sh_link points to the string table
+
+	std::string filename;
+
+    // Index 0 is a dummy entry
+    for (int i = 1; i < nSyms; i++) {
+        ADDRESS val = (ADDRESS) elfRead4((int*)&m_pSym[i].st_value);
+        int name = elfRead4(&m_pSym[i].st_name);
+        if (name == 0)  /* Silly symbols with no names */ continue;
+        std::string str(GetStrPtr(strIdx, name));
+        // Hack off the "@@GLIBC_2.0" of Linux, if present
+        unsigned pos;
+        if ((pos = str.find("@@")) != std::string::npos)
+            str.erase(pos);
+        if (ELF32_ST_TYPE(m_pSym[i].st_info) == STT_FILE) {
+			filename = str;
+			continue;
+		}
+		if (str == sym) {
+			if (filename.length())
+				return strdup(filename.c_str());
+			return NULL;
+		}
+	}
+	return NULL;
+}
 
 // A map for extra symbols, those not in the usual Elf symbol tables
 void ElfBinaryFile::AddSymbol(ADDRESS uNative, const char *pName)

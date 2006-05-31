@@ -24,6 +24,7 @@
 #pragma warning(disable:4290)
 #endif
 
+#include <string>
 #include "exp.h"
 #include "type.h"
 #include "sigenum.h"		// For enums platform and cc
@@ -80,6 +81,7 @@ typedef std::vector<Return*> Returns;
 class Signature {
 protected:
 		std::string	name;		// name of procedure
+		std::string sigFile;	// signature file this signature was read from (for libprocs)
 		std::vector<Parameter*> params;
 		// std::vector<ImplicitParameter*> implicitParams;
 		Returns		returns;
@@ -136,6 +138,9 @@ virtual void		setReturnType(int n, Type *ty);
 		// get/set the name
 virtual const char	*getName();
 virtual void		setName(const char *nam);
+		// get/set the signature file
+		const char	*getSigFile() { return sigFile.c_str(); }
+		void		setSigFile(const char *nam) { sigFile = nam; }
 
 		// add a new parameter to this signature
 virtual void		addParameter(const char *nam = NULL);

@@ -1079,18 +1079,23 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, std::list<RTL*> *BB_
 			}
 			if (found == NULL)
 				continue;
-			if (!found->isIntConst())
-				continue;
 
-			ADDRESS a = ((Const*)found)->getInt();
+			ADDRESS a;
+			if (found->isIntConst())
+				a = ((Const*)found)->getInt();
+			else if (found->isAddrOf() && found->getSubExp1()->isGlobal()) {
+				const char *name = ((Const*)found->getSubExp1()->getSubExp1())->getStr();
+				if (prog->getGlobal((char*)name) == NULL)
+					continue;
+				a = prog->getGlobalAddr((char*)name);
+			} else
+				continue;
 
 			// found one.
 			if (paramIsFuncPointer) {
-				if (found->isIntConst()) {
-					if (VERBOSE)
-						LOG << "found a new procedure at address " << a << " from inspecting parameters of call to " << call->getDestProc()->getName() << ".\n";
-					prog->setNewProc(a);
-				}
+				if (VERBOSE)
+					LOG << "found a new procedure at address " << a << " from inspecting parameters of call to " << call->getDestProc()->getName() << ".\n";
+				prog->setNewProc(a);
 				continue;
 			}
 

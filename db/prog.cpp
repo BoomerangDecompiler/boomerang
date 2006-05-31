@@ -92,7 +92,7 @@ void Prog::setFrontEnd(FrontEnd *pFE) {
 	this->pFE = pFE;
 	if (pBF && pBF->getFilename()) {
 		m_name = pBF->getFilename();
-		m_rootCluster = new Cluster(getNameNoPath().c_str());
+		m_rootCluster = new Cluster(getNameNoPathNoExt().c_str());
 	}
 }
 
@@ -101,7 +101,7 @@ Prog::Prog(const char* name) :
 		pFE(NULL),
 		m_name(name),
 		m_iNumberedProc(1),
-		m_rootCluster(new Cluster(getNameNoPath().c_str())) {
+		m_rootCluster(new Cluster(getNameNoPathNoExt().c_str())) {
 	// Constructor taking a name. Technically, the allocation of the space for the name could fail, but this is unlikely
 	 m_path = m_name;
 }
@@ -359,6 +359,19 @@ bool Prog::clusterUsed(Cluster *c)
 		if ((*it)->getCluster() == c)
 			return true;
 	return false;
+}
+
+Cluster	*Prog::getDefaultCluster(const char *name)
+{
+	const char *fname = pBF->getFilenameSymbolFor(name);
+	if (fname == NULL)
+		return m_rootCluster;
+	Cluster *c = findCluster(fname);
+	if (c == NULL) {
+		c = new Cluster(fname);
+		m_rootCluster->addChild(c);
+	}
+	return c;
 }
 
 void Prog::generateCode(std::ostream &os) {
@@ -1043,6 +1056,14 @@ std::string Prog::getNameNoPath() const {
 	}
 
 	return m_name.substr(n+1);
+}
+
+std::string Prog::getNameNoPathNoExt() const {
+	std::string nopath = getNameNoPath();
+	unsigned n = nopath.rfind(".");
+	if (n == std::string::npos)
+		return nopath;
+	return nopath.substr(0, n);
 }
 
 /*==============================================================================
@@ -2040,5 +2061,40 @@ void Prog::decodeFragment(UserProc* proc, ADDRESS a)
 		if (VERBOSE)
 			LOG << "attempt to decode fragment outside text area, addr=" << a << "\n";
 	}
+}
+
+Exp	*Prog::addReloc(Exp *e, ADDRESS lc)
+{
+	assert(e->isConst());
+	Const *c = (Const*)e;
+
+	// relocations have been applied to the constant, so if there is a 
+	// relocation for this lc then we should be able to replace the constant
+	// with a symbol.
+
+	if (lc == 0x80247b9) {
+		lc = lc;
+	}
+
+	if (pBF->IsRelocationAt(lc)) {
+		if (pBF->getSymbols().find(c->getInt()) != pBF->getSymbols().end()) {
+			const char *n = pBF->getSymbols()[c->getInt()].c_str();
+			ADDRESS a = c->getInt();
+			unsigned int sz = pBF->GetSizeByName(n);
+			if (getGlobal((char*)n) == NULL) {
+				Global *global = new Global(new SizeType(sz), a, n);
+				globals.insert(global);
+			}
+			e = new Unary(opAddrOf, Location::global(n, NULL));
+		} else {
+			char *str = getStringConstant(c->getInt());
+			if (str)
+				e = new Const(str);
+			else {
+				// TODO: check for accesses into the middle of globals
+			}
+		}			
+	}
+	return e;
 }
 

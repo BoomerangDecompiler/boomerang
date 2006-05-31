@@ -171,8 +171,8 @@ std::vector<ADDRESS> FrontEnd::getEntryPoints()
 		entrypoints.push_back(a);
 	else {  // try some other tricks
 		const char *fname = pBF->getFilename();
+		// X11 Module
 		if (!strcmp(fname + strlen(fname) - 6, "_drv.o")) {
-			// Could be an X11 Module
 			const char *p = fname + strlen(fname) - 6;
 			while (*p != '/' && *p != '\\' && p != fname)
 				p--;
@@ -194,6 +194,15 @@ std::vector<ADDRESS> FrontEnd::getEntryPoints()
 						entrypoints.push_back(teardown);
 				}
 			}
+		}
+		// Linux kernel module
+		if (!strcmp(fname + strlen(fname) - 3, ".ko")) {
+			a = pBF->GetAddressByName("init_module");
+			if (a != NO_ADDRESS)
+				entrypoints.push_back(a);
+			a = pBF->GetAddressByName("cleanup_module");
+			if (a != NO_ADDRESS)
+				entrypoints.push_back(a);
 		}
 	}
 	return entrypoints;
@@ -344,6 +353,7 @@ void FrontEnd::readLibrarySignatures(const char *sPath, callconv cc) {
 		std::cerr << "readLibrarySignatures from " << sPath << ": " << (*it)->getName() << "\n";
 #endif
 		librarySignatures[(*it)->getName()] = *it;
+		(*it)->setSigFile(sPath);
 	}
 
 	delete p;

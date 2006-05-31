@@ -32,6 +32,7 @@
 #include <list>
 #include <map>
 #include <string>
+#include <vector>
 #include <stdio.h>		// For FILE
 
 // Note: #including windows.h causes problems later in the objective C code.
@@ -213,13 +214,16 @@ virtual int GetSizeByName(const char* pName, bool bTypeOK = false);
 	// Get an array of addresses of imported function stubs
 	// Set number of these to numImports
 virtual ADDRESS* GetImportStubs(int& numImports);
+virtual	const char *getFilenameSymbolFor(const char *sym) { return NULL; }
+virtual std::vector<ADDRESS> GetExportedAddresses(bool funcsOnly = true) { return std::vector<ADDRESS>(); }
 
 // Relocation table functions
 //virtual bool	IsAddressRelocatable(ADDRESS uNative);
 //virtual ADDRESS GetRelocatedAddress(ADDRESS uNative);
 //virtual	ADDRESS	ApplyRelocation(ADDRESS uNative, ADDRESS uWord);
 		// Get symbol associated with relocation at address, if any
-//virtual const char* GetRelocSym(ADDRESS uNative);
+//virtual const char* GetRelocSym(ADDRESS uNative, ADDRESS *a = NULL, unsigned int *sz = NULL) { return NULL; }
+virtual bool IsRelocationAt(ADDRESS uNative) { return false; }
 
 		// Specific to BinaryFile objects that implement a "global pointer"
 		// Gets a pair of unsigned integers representing the address of the
