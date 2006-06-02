@@ -11,7 +11,7 @@
  * 28 Jan 05 - G. Krol: Separated -h output into sections and neatened
 */
 
-#define VERSION "alpha 0.2 09/Apr/2006"
+#define VERSION "alpha 0.2 29/May/2006"
 
 #include <iostream>
 #include <fstream>
