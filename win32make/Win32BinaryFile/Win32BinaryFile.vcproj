@@ -37,9 +37,9 @@
 				LinkIncremental="2"
 				ModuleDefinitionFile="..\..\Debug\BinaryFile.lib"
 				GenerateDebugInformation="TRUE"
-				ProgramDatabaseFile="$(OutDir)/Win32BinaryFile.pdb"
+				ProgramDatabaseFile="$(OutDir)\Win32BinaryFile.pdb"
 				SubSystem="2"
-				ImportLibrary="$(OutDir)/Win32BinaryFile.lib"
+				ImportLibrary="$(OutDir)\Win32BinaryFile.lib"
 				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"/>
@@ -86,10 +86,11 @@
 				LinkIncremental="1"
 				ModuleDefinitionFile="..\..\Release\BinaryFile.lib"
 				GenerateDebugInformation="TRUE"
+				ProgramDatabaseFile="$(OutDir)\$(ProjectName).pdb"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
-				ImportLibrary="$(OutDir)/Win32BinaryFile.lib"
+				ImportLibrary="$(OutDir)\Win32BinaryFile.lib"
 				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"/>
