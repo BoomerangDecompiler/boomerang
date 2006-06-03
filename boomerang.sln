@@ -26,14 +26,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Win32BinaryFile", "win32mak
 		{A785802D-00A3-4B87-B60B-464AF962BB2C} = {A785802D-00A3-4B87-B60B-464AF962BB2C}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ExeBinaryFile", "win32make\ExeBinaryFile\ExeBinaryFile.vcproj", "{41F2DB03-4679-4E12-A335-D06DE0ED3FC0}"
-	ProjectSection(ProjectDependencies) = postProject
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "boomerang", "boomerang.vcproj", "{6423B982-BD86-49D9-B4B4-834697281351}"
-	ProjectSection(ProjectDependencies) = postProject
-	EndProjectSection
-EndProject
 Global
 	GlobalSection(SolutionConfiguration) = preSolution
 		Debug = Debug
@@ -60,14 +52,6 @@ Global
 		{EDD5A43B-22DE-4C53-BF4C-8FCEFA7503C2}.Debug.Build.0 = Debug|Win32
 		{EDD5A43B-22DE-4C53-BF4C-8FCEFA7503C2}.Release.ActiveCfg = Release|Win32
 		{EDD5A43B-22DE-4C53-BF4C-8FCEFA7503C2}.Release.Build.0 = Release|Win32
-		{41F2DB03-4679-4E12-A335-D06DE0ED3FC0}.Debug.ActiveCfg = Debug|Win32
-		{41F2DB03-4679-4E12-A335-D06DE0ED3FC0}.Debug.Build.0 = Debug|Win32
-		{41F2DB03-4679-4E12-A335-D06DE0ED3FC0}.Release.ActiveCfg = Release|Win32
-		{41F2DB03-4679-4E12-A335-D06DE0ED3FC0}.Release.Build.0 = Release|Win32
-		{6423B982-BD86-49D9-B4B4-834697281351}.Debug.ActiveCfg = Debug|Win32
-		{6423B982-BD86-49D9-B4B4-834697281351}.Debug.Build.0 = Debug|Win32
-		{6423B982-BD86-49D9-B4B4-834697281351}.Release.ActiveCfg = Release|Win32
-		{6423B982-BD86-49D9-B4B4-834697281351}.Release.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 	EndGlobalSection
