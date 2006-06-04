@@ -942,7 +942,7 @@ void UserProc::insertStatementAfter(Statement* s, Statement* a) {
 
 // Decompile this UserProc
 ProcSet* UserProc::decompile(ProcList* path, int& indent) {
-	Boomerang::get()->alert_considering(path->back(), this);
+	Boomerang::get()->alert_considering(path->empty() ? NULL : path->back(), this);
 	std::cout << std::setw(++indent) << " " << (status >= PROC_VISITED ? "re" : "") << "considering " << getName() <<
 		"\n";
 	if (VERBOSE)

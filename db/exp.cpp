@@ -3740,7 +3740,7 @@ bool RefExp::accept(ExpVisitor* v) {
 	return ret;
 }
 bool Location::accept(ExpVisitor* v) {
-	bool override, ret = v->visit(this, override);
+	bool override = false, ret = v->visit(this, override);
 	if (override) return ret;
 	if (ret) ret &= subExp1->accept(v);
 	return ret;

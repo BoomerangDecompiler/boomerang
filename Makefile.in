@@ -110,7 +110,12 @@ CXX = g++ -g -Wall -O0
 
 # NOTE: "win32make/include" should be after "include" because if there is a generated include/config.h then we prefer to
 # use that
+# comment out the next two lines and uncomment the two after to disable
+# the garbage collector
+LINKGC=-lgc
 CXXFLAGS=-Iinclude $(WININCLUDE)
+#LINKGC=
+#CXXFLAGS=-Iinclude $(WININCLUDE) -DNO_GARBAGE_COLLECTOR
 
 
 #############
@@ -289,7 +294,7 @@ frontend/pentiumdecoder.o: 	EXTRA = -fno-exceptions
 # Note: I have put $(LOADERLIBS) last after a -Bdynamic, so that the rest of the libraries could in theory be linked
 # statically (easier for releases). But note that there are presently big problems linking statically.
 boomerang$(EXEEXT): driver.o ${STATIC_OBJS} $(GENSSL)
-	$(CXX) -o $@ driver.o $(STATIC_OBJS) $(RUNPATH) -Llib -lgc -lexpat $(LDL) -Wl,-Bdynamic $(LOADERLIBS) 
+	$(CXX) -o $@ driver.o $(STATIC_OBJS) $(RUNPATH) -Llib $(LINKGC) -lexpat $(LDL) -Wl,-Bdynamic $(LOADERLIBS) 
 
 bffDump$(EXEEXT): loader/bffDump.o
 	$(CXX) -o $@ loader/bffDump.o loader/BinaryFileFactory.o -Llib -lgc -lexpat $(LDL) -Wl,-Bdynamic $(LOADERLIBS) \

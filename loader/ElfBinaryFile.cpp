@@ -42,7 +42,8 @@
 typedef std::map<std::string, int, std::less<std::string> >		StrIntMap;
 
 ElfBinaryFile::ElfBinaryFile(bool bArchive /* = false */)
-	: BinaryFile(bArchive)		// Initialise base class
+	: BinaryFile(bArchive),	// Initialise base class
+	  next_extern(0)
 {
 	m_fd = 0;
 	m_pFileName = 0;
