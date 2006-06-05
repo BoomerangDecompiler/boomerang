@@ -81,7 +81,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="libexpat.lib gc.lib"
+				AdditionalDependencies="libexpat.lib gc_cpp2.lib dbghelp.lib"
 				OutputFile="$(OutDir)/console.exe"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="..\.."
