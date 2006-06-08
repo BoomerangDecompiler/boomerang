@@ -216,10 +216,10 @@ void Prog::generateCode(Cluster *cluster, UserProc *proc, bool intermixRTL) {
 				// Check for an initial value
 				Exp *e = NULL;
 				e = (*it1)->getInitialValue(this);
-				if (e) {
+//				if (e) {
 					code->AddGlobal((*it1)->getName(), (*it1)->getType(), e);
 					global = true;
-				}
+//				}
 			}
 			if (global) code->print(os);		// Avoid blank line if no globals
 		}
@@ -1312,119 +1312,8 @@ void Prog::removeUnusedGlobals() {
       		std::cerr << "warning: an expression refers to a nonexistent global";
     	}
 	}
-
-#if 0
-	if (VERBOSE)
-		LOG << "removing unused globals\n";
-	std::list<Exp*> result;
-	for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end(); it++) {
-		if ((*it)->isLib())
-			continue;
-		UserProc *u = (UserProc*)(*it);
-		u->searchAll(new Location(opGlobal, new Terminal(opWild), u), result);
-	}
-	// MVE: The following seems incredibly round about
-	std::map<std::string, Global*> unusedGlobals, usedGlobals;
-	for (std::vector<Global*>::iterator it = globals.begin(); it != globals.end(); it++)
-		unusedGlobals[(*it)->getName()] = *it;
-	usedGlobals = unusedGlobals;
-	for (std::list<Exp*>::iterator it = result.begin(); it != result.end(); it++)
-		unusedGlobals.erase(((Const*)(*it)->getSubExp1())->getStr());
-	for (std::map<std::string, Global*>::iterator it = unusedGlobals.begin(); it != unusedGlobals.end(); it++) {
-		if (VERBOSE)
-			LOG << "unused global " << it->first.c_str() << " at address " << it->second->getAddress() << "\n";
-		usedGlobals.erase((*it).first);
-	}
-	globals.clear();
-	for (std::map<std::string, Global*>::iterator it = usedGlobals.begin(); it != usedGlobals.end(); it++) {
-		globals.push_back((*it).second);
-	}
-#endif
 }
 
-#if 0
-void Prog::removeUnusedReturns() {
-	// The counter
-	UserProc::ReturnCounter rc;
-	// Two worksets; one of procs whose return sets have changed, and one of their callers
-	std::set<UserProc*> calleeSet, callerSet, newCalleeSet;
-
-	// First count (globally) the used returns
-	std::list<Proc*>::iterator pp;
-	for (pp = m_procs.begin(); pp != m_procs.end(); pp++) {
-		UserProc* proc = (UserProc*)(*pp);
-		if (proc->isLib()) continue;
-		calleeSet.insert(proc);
-		callerSet.insert(proc);
-	}
-
-	bool change;
-	do {
-		rc.clear();
-		// Iterate through the workset, looking for uses of returns from calls in these procs (initially, all procs;
-		// later, callers of procs whose returns set has been reduced
-		// FIXME: the ordering is not consistent; it is affecting whether output is correct or not!!
-		// (so worksets not working)
-		std::set<UserProc*>::iterator it;
-		for (it = callerSet.begin(); it != callerSet.end(); it++)
-			(*it)->countUsedReturns(rc);
-
-		// Count a return reference for main. Looking for the name "main" is good, becuase if it's not a
-		// C program, then it won't have a main, and it probably (?) won't return an int
-		UserProc* m = (UserProc*) findProc("main");
-		if (m) {
-			// Note: it's position 1, because position 0 is the stack pointer
-			// Note: if it's SPARC (or perhaps other architectures), there may be only one
-			Signature* sig = m->getSignature();
-			Exp* r;
-			if (sig->getNumReturns() == 1)
-				r = sig->getReturnExp(0);
-			else r = sig->getReturnExp(1);
-			rc[m].insert(r);
-		}
-
-		newCalleeSet.clear();
-		callerSet.clear();
-		change = false;
-
-		// Having globally counted the returns, remove the unused ones. Note: after the first pass, we have only
-		// counted those callers which call procs in calleeSet, so only consider those procs
-		for (it = calleeSet.begin(); it != calleeSet.end(); it++) {
-			UserProc* proc = *it;
-			if (proc->isLib()) continue;
-			if (Boomerang::get()->debugUnusedRetsAndParams)
-				LOG << " @@ removeUnusedReturns: considering callee " << proc->getName() << "\n";
-			bool thisChange = proc->removeUnusedReturns(rc);
-			if (thisChange && !Boomerang::get()->noRemoveNull) {
-				// It may be that now there are more unused statements (especially for SPARC programs)
-				UserProc::RefCounter refCounts;
-				// Count the references first
-				proc->countRefs(refCounts);
-				// Now remove any that have no used
-				proc->removeUnusedStatements(refCounts, -1);
-				// It may also be that there are now some parameters unused, in particular esp
-				proc->trimParameters();
-				// and one more time
-				refCounts.clear();
-				proc->countRefs(refCounts);
-				proc->removeUnusedStatements(refCounts, -1);
-			}
-			change |= thisChange;
-
-			if (thisChange) {
-				std::list<UserProc*> thisProcCallees;
-				proc->addCallees(thisProcCallees);
-				newCalleeSet.insert(thisProcCallees.begin(), thisProcCallees.end());
-				std::list<UserProc*>::iterator cc;
-				for (cc = thisProcCallees.begin(); cc != thisProcCallees.end(); cc++)
-					(*cc)->addCallers(callerSet);
-			}
-
-		}
-		calleeSet = newCalleeSet;
-	} while (change);
-}
-#else
 // This is the global removing of unused returns. The initial idea is simple enough: remove some returns according to
 // the formula returns(p) = modifys(p) isect union(live at c) for all c calling p.
 // However, removing returns reduces the uses, leading to three effects:
@@ -1460,19 +1349,6 @@ bool Prog::removeUnusedReturns() {
 	}
 	return change;
 }
-#endif
-
-
-#if 0		// For time being, this is in UserProc::generateCode()
-void Prog::removeUnusedLocals() {
-	std::list<Proc*>::iterator pp;
-	for (pp = m_procs.begin(); pp != m_procs.end(); pp++) {
-		UserProc* proc = (UserProc*)(*pp);
-		if (proc->isLib()) continue;
-		proc->removeUnusedLocals();
-	}
-}
-#endif
 
 // Have to transform out of SSA form after the above final pass
 void Prog::fromSSAform() {
@@ -1725,53 +1601,7 @@ Exp* Global::getInitialValue(Prog* prog) {
 		return NULL;
 	if (si == NULL)
 		return NULL;
-	if (type->isCString()) {
-		char* str = prog->getStringConstant(uaddr, true);
-		if (str) {
-			// Make a global string
-			return new Const(str);
-		}
-	} else if (type->isPointer() && ((PointerType*)type)->getPointsTo()->resolvesToFunc()) {
-		ADDRESS init = prog->readNative4(uaddr);	
-		Proc* dest = prog->findProc(init);
-		if (dest)
-			// Make a function constant. Back end should know how to emit the correct language-dependent code
-			return new Const(dest);
-	} else if (type->isArray()) {
-		Type *baseType = type->asArray()->getBaseType();
-		const int elem_size            = baseType->getSize()/8;
-		const int offs_within_section  = uaddr - si->uNativeAddr;
-		const int bytes_to_section_end = si->uSectionSize - offs_within_section;
-		int       no_of_elements       = type->asArray()->getLength();
-		// Now check if the array is crossing a section boundary. If so, adjust it.
-		if (no_of_elements * elem_size > bytes_to_section_end) {
-			// array crossing section. Adjust.
-			const int new_no_of_elements = bytes_to_section_end / elem_size; // truncating division
-			LOG << "Adjusting element count from " << no_of_elements << " to " << new_no_of_elements
-			    << " for array global, to not cross section boundary.\n";
-			no_of_elements = new_no_of_elements;
-			// WARNING: The following line might be an error, even that it's
-			// required for the code generating code right now!
-			static_cast<ArrayType*>(type)->setLength(no_of_elements);
-		}
-		e = new Terminal(opNil);
-/*		for (int i = (int)type->asArray()->getLength() - 1; i >= 0; --i) {
-			Exp *as = prog->readNativeAs(uaddr + i * baseType->getSize()/8, baseType);
-			if (as == NULL)
-				break;
-			e = new Binary(opList, as, e);
-		} */
-		for (int i = no_of_elements-1; i >= 0; --i)
-			e = new Binary(opList, prog->readNativeAs(uaddr + i * elem_size, baseType), e);
-		// Is it really sane to dump the *whole* array to the log?
-		// What if it contains several thousands of entries, or more?
-		if (VERBOSE)
-			LOG << "calculated init for array global: " << e << "\n";
-		if (e->getOper() == opNil)
-			e = NULL;
-	}
-	if (e == NULL) 
-		e = prog->readNativeAs(uaddr, type);
+	e = prog->readNativeAs(uaddr, type);
 	return e;
 }
 
@@ -1787,28 +1617,98 @@ Exp *Prog::readNativeAs(ADDRESS uaddr, Type *type)
 	PSectionInfo si = getSectionInfoByAddr(uaddr);
 	if (si == NULL)
 		return NULL;
-	switch(type->getSize()) {
-	case 8:
-		e = new Const(
-			(int)*(char*)(uaddr + si->uHostAddr - si->uNativeAddr));
-		break;
-	case 16:
-		// Note: must respect endianness
-		e = new Const(readNative2(uaddr));
-		break;
-	case 32:
-	default:
-		// Note: must respect endianness and type
-		if (type->isFloat())
-			e = new Const(readNativeFloat4(uaddr));
-		else
-			e = new Const(readNative4(uaddr));
-		break;
-	case 64:
-		if (type->isFloat())
-			e = new Const(readNativeFloat8(uaddr));
-		else
-			e = new Const(readNative8(uaddr));
+	if (type->resolvesToPointer()) {
+		ADDRESS init = readNative4(uaddr);
+		if (init == 0)
+			return new Const(0);
+		const char *nam = getGlobalName(init);
+		if (nam != NULL)
+			// TODO: typecast?
+			return Location::global(nam, NULL);
+		if (type->asPointer()->getPointsTo()->resolvesToChar()) {
+			char *str = getStringConstant(init);
+			if (str != NULL)
+				return new Const(str);
+		}
+	}
+	if (type->resolvesToCompound()) {
+		CompoundType *c = type->asCompound();
+		Exp *n = e = new Terminal(opNil);
+		for (unsigned int i = 0; i < c->getNumTypes(); i++) {
+			ADDRESS addr = uaddr + c->getOffsetTo(i) / 8;
+			Type *t = c->getType(i);
+			Exp *v = readNativeAs(addr, t);
+			if (v == NULL) {
+				LOG << "unable to read native address " << addr << " as type " << t->getCtype() << "\n";
+				v = new Const(-1);
+			}
+			if (n->isNil()) {
+				n = new Binary(opList, v, n);
+				e = n;
+			} else {
+				assert(n->getSubExp2()->getOper() == opNil);
+				n->setSubExp2(new Binary(opList, v, n->getSubExp2()));
+				n = n->getSubExp2();
+			}
+		}
+		return e;
+	}
+	if (type->resolvesToArray() && type->asArray()->getBaseType()->resolvesToChar()) {
+		char* str = getStringConstant(uaddr, true);
+		if (str) {
+			// Make a global string
+			return new Const(str);
+		}
+	}
+	if (type->resolvesToArray()) {
+		int nelems = -1;
+		const char *nam = getGlobalName(uaddr);
+		int base_sz = type->asArray()->getBaseType()->getSize() / 8;
+		if (nam != NULL)
+			nelems = pBF->GetSizeByName(nam) / base_sz;
+		Exp *n = e = new Terminal(opNil);
+		for (int i = 0; nelems == -1 || i < nelems; i++) {
+			Exp *v = readNativeAs(uaddr + i * base_sz, type->asArray()->getBaseType());
+			if (n->isNil()) {
+				n = new Binary(opList, v, n);
+				e = n;
+			} else {
+				assert(n->getSubExp2()->getOper() == opNil);
+				n->setSubExp2(new Binary(opList, v, n->getSubExp2()));
+				n = n->getSubExp2();
+			}
+			// "null" terminated
+			if (nelems == -1 && v->isConst() && ((Const*)v)->getInt() == 0)
+				break;
+		}
+	}
+	if (type->resolvesToInteger()) {
+		switch(type->asInteger()->getSize()) {
+			case 8:
+				e = new Const(
+					(int)*(char*)(uaddr + si->uHostAddr - si->uNativeAddr));
+				break;
+			case 16:
+				// Note: must respect endianness
+				e = new Const(readNative2(uaddr));
+				break;
+			case 32:
+				e = new Const(readNative4(uaddr));
+				break;
+			case 64:
+				e = new Const(readNative8(uaddr));
+				break;
+		}
+	}
+	if (type->resolvesToFloat()) {
+		switch(type->asFloat()->getSize()) {
+			case 32:
+				e = new Const(readNativeFloat4(uaddr));
+				break;
+			case 64:
+				e = new Const(readNativeFloat8(uaddr));
+				break;
+		}
 	}
 	return e;
 }
@@ -2072,13 +1972,10 @@ Exp	*Prog::addReloc(Exp *e, ADDRESS lc)
 	// relocation for this lc then we should be able to replace the constant
 	// with a symbol.
 
-	if (lc == 0x80247b9) {
-		lc = lc;
-	}
-
 	if (pBF->IsRelocationAt(lc)) {
-		if (pBF->getSymbols().find(c->getInt()) != pBF->getSymbols().end()) {
-			const char *n = pBF->getSymbols()[c->getInt()].c_str();
+		std::map<ADDRESS, std::string> &symbols = pBF->getSymbols();
+		if (symbols.find(c->getInt()) != symbols.end()) {
+			const char *n = symbols[c->getInt()].c_str();
 			ADDRESS a = c->getInt();
 			unsigned int sz = pBF->GetSizeByName(n);
 			if (getGlobal((char*)n) == NULL) {
@@ -2091,7 +1988,14 @@ Exp	*Prog::addReloc(Exp *e, ADDRESS lc)
 			if (str)
 				e = new Const(str);
 			else {
-				// TODO: check for accesses into the middle of globals
+				LOG << "checking for access to middle of symbol c=" << c << " lc=" << lc << "\n";
+				// check for accesses into the middle of symbols
+				for (std::map<ADDRESS, std::string>::iterator it = symbols.begin(); it != symbols.end(); it++)
+					if ((*it).first < (ADDRESS)c->getInt() && (*it).first + pBF->GetSizeByName((*it).second.c_str()) > (ADDRESS)c->getInt()) {
+						int off = c->getInt() - (*it).first;
+						e = new Binary(opPlus, new Unary(opAddrOf, Location::global((*it).second.c_str(), NULL)), new Const(off));
+						break;
+					}
 			}
 		}			
 	}

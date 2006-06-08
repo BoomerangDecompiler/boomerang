@@ -2933,21 +2933,6 @@ Exp* SparcDecoder::dis_Eaddr(ADDRESS pc, int ignore /* = 0 */)
  *============================================================================*/
 bool SparcDecoder::isFuncPrologue(ADDRESS hostPC)
 {
-#if 0		// Can't do this without patterns. It was a bit of a hack anyway
-	int hiVal, loVal, reg, locals;
-	if ((InstructionPatterns::new_reg_win(prog.csrSrc,hostPC, locals)) != NULL)
-			return true;
-	if ((InstructionPatterns::new_reg_win_large(prog.csrSrc, hostPC,
-		hiVal, loVal, reg)) != NULL)
-			return true;
-	if ((InstructionPatterns::same_reg_win(prog.csrSrc, hostPC, locals))
-		!= NULL)
-			return true;
-	if ((InstructionPatterns::same_reg_win_large(prog.csrSrc, hostPC,
-		hiVal, loVal, reg)) != NULL)
-			return true;
-#endif
-
 	return false;
 }
 

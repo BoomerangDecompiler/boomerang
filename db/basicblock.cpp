@@ -965,24 +965,16 @@ bool BasicBlock::allParentsGenerated()
 // statements are used instead if possible
 void BasicBlock::emitGotoAndLabel(HLLCode *hll, int indLevel, PBB dest)
 {
-#if 0
-	// Return BB's have other statements in them.. but it would be nice to have a return here. It's not correct to
-	// merely emit a return statement here. Maybe the code generator can get rid of the goto.  Trent 8/8/2003.
-	if (dest->getType() == RET) { // WAS: check about size of ret bb
-		hll->AddReturnStatement(indLevel, dest->getReturnVal());
-	} else { 
-#endif
-		if (loopHead && (loopHead == dest || loopHead->loopFollow == dest)) {
-			if (loopHead == dest)
-				hll->AddContinue(indLevel);
-			else
-				hll->AddBreak(indLevel);
-		} else {
-			hll->AddGoto(indLevel, dest->ord);
+	if (loopHead && (loopHead == dest || loopHead->loopFollow == dest)) {
+		if (loopHead == dest)
+			hll->AddContinue(indLevel);
+		else
+			hll->AddBreak(indLevel);
+	} else {
+		hll->AddGoto(indLevel, dest->ord);
 
-			dest->hllLabel = true;
-		}
-	//}
+		dest->hllLabel = true;
+	}
 }
 
 // Generates code for each non CTI (except procedure calls) statement within the block.
@@ -2284,23 +2276,8 @@ void BasicBlock::processSwitch(UserProc* proc) {
 	}
 	ADDRESS uSwitch;
 	int iNumOut, iNum;
-#if 0
-	if (si->chForm == 'H') {
-		iNumOut = 0; int i, j=0;
-		for (i=0; i < si->iNumTable; i++, j+=2) {
-			// Endian-ness doesn't matter here; -1 is still -1!
-			int iValue = ((ADDRESS*)(si->uTable+delta))[j];
-			if (iValue != -1)
-				iNumOut++;
-		}
-		iNum = si->iNumTable;
-	}
-	else
-#endif
-	{
-		iNumOut = si->iUpper-si->iLower+1;
-		iNum = iNumOut;
-	}
+	iNumOut = si->iUpper-si->iLower+1;
+	iNum = iNumOut;
 	// Emit an NWAY BB instead of the COMPJUMP. Also update the number of out edges.
 	updateType(NWAY, iNumOut);
 	

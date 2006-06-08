@@ -1,8 +1,41 @@
 
 typedef int OptionValueType;
-typedef double ValueUnion;        // not pretty
+typedef struct {
+  double freq;
+  int units;
+} ValueUnion;        // this is actually a union of other stuff and this :(
+typedef unsigned char CARD8;
+typedef unsigned short CARD16;
 typedef unsigned int CARD32;
 typedef unsigned long IOADDRESS;
+typedef void *pointer;
+typedef int Bool;
+typedef int INT32;
+
+typedef struct {
+    const char * modname;
+    const char * vendor;
+    CARD32       _modinfo1_;
+    CARD32       _modinfo2_;
+    CARD32       xf86version;
+    CARD8        majorversion;
+    CARD8        minorversion;
+    CARD16       patchlevel;
+    const char * abiclass;
+    CARD32       abiversion;
+    const char * moduleclass;
+    CARD32       checksum[4];
+} XF86ModuleVersionInfo;
+
+typedef pointer ModuleSetupProc(pointer module, pointer opts, int *errmaj, int *errmin);
+typedef void ModuleTearDownProc(pointer module);
+
+typedef struct {
+    XF86ModuleVersionInfo 	*vers;
+    ModuleSetupProc             *setup;
+    ModuleTearDownProc          *teardown;
+} XF86ModuleData;
+
 
 typedef struct {
     int                 token;
@@ -12,12 +45,10 @@ typedef struct {
     Bool                found;
 } OptionInfoRec;
 typedef OptionInfoRec *OptionInfoPtr;
+typedef OptionInfoRec OptionInfoRecs[];
 
-typedef void *pointer;
-typedef int Bool;
-typedef int INT32;
 typedef void IdentifyFunc(int flags);
-typedef OptionInfoRec *AvailableOptionsFunc(int chipid, int bustype);
+typedef OptionInfoRecs *AvailableOptionsFunc(int chipid, int bustype);
 
 typedef struct {
     int driverVersion;
@@ -34,9 +65,12 @@ typedef Bool ProbeFunc(DriverRec *drv, int flags);
 
 void xf86AddDriver(DriverPtr driver, pointer module, int flags);
 
-void xf86LoaderRefSymLists(const char **p, ...);
+typedef const char *Sym;
+typedef Sym SymList[];
+
+void xf86LoaderRefSymLists(SymList *p, ...);
 void xf86LoaderRefSymbols(const char *p, ...);
-void LoaderRefSymLists(const char **p, ...);
+void LoaderRefSymLists(SymList *p, ...);
 void LoaderRefSymbols(const char *p, ...);
 
 typedef struct {
@@ -86,7 +120,7 @@ typedef struct {
     char **             modes;
     pointer             options;
 } DispRec;
-typedef DispRec DispPtr;
+typedef DispRec *DispPtr;
 
 typedef struct {
     char *              identifier;
@@ -381,6 +415,7 @@ typedef struct {
     int                 numFormats;
     PixmapFormatRec     formats[8];
     PixmapFormatRec     fbFormat;
+    unsigned char pad;
 
     int                 bitsPerPixel;
     Pix24Flags          pixmap24;

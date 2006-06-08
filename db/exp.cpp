@@ -668,7 +668,7 @@ void Const::printNoQuotes(std::ostream& os) {
 //	//	//	//
 //	Binary	//
 //	//	//	//
-void Binary::printr(std::ostream& os) {
+void Binary::printr(std::ostream& os, bool html) {
     assert(subExp1 && subExp2);
 	// The "r" is for recursive: the idea is that we don't want parentheses at the outer level, but a subexpression
 	// (recursed from a higher level), we want the parens (at least for standard infix operators)
@@ -677,13 +677,15 @@ void Binary::printr(std::ostream& os) {
 		case opList:		// Otherwise, you get (a, (b, (c, d)))
 			// There may be others
 			// These are the noparen cases
-			print(os); return;
+			print(os, html); return;
 		default:
 			break;
 	}
 	// Normal case: we want the parens
 	// std::ostream::operator<< uses print(), which does not have the parens
-	os << "(" << this << ")";
+	os << "(";
+	this->print(os, html);
+	os << ")";
 }
 
 void Binary::print(std::ostream& os, bool html) {
@@ -695,13 +697,13 @@ void Binary::print(std::ostream& os, bool html) {
 		case opSize:
 			// This can still be seen after decoding and before type analysis after m[...]
 			// *size* is printed after the expression, even though it comes from the first subexpression
-			p2->printr(os); os << "*"; p1->printr(os);
+			p2->printr(os, html); os << "*"; p1->printr(os, html);
 			os << "*";
 			return;
 		case opFlagCall:
 			// The name of the flag function (e.g. ADDFLAGS) should be enough
 			((Const*)p1)->printNoQuotes(os);
-			os << "( "; p2->printr(os); os << " )";
+			os << "( "; p2->printr(os, html); os << " )";
 			return;
 		case opExpTable:
 		case opNameTable:
@@ -715,22 +717,22 @@ void Binary::print(std::ostream& os, bool html) {
 		case opList:
 			// Because "," is the lowest precedence operator, we don't need printr here.
 			// Also, same as UQBT, so easier to test
-			p1->print(os);
+			p1->print(os, html);
 			if (!p2->isNil())
 				os << ", "; 
-			p2->print(os);
+			p2->print(os, html);
 			return;
 
 		case opMemberAccess:
-			p1->print(os);
+			p1->print(os, html);
 			os << ".";
 			((Const*)p2)->printNoQuotes(os);
 			return;
 
 		case opArrayIndex:
-			p1->print(os);
+			p1->print(os, html);
 			os << "[";
-			p2->print(os);
+			p2->print(os, html);
 			os << "]";
 			return;
 
@@ -742,7 +744,7 @@ void Binary::print(std::ostream& os, bool html) {
 	if (p1 == NULL)
 		os << "<NULL>";
 	else
-		p1->printr(os);
+		p1->printr(os, html);
 	switch (op) {
 		case opPlus:	os << " + ";  break;
 		case opMinus:	os << " - ";  break;
@@ -791,7 +793,7 @@ void Binary::print(std::ostream& os, bool html) {
 	if (p2 == NULL)
 		os << "<NULL>";
 	else
-		p2->printr(os);
+		p2->printr(os, html);
 
 }
 
@@ -846,7 +848,7 @@ void Unary::print(std::ostream& os, bool html) {
 				break;
 			} else if (p1->isTemp()) {
 				// Just print the temp {   // balance }s
-				p1->print(os);
+				p1->print(os, html);
 				break;
 			}
 			// Else fall through
@@ -864,12 +866,7 @@ void Unary::print(std::ostream& os, bool html) {
 			// Use print, not printr, because this is effectively the top level again (because the [] act as
 			// parentheses)
 			else {
-#if 0		// Problem when attempt to print with conscripts
-				if (op == opMemOf && p1->getOper() == opIntConst)
-					os << std::hex << ((Const*)p1)->getInt();
-				else
-#endif
-					p1->print(os);
+				p1->print(os, html);
 			}
 			os << "]";
 			break;
@@ -883,11 +880,11 @@ void Unary::print(std::ostream& os, bool html) {
 			else if (op == opLNot) os << "L~";
 			else if (op == opFNeg) os << "~f ";
 			else				   os << "-";
-			p1->printr(os);
+			p1->printr(os, html);
 			return;
 
 		case opSignExt:
-			p1->printr(os);
+			p1->printr(os, html);
 			os << "!";			// Operator after expression
 			return;
 
@@ -917,13 +914,13 @@ void Unary::print(std::ostream& os, bool html) {
 				case opSuccessor: os << "succ("; break;
 				default: break;			// For warning
 			}
-			p1->printr(os);
+			p1->printr(os, html);
 			os << ")";
 			return;
 
 		//	Misc	//
 		case opSgnEx:	   // Different because the operator appears last
-			p1->printr(os);
+			p1->printr(os, html);
 			os << "! ";
 			return;
 		case opTemp:
@@ -935,22 +932,22 @@ void Unary::print(std::ostream& os, bool html) {
 			((Const*)p1)->printNoQuotes(os);
 			return;
 		case opInitValueOf:
-			p1->printr(os);
+			p1->printr(os, html);
 			os << "'";
 			return;
 		case opPhi:
 			os << "phi(";
-			p1->print(os);
+			p1->print(os, html);
 			os << ")";
 			return;
 		case opFtrunc:
 			os << "ftrunc(";
-			p1->print(os);
+			p1->print(os, html);
 			os << ")";
 			return;
 		case opFabs:
 			os << "fabs(";
-			p1->print(os);
+			p1->print(os, html);
 			os << ")";
 			return;
 		default:
@@ -963,7 +960,7 @@ void Unary::print(std::ostream& os, bool html) {
 //	//	//	//
 //	Ternary //
 //	//	//	//
-void Ternary::printr(std::ostream& os) {
+void Ternary::printr(std::ostream& os, bool html) {
 	// The function-like operators don't need parentheses
 	switch (op) {
 		// The "function-like" ternaries
@@ -1005,26 +1002,26 @@ void Ternary::print(std::ostream& os, bool html) {
 			}
 			// Use print not printr here, since , has the lowest precendence of all.
 			// Also it makes it the same as UQBT, so it's easier to test
-			if (p1) p1->print(os); else os << "<NULL>"; os << ",";
-			if (p2) p2->print(os); else os << "<NULL>"; os << ",";
-			if (p3) p3->print(os); else os << "<NULL>"; os << ")";
+			if (p1) p1->print(os, html); else os << "<NULL>"; os << ",";
+			if (p2) p2->print(os, html); else os << "<NULL>"; os << ",";
+			if (p3) p3->print(os, html); else os << "<NULL>"; os << ")";
 			return;
 		default:
 			break;
 	}
 	// Else must be ?: or @ (traditional ternary operators)
-	if (p1) p1->printr(os); else os << "<NULL>";
+	if (p1) p1->printr(os, html); else os << "<NULL>";
 	if (op == opTern) {
 		os << " ? ";
-		if (p2) p2->printr(os); else os << "<NULL>";
+		if (p2) p2->printr(os, html); else os << "<NULL>";
 		os << " : ";		// Need wide spacing here
-		if (p3) p3->print(os); else os << "<NULL>";
+		if (p3) p3->print(os, html); else os << "<NULL>";
 	} 
 	else if (op == opAt) {
 			os << "@";
-			if (p2) p2->printr(os); else os << "NULL>";
+			if (p2) p2->printr(os, html); else os << "NULL>";
 			os << ":";
-			if (p3) p3->printr(os); else os << "NULL>";
+			if (p3) p3->printr(os, html); else os << "NULL>";
 	} else {
 		LOG << "Ternary::print invalid operator " << operStrings[op] << "\n";
 		assert(0);
@@ -1038,7 +1035,7 @@ void TypedExp::print(std::ostream& os, bool html) {
 	os << " ";
 	type->starPrint(os);
 	Exp* p1 = ((Ternary*)this)->getSubExp1();
-	p1->print(os);
+	p1->print(os, html);
 }
 
 
@@ -1046,16 +1043,21 @@ void TypedExp::print(std::ostream& os, bool html) {
 //	RefExp	//
 //	//	//	//
 void RefExp::print(std::ostream& os, bool html) {
-	if (subExp1) subExp1->print(os);
+	if (subExp1) subExp1->print(os, html);
 	else os << "<NULL>";
 	if (html)
 		os << "<sub>";
 	else
 		os << "{";
 	if (def == (Statement*)-1) os << "WILD";
-	else if (def) def->printNum(os);
-	// else os << "0";
-	else os << "-";			// So you can tell the difference with {0}
+	else if (def) {
+		if (html)
+			os << "<a href=\"#stmt" << std::dec << def->getNumber() << "\">";
+		def->printNum(os);
+		if (html)
+			os << "</a>";
+	} else 
+		os << "-";			// So you can tell the difference with {0}
 	if (html)
 		os << "</sub>";
 	else
@@ -3443,7 +3445,6 @@ Exp* Binary::genConstraints(Exp* result) {
 Exp* Location::polySimplify(bool& bMod) {
 	Exp *res = Unary::polySimplify(bMod);
 
-
 	if (res->getOper() == opMemOf && res->getSubExp1()->getOper() == opAddrOf) {
 		if (VERBOSE)
 			LOG << "polySimplify " << res << "\n";
@@ -3510,8 +3511,12 @@ Type *Binary::getType() {
 			if (subExp1->getType()) {
 				Type *sty = subExp1->getType();
 				if (!sty->resolvesToCompound()) {
-					if (VERBOSE)
-						LOG << "subExp1 not of compound type: " << this << "\n";
+					LOG << "subExp1 not of compound type: " << subExp1 << " has type " << sty->getCtype() << "\n";
+					LOG << "this exp " << this << " suggests it should be.\n";
+					if (subExp1->isMemOf() && subExp1->getSubExp1()->isSubscript()) {
+						RefExp *r = (RefExp*)subExp1->getSubExp1();
+						LOG << r->getDef() << "\n";
+					}
 					assert(false);
 				}
 				assert(subExp2->getOper() == opStrConst);
@@ -3609,6 +3614,9 @@ Type *Location::getType()
 			}
 			break;
 		case opMemOf:
+			if (subExp1->getType() && subExp1->getType()->resolvesToPointer())
+				return subExp1->getType()->asPointer()->getPointsTo();
+			// fall through
 		case opRegOf:
 			{
 				bool allZero = true;

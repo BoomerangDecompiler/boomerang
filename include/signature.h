@@ -171,19 +171,6 @@ virtual bool		hasEllipsis() { return ellipsis; }
 
 		void		renameParam(const char *oldName, const char *newName);
 
-#if 0
-	// add a new implicit parameter
-virtual void		addImplicitParameter(Exp *e);
-virtual void		removeImplicitParameter(int i);
-
-	// accessors for implicit params
-virtual int			getNumImplicitParams();
-virtual const char	*getImplicitParamName(int n);
-virtual Exp			*getImplicitParamExp(int n);
-virtual Type		*getImplicitParamType(int n);
-virtual int			findImplicitParam(Exp *e);
-#endif
-
 		// analysis determines parameters / return type
 		//virtual void analyse(UserProc *p);
 

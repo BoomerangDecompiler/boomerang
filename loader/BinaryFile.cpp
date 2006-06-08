@@ -118,25 +118,6 @@ int BinaryFile::GetSizeByName(const char* pName, bool bNoTypeOK) {
 	return 0;
 }
 
-
-#if 0
-bool BinaryFile::IsAddressRelocatable(ADDRESS uNative) {
-	return false;
-}
-
-ADDRESS BinaryFile::GetRelocatedAddress(ADDRESS uNative) {
-	return NO_ADDRESS;
-}
-
-WORD  BinaryFile::ApplyRelocation(ADDRESS uNative, WORD wWord) {
-	return 0;
-}
-				// Get symbol associated with relocation at address, if any
-const char* BinaryFile::GetRelocSym(ADDRESS uNative) {
-	return 0;
-}
-#endif
-
 bool BinaryFile::IsDynamicLinkedProc(ADDRESS uNative) {
 	return false;
 }

@@ -703,15 +703,6 @@ bool Statement::canPropagateToExp(Exp*e) {
 		// Don't propagate a null statement! Can happen with %pc's (would have no effect, and would infinitely loop)
 		return false;
 	if (!def->isAssign()) return false;		// Only propagate ordinary assignments (so far)
-#if 0
-	if (def->isPhi())
-		// Don't propagate phi statements!
-		return false;
-	if (def->isCall())
-		return false;
-	if (def->isBool())
-		return false;
-#endif
 	Assign* adef = (Assign*)def;
 	Exp* lhs = adef->getLeft();
 
@@ -873,6 +864,7 @@ bool Statement::replaceRef(Exp* e, Assign *def, bool& convert) {
 	// assert(ret);
 
 	if (ret && isCall()) {
+		this->processTypes();
 		convert |= ((CallStatement*)this)->convertToDirect();
 	}
 	return ret;
@@ -1061,8 +1053,10 @@ bool GotoStatement::searchAll(Exp* search, std::list<Exp*> &result) {
  *============================================================================*/
 void GotoStatement::print(std::ostream& os, bool html) {
 	os << std::setw(4) << std::dec << number << " ";
-	if (html)
+	if (html) {
 		os << "</td><td>";
+		os << "<a name=\"stmt" << std::dec << number << "\">";
+	}
 	os << "GOTO ";
 	if (pDest == NULL)
 		os << "*no dest*";
@@ -1070,6 +1064,8 @@ void GotoStatement::print(std::ostream& os, bool html) {
 		 pDest->print(os);
 	else
 		os << "0x" << std::hex << getFixedDest();
+	if (html)
+		os << "</a></td>";
 }
 
 /*==============================================================================
@@ -1318,8 +1314,10 @@ bool BranchStatement::searchAll(Exp* search, std::list<Exp*> &result) {
  *============================================================================*/
 void BranchStatement::print(std::ostream& os, bool html) {
 	os << std::setw(4) << std::dec << number << " ";
-	if (html)
+	if (html) {
 		os << "</td><td>";
+		os << "<a name=\"stmt" << std::dec << number << "\">";
+	}
 	os << "BRANCH ";
 	if (pDest == NULL)
 		os << "*no dest*";
@@ -1352,8 +1350,11 @@ void BranchStatement::print(std::ostream& os, bool html) {
 	if (pCond) {
 		if (html)
 			os << "<br>";
-		os << "High level: " << pCond;
+		os << "High level: ";
+		pCond->print(os, html);
 	}
+	if (html)
+		os << "</a></td>";
 }
 
 /*==============================================================================
@@ -1682,8 +1683,10 @@ bool CaseStatement::searchAll(Exp* search, std::list<Exp*> &result) {
  *============================================================================*/
 void CaseStatement::print(std::ostream& os, bool html) {
 	os << std::setw(4) << std::dec << number << " ";
-	if (html)
+	if (html) {
 		os << "</td><td>";
+		os << "<a name=\"stmt" << std::dec << number << "\">";
+	}
 	if (pSwitchInfo == NULL) {
 		os << "CASE [";
 		if (pDest == NULL)
@@ -1692,6 +1695,8 @@ void CaseStatement::print(std::ostream& os, bool html) {
 		os << "]";
 	} else
 		os << "SWITCH(" << pSwitchInfo->pSwitchVar << ")\n";
+	if (html)
+		os << "</a></td>";
 }
 
 
@@ -1777,13 +1782,6 @@ CallStatement::CallStatement(): returnAfterCall(false), calleeReturn(NULL) {
 CallStatement::~CallStatement() {
 }
 
-#if 0
-Exp *CallStatement::getReturnExp(int i) {
-	if (i >= (int)defines.size()) return NULL;
-	return returns[i].e;
-}
-#endif
-
 // Temporarily needed for ad-hoc type analysis
 int CallStatement::findDefine(Exp *e) {
 	StatementList::iterator rr;
@@ -1824,67 +1822,13 @@ Exp* CallStatement::localiseExp(Exp* e, int depth /* = -1 */) {
 // Note: must only operator on unsubscripted locations, otherwise it is invalid
 Exp* CallStatement::findDefFor(Exp *e) {
 	return defCol.findDefFor(e);
-#if 0
-	int n = -1;
-	if (!m_isComputed && procDest) {			// ? What if we find a destination for a computed call?
-		n = procDest->getSignature()->findParam(e);
-		if (n != -1)
-			return arguments[n];
-		n = procDest->getSignature()->findImplicitParam(e);
-		if (n != -1)
-			return implicitArguments[n];
-	} else {
-		std::vector<Exp*> &params = proc->getProg()->getDefaultParams();
-		if (params.size() != implicitArguments.size()) {
-			LOG << "eep. " << implicitArguments.size() << " args ";
-			if (procDest) {
-				LOG << procDest->getName() << " ";
-				LOG << "(" << procDest->getSignature()->getNumParams() << " params) ";
-			} else
-				LOG << "(no dest) ";
-			for (int i = 0; i < (int)implicitArguments.size(); i++)
-				LOG << implicitArguments[i] << " ";
-			LOG << "\n";
-		}
-		assert(params.size() == implicitArguments.size());
-		for (unsigned i = 0; i < params.size(); i++)
-			if (*params[i] == *e) {
-				n = i;
-				break;
-			}
-		if (n != -1)
-			return implicitArguments[n];
-	}
-	assert(n == -1);
-	return NULL;
-#endif
 }
-
-#if 0
-void CallStatement::addArgument(Exp *e, UserProc* proc) {
-	// Process the argument. For example, given m[esp+4], it might be needed to localise as m[esp{17}+4], then get
-	// substituted to m[esp{-}-16], then localised again to m[esp{-}-16]{16}, then substituted again into r24{14}
-	// (examples from test/pentium/fibo)
-	e = e->clone();							// Don't modify parameter
-	int depth = e->getMemDepth();
-	arguments.push_back(e);
-	Exp*& er = arguments.back();
-	StatementSet empty;
-	for (int d=0; d <= depth; d++) {
-		er = localiseExp(er, d);		// Localise for this call, depth d
-		propagateTo(-1, empty, d);		// Propagate into all args etc, depth d
-	}
-	// These expressions can end up becoming locals (?)
-	Location *l = dynamic_cast<Location*>(arguments.back());
-	if (l)
-		l->setProc(proc);
-}
-#endif
 
 Type *CallStatement::getArgumentType(int i) {
 	assert(i < (int)arguments.size());
-	if (signature == NULL) return NULL;
-	return signature->getParamType(i);
+	StatementList::iterator aa = arguments.begin();
+	my_advance(aa, i);	
+	return ((Assign*)(*aa))->getType();
 }
 
 /*==============================================================================
@@ -1900,12 +1844,6 @@ void CallStatement::setArguments(StatementList& args) {
 	for (ll = arguments.begin(); ll != arguments.end(); ++ll) {
 		((Assign*)*ll)->setProc(proc);
 		((Assign*)*ll)->setBB(pbb);
-#if 0		// For ad-hoc TA: (not even correct now)
-		Location *l = dynamic_cast<Location*>(*ll);
-		if (l) {
-			l->setProc(proc);
-		}
-#endif
 	}
 }
 
@@ -1956,17 +1894,6 @@ void CallStatement::setSigArguments() {
 	}
 #endif
 
-#if 0
-	n = signature->getNumImplicitParams();
-	implicitArguments.resize(n, NULL);
-	for (i = 0; i < n; i++) {
-		Exp *e = signature->getImplicitParamExp(i);
-		assert(e);
-		implicitArguments[i] = e->clone();
-		implicitArguments[i]->fixLocationProc(proc);
-	}
-#endif
- 
 	// initialize returns
 	// FIXME: anything needed here?
 }
@@ -2039,8 +1966,10 @@ bool CallStatement::searchAll(Exp* search, std::list<Exp *>& result) {
  *============================================================================*/
 void CallStatement::print(std::ostream& os, bool html) {
 	os << std::setw(4) << std::dec << number << " ";
- 	if (html)
+	if (html) {
 		os << "</td><td>";
+		os << "<a name=\"stmt" << std::dec << number << "\">";
+	}
 
 	// Define(s), if any
 	if (defines.size()) {
@@ -2072,7 +2001,7 @@ void CallStatement::print(std::ostream& os, bool html) {
 		if (pDest->isIntConst())
 			os << "0x" << std::hex << ((Const*)pDest)->getInt();
 		else
-			pDest->print(os);		// Could still be an expression
+			pDest->print(os, html);		// Could still be an expression
 	}
 
 	// Print the actual arguments of the call
@@ -2086,7 +2015,7 @@ void CallStatement::print(std::ostream& os, bool html) {
 		StatementList::iterator aa;
 		for (aa = arguments.begin(); aa != arguments.end(); ++aa) {
 			os << "                ";
-			((Assignment*)*aa)->printCompact(os);
+			((Assignment*)*aa)->printCompact(os, html);
 			os << "\n";
 		}
 		os << "              )";
@@ -2099,14 +2028,17 @@ void CallStatement::print(std::ostream& os, bool html) {
 	else 
 		os << "\n              ";
 	os << "Reaching definitions: ";
-	defCol.print(os);
+	defCol.print(os, html);
 	if (html)
 		os << "<br>";
 	else
 		os << "\n              ";
 	os << "Live variables: ";
-	useCol.print(os);
+	useCol.print(os, html);
 #endif
+
+	if (html)
+		os << "</a></td>";
 }
 
 /*==============================================================================
@@ -2210,15 +2142,7 @@ void CallStatement::generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) {
 		}
 	}
 	if (p->isLib() && *p->getSignature()->getPreferedName()) {
-		// How did this ever work? Surely you need the actual, substituted-into arguments!
-#if 0
-		std::vector<Exp*> args;
-		for (unsigned int i = 0; i < p->getSignature()->getNumPreferedParams(); i++)
-			args.push_back(arguments[p->getSignature()->getPreferedParam(i)]);
-		hll->AddCallStatement(indLevel, p,	p->getSignature()->getPreferedName(), args, getReturns());
-#else
 		hll->AddCallStatement(indLevel, p,	p->getSignature()->getPreferedName(), arguments, results);
-#endif
 	} else
 		hll->AddCallStatement(indLevel, p, p->getName(), arguments, results);
 }
@@ -2327,73 +2251,11 @@ bool CallStatement::convertToDirect() {
 	pDest = new Const(dest);
 
 	// 1
-#if 0	// Don't have to do this now!
-	if (procDest->isLib()) {
-		int i;
-		returns = new ReturnStatement;
-    	for (i = 0; i < sig->getNumReturns(); i++) {
-			ImplicitAssign* ia = new ImplicitAssign(sig->getReturnExp(i)->clone());
-    		returns->addReturn(ia);
-		}
-	}
-	else
-		if (procDest)
-			returns = (RetStatement*)((UserProc*)procDest)->getTheReturnStatement()->clone();
-		// else it remains as a DefineAll
-#endif
-
 	// 2
 	proc->fixCallAndPhiRefs();
 
 	// 3
-#if 0
-	std::vector<Exp*> &params = proc->getProg()->getDefaultParams();
-	std::vector<Exp*> oldargs = implicitArguments;
-	std::vector<Exp*> newimpargs;
-	newimpargs.resize(sig->getNumImplicitParams(), NULL);
-	for (i = 0; i < sig->getNumImplicitParams(); i++) {
-		bool gotsub = false;
-		for (unsigned j = 0; j < params.size(); j++)
-			if (*params[j] == *sig->getImplicitParamExp(i)) {
-				newimpargs[i] = oldargs[j];
-				gotsub = true;
-				break;
-			}
-		if (!gotsub) {
-			newimpargs[i] =
-				sig->getImplicitParamExp(i)->clone();
-			if (newimpargs[i]->getOper() == opMemOf) {
-				newimpargs[i]->setSubExp1(localiseExp(newimpargs[i]->getSubExp1()));
-			}
-		}
-	}
-#endif
 	// 3a Do the same with the regular arguments
-#if 0
-	assert(arguments.size() == 0);
-	std::vector<Exp*> newargs;
-	newargs.resize(sig->getNumParams(), NULL);
-	for (i = 0; i < sig->getNumParams(); i++) {
-		bool gotsub = false;
-		for (unsigned j = 0; j < params.size(); j++)
-			if (*params[j] == *sig->getParamExp(i)) {
-				newargs[i] = oldargs[j];
-				// Got something to substitute
-				gotsub = true;
-				break;
-			}
-		if (!gotsub) {
-			Exp* parami = sig->getParamExp(i);
-			newargs[i] = parami->clone();
-			if (newargs[i]->getOper() == opMemOf) {
-				newargs[i]->setSubExp1(localiseExp(newargs[i]->getSubExp1()));
-			}
-		}
-	}
-	// change em
-	arguments = newargs;
-	assert((int)arguments.size() == sig->getNumParams());
-#else
 	arguments.clear();
 	for (unsigned i = 0; i < sig->getNumParams(); i++) {
 		Exp* a = sig->getParamExp(i);
@@ -2406,7 +2268,6 @@ bool CallStatement::convertToDirect() {
 	// StatementList::iterator xx; for (xx = arguments.begin(); xx != arguments.end(); ++xx) {
 	//		((Assignment*)*xx)->printCompact(std::cerr); std::cerr << ", ";
 	// } std::cerr << "\n";
-#endif
 	// implicitArguments = newimpargs;
 	// assert((int)implicitArguments.size() == sig->getNumImplicitParams());
 
@@ -2449,44 +2310,6 @@ void CallStatement::updateArgumentWithType(int n)
 	}
 }
 
-#if 0
-bool CallStatement::doReplaceRef(Exp* from, Exp* to) {
-	bool change = false;
-	bool convertIndirect = false;
-	if (procDest == NULL && pDest) {
-		pDest = pDest->searchReplaceAll(from, to, change);
-		if (change) {
-			if (VERBOSE)
-				LOG << "propagated into call dest " << pDest << "\n";
-			convertIndirect = convertToDirect();
-		}
-	}
-	unsigned int i;
-
-	StatementList::iterator ss;
-	for (ss = arguments.begin(), i=0; ss != arguments.end(); ++ss, ++i) {
-		// Propagate into the RIGHT hand side of arguments
-		Exp*& a = ((Assign*)*ss)->getRightRef();
-		a = a->searchReplaceAll(from, to, change);
-		if (change) {
-			a = a->simplifyArith()->simplify();
-			if (VERBOSE)
-				LOG << "call doReplaceRef: updated argument " << i << " with " << a << "\n";
-			updateArgumentWithType(i);
-		}
-		// Also substitute into m[...] on the LEFT hand side, but don't change the LHS itself.
-		Exp* al = ((Assign*)*ss)->getLeft();
-		if (al->isMemOf()) {
-			al->searchReplaceAll(from, to, change);
-			if (change) al->simplifyArith()->simplify();
-		}
-	}
-
-	defCol.searchReplaceAll(from, to, change);
-	return convertIndirect;
-}
-#endif
-
 Exp* CallStatement::getArgumentExp(int i)
 {
 	assert(i < (int)arguments.size());
@@ -2512,13 +2335,20 @@ int CallStatement::getNumArguments()
 
 void CallStatement::setNumArguments(int n) {
 	int oldSize = arguments.size();
-	StatementList::iterator aa = arguments.begin();
-	my_advance(aa, n);
-	arguments.erase(aa, arguments.end());
+	if (oldSize > n) {
+		StatementList::iterator aa = arguments.begin();
+		my_advance(aa, n);
+		arguments.erase(aa, arguments.end());
+	}
 	// MVE: check if these need extra propagation
 	for (int i = oldSize; i < n; i++) {
 		Exp* a = procDest->getSignature()->getArgumentExp(i);
-		Assign* as = new Assign(new VoidType(), a->clone(), a->clone());
+		Type *ty = procDest->getSignature()->getParamType(i);
+		if (ty == NULL && oldSize)
+			ty = procDest->getSignature()->getParamType(oldSize-1);
+		if (ty == NULL)
+			ty = new VoidType();
+		Assign* as = new Assign(ty, a->clone(), a->clone());
 		as->setProc(proc);
 		as->setBB(pbb);
 		arguments.append(as);
@@ -2577,18 +2407,20 @@ Exp *processConstant(Exp *e, Type *t, Prog *prog, UserProc* proc, ADDRESS stmt) 
 			Type *points_to = pt->getPointsTo();
 			if (t->isCString()) {
 				ADDRESS u = ((Const*)e)->getAddr();
-				char *str = prog->getStringConstant(u, true);
-				if (str) {
-					e = new Const(str);
-					// Check if we may have guessed this global incorrectly (usually as an array of char)
-					const char* nam = prog->getGlobalName(u);
-					if (nam) prog->setGlobalType(nam,
-						new PointerType(new CharType()));
-				} else {
-					proc->getProg()->globalUsed(u);
-					const char *nam = proc->getProg()->getGlobalName(u);
-					if (nam)
-						e = Location::global(nam, proc);
+				if (u != 0) {   // can't do anything with NULL
+					char *str = prog->getStringConstant(u, true);
+					if (str) {
+						e = new Const(str);
+						// Check if we may have guessed this global incorrectly (usually as an array of char)
+						const char* nam = prog->getGlobalName(u);
+						if (nam) prog->setGlobalType(nam,
+							new PointerType(new CharType()));
+					} else {
+						proc->getProg()->globalUsed(u);
+						const char *nam = proc->getProg()->getGlobalName(u);
+						if (nam)
+							e = Location::global(nam, proc);
+					}
 				}
 			}
 			if (points_to->resolvesToFunc()) {
@@ -2610,6 +2442,7 @@ Exp *processConstant(Exp *e, Type *t, Prog *prog, UserProc* proc, ADDRESS stmt) 
 							sig->setName(p->getName());
 						else
 							p->setName(sig->getName());
+						sig->setForced(true);
 						p->setSignature(sig);
 						e = Location::global(p->getName(), proc);
 					}
@@ -2619,12 +2452,7 @@ Exp *processConstant(Exp *e, Type *t, Prog *prog, UserProc* proc, ADDRESS stmt) 
 			e = new Ternary(opItof, new Const(32), new Const(t->getSize()), e);
 		} 
 	}
-#if 0
-	if (t->isPointer() && e->getOper() != opAddrOf) {
-		e = new Unary(opAddrOf, Location::memOf(e));
-	}
-#endif
-	
+
 	return e;
 }
 
@@ -2645,32 +2473,28 @@ void Assignment::setTypeFor(Exp* e, Type* ty) {
 Type* CallStatement::getTypeFor(Exp* e) {
 	// The defines "cache" what the destination proc is defining
 	Assignment* as = defines.findOnLeft(e);
-	if (as != NULL)
+	if (as != NULL) {
+		if (ADHOC_TYPE_ANALYSIS) {
+			if (as->getLeft()->isLocal()) {
+				const char *nam = ((Const*)as->getLeft()->getSubExp1())->getStr();
+				Exp *r = proc->expFromSymbol(nam);
+				if (r->isSubscript())
+					r = r->getSubExp1();
+				Type *ty = getSignature()->getTypeFor(r);
+				Type *lty = proc->getLocalType(nam);
+				if (*ty != *lty) {
+					LOG << "updating type of local " << nam << " to " << ty->getCtype() << "\n";
+					proc->setLocalType(nam, ty);
+				}
+				return ty;
+			}
+		}
 		return as->getType();
+	}
 	if (e->isPC())
 		// Special case: just return void*
 		return new PointerType(new VoidType);
-#if 0	// Else, we should leave it to the bypassing propagator to reference around the call.
-		// The code below assumes that the call does not modify e; if e happens to be the stack pointer, this is
-		// not always true.
-	// See if it is in our reaching definitions
-	Exp* rdef = defCol.findDefFor(e);
-	if (rdef == NULL !ref->isSubscript()) return NULL;
-	Statement* def = ((RefExp*)ref)->getDef();
-	if (def == NULL) return NULL;
-	return def->getTypeFor(e);
-#if 0
-	if (procDest && procDest->isLib()) {
-		Signature* sig = procDest->getSignature();
-		return sig->getTypeFor(e);
-	}
-	if (calleeReturn == NULL) return NULL;
-	return calleeReturn->getTypeFor(e);
-#endif
-#else
-	// return NULL;
 	return new VoidType;
-#endif
 }
 
 void CallStatement::setTypeFor(Exp* e, Type* ty) {
@@ -2744,20 +2568,7 @@ Type *Statement::getTypeFor(Exp *e, Prog *prog)
 							return ((Statement*)as)->getTypeFor(e, prog);
 					}
 				}
-			}
-				
-#if 0
-			std::vector<Exp*>& rets = call->getReturns();
-			std::vector<Exp*>::iterator it;
-			int n = call->getNumReturns();
-			for (int i=0; i < n; i++) {
-				if (*e == *call->getReturnExp(i)) {
-					// This call defines expression e.
-					// How do we get the type?
-				}
-			}
-#endif
-					
+			}				
 		}
 		case STMT_BOOLASSIGN:
 			return new BooleanType;
@@ -2790,6 +2601,64 @@ bool CallStatement::processConstants(Prog *prog) {
 	return ellipsisProcessing(prog);
 }
 
+void CallStatement::processTypes()
+{
+	if (!ADHOC_TYPE_ANALYSIS)
+		return;
+	StatementList::iterator aa;
+	for (aa = arguments.begin(); aa != arguments.end(); ++aa) {
+		Type *t = ((Assign*)*aa)->getType();
+		Exp *e = ((Assign*)*aa)->getRight();
+
+		if (e->isAddrOf() && t->resolvesToPointer()) {
+			e = e->getSubExp1();
+			t = t->asPointer()->getPointsTo();
+		}
+
+		const char *local = proc->getSymbolName(e);
+		if (local) {
+			Type *ty = proc->getLocalType(local);
+			if (ty == NULL || *ty != *t) {
+				LOG << "setting type of local " << local << " to " << t << ". (arg of call).\n";
+				proc->setLocalType(local, t);
+				continue;
+			}
+		}
+
+		StatementList::iterator pp;
+		bool allZero = false;
+		Exp* clean = e->clone()->removeSubscripts(allZero);
+		if (allZero) {
+			int j = 0;
+			for (pp = proc->getParameters().begin(); pp != proc->getParameters().end(); ++pp, j++) {
+				Exp *le = ((Assign*)*pp)->getLeft();
+				Type *te = ((Assign*)*pp)->getType();
+				LOG << "compare " << le << " to " << clean << "\n";
+				if (*le == *clean) {
+					if (*te != *t) {
+						LOG << "setting type of param " << j << " to " << t << ". (arg of call).\n";
+						proc->setParamType(j, t);
+						continue;
+					}
+				}
+			}
+		}
+
+		// this seems harmless to me
+		if (e->isSubscript() && e->getSubExp1()->isGlobal())
+			e = e->getSubExp1();
+
+		if (e->isGlobal()) {
+			const char *name = ((Const*)e->getSubExp1())->getStr();
+			proc->getProg()->setGlobalType(name, t);
+			LOG << "setting global " << name << " to have type " << t->getCtype() << " arg of call " << this << "\n";
+		}
+	}
+
+	// TODO: returns
+}
+
+
 // This function has two jobs. One is to truncate the list of arguments based on the format string.
 // The second is to add parameter types to the signature.
 // If -Td is used, type analysis will be rerun with these changes.
@@ -2800,9 +2669,13 @@ bool CallStatement::ellipsisProcessing(Prog* prog) {
 		return false;
 	// functions like printf almost always have too many args
 	std::string name(getDestProc()->getName());
-	int format;
-	if ((name == "printf" || name == "scanf")) format = 0;
-	else if (name == "sprintf" || name == "fprintf" || name == "sscanf") format = 1;
+	int format = -1;
+	if ((name == "printf" || name == "scanf")) 
+		format = 0;
+	else if (name == "sprintf" || name == "fprintf" || name == "sscanf") 
+		format = 1;
+	else if (getNumArguments() && getArgumentExp(getNumArguments()-1)->isStrConst())
+		format = getNumArguments() - 1;
 	else return false;
 	if (VERBOSE)
 		LOG << "ellipsis processing for " << name << "\n";
@@ -3186,7 +3059,7 @@ void BoolAssign::setCondExpr(Exp* pss) {
  * PARAMETERS:		os: stream
  * RETURNS:			<Nothing>
  *============================================================================*/
-void BoolAssign::printCompact(std::ostream& os /*= cout*/) {
+void BoolAssign::printCompact(std::ostream& os /*= cout*/, bool html) {
 	os << "BOOL ";
 	lhs->print(os);
 	os << " := CC(";
@@ -3209,9 +3082,16 @@ void BoolAssign::printCompact(std::ostream& os /*= cout*/) {
 	}
 	os << ")";
 	if (bFloat) os << ", float";
+	if (html)
+		os << "<br>";
 	os << std::endl;
-	if (pCond)
-		os << "High level: " << pCond << "\n";
+	if (pCond) {
+		os << "High level: ";
+		pCond->print(os, html);
+		if (html)
+			os << "<br>";
+		os << "\n";
+	}
 }
 
 /*==============================================================================
@@ -3392,6 +3272,20 @@ void Assign::simplify() {
 			return;
 	}
 
+	// hack for assigning to the first member of a compound
+	if (ADHOC_TYPE_ANALYSIS && lhs->isMemOf()) {
+		Type *ty = lhs->getSubExp1()->getType();
+		if (ty && ty->resolvesToPointer() && ty->asPointer()->getPointsTo()->resolvesToCompound()) { 
+			CompoundType *c = ty->asPointer()->getPointsTo()->asCompound();
+			const char *nam = c->getNameAtOffset(0);
+			if (nam == NULL) nam = "??";
+			Exp *old = lhs;
+			lhs = new Binary(opMemberAccess, lhs, new Const((char*)nam));
+			if (VERBOSE)
+				LOG << "replacing " << old << " with " << lhs << "\n";
+		}
+	}
+
 	// this is a very complex pattern :)
 	// replace:	 1 r31 = a			 where a is an array pointer
 	//			 2 r31 = phi{1 4}
@@ -3552,25 +3446,29 @@ void Assign::fixSuccessor() {
 
 void Assignment::print(std::ostream& os, bool html) {
 	os << std::setw(4) << std::dec << number << " ";
-	if (html)
+	if (html) {
 		os << "</td><td>";
-	printCompact(os);
+		os << "<a name=\"stmt" << std::dec << number << "\">";
+	}
+	printCompact(os, html);
+	if (html)
+		os << "</a>";
 	if (!ranges.empty()) {
 		os << "\n\t\t\tranges: ";
 		ranges.print(os);
 	}
 }
-void Assign::printCompact(std::ostream& os) {
+void Assign::printCompact(std::ostream& os, bool html) {
 	os << "*" << type << "* ";
 	if (guard) 
 		os << guard << " => ";
-	if (lhs) lhs->print(os);
+	if (lhs) lhs->print(os, html);
 	os << " := ";
-	if (rhs) rhs->print(os);
+	if (rhs) rhs->print(os, html);
 }
-void PhiAssign::printCompact(std::ostream& os) {
+void PhiAssign::printCompact(std::ostream& os, bool html) {
 	os << "*" << type << "* ";
-	if (lhs) lhs->print(os);
+	if (lhs) lhs->print(os, html);
 	os << " := phi";
 	// Print as lhs := phi{9 17} for the common case where the lhs is the same location as all the referenced
 	// locations. When not, print as local4 := phi(r24{9} argc{17})
@@ -3591,9 +3489,13 @@ void PhiAssign::printCompact(std::ostream& os) {
 	if (simple) {
 		os << "{" << std::dec;
 		for (it = defVec.begin(); it != defVec.end(); /* no increment */) {
-			if (it->def)
+			if (it->def) {
+				if (html)
+					os << "<a href=\"#stmt" << std::dec << it->def->getNumber() << "\">";
 				os << it->def->getNumber();
-			else
+				if (html)
+					os << "</a>";
+			} else
 				os << "-";
 			if (++it != defVec.end())
 				os << " ";
@@ -3618,9 +3520,9 @@ void PhiAssign::printCompact(std::ostream& os) {
 		os << ")";
 	}
 }
-void ImplicitAssign::printCompact(std::ostream& os) {
+void ImplicitAssign::printCompact(std::ostream& os, bool html) {
 	os << "*" << type << "* ";
-	if (lhs) lhs->print(os);
+	if (lhs) lhs->print(os, html);
 	os << " := -";
 }
 
@@ -3636,12 +3538,6 @@ void Assignment::getDefinitions(LocationSet &defs) {
 	if (lhs->isFlags()) {
 		defs.insert(new Terminal(opCF));
 	}
-#if 0		// No! Use -O instead
-	Location *loc = dynamic_cast<Location*>(lhs);
-	if (loc)
-		// This is to call a hack to define ax when eax defined, etc
-		loc->getDefinitions(defs);
-#endif
 }
 
 bool Assign::search(Exp* search, Exp*& result) {
@@ -3749,79 +3645,6 @@ bool Assign::usesExp(Exp *e) {
 		((Unary*)lhs)->getSubExp1()->search(e, where)));
 }
 
-#if 0
-bool Assign::doReplaceRef(Exp* from, Exp* to) {
-	bool changeright = false;
-	rhs = rhs->searchReplaceAll(from, to, changeright);
-	bool changeleft = false;
-	// If LHS is a memof or regof, substitute its subexpression as well
-	if (lhs->isMemOf() || lhs->isRegOf()) {
-		Exp* subsub1 = ((Unary*)lhs)->getSubExp1();
-		((Unary*)lhs)->setSubExp1ND(subsub1->searchReplaceAll(from, to, changeleft));
-	}
-	//assert(changeright || changeleft);	// Check this
-	if (!changeright && !changeleft) {
-		// Could be propagating %flags into %CF
-		Exp* baseFrom = ((RefExp*)from)->getSubExp1();
-		if (baseFrom->isFlags()) {
-			Assign* def = (Assign*)((RefExp*)from)->getDef();
-			assert(def->isAssign());
-			Exp* defRhs = def->getRight();
-			assert(defRhs->isFlagCall());
-			char* str = ((Const*)((Binary*)defRhs)->getSubExp1())->getStr();
-			if (strncmp("SUBFLAGS", str, 8) == 0) {
-				/* When the carry flag is used bare, and was defined in a subtract of the form lhs - rhs, then CF has
-				   the value (lhs <u rhs).  lhs and rhs are the first and second parameters of the flagcall.
-				   Note: the flagcall is a binary, with a Const (the name) and a list of expressions:
-					 defRhs
-					 /	  \
-				Const	   opList
-				"SUBFLAGS"	/	\
-						   P1	opList
-								 /	 \
-								P2	opList
-									 /	 \
-									P3	 opNil
-				*/
-				Exp* e = new Binary(opLessUns,
-					((Binary*)defRhs)->getSubExp2()->getSubExp1(),
-					((Binary*)defRhs)->getSubExp2()->getSubExp2()->getSubExp1());
-				rhs = rhs->searchReplaceAll(new RefExp(new Terminal(opCF), def), e, changeright);
-			}
-		}
-	}
-#if 0
-	if (!changeright && !changeleft) {
-		if (VERBOSE) {
-			// This can happen all too frequently now with CallStatements and ReturnStatements containing multiple
-			// assignments
-			LOG << "could not change " << from << " to " << to << " in " << this << " !!\n";
-		}
-	}
-#endif
-	if (changeright) {
-		// simplify the expression
-		rhs = rhs->simplifyArith()->simplify();
-	}
-	if (changeleft) {
-		lhs = lhs->simplifyArith()->simplify();
-	}
-	return false;
-}
-
-bool Assignment::doReplaceRef(Exp* from, Exp* to) {
-	bool change = false;
-	// If LHS is a memof or regof, substitute its subexpression
-	if (lhs->isMemOf() || lhs->isRegOf()) {
-		Exp* subsub1 = ((Unary*)lhs)->getSubExp1();
-		((Unary*)lhs)->setSubExp1ND(subsub1->searchReplaceAll(from, to, change));
-	}
-	if (change)
-		lhs = lhs->simplifyArith()->simplify();
-	return false;
-}
-#endif
-
 // Not sure if anything needed here
 // MVE: check if can be deleted
 bool Assign::processConstants(Prog* prog) {
@@ -3835,6 +3658,108 @@ bool Assign::processConstants(Prog* prog) {
 #endif
 	rhs = processConstant(rhs, Statement::getTypeFor(lhs, prog), prog, proc, pbb->getRTLWithStatement(this)->getAddress());
 	return false;
+}
+
+void Assign::processTypes()
+{
+	if (type->isSize()) {
+		if (rhs->isIntConst() && ((Const*)rhs)->getInt() != 0) {
+			// assigning an integer and it's not NULL, seems good to me.
+			type = new IntegerType(type->getSize());
+		}
+		if (rhs->isFltConst()) {
+			// assigning a float, obviously.
+			type = new FloatType(type->getSize());
+		}
+	}
+
+	if (lhs->isGlobal()) {
+		char *nam = ((Const*)lhs->getSubExp1())->getStr();
+		Type *ty = proc->getProg()->getGlobalType(nam);
+		if (ty == NULL || ty->isSize()) {
+			if (!type->isSize())
+				proc->getProg()->setGlobalType(nam, type);
+		}
+	}
+}
+
+void addPhiReferences(StatementSet &stmts, Statement *def);
+
+void addSimpleCopyReferences(StatementSet &stmts, Statement *def)
+{
+	if (!(*((Assign*)def)->getLeft() == *((Assign*)def)->getRight()->getSubExp1()))
+		return;
+	Statement *copy = ((RefExp*)((Assign*)def)->getRight())->getDef();
+	if (!stmts.exists(copy)) {
+		stmts.insert(copy);
+		if (copy->isPhi())
+			addPhiReferences(stmts, copy);
+		else if (copy->isAssign() && ((Assign*)copy)->getRight()->isSubscript())
+			addSimpleCopyReferences(stmts, copy);
+	}
+}
+
+void addPhiReferences(StatementSet &stmts, Statement *def)
+{
+	PhiAssign *p = (PhiAssign*)def;
+	for (PhiAssign::iterator it = p->begin(); it != p->end(); it++) {
+		if ((*it).def->isPhi() && !stmts.exists((*it).def)) {
+			stmts.insert((*it).def);
+			addPhiReferences(stmts, (*it).def);
+		} else if ((*it).def->isAssign() && ((Assign*)(*it).def)->getRight()->isSubscript()) {
+			stmts.insert((*it).def);
+			addSimpleCopyReferences(stmts, (*it).def);
+		} else 
+			stmts.insert((*it).def);
+	}
+}
+
+void ReturnStatement::processTypes()
+{
+	if (proc->getSignature()->isForced()) {
+		StatementList::iterator it;
+		for (it = returns.begin(); it != returns.end(); it++) {
+			Assign *as = (Assign*)*it;
+			for (int n = 0; n < proc->getSignature()->getNumReturns(); n++)
+				if (*proc->getSignature()->getReturnExp(n) == *as->getLeft()) {
+					as->setType(proc->getSignature()->getReturnType(n));
+					Exp *r = as->getRight();
+					if (r->isSubscript()) {
+						if (r->getSubExp1()->isGlobal())
+							r = r->getSubExp1();
+						else {
+							RefExp *ref = (RefExp*)r;
+							if (ref->getDef()) {
+								StatementSet stmts;
+								Statement *def = ref->getDef();
+								stmts.insert(def);
+								if (def->isPhi())
+									addPhiReferences(stmts, def);
+								for (StatementSet::iterator it1 = stmts.begin(); it1 != stmts.end(); it1++) {
+									if ((*it1)->isCall()) {
+										// original code probably casted the result of the call
+										// e.g., malloc()
+										CallStatement *call = (CallStatement*)*it1;
+										StatementList &defines = call->getDefines();
+										for (StatementList::iterator it2 = defines.begin(); it2 != defines.end(); it2++) {
+											Assignment *asn = (Assignment*)*it2;
+											if (*asn->getLeft() == *r->getSubExp1()) {
+												asn->setType(proc->getSignature()->getReturnType(n));
+												break;
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+					if (r->isGlobal()) {
+						const char *nam = ((Const*)r->getSubExp1())->getStr();
+						proc->getProg()->setGlobalType(nam, proc->getSignature()->getReturnType(n));
+					}
+				}
+		}
+	}
 }
 
 bool PhiAssign::processConstants(Prog* prog) {
@@ -3979,33 +3904,6 @@ void CallStatement::genConstraints(LocationSet& cons) {
 	}
 }
 
-#if 0	// Get rid of this: MVE
-void Exp::genConditionConstraints(LocationSet& cons) {
-	// cond should be of the form a relop b, where relop is opEquals, opLess etc
-	assert(getArity() == 2);
-	Exp* a = ((Binary*)this)->getSubExp1();
-	Exp* b = ((Binary*)this)->getSubExp2();
-	// Constraint typeof(a) == typeof(b)
-	// Generate constraints for a and b separately (if any)
-	Exp* Ta; Exp* Tb;
-	// MVE: are there other times when this is needed?
-	if (a->isSizeCast()) {
-		Ta = new Unary(opTypeOf, ((Binary*)a)->getSubExp2());
-		Exp* con = a->genConstraints(Ta);
-		if (con && !con->isTrue()) cons.insert(con);
-	} else
-		Ta = new Unary(opTypeOf, a);
-	if (b->isSizeCast()) {
-		Tb = new Unary(opTypeOf, ((Binary*)b)->getSubExp2());
-		Exp* con = b->genConstraints(Tb);
-		if (con && !con->isTrue()) cons.insert(con);
-	} else
-		Tb = new Unary(opTypeOf, b);
-	Exp* equ = new Binary(opEquals, Ta, Tb);
-	cons.insert(equ);
-}
-#endif
-
 void BranchStatement::genConstraints(LocationSet& cons) {
 	if (pCond == NULL && VERBOSE) {
 		LOG << "Warning: BranchStatment " << number << " has no condition expression!\n";
@@ -4148,12 +4046,6 @@ bool CallStatement::accept(StmtExpVisitor* v) {
 	for (it = arguments.begin(); ret && it != arguments.end(); it++)
 		ret = (*it)->accept(v);
 	// FIXME: why aren't defines counted?
-#if 0		// Do we want to accept visits to the defines? Not sure now...
-	std::vector<ReturnInfo>::iterator rr;
-	for (rr = defines.begin(); ret && rr != defines.end(); rr++)
-		if (rr->e)			// Can be NULL now to line up with other returns
-			ret = rr->e->accept(v->ev);
-#endif
 	// FIXME: should be count in the collectors?
 	return ret;
 }
@@ -4477,48 +4369,6 @@ void PhiAssign::convertToAssign(Exp* rhs) {
 	a->setBB(bb); 
 }
 
-
-
-#if 0			// Doesn't seem to be called any more
-// This is a hack.	If we have a phi which has one of its elements referencing a statement which is defined as a 
-// function address, then we can use this information to resolve references to indirect calls more aggressively.
-// Note that this is not technically correct and will give the wrong result if the callee of an indirect call
-// actually modifies a function pointer in the caller. 
-bool PhiAssign::hasGlobalFuncParam()
-{
-	unsigned n = defVec.size();
-	for (unsigned i = 0; i < n; i++) {
-		Statement* u = defVec[i].def;
-		if (u == NULL) continue;
-		Exp *right = u->getRight();
-		if (right == NULL)
-			continue;
-		if (right->getOper() == opGlobal ||
-			(right->getOper() == opSubscript && right->getSubExp1()->getOper() == opGlobal)) {
-			Exp *e = right;
-			if (right->getOper() == opSubscript)
-				e = right->getSubExp1();
-			char *nam = ((Const*)e->getSubExp1())->getStr();
-			Proc *p = proc->getProg()->findProc(nam);
-			if (p == NULL)
-				p = proc->getProg()->getLibraryProc(nam);
-			if (p) {
-				if (VERBOSE)
-					LOG << "statement " << i << " of " << this << " is a global func\n";
-				return true;
-			}
-		}
-#if 0
-		// BAD: this can loop forever if we have a phi loop
-		if (u->isPhi() && u->getRight() != this &&
-			((PhiExp*)u->getRight())->hasGlobalFuncParam(prog))
-			return true;
-#endif
-	}
-	return false;
-}
-#endif
-
 void PhiAssign::simplify() {
 	lhs = lhs->simplify();
 
@@ -4559,39 +4409,6 @@ void PhiAssign::simplify() {
 		}
 	}
 }
-
-#if 0			// This functionality is in UserProc::fixCallAndPhiRefs now
-void PhiAssign::simplifyRefs() {
-	Definitions::iterator uu;
-	for (uu = defVec.begin(); uu != defVec.end(); ) {
-		// Look for a phi chain: *uu is an assignment whose RHS is the same expression as our LHS
-		// It is most likely a phi statement that was converted to an Assign
-		if (uu->def && uu->def->isAssign() && 
-				((Assign*)uu->def)->getRight()->getOper() == opSubscript &&
-				*((Assign*)uu->def)->getRight()->getSubExp1() == *lhs) {
-			Assign*& adef = (Assign*&)uu->def;
-			// If the assignment is to this phi...
-			if (((RefExp*)adef->getRight())->getDef() == this) {
-				// ... then *uu can be removed
-				if (VERBOSE)
-					LOG << "removing statement " << uu->def << " from phi at " << number << "\n";
-				uu = defVec.erase(uu);
-				continue;
-			}
-			// Else follow the chain, to get closer to the real, utlimate definition
-			if (VERBOSE)
-				LOG << "replacing " << adef->getNumber() << " with ";
-			uu->def = ((RefExp*)adef->getRight())->getDef();
-			if (VERBOSE) {
-				int n = 0;
-				if (uu->def) n = adef->getNumber();
-				LOG << n << " in phi at " << number << " result is: " << this << "\n";
-			}
-		}
-		uu++;
-	}
-}
-#endif
 
 static Exp* regOfWild = Location::regOf(new Terminal(opWild));
 static Exp* regOfWildRef = new RefExp(regOfWild, (Statement*)-1);
@@ -4635,23 +4452,6 @@ void CallStatement::regReplace(UserProc* proc) {
 	StatementList::iterator it;
 	for (it = arguments.begin(); it != arguments.end(); it++)
 		(*it)->regReplace(proc);
-#if 0
-	for (it = implicitArguments.begin(); it != implicitArguments.end(); it++)
-		Exp::doSearch(regOfWildRef, *it, li, false);
-#endif
-#if 0			// Returns are in the context of the callee
-	// Note: returns are "on the left hand side", and hence are never subscripted. So wrap in a RefExp
-	std::vector<ReturnInfo>::iterator rr;
-	for (rr = returns->begin(); rr != returns->end(); rr++) {
-		if (rr->e && *rr->e == *regOfWild) {
-			std::list<Exp**> rli;
-			Exp* tmp = new RefExp(rr->e, this);
-			rli.push_front(&tmp);
-			proc->regReplaceList(rli);
-			rr->e = tmp;
-		}
-	}
-#endif
 }
 void ReturnStatement::regReplace(UserProc* proc) {
 	for (iterator it = modifieds.begin(); it != modifieds.end(); ++it)
@@ -4667,18 +4467,9 @@ void PhiAssign::putAt(int i, Statement* def, Exp* e) {
 }
 
 void CallStatement::setLeftFor(Exp* forExp, Exp* newExp) {
-#if 0
-	for (unsigned u = 0; u < defines.size(); u++) {
-		if (*returns[u].e == *forExp) {
-			returns[u].e = newExp;
-			return;
-		}
-	}
-#else
 	std::cerr << "! Attempt to setLeftFor this call statement! forExp is " << forExp << ", newExp is " << newExp <<
 		"\n";
 	assert(0);
-#endif
 }
 
 bool Assignment::definesLoc(Exp* loc) {
@@ -4745,15 +4536,17 @@ void ReturnStatement::setTypeFor(Exp*e, Type* ty) {
 #define RETSTMT_COLS 120
 void ReturnStatement::print(std::ostream& os, bool html) {
 	os << std::setw(4) << std::dec << number << " ";
-	if (html)
+	if (html) {
 		os << "</td><td>";
+		os << "<a name=\"stmt" << std::dec << number << "\">";
+	}
 	os << "RET";
 	iterator it;
 	bool first = true;
 	unsigned column = 19;
 	for (it = returns.begin(); it != returns.end(); ++it) {
 		std::ostringstream ost;
-		((Assignment*)*it)->printCompact(ost);
+		((Assignment*)*it)->printCompact(ost, html);
 		unsigned len = ost.str().length();
 		if (first) {
 			first = false;
@@ -4770,7 +4563,7 @@ void ReturnStatement::print(std::ostream& os, bool html) {
 		column += len;
 	}
 	if (html)
-		os << "<br>";
+		os << "</a><br>";
 	else
 		os << "\n              ";
 	os << "Modifieds: ";
@@ -4804,7 +4597,7 @@ void ReturnStatement::print(std::ostream& os, bool html) {
 	else
 		os << "\n              ";
 	os << "Reaching definitions: ";
-	col.print(os);
+	col.print(os, html);
 #endif
 }
 
@@ -5238,23 +5031,10 @@ void CallStatement::updateArguments() {
 		if (!inserted)
 			arguments.insert(arguments.end(), as);				// In case larger than all existing elements
 	}
-}
 
-#if 0		// localiseExp() is the same thing
-// Convert an expression like m[sp+4] in the callee context to m[sp{-} - 32] (in the context of the call)
-Exp* CallStatement::fromCalleeContext(Exp* e) {
-	Exp* sp = Location::regOf(signature->getStackRegister());
-	Exp* refSp = defCol.findNS(sp);
-	if (refSp == NULL)
-		return e;				// No stack pointer definition reaches here, so no change needed
-	Statement* def = ((RefExp*)refSp)->getDef();
-	if (!def->isAssign())
-		return e;				// ? Definition for sp is not an assignment
-	Exp* rhs = ((Assign*)def)->getRight();	// RHS of assign should be in terms of sp{-}
-	bool change;
-	return e->clone()->searchReplaceAll(sp, rhs, change);
+	// seems like a good time to do this
+	processTypes();
 }
-#endif
 
 // Calculate results(this) = defines(this) isect live(this)
 // Note: could use a LocationList for this, but then there is nowhere to store the types (for DFA based TA)
@@ -5318,11 +5098,6 @@ StatementList* CallStatement::calcResults() {
 }
 
 Type* Assignment::getType() {
-	if (ADHOC_TYPE_ANALYSIS) {
-		Type *t = lhs->getType();
-		if (t)
-			return t;
-	}
 	return type;
 }
 
@@ -5334,26 +5109,6 @@ void Assignment::setType(Type* ty) {
 			loc->setType(ty);
 	}
 }
-
-#if 0
-// A temporary HACK for getting rid of the %CF in returns
-void ReturnStatement::specialProcessing() {
-	iterator it;
-	for (it = returns.begin(); it != returns.end(); it++) {
-		Exp* lhs = ((Assign*)*it)->getLeft();
-		if (lhs->getOper() == opCF) {
-			Exp* rhs = ((Assign*)*it)->getRight();
-			if (rhs->isSubscript() &&
-					!((RefExp*)rhs)->isImplicitDef() &&
-					((RefExp*)rhs)->getSubExp1()->getOper() == opCF) {
-				// We have a non SUBFLAGS definition reaching the exit; just delete the return of %CF
-				returns.erase(it);
-				return;
-			}
-		}
-	}
-}
-#endif
 
 void CallStatement::removeDefine(Exp* e) {
 	StatementList::iterator ss;
@@ -5432,9 +5187,13 @@ TypingStatement::TypingStatement(Type* ty) : type(ty) {
 // NOTE: ImpRefStatement not yet used
 void ImpRefStatement::print(std::ostream& os, bool html) {
 	os << "     *";				// No statement number
-	if (html)
+	if (html) {
 		os << "</td><td>";
+		os << "<a name=\"stmt" << std::dec << number << "\">";
+	}
 	os << type << "* IMP REF " << addressExp;
+	if (html)
+		os << "</a></td>";
 }
 
 void ImpRefStatement::meetWith(Type* ty, bool& ch) {
@@ -5548,8 +5307,10 @@ bool JunctionStatement::accept(StmtPartModifier* visitor)
 void JunctionStatement::print(std::ostream &os, bool html)
 {
 	os << std::setw(4) << std::dec << number << " ";
-	if (html)
+	if (html) {
 		os << "</td><td>";
+		os << "<a name=\"stmt" << std::dec << number << "\">";
+	}
 	os << "JUNCTION ";
 	for (int i = 0; i < pbb->getNumInEdges(); i++) {
 		os << std::hex << pbb->getInEdges()[i]->getHiAddr() << std::dec;
@@ -5561,4 +5322,6 @@ void JunctionStatement::print(std::ostream &os, bool html)
 		os << "LOOP";
 	os << "\n\t\t\tranges: ";
 	ranges.print(os);
+	if (html)
+		os << "</a></td>";
 }

@@ -355,41 +355,6 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 				str << "0x" << std::hex << mask;
 			}
 			closeParen(str, curPrec, PREC_BIT_AND);		
-#if 0
-			// General form:
-			//	s1 >> last & (1 << first-last+1)-1
-			// When first == last:
-			//	s1 >> last & 1
-			openParen(str, curPrec, PREC_BIT_AND);
-			appendExp(str, t->getSubExp1(), PREC_BIT_SHIFT);
-			Exp* first = t->getSubExp2();
-			Exp* last  = t->getSubExp3();
-			str << " >> ";
-			appendExp(str, last, PREC_BIT_SHIFT);
-			str << " & ";
-			if (*first == *last)
-				// Can use a much shorter form; just and with 1
-				str << "1";
-			else {
-				str << "(1 << ";
-				appendExp(str, first, PREC_ADD);
-				str << "-";
-				appendExp(str, last, PREC_ADD);
-				str << "+1)-1";
-			}
-			closeParen(str, curPrec, PREC_BIT_AND);
-#endif
-#if 0
-			c = dynamic_cast<Const*>(t->getSubExp3());
-			assert(c && c->getOper() == opIntConst);
-			int last = c->getInt();
-			str << ">>" << std::dec << last << ")";
-			c = dynamic_cast<Const*>(t->getSubExp2());
-			assert(c && c->getOper() == opIntConst);
-			unsigned int mask = (1 << (c->getInt() - last + 1)) - 1;
-			str << "&0x" << std::hex << mask;
-			closeParen(str, curPrec, PREC_BIT_AND);
-#endif
 			break;
 		}
 		case opPlus:
@@ -1484,18 +1449,23 @@ void CHLLCode::AddPrototype(UserProc* proc) {
  */
 void CHLLCode::AddProcDec(UserProc* proc, bool open) {
 	std::ostringstream s;
-#if 0
-	// this is done earlier	
-	if (strncmp("main", proc->getName(), 4+1) == 0) {
-		// Special case for main()
-		lines.push_back("int main(int argc, char* argv[], char** envp) {");
-		return;
-	}
-#endif
 	ReturnStatement* returns = proc->getTheReturnStatement();
-	if (returns == NULL || returns->getNumReturns() == 0)
+	if (proc->getSignature()->isForced()) {
+		int n = 0;
+		Exp *e = proc->getSignature()->getReturnExp(0);
+		if (e->isRegN(Signature::getStackRegister(proc->getProg())))
+			n = 1;
+		Type *retType = proc->getSignature()->getReturnType(n);
+		if (retType == NULL)
+			s << "void ";
+		else {
+			appendType(s, retType);
+			if (!retType->isPointer())	// NOTE: assumes type *proc( style
+				s << " ";
+		}
+	} else if (returns == NULL || returns->getNumReturns() == 0) {
 		s << "void ";
-	else {
+	} else {
 		Assign* firstRet = (Assign*)*returns->begin();
 		Type* retType = firstRet->getType();
 		if (retType == NULL || retType->isVoid())
@@ -1613,11 +1583,11 @@ void CHLLCode::AddGlobal(const char *name, Type *type, Exp *init) {
 	}
 	if (init && !init->isNil()) {
 		s << " = ";
-		if (type->isArray())
+		if (init->getOper() == opList)
 			s << "{ ";
 		Type *base_type = type->isArray() ? type->asArray()->getBaseType() : type; 
 		appendExp(s, init, PREC_ASSIGN, base_type->isInteger() ? !base_type->asInteger()->isSigned() : false);
-		if (type->isArray())
+		if (init->getOper() == opList)
 			s << " }";
 	}
 	s << ";";

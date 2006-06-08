@@ -216,32 +216,6 @@ virtual				~LocationSet() {}						// virtual destructor kills warning
 		void		addSubscript(Statement* def /* , Cfg* cfg */);		// Add a subscript to all elements
 };	// class LocationSet
 
-#if 0
-class LocationList {
-		std::list<Exp*> llist; 
-public:
-typedef std::list<Exp*>::iterator iterator;
-					LocationList() {}						// Default constructor
-virtual				~LocationList() {}						// virtual destructor kills warning
-					LocationList(const LocationList& o);		// Copy constructor
-					LocationList& operator=(const LocationList& o); // Assignment
-		//void		makeUnion(LocationSet& other);			// Set union
-		//void		makeDiff (LocationSet& other);			// Set difference
-		void		clear() {llist.clear();}					// Clear the set
-		iterator	begin() {return llist.begin();}
-		iterator	end()	 {return llist.end();}
-		//void		insert(Exp* loc) {llist.insert(loc);}	// Insert the given location
-		//void		remove(Exp* loc);						// Remove the given location
-		//void		remove(iterator ll);					// Remove location, given iterator
-		//void		removeIfDefines(StatementSet& given);	// Remove locs defined in given
-		unsigned	size() const {return llist.size();}		// Number of elements
-		bool		operator==(const LocationSet& o) const; // Compare
-		void		print(std::ostream& os);				// Print to os
-		char*		prints();								// Print to string for logging and debugging
-		void		dump();									// Print to standard error for debugging
-};	// class LocationList
-#endif
-
 class Range {
 protected:
 	int stride, lowerBound, upperBound;

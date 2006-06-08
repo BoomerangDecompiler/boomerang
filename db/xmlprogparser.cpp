@@ -1256,11 +1256,6 @@ void XMLProgParser::addToContext_callstmt(Context *c, int e)
 		// Assume that the corresponding return type will appear next
 		returnExp = stack.front()->exp;
 		break;
-#if 0	// FIXME! This is all wrong
-	case e_returntype:
-		call->addReturn(returnExp, stack.front()->type);
-		break;
-#endif
 	default:
 		if (e == e_unknown)
 			std::cerr << "unknown tag " << e << " in context callstmt\n";
@@ -1316,11 +1311,6 @@ void XMLProgParser::addToContext_returnstmt(Context *c, int e)
 		return;
 	}
 	switch(e) {
-#if 0
-		case e_returnexp:
-			ret->defs.append((Assignment*)stack.front()->stmt);
-			break;
-#endif
 		case e_modifieds:
 			ret->modifieds.append((Assignment*)stack.front()->stmt);
 			break;
@@ -1638,17 +1628,6 @@ void XMLProgParser::addToContext_argument(Context *c, int e)
 {
 	c->exp = stack.front()->exp;
 }
-
-#if 0
-void XMLProgParser::start_implicitarg(const char **attr)
-{
-}
-
-void XMLProgParser::addToContext_implicitarg(Context *c, int e)
-{
-	c->exp = stack.front()->exp;
-}
-#endif
 
 void XMLProgParser::start_returnexp(const char **attr)
 {
@@ -2817,14 +2796,6 @@ void XMLProgParser::persistToXML(std::ostream &out, Statement *stmt)
 			persistToXML(out, *ss);
 			out << "</argument>\n";
 		}
-
-#if 0
-		for (unsigned i = 0; i < c->implicitArguments.size(); i++) {
-			out << "<implicitarg>\n";
-			persistToXML(out, c->implicitArguments[i]);
-			out << "</implicitarg>\n";
-		}
-#endif
 
 		for (ss = c->defines.begin(); ss != c->defines.end(); ++ss) {
 			out << "<defines>\n";

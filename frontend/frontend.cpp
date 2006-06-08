@@ -188,10 +188,32 @@ std::vector<ADDRESS> FrontEnd::getEntryPoints()
 					vers = pBF->readNative4(a);
 					setup = pBF->readNative4(a+4);
 					teardown = pBF->readNative4(a+8);
-					if (setup)
+					if (setup) {
+						Type *ty = NamedType::getNamedType("ModuleSetupProc");
+						assert(ty->isFunc());
+						UserProc *proc = (UserProc*)prog->setNewProc(setup);
+						assert(proc);
+						Signature *sig = ty->asFunc()->getSignature()->clone();
+						const char *sym = pBF->SymbolByAddress(setup);
+						if (sym)
+							sig->setName(sym);
+						sig->setForced(true);
+						proc->setSignature(sig);
 						entrypoints.push_back(setup);
-					if (teardown)
+					}
+					if (teardown) {
+						Type *ty = NamedType::getNamedType("ModuleTearDownProc");
+						assert(ty->isFunc());
+						UserProc *proc = (UserProc*)prog->setNewProc(teardown);
+						assert(proc);
+						Signature *sig = ty->asFunc()->getSignature()->clone();
+						const char *sym = pBF->SymbolByAddress(teardown);
+						if (sym)
+							sig->setName(sym);
+						sig->setForced(true);
+						proc->setSignature(sig);						
 						entrypoints.push_back(teardown);
+					}
 				}
 			}
 		}
@@ -390,42 +412,6 @@ Signature *FrontEnd::getLibSignature(const char *name) {
 	return signature;
 }
 
-#if 0		// Note: moved to Prog::setNewProc
-/*==============================================================================
- * FUNCTION:	FrontEnd::newProc
- * OVERVIEW:	Call this function when a procedure is discovered (usually by
- *				  decoding a call instruction). That way, it is given a name
- *				  that can be displayed in the dot file, etc. If we assign it
- *				  a number now, then it will retain this number always
- * PARAMETERS:	prog  - program to add the new procedure to
- *				uAddr - Native address of the procedure entry point
- * RETURNS:		Pointer to the Proc object, or 0 if this is a deleted (not to
- *				  be decoded) address
- *============================================================================*/
-Proc* FrontEnd::newProc(Prog *prog, ADDRESS uAddr) {
-	// this test fails when decoding sparc, why?  Please investigate - trent
-	//assert(uAddr >= limitTextLow && uAddr < limitTextHigh);
-	// Check if we already have this proc
-	Proc* pProc = prog->findProc(uAddr);
-	if (pProc == (Proc*)-1)			// Already decoded and deleted?
-		return 0;					// Yes, exit with 0
-	if (pProc)
-		// Yes, we are done
-		return pProc;
-	char* pName = pBF->SymbolByAddress(uAddr);
-	bool bLib = pBF->IsDynamicLinkedProc(uAddr);
-	if (pName == 0) {
-		// No name. Give it a numbered name
-		std::ostringstream ost;
-		ost << "proc" << m_iNumberedProc++;
-		pName = strdup(ost.str().c_str());
-	}
-	pProc = prog->newProc(pName, uAddr, bLib);
-	return pProc;
-}
-#endif
-
-
 /*==============================================================================
  * FUNCTION:	  FrontEnd::processProc
  * OVERVIEW:	  Process a procedure, given a native (source machine) address.
@@ -441,6 +427,9 @@ Proc* FrontEnd::newProc(Prog *prog, ADDRESS uAddr) {
 bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bool frag /* = false */,
 		bool spec /* = false */) {
 	PBB pBB;					// Pointer to the current basic block
+
+	// just in case you missed it
+	Boomerang::get()->alert_new(pProc);
 
 	// We have a set of CallStatement pointers. These may be disregarded if this is a speculative decode
 	// that fails (i.e. an illegal instruction is found). If not, this set will be used to add to the set of calls
@@ -1093,160 +1082,6 @@ RTL* decodeRtl(ADDRESS address, int delta, NJMCDecoder* decoder) {
 
 	return rtl;
 }
-
-
-#if 0
-/*==============================================================================
- * FUNCTION:	getInstanceFor
- * OVERVIEW:	Guess the machine required to decode this binary file; load the library and return an instance of
- *					FrontEnd
- * NOTE:		No longer used... replaced by similar code in class BinaryFileFactory
- * PARAMETERS:	sName: name of the binary file
- *				dlHandle: ref to a void* needed for closeInstance
- *				prog: the program to decode
- *				decoder: ref to ptr to decoder object
- * RETURNS:		Pointer to a FrontEnd* object, or 0 if not successful
- *============================================================================*/
-typedef FrontEnd* (*constructFcn)(int, ADDRESS, NJMCDecoder**);
-#define TESTMAGIC2(buf,off,a,b)		(buf[off] == a && buf[off+1] == b)
-#define TESTMAGIC4(buf,off,a,b,c,d) (buf[off] == a && buf[off+1] == b && \
-									 buf[off+2] == c && buf[off+3] == d)
-FrontEnd* FrontEnd::getInstanceFor( const char *sName, void*& dlHandle, BinaryFile *pBF, NJMCDecoder*& decoder) {
-	FILE *f;
-	char buf[64];
-	std::string libName, machName;
-	dlHandle = 0;			// Only used with DYNAMIC code
-#ifndef DYNAMIC
-	Prog* prog = decoder->getProg();
-#endif
-
-	f = fopen (sName, "ro");
-	if( f == NULL ) {
-		LOG << "Unable to open binary file: " << sName << "\n";
-		fclose(f);
-		return NULL;
-	}
-	fread (buf, sizeof(buf), 1, f);
-	fclose(f);
-
-	if( TESTMAGIC4(buf,0, '\x7F','E','L','F') ) {
-		// ELF Binary; they have an enum for the machine!
-		if (buf[0x13] == 2) {		// Sparc, big endian
-			machName = "sparc"; 
-#ifndef DYNAMIC
-			{
-				SparcFrontEnd *fe = new SparcFrontEnd(pBF, prog);
-				decoder = fe->getDecoder();
-				return fe;
-			}
-#endif
-		}
-		else if (buf[0x12] == 3) {
-			machName = "pentium"; 
-#ifndef DYNAMIC
-			{
-				PentiumFrontEnd *fe = new PentiumFrontEnd(pBF, prog);
-				decoder = fe->getDecoder();
-				return fe;
-			}
-#endif
-		}
-		else if (buf[0x13] == 20) {		// PowerPC, big endian
-			machName = "ppc"; 
-#ifndef DYNAMIC
-			{
-				PPCFrontEnd *fe = new PPCFrontEnd(pBF, prog);
-				decoder = fe->getDecoder();
-				return fe;
-			}
-#endif
-
-		}
-		else if (buf[0x12] == (char)0xa8) {		// ST20, little endian
-			machName = "st20"; 
-#ifndef DYNAMIC
-			{
-				ST20FrontEnd *fe = new ST20FrontEnd(pBF);
-				decoder = fe->getDecoder();
-				return fe;
-			}
-#endif
-
-		}
-		else if (buf[0x12] == (char)0xa8) {		// ST20, little endian
-			machName = "st20"; 
-#ifndef DYNAMIC
-			{
-				ST20FrontEnd *fe = new ST20FrontEnd(pBF);
-				decoder = fe->getDecoder();
-				return fe;
-			}
-#endif
-
-		} else {
-			LOG << "Unknown ELF machine type " << (ADDRESS)buf[0x12] << (ADDRESS)buf[0x13] << "\n";
-			return NULL;
-		}
-	} else if( TESTMAGIC2( buf,0, 'M','Z' ) ) { /* DOS-based file */
-		// This test could be strengthened a bit!
-		machName = "pentium";
-#ifndef DYNAMIC
-		PentiumFrontEnd *fe = new PentiumFrontEnd(pBF, prog);
-		decoder = fe->getDecoder();
-		return fe;
-#endif
-	} else if( TESTMAGIC4( buf,0x3C, 'a','p','p','l' ) || TESTMAGIC4( buf,0x3C, 'p','a','n','l' ) ) {
-		/* PRC Palm-pilot binary */
-		machName = "mc68k";
-	} else if( buf[0] == 0x02 && buf[2] == 0x01 &&
-				(buf[1] == 0x10 || buf[1] == 0x0B) &&
-				(buf[3] == 0x07 || buf[3] == 0x08 || buf[4] == 0x0B) ) {
-		/* HP Som binary (last as it's not really particularly good magic) */
-		libName = "hppa";
-	} else {
-		LOG << "FrontEnd::getInstanceFor: unrecognised binary file" <<
-			sName << "\n";
-		return NULL;
-	}
-
-#ifdef DYNAMIC
-	// Load the specific decoder library
-	libName = std::string("lib/libfront") + machName + ".so";
-	dlHandle = dlopen(libName.c_str(), RTLD_LAZY);
-	if (dlHandle == NULL) {
-		LOG << "Could not open dynamic loader library " << libName << "\n";
-		LOG << "dlerror is " << dlerror() << "\n";
-		return NULL;
-	}
-	// Use the handle to find the "construct" function
-	constructFcn pFcn = (constructFcn) dlsym(dlHandle, "construct");
-	if (pFcn == NULL) {
-		LOG << "Front end library " << libName <<
-			" does not have a construct function\n";
-		return NULL;
-	}
-
-	// Call the construct function
-	return (*pFcn)(pBF, &decoder);
-#endif
-
-	return 0;
-}
-
-/*==============================================================================
- * FUNCTION:	FrontEnd::closeInstance
- * OVERVIEW:	Close the library opened by getInstanceFor
- * PARAMETERS:	dlHandle: a void* from getInstanceFor
- * NOTE:		static function
- * RETURNS:		Nothing
- *============================================================================*/
-void FrontEnd::closeInstance(void* dlHandle) {
-#ifdef DYNAMIC
-	if (dlHandle) dlclose(dlHandle);
-#endif
-}
-#endif
-
 
 /*==============================================================================
  * FUNCTION:	FrontEnd::getProg

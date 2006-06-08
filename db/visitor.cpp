@@ -99,19 +99,6 @@ bool StmtConscriptSetter::visit(CallStatement* stmt) {
 	StatementList::iterator ss;
 	for (ss = args.begin(); ss != args.end(); ++ss)
 		(*ss)->accept(this);
-#if 0
-	std::vector<Exp*>& impargs = stmt->getImplicitArguments();
-	n = impargs.size();
-	for (i=0; i < n; i++)
-		impargs[i]->accept(&sc);
-#endif
-#if 0		// Note sure...
-	n = stmt->getNumReturns();
-	for (i=0; i < n; i++) {
-		Exp* r = stmt->getReturnExp(i);
-		if (r) r->accept(&sc);
-	}
-#endif
 	curConscript = sc.getLast();
 	return true;
 }
@@ -397,8 +384,10 @@ bool UsedLocsVisitor::visit(CallStatement* s, bool& override) {
 		pDest->accept(ev);
 	StatementList::iterator it;
 	StatementList& arguments = s->getArguments();
-	for (it = arguments.begin(); it != arguments.end(); it++)
-		(*it)->accept(this);
+	for (it = arguments.begin(); it != arguments.end(); it++) {
+		// Don't want to ever collect anything from the lhs
+		((Assign*)*it)->getRight()->accept(ev);
+	}
 	if (countCol) {
 		DefCollector::iterator dd;
 		DefCollector* col = s->getDefCollector();
@@ -476,46 +465,14 @@ Exp* ExpSubscripter::preVisit(Binary* e, bool& recur) {
 	return e;
 }
 
-#if 0
-Exp* ExpSubscripter::postVisit(Location* e) {
-	Exp* ret;
-	if (search == NULL || *e == *search) {
-		Statement* oldDef = cfg->preUpdate(e);
-		if (search == NULL)
-			ret = new RefExp(e, cfg->findImplicitAssign(e));
-		else
-			ret = new RefExp(e, def);
-		cfg->postUpdate(ret, oldDef);
-	}
-	else
-		ret = e;
-	return ret;
-}
-#endif
-
 Exp* ExpSubscripter::preVisit(Terminal* e) {
-#if 0
-	if (search == NULL)
-		return new RefExp(e, cfg->findImplicitAssign(e));
-	else
-#endif
 	if (*e == *search)
 		return new RefExp(e, def);
 	return e;
 }
 
 Exp* ExpSubscripter::preVisit(RefExp* e, bool& recur) {
-#if 0		// ?? Surely, never resubscript an already subscripted variable!!
-	Exp* base = e->getSubExp1();
-	if (*base == *search) {
-		recur = false;		// Don't recurse; would double subscript
-		e->setDef(def);
-		return e;
-	}
-	recur = true;
-#else
 	recur = false;			// Don't look inside... not sure about this
-#endif
 	return e;
 }
 
@@ -563,24 +520,8 @@ void StmtSubscripter::visit(CallStatement* s, bool& recur) {
 	StatementList::iterator ss;
 	for (ss = arguments.begin(); ss != arguments.end(); ++ss)
 		(*ss)->accept(this);
-#if 0
-	// Subscript the implicit arguments
-	std::vector<Exp*>& implicits = s->getImplicitArguments();
-	n = implicits.size();
-	for (int i=0; i < n; i++)
-		implicits[i] = implicits[i]->accept(mod);
-#endif
 	// Returns are like the LHS of an assignment; don't subscript them directly (only if m[x], and then only subscript
 	// the x's)
-#if 0
-	n = s->getNumReturns();
-	for (int i=0; i < n; i++) {
-		Exp* r = s->getReturnExp(i);
-		if (r && r->isMemOf()) {
-            ((Location*)r)->setSubExp1(((Location*)r)->getSubExp1()->accept(mod));
-		}
-	}
-#endif
 	recur = false;			// Don't do the usual accept logic
 }
 
@@ -728,14 +669,6 @@ Exp* ExpPropagator::postVisit(RefExp* e) {
 	}
 	return res;
 }
-
-#if 0
-bool AllSubscriptedTester::visit(Location* e, bool& override) {
-	// We reached a location that is not subscripted (we don't look inside RefExps).
-	result = false;			// Test fails
-	return false;			// Don't continue searching this expression
-}
-#endif
 
 // Return true if e is a primitive expression; basically, an expression you can propagate to without causing
 // memory expression problems. See Mike's thesis for details

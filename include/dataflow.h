@@ -166,7 +166,7 @@ public:
 		/*
 		 * Print the collected locations to stream os
 		 */
-		void		print(std::ostream& os);
+		void		print(std::ostream& os, bool html = false);
 
 		/*
 		 * Print to string or stdout (for debugging)
@@ -241,7 +241,7 @@ public:
 		/*
 		 * Print the collected locations to stream os
 		 */
-		void		print(std::ostream& os);
+		void		print(std::ostream& os, bool html = false);
 
 		/*
 		 * Print to string or stderr (for debugging)

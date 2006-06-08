@@ -219,18 +219,6 @@ void BlockSyntaxNode::addSuccessors(SyntaxNode *root,
 	for (unsigned i = 0; i < statements.size(); i++) {
 		if (statements[i]->isBlock()) {
 			//BlockSyntaxNode *b = (BlockSyntaxNode*)statements[i];
-#if 0
-			// can replace blocks with only one statement with that statement
-			if (b->getNumStatements() == 1) {
-				std::cerr << "successor: replace block with single statement" 
-						  << std::endl;
-				SyntaxNode *n = root->clone();
-				n->setDepth(root->getDepth() + 1);
-				n = n->replace(statements[i], b->getStatement(0)->clone());
-				successors.push_back(n);
-				//PRINT_BEFORE_AFTER
-			}
-#endif
 			// can move previous statements into this block
 			if (i > 0) {
 				std::cerr << "successor: move previous statement into block" 

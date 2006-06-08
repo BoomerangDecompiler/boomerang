@@ -51,7 +51,7 @@ BinaryFile* BinaryFileFactory::getInstanceFor( const char *sName ) {
 	std::string libName;
 	BinaryFile *res = NULL;
 
-	f = fopen (sName, "r");
+	f = fopen (sName, "rb");
 	if( f == NULL ) {
 		fprintf(stderr, "Unable to open binary file: %s\n", sName );
 		return NULL;

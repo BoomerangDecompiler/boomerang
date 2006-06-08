@@ -314,16 +314,6 @@ Type *CompoundType::getType(const char *nam)
 	return NULL;
 }
 
-#if 0
-Type *UnionType::getType(const char *nam)
-{
-	for (unsigned i = 0; i < types.size(); i++)
-		if (names[i] == nam)
-			return types[i];
-	return NULL;
-}
-#endif
-
 // Note: n is a BIT offset
 Type *CompoundType::getTypeAtOffset(unsigned n)
 {

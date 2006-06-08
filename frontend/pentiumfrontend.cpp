@@ -472,57 +472,6 @@ void PentiumFrontEnd::emitSet(std::list<RTL*>* BB_rtls, std::list<RTL*>::iterato
 	BB_rtls->insert(rit, pRtl);
 }
 
-#if 0
-static Binary cfOrZf(opOr, new Terminal(opCF), new Terminal(opZF));
-static Unary notZf(opNot, new Terminal(opZF));
-static Unary notCf(opNot, new Terminal(opCF));
-static Binary notCfAndNotZf(opAnd,
-		new Unary(opNot, new Terminal(opCF)),
-		new Unary(opNot, new Terminal(opZF)));
-void PentiumFrontEnd::State25(Exp* lhs, Exp* rhs, std::list<RTL*>* BB_rtls, std::list<RTL*>::iterator& rit,
-		ADDRESS uAddr) {
-	// Assume this is a set instruction
-	Exp* exp;
-	exp = rhs->getSubExp1();
-	if (exp->getOper() == opCF) {
-		// Emit a "floating point set if L
-		emitSet(BB_rtls, rit, uAddr, lhs, new Terminal(opFLF));
-	}
-	else if (exp->getOper() == opZF) {
-		// Emit a floating point "set if Z"
-		emitSet(BB_rtls, rit, uAddr, lhs, new Terminal(opFZF));
-	}
-	else if (*exp == notCf) {
-		// Emit a floating point "set if GE"
-		emitSet(BB_rtls, rit, uAddr, lhs,
-			new Binary(opOr,
-				new Terminal(opFGF),
-				new Terminal(opFZF)));
-	}
-	else if (*exp == notZf) {
-		// Emit a floating point "set if NZ"
-		emitSet(BB_rtls, rit, uAddr, lhs,
-			new Unary(opNot,
-				new Terminal(opFZF)));
-	}
-	else if (*exp == cfOrZf) {
-		// Emit a floating poin2t "set if LE"
-		emitSet(BB_rtls, rit, uAddr, lhs,
-			new Binary(opOr,
-				new Terminal(opFLF),
-				new Terminal(opFZF)));
-	}
-	else if (*exp == notCfAndNotZf) {
-		// Emit a floating point "set if G"
-		emitSet(BB_rtls, rit, uAddr, lhs, new Terminal(opFGF));
-	}
-	else {
-		std::cerr << "Problem with STSW/SET\n";
-		return;
-	}
-}
-#endif
-
 /*==============================================================================
  * FUNCTION:		helperFunc
  * OVERVIEW:		Checks for pentium specific helper functions like __xtol which have specific sematics.
@@ -704,24 +653,6 @@ ADDRESS PentiumFrontEnd::getMainEntryPoint(bool& gotMain) {
 		else
 			addr += inst.numBytes;
 	} while (--instCount);
-#if 0	// Was for finding main in DOS 286 programs
-		// Try another pattern; this one is for DOS programs. In the first 120 instructions,
-		// look for 3 or more pushes, then a call. These will be setting up envp, argv, and argc
-		instCount = 120; addr = start; conseq = 0;
-		do {
-			DecodeResult inst = decodeInstruction(addr);
-			if ((conseq >= 3) && (inst.rtl->getKind() == CALL_HRTL) &&
-					((HLCall*)inst.rtl)->getFixedDest() != NO_ADDRESS) {
-				// Success. Return the target of the call					
-				return ((HLCall*)inst.rtl)->getFixedDest();
-			}
-			if (is286Push(inst.rtl))
-				conseq++;
-			else
-				conseq = 0;
-			addr += inst.numBytes;
-		} while (--instCount);
-#endif
 
 	// Last chance check: look for _main (e.g. Borland programs)
 	ADDRESS umain = pBF->GetAddressByName("_main");
@@ -1026,6 +957,19 @@ DecodeResult& PentiumFrontEnd::decodeInstruction(ADDRESS pc)
 		r.rtl->appendStmt(call);
 		return r;
 	}
+	if (n == (int)(char)0x0f && pBF->readNative1(pc+1) == (int)(char)0x0b) {
+		static DecodeResult r;
+		r.reset();
+		r.numBytes = 2;
+		r.valid = true;
+		r.type = NCT;
+		r.reDecode = false;
+		r.rtl = new RTL(pc);
+		CallStatement *call = new CallStatement();
+		call->setDestProc(prog->getLibraryProc("invalid_opcode"));
+		r.rtl->appendStmt(call);
+		return r;
+	}
 	return FrontEnd::decodeInstruction(pc);
 }
 
@@ -1033,6 +977,8 @@ DecodeResult& PentiumFrontEnd::decodeInstruction(ADDRESS pc)
 void PentiumFrontEnd::extraProcessCall(CallStatement *call, std::list<RTL*> *BB_rtls)
 {
 	if (call->getDestProc()) {
+
+		// looking for function pointers
 		Signature *calledSig = call->getDestProc()->getSignature();
 		for (unsigned int i = 0; i < calledSig->getNumParams(); i++) {
 			// check param type
@@ -1062,7 +1008,6 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, std::list<RTL*> *BB_
 				RTL *rtl = *itr;
 				for (int n = rtl->getNumStmt() - 1; n >= 0; n--) {
 					Statement *stmt = rtl->elementAt(n);
-					LOG << stmt << "\n";
 					if (stmt->isAssign()) {
 						Assign *asgn = (Assign*)stmt;
 						if (asgn->getLeft()->isRegN(28) && asgn->getRight()->getOper() == opMinus)
@@ -1095,7 +1040,11 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, std::list<RTL*> *BB_
 			if (paramIsFuncPointer) {
 				if (VERBOSE)
 					LOG << "found a new procedure at address " << a << " from inspecting parameters of call to " << call->getDestProc()->getName() << ".\n";
-				prog->setNewProc(a);
+				Proc *proc = prog->setNewProc(a);
+				Signature *sig = paramType->asPointer()->getPointsTo()->asFunc()->getSignature()->clone();
+				sig->setName(proc->getName());
+				sig->setForced(true);
+				proc->setSignature(sig);
 				continue;
 			}
 
@@ -1109,10 +1058,50 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, std::list<RTL*> *BB_
 					ADDRESS d = pBF->readNative4(a);
 					if (VERBOSE)
 						LOG << "found a new procedure at address " << d << " from inspecting parameters of call to " << call->getDestProc()->getName() << ".\n";
-					prog->setNewProc(d);
+					Proc *proc = prog->setNewProc(d);
+					Signature *sig = compound->getType(n)->asPointer()->getPointsTo()->asFunc()->getSignature()->clone();
+					sig->setName(proc->getName());
+					sig->setForced(true);
+					proc->setSignature(sig);
 				}
 				a += compound->getType(n)->getSize() / 8;
 			}								
+		}
+
+		// some pentium specific ellipsis processing
+		if (calledSig->hasEllipsis()) {
+			// count pushes backwards to find a push of 0
+			bool found = false;
+			std::list<RTL*>::reverse_iterator itr;
+			int pushcount = 0;
+			for (itr = BB_rtls->rbegin(); itr != BB_rtls->rend() && !found; itr++) {
+				RTL *rtl = *itr;
+				for (int n = rtl->getNumStmt() - 1; n >= 0; n--) {
+					Statement *stmt = rtl->elementAt(n);
+					LOG << "stmt " << stmt << " pushcount = " << pushcount << "\n";
+					if (stmt->isAssign()) {
+						Assign *asgn = (Assign*)stmt;
+						if (asgn->getLeft()->isRegN(28) && asgn->getRight()->getOper() == opMinus)
+							pushcount++;
+						else if (asgn->getLeft()->isMemOf() && 
+								 asgn->getLeft()->getSubExp1()->getOper() == opMinus &&
+								 asgn->getLeft()->getSubExp1()->getSubExp1()->isRegN(28) &&
+								 asgn->getLeft()->getSubExp1()->getSubExp2()->isIntConst()) {
+							if (asgn->getRight()->isIntConst()) { 
+								int n = ((Const*)asgn->getRight())->getInt();
+								if (n == 0) {
+									found = true;
+									break;
+								}
+							}
+						}
+					}
+				}
+			}
+			if (found && pushcount > 1) {
+				call->setSigArguments();
+				call->setNumArguments(pushcount - 1);
+			}
 		}
 	}
 }

@@ -27,6 +27,7 @@
 #include "exp.h"
 #include "log.h"
 #include "boomerang.h"
+#include "proc.h"
 
 extern char debug_buffer[];		// For prints functions
 
@@ -115,32 +116,6 @@ bool StatementSet::definesLoc(Exp* loc) {
 	}
 	return false;
 }
-
-#if 0
-// Remove if defines the given expression
-bool StatementSet::removeIfDefines(Exp* given) {
-	bool found = false;
-	for (iterator it = sset.begin(); it != sset.end(); it++) {
-		if ((*it)->defines(given)) {
-			// Erase this Statement
-			sset.erase(it);
-			found = true;
-		}
-	}
-	return found;
-}
-
-// As above, but given a whole statement set
-bool StatementSet::removeIfDefines(StatementSet& given) {
-	bool found = false;
-	for (iterator it = given.sset.begin(); it != given.sset.end(); it++) {
-		Exp* givenLeft = (*it)->getLeft();
-		if (givenLeft)
-			found |= removeIfDefines(givenLeft);
-	}
-	return found;
-}
-#endif
 
 // Print to a string, for debugging
 char* StatementSet::prints() {
@@ -268,32 +243,6 @@ Assign* AssignSet::lookupLoc(Exp* loc) {
 	if (ff == aset.end()) return NULL;
 	return *ff;
 }
-
-#if 0
-// Remove if defines the given expression
-bool AssignSet::removeIfDefines(Exp* given) {
-	bool found = false;
-	for (iterator it = aset.begin(); it != aset.end(); it++) {
-		if ((*it)->defines(given)) {
-			// Erase this Statement
-			aset.erase(it);
-			found = true;
-		}
-	}
-	return found;
-}
-
-// As above, but given a whole statement set
-bool AssignSet::removeIfDefines(AssignSet& given) {
-	bool found = false;
-	for (iterator it = given.aset.begin(); it != given.aset.end(); it++) {
-		Exp* givenLeft = (*it)->getLeft();
-		if (givenLeft)
-			found |= removeIfDefines(givenLeft);
-	}
-	return found;
-}
-#endif
 
 // Print to a string, for debugging
 char* AssignSet::prints() {
@@ -433,23 +382,6 @@ void LocationSet::makeDiff(LocationSet& other) {
 		lset.erase(*it);
 	}
 }
-
-#if 0
-Exp* LocationSet::getFirst(LocSetIter& it) {
-	it = lset.begin();
-	if (it == lset.end())
-		// No elements
-		return NULL;
-	return *it;			// Else return the first element
-}
-
-Exp* LocationSet::getNext(LocSetIter& it) {
-	if (++it == lset.end())
-		// No more elements
-		return NULL;
-	return *it;			// Else return the next element
-}
-#endif
 
 bool LocationSet::operator==(const LocationSet& o) const {
 	// We want to compare the strings, not the pointers
@@ -596,38 +528,6 @@ void StatementList::append(StatementSet& ss) {
 	}
 }
 
-#if 0
-Statement* StatementList::getFirst(StmtListIter& it) {
-	it = slist.begin();
-	if (it == slist.end())
-		// No elements
-		return NULL;
-	return *it;			// Else return the first element
-}
-
-Statement* StatementList::getNext(StmtListIter& it) {
-	if (++it == slist.end())
-		// No more elements
-		return NULL;
-	return *it;			// Else return the next element
-}
-
-Statement* StatementList::getLast(StmtListRevIter& it) {
-	it = slist.rbegin();
-	if (it == slist.rend())
-		// No elements
-		return NULL;
-	return *it;			// Else return the last element
-}
-
-Statement* StatementList::getPrev(StmtListRevIter& it) {
-	if (++it == slist.rend())
-		// No more elements
-		return NULL;
-	return *it;			// Else return the previous element
-}
-#endif
-
 char* StatementList::prints() {
 	std::ostringstream ost;
 	for (iterator it = slist.begin(); it != slist.end(); it++) {
@@ -725,9 +625,20 @@ void StatementList::removeDefOf(Exp* loc) {
 
 // Find the first Assignment with loc on the LHS
 Assignment* StatementList::findOnLeft(Exp* loc) {
-    for (iterator it = slist.begin(); it != slist.end(); it++)
-        if (*((Assignment*)*it)->getLeft() == *loc)
+	if (slist.size() == 0)
+		return NULL;
+	for (iterator it = slist.begin(); it != slist.end(); it++) {
+		Exp *left = ((Assignment*)*it)->getLeft();
+        if (*left == *loc)
             return (Assignment*)*it;
+		if (left->isLocal()) {
+			Location *l = (Location*)left;
+			Exp *e = l->getProc()->expFromSymbol(((Const*)l->getSubExp1())->getStr());
+			if (e && ((*e == *loc) || (e->isSubscript() && *e->getSubExp1() == *loc))) {
+				return (Assignment*)*it;
+			}
+		}
+	}
     return NULL;
 }
 

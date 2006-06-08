@@ -255,6 +255,7 @@ virtual void		print(std::ostream &os, bool html = false) = 0;
 
 		// inline / decode any constants in the statement. Return true if need to redo dataflow
 virtual bool		processConstants(Prog *prog) = 0;
+virtual void		processTypes() { }
 
 		// general search
 virtual bool		search(Exp *search, Exp *&result) = 0;
@@ -415,7 +416,7 @@ virtual bool		accept(StmtModifier* visitor) = 0;
 virtual bool		accept(StmtPartModifier* visitor) = 0;
 
 virtual	void		print(std::ostream& os, bool html = false);
-virtual void		printCompact(std::ostream& os) = 0;	// Without statement number
+virtual void		printCompact(std::ostream& os, bool html = false) = 0;	// Without statement number
 
 virtual Type*		getTypeFor(Exp* e); 				// Get the type for this assignment. It should define e
 virtual void		setTypeFor(Exp* e, Type* ty); 		// Set the type for this assignment. It should define e
@@ -506,7 +507,7 @@ virtual bool		accept(StmtExpVisitor* visitor);
 virtual bool		accept(StmtModifier* visitor);
 virtual bool		accept(StmtPartModifier* visitor);
 
-virtual void		printCompact(std::ostream& os);	// Without statement number
+virtual void		printCompact(std::ostream& os, bool html = false);	// Without statement number
 
 		// Guard
 		void		setGuard(Exp* g) {guard = g;}
@@ -518,6 +519,7 @@ virtual bool		isDefinition() { return true; }
 		
 		// inline any constants in the statement
 virtual bool		processConstants(Prog *prog);
+virtual void		processTypes();
 
 		// general search
 virtual bool		search(Exp* search, Exp*& result);
@@ -608,7 +610,7 @@ virtual bool		accept(StmtExpVisitor* visitor);
 virtual bool		accept(StmtModifier* visitor);
 virtual bool		accept(StmtPartModifier* visitor);
 
-virtual void		printCompact(std::ostream& os);
+virtual void		printCompact(std::ostream& os, bool html = false);
 
 		// inline any constants in the statement
 virtual bool		processConstants(Prog *prog);
@@ -686,7 +688,7 @@ virtual bool		searchAll(Exp* search, std::list<Exp*>& result);
 		// general search and replace
 virtual bool		searchAndReplace(Exp *search, Exp *replace, bool cc = false);
  
-virtual void		printCompact(std::ostream& os);
+virtual void		printCompact(std::ostream& os, bool html = false);
 
 		// Statement and Assignment functions
 virtual Exp*		getRight() { return NULL; }
@@ -739,7 +741,7 @@ virtual bool		accept(StmtPartModifier* visitor);
 		int			getSize() {return size;}	// Return the size of the assignment
 		void		makeSigned();
 
-virtual void		printCompact(std::ostream& os = std::cout);
+virtual void		printCompact(std::ostream& os = std::cout, bool html = false);
 
 		// code generation
 virtual void		generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel);
@@ -1217,6 +1219,9 @@ virtual void		setLeftFor(Exp* forExp, Exp* newExp);
 		// inline any constants in the statement
 virtual bool		processConstants(Prog *prog);
 
+		// push argument and return types to references
+virtual void		processTypes();
+
 		// simplify all the uses/defs in this Statement
 virtual void		simplify();
 
@@ -1237,7 +1242,7 @@ virtual void		setTypeFor(Exp* e, Type* ty);		// Set the type for this location, 
 		void		removeLiveness(Exp* e) {useCol.remove(e);}		// Remove e from the UseCollector
 		void		removeAllLive() {useCol.clear();}				// Remove all livenesses
 //		Exp*		fromCalleeContext(Exp* e);			// Convert e from callee to caller (this) context
-		StatementList*	getDefines() {return &defines;}	// Get list of locations defined by this call
+		StatementList&	getDefines() {return defines;}	// Get list of locations defined by this call
 		// Process this call for ellipsis parameters. If found, in a printf/scanf call, truncate the number of
 		// parameters if needed, and return true if any signature parameters added
 		bool		ellipsisProcessing(Prog* prog);
@@ -1334,6 +1339,8 @@ virtual bool		isDefinition() { return true; }
 
 		// Ad hoc dataflow analysis
 virtual bool		processConstants(Prog*) {return false;}
+virtual void		processTypes();
+
 		// Replace registers with locals
 virtual	void		regReplace(UserProc* proc);
 		// Get a subscripted version of e from the collector

@@ -1026,26 +1026,6 @@ void Binary::descendType(Type* parentType, bool& ch, Statement* s) {
 	}
 	switch (op) {
 		case opPlus:
-#if 0
-			if (parentType->resolvesToPointer()) {
-				if (ta->resolvesToInteger() && !subExp1->isIntConst()) {
-std::cerr << "ARRAY HACK: parentType is " << parentType << ", tb is " << tb->getCtype() << ", ta is " << ta << ", this is " << this << "\n";
-LOG << "ARRAY HACK for " << this << "\n";
-					assert(subExp2->isIntConst());
-					int val = ((Const*)subExp2)->getInt();
-					tb = new PointerType(
-						prog->makeArrayType(val, ((PointerType*)parentType)->getPointsTo()->clone()));
-				}
-				else if (tb->resolvesToInteger() && !subExp2->isIntConst()) {
-std::cerr << "ARRAY HACK: parentType is " << parentType << ", ta is " << ta << ", this is " << this << "\n";
-LOG << "ARRAY HACK for " << this << "\n";
-					assert(subExp1->isIntConst());
-					int val = ((Const*)subExp1)->getInt();
-					ta = new PointerType(
-						prog->makeArrayType(val, ((PointerType*)parentType)->getPointsTo()->clone()));
-                }
-			}
-#endif
 			ta = ta->meetWith(sigmaAddend(parentType, tb), ch);
 			subExp1->descendType(ta, ch, s);
 			tb = tb->meetWith(sigmaAddend(parentType, ta), ch);
@@ -1276,22 +1256,6 @@ void StmtDfaLocalMapper::visit(CallStatement* s, bool& recur) {
 			((DfaLocalMapper*)mod)->setType(((Assignment*)*it)->getLeft()->ascendType());
 		(*it)->accept(this);
 	}
-#if 0
-	std::vector<Exp*>& implicitArguments = s->getImplicitArguments();
-	for (it = implicitArguments.begin(); recur && it != implicitArguments.end(); it++) {
-		((DfaLocalMapper*)mod)->setType((*it)->ascendType());
-		*it = (*it)->accept(mod);
-	}
-#endif
-#if 0
-	std::vector<ReturnInfo>::iterator rr;
-	std::vector<ReturnInfo>& returns = s->getReturns();
-	for (rr = returns.begin(); recur && rr != returns.end(); rr++) {
-		if (rr->e == NULL) continue;			// Can be NULL now; just ignore
-		((DfaLocalMapper*)mod)->setType(rr->type);
-		rr->e = rr->e->accept(mod);
-	}
-#endif
 	recur = false;
 }
 
@@ -1337,9 +1301,14 @@ Exp* DfaLocalMapper::preVisit(Unary* e, bool& recur) {
 	recur = true;
 	if (e->isAddrOf()) {
 		// When we recurse into the a[...], the type will be changed
-		PointerType* pt = parentType->asPointer();
-		assert(pt);
-		parentType = pt->getPointsTo();
+		if (parentType->isPointer()) {
+			PointerType* pt = parentType->asPointer();
+			assert(pt);
+			parentType = pt->getPointsTo();
+		} else {
+			// FIXME: is this right?
+			parentType = new VoidType(); 
+		}
 	}
 	return e;
 }

@@ -242,15 +242,6 @@ static void cloneVec(std::vector<Parameter*>& from, std::vector<Parameter*>& to)
 		to[i] = from[i]->clone();
 }
 
-#if 0
-static void cloneVec(std::vector<ImplicitParameter*>& from, std::vector<ImplicitParameter*>& to) {
-	unsigned n = from.size();
-	to.resize(n);
-	for (unsigned i=0; i < n; i++)
-		to[i] = from[i]->clone();
-}
-#endif
-
 static void cloneVec(Returns& from, Returns& to) {
 	unsigned n = from.size();
 	to.resize(n);
@@ -261,14 +252,6 @@ static void cloneVec(Returns& from, Returns& to) {
 Parameter* Parameter::clone() {
 	return new Parameter(type->clone(), name.c_str(), exp->clone());
 }
-
-#if 0
-ImplicitParameter* ImplicitParameter::clone() {
-	Parameter* par = parent;
-	if (par) par = par->clone();	// Do we really need to clone the parent pointer? MVE
-	return new ImplicitParameter(getType()->clone(), getName(), getExp()->clone(), par);
-}
-#endif
 
 Signature *CallingConvention::Win32Signature::clone()
 {
@@ -921,20 +904,6 @@ bool CallingConvention::StdC::SparcSignature::qualified(UserProc *p, Signature &
 	platform plat = p->getProg()->getFrontEndId();
 	if (plat != PLAT_SPARC) return false;
 
-// I don't really like the idea of these promotions. Yes, we assume that sparc programs behave in certain ways... but
-// the fact that r14 and r30 are preserved doesn't really make that much more likely. We don't assume calling
-// conventions, just some fairly basic things like m[sp+K] is in the parent's stack frame.
-#if 0
-	Exp* provenStack = p->getProven(Location::regOf(14));
-	// Don't remove the clone() below; the original is still in the proven set
-	if (!provenStack) return false;
-	provenStack = provenStack->clone()->simplify();		// Could be r[14] + 0
-	if (!(*provenStack == *Location::regOf(14)))
-		return false;
-	if (!(*p->getProven(Location::regOf(30)) == *Location::regOf(30)))
-		return false;
-#endif
-
 	if (VERBOSE)
 		LOG << "Promoted to StdC::SparcSignature\n";
 	
@@ -1291,37 +1260,6 @@ int Signature::findParam(const char *nam) {
 	return -1;
 }
 
-#if 0
-int Signature::getNumImplicitParams() {
-	return implicitParams.size();
-}
-
-const char *Signature::getImplicitParamName(int n) {
-	assert(n < (int)implicitParams.size());
-	return implicitParams[n]->getName();
-}
-
-Exp *Signature::getImplicitParamExp(int n) {
-	assert(n < (int)implicitParams.size());
-	return implicitParams[n]->getExp();
-}
-
-Type *Signature::getImplicitParamType(int n) {
-	static IntegerType def;
-	//assert(n < (int)params.size() || ellipsis);
-// With recursion, parameters not set yet. Hack for now: (do we still need this?  - trent)
-	if (n >= (int)implicitParams.size()) return &def;
-	return implicitParams[n]->getType();
-}
-
-int Signature::findImplicitParam(Exp *e) {
-	for (int i = 0; i < getNumImplicitParams(); i++)
-		if (*getImplicitParamExp(i) == *e)
-			return i;
-	return -1;
-}
-#endif
-
 int Signature::findReturn(Exp *e) {
 	for (unsigned i = 0; i < getNumReturns(); i++)
 		if (*returns[i]->exp == *e)
@@ -1352,22 +1290,6 @@ void Signature::setReturnType(int n, Type *ty) {
 	if (n < (int)returns.size())
 		returns[n]->type = ty;
 }
-
-#if 0
-// Not used...
-void Signature::fixReturnsWithParameters() {
-	for (unsigned i = 0; i < params.size(); i++) { 
-		int n = returns.size();
-		for (int j=0; j < n; j++) {
-			bool change;
-			RefExp r(getParamExp(i)->clone(), NULL);
-			Exp*& retExp = returns[j].getRefExp();
-			// ? Seems to be replacing all param{-} with param in returns... why?
-			retExp = retExp->searchReplaceAll(&r, Location::param(getParamName(i)), change);
-		}
-	}
-}
-#endif
 
 Exp *Signature::getArgumentExp(int n) {
 	return getParamExp(n);
@@ -1440,9 +1362,18 @@ Signature *Signature::instantiate(platform plat, callconv cc, const char *nam) {
 
 void Signature::print(std::ostream &out, bool html)
 {
-	if (returns.size() >= 1)
-		out << (*returns.begin())->type->getCtype() << " ";
-	else
+	if (returns.size() > 0) {
+		out << "{ ";
+		int n = 0;
+		for (Returns::iterator rr = returns.begin(); rr != returns.end(); rr++, n++) {
+			out << (*rr)->type->getCtype() << " " << (*rr)->exp;
+			if (n != returns.size() - 1)
+				out << ", ";
+			else
+				out << " ";
+		}
+		out << "} ";
+	} else
 		out << "void ";
 	out << name << "(";
 	unsigned int i;
@@ -1450,25 +1381,7 @@ void Signature::print(std::ostream &out, bool html)
 		out << params[i]->getType()->getCtype() << " " << params[i]->getName() << " " << params[i]->getExp();
 		if (i != params.size()-1) out << ", ";
 	}
-#if 0
-	out << "   implicit: ";
-	for (i = 0; i < implicitParams.size(); i++) {
-		out << implicitParams[i]->getType()->getCtype() << " " << implicitParams[i]->getName() << " " 
-			<< implicitParams[i]->getExp();
-		if (i != implicitParams.size()-1) out << ", ";
-	}
-#endif
-	out << ") { "; 
-	Returns::iterator it;
-	bool first = true;
-	for (it = returns.begin(); it != returns.end(); ++it) {
-		if (first)
-			first = false;
-		else
-			out << ", ";
-		out << (*it)->exp;
-	}
-	out << " }" << std::endl;
+	out << ")\n"; 
 }
 
 char* Signature::prints() {
@@ -1485,23 +1398,6 @@ void Signature::printToLog()
 	print(os);
 	LOG << os.str().c_str();
 }
-
-#if 0
-// Note: the below few functions require reaching definitions.
-// Likely can't be used
-void Signature::updateParams(UserProc *p, Statement *stmt, bool checkreach) {
-	int i;
-	if (usesNewParam(p, stmt, checkreach, i)) {
-		int n = getNumParams();
-		setNumParams(i+1);
-		for (n = 0; n < getNumParams(); n++) {
-			if (VERBOSE) std::cerr << "found param " << n << std::endl;
-			p->getCFG()->searchAndReplace(getParamExp(n), 
-				Location::param(getParamName(n)));
-		}
-	}
-}
-#endif
 
 bool Signature::usesNewParam(UserProc *p, Statement *stmt, bool checkreach, int &n) {
 	n = getNumParams() - 1;
@@ -1532,55 +1428,6 @@ bool Signature::usesNewParam(UserProc *p, Statement *stmt, bool checkreach, int 
 		}
 	return n > ((int)getNumParams() - 1);
 }
-
-#if 0
-void Signature::addImplicitParametersFor(Parameter *pn)
-{
-	Type *type = pn->getType();
-	Exp *e = pn->getExp();
-	if (type && type->resolvesToPointer()) { 
-		PointerType *p = type->asPointer();
-		/* seems right, if you're passing a pointer to a procedure
-		 * then that procedure probably uses what the pointer points
-		 * to.	Need to add them as arguments so SSA finds em.
-		 */
-		Type *points_to = p->getPointsTo();
-		if (points_to->resolvesToCompound()) {
-			CompoundType *c = points_to->asCompound();
-			int base = 0;
-			for (int n = 0; n < c->getNumTypes(); n++) {
-				Exp *e1 = Location::memOf(new Binary(opPlus, e->clone(),
-									new Const(base / 8)));
-				e1 = e1->simplify();
-				addImplicitParameter(c->getType(n), c->getName(n), e1, pn);
-				base += c->getType(n)->getSize();
-			}
-		} else if (!points_to->resolvesToFunc()) 
-			addImplicitParameter(points_to, NULL, Location::memOf(e->clone()), pn);
-	}
-}
-
-void Signature::addImplicitParameter(Type *type, const char *nam, Exp *e, Parameter *parent) {
-	std::ostringstream os;
-	if (nam == NULL) {
-		os << "implicit" << implicitParams.size();
-		nam = os.str().c_str();
-	}
-	ImplicitParameter *p = new ImplicitParameter(type, nam, e, parent);
-	implicitParams.push_back(p);
-	addImplicitParametersFor(p);
-}
-
-void Signature::addImplicitParameter(Exp *e) {
-	addImplicitParameter(new IntegerType(), NULL, e, NULL);
-}
-
-void Signature::removeImplicitParameter(int i) {
-	for (unsigned j = i+1; j < implicitParams.size(); j++)
-		implicitParams[j-1] = implicitParams[j];
-	implicitParams.resize(implicitParams.size()-1);
-}
-#endif
 
 // Special for Mike: find the location where the first outgoing (actual) parameter is conventionally held
 Exp* Signature::getFirstArgLoc(Prog* prog) {

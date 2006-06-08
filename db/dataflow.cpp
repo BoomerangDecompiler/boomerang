@@ -574,7 +574,7 @@ Exp* DefCollector::findDefFor(Exp* e) {
 	return NULL;					// Not explicitly defined here
 }
 
-void UseCollector::print(std::ostream& os) {
+void UseCollector::print(std::ostream& os, bool html) {
 	LocationSet::iterator it;
 	bool first = true;
 	for (it=locs.begin(); it != locs.end(); ++it) {
@@ -582,18 +582,20 @@ void UseCollector::print(std::ostream& os) {
 			first = false;
 		else
 			os << ",  ";
-		os << *it;
+		(*it)->print(os, html);
 	}
 }
 
 #define DEFCOL_COLS 120
-void DefCollector::print(std::ostream& os) {
+void DefCollector::print(std::ostream& os, bool html) {
 	iterator it;
 	unsigned col = 36;
 	bool first = true;
 	for (it=defs.begin(); it != defs.end(); ++it) {
 		std::ostringstream ost;
-		ost << (*it)->getLeft() << "=" << (*it)->getRight();
+		(*it)->getLeft()->print(ost, html);
+		ost << "=";
+		(*it)->getRight()->print(ost, html);
 		unsigned len = ost.str().length();
 		if (first)
 			first = false;
@@ -686,17 +688,6 @@ bool UseCollector::operator==(UseCollector& other) {
 		if (!(**it1 == **it2)) return false;
 	return true;
 }
-
-#if 0
-bool DefCollector::existsOnLeft(Exp* e) {
-	for (iterator it = defs.begin(); it != defs.end(); ++it) {
-		Exp* lhs = (*it)->getLeft();
-		if (*lhs == *e)
-			return true;
-	}
-	return false;
-}
-#endif
 
 void DefCollector::insert(Assign* a) {
 	Exp* l = a->getLeft();
