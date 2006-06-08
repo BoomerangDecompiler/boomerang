@@ -709,6 +709,8 @@ public:
 		/// return a local's type
 		Type		*getLocalType(const char *nam);
 		void		setLocalType(const char *nam, Type *ty);
+		
+		Type		*getParamType(const char *nam);
 
 		/// return a symbol's exp (note: the original exp, like r24, not local1)
 		Exp			*expFromSymbol(const char *nam);

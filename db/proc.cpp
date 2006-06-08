@@ -3149,6 +3149,14 @@ void UserProc::setLocalType(const char *nam, Type *ty)
 		LOG << "setLocalType: updating type of " << nam << " to " << ty->getCtype() << "\n";
 }
 
+Type *UserProc::getParamType(const char *nam)
+{
+	for (unsigned int i = 0; i < signature->getNumParams(); i++)
+		if (std::string(nam) == signature->getParamName(i))
+			return signature->getParamType(i);
+	return NULL;
+}
+
 void UserProc::setExpSymbol(const char *nam, Exp *e, Type* ty)
 {
 	// NOTE: does not update symbols[]

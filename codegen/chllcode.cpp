@@ -1455,7 +1455,9 @@ void CHLLCode::AddProcDec(UserProc* proc, bool open) {
 		Exp *e = proc->getSignature()->getReturnExp(0);
 		if (e->isRegN(Signature::getStackRegister(proc->getProg())))
 			n = 1;
-		Type *retType = proc->getSignature()->getReturnType(n);
+		Type *retType = NULL;
+		if (n < proc->getSignature()->getNumReturns())
+			retType = proc->getSignature()->getReturnType(n);
 		if (retType == NULL)
 			s << "void ";
 		else {
@@ -1608,4 +1610,3 @@ void CHLLCode::AddLineComment(char* cmt) {
 	s << "/* " << cmt << "*/";
 	lines.push_back(strdup(s.str().c_str()));
 }
-
