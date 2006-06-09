@@ -2616,7 +2616,8 @@ void CallStatement::processTypes()
 		if (local) {
 			Type *ty = proc->getLocalType(local);
 			if (ty == NULL || *ty != *t) {
-				LOG << "setting type of local " << local << " to " << t << ". (arg of call).\n";
+				if (VERBOSE)
+					LOG << "setting type of local " << local << " to " << t << ". (arg of call).\n";
 				proc->setLocalType(local, t);
 				continue;
 			}
@@ -2630,10 +2631,10 @@ void CallStatement::processTypes()
 			for (pp = proc->getParameters().begin(); pp != proc->getParameters().end(); ++pp, j++) {
 				Exp *le = ((Assign*)*pp)->getLeft();
 				Type *te = ((Assign*)*pp)->getType();
-				LOG << "compare " << le << " to " << clean << "\n";
 				if (*le == *clean) {
 					if (*te != *t) {
-						LOG << "setting type of param " << j << " to " << t << ". (arg of call).\n";
+						if (VERBOSE)
+							LOG << "setting type of param " << j << " to " << t << ". (arg of call).\n";
 						proc->setParamType(j, t);
 						continue;
 					}
@@ -2648,7 +2649,8 @@ void CallStatement::processTypes()
 		if (e->isGlobal()) {
 			const char *name = ((Const*)e->getSubExp1())->getStr();
 			proc->getProg()->setGlobalType(name, t);
-			LOG << "setting global " << name << " to have type " << t->getCtype() << " arg of call " << this << "\n";
+			if (VERBOSE)
+				LOG << "setting global " << name << " to have type " << t->getCtype() << " arg of call " << this << "\n";
 		}
 	}
 
@@ -3666,7 +3668,6 @@ void Assign::processTypes()
 	}
 
 	// hack for assigning to the first member of a compound
-	LOG << lhs << "\n";
 	Type *ty = lhs->getType();
 	if (ty && ty->resolvesToCompound()) { 
 		CompoundType *c = ty->asCompound();

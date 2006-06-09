@@ -56,8 +56,8 @@ Boomerang::Boomerang() : logger(NULL), vFlag(false), printRtl(false),
 	noRemoveLabels(false), noDataflow(false), noDecompile(false), stopBeforeDecompile(false),
 	traceDecoder(false), dotFile(NULL), numToPropagate(-1),
 	noPromote(false), propOnlyToAll(false), debugGen(false),
-	maxMemDepth(99), debugSwitch(false), noParameterNames(false), debugLiveness(false), 
-	debugTA(false), decodeMain(true), printAST(false), dumpXML(false),
+	maxMemDepth(99), debugSwitch(false), noParameterNames(false), debugLiveness(false),
+	stopAtDebugPoints(false), debugTA(false), decodeMain(true), printAST(false), dumpXML(false),
 	noRemoveReturns(false), debugDecoder(false), decodeThruIndCall(false), ofsIndCallReport(NULL),
 	noDecodeChildren(false), debugProof(false), debugUnused(false),
 	loadBeforeDecompile(false), saveBeforeDecompile(false),
@@ -170,6 +170,7 @@ void Boomerang::help() {
 	std::cout << "  -dg              : Debug code Generation\n";
 	std::cout << "  -dl              : Debug liveness (from SSA) code\n";
 	std::cout << "  -dp              : Debug proof engine\n";
+	std::cout << "  -ds              : Stop at debug points for keypress\n";
 	std::cout << "  -dt              : Debug type analysis\n";
 	std::cout << "  -du              : Debug removing unused statements etc\n";
 	std::cout << "Restrictions\n";
@@ -847,6 +848,9 @@ int Boomerang::commandLine(int argc, const char **argv)
 					case 'p':
 						debugProof = true;
 						break;
+					case 's':
+						stopAtDebugPoints = true;
+						break;
 					case 't':		// debug type analysis
 						debugTA = true;
 						break;
@@ -984,7 +988,7 @@ void Boomerang::objcDecode(std::map<std::string, ObjcModule> &modules, Prog *pro
  */
 Prog *Boomerang::loadAndDecode(const char *fname, const char *pname)
 {
-	std::cerr << "loading...\n";
+	std::cout << "loading...\n";
 	Prog *prog = new Prog();
 	FrontEnd *fe = FrontEnd::Load(fname, prog);
 	if (fe == NULL) {
@@ -1001,7 +1005,7 @@ Prog *Boomerang::loadAndDecode(const char *fname, const char *pname)
 	fe->readLibraryCatalog();		// Needed before readSymbolFile()
 
 	for (unsigned i = 0; i < symbolFiles.size(); i++) {
-		std::cerr << "reading symbol file " << symbolFiles[i].c_str() << "\n";
+		std::cout << "reading symbol file " << symbolFiles[i].c_str() << "\n";
 		prog->readSymbolFile(symbolFiles[i].c_str());
 	}
 
@@ -1011,32 +1015,32 @@ Prog *Boomerang::loadAndDecode(const char *fname, const char *pname)
 
 	// Entry points from -e (and -E) switch(es)
 	for (unsigned i = 0; i < entrypoints.size(); i++) {
-		std::cerr<< "decoding specified entrypoint " << std::hex << entrypoints[i] << "\n";
+		std::cout<< "decoding specified entrypoint " << std::hex << entrypoints[i] << "\n";
 		prog->decodeEntryPoint(entrypoints[i]);
 	}
 
 	if (entrypoints.size() == 0) {		// no -e or -E given
 		if (decodeMain)
-			std::cerr << "decoding entry point...\n";
+			std::cout << "decoding entry point...\n";
 		fe->decode(prog, decodeMain, pname);
 
 		if (!noDecodeChildren) {
 			// this causes any undecoded userprocs to be decoded
-			std::cerr << "decoding anything undecoded...\n";
+			std::cout << "decoding anything undecoded...\n";
 			fe->decode(prog, NO_ADDRESS);
 		}
 	}
 
-	std::cerr << "finishing decode...\n";
+	std::cout << "finishing decode...\n";
 	prog->finishDecode();
 
 	Boomerang::get()->alert_end_decode();
 
-	std::cerr << "found " << std::dec << prog->getNumUserProcs() << " procs\n";
+	std::cout << "found " << std::dec << prog->getNumUserProcs() << " procs\n";
 
 	// GK: The analysis which was performed was not exactly very "analysing", and so it has been moved to
 	// prog::finishDecode, UserProc::assignProcsToCalls and UserProc::finalSimplify
-	//std::cerr << "analysing...\n";
+	//std::cout << "analysing...\n";
  	//prog->analyse();
 
 	if (generateSymbols) {
@@ -1089,7 +1093,7 @@ int Boomerang::decompile(const char *fname, const char *pname)
 	time(&start);
 
 	if (minsToStopAfter) {
-		std::cerr << "stopping decompile after " << minsToStopAfter << " minutes.\n";
+		std::cout << "stopping decompile after " << minsToStopAfter << " minutes.\n";
 #if defined(_WIN32) 			// Includes MinGW
 		DWORD id;
 		CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)stopProcess, (LPVOID)start, 0, &id);
@@ -1099,11 +1103,11 @@ int Boomerang::decompile(const char *fname, const char *pname)
 #endif
 	}
 
-	std::cerr << "setting up transformers...\n";
+	std::cout << "setting up transformers...\n";
 	ExpTransformer::loadAll();
 
 	if (loadBeforeDecompile) {
-		std::cerr << "loading persisted state...\n";
+		std::cout << "loading persisted state...\n";
 		XMLProgParser *p = new XMLProgParser();
 		prog = p->parse(fname);
 	} else {
@@ -1113,7 +1117,7 @@ int Boomerang::decompile(const char *fname, const char *pname)
 	}
 
 	if (saveBeforeDecompile) {
-		std::cerr << "saving persistable state...\n";
+		std::cout << "saving persistable state...\n";
 		XMLProgParser *p = new XMLProgParser();
 		p->persistToXML(prog);
 	}
@@ -1121,14 +1125,14 @@ int Boomerang::decompile(const char *fname, const char *pname)
 	if (stopBeforeDecompile)
 		return 0;
 
-	std::cerr << "decompiling...\n";
+	std::cout << "decompiling...\n";
 	prog->decompile();
 
 	if (dotFile)
 		prog->generateDotFile();
 
 	if (printAST) {
-		std::cerr << "printing AST...\n";
+		std::cout << "printing AST...\n";
 		PROGMAP::const_iterator it;
 		for (Proc *p = prog->getFirstProc(it); p; p = prog->getNextProc(it))
 			if (!p->isLib()) {
@@ -1138,10 +1142,10 @@ int Boomerang::decompile(const char *fname, const char *pname)
 			}
 	}
 
-	std::cerr << "generating code...\n";
+	std::cout << "generating code...\n";
 	prog->generateCode();
 
-	std::cerr << "output written to " << outputPath << prog->getRootCluster()->getName() << "\n";
+	std::cout << "output written to " << outputPath << prog->getRootCluster()->getName() << "\n";
 
 	if (Boomerang::get()->ofsIndCallReport)
 		ofsIndCallReport->close();
@@ -1151,12 +1155,12 @@ int Boomerang::decompile(const char *fname, const char *pname)
 	int hours = (end-start) / 60 / 60;
 	int mins = (end-start) / 60 - hours * 60;
 	int secs = (end-start) - hours * 60 * 60 - mins * 60;
-	std::cerr << "completed in " << std::dec;
+	std::cout << "completed in " << std::dec;
 	if (hours)
-		std::cerr << hours << " hours ";
+		std::cout << hours << " hours ";
 	if (hours || mins)
-		std::cerr << mins << " mins ";
-	std::cerr << secs << " sec" << (secs == 1 ? "" : "s") << ".\n";
+		std::cout << mins << " mins ";
+	std::cout << secs << " sec" << (secs == 1 ? "" : "s") << ".\n";
 
 	return 0;
 }
@@ -1189,3 +1193,15 @@ Prog *Boomerang::loadFromXML(const char *fname)
 void Boomerang::logTail() {
 	logger->tail();
 }
+
+void Boomerang::alert_decompile_debug_point(UserProc *p, const char *description) {
+	if (stopAtDebugPoints) {
+		std::cout << "decompiling " << p->getName() << ": " << description << "\n";
+		std::cout << " <press enter to continue> \n";
+		getchar();
+	}
+	for (std::set<Watcher*>::iterator it = watchers.begin(); it != watchers.end(); it++)
+		(*it)->alert_decompile_debug_point(p, description);
+}
+
+

@@ -1078,7 +1078,6 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, std::list<RTL*> *BB_
 				RTL *rtl = *itr;
 				for (int n = rtl->getNumStmt() - 1; n >= 0; n--) {
 					Statement *stmt = rtl->elementAt(n);
-					LOG << "stmt " << stmt << " pushcount = " << pushcount << "\n";
 					if (stmt->isAssign()) {
 						Assign *asgn = (Assign*)stmt;
 						if (asgn->getLeft()->isRegN(28) && asgn->getRight()->getOper() == opMinus)
