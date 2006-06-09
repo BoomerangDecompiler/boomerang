@@ -1242,6 +1242,8 @@ ProcSet* UserProc::middleDecompile(ProcList* path, int indent) {
 	if (change) numberStatements();		// Number the new statements
 	doRenameBlockVars(2);
 	updateArguments();
+	reverseStrengthReduction();
+	processTypes();
 
 	// Repeat until no change
 	int pass;
@@ -1345,6 +1347,8 @@ ProcSet* UserProc::middleDecompile(ProcList* path, int indent) {
 
 		Boomerang::get()->alert_decompile_afterPropagate(this, pass);
 		Boomerang::get()->alert_decompile_debug_point(this, "after propagating statements");
+
+		processTypes();
 
 		if (!change)
 			break;				// Until no change
@@ -2867,100 +2871,60 @@ bool UserProc::nameRegisters() {
 	static Exp *regOfWild = Location::regOf(new Terminal(opWild));
 	bool found = false;
 	int sp = signature->getStackRegister(prog);
+	std::set<int> usedRegs;
+	std::map<int, Type*> types;
 
+	Boomerang::get()->alert_decompile_debug_point(this, "before naming registers");
 
 	StatementList stmts;
 	getStatements(stmts);
 	StatementList::iterator it;
 
-	std::map<int, Type*> types;
-	// look for the best type for each register
-	for (it = stmts.begin(); ADHOC_TYPE_ANALYSIS && it != stmts.end(); it++) {
-		Statement* s = *it;
-		Location *reg; 
-		std::list<Exp*> li;
-		std::list<Exp*>::iterator ll;
-		s->searchAll(regOfWild, li);
-		for (ll = li.begin(); ll != li.end(); ++ll) {
-			reg = (Location*)*ll;
-			int n = ((Const*)reg->getSubExp1())->getInt();
-			Type *ty = reg->getType();
-			if (ty) {
-				if (VERBOSE)
-					LOG << "found type " << ty << " for " << reg << "\n";
-				if (types.find(n) == types.end() || types[n]->isInteger())
-					types[n] = ty;
-			}
-			Exp *result;
-			if (s->search(new Ternary(opZfill, new Terminal(opWild), new Terminal(opWild), Location::memOf(reg)), result)) {
-				// HACK: there should be an ADHOC analysis somewhere to take care of this
-				int sz = ((Const*)result->getSubExp1())->getInt();
-				types[n] = new PointerType(new IntegerType(sz, -1));
-				if (VERBOSE)
-					LOG << "found zfill(" << sz << ", x, m[" << reg << "]), assigning type " << types[n] << "\n";
-			}
-		}
-	}
-
-	// set the best type on all register locations
-	for (it = stmts.begin(); ADHOC_TYPE_ANALYSIS && it != stmts.end(); it++) {
-		Statement* s = *it;
-		Location *reg; 
-		std::list<Exp*> li;
-		std::list<Exp*>::iterator ll;
-		s->searchAll(regOfWild, li);
-		for (ll = li.begin(); ll != li.end(); ++ll) {
-			reg = (Location*)*ll;
-			int n = ((Const*)reg->getSubExp1())->getInt();
-			if (types.find(n) != types.end())
-				reg->setType(types[n]);
-		}
-	}
-
-	// create a symbol for every register
+	// find all used registers
 	for (it = stmts.begin(); it != stmts.end(); it++) {
 		Statement* s = *it;
-		Exp *reg; 
+		Location *reg; 
 		std::list<Exp*> li;
 		std::list<Exp*>::iterator ll;
 		s->searchAll(regOfWild, li);
 		for (ll = li.begin(); ll != li.end(); ++ll) {
-			reg = *ll;
-			if (reg->isRegN(sp))
-				continue;				// Never name the stack pointer
-			if (symbolMap.find(reg) != symbolMap.end())
-				continue;
-			if (VERBOSE)
-				LOG << "register found: " << reg << "\n";
-			Type *ty;
-			if (ADHOC_TYPE_ANALYSIS)
-				ty = reg->getType();
-			else {
-				ty = s->getTypeFor(reg);
-			}
-			if (ty == NULL)
-				ty = new IntegerType();		// Ugh - default to integer
-			symbolMap[reg->clone()] = newLocal(ty);
-			assert(symbolMap.find(reg) != symbolMap.end());
-			Location* locl = (Location*)symbolMap[reg]->getSubExp1();
-			std::string name = ((Const*)locl)->getStr();
-			if (ADHOC_TYPE_ANALYSIS) {
-				if (reg->getType() != NULL)
-					locals[name] = reg->getType();
-				else {
-					//locals[name] = s->updateType(reg, locals[name]);
-					// For now; should only affect ad hoc type analysis:
-					locals[name] = new IntegerType();
-					if (VERBOSE)
-						LOG << "updating type of named register " << name.c_str() << " to " << locals[name]->getCtype()
-							<< "\n";
-				}
-			}
-			found = true;
+			reg = (Location*)*ll;
+			int n = ((Const*)reg->getSubExp1())->getInt();
+			usedRegs.insert(n);
 		}
 	}
 
-	return found;
+	// find types
+	for (int pass = 0; pass < 3; pass++) {
+		if (pass == 2 && !signature->isForced())
+			continue;
+		for (it = stmts.begin(); it != stmts.end(); it++) {
+			Statement* s = *it;
+			if (pass == 1 && !s->isCall())
+				continue;
+			if (pass == 2 && !s->isReturn())
+				continue;
+			for (std::set<int>::iterator it1 = usedRegs.begin(); it1 != usedRegs.end(); it1++) {
+				Type *ty = s->getTypeFor(Location::regOf(*it1));
+				if (ty)
+					types[*it1] = ty;
+			}
+		}
+	}
+	
+	// create a symbol for every register
+	for (std::set<int>::iterator it = usedRegs.begin(); it != usedRegs.end(); it++) {
+		Type *ty = NULL;
+		if (types.find(*it) != types.end())
+			ty = types[*it];
+		if (ty == NULL)
+			ty = new IntegerType();
+		symbolMap[Location::regOf(*it)] = newLocal(ty);
+	}
+
+	Boomerang::get()->alert_decompile_debug_point(this, "after naming registers");
+
+	return usedRegs.size() > 0;
 }
 
 // Core of the register replacing logic
@@ -3330,6 +3294,9 @@ void UserProc::removeUnusedLocals() {
 void UserProc::fromSSAform() {
 	if (VERBOSE)
 		LOG << "transforming " << getName() << " from SSA\n";
+
+	Boomerang::get()->alert_decompile_debug_point(this, "before transforming from SSA form");
+
 	if (cfg->getNumBBs() >= 100)		// Only for the larger procs
 		// Note: emit newline at end of this proc, so we can distinguish getting stuck in this proc with doing a lot of
 		// little procs that don't get messages. Also, looks better with progress dots
@@ -3508,6 +3475,8 @@ void UserProc::fromSSAform() {
 	}
 	if (cfg->getNumBBs() >= 100)		// Only for the larger procs
 		std::cout << "\n";
+
+	Boomerang::get()->alert_decompile_debug_point(this, "after transforming from SSA form");
 }
 
 static Binary allEqAll(opEquals,
@@ -4154,6 +4123,56 @@ void UserProc::updateCallDefines() {
 		if (call == NULL) continue;
 		call->updateDefines();
 	}
+}
+
+void UserProc::reverseStrengthReduction()
+{
+	Boomerang::get()->alert_decompile_debug_point(this, "before reversing strength reduction");
+
+	StatementList stmts;
+	getStatements(stmts);
+	StatementList::iterator it;
+	for (it = stmts.begin(); it != stmts.end(); it++) 
+		if ((*it)->isAssign()) {
+			Assign *as = (Assign*)*it;
+			// of the form x = x{p} + c
+			if (as->getRight()->getOper() == opPlus && 
+					as->getRight()->getSubExp1()->isSubscript() &&
+					*as->getLeft() == *as->getRight()->getSubExp1()->getSubExp1() &&
+					as->getRight()->getSubExp2()->isIntConst()) {
+				int c = ((Const*)as->getRight()->getSubExp2())->getInt();
+				RefExp *r = (RefExp*)as->getRight()->getSubExp1();
+				if (r->getDef() && r->getDef()->isPhi()) {
+					PhiAssign *p = (PhiAssign*)r->getDef();
+					if (p->getNumDefs() == 2) {
+						Statement *first = p->getDefs().front().def;
+						Statement *second = p->getDefs().back().def;
+						if (first == as) {
+							// want the increment in second
+							Statement *tmp = first;
+							first = second;
+							second = tmp;
+						}
+						// first must be of form x := 0
+						if (first && first->isAssign() && 
+								((Assign*)first)->getRight()->isIntConst() &&
+								((Const*)((Assign*)first)->getRight())->getInt() == 0) {
+							// ok, fun, now we need to find every reference to p and
+							// replace with x{p} * c
+							StatementList stmts2;
+							getStatements(stmts2);
+							StatementList::iterator it2;
+							for (it2 = stmts2.begin(); it2 != stmts2.end(); it2++)
+								if (*it2 != as)
+									(*it2)->searchAndReplace(r, new Binary(opMult, r->clone(), new Const(c)));
+							// that done we can replace c with 1 in as
+							((Const*)as->getRight()->getSubExp2())->setInt(1);
+						}
+					}
+				}
+			}		
+		}
+	Boomerang::get()->alert_decompile_debug_point(this, "after reversing strength reduction");
 }
 
 // Update the parameters, in case the signature and hence ordering and filtering has changed, or the locations in the

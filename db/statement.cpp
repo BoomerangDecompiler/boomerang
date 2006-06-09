@@ -1977,11 +1977,15 @@ void CallStatement::print(std::ostream& os, bool html) {
 		StatementList::iterator rr;
 		bool first = true;
 		for (rr = defines.begin(); rr != defines.end(); ++rr) {
+			assert((*rr)->isAssignment());
+			Assignment *as = (Assignment*)*rr;
 			if (first)
 				first = false;
 			else
 				os << ", ";
-			os << "*" << ((Assignment*)*rr)->getType() << "* " << ((Assignment*)*rr)->getLeft();
+			os << "*" << as->getType() << "* " << as->getLeft();
+			if (as->isAssign())
+				os << " := " << ((Assign*)as)->getRight();
 		}
 		if (defines.size() > 1) os << "}";
 		os << " := ";
@@ -2375,7 +2379,16 @@ void CallStatement::fromSSAform(igraph& ig) {
 	// fromSSA() function
 	for (ss = defines.begin(); ss != defines.end(); ++ss) {
 		Assignment* as = ((Assignment*)*ss);
-		as->setLeft(as->getLeft()->fromSSAleft(ig, this));
+		Exp *e = as->getLeft()->fromSSAleft(ig, this);
+		if (procDest && procDest->isLib() && e->isLocal()) {
+			Type *lty = proc->getLocalType(((Const*)e->getSubExp1())->getStr());
+			Type *ty = as->getType();
+			if (ty && lty && *ty != *lty) {
+				LOG << "local " << e << " has type " << lty->getCtype() << " that doesn't agree with type of define " << ty->getCtype() << " of a library, wtf?\n";
+				proc->setLocalType(((Const*)e->getSubExp1())->getStr(), ty);
+			}
+		}
+		as->setLeft(e);
 	}
 	// Don't think we'll need this anyway:
 	// defCol.fromSSAform(ig);
@@ -2473,24 +2486,8 @@ void Assignment::setTypeFor(Exp* e, Type* ty) {
 Type* CallStatement::getTypeFor(Exp* e) {
 	// The defines "cache" what the destination proc is defining
 	Assignment* as = defines.findOnLeft(e);
-	if (as != NULL) {
-		if (ADHOC_TYPE_ANALYSIS) {
-			if (as->getLeft()->isLocal()) {
-				const char *nam = ((Const*)as->getLeft()->getSubExp1())->getStr();
-				Exp *r = proc->expFromSymbol(nam);
-				if (r->isSubscript())
-					r = r->getSubExp1();
-				Type *ty = getSignature()->getTypeFor(r);
-				Type *lty = proc->getLocalType(nam);
-				if (*ty != *lty) {
-					LOG << "updating type of local " << nam << " to " << ty->getCtype() << "\n";
-					proc->setLocalType(nam, ty);
-				}
-				return ty;
-			}
-		}
+	if (as != NULL)
 		return as->getType();
-	}
 	if (e->isPC())
 		// Special case: just return void*
 		return new PointerType(new VoidType);
@@ -3272,20 +3269,6 @@ void Assign::simplify() {
 			return;
 	}
 
-	// hack for assigning to the first member of a compound
-	if (ADHOC_TYPE_ANALYSIS && lhs->isMemOf()) {
-		Type *ty = lhs->getSubExp1()->getType();
-		if (ty && ty->resolvesToPointer() && ty->asPointer()->getPointsTo()->resolvesToCompound()) { 
-			CompoundType *c = ty->asPointer()->getPointsTo()->asCompound();
-			const char *nam = c->getNameAtOffset(0);
-			if (nam == NULL) nam = "??";
-			Exp *old = lhs;
-			lhs = new Binary(opMemberAccess, lhs, new Const((char*)nam));
-			if (VERBOSE)
-				LOG << "replacing " << old << " with " << lhs << "\n";
-		}
-	}
-
 	// this is a very complex pattern :)
 	// replace:	 1 r31 = a			 where a is an array pointer
 	//			 2 r31 = phi{1 4}
@@ -3680,6 +3663,19 @@ void Assign::processTypes()
 			if (!type->isSize())
 				proc->getProg()->setGlobalType(nam, type);
 		}
+	}
+
+	// hack for assigning to the first member of a compound
+	LOG << lhs << "\n";
+	Type *ty = lhs->getType();
+	if (ty && ty->resolvesToCompound()) { 
+		CompoundType *c = ty->asCompound();
+		const char *nam = c->getNameAtOffset(0);
+		if (nam == NULL) nam = "??";
+		Exp *old = lhs;
+		lhs = new Binary(opMemberAccess, lhs, new Const((char*)nam));
+		if (VERBOSE)
+			LOG << "replacing " << old << " with " << lhs << "\n";
 	}
 }
 

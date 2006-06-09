@@ -553,6 +553,7 @@ virtual				~UserProc();
 //		void		addNewReturns(int depth);
 		void		updateArguments();			///< Update the arguments in calls
 		void		updateCallDefines();		///< Update the defines in calls
+		void		reverseStrengthReduction();
 		/// Trim parameters. If depth not given or == -1, perform at all depths
 		void		trimParameters(int depth = -1);
 		void		processFloatConstants();

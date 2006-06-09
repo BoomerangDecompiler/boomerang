@@ -865,6 +865,7 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 			{
 				Type *ty = b->getSubExp1()->getType();
 				if (ty == NULL) {
+					ty = b->getSubExp1()->getType();
 					if (VERBOSE)
 						LOG << "no type for subexp1 of " << b << "\n";
 					str << "/* type failure */ ";
