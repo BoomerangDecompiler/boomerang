@@ -844,29 +844,25 @@ Global* Prog::getGlobal(char *nam) {
 	return NULL;
 }
 
-void Prog::globalUsed(ADDRESS uaddr, Type* knownType) {
+bool Prog::globalUsed(ADDRESS uaddr, Type* knownType) {
     Global* global;
     
     for (std::set<Global*>::iterator it = globals.begin(); it != globals.end(); it++) {
         if ((*it)->getAddress() == uaddr) {
 			if (knownType) (*it)->meetType(knownType);
-            return;
+            return true;
 		}
         else if ((*it)->getAddress() < uaddr && (*it)->getAddress() + (*it)->getType()->getSize() / 8 > uaddr) {
 			if (knownType) (*it)->meetType(knownType);
-            return;
+            return true;
 		}
 	}
+
+	if (pBF->GetSectionInfoByAddr(uaddr) == NULL) {
+		LOG << "refusing to create a global at address that is in no known section of the binary: " << uaddr << "\n";
+		return false;
+	}
 	
-#if 0
-    if (uaddr < 0x10000) {
-        // This happens in windows code because you can pass a low value integer instead 
-        // of a string to some functions.
-		if (VERBOSE)
-			LOG << "warning: ignoring stupid request for global at address " << uaddr << "\n";
-        return;
-    }
-#endif
     const char *nam = newGlobalName(uaddr); 
     Type *ty;
 	if (knownType)
@@ -884,6 +880,7 @@ void Prog::globalUsed(ADDRESS uaddr, Type* knownType) {
 		else
 			LOG << ", guessed type " << ty->getCtype() << "\n";
 	}
+	return true;
 }
 
 std::map<ADDRESS, std::string> &Prog::getSymbols()
@@ -1309,7 +1306,7 @@ void Prog::removeUnusedGlobals() {
      	if(usedGlobal) {
      		globals.insert(usedGlobal);
 		} else {
-      		std::cerr << "warning: an expression refers to a nonexistent global";
+      		LOG << "warning: an expression refers to a nonexistent global\n";
     	}
 	}
 }

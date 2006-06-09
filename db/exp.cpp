@@ -1876,6 +1876,12 @@ Exp* Unary::polySimplify(bool& bMod) {
 	// The following transformations are for ad-hoc type analysis only
 	if (!ADHOC_TYPE_ANALYSIS) return res;
 
+#if 0    
+	/* These transformations are disabled because opArrayIndex should only be 
+	 * used on subExp1's that have a type of ArrayType.  PointerType is not
+	 * good enough!   - trentw
+	 */
+
 	// Replace m[x + k] where x has type pointer and k is a constant with x[k/sizeof(*x)]
 	if (op == opMemOf && subExp1->getOper() == opPlus && subExp1->getSubExp2()->isIntConst()) {
 		int n = ((Const*)subExp1->getSubExp2())->getInt();
@@ -1907,6 +1913,7 @@ Exp* Unary::polySimplify(bool& bMod) {
 			}
 		}
 	}
+#endif
 
 	return res;
 }
@@ -2424,10 +2431,12 @@ Exp* Binary::polySimplify(bool& bMod) {
 				assert((r % 8) == 0);
 				const char *nam = c->getNameAtOffset(n*8);
 				if (nam == NULL) nam = "??";
+				Location *l = Location::memOf(subExp1);
+				l->setType(c);
 				res = new Binary(opPlus, 
 					new Unary(opAddrOf, 
 						new Binary(opMemberAccess, 
-							Location::memOf(subExp1),
+							l,
 							new Const((char*)nam))),
 					new Const(r / 8));
 				if (VERBOSE)

@@ -865,14 +865,15 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 			{
 				Type *ty = b->getSubExp1()->getType();
 				if (ty == NULL) {
+					LOG << "type failure: no type for subexp1 of " << b << "\n";
 					ty = b->getSubExp1()->getType();
-					if (VERBOSE)
-						LOG << "no type for subexp1 of " << b << "\n";
-					str << "/* type failure */ ";
-					break;
+					// No idea why this is hitting! - trentw
+					// str << "/* type failure */ ";
+					// break;
 				}
 				// Trent: what were you thinking here? Fails for things like
 				// local11.lhHeight (where local11 is a register)
+				// Mike: it shouldn't!  local11 should have a compound type
 				//assert(ty->resolvesToCompound());
 				if (b->getSubExp1()->getOper() == opMemOf) {
 					appendExp(str, b->getSubExp1()->getSubExp1(), PREC_PRIM);
@@ -886,7 +887,15 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 			break;
 		case opArrayIndex:
 			openParen(str, curPrec, PREC_PRIM);
-			appendExp(str, b->getSubExp1(), PREC_PRIM);
+			if (b->getSubExp1()->isMemOf()) {
+			   	Type *ty = b->getSubExp1()->getType();
+				if (ty->resolvesToPointer()) {
+					// a pointer to an array is automatically dereferenced in C
+					appendExp(str, b->getSubExp1()->getSubExp1(), PREC_PRIM);
+				} else
+					appendExp(str, b->getSubExp1(), PREC_PRIM);
+			} else
+				appendExp(str, b->getSubExp1(), PREC_PRIM);
 			closeParen(str, curPrec, PREC_PRIM);
 			str << "[";
 			appendExp(str, b->getSubExp2(), PREC_PRIM);
@@ -1452,7 +1461,7 @@ void CHLLCode::AddProcDec(UserProc* proc, bool open) {
 	std::ostringstream s;
 	ReturnStatement* returns = proc->getTheReturnStatement();
 	if (proc->getSignature()->isForced()) {
-		int n = 0;
+		unsigned int n = 0;
 		Exp *e = proc->getSignature()->getReturnExp(0);
 		if (e->isRegN(Signature::getStackRegister(proc->getProg())))
 			n = 1;

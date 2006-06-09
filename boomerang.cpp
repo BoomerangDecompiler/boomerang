@@ -1197,8 +1197,27 @@ void Boomerang::logTail() {
 void Boomerang::alert_decompile_debug_point(UserProc *p, const char *description) {
 	if (stopAtDebugPoints) {
 		std::cout << "decompiling " << p->getName() << ": " << description << "\n";
-		std::cout << " <press enter to continue> \n";
-		getchar();
+		static char *stopAt = NULL;
+		if (stopAt == NULL || !strcmp(p->getName(), stopAt)) {
+			// This is a mini command line debugger.  Feel free to expand it.
+			std::cout << " <press enter to continue> \n";
+			char line[1024];
+			while(1) {
+				*line = 0;
+				fgets(line, 1024, stdin);
+				if (!strncmp(line, "print", 5))
+					p->print(std::cout);
+				else if (!strncmp(line, "run ", 4)) {
+					stopAt = strdup(line + 4);
+					if (strchr(stopAt, '\n'))
+						*strchr(stopAt, '\n') = 0;
+					if (strchr(stopAt, ' '))
+						*strchr(stopAt, ' ') = 0;
+					break;
+				} else
+					break;
+			}
+		}
 	}
 	for (std::set<Watcher*>::iterator it = watchers.begin(); it != watchers.end(); it++)
 		(*it)->alert_decompile_debug_point(p, description);

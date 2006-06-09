@@ -3271,50 +3271,6 @@ void Assign::simplify() {
 			return;
 	}
 
-	// this is a very complex pattern :)
-	// replace:	 1 r31 = a			 where a is an array pointer
-	//			 2 r31 = phi{1 4}
-	//			 3 m[r31{2}] = x
-	//			 4 r31 = r31{2} + b	 where b is the size of the base of the 
-	//								 array pointed at by a
-	// with:	 1 r31 = 0
-	//			 2 r31 = phi{1 4}
-	//			 3 m[a][r31{2}] = x
-	//			 4 r31 = r31{2} + 1
-	// I just assume this can only happen in a loop.. 
-	if (leftop == opMemOf && lhs->getSubExp1()->getOper() == opSubscript &&
-			((RefExp*)lhs->getSubExp1())->getDef() && ((RefExp*)lhs->getSubExp1())->getDef()->isPhi()) {
-		Statement *phistmt = ((RefExp*)lhs->getSubExp1())->getDef();
-		PhiAssign *phi = (PhiAssign*)phistmt;
-		if (phi->getNumDefs() == 2 && phi->getStmtAt(0) && phi->getStmtAt(1) &&
-				phi->getStmtAt(0)->isAssign() && phi->getStmtAt(1)->isAssign()) {
-			Assign *a1 = (Assign*)phi->getStmtAt(0);
-			Assign *a4 = (Assign*)phi->getStmtAt(1);
-			if (a1->getRight()->getType() && a4->getRight()->getOper() == opPlus &&
-					a4->getRight()->getSubExp1()->getOper() == opSubscript &&
-					((RefExp*)a4->getRight()->getSubExp1())->getDef() == phistmt &&
-					*a4->getRight()->getSubExp1()->getSubExp1() == *phi->getLeft() &&
-					a4->getRight()->getSubExp2()->getOper() == opIntConst) {
-				Type *ty = a1->getRight()->getType();
-				unsigned b = ((Const*)a4->getRight()->getSubExp2())->getInt();
-				if (ty->resolvesToPointer()) {
-					ty = ty->asPointer()->getPointsTo();
-					if (ty->resolvesToArray() && b*8 == ty->asArray()->getBaseType()->getSize()) {
-						if (VERBOSE)
-							LOG << "doing complex pattern on " << this << " using " << a1 << " and " << a4 << "\n";
-						((Const*)a4->getRight()->getSubExp2())->setInt(1);
-						lhs = new Binary(opArrayIndex, 
-							Location::memOf(a1->getRight()->clone(), proc), 
-							lhs->getSubExp1()->clone());
-						a1->setRight(new Const(0));
-						if (VERBOSE)
-							LOG << "replaced with " << this << " using " << a1 << " and " << a4 << "\n";
-					}
-				}
-			}
-		}
-	}
-
 	lhs = lhs->simplifyArith();
 	rhs = rhs->simplifyArith();
 	if (guard) guard = guard->simplifyArith();
@@ -3409,6 +3365,7 @@ void Assign::simplify() {
 		}
 	}
 
+	// note that we're trying to assign to an array, not a pointer.
 	if (lhs->getType() && lhs->getType()->isArray() && lhs->getType()->getSize() > 0) {
 		lhs = new Binary(opArrayIndex, lhs, new Const(0));
 	}
@@ -3717,7 +3674,7 @@ void ReturnStatement::processTypes()
 		StatementList::iterator it;
 		for (it = returns.begin(); it != returns.end(); it++) {
 			Assign *as = (Assign*)*it;
-			for (int n = 0; n < proc->getSignature()->getNumReturns(); n++)
+			for (unsigned int n = 0; n < proc->getSignature()->getNumReturns(); n++)
 				if (*proc->getSignature()->getReturnExp(n) == *as->getLeft()) {
 					as->setType(proc->getSignature()->getReturnType(n));
 					Exp *r = as->getRight();
@@ -5051,7 +5008,7 @@ StatementList* CallStatement::calcResults() {
 				if (locName)
 					sigReturn = Location::local(locName, proc);	// Replace e.g. r24 with local19
 				if (useCol.exists(sigReturn)) {
-					ImplicitAssign* as = new ImplicitAssign(sig->getReturnType(i), sigReturn);
+					ImplicitAssign* as = new ImplicitAssign(getTypeFor(sigReturn), sigReturn);
 					ret->append(as);
 				}
 			}

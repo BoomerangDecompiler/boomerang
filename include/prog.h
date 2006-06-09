@@ -216,7 +216,7 @@ virtual				~Prog();
 		ArrayType*	makeArrayType(ADDRESS u, Type* t);
 
 		// Indicate that a given global has been seen used in the program.
-		void		globalUsed(ADDRESS uaddr, Type* knownType = NULL);
+		bool		globalUsed(ADDRESS uaddr, Type* knownType = NULL);
 
 		// Get the type of a global variable
 		Type		*getGlobalType(char* nam);
