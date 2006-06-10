@@ -1556,6 +1556,8 @@ void UserProc::remUnusedStmtEtc() {
 		}
 	}
 	updateCalls();				// Or just updateArguments?
+
+	fixUglyBranches();
 	
 	if (VERBOSE) {
 		LOG << "--- after remove unused statements etc for " << getName() << "\n";
@@ -1721,6 +1723,47 @@ void UserProc::updateCalls() {
 		LOG << "--- after update calls for " << getName() << "\n";
 		printToLog();
 		LOG << "=== after update calls for " << getName() << "\n";
+	}
+}
+
+void UserProc::fixUglyBranches() {
+	if (VERBOSE)
+		LOG << "### fixUglyBranches for " << getName() << " ###\n";
+
+	StatementList stmts;
+	getStatements(stmts);
+	for (StatementList::iterator it = stmts.begin(); it != stmts.end(); it++) {
+		Statement *stmt = *it;
+		if (stmt->isBranch()) {
+			Exp *hl = ((BranchStatement*)stmt)->getCondExpr();
+			// of the form: x{n} - 1 >= 0
+			if (hl && hl->getOper() == opGtrEq && 
+					hl->getSubExp2()->isIntConst() &&
+					((Const*)hl->getSubExp2())->getInt() == 0 &&
+					hl->getSubExp1()->getOper() == opMinus &&
+					hl->getSubExp1()->getSubExp2()->isIntConst() &&
+					((Const*)hl->getSubExp1()->getSubExp2())->getInt() == 1 &&
+					hl->getSubExp1()->getSubExp1()->isSubscript()) {
+				Statement *n = ((RefExp*)hl->getSubExp1()->getSubExp1())->getDef();
+				if (n && n->isPhi()) {
+					PhiAssign *p = (PhiAssign*)n;
+					for (int i = 0; i < p->getNumDefs(); i++)
+						if (p->getStmtAt(i)->isAssign()) {
+							Assign *a = (Assign*)p->getStmtAt(i);
+							if (*a->getRight() == *hl->getSubExp1()) {
+								hl->setSubExp1(new RefExp(a->getLeft(), a));
+								break;
+							}
+						}
+				}
+			}
+		}
+	}
+	
+	if (VERBOSE) {
+		LOG << "--- after fixUglyBranches for " << getName() << "\n";
+		printToLog();
+		LOG << "=== after fixUglyBranches for " << getName() << "\n";
 	}
 }
 
@@ -2908,11 +2951,16 @@ bool UserProc::nameRegisters() {
 				continue;
 			for (std::set<int>::iterator it1 = usedRegs.begin(); it1 != usedRegs.end(); it1++) {
 				Type *ty = s->getTypeFor(Location::regOf(*it1));
-				if (ty)
+				if (ty && !ty->isVoid())
 					types[*it1] = ty;
 			}
 		}
 	}
+
+	// remove any register params
+	for (unsigned int n = 0; n < signature->getNumParams(); n++)
+		if (signature->getParamExp(n)->isRegOf())
+			usedRegs.erase(((Const*)signature->getParamExp(n)->getSubExp1())->getInt());
 	
 	// create a symbol for every register
 	for (std::set<int>::iterator it = usedRegs.begin(); it != usedRegs.end(); it++) {

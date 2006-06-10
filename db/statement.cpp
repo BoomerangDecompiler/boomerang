@@ -2598,10 +2598,53 @@ bool CallStatement::processConstants(Prog *prog) {
 	return ellipsisProcessing(prog);
 }
 
+void Statement::processTypes()
+{
+	if (!ADHOC_TYPE_ANALYSIS)
+		return;
+
+	bool typeChange = false;
+
+	Exp *addrRefGlobalWild = new Unary(opAddrOf, new RefExp(new Unary(opGlobal, new Terminal(opWildStrConst)), (Statement*)-1));
+	Exp *wildMultConst = new Binary(opMult, new Terminal(opWild), new Terminal(opWildIntConst));
+	std::list<Exp*> result;
+	if (searchAll(new Binary(opPlus, addrRefGlobalWild, wildMultConst), result)) {
+		for (std::list<Exp*>::iterator it = result.begin(); it != result.end(); it++) {
+			char *nam = ((Const*)(*it)->getSubExp1()->getSubExp1()->getSubExp1()->getSubExp1())->getStr();
+			int stride = ((Const*)(*it)->getSubExp2()->getSubExp2())->getInt();
+			Type *ty = proc->getProg()->getGlobalType(nam);
+			if (ty == NULL || ty->isVoid() || ty->isSize()) {
+				// I declare this global an array of something
+				Type *nty;
+				if (ty->isSize()) 
+					nty = new ArrayType(new SizeType(stride * 8), ty->getSize() / (stride * 8));
+				else
+					nty = new ArrayType(new SizeType(stride * 8));
+				proc->getProg()->setGlobalType(nam, nty);
+				typeChange = true;
+				if (VERBOSE) {
+					LOG << "type of global " << nam << " changed from ";
+					if (ty)
+						LOG << ty->getCtype();
+					else
+						LOG << "null";
+					LOG << " to " << nty->getCtype() << "\n";
+				}
+			}
+		}
+	}
+
+	if (typeChange)
+		simplify();
+}
+
 void CallStatement::processTypes()
 {
 	if (!ADHOC_TYPE_ANALYSIS)
 		return;
+
+	Statement::processTypes();
+	
 	StatementList::iterator aa;
 	for (aa = arguments.begin(); aa != arguments.end(); ++aa) {
 		Type *t = ((Assign*)*aa)->getType();
@@ -3602,8 +3645,35 @@ bool Assign::processConstants(Prog* prog) {
 	return false;
 }
 
+void Assignment::processTypes()
+{
+	if (!ADHOC_TYPE_ANALYSIS)
+		return;
+
+	Statement::processTypes();
+
+	// hack for assigning to the first member of a compound
+	if (!lhs->isRegOf()) {
+		Type *ty = lhs->getType();
+		if (ty && ty->resolvesToCompound()) { 
+			CompoundType *c = ty->asCompound();
+			const char *nam = c->getNameAtOffset(0);
+			if (nam == NULL) nam = "??";
+			Exp *old = lhs;
+			lhs = new Binary(opMemberAccess, lhs, new Const((char*)nam));
+			if (VERBOSE)
+				LOG << "replacing " << old << " with " << lhs << "\n";
+		}
+	}
+}
+
 void Assign::processTypes()
 {
+	if (!ADHOC_TYPE_ANALYSIS)
+		return;
+
+	Assignment::processTypes();
+
 	if (type->isSize()) {
 		if (rhs->isIntConst() && ((Const*)rhs)->getInt() != 0) {
 			// assigning an integer and it's not NULL, seems good to me.
@@ -3624,16 +3694,78 @@ void Assign::processTypes()
 		}
 	}
 
-	// hack for assigning to the first member of a compound
-	Type *ty = lhs->getType();
-	if (ty && ty->resolvesToCompound()) { 
-		CompoundType *c = ty->asCompound();
-		const char *nam = c->getNameAtOffset(0);
-		if (nam == NULL) nam = "??";
-		Exp *old = lhs;
-		lhs = new Binary(opMemberAccess, lhs, new Const((char*)nam));
-		if (VERBOSE)
-			LOG << "replacing " << old << " with " << lhs << "\n";
+	// hack for assigning from the first member of a compound
+	if (!rhs->isRegOf()) {
+		Type *ty = rhs->getType();
+		if (ty && ty->resolvesToCompound()) { 
+			CompoundType *c = ty->asCompound();
+			const char *nam = c->getNameAtOffset(0);
+			if (nam == NULL) nam = "??";
+			Exp *old = rhs;
+			rhs = new Binary(opMemberAccess, rhs, new Const((char*)nam));
+			if (VERBOSE)
+				LOG << "replacing " << old << " with " << rhs << "\n";
+		}
+	}
+
+	/* Pattern:
+	 *    x.n := m[&y + c]{-}
+	 * Where:
+	 *    type(y) = size or compound
+	 * and the size is big enough to contain an element of the same size as
+	 * n at an offset of c.
+	 * Becomes:
+	 *    type(y) = compound 
+	 * with element of same type as n at offset of c.
+	 *    
+	 * Is this too specific?  
+	 */
+	if (lhs->isMemberOf() && 
+		lhs->getType() && rhs->getType() && 
+		lhs->getType()->getSize() < rhs->getType()->getSize()) {
+		rhs = new RefExp(Location::memOf(new Binary(opPlus, new Unary(opAddrOf, rhs), new Const(0))), NULL);
+	}
+	if (lhs->isMemberOf() && rhs->isSubscript() &&
+			rhs->getSubExp1()->isMemOf() && 
+			rhs->getSubExp1()->getSubExp1()->getOper() == opPlus &&
+			rhs->getSubExp1()->getSubExp1()->getSubExp1()->isAddrOf() &&
+			rhs->getSubExp1()->getSubExp1()->getSubExp2()->isIntConst()) {
+		char *lnam = ((Const*)lhs->getSubExp2())->getStr();
+		int c = ((Const*)rhs->getSubExp1()->getSubExp1()->getSubExp2())->getInt();
+		Exp *y = rhs->getSubExp1()->getSubExp1()->getSubExp1()->getSubExp1();
+		Type *lty = lhs->getType();
+		Type *ty = y->getType();
+		if (lty && ty && (ty->resolvesToSize() || ty->resolvesToCompound())) {
+			Type *oty = ty->clone();
+			if (ty->resolvesToSize()) {
+				CompoundType *nty = new CompoundType();
+				if (c != 0)
+					nty->addType(new SizeType(c * 8), "pad");
+				nty->addType(lty->clone(), lnam);
+				if (nty->getSize() < ty->getSize())
+					nty->addType(new SizeType(ty->getSize() - nty->getSize()), "pad");
+				ty = nty;
+			} else {
+				ty->asCompound()->setTypeAtOffset(c*8, lty);
+				ty->asCompound()->setNameAtOffset(c*8, lnam);
+			}
+			if (y->getOper() == opArrayIndex) {
+				y = y->getSubExp1();
+				oty = new ArrayType(oty, y->getType()->asArray()->getLength());
+				ty = new ArrayType(ty, y->getType()->asArray()->getLength());
+			}
+			if (y->isSubscript())
+				y = y->getSubExp1();
+			if (*ty != *oty) {
+				if (VERBOSE)
+					LOG << "found better type for " << y << " " << ty->getCtype() << " was " << oty->getCtype() << "\n";
+				if (y->isGlobal()) {
+					char *gnam = ((Const*)y->getSubExp1())->getStr();
+					proc->getProg()->setGlobalType(gnam, ty);
+				}
+			}
+
+		}
 	}
 }
 
@@ -3670,6 +3802,11 @@ void addPhiReferences(StatementSet &stmts, Statement *def)
 
 void ReturnStatement::processTypes()
 {
+	if (!ADHOC_TYPE_ANALYSIS)
+		return;
+
+	Statement::processTypes();
+
 	if (proc->getSignature()->isForced()) {
 		StatementList::iterator it;
 		for (it = returns.begin(); it != returns.end(); it++) {

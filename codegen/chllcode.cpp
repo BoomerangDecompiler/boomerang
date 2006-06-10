@@ -642,17 +642,17 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 			} 
 			break;
 		case opList:
-#if 1
-			// TMN: Stack overflow is a problem, especially for large initialized arrays.
-			// This is an attempt to make that process iterative instead of recursive.
             {
 				int elems_on_line = 0; // try to limit line lengths
 				Exp* e2 = b->getSubExp2();
+				str << "{ ";
+				if (b->getSubExp1()->getOper() == opList)
+					str << "\n ";
 				while (e2->getOper() == opList)
 				{
 					appendExp(str, b->getSubExp1(), PREC_NONE, uns);
 					++elems_on_line;
-					if (elems_on_line >= 16 /* completely arbitrary, but better than nothing*/)
+					if (b->getSubExp1()->getOper() == opList || elems_on_line >= 16 /* completely arbitrary, but better than nothing*/)
 					{
 						str << ",\n ";
 						elems_on_line = 0;
@@ -663,14 +663,8 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 					e2 = b->getSubExp2();
 				}
 				appendExp(str, b->getSubExp1(), PREC_NONE, uns);
+				str << " }";
 			}
-#else
-			appendExp(str, b->getSubExp1(), PREC_NONE, uns);
-			if (b->getSubExp2()->getOper() == opList) {
-				str << ", ";
-				appendExp(str, b->getSubExp2(), PREC_NONE, uns);
-			}
-#endif
 			break;
 		case opFlags:
 			str << "flags"; break;
@@ -888,8 +882,9 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 		case opArrayIndex:
 			openParen(str, curPrec, PREC_PRIM);
 			if (b->getSubExp1()->isMemOf()) {
-			   	Type *ty = b->getSubExp1()->getType();
-				if (ty->resolvesToPointer()) {
+			   	Type *ty = b->getSubExp1()->getSubExp1()->getType();
+				if (ty && ty->resolvesToPointer() && 
+						ty->asPointer()->getPointsTo()->resolvesToArray()) {
 					// a pointer to an array is automatically dereferenced in C
 					appendExp(str, b->getSubExp1()->getSubExp1(), PREC_PRIM);
 				} else
@@ -927,6 +922,13 @@ void CHLLCode::appendType(std::ostringstream& str, Type *typ)
 	if (typ == NULL) {
 		str << "int";			// Default type for C
 		return;
+	}
+	if (typ->resolvesToPointer() && 
+			typ->asPointer()->getPointsTo()->resolvesToArray()) {
+		// C programmers prefer to see pointers to arrays as pointers
+		// to the first element of the array.  They then use syntactic
+		// sugar to access a pointer as if it were an array.
+		typ = new PointerType(typ->asPointer()->getPointsTo()->asArray()->getBaseType());
 	}
 	str << typ->getCtype(true);
 }
@@ -1183,6 +1185,8 @@ bool isBareMemof(Exp* e, UserProc* proc) {
 	if (!e->isMemOf()) return false;
 	// Check if it maps to a symbol
 	char* sym = proc->lookupSym(e);
+	if (sym == NULL)
+		sym = proc->lookupSym(e->getSubExp1());
 	return sym == NULL;			// Only a bare memof if it is not a symbol
 }
 
@@ -1204,6 +1208,9 @@ void CHLLCode::AddAssignmentStatement(int indLevel, Assign *asgn) {
 	Exp* lhs = asgn->getLeft();
 	Exp* rhs = asgn->getRight();
 	UserProc* proc = asgn->getProc();
+
+	if (*lhs == *rhs)
+		return;    // never want to see a = a;
 
 	if (Boomerang::get()->noDecompile && isBareMemof(rhs, proc) && lhs->getOper() == opRegOf &&
 			m_proc->getProg()->getFrontEndId() == PLAT_SPARC) {
@@ -1460,21 +1467,16 @@ void CHLLCode::AddPrototype(UserProc* proc) {
 void CHLLCode::AddProcDec(UserProc* proc, bool open) {
 	std::ostringstream s;
 	ReturnStatement* returns = proc->getTheReturnStatement();
+	Type *retType = NULL;
 	if (proc->getSignature()->isForced()) {
 		unsigned int n = 0;
 		Exp *e = proc->getSignature()->getReturnExp(0);
 		if (e->isRegN(Signature::getStackRegister(proc->getProg())))
 			n = 1;
-		Type *retType = NULL;
 		if (n < proc->getSignature()->getNumReturns())
 			retType = proc->getSignature()->getReturnType(n);
 		if (retType == NULL)
 			s << "void ";
-		else {
-			appendType(s, retType);
-			if (!retType->isPointer())	// NOTE: assumes type *proc( style
-				s << " ";
-		}
 	} else if (returns == NULL || returns->getNumReturns() == 0) {
 		s << "void ";
 	} else {
@@ -1483,6 +1485,8 @@ void CHLLCode::AddProcDec(UserProc* proc, bool open) {
 		if (retType == NULL || retType->isVoid())
 			// There is a real return; make it integer (Remove with AD HOC type analysis)
 			retType = new IntegerType();
+	}
+	if (retType) {
 		appendType(s, retType);
 		if (!retType->isPointer())	// NOTE: assumes type *proc( style
 			s << " ";
@@ -1491,7 +1495,7 @@ void CHLLCode::AddProcDec(UserProc* proc, bool open) {
 	StatementList& parameters = proc->getParameters();
 	StatementList::iterator pp;
 	
-	if (parameters.size() > 4 && open) {
+	if (parameters.size() > 10 && open) {
 		LOG << "Warning: CHLLCode::AddProcDec: Proc " << proc->getName() << " has " << (int)parameters.size() << " parameters\n";
 	}
 	
@@ -1595,14 +1599,12 @@ void CHLLCode::AddGlobal(const char *name, Type *type, Exp *init) {
 	}
 	if (init && !init->isNil()) {
 		s << " = ";
-		if (init->getOper() == opList)
-			s << "{ ";
 		Type *base_type = type->isArray() ? type->asArray()->getBaseType() : type; 
 		appendExp(s, init, PREC_ASSIGN, base_type->isInteger() ? !base_type->asInteger()->isSigned() : false);
-		if (init->getOper() == opList)
-			s << " }";
 	}
 	s << ";";
+	if (type->isSize())
+		s << "// " << type->getSize() / 8 << " bytes";
 	lines.push_back(strdup(s.str().c_str()));
 }
 

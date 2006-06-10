@@ -516,6 +516,8 @@ virtual				~UserProc();
 		void		markAsNonChildless(ProcSet* cs);
 		// Update the defines and arguments in calls.
 		void		updateCalls();
+		// Fix any ugly branch statements (from propagating too much)
+		void		fixUglyBranches();
 		// Place the phi functions
 		void		placePhiFunctions() {df.placePhiFunctions(this);}
 

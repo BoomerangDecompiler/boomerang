@@ -255,7 +255,7 @@ virtual void		print(std::ostream &os, bool html = false) = 0;
 
 		// inline / decode any constants in the statement. Return true if need to redo dataflow
 virtual bool		processConstants(Prog *prog) = 0;
-virtual void		processTypes() { }
+virtual void		processTypes();
 
 		// general search
 virtual bool		search(Exp *search, Exp *&result) = 0;
@@ -467,6 +467,8 @@ virtual void		genConstraints(LocationSet& cons);
 
 		// Replace registers with locals
 virtual	void		regReplace(UserProc* proc);
+
+virtual void		processTypes();
 
 		friend class XMLProgParser;
 };		// class Assignment

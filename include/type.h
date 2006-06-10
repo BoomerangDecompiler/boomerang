@@ -505,6 +505,7 @@ virtual bool		isCompound() const { return true; }
 		const char	*getName(unsigned n) { assert(n < getNumTypes()); return names[n].c_str(); }
 		void		setTypeAtOffset(unsigned n, Type* ty);
 		Type		*getTypeAtOffset(unsigned n);
+		void		setNameAtOffset(unsigned n, const char *nam);
 		const char	*getNameAtOffset(unsigned n);
 		unsigned	getOffsetTo(unsigned n);
 		unsigned	getOffsetTo(const char *member);

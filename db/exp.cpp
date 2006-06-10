@@ -2019,6 +2019,18 @@ Exp* Binary::polySimplify(bool& bMod) {
 		// This is not counted as a modification
 	}
 
+	// Similarly for adding stuff to the addresses of globals
+	if (subExp2->isAddrOf() && subExp2->getSubExp1()->isSubscript() &&
+		subExp2->getSubExp1()->getSubExp1()->isGlobal() &&
+		op == opPlus) {
+		commute();
+		// Swap opSub1 and opSub2 as well
+		OPER t = opSub1;
+		opSub1 = opSub2;
+		opSub2 = t;
+		// This is not counted as a modification
+	}
+
 	// check for (x + a) + b where a and b are constants, becomes x + a+b
 	if (	op == opPlus &&
 			opSub1 == opPlus &&
@@ -2430,19 +2442,20 @@ Exp* Binary::polySimplify(bool& bMod) {
 				unsigned r = c->getOffsetRemainder(n*8);
 				assert((r % 8) == 0);
 				const char *nam = c->getNameAtOffset(n*8);
-				if (nam == NULL) nam = "??";
-				Location *l = Location::memOf(subExp1);
-				l->setType(c);
-				res = new Binary(opPlus, 
-					new Unary(opAddrOf, 
-						new Binary(opMemberAccess, 
-							l,
-							new Const((char*)nam))),
-					new Const(r / 8));
-				if (VERBOSE)
-					LOG << "(trans1) replacing " << this << " with " << res << "\n";
-				bMod = true;
-				return res;
+				if (nam != NULL && std::string("pad") != nam) {
+					Location *l = Location::memOf(subExp1);
+					l->setType(c);
+					res = new Binary(opPlus, 
+						new Unary(opAddrOf, 
+							new Binary(opMemberAccess, 
+								l,
+								new Const((char*)nam))),
+						new Const(r / 8));
+					if (VERBOSE)
+						LOG << "(trans1) replacing " << this << " with " << res << "\n";
+					bMod = true;
+					return res;
+				}
 			}
 		}
 	}
@@ -3591,6 +3604,14 @@ Type *RefExp::getType()
 					break;
 			}
 		}
+	}
+	if (def == NULL) {
+	   if (subExp1->isGlobal())
+			return subExp1->getType();
+	   if (subExp1->getOper() == opArrayIndex)
+		   return subExp1->getType();
+	   if (subExp1->getOper() == opMemberAccess)
+		   return subExp1->getType();
 	}
 	return NULL;
 }

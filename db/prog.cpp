@@ -363,9 +363,14 @@ bool Prog::clusterUsed(Cluster *c)
 
 Cluster	*Prog::getDefaultCluster(const char *name)
 {
-	const char *fname = pBF->getFilenameSymbolFor(name);
-	if (fname == NULL)
+	const char *cfname = pBF->getFilenameSymbolFor(name);
+	if (cfname == NULL)
 		return m_rootCluster;
+	if (strcmp(cfname + strlen(cfname) - 2, ".c"))
+		return m_rootCluster;
+	LOG << "got filename " << cfname << " for " << name << "\n";
+	char *fname = strdup(cfname);
+	fname[strlen(fname) - 2] = 0;
 	Cluster *c = findCluster(fname);
 	if (c == NULL) {
 		c = new Cluster(fname);
@@ -859,7 +864,8 @@ bool Prog::globalUsed(ADDRESS uaddr, Type* knownType) {
 	}
 
 	if (pBF->GetSectionInfoByAddr(uaddr) == NULL) {
-		LOG << "refusing to create a global at address that is in no known section of the binary: " << uaddr << "\n";
+		if (VERBOSE)
+			LOG << "refusing to create a global at address that is in no known section of the binary: " << uaddr << "\n";
 		return false;
 	}
 	
@@ -1666,6 +1672,8 @@ Exp *Prog::readNativeAs(ADDRESS uaddr, Type *type)
 		Exp *n = e = new Terminal(opNil);
 		for (int i = 0; nelems == -1 || i < nelems; i++) {
 			Exp *v = readNativeAs(uaddr + i * base_sz, type->asArray()->getBaseType());
+			if (v == NULL)
+				break;
 			if (n->isNil()) {
 				n = new Binary(opList, v, n);
 				e = n;
@@ -1976,7 +1984,7 @@ Exp	*Prog::addReloc(Exp *e, ADDRESS lc)
 			ADDRESS a = c->getInt();
 			unsigned int sz = pBF->GetSizeByName(n);
 			if (getGlobal((char*)n) == NULL) {
-				Global *global = new Global(new SizeType(sz), a, n);
+				Global *global = new Global(new SizeType(sz*8), a, n);
 				globals.insert(global);
 			}
 			e = new Unary(opAddrOf, Location::global(n, NULL));

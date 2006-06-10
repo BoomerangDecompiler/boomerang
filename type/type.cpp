@@ -331,12 +331,36 @@ void CompoundType::setTypeAtOffset(unsigned n, Type* ty) {
 	unsigned offset = 0;
 	for (unsigned i = 0; i < types.size(); i++) {
 		if (offset <= n && n < offset + types[i]->getSize()) {
+			int oldsz = types[i]->getSize();
 			types[i] = ty;
+			if (ty->getSize() < oldsz) {
+				types.push_back(types[types.size()-1]);
+				names.push_back(names[names.size()-1]);
+				for (int n = types.size() - 1; n > i; n--) {
+					types[n] = types[n-1];
+					names[n] = names[n-1];
+				}
+				types[i+1] = new SizeType(oldsz - ty->getSize());
+				names[i+1] = "pad";
+			}
 			return;
 		}
 		offset += types[i]->getSize();
 	}
 }
+
+void CompoundType::setNameAtOffset(unsigned n, const char *nam)
+{
+	unsigned offset = 0;
+	for (unsigned i = 0; i < types.size(); i++) {
+		if (offset <= n && n < offset + types[i]->getSize()) {
+			names[i] = nam;
+			return;
+		}
+		offset += types[i]->getSize();
+	}
+}
+
 
 const char *CompoundType::getNameAtOffset(unsigned n)
 {
