@@ -36,7 +36,7 @@ void DecompilerThread::run()
 {
 	threadToCollect = QThread::currentThreadId();
 
-	Boomerang::get()->setOutputDirectory(".\\output");
+	Boomerang::get()->setOutputDirectory(".\\output\\");
 
 	decompiler = new Decompiler();
 	decompiler->moveToThread(this);

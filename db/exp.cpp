@@ -2620,7 +2620,7 @@ Exp* Binary::polySimplify(bool& bMod) {
 						new Unary(opAddrOf, 
 							new Binary(opMemberAccess, 
 								l,
-								new Const((char*)nam))),
+								new Const(strdup(nam)))),
 						new Const(r / 8));
 					if (VERBOSE)
 						LOG << "(trans1) replacing " << this << " with " << res << "\n";

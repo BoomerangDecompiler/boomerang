@@ -3719,25 +3719,14 @@ void Assign::processTypes()
 		if (ty && ty->resolvesToCompound()) { 
 			CompoundType *c = ty->asCompound();
 			const char *nam = c->getNameAtOffset(0);
-			if (nam == NULL) nam = "??";
-			Exp *old = rhs;
-			rhs = new Binary(opMemberAccess, rhs, new Const((char*)nam));
-			if (VERBOSE)
-				LOG << "replacing " << old << " with " << rhs << "\n";
+			if (nam != NULL && nam != std::string("pad")) {
+				Exp *old = rhs;
+				rhs = new Binary(opMemberAccess, rhs, new Const(strdup(nam)));
+				if (VERBOSE)
+					LOG << "replacing " << old << " with " << rhs << "\n";
+			}
 		}
 	}
-
-
-	/* Would be nice to be able to write the below this way:
-	 *
-	 * std::map<std::string, Exp*> b;
-	 * if (this->match("x.n := m[a[y] + c]{-}", b) && b["c"]->isIntConst()) {
-	 *		Type *ty = b["y"]->getType();
-	 *		if (ty && (ty->isSize() || ty->isCompound())) {
-	 *		   ...
-	 *		}
-	 * }
-	 */
 
 	/* Pattern:
 	 *    x.n := m[&y + c]{-}
@@ -3756,14 +3745,11 @@ void Assign::processTypes()
 		lhs->getType()->getSize() < rhs->getType()->getSize()) {
 		rhs = new RefExp(Location::memOf(new Binary(opPlus, new Unary(opAddrOf, rhs), new Const(0))), NULL);
 	}
-	if (lhs->isMemberOf() && rhs->isSubscript() &&
-			rhs->getSubExp1()->isMemOf() && 
-			rhs->getSubExp1()->getSubExp1()->getOper() == opPlus &&
-			rhs->getSubExp1()->getSubExp1()->getSubExp1()->isAddrOf() &&
-			rhs->getSubExp1()->getSubExp1()->getSubExp2()->isIntConst()) {
-		char *lnam = ((Const*)lhs->getSubExp2())->getStr();
-		int c = ((Const*)rhs->getSubExp1()->getSubExp1()->getSubExp2())->getInt();
-		Exp *y = rhs->getSubExp1()->getSubExp1()->getSubExp1()->getSubExp1();
+	std::map<std::string, Exp*> b;
+	if (match("x.n := m[a[y] + c]{-}", b) && b["c"]->isIntConst()) {
+		char *lnam = ((Const*)b["n"])->getStr();
+		int c = ((Const*)b["c"])->getInt();
+		Exp *y = b["y"];
 		Type *lty = lhs->getType();
 		Type *ty = y->getType();
 		if (lty && ty && (ty->resolvesToSize() || ty->resolvesToCompound())) {
@@ -3795,7 +3781,6 @@ void Assign::processTypes()
 					proc->getProg()->setGlobalType(gnam, ty);
 				}
 			}
-
 		}
 	}
 }
