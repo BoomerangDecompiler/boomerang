@@ -1373,6 +1373,177 @@ Exp* TypeVal::match(Exp *pattern) {
 	return Exp::match(pattern);
 }
 
+#define ISVARIABLE(x) (strspn((x), "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789") == strlen((x)))
+//#define DEBUG_MATCH
+
+/*==============================================================================
+ * FUNCTION:		Exp::match
+ * OVERVIEW:		Matches this expression to the given patten
+ * PARAMETERS:		pattern to match, map of bindings
+ * RETURNS:			true if match, false otherwise
+ *============================================================================*/
+bool Exp::match(const char *pattern, std::map<std::string, Exp*> &bindings)
+{
+	// most obvious
+	std::ostringstream ostr;
+	this->print(ostr);
+	if (ostr.str() == pattern)
+		return true;
+
+	// alright, is pattern an acceptable variable?
+	if (ISVARIABLE(pattern)) {
+		bindings[pattern] = this;
+		return true;
+	}
+
+	// no, fail
+	return false;
+}
+bool Unary::match(const char *pattern, std::map<std::string, Exp*> &bindings)
+{
+	if (Exp::match(pattern, bindings))
+		return true;
+#ifdef DEBUG_MATCH
+	LOG << "unary::match " << this << " to " << pattern << ".\n";
+#endif
+	if (op == opAddrOf && pattern[0] == 'a' && pattern[1] == '[' &&
+			pattern[strlen(pattern)-1] == ']') {
+		char *sub1 = strdup(pattern+2);
+		sub1[strlen(sub1)-1] = 0;
+		return subExp1->match(sub1, bindings);
+	}
+	return false;
+}
+bool Binary::match(const char *pattern, std::map<std::string, Exp*> &bindings)
+{
+	if (Exp::match(pattern, bindings))
+		return true;
+#ifdef DEBUG_MATCH
+	LOG << "binary::match " << this << " to " << pattern << ".\n";
+#endif
+	if (op == opMemberAccess && strchr(pattern, '.')) {
+		char *sub1 = strdup(pattern);
+		char *sub2 = strchr(sub1, '.');
+		*sub2++ = 0;
+		if (subExp1->match(sub1, bindings)) {
+			assert(subExp2->isStrConst());
+			if (!strcmp(sub2, ((Const*)subExp2)->getStr()))
+				return true;
+			if (ISVARIABLE(sub2)) {
+				bindings[sub2] = subExp2;
+				return true;
+			}
+		}
+	}
+	if (op == opArrayIndex) {
+		if (pattern[strlen(pattern)-1] != ']')
+			return false;
+		char *sub1 = strdup(pattern);
+		char *sub2 = strrchr(sub1, '[');
+		*sub2++ = 0;
+		sub2[strlen(sub2)-1] = 0;
+		if (subExp1->match(sub1, bindings) && subExp2->match(sub2, bindings))
+			return true;
+	}
+	if (op == opPlus && strchr(pattern, '+')) {
+		char *sub1 = strdup(pattern);
+		char *sub2 = strchr(sub1, '+');
+		*sub2++ = 0;
+		while (*sub2 == ' ')
+			sub2++;
+		while (sub1[strlen(sub1)-1] == ' ')
+			sub1[strlen(sub1)-1] = 0;
+		if (subExp1->match(sub1, bindings) && subExp2->match(sub2, bindings))
+			return true;
+	}
+	if (op == opMinus && strchr(pattern, '-')) {
+		char *sub1 = strdup(pattern);
+		char *sub2 = strchr(sub1, '-');
+		*sub2++ = 0;
+		while (*sub2 == ' ')
+			sub2++;
+		while (sub1[strlen(sub1)-1] == ' ')
+			sub1[strlen(sub1)-1] = 0;
+		if (subExp1->match(sub1, bindings) && subExp2->match(sub2, bindings))
+			return true;
+	}
+	return false;
+}
+bool Ternary::match(const char *pattern, std::map<std::string, Exp*> &bindings)
+{
+	if (Exp::match(pattern, bindings))
+		return true;
+#ifdef DEBUG_MATCH
+	LOG << "ternary::match " << this << " to " << pattern << ".\n";
+#endif
+	return false;
+}
+bool RefExp::match(const char *pattern, std::map<std::string, Exp*> &bindings)
+{
+	if (Exp::match(pattern, bindings))
+		return true;
+#ifdef DEBUG_MATCH
+	LOG << "refexp::match " << this << " to " << pattern << ".\n";
+#endif
+	const char *end = pattern + strlen(pattern) - 1;
+	if (end > pattern && *end == '}') {
+		end--;
+		if (*end == '-' && def == NULL) {
+			char *sub = strdup(pattern);
+			*(sub + (end - 1 - pattern)) = 0;
+			return subExp1->match(sub, bindings);
+		}
+		end = strrchr(end, '{');
+		if (end) {
+			if (atoi(end + 1) == def->getNumber()) {
+				char *sub = strdup(pattern);
+				*(sub + (end - pattern)) = 0;
+				return subExp1->match(sub, bindings);
+			}
+		}
+	}
+	return false;
+}
+bool Const::match(const char *pattern, std::map<std::string, Exp*> &bindings)
+{
+	if (Exp::match(pattern, bindings))
+		return true;
+#ifdef DEBUG_MATCH
+	LOG << "const::match " << this << " to " << pattern << ".\n";
+#endif
+	return false;
+}
+bool Terminal::match(const char *pattern, std::map<std::string, Exp*> &bindings)
+{
+	if (Exp::match(pattern, bindings))
+		return true;
+#ifdef DEBUG_MATCH
+	LOG << "terminal::match " << this << " to " << pattern << ".\n";
+#endif
+	return false;
+}
+bool Location::match(const char *pattern, std::map<std::string, Exp*> &bindings)
+{
+	if (Exp::match(pattern, bindings))
+		return true;
+#ifdef DEBUG_MATCH
+	LOG << "location::match " << this << " to " << pattern << ".\n";
+#endif
+	if (op == opMemOf || op == opRegOf) {
+		char ch = 'm';
+		if (op == opRegOf)
+			ch = 'r';
+		if (pattern[0] != ch || pattern[1] != '[')
+			return false;
+		if (pattern[strlen(pattern)-1] != ']')
+			return false;
+		char *sub = strdup(pattern + 2);
+		*(sub + strlen(sub) - 1) = 0;
+		return subExp1->match(sub, bindings);
+	}
+	return false;
+}
+
 /*==============================================================================
  * FUNCTION:		Exp::doSearch
  * OVERVIEW:		Search for the given subexpression

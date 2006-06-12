@@ -1569,6 +1569,9 @@ void UserProc::remUnusedStmtEtc() {
 }
 
 void UserProc::remUnusedStmtEtc(RefCounter& refCounts) {
+	
+	Boomerang::get()->alert_decompile_debug_point(this, "before remUnusedStmtEtc");
+
 	StatementList stmts;
 	getStatements(stmts);
 	bool change;
@@ -1643,6 +1646,8 @@ void UserProc::remUnusedStmtEtc(RefCounter& refCounts) {
 	removeCallLiveness();		// Kill all existing livenesses
 	doRenameBlockVars(-2);		// Recalculate new livenesses
 	setStatus(PROC_FINAL);		// Now fully decompiled (apart from one final pass, and transforming out of SSA form)
+
+	Boomerang::get()->alert_decompile_debug_point(this, "after remUnusedStmtEtc");
 }
 
 void UserProc::recursionGroupAnalysis(ProcList* path, int indent) {
@@ -2625,6 +2630,8 @@ void UserProc::mapExpressionsToParameters() {
 	StatementList stmts;
 	getStatements(stmts);
 
+	Boomerang::get()->alert_decompile_debug_point(this, "before mapping expressions to params");
+
 	if (VERBOSE)
 		LOG << "mapping expressions to parameters\n";
 
@@ -2683,24 +2690,48 @@ void UserProc::mapExpressionsToParameters() {
 			}
 		}
 	}
+
+	Boomerang::get()->alert_decompile_debug_point(this, "after mapping expressions to params");
 }
 
 // Return an expression that is equivilent to e in terms of symbols. Creates new symbols as needed.
 Exp *UserProc::getSymbolExp(Exp *le, Type *ty, bool lastPass) {
-
 	Exp *e = NULL;
+
+	// check for references to the middle of a local
+	if (le->isMemOf() && le->getSubExp1()->getOper() == opMinus && le->getSubExp1()->getSubExp1()->isSubscript() && le->getSubExp1()->getSubExp1()->getSubExp1()->isRegN(signature->getStackRegister()) && le->getSubExp1()->getSubExp2()->isIntConst())
+		for (SymbolMapType::iterator it = symbolMap.begin(); it != symbolMap.end(); it++)
+			if ((*it).second->isLocal()) {
+				char *nam = ((Const*)(*it).second->getSubExp1())->getStr();
+				if (locals.find(nam) != locals.end()) {
+					Type *lty = locals[nam];
+					Exp *loc = (*it).first;
+					if (loc->isMemOf() && loc->getSubExp1()->getOper() == opMinus && loc->getSubExp1()->getSubExp1()->isSubscript() && loc->getSubExp1()->getSubExp1()->getSubExp1()->isRegN(signature->getStackRegister()) && loc->getSubExp1()->getSubExp2()->isIntConst()) {
+						int n = -((Const*)loc->getSubExp1()->getSubExp2())->getInt();
+						int m = -((Const*)le->getSubExp1()->getSubExp2())->getInt();
+						if (m > n && m < n + (lty->getSize() / 8)) {
+							e = Location::memOf(new Binary(opPlus, new Unary(opAddrOf, (*it).second->clone()), new Const(m - n)));
+							if (VERBOSE)
+								LOG << "seems " << le << " is in the middle of " << loc << " returning " << e << "\n";
+							return e;
+						}	
+					}
+				}
+			}
+	
 	if (symbolMap.find(le) == symbolMap.end()) {
-		if (ty == NULL && lastPass)
-			ty = new IntegerType();
-		else
-			ty = new VoidType();			// HACK MVE
+		if (ty == NULL) {
+			if (lastPass)
+				ty = new IntegerType();
+			else
+				ty = new VoidType();			// HACK MVE
+		}
 
 		if (ty) {
 			// the default of just assigning an int type is bad..  if the locals is not an int then assigning it this
 			// type early results in aliases to this local not being recognised 
 			e = newLocal(ty->clone());
 			symbolMap[le->clone()] = e;
-			//e->clone();				// ? Supposed to be e = e->clone()?
 		}
 	} else {
 		e = symbolMap[le]->clone();
@@ -2732,6 +2763,8 @@ Exp *UserProc::getSymbolExp(Exp *le, Type *ty, bool lastPass) {
 void UserProc::mapExpressionsToLocals(bool lastPass) {
 	StatementList stmts;
 	getStatements(stmts);
+
+	Boomerang::get()->alert_decompile_debug_point(this, "before mapping expressions to locals");
 
 	if (VERBOSE) {
 		LOG << "mapping expressions to locals for " << getName();
@@ -2844,6 +2877,7 @@ void UserProc::mapExpressionsToLocals(bool lastPass) {
 	if (signature->isLocalOffsetPositive() && signature->isLocalOffsetNegative())
 		searchRegularLocals(opWild, lastPass, sp, stmts);
 
+	Boomerang::get()->alert_decompile_debug_point(this, "after mapping expressions to locals");
 }
 
 void UserProc::searchRegularLocals(OPER minusOrPlus, bool lastPass, int sp, StatementList& stmts) {

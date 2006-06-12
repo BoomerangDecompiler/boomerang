@@ -560,6 +560,8 @@ virtual void		genConstraints(LocationSet& cons);
 		// Replace registers with locals
 virtual	void		regReplace(UserProc* proc);
 
+		bool match(const char *pattern, std::map<std::string, Exp*> &bindings);
+
 	friend class XMLProgParser;
 };	// class Assign
 

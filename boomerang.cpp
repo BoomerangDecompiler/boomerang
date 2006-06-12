@@ -1198,8 +1198,13 @@ void Boomerang::alert_decompile_debug_point(UserProc *p, const char *description
 	if (stopAtDebugPoints) {
 		std::cout << "decompiling " << p->getName() << ": " << description << "\n";
 		static char *stopAt = NULL;
+		static std::set<Statement*> watches;
 		if (stopAt == NULL || !strcmp(p->getName(), stopAt)) {
 			// This is a mini command line debugger.  Feel free to expand it.
+			for (std::set<Statement*>::iterator it = watches.begin(); it != watches.end(); it++) {
+				(*it)->print(std::cout);
+				std::cout << "\n";
+			}
 			std::cout << " <press enter to continue> \n";
 			char line[1024];
 			while(1) {
@@ -1214,6 +1219,16 @@ void Boomerang::alert_decompile_debug_point(UserProc *p, const char *description
 					if (strchr(stopAt, ' '))
 						*strchr(stopAt, ' ') = 0;
 					break;
+				} else if (!strncmp(line, "watch ", 6)) {
+					int n = atoi(line + 6);
+					StatementList stmts;
+					p->getStatements(stmts);
+					StatementList::iterator it;
+					for (it = stmts.begin(); it != stmts.end(); it++) 
+						if ((*it)->getNumber() == n) {
+							watches.insert(*it);
+							std::cout << "watching " << *it << "\n";
+						}
 				} else
 					break;
 			}

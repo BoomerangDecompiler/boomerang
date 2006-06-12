@@ -231,6 +231,9 @@ virtual bool		isTerminal() { return false; }
 		// NULL
 virtual Exp			*match(Exp *pattern);
 
+		// match a string pattern
+virtual bool 		match(const char *pattern, std::map<std::string, Exp*> &bindings);
+
 			//	//	//	//	//	//	//
 			//	Search and Replace	//
 			//	//	//	//	//	//	//
@@ -439,6 +442,8 @@ virtual Exp*		genConstraints(Exp* restrictTo);
 virtual bool		accept(ExpVisitor* v);
 virtual Exp*		accept(ExpModifier* v);
 
+virtual bool 		match(const char *pattern, std::map<std::string, Exp*> &bindings);
+
 		int			getConscript() {return conscript;}
 		void		setConscript(int cs) {conscript = cs;}
 
@@ -480,6 +485,8 @@ virtual Exp*		accept(ExpModifier* v);
 
 virtual	Type*		ascendType();
 virtual void		descendType(Type* parentType, bool& ch, Statement* s);
+
+virtual bool 		match(const char *pattern, std::map<std::string, Exp*> &bindings);
 
 protected:
 		friend class XMLProgParser;
@@ -529,6 +536,7 @@ virtual void		printx(int ind);
 virtual int			getMemDepth();
 
 virtual Exp*		match(Exp *pattern); 
+virtual bool 		match(const char *pattern, std::map<std::string, Exp*> &bindings);
 		
 		// Search children
 		void 			doSearchChildren(Exp* search, std::list<Exp**>& li, bool once);
@@ -605,6 +613,7 @@ virtual void		 printx(int ind);
 virtual int			getMemDepth();
 
 virtual Exp*		match(Exp *pattern); 
+virtual bool 		match(const char *pattern, std::map<std::string, Exp*> &bindings);
 
 		// Search children
 		void		doSearchChildren(Exp* search, std::list<Exp**>& li, bool once);
@@ -698,6 +707,8 @@ virtual Type* getType();
 		// Visitation
 virtual bool	accept(ExpVisitor* v);
 virtual Exp*	accept(ExpModifier* v);
+
+virtual bool 		match(const char *pattern, std::map<std::string, Exp*> &bindings);
 
 virtual	Type*	ascendType();
 virtual void	descendType(Type* parentType, bool& ch, Statement* s);
@@ -806,6 +817,8 @@ virtual Exp*		fromSSA(igraph& ig);
 virtual Exp*		polySimplify(bool& bMod);
 virtual Type*		getType();
 virtual Exp			*match(Exp *pattern);
+virtual bool 		match(const char *pattern, std::map<std::string, Exp*> &bindings);
+
 		// Before type analysis, implicit definitions are NULL.  During and after TA, they point to an implicit
 		// assignment statement.  Don't implement here, since it would require #including of statement.h
 		bool		isImplicitDef();
@@ -890,6 +903,7 @@ virtual bool		isMemDepth(int d);
 		// Visitation
 virtual bool		accept(ExpVisitor* v);
 virtual Exp*		accept(ExpModifier* v);
+virtual bool 		match(const char *pattern, std::map<std::string, Exp*> &bindings);
 
 protected:
 		friend class XMLProgParser;
