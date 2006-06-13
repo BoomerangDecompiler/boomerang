@@ -16,7 +16,7 @@
 #undef NO_ADDRESS
 #define NO_ADDRESS ((ADDRESS)-1)
 
-Qt::HANDLE threadToCollect = NULL;
+Qt::HANDLE threadToCollect = 0;
 
 void* operator new(size_t n) {
 	Qt::HANDLE curThreadId = QThread::currentThreadId();
@@ -62,7 +62,7 @@ void Decompiler::changeInputFile(const QString &f)
 
 void Decompiler::changeOutputPath(const QString &path)
 {
-	Boomerang::get()->setOutputDirectory(path.toAscii());
+	Boomerang::get()->setOutputDirectory((const char *)path.toAscii());
 }
 
 void Decompiler::load()
@@ -229,7 +229,7 @@ void Decompiler::alert_update_signature(Proc *p)
 
 bool Decompiler::getRtlForProc(const QString &name, QString &rtl)
 {
-	Proc *p = prog->findProc(name.toAscii());
+	Proc *p = prog->findProc((const char *)name.toAscii());
 	if (p->isLib())
 		return false;
 	UserProc *up = (UserProc*)p;
@@ -257,7 +257,7 @@ void Decompiler::stopWaiting()
 
 const char *Decompiler::getSigFile(const QString &name)
 {
-	Proc *p = prog->findProc(name.toAscii());
+	Proc *p = prog->findProc((const char *)name.toAscii());
 	if (p == NULL || !p->isLib() || p->getSignature() == NULL)
 		return NULL;
 	return p->getSignature()->getSigFile();
@@ -265,7 +265,7 @@ const char *Decompiler::getSigFile(const QString &name)
 
 const char *Decompiler::getClusterFile(const QString &name)
 {
-	Cluster *c = prog->findCluster(name.toAscii());
+	Cluster *c = prog->findCluster((const char *)name.toAscii());
 	if (c == NULL)
 		return NULL;
 	return c->getOutPath("c");
@@ -278,14 +278,14 @@ void Decompiler::rereadLibSignatures()
 
 void Decompiler::renameProc(const QString &oldName, const QString &newName)
 {
-	Proc *p = prog->findProc(oldName.toAscii());
+	Proc *p = prog->findProc((const char *)oldName.toAscii());
 	if (p)
-		p->setName(newName.toAscii());
+		p->setName((const char *)newName.toAscii());
 }
 
 void Decompiler::getCompoundMembers(const QString &name, QTableWidget *tbl)
 {
-	Type *ty = NamedType::getNamedType(name.toAscii());
+	Type *ty = NamedType::getNamedType((const char *)name.toAscii());
 	tbl->setRowCount(0);
 	if (ty == NULL || !ty->resolvesToCompound())
 		return;

@@ -41,3 +41,4 @@ void RTLEditor::mousePressEvent(QMouseEvent *event)
 	}
 	QTextEdit::mousePressEvent(event);
 }
+
