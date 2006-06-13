@@ -104,7 +104,7 @@
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="TRUE"
 				AdditionalDependencies="delayimp.lib qtmain.lib QtGui4.lib QtCore4.lib  gc_cpp2.lib libexpat.lib dbghelp.lib"
-				OutputFile="debug\qtgui2.exe"
+				OutputFile="debug\boomerang-gui.exe"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="C:\Qt\4.1.2-msvc7.1\lib;.."
 				GenerateDebugInformation="TRUE"
@@ -233,7 +233,8 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="MOC rtleditor.h"
-						CommandLine="C:\Qt\4.1.2-msvc7.1\bin\moc.exe -D_WINDOWS -DUNICODE -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -DWIN32  -I &quot;C:\Qt\4.1.2-msvc7.1\include\QtCore&quot; -I &quot;C:\Qt\4.1.2-msvc7.1\include\QtGui&quot; -I &quot;C:\Qt\4.1.2-msvc7.1\include&quot; -I &quot;.&quot; -I &quot;C:\Qt\4.1.2-msvc7.1\include\ActiveQt&quot; -I &quot;debug&quot; -I &quot;.&quot; -I&quot;C:\Qt\4.1.2-msvc7.1\mkspecs\win32-msvc.net&quot; -DWIN32 rtleditor.h -o debug\moc_rtleditor.cpp"
+						CommandLine="C:\Qt\4.1.2-msvc7.1\bin\moc.exe -D_WINDOWS -DUNICODE -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -DWIN32  -I &quot;C:\Qt\4.1.2-msvc7.1\include\QtCore&quot; -I &quot;C:\Qt\4.1.2-msvc7.1\include\QtGui&quot; -I &quot;C:\Qt\4.1.2-msvc7.1\include&quot; -I &quot;.&quot; -I &quot;C:\Qt\4.1.2-msvc7.1\include\ActiveQt&quot; -I &quot;debug&quot; -I &quot;.&quot; -I&quot;C:\Qt\4.1.2-msvc7.1\mkspecs\win32-msvc.net&quot; -DWIN32 rtleditor.h -o debug\moc_rtleditor.cpp
+"
 						AdditionalDependencies="C:\Qt\4.1.2-msvc7.1\bin\moc.exe"
 						Outputs="debug\moc_rtleditor.cpp"/>
 				</FileConfiguration>

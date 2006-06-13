@@ -29,8 +29,10 @@ public slots:
 	void showDecodePage();
 	void showDecompilePage();
 	void showGenerateCodePage();
-	void browseForInputFile();
-	void browseForOutputPath();
+	void on_inputFileBrowseButton_clicked();
+	void on_outputPathBrowseButton_clicked();
+	void on_inputFileComboBox_editTextChanged(QString &text);
+	void on_outputPathComboBox_editTextChanged(QString &text);
 	void showConsideringProc(const QString &parent, const QString &name);
 	void showDecompilingProc(const QString &name);
 	void showNewUserProc(const QString &name, unsigned int addr);
@@ -64,14 +66,22 @@ public slots:
 	void on_actionFind_Next_activated();
 	void on_actionGo_To_activated();
 	void on_actionSelect_All_activated();
+
+	void on_actionLoad_activated();
+	void on_actionDecode_activated();
+	void on_actionDecompile_activated();
+	void on_actionGenerate_Code_activated();
 	void on_actionStructs_activated();
 	void on_structName_returnPressed();
+
+	void on_actionBoomerang_Website_activated();
 
 	void closeCurrentTab();
 	void currentTabTextChanged();
 
 protected:
 	void showInitPage();
+	void saveSettings();
 
 private:
     Ui::MainWindow ui;

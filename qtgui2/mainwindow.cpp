@@ -39,10 +39,10 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui.toDecodeButton, SIGNAL(clicked()), d, SLOT(decode()));
     connect(ui.toDecompileButton, SIGNAL(clicked()), d, SLOT(decompile()));
     connect(ui.toGenerateCodeButton, SIGNAL(clicked()), d, SLOT(generateCode()));
-	connect(ui.inputFileComboBox, SIGNAL(editTextChanged(const QString &)), d,  SLOT(changeInputFile(const QString &)));
-	connect(ui.outputPathComboBox, SIGNAL(editTextChanged(const QString &)), d,  SLOT(changeOutputPath(const QString &)));
-	connect(ui.inputFileBrowseButton, SIGNAL(clicked()), this, SLOT(browseForInputFile()));
-	connect(ui.outputPathBrowseButton, SIGNAL(clicked()), this, SLOT(browseForOutputPath()));
+	//connect(ui.inputFileComboBox, SIGNAL(editTextChanged(const QString &)), d,  SLOT(changeInputFile(const QString &)));
+	//connect(ui.outputPathComboBox, SIGNAL(editTextChanged(const QString &)), d,  SLOT(changeOutputPath(const QString &)));
+	//connect(ui.inputFileBrowseButton, SIGNAL(clicked()), this, SLOT(browseForInputFile()));
+	//connect(ui.outputPathBrowseButton, SIGNAL(clicked()), this, SLOT(browseForOutputPath()));
 
 	ui.userProcs->horizontalHeader()->disconnect(SIGNAL(sectionClicked(int)));
 	connect(ui.userProcs->horizontalHeader(), SIGNAL(sectionClicked(int)), this, SLOT(on_userProcs_horizontalHeader_sectionClicked(int)));
@@ -64,30 +64,81 @@ MainWindow::MainWindow(QWidget *parent) :
 
 	showInitPage();
 	setWindowTitle("Boomerang");
+
+	QSettings settings("Boomerang", "Boomerang");
+	QStringList inputfiles = settings.value("inputfiles").toStringList();
+	for (int n = 0; n < inputfiles.count(); n++) {
+		ui.inputFileComboBox->addItem(inputfiles.at(n));
+	}
+	QStringList outputpaths = settings.value("outputpaths").toStringList();
+	for (int n = 0; n < outputpaths.count(); n++) {
+		ui.outputPathComboBox->addItem(outputpaths.at(n));
+	}
+	if (!ui.inputFileComboBox->currentText().isEmpty()) {
+		d->changeInputFile(ui.inputFileComboBox->currentText());
+		ui.toLoadButton->setDisabled(false);
+	}
 }
 
-void MainWindow::browseForInputFile()
+void MainWindow::saveSettings()
+{
+	QSettings settings("Boomerang", "Boomerang");			
+	QStringList inputfiles;
+	for (int n = 0; n < ui.inputFileComboBox->count(); n++) {
+		inputfiles.append(ui.inputFileComboBox->itemText(n));
+	}
+	settings.setValue("inputfiles", inputfiles);
+	QStringList outputPaths;
+	for (int n = 0; n < ui.outputPathComboBox->count(); n++) {
+		outputPaths.append(ui.outputPathComboBox->itemText(n));
+	}
+	settings.setValue("outputpaths", outputPaths);
+}
+
+void MainWindow::on_inputFileBrowseButton_clicked()
 {
     QString s = QFileDialog::getOpenFileName(this, tr("Select a file to decompile..."), "test", "Windows Binaries (*.exe *.dll *.scr *.sys);;Other Binaries (*.*)");
     if (!s.isEmpty()) {
-		if (ui.inputFileComboBox->findText(s) == -1)
+		if (ui.inputFileComboBox->findText(s) == -1) {
 			ui.inputFileComboBox->addItem(s);
+			saveSettings();
+		}
 		ui.inputFileComboBox->setEditText(s);
 		if (!ui.outputPathComboBox->currentText().isEmpty())
 			ui.toLoadButton->setDisabled(false);
 	}
 }
 
-void MainWindow::browseForOutputPath()
+void MainWindow::on_outputPathBrowseButton_clicked()
 {
     QString s = QFileDialog::getExistingDirectory(this, tr("Select a location to write output..."), "output");
     if (!s.isEmpty()) {
-		if (ui.outputPathComboBox->findText(s) == -1)
+		if (ui.outputPathComboBox->findText(s) == -1) {
 			ui.outputPathComboBox->addItem(s);
+			saveSettings();
+		}
 		ui.outputPathComboBox->setEditText(s);
 		if (!ui.inputFileComboBox->currentText().isEmpty())
 			ui.toLoadButton->setDisabled(false);
     }
+}
+
+void MainWindow::on_inputFileComboBox_editTextChanged(QString &text)
+{
+	decompilerThread->getDecompiler()->changeInputFile(text);
+	ui.inputFileComboBox->addItem(text);
+	saveSettings();
+	if (!ui.outputPathComboBox->currentText().isEmpty())
+		ui.toLoadButton->setDisabled(false);
+}
+
+void MainWindow::on_outputPathComboBox_editTextChanged(QString &text)
+{
+	decompilerThread->getDecompiler()->changeOutputPath(text);
+	ui.outputPathComboBox->addItem(text);
+	saveSettings();
+	if (!ui.inputFileComboBox->currentText().isEmpty())
+		ui.toLoadButton->setDisabled(false);
 }
 
 void MainWindow::closeCurrentTab()
@@ -179,6 +230,17 @@ void MainWindow::showInitPage()
     ui.toDecompileButton->setDisabled(true);
     ui.toGenerateCodeButton->setDisabled(true);
     ui.stackedWidget->setCurrentIndex(0);
+	ui.entrypoints->setRowCount(0);
+	ui.userProcs->setRowCount(0);
+	ui.libProcs->setRowCount(0);
+	ui.decompileProcsTreeWidget->clear();
+	decompiledCount = 0;
+	ui.clusters->clear();
+	codeGenCount = 0;
+	ui.actionLoad->setDisabled(true);
+	ui.actionDecode->setDisabled(true);
+	ui.actionDecompile->setDisabled(true);
+	ui.actionGenerate_Code->setDisabled(true);
 }
 
 void MainWindow::showLoadPage()
@@ -188,11 +250,9 @@ void MainWindow::showLoadPage()
 	ui.decodeButton->setDisabled(true);
 	ui.decompileButton->setDisabled(true);
 	ui.generateCodeButton->setDisabled(true);
-	ui.toDecodeButton->setDisabled(true);
-	ui.toDecompileButton->setDisabled(true);
-	ui.toGenerateCodeButton->setDisabled(true);
+	ui.toLoadButton->setDisabled(true);
 	ui.stackedWidget->setCurrentIndex(1);
-	ui.entrypoints->setRowCount(0);
+	ui.actionLoad->setDisabled(false);
 }
 
 void MainWindow::showDecodePage()
@@ -202,12 +262,8 @@ void MainWindow::showDecodePage()
     ui.decodeButton->setDisabled(false);
     ui.decompileButton->setDisabled(true);
     ui.generateCodeButton->setDisabled(true);
-    ui.toDecodeButton->setDisabled(true);
-    ui.toDecompileButton->setDisabled(true);
-    ui.toGenerateCodeButton->setDisabled(true);
+	ui.toDecodeButton->setDisabled(true);
     ui.stackedWidget->setCurrentIndex(2);
-	ui.userProcs->setRowCount(0);
-	ui.libProcs->setRowCount(0);
 
 	if (!ui.actionEnable->isChecked()) {
 		ui.userProcs->removeColumn(2);
@@ -215,22 +271,21 @@ void MainWindow::showDecodePage()
 		ui.userProcs->setColumnCount(3);
 		ui.userProcs->setHorizontalHeaderItem(2, new QTableWidgetItem(tr("Debug")));
 	}
+
+	ui.actionDecode->setDisabled(false);
 }
 
 void MainWindow::showDecompilePage()
 {
-	ui.decompileProcsTreeWidget->clear();
-	decompiledCount = 0;
-
 	ui.toLoadButton->setDisabled(true);
     ui.loadButton->setDisabled(true);
     ui.decodeButton->setDisabled(true);
     ui.decompileButton->setDisabled(false);
     ui.generateCodeButton->setDisabled(true);
-    ui.toDecodeButton->setDisabled(true);
-    ui.toDecompileButton->setDisabled(true);
-    ui.toGenerateCodeButton->setDisabled(true);
+	ui.toDecompileButton->setDisabled(true);
     ui.stackedWidget->setCurrentIndex(3);
+
+	ui.actionDecompile->setDisabled(false);
 }
 
 void MainWindow::showGenerateCodePage()
@@ -240,12 +295,9 @@ void MainWindow::showGenerateCodePage()
     ui.decodeButton->setDisabled(true);
     ui.decompileButton->setDisabled(true);
     ui.generateCodeButton->setDisabled(false);
-    ui.toDecodeButton->setDisabled(true);
-    ui.toDecompileButton->setDisabled(true);
-    ui.toGenerateCodeButton->setDisabled(true);
+	ui.toGenerateCodeButton->setDisabled(true);
     ui.stackedWidget->setCurrentIndex(4);
-	ui.clusters->clear();
-	codeGenCount = 0;
+	ui.actionGenerate_Code->setDisabled(false);
 }
 
 void MainWindow::loadComplete()
@@ -663,6 +715,26 @@ void MainWindow::on_actionSelect_All_activated()
 	}
 }
 
+void MainWindow::on_actionLoad_activated()
+{
+	showLoadPage();
+}
+
+void MainWindow::on_actionDecode_activated()
+{
+	showDecodePage();
+}
+
+void MainWindow::on_actionDecompile_activated()
+{
+	showDecompilePage();
+}
+
+void MainWindow::on_actionGenerate_Code_activated()
+{
+	showGenerateCodePage();
+}
+
 void MainWindow::on_actionStructs_activated()
 {
 	for (int i = 0; i < ui.tabWidget->count(); i++)
@@ -675,5 +747,10 @@ void MainWindow::on_actionStructs_activated()
 void MainWindow::on_structName_returnPressed()
 {
 	decompilerThread->getDecompiler()->getCompoundMembers(ui.structName->text(), ui.structMembers);
+}
+
+void MainWindow::on_actionBoomerang_Website_activated()
+{
+
 }
 
