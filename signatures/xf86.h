@@ -398,6 +398,70 @@ typedef struct {
 } DisplayModeRec;
 typedef DisplayModeRec *DisplayModePtr;
 
+typedef int resType;
+
+typedef void AccessDisableFunc(void *arg);
+typedef void AccessEnableFunc(void *arg);
+
+typedef struct {
+    AccessDisableFunc *AccessDisable;
+    AccessEnableFunc *AccessEnable;
+    void *arg;
+} xf86AccessRec;
+typedef xf86AccessRec *xf86AccessPtr;
+
+typedef struct {
+    xf86AccessPtr mem;
+    xf86AccessPtr io;
+    xf86AccessPtr io_mem;
+} xf86SetAccessFuncRec;
+typedef xf86SetAccessFuncRec *xf86SetAccessFuncPtr;
+
+
+typedef struct {
+    xf86AccessPtr fallback;
+    xf86AccessPtr pAccess;
+    resType rt;
+    pointer  busAcc;
+    EntityAccessRec *next;
+} EntityAccessRec;
+typedef EntityAccessRec *EntityAccessPtr;
+
+typedef struct {
+    EntityAccessPtr pMemAccess;
+    EntityAccessPtr pIoAccess;
+} xf86CurrentAccessRec;
+typedef xf86CurrentAccessRec *xf86CurrentAccessPtr;
+
+typedef pointer DevUnion;
+
+typedef struct {
+    ClockRange *next;
+    int                 minClock;
+    int                 maxClock;
+    int                 clockIndex;
+    Bool                interlaceAllowed;
+    Bool                doubleScanAllowed;
+    int                 ClockMulFactor;
+    int                 ClockDivFactor;
+    int                 PrivFlags;
+} ClockRange;
+typedef ClockRange *ClockRangePtr;
+
+typedef struct {
+    ClockRanges *next;
+    int                 minClock;
+    int                 maxClock;
+    int                 clockIndex;
+    Bool                interlaceAllowed;
+    Bool                doubleScanAllowed;
+    int                 ClockMulFactor;
+    int                 ClockDivFactor;
+    int                 PrivFlags;
+    int                 strategy;
+} ClockRanges;
+typedef ClockRanges *ClockRangesPtr;
+
 
 typedef struct {
     int                 driverVersion;

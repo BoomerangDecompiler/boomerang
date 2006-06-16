@@ -587,6 +587,9 @@ void MainWindow::on_userProcs_horizontalHeader_sectionClicked(int logicalIndex)
 {
 	if (logicalIndex == 2) {
 		for (int i = 0; i < ui.userProcs->rowCount(); i++) {
+			if (ui.userProcs->item(i, 2) == NULL) {
+				ui.userProcs->setItem(i, 2, new QTableWidgetItem(""));
+			}
 			Qt::CheckState state = ui.userProcs->item(i, 2)->checkState();
 			ui.userProcs->item(i, 2)->setCheckState(state == Qt::Checked ? Qt::Unchecked : Qt::Checked);
 		}
