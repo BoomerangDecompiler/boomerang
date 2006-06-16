@@ -3710,7 +3710,8 @@ Type *Binary::getType() {
 						RefExp *r = (RefExp*)subExp1->getSubExp1();
 						LOG << r->getDef() << "\n";
 					}
-					assert(false);
+					return new VoidType();
+					//assert(false);
 				}
 				assert(subExp2->getOper() == opStrConst);
 				char* str = ((Const*)subExp2)->getStr();

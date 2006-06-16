@@ -2785,11 +2785,13 @@ void UserProc::mapExpressionsToLocals(bool lastPass) {
 	for (it = stmts.begin(); it != stmts.end(); it++) {
 		if ((*it)->isCall()) {
 			CallStatement *call = (CallStatement*)*it;
+			LOG << "looking for locals in " << call << "\n";
 			for (int i = 0; i < call->getNumArguments(); i++) {
 				Type *ty = call->getArgumentType(i);
 				Exp *e = call->getArgumentExp(i);
 				// If a pointer type and e is of the form m[sp{0} - K]:
 				if (ty && ty->resolvesToPointer() && signature->isAddrOfStackLocal(prog, e)) {
+					LOG << "argument " << e << " is an addr of stack local and the type resolves to a pointer\n";
 					Exp *olde = e->clone();
 					Type *pty = ty->asPointer()->getPointsTo();
 					if (pty->resolvesToArray() && pty->asArray()->isUnbounded()) {
@@ -2807,7 +2809,7 @@ void UserProc::mapExpressionsToLocals(bool lastPass) {
 					e = getSymbolExp(Location::memOf(e->clone(), this), pty);
 					if (e) {
 						Exp *ne = new Unary(opAddrOf, e);
-						if (VERBOSE)
+						//if (VERBOSE)
 							LOG << "replacing argument " << olde << " with " << ne << " in " << call << "\n";
 						call->setArgumentExp(i, ne);
 					}
@@ -2815,6 +2817,8 @@ void UserProc::mapExpressionsToLocals(bool lastPass) {
 			}
 		}
 	}
+
+	Boomerang::get()->alert_decompile_debug_point(this, "after processing locals in calls");
 
 	// normalise sp usage (turn WILD + sp{0} into sp{0} + WILD)
 	Exp *nn = new Binary(opPlus, new Terminal(opWild), new RefExp(Location::regOf(sp), NULL));
