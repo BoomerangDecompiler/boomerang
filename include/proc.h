@@ -543,6 +543,7 @@ virtual				~UserProc();
 		void		removeRedundantPhis();
 		void		findPreserveds();			///< Was trimReturns()
 		void		findSpPreservation();		///< Preservations only for the stack pointer
+		void		removeSpAssignsIfPossible();
 		void		updateReturnTypes();
 		void		fixCallAndPhiRefs(int d);	///< Perform call and phi statement bypassing at depth d
 		void		fixCallAndPhiRefs();		///< Perform call and phi statement bypassing at all depths

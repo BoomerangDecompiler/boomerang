@@ -1212,7 +1212,11 @@ void Boomerang::alert_decompile_debug_point(UserProc *p, const char *description
 				fgets(line, 1024, stdin);
 				if (!strncmp(line, "print", 5))
 					p->print(std::cout);
-				else if (!strncmp(line, "run ", 4)) {
+				else if (!strncmp(line, "fprint", 6)) {
+					std::ofstream of("out.proc");
+					p->print(of);
+					of.close();
+				} else if (!strncmp(line, "run ", 4)) {
 					stopAt = strdup(line + 4);
 					if (strchr(stopAt, '\n'))
 						*strchr(stopAt, '\n') = 0;

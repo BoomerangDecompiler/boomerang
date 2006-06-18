@@ -2650,6 +2650,21 @@ void CallStatement::processTypes()
 		Type *t = ((Assign*)*aa)->getType();
 		Exp *e = ((Assign*)*aa)->getRight();
 
+		std::map<std::string, Exp*> b;
+		if (t->resolvesToPointer() && e->isSubscript() &&
+				e->getSubExp1()->match("m[r28{-} - c]", b)) {
+			Statement *push = ((RefExp*)e)->getDef();
+			if (push && push->isAssign()) {
+				Assign *apush = (Assign*)push;
+				Exp *rhs = apush->getRight();
+				if (rhs->match("r28{-} - c", b)) {
+					apush->setRight(new Unary(opAddrOf, Location::memOf(rhs)));
+					apush->setType(t->clone());
+					continue;
+				}
+			}		
+		}
+
 		if (e->isAddrOf() && t->resolvesToPointer()) {
 			e = e->getSubExp1();
 			t = t->asPointer()->getPointsTo();
@@ -3656,13 +3671,18 @@ void Assignment::processTypes()
 	if (!lhs->isRegOf()) {
 		Type *ty = lhs->getType();
 		if (ty && ty->resolvesToCompound()) { 
-			CompoundType *c = ty->asCompound();
-			const char *nam = c->getNameAtOffset(0);
-			if (nam == NULL) nam = "??";
-			Exp *old = lhs;
-			lhs = new Binary(opMemberAccess, lhs, new Const((char*)nam));
-			if (VERBOSE)
-				LOG << "replacing " << old << " with " << lhs << "\n";
+			if (isPhi()) {
+				LOG << "eep, seems we've made a phi on a member access, not wanted. " << this << "\n";
+				proc->removeStatement(this);
+			} else {
+				CompoundType *c = ty->asCompound();
+				const char *nam = c->getNameAtOffset(0);
+				if (nam == NULL) nam = "??";
+				Exp *old = lhs;
+				lhs = new Binary(opMemberAccess, lhs, new Const((char*)nam));
+				if (VERBOSE)
+					LOG << "replacing " << old << " with " << lhs << "\n";
+			}
 		}
 	}
 }

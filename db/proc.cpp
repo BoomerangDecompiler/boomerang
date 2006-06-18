@@ -1348,6 +1348,8 @@ ProcSet* UserProc::middleDecompile(ProcList* path, int indent) {
 		Boomerang::get()->alert_decompile_afterPropagate(this, pass);
 		Boomerang::get()->alert_decompile_debug_point(this, "after propagating statements");
 
+		removeSpAssignsIfPossible();
+
 		processTypes();
 
 		if (!change)
@@ -1862,6 +1864,48 @@ void UserProc::findPreserveds() {
 	}
 }
 
+void UserProc::removeSpAssignsIfPossible()
+{
+	// if there are no uses of sp other than sp{-} in the whole procedure,
+	// we can safely remove all assignments to sp, this will make the output
+	// more readable for human eyes.
+	
+	Exp *sp = Location::regOf(signature->getStackRegister(prog));
+	bool foundone = false;
+	
+	StatementList stmts;
+	getStatements(stmts);
+	for (StatementList::iterator it = stmts.begin(); it != stmts.end(); it++) {
+		Statement *stmt = *it;
+		if (stmt->isAssign() && *((Assign*)stmt)->getLeft() == *sp)
+			foundone = true;
+		LocationSet refs;
+		stmt->addUsedLocs(refs);
+		LocationSet::iterator rr;
+		for (rr = refs.begin(); rr != refs.end(); rr++)
+			if ((*rr)->isSubscript() && *(*rr)->getSubExp1() == *sp) {
+				Statement *def = ((RefExp*)(*rr))->getDef();
+				if (def && def->getProc() == this)
+					return;
+			}
+	}
+
+	if (!foundone)
+		return;
+	
+	Boomerang::get()->alert_decompile_debug_point(this, "before removing stack pointer assigns.");
+
+	for (StatementList::iterator it = stmts.begin(); it != stmts.end(); it++)
+		if ((*it)->isAssign()) {
+			Assign *a = (Assign*)*it;
+			if (*a->getLeft() == *sp) {
+				removeStatement(a);
+			}
+		}
+	
+	Boomerang::get()->alert_decompile_debug_point(this, "after removing stack pointer assigns.");
+}
+
 void UserProc::updateReturnTypes()
 {
 	if (VERBOSE)
@@ -2128,6 +2172,7 @@ static RefExp* regOfWild = new RefExp(
 
 // These are called final parameters, because they are determined from implicit references, not from the use collector
 // at the start of the proc, which include some caused by recursive calls
+#define DEBUG_PARAMS 0
 void UserProc::findFinalParameters() {
 
 	parameters.clear();
@@ -2151,7 +2196,7 @@ void UserProc::findFinalParameters() {
 		}
 		return;
 	}
-	if (VERBOSE)
+	if (VERBOSE || DEBUG_PARAMS)
 		LOG << "finding final parameters for " << getName() << "\n";
 
 	int sp = signature->getStackRegister();
@@ -2181,31 +2226,37 @@ void UserProc::findFinalParameters() {
 		}
 		while (results.size()) {
 			bool foundParam;
-			Exp *e = results.front()->clone()->removeSubscripts(foundParam);
+			Exp *e = results.front();
 			results.erase(results.begin());		// Remove current (=first) result from list
+			// add any subexps that are refs to mem
+			if (e->isSubscript() && e->getSubExp1()->isMemOf()) 
+				e->getSubExp1()->getSubExp1()->searchAll(memOfWild, results);
+			e = e->clone()->removeSubscripts(foundParam);
 			if (foundParam && signature->findParam(e) == -1) {
+				if (VERBOSE || DEBUG_PARAMS)
+					LOG << "potential param " << e << "\n";
 				if (signature->isStackLocal(prog, e) || e->getOper() == opLocal) {
-					if (VERBOSE)
+					if (VERBOSE || DEBUG_PARAMS)
 						LOG << "ignoring local " << e << "\n";
 					continue;
 				}
 				if (e->isGlobal()) {
-					if (VERBOSE)
+					if (VERBOSE || DEBUG_PARAMS)
 						LOG << "ignoring global " << e << "\n";
 					continue;
 				}
 				if (e->getMemDepth() > 1) {
-					if (VERBOSE)
+					if (VERBOSE || DEBUG_PARAMS)
 						LOG << "ignoring complex " << e << "\n";
 					continue;
 				}
 				if (e->isMemOf() && e->getSubExp1()->isGlobal()) {
-					if (VERBOSE)
+					if (VERBOSE || DEBUG_PARAMS)
 						LOG << "ignoring m[global] " << e << "\n";
 					continue;
 				}
 				if (e->isMemOf() && e->getSubExp1()->getOper() == opParam) {
-					if (VERBOSE)
+					if (VERBOSE || DEBUG_PARAMS)
 						LOG << "ignoring m[param] " << e << "\n";
 					continue;
 				}
@@ -2213,21 +2264,21 @@ void UserProc::findFinalParameters() {
 						e->getSubExp1()->getOper() == opPlus &&
 						e->getSubExp1()->getSubExp1()->isGlobal() &&
 						e->getSubExp1()->getSubExp2()->isIntConst()) {
-					if (VERBOSE)
+					if (VERBOSE || DEBUG_PARAMS)
 						LOG << "ignoring m[global + int] " << e << "\n";
 					continue;
 				}
 				if (e->isRegN(sp)) {
-					if (VERBOSE)
+					if (VERBOSE || DEBUG_PARAMS)
 						LOG << "ignoring stack pointer register\n";
 					continue;
 				}
 				if (e->isMemOf() && e->getSubExp1()->isConst()) {
-					if (VERBOSE)
+					if (VERBOSE || DEBUG_PARAMS)
 						LOG << "ignoring m[const]\n";
 					continue;
 				}
-				if (VERBOSE)
+				if (VERBOSE || DEBUG_PARAMS)
 					LOG << "found new parameter " << e << "\n";
 				// Add this parameter to the signature (for now; creates parameter names)
 				addParameter(e);
@@ -2740,7 +2791,7 @@ Exp *UserProc::getSymbolExp(Exp *le, Type *ty, bool lastPass) {
 			Type *nty = ty;
 			Type *ty = locals[name];
 			assert(ty);
-			if (nty && !(*ty == *nty) && nty->getSize() >= ty->getSize()) {
+			if (nty && !(*ty == *nty) && nty->getSize() > ty->getSize()) {
 				// FIXME: should this be a type meeting?
 				if (DEBUG_TA)
 					LOG << "getSymbolExp: updating type of " << name.c_str() << " to " << nty->getCtype() << "\n";
@@ -2785,7 +2836,6 @@ void UserProc::mapExpressionsToLocals(bool lastPass) {
 	for (it = stmts.begin(); it != stmts.end(); it++) {
 		if ((*it)->isCall()) {
 			CallStatement *call = (CallStatement*)*it;
-			LOG << "looking for locals in " << call << "\n";
 			for (int i = 0; i < call->getNumArguments(); i++) {
 				Type *ty = call->getArgumentType(i);
 				Exp *e = call->getArgumentExp(i);
@@ -2794,6 +2844,9 @@ void UserProc::mapExpressionsToLocals(bool lastPass) {
 					LOG << "argument " << e << " is an addr of stack local and the type resolves to a pointer\n";
 					Exp *olde = e->clone();
 					Type *pty = ty->asPointer()->getPointsTo();
+					if (e->isAddrOf() && e->getSubExp1()->isSubscript() && 
+							e->getSubExp1()->getSubExp1()->isMemOf())
+						e = e->getSubExp1()->getSubExp1()->getSubExp1();
 					if (pty->resolvesToArray() && pty->asArray()->isUnbounded()) {
 						ArrayType *a = (ArrayType*)pty->asArray()->clone();
 						pty = a;
@@ -2809,7 +2862,7 @@ void UserProc::mapExpressionsToLocals(bool lastPass) {
 					e = getSymbolExp(Location::memOf(e->clone(), this), pty);
 					if (e) {
 						Exp *ne = new Unary(opAddrOf, e);
-						//if (VERBOSE)
+						if (VERBOSE)
 							LOG << "replacing argument " << olde << " with " << ne << " in " << call << "\n";
 						call->setArgumentExp(i, ne);
 					}
@@ -2871,6 +2924,8 @@ void UserProc::mapExpressionsToLocals(bool lastPass) {
 			s->searchAndReplace(result->clone(), replace);
 		}
 	}
+
+	Boomerang::get()->alert_decompile_debug_point(this, "after processing array locals");
 
 	// Stack offsets for local variables could be negative (most machines), positive (PA/RISC), or both (SPARC)
 	if (signature->isLocalOffsetNegative())
@@ -2989,8 +3044,15 @@ bool UserProc::nameRegisters() {
 				continue;
 			for (std::set<int>::iterator it1 = usedRegs.begin(); it1 != usedRegs.end(); it1++) {
 				Type *ty = s->getTypeFor(Location::regOf(*it1));
-				if (ty && !ty->isVoid())
-					types[*it1] = ty;
+				if (ty && !ty->isVoid()) {
+					if (types.find(*it1) != types.end()) {
+						if (types[*it1]->isPointer() && !ty->isPointer())
+							LOG << "not replacing type " << types[*it1] << " with " << ty << " for r" << *it1 << "\n";
+						else
+							types[*it1] = ty;
+					} else
+						types[*it1] = ty;
+				}
 			}
 		}
 	}
@@ -3006,7 +3068,7 @@ bool UserProc::nameRegisters() {
 		if (types.find(*it) != types.end())
 			ty = types[*it];
 		if (ty == NULL)
-			ty = new IntegerType();
+			ty = new SizeType(32); // TODO: get right size for reg
 		symbolMap[Location::regOf(*it)] = newLocal(ty);
 	}
 
@@ -3429,9 +3491,10 @@ void UserProc::fromSSAform() {
 			} else if (ff->second && !ty->isCompatibleWith(ff->second)) {
 				// There already is a type for base, and it is different to the type for this definition.
 				// Record an "interference" so it will get a new variable
-				RefExp* ref = new RefExp(base, s);
-				//ig[ref] = newLocal(ty);
-				ig[ref] = getSymbolExp(ref, ty);
+				if (!ty->isVoid()) {  // just ignore void interferences
+					RefExp* ref = new RefExp(base, s);
+					ig[ref] = getSymbolExp(ref, ty);
+				}
 			}
 		}
 	}

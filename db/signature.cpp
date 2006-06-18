@@ -426,15 +426,16 @@ bool CallingConvention::Win32Signature::isPreserved(Exp* e) {
 void CallingConvention::Win32Signature::setLibraryDefines(StatementList* defs) {
 	if (defs->size()) return;					// Do only once
 	Location* r24 = Location::regOf(24);		// eax
+	Type* ty = new VoidType();
 	if (returns.size() > 1) {					// Ugh - note the stack pointer is the first return still
-		Type* ty = returns[1]->type;
+		ty = returns[1]->type;
 		if (ty->isFloat()) {
 			Location* r32 = Location::regOf(32);			// Top of FP stack
 			r32->setType(ty);
 		} else
 			r24->setType(ty);									// All others return in r24 (check!)
 	}
-	defs->append(new ImplicitAssign(r24));						// eax
+	defs->append(new ImplicitAssign(ty, r24));						// eax
 	defs->append(new ImplicitAssign(Location::regOf(25)));		// ecx
 	defs->append(new ImplicitAssign(Location::regOf(26)));		// edx
 	defs->append(new ImplicitAssign(Location::regOf(28)));		// esp
@@ -622,7 +623,7 @@ bool CallingConvention::StdC::PentiumSignature::isPreserved(Exp* e) {
 void CallingConvention::StdC::PentiumSignature::setLibraryDefines(StatementList* defs) {
 	if (defs->size()) return;					// Do only once
 	Location* r24 = Location::regOf(24);		// eax
-	Type *ty = new VoidType();
+	Type* ty = new VoidType();
 	if (returns.size() > 1) {					// Ugh - note the stack pointer is the first return still
 		ty = returns[1]->type;
 		if (ty->isFloat()) {
@@ -1363,6 +1364,8 @@ Signature *Signature::instantiate(platform plat, callconv cc, const char *nam) {
 
 void Signature::print(std::ostream &out, bool html)
 {
+	if (isForced())
+		out << "*forced* ";
 	if (returns.size() > 0) {
 		out << "{ ";
 		int n = 0;
@@ -1597,6 +1600,8 @@ int Signature::getStackRegister(Prog* prog) throw(StackRegisterNotDefinedExcepti
 
 bool Signature::isStackLocal(Prog* prog, Exp *e) {
 	// e must be m[...]
+	if (e->isSubscript())
+		return isStackLocal(prog, e->getSubExp1());
 	if (!e->isMemOf()) return false;
 	Exp* addr = ((Location*)e)->getSubExp1();
 	return isAddrOfStackLocal(prog, addr);
@@ -1604,6 +1609,8 @@ bool Signature::isStackLocal(Prog* prog, Exp *e) {
 
 bool Signature::isAddrOfStackLocal(Prog* prog, Exp *e) {
 	OPER op = e->getOper();
+	if (op == opAddrOf)
+		return isStackLocal(prog, e->getSubExp1());
 	// e must be sp -/+ K or just sp
 	static Exp *sp = Location::regOf(getStackRegister(prog));
 	if (op != opMinus && op != opPlus) {

@@ -233,11 +233,12 @@ typedef struct {
     memType b;
 } resRange;
 typedef resRange *resList;
+typedef int EntityList[];
 
 int xf86MatchPciInstances(const char *driverName, int vendorID,
                       SymTabPtr chipsets, PciChipsets *PCIchipsets,
                       GDevPtr *devList, int numDevs, DriverPtr drvp,
-                      int **foundEntities);
+                      EntityList **foundEntities);
 void Xfree(pointer p);
 
 typedef struct {

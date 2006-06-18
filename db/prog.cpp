@@ -464,6 +464,8 @@ Proc* Prog::setNewProc(ADDRESS uAddr) {
 		std::ostringstream ost;
 		ost << "proc" << m_iNumberedProc++;
 		pName = strdup(ost.str().c_str());
+		if (VERBOSE)
+			LOG << "assigning name " << pName << " to addr " << uAddr << "\n";
 	}
 	pProc = newProc(pName, uAddr, bLib);
 	return pProc;

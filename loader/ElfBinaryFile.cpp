@@ -367,7 +367,7 @@ void ElfBinaryFile::AddSyms(int secIndex) {
         std::map<ADDRESS, std::string>::iterator aa = m_SymTab.find(val);
         // Ensure no overwriting (except functions)
         if (aa == m_SymTab.end() || ELF32_ST_TYPE(m_pSym[i].st_info) == STT_FUNC) {
-            if (val == 0 && siPlt && i < max_i_for_hack) {
+            if (val == 0 && siPlt) { //&& i < max_i_for_hack) {
                 // Special hack for gcc circa 3.3.3: (e.g. test/pentium/settest).  The value in the dynamic symbol table
 				// is zero!  I was assuming that index i in the dynamic symbol table would always correspond to index i
 				// in the .plt section, but for fedora2_true, this doesn't work. So we have to look in the .rel[a].plt

@@ -1376,6 +1376,26 @@ Exp* TypeVal::match(Exp *pattern) {
 #define ISVARIABLE(x) (strspn((x), "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789") == strlen((x)))
 //#define DEBUG_MATCH
 
+const char *tlstrchr(const char *str, char ch)
+{
+	while (str && *str) {
+		if (*str == ch)
+			return str;
+		if (*str == '[' || *str == '{' || *str == '(') {
+			char close = ']';
+			if (*str == '{')
+				close = '}';
+			if (*str == '(')
+				close = ')';
+			while (*str && *str != close)
+				str++;
+		}
+		if (*str)
+			str++;
+	}
+	return NULL;
+}
+
 /*==============================================================================
  * FUNCTION:		Exp::match
  * OVERVIEW:		Matches this expression to the given patten
@@ -1421,9 +1441,9 @@ bool Binary::match(const char *pattern, std::map<std::string, Exp*> &bindings)
 #ifdef DEBUG_MATCH
 	LOG << "binary::match " << this << " to " << pattern << ".\n";
 #endif
-	if (op == opMemberAccess && strchr(pattern, '.')) {
+	if (op == opMemberAccess && tlstrchr(pattern, '.')) {
 		char *sub1 = strdup(pattern);
-		char *sub2 = strchr(sub1, '.');
+		char *sub2 = (char*)tlstrchr(sub1, '.');
 		*sub2++ = 0;
 		if (subExp1->match(sub1, bindings)) {
 			assert(subExp2->isStrConst());
@@ -1445,9 +1465,9 @@ bool Binary::match(const char *pattern, std::map<std::string, Exp*> &bindings)
 		if (subExp1->match(sub1, bindings) && subExp2->match(sub2, bindings))
 			return true;
 	}
-	if (op == opPlus && strchr(pattern, '+')) {
+	if (op == opPlus && tlstrchr(pattern, '+')) {
 		char *sub1 = strdup(pattern);
-		char *sub2 = strchr(sub1, '+');
+		char *sub2 = (char*)tlstrchr(sub1, '+');
 		*sub2++ = 0;
 		while (*sub2 == ' ')
 			sub2++;
@@ -1456,9 +1476,9 @@ bool Binary::match(const char *pattern, std::map<std::string, Exp*> &bindings)
 		if (subExp1->match(sub1, bindings) && subExp2->match(sub2, bindings))
 			return true;
 	}
-	if (op == opMinus && strchr(pattern, '-')) {
+	if (op == opMinus && tlstrchr(pattern, '-')) {
 		char *sub1 = strdup(pattern);
-		char *sub2 = strchr(sub1, '-');
+		char *sub2 = (char*)tlstrchr(sub1, '-');
 		*sub2++ = 0;
 		while (*sub2 == ' ')
 			sub2++;
@@ -4245,6 +4265,8 @@ Exp* Exp::propagateAllRpt(bool& changed) {
 
 // Return true for non-mem-ofs, or mem-ofs that have primitive address expressions
 bool Exp::canRename() {
+	if (op == opArrayIndex) return false;
+	if (op == opMemberAccess) return false;
 	if (op != opMemOf) return true;
 	Exp* addressExp = ((Location*)this)->getSubExp1();
 	PrimitiveTester pt;
