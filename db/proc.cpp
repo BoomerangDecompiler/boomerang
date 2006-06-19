@@ -3482,6 +3482,7 @@ void UserProc::fromSSAform() {
 		for (dd = defs.begin(); dd != defs.end(); dd++) {
 			Exp* base = *dd;
 			Type* ty = s->getTypeFor(base);
+			LOG << "got type " << ty << " for " << base << " from " << s << "\n";
 			if (ty == NULL)				// Can happen e.g. when getting the type for %flags
 				ty = new VoidType();
 			ff = firstTypes.find(base);
@@ -3489,6 +3490,7 @@ void UserProc::fromSSAform() {
 				// There is no first type yet. Record it.
 				firstTypes[base] = ty;
 			} else if (ff->second && !ty->isCompatibleWith(ff->second)) {
+				LOG << "not compatible with type " << ff->second << ".\n";
 				// There already is a type for base, and it is different to the type for this definition.
 				// Record an "interference" so it will get a new variable
 				if (!ty->isVoid()) {  // just ignore void interferences
@@ -5013,6 +5015,12 @@ bool UserProc::removeUnusedReturns(std::set<UserProc*>& removeRetSet) {
 		}
 		updateForUseChange(removeRetSet);		// HACK!!!
 	}
+
+	if (theReturnStatement->getNumReturns() == 1) {
+		Assign *a = (Assign*)*theReturnStatement->getReturns().begin();
+		signature->setRetType(a->getType());
+	}
+
 	Boomerang::get()->alert_decompile_debug_point(this, "after removing unused returns");
 	return removedRets;
 }

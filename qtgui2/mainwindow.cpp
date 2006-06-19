@@ -65,34 +65,48 @@ MainWindow::MainWindow(QWidget *parent) :
 	showInitPage();
 	setWindowTitle("Boomerang");
 
+	loadingSettings = true;
 	QSettings settings("Boomerang", "Boomerang");
 	QStringList inputfiles = settings.value("inputfiles").toStringList();
 	for (int n = 0; n < inputfiles.count(); n++) {
-		ui.inputFileComboBox->addItem(inputfiles.at(n));
+		if (ui.inputFileComboBox->findText(inputfiles.at(n)) == -1)
+			ui.inputFileComboBox->addItem(inputfiles.at(n));
 	}
+	QString inputfile = settings.value("inputfile").toString();
+	int i = ui.inputFileComboBox->findText(inputfile);
+	if (i != -1)
+		ui.inputFileComboBox->setCurrentIndex(i);
 	QStringList outputpaths = settings.value("outputpaths").toStringList();
 	for (int n = 0; n < outputpaths.count(); n++) {
-		ui.outputPathComboBox->addItem(outputpaths.at(n));
+		if (ui.outputPathComboBox->findText(outputpaths.at(n)) == -1)
+			ui.outputPathComboBox->addItem(outputpaths.at(n));
 	}
+	i = ui.outputPathComboBox->findText(settings.value("outputpath").toString());
+	ui.outputPathComboBox->setCurrentIndex(i);
 	if (!ui.inputFileComboBox->currentText().isEmpty()) {
 		d->changeInputFile(ui.inputFileComboBox->currentText());
 		ui.toLoadButton->setDisabled(false);
 	}
+	loadingSettings = false;
 }
 
 void MainWindow::saveSettings()
 {
+	if (loadingSettings)
+		return;
 	QSettings settings("Boomerang", "Boomerang");			
 	QStringList inputfiles;
 	for (int n = 0; n < ui.inputFileComboBox->count(); n++) {
 		inputfiles.append(ui.inputFileComboBox->itemText(n));
 	}
 	settings.setValue("inputfiles", inputfiles);
+	settings.setValue("inputfile", ui.inputFileComboBox->itemText(ui.inputFileComboBox->currentIndex()));
 	QStringList outputPaths;
 	for (int n = 0; n < ui.outputPathComboBox->count(); n++) {
 		outputPaths.append(ui.outputPathComboBox->itemText(n));
 	}
 	settings.setValue("outputpaths", outputPaths);
+	settings.setValue("outputpath", ui.outputPathComboBox->itemText(ui.outputPathComboBox->currentIndex()));
 }
 
 void MainWindow::on_inputFileBrowseButton_clicked()
@@ -101,9 +115,10 @@ void MainWindow::on_inputFileBrowseButton_clicked()
     if (!s.isEmpty()) {
 		if (ui.inputFileComboBox->findText(s) == -1) {
 			ui.inputFileComboBox->addItem(s);
+			ui.inputFileComboBox->setCurrentIndex(ui.inputFileComboBox->findText(s));
 			saveSettings();
 		}
-		ui.inputFileComboBox->setEditText(s);
+		decompilerThread->getDecompiler()->changeInputFile(s);
 		if (!ui.outputPathComboBox->currentText().isEmpty())
 			ui.toLoadButton->setDisabled(false);
 	}
@@ -123,13 +138,22 @@ void MainWindow::on_outputPathBrowseButton_clicked()
     }
 }
 
-void MainWindow::on_inputFileComboBox_editTextChanged(QString &text)
+void MainWindow::on_inputFileComboBox_editTextChanged(const QString &text)
 {
 	decompilerThread->getDecompiler()->changeInputFile(text);
-	ui.inputFileComboBox->addItem(text);
-	saveSettings();
+	if (ui.inputFileComboBox->findText(text) == -1) {
+		ui.inputFileComboBox->addItem(text);
+		ui.inputFileComboBox->setCurrentIndex(ui.inputFileComboBox->findText(text));
+		saveSettings();
+	}
 	if (!ui.outputPathComboBox->currentText().isEmpty())
 		ui.toLoadButton->setDisabled(false);
+}
+
+void MainWindow::on_inputFileComboBox_currentIndexChanged(const QString &text)
+{
+	decompilerThread->getDecompiler()->changeInputFile(text);
+	saveSettings();
 }
 
 void MainWindow::on_outputPathComboBox_editTextChanged(QString &text)
@@ -220,7 +244,6 @@ void MainWindow::errorLoadingFile()
 
 void MainWindow::showInitPage()
 {
-	ui.inputFileComboBox->clearEditText();
 	ui.toLoadButton->setDisabled(true);
 	ui.loadButton->setDisabled(true);
     ui.decodeButton->setDisabled(true);

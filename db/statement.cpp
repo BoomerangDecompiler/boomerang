@@ -3251,7 +3251,17 @@ void BoolAssign::setLeftFromList(std::list<Statement*>* stmts) {
 // Assign //
 //	//	//	//
 
-Assignment::Assignment(Exp* lhs) : TypingStatement(new VoidType), lhs(lhs) {}
+Assignment::Assignment(Exp* lhs) : TypingStatement(new VoidType), lhs(lhs) {
+	if (lhs->isMemOf())
+		type = new SizeType(32);
+	else if (lhs->isRegOf()) {
+		int n = ((Const*)lhs->getSubExp1())->getInt();
+		if (((Location*)lhs)->getProc()) {
+			type = new SizeType(((Location*)lhs)->getProc()->getProg()->getRegSize(n));
+		}
+	}
+
+}
 Assignment::Assignment(Type* ty, Exp* lhs) : TypingStatement(ty), lhs(lhs) {
 	if (ADHOC_TYPE_ANALYSIS) {
 		Location* loc = dynamic_cast<Location*>(lhs);

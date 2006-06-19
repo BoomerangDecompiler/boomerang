@@ -1481,7 +1481,7 @@ void CHLLCode::AddProcDec(UserProc* proc, bool open) {
 		s << "void ";
 	} else {
 		Assign* firstRet = (Assign*)*returns->begin();
-		Type* retType = firstRet->getType();
+		retType = firstRet->getType();
 		if (retType == NULL || retType->isVoid())
 			// There is a real return; make it integer (Remove with AD HOC type analysis)
 			retType = new IntegerType();

@@ -107,6 +107,12 @@ const char *FrontEnd::getRegName(int idx) {
 	return NULL;
 }
 
+int FrontEnd::getRegSize(int idx) {
+	if (decoder->getRTLDict().DetRegMap.find(idx) == decoder->getRTLDict().DetRegMap.end())
+		return 32;
+	return decoder->getRTLDict().DetRegMap[idx].g_size();
+}
+
 bool FrontEnd::isWin32() {
 	return pBF->GetFormat() == LOADFMT_PE;
 }

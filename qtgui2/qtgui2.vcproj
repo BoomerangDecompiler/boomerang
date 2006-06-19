@@ -117,7 +117,7 @@
 				EnableErrorChecks="1"/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy /y $(TargetPath) $(SolutionDir)"/>
+				CommandLine="copy /y $(TargetPath) $(SolutionDir)\boomerang-gui.exe"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool

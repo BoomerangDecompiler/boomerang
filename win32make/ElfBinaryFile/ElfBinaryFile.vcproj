@@ -44,7 +44,7 @@
 				Name="VCMIDLTool"/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy $(TargetPath) $(SolutionDir)\boomerang-gui.exe"/>
+				CommandLine="copy $(TargetPath) $(SolutionDir)"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool
