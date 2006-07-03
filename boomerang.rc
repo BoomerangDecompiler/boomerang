@@ -146,7 +146,7 @@ CAPTION "About"
 FONT 8, "System", 0, 0, 0x0
 BEGIN
     ICON            IDI_BOOMERANG,IDC_MYICON,14,9,20,20
-    LTEXT           "Boomerang Version 0.2 31/May/2006 ",IDC_STATIC,48,10,
+    LTEXT           "Boomerang Version 0.3 13/June/2006 ",IDC_STATIC,48,10,
                     143,8,SS_NOPREFIX
     LTEXT           "Copyright (C) 1998-2006",IDC_STATIC,49,20,119,8
     DEFPUSHBUTTON   "OK",IDOK,195,6,30,11,WS_GROUP
