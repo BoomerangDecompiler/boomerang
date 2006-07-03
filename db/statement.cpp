@@ -3252,9 +3252,9 @@ void BoolAssign::setLeftFromList(std::list<Statement*>* stmts) {
 //	//	//	//
 
 Assignment::Assignment(Exp* lhs) : TypingStatement(new VoidType), lhs(lhs) {
-	if (lhs->isMemOf())
+	if (lhs && lhs->isMemOf())
 		type = new SizeType(32);
-	else if (lhs->isRegOf()) {
+	else if (lhs && lhs->isRegOf()) {
 		int n = ((Const*)lhs->getSubExp1())->getInt();
 		if (((Location*)lhs)->getProc()) {
 			type = new SizeType(((Location*)lhs)->getProc()->getProg()->getRegSize(n));
