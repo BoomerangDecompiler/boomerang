@@ -2144,7 +2144,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
 Exp* PentiumDecoder::dis_Mem(ADDRESS pc)
 {
 	Exp* expr = NULL;
-	lastDwordLc = -1;
+	lastDwordLc = (unsigned)-1;
 
 	match pc to 
 	| Abs32 (a) =>
@@ -2437,7 +2437,7 @@ void genBSFR(ADDRESS pc, Exp* dest, Exp* modrm, int init, int size,
 
 Exp *PentiumDecoder::addReloc(Exp *e)
 {
-	if (lastDwordLc != -1)
+	if (lastDwordLc != (unsigned)-1)
 		e = prog->addReloc(e, lastDwordLc);
 	return e;
 }
