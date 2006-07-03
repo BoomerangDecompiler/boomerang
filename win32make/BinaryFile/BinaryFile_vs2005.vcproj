@@ -67,7 +67,7 @@
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(OutDir)/BinaryFile.pdb"
 				SubSystem="2"
-				ImportLibrary=""
+				ImportLibrary="$(OutDir)/BinaryFile.lib"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -146,7 +146,7 @@
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
-				ImportLibrary=""
+				ImportLibrary="$(OutDir)/BinaryFile.lib"
 				TargetMachine="1"
 			/>
 			<Tool
