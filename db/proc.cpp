@@ -676,7 +676,7 @@ char* UserProc::prints() {
 	std::ostringstream ost;
 	print(ost);
 	strncpy(debug_buffer, ost.str().c_str(), DEBUG_BUFSIZE);
-	debug_buffer[DEBUG_BUFSIZE] = '\0';
+	debug_buffer[DEBUG_BUFSIZE-1] = '\0';
 	return debug_buffer;
 }
 
