@@ -363,6 +363,11 @@ private:
 		 */
 		StatementList parameters;
 
+		/**
+		 * The set of address-escaped locals and parameters. If in this list, they should not be propagated
+		 */
+		LocationSet addressEscapedVars;
+
 		// The modifieds for the procedure are now stored in the return statement
 
 		/**
@@ -475,7 +480,6 @@ virtual				~UserProc();
 		void		dumpSymbolMap();			///< For debugging
 		void		dumpLocals(std::ostream& os, bool html = false);
 		void		dumpLocals();
-		void		dumpIgraph(igraph& ig);
 
 		/// simplify the statements in this proc
 		void		simplify() { cfg->simplify(); }
@@ -525,6 +529,7 @@ virtual				~UserProc();
 		// Rename block variables, with log if verbose. Return true if a change
 		bool		doRenameBlockVars(int pass, bool clearStacks = false);
 		//int			getMaxDepth() {return maxDepth;}		// FIXME: needed?
+		bool		canRename(Exp* e) {return df.canRename(e, this);}
 
 		Statement	*getStmtAtLex(unsigned int begin, unsigned int end);
 
@@ -538,24 +543,24 @@ virtual				~UserProc();
 		void		initStatements();
 		void		numberStatements();
 		bool		nameStackLocations();
-		bool		replaceReg(Exp* match, Exp* e, Statement* def);		///< Helper function for nameRegisters()
+		bool		replaceReg(Exp* match, Exp* e, Statement* def);	///< Helper function for nameRegisters()
 		bool		nameRegisters();
 		void		removeRedundantPhis();
-		void		findPreserveds();			///< Was trimReturns()
-		void		findSpPreservation();		///< Preservations only for the stack pointer
+		void		findPreserveds();					///< Was trimReturns()
+		void		findSpPreservation();				///< Preservations only for the stack pointer
 		void		removeSpAssignsIfPossible();
 		void		updateReturnTypes();
-		void		fixCallAndPhiRefs(int d);	///< Perform call and phi statement bypassing at depth d
-		void		fixCallAndPhiRefs();		///< Perform call and phi statement bypassing at all depths
+		void		fixCallAndPhiRefs(int d);			///< Perform call and phi statement bypassing at depth d
+		void		fixCallAndPhiRefs();				///< Perform call and phi statement bypassing at all depths
 					/// Helper function for fixCallAndPhiRefs
 		void		fixRefs(int n, int depth, std::map<Exp*, Exp*, lessExpStar>& pres, StatementList& removes);
-		void		initialParameters();		///< Get initial parameters based on proc's use collector
+		void		initialParameters();				///< Get initial parameters based on proc's use collector
 		void		findFinalParameters();
-		void		addParameter(Exp *e);		///< Add to signature (temporary now; still needed to create param names)
-		void		insertParameter(Exp* e);	///< Insert into parameters list correctly sorted
+		void		addParameter(Exp *e, Type* ty);		///< Add parameter to signature
+		void		insertParameter(Exp* e, Type* ty);	///< Insert into parameters list correctly sorted
 //		void		addNewReturns(int depth);
-		void		updateArguments();			///< Update the arguments in calls
-		void		updateCallDefines();		///< Update the defines in calls
+		void		updateArguments();					///< Update the arguments in calls
+		void		updateCallDefines();				///< Update the defines in calls
 		void		reverseStrengthReduction();
 		/// Trim parameters. If depth not given or == -1, perform at all depths
 		void		trimParameters(int depth = -1);
@@ -564,8 +569,11 @@ virtual				~UserProc();
 		void		replaceExpressionsWithSymbols();
 		void		mapExpressionsToParameters();   ///< must be in SSA form
 		void		mapExpressionsToLocals(bool lastPass = false);
-		bool		isLocal(Exp* e);			///< True if e represents a stack local variable
-		bool		isLocalOrParam(Exp* e);		///< True if e represents a stack local or stack param
+		bool		isLocal(Exp* e);				///< True if e represents a stack local variable
+		bool		isLocalOrParam(Exp* e);			///< True if e represents a stack local or stack param
+		bool		isLocalOrParamPattern(Exp* e);	///< True if e could represent a stack local or stack param
+		bool		isAddressEscapedVar(Exp* e) {return addressEscapedVars.exists(e);}
+		bool		isPropagatable(Exp* e);			///< True if e can be propagated
 
 		/// find the procs the calls point to
 		void		assignProcsToCalls();
@@ -608,10 +616,6 @@ typedef std::map<Statement*, int> RefCounter;
 		/// Trim parameters to procedure calls with ellipsis (...). Also add types for ellipsis parameters, if any
 		/// Returns true if any signature types so added.
 		bool		ellipsisProcessing();
-		/// Convert registers to locations (does not need multiple passes, or to call replaceExpressionsWithSymbols)
-		void		mapRegistersToLocals();
-		/// This is a helper function for the above:
-		void		regReplaceList(std::list<Exp**>& li);
 		/// Build a stack map
 		void		buildStackMap();
 		/// Promote stack map to locals
@@ -624,11 +628,14 @@ typedef std::map<Statement*, int> RefCounter;
 		// Used for checking for unused parameters
 		bool		doesParamChainToCall(Exp* param, UserProc* p, ProcSet* visited);
 		bool		isRetNonFakeUsed(CallStatement* c, Exp* loc, UserProc* p, ProcSet* visited);
-		// Remove unused parameters. Return true if remove any
-		bool		removeUnusedParameters();
+		// Remove redundant parameters. Return true if remove any
+		bool		removeRedundantParameters();
 		/// Remove any returns that are not used by any callers
-		// \return true if any returns are removed		
-		bool		removeUnusedReturns(std::set<UserProc*>& removeRetSet);
+		/// return true if any returns are removed		
+		bool		removeRedundantReturns(std::set<UserProc*>& removeRetSet);
+		/// 		Reurn true if location e is used gainfully in this procedure. visited is a set of UserProcs already
+		///			visited.
+		bool		checkForGainfulUse(Exp* e, ProcSet& visited);
 		/// Update parameters and call livenesses to take into account the changes causes by removing a return from this
 		/// procedure, or a callee's parameter (which affects this procedure's arguments, which are also uses).
 		void		updateForUseChange(std::set<UserProc*>& removeRetSet);
@@ -702,8 +709,9 @@ public:
 
 		/**
 		 * Return the next available local variable; make it the given type. Note: was returning TypedExp*.
+		 * If nam is non null, use that name
 		 */
-		Exp*		newLocal(Type* ty);
+		Exp*		newLocal(Type* ty, char* nam = NULL);
 
 		/**
 		 * Add a new local supplying all needed information.
@@ -834,4 +842,8 @@ protected:
 					UserProc();
 		void		setCFG(Cfg *c) { cfg = c; }
 };		// class UserProc
+
+// Useful for debugging
+		void		dumpIgraph(igraph& ig);
+
 #endif
