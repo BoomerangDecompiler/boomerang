@@ -537,11 +537,44 @@ public:
 		bool	 	visit(RefExp *e, bool& override);
 };
 
+// Test if an expression (usually the RHS on an assignment) contains memory expressions. If so, it may not be safe to
+// propagate the assignment
+class ExpHasMemofTester : public ExpVisitor {
+		bool		result;
+		UserProc*	proc;
+public:
+					ExpHasMemofTester(UserProc* proc) : result(false), proc(proc) {}
+		bool		getResult() {return result;}
+		bool	 	visit(Location *e, bool& override);
+};
+
 class TempToLocalMapper : public ExpVisitor {
 		UserProc*	proc;									// Proc object for storing the symbols
 public:
 					TempToLocalMapper(UserProc* p) : proc(p) {}
 		bool	 	visit(Location *e, bool& override);
+};
+
+class ExpRegMapper : public ExpVisitor {
+		UserProc*	proc;									// Proc object for storing the symbols
+		Prog*		prog;
+		Type*		lastType;
+public:
+					ExpRegMapper(UserProc* proc);
+		void		setLastType(Type* ty) {lastType = ty;}
+		bool	 	visit(Location *e, bool& override);
+		bool	 	visit(RefExp *e, bool& override);
+};
+
+class StmtRegMapper : public StmtExpVisitor {
+		Type*		lastType;
+public:
+					StmtRegMapper(ExpRegMapper* erm) : StmtExpVisitor(erm) {}
+virtual bool		common(	   Assignment *stmt, bool& override);
+virtual bool		visit(		   Assign *stmt, bool& override);
+virtual bool		visit(		PhiAssign *stmt, bool& override);
+virtual bool		visit( ImplicitAssign *stmt, bool& override);
+virtual bool		visit(	   BoolAssign *stmt, bool& override);
 };
 
 class ConstGlobalConverter : public ExpModifier {
@@ -552,7 +585,7 @@ virtual Exp*		preVisit(RefExp		*e, bool& recur);
 };
 
 // Count the number of times a reference expression is used. Increments the count multiple times if the same reference
-// expression appears multiple times (so can't use UsedLocsFinfer for this)
+// expression appears multiple times (so can't use UsedLocsFinder for this)
 class ExpDestCounter : public ExpVisitor {
 		std::map<Exp*, int, lessExpStar>& destCounts;
 public:
@@ -600,5 +633,6 @@ public:
 					StmtCastInserter(ExpCastInserter* eci) : StmtModifier(eci) {}
 virtual				~StmtCastInserter() {}
 };
+
 
 #endif	// #ifndef __VISITOR_H__
