@@ -102,7 +102,9 @@ public:
 		bool		renameBlockVars(UserProc* proc, int n, bool clearStacks = false);
 		bool		doesDominate(int n, int w);
 		void		setRenameAllMemofs(bool b) {renameAllMemofs = b;}
-		bool		canRename(Exp* e);
+		bool		canRenameAllMemofs() {return renameAllMemofs;}
+		bool		canRename(Exp* e, UserProc* proc);
+		void		convertImplicits(Cfg* cfg);
 
 		// For testing:
 		int			pbbToNode(PBB bb) {return indices[bb];}
@@ -116,6 +118,7 @@ public:
 		void		dumpStacks();
 		void		dumpDefsites();
 		void		dumpA_orig();
+		void		dumpA_phi();
 
 };
 
@@ -202,6 +205,7 @@ Assign* dumpAddrOfFourth();
 /**
  * UseCollector class. This class collects all uses (live variables) that will be defined by the statement that 
  * contains this collector (or the UserProc that contains it).
+ * Typically the entries are not subscripted, like parameters or locations on the LHS of assignments
  */
 class UseCollector {
 		/*
@@ -255,9 +259,7 @@ public:
 		typedef LocationSet::iterator iterator;
 		iterator	begin() {return locs.begin();}
 		iterator	end()	 {return locs.end();}
-		bool		exists(Exp* e)	{return locs.exists(e);}			// Note: probably want the NS version...
-		bool		existsNS(Exp* e){return locs.findNS(e) != NULL;}	// No Subscripts version
-		Exp*		findNS(Exp* e)	{return locs.findNS(e);}			// Find the expression (no subscripts)
+		bool		exists(Exp* e)	{return locs.exists(e);}	// True if e is in the collection
 		LocationSet& getLocSet() {return locs;}
 public:
 		/*
