@@ -384,11 +384,10 @@ void LocationSet::makeDiff(LocationSet& other) {
 }
 
 bool LocationSet::operator==(const LocationSet& o) const {
-	// We want to compare the strings, not the pointers
+	// We want to compare the locations, not the pointers
 	if (size() != o.size()) return false;
 	std::set<Exp*, lessExpStar>::const_iterator it1, it2;
-	for (it1 = lset.begin(), it2 = o.lset.begin(); it1 != lset.end();
-	  it1++, it2++) {
+	for (it1 = lset.begin(), it2 = o.lset.begin(); it1 != lset.end(); it1++, it2++) {
 		if (!(**it1 == **it2)) return false;
 	}
 	return true;
@@ -401,17 +400,30 @@ bool LocationSet::exists(Exp* e) {
 // This set is assumed to be of subscripted locations (e.g. a Collector), and we want to find the unsubscripted
 // location e in the set
 Exp* LocationSet::findNS(Exp* e) {
-	// Note: can't do this efficiently with a wildcard, since you can't order wildcards sensibly (I think)
-	// RefExp r(e, (Statement*)-1);
-	// return lset.find(&r) != lset.end();
-	iterator it;
-	for (it = lset.begin(); it != lset.end(); ++it) {
-		if (**it *= *e)				// Ignore subscripts
-			return *it;
-	}
-	return NULL;
+	// Note: can't search with a wildcard, since it doesn't have the weak ordering required (I think)
+	RefExp r(e, NULL);
+	// Note: the below assumes that NULL is less than any other pointer
+	iterator it = lset.lower_bound(&r);
+	if (it == lset.end())
+		return NULL;
+	if ((*((RefExp*) *it)->getSubExp1() == *e))
+		return *it;
+	else
+		return NULL;
 }
 
+// Given an unsubscripted location e, return true if e{-} or e{0} exists in the set
+bool LocationSet::existsImplicit(Exp* e) {
+	RefExp r(e, NULL);
+	iterator it = lset.lower_bound(&r);		// First element >= r
+	// Note: the below relies on the fact that NULL is less than any other pointer. Try later entries in the set:
+	while (it != lset.end() && (*((RefExp*) *it)->getSubExp1() == *e)) {
+		if (((RefExp*) *it)->isImplicitDef())
+			return true;
+		++it;
+	}
+	return false;
+}
 
 // Find a location with a different def, but same expression. For example, pass r28{10},
 // return true if r28{20} in the set. If return true, dr points to the first different ref
