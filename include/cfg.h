@@ -481,6 +481,7 @@ public:
 		void		print(std::ostream &out, bool html = false);
 		void		printToLog();
 		void		dump();				// Dump to std::cerr
+		void		dumpImplicitMap();	// Dump the implicit map to std::cerr
 
 		/*
 		 * Check for indirect jumps and calls. If any found, decode the extra code and return true
