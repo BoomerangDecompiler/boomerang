@@ -136,7 +136,7 @@ void FrontSparcTest::test1 () {
 	CPPUNIT_ASSERT_EQUAL(expected, std::string(o3.str()));
 
 	delete pFE;
-	delete pBF;
+	//delete pBF;
 }
 
 void FrontSparcTest::test2() {
@@ -183,7 +183,7 @@ void FrontSparcTest::test2() {
 	CPPUNIT_ASSERT_EQUAL(expected, std::string(o4.str()));
 
 	delete pFE;
-	delete pBF;
+	// delete pBF;
 }
 
 void FrontSparcTest::test3() {
@@ -248,7 +248,7 @@ void FrontSparcTest::test3() {
 	CPPUNIT_ASSERT_EQUAL(expected, std::string(o3.str()));
 
 	delete pFE;
-	delete pBF;
+	// delete pBF;
 }
 
 void FrontSparcTest::testBranch() {
@@ -293,7 +293,7 @@ void FrontSparcTest::testBranch() {
 	CPPUNIT_ASSERT_EQUAL(expected, std::string(o3.str()));
 
 	delete pFE;
-	delete pBF;
+	// delete pBF;
 }
 
 void FrontSparcTest::testDelaySlot() {

@@ -114,7 +114,7 @@ void FrontPentTest::test1 () {
 	CPPUNIT_ASSERT_EQUAL(expected, std::string(o3.str()));
 
 	delete pFE;
-	delete pBF;
+	// delete pBF;
 }
 
 void FrontPentTest::test2() {
@@ -154,7 +154,7 @@ void FrontPentTest::test2() {
 	CPPUNIT_ASSERT_EQUAL(expected, std::string(o3.str()));
 
 	delete pFE;
-	delete pBF;
+	// delete pBF;
 }
 
 void FrontPentTest::test3() {
@@ -193,7 +193,7 @@ void FrontPentTest::test3() {
 	CPPUNIT_ASSERT_EQUAL(expected, std::string(o2.str()));
 
 	delete pFE;
-	delete pBF;
+	// delete pBF;
 }
 
 void FrontPentTest::testBranch() {
@@ -238,7 +238,7 @@ void FrontPentTest::testBranch() {
 	CPPUNIT_ASSERT_EQUAL(expected, std::string(o3.str()));
 
 	delete pFE;
-	delete pBF;
+	// delete pBF;
 }
 
 void FrontPentTest::testFindMain() {
