@@ -363,7 +363,8 @@ bool Prog::clusterUsed(Cluster *c)
 
 Cluster	*Prog::getDefaultCluster(const char *name)
 {
-	const char *cfname = pBF->getFilenameSymbolFor(name);
+	const char *cfname = NULL;
+	if (pBF) cfname = pBF->getFilenameSymbolFor(name);
 	if (cfname == NULL)
 		return m_rootCluster;
 	if (strcmp(cfname + strlen(cfname) - 2, ".c"))
@@ -873,8 +874,18 @@ bool Prog::globalUsed(ADDRESS uaddr, Type* knownType) {
 	
     const char *nam = newGlobalName(uaddr); 
     Type *ty;
-	if (knownType)
+	if (knownType) {
 		ty = knownType;
+		if (ty->resolvesToArray() && ty->asArray()->isUnbounded()) {
+			Type* baseType = ty->asArray()->getBaseType();
+			int baseSize = 0;
+			if (baseType) baseSize = baseType->getSize() / 8;		// Size in bytes
+			int sz = pBF->GetSizeByName(nam);
+			if (sz && baseSize)
+				// Note: since ty is a pointer and has not been cloned, this will also set the type for knownType
+				ty->asArray()->setLength(sz / baseSize);
+		}
+	}
 	else
 		ty = guessGlobalType(nam, uaddr);
 		
@@ -1249,7 +1260,7 @@ void Prog::decompile() {
 			// A final pass to remove returns not used by any caller
 			if (VERBOSE)
 				LOG << "prog: global removing unused returns\n";
-			// repeat until no change
+			// Repeat until no change. Note 100% sure if needed.
 			while(removeUnusedReturns());
 		}
 
@@ -1319,14 +1330,15 @@ void Prog::removeUnusedGlobals() {
 	}
 }
 
-// This is the global removing of unused returns. The initial idea is simple enough: remove some returns according to
-// the formula returns(p) = modifys(p) isect union(live at c) for all c calling p.
+// This is the global removing of unused and redundant returns. The initial idea is simple enough: remove some returns
+// according to the formula returns(p) = modifieds(p) isect union(live at c) for all c calling p.
 // However, removing returns reduces the uses, leading to three effects:
 // 1) The statement that defines the return, if only used by that return, becomes unused
 // 2) if the return is implicitly defined, then the parameters may be reduced, which affects all callers
 // 3) if the return is defined at a call, the location may no longer be live at the call. If not, you need to check
 //   the child, and do the union again (hence needing a list of callers) to find out if this change also affects that
 //	 child.
+// Return true if any change
 bool Prog::removeUnusedReturns() {
 	// For each UserProc. Each proc may process many others, so this may duplicate some work. Really need a worklist of
 	// procedures not yet processed.
@@ -1347,7 +1359,7 @@ bool Prog::removeUnusedReturns() {
 	std::set<UserProc*>::iterator it;
 	while (removeRetSet.size()) {
 		it = removeRetSet.begin();		// Pick the first element of the set
-		change |= (*it)->removeUnusedReturns(removeRetSet);
+		change |= (*it)->removeRedundantReturns(removeRetSet);
 		// Note: removing the currently processed item here should prevent unnecessary reprocessing of self recursive
 		// procedures
 		removeRetSet.erase(it);			// Remove the current element (may no longer be the first)
@@ -1395,12 +1407,14 @@ void Prog::conTypeAnalysis() {
 
 void Prog::globalTypeAnalysis() {
 	if (VERBOSE || DEBUG_TA)
-		LOG << "### start data-flow-based type analysis ###\n";
+		LOG << "### start global data-flow-based type analysis ###\n";
 	std::list<Proc*>::iterator pp;
 	for (pp = m_procs.begin(); pp != m_procs.end(); pp++) {
 		UserProc* proc = (UserProc*)(*pp);
 		if (proc->isLib()) continue;
 		if (!proc->isDecoded()) continue;
+		// FIXME: this just does local TA again. Need to meet types for all parameter/arguments, and return/results!
+		// This will require a repeat until no change loop
 		proc->typeAnalysis();
 	}
 	if (VERBOSE || DEBUG_TA)
@@ -1689,8 +1703,13 @@ Exp *Prog::readNativeAs(ADDRESS uaddr, Type *type)
 				break;
 		}
 	}
-	if (type->resolvesToInteger()) {
-		switch(type->asInteger()->getSize()) {
+	if (type->resolvesToInteger() || type->resolvesToSize()) {
+		int size;
+		if (type->resolvesToInteger())
+			size = type->asInteger()->getSize();
+		else
+			size = type->asSize()->getSize();
+		switch(size) {
 			case 8:
 				e = new Const(
 					(int)*(char*)(uaddr + si->uHostAddr - si->uNativeAddr));
