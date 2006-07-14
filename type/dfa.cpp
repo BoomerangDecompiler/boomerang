@@ -259,10 +259,14 @@ void UserProc::dfaTypeAnalysis() {
 			const char* nam = prog->getGlobalName(K2);
 			if (nam == NULL)
 				nam = prog->newGlobalName(K2);
-			Exp* arr = new Binary(opArrayIndex,
+			Exp* arr = new Binary(opArrayIndex,			// 
 				Location::global(nam, this),
 				idx);
-			s->searchAndReplace(scaledArrayPat, arr);
+			if (s->searchAndReplace(scaledArrayPat, arr)) {
+				if (s->isImplicit())
+					// Register an array of appropriate type
+					prog->globalUsed(K2, new ArrayType(((ImplicitAssign*)s)->getType()));
+			}
 		}
 
 		// 3) Check implicit assigns for parameter and global types.
