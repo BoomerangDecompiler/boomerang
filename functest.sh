@@ -77,12 +77,12 @@ $TESTONE pentium uns			1 "$BOOMSW" '2 3'
 $TESTONE sparc   uns			1 "$BOOMSW" '2 3'
 $TESTONE pentium fromssa2		1 "$BOOMSW"
 $TESTONE sparc   fromssa2		1 "$BOOMSW"
-$TESTONE pentium sumarray-O4	1 "$BOOMSW"
 $TESTONE pentium bswap			1 "$BOOMSW"
-$TESTONE pentium testset		1 -O '2 3 4'
+$TESTONE pentium testset		1 "$BOOMSW" '2 3 4'
 $TESTONE sparc   andn			1 "$BOOMSW"
 $TESTONE pentium callchain		1 "$BOOMSW"
 $TESTONE sparc	 callchain		1 "$BOOMSW"
+$TESTONE pentium sumarray-O4	1 "$BOOMSW"
 
 
 if [ ! "$TYPEANALYSIS" ]
