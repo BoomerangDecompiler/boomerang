@@ -34,9 +34,9 @@
 #define _STATEMENT_H_
 
 /* Class hierarchy:   Statement@			(@ = abstract)
-                    __/   |   \________
-                   /      |            \
-       GotoStatement  TypingStatement@  ReturnStatement
+                    __/   |   \________________________
+                   /      |            \               \
+       GotoStatement  TypingStatement@  ReturnStatement JunctionStatement
  BranchStatement_/     /          \ 
  CaseStatement__/  Assignment@   ImpRefStatement
  CallStatement_/  /   /    \ \________
@@ -283,6 +283,9 @@ virtual void		simplify() = 0;
 		// Only Assignments override at present
 virtual void		simplifyAddr() {}
 
+		// map registers to local variables
+		void		mapRegistersToLocals();
+
 		// fixSuccessor
 		// Only Assign overrides at present
 virtual void		fixSuccessor() {}
@@ -308,8 +311,6 @@ virtual void		rangeAnalysis(std::list<Statement*> &execution_paths);
 		Statement*	getNextStatementInBB();
 		Statement*	getPreviousStatementInBB();
 
-		// Replace registers with locals (FIXME: use visitor?)
-virtual	void		regReplace(UserProc* proc) = 0;
 
 //	//	//	//	//	//	//	//	//	//
 //									//
@@ -465,9 +466,6 @@ virtual void		genConstraints(LocationSet& cons);
 		// Data flow based type analysis
 		void		dfaTypeAnalysis(bool& ch);
 
-		// Replace registers with locals
-virtual	void		regReplace(UserProc* proc);
-
 virtual void		processTypes();
 
 		friend class XMLProgParser;
@@ -556,9 +554,6 @@ virtual void		genConstraints(LocationSet& cons);
 
 		// Range analysis
 		void		rangeAnalysis(std::list<Statement*> &execution_paths);
-
-		// Replace registers with locals
-virtual	void		regReplace(UserProc* proc);
 
 		bool match(const char *pattern, std::map<std::string, Exp*> &bindings);
 
@@ -671,9 +666,9 @@ protected:
 class ImplicitAssign : public Assignment {
 public:
 		// Constructor, subexpression
-					ImplicitAssign(Exp* lhs) : Assignment(lhs) {kind = STMT_IMPASSIGN;}
+					ImplicitAssign(Exp* lhs);
 		// Constructor, type, and subexpression
-					ImplicitAssign(Type* ty, Exp* lhs) : Assignment(ty, lhs) {kind = STMT_IMPASSIGN;}
+					ImplicitAssign(Type* ty, Exp* lhs);
 		// Copy constructor
 					ImplicitAssign(ImplicitAssign& o);
 		// Destructor
@@ -801,7 +796,6 @@ virtual	bool		searchAndReplace(Exp*, Exp*, bool cc = false);
 virtual	void		fromSSAform(igraph&) {}
 virtual	void		generateCode(HLLCode*, BasicBlock*, int) {}
 virtual	void		simplify();
-virtual	void		regReplace(UserProc*);
 virtual	void		print(std::ostream& os, bool html = false);
 
 };
@@ -878,9 +872,6 @@ virtual bool		usesExp(Exp*);
 virtual bool		processConstants(Prog*) {return false;}
 virtual void		fromSSAform(igraph&) {}
 
-		// Replace registers with locals
-virtual	void		regReplace(UserProc* proc);
-
 		friend class XMLProgParser;
 };		// class GotoStatement
 
@@ -920,9 +911,6 @@ public:
 
 		// simpify internal expressions
 	void		simplify() { }
-
-		// Replace registers with locals (FIXME: use visitor?)
-	void		regReplace(UserProc* proc) { }
 
 	void		rangeAnalysis(std::list<Statement*> &execution_paths);
 	bool		isLoopJunction();
@@ -1007,9 +995,6 @@ virtual void		genConstraints(LocationSet& cons);
 		// Data flow based type analysis
 		void		dfaTypeAnalysis(bool& ch);
 
-		// Replace registers with locals
-virtual	void		regReplace(UserProc* proc);
-
 		friend class XMLProgParser;
 };		// class BranchStatement
 
@@ -1067,9 +1052,6 @@ public:
 virtual void		simplify();
 
 virtual void		fromSSAform(igraph& ig);
-
-		// Replace registers with locals
-virtual	void		regReplace(UserProc* proc);
 
 		friend class XMLProgParser;
 };		// class CaseStatement
@@ -1200,9 +1182,6 @@ virtual void		genConstraints(LocationSet& cons);
 		// Data flow based type analysis
 		void		dfaTypeAnalysis(bool& ch);
 
-		// Replace registers with locals
-virtual	void		regReplace(UserProc* proc);
-
 		// code generation
 virtual void		generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel);
 
@@ -1290,13 +1269,16 @@ protected:
 		/// A DefCollector object to collect the reaching definitions
 		DefCollector col;
 
-		/// A list of assignments that represents the locations modified by the enclosing procedure
+		/// A list of assignments that represents the locations modified by the enclosing procedure. These assignments
+		/// have no RHS?
 		/// These transmit type information to callers
-		/// Note that these include preserved locations early on, so it might be more sensible to call them assignees.
+		/// Note that these include preserved locations early on (?)
 		StatementList modifieds;
 
-		/// A list of assignments of locations to expressions. A list is used to facilitate ordering. (A set would
-		/// be ideal, but the ordering depends at runtime on the signature)
+		/// A list of assignments of locations to expressions.
+		/// Initially definitions reaching the exit less preserveds; later has locations unused by any callers removed.
+		/// A list is used to facilitate ordering. (A set would be ideal, but the ordering depends at runtime on the
+		/// signature)
 		StatementList returns;
 
 public:
@@ -1345,8 +1327,6 @@ virtual bool		isDefinition() { return true; }
 virtual bool		processConstants(Prog*) {return false;}
 virtual void		processTypes();
 
-		// Replace registers with locals
-virtual	void		regReplace(UserProc* proc);
 		// Get a subscripted version of e from the collector
 		Exp*		subscriptWithDef(Exp* e);
 
