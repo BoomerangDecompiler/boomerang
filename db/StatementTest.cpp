@@ -671,6 +671,22 @@ void StatementTest::testLocationSet () {
 	Exp* dummy;
 	CPPUNIT_ASSERT(!ls.findDifferentRef(r1, dummy));
 	CPPUNIT_ASSERT( ls.findDifferentRef(r2, dummy));
+
+	Exp* r8 = Location::regOf(8);
+	CPPUNIT_ASSERT(! ls.existsImplicit(r8));
+
+	RefExp r3(Location::regOf(8), NULL);
+	ls.insert (&r3);
+	std::cerr << ls.prints() << "\n";
+	CPPUNIT_ASSERT(ls.existsImplicit(r8));
+
+	ls.remove(&r3);
+
+	ImplicitAssign zero(r8);
+	RefExp r4(Location::regOf(8), &zero);
+	ls.insert (&r4);
+	std::cerr << ls.prints() << "\n";
+	CPPUNIT_ASSERT(ls.existsImplicit(r8));
 }
 
 /*==============================================================================
