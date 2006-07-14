@@ -208,6 +208,7 @@ virtual				~LocationSet() {}						// virtual destructor kills warning
 		void		diff(LocationSet* o);					// Diff 2 location sets to std::cerr
 		bool		exists(Exp* e); 						// Return true if the location exists in the set
 		Exp*		findNS(Exp* e);							// Find location e (no subscripts); NULL if not found
+		bool		existsImplicit(Exp* e);					// Search for location e{-} or e{0} (e has no subscripts)
 		// Return an iterator to the found item (or end() if not). Only really makes sense if e has a wildcard
 		iterator	find(Exp* e) {return lset.find(e); }
 		// Find a location with a different def, but same expression. For example, pass r28{10},
