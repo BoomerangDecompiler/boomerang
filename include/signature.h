@@ -13,7 +13,7 @@
  * Trent had the idea of "promoting" to signatures with known behaviour (e.g. conforms to ABI). However, it seems more
  *	general to only assume ABI behaviour for library functions, and derive the signature information from child
  *	procedures in all user procedures. At present, this promotion is basically disabled (promotion always succeeds,
- *	but not much is assumed by the process of promotion). The role of the Signautre classes is still being considered.
+ *	but not much is assumed by the process of promotion). The role of the Signature classes is still being considered.
  *	- MVE Jun 2005.
  */
 
@@ -145,7 +145,7 @@ virtual void		setName(const char *nam);
 		// add a new parameter to this signature
 virtual void		addParameter(const char *nam = NULL);
 virtual void		addParameter(Type *type, const char *nam = NULL, Exp *e = NULL);
-virtual void		addParameter(Exp *e);
+virtual void		addParameter(Exp *e, Type* ty);
 virtual void		addParameter(Parameter *param);
 		void		addEllipsis() { ellipsis = true; }
 		void		killEllipsis() {ellipsis = false; }
