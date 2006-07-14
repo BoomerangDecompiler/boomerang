@@ -189,10 +189,28 @@ void DataFlow::computeDF(int n) {
 }	// end computeDF
 
 
-bool DataFlow::canRename(Exp* e) {
-	if (renameAllMemofs) return true;
-	return e->canRename();
+bool DataFlow::canRename(Exp* e, UserProc* proc) {
+	if (renameAllMemofs)		// When safe,
+		return true;			//  allow memofs to be renamed
+	if (proc->isLocalOrParam(e)) return true;	// But do rename memofs that are locals or params
+	return e->canRename();		// Currently <=> return !e->isMemof();
 }
+
+// For debugging
+void DataFlow::dumpA_phi() {
+	std::map<Exp*, std::set<int>, lessExpStar>::iterator zz;
+	std::cerr << "A_phi:\n";
+	for (zz = A_phi.begin(); zz != A_phi.end(); ++zz) {
+		std::cerr << zz->first << " -> ";
+		std::set<int>& si = zz->second;
+		std::set<int>::iterator qq;
+		for (qq = si.begin(); qq != si.end(); ++qq)
+			std::cerr << *qq << ", ";
+		std::cerr << "\n";
+	}
+	std::cerr << "end A_phi\n";
+}
+
 
 bool DataFlow::placePhiFunctions(UserProc* proc) {
 	// First free some memory no longer needed
@@ -229,7 +247,7 @@ bool DataFlow::placePhiFunctions(UserProc* proc) {
 			if (s->isCall() && ((CallStatement*)s)->isChildless())		// If this is a childless call
 				defallsites.insert(n);									// then this block defines every variable
 			for (it = ls.begin(); it != ls.end(); it++) {
-				if (canRename(*it)) {
+				if (canRename(*it, proc)) {
 					A_orig[n].insert((*it)->clone());
 					defStmts[*it] = s;
 				}
@@ -274,8 +292,7 @@ bool DataFlow::placePhiFunctions(UserProc* proc) {
 				// if y not element of A_phi[a]
 				std::set<int>& s = A_phi[a];
 				if (s.find(y) == s.end()) {
-					// Insert trivial phi function for a at top of block y
-					// a := phi()
+					// Insert trivial phi function for a at top of block y: a := phi()
 					change = true;
 					Statement* as = new PhiAssign(a->clone());
 					PBB Ybb = BBs[y];
@@ -344,11 +361,12 @@ bool DataFlow::renameBlockVars(UserProc* proc, int n, bool clearStacks /* = fals
 			LocationSet::iterator xx;
 			for (xx = locs.begin(); xx != locs.end(); xx++) {
 				Exp* x = *xx;
-				// Don't rename memOfs whose address expressions are not yet primitive
-				if (!canRename(x)) continue;
+				// Don't rename memOfs that are not renamable according to the current policy
+				if (!canRename(x, proc)) continue;
 				Statement* def = NULL;
 				if (x->isSubscript()) {					// Already subscripted?
-					// No renaming required, but redo the usage analysis, in case this is a new return
+					// No renaming required, but redo the usage analysis, in case this is a new return, and also because
+					// we may have just removed all call livenesses
 					// Update use information in calls, and in the proc (for parameters)
 					Exp* base = ((RefExp*)x)->getSubExp1();
 					def = ((RefExp*)x)->getDef();
@@ -385,8 +403,9 @@ bool DataFlow::renameBlockVars(UserProc* proc, int n, bool clearStacks /* = fals
 				if (S->isPhi()) {
 					Exp* phiLeft = ((PhiAssign*)S)->getLeft();
 					phiLeft->setSubExp1(phiLeft->getSubExp1()->expSubscriptVar(x, def /*, this*/));
-				} else
+				} else {
 					S->subscriptVar(x, def /*, this */);
+				}
 			}
 		}
 
@@ -408,7 +427,7 @@ bool DataFlow::renameBlockVars(UserProc* proc, int n, bool clearStacks /* = fals
 		for (dd = defs.begin(); dd != defs.end(); dd++) {
 			Exp *a = *dd;
 			// Don't consider a if it cannot be propagated
-			bool suitable = canRename(a);
+			bool suitable = canRename(a, proc);
 			if (suitable) {
 				// Push i onto Stacks[a]
 				// Note: we clone a because otherwise it could be an expression that gets deleted through various
@@ -460,7 +479,7 @@ bool DataFlow::renameBlockVars(UserProc* proc, int n, bool clearStacks /* = fals
 			// For now, just get the LHS
 			Exp* a = pa->getLeft();
 			// Only consider variables that can be renamed
-			if (!canRename(a)) continue;
+			if (!canRename(a, proc)) continue;
 			Statement* def;
 			if (STACKS_EMPTY(a))
 				def = NULL;				// No reaching definition
@@ -490,7 +509,7 @@ bool DataFlow::renameBlockVars(UserProc* proc, int n, bool clearStacks /* = fals
 		S->getDefinitions(defs);
 		LocationSet::iterator dd;
 		for (dd = defs.begin(); dd != defs.end(); dd++) {
-			if (canRename(*dd)) {
+			if (canRename(*dd, proc)) {
 				// if ((*dd)->getMemDepth() == memDepth)
 				std::map<Exp*, std::stack<Statement*>, lessExpStar>::iterator ss = Stacks.find(*dd);
 				if (ss == Stacks.end()) {
@@ -693,4 +712,42 @@ void DefCollector::insert(Assign* a) {
 	Exp* l = a->getLeft();
 	if (existsOnLeft(l)) return;
 	defs.insert(a);
+}
+
+void DataFlow::convertImplicits(Cfg* cfg) {
+	// Convert statements in A_phi from m[...]{-} to m[...]{0}
+	std::map<Exp*, std::set<int>, lessExpStar> A_phi_copy = A_phi;			// Object copy
+	std::map<Exp*, std::set<int>, lessExpStar>::iterator it;
+	ImplicitConverter ic(cfg);
+	A_phi.clear();
+	for (it = A_phi_copy.begin(); it != A_phi_copy.end(); ++it) {
+		Exp* e = it->first->clone();
+		e = e->accept(&ic);
+		A_phi[e] = it->second;					// Copy the set (doesn't have to be deep)
+	}
+
+	std::map<Exp*, std::set<int>, lessExpStar > defsites_copy = defsites;	// Object copy
+	std::map<Exp*, std::set<int>, lessExpStar >::iterator dd;
+	defsites.clear();
+	for (dd = A_phi_copy.begin(); dd != A_phi_copy.end(); ++dd) {
+		Exp* e = dd->first->clone();
+		e = e->accept(&ic);
+		defsites[e] = dd->second;				// Copy the set (doesn't have to be deep)
+	}
+
+	std::vector<std::set<Exp*, lessExpStar> > A_orig_copy;
+	std::vector<std::set<Exp*, lessExpStar> >::iterator oo;
+	A_orig.clear();
+	for (oo = A_orig_copy.begin(); oo != A_orig_copy.end(); ++oo) {
+		std::set<Exp*, lessExpStar>& se = *oo;
+		std::set<Exp*, lessExpStar> se_new;
+		std::set<Exp*, lessExpStar>::iterator ee;
+		for (ee = se.begin(); ee != se.end(); ++ee) {
+			Exp* e = (*ee)->clone();
+			e = e->accept(&ic);
+			se_new.insert(e);
+		}
+		A_orig.insert(A_orig.end(), se_new);	// Copy the set (doesn't have to be a deep copy)
+	}
+
 }
