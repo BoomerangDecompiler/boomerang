@@ -577,7 +577,8 @@ void UserProc::generateCode(HLLCode *hll) {
 	cfg->structure();
 	if (!Boomerang::get()->noGlobals && !Boomerang::get()->noDecompile)
 	    replaceExpressionsWithGlobals();	// FIXME: why here?
-	if (!Boomerang::get()->noLocals && !Boomerang::get()->noDecompile) {
+	if (!Boomerang::get()->noLocals && !Boomerang::get()->noDecompile && ADHOC_TYPE_ANALYSIS) {
+		// Note: registers are mapped after dfa type analysis now
 		nameRegisters();
 		mapTempsToLocals();
 	}
@@ -664,7 +665,7 @@ void UserProc::printParams(std::ostream& out, bool html) {
 			first = false;
 		else
 			out << ", ";
-		out << ((Assign*)*pp)->getLeft();
+		out << ((Assign*)*pp)->getType() << " " << ((Assign*)*pp)->getLeft();
 	}
 	out << "\n";
 	if (html)
@@ -1195,7 +1196,7 @@ ProcSet* UserProc::middleDecompile(ProcList* path, int indent) {
 	// The call bypass logic should be staged as well. For example, consider m[r1{11}]{11} where 11 is a call.
 	// The first stage bypass yields m[r1{2}]{11}, which needs another round of propagation to yield m[r1{-}-32]{11}
 	// (which can safely be processed at depth 1).
-	// Except that this is inherent in the visitor nature of the latest algorithm.
+	// Except that this is now inherent in the visitor nature of the latest algorithm.
 	fixCallAndPhiRefs();			// Bypass children that are finalised (if any)
 	bool convert;
 	if (status != PROC_INCYCLE)		// FIXME: need this test?
@@ -1368,19 +1369,30 @@ ProcSet* UserProc::middleDecompile(ProcList* path, int indent) {
 		LOG << "### allowing SSA renaming of all memof expressions ###\n";
 	df.setRenameAllMemofs(true);
 
-	// Now we need another pass to rename and propagate these memofs
+	// Now we need another pass to inert phis for the memofs, rename them and propagate them
 	++pass;
 	if (VERBOSE)
-		LOG << "renaming block variables (3) pass " << pass << "\n";
-	doRenameBlockVars(pass, false);
+		LOG << "setting phis, renaming block variables after memofs renamable pass " << pass << "\n";
+	change = df.placePhiFunctions(this);
+	if (change) numberStatements();		// Number the new statements
+	doRenameBlockVars(pass, false);		// MVE: do we want this parameter false or not?
+	if (VERBOSE) {
+		LOG << "--- after setting phis for memofs, renaming them for " << getName() << "\n";
+		printToLog();
+		LOG << "=== done after setting phis for memofs, renaming them for " << getName() << "\n";
+	}
 	propagateStatements(convert, pass);
+	// Now that memofs are renamed, the bypassing for memofs can work
+	fixCallAndPhiRefs();			// Bypass children that are finalised (if any)
 
-	// Note: processConstants is also where ellipsis processing is done (check this!)
+#if 1			// Now also done where ellipsis processing is done for dfa-based TA
+	// Note: processConstants is also where ellipsis processing is done
 	if (processConstants()) {
 		if (status != PROC_INCYCLE) {
 			doRenameBlockVars(-1, true);			// Needed if there was an indirect call to an ellipsis function
 		}
 	}
+#endif
 	processTypes();
 
 #ifdef EARLY_GLOBALS
@@ -1424,7 +1436,7 @@ ProcSet* UserProc::middleDecompile(ProcList* path, int indent) {
 	findPreserveds();
 
 #ifndef EARLY_GLOBALS
-	// recognising globals early prevents them from becoming parameters
+	// recognising globals early prevents them from becoming parameters (? but they can't any more...)
 	if (!Boomerang::get()->noGlobals)
 		replaceExpressionsWithGlobals();
 #endif
@@ -1475,10 +1487,29 @@ void UserProc::remUnusedStmtEtc() {
 //		theReturnStatement->specialProcessing();
 
 	// Perform type analysis. If we are relying (as we are at present) on TA to perform ellipsis processing,
-	// do an initial TA pass now. Ellipsis processing often reveals additional uses (e.g. additional parameters
+	// do the local TA pass now. Ellipsis processing often reveals additional uses (e.g. additional parameters
 	// to printf/scanf), and removing unused statements is unsafe without full use information
-	if (status < PROC_FINAL)
+	if (status < PROC_FINAL) {
 		typeAnalysis();
+		// Now that locals are identified, redo the dataflow
+		bool change = df.placePhiFunctions(this);
+		if (change) numberStatements();		// Number the new statements
+		doRenameBlockVars(20);				// Rename the locals
+		bool convert;
+		propagateStatements(convert, 20);	// Surely need propagation too
+		if (VERBOSE) {
+			LOG << "--- after propagating locals for " << getName() << " ---\n";
+			printToLog();
+			LOG << "=== end after propagating locals for " << getName() << " ===\n\n";
+		}
+		// Note: processConstants is also where ellipsis processing is done
+		if (processConstants()) {
+			if (status != PROC_INCYCLE) {
+				doRenameBlockVars(-1, true);			// Needed if there was an indirect call to an ellipsis function
+			}
+		}
+
+	}
 
 	// Only remove unused statements after decompiling as much as possible of the proc
 	// FIXME: Probably need a repeat until no change here
@@ -1600,15 +1631,19 @@ void UserProc::remUnusedStmtEtc(RefCounter& refCounts) {
 				continue;
 			}
 			if (asLeft->getOper() == opMemOf &&
-					symbolMap.find(asLeft) == symbolMap.end() &&		// Real locals are OK
-					(!as->isAssign() || !(*new RefExp(asLeft, NULL) == *((Assign*)s)->getRight()))) {
+					// Real locals are OK; don't exit now so the local can be removed if unused
+					symbolMap.find(asLeft) == symbolMap.end()
+					// Was a special test for m[x] := m[x]{0} (memory is restored; very rare!)
+					// && (!as->isAssign() || !(*new RefExp(asLeft, NULL) == *((Assign*)s)->getRight()))
+					) {
 				// Looking for m[x] := anything but m[x]{-}
-				// Assignments to memof anything-but-local must always be kept.
+				// Assignments to memof-anything-but-local must always be kept.
+				// FIXME: Assignments to locals whose address escapes the procedure should also be kept
 				ll++;
 				continue;
 			}
 			if (asLeft->getOper() == opMemberAccess || asLeft->getOper() == opArrayIndex) {
-				// can't say with these
+				// can't say with these; conservatively never remove them
 				ll++;
 				continue;
 			}
@@ -2165,14 +2200,11 @@ static RefExp *memOfWild = new RefExp(
 static RefExp* regOfWild = new RefExp(
 	Location::regOf(new Terminal(opWildIntConst)), NULL);
 
-// Search for expressions without explicit definitions (i.e. WILDCARD{-}), which represent parameters (use before
+// Search for expressions without explicit definitions (i.e. WILDCARD{0}), which represent parameters (use before
 // definition).
-// Note: this identifies saved and restored locations as parameters (e.g. ebp in most Pentium procedures).
-// Some preserved locations could be parameters (and some of those could be returns as well).
-
 // These are called final parameters, because they are determined from implicit references, not from the use collector
 // at the start of the proc, which include some caused by recursive calls
-#define DEBUG_PARAMS 0
+#define DEBUG_PARAMS 1
 void UserProc::findFinalParameters() {
 
 	parameters.clear();
@@ -2205,86 +2237,67 @@ void UserProc::findFinalParameters() {
 	getStatements(stmts);
 
 	StatementList::iterator it;
-	for (it = stmts.begin(); it != stmts.end(); it++) {
+	for (it = stmts.begin(); it != stmts.end(); ++it) {
 		Statement* s = *it;
-		// For now, assume that all parameters will be m[]{-} or r[]{-}, or in phi statements such as
-		// lhs := phi{2 - 5}
-		std::list<Exp*> results;
-		UserProc* dest;
-		if (s->isPhi())
-			((PhiAssign*)s)->enumerateParams(results);
-		// Disregard uses from recursive calls for the purpose of finding final parameters. The reason is that recursive
-		// calls can be the only thing to apparently use a location, in which case they are not real parameters.
-		// Real parameters will have a use along paths not including recursive calls.
-		// NOTE: However, it is possible for a function to terminate recursion only using an exception. We'll fail to
-		// find parameters for those.
-		else if (!s->isCall() || 
-				(dest = (UserProc*)((CallStatement*)s)->getDestProc(),
-				!dest || !cycleGrp || cycleGrp->find(dest) == cycleGrp->end())) {
-			s->searchAll(memOfWild, results);
-			s->searchAll(regOfWild, results);
-		}
-		while (results.size()) {
-			bool foundParam;
-			Exp *e = results.front();
-			results.erase(results.begin());		// Remove current (=first) result from list
-			// add any subexps that are refs to mem
-			if (e->isSubscript() && e->getSubExp1()->isMemOf()) 
-				e->getSubExp1()->getSubExp1()->searchAll(memOfWild, results);
-			e = e->clone()->removeSubscripts(foundParam);
-			if (foundParam && signature->findParam(e) == -1) {
+		// Assume that all parameters will be m[]{0} or r[]{0}, and in the implicit definitions at the start of the
+		// program
+		if (!s->isImplicit())
+			break;					// Stop after reading all implicit assignments
+		Exp *e = ((ImplicitAssign*)s)->getLeft();
+		if (signature->findParam(e) == -1) {
+			if (VERBOSE || DEBUG_PARAMS)
+				LOG << "potential param " << e << "\n";
+			if (signature->isStackLocal(prog, e) || e->getOper() == opLocal) {
 				if (VERBOSE || DEBUG_PARAMS)
-					LOG << "potential param " << e << "\n";
-				if (signature->isStackLocal(prog, e) || e->getOper() == opLocal) {
-					if (VERBOSE || DEBUG_PARAMS)
-						LOG << "ignoring local " << e << "\n";
-					continue;
-				}
-				if (e->isGlobal()) {
-					if (VERBOSE || DEBUG_PARAMS)
-						LOG << "ignoring global " << e << "\n";
-					continue;
-				}
-				if (e->getMemDepth() > 1) {
-					if (VERBOSE || DEBUG_PARAMS)
-						LOG << "ignoring complex " << e << "\n";
-					continue;
-				}
-				if (e->isMemOf() && e->getSubExp1()->isGlobal()) {
-					if (VERBOSE || DEBUG_PARAMS)
-						LOG << "ignoring m[global] " << e << "\n";
-					continue;
-				}
-				if (e->isMemOf() && e->getSubExp1()->getOper() == opParam) {
-					if (VERBOSE || DEBUG_PARAMS)
-						LOG << "ignoring m[param] " << e << "\n";
-					continue;
-				}
-				if (e->isMemOf() &&
-						e->getSubExp1()->getOper() == opPlus &&
-						e->getSubExp1()->getSubExp1()->isGlobal() &&
-						e->getSubExp1()->getSubExp2()->isIntConst()) {
-					if (VERBOSE || DEBUG_PARAMS)
-						LOG << "ignoring m[global + int] " << e << "\n";
-					continue;
-				}
-				if (e->isRegN(sp)) {
-					if (VERBOSE || DEBUG_PARAMS)
-						LOG << "ignoring stack pointer register\n";
-					continue;
-				}
-				if (e->isMemOf() && e->getSubExp1()->isConst()) {
-					if (VERBOSE || DEBUG_PARAMS)
-						LOG << "ignoring m[const]\n";
-					continue;
-				}
-				if (VERBOSE || DEBUG_PARAMS)
-					LOG << "found new parameter " << e << "\n";
-				// Add this parameter to the signature (for now; creates parameter names)
-				addParameter(e);
-				// Insert it into the parameters StatementList
-				insertParameter(e);
+					LOG << "ignoring local " << e << "\n";
+				continue;
 			}
+			if (e->isGlobal()) {
+				if (VERBOSE || DEBUG_PARAMS)
+					LOG << "ignoring global " << e << "\n";
+				continue;
+			}
+			if (e->getMemDepth() > 1) {
+				if (VERBOSE || DEBUG_PARAMS)
+					LOG << "ignoring complex " << e << "\n";
+				continue;
+			}
+			if (e->isMemOf() && e->getSubExp1()->isGlobal()) {
+				if (VERBOSE || DEBUG_PARAMS)
+					LOG << "ignoring m[global] " << e << "\n";
+				continue;
+			}
+			if (e->isMemOf() && e->getSubExp1()->getOper() == opParam) {
+				if (VERBOSE || DEBUG_PARAMS)
+					LOG << "ignoring m[param] " << e << "\n";
+				continue;
+			}
+			if (e->isMemOf() &&
+					e->getSubExp1()->getOper() == opPlus &&
+					e->getSubExp1()->getSubExp1()->isGlobal() &&
+					e->getSubExp1()->getSubExp2()->isIntConst()) {
+				if (VERBOSE || DEBUG_PARAMS)
+					LOG << "ignoring m[global + int] " << e << "\n";
+				continue;
+			}
+			if (e->isRegN(sp)) {
+				if (VERBOSE || DEBUG_PARAMS)
+					LOG << "ignoring stack pointer register\n";
+				continue;
+			}
+			if (e->isMemOf() && e->getSubExp1()->isConst()) {
+				if (VERBOSE || DEBUG_PARAMS)
+					LOG << "ignoring m[const]\n";
+				continue;
+			}
+			if (VERBOSE || DEBUG_PARAMS)
+				LOG << "found new parameter " << e << "\n";
+
+			Type* ty = ((ImplicitAssign*)s)->getType();
+			// Add this parameter to the signature (for now; creates parameter names)
+			addParameter(e, ty);
+			// Insert it into the parameters StatementList
+			insertParameter(e, ty);
 		}
 	}
 }
@@ -2391,15 +2404,12 @@ void Proc::removeReturn(Exp *e)
 	signature->removeReturn(e);
 }
 
-// Add the parameter to the signature. Used to say "and all known callers"; this will be handled by the recursion
-// manager now
-void UserProc::addParameter(Exp *e) {
+// Add the parameter to the signature.
+void UserProc::addParameter(Exp *e, Type* ty) {
 	// In case it's already an implicit argument:
 	removeParameter(e);
 
-	// for (std::set<CallStatement*>::iterator it = callerSet.begin(); it != callerSet.end(); it++)
-	//	(*it)->addArgument(e, this);
-	signature->addParameter(e);
+	signature->addParameter(e, ty);
 }
 
 void UserProc::processFloatConstants()
@@ -2750,18 +2760,29 @@ Exp *UserProc::getSymbolExp(Exp *le, Type *ty, bool lastPass) {
 	Exp *e = NULL;
 
 	// check for references to the middle of a local
-	if (le->isMemOf() && le->getSubExp1()->getOper() == opMinus && le->getSubExp1()->getSubExp1()->isSubscript() && le->getSubExp1()->getSubExp1()->getSubExp1()->isRegN(signature->getStackRegister()) && le->getSubExp1()->getSubExp2()->isIntConst())
-		for (SymbolMapType::iterator it = symbolMap.begin(); it != symbolMap.end(); it++)
+	if (	le->isMemOf() &&
+			le->getSubExp1()->getOper() == opMinus &&
+			le->getSubExp1()->getSubExp1()->isSubscript() &&
+			le->getSubExp1()->getSubExp1()->getSubExp1()->isRegN(signature->getStackRegister()) &&
+			le->getSubExp1()->getSubExp2()->isIntConst()) {
+		for (SymbolMapType::iterator it = symbolMap.begin(); it != symbolMap.end(); it++) {
 			if ((*it).second->isLocal()) {
 				char *nam = ((Const*)(*it).second->getSubExp1())->getStr();
 				if (locals.find(nam) != locals.end()) {
 					Type *lty = locals[nam];
 					Exp *loc = (*it).first;
-					if (loc->isMemOf() && loc->getSubExp1()->getOper() == opMinus && loc->getSubExp1()->getSubExp1()->isSubscript() && loc->getSubExp1()->getSubExp1()->getSubExp1()->isRegN(signature->getStackRegister()) && loc->getSubExp1()->getSubExp2()->isIntConst()) {
+					if (	loc->isMemOf() &&
+							loc->getSubExp1()->getOper() == opMinus &&
+							loc->getSubExp1()->getSubExp1()->isSubscript() &&
+							loc->getSubExp1()->getSubExp1()->getSubExp1()->isRegN(signature->getStackRegister()) &&
+							loc->getSubExp1()->getSubExp2()->isIntConst()) {
 						int n = -((Const*)loc->getSubExp1()->getSubExp2())->getInt();
 						int m = -((Const*)le->getSubExp1()->getSubExp2())->getInt();
-						if (m > n && m < n + (lty->getSize() / 8)) {
-							e = Location::memOf(new Binary(opPlus, new Unary(opAddrOf, (*it).second->clone()), new Const(m - n)));
+						if (m > n && m < n + (int)(lty->getSize() / 8)) {
+							e = Location::memOf(
+								new Binary(opPlus,
+									new Unary(opAddrOf, (*it).second->clone()),
+									new Const(m - n)));
 							if (VERBOSE)
 								LOG << "seems " << le << " is in the middle of " << loc << " returning " << e << "\n";
 							return e;
@@ -2769,6 +2790,8 @@ Exp *UserProc::getSymbolExp(Exp *le, Type *ty, bool lastPass) {
 					}
 				}
 			}
+		}
+	}
 	
 	if (symbolMap.find(le) == symbolMap.end()) {
 		if (ty == NULL) {
@@ -2783,6 +2806,7 @@ Exp *UserProc::getSymbolExp(Exp *le, Type *ty, bool lastPass) {
 			// type early results in aliases to this local not being recognised 
 			e = newLocal(ty->clone());
 			symbolMap[le->clone()] = e;
+			e = e->clone();
 		}
 	} else {
 		e = symbolMap[le]->clone();
@@ -3004,11 +3028,9 @@ bool UserProc::nameStackLocations() {
 	return found;
 }
 
-// Deprecated. Eventually replace with mapRegistersToLocals()
+// Deprecated. Eventually replace with mapRegistersToLocals() when ad-hoc TA removed
 bool UserProc::nameRegisters() {
 	static Exp *regOfWild = Location::regOf(new Terminal(opWild));
-	bool found = false;
-	int sp = signature->getStackRegister(prog);
 	std::set<int> usedRegs;
 	std::map<int, Type*> types;
 
@@ -3032,6 +3054,8 @@ bool UserProc::nameRegisters() {
 		}
 	}
 
+
+#define DEBUG_TYPES 0
 	// find types
 	for (int pass = 0; pass < 3; pass++) {
 		if (pass == 2 && !signature->isForced())
@@ -3048,10 +3072,18 @@ bool UserProc::nameRegisters() {
 					if (types.find(*it1) != types.end()) {
 						if (types[*it1]->isPointer() && !ty->isPointer())
 							LOG << "not replacing type " << types[*it1] << " with " << ty << " for r" << *it1 << "\n";
-						else
+						else {
+							if (DEBUG_TYPES)
+								std::cerr << "setting r" << *it1 << " to type " << ty->getCtype() << " from statement "
+									<< s << "\n";
 							types[*it1] = ty;
-					} else
+						}
+					} else {
+						if (DEBUG_TYPES)
+							std::cerr << "setting r" << *it1 << " to type " << ty->getCtype() << " from statement "
+								<< s << "\n";
 						types[*it1] = ty;
+					}
 				}
 			}
 		}
@@ -3075,35 +3107,6 @@ bool UserProc::nameRegisters() {
 	Boomerang::get()->alert_decompile_debug_point(this, "after naming registers");
 
 	return usedRegs.size() > 0;
-}
-
-// Core of the register replacing logic
-void UserProc::regReplaceList(std::list<Exp**>& li) {
-	std::list<Exp**>::iterator it;
-	for (it = li.begin(); it != li.end(); it++) {
-		Exp* reg = ((RefExp*)**it)->getSubExp1();
-		Statement* def = ((RefExp*)**it)->getDef();
-		Type *ty = def->getTypeFor(reg);
-		if (symbolMap.find(reg) == symbolMap.end()) {
-			symbolMap[reg] = newLocal(ty);
-			Location* locl = (Location*)symbolMap[reg]->getSubExp1();
-			std::string name = ((Const*)locl)->getStr();
-			locals[name] = ty;
-			if (VERBOSE)
-				LOG << "replacing all " << reg << " with " << name << ", type " << ty->getCtype() << "\n";
-		}
-		// Now replace it in the IR
-		//**it = symbolMap[reg];
-	}
-}
-
-void UserProc::mapRegistersToLocals() {
-	StatementList stmts;
-	getStatements(stmts);
-	StatementList::iterator it;
-	for (it = stmts.begin(); it != stmts.end(); it++)
-		// Bounces back most times to UserProc::regReplaceList (above)
-		(*it)->regReplace(this);
 }
 
 bool UserProc::removeNullStatements() {
@@ -3227,10 +3230,14 @@ void UserProc::promoteSignature() {
 	signature = signature->promote(this);
 }
 
-Exp* UserProc::newLocal(Type* ty) {
-	std::ostringstream os;
-	os << "local" << nextLocal++;
-	std::string name = os.str();
+Exp* UserProc::newLocal(Type* ty, char* nam /* = NULL */) {
+	std::string name;
+	if (nam == NULL) {
+		std::ostringstream os;
+		os << "local" << nextLocal++;
+		name = os.str();
+	} else
+		name = nam;				// Use provided name
 	locals[name] = ty;
 	if (ty == NULL) {
 		std::cerr << "null type passed to newLocal\n";
@@ -3306,6 +3313,8 @@ char* UserProc::getSymbolName(Exp* e) {
 }
 
 
+// Count references to the things that are under SSA control. For each SSA subscripting, increment a counter for that
+// definition
 void UserProc::countRefs(RefCounter& refCounts) {
 	StatementList stmts;
 	getStatements(stmts);
@@ -3322,9 +3331,12 @@ void UserProc::countRefs(RefCounter& refCounts) {
 		LocationSet::iterator rr;
 		for (rr = refs.begin(); rr != refs.end(); rr++) {
 			if (((Exp*)*rr)->isSubscript()) {
-				Statement *ref = ((RefExp*)*rr)->getDef();
-				if (ref && ref->getNumber()) {
-					refCounts[ref]++;
+				Statement *def = ((RefExp*)*rr)->getDef();
+				// Used to not count implicit refs here (def->getNumber() == 0), meaning that implicit definitions get
+				// removed as dead code! But these are the ideal place to read off final parameters, and it is
+				// guaranteed now that implicit statements are sorted out for us by now (for dfa type analysis)
+				if (def /* && def->getNumber() */ ) {
+					refCounts[def]++;
 					if (DEBUG_UNUSED)
 						LOG << "counted ref to " << *rr << "\n";
 				}
@@ -3457,9 +3469,14 @@ void UserProc::fromSSAform() {
 	getStatements(stmts);
 	igraph ig;
 
+	// Map registers to initial local variables
+	StatementList::iterator it;
+	for (it = stmts.begin(); it != stmts.end(); it++) {
+		(*it)->mapRegistersToLocals();
+	}
+
 	// First split the live ranges where needed, i.e. when the type of a subscripted variable is different to
 	// its previous type. Start at the top, because we don't want to rename parameters (e.g. argc)
-	StatementList::iterator it;
 	std::map<Exp*, Type*, lessExpStar> firstTypes;
 	std::map<Exp*, Type*, lessExpStar>::iterator ff;
 	// Start with the parameters. There is not always a use of every parameter, yet that location may be used with
@@ -4177,6 +4194,7 @@ void UserProc::addImplicitAssigns() {
 		(*it)->accept(&sm);
 	}
 	cfg->setImplicitsDone();
+	df.convertImplicits(cfg);			// Some maps have m[...]{-} need to be m[...]{0} now
 }
 
 char* UserProc::lookupSym(Exp* e) {
@@ -4236,7 +4254,7 @@ void UserProc::dumpLocals() {
 	std::cerr << ost.str();
 }
 
-void UserProc::dumpIgraph(igraph& ig) {
+void dumpIgraph(igraph& ig) {
 	std::cerr << "Interference graph:\n";
 	igraph::iterator ii;
 	for (ii = ig.begin(); ii != ig.end(); ii++)
@@ -4331,7 +4349,7 @@ void UserProc::reverseStrengthReduction()
 
 // Update the parameters, in case the signature and hence ordering and filtering has changed, or the locations in the
 // collector have changed
-void UserProc::insertParameter(Exp* e) {
+void UserProc::insertParameter(Exp* e, Type* ty) {
 
 	if (filterParams(e))
 		return;						// Filtered out
@@ -4339,7 +4357,7 @@ void UserProc::insertParameter(Exp* e) {
 	// See test/pentium/restoredparam for an example where you must not remove restored locations
 			
 	// Wrap it in an implicit assignment; DFA based TA should update the type later
-	ImplicitAssign* as = new ImplicitAssign(e->clone());
+	ImplicitAssign* as = new ImplicitAssign(ty->clone(), e->clone());
 	// Insert as, in order, into the existing set of parameters
 	StatementList::iterator nn;
 	bool inserted = false;
@@ -4665,8 +4683,18 @@ bool UserProc::isLocal(Exp* e) {
 	return mapTo->isLocal();
 }
 
-// Temporary hack: is this m[sp{-} +/- K]?
+bool UserProc::isPropagatable(Exp* e) {
+	if (addressEscapedVars.exists(e)) return false;
+	return isLocalOrParam(e);
+}
+
 bool UserProc::isLocalOrParam(Exp* e) {
+	if (isLocal(e)) return true;
+	return parameters.existsOnLeft(e);
+}
+
+// Temporary hack: is this m[sp{-} +/- K]?
+bool UserProc::isLocalOrParamPattern(Exp* e) {
 	if (!e->isMemOf()) return false;			// Don't want say a register
 	Exp* addr = ((Location*)e)->getSubExp1();
 	if (!signature->isPromoted()) return false;	// Prevent an assert failure if using -E
@@ -4682,11 +4710,10 @@ bool UserProc::isLocalOrParam(Exp* e) {
 	return right->isIntConst();
 }
 
-// Remove the unused parameters. Check for uses for each parameter as param{-}; if one is found, add an entry to the
-// set usedParams for that parameter. 
-// Some parameters are apparently used when in fact they are only used as parameters to recursive calls to the current
-// prcocedure. So don't count arguments of calls in the current recursion group that chain through to ultimately use the
-// argument as a parameter to the current procedure.
+// Remove the unused parameters. Check for uses for each parameter as param{0}.
+// Some parameters are apparently used when in fact they are only used as parameters to calls to procedures in the
+// recursion set. So don't count components of arguments of calls in the current recursion group that chain through to
+// ultimately use the argument as a parameter to the current procedure.
 // Some parameters are apparently used when in fact they are only used by phi statements which transmit a return from
 // a recursive call ultimately to the current procedure, to the exit of the current procedure, and the return exists
 // only because of a liveness created by a parameter to a recursive call. So when examining phi statements, check if
@@ -4703,7 +4730,8 @@ bool UserProc::doesParamChainToCall(Exp* param, UserProc* p, ProcSet* visited) {
 		UserProc* dest = (UserProc*)c->getDestProc();
 		if (dest == NULL || dest->isLib()) continue;  // Only interested in calls to UserProcs
 		if (dest == p) {				// Pointer comparison is OK here
-			// This is a recursive call to p. Check for an argument of the form param{-}
+			// This is a recursive call to p. Check for an argument of the form param{-} FIXME: should be looking for
+			// component
 			StatementList& args = c->getArguments();
 			StatementList::iterator aa;
 			for (aa = args.begin(); aa != args.end(); ++aa) {
@@ -4734,8 +4762,8 @@ bool UserProc::doesParamChainToCall(Exp* param, UserProc* p, ProcSet* visited) {
 }
 
 bool UserProc::isRetNonFakeUsed(CallStatement* c, Exp* retLoc, UserProc* p, ProcSet* visited) {
-	// Ick! This algorithm has to search every statement for uses of the return location retLoc in call c that are not
-	// arguments of calls to p. If we had def-use information, it would be much more efficient
+	// Ick! This algorithm has to search every statement for uses of the return location retLoc defined at call c that
+	// are not arguments of calls to p. If we had def-use information, it would be much more efficient
 	StatementList stmts;
 	getStatements(stmts);
 	StatementList::iterator it;
@@ -4783,115 +4811,104 @@ bool UserProc::isRetNonFakeUsed(CallStatement* c, Exp* retLoc, UserProc* p, Proc
 	return false;
 }
 
-bool UserProc::removeUnusedParameters() {
-	bool ret = false;
-	
+// Check for a gainful use of bparam{0} in this proc. Return with true when the first such use is found.
+// Ignore uses in return statements of recursive functions, and phi statements that define them
+// Procs in visited are already visited
+bool UserProc::checkForGainfulUse(Exp* bparam, ProcSet& visited) {
+	visited.insert(this);					// Prevent infinite recursion
+	StatementList::iterator pp;
+	StatementList stmts;
+	getStatements(stmts);
+	StatementList::iterator it;
+	for (it = stmts.begin(); it != stmts.end(); it++) {
+		Statement* s = *it;
+		// Special checking for recursive calls
+		if (s->isCall()) {
+			CallStatement* c = (CallStatement*)s;
+			UserProc* dest = (UserProc*)c->getDestProc();
+			if (dest && !dest->isLib() && dest->doesRecurseTo(this)) {
+				// In the destination expression?
+				LocationSet u;
+				c->getDest()->addUsedLocs(u);
+				if (u.existsImplicit(bparam))
+					return true;			// Used by the destination expression
+				// Else check for arguments of the form lloc := f(bparam{0})
+				StatementList& args = c->getArguments();
+				StatementList::iterator aa;
+				for (aa = args.begin(); aa != args.end(); ++aa) {
+					Exp* rhs = ((Assign*)*aa)->getRight();
+					LocationSet argUses;
+					rhs->addUsedLocs(argUses);
+					if (argUses.existsImplicit(bparam)) {
+						Exp* lloc = ((Assign*)*aa)->getLeft();
+						if (visited.find(dest) == visited.end() && checkForGainfulUse(lloc, visited))
+							return true;
+					}
+				}
+				// If get to here, then none of the arguments is of this form, and we can ignore this call
+				continue;
+			}
+		}
+		else if (s->isReturn()) {
+			if (cycleGrp && cycleGrp->size())		// If this function is involved in recursion
+				continue;				//  then ignore this return statement
+		} else if (s->isPhi() && theReturnStatement != NULL && cycleGrp && cycleGrp->size()) {
+			Exp* phiLeft = ((PhiAssign*)s)->getLeft();
+			RefExp* refPhi = new RefExp(phiLeft, s);
+			ReturnStatement::iterator rr;
+			bool foundPhi = false;
+			for (rr = theReturnStatement->begin(); rr != theReturnStatement->end(); ++rr) {
+				Exp* rhs = ((Assign*)*rr)->getRight();
+				LocationSet uses;
+				rhs->addUsedLocs(uses);
+				if (uses.exists(refPhi)) {
+					// s is a phi that defines a component of a recursive return. Ignore it
+					foundPhi = true;
+					break;
+				}
+			}
+			if (foundPhi)
+				continue;			// Ignore this phi
+		}
+
+		// Otherwise, consider uses in s
+		LocationSet uses;
+		s->addUsedLocs(uses);
+		if (uses.existsImplicit(bparam))
+			return true;				// A gainful use
+	}	// for each statement s
+
+	return false;
+}
+
+// See comments three procedures above
+bool UserProc::removeRedundantParameters() {
 	if (signature->isForced())
+		// Assume that no extra parameters would have been inserted... not sure always valid
 		return false;
 
+	bool ret = false;
 	StatementList newParameters;
 	
 	if (DEBUG_UNUSED)
 		LOG << "%%% removing unused parameters for " << getName() << "\n";
-	// Check: I suspect that this would be far more efficient if we had def-use information
+	// Note: this would be far more efficient if we had def-use information
 	StatementList::iterator pp;
 	for (pp = parameters.begin(); pp != parameters.end(); ++pp) {
 		Exp* param = ((Assign*)*pp)->getLeft();
 		bool az;
-		Exp* zparam = param->clone()->removeSubscripts(az);		// FIXME: why does main have subscripts on parameters?
-		StatementList stmts;
-		getStatements(stmts);
-		StatementList::iterator it;
-		bool nonFakeUse = false;
-		for (it = stmts.begin(); it != stmts.end(); it++) {
-			Statement* s = *it;
-			// Ignore parameters in self recursive calls
-			if (s->isCall()) {
-				CallStatement* c = (CallStatement*)s;
-				UserProc* dest = (UserProc*)c->getDestProc();
-				if (dest == this) {
-					// Check if param is an argument of s
-					// FIXME: what about param+1? param+y? Other expressions using param?
-					StatementList& args = c->getArguments();
-					StatementList::iterator aa;
-					bool foundFakeParam = false;
-					for (aa = args.begin(); aa != args.end(); ++aa) {
-						Exp* rhs = ((Assign*)*aa)->getRight();
-						if (*rhs == *zparam) {
-							foundFakeParam = true;
-							break;
-						}
-					}
-					if (foundFakeParam)
-						continue;			// Ignore this call
-				}
-				// Check if there is a parameter that chains to the current parameter, param
-				if (dest && !dest->isLib() && dest->doesRecurseTo(this)) {
-					ProcSet* visited = new ProcSet;
-					visited->insert(this);
-					if (doesParamChainToCall(param, this, visited))
-						continue;				// Ignore it also
-				}
-			} else if (cycleGrp && s->isPhi()) {
-				// Check if this phi is a direct reference from a return
-				ReturnStatement::iterator rr;
-				bool phiDefinesRet = false;
-				if (theReturnStatement)  // can be NULL
-				for (rr = theReturnStatement->begin(); rr != theReturnStatement->end(); ++rr) {
-					Exp* rhs = ((Assign*)*rr)->getRight();
-					if (!rhs->isSubscript())
-						continue;
-					Statement* def = ((RefExp*)rhs)->getDef();
-					if (def == s) {
-						phiDefinesRet = true;
-						break;			// No need to search more returns
-					}
-				}
-				if (phiDefinesRet) {
-					// OK, this is a phi that defines a return
-					// Check all callers. For each, search all statements for non-fake uses. If none found, this
-					// parameter (and return, though that could come later if necessary) can be removed
-					std::set<CallStatement*>& callers = getCallers();
-					std::set<CallStatement*>::iterator cc;
-					bool hasNonFakeUses = false;
-					for (cc = callers.begin(); cc != callers.end(); ++cc) {
-						ProcSet* visited = new ProcSet;
-						visited->insert(this);
-						if (isRetNonFakeUsed(*cc, param, this, visited)) {
-							// There is a non-fake use; can't ignore this phi
-							hasNonFakeUses = true;
-							break;
-						}
-					}
-					if (!hasNonFakeUses)
-						continue;			// Also ignore the phi statement
-				}
-			}
-			// OK, this statement is not ignorable. Check for implicit references
-			LocationSet ls;
-			LocationSet::iterator ll;
-			s->addUsedLocs(ls);
-			for (ll = ls.begin(); ll != ls.end(); ++ll) {
-				// Note: *ll could be <all> (not subscripted; not sure why)
-				if ((*ll)->isSubscript() && ((RefExp*)*ll)->isImplicitDef()) {
-					// The parameter will have subscripts removed; we can remove this one if they are all null
-					// Ugh! Except for main, it seems; so compare with zparam
-					Exp* use = ((RefExp*)*ll)->getSubExp1()->clone();
-					bool allZero;
-					use = use->removeSubscripts(allZero);
-					if (allZero && *use == *zparam) {
-						nonFakeUse = true;
-						break;
-					}
-				}
-			}
-			if (nonFakeUse)
-				break;
-		}
-		// Checked every statement, and no non-fake use was found
-		if (nonFakeUse) {
-			newParameters.append(*pp);
-		} else {
+		Exp* bparam = param->clone()->removeSubscripts(az);		// FIXME: why does main have subscripts on parameters?
+		// Memory parameters will be of the form m[sp + K]; convert to m[sp{0} + K] as will be found in uses
+		bparam = bparam->expSubscriptAllNull();		// Now m[sp{-}+K]{-}
+		ImplicitConverter ic(cfg);
+		bparam = bparam->accept(&ic);				// Now m[sp{0}+K]{0}
+		assert(bparam->isSubscript());
+		bparam = ((RefExp*)bparam)->getSubExp1();	// now m[sp{0}+K] (bare parameter)
+
+		ProcSet visited;
+		if (checkForGainfulUse(bparam, visited))
+			newParameters.append(*pp);				// Keep this parameter
+		else {
 			// Remove the parameter
 			ret = true;
 			if (DEBUG_UNUSED)
@@ -4899,7 +4916,8 @@ bool UserProc::removeUnusedParameters() {
 			// Check if it is in the symbol map. If so, delete it; a local will be created later
 			SymbolMapType::iterator ss = symbolMap.find(param);
 			if (ss != symbolMap.end())
-				symbolMap.erase(ss);		// Kill the symbol
+				symbolMap.erase(ss);			// Kill the symbol
+			signature->removeParameter(param);	// Also remove from the signature
 		}
 	}
 	parameters = newParameters;
@@ -4915,26 +4933,31 @@ bool UserProc::removeUnusedParameters() {
 // y will take the values r25{10} and r26{20}):
 // 1) a statement s defining a return becomes unused if the only use of its definition was y
 // 2) a call statement c defining y will no longer have y live if the return was the only use of y. This could cause a
-//	change to the returns of c's destination, so removeUnusedReturns has to be called for c's destination proc (if it
+//	change to the returns of c's destination, so removeRedundantReturns has to be called for c's destination proc (if it
 //	turns out to be the only definition, and that proc was not already scheduled for return removing).
-// 3) if y is a parameter (i.e. y is of the form loc{-}), then the signature of this procedure changes, and all callers
+// 3) if y is a parameter (i.e. y is of the form loc{0}), then the signature of this procedure changes, and all callers
 //	have to have their arguments trimmed, and a similar process has to be applied to all those caller's removed
 //	arguments as is applied here to the removed returns.
-bool UserProc::removeUnusedReturns(std::set<UserProc*>& removeRetSet) {
+// The removeRetSet is the set of procedures to process with this logic; caller in Prog calls all elements in this set
+// (only add procs to this set, never remove)
+// Return true if any change
+bool UserProc::removeRedundantReturns(std::set<UserProc*>& removeRetSet) {
 	Boomerang::get()->alert_decompile_debug_point(this, "before removing unused returns");
 	// First remove the unused parameters
-	bool removedParams = removeUnusedParameters();
+	bool removedParams = removeRedundantParameters();
 	if (theReturnStatement == NULL)
-		return false;
+		return removedParams;
 	if (DEBUG_UNUSED)
 		LOG << "%%% removing unused returns for " << getName() << " %%%\n";
 
 	if (signature->isForced()) {
+		// Respect the forced signature, but use it to remove returns if necessary
 		bool removedRets = false;
 		ReturnStatement::iterator rr;
 		for (rr = theReturnStatement->begin(); rr != theReturnStatement->end(); ) {
 			Assign* a = (Assign*)*rr;
 			Exp *lhs = a->getLeft();
+			// For each location in the returns, check if in the signature
 			bool found = false;
 			for (unsigned int i = 0; i < signature->getNumReturns(); i++)
 				if (*signature->getReturnExp(i) == *lhs) {
@@ -4942,17 +4965,25 @@ bool UserProc::removeUnusedReturns(std::set<UserProc*>& removeRetSet) {
 					break;
 				}
 			if (found)
-				rr++;
+				rr++;		// Yes, in signature; OK
 			else {
+				// This return is not in the signature. Remove it
 				rr = theReturnStatement->erase(rr);
 				removedRets = true;
+				if (DEBUG_UNUSED)
+					LOG << "%%%  removing unused return " << a << " from proc " << getName() << " (forced signature)\n";
 			}
 		}
+		if (removedRets)
+			// Still may have effects on calls or now unused statements
+			updateForUseChange(removeRetSet);
 		return removedRets;
 	}
 
+	// FIXME: this needs to be more sensible when we don't decompile down from main! Probably should assume just the
+	// first return is valid, for example (presently assume none are valid)
 	LocationSet unionOfCallerLiveLocs;
-	if (strcmp(getName(), "main") == 0)
+	if (strcmp(getName(), "main") == 0)		// Probably not needed: main is forced so handled above
 		// Just insert one return for main. Note: at present, the first parameter is still the stack pointer
 		unionOfCallerLiveLocs.insert(signature->getReturnExp(1));
 	else {
@@ -4973,16 +5004,9 @@ bool UserProc::removeUnusedReturns(std::set<UserProc*>& removeRetSet) {
 		if (!unionOfCallerLiveLocs.exists(a->getLeft())) {
 			if (DEBUG_UNUSED)
 				LOG << "%%%  removing unused return " << a << " from proc " << getName() << "\n";
-			Exp* rhs = a->getRight();
-			if (rhs->isSubscript()) {
-				CallStatement* call = (CallStatement*)((RefExp*)rhs)->getDef();
-				if (call && call->isCall()) {
-					// Remove the liveness for rhs at this call; when dataflow is redone, it may not come back, in which
-					// case we have more work to do
-					Exp* base = ((RefExp*)rhs)->getSubExp1();
-					call->removeLiveness(base);
-				}
-			}
+			// If a component of the RHS referenced a call statement, the liveness used to be killed here.
+			// This was wrong; you need to notice the liveness changing inside updateForUseChange() to correctly
+			// recurse to callee
 			rr = theReturnStatement->erase(rr);
 			removedRets = true;
 		}
@@ -4997,23 +5021,29 @@ bool UserProc::removeUnusedReturns(std::set<UserProc*>& removeRetSet) {
 		LOG << "%%%  final returns for " << getName() << ": " << theReturnStatement->getReturns().prints() << "\n";
 	}
 
+	ProcSet updateSet;			// Set of procs to update
+
 	if (removedParams || removedRets) {
-		// Now update myself, especially because the call livenesses are possibly incorrect, because every time we found
-		// a return defined at a call, we deleted the liveness in the call's use collector. So it's pointless removing
-		// unused returns for children, since the liveness that this depends on is possibly incorrect.
-//		updateForUseChange(removeRetSet);		// HACK!
-	
-		// Update the statements that call us
-		std::set<CallStatement*>::iterator it;
-		for (it = callerSet.begin(); it != callerSet.end() ; it++) {
-			(*it)->updateArguments();
-			// Highly Experimantal!
-			if (removedParams) {
-				UserProc* parent = (*it)->getProc();	// Parent proc (may = this)
-				parent->removeCallLiveness();			// Because parameters can affect livenesses
+		if (removedParams) {
+			// Update the statements that call us
+			std::set<CallStatement*>::iterator it;
+			for (it = callerSet.begin(); it != callerSet.end() ; it++) {
+				(*it)->updateArguments();				// Update caller's arguments
+				updateSet.insert((*it)->getProc());		// Make sure we redo the dataflow
+				removeRetSet.insert((*it)->getProc());	// Also schedule caller proc for more analysis
 			}
 		}
-		updateForUseChange(removeRetSet);		// HACK!!!
+
+		// Now update myself
+		updateForUseChange(removeRetSet);
+
+		// Update any other procs that need updating
+		updateSet.erase(this);		// Already done this proc
+		while (updateSet.size()) {
+			UserProc* proc = *updateSet.begin();
+			updateSet.erase(proc);
+			proc->updateForUseChange(removeRetSet);
+		}
 	}
 
 	if (theReturnStatement->getNumReturns() == 1) {
@@ -5021,14 +5051,14 @@ bool UserProc::removeUnusedReturns(std::set<UserProc*>& removeRetSet) {
 		signature->setRetType(a->getType());
 	}
 
-	Boomerang::get()->alert_decompile_debug_point(this, "after removing unused returns");
-	return removedRets;
+	Boomerang::get()->alert_decompile_debug_point(this, "after removing unused and redundant returns");
+	return removedRets || removedParams;
 }
 
-// See comments above for removeUnusedReturns(). Need to save the old parameters and call livenesses, redo the dataflow
-// and removal of unused statements, recalculate the parameters and call livenesses, and if either or both of these are
-// changed, recurse to parents or those calls' children respectively. (When call livenesses change like this, it means
-// that the recently removed return was the only use of that liveness, i.e. there was a return chain.)
+// See comments above for removeRedundantReturns(). Need to save the old parameters and call livenesses, redo the
+// dataflow and removal of unused statements, recalculate the parameters and call livenesses, and if either or both of
+// these are changed, recurse to parents or those calls' children respectively. (When call livenesses change like this,
+// it means that the recently removed return was the only use of that liveness, i.e. there was a return chain.)
 void UserProc::updateForUseChange(std::set<UserProc*>& removeRetSet) {
 	// We need to remember the parameters, and all the livenesses for all the calls, to see if these are changed
 	// by removing returns
@@ -5053,6 +5083,7 @@ void UserProc::updateForUseChange(std::set<UserProc*>& removeRetSet) {
 	}
 
 	// Have to redo dataflow to get the liveness at the calls correct
+	removeCallLiveness();			// Want to recompute the call livenesses
 	doRenameBlockVars(-3, true);
 
 	remUnusedStmtEtc();				// Also redoes parameters
@@ -5060,7 +5091,7 @@ void UserProc::updateForUseChange(std::set<UserProc*>& removeRetSet) {
 	// Have the parameters changed? If so, then all callers will need to update their arguments, and do similar
 	// analysis to the removal of returns
 	//findFinalParameters();
-	removeUnusedParameters();
+	removeRedundantParameters();
 	if (parameters.size() != oldParameters.size()) {
 		if (DEBUG_UNUSED)
 			LOG << "%%%  parameters changed for " << getName() << "\n";
@@ -5069,12 +5100,10 @@ void UserProc::updateForUseChange(std::set<UserProc*>& removeRetSet) {
 		std::set<UserProc*> callerProcs;
 		std::set<UserProc*>::iterator pp;
 		for (cc = callers.begin(); cc != callers.end(); ++cc) {
-			(*cc)->updateDefines();
-			// To prevent duplication, insert into this set, but do the updates immediately
-			callerProcs.insert((*cc)->getProc());
+			(*cc)->updateArguments();
+			// Schedule the callers for analysis
+			removeRetSet.insert((*cc)->getProc());
 		}
-		for (pp = callerProcs.begin(); pp != callerProcs.end(); ++pp)
-			(*pp)->updateForUseChange(removeRetSet);
 	}
 	// Check if the liveness of any calls has changed
 	std::map<CallStatement*, UseCollector>::iterator ll;
@@ -5109,21 +5138,22 @@ void UserProc::typeAnalysis() {
 	if (VERBOSE)
 		LOG << "### type analysis for " << getName() << " ###\n";
 
+	// Now we need to add the implicit assignments. Doing this earlier is extremely problematic, because
+	// of all the m[...] that change their sorting order as their arguments get subscripted or propagated into
+	// Do this regardless of whether doing dfa-based TA, so things like finding parameters can rely on implicit assigns
+	addImplicitAssigns();
+
 	// Data flow based type analysis
 	// Want to be after all propagation, but before converting expressions to locals etc
 	if (DFA_TYPE_ANALYSIS) {
 		if (VERBOSE || DEBUG_TA)
 			LOG << "--- start data flow based type analysis for " << getName() << " ---\n";
 
-		// Now we need to add the implicit assignments. Doing this earlier is extremely problematic, because
-		// of all the m[...] that change their sorting order as their arguments get subscripted or propagated into
-		addImplicitAssigns();
-
 		bool first = true;
 		do {
 			if (!first) {
 				doRenameBlockVars(-1, true);		// Subscript the discovered extra parameters
-				//propagateAtDepth(maxDepth);		// HACK: Can sometimes be needed, if call was indirect
+				//propagateAtDepth(maxDepth);		// Hack: Can sometimes be needed, if call was indirect
 				bool convert;
 				propagateStatements(convert, 0);
 			}
