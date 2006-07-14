@@ -3210,7 +3210,7 @@ Exp *Exp::removeSubscripts(bool& allZero) {
 
 
 //
-// From SSA form
+// From SSA form. Should be changed to use a visitor pattern some time
 //
 
 Exp* RefExp::fromSSA(igraph& ig) {
@@ -3679,7 +3679,7 @@ Exp* Location::polySimplify(bool& bMod) {
 
 void Location::getDefinitions(LocationSet& defs) {
 	// This is a hack to fix aliasing (replace with something general)
-	// HACK! This is x86 specific too. Use -O for overlapped registers!
+	// FIXME! This is x86 specific too. Use -O for overlapped registers!
 	if (op == opRegOf && ((Const*)subExp1)->getInt() == 24) {
 		defs.insert(Location::regOf(0));
 	}
@@ -4195,7 +4195,7 @@ Exp* Exp::expSubscriptVar(Exp* e, Statement* def) {
 	return accept(&es);
 }
 
-// Subscript any occurrences of e with e{0} in this expression Note: subscript with NULL, not implicit assignments as
+// Subscript any occurrences of e with e{-} in this expression Note: subscript with NULL, not implicit assignments as
 // above
 Exp* Exp::expSubscriptValNull(Exp* e) {
 	return expSubscriptVar(e, NULL);
@@ -4268,10 +4268,14 @@ bool Exp::canRename() {
 	if (op == opArrayIndex) return false;
 	if (op == opMemberAccess) return false;
 	if (op != opMemOf) return true;
+#if 0		// Hack MVE try not renaming memory
 	Exp* addressExp = ((Location*)this)->getSubExp1();
 	PrimitiveTester pt;
 	addressExp->accept(&pt);
 	return pt.getResult();
+#else
+	return false;
+#endif
 }
 
 bool Exp::containsFlags() {
@@ -4284,6 +4288,13 @@ bool Exp::containsBareMemof() {
 	BareMemofFinder bmf;
 	accept(&bmf);
 	return bmf.isFound();
+}
+
+// FIXME: only need one of these, presumably
+bool Exp::containsMemof(UserProc* proc) {
+	ExpHasMemofTester ehmt(proc);
+	accept(&ehmt);
+	return ehmt.getResult();
 }
 
 
