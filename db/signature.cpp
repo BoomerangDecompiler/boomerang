@@ -214,7 +214,6 @@ namespace CallingConvention {
 			//virtual bool isLocalOffsetPositive() {return true;}
 			virtual platform getPlatform() { return PLAT_ST20; }
 			virtual callconv getConvention() { return CONV_C; }
-			//virtual	bool isAddrOfStackLocal(Prog* prog, Exp* e);
 		};
 	};	// namespace StdC
 };	// namespace CallingConvention
@@ -1120,11 +1119,8 @@ void Signature::addParameter(const char *nam /*= NULL*/) {
 		addParameter(new VoidType(), nam);
 }
 
-void Signature::addParameter(Exp *e) {
-	if (ADHOC_TYPE_ANALYSIS)
-		addParameter(new IntegerType(), NULL, e);
-	else
-		addParameter(new VoidType(), NULL, e);
+void Signature::addParameter(Exp *e, Type* ty) {
+	addParameter(ty, NULL, e);
 }
 
 void Signature::addParameter(Type *type, const char *nam /*= NULL*/, Exp *e /*= NULL*/) {
@@ -1370,7 +1366,7 @@ void Signature::print(std::ostream &out, bool html)
 		out << "*forced* ";
 	if (returns.size() > 0) {
 		out << "{ ";
-		int n = 0;
+		unsigned n = 0;
 		for (Returns::iterator rr = returns.begin(); rr != returns.end(); rr++, n++) {
 			out << (*rr)->type->getCtype() << " " << (*rr)->exp;
 			if (n != returns.size() - 1)
