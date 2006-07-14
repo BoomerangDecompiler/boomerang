@@ -688,7 +688,7 @@ if (ret)
 
 // Return true if can propagate to Exp* e (must be a RefExp to return true)
 // Note: does not consider whether e is able to be renamed (from a memory Primitive point of view), only if the
-// definition can be propagated to this stmt
+// definition can be propagated TO this stmt
 // Note: static member function
 bool Statement::canPropagateToExp(Exp*e) {
 	if (!e->isSubscript()) return false;
@@ -721,7 +721,7 @@ bool Statement::propagateTo(bool& convert, std::map<Exp*, int, lessExpStar>* des
 	// Exp* regSp = Location::regOf(sp);
 	int propMaxDepth = Boomerang::get()->propMaxDepth;
 	// Repeat substituting into this statement while there is a reference component in it
-	if (EXPERIMENTAL) {
+	if (EXPERIMENTAL) {						// -X needed for "on demand" propagation
 		do {
 			LocationSet exps;
 			addUsedLocs(exps, true, true);	// First true to also add uses from collectors. For example, want to
@@ -735,9 +735,9 @@ bool Statement::propagateTo(bool& convert, std::map<Exp*, int, lessExpStar>* des
 					continue;
 				Assign* def = (Assign*)((RefExp*)e)->getDef();
 				Exp* rhs = def->getRight();
-				if (rhs->containsBareMemof())
-					// Must never propagate unsubscripted memofs. You could be propagating past a definition, thereby
-					// invalidating the IR
+				if (rhs->containsMemof(proc))
+					// The current idea is to not propagate memofs at all, or propagatable registers whose expressions
+					// contain them. You could be propagating past a definition, thereby invalidating the IR
 					continue;
 				change |= doPropagateTo(e, def, convert);
 			}
@@ -774,7 +774,7 @@ bool Statement::propagateTo(bool& convert, std::map<Exp*, int, lessExpStar>* des
 				def->addUsedLocs(used);
 				RefExp left(def->getLeft(), (Statement*)-1);
 				RefExp *right = dynamic_cast<RefExp*>(def->getRight());
-				// Beware of x := x{something else} (do want to do copy propagation)
+				// Beware of x := x{something else} (because we do want to do copy propagation)
 				if (used.exists(&left) && !(right && *right->getSubExp1() == *left.getSubExp1()))
 					// We have something like eax = eax + 1
 					continue;
@@ -3287,7 +3287,17 @@ Assign::Assign(Assign& o) : Assignment(lhs->clone()) {
 	if (o.type)	 type  = o.type->clone();  else type  = NULL;
 	if (o.guard) guard = o.guard->clone(); else guard = NULL;
 }
-ImplicitAssign::ImplicitAssign(ImplicitAssign& o) : Assignment(lhs->clone()) {
+
+// Implicit Assignment
+// Constructor and subexpression
+ImplicitAssign::ImplicitAssign(Exp* lhs) : Assignment(lhs) {
+	kind = STMT_IMPASSIGN;
+}
+// Constructor, type, and subexpression
+ImplicitAssign::ImplicitAssign(Type* ty, Exp* lhs) : Assignment(ty, lhs) {
+	kind = STMT_IMPASSIGN;
+}
+ImplicitAssign::ImplicitAssign(ImplicitAssign& o) : Assignment(type?type->clone():NULL, lhs->clone()) {
 	kind = STMT_IMPASSIGN;
 }
 // The first virtual function (here the destructor) can't be in statement.h file for gcc
@@ -4183,7 +4193,13 @@ bool CallStatement::accept(StmtExpVisitor* v) {
 	for (it = arguments.begin(); ret && it != arguments.end(); it++)
 		ret = (*it)->accept(v);
 	// FIXME: why aren't defines counted?
-	// FIXME: should be count in the collectors?
+#if 0		// Do we want to accept visits to the defines? Not sure now...
+	std::vector<ReturnInfo>::iterator rr;
+	for (rr = defines.begin(); ret && rr != defines.end(); rr++)
+		if (rr->e)			// Can be NULL now to line up with other returns
+			ret = rr->e->accept(v->ev);
+#endif
+	// FIXME: surely collectors should be counted?
 	return ret;
 }
 
@@ -4465,7 +4481,8 @@ void Statement::bypass() {
 
 // Find the locations used by expressions in this Statement.
 // Use the StmtExpVisitor and UsedLocsFinder visitor classes
-void Statement::addUsedLocs(LocationSet& used, bool cc, bool memOnly /*= false */) {
+// cc = count collectors
+void Statement::addUsedLocs(LocationSet& used, bool cc /* = false */, bool memOnly /*= false */) {
 	UsedLocsFinder ulf(used, memOnly);
 	UsedLocsVisitor ulv(&ulf, cc);
 	accept(&ulv);
@@ -4545,54 +4562,6 @@ void PhiAssign::simplify() {
 			return;
 		}
 	}
-}
-
-static Exp* regOfWild = Location::regOf(new Terminal(opWild));
-static Exp* regOfWildRef = new RefExp(regOfWild, (Statement*)-1);
-
-// FIXME: Check if this is used any more
-void Assignment::regReplace(UserProc* proc) {
-	if (! (*lhs == *regOfWild)) return;
-	std::list<Exp**> li;
-	Exp* tmp = new RefExp(lhs, this);
-	// Make a temporary reference for the LHS
-	li.push_front(&tmp);
-	proc->regReplaceList(li);
-	lhs = tmp;
-}
-void Assign::regReplace(UserProc* proc) {
-	std::list<Exp**> li;
-	Exp::doSearch(regOfWildRef, rhs, li, false);
-	proc->regReplaceList(li);
-	// Now process the LHS
-	Assignment::regReplace(proc);
-}
-void GotoStatement::regReplace(UserProc* proc) {
-	std::list<Exp**> li;
-	Exp::doSearch(regOfWildRef, pDest, li, false);
-	proc->regReplaceList(li);
-}
-void BranchStatement::regReplace(UserProc* proc) {
-	std::list<Exp**> li;
-	Exp::doSearch(regOfWildRef, pDest, li, false);
-	Exp::doSearch(regOfWildRef, pCond, li, false);
-	proc->regReplaceList(li);
-}
-void CaseStatement::regReplace(UserProc* proc) {
-	std::list<Exp**> li;
-	Exp::doSearch(regOfWildRef, pSwitchInfo->pSwitchVar, li, false);
-	proc->regReplaceList(li);
-}
-void CallStatement::regReplace(UserProc* proc) {
-	std::list<Exp**> li;
-	Exp::doSearch(regOfWildRef, pDest, li, false);
-	StatementList::iterator it;
-	for (it = arguments.begin(); it != arguments.end(); it++)
-		(*it)->regReplace(proc);
-}
-void ReturnStatement::regReplace(UserProc* proc) {
-	for (iterator it = modifieds.begin(); it != modifieds.end(); ++it)
-		(*it)->regReplace(proc);
 }
 
 void PhiAssign::putAt(int i, Statement* def, Exp* e) {
@@ -4777,9 +4746,12 @@ void ReturnStatement::updateModifieds() {
 			}
 		}
 		if (!found) {
-			as->setProc(proc);							// Comes from the Collector
-			as->setBB(pbb);
-			oldMods.append(as->clone());
+			ImplicitAssign* ias = new ImplicitAssign(
+                as->getType()->clone(),
+                as->getLeft()->clone());
+			ias->setProc(proc);							// Comes from the Collector
+			ias->setBB(pbb);
+			oldMods.append(ias);
 		}
 	}
 
@@ -4906,12 +4878,13 @@ void CallStatement::updateDefines() {
 		StatementList::iterator mm;
 		StatementList& modifieds = ((UserProc*)procDest)->getModifieds();
 		for (mm = modifieds.begin(); mm != modifieds.end(); ++mm) {
-			ImplicitAssign* ias = (ImplicitAssign*)*mm;
-			Exp* loc = ias->getLeft();
+			Assign* as = (Assign*)*mm;
+			Exp* loc = as->getLeft();
 			if (proc->filterReturns(loc))
 				continue;
+			Type* ty = as->getType();
 			if (!oldDefines.existsOnLeft(loc))
-				oldDefines.append(ias->clone());
+				oldDefines.append(new ImplicitAssign(ty, loc));
 		}
 	} else {
 		// Ensure that everything in the UseCollector has an entry in oldDefines
@@ -4938,7 +4911,7 @@ void CallStatement::updateDefines() {
 			if (!calleeReturn->definesLoc(lhs))
 				continue;						// Not in callee returns
 		} else {
-			if (!useCol.existsNS(lhs))
+			if (!useCol.exists(lhs))
 				continue;						// Not in collector: delete it (don't copy it)
 		}
 		if (proc->filterReturns(lhs))
@@ -5122,10 +5095,10 @@ void CallStatement::updateArguments() {
 	StatementList oldArguments(arguments);
 	arguments.clear();
 	if (EXPERIMENTAL) {
-	// I don't really know why this is needed, but I was seeing r28 := ((((((r28{-} - 4) - 4) - 4) - 8) - 4) - 4) - 4:
-	DefCollector::iterator dd;
-	for (dd = defCol.begin(); dd != defCol.end(); ++dd)
-		(*dd)->simplify();
+		// I don't really know why this is needed, but I was seeing r28 := ((((((r28{-}-4)-4)-4)-8)-4)-4)-4:
+		DefCollector::iterator dd;
+		for (dd = defCol.begin(); dd != defCol.end(); ++dd)
+			(*dd)->simplify();
 	}
 
 	Signature* sig = proc->getSignature();
@@ -5137,7 +5110,13 @@ void CallStatement::updateArguments() {
 		if (proc->filterParams(loc))
 			continue;
 		if (!oldArguments.existsOnLeft(loc)) {
-			Exp* rhs = asp.localise(loc->clone());
+			// Check if the location is renamable. If not, localising won't work, since it relies on definitions
+			// collected in the call, and you just get m[...]{-} even if there are definitions.
+			Exp* rhs;
+			if (proc->canRename(loc))
+				rhs = asp.localise(loc->clone());
+			else
+				rhs = loc->clone();
 			Assign* as = new Assign(asp.curType(loc), loc->clone(), rhs);
 			as->setProc(proc);
 			as->setBB(pbb);
@@ -5287,7 +5266,7 @@ Exp* CallStatement::bypassRef(RefExp* r, bool& ch) {
 			return r;				// Childless callees transmit nothing
 		//if (procDest->isLocal(base))					// ICK! Need to prove locals and parameters through calls...
 		// FIXME: temporary HACK! Ignores alias issues.
-		if (!procDest->isLib() && ((UserProc*)procDest)->isLocalOrParam(base)) {
+		if (!procDest->isLib() && ((UserProc*)procDest)->isLocalOrParamPattern(base)) {
 			Exp* ret = localiseExp(base->clone());	// Assume that it is proved as preserved
 			ch = true;
 			if (VERBOSE)
@@ -5383,11 +5362,6 @@ bool	ImpRefStatement::searchAndReplace(Exp* search, Exp* replace, bool cc) {
 	return change;
 }
 void	ImpRefStatement::simplify() {addressExp = addressExp->simplify();}
-void	ImpRefStatement::regReplace(UserProc* proc) {
-	std::list<Exp**> li;
-	Exp::doSearch(regOfWildRef, addressExp, li, false);
-	proc->regReplaceList(li);
-}
 
 void CallStatement::eliminateDuplicateArgs() {
 	StatementList::iterator it;
@@ -5461,4 +5435,10 @@ void JunctionStatement::print(std::ostream &os, bool html)
 	ranges.print(os);
 	if (html)
 		os << "</a></td>";
+}
+
+void Statement::mapRegistersToLocals() {
+	ExpRegMapper erm(proc);
+	StmtRegMapper srm(&erm);
+	accept(&srm);
 }
