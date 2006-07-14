@@ -1191,6 +1191,13 @@ void Cfg::dump() {
 	print(std::cerr);
 }
 
+void Cfg::dumpImplicitMap() {
+	std::map<Exp*, Statement*, lessExpStar>::iterator it;
+	for (it = implicitMap.begin(); it != implicitMap.end(); ++it) {
+		std::cerr << it->first << " -> " << it->second << "\n";
+	}
+}
+
 void Cfg::printToLog() {
 	std::ostringstream ost;
 	print(ost);
@@ -2026,16 +2033,13 @@ Statement* Cfg::findImplicitAssign(Exp* x) {
 	std::map<Exp*, Statement*, lessExpStar>::iterator it = implicitMap.find(x);
 	if (it == implicitMap.end()) {
 		// A use with no explicit definition. Create a new implicit assignment
-		def = new ImplicitAssign(x->clone());
+		x = x->clone();				// In case the original gets changed
+		def = new ImplicitAssign(x);
 		entryBB->prependStmt(def, myProc);
 		// Remember it for later so we don't insert more than one implicit assignment for any one location
 		// We don't clone the copy in the map. So if the location is a m[...], the same type information is available in
 		// the definition as at all uses
-#if 1
 		implicitMap[x] = def;
-#else
-		implicitMap[x->clone()]=def;	// Not sure if this is good or not. Sometimes seems to fix test/sparc/minmax2
-#endif
 	} else {
 		// Use an existing implicit assignment
 		def = it->second;
