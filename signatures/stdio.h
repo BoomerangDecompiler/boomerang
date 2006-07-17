@@ -2,7 +2,10 @@
 typedef unsigned int size_t;
 
 int printf(char *fmt, ...);
+int _printf(char *fmt, ...);
+int __imp__printf(char *fmt, ...);
 int scanf(char *fmt, ...);
+int _scanf(char *fmt, ...);
 char *getenv(char *name);
 FILE *fopen(const char *path, const char *mode);
 int fseek(FILE *stream, long offset, int whence);
