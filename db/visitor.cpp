@@ -291,8 +291,13 @@ bool UsedLocsFinder::visit(RefExp* e, bool& override) {
 		Exp* x = ((Location*)refd)->getSubExp1();
 		x->accept(this);
 	}
-	else if (refd->isArrayIndex() || refd->isMemberOf()) {
-		Exp* x = ((Binary*)refd)->getSubExp2();
+	else if (refd->isArrayIndex()) {
+		Exp* x1 = ((Binary*)refd)->getSubExp1();
+		x1->accept(this);
+		Exp* x2 = ((Binary*)refd)->getSubExp2();
+		x2->accept(this);
+	} else if (refd->isMemberOf()) {
+		Exp* x = ((Binary*)refd)->getSubExp1();
 		x->accept(this);
 	}
 	return true;

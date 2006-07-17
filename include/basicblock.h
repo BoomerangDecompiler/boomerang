@@ -417,6 +417,8 @@ static void			doAvail(StatementSet& s, PBB inEdge);
 		Statement*	getPrevStmt(rtlrit& rit, StatementList::reverse_iterator& sit);
 		RTL*		getLastRtl() {return m_pRtls->back();}
 
+		void		getStatements(StatementList &stmts);
+
 		/**
 		 * Get the statement number for the first BB as a character array.
 		 * If not possible (e.g. because the BB has no statements), return

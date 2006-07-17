@@ -767,19 +767,19 @@ void Binary::print(std::ostream& os, bool html) {
 		case opBitXor:	os << " ^ ";  break;
 		case opEquals:	os << " = ";  break;
 		case opNotEqual:os << " ~= "; break;
-		case opLess:	os << " < ";  break;
-		case opGtr:		os << " > ";  break;
-		case opLessEq:	os << " <= "; break;
-		case opGtrEq:	os << " >= "; break;
-		case opLessUns: os << " <u "; break;
-		case opGtrUns:	os << " >u "; break;
-		case opLessEqUns:os<< " <=u ";break;
-		case opGtrEqUns:os << " >=u ";break;
+		case opLess:	if (html) os << " &lt; "; else os << " < ";  break;
+		case opGtr:		if (html) os << " &gt; "; else os << " > ";  break;
+		case opLessEq:	if (html) os << " &lt;= "; else os << " <= "; break;
+		case opGtrEq:	if (html) os << " &gt;= "; else os << " >= "; break;
+		case opLessUns: if (html) os << " &lt;u "; else os << " <u "; break;
+		case opGtrUns:	if (html) os << " &gt;u "; else os << " >u "; break;
+		case opLessEqUns: if (html) os << " &lt;u "; else os<< " <=u ";break;
+		case opGtrEqUns: if (html) os << " &gt;=u "; else os << " >=u ";break;
 		case opUpper:	os << " GT "; break;
 		case opLower:	os << " LT "; break;
-		case opShiftL:	os << " << "; break;
-		case opShiftR:	os << " >> "; break;
-		case opShiftRA: os << " >>A "; break;
+		case opShiftL:	if (html) os << " &lt;&lt; "; else os << " << "; break;
+		case opShiftR:	if (html) os << " &gt;&gt; "; else os << " >> "; break;
+		case opShiftRA: if (html) os << " &gt;&gt;A "; else os << " >>A "; break;
 		case opRotateL: os << " rl "; break;
 		case opRotateR: os << " rr "; break;
 		case opRotateLC:os << " rlc "; break;
@@ -924,6 +924,12 @@ void Unary::print(std::ostream& os, bool html) {
 			os << "! ";
 			return;
 		case opTemp:
+			if (p1->getOper() == opWildStrConst) {
+				os << "t[";
+				((Const*)p1)->printNoQuotes(os);
+				os << "]";
+				return;
+			}
 			// Temp: just print the string, no quotes
 		case opGlobal:
 		case opLocal:
@@ -3798,12 +3804,29 @@ Type *RefExp::getType()
 		}
 	}
 	if (def == NULL) {
-	   if (subExp1->isGlobal())
+		if (subExp1->isLocation()) {
+			Location *l = (Location*)subExp1;
+			if (l->getProc()) {
+
+				char *nam = l->getProc()->getSymbolName(this);
+				if (nam == NULL)
+					nam = l->getProc()->getSymbolName(subExp1);
+				if (nam) {
+					Type *ty = l->getProc()->getLocalType(nam);
+					if (ty)
+						return ty;
+					ty = l->getProc()->getParamType(nam);
+					if (ty)
+						return ty;
+				}
+			}
+		}
+		if (subExp1->isGlobal())
 			return subExp1->getType();
-	   if (subExp1->getOper() == opArrayIndex)
-		   return subExp1->getType();
-	   if (subExp1->getOper() == opMemberAccess)
-		   return subExp1->getType();
+		if (subExp1->getOper() == opArrayIndex)
+			return subExp1->getType();
+		if (subExp1->getOper() == opMemberAccess)
+			return subExp1->getType();
 	}
 	return NULL;
 }
@@ -4267,6 +4290,7 @@ Exp* Exp::propagateAllRpt(bool& changed) {
 bool Exp::canRename() {
 	if (op == opArrayIndex) return false;
 	if (op == opMemberAccess) return false;
+	if (op == opTemp) return false;
 	if (op != opMemOf) return true;
 #if 0		// Hack MVE try not renaming memory
 	Exp* addressExp = ((Location*)this)->getSubExp1();

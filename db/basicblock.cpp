@@ -311,6 +311,14 @@ void BasicBlock::print(std::ostream& os, bool html) {
 		case INVALID:	os << "Invalid BB"; break;
 	}
 	os << ":\n";
+	os << "in edges: ";
+	for (unsigned int i = 0; i < m_InEdges.size(); i++)
+		os << std::hex << m_InEdges[i]->getHiAddr() << " ";
+	os << std::dec << "\n";
+	os << "out edges: ";
+	for (unsigned int i = 0; i < m_OutEdges.size(); i++)
+		os << std::hex << m_OutEdges[i]->getLowAddr() << " ";
+	os << std::dec << "\n";
 	if (m_pRtls) {					// Can be zero if e.g. INVALID
 		if (html)
 			os << "<table>\n";
@@ -751,6 +759,21 @@ Statement* BasicBlock::getLastStmt() {
 		rit++;
 	}
 	return NULL;
+}
+
+void BasicBlock::getStatements(StatementList &stmts)
+{
+	std::list<RTL*> *rtls = getRTLs();
+	if (rtls) {
+		for (std::list<RTL*>::iterator rit = rtls->begin(); rit != rtls->end(); rit++) {
+			RTL *rtl = *rit;
+			for (RTL::iterator it = rtl->getList().begin(); it != rtl->getList().end(); it++) {
+				if ((*it)->getBB() == NULL)
+					(*it)->setBB(this);
+				stmts.append(*it);
+			}
+		}
+	}
 }
 
 /*

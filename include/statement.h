@@ -953,6 +953,11 @@ virtual bool		accept(StmtPartModifier* visitor);
 		void		setCondExpr(Exp* pe);
 		// As above, no delete (for subscripting)
 		void		setCondExprND(Exp* e) { pCond = e; }
+
+		PBB			getFallBB();
+		PBB			getTakenBB();
+		void		setFallBB(PBB bb);
+		void		setTakenBB(PBB bb);
 		
 		// Probably only used in front386.cc: convert this from an unsigned to a
 		// signed conditional branch

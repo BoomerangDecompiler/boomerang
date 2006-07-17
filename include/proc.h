@@ -520,6 +520,8 @@ virtual				~UserProc();
 		void		markAsNonChildless(ProcSet* cs);
 		// Update the defines and arguments in calls.
 		void		updateCalls();
+		// Look for short circuit branching
+		void		branchAnalysis();
 		// Fix any ugly branch statements (from propagating too much)
 		void		fixUglyBranches();
 		// Place the phi functions
@@ -549,6 +551,7 @@ virtual				~UserProc();
 		void		findPreserveds();					///< Was trimReturns()
 		void		findSpPreservation();				///< Preservations only for the stack pointer
 		void		removeSpAssignsIfPossible();
+		void		removeMatchingAssignsIfPossible(Exp *e);
 		void		updateReturnTypes();
 		void		fixCallAndPhiRefs(int d);			///< Perform call and phi statement bypassing at depth d
 		void		fixCallAndPhiRefs();				///< Perform call and phi statement bypassing at all depths

@@ -161,6 +161,14 @@ void UserProc::setParamType(const char* nam, Type* ty) {
 
 void UserProc::setParamType(int idx, Type* ty) {
 	signature->setParamType(idx, ty);
+	int n = 0;
+	StatementList::iterator it;
+	for (it = parameters.begin(); n != idx && it != parameters.end(); it++, n++)
+		;
+	if (n == idx) {
+		Assign *a = (Assign*)*it;
+		a->setType(ty);
+	}
 }
 
 void UserProc::renameLocal(const char *oldName, const char *newName) {
@@ -775,21 +783,12 @@ void UserProc::numberStatements() {
 // Get to a statement list, so they come out in a reasonable and consistent order
 void UserProc::getStatements(StatementList &stmts) {
 	BB_IT it;
-	for (PBB bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it)) {
-		std::list<RTL*> *rtls = bb->getRTLs();
-		if (rtls) {
-			for (std::list<RTL*>::iterator rit = rtls->begin(); rit != rtls->end(); rit++) {
-				RTL *rtl = *rit;
-				for (RTL::iterator it = rtl->getList().begin(); it != rtl->getList().end(); it++) {
-					if ((*it)->getBB() == NULL)
-						(*it)->setBB(bb);
-					if ((*it)->getProc() == NULL)
-						(*it)->setProc(this);
-					stmts.append(*it);
-				}
-			}
-		}
-	}
+	for (PBB bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it)) 
+		bb->getStatements(stmts);
+
+	for (StatementList::iterator it = stmts.begin(); it != stmts.end(); it++)
+		if ((*it)->getProc() == NULL)
+			(*it)->setProc(this);
 }
 
 // Remove a statement. This is somewhat inefficient - we have to search the whole BB for the statement.
@@ -1349,7 +1348,12 @@ ProcSet* UserProc::middleDecompile(ProcList* path, int indent) {
 		Boomerang::get()->alert_decompile_afterPropagate(this, pass);
 		Boomerang::get()->alert_decompile_debug_point(this, "after propagating statements");
 
+		// this is just to make it readable, do NOT rely on these statements being removed 
 		removeSpAssignsIfPossible();
+		removeMatchingAssignsIfPossible(new Terminal(opFlags));
+		removeMatchingAssignsIfPossible(new Unary(opTemp, new Terminal(opWildStrConst)));
+		removeMatchingAssignsIfPossible(new Terminal(opCF));
+		removeMatchingAssignsIfPossible(new Terminal(opPC));
 
 		processTypes();
 
@@ -1590,6 +1594,7 @@ void UserProc::remUnusedStmtEtc() {
 	}
 	updateCalls();				// Or just updateArguments?
 
+	branchAnalysis();
 	fixUglyBranches();
 	
 	if (VERBOSE) {
@@ -1768,6 +1773,65 @@ void UserProc::updateCalls() {
 	}
 }
 
+void UserProc::branchAnalysis() {
+	Boomerang::get()->alert_decompile_debug_point(this, "before branch analysis.");
+
+	StatementList stmts;
+	getStatements(stmts);
+	for (StatementList::iterator it = stmts.begin(); it != stmts.end(); it++) {
+		Statement *stmt = *it;
+		if (stmt->isBranch()) {
+			BranchStatement *branch = (BranchStatement*)stmt;
+			if (branch->getFallBB() && branch->getTakenBB()) {
+				StatementList fallstmts;
+				branch->getFallBB()->getStatements(fallstmts);
+				if (fallstmts.size() == 1 && (*fallstmts.begin())->isBranch()) {
+					BranchStatement *fallto = (BranchStatement*)*fallstmts.begin();
+					//   branch to A if cond1
+					//   branch to B if cond2
+					// A: something
+					// B:
+					// ->
+					//   branch to B if !cond1 && cond2
+					// A: something
+					// B:
+					if (fallto->getFallBB() == branch->getTakenBB() && fallto->getBB()->getNumInEdges() == 1) {
+						branch->setFallBB(fallto->getFallBB());
+						branch->setTakenBB(fallto->getTakenBB());
+						branch->setDest(fallto->getFixedDest());
+						branch->setCondExpr(new Binary(opAnd, new Unary(opNot, branch->getCondExpr()), fallto->getCondExpr()->clone()));
+						assert(fallto->getBB()->getNumInEdges() == 0);
+						fallto->getBB()->deleteEdge(fallto->getBB()->getOutEdge(0));
+						fallto->getBB()->deleteEdge(fallto->getBB()->getOutEdge(0));
+						assert(fallto->getBB()->getNumOutEdges() == 0);
+						cfg->removeBB(fallto->getBB());
+					}
+					//   branch to B if cond1
+					//   branch to B if cond2
+					// A: something
+					// B:
+					// ->
+					//   branch to B if cond1 || cond2
+					// A: something
+					// B:
+					if (fallto->getTakenBB() == branch->getTakenBB() && fallto->getBB()->getNumInEdges() == 1) {
+						branch->setFallBB(fallto->getFallBB());
+						branch->setCondExpr(new Binary(opOr, branch->getCondExpr(), fallto->getCondExpr()->clone()));
+						assert(fallto->getBB()->getNumInEdges() == 0);
+						fallto->getBB()->deleteEdge(fallto->getBB()->getOutEdge(0));
+						fallto->getBB()->deleteEdge(fallto->getBB()->getOutEdge(0));
+						assert(fallto->getBB()->getNumOutEdges() == 0);
+						cfg->removeBB(fallto->getBB());
+					}
+
+				}
+			}			
+		}
+	}
+
+	Boomerang::get()->alert_decompile_debug_point(this, "after branch analysis.");
+}
+
 void UserProc::fixUglyBranches() {
 	if (VERBOSE)
 		LOG << "### fixUglyBranches for " << getName() << " ###\n";
@@ -1939,6 +2003,59 @@ void UserProc::removeSpAssignsIfPossible()
 		}
 	
 	Boomerang::get()->alert_decompile_debug_point(this, "after removing stack pointer assigns.");
+}
+
+void UserProc::removeMatchingAssignsIfPossible(Exp *e)
+{
+	// if there are no uses of %flags in the whole procedure,
+	// we can safely remove all assignments to %flags, this will make the output
+	// more readable for human eyes and makes short circuit analysis easier.
+	
+	bool foundone = false;
+	
+	StatementList stmts;
+	getStatements(stmts);
+	for (StatementList::iterator it = stmts.begin(); it != stmts.end(); it++) {
+		Statement *stmt = *it;
+		if (stmt->isAssign() && *((Assign*)stmt)->getLeft() == *e)
+			foundone = true;
+		if (stmt->isPhi()) {
+			if (*((PhiAssign*)stmt)->getLeft() == *e)
+				foundone = true;
+			continue;
+		}
+		LocationSet refs;
+		stmt->addUsedLocs(refs);
+		LocationSet::iterator rr;
+		for (rr = refs.begin(); rr != refs.end(); rr++)
+			if ((*rr)->isSubscript() && *(*rr)->getSubExp1() == *e) {
+				Statement *def = ((RefExp*)(*rr))->getDef();
+				if (def && def->getProc() == this)
+					return;
+			}
+	}
+
+	if (!foundone)
+		return;
+	
+	std::ostringstream str;
+	str << "before removing matching assigns (" << e << ").";
+	Boomerang::get()->alert_decompile_debug_point(this, str.str().c_str());
+
+	for (StatementList::iterator it = stmts.begin(); it != stmts.end(); it++)
+		if ((*it)->isAssign()) {
+			Assign *a = (Assign*)*it;
+			if (*a->getLeft() == *e)
+				removeStatement(a);
+		} else if ((*it)->isPhi()) {
+			PhiAssign *a = (PhiAssign*)*it;
+			if (*a->getLeft() == *e)
+				removeStatement(a);
+		}
+	
+	str.str("");
+	str << "after removing matching assigns (" << e << ").";
+	Boomerang::get()->alert_decompile_debug_point(this, str.str().c_str());
 }
 
 void UserProc::updateReturnTypes()
@@ -2207,6 +2324,8 @@ static RefExp* regOfWild = new RefExp(
 #define DEBUG_PARAMS 1
 void UserProc::findFinalParameters() {
 
+	Boomerang::get()->alert_decompile_debug_point(this, "before find final parameters.");
+
 	parameters.clear();
 
 	if (signature->isForced()) {
@@ -2300,6 +2419,8 @@ void UserProc::findFinalParameters() {
 			insertParameter(e, ty);
 		}
 	}
+
+	Boomerang::get()->alert_decompile_debug_point(this, "after find final parameters.");
 }
 
 void UserProc::trimParameters(int depth) {
@@ -3308,8 +3429,8 @@ char* UserProc::getSymbolName(Exp* e) {
 	SymbolMapType::iterator it = symbolMap.find(e);
 	if (it == symbolMap.end()) return NULL;
 	Exp* loc = it->second;
-	if (!loc->isLocal()) return NULL;
-	return ((Const*)((Location*)loc)->getSubExp1())->getStr();
+	if (!loc->isLocal() && !loc->isParam()) return NULL;
+	return ((Const*)loc->getSubExp1())->getStr();
 }
 
 
@@ -3499,7 +3620,8 @@ void UserProc::fromSSAform() {
 		for (dd = defs.begin(); dd != defs.end(); dd++) {
 			Exp* base = *dd;
 			Type* ty = s->getTypeFor(base);
-			LOG << "got type " << ty << " for " << base << " from " << s << "\n";
+			if (VERBOSE)
+				LOG << "got type " << ty << " for " << base << " from " << s << "\n";
 			if (ty == NULL)				// Can happen e.g. when getting the type for %flags
 				ty = new VoidType();
 			ff = firstTypes.find(base);
@@ -3507,7 +3629,8 @@ void UserProc::fromSSAform() {
 				// There is no first type yet. Record it.
 				firstTypes[base] = ty;
 			} else if (ff->second && !ty->isCompatibleWith(ff->second)) {
-				LOG << "not compatible with type " << ff->second << ".\n";
+				if (VERBOSE)
+					LOG << "not compatible with type " << ff->second << ".\n";
 				// There already is a type for base, and it is different to the type for this definition.
 				// Record an "interference" so it will get a new variable
 				if (!ty->isVoid()) {  // just ignore void interferences
@@ -4363,7 +4486,7 @@ void UserProc::insertParameter(Exp* e, Type* ty) {
 	bool inserted = false;
 	for (nn = parameters.begin(); nn != parameters.end(); ++nn) {
 		// If the new assignment is less than the current one ...
-		if (signature->argumentCompare(*as, *(Assign*)*nn)) {
+		if (signature->argumentCompare(*as, *(Assignment*)*nn)) {
 			nn = parameters.insert(nn, as);		// ... then insert before this position
 			inserted = true;
 			break;
@@ -4371,6 +4494,16 @@ void UserProc::insertParameter(Exp* e, Type* ty) {
 	}
 	if (!inserted)
 		parameters.insert(parameters.end(), as);	// In case larger than all existing elements
+
+	// update the signature
+	signature->setNumParams(0);
+	int i = 1;
+	for (nn = parameters.begin(); nn != parameters.end(); ++nn, ++i) {
+		Assignment *a = (Assignment*)*nn;
+		char tmp[20];
+		sprintf(tmp, "param%i", i);
+		signature->addParameter(a->getType(), tmp, a->getLeft());
+	}
 }
 
 

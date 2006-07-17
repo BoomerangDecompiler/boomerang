@@ -1238,12 +1238,17 @@ void Prog::decompile() {
 	// Just in case there are any Procs not in the call graph. 
 	std::list<Proc*>::iterator pp;
 	if (Boomerang::get()->decodeMain && !Boomerang::get()->noDecodeChildren) {
-		for (pp = m_procs.begin(); pp != m_procs.end(); pp++) {
-			UserProc* proc = (UserProc*)(*pp);
-			if (proc->isLib()) continue;
-			if (proc->isDecompiled()) continue;
-			int indent = 0;
-			proc->decompile(new ProcList, indent);
+		bool foundone = true;
+		while (foundone) {
+			foundone = false;
+			for (pp = m_procs.begin(); pp != m_procs.end(); pp++) {
+				UserProc* proc = (UserProc*)(*pp);
+				if (proc->isLib()) continue;
+				if (proc->isDecompiled()) continue;
+				int indent = 0;
+				proc->decompile(new ProcList, indent);
+				foundone = true;
+			}
 		}
 	}
 

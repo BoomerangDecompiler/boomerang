@@ -1469,14 +1469,18 @@ void CHLLCode::AddProcDec(UserProc* proc, bool open) {
 	ReturnStatement* returns = proc->getTheReturnStatement();
 	Type *retType = NULL;
 	if (proc->getSignature()->isForced()) {
-		unsigned int n = 0;
-		Exp *e = proc->getSignature()->getReturnExp(0);
-		if (e->isRegN(Signature::getStackRegister(proc->getProg())))
-			n = 1;
-		if (n < proc->getSignature()->getNumReturns())
-			retType = proc->getSignature()->getReturnType(n);
-		if (retType == NULL)
-			s << "void ";
+		if (proc->getSignature()->getNumReturns() == 0)
+			s << "void "; 
+		else {
+			unsigned int n = 0;
+			Exp *e = proc->getSignature()->getReturnExp(0);
+			if (e->isRegN(Signature::getStackRegister(proc->getProg())))
+				n = 1;
+			if (n < proc->getSignature()->getNumReturns())
+				retType = proc->getSignature()->getReturnType(n);
+			if (retType == NULL)
+				s << "void ";
+		}
 	} else if (returns == NULL || returns->getNumReturns() == 0) {
 		s << "void ";
 	} else {
