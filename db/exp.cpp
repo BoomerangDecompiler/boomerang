@@ -4290,7 +4290,7 @@ Exp* Exp::propagateAllRpt(bool& changed) {
 bool Exp::canRename() {
 	if (op == opArrayIndex) return false;
 	if (op == opMemberAccess) return false;
-	if (op == opTemp) return false;
+	//if (op == opTemp) return false;
 	if (op != opMemOf) return true;
 #if 0		// Hack MVE try not renaming memory
 	Exp* addressExp = ((Location*)this)->getSubExp1();
