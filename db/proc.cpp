@@ -165,7 +165,7 @@ void UserProc::setParamType(int idx, Type* ty) {
 	StatementList::iterator it;
 	for (it = parameters.begin(); n != idx && it != parameters.end(); it++, n++)
 		;
-	if (n == idx) {
+	if (it != parameters.end()) {
 		Assign *a = (Assign*)*it;
 		a->setType(ty);
 	}
