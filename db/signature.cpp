@@ -1220,7 +1220,16 @@ void Signature::setParamType(int n, Type *ty) {
 void Signature::setParamType(const char* nam, Type* ty) {
 	int idx = findParam(nam);
 	if (idx == -1) {
-		LOG << "Could not set type for unknown parameter " << nam << "\n";
+		LOG << "could not set type for unknown parameter " << nam << "\n";
+		return;
+	}
+	params[idx]->setType(ty);
+}
+
+void Signature::setParamType(Exp* e, Type* ty) {
+	int idx = findParam(e);
+	if (idx == -1) {
+		LOG << "could not set type for unknown parameter expression " << e << "\n";
 		return;
 	}
 	params[idx]->setType(ty);

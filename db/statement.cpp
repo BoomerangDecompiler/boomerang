@@ -2792,7 +2792,9 @@ void CallStatement::processTypes()
 			Type *ty = e->getType();
 			if (ty && t->isSize()) {
 				UserProc *u = (UserProc*)procDest;
-				u->setParamType(i, ty->clone());
+				if (!isChildless())
+					// The destination of childless calls (e.g. with recursion) may not have parameters set up yet
+					u->setParamType(i, ty->clone());
 				((Assign*)*aa)->setType(ty->clone());
 				ReturnStatement *r = u->getTheReturnStatement();
 				if (r) {

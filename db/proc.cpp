@@ -160,7 +160,6 @@ void UserProc::setParamType(const char* nam, Type* ty) {
 }
 
 void UserProc::setParamType(int idx, Type* ty) {
-	signature->setParamType(idx, ty);
 	int n = 0;
 	StatementList::iterator it;
 	for (it = parameters.begin(); n != idx && it != parameters.end(); it++, n++)
@@ -168,6 +167,8 @@ void UserProc::setParamType(int idx, Type* ty) {
 	if (it != parameters.end()) {
 		Assign *a = (Assign*)*it;
 		a->setType(ty);
+		// Sometimes the signature isn't up to date with the latest parameters
+		signature->setParamType(a->getLeft(), ty);
 	}
 }
 

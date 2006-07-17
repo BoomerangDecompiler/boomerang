@@ -190,6 +190,8 @@ void DataFlow::computeDF(int n) {
 
 
 bool DataFlow::canRename(Exp* e, UserProc* proc) {
+if (e->isTemp())
+  int HACK=99;
 	if (renameAllMemofs)		// When safe,
 		return true;			//  allow memofs to be renamed
 	if (proc->isLocalOrParam(e)) return true;	// But do rename memofs that are locals or params
