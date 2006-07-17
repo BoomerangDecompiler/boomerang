@@ -2069,7 +2069,10 @@ Statement* Cfg::findImplicitParamAssign(Parameter* param) {
 
 void Cfg::removeImplicitAssign(Exp* x) {
 	std::map<Exp*, Statement*, lessExpStar>::iterator it = implicitMap.find(x);
-	// assert(it != implicitMap.end());
-	implicitMap.erase(it);
+	assert(it != implicitMap.end());
+	Statement* ia = it->second;
+	implicitMap.erase(it);				// Delete the mapping
+	myProc->removeStatement(ia);		// Remove the actual implicit assignment statement as well
+	
 }
 

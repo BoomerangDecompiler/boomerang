@@ -5051,6 +5051,7 @@ bool UserProc::removeRedundantParameters() {
 			if (ss != symbolMap.end())
 				symbolMap.erase(ss);			// Kill the symbol
 			signature->removeParameter(param);	// Also remove from the signature
+			cfg->removeImplicitAssign(param);	// Remove the implicit assignment so it doesn't come back
 		}
 	}
 	parameters = newParameters;
