@@ -1351,9 +1351,10 @@ ProcSet* UserProc::middleDecompile(ProcList* path, int indent) {
 
 		// this is just to make it readable, do NOT rely on these statements being removed 
 		removeSpAssignsIfPossible();
-		removeMatchingAssignsIfPossible(new Terminal(opFlags));
+		// The problem with removing %flags and %CF is that %CF is a subset of %flags
+		//removeMatchingAssignsIfPossible(new Terminal(opFlags));
+		//removeMatchingAssignsIfPossible(new Terminal(opCF));
 		removeMatchingAssignsIfPossible(new Unary(opTemp, new Terminal(opWildStrConst)));
-		removeMatchingAssignsIfPossible(new Terminal(opCF));
 		removeMatchingAssignsIfPossible(new Terminal(opPC));
 
 		processTypes();
@@ -1800,7 +1801,10 @@ void UserProc::branchAnalysis() {
 						branch->setFallBB(fallto->getFallBB());
 						branch->setTakenBB(fallto->getTakenBB());
 						branch->setDest(fallto->getFixedDest());
-						branch->setCondExpr(new Binary(opAnd, new Unary(opNot, branch->getCondExpr()), fallto->getCondExpr()->clone()));
+						Exp* cond = new Binary(opAnd,
+							new Unary(opNot, branch->getCondExpr()),
+							fallto->getCondExpr()->clone());
+						branch->setCondExpr(cond->simplify());
 						assert(fallto->getBB()->getNumInEdges() == 0);
 						fallto->getBB()->deleteEdge(fallto->getBB()->getOutEdge(0));
 						fallto->getBB()->deleteEdge(fallto->getBB()->getOutEdge(0));
@@ -1817,7 +1821,9 @@ void UserProc::branchAnalysis() {
 					// B:
 					if (fallto->getTakenBB() == branch->getTakenBB() && fallto->getBB()->getNumInEdges() == 1) {
 						branch->setFallBB(fallto->getFallBB());
-						branch->setCondExpr(new Binary(opOr, branch->getCondExpr(), fallto->getCondExpr()->clone()));
+						branch->setCondExpr(new Binary(opOr,
+							branch->getCondExpr(),
+							fallto->getCondExpr()->clone()));
 						assert(fallto->getBB()->getNumInEdges() == 0);
 						fallto->getBB()->deleteEdge(fallto->getBB()->getOutEdge(0));
 						fallto->getBB()->deleteEdge(fallto->getBB()->getOutEdge(0));
@@ -2042,6 +2048,8 @@ void UserProc::removeMatchingAssignsIfPossible(Exp *e)
 	std::ostringstream str;
 	str << "before removing matching assigns (" << e << ").";
 	Boomerang::get()->alert_decompile_debug_point(this, str.str().c_str());
+	if (VERBOSE)
+		LOG << str.str().c_str() << "\n";
 
 	for (StatementList::iterator it = stmts.begin(); it != stmts.end(); it++)
 		if ((*it)->isAssign()) {
@@ -2057,6 +2065,8 @@ void UserProc::removeMatchingAssignsIfPossible(Exp *e)
 	str.str("");
 	str << "after removing matching assigns (" << e << ").";
 	Boomerang::get()->alert_decompile_debug_point(this, str.str().c_str());
+		LOG << str.str().c_str() << "\n";
+
 }
 
 void UserProc::updateReturnTypes()
@@ -3589,13 +3599,18 @@ void UserProc::fromSSAform() {
 
 	StatementList stmts;
 	getStatements(stmts);
+	StatementList::iterator it;
 	igraph ig;
 
-	// Map registers to initial local variables
-	StatementList::iterator it;
-	for (it = stmts.begin(); it != stmts.end(); it++) {
-		(*it)->mapRegistersToLocals();
+	if (DFA_TYPE_ANALYSIS) {
+		for (it = stmts.begin(); it != stmts.end(); it++) {
+			// Map registers to initial local variables
+			(*it)->mapRegistersToLocals();
+			// Insert casts where needed, as types are about to become inaccessible
+			(*it)->insertCasts();
+		}
 	}
+
 
 	// First split the live ranges where needed, i.e. when the type of a subscripted variable is different to
 	// its previous type. Start at the top, because we don't want to rename parameters (e.g. argc)
@@ -5295,10 +5310,8 @@ void UserProc::typeAnalysis() {
 			first = false;
 			dfaTypeAnalysis();
 
-			// Now a special pass to insert casts where needed. I think that these are mainly needed where an operator
-			// implies a signedness, e.g. <u or >>. Example: test/sparc/minmax2 local0 would like to be declared as
-			// unsigned, but then local0 >> 31 doesn't get a cast to int on the lhs without this pass.
-			insertCasts();
+			// There used to be a pass here to insert casts. This is best left until global type analysis is complete,
+			// so do it just before translating from SSA form (which is the where type information becomes inaccessible)
 
 		} while (ellipsisProcessing());
 		if (VERBOSE || DEBUG_TA)
@@ -5569,19 +5582,6 @@ void Proc::setProvenTrue(Exp* fact) {
 	provenTrue[lhs] = rhs;
 }
 
-// Insert casts as needed. At present, these are limited to operators such as <u or >> which imply unsigned and signed
-// operators respectively. If needed, the ExpCastInserter inserts TypedExps which the back end emits as casts.
-void UserProc::insertCasts() {
-	StatementList stmts;
-	getStatements(stmts);
-	StatementList::iterator it;
-	ExpCastInserter eci;
-	StmtCastInserter sci(&eci);
-	for (it = stmts.begin(); it != stmts.end(); it++) {
-		Statement* s = *it;
-		s->accept(&sci);
-	}
-}
 
 #ifdef USING_MEMOS
 class LibProcMemo : public Memo {
