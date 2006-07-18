@@ -157,6 +157,8 @@ char* operStrings[] = {
 	"opKindOf",
 	"opTypeVal",			// Makes a type value
 
+	"opInitValueOf",		// The initial value of a location, typically the stack pointer
+
 	"opZF",					// zero flag
 	"opCF",					// carry flag
 	"opNF",					// negative flag
