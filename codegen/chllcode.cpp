@@ -321,6 +321,7 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 			break;
 		case opNot:
 			openParen(str, curPrec, PREC_UNARY);
+			str << " !";
 			appendExp(str, u->getSubExp1(), PREC_UNARY);
 			closeParen(str, curPrec, PREC_UNARY);
 			break;
@@ -379,34 +380,38 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 				break;
 			}
 			openParen(str, curPrec, PREC_UNARY);
-			if (u->getSubExp1()->getType() &&
-			    !u->getSubExp1()->getType()->isVoid()) {
-				Exp *l = u->getSubExp1();
-				Type *ty = l->getType();
-				if (ty->isPointer()) {
-					str << "*";
-					if (ty->asPointer()->getPointsTo()->isSize()) {
-						int sz = ty->asPointer()->getPointsTo()->asSize()->getSize();
-						if (sz == 8)
-							str << "(char*)";
-						else if (sz == 16)
-							str << "(short*)";
-						else if (sz == 32)
-							str << "(int*)";
+			if (ADHOC_TYPE_ANALYSIS) {
+				if (u->getSubExp1()->getType() && !u->getSubExp1()->getType()->isVoid()) {
+					Exp *l = u->getSubExp1();
+					Type *ty = l->getType();
+					if (ty->isPointer()) {
+						str << "*";
+						if (ty->asPointer()->getPointsTo()->isSize()) {
+							int sz = ty->asPointer()->getPointsTo()->asSize()->getSize();
+							if (sz == 8)
+								str << "(char*)";
+							else if (sz == 16)
+								str << "(short*)";
+							else if (sz == 32)
+								str << "(int*)";
+						}
+						appendExp(str, l, PREC_UNARY);
+						closeParen(str, curPrec, PREC_UNARY);
+						break;
 					}
+					str << "*(";
+					appendType(str, ty);
+					str << "*)";
+					openParen(str, curPrec, PREC_UNARY);
 					appendExp(str, l, PREC_UNARY);
 					closeParen(str, curPrec, PREC_UNARY);
 					break;
 				}
-				str << "*(";
-				appendType(str, ty);
-				str << "*)";
-				openParen(str, curPrec, PREC_UNARY);
-				appendExp(str, l, PREC_UNARY);
-				closeParen(str, curPrec, PREC_UNARY);
-				break;
+				str << "*(int*)";
+			} else if (DFA_TYPE_ANALYSIS) {
+				// annotateMemofs should have added a cast if it was needed
+				str << "*";
 			}
-			str << "*(int*)";
 			appendExp(str, u->getSubExp1(), PREC_UNARY);
 			closeParen(str, curPrec, PREC_UNARY);
 			break;
