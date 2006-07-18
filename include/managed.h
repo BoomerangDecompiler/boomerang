@@ -47,7 +47,7 @@ class StatementSet {
 public:
 typedef std::set<Statement*>::iterator iterator;
 
-virtual				~StatementSet() {}
+					~StatementSet() {}
 		void		makeUnion(StatementSet& other);		// Set union
 		void		makeDiff (StatementSet& other);		// Set difference
 		void		makeIsect(StatementSet& other);		// Set intersection
@@ -82,7 +82,7 @@ public:
 typedef std::set<Assign*, lessAssign>::iterator iterator;
 typedef std::set<Assign*, lessAssign>::const_iterator const_iterator;
 
-virtual				~AssignSet() {}
+					~AssignSet() {}
 		void		makeUnion(AssignSet& other);		// Set union
 		void		makeDiff (AssignSet& other);		// Set difference
 		void		makeIsect(AssignSet& other);		// Set intersection
@@ -119,7 +119,7 @@ class StatementList {
 public:
 typedef std::list<Statement*>::iterator iterator;
 typedef std::list<Statement*>::reverse_iterator reverse_iterator;
-virtual				~StatementList() {}
+					~StatementList() {}
 		unsigned	size() {return slist.size();}		 	// Number of elements
 		iterator	begin()  {return slist.begin();}
 		iterator	end()	  {return slist.end();}
@@ -187,7 +187,7 @@ class LocationSet {
 public:
 typedef std::set<Exp*, lessExpStar>::iterator iterator;
 					LocationSet() {}						// Default constructor
-virtual				~LocationSet() {}						// virtual destructor kills warning
+					~LocationSet() {}						// virtual destructor kills warning
 					LocationSet(const LocationSet& o);		// Copy constructor
 					LocationSet& operator=(const LocationSet& o); // Assignment
 		void		makeUnion(LocationSet& other);			// Set union
