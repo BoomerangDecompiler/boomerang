@@ -82,6 +82,10 @@ $TESTONE pentium testset		1 "$BOOMSW" '2 3 4'
 $TESTONE sparc   andn			1 "$BOOMSW"
 $TESTONE pentium callchain		1 "$BOOMSW"
 $TESTONE sparc	 callchain		1 "$BOOMSW"
+$TESTONE pentium short1			1 "$BOOMSW"
+$TESTONE sparc short1			1 "$BOOMSW"
+$TESTONE pentium short2			1 "$BOOMSW"
+$TESTONE sparc short2			1 "$BOOMSW"
 $TESTONE pentium sumarray-O4	1 "$BOOMSW"
 
 
