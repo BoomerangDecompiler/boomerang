@@ -14,8 +14,8 @@
  *				StmtExpVisitor	(visit expressions in statements)
  *				ExpModifier		(modify expressions)
  *				SimpExpModifier	(simplifying expression modifier)
- *				StmtModifier	(modify expressions in statements)
- *				StmtPartModifier (as above specialised for propagation)
+ *				StmtModifier	(modify expressions in statements; not abstract)
+ *				StmtPartModifier (as above with special case for whole of LHS)
  *============================================================================*/
 /*
  * $Revision$	// 1.13.2.11
@@ -623,16 +623,25 @@ virtual bool		visit(RefExp *e,	bool& override);
 };
 
 class ExpCastInserter : public ExpModifier {
-virtual Exp*		preVisit(TypedExp	*e,	bool& recur) {recur = false; return e;}	// Don't consider if already cast
-virtual Exp*		postVisit(Binary	*e);
-virtual Exp*		postVisit(Const		*e);
-};
-
-class StmtCastInserter : public StmtModifier {
+		UserProc*	proc;				// The enclising UserProc
 public:
-					StmtCastInserter(ExpCastInserter* eci) : StmtModifier(eci) {}
-virtual				~StmtCastInserter() {}
+					ExpCastInserter(UserProc* proc) : proc(proc) {}
+static	void		checkMemofType(Exp* memof, Type* memofType);
+virtual Exp*		postVisit(RefExp *e);
+virtual Exp*		postVisit(Binary *e);
+virtual Exp*		postVisit(Const *e);
+virtual Exp*		preVisit(TypedExp	*e,	bool& recur) {recur = false; return e;}	// Don't consider if already cast
 };
 
+class StmtCastInserter : public StmtVisitor {
+		ExpCastInserter* ema;
+public:
+					StmtCastInserter() {}
+		bool		common(	  Assignment *s);
+virtual bool		visit(		  Assign *s);
+virtual bool		visit(	   PhiAssign *s);
+virtual bool		visit(ImplicitAssign *s);
+virtual bool		visit(	  BoolAssign *s);
+};
 
 #endif	// #ifndef __VISITOR_H__
