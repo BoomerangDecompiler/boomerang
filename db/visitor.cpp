@@ -868,43 +868,76 @@ bool BareMemofFinder::visit(RefExp* e, bool& override) {
 	return true;			// But keep searching
 }
 
-Exp* ExpCastInserter::postVisit(Binary *e) {
+// CastInserters. More cases to be implemented.
+
+// Check the type of the address expression of memof to make sure it is compatible with the given memofType.
+// memof may be changed internally to include a TypedExp, which will emit as a cast
+void ExpCastInserter::checkMemofType(Exp* memof, Type* memofType) {
+	Exp* addr = ((Unary*)memof)->getSubExp1();
+	if (addr->isSubscript()) {
+		Exp* addrBase = ((RefExp*)addr)->getSubExp1();
+		Type* actType = ((RefExp*)addr)->getDef()->getTypeFor(addrBase);
+		Type* expectedType = new PointerType(memofType);
+		if (!actType->isCompatibleWith(expectedType)) {
+			((Unary*)memof)->setSubExp1(new TypedExp(expectedType, addrBase));
+		}
+	}
+}
+
+Exp* ExpCastInserter::postVisit(RefExp* e) {
+	Exp* base = e->getSubExp1();
+	if (base->isMemOf()) {
+		// Check to see if the address expression needs type annotation
+		Statement* def = e->getDef();
+		Type* memofType = def->getTypeFor(base);
+		checkMemofType(base, memofType);
+	}
+	return e;
+}
+
+static Exp* checkSignedness(Exp* e, int reqSignedness) {
+	Type* ty = e->ascendType();
+	int currSignedness = 0;
+	bool isInt = ty->resolvesToInteger();
+	if (isInt) {
+		currSignedness =  ty->asInteger()->getSignedness();
+		currSignedness = (currSignedness >= 0) ? 1 : -1;
+	}
+	if (!isInt || currSignedness != reqSignedness) {
+		IntegerType* newtype;
+		if (!isInt)
+			newtype = new IntegerType(STD_SIZE, reqSignedness);
+		else
+			newtype = new IntegerType(((IntegerType*)ty)->getSize(), reqSignedness);	// Transfer size
+		newtype->setSigned(reqSignedness);
+		return new TypedExp(newtype, e);
+	}
+	return e;
+}
+
+Exp* ExpCastInserter::postVisit(Binary* e) {
 	OPER op = e->getOper();
 	switch (op) {
-		case opLess:
-		case opGtr:
-		case opLessEq:
-		case opGtrEq:
-		case opShiftRA: {
-			Type* tl = e->getSubExp1()->ascendType();
-			if (!tl->isInteger() || !tl->asInteger()->isSigned()) {
-				e->setSubExp1(new TypedExp(new IntegerType(tl->getSize(), 1), e->getSubExp1()));
-			}
-			if (op != opShiftRA) {
-				Type* tr = e->getSubExp2()->ascendType();
-				if (!tr->isInteger() || !tr->asInteger()->isSigned()) {
-					e->setSubExp2(new TypedExp(new IntegerType(tr->getSize(), 1), e->getSubExp2()));
-				}
-			}
-			break;
-		}
+		// This case needed for e.g. test/pentium/switch_gcc:
 		case opLessUns:
 		case opGtrUns:
 		case opLessEqUns:
 		case opGtrEqUns:
-		case opShiftR: {
-			Type* tl = e->getSubExp1()->ascendType();
-			if (!tl->isInteger() || !tl->asInteger()->isUnsigned()) {
-				e->setSubExp1(new TypedExp(new IntegerType(tl->getSize(), -1), e->getSubExp1()));
-			}
-			if (op != opShiftR) {
-				Type* tr = e->getSubExp2()->ascendType();
-				if (!tr->isInteger() || !tr->asInteger()->isUnsigned()) {
-					e->setSubExp2(new TypedExp(new IntegerType(tr->getSize(), -1), e->getSubExp2()));
-				}
-			}
+		case opShiftR:
+			e->setSubExp1(checkSignedness(e->getSubExp1(), -1));
+			if (op != opShiftR)				// The shift amount (second operand) is sign agnostic
+				e->setSubExp2(checkSignedness(e->getSubExp2(), -1));
 			break;
-		}
+		// This case needed for e.g. test/sparc/minmax2, if %g1 is declared as unsigned int
+		case opLess:
+		case opGtr:
+		case opLessEq:
+		case opGtrEq:
+		case opShiftRA:
+			e->setSubExp1(checkSignedness(e->getSubExp1(), +1));
+			if (op != opShiftRA)
+				e->setSubExp2(checkSignedness(e->getSubExp2(), +1));
+			break;
 		default:
 			break;
 	}
@@ -920,4 +953,17 @@ Exp* ExpCastInserter::postVisit(Const *e) {
 		}
 	}
 	return e;
+}
+
+bool StmtCastInserter::visit(		  Assign *s) {return common(s);}
+bool StmtCastInserter::visit(	   PhiAssign *s) {return common(s);}
+bool StmtCastInserter::visit(ImplicitAssign *s) {return common(s);}
+bool StmtCastInserter::visit(	  BoolAssign *s) {return common(s);}
+bool StmtCastInserter::common(Assignment* s) {
+	Exp* lhs = s->getLeft();
+	if (lhs->isMemOf()) {
+		Type* memofType = s->getType();
+		ExpCastInserter::checkMemofType(lhs, memofType);
+	}
+	return true;
 }
