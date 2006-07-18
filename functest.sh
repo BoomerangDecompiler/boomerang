@@ -104,12 +104,12 @@ else
 	echo
 	echo === Switch tests ===
 	$TESTONE pentium switch_gcc		5 "$BOOMSW" '2 3 4 5'
-	$TESTONE sparc   switch_gcc		5 "$BOOMSW" '2 3 4 5'
-	$TESTONE pentium switch_cc		4 "$BOOMSW" '2 3 4'
-	$TESTONE sparc   switch_cc		4 "$BOOMSW" '2 3 4'
 	$TESTONE pentium switch_gcc		1 "$BOOMSW"
+	$TESTONE sparc   switch_gcc		5 "$BOOMSW" '2 3 4 5'
 	$TESTONE sparc   switch_gcc		1 "$BOOMSW"
+	$TESTONE pentium switch_cc		4 "$BOOMSW" '2 3 4'
 	$TESTONE pentium switch_cc		1 "$BOOMSW"
+	$TESTONE sparc   switch_cc		4 "$BOOMSW" '2 3 4'
 	$TESTONE sparc   switch_cc		1 "$BOOMSW"
 	$TESTONE pentium nestedswitch	4 "$BOOMSW" '2 3 4'
 	$TESTONE sparc   nestedswitch	4 "$BOOMSW" '2 3 4'
@@ -138,7 +138,7 @@ echo === Intermittent failure due to incorrect switch analysis ===
 $TESTONE pentium recursion		2 "$BOOMSW" 2
 
 echo
-echo === Known faillures ===
+echo === Known failures ===
 $TESTONE pentium stattest		1 "$BOOMSW"		# TA does not handle structs properly yet
 $TESTONE sparc   stattest		1 "$BOOMSW"		# ditto
 $TESTONE sparc	elfhashtest		1 "$BOOMSW"		# Not sure why fails
