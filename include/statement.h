@@ -286,6 +286,9 @@ virtual void		simplifyAddr() {}
 		// map registers to local variables
 		void		mapRegistersToLocals();
 
+		// insert casts where needed, since fromSSA will erase type information
+		void		insertCasts();
+
 		// fixSuccessor
 		// Only Assign overrides at present
 virtual void		fixSuccessor() {}
