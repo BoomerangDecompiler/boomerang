@@ -1202,7 +1202,8 @@ bool ElfBinaryFile::IsRelocationAt(ADDRESS uNative)
 					//Elf32_Sym* symOrigin = (Elf32_Sym*) m_pSections[symSection].uHostAddr;
 					for (unsigned u=0; u < size; u+= 2*sizeof(unsigned)) {
 						unsigned r_offset = elfRead4(pReloc++);
-						//unsigned info	= elfRead4(pReloc++);
+						//unsigned info	= elfRead4(pReloc);
+						pReloc++;
 						//unsigned char relType = (unsigned char) info;
 						//unsigned symTabIndex = info >> 8;
 						ADDRESS pRelWord;				// Pointer to the word to be relocated
