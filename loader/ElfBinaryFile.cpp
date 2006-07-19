@@ -353,7 +353,7 @@ void ElfBinaryFile::AddSyms(int secIndex) {
 	}
     static bool warned = false;
     // Number of entries in the PLT:
-	int max_i_for_hack = siPlt ? (int)siPlt->uSectionSize / 0x10 : 0;
+	// int max_i_for_hack = siPlt ? (int)siPlt->uSectionSize / 0x10 : 0;
     // Index 0 is a dummy entry
     for (int i = 1; i < nSyms; i++) {
         ADDRESS val = (ADDRESS) elfRead4((int*)&m_pSym[i].st_value);
@@ -1169,7 +1169,7 @@ void ElfBinaryFile::applyRelocations() {
 
 bool ElfBinaryFile::IsRelocationAt(ADDRESS uNative) 
 {
-	int nextFakeLibAddr = -2;			// See R_386_PC32 below; -1 sometimes used for main
+	//int nextFakeLibAddr = -2;			// See R_386_PC32 below; -1 sometimes used for main
 	if (m_pImage == 0) return false;			// No file loaded
     int machine = elfRead2(&((Elf32_Ehdr*)m_pImage)->e_machine);
 	int e_type = elfRead2(&((Elf32_Ehdr*)m_pImage)->e_type);
@@ -1196,15 +1196,15 @@ bool ElfBinaryFile::IsRelocationAt(ADDRESS uNative)
 						destNatOrigin	= m_pSections[destSection].uNativeAddr;
 						destHostOrigin	= m_pSections[destSection].uHostAddr;
 					}
-					int symSection = m_sh_link[i];			// Section index for the associated symbol table
-					int strSection = m_sh_link[symSection];	// Section index for the string section assoc with this
-					char* pStrSection = (char*)m_pSections[strSection].uHostAddr;
-					Elf32_Sym* symOrigin = (Elf32_Sym*) m_pSections[symSection].uHostAddr;
+					//int symSection = m_sh_link[i];			// Section index for the associated symbol table
+					//int strSection = m_sh_link[symSection];	// Section index for the string section assoc with this
+					//char* pStrSection = (char*)m_pSections[strSection].uHostAddr;
+					//Elf32_Sym* symOrigin = (Elf32_Sym*) m_pSections[symSection].uHostAddr;
 					for (unsigned u=0; u < size; u+= 2*sizeof(unsigned)) {
 						unsigned r_offset = elfRead4(pReloc++);
-						unsigned info	= elfRead4(pReloc++);
-						unsigned char relType = (unsigned char) info;
-						unsigned symTabIndex = info >> 8;
+						//unsigned info	= elfRead4(pReloc++);
+						//unsigned char relType = (unsigned char) info;
+						//unsigned symTabIndex = info >> 8;
 						ADDRESS pRelWord;				// Pointer to the word to be relocated
 						if (e_type == E_REL)
 							pRelWord = destNatOrigin + r_offset;
@@ -1239,7 +1239,7 @@ const char *ElfBinaryFile::getFilenameSymbolFor(const char *sym)
 	if (secIndex == 0)
 		return NULL;
 	
-	int e_type = elfRead2(&((Elf32_Ehdr*)m_pImage)->e_type);
+	//int e_type = elfRead2(&((Elf32_Ehdr*)m_pImage)->e_type);
     PSectionInfo pSect = &m_pSections[secIndex];
     // Calc number of symbols
     int nSyms = pSect->uSectionSize / pSect->uSectionEntrySize;
@@ -1250,7 +1250,7 @@ const char *ElfBinaryFile::getFilenameSymbolFor(const char *sym)
 
     // Index 0 is a dummy entry
     for (int i = 1; i < nSyms; i++) {
-        ADDRESS val = (ADDRESS) elfRead4((int*)&m_pSym[i].st_value);
+        //ADDRESS val = (ADDRESS) elfRead4((int*)&m_pSym[i].st_value);
         int name = elfRead4(&m_pSym[i].st_name);
         if (name == 0)  /* Silly symbols with no names */ continue;
         std::string str(GetStrPtr(strIdx, name));
