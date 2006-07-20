@@ -190,6 +190,8 @@ virtual	bool		isCompatibleWith(Type* other, bool all = false);
 					// isCompatible does most of the work; isCompatibleWith looks for complex types in other, and if so
 					// reverses the parameters (this and other) to prevent many tedious repetitions
 virtual bool		isCompatible(Type* other, bool all) = 0;
+					// Return true if this is a subset or equal to other
+		bool		isSubTypeOrEqual(Type* other);
 					// Create a union of this Type and other. Set ch true if any change
 		Type*		createUnion(Type* other, bool& ch, bool bHighestPtr = false);
 static	Type*		newIntegerLikeType(int size, int signedness);	// Return a new Bool/Char/Int

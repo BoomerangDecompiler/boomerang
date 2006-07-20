@@ -449,13 +449,18 @@ Type* PointerType::meetWith(Type* other, bool& ch, bool bHighestPtr) {
 			ch = true;
 		} else {
 			// We have a meeting of two pointers.
+			Type* thisBase = points_to;
+			Type* otherBase = otherPtr->points_to;
 			if (bHighestPtr) {
-				// We'd really like to return the base type for both this and other. For now, just return void*
+				// We want the greatest type of thisBase and otherBase
+				if (thisBase->isSubTypeOrEqual(otherBase))
+					return other->clone();
+				if (otherBase->isSubTypeOrEqual(thisBase))
+					return this;
+				// There may be another type that is a superset of this and other; for now return void*
 				return new PointerType(new VoidType);
 			}
 			// See if the base types will meet
-			Type* thisBase = points_to;
-			Type* otherBase = otherPtr->points_to;
 			if (otherBase->resolvesToPointer()) {
 if (thisBase->resolvesToPointer() && thisBase->asPointer()->getPointsTo() == thisBase)
   std::cerr << "HACK! BAD POINTER 1\n";
@@ -754,11 +759,22 @@ void Assign::dfaTypeAnalysis(bool& ch) {
 
 void Assignment::dfaTypeAnalysis(bool& ch) {
 	Signature* sig = proc->getSignature();
-	// Don't do this for the common case of an ordinary local, since it generates hundreds of implicit referecnes,
+	// Don't do this for the common case of an ordinary local, since it generates hundreds of implicit references,
 	// without any new type information
-	if (lhs->isMemOf() && !sig->isStackLocal(proc->getProg(), lhs))
+	if (lhs->isMemOf() && !sig->isStackLocal(proc->getProg(), lhs)) {
+		Exp* addr = ((Unary*)lhs)->getSubExp1();
+		// Meet the assignment type with *(type of the address)
+		Type* addrType = addr->ascendType();
+		Type* memofType;
+		if (addrType->resolvesToPointer())
+			memofType = addrType->asPointer()->getPointsTo();
+		else
+			memofType = new VoidType;
+		type = type->meetWith(memofType, ch);
 		// Push down the fact that the memof operand is a pointer to the assignment type
-		((Unary*)lhs)->getSubExp1()->descendType(new PointerType(type), ch, this);
+		addrType = new PointerType(type);
+		addr->descendType(addrType, ch, this);
+	}
 }
 
 void BranchStatement::dfaTypeAnalysis(bool& ch) {
@@ -766,8 +782,13 @@ void BranchStatement::dfaTypeAnalysis(bool& ch) {
 	// Not fully implemented yet?
 }
 
+void ImplicitAssign::dfaTypeAnalysis(bool& ch) {
+	Assignment::dfaTypeAnalysis(ch);
+}
+
 void BoolAssign::dfaTypeAnalysis(bool& ch) {
-	// Not implemented yet
+	// Not properly implemented yet
+	Assignment::dfaTypeAnalysis(ch);
 }
 
 // Special operators for handling addition and subtraction in a data flow based type analysis
@@ -1505,6 +1526,15 @@ bool LowerType::isCompatible(Type* other, bool all) {
 	if (other->resolvesToVoid()) return true;
 	if (other->resolvesToLower() && base_type->isCompatibleWith(other->asLower()->base_type)) return true;
 	if (other->resolvesToUnion()) return other->isCompatibleWith(this);
+	return false;
+}
+
+bool Type::isSubTypeOrEqual(Type* other) {
+	if (resolvesToVoid()) return true;
+	if (*this == *other) return true;
+	if (this->resolvesToCompound() && other->resolvesToCompound())
+		return this->asCompound()->isSubStructOf(other);
+	// Not really sure here
 	return false;
 }
 
