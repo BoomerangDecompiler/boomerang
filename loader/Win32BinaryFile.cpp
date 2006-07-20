@@ -305,6 +305,42 @@ ADDRESS Win32BinaryFile::GetMainEntryPoint() {
 		if (p >= textSize)
 			break;
 	}
+
+	// mingw pattern
+	p = LMMH(m_pPEHeader->EntrypointRVA);
+	bool in_mingw_CRTStartup = false;
+	unsigned int lastcall = 0, lastlastcall = 0;
+	while(1) {
+		op1 = *(unsigned char*)(p + base);
+		if (op1 == 0xE8) {			// CALL opcode
+			unsigned int dest = p + 5 + LMMH(*(p + base + 1));
+			if (in_mingw_CRTStartup) {
+				op2 = *(unsigned char*)(dest + base);
+				unsigned char op2a = *(unsigned char*)(dest + base + 1);
+				unsigned int desti = LMMH(*(dest + base + 2));
+				// skip all the call statements until we hit a call to an indirect call to ExitProcess
+				// main is the 2nd call before this one
+				if (op2 == 0xff && op2a == 0x25 && dlprocptrs.find(desti) != dlprocptrs.end() && dlprocptrs[desti] == "ExitProcess") {
+					return lastlastcall + 5 + LMMH(*(lastlastcall + base + 1)) + LMMH(m_pPEHeader->Imagebase);
+				}				
+				lastlastcall = lastcall;
+				lastcall = p;
+			} else {
+				p = dest;
+				in_mingw_CRTStartup = true;
+				continue;
+			}
+		}
+
+		int size = microX86Dis(p + base);
+		if (size == 0x40) {
+			fprintf(stderr, "Warning! Microdisassembler out of step at offset 0x%x\n", p);
+			size = 1;
+		}
+		p += size;
+		if (p >= textSize)
+			break;
+	}
 	
 	return NO_ADDRESS;
 }
