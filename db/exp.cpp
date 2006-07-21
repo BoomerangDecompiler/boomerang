@@ -2624,35 +2624,38 @@ Exp* Binary::polySimplify(bool& bMod) {
 
 	// check for exp + n where exp is a pointer to a compound type
 	// becomes &m[exp].m + r where m is the member at offset n and r is n - the offset to member m
-	// MVE: Fix for DFA type analysis; at present, calls getType which is deprecated
-	//if (	DFA_TYPE_ANALYSIS &&
-	if (	ADHOC_TYPE_ANALYSIS &&
-			op == opPlus &&
-			subExp1->getType() &&
+	Type* ty = NULL;			// Type of subExp1
+	if (ADHOC_TYPE_ANALYSIS)
+		ty = subExp1->getType();
+	else {
+		if (subExp1->isSubscript()) {
+			Statement* def = ((RefExp*)subExp1)->getDef();
+			if (def)
+				ty = def->getTypeFor(((RefExp*)subExp1)->getSubExp1());
+		}
+	}
+	if (	op == opPlus &&
+			ty && ty->resolvesToPointer() &&  ty->asPointer()->getPointsTo()->resolvesToCompound() &&
 			opSub2 == opIntConst) {
 		unsigned n = (unsigned)((Const*)subExp2)->getInt();
-		Exp *l = subExp1;
-		Type *ty = l->getType();
-		if (ty->resolvesToPointer() && ty->asPointer()->getPointsTo()->resolvesToCompound()) { 
-			CompoundType *c = ty->asPointer()->getPointsTo()->asCompound();
-			if (n*8 < c->getSize()) {
-				unsigned r = c->getOffsetRemainder(n*8);
-				assert((r % 8) == 0);
-				const char *nam = c->getNameAtOffset(n*8);
-				if (nam != NULL && std::string("pad") != nam) {
-					Location *l = Location::memOf(subExp1);
-					l->setType(c);
-					res = new Binary(opPlus, 
-						new Unary(opAddrOf, 
-							new Binary(opMemberAccess, 
-								l,
-								new Const(strdup(nam)))),
-						new Const(r / 8));
-					if (VERBOSE)
-						LOG << "(trans1) replacing " << this << " with " << res << "\n";
-					bMod = true;
-					return res;
-				}
+		CompoundType *c = ty->asPointer()->getPointsTo()->asCompound();
+		if (n*8 < c->getSize()) {
+			unsigned r = c->getOffsetRemainder(n*8);
+			assert((r % 8) == 0);
+			const char *nam = c->getNameAtOffset(n*8);
+			if (nam != NULL && std::string("pad") != nam) {
+				Location *l = Location::memOf(subExp1);
+				l->setType(c);
+				res = new Binary(opPlus, 
+					new Unary(opAddrOf, 
+						new Binary(opMemberAccess, 
+							l,
+							new Const(strdup(nam)))),
+					new Const(r / 8));
+				if (VERBOSE)
+					LOG << "(trans1) replacing " << this << " with " << res << "\n";
+				bMod = true;
+				return res;
 			}
 		}
 	}
@@ -4308,13 +4311,15 @@ bool Exp::containsFlags() {
 	return ff.isFound();
 }
 
-bool Exp::containsBareMemof() {
-	BareMemofFinder bmf;
+// Check if this expression contains a bare memof (no subscripts) or one that has no symbol (i.e. is not a local
+// variable or a parameter)
+bool Exp::containsBadMemof(UserProc* proc) {
+	BadMemofFinder bmf(proc);
 	accept(&bmf);
 	return bmf.isFound();
 }
 
-// FIXME: only need one of these, presumably
+// No longer used
 bool Exp::containsMemof(UserProc* proc) {
 	ExpHasMemofTester ehmt(proc);
 	accept(&ehmt);

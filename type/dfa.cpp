@@ -1167,7 +1167,36 @@ void Unary::descendType(Type* parentType, bool& ch, Statement* s) {
 				Prog* prog = s->getProc()->getProg();
 				constK2->descendType(prog->makeArrayType(intK2, parentType), ch, s);
 			}
-			// Other cases, e.g. struct reference m[x + K1] or m[x + p] where p is a pointer
+			else if (subExp1->getOper() == opPlus &&
+					((Binary*)subExp1)->getSubExp1()->isSubscript() &&
+					((RefExp*)((Binary*)subExp1)->getSubExp1())->isLocation() &&
+					((Binary*)subExp1)->getSubExp2()->isIntConst()) {
+				// m[l1 + K]
+				Location* l1 = (Location*)((RefExp*)((Binary*)subExp1)->getSubExp1());
+				Type* l1Type = l1->ascendType();
+				int K = ((Const*)((Binary*)subExp1)->getSubExp2())->getInt();
+				if (l1Type->resolvesToPointer()) {
+					// This is a struct reference m[ptr + K]; ptr points to the struct and K is an offset into it
+					// First find out if we already have struct information
+					if (l1Type->asPointer()->resolvesToCompound()) {
+						CompoundType* ct = l1Type->asPointer()->asCompound();
+						if (ct->isGeneric())
+							ct->updateGenericMember(K, parentType, ch);
+						else
+							// would like to force a simplify here; I guess it will happen soon enough
+							;
+					} else {
+						// Need to create a generic stuct with a least one member at offset K
+						CompoundType* ct = new CompoundType(true);
+						ct->updateGenericMember(K, parentType, ch);
+					}
+				}
+				else {
+					// K must be the pointer, so this is a global array
+					// FIXME: finish this case
+				}
+			// FIXME: many other cases
+			}
 			else
 				subExp1->descendType(new PointerType(parentType), ch, s);
 			break;

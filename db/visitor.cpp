@@ -846,26 +846,34 @@ bool FlagsFinder::visit(Binary *e,	bool& override) {
 }
 
 // Search for bare memofs (not subscripted) in the expression
-bool BareMemofFinder::visit(Location* e, bool& override) {
+bool BadMemofFinder::visit(Location* e, bool& override) {
 	if (e->isMemOf()) {
-		found = true;
+		found = true;		// A bare memof
 		return false;
 	}
 	override = false;
 	return true;			// Continue searching
 }
 
-bool BareMemofFinder::visit(RefExp* e, bool& override) {
+bool BadMemofFinder::visit(RefExp* e, bool& override) {
 	Exp* base = e->getSubExp1();
 	if (base->isMemOf()) {
-		// Beware: it may be possible to have a bare memof inside a subscripted one
+		// Beware: it may be possible to have a bad memof inside a subscripted one
 		Exp* addr = ((Location*)base)->getSubExp1();
 		addr->accept(this);
 		if (found)
 			return false;	// Don't continue searching
+#if NEW		// FIXME: not working yet
+		char* sym = proc->lookupSym(e);
+		if (sym == NULL) {
+			found = true;			// Found a memof that is not a symbol
+			override = true;		// Don't look inside the refexp
+			return false;
+		}
+#endif
 	}
 	override = true;		// Don't look inside the refexp
-	return true;			// But keep searching
+	return true;			// It has a symbol; noting bad foound yet but continue searching
 }
 
 // CastInserters. More cases to be implemented.

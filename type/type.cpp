@@ -133,7 +133,7 @@ NamedType::NamedType(const char *name) : Type(eNamed), name(name)
 {
 }
 
-CompoundType::CompoundType() : Type(eCompound)
+CompoundType::CompoundType(bool generic /* = false */) : Type(eCompound), nextGenericMemberNum(1), generic(generic)
 {
 }
 
@@ -1465,6 +1465,20 @@ void UnionType::addType(Type *n, const char *str) {
 		ue.type = n;
 		ue.name = str;
 		li.push_back(ue);
+	}
+}
+
+// Update this compound to use the fact that offset off has type ty
+void CompoundType::updateGenericMember(int off, Type* ty, bool& ch) {
+	assert(generic);
+	Type* existingType = getTypeAtOffset(off);
+	if (existingType) {
+		existingType = existingType->meetWith(ty, ch);
+	} else {
+		std::ostringstream ost;
+		ost << "member" << std::dec << nextGenericMemberNum++;
+		setTypeAtOffset(off*8, ty);
+		setNameAtOffset(off*8, ost.str().c_str());
 	}
 }
 

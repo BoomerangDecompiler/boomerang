@@ -270,8 +270,11 @@ virtual void		fromSSAform(igraph& ig) = 0;
 		// True if can propagate to expression e in this Statement.
 static	bool		canPropagateToExp(Exp* e);
 		// Propagate to this statement. Return true if a change
-		// Set convertedIndirect if an indirect call is changed to direct (otherwise, no change)
-		bool		propagateTo(bool& convert, std::map<Exp*, int, lessExpStar>* destCounts = NULL);
+		// destCounts is a map that indicates how may times a statement's definition is used
+		// dnp is a StatementSet with statements that should not be propagated
+		// Set convert if an indirect call is changed to direct (otherwise, no change)
+		bool		propagateTo(bool& convert, std::map<Exp*, int, lessExpStar>* destCounts = NULL,
+						StatementSet* dnp = NULL);
 
 		// code generation
 virtual void		generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) = 0;
@@ -682,6 +685,9 @@ virtual Statement*	clone();
 
 		// inline any constants in the statement
 virtual bool		processConstants(Prog *prog);
+
+		// Data flow based type analysis
+		void		dfaTypeAnalysis(bool& ch);
 
 		// general search
 virtual bool		search(Exp* search, Exp*& result);
@@ -1197,8 +1203,6 @@ virtual void		generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel);
 virtual bool		usesExp(Exp *e);
 
 		// dataflow related functions
-virtual bool		propagateToAll() { assert(false); return false;}
-
 virtual bool		isDefinition();
 virtual void		getDefinitions(LocationSet &defs);
 

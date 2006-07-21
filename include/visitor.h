@@ -538,7 +538,7 @@ public:
 };
 
 // Test if an expression (usually the RHS on an assignment) contains memory expressions. If so, it may not be safe to
-// propagate the assignment
+// propagate the assignment. NO LONGER USED.
 class ExpHasMemofTester : public ExpVisitor {
 		bool		result;
 		UserProc*	proc;
@@ -611,11 +611,12 @@ virtual bool		visit(Binary *e,	bool& override);
 
 };
 
-// Search an expression for a bare (non subscripted) memof
-class BareMemofFinder : public ExpVisitor {
+// Search an expression for a bad memof (non subscripted or not linked with a symbol, i.e. local or parameter)
+class BadMemofFinder : public ExpVisitor {
 		bool		found;
+		UserProc*	proc;
 public:
-					BareMemofFinder() : found(false) {}
+					BadMemofFinder(UserProc* proc) : found(false), proc(proc) {}
 		bool		isFound() {return found;}
 private:
 virtual bool		visit(Location *e,	bool& override);

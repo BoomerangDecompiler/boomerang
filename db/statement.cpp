@@ -714,37 +714,13 @@ bool Statement::canPropagateToExp(Exp*e) {
 }
 
 // Return true if any change; set convert if an indirect call statement is converted to direct (else unchanged)
-bool Statement::propagateTo(bool& convert, std::map<Exp*, int, lessExpStar>* destCounts /* = NULL */ ) {
+bool Statement::propagateTo(bool& convert, std::map<Exp*, int, lessExpStar>* destCounts /* = NULL */,
+		StatementSet* dnp /* = NULL */) {
 	bool change;
 	int changes = 0;
 	// int sp = proc->getSignature()->getStackRegister(proc->getProg());
 	// Exp* regSp = Location::regOf(sp);
 	int propMaxDepth = Boomerang::get()->propMaxDepth;
-	// Repeat substituting into this statement while there is a reference component in it
-	if (EXPERIMENTAL) {						// -X needed for "on demand" propagation
-		do {
-			LocationSet exps;
-			addUsedLocs(exps, true, true);	// First true to also add uses from collectors. For example, want to
-											// propagate into the reaching definitions of calls. Second true is to only
-											// look inside m[...]. These must be propagated into, regardless of -l
-			LocationSet::iterator ll;
-			change = false;
-			for (ll = exps.begin(); ll != exps.end(); ll++) {
-				Exp* e = *ll;
-				if (!canPropagateToExp(e))
-					continue;
-				Assign* def = (Assign*)((RefExp*)e)->getDef();
-				Exp* rhs = def->getRight();
-				if (rhs->containsMemof(proc))
-					// The current idea is to not propagate memofs at all, or propagatable registers whose expressions
-					// contain them. You could be propagating past a definition, thereby invalidating the IR
-					continue;
-				change |= doPropagateTo(e, def, convert);
-			}
-		} while (change && ++changes < 10);
-	}
-
-	// Now propagate the rest, but this time subject to -l propagation limiting
 	do {
 		LocationSet exps;
 		addUsedLocs(exps, true);		// True to also add uses from collectors. For example, want to propagate into
@@ -760,9 +736,9 @@ bool Statement::propagateTo(bool& convert, std::map<Exp*, int, lessExpStar>* des
 				continue;
 			Assign* def = (Assign*)((RefExp*)e)->getDef();
 			Exp* rhs = def->getRight();
-			if (rhs->containsBareMemof())
-				// Must never propagate unsubscripted memofs. You could be propagating past a definition, thereby
-				// invalidating the IR
+			if (rhs->containsBadMemof(proc))
+				// Must never propagate unsubscripted memofs, or memofs that don't yet have symbols. You could be
+				// propagating past a definition, thereby invalidating the IR
 				continue;
 			Exp* lhs = def->getLeft();
 

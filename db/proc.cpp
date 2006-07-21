@@ -1227,6 +1227,8 @@ ProcSet* UserProc::middleDecompile(ProcList* path, int indent) {
 		// We want functions other than main to be promoted. Needed before mapExpressionsToLocals
 		promoteSignature();
 	// The problem with doing locals too early is that the symbol map ends up with some {-} and some {0}
+	// Also, once named as a local, it is tempting to propagate the memory location, but that might be unsafe if the
+	// address is taken
 	//mapExpressionsToLocals();
 	
 	// Update the arguments for calls (mainly for the non recursion affected calls)
@@ -1518,82 +1520,47 @@ void UserProc::remUnusedStmtEtc() {
 	}
 
 	// Only remove unused statements after decompiling as much as possible of the proc
-	// FIXME: Probably need a repeat until no change here
-	//for (int depth = 0; depth <= maxDepth; depth++) {
-		// Remove unused statements
-		RefCounter refCounts;			// The map
-		// Count the references first
-		countRefs(refCounts);
-		// Now remove any that have no used
-		if (!Boomerang::get()->noRemoveNull)
-			remUnusedStmtEtc(refCounts);
+	// Remove unused statements
+	RefCounter refCounts;			// The map
+	// Count the references first
+	countRefs(refCounts);
+	// Now remove any that have no used
+	if (!Boomerang::get()->noRemoveNull)
+		remUnusedStmtEtc(refCounts);
 
-		// Remove null statements
-		if (!Boomerang::get()->noRemoveNull)
-			removeNullStatements();
+	// Remove null statements
+	if (!Boomerang::get()->noRemoveNull)
+		removeNullStatements();
 
-		printXML();
-		if (VERBOSE && !Boomerang::get()->noRemoveNull) {
-			LOG << "--- after removing unused and null statements pass " << 1 << " for " << getName() << " ---\n";
-			printToLog();
-			LOG << "=== end after removing unused statements for " << getName() << " ===\n\n";
-		}
-		Boomerang::get()->alert_decompile_afterRemoveStmts(this, 1);
-	//}
+	printXML();
+	if (VERBOSE && !Boomerang::get()->noRemoveNull) {
+		LOG << "--- after removing unused and null statements pass " << 1 << " for " << getName() << " ---\n";
+		printToLog();
+		LOG << "=== end after removing unused statements for " << getName() << " ===\n\n";
+	}
+	Boomerang::get()->alert_decompile_afterRemoveStmts(this, 1);
 
-	// FIXME: not sure where these belong as yet...
 	findFinalParameters();
 	if (!Boomerang::get()->noParameterNames) {
 		mapExpressionsToParameters();
 
-	/* The call to propagateStatements was enabled for a while. Gerard noticed a problem with minmax3, and commented
-		it out; Mike thought the problem went away after some changes, but there are problems with this caused by
-		the way that the fromSSA algorithm works. Consider
-		g=g-1;		// g is some global
-		if (g >= 0)
-			h();	// h() affects g
-		print g;
-		SSA form:
-		5 g := g{-}-1
-		6 if (g{-} -1 >= 0)
-		7   g := h()   // g is not a real return, really a sort of "may define"
-		8 g = phi(5, 7)
-		9 print g{8}
-		As the program stands, statement 5 is not unused; it is used by the phi statement. So it doesn't get deleted
-		as dead code. Without the extra propagation, we get
-		tmp = g;		
-		g = g-1;
-		if (tmp-1 >= 0)
-			h();
-		g = tmp-1;
-		print g;
-		which is not that pretty but it is correct. This is the famous "propagate too much" problem, which the -l
-		switch reduces but does not eliminate.
-		With the below propagation enabled, and the implicit assumption that calls don't really affect globals,
-		we get g{7} = g{5}, and the phi becomes 8 g = phi(5 5) = g{-}-1. Now statement 5 is unused but not eliminated.
-		It means that g{5} is no longer live, so there is no interference between g{5} and g{-} to trigger the tmp
-		creation, and we get
-		g=g-1
-		if (g-1 >= 0)
-			h();
-		g = g-1;
-		print g;
-		which has the wrong argument in the if condition, and also g gets decremented twice.
-		So either leave the propagation below commented out, or change the fromSSA logic to treat all definitions as
-		creating livenesses.
-		Update 6/Mar/2006: globals are no longer possible as return locations, but the above problem still seems to
-		remain.
-	*/
-	
-		//findPreserveds();					// FIXME: is this necessary here?
-		//fixCallAndPhiRef();				// FIXME: surely this is not necessary now?
-		//trimParameters();					// FIXME: check
 		if (VERBOSE) {
 			LOG << "--- after adding new parameters ---\n";
 			printToLog();
 			LOG << "=== end after adding new parameters ===\n";
 		}
 	}
+
+#if 0				// Construction zone; pay no attention
+	bool convert;
+	propagateStatements(convert, 222);	// This is the first opportunity to safely propagate memory parameters
+	if (VERBOSE) {
+		LOG << "--- after propagating new parameters ---\n";
+		printToLog();
+		LOG << "=== end after propagating new parameters ===\n";
+	}
+#endif
+
 	updateCalls();				// Or just updateArguments?
 
 	branchAnalysis();
@@ -5314,6 +5281,7 @@ void UserProc::typeAnalysis() {
 			// so do it just before translating from SSA form (which is the where type information becomes inaccessible)
 
 		} while (ellipsisProcessing());
+		simplify();						// In case there are new struct members
 		if (VERBOSE || DEBUG_TA)
 			LOG << "=== end type analysis for " << getName() << " ===\n";
 	}
