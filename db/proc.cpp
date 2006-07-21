@@ -1422,6 +1422,8 @@ ProcSet* UserProc::middleDecompile(ProcList* path, int indent) {
 		// Code pointed to by the switch table entries has merely had FrontEnd::processFragment() called on it
 		LOG << "=== about to restart decompilation of " << getName() <<
 			" because indirect jumps or calls have been analysed\n\n";
+		Boomerang::get()->alert_decompile_debug_point(this, "before restarting decompilation because indirect jumps or calls have been analysed");
+
 		// First copy any new indirect jumps or calls that were decoded this time around. Just copy them all, the map
 		// will prevent duplicates
 		processDecodedICTs();

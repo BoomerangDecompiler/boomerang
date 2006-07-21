@@ -757,7 +757,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 
 					// Is the called function a thunk calling a library function?
 					// A "thunk" is a function which only consists of: "GOTO library_function"
-					if(	call &&	call->getDestProc() == NULL && call->getFixedDest() != NO_ADDRESS ) {
+					if(	call &&	call->getFixedDest() != NO_ADDRESS ) {
 						// Get the address of the called function.
 						ADDRESS callAddr=call->getFixedDest();
 						// Decode it.
