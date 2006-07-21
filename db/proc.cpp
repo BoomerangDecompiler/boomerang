@@ -1488,6 +1488,7 @@ void UserProc::remUnusedStmtEtc() {
 	//if (status >= PROC_FINAL)
 	//	return;
 
+    Boomerang::get()->alert_decompiling(this);
 	Boomerang::get()->alert_decompile_debug_point(this, "before final");
 
 	if (VERBOSE)
@@ -2301,7 +2302,7 @@ static RefExp* regOfWild = new RefExp(
 // definition).
 // These are called final parameters, because they are determined from implicit references, not from the use collector
 // at the start of the proc, which include some caused by recursive calls
-#define DEBUG_PARAMS 1
+#define DEBUG_PARAMS 0
 void UserProc::findFinalParameters() {
 
 	Boomerang::get()->alert_decompile_debug_point(this, "before find final parameters.");
@@ -3556,6 +3557,8 @@ void UserProc::removeUnusedLocals() {
 //
 
 void UserProc::fromSSAform() {
+    Boomerang::get()->alert_decompiling(this);
+
 	if (VERBOSE)
 		LOG << "transforming " << getName() << " from SSA\n";
 
@@ -4370,6 +4373,7 @@ void dumpIgraph(igraph& ig) {
 }
 
 void UserProc::updateArguments() {
+    Boomerang::get()->alert_decompiling(this);
 	if (VERBOSE)
 		LOG << "### update arguments for " << getName() << " ###\n";
 	Boomerang::get()->alert_decompile_debug_point(this, "before updating arguments");
@@ -4959,7 +4963,7 @@ bool UserProc::checkForGainfulUse(Exp* bparam, ProcSet& visited) {
 					rhs->addUsedLocs(argUses);
 					if (argUses.existsImplicit(bparam)) {
 						Exp* lloc = ((Assign*)*aa)->getLeft();
-						if (visited.find(dest) == visited.end() && checkForGainfulUse(lloc, visited))
+						if (visited.find(dest) == visited.end() && dest->checkForGainfulUse(lloc, visited))
 							return true;
 					}
 				}
@@ -5008,6 +5012,8 @@ bool UserProc::removeRedundantParameters() {
 	bool ret = false;
 	StatementList newParameters;
 	
+	Boomerang::get()->alert_decompile_debug_point(this, "before removing redundant parameters");
+
 	if (DEBUG_UNUSED)
 		LOG << "%%% removing unused parameters for " << getName() << "\n";
 	// Note: this would be far more efficient if we had def-use information
@@ -5042,7 +5048,10 @@ bool UserProc::removeRedundantParameters() {
 	parameters = newParameters;
 	if (DEBUG_UNUSED)
 		LOG << "%%% end removing unused parameters for " << getName() << "\n";
-	return ret;
+
+	Boomerang::get()->alert_decompile_debug_point(this, "after removing redundant parameters");
+
+    return ret;
 }
 
 // Remove unused returns for this procedure, based on the equation returns = modifieds isect union(live at c) for all
@@ -5061,6 +5070,7 @@ bool UserProc::removeRedundantParameters() {
 // (only add procs to this set, never remove)
 // Return true if any change
 bool UserProc::removeRedundantReturns(std::set<UserProc*>& removeRetSet) {
+    Boomerang::get()->alert_decompiling(this);
 	Boomerang::get()->alert_decompile_debug_point(this, "before removing unused returns");
 	// First remove the unused parameters
 	bool removedParams = removeRedundantParameters();

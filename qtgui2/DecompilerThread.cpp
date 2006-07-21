@@ -6,6 +6,7 @@
 #include "gc.h"
 
 #include "boomerang.h"
+#include "log.h"
 #include "prog.h"
 #include "frontend.h"
 #include "proc.h"
@@ -38,6 +39,7 @@ void DecompilerThread::run()
 
 	Boomerang::get()->setOutputDirectory(".\\output\\");
 	//Boomerang::get()->dfaTypeAnalysis = true;
+    //Boomerang::get()->vFlag = true;
 
 	decompiler = new Decompiler();
 	decompiler->moveToThread(this);
@@ -242,6 +244,7 @@ bool Decompiler::getRtlForProc(const QString &name, QString &rtl)
 
 void Decompiler::alert_decompile_debug_point(UserProc *p, const char *description)
 {
+    LOG << p->getName() << ": " << description << "\n";
 	if (debugging) {
 		waiting = true;
 		emit debuggingPoint(QString(p->getName()), QString(description));

@@ -748,6 +748,8 @@ void PentiumFrontEnd::processOverlapped(UserProc* proc) {
 		}
 	}
 
+    std::set<PBB> bbs;
+
 	// For each statement, we are looking for assignments to registers in
 	//	 these ranges:
 	// eax - ebx (24-27) (eax, ecx, edx, ebx)
@@ -758,6 +760,9 @@ void PentiumFrontEnd::processOverlapped(UserProc* proc) {
 	// but only if they are used in this procedure.
 	for (it = stmts.begin(); it != stmts.end(); it++) {
 		Statement* s = *it;
+        if (s->getBB()->overlappedRegProcessingDone)   // never redo processing
+            continue;
+        bbs.insert(s->getBB());
 		if (!s->isAssignment()) continue;
 		Exp* lhs = ((Assignment*)s)->getLeft();
 		if (!lhs->isRegOf()) continue;
@@ -934,6 +939,10 @@ void PentiumFrontEnd::processOverlapped(UserProc* proc) {
 			break;
 		}
 	}
+
+    // set a flag for every BB we've processed so we don't do them again
+    for (std::set<PBB>::iterator bit = bbs.begin(); bit != bbs.end(); bit++)
+        (*bit)->overlappedRegProcessingDone = true;
 }
 
 DecodeResult& PentiumFrontEnd::decodeInstruction(ADDRESS pc)

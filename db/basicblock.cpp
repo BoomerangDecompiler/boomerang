@@ -80,7 +80,9 @@ BasicBlock::BasicBlock()
 // From Doug's code
 ord(-1), revOrd(-1), inEdgesVisited(0), numForwardInEdges(-1), traversed(UNTRAVERSED), hllLabel(false), indentLevel(0),
 immPDom(NULL), loopHead(NULL), caseHead(NULL), condFollow(NULL), loopFollow(NULL), latchNode(NULL), sType(Seq), 
-usType(Structured) 
+usType(Structured),
+// Others
+        overlappedRegProcessingDone(false)
 {
 }
 

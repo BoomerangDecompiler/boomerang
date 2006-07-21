@@ -534,6 +534,10 @@ public:
 		 */
 		bool		undoComputedBB(Statement* stmt);
 
+        // true if processing for overlapped registers on statements in this BB
+        // has been completed.
+        bool        overlappedRegProcessingDone;
+
 protected:
 		friend class XMLProgParser;
 		void		addOutEdge(PBB bb) { m_OutEdges.push_back(bb); }
