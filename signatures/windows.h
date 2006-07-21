@@ -7,6 +7,7 @@ typedef unsigned int SIZE_T;
 typedef unsigned int LONG;
 typedef unsigned char BYTE;
 typedef BYTE *LPBYTE;
+typedef LONG *LPLONG;
 typedef const void *LPCVOID;
 typedef void *LPVOID;
 typedef void *PVOID;
@@ -873,6 +874,17 @@ void Sleep(DWORD dwMilliseconds);
 HMODULE LoadLibraryA(LPCSTR lpFileName);
 HMODULE LoadLibraryW(LPCWSTR lpFileName);
 
+ATOM FindAtomA(LPCSTR lpString);
+ATOM FindAtomW(LPCWSTR lpString);
+ATOM AddAtomA(LPCSTR lpString);
+ATOM AddAtomW(LPCWSTR lpString);
+UINT GetAtomNameA(ATOM nAtom, LPSTR lpBuffer, int nSize);
+UINT GetAtomNameA(ATOM nAtom, LPWSTR lpBuffer, int nSize);
+
+LONG InterlockedIncrement(LONG *Addend);
+
+LONG InterlockedDecrement(LONG *Addend);
+
 
 // guessed LPR functions
 
@@ -881,3 +893,11 @@ int GetShortQueue(int a, int b);
 int GetLongQueue(int a, int b);
 int OpenLPR(int a, int b);
 
+LPVOID TlsGetValue(DWORD dwTlsIndex);
+DWORD TlsAlloc(void);
+
+BOOL TlsSetValue(DWORD dwTlsIndex, LPVOID lpTlsValue);
+
+DWORD WaitForSingleObject(HANDLE hHandle, DWORD dwMilliseconds);
+
+BOOL ReleaseSemaphore(HANDLE hSemaphore, LONG lReleaseCount, LPLONG lpPreviousCount);

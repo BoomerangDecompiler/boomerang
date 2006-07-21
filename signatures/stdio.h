@@ -8,6 +8,7 @@ int scanf(char *fmt, ...);
 int _scanf(char *fmt, ...);
 char *getenv(char *name);
 FILE *fopen(const char *path, const char *mode);
+long ftell(FILE *stream);
 int fseek(FILE *stream, long offset, int whence);
 int fread(char *ptr, int size, int nitems, FILE *stream);
 int fwrite(char *ptr, int size, int nitems, FILE *stream);
@@ -50,3 +51,4 @@ int remove(const char *pathname);
 // on windows
 
 int _write(int fd, char buf[], int size);
+
