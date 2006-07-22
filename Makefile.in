@@ -294,7 +294,7 @@ frontend/pentiumdecoder.o: 	EXTRA = -fno-exceptions
 # Note: I have put $(LOADERLIBS) last after a -Bdynamic, so that the rest of the libraries could in theory be linked
 # statically (easier for releases). But note that there are presently big problems linking statically.
 boomerang$(EXEEXT): driver.o ${STATIC_OBJS} $(GENSSL)
-	$(CXX) -o $@ driver.o $(STATIC_OBJS) $(RUNPATH) -Llib -L. $(LINKGC) -lexpat $(LDL) -Wl,-Bdynamic $(LOADERLIBS) 
+	$(CXX) -o $@ driver.o $(STATIC_OBJS) $(RUNPATH) -Llib $(LINKGC) -lexpat $(LDL) -Wl,-Bdynamic $(LOADERLIBS) 
 
 bffDump$(EXEEXT): loader/bffDump.o
 	$(CXX) -o $@ loader/bffDump.o loader/BinaryFileFactory.o -Llib -lgc -lexpat $(LDL) -Wl,-Bdynamic $(LOADERLIBS) \
@@ -329,7 +329,7 @@ testAll.o: testAll.cpp
 
 bigtest$(EXEEXT): testAll.o ${STATIC_OBJS} ${TEST_OBJS}
 	$(CXX) -o $@ testAll.o ${STATIC_OBJS} ${TEST_OBJS} $(LOADERLIBS) \
-	    $(RUNPATH) -Llib -L. -lcppunit -lgc -lexpat $(LDL)
+	    $(RUNPATH) -Llib -lcppunit -lgc -lexpat $(LDL)
 
 $(TEST_OBJS): %.o : %.cpp
 	$(CXX) $(CXXFLAGS) -c -o $@ $(EXTRA) $<
