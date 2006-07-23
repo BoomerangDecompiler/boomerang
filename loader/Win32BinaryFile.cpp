@@ -111,7 +111,7 @@ typedef char ct_failure[sizeof(SectionInfo) == sizeof(PESectionInfo)];
 }
 
 
-Win32BinaryFile::Win32BinaryFile() : m_pFileName(0)
+Win32BinaryFile::Win32BinaryFile() : m_pFileName(0), mingw_main(false)
 { }
 
 Win32BinaryFile::~Win32BinaryFile()
@@ -321,6 +321,7 @@ ADDRESS Win32BinaryFile::GetMainEntryPoint() {
 				// skip all the call statements until we hit a call to an indirect call to ExitProcess
 				// main is the 2nd call before this one
 				if (op2 == 0xff && op2a == 0x25 && dlprocptrs.find(desti) != dlprocptrs.end() && dlprocptrs[desti] == "ExitProcess") {
+                    mingw_main = true;
 					return lastlastcall + 5 + LMMH(*(lastlastcall + base + 1)) + LMMH(m_pPEHeader->Imagebase);
 				}				
 				lastlastcall = lastcall;
@@ -745,6 +746,9 @@ const char* Win32BinaryFile::SymbolByAddress(ADDRESS dwAddr)
 			LMMH(m_pPEHeader->EntrypointRVA) + LMMH(m_pPEHeader->Imagebase) == dwAddr)
 		return "DriverEntry";
 
+    if (IsMinGWsAllocStack(dwAddr))
+        return "__mingw_allocstack";
+
 #if defined(_WIN32) && !defined(__MINGW32__)
 	HANDLE hProcess = GetCurrentProcess();
 	dbghelp::SYMBOL_INFO *sym = (dbghelp::SYMBOL_INFO *)malloc(sizeof(dbghelp::SYMBOL_INFO) + 1000);
@@ -927,10 +931,35 @@ bool Win32BinaryFile::IsStaticLinkedLibProc(ADDRESS uNative)
 	line.SizeOfStruct = sizeof(line);	
 	line.FileName = NULL;
 	dbghelp::SymGetLineFromAddr64(hProcess, uNative, 0, &line);
-	return haveDebugInfo && line.FileName == NULL || line.FileName && *line.FileName == 'f';
-#else
-	return false;
+    if (haveDebugInfo && line.FileName == NULL || line.FileName && *line.FileName == 'f')
+        return true;
 #endif
+
+    if (IsMinGWsAllocStack(uNative))
+        return true;
+
+	return false;
+}
+
+bool Win32BinaryFile::IsMinGWsAllocStack(ADDRESS uNative)
+{
+    if (mingw_main) {
+	    PSectionInfo si = GetSectionInfoByAddr(uNative);
+        if (si) {
+	        ADDRESS host = si->uHostAddr - si->uNativeAddr + uNative;
+            unsigned char allocstack_pat[] = 
+                { 0x51, 0x89, 0xE1, 0x83, 0xC1, 0x08, 0x3D, 0x00,
+                  0x10, 0x00, 0x00, 0x72, 0x10, 0x81, 0xE9, 0x00,
+                  0x10, 0x00, 0x00, 0x83, 0x09, 0x00, 0x2D, 0x00,
+                  0x10, 0x00, 0x00, 0xEB, 0xE9, 0x29, 0xC1, 0x83,
+                  0x09, 0x00, 0x89, 0xE0, 0x89, 0xCC, 0x8B, 0x08,
+                  0x8B, 0x40, 0x04, 0xFF, 0xE0  };
+            if (memcmp((void*)host, allocstack_pat, sizeof(allocstack_pat)) == 0) {
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
 ADDRESS Win32BinaryFile::IsJumpToAnotherAddr(ADDRESS uNative)

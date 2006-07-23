@@ -484,6 +484,7 @@ void PentiumFrontEnd::emitSet(std::list<RTL*>* BB_rtls, std::list<RTL*>::iterato
 bool PentiumFrontEnd::helperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL*>* lrtl)
 {
 	if (dest == NO_ADDRESS) return false;
+
 	const char* p = pBF->SymbolByAddress(dest);
 	if (p == NULL) return false;
 	std::string name(p);
@@ -520,7 +521,17 @@ bool PentiumFrontEnd::helperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL*>* lr
 		// Return true, so the caller knows not to create a HLCall
 		return true;
 
-	} else {
+    } else if (name == "__mingw_allocstack") {
+		RTL* pRtl = new RTL(addr);
+		Statement* a = new Assign(
+		        Location::regOf(28),
+			    new Binary(opMinus,
+				    Location::regOf(28),
+				    Location::regOf(24)));
+		pRtl->appendStmt(a);
+		lrtl->push_back(pRtl);
+        return true;
+    } else {
 		// Will be other cases in future
 	}
 	return false;
