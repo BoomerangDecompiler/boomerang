@@ -22,6 +22,7 @@ public:
 	virtual void alert_considering(Proc *parent, Proc *p);
 	virtual void alert_decompiling(UserProc *p);
 	virtual void alert_new(Proc *p);
+    virtual void alert_remove(Proc *p);
 	virtual void alert_update_signature(Proc *p);
 
 	bool getRtlForProc(const QString &name, QString &rtl);
@@ -56,6 +57,8 @@ signals:
 	void decompilingProc(const QString &name);
 	void newUserProc(const QString &name, unsigned int addr);
 	void newLibProc(const QString &name, const QString &params);
+	void removeUserProc(const QString &name, unsigned int addr);
+	void removeLibProc(const QString &name);
 	void newCluster(const QString &name);
 	void newProcInCluster(const QString &name, const QString &cluster);
 	void newEntrypoint(unsigned int addr, const QString &name);

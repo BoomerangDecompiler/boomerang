@@ -704,6 +704,16 @@ void Prog::remProc(UserProc* uProc) {
 	delete uProc;
 }
 
+void Prog::removeProc(const char *name)
+{
+	for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end(); it++)
+        if (std::string(name) == (*it)->getName()) {
+            Boomerang::get()->alert_remove(*it);
+			m_procs.erase(it);
+			break;
+        }
+}
+
 /*==============================================================================
  * FUNCTION:	Prog::getNumProcs
  * OVERVIEW:	Return the number of real (non deleted) procedures

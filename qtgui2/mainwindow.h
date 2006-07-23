@@ -38,6 +38,8 @@ public slots:
 	void showDecompilingProc(const QString &name);
 	void showNewUserProc(const QString &name, unsigned int addr);
 	void showNewLibProc(const QString &name, const QString &params);
+	void showRemoveUserProc(const QString &name, unsigned int addr);
+	void showRemoveLibProc(const QString &name);
 	void showNewEntrypoint(unsigned int addr, const QString &name);
 	void showMachineType(const QString &machine);
 	void showNewCluster(const QString &name);

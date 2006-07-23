@@ -74,6 +74,7 @@ virtual				~Prog();
 		// Return a pointer to a new proc
 		Proc*		newProc(const char* name, ADDRESS uNative, bool bLib = false);
 		void		remProc(UserProc* proc);		// Remove the given UserProc
+        void        removeProc(const char *name);
 		char*		getName();						// Get the name of this program
 		const char *getPath() { return m_path.c_str(); }
 		const char *getPathAndName() {return (m_path+m_name).c_str(); }

@@ -530,6 +530,7 @@ bool PentiumFrontEnd::helperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL*>* lr
 				    Location::regOf(24)));
 		pRtl->appendStmt(a);
 		lrtl->push_back(pRtl);
+        prog->removeProc(name.c_str());
         return true;
     } else {
 		// Will be other cases in future

@@ -60,6 +60,7 @@ virtual	~Watcher() { };							// Prevent gcc4 warning
 
 virtual void		alert_complete() { }
 virtual void		alert_new(Proc *p) { }
+virtual void		alert_remove(Proc *p) { }
 virtual void		alert_update_signature(Proc *p) { }
 virtual void		alert_decode(ADDRESS pc, int nBytes) { }
 virtual void		alert_baddecode(ADDRESS pc) { }
@@ -155,6 +156,11 @@ static Boomerang *get() {
 		void		alert_new(Proc *p) {
 						for (std::set<Watcher*>::iterator it = watchers.begin(); it != watchers.end(); it++)
 							(*it)->alert_new(p);
+					}
+		/// Alert the watchers we have removed a %Proc.
+		void		alert_remove(Proc *p) {
+						for (std::set<Watcher*>::iterator it = watchers.begin(); it != watchers.end(); it++)
+							(*it)->alert_remove(p);
 					}
 		/// Alert the watchers we have updated this Procs signature
 		void		alert_update_signature(Proc *p) { 

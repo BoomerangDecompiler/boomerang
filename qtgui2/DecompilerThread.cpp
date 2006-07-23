@@ -224,6 +224,15 @@ void Decompiler::alert_new(Proc *p)
 	}
 }
 
+void Decompiler::alert_remove(Proc *p)
+{
+	if (p->isLib()) {
+		emit removeLibProc(QString(p->getName()));
+	} else {
+		emit removeUserProc(QString(p->getName()), p->getNativeAddress());
+	}
+}
+
 void Decompiler::alert_update_signature(Proc *p)
 {
 	alert_new(p);

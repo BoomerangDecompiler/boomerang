@@ -34,6 +34,8 @@ MainWindow::MainWindow(QWidget *parent) :
 	connect(d, SIGNAL(decompilingProc(const QString &)), this, SLOT(showDecompilingProc(const QString &)));
 	connect(d, SIGNAL(newUserProc(const QString &, unsigned int)), this, SLOT(showNewUserProc(const QString &, unsigned int)));
 	connect(d, SIGNAL(newLibProc(const QString &, const QString &)), this, SLOT(showNewLibProc(const QString &, const QString &)));
+	connect(d, SIGNAL(removeUserProc(const QString &, unsigned int)), this, SLOT(showRemoveUserProc(const QString &, unsigned int)));
+	connect(d, SIGNAL(removeLibProc(const QString &)), this, SLOT(showRemoveLibProc(const QString &)));
 	connect(d, SIGNAL(newSection(const QString &, unsigned int, unsigned int)), this, SLOT(showNewSection(const QString &, unsigned int, unsigned int)));
     connect(ui.toLoadButton, SIGNAL(clicked()), d, SLOT(load()));
     connect(ui.toDecodeButton, SIGNAL(clicked()), d, SLOT(decode()));
@@ -452,6 +454,30 @@ void MainWindow::showNewLibProc(const QString &name, const QString &params)
 	ui.libProcs->setRowCount(nrows + 1);
 	ui.libProcs->setItem(nrows, 0, new QTableWidgetItem(name));
 	ui.libProcs->setItem(nrows, 1, new QTableWidgetItem(params));
+	ui.libProcs->resizeColumnsToContents();
+	ui.libProcs->resizeRowsToContents();
+}
+
+void MainWindow::showRemoveUserProc(const QString &name, unsigned int addr)
+{
+	int nrows = ui.userProcs->rowCount();
+	for (int i = 0; i < nrows; i++)
+        if (ui.userProcs->item(i, 1)->text() == name) {
+            ui.userProcs->removeRow(i);
+			break;
+        }
+	ui.userProcs->resizeColumnsToContents();
+	ui.userProcs->resizeRowsToContents();
+}
+
+void MainWindow::showRemoveLibProc(const QString &name)
+{
+	int nrows = ui.libProcs->rowCount();
+	for (int i = 0; i < nrows; i++)
+        if (ui.libProcs->item(i, 0)->text() == name) {
+            ui.libProcs->removeRow(i);
+			break;
+        }
 	ui.libProcs->resizeColumnsToContents();
 	ui.libProcs->resizeRowsToContents();
 }
