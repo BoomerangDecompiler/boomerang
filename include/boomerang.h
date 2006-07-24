@@ -121,6 +121,7 @@ static Boomerang *get() {
 				return boomerang;
 			}
 
+static	char*		getVersionStr();
 		Log			&log();
 		void		setLogger(Log *l) { logger = l; }
 		bool		setOutputDirectory(const char *path);

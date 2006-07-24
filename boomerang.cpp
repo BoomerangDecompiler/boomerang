@@ -11,7 +11,7 @@
  * 28 Jan 05 - G. Krol: Separated -h output into sections and neatened
 */
 
-#define VERSION "alpha 0.3 18/July/2006"
+#define VERSION "alpha 0.3 24/July/2006"
 
 #include <iostream>
 #include <fstream>
@@ -1242,4 +1242,6 @@ void Boomerang::alert_decompile_debug_point(UserProc *p, const char *description
 		(*it)->alert_decompile_debug_point(p, description);
 }
 
-
+char* Boomerang::getVersionStr() {
+	return VERSION;
+}
