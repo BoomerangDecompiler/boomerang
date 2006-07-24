@@ -82,6 +82,9 @@
                 <height>38</height>
                </size>
               </property>
+              <property name="toolTip" >
+               <string>&lt;html>&lt;head>&lt;meta name="qrichtext" content="1" />&lt;/head>&lt;body style=" white-space: pre-wrap; font-family:MS Shell Dlg; font-size:8.25pt; font-weight:400; font-style:normal; text-decoration:none;">&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">Load&lt;/p>&lt;/body>&lt;/html></string>
+              </property>
               <property name="text" >
                <string/>
               </property>
@@ -180,6 +183,9 @@
                 <height>38</height>
                </size>
               </property>
+              <property name="toolTip" >
+               <string>&lt;html>&lt;head>&lt;meta name="qrichtext" content="1" />&lt;/head>&lt;body style=" white-space: pre-wrap; font-family:MS Shell Dlg; font-size:8.25pt; font-weight:400; font-style:normal; text-decoration:none;">&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">Decode&lt;/p>&lt;/body>&lt;/html></string>
+              </property>
               <property name="text" >
                <string/>
               </property>
@@ -271,6 +277,9 @@
                 <width>38</width>
                 <height>38</height>
                </size>
+              </property>
+              <property name="toolTip" >
+               <string>&lt;html>&lt;head>&lt;meta name="qrichtext" content="1" />&lt;/head>&lt;body style=" white-space: pre-wrap; font-family:MS Shell Dlg; font-size:8.25pt; font-weight:400; font-style:normal; text-decoration:none;">&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">Decompile&lt;/p>&lt;/body>&lt;/html></string>
               </property>
               <property name="text" >
                <string/>
@@ -369,6 +378,9 @@
                 <width>38</width>
                 <height>38</height>
                </size>
+              </property>
+              <property name="toolTip" >
+               <string>&lt;html>&lt;head>&lt;meta name="qrichtext" content="1" />&lt;/head>&lt;body style=" white-space: pre-wrap; font-family:MS Shell Dlg; font-size:8.25pt; font-weight:400; font-style:normal; text-decoration:none;">&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">Generate&lt;/p>&lt;/body>&lt;/html></string>
               </property>
               <property name="text" >
                <string/>
@@ -1162,6 +1174,14 @@
     <addaction name="separator" />
     <addaction name="actionSelect_All" />
    </widget>
+   <widget class="QMenu" name="menuSettings" >
+    <property name="title" >
+     <string>Settings</string>
+    </property>
+    <addaction name="actionLoggingOptions" />
+    <addaction name="actionDecodeOptions" />
+    <addaction name="actionDecompileOptions" />
+   </widget>
    <widget class="QMenu" name="menuDebug_2" >
     <property name="title" >
      <string>Debug</string>
@@ -1183,11 +1203,14 @@
     <property name="title" >
      <string>Help</string>
     </property>
+    <addaction name="actionAbout" />
+    <addaction name="actionAboutQt" />
     <addaction name="actionBoomerang_Website" />
    </widget>
    <addaction name="menuFile" />
    <addaction name="menuWindow" />
    <addaction name="menuView" />
+   <addaction name="menuSettings" />
    <addaction name="menuDebug_2" />
    <addaction name="menuHelp" />
   </widget>
@@ -1353,6 +1376,31 @@
     <string>Boomerang Website</string>
    </property>
   </action>
+  <action name="actionLoggingOptions" >
+   <property name="text" >
+    <string>Logging</string>
+   </property>
+  </action>
+  <action name="actionDecodeOptions" >
+   <property name="text" >
+    <string>Decode</string>
+   </property>
+  </action>
+  <action name="actionDecompileOptions" >
+   <property name="text" >
+    <string>Decompile</string>
+   </property>
+  </action>
+  <action name="actionAbout" >
+   <property name="text" >
+    <string>About Boomerang</string>
+   </property>
+  </action>
+  <action name="actionAboutQt" >
+   <property name="text" >
+    <string>About Qt</string>
+   </property>
+  </action>
  </widget>
  <pixmapfunction></pixmapfunction>
  <resources/>
@@ -1380,8 +1428,8 @@
    <slot>setChecked(bool)</slot>
    <hints>
     <hint type="sourcelabel" >
-     <x>450</x>
-     <y>281</y>
+     <x>111</x>
+     <y>195</y>
     </hint>
     <hint type="destinationlabel" >
      <x>-1</x>

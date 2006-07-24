@@ -3,6 +3,7 @@
 #define MAINWINDOW_H
 
 #include "ui_boomerang.h"
+#include "ui_about.h"
 #include "types.h"
 #include <vector>
 #include <map>
@@ -59,6 +60,8 @@ public slots:
 	void on_actionOpen_activated();
 	void on_actionSave_activated();
 	void on_actionClose_activated();
+	void on_actionAbout_activated();
+	void on_actionAboutQt_activated();
 	void on_tabWidget_currentChanged(int index);
 
 	void on_actionCut_activated();

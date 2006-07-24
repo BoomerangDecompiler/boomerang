@@ -17,37 +17,49 @@ MainWindow::MainWindow(QWidget *parent) :
 	decompilerThread->start();
 	Decompiler *d = decompilerThread->getDecompiler();
 	connect(d, SIGNAL(newCluster(const QString &)), this, SLOT(showNewCluster(const QString &)));
-	connect(d, SIGNAL(newProcInCluster(const QString &, const QString &)), this, SLOT(showNewProcInCluster(const QString &, const QString &)));
-	connect(d, SIGNAL(debuggingPoint(const QString &, const QString &)), this, SLOT(showDebuggingPoint(const QString &, const QString &)));
+	connect(d, SIGNAL(newProcInCluster(const QString &, const QString &)), this, SLOT(showNewProcInCluster(
+		const QString &, const QString &)));
+	connect(d, SIGNAL(debuggingPoint(const QString &, const QString &)), this, SLOT(showDebuggingPoint(
+		const QString &, const QString &)));
 	connect(d, SIGNAL(loading()), this, SLOT(showLoadPage()));
 	connect(d, SIGNAL(decoding()), this, SLOT(showDecodePage()));
 	connect(d, SIGNAL(decompiling()), this, SLOT(showDecompilePage()));
 	connect(d, SIGNAL(generatingCode()), this, SLOT(showGenerateCodePage()));
 	connect(d, SIGNAL(loadCompleted()), this, SLOT(loadComplete()));
 	connect(d, SIGNAL(machineType(const QString &)), this, SLOT(showMachineType(const QString &)));
-	connect(d, SIGNAL(newEntrypoint(unsigned int, const QString &)), this, SLOT(showNewEntrypoint(unsigned int, const QString &)));
+	connect(d, SIGNAL(newEntrypoint(unsigned int, const QString &)), this, SLOT(showNewEntrypoint(
+		unsigned int, const QString &)));
 	connect(d, SIGNAL(decodeCompleted()), this, SLOT(decodeComplete()));
 	connect(d, SIGNAL(decompileCompleted()), this, SLOT(decompileComplete()));
 	connect(d, SIGNAL(generateCodeCompleted()), this, SLOT(generateCodeComplete()));
-	connect(d, SIGNAL(changeProcedureState(const QString &, const QString &)), this, SLOT(changeProcedureState(const QString &, const QString &)));
-	connect(d, SIGNAL(consideringProc(const QString &, const QString &)), this, SLOT(showConsideringProc(const QString &, const QString &)));
+	connect(d, SIGNAL(changeProcedureState(const QString &, const QString &)), this, SLOT(changeProcedureState(
+		const QString &, const QString &)));
+	connect(d, SIGNAL(consideringProc(const QString &, const QString &)), this, SLOT(showConsideringProc(
+		const QString &, const QString &)));
 	connect(d, SIGNAL(decompilingProc(const QString &)), this, SLOT(showDecompilingProc(const QString &)));
-	connect(d, SIGNAL(newUserProc(const QString &, unsigned int)), this, SLOT(showNewUserProc(const QString &, unsigned int)));
-	connect(d, SIGNAL(newLibProc(const QString &, const QString &)), this, SLOT(showNewLibProc(const QString &, const QString &)));
-	connect(d, SIGNAL(removeUserProc(const QString &, unsigned int)), this, SLOT(showRemoveUserProc(const QString &, unsigned int)));
+	connect(d, SIGNAL(newUserProc(const QString &, unsigned int)), this, SLOT(showNewUserProc(
+		const QString &, unsigned int)));
+	connect(d, SIGNAL(newLibProc(const QString &, const QString &)), this, SLOT(showNewLibProc(
+		const QString &, const QString &)));
+	connect(d, SIGNAL(removeUserProc(const QString &, unsigned int)), this, SLOT(showRemoveUserProc(
+		const QString &, unsigned int)));
 	connect(d, SIGNAL(removeLibProc(const QString &)), this, SLOT(showRemoveLibProc(const QString &)));
-	connect(d, SIGNAL(newSection(const QString &, unsigned int, unsigned int)), this, SLOT(showNewSection(const QString &, unsigned int, unsigned int)));
+	connect(d, SIGNAL(newSection(const QString &, unsigned int, unsigned int)), this, SLOT(showNewSection(
+		const QString &, unsigned int, unsigned int)));
     connect(ui.toLoadButton, SIGNAL(clicked()), d, SLOT(load()));
     connect(ui.toDecodeButton, SIGNAL(clicked()), d, SLOT(decode()));
     connect(ui.toDecompileButton, SIGNAL(clicked()), d, SLOT(decompile()));
     connect(ui.toGenerateCodeButton, SIGNAL(clicked()), d, SLOT(generateCode()));
-	//connect(ui.inputFileComboBox, SIGNAL(editTextChanged(const QString &)), d,  SLOT(changeInputFile(const QString &)));
-	//connect(ui.outputPathComboBox, SIGNAL(editTextChanged(const QString &)), d,  SLOT(changeOutputPath(const QString &)));
+	//connect(ui.inputFileComboBox, SIGNAL(editTextChanged(const QString &)), d,  SLOT(
+	//	changeInputFile(const QString &)));
+	//connect(ui.outputPathComboBox, SIGNAL(editTextChanged(const QString &)), d,  SLOT(
+	//	changeOutputPath(const QString &)));
 	//connect(ui.inputFileBrowseButton, SIGNAL(clicked()), this, SLOT(browseForInputFile()));
 	//connect(ui.outputPathBrowseButton, SIGNAL(clicked()), this, SLOT(browseForOutputPath()));
 
 	ui.userProcs->horizontalHeader()->disconnect(SIGNAL(sectionClicked(int)));
-	connect(ui.userProcs->horizontalHeader(), SIGNAL(sectionClicked(int)), this, SLOT(on_userProcs_horizontalHeader_sectionClicked(int)));
+	connect(ui.userProcs->horizontalHeader(), SIGNAL(sectionClicked(int)), this, SLOT(
+		on_userProcs_horizontalHeader_sectionClicked(int)));
 
 	ui.userProcs->verticalHeader()->hide();
 	ui.libProcs->verticalHeader()->hide();
@@ -806,8 +818,37 @@ void MainWindow::on_structName_returnPressed()
 	decompilerThread->getDecompiler()->getCompoundMembers(ui.structName->text(), ui.structMembers);
 }
 
+#ifdef Q_WS_WIN
+#include "windows.h"		// For the windows specific code below (ShellExecuteA)
+#endif
+
 void MainWindow::on_actionBoomerang_Website_activated()
 {
-
+	// This should be a whole lot easier and more portable!
+#ifdef Q_WS_WIN
+	ShellExecuteA(NULL, "open", "http://boomerang.sourceforge.net/", NULL, NULL, SW_SHOW);
+#else
+	// From a web search:
+	QProcess *browser = new QProcess( this );
+	browser->start("firefox http://boomerang.sourceforge.net");
+	if (browser->state() == QProcess::NotRunning)
+	{
+		QMessageBox::critical(this, "Critical!","Firefox reports error!",
+			QMessageBox::Ok | QMessageBox::Default, QMessageBox::NoButton);
+	}
+#endif
 }
 
+void MainWindow::on_actionAbout_activated()
+{
+	QDialog *dlg = new QDialog;
+	Ui::AboutDialog ui;
+	ui.setupUi(dlg);
+	ui.VersionLabel->setText(QString("<h3>").append(Boomerang::getVersionStr()).append("</h3>"));
+	dlg->show();
+}
+
+void MainWindow::on_actionAboutQt_activated()
+{
+	QApplication::aboutQt();
+}
