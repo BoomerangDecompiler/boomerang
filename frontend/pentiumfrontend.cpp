@@ -532,7 +532,11 @@ bool PentiumFrontEnd::helperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL*>* lr
 		lrtl->push_back(pRtl);
         prog->removeProc(name.c_str());
         return true;
-    } else {
+	} else if (name == "__mingw_frame_init" || name == "__mingw_cleanup_setup" || name == "__mingw_frame_end") {
+		LOG << "found removable call to static lib proc " << name << " at " << addr << "\n";
+        prog->removeProc(name.c_str());
+		return true;
+	} else {
 		// Will be other cases in future
 	}
 	return false;

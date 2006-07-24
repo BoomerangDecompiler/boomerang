@@ -782,6 +782,10 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 									const char *nam = pBF->GetDynamicProcName(a);
 									// Assign the proc to the call
 									Proc *p = pProc->getProg()->getLibraryProc(nam);
+									if (call->getDestProc()) {
+										// prevent unnecessary __imp procs
+										prog->removeProc(call->getDestProc()->getName());
+									}
 									call->setDestProc(p);
 									call->setIsComputed(false);
                                     call->setDest(Location::memOf(new Const(a)));
