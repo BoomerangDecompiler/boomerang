@@ -338,7 +338,6 @@ void UserProc::dfaTypeAnalysis() {
 	if (VERBOSE) {
 		LOG << "### after application of dfa type analysis for " << getName() << " ###\n";
 		printToLog();
-		// localTable.dump();
 		LOG << "### end application of dfa type analysis for " << getName() << " ###\n";
 	}
 }
@@ -583,7 +582,7 @@ Type* UnionType::meetWith(Type* other, bool& ch, bool bHighestPtr) {
 
 	// Other is not compatible with any of my component types. Add a new type
 	char name[20];
-#if PRINT_UNION
+#if PRINT_UNION											// Set above
 	if (unionCount == 999)								// Adjust the count to catch the one you want
 		std::cerr << "createUnion breakpokint\n";		// Note: you need two breakpoints (also in Type::createUnion)
 	std::cerr << "  " << ++unionCount << " Created union from " << getCtype() << " and " << other->getCtype();
@@ -657,14 +656,14 @@ Type* Statement::meetWithFor(Type* ty, Exp* e, bool& ch) {
 	Type* newType = getTypeFor(e)->meetWith(ty, thisCh);
 	if (thisCh) {
 		ch = true;
-		setTypeFor(e, newType);
+		setTypeFor(e, newType->clone());
 	}
 	return newType;
 }
 
 Type* Type::createUnion(Type* other, bool& ch, bool bHighestPtr /* = false */) {
 
-	assert(!isUnion());									// Note: `this' should not be a UnionType
+	assert(!resolvesToUnion());										// `this' should not be a UnionType
 	if (other->resolvesToUnion())
 		return other->meetWith(this, ch, bHighestPtr)->clone();		// Put all the hard union logic in one place
 	// Check for anytype meet compound with anytype as first element
@@ -1429,6 +1428,8 @@ bool VoidType::isCompatible(Type* other, bool all) {
 bool SizeType::isCompatible(Type* other, bool all) {
 	if (other->resolvesToVoid()) return true;
 	unsigned otherSize = other->getSize();
+	if (other->resolvesToFunc()) return false;
+	// FIXME: why is there a test for size 0 here?
 	if (otherSize == size || otherSize == 0) return true;
 	if (other->resolvesToUnion()) return other->isCompatibleWith(this);
 	if (other->resolvesToArray()) return isCompatibleWith(((ArrayType*)other)->getBaseType());
