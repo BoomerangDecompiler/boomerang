@@ -173,6 +173,11 @@ virtual void		renameParam(const char *oldName, const char *newName);
 virtual bool		isLib() {return false;}
 
 		/**
+		 * Return true if this procedure doesn't return
+		 */
+virtual bool		isNoReturn() = 0;
+
+		/**
 		 * OutPut operator for a Proc object.
 		 */
 		friend std::ostream& operator<<(std::ostream& os, Proc& proc);
@@ -265,6 +270,8 @@ virtual				~LibProc();
 		 * Return true, since is a library proc
 		 */
 		bool		isLib() {return true;}
+
+virtual bool		isNoReturn();
 
 virtual Exp*		getProven(Exp* left);					// Get the RHS that is proven for left
 virtual	Exp*		getPremised(Exp* left) {return NULL;}	// Get the RHS that is premised for left
@@ -427,6 +434,8 @@ virtual				~UserProc();
 		 * pointer (to prevent strange errors)
 		 */
 		void		deleteCFG();
+
+virtual bool		isNoReturn();
 
 		/**
 		 * Lookup the expression in the symbol map. Return NULL or a C string with the symbol.

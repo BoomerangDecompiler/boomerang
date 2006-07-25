@@ -130,6 +130,25 @@ void Proc::setNativeAddress(ADDRESS a) {
 	address = a;
 }
 
+bool LibProc::isNoReturn()
+{
+	return FrontEnd::noReturnCallDest(getName());
+}
+
+bool UserProc::isNoReturn()
+{
+	PBB exitbb = cfg->getExitBB();
+	if (exitbb == NULL)
+		return true;
+	if (exitbb->getNumInEdges() == 1) {
+		Statement *s = exitbb->getInEdges()[0]->getLastStmt();
+		CallStatement *call = (CallStatement*)s;
+		if (s->isCall() && call->getDestProc() && call->getDestProc()->isNoReturn())
+			return true;
+	}
+	return false;
+}
+
 /*==============================================================================
  * FUNCTION:	  Proc::containsAddr
  * OVERVIEW:	  Return true if this procedure contains the given address
@@ -753,6 +772,16 @@ void UserProc::initStatements() {
 			CallStatement* call = dynamic_cast<CallStatement*>(s);
 			if (call) {
 				call->setSigArguments();
+				PBB exitbb = cfg->getExitBB();
+				if (exitbb && call->getDestProc() && call->getDestProc()->isNoReturn()) {
+					assert(bb->getNumOutEdges() == 1);
+					PBB out = bb->getOutEdge(0);
+					if (out != exitbb) {
+						out->deleteInEdge(bb);
+						bb->setOutEdge(0, exitbb);
+						exitbb->addInEdge(bb);
+					}
+				}
 			}
 			if (ADHOC_TYPE_ANALYSIS) {
 				Assign *asgn = dynamic_cast<Assign*>(s);
@@ -4301,6 +4330,8 @@ bool UserProc::ellipsisProcessing() {
 // Note: you need something recursive to make sure that child subexpressions are processed before parents
 // Example: m[r28{0} - 12]{0} could end up adding an implicit assignment for r28{0} with a null reference!
 void UserProc::addImplicitAssigns() {
+	Boomerang::get()->alert_decompile_debug_point(this, "before adding implicit assigns");
+
 	StatementList stmts;
 	getStatements(stmts);
 	StatementList::iterator it;
@@ -4311,6 +4342,8 @@ void UserProc::addImplicitAssigns() {
 	}
 	cfg->setImplicitsDone();
 	df.convertImplicits(cfg);			// Some maps have m[...]{-} need to be m[...]{0} now
+
+	Boomerang::get()->alert_decompile_debug_point(this, "after adding implicit assigns");
 }
 
 char* UserProc::lookupSym(Exp* e) {
@@ -4605,11 +4638,35 @@ void UserProc::fixCallAndPhiRefs() {
 	if (VERBOSE)
 		LOG << "### start fix call and phi bypass analysis for " << getName() << " ###\n";
 
+	Boomerang::get()->alert_decompile_debug_point(this, "before fixing call and phi refs");
+
 	std::map<Exp*, int, lessExpStar> destCounts;
 	StatementList::iterator it;
 	Statement* s;
 	StatementList stmts;
 	getStatements(stmts);
+
+	// a[m[]] hack, aint nothing better.
+	bool found = true;
+	for (it = stmts.begin(); it != stmts.end(); it++) 
+		if ((*it)->isCall()) {
+			CallStatement *call = (CallStatement*)*it;
+			for (StatementList::iterator it1 = call->getArguments().begin(); it1 != call->getArguments().end(); it1++) {
+				Assign *a = (Assign*)*it1;
+				if (a->getType()->resolvesToPointer()) {
+					Exp *e = a->getRight();
+					if (e->getOper() == opPlus || e->getOper() == opMinus)
+						if (e->getSubExp2()->isIntConst())
+							if (e->getSubExp1()->isSubscript() && ((RefExp*)e->getSubExp1())->getDef() == NULL)
+								if (e->getSubExp1()->getSubExp1()->isRegN(signature->getStackRegister())) {
+									a->setRight(new Unary(opAddrOf, Location::memOf(e->clone())));
+									found = true;
+								}
+				}
+			}
+		}
+	if (found)
+		doRenameBlockVars(2);
 
 	// Scan for situations like this:
 	// 56 r28 := phi{6, 26}
@@ -4727,6 +4784,8 @@ void UserProc::fixCallAndPhiRefs() {
 
 	if (VERBOSE)
 		LOG << "### end fix call and phi bypass analysis for " << getName() << " ###\n";
+
+	Boomerang::get()->alert_decompile_debug_point(this, "after fixing call and phi refs");
 }
 
 // Not sure that this is needed...
