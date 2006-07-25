@@ -772,14 +772,11 @@ void UserProc::initStatements() {
 			CallStatement* call = dynamic_cast<CallStatement*>(s);
 			if (call) {
 				call->setSigArguments();
-				PBB exitbb = cfg->getExitBB();
-				if (exitbb && call->getDestProc() && call->getDestProc()->isNoReturn()) {
-					assert(bb->getNumOutEdges() == 1);
+				if (call->getDestProc() && call->getDestProc()->isNoReturn() && bb->getNumOutEdges() == 1) {
 					PBB out = bb->getOutEdge(0);
-					if (out != exitbb) {
+					if (out != cfg->getExitBB() || cfg->getExitBB()->getNumInEdges() != 1) {
 						out->deleteInEdge(bb);
-						bb->setOutEdge(0, exitbb);
-						exitbb->addInEdge(bb);
+						bb->getOutEdges().clear();
 					}
 				}
 			}

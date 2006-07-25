@@ -119,7 +119,7 @@ bool FrontEnd::isWin32() {
 
 bool FrontEnd::noReturnCallDest(const char *name)
 {
-	return ((strcmp(name, "_exit") == 0) || (strcmp(name,	"exit") == 0) || (strcmp(name, "ExitProcess") == 0) || (strcmp(name, "abort") == 0));
+	return ((strcmp(name, "_exit") == 0) || (strcmp(name,	"exit") == 0) || (strcmp(name, "ExitProcess") == 0) || (strcmp(name, "abort") == 0) || (strcmp(name, "_assert") == 0));
 }
 
 // FIXME: Is this ever used? Need to pass a real pbff?
