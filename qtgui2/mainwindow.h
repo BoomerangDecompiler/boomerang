@@ -82,6 +82,8 @@ public slots:
 
 	void on_actionBoomerang_Website_activated();
 
+	void on_enableDFTAcheckBox_toggled(bool b);
+
 	void closeCurrentTab();
 	void currentTabTextChanged();
 

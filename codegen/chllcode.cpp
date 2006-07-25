@@ -1442,6 +1442,8 @@ void CHLLCode::AddReturnStatement(int indLevel, StatementList* rets) {
 				first = false;
 			else
 				s << ", ";
+			appendExp(s, ((Assign*)*rr)->getLeft(), PREC_NONE);
+			s << " := ";
 			appendExp(s, ((Assign*)*rr)->getRight(), PREC_NONE);
 		}
 		if (n > 1)

@@ -8,6 +8,7 @@ int stat(const char* filename, struct stat* st);
 
 void abort(void);
 
+typedef void *va_list;
 // exported by msvcrt.dll
-void _assert(int cond);// unknown library proc: ftell
+void _assert(const char *cond, const char *file, int errcode);
 int _vsnprintf(char *str, size_t size, const char *format, va_list ap);

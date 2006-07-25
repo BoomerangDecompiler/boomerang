@@ -33,6 +33,7 @@ public:
 	void getCompoundMembers(const QString &name, QTableWidget *tbl);
 
 	void setDebugging(bool d) { debugging = d; }
+	void setUseDFTA(bool d);
 
 public slots:
 	void changeInputFile(const QString &f);

@@ -118,7 +118,8 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				CommandLine="echo copying $(TargetPath) to $(SolutionDir)\boomerang-gui.exe
-copy /y $(TargetPath) $(SolutionDir)\boomerang-gui.exe"/>
+copy /y $(TargetPath) $(SolutionDir)\boomerang-gui.exe
+"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool
@@ -353,6 +354,18 @@ copy /y $(TargetPath) $(SolutionDir)\boomerang-gui.exe"/>
 		<Filter
 			Name="Form Files"
 			Filter="ui">
+			<File
+				RelativePath=".\about.ui">
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="UIC about.ui"
+						CommandLine="C:\Qt\4.1.2-msvc7.1\bin\uic.exe about.ui -o ui_about.h"
+						AdditionalDependencies="C:\Qt\4.1.2-msvc7.1\bin\uic.exe"
+						Outputs="ui_about.h"/>
+				</FileConfiguration>
+			</File>
 			<File
 				RelativePath="boomerang.ui">
 				<FileConfiguration

@@ -1897,9 +1897,12 @@ void UserProc::findPreserveds() {
 	if (VERBOSE)
 		LOG << "finding preserveds for " << getName() << "\n";
 
+	Boomerang::get()->alert_decompile_debug_point(this, "before finding preserveds");
+
 	if (theReturnStatement == NULL) {
 		if (DEBUG_PROOF)
 			LOG << "can't find preservations as there is no return statement!\n";
+		Boomerang::get()->alert_decompile_debug_point(this, "after finding preserveds (no return)");
 		return;
 	}
 
@@ -1938,6 +1941,8 @@ void UserProc::findPreserveds() {
 		if (!(*lhs == *rhs)) continue;
 		theReturnStatement->removeModified(lhs);
 	}
+
+	Boomerang::get()->alert_decompile_debug_point(this, "after finding preserveds");
 }
 
 void UserProc::removeSpAssignsIfPossible()

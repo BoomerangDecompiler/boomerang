@@ -1260,6 +1260,8 @@ bool DataIntervalMap::isClear(ADDRESS addr, unsigned size) {
 
 // With the forced parameter: are we forcing the name, the type, or always both?
 void DataIntervalMap::addItem(ADDRESS addr, char* name, Type* ty, bool forced /* = false */) {
+	if (name == NULL)
+		name = "<noname>";
 	DataIntervalEntry* pdie = find(addr);
 	if (pdie == NULL) {
 		// Check that this new item is compatible with any items it overlaps with, and insert it

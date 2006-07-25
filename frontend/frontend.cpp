@@ -117,6 +117,11 @@ bool FrontEnd::isWin32() {
 	return pBF->GetFormat() == LOADFMT_PE;
 }
 
+bool FrontEnd::noReturnCallDest(const char *name)
+{
+	return ((strcmp(name, "_exit") == 0) || (strcmp(name,	"exit") == 0) || (strcmp(name, "ExitProcess") == 0) || (strcmp(name, "abort") == 0));
+}
+
 // FIXME: Is this ever used? Need to pass a real pbff?
 FrontEnd *FrontEnd::createById(std::string &str, BinaryFile *pBF, Prog* prog) {
 	if (str == "pentium")
@@ -849,7 +854,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 							if (pBF->IsDynamicLinkedProcPointer(a))
 								name = pBF->GetDynamicProcName(a);
 						}	
-						if (name && ((strcmp(name, "_exit") == 0) || (strcmp(name,	"exit") == 0) || (strcmp(name, "ExitProcess") == 0) || (strcmp(name, "abort") == 0))) {
+						if (name && noReturnCallDest(name)) {
 							// Make sure it has a return appended (so there is only one exit from the function)
 							//call->setReturnAfterCall(true);		// I think only the Sparc frontend cares
 							// Create the new basic block

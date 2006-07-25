@@ -26,6 +26,7 @@
 #include "boomerang.h"
 #include "visitor.h"
 #include "log.h"
+#include "frontend.h"
 
 extern char debug_buffer[];		 // For prints functions
 

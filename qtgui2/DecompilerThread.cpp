@@ -38,7 +38,6 @@ void DecompilerThread::run()
 	threadToCollect = QThread::currentThreadId();
 
 	Boomerang::get()->setOutputDirectory(".\\output\\");
-	Boomerang::get()->dfaTypeAnalysis = true;
     //Boomerang::get()->vFlag = true;
 
 	decompiler = new Decompiler();
@@ -56,6 +55,10 @@ Decompiler *DecompilerThread::getDecompiler()
 	while (decompiler == NULL)
 		msleep(10);
 	return decompiler;
+}
+
+void Decompiler::setUseDFTA(bool d) {
+	Boomerang::get()->dfaTypeAnalysis = d;
 }
 
 void Decompiler::changeInputFile(const QString &f) 

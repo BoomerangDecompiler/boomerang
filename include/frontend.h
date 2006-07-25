@@ -154,6 +154,8 @@ static FrontEnd		*createById(std::string &str, BinaryFile *pBFi, Prog* prog);
 
 		bool		isWin32();					// Is this a win32 frontend?
 
+static	bool		noReturnCallDest(const char *name);
+
 		BinaryFile 	*getBinaryFile() { return pBF; }
 
 		/*

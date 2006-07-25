@@ -852,3 +852,8 @@ void MainWindow::on_actionAboutQt_activated()
 {
 	QApplication::aboutQt();
 }
+
+void MainWindow::on_enableDFTAcheckBox_toggled(bool b)
+{
+	decompilerThread->getDecompiler()->setUseDFTA(b);
+}
