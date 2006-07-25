@@ -1,5 +1,4 @@
-/* Tiny X86 disassembler, capable only of finding the number of bytes of
- * a given instruction
+/* Tiny X86 disassembler, capable only of finding the number of bytes of a given instruction
  * In other words, a surface engine
  * Assumes a seg32 segment; ignores the address size override
  * Note that the function could return Not Handled (NH, 0x40)
@@ -100,9 +99,9 @@ static unsigned char opmap[256] = {
     OPSIZE+2,OPSIZE+2,OPSIZE+2,OPSIZE+2,
     OPSIZE+2,OPSIZE+2,OPSIZE+2,OPSIZE+2,
     OPSIZE+2,OPSIZE+2,OPSIZE+2,OPSIZE+2,
-    /* 90-97 */
-    2,2,2,2,2,2,2,2,
-    /* 98-9F */
+    /* 90-97 setcc */
+    MODRM+2,MODRM+2,MODRM+2,MODRM+2,MODRM+2,MODRM+2,MODRM+2,MODRM+2,
+    /* 98-9F setcc */
     MODRM+2,MODRM+2,MODRM+2,MODRM+2,MODRM+2,MODRM+2,MODRM+2,MODRM+2,
     /* A0-A7 */
     2,2,2, MODRM+2, MODRM+3, MODRM+2, NH, NH,
