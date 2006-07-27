@@ -5218,17 +5218,18 @@ bool UserProc::removeRedundantReturns(std::set<UserProc*>& removeRetSet) {
 		LOG << "%%%  final returns for " << getName() << ": " << theReturnStatement->getReturns().prints() << "\n";
 	}
 
+	// removing returns might result in params that can be removed, might as well do it now.
+	removedParams |= removeRedundantParameters();
+
 	ProcSet updateSet;			// Set of procs to update
 
 	if (removedParams || removedRets) {
-		if (removedParams) {
-			// Update the statements that call us
-			std::set<CallStatement*>::iterator it;
-			for (it = callerSet.begin(); it != callerSet.end() ; it++) {
-				(*it)->updateArguments();				// Update caller's arguments
-				updateSet.insert((*it)->getProc());		// Make sure we redo the dataflow
-				removeRetSet.insert((*it)->getProc());	// Also schedule caller proc for more analysis
-			}
+		// Update the statements that call us
+		std::set<CallStatement*>::iterator it;
+		for (it = callerSet.begin(); it != callerSet.end() ; it++) {
+			(*it)->updateArguments();				// Update caller's arguments
+			updateSet.insert((*it)->getProc());		// Make sure we redo the dataflow
+			removeRetSet.insert((*it)->getProc());	// Also schedule caller proc for more analysis
 		}
 
 		// Now update myself
