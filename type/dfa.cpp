@@ -312,7 +312,7 @@ void UserProc::dfaTypeAnalysis() {
 				typeExp = ((ImpRefStatement*)s)->getType();
 				// typeExp should be a pointer expression, or a union of pointer types
 				if (typeExp->resolvesToUnion())
-					typeExp = typeExp->asUnion()->getPointsTo();
+					typeExp = typeExp->asUnion()->dereferenceUnion();
 				else {
 					assert(typeExp->resolvesToPointer());
 					typeExp = typeExp->asPointer()->getPointsTo();
@@ -1039,6 +1039,10 @@ void Binary::descendType(Type* parentType, bool& ch, Statement* s) {
 	Type* ta = subExp1->ascendType();
 	Type* tb = subExp2->ascendType();
 	Type* nt;							// "New" type for certain operators
+	// The following is an idea of Mike's that is not yet implemented well. It is designed to handle the situation
+	// where the only reference to a local is where its address is taken. In the current implementation, it incorrectly
+	// triggers with every ordinary local reference, causing esp to appear used in the final program
+#if 0
 	Signature* sig = s->getProc()->getSignature();
 	Prog* prog = s->getProc()->getProg();
 	if (parentType->resolvesToPointer() && !parentType->asPointer()->getPointsTo()->resolvesToVoid() &&
@@ -1048,6 +1052,7 @@ void Binary::descendType(Type* parentType, bool& ch, Statement* s) {
 		// to the specified address; this should eventually meet with the main assignment(s).
 		s->getProc()->setImplicitRef(s, this, parentType);
 	}
+#endif
 	switch (op) {
 		case opPlus:
 			ta = ta->meetWith(sigmaAddend(parentType, tb), ch);
@@ -1568,15 +1573,27 @@ bool Type::isSubTypeOrEqual(Type* other) {
 	return false;
 }
 
-// Assume that this is a union of pointers. Return a new union that is the set of types pointed to
-Type* UnionType::getPointsTo() {
+Type* Type::dereference() {
+	if (resolvesToPointer())
+		return asPointer()->getPointsTo();
+	if (resolvesToUnion())
+		return asUnion()->dereferenceUnion();
+	return new VoidType();			// Can't dereference this type. Note: should probably be bottom
+}
+
+// Dereference this union. If it is a union of pointers, return a union of the dereferenced items. Else return VoidType
+// (note: should probably be bottom)
+Type* UnionType::dereferenceUnion() {
 	UnionType* ret = new UnionType;
 	char name[20];
 	std::list<UnionElement>::iterator it;
 	for (it = li.begin(); it != li.end(); it++) {
-		assert(it->type->resolvesToPointer());
+		Type* elem = it->type->dereference();
+		if (elem->resolvesToVoid())
+			return elem;			// Return void for the whole thing
 		sprintf(name, "x%d", ++nextUnionNumber);
-		ret->addType(it->type->asPointer()->getPointsTo()->clone(), name);
+		ret->addType(elem->clone(), name);
 	}
 	return ret;
 }
+
