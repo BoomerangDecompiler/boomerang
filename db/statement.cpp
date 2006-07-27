@@ -833,6 +833,21 @@ bool Statement::replaceRef(Exp* e, Assign *def, bool& convert) {
 			return true;
 		}
 	}
+	// need something similar for %ZF
+	if (base->getOper() == opZF && lhs->isFlags()) {
+		if (!rhs->isFlagCall())
+			return false;
+		char* str = ((Const*)((Binary*)rhs)->getSubExp1())->getStr();
+		if (strncmp("SUBFLAGS", str, 8) == 0) {
+			// for zf we're only interested in if the result part of the subflags is equal to zero
+			Exp* relExp = new Binary(opEquals,
+				((Binary*)rhs)->getSubExp2()->getSubExp2()->getSubExp2()->getSubExp1(),
+				new Const(0));
+			searchAndReplace(new RefExp(new Terminal(opZF), def), relExp, true);
+			return true;
+		}
+	}
+
 
 	// do the replacement
 	//bool convert = doReplaceRef(re, rhs);
@@ -3633,6 +3648,7 @@ void Assignment::getDefinitions(LocationSet &defs) {
 	// Special case: flag calls define %CF (and others)
 	if (lhs->isFlags()) {
 		defs.insert(new Terminal(opCF));
+		defs.insert(new Terminal(opZF));
 	}
 }
 

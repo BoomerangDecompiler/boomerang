@@ -2333,7 +2333,7 @@ static RefExp* regOfWild = new RefExp(
 // definition).
 // These are called final parameters, because they are determined from implicit references, not from the use collector
 // at the start of the proc, which include some caused by recursive calls
-#define DEBUG_PARAMS 0
+#define DEBUG_PARAMS 1
 void UserProc::findFinalParameters() {
 
 	Boomerang::get()->alert_decompile_debug_point(this, "before find final parameters.");
@@ -2419,6 +2419,13 @@ void UserProc::findFinalParameters() {
 			if (e->isMemOf() && e->getSubExp1()->isConst()) {
 				if (VERBOSE || DEBUG_PARAMS)
 					LOG << "ignoring m[const]\n";
+				continue;
+			}
+			bool allZero;
+			e->clone()->removeSubscripts(allZero);
+			if (!allZero) {
+				if (VERBOSE || DEBUG_PARAMS)
+					LOG << "ignoring not all-zero\n";
 				continue;
 			}
 			if (VERBOSE || DEBUG_PARAMS)
