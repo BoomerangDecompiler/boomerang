@@ -4591,6 +4591,13 @@ void Statement::addUsedLocs(LocationSet& used, bool cc /* = false */, bool memOn
 	accept(&ulv);
 }
 
+bool Statement::addUsedLocals(LocationSet& used) {
+	UsedLocalFinder ulf(used, proc);
+	UsedLocsVisitor ulv(&ulf, false);
+	accept(&ulv);
+	return ulf.wasAllFound();
+}
+
 // For all expressions in this Statement, replace any e with e{def}
 void Statement::subscriptVar(Exp* e, Statement* def /*, Cfg* cfg */) {
 	ExpSubscripter es(e, def /*, cfg*/);

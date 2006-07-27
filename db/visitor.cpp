@@ -247,7 +247,7 @@ bool UsedLocsFinder::visit(Location* e, bool& override) {
 	if (e->isMemOf()) {
 		// Example: m[r28{10} - 4]	we use r28{10}
 		Exp* child = e->getSubExp1();
-		// Care! Need to turn off the memOnly flag for work inside the m[...], otherwise everyting will get ignored
+		// Care! Need to turn off the memOnly flag for work inside the m[...], otherwise everything will get ignored
 		bool wasMemOnly = memOnly;
 		memOnly = false;
 		child->accept(this);
@@ -303,6 +303,41 @@ bool UsedLocsFinder::visit(RefExp* e, bool& override) {
 	return true;
 }
 
+bool UsedLocalFinder::visit(Location* e, bool& override) {
+	override = false;
+	char* sym = proc->lookupSym(e);
+	if (sym)
+		override = true;				// Don't look inside this local or parameter
+	if (proc->findLocal(e))
+		used->insert(e);				// Found a local
+	return true;						// Continue looking for other locations
+}
+
+bool UsedLocalFinder::visit(TypedExp* e, bool& override) {
+	override = false;
+	Type* ty = e->getType();
+	// Assumption: (cast)exp where cast is of pointer type means that exp is the address of a local
+	if (ty->resolvesToPointer()) {
+		Exp* sub = e->getSubExp1();
+		Location* mof = Location::memOf(sub);
+		if (proc->findLocal(mof)) {
+			used->insert(mof);
+			override = true;
+		}
+	}
+	return true;
+}
+
+bool UsedLocalFinder::visit(Terminal* e) {
+	if (e->getOper() == opDefineAll)
+		all = true;
+	char* sym = proc->findLocal(e);
+	if (sym)
+		used->insert(e);
+	return true;		// Always continue recursion
+}
+
+
 bool UsedLocsVisitor::visit(Assign* s, bool& override) {
 	Exp* lhs = s->getLeft();
 	Exp* rhs = s->getRight();
@@ -311,11 +346,14 @@ bool UsedLocsVisitor::visit(Assign* s, bool& override) {
 	if (lhs->isMemOf() || lhs->isRegOf()) {
 		Exp* child = ((Location*)lhs)->getSubExp1();	// m[xxx] uses xxx
 		// Care! Don't want the memOnly flag when inside a m[...]. Otherwise, nothing will be found
-		UsedLocsFinder* ulf = (UsedLocsFinder*)ev;
-		bool wasMemOnly = ulf->isMemOnly();
-		ulf->setMemOnly(false);
-		child->accept(ev);
-		ulf->setMemOnly(wasMemOnly);
+		// Also beware that ev may be a UsedLocalFinder now
+		UsedLocsFinder* ulf = dynamic_cast<UsedLocsFinder*>(ev);
+		if (ulf) {
+			bool wasMemOnly = ulf->isMemOnly();
+			ulf->setMemOnly(false);
+			child->accept(ev);
+			ulf->setMemOnly(wasMemOnly);
+		}
 	} else if (lhs->getOper() == opArrayIndex || lhs->getOper() == opMemberAccess) {
 		Exp* subExp1 = ((Binary*)lhs)->getSubExp1();	// array(base, index) and member(base, offset)?? use
 		subExp1->accept(ev);							// base and index
@@ -337,11 +375,13 @@ bool UsedLocsVisitor::visit(PhiAssign* s, bool& override) {
 	// Special logic for the LHS
 	if (lhs->isMemOf()) {
 		Exp* child = ((Location*)lhs)->getSubExp1();
-		UsedLocsFinder* ulf = (UsedLocsFinder*)ev;
-		bool wasMemOnly = ulf->isMemOnly();
-		ulf->setMemOnly(false);
-		child->accept(ev);
-		ulf->setMemOnly(wasMemOnly);
+		UsedLocsFinder* ulf = dynamic_cast<UsedLocsFinder*>(ev);
+		if (ulf) {
+			bool wasMemOnly = ulf->isMemOnly();
+			ulf->setMemOnly(false);
+			child->accept(ev);
+			ulf->setMemOnly(wasMemOnly);
+		}
 	} else if (lhs->getOper() == opArrayIndex || lhs->getOper() == opMemberAccess) {
 		Exp* subExp1 = ((Binary*)lhs)->getSubExp1();
 		subExp1->accept(ev);
@@ -368,11 +408,13 @@ bool UsedLocsVisitor::visit(ImplicitAssign* s, bool& override) {
 	// Special logic for the LHS
 	if (lhs->isMemOf()) {
 		Exp* child = ((Location*)lhs)->getSubExp1();
-		UsedLocsFinder* ulf = (UsedLocsFinder*)ev;
-		bool wasMemOnly = ulf->isMemOnly();
-		ulf->setMemOnly(false);
-		child->accept(ev);
-		ulf->setMemOnly(wasMemOnly);
+		UsedLocsFinder* ulf = dynamic_cast<UsedLocsFinder*>(ev);
+		if (ulf) {
+			bool wasMemOnly = ulf->isMemOnly();
+			ulf->setMemOnly(false);
+			child->accept(ev);
+			ulf->setMemOnly(wasMemOnly);
+		}
 	} else if (lhs->getOper() == opArrayIndex || lhs->getOper() == opMemberAccess) {
 		Exp* subExp1 = ((Binary*)lhs)->getSubExp1();
 		subExp1->accept(ev);
@@ -433,11 +475,13 @@ bool UsedLocsVisitor::visit(BoolAssign* s, bool& override) {
 	Exp* lhs = s->getLeft();
 	if (lhs && lhs->isMemOf()) {	// If dest is of form m[x]...
 		Exp* x = ((Location*)lhs)->getSubExp1();
-		UsedLocsFinder* ulf = (UsedLocsFinder*)ev;
-		bool wasMemOnly = ulf->isMemOnly();
-		ulf->setMemOnly(false);
-		x->accept(ev);
-		ulf->setMemOnly(wasMemOnly);
+		UsedLocsFinder* ulf = dynamic_cast<UsedLocsFinder*>(ev);
+		if (ulf) {
+			bool wasMemOnly = ulf->isMemOnly();
+			ulf->setMemOnly(false);
+			x->accept(ev);
+			ulf->setMemOnly(wasMemOnly);
+		}
 	} else if (lhs->getOper() == opArrayIndex || lhs->getOper() == opMemberAccess) {
 		Exp* subExp1 = ((Binary*)lhs)->getSubExp1();
 		subExp1->accept(ev);

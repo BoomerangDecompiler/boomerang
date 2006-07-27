@@ -357,6 +357,26 @@ virtual bool		visit(Location *e, bool& override);
 virtual bool		visit(Terminal* e);
 };
 
+// This class differs from the above in these ways:
+//  1) it counts locals implicitly referred to with (cast to pointer)(sp-K)
+//  2) it does not recurse inside the memof (thus finding the stack pointer as a local)
+//  3) only used after fromSSA, so no RefExps to visit
+class UsedLocalFinder : public ExpVisitor {
+		LocationSet* used;			// Set of used locals' names
+		UserProc*	proc;			// Enclosing proc
+		bool		all;			// True if see opDefineAll
+public:
+					UsedLocalFinder(LocationSet& used, UserProc* proc) : used(&used), proc(proc), all(false) {}
+					~UsedLocalFinder() {}
+
+		LocationSet* getLocSet() {return used;}
+		bool		wasAllFound() {return all;}
+
+virtual bool		visit(Location *e, bool& override);
+virtual bool		visit(TypedExp *e,	bool& override);
+virtual bool		visit(Terminal* e);
+};
+
 class UsedLocsVisitor : public StmtExpVisitor {
 		bool		countCol;					// True to count uses in collectors
 public:

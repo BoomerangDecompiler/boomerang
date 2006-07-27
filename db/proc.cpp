@@ -415,6 +415,7 @@ UserProc::UserProc() : Proc(), cfg(NULL), status(PROC_UNDECODED),
 		// decoded(false), analysed(false),
 		nextLocal(0),	// decompileSeen(false), decompiled(false), isRecursive(false)
 		cycleGrp(NULL), theReturnStatement(NULL) {
+	localTable.setProc(this);
 }
 UserProc::UserProc(Prog *prog, std::string& name, ADDRESS uNative) :
 		// Not quite ready for the below fix:
@@ -425,6 +426,7 @@ UserProc::UserProc(Prog *prog, std::string& name, ADDRESS uNative) :
 		cycleGrp(NULL), theReturnStatement(NULL), DFGcount(0)
 {
 	cfg->setProc(this);				 // Initialise cfg.myProc
+	localTable.setProc(this);
 }
 
 UserProc::~UserProc() {
@@ -3421,9 +3423,12 @@ Type *UserProc::getParamType(const char *nam)
 
 void UserProc::setExpSymbol(const char *nam, Exp *e, Type* ty)
 {
-	// NOTE: does not update symbols[]
 	TypedExp *te = new TypedExp(ty, Location::local(strdup(nam), this));
 	symbolMap[e] = te;
+}
+
+void UserProc::mapSymbolTo(Exp* from, Exp* to) {
+	symbolMap[from] = to;
 }
 
 Exp *UserProc::expFromSymbol(const char *nam)
@@ -3507,22 +3512,18 @@ void UserProc::removeUnusedLocals() {
 	bool all = false;
 	for (ss = stmts.begin(); ss != stmts.end(); ss++) {
 		Statement* s = *ss;
-		LocationSet refs;
-		s->addUsedLocs(refs);
-		LocationSet::iterator rr;
-		for (rr = refs.begin(); rr != refs.end(); rr++) {
-			Exp* r = *rr;
-			if (r->getOper() == opDefineAll)
-				all = true;
-			//if (r->isSubscript())					// Presumably never seen now
-			//	r = ((RefExp*)r)->getSubExp1();
-			char* sym = findLocal(r);				// Look up raw expressions in the symbolMap, and check in symbols
+		LocationSet locs;
+		all |= s->addUsedLocals(locs);
+		LocationSet::iterator uu;
+		for (uu = locs.begin(); uu != locs.end(); uu++) {
+			Exp* u = *uu;
 			// Must be a real symbol, and not defined in this statement, unless it is a return statement (in which case
 			// it is used outside this procedure), or a call statement. Consider local7 = local7+1 and
 			// return local7 = local7+1 and local7 = call(local7+1), where in all cases, local7 is not used elsewhere
 			// outside this procedure. With the assign, it can be deleted, but with the return or call statements, it
 			// can't.
-			if (sym && (s->isReturn() || s->isCall() || !s->definesLoc(r))) {
+			if ((s->isReturn() || s->isCall() || !s->definesLoc(u))) {
+				char* sym = findLocal(u);
 				std::string name(sym);
 				usedLocals.insert(name);
 				if (DEBUG_UNUSED)
@@ -3544,6 +3545,9 @@ void UserProc::removeUnusedLocals() {
 	for (it = locals.begin(); it != locals.end(); it++) {
 		std::string& name = const_cast<std::string&>(it->first);
 		// LOG << "Considering local " << name << "\n";
+		if (VERBOSE && all && removes.size())
+			LOG << "WARNING: defineall seen in procedure " << name.c_str() << " so not removing " << removes.size() <<
+				" locals\n";
 		if (usedLocals.find(name) == usedLocals.end() && !all) {
 			if (VERBOSE)
 				LOG << "removed unused local " << name.c_str() << "\n";

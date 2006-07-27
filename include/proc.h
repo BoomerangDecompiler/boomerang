@@ -739,6 +739,7 @@ public:
 		/// return a symbol's exp (note: the original exp, like r24, not local1)
 		Exp			*expFromSymbol(const char *nam);
 		void		setExpSymbol(const char *nam, Exp *e, Type* ty);
+		void		mapSymbolTo(Exp* from, Exp* to);
 
 		int			getNumLocals() { return (int)locals.size(); }
 		const char	*getLocalName(int n);

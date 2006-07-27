@@ -25,9 +25,6 @@
  */
 
 #include <assert.h>
-#if defined(_MSC_VER) && _MSC_VER <= 1200
-#pragma warning(disable:4786)
-#endif 
 
 #include "types.h"
 #include "type.h"
@@ -38,11 +35,6 @@
 #include "signature.h"
 #include "boomerang.h"
 #include "log.h"
-// For some reason, MSVC 5.00 complains about use of undefined type RTL a lot
-#if defined(_MSC_VER) && _MSC_VER <= 1100
-#include "signature.h"		// For MSVC 5.00
-#include "rtl.h"
-#endif
 
 extern char debug_buffer[];		 // For prints functions
 
@@ -1376,6 +1368,39 @@ void DataIntervalMap::replaceComponents(ADDRESS addr, char* name, Type* ty, bool
 	// The compound or array type is compatible. Remove the items that it will overlap with
 	iterator it1 = dimap.lower_bound(addr);
 	iterator it2 = dimap.upper_bound(pastLast-1);
+
+	// Check for existing locals that need to be updated
+	if (ty->resolvesToCompound() || ty->resolvesToArray()) {
+		Exp* rsp = Location::regOf(proc->getSignature()->getStackRegister());
+		RefExp* rsp0 = new RefExp(rsp, proc->getCFG()->findTheImplicitAssign(rsp));	// sp{0}
+		for (it = it1; it != it2; ++it) {
+			// Check if there is an existing local here
+			Exp* locl = Location::memOf(
+				new Binary(opPlus,
+					rsp0->clone(),
+					new Const(it->first)));
+			locl->simplifyArith();						// Convert m[sp{0} + -4] to m[sp{0} - 4]
+			char* locName = proc->findLocal(locl);
+			if (locName && ty->resolvesToCompound()) {
+				CompoundType* c = ty->asCompound();
+				int bitOffset = (it->first - addr) / 8;
+				// want s.m where s is the new compound object and m is the member at offset bitOffset
+				char* memName = (char*)c->getNameAtOffset(bitOffset);
+				Exp* s = Location::memOf(
+					new Binary(opPlus,
+						rsp0->clone(),
+						new Const(addr)));
+				s->simplifyArith();
+				Exp* memberExp = new Binary(opMemberAccess,
+					s,
+					new Const(memName));
+				proc->mapSymbolTo(locl, memberExp);
+			} else {
+				// FIXME: to be completed
+			}
+		}
+	}
+
 	for (it = it1; it != it2; ++it)
 		/* it = */ dimap.erase(it);
 
@@ -1483,7 +1508,6 @@ void CompoundType::updateGenericMember(int off, Type* ty, bool& ch) {
 		setNameAtOffset(off*8, ost.str().c_str());
 	}
 }
-
 
 
 #if USING_MEMO
@@ -1676,5 +1700,7 @@ void UnionType::readMemo(Memo *mm, bool dec)
 	for (std::list<UnionElement>::iterator it = li.begin(); it != li.end(); it++)
 		it->type->restoreMemo(m->mId, dec);
 }
+
+// Don't insert new functions here! (Unles memo related.) Inside #if USING_MEMO!
 
 #endif			// #if USING_MEMO

@@ -39,6 +39,7 @@
 #include "types.h"			// For STD_SIZE
 
 class Signature;
+class UserProc;
 class VoidType;
 class FuncType;
 class BooleanType;
@@ -91,7 +92,7 @@ static Type*		parseType(const char *str); // parse a C type
 
 bool	isCString();
 
-					// runtime type information
+					// runtime type information. Deprecated for most situations; use resolvesToTYPE()
 virtual bool		isVoid()		const { return false; }
 virtual bool		isFunc()		const { return false; }
 virtual bool		isBoolean()		const { return false; }
@@ -198,6 +199,9 @@ static	Type*		newIntegerLikeType(int size, int signedness);	// Return a new Bool
 					// From a complex type like an array of structs with a float, return a list of components so you
 					// can construct e.g. myarray1[8].mystruct2.myfloat7
 		ComplexTypeCompList& compForAddress(ADDRESS addr, DataIntervalMap& dim);
+					// Dereference this type. For most cases, return null unless you are a pointer type. But for a
+					// union of pointers, return a new union with the dereference of all members. In dfa.cpp
+		Type*		dereference();
 
 protected:
 	friend class XMLProgParser;
@@ -575,7 +579,8 @@ virtual const char *getCtype(bool final = false) const;
 virtual Type*		meetWith(Type* other, bool& ch, bool bHighestPtr);
 virtual bool		isCompatibleWith(Type* other, bool all) {return isCompatible(other, all);}
 virtual bool		isCompatible(Type* other, bool all);
-		Type*		getPointsTo();		// if this is a union of pointer types, get the union of things they point to
+					// if this is a union of pointer types, get the union of things they point to. In dfa.cpp
+		Type*		dereferenceUnion();
 
 protected:
 	friend class XMLProgParser;
@@ -679,9 +684,11 @@ typedef std::pair<const ADDRESS, DataInterval> DataIntervalEntry;		// For result
 
 class DataIntervalMap {
 		std::map<ADDRESS, DataInterval> dimap;
+		UserProc*	proc;							// If used for locals, has ptr to UserProc, else NULL
 public:
 					DataIntervalMap() {}
 typedef	std::map<ADDRESS, DataInterval>::iterator iterator;
+		void		setProc(UserProc* p) {proc = p;}// Initialise the proc pointer
 		DataIntervalEntry* find(ADDRESS addr);		// Find the DataInterval at address addr, or NULL if none
 		iterator	find_it(ADDRESS addr);			// Return an iterator to the entry for it, or end() if none
 		bool		isClear(ADDRESS addr, unsigned size);		// True if from addr for size bytes is clear
