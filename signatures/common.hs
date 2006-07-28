@@ -12,3 +12,11 @@ libintl.h
 unistd.h
 getopt.h
 xf86.h
+pwd.h
+utmp.h
+time.h
+fcntl.h
+signal.h
+netdb.h
+socket.h
+termios.h
