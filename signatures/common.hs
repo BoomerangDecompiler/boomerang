@@ -20,3 +20,4 @@ signal.h
 netdb.h
 socket.h
 termios.h
+ctype.h
