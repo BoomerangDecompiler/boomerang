@@ -1321,13 +1321,15 @@ void StmtDfaLocalMapper::visit(CallStatement* s, bool& recur) {
 
 
 // Map expressions to locals
-DfaLocalMapper::DfaLocalMapper(UserProc* proc) : parentType(NULL), proc(proc) {
+DfaLocalMapper::DfaLocalMapper(UserProc* proc) : parentType(new VoidType()), proc(proc) {
 	sig = proc->getSignature();
 	prog = proc->getProg();
 	change = false;
 }
 
 Exp* DfaLocalMapper::preVisit(Location* e, bool& recur) {
+    assert(parentType);
+
 	// Check if this is an appropriate pattern for local variables	
 	recur = true;
 	if (e->isMemOf()) {
@@ -1345,19 +1347,24 @@ Exp* DfaLocalMapper::preVisit(Location* e, bool& recur) {
 		// When we recurse into the m[...], the type will be changed
 		parentType = new PointerType(parentType);
 	}
-	return e;
+
+    assert(parentType);
+    return e;
 }
 Exp* DfaLocalMapper::postVisit(Location* e) {
-	if (e->isMemOf()) {
+    assert(parentType);
+    if (e->isMemOf()) {
 		// We should have set the type to be a pointer in preVisit; undo that change now
 		PointerType* pt = parentType->asPointer();
 		assert(pt);
 		parentType = pt->getPointsTo();
 	}
+    assert(parentType);
 	return e;
 }
 
 Exp* DfaLocalMapper::preVisit(Unary* e, bool& recur) {
+    assert(parentType);
 	recur = true;
 	if (e->isAddrOf()) {
 		// When we recurse into the a[...], the type will be changed
@@ -1370,6 +1377,7 @@ Exp* DfaLocalMapper::preVisit(Unary* e, bool& recur) {
 			parentType = new VoidType(); 
 		}
 	}
+    assert(parentType);
 	return e;
 }
 Exp* DfaLocalMapper::preVisit(TypedExp* e, bool& recur) {
@@ -1378,10 +1386,12 @@ Exp* DfaLocalMapper::preVisit(TypedExp* e, bool& recur) {
 	return e;
 }
 Exp* DfaLocalMapper::postVisit(Unary* e) {
+    assert(parentType);
 	if (e->isAddrOf()) {
 		// We should have set the type to be a dereference of the original parentType in preVisit; undo that change now
 		parentType = new PointerType(parentType);
 	}
+    assert(parentType);
 	return e;
 }
 
@@ -1499,6 +1509,8 @@ bool PointerType::isCompatible(Type* other, bool all) {
 }
 
 bool NamedType::isCompatible(Type* other, bool all) {
+    if (other->isNamed() && name == ((NamedType*)other)->getName())
+        return true;
 	Type* resTo = resolvesTo();
 	if (resTo)
 		return resolvesTo()->isCompatibleWith(other);

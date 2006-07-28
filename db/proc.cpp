@@ -3705,19 +3705,20 @@ void UserProc::fromSSAform() {
 		}
 		LocationSet refs;
 		pa->addUsedLocs(refs);
-		Exp* first = pa->begin()->e;
 		bool phiParamsSame = true;
+   		Exp* first = NULL;
 		if (pa->getNumDefs() > 1) {
 			PhiAssign::iterator uu;
 			for (uu = ++pa->begin(); uu != pa->end(); uu++) {
 				if (uu->e == NULL) continue;
+                if (first == NULL) { first = uu->e; continue; }
 				if (!(*uu->e == *first)) {
 					phiParamsSame = false;
 					break;
 				}
 			}
 		}
-		if (phiParamsSame) {
+		if (phiParamsSame && first) {
 			// Is the left of the phi assignment the same base variable as all the operands?
 			if (*pa->getLeft() == *first) {
 				if (DEBUG_LIVENESS || DEBUG_UNUSED)
@@ -3766,7 +3767,8 @@ void UserProc::fromSSAform() {
 			for (rr = pa->begin(); rr != pa->end(); rr++) {
 				// Replace the LHS of the definitions (use setLeftFor, since some could be calls with more than one
 				// return) with left
-				rr->def->setLeftFor(rr->e, left);
+                if (rr->def)
+				    rr->def->setLeftFor(rr->e, left);
 			}
 #endif
 		}
