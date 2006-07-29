@@ -1396,8 +1396,11 @@ void DataIntervalMap::replaceComponents(ADDRESS addr, char* name, Type* ty, bool
 		}
 	}
 
-	for (it = it1; it != it2 && it != dimap.end(); )
-		it = dimap.erase(it);
+	for (it = it1; it != it2 && it != dimap.end();  )
+		// I believe that it is a conforming extension for map::erase() to return the iterator, but it is not portable
+		// to use it. In particular, gcc considers using the return value as an error
+		// The postincrement operator seems to be the definitive way to do this
+		dimap.erase(it++);
 
 	DataInterval* pdi = &dimap[addr];				// Finally add the new entry
 	pdi->size = ty->getBytes();

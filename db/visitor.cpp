@@ -651,7 +651,7 @@ Exp* Localiser::postVisit(Location* e) {
 	Exp* r = call->findDefFor(ret);
 	if (r) {
 		ret = r->clone();
-		if (EXPERIMENTAL) {
+		if (0 && EXPERIMENTAL) {		// FIXME: check if sometimes needed
 			// The trouble with the below is that you can propagate to say a call statement's argument expression and
 			// not to the assignment of the actual argument. Examples: test/pentium/fromssa2, fbranch
 			bool ch;
@@ -879,6 +879,19 @@ bool ExpDestCounter::visit(RefExp *e, bool& override) {
 	override = false;		// Continue searching my children
 	return true;			// Continue visiting the rest of Exp* e
 }
+
+bool StmtDestCounter::visit(PhiAssign *stmt, bool& override) {
+	PhiAssign::iterator it;
+	for (it = stmt->begin(); it != stmt->end(); ++it) {
+		if (it->e) {
+			RefExp* re = new RefExp(it->e, it->def);
+			usedInPhi.insert(re);
+		}
+	}
+	override = false;
+	return true;
+}
+
 
 bool FlagsFinder::visit(Binary *e,	bool& override) {
 	if (e->isFlagCall()) {

@@ -274,7 +274,7 @@ static	bool		canPropagateToExp(Exp* e);
 		// dnp is a StatementSet with statements that should not be propagated
 		// Set convert if an indirect call is changed to direct (otherwise, no change)
 		bool		propagateTo(bool& convert, std::map<Exp*, int, lessExpStar>* destCounts = NULL,
-						StatementSet* dnp = NULL);
+						std::set<Exp*, lessExpStar>* uip = NULL);
 
 		// code generation
 virtual void		generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) = 0;

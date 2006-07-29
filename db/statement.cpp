@@ -714,8 +714,10 @@ bool Statement::canPropagateToExp(Exp*e) {
 }
 
 // Return true if any change; set convert if an indirect call statement is converted to direct (else unchanged)
+// destCounts is a set of maps from location to number of times it is used this proc
+// uip is a set of subscripted locations used in phi statements
 bool Statement::propagateTo(bool& convert, std::map<Exp*, int, lessExpStar>* destCounts /* = NULL */,
-		StatementSet* dnp /* = NULL */) {
+		std::set<Exp*, lessExpStar>* uip /* = NULL */) {
 	bool change;
 	int changes = 0;
 	// int sp = proc->getSignature()->getStackRegister(proc->getProg());
@@ -743,6 +745,7 @@ bool Statement::propagateTo(bool& convert, std::map<Exp*, int, lessExpStar>* des
 			Exp* lhs = def->getLeft();
 
 			if (EXPERIMENTAL) {
+#if 0
 				// This is the old "don't propagate x=f(x)" heuristic. Hopefully it will work better now that we always
 				// propagate into memofs etc. However, it might need a "and we're inside the right kind of loop"
 				// condition
@@ -754,6 +757,14 @@ bool Statement::propagateTo(bool& convert, std::map<Exp*, int, lessExpStar>* des
 				if (used.exists(&left) && !(right && *right->getSubExp1() == *left.getSubExp1()))
 					// We have something like eax = eax + 1
 					continue;
+#else
+				// Don't propagate a location that is used in a phi statement
+				if (uip && !lhs->isFlags()) {
+					RefExp* re = new RefExp(lhs, def);
+					if (uip->find(re) != uip->end())
+						continue;
+				}
+#endif
 			}
 
 			// Check if the -l flag (propMaxDepth) prevents this propagation
@@ -5204,7 +5215,7 @@ void CallStatement::updateArguments() {
 	// the printf argument is still m[esp{phi1} -20] = "%d".
 	if (EXPERIMENTAL) {
 		bool convert;
-		propagateTo(convert);
+		proc->propagateStatements(convert, 88);
 	}
 	StatementList oldArguments(arguments);
 	arguments.clear();

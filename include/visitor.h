@@ -616,8 +616,11 @@ public:
 // FIXME: do I need to count collectors? All the visitors and modifiers should be refactored to conditionally visit
 // or modify collectors, or not
 class StmtDestCounter : public StmtExpVisitor {
+		std::set<Exp*, lessExpStar>& usedInPhi;
 public:
-					StmtDestCounter(ExpDestCounter* edc) : StmtExpVisitor(edc) {}
+					StmtDestCounter(ExpDestCounter* edc, std::set<Exp*, lessExpStar>& uip) : StmtExpVisitor(edc),
+						usedInPhi(uip) {}
+		bool		visit(      PhiAssign *stmt, bool& override);
 };
 
 // Search an expression for flags calls, e.g. SETFFLAGS(...) & 0x45

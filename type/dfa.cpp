@@ -1543,8 +1543,8 @@ bool PointerType::isCompatible(Type* other, bool all) {
 }
 
 bool NamedType::isCompatible(Type* other, bool all) {
-    if (other->isNamed() && name == ((NamedType*)other)->getName())
-        return true;
+	if (other->isNamed() && name == ((NamedType*)other)->getName())
+		return true;
 	Type* resTo = resolvesTo();
 	if (resTo)
 		return resolvesTo()->isCompatibleWith(other);
