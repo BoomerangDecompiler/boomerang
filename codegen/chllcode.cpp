@@ -958,6 +958,12 @@ void CHLLCode::appendTypeIdent(std::ostringstream& str, Type *typ, const char *i
 		str << "]";
 	} else if (typ->isVoid()) {
 		// Can happen in e.g. twoproc, where really need global parameter and return analysis
+#if 1 // TMN: Stop crashes by this workaround
+		if (ident == NULL) {
+			static const char szFoo[] = "unknownVoidType";
+			ident = szFoo;
+		}
+#endif
 		LOG << "WARNING: CHLLCode::appendTypeIdent: declaring type void as int for " << ident << "\n";
 		str << "int " << ident;
 	} else {
@@ -983,7 +989,7 @@ void CHLLCode::AddPretestedLoopHeader(int indLevel, Exp *cond) {
 	// Note: removing the strdup() causes weird problems.
 	// Looks to me that it should work (with no real operator delete(),
 	// and garbage collecting...
-	lines.push_back(strdup(s.str().c_str()));
+	appendLine(s);
 }
 
 /// Adds: }
@@ -991,7 +997,7 @@ void CHLLCode::AddPretestedLoopEnd(int indLevel) {
 	std::ostringstream s;
 	indent(s, indLevel);
 	s << "}";
-	lines.push_back(strdup(s.str().c_str()));
+	appendLine(s);
 }
 
 /// Adds: for(;;) {
@@ -999,7 +1005,7 @@ void CHLLCode::AddEndlessLoopHeader(int indLevel) {
 	std::ostringstream s;
 	indent(s, indLevel);
 	s << "for(;;) {";
-	lines.push_back(strdup(s.str().c_str()));
+	appendLine(s);
 }
 
 /// Adds: }
@@ -1007,7 +1013,7 @@ void CHLLCode::AddEndlessLoopEnd(int indLevel) {
 	std::ostringstream s;
 	indent(s, indLevel);
 	s << "}";
-	lines.push_back(strdup(s.str().c_str()));
+	appendLine(s);
 }
 
 /// Adds: do {
@@ -1015,7 +1021,7 @@ void CHLLCode::AddPosttestedLoopHeader(int indLevel) {
 	std::ostringstream s;
 	indent(s, indLevel);
 	s << "do {";
-	lines.push_back(strdup(s.str().c_str()));
+	appendLine(s);
 }
 
 /// Adds: } while (\a cond);
@@ -1026,7 +1032,7 @@ void CHLLCode::AddPosttestedLoopEnd(int indLevel, Exp *cond)
 	s << "} while (";
 	appendExp(s, cond, PREC_NONE);
 	s << ");";
-	lines.push_back(strdup(s.str().c_str()));
+	appendLine(s);
 }
 
 /// Adds: switch(\a cond) {
@@ -1037,7 +1043,7 @@ void CHLLCode::AddCaseCondHeader(int indLevel, Exp *cond)
 	s << "switch(";
 	appendExp(s, cond, PREC_NONE);
 	s << ") {";
-	lines.push_back(strdup(s.str().c_str()));
+	appendLine(s);
 }
 
 /// Adds: case \a opt :
@@ -1048,7 +1054,7 @@ void CHLLCode::AddCaseCondOption(int indLevel, Exp *opt)
 	s << "case ";
 	appendExp(s, opt, PREC_NONE);
 	s << ":";
-	lines.push_back(strdup(s.str().c_str()));
+	appendLine(s);
 }
 
 /// Adds: break;
@@ -1057,7 +1063,7 @@ void CHLLCode::AddCaseCondOptionEnd(int indLevel)
 	std::ostringstream s;
 	indent(s, indLevel);
 	s << "break;";
-	lines.push_back(strdup(s.str().c_str()));
+	appendLine(s);
 }
 
 /// Adds: default:
@@ -1066,7 +1072,7 @@ void CHLLCode::AddCaseCondElse(int indLevel)
 	std::ostringstream s;
 	indent(s, indLevel);
 	s << "default:";
-	lines.push_back(strdup(s.str().c_str()));
+	appendLine(s);
 }
 
 /// Adds: }
@@ -1075,7 +1081,7 @@ void CHLLCode::AddCaseCondEnd(int indLevel)
 	std::ostringstream s;
 	indent(s, indLevel);
 	s << "}";
-	lines.push_back(strdup(s.str().c_str()));
+	appendLine(s);
 }
 
 /// Adds: if(\a cond) {
@@ -1085,7 +1091,7 @@ void CHLLCode::AddIfCondHeader(int indLevel, Exp *cond) {
 	s << "if (";
 	appendExp(s, cond, PREC_NONE);
 	s << ") {";
-	lines.push_back(strdup(s.str().c_str()));
+	appendLine(s);
 }
 
 /// Adds: }
@@ -1093,7 +1099,7 @@ void CHLLCode::AddIfCondEnd(int indLevel) {
 	std::ostringstream s;
 	indent(s, indLevel);
 	s << "}";
-	lines.push_back(strdup(s.str().c_str()));
+	appendLine(s);
 }
 
 /// Adds: if(\a cond) {
@@ -1103,7 +1109,7 @@ void CHLLCode::AddIfElseCondHeader(int indLevel, Exp *cond) {
 	s << "if (";
 	appendExp(s, cond, PREC_NONE);
 	s << ") {";
-	lines.push_back(strdup(s.str().c_str()));
+	appendLine(s);
 }
 
 /// Adds: } else {
@@ -1111,7 +1117,7 @@ void CHLLCode::AddIfElseCondOption(int indLevel) {
 	std::ostringstream s;
 	indent(s, indLevel);
 	s << "} else {";
-	lines.push_back(strdup(s.str().c_str()));
+	appendLine(s);
 }
 
 /// Adds: }
@@ -1119,7 +1125,7 @@ void CHLLCode::AddIfElseCondEnd(int indLevel) {
 	std::ostringstream s;
 	indent(s, indLevel);
 	s << "}";
-	lines.push_back(strdup(s.str().c_str()));
+	appendLine(s);
 }
 
 /// Adds: goto L \em ord
@@ -1127,7 +1133,7 @@ void CHLLCode::AddGoto(int indLevel, int ord) {
 	std::ostringstream s;
 	indent(s, indLevel);
 	s << "goto L" << std::dec << ord << ";";
-	lines.push_back(strdup(s.str().c_str()));
+	appendLine(s);
 	usedLabels.insert(ord);
 }
 
@@ -1155,7 +1161,7 @@ void CHLLCode::AddContinue(int indLevel) {
 	std::ostringstream s;
 	indent(s, indLevel);
 	s << "continue;";
-	lines.push_back(strdup(s.str().c_str()));
+	appendLine(s);
 }
 
 /// Adds: break;
@@ -1163,14 +1169,14 @@ void CHLLCode::AddBreak(int indLevel) {
 	std::ostringstream s;
 	indent(s, indLevel);
 	s << "break;";
-	lines.push_back(strdup(s.str().c_str()));
+	appendLine(s);
 }
 
 /// Adds: L \a ord :
 void CHLLCode::AddLabel(int indLevel, int ord) {
 	std::ostringstream s;
 	s << "L" << std::dec << ord << ":";
-	lines.push_back(strdup(s.str().c_str()));
+	appendLine(s);
 }
 
 /// Search for the label L \a ord and remove it from the generated code.
@@ -1252,7 +1258,7 @@ void CHLLCode::AddAssignmentStatement(int indLevel, Assign *asgn) {
 		s << ", ";
 		appendExp(s, rhs, PREC_UNARY);
 		s << ");";
-		lines.push_back(strdup(s.str().c_str()));
+		appendLine(s);
 		return;
 	}
 	
@@ -1287,7 +1293,7 @@ void CHLLCode::AddAssignmentStatement(int indLevel, Assign *asgn) {
 		rhs = rhs->simplify();
 		appendExp(s, rhs, PREC_ASSIGN);
 		s << ";";
-		lines.push_back(strdup(s.str().c_str()));
+		appendLine(s);
 		return;
 	} else
 		appendExp(s, lhs, PREC_ASSIGN);			// Ordinary LHS
@@ -1310,7 +1316,7 @@ void CHLLCode::AddAssignmentStatement(int indLevel, Assign *asgn) {
 		appendExp(s, rhs, PREC_ASSIGN);
 	}
 	s << ";";
-	lines.push_back(strdup(s.str().c_str()));
+	appendLine(s);
 }
 
 /**
@@ -1379,7 +1385,7 @@ void CHLLCode::AddCallStatement(int indLevel, Proc *proc, const char *name, Stat
 		s << " */";
 	}
 			
-	lines.push_back(strdup(s.str().c_str()));
+	appendLine(s);
 }
 
 /**
@@ -1407,7 +1413,7 @@ void CHLLCode::AddIndCallStatement(int indLevel, Exp *exp, StatementList &args, 
 		appendExp(s, arg, PREC_COMMA);
 	}
 	s << ");";
-	lines.push_back(strdup(s.str().c_str()));
+	appendLine(s);
 }
 
 
@@ -1449,7 +1455,7 @@ void CHLLCode::AddReturnStatement(int indLevel, StatementList* rets) {
 		if (n > 1)
 			s << " */";
 	}
-	lines.push_back(strdup(s.str().c_str()));
+	appendLine(s);
 }
 
 /**
@@ -1458,7 +1464,7 @@ void CHLLCode::AddReturnStatement(int indLevel, StatementList* rets) {
 void CHLLCode::AddProcStart(UserProc* proc) {
 	std::ostringstream s;
 	s << "// address: 0x" << std::hex << proc->getNativeAddress() << std::dec; 
-	lines.push_back(strdup(s.str().c_str()));
+	appendLine(s);
 	AddProcDec(proc, true);
 }
 
@@ -1543,13 +1549,13 @@ void CHLLCode::AddProcDec(UserProc* proc, bool open) {
 		s << " {";
 	else
 		s << ";";
-	lines.push_back(strdup(s.str().c_str()));
+	appendLine(s);
 }
 
 /// Adds: }
 void CHLLCode::AddProcEnd() {
-	lines.push_back(strdup("}"));
-	lines.push_back("");
+	appendLine("}");
+	appendLine("");
 }
 
 /**
@@ -1575,10 +1581,10 @@ void CHLLCode::AddLocal(const char *name, Type *type, bool last) {
 		}
 	} else
 		s << ";";
-	lines.push_back(strdup(s.str().c_str()));
+	appendLine(s);
 	locals[name] = type->clone();
 	if (last)
-		lines.push_back(strdup(""));
+		appendLine("");
 }
 
 /**
@@ -1616,7 +1622,7 @@ void CHLLCode::AddGlobal(const char *name, Type *type, Exp *init) {
 	s << ";";
 	if (type->isSize())
 		s << "// " << type->getSize() / 8 << " bytes";
-	lines.push_back(strdup(s.str().c_str()));
+	appendLine(s);
 }
 
 /// Dump all generated code to \a os.
@@ -1631,5 +1637,16 @@ void CHLLCode::print(std::ostream &os) {
 void CHLLCode::AddLineComment(char* cmt) {
 	std::ostringstream s;
 	s << "/* " << cmt << "*/";
-	lines.push_back(strdup(s.str().c_str()));
+	appendLine(s);
 }
+
+// Private helper functions, to reduce redundant code, and
+// have a single place to put a breakpoint on.
+void CHLLCode::appendLine(const std::ostringstream& ostr) {
+	appendLine(ostr.str());
+}
+
+void CHLLCode::appendLine(const std::string& s) {
+	lines.push_back(strdup(s.c_str()));
+}
+
