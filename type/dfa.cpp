@@ -67,6 +67,8 @@ void init_dfa() {
 
 
 void UserProc::dfaTypeAnalysis() {
+	Boomerang::get()->alert_decompile_debug_point(this, "before doing dfa type analysis");
+
 	// First use the type information from the signature. Sometimes needed to split variables (e.g. argc as a
 	// int and char* in sparc/switch_gcc)
 	bool ch = signature->dfaTypeAnalysis(cfg);
@@ -134,6 +136,8 @@ void UserProc::dfaTypeAnalysis() {
 		LOG << "\n ### end results for Data flow based Type Analysis for " << getName() << " ###\n\n";
 	}
 
+	Boomerang::get()->alert_decompile_debug_point(this, "before mapping locals from dfa type analysis");
+
 	// Now use the type information gathered
 	Prog* prog = getProg();
 	if (DEBUG_TA)
@@ -144,6 +148,8 @@ void UserProc::dfaTypeAnalysis() {
 	}
 	if (DEBUG_TA)
 		LOG << " ### end mapping expressions to local variables for " << getName() << " ###\n";
+
+	Boomerang::get()->alert_decompile_debug_point(this, "before other uses of dfa type analysis");
 
 	for (it = stmts.begin(); it != stmts.end(); it++) {
 		Statement* s = *it;
@@ -340,6 +346,8 @@ void UserProc::dfaTypeAnalysis() {
 		printToLog();
 		LOG << "### end application of dfa type analysis for " << getName() << " ###\n";
 	}
+
+	Boomerang::get()->alert_decompile_debug_point(this, "after doing dfa type analysis");
 }
 
 // This is the core of the data-flow-based type analysis algorithm: implementing the meet operator.
@@ -953,11 +961,14 @@ Type* Const::ascendType() {
 	if (type->resolvesToVoid()) {
 		switch (op) {
 			case opIntConst:
+// could be anything, Boolean, Character, we could be bit fiddling pointers for all we know - trentw
+#if 0
 				if (u.i != 0 && (u.i < 0x1000 && u.i > -0x100))
 					// Assume that small nonzero integer constants are of integer type (can't be pointers)
 					// But note that you can't say anything about sign; these are bit patterns, not HLL constants
 					// (e.g. all ones could be signed -1 or unsigned 0xFFFFFFFF)
 					type = new IntegerType(STD_SIZE, 0);
+#endif
 				break;
 			case opLongConst:
 				type = new IntegerType(STD_SIZE*2, 0);
