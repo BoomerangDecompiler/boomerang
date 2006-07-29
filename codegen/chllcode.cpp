@@ -974,8 +974,6 @@ void CHLLCode::appendTypeIdent(std::ostringstream& str, Type *typ, const char *i
 
 /// Remove all generated code.
 void CHLLCode::reset() {
-	for (std::list<char*>::iterator it = lines.begin(); it != lines.end();
-		 it++) delete *it;
 	lines.clear();
 }
 
