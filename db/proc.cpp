@@ -3548,8 +3548,8 @@ void UserProc::removeUnusedLocals() {
 		std::string& name = const_cast<std::string&>(it->first);
 		// LOG << "Considering local " << name << "\n";
 		if (VERBOSE && all && removes.size())
-			LOG << "WARNING: defineall seen in procedure " << name.c_str() << " so not removing " << removes.size() <<
-				" locals\n";
+			LOG << "WARNING: defineall seen in procedure " << name.c_str() << " so not removing " << (int)removes.size()
+				 << " locals\n";
 		if (usedLocals.find(name) == usedLocals.end() && !all) {
 			if (VERBOSE)
 				LOG << "removed unused local " << name.c_str() << "\n";
