@@ -1935,7 +1935,7 @@ void CallStatement::setSigArguments() {
 		if (l) {
 			l->setProc(proc);		// Needed?
 		}
-		Assign* as = new Assign(signature->getParamType(i), e->clone(), e->clone());
+		Assign* as = new Assign(signature->getParamType(i)->clone(), e->clone(), e->clone());
 		as->setProc(proc);
 		as->setBB(pbb);
 		as->setNumber(number);		// So fromSSAform will work later
@@ -2925,7 +2925,7 @@ bool CallStatement::ellipsisProcessing(Prog* prog) {
 																						// for some archs
 				break;
 			case 's':									// String
-				addSigParam(new PointerType(new CharType), isScanf);
+				addSigParam(new PointerType(new ArrayType(new CharType)), isScanf);
 				break;
 			case 'c':									// Char
 				addSigParam(new CharType, isScanf);
@@ -3343,9 +3343,7 @@ void BoolAssign::setLeftFromList(std::list<Statement*>* stmts) {
 //	//	//	//
 
 Assignment::Assignment(Exp* lhs) : TypingStatement(new VoidType), lhs(lhs) {
-	if (lhs && lhs->isMemOf())
-		type = new SizeType(32);
-	else if (lhs && lhs->isRegOf()) {
+	if (lhs && lhs->isRegOf()) {
 		int n = ((Const*)lhs->getSubExp1())->getInt();
 		if (((Location*)lhs)->getProc()) {
 			type = new SizeType(((Location*)lhs)->getProc()->getProg()->getRegSize(n));

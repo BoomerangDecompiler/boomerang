@@ -153,6 +153,7 @@ void UserProc::dfaTypeAnalysis() {
 
 	for (it = stmts.begin(); it != stmts.end(); it++) {
 		Statement* s = *it;
+
 		// 1) constants
 		std::list<Const*>lc;
 		s->findConstants(lc);
@@ -714,6 +715,21 @@ void CallStatement::dfaTypeAnalysis(bool& ch) {
 	// Iterate through the arguments
 	StatementList::iterator aa;
 	for (aa = arguments.begin(); aa != arguments.end(); ++aa) {
+#if 1
+        // TODO: generalize this so we can have int sprintf(char[] *buf, int n BOUND(buf), const char *fmt, ...); in the signature file
+        Type *ty = ((Assign*)*aa)->getType();
+        if (ty->resolvesToPointer() && ty->asPointer()->getPointsTo()->resolvesToArray() && ty->asPointer()->getPointsTo()->asArray()->isUnbounded()) {
+            StatementList::iterator na = aa;
+            na++;
+            if (procDest && std::string(procDest->getName()) == "_vsnprintf") {
+                Assign *naa = (Assign*)*na;
+                assert(naa->getType()->resolvesToInteger());
+                if (naa->getRight()->isIntConst()) {
+                    ty->asPointer()->getPointsTo()->asArray()->setLength(((Const*)naa->getRight())->getInt());
+                }
+            }
+        }
+#endif
 		// The below will ascend type, meet type with that of arg, and descend type. Note that the type of the assign
 		// will already be that of the signature, if this is a library call, from updateArguments()
 		((Assign*)*aa)->dfaTypeAnalysis(ch);
@@ -1014,6 +1030,9 @@ Type* Unary::ascendType() {
 			else
 				return new VoidType();		// NOT SURE! Really should be bottom
 			break;
+        case opAddrOf:
+            return new PointerType(ta);
+            break;
 		default:
 			break;
 	}
@@ -1217,6 +1236,10 @@ void Unary::descendType(Type* parentType, bool& ch, Statement* s) {
 			else
 				subExp1->descendType(new PointerType(parentType), ch, s);
 			break;
+        case opAddrOf:
+            if (parentType->resolvesToPointer())
+                subExp1->descendType(parentType->asPointer()->getPointsTo(), ch, s);
+            break;
 		default:
 			break;
 	}

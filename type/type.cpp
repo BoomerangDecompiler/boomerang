@@ -1129,7 +1129,7 @@ std::ostream& operator<<(std::ostream& os, Type* t) {
 		case eUnion:	os << "union"; break;
 		//case eUnion:	os << t->getCtype(); break;
 		case eFunc:		os << "func"; break;
-		case eArray:	os << '[' << t->asArray()->getBaseType() << ']'; break;
+		case eArray:	os << '[' << t->asArray()->getBaseType(); if (!t->asArray()->isUnbounded()) os << ", " << t->asArray()->getLength(); os << ']'; break;
 		case eNamed:	os << t->asNamed()->getName(); break;
 		case eUpper:	os << "U(" << t->asUpper()->getBaseType() << ')'; break;
 		case eLower:	os << "L(" << t->asLower()->getBaseType() << ')'; break;
@@ -1396,8 +1396,8 @@ void DataIntervalMap::replaceComponents(ADDRESS addr, char* name, Type* ty, bool
 		}
 	}
 
-	for (it = it1; it != it2; ++it)
-		/* it = */ dimap.erase(it);
+	for (it = it1; it != it2 && it != dimap.end(); )
+		it = dimap.erase(it);
 
 	DataInterval* pdi = &dimap[addr];				// Finally add the new entry
 	pdi->size = ty->getBytes();
