@@ -1,7 +1,7 @@
 #ifndef YY_AnsiCParser_h_included
 #define YY_AnsiCParser_h_included
 
-#line 1 "/usr/local/lib/bison.h"
+#line 1 "C:\\work\\flexbison\\bison.h"
 /* before anything */
 #ifdef c_plusplus
 #ifndef __cplusplus
@@ -16,7 +16,7 @@
 #endif
 #include <stdio.h>
 
-/* #line 14 "/usr/local/lib/bison.h" */
+/* #line 14 "C:\\work\\flexbison\\bison.h" */
 #line 21 "ansi-c-parser.h"
 #define YY_AnsiCParser_DEBUG  1
 #define YY_AnsiCParser_PARSE_PARAM  \
@@ -94,9 +94,17 @@ public: \
 
 	  SymbolRef(ADDRESS a, const char *nam) : addr(a), nam(nam) { }
   };
+  
+  class Bound {
+  public:
+      int kind;
+      std::string nam;
+      
+      Bound(int kind, const char *nam) : kind(kind), nam(nam) { }
+  };
 
 
-#line 120 "ansi-c.y"
+#line 129 "ansi-c.y"
 typedef union {
    int ival;
    char *str;
@@ -107,6 +115,7 @@ typedef union {
    Exp *exp;
    Signature *sig;
    TypeIdent *type_ident;
+   Bound *bound;
    std::list<TypeIdent*> *type_ident_list;
    SymbolMods *mods;
    CustomOptions *custom_options;
@@ -114,7 +123,7 @@ typedef union {
 } yy_AnsiCParser_stype;
 #define YY_AnsiCParser_STYPE yy_AnsiCParser_stype
 
-#line 14 "/usr/local/lib/bison.h"
+#line 14 "C:\\work\\flexbison\\bison.h"
  /* %{ and %header{ and %union, during decl */
 #ifndef YY_AnsiCParser_COMPATIBILITY
 #ifndef YY_USE_CLASS
@@ -165,32 +174,32 @@ typedef union {
 
 #ifndef YY_AnsiCParser_PURE
 
-/* #line 63 "/usr/local/lib/bison.h" */
-#line 170 "ansi-c-parser.h"
+/* #line 63 "C:\\work\\flexbison\\bison.h" */
+#line 179 "ansi-c-parser.h"
 
-#line 63 "/usr/local/lib/bison.h"
+#line 63 "C:\\work\\flexbison\\bison.h"
 /* YY_AnsiCParser_PURE */
 #endif
 
-/* #line 65 "/usr/local/lib/bison.h" */
-#line 177 "ansi-c-parser.h"
+/* #line 65 "C:\\work\\flexbison\\bison.h" */
+#line 186 "ansi-c-parser.h"
 
-#line 65 "/usr/local/lib/bison.h"
+#line 65 "C:\\work\\flexbison\\bison.h"
 /* prefix */
 #ifndef YY_AnsiCParser_DEBUG
 
-/* #line 67 "/usr/local/lib/bison.h" */
-#line 184 "ansi-c-parser.h"
+/* #line 67 "C:\\work\\flexbison\\bison.h" */
+#line 193 "ansi-c-parser.h"
 
-#line 67 "/usr/local/lib/bison.h"
+#line 67 "C:\\work\\flexbison\\bison.h"
 /* YY_AnsiCParser_DEBUG */
 #endif
 #ifndef YY_AnsiCParser_LSP_NEEDED
 
-/* #line 70 "/usr/local/lib/bison.h" */
-#line 192 "ansi-c-parser.h"
+/* #line 70 "C:\\work\\flexbison\\bison.h" */
+#line 201 "ansi-c-parser.h"
 
-#line 70 "/usr/local/lib/bison.h"
+#line 70 "C:\\work\\flexbison\\bison.h"
  /* YY_AnsiCParser_LSP_NEEDED*/
 #endif
 /* DEFAULT LTYPE*/
@@ -265,8 +274,8 @@ extern YY_AnsiCParser_STYPE YY_AnsiCParser_LVAL;
 #endif
 
 
-/* #line 143 "/usr/local/lib/bison.h" */
-#line 270 "ansi-c-parser.h"
+/* #line 143 "C:\\work\\flexbison\\bison.h" */
+#line 279 "ansi-c-parser.h"
 #define	PREINCLUDE	258
 #define	PREDEFINE	259
 #define	PREIF	260
@@ -285,66 +294,67 @@ extern YY_AnsiCParser_STYPE YY_AnsiCParser_LVAL;
 #define	THISCALL	273
 #define	REGOF	274
 #define	MEMOF	275
-#define	CUSTOM	276
-#define	PREFER	277
-#define	WITHSTACK	278
-#define	PTR_OP	279
-#define	INC_OP	280
-#define	DEC_OP	281
-#define	LEFT_OP	282
-#define	RIGHT_OP	283
-#define	LE_OP	284
-#define	GE_OP	285
-#define	EQ_OP	286
-#define	NE_OP	287
-#define	AND_OP	288
-#define	OR_OP	289
-#define	MUL_ASSIGN	290
-#define	DIV_ASSIGN	291
-#define	MOD_ASSIGN	292
-#define	ADD_ASSIGN	293
-#define	SUB_ASSIGN	294
-#define	LEFT_ASSIGN	295
-#define	RIGHT_ASSIGN	296
-#define	AND_ASSIGN	297
-#define	XOR_ASSIGN	298
-#define	OR_ASSIGN	299
-#define	TYPE_NAME	300
-#define	TYPEDEF	301
-#define	EXTERN	302
-#define	STATIC	303
-#define	AUTO	304
-#define	REGISTER	305
-#define	CHAR	306
-#define	SHORT	307
-#define	INT	308
-#define	LONG	309
-#define	SIGNED	310
-#define	UNSIGNED	311
-#define	FLOAT	312
-#define	DOUBLE	313
-#define	CONST	314
-#define	VOLATILE	315
-#define	VOID	316
-#define	STRUCT	317
-#define	UNION	318
-#define	ENUM	319
-#define	ELLIPSIS	320
-#define	CASE	321
-#define	DEFAULT	322
-#define	IF	323
-#define	ELSE	324
-#define	SWITCH	325
-#define	WHILE	326
-#define	DO	327
-#define	FOR	328
-#define	GOTO	329
-#define	CONTINUE	330
-#define	BREAK	331
-#define	RETURN	332
+#define	MAXBOUND	276
+#define	CUSTOM	277
+#define	PREFER	278
+#define	WITHSTACK	279
+#define	PTR_OP	280
+#define	INC_OP	281
+#define	DEC_OP	282
+#define	LEFT_OP	283
+#define	RIGHT_OP	284
+#define	LE_OP	285
+#define	GE_OP	286
+#define	EQ_OP	287
+#define	NE_OP	288
+#define	AND_OP	289
+#define	OR_OP	290
+#define	MUL_ASSIGN	291
+#define	DIV_ASSIGN	292
+#define	MOD_ASSIGN	293
+#define	ADD_ASSIGN	294
+#define	SUB_ASSIGN	295
+#define	LEFT_ASSIGN	296
+#define	RIGHT_ASSIGN	297
+#define	AND_ASSIGN	298
+#define	XOR_ASSIGN	299
+#define	OR_ASSIGN	300
+#define	TYPE_NAME	301
+#define	TYPEDEF	302
+#define	EXTERN	303
+#define	STATIC	304
+#define	AUTO	305
+#define	REGISTER	306
+#define	CHAR	307
+#define	SHORT	308
+#define	INT	309
+#define	LONG	310
+#define	SIGNED	311
+#define	UNSIGNED	312
+#define	FLOAT	313
+#define	DOUBLE	314
+#define	CONST	315
+#define	VOLATILE	316
+#define	VOID	317
+#define	STRUCT	318
+#define	UNION	319
+#define	ENUM	320
+#define	ELLIPSIS	321
+#define	CASE	322
+#define	DEFAULT	323
+#define	IF	324
+#define	ELSE	325
+#define	SWITCH	326
+#define	WHILE	327
+#define	DO	328
+#define	FOR	329
+#define	GOTO	330
+#define	CONTINUE	331
+#define	BREAK	332
+#define	RETURN	333
 
 
-#line 143 "/usr/local/lib/bison.h"
+#line 143 "C:\\work\\flexbison\\bison.h"
  /* #defines token */
 /* after #define tokens, before const tokens S5*/
 #else
@@ -385,8 +395,8 @@ public:
 #if YY_AnsiCParser_USE_CONST_TOKEN != 0
 /* static const int token ... */
 
-/* #line 182 "/usr/local/lib/bison.h" */
-#line 390 "ansi-c-parser.h"
+/* #line 182 "C:\\work\\flexbison\\bison.h" */
+#line 400 "ansi-c-parser.h"
 static const int PREINCLUDE;
 static const int PREDEFINE;
 static const int PREIF;
@@ -405,6 +415,7 @@ static const int PASCAL;
 static const int THISCALL;
 static const int REGOF;
 static const int MEMOF;
+static const int MAXBOUND;
 static const int CUSTOM;
 static const int PREFER;
 static const int WITHSTACK;
@@ -464,13 +475,13 @@ static const int BREAK;
 static const int RETURN;
 
 
-#line 182 "/usr/local/lib/bison.h"
+#line 182 "C:\\work\\flexbison\\bison.h"
  /* decl const */
 #else
 enum YY_AnsiCParser_ENUM_TOKEN { YY_AnsiCParser_NULL_TOKEN=0
 
-/* #line 185 "/usr/local/lib/bison.h" */
-#line 474 "ansi-c-parser.h"
+/* #line 185 "C:\\work\\flexbison\\bison.h" */
+#line 485 "ansi-c-parser.h"
 	,PREINCLUDE=258
 	,PREDEFINE=259
 	,PREIF=260
@@ -489,66 +500,67 @@ enum YY_AnsiCParser_ENUM_TOKEN { YY_AnsiCParser_NULL_TOKEN=0
 	,THISCALL=273
 	,REGOF=274
 	,MEMOF=275
-	,CUSTOM=276
-	,PREFER=277
-	,WITHSTACK=278
-	,PTR_OP=279
-	,INC_OP=280
-	,DEC_OP=281
-	,LEFT_OP=282
-	,RIGHT_OP=283
-	,LE_OP=284
-	,GE_OP=285
-	,EQ_OP=286
-	,NE_OP=287
-	,AND_OP=288
-	,OR_OP=289
-	,MUL_ASSIGN=290
-	,DIV_ASSIGN=291
-	,MOD_ASSIGN=292
-	,ADD_ASSIGN=293
-	,SUB_ASSIGN=294
-	,LEFT_ASSIGN=295
-	,RIGHT_ASSIGN=296
-	,AND_ASSIGN=297
-	,XOR_ASSIGN=298
-	,OR_ASSIGN=299
-	,TYPE_NAME=300
-	,TYPEDEF=301
-	,EXTERN=302
-	,STATIC=303
-	,AUTO=304
-	,REGISTER=305
-	,CHAR=306
-	,SHORT=307
-	,INT=308
-	,LONG=309
-	,SIGNED=310
-	,UNSIGNED=311
-	,FLOAT=312
-	,DOUBLE=313
-	,CONST=314
-	,VOLATILE=315
-	,VOID=316
-	,STRUCT=317
-	,UNION=318
-	,ENUM=319
-	,ELLIPSIS=320
-	,CASE=321
-	,DEFAULT=322
-	,IF=323
-	,ELSE=324
-	,SWITCH=325
-	,WHILE=326
-	,DO=327
-	,FOR=328
-	,GOTO=329
-	,CONTINUE=330
-	,BREAK=331
-	,RETURN=332
+	,MAXBOUND=276
+	,CUSTOM=277
+	,PREFER=278
+	,WITHSTACK=279
+	,PTR_OP=280
+	,INC_OP=281
+	,DEC_OP=282
+	,LEFT_OP=283
+	,RIGHT_OP=284
+	,LE_OP=285
+	,GE_OP=286
+	,EQ_OP=287
+	,NE_OP=288
+	,AND_OP=289
+	,OR_OP=290
+	,MUL_ASSIGN=291
+	,DIV_ASSIGN=292
+	,MOD_ASSIGN=293
+	,ADD_ASSIGN=294
+	,SUB_ASSIGN=295
+	,LEFT_ASSIGN=296
+	,RIGHT_ASSIGN=297
+	,AND_ASSIGN=298
+	,XOR_ASSIGN=299
+	,OR_ASSIGN=300
+	,TYPE_NAME=301
+	,TYPEDEF=302
+	,EXTERN=303
+	,STATIC=304
+	,AUTO=305
+	,REGISTER=306
+	,CHAR=307
+	,SHORT=308
+	,INT=309
+	,LONG=310
+	,SIGNED=311
+	,UNSIGNED=312
+	,FLOAT=313
+	,DOUBLE=314
+	,CONST=315
+	,VOLATILE=316
+	,VOID=317
+	,STRUCT=318
+	,UNION=319
+	,ENUM=320
+	,ELLIPSIS=321
+	,CASE=322
+	,DEFAULT=323
+	,IF=324
+	,ELSE=325
+	,SWITCH=326
+	,WHILE=327
+	,DO=328
+	,FOR=329
+	,GOTO=330
+	,CONTINUE=331
+	,BREAK=332
+	,RETURN=333
 
 
-#line 185 "/usr/local/lib/bison.h"
+#line 185 "C:\\work\\flexbison\\bison.h"
  /* enum token */
      }; /* end of enum declaration */
 #endif
@@ -601,6 +613,6 @@ public:
 #endif
 /* END */
 
-/* #line 236 "/usr/local/lib/bison.h" */
-#line 606 "ansi-c-parser.h"
+/* #line 236 "C:\\work\\flexbison\\bison.h" */
+#line 618 "ansi-c-parser.h"
 #endif

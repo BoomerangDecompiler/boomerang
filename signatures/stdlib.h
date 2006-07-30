@@ -23,4 +23,4 @@ int mergesort(void *base, size_t nmemb, size_t size, comparfunc *compar);
 // exported by msvcrt.dll
 void _assert(const char *cond, const char *file, int errcode);
 typedef void *va_list;
-int _vsnprintf(char[] *buf, size_t size, const char *format, va_list ap);
+int _vsnprintf(char[] *buf, size_t size @max(buf), const char *format, va_list ap);

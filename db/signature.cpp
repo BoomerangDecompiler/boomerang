@@ -80,7 +80,7 @@ namespace CallingConvention {
 		static	bool		qualified(UserProc *p, Signature &candidate);
 
 		virtual void		addReturn(Type *type, Exp *e = NULL);
-		virtual void		addParameter(Type *type, const char *nam = NULL, Exp *e = NULL);
+		virtual void		addParameter(Type *type, const char *nam = NULL, Exp *e = NULL, const char *boundMax = "");
 		virtual Exp			*getArgumentExp(int n);
 
 		virtual Signature 	*promote(UserProc *p);
@@ -121,7 +121,7 @@ namespace CallingConvention {
 			static	bool		qualified(UserProc *p, Signature &candidate);
 
 			virtual void		addReturn(Type *type, Exp *e = NULL);
-			virtual void		addParameter(Type *type, const char *nam = NULL, Exp *e = NULL);
+			virtual void		addParameter(Type *type, const char *nam = NULL, Exp *e = NULL, const char *boundMax = "");
 			virtual Exp			*getArgumentExp(int n);
 
 			virtual Signature	*promote(UserProc *p);
@@ -147,7 +147,7 @@ namespace CallingConvention {
 			static	bool		qualified(UserProc *p, Signature &candidate);
 
 			virtual void		addReturn(Type *type, Exp *e = NULL);
-			virtual void		addParameter(Type *type, const char *nam = NULL, Exp *e = NULL);
+			virtual void		addParameter(Type *type, const char *nam = NULL, Exp *e = NULL, const char *boundMax = "");
 			virtual Exp			*getArgumentExp(int n);
 
 			virtual Signature	*promote(UserProc *p);
@@ -182,7 +182,7 @@ namespace CallingConvention {
 			static	bool		qualified(UserProc *p, Signature &candidate);
 			virtual void		addReturn(Type *type, Exp *e = NULL);
 			virtual	Exp			*getArgumentExp(int n);
-			virtual	void		addParameter(Type *type, const char *nam /*= NULL*/, Exp *e /*= NULL*/);
+			virtual	void		addParameter(Type *type, const char *nam /*= NULL*/, Exp *e /*= NULL*/, const char *boundMax /*= ""*/);
 			virtual Exp			*getStackWildcard();
 			virtual int			getStackRegister() throw(StackRegisterNotDefinedException) {return 1; }
             virtual Exp			*getProven(Exp *left);
@@ -203,7 +203,7 @@ namespace CallingConvention {
 			static bool qualified(UserProc *p, Signature &candidate);
 
 			virtual void addReturn(Type *type, Exp *e = NULL);
-			void addParameter(Type *type, const char *nam /*= NULL*/, Exp *e /*= NULL*/);
+			void addParameter(Type *type, const char *nam /*= NULL*/, Exp *e /*= NULL*/, const char *boundMax /*= ""*/);
 			Exp *getArgumentExp(int n);
 
 			virtual Signature *promote(UserProc *p);
@@ -250,8 +250,15 @@ static void cloneVec(Returns& from, Returns& to) {
 		to[i] = from[i]->clone();
 }
 
+Parameter *hack;
+
 Parameter* Parameter::clone() {
-	return new Parameter(type->clone(), name.c_str(), exp->clone());
+	return new Parameter(type->clone(), name.c_str(), exp->clone(), boundMax.c_str());
+}
+
+void Parameter::setBoundMax(const char *nam) { 
+    hack = this;
+    boundMax = nam;
 }
 
 Signature *CallingConvention::Win32Signature::clone()
@@ -330,12 +337,12 @@ void CallingConvention::Win32Signature::addReturn(Type *type, Exp *e)
 	Signature::addReturn(type, e);
 }
 	
-void CallingConvention::Win32Signature::addParameter(Type *type, const char *nam /*= NULL*/, Exp *e /*= NULL*/)
+void CallingConvention::Win32Signature::addParameter(Type *type, const char *nam /*= NULL*/, Exp *e /*= NULL*/, const char *boundMax /*= ""*/)
 {
 	if (e == NULL) {
 		e = getArgumentExp(params.size());
 	}
-	Signature::addParameter(type, nam, e);
+	Signature::addParameter(type, nam, e, boundMax);
 }
 
 Exp *CallingConvention::Win32Signature::getArgumentExp(int n) {
@@ -555,12 +562,12 @@ void CallingConvention::StdC::PentiumSignature::addReturn(Type *type, Exp *e)
 	Signature::addReturn(type, e);
 }
 
-void CallingConvention::StdC::PentiumSignature::addParameter(Type *type, const char *nam /*= NULL*/, Exp *e /*= NULL*/)
+void CallingConvention::StdC::PentiumSignature::addParameter(Type *type, const char *nam /*= NULL*/, Exp *e /*= NULL*/, const char *boundMax /*= ""*/)
 {
 	if (e == NULL) {
 		e = getArgumentExp(params.size());
 	}
-	Signature::addParameter(type, nam, e);
+	Signature::addParameter(type, nam, e, boundMax);
 }
 
 Exp *CallingConvention::StdC::PentiumSignature::getArgumentExp(int n) {
@@ -691,11 +698,11 @@ void CallingConvention::StdC::PPCSignature::addReturn(Type *type, Exp *e)
 }
 
 
-void CallingConvention::StdC::PPCSignature::addParameter(Type *type, const char *nam /*= NULL*/, Exp *e /*= NULL*/) {
+void CallingConvention::StdC::PPCSignature::addParameter(Type *type, const char *nam /*= NULL*/, Exp *e /*= NULL*/, const char *boundMax /*= ""*/) {
 	if (e == NULL) {
 		e = getArgumentExp(params.size());
 	}
-	Signature::addParameter(type, nam, e);
+	Signature::addParameter(type, nam, e, boundMax);
 }
 
 Exp* CallingConvention::StdC::PPCSignature::getStackWildcard() {
@@ -790,12 +797,12 @@ Signature *CallingConvention::StdC::ST20Signature::promote(UserProc *p) {
 	return this;
 }
 
-void CallingConvention::StdC::ST20Signature::addParameter(Type *type, const char *nam /*= NULL*/, Exp *e /*= NULL*/)
+void CallingConvention::StdC::ST20Signature::addParameter(Type *type, const char *nam /*= NULL*/, Exp *e /*= NULL*/, const char *boundMax /*= ""*/)
 {
 	if (e == NULL) {
 		e = getArgumentExp(params.size());
 	}
-	Signature::addParameter(type, nam, e);
+	Signature::addParameter(type, nam, e, boundMax);
 }
 
 Exp* CallingConvention::StdC::ST20Signature::getStackWildcard() {
@@ -936,11 +943,11 @@ void CallingConvention::StdC::SparcSignature::addReturn(Type *type, Exp *e)
 	Signature::addReturn(type, e);
 }
 
-void CallingConvention::StdC::SparcSignature::addParameter(Type *type, const char *nam /*= NULL*/, Exp *e /*= NULL*/) {
+void CallingConvention::StdC::SparcSignature::addParameter(Type *type, const char *nam /*= NULL*/, Exp *e /*= NULL*/, const char *boundMax /*= ""*/) {
 	if (e == NULL) {
 		e = getArgumentExp(params.size());
 	}
-	Signature::addParameter(type, nam, e);
+	Signature::addParameter(type, nam, e, boundMax);
 }
 
 Exp *CallingConvention::StdC::SparcSignature::getArgumentExp(int n) {
@@ -1123,7 +1130,7 @@ void Signature::addParameter(Exp *e, Type* ty) {
 	addParameter(ty, NULL, e);
 }
 
-void Signature::addParameter(Type *type, const char *nam /*= NULL*/, Exp *e /*= NULL*/) {
+void Signature::addParameter(Type *type, const char *nam /*= NULL*/, Exp *e /*= NULL*/, const char *boundMax /*= ""*/) {
 	if (e == NULL) {
 		std::cerr << "No expression for parameter ";
 		if (type == NULL)
@@ -1154,7 +1161,7 @@ void Signature::addParameter(Type *type, const char *nam /*= NULL*/, Exp *e /*= 
 		}
 		nam = s.c_str();
 	}
-	Parameter *p = new Parameter(type, nam, e); 
+	Parameter *p = new Parameter(type, nam, e, boundMax); 
 	addParameter(p);
 	// addImplicitParametersFor(p);
 }
@@ -1169,7 +1176,7 @@ void Signature::addParameter(Parameter *param)
 		nam = NULL;
 
 	if (ty == NULL || e == NULL || nam == NULL) {
-		addParameter(ty, nam, e);
+		addParameter(ty, nam, e, param->getBoundMax());
 	} else
 		params.push_back(param);
 }
@@ -1211,6 +1218,15 @@ Type *Signature::getParamType(int n) {
 	// With recursion, parameters not set yet. Hack for now:
 	if (n >= (int)params.size()) return NULL;
 	return params[n]->getType();
+}
+
+const char *Signature::getParamBoundMax(int n)
+{
+    if (n >= (int)params.size()) return NULL;
+    const char *s = params[n]->getBoundMax();
+    if (strlen(s) == 0)
+        return NULL;
+    return s;
 }
 
 void Signature::setParamType(int n, Type *ty) {

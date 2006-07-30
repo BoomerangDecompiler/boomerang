@@ -714,22 +714,22 @@ Type* Type::createUnion(Type* other, bool& ch, bool bHighestPtr /* = false */) {
 void CallStatement::dfaTypeAnalysis(bool& ch) {
 	// Iterate through the arguments
 	StatementList::iterator aa;
-	for (aa = arguments.begin(); aa != arguments.end(); ++aa) {
-#if 1
-        // TODO: generalize this so we can have int sprintf(char[] *buf, int n BOUND(buf), const char *fmt, ...); in the signature file
-        Type *ty = ((Assign*)*aa)->getType();
-        if (ty->resolvesToPointer() && ty->asPointer()->getPointsTo()->resolvesToArray() && ty->asPointer()->getPointsTo()->asArray()->isUnbounded()) {
-            StatementList::iterator na = aa;
-            na++;
-            if (procDest && std::string(procDest->getName()) == "_vsnprintf") {
-                Assign *naa = (Assign*)*na;
-                assert(naa->getType()->resolvesToInteger());
-                if (naa->getRight()->isIntConst()) {
-                    ty->asPointer()->getPointsTo()->asArray()->setLength(((Const*)naa->getRight())->getInt());
+    int n = 0;
+	for (aa = arguments.begin(); aa != arguments.end(); ++aa, ++n) {
+        if (procDest && procDest->getSignature()->getParamBoundMax(n) && ((Assign*)*aa)->getRight()->isIntConst()) {
+            Assign *a = (Assign*)*aa;
+            std::string boundmax = procDest->getSignature()->getParamBoundMax(n);
+            assert(a->getType()->resolvesToInteger());
+            StatementList::iterator aat;
+            int nt = 0;
+            for (aat = arguments.begin(); aat != arguments.end(); ++aat, ++nt)
+                if (boundmax == procDest->getSignature()->getParamName(nt)) {
+                    Type *tyt = ((Assign*)*aat)->getType();
+                    if (tyt->resolvesToPointer() && tyt->asPointer()->getPointsTo()->resolvesToArray() && tyt->asPointer()->getPointsTo()->asArray()->isUnbounded())
+                        tyt->asPointer()->getPointsTo()->asArray()->setLength(((Const*)a->getRight())->getInt());
+                    break;
                 }
-            }
         }
-#endif
 		// The below will ascend type, meet type with that of arg, and descend type. Note that the type of the assign
 		// will already be that of the signature, if this is a library call, from updateArguments()
 		((Assign*)*aa)->dfaTypeAnalysis(ch);

@@ -92,6 +92,14 @@ public: \
 
 	  SymbolRef(ADDRESS a, const char *nam) : addr(a), nam(nam) { }
   };
+  
+  class Bound {
+  public:
+      int kind;
+      std::string nam;
+      
+      Bound(int kind, const char *nam) : kind(kind), nam(nam) { }
+  };
 
 %}
 %token PREINCLUDE PREDEFINE PREIF PREIFDEF PREENDIF PRELINE
@@ -104,6 +112,7 @@ public: \
 %token CDECL PASCAL THISCALL
 %token REGOF
 %token MEMOF
+%token MAXBOUND
 %token CUSTOM PREFER
 %token WITHSTACK
 %token PTR_OP INC_OP DEC_OP LEFT_OP RIGHT_OP LE_OP GE_OP EQ_OP NE_OP
@@ -127,6 +136,7 @@ public: \
    Exp *exp;
    Signature *sig;
    TypeIdent *type_ident;
+   Bound *bound;
    std::list<TypeIdent*> *type_ident_list;
    SymbolMods *mods;
    CustomOptions *custom_options;
@@ -141,6 +151,7 @@ public: \
 %type<param> param
 %type<param> param_exp
 %type<exp> exp
+%type<bound> optional_bound;
 %type<custom_options> custom_options
 %type<param_list> param_list;
 %type<num_list> num_list;
@@ -235,8 +246,14 @@ exp: REGOF CONSTANT ']'
 	{ $$ = new Const($1);
 	}
 	;
+	
+optional_bound: MAXBOUND IDENTIFIER ')'
+    { $$ = new Bound(0, $2); }
+    | /* */
+    { }
+    ;
 
-param: type_ident
+param: type_ident optional_bound
 	 {	if ($1->ty->isArray() || 
 			($1->ty->isNamed() && 
 			 ((NamedType*)$1->ty)->resolvesTo() &&
@@ -250,7 +267,12 @@ param: type_ident
 			 */
 			$1->ty = new PointerType($1->ty);
 		}
-		$$ = new Parameter($1->ty, $1->nam.c_str()); 
+		$$ = new Parameter($1->ty, $1->nam.c_str());
+		if ($2) {
+		   switch($2->kind) {
+		     case 0: $$->setBoundMax($2->nam.c_str());
+		   }
+		}
 	 }
 	 | type '(' '*' IDENTIFIER ')' '(' param_list ')'
 	 { Signature *sig = Signature::instantiate(plat, cc, NULL);

@@ -41,10 +41,11 @@ private:
 		Type *type;
 		std::string name;
 		Exp *exp;
+        std::string boundMax;
 
 public: 
-					Parameter(Type *type, const char *name, Exp *exp = NULL) :
-					type(type), name(name), exp(exp)	{ }
+					Parameter(Type *type, const char *name, Exp *exp = NULL, const char *boundMax = "") :
+					type(type), name(name), exp(exp), boundMax(boundMax)	{ }
 virtual				~Parameter() { delete type; delete exp; }
 		bool		operator==(Parameter& other);
 		Parameter*	clone();
@@ -55,6 +56,10 @@ virtual				~Parameter() { delete type; delete exp; }
 		void		setName(const char *nam) { name = nam; }
 		Exp			*getExp()		{ return exp; }
 		void		setExp(Exp *e) { exp = e; }
+
+        // this parameter is the bound of another parameter with name nam
+        const char  *getBoundMax() { return boundMax.c_str(); }
+        void        setBoundMax(const char *nam);
 
 protected:
 		friend		class XMLProgParser;
@@ -144,7 +149,7 @@ virtual void		setName(const char *nam);
 
 		// add a new parameter to this signature
 virtual void		addParameter(const char *nam = NULL);
-virtual void		addParameter(Type *type, const char *nam = NULL, Exp *e = NULL);
+virtual void		addParameter(Type *type, const char *nam = NULL, Exp *e = NULL, const char *boundMax = "");
 virtual void		addParameter(Exp *e, Type* ty);
 virtual void		addParameter(Parameter *param);
 		void		addEllipsis() { ellipsis = true; }
@@ -159,6 +164,7 @@ virtual unsigned	getNumParams() {return params.size();}
 virtual const char	*getParamName(int n);
 virtual Exp			*getParamExp(int n);
 virtual Type		*getParamType(int n);
+virtual const char  *getParamBoundMax(int n);
 virtual void		setParamType(int n, Type *ty);
 virtual void		setParamType(const char* nam, Type *ty);
 virtual void		setParamType(Exp* e, Type *ty);

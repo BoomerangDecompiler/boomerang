@@ -109,6 +109,7 @@ private: \
 "while"			{ count(); return AnsiCParser::WHILE; }
 "r["                    { count(); return AnsiCParser::REGOF; }
 "m["                    { count(); return AnsiCParser::MEMOF; }
+"@max("			{ count(); return AnsiCParser::MAXBOUND; }
 
 {L}({L}|{D})*		{ count(); yylval.str = strdup(yytext); return check_type(); }
 

@@ -245,6 +245,12 @@ copy /y $(TargetPath) $(SolutionDir)\boomerang-gui.exe
 				Name="boomerang"
 				Filter="">
 				<File
+					RelativePath="..\c\ansi-c-parser.h">
+				</File>
+				<File
+					RelativePath="..\c\ansi-c-scanner.h">
+				</File>
+				<File
 					RelativePath="..\include\basicblock.h">
 				</File>
 				<File
@@ -361,7 +367,8 @@ copy /y $(TargetPath) $(SolutionDir)\boomerang-gui.exe
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="UIC about.ui"
-						CommandLine="C:\Qt\4.1.2-msvc7.1\bin\uic.exe about.ui -o ui_about.h"
+						CommandLine="C:\Qt\4.1.2-msvc7.1\bin\uic.exe about.ui -o ui_about.h
+"
 						AdditionalDependencies="C:\Qt\4.1.2-msvc7.1\bin\uic.exe"
 						Outputs="ui_about.h"/>
 				</FileConfiguration>
@@ -398,6 +405,38 @@ copy /y $(TargetPath) $(SolutionDir)\boomerang-gui.exe
 			</File>
 			<File
 				RelativePath="..\c\ansi-c-scanner.cpp">
+			</File>
+			<File
+				RelativePath="..\c\ansi-c.l">
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="running flex++.."
+						CommandLine="cd $(InputDir)
+$(SolutionDir)\..\flexbison\flex++.exe -oansi-c-scanner.cpp -hansi-c-scanner.h $(InputFileName)
+cd $(SolutionDir)
+"
+						AdditionalDependencies=""
+						Outputs="ansi-c-scanner.cpp ansi-c-scanner.h"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\c\ansi-c.y">
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="running bison++.."
+						CommandLine="cd $(InputDir)
+$(SolutionDir)\..\flexbison\bison++.exe -o ansi-c-parser.cpp -d $(InputFileName)
+cd $(SolutionDir)
+"
+						AdditionalDependencies=""
+						Outputs="ansi-c-parser.cpp ansi-c-parser.h"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\db\basicblock.cpp">
