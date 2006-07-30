@@ -26,5 +26,5 @@ char *ctime_r(const time_t *clock, char *buf);
 tm *localtime_r(const time_t *clock, tm *result);
 tm *gmtime_r(const time_t *clock, tm *result);
 char *asctime_r(const tm *tm, char *buf);
-size_t strftime(char *buf, size_t maxsize, const char *format, const tm *timeptr);
+size_t strftime(char *buf, size_t sz @max(buf), const char *format, const tm *timeptr);
 

@@ -616,6 +616,6 @@ pointer Xalloc(unsigned int n);
 // libc wrapper stuff
 typedef int xf86size_t;
 xf86size_t xf86strlen(const char *s);
-int xf86vsnprintf(char *s, xf86size_t len, const char *format, va_list ap);
+int xf86vsnprintf(char *s, xf86size_t len @max(s), const char *format, va_list ap);
 char *xf86strncpy(char *dest, const char *src, xf86size_t n);
 int xf86isspace(int c);

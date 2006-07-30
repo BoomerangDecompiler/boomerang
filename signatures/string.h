@@ -6,7 +6,7 @@ int strcmp(const char[] *s1, const char[] *s2);
 int strncmp(const char[] *s1, const char[] *s2, unsigned int n);
 int strcasecmp(const char[] *s1, const char[] *s2);
 int strncasecmp(const char[] *s1, const char[] *s2, size_t len);
-char *strncpy(char[] *dest, const char[] *src, unsigned int n);
+char *strncpy(char[] *dest, const char[] *src, unsigned int n @max(dest));
 char *strcpy(char[] *dst, char[] *src);
 void *memset(void *s, int c, unsigned int n);
 void *memmove(void *s1, const void *s2, unsigned int n);

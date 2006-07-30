@@ -13,11 +13,11 @@ typedef struct {
 } passwd;
 
 passwd *getpwent(void);
-int getpwent_r(passwd *pwd, char *buffer, size_t bufsize, passwd **result);
+int getpwent_r(passwd *pwd, char *buffer, size_t sz @max(buffer), passwd **result);
 passwd *getpwnam(const char *login);
-int getpwnam_r(const char *name, passwd *pwd, char *buffer, size_t bufsize, passwd **result);
+int getpwnam_r(const char *name, passwd *pwd, char *buffer, size_t sz @max(buffer), passwd **result);
 passwd *getpwuid(uid_t uid);
-int getpwuid_r(uid_t uid, passwd *pwd, char *buffer, size_t bufsize, passwd **result);
+int getpwuid_r(uid_t uid, passwd *pwd, char *buffer, size_t sz @max(buffer), passwd **result);
 int setpassent(int stayopen);
 void setpwent(void);
 void endpwent(void);
