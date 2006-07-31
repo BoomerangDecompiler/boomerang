@@ -48,7 +48,7 @@ else
 			fi
 			mv functest.tmp functest.c
 		fi
-		gcc -o functest.exe functest.c >> functest.res 2>&1
+		gcc -D__size32=int -D__size16=short -D__size8=char -o functest.exe functest.c >> functest.res 2>&1
 		if [[ $? != 0 ]]; then
 			RESULT="Compile FAILED"
 		else
