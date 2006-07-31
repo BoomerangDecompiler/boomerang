@@ -660,7 +660,9 @@ int Boomerang::commandLine(int argc, const char **argv)
 	}
 #ifdef _MSC_VER						// For the console mode version; Windows GUI will override in windows.cpp
 	// As a special case for MSVC testing, make the program path the parent of the dir with the .exe
-	j = progPath.find("Debug\\", progPath.length() - (5+1));
+	j = progPath.find("ebug\\", progPath.length() - (4+1));
+	if (j != std::string::npos)
+		j--;			// Point to the 'd' or 'D'
 	if (j == std::string::npos) {
 			j = progPath.rfind("elease\\", progPath.length() - (6+1));
 			if (j != std::string::npos)
