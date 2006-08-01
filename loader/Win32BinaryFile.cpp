@@ -342,6 +342,36 @@ ADDRESS Win32BinaryFile::GetMainEntryPoint() {
 		if (p >= textSize)
 			break;
 	}
+
+    // Microsoft VisualC 2-6/net runtime
+	p = LMMH(m_pPEHeader->EntrypointRVA);
+    bool gotGMHA = false;
+    while(1) {
+		op1 = *(unsigned char*)(p + base);
+		op2 = *(unsigned char*)(p + base + 1);
+        if (op1 == 0xFF && op2 == 0x15) { // indirect CALL opcode
+            unsigned int desti = LMMH(*(p + base + 2));
+            if (dlprocptrs.find(desti) != dlprocptrs.end() && dlprocptrs[desti] == "GetModuleHandleA") {
+                gotGMHA = true;
+            }
+        }
+		if (op1 == 0xE8 && gotGMHA) {			// CALL opcode
+			unsigned int dest = p + 5 + LMMH(*(p + base + 1));
+            AddSymbol(dest + LMMH(m_pPEHeader->Imagebase), "WinMain");
+            return dest + LMMH(m_pPEHeader->Imagebase);
+        }
+        if (op1 == 0xc3)   // ret ends search
+            break;
+
+		int size = microX86Dis(p + base);
+		if (size == 0x40) {
+			fprintf(stderr, "Warning! Microdisassembler out of step at offset 0x%x\n", p);
+			size = 1;
+		}
+		p += size;
+		if (p >= textSize)
+			break;
+    }
 	
 	return NO_ADDRESS;
 }

@@ -465,7 +465,7 @@
         <item>
          <widget class="QStackedWidget" name="stackedWidget" >
           <property name="currentIndex" >
-           <number>0</number>
+           <number>1</number>
           </property>
           <widget class="QWidget" name="start" >
            <layout class="QVBoxLayout" >
@@ -743,9 +743,9 @@
                    <widget class="QLineEdit" name="nameEdit" />
                   </item>
                   <item>
-                   <widget class="QPushButton" name="AddButton" >
+                   <widget class="QPushButton" name="addButton" >
                     <property name="enabled" >
-                     <bool>false</bool>
+                     <bool>true</bool>
                     </property>
                     <property name="maximumSize" >
                      <size>
@@ -1153,7 +1153,7 @@
      <x>0</x>
      <y>0</y>
      <width>895</width>
-     <height>21</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile" >
@@ -1225,9 +1225,9 @@
    <property name="geometry" >
     <rect>
      <x>0</x>
-     <y>619</y>
+     <y>616</y>
      <width>895</width>
-     <height>19</height>
+     <height>22</height>
     </rect>
    </property>
   </widget>

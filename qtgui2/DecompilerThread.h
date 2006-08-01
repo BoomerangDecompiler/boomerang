@@ -35,6 +35,9 @@ public:
 	void setDebugging(bool d) { debugging = d; }
 	void setUseDFTA(bool d);
 
+    void addEntryPoint(ADDRESS a, const char *nam);
+    void removeEntryPoint(ADDRESS a);
+
 public slots:
 	void changeInputFile(const QString &f);
 	void changeOutputPath(const QString &path);
@@ -80,6 +83,8 @@ protected:
 
 	const char *procStatus(UserProc *p);
 	void emitClusterAndChildren(Cluster *root);
+
+    std::vector<ADDRESS> user_entrypoints;
 };
 
 class DecompilerThread : public QThread

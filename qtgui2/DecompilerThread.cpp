@@ -61,6 +61,19 @@ void Decompiler::setUseDFTA(bool d) {
 	Boomerang::get()->dfaTypeAnalysis = d;
 }
 
+void Decompiler::addEntryPoint(ADDRESS a, const char *nam) {
+    user_entrypoints.push_back(a);
+    fe->AddSymbol(a, nam);
+}
+
+void Decompiler::removeEntryPoint(ADDRESS a) {
+    for (std::vector<ADDRESS>::iterator it = user_entrypoints.begin(); it != user_entrypoints.end(); it++)
+        if (*it == a) {
+            user_entrypoints.erase(it);
+            break;
+        }
+}
+
 void Decompiler::changeInputFile(const QString &f) 
 {
 	filename = f;
@@ -107,6 +120,7 @@ void Decompiler::load()
 	QStringList entrypointStrings;
 	std::vector<ADDRESS> entrypoints = fe->getEntryPoints();
 	for (unsigned int i = 0; i < entrypoints.size(); i++) {
+        user_entrypoints.push_back(entrypoints[i]);
 		emit newEntrypoint(entrypoints[i], fe->getBinaryFile()->SymbolByAddress(entrypoints[i]));
 	}
 
@@ -122,11 +136,16 @@ void Decompiler::decode()
 {
 	emit decoding();
 
-	fe->decode(prog, true, NULL);
+	bool gotMain;
+	ADDRESS a = fe->getMainEntryPoint(gotMain);
+	for (unsigned int i = 0; i < user_entrypoints.size(); i++) 
+        if (user_entrypoints[i] == a) {
+        	fe->decode(prog, true, NULL);
+            break;
+        }
 
-	std::vector<ADDRESS> entrypoints = fe->getEntryPoints();
-	for (unsigned int i = 0; i < entrypoints.size(); i++) {
-		prog->decodeEntryPoint(entrypoints[i]);
+    for (unsigned int i = 0; i < user_entrypoints.size(); i++) {
+        prog->decodeEntryPoint(user_entrypoints[i]);
 	}
 
 	// decode anything undecoded

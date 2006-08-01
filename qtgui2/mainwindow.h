@@ -84,6 +84,10 @@ public slots:
 
 	void on_enableDFTAcheckBox_toggled(bool b);
 
+    void on_entrypoints_currentItemChanged(QTableWidgetItem *current, QTableWidgetItem *previous);
+    void on_addButton_pressed();
+    void on_removeButton_pressed();
+
 	void closeCurrentTab();
 	void currentTabTextChanged();
 

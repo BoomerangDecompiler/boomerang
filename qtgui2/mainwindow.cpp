@@ -857,3 +857,35 @@ void MainWindow::on_enableDFTAcheckBox_toggled(bool b)
 {
 	decompilerThread->getDecompiler()->setUseDFTA(b);
 }
+
+void MainWindow::on_entrypoints_currentItemChanged(QTableWidgetItem *current, QTableWidgetItem *previous)
+{
+    ui.removeButton->setEnabled(true);
+}
+
+void MainWindow::on_addButton_pressed()
+{
+    if (ui.addressEdit->text() == "" || ui.nameEdit->text() == "")
+        return;
+    bool ok;
+    ADDRESS a = ui.addressEdit->text().toInt(&ok, 16);
+    if (!ok)
+        return;
+    decompilerThread->getDecompiler()->addEntryPoint(a, (const char *)ui.nameEdit->text().toAscii());
+	int nrows = ui.entrypoints->rowCount();
+	ui.entrypoints->setRowCount(nrows + 1);
+	ui.entrypoints->setItem(nrows, 0, new QTableWidgetItem(ui.addressEdit->text()));
+	ui.entrypoints->setItem(nrows, 1, new QTableWidgetItem(ui.nameEdit->text()));
+    ui.addressEdit->clear();
+    ui.nameEdit->clear();
+}
+
+void MainWindow::on_removeButton_pressed()
+{
+    bool ok;
+    ADDRESS a = ui.entrypoints->item(ui.entrypoints->currentRow(), 0)->text().toInt(&ok, 16);
+    if (!ok)
+        return;
+    decompilerThread->getDecompiler()->removeEntryPoint(a);
+    ui.entrypoints->removeRow(ui.entrypoints->currentRow());
+}

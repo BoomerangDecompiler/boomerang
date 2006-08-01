@@ -509,6 +509,9 @@ Type* ArrayType::meetWith(Type* other, bool& ch, bool bHighestPtr) {
 			// base_type = newBase;		// No: call setBaseType to adjust length
 			setBaseType(newBase);
 		}
+        if (other->asArray()->getLength() < getLength()) {
+            this->setLength(other->asArray()->getLength());
+        }
 		return this;
 	}
 	if (*base_type == *other)
