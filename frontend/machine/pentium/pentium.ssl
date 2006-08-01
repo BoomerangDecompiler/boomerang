@@ -876,6 +876,9 @@ JMP.EVOW   modrm
 JMP.EVOD   modrm 
             *32* %pc := modrm;
 
+LAHF
+			*8*  %ah := %CF + (%ZF << 6) + (%NF << 7);
+
 LEA.OD   reg32, mem 
             *32* reg32 := addr(mem);
 
