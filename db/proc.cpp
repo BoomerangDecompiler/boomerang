@@ -137,6 +137,10 @@ bool LibProc::isNoReturn()
 
 bool UserProc::isNoReturn()
 {
+    // undecoded procs are assumed to always return (and define everything)
+    if (!this->isDecoded())
+        return false;
+
 	PBB exitbb = cfg->getExitBB();
 	if (exitbb == NULL)
 		return true;

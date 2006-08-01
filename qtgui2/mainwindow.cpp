@@ -858,6 +858,11 @@ void MainWindow::on_enableDFTAcheckBox_toggled(bool b)
 	decompilerThread->getDecompiler()->setUseDFTA(b);
 }
 
+void MainWindow::on_enableNoDecodeChildren_toggled(bool b)
+{
+    decompilerThread->getDecompiler()->setNoDecodeChildren(b);
+}
+
 void MainWindow::on_entrypoints_currentItemChanged(QTableWidgetItem *current, QTableWidgetItem *previous)
 {
     ui.removeButton->setEnabled(true);

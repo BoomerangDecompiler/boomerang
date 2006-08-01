@@ -61,6 +61,10 @@ void Decompiler::setUseDFTA(bool d) {
 	Boomerang::get()->dfaTypeAnalysis = d;
 }
 
+void Decompiler::setNoDecodeChildren(bool d) {
+    Boomerang::get()->noDecodeChildren = d;
+}
+
 void Decompiler::addEntryPoint(ADDRESS a, const char *nam) {
     user_entrypoints.push_back(a);
     fe->AddSymbol(a, nam);
@@ -148,8 +152,10 @@ void Decompiler::decode()
         prog->decodeEntryPoint(user_entrypoints[i]);
 	}
 
-	// decode anything undecoded
-	fe->decode(prog, NO_ADDRESS);
+    if (!Boomerang::get()->noDecodeChildren) {
+	    // decode anything undecoded
+	    fe->decode(prog, NO_ADDRESS);
+    }
 
 	prog->finishDecode();
 

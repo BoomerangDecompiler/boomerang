@@ -83,6 +83,7 @@ public slots:
 	void on_actionBoomerang_Website_activated();
 
 	void on_enableDFTAcheckBox_toggled(bool b);
+    void on_enableNoDecodeChildren_toggled(bool b);
 
     void on_entrypoints_currentItemChanged(QTableWidgetItem *current, QTableWidgetItem *previous);
     void on_addButton_pressed();

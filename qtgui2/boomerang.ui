@@ -465,7 +465,7 @@
         <item>
          <widget class="QStackedWidget" name="stackedWidget" >
           <property name="currentIndex" >
-           <number>1</number>
+           <number>0</number>
           </property>
           <widget class="QWidget" name="start" >
            <layout class="QVBoxLayout" >
@@ -593,6 +593,13 @@
              <widget class="QCheckBox" name="enableDFTAcheckBox" >
               <property name="text" >
                <string>Enable Dataflow Based Type Analysis</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="enableNoDecodeChildren" >
+              <property name="text" >
+               <string>don't decode child procedures</string>
               </property>
              </widget>
             </item>

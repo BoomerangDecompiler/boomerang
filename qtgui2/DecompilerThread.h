@@ -34,6 +34,7 @@ public:
 
 	void setDebugging(bool d) { debugging = d; }
 	void setUseDFTA(bool d);
+    void setNoDecodeChildren(bool d);
 
     void addEntryPoint(ADDRESS a, const char *nam);
     void removeEntryPoint(ADDRESS a);
