@@ -2641,7 +2641,9 @@ void UserProc::replaceExpressionsWithGlobals() {
 									new Unary(opAddrOf, g),
 									new Const(r));
 							} else {
-								prog->setGlobalType((char*)gloName, pty);
+								// TMN: Bugfix for function argument changing type of globals to "void"
+								if (!pty->resolvesToVoid())
+									prog->setGlobalType((char*)gloName, pty);
 								Location *g = Location::global(strdup(gloName), this);
 								// &global
 								ne = new Unary(opAddrOf, g);
@@ -4232,7 +4234,8 @@ if (!cc->first->isTypeOf()) continue;
 				loc = ((RefExp*)loc)->getSubExp1();
 			if (loc->isGlobal()) {
 				char* nam = ((Const*)((Unary*)loc)->getSubExp1())->getStr();
-				prog->setGlobalType(nam, ty->clone());
+				if (!ty->resolvesToVoid())
+					prog->setGlobalType(nam, ty->clone());
 			} else if (loc->isLocal()) {
 				char* nam = ((Const*)((Unary*)loc)->getSubExp1())->getStr();
 				setLocalType(nam, ty);
