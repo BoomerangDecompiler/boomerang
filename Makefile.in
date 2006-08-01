@@ -255,7 +255,8 @@ ifdef BISONPP
 	cd transform ; ${BISONPP} -d -v -otransformation-parser.cpp -htransformation-parser.h transformation.y
 
   db/sslscanner.cpp db/sslscanner.h: db/sslscanner.l db/sslparser.y
-	cd db ; ${FLEXPP} -osslscanner.cpp -hsslscanner.h sslscanner.l
+	cd db ; ${FLEXPP} -osslscanner.cpp1 -hsslscanner.h sslscanner.l
+	sed -f db/sslscanner.sed db/sslscanner.cpp1 > db/sslscanner.cpp		# Fix warnings re array subscript has type char
 
   c/ansi-c-scanner.cpp c/ansi-c-scanner.h: c/ansi-c.l c/ansi-c.y
 	cd c ; ${FLEXPP} -oansi-c-scanner.cpp -hansi-c-scanner.h ansi-c.l

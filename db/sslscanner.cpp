@@ -985,12 +985,12 @@ YY_SSLScanner_LEX_RETURN YY_SSLScanner_CLASS::YY_SSLScanner_LEX ( YY_SSLScanner_
 yy_match:
 	do
 	    {
-	    register YY_CHAR yy_c = yy_ec[*yy_cp];
+	    register YY_CHAR yy_c = yy_ec[(unsigned char)*yy_cp];
 	    while ( yy_chk[yy_base[yy_current_state] + yy_c] != yy_current_state )
 		{
 		yy_current_state = yy_def[yy_current_state];
 		if ( yy_current_state >= 336 )
-		    yy_c = yy_meta[yy_c];
+		    yy_c = yy_meta[(unsigned char)yy_c];
 		}
 	    yy_current_state = yy_nxt[yy_base[yy_current_state] + yy_c];
 	    *yy_state_ptr++ = yy_current_state;
@@ -1822,12 +1822,12 @@ long YY_SSLScanner_CLASS::yy_get_previous_state_()
     for ( yy_cp = yy___text + YY_MORE_ADJ; yy_cp < yy_c_buf_p; ++yy_cp )
 	{
 /* % code to find the next state goes here */ 
-	register YY_CHAR yy_c = (*yy_cp ? yy_ec[*yy_cp] : 1);
+	register YY_CHAR yy_c = (*yy_cp ? yy_ec[(unsigned char)*yy_cp] : 1);
 	while ( yy_chk[yy_base[yy_current_state] + yy_c] != yy_current_state )
 	    {
 	    yy_current_state = yy_def[yy_current_state];
 	    if ( yy_current_state >= 336 )
-		yy_c = yy_meta[yy_c];
+		yy_c = yy_meta[(unsigned char)yy_c];
 	    }
 	yy_current_state = yy_nxt[yy_base[yy_current_state] + yy_c];
 	*yy_state_ptr++ = yy_current_state;
@@ -1872,7 +1872,7 @@ long YY_SSLScanner_CLASS::yy_try_NUL_trans_(long yy_current_state_)
 	{
 	yy_current_state = yy_def[yy_current_state];
 	if ( yy_current_state >= 336 )
-	    yy_c = yy_meta[yy_c];
+	    yy_c = yy_meta[(unsigned char)yy_c];
 	}
     yy_current_state = yy_nxt[yy_base[yy_current_state] + yy_c];
     *yy_state_ptr++ = yy_current_state;
