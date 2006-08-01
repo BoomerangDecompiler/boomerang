@@ -418,7 +418,7 @@ bool DataFlow::renameBlockVars(UserProc* proc, int n, bool clearStacks /* = fals
 				col = ((CallStatement*)S)->getDefCollector();
 			else
 				col = ((ReturnStatement*)S)->getCollector();
-			col->updateDefs(Stacks);
+			col->updateDefs(Stacks, proc);
 		}
 
 		// For each definition of some variable a in S
@@ -570,7 +570,7 @@ void DataFlow::dumpA_orig() {
 	}
 }
 
-void DefCollector::updateDefs(std::map<Exp*, std::stack<Statement*>, lessExpStar>& Stacks) {
+void DefCollector::updateDefs(std::map<Exp*, std::stack<Statement*>, lessExpStar>& Stacks, UserProc* proc) {
 	std::map<Exp*, std::stack<Statement*>, lessExpStar>::iterator it;
 	for (it = Stacks.begin(); it != Stacks.end(); it++) {
 		if (it->second.size() == 0)
@@ -578,6 +578,7 @@ void DefCollector::updateDefs(std::map<Exp*, std::stack<Statement*>, lessExpStar
 		// Create an assignment of the form loc := loc{def}
 		RefExp* re = new RefExp(it->first->clone(), it->second.top());
 		Assign* as = new Assign(it->first->clone(), re);
+		as->setProc(proc);				// Simplify sometimes needs this
 		insert(as);
 	}
 	initialised = true;

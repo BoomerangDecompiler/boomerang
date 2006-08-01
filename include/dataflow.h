@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005, Mike Van Emmerik
+ * Copyright (C) 2005-2006, Mike Van Emmerik
  *
  * See the file "LICENSE.TERMS" for information on usage and
  * redistribution of this file, and for a DISCLAIMER OF ALL
@@ -188,8 +188,9 @@ Assign* dumpAddrOfFourth();
 
 		/*
 		 * Update the definitions with the current set of reaching definitions
+		 * proc is the enclosing procedure
 		 */
-		void		updateDefs(std::map<Exp*, std::stack<Statement*>, lessExpStar>& Stacks);
+		void		updateDefs(std::map<Exp*, std::stack<Statement*>, lessExpStar>& Stacks, UserProc* proc);
 
 		/**
 		 * Find the definition for a location. If not found, return NULL
