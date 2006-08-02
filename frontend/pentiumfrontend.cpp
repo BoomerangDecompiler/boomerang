@@ -23,6 +23,7 @@
  * 30 Sep 03 - Mike: processFloatCode ORs mask with 0x04 for compilers that ignore the C1 status bit (e.g. MSVC).
  *				Also more JE cases
  * 04 Aug 04 - Mike: Quick and dirty hack for overlapped registers (X86 only)
+ * 31 Jul 06 - Tamlin: Fixed overlapped register processing for esi/edi/ebp plus a bug in ah/bh/ch/dh processing
 */
 
 #include <assert.h>
@@ -774,6 +775,12 @@ void PentiumFrontEnd::processOverlapped(UserProc* proc) {
 	//	ah -  bh (12-15) ( ah,	ch,	 dh,  bh)
 	// if found we want to generate assignments to the overlapping registers,
 	// but only if they are used in this procedure.
+	//
+	// TMN: 2006-007-31. This code had been completely forgotten about:
+	// esi/si, edi/di and ebp/bp. For now, let's hope we never encounter esp/sp. :-)
+	// ebp (29)  bp (5)
+	// esi (30)  si (6)
+	// edi (31)  di (7)
 	for (it = stmts.begin(); it != stmts.end(); it++) {
 		Statement* s = *it;
         if (s->getBB()->overlappedRegProcessingDone)   // never redo processing
@@ -786,6 +793,7 @@ void PentiumFrontEnd::processOverlapped(UserProc* proc) {
 		assert(c->isIntConst());
 		int r = c->getInt();
 		int off = r&3;		  // Offset into the array of 4 registers
+		int off_mod8 = r&7;	  // Offset into the array of 8 registers; for ebp, esi, edi
 		Assign* a;
 		switch (r) {
 			case 24: case 25: case 26: case 27:
@@ -850,7 +858,7 @@ void PentiumFrontEnd::processOverlapped(UserProc* proc) {
 			if (usedRegs.find(8+off) != usedRegs.end()) {
 				a = new Assign(
 					new IntegerType(8),
-					Location::regOf(off),
+					Location::regOf(8+off),
 					new Ternary(opTruncu,
 						new Const(16),
 						new Const(8),
@@ -950,6 +958,41 @@ void PentiumFrontEnd::processOverlapped(UserProc* proc) {
 					new Binary(opBitAnd,
 						Location::regOf(off),
 						new Const(0x00FF)));
+				proc->insertStatementAfter(s, a);
+			}
+			break;
+
+			case 5: case 6: case 7:
+			//	bp		si		di
+			// Emit *32* r<24+off_mod8> := r<24+off_mod8>@[31:16] | zfill(16, 32, r<off_mod8>)
+			if (usedRegs.find(24+off_mod8) != usedRegs.end()) {
+				a = new Assign(
+					new IntegerType(32),
+					Location::regOf(24+off_mod8),
+					new Binary(opBitOr,
+						new Ternary(opAt,
+							Location::regOf(24+off_mod8),
+							new Const(31),
+							new Const(16)),
+						new Ternary(opZfill,
+							new Const(16),
+							new Const(32),
+							Location::regOf(off_mod8))));
+				proc->insertStatementAfter(s, a);
+			}
+			break;
+
+			case 29: case 30: case 31:
+			//	ebp		 esi	  edi
+			// Emit *16* r<off_mod8> := trunc(32, 16, r<24+off_mod8>)
+			if (usedRegs.find(off_mod8) != usedRegs.end()) {
+				a = new Assign(
+					new IntegerType(16),
+					Location::regOf(off_mod8),
+					new Ternary(opTruncu,
+						new Const(32),
+						new Const(16),
+						Location::regOf(24+off_mod8)));
 				proc->insertStatementAfter(s, a);
 			}
 			break;
