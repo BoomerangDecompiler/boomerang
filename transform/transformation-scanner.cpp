@@ -679,7 +679,7 @@ YY_TransformationScanner_LEX_RETURN YY_TransformationScanner_CLASS::YY_Transform
 yy_match:
 	do
 	    {
-	    register YY_CHAR yy_c = yy_ec[*yy_cp];
+	    register YY_CHAR yy_c = yy_ec[(unsigned char)*yy_cp];
 	    if ( yy_accept[yy_current_state] )
 		{
 		yy_last_accepting_state = yy_current_state;
@@ -689,7 +689,7 @@ yy_match:
 		{
 		yy_current_state = yy_def[yy_current_state];
 		if ( yy_current_state >= 160 )
-		    yy_c = yy_meta[yy_c];
+		    yy_c = yy_meta[(unsigned char)yy_c];
 		}
 	    yy_current_state = yy_nxt[yy_base[yy_current_state] + yy_c];
 	    ++yy_cp;
@@ -1288,7 +1288,7 @@ long YY_TransformationScanner_CLASS::yy_get_previous_state_()
     for ( yy_cp = yy___text + YY_MORE_ADJ; yy_cp < yy_c_buf_p; ++yy_cp )
 	{
 /* % code to find the next state goes here */ 
-	register YY_CHAR yy_c = (*yy_cp ? yy_ec[*yy_cp] : 1);
+	register YY_CHAR yy_c = (*yy_cp ? yy_ec[(unsigned char)*yy_cp] : 1);
 	if ( yy_accept[yy_current_state] )
 	    {
 	    yy_last_accepting_state = yy_current_state;
@@ -1298,7 +1298,7 @@ long YY_TransformationScanner_CLASS::yy_get_previous_state_()
 	    {
 	    yy_current_state = yy_def[yy_current_state];
 	    if ( yy_current_state >= 160 )
-		yy_c = yy_meta[yy_c];
+		yy_c = yy_meta[(unsigned char)yy_c];
 	    }
 	yy_current_state = yy_nxt[yy_base[yy_current_state] + yy_c];
 #line 721 "//usr/local/lib/flexskel.cc"
@@ -1348,7 +1348,7 @@ long YY_TransformationScanner_CLASS::yy_try_NUL_trans_(long yy_current_state_)
 	{
 	yy_current_state = yy_def[yy_current_state];
 	if ( yy_current_state >= 160 )
-	    yy_c = yy_meta[yy_c];
+	    yy_c = yy_meta[(unsigned char)yy_c];
 	}
     yy_current_state = yy_nxt[yy_base[yy_current_state] + yy_c];
     yy_is_jam = (yy_current_state == 159);

@@ -263,7 +263,9 @@ ifdef BISONPP
 	sed -f db/sslscanner.sed c/ansi-c-scanner.cpp1 > c/ansi-c-scanner.cpp	# Fix warnings with same sed file
 
   transform/transformation-scanner.cpp transform/transformation-scanner.h: transform/transformation.l transform/transformation.y
-	cd transform ; ${FLEXPP} -otransformation-scanner.cpp -htransformation-scanner.h transformation.l
+	cd transform ; ${FLEXPP} -otransformation-scanner.cpp1 -htransformation-scanner.h transformation.l
+	# Fix warnings with same sed file
+	sed -f db/sslscanner.sed transform/transformation-scanner.cpp1 > transform/transformation-scanner.cpp
 
  endif # ifdef FLEXPP
 endif # ifdef BISONPP
