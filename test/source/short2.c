@@ -12,5 +12,6 @@ int main()
 	printf("Result for 4, 5, 6: %d\n", test(4, 5, 6));
 	printf("Result for 6, 5, 4: %d\n", test(6, 5, 4));
 	printf("Result for 4, 6, 5: %d\n", test(4, 6, 5));
+	printf("Result for 6, 4, 5: %d\n", test(6, 4, 5));
     return 0;
 }
