@@ -191,10 +191,16 @@ void DataFlow::computeDF(int n) {
 
 
 bool DataFlow::canRename(Exp* e, UserProc* proc) {
-	if (renameAllMemofs)		// When safe,
-		return true;			//  allow memofs to be renamed
-	if (proc->isLocalOrParam(e)) return true;	// But do rename memofs that are locals or params
-	return e->canRename();		// Currently <=> return !e->isMemof();
+	if (e->isSubscript()) e = ((RefExp*)e)->getSubExp1();	// Look inside refs
+	if (e->isRegOf()) return true;		// Always rename registers
+	if (e->isTemp()) return true;		// Always rename temps (always want to propagate away)
+	if (e->isFlags()) return true;		// Always rename flags
+	if (e->isMainFlag()) return true;	// Always rename individual flags like %CF
+	if (!e->isMemOf()) return false;	// Can't rename %pc or other junk
+	if (proc->lookupSym(e) == NULL)		// Does it have a symbol? (i.e. local or likely parameter)
+		return false;					// Never rename memofs that don't have symbols
+	// e is a local or parameter; allow it to be propagated if we've done escape analysis and the address has not
+	return renameAllMemofs && !proc->isAddressEscapedVar(e);	// escaped
 }
 
 // For debugging
@@ -326,7 +332,12 @@ static Exp* defineAll = new Terminal(opDefineAll);		// An expression representin
 #define STACKS_EMPTY(q) (Stacks.find(q) == Stacks.end() || Stacks[q].empty())
 
 // Subscript dataflow variables
+static int progress = 0;
 bool DataFlow::renameBlockVars(UserProc* proc, int n, bool clearStacks /* = false */ ) {
+	if (++progress > 200) {
+		std::cerr << 'r' << std::flush;
+		progress = 0;
+	}
 	bool changed = false;
 
 	// Need to clear the Stacks of old, renamed locations like m[esp-4] (these will be deleted, and will cause compare

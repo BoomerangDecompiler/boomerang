@@ -138,6 +138,8 @@ virtual int getArity() {return 0;}		// Overridden for Unary, Binary, etc
 		bool		isFlagCall() {return op == opFlagCall;}
 		// True if this represents one of the abstract flags locations, int or float
 		bool		isFlags() {return op == opFlags || op == opFflags;}
+		// True if is one of the main 4 flags
+		bool		isMainFlag() {return op >= opZF && op <= opOF;}
 		// True if this is a register location
 		bool		isRegOf() {return op == opRegOf;}
 		// True if this is a register location with a constant index
@@ -223,9 +225,6 @@ virtual bool		isTerminal() { return false; }
 		// True if this is a typed expression
 		bool		isTypedExp() { return op == opTypedExp;}
 
-		// True if this expression can be renamed (i.e. if a memOf, is the address expression primitive?)
-		bool		canRename();
-					 
 
 		// Matches this expression to the pattern, if successful returns a list of variable bindings, otherwise returns
 		// NULL

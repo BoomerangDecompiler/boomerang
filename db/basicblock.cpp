@@ -2054,10 +2054,12 @@ bool BasicBlock::decodeIndirectJmp(UserProc* proc) {
 		assert(lastRtl->getNumStmt() >= 1);
 		CaseStatement* lastStmt = (CaseStatement*)lastRtl->elementAt(lastRtl->getNumStmt()-1);
 		// Note: some programs might not have the case expression propagated to, because of the -l switch (?)
-		Exp* e = lastStmt->getDest();
+		// We used to use ordinary propagation here to get the memory expression, but now it refuses to propagate memofs
+		// because of the alias safety issue. Eventually, we should use an alias-safe incremental propagation, but for
+		// now we'll assume no alias problems and force the propagation
 		bool convert;
-		lastStmt->propagateTo(convert);
-		e = lastStmt->getDest();
+		lastStmt->propagateTo(convert, NULL, NULL, true /* force */);
+		Exp* e = lastStmt->getDest();
 		int n = sizeof(hlForms) / sizeof(Exp*);
 		char form = 0;
 		for (int i=0; i < n; i++) {

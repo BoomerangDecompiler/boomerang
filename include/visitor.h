@@ -456,27 +456,24 @@ public:
 };
 
 // This class is an ExpModifier because although most of the time it merely maps expressions to locals, in one case,
-// where sp-K is found with a pointer type, we want to replace it with a[m[sp-K]] so the back end emits it as &localX.
+// where sp-K is found, we replace it with a[m[sp-K]] so the back end emits it as &localX.
 class DfaLocalMapper : public ExpModifier {
-		Type*		parentType;
 		UserProc* 	proc;
 		Prog*		prog;
 		Signature*	sig;		// Look up once (from proc) for speed
+		bool		processExp(Exp* e);		// Common processing here
 public:
 		bool		change;		// True if changed this statement
 
 					DfaLocalMapper(UserProc* proc);
-		void		setType(Type* ty) {parentType = ty;}
-		//Type*	getType() {return parentType;}
 
 		Exp*		preVisit(Location* e, bool& recur);		// To process m[X]
-		Exp*		postVisit(Location* e);					// To undo the above
-		Exp*		preVisit(Unary*	e, bool& recur);		// To process a[X]
-		Exp*		postVisit(Unary* e);					// To undo the above
-		Exp*		preVisit(Binary* e, bool& recur);		// To look for sp - K
+//		Exp*		preVisit(Unary*	e, bool& recur);		// To process a[X]
+		Exp*		preVisit(Binary* e, bool& recur);		// To look for sp -+ K
 		Exp*		preVisit(TypedExp*	e, bool& recur);	// To prevent processing TypedExps more than once
 };
 
+#if 0	// FIXME: deleteme
 class StmtDfaLocalMapper : public StmtModifier {
 public:
 					StmtDfaLocalMapper(ExpModifier* em, bool ic = false) : StmtModifier(em, ic) {}
@@ -491,6 +488,7 @@ virtual void		visit(ReturnStatement *s, bool& recur);
 virtual void		visit(ImpRefStatement *s, bool& recur);
 virtual void		visit(  CaseStatement *s, bool& recur);
 };
+#endif
 
 // Convert any exp{-} (with null definition) so that the definition points instead to an implicit assignment (exp{0})
 class ImplicitConverter : public ExpModifier {

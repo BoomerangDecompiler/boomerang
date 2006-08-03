@@ -6,7 +6,7 @@
   */
 
 
-#line 1 "C:\\work\\flexbison\\bison.cc"
+#line 1 "/usr/local/lib/bison.cc"
 /* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
 /* Skeleton output parser for bison,
    Copyright (C) 1984, 1989, 1990 Bob Corbett and Richard Stallman
@@ -80,7 +80,7 @@ void *alloca ();
 #include <stdio.h>
 #define YYBISON 1  
 
-/* #line 73 "C:\\work\\flexbison\\bison.cc" */
+/* #line 73 "/usr/local/lib/bison.cc" */
 #line 85 "ansi-c-parser.cpp"
 #define YY_AnsiCParser_DEBUG  1
 #define YY_AnsiCParser_PARSE_PARAM  \
@@ -190,7 +190,7 @@ typedef union {
 
 #include "ansi-c-scanner.h"
 
-#line 73 "C:\\work\\flexbison\\bison.cc"
+#line 73 "/usr/local/lib/bison.cc"
 /* %{ and %header{ and %union, during decl */
 #define YY_AnsiCParser_BISON 1
 #ifndef YY_AnsiCParser_COMPATIBILITY
@@ -236,36 +236,36 @@ typedef union {
 
 #ifndef YY_AnsiCParser_PURE
 
-/* #line 117 "C:\\work\\flexbison\\bison.cc" */
+/* #line 117 "/usr/local/lib/bison.cc" */
 #line 241 "ansi-c-parser.cpp"
 
-#line 117 "C:\\work\\flexbison\\bison.cc"
+#line 117 "/usr/local/lib/bison.cc"
 /*  YY_AnsiCParser_PURE */
 #endif
 
 /* section apres lecture def, avant lecture grammaire S2 */
 
-/* #line 121 "C:\\work\\flexbison\\bison.cc" */
+/* #line 121 "/usr/local/lib/bison.cc" */
 #line 250 "ansi-c-parser.cpp"
 
-#line 121 "C:\\work\\flexbison\\bison.cc"
+#line 121 "/usr/local/lib/bison.cc"
 /* prefix */
 #ifndef YY_AnsiCParser_DEBUG
 
-/* #line 123 "C:\\work\\flexbison\\bison.cc" */
+/* #line 123 "/usr/local/lib/bison.cc" */
 #line 257 "ansi-c-parser.cpp"
 
-#line 123 "C:\\work\\flexbison\\bison.cc"
+#line 123 "/usr/local/lib/bison.cc"
 /* YY_AnsiCParser_DEBUG */
 #endif
 
 
 #ifndef YY_AnsiCParser_LSP_NEEDED
 
-/* #line 128 "C:\\work\\flexbison\\bison.cc" */
+/* #line 128 "/usr/local/lib/bison.cc" */
 #line 267 "ansi-c-parser.cpp"
 
-#line 128 "C:\\work\\flexbison\\bison.cc"
+#line 128 "/usr/local/lib/bison.cc"
  /* YY_AnsiCParser_LSP_NEEDED*/
 #endif
 
@@ -375,7 +375,7 @@ typedef
 #ifndef YY_USE_CLASS
 /* TOKEN C */
 
-/* #line 236 "C:\\work\\flexbison\\bison.cc" */
+/* #line 236 "/usr/local/lib/bison.cc" */
 #line 380 "ansi-c-parser.cpp"
 #define	PREINCLUDE	258
 #define	PREDEFINE	259
@@ -455,7 +455,7 @@ typedef
 #define	RETURN	333
 
 
-#line 236 "C:\\work\\flexbison\\bison.cc"
+#line 236 "/usr/local/lib/bison.cc"
  /* #defines tokens */
 #else
 /* CLASS */
@@ -501,7 +501,7 @@ public:
 #if YY_AnsiCParser_USE_CONST_TOKEN != 0
 /* static const int token ... */
 
-/* #line 280 "C:\\work\\flexbison\\bison.cc" */
+/* #line 280 "/usr/local/lib/bison.cc" */
 #line 506 "ansi-c-parser.cpp"
 static const int PREINCLUDE;
 static const int PREDEFINE;
@@ -581,12 +581,12 @@ static const int BREAK;
 static const int RETURN;
 
 
-#line 280 "C:\\work\\flexbison\\bison.cc"
+#line 280 "/usr/local/lib/bison.cc"
  /* decl const */
 #else
 enum YY_AnsiCParser_ENUM_TOKEN { YY_AnsiCParser_NULL_TOKEN=0
 
-/* #line 283 "C:\\work\\flexbison\\bison.cc" */
+/* #line 283 "/usr/local/lib/bison.cc" */
 #line 591 "ansi-c-parser.cpp"
 	,PREINCLUDE=258
 	,PREDEFINE=259
@@ -666,7 +666,7 @@ enum YY_AnsiCParser_ENUM_TOKEN { YY_AnsiCParser_NULL_TOKEN=0
 	,RETURN=333
 
 
-#line 283 "C:\\work\\flexbison\\bison.cc"
+#line 283 "/usr/local/lib/bison.cc"
  /* enum token */
      }; /* end of enum declaration */
 #endif
@@ -699,7 +699,7 @@ public:
 /* other declare folow */
 #if YY_AnsiCParser_USE_CONST_TOKEN != 0
 
-/* #line 314 "C:\\work\\flexbison\\bison.cc" */
+/* #line 314 "/usr/local/lib/bison.cc" */
 #line 704 "ansi-c-parser.cpp"
 const int YY_AnsiCParser_CLASS::PREINCLUDE=258;
 const int YY_AnsiCParser_CLASS::PREDEFINE=259;
@@ -779,7 +779,7 @@ const int YY_AnsiCParser_CLASS::BREAK=332;
 const int YY_AnsiCParser_CLASS::RETURN=333;
 
 
-#line 314 "C:\\work\\flexbison\\bison.cc"
+#line 314 "/usr/local/lib/bison.cc"
  /* const YY_AnsiCParser_CLASS::token */
 #endif
 /*apres const  */
@@ -792,12 +792,12 @@ YY_AnsiCParser_CONSTRUCTOR_CODE;
 };
 #endif
 
-/* #line 325 "C:\\work\\flexbison\\bison.cc" */
+/* #line 325 "/usr/local/lib/bison.cc" */
 #line 797 "ansi-c-parser.cpp"
 
 
 #define	YYFINAL		154
-#define	YYFLAG		32768
+#define	YYFLAG		-32768
 #define	YYNTBASE	91
 
 #define YYTRANSLATE(x) ((unsigned)(x) <= 333 ? yytranslate[x] : 112)
@@ -1038,7 +1038,7 @@ static const short yycheck[] = {     8,
     62,    63,   110,   137,    32
 };
 
-#line 325 "C:\\work\\flexbison\\bison.cc"
+#line 325 "/usr/local/lib/bison.cc"
  /* fattrs + tables */
 
 /* parser code folow  */
@@ -1526,7 +1526,7 @@ YYLABEL(yyreduce)
 #endif
 
 
-/* #line 811 "C:\\work\\flexbison\\bison.cc" */
+/* #line 811 "/usr/local/lib/bison.cc" */
 #line 1531 "ansi-c-parser.cpp"
 
   switch (yyn) {
@@ -2017,7 +2017,7 @@ case 76:
     break;}
 }
 
-#line 811 "C:\\work\\flexbison\\bison.cc"
+#line 811 "/usr/local/lib/bison.cc"
    /* the action file gets copied in in place of this dollarsign  */
   yyvsp -= yylen;
   yyssp -= yylen;
@@ -2218,7 +2218,7 @@ YYLABEL(yyerrhandle)
 
 /* END */
 
-/* #line 1010 "C:\\work\\flexbison\\bison.cc" */
+/* #line 1010 "/usr/local/lib/bison.cc" */
 #line 2223 "ansi-c-parser.cpp"
 #line 548 "ansi-c.y"
 

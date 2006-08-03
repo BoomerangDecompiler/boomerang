@@ -417,7 +417,7 @@ bool LibProc::isPreserved(Exp* e) {
  *============================================================================*/
 UserProc::UserProc() : Proc(), cfg(NULL), status(PROC_UNDECODED),
 		// decoded(false), analysed(false),
-		nextLocal(0),	// decompileSeen(false), decompiled(false), isRecursive(false)
+		nextLocal(0), nextParam(0),	// decompileSeen(false), decompiled(false), isRecursive(false)
 		cycleGrp(NULL), theReturnStatement(NULL) {
 	localTable.setProc(this);
 }
@@ -426,7 +426,7 @@ UserProc::UserProc(Prog *prog, std::string& name, ADDRESS uNative) :
 		// Proc(prog, uNative, prog->getDefaultSignature(name.c_str())),
 		Proc(prog, uNative, new Signature(name.c_str())),
 		cfg(new Cfg()), status(PROC_UNDECODED),
-		nextLocal(0), // decompileSeen(false), decompiled(false), isRecursive(false),
+		nextLocal(0),  nextParam(0),// decompileSeen(false), decompiled(false), isRecursive(false),
 		cycleGrp(NULL), theReturnStatement(NULL), DFGcount(0)
 {
 	cfg->setProc(this);				 // Initialise cfg.myProc
@@ -1267,7 +1267,7 @@ ProcSet* UserProc::middleDecompile(ProcList* path, int indent) {
 	// We have only done limited propagation and collecting to this point. Need e.g. to put m[esp-K]
 	// into the collectors of calls, so when a stack parameter is created, it will be correctly localised
 	// Note that we'd like to limit propagation before this point, because we have not yet created any arguments, so
-	// it is possible to get "excessive propagation" to parameters. In fact, because uses vary so much througout a
+	// it is possible to get "excessive propagation" to parameters. In fact, because uses vary so much throughout a
 	// program, it may end up better not limiting propagation until very late in the decompilation, and undoing some
 	// propagation just before removing unused statements. Or even later, if that is possible.
 	// For now, we create the initial arguments here (relatively early), and live with the fact that some apparently
@@ -1276,6 +1276,9 @@ ProcSet* UserProc::middleDecompile(ProcList* path, int indent) {
 	bool change = df.placePhiFunctions(this);
 	if (change) numberStatements();		// Number the new statements
 	doRenameBlockVars(2);
+	propagateStatements(convert, 2);	// Otherwise sometimes sp is not fully propagated
+	if (DFA_TYPE_ANALYSIS)
+		mapLocalsAndParams();
 	updateArguments();
 	reverseStrengthReduction();
 	processTypes();
@@ -1311,7 +1314,7 @@ ProcSet* UserProc::middleDecompile(ProcList* path, int indent) {
 			printDFG();
 		Boomerang::get()->alert_decompile_SSADepth(this, pass);	// FIXME: need depth -> pass in GUI code
 
-		// mapping expressions to Parameters as we go
+		// (* Was: mapping expressions to Parameters as we go *)
 
 #if 1	// FIXME: Check if this is needed any more. At least fib seems to need it at present.
 		if (!Boomerang::get()->noChangeSignatures) {
@@ -1747,7 +1750,9 @@ void UserProc::recursionGroupAnalysis(ProcList* path, int indent) {
 	// statements.
 	bool convert;
 	for (p = cycleGrp->begin(); p != cycleGrp->end(); ++p) {
-		(*p)->initialParameters();
+		//(*p)->initialParameters();					// FIXME: I think this needs to be mapping locals and params now
+		if (DFA_TYPE_ANALYSIS)
+			(*p)->mapLocalsAndParams();
 		(*p)->updateArguments();
 		//(*p)->propagateAtDepth(maxDepth);			// Need to propagate into arguments
 		(*p)->propagateStatements(convert, 0);
@@ -2368,7 +2373,7 @@ void UserProc::findFinalParameters() {
 	if (VERBOSE || DEBUG_PARAMS)
 		LOG << "finding final parameters for " << getName() << "\n";
 
-	int sp = signature->getStackRegister();
+//	int sp = signature->getStackRegister();
 	signature->setNumParams(0);			// Clear any old ideas
 	StatementList stmts;
 	getStatements(stmts);
@@ -2384,6 +2389,11 @@ void UserProc::findFinalParameters() {
 		if (signature->findParam(e) == -1) {
 			if (VERBOSE || DEBUG_PARAMS)
 				LOG << "potential param " << e << "\n";
+#if 1		// I believe that the only true parameters will be registers or memofs that look like locals (stack
+			// pararameters)
+			if (!(e->isRegOf() || isLocalOrParamPattern(e)))
+				continue;
+#else
 			if (signature->isStackLocal(prog, e) || e->getOper() == opLocal) {
 				if (VERBOSE || DEBUG_PARAMS)
 					LOG << "ignoring local " << e << "\n";
@@ -2434,6 +2444,7 @@ void UserProc::findFinalParameters() {
 					LOG << "ignoring not all-zero\n";
 				continue;
 			}
+#endif
 			if (VERBOSE || DEBUG_PARAMS)
 				LOG << "found new parameter " << e << "\n";
 
@@ -3645,11 +3656,11 @@ void UserProc::fromSSAform() {
 		Exp* namedParam = Location::param(signature->getParamName(i));
 		firstTypes[namedParam] = signature->getParamType(i);
 	}
-	int progress = 1000;
+	int progress = 0;
 	for (it = stmts.begin(); it != stmts.end(); it++) {
-		if (--progress <= 0) {
+		if (++progress > 2000) {
 			std::cout << "." << std::flush;
-			progress = 1000;
+			progress = 0;
 		}
 		Statement* s = *it;
 		LocationSet defs;
@@ -4363,6 +4374,7 @@ void UserProc::addImplicitAssigns() {
 	}
 	cfg->setImplicitsDone();
 	df.convertImplicits(cfg);			// Some maps have m[...]{-} need to be m[...]{0} now
+	makeSymbolsImplicit();
 
 	Boomerang::get()->alert_decompile_debug_point(this, "after adding implicit assigns");
 }
@@ -4868,6 +4880,7 @@ void UserProc::propagateToCollector() {
 }
 
 // Get the initial parameters, based on this UserProc's use collector
+// Probably unused now
 void UserProc::initialParameters() {
 	if (VERBOSE)
 		LOG << "### initial parameters for " << getName() << "\n";
@@ -4906,7 +4919,7 @@ bool UserProc::isLocalOrParam(Exp* e) {
 	return parameters.existsOnLeft(e);
 }
 
-// Temporary hack: is this m[sp{-} +/- K]?
+// Is this m[sp{-} +/- K]?
 bool UserProc::isLocalOrParamPattern(Exp* e) {
 	if (!e->isMemOf()) return false;			// Don't want say a register
 	Exp* addr = ((Location*)e)->getSubExp1();
@@ -5654,6 +5667,31 @@ void Proc::setProvenTrue(Exp* fact) {
 	provenTrue[lhs] = rhs;
 }
 
+void UserProc::mapLocalsAndParams() {
+	Boomerang::get()->alert_decompile_debug_point(this, "before mapping locals from dfa type analysis");
+	if (DEBUG_TA)
+		LOG << " ### mapping expressions to local variables for " << getName() << " ###\n";
+	StatementList stmts;
+	getStatements(stmts);
+	StatementList::iterator it;
+	for (it = stmts.begin(); it != stmts.end(); it++) {
+		Statement* s = *it;
+		s->dfaMapLocals();
+	}
+	if (DEBUG_TA)
+		LOG << " ### end mapping expressions to local variables for " << getName() << " ###\n";
+}
+
+void UserProc::makeSymbolsImplicit() {
+	SymbolMapType::iterator it;
+	SymbolMapType sm2 = symbolMap;			// Copy the whole map; necessary because the keys (Exps) change
+	symbolMap.clear();
+	ImplicitConverter ic(cfg);
+	for (it = sm2.begin(); it != sm2.end(); ++it) {
+		Exp* impFrom = it->first->accept(&ic);
+		symbolMap[impFrom] = it->second;
+	}
+}
 
 #ifdef USING_MEMOS
 class LibProcMemo : public Memo {

@@ -136,10 +136,9 @@ void UserProc::dfaTypeAnalysis() {
 		LOG << "\n ### end results for Data flow based Type Analysis for " << getName() << " ###\n\n";
 	}
 
-	Boomerang::get()->alert_decompile_debug_point(this, "before mapping locals from dfa type analysis");
-
 	// Now use the type information gathered
-	Prog* prog = getProg();
+#if 0
+	Boomerang::get()->alert_decompile_debug_point(this, "before mapping locals from dfa type analysis");
 	if (DEBUG_TA)
 		LOG << " ### mapping expressions to local variables for " << getName() << " ###\n";
 	for (it = stmts.begin(); it != stmts.end(); it++) {
@@ -148,9 +147,11 @@ void UserProc::dfaTypeAnalysis() {
 	}
 	if (DEBUG_TA)
 		LOG << " ### end mapping expressions to local variables for " << getName() << " ###\n";
+#endif
 
 	Boomerang::get()->alert_decompile_debug_point(this, "before other uses of dfa type analysis");
 
+	Prog* prog = getProg();
 	for (it = stmts.begin(); it != stmts.end(); it++) {
 		Statement* s = *it;
 
@@ -174,7 +175,7 @@ void UserProc::dfaTypeAnalysis() {
 						con->setStr(str);
 						con->setOper(opStrConst);
 					}
-				} else if (baseType->resolvesToInteger() || baseType->resolvesToFloat()) {
+				} else if (baseType->resolvesToInteger() || baseType->resolvesToFloat() || baseType->resolvesToSize()) {
 					ADDRESS addr = (ADDRESS) con->getInt();
 					prog->globalUsed(addr, baseType);
 					const char *gloName = prog->getGlobalName(addr);
@@ -1243,6 +1244,14 @@ void Unary::descendType(Type* parentType, bool& ch, Statement* s) {
             if (parentType->resolvesToPointer())
                 subExp1->descendType(parentType->asPointer()->getPointsTo(), ch, s);
             break;
+		case opGlobal: {
+			Prog* prog = s->getProc()->getProg();
+			char* name = ((Const*)subExp1)->getStr();
+			Type* ty = prog->getGlobalType(name);
+			ty = ty->meetWith(parentType, ch);
+			prog->setGlobalType(name, ty);
+			break;
+		}
 		default:
 			break;
 	}
@@ -1277,173 +1286,67 @@ void Terminal::descendType(Type* parentType, bool& ch, Statement* s) {
 // when at a sum or difference, check for the address of locals high level pattern that is a pointer
 
 void Statement::dfaMapLocals() {
-	DfaLocalMapper dlc(proc);
-	StmtDfaLocalMapper sdlc(&dlc, true);		// True to ignore def collector in return statement
-	accept(&sdlc);
-	if (VERBOSE && dlc.change)
+	DfaLocalMapper dlm(proc);
+	StmtModifier sm(&dlm, true);		// True to ignore def collector in return statement
+	accept(&sm);
+	if (VERBOSE && dlm.change)
 		LOG << "statement mapped with new local(s): " << number << "\n";
 }
 
-void StmtDfaLocalMapper::visit(Assign* s, bool& recur) {
-	((DfaLocalMapper*)mod)->setType(s->getType());
-	recur = true;
-}
-void StmtDfaLocalMapper::visit(PhiAssign* s, bool& recur) {
-	((DfaLocalMapper*)mod)->setType(s->getType());
-	recur = true;
-}
-void StmtDfaLocalMapper::visit(ImplicitAssign* s, bool& recur) {
-	((DfaLocalMapper*)mod)->setType(s->getType());
-	recur = true;
-}
-void StmtDfaLocalMapper::visit(BoolAssign* s, bool& recur) {
-	((DfaLocalMapper*)mod)->setType(s->getType());
-	recur = true;
-}
-void StmtDfaLocalMapper::visit(BranchStatement* s, bool& recur) {
-	((DfaLocalMapper*)mod)->setType(new BooleanType);
-	recur = true;
-}
-void StmtDfaLocalMapper::visit(ReturnStatement* s, bool& recur) {
-	ReturnStatement::iterator rr;
-	for (rr = s->begin(); rr != s->end(); ++rr)
-		(*rr)->accept(this);
-	recur = false;
-}
-void StmtDfaLocalMapper::visit(ImpRefStatement* s, bool& recur) {
-	((DfaLocalMapper*)mod)->setType(s->getType());
-	recur = true;
-}
-void StmtDfaLocalMapper::visit(CaseStatement* s, bool& recur) {
-	SWITCH_INFO* si = s->getSwitchInfo();
-	if (si) {
-		Exp* pVar = si->pSwitchVar;
-		if (pVar->isSubscript()) {
-			Statement* def = ((RefExp*)pVar)->getDef();
-			((DfaLocalMapper*)mod)->setType(def->getTypeFor(pVar));
-		}
-	}
-	// Otherwise, the parentType stays NULL, and we deal with that
-	recur = true;
-}
-void StmtDfaLocalMapper::visit(CallStatement* s, bool& recur) {
-	// First the destination. The type of this expression will be a pointer to a function with s' dest's signature
-	Exp* pDest = s->getDest();
-	Signature* sig = s->getSignature();
-	if (pDest) {
-		FuncType* ft = new FuncType;
-		if (sig)
-			ft->setSignature(sig);
-		((DfaLocalMapper*)mod)->setType(ft);
-		s->setDest(pDest->accept(mod));
-	}
-	StatementList::iterator it;
-	StatementList& arguments = s->getArguments();
-	// Should we get argument types from the signature, or ascend from the argument expression?
-	// Ideally, it should come to the same thing, but consider if the argument is sp-K... sp essentially
-	// always becomes void*, and so the type is lost
-	unsigned u = 0;
-	for (it = arguments.begin(); it != arguments.end(); ++it, ++u) {
-		Type* pt = NULL;
-		if (sig) 
-			pt = sig->getParamType(u); 	// Could be NULL if we are involved in recursion
-		if (sig && pt)
-			((DfaLocalMapper*)mod)->setType(pt);
-		else
-			((DfaLocalMapper*)mod)->setType(((Assignment*)*it)->getLeft()->ascendType());
-		(*it)->accept(this);
-	}
-	recur = false;
-}
-
-
-// Map expressions to locals
-DfaLocalMapper::DfaLocalMapper(UserProc* proc) : parentType(new VoidType()), proc(proc) {
+// Map expressions to locals, some with names like param3
+DfaLocalMapper::DfaLocalMapper(UserProc* proc) : proc(proc) {
 	sig = proc->getSignature();
 	prog = proc->getProg();
 	change = false;
 }
 
-Exp* DfaLocalMapper::preVisit(Location* e, bool& recur) {
-    assert(parentType);
-
-	// Check if this is an appropriate pattern for local variables	
-	recur = true;
-	if (e->isMemOf()) {
-		if (sig->isStackLocal(proc->getProg(), e)) {
-			change = true;			// We've made a mapping
-			Exp* ret = proc->getSymbolExp(e, parentType, true);
-			// ret is now *usually* a local so postVisit won't expect parentType changed
-			// Note: at least one of Trent's hacks can cause m[a[...]] to be returned
-			if (ret->isMemOf())
-				parentType = new PointerType(parentType);
-			recur = false;			// Don't dig inside m[x] to make m[a[m[x]]] !
-			// Map, don't modify, so don't set e to ret. We want to fall through here to set the parent type, so that
-			// we are consistent and fix the pointer up always in the postVisit function.
+// Common processing for the two main cases:
+bool DfaLocalMapper::processExp(Exp* e) {
+	if (proc->isLocalOrParamPattern(e)) { 	// Check if this is an appropriate pattern for local variables	
+		if (sig->isStackLocal(prog, e)) {
+			change = true;					// We've made a mapping
+			// We have probably not even run TA yet, so doing a full descendtype here would be silly
+			proc->getSymbolExp(e, new VoidType(), true);
+		} else {
+			std::ostringstream ost;
+			ost << "tparam" << proc->nextParamNum();
+			const char* name = strdup(ost.str().c_str());
+			proc->mapSymbolTo(e, Location::local(const_cast<char*>(name), proc));
 		}
-		// When we recurse into the m[...], the type will be changed
-		parentType = new PointerType(parentType);
+		return false;			// set recur false: Don't dig inside m[x] to make m[a[m[x]]] !
 	}
+	return true;
+}
 
-    assert(parentType);
+Exp* DfaLocalMapper::preVisit(Location* e, bool& recur) {
+
+	recur = true;
+	if (e->isMemOf() && proc->lookupSym(e) == NULL) {		// Need the 2nd test to ensure change set correctly
+		recur = processExp(e);
+	}
     return e;
 }
-Exp* DfaLocalMapper::postVisit(Location* e) {
-    assert(parentType);
-    if (e->isMemOf()) {
-		// We should have set the type to be a pointer in preVisit; undo that change now
-		PointerType* pt = parentType->asPointer();
-		assert(pt);
-		parentType = pt->getPointsTo();
+
+Exp* DfaLocalMapper::preVisit(Binary* e, bool& recur) {
+	// Check for sp -/+ K
+	Exp* memOf_e = Location::memOf(e);
+	if (proc->lookupSym(memOf_e) != NULL) {
+		recur = false;		// Already done; don't recurse
+		return e;
+	} else {
+		recur = processExp(memOf_e);				// Process m[this]
+		if (!recur)									// If made a change this visit,
+			return new Unary(opAddrOf, memOf_e);	// change to a[m[this]]
 	}
-    assert(parentType);
 	return e;
 }
 
-Exp* DfaLocalMapper::preVisit(Unary* e, bool& recur) {
-    assert(parentType);
-	recur = true;
-	if (e->isAddrOf()) {
-		// When we recurse into the a[...], the type will be changed
-		if (parentType->isPointer()) {
-			PointerType* pt = parentType->asPointer();
-			assert(pt);
-			parentType = pt->getPointsTo();
-		} else {
-			// FIXME: is this right?
-			parentType = new VoidType(); 
-		}
-	}
-    assert(parentType);
-	return e;
-}
 Exp* DfaLocalMapper::preVisit(TypedExp* e, bool& recur) {
 	// Assume it's already been done correctly, so don't recurse into this
 	recur = false;
 	return e;
 }
-Exp* DfaLocalMapper::postVisit(Unary* e) {
-    assert(parentType);
-	if (e->isAddrOf()) {
-		// We should have set the type to be a dereference of the original parentType in preVisit; undo that change now
-		parentType = new PointerType(parentType);
-	}
-    assert(parentType);
-	return e;
-}
 
-Exp* DfaLocalMapper::preVisit(Binary* e, bool& recur) {
-	// Check for sp -/+ K, but only if TA indicates this is a pointer
-	if (parentType && parentType->resolvesToPointer() && sig->isAddrOfStackLocal(prog, e)) {
-		mod = true;
-		// We have something like sp-K; wrap it in a TypedExp to get the correct exp for the existing local (if any)
-		Exp* memOf_e = Location::memOf(e);
-		proc->getSymbolExp(memOf_e, parentType->asPointer()->getPointsTo(), true);
-		return new TypedExp(parentType->clone(), e);
-	}
-	recur = true;
-	return e;
-}
 
 bool Signature::dfaTypeAnalysis(Cfg* cfg) {
 	bool ch = false;

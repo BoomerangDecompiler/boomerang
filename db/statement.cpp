@@ -716,8 +716,13 @@ bool Statement::canPropagateToExp(Exp*e) {
 // Return true if any change; set convert if an indirect call statement is converted to direct (else unchanged)
 // destCounts is a set of maps from location to number of times it is used this proc
 // uip is a set of subscripted locations used in phi statements
+static int progress = 0;
 bool Statement::propagateTo(bool& convert, std::map<Exp*, int, lessExpStar>* destCounts /* = NULL */,
-		std::set<Exp*, lessExpStar>* uip /* = NULL */) {
+		std::set<Exp*, lessExpStar>* uip /* = NULL */, bool force /* = false */) {
+	if (++progress > 1000) {
+		std::cerr << 'p' << std::flush;
+		progress = 0;
+	}
 	bool change;
 	int changes = 0;
 	// int sp = proc->getSignature()->getStackRegister(proc->getProg());
@@ -738,7 +743,8 @@ bool Statement::propagateTo(bool& convert, std::map<Exp*, int, lessExpStar>* des
 				continue;
 			Assign* def = (Assign*)((RefExp*)e)->getDef();
 			Exp* rhs = def->getRight();
-			if (rhs->containsBadMemof(proc))
+			// If force is true, ignore the fact that a memof should not be propagated (for switch analysis)
+			if (rhs->containsBadMemof(proc) && !(force && rhs->isMemOf()))
 				// Must never propagate unsubscripted memofs, or memofs that don't yet have symbols. You could be
 				// propagating past a definition, thereby invalidating the IR
 				continue;
@@ -4934,7 +4940,8 @@ void ReturnStatement::updateReturns() {
 			}
 		}
 		if (!found) {
-			Assign* as = new Assign(loc->clone(), loc->clone());
+			Exp* rhs = col.findDefFor(loc);			// Find the definition that reaches the return statement's collector
+			Assign* as = new Assign(loc->clone(), rhs->clone());
 			as->setProc(proc);
 			as->setBB(pbb);
 			oldRets.append(as);

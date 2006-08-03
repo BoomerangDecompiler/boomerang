@@ -4299,22 +4299,6 @@ Exp* Exp::propagateAllRpt(bool& changed) {
 	return ret;
 }
 
-// Return true for non-mem-ofs, or mem-ofs that have primitive address expressions
-bool Exp::canRename() {
-	if (op == opArrayIndex) return false;
-	if (op == opMemberAccess) return false;
-	//if (op == opTemp) return false;
-	if (op != opMemOf) return true;
-#if 0		// Hack MVE try not renaming memory
-	Exp* addressExp = ((Location*)this)->getSubExp1();
-	PrimitiveTester pt;
-	addressExp->accept(&pt);
-	return pt.getResult();
-#else
-	return false;
-#endif
-}
-
 bool Exp::containsFlags() {
 	FlagsFinder ff;
 	accept(&ff);

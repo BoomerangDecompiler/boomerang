@@ -1763,6 +1763,7 @@ void updateWorkListRev(PBB currBB, std::list<PBB>&workList, std::set<PBB>& workS
 	}
 }
 
+static int progress = 0;
 void Cfg::findInterferences(igraph& ig) {
 	if (m_listBB.size() == 0) return;
 
@@ -1772,13 +1773,12 @@ void Cfg::findInterferences(igraph& ig) {
 	appendBBs(workList, workSet);
 
 	bool change;
-	int progress = 500;
 	int count = 0;
 	while (workList.size() && count < 100000) {
 		count++;  // prevent infinite loop
-		if (--progress <= 0) {
-			std::cout << ":" << std::flush;
-			progress = 500;
+		if (++progress > 20) {
+			std::cout << "i" << std::flush;
+			progress = 0;
 		}
 		PBB currBB = workList.back();
 		workList.erase(--workList.end());

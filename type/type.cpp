@@ -1242,9 +1242,14 @@ bool DataIntervalMap::isClear(ADDRESS addr, unsigned size) {
 		return true;						// None <= this address, so no overlap possible
 	it--;									// If any item overlaps, it is this one
 	// Make sure the previous item ends before this one will start
-    // FIXME: needs overflow detection, not (int) casts
-    if ((int)it->first + (int)it->second.size <= (int)addr) 
-        return true;
+	ADDRESS end;
+	if (it->first + it->second.size < it->first)
+		// overflow
+		end = 0xFFFFFFFF;		// Overflow
+	else
+		end = it->first + it->second.size;
+	if (end <= addr)
+		return true;
     if (it->second.type->isArray() && it->second.type->asArray()->isUnbounded()) {
         it->second.size = addr - it->first;
         LOG << "shrinking size of unbound array to " << it->second.size << " bytes\n";
