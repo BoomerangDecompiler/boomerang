@@ -80,6 +80,10 @@ else
 		fi
 	fi
 fi
+grep goto functest.c > /dev/null
+if [[ $? -eq 0 ]]; then
+	RESULT=$RESULT" (gotos in output)"
+fi
 echo $RESULT
 echo -e "$RES""$RESULT" >> functest.res
 echo >> functest.res
