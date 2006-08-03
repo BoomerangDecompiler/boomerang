@@ -1967,6 +1967,9 @@ void findSwParams(char form, Exp* e, Exp*& expr, ADDRESS& T) {
 // branch. Note: fails test/sparc/switchAnd_cc because of the and instruction, and the compare that is outside is not
 // the compare for the upper bound. Note that you CAN have an and and still a test for an upper bound. So this needs
 // tightening.
+// TMN: It also needs to check for and handle the double indirect case; where there is one array (of e.g. ubyte)
+// that is indexed by the actual switch value, then the value from that array is used as an index into the array of
+// code pointers.
 int BasicBlock::findNumCases() {
 	std::vector<PBB>::iterator it;
 	for (it = m_InEdges.begin(); it != m_InEdges.end(); it++) {		// For each in-edge
@@ -2074,6 +2077,26 @@ bool BasicBlock::decodeIndirectJmp(UserProc* proc) {
 			if (expr) {
 				swi->uTable = T;
 				swi->iNumTable = findNumCases();
+#if 1 // TMN: Added actual control of the array members, to possibly truncate what findNumCases()
+	// thinks is the number of cases, when finding the first array element not pointing to code.
+				if (form == 'A') {
+					Prog* prog = proc->getProg();
+					for (int iPtr = 0; iPtr < swi->iNumTable; ++iPtr) {
+						ADDRESS uSwitch = prog->readNative4(swi->uTable + iPtr*4);
+						if (uSwitch >= prog->getLimitTextHigh() ||
+						    uSwitch <  prog->getLimitTextLow())
+						{
+							if (DEBUG_SWITCH)
+								LOG << "Truncating type A indirect jump array to " << iPtr << " entries "
+								       "due to finding an array entry pointing outside valid code\n";
+							// Found an array that isn't a pointer-to-code. Assume array has ended.
+							swi->iNumTable = iPtr;
+							break;
+						}
+					}
+				}
+				assert(swi->iNumTable > 0);
+#endif
 				swi->iUpper = swi->iNumTable-1;
 				if (expr->getOper() == opMinus && ((Binary*)expr)->getSubExp2()->isIntConst()) {
 					swi->iLower = ((Const*)((Binary*)expr)->getSubExp2())->getInt();
@@ -2344,8 +2367,20 @@ void BasicBlock::processSwitch(UserProc* proc) {
 			dests.push_back(uSwitch);
 		} else {
 			LOG << "switch table entry branches to past end of text section " << uSwitch << "\n";
+#if 1 		// TMN: If we reached an array entry pointing outside the program text, we can be quite confident the array
+			// has ended. Don't try to pull any more data from it.
+			LOG << "Assuming the end of the pointer-array has been reached at index " << i << "\n";
+			// TODO: Elevate this logic to the code calculating iNumTable, but still leave this code as a safeguard.
+			// Q: Should iNumOut and m_iNumOutEdges really be adjusted (iNum - i) ?
+//			assert(iNumOut        >= (iNum - i));
+			assert(m_iNumOutEdges >= (iNum - i));
+//			iNumOut        -= (iNum - i);
+			m_iNumOutEdges -= (iNum - i);
+			break;
+#else
 			iNumOut--;
 			m_iNumOutEdges--;		// FIXME: where is this set?
+#endif
 		}
 	}
 	// Decode the newly discovered switch code arms, if any, and if not already decoded
