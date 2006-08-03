@@ -1277,8 +1277,8 @@ ProcSet* UserProc::middleDecompile(ProcList* path, int indent) {
 	if (change) numberStatements();		// Number the new statements
 	doRenameBlockVars(2);
 	propagateStatements(convert, 2);	// Otherwise sometimes sp is not fully propagated
-	if (DFA_TYPE_ANALYSIS)
-		mapLocalsAndParams();
+	// Map locals and temporary parameters as symbols, so that they can be propagated later
+	mapLocalsAndParams();
 	updateArguments();
 	reverseStrengthReduction();
 	processTypes();
