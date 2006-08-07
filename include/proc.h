@@ -34,6 +34,7 @@
 #include "memo.h"
 #include "dataflow.h"			// For class UseCollector
 #include "statement.h"			// For embedded ReturnStatement pointer, etc
+#include "boomerang.h"			// For USE_DOMINANCE_NUMS etc
 
 class Prog;
 class UserProc;
@@ -600,6 +601,10 @@ typedef std::map<Statement*, int> RefCounter;
 		/// Propagate statemtents; return true if change; set convert if an indirect call is converted to direct
 		/// (else clear)
 		bool		propagateStatements(bool& convert, int pass);
+		void		findLiveAtDomPhi(LocationSet& usedByDomPhi);
+#if		USE_DOMINANCE_NUMS
+		void		setDominanceNumbers();
+#endif
 		void		propagateToCollector();
 		void		clearUses();					///< Clear the useCollectors (in this Proc, and all calls).
 		void		clearRanges();

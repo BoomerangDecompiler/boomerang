@@ -1621,9 +1621,8 @@ void checkForOverlap(LocationSet& liveLocs, LocationSet& ls, igraph& ig, UserPro
 		// Interference if we can find a live variable which differs only in the reference
 		Exp *dr;
 		if (liveLocs.findDifferentRef(r, dr)) {
-			// We have an interference. Record it, but only if new
-			igraph::iterator gg = ig.find(u);
-			if (gg == ig.end()) {
+			// We have an interference. Record it, but only if neither dr or u is already in the graph
+			if (ig.find(u) == ig.end() && ig.find(dr) == ig.end()) {
 				// The interference is between dr (from liveLocs) and u. If it happens that u is implicit, then
 				// swap u and dr (so u{0} is the thing that is live now, and dr gets the new variable)
 				if (countAsLiveness && r->isImplicitDef()) {

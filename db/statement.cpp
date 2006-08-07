@@ -715,10 +715,10 @@ bool Statement::canPropagateToExp(Exp*e) {
 
 // Return true if any change; set convert if an indirect call statement is converted to direct (else unchanged)
 // destCounts is a set of maps from location to number of times it is used this proc
-// uip is a set of subscripted locations used in phi statements
+// usedByDomPhi is a set of subscripted locations used in phi statements
 static int progress = 0;
 bool Statement::propagateTo(bool& convert, std::map<Exp*, int, lessExpStar>* destCounts /* = NULL */,
-		std::set<Exp*, lessExpStar>* uip /* = NULL */, bool force /* = false */) {
+		LocationSet* usedByDomPhi /* = NULL */, bool force /* = false */) {
 	if (++progress > 1000) {
 		std::cerr << 'p' << std::flush;
 		progress = 0;
@@ -734,7 +734,7 @@ bool Statement::propagateTo(bool& convert, std::map<Exp*, int, lessExpStar>* des
 										// the reaching definitions of calls. Third parameter defaults to false, to
 										// find all locations, not just those inside m[...]
 		LocationSet::iterator ll;
-		change = false;
+		change = false;					// True if changed this iteration of the do/while loop
 		// Example: m[r24{10}] := r25{20} + m[r26{30}]
 		// exps has r24{10}, r25{30}, m[r26{30}], r26{30}
 		for (ll = exps.begin(); ll != exps.end(); ll++) {
@@ -764,14 +764,58 @@ bool Statement::propagateTo(bool& convert, std::map<Exp*, int, lessExpStar>* des
 					// We have something like eax = eax + 1
 					continue;
 #else
-				// Don't propagate a location that is used in a phi statement
-				if (uip && !lhs->isFlags()) {
-					RefExp* re = new RefExp(lhs, def);
-					if (uip->find(re) != uip->end())
+				// This is Mike's experimental propagation limiting heuristic. At present, it is:
+				// for each component of def->rhs
+				//   test if the base expression is in the set usedByDomPhi
+				//	 if so, check if this statement OW overwrites a parameter (like ebx = ebx-1)
+				//	 if so, check for propagating past this overwriting statement, i.e.
+				//		domNum(def) <= domNum(OW) && dimNum(OW) < domNum(def)
+				//		if so, don't propagate (heuristic takes effect)
+				if (usedByDomPhi) {
+					LocationSet rhsComps;
+					rhs->addUsedLocs(rhsComps);
+					LocationSet::iterator rcit;
+					bool doNotPropagate = false;
+					for (rcit = rhsComps.begin(); rcit != rhsComps.end(); ++rcit) {
+						if (!(*rcit)->isSubscript()) continue;		// Sometimes %pc sneaks in
+						Exp* rhsBase = ((RefExp*)*rcit)->getSubExp1();
+						// We don't know the statement number for the one definition in usedInDomPhi that might exist,
+						// so we use findNS()
+						Exp* OW = usedByDomPhi->findNS(rhsBase);
+						if (OW) {
+							Statement* OWdef = ((RefExp*)OW)->getDef();
+							if (!OWdef->isAssign()) continue;
+							Exp* lhsOWdef = ((Assign*)OWdef)->getLeft();
+							LocationSet OWcomps;
+							def->addUsedLocs(OWcomps);
+							LocationSet::iterator cc;
+							bool isOverwrite = false;
+							for (cc = OWcomps.begin(); cc != OWcomps.end(); ++cc) {
+								if (**cc *= *lhsOWdef) {
+									isOverwrite = true;
+									break;
+								}
+							}
+							if (isOverwrite) {
+								// Now check for propagating a component past OWdef
+								if (def->getDomNumber() <= OWdef->getDomNumber() &&
+										OWdef->getDomNumber() < dominanceNum)
+									// The heuristic kicks in
+									doNotPropagate = true;
+									break;
+							}
+if (OW) std::cerr << "Ow is " << OW << "\n";
+						}
+					}
+					if (doNotPropagate) {
+						if (VERBOSE)
+							LOG << "% propagation of " << def->getNumber() << " into " << number << " prevented by the "
+								"propagate past overwriting statement in loop heuristic\n";
 						continue;
+					}
 				}
-#endif
 			}
+#endif
 
 			// Check if the -l flag (propMaxDepth) prevents this propagation
 			if (destCounts && !lhs->isFlags()) {			// Always propagate to %flags
@@ -789,7 +833,29 @@ bool Statement::propagateTo(bool& convert, std::map<Exp*, int, lessExpStar>* des
 	// Simplify is very costly, especially for calls. I hope that doing one simplify at the end will not affect any
 	// result...
 	simplify();
-	return changes != 0;
+	return changes > 0;			// Note: change is only for the last time around the do/while loop
+}
+
+// Experimental: may want to propagate flags first, without tests about complexity or the propagation limiting heuristic
+bool Statement::propagateFlagsTo() {
+	bool change = false, convert;
+	int changes = 0;
+	do {
+		LocationSet exps;
+		addUsedLocs(exps, true);
+		LocationSet::iterator ll;
+		for (ll = exps.begin(); ll != exps.end(); ll++) {
+			Exp* e = *ll;
+			Assign* def = (Assign*)((RefExp*)e)->getDef();
+			if (def == NULL || !def->isAssign()) continue;
+			Exp* base = ((RefExp*)e)->getSubExp1();
+			if (base->isFlags() || base->isMainFlag()) {
+				change |= doPropagateTo(e, def, convert);
+			}
+		}
+	} while (change && ++changes < 10);
+	simplify();
+	return change;
 }
 
 
@@ -4646,6 +4712,9 @@ void PhiAssign::convertToAssign(Exp* rhs) {
 	a->setNumber(n); 
 	a->setProc(p); 
 	a->setBB(bb); 
+	RTL* rtl = bb->getRTLWithStatement(this);
+	if (rtl->getAddress() == 0)
+		rtl->setAddress(1);				// Strange things happen to real assignments with address 0
 }
 
 void PhiAssign::simplify() {
@@ -5569,6 +5638,7 @@ void JunctionStatement::print(std::ostream &os, bool html)
 		os << "</a></td>";
 }
 
+// Map registers and temporaries to locals
 void Statement::mapRegistersToLocals() {
 	ExpRegMapper erm(proc);
 	StmtRegMapper srm(&erm);

@@ -80,7 +80,8 @@ virtual RTL* clone();
 virtual bool		accept(StmtVisitor* visitor);
 
 		// Common enquiry methods
-		ADDRESS		getAddress();							// Return RTL's native address
+		ADDRESS		getAddress() {return nativeAddr;}		// Return RTL's native address
+		void		setAddress(ADDRESS a) {nativeAddr=a;}	// Set the address
 		Type*		getType();								// Return type of first Assign.
 		bool		areFlagsAffected();						// True if flags are affected
 

@@ -56,6 +56,7 @@
 #include "types.h"
 #include "managed.h"
 #include "dataflow.h"	// For embedded objects DefCollector and UseCollector
+#include "boomerang.h"	// For USE_DOMINANCE_NUMS etc
 
 class BasicBlock;
 typedef BasicBlock *PBB;
@@ -140,6 +141,13 @@ protected:
 		PBB			pbb;			// contains a pointer to the enclosing BB
 		UserProc	*proc;			// procedure containing this statement
 		int			number;			// Statement number for printing
+#if		USE_DOMINANCE_NUMS
+		int			dominanceNum;	// Like a statement number, but has dominance properties
+public:
+		int			getDomNumber() {return dominanceNum;}
+		void		setDomNumber(int dn) {dominanceNum = dn;}
+protected:
+#endif
 		STMT_KIND	kind;			// Statement kind (e.g. STMT_BRANCH)
 		Statement	*parent;		// The statement that contains this one
 		RangeMap	ranges;			// overestimation of ranges of locations
@@ -275,7 +283,8 @@ static	bool		canPropagateToExp(Exp* e);
 		// Set convert if an indirect call is changed to direct (otherwise, no change)
 		// Set force to true to propagate even memofs (for switch analysis)
 		bool		propagateTo(bool& convert, std::map<Exp*, int, lessExpStar>* destCounts = NULL,
-						std::set<Exp*, lessExpStar>* uip = NULL, bool force = false);
+						LocationSet* usedByDomPhi = NULL, bool force = false);
+		bool		propagateFlagsTo();
 
 		// code generation
 virtual void		generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) = 0;
@@ -287,7 +296,7 @@ virtual void		simplify() = 0;
 		// Only Assignments override at present
 virtual void		simplifyAddr() {}
 
-		// map registers to local variables
+		// map registers and temporaries to local variables
 		void		mapRegistersToLocals();
 
 		// insert casts where needed, since fromSSA will erase type information

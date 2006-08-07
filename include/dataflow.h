@@ -28,6 +28,7 @@
 
 #include "exphelp.h"		// For lessExpStar, etc
 #include "managed.h"		// For LocationSet
+#include "boomerang.h"		// For USE_DOMINANCE_NUMS etc
 
 class Cfg;
 class BasicBlock;
@@ -35,6 +36,7 @@ class Exp;
 class RefExp;
 class Statement;
 class UserProc;
+class PhiAssign;
 
 typedef BasicBlock* PBB;
 
@@ -105,6 +107,13 @@ public:
 		bool		canRenameAllMemofs() {return renameAllMemofs;}
 		bool		canRename(Exp* e, UserProc* proc);
 		void		convertImplicits(Cfg* cfg);
+		// Find the locations used by a live, dominating phi-function. Also removes dead phi-funcions
+		void		findLiveAtDomPhi(int n, LocationSet& usedByDomPhi, LocationSet& usedByDomPhi0,
+						std::map<Exp*, PhiAssign*, lessExpStar>& defdByPhi);
+#if		USE_DOMINANCE_NUMS
+		void		setDominanceNums(int n, int& currNum);		// Set the dominance statement number
+#endif
+		void		clearA_phi() {A_phi.clear();}
 
 		// For testing:
 		int			pbbToNode(PBB bb) {return indices[bb];}

@@ -886,7 +886,8 @@ void UserProc::insertAssignAfter(Statement* s, Exp* left, Exp* right) {
 		stmts = &rtls->back()->getList();
 		it = stmts->end();			// Insert before the end
 	}
-	Assign* as = new Assign( left, right);
+	Assign* as = new Assign(left, right);
+	as->setProc(this);
 	stmts->insert(it, as);
 	return;
 }
@@ -3331,13 +3332,6 @@ void UserProc::processTypes() {
 	Boomerang::get()->alert_decompile_debug_point(this, "after processing types");
 }
 
-// *** BUG *** FIXME ***
-// Gerard claims: (but I don't get this problem - MVE)
-// It can happen that a statement of the form r24 = r24 + 1 gets
-// propagated to only one use. The original statement is not removed and
-// so the propagated use will see (r24+1)+1 instead of the expected (r24+1).
-// This problem occurs in minmax3
-
 // Propagate statements, but don't remove
 // Return true if change; set convert if an indirect call is converted to direct (else clear)
 bool UserProc::propagateStatements(bool& convert, int pass) {
@@ -3347,22 +3341,35 @@ bool UserProc::propagateStatements(bool& convert, int pass) {
 	getStatements(stmts);
 	// propagate any statements that can be
 	StatementList::iterator it;
-	// First pass: count the number of times each assignment LHS would be propagated somewhere
+	// Find the locations that are used by a live, dominating phi-function
+	LocationSet usedByDomPhi;
+	findLiveAtDomPhi(usedByDomPhi);
+	// Next pass: count the number of times each assignment LHS would be propagated somewhere
 	std::map<Exp*, int, lessExpStar> destCounts;
 	// Also maintain a set of locations which are used by phi statements
-	std::set<Exp*, lessExpStar> usedInPhi;
-	bool change = false;
 	for (it = stmts.begin(); it != stmts.end(); it++) {
 		Statement* s = *it;
 		ExpDestCounter edc(destCounts);
-		StmtDestCounter sdc(&edc, usedInPhi);
+		StmtDestCounter sdc(&edc);
 		s->accept(&sdc);
 	}
+#if USE_DOMINANCE_NUMS
+	// A third pass for dominance numbers
+	setDominanceNumbers();
+#endif
+	// A fourth pass to propagate only the flags (these must be propagated even if it results in extra locals)
+	bool change = false;
+	for (it = stmts.begin(); it != stmts.end(); it++) {
+		Statement* s = *it;
+		if (s->isPhi()) continue;
+		change |= s->propagateFlagsTo();
+	}
+	// Finally the actual propagation
 	convert = false;
 	for (it = stmts.begin(); it != stmts.end(); it++) {
 		Statement* s = *it;
 		if (s->isPhi()) continue;
-		change |= s->propagateTo(convert, &destCounts, &usedInPhi);
+		change |= s->propagateTo(convert, &destCounts, &usedByDomPhi);
 	}
 	simplify();
 	propagateToCollector();
@@ -3694,7 +3701,7 @@ void UserProc::fromSSAform() {
 
 
 	if (DEBUG_LIVENESS) {
-		LOG << "  ig Interference graph:\n";
+		LOG << "  ig interference graph:\n";
 		igraph::iterator ii;
 		for (ii = ig.begin(); ii != ig.end(); ii++)
 			LOG << "  ig " << ii->first << " -> " << ii->second << "\n";
@@ -3728,7 +3735,7 @@ void UserProc::fromSSAform() {
    		Exp* first = NULL;
 		if (pa->getNumDefs() > 1) {
 			PhiAssign::iterator uu;
-			for (uu = ++pa->begin(); uu != pa->end(); uu++) {
+			for (uu = pa->begin(); uu != pa->end(); uu++) {
 				if (uu->e == NULL) continue;
                 if (first == NULL) { first = uu->e; continue; }
 				if (!(*uu->e == *first)) {
@@ -3792,6 +3799,7 @@ void UserProc::fromSSAform() {
 #endif
 		}
 	}
+
 
 	// Now remove subscripts from the symbol map
 	SymbolMapType::iterator ss;
@@ -5692,6 +5700,35 @@ void UserProc::makeSymbolsImplicit() {
 		symbolMap[impFrom] = it->second;
 	}
 }
+
+void UserProc::findLiveAtDomPhi(LocationSet& usedByDomPhi) {
+	LocationSet usedByDomPhi0;
+	std::map<Exp*, PhiAssign*, lessExpStar> defdByPhi;
+	df.findLiveAtDomPhi(0, usedByDomPhi, usedByDomPhi0, defdByPhi);
+	// Note that the above is not the complete algorithm; it has found the dead phi-functions in the defdAtPhi
+	std::map<Exp*, PhiAssign*, lessExpStar>::iterator it;
+	for (it = defdByPhi.begin(); it != defdByPhi.end(); ++it) {
+		// For each phi parameter, remove from the final usedByDomPhi set
+		PhiAssign::iterator pp;
+		for (pp = it->second->begin(); pp != it->second->end(); ++pp) {
+			if (pp->e == NULL) continue;
+			RefExp* wrappedParam = new RefExp(pp->e, pp->def);
+			usedByDomPhi.remove(wrappedParam);
+		}
+		// Now remove the actual phi-function (a PhiAssign Statement)
+		// Ick - some problem with return statements not using their returns until more analysis is done
+		//removeStatement(it->second);
+	}
+}
+
+#if USE_DOMINANCE_NUMS
+void UserProc::setDominanceNumbers() {
+	int currNum = 1;
+	df.setDominanceNums(0, currNum);
+}
+#endif
+
+//	-	-	-	-	-	-	-	-	-
 
 #ifdef USING_MEMOS
 class LibProcMemo : public Memo {

@@ -49,6 +49,7 @@ void DataFlow::DFS(int p, int n) {
 	}
 }
 
+// Essentially Algorithm 19.9 of Appel's "modern compiler implementation in Java" 2nd ed 2002
 void DataFlow::dominators(Cfg* cfg) {
 	PBB r = cfg->getEntryBB();
 	unsigned numBB = cfg->getNumBBs();
@@ -101,7 +102,7 @@ void DataFlow::dominators(Cfg* cfg) {
 				s = sdash;
 		}
 		semi[n] = s;
-		/* Calculation of n'd dominator is deferred until the path from s to n has been linked into the forest */
+		/* Calculation of n's dominator is deferred until the path from s to n has been linked into the forest */
 		bucket[s].insert(n);
 		Link(p, n);
 		// for each v in bucket[p]
@@ -129,7 +130,7 @@ void DataFlow::dominators(Cfg* cfg) {
 	computeDF(0);							// Finally, compute the dominance frontiers
 }
 
-// Basically algorithm 9.10b of Appel 2002 (uses path compression for O(log N) amortised time per operation
+// Basically algorithm 19.10b of Appel 2002 (uses path compression for O(log N) amortised time per operation
 // (overall O(N log N))
 int DataFlow::ancestorWithLowestSemi(int v) {
 	int a = ancestor[v];
@@ -170,8 +171,8 @@ void DataFlow::computeDF(int n) {
 	}
 	// for each child c of n in the dominator tree
 	// Note: this is a linear search!
-	int sz = ancestor.size();
-	for (int c = 0; c < sz; c++) {
+	int sz = idom.size();				// ? Was ancestor.size()
+	for (int c = 0; c < sz; ++c) {
 		if (idom[c] != n) continue;
 		computeDF(c);
 		/* This loop computes DF_up[c] */
@@ -196,6 +197,7 @@ bool DataFlow::canRename(Exp* e, UserProc* proc) {
 	if (e->isTemp()) return true;		// Always rename temps (always want to propagate away)
 	if (e->isFlags()) return true;		// Always rename flags
 	if (e->isMainFlag()) return true;	// Always rename individual flags like %CF
+	if (e->isLocal()) return true;		// Rename hard locals in the post fromSSA pass
 	if (!e->isMemOf()) return false;	// Can't rename %pc or other junk
 	if (proc->lookupSym(e) == NULL)		// Does it have a symbol? (i.e. local or likely parameter)
 		return false;					// Never rename memofs that don't have symbols
@@ -762,5 +764,91 @@ void DataFlow::convertImplicits(Cfg* cfg) {
 		}
 		A_orig.insert(A_orig.end(), se_new);	// Copy the set (doesn't have to be a deep copy)
 	}
-
 }
+
+
+// Helper function for UserProc::propagateStatements()
+// Works on basic block n; call from UserProc with n=0 (entry BB)
+// If an SSA location is in usedByDomPhi it means it is used in a phi that dominates its assignment
+// However, it could turn out that the phi is dead, in which case we don't want to keep the associated entries in
+// usedByDomPhi. So we maintain the map defdByPhi which maps locations defined at a phi to the phi statements. Every
+// time we see a use of a location in defdByPhi, we remove that map entry. At the end of the procedure we therefore have
+// only dead phi statements in the map, so we can delete the associated entries in defdByPhi and also remove the dead
+// phi statements.
+// We add to the set usedByDomPhi0 whenever we see a location referenced by a phi parameter. When we see a definition
+// for such a location, we remove it from the usedByDomPhi0 set (to save memory) and add it to the usedByDomPhi set.
+// For locations defined before they are used in a phi parameter, there will be no entry in usedByDomPhi, so we ignore
+// it. Remember that each location is defined only once, so that's the time to decide if it is dominated by a phi use or
+// not.
+void DataFlow::findLiveAtDomPhi(int n, LocationSet& usedByDomPhi, LocationSet& usedByDomPhi0,
+			std::map<Exp*, PhiAssign*, lessExpStar>& defdByPhi) {
+	// For each statement this BB
+	BasicBlock::rtlit rit; StatementList::iterator sit;
+	PBB bb = BBs[n];
+	Statement* S;
+	for (S = bb->getFirstStmt(rit, sit); S; S = bb->getNextStmt(rit, sit)) {
+		if (S->isPhi()) {
+			// For each phi parameter, insert an entry into usedByDomPhi0
+			PhiAssign* pa = (PhiAssign*)S;
+			PhiAssign::iterator it;
+			for (it = pa->begin(); it != pa->end(); ++it) {
+				if (it->e) {
+					RefExp* re = new RefExp(it->e, it->def);
+					usedByDomPhi0.insert(re);
+				}
+			}
+			// Insert an entry into the defdByPhi map
+			RefExp* wrappedLhs = new RefExp(pa->getLeft(), pa);
+			defdByPhi[wrappedLhs] = pa;
+			// Fall through to the below, because phi uses are also legitimate uses
+		}
+		LocationSet ls;
+		S->addUsedLocs(ls);
+		// Consider uses of this statement
+		LocationSet::iterator it;
+		for (it = ls.begin(); it != ls.end(); ++it) {
+			// Remove this entry from the map, since it is not unused
+			defdByPhi.erase(*it);
+		}
+		// Now process any definitions
+		ls.clear();
+		S->getDefinitions(ls);
+		for (it = ls.begin(); it != ls.end(); ++it) {
+			RefExp* wrappedDef = new RefExp(*it, S);
+			// If this definition is in the usedByDomPhi0 set, then it is in fact dominated by a phi use, so move it to
+			// the final usedByDomPhi set
+			if (usedByDomPhi0.find(wrappedDef) != usedByDomPhi0.end()) {
+				usedByDomPhi0.remove(wrappedDef);
+				usedByDomPhi.insert(wrappedDef);
+			}
+		}
+	}
+
+	// Visit each child in the dominator graph
+	// Note: this is a linear search!
+	// Note also that usedByDomPhi0 may have some irrelevant entries, but this will do no harm, and attempting to erase
+	// the irrelevant ones would probably cost more than leaving them alone
+	int sz = idom.size();
+	for (int c = 0; c < sz; ++c) {
+		if (idom[c] != n) continue;
+		// Recurse to the child
+		findLiveAtDomPhi(c, usedByDomPhi, usedByDomPhi0, defdByPhi);
+	}
+}
+
+#if USE_DOMINANCE_NUMS
+void DataFlow::setDominanceNums(int n, int& currNum) {
+	BasicBlock::rtlit rit; StatementList::iterator sit;
+	PBB bb = BBs[n];
+	Statement* S;
+	for (S = bb->getFirstStmt(rit, sit); S; S = bb->getNextStmt(rit, sit))
+		S->setDomNumber(currNum++);
+	int sz = idom.size();
+	for (int c = 0; c < sz; ++c) {
+		if (idom[c] != n) continue;
+		// Recurse to the child
+		setDominanceNums(c, currNum);
+	}
+}
+#endif
+

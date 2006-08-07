@@ -573,6 +573,7 @@ public:
 		bool	 	visit(Location *e, bool& override);
 };
 
+// Name registers and temporaries
 class ExpRegMapper : public ExpVisitor {
 		UserProc*	proc;									// Proc object for storing the symbols
 		Prog*		prog;
@@ -614,10 +615,8 @@ public:
 // FIXME: do I need to count collectors? All the visitors and modifiers should be refactored to conditionally visit
 // or modify collectors, or not
 class StmtDestCounter : public StmtExpVisitor {
-		std::set<Exp*, lessExpStar>& usedInPhi;
 public:
-					StmtDestCounter(ExpDestCounter* edc, std::set<Exp*, lessExpStar>& uip) : StmtExpVisitor(edc),
-						usedInPhi(uip) {}
+					StmtDestCounter(ExpDestCounter* edc) : StmtExpVisitor(edc) {}
 		bool		visit(      PhiAssign *stmt, bool& override);
 };
 

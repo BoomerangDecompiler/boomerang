@@ -389,17 +389,6 @@ std::ostream& operator<<(std::ostream& os, RTL* r) {
 }
 
 /*==============================================================================
- * FUNCTION:		RTL::getAddress
- * OVERVIEW:		Return the native address of this RTL
- * PARAMETERS:		None
- * RETURNS:			Native address
- *============================================================================*/
-ADDRESS RTL::getAddress() {
-	return nativeAddr;
-}
-
-
-/*==============================================================================
  * FUNCTION:		RTL::updateAddress
  * OVERVIEW:		Set the nativeAddr field
  * PARAMETERS:		Native address
