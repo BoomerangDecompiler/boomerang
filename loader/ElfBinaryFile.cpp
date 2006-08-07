@@ -351,7 +351,6 @@ void ElfBinaryFile::AddSyms(int secIndex) {
 		addrRelPlt = siRelPlt->uHostAddr;
 		numRelPlt = sizeRelPlt ? siRelPlt->uSectionSize / sizeRelPlt : 0;
 	}
-    static bool warned = false;
     // Number of entries in the PLT:
 	// int max_i_for_hack = siPlt ? (int)siPlt->uSectionSize / 0x10 : 0;
     // Index 0 is a dummy entry
@@ -373,10 +372,6 @@ void ElfBinaryFile::AddSyms(int secIndex) {
 				// in the .plt section, but for fedora2_true, this doesn't work. So we have to look in the .rel[a].plt
 				// section. Thanks, gcc!  Note that this hack can cause strange symbol names to appear
                 val = findRelPltOffset(i, addrRelPlt, sizeRelPlt, numRelPlt, addrPlt);
-                if (!warned) {
-					warned = true;
-                    std::cerr << "Warning: dynamic symbol table hack used!\n";
-                }
 			} else if (e_type == E_REL) {
 				int nsec = elfRead2(&m_pSym[i].st_shndx);
 				if (nsec >= 0 && nsec < m_iNumSections)
