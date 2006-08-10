@@ -189,6 +189,14 @@ int BasicBlock::getLabel() {
 	return m_iLabelNum;
 }
 
+bool BasicBlock::isCaseOption() {
+    if (caseHead)
+        for (unsigned int i = 0; i < caseHead->getOutEdges().size() - 1; i++)
+            if (caseHead->getOutEdge(i) == this) 
+                return true;
+    return false;
+}
+
 /*==============================================================================
  * FUNCTION:		BasicBlock::isTraversed
  * OVERVIEW:		Returns nonzero if this BB has been traversed
@@ -1283,6 +1291,8 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
 					hll->AddIfCondEnd(indLevel);
 				}
 			} else { // case header
+                // TODO: linearly emitting each branch of the switch does not result
+                //       in optimal fall-through.
 				// generate code for each out branch
 				for (unsigned int i = 0; i < m_OutEdges.size(); i++) {
 					// emit a case label
@@ -1300,12 +1310,10 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
 //assert(succ->caseHead == this || succ == condFollow || HasBackEdgeTo(succ));
 					if (succ->traversed == DFS_CODEGEN)
 						emitGotoAndLabel(hll, indLevel + 1, succ);
-					else
+                    else {
 						succ->generateCode(hll, indLevel + 1, latch, 
 							followSet, gotoSet);
-
-					// generate the 'break' statement
-					hll->AddCaseCondOptionEnd(indLevel+1);
+                    }
 				}
 				// generate the closing bracket
 				hll->AddCaseCondEnd(indLevel);
@@ -1397,9 +1405,14 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
 					(latch && latch->loopHead && latch->loopHead->loopFollow == child) ||
 					!(caseHead == child->caseHead || 
 					(caseHead && child == caseHead->condFollow)))
-				emitGotoAndLabel(hll, indLevel, m_OutEdges[0]);
-			else
-				child->generateCode(hll, indLevel, latch, followSet, gotoSet);
+				emitGotoAndLabel(hll, indLevel, child);
+            else {
+                if (caseHead && child == caseHead->condFollow) {
+					// generate the 'break' statement
+					hll->AddCaseCondOptionEnd(indLevel);
+                } else if (caseHead == NULL || caseHead != child->caseHead || !child->isCaseOption())
+			        child->generateCode(hll, indLevel, latch, followSet, gotoSet);
+            }
 			break;
 		default:
 			std::cerr << "unhandled sType " << (int)sType << "\n";

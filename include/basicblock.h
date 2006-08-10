@@ -163,6 +163,7 @@ public:
 		void		setLabelStr(std::string &s) { m_labelStr = s; }
 		bool		isLabelNeeded() { return m_labelneeded; }
 		void		setLabelNeeded(bool b) { m_labelneeded = b; }
+        bool        isCaseOption();
 
 		/*
 		 * Return whether this BB has been traversed or not
