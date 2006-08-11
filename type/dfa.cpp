@@ -1309,7 +1309,7 @@ bool DfaLocalMapper::processExp(Exp* e) {
 			proc->getSymbolExp(e, new VoidType(), true);
 		} else {
 			std::ostringstream ost;
-			ost << "tparam" << proc->nextParamNum();
+			ost << "param" << proc->nextParamNum();		// Was "tparam" but seems to be permanent now
 			const char* name = strdup(ost.str().c_str());
 			proc->mapSymbolTo(e, Location::local(const_cast<char*>(name), proc));
 		}
@@ -1346,7 +1346,6 @@ Exp* DfaLocalMapper::preVisit(TypedExp* e, bool& recur) {
 	recur = false;
 	return e;
 }
-
 
 bool Signature::dfaTypeAnalysis(Cfg* cfg) {
 	bool ch = false;
