@@ -1284,13 +1284,14 @@ void BranchStatement::setCondType(BRANCH_TYPE cond, bool usesFloat /*= false*/) 
 			p = new Binary(opGtrUns, new Terminal(opFlags), new Const(0));
 			break;
 		case BRANCH_JPAR:
-			// Can't handle (could happen as a result of a failure of Pentium
-			// floating point analysis)
-			return;
+			// Can't handle this properly here; leave an impossible expression involving %flags so propagation will
+			// still happen, and we can recognise this later in condToRelational()
+			// Update: these expressions seem to get ignored ???
+			p = new Binary(opEquals, new Terminal(opFlags), new Const(999));
+			break;
 	}
-	// this is such a hack.. preferably we should actually recognise 
-	// SUBFLAGS32(..,..,..) > 0 instead of just SUBFLAGS32(..,..,..)
-	// but I'll leave this in here for the moment as it actually works.
+	// this is such a hack.. preferably we should actually recognise SUBFLAGS32(..,..,..) > 0 instead of just
+	// SUBFLAGS32(..,..,..) but I'll leave this in here for the moment as it actually works.
 	if (!Boomerang::get()->noDecompile)
 		p = new Terminal(usesFloat ? opFflags : opFlags);
 	assert(p);
@@ -1546,7 +1547,7 @@ bool condToRelational(Exp*& pCond, BRANCH_TYPE jtCond) {
 	std::string s = os.str();
 
 	OPER condOp = pCond->getOper();
-	if (condOp == opFlagCall && !strncmp(((Const*)pCond->getSubExp1())->getStr(), "SUBFLAGS", 8)) {
+	if (condOp == opFlagCall && strncmp(((Const*)pCond->getSubExp1())->getStr(), "SUBFLAGS", 8) == 0) {
 		OPER op = opWild;
 		// Special for PPC unsigned compares; may be other cases in the future
 	    bool makeUns = strncmp(((Const*)pCond->getSubExp1())->getStr(), "SUBFLAGSNL", 10) == 0;
@@ -1591,7 +1592,7 @@ bool condToRelational(Exp*& pCond, BRANCH_TYPE jtCond) {
 				pCond->getSubExp2()->getSubExp2()->getSubExp1()->clone());	// P2
 		}
 	}
-	else if (condOp == opFlagCall && !strncmp(((Const*)pCond->getSubExp1())->getStr(), "LOGICALFLAGS", 12)) {
+	else if (condOp == opFlagCall && strncmp(((Const*)pCond->getSubExp1())->getStr(), "LOGICALFLAGS", 12) == 0) {
 		// Exp *e = pCond;
 		OPER op = opWild;
 		switch (jtCond) {
@@ -1599,7 +1600,7 @@ bool condToRelational(Exp*& pCond, BRANCH_TYPE jtCond) {
 			case BRANCH_JNE:  op = opNotEqual; break;
 			case BRANCH_JMI:  op = opLess; break;
 			case BRANCH_JPOS: op = opGtrEq; break;
-			// FIXME: This next set is quite shakey. Really, we should put all the individual flag definitions out of
+			// FIXME: This next set is quite shakey. Really, we should pull all the individual flag definitions out of
 			// the flag definitions, and substitute these into the equivalent conditions for the branches (a big, ugly
 			// job).
 			case BRANCH_JSL:  op = opLess; break;
@@ -1613,6 +1614,60 @@ bool condToRelational(Exp*& pCond, BRANCH_TYPE jtCond) {
 			case BRANCH_JULE: op = opLessEqUns; break;
 			case BRANCH_JUGE: op = opGtrEqUns; break;	// Similarly, this is equivalent to always branching
 			case BRANCH_JUG:  op = opGtrUns; break;
+			case BRANCH_JPAR: {
+				// This is pentium specific too; see below for more notes.
+				/*					pCond
+									/	\
+							  Const		opList
+					"LOGICALFLAGS8"		/	\
+								opBitAnd	opNil
+								/		\
+						opFlagCall		opIntConst
+						/		\			mask
+					Const		opList
+				"SETFFLAGS"		/	\
+							   P1	opList
+									/	\
+									P2	opNil
+				*/
+				Exp* flagsParam = ((Binary*)((Binary*)pCond)->getSubExp2())->getSubExp1();
+				Exp* test = flagsParam;
+				if (test->isSubscript())
+					test = ((RefExp*)test)->getSubExp1();
+				if (test->isTemp())
+					return false;			// Just not propagated yet
+				int mask = 0;
+				if (flagsParam->getOper() == opBitAnd) {
+					Exp* setFlagsParam = ((Binary*)flagsParam)->getSubExp2();
+					if (setFlagsParam->isIntConst())
+						mask = ((Const*)setFlagsParam)->getInt();
+				}
+				// Sometimes the mask includes the 0x4 bit, but we expect that to be off all the time. So effectively
+				// the branch is for any one of the (one or two) bits being on. For example, if the mask is 0x41, we
+				// are branching of less (0x1) or equal (0x41).
+				mask &= 0x41;
+				OPER op;
+				switch (mask) {
+					case 0:
+						LOG << "WARNING: unhandled pentium branch if parity with pCond = " << pCond << "\n";
+						return false;
+					case 1:
+						op = opLess;
+						break;
+					case 0x40:
+						op = opEquals;
+						break;
+					case 0x41:
+						op = opLessEq;
+						break;
+					default:
+						break;		// Not possible, but avoid a compiler warning
+				}
+				pCond = new Binary(op,
+					flagsParam->getSubExp1()->getSubExp2()->getSubExp1()->clone(),
+					flagsParam->getSubExp1()->getSubExp2()->getSubExp2()->getSubExp1() ->clone());
+					return true;			// This is a floating point comparison
+				}
 			default:
 				break;
 		}
@@ -1622,7 +1677,7 @@ bool condToRelational(Exp*& pCond, BRANCH_TYPE jtCond) {
 				new Const(0));
 		}
 	}
-	else if (condOp == opFlagCall && !strncmp(((Const*)pCond->getSubExp1())->getStr(), "SETFFLAGS", 9)) {
+	else if (condOp == opFlagCall && strncmp(((Const*)pCond->getSubExp1())->getStr(), "SETFFLAGS", 9) == 0) {
 		// Exp *e = pCond;
 		OPER op = opWild;
 		switch (jtCond) {
@@ -1640,13 +1695,13 @@ bool condToRelational(Exp*& pCond, BRANCH_TYPE jtCond) {
 		if (op != opWild) {
 			pCond = new Binary(op,
 				pCond->getSubExp2()->getSubExp1()->clone(),
-				pCond->getSubExp2()->getSubExp2()->getSubExp1()
-					->clone());
+				pCond->getSubExp2()->getSubExp2()->getSubExp1() ->clone());
 		}
 	}
 	// ICK! This is all PENTIUM SPECIFIC... needs to go somewhere else.
 	// Might be of the form (SETFFLAGS(...) & MASK) RELOP INTCONST where MASK could be a combination of 1, 4, and 40,
 	// and relop could be == or ~=.  There could also be an XOR 40h after the AND
+	// From MSVC 6, we can also see MASK = 0x44, 0x41, 0x5 followed by jump if (even) parity (see above)
 	// %fflags = 0..0.0 00 >
 	// %fflags = 0..0.1 01 <
 	// %fflags = 1..0.0 40 =
@@ -1685,15 +1740,13 @@ bool condToRelational(Exp*& pCond, BRANCH_TYPE jtCond) {
 				} else {
 					switch (mask) {
 						case 1:
-							if (condOp == opEquals && k == 0 ||
-								condOp == opNotEqual && k == 1)
+							if (condOp == opEquals && k == 0 || condOp == opNotEqual && k == 1)
 									op = opGtrEq;
 							else
 									op = opLess;
 							break;
 						case 0x40:
-							if (condOp == opEquals && k == 0 ||
-								condOp == opNotEqual && k == 0x40)
+							if (condOp == opEquals && k == 0 || condOp == opNotEqual && k == 0x40)
 									op = opNotEqual;
 							else
 									op = opEquals;
@@ -3309,7 +3362,7 @@ void BoolAssign::printCompact(std::ostream& os /*= cout*/, bool html) {
 		case BRANCH_JPOS:  os << "plus"; break;
 		case BRANCH_JOF:   os << "overflow"; break;
 		case BRANCH_JNOF:  os << "no overflow"; break;
-		case BRANCH_JPAR:  os << "parity"; break;
+		case BRANCH_JPAR:  os << "ev parity"; break;
 	}
 	os << ")";
 	if (bFloat) os << ", float";
