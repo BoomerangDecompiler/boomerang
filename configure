@@ -309,7 +309,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os CXX CXXFLAGS LDFLAGS CPPFLAGS ac_ct_CXX EXEEXT OBJEXT CC CFLAGS ac_ct_CC CPP MAKEDEPEND MAKEDEPEND  BISONPP BISONPP  FLEXPP FLEXPP  M4 M4  HOST_CC EGREP EXPAT_HDR_PATH EXPAT_HDR_PATH2 EXPAT_PATH GC_HDR_PATH GC_HDR_PATH2 GC_PATH DL_HDR_PATH DL_PATH CXXCPP CPPUNIT_HDR_PATH CPPUNIT_PATH REMOTE TKML HEAPPATH HEAP UNGENERATE PREFIX LIBDIR HOST_GNU_LD HOST_WINDOWS HOST_OSX UNDERSCORE_NEEDED HOST_CYGWIN LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os CXX CXXFLAGS LDFLAGS CPPFLAGS ac_ct_CXX EXEEXT OBJEXT CC CFLAGS ac_ct_CC CPP MAKEDEPEND MAKEDEPEND  BISONPP BISONPP  FLEXPP FLEXPP  M4 M4  HOST_CC EGREP EXPAT_HDR_PATH EXPAT_HDR_PATH2 EXPAT_PATH GC_HDR_PATH GC_HDR_PATH2 GC_PATH DL_HDR_PATH DL_PATH CXXCPP CPPUNIT_HDR_PATH CPPUNIT_PATH REMOTE TKML HEAPPATH HEAP UNGENERATE PREFIX LIBDIR HOST_GNU_LD HOST_WINDOWS HOST_OSX HOST_OSX_10_2 HOST_CYGWIN LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -3289,24 +3289,24 @@ echo "$as_me:$LINENO: checking if host is OS X 10.2 " >&5
 echo $ECHO_N "checking if host is OS X 10.2 ... $ECHO_C" >&6
 case $host in
  *-apple-darwin6*)
-   UNDERSCORE_NEEDED=yes
+   HOST_OSX_10_2=yes
 
 cat >>confdefs.h <<\_ACEOF
-#define UNDERSCORE_NEEDED 1
+#define HOST_OSX_10_2 1
 _ACEOF
 
    ;;
  *)
-   UNDERSCORE_NEEDED=no
+   HOST_OSX_10_2=no
 
 cat >>confdefs.h <<\_ACEOF
-#define UNDERSCORE_NEEDED 0
+#define HOST_OSX_10_2 0
 _ACEOF
 
    ;;
 esac
-echo "$as_me:$LINENO: result: $UNDERSCORE_NEEDED " >&5
-echo "${ECHO_T}$UNDERSCORE_NEEDED " >&6
+echo "$as_me:$LINENO: result: $HOST_OSX_10_2 " >&5
+echo "${ECHO_T}$HOST_OSX_10_2 " >&6
 
 
 
@@ -9331,9 +9331,10 @@ for ac_i in : $LIBOBJS; do test "x$ac_i" = x: && continue
   # 1. Remove the extension, and $U if already installed.
   ac_i=`echo "$ac_i" |
 	 sed 's/\$U\././;s/\.o$//;s/\.obj$//'`
-  # 2. Add them.
-  ac_libobjs="$ac_libobjs $ac_i\$U.$ac_objext"
-  ac_ltlibobjs="$ac_ltlibobjs $ac_i"'$U.lo'
+  # 2. Prepend LIBOBJDIR.  When used with automake>=1.10 LIBOBJDIR
+  #    will be set to the directory where LIBOBJS objects are built.
+  ac_libobjs="$ac_libobjs \${LIBOBJDIR}$ac_i\$U.$ac_objext"
+  ac_ltlibobjs="$ac_ltlibobjs \${LIBOBJDIR}$ac_i"'$U.lo'
 done
 LIBOBJS=$ac_libobjs
 
@@ -9919,7 +9920,7 @@ s,@LIBDIR@,$LIBDIR,;t t
 s,@HOST_GNU_LD@,$HOST_GNU_LD,;t t
 s,@HOST_WINDOWS@,$HOST_WINDOWS,;t t
 s,@HOST_OSX@,$HOST_OSX,;t t
-s,@UNDERSCORE_NEEDED@,$UNDERSCORE_NEEDED,;t t
+s,@HOST_OSX_10_2@,$HOST_OSX_10_2,;t t
 s,@HOST_CYGWIN@,$HOST_CYGWIN,;t t
 s,@LIBOBJS@,$LIBOBJS,;t t
 s,@LTLIBOBJS@,$LTLIBOBJS,;t t

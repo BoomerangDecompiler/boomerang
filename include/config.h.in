@@ -51,6 +51,9 @@
 /* Non zero if host machine is Mac OS X */
 #undef HOST_OSX
 
+/* Non zero is host machine is Mac OS X 10.2 */
+#undef HOST_OSX_10_2
+
 /* Define to the address where bug reports for this package should be sent. */
 #undef PACKAGE_BUGREPORT
 
@@ -92,10 +95,6 @@
 
 /* Define to 1 if you have the ANSI C header files. */
 #undef STDC_HEADERS
-
-/* Non zero if underscore needed at start of library function names in
-   dlopen() */
-#undef UNDERSCORE_NEEDED
 
 /* Define to 1 if your processor stores words with the most significant byte
    first (like Motorola and SPARC, unlike Intel and VAX). */

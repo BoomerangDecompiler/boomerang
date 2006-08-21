@@ -18,7 +18,7 @@
 #include "PalmBinaryFile.h"
 #include "HpSomBinaryFile.h"
 #include "ExeBinaryFile.h"
-#include "config.h"				// For UNDERSCORE_NEEDED etc
+#include "config.h"				// For HOST_OSX_10_2 etc
 
 #include <iostream>
 
@@ -123,8 +123,8 @@ BinaryFile* BinaryFileFactory::getInstanceFor( const char *sName ) {
 		return NULL;
 	}
 	// Use the handle to find the "construct" function
-#if UNDERSCORE_NEEDED
-#define UNDERSCORE "_"
+#if HOST_OSX_10_2
+#define UNDERSCORE "_"		// Only OSX 10.2 seems to need this underscore
 #else
 #define UNDERSCORE
 #endif

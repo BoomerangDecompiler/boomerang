@@ -50,8 +50,8 @@ HOST_CYGWIN = @HOST_CYGWIN@
 # HOST_OSX is true if the hostOS is OS X (*-apple-darwin*)
 HOST_OSX = @HOST_OSX@
 
-# UNDERSCORE_NEEDED is true if the host is OS X 10.2
-UNSERSCORE_NEEDED = @UNDERSCORE_NEEDED@
+# HOST_OSX_10_2 is true if the hostOS is OS X version 10.2.x (*-apple-darwin6*)
+HOST_OSX = @HOST_OSX_10_2@
 
 # HOST_GNU_LD is true if the linker on this host machine is GNU
 HOST_GNU_LD = @HOST_GNU_LD@
@@ -91,7 +91,11 @@ else # Non-Windows
 endif
 
 ifeq ($(HOST_OSX), yes)
- SHARED=-dynamiclib
+ ifeq ($HOST_OSX_10_2), yes)
+  SHARED=-dynamiclib
+ else
+  SHARED=-dynamic -dylib
+ endif
  #-flat_namespace
  DLLEXT=.dylib
  RUNPATH=
