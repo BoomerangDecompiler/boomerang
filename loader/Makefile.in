@@ -51,7 +51,7 @@ HOST_CYGWIN = @HOST_CYGWIN@
 HOST_OSX = @HOST_OSX@
 
 # HOST_OSX_10_2 is true if the hostOS is OS X version 10.2.x (*-apple-darwin6*)
-HOST_OSX = @HOST_OSX_10_2@
+HOST_OSX_10_2 = @HOST_OSX_10_2@
 
 # HOST_GNU_LD is true if the linker on this host machine is GNU
 HOST_GNU_LD = @HOST_GNU_LD@
