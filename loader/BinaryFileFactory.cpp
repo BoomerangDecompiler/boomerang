@@ -123,7 +123,7 @@ BinaryFile* BinaryFileFactory::getInstanceFor( const char *sName ) {
 		return NULL;
 	}
 	// Use the handle to find the "construct" function
-#if HOST_OSX_10_2
+#if 0	// HOST_OSX_10_2	// Not sure when the underscore is really needed
 #define UNDERSCORE "_"		// Only OSX 10.2 seems to need this underscore
 #else
 #define UNDERSCORE
