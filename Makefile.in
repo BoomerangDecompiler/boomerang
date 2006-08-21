@@ -57,6 +57,9 @@ HOST_WINDOWS = @HOST_WINDOWS@
 # HOST_OSX is true if the host OS is Mac OS X
 HOST_OSX = @HOST_OSX@
 
+# HOST_OSX_10_2 is true if the hostOS is OS X version 10.2.x (*-apple-darwin6*)
+HOST_OSX = @HOST_OSX_10_2@
+
 # TKML is set to the path to the New Jersey Machine Code Toolkit (ML version) if found
 TKML = @TKML@
 
@@ -295,10 +298,8 @@ db/CfgTest.o:              	EXTRA = -Ifrontend
 type/TypeTest.o:           	EXTRA = -Ifrontend
 frontend/pentiumdecoder.o: 	EXTRA = -fno-exceptions
 
-# Note: I have put $(LOADERLIBS) last after a -Bdynamic, so that the rest of the libraries could in theory be linked
-# statically (easier for releases). But note that there are presently big problems linking statically.
 boomerang$(EXEEXT): driver.o ${STATIC_OBJS} $(GENSSL)
-	$(CXX) -o $@ driver.o $(STATIC_OBJS) $(RUNPATH) -Llib $(LINKGC) -lexpat $(LDL) -Wl,-Bdynamic $(LOADERLIBS) 
+	$(CXX) -o $@ driver.o $(STATIC_OBJS) $(RUNPATH) -Llib $(LINKGC) -lexpat $(LDL) $(LOADERLIBS) 
 
 bffDump$(EXEEXT): loader/bffDump.o
 	$(CXX) -o $@ loader/bffDump.o loader/BinaryFileFactory.o -Llib -lgc -lexpat $(LDL) -Wl,-Bdynamic $(LOADERLIBS) \
