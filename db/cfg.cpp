@@ -528,7 +528,7 @@ bool Cfg::label ( ADDRESS uNativeAddr, PBB& pCurBB )
 
 		newi = mi;
 		bool bSplit = false;
-		PBB pPrevBB;
+		PBB pPrevBB = NULL;
 		if (newi != m_mapBB.begin()) {
 			pPrevBB = (*--mi).second;
 			if (!pPrevBB->m_bIncomplete &&
