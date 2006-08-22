@@ -13,33 +13,34 @@
 
 # $Revision$
 # Note: gnu make is probably required (for patsubst etc)
-# Whole make is dependent on finding the pattern *BinaryFile.cpp;
-# a lib%.so file is made for each of these
-# You should be able to add a simple loader without any changes to this
-# Makefile, as long as you follow the naming convention <type>BinaryFile.*
+# This whole makefile is dependent on finding the pattern *BinaryFile.cpp; a lib%.so file is made for each of these
+# You should be able to add a simple loader without any changes to this Makefile, as long as you follow the naming
+# convention <type>BinaryFile.*
 
-# 10 Apr 02 - Mike: interface -> include; use util.so for str()
-# 11 Apr 02 - Mike: Use lib%.so names and -l now; no "make install" any more
-# 17 Apr 02 - Mike: Use $(shell pwd) to get an absolute path for BOOMDIR
-# 26 Apr 02 - Mike: Make .so from .o files now
-# 16 Jul 02 - Mike: Removed prog again; no longer needed for serialise code
-# 20 Aug 02 - Icer: removed testLoader from being a dependecy of all:
-# 01 Oct 02 - Mike: testLoader restored; removed ElfDetails
-# 20 Jul 04 - Mike: Removed BOOMDIR (paths relative now)
+# 22 Aug 06 - Mike Frysinger: respect values set up by ./configure script
 # 12 Jul 05 - Mike: All use SymTab.o now
+# 20 Jul 04 - Mike: Removed BOOMDIR (paths relative now)
 # 12 Apr 05 - Gerard: Structured
+# 11 Apr 02 - Mike: Use lib%.so names and -l now; no "make install" any more
 
 ####################
 # Compiler settings
 #
 
-C = gcc -Wall -g -O0
-CC = g++ -Wall -g -O0
-CXX=$(CC)
+CC = @CC@
+CXX = @CXX@
+CFLAGS = @CFLAGS@
+CXXFLAGS = @CXXFLAGS@
+CPPFLAGS = @CPPFLAGS@
+LDFLAGS = @LDFLAGS@
+
+FPIC = -fPIC
 
 ####################################
-# Variables detected by ./configure
+# Other variables detected by ./configure
 #
+
+top_srcdir = @top_srcdir@
 
 # HOST_WINDOWS is "yes" if the host OS is Cygwin or MinGW
 HOST_WINDOWS = @HOST_WINDOWS@
@@ -92,7 +93,7 @@ endif
 
 ifeq ($(HOST_OSX), yes)
  ifeq ($HOST_OSX_10_2), yes)
-  SHARED=-dynamiclib
+  SHARED=-dynamiclib		# Note: doesn't seem to work at present; fiddle manually
  else
   SHARED=-dynamic -dylib
  endif
@@ -123,7 +124,7 @@ ALLOBJS += BinaryFile.o SymTab.o
 all:    $(ALLDLLS) $(COPYDLL)
 
 microX86dis.o: microX86dis.c
-	$(C) -c -o $@ $(FPIC) $<
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $(FPIC) $<
 
 # Extra object files, etc
 # These are target specific variables.
@@ -137,15 +138,15 @@ BinaryFile.o:		CCEXTRAS = -DBUILDING_LIBBINARYFILE
 MachOBinaryFile.o:	CCEXTRAS = -I.
 
 $(BASEDLL) : BinaryFile.o SymTab.o
-	$(CC) -o $@ $(SHARED) BinaryFile.o SymTab.o $(OUTIMPLIB)
+	$(CXX) $(CXXFLAGS) -o $@ $(SHARED) BinaryFile.o SymTab.o $(OUTIMPLIB) $(LDFLAGS)
 
 # This pattern generates all the main dependencies
 $(LOADERDLLS): ../lib/lib%$(DLLEXT) : %.o $(BASEDLL)
-	$(CC) -o $@ $(SHARED) $< SymTab.o $(EXTRAS) -lBinaryFile $(RUNPATH) -L../lib
+	$(CC) $(CFLAGS) -o $@ $(SHARED) $< SymTab.o $(EXTRAS) -lBinaryFile $(RUNPATH) -L../lib $(LDFLAGS)
 
 # Compile all objects with -fPIC
 $(ALLOBJS): %.o : %.cpp
-	$(CC) -c $(FPIC) $(CCEXTRAS) -I../include -o $@ $<
+	$(CXX) $(CXXFLAGS) -c $(FPIC) $(CCEXTRAS) -I../include -o $@ $<
 
 ####################
 # Conditional rules
@@ -172,13 +173,13 @@ endif # ifdef MAKEDEPEND
 #
 
 testLoader$(EXEEXT): testLoader.o LoaderTest.o microX86dis.o BinaryFileFactory.o SymTab.o
-	$(CC) -o $@ $^  -lcppunit $(ALLLIBS) $(RUNPATH) $(LDL) -L../lib
+	$(CXX) $(CXXFLAGS) -o $@ $^  -lcppunit $(ALLLIBS) $(RUNPATH) $(LDL) -L../lib $(LDFLAGS)
 
 testLoader.o: testLoader.cpp
-	$(CC) -c -o $@ -I../include $<
+	$(CXX) $(CXXFLAGS) -c -o $@ -I../include $<
 
 LoaderTest.o: LoaderTest.cpp LoaderTest.h ../include/BinaryFile.h SymTab.o
-	$(CC) -c -o $@ -I../include $<
+	$(CXX) $(CXXFLAGS) -c -o $@ -I../include $<
 
 # Because of the relative paths, testLoader will only work from the parent
 # directory...

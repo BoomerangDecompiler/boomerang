@@ -963,7 +963,9 @@ static Exp* checkSignedness(Exp* e, int reqSignedness) {
 		currSignedness =  ty->asInteger()->getSignedness();
 		currSignedness = (currSignedness >= 0) ? 1 : -1;
 	}
-	if (!isInt || currSignedness != reqSignedness) {
+	//if (!isInt || currSignedness != reqSignedness) { // }
+	// Don't want to cast e.g. floats to integer
+	if (isInt && currSignedness != reqSignedness) {
 		IntegerType* newtype;
 		if (!isInt)
 			newtype = new IntegerType(STD_SIZE, reqSignedness);

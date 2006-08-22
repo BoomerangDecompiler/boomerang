@@ -106,10 +106,10 @@ bool MachOBinaryFile::RealLoad(const char* sName)
     std::vector<struct nlist> symbols;
     unsigned startlocal, nlocal, startdef, ndef, startundef, nundef;
     std::vector<struct section> stubs_sects;
-    char *strtbl;
-    unsigned *indirectsymtbl;
+    char *strtbl = NULL;
+    unsigned *indirectsymtbl = NULL;
     ADDRESS objc_symbols = NO_ADDRESS, objc_modules = NO_ADDRESS, objc_strings = NO_ADDRESS, objc_refs = NO_ADDRESS;
-    unsigned objc_modules_size;
+    unsigned objc_modules_size = 0;
 
 	fseek(fp, sizeof(*header), SEEK_SET);
     for (unsigned i = 0; i < BMMH(header->ncmds); i++) {

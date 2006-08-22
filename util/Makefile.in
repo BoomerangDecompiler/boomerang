@@ -11,11 +11,17 @@
 # 11 Apr 02 - Mike: target is now ../lib/libutil so can use -lutil
 # 28 Apr 02 - Mike: Make library from .o not .cpp
 
+top_srcdir = @top_srcdir@
+
 LIB_OBJS = util.o
 LIB=../lib/libutil.so
 
-CC = g++ -g
-CXX = $(CC)
+CC = @CC@
+CXX = @CXX@
+CFLAGS = @CFLAGS@
+CXXFLAGS = @CXXFLAGS@
+CPPFLAGS = @CPPFLAGS@
+LDFLAGS = @LDFLAGS@
 
 all: #$(LIB) testUtil 
 	# Only "make test" is supported

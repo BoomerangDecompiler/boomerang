@@ -16,6 +16,8 @@
 # 04 Jul 02 - Mike: Added type.cpp, TypeType.cpp
 # 01 Jul 05 - Mike: Big merge from boomerang.pole branch
 
+top_srcdir = @top_srcdir@
+
 # HOST_GNU_LD is true if the linker on this host machine is GNU
 HOST_GNU_LD = @HOST_GNU_LD@
 
@@ -31,8 +33,12 @@ BOOMDIR="$(shell pwd)/.."
 LIBDIR=$(BOOMDIR)/lib
 BOOMSET=-DBOOMDIR=\"$(BOOMDIR)\"
 
-CC = g++ -g -Wall
-CXX = $(CC)
+CC = @CC@
+CXX = @CXX@
+CFLAGS = @CFLAGS@
+CXXFLAGS = @CXXFLAGS@
+CPPFLAGS = @CPPFLAGS@
+LDFLAGS = @LDFLAGS@
 
 GENFILES = sslparser.cpp sslparser.h sslscanner.cpp sslscanner.h
 
@@ -42,7 +48,7 @@ all: #$(DB_LIB) testDbase
 test: testExp testStmt testRtl
 
 testExp.o: testExp.cpp
-	$(CC) -c -o $@ -I../include $<
+	$(CXX) $(CXXFLAGS) -c -o $@ -I../include $<
 
 testExp: testExp.o exp.o statement.o rtl.o testExpStubs.o ExpTest.o
 	$(CC) -o $@ exp.o statement.o rtl.o testExpStubs.o ExpTest.o -lcppunit $<

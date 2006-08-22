@@ -807,7 +807,8 @@ void Assignment::dfaTypeAnalysis(bool& ch) {
 }
 
 void BranchStatement::dfaTypeAnalysis(bool& ch) {
-	pCond->descendType(new BooleanType(), ch, this);
+	if (pCond)
+		pCond->descendType(new BooleanType(), ch, this);
 	// Not fully implemented yet?
 }
 

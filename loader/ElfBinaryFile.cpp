@@ -1076,7 +1076,7 @@ void ElfBinaryFile::applyRelocations() {
 					unsigned size = ps->uSectionSize;
 					// NOTE: the r_offset is different for .o files (E_REL in the e_type header field) than for exe's
 					// and shared objects!
-					ADDRESS destNatOrigin, destHostOrigin;
+					ADDRESS destNatOrigin=0, destHostOrigin=0;
 					if (e_type == E_REL) {
 						int destSection = m_sh_info[i];
 						destNatOrigin	= m_pSections[destSection].uNativeAddr;
@@ -1099,7 +1099,7 @@ void ElfBinaryFile::applyRelocations() {
 							pRelWord = (int*)(destSec->uHostAddr - destSec->uNativeAddr + r_offset);
 							destNatOrigin = 0;
 						}
-						ADDRESS A, S, P;
+						ADDRESS A, S=0, P;
 						int nsec;
 						switch (relType) {
 							case 0:				// R_386_NONE: just ignore (common)
@@ -1185,7 +1185,7 @@ bool ElfBinaryFile::IsRelocationAt(ADDRESS uNative)
 					unsigned size = ps->uSectionSize;
 					// NOTE: the r_offset is different for .o files (E_REL in the e_type header field) than for exe's
 					// and shared objects!
-					ADDRESS destNatOrigin, destHostOrigin;
+					ADDRESS destNatOrigin=0, destHostOrigin;
 					if (e_type == E_REL) {
 						int destSection = m_sh_info[i];
 						destNatOrigin	= m_pSections[destSection].uNativeAddr;

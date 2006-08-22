@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 1998-2001, The University of Queensland
  * Copyright (C) 2001, Sun Microsystems, Inc
- * Copyright (C) 2002-2005, Mike Van Emmerik and Trent Waddington
+ * Copyright (C) 2002-2006, Mike Van Emmerik and Trent Waddington
  *
  * See the file "LICENSE.TERMS" for information on usage and
  * redistribution of this file, and for a DISCLAIMER OF ALL
@@ -9,10 +9,11 @@
  *
  */
 
-/*==============================================================================
- * FILE:	   driver.cpp
- * OVERVIEW:   Important initialisation that has to happen at the start of main()
- *============================================================================*/
+/*======================================================================================================
+ * FILE:		driver.cpp
+ * OVERVIEW:	Important initialisation that has to happen at the start of main()
+ *				Also contains main(), so it can be the only file different between boomerang and bigtest
+ *======================================================================================================*/
 
 /*
  * $Revision$
@@ -23,12 +24,6 @@
 #include "boomerang.h"
 //#define GC_DEBUG 1		// Uncomment to debug the garbage collector
 #include "gc.h"
-
-// FIXME: surely not needed here now?
-#ifdef WIN32
-//#include <direct.h>			// For Windows mkdir
-#endif
-#include <signal.h>
 
 void init_dfa();			// Prototypes for
 void init_sslparser();		// various initialisation functions

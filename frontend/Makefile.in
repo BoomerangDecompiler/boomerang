@@ -12,6 +12,8 @@
 # 08 Apr 02 - Mike: Created.
 # 10 Apr 02 - Mike: interface -> include
 
+top_srcdir = @top_srcdir@
+
 FRONTEND_LIB = ../lib/libfrontend.so
 TEST_OBJS = FrontSparcTest.o FrontPentTest.o # FrontendTest.o 
 LIB_OBJS  = frontend.o njmcDecoder.o
@@ -23,8 +25,12 @@ MACH_SRC  = $(patsubst %, %decoder.cpp, $(MACHS))
 MACH_FE_SRC=$(patsubst %, %frontend.cpp, $(MACHS))
 MACH_FE_OBJ=$(patsubst %, %frontend.o, $(MACHS))
 
-CC = g++ -g -Wall
-CXX = $(CC)
+CC = @CC@
+CXX = @CXX@
+CFLAGS = @CFLAGS@
+CXXFLAGS = @CXXFLAGS@
+CPPFLAGS = @CPPFLAGS@
+LDFLAGS = @LDFLAGS@
 
 GENFILES = $(MACH_SRC)
 

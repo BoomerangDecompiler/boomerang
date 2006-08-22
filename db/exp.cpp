@@ -138,10 +138,9 @@ Ternary::Ternary(Ternary& o)
     assert(subExp1 && subExp2 && subExp3);
 }
 
-TypedExp::TypedExp() : Unary(opTypedExp), type(NULL) { }
+TypedExp::TypedExp() : Unary(opTypedExp), type(NULL) { } 
 TypedExp::TypedExp(Exp* e1) : Unary(opTypedExp, e1), type(NULL) { }
-TypedExp::TypedExp(Type* ty, Exp* e1) : Unary(opTypedExp, e1),
-	type(ty) { }
+TypedExp::TypedExp(Type* ty, Exp* e1) : Unary(opTypedExp, e1), type(ty) { }
 TypedExp::TypedExp(TypedExp& o) : Unary(opTypedExp)
 {
 	subExp1 = o.subExp1->clone();

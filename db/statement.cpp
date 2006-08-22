@@ -1661,7 +1661,8 @@ bool condToRelational(Exp*& pCond, BRANCH_TYPE jtCond) {
 						op = opLessEq;
 						break;
 					default:
-						break;		// Not possible, but avoid a compiler warning
+						op = opWild;		// Not possible, but avoid a compiler warning
+						break;
 				}
 				pCond = new Binary(op,
 					flagsParam->getSubExp1()->getSubExp2()->getSubExp1()->clone(),

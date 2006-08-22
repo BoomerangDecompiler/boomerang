@@ -5,7 +5,8 @@
 #
 ######################################################
 
-# $Revision$		// 1.91.2.10
+# $Revision$
+# 22 Aug 06 - Mike Frysinger: respect values set up by ./configure script
 # 12 Apr 06 - Gerard: Restructured, added conditional rules, added generated dependencies
 # 13 Mar 06 - Mike: Prevent going to the loader directory 5 or 6 times
 # 05 Jul 05 - Mike: Big merge with boomerang.pole branch
@@ -13,10 +14,8 @@
 # 23 Nov 04 - Mike: Added PPC files
 # 20 Jul 04 - Mike: Removed BOOMDIR
 # 21 Aug 02 - Icer: added codegen/chllcode.cpp to the build process by adding it in STATIC_OBJ
-# 20 Aug 02 - Icer: removed test from all, test code is broken
-#		    Added more to distclean
-# 19 Aug 02 - Icer: changed make distclean delete toplevel makefile
-#		    changed all: to read lib static test
+# 20 Aug 02 - Icer: removed test from all, test code is broken. Added more to distclean
+# 19 Aug 02 - Icer: changed make distclean delete toplevel makefile; changed all: to read lib static test
 # 31 May 02 - Mike: Make lib directory if needed
 # 20 May 02 - Trent: Created
 # 15 Jul 01 - Mike: Added static target
@@ -47,6 +46,8 @@
 ####################################
 # Variables detected by ./configure
 #
+
+top_srcdir = @top_srcdir@
 
 # HOST_GNU_LD is "yes" if the linker on this host machine is GNU
 HOST_GNU_LD = @HOST_GNU_LD@
@@ -105,20 +106,20 @@ endif
 # Compiler settings
 #
 
-CC = gcc -g -Wall -O0
-CXX = g++ -g -Wall -O0
-# For non-debug release makes:
-#CC = gcc -Wall -O4
-#CXX = g++ -Wall -O4 # -Wl,-Bstatic
+CC = @CC@
+CXX = @CXX@
+CFLAGS = @CFLAGS@
+CXXFLAGS = @CXXFLAGS@
+CPPFLAGS = @CPPFLAGS@
+LDFLAGS = @LDFLAGS@
 
 # NOTE: "win32make/include" should be after "include" because if there is a generated include/config.h then we prefer to
 # use that
-# comment out the next two lines and uncomment the two after to disable
-# the garbage collector
+# comment out the next two lines and uncomment the two after to disable the garbage collector
 LINKGC=-lgc
-CXXFLAGS=-Iinclude $(WININCLUDE)
+CPPFLAGS += $(WININCLUDE)
 #LINKGC=
-#CXXFLAGS=-Iinclude $(WININCLUDE) -DNO_GARBAGE_COLLECTOR
+#CPPFLAGS += $(WININCLUDE) -DNO_GARBAGE_COLLECTOR
 
 
 #############
@@ -142,8 +143,8 @@ lib:
 	mkdir lib
 	
 loaders: lib
-	cd loader && make
-	
+	cd loader && $(MAKE)
+
 #########################################
 # Detection of machine types and loaders
 #
@@ -299,18 +300,19 @@ type/TypeTest.o:           	EXTRA = -Ifrontend
 frontend/pentiumdecoder.o: 	EXTRA = -fno-exceptions
 
 boomerang$(EXEEXT): driver.o ${STATIC_OBJS} $(GENSSL)
-	$(CXX) -o $@ driver.o $(STATIC_OBJS) $(RUNPATH) -Llib $(LINKGC) -lexpat $(LDL) $(LOADERLIBS) 
+	$(CXX) $(CXXFLAGS) -o $@ driver.o $(STATIC_OBJS) $(RUNPATH) -Llib $(LINKGC) -lexpat $(LDL) $(LDFLAGS) $(LOADERLIBS)
 
 bffDump$(EXEEXT): loader/bffDump.o
-	$(CXX) -o $@ loader/bffDump.o loader/BinaryFileFactory.o -Llib -lgc -lexpat $(LDL) -Wl,-Bdynamic $(LOADERLIBS) \
-		$(RUNPATH)
+	$(CXX) $(CXXFLAGS) -o $@ loader/bffDump.o loader/BinaryFileFactory.o -Llib -lgc -lexpat $(LDL) $(LOADERLIBS) \
+		$(RUNPATH) $(LDFLAGS)
 
 # Compile ordinary files
 $(STATIC_OBJS): %.o : %.cpp
-	$(CXX) $(CXXFLAGS) -c -o $@ $(EXTRA) $<
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $(EXTRA) $<
 
+# driver.o is special because it contains main() and is not wanted for bigtest (the unit test program)
 driver.o: driver.cpp include/boomerang.h
-	$(CXX) $(CXXFLAGS) -c -o $@ -Icodegen $(EXTRA) $<
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $(EXTRA) $<
 
 ###############
 # Unit testing
@@ -322,7 +324,7 @@ testDyn: lib
 	cd db       && ${MAKE} test
 	cd frontend && ${MAKE} test
 
-test:	lib loaders bigtest$(EXEEXT)
+check test:	lib loaders bigtest$(EXEEXT)
 	cd loader   && ${MAKE} test
 	./bigtest$(EXEEXT)
 
@@ -330,14 +332,14 @@ test:	lib loaders bigtest$(EXEEXT)
 INCLUDEALL = -Idb -Ifrontend -Ic -Itype
 
 testAll.o: testAll.cpp
-	$(CXX) $(CXXFLAGS) -c -o $@ $(EXTRA) $< $(INCLUDEALL)
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $(EXTRA) $< $(INCLUDEALL)
 
 bigtest$(EXEEXT): testAll.o ${STATIC_OBJS} ${TEST_OBJS}
-	$(CXX) -o $@ testAll.o ${STATIC_OBJS} ${TEST_OBJS} $(LOADERLIBS) \
-	    $(RUNPATH) -Llib -lcppunit -lgc -lexpat $(LDL)
+	$(CXX) $(CXXFLAGS) -o $@ testAll.o ${STATIC_OBJS} ${TEST_OBJS} $(LOADERLIBS) \
+	    $(RUNPATH) -Llib -lcppunit -lgc -lexpat $(LDL) $(LDFLAGS)
 
 $(TEST_OBJS): %.o : %.cpp
-	$(CXX) $(CXXFLAGS) -c -o $@ $(EXTRA) $<
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $(EXTRA) $<
 
 ##############
 # Cleaning up
