@@ -1420,6 +1420,7 @@ test -n "$target_alias" &&
     NONENONEs,x,x, &&
   program_prefix=${target_alias}-
 
+isset_OPT=${OPT+set}
 
 ac_ext=cc
 ac_cpp='$CXXCPP $CPPFLAGS'
@@ -2941,6 +2942,10 @@ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 if test "$GCC" = yes; then
+	if test "$isset_OPT" == "set"; then
+		CFLAGS="-g $OPT"
+		CXXFLAGS="-g $OPT"
+	fi
 	CFLAGS="$CFLAGS -Wall"
 	CXXFLAGS="$CXXFLAGS -Wall"
 fi

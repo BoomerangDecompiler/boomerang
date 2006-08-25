@@ -22,12 +22,22 @@ AC_CONFIG_HEADER(include/config.h)
 
 AC_CANONICAL_SYSTEM
 
-
+dnl check if the OPT variable is set
+isset_OPT=${OPT+set}
+ 
 dnl Checks for programs.
 AC_PROG_CXX
 AC_PROG_CC
 AC_PROG_CPP
 if test "$GCC" = yes; then
+	if test "$isset_OPT" == "set"; then
+		CFLAGS="-g $OPT"
+		CXXFLAGS="-g $OPT"
+	fi
+dnl	if test "$NOOPT" = yes; then
+dnl		CFLAGS="-g -O0"
+dnl		CXXFLAGS="-g -O0"
+dnl	fi
 	CFLAGS="$CFLAGS -Wall"
 	CXXFLAGS="$CXXFLAGS -Wall"
 fi
