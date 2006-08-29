@@ -39,6 +39,7 @@ void DecompilerThread::run()
 
 	Boomerang::get()->setOutputDirectory(".\\output\\");
     //Boomerang::get()->vFlag = true;
+	//Boomerang::get()->traceDecoder = true;
 
 	decompiler = new Decompiler();
 	decompiler->moveToThread(this);

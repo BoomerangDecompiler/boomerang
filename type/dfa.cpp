@@ -67,7 +67,7 @@ void init_dfa() {
 
 
 void UserProc::dfaTypeAnalysis() {
-	Boomerang::get()->alert_decompile_debug_point(this, "before doing dfa type analysis");
+	Boomerang::get()->alert_decompile_debug_point(this, "before dfa type analysis");
 
 	// First use the type information from the signature. Sometimes needed to split variables (e.g. argc as a
 	// int and char* in sparc/switch_gcc)
@@ -336,6 +336,7 @@ void UserProc::dfaTypeAnalysis() {
 							addr = -addr;
 					}
 				}
+				LOG << "in proc " << getName() << " adding addrExp " << addrExp << " to local table\n";
 				localTable.addItem(addr, lookupSym(Location::memOf(addrExp)), typeExp);
 			}
 		}
@@ -349,7 +350,7 @@ void UserProc::dfaTypeAnalysis() {
 		LOG << "### end application of dfa type analysis for " << getName() << " ###\n";
 	}
 
-	Boomerang::get()->alert_decompile_debug_point(this, "after doing dfa type analysis");
+	Boomerang::get()->alert_decompile_debug_point(this, "after dfa type analysis");
 }
 
 // This is the core of the data-flow-based type analysis algorithm: implementing the meet operator.
@@ -739,8 +740,12 @@ void CallStatement::dfaTypeAnalysis(bool& ch) {
 		((Assign*)*aa)->dfaTypeAnalysis(ch);
 	}
 	// The destination is a pointer to a function with this function's signature (if any)
-	if (pDest)
-		pDest->descendType(new FuncType(signature), ch, this);
+	if (pDest) {
+		if (signature)
+			pDest->descendType(new FuncType(signature), ch, this);
+		else if (procDest)
+			pDest->descendType(new FuncType(procDest->getSignature()), ch, this);
+	}
 }
 
 void ReturnStatement::dfaTypeAnalysis(bool& ch) {
@@ -1432,11 +1437,15 @@ bool BooleanType::isCompatible(Type* other, bool all) {
 }
 
 bool FuncType::isCompatible(Type* other, bool all) {
+	assert(signature);
 	if (other->resolvesToVoid()) return true;
 	if (*this == *other) return true;		// MVE: should not compare names!
 	if (other->resolvesToUnion()) return other->isCompatibleWith(this);
-	if (other->resolvesToSize() && ((SizeType*)other)->getSize() == STD_SIZE) return true;
-	if (other->resolvesToFunc() && *other->asFunc()->signature == *signature) return true;
+	if (other->resolvesToSize() && ((SizeType*)other)->getSize() == STD_SIZE) return true;	
+	if (other->resolvesToFunc()) {
+		assert(other->asFunc()->signature);
+		if (*other->asFunc()->signature == *signature) return true;
+	}
 	return false;
 }
 

@@ -120,8 +120,8 @@ typedef struct {
     unsigned char src;
     unsigned char flags;
     short srcoff;
-    unsigned char object;
-    unsigned short trgoff;
+//    unsigned char object;         // these are now variable length
+//    unsigned short trgoff;
 } LXFixup;
 
 //#ifdef WIN32

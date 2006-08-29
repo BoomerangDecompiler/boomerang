@@ -38,9 +38,9 @@ DOS4GWBinaryFile::~DOS4GWBinaryFile()
 {
 	for (int i=0; i < m_iNumSections; i++) {
 		if (m_pSections[i].pSectionName)
-			delete [] m_pSections[i].pSectionName;
+			; //delete [] m_pSections[i].pSectionName;
 	}
-	if (m_pSections) delete [] m_pSections;
+	// if (m_pSections) delete [] m_pSections;
 }
 
 bool DOS4GWBinaryFile::Open(const char* sName) {
@@ -268,13 +268,23 @@ bool DOS4GWBinaryFile::RealLoad(const char* sName)
     unsigned srcpage = 0;
     do {
         fread(&fixup, sizeof(fixup), 1, fp);
-        if (fixup.src != 7 && fixup.flags != 0) {
+		if (fixup.src != 7 || (fixup.flags & ~0x50)) {
             fprintf(stderr, "unknown fixup type %02x %02x\n", fixup.src, fixup.flags);
             return false;
         }
         //printf("srcpage = %i srcoff = %x object = %02x trgoff = %x\n", srcpage + 1, fixup.srcoff, fixup.object, fixup.trgoff);
         unsigned long src = srcpage * LMMH(m_pLXHeader->pagesize) + (short)LMMHw(fixup.srcoff);
-        unsigned long target = LMMH(m_pLXObjects[fixup.object - 1].RelocBaseAddr) + LMMHw(fixup.trgoff);
+		unsigned short object = 0;
+		if (fixup.flags & 0x40)
+			fread(&object, 2, 1, fp);
+		else
+			fread(&object, 1, 1, fp);
+		unsigned int trgoff = 0;
+		if (fixup.flags & 0x10)
+			fread(&trgoff, 4, 1, fp);
+		else
+			fread(&trgoff, 2, 1, fp);
+        unsigned long target = LMMH(m_pLXObjects[object - 1].RelocBaseAddr) + LMMHw(trgoff);
 //        printf("relocate dword at %x to point to %x\n", src, target);
         *(unsigned int *)(base + src) = target;
 
@@ -289,7 +299,7 @@ bool DOS4GWBinaryFile::RealLoad(const char* sName)
 bool DOS4GWBinaryFile::IsDynamicLinkedProc(ADDRESS uNative)
 {
     if (dlprocptrs.find(uNative) != dlprocptrs.end() && 
-        dlprocptrs[uNative] != "main")
+        dlprocptrs[uNative] != "main" && dlprocptrs[uNative] != "_start")
         return true;
     return false;
 }
