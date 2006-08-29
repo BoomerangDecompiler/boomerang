@@ -123,9 +123,11 @@ else
 	echo === Pentium floating point handling ===
 	# Note: these have a .sed file, for 2 known problems: 1) "%f" in scanf means float, not double
 	# 2) Don't handle two halves of a double properly for printf
-	$TESTONE pentium fbranch		4 $BOOMSW < test/source/fbranch.in4
-	$TESTONE pentium fbranch		5 $BOOMSW < test/source/fbranch.in5
-	$TESTONE pentium fbranch		6 $BOOMSW < test/source/fbranch.in6
+	# However, fbranch2.sed does not exist; there are issues with the name of the local whose address is taken
+	# Note also that fbranch has issues with returning values that depend on flags, hence fbranch2 now
+	$TESTONE pentium fbranch2		4 $BOOMSW < test/source/fbranch.in4
+	$TESTONE pentium fbranch2		5 $BOOMSW < test/source/fbranch.in5
+	$TESTONE pentium fbranch2		6 $BOOMSW < test/source/fbranch.in6
 fi
 
 echo
