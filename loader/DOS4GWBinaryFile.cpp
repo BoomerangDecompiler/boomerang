@@ -31,6 +31,10 @@
 #include <sstream>
 #include <assert.h>
 
+extern "C" {
+	int microX86Dis(void* p);			// From microX86dis.c
+}
+
 DOS4GWBinaryFile::DOS4GWBinaryFile() : m_pFileName(0)
 { }
 
@@ -66,17 +70,66 @@ ADDRESS DOS4GWBinaryFile::GetEntryPoint()
 	return (ADDRESS)(LMMH(m_pLXObjects[LMMH(m_pLXHeader->eipobjectnum)].RelocBaseAddr) + LMMH(m_pLXHeader->eip));
 }
 
-// This is a bit of a hack, but no more than the rest of Windows :-O
-// The pattern is to look for an indirect call (FF 15 opcode) to
-// exit; within 10 instructions before that should be the call
-// to WinMain (with no other calls inbetween)
-// This pattern should work for "old style" and "new style" PE executables,
-// as well as console mode PE files
 ADDRESS DOS4GWBinaryFile::GetMainEntryPoint() {
 	ADDRESS aMain = GetAddressByName ("main", true);
 	if (aMain != NO_ADDRESS)
 		return aMain;
+	aMain = GetAddressByName ("__CMain", true);
+	if (aMain != NO_ADDRESS)
+		return aMain;
 
+	// Search with this crude pattern: call, sub ebp, ebp, call __Cmain in the first 0x300 bytes
+	// Start at program entry point
+	unsigned p = LMMH(m_pLXHeader->eip);
+	unsigned lim = p + 0x300;
+	unsigned char op1, op2;
+	unsigned addr, lastOrdCall = 0;
+	bool gotSubEbp;			// True if see sub ebp, ebp
+	bool lastWasCall;		// True if the last instruction was a call
+
+	SectionInfo* si = GetSectionInfoByName("seg0");		// Assume the first section is text
+	if (si == NULL) si = GetSectionInfoByName(".text");
+	if (si == NULL) si = GetSectionInfoByName("CODE");
+	assert(si);
+	ADDRESS nativeOrigin = si->uNativeAddr;
+	unsigned textSize = si->uSectionSize;
+	if (textSize < 0x300)
+		lim = p + textSize;
+
+	while (p < lim) {
+		op1 = *(unsigned char*)(p + base);
+		op2 = *(unsigned char*)(p + base + 1);
+		//std::cerr << std::hex << "At " << p << ", ops " << (unsigned)op1 << ", " << (unsigned)op2 << std::dec << "\n";
+		switch (op1) {
+			case 0xE8: {
+				// An ordinary call
+				if (gotSubEbp) {
+					// This is the call we want. Get the offset from the call instruction
+					addr = nativeOrigin + p + 5 + LMMH(*(p + base + 1));
+					// std::cerr << "__CMain at " << std::hex << addr << "\n";
+					return addr;
+				}
+				lastOrdCall = p;
+				lastWasCall = true;
+				break;
+			}
+			case 0x2B:			// 0x2B 0xED is sub ebp,ebp
+				if (op2 == 0xED && lastWasCall)
+					gotSubEbp = true;
+				lastWasCall = false;
+				break;
+			default:
+				gotSubEbp = false;
+				lastWasCall = false;
+				break;
+		}
+		int size = microX86Dis(p + base);
+		if (size == 0x40) {
+			fprintf(stderr, "Warning! Microdisassembler out of step at offset 0x%x\n", p);
+			size = 1;
+		}
+		p += size;
+	}
 	return NO_ADDRESS;
 }
 
