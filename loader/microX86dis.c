@@ -46,7 +46,7 @@ static unsigned char opmap[256] = {
     /* A0-A7 */
     2, OPSIZE+1, 2, OPSIZE+1, 1, 1, 1, 1,
     /* A8-AF */
-    2, OPSIZE+1, 2, OPSIZE+1, 1, 1, 1, 1,
+    2, OPSIZE+1, 1, 1, 1, 1, 1, 1,
     /* B0-B7 */
     2,2,2,2,2,2,2,2,
     /* B8-BF */
