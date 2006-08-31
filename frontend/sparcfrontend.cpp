@@ -216,7 +216,7 @@ void SparcFrontEnd::case_unhandled_stub(ADDRESS addr)
  *					 delay_inst - the info summaries when decoding the delay instruction
  *					 BB_rtls - the list of RTLs currently built for the BB under construction
  *					 proc - the enclosing procedure
- *					 callSet - a set of pointers to CallStatements for procs yet to be processed
+ *					 callList - a list of pointers to CallStatements for procs yet to be processed
  *					 os - output stream for rtls
  *					 isPattern - true if the call is an idiomatic pattern (e.g. a move_call_move pattern)
  * SIDE EFFECTS:	 address may change; BB_rtls may be appended to or set NULL
