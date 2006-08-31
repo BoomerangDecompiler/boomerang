@@ -37,6 +37,7 @@ class RefExp;
 class Statement;
 class UserProc;
 class PhiAssign;
+class Type;
 
 typedef BasicBlock* PBB;
 
@@ -84,12 +85,13 @@ class DataFlow {
 		// A map from expression (Exp*) to a stack of (pointers to) Statements
 		std::map<Exp*, std::stack<Statement*>, lessExpStar> Stacks;
 
-		// Initially false, meaning that only memofs whose address expressions are primitive can be renamed.
-		// When true, all memofs can be renamed. See Mike's thesis for details.
-		bool		renameAllMemofs;
+		// Initially false, meaning that locals and parameters are not renamed and hence not propagated.
+		// When true, locals and parameters can be renamed if their address does not escape the local procedure.
+		// See Mike's thesis for details.
+		bool		renameLocalsAndParams;
 
 public:
-					DataFlow() : renameAllMemofs(false) {}		// Constructor
+					DataFlow() : renameLocalsAndParams(false) {}		// Constructor
 		/*
 	 	 * Dominance frontier and SSA code
 	 	 */
@@ -103,8 +105,8 @@ public:
 		// Rename variables in basicblock n. Return true if any change made
 		bool		renameBlockVars(UserProc* proc, int n, bool clearStacks = false);
 		bool		doesDominate(int n, int w);
-		void		setRenameAllMemofs(bool b) {renameAllMemofs = b;}
-		bool		canRenameAllMemofs() {return renameAllMemofs;}
+		void		setRenameLocalsParams(bool b) {renameLocalsAndParams = b;}
+		bool		canRenameLocalsParams() {return renameLocalsAndParams;}
 		bool		canRename(Exp* e, UserProc* proc);
 		void		convertImplicits(Cfg* cfg);
 		// Find the locations used by a live, dominating phi-function. Also removes dead phi-funcions
@@ -282,7 +284,7 @@ public:
 		void		remove(iterator it) {						// Remove the current location
 						locs.remove(it);
 					}
-		void		fromSSAform(igraph& ig, Statement* def);	// Translate out of SSA form
+		void		fromSSAform(UserProc* proc, Statement* def);	// Translate out of SSA form
 		bool		operator==(UseCollector& other);
 };		// class UseCollector
 

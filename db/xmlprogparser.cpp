@@ -506,7 +506,7 @@ void XMLProgParser::addToContext_userproc(Context *c, int e)
 			userproc->locals[stack.front()->str.c_str()] = stack.front()->type;
 			break;
 		case e_symbol:
-			userproc->symbolMap[stack.front()->exp] = stack.front()->symbol;
+			userproc->mapSymbolTo(stack.front()->exp, stack.front()->symbol);
 			break;
 		default:
 			if (e == e_unknown)

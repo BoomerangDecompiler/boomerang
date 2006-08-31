@@ -196,14 +196,14 @@ void UserProc::setParamType(int idx, Type* ty) {
 }
 
 void UserProc::renameLocal(const char *oldName, const char *newName) {
-	Type *t = locals[oldName];
-	Exp *e = expFromSymbol(oldName);
+	Type *ty = locals[oldName];
+	Exp *oldExp = expFromSymbol(oldName);
 	locals.erase(oldName);
-	//Exp *l = symbolMap[e];
-	Exp *n = Location::local(strdup(newName), this);
-	symbolMap[e] = n;
-	locals[strdup(newName)] = t;
-	//cfg->searchAndReplace(l, n);
+	Exp *oldLoc = getSymbolFor(oldExp, ty);
+	Exp *newLoc = Location::local(strdup(newName), this);
+	mapSymbolToRepl(oldExp, oldLoc, newLoc);
+	locals[strdup(newName)] = ty;
+	cfg->searchAndReplace(oldLoc, newLoc);
 }
 
 bool UserProc::searchAll(Exp* search, std::list<Exp*> &result)
@@ -866,7 +866,6 @@ void UserProc::removeStatement(Statement *stmt) {
 	}
 }
 
-#if 1
 void UserProc::insertAssignAfter(Statement* s, Exp* left, Exp* right) {
 	std::list<Statement*>::iterator it;
 	std::list<Statement*>* stmts;
@@ -891,11 +890,10 @@ void UserProc::insertAssignAfter(Statement* s, Exp* left, Exp* right) {
 	stmts->insert(it, as);
 	return;
 }
-#endif
 
+// Note: this procedure is designed for the front end, where enclosing BBs are not set up yet.
+// So this is an inefficient linear search!
 void UserProc::insertStatementAfter(Statement* s, Statement* a) {
-	// Note: this procedure is designed for the front end, where enclosing BBs are not set up yet
-	// So this is an inefficient linear search!
 	BB_IT bb;
 	for (bb = cfg->begin(); bb != cfg->end(); bb++) {
 		std::list<RTL*>::iterator rr;
@@ -1261,7 +1259,7 @@ ProcSet* UserProc::middleDecompile(ProcList* path, int indent) {
 		promoteSignature();
 	// The problem with doing locals too early is that the symbol map ends up with some {-} and some {0}
 	// Also, once named as a local, it is tempting to propagate the memory location, but that might be unsafe if the
-	// address is taken
+	// address is taken. But see mapLocalsAndParams just a page below.
 	//mapExpressionsToLocals();
 	
 	// Update the arguments for calls (mainly for the non recursion affected calls)
@@ -1279,7 +1277,7 @@ ProcSet* UserProc::middleDecompile(ProcList* path, int indent) {
 	doRenameBlockVars(2);
 	propagateStatements(convert, 2);	// Otherwise sometimes sp is not fully propagated
 	// Map locals and temporary parameters as symbols, so that they can be propagated later
-	mapLocalsAndParams();
+//	mapLocalsAndParams();				// FIXME: unsure where this belongs
 	updateArguments();
 	reverseStrengthReduction();
 	processTypes();
@@ -1369,7 +1367,7 @@ ProcSet* UserProc::middleDecompile(ProcList* path, int indent) {
 				if (VERBOSE)
 					LOG << "\nabout to restart propagations and dataflow at pass " << pass <<
 						" due to conversion of indirect to direct call(s)\n\n";
-				df.setRenameAllMemofs(false);
+				df.setRenameLocalsParams(false);
 				change |= doRenameBlockVars(0, true); 			// Initial dataflow level 0
 				LOG << "\nafter rename (2) of " << getName() << ":\n";
 				printToLog();
@@ -1411,7 +1409,7 @@ ProcSet* UserProc::middleDecompile(ProcList* path, int indent) {
 
 	if (VERBOSE)
 		LOG << "### allowing SSA renaming of all memof expressions ###\n";
-	df.setRenameAllMemofs(true);
+	df.setRenameLocalsParams(true);
 
 	// Now we need another pass to inert phis for the memofs, rename them and propagate them
 	++pass;
@@ -1468,7 +1466,7 @@ ProcSet* UserProc::middleDecompile(ProcList* path, int indent) {
 		cfg->clear();
 		std::ofstream os;
 		prog->reDecode(this);
-		df.setRenameAllMemofs(false);			// Start again with memofs
+		df.setRenameLocalsParams(false);		// Start again with memofs
 		setStatus(PROC_VISITED);				// Back to only visited progress
 		path->erase(--path->end());				// Remove self from path
 		--indent;								// Because this is not recursion
@@ -1581,7 +1579,9 @@ void UserProc::remUnusedStmtEtc() {
 
 	findFinalParameters();
 	if (!Boomerang::get()->noParameterNames) {
-		mapExpressionsToParameters();
+		// Replace the existing temporary parameters with the final ones:
+		//mapExpressionsToParameters();
+		addParameterSymbols();
 
 		if (VERBOSE) {
 			LOG << "--- after adding new parameters ---\n";
@@ -1643,15 +1643,9 @@ void UserProc::remUnusedStmtEtc(RefCounter& refCounts) {
 				ll++;
 				continue;
 			}
-			if (asLeft->getOper() == opMemOf &&
-					// Real locals are OK; don't exit now so the local can be removed if unused
-					symbolMap.find(asLeft) == symbolMap.end()
-					// Was a special test for m[x] := m[x]{0} (memory is restored; very rare!)
-					// && (!as->isAssign() || !(*new RefExp(asLeft, NULL) == *((Assign*)s)->getRight()))
-					) {
-				// Looking for m[x] := anything but m[x]{-}
+			// If it's a memof and renameable it can still be deleted
+			if (asLeft->getOper() == opMemOf && !canRename(asLeft)) {
 				// Assignments to memof-anything-but-local must always be kept.
-				// FIXME: Assignments to locals whose address escapes the procedure should also be kept
 				ll++;
 				continue;
 			}
@@ -2105,6 +2099,7 @@ void UserProc::updateReturnTypes()
 	}
 }
 
+// FIXME: unused?
 void UserProc::addToStackMap(int c, Type *ty)
 {
 	unsigned int sz = ty->getSize();
@@ -2136,138 +2131,6 @@ void UserProc::addToStackMap(int c, Type *ty)
 	stackMap[c] = ty;
 }
 
-// PENTIUM only.  Build a map of the stack frame.  Assumes range analysis has been done.
-void UserProc::buildStackMap()
-{
-	StatementList stmts;
-	getStatements(stmts);
-	for (StatementList::iterator it = stmts.begin(); it != stmts.end(); it++) {
-		Statement *stmt = *it;
-		if (stmt->isCall()) {
-			CallStatement *call = (CallStatement*)stmt;
-			for (int i = 0; i < call->getNumArguments(); i++) {
-				Type *ty = call->getArgumentType(i);
-				if (ty == NULL || !ty->resolvesToPointer())
-					continue;
-				Exp *a = call->getArgumentExp(i)->clone();
-				a = (*it)->getSavedInputRanges().substInto(a);
-				if (a->getOper() == opMinus && 
-						a->getSubExp1()->getOper() == opInitValueOf &&
-						a->getSubExp1()->getSubExp1()->isRegN(28) && 
-						a->getSubExp2()->isIntConst()) {
-					Type *pty = ty->asPointer()->getPointsTo();
-					if (VERBOSE)
-						LOG << "argument is pointer to type " << pty << "\n";
-					int c = ((Const*)a->getSubExp2())->getInt() * -8;
-					unsigned int sz = pty->getSize();
-					if (VERBOSE)
-						LOG << "buildStackMap accepted arg " << a << " size " << (int)sz << "\n";
-					addToStackMap(c, pty);
-				}
-			}
-		}
-		if (!stmt->isAssign())
-			continue;
-		Assign *asgn = (Assign*)stmt;
-		Exp *l = asgn->getLeft();
-		if (!l->isMemOf())
-			continue;
-		l = (*it)->getSavedInputRanges().substInto(l->getSubExp1()->clone());
-		l = l->simplifyArith();
-		if (l->getOper() == opMinus &&
-				l->getSubExp1()->getOper() == opInitValueOf &&
-				l->getSubExp1()->getSubExp1()->isRegN(28) && 
-				l->getSubExp2()->isIntConst()) {
-			int c = ((Const*)l->getSubExp2())->getInt() * -8;
-			unsigned int sz = asgn->getType()->getSize();
-			if (VERBOSE)
-				LOG << "buildStackMap accepted " << (int)c << " size " << (int)sz << " in stmt " << stmt->getNumber() << "\n";			
-			addToStackMap(c, new SizeType(sz));
-		}
-	}
-	
-	if (VERBOSE) {
-		LOG << "resulting stack map: ";
-		int n = 0;
-		bool first = true;
-		for (std::map<int, Type*>::iterator it1 = stackMap.begin(); it1 != stackMap.end(); it1++) {
-			if (first) {
-				n = (*it1).first; 
-				LOG << n << " ";
-				first = false;
-			}
-			for (; n < (*it1).first; n += 8)
-				LOG << ".";
-			for (; n < (*it1).first + (int)(*it1).second->getSize(); n += 8) {
-				if (n == (*it1).first)
-					LOG << ">";
-				else
-					LOG << "*";
-			}
-		}
-		LOG << " " << n << "\n";
-		LOG << "                   : ";
-		for (std::map<int, Type*>::iterator it1 = stackMap.begin(); it1 != stackMap.end(); it1++)
-			LOG << (*it1).second << " ";
-		LOG << "\n";
-	}
-}
-
-// PENTIUM only, make locals from the stack map information and replace 
-// all references to r28/r29
-void UserProc::makeLocalsFromStackMap()
-{
-	for (std::map<int, Type*>::iterator it1 = stackMap.begin(); it1 != stackMap.end(); it1++) {
-		Exp *l = newLocal((*it1).second);
-		Exp *e = Location::memOf(new Binary(opMinus, new RefExp(Location::regOf(28), NULL), new Const(-(*it1).first / 8)));
-		symbolMap[e] = l;
-		LOG << "makeLocalsFromStackMap adding symbol " << l << " for " << e << "\n";
-	}
-}
-
-// PENTIUM only, use range information to remove the stack pointer if possible.
-void UserProc::removeStackPointer()
-{
-	StatementList stmts;
-	getStatements(stmts);
-	std::set<Exp*, lessExpStar> only;
-	only.insert(Location::regOf(28));
-
-	for (StatementList::iterator it = stmts.begin(); it != stmts.end(); it++) {
-		Statement *stmt = *it;
-		if (stmt->isCall()) {
-			CallStatement *call = (CallStatement*)stmt;
-			for (int i = 0; i < call->getNumArguments(); i++) {
-				Exp *e = call->getArgumentExp(i);
-				e = stmt->getSavedInputRanges().substInto(e, &only);
-				e = e->simplifyArith();
-				call->setArgumentExp(i, e);
-			}
-		}
-		if (!stmt->isAssign())
-			continue;
-		Assign *asgn = (Assign*)stmt;
-		if (asgn->getLeft()->isMemOf()) {
-			Exp *e = asgn->getLeft()->getSubExp1()->clone();
-			e = stmt->getSavedInputRanges().substInto(e, &only);
-			e = e->simplifyArith();
-			asgn->getLeft()->setSubExp1(e);
-		}
-		Exp *e = asgn->getRight()->clone();
-		e = stmt->getSavedInputRanges().substInto(e, &only);
-		e = e->simplifyArith();
-		asgn->setRight(e);
-	}
-	for (StatementList::iterator it = stmts.begin(); it != stmts.end(); it++) {
-		Statement *stmt = *it;
-		if (stmt->isAssign() && ((Assign*)stmt)->getLeft()->isRegN(28)) {
-			removeStatement(stmt);
-			continue;
-		}
-		stmt->searchAndReplace(new Unary(opInitValueOf, Location::regOf(28)), Location::regOf(28));
-
-	}
-}
 
 /*
  * Find the procs the calls point to.
@@ -2355,19 +2218,24 @@ void UserProc::findFinalParameters() {
 	if (signature->isForced()) {
 		// Copy from signature
 		int n = signature->getNumParams();
+		ImplicitConverter ic(cfg);
 		for (int i=0; i < n; ++i) {
 			Exp* paramLoc = signature->getParamExp(i)->clone();		// E.g. m[r28 + 4]
 			LocationSet components;
 			LocationSet::iterator cc;
 			paramLoc->addUsedLocs(components);
-			for (cc = components.begin(); cc != components.end(); ++cc)
-				if (*cc != paramLoc)								// Don't subscript outer level
+			for (cc = components.begin(); cc != components.end(); ++cc) {
+				if (*cc != paramLoc) {								// Don't subscript outer level
 					paramLoc->expSubscriptVar(*cc, NULL);			// E.g. r28 -> r28{-}
+					paramLoc->accept(&ic);							// E.g. r28{-} -> r28{0}
+				}
+			}
 			ImplicitAssign* ia = new ImplicitAssign(signature->getParamType(i), paramLoc);
 			parameters.append(ia);
 			const char* name = signature->getParamName(i);
 			Exp* param = Location::param(name, this);
-			symbolMap[paramLoc] = param;							// Update name map
+			RefExp* reParamLoc = new RefExp(paramLoc, cfg->findImplicitAssign(paramLoc));
+			mapSymbolTo(reParamLoc, param);							// Update name map
 		}
 		return;
 	}
@@ -2385,6 +2253,7 @@ void UserProc::findFinalParameters() {
 		// Assume that all parameters will be m[]{0} or r[]{0}, and in the implicit definitions at the start of the
 		// program
 		if (!s->isImplicit())
+			// Note: phis can get converted to assignments, but I hope that this is only later on: check this!
 			break;					// Stop after reading all implicit assignments
 		Exp *e = ((ImplicitAssign*)s)->getLeft();
 		if (signature->findParam(e) == -1) {
@@ -2452,7 +2321,7 @@ void UserProc::findFinalParameters() {
 			Type* ty = ((ImplicitAssign*)s)->getType();
 			// Add this parameter to the signature (for now; creates parameter names)
 			addParameter(e, ty);
-			// Insert it into the parameters StatementList
+			// Insert it into the parameters StatementList, in sensible order
 			insertParameter(e, ty);
 		}
 	}
@@ -2460,6 +2329,7 @@ void UserProc::findFinalParameters() {
 	Boomerang::get()->alert_decompile_debug_point(this, "after find final parameters.");
 }
 
+#if 0		// FIXME: not currently used; do we want this any more?
 void UserProc::trimParameters(int depth) {
 
 	if (signature->isForced())
@@ -2473,8 +2343,7 @@ void UserProc::trimParameters(int depth) {
 
 	// find parameters that are referenced (ignore calls to this)
 	int nparams = signature->getNumParams();
-	// int totparams = nparams + signature->getNumImplicitParams();
-int totparams = nparams;
+	int totparams = nparams;
 	std::vector<Exp*> params;
 	bool referenced[64];
 	assert(totparams <= (int)(sizeof(referenced)/sizeof(bool)));
@@ -2539,6 +2408,7 @@ int totparams = nparams;
 		}
 	}
 }
+#endif
 
 void UserProc::removeReturn(Exp *e) {
 	if (theReturnStatement)
@@ -2844,17 +2714,17 @@ void UserProc::replaceExpressionsWithGlobals() {
 void UserProc::replaceExpressionsWithSymbols() {
 }
 
-// FIXME: this function is largely unused now, since expressions are not "replaced" with parameters any more. They
-// retain their original form (e.g. m[esp{-} + 4]) and are mapped to the symbolic parameter (e.g. "argc").
-// There is still the a[m[x]] stuff, which is likely needed by the ad-hoc TA code
+#if 0
+// FIXME: the first part of the below is only for ADHOC_TYPE_ANALYSIS
+// FIXME: I don't think this is needed any more
 void UserProc::mapExpressionsToParameters() {
 	StatementList stmts;
 	getStatements(stmts);
 
-	Boomerang::get()->alert_decompile_debug_point(this, "before mapping expressions to params");
+	Boomerang::get()->alert_decompile_debug_point(this, "before mapping expressions to final params");
 
 	if (VERBOSE)
-		LOG << "mapping expressions to parameters\n";
+		LOG << "mapping expressions to final parameters\n";
 
 	bool found = false;
 	StatementList::iterator it;
@@ -2892,27 +2762,42 @@ void UserProc::mapExpressionsToParameters() {
 		doRenameBlockVars(0, true);
 	}
 
-	// replace expressions in regular statements with parameters
+	// map expressions in regular statements to parameter symbols
 	for (it = stmts.begin(); it != stmts.end(); it++) {
 		Statement* s = *it;
 		for (unsigned i = 0; i < signature->getNumParams(); i++) {
 			Exp *r = signature->getParamExp(i)->clone();
 			r = r->expSubscriptAllNull();
-			// Remove the outer {0}, for where it appears on the LHS, and because we want to have param1{0}
+			// Remove the outer {-}, for where it appears on the LHS, and because we want to have param1{0}
 			if (r->getOper() == opSubscript)
 				r = r->getSubExp1();
 			Location* replace = Location::param( strdup((char*)signature->getParamName(i)), this);
 			Exp *n;
-			if (s->search(r, n)) {
+			RefExp* re = new RefExp(r, cfg->findTheImplicitAssign(r));
+			if (s->search(re, n)) {
 				if (VERBOSE)
-					LOG << "mapping " << r << " to " << replace << " in " << s << "\n";
-				symbolMap[r] = replace;			// Add to symbol map
-				// Note: don't add to locals, since otherwise the back end will declare it twice
+					LOG << "mapping " << re << " to " << replace << " in " << s << "\n";
+				mapSymbolTo(re, replace);			// Add to symbol map
+				// Note: don't add to locals, since otherwise the back end will declare it as a shadowing local
 			}
 		}
 	}
 
 	Boomerang::get()->alert_decompile_debug_point(this, "after mapping expressions to params");
+}
+#endif
+
+void UserProc::addParameterSymbols() {
+	StatementList::iterator it;
+	ImplicitConverter ic(cfg);
+	int i=0;
+	for (it = parameters.begin(); it != parameters.end(); ++it, ++i) {
+		Exp* lhs = ((Assignment*)*it)->getLeft();
+		lhs = lhs->expSubscriptAllNull();
+		lhs = lhs->accept(&ic);
+		Location* to = Location::param(strdup((char*)signature->getParamName(i)), this);
+		mapSymbolTo(lhs, to);
+	}
 }
 
 // Return an expression that is equivilent to e in terms of symbols. Creates new symbols as needed.
@@ -2925,7 +2810,7 @@ Exp *UserProc::getSymbolExp(Exp *le, Type *ty, bool lastPass) {
 			le->getSubExp1()->getSubExp1()->isSubscript() &&
 			le->getSubExp1()->getSubExp1()->getSubExp1()->isRegN(signature->getStackRegister()) &&
 			le->getSubExp1()->getSubExp2()->isIntConst()) {
-		for (SymbolMapType::iterator it = symbolMap.begin(); it != symbolMap.end(); it++) {
+		for (SymbolMap::iterator it = symbolMap.begin(); it != symbolMap.end(); it++) {
 			if ((*it).second->isLocal()) {
 				char *nam = ((Const*)(*it).second->getSubExp1())->getStr();
 				if (locals.find(nam) != locals.end()) {
@@ -2961,14 +2846,19 @@ Exp *UserProc::getSymbolExp(Exp *le, Type *ty, bool lastPass) {
 				ty = new VoidType();			// HACK MVE
 		}
 
+		// the default of just assigning an int type is bad..  if the locals is not an int then assigning it this
+		// type early results in aliases to this local not being recognised 
 		if (ty) {
-			// the default of just assigning an int type is bad..  if the locals is not an int then assigning it this
-			// type early results in aliases to this local not being recognised 
-			e = newLocal(ty->clone());
-			symbolMap[le->clone()] = e;
+			Exp* base = le;
+			if (le->isSubscript()) base = ((RefExp*)le)->getSubExp1();
+			e = newLocal(ty->clone(), le);
+			mapSymbolTo(le->clone(), e);
 			e = e->clone();
 		}
 	} else {
+#if 0	// This code was assuming that locations only every have one type associated with them. The reality is that
+		// compilers and machine language programmers sometimes re-use the same locations with different types.
+		// Let type analysis sort out which live ranges have which type
 		e = symbolMap[le]->clone();
 		if (e->getOper() == opLocal && e->getSubExp1()->getOper() == opStrConst) {
 			std::string name = ((Const*)e->getSubExp1())->getStr();
@@ -2991,10 +2881,14 @@ Exp *UserProc::getSymbolExp(Exp *le, Type *ty, bool lastPass) {
 				return new TypedExp(ty, new Binary(opMemberAccess, e, new Const(nam)));
 			}
 		}
+#else
+		e = getSymbolFor(le, ty);
+#endif
 	}
 	return e;
 }
 
+// Not used with DFA Type Analysis; the equivalent thing happens in mapLocalsAndParams() now
 void UserProc::mapExpressionsToLocals(bool lastPass) {
 	StatementList stmts;
 	getStatements(stmts);
@@ -3158,37 +3052,7 @@ void UserProc::searchRegularLocals(OPER minusOrPlus, bool lastPass, int sp, Stat
 	}
 }
 
-bool UserProc::nameStackLocations() {
-	Exp *match = signature->getStackWildcard();
-	if (match == NULL) return false;
-
-	bool found = false;
-	StatementList stmts;
-	getStatements(stmts);
-	// create a symbol for every memory reference
-	StatementList::iterator it;
-	for (it = stmts.begin(); it != stmts.end(); it++) {
-		Statement* s = *it;
-		Exp *memref; 
-		if (s->search(match, memref)) {
-			if (symbolMap.find(memref) == symbolMap.end()) {
-				if (VERBOSE)
-					LOG << "stack location found: " << memref << "\n";
-				symbolMap[memref->clone()] = newLocal(new IntegerType());
-			}
-			assert(symbolMap.find(memref) != symbolMap.end());
-			Location* locl = (Location*)symbolMap[memref]->getSubExp1();
-			std::string name = ((Const*)locl)->getStr();
-			if (memref->getType() != NULL)
-				locals[name] = memref->getType();
-			found = true;
-		}
-	}
-	delete match;
-	return found;
-}
-
-// Deprecated. Eventually replace with mapRegistersToLocals() when ad-hoc TA removed
+// Deprecated; ad-hoc TA only. Eventually replace with mapRegistersToLocals() when ad-hoc TA removed
 bool UserProc::nameRegisters() {
 	static Exp *regOfWild = Location::regOf(new Terminal(opWild));
 	std::set<int> usedRegs;
@@ -3261,7 +3125,8 @@ bool UserProc::nameRegisters() {
 			ty = types[*it];
 		if (ty == NULL)
 			ty = new SizeType(32); // TODO: get right size for reg
-		symbolMap[Location::regOf(*it)] = newLocal(ty);
+		Exp* regExp = Location::regOf(*it);
+		mapSymbolTo(regExp, newLocal(ty, regExp));
 	}
 
 	Boomerang::get()->alert_decompile_debug_point(this, "after naming registers");
@@ -3398,13 +3263,28 @@ void UserProc::promoteSignature() {
 	signature = signature->promote(this);
 }
 
-Exp* UserProc::newLocal(Type* ty, char* nam /* = NULL */) {
+
+char* UserProc::newLocalName(Exp* e) {
+	std::ostringstream ost;
+	if (e->isSubscript() && ((RefExp*)e)->getSubExp1()->isRegOf()) {
+		// Assume that it's better to know what register this location was created from
+		char* regName = getRegName(((RefExp*)e)->getSubExp1());
+		int tag = 0;
+		do {
+			ost.str("");
+			ost << regName << "_" << ++tag;
+		} while (locals.find(ost.str()) != locals.end());
+		return (char*) ost.str().c_str();
+	}
+	ost << "local" << nextLocal++;
+	return (char*) ost.str().c_str();
+}
+
+Exp* UserProc::newLocal(Type* ty, Exp* e, char* nam /* = NULL */) {
 	std::string name;
-	if (nam == NULL) {
-		std::ostringstream os;
-		os << "local" << nextLocal++;
-		name = os.str();
-	} else
+	if (nam == NULL)
+		name = newLocalName(e);
+	else
 		name = nam;				// Use provided name
 	locals[name] = ty;
 	if (ty == NULL) {
@@ -3418,9 +3298,10 @@ Exp* UserProc::newLocal(Type* ty, char* nam /* = NULL */) {
 
 void UserProc::addLocal(Type *ty, const char *nam, Exp *e)
 {
-	assert(symbolMap.find(e) == symbolMap.end());
-	symbolMap[e] = Location::local(strdup(nam), this);
-	assert(locals.find(nam) == locals.end());
+	// symbolMap is a multimap now; you might have r8->o0 for integers and r8->o0_1 for char*
+	//assert(symbolMap.find(e) == symbolMap.end());
+	mapSymbolTo(e, Location::local(strdup(nam), this));
+	//assert(locals.find(nam) == locals.end());		// Could be r10{20} -> o2, r10{30}->o2 now
 	locals[nam] = ty;
 }
 
@@ -3450,16 +3331,60 @@ Type *UserProc::getParamType(const char *nam)
 void UserProc::setExpSymbol(const char *nam, Exp *e, Type* ty)
 {
 	TypedExp *te = new TypedExp(ty, Location::local(strdup(nam), this));
-	symbolMap[e] = te;
+	mapSymbolTo(e, te);
+}
+
+void UserProc::mapSymbolToRepl(Exp* from, Exp* oldTo, Exp* newTo) {
+	removeSymbolMapping(from, oldTo);
+	mapSymbolTo(from, newTo);		// The compiler could optimise this call to a fall through
 }
 
 void UserProc::mapSymbolTo(Exp* from, Exp* to) {
-	symbolMap[from] = to;
+	SymbolMap::iterator it = symbolMap.find(from);
+	while (it != symbolMap.end() && *it->first == *from) {
+		if (*it->second == *to)
+			return;				// Already in the multimap
+		++it;
+	}
+	std::pair<Exp*, Exp*> pr;
+	pr.first = from;
+	pr.second = to;
+	symbolMap.insert(pr);
 }
 
+// FIXME: is this the same as lookupSym() now?
+Exp* UserProc::getSymbolFor(Exp* from, Type* ty) {
+	SymbolMap::iterator ff = symbolMap.find(from);
+	while (ff != symbolMap.end() && *ff->first == *from) {
+		Exp* currTo = ff->second;
+		assert(currTo->isLocal() || currTo->isParam());
+		char* name = ((Const*)((Location*)currTo)->getSubExp1())->getStr();
+		Type* currTy = getLocalType(name);
+		if (currTy == NULL) currTy = getParamType(name);
+		if (currTy && currTy->isCompatibleWith(ty))
+			return currTo;
+		++ff;
+	}
+	return NULL;
+}
+
+void UserProc::removeSymbolMapping(Exp* from, Exp* to) {
+	SymbolMap::iterator it = symbolMap.find(from);
+	while (it != symbolMap.end() && *it->first == *from) {
+		if (*it->second == *to) {
+			symbolMap.erase(it);
+			return;
+		}
+		it++;
+	}
+}
+
+
+
+// NOTE: linear search!!
 Exp *UserProc::expFromSymbol(const char *nam)
 {
-	for (SymbolMapType::iterator it = symbolMap.begin(); it != symbolMap.end(); it++) {
+	for (SymbolMap::iterator it = symbolMap.begin(); it != symbolMap.end(); it++) {
 		Exp* e = it->second;
 		if (e->isLocal() && !strcmp(((Const*)((Location*)e)->getSubExp1())->getStr(), nam))
 			return it->first;
@@ -3476,7 +3401,7 @@ const char* UserProc::getLocalName(int n) {
 }
 
 char* UserProc::getSymbolName(Exp* e) {
-	SymbolMapType::iterator it = symbolMap.find(e);
+	SymbolMap::iterator it = symbolMap.find(e);
 	if (it == symbolMap.end()) return NULL;
 	Exp* loc = it->second;
 	if (!loc->isLocal() && !loc->isParam()) return NULL;
@@ -3549,19 +3474,19 @@ void UserProc::removeUnusedLocals() {
 			// outside this procedure. With the assign, it can be deleted, but with the return or call statements, it
 			// can't.
 			if ((s->isReturn() || s->isCall() || !s->definesLoc(u))) {
-				char* sym = findLocal(u);
-				std::string name(sym);
+				if (!u->isLocal()) continue;
+				std::string name(((Const*)((Location*)u)->getSubExp1())->getStr());
 				usedLocals.insert(name);
 				if (DEBUG_UNUSED)
-					LOG << "counted local " << sym << " in " << s << "\n";
+					LOG << "counted local " << name << " in " << s << "\n";
 			}
 		}
-		if (s->isAssignment() && ((Assignment*)s)->getLeft()->isLocal()) {
+		if (s->isAssignment() && !s->isImplicit() && ((Assignment*)s)->getLeft()->isLocal()) {
 			Assignment* as = (Assignment*)s;
 			Const* c = (Const*)((Unary*)as->getLeft())->getSubExp1();
 			std::string name(c->getStr());
 			usedLocals.insert(name);
-			if (VERBOSE) LOG << "Counted local " << name.c_str() << " on left of " << s << "\n";
+			if (DEBUG_UNUSED) LOG << "counted local " << name.c_str() << " on left of " << s << "\n";
 
 		}
 	}
@@ -3587,7 +3512,8 @@ void UserProc::removeUnusedLocals() {
 		LocationSet::iterator ll;
 		s->getDefinitions(ls);
 		for (ll = ls.begin(); ll != ls.end(); ++ll) {
-			char* name = findLocal(*ll);
+			Type* ty = s->getTypeFor(*ll);
+			char* name = findLocal(*ll, ty);
 			if (name == NULL) continue;
 			std::string str(name);
 			if (removes.find(str) != removes.end()) {
@@ -3606,7 +3532,7 @@ void UserProc::removeUnusedLocals() {
 	for (std::set<std::string>::iterator it1 = removes.begin(); it1 != removes.end(); )
 		locals.erase(*it1++);
 	// Also remove them from the symbols, since symbols are a superset of locals at present
-	for (SymbolMapType::iterator sm = symbolMap.begin(); sm != symbolMap.end(); ) {
+	for (SymbolMap::iterator sm = symbolMap.begin(); sm != symbolMap.end(); ) {
 		Exp* mapsTo = sm->second;
 		if (mapsTo->isLocal()) {
 			char* tmpName = ((Const*)((Location*)mapsTo)->getSubExp1())->getStr();
@@ -3640,7 +3566,6 @@ void UserProc::fromSSAform() {
 	StatementList stmts;
 	getStatements(stmts);
 	StatementList::iterator it;
-	igraph ig;
 
 	if (DFA_TYPE_ANALYSIS) {
 		for (it = stmts.begin(); it != stmts.end(); it++) {
@@ -3652,17 +3577,28 @@ void UserProc::fromSSAform() {
 	}
 
 
-	// First split the live ranges where needed, i.e. when the type of a subscripted variable is different to
-	// its previous type. Start at the top, because we don't want to rename parameters (e.g. argc)
-	std::map<Exp*, Type*, lessExpStar> firstTypes;
-	std::map<Exp*, Type*, lessExpStar>::iterator ff;
+	// First split the live ranges where needed by reason of type incompatibility, i.e. when the type of a subscripted
+	// variable is different to its previous type. Start at the top, because we don't want to rename parameters (e.g.
+	// argc)
+	typedef std::pair<Type*, Exp*> FirstTypeEnt;
+	typedef std::map<Exp*, FirstTypeEnt, lessExpStar> FirstTypesMap;
+	FirstTypesMap firstTypes;
+	FirstTypesMap::iterator ff;
+	ConnectionGraph ig;				// The interference graph; these can't have the same local variable
+	ConnectionGraph pu;				// The Phi Unites: these need the same local variable or copies
+#if 0
 	// Start with the parameters. There is not always a use of every parameter, yet that location may be used with
 	// a different type (e.g. envp used as int in test/sparc/fibo-O4)
 	int n = signature->getNumParams();
+	
 	for (int i=0; i < n; i++) {
-		Exp* namedParam = Location::param(signature->getParamName(i));
-		firstTypes[namedParam] = signature->getParamType(i);
+		Exp* paramExp = signature->getParamExp(i);
+		FirstTypeEnt fte;
+		fte.first = signature->getParamType(i);
+		fte.second = new RefExp(paramExp, cfg->findTheImplicitAssign(paramExp));
+		firstTypes[paramExp] = fte;
 	}
+#endif
 	int progress = 0;
 	for (it = stmts.begin(); it != stmts.end(); it++) {
 		if (++progress > 2000) {
@@ -3681,46 +3617,158 @@ void UserProc::fromSSAform() {
 			if (ty == NULL)				// Can happen e.g. when getting the type for %flags
 				ty = new VoidType();
 			ff = firstTypes.find(base);
+			RefExp* ref = new RefExp(base, s);
 			if (ff == firstTypes.end()) {
 				// There is no first type yet. Record it.
-				firstTypes[base] = ty;
-			} else if (ff->second && !ty->isCompatibleWith(ff->second)) {
-				if (VERBOSE)
-					LOG << "not compatible with type " << ff->second << ".\n";
+				FirstTypeEnt fte;
+				fte.first = ty;
+				fte.second = ref;
+				firstTypes[base] = fte;
+			} else if (ff->second.first && !ty->isCompatibleWith(ff->second.first)) {
+				if (DEBUG_LIVENESS)
+					LOG << "def of " << base << " at " << s->getNumber() << " type " << ty <<
+						" is not compatible with first type " << ff->second.first << ".\n";
 				// There already is a type for base, and it is different to the type for this definition.
 				// Record an "interference" so it will get a new variable
-				if (!ty->isVoid()) {  // just ignore void interferences
-					RefExp* ref = new RefExp(base, s);
-					ig[ref] = getSymbolExp(ref, ty);
-				}
+				if (!ty->isVoid())		// just ignore void interferences ??!!
+					ig.connect(ref, ff->second.second);
 			}
 		}
 	}
 	// Find the interferences generated by more than one version of a variable being live at the same program point
 	cfg->findInterferences(ig);
 
+	// Find the set of locations that are "united" by phi-functions
+	// FIXME: are these going to be trivially predictable?
+	findPhiUnites(pu);
 
+	ConnectionGraph::iterator ii;
 	if (DEBUG_LIVENESS) {
-		LOG << "  ig interference graph:\n";
-		igraph::iterator ii;
+		LOG << "## ig interference graph:\n";
 		for (ii = ig.begin(); ii != ig.end(); ii++)
-			LOG << "  ig " << ii->first << " -> " << ii->second << "\n";
+			LOG << "   ig " << ii->first << " -> " << ii->second << "\n";
+		LOG << "## pu phi unites graph:\n";
+		for (ii = pu.begin(); ii != pu.end(); ii++)
+			LOG << "   pu " << ii->first << " -> " << ii->second << "\n";
+		LOG << "  ---\n";
 	}
 
-	// First rename the variables (including phi's, but don't remove).  The below could be replaced by
-	//  replaceExpressionsWithSymbols() now, except that then references don't get removed.
+	// Choose one of each interfering location to give a new name to
+	
+	for (ii = ig.begin(); ii != ig.end(); ++ii) {
+		RefExp* r1, *r2;
+		r1 = (RefExp*)ii->first;
+		r2 = (RefExp*)ii->second;			// r1 -> r2 and vice versa
+		char* name1 = lookupSymFromRefAny(r1);
+		char* name2 = lookupSymFromRefAny(r2);
+		if (strcmp(name1, name2) != 0)
+			continue;						// Already different names, probably because of the redundant mapping
+		RefExp* rename = NULL;
+		if (r1->isImplicitDef())
+			// If r1 is an implicit definition, don't rename it (it is probably a parameter, and should retain its
+			// current name)
+			rename = r2;
+		else if (r2->isImplicitDef())
+			rename = r1; 		// Ditto for r2
+		if (rename == NULL) {
+#if 0		// By preferring to rename the destination of the phi, we have more chance that all the phi operands will
+			// end up being the same, so the phi can end up as one copy assignment
+
+			// In general, it is best to rename the location (r1 or r2) which has the smallest number of uniting
+			// connections (or at least, this seems like a reasonable criterion)
+			int n1 = pu.count(r1);
+			int n2 = pu.count(r2);
+			if (n2 <= n1)
+#else
+			Statement* def2 = r2->getDef();
+			if (def2->isPhi())			// Prefer the destinations of phis
+#endif
+				rename = r2;
+			else
+				rename = r1;
+		}
+		Type *ty;
+		if (ADHOC_TYPE_ANALYSIS)
+			ty = rename->getType();
+		else
+			ty = rename->getDef()->getTypeFor(rename->getSubExp1());
+		Exp* local = newLocal(ty, rename);
+		if (DEBUG_LIVENESS)
+			LOG << "renaming " << rename << " to " << local << "\n";
+		mapSymbolTo(rename, local);
+	}
+
+	// Implement part of the Phi Unites list, where renamings or parameters have broken them, by renaming
+	// The rest of them will be done as phis are removed
+	// The idea is that where l1 and l2 have to unite, and exactly one of them already has a local/name, you can
+	// implement the unification by giving the unnamed one the same name as the named one, as long as they don't
+	// interfere
+	for (ii = pu.begin(); ii != pu.end(); ++ii) {
+		RefExp* r1 = (RefExp*)ii->first;
+		RefExp* r2 = (RefExp*)ii->second;
+		char* name1 = lookupSymFromRef(r1);
+		char* name2 = lookupSymFromRef(r2);
+		if (name1 && !name2 && !ig.isConnected(r1, r2)) {
+			// There is a case where this is unhelpful, and it happen in test/pentium/fromssa2. We have renamed the
+			// destination of the phi to ebx_1, and that leaves the two phi operands as ebx. However, we attempt to
+			// unite them here, which will cause one of the operands to become ebx_1, so the neat oprimisation of
+			// replacing the phi with one copy doesn't work. The result is an extra copy.
+			// So check of r1 is a phi and r2 one of its operands, and all other operands for the phi have the same
+			// name. If so, don't rename.
+			Statement* def1 = r1->getDef();
+			if (def1->isPhi()) {
+				bool allSame = true;
+				bool r2IsOperand = false;
+				char* firstName = NULL;
+				PhiAssign::iterator rr;
+				PhiAssign* pi = (PhiAssign*)def1;
+				for (rr = pi->begin(); rr != pi->end(); ++rr) {
+					RefExp* re = new RefExp(rr->e, rr->def);
+					if (*re == *r2)
+						r2IsOperand = true;
+					if (firstName == NULL)
+						firstName = lookupSymFromRefAny(re);
+					else if (strcmp(firstName, lookupSymFromRefAny(re)) != 0) {
+						allSame = false;
+						break;
+					}
+				}
+				if (allSame && r2IsOperand)
+					continue;						// This situation has happened, don't map now
+			}
+			mapSymbolTo(r2, Location::local(name1, this));
+			continue;
+		}
+	}
+
+
+/*	*	*	*	*	*	*	*	*	*	*	*	*	*	*\
+ *														*
+ *	 IR gets changed with hard locals and params here	*
+ *														*
+\*	*	*	*	*	*	*	*	*	*	*	*	*	*	*/
+
+	// First rename the variables (including phi's, but don't remove).
 	// NOTE: it is not possible to postpone renaming these locals till the back end, since the same base location
-	// may require different names at different locations, e.g. r28{-} is local0, r28{16} is local1
+	// may require different names at different locations, e.g. r28{0} is local0, r28{16} is local1
+	// Update symbols and parameters, particularly for the stack pointer inside memofs.
+	// NOTE: the ordering of the below operations is critical! Re-ordering may well prevent e.g. parameters from
+	// renaming successfully.
+	nameParameterPhis();
+	mapLocalsAndParams();
+	mapParameters();
+	removeSubscriptsFromSymbols();
+	removeSubscriptsFromParameters();
 	for (it = stmts.begin(); it != stmts.end(); it++) {
 		Statement* s = *it;
-		s->fromSSAform(ig);
+		s->replaceSubscriptsWithLocals();
 	}
 
 	// Now remove the phis
 	for (it = stmts.begin(); it != stmts.end(); it++) {
 		Statement* s = *it;
 		if (!s->isPhi()) continue;
-		// Check that the base variables are all the same
+		// Check if the base variables are all the same
 		PhiAssign* pa = (PhiAssign*)s;
 		if (pa->begin() == pa->end()) {
 			// no params to this phi, just remove it
@@ -3750,8 +3798,7 @@ void UserProc::fromSSAform() {
 				if (DEBUG_LIVENESS || DEBUG_UNUSED)
 					LOG << "removing phi: left and all refs same or 0: " << s << "\n";
 				// Just removing the refs will work, or removing the whole phi
-				// NOTE: Removing the phi here may cause other statments to be not used. Soon I want to remove the
-				// phi's earlier, so this code can be removed. - MVE
+				// NOTE: Removing the phi here may cause other statments to be not used.
 				removeStatement(s);
 			} else
 				// Need to replace the phi by an expression,
@@ -3760,13 +3807,25 @@ void UserProc::fromSSAform() {
 				pa->convertToAssign(first->clone());
 		}
 		else {
-			// Need new local. Under certain circumstances (e.g. sparc/fromssa2) we needed a copy statement, but most
-			// times that just creates more locals than is necessary.
-			// TODO: find a safe way of doing the "optimisation" below
-#if 1
-			// Just replace all the definitions the phi statement refers to with tempLoc.
-			// WRONG! There can be other uses of those definitions. Even if these are changed, what if we have to
-			// change definition to two or more new variables? So really need copies, unless something clever is done.
+			// Need new local(s) for phi operands that have different names from the lhs
+#if 0		// The big problem with this idea is that it extends the range of the phi destination, and it could "pass"
+			// definitions and uses of that variable. It could be that the dominance numbers could solve this, but it
+			// seems unlikely
+			Exp* lhs = pa->getLeft();
+			RefExp* wrappedLeft = new RefExp(lhs, pa)
+			char* lhsName = lookupSymForRef(wrappedLeft);
+			PhiAssign::iterator rr;
+			for (rr = pa->begin(); rr != pa->end(); rr++) {
+				RefExp* operand = new RefExp(rr->e, rr->def);
+				char* operName = lookupSymFromRef(operand);
+				if (strcmp(operName, lhsName) == 0)
+					continue;					// No need for copies for this operand
+				// Consider possible optimisation here: if have a = phi(b, b, b, b, a), then there is only one copy
+				// needed. If by some fluke the program already had a=b after the definition for b, then no copy is
+				// needed at all. So a map of existing copies could be useful
+				insertAssignAfter(rr->def, lhs, operand);
+			}
+#else		// This way is costly in copies, but has no problems with extending live ranges
 			// Exp* tempLoc = newLocal(pa->getType());
 			Exp* tempLoc = getSymbolExp(new RefExp(pa->getLeft(), pa), pa->getType());
 			if (DEBUG_LIVENESS)
@@ -3779,58 +3838,66 @@ void UserProc::fromSSAform() {
 			}
 			// Replace the RHS of the phi with tempLoc
 			pa->convertToAssign(tempLoc);
-#else
-			// We can often just use the LHS of the phiassign. The problem is that the variable at the left of the
-			// phiassign can overlap with other versions of the same named variable. It may have something to do
-			// with one of the arguments of the phi statement being in the interference graph.
-			// The proper solution would be to change the igraph so it is obvious what interferes with what.
-			// Replace the LHS of the definitions with the left of the PhiAssign
-			Exp* left = pa->getLeft();
-			if (DEBUG_LIVENESS)
-				LOG << "phi statement " << s << " requires back substitution, using " << left << "\n";
-			// For each definition ref'd in the phi
-			PhiAssign::iterator rr;
-			for (rr = pa->begin(); rr != pa->end(); rr++) {
-				// Replace the LHS of the definitions (use setLeftFor, since some could be calls with more than one
-				// return) with left
-                if (rr->def)
-				    rr->def->setLeftFor(rr->e, left);
-			}
 #endif
 		}
 	}
 
 
-	// Now remove subscripts from the symbol map
-	SymbolMapType::iterator ss;
-	SymbolMapType temp(symbolMap);		// Have to copy to a new map, since the ordering is changed by stripping subs!
-	symbolMap.clear();
-	for (ss = temp.begin(); ss != temp.end(); ++ss) {
-		bool allZero;
-		Exp* from = ss->first->removeSubscripts(allZero);
-		if (allZero)
-			symbolMap[from] = ss->second;		// Put the unsubscripted version into the symbolMap
-		else
-			// Put the subscripted version back, e.g. r24{39}, so it will be declared in the decompiled output (e.g.
-			// local10 /* r24{39} */. This one will be the result of a liveness overlap, and the local is already
-			symbolMap[ss->first] = ss->second;	// modified into the IR.
-	}
-
-	// Also the parameters
-	StatementList::iterator pp;
-	for (pp = parameters.begin(); pp != parameters.end(); ++pp) {
-		bool allZero;
-		Exp* lhs = ((Assignment*)*pp)->getLeft();
-		Exp* clean = lhs->clone()->removeSubscripts(allZero);
-		if (allZero)
-			((Assignment*)*pp)->setLeft(clean);
-		// Else leave them alone
-	}
 	if (cfg->getNumBBs() >= 100)		// Only for the larger procs
 		std::cout << "\n";
 
 	Boomerang::get()->alert_decompile_debug_point(this, "after transforming from SSA form");
 }
+
+void UserProc::mapParameters() {
+	// Replace the parameters with their mappings
+	StatementList::iterator pp;
+	for (pp = parameters.begin(); pp != parameters.end(); ++pp) {
+		Exp* lhs = ((Assignment*)*pp)->getLeft();
+		char* mappedName = lookupParam(lhs);
+		if (mappedName == NULL) {
+			LOG << "WARNING! No symbol mapping for parameter " << lhs << "\n";
+			bool allZero;
+			Exp* clean = lhs->clone()->removeSubscripts(allZero);
+			if (allZero)
+				((Assignment*)*pp)->setLeft(clean);
+			// Else leave them alone
+		} else
+			((Assignment*)*pp)->setLeft(Location::param(mappedName, this));
+	}
+}
+
+void UserProc::removeSubscriptsFromSymbols() {
+	// Basically, use the symbol map to map the symbols in the symbol map!
+	// However, do not remove subscripts from the outer level; they are still needed for comments in the output and also
+	// for when removing subscripts from parameters (still need the {0})
+	// Since this will potentially change the ordering of entries, need to copy the map
+	SymbolMap sm2 = symbolMap;				// Object copy
+	SymbolMap::iterator it;
+	symbolMap.clear();
+	ExpSsaXformer esx(this);
+	for (it = sm2.begin(); it != sm2.end(); ++it) {
+		Exp* from = it->first;
+		if (from->isSubscript()) {
+			// As noted above, don't touch the outer level of subscripts
+			Exp*& sub = ((RefExp*)from)->refSubExp1();
+			sub = sub->accept(&esx);
+		} else
+			from = it->first->accept(&esx);
+		mapSymbolTo(from, it->second);
+	}
+}
+
+void UserProc::removeSubscriptsFromParameters() {
+	StatementList::iterator it;
+	ExpSsaXformer esx(this);
+	for (it = parameters.begin(); it != parameters.end(); ++it) {
+		Exp* left = ((Assignment*)*it)->getLeft();
+		left = left->accept(&esx);
+		((Assignment*)*it)->setLeft(left);
+	}
+}
+
 
 static Binary allEqAll(opEquals,
 	new Terminal(opDefineAll),
@@ -4368,7 +4435,8 @@ bool UserProc::ellipsisProcessing() {
 // implicit assignment for the location. Thus, during and after type analysis, you can find the type of any
 // location by following the reference to the definition
 // Note: you need something recursive to make sure that child subexpressions are processed before parents
-// Example: m[r28{0} - 12]{0} could end up adding an implicit assignment for r28{0} with a null reference!
+// Example: m[r28{0} - 12]{0} could end up adding an implicit assignment for r28{-} with a null reference, when other
+// pieces of code add r28{0}
 void UserProc::addImplicitAssigns() {
 	Boomerang::get()->alert_decompile_debug_point(this, "before adding implicit assigns");
 
@@ -4383,29 +4451,74 @@ void UserProc::addImplicitAssigns() {
 	cfg->setImplicitsDone();
 	df.convertImplicits(cfg);			// Some maps have m[...]{-} need to be m[...]{0} now
 	makeSymbolsImplicit();
+	// makeParamsImplicit();			// Not necessary yet, since registers are not yet mapped
 
 	Boomerang::get()->alert_decompile_debug_point(this, "after adding implicit assigns");
 }
 
-char* UserProc::lookupSym(Exp* e) {
+// e is a parameter location, e.g. r8 or m[r28{0}+8]. Lookup a symbol for it
+char* UserProc::lookupParam(Exp* e) {
+												// Originally e.g. m[esp+K]
+	Statement* def = cfg->findTheImplicitAssign(e);
+	if (def == NULL) {
+		LOG << "ERROR: no implicit definition for parameter " << e << " !\n";
+		return NULL;
+	}
+	RefExp* re = new RefExp(e, def);
+	Type* ty = def->getTypeFor(e);
+	return lookupSym(re, ty);
+}
+
+char* UserProc::lookupSymFromRef(RefExp* r) {
+	Statement* def = r->getDef();
+	Exp* base = r->getSubExp1();
+	Type* ty = def->getTypeFor(base);
+	return lookupSym(r, ty);
+}
+
+char* UserProc::lookupSymFromRefAny(RefExp* r) {
+	Statement* def = r->getDef();
+	Exp* base = r->getSubExp1();
+	Type* ty = def->getTypeFor(base);
+	char* ret = lookupSym(r, ty);
+	if (ret)
+		return ret;						// Found a specific symbol
+	return lookupSym(base, ty);			// Check for a general symbol
+}
+
+char* UserProc::lookupSym(Exp* e, Type* ty) {
 	if (e->isTypedExp())
 		e = ((TypedExp*)e)->getSubExp1();
-	SymbolMapType::iterator it;
+	SymbolMap::iterator it;
 	it = symbolMap.find(e);
-	if (it == symbolMap.end())
-		return NULL;
-	Exp* sym = it->second;
-	assert(sym->isLocal() || sym->isParam());
-	return ((Const*)((Location*)sym)->getSubExp1())->getStr();
+	while (it != symbolMap.end() && *it->first == *e) {
+		Exp* sym = it->second;
+		assert(sym->isLocal() || sym->isParam());
+		char* name = ((Const*)((Location*)sym)->getSubExp1())->getStr();
+		Type* type = getLocalType(name);
+		if (type == NULL) type = getParamType(name);	// Ick currently linear search
+		if (type && type->isCompatibleWith(ty))
+			return name;
+		++it;
+	}
+#if 0
+	if (e->isSubscript())
+		// A subscripted location, where there was no specific mapping. Check for a general mapping covering all
+		// versions of the location
+		return lookupSym(((RefExp*)e)->getSubExp1(), ty);
+#endif
+	// Else there is no symbol
+	return NULL;
 }
 
 void UserProc::printSymbolMap(std::ostream &out, bool html) {
 	if (html)
 		out << "<br>";
 	out << "symbols:\n";
-	SymbolMapType::iterator it;
+	SymbolMap::iterator it;
 	for (it = symbolMap.begin(); it != symbolMap.end(); it++) {
-		out << "  " << it->first << " maps to " << it->second << "\n";
+		Type* ty = getTypeForLocation(it->second);
+		out << "  " << it->first << " maps to " << it->second << " type " << (ty ? ty->getCtype() : "NULL") << "\n";
 		if (html)
 			out << "<br>";
 	}
@@ -4433,22 +4546,48 @@ void UserProc::dumpLocals(std::ostream& os, bool html) {
 }
 
 void UserProc::dumpSymbolMap() {
-	SymbolMapType::iterator it;
-	for (it = symbolMap.begin(); it != symbolMap.end(); it++)
-		std::cerr << "  " << it->first << " maps to " << it->second << "\n";
+	SymbolMap::iterator it;
+	for (it = symbolMap.begin(); it != symbolMap.end(); it++) {
+		Type* ty = getTypeForLocation(it->second);
+		std::cerr << "  " << it->first << " maps to " << it->second << " type " << (ty ? ty->getCtype() : "NULL") <<
+			"\n";
+	}
+}
+
+void UserProc::dumpSymbolMapx() {
+	SymbolMap::iterator it;
+	for (it = symbolMap.begin(); it != symbolMap.end(); it++) {
+		Type* ty = getTypeForLocation(it->second);
+		std::cerr << "  " << it->first << " maps to " << it->second << " type " << (ty ? ty->getCtype() : "NULL") <<
+			"\n";
+		it->first->printx(2);
+	}
+}
+
+void UserProc::testSymbolMap() {
+	SymbolMap::iterator it1, it2;
+	bool OK = true;
+	it1 = symbolMap.begin();
+	if (it1 != symbolMap.end()) {
+		it2 = it1;
+		++it2;
+		while (it2 != symbolMap.end()) {
+			if (*it2->first < *it1->first) {		// Compare keys
+				OK = false;
+				std::cerr << "*it2->first < *it1->first: " << it2->first << " < " << it1->first << "!\n";
+				// it2->first->printx(0); it1->first->printx(5);
+			}
+			++it1;
+			++it2;
+		}
+	}
+	std::cerr << "Symbolmap is " << (OK ? "OK" : "NOT OK!!!!!") << "\n";
 }
 
 void UserProc::dumpLocals() {
 	std::stringstream ost;
 	dumpLocals(ost);
 	std::cerr << ost.str();
-}
-
-void dumpIgraph(igraph& ig) {
-	std::cerr << "Interference graph:\n";
-	igraph::iterator ii;
-	for (ii = ig.begin(); ii != ig.end(); ii++)
-		std::cerr << ii->first << " -> " << ii->second << "\n";
 }
 
 void UserProc::updateArguments() {
@@ -4633,11 +4772,11 @@ bool UserProc::filterParams(Exp* e) {
 	return false;
 }
 
-char* UserProc::findLocal(Exp* e) {
+char* UserProc::findLocal(Exp* e, Type* ty) {
 	if (e->isLocal())
 		return ((Const*)((Unary*)e)->getSubExp1())->getStr();
 	// Look it up in the symbol map
-	char* name = lookupSym(e);
+	char* name = lookupSym(e, ty);
 	if (name == NULL)
 		return NULL;
 	// Now make sure it is a local; some symbols (e.g. parameters) are in the symbol map but not locals
@@ -4646,6 +4785,27 @@ char* UserProc::findLocal(Exp* e) {
 		return name;
 	return NULL;
 }
+
+char* UserProc::findLocalFromRef(RefExp* r) {
+	Statement* def = r->getDef();
+	Exp* base = r->getSubExp1();
+	Type* ty = def->getTypeFor(base);
+	char* name = lookupSym(r, ty);
+	if (name == NULL)
+		return NULL;
+	// Now make sure it is a local; some symbols (e.g. parameters) are in the symbol map but not locals
+	std::string str(name);
+	if (locals.find(str) != locals.end())
+		return name;
+	return NULL;
+}
+
+char* UserProc::findFirstSymbol(Exp* e) {
+	SymbolMap::iterator ff = symbolMap.find(e);
+	if (ff == symbolMap.end()) return NULL;
+	return ((Const*)((Location*)ff->second)->getSubExp1())->getStr();
+}
+
 
 // Algorithm:
 /* fixCallAndPhiRefs
@@ -4698,11 +4858,13 @@ void UserProc::fixCallAndPhiRefs() {
 					Exp *e = a->getRight();
 					if (e->getOper() == opPlus || e->getOper() == opMinus)
 						if (e->getSubExp2()->isIntConst())
-							if (e->getSubExp1()->isSubscript() && e->getSubExp1()->getSubExp1()->isRegN(signature->getStackRegister()) &&
-                                (((RefExp*)e->getSubExp1())->getDef() == NULL || ((RefExp*)e->getSubExp1())->getDef()->isImplicit())) {
-									a->setRight(new Unary(opAddrOf, Location::memOf(e->clone())));
-									found = true;
-								}
+							if (e->getSubExp1()->isSubscript() &&
+									e->getSubExp1()->getSubExp1()->isRegN(signature->getStackRegister()) &&
+                                	(((RefExp*)e->getSubExp1())->getDef() == NULL ||
+										((RefExp*)e->getSubExp1())->getDef()->isImplicit())) {
+								a->setRight(new Unary(opAddrOf, Location::memOf(e->clone())));
+								found = true;
+							}
 				}
 			}
 		}
@@ -4911,7 +5073,7 @@ bool UserProc::inductivePreservation(UserProc* topOfCycle) {
 
 bool UserProc::isLocal(Exp* e) {
 	if (!e->isMemOf()) return false;			// Don't want say a register
-	SymbolMapType::iterator ff = symbolMap.find(e);
+	SymbolMap::iterator ff = symbolMap.find(e);
 	if (ff == symbolMap.end()) return false;
 	Exp* mapTo = ff->second;
 	return mapTo->isLocal();
@@ -5150,7 +5312,7 @@ bool UserProc::removeRedundantParameters() {
 			if (DEBUG_UNUSED)
 				LOG << " %%% removing unused parameter " << param << " in " << getName() << "\n";
 			// Check if it is in the symbol map. If so, delete it; a local will be created later
-			SymbolMapType::iterator ss = symbolMap.find(param);
+			SymbolMap::iterator ss = symbolMap.find(param);
 			if (ss != symbolMap.end())
 				symbolMap.erase(ss);			// Kill the symbol
 			signature->removeParameter(param);	// Also remove from the signature
@@ -5691,13 +5853,23 @@ void UserProc::mapLocalsAndParams() {
 }
 
 void UserProc::makeSymbolsImplicit() {
-	SymbolMapType::iterator it;
-	SymbolMapType sm2 = symbolMap;			// Copy the whole map; necessary because the keys (Exps) change
+	SymbolMap::iterator it;
+	SymbolMap sm2 = symbolMap;			// Copy the whole map; necessary because the keys (Exps) change
 	symbolMap.clear();
 	ImplicitConverter ic(cfg);
 	for (it = sm2.begin(); it != sm2.end(); ++it) {
 		Exp* impFrom = it->first->accept(&ic);
-		symbolMap[impFrom] = it->second;
+		mapSymbolTo(impFrom, it->second);
+	}
+}
+
+void UserProc::makeParamsImplicit() {
+	StatementList::iterator it;
+	ImplicitConverter ic(cfg);
+	for (it = parameters.begin(); it != parameters.end(); ++it) {
+		Exp* lhs = ((Assignment*)*it)->getLeft();
+		lhs = lhs->accept(&ic);
+		((Assignment*)*it)->setLeft(lhs);
 	}
 }
 
@@ -5727,6 +5899,111 @@ void UserProc::setDominanceNumbers() {
 	df.setDominanceNums(0, currNum);
 }
 #endif
+
+void UserProc::findPhiUnites(ConnectionGraph& pu) {
+	StatementList stmts;
+	getStatements(stmts);
+	StatementList::iterator it;
+	for (it = stmts.begin(); it != stmts.end(); it++) {
+		PhiAssign* pa = (PhiAssign*)*it;
+		if (!pa->isPhi()) continue;
+		Exp* lhs = pa->getLeft();
+		RefExp* reLhs = new RefExp(lhs, pa);
+		PhiAssign::iterator pp;
+		for (pp = pa->begin(); pp != pa->end(); ++pp) {
+			if (pp->e == NULL) continue;
+			RefExp* re = new RefExp(pp->e, pp->def);
+			pu.connect(reLhs, re);
+		}
+	}
+}
+
+char* UserProc::getRegName(Exp* r) {
+	assert(r->isRegOf());
+	int regNum = ((Const*)((Location*)r)->getSubExp1())->getInt();
+	char* regName = const_cast<char*>(prog->getRegName(regNum));
+	if (regName[0] == '%') regName++;		// Skip % if %eax
+	return regName;
+}
+
+Type* UserProc::getTypeForLocation(Exp* e) {
+	char* name;
+	if (e->isLocal()) {
+		name = ((Const*)((Unary*)e)->getSubExp1())->getStr();
+		if (locals.find(name) != locals.end())
+			return locals[name];
+	}
+	// Sometimes parameters use opLocal, so fall through
+	name = ((Const*)((Unary*)e)->getSubExp1())->getStr();
+	return getParamType(name);
+}
+
+// The idea here is to give a name to those SSA variables that have one and only one parameter amongst the phi
+// arguments. For example, in test/source/param1, there is 18 *v* m[r28{-} + 8] := phi{- 7} with m[r28{-} + 8]{0} mapped
+// to param1; insert a mapping for m[r28{-} + 8]{18} to param1. This will avoid a copy, and will use the name of the
+// parameter only when it is acually used as a parameter
+void UserProc::nameParameterPhis() {
+	StatementList stmts;
+	getStatements(stmts);
+	StatementList::iterator it;
+	for (it = stmts.begin(); it != stmts.end(); it++) {
+		PhiAssign* pi = (PhiAssign*)*it;
+		if (!pi->isPhi()) continue;			// Might be able to optimise this a bit
+		// See if the destination has a symbol already
+		Exp* lhs = pi->getLeft();
+		RefExp* lhsRef = new RefExp(lhs, pi);
+		if (findFirstSymbol(lhsRef) != NULL)
+			continue;						// Already mapped to something
+		bool multiple = false;				// True if find more than one unique parameter
+		char* firstName = NULL;				// The name for the first parameter found
+		Type* ty = pi->getType();
+		PhiAssign::iterator pp;
+		for (pp = pi->begin(); pp != pi->end(); ++pp) {
+			if (pp->def->isImplicit()) {
+				RefExp* phiArg = new RefExp(pp->e, pp->def);
+				char* name = lookupSym(phiArg, ty);
+				if (name != NULL) {
+					if (firstName != NULL && strcmp(firstName, name) != 0) {
+						multiple = true;
+						break;
+					}
+					firstName = name;		// Remember this candidate
+				}
+			}
+		} 
+		if (multiple || firstName == NULL) continue;
+		mapSymbolTo(lhsRef, Location::param(firstName, this));
+	}
+}
+
+bool UserProc::existsLocal(char* name) {
+	std::string s(name);
+	return locals.find(s) != locals.end();
+}
+
+void UserProc::checkLocalFor(RefExp* r) {
+	if (lookupSymFromRefAny(r)) return;			// Already have a symbol for r
+	Statement* def = r->getDef();
+	if (def) {
+		Exp* base = r->getSubExp1();
+		Type* ty = def->getTypeFor(base);
+		// No, get its name from the front end
+		if (base->isRegOf()) {
+			char* regName = getRegName(base);
+			// Create a new local, for the base name if it doesn't exist yet, so we don't need several names for the
+			// same combination of location and type. However if it does already exist, addLocal will allocate a
+			// new name. Example: r8{0}->argc type int, r8->o0 type int, now r8->o0_1 type char*.
+			if (existsLocal(regName))
+				regName = newLocalName(r);
+			addLocal(ty, regName, base);
+		}
+		else {
+			char* locName = newLocalName(r);
+			addLocal(ty, locName, base);
+		}
+	}
+}
+
 
 //	-	-	-	-	-	-	-	-	-
 
@@ -5801,7 +6078,7 @@ public:
 	Cfg* cfg;
 	ProcStatus status;
 	std::map<std::string, Type*> locals;		// r
-	UserProc::SymbolMapType symbolMap;			// r
+	UserProc::SymbolMap symbolMap;			// r
 	std::list<Proc*> calleeList;
 };
 
@@ -5831,7 +6108,7 @@ Memo *UserProc::makeMemo(int mId)
 	for (std::map<std::string, Type*>::iterator it = locals.begin(); it != locals.end(); it++)
 		(*it).second->takeMemo(mId);
 
-	for (SymbolMapType::iterator it = symbolMap.begin(); it != symbolMap.end(); it++) {
+	for (SymbolMap::iterator it = symbolMap.begin(); it != symbolMap.end(); it++) {
 		(*it).first->takeMemo(mId);
 		(*it).second->takeMemo(mId);
 	}
@@ -5865,7 +6142,7 @@ void UserProc::readMemo(Memo *mm, bool dec)
 	for (std::map<std::string, Type*>::iterator it = locals.begin(); it != locals.end(); it++)
 		(*it).second->restoreMemo(m->mId, dec);
 
-	for (SymbolMapType::iterator it = symbolMap.begin(); it != symbolMap.end(); it++) {
+	for (SymbolMap::iterator it = symbolMap.begin(); it != symbolMap.end(); it++) {
 		(*it).first->restoreMemo(m->mId, dec);
 		(*it).second->restoreMemo(m->mId, dec);
 	}

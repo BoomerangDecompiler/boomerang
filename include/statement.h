@@ -82,9 +82,6 @@ class ReturnStatement;
 
 typedef std::set<UserProc*> CycleSet;
 
-// The map of interferences. It maps locations such as argc{55} to a local, e.g. local17
-//typedef std::map<Exp*, Exp*, lessExpStar> igraph;
-
 /*==============================================================================
  * Kinds of Statements, or high-level register transfer lists.
  * changing the order of these will result in save files not working - trent
@@ -170,7 +167,7 @@ virtual				~Statement() { }
 		UserProc*	getProc() {return proc;}
 
 		int			getNumber() {return number;}
-		void		setNumber(int num) {number = num;}
+virtual	void		setNumber(int num) {number = num;}		// Overridden for calls (and maybe later returns)
 
 		STMT_KIND	getKind() { return kind;}
 		void		setKind(STMT_KIND k) {kind = k;}
@@ -183,7 +180,7 @@ virtual				~Statement() { }
 
 virtual Statement*	clone() = 0;			   // Make copy of self
 
-	// Accept a visitor (of various kinds) to this Statement. Return true to continue visiting
+		// Accept a visitor (of various kinds) to this Statement. Return true to continue visiting
 virtual bool		accept(StmtVisitor* visitor) = 0;
 virtual bool		accept(StmtExpVisitor* visitor) = 0;
 virtual bool		accept(StmtModifier* visitor) = 0;
@@ -272,9 +269,6 @@ virtual bool		searchAll(Exp* search, std::list<Exp*>& result) = 0;
 		// general search and replace. Set cc true to change collectors as well. Return true if any change
 virtual bool		searchAndReplace(Exp *search, Exp *replace, bool cc = false) = 0;
 
-		// From SSA form
-virtual void		fromSSAform(igraph& ig) = 0;
-
 		// True if can propagate to expression e in this Statement.
 static	bool		canPropagateToExp(Exp* e);
 		// Propagate to this statement. Return true if a change
@@ -298,6 +292,9 @@ virtual void		simplifyAddr() {}
 
 		// map registers and temporaries to local variables
 		void		mapRegistersToLocals();
+
+		// The last part of the fromSSA logic: replace subscripted locations with suitable local variables
+		void		replaceSubscriptsWithLocals();
 
 		// insert casts where needed, since fromSSA will erase type information
 		void		insertCasts();
@@ -403,6 +400,10 @@ protected:
 public:
 					TypingStatement(Type* ty);		// Constructor
 
+		// Get and set the type.
+		Type*		getType() {return type;}
+		void		setType(Type* ty) {type = ty;}
+
 virtual	bool		isTyping() {return true;}
 };
 
@@ -440,10 +441,6 @@ virtual void		printCompact(std::ostream& os, bool html = false) = 0;	// Without 
 virtual Type*		getTypeFor(Exp* e); 				// Get the type for this assignment. It should define e
 virtual void		setTypeFor(Exp* e, Type* ty); 		// Set the type for this assignment. It should define e
 
-		// Get and set the type. Not polymorphic (any more)
-		Type*		getType();
-		void		setType(Type* ty);
-
 virtual bool		usesExp(Exp *e);	   // PhiAssign and ImplicitAssign don't override
 
 virtual bool		isDefinition() { return true; }
@@ -459,9 +456,6 @@ virtual	void		setLeftFor(Exp* forExp, Exp* newExp) {lhs = newExp; }
 
 		// memory depth
 		int			getMemDepth();
-
-		// from SSA form
-virtual void		fromSSAform(igraph& ig);
 
 		// general search
 virtual bool		search(Exp *search, Exp *&result) = 0;
@@ -548,9 +542,6 @@ virtual bool		searchAndReplace(Exp *search, Exp *replace, bool cc = false);
  
 		// memory depth
 		int			getMemDepth();
-
-		// from SSA form
-virtual void		fromSSAform(igraph& ig);
 
 		// Generate code
 virtual void		generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel);
@@ -641,9 +632,6 @@ virtual bool		searchAndReplace(Exp *search, Exp *replace, bool cc = false);
  
 		// simplify all the uses/defs in this Statement
 virtual void		simplify();
-
-		// from SSA form
-virtual void		fromSSAform(igraph& ig);
 
 		// Generate constraints
 virtual void		genConstraints(LocationSet& cons);
@@ -778,8 +766,6 @@ virtual bool		processConstants(Prog *prog);
 virtual bool		search(Exp *search, Exp *&result);
 virtual bool		searchAll(Exp* search, std::list<Exp*>& result);
 virtual bool		searchAndReplace(Exp *search, Exp *replace, bool cc = false);
-		// from SSA form
-virtual void		fromSSAform(igraph& ig);
 		// a hack for the SETS macro
 		void		setLeftFromList(std::list<Statement*>* stmts);
 
@@ -814,12 +800,11 @@ virtual	bool		processConstants(Prog*);
 virtual	bool		search(Exp*, Exp*&);
 virtual	bool		searchAll(Exp*, std::list<Exp*, std::allocator<Exp*> >&);
 virtual	bool		searchAndReplace(Exp*, Exp*, bool cc = false);
-virtual	void		fromSSAform(igraph&) {}
 virtual	void		generateCode(HLLCode*, BasicBlock*, int) {}
 virtual	void		simplify();
 virtual	void		print(std::ostream& os, bool html = false);
 
-};
+};	// class ImpRefStatement
 
 
 /*=============================================================================
@@ -891,7 +876,6 @@ virtual void		simplify();
 virtual bool		isDefinition() { return false;}
 virtual bool		usesExp(Exp*);
 virtual bool		processConstants(Prog*) {return false;}
-virtual void		fromSSAform(igraph&) {}
 
 		friend class XMLProgParser;
 };		// class GotoStatement
@@ -923,9 +907,6 @@ public:
 
 		// general search and replace. Set cc true to change collectors as well. Return true if any change
 	bool		searchAndReplace(Exp *search, Exp *replace, bool cc = false) { return false; }
-
-		// From SSA form
-	void		fromSSAform(igraph& ig) { }
 
 		// code generation
 	void		generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) { }
@@ -1012,9 +993,6 @@ virtual bool		usesExp(Exp *e);
 		// simplify all the uses/defs in this Statememt
 virtual void		simplify();
 
-		// From SSA form
-virtual void		fromSSAform(igraph& ig);
-
 		// Generate constraints
 virtual void		genConstraints(LocationSet& cons);
 
@@ -1077,8 +1055,6 @@ public:
 		// simplify all the uses/defs in this Statement
 virtual void		simplify();
 
-virtual void		fromSSAform(igraph& ig);
-
 		friend class XMLProgParser;
 };		// class CaseStatement
 
@@ -1122,6 +1098,7 @@ public:
 					CallStatement();
 virtual				~CallStatement();
 
+virtual	void		setNumber(int num);
 		// Make a deep copy, and make the copy a derived object if needed.
 virtual Statement*	clone();
 
@@ -1236,8 +1213,6 @@ virtual void		simplify();
 
 		void		decompile();
 
-virtual void		fromSSAform(igraph& ig);
-		
 		// Insert actual arguments to match formal parameters
 		//void		insertArguments(StatementSet& rs);
 
@@ -1255,6 +1230,7 @@ virtual void		setTypeFor(Exp* e, Type* ty);		// Set the type for this location, 
 		bool		ellipsisProcessing(Prog* prog);
 		bool		convertToDirect();					// Internal function: attempt to convert an indirect to a
 														// direct call
+		void		useColFromSsaForm(Statement* s) {useCol.fromSSAform(proc, s);}
 private:
 		// Private helper functions for the above
 		void		addSigParam(Type* ty, bool isScanf);
@@ -1381,9 +1357,6 @@ virtual void		generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel);
 		Exp*		findDefFor(Exp* e) {return col.findDefFor(e);}
 
 virtual void		dfaTypeAnalysis(bool& ch);
-
-		// From SSA form
-virtual void		fromSSAform(igraph& ig);
 
 		// Remove the stack pointer and return a statement list
 		StatementList* getCleanReturns();

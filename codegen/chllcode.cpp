@@ -96,6 +96,7 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 		}
 	}
 
+#if SYMS_IN_BACK_END				// Should no longer be any unmapped symbols by the back end
 	// Check if it's mapped to a symbol
 	if (m_proc && !exp->isTypedExp()) {			// Beware: lookupSym will match (cast)r24 to local0, stripping the cast!
 		char* sym = m_proc->lookupSym(exp);
@@ -104,6 +105,7 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 			return;
 		}
 	}
+#endif
 
 	Const	*c = (Const*)exp;
 	Unary	*u = (Unary*)exp;
@@ -208,7 +210,12 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 					break;
 				}
 			}
-			if (sub->isMemOf() && m_proc->lookupSym(sub) == NULL) {
+#if SYMS_IN_BACK_END
+			if (sub->isMemOf() && m_proc->lookupSym(sub) == NULL) {	// }
+#else
+			if (sub->isMemOf()) {
+#endif
+
 				// Avoid &*(type*)sub, just emit sub
 				appendExp(str, sub->getSubExp1(), PREC_UNARY);
 			} else {
@@ -721,6 +728,7 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 			str << ")";
 			break;
 		case opTypedExp: {
+#if SYMS_IN_BACK_END
 			Exp* b = u->getSubExp1();					// Base expression
 			char* sym = m_proc->lookupSym(exp);			// Check for (cast)sym
 			if (sym) {
@@ -729,6 +737,7 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 				str << ")" << sym;
 				break;
 			}
+#endif
 			if (u->getSubExp1()->getOper() == opTypedExp &&
 					*((TypedExp*)u)->getType() == *((TypedExp*)u->getSubExp1())->getType()) {
 				// We have (type)(type)x: recurse with type(x)
@@ -764,6 +773,7 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 				// Check for (tt)b where tt is a pointer; could be &local
 				Type* tt = ((TypedExp*)u)->getType();
 				if (dynamic_cast<PointerType*>(tt)) {
+#if SYMS_IN_BACK_END
 					char* sym = m_proc->lookupSym(Location::memOf(b));
 					if (sym) {
 						openParen(str, curPrec, PREC_UNARY);
@@ -771,6 +781,7 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 						closeParen(str, curPrec, PREC_UNARY);
 						break;
 					}
+#endif
 				}
 				// Otherwise, fall back to (tt)b
 				str << "(";
@@ -1197,11 +1208,15 @@ void CHLLCode::RemoveLabel(int ord) {
 
 bool isBareMemof(Exp* e, UserProc* proc) {
 	if (!e->isMemOf()) return false;
+#if SYMS_IN_BACK_END
 	// Check if it maps to a symbol
 	char* sym = proc->lookupSym(e);
 	if (sym == NULL)
 		sym = proc->lookupSym(e->getSubExp1());
 	return sym == NULL;			// Only a bare memof if it is not a symbol
+#else
+	return true;
+#endif
 }
 
 /// Prints an assignment expression.
@@ -1365,7 +1380,8 @@ void CHLLCode::AddCallStatement(int indLevel, Proc *proc, const char *name, Stat
 		}
 		if (ok) {
 			bool needclose = false;
-			if (Boomerang::get()->noDecompile && proc->getSignature()->getParamType(n) && proc->getSignature()->getParamType(n)->isPointer()) {
+			if (Boomerang::get()->noDecompile && proc->getSignature()->getParamType(n) &&
+					proc->getSignature()->getParamType(n)->isPointer()) {
 				s << "ADDR(";
 				needclose = true;
 			}
@@ -1516,7 +1532,8 @@ void CHLLCode::AddProcDec(UserProc* proc, bool open) {
 	StatementList::iterator pp;
 	
 	if (parameters.size() > 10 && open) {
-		LOG << "Warning: CHLLCode::AddProcDec: Proc " << proc->getName() << " has " << (int)parameters.size() << " parameters\n";
+		LOG << "Warning: CHLLCode::AddProcDec: Proc " << proc->getName() << " has " << (int)parameters.size() <<
+			" parameters\n";
 	}
 	
 	bool first = true;
@@ -1533,7 +1550,13 @@ void CHLLCode::AddProcDec(UserProc* proc, bool open) {
 				LOG << "ERROR in CHLLCode::AddProcDec: no type for parameter " << left << "!\n";
 			ty = new IntegerType();
 		}
-		char* name = proc->lookupSym(left);
+		char* name;
+		if (left->isParam())
+			name = ((Const*)((Location*)left)->getSubExp1())->getStr();
+		else {
+			LOG << "ERROR: parameter " << left << " is not opParam!\n";
+			name = "??";
+		}
 		if (ty->isPointer() && ((PointerType*)ty)->getPointsTo()->isArray()) {
 			// C does this by default when you pass an array, i.e. you pass &array meaning array
 			// Replace all m[param] with foo, param with foo, then foo with param
@@ -1543,8 +1566,6 @@ void CHLLCode::AddProcDec(UserProc* proc, bool open) {
 			m_proc->searchAndReplace(left, foo);
 			m_proc->searchAndReplace(foo, left);
 		}
-		if (name == NULL)
-			name = "??";
 		appendTypeIdent(s, ty, name);
 	}
 	s << ")";

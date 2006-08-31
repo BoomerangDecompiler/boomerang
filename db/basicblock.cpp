@@ -1623,8 +1623,8 @@ void BasicBlock::prependStmt(Statement* s, UserProc* proc) {
 
 // Check for overlap of liveness between the currently live locations (liveLocs) and the set of locations in ls
 // Also check for type conflicts if DFA_TYPE_ANALYSIS
-// if countAsLiveness is false, don't count this as a liveness (e.g. pass definitions)
-void checkForOverlap(LocationSet& liveLocs, LocationSet& ls, igraph& ig, UserProc* proc, bool countAsLiveness) {
+// This is a helper function that is not directly declated in the BasicBlock class
+void checkForOverlap(LocationSet& liveLocs, LocationSet& ls, ConnectionGraph& ig, UserProc* proc) {
 	// For each location to be considered
 	LocationSet::iterator uu;
 	for (uu = ls.begin(); uu != ls.end(); uu++) {
@@ -1634,52 +1634,24 @@ void checkForOverlap(LocationSet& liveLocs, LocationSet& ls, igraph& ig, UserPro
 		// Interference if we can find a live variable which differs only in the reference
 		Exp *dr;
 		if (liveLocs.findDifferentRef(r, dr)) {
-			// We have an interference. Record it, but only if neither dr or u is already in the graph
-			if (ig.find(u) == ig.end() && ig.find(dr) == ig.end()) {
-				// The interference is between dr (from liveLocs) and u. If it happens that u is implicit, then
-				// swap u and dr (so u{0} is the thing that is live now, and dr gets the new variable)
-				if (countAsLiveness && r->isImplicitDef()) {
-					if (DEBUG_LIVENESS)
-						LOG << "Swapping " << dr << " and " << u << " so as not to rename an implicit\n";
-					liveLocs.remove(dr);
-					liveLocs.insert(u);
-					Exp* temp = dr;
-					dr = u;
-					u = temp;
-					r = (RefExp*)u;
-				}
-				Type *ty;
-				if (ADHOC_TYPE_ANALYSIS)
-					ty = u->getType();
-				else
-					ty = r->getDef()->getTypeFor(r->getSubExp1());
-				// Pass true as the last argument below, to ensure that a local is generated (even when ty is NULL)
-				Exp* local = proc->getSymbolExp(u, ty, true);
-				ig[u->clone()] = local;
-				if (VERBOSE || DEBUG_LIVENESS) {
-					LOG << "Interference of " << dr << " with " << u << ", assigned " << local;
-					if (ty)
-						LOG << " with type " << ty->getCtype();
-					LOG << "\n";
-				}
-			}
-			// Don't add the interfering variable to liveLocs, otherwise we could register other interferences that
-			// will not exist once this one is renamed
-		} else
-			// Add the uses one at a time. Note: don't use makeUnion, because then we don't discover interferences
-			// from the same statement, e.g.  blah := r24{2} + r24{3}
-			if (countAsLiveness)
-				liveLocs.insert(u);
+			// We have an interference between r and dr. Record it
+			ig.connect(r, dr);
+			if (VERBOSE || DEBUG_LIVENESS)
+				LOG << "interference of " << dr << " with " << r << "\n";
+		}
+		// Add the uses one at a time. Note: don't use makeUnion, because then we don't discover interferences
+		// from the same statement, e.g.  blah := r24{2} + r24{3}
+		liveLocs.insert(u);
 	}
 }
 
-bool BasicBlock::calcLiveness(igraph& ig, UserProc* myProc) {
+bool BasicBlock::calcLiveness(ConnectionGraph& ig, UserProc* myProc) {
 	// Start with the liveness at the bottom of the BB
 	LocationSet liveLocs, phiLocs;
 	getLiveOut(liveLocs, phiLocs);
 	// Do the livensses that result from phi statements at successors first.
 	// FIXME: document why this is necessary
-	checkForOverlap(liveLocs, phiLocs, ig, myProc, true);
+	checkForOverlap(liveLocs, phiLocs, ig, myProc);
 	// For each RTL in this BB
 	std::list<RTL*>::reverse_iterator rit;
 	if (m_pRtls)  // this can be NULL
@@ -1693,6 +1665,12 @@ bool BasicBlock::calcLiveness(igraph& ig, UserProc* myProc) {
 			s->getDefinitions(defs);
 			// The definitions don't have refs yet
 			defs.addSubscript(s /* , myProc->getCFG() */);
+#if 0		// I used to think it necessary to consider definitions as a special case. However, I now believe that
+			// this was either an error of implementation (e.g. it didn't seem to correctly consider the livenesses
+			// causesd by phis) or something to do with renaming but not propagating certain memory locations.
+			// The idea is now to clearly divide locations into those that can be renamed and propagated, and those
+			// which are not renamed or propagated. (Check this.)
+
 			// Also consider it an interference if we define a location that is the same base variable. This can happen
 			// when there is a definition that is unused but for whatever reason not eliminated
 			// This check is done at the "bottom" of the statement, i.e. before we add s's uses and remove s's
@@ -1700,6 +1678,7 @@ bool BasicBlock::calcLiveness(igraph& ig, UserProc* myProc) {
 			// Note that phi assignments don't count
 			if (!s->isPhi())
 				checkForOverlap(liveLocs, defs, ig, myProc, false);
+#endif
 			// Definitions kill uses. Now we are moving to the "top" of statement s
 			liveLocs.makeDiff(defs);
 			// Phi functions are a special case. The operands of phi functions are uses, but they don't interfere
@@ -1710,9 +1689,9 @@ bool BasicBlock::calcLiveness(igraph& ig, UserProc* myProc) {
 			// Check for livenesses that overlap
 			LocationSet uses;
 			s->addUsedLocs(uses);
-			checkForOverlap(liveLocs, uses, ig, myProc, true);
+			checkForOverlap(liveLocs, uses, ig, myProc);
 			if (DEBUG_LIVENESS)
-				LOG << " ## Liveness: at top of " << s << ", liveLocs is " << liveLocs.prints() << "\n";
+				LOG << " ## liveness: at top of " << s << ", liveLocs is " << liveLocs.prints() << "\n";
 		}
 	}
 	// liveIn is what we calculated last time

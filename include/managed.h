@@ -16,6 +16,7 @@
  *				StatementVec
  *				LocationSet
  *				//LocationList
+ *				ConnectionGraph
  *==============================================================================================*/
 
 /*
@@ -226,14 +227,14 @@ public:
 	Range();
 	Range(int stride, int lowerBound, int upperBound, Exp *base);
 
-	Exp *getBase() { return base; }
-	int getStride() { return stride; }
-	int getLowerBound() { return lowerBound; }
-	int getUpperBound() { return upperBound; }
-	void unionWith(Range &r);
-	void widenWith(Range &r);
-	void print(std::ostream &os);
-	bool operator==(Range &other);
+		Exp			*getBase() { return base; }
+		int			getStride() { return stride; }
+		int			getLowerBound() { return lowerBound; }
+		int			getUpperBound() { return upperBound; }
+		void		unionWith(Range &r);
+		void		widenWith(Range &r);
+		void		print(std::ostream &os);
+		bool		operator==(Range &other);
 	
 static const int MAX = 2147483647;
 static const int MIN = -2147483647;
@@ -241,21 +242,45 @@ static const int MIN = -2147483647;
 
 class RangeMap {
 protected:
-	std::map<Exp*, Range, lessExpStar> ranges;
+		std::map<Exp*, Range, lessExpStar> ranges;
 
 public:
-	RangeMap() { }
-	void addRange(Exp *loc, Range &r) { ranges[loc] = r; }
-	bool hasRange(Exp *loc) { return ranges.find(loc) != ranges.end(); }
-	Range &getRange(Exp *loc);
-	void unionwith(RangeMap &other);
-	void widenwith(RangeMap &other);
-	void print(std::ostream &os);
-	Exp *substInto(Exp *e, std::set<Exp*, lessExpStar> *only = NULL);
-	void killAllMemOfs();
-	void clear() { ranges.clear(); }
-	bool isSubset(RangeMap &other);
-	bool empty() { return ranges.empty(); }
+					RangeMap() { }
+		void		addRange(Exp *loc, Range &r) { ranges[loc] = r; }
+		bool		hasRange(Exp *loc) { return ranges.find(loc) != ranges.end(); }
+		Range		&getRange(Exp *loc);
+		void		unionwith(RangeMap &other);
+		void		widenwith(RangeMap &other);
+		void		print(std::ostream &os);
+		Exp			* substInto(Exp *e, std::set<Exp*, lessExpStar> *only = NULL);
+		void		killAllMemOfs();
+		void		clear() { ranges.clear(); }
+		bool		isSubset(RangeMap &other);
+		bool		empty() { return ranges.empty(); }
+};
+
+/// A class to store connections in a graph, e.g. for interferences of types or live ranges, or the phi_unite relation
+/// that phi statements imply
+/// If a is connected to b, then b is automatically connected to a
+// This is implemented in a std::multimap, even though Appel suggests a bitmap (e.g. std::vector<bool> does this in a
+// space efficient manner), but then you still need maps from expression to bit number. So here a standard map is used,
+// and when a -> b is inserted, b->a is redundantly inserted.
+class ConnectionGraph {
+	std::multimap<Exp*, Exp*, lessExpStar> emap;				// The map
+public:
+typedef std::multimap<Exp*, Exp*, lessExpStar>::iterator iterator;
+					ConnectionGraph() {}
+
+		void		add(Exp* a, Exp* b);			// Add pair with check for existing
+		void		connect(Exp* a, Exp* b);
+		iterator	begin() {return emap.begin();}
+		iterator	end() {return emap.end();}
+		int			count(Exp* a);					// Return a count of locations connected to a
+		bool		isConnected(Exp* a, Exp* b);	// Return true if a is connected to b
+		// Update the map that used to be a <-> b, now it is a <-> c
+		void		update(Exp* a, Exp* b, Exp* c);
+		iterator	remove(iterator aa);			// Remove the mapping at *aa
+		void		dump();							// Dump for debugging
 };
 
 #endif	// #ifdef __MANAGED_H__

@@ -9,6 +9,7 @@
 /*
  * $Revision$
  *
+ * 18 Aug 06 - Mike: Moved DfaLocalMapper here from type/dfa.cpp
  * 14 Jun 04 - Mike: Created, from work started by Trent in 2003
  */
 
@@ -20,6 +21,7 @@
 #include "proc.h"
 #include "signature.h"
 #include "prog.h"
+#include <sstream>
 
 
 // FixProcVisitor class
@@ -305,10 +307,14 @@ bool UsedLocsFinder::visit(RefExp* e, bool& override) {
 
 bool UsedLocalFinder::visit(Location* e, bool& override) {
 	override = false;
+#if 0
 	char* sym = proc->lookupSym(e);
 	if (sym)
 		override = true;				// Don't look inside this local or parameter
 	if (proc->findLocal(e))
+#else
+	if (e->isLocal())
+#endif
 		used->insert(e);				// Found a local
 	return true;						// Continue looking for other locations
 }
@@ -320,7 +326,7 @@ bool UsedLocalFinder::visit(TypedExp* e, bool& override) {
 	if (ty->resolvesToPointer()) {
 		Exp* sub = e->getSubExp1();
 		Location* mof = Location::memOf(sub);
-		if (proc->findLocal(mof)) {
+		if (proc->findLocal(mof, ty)) {
 			used->insert(mof);
 			override = true;
 		}
@@ -331,7 +337,7 @@ bool UsedLocalFinder::visit(TypedExp* e, bool& override) {
 bool UsedLocalFinder::visit(Terminal* e) {
 	if (e->getOper() == opDefineAll)
 		all = true;
-	char* sym = proc->findLocal(e);
+	char* sym = proc->findFirstSymbol(e);
 	if (sym)
 		used->insert(e);
 	return true;		// Always continue recursion
@@ -614,6 +620,7 @@ Exp* ImplicitConverter::postVisit(RefExp* e) {
 	return e;
 }
 
+
 void StmtImplicitConverter::visit(PhiAssign* s, bool& recur) {
 	// The LHS could be a m[x] where x has a null subscript; must do first
 	s->setLeft(s->getLeft()->accept(mod));
@@ -625,6 +632,7 @@ void StmtImplicitConverter::visit(PhiAssign* s, bool& recur) {
 	}
 	recur = false;		// Already done LHS
 }
+
 
 // Localiser. Subscript a location with the definitions that reach the call, or with {-} if none
 Exp* Localiser::preVisit(RefExp* e, bool& recur) {
@@ -682,7 +690,7 @@ Exp* Localiser::postVisit(Terminal* e) {
 }
 
 bool ComplexityFinder::visit(Location* e,		bool& override) {
-	if (proc && proc->lookupSym(e) != NULL) {
+	if (proc && proc->findFirstSymbol(e) != NULL) {
 		// This is mapped to a local. Count it as zero, not about 3 (m[r28+4] -> memof, regof, plus)
 		override = true;
 		return true;
@@ -771,62 +779,25 @@ bool TempToLocalMapper::visit(Location *e, bool& override) {
 	return true;
 }
 
-ExpRegMapper::ExpRegMapper(UserProc* p) : proc(p), lastType(NULL) {
+ExpRegMapper::ExpRegMapper(UserProc* p) : proc(p) {
 	prog = proc->getProg();
 }
 
-// The idea here is to map the first use of a register to a symbol with the type of that first use. The fromSSA
-// algorithm is supposed to create new local variables as forced by type incompatibilities.
-bool ExpRegMapper::visit(Location *e, bool& override) {
-	if (e->isRegOf()) {
-		// We have a regiter definition (else would be picked up in the RefExp version).
-		// Check to see if it is in the symbol map yet
-		if (proc->lookupSym(e) == NULL) {
-			// No, get its name from the front end
-			int regNum = ((Const*)e->getSubExp1())->getInt();
-			char* regName = (char*) prog->getRegName(regNum);
-			if (regName && regName[0] == '%')
-				regName++;			// Skip the %
-			// Create a new local; use the type saved from the LHS of the last assignment
-			proc->addLocal(lastType, regName, e);
-		}
-	} else if (e->isTemp() && proc->lookupSym(e) == NULL) {
-		char* nam = ((Const*)e->getSubExp1())->getStr();
-		proc->addLocal(lastType, nam, e);
-	}
-	override = true;		// No need to examine the string
-	return true;
-}
-
+// The idea here is to map the default of a register to a symbol with the type of that first use. If the register is
+// not involved in any conflicts, it will use this name by default
 bool ExpRegMapper::visit(RefExp *e, bool& override) {
 	Exp* base = e->getSubExp1();
-	if (base->isRegOf()) {
-		// We have a regiter use.
-		// Check to see if it is in the symbol map yet
-		if (proc->lookupSym(base) == NULL) {
-			// No, get its name from the front end
-			int regNum = ((Const*)((Unary*)base->getSubExp1()))->getInt();
-			char* regName = (char*) prog->getRegName(regNum);
-			if (regName && regName[0] == '%')
-				regName++;			// Skip the %
-			Statement* def = e->getDef();
-			Type* ty = def->getTypeFor(base);
-			proc->addLocal(ty, regName, base);		 // Create a new local
-		}
-	}
+	if (base->isRegOf() || proc->isLocalOrParamPattern(base))	// Don't convert if e.g. a global
+		proc->checkLocalFor(e);
 	override = true;		// Don't examine the r[] inside
 	return true;
 }
 
 bool StmtRegMapper::common(Assignment *stmt, bool& override) {
+	// In case lhs is a reg or m[reg] such that reg is otherwise unused
 	Exp* lhs = stmt->getLeft();
-	// In case there is a m[reg] such that reg is otherwise unused
-	if (lhs->isMemOf()) {
-		Exp* base = ((Location*)lhs)->getSubExp1();
-		base->accept((ExpRegMapper*)ev);
-	}
-	// Remember the type of this assignment, for the expression visitor
-	((ExpRegMapper*)ev)->setLastType(stmt->getType());
+	RefExp* re = new RefExp(lhs, stmt);
+	re->accept((ExpRegMapper*)ev);
 	override = false;
 	return true;
 }
@@ -915,7 +886,7 @@ bool BadMemofFinder::visit(RefExp* e, bool& override) {
 		addr->accept(this);
 		if (found)
 			return false;	// Don't continue searching
-#if NEW		// FIXME: not working yet
+#if NEW			// FIXME: not ready for this until have incremental propagation
 		char* sym = proc->lookupSym(e);
 		if (sym == NULL) {
 			found = true;			// Found a memof that is not a symbol
@@ -1029,3 +1000,158 @@ bool StmtCastInserter::common(Assignment* s) {
 	}
 	return true;
 }
+
+Exp* ExpSsaXformer::postVisit(RefExp *e) {
+	char* sym = proc->lookupSymFromRefAny(e);
+	if (sym != NULL)
+		return Location::local(sym, proc);
+	// We should not get here: all locations should be replaced with Locals or Parameters
+	LOG << "ERROR! Could not find local or parameter for " << e << " !!\n";
+//	assert(0); int HACK=0;
+	return e->getSubExp1();		// At least strip off the subscript
+}
+
+// Common code for the left hand side of assignments
+void StmtSsaXformer::commonLhs(Assignment* as) {
+	Exp* lhs = as->getLeft();
+	lhs = lhs->accept((ExpSsaXformer*)mod);		// In case the LHS has say m[r28{0}+8] -> m[esp+8]
+	RefExp* re = new RefExp(lhs, as);
+	char* sym = proc->lookupSymFromRefAny(re);
+	if (sym)
+		as->setLeft(Location::local(sym, proc));
+}
+
+void StmtSsaXformer::visit(BoolAssign *s, bool& recur) {
+	commonLhs(s);
+	Exp* pCond = s->getCondExpr();
+	pCond = pCond->accept((ExpSsaXformer*)mod);
+	s->setCondExpr(pCond);
+}
+
+void StmtSsaXformer::visit(Assign *s, bool& recur) {
+	commonLhs(s);
+	Exp* rhs = s->getRight();
+	rhs = rhs->accept((ExpSsaXformer*)mod);
+	s->setRight(rhs);
+}
+
+void StmtSsaXformer::visit(ImplicitAssign *s, bool& recur) {
+	commonLhs(s);
+}
+
+void StmtSsaXformer::visit(PhiAssign *s, bool& recur) {
+	commonLhs(s);
+	PhiAssign::iterator it;
+	UserProc* proc = ((ExpSsaXformer*)mod)->getProc();
+	for (it = s->begin(); it != s->end(); it++) {
+		if (it->e == NULL) continue;
+		RefExp* r = new RefExp(it->e, it->def);
+		char* sym = proc->lookupSymFromRefAny(r);
+		if (sym != NULL)
+			it->e = Location::local(sym, proc);		// Some may be parameters, but hopefully it won't matter
+	}
+}
+
+void StmtSsaXformer::visit(CallStatement* s, bool& recur) {
+	Exp* pDest = s->getDest();
+	if (pDest) {
+		pDest = pDest->accept((ExpSsaXformer*)mod);
+		s->setDest(pDest);
+	}
+	StatementList& arguments = s->getArguments();
+	StatementList::iterator ss;
+	for (ss = arguments.begin(); ss != arguments.end(); ++ss)
+		(*ss)->accept(this);
+	// Note that defines have statements (assignments) within a statement (this call). The fromSSA logic, which needs
+	// to subscript definitions on the left with the statement pointer, won't work if we just call the assignment's
+	// fromSSA() function
+	StatementList& defines = s->getDefines();
+	for (ss = defines.begin(); ss != defines.end(); ++ss) {
+		Assignment* as = ((Assignment*)*ss);
+		// FIXME: use of fromSSAleft is deprecated
+		Exp *e = as->getLeft()->fromSSAleft(((ExpSsaXformer*)mod)->getProc(), s);
+		// FIXME: this looks like a HACK that can go:
+		Proc* procDest = s->getDestProc();
+		if (procDest && procDest->isLib() && e->isLocal()) {
+			UserProc* proc = s->getProc();		// Enclosing proc
+			Type *lty = proc->getLocalType(((Const*)e->getSubExp1())->getStr());
+			Type *ty = as->getType();
+			if (ty && lty && *ty != *lty) {
+				LOG << "local " << e << " has type " << lty->getCtype() << " that doesn't agree with type of define " <<
+					ty->getCtype() << " of a library, why?\n";
+				proc->setLocalType(((Const*)e->getSubExp1())->getStr(), ty);
+			}
+		}
+		as->setLeft(e);
+	}
+	// Don't think we'll need this anyway:
+	// defCol.fromSSAform(ig);
+
+	// However, need modifications of the use collector; needed when say eax is renamed to local5, otherwise
+	// local5 is removed from the results of the call
+	s->useColFromSsaForm(s);
+}
+
+// Map expressions to locals, using the (so far DFA based) type analysis information
+// Basically, descend types, and when you get to m[...] compare with the local high level pattern;
+// when at a sum or difference, check for the address of locals high level pattern that is a pointer
+
+// Map expressions to locals, some with names like param3
+DfaLocalMapper::DfaLocalMapper(UserProc* proc) : proc(proc) {
+	sig = proc->getSignature();
+	prog = proc->getProg();
+	change = false;
+}
+
+// Common processing for the two main cases (visiting a Location or a Binary)
+bool DfaLocalMapper::processExp(Exp* e) {
+	if (proc->isLocalOrParamPattern(e)) { 	// Check if this is an appropriate pattern for local variables	
+		if (sig->isStackLocal(prog, e)) {
+			change = true;					// We've made a mapping
+			// We have probably not even run TA yet, so doing a full descendtype here would be silly
+			// Note also that void is compatible with all types, so the symbol effectively covers all types
+			proc->getSymbolExp(e, new VoidType(), true);
+#if 0
+		} else {
+			std::ostringstream ost;
+			ost << "tparam" << proc->nextParamNum();
+			const char* name = strdup(ost.str().c_str());
+			proc->mapSymbolTo(e, Location::param(const_cast<char*>(name), proc));
+#endif
+		}
+		return false;			// set recur false: Don't dig inside m[x] to make m[a[m[x]]] !
+	}
+	return true;
+}
+
+Exp* DfaLocalMapper::preVisit(Location* e, bool& recur) {
+
+	recur = true;
+	if (e->isMemOf() && proc->findFirstSymbol(e) == NULL) {		// Need the 2nd test to ensure change set correctly
+		recur = processExp(e);
+	}
+    return e;
+}
+
+Exp* DfaLocalMapper::preVisit(Binary* e, bool& recur) {
+#if 1
+	// Check for sp -/+ K
+	Exp* memOf_e = Location::memOf(e);
+	if (proc->findFirstSymbol(memOf_e) != NULL) {
+		recur = false;								// Already done; don't recurse
+		return e;
+	} else {
+		recur = processExp(memOf_e);				// Process m[this]
+		if (!recur)									// If made a change this visit,
+			return new Unary(opAddrOf, memOf_e);	// change to a[m[this]]
+	}
+#endif
+	return e;
+}
+
+Exp* DfaLocalMapper::preVisit(TypedExp* e, bool& recur) {
+	// Assume it's already been done correctly, so don't recurse into this
+	recur = false;
+	return e;
+}
+

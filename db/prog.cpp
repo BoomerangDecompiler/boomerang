@@ -1389,9 +1389,9 @@ void Prog::fromSSAform() {
 		UserProc* proc = (UserProc*)(*pp);
 		if (proc->isLib()) continue;
 		if (Boomerang::get()->vFlag) {
-			LOG << "===== Before transformation from SSA form for " << proc->getName() << " =====\n";
+			LOG << "===== before transformation from SSA form for " << proc->getName() << " =====\n";
 			proc->printToLog();
-			LOG << "===== End before transformation from SSA for " << proc->getName() << " =====\n\n";
+			LOG << "===== end before transformation from SSA for " << proc->getName() << " =====\n\n";
 			if (Boomerang::get()->dotFile)
 				proc->printDFG();
 		}

@@ -3227,54 +3227,11 @@ Exp *Exp::removeSubscripts(bool& allZero) {
 
 
 
-//
-// From SSA form. Should be changed to use a visitor pattern some time
-//
-
-Exp* RefExp::fromSSA(igraph& ig) {
-	// Check to see if it is in the map
-	igraph::iterator it = ig.find(this);
-	if (it == ig.end()) {
-		// It is not in the map. Remove the opSubscript
-		Exp* ret = getSubExp1();
-		// ret could be a memof, etc, which could need subscripts removed from
-		ret = ret->fromSSA(ig);
-		return ret;
-	}
-	else {
-#if 0
-		if (subExp1->isPC())
-			// pc is just a nuisance at this stage. Make it explicit for debugging (i.e. find out why it is still here)
-			return Location::local("pc", NULL);
-#endif
-		// It is in the map. Replace with the assigned local
-		return it->second->clone();
-	}
-}
-
-Exp* Unary::fromSSA(igraph& ig) {
-	subExp1 = subExp1->fromSSA(ig);
-	return this;
-}
-
-Exp* Binary::fromSSA(igraph& ig) {
-	subExp1 = subExp1->fromSSA(ig);
-	subExp2 = subExp2->fromSSA(ig);
-    assert(subExp1 && subExp2);
-	return this;
-}
-
-Exp* Ternary::fromSSA(igraph& ig) {
-	subExp1 = subExp1->fromSSA(ig);
-	subExp2 = subExp2->fromSSA(ig);
-	subExp3 = subExp3->fromSSA(ig);
-	return this;
-}
-
-Exp* Exp::fromSSAleft(igraph& ig, Statement* d) {
+// FIXME: if the wrapped expression does not convert to a location, the result is subscripted, which is probably not
+// what is wanted!
+Exp* Exp::fromSSAleft(UserProc* proc, Statement* d) {
 	RefExp* r = new RefExp(this, d);	   // "Wrap" in a ref
-	return r->fromSSA(ig);
-	// Note: r will be deleted in fromSSA! Do not delete here!
+	return r->accept(new ExpSsaXformer(proc));
 }
 
 // Return the memory nesting depth
@@ -3843,6 +3800,7 @@ Type *RefExp::getType()
 	return NULL;
 }
 
+// Ad-hoc TA only
 Type *Location::getType()
 {
 	if (proc == NULL && subExp1->isLocation())
@@ -3851,6 +3809,7 @@ Type *Location::getType()
 		proc = ((Location*)subExp1->getSubExp1())->getProc();
 	if (proc == NULL)
 		return ty;
+#if 0
 	char *nam = proc->lookupSym(this);
 	if (nam) {
 		Type *ty = proc->getLocalType(nam);
@@ -3860,6 +3819,9 @@ Type *Location::getType()
 		if (ty)
 			return ty;		
 	}
+#else
+	char*
+#endif
 	
 	nam = NULL;
 	if (subExp1->getOper() == opStrConst)

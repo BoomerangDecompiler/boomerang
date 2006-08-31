@@ -181,7 +181,7 @@ virtual int getArity() {return 0;}		// Overridden for Unary, Binary, etc
 		// True if this is a subscripted expression (SSA)
 		bool		isSubscript() {return op == opSubscript;}
 		// True if this is a phi assignmnet (SSA)
-		bool		isPhi() {return op == opPhi;}
+//		bool		isPhi() {return op == opPhi;}
 		// True if this is a local variable
 		bool		isLocal() {return op == opLocal;}
 		// True if this is a global variable
@@ -315,11 +315,9 @@ virtual Exp*		simplifyConstraint() {return this;}
 		// Get number of definitions (statements this expression depends on)
 virtual int			getNumRefs() {return 0;}
 
-		// Convert from SSA form
-virtual Exp*		fromSSA(igraph& ig) {return this;}
-
 		// Convert from SSA form, where this is not subscripted (but defined at statement d)
-		Exp*		fromSSAleft(igraph& ig, Statement* d);
+		// Needs the UserProc for the symbol map
+		Exp*		fromSSAleft(UserProc* proc, Statement* d);
 
 		// Generate constraints for this Exp. NOTE: The behaviour is a bit different depending on whether or not
 		// parameter result is a type constant or a type variable.
@@ -547,9 +545,6 @@ virtual Exp*		polySimplify(bool& bMod);
 		Exp*		simplifyAddr();
 virtual Exp*		simplifyConstraint();
 
-		// Convert from SSA form
-virtual Exp*		fromSSA(igraph& ig);
-
 		// Type analysis
 virtual Exp*		genConstraints(Exp* restrictTo);
 
@@ -627,9 +622,6 @@ virtual Exp*		simplifyConstraint();
 		// Type analysis
 virtual Exp*		genConstraints(Exp* restrictTo);
 
-		// Convert from SSA form
-virtual Exp*		fromSSA(igraph& ig);
-
 virtual Type* getType();
 
 		// Visitation
@@ -698,9 +690,6 @@ virtual Exp*		polySimplify(bool& bMod);
 
 		// Type analysis
 virtual Exp* genConstraints(Exp* restrictTo);
-
-		// Convert from SSA form
-virtual Exp* fromSSA(igraph& ig);
 
 virtual Type* getType();
 
@@ -812,7 +801,6 @@ virtual void		printx(int ind);
 		Exp*		addSubscript(Statement* def) {this->def = def; return this;}
 		void		setDef(Statement* def) {this->def = def;}
 virtual Exp*		genConstraints(Exp* restrictTo);
-virtual Exp*		fromSSA(igraph& ig);
 		bool		references(Statement* s) {return def == s;}
 virtual Exp*		polySimplify(bool& bMod);
 virtual Type*		getType();

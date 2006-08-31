@@ -199,10 +199,16 @@ bool DataFlow::canRename(Exp* e, UserProc* proc) {
 	if (e->isMainFlag()) return true;	// Always rename individual flags like %CF
 	if (e->isLocal()) return true;		// Rename hard locals in the post fromSSA pass
 	if (!e->isMemOf()) return false;	// Can't rename %pc or other junk
-	if (proc->lookupSym(e) == NULL)		// Does it have a symbol? (i.e. local or likely parameter)
-		return false;					// Never rename memofs that don't have symbols
-	// e is a local or parameter; allow it to be propagated if we've done escape analysis and the address has not
-	return renameAllMemofs && !proc->isAddressEscapedVar(e);	// escaped
+	// I used to check here if there was a symbol for the memory expression, and if so allow it to be renamed. However,
+	// even named locals and parameters could have their addresses escape the local function, so we need another test
+	// anyway. So locals and parameters should not be renamed (and hence propagated) until escape analysis is done (and
+	// hence renaleLocalsAndParams is set)
+	// Besides,  before we have types and references, it is not easy to find a type for the location, so we can't tell
+	// if e.g. m[esp{-}+12] is evnp or a separate local.
+	// It certainly needs to have the local/parameter pattern
+	if (!proc->isLocalOrParamPattern(e)) return false;
+	// e is a local or parameter; allow it to be propagated iff we've done escape analysis and the address has not
+	return renameLocalsAndParams && !proc->isAddressEscapedVar(e);	// escaped
 }
 
 // For debugging
@@ -244,7 +250,8 @@ bool DataFlow::placePhiFunctions(UserProc* proc) {
 	assert(numBB == cfg->getNumBBs());
 	A_orig.resize(numBB);
 
-	// We need to create A_orig for the current memory depth
+	// We need to create A_orig[n] for all n, the array of sets of locations defined at BB n
+	// Recreate each call because propagation and other changes make old data invalid
 	unsigned n;
 	for (n=0; n < numBB; n++) {
 		BasicBlock::rtlit rit; StatementList::iterator sit;
@@ -439,8 +446,8 @@ bool DataFlow::renameBlockVars(UserProc* proc, int n, bool clearStacks /* = fals
 		S->getDefinitions(defs);
 		LocationSet::iterator dd;
 		for (dd = defs.begin(); dd != defs.end(); dd++) {
-			Exp *a = *dd;
-			// Don't consider a if it cannot be propagated
+			Exp* a = *dd;
+			// Don't consider a if it cannot be renamed
 			bool suitable = canRename(a, proc);
 			if (suitable) {
 				// Push i onto Stacks[a]
@@ -694,13 +701,14 @@ void DefCollector::searchReplaceAll(Exp* from, Exp* to, bool& change) {
 		(*it)->searchAndReplace(from, to);
 }
 
-// Called from CallStatement::fromSSAform
-void UseCollector::fromSSAform(igraph& ig, Statement* def) {
+// Called from CallStatement::fromSSAform. The UserProc is needed for the symbol map
+void UseCollector::fromSSAform(UserProc* proc, Statement* def) {
 	LocationSet removes, inserts;
 	iterator it;
+	ExpSsaXformer esx(proc);
 	for (it = locs.begin(); it != locs.end(); ++it) {
 		RefExp* ref = new RefExp(*it, def);			// Wrap it in a def
-		Exp* ret = ref->fromSSA(ig);
+		Exp* ret = ref->accept(&esx);
 		// If there is no change, ret will equal *it again (i.e. fromSSAform just removed the subscript)
 		if (ret != *it) {							// Pointer comparison
 			// There was a change; we want to replace *it with ret

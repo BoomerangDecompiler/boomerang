@@ -337,10 +337,10 @@ void UserProc::dfaTypeAnalysis() {
 					}
 				}
 				LOG << "in proc " << getName() << " adding addrExp " << addrExp << " to local table\n";
-				localTable.addItem(addr, lookupSym(Location::memOf(addrExp)), typeExp);
+				Type * ty = ((TypingStatement*)s)->getType();
+				localTable.addItem(addr, lookupSym(Location::memOf(addrExp), ty), typeExp);
 			}
 		}
-
 	}
 
 
@@ -1285,72 +1285,6 @@ void TypedExp::descendType(Type* parentType, bool& ch, Statement* s) {
 }
 
 void Terminal::descendType(Type* parentType, bool& ch, Statement* s) {
-}
-
-// Map expressions to locals, using the (so far DFA based) type analysis information
-// Basically, descend types, and when you get to m[...] compare with the local high level pattern;
-// when at a sum or difference, check for the address of locals high level pattern that is a pointer
-
-void Statement::dfaMapLocals() {
-	DfaLocalMapper dlm(proc);
-	StmtModifier sm(&dlm, true);		// True to ignore def collector in return statement
-	accept(&sm);
-	if (VERBOSE && dlm.change)
-		LOG << "statement mapped with new local(s): " << number << "\n";
-}
-
-// Map expressions to locals, some with names like param3
-DfaLocalMapper::DfaLocalMapper(UserProc* proc) : proc(proc) {
-	sig = proc->getSignature();
-	prog = proc->getProg();
-	change = false;
-}
-
-// Common processing for the two main cases:
-bool DfaLocalMapper::processExp(Exp* e) {
-	if (proc->isLocalOrParamPattern(e)) { 	// Check if this is an appropriate pattern for local variables	
-		if (sig->isStackLocal(prog, e)) {
-			change = true;					// We've made a mapping
-			// We have probably not even run TA yet, so doing a full descendtype here would be silly
-			proc->getSymbolExp(e, new VoidType(), true);
-		} else {
-			std::ostringstream ost;
-			ost << "param" << proc->nextParamNum();		// Was "tparam" but seems to be permanent now
-			const char* name = strdup(ost.str().c_str());
-			proc->mapSymbolTo(e, Location::local(const_cast<char*>(name), proc));
-		}
-		return false;			// set recur false: Don't dig inside m[x] to make m[a[m[x]]] !
-	}
-	return true;
-}
-
-Exp* DfaLocalMapper::preVisit(Location* e, bool& recur) {
-
-	recur = true;
-	if (e->isMemOf() && proc->lookupSym(e) == NULL) {		// Need the 2nd test to ensure change set correctly
-		recur = processExp(e);
-	}
-    return e;
-}
-
-Exp* DfaLocalMapper::preVisit(Binary* e, bool& recur) {
-	// Check for sp -/+ K
-	Exp* memOf_e = Location::memOf(e);
-	if (proc->lookupSym(memOf_e) != NULL) {
-		recur = false;		// Already done; don't recurse
-		return e;
-	} else {
-		recur = processExp(memOf_e);				// Process m[this]
-		if (!recur)									// If made a change this visit,
-			return new Unary(opAddrOf, memOf_e);	// change to a[m[this]]
-	}
-	return e;
-}
-
-Exp* DfaLocalMapper::preVisit(TypedExp* e, bool& recur) {
-	// Assume it's already been done correctly, so don't recurse into this
-	recur = false;
-	return e;
 }
 
 bool Signature::dfaTypeAnalysis(Cfg* cfg) {

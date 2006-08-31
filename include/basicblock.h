@@ -522,7 +522,7 @@ public:
 		void		prependStmt(Statement* s, UserProc* proc);
 
 		// Liveness
-		bool		calcLiveness(igraph& ig, UserProc* proc);
+		bool		calcLiveness(ConnectionGraph& ig, UserProc* proc);
 		void		getLiveOut(LocationSet& live, LocationSet& phiLocs);
 
 		// Find indirect jumps and calls

@@ -232,9 +232,8 @@ virtual bool		visit(ImpRefStatement *stmt, bool& override) {override = false; re
 		bool		isIgnoreCol() {return ignoreCol;}
 };
 
-// StmtModifier is a class that visits all statements in an RTL, and for all expressions in the various types of
-// statements, makes a modification. The modification is as a result of an ExpModifier; there is a pointer to such an
-// ExpModifier in a StmtModifier.
+// StmtModifier is a class that for all expressions in this statement, makes a modification.
+// The modification is as a result of an ExpModifier; there is a pointer to such an ExpModifier in a StmtModifier.
 // Even the top level of the LHS of assignments are changed. This is useful e.g. when modifiying locations to locals
 // as a result of converting from SSA form, e.g. eax := ebx -> local1 := local2
 // Classes that derive from StmtModifier inherit the code (in the accept member functions) to modify all the expressions
@@ -457,6 +456,7 @@ public:
 
 // This class is an ExpModifier because although most of the time it merely maps expressions to locals, in one case,
 // where sp-K is found, we replace it with a[m[sp-K]] so the back end emits it as &localX.
+// FIXME: this is probably no longer necessary, since the back end no longer maps anything!
 class DfaLocalMapper : public ExpModifier {
 		UserProc* 	proc;
 		Prog*		prog;
@@ -491,6 +491,8 @@ virtual void		visit(  CaseStatement *s, bool& recur);
 #endif
 
 // Convert any exp{-} (with null definition) so that the definition points instead to an implicit assignment (exp{0})
+// Note it is important to process refs in a depth first manner, so that e.g. m[sp{-}-8]{-} -> m[sp{0}-8]{-} first, so
+// that there is never an implicit definition for m[sp{-}-8], only ever for m[sp{0}-8]
 class ImplicitConverter : public ExpModifier {
 		Cfg*		cfg;
 public:
@@ -577,16 +579,12 @@ public:
 class ExpRegMapper : public ExpVisitor {
 		UserProc*	proc;									// Proc object for storing the symbols
 		Prog*		prog;
-		Type*		lastType;
 public:
 					ExpRegMapper(UserProc* proc);
-		void		setLastType(Type* ty) {lastType = ty;}
-		bool	 	visit(Location *e, bool& override);
 		bool	 	visit(RefExp *e, bool& override);
 };
 
 class StmtRegMapper : public StmtExpVisitor {
-		Type*		lastType;
 public:
 					StmtRegMapper(ExpRegMapper* erm) : StmtExpVisitor(erm) {}
 virtual bool		common(	   Assignment *stmt, bool& override);
@@ -663,6 +661,32 @@ virtual bool		visit(		  Assign *s);
 virtual bool		visit(	   PhiAssign *s);
 virtual bool		visit(ImplicitAssign *s);
 virtual bool		visit(	  BoolAssign *s);
+};
+
+// Transform an exp by applying mappings to the subscripts. This used to be done by many Exp::fromSSAform() functions.
+// Note that mappings have to be done depth first, so e.g. m[r28{0}-8]{22} -> m[esp-8]{22} first, otherwise there wil be
+// a second implicit definition for m[esp{0}-8] (original should be b[esp+8] by now)
+class ExpSsaXformer : public ExpModifier {
+		UserProc*	proc;
+public:
+					ExpSsaXformer(UserProc* proc) : proc(proc) { }
+		UserProc*	getProc() {return proc;}
+
+virtual Exp*		postVisit(RefExp *e);
+};
+
+class StmtSsaXformer : public StmtModifier {
+		UserProc*	proc;
+public:
+					StmtSsaXformer(ExpSsaXformer* esx, UserProc* proc) : StmtModifier(esx), proc(proc) {}
+//virtual			~StmtSsaXformer() {}
+		void		commonLhs(Assignment* s);
+
+virtual void		visit(		  Assign *s, bool& recur);
+virtual void		visit(	   PhiAssign *s, bool& recur);
+virtual void		visit(ImplicitAssign *s, bool& recur);
+virtual void		visit(    BoolAssign *s, bool& recur);
+virtual void		visit( CallStatement *s, bool& recur);
 };
 
 #endif	// #ifndef __VISITOR_H__

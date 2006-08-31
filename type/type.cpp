@@ -1388,10 +1388,15 @@ void DataIntervalMap::replaceComponents(ADDRESS addr, char* name, Type* ty, bool
 					rsp0->clone(),
 					new Const(it->first)));
 			locl->simplifyArith();						// Convert m[sp{0} + -4] to m[sp{0} - 4]
-			char* locName = proc->findLocal(locl);
+			Type* elemTy;
+			int bitOffset = (it->first - addr) / 8;
+			if (ty->resolvesToCompound())
+				elemTy = ty->asCompound()->getTypeAtOffset(bitOffset);
+			else
+				elemTy = ty->asArray()->getBaseType();
+			char* locName = proc->findLocal(locl, elemTy);
 			if (locName && ty->resolvesToCompound()) {
 				CompoundType* c = ty->asCompound();
-				int bitOffset = (it->first - addr) / 8;
 				// want s.m where s is the new compound object and m is the member at offset bitOffset
 				char* memName = (char*)c->getNameAtOffset(bitOffset);
 				Exp* s = Location::memOf(

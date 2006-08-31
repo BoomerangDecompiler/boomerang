@@ -324,7 +324,7 @@ class UserProc : public Proc {
 		ProcStatus	status;
 
 		/*
-		 * DEPRECATED now. Eventually use the localTable.
+		 * Somewhat DEPRECATED now. Eventually use the localTable.
 		 * This map records the names and types for local variables. It should be a subset of the symbolMap, which also
 		 * stores parameters.
 		 * It is a convenient place to store the types of locals after
@@ -338,12 +338,16 @@ class UserProc : public Proc {
 
 		/**
 		 * A map between machine dependent locations and their corresponding symbolic, machine independent
-		 * representations.  Example: m[r28{0} - 8] -> local5
+		 * representations.  Example: m[r28{0} - 8] -> local5; this means that *after* transforming out of SSA
+		 * form, any locations not specifically mapped otherwise (e.g. m[r28{0} - 8]{55} -> local6) will get this
+		 * name.
+		 * It is a *multi*map because one location can have several default names differentiated by type.
+		 * E.g. r24 -> eax for int, r24 -> eax_1 for float
 		 */
 public:
-		typedef std::map<Exp*,Exp*,lessExpStar> SymbolMapType;
+		typedef std::multimap<Exp*,Exp*,lessExpStar> SymbolMap;
 private:
-		SymbolMapType symbolMap;
+		SymbolMap	symbolMap;
 
 		/**
 		 * The local "symbol table", which is aware of overlaps
@@ -473,6 +477,8 @@ virtual bool		isNoReturn();
 		void		printDFG();
 		void		printSymbolMap(std::ostream& out, bool html = false);	///< Print just the symbol map
 		void		dumpSymbolMap();			///< For debugging
+		void		dumpSymbolMapx();			///< For debugging
+		void		testSymbolMap();			///< For debugging
 		void		dumpLocals(std::ostream& os, bool html = false);
 		void		dumpLocals();
 
@@ -569,9 +575,11 @@ virtual bool		isNoReturn();
 		void		replaceExpressionsWithSymbols();
 		void		mapExpressionsToParameters();   ///< must be in SSA form
 		void		mapExpressionsToLocals(bool lastPass = false);
+		void		addParameterSymbols();
 		bool		isLocal(Exp* e);				///< True if e represents a stack local variable
 		bool		isLocalOrParam(Exp* e);			///< True if e represents a stack local or stack param
 		bool		isLocalOrParamPattern(Exp* e);	///< True if e could represent a stack local or stack param
+		bool		existsLocal(char* name);		///< True if a local exists with name \a name
 		bool		isAddressEscapedVar(Exp* e) {return addressEscapedVars.exists(e);}
 		bool		isPropagatable(Exp* e);			///< True if e can be propagated
 
@@ -608,24 +616,24 @@ typedef std::map<Statement*, int> RefCounter;
 		void		propagateToCollector();
 		void		clearUses();					///< Clear the useCollectors (in this Proc, and all calls).
 		void		clearRanges();
-		//int			findMaxDepth();					///< Find max memory nesting depth.
+		//int		findMaxDepth();					///< Find max memory nesting depth.
 
-		void		toSSAform(int memDepth, StatementSet& rs);
 		void		fromSSAform();
+		void		findPhiUnites(ConnectionGraph& pu);		// Find the locations united by Phi-functions
 		void		insertAssignAfter(Statement* s, Exp* left, Exp* right);
+		void		removeSubscriptsFromSymbols();
+		void		removeSubscriptsFromParameters();
 		//// Insert statement \a a after statement \a s.
 		void		insertStatementAfter(Statement* s, Statement* a);
+		// Add a mapping for the destinations of phi functions that have one argument that is a parameter
+		void		nameParameterPhis();
+		void		mapParameters();
+
 		void		conTypeAnalysis();
 		void		dfaTypeAnalysis();
 		/// Trim parameters to procedure calls with ellipsis (...). Also add types for ellipsis parameters, if any
 		/// Returns true if any signature types so added.
 		bool		ellipsisProcessing();
-		/// Build a stack map
-		void		buildStackMap();
-		/// Promote stack map to locals
-		void		makeLocalsFromStackMap();
-		/// Remove stack pointer if possible.
-		void		removeStackPointer();
 
 		// For the final pass of removing returns that are never used
 //typedef	std::map<UserProc*, std::set<Exp*, lessExpStar> > ReturnCounter;
@@ -679,6 +687,7 @@ virtual	void		removeReturn(Exp *e);
 		void		getDefinitions(LocationSet &defs);
 		void		addImplicitAssigns();
 		void		makeSymbolsImplicit();
+		void		makeParamsImplicit();
 		StatementList& getParameters() { return parameters; }
 		StatementList& getModifieds() { return theReturnStatement->getModifieds(); }
 
@@ -712,11 +721,16 @@ public:
 		 */
 		void		toSymbolic(TypedExp* loc, TypedExp* result, bool local = true);
 
+		/*
+		 * Return a string for a new local suitable for e
+		 */
+		char*		newLocalName(Exp* e);
+
 		/**
 		 * Return the next available local variable; make it the given type. Note: was returning TypedExp*.
 		 * If nam is non null, use that name
 		 */
-		Exp*		newLocal(Type* ty, char* nam = NULL);
+		Exp*		newLocal(Type* ty, Exp* e, char* nam = NULL);
 
 		/**
 		 * Add a new local supplying all needed information.
@@ -733,18 +747,30 @@ public:
 		Exp			*expFromSymbol(const char *nam);
 		void		setExpSymbol(const char *nam, Exp *e, Type* ty);
 		void		mapSymbolTo(Exp* from, Exp* to);
-		/// Lookup the expression in the symbol map. Return NULL or a C string with the symbol.
-		char*		lookupSym(Exp* e);
+		/// As above but with replacement
+		void		mapSymbolToRepl(Exp* from, Exp* oldTo, Exp* newTo);
+		void		removeSymbolMapping(Exp* from, Exp* to);		/// Remove this mapping
+		/// Lookup the expression in the symbol map. Return NULL or a C string with the symbol. Use the Type* ty to
+		/// select from several names in the multimap; the name corresponding to the first compatible type is returned
+		Exp*		getSymbolFor(Exp* e, Type* ty);		/// Lookup the symbol map considering type
+		char*		lookupSym(Exp* e, Type* ty);
+		char*		lookupSymFromRef(RefExp* r);		// Lookup a specific symbol for the given ref
+		char*		lookupSymFromRefAny(RefExp* r);		// Lookup a specific symbol if any, else the general one if any
+		char*		lookupParam(Exp* e);				// Find the implicit definition for e and lookup a symbol
+		void		checkLocalFor(RefExp* r);			// Check if r is already mapped to a local, else add one
+		Type*		getTypeForLocation(Exp* e);			// Find the type of the local or parameter e
 		/// Determine whether e is a local, either as a true opLocal (e.g. generated by fromSSA), or if it is in the
 		/// symbol map and the name is in the locals map. If it is a local, return its name, else NULL
-		char*		findLocal(Exp* e);
-
+		char*		findLocal(Exp* e, Type* ty);
+		char*		findLocalFromRef(RefExp* r);
+		char*		findFirstSymbol(Exp* e);
 		int			getNumLocals() { return (int)locals.size(); }
 		const char	*getLocalName(int n);
 		char		*getSymbolName(Exp* e);		///< As getLocalName, but look for expression e
 		void		renameLocal(const char *oldName, const char *newName);
 virtual void		renameParam(const char *oldName, const char *newName);
 
+		char*		getRegName(Exp* r);			/// Get a name like eax or o2 from r24 or r8
 		void		setParamType(const char* nam, Type* ty);
 		void		setParamType(int idx, Type* ty);
 
@@ -853,8 +879,5 @@ protected:
 					UserProc();
 		void		setCFG(Cfg *c) { cfg = c; }
 };		// class UserProc
-
-// Useful for debugging
-		void		dumpIgraph(igraph& ig);
 
 #endif

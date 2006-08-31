@@ -1430,12 +1430,6 @@ bool BranchStatement::searchAndReplace(Exp* search, Exp* replace, bool cc) {
 	return change;
 }
 
-// Convert from SSA form
-void BranchStatement::fromSSAform(igraph& ig) {
-	if (pCond)
-		pCond = pCond->fromSSA(ig); 
-}
-
 /*==============================================================================
  * FUNCTION:		BranchStatement::searchAll
  * OVERVIEW:		Find all instances of the search expression
@@ -1937,16 +1931,6 @@ bool CaseStatement::usesExp(Exp *e) {
 }
 
 
-// Convert from SSA form
-void CaseStatement::fromSSAform(igraph& ig) {
-	if (pDest) {
-		pDest = pDest->fromSSA(ig);
-		return;
-	}
-	if (pSwitchInfo && pSwitchInfo->pSwitchVar)
-		pSwitchInfo->pSwitchVar = pSwitchInfo->pSwitchVar->fromSSA(ig); 
-}
-
 void CaseStatement::simplify() {
 	if (pDest)
 		pDest = pDest->simplify();
@@ -2075,21 +2059,10 @@ void CallStatement::setSigArguments() {
 		Assign* as = new Assign(signature->getParamType(i)->clone(), e->clone(), e->clone());
 		as->setProc(proc);
 		as->setBB(pbb);
-		as->setNumber(number);		// So fromSSAform will work later
+		as->setNumber(number);		// So fromSSAform will work later. But note: this call is probably not numbered yet!
+		as->setParent(this);
 		arguments.append(as);
 	}
-#if 0
-	if (signature->hasEllipsis()) {
-		// Just guess 4 parameters for now
-		for (int i = 0; i < 4; i++) {
-			Exp* e = signature->getArgumentExp(arguments.size())->clone();
-			Assign* as = new Assign(new VoidType, e->clone(), e->clone());
-			arguments.append(as);
-			as->setProc(proc);
-			as->setBB(pbb);
-		}
-	}
-#endif
 
 	// initialize returns
 	// FIXME: anything needed here?
@@ -2563,39 +2536,6 @@ void CallStatement::removeArgument(int i)
 	arguments.erase(aa);
 }
 
-// Convert from SSA form
-void CallStatement::fromSSAform(igraph& ig) {
-	if (pDest)
-		pDest = pDest->fromSSA(ig);
-	StatementList::iterator ss;
-	// FIXME: do the arguments need this treatment too? Surely they can't get tangled in interferences though
-	for (ss = arguments.begin(); ss != arguments.end(); ++ss)
-		(*ss)->fromSSAform(ig);
-	// Note that defines have statements (assignments) within a statement (this call). The fromSSA logic, which needs
-	// to subscript definitions on the left with the statement pointer, won't work if we just call the assignment's
-	// fromSSA() function
-	for (ss = defines.begin(); ss != defines.end(); ++ss) {
-		Assignment* as = ((Assignment*)*ss);
-		Exp *e = as->getLeft()->fromSSAleft(ig, this);
-		if (procDest && procDest->isLib() && e->isLocal()) {
-			Type *lty = proc->getLocalType(((Const*)e->getSubExp1())->getStr());
-			Type *ty = as->getType();
-			if (ty && lty && *ty != *lty) {
-				LOG << "local " << e << " has type " << lty->getCtype() << " that doesn't agree with type of define " << ty->getCtype() << " of a library, wtf?\n";
-				proc->setLocalType(((Const*)e->getSubExp1())->getStr(), ty);
-			}
-		}
-		as->setLeft(e);
-	}
-	// Don't think we'll need this anyway:
-	// defCol.fromSSAform(ig);
-
-	// However, need modifications of the use collector; needed when say eax is renamed to local5, otherwise
-	// local5 is removed from the results of the call
-	useCol.fromSSAform(ig, this);
-}
-
-
 // Processes each argument of a CallStatement, and the RHS of an Assign. Ad-hoc type analysis only.
 Exp *processConstant(Exp *e, Type *t, Prog *prog, UserProc* proc, ADDRESS stmt) {
 	if (t == NULL) return e;
@@ -3058,7 +2998,9 @@ bool CallStatement::ellipsisProcessing(Prog* prog) {
 				addSigParam(new IntegerType(32, -1), isScanf);
 				break;
 			case 'f': case 'g': case 'G': case 'e': case 'E':	// Various floating point formats
-				addSigParam(new FloatType(veryLong ? 128 : 64), isScanf);	// Note: may not be 64 bits
+				// Note that for scanf, %f means float, and %lf means double, whereas for printf, both of these mean
+				// double
+				addSigParam(new FloatType(veryLong ? 128 : (isScanf ? 32 : 64)), isScanf);// Note: may not be 64 bits
 																						// for some archs
 				break;
 			case 's':									// String
@@ -3195,13 +3137,6 @@ void ReturnStatement::addReturn(Assignment* a) {
 	returns.append(a);
 }
 
-
-// Convert from SSA form
-void ReturnStatement::fromSSAform(igraph& ig) {
-	ReturnStatement::iterator rr;
-	for (rr = begin(); rr != end(); ++rr)
-		(*rr)->fromSSAform(ig);
-}
 
 bool ReturnStatement::search(Exp* search, Exp*& result) {
 	result = NULL;
@@ -3459,12 +3394,6 @@ bool BoolAssign::searchAndReplace(Exp *search, Exp *replace, bool cc) {
 	pCond = pCond->searchReplaceAll(search, replace, chl);
 	 lhs  =	  lhs->searchReplaceAll(search, replace, chr);
 	return chl | chr;
-}
-
-// Convert from SSA form
-void BoolAssign::fromSSAform(igraph& ig) {
-	pCond = pCond->fromSSA(ig); 
-	lhs	  = lhs	 ->fromSSAleft(ig, this);
 }
 
 // This is for setting up SETcc instructions; see include/decoder.h macro SETS
@@ -3793,7 +3722,16 @@ bool Assign::search(Exp* search, Exp*& result) {
 	return rhs->search(search, result);
 }
 bool PhiAssign::search(Exp* search, Exp*& result) {
-	return lhs->search(search, result);
+	if (lhs->search(search, result))
+		return true;
+	iterator it;
+	for (it = defVec.begin(); it != defVec.end(); ++it) {
+		if (it->e == NULL) continue;			// Note: can't match foo{-} because of this
+		RefExp* re = new RefExp(it->e, it->def);
+		if (re->search(search, result))
+			return true;
+	}
+	return false;
 }
 bool ImplicitAssign::search(Exp* search, Exp*& result) {
 	return lhs->search(search, result);
@@ -3855,29 +3793,6 @@ int Assign::getMemDepth() {
 	int d2 = rhs->getMemDepth();
 	if (d1 >= d2) return d1;
 	return d2;
-}
-
-void Assign::fromSSAform(igraph& ig) {
-	lhs = lhs->fromSSAleft(ig, this);
-	rhs = rhs->fromSSA(ig);
-}
-
-void Assignment::fromSSAform(igraph& ig) {
-	lhs = lhs->fromSSAleft(ig, this);
-}
-
-void PhiAssign::fromSSAform(igraph& ig) {
-	lhs = lhs->fromSSAleft(ig, this);
-	iterator it;
-	igraph::iterator gg;
-	for (it = defVec.begin(); it != defVec.end(); it++) {
-		if (it->e == NULL) continue;
-		RefExp* r = new RefExp(it->e, it->def);
-		gg = ig.find(r);
-		if (gg != ig.end()) {
-			it->e = gg->second;
-		}
-	}
 }
 
 // PhiExp and ImplicitExp:
@@ -4377,7 +4292,14 @@ bool PhiAssign::accept(StmtExpVisitor* v) {
 	bool ret = v->visit(this, override);
 	if (override) return ret;
 	if (ret && lhs) ret = lhs->accept(v->ev);
-	return ret;
+	iterator it;
+	for (it = defVec.begin(); it != defVec.end(); ++it) {
+		if (it->e == NULL) continue;
+		RefExp* re = new RefExp(it->e, it->def);
+		ret = re->accept(v->ev);
+		if (ret == false) return false;
+	}
+	return true;
 }
 
 bool ImplicitAssign::accept(StmtExpVisitor* v) {
@@ -4766,9 +4688,9 @@ void PhiAssign::convertToAssign(Exp* rhs) {
 	a->setNumber(n); 
 	a->setProc(p); 
 	a->setBB(bb); 
-	RTL* rtl = bb->getRTLWithStatement(this);
-	if (rtl->getAddress() == 0)
-		rtl->setAddress(1);				// Strange things happen to real assignments with address 0
+//	RTL* rtl = bb->getRTLWithStatement(this);
+//	if (rtl->getAddress() == 0)
+//		rtl->setAddress(1);				// Strange things happen to real assignments with address 0
 }
 
 void PhiAssign::simplify() {
@@ -5372,7 +5294,10 @@ void CallStatement::updateArguments() {
 				rhs = asp.localise(loc->clone());
 			else
 				rhs = loc->clone();
-			Assign* as = new Assign(asp.curType(loc), loc->clone(), rhs);
+			Type* ty = asp.curType(loc);
+			Assign* as = new Assign(ty, loc->clone(), rhs);
+			as->setNumber(number);			// Give the assign the same statement number as the call (for now)
+			as->setParent(this);
 			as->setProc(proc);
 			as->setBB(pbb);
 			oldArguments.append(as);
@@ -5418,12 +5343,14 @@ StatementList* CallStatement::calcResults() {
 			int n = sig->getNumReturns();
 			for (int i=1; i < n; i++) {						// Ignore first (stack pointer) return
 				Exp* sigReturn = sig->getReturnExp(i);
+#if SYMS_IN_BACK_END
 				// But we have translated out of SSA form, so some registers have had to have been replaced with locals
 				// So wrap the return register in a ref to this and check the locals
 				RefExp* wrappedRet = new RefExp(sigReturn, this);
 				char* locName = proc->findLocal(wrappedRet);	// E.g. r24{16}
 				if (locName)
 					sigReturn = Location::local(locName, proc);	// Replace e.g. r24 with local19
+#endif
 				if (useCol.exists(sigReturn)) {
 					ImplicitAssign* as = new ImplicitAssign(getTypeFor(sigReturn), sigReturn);
 					ret->append(as);
@@ -5468,11 +5395,8 @@ StatementList* CallStatement::calcResults() {
 	return ret;
 }
 
-Type* Assignment::getType() {
-	return type;
-}
-
-void Assignment::setType(Type* ty) {
+#if 0
+void TypingStatement::setType(Type* ty) {
 	type = ty;
 	if (ADHOC_TYPE_ANALYSIS) {
 		Location* loc = dynamic_cast<Location*>(lhs);
@@ -5480,6 +5404,7 @@ void Assignment::setType(Type* ty) {
 			loc->setType(ty);
 	}
 }
+#endif
 
 void CallStatement::removeDefine(Exp* e) {
 	StatementList::iterator ss;
@@ -5707,4 +5632,27 @@ void Statement::insertCasts() {
 	// Now handle the LHS of assigns that happen to be m[...], using a StmtCastInserter
 	StmtCastInserter sci;
 	accept(&sci);
+}
+
+void Statement::replaceSubscriptsWithLocals() {
+	ExpSsaXformer esx(proc);
+	StmtSsaXformer ssx(&esx, proc);
+	accept(&ssx);
+}
+
+void Statement::dfaMapLocals() {
+	DfaLocalMapper dlm(proc);
+	StmtModifier sm(&dlm, true);		// True to ignore def collector in return statement
+	accept(&sm);
+	if (VERBOSE && dlm.change)
+		LOG << "statement mapped with new local(s): " << number << "\n";
+}
+
+void CallStatement::setNumber(int num) {
+	number = num;
+	// Also number any existing arguments. Important for library procedures, since these have arguments set by the front
+	// end based in their signature
+	StatementList::iterator aa;
+	for (aa = arguments.begin(); aa != arguments.end(); ++aa)
+		(*aa)->setNumber(num);
 }

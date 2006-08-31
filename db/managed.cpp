@@ -888,8 +888,7 @@ bool Range::operator==(Range &other)
 }
 
 // return true if this range map is a subset of the other range map
-bool RangeMap::isSubset(RangeMap &other)
-{
+bool RangeMap::isSubset(RangeMap &other) {
 	for (std::map<Exp*, Range, lessExpStar>::iterator it = ranges.begin(); it != ranges.end(); it++) {
 		if (other.ranges.find((*it).first) == other.ranges.end()) {
 			if (VERBOSE && DEBUG_RANGE_ANALYSIS)
@@ -904,4 +903,93 @@ bool RangeMap::isSubset(RangeMap &other)
 		}
 	}
 	return true;
+}
+
+
+//	class ConnectionGraph
+
+void ConnectionGraph::add(Exp* a, Exp* b) {
+	iterator ff = emap.find(a);
+	while (ff != emap.end() && *ff->first == *a) {
+		if (*ff->second == *b) return;		// Don't add a second entry
+		++ff;
+	}
+	std::pair<Exp*, Exp*> pr;
+	pr.first = a; pr.second = b;
+	emap.insert(pr);
+}
+
+void ConnectionGraph::connect(Exp* a, Exp* b) {
+	add(a, b);
+	add(b, a);
+}
+
+int ConnectionGraph::count(Exp* e) {
+	iterator ff = emap.find(e);
+	int n = 0;
+	while (ff != emap.end() && *ff->first == *e) {
+		++n;
+		++ff;
+	}
+	return n;
+}
+
+bool ConnectionGraph::isConnected(Exp* a, Exp* b) {
+	iterator ff = emap.find(a);
+	while (ff != emap.end() && *ff->first == *a) {
+		if (*ff->second == *b)
+			return true;					// Found the connection
+		++ff;
+	}
+	return false;
+}
+	
+
+// Modify the map so that a <-> b becomes a <-> c
+void ConnectionGraph::update(Exp* a, Exp* b, Exp* c) {
+	// find a->b
+	iterator ff = emap.find(a);
+	while (ff != emap.end() && *ff->first == *a) {
+		if (*ff->second == *b) {
+			ff->second = c;			// Now a->c
+			break;
+		}
+		++ff;
+	}
+	// find b -> a
+	ff = emap.find(b);
+	while (ff != emap.end() && *ff->first == *b) {
+		if (*ff->second == *a) {
+			emap.erase(ff);
+			add(c, a);				// Now c->a
+			break;
+		}
+		++ff;
+	}
+}
+
+// Remove the mapping at *aa, and return a valid iterator for looping
+ConnectionGraph::iterator ConnectionGraph::remove(iterator aa) {
+	assert (aa != emap.end());
+	Exp* b = aa->second;
+	emap.erase(aa++);
+	iterator bb = emap.find(b);
+	assert(bb != emap.end());
+	if (bb == aa)
+		++aa;
+	emap.erase(bb);
+	return aa;
+}
+
+// For debugging
+void dumpConnectionGraph(ConnectionGraph* cg) {
+	ConnectionGraph::iterator cc;
+	for (cc = cg->begin(); cc != cg->end(); ++cc)
+		std::cerr << cc->first << " <-> " << cc->second << "\n";
+}
+
+void ConnectionGraph::dump() {
+	iterator cc;
+	for (cc = begin(); cc != end(); ++cc)
+		std::cerr << cc->first << " <-> " << cc->second << "\n";
 }

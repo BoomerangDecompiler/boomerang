@@ -500,7 +500,7 @@ public:
 		void	setImplicitsDone() {					// Call when implicits have been created
 					bImplicitsDone = true; }
 
-		void	findInterferences(igraph& ig);
+		void	findInterferences(ConnectionGraph& ig);
 		void	appendBBs(std::list<PBB>& worklist, std::set<PBB>& workset);
 
 		void removeUsedGlobals(std::set<Global*> &unusedGlobals);

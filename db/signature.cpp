@@ -147,7 +147,8 @@ namespace CallingConvention {
 			static	bool		qualified(UserProc *p, Signature &candidate);
 
 			virtual void		addReturn(Type *type, Exp *e = NULL);
-			virtual void		addParameter(Type *type, const char *nam = NULL, Exp *e = NULL, const char *boundMax = "");
+			virtual void		addParameter(Type *type, const char *nam = NULL, Exp *e = NULL,
+									const char *boundMax = "");
 			virtual Exp			*getArgumentExp(int n);
 
 			virtual Signature	*promote(UserProc *p);
@@ -158,6 +159,8 @@ namespace CallingConvention {
 			virtual void		setLibraryDefines(StatementList* defs);	// Set list of locations def'd by library calls
 			// Stack offsets can be negative (inherited) or positive:
 			virtual bool		isLocalOffsetPositive() {return true;}
+			// An override for testing locals
+			virtual bool		isAddrOfStackLocal(Prog* prog, Exp* e);
 			virtual bool		isPromoted() { return true; }
 			virtual platform	getPlatform() { return PLAT_SPARC; }
 			virtual callconv	getConvention() { return CONV_C; }
@@ -1637,7 +1640,7 @@ bool Signature::isAddrOfStackLocal(Prog* prog, Exp *e) {
 	// e must be sp -/+ K or just sp
 	static Exp *sp = Location::regOf(getStackRegister(prog));
 	if (op != opMinus && op != opPlus) {
-		// Matches if e is sp or sp{0}
+		// Matches if e is sp or sp{0} or sp{-}
 		return (*e == *sp ||
 			e->isSubscript() && ((RefExp*)e)->isImplicitDef() && *((RefExp*)e)->getSubExp1() == *sp);
 	}
@@ -1645,14 +1648,41 @@ bool Signature::isAddrOfStackLocal(Prog* prog, Exp *e) {
 	if (op == opPlus  && !isLocalOffsetPositive()) return false;
 	Exp* sub1 = ((Binary*)e)->getSubExp1();
 	Exp* sub2 = ((Binary*)e)->getSubExp2();
-	// e must be <sub1> - K
+	// e must be <sub1> +- K
 	if (!sub2->isIntConst()) return false;
-	// first operand must be sp or sp{0}
+	// first operand must be sp or sp{0} or sp{-}
 	if (sub1->isSubscript()) {
 		if (!((RefExp*)sub1)->isImplicitDef()) return false;
 		sub1 = ((RefExp*)sub1)->getSubExp1();
 	}
 	return *sub1 == *sp;
+}
+
+// An override for the SPARC: [sp+0] .. [sp+88] are local variables (effectively), but [sp + >=92] are memory parameters
+bool CallingConvention::StdC::SparcSignature::isAddrOfStackLocal(Prog* prog, Exp* e) {
+	OPER op = e->getOper();
+	if (op == opAddrOf)
+		return isStackLocal(prog, e->getSubExp1());
+	// e must be sp -/+ K or just sp
+	static Exp *sp = Location::regOf(14);
+	if (op != opMinus && op != opPlus) {
+		// Matches if e is sp or sp{0} or sp{-}
+		return (*e == *sp ||
+			e->isSubscript() && ((RefExp*)e)->isImplicitDef() && *((RefExp*)e)->getSubExp1() == *sp);
+	}
+	Exp* sub1 = ((Binary*)e)->getSubExp1();
+	Exp* sub2 = ((Binary*)e)->getSubExp2();
+	// e must be <sub1> +- K
+	if (!sub2->isIntConst()) return false;
+	// first operand must be sp or sp{0} or sp{-}
+	if (sub1->isSubscript()) {
+		if (!((RefExp*)sub1)->isImplicitDef()) return false;
+		sub1 = ((RefExp*)sub1)->getSubExp1();
+	}
+	if (!(*sub1 == *sp)) return false;
+	// SPARC specific test: K must be < 92; else it is a parameter
+	int K = ((Const*)sub2)->getInt();
+	return K < 92;
 }
 
 bool Parameter::operator==(Parameter& other) {
