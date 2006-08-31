@@ -7,7 +7,7 @@ void *reallocf(void *ptr, size_t size);
 
 void exit(int code);
 
-typedef int main(int argc, char[][] argv, char[][] envp);
+typedef int main(int argc, char* argv[], char* envp[]);
 
 int stat(const char* filename, struct stat* st);
 
