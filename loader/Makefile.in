@@ -144,7 +144,7 @@ $(BASEDLL) : BinaryFile.o SymTab.o
 
 # This pattern generates all the main dependencies
 $(LOADERDLLS): ../lib/lib%$(DLLEXT) : %.o $(BASEDLL)
-	$(CC) $(CFLAGS) -o $@ $(SHARED) $< SymTab.o $(EXTRAS) -lBinaryFile $(RUNPATH) -L../lib $(LDFLAGS)
+	$(CXX) $(CXXFLAGS) -o $@ $(SHARED) $< SymTab.o $(EXTRAS) -lBinaryFile $(RUNPATH) -L../lib $(LDFLAGS)
 
 # Compile all objects with -fPIC
 $(ALLOBJS): %.o : %.cpp
