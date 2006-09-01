@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2002, Trent Waddington
+ * Copyright (C) 2002-2006, Trent Waddington and Mike Van Emmerik
  *
  * See the file "LICENSE.TERMS" for information on usage and
  * redistribution of this file, and for a DISCLAIMER OF ALL
@@ -10,14 +10,12 @@
 /*==============================================================================
  * FILE:	   statement.cpp
  * OVERVIEW:   Implementation of the Statement and related classes.
- *			   (Was dataflow.cpp)
+ *			   (Was dataflow.cpp a long time ago)
  *============================================================================*/
 
 /*
  * $Revision$	// 1.148.2.38
  * 03 Jul 02 - Trent: Created
- * 09 Jan 03 - Mike: Untabbed, reformatted
- * 03 Feb 03 - Mike: cached dataflow (uses and usedBy) (since reversed)
  * 25 Jul 03 - Mike: dataflow.cpp, hrtl.cpp -> statement.cpp
  */
 
@@ -704,9 +702,8 @@ bool Statement::canPropagateToExp(Exp*e) {
 		return false;
 	if (!def->isAssign()) return false;		// Only propagate ordinary assignments (so far)
 	Assign* adef = (Assign*)def;
-	Exp* lhs = adef->getLeft();
 
-	if (lhs->getType() && lhs->getType()->isArray()) {
+	if (adef->getType()->isArray()) {
 		// Assigning to an array, don't propagate (Could be alias problems?)
 		return false;
 	}
@@ -938,7 +935,6 @@ bool Statement::replaceRef(Exp* e, Assign *def, bool& convert) {
 	// assert(ret);
 
 	if (ret && isCall()) {
-		this->processTypes();
 		convert |= ((CallStatement*)this)->convertToDirect();
 	}
 	return ret;
@@ -1982,17 +1978,17 @@ Exp *CallStatement::getProven(Exp *e) {
 }
 
 // Localise only components of e, i.e. xxx if e is m[xxx]
-void CallStatement::localiseComp(Exp* e, int depth /* = -1 */) {
+void CallStatement::localiseComp(Exp* e) {
 	if (e->isMemOf()) {
-        ((Location*)e)->setSubExp1(localiseExp(((Location*)e)->getSubExp1(), depth));
+        ((Location*)e)->setSubExp1(localiseExp(((Location*)e)->getSubExp1()));
 	}
 }
 // Substitute the various components of expression e with the appropriate reaching definitions.
 // Used in e.g. fixCallBypass (via the CallBypasser). Locations defined in this call are replaced with their proven
 // values, which are in terms of the initial values at the start of the call (reaching definitions at the call)
-Exp* CallStatement::localiseExp(Exp* e, int depth /* = -1 */) {
+Exp* CallStatement::localiseExp(Exp* e) {
 	if (!defCol.isInitialised()) return e;				// Don't attempt to subscript if the data flow not started yet
-	Localiser l(this, depth);
+	Localiser l(this);
 	e = e->clone()->accept(&l);
 
 	return e;
@@ -2460,30 +2456,6 @@ bool CallStatement::convertToDirect() {
 	return convertIndirect;
 }
 
-void CallStatement::updateArgumentWithType(int n)
-{
-	if (!ADHOC_TYPE_ANALYSIS) return;
-	// let's set the type of arguments to the signature of the called proc
-	// both locations and constants can have a type set
-	if (procDest) {
-		Type *ty = procDest->getSignature()->getParamType(n);
-		if (ty) {
-			StatementList::iterator aa = arguments.begin();
-			my_advance(aa, n);
-			Exp *e = ((Assign*)*aa)->getRight();
-			if (e->isSubscript())
-				e = e->getSubExp1();
-			if (e->isLocation())
-				((Location*)e)->setType(ty->clone());
-			else {
-				Const *c = dynamic_cast<Const*>(e);
-				if (c)
-					c->setType(ty->clone());
-			}					
-		}
-	}
-}
-
 Exp* CallStatement::getArgumentExp(int i)
 {
 	assert(i < (int)arguments.size());
@@ -2499,7 +2471,6 @@ void CallStatement::setArgumentExp(int i, Exp *e)
 	my_advance(aa, i);
 	Exp*& a = ((Assign*)*aa)->getRightRef();
 	a = e->clone();
-	updateArgumentWithType(i);
 }
 
 int CallStatement::getNumArguments()
@@ -2644,246 +2615,6 @@ void CallStatement::setTypeFor(Exp* e, Type* ty) {
 }
 
 
-// This is temporarily horrible till types are consistently stored in assignments (including implicit and BoolAssign),
-// and CallStatement
-Type *Statement::getTypeFor(Exp *e, Prog *prog)
-{
-	Type *ty = NULL;
-	switch (e->getOper()) {
-		case opGlobal: {
-			const char *nam = ((Const*)e->getSubExp1())->getStr();
-			ty = prog->getGlobalType((char*)nam);
-			break;
-		}
-		case opLocal: {
-			const char *nam = ((Const*)e->getSubExp1())->getStr();
-			ty = proc->getLocalType((char*)nam);
-			break;
-		}
-		case opMemberAccess: {
-			Type *tsubexp1 = getTypeFor(e->getSubExp1(), prog);
-			if (tsubexp1 && tsubexp1->resolvesToCompound()) {
-				CompoundType *compound = tsubexp1->asCompound();
-				const char *nam = ((Const*)e->getSubExp2())->getStr();
-				ty = compound->getType((char*)nam);
-			}
-			break;
-		}
-		case opSubscript: {
-			Statement* def = ((RefExp*)e)->getDef();
-			if (def)
-				ty = def->getTypeFor(e->getSubExp1(), prog);
-			break;
-		}
-		default:
-			break;
-	}
-
-	// Defined by this statement
-	// Ick: this needs to be polymorphic - MVE
-	switch(kind) {
-		case STMT_ASSIGN:
-		case STMT_PHIASSIGN:
-		case STMT_IMPASSIGN:
-			if (*e == *((Assignment*)this)->getLeft())
-				return ((Assignment*)this)->getType();
-			break;
-		case STMT_CALL: {
-			CallStatement* call = (CallStatement*)this;
-			Proc* dest = call->getDestProc();
-			if (dest && !dest->isLib()) {
-				ReturnStatement* rs = ((UserProc*)dest)->getTheReturnStatement();
-				if (rs) {
-					ReturnStatement::iterator rr;
-					for (rr = rs->begin(); rr != rs->end(); rr++) {
-						Assignment* as = (Assignment*)*rr;
-						if (*as->getLeft() == *e)
-							// ? Why does gcc need this cast?
-							return ((Statement*)as)->getTypeFor(e, prog);
-					}
-				}
-			}				
-		}
-		case STMT_BOOLASSIGN:
-			return new BooleanType;
-			break;
-		default:
-			break;
-	}
-
-	// MVE: not sure if this is right
-	if (ty == NULL) ty = e->getType();	// May be m[blah].member
-	return ty;
-}
-
-// For ad-hoc TA only...
-bool CallStatement::processConstants(Prog *prog) {
-	StatementList::iterator aa;
-	int i=0;
-	for (aa = arguments.begin(); aa != arguments.end(); ++aa, ++i) {
-		Type *t = getArgumentType(i);
-		Exp *e = ((Assign*)*aa)->getRight();
-	
-        // check for a[m[constant]{?}], treat it like a constant
-        if (e->isAddrOf() && e->getSubExp1()->isSubscript() && e->getSubExp1()->getSubExp1()->isMemOf() && 
-            	e->getSubExp1()->getSubExp1()->getSubExp1()->isIntConst())
-            e = e->getSubExp1()->getSubExp1()->getSubExp1();
-
-		((Assign*)*aa)->setRight(processConstant(e, t, prog, proc, pbb->getRTLWithStatement(this)->getAddress()));
-	}
-
-	return ellipsisProcessing(prog);
-}
-
-void Statement::processTypes()
-{
-	if (!ADHOC_TYPE_ANALYSIS)
-		return;
-
-	bool typeChange = false;
-
-	Exp *addrRefGlobalWild = new Unary(opAddrOf, new RefExp(new Unary(opGlobal, new Terminal(opWildStrConst)), (Statement*)-1));
-	Exp *wildMultConst = new Binary(opMult, new Terminal(opWild), new Terminal(opWildIntConst));
-	std::list<Exp*> result;
-	if (searchAll(new Binary(opPlus, addrRefGlobalWild, wildMultConst), result)) {
-		for (std::list<Exp*>::iterator it = result.begin(); it != result.end(); it++) {
-			char *nam = ((Const*)(*it)->getSubExp1()->getSubExp1()->getSubExp1()->getSubExp1())->getStr();
-			int stride = ((Const*)(*it)->getSubExp2()->getSubExp2())->getInt();
-			Type *ty = proc->getProg()->getGlobalType(nam);
-			if (ty == NULL || ty->isVoid() || ty->isSize()) {
-				// I declare this global an array of something
-				Type *nty;
-				if (ty->isSize()) 
-					nty = new ArrayType(new SizeType(stride * 8), ty->getSize() / (stride * 8));
-				else
-					nty = new ArrayType(new SizeType(stride * 8));
-				proc->getProg()->setGlobalType(nam, nty);
-				typeChange = true;
-				if (VERBOSE) {
-					LOG << "type of global " << nam << " changed from ";
-					if (ty)
-						LOG << ty->getCtype();
-					else
-						LOG << "null";
-					LOG << " to " << nty->getCtype() << "\n";
-				}
-			}
-		}
-	}
-
-	if (typeChange)
-		simplify();
-}
-
-void CallStatement::processTypes()
-{
-	if (!ADHOC_TYPE_ANALYSIS)
-		return;
-
-	Statement::processTypes();
-	
-	StatementList::iterator aa;
-	for (aa = arguments.begin(); aa != arguments.end(); ++aa) {
-		Type *t = ((Assign*)*aa)->getType();
-		Exp *e = ((Assign*)*aa)->getRight();
-
-		std::map<std::string, Exp*> b;
-		if (t->resolvesToPointer() && e->isSubscript() &&
-				e->getSubExp1()->match("m[r28{-} - c]", b)) {
-			Statement *push = ((RefExp*)e)->getDef();
-			if (push && push->isAssign()) {
-				Assign *apush = (Assign*)push;
-				Exp *rhs = apush->getRight();
-				if (rhs->match("r28{-} - c", b)) {
-					apush->setRight(new Unary(opAddrOf, Location::memOf(rhs)));
-					apush->setType(t->clone());
-					continue;
-				}
-			}	
-		}
-
-		if (e->isAddrOf() && t->resolvesToPointer()) {
-			e = e->getSubExp1();
-			t = t->asPointer()->getPointsTo();
-		}
-
-		const char *local = proc->getSymbolName(e);
-		if (local) {
-			Type *ty = proc->getLocalType(local);
-			if (ty == NULL || *ty != *t) {
-				if (VERBOSE)
-					LOG << "setting type of local " << local << " to " << t << ". (arg of call).\n";
-				proc->setLocalType(local, t);
-				continue;
-			}
-		}
-
-		StatementList::iterator pp;
-		bool allZero = false;
-		Exp* clean = e->clone()->removeSubscripts(allZero);
-		if (allZero) {
-			int j = 0;
-			for (pp = proc->getParameters().begin(); pp != proc->getParameters().end(); ++pp, j++) {
-				Exp *le = ((Assign*)*pp)->getLeft();
-				Type *te = ((Assign*)*pp)->getType();
-				if (*le == *clean) {
-					if (*te != *t) {
-						if (VERBOSE)
-							LOG << "setting type of param " << j << " to " << t << ". (arg of call).\n";
-						proc->setParamType(j, t);
-						continue;
-					}
-				}
-			}
-		}
-
-		// this seems harmless to me
-		if (e->isSubscript() && e->getSubExp1()->isGlobal())
-			e = e->getSubExp1();
-
-		if (e->isGlobal()) {
-			const char *name = ((Const*)e->getSubExp1())->getStr();
-			proc->getProg()->setGlobalType(name, t);
-			if (VERBOSE)
-				LOG << "setting global " << name << " to have type " << t->getCtype() << " arg of call " << this << "\n";
-		}
-	}
-
-	// TODO: returns
-
-	if (procDest && !procDest->isLib() && !procDest->getSignature()->isForced()) {
-		int i = 0;
-		for (aa = arguments.begin(); aa != arguments.end(); ++aa, ++i) {
-			Type *t = ((Assign*)*aa)->getType();
-			Exp *e = ((Assign*)*aa)->getRight();
-
-			Type *ty = e->getType();
-			if (ty && t->isSize()) {
-				UserProc *u = (UserProc*)procDest;
-				if (!isChildless())
-					// The destination of childless calls (e.g. with recursion) may not have parameters set up yet
-					u->setParamType(i, ty->clone());
-				((Assign*)*aa)->setType(ty->clone());
-				ReturnStatement *r = u->getTheReturnStatement();
-				if (r) {
-					r->processTypes();
-					for (StatementList::iterator rr = r->getReturns().begin(); rr != r->getReturns().end(); rr++) {
-						Assign *a = (Assign*)*rr;
-						setTypeFor(a->getLeft(), a->getType());
-						if (VERBOSE)
-							LOG << "set type for " << a->getLeft() << " to " << a->getType()->getCtype() << "\n";
-					}
-				}
-				//u->setStatus(PROC_EARLYDONE);
-				//u->simplify();
-				if (VERBOSE)
-					LOG << "setting type of param " << i << " to " << ty->getCtype() << " in proc " << procDest->getName() << "\n";
-			}
-		}
-	}
-}
-
-
 // This function has two jobs. One is to truncate the list of arguments based on the format string.
 // The second is to add parameter types to the signature.
 // If -Td is used, type analysis will be rerun with these changes.
@@ -3025,13 +2756,6 @@ Assign* CallStatement::makeArgAssign(Type* ty, Exp* e) {
 	Exp* lhs = e->clone();
 	localiseComp(lhs);			// Localise the components of lhs (if needed)
 	Exp* rhs = localiseExp(e->clone());
-	if (ADHOC_TYPE_ANALYSIS) {
-		if (lhs->isLocation()) ((Location*)lhs)->setType(ty);
-		Exp* base = rhs;
-		if (rhs->isSubscript())
-			base = ((RefExp*)rhs)->getSubExp1();
-		if (base->isLocation()) ((Location*)base)->setType(ty);
-	}
 	Assign* as = new Assign(ty, lhs, rhs);
 	as->setProc(proc);
 	as->setBB(pbb);
@@ -3366,10 +3090,6 @@ bool BoolAssign::usesExp(Exp *e)
 		((Unary*)lhs)->getSubExp1()->search(e, where)));
 }
 
-bool BoolAssign::processConstants(Prog *prog) {
-	return false;
-}
-
 bool BoolAssign::search(Exp *search, Exp *&result)
 {
 	assert(lhs);
@@ -3417,13 +3137,7 @@ Assignment::Assignment(Exp* lhs) : TypingStatement(new VoidType), lhs(lhs) {
 	}
 
 }
-Assignment::Assignment(Type* ty, Exp* lhs) : TypingStatement(ty), lhs(lhs) {
-	if (ADHOC_TYPE_ANALYSIS) {
-		Location* loc = dynamic_cast<Location*>(lhs);
-		if (loc)					// For example: could be %CF! Ugh.
-			loc->setType(ty);
-	}
-}
+Assignment::Assignment(Type* ty, Exp* lhs) : TypingStatement(ty), lhs(lhs) {}
 Assignment::~Assignment() {}
 
 Assign::Assign(Exp* lhs, Exp* rhs, Exp* guard)
@@ -3521,6 +3235,7 @@ void Assign::simplify() {
 	}
 
 	// this hack finds address constants.. it should go away when Mike writes some decent type analysis.
+#if 0
 	if (DFA_TYPE_ANALYSIS) return;
 	if (lhs->getOper() == opMemOf && lhs->getSubExp1()->getOper() == opSubscript) {
 		RefExp *ref = (RefExp*)lhs->getSubExp1();
@@ -3528,7 +3243,7 @@ void Assign::simplify() {
 		PhiAssign *phi = NULL;
 		if (phist /* && phist->getRight() */)		// ?
 			phi = dynamic_cast<PhiAssign*>(phist);
-		for (int i = 0; phi && i < phi->getNumDefs(); i++) 
+		for (int i = 0; phi && i < phi->getNumDefs(); i++) {
 			if (phi->getStmtAt(i)) {
 				Assign *def = dynamic_cast<Assign*>(phi->getStmtAt(i));
 				// Look for rX{-} - K or K
@@ -3565,43 +3280,9 @@ void Assign::simplify() {
 					}
 				}
 			}
-	}
-
-	if (!ADHOC_TYPE_ANALYSIS) return;
-	// let's gather some more accurate type information
-	if (lhs->isLocation() && rhs->getType()) {
-		Location *llhs = dynamic_cast<Location*>(lhs);
-		assert(llhs);
-		Type *ty = rhs->getType();
-		llhs->setType(ty);
-		if (DEBUG_TA)
-			LOG << "setting type of " << llhs << " to " << ty->getCtype() << "\n";
-	}
-
-	if (lhs->isLocation() && rhs->isIntConst() && (lhs->getType() == NULL || lhs->getType()->isVoid())) {
-		Location *llhs = dynamic_cast<Location*>(lhs);
-		assert(llhs);
-		Type* ty;
-		if (type)
-			ty = new IntegerType(type->getSize());
-		else
-			ty = new IntegerType();
-		llhs->setType(ty);
-		if (DEBUG_TA)
-			LOG << "setting type of " << llhs << " to " << ty->getCtype() << "\n";
-	}
-
-	if (lhs->getType() && lhs->getType()->isFloat() && rhs->getOper() == opIntConst) {
-		if (lhs->getType()->getSize() == 32) {
-			unsigned n = ((Const*)rhs)->getInt();
-			rhs = new Const(*(float*)&n);
 		}
 	}
-
-	// note that we're trying to assign to an array, not a pointer.
-	if (lhs->getType() && lhs->getType()->isArray() && lhs->getType()->getSize() > 0) {
-		lhs = new Binary(opArrayIndex, lhs, new Const(0));
-	}
+#endif
 }
 
 void Assign::simplifyAddr() {
@@ -3807,48 +3488,7 @@ bool Assign::usesExp(Exp *e) {
 		((Unary*)lhs)->getSubExp1()->search(e, where)));
 }
 
-// Not sure if anything needed here
-// MVE: check if can be deleted
-bool Assign::processConstants(Prog* prog) {
 #if 0
-	LOG << "processing constants in assign lhs: " << lhs << " type: ";
-	Type *ty = getTypeFor(lhs, prog);
-	if (ty)
-		LOG << ty->getCtype() << "\n";
-	else
-		LOG << "none\n";
-#endif
-	rhs = processConstant(rhs, Statement::getTypeFor(lhs, prog), prog, proc, pbb->getRTLWithStatement(this)->getAddress());
-	return false;
-}
-
-void Assignment::processTypes()
-{
-	if (!ADHOC_TYPE_ANALYSIS)
-		return;
-
-	Statement::processTypes();
-
-	// hack for assigning to the first member of a compound
-	if (!lhs->isRegOf()) {
-		Type *ty = lhs->getType();
-		if (ty && ty->resolvesToCompound()) { 
-			if (isPhi()) {
-				LOG << "eep, seems we've made a phi on a member access, not wanted. " << this << "\n";
-				proc->removeStatement(this);
-			} else {
-				CompoundType *c = ty->asCompound();
-				const char *nam = c->getNameAtOffset(0);
-				if (nam == NULL) nam = "??";
-				Exp *old = lhs;
-				lhs = new Binary(opMemberAccess, lhs, new Const((char*)nam));
-				if (VERBOSE)
-					LOG << "replacing " << old << " with " << lhs << "\n";
-			}
-		}
-	}
-}
-
 bool Assign::match(const char *pattern, std::map<std::string, Exp*> &bindings)
 {
 	if (strstr(pattern, ":=") == NULL)
@@ -3866,105 +3506,6 @@ bool Assign::match(const char *pattern, std::map<std::string, Exp*> &bindings)
 	}
 
 	return lhs->match(left, bindings) && rhs->match(right, bindings);
-}
-
-void Assign::processTypes()
-{
-	if (!ADHOC_TYPE_ANALYSIS)
-		return;
-
-	Assignment::processTypes();
-
-	if (type->isSize()) {
-		if (rhs->isIntConst() && ((Const*)rhs)->getInt() != 0) {
-			// assigning an integer and it's not NULL, seems good to me.
-			type = new IntegerType(type->getSize());
-		}
-		if (rhs->isFltConst()) {
-			// assigning a float, obviously.
-			type = new FloatType(type->getSize());
-		}
-	}
-
-	if (lhs->isGlobal()) {
-		char *nam = ((Const*)lhs->getSubExp1())->getStr();
-		Type *ty = proc->getProg()->getGlobalType(nam);
-		if (ty == NULL || ty->isSize()) {
-			if (!type->isSize())
-				proc->getProg()->setGlobalType(nam, type);
-		}
-	}
-
-	// hack for assigning from the first member of a compound
-	if (!rhs->isRegOf()) {
-		Type *ty = rhs->getType();
-		if (ty && ty->resolvesToCompound()) { 
-			CompoundType *c = ty->asCompound();
-			const char *nam = c->getNameAtOffset(0);
-			if (nam != NULL && nam != std::string("pad")) {
-				Exp *old = rhs;
-				rhs = new Binary(opMemberAccess, rhs, new Const(strdup(nam)));
-				if (VERBOSE)
-					LOG << "replacing " << old << " with " << rhs << "\n";
-			}
-		}
-	}
-
-	/* Pattern:
-	 *    x.n := m[&y + c]{-}
-	 * Where:
-	 *    type(y) = size or compound
-	 * and the size is big enough to contain an element of the same size as
-	 * n at an offset of c.
-	 * Becomes:
-	 *    type(y) = compound 
-	 * with element of same type as n at offset of c.
-	 *    
-	 * Is this too specific?  
-	 */
-	if (lhs->isMemberOf() && 
-		lhs->getType() && rhs->getType() && 
-		lhs->getType()->getSize() < rhs->getType()->getSize()) {
-		rhs = new RefExp(Location::memOf(new Binary(opPlus, new Unary(opAddrOf, rhs), new Const(0))), NULL);
-	}
-	std::map<std::string, Exp*> b;
-	if (match("x.n := m[a[y] + c]{-}", b) && b["c"]->isIntConst()) {
-		char *lnam = ((Const*)b["n"])->getStr();
-		int c = ((Const*)b["c"])->getInt();
-		Exp *y = b["y"];
-		Type *lty = lhs->getType();
-		Type *ty = y->getType();
-		if (lty && ty && (ty->resolvesToSize() || ty->resolvesToCompound())) {
-			Type *oty = ty->clone();
-			if (ty->resolvesToSize()) {
-				CompoundType *nty = new CompoundType();
-				if (c != 0)
-					nty->addType(new SizeType(c * 8), "pad");
-				nty->addType(lty->clone(), lnam);
-				if (nty->getSize() < ty->getSize())
-					nty->addType(new SizeType(ty->getSize() - nty->getSize()), "pad");
-				ty = nty;
-			} else {
-				ty->asCompound()->setTypeAtOffset(c*8, lty);
-				ty->asCompound()->setNameAtOffset(c*8, lnam);
-			}
-			if (y->getOper() == opArrayIndex) {
-				y = y->getSubExp1();
-				oty = new ArrayType(oty, y->getType()->asArray()->getLength());
-				ty = new ArrayType(ty, y->getType()->asArray()->getLength());
-			}
-			if (y->isSubscript())
-				y = y->getSubExp1();
-			if (*ty != *oty) {
-				if (VERBOSE)
-					LOG << "found better type for " << y << " " << ty->getCtype() << " was " << oty->getCtype() << "\n";
-				if (y->isGlobal()) {
-					char *gnam = ((Const*)y->getSubExp1())->getStr();
-					proc->getProg()->setGlobalType(gnam, ty);
-				}
-			}
-		}
-	}
 }
 
 void addPhiReferences(StatementSet &stmts, Statement *def);
@@ -3997,77 +3538,7 @@ void addPhiReferences(StatementSet &stmts, Statement *def)
 			stmts.insert((*it).def);
 	}
 }
-
-void ReturnStatement::processTypes()
-{
-	if (!ADHOC_TYPE_ANALYSIS)
-		return;
-
-	Statement::processTypes();
-
-	if (proc->getSignature()->isForced()) {
-		StatementList::iterator it;
-		for (it = returns.begin(); it != returns.end(); it++) {
-			Assign *as = (Assign*)*it;
-			for (unsigned int n = 0; n < proc->getSignature()->getNumReturns(); n++)
-				if (*proc->getSignature()->getReturnExp(n) == *as->getLeft()) {
-					as->setType(proc->getSignature()->getReturnType(n));
-					Exp *r = as->getRight();
-					if (r->isSubscript()) {
-						if (r->getSubExp1()->isGlobal())
-							r = r->getSubExp1();
-						else {
-							RefExp *ref = (RefExp*)r;
-							if (ref->getDef()) {
-								StatementSet stmts;
-								Statement *def = ref->getDef();
-								stmts.insert(def);
-								if (def->isPhi())
-									addPhiReferences(stmts, def);
-								for (StatementSet::iterator it1 = stmts.begin(); it1 != stmts.end(); it1++) {
-									if ((*it1)->isCall()) {
-										// original code probably casted the result of the call
-										// e.g., malloc()
-										CallStatement *call = (CallStatement*)*it1;
-										StatementList &defines = call->getDefines();
-										for (StatementList::iterator it2 = defines.begin(); it2 != defines.end(); it2++) {
-											Assignment *asn = (Assignment*)*it2;
-											if (*asn->getLeft() == *r->getSubExp1()) {
-												asn->setType(proc->getSignature()->getReturnType(n));
-												break;
-											}
-										}
-									}
-								}
-							}
-						}
-					}
-					if (r->isGlobal()) {
-						const char *nam = ((Const*)r->getSubExp1())->getStr();
-						proc->getProg()->setGlobalType(nam, proc->getSignature()->getReturnType(n));
-					}
-				}
-		}
-	} else {
-		StatementList::iterator it;
-		int i = 0;
-		for (it = returns.begin(); it != returns.end(); it++, i++) {
-			Assign *as = (Assign*)*it;
-			as->setRight(as->getRight()->simplify());
-			Type *ty = as->getRight()->getType();
-			if (ty)
-				as->setType(ty);
-			proc->getSignature()->setReturnType(i, ty);
-		}
-	}
-}
-
-bool PhiAssign::processConstants(Prog* prog) {
-	return false;
-}
-bool ImplicitAssign::processConstants(Prog* prog) {
-	return false;
-}
+#endif
 
 void Assignment::genConstraints(LocationSet& cons) {
 	// Almost every assignment has at least a size from decoding
@@ -5328,8 +4799,6 @@ void CallStatement::updateArguments() {
 			arguments.insert(arguments.end(), as);				// In case larger than all existing elements
 	}
 
-	// seems like a good time to do this
-	processTypes();
 }
 
 // Calculate results(this) = defines(this) isect live(this)
@@ -5398,11 +4867,6 @@ StatementList* CallStatement::calcResults() {
 #if 0
 void TypingStatement::setType(Type* ty) {
 	type = ty;
-	if (ADHOC_TYPE_ANALYSIS) {
-		Location* loc = dynamic_cast<Location*>(lhs);
-		if (loc)					// For example: could be %CF! Ugh.
-			loc->setType(ty);
-	}
 }
 #endif
 
@@ -5528,7 +4992,6 @@ bool	ImpRefStatement::accept(StmtPartModifier* v) {
 		LOG << "ImplicitRef changed: now " << this << "\n";
 	return true;
 }
-bool	ImpRefStatement::processConstants(Prog* prog) { return false;}
 bool	ImpRefStatement::search(Exp* search, Exp*& result) {
 	result = NULL;
 	return addressExp->search(search, result);

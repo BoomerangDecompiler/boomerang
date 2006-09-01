@@ -1,10 +1,9 @@
 /*
  * Copyright (C) 2000-2001, The University of Queensland
- * Copyright (C) 2002, Trent Waddington
+ * Copyright (C) 2002-2006, Trent Waddington and Mike Van Emmerik
  *
  * See the file "LICENSE.TERMS" for information on usage and
- * redistribution of this file, and for a DISCLAIMER OF ALL
- * WARRANTIES.
+ * redistribution of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
  */
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2002-2005, Trent Waddington and Mike Van Emmerik
+ * Copyright (C) 2002-2006, Trent Waddington and Mike Van Emmerik
  */
 /*==============================================================================
  * FILE:	   exp.h
@@ -86,8 +86,8 @@ public:
 		// Virtual destructor
 virtual				~Exp() {}
 
-		// Return the index. Note: I'd like to make this protected, but then subclasses don't seem to be able to use it
-		// (at least, for subexpressions)
+		// Return the operator. Note: I'd like to make this protected, but then subclasses don't seem to be able to use
+		// it (at least, for subexpressions)
 		OPER		getOper() const {return op;}
 		void		setOper(OPER x) {op = x;}	  // A few simplifications use this
 
@@ -226,6 +226,7 @@ virtual bool		isTerminal() { return false; }
 		bool		isTypedExp() { return op == opTypedExp;}
 
 
+		// FIXME: are these used?
 		// Matches this expression to the pattern, if successful returns a list of variable bindings, otherwise returns
 		// NULL
 virtual Exp			*match(Exp *pattern);
@@ -278,11 +279,10 @@ virtual void		setSubExp1(Exp* e) {};
 virtual void		setSubExp2(Exp* e) {};
 virtual void		setSubExp3(Exp* e) {};
 
-		// Get the memory nesting depth. Non mem-ofs return 0; m[m[x]] returns 2
-virtual int			getMemDepth() {return 0;}
-virtual bool		isMemDepth(int d) {return d == 0;}
 		// Get the complexity depth. Basically, add one for each unary, binary, or ternary
 		int			getComplexityDepth(UserProc* proc);
+		// Get memory depth. Add one for each m[]
+		int			getMemDepth();
 
 		//	//	//	//	//	//	//
 		//	Guarded assignment	//
@@ -331,8 +331,6 @@ virtual int			getNumRefs() {return 0;}
 		//	 sub1 = <ptr> and sub2 = <ptr> and Tr = <int> or
 		//	 sub1 = <ptr> and sub2 = <int> and Tr = <ptr>
 virtual Exp*		genConstraints(Exp* result);
-
-virtual Type		*getType() { return NULL; }
 
 		// Visitation
 		// Note: best to have accept() as pure virtual, so you don't forget to implement it for new subclasses of Exp
@@ -475,8 +473,6 @@ virtual void		printx(int ind);
 
 virtual bool		isTerminal() { return true; }
 
-virtual bool		isMemDepth(int d);
-
 		// Visitation
 virtual bool		accept(ExpVisitor* v);
 virtual Exp*		accept(ExpModifier* v);
@@ -531,7 +527,6 @@ virtual void		printx(int ind);
 		Exp*		getSubExp1();
 		// Get a reference to subexpression 1
 		Exp*&		refSubExp1();
-virtual int			getMemDepth();
 
 virtual Exp*		match(Exp *pattern); 
 virtual bool 		match(const char *pattern, std::map<std::string, Exp*> &bindings);
@@ -547,8 +542,6 @@ virtual Exp*		simplifyConstraint();
 
 		// Type analysis
 virtual Exp*		genConstraints(Exp* restrictTo);
-
-virtual Type*		getType();
 
 		// Visitation
 virtual bool		accept(ExpVisitor* v);
@@ -605,7 +598,6 @@ virtual void		 printx(int ind);
 		void		commute();
 		// Get a reference to subexpression 2
 		Exp*&		refSubExp2();
-virtual int			getMemDepth();
 
 virtual Exp*		match(Exp *pattern); 
 virtual bool 		match(const char *pattern, std::map<std::string, Exp*> &bindings);
@@ -621,8 +613,6 @@ virtual Exp*		simplifyConstraint();
 
 		// Type analysis
 virtual Exp*		genConstraints(Exp* restrictTo);
-
-virtual Type* getType();
 
 		// Visitation
 virtual bool		accept(ExpVisitor* v);
@@ -679,7 +669,6 @@ virtual void		 printx(int ind);
 		Exp*		getSubExp3();
 		// Get a reference to subexpression 3
 		Exp*&		refSubExp3();
-virtual int			getMemDepth();
 
 		// Search children
 		void		doSearchChildren(Exp* search, std::list<Exp**>& li, bool once);
@@ -690,8 +679,6 @@ virtual Exp*		polySimplify(bool& bMod);
 
 		// Type analysis
 virtual Exp* genConstraints(Exp* restrictTo);
-
-virtual Type* getType();
 
 		// Visitation
 virtual bool	accept(ExpVisitor* v);
@@ -738,8 +725,8 @@ virtual void		appendDotFile(std::ofstream& of);
 virtual void		printx(int ind);
 
 		// Get and set the type
-virtual Type*		getType();
-virtual void		setType(Type* ty);
+virtual Type*		getType() {return type;}
+virtual void		setType(Type* ty) {type = ty;}
 
 		// polySimplify
 virtual Exp*		polySimplify(bool& bMod);
@@ -803,7 +790,6 @@ virtual void		printx(int ind);
 virtual Exp*		genConstraints(Exp* restrictTo);
 		bool		references(Statement* s) {return def == s;}
 virtual Exp*		polySimplify(bool& bMod);
-virtual Type*		getType();
 virtual Exp			*match(Exp *pattern);
 virtual bool 		match(const char *pattern, std::map<std::string, Exp*> &bindings);
 
@@ -844,7 +830,7 @@ virtual void		print(std::ostream& os, bool html = false);
 virtual void		printx(int ind);
 virtual Exp*		genConstraints(Exp* restrictTo) {
 						assert(0); return NULL;} // Should not be constraining constraints
-virtual Exp			*match(Exp *pattern);
+//virtual Exp		*match(Exp *pattern);
 
 		// Visitation
 virtual bool		accept(ExpVisitor* v);
@@ -857,7 +843,6 @@ protected:
 class Location : public Unary {
 protected:
 		UserProc	*proc;
-		Type		*ty;		// The type for this location? Deprecated. Now in class Assignment
 
 public:
 		// Constructor with ID, subexpression, and UserProc*
@@ -883,11 +868,6 @@ virtual Exp*		clone();
 virtual Exp*		polySimplify(bool& bMod);
 virtual void		getDefinitions(LocationSet& defs);
 
-virtual Type		*getType();
-virtual void		setType(Type *t);
-virtual int			getMemDepth();
-virtual bool		isMemDepth(int d);
-
 		// Visitation
 virtual bool		accept(ExpVisitor* v);
 virtual Exp*		accept(ExpModifier* v);
@@ -895,7 +875,7 @@ virtual bool 		match(const char *pattern, std::map<std::string, Exp*> &bindings)
 
 protected:
 		friend class XMLProgParser;
-					Location(OPER op) : Unary(op), proc(NULL), ty(NULL) { }
+					Location(OPER op) : Unary(op), proc(NULL) { }
 };	// class Location
 	
 #endif // __EXP_H__

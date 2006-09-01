@@ -1,10 +1,9 @@
 /*
- * Copyright (C) 2004, Mike Van Emmerik and Trent Waddington
+ * Copyright (C) 2004-2006, Mike Van Emmerik and Trent Waddington
  */
 /*==============================================================================
  * FILE:	   visitor.cpp
- * OVERVIEW:   Provides the implementation for the various visitor and modifier
- *			   classes.
+ * OVERVIEW:   Provides the implementation for the various visitor and modifier classes.
  *============================================================================*/
 /*
  * $Revision$
@@ -643,9 +642,6 @@ Exp* Localiser::preVisit(RefExp* e, bool& recur) {
 
 Exp* Localiser::preVisit(Location* e, bool& recur) {
 	recur = true;
-	int d = e->getMemDepth();
-	if (d <= depth)				// Don't recurse if depth already too low, or equal
-		recur = false;
 	mask <<= 1;
 	return e;
 }
@@ -654,8 +650,6 @@ Exp* Localiser::postVisit(Location* e) {
 	Exp* ret = e;
 	if (!(unchanged & mask)) ret = e->simplify();
 	mask >>= 1;
-	int d = ret->getMemDepth();
-	if (d != depth && depth != -1) return e;	// Only subscript at the requested depth, or any if depth == -1
 	Exp* r = call->findDefFor(ret);
 	if (r) {
 		ret = r->clone();
@@ -678,7 +672,6 @@ Exp* Localiser::postVisit(Terminal* e) {
 	Exp* ret = e;
 	if (!(unchanged & mask)) ret = e->simplify();
 	mask >>= 1;
-	if (depth >= 1) return ret;
 	Exp* r = call->findDefFor(ret);
 	if (r) {
 		ret = r->clone()->bypass();
@@ -689,7 +682,7 @@ Exp* Localiser::postVisit(Terminal* e) {
 	return ret;
 }
 
-bool ComplexityFinder::visit(Location* e,		bool& override) {
+bool ComplexityFinder::visit(Location* e, bool& override) {
 	if (proc && proc->findFirstSymbol(e) != NULL) {
 		// This is mapped to a local. Count it as zero, not about 3 (m[r28+4] -> memof, regof, plus)
 		override = true;
@@ -703,6 +696,13 @@ bool ComplexityFinder::visit(Location* e,		bool& override) {
 bool ComplexityFinder::visit(Unary* e,		bool& override) {count++; override = false; return true;}
 bool ComplexityFinder::visit(Binary* e,		bool& override) {count++; override = false; return true;}
 bool ComplexityFinder::visit(Ternary* e,	bool& override) {count++; override = false; return true;}
+
+bool MemDepthFinder::visit(Location* e, bool& override) {
+	if (e->isMemOf())
+		++depth;
+	override = false;
+	return true;
+}
 
 // Ugh! This is still a separate propagation mechanism from Statement::propagateTo().
 Exp* ExpPropagator::postVisit(RefExp* e) {

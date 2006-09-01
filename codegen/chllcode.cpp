@@ -1,9 +1,8 @@
 /*
- * Copyright (C) 2002, Trent Waddington
+ * Copyright (C) 2002-2006, Trent Waddington
  *
  * See the file "LICENSE.TERMS" for information on usage and
- * redistribution of this file, and for a DISCLAIMER OF ALL
- * WARRANTIES.
+ * redistribution of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
  */
 
@@ -86,15 +85,6 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 	}
 
 	OPER op = exp->getOper();
-	// First, a crude cast if unsigned, for ad-hoc. For DFA type analysis, casts are corrected after TA
-	if (uns && op != opIntConst && op != opList && !DFA_TYPE_ANALYSIS) {
-		if (!(exp->isMemOf() && exp->getSubExp1()->getType() && exp->getSubExp1()->getType()->isPointer() &&
-				exp->getSubExp1()->getType()->asPointer()->getPointsTo()->isInteger() &&
-				!exp->getSubExp1()->getType()->asPointer()->getPointsTo()->asInteger()->isSigned())) {
-			str << "(unsigned)";
-			curPrec = PREC_UNARY;
-		}
-	}
 
 #if SYMS_IN_BACK_END				// Should no longer be any unmapped symbols by the back end
 	// Check if it's mapped to a symbol
@@ -196,10 +186,12 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 			str << c->getFuncName(); break;
 		case opAddrOf: {
 			Exp* sub = u->getSubExp1();
+#if 0		// Suspect only ADHOC TA
 			if (sub->getType() && sub->getType()->isArray()) {
 				appendExp(str, sub, curPrec);
 				break;
 			}
+#endif
 			if (sub->isGlobal()) {
 				Prog* prog = m_proc->getProg();
 				Const* con = (Const*)((Unary*)sub)->getSubExp1();
@@ -238,10 +230,12 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 				openParen(str, curPrec, PREC_EQUAL);
 				appendExp(str, b->getSubExp1(), PREC_EQUAL);
 				str << " == ";
+#if 0			// Suspect only for ADHOC TA
 				Type *ty = b->getSubExp1()->getType();
 				if (ty && ty->isPointer() && b->getSubExp2()->isIntConst() && ((Const*)b->getSubExp2())->getInt() == 0)
 					str << "NULL";
 				else
+#endif
 					appendExp(str, b->getSubExp2(), PREC_EQUAL);				
 				closeParen(str, curPrec, PREC_EQUAL);
 			}
@@ -251,10 +245,12 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 				openParen(str, curPrec, PREC_EQUAL);
 				appendExp(str, b->getSubExp1(), PREC_EQUAL);
 				str << " != ";
+#if 0			// Suspect only for ADHOC_TA
 				Type *ty = b->getSubExp1()->getType();
 				if (ty && ty->isPointer() && b->getSubExp2()->isIntConst() && ((Const*)b->getSubExp2())->getInt() == 0)
 					str << "NULL";
 				else
+#endif
 					appendExp(str, b->getSubExp2(), PREC_EQUAL);
 				closeParen(str, curPrec, PREC_EQUAL);
 			}
@@ -392,38 +388,8 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 				break;
 			}
 			openParen(str, curPrec, PREC_UNARY);
-			if (ADHOC_TYPE_ANALYSIS) {
-				if (u->getSubExp1()->getType() && !u->getSubExp1()->getType()->isVoid()) {
-					Exp *l = u->getSubExp1();
-					Type *ty = l->getType();
-					if (ty->isPointer()) {
-						str << "*";
-						if (ty->asPointer()->getPointsTo()->isSize()) {
-							int sz = ty->asPointer()->getPointsTo()->asSize()->getSize();
-							if (sz == 8)
-								str << "(char*)";
-							else if (sz == 16)
-								str << "(short*)";
-							else if (sz == 32)
-								str << "(int*)";
-						}
-						appendExp(str, l, PREC_UNARY);
-						closeParen(str, curPrec, PREC_UNARY);
-						break;
-					}
-					str << "*(";
-					appendType(str, ty);
-					str << "*)";
-					openParen(str, curPrec, PREC_UNARY);
-					appendExp(str, l, PREC_UNARY);
-					closeParen(str, curPrec, PREC_UNARY);
-					break;
-				}
-				str << "*(int*)";
-			} else if (DFA_TYPE_ANALYSIS) {
-				// annotateMemofs should have added a cast if it was needed
-				str << "*";
-			}
+			// annotateMemofs should have added a cast if it was needed
+			str << "*";
 			appendExp(str, u->getSubExp1(), PREC_UNARY);
 			closeParen(str, curPrec, PREC_UNARY);
 			break;
@@ -702,10 +668,12 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 				if (sz == 8 || sz == 16) {
 					bool close = false;
 					str << "*";
+#if 0				// Suspect ADHOC TA only
 					Type *ty = t->getSubExp3()->getSubExp1()->getType();
 					if (ty == NULL || !ty->isPointer() || 
 							!ty->asPointer()->getPointsTo()->isInteger() ||
 							ty->asPointer()->getPointsTo()->asInteger()->getSize() != sz) {
+#endif
 						str << "(unsigned ";
 						if (sz == 8)
 							str << "char";
@@ -714,7 +682,9 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 						str << "*)";
 						openParen(str, curPrec, PREC_UNARY);
 						close = true;
+#if 0		// ADHOC TA as above
 					}
+#endif
 					appendExp(str, t->getSubExp3()->getSubExp1(), PREC_UNARY);
 					if (close)
 						closeParen(str, curPrec, PREC_UNARY);
@@ -727,6 +697,7 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 			appendExp(str, t->getSubExp3(), PREC_NONE);
 			str << ")";
 			break;
+
 		case opTypedExp: {
 #if SYMS_IN_BACK_END
 			Exp* b = u->getSubExp1();					// Base expression
@@ -744,7 +715,11 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 				appendExp(str, u->getSubExp1(), curPrec);
 			} else if (u->getSubExp1()->getOper() == opMemOf) {
 				// We have (tt)m[x]
+#if 0			// ADHOC TA
 				PointerType *pty = dynamic_cast<PointerType*>(u->getSubExp1()->getSubExp1()->getType());
+#else
+				PointerType* pty = NULL;
+#endif
 				// pty = T(x)
 				Type *tt = ((TypedExp*)u)->getType();
 				if (pty != NULL && (*pty->getPointsTo() == *tt ||
@@ -878,10 +853,14 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 			break;
 		case opMemberAccess:
 			{
+#if 0			// ADHOC TA
 				Type *ty = b->getSubExp1()->getType();
+#else
+				Type* ty = NULL;
+#endif
 				if (ty == NULL) {
 					LOG << "type failure: no type for subexp1 of " << b << "\n";
-					ty = b->getSubExp1()->getType();
+					//ty = b->getSubExp1()->getType();
 					// No idea why this is hitting! - trentw
 					// str << "/* type failure */ ";
 					// break;
@@ -903,7 +882,11 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 		case opArrayIndex:
 			openParen(str, curPrec, PREC_PRIM);
 			if (b->getSubExp1()->isMemOf()) {
+#if 0			// ADHOC TA
 			   	Type *ty = b->getSubExp1()->getSubExp1()->getType();
+#else
+				Type* ty = NULL;
+#endif
 				if (ty && ty->resolvesToPointer() && 
 						ty->asPointer()->getPointsTo()->resolvesToArray()) {
 					// a pointer to an array is automatically dereferenced in C
@@ -1285,9 +1268,7 @@ void CHLLCode::AddAssignmentStatement(int indLevel, Assign *asgn) {
 			new TypedExp(
 				asgnType,
 				lhs), PREC_ASSIGN);
-	else if (lhs->getOper() == opGlobal &&
-			 ((Location*)lhs)->getType() && 
-			 ((Location*)lhs)->getType()->isArray())
+	else if (lhs->getOper() == opGlobal && asgn->getType()->isArray())
 		appendExp(s, new Binary(opArrayIndex,
 			lhs,
 			new Const(0)), PREC_ASSIGN);
@@ -1321,8 +1302,8 @@ void CHLLCode::AddAssignmentStatement(int indLevel, Assign *asgn) {
 		// however it's not always acceptable for assigns to m[] (?)
 		if (rhs->getSubExp2()->isIntConst() && 
 				(((Const*)rhs->getSubExp2())->getInt() == 1 ||
-				 (lhs->getType() && lhs->getType()->isPointer() && 
-				 lhs->getType()->asPointer()->getPointsTo()->getSize() ==
+				 (asgn->getType()->isPointer() &&
+				 asgn->getType()->asPointer()->getPointsTo()->getSize()==
 					(unsigned) ((Const*)rhs->getSubExp2())->getInt() * 8)))
 			s << "++";
 		else {

@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 1998-2001, The University of Queensland
  * Copyright (C) 2000-2001, Sun Microsystems, Inc
- * Copyright (C) 2002, Trent Waddington
+ * Copyright (C) 2002-2006, Trent Waddington and Mike Van Emmerik
  *
  * See the file "LICENSE.TERMS" for information on usage and
  * redistribution of this file, and for a DISCLAIMER OF ALL
@@ -546,8 +546,6 @@ virtual bool		isNoReturn();
 		void		initStatements();
 		void		numberStatements();
 		bool		nameStackLocations();
-		bool		replaceReg(Exp* match, Exp* e, Statement* def);	///< Helper function for nameRegisters()
-		bool		nameRegisters();
 		void		removeRedundantPhis();
 		void		findPreserveds();					///< Was trimReturns()
 		void		findSpPreservation();				///< Preservations only for the stack pointer
@@ -571,9 +569,7 @@ virtual bool		isNoReturn();
 		/// Trim parameters. If depth not given or == -1, perform at all depths
 		void		trimParameters(int depth = -1);
 		void		processFloatConstants();
-		void		replaceExpressionsWithGlobals();
-		void		replaceExpressionsWithSymbols();
-		void		mapExpressionsToParameters();   ///< must be in SSA form
+		//void		mapExpressionsToParameters();   ///< must be in SSA form
 		void		mapExpressionsToLocals(bool lastPass = false);
 		void		addParameterSymbols();
 		bool		isLocal(Exp* e);				///< True if e represents a stack local variable
@@ -675,12 +671,9 @@ virtual	void		removeReturn(Exp *e);
 		/// remove a statement
 		void		removeStatement(Statement *stmt);
 
-		/// inline constants / decode function pointer constants
-		bool		processConstants();
-		void		processTypes();
-
-		/// Calculate uses info
-		void		computeUses();
+		// /// inline constants / decode function pointer constants
+		//bool		processConstants();
+		//void		processTypes();
 
 		bool		searchAll(Exp* search, std::list<Exp*> &result);
 

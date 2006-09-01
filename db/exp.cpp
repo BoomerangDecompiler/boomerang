@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2002-2005 Mike Van Emmerik and Trent Waddington
+ * Copyright (C) 2002-2006 Mike Van Emmerik and Trent Waddington
  */
 /*==============================================================================
  * FILE:	   exp.cpp
@@ -8,28 +8,6 @@
 /*
  * $Revision$	// 1.172.2.20
  * 05 Apr 02 - Mike: Created
- * 05 Apr 02 - Mike: Added copy constructors; was crashing under Linux
- * 08 Apr 02 - Mike: Added Terminal subclass
- * 12 Apr 02 - Mike: IDX -> OPER
- * 14 Apr 02 - Mike: search and replace functions take Exp*, was Exp&
- * 27 Apr 02 - Mike: decideType moved here from sslinst.cc
- * 10 May 02 - Mike: Added refSubExp1 etc
- * 13 May 02 - Mike: Added many more cases to print functions
- * 23 May 02 - Mike: Added error messages before several asserts
- * 02 Jun 02 - Mike: Fixed a nasty bug in Unary::polySimplify() where a member
- *				variable was used after "this" had been ;//deleted
- * 10 Jul 02 - Mike: Added simplifyAddr() methods
- * 16 Jul 02 - Mike: Fixed memory issues with operator==
- * ?? Nov 02 - Mike: Added Exp::prints (great for debugging)
- * 26 Nov 02 - Mike: Quelched some warnings; fixed an error in Assign copy
- *				constructor
- * 03 Dec 02 - Mike: Fixed simplification of exp AND -1 (was exp AND +1)
- * 09 Dec 02 - Mike: Print succ()
- * 03 Feb 03 - Mike: Mods for cached dataflow
- * 25 Mar 03 - Mike: Print new operators (opWildIntConst, etc)
- * 10 Jun 03 - Mike: Swapped simplification of a - K -> a + -K
- * 16 Jun 03 - Mike: Binary::simplifyArith simplifies subexpressions first;
- *				returns a - K now (was a + -K)
  */
 
 #include <assert.h>
@@ -53,7 +31,7 @@
 #include "operstrings.h"// Defines a large array of strings for the createDotFile etc. functions. Needs -I. to find it
 #include "util.h"
 #include "boomerang.h"
-#include "transformer.h"
+//#include "transformer.h"
 #include "visitor.h"
 #include "log.h"
 #include <iomanip>			// For std::setw etc
@@ -160,7 +138,7 @@ TypeVal::TypeVal(Type* ty) : Terminal(opTypeVal), val(ty) { }
  * Create a new Location expression.
  * \param op Should be \opRegOf, opMemOf, opLocal, opGlobal, opParam or opTemp.
  */
-Location::Location(OPER op, Exp *exp, UserProc *proc) : Unary(op, exp), proc(proc), ty(NULL) {
+Location::Location(OPER op, Exp *exp, UserProc *proc) : Unary(op, exp), proc(proc) {
 	assert(op == opRegOf || op == opMemOf || op == opLocal || op == opGlobal || op == opParam || op == opTemp);
 	if (proc == NULL) {
 		// eep.. this almost always causes problems
@@ -190,7 +168,7 @@ Location::Location(OPER op, Exp *exp, UserProc *proc) : Unary(op, exp), proc(pro
 	}
 }
 
-Location::Location(Location& o) : Unary(o.op, o.subExp1->clone()), proc(o.proc), ty(o.ty)
+Location::Location(Location& o) : Unary(o.op, o.subExp1->clone()), proc(o.proc)
 {
 }
 
@@ -277,30 +255,6 @@ Exp*& Exp::refSubExp1() {return dummy;}
 Exp*& Exp::refSubExp2() {return dummy;}
 Exp*& Exp::refSubExp3() {return dummy;}
 
-Type* TypedExp::getType()
-{
-	return type;
-}
-void TypedExp::setType(Type* ty)
-{
-	type = ty;
-}
-
-void Location::setType(Type *t)
-{
-	ty = t;
-
-	if (proc == NULL)
-		return;
-
-	if (op == opParam) {
-		int n = proc->getSignature()->findParam(((Const*)subExp1)->getStr());
-		if (n != -1)
-			proc->getSignature()->setParamType(n, ty);
-	} else if (op == opLocal) {
-		proc->setLocalType(((Const*)subExp1)->getStr(), ty);
-	}
-}
 
 /*==============================================================================
  * FUNCTION:		Binary::commute
@@ -370,8 +324,6 @@ Exp* TypeVal::clone() {
 
 Exp* Location::clone() {
 	Location* c = new Location(op, subExp1->clone(), proc);
-	if (ty)
-		c->ty = ty->clone();
 	return c;
 }
 
@@ -1371,12 +1323,14 @@ Exp* RefExp::match(Exp *pattern) {
 	}
 	return Exp::match(pattern); */
 }
+#if 0		// Suspect ADHOC TA only
 Exp* TypeVal::match(Exp *pattern) {
 	if (op == pattern->getOper()) {
 		return val->match(pattern->getType());
 	}
 	return Exp::match(pattern);
 }
+#endif
 
 #define ISVARIABLE(x) (strspn((x), "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789") == strlen((x)))
 //#define DEBUG_MATCH
@@ -2069,48 +2023,6 @@ Exp* Unary::polySimplify(bool& bMod) {
 			break;
 	}
 
-	// The following transformations are for ad-hoc type analysis only
-	if (!ADHOC_TYPE_ANALYSIS) return res;
-
-#if 0    
-	/* These transformations are disabled because opArrayIndex should only be 
-	 * used on subExp1's that have a type of ArrayType.  PointerType is not
-	 * good enough!   - trentw
-	 */
-
-	// Replace m[x + k] where x has type pointer and k is a constant with x[k/sizeof(*x)]
-	if (op == opMemOf && subExp1->getOper() == opPlus && subExp1->getSubExp2()->isIntConst()) {
-		int n = ((Const*)subExp1->getSubExp2())->getInt();
-		Type *ty = subExp1->getSubExp1()->getType();
-		if (ty && ty->isPointer()) {
-			int basesz = ((PointerType*)ty)->getPointsTo()->getSize();
-			if (basesz && (basesz % 8) == 0 && (n % (basesz / 8)) == 0) {
-				bMod = true;
-				return new Binary(opArrayIndex,
-					subExp1->getSubExp1()->clone(),
-					new Const(n / (basesz / 8)));
-			}
-		}
-	}
-
-	// Replace m[x + y * k] where x has type pointer and k is a constant equal to the size of the pointed to type with
-	// x[y]
-	if (op == opMemOf && subExp1->getOper() == opPlus && subExp1->getSubExp2()->getOper() == opMult && 
-			subExp1->getSubExp2()->getSubExp2()->isIntConst()) {
-		int n = ((Const*)subExp1->getSubExp2()->getSubExp2())->getInt();
-		Type *ty = subExp1->getSubExp1()->getType();
-		if (ty && ty->isPointer()) {
-			int basesz = ((PointerType*)ty)->getPointsTo()->getSize();
-			if (basesz == n * 8) {
-				bMod = true;
-				return new Binary(opArrayIndex,
-					subExp1->getSubExp1()->clone(),
-					subExp1->getSubExp2()->getSubExp1()->clone());
-			}
-		}
-	}
-#endif
-
 	return res;
 }
 
@@ -2616,6 +2528,7 @@ Exp* Binary::polySimplify(bool& bMod) {
 		return res;
 	}
 	
+#if 0		// FIXME! ADHOC TA assumed!
 	// check for (exp + x) + n where exp is a pointer to a compound type becomes (exp + n) + x
 	if (	op == opPlus &&
 			subExp1->getOper() == opPlus &&
@@ -2630,18 +2543,16 @@ Exp* Binary::polySimplify(bool& bMod) {
 			return res;
 		}
 	}
+#endif
 
+	// FIXME: suspect this was only needed for ADHOC TA
 	// check for exp + n where exp is a pointer to a compound type
 	// becomes &m[exp].m + r where m is the member at offset n and r is n - the offset to member m
 	Type* ty = NULL;			// Type of subExp1
-	if (ADHOC_TYPE_ANALYSIS)
-		ty = subExp1->getType();
-	else {
-		if (subExp1->isSubscript()) {
-			Statement* def = ((RefExp*)subExp1)->getDef();
-			if (def)
-				ty = def->getTypeFor(((RefExp*)subExp1)->getSubExp1());
-		}
+	if (subExp1->isSubscript()) {
+		Statement* def = ((RefExp*)subExp1)->getDef();
+		if (def)
+			ty = def->getTypeFor(((RefExp*)subExp1)->getSubExp1());
 	}
 	if (	op == opPlus &&
 			ty && ty->resolvesToPointer() &&  ty->asPointer()->getPointsTo()->resolvesToCompound() &&
@@ -2654,7 +2565,7 @@ Exp* Binary::polySimplify(bool& bMod) {
 			const char *nam = c->getNameAtOffset(n*8);
 			if (nam != NULL && std::string("pad") != nam) {
 				Location *l = Location::memOf(subExp1);
-				l->setType(c);
+				//l->setType(c);
 				res = new Binary(opPlus, 
 					new Unary(opAddrOf, 
 						new Binary(opMemberAccess, 
@@ -2669,6 +2580,7 @@ Exp* Binary::polySimplify(bool& bMod) {
 		}
 	}
 
+#if 0		// FIXME: ADHOC TA assumed
 	// check for exp + x where exp is a pointer to an array
 	// becomes &exp[x / b] + (x % b) where b is the size of the base type in bytes
 	if (	op == opPlus &&
@@ -2703,6 +2615,7 @@ Exp* Binary::polySimplify(bool& bMod) {
 			}
 		}
 	}
+#endif
 
 	if (	op == opFMinus &&
 			subExp1->getOper() == opFltConst &&
@@ -2821,6 +2734,7 @@ Exp* Binary::polySimplify(bool& bMod) {
 	// Replace opSize(n, loc) with loc and set the type if needed
 	if (	op == opSize &&
 			subExp2->isLocation()) {
+#if 0		// FIXME: ADHOC TA assumed here
 		Location *loc = (Location*)subExp2;
 		unsigned n = (unsigned)((Const*)subExp1)->getInt();
 		Type *ty = loc->getType();
@@ -2828,6 +2742,7 @@ Exp* Binary::polySimplify(bool& bMod) {
 			loc->setType(new SizeType(n));
 		else if (ty->getSize() != n)
 			ty->setSize(n);
+#endif
 		res = ((Binary*)res)->getSubExp2();
 		bMod = true;
 		return res;
@@ -3234,38 +3149,6 @@ Exp* Exp::fromSSAleft(UserProc* proc, Statement* d) {
 	return r->accept(new ExpSsaXformer(proc));
 }
 
-// Return the memory nesting depth
-// Examples: r[24] returns 0; m[r[24 + m[r[25]] + 4] returns 2
-int Unary::getMemDepth() {
-	return subExp1->getMemDepth();
-}
-
-int Binary::getMemDepth() {
-    assert(subExp1 && subExp2);
-
-	int d1 = subExp1->getMemDepth();
-	int d2 = subExp2->getMemDepth();
-	if (d1 > d2) return d1;
-	return d2;
-}
-
-int Ternary::getMemDepth() {
-	int d1 = subExp1->getMemDepth();
-	int d2 = subExp2->getMemDepth();
-	int d3 = subExp3->getMemDepth();
-	if (d1 >= d2 && d1 >= d3) return d1;
-	if (d2 >= d3) return d2;
-	return d3;
-}
-
-int Location::getMemDepth() {
-	if (op == opMemOf)
-		return subExp1->getMemDepth() + 1;
-	else if (subExp1)
-		return subExp1->getMemDepth();
-	return 0;
-}
-
 // A helper class for comparing Exp*'s sensibly
 bool lessExpStar::operator()(const Exp* x, const Exp* y) const {
 	return (*x < *y);		// Compare the actual Exps
@@ -3286,8 +3169,7 @@ Exp* Exp::genConstraints(Exp* result) {
 
 Exp* Const::genConstraints(Exp* result) {
 	if (result->isTypeVal()) {
-		// result is a constant type, or possibly a partial type such as
-		// ptr(alpha)
+		// result is a constant type, or possibly a partial type such as ptr(alpha)
 		Type* t = ((TypeVal*)result)->getType();
 		bool match = false;
 		switch (op) {
@@ -3660,230 +3542,6 @@ void Location::getDefinitions(LocationSet& defs) {
 	}
 }
 
-// Ad hoc type analysis only. Possibly similar to ascendType of the data-flow based type analysis.
-Type *Unary::getType() {
-	switch(op) {
-		case opAddrOf:
-			if (subExp1->getType()) {
-				return new PointerType(subExp1->getType());
-			}
-			break;
-		default:
-			break;
-	} 
-	return NULL;
-}
-
-Type *Binary::getType() {
-    assert(subExp1 && subExp2);
-
-	switch(op) {
-		case opArrayIndex:
-			if (subExp1->getType()) {
-				Type *sty = subExp1->getType();
-				if (!sty->resolvesToArray() && !sty->resolvesToPointer()) {
-					if (VERBOSE) {
-						LOG << "subExp1 not of array/ptr type: " << this << "\n";
-						if (sty)
-							LOG << "it has a type: " << sty->getCtype() << "\n";
-					}
-					return NULL;
-				}
-				if (sty->resolvesToArray())
-					return sty->asArray()->getBaseType();
-				// Else must be pointer
-				return sty->asPointer()->getPointsTo();
-			}
-			break;
-		case opMemberAccess:
-			if (subExp1->getType()) {
-				Type *sty = subExp1->getType();
-				if (!sty->resolvesToCompound()) {
-					LOG << "subExp1 not of compound type: " << subExp1 << " has type " << sty->getCtype() << "\n";
-					LOG << "this exp " << this << " suggests it should be.\n";
-					if (subExp1->isMemOf() && subExp1->getSubExp1()->isSubscript()) {
-						RefExp *r = (RefExp*)subExp1->getSubExp1();
-						LOG << r->getDef() << "\n";
-					}
-					return new VoidType();
-					//assert(false);
-				}
-				assert(subExp2->getOper() == opStrConst);
-				char* str = ((Const*)subExp2)->getStr();
-				if (str == NULL) {
-					LOG << "Compound type " << this << " is missing a field "
-						"definition (check signature/*.h files)\n";
-					return NULL;
-				}
-				return sty->asCompound()->getType(str);
-			}
-		default:
-			break;
-	} 
-	return NULL;
-}
-
-Type *Ternary::getType() {
-	switch(op) {
-		case opFsize:
-			assert(subExp2->getOper() == opIntConst);
-//			  return new FloatType(((Const*)subExp2)->getInt());
-			break;
-		default:
-			break;
-	} 
-	return NULL;
-}
-
-Type *RefExp::getType()
-{
-	// This is just WRONG! It discards the subscript, effectively turning r9{35} into r9{-}, which are not the same
-	// variable in SSA!
-	//if (subExp1 && subExp1->getType())
-	//	return subExp1->getType();
-	if (!ADHOC_TYPE_ANALYSIS)
-		return NULL;			// Desperate attempt to avoid phi loops
-	if (def && def->isAssign() && ((Assign*)def)->getRight()->getType())
-		return ((Assign*)def)->getRight()->getType();
-	if (def && def->isCall()) {
-		CallStatement *call = (CallStatement*)def;
-		return call->getTypeFor(subExp1);
-	}
-	if (def && def->isPhi() && 0) {
-		// TODO: review this code and/or remove.
-		PhiAssign *phi = (PhiAssign*)def;
-		if (DEBUG_TA)
-			LOG << "checking statements in " << phi << " for type of " << this << "\n";
-		PhiAssign::iterator uu;
-		for (uu = phi->begin(); uu != phi->end(); uu++) {
-			Statement *s = uu->def;
-			Assign* as = (Assign*)s;
-			if (as && as->isAssign() && 
-					(as->getRight()->getOper() != opSubscript || ((RefExp*)as->getRight())->getDef() == NULL)) {
-				Type *ty = as->getRight()->getType();
-				if (ty) {
-#if 1
-					if (VERBOSE)
-						LOG << "returning type " << ty->getCtype() << " for " << this << "\n";
-#endif
-					return ty;
-				} else 
-					break;
-			}
-		}
-	}
-	if (def == NULL) {
-		if (subExp1->isLocation()) {
-			Location *l = (Location*)subExp1;
-			if (l->getProc()) {
-
-				char *nam = l->getProc()->getSymbolName(this);
-				if (nam == NULL)
-					nam = l->getProc()->getSymbolName(subExp1);
-				if (nam) {
-					Type *ty = l->getProc()->getLocalType(nam);
-					if (ty)
-						return ty;
-					ty = l->getProc()->getParamType(nam);
-					if (ty)
-						return ty;
-				}
-			}
-		}
-		if (subExp1->isGlobal())
-			return subExp1->getType();
-		if (subExp1->getOper() == opArrayIndex)
-			return subExp1->getType();
-		if (subExp1->getOper() == opMemberAccess)
-			return subExp1->getType();
-	}
-	return NULL;
-}
-
-// Ad-hoc TA only
-Type *Location::getType()
-{
-	if (proc == NULL && subExp1->isLocation())
-		proc = ((Location*)subExp1)->getProc();
-	if (proc == NULL && subExp1->getOper() == opSubscript && subExp1->getSubExp1()->isLocation())
-		proc = ((Location*)subExp1->getSubExp1())->getProc();
-	if (proc == NULL)
-		return ty;
-#if 0
-	char *nam = proc->lookupSym(this);
-	if (nam) {
-		Type *ty = proc->getLocalType(nam);
-		if (ty)
-			return ty;
-		ty = proc->getParamType(nam);
-		if (ty)
-			return ty;		
-	}
-#else
-	char*
-#endif
-	
-	nam = NULL;
-	if (subExp1->getOper() == opStrConst)
-		nam = ((Const*)subExp1)->getStr();
-	
-	switch(op) {
-		case opGlobal:
-			return proc->getProg()->getGlobalType(nam);
-			break;
-		case opLocal:
-			return proc->getLocalType(nam);
-			break;
-		case opParam:
-			{
-				int n = proc->getSignature()->findParam(nam);
-				if (n != -1) {
-					return proc->getSignature()->getParamType(n);
-				}
-			}
-			break;
-		case opMemOf:
-			if (subExp1->getType() && subExp1->getType()->resolvesToPointer())
-				return subExp1->getType()->asPointer()->getPointsTo();
-			// fall through
-		case opRegOf:
-			{
-				bool allZero = true;
-				Exp *e = clone()->removeSubscripts(allZero);
-				if (allZero) {
-					int n = proc->getSignature()->findParam(e);
-					if (n != -1) {
-						Type *ty = proc->getSignature()->getParamType(n);
-#if 0
-						LOG << "type from signature " << ty->getCtype() << " for " << this << "\n";
-#endif
-						return ty;
-					}
-				}
-				if (subExp1->getType()) {
-					PointerType *ty = 
-							dynamic_cast<PointerType*>(subExp1->getType());
-					if (ty) {
-						Type *t = ty->getPointsTo();
-#if 0
-						LOG << "type from subexp1 " << t->getCtype() << " for " << this << "\n";
-#endif
-						return t;
-					}
-				}
-				if (ty) {
-#if 0
-					LOG << "type (saved) " << ty->getCtype() << " for " << this << "\n";
-#endif
-					return ty;
-				}
-			}
-			break;
-		default:
-			break;
-	}
-	return NULL;
-}
 
 const char* Const::getFuncName() {
 	return u.pp->getName();
@@ -3902,8 +3560,9 @@ Exp* Binary::simplifyConstraint() {
 	switch (op) {
 		case opEquals: {
 			if (subExp1->isTypeVal() && subExp2->isTypeVal()) {
-				Type* t1 = ((TypeVal*)subExp1)->getType();
-				Type* t2 = ((TypeVal*)subExp2)->getType();
+				// FIXME: ADHOC TA assumed
+				Type* t1 = NULL;	// ((TypeVal*)subExp1)->getType();
+				Type* t2 = NULL;	// ((TypeVal*)subExp2)->getType();
 				if (!t1->isPointerToAlpha() && !t2->isPointerToAlpha()) {
 					delete this;
 					if (*t1 == *t2)
@@ -4207,16 +3866,6 @@ Location* Location::local(const char *nam, UserProc *p) {
 	return new Location(opLocal, new Const((char*)nam), p);
 }
 
-bool Terminal::isMemDepth(int d) {
-	if (op == opDefineAll)
-		return true;			// define-all matches all memory depths
-	return d == 0;
-}
-
-bool Location::isMemDepth(int d) {
-	return d == getMemDepth();
-}
-
 // Don't put in exp.h, as this would require statement.h including before exp.h
 bool RefExp::isImplicitDef() {
 	return def == NULL || def->getKind() == STMT_IMPASSIGN;
@@ -4236,6 +3885,12 @@ int Exp::getComplexityDepth(UserProc* proc) {
 	ComplexityFinder cf(proc);
 	accept(&cf);
 	return cf.getDepth();
+}
+
+int Exp::getMemDepth() {
+	MemDepthFinder mdf;
+	accept(&mdf);
+	return mdf.getDepth();
 }
 
 // Propagate all possible statements to this expression

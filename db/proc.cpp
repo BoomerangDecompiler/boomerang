@@ -1,11 +1,10 @@
 /*
  * Copyright (C) 1997-2001, The University of Queensland
  * Copyright (C) 2000-2001, Sun Microsystems, Inc
- * Copyright (C) 2002, Trent Waddington
+ * Copyright (C) 2002-2006, Trent Waddington and Mike Van Emmerik
  *
  * See the file "LICENSE.TERMS" for information on usage and
- * redistribution of this file, and for a DISCLAIMER OF ALL
- * WARRANTIES.
+ * redistribution of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
  */
 
@@ -609,13 +608,6 @@ void UserProc::generateCode(HLLCode *hll) {
 	assert(getEntryBB());
 
 	cfg->structure();
-	if (!Boomerang::get()->noGlobals && !Boomerang::get()->noDecompile)
-	    replaceExpressionsWithGlobals();	// FIXME: why here?
-	if (!Boomerang::get()->noLocals && !Boomerang::get()->noDecompile && ADHOC_TYPE_ANALYSIS) {
-		// Note: registers are mapped after dfa type analysis now
-		nameRegisters();
-		mapTempsToLocals();
-	}
 	removeUnusedLocals();
 
 	// Note: don't try to remove unused statements here; that requires the
@@ -783,16 +775,6 @@ void UserProc::initStatements() {
 					if (out != cfg->getExitBB() || cfg->getExitBB()->getNumInEdges() != 1) {
 						out->deleteInEdge(bb);
 						bb->getOutEdges().clear();
-					}
-				}
-			}
-			if (ADHOC_TYPE_ANALYSIS) {
-				Assign *asgn = dynamic_cast<Assign*>(s);
-				if (asgn) {
-					Exp *r = asgn->getRight();
-					if (r->isMemOf() && r->getSubExp1()->isLocation()) {
-						Location *l = (Location*)r->getSubExp1();
-						l->setType(new PointerType(asgn->getType()));
 					}
 				}
 			}
@@ -1280,7 +1262,7 @@ ProcSet* UserProc::middleDecompile(ProcList* path, int indent) {
 //	mapLocalsAndParams();				// FIXME: unsure where this belongs
 	updateArguments();
 	reverseStrengthReduction();
-	processTypes();
+	//processTypes();
 
 	// Repeat until no change
 	int pass;
@@ -1324,7 +1306,6 @@ ProcSet* UserProc::middleDecompile(ProcList* path, int indent) {
 				if (status != PROC_INCYCLE)
 					doRenameBlockVars(pass, true);
 				findPreserveds();
-				updateReturnTypes();
 				updateCallDefines();		// Returns have uses which affect call defines (if childless)
 				fixCallAndPhiRefs();
 				findPreserveds();			// Preserveds subtract from returns
@@ -1393,7 +1374,7 @@ ProcSet* UserProc::middleDecompile(ProcList* path, int indent) {
 		removeMatchingAssignsIfPossible(new Unary(opTemp, new Terminal(opWildStrConst)));
 		removeMatchingAssignsIfPossible(new Terminal(opPC));
 
-		processTypes();
+		//processTypes();
 
 		if (!change)
 			break;				// Until no change
@@ -1427,21 +1408,14 @@ ProcSet* UserProc::middleDecompile(ProcList* path, int indent) {
 	// Now that memofs are renamed, the bypassing for memofs can work
 	fixCallAndPhiRefs();			// Bypass children that are finalised (if any)
 
-#if 1			// Now also done where ellipsis processing is done for dfa-based TA
+#if 0			// Now also done where ellipsis processing is done for dfa-based TA
 	// Note: processConstants is also where ellipsis processing is done
 	if (processConstants()) {
 		if (status != PROC_INCYCLE) {
 			doRenameBlockVars(-1, true);			// Needed if there was an indirect call to an ellipsis function
 		}
 	}
-#endif
 	processTypes();
-
-#ifdef EARLY_GLOBALS
-	// recognising globals early prevents them from becoming parameters
-//	if (depth == maxDepth)		// Else Sparc problems... MVE FIXME: Exactly why?
-		if (!Boomerang::get()->noGlobals)
-			replaceExpressionsWithGlobals();
 #endif
 
 	if (!Boomerang::get()->noParameterNames) {
@@ -1478,12 +1452,6 @@ ProcSet* UserProc::middleDecompile(ProcList* path, int indent) {
 	}
 
 	findPreserveds();
-
-#ifndef EARLY_GLOBALS
-	// recognising globals early prevents them from becoming parameters (? but they can't any more...)
-	if (!Boomerang::get()->noGlobals)
-		replaceExpressionsWithGlobals();
-#endif
 
 
 	// Used to be later...
@@ -1547,12 +1515,14 @@ void UserProc::remUnusedStmtEtc() {
 			printToLog();
 			LOG << "=== end after propagating locals for " << getName() << " ===\n\n";
 		}
+#if 0
 		// Note: processConstants is also where ellipsis processing is done
 		if (processConstants()) {
 			if (status != PROC_INCYCLE) {
 				doRenameBlockVars(-1, true);			// Needed if there was an indirect call to an ellipsis function
 			}
 		}
+#endif
 
 	}
 
@@ -1746,11 +1716,9 @@ void UserProc::recursionGroupAnalysis(ProcList* path, int indent) {
 	bool convert;
 	for (p = cycleGrp->begin(); p != cycleGrp->end(); ++p) {
 		//(*p)->initialParameters();					// FIXME: I think this needs to be mapping locals and params now
-		if (DFA_TYPE_ANALYSIS)
-			(*p)->mapLocalsAndParams();
+		(*p)->mapLocalsAndParams();
 		(*p)->updateArguments();
-		//(*p)->propagateAtDepth(maxDepth);			// Need to propagate into arguments
-		(*p)->propagateStatements(convert, 0);
+		(*p)->propagateStatements(convert, 0);		// Need to propagate into arguments
 	}
 
 	// while no change
@@ -2075,62 +2043,6 @@ void UserProc::removeMatchingAssignsIfPossible(Exp *e)
 		LOG << str.str().c_str() << "\n";
 
 }
-
-void UserProc::updateReturnTypes()
-{
-	if (VERBOSE)
-		LOG << "### update return types for " << getName() << " ###\n";
-	if (theReturnStatement == NULL || !ADHOC_TYPE_ANALYSIS)		// MVE: check
-		return;
-	ReturnStatement::iterator rr;
-	for (rr = theReturnStatement->begin(); rr != theReturnStatement->end(); ++rr) {
-		Exp *e = ((Assignment*)*rr)->getLeft();
-		Type *ty = e->getType();
-		if (ty && !ty->isVoid()) {
-			// UGH! Remove when ad hoc TA is removed!
-			int n = signature->getNumReturns();
-			for (int i=0; i < n; i++) {
-				if (*signature->getReturnExp(i) == *e) {
-					signature->setReturnType(n, ty->clone());
-					break;
-				}
-			}
-		}
-	}
-}
-
-// FIXME: unused?
-void UserProc::addToStackMap(int c, Type *ty)
-{
-	unsigned int sz = ty->getSize();
-	if (stackMap.find(c) != stackMap.end()) {
-		if (stackMap[c]->getSize() < ty->getSize()) {
-			LOG << "increased stack size of offset " << c << " to " << ty << "\n";
-			stackMap[c] = ty;
-		}
-		return;
-	}
-	for (std::map<int, Type*>::iterator it1 = stackMap.begin(); it1 != stackMap.end(); it1++)
-		if ((*it1).first < c && (*it1).first + (int)(*it1).second->getSize() > c) {
-			LOG << "detected stack conflict, " << c << " is in previous mapping starting at " << (*it1).first << " of size " << (*it1).second->getSize() << "\n";
-			// TODO
-			assert(false);
-		}
-	bool redo = true;
-	while (redo) {
-		redo = false;
-		for (std::map<int, Type*>::iterator it1 = stackMap.begin(); it1 != stackMap.end(); it1++)
-			if ((*it1).first > c && (*it1).first < c + (int)sz) {
-				LOG << "detected stack conflict, a previous mapping starting at " << (*it1).first << " of size " << (int)(*it1).second << " would be inside the mapping to be created at " << c << " of size " << (int)sz << "\n";
-				LOG << "the old mapping will be removed.\n";
-				stackMap.erase(it1);
-				redo = true;
-				break;
-			}
-	}
-	stackMap[c] = ty;
-}
-
 
 /*
  * Find the procs the calls point to.
@@ -2474,318 +2386,6 @@ void UserProc::processFloatConstants()
 	}
 }
 
-void UserProc::replaceExpressionsWithGlobals() {
-	if (DFA_TYPE_ANALYSIS) {
-		if (VERBOSE)
-			LOG << "not replacing expressions with globals because -Td in force\n";
-		return;
-	}
-
-	Boomerang::get()->alert_decompile_debug_point(this, "before replacing expressions with globals");
-
-	StatementList stmts;
-	getStatements(stmts);
-	int sp = signature->getStackRegister(prog);
-
-	if (VERBOSE)
-		LOG << "replacing expressions with globals\n";
-
-	// start with calls because that's where we have the most types
-	StatementList::iterator it;
-	for (it = stmts.begin(); it != stmts.end(); it++) {
-		if ((*it)->isCall()) {
-			CallStatement *call = (CallStatement*)*it;
-			// This loop seems to only look for the address of globals in a parameter (?!)
-			for (int i = 0; i < call->getNumArguments(); i++) {
-				Type *ty = call->getArgumentType(i);
-				Exp *e = call->getArgumentExp(i);
-				// The below assumes that the address of a global is an integer constant
-				if (ty && ty->resolvesToPointer() && e->getOper() == opIntConst) {
-					Type *pty = ty->asPointer()->getPointsTo();
-					if (pty->resolvesToArray() && pty->asArray()->isUnbounded()) {
-						ArrayType *a = (ArrayType*)pty->asArray()->clone();
-						pty = a;
-						a->setLength(1024);		// just something arbitrary
-						if (i+1 < call->getNumArguments()) {
-							Type *nt = call->getArgumentType(i+1);
-							if (nt->isNamed())
-								nt = ((NamedType*)nt)->resolvesTo();
-							if (nt->isInteger() && call->getArgumentExp(i+1)->isIntConst())
-								a->setLength(((Const*)call->getArgumentExp(i+1))->getInt());
-						}
-					}
-					ADDRESS u = ((Const*)e)->getInt();
-					if (u != 0 && prog->globalUsed(u)) {
-						const char *gloName = prog->getGlobalName(u);
-						if (gloName) {
-							ADDRESS r = u - prog->getGlobalAddr((char*)gloName);
-							Exp *ne;
-							if (r) {
-								Location *g = Location::global(strdup(gloName), this);
-								// &global + r
-								ne = new Binary(opPlus,
-									new Unary(opAddrOf, g),
-									new Const(r));
-							} else {
-								// TMN: Bugfix for function argument changing type of globals to "void"
-								if (!pty->resolvesToVoid())
-									prog->setGlobalType((char*)gloName, pty);
-								Location *g = Location::global(strdup(gloName), this);
-								// &global
-								ne = new Unary(opAddrOf, g);
-							}
-							call->setArgumentExp(i, ne);
-							if (VERBOSE)
-								LOG << "replacing argument " << e << " with " << ne << " in " << call << "\n";
-						}
-					}
-				}
-			}
-		}
-	}
-
-
-	// replace expressions with globals
-	for (it = stmts.begin(); it != stmts.end(); it++) {
-		Statement* s = *it;
-
-		// (a) Definitions
-		LocationSet defs;
-		s->getDefinitions(defs);
-		LocationSet::iterator rr;
-		for (rr = defs.begin(); rr != defs.end(); rr++) {
-			if ((*rr)->getOper() == opMemOf && (*rr)->getSubExp1()->getOper() == opIntConst) {
-				Exp *memof = *rr;
-				ADDRESS u = ((Const*)memof->getSubExp1())->getInt();
-				if (u != 0 && prog->globalUsed(u)) {
-					const char *gloName = prog->getGlobalName(u);
-					if (gloName) {
-						ADDRESS r = u - prog->getGlobalAddr((char*)gloName);
-						Exp *ne;
-						if (r) {
-							Location *g = Location::global(strdup(gloName), this);
-							ne = Location::memOf(
-								new Binary(opPlus,
-									new Unary(opAddrOf, g),
-									new Const(r)), this);
-						} else {
-							Type *ty = prog->getGlobalType((char*)gloName);
-							if (s->isAssign() && ((Assign*)s)->getType()) {
-								int bits = ((Assign*)s)->getType()->getSize();
-								if (ty == NULL || ty->getSize() == 0)
-									prog->setGlobalType((char*)gloName, new IntegerType(bits));
-							}
-							ty = prog->getGlobalType((char*)gloName);
-							Location *g = Location::global(strdup(gloName), this);
-							if (ty && ty->isArray()) 
-								ne = new Binary(opArrayIndex, g, new Const(0));
-							else 
-								ne = g;
-						}
-						s->searchAndReplace(memof->clone(), ne);
-					}
-				}
-			}
-		}
-
-		// (b) Uses
-		LocationSet refs;
-		s->addUsedLocs(refs);
-		for (rr = refs.begin(); rr != refs.end(); rr++) {
-			if (((Exp*)*rr)->isSubscript()) {
-				Statement *ref = ((RefExp*)*rr)->getDef();
-				Exp *r1 = (*rr)->getSubExp1();
-				if (symbolMap.find(r1) != symbolMap.end())
-					continue;					// Ignore locals, etc
-				// look for m[exp + K]{0} where exp is not opMult; if found replace it with m[exp * 1 + K]{0} in the
-				// hope that it will get picked up as a global array.
-				if (ref == NULL && r1->getOper() == opMemOf && r1->getSubExp1()->getOper() == opPlus &&
-						r1->getSubExp1()->getSubExp2()->getOper() == opIntConst &&
-						r1->getSubExp1()->getSubExp1()->getOper() != opMult) {
-					r1->getSubExp1()->setSubExp1(new Binary(opMult, r1->getSubExp1()->getSubExp1(), new Const(1)));
-				}
-				// Is it m[CONSTANT]{-}
-				if (ref == NULL && r1->getOper() == opMemOf && r1->getSubExp1()->getOper() == opIntConst) {
-					Exp *memof = r1;
-					ADDRESS u = ((Const*)memof->getSubExp1())->getInt();
-					if (u != 0 && prog->globalUsed(u)) {
-						const char *gloName = prog->getGlobalName(u);
-						if (gloName) {
-							ADDRESS r = u - prog->getGlobalAddr((char*)gloName);
-							Exp *ne;
-							if (r) {
-								Unary *g = Location::global(strdup(gloName), this);
-								ne = Location::memOf(
-									new Binary(opPlus,
-										new Unary(opAddrOf, g),
-										new Const(r)), this);
-							} else {
-								Type *ty = prog->getGlobalType((char*)gloName);
-								Unary *g = Location::global(strdup(gloName), this);
-								if (ty && ty->isArray() && ty->getSize() > 0) 
-									ne = new Binary(opArrayIndex,
-										g,
-										new Const(0));
-								else 
-									ne = g;
-							}
-							s->searchAndReplace(memof->clone(), ne);
-						}
-					}
-				// look for m[(blah * K1 + K2)]
-				} else if (ref == NULL && r1->getOper() == opMemOf && r1->getSubExp1()->getOper() == opPlus &&
-						r1->getSubExp1()->getSubExp1()->getOper() == opMult &&
-						r1->getSubExp1()->getSubExp1()->getSubExp2() ->getOper() == opIntConst &&
-						r1->getSubExp1()->getSubExp2()->getOper() == opIntConst) {
-					Exp* blah = r1->getSubExp1()->getSubExp1()->getSubExp1();
-					if (blah->isSubscript())
-						blah = ((RefExp*)blah)->getSubExp1();
-					if (blah->isRegN(sp))
-						continue;					// sp can't base an array
-					Exp *memof = r1;
-					// K1 is the stride
-					unsigned stride = ((Const*)memof->getSubExp1()->getSubExp1()->getSubExp2())->getInt();
-					// u is K2
-					ADDRESS u = ((Const*)memof->getSubExp1()->getSubExp2())->getInt();
-					if (VERBOSE)
-						LOG << "detected array ref with stride " << stride << "\n";
-					if (u != 0 && prog->globalUsed(u)) {
-						const char *gloName = prog->getGlobalName(u);
-						if (gloName) {
-							ADDRESS r = u - prog->getGlobalAddr((char*)gloName);
-							Exp *ne = NULL;
-							if (r) {
-								// TOO HARD
-							} else {
-								Type *ty = prog->getGlobalType((char*)gloName);
-								Location *g = Location::global(strdup(gloName), this);
-								if (ty == NULL || ty->getSize() == 0) {
-									if (VERBOSE)
-										LOG << "setting type of global to array\n";
-									ty = new ArrayType(new IntegerType(stride*8),1);
-									prog->setGlobalType((char*)gloName, ty);
-								}
-
-								if (ty && VERBOSE)
-									LOG << "got type: " << ty->getCtype() << "\n";
-
-								if (ty && ty->isArray() && ty->asArray()->getBaseType()->getSize() != stride*8) {
-									if (VERBOSE)
-										LOG << "forcing array base type size to stride\n";
-									// Ugh! This was getting done twice, once below, and once again in setBaseType!
-									// ty->asArray()->setLength(ty->asArray()->getLength() *
-										// ty->asArray()->getBaseType()->getSize() / (stride * 8));
-									ty->asArray()->setBaseType(new IntegerType(stride*8));
-									prog->setGlobalType((char*)gloName, ty);
-								}
-
-								if (ty && VERBOSE)
-									LOG << "got type: " << ty->getCtype() << "\n";
-
-								if (ty && ty->isArray() && ty->asArray()->getBaseType()->getSize() == stride*8) {
-									if (VERBOSE)
-										LOG << "setting new exp to array ref\n";
-									ne = new Binary(opArrayIndex,
-										g, 
-										memof->getSubExp1()->getSubExp1()->getSubExp1() ->clone());
-									if (VERBOSE)
-										LOG << "set to " << ne << "\n";
-								}
-								/* else 
-									ne = Location::memOf(new Binary(opPlus, 
-											new Unary(opAddrOf, g), 
-											memof->getSubExp1()->getSubExp1()->clone()
-											)); */
-							}
-							if (ne)
-								s->searchAndReplace(memof->clone(), ne);
-						}
-					}
-				}
-			}
-		}
-
-		s->simplify();
-	}
-
-	Boomerang::get()->alert_decompile_debug_point(this, "after replacing expressions with globals");
-}
-
-void UserProc::replaceExpressionsWithSymbols() {
-}
-
-#if 0
-// FIXME: the first part of the below is only for ADHOC_TYPE_ANALYSIS
-// FIXME: I don't think this is needed any more
-void UserProc::mapExpressionsToParameters() {
-	StatementList stmts;
-	getStatements(stmts);
-
-	Boomerang::get()->alert_decompile_debug_point(this, "before mapping expressions to final params");
-
-	if (VERBOSE)
-		LOG << "mapping expressions to final parameters\n";
-
-	bool found = false;
-	StatementList::iterator it;
-	for (it = stmts.begin(); it != stmts.end(); it++) {
-		if ((*it)->isCall()) {
-			CallStatement *call = (CallStatement*)*it;
-			for (int i = 0; i < call->getNumArguments(); i++) {
-				Type *ty = call->getArgumentType(i);
-				Exp *e = call->getArgumentExp(i);
-				if (ty && ty->resolvesToPointer() && e->getOper() != opAddrOf && e->getMemDepth() == 0) {
-					// Check for an expression representing the address of a local variable. NOTE: machine dependent
-					if (signature->isAddrOfStackLocal(prog, e)) {
-						// don't do locals here!
-						continue;
-					}
-
-					Exp* ne;
-					if (DFA_TYPE_ANALYSIS)
-						ne = e;		// No a[m[e]]
-					else {
-						// Do the a[m[e]] hack
-						Location *pe = Location::memOf(e, this);
-						ne = new Unary(opAddrOf, pe);
-					}
-					if (VERBOSE)
-						LOG << "replacing argument " << e << " with " << ne << " in " << call << "\n";
-					call->setArgumentExp(i, ne);
-					found = true;
-				}
-			}
-		}
-	}
-	if (found) {
-		// Must redo all the subscripting, just for the a[m[...]] thing!
-		doRenameBlockVars(0, true);
-	}
-
-	// map expressions in regular statements to parameter symbols
-	for (it = stmts.begin(); it != stmts.end(); it++) {
-		Statement* s = *it;
-		for (unsigned i = 0; i < signature->getNumParams(); i++) {
-			Exp *r = signature->getParamExp(i)->clone();
-			r = r->expSubscriptAllNull();
-			// Remove the outer {-}, for where it appears on the LHS, and because we want to have param1{0}
-			if (r->getOper() == opSubscript)
-				r = r->getSubExp1();
-			Location* replace = Location::param( strdup((char*)signature->getParamName(i)), this);
-			Exp *n;
-			RefExp* re = new RefExp(r, cfg->findTheImplicitAssign(r));
-			if (s->search(re, n)) {
-				if (VERBOSE)
-					LOG << "mapping " << re << " to " << replace << " in " << s << "\n";
-				mapSymbolTo(re, replace);			// Add to symbol map
-				// Note: don't add to locals, since otherwise the back end will declare it as a shadowing local
-			}
-		}
-	}
-
-	Boomerang::get()->alert_decompile_debug_point(this, "after mapping expressions to params");
-}
-#endif
 
 void UserProc::addParameterSymbols() {
 	StatementList::iterator it;
@@ -2964,6 +2564,7 @@ void UserProc::mapExpressionsToLocals(bool lastPass) {
 		}
 	}
 
+	// FIXME: this is probably part of the ADHOC TA
 	// look for array locals
 	// l = m[(sp{0} + WILD1) - K2]
 	Exp *l = Location::memOf(new Binary(opMinus, 
@@ -2990,7 +2591,7 @@ void UserProc::mapExpressionsToLocals(bool lastPass) {
 				if(at && at->getSize() != 0)
 					base = ((Assign*)s)->getType()->clone();
 			}
-			arr->setType(new ArrayType(base, n / (base->getSize() / 8)));
+			//arr->setType(new ArrayType(base, n / (base->getSize() / 8)));
 			if (VERBOSE)
 				LOG << "found a local array using " << n << " bytes\n";
 			Exp *replace = Location::memOf(
@@ -3037,9 +2638,7 @@ void UserProc::searchRegularLocals(OPER minusOrPlus, bool lastPass, int sp, Stat
 		s->searchAll(l, results);
 		for (std::list<Exp*>::iterator it1 = results.begin(); it1 != results.end(); it1++) {
 			Exp *result = *it1;
-			Type *ty = result->getType();
-			if (s->isAssign() && ((Assign*)s)->getLeft() == result)
-				ty = ((Assign*)s)->getType();
+			Type* ty = s->getTypeFor(result);
 			Exp *e = getSymbolExp(result, ty, lastPass);
 			if (e) {
 				Exp* search = result->clone();
@@ -3050,88 +2649,6 @@ void UserProc::searchRegularLocals(OPER minusOrPlus, bool lastPass, int sp, Stat
 		}
 		//s->simplify();
 	}
-}
-
-// Deprecated; ad-hoc TA only. Eventually replace with mapRegistersToLocals() when ad-hoc TA removed
-bool UserProc::nameRegisters() {
-	static Exp *regOfWild = Location::regOf(new Terminal(opWild));
-	std::set<int> usedRegs;
-	std::map<int, Type*> types;
-
-	Boomerang::get()->alert_decompile_debug_point(this, "before naming registers");
-
-	StatementList stmts;
-	getStatements(stmts);
-	StatementList::iterator it;
-
-	// find all used registers
-	for (it = stmts.begin(); it != stmts.end(); it++) {
-		Statement* s = *it;
-		Location *reg; 
-		std::list<Exp*> li;
-		std::list<Exp*>::iterator ll;
-		s->searchAll(regOfWild, li);
-		for (ll = li.begin(); ll != li.end(); ++ll) {
-			reg = (Location*)*ll;
-			int n = ((Const*)reg->getSubExp1())->getInt();
-			usedRegs.insert(n);
-		}
-	}
-
-
-#define DEBUG_TYPES 0
-	// find types
-	for (int pass = 0; pass < 3; pass++) {
-		if (pass == 2 && !signature->isForced())
-			continue;
-		for (it = stmts.begin(); it != stmts.end(); it++) {
-			Statement* s = *it;
-			if (pass == 1 && !s->isCall())
-				continue;
-			if (pass == 2 && !s->isReturn())
-				continue;
-			for (std::set<int>::iterator it1 = usedRegs.begin(); it1 != usedRegs.end(); it1++) {
-				Type *ty = s->getTypeFor(Location::regOf(*it1));
-				if (ty && !ty->isVoid()) {
-					if (types.find(*it1) != types.end()) {
-						if (types[*it1]->isPointer() && !ty->isPointer())
-							LOG << "not replacing type " << types[*it1] << " with " << ty << " for r" << *it1 << "\n";
-						else {
-							if (DEBUG_TYPES)
-								std::cerr << "setting r" << *it1 << " to type " << ty->getCtype() << " from statement "
-									<< s << "\n";
-							types[*it1] = ty;
-						}
-					} else {
-						if (DEBUG_TYPES)
-							std::cerr << "setting r" << *it1 << " to type " << ty->getCtype() << " from statement "
-								<< s << "\n";
-						types[*it1] = ty;
-					}
-				}
-			}
-		}
-	}
-
-	// remove any register params
-	for (unsigned int n = 0; n < signature->getNumParams(); n++)
-		if (signature->getParamExp(n)->isRegOf())
-			usedRegs.erase(((Const*)signature->getParamExp(n)->getSubExp1())->getInt());
-	
-	// create a symbol for every register
-	for (std::set<int>::iterator it = usedRegs.begin(); it != usedRegs.end(); it++) {
-		Type *ty = NULL;
-		if (types.find(*it) != types.end())
-			ty = types[*it];
-		if (ty == NULL)
-			ty = new SizeType(32); // TODO: get right size for reg
-		Exp* regExp = Location::regOf(*it);
-		mapSymbolTo(regExp, newLocal(ty, regExp));
-	}
-
-	Boomerang::get()->alert_decompile_debug_point(this, "after naming registers");
-
-	return usedRegs.size() > 0;
 }
 
 bool UserProc::removeNullStatements() {
@@ -3153,48 +2670,6 @@ bool UserProc::removeNullStatements() {
 		}
 	}
 	return change;
-}
-
-bool UserProc::processConstants() {
-	if (DFA_TYPE_ANALYSIS) {
-		if (VERBOSE)
-			LOG << "not processing constants since -Td in force\n";
-		return false;
-	}
-	if (VERBOSE)
-		LOG << "process constants for " << getName() << "\n";
-	Boomerang::get()->alert_decompile_debug_point(this, "before processing constants");
-	StatementList stmts;
-	getStatements(stmts);
-	// process any constants in the statement
-	StatementList::iterator it;
-	bool paramsAdded = false;
-	for (it = stmts.begin(); it != stmts.end(); it++) {
-		Statement* s = *it;
-		paramsAdded |= s->processConstants(prog);
-	}
-	Boomerang::get()->alert_decompile_debug_point(this, "after processing constants");
-	return paramsAdded;
-}
-
-void UserProc::processTypes() {
-	if (DFA_TYPE_ANALYSIS) {
-		if (VERBOSE)
-			LOG << "not processing types since -Td in force\n";
-		return;
-	}
-	if (VERBOSE)
-		LOG << "process types for " << getName() << "\n";
-	Boomerang::get()->alert_decompile_debug_point(this, "before processing types");
-	StatementList stmts;
-	getStatements(stmts);
-	// process statement to find types
-	StatementList::iterator it;
-	for (it = stmts.begin(); it != stmts.end(); it++) {
-		Statement* s = *it;
-		s->processTypes();
-	}
-	Boomerang::get()->alert_decompile_debug_point(this, "after processing types");
 }
 
 // Propagate statements, but don't remove
@@ -3567,13 +3042,11 @@ void UserProc::fromSSAform() {
 	getStatements(stmts);
 	StatementList::iterator it;
 
-	if (DFA_TYPE_ANALYSIS) {
-		for (it = stmts.begin(); it != stmts.end(); it++) {
-			// Map registers to initial local variables
-			(*it)->mapRegistersToLocals();
-			// Insert casts where needed, as types are about to become inaccessible
-			(*it)->insertCasts();
-		}
+	for (it = stmts.begin(); it != stmts.end(); it++) {
+		// Map registers to initial local variables
+		(*it)->mapRegistersToLocals();
+		// Insert casts where needed, as types are about to become inaccessible
+		(*it)->insertCasts();
 	}
 
 
@@ -3688,10 +3161,7 @@ void UserProc::fromSSAform() {
 				rename = r1;
 		}
 		Type *ty;
-		if (ADHOC_TYPE_ANALYSIS)
-			ty = rename->getType();
-		else
-			ty = rename->getDef()->getTypeFor(rename->getSubExp1());
+		ty = rename->getDef()->getTypeFor(rename->getSubExp1());
 		Exp* local = newLocal(ty, rename);
 		if (DEBUG_LIVENESS)
 			LOG << "renaming " << rename << " to " << local << "\n";
@@ -5575,11 +5045,6 @@ void UserProc::typeAnalysis() {
 
 	else if (CON_TYPE_ANALYSIS) {
 		// FIXME: if we want to do comparison
-	}
-
-	else {
-		// Need to map the locals somewhere; usually TA does this
-		mapExpressionsToLocals();
 	}
 
 	printXML();

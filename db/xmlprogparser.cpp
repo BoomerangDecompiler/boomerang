@@ -1852,9 +1852,6 @@ void XMLProgParser::addToContext_location(Context *c, int e)
 	Location *l = dynamic_cast<Location*>(c->exp);
 	assert(l);
 	switch(e) {
-		case e_type:
-			l->ty = stack.front()->type;
-			break;
 		case e_subexp1:
 			c->exp->setSubExp1(stack.front()->exp);
 			break;
@@ -2532,11 +2529,6 @@ void XMLProgParser::persistToXML(std::ostream &out, Exp *e)
 		out << "<subexp1>\n";
 		persistToXML(out, l->subExp1);
 		out << "</subexp1>\n";
-		if (l->ty) {
-			out << "<type>\n";
-			persistToXML(out, l->ty);
-			out << "</type>\n";
-		}
 		out << "</location>\n";
 		return;
 	} 

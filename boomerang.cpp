@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2002-2005, Mike Van Emmerik and Trent Waddington
+ * Copyright (C) 2002-2006, Mike Van Emmerik and Trent Waddington
  */
 /*==============================================================================
  * FILE:	   boomerang.cpp
@@ -11,7 +11,7 @@
  * 28 Jan 05 - G. Krol: Separated -h output into sections and neatened
 */
 
-#define VERSION "alpha 0.3 01/Sep/2006"
+#define VERSION "alpha 0.3 01/Sep/2006 no ad-hoc TA"
 
 #include <iostream>
 #include <fstream>
@@ -32,7 +32,7 @@
 #include "frontend.h"
 #include "hllcode.h"
 #include "codegen/chllcode.h"
-#include "transformer.h"
+//#include "transformer.h"
 #include "boomerang.h"
 #include "xmlprogparser.h"
 #include "log.h"
@@ -61,7 +61,7 @@ Boomerang::Boomerang() : logger(NULL), vFlag(false), printRtl(false),
 	noRemoveReturns(false), debugDecoder(false), decodeThruIndCall(false), ofsIndCallReport(NULL),
 	noDecodeChildren(false), debugProof(false), debugUnused(false),
 	loadBeforeDecompile(false), saveBeforeDecompile(false),
-	noProve(false), noChangeSignatures(false), conTypeAnalysis(false), dfaTypeAnalysis(false),
+	noProve(false), noChangeSignatures(false), conTypeAnalysis(false), dfaTypeAnalysis(true),
 	propMaxDepth(3), generateCallGraph(false), generateSymbols(false), noGlobals(false), assumeABI(false),
 	experimental(false), minsToStopAfter(0)
 {
@@ -701,10 +701,12 @@ int Boomerang::commandLine(int argc, const char **argv)
 			case 'r': printRtl = true; break;
 			case 't': traceDecoder = true; break;
 			case 'T':
-				if (argv[i][2] == 'c')
+				if (argv[i][2] == 'c') {
 					conTypeAnalysis = true;		// -Tc: use old constraint-based type analysis
+					dfaTypeAnalysis = false;
+				}
 				else if (argv[i][2] == 'd')
-					dfaTypeAnalysis = true;		// -Td: use data-flow-based type analysis
+					dfaTypeAnalysis = true;		// -Td: use data-flow-based type analysis (now default)
 				break;
 			case 'g': 
 				if(argv[i][2]=='d')
@@ -1105,8 +1107,8 @@ int Boomerang::decompile(const char *fname, const char *pname)
 #endif
 	}
 
-	std::cout << "setting up transformers...\n";
-	ExpTransformer::loadAll();
+//	std::cout << "setting up transformers...\n";
+//	ExpTransformer::loadAll();
 
 	if (loadBeforeDecompile) {
 		std::cout << "loading persisted state...\n";

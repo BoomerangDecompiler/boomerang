@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2004-2005, Mike Van Emmerik and Trent Waddington
+ * Copyright (C) 2004-2006, Mike Van Emmerik and Trent Waddington
  */
 /*==============================================================================
  * FILE:	   visitor.h
@@ -511,9 +511,8 @@ virtual void		visit(	    PhiAssign *s, bool& recur);
 
 class Localiser : public SimpExpModifier {
 		CallStatement* call;					// The call to localise to
-		int			depth;						// Depth to allow localisation at
 public:
-					Localiser(CallStatement* call, int depth) : call(call), depth(depth) { }
+					Localiser(CallStatement* call) : call(call) { }
 		Exp*		preVisit(RefExp* e, bool& recur);
 		Exp*		preVisit(Location* e, bool& recur);
 		Exp*		postVisit(Location* e);
@@ -534,6 +533,16 @@ virtual bool	visit(Ternary *e,	bool& override);
 virtual bool	visit(Location *e,	bool& override);
 
 };
+
+// Used by range analysis
+class MemDepthFinder : public ExpVisitor {
+		int		depth;
+public:
+				MemDepthFinder() : depth(0) {}
+virtual bool	visit(Location *e,	bool& override);
+		int		getDepth() {return depth;}
+};
+
 
 // A class to propagate everything, regardless, to this expression. Does not consider memory expressions and whether
 // the address expression is primitive. Use with caution; mostly Statement::propagateTo() should be used.

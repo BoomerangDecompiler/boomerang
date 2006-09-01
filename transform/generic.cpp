@@ -7,6 +7,8 @@
  *============================================================================*/
 /*
  * $Revision$
+ * 01 Sep 06 - Mike: this was written a while ago, and is now broken because it assumes Exp::getType(), which no longer
+ *	exists since ADHOC TA has been removed
  * 17 Apr 04 - Trent: Created
  */
 
@@ -42,8 +44,12 @@ Exp *GenericExpTransformer::applyFuncs(Exp *rhs)
         Exp *p2 = applyFuncs(call->getSubExp2()->getSubExp2()->getSubExp1());
         assert(p1->getOper() == opTypeVal);
         assert(p2->getOper() == opIntConst);
+#if 0
         Type *ty = p1->getType();
         assert(ty && ty->resolvesToCompound());
+#else
+		Type* ty = NULL;		// Note: will cause a segfault
+#endif
         // probably need to make this func take bits in future
         int offset = ((Const*)p2)->getInt() * 8;
         const char *member = ty->asCompound()->getNameAtOffset(offset);
@@ -62,8 +68,12 @@ Exp *GenericExpTransformer::applyFuncs(Exp *rhs)
         Exp *p2 = applyFuncs(call->getSubExp2()->getSubExp2()->getSubExp1());
         assert(p1->getOper() == opTypeVal);
         assert(p2->getOper() == opStrConst);
+#if 0	// ADHOC TA
         Type *ty = p1->getType();
         assert(ty && ty->resolvesToCompound());
+#else
+		Type* ty = NULL;			// Note: will cause a segfault
+#endif
         char *member = ((Const*)p2)->getStr();
         int offset = ty->asCompound()->getOffsetTo(member) / 8;
         Exp *result = new Const(offset);
@@ -132,7 +142,11 @@ bool GenericExpTransformer::checkCond(Exp *cond, Exp *bindings)
 #endif
                 }
                 if (lhs->getOper() == opTypeOf) {
+#if 0				// ADHOC TA
                     Type *ty = lhs->getSubExp1()->getType();
+#else
+					Type* ty = NULL;
+#endif
                     if (ty == NULL) {
 #if 0
 						if (VERBOSE)
@@ -170,10 +184,12 @@ bool GenericExpTransformer::checkCond(Exp *cond, Exp *bindings)
                 if (*lhs == *rhs)
                     return true;
 
+#if 0			// ADHOC TA
                 if (lhs->getOper() == opTypeVal && rhs->getOper() == opTypeVal &&
                     lhs->getType()->resolvesToCompound() &&
                     rhs->getType()->isCompound())
                     return true;
+#endif
 
                 Exp *new_bindings = lhs->match(rhs);
                 if (new_bindings == NULL)

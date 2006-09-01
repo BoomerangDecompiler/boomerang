@@ -258,10 +258,6 @@ virtual void		print(std::ostream &os, bool html = false) = 0;
 		char*		prints();		// For logging, was also for debugging
 		void		dump();			// For debugging
 
-		// inline / decode any constants in the statement. Return true if need to redo dataflow
-virtual bool		processConstants(Prog *prog) = 0;
-virtual void		processTypes();
-
 		// general search
 virtual bool		search(Exp *search, Exp *&result) = 0;
 virtual bool		searchAll(Exp* search, std::list<Exp*>& result) = 0;
@@ -365,9 +361,6 @@ virtual void		rangeAnalysis(std::list<Statement*> &execution_paths);
 
 		// End Statement visitation functions
 
-
-		// Get the type for the given expression in this statement. This is an old version for processConstants
-		Type		*getTypeFor(Exp *e, Prog *prog);
 
 		// Get the type for the definition, if any, for expression e in this statement 
 		// Overridden only by Assignment and CallStatement, and ReturnStatement.
@@ -478,8 +471,6 @@ virtual void		genConstraints(LocationSet& cons);
 		// Data flow based type analysis
 		void		dfaTypeAnalysis(bool& ch);
 
-virtual void		processTypes();
-
 		friend class XMLProgParser;
 };		// class Assignment
 
@@ -529,10 +520,6 @@ virtual void		printCompact(std::ostream& os, bool html = false);	// Without stat
 virtual bool		usesExp(Exp *e);
 virtual bool		isDefinition() { return true; }
 		
-		// inline any constants in the statement
-virtual bool		processConstants(Prog *prog);
-virtual void		processTypes();
-
 		// general search
 virtual bool		search(Exp* search, Exp*& result);
 virtual bool		searchAll(Exp* search, std::list<Exp*>& result);
@@ -564,6 +551,7 @@ virtual void		genConstraints(LocationSet& cons);
 		// Range analysis
 		void		rangeAnalysis(std::list<Statement*> &execution_paths);
 
+		// FIXME: I suspect that this was only used by adhoc TA, and can be deleted
 		bool match(const char *pattern, std::map<std::string, Exp*> &bindings);
 
 	friend class XMLProgParser;
@@ -619,9 +607,6 @@ virtual bool		accept(StmtModifier* visitor);
 virtual bool		accept(StmtPartModifier* visitor);
 
 virtual void		printCompact(std::ostream& os, bool html = false);
-
-		// inline any constants in the statement
-virtual bool		processConstants(Prog *prog);
 
 		// general search
 virtual bool		search(Exp* search, Exp*& result);
@@ -682,9 +667,6 @@ virtual				~ImplicitAssign();
 
 		// Clone
 virtual Statement*	clone();
-
-		// inline any constants in the statement
-virtual bool		processConstants(Prog *prog);
 
 		// Data flow based type analysis
 		void		dfaTypeAnalysis(bool& ch);
@@ -762,7 +744,6 @@ virtual bool		isDefinition() { return true; }
 virtual void		getDefinitions(LocationSet &def);
 virtual Exp*		getRight() { return getCondExpr(); }
 virtual bool		usesExp(Exp *e);
-virtual bool		processConstants(Prog *prog);
 virtual bool		search(Exp *search, Exp *&result);
 virtual bool		searchAll(Exp* search, std::list<Exp*>& result);
 virtual bool		searchAndReplace(Exp *search, Exp *replace, bool cc = false);
@@ -796,7 +777,6 @@ virtual	bool		accept(StmtModifier*);
 virtual	bool		accept(StmtPartModifier*);
 virtual	bool		isDefinition() {return false;}
 virtual	bool		usesExp(Exp*) {return false;}
-virtual	bool		processConstants(Prog*);
 virtual	bool		search(Exp*, Exp*&);
 virtual	bool		searchAll(Exp*, std::list<Exp*, std::allocator<Exp*> >&);
 virtual	bool		searchAndReplace(Exp*, Exp*, bool cc = false);
@@ -875,7 +855,6 @@ virtual void		simplify();
 		// Statement virtual functions
 virtual bool		isDefinition() { return false;}
 virtual bool		usesExp(Exp*);
-virtual bool		processConstants(Prog*) {return false;}
 
 		friend class XMLProgParser;
 };		// class GotoStatement
@@ -898,8 +877,6 @@ public:
 	bool		usesExp(Exp *e) { return false; }
 
 	void		print(std::ostream &os, bool html = false);
-
-	bool		processConstants(Prog *prog) { return false; }
 
 		// general search
 	bool		search(Exp *search, Exp *&result) { return false; }
@@ -1132,8 +1109,8 @@ virtual bool		accept(StmtPartModifier* visitor);
 		// Localise the various components of expression e with reaching definitions to this call
 		// Note: can change e so usually need to clone the argument
 		// Was called substituteParams
-		Exp			*localiseExp(Exp *e, int depth = -1);			// Restrict to given depth
-		void		localiseComp(Exp* e, int depth = -1);			// Localise only xxx of m[xxx]
+		Exp			*localiseExp(Exp *e);
+		void		localiseComp(Exp* e);			// Localise only xxx of m[xxx]
 		// Do the call bypass logic e.g. r28{20} -> r28{17} + 4 (where 20 is this CallStatement)
 		// Set ch if changed (bypassed)
 		Exp*		bypassRef(RefExp* r, bool& ch);
@@ -1200,12 +1177,6 @@ virtual void		setLeftFor(Exp* forExp, Exp* newExp);
 		// get how to replace this statement in a use
 //virtual Exp*		getRight() { return NULL; }
 
-		// inline any constants in the statement
-virtual bool		processConstants(Prog *prog);
-
-		// push argument and return types to references
-virtual void		processTypes();
-
 		// simplify all the uses/defs in this Statement
 virtual void		simplify();
 
@@ -1238,7 +1209,6 @@ private:
 
 protected:
 
-		void		updateArgumentWithType(int n);
 		void		updateDefineWithType(int n);
 		void		appendArgument(Assignment* as) {arguments.append(as);}
 friend	class		XMLProgParser;
@@ -1322,10 +1292,6 @@ virtual void		getDefinitions(LocationSet &defs);
 virtual void		simplify();
 
 virtual bool		isDefinition() { return true; }
-
-		// Ad hoc dataflow analysis
-virtual bool		processConstants(Prog*) {return false;}
-virtual void		processTypes();
 
 		// Get a subscripted version of e from the collector
 		Exp*		subscriptWithDef(Exp* e);

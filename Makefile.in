@@ -202,7 +202,7 @@ FRONT_OBJS = frontend/frontend.o frontend/njmcDecoder.o frontend/sparcdecoder.o 
 CODEGEN = codegen/chllcode.o codegen/syntax.o
 TYPEOBJS = type/constraint.o type/type.o type/dfa.o
 LOADER_OBJS = loader/BinaryFileFactory.o
-STATIC_OBJS = ${CODEGEN} ${UTIL_OBJS} ${DB_OBJS} ${TRANSFORM_OBJS} ${FRONT_OBJS} ${TYPEOBJS} ${LOADER_OBJS}
+STATIC_OBJS = ${CODEGEN} ${UTIL_OBJS} ${DB_OBJS} ${FRONT_OBJS} ${TYPEOBJS} ${LOADER_OBJS} # ${TRANSFORM_OBJS}
 
 ####################
 # Conditional rules

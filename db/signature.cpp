@@ -440,11 +440,13 @@ void CallingConvention::Win32Signature::setLibraryDefines(StatementList* defs) {
 	Type* ty = new SizeType(32);
 	if (returns.size() > 1) {					// Ugh - note the stack pointer is the first return still
 		ty = returns[1]->type;
+#if 0	// ADHOC TA
 		if (ty->isFloat()) {
-			Location* r32 = Location::regOf(32);			// Top of FP stack
+			Location* r32 = Location::regOf(32);				// Top of FP stack
 			r32->setType(ty);
 		} else
 			r24->setType(ty);									// All others return in r24 (check!)
+#endif
 	}
 	defs->append(new ImplicitAssign(ty, r24));						// eax
 	defs->append(new ImplicitAssign(Location::regOf(25)));		// ecx
@@ -637,11 +639,13 @@ void CallingConvention::StdC::PentiumSignature::setLibraryDefines(StatementList*
 	Type* ty = new SizeType(32);
 	if (returns.size() > 1) {					// Ugh - note the stack pointer is the first return still
 		ty = returns[1]->type;
+#if 0		// ADHOC TA
 		if (ty->isFloat()) {
 			Location* r32 = Location::regOf(32);			// Top of FP stack
 			r32->setType(ty);
 		} else
 			r24->setType(ty);									// All others return in r24 (check!)
+#endif
 	}
 	defs->append(new ImplicitAssign(ty, r24));					// eax
 	defs->append(new ImplicitAssign(Location::regOf(25)));		// ecx
@@ -1123,10 +1127,7 @@ void Signature::setName(const char *nam)
 }
 
 void Signature::addParameter(const char *nam /*= NULL*/) {
-	if (ADHOC_TYPE_ANALYSIS)
-		addParameter(new IntegerType(), nam);
-	else
-		addParameter(new VoidType(), nam);
+	addParameter(new VoidType(), nam);
 }
 
 void Signature::addParameter(Exp *e, Type* ty) {
@@ -1300,8 +1301,10 @@ void Signature::addReturn(Type *type, Exp *exp) {
 	addReturn(new Return(type, exp));
 }
 
+// Deprecated. Use the above version.
 void Signature::addReturn(Exp *exp) {
-	addReturn(exp->getType() ? exp->getType() : new IntegerType(), exp);
+	//addReturn(exp->getType() ? exp->getType() : new IntegerType(), exp);
+	addReturn(new VoidType(), exp);
 }
 
 void Signature::removeReturn(Exp *e)

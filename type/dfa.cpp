@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2004-2005, Mike Van Emmerik
+ * Copyright (C) 2004-2006, Mike Van Emmerik
  *
  * See the file "LICENSE.TERMS" for information on usage and
  * redistribution of this file, and for a DISCLAIMER OF ALL WARRANTIES.
