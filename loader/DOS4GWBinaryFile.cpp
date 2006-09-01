@@ -84,8 +84,8 @@ ADDRESS DOS4GWBinaryFile::GetMainEntryPoint() {
 	unsigned lim = p + 0x300;
 	unsigned char op1, op2;
 	unsigned addr, lastOrdCall = 0;
-	bool gotSubEbp;			// True if see sub ebp, ebp
-	bool lastWasCall;		// True if the last instruction was a call
+	bool gotSubEbp = false;			// True if see sub ebp, ebp
+	bool lastWasCall = false;		// True if the last instruction was a call
 
 	SectionInfo* si = GetSectionInfoByName("seg0");		// Assume the first section is text
 	if (si == NULL) si = GetSectionInfoByName(".text");
