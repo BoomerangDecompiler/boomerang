@@ -147,7 +147,7 @@ void Boomerang::help() {
 	std::cout << "  -t               : Trace (print address of) every instruction decoded\n";
 	std::cout << "  -Tc              : Use old constraint-based type analysis\n";
 	std::cout << "  -Td              : Use data-flow-based type analysis\n";
-#if XML_USED
+#if USE_XML
 	std::cout << "  -LD              : Load before decompile (<program> becomes xml input file)\n";
 	std::cout << "  -SD              : Save before decompile\n";
 #endif
@@ -1191,7 +1191,7 @@ int Boomerang::decompile(const char *fname, const char *pname)
 	return 0;
 }
 
-#if XML_USED
+#if USE_XML
 /**
  * Saves the state of the Prog object to a XML file.
  * \param prog The Prog object to save.
