@@ -1035,7 +1035,7 @@ void BasicBlock::WriteBB(HLLCode *hll, int indLevel)
 }
 
 void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch, 
-	std::list<PBB> &followSet, std::list<PBB> &gotoSet) {
+	std::list<PBB> &followSet, std::list<PBB> &gotoSet, UserProc* proc) {
 	// If this is the follow for the most nested enclosing conditional, then don't generate anything. Otherwise if it is
 	// in the follow set generate a goto to the follow
 	PBB enclFollow = followSet.size() == 0 ? NULL : followSet.back();
@@ -1065,7 +1065,8 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
 	// if this is a latchNode and the current indentation level is the same as the first node in the loop, then this
 	// write out its body and return otherwise generate a goto
 	if (isLatchNode())
-		if (latch && latch->loopHead && indLevel == latch->loopHead->indentLevel + (latch->loopHead->lType == PreTested ? 1 : 0)) {
+		if (latch && latch->loopHead && indLevel == latch->loopHead->indentLevel + (latch->loopHead->lType ==
+				PreTested ? 1 : 0)) {
 			WriteBB(hll, indLevel);
 			return;
 		} else {
@@ -1100,7 +1101,7 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
 
 				// write the code for the body of the loop
 				PBB loopBody = (m_OutEdges[BELSE] == loopFollow) ? m_OutEdges[BTHEN] : m_OutEdges[BELSE];
-				loopBody->generateCode(hll, indLevel + 1, latchNode, followSet, gotoSet);
+				loopBody->generateCode(hll, indLevel + 1, latchNode, followSet, gotoSet, proc);
 
 				// if code has not been generated for the latch node, generate it now
 				if (latchNode->traversed != DFS_CODEGEN) {
@@ -1128,13 +1129,12 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
 					// set the necessary flags so that generateCode can successfully be called again on this node
 					sType = Cond;
 					traversed = UNTRAVERSED;
-					generateCode(hll, indLevel + 1, latchNode, followSet, 
-								 gotoSet);
+					generateCode(hll, indLevel + 1, latchNode, followSet, gotoSet, proc);
 				} else {
 					WriteBB(hll, indLevel+1);
 
 					// write the code for the body of the loop
-					m_OutEdges[0]->generateCode(hll, indLevel + 1, latchNode, followSet, gotoSet);
+					m_OutEdges[0]->generateCode(hll, indLevel + 1, latchNode, followSet, gotoSet, proc);
 				}
 
 				if (lType == PostTested) {
@@ -1168,8 +1168,7 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
 				followSet.resize(followSet.size()-1);
 
 				if (loopFollow->traversed != DFS_CODEGEN)
-					loopFollow->generateCode(hll, indLevel, latch, followSet,
-											 gotoSet);
+					loopFollow->generateCode(hll, indLevel, latch, followSet, gotoSet, proc);
 				else
 					emitGotoAndLabel(hll, indLevel, loopFollow);
 			}
@@ -1268,7 +1267,7 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
 				if (succ->traversed == DFS_CODEGEN || (loopHead && succ == loopHead->loopFollow))
 					emitGotoAndLabel(hll, indLevel + 1, succ);
 				else		
-					succ->generateCode(hll, indLevel + 1, latch, followSet, gotoSet);
+					succ->generateCode(hll, indLevel + 1, latch, followSet, gotoSet, proc);
 
 				// generate the else clause if necessary
 				if (cType == IfThenElse) {
@@ -1282,7 +1281,7 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
 					if (succ->traversed == DFS_CODEGEN)
 						emitGotoAndLabel(hll, indLevel + 1, succ);
 					else
-						succ->generateCode(hll, indLevel + 1, latch, followSet, gotoSet);
+						succ->generateCode(hll, indLevel + 1, latch, followSet, gotoSet, proc);
 
 					// generate the closing bracket
 					hll->AddIfElseCondEnd(indLevel);
@@ -1311,8 +1310,7 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
 					if (succ->traversed == DFS_CODEGEN)
 						emitGotoAndLabel(hll, indLevel + 1, succ);
                     else {
-						succ->generateCode(hll, indLevel + 1, latch, 
-							followSet, gotoSet);
+						succ->generateCode(hll, indLevel + 1, latch, followSet, gotoSet, proc);
                     }
 				}
 				// generate the closing bracket
@@ -1339,8 +1337,7 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
 				if (tmpCondFollow->traversed == DFS_CODEGEN)
 					emitGotoAndLabel(hll, indLevel, tmpCondFollow);
 				else
-					tmpCondFollow->generateCode(hll, indLevel, latch,
-						followSet, gotoSet);
+					tmpCondFollow->generateCode(hll, indLevel, latch, followSet, gotoSet, proc);
 			}
 			break;
 		} 
@@ -1357,7 +1354,7 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
 
 			// return if this doesn't have any out edges (emit a warning)
 			if (m_OutEdges.size() == 0) {
-				std::cerr << "WARNING: no out edge for BB: " << std::endl;
+				std::cerr << "WARNING: no out edge for this BB in " << proc->getName() << ":\n";
 				this->print(std::cerr);
 				std::cerr << std::endl;
 				if (m_nodeType == COMPJUMP) {
@@ -1388,8 +1385,7 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
 					if (other->traversed == DFS_CODEGEN)
 						emitGotoAndLabel(hll, indLevel+1, other);
 					else
-						other->generateCode(hll, indLevel+1, latch,
-							followSet, gotoSet);
+						other->generateCode(hll, indLevel+1, latch, followSet, gotoSet, proc);
 					hll->AddIfCondEnd(indLevel);
 				} catch (LastStatementNotABranchError &) {
 					LOG << "last statement is not a cond, don't know what to do with this.\n";
@@ -1411,7 +1407,7 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
 					// generate the 'break' statement
 					hll->AddCaseCondOptionEnd(indLevel);
                 } else if (caseHead == NULL || caseHead != child->caseHead || !child->isCaseOption())
-			        child->generateCode(hll, indLevel, latch, followSet, gotoSet);
+			        child->generateCode(hll, indLevel, latch, followSet, gotoSet, proc);
             }
 			break;
 		default:
