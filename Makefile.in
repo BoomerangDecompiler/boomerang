@@ -193,7 +193,7 @@ TEST_OBJS = util/UtilTest.o db/ExpTest.o db/ParserTest.o db/ProcTest.o db/ProgTe
 UTIL_OBJS = 	  util/util.o
 DB_OBJS = db/basicblock.o db/proc.o db/sslscanner.o db/cfg.o db/prog.o db/table.o db/statement.o db/register.o \
 	db/sslparser.o db/exp.o db/rtl.o db/sslinst.o db/insnameelem.o db/signature.o db/managed.o c/ansi-c-parser.o \
-	c/ansi-c-scanner.o boomerang.o log.o db/visitor.o db/xmlprogparser.o db/dataflow.o 
+	c/ansi-c-scanner.o boomerang.o log.o db/visitor.o db/dataflow.o db/xmlprogparser.o 
 TRANSFORM_OBJS = transform/rdi.o transform/transformer.o transform/generic.o transform/transformation-parser.o \
 	transform/transformation-scanner.o
 FRONT_OBJS = frontend/frontend.o frontend/njmcDecoder.o frontend/sparcdecoder.o frontend/pentiumdecoder.o \
@@ -300,7 +300,7 @@ type/TypeTest.o:           	EXTRA = -Ifrontend
 frontend/pentiumdecoder.o: 	EXTRA = -fno-exceptions
 
 boomerang$(EXEEXT): driver.o ${STATIC_OBJS} $(GENSSL)
-	$(CXX) $(CXXFLAGS) -o $@ driver.o $(STATIC_OBJS) $(RUNPATH) -Llib $(LINKGC) -lexpat $(LDL) $(LDFLAGS) $(LOADERLIBS)
+	$(CXX) $(CXXFLAGS) -o $@ driver.o $(STATIC_OBJS) $(RUNPATH) -Llib $(LINKGC) $(LDL) $(LDFLAGS) $(LOADERLIBS) -lexpat
 
 bffDump$(EXEEXT): loader/bffDump.o
 	$(CXX) $(CXXFLAGS) -o $@ loader/bffDump.o loader/BinaryFileFactory.o -Llib -lgc -lexpat $(LDL) $(LOADERLIBS) \
