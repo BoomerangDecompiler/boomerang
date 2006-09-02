@@ -2295,7 +2295,7 @@ void XMLProgParser::persistToXML(std::ostream &out, UserProc *proc)
 		out << "</local>\n";
 	}
 
-	for (std::map<Exp*, Exp*, lessExpStar>::iterator it2 = proc->symbolMap.begin(); it2 != proc->symbolMap.end(); it2++)
+	for (std::multimap<Exp*, Exp*, lessExpStar>::iterator it2 = proc->symbolMap.begin(); it2 != proc->symbolMap.end(); it2++)
 	{
 		out << "<symbol>\n";
 		out << "<exp>\n";
