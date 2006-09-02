@@ -1466,6 +1466,7 @@ void Prog::globalTypeAnalysis() {
 		if (!proc->isDecoded()) continue;
 		// FIXME: this just does local TA again. Need to meet types for all parameter/arguments, and return/results!
 		// This will require a repeat until no change loop
+		std::cout << "global type analysis for " << proc->getName() << "\n";
 		proc->typeAnalysis();
 	}
 	if (VERBOSE || DEBUG_TA)
@@ -2066,12 +2067,16 @@ Exp	*Prog::addReloc(Exp *e, ADDRESS lc)
 				e = new Const(str);
 			else {
 				// check for accesses into the middle of symbols
-				for (std::map<ADDRESS, std::string>::iterator it = symbols.begin(); it != symbols.end(); it++)
-					if ((*it).first < (ADDRESS)c->getInt() && (*it).first + pBF->GetSizeByName((*it).second.c_str()) > (ADDRESS)c->getInt()) {
+				for (std::map<ADDRESS, std::string>::iterator it = symbols.begin(); it != symbols.end(); it++) {
+					if ((*it).first < (ADDRESS)c->getInt() && (*it).first + pBF->GetSizeByName((*it).second.c_str()) >
+							(ADDRESS)c->getInt()) {
 						int off = c->getInt() - (*it).first;
-						e = new Binary(opPlus, new Unary(opAddrOf, Location::global((*it).second.c_str(), NULL)), new Const(off));
+						e = new Binary(opPlus,
+							new Unary(opAddrOf, Location::global((*it).second.c_str(), NULL)),
+							new Const(off));
 						break;
 					}
+				}
 			}
 		}			
 	}
