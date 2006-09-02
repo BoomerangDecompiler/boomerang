@@ -517,7 +517,7 @@ protected:
 
 public:
 		void		generateCode(HLLCode *hll, int indLevel, PBB latch, std::list<PBB> &followSet,
-						std::list<PBB> &gotoSet);
+						std::list<PBB> &gotoSet, UserProc* proc);
 		// For prepending phi functions
 		void		prependStmt(Statement* s, UserProc* proc);
 
