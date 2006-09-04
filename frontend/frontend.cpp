@@ -701,7 +701,8 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 					LOG << "COMPUTED JUMP at " << uAddr << ", pDest = " << pDest << "\n";
 					if (Boomerang::get()->noDecompile) {
 						// try some hacks
-						if (pDest->isMemOf() && pDest->getSubExp1()->getOper() == opPlus && pDest->getSubExp1()->getSubExp2()->isIntConst()) {
+						if (pDest->isMemOf() && pDest->getSubExp1()->getOper() == opPlus &&
+								pDest->getSubExp1()->getSubExp2()->isIntConst()) {
 							// assume subExp2 is a jump table
 							ADDRESS jmptbl = ((Const*)pDest->getSubExp1()->getSubExp2())->getInt();
 							unsigned int i;
@@ -771,35 +772,39 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 					if(	call &&	call->getFixedDest() != NO_ADDRESS ) {
 						// Get the address of the called function.
 						ADDRESS callAddr=call->getFixedDest();
-						// Decode it.
-						DecodeResult decoded=decodeInstruction(callAddr);
-						if (decoded.valid) { // is the instruction decoded succesfully?
-							// Yes, it is. Create a Statement from it.
-							RTL *rtl = decoded.rtl;
-							Statement* first_statement = *rtl->getList().begin();
-							if (first_statement) {
-								first_statement->setProc(pProc);
-								first_statement->simplify();
-								GotoStatement* stmt_jump = static_cast<GotoStatement*>(first_statement);
-								// In fact it's a computed (looked up) jump, so the jump seems to be a case statement.
-								if ( first_statement->getKind() == STMT_CASE &&
-									stmt_jump->getDest()->getOper() == opMemOf &&
-									stmt_jump->getDest()->getSubExp1()->getOper() == opIntConst &&
-									pBF->IsDynamicLinkedProcPointer(((Const*)stmt_jump->getDest()->getSubExp1())->
-										getAddr())) // Is it an "DynamicLinkedProcPointer"?
-								{
-									// Yes, it's a library function. Look up it's name.
-                                    ADDRESS a = ((Const*)stmt_jump->getDest()->getSubExp1())->getAddr();
-									const char *nam = pBF->GetDynamicProcName(a);
-									// Assign the proc to the call
-									Proc *p = pProc->getProg()->getLibraryProc(nam);
-									if (call->getDestProc()) {
-										// prevent unnecessary __imp procs
-										prog->removeProc(call->getDestProc()->getName());
+						// It should not be in the PLT either, but getLimitTextHigh() takes this into account
+						if (callAddr < pBF->getLimitTextHigh()) {
+							// Decode it.
+							DecodeResult decoded=decodeInstruction(callAddr);
+							if (decoded.valid) { // is the instruction decoded succesfully?
+								// Yes, it is. Create a Statement from it.
+								RTL *rtl = decoded.rtl;
+								Statement* first_statement = *rtl->getList().begin();
+								if (first_statement) {
+									first_statement->setProc(pProc);
+									first_statement->simplify();
+									GotoStatement* stmt_jump = static_cast<GotoStatement*>(first_statement);
+									// In fact it's a computed (looked up) jump, so the jump seems to be a case
+									// statement.
+									if ( first_statement->getKind() == STMT_CASE &&
+										stmt_jump->getDest()->getOper() == opMemOf &&
+										stmt_jump->getDest()->getSubExp1()->getOper() == opIntConst &&
+										pBF->IsDynamicLinkedProcPointer(((Const*)stmt_jump->getDest()->getSubExp1())->
+											getAddr())) // Is it an "DynamicLinkedProcPointer"?
+									{
+										// Yes, it's a library function. Look up it's name.
+										ADDRESS a = ((Const*)stmt_jump->getDest()->getSubExp1())->getAddr();
+										const char *nam = pBF->GetDynamicProcName(a);
+										// Assign the proc to the call
+										Proc *p = pProc->getProg()->getLibraryProc(nam);
+										if (call->getDestProc()) {
+											// prevent unnecessary __imp procs
+											prog->removeProc(call->getDestProc()->getName());
+										}
+										call->setDestProc(p);
+										call->setIsComputed(false);
+										call->setDest(Location::memOf(new Const(a)));
 									}
-									call->setDestProc(p);
-									call->setIsComputed(false);
-                                    call->setDest(Location::memOf(new Const(a)));
 								}
 							}
 						}
