@@ -82,6 +82,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="dbghelp.lib"
 				OutputFile="$(OutDir)/Win32BinaryFile.dll"
 				LinkIncremental="1"
 				ModuleDefinitionFile="..\..\Release\BinaryFile.lib"
