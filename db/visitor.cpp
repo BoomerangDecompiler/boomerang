@@ -1006,8 +1006,7 @@ Exp* ExpSsaXformer::postVisit(RefExp *e) {
 	if (sym != NULL)
 		return Location::local(sym, proc);
 	// We should not get here: all locations should be replaced with Locals or Parameters
-	LOG << "ERROR! Could not find local or parameter for " << e << " !!\n";
-//	assert(0); int HACK=0;
+	//LOG << "ERROR! Could not find local or parameter for " << e << " !!\n";
 	return e->getSubExp1();		// At least strip off the subscript
 }
 
