@@ -2749,10 +2749,10 @@ char* UserProc::newLocalName(Exp* e) {
 			ost.str("");
 			ost << regName << "_" << ++tag;
 		} while (locals.find(ost.str()) != locals.end());
-		return (char*) ost.str().c_str();
+		return strdup (ost.str().c_str());
 	}
 	ost << "local" << nextLocal++;
-	return (char*) ost.str().c_str();
+	return strdup(ost.str().c_str());
 }
 
 Exp* UserProc::newLocal(Type* ty, Exp* e, char* nam /* = NULL */) {
