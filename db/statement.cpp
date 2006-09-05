@@ -843,6 +843,7 @@ bool Statement::propagateFlagsTo() {
 		LocationSet::iterator ll;
 		for (ll = exps.begin(); ll != exps.end(); ll++) {
 			Exp* e = *ll;
+			if (!e->isSubscript()) continue;		// e.g. %pc
 			Assign* def = (Assign*)((RefExp*)e)->getDef();
 			if (def == NULL || !def->isAssign()) continue;
 			Exp* base = ((RefExp*)e)->getSubExp1();
