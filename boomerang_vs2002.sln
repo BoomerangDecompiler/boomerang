@@ -11,8 +11,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DOS4GWBinaryFile", "win32ma
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MachOBinaryFile", "win32make\MachOBinaryFile\MachOBinaryFile_vs2002.vcproj", "{EDD5A43B-22DE-4C53-BF4C-8FCEFA7503C3}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "console", "win32make\console\console_vs2002.vcproj", "{61F02837-79AE-4841-939D-77233F4F35BD}"
-EndProject
 Global
 	GlobalSection(SolutionConfiguration) = preSolution
 		ConfigName.0 = Debug
