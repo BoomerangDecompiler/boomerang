@@ -121,6 +121,9 @@
 			<File
 				RelativePath="..\..\loader\DOS4GWBinaryFile.cpp">
 			</File>
+			<File
+				RelativePath="..\..\loader\microX86dis.c">
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
