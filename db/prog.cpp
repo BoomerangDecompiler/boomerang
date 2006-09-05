@@ -576,7 +576,7 @@ Type *typeFromDebugInfo(int index, DWORD64 ModBase)
 			assert(got);
 			got = dbghelp::SymGetTypeInfo(hProcess, ModBase, index, dbghelp::TI_GET_LENGTH, &lsz);
 			assert(got);			
-			return new ArrayType(typeFromDebugInfo(d, ModBase), lsz);
+			return new ArrayType(typeFromDebugInfo(d, ModBase), (unsigned)lsz);
 			break;
 		case 16:
 			got = dbghelp::SymGetTypeInfo(hProcess, ModBase, index, dbghelp::TI_GET_BASETYPE, &d);
