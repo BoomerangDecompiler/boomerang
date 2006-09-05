@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="8.00"
 	Name="boomerang"
-	ProjectGUID="{61F02837-79AE-4841-939D-77233F4F35BC}"
+	ProjectGUID="{6423B982-BD86-49D9-B4B4-834697281351}"
 	Keyword="Win32Proj"
 	>
 	<Platforms>
