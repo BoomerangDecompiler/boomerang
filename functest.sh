@@ -50,6 +50,7 @@ $TESTONE pentium global1		1 "$BOOMSW"
 $TESTONE sparc   global1		1 "$BOOMSW"
 $TESTONE pentium global2		1 "$BOOMSW"
 $TESTONE sparc   global2		1 "$BOOMSW"
+echo known portability issue with long long type used in global3 (should work for Unix/Cygwin but not MSVC/MinGW
 $TESTONE pentium global3		1 "$BOOMSW"
 $TESTONE sparc   global3		1 "$BOOMSW"
 
