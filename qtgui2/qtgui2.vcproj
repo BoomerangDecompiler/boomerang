@@ -21,7 +21,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="-Zm200 -EHsc"
 				Optimization="2"
-				AdditionalIncludeDirectories="C:\Qt\4.1.2-msvc7.1\include\QtCore,C:\Qt\4.1.2-msvc7.1\include\QtGui,C:\Qt\4.1.2-msvc7.1\include,.,C:\Qt\4.1.2-msvc7.1\include\ActiveQt,release,.,C:\Qt\4.1.2-msvc7.1\mkspecs\win32-msvc.net"
+				AdditionalIncludeDirectories="&quot;C:\Qt\4.1.2-msvc7.1\include\QtCore&quot;;&quot;C:\Qt\4.1.2-msvc7.1\include\QtGui&quot;;&quot;C:\Qt\4.1.2-msvc7.1\include&quot;;&quot;C:\Qt\4.1.2-msvc7.1\include\ActiveQt&quot;;&quot;C:\Qt\4.1.2-msvc7.1\mkspecs\win32-msvc.net&quot;;..\include;..\win32make\include;..\c"
 				PreprocessorDefinitions="QT_NO_DEBUG,NDEBUG,_WINDOWS,UNICODE,QT_LARGEFILE_SUPPORT,QT_DLL,QT_NO_DEBUG,QT_GUI_LIB,QT_CORE_LIB,QT_THREAD_SUPPORT,WIN32,NDEBUG"
 				GeneratePreprocessedFile="0"
 				ExceptionHandling="TRUE"
@@ -40,10 +40,10 @@
 			<Tool
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="TRUE"
-				AdditionalDependencies="delayimp.lib qtmain.lib QtGui4.lib QtCore4.lib"
-				OutputFile="release\qtgui2.exe"
+				AdditionalDependencies="delayimp.lib qtmain.lib QtGui4.lib QtCore4.lib gc_cpp2.lib libexpat.lib dbghelp.lib"
+				OutputFile="..\boomerang-gui.exe"
 				SuppressStartupBanner="TRUE"
-				AdditionalLibraryDirectories="C:\Qt\4.1.2-msvc7.1\lib"
+				AdditionalLibraryDirectories="C:\Qt\4.1.2-msvc7.1\lib;.."
 				GenerateDebugInformation="FALSE"
 				ProgramDatabaseFile=""
 				SubSystem="2"/>
@@ -83,7 +83,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="-Zm200 -EHsc"
 				Optimization="0"
-				AdditionalIncludeDirectories="C:\Qt\4.1.2-msvc7.1\include\QtCore,C:\Qt\4.1.2-msvc7.1\include\QtGui,C:\Qt\4.1.2-msvc7.1\include,.,C:\Qt\4.1.2-msvc7.1\include\ActiveQt,debug,.,C:\Qt\4.1.2-msvc7.1\mkspecs\win32-msvc.net;..\include;..\win32make\include;..\c"
+				AdditionalIncludeDirectories="&quot;C:\Qt\4.1.2-msvc7.1\include\QtCore&quot;;&quot;C:\Qt\4.1.2-msvc7.1\include\QtGui&quot;;&quot;C:\Qt\4.1.2-msvc7.1\include&quot;;.;&quot;C:\Qt\4.1.2-msvc7.1\include\ActiveQt&quot;;&quot;C:\Qt\4.1.2-msvc7.1\mkspecs\win32-msvc.net&quot;;..\include;..\win32make\include;..\c"
 				PreprocessorDefinitions="_WINDOWS,UNICODE,QT_LARGEFILE_SUPPORT,QT_DLL,QT_GUI_LIB,QT_CORE_LIB,QT_THREAD_SUPPORT,WIN32"
 				GeneratePreprocessedFile="0"
 				MinimalRebuild="TRUE"
@@ -103,8 +103,8 @@
 			<Tool
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="TRUE"
-				AdditionalDependencies="delayimp.lib qtmain.lib QtGui4.lib QtCore4.lib  gc_cpp2.lib libexpat.lib dbghelp.lib"
-				OutputFile="debug\boomerang-gui.exe"
+				AdditionalDependencies="delayimp.lib qtmain.lib QtGui4.lib QtCore4.lib gc_cpp2.lib libexpat.lib dbghelp.lib"
+				OutputFile="..\boomerang-gui.exe"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="C:\Qt\4.1.2-msvc7.1\lib;.."
 				GenerateDebugInformation="TRUE"
@@ -116,10 +116,7 @@
 				DefaultCharType="0"
 				EnableErrorChecks="1"/>
 			<Tool
-				Name="VCPostBuildEventTool"
-				CommandLine="echo copying $(TargetPath) to $(SolutionDir)\boomerang-gui.exe
-copy /y $(TargetPath) $(SolutionDir)\boomerang-gui.exe
-"/>
+				Name="VCPostBuildEventTool"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool
@@ -156,21 +153,9 @@ copy /y $(TargetPath) $(SolutionDir)\boomerang-gui.exe
 			</File>
 			<File
 				RelativePath="debug\moc_DecompilerThread.cpp">
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="TRUE">
-					<Tool
-						Name="VCCLCompilerTool"/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="debug\moc_mainwindow.cpp">
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="TRUE">
-					<Tool
-						Name="VCCLCompilerTool"/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\debug\moc_rtleditor.cpp">
@@ -464,15 +449,6 @@ cd $(SolutionDir)
 			</File>
 			<File
 				RelativePath="..\type\dfa.cpp">
-			</File>
-			<File
-				RelativePath="..\driver.cpp">
-				<FileConfiguration
-					Name="Debug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						PreprocessorDefinitions="NO_CMDLINE_MAIN;NO_NEW_OR_DELETE_OPERATORS"/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\db\exp.cpp">
