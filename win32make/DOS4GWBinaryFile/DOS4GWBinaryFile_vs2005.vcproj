@@ -142,7 +142,7 @@
 				Name="VCLinkerTool"
 				OutputFile="..\..\DOS4GWBinaryFile.dll"
 				LinkIncremental="1"
-				ModuleDefinitionFile="..\..\Release\BinaryFile.lib"
+				ModuleDefinitionFile=""
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				OptimizeReferences="2"

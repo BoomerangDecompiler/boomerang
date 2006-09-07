@@ -144,7 +144,7 @@
 				AdditionalDependencies="dbghelp.lib"
 				OutputFile="..\..\Win32BinaryFile.dll"
 				LinkIncremental="1"
-				ModuleDefinitionFile="..\..\Release\BinaryFile.lib"
+				ModuleDefinitionFile=""
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(OutDir)\$(ProjectName).pdb"
 				SubSystem="2"
