@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="7.10"
 	Name="DOS4GWBinaryFile"
-	ProjectGUID="{EDD5A43B-22DE-4C53-BF4C-8FCEFA7503C2}"
+	ProjectGUID="{EDD5A43B-22DE-4C53-BF4C-8FCEFA7503C4}"
 	Keyword="Win32Proj">
 	<Platforms>
 		<Platform
@@ -13,7 +13,7 @@
 		<Configuration
 			Name="Debug|Win32"
 			OutputDirectory="..\..\Debug"
-			IntermediateDirectory="Debug"
+			IntermediateDirectory="..\..\Debug"
 			ConfigurationType="2"
 			CharacterSet="2">
 			<Tool
@@ -32,19 +32,18 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(OutDir)/DOS4GWBinaryFile.dll"
+				OutputFile="..\..\DOS4GWBinaryFile.dll"
 				LinkIncremental="2"
-				ModuleDefinitionFile="..\..\Debug\BinaryFile.lib"
+				ModuleDefinitionFile=""
 				GenerateDebugInformation="TRUE"
-				ProgramDatabaseFile="$(OutDir)/DOS4GWBinaryFile.pdb"
+				ProgramDatabaseFile="$(OutDir)\$(TargetName).pdb"
 				SubSystem="2"
-				ImportLibrary="$(OutDir)/DOS4GWBinaryFile.lib"
+				ImportLibrary="$(OutDir)\$(TargetName).lib"
 				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"/>
 			<Tool
-				Name="VCPostBuildEventTool"
-				CommandLine="copy $(TargetPath) $(SolutionDir)"/>
+				Name="VCPostBuildEventTool"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool
@@ -65,7 +64,7 @@
 		<Configuration
 			Name="Release|Win32"
 			OutputDirectory="..\..\Release"
-			IntermediateDirectory="Release"
+			IntermediateDirectory="..\..\Release"
 			ConfigurationType="2"
 			CharacterSet="2">
 			<Tool
@@ -80,14 +79,15 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(OutDir)/DOS4GWBinaryFile.dll"
+				OutputFile="..\..\DOS4GWBinaryFile.dll"
 				LinkIncremental="1"
-				ModuleDefinitionFile="..\..\Release\BinaryFile.lib"
+				ModuleDefinitionFile=""
 				GenerateDebugInformation="TRUE"
+				ProgramDatabaseFile="$(OutDir)\$(TargetName).pdb"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
-				ImportLibrary="$(OutDir)/DOS4GWBinaryFile.lib"
+				ImportLibrary="$(OutDir)\$(TargetName).lib"
 				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"/>
@@ -120,6 +120,18 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}">
 			<File
 				RelativePath="..\..\loader\DOS4GWBinaryFile.cpp">
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories="..\..\include"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories="..\..\include"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\loader\microX86dis.c">

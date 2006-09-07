@@ -13,7 +13,7 @@
 		<Configuration
 			Name="Debug|Win32"
 			OutputDirectory="..\..\Debug"
-			IntermediateDirectory="Debug"
+			IntermediateDirectory="..\..\Debug"
 			ConfigurationType="2"
 			CharacterSet="2">
 			<Tool
@@ -33,19 +33,18 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="dbghelp.lib"
-				OutputFile="$(OutDir)/Win32BinaryFile.dll"
+				OutputFile="..\..\Win32BinaryFile.dll"
 				LinkIncremental="2"
-				ModuleDefinitionFile="..\..\Debug\BinaryFile.lib"
+				ModuleDefinitionFile=""
 				GenerateDebugInformation="TRUE"
-				ProgramDatabaseFile="$(OutDir)\Win32BinaryFile.pdb"
+				ProgramDatabaseFile="$(OutDir)\$(TargetName).pdb"
 				SubSystem="2"
-				ImportLibrary="$(OutDir)\Win32BinaryFile.lib"
+				ImportLibrary="$(OutDir)\$(TargetName).lib"
 				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"/>
 			<Tool
-				Name="VCPostBuildEventTool"
-				CommandLine="copy $(TargetPath) $(SolutionDir)"/>
+				Name="VCPostBuildEventTool"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool
@@ -66,7 +65,7 @@
 		<Configuration
 			Name="Release|Win32"
 			OutputDirectory="..\..\Release"
-			IntermediateDirectory="Release"
+			IntermediateDirectory="..\..\Release"
 			ConfigurationType="2"
 			CharacterSet="2">
 			<Tool
@@ -83,15 +82,15 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="dbghelp.lib"
-				OutputFile="$(OutDir)/Win32BinaryFile.dll"
+				OutputFile="..\..\Win32BinaryFile.dll"
 				LinkIncremental="1"
-				ModuleDefinitionFile="..\..\Release\BinaryFile.lib"
+				ModuleDefinitionFile=""
 				GenerateDebugInformation="TRUE"
-				ProgramDatabaseFile="$(OutDir)\$(ProjectName).pdb"
+				ProgramDatabaseFile="$(OutDir)\$(TargetName).pdb"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
-				ImportLibrary="$(OutDir)\Win32BinaryFile.lib"
+				ImportLibrary="$(OutDir)\$(TargetName).lib"
 				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"/>
