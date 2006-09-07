@@ -33,7 +33,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="libexpat.lib gc_cpp2.lib dbghelp.lib"
-				OutputFile="$(OutDir)/boomerang.exe"
+				OutputFile="boomerang.exe"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories=""
 				GenerateDebugInformation="TRUE"
@@ -43,8 +43,7 @@
 			<Tool
 				Name="VCMIDLTool"/>
 			<Tool
-				Name="VCPostBuildEventTool"
-				CommandLine="copy $(TargetPath) $(SolutionDir)"/>
+				Name="VCPostBuildEventTool"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool
@@ -82,9 +81,10 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="libexpat.lib gc_cpp2.lib dbghelp.lib"
-				OutputFile="$(OutDir)/boomerang.exe"
+				OutputFile="boomerang.exe"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories=""
+				IgnoreDefaultLibraryNames="libc.lib"
 				GenerateDebugInformation="TRUE"
 				SubSystem="1"
 				OptimizeReferences="2"
@@ -155,6 +155,12 @@
 				RelativePath="db\basicblock.cpp">
 				<FileConfiguration
 					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						RuntimeTypeInfo="TRUE"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						RuntimeTypeInfo="TRUE"/>
