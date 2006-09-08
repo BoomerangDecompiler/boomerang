@@ -417,10 +417,13 @@ bool LocationSet::existsImplicit(Exp* e) {
 	RefExp r(e, NULL);
 	iterator it = lset.lower_bound(&r);		// First element >= r
 	// Note: the below relies on the fact that NULL is less than any other pointer. Try later entries in the set:
-	while (it != lset.end() && (*((RefExp*) *it)->getSubExp1() == *e)) {
-		if (((RefExp*) *it)->isImplicitDef())
-			return true;
-		++it;
+	while (it != lset.end()) {
+		if (!(*it)->isSubscript()) return false;		// Looking for e{something} (could be e.g. %pc)
+		if (!(*((RefExp*) *it)->getSubExp1() == *e))	// Gone past e{anything}?
+			return false;								// Yes, then e{-} or e{0} cannot exist
+		if (((RefExp*) *it)->isImplicitDef())			// Check for e{-} or e{0}
+			return true;								// Found
+		++it;											// Else check next entry
 	}
 	return false;
 }
