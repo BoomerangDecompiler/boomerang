@@ -1,46 +1,22 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8.00"
+	Version="7.10"
 	Name="qtgui2"
 	ProjectGUID="{D98C1DD4-008F-34B2-A980-0998ECF8427E}"
-	RootNamespace="qtgui2"
-	>
+	RootNamespace="qtgui2">
 	<Platforms>
 		<Platform
-			Name="Win32"
-		/>
+			Name="Win32"/>
 	</Platforms>
-	<ToolFiles>
-	</ToolFiles>
 	<Configurations>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="..\Release"
-			IntermediateDirectory="..\Release"
+			OutputDirectory="."
+			IntermediateDirectory="release\"
 			ConfigurationType="1"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="false"
-			>
-			<Tool
-				Name="VCPreBuildEventTool"
-			/>
-			<Tool
-				Name="VCCustomBuildTool"
-			/>
-			<Tool
-				Name="VCXMLDataGeneratorTool"
-			/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"
-			/>
-			<Tool
-				Name="VCMIDLTool"
-				WarningLevel="0"
-				DefaultCharType="0"
-				EnableErrorChecks="1"
-			/>
+			ATLMinimizesCRunTimeLibraryUsage="FALSE">
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalOptions="-Zm200 -EHsc"
@@ -48,92 +24,61 @@
 				AdditionalIncludeDirectories="&quot;C:\Qt\4.1.2-msvc7.1\include\QtCore&quot;;&quot;C:\Qt\4.1.2-msvc7.1\include\QtGui&quot;;&quot;C:\Qt\4.1.2-msvc7.1\include&quot;;&quot;C:\Qt\4.1.2-msvc7.1\include\ActiveQt&quot;;&quot;C:\Qt\4.1.2-msvc7.1\mkspecs\win32-msvc.net&quot;;..\include;..\win32make\include;..\c"
 				PreprocessorDefinitions="QT_NO_DEBUG,NDEBUG,_WINDOWS,UNICODE,QT_LARGEFILE_SUPPORT,QT_DLL,QT_NO_DEBUG,QT_GUI_LIB,QT_CORE_LIB,QT_THREAD_SUPPORT,WIN32,NDEBUG"
 				GeneratePreprocessedFile="0"
-				ExceptionHandling="1"
+				ExceptionHandling="TRUE"
 				RuntimeLibrary="2"
-				BufferSecurityCheck="true"
-				RuntimeTypeInfo="true"
+				BufferSecurityCheck="TRUE"
+				RuntimeTypeInfo="TRUE"
 				AssemblerListingLocation="release\"
 				ObjectFile="release\"
 				ProgramDataBaseFileName=".\"
 				WarningLevel="3"
-				SuppressStartupBanner="true"
+				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="0"
-				DisableSpecificWarnings="4996"
-			/>
+				DisableSpecificWarnings="4996"/>
 			<Tool
-				Name="VCManagedResourceCompilerTool"
-			/>
-			<Tool
-				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="NDEBUG"
-			/>
-			<Tool
-				Name="VCPreLinkEventTool"
-			/>
+				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				IgnoreImportLibrary="true"
+				IgnoreImportLibrary="TRUE"
 				AdditionalDependencies="delayimp.lib qtmain.lib QtGui4.lib QtCore4.lib gc_cpp2.lib libexpat.lib dbghelp.lib"
 				OutputFile="..\boomerang-gui.exe"
-				SuppressStartupBanner="true"
+				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="C:\Qt\4.1.2-msvc7.1\lib;.."
-				IgnoreDefaultLibraryNames="msvcrt.lib"
-				GenerateDebugInformation="false"
+				GenerateDebugInformation="FALSE"
 				ProgramDatabaseFile=""
-				SubSystem="2"
-			/>
+				SubSystem="2"/>
 			<Tool
-				Name="VCALinkTool"
-			/>
+				Name="VCMIDLTool"
+				WarningLevel="0"
+				DefaultCharType="0"
+				EnableErrorChecks="1"/>
 			<Tool
-				Name="VCManifestTool"
-			/>
+				Name="VCPostBuildEventTool"/>
 			<Tool
-				Name="VCXDCMakeTool"
-			/>
+				Name="VCPreBuildEventTool"/>
 			<Tool
-				Name="VCBscMakeTool"
-			/>
+				Name="VCPreLinkEventTool"/>
 			<Tool
-				Name="VCFxCopTool"
-			/>
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="NDEBUG"/>
 			<Tool
-				Name="VCAppVerifierTool"
-			/>
+				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
-				Name="VCWebDeploymentTool"
-			/>
+				Name="VCXMLDataGeneratorTool"/>
 			<Tool
-				Name="VCPostBuildEventTool"
-			/>
+				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
 			OutputDirectory="."
 			IntermediateDirectory="debug\"
 			ConfigurationType="1"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="false"
-			>
-			<Tool
-				Name="VCPreBuildEventTool"
-			/>
-			<Tool
-				Name="VCCustomBuildTool"
-			/>
-			<Tool
-				Name="VCXMLDataGeneratorTool"
-			/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"
-			/>
-			<Tool
-				Name="VCMIDLTool"
-				WarningLevel="0"
-				DefaultCharType="0"
-				EnableErrorChecks="1"
-			/>
+			ATLMinimizesCRunTimeLibraryUsage="FALSE">
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalOptions="-Zm200 -EHsc"
@@ -141,65 +86,54 @@
 				AdditionalIncludeDirectories="&quot;C:\Qt\4.1.2-msvc7.1\include\QtCore&quot;;&quot;C:\Qt\4.1.2-msvc7.1\include\QtGui&quot;;&quot;C:\Qt\4.1.2-msvc7.1\include&quot;;.;&quot;C:\Qt\4.1.2-msvc7.1\include\ActiveQt&quot;;&quot;C:\Qt\4.1.2-msvc7.1\mkspecs\win32-msvc.net&quot;;..\include;..\win32make\include;..\c"
 				PreprocessorDefinitions="_WINDOWS,UNICODE,QT_LARGEFILE_SUPPORT,QT_DLL,QT_GUI_LIB,QT_CORE_LIB,QT_THREAD_SUPPORT,WIN32"
 				GeneratePreprocessedFile="0"
-				MinimalRebuild="true"
-				ExceptionHandling="1"
+				MinimalRebuild="TRUE"
+				ExceptionHandling="TRUE"
 				RuntimeLibrary="3"
-				BufferSecurityCheck="true"
-				RuntimeTypeInfo="true"
+				BufferSecurityCheck="TRUE"
+				RuntimeTypeInfo="TRUE"
 				AssemblerListingLocation="debug\"
 				ObjectFile="debug\"
 				ProgramDataBaseFileName=".\"
 				WarningLevel="3"
-				SuppressStartupBanner="true"
+				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="4"
-				DisableSpecificWarnings="4996"
-			/>
+				DisableSpecificWarnings="4996"/>
 			<Tool
-				Name="VCManagedResourceCompilerTool"
-			/>
-			<Tool
-				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="NDEBUG"
-			/>
-			<Tool
-				Name="VCPreLinkEventTool"
-			/>
+				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				IgnoreImportLibrary="true"
+				IgnoreImportLibrary="TRUE"
 				AdditionalDependencies="delayimp.lib qtmain.lib QtGui4.lib QtCore4.lib gc_cpp2.lib libexpat.lib dbghelp.lib"
 				OutputFile="..\boomerang-gui.exe"
-				SuppressStartupBanner="true"
+				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="C:\Qt\4.1.2-msvc7.1\lib;.."
-				IgnoreDefaultLibraryNames="msvcrt.lib"
-				GenerateDebugInformation="true"
+				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile=""
-				SubSystem="2"
-			/>
+				SubSystem="2"/>
 			<Tool
-				Name="VCALinkTool"
-			/>
+				Name="VCMIDLTool"
+				WarningLevel="0"
+				DefaultCharType="0"
+				EnableErrorChecks="1"/>
 			<Tool
-				Name="VCManifestTool"
-			/>
+				Name="VCPostBuildEventTool"/>
 			<Tool
-				Name="VCXDCMakeTool"
-			/>
+				Name="VCPreBuildEventTool"/>
 			<Tool
-				Name="VCBscMakeTool"
-			/>
+				Name="VCPreLinkEventTool"/>
 			<Tool
-				Name="VCFxCopTool"
-			/>
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="NDEBUG"/>
 			<Tool
-				Name="VCAppVerifierTool"
-			/>
+				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
-				Name="VCWebDeploymentTool"
-			/>
+				Name="VCXMLDataGeneratorTool"/>
 			<Tool
-				Name="VCPostBuildEventTool"
-			/>
+				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
 	</Configurations>
 	<References>
@@ -207,521 +141,416 @@
 	<Files>
 		<Filter
 			Name="Source Files"
-			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx"
-			>
+			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx">
 			<File
-				RelativePath="DecompilerThread.cpp"
-				>
+				RelativePath="DecompilerThread.cpp">
 			</File>
 			<File
-				RelativePath="main.cpp"
-				>
+				RelativePath="main.cpp">
 			</File>
 			<File
-				RelativePath="mainwindow.cpp"
-				>
+				RelativePath="mainwindow.cpp">
 			</File>
 			<File
-				RelativePath="debug\moc_DecompilerThread.cpp"
-				>
+				RelativePath="debug\moc_DecompilerThread.cpp">
 			</File>
 			<File
-				RelativePath="debug\moc_mainwindow.cpp"
-				>
+				RelativePath="debug\moc_mainwindow.cpp">
 			</File>
 			<File
-				RelativePath=".\debug\moc_rtleditor.cpp"
-				>
+				RelativePath=".\debug\moc_rtleditor.cpp">
 			</File>
 			<File
-				RelativePath=".\rtleditor.cpp"
-				>
+				RelativePath=".\rtleditor.cpp">
 			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
-			Filter="h;hpp;hxx;hm;inl;inc;xsd"
-			>
+			Filter="h;hpp;hxx;hm;inl;inc;xsd">
 			<File
-				RelativePath="DecompilerThread.h"
-				>
+				RelativePath="DecompilerThread.h">
 				<FileConfiguration
-					Name="Release|Win32"
-					>
+					Name="Release|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="MOC DecompilerThread.h"
-						CommandLine="C:\Qt\4.1.2-msvc7.1\bin\moc.exe -DQT_NO_DEBUG -DNDEBUG -D_WINDOWS -DUNICODE -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_NO_DEBUG -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -DWIN32 -DNDEBUG  -I &quot;C:\Qt\4.1.2-msvc7.1\include\QtCore&quot; -I &quot;C:\Qt\4.1.2-msvc7.1\include\QtGui&quot; -I &quot;C:\Qt\4.1.2-msvc7.1\include&quot; -I &quot;.&quot; -I &quot;C:\Qt\4.1.2-msvc7.1\include\ActiveQt&quot; -I &quot;release&quot; -I &quot;.&quot; -I&quot;C:\Qt\4.1.2-msvc7.1\mkspecs\win32-msvc.net&quot; -DWIN32 DecompilerThread.h -o release\moc_DecompilerThread.cpp&#x0D;&#x0A;"
+						CommandLine="C:\Qt\4.1.2-msvc7.1\bin\moc.exe -DQT_NO_DEBUG -DNDEBUG -D_WINDOWS -DUNICODE -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_NO_DEBUG -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -DWIN32 -DNDEBUG  -I &quot;C:\Qt\4.1.2-msvc7.1\include\QtCore&quot; -I &quot;C:\Qt\4.1.2-msvc7.1\include\QtGui&quot; -I &quot;C:\Qt\4.1.2-msvc7.1\include&quot; -I &quot;.&quot; -I &quot;C:\Qt\4.1.2-msvc7.1\include\ActiveQt&quot; -I &quot;release&quot; -I &quot;.&quot; -I&quot;C:\Qt\4.1.2-msvc7.1\mkspecs\win32-msvc.net&quot; -DWIN32 DecompilerThread.h -o release\moc_DecompilerThread.cpp
+"
 						AdditionalDependencies="C:\Qt\4.1.2-msvc7.1\bin\moc.exe"
-						Outputs="release\moc_DecompilerThread.cpp"
-					/>
+						Outputs="release\moc_DecompilerThread.cpp"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug|Win32"
-					>
+					Name="Debug|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="MOC DecompilerThread.h"
-						CommandLine="C:\Qt\4.1.2-msvc7.1\bin\moc.exe -D_WINDOWS -DUNICODE -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -DWIN32  -I &quot;C:\Qt\4.1.2-msvc7.1\include\QtCore&quot; -I &quot;C:\Qt\4.1.2-msvc7.1\include\QtGui&quot; -I &quot;C:\Qt\4.1.2-msvc7.1\include&quot; -I &quot;.&quot; -I &quot;C:\Qt\4.1.2-msvc7.1\include\ActiveQt&quot; -I &quot;debug&quot; -I &quot;.&quot; -I&quot;C:\Qt\4.1.2-msvc7.1\mkspecs\win32-msvc.net&quot; -DWIN32 DecompilerThread.h -o debug\moc_DecompilerThread.cpp&#x0D;&#x0A;"
+						CommandLine="C:\Qt\4.1.2-msvc7.1\bin\moc.exe -D_WINDOWS -DUNICODE -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -DWIN32  -I &quot;C:\Qt\4.1.2-msvc7.1\include\QtCore&quot; -I &quot;C:\Qt\4.1.2-msvc7.1\include\QtGui&quot; -I &quot;C:\Qt\4.1.2-msvc7.1\include&quot; -I &quot;.&quot; -I &quot;C:\Qt\4.1.2-msvc7.1\include\ActiveQt&quot; -I &quot;debug&quot; -I &quot;.&quot; -I&quot;C:\Qt\4.1.2-msvc7.1\mkspecs\win32-msvc.net&quot; -DWIN32 DecompilerThread.h -o debug\moc_DecompilerThread.cpp
+"
 						AdditionalDependencies="C:\Qt\4.1.2-msvc7.1\bin\moc.exe"
-						Outputs="debug\moc_DecompilerThread.cpp"
-					/>
+						Outputs="debug\moc_DecompilerThread.cpp"/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="mainwindow.h"
-				>
+				RelativePath="mainwindow.h">
 				<FileConfiguration
-					Name="Release|Win32"
-					>
+					Name="Release|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="MOC mainwindow.h"
-						CommandLine="C:\Qt\4.1.2-msvc7.1\bin\moc.exe -DQT_NO_DEBUG -DNDEBUG -D_WINDOWS -DUNICODE -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_NO_DEBUG -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -DWIN32 -DNDEBUG  -I &quot;C:\Qt\4.1.2-msvc7.1\include\QtCore&quot; -I &quot;C:\Qt\4.1.2-msvc7.1\include\QtGui&quot; -I &quot;C:\Qt\4.1.2-msvc7.1\include&quot; -I &quot;.&quot; -I &quot;C:\Qt\4.1.2-msvc7.1\include\ActiveQt&quot; -I &quot;release&quot; -I &quot;.&quot; -I&quot;C:\Qt\4.1.2-msvc7.1\mkspecs\win32-msvc.net&quot; -DWIN32 mainwindow.h -o release\moc_mainwindow.cpp&#x0D;&#x0A;"
+						CommandLine="C:\Qt\4.1.2-msvc7.1\bin\moc.exe -DQT_NO_DEBUG -DNDEBUG -D_WINDOWS -DUNICODE -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_NO_DEBUG -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -DWIN32 -DNDEBUG  -I &quot;C:\Qt\4.1.2-msvc7.1\include\QtCore&quot; -I &quot;C:\Qt\4.1.2-msvc7.1\include\QtGui&quot; -I &quot;C:\Qt\4.1.2-msvc7.1\include&quot; -I &quot;.&quot; -I &quot;C:\Qt\4.1.2-msvc7.1\include\ActiveQt&quot; -I &quot;release&quot; -I &quot;.&quot; -I&quot;C:\Qt\4.1.2-msvc7.1\mkspecs\win32-msvc.net&quot; -DWIN32 mainwindow.h -o release\moc_mainwindow.cpp
+"
 						AdditionalDependencies="C:\Qt\4.1.2-msvc7.1\bin\moc.exe"
-						Outputs="release\moc_mainwindow.cpp"
-					/>
+						Outputs="release\moc_mainwindow.cpp"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug|Win32"
-					>
+					Name="Debug|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="MOC mainwindow.h"
-						CommandLine="C:\Qt\4.1.2-msvc7.1\bin\moc.exe -D_WINDOWS -DUNICODE -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -DWIN32  -I &quot;C:\Qt\4.1.2-msvc7.1\include\QtCore&quot; -I &quot;C:\Qt\4.1.2-msvc7.1\include\QtGui&quot; -I &quot;C:\Qt\4.1.2-msvc7.1\include&quot; -I &quot;.&quot; -I &quot;C:\Qt\4.1.2-msvc7.1\include\ActiveQt&quot; -I &quot;debug&quot; -I &quot;.&quot; -I&quot;C:\Qt\4.1.2-msvc7.1\mkspecs\win32-msvc.net&quot; -DWIN32 mainwindow.h -o debug\moc_mainwindow.cpp&#x0D;&#x0A;"
+						CommandLine="C:\Qt\4.1.2-msvc7.1\bin\moc.exe -D_WINDOWS -DUNICODE -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -DWIN32  -I &quot;C:\Qt\4.1.2-msvc7.1\include\QtCore&quot; -I &quot;C:\Qt\4.1.2-msvc7.1\include\QtGui&quot; -I &quot;C:\Qt\4.1.2-msvc7.1\include&quot; -I &quot;.&quot; -I &quot;C:\Qt\4.1.2-msvc7.1\include\ActiveQt&quot; -I &quot;debug&quot; -I &quot;.&quot; -I&quot;C:\Qt\4.1.2-msvc7.1\mkspecs\win32-msvc.net&quot; -DWIN32 mainwindow.h -o debug\moc_mainwindow.cpp
+"
 						AdditionalDependencies="C:\Qt\4.1.2-msvc7.1\bin\moc.exe"
-						Outputs="debug\moc_mainwindow.cpp"
-					/>
+						Outputs="debug\moc_mainwindow.cpp"/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\rtleditor.h"
-				>
+				RelativePath=".\rtleditor.h">
 				<FileConfiguration
-					Name="Debug|Win32"
-					>
+					Name="Debug|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="MOC rtleditor.h"
-						CommandLine="C:\Qt\4.1.2-msvc7.1\bin\moc.exe -D_WINDOWS -DUNICODE -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -DWIN32  -I &quot;C:\Qt\4.1.2-msvc7.1\include\QtCore&quot; -I &quot;C:\Qt\4.1.2-msvc7.1\include\QtGui&quot; -I &quot;C:\Qt\4.1.2-msvc7.1\include&quot; -I &quot;.&quot; -I &quot;C:\Qt\4.1.2-msvc7.1\include\ActiveQt&quot; -I &quot;debug&quot; -I &quot;.&quot; -I&quot;C:\Qt\4.1.2-msvc7.1\mkspecs\win32-msvc.net&quot; -DWIN32 rtleditor.h -o debug\moc_rtleditor.cpp&#x0D;&#x0A;"
+						CommandLine="C:\Qt\4.1.2-msvc7.1\bin\moc.exe -D_WINDOWS -DUNICODE -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -DWIN32  -I &quot;C:\Qt\4.1.2-msvc7.1\include\QtCore&quot; -I &quot;C:\Qt\4.1.2-msvc7.1\include\QtGui&quot; -I &quot;C:\Qt\4.1.2-msvc7.1\include&quot; -I &quot;.&quot; -I &quot;C:\Qt\4.1.2-msvc7.1\include\ActiveQt&quot; -I &quot;debug&quot; -I &quot;.&quot; -I&quot;C:\Qt\4.1.2-msvc7.1\mkspecs\win32-msvc.net&quot; -DWIN32 rtleditor.h -o debug\moc_rtleditor.cpp
+"
 						AdditionalDependencies="C:\Qt\4.1.2-msvc7.1\bin\moc.exe"
-						Outputs="debug\moc_rtleditor.cpp"
-					/>
+						Outputs="debug\moc_rtleditor.cpp"/>
 				</FileConfiguration>
 			</File>
 			<Filter
 				Name="boomerang"
-				>
+				Filter="">
 				<File
-					RelativePath="..\c\ansi-c-parser.h"
-					>
+					RelativePath="..\c\ansi-c-parser.h">
 				</File>
 				<File
-					RelativePath="..\c\ansi-c-scanner.h"
-					>
+					RelativePath="..\c\ansi-c-scanner.h">
 				</File>
 				<File
-					RelativePath="..\include\basicblock.h"
-					>
+					RelativePath="..\include\basicblock.h">
 				</File>
 				<File
-					RelativePath="..\include\BinaryFile.h"
-					>
+					RelativePath="..\include\BinaryFile.h">
 				</File>
 				<File
-					RelativePath="..\include\BinaryFileStub.h"
-					>
+					RelativePath="..\include\BinaryFileStub.h">
 				</File>
 				<File
-					RelativePath="..\include\boomerang.h"
-					>
+					RelativePath="..\include\boomerang.h">
 				</File>
 				<File
-					RelativePath="..\include\cfg.h"
-					>
+					RelativePath="..\include\cfg.h">
 				</File>
 				<File
-					RelativePath="..\include\cluster.h"
-					>
+					RelativePath="..\include\cluster.h">
 				</File>
 				<File
-					RelativePath="..\include\config.h"
-					>
+					RelativePath="..\include\config.h">
 				</File>
 				<File
-					RelativePath="..\include\constraint.h"
-					>
+					RelativePath="..\include\constraint.h">
 				</File>
 				<File
-					RelativePath="..\include\dataflow.h"
-					>
+					RelativePath="..\include\dataflow.h">
 				</File>
 				<File
-					RelativePath="..\include\decoder.h"
-					>
+					RelativePath="..\include\decoder.h">
 				</File>
 				<File
-					RelativePath="..\include\exp.h"
-					>
+					RelativePath="..\include\exp.h">
 				</File>
 				<File
-					RelativePath="..\include\exphelp.h"
-					>
+					RelativePath="..\include\exphelp.h">
 				</File>
 				<File
-					RelativePath="..\include\frontend.h"
-					>
+					RelativePath="..\include\frontend.h">
 				</File>
 				<File
-					RelativePath="..\include\hllcode.h"
-					>
+					RelativePath="..\include\hllcode.h">
 				</File>
 				<File
-					RelativePath="..\include\log.h"
-					>
+					RelativePath="..\include\log.h">
 				</File>
 				<File
-					RelativePath="..\include\managed.h"
-					>
+					RelativePath="..\include\managed.h">
 				</File>
 				<File
-					RelativePath="..\include\memo.h"
-					>
+					RelativePath="..\include\memo.h">
 				</File>
 				<File
-					RelativePath="..\include\operator.h"
-					>
+					RelativePath="..\include\operator.h">
 				</File>
 				<File
-					RelativePath="..\db\operstrings.h"
-					>
+					RelativePath="..\db\operstrings.h">
 				</File>
 				<File
-					RelativePath="..\include\osfcn.h"
-					>
+					RelativePath="..\include\osfcn.h">
 				</File>
 				<File
-					RelativePath="..\frontend\pentiumdecoder.h"
-					>
+					RelativePath="..\frontend\pentiumdecoder.h">
 				</File>
 				<File
-					RelativePath="..\frontend\pentiumfrontend.h"
-					>
+					RelativePath="..\frontend\pentiumfrontend.h">
 				</File>
 				<File
-					RelativePath="..\include\proc.h"
-					>
+					RelativePath="..\include\proc.h">
 				</File>
 				<File
-					RelativePath="..\include\prog.h"
-					>
+					RelativePath="..\include\prog.h">
 				</File>
 				<File
-					RelativePath="..\include\register.h"
-					>
+					RelativePath="..\include\register.h">
 				</File>
 				<File
-					RelativePath="..\include\rtl.h"
-					>
+					RelativePath="..\include\rtl.h">
 				</File>
 				<File
-					RelativePath="..\include\sigenum.h"
-					>
+					RelativePath="..\include\sigenum.h">
 				</File>
 				<File
-					RelativePath="..\include\signature.h"
-					>
+					RelativePath="..\include\signature.h">
 				</File>
 				<File
-					RelativePath="..\include\statement.h"
-					>
+					RelativePath="..\include\statement.h">
 				</File>
 				<File
-					RelativePath="..\include\transformer.h"
-					>
+					RelativePath="..\include\transformer.h">
 				</File>
 				<File
-					RelativePath="..\include\type.h"
-					>
+					RelativePath="..\include\type.h">
 				</File>
 				<File
-					RelativePath="..\include\types.h"
-					>
+					RelativePath="..\include\types.h">
 				</File>
 				<File
-					RelativePath="..\include\util.h"
-					>
+					RelativePath="..\include\util.h">
 				</File>
 				<File
-					RelativePath="..\include\visitor.h"
-					>
+					RelativePath="..\include\visitor.h">
 				</File>
 				<File
-					RelativePath="..\include\xmlprogparser.h"
-					>
+					RelativePath="..\include\xmlprogparser.h">
 				</File>
 			</Filter>
 		</Filter>
 		<Filter
 			Name="Form Files"
-			Filter="ui"
-			>
+			Filter="ui">
 			<File
-				RelativePath=".\about.ui"
-				>
+				RelativePath=".\about.ui">
 				<FileConfiguration
-					Name="Debug|Win32"
-					>
+					Name="Debug|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="UIC about.ui"
-						CommandLine="C:\Qt\4.1.2-msvc7.1\bin\uic.exe about.ui -o ui_about.h&#x0D;&#x0A;"
+						CommandLine="C:\Qt\4.1.2-msvc7.1\bin\uic.exe about.ui -o ui_about.h
+"
 						AdditionalDependencies="C:\Qt\4.1.2-msvc7.1\bin\uic.exe"
-						Outputs="ui_about.h"
-					/>
+						Outputs="ui_about.h"/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="boomerang.ui"
-				>
+				RelativePath="boomerang.ui">
 				<FileConfiguration
-					Name="Release|Win32"
-					>
+					Name="Release|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="UIC boomerang.ui"
-						CommandLine="C:\Qt\4.1.2-msvc7.1\bin\uic.exe boomerang.ui -o ui_boomerang.h&#x0D;&#x0A;"
+						CommandLine="C:\Qt\4.1.2-msvc7.1\bin\uic.exe boomerang.ui -o ui_boomerang.h
+"
 						AdditionalDependencies="C:\Qt\4.1.2-msvc7.1\bin\uic.exe"
-						Outputs="ui_boomerang.h"
-					/>
+						Outputs="ui_boomerang.h"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug|Win32"
-					>
+					Name="Debug|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="UIC boomerang.ui"
-						CommandLine="C:\Qt\4.1.2-msvc7.1\bin\uic.exe boomerang.ui -o ui_boomerang.h&#x0D;&#x0A;"
+						CommandLine="C:\Qt\4.1.2-msvc7.1\bin\uic.exe boomerang.ui -o ui_boomerang.h
+"
 						AdditionalDependencies="C:\Qt\4.1.2-msvc7.1\bin\uic.exe"
-						Outputs="ui_boomerang.h"
-					/>
+						Outputs="ui_boomerang.h"/>
 				</FileConfiguration>
 			</File>
 		</Filter>
 		<Filter
 			Name="boomerang"
-			>
+			Filter="">
 			<File
-				RelativePath="..\c\ansi-c-parser.cpp"
-				>
+				RelativePath="..\c\ansi-c-parser.cpp">
 			</File>
 			<File
-				RelativePath="..\c\ansi-c-scanner.cpp"
-				>
+				RelativePath="..\c\ansi-c-scanner.cpp">
 			</File>
 			<File
-				RelativePath="..\c\ansi-c.l"
-				>
+				RelativePath="..\c\ansi-c.l">
 				<FileConfiguration
 					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
+					ExcludedFromBuild="TRUE">
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="running flex++.."
-						CommandLine="cd $(InputDir)&#x0D;&#x0A;$(SolutionDir)\..\flexbison\flex++.exe -oansi-c-scanner.cpp -hansi-c-scanner.h $(InputFileName)&#x0D;&#x0A;cd $(SolutionDir)&#x0D;&#x0A;"
+						CommandLine="cd $(InputDir)
+$(SolutionDir)\..\flexbison\flex++.exe -oansi-c-scanner.cpp -hansi-c-scanner.h $(InputFileName)
+cd $(SolutionDir)
+"
 						AdditionalDependencies=""
-						Outputs="ansi-c-scanner.cpp ansi-c-scanner.h"
-					/>
+						Outputs="ansi-c-scanner.cpp ansi-c-scanner.h"/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\c\ansi-c.y"
-				>
+				RelativePath="..\c\ansi-c.y">
 				<FileConfiguration
 					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
+					ExcludedFromBuild="TRUE">
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="running bison++.."
-						CommandLine="cd $(InputDir)&#x0D;&#x0A;$(SolutionDir)\..\flexbison\bison++.exe -o ansi-c-parser.cpp -d $(InputFileName)&#x0D;&#x0A;cd $(SolutionDir)&#x0D;&#x0A;"
+						CommandLine="cd $(InputDir)
+$(SolutionDir)\..\flexbison\bison++.exe -o ansi-c-parser.cpp -d $(InputFileName)
+cd $(SolutionDir)
+"
 						AdditionalDependencies=""
-						Outputs="ansi-c-parser.cpp ansi-c-parser.h"
-					/>
+						Outputs="ansi-c-parser.cpp ansi-c-parser.h"/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\db\basicblock.cpp"
-				>
+				RelativePath="..\db\basicblock.cpp">
 			</File>
 			<File
-				RelativePath="..\loader\BinaryFile.cpp"
-				>
+				RelativePath="..\loader\BinaryFile.cpp">
 			</File>
 			<File
-				RelativePath="..\loader\BinaryFileFactory.cpp"
-				>
+				RelativePath="..\loader\BinaryFileFactory.cpp">
 			</File>
 			<File
-				RelativePath="..\boomerang.cpp"
-				>
+				RelativePath="..\boomerang.cpp">
 			</File>
 			<File
-				RelativePath="..\db\cfg.cpp"
-				>
+				RelativePath="..\db\cfg.cpp">
 			</File>
 			<File
-				RelativePath="..\codegen\chllcode.cpp"
-				>
+				RelativePath="..\codegen\chllcode.cpp">
 			</File>
 			<File
-				RelativePath="..\type\constraint.cpp"
-				>
+				RelativePath="..\type\constraint.cpp">
 			</File>
 			<File
-				RelativePath="..\db\dataflow.cpp"
-				>
+				RelativePath="..\db\dataflow.cpp">
 			</File>
 			<File
-				RelativePath="..\type\dfa.cpp"
-				>
+				RelativePath="..\type\dfa.cpp">
 			</File>
 			<File
-				RelativePath="..\db\exp.cpp"
-				>
+				RelativePath="..\db\exp.cpp">
 			</File>
 			<File
-				RelativePath="..\frontend\frontend.cpp"
-				>
+				RelativePath="..\frontend\frontend.cpp">
 			</File>
 			<File
-				RelativePath="..\transform\generic.cpp"
-				>
+				RelativePath="..\transform\generic.cpp">
 			</File>
 			<File
-				RelativePath="..\db\insnameelem.cpp"
-				>
+				RelativePath="..\db\insnameelem.cpp">
 			</File>
 			<File
-				RelativePath="..\log.cpp"
-				>
+				RelativePath="..\log.cpp">
 			</File>
 			<File
-				RelativePath="..\db\managed.cpp"
-				>
+				RelativePath="..\db\managed.cpp">
 			</File>
 			<File
-				RelativePath="..\frontend\njmcDecoder.cpp"
-				>
+				RelativePath="..\frontend\njmcDecoder.cpp">
 			</File>
 			<File
-				RelativePath="..\frontend\pentiumdecoder.cpp"
-				>
+				RelativePath="..\frontend\pentiumdecoder.cpp">
 			</File>
 			<File
-				RelativePath="..\frontend\pentiumfrontend.cpp"
-				>
+				RelativePath="..\frontend\pentiumfrontend.cpp">
 			</File>
 			<File
-				RelativePath="..\frontend\ppcdecoder.cpp"
-				>
+				RelativePath="..\frontend\ppcdecoder.cpp">
 			</File>
 			<File
-				RelativePath="..\frontend\ppcfrontend.cpp"
-				>
+				RelativePath="..\frontend\ppcfrontend.cpp">
 			</File>
 			<File
-				RelativePath="..\db\proc.cpp"
-				>
+				RelativePath="..\db\proc.cpp">
 			</File>
 			<File
-				RelativePath="..\db\prog.cpp"
-				>
+				RelativePath="..\db\prog.cpp">
 			</File>
 			<File
-				RelativePath="..\transform\rdi.cpp"
-				>
+				RelativePath="..\transform\rdi.cpp">
 			</File>
 			<File
-				RelativePath="..\db\register.cpp"
-				>
+				RelativePath="..\db\register.cpp">
 			</File>
 			<File
-				RelativePath="..\db\rtl.cpp"
-				>
+				RelativePath="..\db\rtl.cpp">
 			</File>
 			<File
-				RelativePath="..\db\signature.cpp"
-				>
+				RelativePath="..\db\signature.cpp">
 			</File>
 			<File
-				RelativePath="..\frontend\sparcdecoder.cpp"
-				>
+				RelativePath="..\frontend\sparcdecoder.cpp">
 			</File>
 			<File
-				RelativePath="..\frontend\sparcfrontend.cpp"
-				>
+				RelativePath="..\frontend\sparcfrontend.cpp">
 			</File>
 			<File
-				RelativePath="..\db\sslinst.cpp"
-				>
+				RelativePath="..\db\sslinst.cpp">
 			</File>
 			<File
-				RelativePath="..\db\sslparser.cpp"
-				>
+				RelativePath="..\db\sslparser.cpp">
 			</File>
 			<File
-				RelativePath="..\db\sslscanner.cpp"
-				>
+				RelativePath="..\db\sslscanner.cpp">
 			</File>
 			<File
-				RelativePath="..\frontend\st20decoder.cpp"
-				>
+				RelativePath="..\frontend\st20decoder.cpp">
 			</File>
 			<File
-				RelativePath="..\frontend\st20frontend.cpp"
-				>
+				RelativePath="..\frontend\st20frontend.cpp">
 			</File>
 			<File
-				RelativePath="..\db\statement.cpp"
-				>
+				RelativePath="..\db\statement.cpp">
 			</File>
 			<File
-				RelativePath="..\codegen\syntax.cpp"
-				>
+				RelativePath="..\codegen\syntax.cpp">
 			</File>
 			<File
-				RelativePath="..\db\table.cpp"
-				>
+				RelativePath="..\db\table.cpp">
 			</File>
 			<File
-				RelativePath="..\transform\transformation-parser.cpp"
-				>
+				RelativePath="..\transform\transformation-parser.cpp">
 			</File>
 			<File
-				RelativePath="..\transform\transformation-scanner.cpp"
-				>
+				RelativePath="..\transform\transformation-scanner.cpp">
 			</File>
 			<File
-				RelativePath="..\transform\transformer.cpp"
-				>
+				RelativePath="..\transform\transformer.cpp">
 			</File>
 			<File
-				RelativePath="..\type\type.cpp"
-				>
+				RelativePath="..\type\type.cpp">
 			</File>
 			<File
-				RelativePath="..\util\util.cpp"
-				>
+				RelativePath="..\util\util.cpp">
 			</File>
 			<File
-				RelativePath="..\db\visitor.cpp"
-				>
+				RelativePath="..\db\visitor.cpp">
 			</File>
 			<File
-				RelativePath="..\db\xmlprogparser.cpp"
-				>
+				RelativePath="..\db\xmlprogparser.cpp">
 			</File>
 		</Filter>
 	</Files>
