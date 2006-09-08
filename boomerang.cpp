@@ -12,7 +12,7 @@
  * 02 Sep 06 - Mike: introduced USE_XML to make it easy to disable use of the expat library
 */
 
-#define VERSION "alpha 0.3.1 08/Sep/2006"
+#define VERSION "alpha 0.3.1 09/Sep/2006"
 
 #if __CYGWIN__
 #define USE_XML 0			// Cygwin has a weird problem that causes libBinaryFile.dll not to load if the expat library
