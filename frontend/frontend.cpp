@@ -35,7 +35,7 @@
 #include <queue>
 #include <stdarg.h>			// For varargs
 #include <sstream>
-#ifndef WIN32
+#ifndef _WIN32
 #include <dlfcn.h>			// dlopen, dlsym
 #endif
 

@@ -34,13 +34,16 @@
 // ? How does the following do any good?
 #define for if(0){}else for
 #endif 
+#if defined(_MSC_VER) && _MSC_VER >= 1400
+#pragma warning(disable:4996)		// Warnings about e.g. _strdup deprecated in VS 2005
+#endif
 
 #include <assert.h>
 #include <fstream>
 #include <sstream>
 #include <vector>
 #include <math.h>
-#ifdef WIN32
+#ifdef _WIN32
 #include <direct.h>					// For Windows mkdir()
 #endif
 
@@ -314,7 +317,7 @@ const char *Cluster::makeDirs()
 		path = Boomerang::get()->getOutputPath();		 
 	if (getNumChildren() > 0 || parent == NULL) {
 		path = path + "/" + name;
-#ifdef WIN32
+#ifdef _WIN32
 		mkdir(path.c_str());
 #else
 		mkdir(path.c_str(), 0777);
@@ -1206,7 +1209,7 @@ UserProc* Prog::getNextUserProc(std::list<Proc*>::iterator& it) {
 const void* Prog::getCodeInfo(ADDRESS uAddr, const char*& last, int& delta) {
 	delta=0;
 	last=0;
-#ifdef WIN32
+#ifdef _WIN32
 	// this is broken obviously
 	return NULL;
 #else

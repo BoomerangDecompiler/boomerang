@@ -625,7 +625,7 @@ void Cfg::sortByAddress()
  *============================================================================*/
 void Cfg::sortByFirstDFT()
 {
-#ifndef WIN32
+#ifndef _WIN32
 	m_listBB.sort(BasicBlock::lessFirstDFT);
 #else
 	updateVectorBB();
@@ -645,7 +645,7 @@ void Cfg::sortByFirstDFT()
  *============================================================================*/
 void Cfg::sortByLastDFT()
 {
-#ifndef WIN32
+#ifndef _WIN32
 	m_listBB.sort(BasicBlock::lessLastDFT);
 #else
 	updateVectorBB();

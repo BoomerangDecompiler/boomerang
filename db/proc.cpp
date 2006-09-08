@@ -65,6 +65,9 @@ namespace dbghelp {
 #undef NO_ADDRESS
 #define NO_ADDRESS ((ADDRESS)-1)
 #endif
+#if defined(_MSC_VER) && _MSC_VER >= 1400
+#pragma warning(disable:4996)		// Warnings about e.g. _strdup deprecated in VS 2005
+#endif
 
 typedef std::map<Statement*, int> RefCounter;
 

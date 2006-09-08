@@ -98,7 +98,7 @@ void *alloca ();
 #include "util.h"			// E.g. str()
 #include "statement.h"
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <malloc.h>
 #endif
 

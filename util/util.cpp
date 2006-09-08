@@ -19,18 +19,6 @@
  * $Revision$
  *
  * 05 Sep 00 - Mike: moved getCodeInfo here from translate2c.cc
- * 21 Sep 00 - Mike: getTempType handles tmph, tmpb now
- * 27 Sep 00 - Mike: getCodeInfo() was not setting parameter last correctly,
- *              and was not rejecting addresses outside the code section
- * 04 Dec 00 - Mike: Added #ifndef NOFRILLS for complex functions, so we can
- *              use simple things like str() and string::operator+ in
- *              PAL/parsepatterns without linking in BINARYFILE/?? etc
- * 11 Feb 01 - Nathan: Removed getCodeInfo and getTempType to prog.cc & type.cc
- * 22 Feb 01 - Nathan: Moved changeExt here from driver.cc
- * 25 Feb 01 - Nathan: Removed NOFRILLS (no longer applicable)
- * 16 Apr 01 - Brian: added hasExt() procedure.
- * 14 Aug 01 - Mike: Added upperStr() to replace Doug's use of transform();
- *              gcc v3 no longer allows the use of char* for an iterator
  * 10 Apr 02 - Mike: Mods for boomerang; put expSimplify here
  */
 
@@ -38,6 +26,9 @@
 #if defined(_MSC_VER) && _MSC_VER <= 1200 
 #pragma warning(disable:4786)
 #endif 
+#if defined(_MSC_VER) && _MSC_VER >= 1400
+#pragma warning(disable:4996)		// Warnings about e.g. _strdup deprecated in VS 2005
+#endif
 
 #include <string>
 #include <sstream>

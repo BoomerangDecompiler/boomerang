@@ -31,6 +31,9 @@
 #include "log.h"
 #include "proc.h"
 #include <sstream>
+#if defined(_MSC_VER) && _MSC_VER >= 1400
+#pragma warning(disable:4996)		// Warnings about e.g. _strdup deprecated in VS 2005
+#endif
 
 static int nextUnionNumber = 0;
 

@@ -426,8 +426,8 @@ int DOS4GWBinaryFile::readNative1(ADDRESS nat) {
 	PSectionInfo si = GetSectionInfoByAddr(nat);
 	if (si == 0) 
 		si = GetSectionInfo(0);
-	ADDRESS host = si->uHostAddr - si->uNativeAddr + nat;
-	return *(char*)host;
+	char* host = (char*)(si->uHostAddr - si->uNativeAddr + nat);
+	return *host;
 }
 
 // Read 2 bytes from given native address

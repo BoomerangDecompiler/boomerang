@@ -30,7 +30,7 @@
 #include "LoaderTest.h"
 //#include "util.h"           // For str()
 #include <iostream>         // For cout
-#ifndef WIN32
+#ifndef _WIN32
 #include <dlfcn.h>          // dlopen, dlsym
 #endif
 
@@ -597,7 +597,7 @@ void LoaderTest::testMicroDis2 () {
 
 typedef unsigned (*elfHashFcn)(const char*);
 void LoaderTest::testElfHash () {
-#ifndef WIN32
+#ifndef _WIN32
 	void* dlHandle = dlopen(ELFBINFILE, RTLD_LAZY);
 	CPPUNIT_ASSERT(dlHandle);
 	// Use the handle to find the "elf_hash" function

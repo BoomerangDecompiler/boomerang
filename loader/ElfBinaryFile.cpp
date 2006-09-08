@@ -38,6 +38,9 @@
 #include <iostream>
 #include <assert.h>
 #include "config.h"
+#if defined(_MSC_VER) && _MSC_VER >= 1400
+#pragma warning(disable:4996)		// Warnings about e.g. _strdup deprecated in VS 2005
+#endif
 
 typedef std::map<std::string, int, std::less<std::string> >		StrIntMap;
 
