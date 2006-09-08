@@ -12,7 +12,7 @@
  * 02 Sep 06 - Mike: introduced USE_XML to make it easy to disable use of the expat library
 */
 
-#define VERSION "alpha 0.3.1 07/Sep/2006"
+#define VERSION "alpha 0.3.1 08/Sep/2006"
 
 #if __CYGWIN__
 #define USE_XML 0			// Cygwin has a weird problem that causes libBinaryFile.dll not to load if the expat library
@@ -24,7 +24,7 @@
 #include <iostream>
 #include <fstream>
 #include <time.h>
-#ifdef WIN32
+#ifdef _WIN32
 #include <direct.h>			// mkdir under Windows
 #else
 #include <sys/stat.h>		// For mkdir
@@ -221,7 +221,7 @@ bool createDirectory(std::string dir) {
 	while ((i = remainder.find('/')) != std::string::npos) {
 		path += remainder.substr(0, i+1);
 		remainder = remainder.substr(i+1);
-#ifdef WIN32
+#ifdef _WIN32
 		mkdir(path.c_str());
 #else
 		mkdir(path.c_str(), 0777);				// Doesn't matter if already exists
@@ -229,7 +229,7 @@ bool createDirectory(std::string dir) {
 			}
 	// Now try to create a test file
 	path += remainder;
-#ifdef WIN32
+#ifdef _WIN32
 	mkdir(path.c_str());					// Make the last dir if needed
 #else
 	mkdir(path.c_str(), 0777);				// Make the last dir if needed
@@ -1183,9 +1183,9 @@ int Boomerang::decompile(const char *fname, const char *pname)
 
 	time_t end;
 	time(&end);
-	int hours = (end-start) / 60 / 60;
-	int mins = (end-start) / 60 - hours * 60;
-	int secs = (end-start) - hours * 60 * 60 - mins * 60;
+	int hours = (int)((end-start) / 60 / 60);
+	int mins = (int)((end-start) / 60 - hours * 60);
+	int secs = (int)((end-start) - hours * 60 * 60 - mins * 60);
 	std::cout << "completed in " << std::dec;
 	if (hours)
 		std::cout << hours << " hours ";
