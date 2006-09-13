@@ -16,7 +16,7 @@
 	<Configurations>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="..\Release"
+			OutputDirectory=".\Release"
 			IntermediateDirectory="..\Release"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
@@ -45,7 +45,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="-Zm200 -EHsc"
 				Optimization="2"
-				AdditionalIncludeDirectories="C:\Qt\4.1.4-vs2005\include\QtCore;C:\Qt\4.1.4-vs2005\include\QtGui;C:\Qt\4.1.4-vs2005\include;C:\Qt\4.1.4-vs2005\include\ActiveQt;C:\Qt\4.1.4-vs2005\mkspecs\win32-msvc.net;..\include;..\win32make\include;..\c"
+				AdditionalIncludeDirectories="&quot;C:\Qt\4.1.4-vs2005\include\QtCore&quot;;&quot;C:\Qt\4.1.4-vs2005\include\QtGui&quot;;&quot;C:\Qt\4.1.4-vs2005\include&quot;;&quot;C:\Qt\4.1.4-vs2005\include\ActiveQt&quot;;&quot;C:\Qt\4.1.4-vs2005\mkspecs\win32-msvc.net&quot;;..\include;..\win32make\include;..\c"
 				PreprocessorDefinitions="QT_NO_DEBUG,NDEBUG,_WINDOWS,UNICODE,QT_LARGEFILE_SUPPORT,QT_DLL,QT_NO_DEBUG,QT_GUI_LIB,QT_CORE_LIB,QT_THREAD_SUPPORT,WIN32,NDEBUG"
 				GeneratePreprocessedFile="0"
 				ExceptionHandling="1"
@@ -73,11 +73,10 @@
 			<Tool
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="true"
-				AdditionalDependencies="delayimp.lib qtmain.lib QtGui4.lib QtCore4.lib  gc_cpp2.lib libexpat.lib dbghelp.lib"
+				AdditionalDependencies="delayimp.lib qtmain.lib QtGui4.lib QtCore4.lib gc_cpp2.lib libexpat.lib dbghelp.lib"
 				OutputFile="..\boomerang-gui.exe"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="C:\Qt\4.1.4-vs2005\lib;..;c:\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\Lib&quot;"
-				IgnoreDefaultLibraryNames=""
+				AdditionalLibraryDirectories="C:\Qt\4.1.4-vs2005\lib;.."
 				GenerateDebugInformation="false"
 				ProgramDatabaseFile=""
 				SubSystem="2"
@@ -138,7 +137,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="-Zm200 -EHsc"
 				Optimization="0"
-				AdditionalIncludeDirectories="C:\Qt\4.1.2-msvc7.1\include\QtCore;C:\Qt\4.1.2-msvc7.1\include\QtGui;C:\Qt\4.1.2-msvc7.1\include;C:\Qt\4.1.2-msvc7.1\include\ActiveQt;C:\Qt\4.1.2-msvc7.1\mkspecs\win32-msvc.net;..\include;..\win32make\include;..\c"
+				AdditionalIncludeDirectories="&quot;C:\Qt\4.1.4-vs2005\include\QtCore&quot;;&quot;C:\Qt\4.1.4-vs2005\include\QtGui&quot;;&quot;C:\Qt\4.1.4-vs2005\include&quot;;.;&quot;C:\Qt\4.1.4-vs2005\include\ActiveQt&quot;;&quot;C:\Qt\4.1.4-vs2005\mkspecs\win32-msvc.net&quot;;..\include;..\win32make\include;..\c"
 				PreprocessorDefinitions="_WINDOWS,UNICODE,QT_LARGEFILE_SUPPORT,QT_DLL,QT_GUI_LIB,QT_CORE_LIB,QT_THREAD_SUPPORT,WIN32"
 				GeneratePreprocessedFile="0"
 				MinimalRebuild="true"
@@ -167,12 +166,10 @@
 			<Tool
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="true"
-				AdditionalDependencies="delayimp.lib qtmaind.lib QtGuid4.lib QtCored4.lib gc_cpp2.lib libexpat.lib dbghelp.lib"
-				OutputFile="..\boomerang-gui.exe"
+				AdditionalDependencies="delayimp.lib qtmain.lib QtGui4.lib QtCore4.lib gc_cpp2.lib libexpat.lib dbghelp.lib"
+				OutputFile="..\boomerang-gui-debug.exe"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="C:\Qt\4.1.2-msvc7.1\lib;..c:\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\Lib&quot;"
-				IgnoreAllDefaultLibraries="false"
-				IgnoreDefaultLibraryNames=""
+				AdditionalLibraryDirectories="C:\Qt\4.1.4-vs2005\lib;.."
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile=""
 				SubSystem="2"
@@ -200,7 +197,6 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy /y $(TargetPath) $(SolutionDir)\boomerang-gui.exe"
 			/>
 		</Configuration>
 	</Configurations>
@@ -226,26 +222,10 @@
 			<File
 				RelativePath="debug\moc_DecompilerThread.cpp"
 				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="debug\moc_mainwindow.cpp"
 				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\debug\moc_rtleditor.cpp"
@@ -269,8 +249,8 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="MOC DecompilerThread.h"
-						CommandLine="C:\Qt\4.1.2-msvc7.1\bin\moc.exe -DQT_NO_DEBUG -DNDEBUG -D_WINDOWS -DUNICODE -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_NO_DEBUG -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -DWIN32 -DNDEBUG  -I &quot;C:\Qt\4.1.2-msvc7.1\include\QtCore&quot; -I &quot;C:\Qt\4.1.2-msvc7.1\include\QtGui&quot; -I &quot;C:\Qt\4.1.2-msvc7.1\include&quot; -I &quot;.&quot; -I &quot;C:\Qt\4.1.2-msvc7.1\include\ActiveQt&quot; -I &quot;release&quot; -I &quot;.&quot; -I&quot;C:\Qt\4.1.2-msvc7.1\mkspecs\win32-msvc.net&quot; -DWIN32 DecompilerThread.h -o release\moc_DecompilerThread.cpp&#x0D;&#x0A;"
-						AdditionalDependencies="C:\Qt\4.1.2-msvc7.1\bin\moc.exe"
+						CommandLine="C:\Qt\4.1.4-vs2005\bin\moc.exe -DQT_NO_DEBUG -DNDEBUG -D_WINDOWS -DUNICODE -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_NO_DEBUG -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -DWIN32 -DNDEBUG  -I &quot;C:\Qt\4.1.4-vs2005\include\QtCore&quot; -I &quot;C:\Qt\4.1.4-vs2005\include\QtGui&quot; -I &quot;C:\Qt\4.1.4-vs2005\include&quot; -I &quot;.&quot; -I &quot;C:\Qt\4.1.4-vs2005\include\ActiveQt&quot; -I &quot;release&quot; -I &quot;.&quot; -I&quot;C:\Qt\4.1.4-vs2005\mkspecs\win32-msvc.net&quot; -DWIN32 DecompilerThread.h -o release\moc_DecompilerThread.cpp&#x0D;&#x0A;"
+						AdditionalDependencies="C:\Qt\4.1.4-vs2005\bin\moc.exe"
 						Outputs="release\moc_DecompilerThread.cpp"
 					/>
 				</FileConfiguration>
@@ -280,8 +260,8 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="MOC DecompilerThread.h"
-						CommandLine="C:\Qt\4.1.2-msvc7.1\bin\moc.exe -D_WINDOWS -DUNICODE -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -DWIN32  -I &quot;C:\Qt\4.1.2-msvc7.1\include\QtCore&quot; -I &quot;C:\Qt\4.1.2-msvc7.1\include\QtGui&quot; -I &quot;C:\Qt\4.1.2-msvc7.1\include&quot; -I &quot;.&quot; -I &quot;C:\Qt\4.1.2-msvc7.1\include\ActiveQt&quot; -I &quot;debug&quot; -I &quot;.&quot; -I&quot;C:\Qt\4.1.2-msvc7.1\mkspecs\win32-msvc.net&quot; -DWIN32 DecompilerThread.h -o debug\moc_DecompilerThread.cpp&#x0D;&#x0A;"
-						AdditionalDependencies="C:\Qt\4.1.2-msvc7.1\bin\moc.exe"
+						CommandLine="C:\Qt\4.1.4-vs2005\bin\moc.exe -D_WINDOWS -DUNICODE -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -DWIN32  -I &quot;C:\Qt\4.1.4-vs2005\include\QtCore&quot; -I &quot;C:\Qt\4.1.4-vs2005\include\QtGui&quot; -I &quot;C:\Qt\4.1.4-vs2005\include&quot; -I &quot;.&quot; -I &quot;C:\Qt\4.1.4-vs2005\include\ActiveQt&quot; -I &quot;debug&quot; -I &quot;.&quot; -I&quot;C:\Qt\4.1.4-vs2005\mkspecs\win32-msvc.net&quot; -DWIN32 DecompilerThread.h -o debug\moc_DecompilerThread.cpp&#x0D;&#x0A;"
+						AdditionalDependencies="C:\Qt\4.1.4-vs2005\bin\moc.exe"
 						Outputs="debug\moc_DecompilerThread.cpp"
 					/>
 				</FileConfiguration>
@@ -295,8 +275,8 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="MOC mainwindow.h"
-						CommandLine="C:\Qt\4.1.2-msvc7.1\bin\moc.exe -DQT_NO_DEBUG -DNDEBUG -D_WINDOWS -DUNICODE -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_NO_DEBUG -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -DWIN32 -DNDEBUG  -I &quot;C:\Qt\4.1.2-msvc7.1\include\QtCore&quot; -I &quot;C:\Qt\4.1.2-msvc7.1\include\QtGui&quot; -I &quot;C:\Qt\4.1.2-msvc7.1\include&quot; -I &quot;.&quot; -I &quot;C:\Qt\4.1.2-msvc7.1\include\ActiveQt&quot; -I &quot;release&quot; -I &quot;.&quot; -I&quot;C:\Qt\4.1.2-msvc7.1\mkspecs\win32-msvc.net&quot; -DWIN32 mainwindow.h -o release\moc_mainwindow.cpp&#x0D;&#x0A;"
-						AdditionalDependencies="C:\Qt\4.1.2-msvc7.1\bin\moc.exe"
+						CommandLine="C:\Qt\4.1.4-vs2005\bin\moc.exe -DQT_NO_DEBUG -DNDEBUG -D_WINDOWS -DUNICODE -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_NO_DEBUG -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -DWIN32 -DNDEBUG  -I &quot;C:\Qt\4.1.4-vs2005\include\QtCore&quot; -I &quot;C:\Qt\4.1.4-vs2005\include\QtGui&quot; -I &quot;C:\Qt\4.1.4-vs2005\include&quot; -I &quot;.&quot; -I &quot;C:\Qt\4.1.4-vs2005\include\ActiveQt&quot; -I &quot;release&quot; -I &quot;.&quot; -I&quot;C:\Qt\4.1.4-vs2005\mkspecs\win32-msvc.net&quot; -DWIN32 mainwindow.h -o release\moc_mainwindow.cpp&#x0D;&#x0A;"
+						AdditionalDependencies="C:\Qt\4.1.4-vs2005\bin\moc.exe"
 						Outputs="release\moc_mainwindow.cpp"
 					/>
 				</FileConfiguration>
@@ -306,8 +286,8 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="MOC mainwindow.h"
-						CommandLine="C:\Qt\4.1.2-msvc7.1\bin\moc.exe -D_WINDOWS -DUNICODE -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -DWIN32  -I &quot;C:\Qt\4.1.2-msvc7.1\include\QtCore&quot; -I &quot;C:\Qt\4.1.2-msvc7.1\include\QtGui&quot; -I &quot;C:\Qt\4.1.2-msvc7.1\include&quot; -I &quot;.&quot; -I &quot;C:\Qt\4.1.2-msvc7.1\include\ActiveQt&quot; -I &quot;debug&quot; -I &quot;.&quot; -I&quot;C:\Qt\4.1.2-msvc7.1\mkspecs\win32-msvc.net&quot; -DWIN32 mainwindow.h -o debug\moc_mainwindow.cpp&#x0D;&#x0A;"
-						AdditionalDependencies="C:\Qt\4.1.2-msvc7.1\bin\moc.exe"
+						CommandLine="C:\Qt\4.1.4-vs2005\bin\moc.exe -D_WINDOWS -DUNICODE -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -DWIN32  -I &quot;C:\Qt\4.1.4-vs2005\include\QtCore&quot; -I &quot;C:\Qt\4.1.4-vs2005\include\QtGui&quot; -I &quot;C:\Qt\4.1.4-vs2005\include&quot; -I &quot;.&quot; -I &quot;C:\Qt\4.1.4-vs2005\include\ActiveQt&quot; -I &quot;debug&quot; -I &quot;.&quot; -I&quot;C:\Qt\4.1.4-vs2005\mkspecs\win32-msvc.net&quot; -DWIN32 mainwindow.h -o debug\moc_mainwindow.cpp&#x0D;&#x0A;"
+						AdditionalDependencies="C:\Qt\4.1.4-vs2005\bin\moc.exe"
 						Outputs="debug\moc_mainwindow.cpp"
 					/>
 				</FileConfiguration>
@@ -321,8 +301,8 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="MOC rtleditor.h"
-						CommandLine="C:\Qt\4.1.2-msvc7.1\bin\moc.exe -D_WINDOWS -DUNICODE -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -DWIN32  -I &quot;C:\Qt\4.1.2-msvc7.1\include\QtCore&quot; -I &quot;C:\Qt\4.1.2-msvc7.1\include\QtGui&quot; -I &quot;C:\Qt\4.1.2-msvc7.1\include&quot; -I &quot;.&quot; -I &quot;C:\Qt\4.1.2-msvc7.1\include\ActiveQt&quot; -I &quot;debug&quot; -I &quot;.&quot; -I&quot;C:\Qt\4.1.2-msvc7.1\mkspecs\win32-msvc.net&quot; -DWIN32 rtleditor.h -o debug\moc_rtleditor.cpp&#x0D;&#x0A;"
-						AdditionalDependencies="C:\Qt\4.1.2-msvc7.1\bin\moc.exe"
+						CommandLine="C:\Qt\4.1.4-vs2005\bin\moc.exe -D_WINDOWS -DUNICODE -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -DWIN32  -I &quot;C:\Qt\4.1.4-vs2005\include\QtCore&quot; -I &quot;C:\Qt\4.1.4-vs2005\include\QtGui&quot; -I &quot;C:\Qt\4.1.4-vs2005\include&quot; -I &quot;.&quot; -I &quot;C:\Qt\4.1.4-vs2005\include\ActiveQt&quot; -I &quot;debug&quot; -I &quot;.&quot; -I&quot;C:\Qt\4.1.4-vs2005\mkspecs\win32-msvc.net&quot; -DWIN32 rtleditor.h -o debug\moc_rtleditor.cpp&#x0D;&#x0A;"
+						AdditionalDependencies="C:\Qt\4.1.4-vs2005\bin\moc.exe"
 						Outputs="debug\moc_rtleditor.cpp"
 					/>
 				</FileConfiguration>
@@ -330,6 +310,14 @@
 			<Filter
 				Name="boomerang"
 				>
+				<File
+					RelativePath="..\c\ansi-c-parser.h"
+					>
+				</File>
+				<File
+					RelativePath="..\c\ansi-c-scanner.h"
+					>
+				</File>
 				<File
 					RelativePath="..\include\basicblock.h"
 					>
@@ -477,6 +465,21 @@
 			Filter="ui"
 			>
 			<File
+				RelativePath=".\about.ui"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="UIC about.ui"
+						CommandLine="C:\Qt\4.1.4-vs2005\bin\uic.exe about.ui -o ui_about.h&#x0D;&#x0A;"
+						AdditionalDependencies="C:\Qt\4.1.4-vs2005\bin\uic.exe"
+						Outputs="ui_about.h"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="boomerang.ui"
 				>
 				<FileConfiguration
@@ -485,8 +488,8 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="UIC boomerang.ui"
-						CommandLine="C:\Qt\4.1.2-msvc7.1\bin\uic.exe boomerang.ui -o ui_boomerang.h&#x0D;&#x0A;"
-						AdditionalDependencies="C:\Qt\4.1.2-msvc7.1\bin\uic.exe"
+						CommandLine="C:\Qt\4.1.4-vs2005\bin\uic.exe boomerang.ui -o ui_boomerang.h&#x0D;&#x0A;"
+						AdditionalDependencies="C:\Qt\4.1.4-vs2005\bin\uic.exe"
 						Outputs="ui_boomerang.h"
 					/>
 				</FileConfiguration>
@@ -496,8 +499,8 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="UIC boomerang.ui"
-						CommandLine="C:\Qt\4.1.2-msvc7.1\bin\uic.exe boomerang.ui -o ui_boomerang.h&#x0D;&#x0A;"
-						AdditionalDependencies="C:\Qt\4.1.2-msvc7.1\bin\uic.exe"
+						CommandLine="C:\Qt\4.1.4-vs2005\bin\uic.exe boomerang.ui -o ui_boomerang.h&#x0D;&#x0A;"
+						AdditionalDependencies="C:\Qt\4.1.4-vs2005\bin\uic.exe"
 						Outputs="ui_boomerang.h"
 					/>
 				</FileConfiguration>
@@ -513,6 +516,38 @@
 			<File
 				RelativePath="..\c\ansi-c-scanner.cpp"
 				>
+			</File>
+			<File
+				RelativePath="..\c\ansi-c.l"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="running flex++.."
+						CommandLine="cd $(InputDir)&#x0D;&#x0A;$(SolutionDir)\..\flexbison\flex++.exe -oansi-c-scanner.cpp -hansi-c-scanner.h $(InputFileName)&#x0D;&#x0A;cd $(SolutionDir)&#x0D;&#x0A;"
+						AdditionalDependencies=""
+						Outputs="ansi-c-scanner.cpp ansi-c-scanner.h"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\c\ansi-c.y"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="running bison++.."
+						CommandLine="cd $(InputDir)&#x0D;&#x0A;$(SolutionDir)\..\flexbison\bison++.exe -o ansi-c-parser.cpp -d $(InputFileName)&#x0D;&#x0A;cd $(SolutionDir)&#x0D;&#x0A;"
+						AdditionalDependencies=""
+						Outputs="ansi-c-parser.cpp ansi-c-parser.h"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\db\basicblock.cpp"
@@ -559,6 +594,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\transform\generic.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\db\insnameelem.cpp"
 				>
 			</File>
@@ -596,6 +635,10 @@
 			</File>
 			<File
 				RelativePath="..\db\prog.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\transform\rdi.cpp"
 				>
 			</File>
 			<File
@@ -648,6 +691,18 @@
 			</File>
 			<File
 				RelativePath="..\db\table.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\transform\transformation-parser.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\transform\transformation-scanner.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\transform\transformer.cpp"
 				>
 			</File>
 			<File
