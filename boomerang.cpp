@@ -18,7 +18,7 @@
 #define USE_XML 0			// Cygwin has a weird problem that causes libBinaryFile.dll not to load if the expat library
 							// is used. Note that other Windows versions require expat.
 #else						// For all platforms other than Cygwin:
-#define USE_XML 1			// Set to 0 to not use the expat library for XML loading and saving
+#define USE_XML 0			// Set to 0 to not use the expat library for XML loading and saving
 #endif
 
 #include <iostream>
