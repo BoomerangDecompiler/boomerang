@@ -62,11 +62,11 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="..\..\MachOBinaryFile.dll"
+				OutputFile="..\..\lib\$(ProjectName).dll"
 				LinkIncremental="2"
 				ModuleDefinitionFile=""
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="$(OutDir)/MachOBinaryFile.pdb"
+				ProgramDatabaseFile="..\..\lib\$(TargetName).pdb"
 				SubSystem="2"
 				ImportLibrary="$(OutDir)\MachOBinaryFile.lib"
 				TargetMachine="1"
@@ -94,7 +94,8 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine=""
+				Description="Copy the target to where needed, avoid changing names, yet won&apos;t confuse the touch times"
+				CommandLine="copy ..\..\lib\$(TargetFileName) ..\.. ; copy ..\..\lib\$(TargetName).pdb ..\.."
 			/>
 		</Configuration>
 		<Configuration
@@ -141,10 +142,11 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="..\..\MachOBinaryFile.dll"
+				OutputFile="..\..\lib\$(ProjectName).dll"
 				LinkIncremental="1"
 				ModuleDefinitionFile=""
 				GenerateDebugInformation="true"
+				ProgramDatabaseFile="..\..\lib\$(TargetName).pdb"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
@@ -174,6 +176,8 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				Description="Copy the target to where needed, avoid changing names, yet won&apos;t confuse the touch times"
+				CommandLine="copy ..\..\lib\$(TargetFileName) ..\..&#x0D;&#x0A;copy ..\..\lib\$(TargetName).pdb ..\.."
 			/>
 		</Configuration>
 	</Configurations>

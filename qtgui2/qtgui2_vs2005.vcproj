@@ -16,7 +16,7 @@
 	<Configurations>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory=".\Release"
+			OutputDirectory="..\Release"
 			IntermediateDirectory="..\Release"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
@@ -73,12 +73,12 @@
 			<Tool
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="true"
-				AdditionalDependencies="delayimp.lib qtmain.lib QtGui4.lib QtCore4.lib gc_cpp2.lib libexpat.lib dbghelp.lib"
+				AdditionalDependencies="delayimp.lib qtmain.lib QtGui4.lib QtCore4.lib gc_cpp2.lib dbghelp.lib"
 				OutputFile="..\boomerang-gui.exe"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="C:\Qt\4.1.4-vs2005\lib;.."
-				GenerateDebugInformation="false"
-				ProgramDatabaseFile=""
+				GenerateDebugInformation="true"
+				ProgramDatabaseFile="$(TargetDir)\boomerang-gui.pdb"
 				SubSystem="2"
 			/>
 			<Tool
@@ -166,12 +166,12 @@
 			<Tool
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="true"
-				AdditionalDependencies="delayimp.lib qtmain.lib QtGui4.lib QtCore4.lib gc_cpp2.lib libexpat.lib dbghelp.lib"
+				AdditionalDependencies="delayimp.lib qtmaind.lib QtGuid4.lib QtCored4.lib gc_cpp2.lib dbghelp.lib"
 				OutputFile="..\boomerang-gui-debug.exe"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="C:\Qt\4.1.4-vs2005\lib;.."
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile=""
+				ProgramDatabaseFile="$(TargetDir)\boomerang-gui.pdb"
 				SubSystem="2"
 			/>
 			<Tool
@@ -715,10 +715,6 @@
 			</File>
 			<File
 				RelativePath="..\db\visitor.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\db\xmlprogparser.cpp"
 				>
 			</File>
 		</Filter>
