@@ -16,7 +16,7 @@
 	<Configurations>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="..\Release"
+			OutputDirectory=".."
 			IntermediateDirectory="..\Release"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
@@ -78,8 +78,9 @@
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="C:\Qt\4.1.4-vs2005\lib;.."
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="$(TargetDir)\boomerang-gui.pdb"
+				ProgramDatabaseFile=""
 				SubSystem="2"
+				OptimizeReferences="2"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -108,7 +109,7 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="..\Debug"
+			OutputDirectory=".."
 			IntermediateDirectory="..\Debug"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
@@ -171,7 +172,7 @@
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="C:\Qt\4.1.4-vs2005\lib;.."
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="$(TargetDir)\boomerang-gui.pdb"
+				ProgramDatabaseFile=""
 				SubSystem="2"
 			/>
 			<Tool

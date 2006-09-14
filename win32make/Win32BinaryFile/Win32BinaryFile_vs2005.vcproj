@@ -95,8 +95,8 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				Description="Copy the target to where needed, avoid changing names, yet won&apos;t confuse the touch times"
-				CommandLine="copy ..\..\lib\$(TargetFileName) ..\.. ; copy ..\..\lib\$(TargetName).pdb ..\.."
+				Description="Copying $(TargetFileName) and $(TargetName).pdb to the top level directory:"
+				CommandLine="copy ..\..\lib\$(TargetFileName) ..\..&#x0D;&#x0A;copy ..\..\lib\$(TargetName).pdb ..\.."
 			/>
 		</Configuration>
 		<Configuration
@@ -178,7 +178,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				Description="Copy the target to where needed, avoid changing names, yet won&apos;t confuse the touch times"
+				Description="Copying $(TargetFileName) and $(TargetName).pdb to the top level directory:"
 				CommandLine="copy ..\..\lib\$(TargetFileName) ..\..&#x0D;&#x0A;copy ..\..\lib\$(TargetName).pdb ..\.."
 			/>
 		</Configuration>
