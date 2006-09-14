@@ -96,6 +96,7 @@ void Decompiler::load()
 	prog = new Prog();
 	fe = FrontEnd::Load(strdup(filename.toAscii()), prog);
 	if (fe == NULL) {
+		emit machineType(QString("unavailable: Load Failed!"));
 		return;
 	}
 	prog->setFrontEnd(fe);
