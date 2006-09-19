@@ -12,6 +12,8 @@ USE_WINDOWS_ENCODING   = NO
 BRIEF_MEMBER_DESC      = YES
 REPEAT_BRIEF           = YES
 ABBREVIATE_BRIEF       = "The $name class" \
+                         "Class $name" \
+                         "$name class" \
                          "The $name widget" \
                          "The $name file" \
                          is \
@@ -88,6 +90,7 @@ INPUT                  = db/ \
                          type/ \
                          frontend/ \
                          loader/ \
+                         qtgui2/ \
                          type/
 FILE_PATTERNS          = [a-zA-Z]*.cpp \
                          [a-zA-Z]*.h \
