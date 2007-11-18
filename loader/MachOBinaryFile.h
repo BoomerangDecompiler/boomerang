@@ -30,14 +30,13 @@
 // Given a little endian value x, load its value assuming big endian order
 // Note: must be able to take address of x
 // Note: Unlike the LH macro in BinaryFile.h, the paraeter is not a pointer
-#define BMMH(x) ((unsigned)((Byte *)(&x))[3] + ((unsigned)((Byte *)(&x))[2] << 8) + \
+#define _BMMH(x) ((unsigned)((Byte *)(&x))[3] + ((unsigned)((Byte *)(&x))[2] << 8) + \
 	((unsigned)((Byte *)(&x))[1] << 16) + ((unsigned)((Byte *)(&x))[0] << 24))
 // With this one, x IS a pounsigneder
-#define BMMH2(x) ((unsigned)((Byte *)(x))[3] + ((unsigned)((Byte *)(x))[2] << 8) + \
+#define _BMMH2(x) ((unsigned)((Byte *)(x))[3] + ((unsigned)((Byte *)(x))[2] << 8) + \
 	((unsigned)((Byte *)(x))[1] << 16) + ((unsigned)((Byte *)(x))[0] << 24))
 
-
-#define BMMHW(x) (((unsigned)((Byte *)(&x))[1]) + ((unsigned)((Byte *)(&x))[0] << 8))
+#define _BMMHW(x) (((unsigned)((Byte *)(&x))[1]) + ((unsigned)((Byte *)(&x))[0] << 8))
 
 //#ifdef WIN32
 #pragma pack(1)
@@ -94,6 +93,16 @@ protected:
 		int machORead2(short *ps) const; // Read 2 bytes from native addr
 		int machORead4(int *pi) const;	 // Read 4 bytes from native addr
 
+                //void *         BMMH(void *x);
+                char *         BMMH(char *x);
+                const char *   BMMH(const char *x);
+                unsigned int   BMMH(long int & x);
+                unsigned int   BMMH(void *x);
+                unsigned int   BMMH(unsigned long x);
+                  signed int   BMMH(signed int x);
+                unsigned int   BMMH(unsigned int x);
+                unsigned short BMMHW(unsigned short x);
+
 public:
 
 virtual int			readNative1(ADDRESS a);         // Read 1 bytes from native addr
@@ -122,6 +131,8 @@ private:
 		const char	*m_pFileName;
         ADDRESS		entrypoint, loaded_addr;
         unsigned	loaded_size;
+        MACHINE         machine;
+        bool            swap_bytes;
         std::map<ADDRESS, std::string> m_SymA, dlprocs;
         std::map<std::string, ObjcModule> modules;
 };

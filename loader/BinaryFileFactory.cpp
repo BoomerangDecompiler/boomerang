@@ -83,7 +83,8 @@ BinaryFile* BinaryFileFactory::getInstanceFor( const char *sName ) {
 			   TESTMAGIC4( buf,0x3C, 'p','a','n','l' ) ) {
 		/* PRC Palm-pilot binary */
 		libName = "PalmBinaryFile";
-    } else if( buf[0] == 0xfe && buf[1] == 0xed && buf[2] == 0xfa && buf[3] == 0xce ) {
+	} else if ( ( buf[0] == 0xfe && buf[1] == 0xed && buf[2] == 0xfa && buf[3] == 0xce ) ||
+		    ( buf[0] == 0xce && buf[1] == 0xfa && buf[2] == 0xed && buf[3] == 0xfe ) ) {
         /* Mach-O Mac OS-X binary */
         libName = "MachOBinaryFile";
 #ifdef __CYGWIN__

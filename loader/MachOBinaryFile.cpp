@@ -42,7 +42,10 @@
 //#define DEBUG_MACHO_LOADER_OBJC
 
 MachOBinaryFile::MachOBinaryFile() : m_pFileName(0)
-{ }
+{ 
+        machine = MACHINE_PPC;
+        swap_bytes = false;
+}
 
 MachOBinaryFile::~MachOBinaryFile()
 {
@@ -87,7 +90,6 @@ ADDRESS MachOBinaryFile::GetMainEntryPoint() {
 	return NO_ADDRESS;
 }
 
-
 bool MachOBinaryFile::RealLoad(const char* sName)
 {
 	m_pFileName = sName;
@@ -96,11 +98,20 @@ bool MachOBinaryFile::RealLoad(const char* sName)
     header = new struct mach_header;
 	fread(header, sizeof(*header), 1, fp);
 
-	if (BMMH(header->magic) != MH_MAGIC) {
-        fclose(fp);
+	if ((header->magic != MH_MAGIC) && (_BMMH(header->magic) != MH_MAGIC)) {
+	        fclose(fp);
 		fprintf(stderr,"error loading file %s, bad Mach-O magic\n", sName);
 		return false;
 	}
+	
+	// check for swapped bytes
+	swap_bytes = (_BMMH(header->magic) == MH_MAGIC);
+
+	// Determine CPU type
+	if (BMMH(header->cputype) == 0x07)
+	  machine = MACHINE_PENTIUM;
+	else
+	  machine = MACHINE_PPC;
 
     std::vector<struct segment_command> segments;
     std::vector<struct nlist> symbols;
@@ -344,12 +355,12 @@ bool MachOBinaryFile::RealLoad(const char* sName)
                     char *name = (char*)((ADDRESS)base + BMMH(method->method_name) - loaded_addr);
                     char *types = (char*)((ADDRESS)base + BMMH(method->method_types) - loaded_addr);
 #ifdef DEBUG_MACHO_LOADER_OBJC
-                    fprintf(stdout, "    method %s %s %x\n", name, types, BMMH(method->method_imp));
+                    fprintf(stdout, "    method %s %s %x\n", name, types, BMMH((void*)method->method_imp));
 #endif
                     ObjcMethod *me = &cl->methods[name];
                     me->name = name;
                     me->types = types;
-                    me->addr = BMMH(method->method_imp);
+                    me->addr = BMMH((void*)method->method_imp);
                 }
             }
             i += BMMH(module->size);
@@ -419,6 +430,53 @@ int MachOBinaryFile::machORead4(int* pi) const{
 	int n2 = machORead2(p+1);
 	int n = (int) (n2 | (n1 << 16));
 	return n;
+}
+
+/*
+void *MachOBinaryFile::BMMH(void *x)
+{
+  if (swap_bytes) return _BMMH(x); else return x;
+}
+*/
+
+char *MachOBinaryFile::BMMH(char *x)
+{
+  if (swap_bytes) return (char *)_BMMH(x); else return x;
+}
+
+unsigned int MachOBinaryFile::BMMH(void * x)
+{
+  if (swap_bytes) return (unsigned int)_BMMH(x); else return (unsigned int)x;
+}
+
+const char *MachOBinaryFile::BMMH(const char *x)
+{
+  if (swap_bytes) return (const char *)_BMMH(x); else return x;
+}
+
+unsigned int MachOBinaryFile::BMMH(unsigned long x)
+{
+  if (swap_bytes) return _BMMH(x); else return x;
+}
+
+unsigned int MachOBinaryFile::BMMH(long int & x)
+{
+  if (swap_bytes) return _BMMH(x); else return x;
+}
+
+signed int MachOBinaryFile::BMMH(signed int x)
+{
+  if (swap_bytes) return _BMMH(x); else return x;
+}
+
+unsigned int MachOBinaryFile::BMMH(unsigned int x)
+{
+  if (swap_bytes) return _BMMH(x); else return x;
+}
+
+unsigned short MachOBinaryFile::BMMHW(unsigned short x)
+{
+  if (swap_bytes) return _BMMHW(x); else return x;
 }
 
 // Read 2 bytes from given native address
@@ -499,7 +557,7 @@ LOAD_FMT MachOBinaryFile::GetFormat() const
 
 MACHINE MachOBinaryFile::GetMachine() const
 {
-	return MACHINE_PPC;
+        return machine;
 }
 
 bool MachOBinaryFile::isLibrary() const
