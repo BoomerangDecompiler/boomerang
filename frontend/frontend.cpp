@@ -50,6 +50,7 @@
 #include "sparcfrontend.h"
 #include "pentiumfrontend.h"
 #include "ppcfrontend.h"
+#include "mipsfrontend.h"
 #include "st20frontend.h"
 #include "prog.h"
 #include "signature.h"
@@ -77,6 +78,8 @@ FrontEnd* FrontEnd::instantiate(BinaryFile *pBF, Prog* prog, BinaryFileFactory* 
 			return new SparcFrontEnd(pBF, prog, pbff);
 		case MACHINE_PPC:
 			return new PPCFrontEnd(pBF, prog, pbff);
+		case MACHINE_MIPS:
+			return new MIPSFrontEnd(pBF, prog, pbff);			
 		case MACHINE_ST20:
 			return new ST20FrontEnd(pBF, prog, pbff);
 		default:
@@ -130,6 +133,8 @@ FrontEnd *FrontEnd::createById(std::string &str, BinaryFile *pBF, Prog* prog) {
 		return new SparcFrontEnd(pBF, prog, NULL);
 	if (str == "ppc")
 		return new PPCFrontEnd(pBF, prog, NULL);
+	if (str == "mips")
+		return new MIPSFrontEnd(pBF, prog, NULL);
 	if (str == "st20")
 		return new ST20FrontEnd(pBF, prog, NULL);
 	return NULL;

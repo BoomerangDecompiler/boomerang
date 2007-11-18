@@ -188,12 +188,32 @@ namespace CallingConvention {
 			virtual	void		addParameter(Type *type, const char *nam /*= NULL*/, Exp *e /*= NULL*/, const char *boundMax /*= ""*/);
 			virtual Exp			*getStackWildcard();
 			virtual int			getStackRegister() throw(StackRegisterNotDefinedException) {return 1; }
-            virtual Exp			*getProven(Exp *left);
+            		virtual Exp			*getProven(Exp *left);
 			virtual	bool		isPreserved(Exp* e);		// Return whether e is preserved by this proc
 			virtual void		setLibraryDefines(StatementList* defs);	// Set list of locations def'd by library calls
-            virtual bool		isLocalOffsetPositive() {return true;}
+           		 virtual bool		isLocalOffsetPositive() {return true;}
 			virtual bool		isPromoted() { return true; }
 			virtual platform	getPlatform() { return PLAT_PPC; }
+			virtual callconv	getConvention() { return CONV_C; }
+		};
+		class MIPSSignature : public Signature {
+		public:
+			MIPSSignature(const char *name);
+			MIPSSignature(Signature& old);
+			virtual			~MIPSSignature() { }
+			virtual	Signature	*clone();
+			static	bool		qualified(UserProc *p, Signature &candidate);
+			virtual void		addReturn(Type *type, Exp *e = NULL);
+			virtual	Exp			*getArgumentExp(int n);
+			virtual	void		addParameter(Type *type, const char *nam /*= NULL*/, Exp *e /*= NULL*/, const char *boundMax /*= ""*/);
+			virtual Exp			*getStackWildcard();
+			virtual int			getStackRegister() throw(StackRegisterNotDefinedException) {return 1; }
+            		virtual Exp			*getProven(Exp *left);
+			virtual	bool		isPreserved(Exp* e);		// Return whether e is preserved by this proc
+			virtual void		setLibraryDefines(StatementList* defs);	// Set list of locations def'd by library calls
+           		 virtual bool		isLocalOffsetPositive() {return true;}
+			virtual bool		isPromoted() { return true; }
+			virtual platform	getPlatform() { return PLAT_MIPS; }
 			virtual callconv	getConvention() { return CONV_C; }
 		};
 		class ST20Signature : public Signature {
@@ -939,6 +959,20 @@ bool CallingConvention::StdC::PPCSignature::qualified(UserProc *p, Signature &ca
 	
 	return true;
 }
+
+bool CallingConvention::StdC::MIPSSignature::qualified(UserProc *p, Signature &candidate) {
+	if (VERBOSE)
+		LOG << "consider promotion to stdc MIPS signature for " << p->getName() << "\n";
+	
+	platform plat = p->getProg()->getFrontEndId();
+	if (plat != PLAT_MIPS) return false;
+
+	if (VERBOSE)
+		LOG << "Promoted to StdC::MIPSSignature (always qualifies)\n";
+	
+	return true;
+}
+
 
 void CallingConvention::StdC::SparcSignature::addReturn(Type *type, Exp *e)
 {
