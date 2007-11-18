@@ -47,6 +47,7 @@ public:
 		int			FindIndex(ADDRESS dwAddr);      // Find index for entry
 		ADDRESS		FindSym(char* pName);           // Linear search for addr from name
 #endif
+		std::map<ADDRESS, std::string>& getAll() { return amap; }
 };
 
 #ifndef NULL

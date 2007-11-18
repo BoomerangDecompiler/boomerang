@@ -108,7 +108,7 @@ endif
 # Rules for compiling
 #
 
-LOADERS=ElfBinaryFile Win32BinaryFile ExeBinaryFile HpSomBinaryFile PalmBinaryFile DOS4GWBinaryFile
+LOADERS=ElfBinaryFile Win32BinaryFile ExeBinaryFile HpSomBinaryFile PalmBinaryFile DOS4GWBinaryFile IntelCoffFile
 ifeq ($(HOST_CYGWIN), no)
  # Until we can resolve the issue of compiling loader/MachOBinaryFile.cpp, don't attempt to make it so at least
  # the Cygwin hosted Boomerang can compile and use non-MachO loaders

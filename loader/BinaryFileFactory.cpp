@@ -98,6 +98,9 @@ BinaryFile* BinaryFileFactory::getInstanceFor( const char *sName ) {
 			   (buf[3] == 0x07 || buf[3] == 0x08 || buf[4] == 0x0B) ) {
 		/* HP Som binary (last as it's not really particularly good magic) */
 		libName = "HpSomBinaryFile";
+	} else if ( buf[0] == 0x4c && buf[1] == 0x01 )
+	{
+		libName = "IntelCoffFile";
 	} else {
 		fprintf( stderr, "Unrecognised binary file\n" );
 		fclose(f);
