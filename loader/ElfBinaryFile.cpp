@@ -770,6 +770,7 @@ MACHINE ElfBinaryFile::GetMachine() const {
 	else if (machine == EM_68K)		return MACHINE_PALM;	// Unlikely
 	else if (machine == EM_PPC)		return MACHINE_PPC;
 	else if (machine == EM_ST20)		return MACHINE_ST20;
+	else if (machine == EM_MIPS)		return MACHINE_MIPS;
 	else if (machine == EM_X86_64)	{
 		std::cerr << "Error: ElfBinaryFile::GetMachine: The AMD x86-64 architecture is not supported yet\n";
 		return (MACHINE)-1;
