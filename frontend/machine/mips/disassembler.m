@@ -1,19 +1,19 @@
-dnl /****************************************************************
-dnl *
-dnl * FILENAME
-dnl *
-dnl *   \file disassembler.m
-dnl *
-dnl * PURPOSE 
-dnl *
-dnl * MIPS disassembly.
-dnl *
-dnl * AUTHOR 
-dnl *
-dnl *   \author Markus Gothe, nietzsche@lysator.liu.se
-dnl *
-dnl * REVISION 
-dnl *
-dnl *   $Id$
-dnl *
-dnl *****************************************************************/
+/****************************************************************
+ *
+ * FILENAME
+ *
+ *   \file disassembler.m
+ *
+ * PURPOSE 
+ *
+ * MIPS disassembly.
+ *
+ * AUTHOR 
+ *
+ *   \author Markus Gothe, nietzsche@lysator.liu.se
+ *
+ * REVISION 
+ *
+ *   $Id$
+ *
+ *****************************************************************/
