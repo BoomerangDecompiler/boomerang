@@ -6,7 +6,7 @@
 #
 # PURPOSE 
 #
-#   Semantic description of the MIPS CPU.
+#   Semantic description of the MIPS R3000 (32-bit) and later CPUs.
 #
 # AUTHOR 
 #
@@ -32,7 +32,29 @@ WORD        := 4;            # size of word in bytes (for now)
 
 ENDIANESS BIG;
 
-SP := 29;
+# register mapping
+# normal registers have a mapping to a Cardinal
+# special register maps to -1
+
+INTEGER
+[ %zero , %at , %v0 , %v1 , %a0 , %a1 , %a2 , %a3,
+  %t0 , %t1 , %t2, %t3, %t4, %t5, %t6, %t7,
+  %s0 , %s01, %s2, %s3, %s4, %s5, %s6, %s7,
+  %t8, %t9, %k0, %k1, %gp, %sp, %fp, %ra ][32] -> 0..31,
+  
+  %s8[32] -> 30;          #saved register if not frame pointer
+
+FLOAT
+[ %f0 , %f1 , %f2 , %f3 , %f4 , %f5 , %f6 , %f7,
+  %f8 , %f9 , %f10, %f11, %f12, %f13, %f14, %f15,
+  %f16, %f17, %f18, %f19, %f20, %f21, %f22, %f23,
+  %f24, %f25, %f26, %f27, %f28, %f29, %f30, %f31 ][64] -> 32..63;
+
+INTEGER
+[ %pc][32] -> -1, # Program Counter
+[ %HI, %LO] [32] -> -1;   #HI and LO special registers.
+
+#SP := 29;
 
 NOP
                 _ ;
