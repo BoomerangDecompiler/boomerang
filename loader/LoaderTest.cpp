@@ -19,10 +19,12 @@
 #define HELLO_PENTIUM   "test/pentium/hello"
 #define HELLO_HPPA      "test/hppa/hello"
 #define STARTER_PALM    "test/mc68328/Starter.prc"
+#if 0 /* FIXME: these programs are proprietary */
 #define CALC_WINDOWS    "test/windows/calc.exe"
 #define CALC_WINXP      "test/windows/calcXP.exe"
 #define CALC_WIN2000    "test/windows/calc2000.exe"
 #define LPQ_WINDOWS     "test/windows/lpq.exe"
+#endif
 #define SWITCH_BORLAND	"test/windows/switch_borland.exe"
 #define ELFBINFILE		"lib/libElfBinaryFile.so"
 
@@ -195,11 +197,12 @@ void LoaderTest::testPalmLoad () {
 
 /*==============================================================================
  * FUNCTION:        LoaderTest::testWinLoad
- * OVERVIEW:        Test loading the Windows calc.exe program
+ * OVERVIEW:        Test loading Windows programs
  *============================================================================*/
 void LoaderTest::testWinLoad () {
     std::ostringstream ost;
 
+#if 0 /* FIXME: these tests should use non-proprietary programs */
     // Load Windows program calc.exe
 	BinaryFileFactory bff;
     BinaryFile* pBF = bff.Load(CALC_WINDOWS);
@@ -272,18 +275,20 @@ void LoaderTest::testWinLoad () {
     CPPUNIT_ASSERT_EQUAL(expected, actual);
     pBF->UnLoad();
 	bff.UnLoad();
+#endif
 
-	// Borland
-    pBF = bff.Load(SWITCH_BORLAND);
+    // Borland
+    BinaryFileFactory bff;
+    BinaryFile* pBF = bff.Load(SWITCH_BORLAND);
     CPPUNIT_ASSERT(pBF != NULL);
-    addr = pBF->GetMainEntryPoint();
-	std::ostringstream ost4;
-	ost4 << std::hex << addr;
-	actual = ost4.str();
-	expected = "401150";
+    ADDRESS addr = pBF->GetMainEntryPoint();
+    std::ostringstream ost4;
+    ost4 << std::hex << addr;
+    std::string actual(ost4.str());
+    std::string expected("401150");
     CPPUNIT_ASSERT_EQUAL(expected, actual);
     pBF->UnLoad();
-	bff.UnLoad();
+    bff.UnLoad();
 }
 
 /*==============================================================================

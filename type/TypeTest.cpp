@@ -20,6 +20,7 @@
 #include "boomerang.h"
 #include "log.h"
 #include "prog.h"
+#include "proc.h"
 
 /*==============================================================================
  * FUNCTION:		TypeTest::registerTests
@@ -159,6 +160,13 @@ void TypeTest::testCompound() {
  *============================================================================*/
 void TypeTest::testDataInterval() {
 	DataIntervalMap dim;
+
+	Prog* prog = new Prog;
+	UserProc* proc = (UserProc*) prog->newProc("test", 0x123);
+	std::string name("test");
+	proc->setSignature(Signature::instantiate(PLAT_PENTIUM, CONV_C, name.c_str()));
+	dim.setProc(proc);
+
 	dim.addItem(0x1000, "first", new IntegerType(32, 1));
 	dim.addItem(0x1004, "second", new FloatType(64));
 	std::string actual(dim.prints());
@@ -237,6 +245,13 @@ void TypeTest::testDataInterval() {
  *============================================================================*/
 void TypeTest::testDataIntervalOverlaps() {
 	DataIntervalMap dim;
+
+	Prog* prog = new Prog;
+	UserProc* proc = (UserProc*) prog->newProc("test", 0x123);
+	std::string name("test");
+	proc->setSignature(Signature::instantiate(PLAT_PENTIUM, CONV_C, name.c_str()));
+	dim.setProc(proc);
+
 	dim.addItem(0x1000, "firstInt", new IntegerType(32, 1));
 	dim.addItem(0x1004, "firstFloat", new FloatType(32));
 	dim.addItem(0x1008, "secondInt", new IntegerType(32, 1));

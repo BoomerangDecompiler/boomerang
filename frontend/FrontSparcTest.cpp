@@ -327,6 +327,8 @@ void FrontSparcTest::testDelaySlot() {
 	std::ostringstream o1;
 	bb->print(o1);
 	std::string expected("Call BB:\n"
+		"in edges: \n"
+		"out edges: 10a98 \n"
 		"00010a80    0 *32* tmp := r14 - 120\n"
 		"            0 *32* m[r14] := r16\n"
 		"            0 *32* m[r14 + 4] := r17\n"
@@ -371,6 +373,8 @@ void FrontSparcTest::testDelaySlot() {
 	std::ostringstream o2;
 	bb->print(o2);
 	expected = std::string("Call BB:\n"
+		"in edges: 10a90 \n"
+		"out edges: 10aa4 \n"
 		"00010a98    0 *32* r8 := r16\n"
 		"00010a9c    0 *32* tmp := r30\n"
 		"            0 *32* r9 := r30 - 24\n"
@@ -387,6 +391,8 @@ void FrontSparcTest::testDelaySlot() {
 	std::ostringstream o3;
 	bb->print(o3);
 	expected = std::string("Twoway BB:\n"
+	"in edges: 10a9c \n"
+	"out edges: 10ac8 10ab8 \n"
 	"00010aa4    0 *32* r8 := m[r30 - 20]\n"
 	"00010aa8    0 *32* r16 := 5\n"
 	"00010aac    0 *32* tmp := r16\n"
@@ -403,6 +409,8 @@ void FrontSparcTest::testDelaySlot() {
 	std::ostringstream o4;
 	bb->print(o4);
 	expected = std::string("L1: Twoway BB:\n"
+		"in edges: 10ab0 10ac4 \n"
+		"out edges: 10ad8 10ad0 \n"
 		"00010ac8    0 *32* r8 := 0x11400\n"
 		"00010ac8    0 BRANCH 0x10ad8, condition equals\n"
 		"High level: %flags\n");
@@ -414,6 +422,8 @@ void FrontSparcTest::testDelaySlot() {
 	std::ostringstream o5;
 	bb->print(o5);
 	expected = std::string("Call BB:\n"
+		"in edges: 10ab0 \n"
+		"out edges: 10ac0 \n"
 		"00010ab8    0 *32* r8 := r8 | 816\n"
 		"00010ab8    0 CALL printf(\n"
 		"              )\n"

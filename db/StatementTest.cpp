@@ -142,6 +142,8 @@ void StatementTest::testEmpty () {
 	// compare it to expected
 	std::string expected = 
 		"Ret BB:\n"
+		"in edges: \n"
+		"out edges: \n"
 		"00000123\n\n";
 	CPPUNIT_ASSERT_EQUAL(expected, s);
 	// clean up
@@ -164,6 +166,7 @@ void StatementTest::testFlow () {
 	// create UserProc
 	std::string name = "test";
 	UserProc* proc = (UserProc*) prog->newProc("test", 0x123);
+	proc->setSignature(Signature::instantiate(PLAT_PENTIUM, CONV_C, name.c_str()));
 	// create CFG
 	Cfg *cfg = proc->getCFG();
 	std::list<RTL*>* pRtls = new std::list<RTL*>();
@@ -178,7 +181,9 @@ void StatementTest::testFlow () {
 	rtl = new RTL(0x123);
 	ReturnStatement* rs = new ReturnStatement;
 	rs->setNumber(2);
-	rs->addReturn(new Assign(Location::regOf(24), new Const(5)));
+	a = new Assign(Location::regOf(24), new Const(5));
+	a->setProc(proc);
+	rs->addReturn(a);
 	rtl->appendStmt(rs);
 	pRtls->push_back(rtl);
 	PBB ret = cfg->newBB(pRtls, RET, 0);
@@ -199,8 +204,12 @@ void StatementTest::testFlow () {
 	// to r24 is removed
 	expected =
 		"Fall BB:\n"
+		"in edges: \n"
+		"out edges: 123 \n"
 		"00000000\n"
 		"Ret BB:\n"
+		"in edges: 0 \n"
+		"out edges: \n"
 		"00000123    2 RET *v* r24 := 5\n"
 		"              Modifieds: \n"
 		"              Reaching definitions: r24=5\n\n";
@@ -225,6 +234,7 @@ void StatementTest::testKill () {
 	// create UserProc
 	std::string name = "test";
 	UserProc* proc = (UserProc*) prog->newProc("test", 0x123);
+	proc->setSignature(Signature::instantiate(PLAT_PENTIUM, CONV_C, name.c_str()));
 	// create CFG
 	Cfg *cfg = proc->getCFG();
 	std::list<RTL*>* pRtls = new std::list<RTL*>();
@@ -245,7 +255,9 @@ void StatementTest::testKill () {
 	rtl = new RTL(0x123);
 	ReturnStatement* rs = new ReturnStatement;
 	rs->setNumber(3);
-	rs->addReturn(new Assign(Location::regOf(24), new Const(0)));
+	e = new Assign(Location::regOf(24), new Const(0));
+	e->setProc(proc);
+	rs->addReturn(e);
 	rtl->appendStmt(rs);
 	pRtls->push_back(rtl);
 	PBB ret = cfg->newBB(pRtls, RET, 0);
@@ -264,8 +276,12 @@ void StatementTest::testKill () {
 	std::string expected;
 	expected =
 		"Fall BB:\n"
+		"in edges: \n"
+		"out edges: 123 \n"
 		"00000000\n"
 		"Ret BB:\n"
+		"in edges: 0 \n"
+		"out edges: \n"
 		"00000123    3 RET *v* r24 := 0\n"
 		"              Modifieds: \n"
 		"              Reaching definitions: r24=6\n\n";
@@ -290,6 +306,7 @@ void StatementTest::testUse () {
 	// create UserProc
 	std::string name = "test";
 	UserProc* proc = (UserProc*) prog->newProc("test", 0x123);
+	proc->setSignature(Signature::instantiate(PLAT_PENTIUM, CONV_C, name.c_str()));
 	// create CFG
 	Cfg *cfg = proc->getCFG();
 	std::list<RTL*>* pRtls = new std::list<RTL*>();
@@ -308,7 +325,9 @@ void StatementTest::testUse () {
 	rtl = new RTL(0x123);
 	ReturnStatement* rs = new ReturnStatement;
 	rs->setNumber(3);
-	rs->addReturn(new Assign(Location::regOf(28), new Const(1000)));
+	a = new Assign(Location::regOf(28), new Const(1000));
+	a->setProc(proc);
+	rs->addReturn(a);
 	rtl->appendStmt(rs);
 	pRtls->push_back(rtl);
 	PBB ret = cfg->newBB(pRtls, RET, 0);
@@ -327,8 +346,12 @@ void StatementTest::testUse () {
 	std::string expected;
 	expected =
 		"Fall BB:\n"
+		"in edges: \n"
+		"out edges: 123 \n"
 		"00000000\n"
 		"Ret BB:\n"
+		"in edges: 0 \n"
+		"out edges: \n"
 		"00000123    3 RET *v* r28 := 1000\n"
 		"              Modifieds: \n"
 		"              Reaching definitions: r24=5,   r28=5\n\n";
@@ -353,6 +376,7 @@ void StatementTest::testUseOverKill () {
 	// create UserProc
 	std::string name = "test";
 	UserProc* proc = (UserProc*) prog->newProc("test", 0x123);
+	proc->setSignature(Signature::instantiate(PLAT_PENTIUM, CONV_C, name.c_str()));
 	// create CFG
 	Cfg *cfg = proc->getCFG();
 	std::list<RTL*>* pRtls = new std::list<RTL*>();
@@ -375,7 +399,9 @@ void StatementTest::testUseOverKill () {
 	rtl = new RTL(0x123);
 	ReturnStatement* rs = new ReturnStatement;
 	rs->setNumber(4);
-	rs->addReturn(new Assign(Location::regOf(24), new Const(0)));
+	e = new Assign(Location::regOf(24), new Const(0));
+	e->setProc(proc);
+	rs->addReturn(e);
 	rtl->appendStmt(rs);
 	pRtls->push_back(rtl);
 	PBB ret = cfg->newBB(pRtls, RET, 0);
@@ -394,8 +420,12 @@ void StatementTest::testUseOverKill () {
 	std::string expected;
 	expected = 
 		"Fall BB:\n"
+		"in edges: \n"
+		"out edges: 123 \n"
 		"00000000\n"
 		"Ret BB:\n"
+		"in edges: 0 \n"
+		"out edges: \n"
 		"00000123    4 RET *v* r24 := 0\n"
 		"              Modifieds: \n"
 		"              Reaching definitions: r24=6,   r28=6\n\n";
@@ -445,7 +475,9 @@ void StatementTest::testUseOverBB () {
 	rtl = new RTL(0x123);
 	ReturnStatement* rs = new ReturnStatement;
 	rs->setNumber(4);
-	rs->addReturn(new Assign(Location::regOf(24), new Const(0)));
+	a = new Assign(Location::regOf(24), new Const(0));
+	a->setProc(proc);
+	rs->addReturn(a);
 	rtl->appendStmt(rs);
 	pRtls->push_back(rtl);
 	PBB ret = cfg->newBB(pRtls, RET, 0);
@@ -464,8 +496,12 @@ void StatementTest::testUseOverBB () {
 	std::string expected;
 	expected =
 		"Fall BB:\n"
+		"in edges: \n"
+		"out edges: 123 \n"
 		"00000000\n"
 		"Ret BB:\n"
+		"in edges: 0 \n"
+		"out edges: \n"
 		"00000000\n"
 		"00000123    4 RET *v* r24 := 0\n"
 		"              Modifieds: \n"
@@ -512,7 +548,9 @@ void StatementTest::testUseKill () {
 	rtl = new RTL(0x123);
 	ReturnStatement* rs = new ReturnStatement;
 	rs->setNumber(3);
-	rs->addReturn(new Assign(Location::regOf(24), new Const(0)));
+	a = new Assign(Location::regOf(24), new Const(0));
+	a->setProc(proc);
+	rs->addReturn(a);
 	rtl->appendStmt(rs);
 	pRtls->push_back(rtl);
 	PBB ret = cfg->newBB(pRtls, RET, 0);
@@ -531,8 +569,12 @@ void StatementTest::testUseKill () {
 	std::string expected;
 	expected  = 
 		"Fall BB:\n"
+		"in edges: \n"
+		"out edges: 123 \n"
 		"00000000\n"
 		"Ret BB:\n"
+		"in edges: 0 \n"
+		"out edges: \n"
 		"00000123    3 RET *v* r24 := 0\n"
 		"              Modifieds: \n"
 		"              Reaching definitions: r24=6\n\n";
