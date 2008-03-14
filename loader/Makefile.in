@@ -73,7 +73,7 @@ ifeq ($(HOST_WINDOWS), yes)
  WININCLUDE=-Iwin32make/include
  # RUNPATH is not needed on Windows 
  RUNPATH=
- COPYDLL=../libBinaryFile$(DLLEXT)
+ COPYDLL=$(top_srcdir)/libBinaryFile$(DLLEXT)
 else # Non-Windows
  LDL=-ldl
  EXEEXT=
@@ -114,26 +114,26 @@ ifeq ($(HOST_CYGWIN), no)
  # the Cygwin hosted Boomerang can compile and use non-MachO loaders
  LOADERS+=MachOBinaryFile
 endif
-LOADERDLLS=$(patsubst %,../lib/lib%$(DLLEXT),$(LOADERS))
-BASEDLL=../lib/libBinaryFile$(DLLEXT)
+LOADERDLLS=$(patsubst %,$(top_srcdir)/lib/lib%$(DLLEXT),$(LOADERS))
+BASEDLL=$(top_srcdir)/lib/libBinaryFile$(DLLEXT)
 ALLDLLS=$(LOADERDLLS) $(BASEDLL)
 ALLLIBS=$(patsubst %,-l%,$(LOADERS)) -lBinaryFile
 ALLOBJS = $(patsubst %, %.o, $(LOADERS))
 ALLOBJS += BinaryFile.o SymTab.o
 
-all:    $(ALLDLLS) $(COPYDLL)
+all:    $(ALLDLLS) $(COPYDLL) BinaryFileFactory.o BinaryFileStub.o
 
 microX86dis.o: microX86dis.c
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $(FPIC) $<
 
 # Extra object files, etc
 # These are target specific variables.
-../lib/libWin32BinaryFile$(DLLEXT): EXTRAS = microX86dis.o
-../lib/libWin32BinaryFile$(DLLEXT): microX86dis.o
-../lib/libDOS4GWBinaryFile$(DLLEXT): EXTRAS = microX86dis.o
-../lib/libDOS4GWBinaryFile$(DLLEXT): microX86dis.o
+$(top_srcdir)/lib/libWin32BinaryFile$(DLLEXT): EXTRAS = microX86dis.o
+$(top_srcdir)/lib/libWin32BinaryFile$(DLLEXT): microX86dis.o
+$(top_srcdir)/lib/libDOS4GWBinaryFile$(DLLEXT): EXTRAS = microX86dis.o
+$(top_srcdir)/lib/libDOS4GWBinaryFile$(DLLEXT): microX86dis.o
 
-../libBinaryFile$(DLLEXT): ../lib/libBinaryFile$(DLLEXT)
+$(top_srcdir)/libBinaryFile$(DLLEXT): $(top_srcdir)/lib/libBinaryFile$(DLLEXT)
 	cp $< $@
 
 BinaryFile.o:		CCEXTRAS = -DBUILDING_LIBBINARYFILE
@@ -143,12 +143,12 @@ $(BASEDLL) : BinaryFile.o SymTab.o
 	$(CXX) $(CXXFLAGS) -o $@ $(SHARED) BinaryFile.o SymTab.o $(OUTIMPLIB) $(LDFLAGS)
 
 # This pattern generates all the main dependencies
-$(LOADERDLLS): ../lib/lib%$(DLLEXT) : %.o $(BASEDLL)
-	$(CXX) $(CXXFLAGS) -o $@ $(SHARED) $< SymTab.o $(EXTRAS) -lBinaryFile $(RUNPATH) -L../lib $(LDFLAGS)
+$(LOADERDLLS): $(top_srcdir)/lib/lib%$(DLLEXT) : %.o $(BASEDLL)
+	$(CXX) $(CXXFLAGS) -o $@ $(SHARED) $< SymTab.o $(EXTRAS) -lBinaryFile $(RUNPATH) -L$(top_srcdir)/lib $(LDFLAGS)
 
 # Compile all objects with -fPIC
 $(ALLOBJS): %.o : %.cpp
-	$(CXX) $(CXXFLAGS) -c $(FPIC) $(CCEXTRAS) -I../include -o $@ $<
+	$(CXX) $(CXXFLAGS) -c $(FPIC) $(CCEXTRAS) -I$(top_srcdir)/include -o $@ $<
 
 ####################
 # Conditional rules
@@ -157,11 +157,13 @@ $(ALLOBJS): %.o : %.cpp
 # Automatic generation of dependencies
 ifdef MAKEDEPEND
  # automatic is better!
- depend: ${MAKEDEPEND}
-	${MAKEDEPEND} -w120 -Y -I../include -I. -I../c -I../codegen -I../frontend *.cpp *.c > /dev/null 2>&1
+ depend: $(MAKEDEPEND)
+	$(MAKEDEPEND) -w120 -Y -I$(top_srcdir)/include -I. -I$(top_srcdir)/c -I$(top_srcdir)/codegen \
+		-I$(top_srcdir)/frontend *.cpp *.c > /dev/null 2>&1
 
- depend.in: ${MAKEDEPEND}
-	${MAKEDEPEND} -fMakefile.in -w120 -Y -I../include -I. -I../c -I../codegen -I../frontend *.cpp *.c > /dev/null 2>&1
+ depend.in: $(MAKEDEPEND)
+	$(MAKEDEPEND) -fMakefile.in -w120 -Y -I$(top_srcdir)/include -I. -I$(top_srcdir)/c -I$(top_srcdir)/codegen \
+		-I$(top_srcdir)/frontend *.cpp *.c > /dev/null 2>&1
 	
 else
  depend:
@@ -175,25 +177,25 @@ endif # ifdef MAKEDEPEND
 #
 
 testLoader$(EXEEXT): testLoader.o LoaderTest.o microX86dis.o BinaryFileFactory.o SymTab.o
-	$(CXX) $(CXXFLAGS) -o $@ $^  -lcppunit $(ALLLIBS) $(RUNPATH) $(LDL) -L../lib $(LDFLAGS)
+	$(CXX) $(CXXFLAGS) -o $@ $^  -lcppunit $(ALLLIBS) $(RUNPATH) $(LDL) -L$(top_srcdir)/lib $(LDFLAGS)
 
 testLoader.o: testLoader.cpp
-	$(CXX) $(CXXFLAGS) -c -o $@ -I../include $<
+	$(CXX) $(CXXFLAGS) -c -o $@ -I$(top_srcdir)/include $<
 
-LoaderTest.o: LoaderTest.cpp LoaderTest.h ../include/BinaryFile.h SymTab.o
-	$(CXX) $(CXXFLAGS) -c -o $@ -I../include $<
+LoaderTest.o: LoaderTest.cpp LoaderTest.h $(top_srcdir)/include/BinaryFile.h SymTab.o
+	$(CXX) $(CXXFLAGS) -c -o $@ -I$(top_srcdir)/include $<
 
 # Because of the relative paths, testLoader will only work from the parent
 # directory...
 test: all testLoader$(EXEEXT)
-	cd .. ; loader/testLoader$(EXEEXT); cd -
+	cd $(top_srcdir) && loader/testLoader$(EXEEXT)
 
 ##############
 # Cleaning up
 #
 
 clean:
-	-rm -f *.o $(ALLDLLS) $(COPYDLL) testLoader$(EXEEXT) $(BASEIMPLIB)
+	rm -f *.o $(ALLDLLS) $(COPYDLL) testLoader$(EXEEXT) $(BASEIMPLIB)
 
 ###############
 # Dependencies

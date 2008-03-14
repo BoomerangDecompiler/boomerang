@@ -24,12 +24,12 @@ HOST_GNU_LD = @HOST_GNU_LD@
 BISONPP=bison++
 FLEXPP=flex++
 
-DB_LIB=../lib/libdb.so
+DB_LIB=$(top_srcdir)/lib/libdb.so
 TEST_OBJS = ExpTest.o ProcTest.o ProgTest.o RtlTest.o ParserTest.o TypeTest.o CfgTest.o
 LIB_OBJS = exp.o prog.o proc.o rtl.o cfg.o basicblock.o register.o sslparser.o sslscanner.o insnameelem.o sslinst.o \
 	table.o type.o dataflow.o
 
-BOOMDIR="$(shell pwd)/.."
+BOOMDIR="$(PWD)/.."
 LIBDIR=$(BOOMDIR)/lib
 BOOMSET=-DBOOMDIR=\"$(BOOMDIR)\"
 
@@ -48,47 +48,43 @@ all: #$(DB_LIB) testDbase
 test: testExp testStmt testRtl
 
 testExp.o: testExp.cpp
-	$(CXX) $(CXXFLAGS) -c -o $@ -I../include $<
+	$(CXX) $(CXXFLAGS) -c -o $@ -I$(top_srcdir)/include $<
 
 testExp: testExp.o exp.o statement.o rtl.o testExpStubs.o ExpTest.o
 	$(CC) -o $@ exp.o statement.o rtl.o testExpStubs.o ExpTest.o -lcppunit $<
 
 testStmt.o: testStmt.cpp
-	$(CC) -c -o $@ -I../include $<
+	$(CC) -c -o $@ -I$(top_srcdir)/include $<
 
 STMT_TEST_OBJS = testStmt.o statement.o exp.o testStmtStubs.o StatementTest.o proc.o signature.o
 testStmt: $(STMT_TEST_OBJS)
 	$(CC) -o $@ $(STMT_TEST_OBJS) -lcppunit
 
 testRtl.o: testRtl.cpp
-	$(CC) -c -o $@ -I../include $<
+	$(CC) -c -o $@ -I$(top_srcdir)/include $<
 
 # This one tests the whole front end!
 RTL_TEST_OBJS=testRtl.o exp.o statement.o rtl.o proc.o prog.o testRtlStubs.o RtlTest.o ../loader/BinaryFile.o \
 	../frontend/frontend.o ../frontend/njmcDecoder.o ../frontend/sparcfrontend.o ../frontend/pentiumfrontend.o \
 	../frontend/sparcdecoder.o ../frontend/pentiumdecoder.o sslparser.o sslscanner.o register.o table.o ../util/util.o \
 	cfg.o basicblock.o sslinst.o ../c/ansi-c-parser.o ../c/ansi-c-scanner.o insnameelem.o
+
 testRtl: $(RTL_TEST_OBJS)
 	$(CC) -o $@ $(RTL_TEST_OBJS) -lcppunit -ldl 
 
-
-BOOMDIR="$(shell pwd)/.."
-BOOMSET=-DBOOMDIR=\"$(BOOMDIR)\"
-LIBDIR=$(BOOMDIR)/lib
 ifeq ($(HOST_GNU_LD), yes)
 RUNPATH=-Wl,-rpath -Wl,$(LIBDIR)
 else # Assume Solaris
 RUNPATH=-R$(LIBDIR)
 endif
 
-
 $(DB_LIB): $(LIB_OBJS)
 	$(CC) -shared -o $@ $(LIB_OBJS) -lBinaryFile -lcppunit -lutil \
-      $(RUNPATH) -L../lib
+		$(RUNPATH) -L$(top_srcdir)/lib
 
 testDbase: testDbase.o $(DB_LIB) $(TEST_OBJS)
 	$(CC) -o $@ testDbase.o $(TEST_OBJS) -ldb -lcppunit -lutil -lBinaryFile \
-      $(RUNPATH) -L../lib
+		$(RUNPATH) -L$(top_srcdir)/lib
 
 TEST_HDRS = $(patsubst %.o,  %.h, $(TEST_OBJS))
 testDbase: $(TEST_HDRS)
@@ -110,35 +106,33 @@ testRtlStubs.o: typeStubs.cpp signatureStubs.cpp
 testExpStubs.o: utilStubs.cpp typeStubs.cpp
 
 prog.o:             EXTRAS = $(BOOMSET)
-StatementTest.o:    EXTRAS = $(BOOMSET) -I../frontend
+StatementTest.o:    EXTRAS = $(BOOMSET) -I$(top_srcdir)/frontend
 exp.o:              EXTRAS = -I.
-testStmtStubs.o:    EXTRAS = -I../frontend
-RtlTest.o:          EXTRAS = $(BOOMSET) -I../frontend
+testStmtStubs.o:    EXTRAS = -I$(top_srcdir)/frontend
+RtlTest.o:          EXTRAS = $(BOOMSET) -I$(top_srcdir)/frontend
 
 # Make these objects with -fPIC
 $(LIB_OBJS): %.o : %.cpp
-	$(CC) -c -fPIC -I../include $(EXTRAS) -o $@ $<
+	$(CC) -c -fPIC -I$(top_srcdir)/include $(EXTRAS) -o $@ $<
 
 # Others without -fPIC
 .cpp.o:
-	$(CC) -c -I../include $(EXTRAS) -o $@ $<
+	$(CC) -c -I$(top_srcdir)/include $(EXTRAS) -o $@ $<
 
 sslparser.cpp sslparser.h: sslparser.y sslscanner.l
-	${BISONPP} -d -v -osslparser.cpp -hsslparser.h $<
+	$(BISONPP) -d -v -osslparser.cpp -hsslparser.h $<
 
 sslscanner.cpp sslscanner.h: sslscanner.l sslparser.y
-	${FLEXPP} -osslscanner.cpp -hsslscanner.h $<
-
+	$(FLEXPP) -osslscanner.cpp -hsslscanner.h $<
 
 clean:
-	-rm -f testDbase *.o $(DB_LIB)
+	rm -f testDbase *.o $(DB_LIB)
 
 # Clean up generated files
 cleangen:
-	-rm -f $(GENFILES)
+	rm -f $(GENFILES)
 
 # Remote: for when making remotely from bison++/flex++ facilities, or just
 # can't be bothered installing these.
 remote:
 	touch $(GENFILES)
-

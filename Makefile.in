@@ -143,7 +143,7 @@ lib:
 	mkdir lib
 	
 loaders: lib
-	cd loader && $(MAKE)
+	$(MAKE) -C loader
 
 #########################################
 # Detection of machine types and loaders
@@ -190,7 +190,7 @@ TEST_OBJS = util/UtilTest.o db/ExpTest.o db/ParserTest.o db/ProcTest.o db/ProgTe
 	db/CfgTest.o db/DfaTest.o frontend/FrontSparcTest.o frontend/FrontPentTest.o loader/BinaryFileStub.o c/CTest.o \
 	type/TypeTest.o
 
-UTIL_OBJS = 	  util/util.o
+UTIL_OBJS = util/util.o
 DB_OBJS = db/basicblock.o db/proc.o db/sslscanner.o db/cfg.o db/prog.o db/table.o db/statement.o db/register.o \
 	db/sslparser.o db/exp.o db/rtl.o db/sslinst.o db/insnameelem.o db/signature.o db/managed.o c/ansi-c-parser.o \
 	c/ansi-c-scanner.o boomerang.o log.o db/visitor.o db/dataflow.o # db/xmlprogparser.o 
@@ -202,7 +202,7 @@ FRONT_OBJS = frontend/frontend.o frontend/njmcDecoder.o frontend/sparcdecoder.o 
 CODEGEN = codegen/chllcode.o codegen/syntax.o
 TYPEOBJS = type/constraint.o type/type.o type/dfa.o
 LOADER_OBJS = loader/BinaryFileFactory.o
-STATIC_OBJS = ${CODEGEN} ${UTIL_OBJS} ${DB_OBJS} ${FRONT_OBJS} ${TYPEOBJS} ${LOADER_OBJS} # ${TRANSFORM_OBJS}
+STATIC_OBJS = $(CODEGEN) $(UTIL_OBJS) $(DB_OBJS) $(FRONT_OBJS) $(TYPEOBJS) $(LOADER_OBJS) # $(TRANSFORM_OBJS)
 
 ####################
 # Conditional rules
@@ -213,7 +213,7 @@ ifdef M4
  GENSSL = frontend/machine/st20/st20.ssl
 
  frontend/machine/st20/st20.ssl: frontend/machine/st20/st20.ssl.m
-	${M4} < frontend/machine/st20/st20.ssl.m > frontend/machine/st20/st20.ssl
+	$(M4) < frontend/machine/st20/st20.ssl.m > frontend/machine/st20/st20.ssl
 	
 endif # ifdef M4
 
@@ -222,16 +222,16 @@ ifdef MAKEDEPEND
  CPPFILES=*.cpp c/*.cpp codegen/*.cpp db/*.cpp frontend/*.cpp transform/*.cpp type/*.cpp util/*.cpp
 
  # automatic is better!
- depend: ${MAKEDEPEND} lib
+ depend: $(MAKEDEPEND) lib
 	-mv include/gc*.h lib
-	${MAKEDEPEND} -w120 -Y -Iinclude -I. -Ic -Icodegen -Ifrontend ${CPPFILES} > /dev/null 2>&1
-	cd loader && ${MAKE} depend
+	$(MAKEDEPEND) -w120 -Y -Iinclude -I. -Ic -Icodegen -Ifrontend $(CPPFILES) > /dev/null 2>&1
+	$(MAKE) -C loader depend
 	-mv lib/gc*.h include
 
- depend.in: ${MAKEDEPEND} lib
+ depend.in: $(MAKEDEPEND) lib
 	-mv include/gc*.h lib
-	${MAKEDEPEND} -fMakefile.in -w120 -Y -Iinclude -I. -Ic -Icodegen -Ifrontend ${CPPFILES} > /dev/null 2>&1
-	cd loader && ${MAKE} depend
+	$(MAKEDEPEND) -fMakefile.in -w120 -Y -Iinclude -I. -Ic -Icodegen -Ifrontend $(CPPFILES) > /dev/null 2>&1
+	$(MAKE) -C loader depend
 	-mv lib/gc*.h include
 	
 else
@@ -248,26 +248,26 @@ ifdef BISONPP
  ifdef FLEXPP
  
   db/sslparser.cpp db/sslparser.h: db/sslparser.y db/sslscanner.l
-	cd db ; ${BISONPP} -d -v -osslparser.cpp -hsslparser.h sslparser.y
-	cd db ; sed -e "s/int __alloca_free_ptr/static int __alloca_free_ptr/" < sslparser.cpp > sslparser.cpp1
+	cd db && $(BISONPP) -d -v -osslparser.cpp -hsslparser.h sslparser.y
+	cd db && sed -e "s/int __alloca_free_ptr/static int __alloca_free_ptr/" < sslparser.cpp > sslparser.cpp1
 	mv db/sslparser.cpp1 db/sslparser.cpp
 
   c/ansi-c-parser.cpp c/ansi-c-parser.h: c/ansi-c.y c/ansi-c.l
-	cd c ; ${BISONPP} -d -v -oansi-c-parser.cpp -hansi-c-parser.h ansi-c.y
+	cd c && $(BISONPP) -d -v -oansi-c-parser.cpp -hansi-c-parser.h ansi-c.y
 	
   transform/transformation-parser.cpp transform/transformation-parser.h: transform/transformation.y transform/transformation.l
-	cd transform ; ${BISONPP} -d -v -otransformation-parser.cpp -htransformation-parser.h transformation.y
+	cd transform && $(BISONPP) -d -v -otransformation-parser.cpp -htransformation-parser.h transformation.y
 
   db/sslscanner.cpp db/sslscanner.h: db/sslscanner.l db/sslparser.y
-	cd db ; ${FLEXPP} -osslscanner.cpp1 -hsslscanner.h sslscanner.l
+	cd db && $(FLEXPP) -osslscanner.cpp1 -hsslscanner.h sslscanner.l
 	sed -f db/sslscanner.sed db/sslscanner.cpp1 > db/sslscanner.cpp		# Fix warnings re array subscript has type char
 
   c/ansi-c-scanner.cpp c/ansi-c-scanner.h: c/ansi-c.l c/ansi-c.y
-	cd c ; ${FLEXPP} -oansi-c-scanner.cpp1 -hansi-c-scanner.h ansi-c.l
+	cd c && $(FLEXPP) -oansi-c-scanner.cpp1 -hansi-c-scanner.h ansi-c.l
 	sed -f db/sslscanner.sed c/ansi-c-scanner.cpp1 > c/ansi-c-scanner.cpp	# Fix warnings with same sed file
 
   transform/transformation-scanner.cpp transform/transformation-scanner.h: transform/transformation.l transform/transformation.y
-	cd transform ; ${FLEXPP} -otransformation-scanner.cpp1 -htransformation-scanner.h transformation.l
+	cd transform && $(FLEXPP) -otransformation-scanner.cpp1 -htransformation-scanner.h transformation.l
 	# Fix warnings with same sed file
 	sed -f db/sslscanner.sed transform/transformation-scanner.cpp1 > transform/transformation-scanner.cpp
 
@@ -299,7 +299,7 @@ db/CfgTest.o:              	EXTRA = -Ifrontend
 type/TypeTest.o:           	EXTRA = -Ifrontend
 frontend/pentiumdecoder.o: 	EXTRA = -fno-exceptions
 
-boomerang$(EXEEXT): driver.o ${STATIC_OBJS} $(GENSSL)
+boomerang$(EXEEXT): driver.o $(STATIC_OBJS) $(GENSSL)
 	$(CXX) $(CXXFLAGS) -o $@ driver.o $(STATIC_OBJS) $(RUNPATH) -Llib $(LINKGC) $(LDL) $(LDFLAGS) $(LOADERLIBS) #-lexpat
 
 bffDump$(EXEEXT): loader/bffDump.o
@@ -319,13 +319,13 @@ driver.o: driver.cpp include/boomerang.h
 #
 
 testDyn: lib
-	cd util     && ${MAKE} test
-	cd loader   && ${MAKE} test
-	cd db       && ${MAKE} test
-	cd frontend && ${MAKE} test
+	$(MAKE) -C util     test
+	$(MAKE) -C loader   test
+	$(MAKE) -C db       test
+	$(MAKE) -C frontend test
 
-check test:	lib loaders bigtest$(EXEEXT)
-	cd loader   && ${MAKE} test
+check test: lib loaders bigtest$(EXEEXT)
+	$(MAKE) -C loader test
 	./bigtest$(EXEEXT)
 
 # Needed because the test header files are in all these different directories
@@ -334,8 +334,8 @@ INCLUDEALL = -Idb -Ifrontend -Ic -Itype
 testAll.o: testAll.cpp
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $(EXTRA) $< $(INCLUDEALL)
 
-bigtest$(EXEEXT): testAll.o ${STATIC_OBJS} ${TEST_OBJS}
-	$(CXX) $(CXXFLAGS) -o $@ testAll.o ${STATIC_OBJS} ${TEST_OBJS} $(LOADERLIBS) \
+bigtest$(EXEEXT): testAll.o $(STATIC_OBJS) $(TEST_OBJS)
+	$(CXX) $(CXXFLAGS) -o $@ testAll.o $(STATIC_OBJS) $(TEST_OBJS) $(LOADERLIBS) \
 	    $(RUNPATH) -Llib -lcppunit -lgc $(LDL) $(LDFLAGS) #-lexpat
 
 $(TEST_OBJS): %.o : %.cpp
@@ -346,12 +346,18 @@ $(TEST_OBJS): %.o : %.cpp
 #
 
 clean:
-	-rm -f driver.o ${STATIC_OBJS} boomerang$(EXEEXT) bigtest$(EXEEXT) testAll.o
-	cd loader && ${MAKE} clean
+	rm -f driver.o $(STATIC_OBJS) boomerang$(EXEEXT) bigtest$(EXEEXT) testAll.o
+	rm -f type/TypeTest.o util/UtilTest.o c/CTest.o \
+		frontend/FrontPentTest.o frontend/FrontSparcTest.o
+	$(MAKE) -C loader clean
+	$(MAKE) -C db     clean
 
 distclean: clean
-	-rm -f Makefile util/Makefile loader/Makefile db/Makefile frontend/Makefile transform/Makefile include/config.h \
+	rm -f Makefile util/Makefile loader/Makefile db/Makefile frontend/Makefile transform/Makefile include/config.h \
 		config.log config.status frontend/mltk.sh
+	rm -f include/gc.h include/gc_config_macros.h lib/libcppunit.a
+	rm -f functest.c functest.exe functest.out functest.res functest.tmp functests.out output/log
+	rm -rf functest unit_test lib
 
 # target mostclean (clean also the autoconf output)
 mostclean: distclean

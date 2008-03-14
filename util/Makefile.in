@@ -14,7 +14,7 @@
 top_srcdir = @top_srcdir@
 
 LIB_OBJS = util.o
-LIB=../lib/libutil.so
+LIB=$(top_srcdir)/lib/libutil.so
 
 CC = @CC@
 CXX = @CXX@
@@ -29,7 +29,7 @@ all: #$(LIB) testUtil
 # HOST_GNU_LD is true if the linker on this host machine is GNU
 HOST_GNU_LD = @HOST_GNU_LD@
 
-BOOMDIR="$(shell pwd)/.."
+BOOMDIR="$(PWD)/.."
 BOOMSET=-DBOOMDIR=\"$(BOOMDIR)\"
 LIBDIR=$(BOOMDIR)/lib
 ifeq ($(HOST_GNU_LD), yes)
@@ -39,24 +39,24 @@ RUNPATH=-R$(LIBDIR)
 endif
 
 testUtil: testUtil.o UtilTest.o $(LIB)
-	$(CC) -o $@ testUtil.o UtilTest.o -lutil -lcppunit $(RUNPATH) -L../lib
+	$(CC) -o $@ testUtil.o UtilTest.o -lutil -lcppunit $(RUNPATH) -L$(top_srcdir)/lib
 
 $(LIB): $(LIB_OBJS)
-	$(CC) -o $@ -shared $(LIB_OBJS) $(RUNPATH) -L../lib
+	$(CC) -o $@ -shared $(LIB_OBJS) $(RUNPATH) -L$(top_srcdir)/lib
 
 UtilTest.o: UtilTest.h
 util.o: ../include/util.h
 
 # Make these objects with -fPIC
 $(LIB_OBJS): %.o : %.cpp
-	$(CC) -c -fPIC -I../include $(EXTRAS) -o $@ $<
+	$(CC) -c -fPIC -I$(top_srcdir)/include $(EXTRAS) -o $@ $<
 
 # Others without -fPIC
 .cpp.o:
-	$(CC) -c -I../include -o $@ $<
+	$(CC) -c -I$(top_srcdir)/include -o $@ $<
 
 clean:
-	-rm -f testUtil *.o $(LIB)
+	rm -f testUtil *.o $(LIB)
 
 test: $(LIB) testUtil
 	./testUtil

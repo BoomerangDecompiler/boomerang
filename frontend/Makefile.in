@@ -14,12 +14,12 @@
 
 top_srcdir = @top_srcdir@
 
-FRONTEND_LIB = ../lib/libfrontend.so
+FRONTEND_LIB = $(top_srcdir)/lib/libfrontend.so
 TEST_OBJS = FrontSparcTest.o FrontPentTest.o # FrontendTest.o 
 LIB_OBJS  = frontend.o njmcDecoder.o
 
 MACHS     = sparc pentium st20 ppc mips arm hppa
-MACH_LIBS = $(patsubst %, ../lib/libfront%.so, $(MACHS))
+MACH_LIBS = $(patsubst %, $(top_srcdir)/lib/libfront%.so, $(MACHS))
 MACH_OBJS = $(patsubst %, %decoder.o, $(MACHS))
 MACH_SRC  = $(patsubst %, %decoder.cpp, $(MACHS))
 MACH_FE_SRC=$(patsubst %, %frontend.cpp, $(MACHS))
@@ -40,7 +40,7 @@ all: #testFront
 # HOST_GNU_LD is true if the linker on this host machine is GNU
 HOST_GNU_LD = @HOST_GNU_LD@
 
-BOOMDIR="$(shell pwd)/.."
+BOOMDIR="$(PWD)/.."
 BOOMSET=-DBOOMDIR=\"$(BOOMDIR)\"
 LIBDIR=$(BOOMDIR)/lib
 ifeq ($(HOST_GNU_LD), yes)
@@ -49,18 +49,17 @@ else # Assume Solaris
 RUNPATH=-R$(LIBDIR)
 endif
 
-
 testFront: testFront.o $(FRONTEND_LIB) $(TEST_OBJS) $(MACH_LIBS) \
         ../include/frontend.h
 	$(CC) -o $@ testFront.o $(TEST_OBJS) -lcppunit -lfrontend -ldb \
-      -lBinaryFile -lutil $(RUNPATH) -L../lib
+		-lBinaryFile -lutil $(RUNPATH) -L$(top_srcdir)/lib
 
 $(FRONTEND_LIB): $(LIB_OBJS)
-	$(CC) -shared -o $@ $(LIB_OBJS) $(RUNPATH) -L../lib
+	$(CC) -shared -o $@ $(LIB_OBJS) $(RUNPATH) -L$(top_srcdir)/lib
 
 # A pattern for the machine dependent libraries
 $(MACH_LIBS): ../lib/libfront%.so : %decoder.o %frontend.o
-	$(CC) -shared -o $@ $^ $(RUNPATH) -L../lib
+	$(CC) -shared -o $@ $^ $(RUNPATH) -L$(top_srcdir)/lib
 
 # Dependencies
 frontend.o: frontend.cpp ../include/frontend.h ../include/decoder.h
@@ -83,23 +82,22 @@ $(MACH_SRC): %decoder.cpp : machine/%/core.spec \
 
 # The library objs require -fPIC
 $(LIB_OBJS):
-	$(CC) -c -o $@ -I../include -I. -fPIC $(EXTRAS) $<
+	$(CC) -c -o $@ -I$(top_srcdir)/include -I. -fPIC $(EXTRAS) $<
 
 # Also the machine dependent decoders
 $(MACH_OBJS) $(MACH_FE_OBJ): %.o : %.cpp ../include/decoder.h
-	$(CC) -c -o $@ -I../include -I. -fPIC $<
+	$(CC) -c -o $@ -I$(top_srcdir)/include -I. -fPIC $<
 
 .cpp.o:
-	$(CC) -c -o $@ -I../include $(BOOMSET) $(EXTRAS) $<
-
+	$(CC) -c -o $@ -I$(top_srcdir)/include $(BOOMSET) $(EXTRAS) $<
 
 clean:
-	-rm -f testFront *.o $(FRONTEND_LIB) $(MACH_OBJS) $(MACH_FE_OBJS) $(MACH_LIBS)
-	-find . -name *.o -exec rm {} \;
+	rm -f testFront $(FRONTEND_LIB) $(MACH_OBJS) $(MACH_FE_OBJS) $(MACH_LIBS)
+	find . -name '*.o' -exec rm {} \;
 
 # Clean up generated files
 cleangen:
-	-rm -f $(GENFILES)
+	rm -f $(GENFILES)
 
 # Remote: for when making remotely from bison++/flex++ facilities, or just
 # can't be bothered installing these.
