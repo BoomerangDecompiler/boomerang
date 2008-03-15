@@ -13,6 +13,7 @@ int stat(const char* filename, struct stat* st);
 
 void abort(void);
 
+int atexit(void (*function)(void));
 typedef int comparfunc(const void *a, const void *b);
 
 void qsort(void *base, size_t nmemb, size_t size, comparfunc *compar);
