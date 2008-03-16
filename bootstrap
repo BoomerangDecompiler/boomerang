@@ -1,0 +1,3 @@
+#! /bin/sh
+autoheader && aclocal -I . && automake --foreign --add-missing && \
+autoconf
