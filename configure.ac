@@ -34,6 +34,8 @@ dnl Checks for programs.
 AC_PROG_CXX
 AC_PROG_CC
 AC_PROG_CPP
+AC_PROG_LD
+AC_SUBST(LD)
 AC_PROG_RANLIB
 if test "$GCC" = yes; then
 	if test "$isset_OPT" == "set"; then
@@ -64,14 +66,11 @@ AC_PATH_PROG( M4, m4 )
 AC_SUBST( M4 )
 
 dnl -------------------
-AC_PATH_BINUTIL( HOST_CC, gcc cc )
-
-dnl -------------------
 AC_MSG_CHECKING( [if using GNU ld] )
 HOST_GNU_LD=no
-if ${HOST_CC} -v 2>&1 </dev/null | egrep "gcc" 1>&5; then
+if ${CC} -v 2>&1 </dev/null | egrep "gcc" 1>&5; then
    HOST_GCC=yes
-   HOST_LD=`${HOST_CC} -print-prog-name=ld`
+   HOST_LD=`${CC} -print-prog-name=ld`
 else
    HOST_LD=ld
 fi
