@@ -44,6 +44,8 @@
 # - Dependencies
 #
 
+SUBDIRS = loader db transform util frontent .
+
 bin_PROGRAMS = boomerang bffDump
 noinst_LIBRARIES = libdriver.a
 bffDump_sources = loader/bffDump.cpp
