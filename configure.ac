@@ -34,10 +34,9 @@ dnl Checks for programs.
 AC_PROG_CXX
 AC_PROG_CC
 AC_PROG_CPP
-AC_PROG_LD
-AC_SUBST(LD)
-AC_PROG_RANLIB
-if test "$GCC" = yes; then
+AC_PROG_LIBTOOL
+
+if test "$GXX" = yes; then
 	if test "$isset_OPT" == "set"; then
 		CFLAGS="-g $OPT"
 		CXXFLAGS="-g $OPT"
