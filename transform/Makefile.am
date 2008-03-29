@@ -28,3 +28,5 @@ noinst_HEADERS = \
 		transformation-parser.h \
 		transformation-scanner.h \
 		$(NULL)
+
+libtransform_la_LDFLAGS = -release $(VERSION)
