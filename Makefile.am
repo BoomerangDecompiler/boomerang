@@ -56,7 +56,6 @@ STD_DIRS = \
 	transform \
 	util \
 	frontent \
-	. \
 	$(NULL)
 
 SUBDIRS = $(STD_DIRS)
