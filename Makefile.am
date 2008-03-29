@@ -44,7 +44,25 @@
 # - Dependencies
 #
 
-SUBDIRS = loader db transform util frontent .
+AUTOMAKE_OPTIONS = 1.6.0
+ACLOCAL_AMFLAGS = -I .
+
+DISTCHECK_CONFIGURE_FLAGS = \
+	$(NULL)
+
+STD_DIRS = \
+	loader \
+	db \
+	transform \
+	util \
+	frontent \
+	. \
+	$(NULL)
+
+SUBDIRS = $(STD_DIRS)
+DIST_SUBDIRS = $(STD_DIRS)
+
+nobase_include_HEADERS = include/*.h
 
 bin_PROGRAMS = boomerang bffDump
 noinst_LIBRARIES = libdriver.a
@@ -52,3 +70,4 @@ bffDump_sources = loader/bffDump.cpp
 boomerang_SOURCES = boomerang.cpp $(STATIC_OBJS) $(GENSSL)
 boomerang_LDADD = libdriver.a
 libdriver_a_SOURCES= driver.cpp include/boomerang.h
+
