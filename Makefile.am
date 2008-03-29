@@ -55,7 +55,8 @@ STD_DIRS = \
 	db \
 	transform \
 	util \
-	frontent \
+	frontend \
+	. \
 	$(NULL)
 
 SUBDIRS = $(STD_DIRS)
