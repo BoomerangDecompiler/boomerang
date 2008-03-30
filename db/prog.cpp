@@ -191,7 +191,7 @@ void Prog::generateCode(Cluster *cluster, UserProc *proc, bool intermixRTL) {
 			HLLCode *code = Boomerang::get()->getHLLCode();
 			bool global = false;
 			if (Boomerang::get()->noDecompile) {
-				char *sections[] = { "rodata", "data", "data1", 0 };
+				const char *sections[] = { "rodata", "data", "data1", 0 };
 				for (int j = 0; sections[j]; j++) {
 					std::string str = ".";
 					str += sections[j];
