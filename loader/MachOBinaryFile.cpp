@@ -336,7 +336,7 @@ bool MachOBinaryFile::RealLoad(const char* sName)
                 ObjcClass *cl = &m->classes[name];
                 cl->name = name;
                 struct objc_ivar_list *ivars = (struct objc_ivar_list *)((ADDRESS)base + BMMH(def->ivars) - loaded_addr);
-                for (unsigned k = 0; k < BMMH(ivars->ivar_count); k++) {
+                for (unsigned k = 0; k < static_cast<unsigned int>(BMMH(ivars->ivar_count)); k++) {
                     struct objc_ivar *ivar = &ivars->ivar_list[k];
                     char *name = (char*)((ADDRESS)base + BMMH(ivar->ivar_name) - loaded_addr);
                     char *types = (char*)((ADDRESS)base + BMMH(ivar->ivar_type) - loaded_addr);
@@ -350,7 +350,7 @@ bool MachOBinaryFile::RealLoad(const char* sName)
                 }
                 // this is weird, why is it defined as a ** in the struct but used as a * in otool?
                 struct objc_method_list *methods = (struct objc_method_list *)((ADDRESS)base + BMMH(def->methodLists) - loaded_addr);
-                for (unsigned k = 0; k < BMMH(methods->method_count); k++) {
+                for (unsigned k = 0; k < static_cast<unsigned int>(BMMH(methods->method_count)); k++) {
                     struct objc_method *method = &methods->method_list[k];
                     char *name = (char*)((ADDRESS)base + BMMH(method->method_name) - loaded_addr);
                     char *types = (char*)((ADDRESS)base + BMMH(method->method_types) - loaded_addr);
