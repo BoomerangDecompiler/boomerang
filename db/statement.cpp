@@ -2519,7 +2519,7 @@ Exp *processConstant(Exp *e, Type *t, Prog *prog, UserProc* proc, ADDRESS stmt) 
 	if (t == NULL) return e;
 	// char* and a constant
 	if (e->isIntConst()) {
-		if (nt && nt->getName() == "LPCWSTR") {
+		if (nt && (nt->getName() == static_cast<std::string>("LPCWSTR"))) {
 			ADDRESS u = ((Const*)e)->getAddr();
 			// TODO
 			LOG << "possible wide char string at " << u << "\n";
