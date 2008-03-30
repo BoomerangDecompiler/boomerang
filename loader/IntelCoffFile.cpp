@@ -111,7 +111,7 @@ bool IntelCoffFile::RealLoad(const char *sName)
 	if ( !psh )
 		return false;
 
-	if ( (sizeof *psh * m_Header.coff_sections) != read(m_fd, psh, sizeof *psh * m_Header.coff_sections) )
+	if ( static_cast<signed long>(sizeof *psh * m_Header.coff_sections) != read(m_fd, psh, sizeof *psh * m_Header.coff_sections) )
 	{
 		free(psh);
 		return false;
@@ -179,19 +179,19 @@ bool IntelCoffFile::RealLoad(const char *sName)
 		char *pData = (char*)psi->uHostAddr + psh[iSection].sch_virtaddr;
 		if ( !(psh[iSection].sch_flags & 0x80) )
 		{
-			if ( psh[iSection].sch_sectsize != read(m_fd, pData, psh[iSection].sch_sectsize) )
+			if ( static_cast<signed long>(psh[iSection].sch_sectsize) != read(m_fd, pData, psh[iSection].sch_sectsize) )
 				return false;
 		}
 	}
 
 	// Load the symbol table
 	printf("Load symbol table\n");
-	if ( m_Header.coff_symtab_ofs != lseek(m_fd, m_Header.coff_symtab_ofs, SEEK_SET) )
+	if ( static_cast<signed long>(m_Header.coff_symtab_ofs) != lseek(m_fd, m_Header.coff_symtab_ofs, SEEK_SET) )
 		return false;
 	struct coff_symbol *pSymbols = (struct coff_symbol *)malloc(m_Header.coff_num_syment * sizeof (struct coff_symbol));
 	if ( !pSymbols )
 		return false;
-	if ( m_Header.coff_num_syment * sizeof (struct coff_symbol) != read(m_fd, pSymbols, m_Header.coff_num_syment * sizeof (struct coff_symbol)) )
+	if ( static_cast<signed long>(m_Header.coff_num_syment * sizeof (struct coff_symbol)) != read(m_fd, pSymbols, m_Header.coff_num_syment * sizeof (struct coff_symbol)) )
 		return false;
 
 	// TODO: Groesse des Abschnittes vorher bestimmen
@@ -203,7 +203,7 @@ bool IntelCoffFile::RealLoad(const char *sName)
 	ADDRESS fakeForImport = (ADDRESS)0xfffe0000;
 	 
 printf("Size of one symbol: %u\n", sizeof pSymbols[0]);
-	for ( int iSym = 0; iSym < m_Header.coff_num_syment; iSym += pSymbols[iSym].csym_numaux+1 )
+	for (unsigned int iSym = 0; iSym < m_Header.coff_num_syment; iSym += pSymbols[iSym].csym_numaux+1)
 	{
 		char tmp_name[9]; tmp_name[8] = 0;
 		char* name = tmp_name;
@@ -268,14 +268,14 @@ printf("Size of one symbol: %u\n", sizeof pSymbols[0]);
 		if ( !psh[iSection].sch_nreloc ) continue;
 
 //printf("Relocation table at %08lx\n", psh[iSection].sch_relptr);
-		if ( psh[iSection].sch_relptr != lseek(m_fd, psh[iSection].sch_relptr, SEEK_SET) )
+		if (static_cast<signed long>(psh[iSection].sch_relptr) != lseek(m_fd, psh[iSection].sch_relptr, SEEK_SET) )
 			return false;
 
 		struct struct_coff_rel *pRel = (struct struct_coff_rel *)malloc(sizeof (struct struct_coff_rel) * psh[iSection].sch_nreloc);
 		if ( !pRel )
 			return false;
 
-		if ( sizeof (struct struct_coff_rel) * psh[iSection].sch_nreloc != read(m_fd, pRel, sizeof (struct struct_coff_rel) * psh[iSection].sch_nreloc) )
+		if (static_cast<signed long>(sizeof (struct struct_coff_rel) * psh[iSection].sch_nreloc) != read(m_fd, pRel, sizeof (struct struct_coff_rel) * psh[iSection].sch_nreloc) )
 			return false;
 
 		for ( int iReloc = 0; iReloc < psh[iSection].sch_nreloc; iReloc++ )
