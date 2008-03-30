@@ -2,7 +2,7 @@
 // Only needed for the dotty file (a debugging nicety) so don't be
 // surprised if the strings become out of date.
 
-char* operStrings[] = {
+const char* operStrings[] = {
 	"opPlus",				// Binary addition
 	"opMinus",				// Binary subtraction
 	"opMult",				// Multiplication
