@@ -13,7 +13,8 @@ int stat(const char* filename, struct stat* st);
 
 void abort(void);
 
-int atexit(void (*function)(void));
+typedef void atexitfunc(void);
+int atexit(atexitfunc *function);
 
 typedef void onexitfunc(int a, void *b);
 int on_exit(onexitfunc *function, void *arg);
