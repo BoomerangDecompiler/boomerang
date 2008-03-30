@@ -47,23 +47,23 @@ extern char debug_buffer[];				// For prints()
 
 char* Signature::platformName(platform plat) {
 	switch (plat) {
-		case PLAT_PENTIUM:	return "pentium";
-		case PLAT_SPARC:	return "sparc";
-		case PLAT_M68K:		return "m68k";
-		case PLAT_PARISC:	return "parisc";
-		case PLAT_PPC:		return "ppc";
-		case PLAT_MIPS:		return "mips";
-		case PLAT_ST20:		return "st20";
-		default:			return "???";
+		case PLAT_PENTIUM:	return const_cast<char *>("pentium");
+		case PLAT_SPARC:	return const_cast<char *>("sparc");
+		case PLAT_M68K:		return const_cast<char *>("m68k");
+		case PLAT_PARISC:	return const_cast<char *>("parisc");
+		case PLAT_PPC:		return const_cast<char *>("ppc");
+		case PLAT_MIPS:		return const_cast<char *>("mips");
+		case PLAT_ST20:		return const_cast<char *>("st20");
+		default:			return const_cast<char *>("???");
 	}
 }
 
 char* Signature::conventionName(callconv cc) {
 	switch (cc) {
-		case CONV_C:		return "stdc";
-		case CONV_PASCAL:	return "pascal";
-		case CONV_THISCALL: return "thiscall";
-		default:			return "??";
+		case CONV_C:		return const_cast<char *>("stdc");
+		case CONV_PASCAL:	return const_cast<char *>("pascal");
+		case CONV_THISCALL: return const_cast<char *>("thiscall");
+		default:			return const_cast<char *>("??");
 	}
 }
 

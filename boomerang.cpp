@@ -1280,5 +1280,5 @@ void Boomerang::alert_decompile_debug_point(UserProc *p, const char *description
 }
 
 char* Boomerang::getVersionStr() {
-	return VERSION;
+	return const_cast<char *>(VERSION);
 }
