@@ -62,8 +62,8 @@ char* Signature::conventionName(callconv cc) {
 	switch (cc) {
 		case CONV_C:		return const_cast<char *>("stdc");
 		case CONV_PASCAL:	return const_cast<char *>("pascal");
-		case CONV_THISCALL: return const_cast<char *>("thiscall");
-		default:			return const_cast<char *>("??");
+		case CONV_THISCALL: 	return const_cast<char *>("thiscall");
+		default:		return const_cast<char *>("??");
 	}
 }
 
