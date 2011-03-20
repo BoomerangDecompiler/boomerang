@@ -30,6 +30,7 @@
 */
 
 #include <assert.h>
+#include <cstring>
 #if defined(_MSC_VER) && _MSC_VER <= 1100
 #include "signature.h"
 #endif
@@ -123,20 +124,20 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
 #line 112 "frontend/machine/pentium/decoder.m"
     hostPC
     ;
-  char *MATCH_name;
-  char *MATCH_name_page_0[] = {"REPNE.MOVSB", "JMP.Jvow", };
-  char *MATCH_name_page_1[] = {"REPNE.MOVSvow", "REPNE.STOSvow", };
-  char *MATCH_name_page_2[] = {"REPNE.CMPSvow", "REPNE.LODSvow", };
-  char *MATCH_name_page_3[] = {"REP.MOVSvow", "REPNE.SCASvow", };
-  char *MATCH_name_page_4[] = {"REPNE.MOVSvod", "REPNE.STOSB", };
-  char *MATCH_name_page_5[] = {"REPNE.CMPSB", "REPNE.STOSvod", };
-  char *MATCH_name_page_6[] = {"REPNE.CMPSvod", "REPNE.LODSB", };
-  char *MATCH_name_page_7[] = {"REP.MOVSB", "REPNE.LODSvod", };
-  char *MATCH_name_page_8[] = {"REP.MOVSvod", "REPNE.SCASB", };
-  char *MATCH_name_page_9[] = {"REP.CMPSB", "REPNE.SCASvod", };
-  char *MATCH_name_page_10[] = {"REP.CMPSvow", "REP.STOSvow", };
-  char *MATCH_name_page_13[] = {"REP.CMPSvod", "REP.STOSB", };
-  char *MATCH_name_col_59[] = {(char *)0, "JMP.Jvod", (char *)0, "JMP.Jb", };
+  const char *MATCH_name;
+  const char *MATCH_name_page_0[] = {"REPNE.MOVSB", "JMP.Jvow", };
+  const char *MATCH_name_page_1[] = {"REPNE.MOVSvow", "REPNE.STOSvow", };
+  const char *MATCH_name_page_2[] = {"REPNE.CMPSvow", "REPNE.LODSvow", };
+  const char *MATCH_name_page_3[] = {"REP.MOVSvow", "REPNE.SCASvow", };
+  const char *MATCH_name_page_4[] = {"REPNE.MOVSvod", "REPNE.STOSB", };
+  const char *MATCH_name_page_5[] = {"REPNE.CMPSB", "REPNE.STOSvod", };
+  const char *MATCH_name_page_6[] = {"REPNE.CMPSvod", "REPNE.LODSB", };
+  const char *MATCH_name_page_7[] = {"REP.MOVSB", "REPNE.LODSvod", };
+  const char *MATCH_name_page_8[] = {"REP.MOVSvod", "REPNE.SCASB", };
+  const char *MATCH_name_page_9[] = {"REP.CMPSB", "REPNE.SCASvod", };
+  const char *MATCH_name_page_10[] = {"REP.CMPSvow", "REP.STOSvow", };
+  const char *MATCH_name_page_13[] = {"REP.CMPSvod", "REP.STOSB", };
+  const char *MATCH_name_col_59[] = {(const char *)0, "JMP.Jvod", (const char *)0, "JMP.Jb", };
   unsigned /* [0..255] */ MATCH_w_8_0;
   unsigned /* [0..255] */ MATCH_w_8_8;
   unsigned /* [0..65535] */ MATCH_w_16_8;
@@ -2008,7 +2009,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                               /* index at 24 */ < 8)) { 
                                         MATCH_name = "SETb.S"; 
                                         { 
-                                          char *name = MATCH_name;
+                                          const char *name = MATCH_name;
                                           unsigned Eaddr = 
                                             2 + addressToPC(MATCH_p);
                                           nextPC = 5 + MATCH_p; 
@@ -2116,7 +2117,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                               /* index at 24 */ < 8)) { 
                                         MATCH_name = "SETb.NS"; 
                                         { 
-                                          char *name = MATCH_name;
+                                          const char *name = MATCH_name;
                                           unsigned Eaddr = 
                                             2 + addressToPC(MATCH_p);
                                           nextPC = 5 + MATCH_p; 
@@ -2226,7 +2227,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                               /* index at 24 */ < 8)) { 
                                         MATCH_name = "SETb.L"; 
                                         { 
-                                          char *name = MATCH_name;
+                                          const char *name = MATCH_name;
                                           unsigned Eaddr = 
                                             2 + addressToPC(MATCH_p);
                                           nextPC = 5 + MATCH_p; 
@@ -2346,7 +2347,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                               /* index at 24 */ < 8)) { 
                                         MATCH_name = "SETb.NL"; 
                                         { 
-                                          char *name = MATCH_name;
+                                          const char *name = MATCH_name;
                                           unsigned Eaddr = 
                                             2 + addressToPC(MATCH_p);
                                           nextPC = 5 + MATCH_p; 
@@ -2454,7 +2455,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                               /* index at 24 */ < 8)) { 
                                         MATCH_name = "SETb.LE"; 
                                         { 
-                                          char *name = MATCH_name;
+                                          const char *name = MATCH_name;
                                           unsigned Eaddr = 
                                             2 + addressToPC(MATCH_p);
                                           nextPC = 5 + MATCH_p; 
@@ -2562,7 +2563,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                               /* index at 24 */ < 8)) { 
                                         MATCH_name = "SETb.NLE"; 
                                         { 
-                                          char *name = MATCH_name;
+                                          const char *name = MATCH_name;
                                           unsigned Eaddr = 
                                             2 + addressToPC(MATCH_p);
                                           nextPC = 5 + MATCH_p; 
@@ -2677,7 +2678,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                               /* index at 24 */ < 8)) { 
                                         MATCH_name = "SETb.B"; 
                                         { 
-                                          char *name = MATCH_name;
+                                          const char *name = MATCH_name;
                                           unsigned Eaddr = 
                                             2 + addressToPC(MATCH_p);
                                           nextPC = 5 + MATCH_p; 
@@ -2799,7 +2800,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                               /* index at 24 */ < 8)) { 
                                         MATCH_name = "SETb.NB"; 
                                         { 
-                                          char *name = MATCH_name;
+                                          const char *name = MATCH_name;
                                           unsigned Eaddr = 
                                             2 + addressToPC(MATCH_p);
                                           nextPC = 5 + MATCH_p; 
@@ -2907,7 +2908,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                               /* index at 24 */ < 8)) { 
                                         MATCH_name = "SETb.Z"; 
                                         { 
-                                          char *name = MATCH_name;
+                                          const char *name = MATCH_name;
                                           unsigned Eaddr = 
                                             2 + addressToPC(MATCH_p);
                                           nextPC = 5 + MATCH_p; 
@@ -3015,7 +3016,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                               /* index at 24 */ < 8)) { 
                                         MATCH_name = "SETb.NZ"; 
                                         { 
-                                          char *name = MATCH_name;
+                                          const char *name = MATCH_name;
                                           unsigned Eaddr = 
                                             2 + addressToPC(MATCH_p);
                                           nextPC = 5 + MATCH_p; 
@@ -3123,7 +3124,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                               /* index at 24 */ < 8)) { 
                                         MATCH_name = "SETb.BE"; 
                                         { 
-                                          char *name = MATCH_name;
+                                          const char *name = MATCH_name;
                                           unsigned Eaddr = 
                                             2 + addressToPC(MATCH_p);
                                           nextPC = 5 + MATCH_p; 
@@ -3231,7 +3232,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                               /* index at 24 */ < 8)) { 
                                         MATCH_name = "SETb.NBE"; 
                                         { 
-                                          char *name = MATCH_name;
+                                          const char *name = MATCH_name;
                                           unsigned Eaddr = 
                                             2 + addressToPC(MATCH_p);
                                           nextPC = 5 + MATCH_p; 
@@ -11398,7 +11399,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                             case 3: 
                               MATCH_name = "FUCOMI.ST.STi"; 
                               { 
-                                char *name = MATCH_name;
+                                const char *name = MATCH_name;
                                 unsigned idx = 
                                   (MATCH_w_8_8 & 0x7) /* r_m at 8 */;
                                 nextPC = 2 + MATCH_p; 
@@ -11423,7 +11424,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                         if ((MATCH_w_8_8 >> 6 & 0x3) /* mod at 8 */ == 3) { 
                           MATCH_name = "FCOMI.ST.STi"; 
                           { 
-                            char *name = MATCH_name;
+                            const char *name = MATCH_name;
                             unsigned idx = (MATCH_w_8_8 & 0x7) /* r_m at 8 */;
                             nextPC = 2 + MATCH_p; 
                             
@@ -14210,7 +14211,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                             case 3: 
                               MATCH_name = "FUCOMIP.ST.STi"; 
                               { 
-                                char *name = MATCH_name;
+                                const char *name = MATCH_name;
                                 unsigned idx = 
                                   (MATCH_w_8_8 & 0x7) /* r_m at 8 */;
                                 nextPC = 2 + MATCH_p; 
@@ -14315,7 +14316,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                             case 3: 
                               MATCH_name = "FCOMIP.ST.STi"; 
                               { 
-                                char *name = MATCH_name;
+                                const char *name = MATCH_name;
                                 unsigned idx = 
                                   (MATCH_w_8_8 & 0x7) /* r_m at 8 */;
                                 nextPC = 2 + MATCH_p; 
@@ -14505,7 +14506,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                   MATCH_name = 
                     MATCH_name_col_59[(MATCH_w_8_0 & 0x7) /* col at 0 */]; 
                   { 
-                    char *name = MATCH_name;
+                    const char *name = MATCH_name;
                     unsigned relocd = 
                       5 + MATCH_w_32_8 /* i32 at 8 */ + addressToPC(MATCH_p);
                     nextPC = 5 + MATCH_p; 
@@ -14530,7 +14531,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                   MATCH_name = 
                     MATCH_name_col_59[(MATCH_w_8_0 & 0x7) /* col at 0 */]; 
                   { 
-                    char *name = MATCH_name;
+                    const char *name = MATCH_name;
                     unsigned relocd = 
                       2 + sign_extend((MATCH_w_8_8 & 0xff) /* i8 at 8 */, 
                                   8) + addressToPC(MATCH_p);
@@ -26397,7 +26398,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                             MATCH_name_page_0[(MATCH_w_8_8 >> 3 & 0x1) 
                                 /* page at 8 */]; 
                           { 
-                            char *name = MATCH_name;
+                            const char *name = MATCH_name;
                             unsigned relocd = 
                               4 + sign_extend((MATCH_w_16_16 & 0xffff) 
                                                 /* i16 at 16 */, 16) + 
@@ -34398,7 +34399,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                       MATCH_name_page_1[(MATCH_w_8_16 >> 3 & 0x1) 
                                           /* page at 16 */]; 
                                     { 
-                                      char *name = MATCH_name;
+                                      const char *name = MATCH_name;
                                       nextPC = 3 + MATCH_p; 
                                       
 #line 590 "frontend/machine/pentium/decoder.m"
@@ -34427,7 +34428,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                         MATCH_name_page_2[(MATCH_w_8_16 >> 3 & 0x1) 
                                             /* page at 16 */]; 
                                       { 
-                                        char *name = MATCH_name;
+                                        const char *name = MATCH_name;
                                         nextPC = 3 + MATCH_p; 
                                         
 #line 563 "frontend/machine/pentium/decoder.m"
@@ -34448,7 +34449,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                         MATCH_name_page_1[(MATCH_w_8_16 >> 3 & 0x1) 
                                             /* page at 16 */]; 
                                       { 
-                                        char *name = MATCH_name;
+                                        const char *name = MATCH_name;
                                         nextPC = 3 + MATCH_p; 
                                         
 #line 572 "frontend/machine/pentium/decoder.m"
@@ -34476,7 +34477,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                         MATCH_name_page_3[(MATCH_w_8_16 >> 3 & 0x1) 
                                             /* page at 16 */]; 
                                       { 
-                                        char *name = MATCH_name;
+                                        const char *name = MATCH_name;
                                         nextPC = 3 + MATCH_p; 
                                         
 #line 581 "frontend/machine/pentium/decoder.m"
@@ -34497,7 +34498,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                         MATCH_name_page_2[(MATCH_w_8_16 >> 3 & 0x1) 
                                             /* page at 16 */]; 
                                       { 
-                                        char *name = MATCH_name;
+                                        const char *name = MATCH_name;
                                         nextPC = 3 + MATCH_p; 
                                         
 #line 554 "frontend/machine/pentium/decoder.m"
@@ -34535,7 +34536,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                   MATCH_name_page_4[(MATCH_w_8_8 >> 3 & 0x1) 
                                       /* page at 8 */]; 
                                 { 
-                                  char *name = MATCH_name;
+                                  const char *name = MATCH_name;
                                   nextPC = 2 + MATCH_p; 
                                   
 #line 587 "frontend/machine/pentium/decoder.m"
@@ -34562,7 +34563,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                   MATCH_name_page_5[(MATCH_w_8_8 >> 3 & 0x1) 
                                       /* page at 8 */]; 
                                 { 
-                                  char *name = MATCH_name;
+                                  const char *name = MATCH_name;
                                   nextPC = 2 + MATCH_p; 
                                   
 #line 593 "frontend/machine/pentium/decoder.m"
@@ -34589,7 +34590,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                   MATCH_name_page_6[(MATCH_w_8_8 >> 3 & 0x1) 
                                       /* page at 8 */]; 
                                 { 
-                                  char *name = MATCH_name;
+                                  const char *name = MATCH_name;
                                   nextPC = 2 + MATCH_p; 
                                   
 #line 560 "frontend/machine/pentium/decoder.m"
@@ -34610,7 +34611,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                   MATCH_name_page_0[(MATCH_w_8_8 >> 3 & 0x1) 
                                       /* page at 8 */]; 
                                 { 
-                                  char *name = MATCH_name;
+                                  const char *name = MATCH_name;
                                   nextPC = 2 + MATCH_p; 
                                   
 #line 569 "frontend/machine/pentium/decoder.m"
@@ -34635,7 +34636,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                   MATCH_name_page_7[(MATCH_w_8_8 >> 3 & 0x1) 
                                       /* page at 8 */]; 
                                 { 
-                                  char *name = MATCH_name;
+                                  const char *name = MATCH_name;
                                   nextPC = 2 + MATCH_p; 
                                   
 #line 566 "frontend/machine/pentium/decoder.m"
@@ -34656,7 +34657,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                   MATCH_name_page_4[(MATCH_w_8_8 >> 3 & 0x1) 
                                       /* page at 8 */]; 
                                 { 
-                                  char *name = MATCH_name;
+                                  const char *name = MATCH_name;
                                   nextPC = 2 + MATCH_p; 
                                   
 #line 575 "frontend/machine/pentium/decoder.m"
@@ -34681,7 +34682,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                   MATCH_name_page_8[(MATCH_w_8_8 >> 3 & 0x1) 
                                       /* page at 8 */]; 
                                 { 
-                                  char *name = MATCH_name;
+                                  const char *name = MATCH_name;
                                   nextPC = 2 + MATCH_p; 
                                   
 #line 578 "frontend/machine/pentium/decoder.m"
@@ -34702,7 +34703,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                   MATCH_name_page_5[(MATCH_w_8_8 >> 3 & 0x1) 
                                       /* page at 8 */]; 
                                 { 
-                                  char *name = MATCH_name;
+                                  const char *name = MATCH_name;
                                   nextPC = 2 + MATCH_p; 
                                   
 #line 551 "frontend/machine/pentium/decoder.m"
@@ -34727,7 +34728,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                   MATCH_name_page_9[(MATCH_w_8_8 >> 3 & 0x1) 
                                       /* page at 8 */]; 
                                 { 
-                                  char *name = MATCH_name;
+                                  const char *name = MATCH_name;
                                   nextPC = 2 + MATCH_p; 
                                   
 #line 584 "frontend/machine/pentium/decoder.m"
@@ -34748,7 +34749,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                   MATCH_name_page_6[(MATCH_w_8_8 >> 3 & 0x1) 
                                       /* page at 8 */]; 
                                 { 
-                                  char *name = MATCH_name;
+                                  const char *name = MATCH_name;
                                   nextPC = 2 + MATCH_p; 
                                   
 #line 557 "frontend/machine/pentium/decoder.m"
@@ -34800,7 +34801,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                       MATCH_name_page_10[(MATCH_w_8_16 >> 3 & 0x1) 
                                           /* page at 16 */]; 
                                     { 
-                                      char *name = MATCH_name;
+                                      const char *name = MATCH_name;
                                       nextPC = 3 + MATCH_p; 
                                       
 #line 545 "frontend/machine/pentium/decoder.m"
@@ -34827,7 +34828,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             /* page at 16 */ == 1) { 
                                       MATCH_name = "REP.LODSvow"; 
                                       { 
-                                        char *name = MATCH_name;
+                                        const char *name = MATCH_name;
                                         nextPC = 3 + MATCH_p; 
                                         
 #line 518 "frontend/machine/pentium/decoder.m"
@@ -34848,7 +34849,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                         MATCH_name_page_3[(MATCH_w_8_16 >> 3 & 0x1) 
                                             /* page at 16 */]; 
                                       { 
-                                        char *name = MATCH_name;
+                                        const char *name = MATCH_name;
                                         nextPC = 3 + MATCH_p; 
                                         
 #line 527 "frontend/machine/pentium/decoder.m"
@@ -34874,7 +34875,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             /* page at 16 */ == 1) { 
                                       MATCH_name = "REP.SCASvow"; 
                                       { 
-                                        char *name = MATCH_name;
+                                        const char *name = MATCH_name;
                                         nextPC = 3 + MATCH_p; 
                                         
 #line 536 "frontend/machine/pentium/decoder.m"
@@ -34895,7 +34896,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                         MATCH_name_page_10[(MATCH_w_8_16 >> 3 & 0x1) 
                                             /* page at 16 */]; 
                                       { 
-                                        char *name = MATCH_name;
+                                        const char *name = MATCH_name;
                                         nextPC = 3 + MATCH_p; 
                                         
 #line 509 "frontend/machine/pentium/decoder.m"
@@ -34933,7 +34934,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                   MATCH_name_page_13[(MATCH_w_8_8 >> 3 & 0x1) 
                                       /* page at 8 */]; 
                                 { 
-                                  char *name = MATCH_name;
+                                  const char *name = MATCH_name;
                                   nextPC = 2 + MATCH_p; 
                                   
 #line 542 "frontend/machine/pentium/decoder.m"
@@ -34958,7 +34959,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                       /* page at 8 */ == 1) { 
                                 MATCH_name = "REP.STOSvod"; 
                                 { 
-                                  char *name = MATCH_name;
+                                  const char *name = MATCH_name;
                                   nextPC = 2 + MATCH_p; 
                                   
 #line 548 "frontend/machine/pentium/decoder.m"
@@ -34983,7 +34984,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                       /* page at 8 */ == 1) { 
                                 MATCH_name = "REP.LODSB"; 
                                 { 
-                                  char *name = MATCH_name;
+                                  const char *name = MATCH_name;
                                   nextPC = 2 + MATCH_p; 
                                   
 #line 515 "frontend/machine/pentium/decoder.m"
@@ -35004,7 +35005,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                   MATCH_name_page_7[(MATCH_w_8_8 >> 3 & 0x1) 
                                       /* page at 8 */]; 
                                 { 
-                                  char *name = MATCH_name;
+                                  const char *name = MATCH_name;
                                   nextPC = 2 + MATCH_p; 
                                   
 #line 524 "frontend/machine/pentium/decoder.m"
@@ -35027,7 +35028,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                       /* page at 8 */ == 1) { 
                                 MATCH_name = "REP.LODSvod"; 
                                 { 
-                                  char *name = MATCH_name;
+                                  const char *name = MATCH_name;
                                   nextPC = 2 + MATCH_p; 
                                   
 #line 521 "frontend/machine/pentium/decoder.m"
@@ -35048,7 +35049,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                   MATCH_name_page_8[(MATCH_w_8_8 >> 3 & 0x1) 
                                       /* page at 8 */]; 
                                 { 
-                                  char *name = MATCH_name;
+                                  const char *name = MATCH_name;
                                   nextPC = 2 + MATCH_p; 
                                   
 #line 530 "frontend/machine/pentium/decoder.m"
@@ -35071,7 +35072,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                       /* page at 8 */ == 1) { 
                                 MATCH_name = "REP.SCASB"; 
                                 { 
-                                  char *name = MATCH_name;
+                                  const char *name = MATCH_name;
                                   nextPC = 2 + MATCH_p; 
                                   
 #line 533 "frontend/machine/pentium/decoder.m"
@@ -35092,7 +35093,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                   MATCH_name_page_9[(MATCH_w_8_8 >> 3 & 0x1) 
                                       /* page at 8 */]; 
                                 { 
-                                  char *name = MATCH_name;
+                                  const char *name = MATCH_name;
                                   nextPC = 2 + MATCH_p; 
                                   
 #line 506 "frontend/machine/pentium/decoder.m"
@@ -35115,7 +35116,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                       /* page at 8 */ == 1) { 
                                 MATCH_name = "REP.SCASvod"; 
                                 { 
-                                  char *name = MATCH_name;
+                                  const char *name = MATCH_name;
                                   nextPC = 2 + MATCH_p; 
                                   
 #line 539 "frontend/machine/pentium/decoder.m"
@@ -35136,7 +35137,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                   MATCH_name_page_13[(MATCH_w_8_8 >> 3 & 0x1) 
                                       /* page at 8 */]; 
                                 { 
-                                  char *name = MATCH_name;
+                                  const char *name = MATCH_name;
                                   nextPC = 2 + MATCH_p; 
                                   
 #line 512 "frontend/machine/pentium/decoder.m"
@@ -52903,7 +52904,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
     
   MATCH_label_c842: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned Eaddr = 2 + addressToPC(MATCH_p);
       nextPC = 3 + MATCH_p; 
       
@@ -52936,7 +52937,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
     
   MATCH_label_c843: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned Eaddr = 2 + addressToPC(MATCH_p);
       nextPC = 4 + MATCH_p; 
       
@@ -52969,7 +52970,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
     
   MATCH_label_c844: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned Eaddr = 2 + addressToPC(MATCH_p);
       nextPC = 8 + MATCH_p; 
       
@@ -53002,7 +53003,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
     
   MATCH_label_c845: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned Eaddr = 2 + addressToPC(MATCH_p);
       nextPC = 7 + MATCH_p; 
       
@@ -53035,7 +53036,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
     
   MATCH_label_c846: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned Eaddr = 2 + addressToPC(MATCH_p);
       nextPC = 3 + MATCH_p; 
       
@@ -53054,7 +53055,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
     
   MATCH_label_c847: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned Eaddr = 2 + addressToPC(MATCH_p);
       nextPC = 4 + MATCH_p; 
       
@@ -53073,7 +53074,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
     
   MATCH_label_c848: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned Eaddr = 2 + addressToPC(MATCH_p);
       nextPC = 8 + MATCH_p; 
       
@@ -53092,7 +53093,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
     
   MATCH_label_c849: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned Eaddr = 2 + addressToPC(MATCH_p);
       nextPC = 7 + MATCH_p; 
       
@@ -53111,7 +53112,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
     
   MATCH_label_c850: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned Eaddr = 2 + addressToPC(MATCH_p);
       nextPC = 3 + MATCH_p; 
       
@@ -53130,7 +53131,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
     
   MATCH_label_c851: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned Eaddr = 2 + addressToPC(MATCH_p);
       nextPC = 4 + MATCH_p; 
       
@@ -53149,7 +53150,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
     
   MATCH_label_c852: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned Eaddr = 2 + addressToPC(MATCH_p);
       nextPC = 8 + MATCH_p; 
       
@@ -53168,7 +53169,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
     
   MATCH_label_c853: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned Eaddr = 2 + addressToPC(MATCH_p);
       nextPC = 7 + MATCH_p; 
       
@@ -53187,7 +53188,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
     
   MATCH_label_c854: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned Eaddr = 2 + addressToPC(MATCH_p);
       nextPC = 3 + MATCH_p; 
       
@@ -53206,7 +53207,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
     
   MATCH_label_c855: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned Eaddr = 2 + addressToPC(MATCH_p);
       nextPC = 4 + MATCH_p; 
       
@@ -53225,7 +53226,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
     
   MATCH_label_c856: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned Eaddr = 2 + addressToPC(MATCH_p);
       nextPC = 8 + MATCH_p; 
       
@@ -53244,7 +53245,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
     
   MATCH_label_c857: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned Eaddr = 2 + addressToPC(MATCH_p);
       nextPC = 7 + MATCH_p; 
       
@@ -53263,7 +53264,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
     
   MATCH_label_c858: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned Eaddr = 2 + addressToPC(MATCH_p);
       nextPC = 3 + MATCH_p; 
       
@@ -53282,7 +53283,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
     
   MATCH_label_c859: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned Eaddr = 2 + addressToPC(MATCH_p);
       nextPC = 4 + MATCH_p; 
       
@@ -53301,7 +53302,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
     
   MATCH_label_c860: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned Eaddr = 2 + addressToPC(MATCH_p);
       nextPC = 8 + MATCH_p; 
       
@@ -53320,7 +53321,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
     
   MATCH_label_c861: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned Eaddr = 2 + addressToPC(MATCH_p);
       nextPC = 7 + MATCH_p; 
       
@@ -53339,7 +53340,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
     
   MATCH_label_c862: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned Eaddr = 2 + addressToPC(MATCH_p);
       nextPC = 3 + MATCH_p; 
       
@@ -53358,7 +53359,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
     
   MATCH_label_c863: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned Eaddr = 2 + addressToPC(MATCH_p);
       nextPC = 4 + MATCH_p; 
       
@@ -53377,7 +53378,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
     
   MATCH_label_c864: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned Eaddr = 2 + addressToPC(MATCH_p);
       nextPC = 8 + MATCH_p; 
       
@@ -53396,7 +53397,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
     
   MATCH_label_c865: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned Eaddr = 2 + addressToPC(MATCH_p);
       nextPC = 7 + MATCH_p; 
       
@@ -53415,7 +53416,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
     
   MATCH_label_c866: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned Eaddr = 2 + addressToPC(MATCH_p);
       nextPC = 3 + MATCH_p; 
       
@@ -53434,7 +53435,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
     
   MATCH_label_c867: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned Eaddr = 2 + addressToPC(MATCH_p);
       nextPC = 4 + MATCH_p; 
       
@@ -53453,7 +53454,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
     
   MATCH_label_c868: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned Eaddr = 2 + addressToPC(MATCH_p);
       nextPC = 8 + MATCH_p; 
       
@@ -53472,7 +53473,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
     
   MATCH_label_c869: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned Eaddr = 2 + addressToPC(MATCH_p);
       nextPC = 7 + MATCH_p; 
       
@@ -53491,7 +53492,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
     
   MATCH_label_c870: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned Eaddr = 2 + addressToPC(MATCH_p);
       nextPC = 3 + MATCH_p; 
       
@@ -53510,7 +53511,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
     
   MATCH_label_c871: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned Eaddr = 2 + addressToPC(MATCH_p);
       nextPC = 4 + MATCH_p; 
       
@@ -53529,7 +53530,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
     
   MATCH_label_c872: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned Eaddr = 2 + addressToPC(MATCH_p);
       nextPC = 8 + MATCH_p; 
       
@@ -53548,7 +53549,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
     
   MATCH_label_c873: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned Eaddr = 2 + addressToPC(MATCH_p);
       nextPC = 7 + MATCH_p; 
       
@@ -53567,7 +53568,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
     
   MATCH_label_c874: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned Eaddr = 2 + addressToPC(MATCH_p);
       nextPC = 3 + MATCH_p; 
       
@@ -53598,7 +53599,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
     
   MATCH_label_c875: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned Eaddr = 2 + addressToPC(MATCH_p);
       nextPC = 4 + MATCH_p; 
       
@@ -53629,7 +53630,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
     
   MATCH_label_c876: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned Eaddr = 2 + addressToPC(MATCH_p);
       nextPC = 8 + MATCH_p; 
       
@@ -53660,7 +53661,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
     
   MATCH_label_c877: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned Eaddr = 2 + addressToPC(MATCH_p);
       nextPC = 7 + MATCH_p; 
       
@@ -53691,7 +53692,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
     
   MATCH_label_c878: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned Eaddr = 2 + addressToPC(MATCH_p);
       nextPC = 3 + MATCH_p; 
       
@@ -53710,7 +53711,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
     
   MATCH_label_c879: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned Eaddr = 2 + addressToPC(MATCH_p);
       nextPC = 4 + MATCH_p; 
       
@@ -53729,7 +53730,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
     
   MATCH_label_c880: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned Eaddr = 2 + addressToPC(MATCH_p);
       nextPC = 8 + MATCH_p; 
       
@@ -53748,7 +53749,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
     
   MATCH_label_c881: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned Eaddr = 2 + addressToPC(MATCH_p);
       nextPC = 7 + MATCH_p; 
       
@@ -53767,7 +53768,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
     
   MATCH_label_c882: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned Eaddr = 2 + addressToPC(MATCH_p);
       nextPC = 3 + MATCH_p; 
       
@@ -53786,7 +53787,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
     
   MATCH_label_c883: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned Eaddr = 2 + addressToPC(MATCH_p);
       nextPC = 4 + MATCH_p; 
       
@@ -53805,7 +53806,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
     
   MATCH_label_c884: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned Eaddr = 2 + addressToPC(MATCH_p);
       nextPC = 8 + MATCH_p; 
       
@@ -53824,7 +53825,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
     
   MATCH_label_c885: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned Eaddr = 2 + addressToPC(MATCH_p);
       nextPC = 7 + MATCH_p; 
       
@@ -53843,7 +53844,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
     
   MATCH_label_c886: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned Eaddr = 2 + addressToPC(MATCH_p);
       nextPC = 3 + MATCH_p; 
       
@@ -53862,7 +53863,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
     
   MATCH_label_c887: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned Eaddr = 2 + addressToPC(MATCH_p);
       nextPC = 4 + MATCH_p; 
       
@@ -53881,7 +53882,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
     
   MATCH_label_c888: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned Eaddr = 2 + addressToPC(MATCH_p);
       nextPC = 8 + MATCH_p; 
       
@@ -53900,7 +53901,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
     
   MATCH_label_c889: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned Eaddr = 2 + addressToPC(MATCH_p);
       nextPC = 7 + MATCH_p; 
       
@@ -61828,7 +61829,7 @@ Exp* PentiumDecoder::dis_Eaddr(ADDRESS pc, int size)
     pc
     ;
   unsigned /* [0..255] */ MATCH_w_8_0;
-  unsigned /* [0..255] */ MATCH_w_8_8;
+//  unsigned /* [0..255] */ MATCH_w_8_8;
   { 
     MATCH_w_8_0 = getByte(MATCH_p); 
     if ((MATCH_w_8_0 >> 6 & 0x3) /* mod at 0 */ == 3) { 

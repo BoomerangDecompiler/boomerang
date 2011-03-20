@@ -20,6 +20,7 @@
  */
 
 #include <sstream>
+#include <cstring>
 
 #include "types.h"
 #include "managed.h"

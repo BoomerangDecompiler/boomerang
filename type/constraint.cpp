@@ -24,6 +24,7 @@
 #include "boomerang.h"
 #include "log.h"
 #include <sstream>
+#include <cstring>
 
 void ConstraintMap::print(std::ostream& os) {
 	iterator kk;

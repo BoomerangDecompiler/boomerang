@@ -22,6 +22,7 @@
  * 09 Jan 02 - Mike: Untabbed, reformatted
  * 17 Jun 03 - Mike: Fixed an apparent error in generateCode (getCond)
  * 14 Jun 05 - Mike: Don't add redundant out edges to an N-way BB if some jump table entries repeat
+ * 20 Mar 11 - Mike: Fixed braces near isLatchNode() in generateCode()
 */
 
 
@@ -30,6 +31,7 @@
  *============================================================================*/
 
 #include <assert.h>
+#include <cstring>
 #if defined(_MSC_VER) && _MSC_VER <= 1200
 #pragma warning(disable:4786)
 #endif 
@@ -1064,7 +1066,7 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
 
 	// if this is a latchNode and the current indentation level is the same as the first node in the loop, then this
 	// write out its body and return otherwise generate a goto
-	if (isLatchNode())
+	if (isLatchNode()) {
 		if (latch && latch->loopHead &&
 				indLevel == latch->loopHead->indentLevel + (latch->loopHead->lType == PreTested ? 1 : 0)) {
 			WriteBB(hll, indLevel);
@@ -1076,6 +1078,7 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
 			emitGotoAndLabel(hll, indLevel, this);
 			return;
 		}
+	}
 
 	PBB child = NULL;
 	switch(sType) {

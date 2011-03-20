@@ -43,6 +43,8 @@
 #include "util.h"
 #include "log.h"
 #include <sstream>
+#include <cstring>
+#include <stdlib.h>
 
 extern char *operStrings[];
 

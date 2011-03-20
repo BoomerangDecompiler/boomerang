@@ -27,6 +27,7 @@
 #include <iomanip>			// For setfill etc
 
 #include <sstream>
+#include <cstring>
 #include <algorithm>
 #include "statement.h"
 #include "exp.h"
@@ -1732,13 +1733,13 @@ bool condToRelational(Exp*& pCond, BRANCH_TYPE jtCond) {
 				} else {
 					switch (mask) {
 						case 1:
-							if (condOp == opEquals && k == 0 || condOp == opNotEqual && k == 1)
+							if ((condOp == opEquals && k == 0) || (condOp == opNotEqual && k == 1))
 									op = opGtrEq;
 							else
 									op = opLess;
 							break;
 						case 0x40:
-							if (condOp == opEquals && k == 0 || condOp == opNotEqual && k == 0x40)
+							if ((condOp == opEquals && k == 0) || (condOp == opNotEqual && k == 0x40))
 									op = opNotEqual;
 							else
 									op = opEquals;
@@ -3228,7 +3229,7 @@ void Assign::simplify() {
 	if (guard) guard = guard->simplify();
 
 	// Perhaps the guard can go away
-	if (guard && (guard->isTrue() || guard->isIntConst() && ((Const*)guard)->getInt() == 1))
+	if ((guard && guard->isTrue()) || (guard->isIntConst() && ((Const*)guard)->getInt() == 1))
 		guard = NULL;			// No longer a guarded assignment
 
 	if (lhs->getOper() == opMemOf) {
@@ -4190,11 +4191,12 @@ void PhiAssign::simplify() {
 		bool onlyOneNotThis = true;
 		Statement *notthis = (Statement*)-1;
 		for (uu = defVec.begin(); uu != defVec.end(); uu++) {
-			if (uu->def == NULL || uu->def->isImplicit() || !uu->def->isPhi() || uu->def != this)
+			if (uu->def == NULL || uu->def->isImplicit() || !uu->def->isPhi() || uu->def != this) {
 				if (notthis != (Statement*)-1) {
 					onlyOneNotThis = false;
 					break;
 				} else notthis = uu->def;
+			}
 		}
 
 		if (onlyOneNotThis && notthis != (Statement*)-1) {

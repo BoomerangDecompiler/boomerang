@@ -27,6 +27,7 @@
  *============================================================================*/
 
 #include <assert.h>
+#include <cstring>
 #if defined(_MSC_VER) && _MSC_VER <= 1100
 #include "signature.h"
 #endif
@@ -90,7 +91,7 @@ Exp*	crBit(int bitNum);	// Get an expression for a CR bit access
  *============================================================================*/
 void PPCDecoder::unused(int x)
 {}
-void unused(char* x) {}
+void unused(const char* x) {}
 
 
 /*==============================================================================
@@ -131,439 +132,439 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
 #line 119 "frontend/machine/ppc/decoder.m"
     hostPC
     ;
-  char *MATCH_name;
-  static char *MATCH_name_OPCD_0[] = {
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, "mulli", "subfic", (char *)0, (char *)0, (char *)0, "addic", 
-    "addicq", "addi", "addis", (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, "ori", "oris", "xori", 
-    "xoris", "andiq", "andisq", (char *)0, (char *)0, "lwz", "lwzu", "lbz", 
+  const char *MATCH_name;
+  static const char *MATCH_name_OPCD_0[] = {
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, "mulli", "subfic", (const char *)0, (const char *)0, (const char *)0, "addic", 
+    "addicq", "addi", "addis", (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, "ori", "oris", "xori", 
+    "xoris", "andiq", "andisq", (const char *)0, (const char *)0, "lwz", "lwzu", "lbz", 
     "lbzu", "stw", "stwu", "stb", "stbu", "lhz", "lhzu", "lha", "lhau", 
     "sth", "sthu", "lmw", "stmw", "lfs", "lfsu", "lfd", "lfdu", "stfs", 
     "stfsu", "stfd", "stfdu", 
   };
-  static char *MATCH_name_BO4_3[] = {
-    (char *)0, (char *)0, "bge", (char *)0, (char *)0, (char *)0, "blt", 
+  static const char *MATCH_name_BO4_3[] = {
+    (const char *)0, (const char *)0, "bge", (const char *)0, (const char *)0, (const char *)0, "blt", 
   };
-  static char *MATCH_name_BO4_4[] = {
-    (char *)0, (char *)0, "ble", (char *)0, (char *)0, (char *)0, "bgt", 
+  static const char *MATCH_name_BO4_4[] = {
+    (const char *)0, (const char *)0, "ble", (const char *)0, (const char *)0, (const char *)0, "bgt", 
   };
-  static char *MATCH_name_BO4_5[] = {
-    (char *)0, (char *)0, "bne", (char *)0, (char *)0, (char *)0, "beq", 
+  static const char *MATCH_name_BO4_5[] = {
+    (const char *)0, (const char *)0, "bne", (const char *)0, (const char *)0, (const char *)0, "beq", 
   };
-  static char *MATCH_name_BO4_6[] = {
-    (char *)0, (char *)0, "bns", (char *)0, (char *)0, (char *)0, "bso", 
+  static const char *MATCH_name_BO4_6[] = {
+    (const char *)0, (const char *)0, "bns", (const char *)0, (const char *)0, (const char *)0, "bso", 
   };
-  static char *MATCH_name_LK_8[] = {"crnor", "bl", };
-  static char *MATCH_name_BO4_10[] = {
-    (char *)0, (char *)0, "bgelr", (char *)0, (char *)0, (char *)0, "bltlr", 
+  static const char *MATCH_name_LK_8[] = {"crnor", "bl", };
+  static const char *MATCH_name_BO4_10[] = {
+    (const char *)0, (const char *)0, "bgelr", (const char *)0, (const char *)0, (const char *)0, "bltlr", 
   };
-  static char *MATCH_name_BO4_11[] = {
-    (char *)0, (char *)0, "blelr", (char *)0, (char *)0, (char *)0, "bgtlr", 
+  static const char *MATCH_name_BO4_11[] = {
+    (const char *)0, (const char *)0, "blelr", (const char *)0, (const char *)0, (const char *)0, "bgtlr", 
   };
-  static char *MATCH_name_BO4_12[] = {
-    (char *)0, (char *)0, "bnelr", (char *)0, (char *)0, (char *)0, "beqlr", 
+  static const char *MATCH_name_BO4_12[] = {
+    (const char *)0, (const char *)0, "bnelr", (const char *)0, (const char *)0, (const char *)0, "beqlr", 
   };
-  static char *MATCH_name_BO4_13[] = {
-    (char *)0, (char *)0, "bnslr", (char *)0, (char *)0, (char *)0, "bsolr", 
+  static const char *MATCH_name_BO4_13[] = {
+    (const char *)0, (const char *)0, "bnslr", (const char *)0, (const char *)0, (const char *)0, "bsolr", 
   };
-  static char *MATCH_name_LK_14[] = {"crandc", "balctrl", };
-  static char *MATCH_name_Rc_22[] = {"rlwimi", "rlwimiq", };
-  static char *MATCH_name_Rc_23[] = {"rlwinm", "rlwinmq", };
-  static char *MATCH_name_Xo1_26[] = {
-    "fcmpu", (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, "frsp", 
-    (char *)0, "fctiw", "fctiwz", (char *)0, (char *)0, (char *)0, (char *)0, 
-    "lwarx", "ldx", (char *)0, "lwzx", "slw", (char *)0, "cntlzw", "sld", 
-    "and", (char *)0, (char *)0, (char *)0, "fcmpo", (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, "fneg", (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, "ldux", (char *)0, 
-    "lwzux", (char *)0, (char *)0, "cntlzd", (char *)0, "andc", (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, "fmr", (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, "ldarx", (char *)0, (char *)0, "lbzx", 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, "lbzux", (char *)0, (char *)0, (char *)0, (char *)0, "nor", 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, "fnabs", 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, "stdx", 
-    "stwcxq", "stwx", (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    "stdux", (char *)0, "stwux", (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, "stdcxq", "stbx", (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, "stbux", (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, "fabs", (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, "lhzx", (char *)0, 
-    (char *)0, (char *)0, (char *)0, "eqv", (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, "eciwx", "lhzux", (char *)0, 
-    (char *)0, (char *)0, (char *)0, "xor", (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, "mfspr", (char *)0, "lwax", (char *)0, "lhax", (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, "lwaux", (char *)0, "lhaux", 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, "sthx", (char *)0, (char *)0, (char *)0, (char *)0, "orc", 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, "ecowx", "sthux", (char *)0, (char *)0, (char *)0, (char *)0, 
-    "or", (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, "mtspr", (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, "nand", (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, "lswx", "lwbrx", "lfsx", "srw", 
-    (char *)0, (char *)0, "srd", (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, "lfsux", 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, "lfdx", (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, "lfdux", (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, "stswx", "stwbrx", "stfsx", (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, "stfsux", 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, "stfdx", (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, "stfdux", (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, "lhbrx", (char *)0, "sraw", 
-    (char *)0, "srad", (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, "fctid", "fctidz", (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, "srawi", 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, "fcfid", (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, "sthbrx", (char *)0, (char *)0, 
-    (char *)0, "extsh", (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, "extsb", (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, "stfiwx", (char *)0, (char *)0, "extsw", 
+  static const char *MATCH_name_LK_14[] = {"crandc", "balctrl", };
+  static const char *MATCH_name_Rc_22[] = {"rlwimi", "rlwimiq", };
+  static const char *MATCH_name_Rc_23[] = {"rlwinm", "rlwinmq", };
+  static const char *MATCH_name_Xo1_26[] = {
+    "fcmpu", (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, "frsp", 
+    (const char *)0, "fctiw", "fctiwz", (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    "lwarx", "ldx", (const char *)0, "lwzx", "slw", (const char *)0, "cntlzw", "sld", 
+    "and", (const char *)0, (const char *)0, (const char *)0, "fcmpo", (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, "fneg", (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, "ldux", (const char *)0, 
+    "lwzux", (const char *)0, (const char *)0, "cntlzd", (const char *)0, "andc", (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, "fmr", (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, "ldarx", (const char *)0, (const char *)0, "lbzx", 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, "lbzux", (const char *)0, (const char *)0, (const char *)0, (const char *)0, "nor", 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, "fnabs", 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, "stdx", 
+    "stwcxq", "stwx", (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    "stdux", (const char *)0, "stwux", (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, "stdcxq", "stbx", (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, "stbux", (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, "fabs", (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, "lhzx", (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, "eqv", (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, "eciwx", "lhzux", (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, "xor", (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, "mfspr", (const char *)0, "lwax", (const char *)0, "lhax", (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, "lwaux", (const char *)0, "lhaux", 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, "sthx", (const char *)0, (const char *)0, (const char *)0, (const char *)0, "orc", 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, "ecowx", "sthux", (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    "or", (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, "mtspr", (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, "nand", (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, "lswx", "lwbrx", "lfsx", "srw", 
+    (const char *)0, (const char *)0, "srd", (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, "lfsux", 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, "lfdx", (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, "lfdux", (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, "stswx", "stwbrx", "stfsx", (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, "stfsux", 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, "stfdx", (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, "stfdux", (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, "lhbrx", (const char *)0, "sraw", 
+    (const char *)0, "srad", (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, "fctid", "fctidz", (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, "srawi", 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, "fcfid", (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, "sthbrx", (const char *)0, (const char *)0, 
+    (const char *)0, "extsh", (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, "extsb", (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, "stfiwx", (const char *)0, (const char *)0, "extsw", 
   };
-  static char *MATCH_name_Xo9_29[] = {
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, "subfc", (char *)0, "addc", (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, "subf", (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, "neg", 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, "subfe", (char *)0, "adde", (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, "subfze", (char *)0, "addze", 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, "subfme", "mulld", 
-    "addme", "mullw", (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, "add", (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, "divdu", 
-    (char *)0, "divwu", (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, "divd", (char *)0, "divw", 
+  static const char *MATCH_name_Xo9_29[] = {
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, "subfc", (const char *)0, "addc", (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, "subf", (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, "neg", 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, "subfe", (const char *)0, "adde", (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, "subfze", (const char *)0, "addze", 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, "subfme", "mulld", 
+    "addme", "mullw", (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, "add", (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, "divdu", 
+    (const char *)0, "divwu", (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, "divd", (const char *)0, "divw", 
   };
-  static char *MATCH_name_Xo1_30[] = {
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    "frspq", (char *)0, "fctiwq", "fctiwzq", (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, "slwq", (char *)0, 
-    (char *)0, "sldq", "andq", (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, "fnegq", (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, "andcq", (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, "fmrq", (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, "norq", 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, "fnabsq", 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, "fabsq", (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, "eqvq", (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, "xorq", (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, "orcq", (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, "orq", (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, "nandq", 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, "srwq", (char *)0, 
-    (char *)0, "srdq", (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, "srawq", (char *)0, "sradq", (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, "fctidq", "fctidzq", 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, "srawiq", (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+  static const char *MATCH_name_Xo1_30[] = {
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    "frspq", (const char *)0, "fctiwq", "fctiwzq", (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, "slwq", (const char *)0, 
+    (const char *)0, "sldq", "andq", (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, "fnegq", (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, "andcq", (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, "fmrq", (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, "norq", 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, "fnabsq", 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, "fabsq", (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, "eqvq", (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, "xorq", (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, "orcq", (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, "orq", (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, "nandq", 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, "srwq", (const char *)0, 
+    (const char *)0, "srdq", (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, "srawq", (const char *)0, "sradq", (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, "fctidq", "fctidzq", 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, "srawiq", (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
     "fcfidq", 
   };
-  static char *MATCH_name_Rc_36[] = {"fdivs", "fdivsq", };
-  static char *MATCH_name_Rc_37[] = {"fsubs", "fsubsq", };
-  static char *MATCH_name_Rc_38[] = {"fadds", "faddsq", };
-  static char *MATCH_name_Xo5_40[] = {
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, "fdiv", 
-    (char *)0, "fsub", "fadd", 
+  static const char *MATCH_name_Rc_36[] = {"fdivs", "fdivsq", };
+  static const char *MATCH_name_Rc_37[] = {"fsubs", "fsubsq", };
+  static const char *MATCH_name_Rc_38[] = {"fadds", "faddsq", };
+  static const char *MATCH_name_Xo5_40[] = {
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, "fdiv", 
+    (const char *)0, "fsub", "fadd", 
   };
   unsigned MATCH_w_32_0;
   { 
@@ -578,7 +579,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
           MATCH_name = 
             MATCH_name_OPCD_0[(MATCH_w_32_0 >> 26 & 0x3f) /* OPCD at 0 */]; 
           { 
-            char *name = MATCH_name;
+            const char *name = MATCH_name;
             unsigned ra = (MATCH_w_32_0 >> 16 & 0x1f) /* A at 0 */;
             unsigned rd = (MATCH_w_32_0 >> 21 & 0x1f) /* D at 0 */;
             int /* [~32768..32767] */ simm = 
@@ -608,7 +609,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
           if ((MATCH_w_32_0 >> 22 & 0x1) /* Lz at 0 */ == 0) { 
             MATCH_name = "cmpli"; 
             { 
-              char *name = MATCH_name;
+              const char *name = MATCH_name;
               unsigned crfd = (MATCH_w_32_0 >> 23 & 0x7) /* crfD at 0 */;
               unsigned l = (MATCH_w_32_0 >> 21 & 0x1) /* L at 0 */;
               unsigned ra = (MATCH_w_32_0 >> 16 & 0x1f) /* A at 0 */;
@@ -638,7 +639,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
           if ((MATCH_w_32_0 >> 22 & 0x1) /* Lz at 0 */ == 0) { 
             MATCH_name = "cmpi"; 
             { 
-              char *name = MATCH_name;
+              const char *name = MATCH_name;
               unsigned crfd = (MATCH_w_32_0 >> 23 & 0x7) /* crfD at 0 */;
               unsigned l = (MATCH_w_32_0 >> 21 & 0x1) /* L at 0 */;
               unsigned ra = (MATCH_w_32_0 >> 16 & 0x1f) /* A at 0 */;
@@ -671,7 +672,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
               if ((MATCH_w_32_0 >> 21 & 0x1f) /* BO at 0 */ == 20) { 
                 MATCH_name = "ball"; 
                 { 
-                  char *name = MATCH_name;
+                  const char *name = MATCH_name;
                   unsigned BIcr = (MATCH_w_32_0 >> 18 & 0x7) /* BIcr at 0 */;
                   unsigned reladdr = 
                     4 * (MATCH_w_32_0 >> 2 & 0x3fff) /* BD at 0 */ + 
@@ -754,7 +755,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                             MATCH_name_BO4_3[(MATCH_w_32_0 >> 22 & 0xf) 
                                 /* BO4 at 0 */]; 
                           { 
-                            char *name = MATCH_name;
+                            const char *name = MATCH_name;
                             unsigned BIcr = 
                               (MATCH_w_32_0 >> 18 & 0x7) /* BIcr at 0 */;
                             unsigned reladdr = 
@@ -778,7 +779,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                             MATCH_name_BO4_3[(MATCH_w_32_0 >> 22 & 0xf) 
                                 /* BO4 at 0 */]; 
                           { 
-                            char *name = MATCH_name;
+                            const char *name = MATCH_name;
                             unsigned BIcr = 
                               (MATCH_w_32_0 >> 18 & 0x7) /* BIcr at 0 */;
                             unsigned reladdr = 
@@ -818,7 +819,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                             MATCH_name_BO4_4[(MATCH_w_32_0 >> 22 & 0xf) 
                                 /* BO4 at 0 */]; 
                           { 
-                            char *name = MATCH_name;
+                            const char *name = MATCH_name;
                             unsigned BIcr = 
                               (MATCH_w_32_0 >> 18 & 0x7) /* BIcr at 0 */;
                             unsigned reladdr = 
@@ -842,7 +843,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                             MATCH_name_BO4_4[(MATCH_w_32_0 >> 22 & 0xf) 
                                 /* BO4 at 0 */]; 
                           { 
-                            char *name = MATCH_name;
+                            const char *name = MATCH_name;
                             unsigned BIcr = 
                               (MATCH_w_32_0 >> 18 & 0x7) /* BIcr at 0 */;
                             unsigned reladdr = 
@@ -886,7 +887,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                             MATCH_name_BO4_5[(MATCH_w_32_0 >> 22 & 0xf) 
                                 /* BO4 at 0 */]; 
                           { 
-                            char *name = MATCH_name;
+                            const char *name = MATCH_name;
                             unsigned BIcr = 
                               (MATCH_w_32_0 >> 18 & 0x7) /* BIcr at 0 */;
                             unsigned reladdr = 
@@ -914,7 +915,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                             MATCH_name_BO4_5[(MATCH_w_32_0 >> 22 & 0xf) 
                                 /* BO4 at 0 */]; 
                           { 
-                            char *name = MATCH_name;
+                            const char *name = MATCH_name;
                             unsigned BIcr = 
                               (MATCH_w_32_0 >> 18 & 0x7) /* BIcr at 0 */;
                             unsigned reladdr = 
@@ -954,7 +955,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                             MATCH_name_BO4_6[(MATCH_w_32_0 >> 22 & 0xf) 
                                 /* BO4 at 0 */]; 
                           { 
-                            char *name = MATCH_name;
+                            const char *name = MATCH_name;
                             unsigned BIcr = 
                               (MATCH_w_32_0 >> 18 & 0x7) /* BIcr at 0 */;
                             unsigned reladdr = 
@@ -988,7 +989,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                             MATCH_name_BO4_6[(MATCH_w_32_0 >> 22 & 0xf) 
                                 /* BO4 at 0 */]; 
                           { 
-                            char *name = MATCH_name;
+                            const char *name = MATCH_name;
                             unsigned BIcr = 
                               (MATCH_w_32_0 >> 18 & 0x7) /* BIcr at 0 */;
                             unsigned reladdr = 
@@ -1021,7 +1022,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
               MATCH_name = 
                 MATCH_name_LK_8[(MATCH_w_32_0 & 0x1) /* LK at 0 */]; 
               { 
-                char *name = MATCH_name;
+                const char *name = MATCH_name;
                 unsigned reladdr = 
                   4 * sign_extend(
                               (MATCH_w_32_0 >> 2 & 0xffffff) /* LI at 0 */, 
@@ -1151,7 +1152,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                                   MATCH_name_BO4_10[(MATCH_w_32_0 >> 22 & 0xf) 
                                       /* BO4 at 0 */]; 
                                 { 
-                                  char *name = MATCH_name;
+                                  const char *name = MATCH_name;
                                   unsigned BIcr = 
                                     (MATCH_w_32_0 >> 18 & 0x7) 
                                           /* BIcr at 0 */;
@@ -1177,7 +1178,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                                   MATCH_name_BO4_10[(MATCH_w_32_0 >> 22 & 0xf) 
                                       /* BO4 at 0 */]; 
                                 { 
-                                  char *name = MATCH_name;
+                                  const char *name = MATCH_name;
                                   unsigned BIcr = 
                                     (MATCH_w_32_0 >> 18 & 0x7) 
                                           /* BIcr at 0 */;
@@ -1223,7 +1224,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                                   MATCH_name_BO4_11[(MATCH_w_32_0 >> 22 & 0xf) 
                                       /* BO4 at 0 */]; 
                                 { 
-                                  char *name = MATCH_name;
+                                  const char *name = MATCH_name;
                                   unsigned BIcr = 
                                     (MATCH_w_32_0 >> 18 & 0x7) 
                                           /* BIcr at 0 */;
@@ -1249,7 +1250,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                                   MATCH_name_BO4_11[(MATCH_w_32_0 >> 22 & 0xf) 
                                       /* BO4 at 0 */]; 
                                 { 
-                                  char *name = MATCH_name;
+                                  const char *name = MATCH_name;
                                   unsigned BIcr = 
                                     (MATCH_w_32_0 >> 18 & 0x7) 
                                           /* BIcr at 0 */;
@@ -1295,7 +1296,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                                   MATCH_name_BO4_12[(MATCH_w_32_0 >> 22 & 0xf) 
                                       /* BO4 at 0 */]; 
                                 { 
-                                  char *name = MATCH_name;
+                                  const char *name = MATCH_name;
                                   unsigned BIcr = 
                                     (MATCH_w_32_0 >> 18 & 0x7) 
                                           /* BIcr at 0 */;
@@ -1321,7 +1322,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                                   MATCH_name_BO4_12[(MATCH_w_32_0 >> 22 & 0xf) 
                                       /* BO4 at 0 */]; 
                                 { 
-                                  char *name = MATCH_name;
+                                  const char *name = MATCH_name;
                                   unsigned BIcr = 
                                     (MATCH_w_32_0 >> 18 & 0x7) 
                                           /* BIcr at 0 */;
@@ -1367,7 +1368,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                                   MATCH_name_BO4_13[(MATCH_w_32_0 >> 22 & 0xf) 
                                       /* BO4 at 0 */]; 
                                 { 
-                                  char *name = MATCH_name;
+                                  const char *name = MATCH_name;
                                   unsigned BIcr = 
                                     (MATCH_w_32_0 >> 18 & 0x7) 
                                           /* BIcr at 0 */;
@@ -1393,7 +1394,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                                   MATCH_name_BO4_13[(MATCH_w_32_0 >> 22 & 0xf) 
                                       /* BO4 at 0 */]; 
                                 { 
-                                  char *name = MATCH_name;
+                                  const char *name = MATCH_name;
                                   unsigned BIcr = 
                                     (MATCH_w_32_0 >> 18 & 0x7) 
                                           /* BIcr at 0 */;
@@ -1511,7 +1512,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                       MATCH_name = 
                         MATCH_name_LK_14[(MATCH_w_32_0 & 0x1) /* LK at 0 */]; 
                       { 
-                        char *name = MATCH_name;
+                        const char *name = MATCH_name;
                         unsigned BIcr = 
                           (MATCH_w_32_0 >> 18 & 0x7) /* BIcr at 0 */;
                         nextPC = 4 + MATCH_p; 
@@ -1534,7 +1535,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                     else { 
                       MATCH_name = "balctr"; 
                       { 
-                        char *name = MATCH_name;
+                        const char *name = MATCH_name;
                         unsigned BIcr = 
                           (MATCH_w_32_0 >> 18 & 0x7) /* BIcr at 0 */;
                         nextPC = 4 + MATCH_p; 
@@ -1576,7 +1577,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
           MATCH_name = 
             MATCH_name_OPCD_0[(MATCH_w_32_0 >> 26 & 0x3f) /* OPCD at 0 */]; 
           { 
-            char *name = MATCH_name;
+            const char *name = MATCH_name;
             unsigned ra = (MATCH_w_32_0 >> 21 & 0x1f) /* S at 0 */;
             unsigned rd = (MATCH_w_32_0 >> 16 & 0x1f) /* A at 0 */;
             unsigned uimm = (MATCH_w_32_0 & 0xffff) /* UIMM at 0 */;
@@ -1698,7 +1699,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                   MATCH_name = MATCH_name_Xo1_30[(MATCH_w_32_0 >> 1 & 0x3ff) 
                         /* Xo1 at 0 */]; 
                   { 
-                    char *name = MATCH_name;
+                    const char *name = MATCH_name;
                     unsigned ra = (MATCH_w_32_0 >> 16 & 0x1f) /* A at 0 */;
                     unsigned rs = (MATCH_w_32_0 >> 21 & 0x1f) /* S at 0 */;
                     unsigned uimm = (MATCH_w_32_0 >> 11 & 0x1f) /* SH at 0 */;
@@ -2641,7 +2642,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                         MATCH_name_Xo9_29[(MATCH_w_32_0 >> 1 & 0x1ff) 
                             /* Xo9 at 0 */]; 
                       { 
-                        char *name = MATCH_name;
+                        const char *name = MATCH_name;
                         unsigned ra = 
                           (MATCH_w_32_0 >> 16 & 0x1f) /* A at 0 */;
                         unsigned rd = 
@@ -3430,7 +3431,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
           MATCH_name = 
             MATCH_name_OPCD_0[(MATCH_w_32_0 >> 26 & 0x3f) /* OPCD at 0 */]; 
           { 
-            char *name = MATCH_name;
+            const char *name = MATCH_name;
             int /* [~32768..32767] */ d = 
               sign_extend((MATCH_w_32_0 & 0xffff) /* d at 0 */, 16);
             unsigned ra = (MATCH_w_32_0 >> 16 & 0x1f) /* A at 0 */;
@@ -3480,7 +3481,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
           MATCH_name = 
             MATCH_name_OPCD_0[(MATCH_w_32_0 >> 26 & 0x3f) /* OPCD at 0 */]; 
           { 
-            char *name = MATCH_name;
+            const char *name = MATCH_name;
             int /* [~32768..32767] */ d = 
               sign_extend((MATCH_w_32_0 & 0xffff) /* d at 0 */, 16);
             unsigned ra = (MATCH_w_32_0 >> 16 & 0x1f) /* A at 0 */;
@@ -3512,7 +3513,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
           MATCH_name = 
             MATCH_name_OPCD_0[(MATCH_w_32_0 >> 26 & 0x3f) /* OPCD at 0 */]; 
           { 
-            char *name = MATCH_name;
+            const char *name = MATCH_name;
             int /* [~32768..32767] */ d = 
               sign_extend((MATCH_w_32_0 & 0xffff) /* d at 0 */, 16);
             unsigned fd = (MATCH_w_32_0 >> 21 & 0x1f) /* fD at 0 */;
@@ -3536,7 +3537,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
           MATCH_name = 
             MATCH_name_OPCD_0[(MATCH_w_32_0 >> 26 & 0x3f) /* OPCD at 0 */]; 
           { 
-            char *name = MATCH_name;
+            const char *name = MATCH_name;
             int /* [~32768..32767] */ d = 
               sign_extend((MATCH_w_32_0 & 0xffff) /* d at 0 */, 16);
             unsigned fs = (MATCH_w_32_0 >> 21 & 0x1f) /* fS at 0 */;
@@ -4137,7 +4138,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
     
   MATCH_label_a2: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned BIcr = (MATCH_w_32_0 >> 18 & 0x7) /* BIcr at 0 */;
       nextPC = 4 + MATCH_p; 
       
@@ -4164,7 +4165,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
     
   MATCH_label_a3: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned crbA = (MATCH_w_32_0 >> 16 & 0x1f) /* crbA at 0 */;
       unsigned crbB = (MATCH_w_32_0 >> 11 & 0x1f) /* crbB at 0 */;
       unsigned crbD = (MATCH_w_32_0 >> 21 & 0x1f) /* crbD at 0 */;
@@ -4185,7 +4186,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
     
   MATCH_label_a4: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned beg = (MATCH_w_32_0 >> 6 & 0x1f) /* MB at 0 */;
       unsigned end = (MATCH_w_32_0 >> 1 & 0x1f) /* ME at 0 */;
       unsigned ra = (MATCH_w_32_0 >> 16 & 0x1f) /* A at 0 */;
@@ -4210,7 +4211,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
     
   MATCH_label_a5: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned crfd = (MATCH_w_32_0 >> 23 & 0x7) /* crfD at 0 */;
       unsigned l = (MATCH_w_32_0 >> 21 & 0x1) /* L at 0 */;
       unsigned ra = (MATCH_w_32_0 >> 16 & 0x1f) /* A at 0 */;
@@ -4232,7 +4233,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
     
   MATCH_label_a6: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned rd = (MATCH_w_32_0 >> 21 & 0x1f) /* D at 0 */;
       nextPC = 4 + MATCH_p; 
       
@@ -4251,7 +4252,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
     
   MATCH_label_a7: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned ra = (MATCH_w_32_0 >> 16 & 0x1f) /* A at 0 */;
       unsigned rb = (MATCH_w_32_0 >> 11 & 0x1f) /* B at 0 */;
       unsigned rd = (MATCH_w_32_0 >> 21 & 0x1f) /* D at 0 */;
@@ -4270,7 +4271,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
     
   MATCH_label_a8: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned ra = (MATCH_w_32_0 >> 21 & 0x1f) /* S at 0 */;
       unsigned rb = (MATCH_w_32_0 >> 11 & 0x1f) /* B at 0 */;
       unsigned rd = (MATCH_w_32_0 >> 16 & 0x1f) /* A at 0 */;
@@ -4289,7 +4290,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
     
   MATCH_label_a9: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned ra = (MATCH_w_32_0 >> 21 & 0x1f) /* S at 0 */;
       unsigned rd = (MATCH_w_32_0 >> 16 & 0x1f) /* A at 0 */;
       nextPC = 4 + MATCH_p; 
@@ -4313,7 +4314,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
     
   MATCH_label_a10: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned ra = (MATCH_w_32_0 >> 16 & 0x1f) /* A at 0 */;
       unsigned rb = (MATCH_w_32_0 >> 11 & 0x1f) /* B at 0 */;
       unsigned rd = (MATCH_w_32_0 >> 21 & 0x1f) /* S at 0 */;
@@ -4334,7 +4335,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
     
   MATCH_label_a11: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned rd = (MATCH_w_32_0 >> 21 & 0x1f) /* D at 0 */;
       unsigned uimm = 
         ((MATCH_w_32_0 >> 11 & 0x1f) /* sprH at 0 */ << 5) + 
@@ -4354,7 +4355,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
     
   MATCH_label_a12: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned rs = (MATCH_w_32_0 >> 21 & 0x1f) /* S at 0 */;
       unsigned uimm = 
         ((MATCH_w_32_0 >> 11 & 0x1f) /* sprH at 0 */ << 5) + 
@@ -4396,7 +4397,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
     
   MATCH_label_a13: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned fd = (MATCH_w_32_0 >> 21 & 0x1f) /* fD at 0 */;
       unsigned ra = (MATCH_w_32_0 >> 16 & 0x1f) /* A at 0 */;
       unsigned rb = (MATCH_w_32_0 >> 11 & 0x1f) /* B at 0 */;
@@ -4417,7 +4418,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
     
   MATCH_label_a14: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned fs = (MATCH_w_32_0 >> 21 & 0x1f) /* fS at 0 */;
       unsigned ra = (MATCH_w_32_0 >> 16 & 0x1f) /* A at 0 */;
       unsigned rb = (MATCH_w_32_0 >> 11 & 0x1f) /* B at 0 */;
@@ -4440,7 +4441,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
     
   MATCH_label_a15: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned ra = (MATCH_w_32_0 >> 16 & 0x1f) /* A at 0 */;
       unsigned rs = (MATCH_w_32_0 >> 21 & 0x1f) /* S at 0 */;
       unsigned uimm = (MATCH_w_32_0 >> 11 & 0x1f) /* SH at 0 */;
@@ -4459,7 +4460,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
     
   MATCH_label_a16: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned ra = (MATCH_w_32_0 >> 16 & 0x1f) /* A at 0 */;
       unsigned rb = (MATCH_w_32_0 >> 11 & 0x1f) /* B at 0 */;
       unsigned rd = (MATCH_w_32_0 >> 21 & 0x1f) /* D at 0 */;
@@ -4478,7 +4479,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
     
   MATCH_label_a17: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned fa = (MATCH_w_32_0 >> 16 & 0x1f) /* fA at 0 */;
       unsigned fb = (MATCH_w_32_0 >> 11 & 0x1f) /* fB at 0 */;
       unsigned fd = (MATCH_w_32_0 >> 21 & 0x1f) /* fD at 0 */;
@@ -4509,7 +4510,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
     
   MATCH_label_a18: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned crfd = (MATCH_w_32_0 >> 23 & 0x7) /* crfD at 0 */;
       unsigned fa = (MATCH_w_32_0 >> 16 & 0x1f) /* fA at 0 */;
       unsigned fb = (MATCH_w_32_0 >> 11 & 0x1f) /* fB at 0 */;
@@ -4530,7 +4531,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
     
   MATCH_label_a19: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned fb = (MATCH_w_32_0 >> 11 & 0x1f) /* fB at 0 */;
       unsigned fd = (MATCH_w_32_0 >> 21 & 0x1f) /* fD at 0 */;
       nextPC = 4 + MATCH_p; 

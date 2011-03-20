@@ -34,6 +34,7 @@
 
 #include "BinaryFile.h"
 #include <iostream>
+#include <cstring>
 #include <stdio.h>
 
 

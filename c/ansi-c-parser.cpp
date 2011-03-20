@@ -1353,7 +1353,7 @@ YYLABEL(yynewstate)
       /* Extend the stack our own way.  */
       if (yystacksize >= YYMAXDEPTH)
 	{
-	  YY_AnsiCParser_ERROR("parser stack overflow");
+	  YY_AnsiCParser_ERROR((char*)"parser stack overflow");
 	  __ALLOCA_return(2);
 	}
       yystacksize *= 2;
@@ -2114,11 +2114,11 @@ YYLABEL(yyerrlab)   /* here on detecting error */
 	      free(msg);
 	    }
 	  else
-	    YY_AnsiCParser_ERROR ("parse error; also virtual memory exceeded");
+	    YY_AnsiCParser_ERROR ((char*)"parse error; also virtual memory exceeded");
 	}
       else
 #endif /* YY_AnsiCParser_ERROR_VERBOSE */
-	YY_AnsiCParser_ERROR("parse error");
+	YY_AnsiCParser_ERROR((char*)"parse error");
     }
 
   YYGOTO(yyerrlab1);

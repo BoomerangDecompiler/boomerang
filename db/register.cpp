@@ -26,6 +26,7 @@
 #pragma warning(disable:4786)
 #endif
 #include <assert.h>
+#include <cstring>
 #include "register.h"
 #include "type.h"
 

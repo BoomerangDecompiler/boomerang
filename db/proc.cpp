@@ -53,6 +53,7 @@
 #include "log.h"
 #include <iomanip>			// For std::setw etc
 #include <sstream>
+#include <cstring>
 
 #ifdef _WIN32
 #undef NO_ADDRESS

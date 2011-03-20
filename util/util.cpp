@@ -35,6 +35,7 @@
 #include <iostream>
 #include <fstream>
 #include <stdio.h>
+#include <cstring>
 #include "util.h"
 
 #ifndef _WIN32

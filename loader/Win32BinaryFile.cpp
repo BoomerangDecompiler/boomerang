@@ -46,6 +46,8 @@ namespace dbghelp {
 #include "config.h"
 #include <iostream>
 #include <sstream>
+#include <cstring>
+#include <stdlib.h>
 #include <assert.h>
 
 extern "C" {

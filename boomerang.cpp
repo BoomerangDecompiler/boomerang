@@ -22,6 +22,8 @@
 #endif
 
 #include <iostream>
+#include <cstring>
+#include <stdlib.h>
 #include <fstream>
 #include <time.h>
 #ifdef _WIN32

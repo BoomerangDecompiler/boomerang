@@ -18,6 +18,7 @@
  */
 
 #include <sstream>
+#include <cstring>
 
 #include "dataflow.h"
 #include "cfg.h"

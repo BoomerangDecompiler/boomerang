@@ -32,6 +32,7 @@
 
 #include <iomanip>			// For setfill
 #include <sstream>
+#include <cstring>
 #include "types.h"
 #include "statement.h"
 #include "exp.h"
@@ -583,7 +584,7 @@ void RTL::simplify() {
 			}
 		} else if (s->isAssign()) {
 			Exp* guard = ((Assign*)s)->getGuard();
-			if (guard && (guard->isFalse() || guard->isIntConst() && ((Const*)guard)->getInt() == 0)) {
+			if (guard && (guard->isFalse() || (guard->isIntConst() && ((Const*)guard)->getInt() == 0))) {
 				// This assignment statement can be deleted
 				if (VERBOSE)
 					LOG << "removing assignment with false guard at " << getAddress() << " " << *it << "\n";

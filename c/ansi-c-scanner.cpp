@@ -36,6 +36,7 @@
 
 #ifdef __cplusplus
 #include <stdlib.h>
+#include <cstring>
 #define YY_USE_CONST
 #define YY_USE_PROTOS
 #ifndef YY_USE_CLASS
@@ -152,7 +153,7 @@ int read();
 #define YY_FATAL_ERROR(msg) \
 	do \
 		{ \
-		(void) fputs( msg, yy___stderr  ); \
+		(void) fputs( (char*)msg, yy___stderr  ); \
 		(void) putc( '\n', yy___stderr  ); \
 		exit( 1 ); \
 		} \
@@ -173,7 +174,7 @@ int read();
 	if ( yy___input((char *)buf, result,max_size) < 0 ) \
 	    YY_FATAL_ERROR( "YY_INPUT() in flex scanner failed" );
 
-#define YY_FATAL_ERROR(msg) yy___fatal_error(msg)
+#define YY_FATAL_ERROR(msg) yy___fatal_error((char*)msg)
 #define yywrap() yy___wrap()
 
 #endif

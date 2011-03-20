@@ -34,6 +34,7 @@
  *============================================================================*/
 
 #include <assert.h>
+#include <cstring>
 #if defined(_MSC_VER) && _MSC_VER <= 1100
 #include "signature.h"
 #endif
@@ -224,102 +225,102 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
 #line 212 "frontend/machine/sparc/decoder.m"
     hostPC
     ;
-  char *MATCH_name;
-  static char *MATCH_name_cond_0[] = {
+  const char *MATCH_name;
+  static const char *MATCH_name_cond_0[] = {
     "BPN", "BPE", "BPLE", "BPL", "BPLEU", "BPCS", "BPNEG", "BPVS", "BPA,a", 
     "BPNE", "BPG", "BPGE", "BPGU", "BPCC", "BPPOS", "BPVC", 
   };
-  static char *MATCH_name_cond_1[] = {
+  static const char *MATCH_name_cond_1[] = {
     "BPN,a", "BPE,a", "BPLE,a", "BPL,a", "BPLEU,a", "BPCS,a", "BPNEG,a", 
     "BPVS,a", "BA", "BPNE,a", "BPG,a", "BPGE,a", "BPGU,a", "BPCC,a", 
     "BPPOS,a", "BPVC,a", 
   };
-  static char *MATCH_name_cond_2[] = {
+  static const char *MATCH_name_cond_2[] = {
     "BN", "BE", "BLE", "BL", "BLEU", "BCS", "BNEG", "BVS", "BA,a", "BNE", 
     "BG", "BGE", "BGU", "BCC", "BPOS", "BVC", 
   };
-  static char *MATCH_name_cond_3[] = {
+  static const char *MATCH_name_cond_3[] = {
     "BN,a", "BE,a", "BLE,a", "BL,a", "BLEU,a", "BCS,a", "BNEG,a", "BVS,a", 
     "FBA", "BNE,a", "BG,a", "BGE,a", "BGU,a", "BCC,a", "BPOS,a", "BVC,a", 
   };
-  static char *MATCH_name_cond_5[] = {
+  static const char *MATCH_name_cond_5[] = {
     "FBN", "FBNE", "FBLG", "FBUL", "FBL", "FBUG", "FBG", "FBU", "FBA,a", 
     "FBE", "FBUE", "FBGE", "FBUGE", "FBLE", "FBULE", "FBO", 
   };
-  static char *MATCH_name_cond_6[] = {
+  static const char *MATCH_name_cond_6[] = {
     "FBN,a", "FBNE,a", "FBLG,a", "FBUL,a", "FBL,a", "FBUG,a", "FBG,a", 
     "FBU,a", "CBA", "FBE,a", "FBUE,a", "FBGE,a", "FBUGE,a", "FBLE,a", 
     "FBULE,a", "FBO,a", 
   };
-  static char *MATCH_name_cond_7[] = {
+  static const char *MATCH_name_cond_7[] = {
     "CBN", "CB123", "CB12", "CB13", "CB1", "CB23", "CB2", "CB3", "CBA,a", 
     "CB0", "CB03", "CB02", "CB023", "CB01", "CB013", "CB012", 
   };
-  static char *MATCH_name_cond_8[] = {
+  static const char *MATCH_name_cond_8[] = {
     "CBN,a", "CB123,a", "CB12,a", "CB13,a", "CB1,a", "CB23,a", "CB2,a", 
     "CB3,a", "TA", "CB0,a", "CB03,a", "CB02,a", "CB023,a", "CB01,a", 
     "CB013,a", "CB012,a", 
   };
-  static char *MATCH_name_op3_46[] = {
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, "RDPSR", "RDWIM", 
+  static const char *MATCH_name_op3_46[] = {
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, "RDPSR", "RDWIM", 
     "RDTBR", 
   };
-  static char *MATCH_name_opf_51[] = {
-    (char *)0, "FMOVs", (char *)0, (char *)0, (char *)0, "FNEGs", (char *)0, 
-    (char *)0, (char *)0, "FABSs", (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, "FSQRTs", "FSQRTd", "FSQRTq", 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, "FADDs", "FADDd", "FADDq", (char *)0, 
+  static const char *MATCH_name_opf_51[] = {
+    (const char *)0, "FMOVs", (const char *)0, (const char *)0, (const char *)0, "FNEGs", (const char *)0, 
+    (const char *)0, (const char *)0, "FABSs", (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, "FSQRTs", "FSQRTd", "FSQRTq", 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, "FADDs", "FADDd", "FADDq", (const char *)0, 
     "FSUBs", "FSUBd", "FSUBq", (char *)0, "FMULs", "FMULd", "FMULq", 
-    (char *)0, "FDIVs", "FDIVd", "FDIVq", (char *)0, "FCMPs", "FCMPd", 
-    "FCMPq", (char *)0, "FCMPEs", "FCMPEd", "FCMPEq", (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, "FiTOs", (char *)0, "FdTOs", 
-    "FqTOs", "FiTOd", "FsTOd", (char *)0, "FqTOd", "FiTOq", "FsTOq", "FdTOq", 
-    (char *)0, (char *)0, "FsTOi", "FdTOi", "FqTOi", 
+    (const char *)0, "FDIVs", "FDIVd", "FDIVq", (const char *)0, "FCMPs", "FCMPd", 
+    "FCMPq", (const char *)0, "FCMPEs", "FCMPEd", "FCMPEq", (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, (const char *)0, 
+    (const char *)0, (const char *)0, (const char *)0, (const char *)0, "FiTOs", (const char *)0, "FdTOs", 
+    "FqTOs", "FiTOd", "FsTOd", (const char *)0, "FqTOd", "FiTOq", "FsTOq", "FdTOq", 
+    (const char *)0, (const char *)0, "FsTOi", "FdTOi", "FqTOi", 
   };
-  static char *MATCH_name_cond_53[] = {
-    "TN", "TE", "TLE", "TL", "TLEU", "TCS", "TNEG", "TVS", (char *)0, "TNE", 
+  static const char *MATCH_name_cond_53[] = {
+    "TN", "TE", "TLE", "TL", "TLEU", "TCS", "TNEG", "TVS", (const char *)0, "TNE", 
     "TG", "TGE", "TGU", "TCC", "TPOS", "TVC", 
   };
-  static char *MATCH_name_i_66[] = {"LDA", "LDF", };
-  static char *MATCH_name_i_67[] = {"LDUBA", "LDFSR", };
-  static char *MATCH_name_i_68[] = {"LDUHA", "LDDF", };
-  static char *MATCH_name_i_69[] = {"LDDA", "STF", };
-  static char *MATCH_name_i_70[] = {"STA", "STFSR", };
-  static char *MATCH_name_i_71[] = {"STBA", "STDFQ", };
-  static char *MATCH_name_i_72[] = {"STHA", "STDF", };
-  static char *MATCH_name_i_73[] = {"STDA", "LDCSR", };
-  static char *MATCH_name_i_74[] = {"LDSBA", "STCSR", };
-  static char *MATCH_name_i_75[] = {"LDSHA", "STDCQ", };
+  static const char *MATCH_name_i_66[] = {"LDA", "LDF", };
+  static const char *MATCH_name_i_67[] = {"LDUBA", "LDFSR", };
+  static const char *MATCH_name_i_68[] = {"LDUHA", "LDDF", };
+  static const char *MATCH_name_i_69[] = {"LDDA", "STF", };
+  static const char *MATCH_name_i_70[] = {"STA", "STFSR", };
+  static const char *MATCH_name_i_71[] = {"STBA", "STDFQ", };
+  static const char *MATCH_name_i_72[] = {"STHA", "STDF", };
+  static const char *MATCH_name_i_73[] = {"STDA", "LDCSR", };
+  static const char *MATCH_name_i_74[] = {"LDSBA", "STCSR", };
+  static const char *MATCH_name_i_75[] = {"LDSHA", "STDCQ", };
   unsigned MATCH_w_32_0;
   { 
     MATCH_w_32_0 = getDword(MATCH_p); 
@@ -405,7 +406,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
                     MATCH_name = MATCH_name_cond_0[(MATCH_w_32_0 >> 25 & 0xf) 
                           /* cond at 0 */]; 
                     { 
-                      char *name = MATCH_name;
+                      const char *name = MATCH_name;
                       unsigned cc01 = 
                         (MATCH_w_32_0 >> 20 & 0x3) /* cc01 at 0 */;
                       unsigned tgt = 
@@ -531,7 +532,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
                   (MATCH_w_32_0 >> 25 & 0x1f) /* rd at 0 */ == 0) { 
                   MATCH_name = "NOP"; 
                   { 
-                    char *name = MATCH_name;
+                    const char *name = MATCH_name;
                     nextPC = 4 + MATCH_p; 
                     
 #line 481 "frontend/machine/sparc/decoder.m"
@@ -744,7 +745,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
                 if ((MATCH_w_32_0 >> 14 & 0x1f) /* rs1 at 0 */ == 0) { 
                   MATCH_name = "RDY"; 
                   { 
-                    char *name = MATCH_name;
+                    const char *name = MATCH_name;
                     unsigned rd = (MATCH_w_32_0 >> 25 & 0x1f) /* rd at 0 */;
                     nextPC = 4 + MATCH_p; 
                     
@@ -769,7 +770,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
                 MATCH_name = MATCH_name_op3_46[(MATCH_w_32_0 >> 19 & 0x3f) 
                       /* op3 at 0 */]; 
                 { 
-                  char *name = MATCH_name;
+                  const char *name = MATCH_name;
                   unsigned rd = (MATCH_w_32_0 >> 25 & 0x1f) /* rd at 0 */;
                   nextPC = 4 + MATCH_p; 
                   
@@ -790,7 +791,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
                 MATCH_name = MATCH_name_op3_46[(MATCH_w_32_0 >> 19 & 0x3f) 
                       /* op3 at 0 */]; 
                 { 
-                  char *name = MATCH_name;
+                  const char *name = MATCH_name;
                   unsigned rd = (MATCH_w_32_0 >> 25 & 0x1f) /* rd at 0 */;
                   nextPC = 4 + MATCH_p; 
                   
@@ -811,7 +812,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
                 MATCH_name = MATCH_name_op3_46[(MATCH_w_32_0 >> 19 & 0x3f) 
                       /* op3 at 0 */]; 
                 { 
-                  char *name = MATCH_name;
+                  const char *name = MATCH_name;
                   unsigned rd = (MATCH_w_32_0 >> 25 & 0x1f) /* rd at 0 */;
                   nextPC = 4 + MATCH_p; 
                   
@@ -835,7 +836,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
                 else { 
                   MATCH_name = "WRY"; 
                   { 
-                    char *name = MATCH_name;
+                    const char *name = MATCH_name;
                     unsigned roi = addressToPC(MATCH_p);
                     unsigned rs1 = (MATCH_w_32_0 >> 14 & 0x1f) /* rs1 at 0 */;
                     nextPC = 4 + MATCH_p; 
@@ -858,7 +859,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
               case 49: 
                 MATCH_name = "WRPSR"; 
                 { 
-                  char *name = MATCH_name;
+                  const char *name = MATCH_name;
                   unsigned roi = addressToPC(MATCH_p);
                   unsigned rs1 = (MATCH_w_32_0 >> 14 & 0x1f) /* rs1 at 0 */;
                   nextPC = 4 + MATCH_p; 
@@ -879,7 +880,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
               case 50: 
                 MATCH_name = "WRWIM"; 
                 { 
-                  char *name = MATCH_name;
+                  const char *name = MATCH_name;
                   unsigned roi = addressToPC(MATCH_p);
                   unsigned rs1 = (MATCH_w_32_0 >> 14 & 0x1f) /* rs1 at 0 */;
                   nextPC = 4 + MATCH_p; 
@@ -900,7 +901,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
               case 51: 
                 MATCH_name = "WRTBR"; 
                 { 
-                  char *name = MATCH_name;
+                  const char *name = MATCH_name;
                   unsigned roi = addressToPC(MATCH_p);
                   unsigned rs1 = (MATCH_w_32_0 >> 14 & 0x1f) /* rs1 at 0 */;
                   nextPC = 4 + MATCH_p; 
@@ -943,7 +944,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
                         MATCH_name_opf_51[(MATCH_w_32_0 >> 5 & 0x1ff) 
                             /* opf at 0 */]; 
                       { 
-                        char *name = MATCH_name;
+                        const char *name = MATCH_name;
                         unsigned fds = 
                           (MATCH_w_32_0 >> 25 & 0x1f) /* fds at 0 */;
                         unsigned fs2s = (MATCH_w_32_0 & 0x1f) /* fs2s at 0 */;
@@ -967,7 +968,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
                         MATCH_name_opf_51[(MATCH_w_32_0 >> 5 & 0x1ff) 
                             /* opf at 0 */]; 
                       { 
-                        char *name = MATCH_name;
+                        const char *name = MATCH_name;
                         unsigned fdd = 
                           (MATCH_w_32_0 >> 25 & 0x1f) /* fdd at 0 */;
                         unsigned fs2d = (MATCH_w_32_0 & 0x1f) /* fs2d at 0 */;
@@ -991,7 +992,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
                         MATCH_name_opf_51[(MATCH_w_32_0 >> 5 & 0x1ff) 
                             /* opf at 0 */]; 
                       { 
-                        char *name = MATCH_name;
+                        const char *name = MATCH_name;
                         unsigned fdq = 
                           (MATCH_w_32_0 >> 25 & 0x1f) /* fdq at 0 */;
                         unsigned fs2q = (MATCH_w_32_0 & 0x1f) /* fs2q at 0 */;
@@ -1021,7 +1022,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
                         MATCH_name_opf_51[(MATCH_w_32_0 >> 5 & 0x1ff) 
                             /* opf at 0 */]; 
                       { 
-                        char *name = MATCH_name;
+                        const char *name = MATCH_name;
                         unsigned fds = 
                           (MATCH_w_32_0 >> 25 & 0x1f) /* fds at 0 */;
                         unsigned fs1s = 
@@ -1047,7 +1048,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
                         MATCH_name_opf_51[(MATCH_w_32_0 >> 5 & 0x1ff) 
                             /* opf at 0 */]; 
                       { 
-                        char *name = MATCH_name;
+                        const char *name = MATCH_name;
                         unsigned fdd = 
                           (MATCH_w_32_0 >> 25 & 0x1f) /* fdd at 0 */;
                         unsigned fs1d = 
@@ -1073,7 +1074,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
                         MATCH_name_opf_51[(MATCH_w_32_0 >> 5 & 0x1ff) 
                             /* opf at 0 */]; 
                       { 
-                        char *name = MATCH_name;
+                        const char *name = MATCH_name;
                         unsigned fdq = 
                           (MATCH_w_32_0 >> 25 & 0x1f) /* fdq at 0 */;
                         unsigned fs1q = 
@@ -1099,7 +1100,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
                         MATCH_name_opf_51[(MATCH_w_32_0 >> 5 & 0x1ff) 
                             /* opf at 0 */]; 
                       { 
-                        char *name = MATCH_name;
+                        const char *name = MATCH_name;
                         unsigned fds = 
                           (MATCH_w_32_0 >> 25 & 0x1f) /* fds at 0 */;
                         unsigned fs2s = (MATCH_w_32_0 & 0x1f) /* fs2s at 0 */;
@@ -1125,7 +1126,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
                         MATCH_name_opf_51[(MATCH_w_32_0 >> 5 & 0x1ff) 
                             /* opf at 0 */]; 
                       { 
-                        char *name = MATCH_name;
+                        const char *name = MATCH_name;
                         unsigned fds = 
                           (MATCH_w_32_0 >> 25 & 0x1f) /* fds at 0 */;
                         unsigned fs2d = (MATCH_w_32_0 & 0x1f) /* fs2d at 0 */;
@@ -1149,7 +1150,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
                         MATCH_name_opf_51[(MATCH_w_32_0 >> 5 & 0x1ff) 
                             /* opf at 0 */]; 
                       { 
-                        char *name = MATCH_name;
+                        const char *name = MATCH_name;
                         unsigned fds = 
                           (MATCH_w_32_0 >> 25 & 0x1f) /* fds at 0 */;
                         unsigned fs2q = (MATCH_w_32_0 & 0x1f) /* fs2q at 0 */;
@@ -1173,7 +1174,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
                         MATCH_name_opf_51[(MATCH_w_32_0 >> 5 & 0x1ff) 
                             /* opf at 0 */]; 
                       { 
-                        char *name = MATCH_name;
+                        const char *name = MATCH_name;
                         unsigned fdd = 
                           (MATCH_w_32_0 >> 25 & 0x1f) /* fdd at 0 */;
                         unsigned fs2s = (MATCH_w_32_0 & 0x1f) /* fs2s at 0 */;
@@ -1195,7 +1196,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
                         MATCH_name_opf_51[(MATCH_w_32_0 >> 5 & 0x1ff) 
                             /* opf at 0 */]; 
                       { 
-                        char *name = MATCH_name;
+                        const char *name = MATCH_name;
                         unsigned fdd = 
                           (MATCH_w_32_0 >> 25 & 0x1f) /* fdd at 0 */;
                         unsigned fs2s = (MATCH_w_32_0 & 0x1f) /* fs2s at 0 */;
@@ -1217,7 +1218,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
                         MATCH_name_opf_51[(MATCH_w_32_0 >> 5 & 0x1ff) 
                             /* opf at 0 */]; 
                       { 
-                        char *name = MATCH_name;
+                        const char *name = MATCH_name;
                         unsigned fdd = 
                           (MATCH_w_32_0 >> 25 & 0x1f) /* fdd at 0 */;
                         unsigned fs2q = (MATCH_w_32_0 & 0x1f) /* fs2q at 0 */;
@@ -1243,7 +1244,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
                         MATCH_name_opf_51[(MATCH_w_32_0 >> 5 & 0x1ff) 
                             /* opf at 0 */]; 
                       { 
-                        char *name = MATCH_name;
+                        const char *name = MATCH_name;
                         unsigned fdq = 
                           (MATCH_w_32_0 >> 25 & 0x1f) /* fdq at 0 */;
                         unsigned fs2s = (MATCH_w_32_0 & 0x1f) /* fs2s at 0 */;
@@ -1265,7 +1266,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
                         MATCH_name_opf_51[(MATCH_w_32_0 >> 5 & 0x1ff) 
                             /* opf at 0 */]; 
                       { 
-                        char *name = MATCH_name;
+                        const char *name = MATCH_name;
                         unsigned fdq = 
                           (MATCH_w_32_0 >> 25 & 0x1f) /* fdq at 0 */;
                         unsigned fs2s = (MATCH_w_32_0 & 0x1f) /* fs2s at 0 */;
@@ -1287,7 +1288,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
                         MATCH_name_opf_51[(MATCH_w_32_0 >> 5 & 0x1ff) 
                             /* opf at 0 */]; 
                       { 
-                        char *name = MATCH_name;
+                        const char *name = MATCH_name;
                         unsigned fdq = 
                           (MATCH_w_32_0 >> 25 & 0x1f) /* fdq at 0 */;
                         unsigned fs2d = (MATCH_w_32_0 & 0x1f) /* fs2d at 0 */;
@@ -1309,7 +1310,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
                         MATCH_name_opf_51[(MATCH_w_32_0 >> 5 & 0x1ff) 
                             /* opf at 0 */]; 
                       { 
-                        char *name = MATCH_name;
+                        const char *name = MATCH_name;
                         unsigned fds = 
                           (MATCH_w_32_0 >> 25 & 0x1f) /* fds at 0 */;
                         unsigned fs2d = (MATCH_w_32_0 & 0x1f) /* fs2d at 0 */;
@@ -1333,7 +1334,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
                         MATCH_name_opf_51[(MATCH_w_32_0 >> 5 & 0x1ff) 
                             /* opf at 0 */]; 
                       { 
-                        char *name = MATCH_name;
+                        const char *name = MATCH_name;
                         unsigned fds = 
                           (MATCH_w_32_0 >> 25 & 0x1f) /* fds at 0 */;
                         unsigned fs2q = (MATCH_w_32_0 & 0x1f) /* fs2q at 0 */;
@@ -1370,7 +1371,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
                         MATCH_name_opf_51[(MATCH_w_32_0 >> 5 & 0x1ff) 
                             /* opf at 0 */]; 
                       { 
-                        char *name = MATCH_name;
+                        const char *name = MATCH_name;
                         unsigned fs1s = 
                           (MATCH_w_32_0 >> 14 & 0x1f) /* fs1s at 0 */;
                         unsigned fs2s = (MATCH_w_32_0 & 0x1f) /* fs2s at 0 */;
@@ -1394,7 +1395,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
                         MATCH_name_opf_51[(MATCH_w_32_0 >> 5 & 0x1ff) 
                             /* opf at 0 */]; 
                       { 
-                        char *name = MATCH_name;
+                        const char *name = MATCH_name;
                         unsigned fs1d = 
                           (MATCH_w_32_0 >> 14 & 0x1f) /* fs1d at 0 */;
                         unsigned fs2d = (MATCH_w_32_0 & 0x1f) /* fs2d at 0 */;
@@ -1418,7 +1419,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
                         MATCH_name_opf_51[(MATCH_w_32_0 >> 5 & 0x1ff) 
                             /* opf at 0 */]; 
                       { 
-                        char *name = MATCH_name;
+                        const char *name = MATCH_name;
                         unsigned fs1q = 
                           (MATCH_w_32_0 >> 14 & 0x1f) /* fs1q at 0 */;
                         unsigned fs2q = (MATCH_w_32_0 & 0x1f) /* fs2q at 0 */;
@@ -1544,7 +1545,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
               case 57: 
                 MATCH_name = "RETURN"; 
                 { 
-                  char *name = MATCH_name;
+                  const char *name = MATCH_name;
                   unsigned addr = addressToPC(MATCH_p);
                   nextPC = 4 + MATCH_p; 
                   
@@ -1948,7 +1949,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
   
   MATCH_label_d0: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned cc01 = (MATCH_w_32_0 >> 20 & 0x3) /* cc01 at 0 */;
       unsigned tgt = 
         4 * sign_extend((MATCH_w_32_0 & 0x7ffff) /* disp19 at 0 */, 19) + 
@@ -2048,7 +2049,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
     
   MATCH_label_d1: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned tgt = 
         4 * sign_extend((MATCH_w_32_0 & 0x3fffff) /* disp22 at 0 */, 22) + 
         addressToPC(MATCH_p);
@@ -2147,7 +2148,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
     
   MATCH_label_d2: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned tgt = 
         4 * sign_extend((MATCH_w_32_0 & 0x3fffff) /* disp22 at 0 */, 22) + 
         addressToPC(MATCH_p);
@@ -2293,7 +2294,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
     
   MATCH_label_d5: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned rd = (MATCH_w_32_0 >> 25 & 0x1f) /* rd at 0 */;
       unsigned roi = addressToPC(MATCH_p);
       unsigned rs1 = (MATCH_w_32_0 >> 14 & 0x1f) /* rs1 at 0 */;
@@ -2423,7 +2424,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
     
   MATCH_label_d8: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned addr = addressToPC(MATCH_p);
       nextPC = 4 + MATCH_p; 
       
@@ -2442,7 +2443,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
     
   MATCH_label_d9: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned addr = addressToPC(MATCH_p);
       unsigned rd = (MATCH_w_32_0 >> 25 & 0x1f) /* rd at 0 */;
       nextPC = 4 + MATCH_p; 
@@ -2462,7 +2463,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
     
   MATCH_label_d10: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned addr = addressToPC(MATCH_p);
       unsigned rd = (MATCH_w_32_0 >> 25 & 0x1f) /* rd at 0 */;
       nextPC = 4 + MATCH_p; 
@@ -2484,7 +2485,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
     
   MATCH_label_d11: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned addr = addressToPC(MATCH_p);
       unsigned asi = (MATCH_w_32_0 >> 5 & 0xff) /* asi at 0 */;
       unsigned rd = (MATCH_w_32_0 >> 25 & 0x1f) /* rd at 0 */;
@@ -2507,7 +2508,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
     
   MATCH_label_d12: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned addr = addressToPC(MATCH_p);
       unsigned asi = (MATCH_w_32_0 >> 5 & 0xff) /* asi at 0 */;
       unsigned rd = (MATCH_w_32_0 >> 25 & 0x1f) /* rd at 0 */;
@@ -2530,7 +2531,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
     
   MATCH_label_d13: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned addr = addressToPC(MATCH_p);
       unsigned fds = (MATCH_w_32_0 >> 25 & 0x1f) /* fds at 0 */;
       nextPC = 4 + MATCH_p; 
@@ -2550,7 +2551,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
     
   MATCH_label_d14: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned addr = addressToPC(MATCH_p);
       nextPC = 4 + MATCH_p; 
       
@@ -2569,7 +2570,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
     
   MATCH_label_d15: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned addr = addressToPC(MATCH_p);
       unsigned fdd = (MATCH_w_32_0 >> 25 & 0x1f) /* fdd at 0 */;
       nextPC = 4 + MATCH_p; 
@@ -2589,7 +2590,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
     
   MATCH_label_d16: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned addr = addressToPC(MATCH_p);
       unsigned fds = (MATCH_w_32_0 >> 25 & 0x1f) /* fds at 0 */;
       nextPC = 4 + MATCH_p; 
@@ -2609,7 +2610,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
     
   MATCH_label_d17: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned addr = addressToPC(MATCH_p);
       nextPC = 4 + MATCH_p; 
       
@@ -2628,7 +2629,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
     
   MATCH_label_d18: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned addr = addressToPC(MATCH_p);
       nextPC = 4 + MATCH_p; 
       
@@ -2647,7 +2648,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
     
   MATCH_label_d19: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned addr = addressToPC(MATCH_p);
       unsigned fdd = (MATCH_w_32_0 >> 25 & 0x1f) /* fdd at 0 */;
       nextPC = 4 + MATCH_p; 
@@ -2667,7 +2668,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
     
   MATCH_label_d20: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned addr = addressToPC(MATCH_p);
       nextPC = 4 + MATCH_p; 
       
@@ -2686,7 +2687,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
     
   MATCH_label_d21: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned addr = addressToPC(MATCH_p);
       nextPC = 4 + MATCH_p; 
       
@@ -2705,7 +2706,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
     
   MATCH_label_d22: (void)0; /*placeholder for label*/ 
     { 
-      char *name = MATCH_name;
+      const char *name = MATCH_name;
       unsigned addr = addressToPC(MATCH_p);
       nextPC = 4 + MATCH_p; 
       

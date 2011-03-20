@@ -22,6 +22,7 @@
  * 26 Apr 02 - Mike: common.hs read relative to BOOMDIR
  * 20 Jul 04 - Mike: Got rid of BOOMDIR
  * 03 Mar 06 - tamlin: prevent arrays from crossing section boundaries
+ * 20 Mar 11 - Mike: Added missing braces in Prog::getFloatConstant()
  */
 
 /*==============================================================================
@@ -41,6 +42,8 @@
 #include <assert.h>
 #include <fstream>
 #include <sstream>
+#include <cstring>
+#include <stdlib.h>
 #include <vector>
 #include <math.h>
 #ifdef _WIN32
@@ -244,7 +247,7 @@ void Prog::generateCode(Cluster *cluster, UserProc *proc, bool intermixRTL) {
 		if (cluster == NULL || cluster == m_rootCluster)
 			code->print(os);
 	}
-	if (proto && cluster == NULL || cluster == m_rootCluster)
+	if ((proto && cluster == NULL) || cluster == m_rootCluster)
 		os << "\n";				// Separate prototype(s) from first proc
 		
 	for (it = m_procs.begin(); it != m_procs.end(); it++) {
@@ -1061,13 +1064,14 @@ char *Prog::getStringConstant(ADDRESS uaddr, bool knownString /* = false */) {
 double Prog::getFloatConstant(ADDRESS uaddr, bool &ok, int bits) {
 	ok = true;
 	SectionInfo* si = pBF->GetSectionInfoByAddr(uaddr);
-	if (si && si->bReadOnly)
+	if (si && si->bReadOnly) {
 		if (bits == 64) {
 			return pBF->readNativeFloat8(uaddr);
 		} else {
 			assert(bits == 32);
 			return pBF->readNativeFloat4(uaddr);
 		}
+	}
 	ok = false;
 	return 0.0;
 }

@@ -36,6 +36,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <iostream>
+#include <cstring>
 #include <assert.h>
 #include "config.h"
 #if defined(_MSC_VER) && _MSC_VER >= 1400
@@ -297,7 +298,7 @@ char* ElfBinaryFile::GetStrPtr(int idx, int offset)
 	{
 		// Most commonly, this will be an index of -1, because a call to GetSectionIndexByName() failed
 		fprintf(stderr, "Error! GetStrPtr passed index of %d\n", idx);
-		return "Error!";
+		return (char*)"Error!";
 	}
 	// Get a pointer to the start of the string table
 	char* pSym = (char*)m_pSections[idx].uHostAddr;

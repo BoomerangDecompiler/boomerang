@@ -25,6 +25,7 @@
  */
 
 #include <assert.h>
+#include <cstring>
 
 #include "types.h"
 #include "type.h"
@@ -426,9 +427,9 @@ bool IntegerType::operator==(const Type& other) const {
 		// Note: zero size matches any other size (wild, or unknown, size)
 		(size == 0 || otherInt.size == 0 || size == otherInt.size) &&
 		// Note: actual value of signedness is disregarded, just whether less than, equal to, or greater than 0
-		( signedness < 0	&& otherInt.signedness < 0 ||
-		  signedness == 0	&& otherInt.signedness == 0 ||
-		  signedness > 0	&& otherInt.signedness > 0);
+		( (signedness < 0	&& otherInt.signedness < 0) ||
+		  (signedness == 0	&& otherInt.signedness == 0) ||
+		  (signedness > 0	&& otherInt.signedness > 0));
 }
 
 bool FloatType::operator==(const Type& other) const {

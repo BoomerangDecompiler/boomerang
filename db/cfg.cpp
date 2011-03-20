@@ -18,6 +18,7 @@
  * $Revision$	// 1.95.2.5
  * 18 Apr 02 - Mike: Mods for boomerang
  * 19 Jul 04 - Mike: Changed initialisation of BBs to not rely on out edges
+ * 20 Mar 11 - Mike: Added missing braces in Cfg::findLoopFollow()
  */
 
 
@@ -33,6 +34,7 @@
 #include <algorithm>		// For find()
 #include <fstream>
 #include <sstream>
+#include <cstring>
 #include "types.h"
 #include "statement.h"
 #include "signature.h"
@@ -1408,11 +1410,12 @@ void Cfg::findLoopFollow(PBB header, bool* &loopNodes) {
 				} else {
 					// otherwise find the child (if any) of the conditional header that isn't inside the same loop 
 					PBB succ = desc->getOutEdges()[0];
-					if (loopNodes[succ->ord])
+					if (loopNodes[succ->ord]) {
 						if (!loopNodes[desc->getOutEdges()[1]->ord])
 							succ = desc->getOutEdges()[1];
 						else
 							succ = NULL;
+					}
 					// if a potential follow was found, compare its ordering with the currently found follow
 					if (succ && (!follow || succ->ord > follow->ord))
 						follow = succ;

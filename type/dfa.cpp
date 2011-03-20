@@ -31,6 +31,7 @@
 #include "log.h"
 #include "proc.h"
 #include <sstream>
+#include <cstring>
 #if defined(_MSC_VER) && _MSC_VER >= 1400
 #pragma warning(disable:4996)		// Warnings about e.g. _strdup deprecated in VS 2005
 #endif
@@ -396,8 +397,8 @@ Type* IntegerType::meetWith(Type* other, bool& ch, bool bHighestPtr) {
 			signedness++;
 		else if (otherInt->signedness < 0)
 			signedness--;
-		ch |= (signedness > 0 != oldSignedness > 0);		// Changed from signed to not necessarily signed
-		ch |= (signedness < 0 != oldSignedness < 0);		// Changed from unsigned to not necessarily unsigned
+		ch |= ((signedness > 0) != (oldSignedness > 0));	// Changed from signed to not necessarily signed
+		ch |= ((signedness < 0) != (oldSignedness < 0));	// Changed from unsigned to not necessarily unsigned
 		// Size. Assume 0 indicates unknown size
 		unsigned oldSize = size;
 		size = max(size, otherInt->size);

@@ -21,6 +21,7 @@
  * 29 Apr 02 - Mike: Mods for boomerang; removed &~, |~, and ^~ operators
  * 09 May 02 - Mike: ASSIGNSIZE is an num now
  * 05 May 04 - Mike: ASSIGNSIZE replaced by ASSIGNTYPE (text)
+ * 20 Mar 11 - Mike: Note: YY_FATAL_ERROR needs (char*) cast inserted into output
  */
 
 %name SSLScanner
@@ -33,6 +34,7 @@
 // stuff to go in sslscanner.cc
 %{
 #include <assert.h>
+#include <cstring>
 #if defined(_MSC_VER) && _MSC_VER <= 1200
 #pragma warning(disable:4786)
 #endif 

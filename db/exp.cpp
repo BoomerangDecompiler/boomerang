@@ -22,6 +22,7 @@
 #include <algorithm>	// For std::max()
 #include <map>			// In decideType()
 #include <sstream>		// Need gcc 3.0 or better
+#include <cstring>
 #include "types.h"
 #include "statement.h"
 #include "cfg.h"
@@ -343,7 +344,7 @@ bool Const::operator==(const Exp& o) const {
 	if (((Const&)o).op == opWildIntConst && op == opIntConst) return true;
 	if (((Const&)o).op == opWildStrConst && op == opStrConst) return true;
 	if (op != ((Const&)o).op) return false;
-	if (conscript && conscript != ((Const&)o).conscript || ((Const&)o).conscript)
+	if ((conscript && conscript != ((Const&)o).conscript) || ((Const&)o).conscript)
 		return false;
 	switch (op) {
 		case opIntConst: return u.i == ((Const&)o).u.i;
@@ -2285,7 +2286,7 @@ Exp* Binary::polySimplify(bool& bMod) {
 	// Check for exp AND TRUE (logical AND)
 	if (	(op == opAnd) &&
 			// Is the below really needed?
-			(opSub2 == opIntConst && ((Const*)subExp2)->getInt() != 0) || subExp2->isTrue()) {
+			(((opSub2 == opIntConst && ((Const*)subExp2)->getInt() != 0)) || subExp2->isTrue())) {
 		res = ((Unary*)res)->getSubExp1();
 		bMod = true;
 		return res;
@@ -2293,9 +2294,8 @@ Exp* Binary::polySimplify(bool& bMod) {
 
 	// Check for exp OR TRUE (logical OR)
 	if (	(op == opOr) &&
-			(opSub2 == opIntConst &&
-			((Const*)subExp2)->getInt() != 0) || subExp2->isTrue()) {
-		;//delete res;
+			(((opSub2 == opIntConst && ((Const*)subExp2)->getInt() != 0)) || subExp2->isTrue())) {
+		//delete res;
 		res = new Terminal(opTrue);
 		bMod = true;
 		return res;
@@ -3417,7 +3417,7 @@ Exp* Binary::genConstraints(Exp* result) {
 			// A pointer to anything
 			Type* ptrType = PointerType::newPtrAlpha();
 			TypeVal ptrVal(ptrType);	// Type value of ptr to anything
-			if (!restrictTo || restrictTo && restrictTo->isInteger()) {
+			if (!restrictTo || restrictTo->isInteger()) {
 				// int + int -> int
 				res = constrainSub(&intVal, &intVal);
 				if (!restrictTo)
@@ -3426,7 +3426,7 @@ Exp* Binary::genConstraints(Exp* result) {
 						intVal.clone()));
 			}
 
-			if (!restrictTo || restrictTo && restrictTo->isPointer()) {
+			if (!restrictTo || restrictTo->isPointer()) {
 				// ptr + int -> ptr
 				Exp* res2 = constrainSub(&ptrVal, &intVal);
 				if (!restrictTo)
@@ -3453,7 +3453,7 @@ Exp* Binary::genConstraints(Exp* result) {
 		case opMinus: {
 			Type* ptrType = PointerType::newPtrAlpha();
 			TypeVal ptrVal(ptrType);
-			if (!restrictTo || restrictTo && restrictTo->isInteger()) {
+			if (!restrictTo || restrictTo->isInteger()) {
 				// int - int -> int
 				res = constrainSub(&intVal, &intVal);
 				if (!restrictTo)
@@ -3471,7 +3471,7 @@ Exp* Binary::genConstraints(Exp* result) {
 				else	 res = res2;
 			}
 
-			if (!restrictTo || restrictTo && restrictTo->isPointer()) {
+			if (!restrictTo || restrictTo->isPointer()) {
 				// ptr - int -> ptr
 				Exp* res2 = constrainSub(&ptrVal, &intVal);
 				if (!restrictTo)

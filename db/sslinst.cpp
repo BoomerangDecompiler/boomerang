@@ -36,6 +36,7 @@
 #pragma warning(disable:4786)
 #endif 
 
+#include <cstring>
 #include <algorithm>	// For remove()
 #include "types.h"
 #include "statement.h"

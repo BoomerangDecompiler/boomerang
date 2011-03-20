@@ -348,7 +348,7 @@ a_reglist:
 					int bitsize = Dict.DetRegMap[Dict.RegMap[$10]].g_size();
 					for (int i = Dict.RegMap[$8]; i != Dict.RegMap[$10]; i++) {
 						if (Dict.DetRegMap.find(i) == Dict.DetRegMap.end()) {
-							yyerror("Not all regesters in range defined\n");
+							yyerror("Not all registers in range defined\n");
 							break;
 						}
 						bitsize += Dict.DetRegMap[i].g_size();
@@ -358,7 +358,7 @@ a_reglist:
 						}
 					}
 				if (bitsize < $3) 
-					yyerror("Register size is exceeds regesters in range\n");
+					yyerror("Register size is exceeds registers in range\n");
 					// copy information
 				}
 				Dict.DetRegMap[$6].s_mappedIndex(Dict.RegMap[$8]);

@@ -30,6 +30,8 @@
 #include <iostream>
 #include <sstream>
 #include <assert.h>
+#include <stdlib.h>
+#include <cstring>
 
 extern "C" {
 	int microX86Dis(void* p);			// From microX86dis.c

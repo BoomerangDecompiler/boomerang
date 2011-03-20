@@ -91,6 +91,8 @@ void *alloca ();
 #endif 
 
 #include <sstream>
+#include <cstring>
+#include <stdlib.h>
 #include "types.h"
 #include "rtl.h"
 #include "table.h"
@@ -375,6 +377,8 @@ typedef
 #endif
 #endif
 #endif
+#define yyyerror(msg) yyerror((char*)msg)		// MVE Fix deprecated string constant to char* conversion
+
 #ifndef YY_USE_CLASS
 /* TOKEN C */
 
@@ -1218,7 +1222,7 @@ do                                                              \
       YYGOTO(yybackup);                                            \
     }                                                           \
   else                                                          \
-    { YY_SSLParser_ERROR ("syntax error: cannot back up"); YYERROR; }   \
+    { YY_SSLParser_ERROR ((char*)"syntax error: cannot back up"); YYERROR; }   \
 while (0)
 
 #define YYTERROR        1
@@ -1427,7 +1431,7 @@ YYLABEL(yynewstate)
       /* Extend the stack our own way.  */
       if (yystacksize >= YYMAXDEPTH)
 	{
-	  YY_SSLParser_ERROR("parser stack overflow");
+	  YY_SSLParser_ERROR((char*)"parser stack overflow");
 	  __ALLOCA_return(2);
 	}
       yystacksize *= 2;
@@ -1680,7 +1684,7 @@ case 27:
 #line 324 "db/sslparser.y"
 {
 				if (Dict.RegMap.find(yyvsp[-2].str) != Dict.RegMap.end())
-					yyerror("Name reglist decared twice\n");
+					yyyerror("Name reglist decared twice\n");
 				Dict.RegMap[yyvsp[-2].str] = yyvsp[0].num;
 			;
     break;}
@@ -1688,7 +1692,7 @@ case 28:
 #line 329 "db/sslparser.y"
 {
 				if (Dict.RegMap.find(yyvsp[-5].str) != Dict.RegMap.end())
-					yyerror("Name reglist declared twice\n");
+					yyyerror("Name reglist declared twice\n");
 				Dict.addRegister( yyvsp[-5].str, yyvsp[0].num, yyvsp[-3].num, bFloat);
 			;
     break;}
@@ -1696,32 +1700,32 @@ case 29:
 #line 334 "db/sslparser.y"
 {
 				if (Dict.RegMap.find(yyvsp[-9].str) != Dict.RegMap.end())
-					yyerror("Name reglist declared twice\n");
+					yyyerror("Name reglist declared twice\n");
 				Dict.RegMap[yyvsp[-9].str] = yyvsp[-4].num;
 				// Now for detailed Reg information
 				if (Dict.DetRegMap.find(yyvsp[-4].num) != Dict.DetRegMap.end())
-					yyerror("Index used for more than one register\n");
+					yyyerror("Index used for more than one register\n");
 				Dict.DetRegMap[yyvsp[-4].num].s_name(yyvsp[-9].str);
 				Dict.DetRegMap[yyvsp[-4].num].s_size(yyvsp[-7].num);
 				Dict.DetRegMap[yyvsp[-4].num].s_address(NULL);
 				// check range is legitimate for size. 8,10
 				if ((Dict.RegMap.find(yyvsp[-2].str) == Dict.RegMap.end()) || (Dict.RegMap.find(yyvsp[0].str) == Dict.RegMap.end()))
-					yyerror("Undefined range\n");
+					yyyerror("Undefined range\n");
 				else {
 					int bitsize = Dict.DetRegMap[Dict.RegMap[yyvsp[0].str]].g_size();
 					for (int i = Dict.RegMap[yyvsp[-2].str]; i != Dict.RegMap[yyvsp[0].str]; i++) {
 						if (Dict.DetRegMap.find(i) == Dict.DetRegMap.end()) {
-							yyerror("Not all regesters in range defined\n");
+							yyyerror("Not all registers in range defined\n");
 							break;
 						}
 						bitsize += Dict.DetRegMap[i].g_size();
 						if (bitsize > yyvsp[-7].num) {
-							yyerror("Range exceeds size of register\n");
+							yyyerror("Range exceeds size of register\n");
 							break;
 						}
 					}
 				if (bitsize < yyvsp[-7].num) 
-					yyerror("Register size is exceeds regesters in range\n");
+					yyyerror("Register size is exceeds registers in range\n");
 					// copy information
 				}
 				Dict.DetRegMap[yyvsp[-4].num].s_mappedIndex(Dict.RegMap[yyvsp[-2].str]);
@@ -1733,22 +1737,22 @@ case 30:
 #line 368 "db/sslparser.y"
 {
 				if (Dict.RegMap.find(yyvsp[-13].str) != Dict.RegMap.end())
-					yyerror("Name reglist declared twice\n");
+					yyyerror("Name reglist declared twice\n");
 				Dict.RegMap[yyvsp[-13].str] = yyvsp[-8].num;
 				// Now for detailed Reg information
 				if (Dict.DetRegMap.find(yyvsp[-8].num) != Dict.DetRegMap.end())
-					yyerror("Index used for more than one register\n");
+					yyyerror("Index used for more than one register\n");
 				Dict.DetRegMap[yyvsp[-8].num].s_name(yyvsp[-13].str);
 				Dict.DetRegMap[yyvsp[-8].num].s_size(yyvsp[-11].num);
 				Dict.DetRegMap[yyvsp[-8].num].s_address(NULL);
 				// Do checks
 				if (yyvsp[-11].num != (yyvsp[-1].num - yyvsp[-3].num) + 1) 
-					yyerror("Size does not equal range\n");
+					yyyerror("Size does not equal range\n");
 					if (Dict.RegMap.find(yyvsp[-6].str) != Dict.RegMap.end()) {
 						if (yyvsp[-1].num >= Dict.DetRegMap[Dict.RegMap[yyvsp[-6].str]].g_size())
-							yyerror("Range extends over target register\n");
+							yyyerror("Range extends over target register\n");
 					} else 
-						yyerror("Shared index not yet defined\n");
+						yyyerror("Shared index not yet defined\n");
 				Dict.DetRegMap[yyvsp[-8].num].s_mappedIndex(Dict.RegMap[yyvsp[-6].str]);
 				Dict.DetRegMap[yyvsp[-8].num].s_mappedOffset(yyvsp[-3].num);
 				Dict.DetRegMap[yyvsp[-8].num].s_float(bFloat);
@@ -1764,7 +1768,7 @@ case 31:
 					std::list<std::string>::iterator loc = yyvsp[-8].strlist->begin();
 					for (int x = yyvsp[-2].num; x <= yyvsp[0].num; x++, loc++) {
 						if (Dict.RegMap.find(*loc) != Dict.RegMap.end())
-							yyerror("Name reglist declared twice\n");
+							yyyerror("Name reglist declared twice\n");
 						Dict.addRegister( loc->c_str(), x, yyvsp[-5].num, bFloat);
 					}
 					//delete $2;
@@ -1777,7 +1781,7 @@ case 32:
 				std::list<std::string>::iterator loc = yyvsp[-6].strlist->begin();
 				for (; loc != yyvsp[-6].strlist->end(); loc++) {
 					if (Dict.RegMap.find(*loc) != Dict.RegMap.end())
-						yyerror("Name reglist declared twice\n");
+						yyyerror("Name reglist declared twice\n");
 					Dict.addRegister(loc->c_str(), yyvsp[0].num, yyvsp[-3].num, bFloat);
 				}
 				//delete $2;
@@ -1807,7 +1811,7 @@ case 36:
 #line 435 "db/sslparser.y"
 {
 				if (ConstTable.find(yyvsp[-2].str) != ConstTable.end())
-					yyerror("Constant declared twice");
+					yyyerror("Constant declared twice");
 				ConstTable[std::string(yyvsp[-2].str)] = yyvsp[0].num;
 			;
     break;}
@@ -1815,13 +1819,13 @@ case 37:
 #line 441 "db/sslparser.y"
 {
 				if (ConstTable.find(yyvsp[-4].str) != ConstTable.end())
-					yyerror("Constant declared twice");
+					yyyerror("Constant declared twice");
 				else if (yyvsp[-1].str == std::string("-"))
 					ConstTable[std::string(yyvsp[-4].str)] = yyvsp[-2].num - yyvsp[0].num;
 				else if (yyvsp[-1].str == std::string("+"))
 					ConstTable[std::string(yyvsp[-4].str)] = yyvsp[-2].num + yyvsp[0].num;
 				else
-					yyerror("Constant expression must be NUM + NUM or NUM - NUM");
+					yyyerror("Constant expression must be NUM + NUM or NUM - NUM");
 			;
     break;}
 case 38:
@@ -1928,11 +1932,11 @@ case 51:
 					yyval.namelist = new std::deque<std::string>(TableDict[yyvsp[0].str]->records);
 				else {
 					o << "name " << yyvsp[0].str << " is not a NAMETABLE.\n";
-					yyerror(STR(o));
+					yyyerror(STR(o));
 				}
 			else {
 				o << "could not dereference name " << yyvsp[0].str << "\n";
-				yyerror(STR(o));
+				yyyerror(STR(o));
 			}
 		;
     break;}
@@ -1946,7 +1950,7 @@ case 52:
 				else {
 					std::ostringstream o;
 					o << "name " << yyvsp[0].str << " is not a NAMETABLE.\n";
-					yyerror(STR(o));
+					yyyerror(STR(o));
 				}
 			else {
 				yyval.namelist = new std::deque<std::string>;
@@ -2087,10 +2091,10 @@ case 70:
 			std::ostringstream o;
 			if (TableDict.find(yyvsp[-2].str) == TableDict.end()) {
 				o << "Table " << yyvsp[-2].str << " has not been declared.\n";
-				yyerror(STR(o));
+				yyyerror(STR(o));
 			} else if ((yyvsp[-1].num < 0) || (yyvsp[-1].num >= (int)TableDict[yyvsp[-2].str]->records.size())) {
 				o << "Can't get element " << yyvsp[-1].num << " of table " << yyvsp[-2].str << ".\n";
-				yyerror(STR(o));
+				yyyerror(STR(o));
 			} else
 				yyval.insel = new InsNameElem(TableDict[yyvsp[-2].str]->records[yyvsp[-1].num].c_str());
 		;
@@ -2101,7 +2105,7 @@ case 71:
 			std::ostringstream o;
 			if (TableDict.find(yyvsp[-2].str) == TableDict.end()) {
 				o << "Table " << yyvsp[-2].str << " has not been declared.\n";
-				yyerror(STR(o));
+				yyyerror(STR(o));
 			} else
 				yyval.insel = new InsListElem(yyvsp[-2].str, TableDict[yyvsp[-2].str], yyvsp[-1].str);
 		;
@@ -2112,10 +2116,10 @@ case 72:
 			std::ostringstream o;
 			if (TableDict.find(yyvsp[-2].str) == TableDict.end()) {
 				o << "Table " << yyvsp[-2].str << " has not been declared.\n";
-				yyerror(STR(o));
+				yyyerror(STR(o));
 			} else if ((yyvsp[-1].num < 0) || (yyvsp[-1].num >= (int)TableDict[yyvsp[-2].str]->records.size())) {
 				o << "Can't get element " << yyvsp[-1].num << " of table " << yyvsp[-2].str << ".\n";
-				yyerror(STR(o));
+				yyyerror(STR(o));
 			} else
 				yyval.insel = new InsNameElem(TableDict[yyvsp[-2].str]->records[yyvsp[-1].num].c_str());
 		;
@@ -2126,7 +2130,7 @@ case 73:
 			std::ostringstream o;
 			if (TableDict.find(yyvsp[-2].str) == TableDict.end()) {
 				o << "Table " << yyvsp[-2].str << " has not been declared.\n";
-				yyerror(STR(o));
+				yyyerror(STR(o));
 			} else
 				yyval.insel = new InsListElem(yyvsp[-2].str, TableDict[yyvsp[-2].str], yyvsp[-1].str);
 		;
@@ -2177,7 +2181,7 @@ case 78:
 						listExpToExp(yyvsp[-1].explist)));
 			} else {
 				o << yyvsp[-2].str << " is not declared as a flag function.\n";
-				yyerror(STR(o));
+				yyyerror(STR(o));
 			}
 		;
     break;}
@@ -2381,17 +2385,17 @@ case 108:
 			std::ostringstream o;
 			if (indexrefmap.find(yyvsp[-1].str) == indexrefmap.end()) {
 				o << "index " << yyvsp[-1].str << " not declared for use.\n";
-				yyerror(STR(o));
+				yyyerror(STR(o));
 			} else if (TableDict.find(yyvsp[-2].str) == TableDict.end()) {
 				o << "table " << yyvsp[-2].str << " not declared for use.\n";
-				yyerror(STR(o));
+				yyyerror(STR(o));
 			} else if (TableDict[yyvsp[-2].str]->getType() != EXPRTABLE) {
 				o << "table " << yyvsp[-2].str << " is not an expression table but appears to be used as one.\n";
-				yyerror(STR(o));
+				yyyerror(STR(o));
 			} else if ((int)((ExprTable*)TableDict[yyvsp[-2].str])->expressions.size() < indexrefmap[yyvsp[-1].str]->ntokens()) {
 				o << "table " << yyvsp[-2].str << " (" << ((ExprTable*)TableDict[yyvsp[-2].str])->expressions.size() <<
 					") is too small to use " << yyvsp[-1].str << " (" << indexrefmap[yyvsp[-1].str]->ntokens() << ") as an index.\n";
-				yyerror(STR(o));
+				yyyerror(STR(o));
 			}
 			// $1 is a map from string to Table*; $2 is a map from string to InsNameElem*
 			yyval.exp = new Binary(opExpTable, new Const(yyvsp[-2].str), new Const(yyvsp[-1].str));
@@ -2407,7 +2411,7 @@ case 109:
 				if (yyvsp[-1].explist->size() != param.funcParams.size() ) {
 					o << yyvsp[-2].str << " requires " << param.funcParams.size() << " parameters, but received " << yyvsp[-1].explist->size()
 						<< ".\n";
-					yyerror(STR(o));
+					yyyerror(STR(o));
 				} else {
 					// Everything checks out. *phew* 
 					// Note: the below may not be right! (MVE)
@@ -2418,7 +2422,7 @@ case 109:
 				}
 			} else {
 				o << yyvsp[-2].str << " is not defined as a OPERAND function.\n";
-				yyerror(STR(o));
+				yyyerror(STR(o));
 			}
 		} else {
 			o << "Unrecognized name " << yyvsp[-2].str << " in lambda call.\n";
@@ -2502,16 +2506,16 @@ case 121:
 			std::ostringstream o;
 			if (indexrefmap.find(yyvsp[-2].str) == indexrefmap.end()) {
 				o << "index " << yyvsp[-2].str << " not declared for use.\n";
-				yyerror(STR(o));
+				yyyerror(STR(o));
 			} else if (TableDict.find(yyvsp[-3].str) == TableDict.end()) {
 				o << "table " << yyvsp[-3].str << " not declared for use.\n";
-				yyerror(STR(o));
+				yyyerror(STR(o));
 			} else if (TableDict[yyvsp[-3].str]->getType() != OPTABLE) {
 				o << "table " << yyvsp[-3].str << " is not an operator table but appears to be used as one.\n";
-				yyerror(STR(o));
+				yyyerror(STR(o));
 			} else if ((int)TableDict[yyvsp[-3].str]->records.size() < indexrefmap[yyvsp[-2].str]->ntokens()) {
 				o << "table " << yyvsp[-3].str << " is too small to use with " << yyvsp[-2].str << " as an index.\n";
-				yyerror(STR(o));
+				yyyerror(STR(o));
 			}
 			yyval.exp = new Ternary(opOpTable, new Const(yyvsp[-3].str), new Const(yyvsp[-2].str),
 				new Binary(opList,
@@ -2535,7 +2539,7 @@ case 123:
 			if (it == Dict.RegMap.end() && !isFlag) {
 				std::ostringstream ost;
 				ost << "register `" << yyvsp[0].str << "' is undefined";
-				yyerror(STR(ost));
+				yyyerror(STR(ost));
 			} else if (isFlag || it->second == -1) {
 				// A special register, e.g. %npc or %CF. Return a Terminal for it
 				OPER op = strToTerm(yyvsp[0].str);
@@ -2585,7 +2589,7 @@ case 127:
 			} else {
 				std::ostringstream ost;
 				ost << "`" << yyvsp[0].str << "' is not a constant, definition or a parameter of this instruction\n";
-				yyerror(STR(ost));
+				yyyerror(STR(ost));
 				s = new Const(0);
 			}
 			yyval.exp = s;
@@ -2772,11 +2776,11 @@ YYLABEL(yyerrlab)   /* here on detecting error */
 	      free(msg);
 	    }
 	  else
-	    YY_SSLParser_ERROR ("parse error; also virtual memory exceeded");
+	    YY_SSLParser_ERROR ((char*)"parse error; also virtual memory exceeded");
 	}
       else
 #endif /* YY_SSLParser_ERROR_VERBOSE */
-	YY_SSLParser_ERROR("parse error");
+	YY_SSLParser_ERROR((char*)"parse error");
     }
 
   YYGOTO(yyerrlab1);
@@ -2923,7 +2927,7 @@ SSLParser::~SSLParser()
 }
 
 /*==============================================================================
- * FUNCTION:		SSLParser::yyerror
+ * FUNCTION:		SSLParser::yyyerror
  * OVERVIEW:		Display an error message and exit.
  * PARAMETERS:		msg - an error message
  * RETURNS:			<nothing>
@@ -2950,7 +2954,7 @@ int SSLParser::yylex()
  * OVERVIEW:		Convert a string operator (e.g. "+f") to an OPER (opFPlus)
  * NOTE:			An attempt is made to make this moderately efficient, else we might have a skip chain of string
  *					comparisons
- * NOTE:			This is a member of SSLParser so we can call yyerror and have line number etc printed out
+ * NOTE:			This is a member of SSLParser so we can call yyyerror and have line number etc printed out
  * PARAMETERS:		s: pointer to the operator C string
  * RETURNS:			An OPER, or -1 if not found (enum opWild)
  *============================================================================*/
@@ -3108,7 +3112,7 @@ OPER SSLParser::strToOper(const char* s) {
 	}
 	std::ostringstream ost;
 	ost << "Unknown operator " << s << std::endl;
-	yyerror(STR(ost));
+	yyyerror(STR(ost));
 	return opWild;
 }
 
@@ -3255,7 +3259,7 @@ void SSLParser::expandTables(InsNameElem* iname, std::list<std::string>* params,
  
 		if (Dict.appendToDict(nam, *params, *rtl) != 0) {
 			o << "Pattern " << iname->getinspattern() << " conflicts with an earlier declaration of " << nam << ".\n";
-			yyerror(STR(o));
+			yyyerror(STR(o));
 		}
 	}
 	indexrefmap.erase(indexrefmap.begin(), indexrefmap.end());

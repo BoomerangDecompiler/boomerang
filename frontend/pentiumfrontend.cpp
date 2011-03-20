@@ -27,6 +27,7 @@
 */
 
 #include <assert.h>
+#include <cstring>
 #if defined(_MSC_VER) && _MSC_VER <= 1200
 #pragma warning(disable:4786)
 #endif
@@ -151,7 +152,7 @@ void PentiumFrontEnd::bumpRegisterAll(Exp* e, int min, int max, int delta, int m
 			// Replace the K in r[ K] with a new K
 			// **it is a reg[K]
 			Const* K = (Const*)((Unary*)**it)->getSubExp1();
-			K->setInt(min + (reg - min + delta & mask));
+			K->setInt(min + ((reg - min + delta) & mask));
 		}
 	}
 }
@@ -425,7 +426,7 @@ void PentiumFrontEnd::processFloatCode(PBB pBB, int& tos, Cfg* pCfg)
 						int K = c->getInt();		// Old register number
 						// Change to new register number, if in range
 						if ((K >= 32) && (K <= 39))
-							s->setSubExp1(new Const(32 + (K - 32 + tos & 7)));
+							s->setSubExp1(new Const(32 + ((K - 32 + tos) & 7)));
 					}
 				}
 						

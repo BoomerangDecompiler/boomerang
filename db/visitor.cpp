@@ -744,7 +744,7 @@ bool PrimitiveTester::visit(Location* e, bool& override) {
 bool PrimitiveTester::visit(RefExp* e, bool& override) {
 	Statement* def = e->getDef();
 	// If defined by a call, e had better not be a memory location (crude approximation for now)
-	if (def == NULL || def->getNumber() == 0 || def->isCall() && !e->getSubExp1()->isMemOf()) {
+	if (def == NULL || def->getNumber() == 0 || (def->isCall() && !e->getSubExp1()->isMemOf())) {
 		// Implicit definitions are always primitive
 		// The results of calls are always primitive
 		override = true;	// Don't recurse into the reference

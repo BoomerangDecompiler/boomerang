@@ -27,6 +27,7 @@
 #endif
 
 #include "HpSomBinaryFile.h"
+#include <cstring>
 
 // Macro to convert a pointer to a Big Endian integer into a host integer
 #define UC(p) ((unsigned char*)p)
