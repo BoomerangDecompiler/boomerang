@@ -1,6 +1,7 @@
 ######################################################
 # File: Makefile
 # Desc: Makefile for the db (database) directory
+#		NOTE: seems to be overridden by top level Makefile now!
 #       Makes and tests all object files in this directory
 #
 # Prerequisite libraries: util, BinaryFile, cppunit

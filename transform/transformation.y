@@ -200,6 +200,8 @@ type: POINTER type ')'
 
 %%
 #include <stdio.h>
+#include <cstring>
+#include <cstdlib>
 
 int TransformationParser::yylex()
 {

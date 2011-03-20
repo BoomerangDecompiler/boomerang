@@ -34,7 +34,7 @@ CXXFLAGS = @CXXFLAGS@
 CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 
-FPIC = -fPIC
+FPIC =# -fPIC		# FIXME: is this needed by architectures other than x86?
 
 ####################################
 # Other variables detected by ./configure
@@ -137,7 +137,10 @@ $(top_srcdir)/libBinaryFile$(DLLEXT): $(top_srcdir)/lib/libBinaryFile$(DLLEXT)
 	cp $< $@
 
 BinaryFile.o:		CCEXTRAS = -DBUILDING_LIBBINARYFILE
+ElfBinaryFile.o:	CCEXTRAS = -fno-strict-aliasing
 MachOBinaryFile.o:	CCEXTRAS = -I.
+Win32BinaryFile.o:	CCEXTRAS = -fno-strict-aliasing
+DOS4GWBinaryFile.o:	CCEXTRAS = -fno-strict-aliasing
 
 $(BASEDLL) : BinaryFile.o SymTab.o
 	$(CXX) $(CXXFLAGS) -o $@ $(SHARED) BinaryFile.o SymTab.o $(OUTIMPLIB) $(LDFLAGS)

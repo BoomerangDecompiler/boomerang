@@ -26,6 +26,8 @@
    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* HEADER SECTION */
+#include <cstring>
+#include <cstdlib>
 #if defined( _MSDOS ) || defined(MSDOS) || defined(__MSDOS__) 
 #define __MSDOS_AND_ALIKE
 #endif
@@ -893,7 +895,7 @@ do                                                              \
       YYGOTO(yybackup);                                            \
     }                                                           \
   else                                                          \
-    { YY_TransformationParser_ERROR ("syntax error: cannot back up"); YYERROR; }   \
+    { YY_TransformationParser_ERROR ((char*)"syntax error: cannot back up"); YYERROR; }   \
 while (0)
 
 #define YYTERROR        1
@@ -1102,7 +1104,7 @@ YYLABEL(yynewstate)
       /* Extend the stack our own way.  */
       if (yystacksize >= YYMAXDEPTH)
 	{
-	  YY_TransformationParser_ERROR("parser stack overflow");
+	  YY_TransformationParser_ERROR((char*)"parser stack overflow");
 	  __ALLOCA_return(2);
 	}
       yystacksize *= 2;
@@ -1553,11 +1555,11 @@ YYLABEL(yyerrlab)   /* here on detecting error */
 	      free(msg);
 	    }
 	  else
-	    YY_TransformationParser_ERROR ("parse error; also virtual memory exceeded");
+	    YY_TransformationParser_ERROR ((char*)"parse error; also virtual memory exceeded");
 	}
       else
 #endif /* YY_TransformationParser_ERROR_VERBOSE */
-	YY_TransformationParser_ERROR("parse error");
+	YY_TransformationParser_ERROR((char*)"parse error");
     }
 
   YYGOTO(yyerrlab1);

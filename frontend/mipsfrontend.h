@@ -18,7 +18,7 @@
 *
 *****************************************************************/
 
-#ifndef MIPSRONTEND_H
+#ifndef MIPSFRONTEND_H
 #define MIPSFRONTEND_H
 
 // Class MIPSFrontEnd: derived from FrontEnd, with source machine specific

@@ -193,7 +193,7 @@ TEST_OBJS = util/UtilTest.o db/ExpTest.o db/ParserTest.o db/ProcTest.o db/ProgTe
 UTIL_OBJS = util/util.o
 DB_OBJS = db/basicblock.o db/proc.o db/sslscanner.o db/cfg.o db/prog.o db/table.o db/statement.o db/register.o \
 	db/sslparser.o db/exp.o db/rtl.o db/sslinst.o db/insnameelem.o db/signature.o db/managed.o c/ansi-c-parser.o \
-	c/ansi-c-scanner.o boomerang.o log.o db/visitor.o db/dataflow.o # db/xmlprogparser.o 
+	c/ansi-c-scanner.o boomerang.o log.o db/visitor.o db/dataflow.o db/xmlprogparser.o 
 TRANSFORM_OBJS = transform/rdi.o transform/transformer.o transform/generic.o transform/transformation-parser.o \
 	transform/transformation-scanner.o
 FRONT_OBJS = frontend/frontend.o frontend/njmcDecoder.o frontend/sparcdecoder.o frontend/pentiumdecoder.o \
@@ -202,7 +202,7 @@ FRONT_OBJS = frontend/frontend.o frontend/njmcDecoder.o frontend/sparcdecoder.o 
 CODEGEN = codegen/chllcode.o codegen/syntax.o
 TYPEOBJS = type/constraint.o type/type.o type/dfa.o
 LOADER_OBJS = loader/BinaryFileFactory.o
-STATIC_OBJS = $(CODEGEN) $(UTIL_OBJS) $(DB_OBJS) $(FRONT_OBJS) $(TYPEOBJS) $(LOADER_OBJS) # $(TRANSFORM_OBJS)
+STATIC_OBJS = $(CODEGEN) $(UTIL_OBJS) $(DB_OBJS) $(FRONT_OBJS) $(TYPEOBJS) $(LOADER_OBJS) $(TRANSFORM_OBJS)
 
 ####################
 # Conditional rules
@@ -290,21 +290,24 @@ endif
 
 # Extra flags
 db/prog.o:                 	EXTRA = -Icodegen -Ic
+db/proc.o:                 	EXTRA = -fno-strict-aliasing
+db/exp.o:                 	EXTRA = -fno-strict-aliasing
 frontend/frontend.o:       	EXTRA = -Ic
 db/ProgTest.o:             	EXTRA = -Ifrontend
 db/ProcTest.o:             	EXTRA = -Ifrontend
 db/RtlTest.o:              	EXTRA = -Ifrontend
 db/StatementTest.o:        	EXTRA = -Ifrontend
 db/CfgTest.o:              	EXTRA = -Ifrontend
+type/dfa.o:                	EXTRA = -fno-strict-aliasing
 type/TypeTest.o:           	EXTRA = -Ifrontend
 frontend/pentiumdecoder.o: 	EXTRA = -fno-exceptions
 
 boomerang$(EXEEXT): driver.o $(STATIC_OBJS) $(GENSSL)
-	$(CXX) $(CXXFLAGS) -o $@ driver.o $(STATIC_OBJS) $(RUNPATH) -Llib $(LINKGC) $(LDL) $(LDFLAGS) $(LOADERLIBS) #-lexpat
+	$(CXX) $(CXXFLAGS) -o $@ driver.o $(STATIC_OBJS) $(RUNPATH) -Llib $(LINKGC) $(LDL) $(LDFLAGS) $(LOADERLIBS) -lexpat
 
 bffDump$(EXEEXT): loader/bffDump.o
 	$(CXX) $(CXXFLAGS) -o $@ loader/bffDump.o loader/BinaryFileFactory.o -Llib -lgc $(LDL) $(LOADERLIBS) \
-		$(RUNPATH) $(LDFLAGS) #-lexpat
+		$(RUNPATH) $(LDFLAGS) -lexpat
 
 # Compile ordinary files
 $(STATIC_OBJS): %.o : %.cpp
@@ -336,7 +339,7 @@ testAll.o: testAll.cpp
 
 bigtest$(EXEEXT): testAll.o $(STATIC_OBJS) $(TEST_OBJS)
 	$(CXX) $(CXXFLAGS) -o $@ testAll.o $(STATIC_OBJS) $(TEST_OBJS) $(LOADERLIBS) \
-	    $(RUNPATH) -Llib -lcppunit -lgc $(LDL) $(LDFLAGS) #-lexpat
+	    $(RUNPATH) -Llib -lcppunit -lgc $(LDL) $(LDFLAGS) -lexpat
 
 $(TEST_OBJS): %.o : %.cpp
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $(EXTRA) $<

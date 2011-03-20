@@ -1,7 +1,10 @@
 
 #include <QThread>
+#include <QString>
+#include <QTableWidget>
+
 #undef NO_ADDRESS
-#include "boomerang.h"
+#include "../include/boomerang.h"
 
 class MainWindow;
 class FrontEnd;
@@ -10,6 +13,7 @@ class UserProc;
 class Prog;
 class Cluster;
 class QTableWidget;
+class QObject;
 
 class Decompiler : public QObject, public Watcher
 {

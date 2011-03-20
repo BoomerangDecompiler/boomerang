@@ -4,7 +4,8 @@
 #ifndef PENTFRONTEND_H
 #define PENTFRONTEND_H
 
-#include "frontend.h"
+#include "frontend.h"           // In case included bare, e.g. ProcTest.cpp
+
 class Statement;
 
 

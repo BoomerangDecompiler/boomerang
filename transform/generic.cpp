@@ -37,7 +37,7 @@ extern char* operStrings[];
 
 Exp *GenericExpTransformer::applyFuncs(Exp *rhs)
 {
-    Exp *call, *callw = new Binary(opFlagCall, new Const("memberAtOffset"), new Terminal(opWild));
+    Exp *call, *callw = new Binary(opFlagCall, new Const((char*)"memberAtOffset"), new Terminal(opWild));
     if (rhs->search(callw, call)) {
         assert(call->getSubExp2()->getOper() == opList);
         Exp *p1 = applyFuncs(call->getSubExp2()->getSubExp1());
@@ -61,7 +61,7 @@ Exp *GenericExpTransformer::applyFuncs(Exp *rhs)
         LOG << "replaced " << call << " with " << result << "\n";
 #endif
     }
-    callw = new Binary(opFlagCall, new Const("offsetToMember"), new Terminal(opWild));
+    callw = new Binary(opFlagCall, new Const((char*)"offsetToMember"), new Terminal(opWild));
     if (rhs->search(callw, call)) {
         assert(call->getSubExp2()->getOper() == opList);
         Exp *p1 = applyFuncs(call->getSubExp2()->getSubExp1());
@@ -84,7 +84,7 @@ Exp *GenericExpTransformer::applyFuncs(Exp *rhs)
         LOG << "replaced " << call << " with " << result << "\n";
 #endif
     }
-    callw = new Binary(opFlagCall, new Const("plus"), new Terminal(opWild));
+    callw = new Binary(opFlagCall, new Const((char*)"plus"), new Terminal(opWild));
     if (rhs->search(callw, call)) {
         assert(call->getSubExp2()->getOper() == opList);
         Exp *p1 = applyFuncs(call->getSubExp2()->getSubExp1());
@@ -101,7 +101,7 @@ Exp *GenericExpTransformer::applyFuncs(Exp *rhs)
         LOG << "replaced " << call << " with " << result << "\n";
 #endif
     }
-    callw = new Binary(opFlagCall, new Const("neg"), new Terminal(opWild));
+    callw = new Binary(opFlagCall, new Const((char*)"neg"), new Terminal(opWild));
     if (rhs->search(callw, call)) {
         Exp *p1 = applyFuncs(call->getSubExp2());
         assert(p1->getOper() == opIntConst);

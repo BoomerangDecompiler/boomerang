@@ -1,5 +1,10 @@
 
 #include <QtGui>
+#include <QtCore>
+#include <Qt/QtCore>
+#include <QThread>
+#include <QString>
+#include <QTableWidget>
 
 #include "DecompilerThread.h"
 

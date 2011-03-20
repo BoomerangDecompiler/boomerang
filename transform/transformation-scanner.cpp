@@ -62,6 +62,7 @@ int read();
 #define YY_USE_CONST
 #endif
 #include <stdio.h>
+#include <cstring>
 
 
 /*********************************************/
@@ -126,11 +127,11 @@ int read();
 #ifdef _MSDOS
 #define YY_INPUT(buf,result,max_size) \
 	if ( (result = fread(buf,1,max_size,yy___in)) < 0 ) \
-	    YY_FATAL_ERROR( "fread() in flex scanner failed" );
+	    YY_FATAL_ERROR( (char*)"fread() in flex scanner failed" );
 #else
 #define YY_INPUT(buf,result,max_size) \
 	if ( (result = read( fileno(yy___in), (char *) buf, max_size )) < 0 ) \
-	    YY_FATAL_ERROR( "read() in flex scanner failed" );
+	    YY_FATAL_ERROR( (char*)"read() in flex scanner failed" );
 
 #endif
 /* report a fatal error */
@@ -140,7 +141,7 @@ int read();
  * This avoids problems with code like:
  *
  *      if ( something_happens )
- *              YY_FATAL_ERROR( "oops, the something happened" );
+ *              YY_FATAL_ERROR( (char*)"oops, the something happened" );
  *      else
  *              everything_okay();
  *
@@ -171,7 +172,7 @@ int read();
 #define ECHO yy___echo()
 #define YY_INPUT(buf,result,max_size) \
 	if ( yy___input((char *)buf, result,max_size) < 0 ) \
-	    YY_FATAL_ERROR( "YY_INPUT() in flex scanner failed" );
+	    YY_FATAL_ERROR( (char*)"YY_INPUT() in flex scanner failed" );
 
 #define YY_FATAL_ERROR(msg) yy___fatal_error(msg)
 #define yywrap() yy___wrap()
@@ -1171,7 +1172,7 @@ case YY_STATE_EOF(INITIAL):
 #endif
 #endif
 		YY_FATAL_ERROR(
-			"fatal flex scanner internal error--no action found" );
+			(char*)"fatal flex scanner internal error--no action found" );
 	    }
 	}
 	yyterminate();/* avoid the no return value error message on MS-C7/dos */
@@ -1201,7 +1202,7 @@ int YY_TransformationScanner_CLASS::yy_get_next_buffer()
 
     if ( yy_c_buf_p > &YY_TransformationScanner_CURRENT_BUFFER->yy_ch_buf[yy_n_chars + 1] )
 	YY_FATAL_ERROR(
-		"fatal flex scanner internal error--end of buffer missed" );
+		(char*)"fatal flex scanner internal error--end of buffer missed" );
 
     /* try to read more data */
 
@@ -1225,7 +1226,7 @@ int YY_TransformationScanner_CLASS::yy_get_next_buffer()
 	    num_to_read = YY_READ_BUF_SIZE;
 
 	else if ( num_to_read <= 0 )
-	    YY_FATAL_ERROR( "fatal error - scanner input buffer overflow" );
+	    YY_FATAL_ERROR( (char*)"fatal error - scanner input buffer overflow" );
 
 	/* read in more data */
 	YY_INPUT( (&YY_TransformationScanner_CURRENT_BUFFER->yy_ch_buf[number_to_move]),
@@ -1395,7 +1396,7 @@ void YY_TransformationScanner_CLASS::yyunput( YY_TransformationScanner_CHAR c, Y
 	yy_n_chars = YY_TransformationScanner_CURRENT_BUFFER->yy_buf_size;
 
 	if ( yy_cp < YY_TransformationScanner_CURRENT_BUFFER->yy_ch_buf + 2 )
-	    YY_FATAL_ERROR( "flex scanner push-back overflow" );
+	    YY_FATAL_ERROR( (char*)"flex scanner push-back overflow" );
 	}
 
     if ( yy_cp > yy_bp && yy_cp[-1] == '\n' )
@@ -1469,12 +1470,12 @@ int YY_TransformationScanner_CLASS::input()
 		case EOB_ACT_LAST_MATCH:
 #ifndef YY_USE_CLASS
 #ifdef __cplusplus
-		    YY_FATAL_ERROR( "unexpected last match in yyinput()" );
+		    YY_FATAL_ERROR( (char*)"unexpected last match in yyinput()" );
 #else
-		    YY_FATAL_ERROR( "unexpected last match in input()" );
+		    YY_FATAL_ERROR( (char*)"unexpected last match in input()" );
 #endif
 #else
-		    YY_FATAL_ERROR( "unexpected last match in YY_TransformationScanner_CLASS::input()" );
+		    YY_FATAL_ERROR( (char*)"unexpected last match in YY_TransformationScanner_CLASS::input()" );
 #endif
 		}
 	    }
@@ -1575,7 +1576,7 @@ YY_BUFFER_STATE YY_TransformationScanner_CLASS::YY_TransformationScanner_CREATE_
     b = (YY_BUFFER_STATE) malloc( sizeof( struct yy_buffer_state ) );
 
     if ( ! b )
-	YY_FATAL_ERROR( "out of dynamic memory in YY_TransformationScanner_CREATE_BUFFER()" );
+	YY_FATAL_ERROR( (char*)"out of dynamic memory in YY_TransformationScanner_CREATE_BUFFER()" );
 
     b->yy_buf_size = size;
 
@@ -1585,7 +1586,7 @@ YY_BUFFER_STATE YY_TransformationScanner_CLASS::YY_TransformationScanner_CREATE_
     b->yy_ch_buf = (YY_TransformationScanner_CHAR *) malloc( (unsigned) (b->yy_buf_size + 2) );
 
     if ( ! b->yy_ch_buf )
-	YY_FATAL_ERROR( "out of dynamic memory in YY_TransformationScanner_CREATE_BUFFER()" );
+	YY_FATAL_ERROR( (char*)"out of dynamic memory in YY_TransformationScanner_CREATE_BUFFER()" );
 
     YY_TransformationScanner_INIT_BUFFER( b, file );
 

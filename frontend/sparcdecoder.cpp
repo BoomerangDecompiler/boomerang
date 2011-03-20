@@ -920,10 +920,10 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
                 
                 break;
               case 52: 
-                if (80 <= (MATCH_w_32_0 >> 5 & 0x1ff) /* opf at 0 */ && 
-                  (MATCH_w_32_0 >> 5 & 0x1ff) /* opf at 0 */ < 196 || 
-                  212 <= (MATCH_w_32_0 >> 5 & 0x1ff) /* opf at 0 */ && 
-                  (MATCH_w_32_0 >> 5 & 0x1ff) /* opf at 0 */ < 512) 
+                if ((80 <= (MATCH_w_32_0 >> 5 & 0x1ff) /* opf at 0 */ && 
+                  (MATCH_w_32_0 >> 5 & 0x1ff) /* opf at 0 */ < 196) || 
+                  (212 <= (MATCH_w_32_0 >> 5 & 0x1ff) /* opf at 0 */ && 
+                  (MATCH_w_32_0 >> 5 & 0x1ff)) /* opf at 0 */ < 512) 
                   goto MATCH_label_d3;  /*opt-block+*/
                 else 
                   switch((MATCH_w_32_0 >> 5 & 0x1ff) /* opf at 0 */) {
@@ -1357,10 +1357,10 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
                   } /* (MATCH_w_32_0 >> 5 & 0x1ff) -- opf at 0 --*/ 
                 break;
               case 53: 
-                if (0 <= (MATCH_w_32_0 >> 5 & 0x1ff) /* opf at 0 */ && 
-                  (MATCH_w_32_0 >> 5 & 0x1ff) /* opf at 0 */ < 81 || 
-                  88 <= (MATCH_w_32_0 >> 5 & 0x1ff) /* opf at 0 */ && 
-                  (MATCH_w_32_0 >> 5 & 0x1ff) /* opf at 0 */ < 512) 
+                if ((0 <= (MATCH_w_32_0 >> 5 & 0x1ff) /* opf at 0 */ && 
+                  (MATCH_w_32_0 >> 5 & 0x1ff)) /* opf at 0 */ < 81 || 
+                  (88 <= (MATCH_w_32_0 >> 5 & 0x1ff) /* opf at 0 */ && 
+                  (MATCH_w_32_0 >> 5 & 0x1ff) /* opf at 0 */ < 512)) 
                   goto MATCH_label_d3;  /*opt-block+*/
                 else 
                   switch((MATCH_w_32_0 >> 5 & 0x1ff) /* opf at 0 */) {

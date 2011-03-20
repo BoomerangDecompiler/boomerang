@@ -7,10 +7,10 @@
 TEMPLATE = app
 TARGET += 
 DEPENDPATH += .
-INCLUDEPATH += ../include ../win32make/include
+INCLUDEPATH += ../include ../win32make/include /usr/include/qt4/Qt /usr/include/qt4/QtCore /usr/include/qt4/QtGui
 # Note: because we make in qtgui2 and run in ../, we need two -L options
 # Seems to be a problem with loading BinaryFile dynamically
-LIBS +=  -lgc -lexpat -Llib -L../lib # -Wl,-Bdynamic -lBinaryFile
+LIBS +=  -lgc -lexpat -lQtCore -lQtGui -Llib -L../lib # -Wl,-Bdynamic -lBinaryFile
 # Input
 HEADERS += DecompilerThread.h mainwindow.h rtleditor.h
 FORMS += boomerang.ui about.ui
@@ -52,8 +52,9 @@ OBJECTS += ../boomerang.o \
 		../frontend/sparcfrontend.o \
 		../frontend/st20decoder.o \
 		../frontend/st20frontend.o \
+		../frontend/mipsdecoder.o\
+		../frontend/mipsfrontend.o\
 		../loader/BinaryFileFactory.o \
-# Doesn't seem to want to load dynamically, perhaps because of the two -L link options
 		../loader/BinaryFile.o \
 		../c/ansi-c-parser.o \
 		../c/ansi-c-scanner.o \

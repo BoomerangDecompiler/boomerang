@@ -14,6 +14,7 @@
  */
 
 #include <stdio.h>
+#include <cstring>
 extern "C" {
 #include "expat.h"
 }
