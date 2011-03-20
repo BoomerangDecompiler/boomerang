@@ -71,10 +71,10 @@ DecodeResult& ST20Decoder::decodeInstruction (ADDRESS pc, int delta) {
 #line 60 "frontend/machine/st20/decoder.m"
     hostPC+result.numBytes++
     ;
-  char *MATCH_name;
-  static char *MATCH_name_fc_0[] = {
-    (char *)0, "ldlp", (char *)0, "ldnl", "ldc", "ldnlp", (char *)0, "ldl", 
-    "adc", (char *)0, (char *)0, "ajw", "eqc", "stl", "stnl", 
+  const char *MATCH_name;
+  static const char *MATCH_name_fc_0[] = {
+    (const char *)0, "ldlp", (char *)0, "ldnl", "ldc", "ldnlp", (char *)0, "ldl", 
+    "adc", (const char *)0, (char *)0, "ajw", "eqc", "stl", "stnl", 
   };
   unsigned /* [0..255] */ MATCH_w_8_0;
   { 
@@ -103,7 +103,7 @@ DecodeResult& ST20Decoder::decodeInstruction (ADDRESS pc, int delta) {
           MATCH_name = 
             MATCH_name_fc_0[(MATCH_w_8_0 >> 4 & 0xf) /* fc at 0 */]; 
           { 
-            char *name = MATCH_name;
+            const char *name = MATCH_name;
             unsigned oper = (MATCH_w_8_0 & 0xf) /* bot at 0 */;
             
 #line 71 "frontend/machine/st20/decoder.m"
@@ -224,7 +224,7 @@ DecodeResult& ST20Decoder::decodeInstruction (ADDRESS pc, int delta) {
 
             			total |= oper;
 
-            			char* name = NULL;
+            			const char* name = NULL;
 
             			bool isRet = false;
 
