@@ -11,15 +11,15 @@
 struct struc_coff_sect          // segment information
 {
         char  sch_sectname[8];
-        ulong sch_physaddr;
-        ulong sch_virtaddr;
-        ulong sch_sectsize;
-        ulong sch_sectptr;
-        ulong sch_relptr;
-        ulong sch_lineno_ptr;
-        ushort sch_nreloc;
-        ushort sch_nlineno;
-        ulong sch_flags;
+        uint32_t sch_physaddr;
+        uint32_t sch_virtaddr;
+        uint32_t sch_sectsize;
+        uint32_t sch_sectptr;
+        uint32_t sch_relptr;
+        uint32_t sch_lineno_ptr;
+        uint16_t sch_nreloc;
+        uint16_t sch_nlineno;
+        uint32_t sch_flags;
 } PACKED;       // 40 bytes
 
 struct coff_symbol      // symbol information
@@ -27,8 +27,8 @@ struct coff_symbol      // symbol information
         union
         {
                 struct {
-                        ulong zeros;
-                        ulong offset;
+                        uint32_t zeros;
+                        uint32_t offset;
                 } e;
                 char name[8];
         } e;
@@ -36,11 +36,11 @@ struct coff_symbol      // symbol information
 #define csym_zeros      e.e.zeros
 #define csym_offset     e.e.offset
 
-        ulong csym_value;
-        ushort csym_sectnum;
+        uint32_t csym_value;
+        uint16_t csym_sectnum;
 #define N_UNDEF 0
 
-        ushort csym_type;
+        uint16_t csym_type;
 #define T_FUNC  0x20
 
         unsigned char csym_loadclass;
@@ -49,9 +49,9 @@ struct coff_symbol      // symbol information
 
 struct struct_coff_rel
 {
-        ulong   r_vaddr;
-        ulong   r_symndx;
-        ushort  r_type;
+        uint32_t   r_vaddr;
+        uint32_t   r_symndx;
+        uint16_t  r_type;
 #define RELOC_ADDR32    6
 #define RELOC_REL32     20
 } PACKED;
@@ -258,7 +258,7 @@ printf("Size of one symbol: %u\n", sizeof pSymbols[0]);
 			}
 
 		}
-		printf("Symbol %d: %s %08lx\n", iSym, name, pSymbols[iSym].csym_value); 
+		printf("Symbol %d: %s %08lx\n", iSym, name, (long)pSymbols[iSym].csym_value); 
 	}
 
 	for ( int iSection = 0; iSection < m_Header.coff_sections; iSection++ )
@@ -284,7 +284,7 @@ printf("Size of one symbol: %u\n", sizeof pSymbols[0]);
 		{
 			struct struct_coff_rel *tRel = pRel + iReloc;
                         struct coff_symbol* pSym = pSymbols+tRel->r_symndx;
-			ulong *pPatch = (ulong*)(pData + tRel->r_vaddr);
+			uint32_t *pPatch = (uint32_t*)(pData + tRel->r_vaddr);
 //printf("Relocating at %08lx: type %d, dest %08lx\n", tRel->r_vaddr + psi->uNativeAddr + psh[iSection].sch_virtaddr, (int)tRel->r_type, pSym->csym_value);
 
 			switch ( tRel->r_type )
