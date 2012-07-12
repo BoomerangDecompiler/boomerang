@@ -1263,8 +1263,10 @@ void Unary::descendType(Type* parentType, bool& ch, Statement* s) {
 			Prog* prog = s->getProc()->getProg();
 			char* name = ((Const*)subExp1)->getStr();
 			Type* ty = prog->getGlobalType(name);
-			ty = ty->meetWith(parentType, ch);
-			prog->setGlobalType(name, ty);
+			if(ty) {
+				ty = ty->meetWith(parentType, ch);
+				prog->setGlobalType(name, ty);
+			}
 			break;
 		}
 		default:

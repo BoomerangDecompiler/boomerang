@@ -3202,9 +3202,12 @@ void UserProc::fromSSAform() {
 						r2IsOperand = true;
 					if (firstName == NULL)
 						firstName = lookupSymFromRefAny(re);
-					else if (strcmp(firstName, lookupSymFromRefAny(re)) != 0) {
-						allSame = false;
-						break;
+					else {
+						char* tmp = lookupSymFromRefAny(re);
+						if (!tmp || strcmp(firstName, tmp) != 0) {
+							allSame = false;
+							break;
+						}
 					}
 				}
 				if (allSame && r2IsOperand)
