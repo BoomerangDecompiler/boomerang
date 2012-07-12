@@ -1,3 +1,10 @@
+cmake_minimum_required (VERSION 2.8)
+project (boomerang)
+
+if("${PROJECT_SOURCE_DIR}" STREQUAL "${PROJECT_BINARY_DIR}")
+   message(SEND_ERROR "In-source builds are not allowed! mkdir build, cd build, cmake ..")
+endif()
+
 INCLUDE(CheckIncludeFiles)
 INCLUDE(CheckLibraryExists)
 INCLUDE(CheckTypeSize)
@@ -139,6 +146,8 @@ SET(boomerang_SRC
 	frontend/ppcfrontend.cpp
 	frontend/sparcdecoder.cpp
 	frontend/sparcfrontend.cpp
+	frontend/mipsdecoder.cpp
+	frontend/mipsfrontend.cpp
 	frontend/st20decoder.cpp
 	frontend/st20frontend.cpp
 	loader/BinaryFileFactory.cpp
@@ -150,9 +159,6 @@ SET(boomerang_SRC
 
 ADD_EXECUTABLE(boomerang ${boomerang_SRC})
 
-TARGET_LINK_LIBRARIES(boomerang ${DL_LIBS})
-TARGET_LINK_LIBRARIES(boomerang ${GC_LIBS})
-TARGET_LINK_LIBRARIES(boomerang "${EXPAT_LIBRARIES}")
-TARGET_LINK_LIBRARIES(boomerang BinaryFile)
+TARGET_LINK_LIBRARIES(boomerang ${DL_LIBS} ${GC_LIBS} "${EXPAT_LIBRARIES}" BinaryFile)
 
 ADD_SUBDIRECTORY(loader)

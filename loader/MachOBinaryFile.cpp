@@ -30,6 +30,8 @@
 #include <iostream>
 #include <sstream>
 #include <assert.h>
+#include <cstring>
+#include <cstdlib>
 
 #include "nlist.h"
 #include "macho-apple.h"
@@ -446,7 +448,7 @@ char *MachOBinaryFile::BMMH(char *x)
 
 unsigned int MachOBinaryFile::BMMH(void * x)
 {
-  if (swap_bytes) return (unsigned int)_BMMH(x); else return (unsigned int)x;
+  if (swap_bytes) return (unsigned int)_BMMH(x); else return (ADDRESS)x;
 }
 
 const char *MachOBinaryFile::BMMH(const char *x)
@@ -585,7 +587,7 @@ DWord MachOBinaryFile::getDelta()
 	// Stupid function anyway: delta depends on section
 	// This should work for the header only
 	//	return (DWord)base - LMMH(m_pPEHeader->Imagebase); 
-	return (DWord)base - (DWord)loaded_addr; 
+	return (ADDRESS) base - (ADDRESS) loaded_addr; 
 }
 
 // This function is called via dlopen/dlsym; it returns a new BinaryFile

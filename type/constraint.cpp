@@ -268,7 +268,7 @@ Exp* nextConjunct(Exp*& remainder) {
 }
 
 bool Constraints::solve(std::list<ConstraintMap>& solns) {
-LOG << conSet.size() << " constraints:";
+LOG << (int) conSet.size() << " constraints:";
 std::ostringstream os; conSet.print(os); LOG << os.str().c_str();
 	// Replace Ta[loc] = ptr(alpha) with
 	//		   Tloc = alpha
@@ -339,7 +339,7 @@ std::ostringstream os; conSet.print(os); LOG << os.str().c_str();
 		}
 	}
 
-	{LOG << "\n" << (unsigned)disjunctions.size() << " disjunctions: "; std::list<Exp*>::iterator dd;
+	{LOG << "\n" << (unsigned) disjunctions.size() << " disjunctions: "; std::list<Exp*>::iterator dd;
 	 for (dd = disjunctions.begin(); dd != disjunctions.end(); dd++) LOG << *dd << ",\n"; LOG << "\n";}
 	LOG << fixed.size() << " fixed: " << fixed.prints();
 	LOG << equates.size() << " equates: " << equates.prints();

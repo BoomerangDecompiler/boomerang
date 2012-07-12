@@ -64,7 +64,7 @@ static int temp1 = 0;               // id of a temp; initialised on first use
  * PARAMETERS:      lc - host address at which to decode 
  * RETURNS:         the decoded double
  *============================================================================*/
-SWord getWord (unsigned lc)
+SWord getWord (ADDRESS lc)
 /* get2Bytes - returns next 2-Byte from image pointed to by lc.
    Fetch in a big-endian manner  */
 {

@@ -57,7 +57,7 @@ MIPSDecoder::MIPSDecoder(Prog* prog) : NJMCDecoder(prog)
 }
 
 // For now...
-int MIPSDecoder::decodeAssemblyInstruction(unsigned, int)
+int MIPSDecoder::decodeAssemblyInstruction(ADDRESS, int)
 { return 0; }
 
 /********************************************************************************

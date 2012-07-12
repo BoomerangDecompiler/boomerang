@@ -250,7 +250,7 @@ void Assign::rangeAnalysis(std::list<Statement*> &execution_paths)
 						a_rhs = new Const(proc->getProg()->readNative4(c));
 						break;
 					default:
-						LOG << "error: unhandled type size " << type->getSize() << " for reading native address\n";
+						LOG << "error: unhandled type size " << (int) type->getSize() << " for reading native address\n";
 				}
 			} else
 				if (VERBOSE && DEBUG_RANGE_ANALYSIS)
@@ -2572,7 +2572,7 @@ Exp *processConstant(Exp *e, Type *t, Prog *prog, UserProc* proc, ADDRESS stmt) 
 				}
 			}
 		} else if (t->resolvesToFloat()) {
-			e = new Ternary(opItof, new Const(32), new Const(t->getSize()), e);
+			e = new Ternary(opItof, new Const(32), new Const((int) t->getSize()), e);
 		} 
 	}
 

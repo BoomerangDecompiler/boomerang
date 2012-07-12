@@ -1250,7 +1250,7 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
 			} else {
 				Exp *cond = getCond();
 				if (cond == NULL)
-					cond = new Const(0xfeedface);  // hack, but better than a crash
+					cond = new Const((ADDRESS) 0xfeedface);  // hack, but better than a crash
 				if (cType == IfElse) {
 					cond = new Unary(opNot, cond->clone());
 					cond = cond->simplify();
@@ -1593,7 +1593,7 @@ char* BasicBlock::getStmtNumber() {
 	if (first)
 		sprintf(ret, "%d", first->getNumber());
 	else
-		sprintf(ret, "bb%x", (unsigned)this);
+		sprintf(ret, "bb%x", (ADDRESS) this);
 	return ret;
 } 
 

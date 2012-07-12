@@ -387,6 +387,7 @@ class Const : public Exp {
 		Type*		type;		// Constants need types during type analysis
 public:
 		// Special constructors overloaded for the various constants
+					Const(unsigned int i);
 					Const(int i);
 					Const(QWord ll);
 					Const(ADDRESS a);

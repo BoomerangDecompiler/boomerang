@@ -502,8 +502,8 @@ bool Win32BinaryFile::RealLoad(const char* sName)
 					// Normal case (IMAGE_IMPORT_BY_NAME). Skip the useless hint (2 bytes)
 					std::string name((const char*)(iatEntry+2+base));
 					dlprocptrs[paddr] = name;
-					if ((unsigned)paddr != (unsigned)iat - (unsigned)base + LMMH(m_pPEHeader->Imagebase))
-						dlprocptrs[(unsigned)iat - (unsigned)base + LMMH(m_pPEHeader->Imagebase)]
+					if ((unsigned)paddr != (ADDRESS)iat - (ADDRESS)base + LMMH(m_pPEHeader->Imagebase))
+						dlprocptrs[(ADDRESS)iat - (ADDRESS)base + LMMH(m_pPEHeader->Imagebase)]
 							= std::string("old_") + name; // add both possibilities
 					// printf("Added symbol %s value %x\n", name.c_str(), paddr);
 					// printf("Also added old_%s value %x\n", name.c_str(), (int)iat - (int)base +
@@ -1167,7 +1167,7 @@ DWord Win32BinaryFile::getDelta() {
 	// Stupid function anyway: delta depends on section
 	// This should work for the header only
 	//	return (DWord)base - LMMH(m_pPEHeader->Imagebase); 
-	return (DWord)base - (DWord)m_pPEHeader->Imagebase; 
+	return (ADDRESS) base - (DWord) m_pPEHeader->Imagebase; 
 }
 
 // This function is called via dlopen/dlsym; it returns a new BinaryFile derived concrete object. After this object is

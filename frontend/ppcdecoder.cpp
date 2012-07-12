@@ -4637,7 +4637,7 @@ PPCDecoder::PPCDecoder(Prog* prog) : NJMCDecoder(prog)
 }
 
 // For now...
-int PPCDecoder::decodeAssemblyInstruction(unsigned, int)
+int PPCDecoder::decodeAssemblyInstruction(ADDRESS, int)
 { return 0; }
 
 // Get an expression for a CR bit. For example, if bitNum is 6, return r65@[2:2]

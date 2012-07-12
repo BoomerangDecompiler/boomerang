@@ -80,6 +80,14 @@ Log &Log::operator<<(int i)
 	return *this;
 }
 
+Log &Log::operator<<(unsigned i)
+{
+	std::ostringstream st;
+	st << std::dec << i;
+	*this << st.str().c_str();
+	return *this;
+}
+
 Log &Log::operator<<(char c) {
 	std::ostringstream st;
 	st << c;

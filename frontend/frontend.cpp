@@ -524,7 +524,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 					LOG << "Warning: invalid instruction at " << uAddr << ": ";
 					// Emit the next 4 bytes for debugging
 					for (int ii=0; ii < 4; ii++)
-						LOG << (unsigned)(pBF->readNative1(uAddr + ii) & 0xFF) << " ";
+						LOG << (ADDRESS) (pBF->readNative1(uAddr + ii) & 0xFF) << " ";
 					LOG << "\n";
 				}
 				// Emit the RTL anyway, so we have the address and maybe some other clues

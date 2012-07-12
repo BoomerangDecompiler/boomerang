@@ -4,7 +4,7 @@
 extern char _assembly[];
 char* astr;
 
-DWord getDword (unsigned lc)
+DWord getDword (ADDRESS lc)
 /* get4Bytes - returns next 4-Byte from image pointed to by lc.
    Fetch in a big-endian manner  */
 {

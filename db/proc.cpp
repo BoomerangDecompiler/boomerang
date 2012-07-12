@@ -3769,8 +3769,7 @@ void UserProc::conTypeAnalysis() {
 		if (!ret)
 			LOG << "** could not solve type constraints for proc " << getName() << "!\n";
 		else if (solns.size() > 1)
-			// Note: require cast to unsigned for OS X and 64-bit hosts
-			LOG << "** " << (unsigned)solns.size() << " solutions to type constraints for proc " << getName() << "!\n";
+			LOG << "** " << solns.size() << " solutions to type constraints for proc " << getName() << "!\n";
 	}
 		
 	std::list<ConstraintMap>::iterator it;

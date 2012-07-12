@@ -1511,7 +1511,7 @@ void Prog::printCallGraph() {
 	while (procList.size()) {
 		Proc *p = procList.front();
 		procList.erase(procList.begin());
-		if ((unsigned)p == NO_ADDRESS)
+		if ((ADDRESS) p == NO_ADDRESS)
 			continue;
 		if (seen.find(p) == seen.end()) {
 			seen.insert(p);
