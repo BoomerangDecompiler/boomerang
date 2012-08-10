@@ -223,7 +223,7 @@ void Boomerang::help() {
 bool createDirectory(std::string dir) {
 	std::string remainder(dir);
 	std::string path;
-	unsigned i;
+	size_t i;
 	while ((i = remainder.find('/')) != std::string::npos) {
 		path += remainder.substr(0, i+1);
 		remainder = remainder.substr(i+1);
