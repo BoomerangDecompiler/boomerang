@@ -8,12 +8,10 @@
 #include <stdint.h>
 
 // Machine types
-typedef unsigned char        Byte;        /* 8 bits */
-typedef unsigned short        SWord;        /* 16 bits */
-typedef unsigned int            DWord;        /* 32 bits */
-typedef unsigned int            Word;        /* 32 bits */
-//typedef uintptr_t       ADDRESS;	/* pointer. size depends on platform */
-struct ADDRESS {
+typedef unsigned char       Byte;        /* 8 bits */
+typedef unsigned short      SWord;       /* 16 bits */
+typedef unsigned int        DWord;       /* 32 bits */
+struct ADDRESS { /* pointer. size depends on platform */
 //    ADDRESS() {}
 //    ADDRESS(uint32_t v) : m_value(v) {}
     typedef intptr_t value_type;
@@ -23,7 +21,7 @@ struct ADDRESS {
         z.m_value =x;
         return z;
     }
-    static ADDRESS g(void *x) {
+    static ADDRESS g(void *x) { // construct host/native oblivious address
         ADDRESS z;
         z.m_value =value_type(x);
         return z;
