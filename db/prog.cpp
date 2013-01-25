@@ -1692,7 +1692,7 @@ void Global::print(std::ostream& os, Prog* prog) {
 Exp *Prog::readNativeAs(ADDRESS uaddr, Type *type)
 {
     Exp *e = NULL;
-    PSectionInfo si = getSectionInfoByAddr(uaddr);
+    SectionInfo *si = getSectionInfoByAddr(uaddr);
     if (si == NULL)
         return NULL;
     if (type->resolvesToPointer()) {
