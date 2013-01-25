@@ -97,7 +97,7 @@ protected:
     char *              BMMH(char *x);
     const char *        BMMH(const char *x);
     unsigned int        BMMH(long int & x);
-    unsigned int        BMMH(void *x);
+    uintptr_t BMMH(void *x);
     unsigned int        BMMH(unsigned long x);
     signed int          BMMH(signed int x);
     unsigned int        BMMH(unsigned int x);

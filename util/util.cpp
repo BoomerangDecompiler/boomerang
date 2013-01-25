@@ -245,5 +245,10 @@ char* escapeStr(char* str) {
     strcpy(ret, out.str().c_str());
     return ret;
 }
-
+#include "types.h"
+#include <iomanip>
+std::ostream& operator<< (std::ostream& stream, const ADDRESS& addr) {
+	stream << "0x" << std::hex << addr.m_value << std::dec;
+	return stream;
+}
 

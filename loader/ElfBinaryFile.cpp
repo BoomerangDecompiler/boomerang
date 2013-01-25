@@ -31,13 +31,14 @@
  * Dependencies.
  *============================================================================*/
 
-#include "ElfBinaryFile.h"
 #include <sys/types.h>        // Next three for open()
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <cstddef>
 #include <iostream>
 #include <cstring>
 #include <assert.h>
+#include "ElfBinaryFile.h"
 #include "config.h"
 #if defined(_MSC_VER) && _MSC_VER >= 1400
 #pragma warning(disable:4996)        // Warnings about e.g. _strdup deprecated in VS 2005
@@ -47,7 +48,7 @@ typedef std::map<std::string, int, std::less<std::string> >        StrIntMap;
 
 ElfBinaryFile::ElfBinaryFile(bool bArchive /* = false */)
     : BinaryFile(bArchive),    // Initialise base class
-      next_extern(ADDRESS::g(0))
+      next_extern(ADDRESS::g(0L))
 {
     m_fd = 0;
     m_pFileName = 0;
@@ -197,11 +198,11 @@ bool ElfBinaryFile::RealLoad(const char* sName)
             m_pSections[i].uHostAddr = ADDRESS::g(m_pImage + off);
         m_pSections[i].uNativeAddr = elfRead4(&pShdr->sh_addr);
         m_pSections[i].uSectionSize = elfRead4(&pShdr->sh_size);
-        if (m_pSections[i].uNativeAddr == 0 && strncmp(pName, ".rel", 4)) {
+        if (m_pSections[i].uNativeAddr.isZero() && strncmp(pName, ".rel", 4)) {
             int align = elfRead4(&pShdr->sh_addralign);
             if (align > 1) {
-                if (arbitaryLoadAddr % align)
-                    arbitaryLoadAddr += align - (arbitaryLoadAddr % align);
+                if (arbitaryLoadAddr.m_value % align)
+                    arbitaryLoadAddr += align - (arbitaryLoadAddr.m_value % align);
             }
             m_pSections[i].uNativeAddr = arbitaryLoadAddr;
             arbitaryLoadAddr += m_pSections[i].uSectionSize;
@@ -238,7 +239,7 @@ bool ElfBinaryFile::RealLoad(const char* sName)
 
     // assign arbitary addresses to .rel.* sections too
     for (i=0; i < m_iNumSections; i++)
-        if (m_pSections[i].uNativeAddr == 0 && !strncmp(m_pSections[i].pSectionName, ".rel", 4)) {
+        if (m_pSections[i].uNativeAddr.isZero() && !strncmp(m_pSections[i].pSectionName, ".rel", 4)) {
             m_pSections[i].uNativeAddr = arbitaryLoadAddr;
             arbitaryLoadAddr += m_pSections[i].uSectionSize;
         }
@@ -330,7 +331,7 @@ ADDRESS ElfBinaryFile::findRelPltOffset(int i, ADDRESS addrRelPlt, int sizeRelPl
         if (--curr < 0)
             curr = numRelPlt - 1;
     } while (curr != first);            // Will eventually wrap around to first if not present
-    return ADDRESS::g(0);   // Exit if this happens
+    return ADDRESS::g(0L);   // Exit if this happens
 }
 
 // Add appropriate symbols to the symbol table.  secIndex is the section index of the symbol table.
@@ -343,14 +344,14 @@ void ElfBinaryFile::AddSyms(int secIndex) {
     int strIdx = m_sh_link[secIndex];                // sh_link points to the string table
 
     PSectionInfo siPlt = GetSectionInfoByName(".plt");
-    ADDRESS addrPlt = siPlt ? siPlt->uNativeAddr : ADDRESS::g(0);
+    ADDRESS addrPlt = siPlt ? siPlt->uNativeAddr : ADDRESS::g(0L);
     PSectionInfo siRelPlt = GetSectionInfoByName(".rel.plt");
     int sizeRelPlt = 8;            // Size of each entry in the .rel.plt table
     if (siRelPlt == NULL) {
         siRelPlt = GetSectionInfoByName(".rela.plt");
         sizeRelPlt = 12;        // Size of each entry in the .rela.plt table is 12 bytes
     }
-    ADDRESS addrRelPlt = ADDRESS::g(0);
+    ADDRESS addrRelPlt = ADDRESS::g(0L);
     int numRelPlt = 0;
     if (siRelPlt) {
         addrRelPlt = siRelPlt->uHostAddr;
@@ -371,7 +372,7 @@ void ElfBinaryFile::AddSyms(int secIndex) {
         std::map<ADDRESS, std::string>::iterator aa = m_SymTab.find(val);
         // Ensure no overwriting (except functions)
         if (aa == m_SymTab.end() || ELF32_ST_TYPE(m_pSym[i].st_info) == STT_FUNC) {
-            if (val == 0 && siPlt) { //&& i < max_i_for_hack) {
+            if ( val.isZero() && siPlt) { //&& i < max_i_for_hack) {
                 // Special hack for gcc circa 3.3.3: (e.g. test/pentium/settest).  The value in the dynamic symbol table
                 // is zero!  I was assuming that index i in the dynamic symbol table would always correspond to index i
                 // in the .plt section, but for fedora2_true, this doesn't work. So we have to look in the .rel[a].plt
@@ -471,7 +472,7 @@ void ElfBinaryFile::AddRelocsAsSyms(int relSecIdx) {
             if (m_pSym[symIndex].st_info & STT_SECTION)
                 a = GetSectionInfo(elfRead2(&m_pSym[symIndex].st_shndx))->uNativeAddr;
             // Overwrite the relocation value... ?
-            writeNative4(val, a);
+            writeNative4(val, a.m_value);
             continue;
         }
         if ((flags & R_386_PC32) == 0)
@@ -493,7 +494,7 @@ void ElfBinaryFile::AddRelocsAsSyms(int relSecIdx) {
             it = m_SymTab.find(next_extern);
             next_extern += 4;
         }
-        writeNative4(val, (*it).first - val - 4);
+        writeNative4(val, ((*it).first - val - 4).m_value);
     }
     return;
 }
@@ -648,8 +649,9 @@ int ElfBinaryFile::GetDistanceByName(const char* sName, const char* pSectName)
     // No need to guess, but if there are fillers, then subtracting labels will give a better answer for coverage
     // purposes. For example, switch_cc. But some programs (e.g. switch_ps) have the switch tables between the
     // end of _start and main! So we are better off overall not trying to guess the size of _start
-    unsigned value = GetAddressByName(sName);
-    if (value == 0) return 0;        // Symbol doesn't even exist!
+    ADDRESS value = GetAddressByName(sName);
+    if ( value.isZero() )
+        return 0;        // Symbol doesn't even exist!
 
     PSectionInfo pSect;
     pSect = GetSectionInfoByName(pSectName);
@@ -658,10 +660,10 @@ int ElfBinaryFile::GetDistanceByName(const char* sName, const char* pSectName)
     int n = pSect->uSectionSize / pSect->uSectionEntrySize;
     Elf32_Sym* pSym = (Elf32_Sym*)pSect->uHostAddr.m_value;
     // Search all the symbols. It may be possible to start later than index 0
-    unsigned closest = 0xFFFFFFFF;
+    ADDRESS closest = ADDRESS::g(0xFFFFFFFF); //TODO: should use something like ADDRESS::max ??
     int idx = -1;
     for (int i=0; i < n; i++) {
-        if ((pSym[i].st_value > value) && (pSym[i].st_value < closest)) {
+        if ((pSym[i].st_value > value.m_value) && (pSym[i].st_value < closest.m_value)) {
             idx = i;
             closest = pSym[i].st_value;
         }
@@ -673,9 +675,10 @@ int ElfBinaryFile::GetDistanceByName(const char* sName, const char* pSectName)
     ADDRESS hi = low + pSect->uSectionSize;
     if ((value >= low) && (value < hi)) {
         // Our symbol is in the .text section. Put a ceiling of the end of the section on closest.
-        if (closest > hi) closest = hi;
+        if (closest > hi)
+            closest = hi;
     }
-    return closest - value;
+    return (closest - value).m_value;
 }
 
 int ElfBinaryFile::GetDistanceByName(const char* sName) {
@@ -685,11 +688,12 @@ int ElfBinaryFile::GetDistanceByName(const char* sName) {
 }
 
 bool ElfBinaryFile::IsDynamicLinkedProc(ADDRESS uNative) {
-    if (uNative > (unsigned)-1024 && uNative != (unsigned)-1)
+    if (uNative.m_value > (unsigned)-1024 && uNative != NO_ADDRESS)
         return true;                                // Say yes for fake library functions
     if (uNative >= first_extern && uNative < next_extern)
         return true;                                // Yes for externs (not currently used)
-    if (m_uPltMin == 0) return false;
+    if ( m_uPltMin.isZero() )
+        return false;
     return (uNative >= m_uPltMin) && (uNative < m_uPltMax);    // Yes if a call to the PLT (false otherwise)
 }
 
@@ -703,7 +707,7 @@ std::list<SectionInfo*>& ElfBinaryFile::GetEntryPoints(
         const char* pEntry /* = "main" */) {
     SectionInfo* pSect = GetSectionInfoByName(".text");
     ADDRESS uMain = GetAddressByName(pEntry, true);
-    ADDRESS delta = uMain - pSect->uNativeAddr;
+    ptrdiff_t delta = (uMain - pSect->uNativeAddr).m_value;
     pSect->uNativeAddr += delta;
     pSect->uHostAddr += delta;
     // Adjust uSectionSize so uNativeAddr + uSectionSize still is end of sect
@@ -732,13 +736,13 @@ ADDRESS ElfBinaryFile::GetEntryPoint() {
 
 // FIXME: the below assumes a fixed delta
 ADDRESS ElfBinaryFile::NativeToHostAddress(ADDRESS uNative) {
-    if (m_iNumSections == 0) return ADDRESS::g(0);
+    if (m_iNumSections == 0) return ADDRESS::g(0L);
     return m_pSections[1].uHostAddr - m_pSections[1].uNativeAddr + uNative;
 }
 
 ADDRESS ElfBinaryFile::GetRelocatedAddress(ADDRESS uNative) {
     // Not implemented yet. But we need the function to make it all link
-    return ADDRESS::g(0);
+    return ADDRESS::g(0L);
 }
 
 bool ElfBinaryFile::PostLoad(void* handle) {
@@ -905,13 +909,13 @@ std::map<ADDRESS, const char*>* ElfBinaryFile::GetDynamicGlobalMap() {
         return ret;
     }
 
-    unsigned p = pSect->uHostAddr;
+    ADDRESS p = pSect->uHostAddr;
     for (int i=0; i < numEnt; i++) {
         // The ugly p[1] below is because it p might point to an Elf32_Rela struct, or an Elf32_Rel struct
-        int sym = ELF32_R_SYM(((int*)p)[1]);
+        int sym = ELF32_R_SYM(((int*)p.m_value)[1]);
         int name = pSym[sym].st_name;        // Index into string table
         const char* s = GetStrPtr(idxStr, name);
-        ADDRESS val = ADDRESS::g(((int*)p)[0]);
+        ADDRESS val = ADDRESS::g(((int*)p.m_value)[0]);
         (*ret)[val] = s;            // Add the (val, s) mapping to ret
         p += pSect->uSectionEntrySize;
     }
@@ -985,11 +989,11 @@ int ElfBinaryFile::readNative4(ADDRESS nat) {
     return elfRead4((int*)host.m_value);
 }
 
-void ElfBinaryFile::writeNative4(ADDRESS nat, unsigned int n) {
+void ElfBinaryFile::writeNative4(ADDRESS nat, uint32_t n) {
     PSectionInfo si = GetSectionInfoByAddr(nat);
     if (si == 0) return;
     ADDRESS host = si->uHostAddr - si->uNativeAddr + nat;
-    u_int8_t *host_ptr  = (unsigned char*)host.m_value;
+    uint8_t *host_ptr  = (unsigned char*)host.m_value;
     if (m_elfEndianness) {
         host_ptr[0] = (n >> 24) & 0xff;
         host_ptr[1] = (n >> 16) & 0xff;
@@ -1085,7 +1089,7 @@ void ElfBinaryFile::applyRelocations() {
                     unsigned size = ps->uSectionSize;
                     // NOTE: the r_offset is different for .o files (E_REL in the e_type header field) than for exe's
                     // and shared objects!
-                    ADDRESS destNatOrigin=ADDRESS::g(0), destHostOrigin=ADDRESS::g(0);
+                    ADDRESS destNatOrigin=ADDRESS::g(0L), destHostOrigin=ADDRESS::g(0L);
                     if (e_type == E_REL) {
                         int destSection = m_sh_info[i];
                         destNatOrigin    = m_pSections[destSection].uNativeAddr;
@@ -1106,9 +1110,9 @@ void ElfBinaryFile::applyRelocations() {
                         else {
                             SectionInfo* destSec = GetSectionInfoByAddr(ADDRESS::g(r_offset));
                             pRelWord = (int*)(destSec->uHostAddr - destSec->uNativeAddr + r_offset).m_value;
-                            destNatOrigin = ADDRESS::g(0);
+                            destNatOrigin = ADDRESS::g(0L);
                         }
-                        ADDRESS A, S=ADDRESS::g(0), P;
+                        ADDRESS A, S=ADDRESS::g(0L), P;
                         int nsec;
                         switch (relType) {
                             case 0:                // R_386_NONE: just ignore (common)
@@ -1121,7 +1125,7 @@ void ElfBinaryFile::applyRelocations() {
                                         S += GetSectionInfo(nsec)->uNativeAddr;
                                 }
                                 A = elfRead4(pRelWord);
-                                elfWrite4(pRelWord, S+A);
+                                elfWrite4(pRelWord, (S+A).m_value);
                                 break;
                             case 2:                // R_386_PC32: S + A - P
                                 if (ELF32_ST_TYPE(symOrigin[symTabIndex].st_info) == STT_SECTION) {
@@ -1130,7 +1134,7 @@ void ElfBinaryFile::applyRelocations() {
                                         S = GetSectionInfo(nsec)->uNativeAddr;
                                 } else {
                                     S = elfRead4((int*)&symOrigin[symTabIndex].st_value);
-                                    if (S == 0) {
+                                    if (S.isZero()) {
                                         // This means that the symbol doesn't exist in this module, and is not accessed
                                         // through the PLT, i.e. it will be statically linked, e.g. strcmp. We have the
                                         // name of the symbol right here in the symbol table entry, but the only way
@@ -1153,7 +1157,7 @@ void ElfBinaryFile::applyRelocations() {
                                 }
                                 A = elfRead4(pRelWord);
                                 P = destNatOrigin + r_offset;
-                                elfWrite4(pRelWord, S+A-P);
+                                elfWrite4(pRelWord, (S+A-P).m_value);
                                 break;
                             case 7:
                             case 8:                // R_386_RELATIVE
@@ -1194,7 +1198,7 @@ bool ElfBinaryFile::IsRelocationAt(ADDRESS uNative)
                     unsigned size = ps->uSectionSize;
                     // NOTE: the r_offset is different for .o files (E_REL in the e_type header field) than for exe's
                     // and shared objects!
-                    ADDRESS destNatOrigin=ADDRESS::g(0), destHostOrigin;
+                    ADDRESS destNatOrigin=ADDRESS::g(0L), destHostOrigin;
                     if (e_type == E_REL) {
                         int destSection = m_sh_info[i];
                         destNatOrigin    = m_pSections[destSection].uNativeAddr;

@@ -261,20 +261,20 @@ Type* LowerType::clone() const
  * PARAMETERS:        <none>
  * RETURNS:            Size of the type (in bits)
  *============================================================================*/
-unsigned IntegerType::getSize() const { return size; }
-unsigned      FloatType::getSize() const { return size; }
-unsigned BooleanType::getSize() const { return 1; }
-unsigned       CharType::getSize() const { return 8; }
-unsigned       VoidType::getSize() const { return 0; }
-unsigned       FuncType::getSize() const { return 0; /* always nagged me */ }
-unsigned PointerType::getSize() const {
+size_t IntegerType::getSize() const { return size; }
+size_t FloatType::getSize() const { return size; }
+size_t BooleanType::getSize() const { return 1; }
+size_t CharType::getSize() const { return 8; }
+size_t VoidType::getSize() const { return 0; }
+size_t FuncType::getSize() const { return 0; /* always nagged me */ }
+size_t PointerType::getSize() const {
     //points_to->getSize(); // yes, it was a good idea at the time
     return STD_SIZE;
 }
-unsigned ArrayType::getSize() const {
+size_t ArrayType::getSize() const {
     return base_type->getSize() * length;
 }
-unsigned NamedType::getSize() const {
+size_t NamedType::getSize() const {
     Type *ty = resolvesTo();
     if (ty)
         return ty->getSize();
@@ -282,14 +282,14 @@ unsigned NamedType::getSize() const {
         LOG << "WARNING: Unknown size for named type " << name.c_str() << "\n";
     return 0; // don't know
 }
-unsigned CompoundType::getSize() const {
+size_t CompoundType::getSize() const {
     int n = 0;
     for (unsigned i = 0; i < types.size(); i++)
         // NOTE: this assumes no padding... perhaps explicit padding will be needed
         n += types[i]->getSize();
     return n;
 }
-unsigned UnionType::getSize() const {
+size_t UnionType::getSize() const {
     int max = 0;
     std::list<UnionElement>::const_iterator it;
     for (it = li.begin(); it != li.end(); it++) {
@@ -298,7 +298,7 @@ unsigned UnionType::getSize() const {
     }
     return max;
 }
-unsigned SizeType::getSize() const { return size; }
+size_t SizeType::getSize() const { return size; }
 
 
 
@@ -1255,7 +1255,7 @@ bool DataIntervalMap::isClear(ADDRESS addr, unsigned size) {
     if (end <= addr)
         return true;
     if (it->second.type->isArray() && it->second.type->asArray()->isUnbounded()) {
-        it->second.size = addr - it->first;
+        it->second.size = (addr - it->first).m_value;
         LOG << "shrinking size of unbound array to " << it->second.size << " bytes\n";
         return true;
     }
@@ -1284,8 +1284,8 @@ void DataIntervalMap::addItem(ADDRESS addr, char* name, Type* ty, bool forced /*
         enterComponent(pdie, addr, name, ty, forced);
     } else if (pdie->first == addr) {
         // Could go either way, depending on where the data items end
-        unsigned endOfCurrent = pdie->first + pdie->second.size;
-        unsigned endOfNew = addr+ty->getSize()/8;
+        ADDRESS endOfCurrent = pdie->first + pdie->second.size;
+        ADDRESS endOfNew = addr+ty->getSize()/8;
         if (endOfCurrent < endOfNew)
             replaceComponents(addr, name, ty, forced);
         else if (endOfCurrent == endOfNew)
@@ -1307,7 +1307,7 @@ void DataIntervalMap::addItem(ADDRESS addr, char* name, Type* ty, bool forced /*
 // We are entering an item that already exists in a larger type. Check for compatibility, meet if necessary.
 void DataIntervalMap::enterComponent(DataIntervalEntry* pdie, ADDRESS addr, char* name, Type* ty, bool forced) {
     if (pdie->second.type->resolvesToCompound()) {
-        unsigned bitOffset = (addr - pdie->first)*8;
+        unsigned bitOffset = (addr - pdie->first).m_value*8;
         Type* memberType = pdie->second.type->asCompound()->getTypeAtOffset(bitOffset);
         if (memberType->isCompatibleWith(ty)) {
             bool ch;
@@ -1334,14 +1334,14 @@ void DataIntervalMap::enterComponent(DataIntervalEntry* pdie, ADDRESS addr, char
 // components out of the way, meeting if necessary
 void DataIntervalMap::replaceComponents(ADDRESS addr, char* name, Type* ty, bool forced) {
     iterator it;
-    unsigned pastLast = addr + ty->getSize()/8;        // This is the byte address just past the type to be inserted
+    ADDRESS pastLast = addr + ty->getSize()/8;        // This is the byte address just past the type to be inserted
     // First check that the new entry will be compatible with everything it will overlap
     if (ty->resolvesToCompound()) {
         iterator it1 = dimap.lower_bound(addr);            // Iterator to the first overlapping item (could be end(), but
         // if so, it2 will also be end())
-        iterator it2 = dimap.upper_bound(ADDRESS::g(pastLast-1));    // Iterator to the first item that starts too late
+        iterator it2 = dimap.upper_bound(pastLast-1);    // Iterator to the first item that starts too late
         for (it = it1; it != it2; ++it) {
-            unsigned bitOffset = (it->first - addr) * 8;
+            unsigned bitOffset = (it->first - addr).m_value * 8;
             Type* memberType = ty->asCompound()->getTypeAtOffset(bitOffset);
             if (memberType->isCompatibleWith(it->second.type, true)) {
                 bool ch;
@@ -1356,7 +1356,7 @@ void DataIntervalMap::replaceComponents(ADDRESS addr, char* name, Type* ty, bool
     } else if (ty->resolvesToArray()) {
         Type* memberType = ty->asArray()->getBaseType();
         iterator it1 = dimap.lower_bound(addr);
-        iterator it2 = dimap.upper_bound(ADDRESS::g(pastLast-1));
+        iterator it2 = dimap.upper_bound(pastLast-1);
         for (it = it1; it != it2; ++it) {
             if (memberType->isCompatibleWith(it->second.type, true)) {
                 bool ch;
@@ -1379,7 +1379,7 @@ void DataIntervalMap::replaceComponents(ADDRESS addr, char* name, Type* ty, bool
 
     // The compound or array type is compatible. Remove the items that it will overlap with
     iterator it1 = dimap.lower_bound(addr);
-    iterator it2 = dimap.upper_bound(ADDRESS::g(pastLast-1));
+    iterator it2 = dimap.upper_bound(pastLast-1);
 
     // Check for existing locals that need to be updated
     if (ty->resolvesToCompound() || ty->resolvesToArray()) {
@@ -1393,7 +1393,7 @@ void DataIntervalMap::replaceComponents(ADDRESS addr, char* name, Type* ty, bool
                                        new Const(it->first)));
             locl->simplifyArith();                        // Convert m[sp{0} + -4] to m[sp{0} - 4]
             Type* elemTy;
-            int bitOffset = (it->first - addr) / 8;
+            int bitOffset = (it->first - addr).m_value / 8;
             if (ty->resolvesToCompound())
                 elemTy = ty->asCompound()->getTypeAtOffset(bitOffset);
             else
@@ -1470,7 +1470,7 @@ ComplexTypeCompList& Type::compForAddress(ADDRESS addr, DataIntervalMap& dim) {
     ADDRESS startCurrent = pdie->first;
     Type* curType = pdie->second.type;
     while (startCurrent < addr) {
-        unsigned bitOffset = (addr - startCurrent) * 8;
+        unsigned bitOffset = (addr - startCurrent).m_value * 8;
         if (curType->isCompound()) {
             CompoundType* compCurType = curType->asCompound();
             unsigned rem = compCurType->getOffsetRemainder(bitOffset);

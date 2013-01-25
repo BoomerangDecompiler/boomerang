@@ -179,7 +179,7 @@ public:
     float        readNativeFloat4(ADDRESS a);    // Read 4 bytes as float
     double        readNativeFloat8(ADDRESS a);    // Read 8 bytes as float
 
-    void        writeNative4(ADDRESS nat, unsigned int n);
+    void        writeNative4(ADDRESS nat, uint32_t n);
 
     // Symbol functions
     const char* SymbolByAddress(ADDRESS uAddr); // Get name of symbol

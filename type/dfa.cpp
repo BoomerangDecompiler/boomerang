@@ -191,7 +191,7 @@ void UserProc::dfaTypeAnalysis() {
                     if (gloName) {
                         ADDRESS r = addr - prog->getGlobalAddr((char*)gloName);
                         Exp *ne;
-                        if (r) {
+                        if (!r.isZero()) { //TODO: what if r is NO_ADDR ?
                             Location *g = Location::global(strdup(gloName), this);
                             ne = Location::memOf(
                                      new Binary(opPlus,
@@ -1208,7 +1208,7 @@ void Unary::descendType(Type* parentType, bool& ch, Statement* s) {
                     ((Binary*)((Binary*)subExp1)->getSubExp1())->getSubExp2()->isIntConst()) {
                 Exp* leftOfPlus = ((Binary*)subExp1)->getSubExp1();
                 // We would expect the stride to be the same size as the base type
-                unsigned stride =  ((Const*)((Binary*)leftOfPlus)->getSubExp2())->getInt();
+                size_t stride =  ((Const*)((Binary*)leftOfPlus)->getSubExp2())->getInt();
                 if (DEBUG_TA && stride*8 != parentType->getSize())
                     LOG << "type WARNING: apparent array reference at " << this << " has stride " << stride*8 <<
                            " bits, but parent type " << parentType->getCtype() << " has size " <<

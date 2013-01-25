@@ -50,7 +50,7 @@ public:
 
     // Specific to BinaryFile objects that implement a "global pointer"
     // Gets a pair of unsigned integers representing the address of %agp (first) and the value for GLOBALOFFSET (second)
-    virtual std::pair<unsigned,unsigned> GetGlobalPointerInfo();
+    virtual std::pair<ADDRESS,unsigned> GetGlobalPointerInfo();
 
     // Palm specific calls
 

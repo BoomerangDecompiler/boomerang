@@ -207,7 +207,7 @@ std::vector<ADDRESS> FrontEnd::getEntryPoints()
                     vers = pBF->readNative4(a);
                     setup = ADDRESS::g(pBF->readNative4(a+4));
                     teardown = ADDRESS::g(pBF->readNative4(a+8));
-                    if (setup) {
+                    if ( !setup.isZero() ) {
                         Type *ty = NamedType::getNamedType("ModuleSetupProc");
                         assert(ty->isFunc());
                         UserProc *proc = (UserProc*)prog->setNewProc(setup);
@@ -220,7 +220,7 @@ std::vector<ADDRESS> FrontEnd::getEntryPoints()
                         proc->setSignature(sig);
                         entrypoints.push_back(setup);
                     }
-                    if (teardown) {
+                    if ( !teardown.isZero() ) {
                         Type *ty = NamedType::getNamedType("ModuleTearDownProc");
                         assert(ty->isFunc());
                         UserProc *proc = (UserProc*)prog->setNewProc(teardown);
@@ -256,7 +256,7 @@ void FrontEnd::decode(Prog* prog, bool decodeMain, const char *pname) {
     if (!decodeMain)
         return;
 
-    Boomerang::get()->alert_start_decode(pBF->getLimitTextLow(), pBF->getLimitTextHigh() - pBF->getLimitTextLow());
+    Boomerang::get()->alert_start_decode(pBF->getLimitTextLow(), (pBF->getLimitTextHigh() - pBF->getLimitTextLow()).m_value);
 
     bool gotMain;
     ADDRESS a = getMainEntryPoint(gotMain);
@@ -588,7 +588,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
                     const char *nam = refHints[pRtl->getAddress()].c_str();
                     ADDRESS gu = prog->getGlobalAddr((char*)nam);
                     if (gu != NO_ADDRESS) {
-                        s->searchAndReplace(new Const((int)gu), new Unary(opAddrOf, Location::global(nam, pProc)));
+                        s->searchAndReplace(new Const((int)gu.m_value), new Unary(opAddrOf, Location::global(nam, pProc))); //TODO: use Const(gu) instead of casting to int ?
                     }
                 }
                 s->simplify();
@@ -858,7 +858,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
                             callList.push_back(call);
 
                             // Record the called address as the start of a new procedure if it didn't already exist.
-                            if (uNewAddr && uNewAddr != NO_ADDRESS && pProc->getProg()->findProc(uNewAddr) == NULL) {
+                            if ( !uNewAddr.isZero() && uNewAddr != NO_ADDRESS && pProc->getProg()->findProc(uNewAddr) == NULL) {
                                 callList.push_back(call);
                                 //newProc(pProc->getProg(), uNewAddr);
                                 if (Boomerang::get()->traceDecoder)

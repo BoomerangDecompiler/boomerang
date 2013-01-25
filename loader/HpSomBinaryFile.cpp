@@ -169,7 +169,7 @@ bool HpSomBinaryFile::RealLoad(const char* sName) {
     bool found = false;
     unsigned* maxAux = auxHeaders + sizeAux;
     while (auxHeaders < maxAux) {
-        if ((UINT4(m_pImage + ADDRESS::g(auxHeaders)) & 0xFFFF) == 0x0004) {
+        if ((UINT4(m_pImage + ADDRESS::value_type(auxHeaders)) & 0xFFFF) == 0x0004) {
             found = true;
             break;
         }
@@ -205,7 +205,7 @@ bool HpSomBinaryFile::RealLoad(const char* sName) {
     // assume that the first subspace entry points to it
     char* subspace_location = (char*)m_pImage + UINT4(m_pImage + 0x34);
     ADDRESS first_subspace_fileloc = ADDRESS::g(UINT4(subspace_location + 8));
-    char* DLTable = (char*)m_pImage + first_subspace_fileloc;
+    char* DLTable = (char*)m_pImage + first_subspace_fileloc.m_value;
     char* pDlStrings = DLTable + UINT4(DLTable + 0x28);
     unsigned numImports = UINT4(DLTable + 0x14);    // Number of import strings
     import_entry* import_list = (import_entry*)(DLTable +
@@ -216,7 +216,7 @@ bool HpSomBinaryFile::RealLoad(const char* sName) {
 
     // A convenient macro for accessing the fields (0-11) of the auxilliary header
     // Fields 0, 1 are the header (flags, aux header type, and size)
-#define AUXHDR(idx) (UINT4(m_pImage + ADDRESS::g(auxHeaders+idx)))
+#define AUXHDR(idx) (UINT4(m_pImage + ADDRESS::value_type(auxHeaders+idx)))
 
     // Section 0: header
     m_pSections[0].pSectionName = const_cast<char *>("$HEADER$");
@@ -269,8 +269,8 @@ bool HpSomBinaryFile::RealLoad(const char* sName) {
 
     // Work through the imports, and find those for which there are stubs using that import entry.
     // Add the addresses of any such stubs.
-    int deltaText = m_pSections[1].uHostAddr - m_pSections[1].uNativeAddr;
-    int deltaData = m_pSections[2].uHostAddr - m_pSections[2].uNativeAddr;
+    int deltaText = (m_pSections[1].uHostAddr - m_pSections[1].uNativeAddr).m_value;
+    int deltaData = (m_pSections[2].uHostAddr - m_pSections[2].uNativeAddr).m_value;
     // The "end of data" where r27 points is not necessarily the same as
     // the end of the $DATA$ space. So we have to call getSubSpaceInfo
     std::pair<ADDRESS, int> pr = getSubspaceInfo("$GLOBAL$");
@@ -403,7 +403,7 @@ void HpSomBinaryFile::UnLoad()
 ADDRESS HpSomBinaryFile::GetEntryPoint()
 {
     assert(0); /* FIXME: Someone who understands this file please implement */
-    return ADDRESS::g(0);
+    return ADDRESS::g(0L);
 }
 
 // This is provided for completeness only...
@@ -458,7 +458,7 @@ std::list<const char *> HpSomBinaryFile::getDependencyList()
 
 ADDRESS HpSomBinaryFile::getImageBase()
 {
-    return ADDRESS::g(0); /* FIXME */
+    return ADDRESS::g(0L); /* FIXME */
 }
 
 size_t HpSomBinaryFile::getImageSize()
@@ -477,7 +477,7 @@ ADDRESS HpSomBinaryFile::GetAddressByName(char* pName, bool bNoTypeOK /* = false
     // SymTab table
     ADDRESS res = symbols.find(pName);
     if (res == NO_ADDRESS)
-        return ADDRESS::g(0);           // Till the failure return value is fixed
+        return ADDRESS::g(0L);           // Till the failure return value is fixed
     return res;
 }
 
@@ -489,7 +489,7 @@ bool HpSomBinaryFile::IsDynamicLinkedProc(ADDRESS uNative)
 
 std::pair<ADDRESS, int> HpSomBinaryFile::getSubspaceInfo(const char* ssname)
 {
-    std::pair<ADDRESS, int> ret(ADDRESS::g(0), 0);
+    std::pair<ADDRESS, int> ret(ADDRESS::g(0L), 0);
     // Get the start and length of the subspace with the given name
     struct subspace_dictionary_record* subSpaces =
             (struct subspace_dictionary_record*)(m_pImage + UINT4(m_pImage + 0x34));
@@ -516,9 +516,9 @@ std::pair<ADDRESS, int> HpSomBinaryFile::getSubspaceInfo(const char* ssname)
 // (first) and the value for GLOBALOFFSET (unused for ra-risc)
 // The understanding at present is that the global data pointer (%r27 for
 // pa-risc) points just past the end of the $GLOBAL$ subspace.
-std::pair<unsigned,unsigned> HpSomBinaryFile::GetGlobalPointerInfo()
+std::pair<ADDRESS,unsigned> HpSomBinaryFile::GetGlobalPointerInfo()
 {
-    std::pair<unsigned, unsigned> ret(0, 0);
+    std::pair<ADDRESS, unsigned> ret(ADDRESS::g(0L), 0);
     // Search the subspace names for "$GLOBAL$
     std::pair<ADDRESS, int> info = getSubspaceInfo("$GLOBAL$");
     // We want the end of the $GLOBAL$ section, which is the sum of the start
@@ -546,11 +546,11 @@ std::map<ADDRESS, const char*>* HpSomBinaryFile::GetDynamicGlobalMap()
     // assume that the first subspace entry points to it
     const char* subspace_location = (char*)m_pImage + UINT4(m_pImage + 0x34);
     ADDRESS first_subspace_fileloc = ADDRESS::g(UINT4(subspace_location + 8));
-    const char* DLTable = (char*)m_pImage + first_subspace_fileloc;
+    const char* DLTable = (char*)m_pImage + first_subspace_fileloc.m_value;
 
     unsigned numDLT = UINT4(DLTable + 0x40);
     // Offset 0x38 in the DL table has the offset relative to $DATA$ (section 2)
-    unsigned* p = (unsigned*)(UINT4(DLTable + 0x38) + m_pSections[2].uHostAddr);
+    unsigned* p = (unsigned*)(UINT4(DLTable + 0x38) + m_pSections[2].uHostAddr.m_value);
 
     // The DLT is paralelled by the first <numDLT> entries in the import table;
     // the import table has the symbolic names

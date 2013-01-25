@@ -59,6 +59,9 @@ private:
         Byte	getByte(intptr_t lc); //TODO: switch to using ADDRESS objects
         SWord	getWord(intptr_t lc);
         DWord	getDword(intptr_t lc);
+		Byte	getByte(ADDRESS lc) {return getByte(lc.m_value);}
+		SWord	getWord(ADDRESS lc) {return getWord(lc.m_value);}
+		DWord	getDword(ADDRESS lc){return getDword(lc.m_value);}
 
         ADDRESS lastDwordLc;
 };

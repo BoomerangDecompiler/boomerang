@@ -183,7 +183,7 @@ void DecodeResult::reset()
     valid = true;
     rtl = NULL;
     reDecode = false;
-    forceOutEdge = ADDRESS::g(0);
+    forceOutEdge = ADDRESS::g(0L);
 }
 
 /*==============================================================================

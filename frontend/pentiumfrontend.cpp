@@ -591,7 +591,7 @@ ADDRESS PentiumFrontEnd::getMainEntryPoint(bool& gotMain) {
 
     gotMain = false;
     start = pBF->GetEntryPoint();
-    if (start == 0 || start == NO_ADDRESS)
+    if ( start.isZero() || start == NO_ADDRESS)
         return NO_ADDRESS;
 
     int instCount = 100;
@@ -714,7 +714,7 @@ void PentiumFrontEnd::processStringInst(UserProc* proc) {
         std::list<RTL*> *rtls = bb->getRTLs();
         if (rtls == NULL)
             break;
-        ADDRESS prev, addr = ADDRESS::g(0);
+        ADDRESS prev, addr = ADDRESS::g(0L);
         bool lastRtl = true;
         // For each RTL this BB
         for (std::list<RTL*>::iterator rit = rtls->begin(); rit != rtls->end(); rit++) {

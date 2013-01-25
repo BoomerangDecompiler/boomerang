@@ -112,7 +112,7 @@ public:
     // Specific to BinaryFile objects that implement a "global pointer"
     // Gets a pair of unsigned integers representing the address of %agp (first)
     // and the value for GLOBALOFFSET (unused for pa-risc)
-    virtual std::pair<unsigned,unsigned> GetGlobalPointerInfo();
+    virtual std::pair<ADDRESS,unsigned> GetGlobalPointerInfo();
 
     // Get a map from ADDRESS to const char*. This map contains the native
     // addresses and symbolic names of global data items (if any) which are

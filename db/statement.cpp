@@ -28,6 +28,7 @@
 
 #include <sstream>
 #include <cstring>
+#include <cstddef>
 #include <algorithm>
 #include "statement.h"
 #include "exp.h"
@@ -99,7 +100,7 @@ bool Statement::calcMayAlias(Exp *e1, Exp *e2, int size) {
     if (e1a->isIntConst() && e2a->isIntConst()) {
         ADDRESS a1 = ((Const*)e1a)->getAddr();
         ADDRESS a2 = ((Const*)e2a)->getAddr();
-        int diff = a1 - a2;
+        ptrdiff_t diff = (a1 - a2).m_value;
         if (diff < 0) diff = -diff;
         if (diff*8 >= size) return false;
     }
@@ -2530,7 +2531,7 @@ Exp *processConstant(Exp *e, Type *t, Prog *prog, UserProc* proc, ADDRESS stmt) 
             Type *points_to = pt->getPointsTo();
             if (t->isCString()) {
                 ADDRESS u = ((Const*)e)->getAddr();
-                if (u != 0) {   // can't do anything with NULL
+                if ( !u.isZero() ) {   // can't do anything with NULL
                     char *str = prog->getStringConstant(u, true);
                     if (str) {
                         e = new Const(str);
@@ -2552,7 +2553,7 @@ Exp *processConstant(Exp *e, Type *t, Prog *prog, UserProc* proc, ADDRESS stmt) 
                     LOG << "found function pointer with constant value " << "of type " << pt->getCtype()
                         << " in statement at addr " << stmt << ".  Decoding address " << a << "\n";
                 // the address can be zero, i.e., NULL, if so, ignore it.
-                if (a != 0) {
+                if ( !a.isZero() ) {
                     if (!Boomerang::get()->noDecodeChildren)
                         prog->decodeEntryPoint(a);
                     Proc *p = prog->findProc(a);

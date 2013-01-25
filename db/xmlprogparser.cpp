@@ -2216,7 +2216,7 @@ void XMLProgParser::persistToXML(std::ostream &out, Cluster *c)
 
 void XMLProgParser::persistToXML(std::ostream &out, Global *g)
 {
-    out << "<global name=\"" << g->nam << "\" uaddr=\"" << (int)g->uaddr << "\">\n";
+    out << "<global name=\"" << g->nam << "\" uaddr=\"" << g->uaddr << "\">\n";
     out << "<type>\n";
     persistToXML(out, g->type);
     out << "</type>\n";
@@ -2243,7 +2243,7 @@ void XMLProgParser::persistToXML(Prog *prog)
 
 void XMLProgParser::persistToXML(std::ostream &out, LibProc *proc)
 {
-        out << "<libproc id=\"" << ADDRESS::g(proc) << "\" address=\"" << (int)proc->address << "\"";
+        out << "<libproc id=\"" << ADDRESS::g(proc) << "\" address=\"" << proc->address << "\"";
     out << " firstCallerAddress=\"" << proc->m_firstCallerAddr << "\"";
     if (proc->m_firstCaller)
                 out << " firstCaller=\"" << ADDRESS::g(proc->m_firstCaller) << "\"";
@@ -2268,7 +2268,7 @@ void XMLProgParser::persistToXML(std::ostream &out, LibProc *proc)
 void XMLProgParser::persistToXML(std::ostream &out, UserProc *proc)
 {
         out << "<userproc id=\"" << ADDRESS::g(proc) << "\"";
-    out << " address=\"" << (int)proc->address << "\"";
+    out << " address=\"" << proc->address << "\"";
     out << " status=\"" << (int)proc->status << "\"";
     out << " firstCallerAddress=\"" << proc->m_firstCallerAddr << "\"";
     if (proc->m_firstCaller)
@@ -2675,7 +2675,7 @@ void XMLProgParser::persistToXML(std::ostream &out, BasicBlock *bb)
 
 void XMLProgParser::persistToXML(std::ostream &out, RTL *rtl)
 {
-        out << "<rtl id=\"" << ADDRESS::g(rtl) << "\" addr=\"" << (int)rtl->nativeAddr << "\">\n";
+        out << "<rtl id=\"" << ADDRESS::g(rtl) << "\" addr=\"" << rtl->nativeAddr << "\">\n";
     for (std::list<Statement*>::iterator it = rtl->stmtList.begin(); it != rtl->stmtList.end(); it++) {
         out << "<stmt>\n";
         persistToXML(out, *it);
@@ -2712,7 +2712,7 @@ void XMLProgParser::persistToXML(std::ostream &out, Statement *stmt)
                         out << " parent=\"" << ADDRESS::g(r->parent) << "\"";
         if (r->proc)
                         out << " proc=\"" << ADDRESS::g(r->proc) << "\"";
-        out << " retAddr=\"" << (int)r->retAddr << "\"";
+        out << " retAddr=\"" << r->retAddr << "\"";
         out << ">\n";
 
         ReturnStatement::iterator rr;

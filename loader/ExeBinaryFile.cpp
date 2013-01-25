@@ -264,7 +264,7 @@ std::list<const char *> ExeBinaryFile::getDependencyList()
 
 ADDRESS ExeBinaryFile::getImageBase()
 {
-    return ADDRESS::g(0); /* FIXME */
+    return ADDRESS::g(0L); /* FIXME */
 }
 
 size_t ExeBinaryFile::getImageSize()

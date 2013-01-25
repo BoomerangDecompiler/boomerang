@@ -156,7 +156,7 @@ virtual Exp            *match(Type *pattern);
 virtual Type*        mergeWith(Type* other) { assert(0); return 0; }
 
                     // Acccess functions
-virtual unsigned    getSize() const = 0;
+virtual size_t      getSize() const = 0;
         unsigned    getBytes() const {return (getSize() + 7) / 8; }
 virtual void        setSize(int sz) {assert(0);}
 
@@ -183,7 +183,7 @@ static    void        clearNamedTypes() { namedTypes.clear(); }
                     // *highest* possible type compatible with both (i.e. this JOIN other)
 virtual Type*        meetWith(Type* other, bool& ch, bool bHighestPtr = false) = 0;
                     // When all=false (default), return true if can use this and other interchangeably; in particular,
-                    // if at most one of the types is compound and the first element is compatible with the other, then 
+                    // if at most one of the types is compound and the first element is compatible with the other, then
                     // the types are considered compatible. With all set to true, if one or both types is compound, all
                     // corresponding elements must be compatible
 virtual    bool        isCompatibleWith(Type* other, bool all = false);
@@ -217,13 +217,13 @@ virtual Type        *clone() const;
 virtual bool        operator==(const Type& other) const;
 //virtual bool          operator-=(const Type& other) const;
 virtual bool        operator< (const Type& other) const;
-virtual Exp            *match(Type *pattern);
+virtual Exp*        match(Type *pattern);
 
-virtual unsigned    getSize() const;
+virtual size_t      getSize() const;
 
-virtual const char    *getCtype(bool final = false) const;
+virtual const char* getCtype(bool final = false) const;
 
-virtual Type*        meetWith(Type* other, bool& ch, bool bHighestPtr);
+virtual Type*       meetWith(Type* other, bool& ch, bool bHighestPtr);
 virtual bool        isCompatible(Type* other, bool all);
 
 protected:
@@ -232,30 +232,30 @@ protected:
 
 class FuncType : public Type {
 private:
-    Signature        *signature;
+    Signature*      signature;
 public:
                     FuncType(Signature *sig = NULL);
 virtual             ~FuncType();
 virtual bool        isFunc() const { return true; }
 
-virtual Type        *clone() const;
+virtual Type*       clone() const;
 
-        Signature    *getSignature() { return signature; }
+        Signature*  getSignature() { return signature; }
         void        setSignature(Signature* sig) {signature = sig;}
 
 virtual bool        operator==(const Type& other) const;
 //virtual bool          operator-=(const Type& other) const;
 virtual bool        operator< (const Type& other) const;
-virtual Exp         *match(Type *pattern);
+virtual Exp*        match(Type *pattern);
 
-virtual unsigned    getSize() const;
+virtual size_t      getSize() const;
 
-virtual const char    *getCtype(bool final = false) const;
+virtual const char* getCtype(bool final = false) const;
 
                     // Split the C type into return and parameter parts
         void        getReturnAndParam(const char*& ret, const char*& param);
 
-virtual Type*        meetWith(Type* other, bool& ch, bool bHighestPtr);
+virtual Type*       meetWith(Type* other, bool& ch, bool bHighestPtr);
 virtual bool        isCompatible(Type* other, bool all);
 
 protected:
@@ -264,8 +264,8 @@ protected:
 
 class IntegerType : public Type {
 private:
-        unsigned    size;            // Size in bits, e.g. 16
-        int            signedness;        // pos=signed, neg=unsigned, 0=unknown or evenly matched
+        size_t      size;            // Size in bits, e.g. 16
+        int         signedness;        // pos=signed, neg=unsigned, 0=unknown or evenly matched
 
 public:
                     IntegerType(int sz = STD_SIZE, int sign = 0);
@@ -273,15 +273,15 @@ virtual             ~IntegerType();
 virtual bool        isInteger() const { return true; }
 virtual bool        isComplete() {return signedness != 0 && size != 0;}
 
-virtual Type*        clone() const;
+virtual Type*       clone() const;
 
 virtual bool        operator==(const Type& other) const;
 //virtual bool          operator-=(const Type& other) const;
 virtual bool        operator< (const Type& other) const;
-virtual Type*        mergeWith(Type* other);
-virtual Exp            *match(Type *pattern);
+virtual Type*       mergeWith(Type* other);
+virtual Exp*        match(Type *pattern);
 
-virtual unsigned    getSize() const;            // Get size in bits
+virtual size_t      getSize() const;            // Get size in bits
 virtual void        setSize(int sz) {size = sz;}
                     // Is it signed? 0=unknown, pos=yes, neg = no
         bool        isSigned() { return signedness >= 0; }        // True if not unsigned
@@ -291,14 +291,14 @@ virtual void        setSize(int sz) {size = sz;}
                     // Set absolute signedness
         void        setSigned(int sg) {signedness = sg; }
                     // Get the signedness
-        int            getSignedness() {return signedness;}
+        int         getSignedness() {return signedness;}
 
 // Get the C type as a string. If full, output comments re the lack of sign information (in IntegerTypes).
-virtual const char    *getCtype(bool final = false) const;
+virtual const char* getCtype(bool final = false) const;
 
-virtual std::string    getTempName() const;
+virtual std::string getTempName() const;
 
-virtual Type*        meetWith(Type* other, bool& ch, bool bHighestPtr);
+virtual Type*       meetWith(Type* other, bool& ch, bool bHighestPtr);
 virtual bool        isCompatible(Type* other, bool all);
 
 protected:
@@ -321,7 +321,7 @@ virtual bool        operator==(const Type& other) const;
 virtual bool        operator< (const Type& other) const;
 virtual Exp            *match(Type *pattern);
 
-virtual unsigned    getSize() const;
+virtual size_t      getSize() const;
 virtual void        setSize(int sz) {size = sz;}
 
 virtual const char    *getCtype(bool final = false) const;
@@ -348,7 +348,7 @@ virtual bool        operator==(const Type& other) const;
 virtual bool        operator< (const Type& other) const;
 virtual Exp            *match(Type *pattern);
 
-virtual unsigned    getSize() const;
+virtual size_t      getSize() const;
 
 virtual const char    *getCtype(bool final = false) const;
 
@@ -372,7 +372,7 @@ virtual bool        operator==(const Type& other) const;
 virtual bool        operator< (const Type& other) const;
 virtual Exp            *match(Type *pattern);
 
-virtual unsigned    getSize() const;
+virtual size_t      getSize() const;
 
 virtual const char    *getCtype(bool final = false) const;
 
@@ -405,7 +405,7 @@ virtual bool        operator==(const Type& other) const;
 virtual bool        operator< (const Type& other) const;
 virtual Exp            *match(Type *pattern);
 
-virtual unsigned    getSize() const;
+virtual size_t      getSize() const;
 virtual void        setSize(int sz) {assert(sz == STD_SIZE);}
 
 virtual const char    *getCtype(bool final = false) const;
@@ -441,7 +441,7 @@ virtual bool        operator==(const Type& other) const;
 virtual bool        operator< (const Type& other) const;
 virtual Exp            *match(Type *pattern);
 
-virtual unsigned    getSize() const;
+virtual size_t      getSize() const;
 
 virtual const char    *getCtype(bool final = false) const;
 
@@ -475,7 +475,7 @@ virtual bool        operator==(const Type& other) const;
 virtual bool        operator< (const Type& other) const;
 virtual Exp            *match(Type *pattern);
 
-virtual unsigned    getSize() const;
+virtual size_t      getSize() const;
 
 virtual const char    *getCtype(bool final = false) const;
 
@@ -502,7 +502,7 @@ virtual bool        isCompound() const { return true; }
                         // check if it is a user defined type (typedef)
                         Type *t=getNamedType(n->getCtype());
                         if ( t ) n = t;
-                        types.push_back(n); 
+                        types.push_back(n);
                         names.push_back(str);
                     }
         unsigned    getNumTypes() { return types.size(); }
@@ -526,7 +526,7 @@ virtual bool        operator==(const Type& other) const;
 virtual bool        operator< (const Type& other) const;
 virtual Exp            *match(Type *pattern);
 
-virtual unsigned    getSize() const;
+virtual size_t      getSize() const;
 
 virtual const char *getCtype(bool final = false) const;
 
@@ -571,7 +571,7 @@ virtual bool        operator==(const Type& other) const;
 virtual bool        operator< (const Type& other) const;
 virtual Exp            *match(Type *pattern);
 
-virtual unsigned    getSize() const;
+virtual size_t      getSize() const;
 
 virtual const char *getCtype(bool final = false) const;
 
@@ -589,7 +589,7 @@ protected:
 // width of a register or memory transfer)
 class SizeType : public Type {
 private:
-    unsigned        size;                // Size in bits, e.g. 16
+    size_t        size;                // Size in bits, e.g. 16
 public:
                     SizeType() : Type(eSize) {}
                     SizeType(unsigned sz) : Type(eSize), size(sz) {}
@@ -600,8 +600,8 @@ virtual bool        operator< (const Type& other) const;
 //virtual Exp          *match(Type *pattern);
 virtual Type*        mergeWith(Type* other);
 
-virtual unsigned    getSize() const;
-virtual void        setSize(unsigned sz) {size = sz;}
+virtual size_t      getSize() const;
+virtual void        setSize(size_t sz) {size = sz;}
 virtual bool        isSize() const { return true; }
 virtual bool        isComplete() {return false;}    // Basic type is unknown
 virtual const char* getCtype(bool final = false) const;
@@ -627,7 +627,7 @@ virtual Type*        mergeWith(Type* other);
         Type        *getBaseType() { return base_type; }
         void        setBaseType(Type *b) { base_type = b; }
 
-virtual unsigned    getSize() const {return base_type->getSize()/2;}
+virtual size_t      getSize() const {return base_type->getSize()/2;}
 virtual void        setSize(int sz);        // Does this make sense?
 virtual bool        isUpper() const { return true; }
 virtual bool        isComplete() {return base_type->isComplete();}
@@ -652,7 +652,7 @@ virtual Type*        mergeWith(Type* other);
         Type        *getBaseType() { return base_type; }
         void        setBaseType(Type *b) { base_type = b; }
 
-virtual unsigned    getSize() const {return base_type->getSize()/2;}
+virtual size_t      getSize() const {return base_type->getSize()/2;}
 virtual void        setSize(int sz);        // Does this make sense?
 virtual bool        isLower() const { return true; }
 virtual bool        isComplete() {return base_type->isComplete();}
@@ -674,7 +674,7 @@ virtual bool        isCompatible(Type* other, bool all);
  */
 
 struct DataInterval {
-        unsigned    size;                // The size of this type in bytes
+        size_t    size;                // The size of this type in bytes
         std::string    name;                // The name of the variable
         Type*        type;                // The type of the variable
 };

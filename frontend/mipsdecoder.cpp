@@ -95,7 +95,7 @@ DecodeResult& MIPSDecoder::decodeInstruction(ADDRESS pc, int delta)
     std::list<Statement*>* stmts = NULL;
 
     ADDRESS nextPC = NO_ADDRESS;
-
+	return result;
 }
 
 

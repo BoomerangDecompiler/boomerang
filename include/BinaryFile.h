@@ -232,7 +232,7 @@ virtual bool IsRelocationAt(ADDRESS uNative) { return false; }
         // the latter is only used by the Palm machine, to represent the space
         // allocated below the %a5 register (i.e. the difference between %a5 and
         // %agp). This value could possibly be used for other purposes.
-virtual std::pair<unsigned,unsigned> GetGlobalPointerInfo();
+virtual std::pair<ADDRESS,unsigned> GetGlobalPointerInfo();
 
         // Get a map from ADDRESS to const char*. This map contains the native addresses and symbolic names of global
         // data items (if any) which are shared with dynamically linked libraries. Example: __iob (basis for stdout).

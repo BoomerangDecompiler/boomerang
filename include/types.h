@@ -4,7 +4,7 @@
  */
 #ifndef __TYPES_H__
 #define __TYPES_H__
-
+#include <iostream>
 #include <stdint.h>
 
 // Machine types
@@ -26,15 +26,14 @@ struct ADDRESS { /* pointer. size depends on platform */
         z.m_value =value_type(x);
         return z;
     }
-    bool operator<(const ADDRESS &other) const {
-        return m_value < other.m_value;
-    }
-    bool operator>(const ADDRESS &other) const {
-        return m_value > other.m_value;
-    }
-    bool operator>=(const ADDRESS &other) const {
-        return m_value >= other.m_value;
-    }
+	bool isZero() const {return m_value==0;}
+	bool operator==(const ADDRESS &other) const { return m_value==other.m_value; }
+	bool operator!=(const ADDRESS &other) const { return m_value!=other.m_value; }
+    bool operator<(const ADDRESS &other) const  { return m_value < other.m_value; }
+    bool operator>(const ADDRESS &other) const  { return m_value > other.m_value; }
+    bool operator>=(const ADDRESS &other) const { return m_value >= other.m_value;}
+	bool operator<=(const ADDRESS &other) const { return m_value <= other.m_value;}
+
     ADDRESS operator+(const ADDRESS &other) const {
         return ADDRESS::g(m_value + other.m_value);
     }
@@ -55,7 +54,7 @@ struct ADDRESS { /* pointer. size depends on platform */
         m_value = v;
         return *this;
     }
-    ADDRESS operator+(uint32_t val) const {
+    ADDRESS operator+(intptr_t val) const {
         return ADDRESS::g(m_value + val);
     }
     ADDRESS operator-(const ADDRESS &other) const {
@@ -68,8 +67,10 @@ struct ADDRESS { /* pointer. size depends on platform */
     ADDRESS operator-(int other) const {
         return ADDRESS::g(m_value - other);
     }
-    operator int() const {return int(m_value);}
+	friend std::ostream& operator<< (std::ostream& stream, const ADDRESS& addr);
+    //operator intptr_t() const {return int(m_value);}
 };
+
 #define STD_SIZE    32                    // Standard size
 // Note: there is a known name collision with NO_ADDRESS in WinSock.h
 #ifdef NO_ADDRESS

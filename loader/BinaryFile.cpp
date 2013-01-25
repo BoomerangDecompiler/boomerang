@@ -32,11 +32,11 @@
 #pragma warning(disable:4786)
 #endif
 
-#include "BinaryFile.h"
 #include <iostream>
 #include <cstring>
 #include <stdio.h>
-
+#include <cstddef>
+#include "BinaryFile.h"
 
 BinaryFile::BinaryFile(bool bArch /*= false*/)
 {
@@ -48,7 +48,7 @@ BinaryFile::BinaryFile(bool bArch /*= false*/)
 // This struct used to be initialised with a memset, but now that overwrites the virtual table (if compiled under gcc
 // and possibly others)
 SectionInfo::SectionInfo() :
-    pSectionName(NULL), uNativeAddr(ADDRESS::g(0)), uHostAddr(ADDRESS::g(0)), uSectionSize(0), uSectionEntrySize(0), uType(0),
+    pSectionName(NULL), uNativeAddr(ADDRESS::g(0L)), uHostAddr(ADDRESS::g(0L)), uSectionSize(0), uSectionEntrySize(0), uType(0),
     bCode(false), bData(false), bBss(0), bReadOnly(0)
 {}
 
@@ -112,7 +112,7 @@ const char* BinaryFile::SymbolByAddress(ADDRESS uNative) {
 }
 
 ADDRESS BinaryFile::GetAddressByName(const char* pName, bool bNoTypeOK) {
-    return ADDRESS::g(0);
+    return ADDRESS::g(0L);
 }
 
 int BinaryFile::GetSizeByName(const char* pName, bool bNoTypeOK) {
@@ -154,9 +154,9 @@ bool BinaryFile::DisplayDetails(const char* fileName, FILE* f /* = stdout */)
 // Gets a pair of unsigned integers representing the address of %agp, and
 // a machine specific value (GLOBALOFFSET)
 // This is a stub routine that should be overridden if required
-std::pair<unsigned,unsigned> BinaryFile::GetGlobalPointerInfo()
+std::pair<ADDRESS,unsigned> BinaryFile::GetGlobalPointerInfo()
 {
-    return std::pair<unsigned, unsigned>(0, 0);
+    return std::pair<ADDRESS, unsigned>(ADDRESS::g(0L), 0);
 }
 
 // Get a pointer to a new map of dynamic global data items.
@@ -178,7 +178,7 @@ void BinaryFile::getTextLimits()
 {
     int n = GetNumSections();
     limitTextLow = ADDRESS::g(0xFFFFFFFF);
-    limitTextHigh = ADDRESS::g(0);
+    limitTextHigh = ADDRESS::g(0L);
     textDelta = 0;
     for (int i=0; i < n; i++) {
         SectionInfo* pSect = GetSectionInfo(i);
@@ -194,10 +194,11 @@ void BinaryFile::getTextLimits()
             ADDRESS hiAddress = pSect->uNativeAddr + pSect->uSectionSize;
             if (hiAddress > limitTextHigh)
                 limitTextHigh = hiAddress;
+            ptrdiff_t host_native_diff = (pSect->uHostAddr - pSect->uNativeAddr).m_value;
             if (textDelta == 0)
-                textDelta = pSect->uHostAddr - pSect->uNativeAddr;
+                textDelta = host_native_diff;
             else {
-                if (textDelta != (int) (pSect->uHostAddr - pSect->uNativeAddr))
+                if (textDelta != host_native_diff)
                     std::cerr << "warning: textDelta different for section " << pSect->pSectionName <<
                                  " (ignoring).\n";
             }

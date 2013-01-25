@@ -243,7 +243,7 @@ bool SparcFrontEnd::case_CALL(ADDRESS& address, DecodeResult& inst, DecodeResult
     // Get the new return basic block for the special case where the delay instruction is a restore
     BasicBlock* returnBB = optimise_CallReturn(call_stmt, inst.rtl, delay_rtl, proc);
 
-    int disp30 = (call_stmt->getFixedDest() - address) >> 2;
+    int disp30 = (call_stmt->getFixedDest() - address).m_value >> 2;
     // Don't test for small offsets if part of a move_call_move pattern.
     // These patterns assign to %o7 in the delay slot, and so can't possibly be used to copy %pc to %o7
     // Similarly if followed by a restore
@@ -303,7 +303,7 @@ bool SparcFrontEnd::case_CALL(ADDRESS& address, DecodeResult& inst, DecodeResult
             // will be 8 bytes ahead or in the case where the callee returns a struct, 12 bytes ahead. But the problem
             // is: how do you know this function returns a struct at decode time?
             // If forceOutEdge is set, set offset to 0 and no out-edge will be added yet
-            int offset = inst.forceOutEdge ? 0 :
+            int offset = !inst.forceOutEdge.isZero() ? 0 :
                                              //(call_stmt->returnsStruct() ? 12 : 8);
                                              // MVE: FIXME!
                                              8;
@@ -323,7 +323,7 @@ bool SparcFrontEnd::case_CALL(ADDRESS& address, DecodeResult& inst, DecodeResult
             // Handle the call (register the destination as a proc) and possibly set the outedge.
             handleCall(proc, dest, callBB, cfg, address, offset);
 
-            if (inst.forceOutEdge) {
+            if (!inst.forceOutEdge.isZero()) {
                 // There is no need to force a goto to the new out-edge, since we will continue decoding from there.
                 // If other edges exist to the outedge, they will generate the required label
                 cfg->addOutEdge(callBB, inst.forceOutEdge);
@@ -589,12 +589,12 @@ bool SparcFrontEnd::case_SCD(ADDRESS& address, int delta, ADDRESS hiAddress,
         // be several jumps to the same destination that all require an orphan. The instruction in the orphan will
         // often but not necessarily be the same, so we can't use the same orphan BB. newBB knows to consider BBs
         // with address 0 as being in the map, so several BBs can exist with address 0
-        delay_inst.rtl->updateAddress(ADDRESS::g(0));
+        delay_inst.rtl->updateAddress(ADDRESS::g(0L));
         // Add a branch from the orphan instruction to the dest of the branch. Again, we can't even give the jumps
         // a special address like 1, since then the BB would have this getLowAddr.
         std::list<Statement*>* gl = new std::list<Statement*>;
         gl->push_back(new GotoStatement(uDest));
-        pOrphan->push_back(new RTL(ADDRESS::g(0), gl));
+        pOrphan->push_back(new RTL(ADDRESS::g(0L), gl));
         PBB pOrBB = cfg->newBB(pOrphan, ONEWAY, 1);
         // Add an out edge from the orphan as well
         cfg->addOutEdge(pOrBB, uDest, true);
@@ -658,11 +658,11 @@ bool SparcFrontEnd::case_SCDAN(ADDRESS& address, int delta, ADDRESS hiAddress,
         pOrphan->push_back(delay_inst.rtl);
         // Change the address to 0, since this code has no source address (else we may branch to here when we want to
         // branch to the real BB with this instruction).
-        delay_inst.rtl->updateAddress(ADDRESS::g(0));
+        delay_inst.rtl->updateAddress(ADDRESS::g(0L));
         // Add a branch from the orphan instruction to the dest of the branch
         std::list<Statement*>* gl = new std::list<Statement*>;
         gl->push_back(new GotoStatement(uDest));
-        pOrphan->push_back(new RTL(ADDRESS::g(0), gl));
+        pOrphan->push_back(new RTL(ADDRESS::g(0L), gl));
         PBB pOrBB = cfg->newBB(pOrphan, ONEWAY, 1);
         // Add an out edge from the orphan as well. Set a label there.
         cfg->addOutEdge(pOrBB, uDest, true);
@@ -1000,7 +1000,7 @@ bool SparcFrontEnd::processProc(ADDRESS address, UserProc* proc, std::ofstream &
 
                             // Adjust the destination of the SD and emit it.
                             GotoStatement* delay_jump = static_cast<GotoStatement*>(delay_rtl->getList().back());
-                            ADDRESS dest = ADDRESS::g(4+address+delay_jump->getFixedDest());
+                            ADDRESS dest = address+4+delay_jump->getFixedDest();
                             stmt_jump->setDest(dest);
                             BB_rtls->push_back(inst.rtl);
 
@@ -1013,7 +1013,7 @@ bool SparcFrontEnd::processProc(ADDRESS address, UserProc* proc, std::ofstream &
                                 BB_rtls = NULL;
                                 address = address + 8;
 
-                                // Add this call site to the set of call sites which need to be analysed later.
+                                // Add this call site to the set of call sites which need to be analyzed later.
                                 callList.push_back((CallStatement*)inst.rtl->getList().back());
                             }
                             else {

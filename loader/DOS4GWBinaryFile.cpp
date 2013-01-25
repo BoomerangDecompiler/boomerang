@@ -537,7 +537,7 @@ DWord DOS4GWBinaryFile::getDelta()
     // Stupid function anyway: delta depends on section
     // This should work for the header only
     //    return (DWord)base - LMMH(m_pPEHeader->Imagebase);
-    return ADDRESS::g(base) - ADDRESS::g(m_pLXObjects[0].RelocBaseAddr);
+    return intptr_t(base) - m_pLXObjects[0].RelocBaseAddr;
 }
 
 // This function is called via dlopen/dlsym; it returns a new BinaryFile

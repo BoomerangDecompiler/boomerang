@@ -339,7 +339,7 @@ bool Constraints::solve(std::list<ConstraintMap>& solns) {
         }
     }
 
-    {LOG << "\n" << (unsigned) disjunctions.size() << " disjunctions: "; std::list<Exp*>::iterator dd;
+    {LOG << "\n" << disjunctions.size() << " disjunctions: "; std::list<Exp*>::iterator dd;
         for (dd = disjunctions.begin(); dd != disjunctions.end(); dd++) LOG << *dd << ",\n"; LOG << "\n";}
     LOG << fixed.size() << " fixed: " << fixed.prints();
     LOG << equates.size() << " equates: " << equates.prints();
@@ -352,7 +352,7 @@ bool Constraints::solve(std::list<ConstraintMap>& solns) {
     substIntoEquates(fixed);
 
     LOG << "\nAfter substitute fixed into equates:\n";
-    {LOG << "\n" << (unsigned)disjunctions.size() << " disjunctions: "; std::list<Exp*>::iterator dd;
+    {LOG << "\n" << disjunctions.size() << " disjunctions: "; std::list<Exp*>::iterator dd;
         for (dd = disjunctions.begin(); dd != disjunctions.end(); dd++) LOG << *dd << ",\n"; LOG << "\n";}
     LOG << fixed.size() << " fixed: " << fixed.prints();
     LOG << equates.size() << " equates: " << equates.prints();
@@ -361,8 +361,10 @@ bool Constraints::solve(std::list<ConstraintMap>& solns) {
     substIntoDisjuncts(fixed);
 
     LOG << "\nAfter second substitute fixed into disjunctions:\n";
-    {LOG << "\n" << (unsigned)disjunctions.size() << " disjunctions: "; std::list<Exp*>::iterator dd;
-        for (dd = disjunctions.begin(); dd != disjunctions.end(); dd++) LOG << *dd << ",\n"; LOG << "\n";}
+    {
+        LOG << "\n" << disjunctions.size() << " disjunctions: "; std::list<Exp*>::iterator dd;
+        for (dd = disjunctions.begin(); dd != disjunctions.end(); dd++) LOG << *dd << ",\n"; LOG << "\n";
+    }
     LOG << fixed.size() << " fixed: " << fixed.prints();
     LOG << equates.size() << " equates: " << equates.prints();
 

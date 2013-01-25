@@ -13,7 +13,7 @@ class Range;
 class RangeMap;
 class Type;
 
-class Log 
+class Log
 {
 public:
     Log() { }
@@ -26,7 +26,7 @@ public:
     virtual Log &operator<<(Range &r);
     virtual Log &operator<<(RangeMap &r);
     virtual Log &operator<<(int i);
-    virtual Log &operator<<(unsigned i);
+    virtual Log &operator<<(size_t i);
     virtual Log &operator<<(char c);
     virtual Log &operator<<(double d);
     virtual Log &operator<<(ADDRESS a);
@@ -42,9 +42,9 @@ protected:
 public:
             FileLogger();        // Implemented in boomerang.cpp
     void    tail();
-    virtual Log &operator<<(const char *str) { 
-        out << str << std::flush;  
-        return *this; 
+    virtual Log &operator<<(const char *str) {
+        out << str << std::flush;
+        return *this;
     }
     virtual ~FileLogger() {};
 };

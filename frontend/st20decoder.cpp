@@ -1,7 +1,7 @@
 #define sign_extend(N,SIZE) (((int)((N) << (sizeof(unsigned)*8-(SIZE)))) >> (sizeof(unsigned)*8-(SIZE)))
 #include <assert.h>
 
-#line 1 "frontend/machine/st20/decoder.m"
+//#line 1 "frontend/machine/st20/decoder.m"
 /*
  * Copyright (C) 2005 Mike Van Emmerik
  *
@@ -64,11 +64,11 @@ DecodeResult& ST20Decoder::decodeInstruction (ADDRESS pc, int delta) {
     while (1) {
 
 
-#line 60 "frontend/machine/st20/decoder.m"
+//#line 60 "frontend/machine/st20/decoder.m"
         {
             ADDRESS MATCH_p =
 
-        #line 60 "frontend/machine/st20/decoder.m"
+        //#line 60 "frontend/machine/st20/decoder.m"
                     hostPC+result.numBytes++
                     ;
             const char *MATCH_name;
@@ -78,14 +78,14 @@ DecodeResult& ST20Decoder::decodeInstruction (ADDRESS pc, int delta) {
             };
             unsigned /* [0..255] */ MATCH_w_8_0;
             {
-                MATCH_w_8_0 = getByte(MATCH_p);
+                MATCH_w_8_0 = getByte(MATCH_p.m_value);
 
                 switch((MATCH_w_8_0 >> 4 & 0xf) /* fc at 0 */) {
                     case 0:
                     {
                         unsigned oper = (MATCH_w_8_0 & 0xf) /* bot at 0 */;
 
-#line 74 "frontend/machine/st20/decoder.m"
+//#line 74 "frontend/machine/st20/decoder.m"
 
 
                         unconditionalJump("j", result.numBytes, hostPC+result.numBytes+total+oper, delta, pc, stmts, result);
@@ -106,7 +106,7 @@ DecodeResult& ST20Decoder::decodeInstruction (ADDRESS pc, int delta) {
                         const char *name = MATCH_name;
                         unsigned oper = (MATCH_w_8_0 & 0xf) /* bot at 0 */;
 
-#line 71 "frontend/machine/st20/decoder.m"
+//#line 71 "frontend/machine/st20/decoder.m"
 
 
                         stmts = instantiate(pc,    name, new Const(total+oper));
@@ -123,7 +123,7 @@ DecodeResult& ST20Decoder::decodeInstruction (ADDRESS pc, int delta) {
                     {
                         unsigned oper = (MATCH_w_8_0 & 0xf) /* bot at 0 */;
 
-#line 63 "frontend/machine/st20/decoder.m"
+//#line 63 "frontend/machine/st20/decoder.m"
 
 
                         total = (total + oper) << 4;
@@ -142,7 +142,7 @@ DecodeResult& ST20Decoder::decodeInstruction (ADDRESS pc, int delta) {
                     {
                         unsigned oper = (MATCH_w_8_0 & 0xf) /* bot at 0 */;
 
-#line 67 "frontend/machine/st20/decoder.m"
+//#line 67 "frontend/machine/st20/decoder.m"
 
 
                         total = (total + ~oper) << 4;
@@ -161,7 +161,7 @@ DecodeResult& ST20Decoder::decodeInstruction (ADDRESS pc, int delta) {
                     {
                         unsigned oper = (MATCH_w_8_0 & 0xf) /* bot at 0 */;
 
-#line 77 "frontend/machine/st20/decoder.m"
+//#line 77 "frontend/machine/st20/decoder.m"
 
 
                         total += oper;
@@ -190,7 +190,7 @@ DecodeResult& ST20Decoder::decodeInstruction (ADDRESS pc, int delta) {
                     {
                         unsigned oper = (MATCH_w_8_0 & 0xf) /* bot at 0 */;
 
-#line 86 "frontend/machine/st20/decoder.m"
+//#line 86 "frontend/machine/st20/decoder.m"
 
 
                         BranchStatement* br = new BranchStatement();
@@ -219,7 +219,7 @@ DecodeResult& ST20Decoder::decodeInstruction (ADDRESS pc, int delta) {
                     {
                         unsigned oper = (MATCH_w_8_0 & 0xf) /* bot at 0 */;
 
-#line 95 "frontend/machine/st20/decoder.m"
+//#line 95 "frontend/machine/st20/decoder.m"
 
 
                         total |= oper;
@@ -609,7 +609,7 @@ MATCH_finished_a: (void)0; /*placeholder for label*/
 
         }
 
-#line 283 "frontend/machine/st20/decoder.m"
+//#line 283 "frontend/machine/st20/decoder.m"
         break;
     }
 

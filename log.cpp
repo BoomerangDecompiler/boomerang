@@ -80,7 +80,7 @@ Log &Log::operator<<(int i)
     return *this;
 }
 
-Log &Log::operator<<(unsigned i)
+Log &Log::operator<<(size_t i)
 {
     std::ostringstream st;
     st << std::dec << i;

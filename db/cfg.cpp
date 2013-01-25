@@ -194,7 +194,7 @@ PBB Cfg::newBB(std::list<RTL*>* pRtls, BBTYPE bbType, int iNumOutEdges) throw(BB
     // instr (if not a NOP), and one for the side effect of copying %o7 to %o1.
     // Note that orphaned BBs (for which we must compute addr here to to be 0) must not be added to the map, but they
     // have no RTLs with a non zero address.
-    if ((addr == 0) && (pRtls->size() > 1)) {
+    if ( addr.isZero() && (pRtls->size() > 1)) {
         std::list<RTL*>::iterator next = pRtls->begin();
         addr = (*++next)->getAddress();
     }
@@ -202,7 +202,7 @@ PBB Cfg::newBB(std::list<RTL*>* pRtls, BBTYPE bbType, int iNumOutEdges) throw(BB
     // If this addr is non zero, check the map to see if we have a (possibly incomplete) BB here already
     // If it is zero, this is a special BB for handling delayed branches or the like
     bool bDone = false;
-    if (addr != 0) {
+    if ( !addr.isZero() ) {
         mi = m_mapBB.find(addr);
         if (mi != m_mapBB.end() && (*mi).second) {
             pBB = (*mi).second;
@@ -233,28 +233,28 @@ PBB Cfg::newBB(std::list<RTL*>* pRtls, BBTYPE bbType, int iNumOutEdges) throw(BB
 
         // Also add the address to the map from native (source) address to
         // pointer to BB, unless it's zero
-        if (addr != 0)
+        if ( !addr.isZero() )
         {
             m_mapBB[addr] = pBB;            // Insert the mapping
             mi = m_mapBB.find(addr);
         }
     }
 
-    if (addr != 0 && (mi != m_mapBB.end()))
+    if ( !addr.isZero() && (mi != m_mapBB.end()))
     {
         // Existing New            +---+ Top of new
         //            +---+        +---+
-        //    +---+    |    |        +---+ Fall through
-        //    |    |    |    | =>    |    |
-        //    |    |    |    |        |    | Existing; rest of new discarded
-        //    +---+    +---+        +---+
+        //    +---+   |   |        +---+ Fall through
+        //    |   |   |   | =>     |   |
+        //    |   |   |   |        |   | Existing; rest of new discarded
+        //    +---+   +---+        +---+
         //
         // Check for overlap of the just added BB with the next BB (address wise).  If there is an overlap, truncate the
         // std::list<Exp*> for the new BB to not overlap, and make this a fall through BB.
         // We still want to do this even if the new BB overlaps with an incomplete BB, though in this case,
         // splitBB needs to fill in the details for the "bottom" BB of the split.
         // Also, in this case, we return a pointer to the newly completed BB, so it will get out edges added
-        // (if required). In the other case (i.e. we overlap with an exising, completed BB), we want to return 0, since
+        // (if required). In the other case (i.e. we overlap with an existing, completed BB), we want to return 0, since
         // the out edges are already created.
         if (++mi != m_mapBB.end()) {
             PBB pNextBB = (*mi).second;
@@ -1038,7 +1038,7 @@ bool Cfg::isOrphan(ADDRESS uAddr)
     PBB pBB = (*mi).second;
     // If it's incomplete, it can't be an orphan
     if (pBB->m_bIncomplete) return false;
-    return pBB->m_pRtls->front()->getAddress() == 0;
+    return pBB->m_pRtls->front()->getAddress().isZero();
 }
 
 /*==============================================================================
@@ -1714,7 +1714,7 @@ void Cfg::generateDotFile(std::ofstream& of) {
 
     // Force the one return node to be at the bottom (max rank). Otherwise, with all its in-edges, it will end up in the
     // middle
-    if (aret)
+    if (!aret.isZero())
         of << "{rank=max; bb" << std::hex << aret << "}\n";
 
     // Close the subgraph
@@ -1881,7 +1881,7 @@ PBB Cfg::splitForBranch(PBB pBB, RTL* rtl, BranchStatement* br1, BranchStatement
     ls->push_back(br1);
     // Don't give this "instruction" the same address as the rest of the string instruction (causes problems when
     // creating the rptBB). Or if there is no A, temporarily use 0
-    ADDRESS a = (haveA) ? addr : ADDRESS::g(0);
+    ADDRESS a = (haveA) ? addr : ADDRESS::g(0L);
     RTL* skipRtl = new RTL(a, ls);
     pRtls->push_back(skipRtl);
     PBB skipBB = newBB(pRtls, TWOWAY, 2);

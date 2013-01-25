@@ -214,7 +214,7 @@ protected:
     BranchStatement* jump = new BranchStatement; \
     result.rtl->appendStmt(jump); \
     result.numBytes = size; \
-    jump->setDest(ADDRESS::g(relocd-delta)); \
+    jump->setDest(relocd-ADDRESS::g(delta)); \
     jump->setCondType(cond); \
     SHOW_ASM(name<<" "<<relocd)
 

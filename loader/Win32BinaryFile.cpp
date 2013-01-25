@@ -22,7 +22,7 @@
  * 07 Jul 02 - Mike: Added a LMMH() so code works on big-endian host
  * 08 Jul 02 - Mike: Changed algorithm to find main; now looks for ordinary
  *                 call up to 10 instructions before an indirect call to exit
- * 24 Jul 05 - Mike: State machine to recognise main in Borland Builder files
+ * 24 Jul 05 - Mike: State machine to recognize main in Borland Builder files
  */
 
 #if defined(_MSC_VER) && _MSC_VER <= 1200
@@ -231,7 +231,7 @@ ADDRESS Win32BinaryFile::GetMainEntryPoint() {
                     else if (borlandState == 4) {
                         // Borland pattern succeeds. p-4 has the offset of mainInfo
                         ADDRESS mainInfo = ADDRESS::g(LMMH(*(base + p-4)));
-                        ADDRESS main = ADDRESS::g(readNative4(mainInfo+0x18));// Address of main is at mainInfo+18
+                        ADDRESS main = ADDRESS::g(readNative4(mainInfo+ADDRESS::g(0x18)));// Address of main is at mainInfo+18
                         return main;
                     }
                 } else
@@ -292,10 +292,10 @@ ADDRESS Win32BinaryFile::GetMainEntryPoint() {
                 int off = LMMH(*(p + base + 1));
                 ADDRESS dest = ADDRESS::g((unsigned)p + 5 + off);
                 // Check for a jump there
-                op1 = *(unsigned char*)(dest + base);
+                op1 = *(unsigned char*)(dest.m_value + base);
                 if (op1 == 0xE9) {
                     // Follow that jump
-                    off = LMMH(*(dest + base + 1));
+                    off = LMMH(*(dest.m_value + base + 1));
                     dest = dest + 5 + off;
                 }
                 return dest + LMMH(m_pPEHeader->Imagebase);
@@ -331,7 +331,7 @@ ADDRESS Win32BinaryFile::GetMainEntryPoint() {
     // mingw pattern
     p = LMMH(m_pPEHeader->EntrypointRVA);
     bool in_mingw_CRTStartup = false;
-    ADDRESS lastcall = ADDRESS::g(0), lastlastcall = ADDRESS::g(0);
+    ADDRESS lastcall = ADDRESS::g(0L), lastlastcall = ADDRESS::g(0L);
     while(1) {
         op1 = *(unsigned char*)(p + base);
         if (op1 == 0xE8) {            // CALL opcode
@@ -344,7 +344,7 @@ ADDRESS Win32BinaryFile::GetMainEntryPoint() {
                 // main is the 2nd call before this one
                 if (op2 == 0xff && op2a == 0x25 && dlprocptrs.find(desti) != dlprocptrs.end() && dlprocptrs[desti] == "ExitProcess") {
                     mingw_main = true;
-                    return lastlastcall + 5 + LMMH(*(lastlastcall + base + 1)) + LMMH(m_pPEHeader->Imagebase);
+                    return lastlastcall + 5 + LMMH(*(lastlastcall.m_value + base + 1)) + LMMH(m_pPEHeader->Imagebase);
                 }
                 lastlastcall = lastcall;
                 lastcall = p;
@@ -502,7 +502,7 @@ bool Win32BinaryFile::RealLoad(const char* sName)
                     // Normal case (IMAGE_IMPORT_BY_NAME). Skip the useless hint (2 bytes)
                     std::string name((const char*)(iatEntry+2+base));
                     dlprocptrs[paddr] = name;
-                    if ((unsigned)paddr != ADDRESS::g(iat) - ADDRESS::g(base) + LMMH(m_pPEHeader->Imagebase))
+                    if (paddr != ADDRESS::g(iat) - ADDRESS::g(base) + LMMH(m_pPEHeader->Imagebase))
                         dlprocptrs[ADDRESS::g(iat) - ADDRESS::g(base) + LMMH(m_pPEHeader->Imagebase)]
                                 = std::string("old_") + name; // add both possibilities
                     // printf("Added symbol %s value %x\n", name.c_str(), paddr);
@@ -595,12 +595,12 @@ void Win32BinaryFile::findJumps(ADDRESS curr) {
     if (sec == NULL) sec = GetSectionInfoByName("CODE");
     assert(sec);
     // Add to native addr to get host:
-    int delta = sec->uHostAddr - sec->uNativeAddr;
+    int delta = (sec->uHostAddr - sec->uNativeAddr).m_value;
     while (cnt < 0x60) {    // Max of 0x60 bytes without a match
         curr -= 2;            // Has to be on 2-byte boundary
         cnt += 2;
-        if (LH(delta+curr) != 0xFF + (0x25<<8)) continue;
-        ADDRESS operand = ADDRESS::g(LMMH2(delta+curr+2));
+        if (LH((curr+delta).m_value) != 0xFF + (0x25<<8)) continue;
+        ADDRESS operand = ADDRESS::g(LMMH2((curr+delta+2).m_value));
         std::map<ADDRESS, std::string>::iterator it;
         it = dlprocptrs.find(operand);
         if (it == dlprocptrs.end()) continue;
@@ -795,7 +795,7 @@ BOOL CALLBACK printem(
 const char* Win32BinaryFile::SymbolByAddress(ADDRESS dwAddr)
 {
     if (m_pPEHeader->Subsystem == 1 &&                // native
-            LMMH(m_pPEHeader->EntrypointRVA) + LMMH(m_pPEHeader->Imagebase) == dwAddr)
+            LMMH(m_pPEHeader->EntrypointRVA) + LMMH(m_pPEHeader->Imagebase) == dwAddr.m_value)
         return "DriverEntry";
 
     if (IsMinGWsAllocStack(dwAddr))
@@ -815,7 +815,7 @@ const char* Win32BinaryFile::SymbolByAddress(ADDRESS dwAddr)
     sym->SizeOfStruct = sizeof(*sym);
     sym->MaxNameLen = 1000;
     sym->Name[0] = 0;
-    BOOL got = dbghelp::SymFromAddr(hProcess, dwAddr, 0, sym);
+    BOOL got = dbghelp::SymFromAddr(hProcess, dwAddr.m_value, 0, sym);
     if (*sym->Name) {
         char *n = strdup(sym->Name);
 #if 0
@@ -990,7 +990,7 @@ bool Win32BinaryFile::IsStaticLinkedLibProc(ADDRESS uNative)
     dbghelp::IMAGEHLP_LINE64 line;
     line.SizeOfStruct = sizeof(line);
     line.FileName = NULL;
-    dbghelp::SymGetLineFromAddr64(hProcess, uNative, 0, &line);
+    dbghelp::SymGetLineFromAddr64(hProcess, uNative.m_value, 0, &line);
     if (haveDebugInfo && line.FileName == NULL || line.FileName && *line.FileName == 'f')
         return true;
 #endif
@@ -1167,7 +1167,7 @@ DWord Win32BinaryFile::getDelta() {
     // Stupid function anyway: delta depends on section
     // This should work for the header only
     //    return (DWord)base - LMMH(m_pPEHeader->Imagebase);
-    return ADDRESS::g(base) - (DWord) m_pPEHeader->Imagebase;
+    return DWord(intptr_t(base)) - (DWord) m_pPEHeader->Imagebase;
 }
 
 // This function is called via dlopen/dlsym; it returns a new BinaryFile derived concrete object. After this object is

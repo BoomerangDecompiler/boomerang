@@ -94,7 +94,7 @@ virtual                ~Proc();
          */
         Prog        *getProg() { return prog; }
         void        setProg(Prog *p) { prog = p; }
-     
+
         /**
          * Get/Set the first procedure that calls this procedure (or null for main/start).
          */
@@ -182,7 +182,7 @@ virtual bool        isNoReturn() = 0;
          * OutPut operator for a Proc object.
          */
         friend std::ostream& operator<<(std::ostream& os, Proc& proc);
-        
+
 virtual Exp            *getProven(Exp *left) = 0;        // Get the RHS, if any, that is proven for left
 virtual Exp            *getPremised(Exp *left) = 0;    // Get the RHS, if any, that is premised for left
 virtual    bool        isPreserved(Exp* e) = 0;        ///< Return whether e is preserved by this proc
@@ -253,7 +253,7 @@ protected:
         Cluster        *cluster;                        ///< Cluster this procedure is contained within.
 
         friend class XMLProgParser;
-        Proc() : visited(false), prog(NULL), signature(NULL), address(ADDRESS::g(0)), m_firstCaller(NULL), m_firstCallerAddr(ADDRESS::g(0)),
+        Proc() : visited(false), prog(NULL), signature(NULL), address(ADDRESS::g(0L)), m_firstCaller(NULL), m_firstCallerAddr(ADDRESS::g(0L)),
             cluster(NULL) { }
 
 };    // class Proc
@@ -263,7 +263,7 @@ protected:
  *============================================================================*/
 class LibProc : public Proc {
 public:
-    
+
                     LibProc(Prog *prog, std::string& name, ADDRESS address);
 virtual                ~LibProc();
 
@@ -358,7 +358,7 @@ private:
          * Set of callees (Procedures that this procedure calls). Used for call graph, among other things
          */
         std::list<Proc*> calleeList;
-     
+
         /**
          * A collector for initial parameters (locations used before being defined).  Note that final parameters don't
          * use this; it's only of use during group decompilation analysis (sorting out recursion)
@@ -446,7 +446,7 @@ virtual bool        isNoReturn();
         /**
          * Returns an abstract syntax tree for the procedure in the internal representation. This function actually
          * _calculates_ * this value and is expected to do so expensively.
-         */ 
+         */
         SyntaxNode    *getAST();
         // print it to a file
         void        printAST(SyntaxNode *a = NULL);
@@ -581,13 +581,13 @@ virtual bool        isNoReturn();
 
         /// find the procs the calls point to
         void        assignProcsToCalls();
-        
+
         /// perform final simplifications
         void        finalSimplify();
 
         // eliminate duplicate arguments
         void        eliminateDuplicateArgs();
-    
+
 private:
         void        searchRegularLocals(OPER minusOrPlus, bool lastPass, int sp, StatementList& stmts);
 public:
@@ -639,7 +639,7 @@ typedef std::map<Statement*, int> RefCounter;
         // Remove redundant parameters. Return true if remove any
         bool        removeRedundantParameters();
         /// Remove any returns that are not used by any callers
-        /// return true if any returns are removed        
+        /// return true if any returns are removed
         bool        removeRedundantReturns(std::set<UserProc*>& removeRetSet);
         ///         Reurn true if location e is used gainfully in this procedure. visited is a set of UserProcs already
         ///            visited.
@@ -657,7 +657,7 @@ typedef std::map<Statement*, int> RefCounter;
         bool        prove(Exp *query, bool conditional = false);
         /// helper function, should be private
         bool        prover(Exp *query, std::set<PhiAssign*> &lastPhis, std::map<PhiAssign*, Exp*> &cache,
-                        Exp* original, PhiAssign *lastPhi = NULL);      
+                        Exp* original, PhiAssign *lastPhi = NULL);
 
         /// promote the signature if possible
         void        promoteSignature();
@@ -733,7 +733,7 @@ public:
         /// return a local's type
         Type        *getLocalType(const char *nam);
         void        setLocalType(const char *nam, Type *ty);
-        
+
         Type        *getParamType(const char *nam);
 
         /// return a symbol's exp (note: the original exp, like r24, not local1)
@@ -795,7 +795,7 @@ virtual void        renameParam(const char *oldName, const char *newName);
         /**
          * Add to the set of callees.
          */
-        void        addCallee(Proc* callee); 
+        void        addCallee(Proc* callee);
 
         /**
          * Add to a set of callee Procs.
@@ -847,7 +847,7 @@ virtual void        printCallGraphXML(std::ostream &os, int depth,
         /// Copy the decoded indirect control transfer instructions' RTLs to the front end's map, and decode any new
         /// targets for this CFG
         void        processDecodedICTs();
- 
+
 private:
         /// We ensure that there is only one return statement now. See code in frontend/frontend.cpp handling case
         /// STMT_RET. If no return statement, this will be NULL.

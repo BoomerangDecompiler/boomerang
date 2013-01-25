@@ -1468,7 +1468,7 @@ void CHLLCode::AddReturnStatement(int indLevel, StatementList* rets) {
  */
 void CHLLCode::AddProcStart(UserProc* proc) {
     std::ostringstream s;
-    s << "// address: 0x" << std::hex << proc->getNativeAddress() << std::dec;
+    s << "// address: "<<proc->getNativeAddress();
     appendLine(s);
     AddProcDec(proc, true);
 }

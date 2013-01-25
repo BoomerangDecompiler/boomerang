@@ -33,10 +33,13 @@
  * Dependencies.
  *============================================================================*/
 
-#include "proc.h"
-#include <types.h>
 #include <sstream>
 #include <algorithm>        // For find()
+#include <iomanip>            // For std::setw etc
+#include <sstream>
+#include <cstring>
+#include "proc.h"
+#include "types.h"
 #include "type.h"
 #include "cluster.h"
 #include "statement.h"
@@ -51,9 +54,6 @@
 #include "constraint.h"
 #include "visitor.h"
 #include "log.h"
-#include <iomanip>            // For std::setw etc
-#include <sstream>
-#include <cstring>
 
 #ifdef _WIN32
 #undef NO_ADDRESS
@@ -64,7 +64,7 @@ namespace dbghelp {
 };
 #endif
 #undef NO_ADDRESS
-#define NO_ADDRESS ((ADDRESS)-1)
+#define NO_ADDRESS ADDRESS::g(-1)
 #endif
 #if defined(_MSC_VER) && _MSC_VER >= 1400
 #pragma warning(disable:4996)        // Warnings about e.g. _strdup deprecated in VS 2005

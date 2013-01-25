@@ -262,8 +262,8 @@ bool MachOBinaryFile::RealLoad(const char* sName)
         ADDRESS a = ADDRESS::g(BMMH(segments[i].vmaddr));
         unsigned sz = BMMH(segments[i].vmsize);
         unsigned fsz = BMMH(segments[i].filesize);
-        memset(base + a - loaded_addr, 0, sz);
-        fread(base + a - loaded_addr, 1, fsz, fp);
+        memset(base + a.m_value - loaded_addr.m_value, 0, sz);
+        fread(base + a.m_value - loaded_addr.m_value, 1, fsz, fp);
 #ifdef DEBUG_MACHO_LOADER
         fprintf(stderr, "loaded segment %x %i in mem %i in file\n", a, sz, fsz);
 #endif
@@ -272,7 +272,7 @@ bool MachOBinaryFile::RealLoad(const char* sName)
         strncpy(m_pSections[i].pSectionName, segments[i].segname, 16);
         m_pSections[i].pSectionName[16] = 0;
         m_pSections[i].uNativeAddr = BMMH(segments[i].vmaddr);
-        m_pSections[i].uHostAddr = ADDRESS::g(base + BMMH(segments[i].vmaddr) - loaded_addr);
+        m_pSections[i].uHostAddr = ADDRESS::value_type(base) + BMMH(segments[i].vmaddr) - loaded_addr.m_value;
         m_pSections[i].uSectionSize = BMMH(segments[i].vmsize);
 
         unsigned long l = BMMH(segments[i].initprot);
@@ -331,7 +331,7 @@ bool MachOBinaryFile::RealLoad(const char* sName)
             m->name = name;
             for (unsigned j = 0; j < BMMHW(symtab->cls_def_cnt); j++) {
                 struct objc_class *def = (struct objc_class *)(base + BMMH(symtab->defs[j]) - loaded_addr.m_value);
-                char *name = (char *)(ADDRESS::g(base) + BMMH(def->name) - loaded_addr);
+                char *name = (char *)(ADDRESS::value_type(base) + BMMH(def->name) - loaded_addr.m_value);
 #ifdef DEBUG_MACHO_LOADER_OBJC
                 fprintf(stdout, "  class %s\n", name);
 #endif
@@ -340,8 +340,8 @@ bool MachOBinaryFile::RealLoad(const char* sName)
                 struct objc_ivar_list *ivars = (struct objc_ivar_list *)(base + BMMH(def->ivars) - loaded_addr.m_value);
                 for (unsigned k = 0; k < static_cast<unsigned int>(BMMH(ivars->ivar_count)); k++) {
                     struct objc_ivar *ivar = &ivars->ivar_list[k];
-                    char *name = (char*)(ADDRESS::g(base) + BMMH(ivar->ivar_name) - loaded_addr);
-                    char *types = (char*)(ADDRESS::g(base) + BMMH(ivar->ivar_type) - loaded_addr);
+                    char *name = (char*)(ADDRESS::value_type(base) + BMMH(ivar->ivar_name) - loaded_addr.m_value);
+                    char *types = (char*)(ADDRESS::value_type(base) + BMMH(ivar->ivar_type) - loaded_addr.m_value);
 #ifdef DEBUG_MACHO_LOADER_OBJC
                     fprintf(stdout, "    ivar %s %s %x\n", name, types, BMMH(ivar->ivar_offset));
 #endif
@@ -351,7 +351,7 @@ bool MachOBinaryFile::RealLoad(const char* sName)
                     iv->offset = BMMH(ivar->ivar_offset);
                 }
                 // this is weird, why is it defined as a ** in the struct but used as a * in otool?
-                struct objc_method_list *methods = (struct objc_method_list *)(intptr_t(base) + BMMH(def->methodLists) - loaded_addr);
+                struct objc_method_list *methods = (struct objc_method_list *)(intptr_t(base) + BMMH(def->methodLists) - loaded_addr.m_value);
                 for (unsigned k = 0; k < static_cast<unsigned int>(BMMH(methods->method_count)); k++) {
                     struct objc_method *method = &methods->method_list[k];
                     char *name = (char*)(intptr_t(base) + BMMH(method->method_name) - loaded_addr.m_value);
@@ -446,9 +446,9 @@ char *MachOBinaryFile::BMMH(char *x)
     if (swap_bytes) return (char *)_BMMH(x); else return x;
 }
 
-unsigned int MachOBinaryFile::BMMH(void * x)
+uintptr_t MachOBinaryFile::BMMH(void * x)
 {
-    if (swap_bytes) return (unsigned int)_BMMH(x); else return unsigned(x);
+    if (swap_bytes) return (uintptr_t)_BMMH(x); else return uintptr_t(x);
 }
 
 const char *MachOBinaryFile::BMMH(const char *x)

@@ -383,16 +383,17 @@ void printBB(PBB bb) {
  *============================================================================*/
 ADDRESS BasicBlock::getLowAddr() {
     if (m_pRtls == NULL || m_pRtls->size() == 0)
-        return ADDRESS::g(0);
+        return ADDRESS::g(0L);
     ADDRESS a = m_pRtls->front()->getAddress();
-    if ((a == 0) && (m_pRtls->size() > 1)) {
+
+    if (a.isZero() && (m_pRtls->size() > 1)) {
         std::list<RTL*>::iterator it = m_pRtls->begin();
         ADDRESS add2 = (*++it)->getAddress();
         // This is a bit of a hack for 286 programs, whose main actually starts at offset 0. A better solution would be
         // to change orphan BBs' addresses to NO_ADDRESS, but I suspect that this will cause many problems. MVE
-        if (add2 < 0x10)
+        if (add2 < ADDRESS::g(0x10))
             // Assume that 0 is the real address
-            return ADDRESS::g(0);
+            return ADDRESS::g(0L);
         return add2;
     }
     return a;
@@ -1302,13 +1303,13 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
                     // FIXME: Not valid for all switch types
                     Const caseVal(0);
                     if (psi->chForm == 'F')                            // "Fortran" style?
-                        caseVal.setInt(((int*)int(psi->uTable))[i]);		// Yes, use the table value itself
+                        caseVal.setInt(((int*)psi->uTable.m_value)[i]);		// Yes, use the table value itself
                     // Note that uTable has the address of an int array
                     else
                         caseVal.setInt((int)(psi->iLower+i));
                     hll->AddCaseCondOption(indLevel, &caseVal);
 
-                    // generate code for the current outedge
+                    // generate code for the current out-edge
                     PBB succ = m_OutEdges[i];
                     //assert(succ->caseHead == this || succ == condFollow || HasBackEdgeTo(succ));
                     if (succ->traversed == DFS_CODEGEN)
@@ -1378,7 +1379,7 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
                 PBB other = m_OutEdges[1];
                 LOG << "found seq with more than one outedge!\n";
                 if (getDest()->isIntConst() &&
-                        ((Const*)getDest())->getInt() == (int)child->getLowAddr()) {
+                        ((Const*)getDest())->getAddr() == child->getLowAddr()) {
                     other = child;
                     child = m_OutEdges[1];
                     LOG << "taken branch is first out edge\n";
@@ -1606,7 +1607,7 @@ void BasicBlock::prependStmt(Statement* s, UserProc* proc) {
     s->setProc(proc);
     if (m_pRtls->size()) {
         RTL* rtl = m_pRtls->front();
-        if (rtl->getAddress() == 0) {
+        if ( rtl->getAddress().isZero() ) {
             // Append to this RTL
             rtl->appendStmt(s);
             return;
@@ -1615,7 +1616,7 @@ void BasicBlock::prependStmt(Statement* s, UserProc* proc) {
     // Otherwise, prepend a new RTL
     std::list<Statement*> listStmt;
     listStmt.push_back(s);
-    RTL* rtl = new RTL(ADDRESS::g(0), &listStmt);
+    RTL* rtl = new RTL(ADDRESS::g(0L), &listStmt);
     m_pRtls->push_front(rtl);
 }
 
@@ -1916,7 +1917,7 @@ void findSwParams(char form, Exp* e, Exp*& expr, ADDRESS& T) {
         }
         case 'R': {
             // Pattern: %pc + m[%pc     + (<expr> * 4) + k]
-            T = ADDRESS::g(0);		// ?
+            T = ADDRESS::g(0L);		// ?
             // l = m[%pc  + (<expr> * 4) + k]:
             Exp* l = ((Binary*)e)->getSubExp2();
             if (l->isSubscript()) l = l->getSubExp1();
@@ -1932,7 +1933,7 @@ void findSwParams(char form, Exp* e, Exp*& expr, ADDRESS& T) {
         }
         case 'r': {
             // Pattern: %pc + m[%pc + ((<expr> * 4) - k)] - k
-            T = ADDRESS::g(0);		// ?
+            T = ADDRESS::g(0L);		// ?
             // b = %pc + m[%pc + ((<expr> * 4) - k)]:
             Binary* b = (Binary*)((Binary*)e)->getSubExp1();
             // l = m[%pc + ((<expr> * 4) - k)]:

@@ -79,7 +79,7 @@ namespace dbghelp {
 };
 #endif
 #undef NO_ADDRESS
-#define NO_ADDRESS ((ADDRESS)-1)
+#define NO_ADDRESS (ADDRESS::g(-1))
 #endif
 
 #include <sys/stat.h>
@@ -201,7 +201,7 @@ void Prog::generateCode(Cluster *cluster, UserProc *proc, bool intermixRTL) {
                     PSectionInfo info = pBF->GetSectionInfoByName(str.c_str());
                     str = "start_";
                     str    += sections[j];
-                    code->AddGlobal(str.c_str(), new IntegerType(32, -1), new Const(info ? info->uNativeAddr : (unsigned int)-1));
+                    code->AddGlobal(str.c_str(), new IntegerType(32, -1), new Const(info ? info->uNativeAddr : NO_ADDRESS));
                     str = sections[j];
                     str += "_size";
                     code->AddGlobal(str.c_str(), new IntegerType(32, -1), new Const(info ? info->uSectionSize : (unsigned int)-1));
@@ -683,7 +683,7 @@ Proc* Prog::newProc (const char* name, ADDRESS uNative, bool bLib /*= false*/) {
         sym->SizeOfStruct = sizeof(*sym);
         sym->MaxNameLen = 1000;
         sym->Name[0] = 0;
-        BOOL got = dbghelp::SymFromAddr(hProcess, uNative, 0, sym);
+        BOOL got = dbghelp::SymFromAddr(hProcess, uNative.m_value, 0, sym);
         DWORD retType;
         if (got && *sym->Name && dbghelp::SymGetTypeInfo(hProcess, sym->ModBase, sym->TypeIndex, dbghelp::TI_GET_TYPE, &retType)) {
             DWORD d;
@@ -705,7 +705,7 @@ Proc* Prog::newProc (const char* name, ADDRESS uNative, bool bLib /*= false*/) {
 
             // find params and locals
             dbghelp::IMAGEHLP_STACK_FRAME stack;
-            stack.InstructionOffset = uNative;
+            stack.InstructionOffset = uNative.m_value;
             dbghelp::SymSetContext(hProcess, &stack, 0);
             dbghelp::SymEnumSymbols(hProcess, 0, NULL, addSymbol, pProc);
 
@@ -976,7 +976,7 @@ Type *Prog::guessGlobalType(const char *nam, ADDRESS u) {
     sym->SizeOfStruct = sizeof(*sym);
     sym->MaxNameLen = 1000;
     sym->Name[0] = 0;
-    BOOL got = dbghelp::SymFromAddr(hProcess, u, 0, sym);
+    BOOL got = dbghelp::SymFromAddr(hProcess, u.m_value, 0, sym);
     if (got && *sym->Name && sym->TypeIndex) {
         assert(!strcmp(nam, sym->Name));
         return typeFromDebugInfo(sym->TypeIndex, sym->ModBase);
@@ -1226,7 +1226,7 @@ const void* Prog::getCodeInfo(ADDRESS uAddr, const char*& last, int& delta) {
             continue;
         if ((uAddr < pSect->uNativeAddr) || (uAddr >= pSect->uNativeAddr + pSect->uSectionSize))
             continue;            // Try the next section
-        delta = pSect->uHostAddr - pSect->uNativeAddr;
+        delta = (pSect->uHostAddr - pSect->uNativeAddr).m_value;
         last = (const char*) (pSect->uHostAddr + pSect->uSectionSize).m_value;
         const char* p = (const char *) (uAddr + delta).m_value;
         return p;
@@ -1554,7 +1554,7 @@ void printProcsRecursive(Proc* proc, int indent, std::ofstream &f,std::set<Proc*
 
     if(!proc->isLib() && fisttime) // seen lib proc
     {
-        f << "0x" << std::hex << proc->getNativeAddress();
+        f << proc->getNativeAddress();
         f << " __nodecode __incomplete void " << proc->getName() << "();\n";
 
         UserProc *u = (UserProc*)proc;
@@ -1697,7 +1697,7 @@ Exp *Prog::readNativeAs(ADDRESS uaddr, Type *type)
         return NULL;
     if (type->resolvesToPointer()) {
         ADDRESS init = ADDRESS::g(readNative4(uaddr));
-        if (init == 0)
+        if ( init.isZero() )
             return new Const(0);
         const char *nam = getGlobalName(init);
         if (nam != NULL)
@@ -2077,7 +2077,7 @@ Exp    *Prog::addReloc(Exp *e, ADDRESS lc)
                 // check for accesses into the middle of symbols
                 for (std::map<ADDRESS, std::string>::iterator it = symbols.begin(); it != symbols.end(); it++) {
                     if ((*it).first < c_addr && (*it).first + pBF->GetSizeByName((*it).second.c_str()) > c_addr) {
-                        int off = c->getInt() - (*it).first;
+                        int off = (c->getAddr() - (*it).first).m_value;
                         e = new Binary(opPlus,
                                        new Unary(opAddrOf, Location::global((*it).second.c_str(), NULL)),
                                        new Const(off));

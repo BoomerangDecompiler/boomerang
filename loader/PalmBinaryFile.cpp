@@ -129,7 +129,7 @@ bool PalmBinaryFile::RealLoad(const char* sName)
 
         // Guess the length
         if (i > 0) {
-            m_pSections[i-1].uSectionSize = off - m_pSections[i-1].uNativeAddr;
+            m_pSections[i-1].uSectionSize = off - m_pSections[i-1].uNativeAddr.m_value;
             m_pSections[i].uSectionEntrySize = 1;        // No info available
         }
 
@@ -272,7 +272,7 @@ std::list<SectionInfo*>& PalmBinaryFile::GetEntryPoints(const char* pEntry
 ADDRESS PalmBinaryFile::GetEntryPoint()
 {
     assert(0); /* FIXME: Need to be implemented */
-    return ADDRESS::g(0);
+    return ADDRESS::g(0L);
 }
 
 bool PalmBinaryFile::Open(const char* sName)
@@ -312,20 +312,20 @@ std::list<const char *> PalmBinaryFile::getDependencyList()
 
 ADDRESS PalmBinaryFile::getImageBase()
 {
-    return ADDRESS::g(0); /* FIXME */
+    return ADDRESS::g(0L); /* FIXME */
 }
 
 size_t PalmBinaryFile::getImageSize()
 {
-    return ADDRESS::g(0); /* FIXME */
+    return 0; /* FIXME */
 }
 
 // We at least need to be able to name the main function and system calls
 const char* PalmBinaryFile::SymbolByAddress(ADDRESS dwAddr)
 {
-    if ((dwAddr & 0xFFFFF000) == 0xAAAAA000) {
+    if ((dwAddr.m_value & 0xFFFFF000) == 0xAAAAA000) {
         // This is the convention used to indicate an A-line system call
-        unsigned offset = dwAddr & 0xFFF;
+        unsigned offset = dwAddr.m_value & 0xFFF;
         if (offset < numTrapStrings)
             return trapNames[offset];
         else
@@ -339,7 +339,7 @@ const char* PalmBinaryFile::SymbolByAddress(ADDRESS dwAddr)
 // Not really dynamically linked, but the closest thing
 bool PalmBinaryFile::IsDynamicLinkedProc(ADDRESS uNative)
 {
-    return ((uNative & 0xFFFFF000) == 0xAAAAA000);
+    return ((uNative.m_value & 0xFFFFF000) == 0xAAAAA000);
 }
 
 // Specific to BinaryFile objects that implement a "global pointer"
@@ -347,12 +347,12 @@ bool PalmBinaryFile::IsDynamicLinkedProc(ADDRESS uNative)
 // and the value for GLOBALOFFSET. For Palm, the latter is the amount of
 // space allocated below %a5, i.e. the difference between %a5 and %agp
 // (%agp points to the bottom of the global data area).
-std::pair<unsigned,unsigned> PalmBinaryFile::GetGlobalPointerInfo()
+std::pair<ADDRESS,unsigned> PalmBinaryFile::GetGlobalPointerInfo()
 {
-    unsigned agp = 0;
+    ADDRESS agp = ADDRESS::g(0L);
     const SectionInfo* ps = GetSectionInfoByName("data0");
     if (ps) agp = ps->uNativeAddr;
-    std::pair<unsigned, unsigned> ret(agp, m_SizeBelowA5);
+    std::pair<ADDRESS, unsigned> ret(agp, m_SizeBelowA5);
     return ret;
 }
 
@@ -426,10 +426,10 @@ ADDRESS PalmBinaryFile::GetMainEntryPoint()
 {
     SectionInfo* pSect = GetSectionInfoByName("code1");
     if (pSect == 0)
-        return ADDRESS::g(0);               // Failed
+        return ADDRESS::g(0L);               // Failed
     // Return the start of the code1 section
     SWord* startCode = (SWord*) pSect->uHostAddr.m_value;
-    int delta = pSect->uHostAddr - pSect->uNativeAddr;
+    int delta = (pSect->uHostAddr - pSect->uNativeAddr).m_value;
 
     // First try the CW first jump pattern
     SWord* res = findPattern(startCode, CWFirstJump,
@@ -449,7 +449,7 @@ ADDRESS PalmBinaryFile::GetMainEntryPoint()
         }
         else {
             fprintf( stderr, "Could not find call to PilotMain in CW app\n" );
-            return ADDRESS::g(0);
+            return ADDRESS::g(0L);
         }
     }
     // Check for gcc call to main
@@ -462,7 +462,7 @@ ADDRESS PalmBinaryFile::GetMainEntryPoint()
     }
 
     fprintf(stderr,"Cannot find call to PilotMain\n");
-    return ADDRESS::g(0);
+    return ADDRESS::g(0L);
 }
 
 void PalmBinaryFile::GenerateBinFiles(const std::string& path) const

@@ -59,7 +59,7 @@ virtual                ~Global();
         void        print(std::ostream& os, Prog* prog);    // Print to stream os
 
 protected:
-                    Global() : type(NULL), uaddr(ADDRESS::g(0)), nam("") { }
+                    Global() : type(NULL), uaddr(ADDRESS::g(0L)), nam("") { }
         friend class XMLProgParser;
 };        // class Global
 
@@ -104,7 +104,7 @@ virtual                ~Prog();
         UserProc*    getNextUserProc (std::list<Proc*>::iterator& it);
 
         // list of UserProcs for entry point(s)
-        std::list<UserProc*> entryProcs;    
+        std::list<UserProc*> entryProcs;
 
         // clear the prog object NOTE: deletes everything!
         void        clear();
@@ -126,7 +126,7 @@ virtual                ~Prog();
 
         // Well form all the procedures/cfgs in this program
         bool        wellForm();
-        
+
         // last fixes after decoding everything
         void        finishDecode();
 
@@ -222,7 +222,7 @@ virtual                ~Prog();
 
         // Get the type of a global variable
         Type        *getGlobalType(char* nam);
-        
+
         // Set the type of a global variable
         void        setGlobalType(const char* name, Type* ty);
 

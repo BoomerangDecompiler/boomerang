@@ -584,7 +584,7 @@ int Boomerang::parseCmd(int argc, const char **argv)
 
             std::cout << "proc " << proc->getName() << ":\n";
             std::cout << "\tbelongs to cluster " << proc->getCluster()->getName() << "\n";
-            std::cout << "\tnative address " << std::hex << proc->getNativeAddress() << std::dec << "\n";
+            std::cout << "\tnative address " << proc->getNativeAddress()<< "\n";
             if (proc->isLib())
                 std::cout << "\tis a library proc.\n";
             else {
@@ -1047,7 +1047,7 @@ Prog *Boomerang::loadAndDecode(const char *fname, const char *pname)
 
     // Entry points from -e (and -E) switch(es)
     for (unsigned i = 0; i < entrypoints.size(); i++) {
-        std::cout<< "decoding specified entrypoint " << std::hex << entrypoints[i] << "\n";
+        std::cout<< "decoding specified entrypoint " << entrypoints[i] << "\n";
         prog->decodeEntryPoint(entrypoints[i]);
     }
 
