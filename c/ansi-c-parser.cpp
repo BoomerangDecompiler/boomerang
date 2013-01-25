@@ -1817,13 +1817,13 @@ YY_AnsiCParser_PARSE_PARAM_DEF
             break;}
         case 39:
 #line 404 "c/ansi-c.y"
-        { SymbolRef *ref = new SymbolRef(yyvsp[-2].ival, yyvsp[-1].str);
+{ SymbolRef *ref = new SymbolRef(ADDRESS::g(yyvsp[-2].ival), yyvsp[-1].str);
             refs.push_back(ref);
             ;
             break;}
         case 40:
 #line 410 "c/ansi-c.y"
-        { Symbol *sym = new Symbol(yyvsp[-2].ival);
+{ Symbol *sym = new Symbol(ADDRESS::g(yyvsp[-2].ival));
             sym->nam = yyvsp[-1].type_ident->nam;
             sym->ty = yyvsp[-1].type_ident->ty;
             symbols.push_back(sym);
@@ -1831,7 +1831,7 @@ YY_AnsiCParser_PARSE_PARAM_DEF
             break;}
         case 41:
 #line 421 "c/ansi-c.y"
-        { Symbol *sym = new Symbol(yyvsp[-3].ival);
+{ Symbol *sym = new Symbol(ADDRESS::g(yyvsp[-3].ival));
             sym->sig = yyvsp[-1].sig;
             sym->mods = yyvsp[-2].mods;
             symbols.push_back(sym);

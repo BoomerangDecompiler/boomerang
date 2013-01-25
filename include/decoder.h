@@ -91,7 +91,8 @@ struct DecodeResult {
         bool reDecode;
 
         /*
-         * If non zero, this field represents a new native address to be used as the out-edge for this instruction's BB.         * At present, only used for the SPARC call/add caller prologue
+         * If non zero, this field represents a new native address to be used as the out-edge for this instruction's BB.
+         * At present, only used for the SPARC call/add caller prologue
          */
         ADDRESS forceOutEdge;
 
@@ -213,7 +214,7 @@ protected:
     BranchStatement* jump = new BranchStatement; \
     result.rtl->appendStmt(jump); \
     result.numBytes = size; \
-    jump->setDest(relocd-delta); \
+    jump->setDest(ADDRESS::g(relocd-delta)); \
     jump->setCondType(cond); \
     SHOW_ASM(name<<" "<<relocd)
 

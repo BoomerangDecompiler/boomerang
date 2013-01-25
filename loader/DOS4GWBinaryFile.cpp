@@ -69,7 +69,7 @@ std::list<SectionInfo*>& DOS4GWBinaryFile::GetEntryPoints(
 
 ADDRESS DOS4GWBinaryFile::GetEntryPoint()
 {
-    return (ADDRESS)(LMMH(m_pLXObjects[LMMH(m_pLXHeader->eipobjectnum)].RelocBaseAddr) + LMMH(m_pLXHeader->eip));
+        return ADDRESS::g((LMMH(m_pLXObjects[LMMH(m_pLXHeader->eipobjectnum)].RelocBaseAddr) + LMMH(m_pLXHeader->eip)));
 }
 
 ADDRESS DOS4GWBinaryFile::GetMainEntryPoint() {
@@ -85,7 +85,8 @@ ADDRESS DOS4GWBinaryFile::GetMainEntryPoint() {
     unsigned p = LMMH(m_pLXHeader->eip);
     unsigned lim = p + 0x300;
     unsigned char op1, op2;
-    unsigned addr, lastOrdCall = 0;
+        ADDRESS addr;
+        unsigned lastOrdCall = 0;
     bool gotSubEbp = false;            // True if see sub ebp, ebp
     bool lastWasCall = false;        // True if the last instruction was a call
 
@@ -209,8 +210,8 @@ bool DOS4GWBinaryFile::RealLoad(const char* sName)
 
             m_pSections[n].pSectionName = new char[9];
             sprintf(m_pSections[n].pSectionName, "seg%i", n);   // no section names in LX
-            m_pSections[n].uNativeAddr=(ADDRESS)LMMH(m_pLXObjects[n].RelocBaseAddr);
-            m_pSections[n].uHostAddr=(ADDRESS)(LMMH(m_pLXObjects[n].RelocBaseAddr) - LMMH(m_pLXObjects[0].RelocBaseAddr) + base);
+            m_pSections[n].uNativeAddr=LMMH(m_pLXObjects[n].RelocBaseAddr);
+            m_pSections[n].uHostAddr=ADDRESS::g((LMMH(m_pLXObjects[n].RelocBaseAddr) - LMMH(m_pLXObjects[0].RelocBaseAddr) + base));
             m_pSections[n].uSectionSize=LMMH(m_pLXObjects[n].VirtualSize);
             DWord Flags = LMMH(m_pLXObjects[n].ObjectFlags);
             m_pSections[n].bBss        = 0; // TODO
@@ -424,11 +425,11 @@ int DOS4GWBinaryFile::dos4gwRead4(int* pi) const{
 }
 
 // Read 2 bytes from given native address
-int DOS4GWBinaryFile::readNative1(ADDRESS nat) {
+char DOS4GWBinaryFile::readNative1(ADDRESS nat) {
     PSectionInfo si = GetSectionInfoByAddr(nat);
     if (si == 0)
         si = GetSectionInfo(0);
-    char* host = (char*)(si->uHostAddr - si->uNativeAddr + nat);
+    char* host = (char*)(si->uHostAddr - si->uNativeAddr + nat).m_value;
     return *host;
 }
 
@@ -437,7 +438,7 @@ int DOS4GWBinaryFile::readNative2(ADDRESS nat) {
     PSectionInfo si = GetSectionInfoByAddr(nat);
     if (si == 0) return 0;
     ADDRESS host = si->uHostAddr - si->uNativeAddr + nat;
-    int n = dos4gwRead2((short*)host);
+    int n = dos4gwRead2((short*)host.m_value);
     return n;
 }
 
@@ -446,7 +447,7 @@ int DOS4GWBinaryFile::readNative4(ADDRESS nat) {
     PSectionInfo si = GetSectionInfoByAddr(nat);
     if (si == 0) return 0;
     ADDRESS host = si->uHostAddr - si->uNativeAddr + nat;
-    int n = dos4gwRead4((int*)host);
+    int n = dos4gwRead4((int*)host.m_value);
     return n;
 }
 
@@ -518,7 +519,7 @@ bool DOS4GWBinaryFile::isLibrary() const
 
 ADDRESS DOS4GWBinaryFile::getImageBase()
 {
-    return m_pLXObjects[0].RelocBaseAddr;
+    return ADDRESS::g(m_pLXObjects[0].RelocBaseAddr);
 }
 
 size_t DOS4GWBinaryFile::getImageSize()
@@ -536,7 +537,7 @@ DWord DOS4GWBinaryFile::getDelta()
     // Stupid function anyway: delta depends on section
     // This should work for the header only
     //    return (DWord)base - LMMH(m_pPEHeader->Imagebase);
-    return (ADDRESS) base - (ADDRESS) m_pLXObjects[0].RelocBaseAddr;
+    return ADDRESS::g(base) - ADDRESS::g(m_pLXObjects[0].RelocBaseAddr);
 }
 
 // This function is called via dlopen/dlsym; it returns a new BinaryFile

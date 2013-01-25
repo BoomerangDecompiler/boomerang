@@ -259,7 +259,7 @@ bool MachOBinaryFile::RealLoad(const char* sName)
 
     for (unsigned i = 0; i < segments.size(); i++) {
         fseek(fp, BMMH(segments[i].fileoff), SEEK_SET);
-        ADDRESS a = BMMH(segments[i].vmaddr);
+        ADDRESS a = ADDRESS::g(BMMH(segments[i].vmaddr));
         unsigned sz = BMMH(segments[i].vmsize);
         unsigned fsz = BMMH(segments[i].filesize);
         memset(base + a - loaded_addr, 0, sz);
@@ -272,7 +272,7 @@ bool MachOBinaryFile::RealLoad(const char* sName)
         strncpy(m_pSections[i].pSectionName, segments[i].segname, 16);
         m_pSections[i].pSectionName[16] = 0;
         m_pSections[i].uNativeAddr = BMMH(segments[i].vmaddr);
-        m_pSections[i].uHostAddr = (ADDRESS)base + BMMH(segments[i].vmaddr) - loaded_addr;
+        m_pSections[i].uHostAddr = ADDRESS::g(base + BMMH(segments[i].vmaddr) - loaded_addr);
         m_pSections[i].uSectionSize = BMMH(segments[i].vmsize);
 
         unsigned long l = BMMH(segments[i].initprot);
@@ -287,7 +287,7 @@ bool MachOBinaryFile::RealLoad(const char* sName)
         for (unsigned i = 0; i < BMMH(stubs_sects[j].size) / BMMH(stubs_sects[j].reserved2); i++) {
             unsigned startidx = BMMH(stubs_sects[j].reserved1);
             unsigned symbol = BMMH(indirectsymtbl[startidx + i]);
-            ADDRESS addr = BMMH(stubs_sects[j].addr) + i * BMMH(stubs_sects[j].reserved2);
+            ADDRESS addr = ADDRESS::g(BMMH(stubs_sects[j].addr) + i * BMMH(stubs_sects[j].reserved2));
 #ifdef DEBUG_MACHO_LOADER
             fprintf(stdout, "stub for %s at %x\n", strtbl + BMMH(symbols[symbol].n_un.n_strx), addr);
 #endif
@@ -311,7 +311,7 @@ bool MachOBinaryFile::RealLoad(const char* sName)
 #endif
             if (*name == '_')  // we want main not _main
                 name++;
-            m_SymA[BMMH(symbols[i].n_value)] = name;
+            m_SymA[ADDRESS::g(BMMH(symbols[i].n_value))] = name;
         }
     }
 
@@ -321,27 +321,27 @@ bool MachOBinaryFile::RealLoad(const char* sName)
         fprintf(stdout, "processing objective-c section\n");
 #endif
         for (unsigned i = 0; i < objc_modules_size; ) {
-            struct objc_module *module = (struct objc_module *)((ADDRESS)base + objc_modules - loaded_addr + i);
-            char *name = (char *)((ADDRESS)base + BMMH(module->name) - loaded_addr);
-            Symtab symtab = (Symtab)((ADDRESS)base + BMMH(module->symtab) - loaded_addr);
+            struct objc_module *module = (struct objc_module *)(ADDRESS::g(base) + objc_modules - loaded_addr + i).m_value;
+            char *name = (char *)(intptr_t(base) + BMMH(module->name) - loaded_addr.m_value);
+            Symtab symtab = (Symtab)(ADDRESS::g(base) + BMMH(module->symtab) - loaded_addr).m_value;
 #ifdef DEBUG_MACHO_LOADER_OBJC
             fprintf(stdout, "module %s (%i classes)\n", name, BMMHW(symtab->cls_def_cnt));
 #endif
             ObjcModule *m = &modules[name];
             m->name = name;
             for (unsigned j = 0; j < BMMHW(symtab->cls_def_cnt); j++) {
-                struct objc_class *def = (struct objc_class *)((ADDRESS)base + BMMH(symtab->defs[j]) - loaded_addr);
-                char *name = (char *)((ADDRESS)base + BMMH(def->name) - loaded_addr);
+                struct objc_class *def = (struct objc_class *)(base + BMMH(symtab->defs[j]) - loaded_addr.m_value);
+                char *name = (char *)(ADDRESS::g(base) + BMMH(def->name) - loaded_addr);
 #ifdef DEBUG_MACHO_LOADER_OBJC
                 fprintf(stdout, "  class %s\n", name);
 #endif
                 ObjcClass *cl = &m->classes[name];
                 cl->name = name;
-                struct objc_ivar_list *ivars = (struct objc_ivar_list *)((ADDRESS)base + BMMH(def->ivars) - loaded_addr);
+                struct objc_ivar_list *ivars = (struct objc_ivar_list *)(base + BMMH(def->ivars) - loaded_addr.m_value);
                 for (unsigned k = 0; k < static_cast<unsigned int>(BMMH(ivars->ivar_count)); k++) {
                     struct objc_ivar *ivar = &ivars->ivar_list[k];
-                    char *name = (char*)((ADDRESS)base + BMMH(ivar->ivar_name) - loaded_addr);
-                    char *types = (char*)((ADDRESS)base + BMMH(ivar->ivar_type) - loaded_addr);
+                    char *name = (char*)(ADDRESS::g(base) + BMMH(ivar->ivar_name) - loaded_addr);
+                    char *types = (char*)(ADDRESS::g(base) + BMMH(ivar->ivar_type) - loaded_addr);
 #ifdef DEBUG_MACHO_LOADER_OBJC
                     fprintf(stdout, "    ivar %s %s %x\n", name, types, BMMH(ivar->ivar_offset));
 #endif
@@ -351,11 +351,11 @@ bool MachOBinaryFile::RealLoad(const char* sName)
                     iv->offset = BMMH(ivar->ivar_offset);
                 }
                 // this is weird, why is it defined as a ** in the struct but used as a * in otool?
-                struct objc_method_list *methods = (struct objc_method_list *)((ADDRESS)base + BMMH(def->methodLists) - loaded_addr);
+                struct objc_method_list *methods = (struct objc_method_list *)(intptr_t(base) + BMMH(def->methodLists) - loaded_addr);
                 for (unsigned k = 0; k < static_cast<unsigned int>(BMMH(methods->method_count)); k++) {
                     struct objc_method *method = &methods->method_list[k];
-                    char *name = (char*)((ADDRESS)base + BMMH(method->method_name) - loaded_addr);
-                    char *types = (char*)((ADDRESS)base + BMMH(method->method_types) - loaded_addr);
+                    char *name = (char*)(intptr_t(base) + BMMH(method->method_name) - loaded_addr.m_value);
+                    char *types = (char*)(intptr_t(base) + BMMH(method->method_types) - loaded_addr.m_value);
 #ifdef DEBUG_MACHO_LOADER_OBJC
                     fprintf(stdout, "    method %s %s %x\n", name, types, BMMH((void*)method->method_imp));
 #endif
@@ -448,7 +448,7 @@ char *MachOBinaryFile::BMMH(char *x)
 
 unsigned int MachOBinaryFile::BMMH(void * x)
 {
-    if (swap_bytes) return (unsigned int)_BMMH(x); else return (ADDRESS)x;
+    if (swap_bytes) return (unsigned int)_BMMH(x); else return unsigned(x);
 }
 
 const char *MachOBinaryFile::BMMH(const char *x)
@@ -482,12 +482,12 @@ unsigned short MachOBinaryFile::BMMHW(unsigned short x)
 }
 
 // Read 2 bytes from given native address
-int MachOBinaryFile::readNative1(ADDRESS nat) {
+char MachOBinaryFile::readNative1(ADDRESS nat) {
     PSectionInfo si = GetSectionInfoByAddr(nat);
     if (si == 0)
         si = GetSectionInfo(0);
     ADDRESS host = si->uHostAddr - si->uNativeAddr + nat;
-    return *(char*)host;
+    return *(char*)host.m_value;
 }
 
 // Read 2 bytes from given native address
@@ -495,7 +495,7 @@ int MachOBinaryFile::readNative2(ADDRESS nat) {
     PSectionInfo si = GetSectionInfoByAddr(nat);
     if (si == 0) return 0;
     ADDRESS host = si->uHostAddr - si->uNativeAddr + nat;
-    int n = machORead2((short*)host);
+    int n = machORead2((short*)host.m_value);
     return n;
 }
 
@@ -504,7 +504,7 @@ int MachOBinaryFile::readNative4(ADDRESS nat) {
     PSectionInfo si = GetSectionInfoByAddr(nat);
     if (si == 0) return 0;
     ADDRESS host = si->uHostAddr - si->uNativeAddr + nat;
-    int n = machORead4((int*)host);
+    int n = machORead4((int*)host.m_value);
     return n;
 }
 
@@ -587,7 +587,7 @@ DWord MachOBinaryFile::getDelta()
     // Stupid function anyway: delta depends on section
     // This should work for the header only
     //    return (DWord)base - LMMH(m_pPEHeader->Imagebase);
-    return (ADDRESS) base - (ADDRESS) loaded_addr;
+    return (ADDRESS::g(base) - loaded_addr).m_value;
 }
 
 // This function is called via dlopen/dlsym; it returns a new BinaryFile

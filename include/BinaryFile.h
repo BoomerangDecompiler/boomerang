@@ -72,8 +72,8 @@ struct IMPORT_BINARYFILE SectionInfo
     char*        pSectionName;        // Name of section
     ADDRESS        uNativeAddr;        // Logical or native load address
     ADDRESS        uHostAddr;            // Host or actual address of data
-    ADDRESS        uSectionSize;        // Size of section in bytes
-    ADDRESS        uSectionEntrySize;    // Size of one section entry (if applic)
+    uint32_t        uSectionSize;        // Size of section in bytes
+    uint32_t        uSectionEntrySize;    // Size of one section entry (if applic)
     unsigned    uType;                 // Type of section (format dependent)
     unsigned    bCode:1;            // Set if section contains instructions
     unsigned    bData:1;            // Set if section contains data
@@ -191,7 +191,7 @@ virtual size_t    getImageSize() = 0;
             PSectionInfo p = GetSectionInfoByAddr(uEntry);
             return p && p->bReadOnly;
         }
-virtual int            readNative1(ADDRESS a) {return 0;}
+virtual char			readNative1(ADDRESS a) {return 0;}
         // Read 2 bytes from given native address a; considers endianness
 virtual int            readNative2(ADDRESS a) {return 0;}
         // Read 4 bytes from given native address a; considers endianness

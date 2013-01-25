@@ -83,8 +83,8 @@ bool SparcFrontEnd::optimise_DelayCopy(ADDRESS src, ADDRESS dest, int delta, ADD
     // Check that the destination is within the main test section; may not be when we speculatively decode junk
     if ((dest - 4) > uUpper)
         return false;
-    unsigned delay_inst = *((unsigned*)(src+4+delta));
-    unsigned inst_before_dest = *((unsigned*)(dest-4+delta));
+    unsigned delay_inst = *((unsigned*)(src+4+delta).m_value);
+    unsigned inst_before_dest = *((unsigned*)(dest-4+delta).m_value);
     return (delay_inst == inst_before_dest);
 }
 
@@ -589,12 +589,12 @@ bool SparcFrontEnd::case_SCD(ADDRESS& address, int delta, ADDRESS hiAddress,
         // be several jumps to the same destination that all require an orphan. The instruction in the orphan will
         // often but not necessarily be the same, so we can't use the same orphan BB. newBB knows to consider BBs
         // with address 0 as being in the map, so several BBs can exist with address 0
-        delay_inst.rtl->updateAddress(0);
+        delay_inst.rtl->updateAddress(ADDRESS::g(0));
         // Add a branch from the orphan instruction to the dest of the branch. Again, we can't even give the jumps
         // a special address like 1, since then the BB would have this getLowAddr.
         std::list<Statement*>* gl = new std::list<Statement*>;
         gl->push_back(new GotoStatement(uDest));
-        pOrphan->push_back(new RTL(0, gl));
+        pOrphan->push_back(new RTL(ADDRESS::g(0), gl));
         PBB pOrBB = cfg->newBB(pOrphan, ONEWAY, 1);
         // Add an out edge from the orphan as well
         cfg->addOutEdge(pOrBB, uDest, true);
@@ -658,11 +658,11 @@ bool SparcFrontEnd::case_SCDAN(ADDRESS& address, int delta, ADDRESS hiAddress,
         pOrphan->push_back(delay_inst.rtl);
         // Change the address to 0, since this code has no source address (else we may branch to here when we want to
         // branch to the real BB with this instruction).
-        delay_inst.rtl->updateAddress(0);
+        delay_inst.rtl->updateAddress(ADDRESS::g(0));
         // Add a branch from the orphan instruction to the dest of the branch
         std::list<Statement*>* gl = new std::list<Statement*>;
         gl->push_back(new GotoStatement(uDest));
-        pOrphan->push_back(new RTL(0, gl));
+        pOrphan->push_back(new RTL(ADDRESS::g(0), gl));
         PBB pOrBB = cfg->newBB(pOrphan, ONEWAY, 1);
         // Add an out edge from the orphan as well. Set a label there.
         cfg->addOutEdge(pOrBB, uDest, true);
@@ -793,7 +793,7 @@ bool SparcFrontEnd::processProc(ADDRESS address, UserProc* proc, std::ofstream &
                 std::cerr << std::setfill('0') << std::setw(2);
                 int delta = pBF->getTextDelta();
                 for (int j=0; j<inst.numBytes; j++)
-                    std::cerr << std::setfill('0') << std::setw(2) << (unsigned)*(unsigned char*)(address+delta + j) <<
+                    std::cerr << std::setfill('0') << std::setw(2) << (unsigned)*(unsigned char*)(address+delta + j).m_value <<
                                  " " << std::setfill(' ') << std::setw(0) << "\n";
                 return false;
             }
@@ -1000,7 +1000,7 @@ bool SparcFrontEnd::processProc(ADDRESS address, UserProc* proc, std::ofstream &
 
                             // Adjust the destination of the SD and emit it.
                             GotoStatement* delay_jump = static_cast<GotoStatement*>(delay_rtl->getList().back());
-                            int dest = 4+address+delay_jump->getFixedDest();
+                            ADDRESS dest = ADDRESS::g(4+address+delay_jump->getFixedDest());
                             stmt_jump->setDest(dest);
                             BB_rtls->push_back(inst.rtl);
 

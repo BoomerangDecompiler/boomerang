@@ -1358,7 +1358,7 @@ void CHLLCode::AddCallStatement(int indLevel, Proc *proc, const char *name, Stat
         Exp* arg = ((Assign*)*ss)->getRight();
         bool ok = true;
         if (t && t->isPointer() && ((PointerType*)t)->getPointsTo()->isFunc() && arg->isIntConst()) {
-            Proc *p = proc->getProg()->findProc(((Const*)arg)->getInt());
+                        Proc *p = proc->getProg()->findProc(((Const*)arg)->getAddr());
             if (p) {
                 s << p->getName();
                 ok = false;

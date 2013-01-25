@@ -382,7 +382,8 @@ void printBB(PBB bb) {
  * RETURNS:            the lowest real address associated with this BB
  *============================================================================*/
 ADDRESS BasicBlock::getLowAddr() {
-    if (m_pRtls == NULL || m_pRtls->size() == 0) return 0;
+    if (m_pRtls == NULL || m_pRtls->size() == 0)
+        return ADDRESS::g(0);
     ADDRESS a = m_pRtls->front()->getAddress();
     if ((a == 0) && (m_pRtls->size() > 1)) {
         std::list<RTL*>::iterator it = m_pRtls->begin();
@@ -391,7 +392,7 @@ ADDRESS BasicBlock::getLowAddr() {
         // to change orphan BBs' addresses to NO_ADDRESS, but I suspect that this will cause many problems. MVE
         if (add2 < 0x10)
             // Assume that 0 is the real address
-            return 0;
+            return ADDRESS::g(0);
         return add2;
     }
     return a;
@@ -663,9 +664,9 @@ bool BasicBlock::lessLastDFT(PBB bb1, PBB bb2) {
  *============================================================================*/
 ADDRESS BasicBlock::getCallDest() {
     if (m_nodeType != CALL)
-        return (ADDRESS)-1;
+                return NO_ADDRESS;
     if (m_pRtls->size() == 0)
-        return (ADDRESS)-1;
+                return NO_ADDRESS;
     RTL* lastRtl = m_pRtls->back();
     RTL::reverse_iterator rit;
     std::list<Statement*>& sl = lastRtl->getList();
@@ -673,7 +674,7 @@ ADDRESS BasicBlock::getCallDest() {
         if ((*rit)->getKind() == STMT_CALL)
             return ((CallStatement*)(*rit))->getFixedDest();
     }
-    return (ADDRESS)-1;
+        return NO_ADDRESS;
 }
 
 Proc *BasicBlock::getCallDestProc() {
@@ -1250,7 +1251,7 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
             } else {
                 Exp *cond = getCond();
                 if (cond == NULL)
-                    cond = new Const((ADDRESS) 0xfeedface);  // hack, but better than a crash
+                    cond = new Const(ADDRESS::g(0xfeedface));  // hack, but better than a crash
                 if (cType == IfElse) {
                     cond = new Unary(opNot, cond->clone());
                     cond = cond->simplify();
@@ -1301,7 +1302,7 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
                     // FIXME: Not valid for all switch types
                     Const caseVal(0);
                     if (psi->chForm == 'F')                            // "Fortran" style?
-                        caseVal.setInt(((int*)psi->uTable)[i]);        // Yes, use the table value itself
+                        caseVal.setInt(((int*)int(psi->uTable))[i]);		// Yes, use the table value itself
                     // Note that uTable has the address of an int array
                     else
                         caseVal.setInt((int)(psi->iLower+i));
@@ -1593,7 +1594,7 @@ char* BasicBlock::getStmtNumber() {
     if (first)
         sprintf(ret, "%d", first->getNumber());
     else
-        sprintf(ret, "bb%x", (ADDRESS) this);
+        sprintf(ret, "bb%x", ADDRESS::value_type(this));
     return ret;
 }
 
@@ -1614,7 +1615,7 @@ void BasicBlock::prependStmt(Statement* s, UserProc* proc) {
     // Otherwise, prepend a new RTL
     std::list<Statement*> listStmt;
     listStmt.push_back(s);
-    RTL* rtl = new RTL(0, &listStmt);
+    RTL* rtl = new RTL(ADDRESS::g(0), &listStmt);
     m_pRtls->push_front(rtl);
 }
 
@@ -1894,14 +1895,14 @@ void findSwParams(char form, Exp* e, Exp*& expr, ADDRESS& T) {
             // b will be (<expr> * 4) + T
             Binary* b = (Binary*)((Location*)e)->getSubExp1();
             Const* TT = (Const*)b->getSubExp2();
-            T = (ADDRESS)TT->getInt();
+            T = ADDRESS::g(TT->getInt()); //TODO: why not getAddr ?
             b = (Binary*)b->getSubExp1();    // b is now <expr> * 4
             expr = b->getSubExp1();
             break;
         }
         case 'O': {        // Form O
             // Pattern: m[<expr> * 4 + T ] + T
-            T = ((Const*)((Binary*)e)->getSubExp2())->getInt();
+            T = ADDRESS::g(((Const*)((Binary*)e)->getSubExp2())->getInt()); //TODO: why not getAddr ?
             // l = m[<expr> * 4 + T ]:
             Exp* l = ((Binary*)e)->getSubExp1();
             if (l->isSubscript()) l = l->getSubExp1();
@@ -1915,7 +1916,7 @@ void findSwParams(char form, Exp* e, Exp*& expr, ADDRESS& T) {
         }
         case 'R': {
             // Pattern: %pc + m[%pc     + (<expr> * 4) + k]
-            T = 0;        // ?
+            T = ADDRESS::g(0);		// ?
             // l = m[%pc  + (<expr> * 4) + k]:
             Exp* l = ((Binary*)e)->getSubExp2();
             if (l->isSubscript()) l = l->getSubExp1();
@@ -1931,7 +1932,7 @@ void findSwParams(char form, Exp* e, Exp*& expr, ADDRESS& T) {
         }
         case 'r': {
             // Pattern: %pc + m[%pc + ((<expr> * 4) - k)] - k
-            T = 0;        // ?
+            T = ADDRESS::g(0);		// ?
             // b = %pc + m[%pc + ((<expr> * 4) - k)]:
             Binary* b = (Binary*)((Binary*)e)->getSubExp1();
             // l = m[%pc + ((<expr> * 4) - k)]:
@@ -2074,7 +2075,7 @@ bool BasicBlock::decodeIndirectJmp(UserProc* proc) {
                 if (form == 'A') {
                     Prog* prog = proc->getProg();
                     for (int iPtr = 0; iPtr < swi->iNumTable; ++iPtr) {
-                        ADDRESS uSwitch = prog->readNative4(swi->uTable + iPtr*4);
+                        ADDRESS uSwitch = ADDRESS::g(prog->readNative4(swi->uTable + iPtr*4));
                         if (uSwitch >= prog->getLimitTextHigh() ||
                                 uSwitch <  prog->getLimitTextLow())
                         {
@@ -2121,7 +2122,7 @@ bool BasicBlock::decodeIndirectJmp(UserProc* proc) {
                         SWITCH_INFO* swi = new SWITCH_INFO;
                         swi->chForm = 'F';                    // The "Fortran" form
                         swi->pSwitchVar = e;
-                        swi->uTable = (ADDRESS)destArray;    // Abuse the uTable member as a pointer
+                        swi->uTable = ADDRESS::g(intptr_t(destArray));	//WARN: Abuse the uTable member as a pointer
                         swi->iNumTable = n;
                         swi->iLower = 1;                    // Not used, except to compute
                         swi->iUpper = n;                    // the number of options
@@ -2276,8 +2277,8 @@ bool BasicBlock::decodeIndirectJmp(UserProc* proc) {
         // Danger. For now, only do if -ic given
         bool decodeThru = Boomerang::get()->decodeThruIndCall;
         if (decodeThru && vtExp && vtExp->isIntConst()) {
-            int addr = ((Const*)vtExp)->getInt();
-            ADDRESS pfunc = prog->readNative4(addr);
+            int addr = ((Const*)vtExp)->getInt(); // TODO: user getAddr ?
+            ADDRESS pfunc = ADDRESS::g(prog->readNative4(ADDRESS::g(addr)));
             if (prog->findProc(pfunc) == NULL) {
                 // A new, undecoded procedure
                 if (Boomerang::get()->noDecodeChildren)
@@ -2340,12 +2341,12 @@ void BasicBlock::processSwitch(UserProc* proc) {
         if (si->chForm == 'H') {
             int iValue = prog->readNative4(si->uTable + i*2);
             if (iValue == -1) continue;
-            uSwitch =prog->readNative4(si->uTable + i*8 + 4);
+            uSwitch =ADDRESS::g(prog->readNative4(si->uTable + i*8 + 4));
         }
         else if (si->chForm == 'F')
-            uSwitch = ((int*)si->uTable)[i];
+            uSwitch = ADDRESS::g(((int*)si->uTable.m_value)[i]);
         else
-            uSwitch = prog->readNative4(si->uTable + i*4);
+            uSwitch = ADDRESS::g(prog->readNative4(si->uTable + i*4));
         if ((si->chForm == 'O') || (si->chForm == 'R') || (si->chForm == 'r'))
             // Offset: add table address to make a real pointer to code.  For type R, the table is relative to the
             // branch, so take iOffset. For others, iOffset is 0, so no harm

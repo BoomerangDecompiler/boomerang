@@ -2155,7 +2155,7 @@ YY_SSLParser_PARSE_PARAM_DEF
         case 76:
 #line 722 "db/sslparser.y"
         {
-            yyval.rtlist = new RTL(0); //WARN: the code here was RTL(STMT_ASSIGN), which is not right, since RTL parameter is an address
+            yyval.rtlist = new RTL(ADDRESS::g(0)); //WARN: the code here was RTL(STMT_ASSIGN), which is not right, since RTL parameter is an address
             if (yyvsp[0].regtransfer != NULL)
                 yyval.rtlist->appendStmt(yyvsp[0].regtransfer);
             ;

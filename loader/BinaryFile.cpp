@@ -48,7 +48,7 @@ BinaryFile::BinaryFile(bool bArch /*= false*/)
 // This struct used to be initialised with a memset, but now that overwrites the virtual table (if compiled under gcc
 // and possibly others)
 SectionInfo::SectionInfo() :
-    pSectionName(NULL), uNativeAddr(0), uHostAddr(0), uSectionSize(0), uSectionEntrySize(0), uType(0),
+    pSectionName(NULL), uNativeAddr(ADDRESS::g(0)), uHostAddr(ADDRESS::g(0)), uSectionSize(0), uSectionEntrySize(0), uType(0),
     bCode(false), bData(false), bBss(0), bReadOnly(0)
 {}
 
@@ -112,7 +112,7 @@ const char* BinaryFile::SymbolByAddress(ADDRESS uNative) {
 }
 
 ADDRESS BinaryFile::GetAddressByName(const char* pName, bool bNoTypeOK) {
-    return 0;
+    return ADDRESS::g(0);
 }
 
 int BinaryFile::GetSizeByName(const char* pName, bool bNoTypeOK) {
@@ -177,8 +177,8 @@ ADDRESS* BinaryFile::GetImportStubs(int& numExports)
 void BinaryFile::getTextLimits()
 {
     int n = GetNumSections();
-    limitTextLow = 0xFFFFFFFF;
-    limitTextHigh = 0;
+    limitTextLow = ADDRESS::g(0xFFFFFFFF);
+    limitTextHigh = ADDRESS::g(0);
     textDelta = 0;
     for (int i=0; i < n; i++) {
         SectionInfo* pSect = GetSectionInfo(i);

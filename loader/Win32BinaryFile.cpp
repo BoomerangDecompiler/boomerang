@@ -148,8 +148,7 @@ std::list<SectionInfo*>& Win32BinaryFile::GetEntryPoints(
 
 ADDRESS Win32BinaryFile::GetEntryPoint()
 {
-    return (ADDRESS)(LMMH(m_pPEHeader->EntrypointRVA) +
-                     LMMH(m_pPEHeader->Imagebase));
+    return ADDRESS::g(LMMH(m_pPEHeader->EntrypointRVA) + LMMH(m_pPEHeader->Imagebase));
 }
 
 // This is a bit of a hack, but no more than the rest of Windows :-O  The pattern is to look for an indirect call (FF 15
@@ -167,7 +166,8 @@ ADDRESS Win32BinaryFile::GetMainEntryPoint() {
     unsigned p = LMMH(m_pPEHeader->EntrypointRVA);
     unsigned lim = p + 0x200;
     unsigned char op1, op2;
-    unsigned addr, lastOrdCall = 0;
+    ADDRESS addr;
+    unsigned lastOrdCall = 0;
     int gap;                // Number of instructions from the last ordinary call
     int borlandState = 0;    // State machine for Borland
 
@@ -179,7 +179,7 @@ ADDRESS Win32BinaryFile::GetMainEntryPoint() {
         lim = p + textSize;
 
     if (m_pPEHeader->Subsystem == 1)     // native
-        return LMMH(m_pPEHeader->EntrypointRVA) + LMMH(m_pPEHeader->Imagebase);
+        return ADDRESS::g(LMMH(m_pPEHeader->EntrypointRVA) + LMMH(m_pPEHeader->Imagebase));
 
     gap = 0xF0000000;    // Large positive number (in case no ordinary calls)
     while (p < lim) {
@@ -230,8 +230,8 @@ ADDRESS Win32BinaryFile::GetMainEntryPoint() {
                         borlandState = 1;
                     else if (borlandState == 4) {
                         // Borland pattern succeeds. p-4 has the offset of mainInfo
-                        ADDRESS mainInfo = LMMH(*(base + p-4));
-                        ADDRESS main = readNative4(mainInfo+0x18);        // Address of main is at mainInfo+18
+                        ADDRESS mainInfo = ADDRESS::g(LMMH(*(base + p-4)));
+                        ADDRESS main = ADDRESS::g(readNative4(mainInfo+0x18));// Address of main is at mainInfo+18
                         return main;
                     }
                 } else
@@ -265,13 +265,13 @@ ADDRESS Win32BinaryFile::GetMainEntryPoint() {
     // VS.NET release console mode pattern
     p = LMMH(m_pPEHeader->EntrypointRVA);
     if (*(unsigned char*)(p + base + 0x20) == 0xff && *(unsigned char*)(p + base + 0x21) == 0x15) {
-        unsigned int desti = LMMH(*(p + base + 0x22));
+        ADDRESS desti = ADDRESS::g(LMMH(*(p + base + 0x22)));
         if (dlprocptrs.find(desti) != dlprocptrs.end() && dlprocptrs[desti] == "GetVersionExA") {
             if (*(unsigned char*)(p + base + 0x6d) == 0xff && *(unsigned char*)(p + base + 0x6e) == 0x15) {
                 desti = LMMH(*(p + base + 0x6f));
                 if (dlprocptrs.find(desti) != dlprocptrs.end() && dlprocptrs[desti] == "GetModuleHandleA") {
                     if (*(unsigned char*)(p + base + 0x16e) == 0xe8) {
-                        unsigned int dest = p + 0x16e + 5 + LMMH(*(p + base + 0x16f));
+                        ADDRESS dest = ADDRESS::g(p + 0x16e + 5 + LMMH(*(p + base + 0x16f)));
                         return dest + LMMH(m_pPEHeader->Imagebase);
                     }
                 }
@@ -290,7 +290,7 @@ ADDRESS Win32BinaryFile::GetMainEntryPoint() {
             if (pushes == 3) {
                 // Get the offset
                 int off = LMMH(*(p + base + 1));
-                unsigned dest = (unsigned)p + 5 + off;
+                ADDRESS dest = ADDRESS::g((unsigned)p + 5 + off);
                 // Check for a jump there
                 op1 = *(unsigned char*)(dest + base);
                 if (op1 == 0xE9) {
@@ -331,7 +331,7 @@ ADDRESS Win32BinaryFile::GetMainEntryPoint() {
     // mingw pattern
     p = LMMH(m_pPEHeader->EntrypointRVA);
     bool in_mingw_CRTStartup = false;
-    unsigned int lastcall = 0, lastlastcall = 0;
+    ADDRESS lastcall = ADDRESS::g(0), lastlastcall = ADDRESS::g(0);
     while(1) {
         op1 = *(unsigned char*)(p + base);
         if (op1 == 0xE8) {            // CALL opcode
@@ -339,7 +339,7 @@ ADDRESS Win32BinaryFile::GetMainEntryPoint() {
             if (in_mingw_CRTStartup) {
                 op2 = *(unsigned char*)(dest + base);
                 unsigned char op2a = *(unsigned char*)(dest + base + 1);
-                unsigned int desti = LMMH(*(dest + base + 2));
+                ADDRESS desti = ADDRESS::g(LMMH(*(dest + base + 2)));
                 // skip all the call statements until we hit a call to an indirect call to ExitProcess
                 // main is the 2nd call before this one
                 if (op2 == 0xff && op2a == 0x25 && dlprocptrs.find(desti) != dlprocptrs.end() && dlprocptrs[desti] == "ExitProcess") {
@@ -372,13 +372,13 @@ ADDRESS Win32BinaryFile::GetMainEntryPoint() {
         op1 = *(unsigned char*)(p + base);
         op2 = *(unsigned char*)(p + base + 1);
         if (op1 == 0xFF && op2 == 0x15) { // indirect CALL opcode
-            unsigned int desti = LMMH(*(p + base + 2));
+            ADDRESS desti = ADDRESS::g(LMMH(*(p + base + 2)));
             if (dlprocptrs.find(desti) != dlprocptrs.end() && dlprocptrs[desti] == "GetModuleHandleA") {
                 gotGMHA = true;
             }
         }
         if (op1 == 0xE8 && gotGMHA) {            // CALL opcode
-            unsigned int dest = p + 5 + LMMH(*(p + base + 1));
+            ADDRESS dest = ADDRESS::g(p + 5 + LMMH(*(p + base + 1)));
             AddSymbol(dest + LMMH(m_pPEHeader->Imagebase), "WinMain");
             return dest + LMMH(m_pPEHeader->Imagebase);
         }
@@ -462,8 +462,8 @@ bool Win32BinaryFile::RealLoad(const char* sName)
         strncpy(sect.pSectionName, o->ObjectName, 8);
         //        if (!strcmp(sect.pSectionName, ".reloc"))
         //            reloc = &sect;
-        sect.uNativeAddr=(ADDRESS)(LMMH(o->RVA) + LMMH(m_pPEHeader->Imagebase));
-        sect.uHostAddr=(ADDRESS)(LMMH(o->RVA) + base);
+        sect.uNativeAddr=ADDRESS::g(LMMH(o->RVA) + LMMH(m_pPEHeader->Imagebase));
+        sect.uHostAddr=ADDRESS::g(LMMH(o->RVA) + base);
         sect.uSectionSize=LMMH(o->VirtualSize);
         DWord Flags = LMMH(o->Flags);
         sect.bBss      = (Flags&IMAGE_SCN_CNT_UNINITIALIZED_DATA)?1:0;
@@ -485,7 +485,7 @@ bool Win32BinaryFile::RealLoad(const char* sName)
             unsigned thunk = id->originalFirstThunk ? id->originalFirstThunk : id->firstThunk;
             unsigned* iat = (unsigned*)(LMMH(thunk) + base);
             unsigned iatEntry = LMMH(*iat);
-            ADDRESS paddr = LMMH(id->firstThunk) + LMMH(m_pPEHeader->Imagebase);
+            ADDRESS paddr = ADDRESS::g(LMMH(id->firstThunk) + LMMH(m_pPEHeader->Imagebase));
             while (iatEntry) {
                 if (iatEntry >> 31) {
                     // This is an ordinal number (stupid idea)
@@ -502,8 +502,8 @@ bool Win32BinaryFile::RealLoad(const char* sName)
                     // Normal case (IMAGE_IMPORT_BY_NAME). Skip the useless hint (2 bytes)
                     std::string name((const char*)(iatEntry+2+base));
                     dlprocptrs[paddr] = name;
-                    if ((unsigned)paddr != (ADDRESS)iat - (ADDRESS)base + LMMH(m_pPEHeader->Imagebase))
-                        dlprocptrs[(ADDRESS)iat - (ADDRESS)base + LMMH(m_pPEHeader->Imagebase)]
+                    if ((unsigned)paddr != ADDRESS::g(iat) - ADDRESS::g(base) + LMMH(m_pPEHeader->Imagebase))
+                        dlprocptrs[ADDRESS::g(iat) - ADDRESS::g(base) + LMMH(m_pPEHeader->Imagebase)]
                                 = std::string("old_") + name; // add both possibilities
                     // printf("Added symbol %s value %x\n", name.c_str(), paddr);
                     // printf("Also added old_%s value %x\n", name.c_str(), (int)iat - (int)base +
@@ -600,7 +600,7 @@ void Win32BinaryFile::findJumps(ADDRESS curr) {
         curr -= 2;            // Has to be on 2-byte boundary
         cnt += 2;
         if (LH(delta+curr) != 0xFF + (0x25<<8)) continue;
-        ADDRESS operand = LMMH2(delta+curr+2);
+        ADDRESS operand = ADDRESS::g(LMMH2(delta+curr+2));
         std::map<ADDRESS, std::string>::iterator it;
         it = dlprocptrs.find(operand);
         if (it == dlprocptrs.end()) continue;
@@ -910,13 +910,13 @@ int Win32BinaryFile::win32Read4(int* pi) const{
     return n;
 }
 
-// Read 2 bytes from given native address
-int Win32BinaryFile::readNative1(ADDRESS nat) {
+// Read 1 byte from given native address
+char Win32BinaryFile::readNative1(ADDRESS nat) {
     PSectionInfo si = GetSectionInfoByAddr(nat);
     if (si == 0)
         return -1;
     ADDRESS host = si->uHostAddr - si->uNativeAddr + nat;
-    return *(char*)host;
+    return *(char*)host.m_value;
 }
 
 // Read 2 bytes from given native address
@@ -924,7 +924,7 @@ int Win32BinaryFile::readNative2(ADDRESS nat) {
     PSectionInfo si = GetSectionInfoByAddr(nat);
     if (si == 0) return 0;
     ADDRESS host = si->uHostAddr - si->uNativeAddr + nat;
-    int n = win32Read2((short*)host);
+    int n = win32Read2((short*)host.m_value);
     return n;
 }
 
@@ -933,7 +933,7 @@ int Win32BinaryFile::readNative4(ADDRESS nat) {
     PSectionInfo si = GetSectionInfoByAddr(nat);
     if (si == 0) return 0;
     ADDRESS host = si->uHostAddr - si->uNativeAddr + nat;
-    int n = win32Read4((int*)host);
+    int n = win32Read4((int*)host.m_value);
     return n;
 }
 
@@ -1016,7 +1016,7 @@ bool Win32BinaryFile::IsMinGWsAllocStack(ADDRESS uNative)
               0x10, 0x00, 0x00, 0xEB, 0xE9, 0x29, 0xC1, 0x83,
               0x09, 0x00, 0x89, 0xE0, 0x89, 0xCC, 0x8B, 0x08,
               0x8B, 0x40, 0x04, 0xFF, 0xE0  };
-            if (memcmp((void*)host, pat, sizeof(pat)) == 0) {
+            if (memcmp((void*)host.m_value, pat, sizeof(pat)) == 0) {
                 return true;
             }
         }
@@ -1034,7 +1034,7 @@ bool Win32BinaryFile::IsMinGWsFrameInit(ADDRESS uNative)
             { 0x55, 0x89, 0xE5, 0x83, 0xEC, 0x18, 0x89, 0x7D,
               0xFC, 0x8B, 0x7D, 0x08, 0x89, 0x5D, 0xF4, 0x89,
               0x75, 0xF8 };
-            if (memcmp((void*)host, pat1, sizeof(pat1)) == 0) {
+            if (memcmp((void*)host.m_value, pat1, sizeof(pat1)) == 0) {
                 unsigned char pat2[] =
                 { 0x85, 0xD2, 0x74, 0x24, 0x8B, 0x42, 0x2C, 0x85,
                   0xC0, 0x78, 0x3D, 0x8B, 0x42, 0x2C, 0x85, 0xC0,
@@ -1043,7 +1043,7 @@ bool Win32BinaryFile::IsMinGWsFrameInit(ADDRESS uNative)
                   0x8B, 0x7D, 0xFC, 0x89, 0xEC, 0x5D, 0xC3
 
                 };
-                if (memcmp((void*)(host + sizeof(pat1) + 6), pat2, sizeof(pat2)) == 0) {
+                if (memcmp((void*)(host.m_value + sizeof(pat1) + 6), pat2, sizeof(pat2)) == 0) {
                     return true;
                 }
             }
@@ -1060,13 +1060,13 @@ bool Win32BinaryFile::IsMinGWsFrameEnd(ADDRESS uNative)
             ADDRESS host = si->uHostAddr - si->uNativeAddr + uNative;
             unsigned char pat1[] =
             { 0x55, 0x89, 0xE5, 0x53, 0x83, 0xEC, 0x14, 0x8B, 0x45, 0x08, 0x8B, 0x18 };
-            if (memcmp((void*)host, pat1, sizeof(pat1)) == 0) {
+            if (memcmp((void*)host.m_value, pat1, sizeof(pat1)) == 0) {
                 unsigned char pat2[] =
                 { 0x85, 0xC0, 0x74, 0x1B, 0x8B, 0x48, 0x2C, 0x85, 0xC9, 0x78, 0x34, 0x8B,
                   0x50, 0x2C, 0x85, 0xD2, 0x75, 0x4D, 0x89, 0x58, 0x28, 0x8B, 0x5D, 0xFC,
                   0xC9, 0xC3
                 };
-                if (memcmp((void*)(host + sizeof(pat1) + 5), pat2, sizeof(pat2)) == 0) {
+                if (memcmp((void*)(host.m_value + sizeof(pat1) + 5), pat2, sizeof(pat2)) == 0) {
                     return true;
                 }
             }
@@ -1083,14 +1083,14 @@ bool Win32BinaryFile::IsMinGWsCleanupSetup(ADDRESS uNative)
             ADDRESS host = si->uHostAddr - si->uNativeAddr + uNative;
             unsigned char pat1[] =
             { 0x55, 0x89, 0xE5, 0x53, 0x83, 0xEC, 0x04 };
-            if (memcmp((void*)host, pat1, sizeof(pat1)) == 0) {
+            if (memcmp((void*)host.m_value, pat1, sizeof(pat1)) == 0) {
                 unsigned char pat2[] =
                 { 0x85, 0xDB, 0x75, 0x35 };
-                if (memcmp((void*)(host + sizeof(pat1) + 6), pat2, sizeof(pat2)) == 0) {
+                if (memcmp((void*)(host.m_value + sizeof(pat1) + 6), pat2, sizeof(pat2)) == 0) {
                     unsigned char pat3[] =
                     { 0x83, 0xF8, 0xFF, 0x74, 0x24, 0x85, 0xC0, 0x89, 0xC3, 0x74, 0x0E,
                       0x8D, 0x74, 0x26, 0x00 };
-                    if (memcmp((void*)(host + sizeof(pat1) + 6 + sizeof(pat2) + 16), pat3, sizeof(pat3)) == 0) {
+                    if (memcmp((void*)(host.m_value + sizeof(pat1) + 6 + sizeof(pat2) + 16), pat3, sizeof(pat3)) == 0) {
                         return true;
                     }
                 }
@@ -1109,10 +1109,10 @@ bool Win32BinaryFile::IsMinGWsMalloc(ADDRESS uNative)
             unsigned char pat1[] =
             { 0x55, 0x89, 0xE5, 0x8D, 0x45, 0xF4, 0x83, 0xEC, 0x58, 0x89, 0x45, 0xE0, 0x8D, 0x45, 0xC0, 0x89,
               0x04, 0x24, 0x89, 0x5D, 0xF4, 0x89, 0x75, 0xF8, 0x89, 0x7D, 0xFC };
-            if (memcmp((void*)host, pat1, sizeof(pat1)) == 0) {
+            if (memcmp((void*)host.m_value, pat1, sizeof(pat1)) == 0) {
                 unsigned char pat2[] =
                 { 0x89, 0x65, 0xE8 };
-                if (memcmp((void*)(host + sizeof(pat1) + 0x15), pat2, sizeof(pat2)) == 0) {
+                if (memcmp((void*)(host.m_value + sizeof(pat1) + 0x15), pat2, sizeof(pat2)) == 0) {
                     return true;
                 }
             }
@@ -1125,7 +1125,7 @@ ADDRESS Win32BinaryFile::IsJumpToAnotherAddr(ADDRESS uNative)
 {
     if ((readNative1(uNative) & 0xff) != 0xe9)
         return NO_ADDRESS;
-    return readNative4(uNative+1) + uNative + 5;
+    return ADDRESS::g(readNative4(uNative+1)) + uNative + 5;
 }
 
 const char *Win32BinaryFile::GetDynamicProcName(ADDRESS uNative)
@@ -1150,7 +1150,7 @@ bool Win32BinaryFile::isLibrary() const
 
 ADDRESS Win32BinaryFile::getImageBase()
 {
-    return m_pPEHeader->Imagebase;
+    return ADDRESS::g(m_pPEHeader->Imagebase);
 }
 
 size_t Win32BinaryFile::getImageSize()
@@ -1167,7 +1167,7 @@ DWord Win32BinaryFile::getDelta() {
     // Stupid function anyway: delta depends on section
     // This should work for the header only
     //    return (DWord)base - LMMH(m_pPEHeader->Imagebase);
-    return (ADDRESS) base - (DWord) m_pPEHeader->Imagebase;
+    return ADDRESS::g(base) - (DWord) m_pPEHeader->Imagebase;
 }
 
 // This function is called via dlopen/dlsym; it returns a new BinaryFile derived concrete object. After this object is

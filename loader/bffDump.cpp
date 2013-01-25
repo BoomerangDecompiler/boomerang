@@ -85,7 +85,7 @@ int main(int argc, char* argv[])
         if (pSect->bCode) {
             printf("  Code section:\n");
             ADDRESS a = pSect->uNativeAddr;
-            unsigned char* p = (unsigned char*) pSect->uHostAddr;
+            unsigned char* p = (unsigned char*) pSect->uHostAddr.m_value;
             for (unsigned off = 0; off < pSect->uSectionSize; ) {
                 printf("%04X: ", a);
                 for (int j=0; (j < 16) && (off < pSect->uSectionSize); j++) {
@@ -106,7 +106,7 @@ int main(int argc, char* argv[])
         if (pSect->bData) {
             printf("  Data section: %s\n", pSect->pSectionName);
             ADDRESS a = pSect->uNativeAddr;
-            unsigned char* p = (unsigned char*) pSect->uHostAddr;
+            unsigned char* p = (unsigned char*) pSect->uHostAddr.m_value;
             for (unsigned off = 0; off < pSect->uSectionSize; ) {
                 printf("%04X: ", a);
                 for (int j=0; (j < 16) && (off < pSect->uSectionSize); j++) {

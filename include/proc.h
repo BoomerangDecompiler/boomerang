@@ -253,7 +253,7 @@ protected:
         Cluster        *cluster;                        ///< Cluster this procedure is contained within.
 
         friend class XMLProgParser;
-        Proc() : visited(false), prog(NULL), signature(NULL), address(0), m_firstCaller(NULL), m_firstCallerAddr(0),
+        Proc() : visited(false), prog(NULL), signature(NULL), address(ADDRESS::g(0)), m_firstCaller(NULL), m_firstCallerAddr(ADDRESS::g(0)),
             cluster(NULL) { }
 
 };    // class Proc

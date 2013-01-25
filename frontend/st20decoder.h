@@ -58,9 +58,9 @@ private:
     RTL*    createBranchRtl(ADDRESS pc, std::list<Statement*>* stmts,
                             const char* name);
     bool    isFuncPrologue(ADDRESS hostPC);
-    DWord    getDword(ADDRESS lc);
-    SWord    getWord(ADDRESS lc);
-    Byte    getByte(ADDRESS lc);
+	DWord	getDword(intptr_t lc); // TODO: switch back to using ADDRESS objects
+	SWord	getWord(intptr_t lc);
+	Byte	getByte(intptr_t lc);
 
 };
 

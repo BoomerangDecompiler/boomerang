@@ -202,10 +202,11 @@ std::vector<ADDRESS> FrontEnd::getEntryPoints()
                 strcat(name, "ModuleData");
                 ADDRESS a = pBF->GetAddressByName(name, true);
                 if (a != NO_ADDRESS) {
-                    ADDRESS vers, setup, teardown;
+                    ADDRESS setup, teardown;
+                    uint32_t vers;
                     vers = pBF->readNative4(a);
-                    setup = pBF->readNative4(a+4);
-                    teardown = pBF->readNative4(a+8);
+                    setup = ADDRESS::g(pBF->readNative4(a+4));
+                    teardown = ADDRESS::g(pBF->readNative4(a+8));
                     if (setup) {
                         Type *ty = NamedType::getNamedType("ModuleSetupProc");
                         assert(ty->isFunc());
@@ -524,7 +525,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
                     LOG << "Warning: invalid instruction at " << uAddr << ": ";
                     // Emit the next 4 bytes for debugging
                     for (int ii=0; ii < 4; ii++)
-                        LOG << (ADDRESS) (pBF->readNative1(uAddr + ii) & 0xFF) << " ";
+                    	LOG << ADDRESS::g(pBF->readNative1(uAddr + ii) & 0xFF) << " ";
                     LOG << "\n";
                 }
                 // Emit the RTL anyway, so we have the address and maybe some other clues
@@ -711,10 +712,11 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
                             if (pDest->isMemOf() && pDest->getSubExp1()->getOper() == opPlus &&
                                     pDest->getSubExp1()->getSubExp2()->isIntConst()) {
                                 // assume subExp2 is a jump table
-                                ADDRESS jmptbl = ((Const*)pDest->getSubExp1()->getSubExp2())->getInt();
+                                // TODO: use getAddr ?
+                                ADDRESS jmptbl = ADDRESS::g(((Const*)pDest->getSubExp1()->getSubExp2())->getInt());
                                 unsigned int i;
                                 for (i = 0; ; i++) {
-                                    ADDRESS uDest = pBF->readNative4(jmptbl + i * 4);
+                                    ADDRESS uDest = ADDRESS::g(pBF->readNative4(jmptbl + i * 4));
                                     if (pBF->getLimitTextLow() <= uDest && uDest < pBF->getLimitTextHigh()) {
                                         LOG << "  guessed uDest " << uDest << "\n";
                                         targetQueue.visit(pCfg, uDest, pBB);
@@ -868,7 +870,8 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
                             const char* name = pBF->SymbolByAddress(uNewAddr);
                             if (name == NULL && call->getDest()->isMemOf() &&
                                     call->getDest()->getSubExp1()->isIntConst()) {
-                                ADDRESS a = ((Const*)call->getDest()->getSubExp1())->getInt();
+                                    //TODO : use getAddr
+                                    ADDRESS a = ADDRESS::g(((Const*)call->getDest()->getSubExp1())->getInt());
                                 if (pBF->IsDynamicLinkedProcPointer(a))
                                     name = pBF->GetDynamicProcName(a);
                             }

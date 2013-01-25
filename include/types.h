@@ -13,15 +13,72 @@ typedef unsigned short        SWord;        /* 16 bits */
 typedef unsigned int            DWord;        /* 32 bits */
 typedef unsigned int            dword;        /* 32 bits */
 typedef unsigned int            Word;        /* 32 bits */
-typedef uintptr_t                    ADDRESS;    /* pointer. size depends on platform */
-
-
+//typedef uintptr_t       ADDRESS;	/* pointer. size depends on platform */
+struct ADDRESS {
+//    ADDRESS() {}
+//    ADDRESS(uint32_t v) : m_value(v) {}
+    typedef intptr_t value_type;
+    value_type m_value;
+    static ADDRESS g(value_type x) {
+        ADDRESS z;
+        z.m_value =x;
+        return z;
+    }
+    static ADDRESS g(void *x) {
+        ADDRESS z;
+        z.m_value =value_type(x);
+        return z;
+    }
+    bool operator<(const ADDRESS &other) const {
+        return m_value < other.m_value;
+    }
+    bool operator>(const ADDRESS &other) const {
+        return m_value > other.m_value;
+    }
+    bool operator>=(const ADDRESS &other) const {
+        return m_value >= other.m_value;
+    }
+    ADDRESS operator+(const ADDRESS &other) const {
+        return ADDRESS::g(m_value + other.m_value);
+    }
+    ADDRESS operator++(int){
+        ADDRESS res = *this;
+        m_value++;
+        return res;
+    }
+    ADDRESS operator+=(const ADDRESS &other) {
+        m_value += other.m_value;
+        return *this;
+    }
+    ADDRESS operator+=(int other) {
+        m_value += other;
+        return *this;
+    }
+    ADDRESS &operator=(intptr_t v) {
+        m_value = v;
+        return *this;
+    }
+    ADDRESS operator+(uint32_t val) const {
+        return ADDRESS::g(m_value + val);
+    }
+    ADDRESS operator-(const ADDRESS &other) const {
+        return ADDRESS::g(m_value - other.m_value);
+    }
+    ADDRESS operator-=(int v) {
+        m_value -= v;
+        return *this;
+    }
+    ADDRESS operator-(int other) const {
+        return ADDRESS::g(m_value - other);
+    }
+    operator int() const {return int(m_value);}
+};
 #define STD_SIZE    32                    // Standard size
 // Note: there is a known name collision with NO_ADDRESS in WinSock.h
 #ifdef NO_ADDRESS
 #undef NO_ADDRESS
 #endif
-#define NO_ADDRESS ((ADDRESS)-1)        // For invalid ADDRESSes
+#define NO_ADDRESS (ADDRESS::g(-1))		// For invalid ADDRESSes
 
 #ifndef _MSC_VER
 typedef long unsigned long QWord;        // 64 bits

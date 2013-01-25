@@ -658,7 +658,7 @@ ADDRESS PentiumFrontEnd::getMainEntryPoint(bool& gotMain) {
                 Exp* rhs = a->getRight();
                 assert(rhs->isIntConst());
                 gotMain = true;
-                return (ADDRESS)((Const*)rhs)->getInt();
+                return ADDRESS::g(((Const*)rhs)->getInt()); //TODO: use getAddr ?
             }
         }
         else
@@ -714,7 +714,7 @@ void PentiumFrontEnd::processStringInst(UserProc* proc) {
         std::list<RTL*> *rtls = bb->getRTLs();
         if (rtls == NULL)
             break;
-        ADDRESS prev, addr = 0;
+        ADDRESS prev, addr = ADDRESS::g(0);
         bool lastRtl = true;
         // For each RTL this BB
         for (std::list<RTL*>::iterator rit = rtls->begin(); rit != rtls->end(); rit++) {
@@ -1128,7 +1128,7 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, std::list<RTL*> *BB_
             for (unsigned int n = 0; n < compound->getNumTypes(); n++) {
                 if (compound->getType(n)->resolvesToPointer() &&
                         compound->getType(n)->asPointer()->getPointsTo()->resolvesToFunc()) {
-                    ADDRESS d = pBF->readNative4(a);
+                    ADDRESS d = ADDRESS::g(pBF->readNative4(a));
                     if (VERBOSE)
                         LOG << "found a new procedure at address " << d << " from inspecting parameters of call to " <<
                                call->getDestProc()->getName() << ".\n";

@@ -56,11 +56,11 @@ private:
     void            unused(int x);
     bool            isFuncPrologue(ADDRESS hostPC);
 
-    Byte            getByte(ADDRESS lc);
-    SWord           getWord(ADDRESS lc);
-    DWord           getDword(ADDRESS lc);
+        Byte	getByte(intptr_t lc); //TODO: switch to using ADDRESS objects
+        SWord	getWord(intptr_t lc);
+        DWord	getDword(intptr_t lc);
 
-    unsigned        lastDwordLc;
+        ADDRESS lastDwordLc;
 };
 
 #endif

@@ -59,7 +59,7 @@ virtual                ~Global();
         void        print(std::ostream& os, Prog* prog);    // Print to stream os
 
 protected:
-                    Global() : type(NULL), uaddr(0), nam("") { }
+                    Global() : type(NULL), uaddr(ADDRESS::g(0)), nam("") { }
         friend class XMLProgParser;
 };        // class Global
 
@@ -256,8 +256,8 @@ virtual                ~Prog();
         bool        isDynamicLinkedProcPointer(ADDRESS dest) { return pBF->IsDynamicLinkedProcPointer(dest); }
         const char*    GetDynamicProcName(ADDRESS uNative) { return pBF->GetDynamicProcName(uNative); }
 
-        bool        processProc(int addr, UserProc* proc)    // Decode a proc
-                        { std::ofstream os; return pFE->processProc((unsigned)addr, proc, os);}
+        bool        processProc(ADDRESS addr, UserProc* proc)    // Decode a proc
+                        { std::ofstream os; return pFE->processProc(addr, proc, os);}
 
         void        readSymbolFile(const char *fname);
         unsigned    getImageSize() { return pBF->getImageSize(); }

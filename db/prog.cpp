@@ -1040,7 +1040,7 @@ char *Prog::getStringConstant(ADDRESS uaddr, bool knownString /* = false */) {
     if (si && !si->isAddressBss(uaddr)) {
         // At this stage, only support ascii, null terminated, non unicode strings.
         // At least 4 of the first 6 chars should be printable ascii
-        char* p = (char*)(uaddr + si->uHostAddr - si->uNativeAddr);
+                char* p = (char*)(uaddr + si->uHostAddr - si->uNativeAddr).m_value;
         if (knownString)
             // No need to guess... this is hopefully a known string
             return p;
@@ -1227,8 +1227,8 @@ const void* Prog::getCodeInfo(ADDRESS uAddr, const char*& last, int& delta) {
         if ((uAddr < pSect->uNativeAddr) || (uAddr >= pSect->uNativeAddr + pSect->uSectionSize))
             continue;            // Try the next section
         delta = pSect->uHostAddr - pSect->uNativeAddr;
-        last = (const char*) (pSect->uHostAddr + pSect->uSectionSize);
-        const char* p = (const char *) (uAddr + delta);
+        last = (const char*) (pSect->uHostAddr + pSect->uSectionSize).m_value;
+        const char* p = (const char *) (uAddr + delta).m_value;
         return p;
     }
     return NULL;
@@ -1511,7 +1511,7 @@ void Prog::printCallGraph() {
     while (procList.size()) {
         Proc *p = procList.front();
         procList.erase(procList.begin());
-        if ((ADDRESS) p == NO_ADDRESS)
+        if (ADDRESS::g(p) == NO_ADDRESS)
             continue;
         if (seen.find(p) == seen.end()) {
             seen.insert(p);
@@ -1696,7 +1696,7 @@ Exp *Prog::readNativeAs(ADDRESS uaddr, Type *type)
     if (si == NULL)
         return NULL;
     if (type->resolvesToPointer()) {
-        ADDRESS init = readNative4(uaddr);
+        ADDRESS init = ADDRESS::g(readNative4(uaddr));
         if (init == 0)
             return new Const(0);
         const char *nam = getGlobalName(init);
@@ -1771,7 +1771,7 @@ Exp *Prog::readNativeAs(ADDRESS uaddr, Type *type)
         switch(size) {
             case 8:
                 e = new Const(
-                        (int)*(char*)(uaddr + si->uHostAddr - si->uNativeAddr));
+                        (int)*(char*)(uaddr + si->uHostAddr - si->uNativeAddr).m_value);
                 break;
             case 16:
                 // Note: must respect endianness
@@ -2059,24 +2059,24 @@ Exp    *Prog::addReloc(Exp *e, ADDRESS lc)
 
     if (pBF->IsRelocationAt(lc)) {
         std::map<ADDRESS, std::string> &symbols = pBF->getSymbols();
-        if (symbols.find(c->getInt()) != symbols.end()) {
-            const char *n = symbols[c->getInt()].c_str();
-            ADDRESS a = c->getInt();
+        ADDRESS c_addr = ADDRESS::g(c->getInt());
+        std::map<ADDRESS, std::string>::iterator found_at = symbols.find(c_addr);
+        if (found_at != symbols.end()) { //TODO: use getAddr instead of getInt
+            const char *n = found_at->second.c_str();
             unsigned int sz = pBF->GetSizeByName(n);
             if (getGlobal((char*)n) == NULL) {
-                Global *global = new Global(new SizeType(sz*8), a, n);
+                Global *global = new Global(new SizeType(sz*8), c_addr, n);
                 globals.insert(global);
             }
             e = new Unary(opAddrOf, Location::global(n, NULL));
         } else {
-            char *str = getStringConstant(c->getInt());
+            char *str = getStringConstant(c_addr);
             if (str)
                 e = new Const(str);
             else {
                 // check for accesses into the middle of symbols
                 for (std::map<ADDRESS, std::string>::iterator it = symbols.begin(); it != symbols.end(); it++) {
-                    if ((*it).first < (ADDRESS)c->getInt() && (*it).first + pBF->GetSizeByName((*it).second.c_str()) >
-                            (ADDRESS)c->getInt()) {
+                    if ((*it).first < c_addr && (*it).first + pBF->GetSizeByName((*it).second.c_str()) > c_addr) {
                         int off = c->getInt() - (*it).first;
                         e = new Binary(opPlus,
                                        new Unary(opAddrOf, Location::global((*it).second.c_str(), NULL)),

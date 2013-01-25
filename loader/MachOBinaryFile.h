@@ -78,7 +78,7 @@ public:
     DWord        getDelta();
     virtual const char*    SymbolByAddress(ADDRESS dwAddr); // Get sym from addr
     virtual ADDRESS        GetAddressByName(const char* name,
-                                                 bool        bNoTypeOK = false);                    // Find addr given name
+                                            bool        bNoTypeOK = false);                    // Find addr given name
     virtual void        AddSymbol(ADDRESS uNative, const char *pName);
 
     //
@@ -93,27 +93,27 @@ protected:
     int machORead2(short *ps) const; // Read 2 bytes from native addr
     int machORead4(int *pi) const;     // Read 4 bytes from native addr
 
-    //void *         BMMH(void *x);
-    char *         BMMH(char *x);
-    const char *   BMMH(const char *x);
-    unsigned int   BMMH(long int & x);
-    unsigned int   BMMH(void *x);
-    unsigned int   BMMH(unsigned long x);
-    signed int   BMMH(signed int x);
-    unsigned int   BMMH(unsigned int x);
-    unsigned short BMMHW(unsigned short x);
+    //void *            BMMH(void *x);
+    char *              BMMH(char *x);
+    const char *        BMMH(const char *x);
+    unsigned int        BMMH(long int & x);
+    unsigned int        BMMH(void *x);
+    unsigned int        BMMH(unsigned long x);
+    signed int          BMMH(signed int x);
+    unsigned int        BMMH(unsigned int x);
+    unsigned short      BMMHW(unsigned short x);
 
 public:
 
-    virtual int            readNative1(ADDRESS a);         // Read 1 bytes from native addr
-    virtual int            readNative2(ADDRESS a);            // Read 2 bytes from native addr
-    virtual int            readNative4(ADDRESS a);            // Read 4 bytes from native addr
-    virtual QWord        readNative8(ADDRESS a);    // Read 8 bytes from native addr
-    virtual float        readNativeFloat4(ADDRESS a);    // Read 4 bytes as float
-    virtual double        readNativeFloat8(ADDRESS a); // Read 8 bytes as float
+    virtual char        readNative1(ADDRESS a);         // Read 1 bytes from native addr
+    virtual int         readNative2(ADDRESS a);            // Read 2 bytes from native addr
+    virtual int         readNative4(ADDRESS a);            // Read 4 bytes from native addr
+    virtual QWord       readNative8(ADDRESS a);    // Read 8 bytes from native addr
+    virtual float       readNativeFloat4(ADDRESS a);    // Read 4 bytes as float
+    virtual double      readNativeFloat8(ADDRESS a); // Read 8 bytes as float
 
     virtual bool        IsDynamicLinkedProc(ADDRESS uNative) { return dlprocs.find(uNative) != dlprocs.end(); }
-    virtual const char    *GetDynamicProcName(ADDRESS uNative);
+    virtual const char* GetDynamicProcName(ADDRESS uNative);
 
     virtual std::map<ADDRESS, std::string> &getSymbols() { return m_SymA; }
     virtual std::map<std::string, ObjcModule> &getObjcModules() { return modules; }

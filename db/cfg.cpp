@@ -1881,7 +1881,7 @@ PBB Cfg::splitForBranch(PBB pBB, RTL* rtl, BranchStatement* br1, BranchStatement
     ls->push_back(br1);
     // Don't give this "instruction" the same address as the rest of the string instruction (causes problems when
     // creating the rptBB). Or if there is no A, temporarily use 0
-    ADDRESS a = (haveA) ? addr : 0;
+    ADDRESS a = (haveA) ? addr : ADDRESS::g(0);
     RTL* skipRtl = new RTL(a, ls);
     pRtls->push_back(skipRtl);
     PBB skipBB = newBB(pRtls, TWOWAY, 2);

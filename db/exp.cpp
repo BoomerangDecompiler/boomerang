@@ -51,12 +51,12 @@ extern char debug_buffer[];         ///< For prints functions
 
 // Derived class constructors
 
-Const::Const(unsigned int i)        : Exp(opIntConst),    conscript(0), type(new VoidType) {u.i = i;}
-Const::Const(int i)                        : Exp(opIntConst),    conscript(0), type(new VoidType) {u.i = i;}
-Const::Const(QWord ll)                    : Exp(opLongConst),    conscript(0), type(new VoidType) {u.ll= ll;}
-Const::Const(double d)                    : Exp(opFltConst),    conscript(0), type(new VoidType) {u.d = d;}
-Const::Const(char* p)                    : Exp(opStrConst),    conscript(0), type(new VoidType) {u.p = p;}
-Const::Const(Proc* p)                    : Exp(opFuncConst),    conscript(0), type(new VoidType) {u.pp = p;}
+Const::Const(uint32_t i)    : Exp(opIntConst),	conscript(0), type(new VoidType) {u.i = i;}
+Const::Const(int i)         : Exp(opIntConst),    conscript(0), type(new VoidType) {u.i = i;}
+Const::Const(QWord ll)      : Exp(opLongConst),    conscript(0), type(new VoidType) {u.ll= ll;}
+Const::Const(double d)      : Exp(opFltConst),    conscript(0), type(new VoidType) {u.d = d;}
+Const::Const(char* p)       : Exp(opStrConst),    conscript(0), type(new VoidType) {u.p = p;}
+Const::Const(Proc* p)       : Exp(opFuncConst),    conscript(0), type(new VoidType) {u.pp = p;}
 /// \remark This is bad. We need a way of constructing true unsigned constants
 Const::Const(ADDRESS a)    : Exp(opIntConst),    conscript(0), type(new VoidType) {u.a = a;}
 
@@ -1080,8 +1080,8 @@ void Exp::createDotFile(char* name) {
 //    //    //    //
 void Const::appendDotFile(std::ofstream& of) {
     // We define a unique name for each node as "e123456" if the address of "this" == 0x123456
-    of << "e" << std::hex << (ADDRESS) this << " [shape=record,label=\"{";
-    of << operStrings[op] << "\\n0x" << std::hex << (ADDRESS) this << " | ";
+        of << "e" << std::hex << ADDRESS::g(this) << " [shape=record,label=\"{";
+        of << operStrings[op] << "\\n0x" << std::hex << ADDRESS::g(this) << " | ";
     switch (op) {
         case opIntConst:  of << std::dec << u.i; break;
         case opFltConst:  of << u.d; break;
@@ -1098,13 +1098,13 @@ void Const::appendDotFile(std::ofstream& of) {
 // Terminal //
 //    //    //    //
 void Terminal::appendDotFile(std::ofstream& of) {
-    of << "e" << std::hex << (ADDRESS) this << " [shape=parallelogram,label=\"";
+        of << "e" << std::hex << ADDRESS::g(this) << " [shape=parallelogram,label=\"";
     if (op == opWild)
         // Note: value is -1, so can't index array
         of << "WILD";
     else
         of << operStrings[op];
-    of << "\\n0x" << std::hex << (ADDRESS) this;
+        of << "\\n0x" << std::hex << ADDRESS::g(this);
     of << "\"];\n";
 }
 
@@ -1113,9 +1113,9 @@ void Terminal::appendDotFile(std::ofstream& of) {
 //    //    //    //
 void Unary::appendDotFile(std::ofstream& of) {
     // First a node for this Unary object
-    of << "e" << std::hex << (ADDRESS) this << " [shape=record,label=\"{";
+        of << "e" << std::hex << ADDRESS::g(this) << " [shape=record,label=\"{";
     // The (int) cast is to print the address, not the expression!
-    of << operStrings[op] << "\\n0x" << std::hex << (ADDRESS) this << " | ";
+        of << operStrings[op] << "\\n0x" << std::hex << ADDRESS::g(this) << " | ";
     of << "<p1>";
     of << " }\"];\n";
 
@@ -1123,7 +1123,7 @@ void Unary::appendDotFile(std::ofstream& of) {
     subExp1->appendDotFile(of);
 
     // Finally an edge for the subexpression
-    of << "e" << std::hex << (ADDRESS) this << "->e" << (ADDRESS) subExp1 << ";\n";
+        of << "e" << std::hex << ADDRESS::g(this) << "->e" << ADDRESS::g(subExp1) << ";\n";
 }
 
 //    //    //    //
@@ -1131,15 +1131,15 @@ void Unary::appendDotFile(std::ofstream& of) {
 //    //    //    //
 void Binary::appendDotFile(std::ofstream& of) {
     // First a node for this Binary object
-    of << "e" << std::hex << (ADDRESS) this << " [shape=record,label=\"{";
-    of << operStrings[op] << "\\n0x" << std::hex << (ADDRESS) this << " | ";
+        of << "e" << std::hex << ADDRESS::g(this) << " [shape=record,label=\"{";
+        of << operStrings[op] << "\\n0x" << std::hex << ADDRESS::g(this) << " | ";
     of << "{<p1> | <p2>}";
     of << " }\"];\n";
     subExp1->appendDotFile(of);
     subExp2->appendDotFile(of);
     // Now an edge for each subexpression
-    of << "e" << std::hex << (ADDRESS) this << ":p1->e" << (ADDRESS) subExp1 << ";\n";
-    of << "e" << std::hex << (ADDRESS) this << ":p2->e" << (ADDRESS) subExp2 << ";\n";
+        of << "e" << std::hex << ADDRESS::g(this) << ":p1->e" << ADDRESS::g(subExp1) << ";\n";
+        of << "e" << std::hex << ADDRESS::g(this) << ":p2->e" << ADDRESS::g(subExp2) << ";\n";
 }
 
 //    //    //    //
@@ -1147,37 +1147,37 @@ void Binary::appendDotFile(std::ofstream& of) {
 //    //    //    //
 void Ternary::appendDotFile(std::ofstream& of) {
     // First a node for this Ternary object
-    of << "e" << std::hex << (ADDRESS) this << " [shape=record,label=\"{";
-    of << operStrings[op] << "\\n0x" << std::hex << (ADDRESS) this << " | ";
+        of << "e" << std::hex << ADDRESS::g(this) << " [shape=record,label=\"{";
+        of << operStrings[op] << "\\n0x" << std::hex << ADDRESS::g(this) << " | ";
     of << "{<p1> | <p2> | <p3>}";
     of << " }\"];\n";
     subExp1->appendDotFile(of);
     subExp2->appendDotFile(of);
     subExp3->appendDotFile(of);
     // Now an edge for each subexpression
-    of << "e" << std::hex << (ADDRESS) this << ":p1->e" << (ADDRESS) subExp1 << ";\n";
-    of << "e" << std::hex << (ADDRESS) this << ":p2->e" << (ADDRESS) subExp2 << ";\n";
-    of << "e" << std::hex << (ADDRESS) this << ":p3->e" << (ADDRESS) subExp3 << ";\n";
+        of << "e" << std::hex << ADDRESS::g(this) << ":p1->e" << ADDRESS::g(subExp1) << ";\n";
+        of << "e" << std::hex << ADDRESS::g(this) << ":p2->e" << ADDRESS::g(subExp2) << ";\n";
+        of << "e" << std::hex << ADDRESS::g(this) << ":p3->e" << ADDRESS::g(subExp3) << ";\n";
 }
 //    //    //    //
 // TypedExp //
 //    //    //    //
 void TypedExp::appendDotFile(std::ofstream& of) {
-    of << "e" << std::hex << (ADDRESS) this << " [shape=record,label=\"{";
-    of << "opTypedExp\\n0x" << std::hex << (ADDRESS) this << " | ";
+        of << "e" << std::hex << ADDRESS::g(this) << " [shape=record,label=\"{";
+        of << "opTypedExp\\n0x" << std::hex << ADDRESS::g(this) << " | ";
     // Just display the C type for now
     of << type->getCtype() << " | <p1>";
     of << " }\"];\n";
     subExp1->appendDotFile(of);
-    of << "e" << std::hex << (ADDRESS) this << ":p1->e" << (ADDRESS) subExp1 << ";\n";
+        of << "e" << std::hex << ADDRESS::g(this) << ":p1->e" << ADDRESS::g(subExp1) << ";\n";
 }
 
 //    //    //    //
 //    FlagDef //
 //    //    //    //
 void FlagDef::appendDotFile(std::ofstream& of) {
-    of << "e" << std::hex << (ADDRESS) this << " [shape=record,label=\"{";
-    of << "opFlagDef \\n0x" << std::hex << (ADDRESS) this << "| ";
+        of << "e" << std::hex << ADDRESS::g(this) << " [shape=record,label=\"{";
+        of << "opFlagDef \\n0x" << std::hex << ADDRESS::g(this) << "| ";
     // Display the RTL as "RTL <r1> <r2>..." vertically (curly brackets)
     of << "{ RTL ";
     int n = rtl->getNumStmt();
@@ -1185,7 +1185,7 @@ void FlagDef::appendDotFile(std::ofstream& of) {
         of << "| <r" << std::dec << i << "> ";
     of << "} | <p1> }\"];\n";
     subExp1->appendDotFile(of);
-    of << "e" << std::hex << (ADDRESS) this << ":p1->e" << (ADDRESS) subExp1 << ";\n";
+        of << "e" << std::hex << ADDRESS::g(this) << ":p1->e" << ADDRESS::g(subExp1) << ";\n";
 }
 
 /*==============================================================================
@@ -2830,7 +2830,7 @@ Exp* Ternary::polySimplify(bool& bMod) {
     if (    op == opFsize &&
                 subExp3->getOper() == opMemOf &&
                 subExp3->getSubExp1()->getOper() == opIntConst) {
-        unsigned u = ((Const*)subExp3->getSubExp1())->getInt();
+                ADDRESS u = ADDRESS::g(((Const*)subExp3->getSubExp1())->getInt()); // TODO: why not getAdrr ?
         Location *l = dynamic_cast<Location*>(subExp3);
         UserProc *p = l->getProc();
         if (p) {
@@ -2853,12 +2853,12 @@ Exp* Ternary::polySimplify(bool& bMod) {
         unsigned int val = ((Const*)subExp3)->getInt();
         if (from == 32) {
             if (to == 16) {
-                res = new Const((ADDRESS) val & 0xffff);
+                            res = new Const(ADDRESS::g(val & 0xffff));
                 bMod = true;
                 return res;
             }
             if (to == 8) {
-                res = new Const((ADDRESS) val & 0xff);
+                                res = new Const(ADDRESS::g(val & 0xff));
                 bMod = true;
                 return res;
             }
@@ -3824,7 +3824,7 @@ void RefExp::printx(int ind) {
     std::cerr << std::setw(ind) << " " << operStrings[op] << " ";
     std::cerr << "{";
     if (def == 0) std::cerr << "NULL";
-    else std::cerr << std::hex << (ADDRESS) def << "=" << std::dec << def->getNumber();
+        else std::cerr << std::hex << ADDRESS::g(def) << "=" << std::dec << def->getNumber();
     std::cerr << "}\n" << std::flush;
     child(subExp1, ind);
 }

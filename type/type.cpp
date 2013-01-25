@@ -86,7 +86,7 @@ void PointerType::setPointsTo(Type* p) {
     if (p == this) {                    // Note: comparing pointers
         points_to = new VoidType();        // Can't point to self; impossible to compare, print, etc
         if (VERBOSE)
-            LOG << "Warning: attempted to create pointer to self: " << (ADDRESS) this << "\n";
+            LOG << "Warning: attempted to create pointer to self: " << ADDRESS::g(this) << "\n";
     } else
         points_to = p;
 }
@@ -1065,7 +1065,7 @@ AS_TYPE(Float)
 AS_TYPE(Pointer)
 AS_TYPE(Array)
 AS_TYPE(Compound)
-AS_TYPE(Size);
+AS_TYPE(Size)
 AS_TYPE(Union)
 AS_TYPE(Upper)
 AS_TYPE(Lower)
@@ -1339,7 +1339,7 @@ void DataIntervalMap::replaceComponents(ADDRESS addr, char* name, Type* ty, bool
     if (ty->resolvesToCompound()) {
         iterator it1 = dimap.lower_bound(addr);            // Iterator to the first overlapping item (could be end(), but
         // if so, it2 will also be end())
-        iterator it2 = dimap.upper_bound(pastLast-1);    // Iterator to the first item that starts too late
+        iterator it2 = dimap.upper_bound(ADDRESS::g(pastLast-1));    // Iterator to the first item that starts too late
         for (it = it1; it != it2; ++it) {
             unsigned bitOffset = (it->first - addr) * 8;
             Type* memberType = ty->asCompound()->getTypeAtOffset(bitOffset);
@@ -1356,7 +1356,7 @@ void DataIntervalMap::replaceComponents(ADDRESS addr, char* name, Type* ty, bool
     } else if (ty->resolvesToArray()) {
         Type* memberType = ty->asArray()->getBaseType();
         iterator it1 = dimap.lower_bound(addr);
-        iterator it2 = dimap.upper_bound(pastLast-1);
+        iterator it2 = dimap.upper_bound(ADDRESS::g(pastLast-1));
         for (it = it1; it != it2; ++it) {
             if (memberType->isCompatibleWith(it->second.type, true)) {
                 bool ch;
@@ -1379,7 +1379,7 @@ void DataIntervalMap::replaceComponents(ADDRESS addr, char* name, Type* ty, bool
 
     // The compound or array type is compatible. Remove the items that it will overlap with
     iterator it1 = dimap.lower_bound(addr);
-    iterator it2 = dimap.upper_bound(pastLast-1);
+    iterator it2 = dimap.upper_bound(ADDRESS::g(pastLast-1));
 
     // Check for existing locals that need to be updated
     if (ty->resolvesToCompound() || ty->resolvesToArray()) {

@@ -31,9 +31,11 @@
 #include "palmsystraps.h"
 
 // Macro to convert a pointer to a Big Endian integer into a host integer
-#define UC(p) ((unsigned char*)p)
-#define UINT4(p) ((UC(p)[0] << 24) + (UC(p)[1] << 16) + (UC(p)[2] << 8) + \
+#define UC(ad) ((unsigned char*)ad)
+#define UINT4(p) ((UC((p))[0] << 24) + (UC(p)[1] << 16) + (UC(p)[2] << 8) + \
     UC(p)[3])
+#define UINT4ADDR(p) ((UC((p).m_value)[0] << 24) + (UC((p).m_value)[1] << 16) + (UC((p).m_value)[2] << 8) + \
+    UC((p).m_value)[3])
 
 PalmBinaryFile::PalmBinaryFile()
     : m_pImage(0), m_pData(0)
@@ -123,7 +125,7 @@ bool PalmBinaryFile::RealLoad(const char* sName)
         off = UINT4(p);
         p += 4;
         m_pSections[i].uNativeAddr = off;
-        m_pSections[i].uHostAddr = off + (ADDRESS)m_pImage;
+        m_pSections[i].uHostAddr = ADDRESS::g(off) + ADDRESS::g(m_pImage);
 
         // Guess the length
         if (i > 0) {
@@ -157,9 +159,9 @@ bool PalmBinaryFile::RealLoad(const char* sName)
     // When the info is all boiled down, the two things we need from the
     // code 0 section are at offset 0, the size of data above a5, and at
     // offset 4, the size below. Save the size below as a member variable
-    m_SizeBelowA5 = UINT4(pCode0->uHostAddr+4);
+    m_SizeBelowA5 = UINT4ADDR(pCode0->uHostAddr+4);
     // Total size is this plus the amount above (>=) a5
-    unsigned sizeData = m_SizeBelowA5 + UINT4(pCode0->uHostAddr);
+    unsigned sizeData = m_SizeBelowA5 + UINT4ADDR(pCode0->uHostAddr);
 
     // Allocate a new data section
     m_pData = new unsigned char[sizeData];
@@ -169,13 +171,13 @@ bool PalmBinaryFile::RealLoad(const char* sName)
     }
 
     // Uncompress the data. Skip first long (offset of CODE1 "xrefs")
-    p = (unsigned char*)(pData->uHostAddr+4);
+    p = (unsigned char*)(pData->uHostAddr+4).m_value;
     int start = (int) UINT4(p);
     p += 4;
     unsigned char* q = (m_pData + m_SizeBelowA5 + start);
     bool done = false;
     while (!done && (p < (unsigned char*)(pData->uHostAddr +
-                                          pData->uSectionSize))) {
+                                          pData->uSectionSize).m_value)) {
         unsigned char rle = *p++;
         if (rle == 0) {
             done = true;
@@ -238,7 +240,7 @@ bool PalmBinaryFile::RealLoad(const char* sName)
     //p-(unsigned char*)pData->uHostAddr, pData->uSectionSize);
 
     // Replace the data pointer and size with the uncompressed versions
-    pData->uHostAddr = (ADDRESS)m_pData;
+    pData->uHostAddr = ADDRESS::g(m_pData);
     pData->uSectionSize = sizeData;
     // May as well make the native address zero; certainly the offset in the
     // file is no longer appropriate (and is confusing)
@@ -270,7 +272,7 @@ std::list<SectionInfo*>& PalmBinaryFile::GetEntryPoints(const char* pEntry
 ADDRESS PalmBinaryFile::GetEntryPoint()
 {
     assert(0); /* FIXME: Need to be implemented */
-    return 0;
+    return ADDRESS::g(0);
 }
 
 bool PalmBinaryFile::Open(const char* sName)
@@ -310,12 +312,12 @@ std::list<const char *> PalmBinaryFile::getDependencyList()
 
 ADDRESS PalmBinaryFile::getImageBase()
 {
-    return 0; /* FIXME */
+    return ADDRESS::g(0); /* FIXME */
 }
 
 size_t PalmBinaryFile::getImageSize()
 {
-    return 0; /* FIXME */
+    return ADDRESS::g(0); /* FIXME */
 }
 
 // We at least need to be able to name the main function and system calls
@@ -424,9 +426,9 @@ ADDRESS PalmBinaryFile::GetMainEntryPoint()
 {
     SectionInfo* pSect = GetSectionInfoByName("code1");
     if (pSect == 0)
-        return 0;               // Failed
+        return ADDRESS::g(0);               // Failed
     // Return the start of the code1 section
-    SWord* startCode = (SWord*) pSect->uHostAddr;
+    SWord* startCode = (SWord*) pSect->uHostAddr.m_value;
     int delta = pSect->uHostAddr - pSect->uNativeAddr;
 
     // First try the CW first jump pattern
@@ -435,7 +437,7 @@ ADDRESS PalmBinaryFile::GetMainEntryPoint()
     if (res) {
         // We have the code warrior first jump. Get the addil operand
         int addilOp = (startCode[5] << 16) + startCode[6];
-        SWord* startupCode = (SWord*)((ADDRESS)startCode + 10 + addilOp);
+        SWord* startupCode = (SWord*)(ADDRESS::g(startCode) + 10 + addilOp).m_value;
         // Now check the next 60 SWords for the call to PilotMain
         res = findPattern(startupCode, CWCallMain,
                           sizeof(CWCallMain) / sizeof(SWord), 60);
@@ -443,11 +445,11 @@ ADDRESS PalmBinaryFile::GetMainEntryPoint()
             // Get the addil operand
             addilOp = (res[5] << 16) + res[6];
             // That operand plus the address of that operand is PilotMain
-            return (ADDRESS)res + 10 + addilOp - delta;
+            return ADDRESS::g(res) + 10 + addilOp - delta;
         }
         else {
             fprintf( stderr, "Could not find call to PilotMain in CW app\n" );
-            return 0;
+            return ADDRESS::g(0);
         }
     }
     // Check for gcc call to main
@@ -456,11 +458,11 @@ ADDRESS PalmBinaryFile::GetMainEntryPoint()
     if (res) {
         // Get the operand to the bsr
         SWord bsrOp = res[7];
-        return (ADDRESS)res + 14 + bsrOp - delta;
+        return ADDRESS::g(res) + 14 + bsrOp - delta;
     }
 
     fprintf(stderr,"Cannot find call to PilotMain\n");
-    return 0;
+    return ADDRESS::g(0);
 }
 
 void PalmBinaryFile::GenerateBinFiles(const std::string& path) const
@@ -483,7 +485,7 @@ void PalmBinaryFile::GenerateBinFiles(const std::string& path) const
                          fullName.c_str() );
                 return;
             }
-            fwrite((void*)pSect->uHostAddr, pSect->uSectionSize, 1, f);
+            fwrite((void*)pSect->uHostAddr.m_value, pSect->uSectionSize, 1, f);
             fclose(f);
         }
     }

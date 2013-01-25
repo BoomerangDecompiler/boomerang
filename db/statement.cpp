@@ -230,7 +230,7 @@ void Assign::rangeAnalysis(std::list<Statement*> &execution_paths)
         if (VERBOSE && DEBUG_RANGE_ANALYSIS)
             LOG << "a_rhs is " << a_rhs << "\n";
         if (a_rhs->isMemOf() && a_rhs->getSubExp1()->isIntConst()) {
-            ADDRESS c = ((Const*)a_rhs->getSubExp1())->getInt();
+            ADDRESS c = ADDRESS::g(((Const*)a_rhs->getSubExp1())->getInt()); //TODO: user getAddr
             if (proc->getProg()->isDynamicLinkedProcPointer(c)) {
                 char *nam = (char*)proc->getProg()->GetDynamicProcName(c);
                 if (nam) {
@@ -446,7 +446,7 @@ void CallStatement::rangeAnalysis(std::list<Statement*> &execution_paths)
         Exp *d = output.substInto(getDest()->clone());
         if (d->isIntConst() || d->isStrConst()) {
             if (d->isIntConst()) {
-                ADDRESS dest = ((Const*)d)->getInt();
+                ADDRESS dest = ADDRESS::g(((Const*)d)->getInt()); //TODO: use getAddr ?
                 procDest = proc->getProg()->setNewProc(dest);
             } else {
                 procDest = proc->getProg()->getLibraryProc(((Const*)d)->getStr());
@@ -2383,7 +2383,7 @@ bool CallStatement::convertToDirect() {
         Exp* sub = ((Unary*)e)->getSubExp1();
         if (sub->isIntConst()) {
             // m[K]: convert it to a global right here
-            ADDRESS u = (ADDRESS)((Const*)sub)->getInt();
+            ADDRESS u = ADDRESS::g(((Const*)sub)->getInt());
             proc->getProg()->globalUsed(u);
             const char *nam = proc->getProg()->getGlobalName(u);
             e = Location::global(nam, proc);
@@ -2396,7 +2396,7 @@ bool CallStatement::convertToDirect() {
     char *nam = ((Const*)e->getSubExp1())->getStr();
     Prog* prog = proc->getProg();
     ADDRESS gloAddr = prog->getGlobalAddr(nam);
-    ADDRESS dest = prog->readNative4(gloAddr);
+    ADDRESS dest = ADDRESS::g(prog->readNative4(gloAddr));
     // We'd better do some limit checking on the value. This does not guarantee that it's a valid proc pointer, but it
     // may help
     if (dest < prog->getLimitTextLow() || dest > prog->getLimitTextHigh())

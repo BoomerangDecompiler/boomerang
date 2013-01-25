@@ -632,7 +632,7 @@ MATCH_finished_a: (void)0; /*placeholder for label*/
  * PARAMETERS:        lc - address at which to decode the double
  * RETURNS:            the decoded double
  *============================================================================*/
-Byte ST20Decoder::getByte (ADDRESS lc)
+Byte ST20Decoder::getByte (intptr_t lc)
 /* getByte - returns next byte from image pointed to by lc.     */
 {
     return *(Byte *)lc;
@@ -644,7 +644,7 @@ Byte ST20Decoder::getByte (ADDRESS lc)
  * PARAMETERS:        lc - address at which to decode the double
  * RETURNS:            the decoded double
  *============================================================================*/
-SWord ST20Decoder::getWord (ADDRESS lc)
+SWord ST20Decoder::getWord (intptr_t lc)
 /* get2Bytes - returns next 2-Byte from image pointed to by lc.     */
 {
     return (SWord)(*(Byte *)lc + (*(Byte *)(lc+1) << 8));
@@ -656,7 +656,7 @@ SWord ST20Decoder::getWord (ADDRESS lc)
  * PARAMETERS:        lc - address at which to decode the double
  * RETURNS:            the decoded double
  *============================================================================*/
-DWord ST20Decoder::getDword (ADDRESS lc)
+DWord ST20Decoder::getDword (intptr_t lc)
 /* get4Bytes - returns the next 4-Byte word from image pointed to by lc. */
 {
     return (DWord)(*(Byte *)lc + (*(Byte *)(lc+1) << 8) +
