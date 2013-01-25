@@ -66,7 +66,7 @@ DecodeResult& ST20Decoder::decodeInstruction (ADDRESS pc, int delta) {
 
 #line 60 "frontend/machine/st20/decoder.m"
         {
-            dword MATCH_p =
+            ADDRESS MATCH_p =
 
         #line 60 "frontend/machine/st20/decoder.m"
                     hostPC+result.numBytes++

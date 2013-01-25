@@ -109,7 +109,7 @@ bool ExeBinaryFile::RealLoad(const char* sName)
         /* Allocate the relocation table */
         if (m_cReloc)
         {
-            m_pRelocTable = new dword[m_cReloc];
+            m_pRelocTable = new DWord[m_cReloc];
             if (m_pRelocTable == 0)
             {
                 fprintf(stderr, "Could not allocate relocation table "
