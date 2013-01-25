@@ -31,7 +31,7 @@ typedef pointer ModuleSetupProc(pointer module, pointer opts, int *errmaj, int *
 typedef void ModuleTearDownProc(pointer module);
 
 typedef struct {
-    XF86ModuleVersionInfo 	*vers;
+    XF86ModuleVersionInfo     *vers;
     ModuleSetupProc             *setup;
     ModuleTearDownProc          *teardown;
 } XF86ModuleData;
@@ -137,8 +137,8 @@ typedef struct {
 typedef confXvAdaptorRec *confXvAdaptorPtr;
 
 typedef struct { 
-	float hi;
-	float lo; 
+    float hi;
+    float lo; 
 } range;
 
 typedef struct {
@@ -183,7 +183,7 @@ typedef struct {
    char *                       chipset;
    char *                       ramdac;
    char *                       driver;
-   confScreenPtr      		myScreenSection;
+   confScreenPtr              myScreenSection;
    Bool                         claimed;
    int                          dacSpeeds[4];
    int                          numclocks;
@@ -251,20 +251,20 @@ typedef struct {
     int                 myNum;
     ATOM                id;
     short               width;
-	short				height;
+    short                height;
     short               mmWidth;
-	short				mmHeight;
+    short                mmHeight;
     short               numDepths;
     unsigned char       rootDepth;
     DepthPtr            allowedDepths;
     unsigned long       rootVisual;
     unsigned long       defColormap;
     short               minInstalledCmaps;
-	short				maxInstalledCmaps;
+    short                maxInstalledCmaps;
     char                backingStoreSupport;
-	char				saveUnderSupport;
+    char                saveUnderSupport;
     unsigned long       whitePixel;
-	unsigned long		blackPixel;
+    unsigned long        blackPixel;
     unsigned long       rgf;
     GCPtr               GCperDepth[9];
     PixmapPtr           PixmapPerDepth[1];
@@ -343,14 +343,14 @@ typedef int Pix24Flags;
 typedef int MessageType;
 
 typedef struct { 
-	CARD32 red;
-	CARD32 green;
-	CARD32 blue; 
+    CARD32 red;
+    CARD32 green;
+    CARD32 blue; 
 } rgb;
 typedef struct { 
-	float red;
-	float green;
-	float blue; 
+    float red;
+    float green;
+    float blue; 
 } Gamma;
 
 typedef struct {
@@ -395,7 +395,7 @@ typedef struct {
     int                         PrivFlags;
 
     float                       HSync;
-	float						VRefresh;
+    float                        VRefresh;
 } DisplayModeRec;
 typedef DisplayModeRec *DisplayModePtr;
 

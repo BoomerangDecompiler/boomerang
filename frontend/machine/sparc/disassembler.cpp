@@ -43,15 +43,15 @@ DWord getDword(ADDRESS lc)
 
 
 /* 
- * FUNCTION: 		dis_RegImm
- * OVERVIEW:		decodes a register or an immediate value
- * PARAMETERS: 		address pointer to be decoded
- * RETURNS: 		string with information about register or immediate 
+ * FUNCTION:         dis_RegImm
+ * OVERVIEW:        decodes a register or an immediate value
+ * PARAMETERS:         address pointer to be decoded
+ * RETURNS:         string with information about register or immediate 
  */
 
 char *NJMCDecoder::dis_RegImm (ADDRESS pc)
 {
-	static char _buffer[11]; 
+    static char _buffer[11]; 
 
 
 
@@ -70,7 +70,7 @@ char *NJMCDecoder::dis_RegImm (ADDRESS pc)
         sign_extend((MATCH_w_32_0 & 0x1fff) /* simm13 at 0 */, 13);
       
       #line 55 "machine/sparc/disassembler.m"
-      	sprintf (_buffer, "%d", i); 
+          sprintf (_buffer, "%d", i); 
 
       
       
@@ -94,20 +94,20 @@ char *NJMCDecoder::dis_RegImm (ADDRESS pc)
 }
 
 #line 59 "machine/sparc/disassembler.m"
-	return _buffer;
+    return _buffer;
 }
 
 
 /* 
- * FUNCTION: 		dis_Eaddr
- * OVERVIEW:		decodes an effective address
- * PARAMETERS: 		address pointer to be decoded
- * RETURNS: 		string with effective address in assembly format
+ * FUNCTION:         dis_Eaddr
+ * OVERVIEW:        decodes an effective address
+ * PARAMETERS:         address pointer to be decoded
+ * RETURNS:         string with effective address in assembly format
  */
 
 char* NJMCDecoder::dis_Eaddr (ADDRESS pc)
 {
-	static char _buffer[21]; 
+    static char _buffer[21]; 
 
 
 
@@ -127,7 +127,7 @@ char* NJMCDecoder::dis_Eaddr (ADDRESS pc)
           sign_extend((MATCH_w_32_0 & 0x1fff) /* simm13 at 0 */, 13);
         
         #line 78 "machine/sparc/disassembler.m"
-        	sprintf (_buffer, "[0x%x]", i); 
+            sprintf (_buffer, "[0x%x]", i); 
 
                                 strcat(constrName, "absoluteA ");
 
@@ -141,7 +141,7 @@ char* NJMCDecoder::dis_Eaddr (ADDRESS pc)
         unsigned rs1 = (MATCH_w_32_0 >> 14 & 0x1f) /* rs1 at 0 */;
         
         #line 80 "machine/sparc/disassembler.m"
-        	sprintf (_buffer, "[%s+%d]", DIS_RS1, i); 
+            sprintf (_buffer, "[%s+%d]", DIS_RS1, i); 
 
                                 strcat(constrName, "dispA ");
 
@@ -154,7 +154,7 @@ char* NJMCDecoder::dis_Eaddr (ADDRESS pc)
         unsigned rs1 = (MATCH_w_32_0 >> 14 & 0x1f) /* rs1 at 0 */;
         
         #line 74 "machine/sparc/disassembler.m"
-        	sprintf (_buffer, "[%s]", DIS_RS1);
+            sprintf (_buffer, "[%s]", DIS_RS1);
 
                                 strcat(constrName, "indirectA ");
 
@@ -167,7 +167,7 @@ char* NJMCDecoder::dis_Eaddr (ADDRESS pc)
         unsigned rs2 = (MATCH_w_32_0 & 0x1f) /* rs2 at 0 */;
         
         #line 76 "machine/sparc/disassembler.m"
-        	sprintf (_buffer, "%s[%s]", DIS_RS1, DIS_RS2); 
+            sprintf (_buffer, "%s[%s]", DIS_RS1, DIS_RS2); 
 
                                 strcat(constrName, "indexA ");
 
@@ -183,7 +183,7 @@ char* NJMCDecoder::dis_Eaddr (ADDRESS pc)
 }
 
 #line 84 "machine/sparc/disassembler.m"
-	return _buffer;
+    return _buffer;
 }
 
 /*==============================================================================
@@ -191,16 +191,16 @@ char* NJMCDecoder::dis_Eaddr (ADDRESS pc)
  * OVERVIEW:       Decodes a machine instruction and displays its assembly
  *                 representation onto the external array _assembly[].
  * PARAMETERS:     pc - the native address of the pc
- *				   delta - the difference between the native address and 
- *					the host address of the pc
- * RETURNS: 	   number of bytes taken up by the decoded instruction 
- *					(i.e. number of bytes processed)
+ *                   delta - the difference between the native address and 
+ *                    the host address of the pc
+ * RETURNS:        number of bytes taken up by the decoded instruction 
+ *                    (i.e. number of bytes processed)
  *============================================================================*/
 
 int NJMCDecoder::decodeAssemblyInstruction (ADDRESS pc, int delta)
 {
-	ADDRESS hostPC = pc + delta; 
-	ADDRESS nextPC;
+    ADDRESS hostPC = pc + delta; 
+    ADDRESS nextPC;
 
     sprintf(_assembly, "%X: %08X  ", pc, getDword(hostPC) );
     char* str = _assembly + strlen(_assembly);
@@ -351,7 +351,7 @@ int NJMCDecoder::decodeAssemblyInstruction (ADDRESS pc, int delta)
                   #line 276 "machine/sparc/disassembler.m"
                    
 
-                  		sprintf (str, "%s %d", name, n);
+                          sprintf (str, "%s %d", name, n);
 
                   
 
@@ -388,7 +388,7 @@ int NJMCDecoder::decodeAssemblyInstruction (ADDRESS pc, int delta)
                   #line 108 "machine/sparc/disassembler.m"
                   
 
-                  		sprintf (str, "NOP");
+                          sprintf (str, "NOP");
 
                   
 
@@ -461,7 +461,7 @@ int NJMCDecoder::decodeAssemblyInstruction (ADDRESS pc, int delta)
 
                         sprintf(hexsym, "0x%x", dest);
 
-                 	sprintf (str, "%s %s", "call", (dsym ? dsym : hexsym));
+                     sprintf (str, "%s %s", "call", (dsym ? dsym : hexsym));
 
                 }
 
@@ -563,7 +563,7 @@ int NJMCDecoder::decodeAssemblyInstruction (ADDRESS pc, int delta)
                     #line 174 "machine/sparc/disassembler.m"
                      
 
-                    		sprintf (str, "%s %s", name, DIS_RD);
+                            sprintf (str, "%s %s", name, DIS_RD);
 
                     
 
@@ -588,7 +588,7 @@ int NJMCDecoder::decodeAssemblyInstruction (ADDRESS pc, int delta)
                   #line 177 "machine/sparc/disassembler.m"
                    
 
-                  		sprintf (str, "%s %s", name, DIS_RD);
+                          sprintf (str, "%s %s", name, DIS_RD);
 
                   
 
@@ -609,7 +609,7 @@ int NJMCDecoder::decodeAssemblyInstruction (ADDRESS pc, int delta)
                   #line 180 "machine/sparc/disassembler.m"
                    
 
-                  		sprintf (str, "%s %s", name, DIS_RD);
+                          sprintf (str, "%s %s", name, DIS_RD);
 
                   
 
@@ -630,7 +630,7 @@ int NJMCDecoder::decodeAssemblyInstruction (ADDRESS pc, int delta)
                   #line 183 "machine/sparc/disassembler.m"
                    
 
-                  		sprintf (str, "%s %s", name, DIS_RD);
+                          sprintf (str, "%s %s", name, DIS_RD);
 
                   
 
@@ -655,7 +655,7 @@ int NJMCDecoder::decodeAssemblyInstruction (ADDRESS pc, int delta)
                     #line 186 "machine/sparc/disassembler.m"
                      
 
-                    		sprintf (str, "%s %s,%s", name, DIS_RS1, DIS_ROI);
+                            sprintf (str, "%s %s,%s", name, DIS_RS1, DIS_ROI);
 
                     
 
@@ -678,7 +678,7 @@ int NJMCDecoder::decodeAssemblyInstruction (ADDRESS pc, int delta)
                   #line 189 "machine/sparc/disassembler.m"
                    
 
-                  		sprintf (str, "%s %s,%s", name, DIS_RS1, DIS_ROI);
+                          sprintf (str, "%s %s,%s", name, DIS_RS1, DIS_ROI);
 
                   
 
@@ -699,7 +699,7 @@ int NJMCDecoder::decodeAssemblyInstruction (ADDRESS pc, int delta)
                   #line 192 "machine/sparc/disassembler.m"
                    
 
-                  		sprintf (str, "%s %s,%s", name, DIS_RS1, DIS_ROI);
+                          sprintf (str, "%s %s,%s", name, DIS_RS1, DIS_ROI);
 
                   
 
@@ -720,7 +720,7 @@ int NJMCDecoder::decodeAssemblyInstruction (ADDRESS pc, int delta)
                   #line 195 "machine/sparc/disassembler.m"
                    
 
-                  		sprintf (str, "%s %s,%s", name, DIS_RS1, DIS_ROI);
+                          sprintf (str, "%s %s,%s", name, DIS_RS1, DIS_ROI);
 
                   
 
@@ -765,7 +765,7 @@ int NJMCDecoder::decodeAssemblyInstruction (ADDRESS pc, int delta)
                         #line 218 "machine/sparc/disassembler.m"
                          
 
-                        		sprintf (str, "%s %s,%s", name, DIS_FS2S, DIS_FDS);
+                                sprintf (str, "%s %s,%s", name, DIS_FS2S, DIS_FDS);
 
                         
 
@@ -791,7 +791,7 @@ int NJMCDecoder::decodeAssemblyInstruction (ADDRESS pc, int delta)
                         #line 221 "machine/sparc/disassembler.m"
                          
 
-                        		sprintf (str, "%s %s,%s,%s", name, DIS_FS1S, DIS_FS2S, DIS_FDS);
+                                sprintf (str, "%s %s,%s,%s", name, DIS_FS1S, DIS_FS2S, DIS_FDS);
 
                          
 
@@ -817,7 +817,7 @@ int NJMCDecoder::decodeAssemblyInstruction (ADDRESS pc, int delta)
                         #line 224 "machine/sparc/disassembler.m"
                          
 
-                        		sprintf (str, "%s %s,%s,%s", name, DIS_FS1D, DIS_FS2D, DIS_FDD);
+                                sprintf (str, "%s %s,%s,%s", name, DIS_FS1D, DIS_FS2D, DIS_FDD);
 
                          
 
@@ -843,7 +843,7 @@ int NJMCDecoder::decodeAssemblyInstruction (ADDRESS pc, int delta)
                         #line 227 "machine/sparc/disassembler.m"
                          
 
-                        		sprintf (str, "%s %s,%s,%s", name, DIS_FS1Q, DIS_FS2Q, DIS_FDQ);
+                                sprintf (str, "%s %s,%s,%s", name, DIS_FS1Q, DIS_FS2Q, DIS_FDQ);
 
                          
 
@@ -1134,7 +1134,7 @@ int NJMCDecoder::decodeAssemblyInstruction (ADDRESS pc, int delta)
                         #line 230 "machine/sparc/disassembler.m"
                          
 
-                        		sprintf (str, "%s %s,%s", name, DIS_FS1S, DIS_FS2S);
+                                sprintf (str, "%s %s,%s", name, DIS_FS1S, DIS_FS2S);
 
                         
 
@@ -1158,7 +1158,7 @@ int NJMCDecoder::decodeAssemblyInstruction (ADDRESS pc, int delta)
                         #line 233 "machine/sparc/disassembler.m"
                          
 
-                        		sprintf (str, "%s %s,%s", name, DIS_FS1D, DIS_FS2D);
+                                sprintf (str, "%s %s,%s", name, DIS_FS1D, DIS_FS2D);
 
                         
 
@@ -1182,7 +1182,7 @@ int NJMCDecoder::decodeAssemblyInstruction (ADDRESS pc, int delta)
                         #line 236 "machine/sparc/disassembler.m"
                          
 
-                        		sprintf (str, "%s %s,%s", name, DIS_FS1Q, DIS_FS2Q);
+                                sprintf (str, "%s %s,%s", name, DIS_FS1Q, DIS_FS2Q);
 
                         
 
@@ -1298,7 +1298,7 @@ int NJMCDecoder::decodeAssemblyInstruction (ADDRESS pc, int delta)
                   #line 273 "machine/sparc/disassembler.m"
                    
 
-                  		sprintf (str, "%s %s", name, DIS_ADDR);
+                          sprintf (str, "%s %s", name, DIS_ADDR);
 
                   
 
@@ -1327,7 +1327,7 @@ int NJMCDecoder::decodeAssemblyInstruction (ADDRESS pc, int delta)
                           #line 123 "machine/sparc/disassembler.m"
                           
 
-                          		sprintf (str, "%s %s,%s", name, "%g0", "%g0", "%g0");
+                                  sprintf (str, "%s %s,%s", name, "%g0", "%g0", "%g0");
 
                           
 
@@ -1371,7 +1371,7 @@ int NJMCDecoder::decodeAssemblyInstruction (ADDRESS pc, int delta)
                     #line 114 "machine/sparc/disassembler.m"
                     
 
-                    		sprintf (str, "restore");
+                            sprintf (str, "restore");
 
                     
 
@@ -1925,7 +1925,7 @@ int NJMCDecoder::decodeAssemblyInstruction (ADDRESS pc, int delta)
 
               // What does this mean?
 
-      		NULL;
+              NULL;
 
       
 
@@ -1946,7 +1946,7 @@ int NJMCDecoder::decodeAssemblyInstruction (ADDRESS pc, int delta)
       #line 204 "machine/sparc/disassembler.m"
        
 
-      		sprintf (str, "%s %X", name, tgt-delta);
+              sprintf (str, "%s %X", name, tgt-delta);
 
       
 
@@ -1967,7 +1967,7 @@ int NJMCDecoder::decodeAssemblyInstruction (ADDRESS pc, int delta)
       #line 201 "machine/sparc/disassembler.m"
        
 
-      		sprintf (str, "%s %X", name, tgt-delta);
+              sprintf (str, "%s %X", name, tgt-delta);
 
       
 
@@ -1986,7 +1986,7 @@ int NJMCDecoder::decodeAssemblyInstruction (ADDRESS pc, int delta)
       #line 111 "machine/sparc/disassembler.m"
        
 
-      		sprintf (str, "%s 0x%X,%s", "sethi", (imm22), DIS_RD);
+              sprintf (str, "%s 0x%X,%s", "sethi", (imm22), DIS_RD);
 
       
 
@@ -2007,7 +2007,7 @@ int NJMCDecoder::decodeAssemblyInstruction (ADDRESS pc, int delta)
       #line 198 "machine/sparc/disassembler.m"
        
 
-      		sprintf (str, "%s %s,%s,%s", name, DIS_RS1, DIS_ROI, DIS_RD);
+              sprintf (str, "%s %s,%s,%s", name, DIS_RS1, DIS_ROI, DIS_RD);
 
       
 
@@ -2027,7 +2027,7 @@ int NJMCDecoder::decodeAssemblyInstruction (ADDRESS pc, int delta)
       #line 267 "machine/sparc/disassembler.m"
        
 
-      		sprintf (str, "%s %s,%s", name, DIS_ADDR, DIS_RD);
+              sprintf (str, "%s %s,%s", name, DIS_ADDR, DIS_RD);
 
       
 
@@ -2046,7 +2046,7 @@ int NJMCDecoder::decodeAssemblyInstruction (ADDRESS pc, int delta)
       #line 270 "machine/sparc/disassembler.m"
        
 
-      		sprintf (str, "%s", name);
+              sprintf (str, "%s", name);
 
       
 
@@ -2066,7 +2066,7 @@ int NJMCDecoder::decodeAssemblyInstruction (ADDRESS pc, int delta)
       #line 126 "machine/sparc/disassembler.m"
        
 
-      		sprintf (str, "%s %s,%s", name, DIS_ADDR, DIS_RD);
+              sprintf (str, "%s %s,%s", name, DIS_ADDR, DIS_RD);
 
       
 
@@ -2086,7 +2086,7 @@ int NJMCDecoder::decodeAssemblyInstruction (ADDRESS pc, int delta)
       #line 141 "machine/sparc/disassembler.m"
        
 
-      		sprintf (str, "%s %s,%s", name, DIS_RD, DIS_ADDR);
+              sprintf (str, "%s %s,%s", name, DIS_RD, DIS_ADDR);
 
       
 
@@ -2107,7 +2107,7 @@ int NJMCDecoder::decodeAssemblyInstruction (ADDRESS pc, int delta)
       #line 138 "machine/sparc/disassembler.m"
        
 
-      		sprintf (str, "%s %s,%s", name, DIS_RD, DIS_ADDR);
+              sprintf (str, "%s %s,%s", name, DIS_RD, DIS_ADDR);
 
       
 
@@ -2128,7 +2128,7 @@ int NJMCDecoder::decodeAssemblyInstruction (ADDRESS pc, int delta)
       #line 153 "machine/sparc/disassembler.m"
        
 
-      		sprintf (str, "%s %s,%s", name, DIS_RD, DIS_ADDR);
+              sprintf (str, "%s %s,%s", name, DIS_RD, DIS_ADDR);
 
       
 
@@ -2148,7 +2148,7 @@ int NJMCDecoder::decodeAssemblyInstruction (ADDRESS pc, int delta)
       #line 129 "machine/sparc/disassembler.m"
        
 
-      		sprintf (str, "%s %s,%s", name, DIS_ADDR, DIS_FDS);
+              sprintf (str, "%s %s,%s", name, DIS_ADDR, DIS_FDS);
 
       
 
@@ -2167,7 +2167,7 @@ int NJMCDecoder::decodeAssemblyInstruction (ADDRESS pc, int delta)
       #line 156 "machine/sparc/disassembler.m"
        
 
-      		sprintf (str, "%s %s", name, DIS_ADDR);
+              sprintf (str, "%s %s", name, DIS_ADDR);
 
       
 
@@ -2187,7 +2187,7 @@ int NJMCDecoder::decodeAssemblyInstruction (ADDRESS pc, int delta)
       #line 132 "machine/sparc/disassembler.m"
        
 
-      		sprintf (str, "%s %s,%s", name, DIS_ADDR, DIS_FDD);
+              sprintf (str, "%s %s,%s", name, DIS_ADDR, DIS_FDD);
 
       
 
@@ -2207,7 +2207,7 @@ int NJMCDecoder::decodeAssemblyInstruction (ADDRESS pc, int delta)
       #line 144 "machine/sparc/disassembler.m"
        
 
-      		sprintf (str, "%s %s,%s", name, DIS_FDS, DIS_ADDR);
+              sprintf (str, "%s %s,%s", name, DIS_FDS, DIS_ADDR);
 
       
 
@@ -2226,7 +2226,7 @@ int NJMCDecoder::decodeAssemblyInstruction (ADDRESS pc, int delta)
       #line 162 "machine/sparc/disassembler.m"
        
 
-      		sprintf (str, "%s %s", name, DIS_ADDR);
+              sprintf (str, "%s %s", name, DIS_ADDR);
 
       
 
@@ -2245,7 +2245,7 @@ int NJMCDecoder::decodeAssemblyInstruction (ADDRESS pc, int delta)
       #line 168 "machine/sparc/disassembler.m"
        
 
-      		sprintf (str, "%s %s", name, DIS_ADDR);
+              sprintf (str, "%s %s", name, DIS_ADDR);
 
       
 
@@ -2265,7 +2265,7 @@ int NJMCDecoder::decodeAssemblyInstruction (ADDRESS pc, int delta)
       #line 147 "machine/sparc/disassembler.m"
        
 
-      		sprintf (str, "%s %s,%s", name, DIS_FDD, DIS_ADDR);
+              sprintf (str, "%s %s,%s", name, DIS_FDD, DIS_ADDR);
 
       
 
@@ -2285,9 +2285,9 @@ int NJMCDecoder::decodeAssemblyInstruction (ADDRESS pc, int delta)
       #line 135 "machine/sparc/disassembler.m"
        
 
-      		sprintf (str, "%s %s,%s", name, DIS_ADDR, DIS_CD);
+              sprintf (str, "%s %s,%s", name, DIS_ADDR, DIS_CD);
 
-      		
+              
 
       
       
@@ -2304,7 +2304,7 @@ int NJMCDecoder::decodeAssemblyInstruction (ADDRESS pc, int delta)
       #line 159 "machine/sparc/disassembler.m"
        
 
-      		sprintf (str, "%s %s", name, DIS_ADDR);
+              sprintf (str, "%s %s", name, DIS_ADDR);
 
       
 
@@ -2324,7 +2324,7 @@ int NJMCDecoder::decodeAssemblyInstruction (ADDRESS pc, int delta)
       #line 150 "machine/sparc/disassembler.m"
        
 
-      		sprintf (str, "%s %s,%s", name, DIS_CD, DIS_ADDR);
+              sprintf (str, "%s %s,%s", name, DIS_CD, DIS_ADDR);
 
       
 
@@ -2343,7 +2343,7 @@ int NJMCDecoder::decodeAssemblyInstruction (ADDRESS pc, int delta)
       #line 165 "machine/sparc/disassembler.m"
        
 
-      		sprintf (str, "%s %s", name, DIS_ADDR);
+              sprintf (str, "%s %s", name, DIS_ADDR);
 
       
 
@@ -2362,7 +2362,7 @@ int NJMCDecoder::decodeAssemblyInstruction (ADDRESS pc, int delta)
       #line 171 "machine/sparc/disassembler.m"
        
 
-      		sprintf (str, "%s %s", name, DIS_ADDR);
+              sprintf (str, "%s %s", name, DIS_ADDR);
 
       
 
@@ -2378,7 +2378,7 @@ int NJMCDecoder::decodeAssemblyInstruction (ADDRESS pc, int delta)
 
 #line 287 "machine/sparc/disassembler.m"
 
-	return (nextPC - hostPC);
+    return (nextPC - hostPC);
 }
 
 

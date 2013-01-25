@@ -26,7 +26,7 @@ typedef malloc_zone_t NXZone;
 
 #define NX_NOZONE  ((NXZone *)0)
 
-/*********	Interface to zone based malloc	************/
+/*********    Interface to zone based malloc    ************/
 
 extern NXZone *NXDefaultMallocZone(void);
     // Returns the default zone used by the malloc(3) calls

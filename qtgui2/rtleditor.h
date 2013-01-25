@@ -17,18 +17,18 @@ class RTLEditor : public QTextEdit
     Q_OBJECT
 
 public:
-	RTLEditor(Decompiler *decompiler, const QString &name);
+    RTLEditor(Decompiler *decompiler, const QString &name);
 
 public slots:
-	void updateContents();
+    void updateContents();
 
 protected:
-	virtual void mouseMoveEvent(QMouseEvent *event);
-	virtual void mousePressEvent(QMouseEvent *event);
+    virtual void mouseMoveEvent(QMouseEvent *event);
+    virtual void mousePressEvent(QMouseEvent *event);
 
 private:
     Decompiler *decompiler;
-	QString name;
+    QString name;
 };
 
 #endif

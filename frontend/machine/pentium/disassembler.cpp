@@ -36,7 +36,7 @@
  *============================================================================*/
 int NJMCDecoder::decodeAssemblyInstruction (ADDRESS pc, int delta)
 {
-	ADDRESS hostPC = pc + delta; 
+    ADDRESS hostPC = pc + delta; 
     ADDRESS nextPC; 
 
     sprintf(_assembly, "%X: %08X  ", pc, getDword(hostPC) );
@@ -24922,9 +24922,9 @@ int NJMCDecoder::decodeAssemblyInstruction (ADDRESS pc, int delta)
 
                                     
 
-                                    //	| inst = n =>
+                                    //    | inst = n =>
 
-                                    //		sprintf (str, "%0x", n);
+                                    //        sprintf (str, "%0x", n);
 
                                     
 
@@ -34472,7 +34472,7 @@ int NJMCDecoder::decodeAssemblyInstruction (ADDRESS pc, int delta)
       
       #line 1792 "machine/pentium/disassembler.m"
       
-      		sprintf (str, "%0x", n);
+              sprintf (str, "%0x", n);
 
       
 

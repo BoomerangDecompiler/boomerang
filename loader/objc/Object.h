@@ -22,11 +22,11 @@
  * @APPLE_LICENSE_HEADER_END@
  */
 /*
-	Object.h
-	Copyright 1988-1996 NeXT Software, Inc.
+    Object.h
+    Copyright 1988-1996 NeXT Software, Inc.
   
-	DEFINED AS:	A common class
-	HEADER FILES:	<objc/Object.h>
+    DEFINED AS:    A common class
+    HEADER FILES:    <objc/Object.h>
 
 */
 
@@ -39,7 +39,7 @@
 
 @interface Object
 {
-	Class isa;	/* A pointer to the instance's class structure */
+    Class isa;    /* A pointer to the instance's class structure */
 }
 
 /* Initializing classes and instances */

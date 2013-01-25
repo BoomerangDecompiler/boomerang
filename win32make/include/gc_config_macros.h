@@ -39,13 +39,13 @@
 #endif
 
 #if !defined(_REENTRANT) && (defined(GC_SOLARIS_THREADS) \
-		             || defined(GC_SOLARIS_PTHREADS) \
-			     || defined(GC_HPUX_THREADS) \
-			     || defined(GC_AIX_THREADS) \
-			     || defined(GC_LINUX_THREADS))
+                     || defined(GC_SOLARIS_PTHREADS) \
+                 || defined(GC_HPUX_THREADS) \
+                 || defined(GC_AIX_THREADS) \
+                 || defined(GC_LINUX_THREADS))
 # define _REENTRANT
-	/* Better late than never.  This fails if system headers that	*/
-	/* depend on this were previously included.			*/
+    /* Better late than never.  This fails if system headers that    */
+    /* depend on this were previously included.            */
 #endif
 
 #if defined(GC_DGUX386_THREADS) && !defined(_POSIX4A_DRAFT10_SOURCE)
@@ -53,10 +53,10 @@
 #endif
 
 # if defined(GC_SOLARIS_PTHREADS) || defined(GC_FREEBSD_THREADS) || \
-	defined(GC_IRIX_THREADS) || defined(GC_LINUX_THREADS) || \
-	defined(GC_HPUX_THREADS) || defined(GC_OSF1_THREADS) || \
-	defined(GC_DGUX386_THREADS) || defined(GC_DARWIN_THREADS) || \
-	defined(GC_AIX_THREADS) || \
+    defined(GC_IRIX_THREADS) || defined(GC_LINUX_THREADS) || \
+    defined(GC_HPUX_THREADS) || defined(GC_OSF1_THREADS) || \
+    defined(GC_DGUX386_THREADS) || defined(GC_DARWIN_THREADS) || \
+    defined(GC_AIX_THREADS) || \
         (defined(GC_WIN32_THREADS) && defined(__CYGWIN32__))
 #   define GC_PTHREADS
 # endif
@@ -109,8 +109,8 @@
 # include <stddef.h>
 # ifdef _WIN32_WCE
 /* Yet more kluges for WinCE */
-#   include <stdlib.h>		/* size_t is defined here */
-    typedef long ptrdiff_t;	/* ptrdiff_t is not defined */
+#   include <stdlib.h>        /* size_t is defined here */
+    typedef long ptrdiff_t;    /* ptrdiff_t is not defined */
 # endif
 
 #if defined(_DLL) && !defined(GC_NOT_DLL) && !defined(GC_DLL)

@@ -1948,7 +1948,7 @@ list<RT*>* NJMCDecoder::decodeLowLevelInstruction (ADDRESS hostPC, ADDRESS pc,
       #line 331 "machine/hppa/decoder_low.m"
       {
 
-      		    //RTs = NULL;
+                  //RTs = NULL;
 
                   result.valid = false;
 
@@ -2021,7 +2021,7 @@ list<RT*>* NJMCDecoder::decodeLowLevelInstruction (ADDRESS hostPC, ADDRESS pc,
 
                   RTs = instantiate(pc, name, dis_c_addr(c_addr),
 
-      				dis_xd(xd), dis_Sreg(s),
+                      dis_xd(xd), dis_Sreg(s),
 
                       dis_Reg(b), dis_Reg(t_27));
 

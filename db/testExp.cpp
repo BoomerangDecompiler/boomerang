@@ -1,5 +1,5 @@
 /*==============================================================================
- * FILE:	   testExp.cpp
+ * FILE:       testExp.cpp
  * OVERVIEW:   Command line test of the Exp class
  *============================================================================*/
 /*
@@ -19,16 +19,16 @@
 
 int main(int argc, char** argv)
 {
-	CppUnit::TestSuite suite;
+    CppUnit::TestSuite suite;
 
-	ExpTest	 expt("ExpTest");
+    ExpTest     expt("ExpTest");
 
-	expt.registerTests(&suite);
+    expt.registerTests(&suite);
 
-	CppUnit::TextTestResult res;
+    CppUnit::TextTestResult res;
 
-	suite.run( &res );
-	std::cout << res << std::endl;
+    suite.run( &res );
+    std::cout << res << std::endl;
 
-	return 0;
+    return 0;
 }

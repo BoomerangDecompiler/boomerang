@@ -22,8 +22,8 @@
  * @APPLE_LICENSE_HEADER_END@
  */
 /*
- *	objc-runtime.h
- *	Copyright 1988-1996, NeXT Software, Inc.
+ *    objc-runtime.h
+ *    Copyright 1988-1996, NeXT Software, Inc.
  */
 
 #ifndef _OBJC_RUNTIME_H_
@@ -36,25 +36,25 @@
 typedef struct objc_symtab *Symtab;
 
 struct objc_symtab {
-	unsigned long 	sel_ref_cnt;
-	SEL 		*refs;		
-	unsigned short 	cls_def_cnt;
-	unsigned short 	cat_def_cnt;
-	void  		*defs[1];	/* variable size */
+    unsigned long     sel_ref_cnt;
+    SEL         *refs;        
+    unsigned short     cls_def_cnt;
+    unsigned short     cat_def_cnt;
+    void          *defs[1];    /* variable size */
 };
 
 typedef struct objc_module *Module;
 
 struct objc_module {
-	unsigned long	version;
-	unsigned long	size;
-	const char	*name;
-	Symtab 		symtab;	
+    unsigned long    version;
+    unsigned long    size;
+    const char    *name;
+    Symtab         symtab;    
 };
 
 struct objc_super {
-	id receiver;
-	//Class class;
+    id receiver;
+    //Class class;
     Class pclass;
 };
 
@@ -88,19 +88,19 @@ OBJC_EXPORT void objc_msgSendv_stret(void * stretAddr, id self, SEL op, unsigned
     getting all the classes in the application...
     
     int objc_getClassList(buffer, bufferLen)
-	classes is an array of Class values (which are pointers)
-		which will be filled by the function; if this
-		argument is NULL, no copying is done, only the
-		return value is returned
-	bufferLen is the number of Class values the given buffer
-		can hold; if the buffer is not large enough to
-		hold all the classes, the buffer is filled to
-		the indicated capacity with some arbitrary subset
-		of the known classes, which could be different
-		from call to call
-	returns the number of classes, which is the number put
-		in the buffer if the buffer was large enough,
-		or the length the buffer should have been
+    classes is an array of Class values (which are pointers)
+        which will be filled by the function; if this
+        argument is NULL, no copying is done, only the
+        return value is returned
+    bufferLen is the number of Class values the given buffer
+        can hold; if the buffer is not large enough to
+        hold all the classes, the buffer is filled to
+        the indicated capacity with some arbitrary subset
+        of the known classes, which could be different
+        from call to call
+    returns the number of classes, which is the number put
+        in the buffer if the buffer was large enough,
+        or the length the buffer should have been
 
     int numClasses = 0, newNumClasses = objc_getClassList(NULL, 0);
     Class *classes = NULL;
@@ -132,15 +132,15 @@ OBJC_EXPORT void objc_setMultithreaded (BOOL flag);
 
 /* overriding the default object allocation and error handling routines */
 
-OBJC_EXPORT id	(*_alloc)(Class, unsigned int);
-OBJC_EXPORT id	(*_copy)(id, unsigned int);
-OBJC_EXPORT id	(*_realloc)(id, unsigned int);
-OBJC_EXPORT id	(*_dealloc)(id);
-OBJC_EXPORT id	(*_zoneAlloc)(Class, unsigned int, void *);
-OBJC_EXPORT id	(*_zoneRealloc)(id, unsigned int, void *);
-OBJC_EXPORT id	(*_zoneCopy)(id, unsigned int, void *);
+OBJC_EXPORT id    (*_alloc)(Class, unsigned int);
+OBJC_EXPORT id    (*_copy)(id, unsigned int);
+OBJC_EXPORT id    (*_realloc)(id, unsigned int);
+OBJC_EXPORT id    (*_dealloc)(id);
+OBJC_EXPORT id    (*_zoneAlloc)(Class, unsigned int, void *);
+OBJC_EXPORT id    (*_zoneRealloc)(id, unsigned int, void *);
+OBJC_EXPORT id    (*_zoneCopy)(id, unsigned int, void *);
 
-OBJC_EXPORT void	(*_error)(id, const char *, va_list);
+OBJC_EXPORT void    (*_error)(id, const char *, va_list);
 
 
 #endif /* _OBJC_RUNTIME_H_ */

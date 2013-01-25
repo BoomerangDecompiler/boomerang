@@ -1,20 +1,20 @@
 struct nlist {
-	union {
-		char      *n_name;   /* for use when in-core */
-		long       n_strx;   /* index into file string table */
-	} n_un;
-	unsigned char  n_type;   /* type flag; see below */
-	unsigned char  n_sect;   /* section number or NO_SECT */
-	short          n_desc;   /* see the header file stab.h */
-	unsigned       n_value;  /* value of this symbol table entry
-				    (or stab offset) */
+    union {
+        char      *n_name;   /* for use when in-core */
+        long       n_strx;   /* index into file string table */
+    } n_un;
+    unsigned char  n_type;   /* type flag; see below */
+    unsigned char  n_sect;   /* section number or NO_SECT */
+    short          n_desc;   /* see the header file stab.h */
+    unsigned       n_value;  /* value of this symbol table entry
+                    (or stab offset) */
 };
 
 #define N_STAB  0xe0  /* if any bits are set, this is a symbolic
-			 debugging entry */
+             debugging entry */
 #define N_TYPE  0x1e  /* mask for the type bits */
 #define N_EXT   0x01  /* external symbol bit; set for external
-			 symbols */
+             symbols */
 
 #define N_UNDF  0x0   /* undefined; n_sect == NO_SECT */
 #define N_ABS   0x2   /* absolute; n_sect == NO_SECT */

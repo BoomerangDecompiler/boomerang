@@ -25,8 +25,8 @@
 #define CALC_WIN2000    "test/windows/calc2000.exe"
 #define LPQ_WINDOWS     "test/windows/lpq.exe"
 #endif
-#define SWITCH_BORLAND	"test/windows/switch_borland.exe"
-#define ELFBINFILE		"lib/libElfBinaryFile.so"
+#define SWITCH_BORLAND    "test/windows/switch_borland.exe"
+#define ELFBINFILE        "lib/libElfBinaryFile.so"
 
 #include "string"
 #include "LoaderTest.h"
@@ -56,7 +56,7 @@ void LoaderTest::registerTests(CppUnit::TestSuite* suite) {
     MYTEST(testMicroDis1);
     MYTEST(testMicroDis2);
 
-	MYTEST(testElfHash);
+    MYTEST(testElfHash);
 }
 
 int LoaderTest::countTestCases () const
@@ -90,7 +90,7 @@ void LoaderTest::testSparcLoad () {
     std::ostringstream ost;
 
     // Load SPARC hello world
-	BinaryFileFactory bff;
+    BinaryFileFactory bff;
     BinaryFile* pBF = bff.Load(HELLO_SPARC);
     CPPUNIT_ASSERT(pBF != NULL);
     int n;
@@ -105,9 +105,9 @@ void LoaderTest::testSparcLoad () {
     pBF->UnLoad();
     // Note: the string below needs to have embedded tabs. Edit with caution!
     std::string expected("Number of sections = 29\r\n\t"
-        ".interp	.stab.indexstr");
+        ".interp    .stab.indexstr");
     CPPUNIT_ASSERT_EQUAL(expected, ost.str());
-	bff.UnLoad();
+    bff.UnLoad();
 }
 
 /*==============================================================================
@@ -118,7 +118,7 @@ void LoaderTest::testPentiumLoad () {
     std::ostringstream ost;
 
     // Load Pentium hello world
-	BinaryFileFactory bff;
+    BinaryFileFactory bff;
     BinaryFile* pBF = bff.Load(HELLO_PENTIUM);
     CPPUNIT_ASSERT(pBF != NULL);
     int n;
@@ -133,11 +133,11 @@ void LoaderTest::testPentiumLoad () {
     // Note: the string below needs to have embedded tabs. Edit with caution!
     // (And slightly different string to the sparc test, e.g. rel vs rela)
     std::string expected("Number of sections = 34\r\n\t"
-        ".interp	.strtab");
+        ".interp    .strtab");
 
 
     CPPUNIT_ASSERT_EQUAL(expected, ost.str());
-	bff.UnLoad();
+    bff.UnLoad();
 }
 
 /*==============================================================================
@@ -148,7 +148,7 @@ void LoaderTest::testHppaLoad () {
     std::ostringstream ost;
 
     // Load HPPA hello world
-	BinaryFileFactory bff;
+    BinaryFileFactory bff;
     BinaryFile* pBF = bff.Load(HELLO_HPPA);
     CPPUNIT_ASSERT(pBF != NULL);
     int n;
@@ -162,9 +162,9 @@ void LoaderTest::testHppaLoad () {
     pBF->UnLoad();
     // Note: the string below needs to have embedded tabs. Edit with caution!
     std::string expected("Number of sections = 4\r\n"
-        "$HEADER$	$TEXT$	$DATA$	$BSS$	");
+        "$HEADER$    $TEXT$    $DATA$    $BSS$    ");
     CPPUNIT_ASSERT_EQUAL(expected, ost.str());
-	bff.UnLoad();
+    bff.UnLoad();
 }
 
 /*==============================================================================
@@ -175,7 +175,7 @@ void LoaderTest::testPalmLoad () {
     std::ostringstream ost;
 
     // Load Palm Starter.prc
-	BinaryFileFactory bff;
+    BinaryFileFactory bff;
     BinaryFile* pBF = bff.Load(STARTER_PALM);
     CPPUNIT_ASSERT(pBF != NULL);
     int n;
@@ -189,10 +189,10 @@ void LoaderTest::testPalmLoad () {
     pBF->UnLoad();
     // Note: the string below needs to have embedded tabs. Edit with caution!
     std::string expected("Number of sections = 8\r\n"
-        "code1	MBAR1000	tFRM1000	Talt1001	"
-        "data0	code0	tAIN1000	tver1000	");
+        "code1    MBAR1000    tFRM1000    Talt1001    "
+        "data0    code0    tAIN1000    tver1000    ");
     CPPUNIT_ASSERT_EQUAL(expected, ost.str());
-	bff.UnLoad();
+    bff.UnLoad();
 }
 
 /*==============================================================================
@@ -204,7 +204,7 @@ void LoaderTest::testWinLoad () {
 
 #if 0 /* FIXME: these tests should use non-proprietary programs */
     // Load Windows program calc.exe
-	BinaryFileFactory bff;
+    BinaryFileFactory bff;
     BinaryFile* pBF = bff.Load(CALC_WINDOWS);
     CPPUNIT_ASSERT(pBF != NULL);
     int n;
@@ -218,7 +218,7 @@ void LoaderTest::testWinLoad () {
 
     // Note: the string below needs to have embedded tabs. Edit with caution!
     std::string expected("Number of sections = 5\r\n"
-        ".text	.rdata	.data	.rsrc	.reloc	");
+        ".text    .rdata    .data    .rsrc    .reloc    ");
     std::string actual(ost.str());
     CPPUNIT_ASSERT_EQUAL(expected, actual);
 
@@ -238,43 +238,43 @@ void LoaderTest::testWinLoad () {
     ADDRESS expectedAddr = 0x1292060;
     CPPUNIT_ASSERT_EQUAL(expectedAddr, a);
     pBF->UnLoad();
-	bff.UnLoad();
+    bff.UnLoad();
 
     // Test loading the "new style" exes, as found in winXP etc
     pBF = bff.Load(CALC_WINXP);
     CPPUNIT_ASSERT(pBF != NULL);
     addr = pBF->GetMainEntryPoint();
-	std::ostringstream ost1;
-	ost1 << std::hex << addr;
-	actual = ost1.str();
-	expected = "1001f51";
+    std::ostringstream ost1;
+    ost1 << std::hex << addr;
+    actual = ost1.str();
+    expected = "1001f51";
     CPPUNIT_ASSERT_EQUAL(expected, actual);
     pBF->UnLoad();
-	bff.UnLoad();
+    bff.UnLoad();
 
     // Test loading the calc.exe found in Windows 2000 (more NT based)
     pBF = bff.Load(CALC_WIN2000);
     CPPUNIT_ASSERT(pBF != NULL);
-	expected = "1001680";
+    expected = "1001680";
     addr = pBF->GetMainEntryPoint();
-	std::ostringstream ost2;
-	ost2 << std::hex << addr;
-	actual = ost2.str();
+    std::ostringstream ost2;
+    ost2 << std::hex << addr;
+    actual = ost2.str();
     CPPUNIT_ASSERT_EQUAL(expected, actual);
     pBF->UnLoad();
-	bff.UnLoad();
+    bff.UnLoad();
 
     // Test loading the lpq.exe program - console mode PE file
     pBF = bff.Load(LPQ_WINDOWS);
     CPPUNIT_ASSERT(pBF != NULL);
     addr = pBF->GetMainEntryPoint();
-	std::ostringstream ost3;
-	ost3 << std::hex << addr;
-	actual = ost3.str();
-	expected = "18c1000";
+    std::ostringstream ost3;
+    ost3 << std::hex << addr;
+    actual = ost3.str();
+    expected = "18c1000";
     CPPUNIT_ASSERT_EQUAL(expected, actual);
     pBF->UnLoad();
-	bff.UnLoad();
+    bff.UnLoad();
 #endif
 
     // Borland
@@ -571,14 +571,14 @@ void LoaderTest::testMicroDis1 () {
         int expected = lengths[i++];
         if (expected != size) {
             std::cout << "At offset 0x" << std::hex <<
-				(ADDRESS)p - (ADDRESS)pent_hello_text << " ("
-				<< (int)*((unsigned char*)p) << " "
-				<< (int)*((unsigned char*)p+1) << " " 
-				<< (int)*((unsigned char*)p+2) << " " 
-				<< (int)*((unsigned char*)p+3) << " " 
-				<< ") expected " <<
-				std::dec << expected << ", actual " << size << std::endl;
-			CPPUNIT_ASSERT_EQUAL(expected, size);
+                (ADDRESS)p - (ADDRESS)pent_hello_text << " ("
+                << (int)*((unsigned char*)p) << " "
+                << (int)*((unsigned char*)p+1) << " " 
+                << (int)*((unsigned char*)p+2) << " " 
+                << (int)*((unsigned char*)p+3) << " " 
+                << ") expected " <<
+                std::dec << expected << ", actual " << size << std::endl;
+            CPPUNIT_ASSERT_EQUAL(expected, size);
         }
         p = (void*) ((char*)p + size);
         totalSize += size;
@@ -588,29 +588,29 @@ void LoaderTest::testMicroDis1 () {
 
 void LoaderTest::testMicroDis2 () {
 
-	// Now a special test:
-	// 8048910:  0f be 00			movsbl (%eax),%eax
-	// 8048913:  0f bf 00			movswl (%eax),%eax
+    // Now a special test:
+    // 8048910:  0f be 00            movsbl (%eax),%eax
+    // 8048913:  0f bf 00            movswl (%eax),%eax
 
-	unsigned char movsbl[3] = {0x0f, 0xbe, 0x00};
-	unsigned char movswl[3] = {0x0f, 0xbf, 0x00};
-	int size = microX86Dis(movsbl);
-	CPPUNIT_ASSERT_EQUAL(3, size);
-	size = microX86Dis(movswl);
-	CPPUNIT_ASSERT_EQUAL(3, size);
+    unsigned char movsbl[3] = {0x0f, 0xbe, 0x00};
+    unsigned char movswl[3] = {0x0f, 0xbf, 0x00};
+    int size = microX86Dis(movsbl);
+    CPPUNIT_ASSERT_EQUAL(3, size);
+    size = microX86Dis(movswl);
+    CPPUNIT_ASSERT_EQUAL(3, size);
 }
 
 typedef unsigned (*elfHashFcn)(const char*);
 void LoaderTest::testElfHash () {
 #ifndef _WIN32
-	void* dlHandle = dlopen(ELFBINFILE, RTLD_LAZY);
-	CPPUNIT_ASSERT(dlHandle);
-	// Use the handle to find the "elf_hash" function
-	elfHashFcn pFcn = (elfHashFcn) dlsym(dlHandle, "elf_hash");
-	CPPUNIT_ASSERT(pFcn);
-	// Call the function with the string "main
-	unsigned act = (*pFcn)("main");
-	unsigned exp = 0x737fe;
-	CPPUNIT_ASSERT_EQUAL(exp, act);
+    void* dlHandle = dlopen(ELFBINFILE, RTLD_LAZY);
+    CPPUNIT_ASSERT(dlHandle);
+    // Use the handle to find the "elf_hash" function
+    elfHashFcn pFcn = (elfHashFcn) dlsym(dlHandle, "elf_hash");
+    CPPUNIT_ASSERT(pFcn);
+    // Call the function with the string "main
+    unsigned act = (*pFcn)("main");
+    unsigned exp = 0x737fe;
+    CPPUNIT_ASSERT_EQUAL(exp, act);
 #endif
 }

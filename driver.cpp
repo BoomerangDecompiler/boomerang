@@ -9,9 +9,9 @@
  */
 
 /*======================================================================================================
- * FILE:		driver.cpp
- * OVERVIEW:	Important initialisation that has to happen at the start of main()
- *				Also contains main(), so it can be the only file different between boomerang and bigtest
+ * FILE:        driver.cpp
+ * OVERVIEW:    Important initialisation that has to happen at the start of main()
+ *                Also contains main(), so it can be the only file different between boomerang and bigtest
  *======================================================================================================*/
 
 /*
@@ -21,41 +21,41 @@
  */
 
 #include "boomerang.h"
-//#define GC_DEBUG 1		// Uncomment to debug the garbage collector
+//#define GC_DEBUG 1        // Uncomment to debug the garbage collector
 #include "gc.h"
 
-void init_dfa();			// Prototypes for
-void init_sslparser();		// various initialisation functions
-void init_basicblock();		// for garbage collection safety
+void init_dfa();            // Prototypes for
+void init_sslparser();        // various initialisation functions
+void init_basicblock();        // for garbage collection safety
 
 #ifndef NO_CMDLINE_MAIN
 int main(int argc, const char* argv[]) {
 
-	// Call the various initialisation functions for safe garbage collection
-	init_dfa();
-	init_sslparser();
-	init_basicblock();
+    // Call the various initialisation functions for safe garbage collection
+    init_dfa();
+    init_sslparser();
+    init_basicblock();
 
-	return Boomerang::get()->commandLine(argc, argv);
+    return Boomerang::get()->commandLine(argc, argv);
 }
 #endif
 
 #ifndef NO_NEW_OR_DELETE_OPERATORS
 #ifndef NO_GARBAGE_COLLECTOR
 /* This makes sure that the garbage collector sees all allocations, even those
-	that we can't be bothered collecting, especially standard STL objects */
+        that we can't be bothered collecting, especially standard STL objects */
 void* operator new(size_t n) {
 #ifdef DONT_COLLECT_STL
-	return GC_malloc_uncollectable(n);	// Don't collect, but mark
+    return GC_malloc_uncollectable(n);    // Don't collect, but mark
 #else
-	return GC_malloc(n);				// Collect everything
+    return GC_malloc(n);                // Collect everything
 #endif
 }
 
 void operator delete(void* p) {
 #ifdef DONT_COLLECT_STL
-	GC_free(p); // Important to call this if you call GC_malloc_uncollectable
-	// #else do nothing!
+    GC_free(p); // Important to call this if you call GC_malloc_uncollectable
+    // #else do nothing!
 #endif
 }
 #endif

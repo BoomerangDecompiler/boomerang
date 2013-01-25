@@ -26,16 +26,16 @@
 #ifndef YY_USE_CLASS
 #define YY_USE_CLASS
 #endif
-#else	/* ! __cplusplus */
+#else    /* ! __cplusplus */
 #ifdef __STDC__
 #ifdef __GNUC__
 #else
-#endif	/* __GNUC__ */
+#endif    /* __GNUC__ */
 #ifndef YY_USE_PROTOS
 #define YY_USE_PROTOS
 #endif
-#endif	/* __STDC__ */
-#endif	/* ! __cplusplus */
+#endif    /* __STDC__ */
+#endif    /* ! __cplusplus */
 /*********************************************/
 /* COMPILER DEPENDENT   MACROS               */
 /*********************************************/
@@ -52,13 +52,13 @@
 
 
 
-/* % here is the declaration from section1 %header{  */ 
+/* % here is the declaration from section1 %header{  */
 #line 21 "ansi-c.l"
 #include <stdio.h>
 #include "ansi-c-parser.h"
 // For some reason, MSVC 5.00 complains about use of undefined type RTL a lot
 #if defined(_MSC_VER) && _MSC_VER <= 1100
-#include "signature.h"		// For MSVC 5.00
+#include "signature.h"        // For MSVC 5.00
 #include "rtl.h"
 #endif
 #define MAX_LINE 1024      // the longest line
@@ -71,20 +71,20 @@
 #line 34 "ansi-c.l"
 #define YY_AnsiCScanner_INPUT_CODE  if (in.eof()) {  \
     result = 0; \
-} else { \
+    } else { \
     in.read(buffer, max_size); \
     result=in.gcount(); \
-} \
-return result;
+    } \
+    return result;
 #line 41 "ansi-c.l"
 #define YY_AnsiCScanner_MEMBERS  \
-public: \
+    public: \
     int theLine;        /* the current line number */\
     char lineBuf[MAX_LINE]; /* the current line */ \
     bool traceLines;    /* echo each lines as it is scanned */ \
     std::istream &in; \
     int column; \
-private: \
+    private: \
     void count(); \
     void comment(); \
     void commentEOL(); \
@@ -98,7 +98,7 @@ private: \
 #ifdef YY_AnsiCScanner_IOSTREAM
 #include <iostream.h>
 #define YY_AnsiCScanner_IFILE  istream
-#define YY_AnsiCScanner_OFILE ostream 
+#define YY_AnsiCScanner_OFILE ostream
 #define YY_AnsiCScanner_ERRFILE cerr
 
 #ifndef YY_AnsiCScanner_IFILE_DEFAULT
@@ -113,11 +113,11 @@ private: \
 #endif
 
 #ifndef YY_AnsiCScanner_IFILE
-#define YY_AnsiCScanner_IFILE FILE 
+#define YY_AnsiCScanner_IFILE FILE
 #endif
 
 #ifndef YY_AnsiCScanner_OFILE
-#define YY_AnsiCScanner_OFILE FILE 
+#define YY_AnsiCScanner_OFILE FILE
 #endif
 
 #ifndef YY_AnsiCScanner_ERRFILE
@@ -152,7 +152,7 @@ private: \
 #define YY_AnsiCScanner_LEX_RETURN int
 #else
 #ifndef YY_AnsiCScanner_LEX_DEFINED
-#define YY_AnsiCScanner_LEX_DEFINED 
+#define YY_AnsiCScanner_LEX_DEFINED
 #endif
 #endif
 
@@ -160,19 +160,19 @@ private: \
 #define YY_AnsiCScanner_LEX yylex
 #else
 #ifndef YY_AnsiCScanner_LEX_DEFINED
-#define YY_AnsiCScanner_LEX_DEFINED 
+#define YY_AnsiCScanner_LEX_DEFINED
 #endif
 #endif
 
 #ifndef YY_AnsiCScanner_LEX_PARAM
 #ifndef YY_USE_PROTOS
-#define YY_AnsiCScanner_LEX_PARAM 
+#define YY_AnsiCScanner_LEX_PARAM
 #else
 #define YY_AnsiCScanner_LEX_PARAM void
 #endif
 #else
 #ifndef YY_AnsiCScanner_LEX_DEFINED
-#define YY_AnsiCScanner_LEX_DEFINED 
+#define YY_AnsiCScanner_LEX_DEFINED
 #endif
 #endif
 
@@ -180,7 +180,7 @@ private: \
 #define YY_AnsiCScanner_LEX_PARAM_DEF
 #else
 #ifndef YY_AnsiCScanner_LEX_DEFINED
-#define YY_AnsiCScanner_LEX_DEFINED 
+#define YY_AnsiCScanner_LEX_DEFINED
 #endif
 #endif
 
@@ -332,7 +332,7 @@ YY_AnsiCScanner_LEX_PARAM_DEF
 #define YY_AnsiCScanner_INHERIT
 #endif
 #ifndef YY_AnsiCScanner_MEMBERS
-#define YY_AnsiCScanner_MEMBERS 
+#define YY_AnsiCScanner_MEMBERS
 #endif
 #ifndef YY_AnsiCScanner_CONSTRUCTOR_PARAM
 #define YY_AnsiCScanner_CONSTRUCTOR_PARAM
@@ -350,64 +350,64 @@ typedef struct yy_buffer_state *YY_BUFFER_STATE;
 
 class YY_AnsiCScanner_CLASS YY_AnsiCScanner_INHERIT
 {
- private:/* data */
- YY_AnsiCScanner_CHAR  *yy_c_buf_p;
- YY_AnsiCScanner_CHAR  yy_hold_char;
- int yy_n_chars;
- int yy_init;
- int yy_start;
- int yy_did_buffer_switch_on_eof;
- private: /* functions */
- void yy_initialize();
- int input();
- int yyinput() {return input();};
- int yy_get_next_buffer();
- void yyunput( YY_AnsiCScanner_CHAR  c, YY_AnsiCScanner_CHAR  *buf_ptr );
- /* use long instead of yy_state_type because it is undef */
- long yy_get_previous_state_ ( void );
- long yy_try_NUL_trans_  ( long current_state_ );
- protected:/* non virtual */
- YY_BUFFER_STATE YY_AnsiCScanner_CURRENT_BUFFER;
- void YY_AnsiCScanner_RESTART ( YY_AnsiCScanner_IFILE *input_file );
- void YY_AnsiCScanner_SWITCH_TO_BUFFER( YY_BUFFER_STATE new_buffer );
- void YY_AnsiCScanner_LOAD_BUFFER_STATE( void );
- YY_BUFFER_STATE YY_AnsiCScanner_CREATE_BUFFER( YY_AnsiCScanner_IFILE *file, int size );
- void YY_AnsiCScanner_DELETE_BUFFER( YY_BUFFER_STATE b );
- void YY_AnsiCScanner_INIT_BUFFER( YY_BUFFER_STATE b, YY_AnsiCScanner_IFILE *file );
- protected: /* virtual */
- virtual void YY_AnsiCScanner_ECHO()
+private:/* data */
+    YY_AnsiCScanner_CHAR  *yy_c_buf_p;
+    YY_AnsiCScanner_CHAR  yy_hold_char;
+    int yy_n_chars;
+    int yy_init;
+    int yy_start;
+    int yy_did_buffer_switch_on_eof;
+private: /* functions */
+    void yy_initialize();
+    int input();
+    int yyinput() {return input();};
+    int yy_get_next_buffer();
+    void yyunput( YY_AnsiCScanner_CHAR  c, YY_AnsiCScanner_CHAR  *buf_ptr );
+    /* use long instead of yy_state_type because it is undef */
+    long yy_get_previous_state_ ( void );
+    long yy_try_NUL_trans_  ( long current_state_ );
+protected:/* non virtual */
+    YY_BUFFER_STATE YY_AnsiCScanner_CURRENT_BUFFER;
+    void YY_AnsiCScanner_RESTART ( YY_AnsiCScanner_IFILE *input_file );
+    void YY_AnsiCScanner_SWITCH_TO_BUFFER( YY_BUFFER_STATE new_buffer );
+    void YY_AnsiCScanner_LOAD_BUFFER_STATE( void );
+    YY_BUFFER_STATE YY_AnsiCScanner_CREATE_BUFFER( YY_AnsiCScanner_IFILE *file, int size );
+    void YY_AnsiCScanner_DELETE_BUFFER( YY_BUFFER_STATE b );
+    void YY_AnsiCScanner_INIT_BUFFER( YY_BUFFER_STATE b, YY_AnsiCScanner_IFILE *file );
+protected: /* virtual */
+    virtual void YY_AnsiCScanner_ECHO()
 #ifdef YY_AnsiCScanner_ECHO_PURE
-  =0
-#endif
-  ;
- virtual int  YY_AnsiCScanner_INPUT(char  *buf,int &result,int max_size)
+    =0
+ #endif
+     ;
+    virtual int  YY_AnsiCScanner_INPUT(char  *buf,int &result,int max_size)
 #ifdef YY_AnsiCScanner_INPUT_PURE
-  =0
-#endif
-  ;
- virtual void  YY_AnsiCScanner_FATAL_ERROR(char *msg)
+    =0
+ #endif
+     ;
+    virtual void  YY_AnsiCScanner_FATAL_ERROR(char *msg)
 #ifdef YY_AnsiCScanner_FATAL_ERROR_PURE
-  =0
-#endif
-  ;
- virtual int  YY_AnsiCScanner_WRAP()
+    =0
+ #endif
+     ;
+    virtual int  YY_AnsiCScanner_WRAP()
 #ifdef YY_AnsiCScanner_WRAP_PURE
-  =0
-#endif
-  ;
- public:
- YY_AnsiCScanner_CHAR  *YY_AnsiCScanner_TEXT;
- int YY_AnsiCScanner_LENG;
- YY_AnsiCScanner_IFILE *YY_AnsiCScanner_IN;
- YY_AnsiCScanner_OFILE *YY_AnsiCScanner_OUT;
- YY_AnsiCScanner_LEX_RETURN YY_AnsiCScanner_LEX ( YY_AnsiCScanner_LEX_PARAM);
- YY_AnsiCScanner_CLASS(YY_AnsiCScanner_CONSTRUCTOR_PARAM) ;
- virtual ~YY_AnsiCScanner_CLASS() ;
+    =0
+ #endif
+     ;
+public:
+    YY_AnsiCScanner_CHAR  *YY_AnsiCScanner_TEXT;
+    int YY_AnsiCScanner_LENG;
+    YY_AnsiCScanner_IFILE *YY_AnsiCScanner_IN;
+    YY_AnsiCScanner_OFILE *YY_AnsiCScanner_OUT;
+    YY_AnsiCScanner_LEX_RETURN YY_AnsiCScanner_LEX ( YY_AnsiCScanner_LEX_PARAM);
+    YY_AnsiCScanner_CLASS(YY_AnsiCScanner_CONSTRUCTOR_PARAM) ;
+    virtual ~YY_AnsiCScanner_CLASS() ;
 #if YY_AnsiCScanner_DEBUG != 0
- int YY_AnsiCScanner_DEBUG_FLAG;
+    int YY_AnsiCScanner_DEBUG_FLAG;
 #endif
- public: /* added members */
- YY_AnsiCScanner_MEMBERS 
+public: /* added members */
+    YY_AnsiCScanner_MEMBERS
 };
 #endif
 
@@ -415,7 +415,7 @@ class YY_AnsiCScanner_CLASS YY_AnsiCScanner_INHERIT
 
 /* declaration of externs for public use of yylex scanner */
 
-/* % here is the declaration from section2 %header{ */ 
+/* % here is the declaration from section2 %header{ */
 #line 177 "ansi-c.l"
 #endif
 #line 375 "//usr/local/lib/flexskel.h"

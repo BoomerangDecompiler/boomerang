@@ -27,6 +27,6 @@ class LoaderTest : public CppUnit::TestCase {
     void testMicroDis1();
     void testMicroDis2();
 
-	void testElfHash();
+    void testElfHash();
 };
 

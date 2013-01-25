@@ -19,7 +19,7 @@
     not use dynamic linking, but it is possible that some files may
     have debug symbols (in Microsoft Codeview or Borland formats),
     and these may be implemented in the future. The debug info may
-    even be exposed as another pseudo section 
+    even be exposed as another pseudo section
  * 16 Mar 01 - Mike: Added the needed definitions of new virtual functions
  * 17 Mar 01 - Mike: Removed EXE_RELOCATION (no longer fake a PSP)
  * 16 Apr 01 - Brian: Moved definition of the LH macro to BinaryFile.h.
@@ -50,55 +50,55 @@ typedef struct {            /*        PSP structure                 */
 } PSP;
 
 typedef struct {            /*      EXE file header          */
-     Byte   sigLo;          /* .EXE signature: 0x4D 0x5A     */
-     Byte   sigHi;
-     SWord  lastPageSize;   /* Size of the last page         */
-     SWord  numPages;       /* Number of pages in the file   */
-     SWord  numReloc;       /* Number of relocation items    */
-     SWord  numParaHeader;  /* # of paragraphs in the header */
-     SWord  minAlloc;       /* Minimum number of paragraphs  */
-     SWord  maxAlloc;       /* Maximum number of paragraphs  */
-     SWord  initSS;         /* Segment displacement of stack */
-     SWord  initSP;         /* Contents of SP at entry       */
-     SWord  checkSum;       /* Complemented checksum         */
-     SWord  initIP;         /* Contents of IP at entry       */
-     SWord  initCS;         /* Segment displacement of code  */
-     SWord  relocTabOffset; /* Relocation table offset       */
-     SWord  overlayNum;     /* Overlay number                */
+    Byte   sigLo;          /* .EXE signature: 0x4D 0x5A     */
+    Byte   sigHi;
+    SWord  lastPageSize;   /* Size of the last page         */
+    SWord  numPages;       /* Number of pages in the file   */
+    SWord  numReloc;       /* Number of relocation items    */
+    SWord  numParaHeader;  /* # of paragraphs in the header */
+    SWord  minAlloc;       /* Minimum number of paragraphs  */
+    SWord  maxAlloc;       /* Maximum number of paragraphs  */
+    SWord  initSS;         /* Segment displacement of stack */
+    SWord  initSP;         /* Contents of SP at entry       */
+    SWord  checkSum;       /* Complemented checksum         */
+    SWord  initIP;         /* Contents of IP at entry       */
+    SWord  initCS;         /* Segment displacement of code  */
+    SWord  relocTabOffset; /* Relocation table offset       */
+    SWord  overlayNum;     /* Overlay number                */
 } exeHeader;
 
 class ExeBinaryFile : public BinaryFile
 {
 public:
-                ExeBinaryFile();                // Default constructor
-  virtual void  UnLoad();                       // Unload the image
-  virtual bool  Open(const char* sName);        // Open the file for r/w; pv
-  virtual void  Close();                        // Close file opened with Open()
-  virtual bool  PostLoad(void* handle);         // For archive files only
-  virtual LOAD_FMT GetFormat() const;           // Get format (i.e. LOADFMT_EXE)
-  virtual MACHINE GetMachine() const;           // Get machine (i.e. MACHINE_PENTIUM)
-  virtual const char *getFilename() const { return m_pFileName; }
+    ExeBinaryFile();                // Default constructor
+    virtual void  UnLoad();                       // Unload the image
+    virtual bool  Open(const char* sName);        // Open the file for r/w; pv
+    virtual void  Close();                        // Close file opened with Open()
+    virtual bool  PostLoad(void* handle);         // For archive files only
+    virtual LOAD_FMT GetFormat() const;           // Get format (i.e. LOADFMT_EXE)
+    virtual MACHINE GetMachine() const;           // Get machine (i.e. MACHINE_PENTIUM)
+    virtual const char *getFilename() const { return m_pFileName; }
 
-  virtual bool isLibrary() const;
-  virtual std::list<const char *> getDependencyList();
-  virtual ADDRESS getImageBase();
-  virtual size_t getImageSize();
+    virtual bool isLibrary() const;
+    virtual std::list<const char *> getDependencyList();
+    virtual ADDRESS getImageBase();
+    virtual size_t getImageSize();
 
-  virtual char* SymbolByAddr(ADDRESS a);
+    virtual char* SymbolByAddr(ADDRESS a);
 
     // Analysis functions
     virtual std::list<SectionInfo*>& GetEntryPoints(const char* pEntry = "main");
     virtual ADDRESS GetMainEntryPoint();
     virtual ADDRESS GetEntryPoint();
 
-//
-//  --  --  --  --  --  --  --  --  --  --  --
-//
-                // Internal information
+    //
+    //  --  --  --  --  --  --  --  --  --  --  --
+    //
+    // Internal information
     // Dump headers, etc
-virtual bool    DisplayDetails(const char* fileName, FILE* f = stdout);
+    virtual bool    DisplayDetails(const char* fileName, FILE* f = stdout);
 
-  protected:
+protected:
     virtual bool  RealLoad(const char* sName); // Load the file; pure virtual
 private:
 

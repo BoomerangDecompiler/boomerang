@@ -1,5 +1,5 @@
 /*==============================================================================
- * FILE:	   testAll.cc
+ * FILE:       testAll.cc
  * OVERVIEW:   Command line test of all of Boomerang
  *============================================================================*/
 /*
@@ -34,39 +34,39 @@
 int main(int argc, char** argv)
 {
 //std::cerr << "Prog at " << std::hex << &prog << std::endl;
-	CppUnit::TestSuite suite;
+    CppUnit::TestSuite suite;
 
-	ExpTest	 expt("Exp Test");
-	ProgTest progt("Prog Test");
-	ProcTest proct("Proc Test");
-	RtlTest rtlt("Rtl Test");
-	ParserTest parsert("SSL Parser Test");
-	TypeTest typet("Type Test");
-	FrontSparcTest fst("SPARC Frontend Test");
-//	  FrontendTest fet("FrontendTest");
-	FrontPentTest fpt("Pentium Frontend Test");
-	CTest ct("C Parser Test");
-	StatementTest stt("Statement Test");
-	CfgTest cfgt("Cfg Test");
-	DfaTest dfat("Dfa Test");
+    ExpTest     expt("Exp Test");
+    ProgTest progt("Prog Test");
+    ProcTest proct("Proc Test");
+    RtlTest rtlt("Rtl Test");
+    ParserTest parsert("SSL Parser Test");
+    TypeTest typet("Type Test");
+    FrontSparcTest fst("SPARC Frontend Test");
+//      FrontendTest fet("FrontendTest");
+    FrontPentTest fpt("Pentium Frontend Test");
+    CTest ct("C Parser Test");
+    StatementTest stt("Statement Test");
+    CfgTest cfgt("Cfg Test");
+    DfaTest dfat("Dfa Test");
 
-	expt.registerTests(&suite);
-	progt.registerTests(&suite);
-	proct.registerTests(&suite);
-	rtlt.registerTests(&suite);
-	parsert.registerTests(&suite);
-	typet.registerTests(&suite);
-	fst.registerTests(&suite);
-	fpt.registerTests(&suite);
-	ct.registerTests(&suite);
-	stt.registerTests(&suite);
-	cfgt.registerTests(&suite);
-	dfat.registerTests(&suite);
+    expt.registerTests(&suite);
+    progt.registerTests(&suite);
+    proct.registerTests(&suite);
+    rtlt.registerTests(&suite);
+    parsert.registerTests(&suite);
+    typet.registerTests(&suite);
+    fst.registerTests(&suite);
+    fpt.registerTests(&suite);
+    ct.registerTests(&suite);
+    stt.registerTests(&suite);
+    cfgt.registerTests(&suite);
+    dfat.registerTests(&suite);
 
-	CppUnit::TextTestResult res;
+    CppUnit::TextTestResult res;
 
-	suite.run( &res );
-	std::cout << res << std::endl;
+    suite.run( &res );
+    std::cout << res << std::endl;
 
-	return 0;
+    return 0;
 }

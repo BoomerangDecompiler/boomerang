@@ -41,23 +41,23 @@ pthread_create_type *orig = NULL;
 
 extern "C" void *pthread_create(void *a, void *b, void *c, void *d)
 {
-	if (c != (void*)GC_start_routine)
-		return GC_pthread_create(a, b, c, d);
-	else {
-		if (pthread_lib == NULL) {
-			pthread_lib = dlopen("libpthread.so.0", RTLD_LAZY);
-			if (pthread_lib == NULL) {
-				printf("cannot dynamically open pthreads %s.\n", dlerror());
-				exit(1);
-			}
-			orig = (pthread_create_type*)dlsym(pthread_lib, "pthread_create");
-			if (orig == NULL) {
-				printf("cannot find symbol pthread_create %s.\n", dlerror());
-				exit(1);
-			}
-		}
-		return (*orig)(a, b, c, d);
-	}
+    if (c != (void*)GC_start_routine)
+        return GC_pthread_create(a, b, c, d);
+    else {
+        if (pthread_lib == NULL) {
+            pthread_lib = dlopen("libpthread.so.0", RTLD_LAZY);
+            if (pthread_lib == NULL) {
+                printf("cannot dynamically open pthreads %s.\n", dlerror());
+                exit(1);
+            }
+            orig = (pthread_create_type*)dlsym(pthread_lib, "pthread_create");
+            if (orig == NULL) {
+                printf("cannot find symbol pthread_create %s.\n", dlerror());
+                exit(1);
+            }
+        }
+        return (*orig)(a, b, c, d);
+    }
 }
 
 

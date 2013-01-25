@@ -25,11 +25,11 @@ double tmpD9;
 int target_endianness = 0;
 
 #define PENTIUMSETUP() { esp = malloc(65536); esp += 65536; \
-						 esp -= 4; *(int*)esp = (int)envp; \
-						 esp -= 4; *(int*)esp = (int)argv; \
-						 esp -= 4; *(int*)esp = (int)argc; \
-						 esp -= 4; *(int*)esp = 0; \
-					   }
+                         esp -= 4; *(int*)esp = (int)envp; \
+                         esp -= 4; *(int*)esp = (int)argv; \
+                         esp -= 4; *(int*)esp = (int)argc; \
+                         esp -= 4; *(int*)esp = 0; \
+                       }
 #define SPARCSETUP() { o6 = malloc(65536); o6 += 65400; }
 #define SUBFLAGS(x, y, r) ((x) - (y))
 #define ADDFLAGS(x, y, r) ((x) + (y))
@@ -41,23 +41,23 @@ int target_endianness = 0;
 #define SARFLAGS(x, y, r) ((y))
 
 #define ADDR(x) ((unsigned int)(x) >= start_data &&  \
-				 (unsigned int)(x) < start_data + data_size ?  \
-				 	(unsigned int)(x) - start_data + (unsigned int)data :  \
-				 (unsigned int)(x) >= start_rodata && \
-				 (unsigned int)(x) < start_rodata + rodata_size ? \
-				 (unsigned int)(x) - start_rodata + (unsigned int)rodata : \
-				 (unsigned int)(x) >= start_data1 && \
-				 (unsigned int)(x) < start_data1 + data1_size ? \
-				 (unsigned int)(x) - start_data1 + (unsigned int)data1 : \
-				 (x))
+                 (unsigned int)(x) < start_data + data_size ?  \
+                     (unsigned int)(x) - start_data + (unsigned int)data :  \
+                 (unsigned int)(x) >= start_rodata && \
+                 (unsigned int)(x) < start_rodata + rodata_size ? \
+                 (unsigned int)(x) - start_rodata + (unsigned int)rodata : \
+                 (unsigned int)(x) >= start_data1 && \
+                 (unsigned int)(x) < start_data1 + data1_size ? \
+                 (unsigned int)(x) - start_data1 + (unsigned int)data1 : \
+                 (x))
 #define MEMASSIGN(x, y) *(int*)(ADDR(x)) = (y)
 #define MEMOF(a) (source_endianness != target_endianness && \
-				    (a) != ADDR(a) ? \
-					(*(unsigned int*)ADDR(a) & 0xff000000) >> 24 | \
-					(*(unsigned int*)ADDR(a) & 0x00ff0000) >> 8  | \
-					(*(unsigned int*)ADDR(a) & 0x0000ff00) << 8  | \
-					(*(unsigned int*)ADDR(a) & 0x000000ff) << 24 \
-					: *(unsigned int*)(a))
+                    (a) != ADDR(a) ? \
+                    (*(unsigned int*)ADDR(a) & 0xff000000) >> 24 | \
+                    (*(unsigned int*)ADDR(a) & 0x00ff0000) >> 8  | \
+                    (*(unsigned int*)ADDR(a) & 0x0000ff00) << 8  | \
+                    (*(unsigned int*)ADDR(a) & 0x000000ff) << 24 \
+                    : *(unsigned int*)(a))
 #define FLOAT_MEMOF(x) (tmp = MEMOF(x), *(float*)&tmp)
 #define FLOAT_MEMASSIGN(x, y) *(float*)(ADDR(x)) = (y)
 #define DOUBLE_MEMOF(x) *(double*)(ADDR(x))

@@ -23,11 +23,11 @@
  */
 
 #include <assert.h>
-#if defined(_MSC_VER) && _MSC_VER <= 1200 
+#if defined(_MSC_VER) && _MSC_VER <= 1200
 #pragma warning(disable:4786)
-#endif 
+#endif
 #if defined(_MSC_VER) && _MSC_VER >= 1400
-#pragma warning(disable:4996)		// Warnings about e.g. _strdup deprecated in VS 2005
+#pragma warning(disable:4996)        // Warnings about e.g. _strdup deprecated in VS 2005
 #endif
 
 #include <string>
@@ -52,30 +52,30 @@
  * FUNCTION:      string::operator+(string, int)
  * OVERVIEW:      Append an int to a string
  * PARAMETERS:    s: the string to append to
- *				  i: the integer whose ascii representation is to be appended
+ *                  i: the integer whose ascii representation is to be appended
  * RETURNS:       A copy of the modified string
  *============================================================================*/
 std::string operator+(const std::string& s, int i)
 {
-	static char buf[50];
-	std::string ret(s);
+    static char buf[50];
+    std::string ret(s);
 
-	sprintf(buf,"%d",i);
-	return ret.append(buf);
+    sprintf(buf,"%d",i);
+    return ret.append(buf);
 }
 
 /*==============================================================================
  * FUNCTION:      initCapital
  * OVERVIEW:      Return a string the same as the input string, but with the
- *					first character capitalised
+ *                    first character capitalised
  * PARAMETERS:    s: the string to capitalise
  * RETURNS:       A copy of the modified string
  *============================================================================*/
 std::string initCapital(const std::string& s)
 {
-	std::string res(s);
+    std::string res(s);
     res[0] = toupper(res[0]);
-	return res;
+    return res;
 }
 
 /*==============================================================================
@@ -154,7 +154,7 @@ void upperStr(const char* s, char* d)
 {
     int len = strlen(s);
     for (int i=0; i < len; i++)
-       d[i] = toupper(s[i]);
+        d[i] = toupper(s[i]);
     d[len] = '\0';
 }
 
@@ -214,31 +214,31 @@ void escapeXMLChars(std::string &s)
 // Note: assumes a C or C++ back end...
 char* escapeStr(char* str) {
     std::ostringstream out;
-	char unescaped[]="ntvbrfa\"";
-	char escaped[]="\n\t\v\b\r\f\a\"";
-	bool escapedSucessfully;
+    char unescaped[]="ntvbrfa\"";
+    char escaped[]="\n\t\v\b\r\f\a\"";
+    bool escapedSucessfully;
 
-	// test each character
-	for(;*str;str++)
-	{
-		if(isprint((unsigned char)*str) && *str != '\"' ) {
-    		// it's printable, so just print it
-    		out << *str;
-		} else { // in fact, this shouldn't happen, except for "
-			// maybe it's a known escape sequence
-			escapedSucessfully=false;
-			for(int i=0;escaped[i] && !escapedSucessfully ;i++) {
-				if(*str == escaped[i]) {
-					out << "\\" << unescaped[i];
-					escapedSucessfully=true;
-      			}
-			}
-			if(!escapedSucessfully) {
- 				// it isn't so just use the \xhh escape
- 				out << "\\x" << std::hex << std::setfill('0') << std::setw(2) << (int)*str;
-				out << std::setfill(' ');
-			}
-		}
+    // test each character
+    for(;*str;str++)
+    {
+        if(isprint((unsigned char)*str) && *str != '\"' ) {
+            // it's printable, so just print it
+            out << *str;
+        } else { // in fact, this shouldn't happen, except for "
+            // maybe it's a known escape sequence
+            escapedSucessfully=false;
+            for(int i=0;escaped[i] && !escapedSucessfully ;i++) {
+                if(*str == escaped[i]) {
+                    out << "\\" << unescaped[i];
+                    escapedSucessfully=true;
+                }
+            }
+            if(!escapedSucessfully) {
+                // it isn't so just use the \xhh escape
+                out << "\\x" << std::hex << std::setfill('0') << std::setw(2) << (int)*str;
+                out << std::setfill(' ');
+            }
+        }
     }
 
     char* ret = new char[out.str().size()+1];

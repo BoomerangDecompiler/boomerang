@@ -1499,7 +1499,7 @@ SemStr* NJMCDecoder::dis_c_addr(ADDRESS hostPC)
 #line 597 "machine/hppa/decoder.m"
           
 
-          		 { result = instantiateNamedParam( "c_l_addr_none" ); }
+                   { result = instantiateNamedParam( "c_l_addr_none" ); }
 
           
           
@@ -1541,7 +1541,7 @@ SemStr* NJMCDecoder::dis_c_addr(ADDRESS hostPC)
 #line 583 "machine/hppa/decoder.m"
     
 
-    	     { result = instantiateNamedParam( "c_s_addr_notm" ); }
+             { result = instantiateNamedParam( "c_s_addr_notm" ); }
 
     
      
@@ -1552,7 +1552,7 @@ SemStr* NJMCDecoder::dis_c_addr(ADDRESS hostPC)
 #line 581 "machine/hppa/decoder.m"
     
 
-    	     { result = instantiateNamedParam( "c_s_addr_ma" ); }
+             { result = instantiateNamedParam( "c_s_addr_ma" ); }
 
     
      
@@ -1563,7 +1563,7 @@ SemStr* NJMCDecoder::dis_c_addr(ADDRESS hostPC)
 #line 579 "machine/hppa/decoder.m"
     
 
-    		 { result = instantiateNamedParam( "c_s_addr_mb" ); }
+             { result = instantiateNamedParam( "c_s_addr_mb" ); }
 
     
      

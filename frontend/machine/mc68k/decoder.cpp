@@ -63,273 +63,273 @@
  *                   gathered during decoding
  *============================================================================*/
 DecodeResult& NJMCDecoder::decodeInstruction (ADDRESS pc, int delta,
-	UserProc* proc = NULL)
+    UserProc* proc = NULL)
 {
-	static DecodeResult result;
-	ADDRESS hostPC = pc + delta;
+    static DecodeResult result;
+    ADDRESS hostPC = pc + delta;
 
-	// Clear the result structure;
-	result.reset();
+    // Clear the result structure;
+    result.reset();
 
-	// The actual list of instantiated RTs
-	list<RT*>* RTs = NULL;
+    // The actual list of instantiated RTs
+    list<RT*>* RTs = NULL;
 
-	// Try matching a logue first
-	int addr, regs, locals, stackSize, d16, d32, reg;
-	ADDRESS saveHostPC = hostPC;
-	Logue* logue;
-	if ((logue = InstructionPatterns::std_call(csr, hostPC, addr)) != NULL) {
-		/*
-		 * Direct call
-		 */
-		HLCall* newCall = new HLCall(pc, 0, RTs);
-		result.rtl = newCall;
-		result.numBytes = hostPC - saveHostPC;
+    // Try matching a logue first
+    int addr, regs, locals, stackSize, d16, d32, reg;
+    ADDRESS saveHostPC = hostPC;
+    Logue* logue;
+    if ((logue = InstructionPatterns::std_call(csr, hostPC, addr)) != NULL) {
+        /*
+         * Direct call
+         */
+        HLCall* newCall = new HLCall(pc, 0, RTs);
+        result.rtl = newCall;
+        result.numBytes = hostPC - saveHostPC;
 
-		// Set the destination expression
-		newCall->setDest(addr - delta);
-		newCall->setPrologue(logue);
+        // Set the destination expression
+        newCall->setDest(addr - delta);
+        newCall->setPrologue(logue);
 
-		// Save RTL for the latest call
-		//lastCall = newCall;
-		SHOW_ASM("std_call "<<addr)
-	}
+        // Save RTL for the latest call
+        //lastCall = newCall;
+        SHOW_ASM("std_call "<<addr)
+    }
 
-	else if ((logue = InstructionPatterns::near_call(csr, hostPC, addr))
+    else if ((logue = InstructionPatterns::near_call(csr, hostPC, addr))
         != NULL) {
-		/*
-		 * Call with short displacement (16 bit instruction)
-		 */
-		HLCall* newCall = new HLCall(pc, 0, RTs);
-		result.rtl = newCall;
-		result.numBytes = hostPC - saveHostPC;
+        /*
+         * Call with short displacement (16 bit instruction)
+         */
+        HLCall* newCall = new HLCall(pc, 0, RTs);
+        result.rtl = newCall;
+        result.numBytes = hostPC - saveHostPC;
 
-		// Set the destination expression
-		newCall->setDest(addr - delta);
-		newCall->setPrologue(logue);
+        // Set the destination expression
+        newCall->setDest(addr - delta);
+        newCall->setPrologue(logue);
 
-		// Save RTL for the latest call
-		//lastCall = newCall;
-		SHOW_ASM("near_call " << addr)
-	}
+        // Save RTL for the latest call
+        //lastCall = newCall;
+        SHOW_ASM("near_call " << addr)
+    }
 
-	else if ((logue = InstructionPatterns::pea_pea_add_rts(csr, hostPC, d32))
+    else if ((logue = InstructionPatterns::pea_pea_add_rts(csr, hostPC, d32))
         != NULL) {
-		/*
-		 * pea E(pc) pea 4(pc) / addil #d32, (a7) / rts
+        /*
+         * pea E(pc) pea 4(pc) / addil #d32, (a7) / rts
          * Handle as a call
-		 */
-		HLCall* newCall = new HLCall(pc, 0, RTs);
-		result.rtl = newCall;
-		result.numBytes = hostPC - saveHostPC;
+         */
+        HLCall* newCall = new HLCall(pc, 0, RTs);
+        result.rtl = newCall;
+        result.numBytes = hostPC - saveHostPC;
 
-		// Set the destination expression. It's d32 past the address of the
+        // Set the destination expression. It's d32 past the address of the
         // d32 itself, which is pc+10
-		newCall->setDest(pc + 10 + d32);
-		newCall->setPrologue(logue);
+        newCall->setDest(pc + 10 + d32);
+        newCall->setPrologue(logue);
 
-		// Save RTL for the latest call
-		//lastCall = newCall;
-		SHOW_ASM("pea/pea/add/rts " << pc+10+d32)
-	}
+        // Save RTL for the latest call
+        //lastCall = newCall;
+        SHOW_ASM("pea/pea/add/rts " << pc+10+d32)
+    }
 
-	else if ((logue = InstructionPatterns::pea_add_rts(csr, hostPC, d32))
+    else if ((logue = InstructionPatterns::pea_add_rts(csr, hostPC, d32))
         != NULL) {
-		/*
-		 * pea 4(pc) / addil #d32, (a7) / rts
+        /*
+         * pea 4(pc) / addil #d32, (a7) / rts
          * Handle as a call followed by a return
-		 */
-		HLCall* newCall = new HLCall(pc, 0, RTs);
-		result.rtl = newCall;
-		result.numBytes = hostPC - saveHostPC;
+         */
+        HLCall* newCall = new HLCall(pc, 0, RTs);
+        result.rtl = newCall;
+        result.numBytes = hostPC - saveHostPC;
 
-		// Set the destination expression. It's d32 past the address of the
+        // Set the destination expression. It's d32 past the address of the
         // d32 itself, which is pc+6
-		newCall->setDest(pc + 6 + d32);
-		newCall->setPrologue(logue);
+        newCall->setDest(pc + 6 + d32);
+        newCall->setPrologue(logue);
 
         // This call effectively is followed by a return
         newCall->setReturnAfterCall(true);
 
-		// Save RTL for the latest call
-		//lastCall = newCall;
-		SHOW_ASM("pea/add/rts " << pc+6+d32)
-	}
+        // Save RTL for the latest call
+        //lastCall = newCall;
+        SHOW_ASM("pea/add/rts " << pc+6+d32)
+    }
 
-	else if ((logue = InstructionPatterns::trap_syscall(csr, hostPC, d16))
+    else if ((logue = InstructionPatterns::trap_syscall(csr, hostPC, d16))
         != NULL) {
-		/*
-		 * trap / AXXX  (d16 set to the XXX)
+        /*
+         * trap / AXXX  (d16 set to the XXX)
          * Handle as a library call
-		 */
-		HLCall* newCall = new HLCall(pc, 0, RTs);
-		result.rtl = newCall;
-		result.numBytes = hostPC - saveHostPC;
+         */
+        HLCall* newCall = new HLCall(pc, 0, RTs);
+        result.rtl = newCall;
+        result.numBytes = hostPC - saveHostPC;
 
-		// Set the destination expression. For now, we put AAAAA000+d16 there
-		newCall->setDest(0xAAAAA000 + d16);
-		newCall->setPrologue(logue);
+        // Set the destination expression. For now, we put AAAAA000+d16 there
+        newCall->setDest(0xAAAAA000 + d16);
+        newCall->setPrologue(logue);
 
-		SHOW_ASM("trap/syscall " << hex << 0xA000 + d16)
-	}
+        SHOW_ASM("trap/syscall " << hex << 0xA000 + d16)
+    }
 
 /*
  * CALLEE PROLOGUES
  */
-	else if ((logue = InstructionPatterns::link_save(csr, hostPC,
-		locals, d16)) != NULL)
-	{
-		/*
-		 * Standard link with save of registers using movem
-		 */
-		if (proc != NULL) {
+    else if ((logue = InstructionPatterns::link_save(csr, hostPC,
+        locals, d16)) != NULL)
+    {
+        /*
+         * Standard link with save of registers using movem
+         */
+        if (proc != NULL) {
 
-			// Record the prologue of this callee
-			assert(logue->getType() == Logue::CALLEE_PROLOGUE);
-			proc->setPrologue((CalleePrologue*)logue);
-		}
-		result.rtl = new RTlist(pc, RTs);
-		result.numBytes = hostPC - saveHostPC;
-		SHOW_ASM("link_save " << locals)
-	}
+            // Record the prologue of this callee
+            assert(logue->getType() == Logue::CALLEE_PROLOGUE);
+            proc->setPrologue((CalleePrologue*)logue);
+        }
+        result.rtl = new RTlist(pc, RTs);
+        result.numBytes = hostPC - saveHostPC;
+        SHOW_ASM("link_save " << locals)
+    }
 
-	else if ((logue = InstructionPatterns::link_save1(csr, hostPC,
-		locals, reg)) != NULL)
-	{
-		/*
-		 * Standard link with save of 1 D register using move dn,-(a7)
-		 */
-		if (proc != NULL) {
+    else if ((logue = InstructionPatterns::link_save1(csr, hostPC,
+        locals, reg)) != NULL)
+    {
+        /*
+         * Standard link with save of 1 D register using move dn,-(a7)
+         */
+        if (proc != NULL) {
 
-			// Record the prologue of this callee
-			assert(logue->getType() == Logue::CALLEE_PROLOGUE);
-			proc->setPrologue((CalleePrologue*)logue);
-		}
-		result.rtl = new RTlist(pc, RTs);
-		result.numBytes = hostPC - saveHostPC;
-		SHOW_ASM("link_save1 " << locals)
-	}
+            // Record the prologue of this callee
+            assert(logue->getType() == Logue::CALLEE_PROLOGUE);
+            proc->setPrologue((CalleePrologue*)logue);
+        }
+        result.rtl = new RTlist(pc, RTs);
+        result.numBytes = hostPC - saveHostPC;
+        SHOW_ASM("link_save1 " << locals)
+    }
 
-	else if ((logue = InstructionPatterns::push_lea(csr, hostPC,
-		locals, reg)) != NULL)
-	{
-		/*
-		 * Just save of 1 D register using move dn,-(a7);
+    else if ((logue = InstructionPatterns::push_lea(csr, hostPC,
+        locals, reg)) != NULL)
+    {
+        /*
+         * Just save of 1 D register using move dn,-(a7);
          * then an lea d16(a7), a7 to allocate the stack
-		 */
+         */
         //locals = 0;             // No locals for this prologue
-		if (proc != NULL) {
+        if (proc != NULL) {
 
-			// Record the prologue of this callee
-			assert(logue->getType() == Logue::CALLEE_PROLOGUE);
-			proc->setPrologue((CalleePrologue*)logue);
-		}
-		result.rtl = new RTlist(pc, RTs);
-		result.numBytes = hostPC - saveHostPC;
-		SHOW_ASM("push_lea " << locals)
-	}
+            // Record the prologue of this callee
+            assert(logue->getType() == Logue::CALLEE_PROLOGUE);
+            proc->setPrologue((CalleePrologue*)logue);
+        }
+        result.rtl = new RTlist(pc, RTs);
+        result.numBytes = hostPC - saveHostPC;
+        SHOW_ASM("push_lea " << locals)
+    }
 
-	else if ((logue = InstructionPatterns::std_link(csr, hostPC,
-		locals)) != NULL)
-	{
-		/*
-		 * Standard link
-		 */
-		if (proc != NULL) {
+    else if ((logue = InstructionPatterns::std_link(csr, hostPC,
+        locals)) != NULL)
+    {
+        /*
+         * Standard link
+         */
+        if (proc != NULL) {
 
-			// Record the prologue of this callee
-			assert(logue->getType() == Logue::CALLEE_PROLOGUE);
-			proc->setPrologue((CalleePrologue*)logue);
-		}
-		result.rtl = new RTlist(pc, RTs);
-		result.numBytes = hostPC - saveHostPC;
-		SHOW_ASM("std_link "<< locals)
-	}
+            // Record the prologue of this callee
+            assert(logue->getType() == Logue::CALLEE_PROLOGUE);
+            proc->setPrologue((CalleePrologue*)logue);
+        }
+        result.rtl = new RTlist(pc, RTs);
+        result.numBytes = hostPC - saveHostPC;
+        SHOW_ASM("std_link "<< locals)
+    }
 
-	else if ((logue = InstructionPatterns::bare_ret(csr, hostPC))
+    else if ((logue = InstructionPatterns::bare_ret(csr, hostPC))
         != NULL)
-	{
-		/*
-		 * Just a bare rts instruction
-		 */
-		if (proc != NULL) {
+    {
+        /*
+         * Just a bare rts instruction
+         */
+        if (proc != NULL) {
 
-			// Record the prologue of this callee
-			assert(logue->getType() == Logue::CALLEE_PROLOGUE);
-			proc->setPrologue((CalleePrologue*)logue);
+            // Record the prologue of this callee
+            assert(logue->getType() == Logue::CALLEE_PROLOGUE);
+            proc->setPrologue((CalleePrologue*)logue);
             proc->setEpilogue(new CalleeEpilogue("__dummy",list<string>()));
-		}
-		result.rtl = new HLReturn(pc, RTs);
-		result.numBytes = hostPC - saveHostPC;
-		SHOW_ASM("bare_ret")
-	}
+        }
+        result.rtl = new HLReturn(pc, RTs);
+        result.numBytes = hostPC - saveHostPC;
+        SHOW_ASM("bare_ret")
+    }
 
-	else if ((logue = InstructionPatterns::std_ret(csr, hostPC)) != NULL) {
-		/*
-		 * An unlink and return
-		 */
-		if (proc!= NULL) {
+    else if ((logue = InstructionPatterns::std_ret(csr, hostPC)) != NULL) {
+        /*
+         * An unlink and return
+         */
+        if (proc!= NULL) {
 
-			// Record the epilogue of this callee
-			assert(logue->getType() == Logue::CALLEE_EPILOGUE);
-			proc->setEpilogue((CalleeEpilogue*)logue);
-		}
+            // Record the epilogue of this callee
+            assert(logue->getType() == Logue::CALLEE_EPILOGUE);
+            proc->setEpilogue((CalleeEpilogue*)logue);
+        }
 
-		result.rtl = new HLReturn(pc, RTs);
-		result.numBytes = hostPC - saveHostPC;
-		SHOW_ASM("std_ret")
-	}
+        result.rtl = new HLReturn(pc, RTs);
+        result.numBytes = hostPC - saveHostPC;
+        SHOW_ASM("std_ret")
+    }
 
-	else if ((logue = InstructionPatterns::rest_ret(csr, hostPC, d16)) != NULL)
+    else if ((logue = InstructionPatterns::rest_ret(csr, hostPC, d16)) != NULL)
     {
-		/*
-		 * A restore (movem stack to registers) then return
-		 */
-		if (proc!= NULL) {
+        /*
+         * A restore (movem stack to registers) then return
+         */
+        if (proc!= NULL) {
 
-			// Record the epilogue of this callee
-			assert(logue->getType() == Logue::CALLEE_EPILOGUE);
-			proc->setEpilogue((CalleeEpilogue*)logue);
-		}
+            // Record the epilogue of this callee
+            assert(logue->getType() == Logue::CALLEE_EPILOGUE);
+            proc->setEpilogue((CalleeEpilogue*)logue);
+        }
 
-		result.rtl = new HLReturn(pc, RTs);
-		result.numBytes = hostPC - saveHostPC;
-		SHOW_ASM("rest_ret")
-	}
+        result.rtl = new HLReturn(pc, RTs);
+        result.numBytes = hostPC - saveHostPC;
+        SHOW_ASM("rest_ret")
+    }
 
-	else if ((logue = InstructionPatterns::rest1_ret(csr, hostPC, reg)) != NULL)
+    else if ((logue = InstructionPatterns::rest1_ret(csr, hostPC, reg)) != NULL)
     {
-		/*
-		 * A pop (move (a7)+ to one D register) then unlink and return
-		 */
-		if (proc!= NULL) {
+        /*
+         * A pop (move (a7)+ to one D register) then unlink and return
+         */
+        if (proc!= NULL) {
 
-			// Record the epilogue of this callee
-			assert(logue->getType() == Logue::CALLEE_EPILOGUE);
-			proc->setEpilogue((CalleeEpilogue*)logue);
-		}
+            // Record the epilogue of this callee
+            assert(logue->getType() == Logue::CALLEE_EPILOGUE);
+            proc->setEpilogue((CalleeEpilogue*)logue);
+        }
 
-		result.rtl = new HLReturn(pc, RTs);
-		result.numBytes = hostPC - saveHostPC;
-		SHOW_ASM("rest1_ret")
-	}
+        result.rtl = new HLReturn(pc, RTs);
+        result.numBytes = hostPC - saveHostPC;
+        SHOW_ASM("rest1_ret")
+    }
 
-	else if ((logue = InstructionPatterns::pop_ret(csr, hostPC, reg)) != NULL)
+    else if ((logue = InstructionPatterns::pop_ret(csr, hostPC, reg)) != NULL)
     {
-		/*
-		 * A pop (move (a7)+ to one D register) then just return
-		 */
-		if (proc!= NULL) {
+        /*
+         * A pop (move (a7)+ to one D register) then just return
+         */
+        if (proc!= NULL) {
 
-			// Record the epilogue of this callee
-			assert(logue->getType() == Logue::CALLEE_EPILOGUE);
-			proc->setEpilogue((CalleeEpilogue*)logue);
-		}
+            // Record the epilogue of this callee
+            assert(logue->getType() == Logue::CALLEE_EPILOGUE);
+            proc->setEpilogue((CalleeEpilogue*)logue);
+        }
 
-		result.rtl = new HLReturn(pc, RTs);
-		result.numBytes = hostPC - saveHostPC;
-		SHOW_ASM("pop_ret")
-	}
+        result.rtl = new HLReturn(pc, RTs);
+        result.numBytes = hostPC - saveHostPC;
+        SHOW_ASM("pop_ret")
+    }
 
     else if ((logue = InstructionPatterns::clear_stack(csr, hostPC, stackSize))
         != NULL)
@@ -343,9 +343,9 @@ DecodeResult& NJMCDecoder::decodeInstruction (ADDRESS pc, int delta,
         result.numBytes = hostPC - saveHostPC;
     }
 
-	else {
+    else {
 
-		ADDRESS nextPC;
+        ADDRESS nextPC;
         int bump = 0, bumpr;
         SemStr* ss;
 
@@ -389,31 +389,31 @@ DecodeResult& NJMCDecoder::decodeInstruction (ADDRESS pc, int delta,
 
                         
 
-                        			/*
+                                    /*
 
-                        			 * Register call
+                                     * Register call
 
-                        			 */
+                                     */
 
-                        			// Mike: there should probably be a HLNwayCall class for this!
+                                    // Mike: there should probably be a HLNwayCall class for this!
 
-                        			HLCall* newCall = new HLCall(pc, 0, RTs);
+                                    HLCall* newCall = new HLCall(pc, 0, RTs);
 
-                        			// Record the fact that this is a computed call
+                                    // Record the fact that this is a computed call
 
-                        			newCall->setIsComputed();
+                                    newCall->setIsComputed();
 
-                        			// Set the destination expression
+                                    // Set the destination expression
 
-                        			newCall->setDest(cEA(ea, pc, 32));
+                                    newCall->setDest(cEA(ea, pc, 32));
 
-                        			result.rtl = newCall;
+                                    result.rtl = newCall;
 
-                        			// Only one instruction, so size of result is size of this decode
+                                    // Only one instruction, so size of result is size of this decode
 
-                        			result.numBytes = nextPC - hostPC;
+                                    result.numBytes = nextPC - hostPC;
 
-                        	
+                            
 
                         
                         
@@ -429,35 +429,35 @@ DecodeResult& NJMCDecoder::decodeInstruction (ADDRESS pc, int delta,
 
                         
 
-                        			/*
+                                    /*
 
-                        			 * Register jump
+                                     * Register jump
 
-                        			 */
+                                     */
 
-                        			HLNwayJump* newJump = new HLNwayJump(pc, RTs);
+                                    HLNwayJump* newJump = new HLNwayJump(pc, RTs);
 
-                        			// Record the fact that this is a computed call
+                                    // Record the fact that this is a computed call
 
-                        			newJump->setIsComputed();
+                                    newJump->setIsComputed();
 
-                        			// Set the destination expression
+                                    // Set the destination expression
 
-                        			newJump->setDest(cEA(ea, pc, 32));
+                                    newJump->setDest(cEA(ea, pc, 32));
 
-                        			result.rtl = newJump;
+                                    result.rtl = newJump;
 
-                        			// Only one instruction, so size of result is size of this decode
+                                    // Only one instruction, so size of result is size of this decode
 
-                        			result.numBytes = nextPC - hostPC;
+                                    result.numBytes = nextPC - hostPC;
 
-                        		
+                                
 
-                        		/*
+                                /*
 
-                        		 * Unconditional branches
+                                 * Unconditional branches
 
-                        		 */
+                                 */
 
                         
                         
@@ -493,9 +493,9 @@ DecodeResult& NJMCDecoder::decodeInstruction (ADDRESS pc, int delta,
 
                                 ss = daEA(ea, pc, bump, bumpr, 1);
 
-                    			RTs = instantiate(pc, name, ss);
+                                RTs = instantiate(pc, name, ss);
 
-                    			SETS(name, ss, HLJCOND_JSG)
+                                SETS(name, ss, HLJCOND_JSG)
 
                     
                     
@@ -523,9 +523,9 @@ DecodeResult& NJMCDecoder::decodeInstruction (ADDRESS pc, int delta,
 
                                 ss = daEA(ea, pc, bump, bumpr, 1);
 
-                    			RTs = instantiate(pc, name, ss);
+                                RTs = instantiate(pc, name, ss);
 
-                    			SETS(name, ss, HLJCOND_JULE)
+                                SETS(name, ss, HLJCOND_JULE)
 
                     
                     
@@ -553,9 +553,9 @@ DecodeResult& NJMCDecoder::decodeInstruction (ADDRESS pc, int delta,
 
                                 ss = daEA(ea, pc, bump, bumpr, 1);
 
-                    			RTs = instantiate(pc, name, ss);
+                                RTs = instantiate(pc, name, ss);
 
-                    			SETS(name, ss, HLJCOND_JUGE)
+                                SETS(name, ss, HLJCOND_JUGE)
 
                     
                     
@@ -583,9 +583,9 @@ DecodeResult& NJMCDecoder::decodeInstruction (ADDRESS pc, int delta,
 
                                 ss = daEA(ea, pc, bump, bumpr, 1);
 
-                    			RTs = instantiate(pc, name, ss);
+                                RTs = instantiate(pc, name, ss);
 
-                    			SETS(name, ss, HLJCOND_JUL)
+                                SETS(name, ss, HLJCOND_JUL)
 
                     
                     
@@ -613,9 +613,9 @@ DecodeResult& NJMCDecoder::decodeInstruction (ADDRESS pc, int delta,
 
                                 ss = daEA(ea, pc, bump, bumpr, 1);
 
-                    			RTs = instantiate(pc, name, ss);
+                                RTs = instantiate(pc, name, ss);
 
-                    			SETS(name, ss, HLJCOND_JNE)
+                                SETS(name, ss, HLJCOND_JNE)
 
                     
                     
@@ -643,25 +643,25 @@ DecodeResult& NJMCDecoder::decodeInstruction (ADDRESS pc, int delta,
 
                                 ss = daEA(ea, pc, bump, bumpr, 1);
 
-                    			RTs = instantiate(pc, name, ss);
+                                RTs = instantiate(pc, name, ss);
 
-                    			SETS(name, ss, HLJCOND_JE)
+                                SETS(name, ss, HLJCOND_JE)
 
-                    		//| svc(ea) [name] =>
-
-                            //  ss = daEA(ea, pc, bump, bumpr, 1);
-
-                    		//	RTs = instantiate(pc, name, ss);
-
-                    		//	SETS(name, ss, HLJCOND_)
-
-                    		//| svs(ea) [name] =>
+                            //| svc(ea) [name] =>
 
                             //  ss = daEA(ea, pc, bump, bumpr, 1);
 
-                    		//	RTs = instantiate(pc, name, ss);
+                            //    RTs = instantiate(pc, name, ss);
 
-                    		//	SETS(name, ss, HLJCOND_)
+                            //    SETS(name, ss, HLJCOND_)
+
+                            //| svs(ea) [name] =>
+
+                            //  ss = daEA(ea, pc, bump, bumpr, 1);
+
+                            //    RTs = instantiate(pc, name, ss);
+
+                            //    SETS(name, ss, HLJCOND_)
 
                     
                     
@@ -689,9 +689,9 @@ DecodeResult& NJMCDecoder::decodeInstruction (ADDRESS pc, int delta,
 
                                 ss = daEA(ea, pc, bump, bumpr, 1);
 
-                    			RTs = instantiate(pc, name, ss);
+                                RTs = instantiate(pc, name, ss);
 
-                    			SETS(name, ss, HLJCOND_JPOS)
+                                SETS(name, ss, HLJCOND_JPOS)
 
                     
                     
@@ -719,9 +719,9 @@ DecodeResult& NJMCDecoder::decodeInstruction (ADDRESS pc, int delta,
 
                                 ss = daEA(ea, pc, bump, bumpr, 1);
 
-                    			RTs = instantiate(pc, name, ss);
+                                RTs = instantiate(pc, name, ss);
 
-                    			SETS(name, ss, HLJCOND_JMI)
+                                SETS(name, ss, HLJCOND_JMI)
 
                     
                     
@@ -749,9 +749,9 @@ DecodeResult& NJMCDecoder::decodeInstruction (ADDRESS pc, int delta,
 
                                 ss = daEA(ea, pc, bump, bumpr, 1);
 
-                    			RTs = instantiate(pc, name, ss);
+                                RTs = instantiate(pc, name, ss);
 
-                    			SETS(name, ss, HLJCOND_JSGE)
+                                SETS(name, ss, HLJCOND_JSGE)
 
                     
                     
@@ -779,9 +779,9 @@ DecodeResult& NJMCDecoder::decodeInstruction (ADDRESS pc, int delta,
 
                                 ss = daEA(ea, pc, bump, bumpr, 1);
 
-                    			RTs = instantiate(pc, name, ss);
+                                RTs = instantiate(pc, name, ss);
 
-                    			SETS(name, ss, HLJCOND_JSL)
+                                SETS(name, ss, HLJCOND_JSL)
 
                     
                     
@@ -809,9 +809,9 @@ DecodeResult& NJMCDecoder::decodeInstruction (ADDRESS pc, int delta,
 
                                 ss = daEA(ea, pc, bump, bumpr, 1);
 
-                    			RTs = instantiate(pc, name, ss);
+                                RTs = instantiate(pc, name, ss);
 
-                    			SETS(name, ss, HLJCOND_JSG)
+                                SETS(name, ss, HLJCOND_JSG)
 
                     
                     
@@ -839,13 +839,13 @@ DecodeResult& NJMCDecoder::decodeInstruction (ADDRESS pc, int delta,
 
                                 ss = daEA(ea, pc, bump, bumpr, 1);
 
-                    			RTs = instantiate(pc, name, ss);
+                                RTs = instantiate(pc, name, ss);
 
-                    			SETS(name, ss, HLJCOND_JSLE)
+                                SETS(name, ss, HLJCOND_JSLE)
 
                     // HACK: Still need to do .ex versions of set, jsr, jmp
 
-                    	
+                        
 
                     
                     
@@ -874,17 +874,17 @@ DecodeResult& NJMCDecoder::decodeInstruction (ADDRESS pc, int delta,
 
                   
 
-                  			ss = BTA(d, result, pc);
+                              ss = BTA(d, result, pc);
 
                               UNCOND_JUMP(name, nextPC - hostPC, ss);
 
-                  	
+                      
 
-                  		/*
+                          /*
 
-                  		 * Conditional branches
+                           * Conditional branches
 
-                  		 */
+                           */
 
                   
                   
@@ -907,7 +907,7 @@ DecodeResult& NJMCDecoder::decodeInstruction (ADDRESS pc, int delta,
 
                               ss = BTA(d, result, pc);
 
-                  			COND_JUMP(name, nextPC - hostPC, ss, HLJCOND_JUG)
+                              COND_JUMP(name, nextPC - hostPC, ss, HLJCOND_JUG)
 
                   
                   
@@ -928,7 +928,7 @@ DecodeResult& NJMCDecoder::decodeInstruction (ADDRESS pc, int delta,
 
                               ss = BTA(d, result, pc);
 
-                  			COND_JUMP(name, nextPC - hostPC, ss, HLJCOND_JULE)
+                              COND_JUMP(name, nextPC - hostPC, ss, HLJCOND_JULE)
 
                   
                   
@@ -949,7 +949,7 @@ DecodeResult& NJMCDecoder::decodeInstruction (ADDRESS pc, int delta,
 
                               ss = BTA(d, result, pc);
 
-                  			COND_JUMP(name, nextPC - hostPC, ss, HLJCOND_JUGE)
+                              COND_JUMP(name, nextPC - hostPC, ss, HLJCOND_JUGE)
 
                   
                   
@@ -970,7 +970,7 @@ DecodeResult& NJMCDecoder::decodeInstruction (ADDRESS pc, int delta,
 
                               ss = BTA(d, result, pc);
 
-                  			COND_JUMP(name, nextPC - hostPC, ss, HLJCOND_JUL)
+                              COND_JUMP(name, nextPC - hostPC, ss, HLJCOND_JUL)
 
                   
                   
@@ -991,7 +991,7 @@ DecodeResult& NJMCDecoder::decodeInstruction (ADDRESS pc, int delta,
 
                               ss = BTA(d, result, pc);
 
-                  			COND_JUMP(name, nextPC - hostPC, ss, HLJCOND_JNE)
+                              COND_JUMP(name, nextPC - hostPC, ss, HLJCOND_JNE)
 
                   
                   
@@ -1012,7 +1012,7 @@ DecodeResult& NJMCDecoder::decodeInstruction (ADDRESS pc, int delta,
 
                               ss = BTA(d, result, pc);
 
-                  			COND_JUMP(name, nextPC - hostPC, ss, HLJCOND_JE)
+                              COND_JUMP(name, nextPC - hostPC, ss, HLJCOND_JE)
 
                   
                   
@@ -1033,7 +1033,7 @@ DecodeResult& NJMCDecoder::decodeInstruction (ADDRESS pc, int delta,
 
                               ss = BTA(d, result, pc);
 
-                  			COND_JUMP(name, nextPC - hostPC, ss, (JCOND_TYPE)0)
+                              COND_JUMP(name, nextPC - hostPC, ss, (JCOND_TYPE)0)
 
                   
                   
@@ -1054,11 +1054,11 @@ DecodeResult& NJMCDecoder::decodeInstruction (ADDRESS pc, int delta,
 
                               ss = BTA(d, result, pc);
 
-                  			COND_JUMP(name, nextPC - hostPC, ss, (JCOND_TYPE)0)
+                              COND_JUMP(name, nextPC - hostPC, ss, (JCOND_TYPE)0)
 
-                  	
+                      
 
-                  	
+                      
 
                           // MVE: I'm assuming that we won't ever see shi(-(a7)) or the like.
 
@@ -1087,7 +1087,7 @@ DecodeResult& NJMCDecoder::decodeInstruction (ADDRESS pc, int delta,
 
                               ss = BTA(d, result, pc);
 
-                  			COND_JUMP(name, nextPC - hostPC, ss, HLJCOND_JPOS)
+                              COND_JUMP(name, nextPC - hostPC, ss, HLJCOND_JPOS)
 
                   
                   
@@ -1108,7 +1108,7 @@ DecodeResult& NJMCDecoder::decodeInstruction (ADDRESS pc, int delta,
 
                               ss = BTA(d, result, pc);
 
-                  			COND_JUMP(name, nextPC - hostPC, ss, HLJCOND_JMI)
+                              COND_JUMP(name, nextPC - hostPC, ss, HLJCOND_JMI)
 
                   
                   
@@ -1129,7 +1129,7 @@ DecodeResult& NJMCDecoder::decodeInstruction (ADDRESS pc, int delta,
 
                               ss = BTA(d, result, pc);
 
-                  			COND_JUMP(name, nextPC - hostPC, ss, HLJCOND_JSGE)
+                              COND_JUMP(name, nextPC - hostPC, ss, HLJCOND_JSGE)
 
                   
                   
@@ -1150,7 +1150,7 @@ DecodeResult& NJMCDecoder::decodeInstruction (ADDRESS pc, int delta,
 
                               ss = BTA(d, result, pc);
 
-                  			COND_JUMP(name, nextPC - hostPC, ss, HLJCOND_JSL)
+                              COND_JUMP(name, nextPC - hostPC, ss, HLJCOND_JSL)
 
                   
                   
@@ -1171,7 +1171,7 @@ DecodeResult& NJMCDecoder::decodeInstruction (ADDRESS pc, int delta,
 
                               ss = BTA(d, result, pc);
 
-                  			COND_JUMP(name, nextPC - hostPC, ss, HLJCOND_JSG)
+                              COND_JUMP(name, nextPC - hostPC, ss, HLJCOND_JSG)
 
                   
                   
@@ -1192,7 +1192,7 @@ DecodeResult& NJMCDecoder::decodeInstruction (ADDRESS pc, int delta,
 
                               ss = BTA(d, result, pc);
 
-                  			COND_JUMP(name, nextPC - hostPC, ss, HLJCOND_JSLE)
+                              COND_JUMP(name, nextPC - hostPC, ss, HLJCOND_JSLE)
 
                   
                   
@@ -1214,9 +1214,9 @@ DecodeResult& NJMCDecoder::decodeInstruction (ADDRESS pc, int delta,
       
 
       
-      			result.rtl = new RTlist(pc,
+                  result.rtl = new RTlist(pc,
 
-      				decodeLowLevelInstruction(hostPC, pc, result));
+                      decodeLowLevelInstruction(hostPC, pc, result));
 
       
       
@@ -1229,8 +1229,8 @@ DecodeResult& NJMCDecoder::decodeInstruction (ADDRESS pc, int delta,
 }
 
 
-	}
-	return result;
+    }
+    return result;
 }
 
 /*==============================================================================
@@ -1253,8 +1253,8 @@ DecodeResult& NJMCDecoder::decodeInstruction (ADDRESS pc, int delta,
  *      matching statement.  Mike's program formats replaces repeated
  *      names by unique names.
  * 9 Feb 00 - Cristina.  Note that I have *not* tested the indexed 
- *		addressing modes as the mc68328 does not support *any* of
- *		such addressing modes.  The mc68000 does however. 
+ *        addressing modes as the mc68328 does not support *any* of
+ *        such addressing modes.  The mc68000 does however. 
  * 20 Feb 00 - Cristina: fixed branches
  * 21 Feb 00 - Mike: Removed redundant delta from BTA()
  * 01 Aug 01 - Mike: Quelled some warnings about "name" not used

@@ -22,8 +22,8 @@
  * @APPLE_LICENSE_HEADER_END@
  */
 /*
- *	objc-load.h
- *	Copyright 1988-1996, NeXT Software, Inc.
+ *    objc-load.h
+ *    Copyright 1988-1996, NeXT Software, Inc.
  */
 
 #ifndef _OBJC_LOAD_H_
@@ -36,27 +36,27 @@
 /* dynamically loading Mach-O object files that contain Objective-C code */
 
 OBJC_EXPORT long objc_loadModules (
-	char *modlist[], 
-	void *errStream,
-	void (*class_callback) (Class, Category),
-	/*headerType*/ struct mach_header **hdr_addr,
-	char *debug_file
+    char *modlist[], 
+    void *errStream,
+    void (*class_callback) (Class, Category),
+    /*headerType*/ struct mach_header **hdr_addr,
+    char *debug_file
 );
 OBJC_EXPORT int objc_loadModule (
-	char *	moduleName, 
-	void	(*class_callback) (Class, Category),
-	int *	errorCode);
+    char *    moduleName, 
+    void    (*class_callback) (Class, Category),
+    int *    errorCode);
 OBJC_EXPORT long objc_unloadModules(
-	void *errorStream,				/* input (optional) */
-	void (*unloadCallback)(Class, Category)		/* input (optional) */
+    void *errorStream,                /* input (optional) */
+    void (*unloadCallback)(Class, Category)        /* input (optional) */
 );
 
 OBJC_EXPORT void objc_register_header_name(
-	char *name					/* input */
+    char *name                    /* input */
 );
 
 OBJC_EXPORT void objc_register_header(
-	char *name					/* input */
+    char *name                    /* input */
 );
 
 

@@ -8,19 +8,19 @@ class DfaTest : public CppUnit::TestCase {
   protected:
 
   public:
-	DfaTest(std::string name) : CppUnit::TestCase (name)
-	{}
+    DfaTest(std::string name) : CppUnit::TestCase (name)
+    {}
 
-	virtual void registerTests(CppUnit::TestSuite* suite);
+    virtual void registerTests(CppUnit::TestSuite* suite);
 
-	int countTestCases () const;
+    int countTestCases () const;
 
-	void setUp ();
-	void tearDown ();
+    void setUp ();
+    void tearDown ();
 
-	void testMeetInt();
-	void testMeetSize();
-	void testMeetPointer();
-	void testMeetUnion();
+    void testMeetInt();
+    void testMeetSize();
+    void testMeetPointer();
+    void testMeetUnion();
 };
 

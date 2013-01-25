@@ -25,8 +25,8 @@
     List.h
     Copyright 1988-1996 NeXT Software, Inc.
 
-    DEFINED AS:	A common class
-    HEADER FILES:	objc/List.h
+    DEFINED AS:    A common class
+    HEADER FILES:    objc/List.h
 
 */
 
@@ -40,9 +40,9 @@
 @interface List : Object
 {
 @public
-    id 		*dataPtr;	/* data of the List object */
-    unsigned 	numElements;	/* Actual number of elements */
-    unsigned 	maxElements;	/* Total allocated elements */
+    id         *dataPtr;    /* data of the List object */
+    unsigned     numElements;    /* Actual number of elements */
+    unsigned     maxElements;    /* Total allocated elements */
 }
 
 /* Creating, freeing */
@@ -110,6 +110,6 @@ typedef struct {
 
 #define NX_ADDRESS(x) (((NXListId *)(x))->dataPtr)
 
-#define NX_NOT_IN_LIST	0xffffffff
+#define NX_NOT_IN_LIST    0xffffffff
 
 #endif /* _OBJC_LIST_H_ */

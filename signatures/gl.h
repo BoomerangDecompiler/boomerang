@@ -12,7 +12,7 @@ void glPopMatrix(void);
 void glBegin(GLenum mode);
 void glEnd(void);
 void glOrtho(GLdouble left, GLdouble right, GLdouble bottom, GLdouble top,
-			 GLdouble near_val, GLdouble far_val);
+             GLdouble near_val, GLdouble far_val);
 void glColor3f(GLfloat red, GLfloat green, GLfloat blue);
 void glVertex3f(GLfloat x, GLfloat y, GLfloat z);
 GLenum glGetError(void);

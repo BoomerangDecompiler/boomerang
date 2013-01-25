@@ -291,7 +291,7 @@ bool case_CALL_NCT(ADDRESS& address, DecodeResult& inst,
     // Emit the delay instruction, unless a the delay instruction is a nop,
     // or we have a pattern, or are followed by a restore
     if ((delay_inst.type != NOP) && !delayPattern &&
-	  !call_rtl->isReturnAfterCall()) {
+      !call_rtl->isReturnAfterCall()) {
         delay_rtl->updateAddress(address);
         BB_rtls->push_back(delay_rtl);
         if (progOptions.rtl)

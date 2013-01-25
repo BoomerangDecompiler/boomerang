@@ -5,9 +5,9 @@
 
 #include "gc.h"
 
-void init_dfa();			// Prototypes for
-void init_sslparser();		// various initialisation functions
-void init_basicblock();		// for garbage collection safety
+void init_dfa();            // Prototypes for
+void init_sslparser();        // various initialisation functions
+void init_basicblock();        // for garbage collection safety
 
 int main(int argc, char *argv[])
 {

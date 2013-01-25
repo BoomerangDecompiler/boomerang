@@ -228,71 +228,71 @@ bool BinaryFileStub::isLibrary() const
 
 std::list<const char *> BinaryFileStub::getDependencyList()
 {
-	assert(false);
-	return std::list<const char*> ();
+    assert(false);
+    return std::list<const char*> ();
 }
 
 ADDRESS BinaryFileStub::getImageBase()
 {
-	return 0;
+    return 0;
 }
 
 size_t BinaryFileStub::getImageSize()
 {
-	return 0;
+    return 0;
 }
 
 ADDRESS BinaryFileStub::GetFirstHeaderAddress()
 {
-	return 0;
+    return 0;
 }
 
 ADDRESS* BinaryFileStub::GetImportStubs(int& numImports)
 {
-	return NULL;
+    return NULL;
 }
 
 bool    BinaryFileStub::DisplayDetails(const char* fileName, FILE* f)
 {
-	return false;
+    return false;
 }
 
 std::list<SectionInfo*>& BinaryFileStub::GetEntryPoints(const char* pEntry)
 {
-	return * new std::list<SectionInfo*>;
+    return * new std::list<SectionInfo*>;
 }
 
 ADDRESS BinaryFileStub::GetMainEntryPoint()
 {
-	return 0x8048918;
+    return 0x8048918;
 }
 
 ADDRESS BinaryFileStub::GetEntryPoint()
 {
-	return 0;
+    return 0;
 }
 
 std::map<ADDRESS, const char*>* BinaryFileStub::GetDynamicGlobalMap()
 {
-	return new std::map<ADDRESS, const char*>;
+    return new std::map<ADDRESS, const char*>;
 }
 
 char* BinaryFileStub::GetStrPtr(int idx, int offset)
 {
-	return NULL;
+    return NULL;
 }
 
 void BinaryFileStub::SetLinkAndInfo(int idx, int link, int info)
 {
-	assert(false);
+    assert(false);
 }
 
 bool  BinaryFileStub::RealLoad(const char* sName)
 {
-	return false;
+    return false;
 }
 
 bool BinaryFileStub::PostLoad(void* handle)
 {
-	return false;
+    return false;
 }

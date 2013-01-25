@@ -230,8 +230,8 @@ typedef
 #endif
 /* DEFAULT STYPE*/
       /* We used to use `unsigned long' as YY_TransformationParser_STYPE on MSDOS,
-	 but it seems better to be consistent.
-	 Most programs should declare their own type anyway.  */
+     but it seems better to be consistent.
+     Most programs should declare their own type anyway.  */
 
 #ifndef YY_TransformationParser_STYPE
 #define YY_TransformationParser_STYPE int
@@ -316,49 +316,49 @@ typedef
 
 /* #line 236 "/usr/local/lib/bison.cc" */
 #line 315 "transformation-parser.cpp"
-#define	SIZEOF	258
-#define	KIND	259
-#define	POINTER	260
-#define	COMPOUND	261
-#define	ARRAY	262
-#define	TYPE	263
-#define	FUNC	264
-#define	WHERE	265
-#define	BECOMES	266
-#define	REGOF	267
-#define	MEMOF	268
-#define	ADDROF	269
-#define	CONSTANT	270
-#define	IDENTIFIER	271
-#define	STRING_LITERAL	272
-#define	PTR_OP	273
-#define	INC_OP	274
-#define	DEC_OP	275
-#define	LEFT_OP	276
-#define	RIGHT_OP	277
-#define	LE_OP	278
-#define	GE_OP	279
-#define	EQ_OP	280
-#define	NE_OP	281
-#define	AND_OP	282
-#define	OR_OP	283
-#define	MUL_ASSIGN	284
-#define	DIV_ASSIGN	285
-#define	MOD_ASSIGN	286
-#define	ADD_ASSIGN	287
-#define	SUB_ASSIGN	288
-#define	LEFT_ASSIGN	289
-#define	RIGHT_ASSIGN	290
-#define	AND_ASSIGN	291
-#define	XOR_ASSIGN	292
-#define	OR_ASSIGN	293
-#define	TYPE_NAME	294
-#define	STRUCT	295
-#define	UNION	296
-#define	ENUM	297
-#define	ELLIPSIS	298
-#define	BOOL_TRUE	299
-#define	BOOL_FALSE	300
+#define    SIZEOF    258
+#define    KIND    259
+#define    POINTER    260
+#define    COMPOUND    261
+#define    ARRAY    262
+#define    TYPE    263
+#define    FUNC    264
+#define    WHERE    265
+#define    BECOMES    266
+#define    REGOF    267
+#define    MEMOF    268
+#define    ADDROF    269
+#define    CONSTANT    270
+#define    IDENTIFIER    271
+#define    STRING_LITERAL    272
+#define    PTR_OP    273
+#define    INC_OP    274
+#define    DEC_OP    275
+#define    LEFT_OP    276
+#define    RIGHT_OP    277
+#define    LE_OP    278
+#define    GE_OP    279
+#define    EQ_OP    280
+#define    NE_OP    281
+#define    AND_OP    282
+#define    OR_OP    283
+#define    MUL_ASSIGN    284
+#define    DIV_ASSIGN    285
+#define    MOD_ASSIGN    286
+#define    ADD_ASSIGN    287
+#define    SUB_ASSIGN    288
+#define    LEFT_ASSIGN    289
+#define    RIGHT_ASSIGN    290
+#define    AND_ASSIGN    291
+#define    XOR_ASSIGN    292
+#define    OR_ASSIGN    293
+#define    TYPE_NAME    294
+#define    STRUCT    295
+#define    UNION    296
+#define    ENUM    297
+#define    ELLIPSIS    298
+#define    BOOL_TRUE    299
+#define    BOOL_FALSE    300
 
 
 #line 236 "/usr/local/lib/bison.cc"
@@ -461,49 +461,49 @@ enum YY_TransformationParser_ENUM_TOKEN { YY_TransformationParser_NULL_TOKEN=0
 
 /* #line 283 "/usr/local/lib/bison.cc" */
 #line 460 "transformation-parser.cpp"
-	,SIZEOF=258
-	,KIND=259
-	,POINTER=260
-	,COMPOUND=261
-	,ARRAY=262
-	,TYPE=263
-	,FUNC=264
-	,WHERE=265
-	,BECOMES=266
-	,REGOF=267
-	,MEMOF=268
-	,ADDROF=269
-	,CONSTANT=270
-	,IDENTIFIER=271
-	,STRING_LITERAL=272
-	,PTR_OP=273
-	,INC_OP=274
-	,DEC_OP=275
-	,LEFT_OP=276
-	,RIGHT_OP=277
-	,LE_OP=278
-	,GE_OP=279
-	,EQ_OP=280
-	,NE_OP=281
-	,AND_OP=282
-	,OR_OP=283
-	,MUL_ASSIGN=284
-	,DIV_ASSIGN=285
-	,MOD_ASSIGN=286
-	,ADD_ASSIGN=287
-	,SUB_ASSIGN=288
-	,LEFT_ASSIGN=289
-	,RIGHT_ASSIGN=290
-	,AND_ASSIGN=291
-	,XOR_ASSIGN=292
-	,OR_ASSIGN=293
-	,TYPE_NAME=294
-	,STRUCT=295
-	,UNION=296
-	,ENUM=297
-	,ELLIPSIS=298
-	,BOOL_TRUE=299
-	,BOOL_FALSE=300
+    ,SIZEOF=258
+    ,KIND=259
+    ,POINTER=260
+    ,COMPOUND=261
+    ,ARRAY=262
+    ,TYPE=263
+    ,FUNC=264
+    ,WHERE=265
+    ,BECOMES=266
+    ,REGOF=267
+    ,MEMOF=268
+    ,ADDROF=269
+    ,CONSTANT=270
+    ,IDENTIFIER=271
+    ,STRING_LITERAL=272
+    ,PTR_OP=273
+    ,INC_OP=274
+    ,DEC_OP=275
+    ,LEFT_OP=276
+    ,RIGHT_OP=277
+    ,LE_OP=278
+    ,GE_OP=279
+    ,EQ_OP=280
+    ,NE_OP=281
+    ,AND_OP=282
+    ,OR_OP=283
+    ,MUL_ASSIGN=284
+    ,DIV_ASSIGN=285
+    ,MOD_ASSIGN=286
+    ,ADD_ASSIGN=287
+    ,SUB_ASSIGN=288
+    ,LEFT_ASSIGN=289
+    ,RIGHT_ASSIGN=290
+    ,AND_ASSIGN=291
+    ,XOR_ASSIGN=292
+    ,OR_ASSIGN=293
+    ,TYPE_NAME=294
+    ,STRUCT=295
+    ,UNION=296
+    ,ENUM=297
+    ,ELLIPSIS=298
+    ,BOOL_TRUE=299
+    ,BOOL_FALSE=300
 
 
 #line 283 "/usr/local/lib/bison.cc"
@@ -603,9 +603,9 @@ YY_TransformationParser_CONSTRUCTOR_CODE;
 #line 600 "transformation-parser.cpp"
 
 
-#define	YYFINAL		72
-#define	YYFLAG		-32768
-#define	YYNTBASE	59
+#define    YYFINAL        72
+#define    YYFLAG        -32768
+#define    YYNTBASE    59
 
 #define YYTRANSLATE(x) ((unsigned)(x) <= 300 ? yytranslate[x] : 64)
 
@@ -732,7 +732,7 @@ static const short yypgoto[] = {    22,
 };
 
 
-#define	YYLAST		233
+#define    YYLAST        233
 
 
 static const short yytable[] = {    19,
@@ -856,14 +856,14 @@ static int __alloca_free_ptr(char *ptr,char *ref)
 #ifdef YY_TransformationParser_LSP_NEEDED
 #define __ALLOCA_return(num) \
             return( __ALLOCA_free(yyss,yyssa)+\
-		    __ALLOCA_free(yyvs,yyvsa)+\
-		    __ALLOCA_free(yyls,yylsa)+\
-		   (num))
+            __ALLOCA_free(yyvs,yyvsa)+\
+            __ALLOCA_free(yyls,yylsa)+\
+           (num))
 #else
 #define __ALLOCA_return(num) \
             return( __ALLOCA_free(yyss,yyssa)+\
-		    __ALLOCA_free(yyvs,yyvsa)+\
-		   (num))
+            __ALLOCA_free(yyvs,yyvsa)+\
+           (num))
 #endif
 #else
 #define __ALLOCA_return(num) return(num)
@@ -908,11 +908,11 @@ while (0)
 /* If nonreentrant, and not class , generate the variables here */
 int     YY_TransformationParser_CHAR;                      /*  the lookahead symbol        */
 YY_TransformationParser_STYPE      YY_TransformationParser_LVAL;              /*  the semantic value of the */
-				/*  lookahead symbol    */
+                /*  lookahead symbol    */
 int YY_TransformationParser_NERRS;                 /*  number of parse errors so far */
 #ifdef YY_TransformationParser_LSP_NEEDED
 YY_TransformationParser_LTYPE YY_TransformationParser_LLOC;   /*  location data for the lookahead     */
-			/*  symbol                              */
+            /*  symbol                              */
 #endif
 #endif
 
@@ -1031,8 +1031,8 @@ YY_TransformationParser_PARSE_PARAM_DEF
 #endif
 
   YY_TransformationParser_STYPE yyval;             /*  the variable used to return         */
-				/*  semantic values from the action     */
-				/*  routines                            */
+                /*  semantic values from the action     */
+                /*  routines                            */
 
   int yylen;
 /* start loop, in which YYGOTO may be used. */
@@ -1080,20 +1080,20 @@ YYLABEL(yynewstate)
 
 #ifdef yyoverflow
       /* Each stack pointer address is followed by the size of
-	 the data in use in that stack, in bytes.  */
+     the data in use in that stack, in bytes.  */
 #ifdef YY_TransformationParser_LSP_NEEDED
       /* This used to be a conditional around just the two extra args,
-	 but that might be undefined if yyoverflow is a macro.  */
+     but that might be undefined if yyoverflow is a macro.  */
       yyoverflow("parser stack overflow",
-		 &yyss1, size * sizeof (*yyssp),
-		 &yyvs1, size * sizeof (*yyvsp),
-		 &yyls1, size * sizeof (*yylsp),
-		 &yystacksize);
+         &yyss1, size * sizeof (*yyssp),
+         &yyvs1, size * sizeof (*yyvsp),
+         &yyls1, size * sizeof (*yylsp),
+         &yystacksize);
 #else
       yyoverflow("parser stack overflow",
-		 &yyss1, size * sizeof (*yyssp),
-		 &yyvs1, size * sizeof (*yyvsp),
-		 &yystacksize);
+         &yyss1, size * sizeof (*yyssp),
+         &yyvs1, size * sizeof (*yyvsp),
+         &yystacksize);
 #endif
 
       yyss = yyss1; yyvs = yyvs1;
@@ -1103,13 +1103,13 @@ YYLABEL(yynewstate)
 #else /* no yyoverflow */
       /* Extend the stack our own way.  */
       if (yystacksize >= YYMAXDEPTH)
-	{
-	  YY_TransformationParser_ERROR((char*)"parser stack overflow");
-	  __ALLOCA_return(2);
-	}
+    {
+      YY_TransformationParser_ERROR((char*)"parser stack overflow");
+      __ALLOCA_return(2);
+    }
       yystacksize *= 2;
       if (yystacksize > YYMAXDEPTH)
-	yystacksize = YYMAXDEPTH;
+    yystacksize = YYMAXDEPTH;
       yyss = (short *) __ALLOCA_alloca (yystacksize * sizeof (*yyssp));
       __yy_bcopy ((char *)yyss1, (char *)yyss, size * sizeof (*yyssp));
       __ALLOCA_free(yyss1,yyssa);
@@ -1131,11 +1131,11 @@ YYLABEL(yynewstate)
 
 #if YY_TransformationParser_DEBUG != 0
       if (YY_TransformationParser_DEBUG_FLAG)
-	fprintf(stderr, "Stack size increased to %d\n", yystacksize);
+    fprintf(stderr, "Stack size increased to %d\n", yystacksize);
 #endif
 
       if (yyssp >= yyss + yystacksize - 1)
-	YYABORT;
+    YYABORT;
     }
 
 #if YY_TransformationParser_DEBUG != 0
@@ -1165,7 +1165,7 @@ YYLABEL(yybackup)
     {
 #if YY_TransformationParser_DEBUG != 0
       if (YY_TransformationParser_DEBUG_FLAG)
-	fprintf(stderr, "Reading a token: ");
+    fprintf(stderr, "Reading a token: ");
 #endif
       YY_TransformationParser_CHAR = YYLEX;
     }
@@ -1179,7 +1179,7 @@ YYLABEL(yybackup)
 
 #if YY_TransformationParser_DEBUG != 0
       if (YY_TransformationParser_DEBUG_FLAG)
-	fprintf(stderr, "Now at end of input.\n");
+    fprintf(stderr, "Now at end of input.\n");
 #endif
     }
   else
@@ -1188,15 +1188,15 @@ YYLABEL(yybackup)
 
 #if YY_TransformationParser_DEBUG != 0
       if (YY_TransformationParser_DEBUG_FLAG)
-	{
-	  fprintf (stderr, "Next token is %d (%s", YY_TransformationParser_CHAR, yytname[yychar1]);
-	  /* Give the individual parser a way to print the precise meaning
-	     of a token, for further debugging info.  */
+    {
+      fprintf (stderr, "Next token is %d (%s", YY_TransformationParser_CHAR, yytname[yychar1]);
+      /* Give the individual parser a way to print the precise meaning
+         of a token, for further debugging info.  */
 #ifdef YYPRINT
-	  YYPRINT (stderr, YY_TransformationParser_CHAR, YY_TransformationParser_LVAL);
+      YYPRINT (stderr, YY_TransformationParser_CHAR, YY_TransformationParser_LVAL);
 #endif
-	  fprintf (stderr, ")\n");
-	}
+      fprintf (stderr, ")\n");
+    }
 #endif
     }
 
@@ -1216,7 +1216,7 @@ YYLABEL(yybackup)
   if (yyn < 0)
     {
       if (yyn == YYFLAG)
-	YYGOTO(yyerrlab);
+    YYGOTO(yyerrlab);
       yyn = -yyn;
       YYGOTO(yyreduce);
     }
@@ -1267,11 +1267,11 @@ YYLABEL(yyreduce)
       int i;
 
       fprintf (stderr, "Reducing via rule %d (line %d), ",
-	       yyn, yyrline[yyn]);
+           yyn, yyrline[yyn]);
 
       /* Print the symbols being reduced, and their result.  */
       for (i = yyprhs[yyn]; yyrhs[i] > 0; i++)
-	fprintf (stderr, "%s ", yytname[yyrhs[i]]);
+    fprintf (stderr, "%s ", yytname[yyrhs[i]]);
       fprintf (stderr, " -> %s\n", yytname[yyr1[yyn]]);
     }
 #endif
@@ -1472,7 +1472,7 @@ case 35:
       short *ssp1 = yyss - 1;
       fprintf (stderr, "state stack now");
       while (ssp1 != yyssp)
-	fprintf (stderr, " %d", *++ssp1);
+    fprintf (stderr, " %d", *++ssp1);
       fprintf (stderr, "\n");
     }
 #endif
@@ -1522,44 +1522,44 @@ YYLABEL(yyerrlab)   /* here on detecting error */
       yyn = yypact[yystate];
 
       if (yyn > YYFLAG && yyn < YYLAST)
-	{
-	  int size = 0;
-	  char *msg;
-	  int x, count;
+    {
+      int size = 0;
+      char *msg;
+      int x, count;
 
-	  count = 0;
-	  /* Start X at -yyn if nec to avoid negative indexes in yycheck.  */
-	  for (x = (yyn < 0 ? -yyn : 0);
-	       x < (sizeof(yytname) / sizeof(char *)); x++)
-	    if (yycheck[x + yyn] == x)
-	      size += strlen(yytname[x]) + 15, count++;
-	  msg = (char *) malloc(size + 15);
-	  if (msg != 0)
-	    {
-	      strcpy(msg, "parse error");
+      count = 0;
+      /* Start X at -yyn if nec to avoid negative indexes in yycheck.  */
+      for (x = (yyn < 0 ? -yyn : 0);
+           x < (sizeof(yytname) / sizeof(char *)); x++)
+        if (yycheck[x + yyn] == x)
+          size += strlen(yytname[x]) + 15, count++;
+      msg = (char *) malloc(size + 15);
+      if (msg != 0)
+        {
+          strcpy(msg, "parse error");
 
-	      if (count < 5)
-		{
-		  count = 0;
-		  for (x = (yyn < 0 ? -yyn : 0);
-		       x < (sizeof(yytname) / sizeof(char *)); x++)
-		    if (yycheck[x + yyn] == x)
-		      {
-			strcat(msg, count == 0 ? ", expecting `" : " or `");
-			strcat(msg, yytname[x]);
-			strcat(msg, "'");
-			count++;
-		      }
-		}
-	      YY_TransformationParser_ERROR(msg);
-	      free(msg);
-	    }
-	  else
-	    YY_TransformationParser_ERROR ((char*)"parse error; also virtual memory exceeded");
-	}
+          if (count < 5)
+        {
+          count = 0;
+          for (x = (yyn < 0 ? -yyn : 0);
+               x < (sizeof(yytname) / sizeof(char *)); x++)
+            if (yycheck[x + yyn] == x)
+              {
+            strcat(msg, count == 0 ? ", expecting `" : " or `");
+            strcat(msg, yytname[x]);
+            strcat(msg, "'");
+            count++;
+              }
+        }
+          YY_TransformationParser_ERROR(msg);
+          free(msg);
+        }
+      else
+        YY_TransformationParser_ERROR ((char*)"parse error; also virtual memory exceeded");
+    }
       else
 #endif /* YY_TransformationParser_ERROR_VERBOSE */
-	YY_TransformationParser_ERROR((char*)"parse error");
+    YY_TransformationParser_ERROR((char*)"parse error");
     }
 
   YYGOTO(yyerrlab1);
@@ -1571,11 +1571,11 @@ YYLABEL(yyerrlab1)   /* here on error raised explicitly by an action */
 
       /* return failure if at end of input */
       if (YY_TransformationParser_CHAR == YYEOF)
-	YYABORT;
+    YYABORT;
 
 #if YY_TransformationParser_DEBUG != 0
       if (YY_TransformationParser_DEBUG_FLAG)
-	fprintf(stderr, "Discarding token %d (%s).\n", YY_TransformationParser_CHAR, yytname[yychar1]);
+    fprintf(stderr, "Discarding token %d (%s).\n", YY_TransformationParser_CHAR, yytname[yychar1]);
 #endif
 
       YY_TransformationParser_CHAR = YYEMPTY;
@@ -1612,7 +1612,7 @@ YYLABEL(yyerrpop)   /* pop the current state because it cannot handle the error 
       short *ssp1 = yyss - 1;
       fprintf (stderr, "Error: state stack now");
       while (ssp1 != yyssp)
-	fprintf (stderr, " %d", *++ssp1);
+    fprintf (stderr, " %d", *++ssp1);
       fprintf (stderr, "\n");
     }
 #endif
@@ -1631,7 +1631,7 @@ YYLABEL(yyerrhandle)
   if (yyn < 0)
     {
       if (yyn == YYFLAG)
-	YYGOTO(yyerrpop);
+    YYGOTO(yyerrpop);
       yyn = -yyn;
       YYGOTO(yyreduce);
     }
@@ -1673,9 +1673,9 @@ int TransformationParser::yylex()
 
 void TransformationParser::yyerror(char *s)
 {
-	fflush(stdout);
+    fflush(stdout);
         printf("\n%s", theScanner->lineBuf);
-	printf("\n%*s\n%*s on line %i\n", theScanner->column, "^", theScanner->column, s, theScanner->theLine);
+    printf("\n%*s\n%*s on line %i\n", theScanner->column, "^", theScanner->column, s, theScanner->theLine);
 }
 
 TransformationParser::~TransformationParser()

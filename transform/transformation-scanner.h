@@ -26,16 +26,16 @@
 #ifndef YY_USE_CLASS
 #define YY_USE_CLASS
 #endif
-#else	/* ! __cplusplus */
+#else    /* ! __cplusplus */
 #ifdef __STDC__
 #ifdef __GNUC__
 #else
-#endif	/* __GNUC__ */
+#endif    /* __GNUC__ */
 #ifndef YY_USE_PROTOS
 #define YY_USE_PROTOS
 #endif
-#endif	/* __STDC__ */
-#endif	/* ! __cplusplus */
+#endif    /* __STDC__ */
+#endif    /* ! __cplusplus */
 /*********************************************/
 /* COMPILER DEPENDENT   MACROS               */
 /*********************************************/
@@ -58,7 +58,7 @@
 #include "transformation-parser.h"
 // For some reason, MSVC 5.00 complains about use of undefined type RTL a lot
 #if defined(_MSC_VER) && _MSC_VER <= 1100
-#include "signature.h"		// For MSVC 5.00
+#include "signature.h"        // For MSVC 5.00
 #include "rtl.h"
 #endif
 #define MAX_LINE 1024      // the longest line

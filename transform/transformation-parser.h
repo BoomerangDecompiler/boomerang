@@ -211,49 +211,49 @@ extern YY_TransformationParser_STYPE YY_TransformationParser_LVAL;
 
 /* #line 143 "/usr/local/lib/bison.h" */
 #line 214 "transformation-parser.h"
-#define	SIZEOF	258
-#define	KIND	259
-#define	POINTER	260
-#define	COMPOUND	261
-#define	ARRAY	262
-#define	TYPE	263
-#define	FUNC	264
-#define	WHERE	265
-#define	BECOMES	266
-#define	REGOF	267
-#define	MEMOF	268
-#define	ADDROF	269
-#define	CONSTANT	270
-#define	IDENTIFIER	271
-#define	STRING_LITERAL	272
-#define	PTR_OP	273
-#define	INC_OP	274
-#define	DEC_OP	275
-#define	LEFT_OP	276
-#define	RIGHT_OP	277
-#define	LE_OP	278
-#define	GE_OP	279
-#define	EQ_OP	280
-#define	NE_OP	281
-#define	AND_OP	282
-#define	OR_OP	283
-#define	MUL_ASSIGN	284
-#define	DIV_ASSIGN	285
-#define	MOD_ASSIGN	286
-#define	ADD_ASSIGN	287
-#define	SUB_ASSIGN	288
-#define	LEFT_ASSIGN	289
-#define	RIGHT_ASSIGN	290
-#define	AND_ASSIGN	291
-#define	XOR_ASSIGN	292
-#define	OR_ASSIGN	293
-#define	TYPE_NAME	294
-#define	STRUCT	295
-#define	UNION	296
-#define	ENUM	297
-#define	ELLIPSIS	298
-#define	BOOL_TRUE	299
-#define	BOOL_FALSE	300
+#define    SIZEOF    258
+#define    KIND    259
+#define    POINTER    260
+#define    COMPOUND    261
+#define    ARRAY    262
+#define    TYPE    263
+#define    FUNC    264
+#define    WHERE    265
+#define    BECOMES    266
+#define    REGOF    267
+#define    MEMOF    268
+#define    ADDROF    269
+#define    CONSTANT    270
+#define    IDENTIFIER    271
+#define    STRING_LITERAL    272
+#define    PTR_OP    273
+#define    INC_OP    274
+#define    DEC_OP    275
+#define    LEFT_OP    276
+#define    RIGHT_OP    277
+#define    LE_OP    278
+#define    GE_OP    279
+#define    EQ_OP    280
+#define    NE_OP    281
+#define    AND_OP    282
+#define    OR_OP    283
+#define    MUL_ASSIGN    284
+#define    DIV_ASSIGN    285
+#define    MOD_ASSIGN    286
+#define    ADD_ASSIGN    287
+#define    SUB_ASSIGN    288
+#define    LEFT_ASSIGN    289
+#define    RIGHT_ASSIGN    290
+#define    AND_ASSIGN    291
+#define    XOR_ASSIGN    292
+#define    OR_ASSIGN    293
+#define    TYPE_NAME    294
+#define    STRUCT    295
+#define    UNION    296
+#define    ENUM    297
+#define    ELLIPSIS    298
+#define    BOOL_TRUE    299
+#define    BOOL_FALSE    300
 
 
 #line 143 "/usr/local/lib/bison.h"
@@ -351,49 +351,49 @@ enum YY_TransformationParser_ENUM_TOKEN { YY_TransformationParser_NULL_TOKEN=0
 
 /* #line 185 "/usr/local/lib/bison.h" */
 #line 354 "transformation-parser.h"
-	,SIZEOF=258
-	,KIND=259
-	,POINTER=260
-	,COMPOUND=261
-	,ARRAY=262
-	,TYPE=263
-	,FUNC=264
-	,WHERE=265
-	,BECOMES=266
-	,REGOF=267
-	,MEMOF=268
-	,ADDROF=269
-	,CONSTANT=270
-	,IDENTIFIER=271
-	,STRING_LITERAL=272
-	,PTR_OP=273
-	,INC_OP=274
-	,DEC_OP=275
-	,LEFT_OP=276
-	,RIGHT_OP=277
-	,LE_OP=278
-	,GE_OP=279
-	,EQ_OP=280
-	,NE_OP=281
-	,AND_OP=282
-	,OR_OP=283
-	,MUL_ASSIGN=284
-	,DIV_ASSIGN=285
-	,MOD_ASSIGN=286
-	,ADD_ASSIGN=287
-	,SUB_ASSIGN=288
-	,LEFT_ASSIGN=289
-	,RIGHT_ASSIGN=290
-	,AND_ASSIGN=291
-	,XOR_ASSIGN=292
-	,OR_ASSIGN=293
-	,TYPE_NAME=294
-	,STRUCT=295
-	,UNION=296
-	,ENUM=297
-	,ELLIPSIS=298
-	,BOOL_TRUE=299
-	,BOOL_FALSE=300
+    ,SIZEOF=258
+    ,KIND=259
+    ,POINTER=260
+    ,COMPOUND=261
+    ,ARRAY=262
+    ,TYPE=263
+    ,FUNC=264
+    ,WHERE=265
+    ,BECOMES=266
+    ,REGOF=267
+    ,MEMOF=268
+    ,ADDROF=269
+    ,CONSTANT=270
+    ,IDENTIFIER=271
+    ,STRING_LITERAL=272
+    ,PTR_OP=273
+    ,INC_OP=274
+    ,DEC_OP=275
+    ,LEFT_OP=276
+    ,RIGHT_OP=277
+    ,LE_OP=278
+    ,GE_OP=279
+    ,EQ_OP=280
+    ,NE_OP=281
+    ,AND_OP=282
+    ,OR_OP=283
+    ,MUL_ASSIGN=284
+    ,DIV_ASSIGN=285
+    ,MOD_ASSIGN=286
+    ,ADD_ASSIGN=287
+    ,SUB_ASSIGN=288
+    ,LEFT_ASSIGN=289
+    ,RIGHT_ASSIGN=290
+    ,AND_ASSIGN=291
+    ,XOR_ASSIGN=292
+    ,OR_ASSIGN=293
+    ,TYPE_NAME=294
+    ,STRUCT=295
+    ,UNION=296
+    ,ENUM=297
+    ,ELLIPSIS=298
+    ,BOOL_TRUE=299
+    ,BOOL_FALSE=300
 
 
 #line 185 "/usr/local/lib/bison.h"
@@ -420,7 +420,7 @@ public:
 #endif
 #if YY_TransformationParser_DEBUG != 0
 public:
- int YY_TransformationParser_DEBUG_FLAG;	/*  nonzero means print parse trace	*/
+ int YY_TransformationParser_DEBUG_FLAG;    /*  nonzero means print parse trace    */
 #endif
 public:
  YY_TransformationParser_CLASS(YY_TransformationParser_CONSTRUCTOR_PARAM);
