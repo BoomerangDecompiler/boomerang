@@ -89,8 +89,8 @@ bool ExeBinaryFile::RealLoad(const char* sName)
                  * less the length of the m_pHeader and reloc table
                  * less the number of bytes unused on last page
                 */
-        cb = (dword)LH(&m_pHeader->numPages) * 512 -
-             (dword)LH(&m_pHeader->numParaHeader) * 16;
+        cb = (DWord)LH(&m_pHeader->numPages) * 512 -
+             (DWord)LH(&m_pHeader->numParaHeader) * 16;
         if (m_pHeader->lastPageSize)
         {
             cb -= 512 - LH(&m_pHeader->lastPageSize);
