@@ -310,7 +310,7 @@ void UserProc::dfaTypeAnalysis() {
                     prog->globalUsed(ADDRESS::g(K), iType);
                 }
             } else if (lhs->isGlobal()) {
-                char* gname = ((Const*)((Location*)lhs)->getSubExp1())->getStr();
+                const char* gname = ((Const*)((Location*)lhs)->getSubExp1())->getStr();
                 prog->setGlobalType(gname, iType);
             }
         }
@@ -1266,7 +1266,7 @@ void Unary::descendType(Type* parentType, bool& ch, Statement* s) {
             break;
         case opGlobal: {
             Prog* prog = s->getProc()->getProg();
-            char* name = ((Const*)subExp1)->getStr();
+            const char* name = ((Const*)subExp1)->getStr();
             Type* ty = prog->getGlobalType(name);
             if(ty) {
                 ty = ty->meetWith(parentType, ch);

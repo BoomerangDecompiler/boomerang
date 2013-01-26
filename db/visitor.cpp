@@ -336,7 +336,7 @@ bool UsedLocalFinder::visit(TypedExp* e, bool& override) {
 bool UsedLocalFinder::visit(Terminal* e) {
     if (e->getOper() == opDefineAll)
         all = true;
-    char* sym = proc->findFirstSymbol(e);
+    const char* sym = proc->findFirstSymbol(e);
     if (sym)
         used->insert(e);
     return true;        // Always continue recursion
@@ -770,7 +770,7 @@ bool ExpHasMemofTester::visit(Location *e, bool& override) {
 bool TempToLocalMapper::visit(Location *e, bool& override) {
     if (e->isTemp()) {
         // We have a temp subexpression; get its name
-        char* tempName = ((Const*)e->getSubExp1())->getStr();
+        const char* tempName = ((Const*)e->getSubExp1())->getStr();
         Type* ty = Type::getTempType(tempName);        // Types for temps strictly depend on the name
         // This call will do the mapping from the temp to a new local:
         proc->getSymbolExp(e, ty, true);
@@ -822,7 +822,7 @@ Exp* ConstGlobalConverter::preVisit(RefExp* e, bool& recur) {
             return new Const(value);
         } else if (base->isGlobal()) {
             // We have a glo{-}
-            char* gname = ((Const*)(base->getSubExp1()))->getStr();
+            const char* gname = ((Const*)(base->getSubExp1()))->getStr();
             ADDRESS gloValue = prog->getGlobalAddr(gname);
             int value = prog->readNative4(gloValue);
             recur = false;
@@ -832,7 +832,7 @@ Exp* ConstGlobalConverter::preVisit(RefExp* e, bool& recur) {
                    (glo = ((Binary*)base)->getSubExp1(), glo->isGlobal())) {
             // We have a glo[K]{-}
             int K = ((Const*)idx)->getInt();
-            char* gname = ((Const*)(glo->getSubExp1()))->getStr();
+            const char* gname = ((Const*)(glo->getSubExp1()))->getStr();
             ADDRESS gloValue = prog->getGlobalAddr(gname);
             Type* gloType = prog->getGlobal(gname)->getType();
             assert(gloType->isArray());
@@ -1002,7 +1002,7 @@ bool StmtCastInserter::common(Assignment* s) {
 }
 
 Exp* ExpSsaXformer::postVisit(RefExp *e) {
-    char* sym = proc->lookupSymFromRefAny(e);
+    const char* sym = proc->lookupSymFromRefAny(e);
     if (sym != NULL)
         return Location::local(sym, proc);
     // We should not get here: all locations should be replaced with Locals or Parameters
@@ -1015,7 +1015,7 @@ void StmtSsaXformer::commonLhs(Assignment* as) {
     Exp* lhs = as->getLeft();
     lhs = lhs->accept((ExpSsaXformer*)mod);        // In case the LHS has say m[r28{0}+8] -> m[esp+8]
     RefExp* re = new RefExp(lhs, as);
-    char* sym = proc->lookupSymFromRefAny(re);
+    const char* sym = proc->lookupSymFromRefAny(re);
     if (sym)
         as->setLeft(Location::local(sym, proc));
 }
@@ -1045,7 +1045,7 @@ void StmtSsaXformer::visit(PhiAssign *s, bool& recur) {
     for (it = s->begin(); it != s->end(); it++) {
         if (it->e == NULL) continue;
         RefExp* r = new RefExp(it->e, it->def);
-        char* sym = proc->lookupSymFromRefAny(r);
+        const char* sym = proc->lookupSymFromRefAny(r);
         if (sym != NULL)
             it->e = Location::local(sym, proc);        // Some may be parameters, but hopefully it won't matter
     }

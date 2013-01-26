@@ -170,7 +170,7 @@ virtual int getArity() {return 0;}        // Overridden for Unary, Binary, etc
         // True if is string const
         bool        isStrConst() {return op == opStrConst;}
         // Get string constant even if mangled
-        char*        getAnyStrConst();
+        const char *getAnyStrConst();
         // True if is flt point const
         bool        isFltConst() {return op == opFltConst;}
         // True if inteter or string constant
@@ -380,7 +380,7 @@ class Const : public Exp {
             ADDRESS    a;            // void* conflated with unsigned int: needs fixing
             QWord    ll;            // 64 bit integer
             double    d;            // Double precision float
-            char*    p;            // Pointer to string
+            const char* p;            // Pointer to string
                                 // Don't store string: function could be renamed
             Proc*    pp;            // Pointer to function
         } u;
@@ -393,7 +393,7 @@ public:
                     Const(QWord ll);
                     Const(ADDRESS a);
                     Const(double d);
-                    Const(char* p);
+                    Const(const char* p);
                     Const(Proc* p);
         // Copy constructor
                     Const(Const& o);
@@ -412,7 +412,7 @@ virtual bool        operator*=(Exp& o);
         int            getInt() {return u.i;}
         QWord        getLong(){return u.ll;}
         double        getFlt() {return u.d;}
-        char*        getStr() {return u.p;}
+        const char*        getStr() {return u.p;}
         ADDRESS        getAddr() {return u.a;}
         const char*    getFuncName();
 

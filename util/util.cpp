@@ -212,7 +212,7 @@ void escapeXMLChars(std::string &s)
 
 // Turn things like newline, return, tab into \n, \r, \t etc
 // Note: assumes a C or C++ back end...
-char* escapeStr(char* str) {
+char* escapeStr(const char* str) {
     std::ostringstream out;
     char unescaped[]="ntvbrfa\"";
     char escaped[]="\n\t\v\b\r\f\a\"";
@@ -248,7 +248,7 @@ char* escapeStr(char* str) {
 #include "types.h"
 #include <iomanip>
 std::ostream& operator<< (std::ostream& stream, const ADDRESS& addr) {
-	stream << "0x" << std::hex << addr.m_value << std::dec;
-	return stream;
+    stream << "0x" << std::hex << addr.m_value << std::dec;
+    return stream;
 }
 

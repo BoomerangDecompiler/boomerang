@@ -1521,8 +1521,8 @@ void SSLParser::expandTables(InsNameElem* iname, std::list<std::string>* params,
                         if (((Assign*)s)->searchAll(srchExpr, le)) {
                                 std::list<Exp*>::iterator it;
                                 for (it = le.begin(); it != le.end(); it++) {
-                                        char* tbl = ((Const*)((Binary*)*it)->getSubExp1())->getStr();
-                                        char* idx = ((Const*)((Binary*)*it)->getSubExp2())->getStr();
+                                        const char* tbl = ((Const*)((Binary*)*it)->getSubExp1())->getStr();
+                                        const char* idx = ((Const*)((Binary*)*it)->getSubExp2())->getStr();
                                         Exp* repl =((ExprTable*)(TableDict[tbl]))->expressions[indexrefmap[idx]->getvalue()];
                                         s->searchAndReplace(*it, repl);
                                 }
@@ -1538,8 +1538,8 @@ void SSLParser::expandTables(InsNameElem* iname, std::list<std::string>* params,
                                 assert(t->getOper() == opOpTable);
                                 // The ternary opOpTable has a table and index name as strings, then a list of 2 expressions
                                 // (and we want to replace it with e1 OP e2)
-                                char* tbl = ((Const*)t->getSubExp1()) ->getStr();
-                                char* idx = ((Const*)t->getSubExp2()) ->getStr();
+                                const char* tbl = ((Const*)t->getSubExp1()) ->getStr();
+                                const char* idx = ((Const*)t->getSubExp2()) ->getStr();
                                 // The expressions to operate on are in the list
                                 Binary* b = (Binary*)t->getSubExp3();
                                 assert(b->getOper() == opList);

@@ -1887,7 +1887,7 @@ void findSwParams(char form, Exp* e, Exp*& expr, ADDRESS& T) {
             if (base->isSubscript())
                 base = ((RefExp*)base)->getSubExp1();
             Exp* con = ((Location*)base)->getSubExp1();
-            char* gloName = ((Const*)con)->getStr();
+            const char* gloName = ((Const*)con)->getStr();
             UserProc* p = ((Location*)base)->getProc();
             Prog* prog = p->getProg();
             T = (ADDRESS)prog->getGlobalAddr(gloName);

@@ -691,17 +691,16 @@ typedef    std::map<ADDRESS, DataInterval>::iterator iterator;
         DataIntervalEntry* find(ADDRESS addr);        // Find the DataInterval at address addr, or NULL if none
         iterator    find_it(ADDRESS addr);            // Return an iterator to the entry for it, or end() if none
         bool        isClear(ADDRESS addr, unsigned size);        // True if from addr for size bytes is clear
-        // Add a new data item
-        void        addItem(ADDRESS addr, char* name, Type* ty, bool forced = false);
+        void        addItem(ADDRESS addr, const char* name, Type* ty, bool forced = false);
         void        deleteItem(ADDRESS addr);        // Mainly for testing?
         void        expandItem(ADDRESS addr, unsigned size);
-        char*        prints();                        // For test and debug
+        char *      prints();                        // For test and debug
         void        dump();                            // For debug
 
 private:
-        void        enterComponent(DataIntervalEntry* pdie, ADDRESS addr, char* name, Type* ty, bool forced);
-        void        replaceComponents(ADDRESS addr, char* name, Type* ty, bool forced);
-        void        checkMatching(DataIntervalEntry* pdie, ADDRESS addr, char* name, Type* ty, bool forced);
+        void        enterComponent(DataIntervalEntry* pdie, ADDRESS addr, const char *name, Type* ty, bool forced);
+        void        replaceComponents(ADDRESS addr, const char *name, Type* ty, bool forced);
+        void        checkMatching(DataIntervalEntry* pdie, ADDRESS addr, const char* name, Type* ty, bool forced);
 };
 
 // Not part of the Type class, but logically belongs with it:
