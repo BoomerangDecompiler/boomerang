@@ -11,14 +11,18 @@
  * 28 Jan 05 - G. Krol: Separated -h output into sections and neatened
  * 02 Sep 06 - Mike: introduced USE_XML to make it easy to disable use of the expat library
 */
-
+#include "config.h"
 #define VERSION "alpha 0.3.1 09/Sep/2006"
 
 #if __CYGWIN__
-#define USE_XML 0            // Cygwin has a weird problem that causes libBinaryFile.dll not to load if the expat library
-// is used. Note that other Windows versions require expat.
-#else                        // For all platforms other than Cygwin:
-#define USE_XML 1        // Set to 0 to not use the expat library for XML loading and saving
+#define USE_XML 0           // Cygwin has a weird problem that causes libBinaryFile.dll not to load if the expat library
+                            // is used. Note that other Windows versions require expat.
+#else                       // For all platforms other than Cygwin:
+#   ifdef HAVE_LIBEXPAT
+#       define USE_XML 1    // Set to 0 to not use the expat library for XML loading and saving
+#   else
+#       define USE_XML 0    // Set to 0 to not use the expat library for XML loading and saving
+#   endif
 #endif
 
 #include <iostream>

@@ -1,5 +1,10 @@
 cmake_minimum_required (VERSION 2.8)
 project (boomerang)
+IF(CMAKE_CXX_COMPILER MATCHES cl.exe)
+    ADD_DEFINITIONS(-D_CRT_NONSTDC_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS)
+ELSE()
+
+ENDIF()
 
 if("${PROJECT_SOURCE_DIR}" STREQUAL "${PROJECT_BINARY_DIR}")
    message(SEND_ERROR "In-source builds are not allowed! mkdir build, cd build, cmake ..")
@@ -9,22 +14,21 @@ INCLUDE(CheckIncludeFiles)
 INCLUDE(CheckLibraryExists)
 INCLUDE(CheckTypeSize)
 INCLUDE(TestBigEndian)
-INCLUDE(FindEXPAT)
 
 MACRO(SET_01 A B)
-	IF(${B})
-		SET(${A} 1)
-	ELSE(${B})
-		SET(${A} 0)
-	ENDIF(${B})
+    IF(${B})
+        SET(${A} 1)
+    ELSE(${B})
+        SET(${A} 0)
+    ENDIF(${B})
 ENDMACRO(SET_01 A B)
 
 MACRO(SET_01_2 A B C)
-	IF(${B} AND ${C})
-		SET(${A} 1)
-	ELSE(${B} AND ${C})
-		SET(${A} 0)
-	ENDIF(${B} AND ${C})
+    IF(${B} AND ${C})
+        SET(${A} 1)
+    ELSE(${B} AND ${C})
+        SET(${A} 0)
+    ENDIF(${B} AND ${C})
 ENDMACRO(SET_01_2 A B C)
 
 # -ldl (dlopen)
@@ -33,17 +37,17 @@ CHECK_LIBRARY_EXISTS(dl dlopen ""      DL_L)
 SET_01_2(DL_FOUND DL_H DL_L)
 
 IF(NOT "${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
-	SET(DL_LIBS -ldl)
+        SET(DL_LIBS -ldl)
 ELSE(NOT "${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
-	SET(DL_LIBS)
+        SET(DL_LIBS)
 ENDIF(NOT "${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
 
 # CppUnit
 FIND_PROGRAM(CPPUNIT_CONFIG_EXECUTABLE NAMES cppunit-config PATHS /usr/local/bin)
 IF(CPPUNIT_CONFIG_EXECUTABLE)
-	EXEC_PROGRAM(${CPPUNIT_CONFIG_EXECUTABLE} ARGS --cflags OUTPUT_VARIABLE CPPUNIT_CFLAGS)
-	EXEC_PROGRAM(${CPPUNIT_CONFIG_EXECUTABLE} ARGS --libs OUTPUT_VARIABLE CPPUNIT_LIBS)
-	SET(CPPUNIT_FOUND 1)
+        EXEC_PROGRAM(${CPPUNIT_CONFIG_EXECUTABLE} ARGS --cflags OUTPUT_VARIABLE CPPUNIT_CFLAGS)
+        EXEC_PROGRAM(${CPPUNIT_CONFIG_EXECUTABLE} ARGS --libs OUTPUT_VARIABLE CPPUNIT_LIBS)
+        SET(CPPUNIT_FOUND 1)
 ENDIF(CPPUNIT_CONFIG_EXECUTABLE)
 
 # GC
@@ -70,7 +74,7 @@ CHECK_INCLUDE_FILES(sys/stat.h    HAVE_SYS_STAT_H)
 CHECK_INCLUDE_FILES(sys/types.h   HAVE_SYS_TYPES_H)
 CHECK_INCLUDE_FILES(unistd.h      HAVE_UNISTD_H)
 IF("${CMAKE_SYSTEM_NAME}" STREQUAL "MacOS")
-	SET(HOST_OSX 1)
+        SET(HOST_OSX 1)
 ENDIF("${CMAKE_SYSTEM_NAME}" STREQUAL "MacOS")
 SET(PACKAGE_BUGREPORT "http://boomerang.sourceforge.net")
 SET(PACKAGE_NAME      "boomerang")
@@ -98,64 +102,68 @@ INCLUDE_DIRECTORIES("${EXPAT_INCLUDE_DIRS}")
 LINK_DIRECTORIES("${CMAKE_CURRENT_BINARY_DIR}/loader")
 
 MACRO(ADDCFLAG SRCFILE FLAG)
-	GET_SOURCE_FILE_PROPERTY(loc_flags "${SRCFILE}" COMPILE_FLAGS)
-	IF(loc_flags)
-		SET_SOURCE_FILES_PROPERTIES("${SRCFILE}" PROPERTIES   COMPILE_FLAGS "${loc_flags} ${FLAG}")
-	ELSE(loc_flags)
-		SET_SOURCE_FILES_PROPERTIES("${SRCFILE}" PROPERTIES   COMPILE_FLAGS "${FLAG}")
-	ENDIF(loc_flags)
-	SET(loc_flags)
+        GET_SOURCE_FILE_PROPERTY(loc_flags "${SRCFILE}" COMPILE_FLAGS)
+        IF(loc_flags)
+                SET_SOURCE_FILES_PROPERTIES("${SRCFILE}" PROPERTIES   COMPILE_FLAGS "${loc_flags} ${FLAG}")
+        ELSE(loc_flags)
+                SET_SOURCE_FILES_PROPERTIES("${SRCFILE}" PROPERTIES   COMPILE_FLAGS "${FLAG}")
+        ENDIF(loc_flags)
+        SET(loc_flags)
 ENDMACRO(ADDCFLAG SRCFILE FLAG)
 
 ADDCFLAG(db/prog.cpp "-I${CMAKE_CURRENT_SOURCE_DIR}/codegen")
 ADDCFLAG(db/prog.cpp "-I${CMAKE_CURRENT_SOURCE_DIR}/c")
 ADDCFLAG(frontend/frontend.cpp "-I${CMAKE_CURRENT_SOURCE_DIR}/c")
 ADDCFLAG(frontend/pentiumdecoder.cpp -fno-exceptions)
-
 SET(boomerang_SRC
-	boomerang.cpp
-	driver.cpp
-	log.cpp
-	c/ansi-c-parser.cpp
-	c/ansi-c-scanner.cpp
-	codegen/chllcode.cpp
-	codegen/syntax.cpp
-	db/basicblock.cpp
-	db/cfg.cpp
-	db/dataflow.cpp
-	db/exp.cpp
-	db/insnameelem.cpp
-	db/managed.cpp
-	db/proc.cpp
-	db/prog.cpp #-Icodegen -Ic
-	db/register.cpp
-	db/rtl.cpp
-	db/signature.cpp
-	db/sslinst.cpp
-	db/sslparser.cpp
-	db/sslscanner.cpp
-	db/statement.cpp
-	db/table.cpp
-	db/visitor.cpp
-	db/xmlprogparser.cpp
-	frontend/frontend.cpp #-Ic
-	frontend/njmcDecoder.cpp
-	frontend/pentiumdecoder.cpp #-fno-exceptions
-	frontend/pentiumfrontend.cpp
-	frontend/ppcdecoder.cpp
-	frontend/ppcfrontend.cpp
-	frontend/sparcdecoder.cpp
-	frontend/sparcfrontend.cpp
-	frontend/mipsdecoder.cpp
-	frontend/mipsfrontend.cpp
-	frontend/st20decoder.cpp
-	frontend/st20frontend.cpp
-	loader/BinaryFileFactory.cpp
-	type/constraint.cpp
-	type/dfa.cpp
-	type/type.cpp
-	util/util.cpp
+        boomerang.cpp
+        driver.cpp
+        log.cpp
+        c/ansi-c-parser.cpp
+        c/ansi-c-scanner.cpp
+        codegen/chllcode.cpp
+        codegen/syntax.cpp
+        db/basicblock.cpp
+        db/cfg.cpp
+        db/dataflow.cpp
+        db/exp.cpp
+        db/insnameelem.cpp
+        db/managed.cpp
+        db/proc.cpp
+        db/prog.cpp #-Icodegen -Ic
+        db/register.cpp
+        db/rtl.cpp
+        db/signature.cpp
+        db/sslinst.cpp
+        db/sslparser.cpp
+        db/sslscanner.cpp
+        db/statement.cpp
+        db/table.cpp
+        db/visitor.cpp
+        frontend/frontend.cpp #-Ic
+        frontend/njmcDecoder.cpp
+        frontend/pentiumdecoder.cpp #-fno-exceptions
+        frontend/pentiumfrontend.cpp
+        frontend/ppcdecoder.cpp
+        frontend/ppcfrontend.cpp
+        frontend/sparcdecoder.cpp
+        frontend/sparcfrontend.cpp
+        frontend/mipsdecoder.cpp
+        frontend/mipsfrontend.cpp
+        frontend/st20decoder.cpp
+        frontend/st20frontend.cpp
+        loader/BinaryFileFactory.cpp
+        type/constraint.cpp
+        type/dfa.cpp
+        type/type.cpp
+        util/util.cpp
 )
+SET(LINKED_LIBRARIES ${DL_LIBS} ${GC_LIBS})
+
+IF(EXPAT_FOUND)
+    SET(LINKED_LIBRARIES ${LINKED_LIBRARIES} "${EXPAT_LIBRARIES}")
+    SET(boomerang_SRC ${boomerang_SRC} db/xmlprogparser.cpp)
+ENDIF()
 
 ADD_EXECUTABLE(boomerang ${boomerang_SRC})
 
