@@ -2996,6 +2996,11 @@ Exp* Ternary::simplifyAddr() {
  * PARAMETERS:        Output stream to send the output to
  * RETURNS:            <nothing>
  *============================================================================*/
+const char *Exp::getOperName() const
+{
+    return operStrings[op];
+}
+
 void Exp::printt(std::ostream& os /*= cout*/)
 {
     print(os);

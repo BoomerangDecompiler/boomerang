@@ -15,7 +15,7 @@
  * 29 Apr 02 - Mike: TypedExp takes Type& and Exp* in opposite order; consistent
  * 10 May 02 - Mike: Added refSubExp1 etc
  * 21 May 02 - Mike: Mods for gcc 3.1
- * 02 Aug 04 - Mike: Removed PhiExp (PhiAssign replaces it) 
+ * 02 Aug 04 - Mike: Removed PhiExp (PhiAssign replaces it)
  * 05 Aug 04 - Mike: Removed the withUses/withDF parameter from print() funcs
  */
 
@@ -89,6 +89,7 @@ virtual                ~Exp() {}
         // Return the operator. Note: I'd like to make this protected, but then subclasses don't seem to be able to use
         // it (at least, for subexpressions)
         OPER        getOper() const {return op;}
+        const char *getOperName() const;
         void        setOper(OPER x) {op = x;}      // A few simplifications use this
 
         void        setLexBegin(unsigned int n) { lexBegin = n; }
@@ -216,7 +217,7 @@ virtual bool        isTerminal() { return false; }
         bool        isMachFtr() {return op == opMachFtr;}
         // True if this is a parameter. Note: opParam has two meanings: a SSL parameter, or a function parameter
         bool        isParam() {return op == opParam;}
-        
+
         // True if this is a location
         bool        isLocation() { return    op == opMemOf || op == opRegOf ||
                                                op == opGlobal || op == opLocal ||
@@ -237,7 +238,7 @@ virtual bool         match(const char *pattern, std::map<std::string, Exp*> &bin
             //    //    //    //    //    //    //
             //    Search and Replace    //
             //    //    //    //    //    //    //
-        
+
         // Search for Exp *search in this Exp. If found, return true and return a ptr to the matching expression in
         // result (useful with wildcards).
 virtual bool        search(Exp* search, Exp*& result);
@@ -265,7 +266,7 @@ virtual void        doSearchChildren(Exp* search, std::list<Exp**>& li, bool onc
         //    //    //    //    //    //    //
         //      Sub expressions    //
         //    //    //    //    //    //    //
-    
+
         // These are here so we can (optionally) prevent code clutter.
         // Using a *Exp (that is known to be a Binary* say), you can just directly call getSubExp2.
         // However, you can still choose to cast from Exp* to Binary* etc. and avoid the virtual call
@@ -288,11 +289,11 @@ virtual void        setSubExp3(Exp* e) {};
         //    Guarded assignment    //
         //    //    //    //    //    //    //
         Exp*        getGuard();            // Get the guard expression, or 0 if not
-    
+
         //    //    //    //    //    //    //    //    //
         //    Expression Simplification    //
         //    //    //    //    //    //    //    //    //
-    
+
         void        partitionTerms(std::list<Exp*>& positives, std::list<Exp*>& negatives, std::vector<int>& integers,
                         bool negate);
 virtual Exp*        simplifyArith() {return this;}
@@ -396,7 +397,7 @@ public:
                     Const(Proc* p);
         // Copy constructor
                     Const(Const& o);
-            
+
         // Nothing to destruct: Don't deallocate the string passed to constructor
 
         // Clone
@@ -430,7 +431,7 @@ virtual void        print(std::ostream& os, bool html = false);
         // Print "recursive" (extra parens not wanted at outer levels)
         void        printNoQuotes(std::ostream& os);
 virtual void        printx(int ind);
- 
+
 
 virtual void        appendDotFile(std::ofstream& of);
 virtual Exp*        genConstraints(Exp* restrictTo);
@@ -529,9 +530,9 @@ virtual void        printx(int ind);
         // Get a reference to subexpression 1
         Exp*&        refSubExp1();
 
-virtual Exp*        match(Exp *pattern); 
+virtual Exp*        match(Exp *pattern);
 virtual bool         match(const char *pattern, std::map<std::string, Exp*> &bindings);
-        
+
         // Search children
         void             doSearchChildren(Exp* search, std::list<Exp**>& li, bool once);
 
@@ -600,7 +601,7 @@ virtual void         printx(int ind);
         // Get a reference to subexpression 2
         Exp*&        refSubExp2();
 
-virtual Exp*        match(Exp *pattern); 
+virtual Exp*        match(Exp *pattern);
 virtual bool         match(const char *pattern, std::map<std::string, Exp*> &bindings);
 
         // Search children
@@ -878,5 +879,5 @@ protected:
         friend class XMLProgParser;
                     Location(OPER op) : Unary(op), proc(NULL) { }
 };    // class Location
-    
+
 #endif // __EXP_H__

@@ -46,7 +46,7 @@
 #include <cstring>
 #include <stdlib.h>
 
-extern char *operStrings[];
+//extern char *operStrings[];
 
 /// Empty constructor, calls HLLCode()
 CHLLCode::CHLLCode() : HLLCode()
@@ -611,7 +611,7 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
         case opAFP:
         case opAGP:
             // not implemented
-            LOG << "WARNING: CHLLCode::appendExp: case " << operStrings[exp->getOper()] << " not implemented\n";
+            LOG << "WARNING: CHLLCode::appendExp: case " << exp->getOperName() << " not implemented\n";
             //assert(false);
             break;
         case opFlagCall:
@@ -916,10 +916,10 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
             if (op >= opZF) {
                 // Machine flags; can occasionally be manipulated individually
                 // Chop off the "op" part
-                str << operStrings[op]+2;
+                str << exp->getOperName()+2;
                 break;
             }
-            LOG << "ERROR: CHLLCode::appendExp: case " << operStrings[op] << " not implemented\n";
+            LOG << "ERROR: CHLLCode::appendExp: case " << exp->getOperName() << " not implemented\n";
             //assert(false);
     }
 
