@@ -628,7 +628,7 @@ instr_name:
                         $$ = $1;
                 }
         |	instr_name DECOR {
-                        unsigned i;
+                        std::string::size_type i;
                         InsNameElem *temp;
                         std::string nm = $2;
 

@@ -2044,7 +2044,7 @@ YY_SSLParser_PARSE_PARAM_DEF
         case 65:
 //#line 625 "db/sslparser.y"
         {
-            unsigned i;
+            std::string::size_type i;
             InsNameElem *temp;
             std::string nm = yyvsp[0].str;
 
