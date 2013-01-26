@@ -9,7 +9,11 @@ ENDIF()
 if("${PROJECT_SOURCE_DIR}" STREQUAL "${PROJECT_BINARY_DIR}")
    message(SEND_ERROR "In-source builds are not allowed! mkdir build, cd build, cmake ..")
 endif()
-
+SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/out)
+IF(WIN32)
+SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG ${PROJECT_SOURCE_DIR}/out)
+#SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE ${PROJECT_SOURCE_DIR}/out)
+ENDIF()
 INCLUDE(CheckIncludeFiles)
 INCLUDE(CheckLibraryExists)
 INCLUDE(CheckTypeSize)
@@ -97,7 +101,9 @@ CONFIGURE_FILE(include/config.h.cmake include/config.h)
 
 INCLUDE_DIRECTORIES("${CMAKE_CURRENT_SOURCE_DIR}/include")
 INCLUDE_DIRECTORIES("${CMAKE_CURRENT_BINARY_DIR}/include")
-INCLUDE_DIRECTORIES("${EXPAT_INCLUDE_DIRS}")
+IF(EXPAT_FOUND)
+    INCLUDE_DIRECTORIES("${EXPAT_INCLUDE_DIRS}")
+ENDIF()
 IF(WIN32)
     LINK_DIRECTORIES("3rd_party/lib")
 ENDIF()
@@ -118,6 +124,7 @@ ADDCFLAG(db/prog.cpp "-I${CMAKE_CURRENT_SOURCE_DIR}/c")
 ADDCFLAG(frontend/frontend.cpp "-I${CMAKE_CURRENT_SOURCE_DIR}/c")
 ADDCFLAG(frontend/pentiumdecoder.cpp -fno-exceptions)
 
+ADD_SUBDIRECTORY(util)
 ADD_SUBDIRECTORY(c)
 ADD_SUBDIRECTORY(codegen)
 ADD_SUBDIRECTORY(db)
@@ -129,7 +136,6 @@ SET(boomerang_SRC
         driver.cpp
         log.cpp
         loader/BinaryFileFactory.cpp
-        util/util.cpp
 )
 SET(LINKED_LIBRARIES ${DL_LIBS} ${GC_LIBS})
 
@@ -137,8 +143,11 @@ IF(EXPAT_FOUND)
     SET(LINKED_LIBRARIES ${LINKED_LIBRARIES} "${EXPAT_LIBRARIES}")
 ENDIF()
 
+IF(WIN32)
+        SET(DEBUG_LIB Dbghelp.lib )
+ENDIF()
 ADD_EXECUTABLE(boomerang ${boomerang_SRC})
 
-TARGET_LINK_LIBRARIES(boomerang ${DL_LIBS} ${GC_LIBS} "${EXPAT_LIBRARIES}" BinaryFile frontend db type ansi-c-parser codegen )
+TARGET_LINK_LIBRARIES(boomerang ${DL_LIBS} ${GC_LIBS} ${DEBUG_LIB} "${EXPAT_LIBRARIES}" BinaryFile frontend db type ansi-c-parser codegen util)
 
 ADD_SUBDIRECTORY(loader)

@@ -1,6 +1,7 @@
 INCLUDE_DIRECTORIES(../c/) # used by prog.cpp
 SET(SRC
         basicblock.cpp
+        ../include/basicblock.h
         cfg.cpp
         dataflow.cpp
         exp.cpp
