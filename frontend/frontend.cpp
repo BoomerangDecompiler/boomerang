@@ -525,7 +525,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
                     LOG << "Warning: invalid instruction at " << uAddr << ": ";
                     // Emit the next 4 bytes for debugging
                     for (int ii=0; ii < 4; ii++)
-                    	LOG << ADDRESS::g(pBF->readNative1(uAddr + ii) & 0xFF) << " ";
+                        LOG << ADDRESS::g(pBF->readNative1(uAddr + ii) & 0xFF) << " ";
                     LOG << "\n";
                 }
                 // Emit the RTL anyway, so we have the address and maybe some other clues
@@ -1030,10 +1030,10 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
  * PARAMETERS:    addr - host address to getch from
  * RETURNS:        An integer with the instruction in it
  *============================================================================*/
-int FrontEnd::getInst(int addr)
-{
-    return (int)(*(unsigned char*)addr);
-}
+//int FrontEnd::getInst(int addr)
+//{
+//    return (int)(*(unsigned char*)addr);
+//}
 
 
 /*==============================================================================
@@ -1116,11 +1116,8 @@ void TargetQueue::dump() {
  * RETURNS:          a pointer to the decoded RTL
  *============================================================================*/
 RTL* decodeRtl(ADDRESS address, int delta, NJMCDecoder* decoder) {
-    DecodeResult inst =
-            decoder->decodeInstruction(address, delta);
-
+    DecodeResult inst = decoder->decodeInstruction(address, delta);
     RTL*    rtl    = inst.rtl;
-
     return rtl;
 }
 
