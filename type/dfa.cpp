@@ -20,7 +20,14 @@
  *                        Van Emmerik style "result is void*" for sigma and delta functions
  */
 
+#include <sstream>
+#include <cstring>
+#include "config.h"
+#ifdef HAVE_LIBGC
 #include "gc.h"
+#else
+#define NO_GARBAGE_COLLECTOR
+#endif
 #include "type.h"
 #include "boomerang.h"
 #include "signature.h"
@@ -30,8 +37,6 @@
 #include "visitor.h"
 #include "log.h"
 #include "proc.h"
-#include <sstream>
-#include <cstring>
 #if defined(_MSC_VER) && _MSC_VER >= 1400
 #pragma warning(disable:4996)        // Warnings about e.g. _strdup deprecated in VS 2005
 #endif

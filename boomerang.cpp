@@ -58,7 +58,13 @@
 
 
 // For the -nG switch to disable the garbage collector
+#include "config.h"
+#ifdef HAVE_LIBGC
 #include "gc.h"
+#else
+#define NO_GARBAGE_COLLECTOR
+#endif
+
 
 Boomerang *Boomerang::boomerang = NULL;
 
@@ -203,7 +209,9 @@ void Boomerang::help() {
     std::cout << "  -nl              : No creation of local variables\n";
     //    std::cout << "  -nm              : No decoding of the 'main' procedure\n";
     std::cout << "  -ng              : No replacement of expressions with Globals\n";
+#ifdef HAVE_LIBGC
     std::cout << "  -nG              : No garbage collection\n";
+#endif
     std::cout << "  -nn              : No removal of NULL and unused statements\n";
     std::cout << "  -np              : No replacement of expressions with Parameter names\n";
     std::cout << "  -nP              : No promotion of signatures (other than main/WinMain/\n";
