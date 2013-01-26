@@ -98,7 +98,9 @@ CONFIGURE_FILE(include/config.h.cmake include/config.h)
 INCLUDE_DIRECTORIES("${CMAKE_CURRENT_SOURCE_DIR}/include")
 INCLUDE_DIRECTORIES("${CMAKE_CURRENT_BINARY_DIR}/include")
 INCLUDE_DIRECTORIES("${EXPAT_INCLUDE_DIRS}")
-
+IF(WIN32)
+    LINK_DIRECTORIES("3rd_party/lib")
+ENDIF()
 LINK_DIRECTORIES("${CMAKE_CURRENT_BINARY_DIR}/loader")
 
 MACRO(ADDCFLAG SRCFILE FLAG)
@@ -115,58 +117,28 @@ ADDCFLAG(db/prog.cpp "-I${CMAKE_CURRENT_SOURCE_DIR}/codegen")
 ADDCFLAG(db/prog.cpp "-I${CMAKE_CURRENT_SOURCE_DIR}/c")
 ADDCFLAG(frontend/frontend.cpp "-I${CMAKE_CURRENT_SOURCE_DIR}/c")
 ADDCFLAG(frontend/pentiumdecoder.cpp -fno-exceptions)
+
+ADD_SUBDIRECTORY(c)
+ADD_SUBDIRECTORY(codegen)
+ADD_SUBDIRECTORY(db)
+ADD_SUBDIRECTORY(frontend)
+ADD_SUBDIRECTORY(type)
+
 SET(boomerang_SRC
         boomerang.cpp
         driver.cpp
         log.cpp
-        c/ansi-c-parser.cpp
-        c/ansi-c-scanner.cpp
-        codegen/chllcode.cpp
-        codegen/syntax.cpp
-        db/basicblock.cpp
-        db/cfg.cpp
-        db/dataflow.cpp
-        db/exp.cpp
-        db/insnameelem.cpp
-        db/managed.cpp
-        db/proc.cpp
-        db/prog.cpp #-Icodegen -Ic
-        db/register.cpp
-        db/rtl.cpp
-        db/signature.cpp
-        db/sslinst.cpp
-        db/sslparser.cpp
-        db/sslscanner.cpp
-        db/statement.cpp
-        db/table.cpp
-        db/visitor.cpp
-        frontend/frontend.cpp #-Ic
-        frontend/njmcDecoder.cpp
-        frontend/pentiumdecoder.cpp #-fno-exceptions
-        frontend/pentiumfrontend.cpp
-        frontend/ppcdecoder.cpp
-        frontend/ppcfrontend.cpp
-        frontend/sparcdecoder.cpp
-        frontend/sparcfrontend.cpp
-        frontend/mipsdecoder.cpp
-        frontend/mipsfrontend.cpp
-        frontend/st20decoder.cpp
-        frontend/st20frontend.cpp
         loader/BinaryFileFactory.cpp
-        type/constraint.cpp
-        type/dfa.cpp
-        type/type.cpp
         util/util.cpp
 )
 SET(LINKED_LIBRARIES ${DL_LIBS} ${GC_LIBS})
 
 IF(EXPAT_FOUND)
     SET(LINKED_LIBRARIES ${LINKED_LIBRARIES} "${EXPAT_LIBRARIES}")
-    SET(boomerang_SRC ${boomerang_SRC} db/xmlprogparser.cpp)
 ENDIF()
 
 ADD_EXECUTABLE(boomerang ${boomerang_SRC})
 
-TARGET_LINK_LIBRARIES(boomerang ${DL_LIBS} ${GC_LIBS} "${EXPAT_LIBRARIES}" BinaryFile)
+TARGET_LINK_LIBRARIES(boomerang ${DL_LIBS} ${GC_LIBS} "${EXPAT_LIBRARIES}" BinaryFile frontend db type ansi-c-parser codegen )
 
 ADD_SUBDIRECTORY(loader)
