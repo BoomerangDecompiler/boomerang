@@ -1,3 +1,7 @@
+This is an experimental branch of boomerang project, the inital goals are:
+- 'clean' up the repository ( removing old .cvsignore files and such )
+- move all old build systems into "out of sight" storage.
+
 
 
 For build instructions please see 
