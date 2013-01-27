@@ -1,25 +1,22 @@
-#include <cppunit/TestCaller.h>
-#include <cppunit/TestCase.h>
-#include <cppunit/TestSuite.h>
-#include "util.h"
-#include "type.h"
+#include <cppunit/extensions/HelperMacros.h>
 
 
-class UtilTest : public CppUnit::TestCase {
-  protected:
+class UtilTest : public CPPUNIT_NS::TestFixture
+  {
+    CPPUNIT_TEST_SUITE( UtilTest );
+    CPPUNIT_TEST( test_hasExt );
+    CPPUNIT_TEST( test_changeExt );
+    CPPUNIT_TEST( test_searchAndReplace);
+    CPPUNIT_TEST_SUITE_END();
 
   public:
-    UtilTest(std::string name) : CppUnit::TestCase (name)
-    {}
-
-    virtual void registerTests(CppUnit::TestSuite* suite);
-
-    int countTestCases () const;
 
     void setUp ();
     void tearDown ();
 
-    void testTypeLong ();
-    void testNotEqual ();
+  protected:
+    void test_hasExt ();
+    void test_changeExt ();
+    void test_searchAndReplace ();
 };
 

@@ -1,72 +1,78 @@
-/*==============================================================================
- * FILE:       testAll.cc
- * OVERVIEW:   Command line test of all of Boomerang
- *============================================================================*/
-/*
- * $Revision$
- * 15 Jul 02 - Mike: Created from testDbase
-*/
-
-#include "string"
-#include "cppunit/TextTestResult.h"
-#include "cppunit/TestSuite.h"
-
-#include "exp.h"
-
-#include "ExpTest.h"
-#include "ProgTest.h"
-#include "ProcTest.h"
-#include "StatementTest.h"
-#include "RtlTest.h"
-#include "DfaTest.h"
-#include "ParserTest.h"
-#include "TypeTest.h"
-#include "FrontSparcTest.h"
-#include "FrontPentTest.h"
-#include "CTest.h"
-#include "CfgTest.h"
-
-#include "prog.h"
-
-#include <sstream>
-#include <iostream>
-
-int main(int argc, char** argv)
+#include <stdexcept>
+#include <cppunit/BriefTestProgressListener.h>
+#include <cppunit/CompilerOutputter.h>
+#include <cppunit/extensions/TestFactoryRegistry.h>
+#include <cppunit/TestResult.h>
+#include <cppunit/TestResultCollector.h>
+#include <cppunit/TestRunner.h>
+#include "config.h"
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#else
+#include <direct.h>
+#endif
+#ifndef USE_OLD_TESTING
+int main (int argc, char* argv[])
 {
-//std::cerr << "Prog at " << std::hex << &prog << std::endl;
-    CppUnit::TestSuite suite;
+    if (argc>2)
+        chdir(argv[1]);
+    // Create the event manager and test controller
+    CPPUNIT_NS::TestResult controller;
 
-    ExpTest     expt("Exp Test");
-    ProgTest progt("Prog Test");
-    ProcTest proct("Proc Test");
-    RtlTest rtlt("Rtl Test");
-    ParserTest parsert("SSL Parser Test");
-    TypeTest typet("Type Test");
-    FrontSparcTest fst("SPARC Frontend Test");
-//      FrontendTest fet("FrontendTest");
-    FrontPentTest fpt("Pentium Frontend Test");
-    CTest ct("C Parser Test");
-    StatementTest stt("Statement Test");
-    CfgTest cfgt("Cfg Test");
-    DfaTest dfat("Dfa Test");
+    // Add a listener that colllects test result
+    CPPUNIT_NS::TestResultCollector result;
+    controller.addListener( &result );
 
-    expt.registerTests(&suite);
-    progt.registerTests(&suite);
-    proct.registerTests(&suite);
-    rtlt.registerTests(&suite);
-    parsert.registerTests(&suite);
-    typet.registerTests(&suite);
-    fst.registerTests(&suite);
-    fpt.registerTests(&suite);
-    ct.registerTests(&suite);
-    stt.registerTests(&suite);
-    cfgt.registerTests(&suite);
-    dfat.registerTests(&suite);
+    // Add a listener that print dots as test run.
+    CPPUNIT_NS::BriefTestProgressListener progress;
+    controller.addListener( &progress );
 
-    CppUnit::TextTestResult res;
+    CPPUNIT_NS::TestRunner runner;
+    CPPUNIT_NS::TestFactoryRegistry& registry = CPPUNIT_NS::TestFactoryRegistry::getRegistry();
 
-    suite.run( &res );
-    std::cout << res << std::endl;
-
-    return 0;
+    // run all tests if none specified on command line
+    CPPUNIT_NS::Test* test_to_run = registry.makeTest();
+    if (argc>2)
+        {
+            try
+                {
+                    test_to_run = test_to_run->findTest(argv[2]);
+                }
+            catch (std::invalid_argument &inv_arg)
+                {
+                    fprintf(stderr,inv_arg.what());
+                    return -1;
+                }
+        }
+    runner.addTest( test_to_run );
+    runner.run(controller, "");
+    return result.wasSuccessful() ? 0 : -1;
 }
+#else
+
+int
+main( int argc, char* argv[] )
+{
+    // Create the event manager and test controller
+    CPPUNIT_NS::TestResult controller;
+
+    // Add a listener that colllects test result
+    CPPUNIT_NS::TestResultCollector result;
+    controller.addListener( &result );
+
+    // Add a listener that print dots as test run.
+    CPPUNIT_NS::BriefTestProgressListener progress;
+    controller.addListener( &progress );
+
+    // Add the top suite to the test runner
+    CPPUNIT_NS::TestRunner runner;
+    runner.addTest( CPPUNIT_NS::TestFactoryRegistry::getRegistry().makeTest() );
+    runner.run( controller );
+
+    // Print test in a compiler compatible format.
+    CPPUNIT_NS::CompilerOutputter outputter( &result, CPPUNIT_NS::stdCOut() );
+    outputter.write();
+
+    return result.wasSuccessful() ? 0 : 1;
+}
+#endif

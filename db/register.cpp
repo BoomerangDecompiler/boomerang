@@ -25,7 +25,7 @@
 // For MSVC 5 or 6: warning about debug into truncated to 255 chars
 #pragma warning(disable:4786)
 #endif
-#include <assert.h>
+#include <cassert>
 #include <cstring>
 #include "register.h"
 #include "type.h"
@@ -136,7 +136,7 @@ void Register::s_name(const char *s)
  * PARAMETERS:      <none>
  * RETURNS:          The name as a character string
  *============================================================================*/
-char *Register::g_name() const {
+const char *Register::g_name() const {
     static char outname[100];
 
     strncpy(outname, name, 100);

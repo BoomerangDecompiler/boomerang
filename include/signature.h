@@ -36,14 +36,14 @@ class StatementList;
 class BinaryFile;
 class XMLProgParser;
 
-class Parameter { 
+class Parameter {
 private:
         Type *type;
         std::string name;
         Exp *exp;
         std::string boundMax;
 
-public: 
+public:
                     Parameter(Type *type, const char *name, Exp *exp = NULL, const char *boundMax = "") :
                     type(type), name(name), exp(exp), boundMax(boundMax)    { }
 virtual                ~Parameter() { delete type; delete exp; }
@@ -218,7 +218,7 @@ virtual bool        isLocalOffsetNegative() {return true;}
         // For most machines, local variables are not POSITIVE offsets from sp
 virtual bool        isLocalOffsetPositive() {return false;}
         // Is this operator (between the stack pointer and a constant) compatible with a stack local pattern?
-        bool        isOpCompatStackLocal(OPER op);    
+        bool        isOpCompatStackLocal(OPER op);
 
         // Quick and dirty hack
 static    Exp*        getReturnExp2(BinaryFile* pBF);
@@ -237,10 +237,10 @@ virtual bool        isPromoted() { return false; }
         //bool        isFullSignature() {return bFullSig;}
 
     // ascii versions of platform, calling convention name
-static char*        platformName(platform plat);
-static char*        conventionName(callconv cc);
-virtual platform    getPlatform() { return PLAT_GENERIC; }
-virtual callconv    getConvention() { return CONV_NONE; }
+static  const char*     platformName(platform plat);
+static  const char*     conventionName(callconv cc);
+virtual platform        getPlatform() { return PLAT_GENERIC; }
+virtual callconv        getConvention() { return CONV_NONE; }
 
         // prefered format
         void        setPreferedReturn(Type *ty) { preferedReturn = ty; }

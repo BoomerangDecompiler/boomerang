@@ -11,25 +11,7 @@
 
 #include "UtilTest.h"
 
-/*==============================================================================
- * FUNCTION:        UtilTest::registerTests
- * OVERVIEW:        Register the test functions in the given suite
- * PARAMETERS:      Pointer to the test suite
- * RETURNS:         <nothing>
- *============================================================================*/
-#define MYTEST(name) \
-suite->addTest(new CppUnit::TestCaller<UtilTest> ("testUtil", \
-    &UtilTest::name, *this))
-
-void UtilTest::registerTests(CppUnit::TestSuite* suite) {
-
-//  Note: there is nothing left to test in Util (for now)
-//    MYTEST(testTypeLong);
-//    MYTEST(testNotEqual);
-}
-
-int UtilTest::countTestCases () const
-{ return 1; }   // ? What's this for?
+CPPUNIT_TEST_SUITE_REGISTRATION( UtilTest );
 
 /*==============================================================================
  * FUNCTION:        UtilTest::setUp
@@ -50,4 +32,29 @@ void UtilTest::setUp () {
  *============================================================================*/
 void UtilTest::tearDown () {
 }
+/*==============================================================================
+* FUNCTION:		UtilTest::test_hasExt
+* OVERVIEW:		Test hasExt utility function
+*============================================================================*/
+void UtilTest::test_hasExt()
+{
+  CPPUNIT_FAIL("Unimplemented hasExt test");
+}
 
+/*==============================================================================
+* FUNCTION:		UtilTest::test_hasExt
+* OVERVIEW:		Test hasExt utility function
+*============================================================================*/
+void UtilTest::test_changeExt()
+{
+  CPPUNIT_FAIL("Unimplemented changeExt test");
+}
+
+/*==============================================================================
+* FUNCTION:		UtilTest::test_hasExt
+* OVERVIEW:		Test hasExt utility function
+*============================================================================*/
+void UtilTest::test_searchAndReplace()
+{
+  CPPUNIT_FAIL("Unimplemented searchAndReplace test");
+}

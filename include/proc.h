@@ -559,12 +559,13 @@ virtual bool        isNoReturn();
         void        initialParameters();                ///< Get initial parameters based on proc's use collector
         void        mapLocalsAndParams();                ///< Map expressions to locals and initial parameters
         void        findFinalParameters();
-        int            nextParamNum() {return ++nextParam;}
+        int         nextParamNum() {return ++nextParam;}
         void        addParameter(Exp *e, Type* ty);        ///< Add parameter to signature
         void        insertParameter(Exp* e, Type* ty);    ///< Insert into parameters list correctly sorted
 //        void        addNewReturns(int depth);
         void        updateArguments();                    ///< Update the arguments in calls
         void        updateCallDefines();                ///< Update the defines in calls
+        void        replaceSimpleGlobalConstants();     ///< Replace simple global constant references
         void        reverseStrengthReduction();
         /// Trim parameters. If depth not given or == -1, perform at all depths
         void        trimParameters(int depth = -1);
@@ -575,7 +576,7 @@ virtual bool        isNoReturn();
         bool        isLocal(Exp* e);                ///< True if e represents a stack local variable
         bool        isLocalOrParam(Exp* e);            ///< True if e represents a stack local or stack param
         bool        isLocalOrParamPattern(Exp* e);    ///< True if e could represent a stack local or stack param
-        bool        existsLocal(char* name);        ///< True if a local exists with name \a name
+        bool        existsLocal(const char *name);        ///< True if a local exists with name \a name
         bool        isAddressEscapedVar(Exp* e) {return addressEscapedVars.exists(e);}
         bool        isPropagatable(Exp* e);            ///< True if e can be propagated
 
@@ -759,7 +760,7 @@ public:
         void            renameLocal(const char *oldName, const char *newName);
 virtual void            renameParam(const char *oldName, const char *newName);
 
-        char*        getRegName(Exp* r);            /// Get a name like eax or o2 from r24 or r8
+        const char *getRegName(Exp* r);            /// Get a name like eax or o2 from r24 or r8
         void        setParamType(const char* nam, Type* ty);
         void        setParamType(int idx, Type* ty);
 

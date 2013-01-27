@@ -20,7 +20,7 @@
  */
 
 
-#include <assert.h>
+#include <cassert>
 #if defined(_MSC_VER) && _MSC_VER <= 1200
 #pragma warning(disable:4786)
 #endif
@@ -32,25 +32,21 @@
 
 Table::Table(TABLE_TYPE t) :
     type(t)
-{
-}
+{}
 
 Table::Table(std::deque<std::string>& recs, TABLE_TYPE t /* = NAMETABLE */) :
     records(recs),type(t)
-{
-}
+{}
 
 TABLE_TYPE Table::getType() const { return type; }
 
 OpTable::OpTable(std::deque<std::string>& ops) :
     Table(ops, OPTABLE)
-{
-}
+{}
 
 ExprTable::ExprTable(std::deque<Exp*>& exprs) :
     Table(EXPRTABLE),expressions(exprs)
-{
-}
+{}
 
 ExprTable::~ExprTable(void)
 {

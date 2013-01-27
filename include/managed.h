@@ -57,7 +57,7 @@ typedef std::set<Statement*>::iterator iterator;
         unsigned    size() {return sset.size();}        // Number of elements
         iterator    begin()    {return sset.begin();}
         iterator    end()    {return sset.end();}
-        
+
         void        insert(Statement* s) {sset.insert(s);}    // Insertion
         bool        remove(Statement* s);                    // Removal; rets false if not found
         bool        removeIfDefines(Exp* given);            // Remove if given exp is defined
@@ -94,7 +94,7 @@ typedef std::set<Assign*, lessAssign>::const_iterator const_iterator;
         //Statement* getNext (StmtSetIter& it);              // Get next
         iterator    begin()    {return aset.begin();}
         iterator    end()    {return aset.end();}
-        
+
         void        insert(Assign* a) {aset.insert(a);}        // Insertion
         bool        remove(Assign* a);                        // Removal; rets false if not found
         bool        removeIfDefines(Exp* given);            // Remove if given exp is defined
@@ -131,7 +131,7 @@ typedef std::list<Statement*>::reverse_iterator reverse_iterator;
         // Assignment*s) with the LocationSet b.
         // Used for calculating returns for a CallStatement
         void        makeIsect(StatementList& a, LocationSet& b);
-        
+
         void        append(Statement* s) {slist.push_back(s);} // Insert at end
         void        append(StatementList& sl);            // Append whole StatementList
         void        append(StatementSet& sl);            // Append whole StatementSet
@@ -184,7 +184,7 @@ class LocationSet {
         // by expression value. If this is not done, then two expressions with the same value (say r[10])
         // but that happen to have different addresses (because they came from different statements)
         // would both be stored in the set (instead of the required set behaviour, where only one is stored)
-        std::set<Exp*, lessExpStar> lset; 
+        std::set<Exp*, lessExpStar> lset;
 public:
 typedef std::set<Exp*, lessExpStar>::iterator iterator;
                     LocationSet() {}                        // Default constructor
@@ -200,7 +200,7 @@ typedef std::set<Exp*, lessExpStar>::iterator iterator;
         void        remove(Exp* loc);                        // Remove the given location
         void        remove(iterator ll) {lset.erase(ll);}    // Remove location, given iterator
         void        removeIfDefines(StatementSet& given);    // Remove locs defined in given
-        unsigned    size() const {return lset.size();}        // Number of elements
+        size_t      size() const {return lset.size();}        // Number of elements
         bool        operator==(const LocationSet& o) const; // Compare
         void        substitute(Assign& a);                    // Substitute the given assignment to all
         void        print(std::ostream& os);                // Print to os
@@ -235,7 +235,7 @@ public:
         void        widenWith(Range &r);
         void        print(std::ostream &os);
         bool        operator==(Range &other);
-    
+
 static const int MAX = 2147483647;
 static const int MIN = -2147483647;
 };

@@ -1,24 +1,25 @@
-#include <cppunit/TestCaller.h>
-#include <cppunit/TestCase.h>
-#include <cppunit/TestSuite.h>
+#include <cppunit/extensions/HelperMacros.h>
 
 #include "cfg.h"
 
-class CfgTest : public CppUnit::TestCase {
+class CfgTest : public CPPUNIT_NS::TestFixture
+  {
+    CPPUNIT_TEST_SUITE( CfgTest );
+    CPPUNIT_TEST( testDominators );
+    CPPUNIT_TEST( testSemiDominators );
+    CPPUNIT_TEST( testPlacePhi );
+    CPPUNIT_TEST( testPlacePhi2 );
+    CPPUNIT_TEST( testRenameVars );
+    CPPUNIT_TEST_SUITE_END();
   protected:
     Cfg*  m_prog;
 
   public:
-    CfgTest(std::string name) : CppUnit::TestCase (name)
-    {}
-
-    virtual void registerTests(CppUnit::TestSuite* suite);
-
-    int countTestCases () const;
 
     void setUp ();
     void tearDown ();
 
+  protected:
     void testDominators ();
     void testSemiDominators ();
     void testPlacePhi ();

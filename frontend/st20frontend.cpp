@@ -23,7 +23,7 @@
  * Dependencies.
  *============================================================================*/
 
-#include <assert.h>
+#include <cassert>
 #include <iomanip>            // For setfill etc
 #include <sstream>
 #if defined(_MSC_VER) && _MSC_VER <= 1200

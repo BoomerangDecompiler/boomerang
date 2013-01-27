@@ -128,8 +128,7 @@ typedef struct {
 #pragma pack(4)
 //#endif
 
-class DOS4GWBinaryFile : public BinaryFile
-{
+class DOS4GWBinaryFile : public BinaryFile {
 public:
     DOS4GWBinaryFile();                // Default constructor
     virtual        ~DOS4GWBinaryFile();                // Destructor

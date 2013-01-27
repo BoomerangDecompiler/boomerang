@@ -1,5 +1,5 @@
 #define sign_extend(N,SIZE) (((int)((N) << (sizeof(unsigned)*8-(SIZE)))) >> (sizeof(unsigned)*8-(SIZE)))
-#include <assert.h>
+#include <cassert>
 
 //#line 0 "frontend/machine/ppc/decoder.m"
 /*
@@ -26,7 +26,7 @@
  * Dependencies.
  *============================================================================*/
 
-#include <assert.h>
+#include <cassert>
 #include <cstring>
 #if defined(_MSC_VER) && _MSC_VER <= 1100
 #include "signature.h"
@@ -840,7 +840,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                                             const char *name = MATCH_name;
                                             unsigned BIcr =
                                                     (MATCH_w_32_0 >> 18 & 0x7) /* BIcr at 0 */;
-							ADDRESS reladdr = addressToPC(MATCH_p) + 4 * (MATCH_w_32_0 >> 2 & 0x3fff)/* BD at 0 */;
+                            ADDRESS reladdr = addressToPC(MATCH_p) + 4 * (MATCH_w_32_0 >> 2 & 0x3fff)/* BD at 0 */;
                                             nextPC = MATCH_p+4;
 
 //#line 278 "frontend/machine/ppc/decoder.m"

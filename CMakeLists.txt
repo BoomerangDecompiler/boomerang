@@ -3,7 +3,7 @@ project (boomerang)
 IF(CMAKE_CXX_COMPILER MATCHES cl.exe)
     ADD_DEFINITIONS(-D_CRT_NONSTDC_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS)
 ELSE()
-
+    add_definitions(-D_GLIBCXX_DEBUG)
 ENDIF()
 
 if("${PROJECT_SOURCE_DIR}" STREQUAL "${PROJECT_BINARY_DIR}")
@@ -148,6 +148,6 @@ IF(WIN32)
 ENDIF()
 ADD_EXECUTABLE(boomerang ${boomerang_SRC})
 
-TARGET_LINK_LIBRARIES(boomerang ${DL_LIBS} ${GC_LIBS} ${DEBUG_LIB} "${EXPAT_LIBRARIES}" BinaryFile frontend db type ansi-c-parser codegen util)
+TARGET_LINK_LIBRARIES(boomerang ${DL_LIBS} ${GC_LIBS} ${DEBUG_LIB} "${EXPAT_LIBRARIES}" BinaryFile frontend db type boomerang_DSLs codegen util)
 
 ADD_SUBDIRECTORY(loader)

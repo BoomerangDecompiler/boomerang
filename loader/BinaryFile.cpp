@@ -34,58 +34,46 @@
 
 #include <iostream>
 #include <cstring>
-#include <stdio.h>
+#include <cstdio>
 #include <cstddef>
 #include "BinaryFile.h"
 
-BinaryFile::BinaryFile(bool bArch /*= false*/)
-{
-    m_bArchive = bArch;            // Remember whether an archive member
-    m_iNumSections = 0;            // No sections yet
-    m_pSections = 0;            // No section data yet
+BinaryFile::BinaryFile(bool bArch /*= false*/) {
+    m_bArchive      = bArch;        // Remember whether an archive member
+    m_iNumSections  = 0;            // No sections yet
+    m_pSections     = 0;            // No section data yet
 }
 
 // This struct used to be initialised with a memset, but now that overwrites the virtual table (if compiled under gcc
 // and possibly others)
 SectionInfo::SectionInfo() :
-    pSectionName(NULL), uNativeAddr(ADDRESS::g(0L)), uHostAddr(ADDRESS::g(0L)), uSectionSize(0), uSectionEntrySize(0), uType(0),
-    bCode(false), bData(false), bBss(0), bReadOnly(0)
-{}
+    pSectionName(NULL), uNativeAddr(ADDRESS::g(0L)), uHostAddr(ADDRESS::g(0L)), uSectionSize(0), uSectionEntrySize(0),
+    uType(0), bCode(false), bData(false), bBss(0), bReadOnly(0) {
 
-SectionInfo::~SectionInfo()
-{}
+}
 
-int BinaryFile::GetNumSections() const
-{
+int BinaryFile::GetNumSections() const {
     return m_iNumSections;
 }
 
-PSectionInfo BinaryFile::GetSectionInfo(int idx) const
-{
+SectionInfo *BinaryFile::GetSectionInfo(int idx) const {
     return m_pSections + idx;
 }
 
-int BinaryFile::GetSectionIndexByName(const char* sName)
-{
-    for (int i=0; i < m_iNumSections; i++)
-    {
-        if (strcmp(m_pSections[i].pSectionName, sName) == 0)
-        {
+int BinaryFile::GetSectionIndexByName(const char* sName) {
+    for (int i=0; i < m_iNumSections; i++) {
+        if (strcmp(m_pSections[i].pSectionName, sName) == 0) {
             return i;
         }
     }
     return -1;
 }
 
-PSectionInfo BinaryFile::GetSectionInfoByAddr(ADDRESS uEntry) const
-{
+SectionInfo *BinaryFile::GetSectionInfoByAddr(ADDRESS uEntry) const {
     PSectionInfo pSect;
-    for (int i=0; i < m_iNumSections; i++)
-    {
+    for (int i=0; i < m_iNumSections; i++) {
         pSect = &m_pSections[i];
-        if ((uEntry >= pSect->uNativeAddr) &&
-                (uEntry < pSect->uNativeAddr + pSect->uSectionSize))
-        {
+        if ((uEntry >= pSect->uNativeAddr) && (uEntry < pSect->uNativeAddr + pSect->uSectionSize)) {
             // We have the right section
             return pSect;
         }
@@ -94,10 +82,10 @@ PSectionInfo BinaryFile::GetSectionInfoByAddr(ADDRESS uEntry) const
     return NULL;
 }
 
-PSectionInfo BinaryFile::GetSectionInfoByName(const char* sName)
-{
+SectionInfo * BinaryFile::GetSectionInfoByName(const char* sName) {
     int i = GetSectionIndexByName(sName);
-    if (i == -1) return 0;
+    if (i == -1)
+        return 0;
     return &m_pSections[i];
 }
 
@@ -127,23 +115,19 @@ bool BinaryFile::IsStaticLinkedLibProc(ADDRESS uNative) {
     return false;
 }
 
-bool BinaryFile::IsDynamicLinkedProcPointer(ADDRESS uNative)
-{
+bool BinaryFile::IsDynamicLinkedProcPointer(ADDRESS uNative) {
     return false;
 }
 
-ADDRESS BinaryFile::IsJumpToAnotherAddr(ADDRESS uNative)
-{
+ADDRESS BinaryFile::IsJumpToAnotherAddr(ADDRESS uNative) {
     return NO_ADDRESS;
 }
 
-const char *BinaryFile::GetDynamicProcName(ADDRESS uNative)
-{
+const char *BinaryFile::GetDynamicProcName(ADDRESS uNative) {
     return "dynamic";
 }
 
-bool BinaryFile::DisplayDetails(const char* fileName, FILE* f /* = stdout */)
-{
+bool BinaryFile::DisplayDetails(const char* fileName, FILE* f /* = stdout */) {
     return false;            // Should always be overridden
     // Should display file header, program
     // headers and section headers, as well
@@ -154,54 +138,49 @@ bool BinaryFile::DisplayDetails(const char* fileName, FILE* f /* = stdout */)
 // Gets a pair of unsigned integers representing the address of %agp, and
 // a machine specific value (GLOBALOFFSET)
 // This is a stub routine that should be overridden if required
-std::pair<ADDRESS,unsigned> BinaryFile::GetGlobalPointerInfo()
-{
+std::pair<ADDRESS,unsigned> BinaryFile::GetGlobalPointerInfo() {
     return std::pair<ADDRESS, unsigned>(ADDRESS::g(0L), 0);
 }
 
 // Get a pointer to a new map of dynamic global data items.
 // If the derived class doesn't implement this function, return an empty map
 // Caller should delete the returned map
-std::map<ADDRESS, const char*>* BinaryFile::GetDynamicGlobalMap()
-{
+std::map<ADDRESS, const char*>* BinaryFile::GetDynamicGlobalMap() {
     return new std::map<ADDRESS, const char*>;
 }
 
 // Get an array of exported function stub addresses. Normally overridden.
-ADDRESS* BinaryFile::GetImportStubs(int& numExports)
-{
+ADDRESS* BinaryFile::GetImportStubs(int& numExports) {
     numExports = 0;
     return NULL;
 }
 
-void BinaryFile::getTextLimits()
-{
+void BinaryFile::getTextLimits() {
     int n = GetNumSections();
     limitTextLow = ADDRESS::g(0xFFFFFFFF);
     limitTextHigh = ADDRESS::g(0L);
     textDelta = 0;
     for (int i=0; i < n; i++) {
         SectionInfo* pSect = GetSectionInfo(i);
-        if (pSect->bCode) {
-            // The .plt section is an anomaly. It's code, but we never want to
-            // decode it, and in Sparc ELF files, it's actually in the data
-            // segment (so it can be modified). For now, we make this ugly
-            // exception
-            if (strcmp(".plt", pSect->pSectionName) == 0)
-                continue;
-            if (pSect->uNativeAddr < limitTextLow)
-                limitTextLow = pSect->uNativeAddr;
-            ADDRESS hiAddress = pSect->uNativeAddr + pSect->uSectionSize;
-            if (hiAddress > limitTextHigh)
-                limitTextHigh = hiAddress;
-            ptrdiff_t host_native_diff = (pSect->uHostAddr - pSect->uNativeAddr).m_value;
-            if (textDelta == 0)
-                textDelta = host_native_diff;
-            else {
-                if (textDelta != host_native_diff)
-                    std::cerr << "warning: textDelta different for section " << pSect->pSectionName <<
-                                 " (ignoring).\n";
-            }
+        if (!pSect->bCode)
+            continue;
+        // The .plt section is an anomaly. It's code, but we never want to
+        // decode it, and in Sparc ELF files, it's actually in the data
+        // segment (so it can be modified). For now, we make this ugly
+        // exception
+        if (strcmp(".plt", pSect->pSectionName) == 0)
+            continue;
+        if (pSect->uNativeAddr < limitTextLow)
+            limitTextLow = pSect->uNativeAddr;
+        ADDRESS hiAddress = pSect->uNativeAddr + pSect->uSectionSize;
+        if (hiAddress > limitTextHigh)
+            limitTextHigh = hiAddress;
+        ptrdiff_t host_native_diff = (pSect->uHostAddr - pSect->uNativeAddr).m_value;
+        if (textDelta == 0)
+            textDelta = host_native_diff;
+        else {
+            if (textDelta != host_native_diff)
+                std::cerr << "warning: textDelta different for section " << pSect->pSectionName << " (ignoring).\n";
         }
     }
 }

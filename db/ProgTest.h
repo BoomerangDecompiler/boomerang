@@ -1,24 +1,21 @@
-#include <cppunit/TestCaller.h>
-#include <cppunit/TestCase.h>
-#include <cppunit/TestSuite.h>
+#include <cppunit/extensions/HelperMacros.h>
 
 #include "prog.h"
 
-class ProgTest : public CppUnit::TestCase {
-  protected:
+class ProgTest : public CPPUNIT_NS::TestFixture
+{
+    CPPUNIT_TEST_SUITE( ProgTest );
+    CPPUNIT_TEST( testName );
+    CPPUNIT_TEST_SUITE_END();
+
+protected:
     Prog*  m_prog;
 
-  public:
-    ProgTest(std::string name) : CppUnit::TestCase (name)
-    {}
-
-    virtual void registerTests(CppUnit::TestSuite* suite);
-
-    int countTestCases () const;
-
+public:
     void setUp ();
     void tearDown ();
 
+protected:
     void testName ();
 };
 

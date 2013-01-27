@@ -9,34 +9,21 @@
  * 17 Jul 03 - Mike: Created
  */
 
-#define FRONTIER_PENTIUM        "test/pentium/frontier"
-#define SEMI_PENTIUM            "test/pentium/semi"
-#define IFTHEN_PENTIUM            "test/pentium/ifthen"
 
 #include "CfgTest.h"
-#include <sstream>
-#include <string>
 #include "BinaryFile.h"
 #include "frontend.h"
 #include "proc.h"
 #include "prog.h"
 #include "dataflow.h"
 #include "pentiumfrontend.h"
+#include "log.h"
 
-/*==============================================================================
- * FUNCTION:        CfgTest::registerTests
- * OVERVIEW:        Register the test functions in the given suite
- * PARAMETERS:        Pointer to the test suite
- * RETURNS:            <nothing>
- *============================================================================*/
-#define MYTEST(name) suite->addTest(new CppUnit::TestCaller<CfgTest> ("CfgTest", &CfgTest::name, *this))
+CPPUNIT_TEST_SUITE_REGISTRATION( CfgTest );
 
-void CfgTest::registerTests(CppUnit::TestSuite* suite) {
-    // Oops - they were all for dataflow. Need some real Cfg tests!
-}
-
-int CfgTest::countTestCases () const
-{ return 2; }    // ? What's this for?
+#define FRONTIER_PENTIUM		"test/pentium/frontier"
+#define SEMI_PENTIUM			"test/pentium/semi"
+#define IFTHEN_PENTIUM			"test/pentium/ifthen"
 
 /*==============================================================================
  * FUNCTION:        CfgTest::setUp
@@ -45,8 +32,14 @@ int CfgTest::countTestCases () const
  * PARAMETERS:        <none>
  * RETURNS:            <nothing>
  *============================================================================*/
-void CfgTest::setUp () {
-    //prog.setName("default name");
+static bool logset = false;
+void CfgTest::setUp ()
+{
+  if (!logset)
+    {
+      logset = true;
+      Boomerang::get()->setLogger(new NullLogger());
+    }
 }
 
 /*==============================================================================

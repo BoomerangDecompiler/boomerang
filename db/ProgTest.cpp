@@ -10,30 +10,16 @@
  * 18 Jul 02 - Mike: Set up prog.pFE before calling readLibParams
  */
 
-#define HELLO_PENTIUM        "test/pentium/hello"
-
-#include "ProgTest.h"
-#include "BinaryFile.h"
-#include "pentiumfrontend.h"
 #include <map>
 #include <sstream>
+#include "ProgTest.h"
+#include "pentiumfrontend.h"
+#include "BinaryFile.h"
 
-/*==============================================================================
- * FUNCTION:        ProgTest::registerTests
- * OVERVIEW:        Register the test functions in the given suite
- * PARAMETERS:        Pointer to the test suite
- * RETURNS:            <nothing>
- *============================================================================*/
-#define MYTEST(name) \
-suite->addTest(new CppUnit::TestCaller<ProgTest> ("ProgTest", \
-    &ProgTest::name, *this))
+CPPUNIT_TEST_SUITE_REGISTRATION( ProgTest );
 
-void ProgTest::registerTests(CppUnit::TestSuite* suite) {
-    MYTEST(testName);
-}
+#define HELLO_PENTIUM		"test/pentium/hello"
 
-int ProgTest::countTestCases () const
-{ return 2; }    // ? What's this for?
 
 /*==============================================================================
  * FUNCTION:        ProgTest::setUp

@@ -20,63 +20,7 @@
 #include <map>
 #include <sstream>        // Gcc >= 3.0 needed
 
-/*==============================================================================
- * FUNCTION:        ExpTest::registerTests
- * OVERVIEW:        Register the test functions in the given suite
- * PARAMETERS:        Pointer to the test suite
- * RETURNS:            <nothing>
- *============================================================================*/
-#define MYTEST(name) \
-suite->addTest(new CppUnit::TestCaller<ExpTest> ("testExp", \
-    &ExpTest::name, *this))
-
-void ExpTest::registerTests(CppUnit::TestSuite* suite) {
-MYTEST(testFixSuccessor);
-    MYTEST(test99);
-    MYTEST(testFlt);
-    MYTEST(testRegOf2);
-    MYTEST(testBinaries);
-    MYTEST(testUnaries);
-    MYTEST(testIsAfpTerm);
-    MYTEST(testCompare1);
-    MYTEST(testCompare2);
-    MYTEST(testCompare3);
-    MYTEST(testCompare4);
-    MYTEST(testCompare5);
-    MYTEST(testCompare6);
-    MYTEST(testSearchReplace1);
-    MYTEST(testSearchReplace2);
-    MYTEST(testSearchReplace3);
-    MYTEST(testSearchReplace4);
-    MYTEST(testSearch1);
-    MYTEST(testSearch2);
-    MYTEST(testSearch3);
-    MYTEST(testSearchAll);
-    MYTEST(testAccumulate);
-    MYTEST(testPartitionTerms);
-    MYTEST(testSimplifyArith);
-    MYTEST(testSimplifyUnary);
-    MYTEST(testSimplifyBinary);
-    MYTEST(testSimplifyAddr);
-    MYTEST(testSimpConstr);
-
-    MYTEST(testLess);
-    MYTEST(testMapOfExp);
-    MYTEST(testList);
-    MYTEST(testParen);
-    MYTEST(testFixSuccessor);
-    MYTEST(testKillFill);
-    MYTEST(testAssociativity);
-    MYTEST(testSubscriptVar);
-    MYTEST(testTypeOf);
-    MYTEST(testSetConscripts);
-    MYTEST(testAddUsedLocs);
-    MYTEST(testSubscriptVars);
-    MYTEST(testVisitors);
-}
-
-int ExpTest::countTestCases () const
-{ return 2; }    // ? What's this for?
+CPPUNIT_TEST_SUITE_REGISTRATION( ExpTest );
 
 /*==============================================================================
  * FUNCTION:        ExpTest::setUp
@@ -112,9 +56,11 @@ void ExpTest::test99 () {
     CPPUNIT_ASSERT (std::string("99") == std::string(ost.str()));
 }
 
-/*============================================================================== * FUNCTION:        ExpTest::testFlt
+/*==============================================================================
+ * FUNCTION:        ExpTest::testFlt
  * OVERVIEW:        Test float constant
- *============================================================================*/void ExpTest::testFlt () {
+ *============================================================================*/
+void ExpTest::testFlt () {
     std::ostringstream ost;
     Const *c = new Const(3.14);
     c->print(ost);
@@ -439,12 +385,12 @@ void ExpTest::testAccumulate () {
     le.push_back(&afp);
     res = Exp::Accumulate(le);
     Binary expected4(opPlus, rof2.clone(),
-        new Binary(opPlus, nineNine.clone(), 
+        new Binary(opPlus, nineNine.clone(),
             new Binary(opPlus, nineNine.clone(), new Terminal(opAFP))));
     CPPUNIT_ASSERT(*res == expected4);
     delete res;
     delete nn;
-}  
+}
 
 /*==============================================================================
  * FUNCTION:        ExpTest::testPartitionTerms
@@ -510,8 +456,8 @@ void ExpTest::testSimplifyArith() {
     expected = "m[r28 + 4]";
     CPPUNIT_ASSERT_EQUAL(expected, std::string(ost2.str()));
     delete mm;
-   
-    // r24 + m[(r28 - 4) - 4] 
+
+    // r24 + m[(r28 - 4) - 4]
     mm = new Binary(opPlus,
         Location::regOf(24),
         Location::memOf(
@@ -856,7 +802,7 @@ void ExpTest::testMapOfExp() {
     m[&rof2] = 2;             // Should overwrite
 
     int i = m.size();
-    CPPUNIT_ASSERT_EQUAL(3, i); 
+    CPPUNIT_ASSERT_EQUAL(3, i);
     i = m[m_rof2];
     CPPUNIT_ASSERT_EQUAL(2, i);
     i = m[&rof2];
@@ -864,7 +810,7 @@ void ExpTest::testMapOfExp() {
     i = m[m_99];
     CPPUNIT_ASSERT_EQUAL(99, i);
     i = m[e];
-    CPPUNIT_ASSERT_EQUAL(-100, i); 
+    CPPUNIT_ASSERT_EQUAL(-100, i);
     // When the map goes out of scope, the expressions pointed to still exist
     delete e;
 }
@@ -977,7 +923,7 @@ void ExpTest::testFixSuccessor() {
     std::string actual(o1.str());
     CPPUNIT_ASSERT_EQUAL(expected, actual);
     delete e;
-    
+
     Unary* u = new Unary(opSuccessor,
         Location::regOf(2));
     std::ostringstream o2;
@@ -1032,7 +978,7 @@ void ExpTest::testKillFill() {
  * OVERVIEW:        Test that a+K+b is the same as a+b+K when each is simplified
  *============================================================================*/
 void ExpTest::testAssociativity() {
-    
+
     // (r8 + m[m[r8 + 12] + -12]) + 12
     Binary e1(opPlus,
         new Binary(opPlus,

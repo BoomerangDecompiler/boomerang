@@ -10,11 +10,6 @@
  * 21 May 02 - Mike: Mods for gcc 3.1
  */
 
-#define HELLO_PENT        "test/pentium/hello"
-#define BRANCH_PENT        "test/pentium/branch"
-#define FEDORA2_TRUE    "test/pentium/fedora2_true"
-#define FEDORA3_TRUE    "test/pentium/fedora3_true"
-#define SUSE_TRUE        "test/pentium/suse_true"
 
 #include "types.h"
 #include "rtl.h"
@@ -24,27 +19,17 @@
 #include "pentiumfrontend.h"
 #include "BinaryFile.h"
 #include "BinaryFileStub.h"
+#include "decoder.h"
+#include "boomerang.h"
+#include "log.h"
+CPPUNIT_TEST_SUITE_REGISTRATION( FrontPentTest );
 
-/*==============================================================================
- * FUNCTION:        FrontPentTest::registerTests
- * OVERVIEW:        Register the test functions in the given suite
- * PARAMETERS:        Pointer to the test suite
- * RETURNS:            <nothing>
- *============================================================================*/
-#define MYTEST(name) \
-suite->addTest(new CppUnit::TestCaller<FrontPentTest> ("FrontPentTest", \
-    &FrontPentTest::name, *this))
+#define HELLO_PENT        "test/pentium/hello"
+#define BRANCH_PENT        "test/pentium/branch"
+#define FEDORA2_TRUE    "test/pentium/fedora2_true"
+#define FEDORA3_TRUE    "test/pentium/fedora3_true"
+#define SUSE_TRUE        "test/pentium/suse_true"
 
-void FrontPentTest::registerTests(CppUnit::TestSuite* suite) {
-    MYTEST(test1);
-    MYTEST(test2);
-    MYTEST(test3);
-    MYTEST(testBranch);
-    MYTEST(testFindMain);
-}
-
-int FrontPentTest::countTestCases () const
-{ return 3; }    // ? What's this for?
 
 /*==============================================================================
  * FUNCTION:        FrontPentTest::setUp
@@ -54,9 +39,13 @@ int FrontPentTest::countTestCases () const
  * PARAMETERS:        <none>
  * RETURNS:            <nothing>
  *============================================================================*/
+static bool logset = false;
 void FrontPentTest::setUp () {
+    if (!logset) {
+        logset = true;
+        Boomerang::get()->setLogger(new NullLogger());
+    }
 }
-
 /*==============================================================================
  * FUNCTION:        FrontPentTest::tearDown
  * OVERVIEW:        Delete objects created in setUp
@@ -91,7 +80,7 @@ void FrontPentTest::test1 () {
     // Decode first instruction
     DecodeResult inst = pFE->decodeInstruction(addr);
     inst.rtl->print(ost);
-    
+
     std::string expected(
         "08048328    0 *32* m[r28 - 4] := r29\n"
         "            0 *32* r28 := r28 - 4\n");
@@ -128,7 +117,7 @@ void FrontPentTest::test2() {
     CPPUNIT_ASSERT(pBF != 0);
     CPPUNIT_ASSERT(pBF->GetMachine() == MACHINE_PENTIUM);
     Prog* prog = new Prog;
-    FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff); 
+    FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
     prog->setFrontEnd(pFE);
 
     std::ostringstream o1;
@@ -168,7 +157,7 @@ void FrontPentTest::test3() {
     CPPUNIT_ASSERT(pBF != 0);
     CPPUNIT_ASSERT(pBF->GetMachine() == MACHINE_PENTIUM);
     Prog* prog = new Prog;
-    FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff); 
+    FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
     prog->setFrontEnd(pFE);
 
     std::ostringstream o1;
@@ -207,7 +196,7 @@ void FrontPentTest::testBranch() {
     CPPUNIT_ASSERT(pBF != 0);
     CPPUNIT_ASSERT(pBF->GetMachine() == MACHINE_PENTIUM);
     Prog* prog = new Prog;
-    FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff); 
+    FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
     prog->setFrontEnd(pFE);
 
     // jne
@@ -248,7 +237,7 @@ void FrontPentTest::testFindMain() {
     BinaryFile* pBF = bff.Load(FEDORA2_TRUE);
     CPPUNIT_ASSERT(pBF != NULL);
     Prog* prog = new Prog;
-    FrontEnd* pFE = new PentiumFrontEnd(pBF, prog, &bff); 
+    FrontEnd* pFE = new PentiumFrontEnd(pBF, prog, &bff);
     prog->setFrontEnd(pFE);
     CPPUNIT_ASSERT(pFE != NULL);
     bool found;
@@ -260,7 +249,7 @@ void FrontPentTest::testFindMain() {
 
     pBF = bff.Load(FEDORA3_TRUE);
     CPPUNIT_ASSERT(pBF != NULL);
-    pFE = new PentiumFrontEnd(pBF, prog, &bff); 
+    pFE = new PentiumFrontEnd(pBF, prog, &bff);
     prog->setFrontEnd(pFE);
     CPPUNIT_ASSERT(pFE != NULL);
     addr = pFE->getMainEntryPoint(found);
@@ -271,7 +260,7 @@ void FrontPentTest::testFindMain() {
 
     pBF = bff.Load(SUSE_TRUE);
     CPPUNIT_ASSERT(pBF != NULL);
-    pFE = new PentiumFrontEnd(pBF, prog, &bff); 
+    pFE = new PentiumFrontEnd(pBF, prog, &bff);
     prog->setFrontEnd(pFE);
     CPPUNIT_ASSERT(pFE != NULL);
     addr = pFE->getMainEntryPoint(found);

@@ -58,15 +58,13 @@ class MachOBinaryFile : public BinaryFile
 {
 public:
     MachOBinaryFile();                // Default constructor
-    virtual        ~MachOBinaryFile();                // Destructor
-    virtual bool    Open(const char* sName);        // Open the file for r/w; ???
-    virtual void    Close();                        // Close file opened with Open()
-    virtual void    UnLoad();                        // Unload the image
-    virtual LOAD_FMT GetFormat() const;            // Get format (i.e.
-    // LOADFMT_MACHO)
-    virtual MACHINE GetMachine() const;            // Get machine (i.e.
-    // MACHINE_PPC)
-    virtual const char    *getFilename() const { return m_pFileName; }
+    virtual             ~MachOBinaryFile();                // Destructor
+    virtual bool        Open(const char* sName);        // Open the file for r/w; ???
+    virtual void        Close();                        // Close file opened with Open()
+    virtual void        UnLoad();                        // Unload the image
+    virtual LOAD_FMT    GetFormat() const;            // Get format (i.e. LOADFMT_MACHO)
+    virtual MACHINE     GetMachine() const;            // Get machine (i.e. MACHINE_PPC)
+    virtual const char *getFilename() const { return m_pFileName; }
     virtual bool        isLibrary() const;
     virtual std::list<const char *> getDependencyList();
     virtual ADDRESS        getImageBase();
@@ -97,14 +95,16 @@ protected:
     char *              BMMH(char *x);
     const char *        BMMH(const char *x);
     unsigned int        BMMH(long int & x);
-    uintptr_t BMMH(void *x);
+    uintptr_t           BMMH(void *x);
     unsigned int        BMMH(unsigned long x);
     signed int          BMMH(signed int x);
     unsigned int        BMMH(unsigned int x);
     unsigned short      BMMHW(unsigned short x);
 
 public:
-
+    virtual bool        isReadOnly(ADDRESS uEntry);
+    virtual bool        isStringConstant(ADDRESS uEntry);
+    virtual bool        isCFStringConstant(ADDRESS uEntry);
     virtual char        readNative1(ADDRESS a);         // Read 1 bytes from native addr
     virtual int         readNative2(ADDRESS a);            // Read 2 bytes from native addr
     virtual int         readNative4(ADDRESS a);            // Read 4 bytes from native addr
@@ -135,6 +135,7 @@ private:
     bool            swap_bytes;
     std::map<ADDRESS, std::string> m_SymA, dlprocs;
     std::map<std::string, ObjcModule> modules;
+    std::vector<struct section> sections;
 };
 
 //#ifdef WIN32

@@ -12,7 +12,6 @@
 #include "RtlTest.h"
 #include "statement.h"
 #include "exp.h"
-#include <sstream>
 #include "BinaryFile.h"
 #include "frontend.h"
 #include "sparcfrontend.h"
@@ -22,29 +21,10 @@
 #include "prog.h"
 #include "visitor.h"
 
-#define SWITCH_SPARC        "test/sparc/switch_cc"
-#define SWITCH_PENT            "test/pentium/switch_cc"
+CPPUNIT_TEST_SUITE_REGISTRATION( RtlTest );
 
-/*==============================================================================
- * FUNCTION:        RtlTest::registerTests
- * OVERVIEW:        Register the test functions in the given suite
- * PARAMETERS:        Pointer to the test suite
- * RETURNS:            <nothing>
- *============================================================================*/
-#define MYTEST(name) \
-suite->addTest(new CppUnit::TestCaller<RtlTest> ("RtlTest", \
-    &RtlTest::name, *this))
-
-void RtlTest::registerTests(CppUnit::TestSuite* suite) {
-    MYTEST(testAppend);
-    MYTEST(testClone);
-    MYTEST(testVisitor);
-    MYTEST(testIsCompare);
-    MYTEST(testSetConscripts);
-}
-
-int RtlTest::countTestCases () const
-{ return 2; }    // ? What's this for?
+#define SWITCH_SPARC		"test/sparc/switch_cc"
+#define SWITCH_PENT			"test/pentium/switch_cc"
 
 /*==============================================================================
  * FUNCTION:        RtlTest::setUp
@@ -129,7 +109,7 @@ void RtlTest::testClone () {
 
 class StmtVisitorStub : public StmtVisitor {
 public:
-    bool a, b, c, d, e, f, g, h; 
+    bool a, b, c, d, e, f, g, h;
 
     void clear() { a = b = c = d = e = f = g = h = false; }
     StmtVisitorStub() { clear(); }
@@ -225,7 +205,7 @@ void RtlTest::testIsCompare () {
     DecodeResult inst = pFE->decodeInstruction(0x10910);
     CPPUNIT_ASSERT(inst.rtl != NULL);
     CPPUNIT_ASSERT(inst.rtl->isCompare(iReg, eOperand) == false);
-    
+
     // Decode fifth instruction: "cmp        %o1, 5"
     inst = pFE->decodeInstruction(0x1091c);
     CPPUNIT_ASSERT(inst.rtl != NULL);
@@ -255,7 +235,7 @@ void RtlTest::testIsCompare () {
     eOperand->print(ost2);
     actual = ost2.str();
     CPPUNIT_ASSERT_EQUAL(expected, actual);
-    
+
     // Decode instruction: "add        $0x4,%esp"
     inst = pFE->decodeInstruction(0x804890c);
     CPPUNIT_ASSERT(inst.rtl != NULL);
@@ -273,7 +253,7 @@ void RtlTest::testSetConscripts() {
         Location::memOf(
             new Const(1000), NULL),
         new Const(1000)));
-    
+
     // "printf("max is %d", (local0 > 0) ? local0 : global1)
     CallStatement* s2 = new CallStatement();
     std::string name("printf");

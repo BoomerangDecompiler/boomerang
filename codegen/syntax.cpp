@@ -31,8 +31,7 @@ SyntaxNode::SyntaxNode() : pbb(NULL), score(-1), correspond(NULL),
 }
 
 SyntaxNode::~SyntaxNode()
-{
-}
+{}
 
 int SyntaxNode::getScore()
 {
@@ -52,8 +51,7 @@ bool SyntaxNode::isBranch()
 }
 
 BlockSyntaxNode::BlockSyntaxNode()
-{
-}
+{}
 
 BlockSyntaxNode::~BlockSyntaxNode()
 {

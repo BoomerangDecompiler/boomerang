@@ -1,5 +1,5 @@
 #define sign_extend(N,SIZE) (((int)((N) << (sizeof(unsigned)*8-(SIZE)))) >> (sizeof(unsigned)*8-(SIZE)))
-#include <assert.h>
+#include <cassert>
 //#line 1 "frontend/machine/pentium/decoder.m"
 /*
  * Copyright (C) 1998-2001, The University of Queensland
@@ -25,7 +25,7 @@
  * 24 Oct 03 - Mike: Fixed DIS_IDXP1: did not have +32 in macro
  * 02 Sep 05 - Mike: POP.Evod/w take Eaddr now, not Mem
 */
-#include <assert.h>
+#include <cassert>
 #include <cstring>
 #if defined(_MSC_VER) && _MSC_VER <= 1100
 #include "signature.h"
@@ -67,7 +67,7 @@ void genBSFR(ADDRESS pc, Exp* reg, Exp* modrm, int init, int size, OPER incdec,
 /**********************************
  * PentiumDecoder methods.
  **********************************/
-/*============================================================================== 
+/*==============================================================================
  * FUNCTION:       unused
  * OVERVIEW:       A dummy function to suppress "unused local variable" messages
  * PARAMETERS:       x: integer variable to be "used"
@@ -75,7 +75,7 @@ void genBSFR(ADDRESS pc, Exp* reg, Exp* modrm, int init, int size, OPER incdec,
  *============================================================================*/
 void PentiumDecoder::unused(int x)
 {}
-/*============================================================================== 
+/*==============================================================================
  * FUNCTION:       PentiumDecoder::decodeInstruction
  * OVERVIEW:       Decodes a machine instruction and returns an RTL instance. In most cases a single instruction is
  *                    decoded. However, if a higher level construct that may consist of multiple instructions is matched,
@@ -36939,18 +36939,17 @@ MATCH_label_c1262: (void)0; /*placeholder for label*/
 MATCH_label_c1263: (void)0; /*placeholder for label*/
         {
             ADDRESS Eaddr = addressToPC(MATCH_p)+1;
+            Exp* tgt = DIS_EADDR32;
             nextPC = MATCH_p+6;
 //#line 115 "frontend/machine/pentium/decoder.m"
             /*
-                 * Register call
-                 */
+             * Register call
+             */
             // Mike: there should probably be a HLNwayCall class for this!
-            stmts = instantiate(pc,     "CALL.Evod", DIS_EADDR32);
+            stmts = instantiate(pc, "CALL.Evod", tgt);
             CallStatement* newCall = new CallStatement;
-            // Record the fact that this is a computed call
-            newCall->setIsComputed();
-            // Set the destination expression
-            newCall->setDest(DIS_EADDR32);
+            newCall->setIsComputed(); // Record the fact that this is a computed call
+            newCall->setDest(tgt);    // Set the destination expression
             result.rtl = new RTL(pc, stmts);
             result.rtl->appendStmt(newCall);
             // Only one instruction, so size of result is size of this decode
@@ -37085,9 +37084,12 @@ MATCH_finished_c: (void)0; /*placeholder for label*/
     result.numBytes = (nextPC-hostPC).m_value;
     return result;
 }
-/*============================================================================== * These are machine specific functions used to decode instruction operands into Exp*s.
+/*==============================================================================
+ * These are machine specific functions used to decode instruction operands into
+ * Exps.
  *============================================================================*/
-/*============================================================================== * FUNCTION:        dis_Mem
+/*==============================================================================
+ * FUNCTION:        dis_Mem
  * OVERVIEW:        Converts a dynamic address to a Exp* expression.
  *                    E.g. [1000] --> m[, 1000
  * PARAMETERS:        pc - the address of the Eaddr part of the instr
@@ -37100,10 +37102,7 @@ Exp* PentiumDecoder::dis_Mem(ADDRESS pc)
     lastDwordLc = (unsigned)-1;
 //#line 2148 "frontend/machine/pentium/decoder.m"
     {
-        ADDRESS MATCH_p =
-        //#line 2148 "frontend/machine/pentium/decoder.m"
-                pc
-                ;
+        ADDRESS MATCH_p = pc;
         unsigned /* [0..255] */ MATCH_w_8_0;
         unsigned /* [0..255] */ MATCH_w_8_8;
         unsigned MATCH_w_32_8;

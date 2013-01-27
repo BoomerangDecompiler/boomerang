@@ -9,10 +9,13 @@
  * 19 Oct 04 - Mike: Created
  */
 
-#include "DfaTest.h"
 #include <iostream>        // For std::cerr
 #include <log.h>
-#include <boomerang.h>
+#include "boomerang.h"
+#include "DfaTest.h"
+#include "type.h"
+
+CPPUNIT_TEST_SUITE_REGISTRATION( DfaTest );
 
 class ErrLogger : public Log {
 public:
@@ -20,27 +23,8 @@ public:
      std::cerr << str;
         return *this;
     }
-    virtual ~ErrLogger() {};
+    virtual ~ErrLogger() {}
 };
-/*==============================================================================
- * FUNCTION:        DfaTest::registerTests
- * OVERVIEW:        Register the test functions in the given suite
- * PARAMETERS:        Pointer to the test suite
- * RETURNS:            <nothing>
- *============================================================================*/
-#define MYTEST(name) \
-suite->addTest(new CppUnit::TestCaller<DfaTest> ("DfaTest", \
-    &DfaTest::name, *this))
-
-void DfaTest::registerTests(CppUnit::TestSuite* suite) {
-    MYTEST(testMeetInt);
-    MYTEST(testMeetSize);
-    MYTEST(testMeetPointer);
-    MYTEST(testMeetUnion);
-}
-
-int DfaTest::countTestCases () const
-{ return 2; }    // ? What's this for?
 
 /*==============================================================================
  * FUNCTION:        DfaTest::setUp
@@ -49,9 +33,15 @@ int DfaTest::countTestCases () const
  * PARAMETERS:        <none>
  * RETURNS:            <nothing>
  *============================================================================*/
-void DfaTest::setUp () {
+static bool logset = false;
+void DfaTest::setUp ()
+{
+  if (!logset)
+    {
+      logset = true;
+      Boomerang::get()->setLogger(new NullLogger());
+    }
 }
-
 /*==============================================================================
  * FUNCTION:        DfaTest::tearDown
  * OVERVIEW:        Delete expressions created in setUp
@@ -77,7 +67,7 @@ void DfaTest::testMeetInt () {
     FloatType flt(32);
     PointerType pt(&flt);
     VoidType v;
-    
+
     bool ch = false;
     i32.meetWith(&i32, ch, false);
     CPPUNIT_ASSERT(ch == false);
@@ -124,7 +114,7 @@ void DfaTest::testMeetInt () {
     actual = ost4.str();
     expected = "u32";
     CPPUNIT_ASSERT_EQUAL(expected, actual);
-    
+
     u32.meetWith(&s64, ch, false);
     CPPUNIT_ASSERT(ch == true);
     std::ostringstream ost5;
@@ -188,7 +178,7 @@ void DfaTest::testMeetSize () {
     expected = "union";
     CPPUNIT_ASSERT_EQUAL(expected, actual);
 #endif
-    
+
     ch = false;
     res = s16.meetWith(&v, ch, false);
     CPPUNIT_ASSERT(ch == false);
@@ -197,7 +187,7 @@ void DfaTest::testMeetSize () {
     actual = ost3.str();
     expected = "16";
     CPPUNIT_ASSERT_EQUAL(expected, actual);
-    
+
 }
 
 /*==============================================================================
@@ -210,7 +200,7 @@ void DfaTest::testMeetPointer() {
     PointerType pi32(&i32);
     PointerType pu32(&u32);
     VoidType v;
-    
+
     std::ostringstream ost1;
     ost1 << pu32.getCtype();
     std::string actual(ost1.str());
@@ -227,7 +217,7 @@ void DfaTest::testMeetPointer() {
     CPPUNIT_ASSERT_EQUAL(expected, actual);
 
     ch = false;
-    res = pi32.meetWith(&v, ch, false);    
+    res = pi32.meetWith(&v, ch, false);
     CPPUNIT_ASSERT(ch == false);
 
     res = pi32.meetWith(&i32, ch, false);
@@ -266,7 +256,7 @@ void DfaTest::testMeetUnion() {
     actual = ost2.str();
     expected = "union { int bow; float wow; }";
     CPPUNIT_ASSERT_EQUAL(expected, actual);
-    
+
     res = u1.meetWith(&j32, ch, false);
     CPPUNIT_ASSERT(ch == false);
     std::ostringstream ost3;

@@ -110,6 +110,7 @@ FileLogger::FileLogger() : out((Boomerang::get()->getOutputPath() + "log").c_str
 
 /**
  * Returns the HLLCode for the given proc.
+ * \return The HLLCode for the specified UserProc.
  */
 HLLCode *Boomerang::getHLLCode(UserProc *p) {
     return new CHLLCode(p);
@@ -1293,6 +1294,6 @@ void Boomerang::alert_decompile_debug_point(UserProc *p, const char *description
         (*it)->alert_decompile_debug_point(p, description);
 }
 
-char* Boomerang::getVersionStr() {
+const char *Boomerang::getVersionStr() {
     return const_cast<char *>(VERSION);
 }

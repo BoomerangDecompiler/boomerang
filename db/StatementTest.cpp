@@ -11,9 +11,8 @@
  * 06 Jul 05 - Mike: Split testAddUsedLocs into six separate tests for Assign ... Bool
  */
 
-#define HELLO_PENTIUM       "test/pentium/hello"
-#define GLOBAL1_PENTIUM       "test/pentium/global1"
-
+#include <sstream>
+#include <map>
 #include "StatementTest.h"
 #include "cfg.h"
 #include "rtl.h"
@@ -24,58 +23,22 @@
 #include "log.h"
 #include "signature.h"
 
-#include <sstream>
-#include <map>
 
-class NullLogger : public Log {
-public:
-    virtual Log &operator<<(const char *str) {
-        // std::cerr << str;
-        return *this;
-    }
-    virtual ~NullLogger() {};
-};
-/*==============================================================================
- * FUNCTION:        StatementTest::registerTests
- * OVERVIEW:        Register the test functions in the given suite
- * PARAMETERS:        Pointer to the test suite
- * RETURNS:            <nothing>
- *============================================================================*/
-#define MYTEST(name) \
-suite->addTest(new CppUnit::TestCaller<StatementTest> ("Statements", \
-    &StatementTest::name, *this))
+//class NullLogger : public Log {
+//public:
+//    virtual Log &operator<<(const char *str) {
+//        // std::cerr << str;
+//        return *this;
+//    }
+//    virtual ~NullLogger() {};
+//};
+#include "prog.h"
+#include "proc.h"
 
-void StatementTest::registerTests(CppUnit::TestSuite* suite) {
+CPPUNIT_TEST_SUITE_REGISTRATION( StatementTest );
 
-    MYTEST(testLocationSet);
-    MYTEST(testWildLocationSet);
-    MYTEST(testEmpty);
-    MYTEST(testFlow);
-    MYTEST(testKill);
-    MYTEST(testUse);
-    MYTEST(testUseOverKill);
-    MYTEST(testUseOverBB);
-    MYTEST(testUseKill);
-    //MYTEST(testEndlessLoop);
-    //MYTEST(testRecursion);
-    //MYTEST(testExpand);
-    MYTEST(testClone);
-    MYTEST(testIsAssign);
-    MYTEST(testIsFlagAssgn);
-    MYTEST(testAddUsedLocsAssign);
-    MYTEST(testAddUsedLocsBranch);
-    MYTEST(testAddUsedLocsCase);
-    MYTEST(testAddUsedLocsCall);
-    MYTEST(testAddUsedLocsReturn);
-    MYTEST(testAddUsedLocsBool);
-    MYTEST(testSubscriptVars);
-    MYTEST(testBypass);
-    MYTEST(testStripSizes);
-    MYTEST(testFindConstants);
-}
-
-int StatementTest::countTestCases () const
-{ return 2; }    // ? What's this for?
+#define HELLO_PENTIUM	   "test/pentium/hello"
+#define GLOBAL1_PENTIUM	   "test/pentium/global1"
 
 /*==============================================================================
  * FUNCTION:        StatementTest::setUp
@@ -104,7 +67,7 @@ void StatementTest::tearDown () {
 
 /*==============================================================================
  * FUNCTION:        StatementTest::testEmpty
- * OVERVIEW:        
+ * OVERVIEW:
  *============================================================================*/
 void StatementTest::testEmpty () {
     // Force "verbose" flag (-v)
@@ -140,7 +103,7 @@ void StatementTest::testEmpty () {
     cfg->print(st);
     std::string s = st.str();
     // compare it to expected
-    std::string expected = 
+    std::string expected =
         "Ret BB:\n"
         "in edges: \n"
         "out edges: \n"
@@ -152,7 +115,7 @@ void StatementTest::testEmpty () {
 
 /*==============================================================================
  * FUNCTION:        StatementTest::testFlow
- * OVERVIEW:        
+ * OVERVIEW:
  *============================================================================*/
 void StatementTest::testFlow () {
     // create Prog
@@ -221,7 +184,7 @@ void StatementTest::testFlow () {
 
 /*==============================================================================
  * FUNCTION:        StatementTest::testKill
- * OVERVIEW:        
+ * OVERVIEW:
  *============================================================================*/
 void StatementTest::testKill () {
     // create Prog
@@ -293,7 +256,7 @@ void StatementTest::testKill () {
 
 /*==============================================================================
  * FUNCTION:        StatementTest::testUse
- * OVERVIEW:        
+ * OVERVIEW:
  *============================================================================*/
 void StatementTest::testUse () {
     // create Prog
@@ -363,7 +326,7 @@ void StatementTest::testUse () {
 
 /*==============================================================================
  * FUNCTION:        StatementTest::testUseOverKill
- * OVERVIEW:        
+ * OVERVIEW:
  *============================================================================*/
 void StatementTest::testUseOverKill () {
     // create Prog
@@ -418,7 +381,7 @@ void StatementTest::testUseOverKill () {
     std::string s = st.str();
     // compare it to expected
     std::string expected;
-    expected = 
+    expected =
         "Fall BB:\n"
         "in edges: \n"
         "out edges: 123 \n"
@@ -437,7 +400,7 @@ void StatementTest::testUseOverKill () {
 
 /*==============================================================================
  * FUNCTION:        StatementTest::testUseOverBB
- * OVERVIEW:        
+ * OVERVIEW:
  *============================================================================*/
 void StatementTest::testUseOverBB () {
     // create Prog
@@ -514,7 +477,7 @@ void StatementTest::testUseOverBB () {
 
 /*==============================================================================
  * FUNCTION:        StatementTest::testUseKill
- * OVERVIEW:        
+ * OVERVIEW:
  *============================================================================*/
 void StatementTest::testUseKill () {
     // create Prog
@@ -567,7 +530,7 @@ void StatementTest::testUseKill () {
     std::string s = st.str();
     // compare it to expected
     std::string expected;
-    expected  = 
+    expected  =
         "Fall BB:\n"
         "in edges: \n"
         "out edges: 123 \n"
@@ -586,7 +549,7 @@ void StatementTest::testUseKill () {
 
 /*==============================================================================
  * FUNCTION:        StatementTest::testEndlessLoop
- * OVERVIEW:        
+ * OVERVIEW:
  *============================================================================*/
 void StatementTest::testEndlessLoop () {
     // create Prog
@@ -650,7 +613,7 @@ void StatementTest::testEndlessLoop () {
 
 /*==============================================================================
  * FUNCTION:        StatementTest::testLocationSet
- * OVERVIEW:        
+ * OVERVIEW:
  *============================================================================*/
 void StatementTest::testLocationSet () {
     Location rof(opRegOf, new Const(12), NULL);        // r12
@@ -733,7 +696,7 @@ void StatementTest::testLocationSet () {
 
 /*==============================================================================
  * FUNCTION:        StatementTest::testWildLocationSet
- * OVERVIEW:        
+ * OVERVIEW:
  *============================================================================*/
 void StatementTest::testWildLocationSet () {
     Location rof12(opRegOf, new Const(12), NULL);
@@ -951,7 +914,7 @@ void StatementTest::testClone () {
     CPPUNIT_ASSERT_EQUAL(expected, act1); // Originals
     CPPUNIT_ASSERT_EQUAL(expected, act2); // Clones
 }
- 
+
 /*==============================================================================
  * FUNCTION:        StatementTest::testIsAssign
  * OVERVIEW:        Test assignment test
@@ -1116,7 +1079,7 @@ void StatementTest::testAddUsedLocsCall() {
     CPPUNIT_ASSERT_EQUAL(expected, actual);
 #endif
 }
-    
+
 void StatementTest::testAddUsedLocsReturn() {
     // ReturnStatement with returns r31, m[r24], m[r25]{55} + r[26]{99}]
     LocationSet l;
@@ -1278,7 +1241,7 @@ void StatementTest::testSubscriptVars () {
     expected = "   0 CASE [r28{9}]";
     actual = ost4a.str();
     CPPUNIT_ASSERT_EQUAL(expected, actual);
-    
+
     // CallStatement with pDest = m[r26], params = m[r27], r28, defines r28, m[r28]
     CallStatement* ca = new CallStatement;
     ca->setDest(Location::memOf(Location::regOf(26)));

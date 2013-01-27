@@ -24,7 +24,7 @@
  * 23 Jul 04 - Mike: Implement SizeType
  */
 
-#include <assert.h>
+#include <cassert>
 #include <cstring>
 
 #include "types.h"
@@ -61,26 +61,26 @@ bool Type::isCString()
  * PARAMETERS:        <none>
  * RETURNS:            <Not applicable>
  *============================================================================*/
-Type::Type(eType id) : id(id) {
-}
+Type::Type(eType id) : id(id)
+{}
 
-VoidType::VoidType() : Type(eVoid) {
-}
+VoidType::VoidType() : Type(eVoid)
+{}
 
-FuncType::FuncType(Signature *sig) : Type(eFunc), signature(sig) {
-}
+FuncType::FuncType(Signature *sig) : Type(eFunc), signature(sig)
+{}
 
-IntegerType::IntegerType(int sz, int sign) : Type(eInteger), size(sz), signedness(sign) {
-}
+IntegerType::IntegerType(int sz, int sign) : Type(eInteger), size(sz), signedness(sign)
+{}
 
-FloatType::FloatType(int sz) : Type(eFloat), size(sz) {
-}
+FloatType::FloatType(int sz) : Type(eFloat), size(sz)
+{}
 
-BooleanType::BooleanType() : Type(eBoolean) {
-}
+BooleanType::BooleanType() : Type(eBoolean)
+{}
 
-CharType::CharType() : Type(eChar) {
-}
+CharType::CharType() : Type(eChar)
+{}
 
 void PointerType::setPointsTo(Type* p) {
     if (p == this) {                    // Note: comparing pointers

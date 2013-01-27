@@ -230,7 +230,7 @@ virtual                ~Prog();
         void        dumpGlobals();
 
         // get a string constant at a give address if appropriate
-        char        *getStringConstant(ADDRESS uaddr, bool knownString = false);
+        const char *getStringConstant(ADDRESS uaddr, bool knownString = false);
         double        getFloatConstant(ADDRESS uaddr, bool &ok, int bits = 64);
 
         // Hacks for Mike
@@ -243,6 +243,9 @@ virtual                ~Prog();
         ADDRESS        getLimitTextLow() {return pBF->getLimitTextLow();}
         ADDRESS        getLimitTextHigh() {return pBF->getLimitTextHigh();}
         bool        isReadOnly(ADDRESS a) { return pBF->isReadOnly(a); }
+        bool        isStringConstant(ADDRESS a) { return pBF->isStringConstant(a); }
+        bool        isCFStringConstant(ADDRESS a) { return pBF->isCFStringConstant(a); }
+
         // Read 2, 4, or 8 bytes given a native address
         int            readNative1(ADDRESS a) {return pBF->readNative1(a);}
         int            readNative2(ADDRESS a) {return pBF->readNative2(a);}

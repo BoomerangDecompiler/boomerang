@@ -887,7 +887,7 @@ bool BadMemofFinder::visit(RefExp* e, bool& override) {
         if (found)
             return false;    // Don't continue searching
 #if NEW            // FIXME: not ready for this until have incremental propagation
-        char* sym = proc->lookupSym(e);
+      const char* sym = proc->lookupSym(e);
         if (sym == NULL) {
             found = true;            // Found a memof that is not a symbol
             override = true;        // Don't look inside the refexp
@@ -1115,7 +1115,7 @@ bool DfaLocalMapper::processExp(Exp* e) {
             std::ostringstream ost;
             ost << "tparam" << proc->nextParamNum();
             const char* name = strdup(ost.str().c_str());
-            proc->mapSymbolTo(e, Location::param(const_cast<char*>(name), proc));
+            proc->mapSymbolTo(e, Location::param(name, proc));
 #endif
         }
         return false;            // set recur false: Don't dig inside m[x] to make m[a[m[x]]] !

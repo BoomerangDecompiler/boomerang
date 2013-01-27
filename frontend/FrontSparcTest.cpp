@@ -11,9 +11,6 @@
  * 04 Dec 02 - Mike: Changed all r[0] to 0
  */
 
-#define HELLO_SPARC        "test/sparc/hello"
-#define BRANCH_SPARC    "test/sparc/branch"
-
 #include "types.h"
 #include "FrontSparcTest.h"
 #include "proc.h"
@@ -23,37 +20,27 @@
 #include "cfg.h"
 #include "BinaryFile.h"
 #include "BinaryFileStub.h"
+#include "boomerang.h"
+#include "log.h"
+CPPUNIT_TEST_SUITE_REGISTRATION( FrontSparcTest );
+
+#define HELLO_SPARC		"test/sparc/hello"
+#define BRANCH_SPARC	"test/sparc/branch"
 
 /*==============================================================================
- * FUNCTION:        FrontSparcTest::registerTests
- * OVERVIEW:        Register the test functions in the given suite
- * PARAMETERS:        Pointer to the test suite
- * RETURNS:            <nothing>
+ * FUNCTION:		FrontSparcTest::setUp
+ * OVERVIEW:		Set up anything needed before all tests
+ * NOTE:			Called before any tests
+ * NOTE:			Also appears to be called before all tests!
+ * PARAMETERS:		<none>
+ * RETURNS:			<nothing>
  *============================================================================*/
-#define MYTEST(name) \
-suite->addTest(new CppUnit::TestCaller<FrontSparcTest> ("FrontSparcTest", \
-    &FrontSparcTest::name, *this))
-
-void FrontSparcTest::registerTests(CppUnit::TestSuite* suite) {
-    MYTEST(test1);
-    MYTEST(test2);
-    MYTEST(test3);
-    MYTEST(testBranch);
-    MYTEST(testDelaySlot);
-}
-
-int FrontSparcTest::countTestCases () const
-{ return 3; }    // ? What's this for?
-
-/*==============================================================================
- * FUNCTION:        FrontSparcTest::setUp
- * OVERVIEW:        Set up anything needed before all tests
- * NOTE:            Called before any tests
- * NOTE:            Also appears to be called before all tests!
- * PARAMETERS:        <none>
- * RETURNS:            <nothing>
- *============================================================================*/
+static bool logset = false;
 void FrontSparcTest::setUp () {
+    if (!logset) {
+        logset = true;
+        Boomerang::get()->setLogger(new NullLogger());
+    }
 }
 
 /*==============================================================================
@@ -91,7 +78,7 @@ void FrontSparcTest::test1 () {
     DecodeResult inst = pFE->decodeInstruction(addr);
     CPPUNIT_ASSERT(inst.rtl != NULL);
     inst.rtl->print(ost);
-    
+
     std::string expected(
         "00010684    0 *32* tmp := r14 - 112\n"
         "            0 *32* m[r14] := r16\n"
@@ -297,7 +284,7 @@ void FrontSparcTest::testBranch() {
 }
 
 void FrontSparcTest::testDelaySlot() {
-    
+
     BinaryFileFactory bff;
     BinaryFile *pBF = bff.Load(BRANCH_SPARC);
     if (pBF == NULL)

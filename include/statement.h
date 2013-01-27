@@ -37,7 +37,7 @@
                     __/   |   \________________________
                    /      |            \               \
        GotoStatement  TypingStatement@  ReturnStatement JunctionStatement
- BranchStatement_/     /          \ 
+ BranchStatement_/     /          \
  CaseStatement__/  Assignment@   ImpRefStatement
  CallStatement_/  /   /    \ \________
        PhiAssign_/ Assign  BoolAssign \_ImplicitAssign
@@ -362,7 +362,7 @@ virtual void        rangeAnalysis(std::list<Statement*> &execution_paths);
         // End Statement visitation functions
 
 
-        // Get the type for the definition, if any, for expression e in this statement 
+        // Get the type for the definition, if any, for expression e in this statement
         // Overridden only by Assignment and CallStatement, and ReturnStatement.
 virtual    Type*        getTypeFor(Exp* e) { return NULL;}
         // Set the type for the definition of e in this Statement
@@ -439,7 +439,7 @@ virtual bool        usesExp(Exp *e);       // PhiAssign and ImplicitAssign don't
 virtual bool        isDefinition() { return true; }
 virtual void        getDefinitions(LocationSet &defs);
 virtual bool        definesLoc(Exp* loc);                    // True if this Statement defines loc
-        
+
         // get how to access this lvalue
 virtual Exp*        getLeft() { return lhs; }        // Note: now only defined for Assignments, not all Statements
 virtual    void        setLeftFor(Exp* forExp, Exp* newExp) {lhs = newExp; }
@@ -519,14 +519,14 @@ virtual void        printCompact(std::ostream& os, bool html = false);    // Wit
 
 virtual bool        usesExp(Exp *e);
 virtual bool        isDefinition() { return true; }
-        
+
         // general search
 virtual bool        search(Exp* search, Exp*& result);
 virtual bool        searchAll(Exp* search, std::list<Exp*>& result);
 
         // general search and replace
 virtual bool        searchAndReplace(Exp *search, Exp *replace, bool cc = false);
- 
+
         // memory depth
         int            getMemDepth();
 
@@ -583,70 +583,67 @@ public:
 private:
         Definitions    defVec;        // A vector of information about definitions
 public:
-        // Constructor, subexpression
-                    PhiAssign(Exp* lhs)
-                        : Assignment(lhs) {kind = STMT_PHIASSIGN;}
-        // Constructor, type and subexpression
-                    PhiAssign(Type* ty, Exp* lhs)
-                      : Assignment(ty, lhs) {kind = STMT_PHIASSIGN;}
-        // Copy constructor (not currently used or implemented)
-                    PhiAssign(Assign& o);
-        // Destructor
+                        PhiAssign(Exp* lhs) : Assignment(lhs) {
+                            kind = STMT_PHIASSIGN;
+                        }
+                        PhiAssign(Type* ty, Exp* lhs) : Assignment(ty, lhs) {kind = STMT_PHIASSIGN;}
+                        // Copy constructor (not currently used or implemented)
+                        PhiAssign(Assign& o);
 virtual                ~PhiAssign() {}
 
-        // Clone
-virtual Statement*    clone();
+                        // Clone
+virtual Statement*      clone();
 
-        // get how to replace this statement in a use
-virtual Exp*        getRight() { return NULL; }
+                        // get how to replace this statement in a use
+virtual Exp*            getRight() { return NULL; }
 
-        // Accept a visitor to this Statement
-virtual bool        accept(StmtVisitor* visitor);
-virtual bool        accept(StmtExpVisitor* visitor);
-virtual bool        accept(StmtModifier* visitor);
-virtual bool        accept(StmtPartModifier* visitor);
+                        // Accept a visitor to this Statement
+virtual bool            accept(StmtVisitor* visitor);
+virtual bool            accept(StmtExpVisitor* visitor);
+virtual bool            accept(StmtModifier* visitor);
+virtual bool            accept(StmtPartModifier* visitor);
 
-virtual void        printCompact(std::ostream& os, bool html = false);
+virtual void            printCompact(std::ostream& os, bool html = false);
 
-        // general search
-virtual bool        search(Exp* search, Exp*& result);
-virtual bool        searchAll(Exp* search, std::list<Exp*>& result);
+                        // general search
+virtual bool            search(Exp* search, Exp*& result);
+virtual bool            searchAll(Exp* search, std::list<Exp*>& result);
 
-        // general search and replace
-virtual bool        searchAndReplace(Exp *search, Exp *replace, bool cc = false);
- 
-        // simplify all the uses/defs in this Statement
-virtual void        simplify();
+                        // general search and replace
+virtual bool            searchAndReplace(Exp *search, Exp *replace, bool cc = false);
 
-        // Generate constraints
-virtual void        genConstraints(LocationSet& cons);
+                        // simplify all the uses/defs in this Statement
+virtual void            simplify();
 
-        // Data flow based type analysis
-        void        dfaTypeAnalysis(bool& ch);
+                        // Generate constraints
+virtual void            genConstraints(LocationSet& cons);
+
+                        // Data flow based type analysis
+        void            dfaTypeAnalysis(bool& ch);
 
 //
 //    Phi specific functions
 //
 
-        // Get or put the statement at index idx
-        Statement*    getStmtAt(int idx) {return defVec[idx].def;}
-        PhiInfo&    getAt(int idx) {return defVec[idx];}
-        void        putAt(int idx, Statement* d, Exp* e);
-        void        simplifyRefs();
-virtual    int            getNumDefs() {return defVec.size();}
-        Definitions& getDefs() {return defVec;}
-        // A hack. Check MVE
-        bool        hasGlobalFuncParam();
+                        // Get or put the statement at index idx
+        Statement*      getStmtAt(int idx) {return defVec[idx].def;}
+        PhiInfo&        getAt(int idx) {return defVec[idx];}
+        void            putAt(int idx, Statement* d, Exp* e);
+        void            simplifyRefs();
+virtual int             getNumDefs() {return defVec.size();}
+        Definitions&    getDefs() {return defVec;}
+                        // A hack. Check MVE
+        bool            hasGlobalFuncParam();
 
-        iterator    begin() {return defVec.begin();}
-        iterator    end()   {return defVec.end();}
-        iterator    erase(iterator it)    {return defVec.erase(it);}
+        iterator        begin() {return defVec.begin();}
+        iterator        end()   {return defVec.end();}
+        iterator        erase(iterator it)    {return defVec.erase(it);}
 
-        // Convert this phi assignment to an ordinary assignment
-        void        convertToAssign(Exp* rhs);
+                        // Convert this phi assignment to an ordinary assignment
+        void            convertToAssign(Exp* rhs);
 
-        // Generate a list of references for the parameters
-        void        enumerateParams(std::list<Exp*>& le);
+                        // Generate a list of references for the parameters
+        void            enumerateParams(std::list<Exp*>& le);
 
 protected:
         friend class XMLProgParser;
@@ -656,19 +653,12 @@ protected:
 // globals.  That way, you can always find the type of a subscripted variable by looking in its defining Assignment
 class ImplicitAssign : public Assignment {
 public:
-        // Constructor, subexpression
                     ImplicitAssign(Exp* lhs);
-        // Constructor, type, and subexpression
                     ImplicitAssign(Type* ty, Exp* lhs);
-        // Copy constructor
                     ImplicitAssign(ImplicitAssign& o);
-        // Destructor
-virtual                ~ImplicitAssign();
+virtual             ~ImplicitAssign();
 
-        // Clone
-virtual Statement*    clone();
-
-        // Data flow based type analysis
+virtual Statement * clone();
         void        dfaTypeAnalysis(bool& ch);
 
         // general search
@@ -677,7 +667,7 @@ virtual bool        searchAll(Exp* search, std::list<Exp*>& result);
 
         // general search and replace
 virtual bool        searchAndReplace(Exp *search, Exp *replace, bool cc = false);
- 
+
 virtual void        printCompact(std::ostream& os, bool html = false);
 
         // Statement and Assignment functions
@@ -685,7 +675,7 @@ virtual Exp*        getRight() { return NULL; }
 virtual void        simplify() {}
 
         // Visitation
-virtual    bool        accept(StmtVisitor* visitor);
+virtual bool        accept(StmtVisitor* visitor);
 virtual bool        accept(StmtExpVisitor* visitor);
 virtual bool        accept(StmtModifier* visitor);
 virtual bool        accept(StmtPartModifier* visitor);
@@ -701,45 +691,40 @@ class BoolAssign: public Assignment {
         Exp*        pCond;        // Exp representation of the high level
                                 // condition: e.g. r[8] == 5
         bool        bFloat;        // True if condition uses floating point CC
-        int            size;        // The size of the dest
+        int         size;        // The size of the dest
 public:
                     BoolAssign(int size);
-virtual                ~BoolAssign();
+virtual             ~BoolAssign();
 
         // Make a deep copy, and make the copy a derived object if needed.
-virtual Statement*    clone();
+virtual Statement * clone();
 
-        // Accept a visitor to this Statement
+                    // Accept a visitor to this Statement
 virtual bool        accept(StmtVisitor* visitor);
 virtual bool        accept(StmtExpVisitor* visitor);
 virtual bool        accept(StmtModifier* visitor);
 virtual bool        accept(StmtPartModifier* visitor);
 
-        // Set and return the BRANCH_TYPE of this scond as well as whether the
-        // floating point condition codes are used.
+                    // Set and return the BRANCH_TYPE of this scond as well as whether the
+                    // floating point condition codes are used.
         void        setCondType(BRANCH_TYPE cond, bool usesFloat = false);
         BRANCH_TYPE getCond(){return jtCond;}
         bool        isFloat(){return bFloat;}
         void        setFloat(bool b) { bFloat = b; }
 
-        // Set and return the Exp representing the HL condition
+                    // Set and return the Exp representing the HL condition
         Exp*        getCondExpr();
         void        setCondExpr(Exp* pss);
-        // As above, no delete (for subscripting)
+                    // As above, no delete (for subscripting)
         void        setCondExprND(Exp* e) { pCond = e; }
-
-        int            getSize() {return size;}    // Return the size of the assignment
+        int         getSize() {return size;}    // Return the size of the assignment
         void        makeSigned();
 
 virtual void        printCompact(std::ostream& os = std::cout, bool html = false);
-
-        // code generation
 virtual void        generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel);
-
-        // simplify all the uses/defs in this Statement
 virtual void        simplify();
 
-        // Statement functions
+                    // Statement functions
 virtual bool        isDefinition() { return true; }
 virtual void        getDefinitions(LocationSet &def);
 virtual Exp*        getRight() { return getCondExpr(); }
@@ -761,28 +746,28 @@ virtual void        dfaTypeAnalysis(bool& ch);
 class ImpRefStatement : public TypingStatement {
         Exp*        addressExp;            // The expression representing the address of the location referenced
 public:
-        // Constructor, subexpression
+                    // Constructor, subexpression
                     ImpRefStatement(Type* ty, Exp* a) : TypingStatement(ty), addressExp(a) {
                         kind = STMT_IMPREF;
                     }
-        Exp*        getAddressExp() {return addressExp;}
-        Type*        getType() {return type;}
+        Exp *       getAddressExp() {return addressExp;}
+        Type *      getType() {return type;}
         void        meetWith(Type* ty, bool& ch);        // Meet the internal type with ty. Set ch if a change
 
         // Virtuals
-virtual    Statement*    clone();
-virtual    bool        accept(StmtVisitor*);
-virtual    bool        accept(StmtExpVisitor*);
-virtual    bool        accept(StmtModifier*);
-virtual    bool        accept(StmtPartModifier*);
-virtual    bool        isDefinition() {return false;}
-virtual    bool        usesExp(Exp*) {return false;}
-virtual    bool        search(Exp*, Exp*&);
-virtual    bool        searchAll(Exp*, std::list<Exp*, std::allocator<Exp*> >&);
-virtual    bool        searchAndReplace(Exp*, Exp*, bool cc = false);
-virtual    void        generateCode(HLLCode*, BasicBlock*, int) {}
-virtual    void        simplify();
-virtual    void        print(std::ostream& os, bool html = false);
+virtual Statement * clone();
+virtual bool        accept(StmtVisitor*);
+virtual bool        accept(StmtExpVisitor*);
+virtual bool        accept(StmtModifier*);
+virtual bool        accept(StmtPartModifier*);
+virtual bool        isDefinition() {return false;}
+virtual bool        usesExp(Exp*) {return false;}
+virtual bool        search(Exp*, Exp*&);
+virtual bool        searchAll(Exp*, std::list<Exp*, std::allocator<Exp*> >&);
+virtual bool        searchAndReplace(Exp*, Exp*, bool cc = false);
+virtual void        generateCode(HLLCode*, BasicBlock*, int) {}
+virtual void        simplify();
+virtual void        print(std::ostream& os, bool html = false);
 
 };    // class ImpRefStatement
 
@@ -798,61 +783,60 @@ virtual    void        print(std::ostream& os, bool html = false);
  *===========================================================================*/
 class GotoStatement: public Statement {
 protected:
-        Exp*        pDest;            // Destination of a jump or call. This is the absolute destination for both static
-                                    // and dynamic CTIs.
-        bool        m_isComputed;    // True if this is a CTI with a computed destination address.
+        Exp*        pDest;          // Destination of a jump or call. This is the absolute destination for both
+                                    // static and dynamic CTIs.
+        bool        m_isComputed;   // True if this is a CTI with a computed destination address.
                                     // NOTE: This should be removed, once CaseStatement and HLNwayCall are implemented
                                     // properly.
+        Const *     constDest() {return ((Const*)pDest);}
 public:
                     GotoStatement();
                     GotoStatement(ADDRESS jumpDest);
-virtual                ~GotoStatement();
+virtual             ~GotoStatement();
 
-        // Make a deep copy, and make the copy a derived object if needed.
-virtual Statement*    clone();
 
-        // Accept a visitor to this Statement
+virtual Statement * clone(); //!< Make a deep copy, and make the copy a derived object if needed.
+
+                    // Accept a visitor to this Statement
 virtual bool        accept(StmtVisitor* visitor);
 virtual bool        accept(StmtExpVisitor* visitor);
 virtual bool        accept(StmtModifier* visitor);
 virtual bool        accept(StmtPartModifier* visitor);
 
-        // Set and return the destination of the jump. The destination is either an Exp, or an ADDRESS that is
-        // converted to a Exp.
+                    // Set and return the destination of the jump. The destination is either an Exp, or an ADDRESS that
+                    // is converted to a Exp.
         void        setDest(Exp* pd);
         void        setDest(ADDRESS addr);
 virtual Exp*        getDest();
 
-        // Return the fixed destination of this CTI. For dynamic CTIs, returns -1.
-        ADDRESS        getFixedDest();
 
-        // Adjust the fixed destination by a given amount. Invalid for dynamic CTIs.
+        ADDRESS     getFixedDest();
         void        adjustFixedDest(int delta);
-    
-        // Set and return whether the destination of this CTI is computed.
-        // NOTE: These should really be removed, once CaseStatement and HLNwayCall are implemented properly.
+
+                    // Set and return whether the destination of this CTI is computed.
+                    // NOTE: These should really be removed, once CaseStatement and HLNwayCall are implemented properly.
         void        setIsComputed(bool b = true);
         bool        isComputed();
 
 virtual void        print(std::ostream& os = std::cout, bool html = false);
 
-        // general search
+                    // general search
 virtual bool        search(Exp*, Exp*&);
 
-        // Replace all instances of "search" with "replace".
+                    // Replace all instances of "search" with "replace".
 virtual bool        searchAndReplace(Exp* search, Exp* replace, bool cc = false);
-    
-        // Searches for all instances of a given subexpression within this
-        // expression and adds them to a given list in reverse nesting order.     
+
+                    // Searches for all instances of a given subexpression within this
+                    // expression and adds them to a given list in reverse nesting order.
 virtual bool        searchAll(Exp* search, std::list<Exp*> &result);
 
-        // code generation
+                    // code generation
 virtual void        generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel);
 
-        // simplify all the uses/defs in this Statement
+                    // simplify all the uses/defs in this Statement
 virtual void        simplify();
 
-        // Statement virtual functions
+                    // Statement virtual functions
 virtual bool        isDefinition() { return false;}
 virtual bool        usesExp(Exp*);
 
@@ -937,7 +921,7 @@ virtual bool        accept(StmtPartModifier* visitor);
         PBB            getTakenBB();
         void        setFallBB(PBB bb);
         void        setTakenBB(PBB bb);
-        
+
         // Probably only used in front386.cc: convert this from an unsigned to a
         // signed conditional branch
         void        makeSigned();
@@ -949,7 +933,7 @@ virtual bool        search(Exp *search, Exp *&result);
 
         // Replace all instances of "search" with "replace".
 virtual bool        searchAndReplace(Exp* search, Exp* replace, bool cc = false);
-    
+
         // Searches for all instances of a given subexpression within this
         // expression and adds them to a given list in reverse nesting order.
 virtual bool        searchAll(Exp* search, std::list<Exp*> &result);
@@ -1010,21 +994,21 @@ virtual bool        accept(StmtModifier* visitor);
 virtual bool        accept(StmtPartModifier* visitor);
 
         // Set and return the Exp representing the switch variable
-        SWITCH_INFO* getSwitchInfo(); 
+        SWITCH_INFO* getSwitchInfo();
         void        setSwitchInfo(SWITCH_INFO* pss);
-    
+
 virtual void        print(std::ostream& os = std::cout, bool html = false);
 
         // Replace all instances of "search" with "replace".
 virtual bool    searchAndReplace(Exp* search, Exp* replace, bool cc = false);
-    
+
         // Searches for all instances of a given subexpression within this
         // expression and adds them to a given list in reverse nesting order.
 virtual bool        searchAll(Exp* search, std::list<Exp*> &result);
-    
+
         // code generation
 virtual void        generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel);
-    
+
         // dataflow analysis
 virtual bool        usesExp(Exp *e);
 public:
@@ -1040,7 +1024,7 @@ virtual void        simplify();
  *============================================================================*/
 class CallStatement: public GotoStatement {
         bool        returnAfterCall;// True if call is effectively followed by a return.
-    
+
         // The list of arguments passed by this call, actually a list of Assign statements (location := expr)
         StatementList arguments;
 
@@ -1123,6 +1107,7 @@ virtual bool        accept(StmtPartModifier* visitor);
         int            getNumArguments();
         void        removeArgument(int i);
         Type        *getArgumentType(int i);
+        void        setArgumentType(int i, Type *ty);
         void        truncateArguments();
         void        clearLiveEntry();
         void        eliminateDuplicateArgs();
@@ -1137,7 +1122,7 @@ virtual bool        search(Exp *search, Exp *&result);
 
         // Replace all instances of "search" with "replace".
 virtual bool        searchAndReplace(Exp* search, Exp* replace, bool cc = false);
-    
+
         // Searches for all instances of a given subexpression within this
         // expression and adds them to a given list in reverse nesting order.
 virtual bool        searchAll(Exp* search, std::list<Exp*> &result);
@@ -1205,7 +1190,8 @@ virtual void        setTypeFor(Exp* e, Type* ty);        // Set the type for thi
 private:
         // Private helper functions for the above
         void        addSigParam(Type* ty, bool isScanf);
-        Assign*        makeArgAssign(Type* ty, Exp* e);    
+        Assign*     makeArgAssign(Type* ty, Exp* e);
+        bool        objcSpecificProcessing(const char *formatStr);
 
 protected:
 
@@ -1272,7 +1258,7 @@ virtual bool        search(Exp*, Exp*&);
 
         // Replace all instances of "search" with "replace".
 virtual bool        searchAndReplace(Exp* search, Exp* replace, bool cc = false);
-    
+
         // Searches for all instances of a given subexpression within this statement and adds them to a given list
 virtual bool        searchAll(Exp* search, std::list<Exp*> &result);
 

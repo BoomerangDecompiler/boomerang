@@ -1,5 +1,5 @@
 #define sign_extend(N,SIZE) (((int)((N) << (sizeof(unsigned)*8-(SIZE)))) >> (sizeof(unsigned)*8-(SIZE)))
-#include <assert.h>
+#include <cassert>
 
 //#line 0 "frontend/machine/sparc/decoder.m"
 /*
@@ -33,7 +33,7 @@
  * Dependencies.
  *============================================================================*/
 
-#include <assert.h>
+#include <cassert>
 #include <cstring>
 #if defined(_MSC_VER) && _MSC_VER <= 1100
 #include "signature.h"

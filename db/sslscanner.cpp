@@ -224,7 +224,7 @@ int read();
  */
 #define YY_SSLScanner_FLEX_SCANNER
 #line 35 "db/sslscanner.l"
-#include <assert.h>
+#include <cassert>
 #include <cstring>
 #if defined(_MSC_VER) && _MSC_VER <= 1200
 #pragma warning(disable:4786)

@@ -1,5 +1,5 @@
 #define sign_extend(N,SIZE) (((int)((N) << (sizeof(unsigned)*8-(SIZE)))) >> (sizeof(unsigned)*8-(SIZE)))
-#include <assert.h>
+#include <cassert>
 
 //#line 1 "frontend/machine/st20/decoder.m"
 /*
@@ -21,7 +21,7 @@
  * 10 Mar 05 - Mike: Created.
 */
 
-#include <assert.h>
+#include <cassert>
 
 #include "rtl.h"
 #include "decoder.h"

@@ -495,8 +495,7 @@ yyltype;
 #endif
 #endif
 
-class YY_AnsiCParser_CLASS YY_AnsiCParser_INHERIT
-{
+class YY_AnsiCParser_CLASS YY_AnsiCParser_INHERIT {
 public:
 #if YY_AnsiCParser_USE_CONST_TOKEN != 0
     /* static const int token ... */
@@ -584,7 +583,8 @@ public:
 #line 280 "/usr/local/lib/bison.cc"
     /* decl const */
 #else
-    enum YY_AnsiCParser_ENUM_TOKEN { YY_AnsiCParser_NULL_TOKEN=0
+enum YY_AnsiCParser_ENUM_TOKEN {
+        YY_AnsiCParser_NULL_TOKEN = 0
 
                                      /* #line 283 "/usr/local/lib/bison.cc" */
                              #line 591 "c/ansi-c-parser.cpp"
@@ -783,8 +783,7 @@ const int YY_AnsiCParser_CLASS::RETURN=333;
 /* const YY_AnsiCParser_CLASS::token */
 #endif
 /*apres const  */
-YY_AnsiCParser_CLASS::YY_AnsiCParser_CLASS(YY_AnsiCParser_CONSTRUCTOR_PARAM) YY_AnsiCParser_CONSTRUCTOR_INIT
-{
+YY_AnsiCParser_CLASS::YY_AnsiCParser_CLASS(YY_AnsiCParser_CONSTRUCTOR_PARAM) YY_AnsiCParser_CONSTRUCTOR_INIT {
 #if YY_AnsiCParser_DEBUG != 0
     YY_AnsiCParser_DEBUG_FLAG=0;
 #endif
@@ -1095,9 +1094,10 @@ YYENDDECLARELABEL
 /* ALLOCA SIMULATION */
 /* __HAVE_NO_ALLOCA */
 #ifdef __HAVE_NO_ALLOCA
-int __alloca_free_ptr(char *ptr,char *ref)
-{if(ptr!=ref) free(ptr);
-    return 0;}
+int __alloca_free_ptr(char *ptr, char *ref) {
+    if (ptr != ref) free(ptr);
+    return 0;
+}
 
 #define __ALLOCA_alloca(size) malloc(size)
 #define __ALLOCA_free(ptr,ref) __alloca_free_ptr((char *)ptr,(char *)ref)
@@ -1314,8 +1314,7 @@ YY_AnsiCParser_PARSE_PARAM_DEF
 
             *++yyssp = yystate;
 
-    if (yyssp >= yyss + yystacksize - 1)
-    {
+    if (yyssp >= yyss + yystacksize - 1) {
         /* Give user a chance to reallocate the stack */
         /* Use copies of these so that the &'s don't force the real ones into memory. */
         YY_AnsiCParser_STYPE *yyvs1 = yyvs;
@@ -1351,9 +1350,8 @@ YY_AnsiCParser_PARSE_PARAM_DEF
 #endif
 #else /* no yyoverflow */
         /* Extend the stack our own way.  */
-        if (yystacksize >= YYMAXDEPTH)
-        {
-            YY_AnsiCParser_ERROR((char*)"parser stack overflow");
+        if (yystacksize >= YYMAXDEPTH) {
+            YY_AnsiCParser_ERROR("parser stack overflow");
             __ALLOCA_return(2);
         }
         yystacksize *= 2;
@@ -1410,8 +1408,7 @@ YY_AnsiCParser_PARSE_PARAM_DEF
     /* yychar is either YYEMPTY or YYEOF
      or a valid token in external form.  */
 
-    if (YY_AnsiCParser_CHAR == YYEMPTY)
-    {
+    if (YY_AnsiCParser_CHAR == YYEMPTY) {
 #if YY_AnsiCParser_DEBUG != 0
         if (YY_AnsiCParser_DEBUG_FLAG)
             fprintf(stderr, "Reading a token: ");
@@ -1421,8 +1418,7 @@ YY_AnsiCParser_PARSE_PARAM_DEF
 
     /* Convert token to internal form (in yychar1) for indexing tables with */
 
-    if (YY_AnsiCParser_CHAR <= 0)           /* This means end of input. */
-    {
+    if (YY_AnsiCParser_CHAR <= 0) /* This means end of input. */ {
         yychar1 = 0;
         YY_AnsiCParser_CHAR = YYEOF;                /* Don't call YYLEX any more */
 
@@ -1430,14 +1426,11 @@ YY_AnsiCParser_PARSE_PARAM_DEF
         if (YY_AnsiCParser_DEBUG_FLAG)
             fprintf(stderr, "Now at end of input.\n");
 #endif
-    }
-    else
-    {
+    } else {
         yychar1 = YYTRANSLATE(YY_AnsiCParser_CHAR);
 
 #if YY_AnsiCParser_DEBUG != 0
-        if (YY_AnsiCParser_DEBUG_FLAG)
-        {
+        if (YY_AnsiCParser_DEBUG_FLAG) {
             fprintf (stderr, "Next token is %d (%s", YY_AnsiCParser_CHAR, yytname[yychar1]);
             /* Give the individual parser a way to print the precise meaning
              of a token, for further debugging info.  */
@@ -1462,14 +1455,12 @@ YY_AnsiCParser_PARSE_PARAM_DEF
        just return success.
      0, or most negative number => error.  */
 
-    if (yyn < 0)
-    {
+    if (yyn < 0) {
         if (yyn == YYFLAG)
             YYGOTO(yyerrlab);
         yyn = -yyn;
         YYGOTO(yyreduce);
-    }
-    else if (yyn == 0)
+    } else if (yyn == 0)
         YYGOTO(yyerrlab);
 
     if (yyn == YYFINAL)

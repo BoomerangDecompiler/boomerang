@@ -48,7 +48,7 @@ namespace dbghelp {
 #include <sstream>
 #include <cstring>
 #include <stdlib.h>
-#include <assert.h>
+#include <cassert>
 
 extern "C" {
 int microX86Dis(void* p);            // From microX86dis.c

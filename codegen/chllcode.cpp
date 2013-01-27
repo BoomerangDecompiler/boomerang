@@ -22,7 +22,7 @@
  * 18 Jan 06 - Gerard: several changes for prettier output, better logging of warnings and errors
  */
 
-#include <assert.h>
+#include <cassert>
 #if defined(_MSC_VER) && _MSC_VER <= 1200
 #pragma warning(disable:4786)
 #endif
@@ -44,24 +44,21 @@
 #include "log.h"
 #include <sstream>
 #include <cstring>
-#include <stdlib.h>
+#include <cstdlib>
 
 //extern char *operStrings[];
 
 /// Empty constructor, calls HLLCode()
 CHLLCode::CHLLCode() : HLLCode()
-{
-}
+{}
 
 /// Empty constructor, calls HLLCode(p)
 CHLLCode::CHLLCode(UserProc *p) : HLLCode(p)
-{
-}
+{}
 
 /// Empty destructor
 CHLLCode::~CHLLCode()
-{
-}
+{}
 
 /// Output 4 * \a indLevel spaces to \a str
 void CHLLCode::indent(std::ostringstream& str, int indLevel) {
@@ -94,7 +91,7 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 #if SYMS_IN_BACK_END                // Should no longer be any unmapped symbols by the back end
     // Check if it's mapped to a symbol
     if (m_proc && !exp->isTypedExp()) {            // Beware: lookupSym will match (cast)r24 to local0, stripping the cast!
-        char* sym = m_proc->lookupSym(exp);
+      const char* sym = m_proc->lookupSym(exp);
         if (sym) {
             str << sym;
             return;
@@ -706,7 +703,7 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
         case opTypedExp: {
 #if SYMS_IN_BACK_END
             Exp* b = u->getSubExp1();                    // Base expression
-            char* sym = m_proc->lookupSym(exp);            // Check for (cast)sym
+            const char* sym = m_proc->lookupSym(exp);            // Check for (cast)sym
             if (sym) {
                 str << "(";
                 appendType(str, ((TypedExp*)u)->getType());
@@ -754,7 +751,7 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
                 Type* tt = ((TypedExp*)u)->getType();
                 if (dynamic_cast<PointerType*>(tt)) {
 #if SYMS_IN_BACK_END
-                    char* sym = m_proc->lookupSym(Location::memOf(b));
+                    const char* sym = m_proc->lookupSym(Location::memOf(b));
                     if (sym) {
                         openParen(str, curPrec, PREC_UNARY);
                         str << "&" << sym;
@@ -1198,7 +1195,7 @@ bool isBareMemof(Exp* e, UserProc* proc) {
     if (!e->isMemOf()) return false;
 #if SYMS_IN_BACK_END
     // Check if it maps to a symbol
-    char* sym = proc->lookupSym(e);
+    const char* sym = proc->lookupSym(e);
     if (sym == NULL)
         sym = proc->lookupSym(e->getSubExp1());
     return sym == NULL;            // Only a bare memof if it is not a symbol

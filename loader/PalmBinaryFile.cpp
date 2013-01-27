@@ -20,7 +20,7 @@
  * 01 Aug 01 - Mike: Changed GetGlobalPointerInfo to the new definition
  */
 
-#include <assert.h>
+#include <cassert>
 #include <cstring>
 #include <stdlib.h>
 #if defined(_MSC_VER) && _MSC_VER <= 1200

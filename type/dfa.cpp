@@ -183,7 +183,7 @@ void UserProc::dfaTypeAnalysis() {
                 if (baseType->resolvesToChar()) {
                     // Convert to a string    MVE: check for read-only?
                     // Also, distinguish between pointer to one char, and ptr to many?
-                    char* str = prog->getStringConstant(ADDRESS::g(val), true);
+                    const char* str = prog->getStringConstant(ADDRESS::g(val), true);
                     if (str) {
                         // Make a string
                         con->setStr(str);
@@ -681,7 +681,9 @@ Type* LowerType::meetWith(Type* other, bool& ch, bool bHighestPtr) {
 
 Type* Statement::meetWithFor(Type* ty, Exp* e, bool& ch) {
     bool thisCh = false;
-    Type* newType = getTypeFor(e)->meetWith(ty, thisCh);
+    Type* typeFor = getTypeFor(e);
+    assert(typeFor);
+    Type* newType = typeFor->meetWith(ty, thisCh);
     if (thisCh) {
         ch = true;
         setTypeFor(e, newType->clone());
@@ -830,7 +832,7 @@ void BranchStatement::dfaTypeAnalysis(bool& ch) {
         pCond->descendType(new BooleanType(), ch, this);
     // Not fully implemented yet?
 }
-
+//! Data flow based type analysis
 void ImplicitAssign::dfaTypeAnalysis(bool& ch) {
     Assignment::dfaTypeAnalysis(ch);
 }
@@ -842,10 +844,10 @@ void BoolAssign::dfaTypeAnalysis(bool& ch) {
 
 // Special operators for handling addition and subtraction in a data flow based type analysis
 //                    ta=
-//  tb=        alpha*    int        pi
-// beta*    bottom    void*    void*
-// int        void*    int        pi
-// pi        void*    pi        pi
+//  tb=       alpha*     int      pi
+//  beta*     bottom    void*    void*
+//  int        void*     int      pi
+//  pi         void*     pi       pi
 Type* sigmaSum(Type* ta, Type* tb) {
     bool ch;
     if (ta->resolvesToPointer()) {
@@ -1180,7 +1182,7 @@ void RefExp::descendType(Type* parentType, bool& ch, Statement* s) {
 }
 
 void Const::descendType(Type* parentType, bool& ch, Statement* s) {
-    bool thisCh;
+    bool thisCh = false;
     type = type->meetWith(parentType, thisCh);
     ch |= thisCh;
     if (thisCh) {
@@ -1445,7 +1447,7 @@ bool UnionType::isCompatible(Type* other, bool all) {
     }
     // Other is not a UnionType
     for (it = li.begin(); it != li.end(); it++)
-        if (other->isCompatibleWith(it->type), all) return true;
+        if (other->isCompatibleWith(it->type, all)) return true;
     return false;
 }
 

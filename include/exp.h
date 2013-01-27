@@ -375,13 +375,13 @@ std::ostream& operator<<(std::ostream& os, Exp* p);     // Print the Exp poited 
 class Const : public Exp {
         union {
             int        i;            // Integer
-            // Note: although we have i and a as unions, both often use the same operator (opIntConst).
-            // There is no opCodeAddr any more.
+                                     // Note: although we have i and a as unions, both often use the same operator (opIntConst).
+                                     // There is no opCodeAddr any more.
             ADDRESS    a;            // void* conflated with unsigned int: needs fixing
             QWord    ll;            // 64 bit integer
             double    d;            // Double precision float
-            const char* p;            // Pointer to string
-                                // Don't store string: function could be renamed
+            const char* p;          // Pointer to string
+                                    // Don't store string: function could be renamed
             Proc*    pp;            // Pointer to function
         } u;
         int            conscript;    // like a subscript for constants
@@ -401,7 +401,7 @@ public:
         // Nothing to destruct: Don't deallocate the string passed to constructor
 
         // Clone
-virtual Exp*        clone();
+virtual Exp*            clone();
 
         // Compare
 virtual bool        operator==(const Exp& o) const;
@@ -409,22 +409,22 @@ virtual bool        operator< (const Exp& o) const;
 virtual bool        operator*=(Exp& o);
 
         // Get the constant
-        int            getInt() {return u.i;}
-        QWord        getLong(){return u.ll;}
-        double        getFlt() {return u.d;}
-        const char*        getStr() {return u.p;}
-        ADDRESS        getAddr() {return u.a;}
-        const char*    getFuncName();
+        int         getInt() {return u.i;}
+        QWord       getLong(){return u.ll;}
+        double      getFlt() {return u.d;}
+        const char* getStr() {return u.p;}
+        ADDRESS     getAddr() {return u.a;}
+        const char* getFuncName();
 
         // Set the constant
         void        setInt(int i)        {u.i = i;}
         void        setLong(QWord ll)    {u.ll = ll;}
         void        setFlt(double d)    {u.d = d;}
-        void        setStr(char* p)        {u.p = p;}
+        void        setStr(const char* p)        {u.p = p;}
         void        setAddr(ADDRESS a)    {u.a = a;}
 
         // Get and set the type
-        Type*        getType() { return type; }
+        Type*       getType() { return type; }
         void        setType(Type* ty) { type = ty; }
 
 virtual void        print(std::ostream& os, bool html = false);

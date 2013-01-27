@@ -37,7 +37,7 @@
 #include <cstddef>
 #include <iostream>
 #include <cstring>
-#include <assert.h>
+#include <cassert>
 #include "ElfBinaryFile.h"
 #include "config.h"
 #if defined(_MSC_VER) && _MSC_VER >= 1400

@@ -25,7 +25,7 @@
  * 25 Jul 02 - Mike: RTL is now list of Statements
  */
 
-#include <assert.h>
+#include <cassert>
 #if defined(_MSC_VER) && _MSC_VER <= 1200
 #pragma warning(disable:4786)
 #endif

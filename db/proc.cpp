@@ -1169,6 +1169,9 @@ void UserProc::earlyDecompile() {
     // Update the defines in the calls. Will redo if involved in recursion
     updateCallDefines();
 
+    // This is useful for obj-c
+    replaceSimpleGlobalConstants();
+
     // First placement of phi functions, renaming, and initial propagation. This is mostly for the stack pointer
     //maxDepth = findMaxDepth() + 1;
     //if (Boomerang::get()->maxMemDepth < maxDepth)
@@ -2747,7 +2750,7 @@ char* UserProc::newLocalName(Exp* e) {
     std::ostringstream ost;
     if (e->isSubscript() && ((RefExp*)e)->getSubExp1()->isRegOf()) {
         // Assume that it's better to know what register this location was created from
-        char* regName = getRegName(((RefExp*)e)->getSubExp1());
+        const char* regName = getRegName(((RefExp*)e)->getSubExp1());
         int tag = 0;
         do {
             ost.str("");
@@ -3817,7 +3820,7 @@ void UserProc::conTypeAnalysis() {
                     con->setOper(opFltConst);
                 } else if (ty->isCString()) {
                     // Convert to a string
-                    char* str = prog->getStringConstant(ADDRESS::g(val), true);
+                    const char* str = prog->getStringConstant(ADDRESS::g(val), true);
                     if (str) {
                         // Make a string
                         con->setStr(str);
@@ -4104,7 +4107,43 @@ void UserProc::updateCallDefines() {
         call->updateDefines();
     }
 }
-
+void UserProc::replaceSimpleGlobalConstants()
+{
+  if (VERBOSE)
+    LOG << "### replace simple global constants for " << getName() << " ###\n";
+  StatementList stmts;
+  getStatements(stmts);
+  StatementList::iterator it;
+  for (it = stmts.begin(); it != stmts.end(); it++)
+    {
+      Assign* assgn = dynamic_cast<Assign*>(*it);
+      if (assgn == NULL) continue;
+      if (!assgn->getRight()->isMemOf()) continue;
+      if (!assgn->getRight()->getSubExp1()->isIntConst()) continue;
+      ADDRESS addr = ((Const*)assgn->getRight()->getSubExp1())->getAddr();
+      LOG << "assgn " << assgn << "\n";
+      if (prog->isReadOnly(addr))
+        {
+          LOG << "is readonly\n";
+          int val;
+          switch (assgn->getType()->getSize())
+            {
+            case 8:
+              val = prog->readNative1(addr);
+              break;
+            case 16:
+              val = prog->readNative2(addr);
+              break;
+            case 32:
+              val = prog->readNative4(addr);
+              break;
+            default:
+              assert(false);
+            }
+          assgn->setRight(new Const(val));
+        }
+    }
+}
 void UserProc::reverseStrengthReduction()
 {
     Boomerang::get()->alert_decompile_debug_point(this, "before reversing strength reduction");
@@ -5392,10 +5431,10 @@ void UserProc::findPhiUnites(ConnectionGraph& pu) {
     }
 }
 
-char* UserProc::getRegName(Exp* r) {
+const char* UserProc::getRegName(Exp* r) {
     assert(r->isRegOf());
     int regNum = ((Const*)((Location*)r)->getSubExp1())->getInt();
-    char* regName = const_cast<char*>(prog->getRegName(regNum));
+    const char* regName = prog->getRegName(regNum);
     if (regName[0] == '%') regName++;        // Skip % if %eax
     return regName;
 }
@@ -5450,7 +5489,7 @@ void UserProc::nameParameterPhis() {
     }
 }
 
-bool UserProc::existsLocal(char* name) {
+bool UserProc::existsLocal(const char* name) {
     std::string s(name);
     return locals.find(s) != locals.end();
 }
@@ -5463,7 +5502,7 @@ void UserProc::checkLocalFor(RefExp* r) {
         Type* ty = def->getTypeFor(base);
         // No, get its name from the front end
         if (base->isRegOf()) {
-            char* regName = getRegName(base);
+            const char* regName = getRegName(base);
             // Create a new local, for the base name if it doesn't exist yet, so we don't need several names for the
             // same combination of location and type. However if it does already exist, addLocal will allocate a
             // new name. Example: r8{0}->argc type int, r8->o0 type int, now r8->o0_1 type char*.

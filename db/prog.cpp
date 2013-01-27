@@ -29,7 +29,7 @@
  * Dependencies.
  *============================================================================*/
 
-#include <assert.h>
+#include <cassert>
 #if defined(_MSC_VER) && _MSC_VER <= 1200
 #pragma warning(disable:4786)
 // ? How does the following do any good?
@@ -39,13 +39,13 @@
 #pragma warning(disable:4996)        // Warnings about e.g. _strdup deprecated in VS 2005
 #endif
 
-#include <assert.h>
+#include <cassert>
+#include <cstdlib>
+#include <cstring>
 #include <fstream>
 #include <sstream>
-#include <cstring>
-#include <stdlib.h>
 #include <vector>
-#include <math.h>
+#include <cmath>
 #ifdef _WIN32
 #include <direct.h>                    // For Windows mkdir()
 #endif
@@ -862,6 +862,8 @@ std::vector<Exp*> &Prog::getDefaultReturns()
 }
 
 bool Prog::isWin32() {
+    if (!pFE)
+      return false;
     return pFE->isWin32();
 }
 
@@ -985,7 +987,7 @@ Type *Prog::guessGlobalType(const char *nam, ADDRESS u) {
     int sz = pBF->GetSizeByName(nam);
     if (sz == 0) {
         // Check if it might be a string
-        char* str = getStringConstant(u);
+        const char* str = getStringConstant(u);
         if (str)
             // return char* and hope it is dealt with properly
             return new PointerType(new CharType());
@@ -1033,7 +1035,7 @@ void Prog::setGlobalType(const char* nam, Type* ty) {
 
 // get a string constant at a given address if appropriate
 // if knownString, it is already known to be a char*
-char *Prog::getStringConstant(ADDRESS uaddr, bool knownString /* = false */) {
+const char *Prog::getStringConstant(ADDRESS uaddr, bool knownString /* = false */) {
     const SectionInfo* si = pBF->GetSectionInfoByAddr(uaddr);
     // Too many compilers put constants, including string constants, into read/write sections
     //if (si && si->bReadOnly)
@@ -1704,7 +1706,7 @@ Exp *Prog::readNativeAs(ADDRESS uaddr, Type *type)
             // TODO: typecast?
             return Location::global(nam, NULL);
         if (type->asPointer()->getPointsTo()->resolvesToChar()) {
-            char *str = getStringConstant(init);
+            const char *str = getStringConstant(init);
             if (str != NULL)
                 return new Const(str);
         }
@@ -1732,7 +1734,7 @@ Exp *Prog::readNativeAs(ADDRESS uaddr, Type *type)
         return e;
     }
     if (type->resolvesToArray() && type->asArray()->getBaseType()->resolvesToChar()) {
-        char* str = getStringConstant(uaddr, true);
+        const char* str = getStringConstant(uaddr, true);
         if (str) {
             // Make a global string
             return new Const(str);
@@ -2070,7 +2072,7 @@ Exp    *Prog::addReloc(Exp *e, ADDRESS lc)
             }
             e = new Unary(opAddrOf, Location::global(n, NULL));
         } else {
-            char *str = getStringConstant(c_addr);
+            const char *str = getStringConstant(c_addr);
             if (str)
                 e = new Const(str);
             else {

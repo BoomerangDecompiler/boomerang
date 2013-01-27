@@ -46,9 +46,17 @@ public:
         out << str << std::flush;
         return *this;
     }
-    virtual ~FileLogger() {};
+    virtual ~FileLogger() {}
 };
-
+class NullLogger : public Log
+{
+public:
+    virtual Log &operator<<(const char *str)
+    {
+        // std::cerr << str;
+        return *this;
+    }
+};
 // For older MSVC compilers
 #if defined(_MSC_VER) && (_MSC_VER <= 1200)
 static std::ostream& operator<<(std::ostream& s, QWord val)

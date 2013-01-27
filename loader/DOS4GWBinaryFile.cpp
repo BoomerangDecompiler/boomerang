@@ -29,19 +29,18 @@
 #include "config.h"
 #include <iostream>
 #include <sstream>
-#include <assert.h>
-#include <stdlib.h>
+#include <cassert>
 #include <cstring>
+#include <cstdlib>
 
 extern "C" {
 int microX86Dis(void* p);            // From microX86dis.c
 }
 
-DOS4GWBinaryFile::DOS4GWBinaryFile() : m_pFileName(0)
-{ }
+DOS4GWBinaryFile::DOS4GWBinaryFile() : m_pFileName(0) {
+}
 
-DOS4GWBinaryFile::~DOS4GWBinaryFile()
-{
+DOS4GWBinaryFile::~DOS4GWBinaryFile() {
     for (int i=0; i < m_iNumSections; i++) {
         if (m_pSections[i].pSectionName)
             ; //delete [] m_pSections[i].pSectionName;
@@ -59,17 +58,15 @@ void DOS4GWBinaryFile::Close() {
 }
 
 std::list<SectionInfo*>& DOS4GWBinaryFile::GetEntryPoints(
-        const char* pEntry)
-{
+        const char* pEntry) {
     fprintf(stderr,"really don't know how to implement GetEntryPoints\n");
     exit(0);
     static std::list<SectionInfo*> l;
     return l;
 }
 
-ADDRESS DOS4GWBinaryFile::GetEntryPoint()
-{
-        return ADDRESS::g((LMMH(m_pLXObjects[LMMH(m_pLXHeader->eipobjectnum)].RelocBaseAddr) + LMMH(m_pLXHeader->eip)));
+ADDRESS DOS4GWBinaryFile::GetEntryPoint() {
+    return ADDRESS::g((LMMH(m_pLXObjects[LMMH(m_pLXHeader->eipobjectnum)].RelocBaseAddr) + LMMH(m_pLXHeader->eip)));
 }
 
 ADDRESS DOS4GWBinaryFile::GetMainEntryPoint() {
@@ -143,8 +140,7 @@ ADDRESS DOS4GWBinaryFile::GetMainEntryPoint() {
 }
 
 
-bool DOS4GWBinaryFile::RealLoad(const char* sName)
-{
+bool DOS4GWBinaryFile::RealLoad(const char* sName) {
     m_pFileName = sName;
     FILE *fp = fopen(sName,"rb");
 
@@ -210,8 +206,8 @@ bool DOS4GWBinaryFile::RealLoad(const char* sName)
 
             m_pSections[n].pSectionName = new char[9];
             sprintf(m_pSections[n].pSectionName, "seg%i", n);   // no section names in LX
-            m_pSections[n].uNativeAddr=LMMH(m_pLXObjects[n].RelocBaseAddr);
-            m_pSections[n].uHostAddr=ADDRESS::g((LMMH(m_pLXObjects[n].RelocBaseAddr) - LMMH(m_pLXObjects[0].RelocBaseAddr) + base));
+            m_pSections[n].uNativeAddr = LMMH(m_pLXObjects[n].RelocBaseAddr);
+            m_pSections[n].uHostAddr = ADDRESS::g((LMMH(m_pLXObjects[n].RelocBaseAddr) - LMMH(m_pLXObjects[0].RelocBaseAddr) + base));
             m_pSections[n].uSectionSize=LMMH(m_pLXObjects[n].VirtualSize);
             DWord Flags = LMMH(m_pLXObjects[n].ObjectFlags);
             m_pSections[n].bBss        = 0; // TODO
@@ -358,8 +354,7 @@ bool DOS4GWBinaryFile::RealLoad(const char* sName)
     return true;
 }
 
-bool DOS4GWBinaryFile::IsDynamicLinkedProc(ADDRESS uNative)
-{
+bool DOS4GWBinaryFile::IsDynamicLinkedProc(ADDRESS uNative) {
     if (dlprocptrs.find(uNative) != dlprocptrs.end() &&
             dlprocptrs[uNative] != "main" && dlprocptrs[uNative] != "_start")
         return true;
@@ -367,17 +362,14 @@ bool DOS4GWBinaryFile::IsDynamicLinkedProc(ADDRESS uNative)
 }
 
 // Clean up and unload the binary image
-void DOS4GWBinaryFile::UnLoad()
-{
+void DOS4GWBinaryFile::UnLoad() {
 }
 
-bool DOS4GWBinaryFile::PostLoad(void* handle)
-{
+bool DOS4GWBinaryFile::PostLoad(void* handle) {
     return false;
 }
 
-const char* DOS4GWBinaryFile::SymbolByAddress(ADDRESS dwAddr)
-{
+const char* DOS4GWBinaryFile::SymbolByAddress(ADDRESS dwAddr) {
     std::map<ADDRESS, std::string>::iterator it = dlprocptrs.find(dwAddr);
     if (it == dlprocptrs.end())
         return 0;
@@ -398,14 +390,12 @@ ADDRESS DOS4GWBinaryFile::GetAddressByName(const char* pName,
     return NO_ADDRESS;
 }
 
-void DOS4GWBinaryFile::AddSymbol(ADDRESS uNative, const char *pName)
-{
+void DOS4GWBinaryFile::AddSymbol(ADDRESS uNative, const char *pName) {
     dlprocptrs[uNative] = pName;
 }
 
 bool DOS4GWBinaryFile::DisplayDetails(const char* fileName, FILE* f
-                                      /* = stdout */)
-{
+        /* = stdout */) {
     return false;
 }
 
@@ -490,50 +480,41 @@ double DOS4GWBinaryFile::readNativeFloat8(ADDRESS nat) {
     return *(double*)raw;
 }
 
-bool DOS4GWBinaryFile::IsDynamicLinkedProcPointer(ADDRESS uNative)
-{
+bool DOS4GWBinaryFile::IsDynamicLinkedProcPointer(ADDRESS uNative) {
     if (dlprocptrs.find(uNative) != dlprocptrs.end())
         return true;
     return false;
 }
 
-const char *DOS4GWBinaryFile::GetDynamicProcName(ADDRESS uNative)
-{
+const char *DOS4GWBinaryFile::GetDynamicProcName(ADDRESS uNative) {
     return dlprocptrs[uNative].c_str();
 }
 
-LOAD_FMT DOS4GWBinaryFile::GetFormat() const
-{
+LOAD_FMT DOS4GWBinaryFile::GetFormat() const {
     return LOADFMT_LX;
 }
 
-MACHINE DOS4GWBinaryFile::GetMachine() const
-{
+MACHINE DOS4GWBinaryFile::GetMachine() const {
     return MACHINE_PENTIUM;
 }
 
-bool DOS4GWBinaryFile::isLibrary() const
-{
+bool DOS4GWBinaryFile::isLibrary() const {
     return false; // TODO
 }
 
-ADDRESS DOS4GWBinaryFile::getImageBase()
-{
+ADDRESS DOS4GWBinaryFile::getImageBase() {
     return ADDRESS::g(m_pLXObjects[0].RelocBaseAddr);
 }
 
-size_t DOS4GWBinaryFile::getImageSize()
-{
+size_t DOS4GWBinaryFile::getImageSize() {
     return 0; // TODO
 }
 
-std::list<const char *> DOS4GWBinaryFile::getDependencyList()
-{
+std::list<const char *> DOS4GWBinaryFile::getDependencyList() {
     return std::list<const char *>(); /* FIXME */
 }
 
-DWord DOS4GWBinaryFile::getDelta()
-{
+DWord DOS4GWBinaryFile::getDelta() {
     // Stupid function anyway: delta depends on section
     // This should work for the header only
     //    return (DWord)base - LMMH(m_pPEHeader->Imagebase);
@@ -548,8 +529,7 @@ extern "C" {
 #ifdef _WIN32
 __declspec(dllexport)
 #endif
-BinaryFile* construct()
-{
+    BinaryFile* construct() {
     return new DOS4GWBinaryFile;
 }
 }

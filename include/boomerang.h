@@ -18,7 +18,7 @@
  *
  * \section Introduction
  *
- * Welcome to the Doxygen generated documentation for the 
+ * Welcome to the Doxygen generated documentation for the
  * %Boomerang decompiler. Not all classes and functions have been documented
  * yet, but eventually they will. If you have figured out what a function is doing
  * please update the documentation and submit it as a patch.
@@ -98,8 +98,8 @@ static Boomerang *boomerang;
         Log            *logger;
         /// The watchers which are interested in this decompilation.
         std::set<Watcher*> watchers;
-        
-        
+
+
         /* Documentation about a function should be at one place only
          * So: Document all functions at the point of implementation (in the .c file)
          */
@@ -116,24 +116,23 @@ static Boomerang *boomerang;
         /// The destructor is virtual to force this object to be created on the heap (with \em new).
 virtual            ~Boomerang() {}
 public:
-        /** 
+        /**
          * \return The global boomerang object. It will be created if it didn't already exist.
-         */ 
-static Boomerang *get() { 
-                if (!boomerang) boomerang = new Boomerang(); 
+         */
+static Boomerang *get() {
+                if (!boomerang) boomerang = new Boomerang();
                 return boomerang;
             }
 
-static    char*        getVersionStr();
-        Log            &log();
+static const char * getVersionStr();
+        Log &       log();
         void        setLogger(Log *l) { logger = l; }
         bool        setOutputDirectory(const char *path);
 
-        /// \return The HLLCode for the specified UserProc.
-        HLLCode        *getHLLCode(UserProc *p = NULL);
 
-        int            commandLine(int argc, const char **argv);
-        /// Set the path to the %Boomerang executable.
+        HLLCode *   getHLLCode(UserProc *p = NULL);
+        int         commandLine(int argc, const char **argv);
+                    /// Set the path to the %Boomerang executable.
         void        setProgPath(const char* p) { progPath = p; }
         /// Get the path to the %Boomerang executable.
         const std::string& getProgPath() { return progPath; }
@@ -167,7 +166,7 @@ static    char*        getVersionStr();
                             (*it)->alert_remove(p);
                     }
         /// Alert the watchers we have updated this Procs signature
-        void        alert_update_signature(Proc *p) { 
+        void        alert_update_signature(Proc *p) {
                         for (std::set<Watcher*>::iterator it = watchers.begin(); it != watchers.end(); it++)
                             (*it)->alert_update_signature(p);
                     }
@@ -192,16 +191,16 @@ static    char*        getVersionStr();
                             (*it)->alert_load(p);
             }
         /// Alert the watchers we are starting to decode.
-        void        alert_start_decode(ADDRESS start, int nBytes) { 
+        void        alert_start_decode(ADDRESS start, int nBytes) {
                         for (std::set<Watcher*>::iterator it = watchers.begin(); it != watchers.end(); it++)
                             (*it)->alert_start_decode(start, nBytes);
                     }
         /// Alert the watchers we finished decoding.
-        void        alert_end_decode() { 
+        void        alert_end_decode() {
                         for (std::set<Watcher*>::iterator it = watchers.begin(); it != watchers.end(); it++)
                             (*it)->alert_end_decode();
                     }
-virtual    void        alert_start_decompile(UserProc *p) { 
+virtual    void        alert_start_decompile(UserProc *p) {
                         for (std::set<Watcher*>::iterator it = watchers.begin(); it != watchers.end(); it++)
                             (*it)->alert_start_decompile(p);
                     }
@@ -225,15 +224,15 @@ virtual void        alert_decompile_afterRemoveStmts(UserProc *p, int depth) {
                         for (std::set<Watcher*>::iterator it = watchers.begin(); it != watchers.end(); it++)
                             (*it)->alert_decompile_afterRemoveStmts(p, depth);
                     }
-virtual void        alert_end_decompile(UserProc *p) { 
+virtual void        alert_end_decompile(UserProc *p) {
                         for (std::set<Watcher*>::iterator it = watchers.begin(); it != watchers.end(); it++)
                             (*it)->alert_end_decompile(p);
                     }
-virtual void        alert_considering(Proc *parent, Proc *p) { 
+virtual void        alert_considering(Proc *parent, Proc *p) {
                         for (std::set<Watcher*>::iterator it = watchers.begin(); it != watchers.end(); it++)
                             (*it)->alert_considering(parent, p);
                     }
-virtual void        alert_decompiling(UserProc *p) { 
+virtual void        alert_decompiling(UserProc *p) {
                         for (std::set<Watcher*>::iterator it = watchers.begin(); it != watchers.end(); it++)
                             (*it)->alert_decompiling(p);
                     }
@@ -272,7 +271,7 @@ virtual void        alert_decompile_debug_point(UserProc *p, const char *descrip
         std::map<ADDRESS, std::string> symbols;
         /// When true, attempt to decode main, all children, and all procs.
         /// \a decodeMain is set when there are no -e or -E switches given
-        bool        decodeMain;                    
+        bool        decodeMain;
         bool        printAST;
         bool        dumpXML;
         bool        noRemoveReturns;

@@ -22,7 +22,7 @@
  * 10 Apr 02 - Mike: Mods for boomerang; put expSimplify here
  */
 
-#include <assert.h>
+#include <cassert>
 #if defined(_MSC_VER) && _MSC_VER <= 1200
 #pragma warning(disable:4786)
 #endif
@@ -34,7 +34,7 @@
 #include <sstream>
 #include <iostream>
 #include <fstream>
-#include <stdio.h>
+#include <cstdio>
 #include <cstring>
 #include "util.h"
 

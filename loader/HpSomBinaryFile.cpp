@@ -21,7 +21,7 @@
  * 15 May 02 - Mike: Fixed several UINT4(&...) that were needed for endianness
 */
 
-#include <assert.h>
+#include <cassert>
 #if defined(_MSC_VER) && _MSC_VER <= 1200
 #include "exp.h"        // For MSVC 5.00
 #endif

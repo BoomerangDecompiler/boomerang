@@ -26,7 +26,7 @@
  * 02 Feb 05 - Gerard: Check for thunks to library functions and don't create procs for these
  */
 
-#include <assert.h>
+#include <cassert>
 #include <cstring>
 #include <stdlib.h>
 #if defined(_MSC_VER) && _MSC_VER <= 1200
@@ -176,6 +176,10 @@ void FrontEnd::readLibraryCatalog() {
     readLibraryCatalog(sList.c_str());
     if (isWin32()) {
         sList = Boomerang::get()->getProgPath() + "signatures/win32.hs";
+        readLibraryCatalog(sList.c_str());
+    }
+    if (pBF->GetFormat() == LOADFMT_MACHO) {
+        sList = Boomerang::get()->getProgPath() + "signatures/objc.hs";
         readLibraryCatalog(sList.c_str());
     }
 }

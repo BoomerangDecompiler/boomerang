@@ -1,23 +1,15 @@
-#include <cppunit/TestCaller.h>
-#include <cppunit/TestCase.h>
-#include <cppunit/TestSuite.h>
-#include "BinaryFile.h"
+#include <cppunit/extensions/HelperMacros.h>
 
-
-class FrontendTest : public CppUnit::TestCase {
-  protected:
+class FrontendTest : public CPPUNIT_NS::TestFixture {
+  CPPUNIT_TEST_SUITE( FrontendTest );
+  CPPUNIT_TEST( test1 );
+  CPPUNIT_TEST_SUITE_END();
 
   public:
-    FrontendTest(std::string name) : CppUnit::TestCase (name)
-    {}
-
-    virtual void registerTests(CppUnit::TestSuite* suite);
-
-    int countTestCases () const;
-
     void setUp ();
     void tearDown ();
 
+  protected:
     void test1 ();
 };
 

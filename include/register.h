@@ -49,7 +49,7 @@ class Register {
   void s_address(void *p) {address = p;}
 
 /* These are only used in the interpreter */
-  char *g_name() const;
+  const char *g_name() const;
   void *g_address() const {return address;}
 
   int g_size() const {return size;}

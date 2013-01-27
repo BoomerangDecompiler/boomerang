@@ -10,9 +10,6 @@
  * 25 Juk 05 - Mike: DataIntervalMap tests
  */
 
-#define HELLO_WINDOWS        "test/windows/hello.exe"
-
-#include <iostream>
 #include "TypeTest.h"
 #include "BinaryFile.h"            // Ugh - needed before frontend.h
 #include "pentiumfrontend.h"
@@ -22,28 +19,9 @@
 #include "prog.h"
 #include "proc.h"
 
-/*==============================================================================
- * FUNCTION:        TypeTest::registerTests
- * OVERVIEW:        Register the test functions in the given suite
- * PARAMETERS:        Pointer to the test suite
- * RETURNS:            <nothing>
- *============================================================================*/
-#define MYTEST(name) \
-suite->addTest(new CppUnit::TestCaller<TypeTest> ("Type", \
-    &TypeTest::name, *this))
+CPPUNIT_TEST_SUITE_REGISTRATION(TypeTest);
 
-void TypeTest::registerTests(CppUnit::TestSuite* suite) {
-
-//    Note: there is nothing left to test in Util (for now)
-    MYTEST(testTypeLong);
-    MYTEST(testNotEqual);
-    MYTEST(testCompound);
-    MYTEST(testDataInterval);
-    MYTEST(testDataIntervalOverlaps);
-}
-
-int TypeTest::countTestCases () const
-{ return 1; }    // ? What's this for?
+#define HELLO_WINDOWS		"test/windows/hello.exe"
 
 /*==============================================================================
  * FUNCTION:        TypeTest::setUp
@@ -52,7 +30,12 @@ int TypeTest::countTestCases () const
  * PARAMETERS:        <none>
  * RETURNS:            <nothing>
  *============================================================================*/
+static bool logset = false;
 void TypeTest::setUp () {
+    if (!logset) {
+        logset = true;
+        Boomerang::get()->setLogger(new NullLogger());
+        }
 }
 
 /*==============================================================================
@@ -98,7 +81,6 @@ void TypeTest::testCompound() {
     BinaryFileFactory bff;
     BinaryFile *pBF = bff.Load(HELLO_WINDOWS);
     FrontEnd *pFE = new PentiumFrontEnd(pBF, new Prog, &bff);
-    Boomerang::get()->setLogger(new FileLogger());        // May try to output some messages to LOG
     pFE->readLibraryCatalog();                // Read definitions
 
     Signature* paintSig = pFE->getLibSignature("BeginPaint");

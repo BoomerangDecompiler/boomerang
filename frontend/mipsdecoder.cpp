@@ -1,5 +1,5 @@
 #define sign_extend(N,SIZE) (((int)((N) << (sizeof(unsigned)*8-(SIZE)))) >> (sizeof(unsigned)*8-(SIZE)))
-#include <assert.h>
+#include <cassert>
 
 #line 1 "frontend/machine/mips/decoder.m"
 /****************************************************************
@@ -22,7 +22,7 @@
 *
 *****************************************************************/
 
-#include <assert.h>
+#include <cassert>
 #if defined(_MSC_VER) && _MSC_VER <= 1100
 #include "signature.h"
 #endif

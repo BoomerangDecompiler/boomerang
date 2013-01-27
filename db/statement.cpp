@@ -23,11 +23,11 @@
  * Dependencies.
  *============================================================================*/
 
-#include <assert.h>
+#include <cassert>
+#include <cstring>
 #include <iomanip>            // For setfill etc
 
 #include <sstream>
-#include <cstring>
 #include <cstddef>
 #include <algorithm>
 #include "statement.h"
@@ -1011,7 +1011,7 @@ GotoStatement::GotoStatement(ADDRESS uDest) : m_isComputed(false) {
 GotoStatement::~GotoStatement() {
     if (pDest) ;//delete pDest;
 }
-
+//!< Return the fixed destination of this CTI.
 /*==============================================================================
  * FUNCTION:        GotoStatement::getFixedDest
  * OVERVIEW:        Get the fixed destination of this CTI. Assumes destination
@@ -1019,11 +1019,13 @@ GotoStatement::~GotoStatement() {
  *                    be of the Exp form:
  *                       opIntConst dest
  * PARAMETERS:        <none>
- * RETURNS:            Fixed dest or NO_ADDRESS if there isn't one
+ * RETURNS:            Fixed dest or NO_ADDRESS if there isn't one, For dynamic CTIs,
+ *                     returns NO_ADDRESS.
  *============================================================================*/
 ADDRESS GotoStatement::getFixedDest() {
-    if (pDest->getOper() != opIntConst) return NO_ADDRESS;
-    return ((Const*)pDest)->getAddr();
+    if (pDest->getOper() != opIntConst)
+        return NO_ADDRESS;
+    return constDest()->getAddr();
 }
 
 /*==============================================================================
@@ -1048,7 +1050,6 @@ void GotoStatement::setDest(ADDRESS addr) {
     // Delete the old destination if there is one
     if (pDest != NULL)
         ;//delete pDest;
-
     pDest = new Const(addr);
 }
 
@@ -1076,8 +1077,8 @@ void GotoStatement::adjustFixedDest(int delta) {
     if (pDest == 0 || pDest->getOper() != opIntConst)
         LOG << "Can't adjust destination of non-static CTI\n";
 
-    ADDRESS dest = ((Const*)pDest)->getAddr();
-    ((Const*)pDest)->setAddr(dest + delta);
+    ADDRESS dest = constDest()->getAddr();
+    constDest()->setAddr(dest + delta);
 }
 
 bool GotoStatement::search(Exp* search, Exp*& result) {
@@ -2010,7 +2011,13 @@ Type *CallStatement::getArgumentType(int i) {
     my_advance(aa, i);
     return ((Assign*)(*aa))->getType();
 }
-
+void CallStatement::setArgumentType(int i, Type *ty)
+{
+  assert(i < (int)arguments.size());
+  StatementList::iterator aa = arguments.begin();
+  my_advance(aa, i);
+  ((Assign*)(*aa))->setType(ty);
+}
 /*==============================================================================
  * FUNCTION:      CallStatement::setArguments
  * OVERVIEW:      Set the arguments of this call.
@@ -2286,6 +2293,8 @@ void CallStatement::generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) {
 #if 0
     LOG << "call: " << this;
     LOG << " in proc " << proc->getName() << "\n";
+    for (StatementList::iterator it = results->begin(); it != results->end(); it++)
+      LOG << "result: " << *it << "\n";
 #endif
     assert(p);
     if (Boomerang::get()->noDecompile) {
@@ -2532,7 +2541,7 @@ Exp *processConstant(Exp *e, Type *t, Prog *prog, UserProc* proc, ADDRESS stmt) 
             if (t->isCString()) {
                 ADDRESS u = ((Const*)e)->getAddr();
                 if ( !u.isZero() ) {   // can't do anything with NULL
-                    char *str = prog->getStringConstant(u, true);
+                    const char *str = prog->getStringConstant(u, true);
                     if (str) {
                         e = new Const(str);
                         // Check if we may have guessed this global incorrectly (usually as an array of char)
@@ -2617,6 +2626,66 @@ void CallStatement::setTypeFor(Exp* e, Type* ty) {
     def->setTypeFor(e, ty);
 }
 
+bool CallStatement::objcSpecificProcessing(const char *formatStr)
+{
+    Proc* proc = getDestProc();
+    if(!proc) return false;
+
+    std::string name(proc->getName());
+    if (name == "objc_msgSend")
+    {
+        if (formatStr)
+        {
+            int format = getNumArguments() - 1;
+            int n = 1;
+            char *p = (char*)formatStr;
+            while ((p = strchr(p, ':')))
+            {
+                p++;				// Point past the :
+                n++;
+                addSigParam(new PointerType(new VoidType()), false);
+            }
+            setNumArguments(format + n);
+            signature->killEllipsis();	// So we don't do this again
+            return true;
+        }
+        else
+        {
+            bool change = false;
+            LOG << this << "\n";
+            for (int i = 0; i < getNumArguments(); i++)
+            {
+                Exp *e = getArgumentExp(i);
+                Type *ty = getArgumentType(i);
+                LOG << "arg " << i << " e: " << e << " ty: " << ty << "\n";
+                if (!(ty->isPointer() && ((PointerType*)ty)->getPointsTo()->isChar()) &&
+                        e->isIntConst())
+                {
+                    ADDRESS addr = ADDRESS::g(((Const*)e)->getInt());
+                    LOG << "addr: " << addr << "\n";
+                    if (proc->getProg()->isStringConstant(addr))
+                    {
+                        LOG << "making arg " << i << " of call c*\n";
+                        setArgumentType(i, new PointerType(new CharType()));
+                        change = true;
+                    }
+                    else if (proc->getProg()->isCFStringConstant(addr))
+                    {
+                        ADDRESS addr2 = ADDRESS::g(proc->getProg()->readNative4(addr+8));
+                        LOG << "arg " << i << " of call is a cfstring\n";
+                        setArgumentType(i, new PointerType(new CharType()));
+                        // TODO: we'd really like to change this to CFSTR(addr)
+                        setArgumentExp(i, new Const(addr2));
+                        change = true;
+                    }
+                }
+            }
+            return change;
+        }
+    }
+
+    return false;
+}
 
 // This function has two jobs. One is to truncate the list of arguments based on the format string.
 // The second is to add parameter types to the signature.
@@ -2625,7 +2694,7 @@ bool CallStatement::ellipsisProcessing(Prog* prog) {
 
     // if (getDestProc() == NULL || !getDestProc()->getSignature()->hasEllipsis())
     if (getDestProc() == NULL || !signature->hasEllipsis())
-        return false;
+                                            return objcSpecificProcessing(NULL);
     // functions like printf almost always have too many args
     std::string name(getDestProc()->getName());
     int format = -1;
@@ -2675,6 +2744,9 @@ bool CallStatement::ellipsisProcessing(Prog* prog) {
     } else if (formatExp->isStrConst()) {
         formatStr = ((Const*)formatExp)->getStr();
     } else return false;
+    if (objcSpecificProcessing(formatStr))
+        return true;
+
     // actually have to parse it
     // Format string is: % [flags] [width] [.precision] [size] type
     int n = 1;        // Count the format string itself (may also be "format" more arguments)
@@ -3061,11 +3133,11 @@ Statement* BoolAssign::clone() {
     return ret;
 }
 
-// visit this Statement
+//! visit this Statement
 bool BoolAssign::accept(StmtVisitor* visitor) {
     return visitor->visit(this);
 }
-
+//! code generation
 void BoolAssign::generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) {
     assert(lhs);
     assert(pCond);
@@ -3074,7 +3146,7 @@ void BoolAssign::generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) {
                                         new Const(1), new Const(0)));
     hll->AddAssignmentStatement(indLevel, &as);
 }
-
+//! simplify all the uses/defs in this Statement
 void BoolAssign::simplify() {
     if (pCond)
         condToRelational(pCond, jtCond);
@@ -3161,11 +3233,11 @@ Assign::Assign(Assign& o) : Assignment(lhs->clone()) {
 }
 
 // Implicit Assignment
-// Constructor and subexpression
+//! Constructor and subexpression
 ImplicitAssign::ImplicitAssign(Exp* lhs) : Assignment(lhs) {
     kind = STMT_IMPASSIGN;
 }
-// Constructor, type, and subexpression
+//! Constructor, type, and subexpression
 ImplicitAssign::ImplicitAssign(Type* ty, Exp* lhs) : Assignment(ty, lhs) {
     kind = STMT_IMPASSIGN;
 }
@@ -4814,13 +4886,15 @@ StatementList* CallStatement::calcResults() {
         Signature* sig = procDest->getSignature();
         if (procDest && procDest->isLib()) {
             int n = sig->getNumReturns();
-            for (int i=1; i < n; i++) {                        // Ignore first (stack pointer) return
+            for (int i=0; i < n; i++) {                        // Ignore first (stack pointer) return
                 Exp* sigReturn = sig->getReturnExp(i);
+                if (sigReturn->isRegN(sig->getStackRegister(proc->getProg())))
+                  continue; // ignore stack reg
 #if SYMS_IN_BACK_END
                 // But we have translated out of SSA form, so some registers have had to have been replaced with locals
                 // So wrap the return register in a ref to this and check the locals
                 RefExp* wrappedRet = new RefExp(sigReturn, this);
-                char* locName = proc->findLocal(wrappedRet);    // E.g. r24{16}
+                const char* locName = proc->findLocalFromRef(wrappedRet);    // E.g. r24{16}
                 if (locName)
                     sigReturn = Location::local(locName, proc);    // Replace e.g. r24 with local19
 #endif

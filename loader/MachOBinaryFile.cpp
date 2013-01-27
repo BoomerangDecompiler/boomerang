@@ -29,7 +29,7 @@
 #include "config.h"
 #include <iostream>
 #include <sstream>
-#include <assert.h>
+#include <cassert>
 #include <cstring>
 #include <cstdlib>
 
@@ -92,11 +92,45 @@ ADDRESS MachOBinaryFile::GetMainEntryPoint() {
     return NO_ADDRESS;
 }
 
+#define BE4(x) ((magic[(x)] << 24) | (magic[(x)+1] << 16) | (magic[(x)+2] << 8) | (magic[(x)+3]))
+
 bool MachOBinaryFile::RealLoad(const char* sName)
 {
     m_pFileName = sName;
     FILE *fp = fopen(sName,"rb");
+    unsigned int imgoffs = 0;
 
+    unsigned char magic[12*4];
+    fread(magic, sizeof(magic), 1, fp);
+
+    if (magic[0] == 0xca && magic[1] == 0xfe && magic[2] == 0xba && magic[3] == 0xbe)
+        {
+            int nimages = BE4(4);
+#ifdef DEBUG_MACHO_LOADER
+            printf("binary is universal with %d images\n", nimages);
+#endif
+            for (int i = 0; i < nimages; i++)
+                {
+                    int fbh = 8 + i * 5*4;
+                    unsigned int cputype = BE4(fbh);
+                    unsigned int cpusubtype = BE4(fbh+4);
+                    unsigned int offset = BE4(fbh+8);
+                    unsigned int size = BE4(fbh+12);
+                    unsigned int pad = BE4(fbh+16);
+#ifdef DEBUG_MACHO_LOADER
+                    printf("cputype: %08x\n", cputype);
+                    printf("cpusubtype: %08x\n", cpusubtype);
+                    printf("offset: %08x\n", offset);
+                    printf("size: %08x\n", size);
+                    printf("pad: %08x\n", pad);
+#endif
+
+                    if (cputype == 0x7) // i386
+                        imgoffs = offset;
+                }
+        }
+
+    fseek(fp, imgoffs, SEEK_SET);
     header = new struct mach_header;
     fread(header, sizeof(*header), 1, fp);
 
@@ -115,6 +149,7 @@ bool MachOBinaryFile::RealLoad(const char* sName)
     else
         machine = MACHINE_PPC;
 
+    sections.clear();
     std::vector<struct segment_command> segments;
     std::vector<struct nlist> symbols;
     unsigned startlocal, nlocal, startdef, ndef, startundef, nundef;
@@ -124,12 +159,11 @@ bool MachOBinaryFile::RealLoad(const char* sName)
     ADDRESS objc_symbols = NO_ADDRESS, objc_modules = NO_ADDRESS, objc_strings = NO_ADDRESS, objc_refs = NO_ADDRESS;
     unsigned objc_modules_size = 0;
 
-    fseek(fp, sizeof(*header), SEEK_SET);
+    fseek(fp, imgoffs + sizeof(*header), SEEK_SET);
     for (unsigned i = 0; i < BMMH(header->ncmds); i++) {
         struct load_command cmd;
         long pos = ftell(fp);
         fread(&cmd, 1, sizeof(struct load_command), fp);
-
         fseek(fp, pos, SEEK_SET);
         switch(BMMH(cmd.cmd)) {
             case LC_SEGMENT:
@@ -143,6 +177,7 @@ bool MachOBinaryFile::RealLoad(const char* sName)
                 for (unsigned n = 0; n < BMMH(seg.nsects); n++) {
                     struct section sect;
                     fread(&sect, 1, sizeof(sect), fp);
+                    sections.push_back(sect);
 #ifdef DEBUG_MACHO_LOADER
                     fprintf(stdout, "    sectname %s segname %s addr %x size %i flags %x\n", sect.sectname, sect.segname, BMMH(sect.addr), BMMH(sect.size), BMMH(sect.flags));
 #endif
@@ -176,10 +211,10 @@ bool MachOBinaryFile::RealLoad(const char* sName)
             {
                 struct symtab_command syms;
                 fread(&syms, 1, sizeof(syms), fp);
-                fseek(fp, BMMH(syms.stroff), SEEK_SET);
+                fseek(fp,  imgoffs + BMMH(syms.stroff), SEEK_SET);
                 strtbl = new char[BMMH(syms.strsize)];
                 fread(strtbl, 1, BMMH(syms.strsize), fp);
-                fseek(fp, BMMH(syms.symoff), SEEK_SET);
+                fseek(fp,  imgoffs + BMMH(syms.symoff), SEEK_SET);
                 for (unsigned n = 0; n < BMMH(syms.nsyms); n++) {
                     struct nlist sym;
                     fread(&sym, 1, sizeof(sym), fp);
@@ -214,7 +249,7 @@ bool MachOBinaryFile::RealLoad(const char* sName)
                 fprintf(stdout, "dysymtab has %i indirect symbols: ", BMMH(syms.nindirectsyms));
 #endif
                 indirectsymtbl = new unsigned[BMMH(syms.nindirectsyms)];
-                fseek(fp, BMMH(syms.indirectsymoff), SEEK_SET);
+                fseek(fp,  imgoffs +  BMMH(syms.indirectsymoff), SEEK_SET);
                 fread(indirectsymtbl, 1, BMMH(syms.nindirectsyms)*sizeof(unsigned), fp);
 #ifdef DEBUG_MACHO_LOADER
                 for (unsigned j = 0; j < BMMH(syms.nindirectsyms); j++) {
@@ -258,7 +293,7 @@ bool MachOBinaryFile::RealLoad(const char* sName)
     m_pSections = new SectionInfo[m_iNumSections];
 
     for (unsigned i = 0; i < segments.size(); i++) {
-        fseek(fp, BMMH(segments[i].fileoff), SEEK_SET);
+        fseek(fp,  imgoffs + BMMH(segments[i].fileoff), SEEK_SET);
         ADDRESS a = ADDRESS::g(BMMH(segments[i].vmaddr));
         unsigned sz = BMMH(segments[i].vmsize);
         unsigned fsz = BMMH(segments[i].filesize);
@@ -280,6 +315,9 @@ bool MachOBinaryFile::RealLoad(const char* sName)
         m_pSections[i].bCode        = l&VM_PROT_EXECUTE?1:0;
         m_pSections[i].bData        = l&VM_PROT_READ?1:0;
         m_pSections[i].bReadOnly    = ~(l&VM_PROT_WRITE)?0:1;
+#ifdef DEBUG_MACHO_LOADER
+        fprintf(stderr, "loaded segment %x %i in mem %i in file code=%i data=%i readonly=%i\n", a, sz, fsz, m_pSections[i].bCode, m_pSections[i].bData, m_pSections[i].bReadOnly);
+#endif
     }
 
     // process stubs_sects
@@ -421,8 +459,11 @@ bool MachOBinaryFile::DisplayDetails(const char* fileName, FILE* f
 
 int MachOBinaryFile::machORead2(short* ps) const {
     unsigned char* p = (unsigned char*)ps;
-    // Big endian
-    int n = (int)(p[1] + (p[0] << 8));
+    int n;
+    if (machine == MACHINE_PPC)
+        n = (int)(p[1] + (p[0] << 8));
+    else
+        n = (int)(p[0] + (p[1] << 8));
     return n;
 }
 
@@ -430,7 +471,11 @@ int MachOBinaryFile::machORead4(int* pi) const{
     short* p = (short*)pi;
     int n1 = machORead2(p);
     int n2 = machORead2(p+1);
-    int n = (int) (n2 | (n1 << 16));
+    int n;
+    if (machine == MACHINE_PPC)
+        n = (int) (n2 | (n1 << 16));
+    else
+        n = (int) (n1 | (n2 << 16));
     return n;
 }
 
@@ -479,6 +524,43 @@ unsigned int MachOBinaryFile::BMMH(unsigned int x)
 unsigned short MachOBinaryFile::BMMHW(unsigned short x)
 {
     if (swap_bytes) return _BMMHW(x); else return x;
+}
+bool MachOBinaryFile::isReadOnly(ADDRESS uEntry)
+{
+    uint32_t entry_val(uEntry.m_value);
+    for (size_t i = 0; i < sections.size(); i++) {
+        if (entry_val >= BMMH(sections[i].addr) &&  entry_val < BMMH(sections[i].addr) + BMMH(sections[i].size)) {
+            return (BMMH(sections[i].flags) & VM_PROT_WRITE) ? 0 : 1;
+        }
+    }
+    return BinaryFile::isReadOnly(uEntry);
+}
+
+// constant.. hmm, seems __cstring is writable, what's with that?
+bool MachOBinaryFile::isStringConstant(ADDRESS uEntry)
+{
+    uint32_t entry_val(uEntry.m_value);
+    for (size_t i = 0; i < sections.size(); i++) {
+        if (entry_val >= BMMH(sections[i].addr) &&  entry_val < BMMH(sections[i].addr) + BMMH(sections[i].size)) {
+            //printf("%08x is in %s\n", uEntry, sections[i].sectname);
+            if (!strcmp(sections[i].sectname, "__cstring"))
+                return true;
+        }
+    }
+    return BinaryFile::isStringConstant(uEntry);
+}
+
+bool MachOBinaryFile::isCFStringConstant(ADDRESS uEntry)
+{
+    uint32_t entry_val(uEntry.m_value);
+    for (size_t i = 0; i < sections.size(); i++) {
+        if (entry_val >= BMMH(sections[i].addr) &&  entry_val < BMMH(sections[i].addr) + BMMH(sections[i].size)) {
+            //printf("%08x is in %s\n", uEntry, sections[i].sectname);
+            if (!strcmp(sections[i].sectname, "__cfstring"))
+                return true;
+        }
+    }
+    return BinaryFile::isCFStringConstant(uEntry);
 }
 
 // Read 2 bytes from given native address

@@ -9,27 +9,10 @@
  * 03 Dec 02 - Trent: Created
  */
 
-#include <sstream>
 #include "CTest.h"
-#include "sigenum.h"
+#include "ansi-c-parser.h"
 
-/*==============================================================================
- * FUNCTION:        CTest::registerTests
- * OVERVIEW:        Register the test functions in the given suite
- * PARAMETERS:      Pointer to the test suite
- * RETURNS:         <nothing>
- *============================================================================*/
-#define MYTEST(name) \
-suite->addTest(new CppUnit::TestCaller<CTest> ("testC", \
-    &CTest::name, *this))
-
-void CTest::registerTests(CppUnit::TestSuite* suite) {
-
-    MYTEST(testSignature);
-}
-
-int CTest::countTestCases () const
-{ return 1; }   // ? What's this for?
+CPPUNIT_TEST_SUITE_REGISTRATION( CTest );
 
 /*==============================================================================
  * FUNCTION:        CTest::setUp

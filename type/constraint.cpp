@@ -268,8 +268,10 @@ Exp* nextConjunct(Exp*& remainder) {
 }
 
 bool Constraints::solve(std::list<ConstraintMap>& solns) {
-    LOG << (int) conSet.size() << " constraints:";
-    std::ostringstream os; conSet.print(os); LOG << os.str().c_str();
+    LOG << conSet.size() << " constraints:";
+    std::ostringstream os;
+	conSet.print(os);
+	LOG << os.str().c_str();
     // Replace Ta[loc] = ptr(alpha) with
     //           Tloc = alpha
     LocationSet::iterator cc;
