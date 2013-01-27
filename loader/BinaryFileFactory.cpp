@@ -6,21 +6,23 @@
  * loader class dynamically.
 */
 
+#include <iostream>
 #ifndef _WIN32
 #include <dlfcn.h>
 #else
 #include <windows.h>            // include before types.h: name collision of NO_ADDRESS and WinSock.h
 #endif
 
+#include "config.h"                // For HOST_OSX_10_2 etc
 #include "BinaryFile.h"
 #include "ElfBinaryFile.h"
 #include "Win32BinaryFile.h"
 #include "PalmBinaryFile.h"
 #include "HpSomBinaryFile.h"
 #include "ExeBinaryFile.h"
-#include "config.h"                // For HOST_OSX_10_2 etc
 
-#include <iostream>
+using namespace std;
+const char * BinaryFileFactory::m_base_path = "";
 
 BinaryFile *BinaryFileFactory::Load(const char *sName) {
     BinaryFile *pBF = getInstanceFor( sName );
@@ -43,11 +45,14 @@ BinaryFile *BinaryFileFactory::Load(const char *sName) {
 
 // Declare a pointer to a constructor function; returns a BinaryFile*
 typedef BinaryFile* (*constructFcn)();
-
+/**
+ * Perform simple magic on the file by the given name in order to determine the appropriate type, and then return an
+ * instance of the appropriate subclass.
+ */
 BinaryFile* BinaryFileFactory::getInstanceFor( const char *sName ) {
     FILE *f;
     unsigned char buf[64];
-    std::string libName;
+    string libName,base_plugin_path=m_base_path;
     BinaryFile *res = NULL;
 
     f = fopen (sName, "rb");
@@ -118,6 +123,7 @@ BinaryFile* BinaryFileFactory::getInstanceFor( const char *sName ) {
     libName += ".so";
 #endif
 #endif
+    libName = base_plugin_path + libName;
     dlHandle = dlopen(libName.c_str(), RTLD_LAZY);
     if (dlHandle == NULL) {
         fprintf( stderr, "Could not open dynamic loader library %s\n", libName.c_str());
@@ -137,15 +143,15 @@ BinaryFile* BinaryFileFactory::getInstanceFor( const char *sName ) {
 #ifdef __MINGW32__
     libName = "lib/lib" + libName;
 #endif
-    hModule = LoadLibraryA(libName.c_str());
-    if(hModule == NULL) {
+    dlHandle = LoadLibraryA(libName.c_str());
+    if(dlHandle == NULL) {
         int err = GetLastError();
         fprintf( stderr, "Could not open dynamic loader library %s (error #%d)\n", libName.c_str(), err);
         fclose(f);
         return NULL;
     }
     // Use the handle to find the "construct" function
-    constructFcn pFcn = (constructFcn) GetProcAddress((HINSTANCE)hModule, "construct");
+    constructFcn pFcn = (constructFcn) GetProcAddress((HINSTANCE)dlHandle, "construct");
 #endif
 
     if (pFcn == NULL) {
@@ -164,7 +170,7 @@ BinaryFile* BinaryFileFactory::getInstanceFor( const char *sName ) {
 
 void BinaryFileFactory::UnLoad() {
 #ifdef _WIN32
-    FreeLibrary((HINSTANCE)hModule);
+    FreeLibrary((HINSTANCE)dlHandle);
 #else
     dlclose(dlHandle);                    // Especially important for Mac OS X
 #endif

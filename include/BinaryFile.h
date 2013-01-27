@@ -130,22 +130,15 @@ enum LOAD_FMT {
 enum MACHINE {MACHINE_PENTIUM, MACHINE_SPARC, MACHINE_HPRISC, MACHINE_PALM, MACHINE_PPC, MACHINE_ST20, MACHINE_MIPS};
 
 class BinaryFileFactory {
-#ifdef _WIN32
-// The below should be of type HINSTANCE, but #including windows.h here causes problems later compiling the objective C
-// code. So just cast as needed.
-        void*        hModule;
-#else
-        void*        dlHandle;        // Needed for UnLoading the library
-#endif
+        // The below should be of type HINSTANCE on WIN32, but #including windows.h here causes problems later compiling the objective C
+        // code. So just cast as needed.
+        void *          dlHandle;        // Needed for UnLoading the library
+        BinaryFile *    getInstanceFor(const char *sName);
+static  const char *    m_base_path; //!< path from which the executable is being ran, used to find lib/ directory
 public:
-        BinaryFile    *Load( const char *sName );
-        void        UnLoad();
-private:
-    /*
-     * Perform simple magic on the file by the given name in order to determine the appropriate type, and then return an
-     * instance of the appropriate subclass.
-     */
-        BinaryFile    *getInstanceFor(const char *sName);
+static  void            setBasePath(const char *path) {m_base_path=path;} //!< sets the base directory for plugin search
+        BinaryFile *    Load( const char *sName );
+        void            UnLoad();
 };
 
 
@@ -155,9 +148,9 @@ class IMPORT_BINARYFILE BinaryFile {
   friend class BinaryFileFactory;    // So can use getTextLimits
 
 public:
-    typedef std::map<ADDRESS, std::string> tMapAddrToString;
-virtual             ~BinaryFile() {}
-                    BinaryFile(bool bArchive = false);
+        typedef         std::map<ADDRESS, std::string> tMapAddrToString;
+virtual                 ~BinaryFile() {}
+                        BinaryFile(bool bArchive = false);
 
                         // General loader functions
                         // Unload the file. Pure virtual
@@ -199,8 +192,8 @@ virtual size_t          getImageSize() = 0; //!< Return the total size of the lo
                             return p && p->bReadOnly;
                         }
   // returns true if the given address is in a "strings" section
-virtual bool isStringConstant(ADDRESS uEntry) { return false; }
-virtual bool isCFStringConstant(ADDRESS uEntry) { return false; }
+virtual bool            isStringConstant(ADDRESS uEntry) { return false; }
+virtual bool            isCFStringConstant(ADDRESS uEntry) { return false; }
 virtual char			readNative1(ADDRESS a) {return 0;}
                         // Read 2 bytes from given native address a; considers endianness
 virtual int             readNative2(ADDRESS a) {return 0;}
@@ -249,10 +242,7 @@ virtual std::pair<ADDRESS,unsigned> GetGlobalPointerInfo();
                         // The ADDRESS is the native address of a pointer to the real dynamic data object.
 virtual std::map<ADDRESS, const char*>* GetDynamicGlobalMap();
 
-//
-//    --    --    --    --    --    --    --    --    --    --    --
-//
-
+///////////////////////////////////////////////////////////////////////////////
 // Internal information
                         // Dump headers, etc
 virtual bool            DisplayDetails(const char* fileName, FILE* f = stdout);
@@ -287,9 +277,7 @@ virtual std::map<std::string, ObjcModule> &getObjcModules() { return *new std::m
 
 virtual bool            hasDebugInfo() { return false; }
 
-//
-//    --    --    --    --    --    --    --    --    --    --    --
-//
+///////////////////////////////////////////////////////////////////////////////
 
 protected:
 // Special load function for archive members

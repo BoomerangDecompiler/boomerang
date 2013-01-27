@@ -681,7 +681,7 @@ int Boomerang::commandLine(int argc, const char **argv)
     printf("Boomerang %s\n", VERSION);        // Display a version and date (mainly for release versions)
     if (argc < 2) usage();
     progPath = argv[0];
-    size_t j = progPath.rfind('/');            // Chop off after the last slash
+    std::string::size_type j = progPath.rfind('/');            // Chop off after the last slash
     if (j == (size_t)-1)
         j = progPath.rfind('\\');            // .. or reverse slash
     if (j != (size_t)-1) {
@@ -691,6 +691,7 @@ int Boomerang::commandLine(int argc, const char **argv)
     else {
         progPath = "./";            // Just assume the current directory
     }
+    BinaryFileFactory::setBasePath(progPath.c_str());
 #ifdef _MSC_VER                        // For the console mode version; Windows GUI will override in windows.cpp
     // As a special case for MSVC testing, make the program path the parent of the dir with the .exe
     j = progPath.find("ebug\\", progPath.length() - (4+1));
