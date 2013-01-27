@@ -1,0 +1,8 @@
+got filename daysofxmas.c for main
+Unknown library function proc1
+Unknown library function proc2
+Unknown library function proc3
+Error: Instruction at 0x0x804845d branches beyond end of section, to 0x0x108048395
+Unknown library function proc4
+Unknown library function proc5
+Unknown library function proc6

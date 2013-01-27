@@ -1,0 +1,2 @@
+main function not found
+boomerang: /terra/development/Hobby/Decompilation/Systems/boomerang_git/db/cfg.cpp:702: bool Cfg::wellFormCfg(): Assertion `(int)(*it)->m_OutEdges.size() == (*it)->m_iNumOutEdges' failed.

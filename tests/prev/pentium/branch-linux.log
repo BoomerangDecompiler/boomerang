@@ -1,0 +1,5 @@
+got filename branch.c for main
+Unknown library function proc1
+Unknown library function proc2
+Error: Instruction at 0x0x8048651 branches beyond end of section, to 0x0x10804844e
+Unknown library function proc3

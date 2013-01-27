@@ -1,0 +1,8 @@
+/usr/lib/gcc/x86_64-unknown-linux-gnu/4.7.2/../../../../include/c++/4.7.2/debug/vector:336:
+    error: attempt to subscript container with out-of-bounds index 0, but     
+    container only holds 0 elements.
+
+Objects involved in the operation:
+sequence "this" @ 0x0x7ffff8f3d920 {
+  type = NSt7__debug6vectorI15segment_commandSaIS1_EEE;
+}

@@ -1,0 +1,13 @@
+ERROR: attempted to decode outside any known segment 0x0x10010428
+after removing matching assigns (%pc).
+size 32 meet with size 1!
+size 1 meet with size 32!
+size 1 meet with size 32!
+size 32 meet with size 1!
+size 1 meet with size 32!
+in proc main adding addrExp r1{0} - 16 to local table
+in proc main adding addrExp r1{0} + 4 to local table
+in proc main adding addrExp r1{0} - 16 to local table
+in proc main adding addrExp r1{0} + 4 to local table
+local g3 has type char * that doesn't agree with type of define void of a library, why?
+local g4 has type /*signed?*/int that doesn't agree with type of define void of a library, why?

@@ -1,0 +1,44 @@
+after removing matching assigns (%pc).
+in proc foo2 adding addrExp r1{0} - 32 to local table
+in proc foo2 adding addrExp r1{0} - 4 to local table
+in proc foo2 adding addrExp r1{0} + 4 to local table
+### WARNING: iteration limit exceeded for dfaTypeAnalysis of procedure foo2 ###
+in proc foo2 adding addrExp r1{0} - 32 to local table
+in proc foo2 adding addrExp r1{0} - 4 to local table
+in proc foo2 adding addrExp r1{0} + 4 to local table
+finding final parameters for foo2
+potential param r1
+found new parameter r1
+potential param r4
+found new parameter r4
+after removing matching assigns (%pc).
+integer size 64 meet with SizeType size 32!
+WARNING: size 32 meet with /*signed?*/long long; allowing temporarily
+in proc foo1 adding addrExp r1{0} - 32 to local table
+in proc foo1 adding addrExp r1{0} - 4 to local table
+in proc foo1 adding addrExp r1{0} + 4 to local table
+finding final parameters for foo1
+potential param r1
+found new parameter r1
+potential param r4
+found new parameter r4
+after removing matching assigns (%pc).
+in proc main adding addrExp r1{0} - 32 to local table
+in proc main adding addrExp r1{0} - 4 to local table
+in proc main adding addrExp r1{0} + 4 to local table
+### WARNING: iteration limit exceeded for dfaTypeAnalysis of procedure main ###
+in proc main adding addrExp r1{0} - 32 to local table
+in proc main adding addrExp r1{0} - 4 to local table
+in proc main adding addrExp r1{0} + 4 to local table
+finding final parameters for foo1
+potential param r4
+found new parameter r4
+finding final parameters for foo2
+potential param r4
+found new parameter r4
+finding final parameters for foo1
+potential param r4
+found new parameter r4
+local g3 has type char * that doesn't agree with type of define void of a library, why?
+local g4 has type union { /*signed?*/long long x3; char *[] * x4; } that doesn't agree with type of define __size32 of a library, why?
+local g3 has type char * that doesn't agree with type of define __size32 of a library, why?

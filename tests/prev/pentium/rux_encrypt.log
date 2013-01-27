@@ -1,0 +1,79 @@
+got filename encrypt.c for main
+Unknown library function proc1
+got filename encrypt.c for rux_encrypt
+Unknown library function proc2
+Unknown library function proc3
+Unknown library function proc4
+after removing matching assigns (%pc).
+### WARNING: iteration limit exceeded for dfaTypeAnalysis of procedure rux_encrypt ###
+in proc rux_encrypt adding addrExp r28{0} - 4 to local table
+in proc rux_encrypt adding addrExp r28{0} - 68 to local table
+in proc rux_encrypt adding addrExp r28{0} - 72 to local table
+in proc rux_encrypt adding addrExp r28{0} - 76 to local table
+in proc rux_encrypt adding addrExp r28{0} - 6 to local table
+in proc rux_encrypt adding addrExp r28{0} - 5 to local table
+in proc rux_encrypt adding addrExp r28{0} - 48 to local table
+in proc rux_encrypt adding addrExp r28{0} - 41 to local table
+in proc rux_encrypt adding addrExp r28{0} - 42 to local table
+in proc rux_encrypt adding addrExp r28{0} - 6 to local table
+finding final parameters for rux_encrypt
+potential param r28
+found new parameter r28
+potential param r27
+found new parameter r27
+potential param m[r28{0} + 4]
+found new parameter m[r28{0} + 4]
+after removing matching assigns (%pc).
+in proc main adding addrExp r28{0} - 12 to local table
+in proc main adding addrExp r28{0} - 36 to local table
+in proc main adding addrExp r28{0} - 40 to local table
+in proc main adding addrExp r28{0} - 44 to local table
+in proc main adding addrExp r28{0} - 48 to local table
+in proc main adding addrExp r28{0} - 8 to local table
+in proc main adding addrExp r28{0} - 4 to local table
+in proc main adding addrExp r28{0} - 12 to local table
+in proc main adding addrExp r28{0} - 36 to local table
+in proc main adding addrExp r28{0} - 40 to local table
+in proc main adding addrExp r28{0} - 44 to local table
+in proc main adding addrExp r28{0} - 48 to local table
+in proc main adding addrExp r28{0} - 36 to local table
+in proc main adding addrExp r28{0} - 40 to local table
+in proc main adding addrExp r28{0} - 44 to local table
+in proc main adding addrExp r28{0} - 48 to local table
+in proc main adding addrExp r28{0} - 12 to local table
+in proc main adding addrExp r28{0} - 44 to local table
+in proc main adding addrExp r28{0} - 48 to local table
+in proc main adding addrExp r28{0} - 36 to local table
+in proc main adding addrExp r28{0} - 40 to local table
+in proc main adding addrExp r28{0} - 44 to local table
+in proc main adding addrExp r28{0} - 48 to local table
+in proc main adding addrExp r28{0} - 36 to local table
+in proc main adding addrExp r28{0} - 40 to local table
+in proc main adding addrExp r28{0} - 44 to local table
+in proc main adding addrExp r28{0} - 48 to local table
+in proc main adding addrExp r28{0} - 44 to local table
+in proc main adding addrExp r28{0} - 48 to local table
+in proc main adding addrExp r28{0} - 36 to local table
+in proc main adding addrExp r28{0} - 40 to local table
+in proc main adding addrExp r28{0} - 44 to local table
+in proc main adding addrExp r28{0} - 48 to local table
+in proc main adding addrExp r28{0} - 36 to local table
+TYPE ERROR: Existing type at address 0x0xffffffffffffffdc is not structure or array type
+in proc main adding addrExp r28{0} - 40 to local table
+in proc main adding addrExp r28{0} - 44 to local table
+in proc main adding addrExp r28{0} - 48 to local table
+in proc main adding addrExp r28{0} - 8 to local table
+could not set type for unknown parameter expression m[r28{0} + 4]
+could not set type for unknown parameter expression m[r28{0} + 8]
+could not set type for unknown parameter expression m[r28{0} + 12]
+### WARNING: iteration limit exceeded for dfaTypeAnalysis of procedure rux_encrypt ###
+finding final parameters for rux_encrypt
+potential param r28
+found new parameter r28
+potential param m[r28{0} + 4]
+found new parameter m[r28{0} + 4]
+local esp has type void * that doesn't agree with type of define void of a library, why?
+local eax has type /*signed?*/int that doesn't agree with type of define __size32 of a library, why?
+local eax has type __size32 that doesn't agree with type of define /*signed?*/int of a library, why?
+local ecx has type __size32 that doesn't agree with type of define void of a library, why?
+local esp has type void * that doesn't agree with type of define void of a library, why?

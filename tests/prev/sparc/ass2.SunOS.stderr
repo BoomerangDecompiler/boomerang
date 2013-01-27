@@ -1,0 +1,3 @@
+decompiling entry point main
+tttprttrptrprpprttttprttprttptrpprrptprtttprptrtprprtttrptttrprrttprprrrpttttttttrprttprttprrtrprttrprrprrrrrrprprrprrrrrrprttttttttrprrrterminate called after throwing an instance of 'Signature::StackRegisterNotDefinedException'
+  what():  std::exception

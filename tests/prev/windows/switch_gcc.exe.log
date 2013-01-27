@@ -1,0 +1,7 @@
+Unknown library function dll_crt0__FP11per_process
+Unknown library function GetModuleHandleA
+Unknown library function cygwin_internal
+Error: Instruction at 0x0x40164c branches beyond end of section, to 0x0x100401544
+Error: Instruction at 0x0x40162b branches beyond end of section, to 0x0x100401594
+COMPUTED JUMP at 0x0x401780, pDest = m[0x4040c4]
+ERROR: attempted to decode outside any known segment 0x0x100401670

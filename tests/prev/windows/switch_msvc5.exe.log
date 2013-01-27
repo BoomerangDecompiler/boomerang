@@ -1,0 +1,8 @@
+COMPUTED JUMP at 0x0x40100c, pDest = m[(r24 * 4) + 0x401084]
+COMPUTED JUMP at 0x0x4013ad, pDest = m[(r24 * 4) + 0x401bac]
+Error: Instruction at 0x0x401b81 branches beyond end of section, to 0x0x100401365
+Error: Instruction at 0x0x4039f3 branches beyond end of section, to 0x0x100403953
+Error: Instruction at 0x0x40411a branches beyond end of section, to 0x0x100404039
+Error: Instruction at 0x0x4040e9 branches beyond end of section, to 0x0x100404035
+Error: Instruction at 0x0x404129 branches beyond end of section, to 0x0x100404039
+ERROR: attempted to decode outside any known segment 0x0x1004035e0

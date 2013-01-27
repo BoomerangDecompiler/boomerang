@@ -1,0 +1,82 @@
+Unknown library function proc1
+Unknown library function proc2
+Unknown library function proc3
+Unknown library function proc4
+Unknown library function proc5
+Unknown library function proc6
+Unknown library function proc7
+Unknown library function proc8
+Unknown library function proc9
+Unknown library function proc10
+after removing matching assigns (t[WILDSTR]).
+after removing matching assigns (%pc).
+in proc atexit adding addrExp r28{0} - 4 to local table
+in proc atexit adding addrExp r28{0} - 8 to local table
+in proc atexit adding addrExp r28{0} - 24 to local table
+in proc atexit adding addrExp r28{0} - 12 to local table
+in proc atexit adding addrExp r28{0} - 16 to local table
+in proc atexit adding addrExp r28{0} - 20 to local table
+in proc atexit adding addrExp r28{0} - 24 to local table
+finding final parameters for atexit
+potential param r27
+found new parameter r27
+after removing matching assigns (t[WILDSTR]).
+after removing matching assigns (%pc).
+in proc version_etc adding addrExp r28{0} - 4 to local table
+in proc version_etc adding addrExp r28{0} - 12 to local table
+in proc version_etc adding addrExp r28{0} - 16 to local table
+in proc version_etc adding addrExp r28{0} - 20 to local table
+in proc version_etc adding addrExp r28{0} - 24 to local table
+in proc version_etc adding addrExp r28{0} - 28 to local table
+in proc version_etc adding addrExp r28{0} - 32 to local table
+finding final parameters for version_etc
+assgn   89 *32* r24 := m[0x804b800]
+after removing matching assigns (%pc).
+### WARNING: iteration limit exceeded for dfaTypeAnalysis of procedure main ###
+in proc main adding addrExp r28{0} - 20 to local table
+in proc main adding addrExp r28{0} - 4 to local table
+in proc main adding addrExp r28{0} - 16 to local table
+in proc main adding addrExp r28{0} - 12 to local table
+in proc main adding addrExp r28{0} - 8 to local table
+in proc main adding addrExp r28{0} - 60 to local table
+in proc main adding addrExp r28{0} - 56 to local table
+in proc main adding addrExp r28{0} - 64 to local table
+in proc main adding addrExp r28{0} - 60 to local table
+in proc main adding addrExp r28{0} - 56 to local table
+in proc main adding addrExp r28{0} - 64 to local table
+in proc main adding addrExp r28{0} - 60 to local table
+in proc main adding addrExp r28{0} - 64 to local table
+in proc main adding addrExp r28{0} - 60 to local table
+in proc main adding addrExp r28{0} - 64 to local table
+in proc main adding addrExp r28{0} - 20 to local table
+in proc main adding addrExp r28{0} - 20 to local table
+in proc main adding addrExp r28{0} - 20 to local table
+in proc main adding addrExp r28{0} - 20 to local table
+in proc main adding addrExp r28{0} - 20 to local table
+size 8 meet with size 32!
+size 32 meet with size 8!
+size 32 meet with size 8!
+size 8 meet with size 32!
+size 8 meet with size 32!
+size 8 meet with size 32!
+### WARNING: iteration limit exceeded for dfaTypeAnalysis of procedure main ###
+could not set type for unknown parameter expression m[r28{0} + 8]
+could not set type for unknown parameter expression m[r28{0} + 4]
+in proc main adding addrExp r28{0} - 20 to local table
+could not set type for unknown parameter expression m[r28{0} + 12]
+in proc main adding addrExp r28{0} - 20 to local table
+in proc main adding addrExp r28{0} - 20 to local table
+in proc main adding addrExp r28{0} - 20 to local table
+finding final parameters for atexit
+potential param r27
+found new parameter r27
+finding final parameters for version_etc
+local ecx has type __size32 that doesn't agree with type of define void of a library, why?
+local esp has type void * that doesn't agree with type of define void of a library, why?
+local ecx has type void that doesn't agree with type of define __size32 of a library, why?
+local ecx has type __size32 that doesn't agree with type of define void of a library, why?
+local ecx has type void that doesn't agree with type of define __size32 of a library, why?
+local edx has type __size32 * that doesn't agree with type of define void of a library, why?
+local edx has type void that doesn't agree with type of define __size32 of a library, why?
+found seq with more than one outedge!
+taken branch is first out edge

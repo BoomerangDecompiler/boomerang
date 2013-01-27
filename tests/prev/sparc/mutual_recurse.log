@@ -1,0 +1,143 @@
+after removing matching assigns (t[WILDSTR]).
+after removing matching assigns (t[WILDSTR]).
+### WARNING: iteration limit exceeded for dfaTypeAnalysis of procedure c1 ###
+in proc c1 adding addrExp r14{0} to local table
+in proc c1 adding addrExp r14{0} + 4 to local table
+in proc c1 adding addrExp r14{0} + 8 to local table
+in proc c1 adding addrExp r14{0} + 12 to local table
+in proc c1 adding addrExp r14{0} + 16 to local table
+in proc c1 adding addrExp r14{0} + 20 to local table
+in proc c1 adding addrExp r14{0} + 24 to local table
+in proc c1 adding addrExp r14{0} + 28 to local table
+in proc c1 adding addrExp r14{0} + 32 to local table
+in proc c1 adding addrExp r14{0} + 36 to local table
+in proc c1 adding addrExp r14{0} + 40 to local table
+in proc c1 adding addrExp r14{0} + 44 to local table
+in proc c1 adding addrExp r14{0} + 48 to local table
+in proc c1 adding addrExp r14{0} + 52 to local table
+in proc c1 adding addrExp r14{0} + 56 to local table
+in proc c1 adding addrExp r14{0} + 60 to local table
+in proc c1 adding addrExp r14{0} + 4 to local table
+in proc c1 adding addrExp r14{0} + 8 to local table
+in proc c1 adding addrExp r14{0} + 12 to local table
+in proc c1 adding addrExp r14{0} + 16 to local table
+in proc c1 adding addrExp r14{0} + 20 to local table
+in proc c1 adding addrExp r14{0} + 24 to local table
+in proc c1 adding addrExp r14{0} + 28 to local table
+in proc c1 adding addrExp r14{0} + 32 to local table
+in proc c1 adding addrExp r14{0} + 36 to local table
+in proc c1 adding addrExp r14{0} + 40 to local table
+in proc c1 adding addrExp r14{0} + 44 to local table
+in proc c1 adding addrExp r14{0} + 48 to local table
+in proc c1 adding addrExp r14{0} + 52 to local table
+in proc c1 adding addrExp r14{0} + 56 to local table
+in proc c1 adding addrExp r14{0} + 60 to local table
+in proc c1 adding addrExp r14{0} to local table
+in proc c1 adding addrExp r14{0} + 4 to local table
+in proc c1 adding addrExp r14{0} + 8 to local table
+in proc c1 adding addrExp r14{0} + 12 to local table
+in proc c1 adding addrExp r14{0} + 16 to local table
+in proc c1 adding addrExp r14{0} + 20 to local table
+in proc c1 adding addrExp r14{0} + 24 to local table
+in proc c1 adding addrExp r14{0} + 28 to local table
+in proc c1 adding addrExp r14{0} + 32 to local table
+in proc c1 adding addrExp r14{0} + 36 to local table
+in proc c1 adding addrExp r14{0} + 40 to local table
+in proc c1 adding addrExp r14{0} + 44 to local table
+in proc c1 adding addrExp r14{0} + 48 to local table
+in proc c1 adding addrExp r14{0} + 52 to local table
+in proc c1 adding addrExp r14{0} + 56 to local table
+in proc c1 adding addrExp r14{0} + 60 to local table
+in proc c1 adding addrExp r14{0} to local table
+finding final parameters for c1
+potential param r14
+found new parameter r14
+potential param r8
+found new parameter r8
+potential param r11
+found new parameter r11
+potential param r12
+found new parameter r12
+potential param r13
+found new parameter r13
+potential param r15
+found new parameter r15
+finding final parameters for c2
+potential param r8
+found new parameter r8
+potential param r15
+found new parameter r15
+finding final parameters for c1
+potential param r14
+found new parameter r14
+potential param r8
+found new parameter r8
+potential param r11
+found new parameter r11
+potential param r12
+found new parameter r12
+potential param r13
+found new parameter r13
+potential param r15
+found new parameter r15
+finding final parameters for c2
+potential param r8
+found new parameter r8
+potential param r15
+found new parameter r15
+after removing matching assigns (t[WILDSTR]).
+in proc main adding addrExp r14{0} to local table
+in proc main adding addrExp r14{0} + 4 to local table
+in proc main adding addrExp r14{0} + 8 to local table
+in proc main adding addrExp r14{0} + 12 to local table
+in proc main adding addrExp r14{0} + 16 to local table
+in proc main adding addrExp r14{0} + 20 to local table
+in proc main adding addrExp r14{0} + 24 to local table
+in proc main adding addrExp r14{0} + 28 to local table
+in proc main adding addrExp r14{0} + 32 to local table
+in proc main adding addrExp r14{0} + 36 to local table
+in proc main adding addrExp r14{0} + 40 to local table
+in proc main adding addrExp r14{0} + 44 to local table
+in proc main adding addrExp r14{0} + 48 to local table
+in proc main adding addrExp r14{0} + 52 to local table
+in proc main adding addrExp r14{0} + 56 to local table
+in proc main adding addrExp r14{0} + 60 to local table
+in proc main adding addrExp r14{0} to local table
+in proc main adding addrExp r14{0} + 4 to local table
+in proc main adding addrExp r14{0} + 8 to local table
+in proc main adding addrExp r14{0} + 12 to local table
+in proc main adding addrExp r14{0} + 16 to local table
+in proc main adding addrExp r14{0} + 20 to local table
+in proc main adding addrExp r14{0} + 24 to local table
+in proc main adding addrExp r14{0} + 28 to local table
+in proc main adding addrExp r14{0} + 32 to local table
+in proc main adding addrExp r14{0} + 36 to local table
+in proc main adding addrExp r14{0} + 40 to local table
+in proc main adding addrExp r14{0} + 44 to local table
+in proc main adding addrExp r14{0} + 48 to local table
+in proc main adding addrExp r14{0} + 52 to local table
+in proc main adding addrExp r14{0} + 56 to local table
+in proc main adding addrExp r14{0} + 60 to local table
+### WARNING: iteration limit exceeded for dfaTypeAnalysis of procedure c1 ###
+finding final parameters for c1
+potential param r8
+found new parameter r8
+finding final parameters for c2
+potential param r8
+found new parameter r8
+potential param r15
+found new parameter r15
+finding final parameters for c2
+potential param r8
+found new parameter r8
+finding final parameters for c1
+potential param r8
+found new parameter r8
+finding final parameters for c1
+potential param r8
+found new parameter r8
+finding final parameters for c2
+potential param r8
+found new parameter r8
+local o0 has type int that doesn't agree with type of define void of a library, why?
+local o1 has type /*signed?*/int that doesn't agree with type of define void of a library, why?

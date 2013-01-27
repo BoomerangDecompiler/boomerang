@@ -1,0 +1,22 @@
+COMPUTED JUMP at 0x0x804892a, pDest = m[(r24 * 4) + 0x8048934]
+Unknown library function proc1
+after removing matching assigns (t[WILDSTR]).
+after removing matching assigns (%pc).
+=== about to restart decompilation of main because indirect jumps or calls have been analysed
+
+after removing matching assigns (t[WILDSTR]).
+after removing matching assigns (%pc).
+### WARNING: iteration limit exceeded for dfaTypeAnalysis of procedure main ###
+in proc main adding addrExp r28{0} - 4 to local table
+in proc main adding addrExp r28{0} - 8 to local table
+in proc main adding addrExp r28{0} - 8 to local table
+in proc main adding addrExp r28{0} - 8 to local table
+in proc main adding addrExp r28{0} - 8 to local table
+in proc main adding addrExp r28{0} - 8 to local table
+in proc main adding addrExp r28{0} - 8 to local table
+in proc main adding addrExp r28{0} - 8 to local table
+in proc main adding addrExp r28{0} - 8 to local table
+in proc main adding addrExp r28{0} - 12 to local table
+### WARNING: iteration limit exceeded for dfaTypeAnalysis of procedure main ###
+could not set type for unknown parameter expression m[r28{0} + 4]
+local esp has type __size32 that doesn't agree with type of define void of a library, why?

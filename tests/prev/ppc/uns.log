@@ -1,0 +1,22 @@
+after removing matching assigns (%pc).
+size 32 meet with size 1!
+size 1 meet with size 32!
+size 32 meet with size 1!
+size 1 meet with size 32!
+size 32 meet with size 1!
+size 1 meet with size 32!
+size 32 meet with size 1!
+size 1 meet with size 32!
+### WARNING: iteration limit exceeded for dfaTypeAnalysis of procedure main ###
+in proc main adding addrExp r1{0} - 32 to local table
+in proc main adding addrExp r1{0} - 4 to local table
+in proc main adding addrExp r1{0} + 4 to local table
+in proc main adding addrExp r1{0} - 24 to local table
+in proc main adding addrExp r1{0} - 20 to local table
+### WARNING: iteration limit exceeded for dfaTypeAnalysis of procedure main ###
+in proc main adding addrExp r1{0} - 32 to local table
+in proc main adding addrExp r1{0} - 4 to local table
+in proc main adding addrExp r1{0} + 4 to local table
+in proc main adding addrExp r1{0} - 24 to local table
+in proc main adding addrExp r1{0} - 20 to local table
+### WARNING: iteration limit exceeded for dfaTypeAnalysis of procedure main ###

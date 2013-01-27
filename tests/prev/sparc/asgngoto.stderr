@@ -1,0 +1,2 @@
+warning: textDelta different for section .init (ignoring).
+warning: textDelta different for section .fini (ignoring).

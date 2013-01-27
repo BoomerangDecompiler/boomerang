@@ -1,0 +1,57 @@
+after removing matching assigns (t[WILDSTR]).
+in proc main adding addrExp r14{0} to local table
+in proc main adding addrExp r14{0} + 4 to local table
+in proc main adding addrExp r14{0} + 8 to local table
+in proc main adding addrExp r14{0} + 12 to local table
+in proc main adding addrExp r14{0} + 16 to local table
+in proc main adding addrExp r14{0} + 20 to local table
+in proc main adding addrExp r14{0} + 24 to local table
+in proc main adding addrExp r14{0} + 28 to local table
+in proc main adding addrExp r14{0} + 32 to local table
+in proc main adding addrExp r14{0} + 36 to local table
+in proc main adding addrExp r14{0} + 40 to local table
+in proc main adding addrExp r14{0} + 44 to local table
+in proc main adding addrExp r14{0} + 48 to local table
+in proc main adding addrExp r14{0} + 52 to local table
+in proc main adding addrExp r14{0} + 56 to local table
+in proc main adding addrExp r14{0} + 60 to local table
+undoComputedBB for statement   80 {*32* r0, *v* r11, *v* r12, *v* r13, *v* r15, *32*** r16, *32* r17, *32* r18, *32* r19, *32* r20, *32* r21, *32* r22, *32* r23, *32* r24, *32* r25, *32* r26, *32* r27, *32* r28, *32* r29, *32* r30, *32* r31} := CALL _ZN1D3fooEv(<all>)
+              Reaching definitions: r8=r8{28},   r9=global9,   r10=8,   r11=0x217a4,   r12=0x21740,   r13=r13{61},
+                r14=r14{0} - 112,   r15=r15{59},   r16=r8{28},   r17=r17{0},   r18=r8{28} + 12,   r19=r19{0},
+                r20=r20{0},   r21=r21{0},   r22=r22{0},   r23=r23{0},   r24=0,   r25=r9{0},   r26=r10{0},   r27=r11{0},
+                r28=r12{0},   r29=r13{0},   r30=r14{0},   r31=r15{0},   m[r14{0} + 4]=r17{0},   m[r14{0} + 8]=r18{0},
+                m[r14{0} + 12]=r19{0},   m[r14{0} + 16]=r20{0},   m[r14{0} + 20]=r21{0},   m[r14{0} + 24]=r22{0},
+                m[r14{0} + 28]=r23{0},   m[r14{0} + 32]=r24{0},   m[r14{0} + 36]=r25{0},   m[r14{0} + 40]=r26{0},
+                m[r14{0} + 44]=r27{0},   m[r14{0} + 48]=r28{0},   m[r14{0} + 52]=r29{0},   m[r14{0} + 56]=r30{0},
+                m[r14{0} + 60]=r31{0},   m[r14{0}]=r16{0},   tmp=0x217a4
+              Live variables: r0,  r11,  r12,  r13,  r15,  r16,  r17,  r18,  r19,  r20,  r21,  r22,  r23,  r24,  r25,  r26,  r27,  r28,  r29,  r30,  r31
+Unknown library function _ZNSolsEPFRSt8ios_baseS0_E
+Unknown library function _ZNSolsEPKv
+after removing matching assigns (t[WILDSTR]).
+in proc _ZN1D3fooEv adding addrExp r14{0} to local table
+in proc _ZN1D3fooEv adding addrExp r14{0} + 4 to local table
+in proc _ZN1D3fooEv adding addrExp r14{0} + 8 to local table
+in proc _ZN1D3fooEv adding addrExp r14{0} + 12 to local table
+in proc _ZN1D3fooEv adding addrExp r14{0} + 16 to local table
+in proc _ZN1D3fooEv adding addrExp r14{0} + 20 to local table
+in proc _ZN1D3fooEv adding addrExp r14{0} + 24 to local table
+in proc _ZN1D3fooEv adding addrExp r14{0} + 28 to local table
+in proc _ZN1D3fooEv adding addrExp r14{0} + 32 to local table
+in proc _ZN1D3fooEv adding addrExp r14{0} + 36 to local table
+in proc _ZN1D3fooEv adding addrExp r14{0} + 40 to local table
+in proc _ZN1D3fooEv adding addrExp r14{0} + 44 to local table
+in proc _ZN1D3fooEv adding addrExp r14{0} + 48 to local table
+in proc _ZN1D3fooEv adding addrExp r14{0} + 52 to local table
+in proc _ZN1D3fooEv adding addrExp r14{0} + 56 to local table
+in proc _ZN1D3fooEv adding addrExp r14{0} + 60 to local table
+finding final parameters for _ZN1D3fooEv
+finding final parameters for _ZN1D3fooEv
+local o2 has type void * that doesn't agree with type of define void of a library, why?
+local o3 has type /*signed?*/int that doesn't agree with type of define void of a library, why?
+local o6 has type __size32 that doesn't agree with type of define void of a library, why?
+local o7 has type /*signed?*/int that doesn't agree with type of define void of a library, why?
+local o0 has type void * that doesn't agree with type of define void of a library, why?
+local o1 has type char * that doesn't agree with type of define void of a library, why?
+local o0 has type void that doesn't agree with type of define void * of a library, why?
+local o0 has type void * that doesn't agree with type of define __size32 of a library, why?
+local o1 has type void that doesn't agree with type of define __size32 of a library, why?

@@ -795,6 +795,7 @@ bool SparcFrontEnd::processProc(ADDRESS address, UserProc* proc, std::ofstream &
                 for (int j=0; j<inst.numBytes; j++)
                     std::cerr << std::setfill('0') << std::setw(2) << (unsigned)*(unsigned char*)(address+delta + j).m_value <<
                                  " " << std::setfill(' ') << std::setw(0) << "\n";
+                assert(false);
                 return false;
             }
 

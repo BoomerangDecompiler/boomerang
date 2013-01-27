@@ -1,0 +1,8 @@
+main function not found
+decompiling entry point _start
+WARNING: no out edge for this BB in _start:
+Invalid BB:
+in edges: 0x8048eec 
+out edges: 
+0000000x8048ef1
+

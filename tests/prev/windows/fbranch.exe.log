@@ -1,0 +1,33 @@
+COMPUTED JUMP at 0x0x401545, pDest = m[(r24 * 4) + 0x401c9a]
+Error: Instruction at 0x0x401c7b branches beyond end of section, to 0x0x1004014fd
+Error: Instruction at 0x0x402bc4 branches beyond end of section, to 0x0x100401e02
+Error: Instruction at 0x0x402bd6 branches beyond end of section, to 0x0x100401dff
+Error: Instruction at 0x0x401fe5 branches beyond end of section, to 0x0x100401ee0
+Error: Instruction at 0x0x4023c7 branches beyond end of section, to 0x0x100402106
+Error: Instruction at 0x0x402765 branches beyond end of section, to 0x0x10040257b
+Error: Instruction at 0x0x40275f branches beyond end of section, to 0x0x10040257b
+Error: Instruction at 0x0x402976 branches beyond end of section, to 0x0x100402832
+Error: Instruction at 0x0x402abd branches beyond end of section, to 0x0x1004029c5
+Error: Instruction at 0x0x4041ab branches beyond end of section, to 0x0x100404171
+Error: Instruction at 0x0x4045c9 branches beyond end of section, to 0x0x100404548
+Error: Instruction at 0x0x406d3b branches beyond end of section, to 0x0x100406bf5
+Unknown library function GetStringTypeW
+Unknown library function GetStringTypeA
+Unknown library function GetLocaleInfoA
+Unknown library function WideCharToMultiByte
+ERROR: attempted to decode outside any known segment 0x0x100401d74
+ERROR: attempted to decode outside any known segment 0x0x100401da6
+ERROR: attempted to decode outside any known segment 0x0x100403bd0
+ERROR: attempted to decode outside any known segment 0x0x100403c0b
+ERROR: attempted to decode outside any known segment 0x0x100403d30
+ERROR: attempted to decode outside any known segment 0x0x100403db3
+ERROR: attempted to decode outside any known segment 0x0x100403ddf
+ERROR: attempted to decode outside any known segment 0x0x10040403c
+ERROR: attempted to decode outside any known segment 0x0x100404080
+ERROR: attempted to decode outside any known segment 0x0x1004041a2
+ERROR: attempted to decode outside any known segment 0x0x100404245
+ERROR: attempted to decode outside any known segment 0x0x100404318
+ERROR: attempted to decode outside any known segment 0x0x1004045e0
+ERROR: attempted to decode outside any known segment 0x0x100404be0
+ERROR: attempted to decode outside any known segment 0x0x1004070ad
+ERROR: attempted to decode outside any known segment 0x0x100408278

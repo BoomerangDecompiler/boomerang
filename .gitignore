@@ -1,4 +1,5 @@
 boomerang.kdev4
 build
 out
+tests/outputs/*
 *.user

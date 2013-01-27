@@ -1,0 +1,90 @@
+decompiling entry point main
+ppttrrptrWARNING: no out edge for this BB in proc2:
+L3: Call BB:
+in edges: 0x403b1d 0x4043e2 
+out edges: 
+0000000x4043e4
+0000000x4043ea  223 *32* m[r28 - 4] := r25
+0000000x4043eb  226 *u32* m[r28] := %pc
+          228 <all> := CALL proc4(<all>)
+              Reaching definitions: 
+              Live variables: 
+
+WARNING: no out edge for this BB in proc2:
+Oneway BB:
+in edges: 0x403c2e 
+out edges: 
+0000000x403c34
+0000000x403c37  149 GOTO 0x0x100403b8b
+
+WARNING: no out edge for this BB in proc2:
+L15: Call BB:
+in edges: 0x4043e2 
+out edges: 
+0000000x4043c8
+0000000x4043ce  200 *32* m[r28 - 4] := r26
+0000000x4043cf  202 *32* m[r28 - 4] := r24
+0000000x4043d0  205 *u32* m[r28] := %pc
+          207 <all> := CALL proc3(<all>)
+              Reaching definitions: 
+              Live variables: 
+
+WARNING: no out edge for this BB in proc2:
+L18: Oneway BB:
+in edges: 0x403cc0 0x403cc5 
+out edges: 
+0000000x403cc8
+0000000x403ccd  187 GOTO 0x0x100403b8b
+
+WARNING: no out edge for this BB in proc2:
+Oneway BB:
+in edges: 0x403cd5 
+out edges: 
+0000000x403cdb
+0000000x403cde
+0000000x403cdf  197 *32* m[r29 - 8] := r26
+0000000x403ce2  198 GOTO 0x0x100403b8b
+
+WARNING: no out edge for this BB in proc2:
+Oneway BB:
+in edges: 0x403c58 
+out edges: 
+0000000x403c5e  156 *8* m[r29 - 9] := r11
+0000000x403c61  157 GOTO 0x0x100403b8b
+
+WARNING: no out edge for this BB in proc2:
+Call BB:
+in edges: 0x403b3b 
+out edges: 
+0000000x403b42
+0000000x403b48   66 *32* m[r28 - 4] := r26
+0000000x403b49   68 *32* m[r28 - 4] := r27
+0000000x403b4a   71 *u32* m[r28] := %pc
+           73 <all> := CALL proc3(<all>)
+              Reaching definitions: 
+              Live variables: 
+
+WARNING: no out edge for this BB in proc2:
+L6: Call BB:
+in edges: 0x403b3b 0x403b54 
+out edges: 
+0000000x403b55
+0000000x403b5b   84 *32* m[r28 - 4] := r24
+0000000x403b5c   86 *32* m[r28 - 4] := r27
+0000000x403b5d   89 *u32* m[r28] := %pc
+           91 <all> := CALL proc3(<all>)
+              Reaching definitions: 
+              Live variables: 
+
+WARNING: no out edge for this BB in proc3:
+Invalid BB:
+in edges: 
+out edges: 
+0000000x100403a68
+
+WARNING: no out edge for this BB in proc4:
+Invalid BB:
+in edges: 
+out edges: 
+0000000x100403a20
+

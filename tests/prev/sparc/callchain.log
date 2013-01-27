@@ -1,0 +1,70 @@
+after removing matching assigns (t[WILDSTR]).
+finding final parameters for add15
+potential param r8
+found new parameter r8
+after removing matching assigns (t[WILDSTR]).
+finding final parameters for add10
+potential param r8
+found new parameter r8
+after removing matching assigns (t[WILDSTR]).
+finding final parameters for add5
+potential param r8
+found new parameter r8
+after removing matching assigns (t[WILDSTR]).
+in proc printarg adding addrExp r14{0} to local table
+in proc printarg adding addrExp r14{0} + 4 to local table
+in proc printarg adding addrExp r14{0} + 8 to local table
+in proc printarg adding addrExp r14{0} + 12 to local table
+in proc printarg adding addrExp r14{0} + 16 to local table
+in proc printarg adding addrExp r14{0} + 20 to local table
+in proc printarg adding addrExp r14{0} + 24 to local table
+in proc printarg adding addrExp r14{0} + 28 to local table
+in proc printarg adding addrExp r14{0} + 32 to local table
+in proc printarg adding addrExp r14{0} + 36 to local table
+in proc printarg adding addrExp r14{0} + 40 to local table
+in proc printarg adding addrExp r14{0} + 44 to local table
+in proc printarg adding addrExp r14{0} + 48 to local table
+in proc printarg adding addrExp r14{0} + 52 to local table
+in proc printarg adding addrExp r14{0} + 56 to local table
+in proc printarg adding addrExp r14{0} + 60 to local table
+in proc printarg adding addrExp r14{0} to local table
+in proc printarg adding addrExp r14{0} + 4 to local table
+in proc printarg adding addrExp r14{0} + 8 to local table
+in proc printarg adding addrExp r14{0} + 12 to local table
+in proc printarg adding addrExp r14{0} + 16 to local table
+in proc printarg adding addrExp r14{0} + 20 to local table
+in proc printarg adding addrExp r14{0} + 24 to local table
+in proc printarg adding addrExp r14{0} + 28 to local table
+in proc printarg adding addrExp r14{0} + 32 to local table
+in proc printarg adding addrExp r14{0} + 36 to local table
+in proc printarg adding addrExp r14{0} + 40 to local table
+in proc printarg adding addrExp r14{0} + 44 to local table
+in proc printarg adding addrExp r14{0} + 48 to local table
+in proc printarg adding addrExp r14{0} + 52 to local table
+in proc printarg adding addrExp r14{0} + 56 to local table
+in proc printarg adding addrExp r14{0} + 60 to local table
+finding final parameters for printarg
+potential param r8
+found new parameter r8
+after removing matching assigns (t[WILDSTR]).
+in proc main adding addrExp r14{0} to local table
+in proc main adding addrExp r14{0} + 4 to local table
+in proc main adding addrExp r14{0} + 8 to local table
+in proc main adding addrExp r14{0} + 12 to local table
+in proc main adding addrExp r14{0} + 16 to local table
+in proc main adding addrExp r14{0} + 20 to local table
+in proc main adding addrExp r14{0} + 24 to local table
+in proc main adding addrExp r14{0} + 28 to local table
+in proc main adding addrExp r14{0} + 32 to local table
+in proc main adding addrExp r14{0} + 36 to local table
+in proc main adding addrExp r14{0} + 40 to local table
+in proc main adding addrExp r14{0} + 44 to local table
+in proc main adding addrExp r14{0} + 48 to local table
+in proc main adding addrExp r14{0} + 52 to local table
+in proc main adding addrExp r14{0} + 56 to local table
+in proc main adding addrExp r14{0} + 60 to local table
+finding final parameters for printarg
+potential param r8
+found new parameter r8
+local o0 has type char * that doesn't agree with type of define void of a library, why?
+local o1 has type /*signed?*/int that doesn't agree with type of define void of a library, why?

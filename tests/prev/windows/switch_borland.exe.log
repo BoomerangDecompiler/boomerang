@@ -1,0 +1,114 @@
+COMPUTED JUMP at 0x0x40115b, pDest = m[(r24 * 4) + 0x401162]
+COMPUTED JUMP at 0x0x403bb9, pDest = m[(r25 * 4) + 0x403bc0]
+ERROR: attempted to decode outside any known segment 0x0x100403a20
+ERROR: attempted to decode outside any known segment 0x0x100403a68
+finding final parameters for proc4
+finding final parameters for proc3
+after removing matching assigns (%pc).
+Could not find number of cases for n-way at address 0x0x403bb9
+=== about to restart decompilation of proc2 because indirect jumps or calls have been analysed
+
+Error: Instruction at 0x0x403c58 branches beyond end of section, to 0x0x100403b8b
+Error: Instruction at 0x0x403c61 branches beyond end of section, to 0x0x100403b8b
+Error: Instruction at 0x0x403c37 branches beyond end of section, to 0x0x100403b8b
+Error: Instruction at 0x0x403ce2 branches beyond end of section, to 0x0x100403b8b
+Error: Instruction at 0x0x403ccd branches beyond end of section, to 0x0x100403b8b
+after removing matching assigns (%pc).
+### WARNING: iteration limit exceeded for dfaTypeAnalysis of procedure proc2 ###
+in proc proc2 adding addrExp r28{0} - 4 to local table
+in proc proc2 adding addrExp r28{0} - 0x528 to local table
+in proc proc2 adding addrExp r28{0} - 0x52c to local table
+in proc proc2 adding addrExp r28{0} - 0x530 to local table
+in proc proc2 adding addrExp r28{0} - 0x4c4 to local table
+in proc proc2 adding addrExp r28{0} - 0x4c8 to local table
+in proc proc2 adding addrExp r28{0} - 0x4d4 to local table
+in proc proc2 adding addrExp r28{0} - 0x4d0 to local table
+in proc proc2 adding addrExp r28{0} - 0x4cc to local table
+in proc proc2 adding addrExp r28{0} - 0x4c0 to local table
+in proc proc2 adding addrExp r28 - 4 to local table
+in proc proc2 adding addrExp r28 - 4 to local table
+in proc proc2 adding addrExp r28 to local table
+in proc proc2 adding addrExp r28 - 4 to local table
+in proc proc2 adding addrExp r28 - 4 to local table
+in proc proc2 adding addrExp r28 to local table
+in proc proc2 adding addrExp r28 - 4 to local table
+in proc proc2 adding addrExp r28 - 4 to local table
+in proc proc2 adding addrExp r28 to local table
+in proc proc2 adding addrExp r28 - 4 to local table
+in proc proc2 adding addrExp r28 to local table
+finding final parameters for proc2
+potential param r28
+found new parameter r28
+potential param m[r28{0} + 16]
+found new parameter m[r28{0} + 16]
+finding final parameters for proc2
+potential param r28
+found new parameter r28
+potential param m[r28{0} + 16]
+found new parameter m[r28{0} + 16]
+after removing matching assigns (t[WILDSTR]).
+after removing matching assigns (%pc).
+in proc proc1 adding addrExp r28{0} - 4 to local table
+in proc proc1 adding addrExp r28{0} - 8 to local table
+in proc proc1 adding addrExp r28{0} - 12 to local table
+in proc proc1 adding addrExp r28{0} - 16 to local table
+in proc proc1 adding addrExp r28{0} - 20 to local table
+in proc proc1 adding addrExp r28{0} - 24 to local table
+in proc proc1 adding addrExp r28{0} - 28 to local table
+in proc proc1 adding addrExp r28{0} - 32 to local table
+finding final parameters for proc1
+potential param r28
+found new parameter r28
+potential param m[r28{0} + 4]
+found new parameter m[r28{0} + 4]
+after removing matching assigns (t[WILDSTR]).
+after removing matching assigns (%pc).
+=== about to restart decompilation of main because indirect jumps or calls have been analysed
+
+after removing matching assigns (t[WILDSTR]).
+after removing matching assigns (%pc).
+in proc main adding addrExp r28{0} - 12 to local table
+in proc main adding addrExp r28{0} - 4 to local table
+in proc main adding addrExp r28{0} - 8 to local table
+in proc main adding addrExp r28{0} - 12 to local table
+in proc main adding addrExp r28{0} - 8 to local table
+in proc main adding addrExp r28{0} - 12 to local table
+in proc main adding addrExp r28{0} - 8 to local table
+in proc main adding addrExp r28{0} - 12 to local table
+in proc main adding addrExp r28{0} - 8 to local table
+in proc main adding addrExp r28{0} - 12 to local table
+in proc main adding addrExp r28{0} - 8 to local table
+in proc main adding addrExp r28{0} - 12 to local table
+in proc main adding addrExp r28{0} - 8 to local table
+in proc main adding addrExp r28{0} - 12 to local table
+in proc main adding addrExp r28{0} - 8 to local table
+in proc main adding addrExp r28{0} - 12 to local table
+in proc main adding addrExp r28{0} - 8 to local table
+in proc main adding addrExp r28{0} - 12 to local table
+could not set type for unknown parameter expression m[r28{0} + 4]
+in proc main adding addrExp r28{0} - 12 to local table
+in proc main adding addrExp r28{0} - 8 to local table
+in proc main adding addrExp r28{0} - 8 to local table
+in proc main adding addrExp r28{0} - 8 to local table
+in proc main adding addrExp r28{0} - 8 to local table
+in proc main adding addrExp r28{0} - 8 to local table
+in proc main adding addrExp r28{0} - 8 to local table
+in proc main adding addrExp r28{0} - 8 to local table
+in proc main adding addrExp r28{0} - 8 to local table
+### WARNING: iteration limit exceeded for dfaTypeAnalysis of procedure proc2 ###
+in proc proc2 adding addrExp r28 - 4 to local table
+in proc proc2 adding addrExp r28 - 4 to local table
+in proc proc2 adding addrExp r28 to local table
+in proc proc2 adding addrExp r28 - 4 to local table
+in proc proc2 adding addrExp r28 - 4 to local table
+in proc proc2 adding addrExp r28 to local table
+in proc proc2 adding addrExp r28 - 4 to local table
+in proc proc2 adding addrExp r28 - 4 to local table
+in proc proc2 adding addrExp r28 to local table
+in proc proc2 adding addrExp r28 - 4 to local table
+in proc proc2 adding addrExp r28 to local table
+finding final parameters for proc1
+potential param r28
+found new parameter r28
+potential param m[r28{0} + 4]
+found new parameter m[r28{0} + 4]

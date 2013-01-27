@@ -1,0 +1,78 @@
+after removing matching assigns (%pc).
+after removing matching assigns (%pc).
+### WARNING: iteration limit exceeded for dfaTypeAnalysis of procedure fib1 ###
+in proc fib1 adding addrExp r1{0} - 32 to local table
+in proc fib1 adding addrExp r1{0} - 4 to local table
+in proc fib1 adding addrExp r1{0} + 4 to local table
+in proc fib1 adding addrExp r1{0} - 24 to local table
+finding final parameters for fib1
+### WARNING: iteration limit exceeded for dfaTypeAnalysis of procedure fib2 ###
+in proc fib2 adding addrExp r1{0} - 20 to local table
+in proc fib2 adding addrExp r1{0} - 32 to local table
+in proc fib2 adding addrExp r1{0} - 12 to local table
+in proc fib2 adding addrExp r1{0} - 4 to local table
+in proc fib2 adding addrExp r1{0} + 4 to local table
+in proc fib2 adding addrExp r1{0} - 24 to local table
+in proc fib2 adding addrExp r1{0} - 20 to local table
+in proc fib2 adding addrExp r1{0} - 20 to local table
+in proc fib2 adding addrExp r1{0} + 4 to local table
+TYPE ERROR: Existing type at address 0x0x4 is not structure or array type
+in proc fib2 adding addrExp r1{0} - 4 to local table
+in proc fib2 adding addrExp r1{0} - 12 to local table
+in proc fib2 adding addrExp r1{0} - 20 to local table
+in proc fib2 adding addrExp r1{0} - 24 to local table
+in proc fib2 adding addrExp r1{0} - 32 to local table
+finding final parameters for fib2
+potential param r1
+found new parameter r1
+potential param r3
+found new parameter r3
+potential param r9
+found new parameter r9
+finding final parameters for fib1
+finding final parameters for fib2
+potential param r1
+found new parameter r1
+potential param r3
+found new parameter r3
+potential param r9
+found new parameter r9
+after removing matching assigns (%pc).
+in proc main adding addrExp r1{0} - 24 to local table
+in proc main adding addrExp r1{0} - 32 to local table
+in proc main adding addrExp r1{0} - 4 to local table
+in proc main adding addrExp r1{0} + 4 to local table
+in proc main adding addrExp r1{0} - 20 to local table
+### WARNING: iteration limit exceeded for dfaTypeAnalysis of procedure main ###
+in proc main adding addrExp r1{0} - 24 to local table
+in proc main adding addrExp r1{0} - 32 to local table
+in proc main adding addrExp r1{0} - 4 to local table
+in proc main adding addrExp r1{0} + 4 to local table
+in proc main adding addrExp r1{0} - 20 to local table
+in proc main adding addrExp r1{0} - 24 to local table
+### WARNING: iteration limit exceeded for dfaTypeAnalysis of procedure fib1 ###
+### WARNING: iteration limit exceeded for dfaTypeAnalysis of procedure fib2 ###
+in proc fib2 adding addrExp r1{0} - 20 to local table
+in proc fib2 adding addrExp r1{0} - 20 to local table
+in proc fib2 adding addrExp r1{0} - 20 to local table
+finding final parameters for fib1
+potential param r9
+found new parameter r9
+finding final parameters for fib2
+potential param r1
+found new parameter r1
+potential param r3
+found new parameter r3
+potential param r9
+found new parameter r9
+finding final parameters for fib2
+potential param r1
+found new parameter r1
+potential param r3
+found new parameter r3
+finding final parameters for fib1
+local g3 has type char * that doesn't agree with type of define void of a library, why?
+local g4 has type /*signed?*/int * that doesn't agree with type of define void of a library, why?
+local g5 has type /*signed?*/int that doesn't agree with type of define void of a library, why?
+local g4 has type void that doesn't agree with type of define __size32 of a library, why?
+local g5 has type void that doesn't agree with type of define __size32 of a library, why?
