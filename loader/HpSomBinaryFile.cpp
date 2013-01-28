@@ -471,7 +471,7 @@ const char* HpSomBinaryFile::SymbolByAddress(ADDRESS a) {
     return symbols.find(a);
 }
 
-ADDRESS HpSomBinaryFile::GetAddressByName(char* pName, bool bNoTypeOK /* = false */)
+ADDRESS HpSomBinaryFile::GetAddressByName(const char * pName, bool bNoTypeOK /* = false */)
 {
     // For now, we ignore the symbol table and do a linear search of our
     // SymTab table

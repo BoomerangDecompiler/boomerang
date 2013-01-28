@@ -88,24 +88,24 @@ class HpSomBinaryFile : public BinaryFile
 {
 public:
     HpSomBinaryFile();          // Constructor
-    virtual                ~HpSomBinaryFile();
+    virtual             ~HpSomBinaryFile();
     virtual void        UnLoad();                   // Unload the image
     virtual bool        Open(const char* sName);    // Open the file for r/w; pv
     virtual void        Close();                    // Close file opened with Open()
     virtual bool        PostLoad(void* handle);     // For archive files only
     virtual LOAD_FMT    GetFormat() const;       // Get format i.e. LOADFMT_PALM
-    virtual MACHINE        GetMachine() const;       // Get format i.e. MACHINE_HPRISC
-    virtual const char    *getFilename() const { return m_pFileName; }
+    virtual MACHINE     GetMachine() const;       // Get format i.e. MACHINE_HPRISC
+    virtual const char *getFilename() const { return m_pFileName; }
 
     virtual bool        isLibrary() const;
     virtual std::list<const char *> getDependencyList();
-    virtual ADDRESS        getImageBase();
-    virtual size_t        getImageSize();
+    virtual ADDRESS     getImageBase();
+    virtual size_t      getImageSize();
 
     // Get a symbol given an address
-    virtual const char*    SymbolByAddress(ADDRESS dwAddr);
+    virtual const char* SymbolByAddress(ADDRESS dwAddr);
     // Lookup the name, return the address
-    virtual ADDRESS        GetAddressByName(char* pName, bool bNoTypeOK = false);
+    virtual ADDRESS     GetAddressByName(const char* pName, bool bNoTypeOK = false);
     // Return true if the address matches the convention for A-line system calls
     bool        IsDynamicLinkedProc(ADDRESS uNative);
 
