@@ -23,7 +23,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION( ParserTest );
  * OVERVIEW:        Set up some expressions for use with all the tests
  * NOTE:            Called before any tests
  * PARAMETERS:        <none>
- * RETURNS:            <nothing>
+ * \returns             <nothing>
  *============================================================================*/
 void ParserTest::setUp () {
 }
@@ -33,7 +33,7 @@ void ParserTest::setUp () {
  * OVERVIEW:        Delete expressions created in setUp
  * NOTE:            Called after all tests
  * PARAMETERS:        <none>
- * RETURNS:            <nothing>
+ * \returns             <nothing>
  *============================================================================*/
 void ParserTest::tearDown () {
 }

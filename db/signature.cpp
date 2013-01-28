@@ -9,7 +9,7 @@
 
 /*==============================================================================
  * FILE:       signature.cpp
- * OVERVIEW:   Implementation of the classes that describe a procedure signature
+ * \brief   Implementation of the classes that describe a procedure signature
  ******************************************************************************/
 
 /*

@@ -834,7 +834,7 @@ size_t ElfBinaryFile::getImageSize() {
 
 /***************************************************************************//**
  *
- * OVERVIEW:      Get an array of addresses of imported function stubs
+ * \brief      Get an array of addresses of imported function stubs
  *                    This function relies on the fact that the symbols are sorted by address, and that Elf PLT
  *                    entries have successive addresses beginning soon after m_PltMin
  * PARAMETERS:      numImports - reference to integer set to the number of these
@@ -877,7 +877,7 @@ ADDRESS* ElfBinaryFile::GetImportStubs(int& numImports) {
 
 /***************************************************************************//**
  *
- * OVERVIEW:    Get a map from ADDRESS to const char*. This map contains the native addresses
+ * \brief    Get a map from ADDRESS to const char*. This map contains the native addresses
  *                    and symbolic names of global data items (if any) which are shared with dynamically
  *                    linked libraries.
  *                    Example: __iob (basis for stdout). The ADDRESS is the native address of a pointer
@@ -925,7 +925,7 @@ std::map<ADDRESS, const char*>* ElfBinaryFile::GetDynamicGlobalMap() {
 
 /***************************************************************************//**
  *
- * OVERVIEW:    Read a 2 or 4 byte quantity from host address (C pointer) p
+ * \brief    Read a 2 or 4 byte quantity from host address (C pointer) p
  * NOTE:        Takes care of reading the correct endianness, set early on into m_elfEndianness
  * PARAMETERS:    ps or pi: host pointer to the data
  * \returns        An integer representing the data

@@ -212,7 +212,7 @@ int read();
  */
 /*==============================================================================
  * FILE:          sslscanner.l
- * OVERVIEW:      Defines a scanner to parse the tokens of a Semantic
+ * \brief      Defines a scanner to parse the tokens of a Semantic
  *                  Specification Language specification.
  ******************************************************************************/
 /*

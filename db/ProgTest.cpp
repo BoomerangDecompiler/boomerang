@@ -26,7 +26,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION( ProgTest );
  * OVERVIEW:        Set up some expressions for use with all the tests
  * NOTE:            Called before any tests
  * PARAMETERS:        <none>
- * RETURNS:            <nothing>
+ * \returns             <nothing>
  *============================================================================*/
 void ProgTest::setUp () {
     //prog.setName("default name");
@@ -37,7 +37,7 @@ void ProgTest::setUp () {
  * OVERVIEW:        Delete expressions created in setUp
  * NOTE:            Called after all tests
  * PARAMETERS:        <none>
- * RETURNS:            <nothing>
+ * \returns             <nothing>
  *============================================================================*/
 void ProgTest::tearDown () {
 }

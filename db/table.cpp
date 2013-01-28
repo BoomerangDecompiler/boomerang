@@ -10,7 +10,7 @@
 
 /*==============================================================================
  * FILE:       table.cc
- * OVERVIEW:   Provides the implementation of classes Table, OpTable, and
+ * \brief   Provides the implementation of classes Table, OpTable, and
  *               ExprTable
  ******************************************************************************/
 

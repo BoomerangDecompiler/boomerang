@@ -11,7 +11,7 @@
 
 /***************************************************************************//**
  * FILE:       type.cpp
- * OVERVIEW:   Implementation of the Type class: low level type information
+ * \brief   Implementation of the Type class: low level type information
  ******************************************************************************/
 
 /*
@@ -57,7 +57,7 @@ bool Type::isCString()
 
 /***************************************************************************//**
  *
- * OVERVIEW:        Default constructor
+ * \brief        Default constructor
  * PARAMETERS:        <none>
  * \returns            <Not applicable>
  ******************************************************************************/
@@ -139,7 +139,7 @@ UnionType::UnionType() : Type(eUnion)
 
 /***************************************************************************//**
  *
- * OVERVIEW:        Virtual destructor
+ * \brief        Virtual destructor
  * PARAMETERS:        <none>
  * \returns            <Not applicable>
  ******************************************************************************/
@@ -162,7 +162,7 @@ UnionType::~UnionType() { }
 
 /***************************************************************************//**
  *
- * OVERVIEW:        Deep copy of this type
+ * \brief        Deep copy of this type
  * PARAMETERS:        <none>
  * \returns            Copy of the type
  ******************************************************************************/
@@ -257,7 +257,7 @@ Type* LowerType::clone() const
 
 /***************************************************************************//**
  *
- * OVERVIEW:        Get the size of this type
+ * \brief        Get the size of this type
  * PARAMETERS:        <none>
  * \returns            Size of the type (in bits)
  ******************************************************************************/
@@ -406,7 +406,7 @@ unsigned CompoundType::getOffsetRemainder(unsigned n)
 
 /***************************************************************************//**
  *
- * OVERVIEW:        static Constructor from string
+ * \brief        static Constructor from string
  * PARAMETERS:        str: string to parse
  * \returns            <Not applicable>
  ******************************************************************************/
@@ -417,7 +417,7 @@ Type *Type::parseType(const char *str)
 
 /***************************************************************************//**
  *
- * OVERVIEW:        Equality comparsion.
+ * \brief        Equality comparsion.
  * PARAMETERS:        other - Type being compared to
  * \returns            this == other
  ******************************************************************************/
@@ -516,7 +516,7 @@ bool LowerType::operator==(const Type& other) const {
 
 /***************************************************************************//**
  *
- * OVERVIEW:        Inequality comparsion.
+ * \brief        Inequality comparsion.
  * PARAMETERS:        other - Type being compared to
  * \returns            this == other
  ******************************************************************************/
@@ -527,7 +527,7 @@ bool Type::operator!=(const Type& other) const
 
 /***************************************************************************//**
  *
- * OVERVIEW:        Equality operator, ignoring sign. True if equal in broad
+ * \brief        Equality operator, ignoring sign. True if equal in broad
  *                      type and size, but not necessarily sign
  *                      Considers all float types > 64 bits to be the same
  * PARAMETERS:        other - Type being compared to
@@ -550,7 +550,7 @@ bool FloatType::operator-=(const Type& other) const
 */
 /***************************************************************************//**
  *
- * OVERVIEW:        Defines an ordering between Type's
+ * \brief        Defines an ordering between Type's
  *                      (and hence sets etc of Exp* using lessExpStar).
  * PARAMETERS:        other - Type being compared to
  * \returns            this is less than other
@@ -640,7 +640,7 @@ bool LowerType::operator<(const Type& other) const {
 
 /***************************************************************************//**
  *
- * OVERVIEW:        Match operation.
+ * \brief        Match operation.
  * PARAMETERS:        pattern - Type to match
  * \returns            Exp list of bindings if match or NULL
  ******************************************************************************/
@@ -722,7 +722,7 @@ Exp *UnionType::match(Type *pattern)
 
 /***************************************************************************//**
  *
- * OVERVIEW:        Return a string representing this type
+ * \brief        Return a string representing this type
  * PARAMETERS:        final: if true, this is final output
  * \returns            Pointer to a constant string of char
  ******************************************************************************/
@@ -928,7 +928,7 @@ void Type::dumpNames() {
 
 /***************************************************************************//**
  *
- * OVERVIEW:    Given the name of a temporary variable, return its Type
+ * \brief    Given the name of a temporary variable, return its Type
  * NOTE:        Caller must delete result
  * PARAMETERS:    name: reference to a string (e.g. "tmp", "tmpd")
  * \returns        Ptr to a new Type object
@@ -955,7 +955,7 @@ Type* Type::getTempType(const std::string& name)
 
 /***************************************************************************//**
  *
- * OVERVIEW:    Return a minimal temporary name for this type. It'd be even
+ * \brief    Return a minimal temporary name for this type. It'd be even
  *                nicer to return a unique name, but we don't know scope at
  *                this point, and even so we could still clash with a user-defined
  *                name later on :(

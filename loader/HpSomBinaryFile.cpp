@@ -9,7 +9,7 @@
 
 /***************************************************************************//**
  * FILE:        HpSomBinaryFile.cc
- * OVERVIEW:    This file contains the implementation of the class
+ * \brief    This file contains the implementation of the class
  *              HpSomBinaryFile, for decoding PA/RISC SOM executable files.
  *              Derived from class BinaryFile
  ******************************************************************************/
@@ -529,7 +529,7 @@ std::pair<ADDRESS,unsigned> HpSomBinaryFile::GetGlobalPointerInfo()
 
 /***************************************************************************//**
  *
- * OVERVIEW:    Get a map from ADDRESS to const char*. This map contains the
+ * \brief    Get a map from ADDRESS to const char*. This map contains the
  *                native addresses and symbolic names of global data items
  *                (if any) which are shared with dynamically linked libraries.
  *                Example: __iob (basis for stdout). The ADDRESS is the native

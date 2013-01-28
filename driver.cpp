@@ -10,7 +10,7 @@
 
 /*======================================================================================================
  * FILE:        driver.cpp
- * OVERVIEW:    Important initialisation that has to happen at the start of main()
+ * \brief    Important initialisation that has to happen at the start of main()
  *                Also contains main(), so it can be the only file different between boomerang and bigtest
  *======================================================================================================*/
 

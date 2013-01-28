@@ -9,8 +9,8 @@
  */
 
 /***************************************************************************//**
- * FILE:       proc.cc
- * OVERVIEW:   Implementation of the Proc hierachy (Proc, UserProc, LibProc).
+ * \file    proc.cpp
+ * \brief   Implementation of the Proc hierachy (Proc, UserProc, LibProc).
  *               All aspects of a procedure, apart from the actual code in the
  *               Cfg, are stored here
  *
@@ -28,8 +28,40 @@
  * 13 Jul 05 - Mike: Fixed a segfault in processDecodedICTs with zero lentgth (!) BBs. Also one in the ad-hoc TA
  * 08 Mar 06 - Mike: fixed use of invalidated iterator in set/map::erase() (thanks, tamlin!)
  */
-
 /***************************************************************************//**
+ * \class Proc
+ *
+ * \var Proc::visited
+ * \brief For printCallGraphXML
+ * \var Proc::prog
+ * \brief Program containing this procedure.
+ * \var Proc::signature
+ * \brief The formal signature of this procedure.
+ * This information is determined
+ * either by the common.hs file (for a library function) or by analysis.
+ * NOTE: This belongs in the CALL, because the same procedure can have different
+ * signatures if it happens to have varargs. Temporarily here till it can be permanently
+ * moved.
+ * \var Proc::address
+ * Procedure's address.
+ * \var Proc::m_firstCaller
+ * first procedure to call this procedure.
+ * \var Proc::m_firstCallerAddr
+ * can only be used once.
+ * \var Proc::provenTrue
+ * All the expressions that have been proven true.
+ * (Could perhaps do with a list of some that are proven false)
+ * Proof the form r28 = r28 + 4 is stored as map from "r28" to "r28+4" (NOTE: no subscripts)
+ * \var Proc::recurPremises
+ * Premises for recursion group analysis. This is a preservation
+ * that is assumed true only for definitions by calls reached in the proof. It also
+ * prevents infinite looping of this proof logic.
+ * \var Proc::callerSet
+ * Set of callers (CallStatements that call this procedure).
+ * \var Proc::cluster
+ * Cluster this procedure is contained within.
+ ******************************************************************************/
+/******************************************************************************
  * Dependencies.
  ******************************************************************************/
 
@@ -83,13 +115,14 @@ Proc::~Proc()
 
 /***************************************************************************//**
  *
- * OVERVIEW:        Constructor with name, native address.
- * PARAMETERS:        uNative - Native address of entry point of procedure
- * \returns            <nothing>
+ * \brief        Constructor with name, native address.
+ * \param        prog - the program this procedure belongs to
+ * \param        uNative - Native address of entry point of procedure
+ * \param        sig - the Signature for this Proc
+ *
  ******************************************************************************/
 Proc::Proc(Prog *prog, ADDRESS uNative, Signature *sig)
-    : prog(prog), signature(sig), address(uNative), m_firstCaller(NULL)
-{
+    : prog(prog), signature(sig), address(uNative), m_firstCaller(NULL) {
     if (sig)
         cluster = prog->getDefaultCluster(sig->getName());
     else
@@ -98,7 +131,7 @@ Proc::Proc(Prog *prog, ADDRESS uNative, Signature *sig)
 
 /***************************************************************************//**
  *
- * OVERVIEW:        Returns the name of this procedure
+ * \brief        Returns the name of this procedure
  * PARAMETERS:        <none>
  * \returns            the name of this procedure
  ******************************************************************************/
@@ -109,7 +142,7 @@ const char* Proc::getName() {
 
 /***************************************************************************//**
  *
- * OVERVIEW:        Sets the name of this procedure
+ * \brief        Sets the name of this procedure
  * PARAMETERS:        new name
  * \returns            <nothing>
  ******************************************************************************/
@@ -121,7 +154,7 @@ void Proc::setName(const char *nam) {
 
 /***************************************************************************//**
  *
- * OVERVIEW:        Get the native address (entry point).
+ * \brief        Get the native address (entry point).
  * PARAMETERS:        <none>
  * \returns            the native address of this procedure (entry point)
  ******************************************************************************/
@@ -129,17 +162,45 @@ ADDRESS Proc::getNativeAddress() {
     return address;
 }
 
+/***************************************************************************//**
+ *
+ * \brief        Set the native address
+ * \param a native address of the procedure
+ *
+ ******************************************************************************/
 void Proc::setNativeAddress(ADDRESS a) {
     address = a;
 }
 
-bool LibProc::isNoReturn()
-{
+bool LibProc::isNoReturn() {
     return FrontEnd::noReturnCallDest(getName());
 }
 
-bool UserProc::isNoReturn()
-{
+/**
+ * \var UserProc::cycleGrp
+ * Pointer to a set of procedures involved in a recursion group.
+ * \note Each procedure in the cycle points to the same set! However, there can be several separate cycles.
+ * E.g. in test/source/recursion.c, there is a cycle with f and g, while another is being built up (it only
+ * has c, d, and e at the point where the f-g cycle is found).
+ * \var UserProc::stmtNumber
+ * Current statement number. Makes it easier to split decompile() into smaller pieces.
+ * \var UserProc::theReturnStatement
+ * We ensure that there is only one return statement now. See code in frontend/frontend.cpp handling case
+ * STMT_RET. If no return statement, this will be NULL.
+ * \var  UserProc::parameters
+ * The list of parameters, ordered and filtered.
+ * Note that a LocationList could be used, but then there would be nowhere to store the types (for DFA based TA)
+ * The RHS is just ignored; the list is of ImplicitAssigns.
+ * DESIGN ISSUE: it would be nice for the parameters' implicit assignments to be the sole definitions, i.e. not
+ * need other implicit assignments for these. But the targets of RefExp's are not expected to change address,
+ * so they are not suitable at present (since the addresses regularly get changed as the parameters get
+ * recreated).
+ * \var UserProc::col
+ * A collector for initial parameters (locations used before being defined).  Note that final parameters don't
+ * use this; it's only of use during group decompilation analysis (sorting out recursion)
+ */
+
+bool UserProc::isNoReturn() {
     // undecoded procs are assumed to always return (and define everything)
     if (!this->isDecoded())
         return false;
@@ -158,8 +219,8 @@ bool UserProc::isNoReturn()
 
 /***************************************************************************//**
  *
- * OVERVIEW:      Return true if this procedure contains the given address
- * PARAMETERS:      address
+ * \brief Return true if this procedure contains the given address
+ * \param uAddr address to search for
  * \returns          true if it does
  ******************************************************************************/
 bool UserProc::containsAddr(ADDRESS uAddr) {
@@ -174,8 +235,66 @@ void Proc::renameParam(const char *oldName, const char *newName) {
     signature->renameParam(oldName, newName);
 }
 
-void UserProc::renameParam(const char *oldName, const char *newName)
-{
+/**
+ * Modify actuals so that it is now the list of locations that must
+ * be passed to this procedure. The modification will be to either add
+ * dummy locations to actuals, delete from actuals, or leave it
+ * unchanged.
+ * Add "dummy" params: this will be required when there are
+ *     less live outs at a call site than the number of parameters
+ *     expected by the procedure called. This will be a result of
+ *     one of two things:
+ *     i) a value returned by a preceeding call is used as a
+ *        parameter and as such is not detected as defined by the
+ *        procedure. E.g.:
+ *
+ *           foo(bar(x));
+ *
+ *        Here, the result of bar(x) is used as the first and only
+ *        parameter to foo. On some architectures (such as SPARC),
+ *        the location used as the first parameter (e.g. %o0) is
+ *        also the location in which a value is returned. So, the
+ *        call to bar defines this location implicitly as shown in
+ *        the following SPARC assembly that may be generated by from
+ *        the above code:
+ *
+ *            mov      x, %o0
+ *            call  bar
+ *            nop
+ *            call  foo
+ *
+ *       As can be seen, there is no definition of %o0 after the
+ *       call to bar and before the call to foo. Adding the integer
+ *       return location is therefore a good guess for the dummy
+ *       location to add (but may occasionally be wrong).
+ *
+ *    ii) uninitialised variables are used as parameters to a call
+ *
+ *    Note that both of these situations can only occur on
+ *    architectures such as SPARC that use registers for parameter
+ *    passing. Stack parameters must always be pushed so that the
+ *    callee doesn't access the caller's non-parameter portion of
+ *    stack.
+ *
+ * This used to be a virtual function, implemented differenty for
+ * LibProcs and for UserProcs. But in fact, both need the exact same
+ * treatment; the only difference is how the local member "parameters"
+ * is set (from common.hs in the case of LibProc objects, or from analysis
+ * in the case of UserProcs).
+ */
+void Proc::matchParams(std::list<Exp *> &actuals, UserProc &caller) {
+    //TODO: not implemented, not used, but large amount of docs :)
+}
+
+/**
+ * Get a list of types to cast a given list of actual parameters to
+ */
+std::list<Type> *Proc::getParamTypeList(const std::list<Exp *> &actuals) {
+    //TODO: not implemented, not used
+    return 0;
+}
+
+void UserProc::renameParam(const char *oldName, const char *newName) {
     oldName = strdup(oldName);
     Proc::renameParam(oldName, newName);
     //cfg->searchAndReplace(Location::param(strdup(oldName), this), Location::param(strdup(newName), this));
@@ -209,13 +328,11 @@ void UserProc::renameLocal(const char *oldName, const char *newName) {
     cfg->searchAndReplace(oldLoc, newLoc);
 }
 
-bool UserProc::searchAll(Exp* search, std::list<Exp*> &result)
-{
+bool UserProc::searchAll(Exp* search, std::list<Exp*> &result) {
     return cfg->searchAll(search, result);
 }
 
-void Proc::printCallGraphXML(std::ostream &os, int depth, bool recurse)
-{
+void Proc::printCallGraphXML(std::ostream &os, int depth, bool recurse) {
     if (!DUMP_XML)
         return;
     visited = true;
@@ -224,8 +341,7 @@ void Proc::printCallGraphXML(std::ostream &os, int depth, bool recurse)
     os << "<proc name=\"" << getName() << "\"/>\n";
 }
 
-void UserProc::printCallGraphXML(std::ostream &os, int depth, bool recurse)
-{
+void UserProc::printCallGraphXML(std::ostream &os, int depth, bool recurse) {
     if (!DUMP_XML)
         return;
     bool wasVisited = visited;
@@ -259,8 +375,7 @@ void Proc::printDetailsXML() {
     out.close();
 }
 
-void UserProc::printDecodedXML()
-{
+void UserProc::printDecodedXML() {
     if (!DUMP_XML)
         return;
     std::ofstream out((Boomerang::get()->getOutputPath() + getName() + "-decoded.xml").c_str());
@@ -276,8 +391,7 @@ void UserProc::printDecodedXML()
     out.close();
 }
 
-void UserProc::printAnalysedXML()
-{
+void UserProc::printAnalysedXML() {
     if (!DUMP_XML)
         return;
     std::ofstream out((Boomerang::get()->getOutputPath() + getName() + "-analysed.xml").c_str());
@@ -293,8 +407,7 @@ void UserProc::printAnalysedXML()
     out.close();
 }
 
-void UserProc::printSSAXML()
-{
+void UserProc::printSSAXML() {
     if (!DUMP_XML)
         return;
     std::ofstream out((Boomerang::get()->getOutputPath() + getName() + "-ssa.xml").c_str());
@@ -311,8 +424,7 @@ void UserProc::printSSAXML()
 }
 
 
-void UserProc::printXML()
-{
+void UserProc::printXML() {
     if (!DUMP_XML)
         return;
     printDetailsXML();
@@ -321,8 +433,7 @@ void UserProc::printXML()
     printUseGraph();
 }
 
-void UserProc::printUseGraph()
-{
+void UserProc::printUseGraph() {
     std::ofstream out((Boomerang::get()->getOutputPath() + getName() + "-usegraph.dot").c_str());
     out << "digraph " << getName() << " {\n";
     StatementList stmts;
@@ -349,22 +460,21 @@ void UserProc::printUseGraph()
 
 /***************************************************************************//**
  *
- * OVERVIEW:        Output operator for a Proc object.
- * PARAMETERS:        os - output stream
- *                    proc -
- * \returns            os
+ * \brief        Output operator for a Proc object.
+ * \param        os - output stream
+ * \param        proc -
+ * \returns      os
  ******************************************************************************/
 //std::ostream& operator<<(std::ostream& os, Proc& proc) {
 //    return proc.put(os);
 //}
 
-
+//! Get the first procedure that calls this procedure (or null for main/start).
 Proc *Proc::getFirstCaller() {
     if (m_firstCaller == NULL && m_firstCallerAddr != NO_ADDRESS) {
         m_firstCaller = prog->findProc(m_firstCallerAddr);
         m_firstCallerAddr = NO_ADDRESS;
     }
-
     return m_firstCaller;
 }
 
@@ -374,10 +484,9 @@ Proc *Proc::getFirstCaller() {
 
 /***************************************************************************//**
  *
- * OVERVIEW:        Constructor with name, native address.
- * PARAMETERS:        name - Name of procedure
- *                    uNative - Native address of entry point of procedure
- * \returns            <nothing>
+ * \brief        Constructor with name, native address.
+ * \param        name - Name of procedure
+ * \param        uNative - Native address of entry point of procedure
  ******************************************************************************/
 LibProc::LibProc(Prog *prog, std::string& name, ADDRESS uNative) : Proc(prog, uNative, NULL) {
     Signature* sig = prog->getLibSignature(name.c_str());
@@ -389,7 +498,7 @@ LibProc::~LibProc()
 
 /***************************************************************************//**
  *
- * OVERVIEW:        Display on os.
+ * \brief        Display on os.
  * PARAMETERS:        os -
  * \returns            os
  ******************************************************************************/
@@ -398,6 +507,7 @@ LibProc::~LibProc()
 //    return os << std::hex << address << std::endl;
 //}
 
+//! Get the RHS that is proven for left
 Exp *LibProc::getProven(Exp *left) {
     // Just use the signature information (all we have, after all)
     return signature->getProven(left);
@@ -413,10 +523,10 @@ bool LibProc::isPreserved(Exp* e) {
 
 /***************************************************************************//**
  *
- * OVERVIEW:        Constructor with name, native address.
- * PARAMETERS:        name - Name of procedure
- *                    uNative - Native address of entry point of procedure
- * \returns            <nothing>
+ * \brief        Constructor with name, native address.
+ * \param name - Name of procedure
+ * \param uNative - Native address of entry point of procedure
+ *
  ******************************************************************************/
 UserProc::UserProc() : Proc(), cfg(NULL), status(PROC_UNDECODED),
     // decoded(false), analysed(false),
@@ -443,10 +553,9 @@ UserProc::~UserProc() {
 
 /***************************************************************************//**
  *
- * OVERVIEW:        Deletes the whole CFG for this proc object. Also clears the
- *                    cfg pointer, to prevent strange errors after this is called
- * PARAMETERS:        <none>
- * \returns            <nothing>
+ * \brief        Deletes the whole Cfg for this proc object. Also clears the
+ * cfg pointer, to prevent strange errors after this is called
+ *
  ******************************************************************************/
 void UserProc::deleteCFG() {
     delete cfg;
@@ -455,14 +564,15 @@ void UserProc::deleteCFG() {
 
 class lessEvaluate : public std::binary_function<SyntaxNode*, SyntaxNode*, bool> {
 public:
-    bool operator()(const SyntaxNode* x, const SyntaxNode* y) const
-    {
+    bool operator()(const SyntaxNode* x, const SyntaxNode* y) const {
         return ((SyntaxNode*)x)->getScore() > ((SyntaxNode*)y)->getScore();
     }
 };
-
-SyntaxNode *UserProc::getAST()
-{
+/**
+ * Returns an abstract syntax tree for the procedure in the internal representation. This function actually
+ * _calculates_ * this value and is expected to do so expensively.
+ */
+SyntaxNode *UserProc::getAST() {
     int numBBs = 0;
     BlockSyntaxNode *init = new BlockSyntaxNode();
     BB_IT it;
@@ -528,9 +638,8 @@ SyntaxNode *UserProc::getAST()
 }
 
 int count = 1;
-
-void UserProc::printAST(SyntaxNode *a)
-{
+//! Print ast to a file
+void UserProc::printAST(SyntaxNode *a) {
     char s[1024];
     if (a == NULL)
         a = getAST();
@@ -545,9 +654,8 @@ void UserProc::printAST(SyntaxNode *a)
 
 /***************************************************************************//**
  *
- * OVERVIEW:
- * PARAMETERS:
- * \returns
+ * \brief Records that this procedure has been decoded.
+ *
  ******************************************************************************/
 void UserProc::setDecoded() {
     setStatus(PROC_DECODED);
@@ -556,9 +664,9 @@ void UserProc::setDecoded() {
 
 /***************************************************************************//**
  *
- * OVERVIEW:
- * PARAMETERS:
- * \returns
+ * \brief Removes the decoded bit and throws away all the current information
+ * about this procedure.
+ *
  ******************************************************************************/
 void UserProc::unDecode() {
     cfg->clear();
@@ -567,17 +675,18 @@ void UserProc::unDecode() {
 
 /***************************************************************************//**
  *
- * OVERVIEW:    Get the BB with the entry point address for this procedure
- * PARAMETERS:
+ * \brief    Get the BB with the entry point address for this procedure
+ * \note (not always the first BB)
  * \returns        Pointer to the entry point BB, or NULL if not found
+ *
  ******************************************************************************/
-PBB UserProc::getEntryBB() {
+BasicBlock * UserProc::getEntryBB() {
     return cfg->getEntryBB();
 }
 
 /***************************************************************************//**
  *
- * OVERVIEW:        Set the entry BB for this procedure
+ * \brief        Set the entry BB for this procedure (constructor has the entry address)
  * PARAMETERS:        <none>
  * \returns            <nothing>
  ******************************************************************************/
@@ -593,9 +702,9 @@ void UserProc::setEntryBB() {
 
 /***************************************************************************//**
  *
- * OVERVIEW:        Add this callee to the set of callees for this proc
- * PARAMETERS:        A pointer to the Proc object for the callee
- * \returns            <nothing>
+ * \brief Add this callee to the set of callees for this proc
+ * \param  callee - A pointer to the Proc object for the callee
+ *
  ******************************************************************************/
 void UserProc::addCallee(Proc* callee) {
     // is it already in? (this is much slower than using a set)
@@ -606,7 +715,7 @@ void UserProc::addCallee(Proc* callee) {
 
     calleeList.push_back(callee);
 }
-
+/// code generation
 void UserProc::generateCode(HLLCode *hll) {
     assert(cfg);
     assert(getEntryBB());
@@ -651,7 +760,7 @@ void UserProc::generateCode(HLLCode *hll) {
     setStatus(PROC_CODE_GENERATED);
 }
 
-// print this userproc, maining for debugging
+/// print this proc, mainly for debugging
 void UserProc::print(std::ostream &out, bool html) {
     signature->print(out, html);
     if (html)
@@ -679,8 +788,7 @@ void UserProc::print(std::ostream &out, bool html) {
     out << "\n";
 }
 
-void UserProc::setStatus(ProcStatus s)
-{
+void UserProc::setStatus(ProcStatus s) {
     status = s;
     Boomerang::get()->alert_proc_status_change(this);
 }
@@ -763,7 +871,11 @@ void UserProc::printDFG() {
     out.close();
 }
 
-// initialise all statements
+/***************************************************************************//**
+ *
+ * \brief Initialise the statements, e.g. proc, bb pointers
+ *
+ ******************************************************************************/
 void UserProc::initStatements() {
     BB_IT it;
     BasicBlock::rtlit rit; StatementList::iterator sit;
@@ -800,6 +912,7 @@ void UserProc::numberStatements() {
 
 // get all statements
 // Get to a statement list, so they come out in a reasonable and consistent order
+/// get all the statements
 void UserProc::getStatements(StatementList &stmts) {
     BB_IT it;
     for (PBB bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it))
@@ -810,8 +923,15 @@ void UserProc::getStatements(StatementList &stmts) {
             (*it)->setProc(this);
 }
 
-// Remove a statement. This is somewhat inefficient - we have to search the whole BB for the statement.
-// Should use iterators or other context to find out how to erase "in place" (without having to linearly search)
+///
+/***************************************************************************//**
+ *
+ * \brief Remove a statement
+ *
+ * Remove a statement. This is somewhat inefficient - we have to search the whole BB for the statement.
+ * Should use iterators or other context to find out how to erase "in place" (without having to linearly search)
+ *
+ ******************************************************************************/
 void UserProc::removeStatement(Statement *stmt) {
     // remove anything proven about this statement
     for (std::map<Exp*, Exp*, lessExpStar>::iterator it = provenTrue.begin(); it != provenTrue.end(); ) {
@@ -877,8 +997,9 @@ void UserProc::insertAssignAfter(Statement* s, Exp* left, Exp* right) {
     return;
 }
 
-// Note: this procedure is designed for the front end, where enclosing BBs are not set up yet.
-// So this is an inefficient linear search!
+/// Insert statement \a a after statement \a s.
+/// \note this procedure is designed for the front end, where enclosing BBs are not set up yet.
+/// So this is an inefficient linear search!
 void UserProc::insertStatementAfter(Statement* s, Statement* a) {
     BB_IT bb;
     for (bb = cfg->begin(); bb != cfg->end(); bb++) {
@@ -949,8 +1070,15 @@ void UserProc::insertStatementAfter(Statement* s, Statement* a) {
         remove last element (= this) from path
         return child
  */
-
-// Decompile this UserProc
+/***************************************************************************//**
+ *
+ * \brief Begin the decompile process at this procedure
+ * \param  path - is a list of pointers to procedures, representing the path from
+ * the current entry point to the current procedure in the call graph. Pass an
+ * empty set at the top level.
+ * \param indent is the indentation level; pass 0 at the top level
+ *
+ ******************************************************************************/
 ProcSet* UserProc::decompile(ProcList* path, int& indent) {
     Boomerang::get()->alert_considering(path->empty() ? NULL : path->back(), this);
     std::cout << std::setw(++indent) << " " << (status >= PROC_VISITED ? "re" : "") << "considering " << getName() <<
@@ -1114,6 +1242,11 @@ ProcSet* UserProc::decompile(ProcList* path, int& indent) {
  *                                            *
  *    *    *    *    *    *    *    *    *    *    *    */
 
+/***************************************************************************//**
+ *
+ * \brief Initialise decompile: sort CFG, number statements, dominator tree, etc.
+ *
+ ******************************************************************************/
 void UserProc::initialiseDecompile() {
 
     Boomerang::get()->alert_start_decompile(this);
@@ -1157,7 +1290,12 @@ void UserProc::initialiseDecompile() {
 
     Boomerang::get()->alert_decompile_debug_point(this, "after initialise");
 }
-// Can merge these two now
+/***************************************************************************//**
+ *
+ * \brief Early decompile: Place phi functions, number statements, first rename,
+ * propagation: ready for preserveds.
+ *
+ ******************************************************************************/
 void UserProc::earlyDecompile() {
 
     if (status >= PROC_EARLYDONE)
@@ -1208,7 +1346,13 @@ void UserProc::earlyDecompile() {
 
     Boomerang::get()->alert_decompile_debug_point(this, "after early");
 }
-
+/***************************************************************************//**
+ *
+ * \brief Middle decompile: All the decompilation from preservation up to
+ * but not including removing unused statements.
+ * \returns the cycle set from the recursive call to decompile()
+ *
+ ******************************************************************************/
 ProcSet* UserProc::middleDecompile(ProcList* path, int indent) {
 
     Boomerang::get()->alert_decompile_debug_point(this, "before middle");
@@ -1489,7 +1633,7 @@ ProcSet* UserProc::middleDecompile(ProcList* path, int indent) {
  *    R e m o v e   u n u s e d   s t a t e m e n t s    *
  *                                                    *
  *    *    *    *    *    *    *    *    *    *    *    *    *    */
-
+//! Remove unused statements.
 void UserProc::remUnusedStmtEtc() {
 
     // NO! Removing of unused statements is an important part of the global removing unused returns analysis, which
@@ -1670,22 +1814,30 @@ void UserProc::remUnusedStmtEtc(RefCounter& refCounts) {
 
     Boomerang::get()->alert_decompile_debug_point(this, "after remUnusedStmtEtc");
 }
-
+/// Analyse the whole group of procedures for conditional preserveds, and update till no change.
+/// Also finalise the whole group.
+/***************************************************************************//**
+ *
+ * \brief Middle decompile: All the decompilation from preservation up to
+ * but not including removing unused statements.
+ * \returns the cycle set from the recursive call to decompile()
+ *
+ ******************************************************************************/
 void UserProc::recursionGroupAnalysis(ProcList* path, int indent) {
     /* Overall algorithm:
-                for each proc in the group
-                        initialise
-                        earlyDecompile
-                for eac proc in the group
-                        middleDecompile
-                mark all calls involved in cs as non-childless
-                for each proc in cs
-                        update parameters and returns, redoing call bypass, until no change
-                for each proc in cs
-                        remove unused statements
-                for each proc in cs
-                        update parameters and returns, redoing call bypass, until no change
-        */
+        for each proc in the group
+                initialise
+                earlyDecompile
+        for eac proc in the group
+                middleDecompile
+        mark all calls involved in cs as non-childless
+        for each proc in cs
+                update parameters and returns, redoing call bypass, until no change
+        for each proc in cs
+                remove unused statements
+        for each proc in cs
+                update parameters and returns, redoing call bypass, until no change
+     */
     if (VERBOSE) {
         LOG << "\n\n# # # recursion group analysis for ";
         ProcSet::iterator csi;
@@ -1740,6 +1892,11 @@ void UserProc::recursionGroupAnalysis(ProcList* path, int indent) {
 
 }
 
+/***************************************************************************//**
+ *
+ * \brief Update the defines and arguments in calls.
+ *
+ ******************************************************************************/
 void UserProc::updateCalls() {
     if (VERBOSE)
         LOG << "### updateCalls for " << getName() << " ###\n";
@@ -1752,6 +1909,11 @@ void UserProc::updateCalls() {
     }
 }
 
+/***************************************************************************//**
+ *
+ * \brief Look for short circuit branching
+ *
+ ******************************************************************************/
 void UserProc::branchAnalysis() {
     Boomerang::get()->alert_decompile_debug_point(this, "before branch analysis.");
 
@@ -1816,6 +1978,11 @@ void UserProc::branchAnalysis() {
     Boomerang::get()->alert_decompile_debug_point(this, "after branch analysis.");
 }
 
+/***************************************************************************//**
+ *
+ * \brief Fix any ugly branch statements (from propagating too much)
+ *
+ ******************************************************************************/
 void UserProc::fixUglyBranches() {
     if (VERBOSE)
         LOG << "### fixUglyBranches for " << getName() << " ###\n";
@@ -1857,6 +2024,12 @@ void UserProc::fixUglyBranches() {
     }
 }
 
+/***************************************************************************//**
+ *
+ * \brief Rename block variables, with log if verbose.
+ * \returns true if a change
+ *
+ ******************************************************************************/
 bool UserProc::doRenameBlockVars(int pass, bool clearStacks) {
     if (VERBOSE)
         LOG << "### rename block vars for " << getName() << " pass " << pass << ", clear = " << clearStacks << " ###\n";
@@ -1866,6 +2039,11 @@ bool UserProc::doRenameBlockVars(int pass, bool clearStacks) {
     return b;
 }
 
+/***************************************************************************//**
+ *
+ * \brief Preservations only for the stack pointer
+ *
+ ******************************************************************************/
 void UserProc::findSpPreservation() {
     if (VERBOSE)
         LOG << "finding stack pointer preservation for " << getName() << "\n";
@@ -1898,6 +2076,11 @@ void UserProc::findSpPreservation() {
 
 }
 
+/***************************************************************************//**
+ *
+ * \brief  Was trimReturns()
+ *
+ ******************************************************************************/
 void UserProc::findPreserveds() {
     std::set<Exp*> removes;
 
@@ -1952,8 +2135,7 @@ void UserProc::findPreserveds() {
     Boomerang::get()->alert_decompile_debug_point(this, "after finding preserveds");
 }
 
-void UserProc::removeSpAssignsIfPossible()
-{
+void UserProc::removeSpAssignsIfPossible() {
     // if there are no uses of sp other than sp{-} in the whole procedure,
     // we can safely remove all assignments to sp, this will make the output
     // more readable for human eyes.
@@ -1994,8 +2176,7 @@ void UserProc::removeSpAssignsIfPossible()
     Boomerang::get()->alert_decompile_debug_point(this, "after removing stack pointer assigns.");
 }
 
-void UserProc::removeMatchingAssignsIfPossible(Exp *e)
-{
+void UserProc::removeMatchingAssignsIfPossible(Exp *e) {
     // if there are no uses of %flags in the whole procedure,
     // we can safely remove all assignments to %flags, this will make the output
     // more readable for human eyes and makes short circuit analysis easier.
@@ -2056,12 +2237,11 @@ void UserProc::removeMatchingAssignsIfPossible(Exp *e)
  * To be called after decoding all procs.
  * was in: analyis.cpp
  */
-void UserProc::assignProcsToCalls()
-{
+//! find the procs the calls point to
+void UserProc::assignProcsToCalls() {
     std::list<PBB>::iterator it;
     PBB pBB = cfg->getFirstBB(it);
-    while (pBB)
-    {
+    while (pBB) {
         std::list<RTL*>* rtls = pBB->getRTLs();
         if (rtls == NULL) {
             pBB = cfg->getNextBB(it);
@@ -2090,12 +2270,11 @@ void UserProc::assignProcsToCalls()
  * Perform final simplifications
  * was in: analyis.cpp
  */
-void UserProc::finalSimplify()
-{
+//! perform final simplifications
+void UserProc::finalSimplify() {
     std::list<PBB>::iterator it;
     PBB pBB = cfg->getFirstBB(it);
-    while (pBB)
-    {
+    while (pBB) {
         std::list<RTL*>* pRtls = pBB->getRTLs();
         if (pRtls == NULL) {
             pBB = cfg->getNextBB(it);
@@ -2249,6 +2428,7 @@ void UserProc::findFinalParameters() {
 }
 
 #if 0        // FIXME: not currently used; do we want this any more?
+//! Trim parameters. If depth not given or == -1, perform at all depths
 void UserProc::trimParameters(int depth) {
 
     if (signature->isForced())
@@ -2346,12 +2526,11 @@ void Proc::removeParameter(Exp *e) {
     }
 }
 
-void Proc::removeReturn(Exp *e)
-{
+void Proc::removeReturn(Exp *e) {
     signature->removeReturn(e);
 }
 
-// Add the parameter to the signature.
+//! Add the parameter to the signature
 void UserProc::addParameter(Exp *e, Type* ty) {
     // In case it's already an implicit argument:
     removeParameter(e);
@@ -2359,8 +2538,7 @@ void UserProc::addParameter(Exp *e, Type* ty) {
     signature->addParameter(e, ty);
 }
 
-void UserProc::processFloatConstants()
-{
+void UserProc::processFloatConstants() {
     StatementList stmts;
     getStatements(stmts);
 
@@ -2408,6 +2586,9 @@ void UserProc::addParameterSymbols() {
 }
 
 // Return an expression that is equivilent to e in terms of symbols. Creates new symbols as needed.
+/**
+ * Return an expression that is equivilent to e in terms of local variables.  Creates new locals as needed.
+ */
 Exp *UserProc::getSymbolExp(Exp *le, Type *ty, bool lastPass) {
     Exp *e = NULL;
 
@@ -2682,6 +2863,8 @@ bool UserProc::removeNullStatements() {
 
 // Propagate statements, but don't remove
 // Return true if change; set convert if an indirect call is converted to direct (else clear)
+/// Propagate statemtents; return true if change; set convert if an indirect call is converted to direct
+/// (else clear)
 bool UserProc::propagateStatements(bool& convert, int pass) {
     if (VERBOSE)
         LOG << "--- begin propagating statements pass " << pass << " ---\n";
@@ -2726,8 +2909,14 @@ bool UserProc::propagateStatements(bool& convert, int pass) {
     return change;
 }    // propagateStatements
 
-Statement *UserProc::getStmtAtLex(unsigned int begin, unsigned int end)
-{
+/***************************************************************************//**
+ *
+ * \brief Middle decompile: All the decompilation from preservation up to
+ * but not including removing unused statements.
+ * \returns the cycle set from the recursive call to decompile()
+ *
+ ******************************************************************************/
+Statement *UserProc::getStmtAtLex(unsigned int begin, unsigned int end) {
     StatementList stmts;
     getStatements(stmts);
 
@@ -2741,13 +2930,13 @@ Statement *UserProc::getStmtAtLex(unsigned int begin, unsigned int end)
         }
     return loweststmt;
 }
-
+/// promote the signature if possible
 void UserProc::promoteSignature() {
     signature = signature->promote(this);
 }
 
-
-char* UserProc::newLocalName(Exp* e) {
+/// Return a string for a new local suitable for \a e
+const char* UserProc::newLocalName(Exp* e) {
     std::ostringstream ost;
     if (e->isSubscript() && ((RefExp*)e)->getSubExp1()->isRegOf()) {
         // Assume that it's better to know what register this location was created from
@@ -2762,7 +2951,10 @@ char* UserProc::newLocalName(Exp* e) {
     ost << "local" << nextLocal++;
     return strdup(ost.str().c_str());
 }
-
+/**
+ * Return the next available local variable; make it the given type. Note: was returning TypedExp*.
+ * If nam is non null, use that name
+ */
 Exp* UserProc::newLocal(Type* ty, Exp* e, char* nam /* = NULL */) {
     std::string name;
     if (nam == NULL)
@@ -2779,8 +2971,10 @@ Exp* UserProc::newLocal(Type* ty, Exp* e, char* nam /* = NULL */) {
     return Location::local(strdup(name.c_str()), this);
 }
 
-void UserProc::addLocal(Type *ty, const char *nam, Exp *e)
-{
+/**
+ * Add a new local supplying all needed information.
+ */
+void UserProc::addLocal(Type *ty, const char *nam, Exp *e) {
     // symbolMap is a multimap now; you might have r8->o0 for integers and r8->o0_1 for char*
     //assert(symbolMap.find(e) == symbolMap.end());
     mapSymbolTo(e, Location::local(strdup(nam), this));
@@ -2788,35 +2982,33 @@ void UserProc::addLocal(Type *ty, const char *nam, Exp *e)
     locals[nam] = ty;
 }
 
-Type *UserProc::getLocalType(const char *nam)
-{
+/// return a local's type
+Type *UserProc::getLocalType(const char *nam) {
     if (locals.find(nam) == locals.end())
         return NULL;
     Type *ty = locals[nam];
     return ty;
 }
 
-void UserProc::setLocalType(const char *nam, Type *ty)
-{
+void UserProc::setLocalType(const char *nam, Type *ty) {
     locals[nam] = ty;
     if (VERBOSE)
         LOG << "setLocalType: updating type of " << nam << " to " << ty->getCtype() << "\n";
 }
 
-Type *UserProc::getParamType(const char *nam)
-{
+Type *UserProc::getParamType(const char *nam) {
     for (unsigned int i = 0; i < signature->getNumParams(); i++)
         if (std::string(nam) == signature->getParamName(i))
             return signature->getParamType(i);
     return NULL;
 }
 
-void UserProc::setExpSymbol(const char *nam, Exp *e, Type* ty)
-{
+void UserProc::setExpSymbol(const char *nam, Exp *e, Type* ty) {
     TypedExp *te = new TypedExp(ty, Location::local(strdup(nam), this));
     mapSymbolTo(e, te);
 }
 
+/// As above but with replacement
 void UserProc::mapSymbolToRepl(Exp* from, Exp* oldTo, Exp* newTo) {
     removeSymbolMapping(from, oldTo);
     mapSymbolTo(from, newTo);        // The compiler could optimise this call to a fall through
@@ -2836,6 +3028,7 @@ void UserProc::mapSymbolTo(Exp* from, Exp* to) {
 }
 
 // FIXME: is this the same as lookupSym() now?
+/// \brief Lookup the symbol map considering type
 /// Lookup the expression in the symbol map. Return NULL or a C string with the symbol. Use the Type* ty to
 /// select from several names in the multimap; the name corresponding to the first compatible type is returned
 Exp* UserProc::getSymbolFor(Exp* from, Type* ty) {
@@ -2852,7 +3045,7 @@ Exp* UserProc::getSymbolFor(Exp* from, Type* ty) {
     }
     return NULL;
 }
-
+/// Remove this mapping
 void UserProc::removeSymbolMapping(Exp* from, Exp* to) {
     SymbolMap::iterator it = symbolMap.find(from);
     while (it != symbolMap.end() && *it->first == *from) {
@@ -2866,9 +3059,9 @@ void UserProc::removeSymbolMapping(Exp* from, Exp* to) {
 
 
 
-// NOTE: linear search!!
-Exp *UserProc::expFromSymbol(const char *nam)
-{
+/// return a symbol's exp (note: the original exp, like r24, not local1)
+/// \note linear search!!
+Exp *UserProc::expFromSymbol(const char *nam) {
     for (SymbolMap::iterator it = symbolMap.begin(); it != symbolMap.end(); it++) {
         Exp* e = it->second;
         if (e->isLocal() && !strcmp(((Const*)((Location*)e)->getSubExp1())->getStr(), nam))
@@ -2884,7 +3077,7 @@ const char* UserProc::getLocalName(int n) {
             return it->first.c_str();
     return NULL;
 }
-
+//! As getLocalName, but look for expression \a e
 const char* UserProc::getSymbolName(Exp* e) {
     SymbolMap::iterator it = symbolMap.find(e);
     if (it == symbolMap.end()) return NULL;
@@ -3387,6 +3580,8 @@ static Binary allEqAll(opEquals,
                        new Terminal(opDefineAll));
 
 // this function was non-reentrant, but now reentrancy is frequently used
+/// prove any arbitary property of this procedure. If conditional is true, do not save the result, as it may
+/// be conditional on premises stored in other procedures
 bool UserProc::prove(Exp *query, bool conditional /* = false */) {
 
     assert(query->isEquality());
@@ -3469,7 +3664,7 @@ bool UserProc::prove(Exp *query, bool conditional /* = false */) {
     }
     return result;
 }
-
+/// helper function, should be private
 bool UserProc::prover(Exp *query, std::set<PhiAssign*>& lastPhis, std::map<PhiAssign*, Exp*> &cache, Exp* original,
                       PhiAssign* lastPhi /* = NULL */) {
     // A map that seems to be used to detect loops in the call graph:
@@ -3734,14 +3929,17 @@ void Proc::addCallers(std::set<UserProc*>& callers) {
         callers.insert(callerProc);
     }
 }
-
+/**
+ * Add to a set of callee Procs.
+ */
 void UserProc::addCallees(std::list<UserProc*>& callees) {
     // SLOW SLOW SLOW
     // this function is evil now... REALLY evil... hope it doesn't get called too often
     std::list<Proc*>::iterator it;
     for (it = calleeList.begin(); it != calleeList.end(); it++) {
         UserProc* callee = (UserProc*)(*it);
-        if (callee->isLib()) continue;
+        if (callee->isLib())
+            continue;
         addCallee(callee);
     }
 }
@@ -3847,8 +4045,7 @@ void UserProc::conTypeAnalysis() {
 
 
 
-bool UserProc::searchAndReplace(Exp *search, Exp *replace)
-{
+bool UserProc::searchAndReplace(Exp *search, Exp *replace) {
     bool ch = false;
     StatementList stmts;
     getStatements(stmts);
@@ -3882,11 +4079,12 @@ Exp* UserProc::getPremised(Exp* left) {
         return it->second;
     return NULL;
 }
-
+//! Return whether e is preserved by this proc
 bool UserProc::isPreserved(Exp* e) {
     return provenTrue.find(e) != provenTrue.end() && *provenTrue[e] == *e;
 }
 
+/// Cast the constant whose conscript is num to be type ty
 void UserProc::castConst(int num, Type* ty) {
     StatementList stmts;
     getStatements(stmts);
@@ -3897,7 +4095,11 @@ void UserProc::castConst(int num, Type* ty) {
     }
 }
 
-// Process calls with ellipsis parameters. Return true if any signature parameter types added.
+/***************************************************************************//**
+ *
+ * \brief Trim parameters to procedure calls with ellipsis (...). Also add types for ellipsis parameters, if any
+ * \returns true if any signature types so added.
+ ******************************************************************************/
 bool UserProc::ellipsisProcessing() {
     BB_IT it;
     BasicBlock::rtlrit rrit; StatementList::reverse_iterator srit;
@@ -3913,12 +4115,15 @@ bool UserProc::ellipsisProcessing() {
     return ch;
 }
 
-// Before Type Analysis, refs like r28{0} have a NULL Statement pointer. After this, they will point to an
-// implicit assignment for the location. Thus, during and after type analysis, you can find the type of any
-// location by following the reference to the definition
-// Note: you need something recursive to make sure that child subexpressions are processed before parents
-// Example: m[r28{0} - 12]{0} could end up adding an implicit assignment for r28{-} with a null reference, when other
-// pieces of code add r28{0}
+/***************************************************************************//**
+ *
+ * Before Type Analysis, refs like r28{0} have a NULL Statement pointer. After this, they will point to an
+ * implicit assignment for the location. Thus, during and after type analysis, you can find the type of any
+ * location by following the reference to the definition
+ * Note: you need something recursive to make sure that child subexpressions are processed before parents
+ * Example: m[r28{0} - 12]{0} could end up adding an implicit assignment for r28{-} with a null reference, when other
+ * pieces of code add r28{0}
+ ******************************************************************************/
 void UserProc::addImplicitAssigns() {
     Boomerang::get()->alert_decompile_debug_point(this, "before adding implicit assigns");
 
@@ -3939,6 +4144,7 @@ void UserProc::addImplicitAssigns() {
 }
 
 // e is a parameter location, e.g. r8 or m[r28{0}+8]. Lookup a symbol for it
+//! Find the implicit definition for \a e and lookup a symbol
 const char* UserProc::lookupParam(Exp* e) {
     // Originally e.g. m[esp+K]
     Statement* def = cfg->findTheImplicitAssign(e);
@@ -3957,7 +4163,7 @@ const char* UserProc::lookupSymFromRef(RefExp* r) {
     Type* ty = def->getTypeFor(base);
     return lookupSym(r, ty);
 }
-
+//! Lookup a specific symbol if any, else the general one if any
 const char* UserProc::lookupSymFromRefAny(RefExp* r) {
     Statement* def = r->getDef();
     Exp* base = r->getSubExp1();
@@ -4026,7 +4232,7 @@ void UserProc::dumpLocals(std::ostream& os, bool html) {
         os << "<br>";
     os << "end locals\n";
 }
-
+//! For debugging
 void UserProc::dumpSymbolMap() {
     SymbolMap::iterator it;
     for (it = symbolMap.begin(); it != symbolMap.end(); it++) {
@@ -4036,6 +4242,7 @@ void UserProc::dumpSymbolMap() {
     }
 }
 
+//! For debugging
 void UserProc::dumpSymbolMapx() {
     SymbolMap::iterator it;
     for (it = symbolMap.begin(); it != symbolMap.end(); it++) {
@@ -4046,6 +4253,7 @@ void UserProc::dumpSymbolMapx() {
     }
 }
 
+//! For debugging
 void UserProc::testSymbolMap() {
     SymbolMap::iterator it1, it2;
     bool OK = true;
@@ -4071,7 +4279,7 @@ void UserProc::dumpLocals() {
     dumpLocals(ost);
     std::cerr << ost.str();
 }
-
+//! Update the arguments in calls
 void UserProc::updateArguments() {
     Boomerang::get()->alert_decompiling(this);
     if (VERBOSE)
@@ -4095,7 +4303,7 @@ void UserProc::updateArguments() {
         LOG << "=== end update arguments for " << getName() << "\n";
     Boomerang::get()->alert_decompile_debug_point(this, "after updating arguments");
 }
-
+//! Update the defines in calls
 void UserProc::updateCallDefines() {
     if (VERBOSE)
         LOG << "### update call defines for " << getName() << " ###\n";
@@ -4108,45 +4316,41 @@ void UserProc::updateCallDefines() {
         call->updateDefines();
     }
 }
-void UserProc::replaceSimpleGlobalConstants()
-{
-  if (VERBOSE)
-    LOG << "### replace simple global constants for " << getName() << " ###\n";
-  StatementList stmts;
-  getStatements(stmts);
-  StatementList::iterator it;
-  for (it = stmts.begin(); it != stmts.end(); it++)
-    {
-      Assign* assgn = dynamic_cast<Assign*>(*it);
-      if (assgn == NULL) continue;
-      if (!assgn->getRight()->isMemOf()) continue;
-      if (!assgn->getRight()->getSubExp1()->isIntConst()) continue;
-      ADDRESS addr = ((Const*)assgn->getRight()->getSubExp1())->getAddr();
-      LOG << "assgn " << assgn << "\n";
-      if (prog->isReadOnly(addr))
-        {
-          LOG << "is readonly\n";
-          int val;
-          switch (assgn->getType()->getSize())
-            {
-            case 8:
-              val = prog->readNative1(addr);
-              break;
-            case 16:
-              val = prog->readNative2(addr);
-              break;
-            case 32:
-              val = prog->readNative4(addr);
-              break;
-            default:
-              assert(false);
+//! Replace simple global constant references
+void UserProc::replaceSimpleGlobalConstants() {
+    if (VERBOSE)
+        LOG << "### replace simple global constants for " << getName() << " ###\n";
+    StatementList stmts;
+    getStatements(stmts);
+    StatementList::iterator it;
+    for (it = stmts.begin(); it != stmts.end(); it++) {
+        Assign* assgn = dynamic_cast<Assign*>(*it);
+        if (assgn == NULL) continue;
+        if (!assgn->getRight()->isMemOf()) continue;
+        if (!assgn->getRight()->getSubExp1()->isIntConst()) continue;
+        ADDRESS addr = ((Const*)assgn->getRight()->getSubExp1())->getAddr();
+        LOG << "assgn " << assgn << "\n";
+        if (prog->isReadOnly(addr)) {
+            LOG << "is readonly\n";
+            int val;
+            switch (assgn->getType()->getSize()) {
+                case 8:
+                    val = prog->readNative1(addr);
+                    break;
+                case 16:
+                    val = prog->readNative2(addr);
+                    break;
+                case 32:
+                    val = prog->readNative4(addr);
+                    break;
+                default:
+                    assert(false);
             }
-          assgn->setRight(new Const(val));
+            assgn->setRight(new Const(val));
         }
     }
 }
-void UserProc::reverseStrengthReduction()
-{
+void UserProc::reverseStrengthReduction() {
     Boomerang::get()->alert_decompile_debug_point(this, "before reversing strength reduction");
 
     StatementList stmts;
@@ -4194,9 +4398,14 @@ void UserProc::reverseStrengthReduction()
         }
     Boomerang::get()->alert_decompile_debug_point(this, "after reversing strength reduction");
 }
-
-// Update the parameters, in case the signature and hence ordering and filtering has changed, or the locations in the
-// collector have changed
+/***************************************************************************//**
+ *
+ * \brief Insert into parameters list correctly sorted
+ *
+ * Update the parameters, in case the signature and hence ordering and filtering has changed, or the locations in the
+ * collector have changed
+ *
+ ******************************************************************************/
 void UserProc::insertParameter(Exp* e, Type* ty) {
 
     if (filterParams(e))
@@ -4231,8 +4440,14 @@ void UserProc::insertParameter(Exp* e, Type* ty) {
     }
 }
 
-
-// Filter out locations not possible as return locations. Return true to *remove* (filter *out*)
+/***************************************************************************//**
+ *
+ * \brief Decide whether to filter out \a e (return true) or keep it
+ *
+ * Filter out locations not possible as return locations. Return true to *remove* (filter *out*)
+ *
+ * \returns true if \a e  should be filtered out
+ ******************************************************************************/
 bool UserProc::filterReturns(Exp* e) {
     if (isPreserved(e))
         // If it is preserved, then it can't be a return (since we don't change it)
@@ -4258,7 +4473,17 @@ bool UserProc::filterReturns(Exp* e) {
     return false;
 }
 
-// Filter out locations not possible as parameters or arguments. Return true to remove
+//
+/***************************************************************************//**
+ *
+ * \brief Decide whether to filter out \a e (return true) or keep it
+ *
+ * Filter out locations not possible as parameters or arguments. Return true to remove
+ *
+ * \returns true if \a e  should be filtered out
+ * \sa UserProc::filterReturns
+ *
+ ******************************************************************************/
 bool UserProc::filterParams(Exp* e) {
     switch (e->getOper()) {
         case opPC:    return true;
@@ -4353,7 +4578,13 @@ const char* UserProc::findFirstSymbol(Exp* e) {
         else (ordinary statement)
           do bypass and propagation for s
 */
+//Perform call and phi statement bypassing at depth d <- missing
 
+/***************************************************************************//**
+ *
+ * \brief  Perform call and phi statement bypassing at all depths
+ *
+ ******************************************************************************/
 void UserProc::fixCallAndPhiRefs() {
     if (VERBOSE)
         LOG << "### start fix call and phi bypass analysis for " << getName() << " ###\n";
@@ -4517,6 +4748,12 @@ void UserProc::fixCallAndPhiRefs() {
 }
 
 // Not sure that this is needed...
+/***************************************************************************//**
+ *
+ * \brief Mark calls involved in the recursion cycle as non childless
+ * (each child has had middleDecompile called on it now).
+ *
+ ******************************************************************************/
 void UserProc::markAsNonChildless(ProcSet* cs) {
     BasicBlock::rtlrit rrit; StatementList::reverse_iterator srit;
     BB_IT it;
@@ -4568,8 +4805,12 @@ void UserProc::propagateToCollector() {
     }
 }
 
-// Get the initial parameters, based on this UserProc's use collector
-// Probably unused now
+/***************************************************************************//**
+ *
+ * \brief Get the initial parameters, based on this UserProc's use collector
+ * Probably unused now
+ *
+ ******************************************************************************/
 void UserProc::initialParameters() {
     if (VERBOSE)
         LOG << "### initial parameters for " << getName() << "\n";
@@ -4584,58 +4825,83 @@ void UserProc::initialParameters() {
     }
 }
 
+/***************************************************************************//**
+ *
+ * \brief The inductive preservation analysis.
+ *
+ ******************************************************************************/
 bool UserProc::inductivePreservation(UserProc* topOfCycle) {
     // FIXME: This is not correct in general!! It should work OK for self recursion, but not for general mutual
     //recursion. Not that hard, just not done yet.
     return true;
 }
-
+//! True if e represents a stack local variable
 bool UserProc::isLocal(Exp* e) {
-    if (!e->isMemOf()) return false;            // Don't want say a register
+    if (!e->isMemOf())
+        return false;            // Don't want say a register
     SymbolMap::iterator ff = symbolMap.find(e);
-    if (ff == symbolMap.end()) return false;
+    if (ff == symbolMap.end())
+        return false;
     Exp* mapTo = ff->second;
     return mapTo->isLocal();
 }
-
+//! True if e can be propagated
 bool UserProc::isPropagatable(Exp* e) {
     if (addressEscapedVars.exists(e)) return false;
     return isLocalOrParam(e);
 }
-
+//! True if e represents a stack local or stack param
 bool UserProc::isLocalOrParam(Exp* e) {
     if (isLocal(e)) return true;
     return parameters.existsOnLeft(e);
 }
 
 // Is this m[sp{-} +/- K]?
+//! True if e could represent a stack local or stack param
 bool UserProc::isLocalOrParamPattern(Exp* e) {
-    if (!e->isMemOf()) return false;            // Don't want say a register
+    if (!e->isMemOf())
+        return false;            // Don't want say a register
     Exp* addr = ((Location*)e)->getSubExp1();
-    if (!signature->isPromoted()) return false;    // Prevent an assert failure if using -E
+    if (!signature->isPromoted())
+        return false;    // Prevent an assert failure if using -E
     int sp = signature->getStackRegister();
     Exp* initSp = new RefExp(Location::regOf(sp), NULL);    // sp{-}
-    if (*addr == *initSp) return true;            // Accept m[sp{-}]
-    if (addr->getArity() != 2) return false;    // Require sp +/- K
+    if (*addr == *initSp)
+        return true;            // Accept m[sp{-}]
+    if (addr->getArity() != 2)
+        return false;    // Require sp +/- K
     OPER op = ((Binary*)addr)->getOper();
-    if (op != opPlus && op != opMinus) return false;
+    if (op != opPlus && op != opMinus)
+        return false;
     Exp* left =  ((Binary*)addr)->getSubExp1();
-    if (!(*left == *initSp)) return false;
+    if (!(*left == *initSp))
+        return false;
     Exp* right = ((Binary*)addr)->getSubExp2();
     return right->isIntConst();
 }
 
-// Remove the unused parameters. Check for uses for each parameter as param{0}.
-// Some parameters are apparently used when in fact they are only used as parameters to calls to procedures in the
-// recursion set. So don't count components of arguments of calls in the current recursion group that chain through to
-// ultimately use the argument as a parameter to the current procedure.
-// Some parameters are apparently used when in fact they are only used by phi statements which transmit a return from
-// a recursive call ultimately to the current procedure, to the exit of the current procedure, and the return exists
-// only because of a liveness created by a parameter to a recursive call. So when examining phi statements, check if
-// referenced from a return of the current procedure, and has an implicit operand, and all the others satisfy a call
-// to doesReturnChainToCall(param, this proc).
 
-// visited is a set of procs already visited, to prevent infinite recursion
+//
+//
+/***************************************************************************//**
+ *
+ * \brief Used for checking for unused parameters
+ * \param visited - a set of procs already visited, to prevent infinite recursion
+ *
+ * Remove the unused parameters. Check for uses for each parameter as param{0}.
+ * Some parameters are apparently used when in fact they are only used as parameters to calls to procedures in the
+ * recursion set. So don't count components of arguments of calls in the current recursion group that chain through to
+ * ultimately use the argument as a parameter to the current procedure.
+ * Some parameters are apparently used when in fact they are only used by phi statements which transmit a return from
+ * a recursive call ultimately to the current procedure, to the exit of the current procedure, and the return exists
+ * only because of a liveness created by a parameter to a recursive call. So when examining phi statements, check if
+ * referenced from a return of the current procedure, and has an implicit operand, and all the others satisfy a call
+ * to doesReturnChainToCall(param, this proc).
+ * but not including removing unused statements.
+ *
+ * \returns true/false :P
+ *
+ ******************************************************************************/
 bool UserProc::doesParamChainToCall(Exp* param, UserProc* p, ProcSet* visited) {
     BB_IT it;
     BasicBlock::rtlrit rrit; StatementList::reverse_iterator srit;
@@ -4668,7 +4934,7 @@ bool UserProc::doesParamChainToCall(Exp* param, UserProc* p, ProcSet* visited) {
                     bool res = dest->doesParamChainToCall(param, p, visited);
                     if (res)
                         return true;
-                    // Else consider more calls this proc
+                    //TODO: Else consider more calls this proc
                 }
             }
         }
@@ -4729,6 +4995,8 @@ bool UserProc::isRetNonFakeUsed(CallStatement* c, Exp* retLoc, UserProc* p, Proc
 // Check for a gainful use of bparam{0} in this proc. Return with true when the first such use is found.
 // Ignore uses in return statements of recursive functions, and phi statements that define them
 // Procs in visited are already visited
+///         Reurn true if location e is used gainfully in this procedure. visited is a set of UserProcs already
+///            visited.
 bool UserProc::checkForGainfulUse(Exp* bparam, ProcSet& visited) {
     visited.insert(this);                    // Prevent infinite recursion
     StatementList::iterator pp;
@@ -4797,6 +5065,7 @@ bool UserProc::checkForGainfulUse(Exp* bparam, ProcSet& visited) {
 }
 
 // See comments three procedures above
+//! Remove redundant parameters. Return true if remove any
 bool UserProc::removeRedundantParameters() {
     if (signature->isForced())
         // Assume that no extra parameters would have been inserted... not sure always valid
@@ -4847,21 +5116,28 @@ bool UserProc::removeRedundantParameters() {
     return ret;
 }
 
-// Remove unused returns for this procedure, based on the equation returns = modifieds isect union(live at c) for all
-// c calling this procedure.
-// The intersection operation will only remove locations. Removing returns can have three effects for each component y
-// used by that return (e.g. if return r24 := r25{10} + r26{20} is removed, statements 10 and 20 will be affected and
-// y will take the values r25{10} and r26{20}):
-// 1) a statement s defining a return becomes unused if the only use of its definition was y
-// 2) a call statement c defining y will no longer have y live if the return was the only use of y. This could cause a
-//    change to the returns of c's destination, so removeRedundantReturns has to be called for c's destination proc (if it
-//    turns out to be the only definition, and that proc was not already scheduled for return removing).
-// 3) if y is a parameter (i.e. y is of the form loc{0}), then the signature of this procedure changes, and all callers
-//    have to have their arguments trimmed, and a similar process has to be applied to all those caller's removed
-//    arguments as is applied here to the removed returns.
-// The removeRetSet is the set of procedures to process with this logic; caller in Prog calls all elements in this set
-// (only add procs to this set, never remove)
-// Return true if any change
+/***************************************************************************//**
+ *
+ * \brief Remove any returns that are not used by any callers
+ *
+ * Remove unused returns for this procedure, based on the equation:
+ * returns = modifieds isect union(live at c) for all c calling this procedure.
+ * The intersection operation will only remove locations. Removing returns can have three effects for each component y
+ * used by that return (e.g. if return r24 := r25{10} + r26{20} is removed, statements 10 and 20 will be affected and
+ * y will take the values r25{10} and r26{20}):
+ * 1) a statement s defining a return becomes unused if the only use of its definition was y
+ * 2) a call statement c defining y will no longer have y live if the return was the only use of y. This could cause a
+ *    change to the returns of c's destination, so removeRedundantReturns has to be called for c's destination proc (if it
+ *    turns out to be the only definition, and that proc was not already scheduled for return removing).
+ * 3) if y is a parameter (i.e. y is of the form loc{0}), then the signature of this procedure changes, and all callers
+ *    have to have their arguments trimmed, and a similar process has to be applied to all those caller's removed
+ *    arguments as is applied here to the removed returns.
+ * The \a removeRetSet is the set of procedures to process with this logic; caller in Prog calls all elements in this set
+ * (only add procs to this set, never remove)
+ *
+ * \returns true if any change
+ ******************************************************************************/
+
 bool UserProc::removeRedundantReturns(std::set<UserProc*>& removeRetSet) {
     Boomerang::get()->alert_decompiling(this);
     Boomerang::get()->alert_decompile_debug_point(this, "before removing unused returns");
@@ -4978,10 +5254,21 @@ bool UserProc::removeRedundantReturns(std::set<UserProc*>& removeRetSet) {
     return removedRets || removedParams;
 }
 
-// See comments above for removeRedundantReturns(). Need to save the old parameters and call livenesses, redo the
-// dataflow and removal of unused statements, recalculate the parameters and call livenesses, and if either or both of
-// these are changed, recurse to parents or those calls' children respectively. (When call livenesses change like this,
-// it means that the recently removed return was the only use of that liveness, i.e. there was a return chain.)
+/***************************************************************************//**
+ *
+ * \brief Update parameters and call livenesses to take into account the changes
+ * causes by removing a return from this procedure, or a callee's parameter
+ * (which affects this procedure's arguments, which are also uses).
+ *
+ * Need to save the old parameters and call livenesses, redo the dataflow and
+ * removal of unused statements, recalculate the parameters and call livenesses,
+ * and if either or both of these are changed, recurse to parents or those calls'
+ * children respectively. (When call livenesses change like this, it means that
+ * the recently removed return was the only use of that liveness, i.e. there was a
+ * return chain.)
+ * \sa removeRedundantReturns().
+ *
+ ******************************************************************************/
 void UserProc::updateForUseChange(std::set<UserProc*>& removeRetSet) {
     // We need to remember the parameters, and all the livenesses for all the calls, to see if these are changed
     // by removing returns
@@ -5042,7 +5329,7 @@ void UserProc::updateForUseChange(std::set<UserProc*>& removeRetSet) {
         }
     }
 }
-
+//! Clear the useCollectors (in this Proc, and all calls).
 void UserProc::clearUses() {
     if (VERBOSE)
         LOG << "### clearing usage for " << getName() << " ###\n";
@@ -5057,6 +5344,11 @@ void UserProc::clearUses() {
     }
 }
 
+/***************************************************************************//**
+ *
+ * \brief Global type analysis (for this procedure).
+ *
+ ******************************************************************************/
 void UserProc::typeAnalysis() {
     if (VERBOSE)
         LOG << "### type analysis for " << getName() << " ###\n";
@@ -5099,8 +5391,7 @@ void UserProc::typeAnalysis() {
     printXML();
 }
 
-void UserProc::clearRanges()
-{
+void UserProc::clearRanges() {
     StatementList stmts;
     getStatements(stmts);
     StatementList::iterator it;
@@ -5108,8 +5399,12 @@ void UserProc::clearRanges()
         (*it)->clearRanges();
 }
 
-void UserProc::rangeAnalysis()
-{
+/***************************************************************************//**
+ *
+ * \brief Range analysis (for this procedure).
+ *
+ ******************************************************************************/
+void UserProc::rangeAnalysis() {
     std::cout << "performing range analysis on " << getName() << "\n";
 
     // this helps
@@ -5180,8 +5475,12 @@ void UserProc::rangeAnalysis()
     cfg->removeJunctionStatements();
 }
 
-void UserProc::logSuspectMemoryDefs()
-{
+/***************************************************************************//**
+ *
+ * \brief Detect and log possible buffer overflows
+ *
+ ******************************************************************************/
+void UserProc::logSuspectMemoryDefs() {
     StatementList stmts;
     getStatements(stmts);
     StatementList::iterator it;
@@ -5205,10 +5504,19 @@ void UserProc::logSuspectMemoryDefs()
         }
 }
 
-// Copy the RTLs for the already decoded Indirect Control Transfer instructions, and decode any new targets in this CFG
-// Note that we have to delay the new target decoding till now, because otherwise we will attempt to decode nested
-// switch statements without having any SSA renaming, propagation, etc
 RTL* globalRtl = 0;
+/***************************************************************************//**
+ *
+ * \brief Copy the decoded indirect control transfer instructions' RTLs to
+ * the front end's map, and decode any new targets for this CFG
+ *
+ * Copy the RTLs for the already decoded Indirect Control Transfer instructions, and decode any new targets in this CFG
+ * Note that we have to delay the new target decoding till now, because otherwise we will attempt to decode nested
+ * switch statements without having any SSA renaming, propagation, etc
+ *
+ *
+ ******************************************************************************/
+
 void UserProc::processDecodedICTs() {
     BB_IT it;
     BasicBlock::rtlrit rrit; StatementList::reverse_iterator srit;
@@ -5228,6 +5536,7 @@ void UserProc::processDecodedICTs() {
 
 // Find or insert a new implicit reference just before statement s, for address expression a with type t.
 // Meet types if necessary
+/// Find and if necessary insert an implicit reference before s whose address expression is a and type is t.
 void UserProc::setImplicitRef(Statement* s, Exp* a, Type* ty) {
     PBB bb = s->getBB();            // Get s' enclosing BB
     std::list<RTL*> *rtls = bb->getRTLs();
@@ -5290,7 +5599,7 @@ void UserProc::setImplicitRef(Statement* s, Exp* a, Type* ty) {
     }
     assert(0);                // Could not find s withing its enclosing BB
 }
-
+//! eliminate duplicate arguments
 void UserProc::eliminateDuplicateArgs() {
     if (VERBOSE)
         LOG << "### eliminate duplicate args for " << getName() << " ###\n";
@@ -5303,7 +5612,7 @@ void UserProc::eliminateDuplicateArgs() {
         c->eliminateDuplicateArgs();
     }
 }
-
+//! Remove all liveness info in UseCollectors in calls
 void UserProc::removeCallLiveness() {
     if (VERBOSE)
         LOG << "### removing call livenesses for " << getName() << " ###\n";
@@ -5343,7 +5652,7 @@ void dumpProcSet(ProcSet* pc) {
         std::cerr << (*pi)->getName() << ", ";
     std::cerr << "\n";
 }
-
+/// Set an equation as proven. Useful for some sorts of testing
 void Proc::setProvenTrue(Exp* fact) {
     assert(fact->isEquality());
     Exp* lhs = ((Binary*)fact)->getSubExp1();
@@ -5351,6 +5660,7 @@ void Proc::setProvenTrue(Exp* fact) {
     provenTrue[lhs] = rhs;
 }
 
+//! Map expressions to locals and initial parameters
 void UserProc::mapLocalsAndParams() {
     Boomerang::get()->alert_decompile_debug_point(this, "before mapping locals from dfa type analysis");
     if (DEBUG_TA)
@@ -5413,7 +5723,7 @@ void UserProc::setDominanceNumbers() {
     df.setDominanceNums(0, currNum);
 }
 #endif
-
+//! Find the locations united by Phi-functions
 void UserProc::findPhiUnites(ConnectionGraph& pu) {
     StatementList stmts;
     getStatements(stmts);
@@ -5431,7 +5741,7 @@ void UserProc::findPhiUnites(ConnectionGraph& pu) {
         }
     }
 }
-
+/// Get a name like eax or o2 from r24 or r8
 const char* UserProc::getRegName(Exp* r) {
     assert(r->isRegOf());
     int regNum = ((Const*)((Location*)r)->getSubExp1())->getInt();
@@ -5439,7 +5749,7 @@ const char* UserProc::getRegName(Exp* r) {
     if (regName[0] == '%') regName++;        // Skip % if %eax
     return regName;
 }
-
+//! Find the type of the local or parameter \a e
 Type* UserProc::getTypeForLocation(Exp* e) {
     const char* name;
     if (e->isLocal()) {
@@ -5452,17 +5762,27 @@ Type* UserProc::getTypeForLocation(Exp* e) {
     return getParamType(name);
 }
 
-// The idea here is to give a name to those SSA variables that have one and only one parameter amongst the phi
-// arguments. For example, in test/source/param1, there is 18 *v* m[r28{-} + 8] := phi{- 7} with m[r28{-} + 8]{0} mapped
-// to param1; insert a mapping for m[r28{-} + 8]{18} to param1. This will avoid a copy, and will use the name of the
-// parameter only when it is acually used as a parameter
+/***************************************************************************//**
+ *
+ * \brief Add a mapping for the destinations of phi functions that have one
+ * argument that is a parameter
+ *
+ * The idea here is to give a name to those SSA variables that have one and only one parameter amongst the phi
+ * arguments. For example, in test/source/param1, there is 18 *v* m[r28{-} + 8] := phi{- 7} with m[r28{-} + 8]{0} mapped
+ * to param1; insert a mapping for m[r28{-} + 8]{18} to param1. This will avoid a copy, and will use the name of the
+ * parameter only when it is acually used as a parameter
+ *
+ * \returns the cycle set from the recursive call to decompile()
+ *
+ ******************************************************************************/
 void UserProc::nameParameterPhis() {
     StatementList stmts;
     getStatements(stmts);
     StatementList::iterator it;
     for (it = stmts.begin(); it != stmts.end(); it++) {
         PhiAssign* pi = (PhiAssign*)*it;
-        if (!pi->isPhi()) continue;            // Might be able to optimise this a bit
+        if (!pi->isPhi())
+            continue;            // Might be able to optimise this a bit
         // See if the destination has a symbol already
         Exp* lhs = pi->getLeft();
         RefExp* lhsRef = new RefExp(lhs, pi);
@@ -5489,33 +5809,34 @@ void UserProc::nameParameterPhis() {
         mapSymbolTo(lhsRef, Location::param(firstName, this));
     }
 }
-
+//! True if a local exists with name \a name
 bool UserProc::existsLocal(const char* name) {
     std::string s(name);
     return locals.find(s) != locals.end();
 }
-
+//! Check if \a r is already mapped to a local, else add one
 void UserProc::checkLocalFor(RefExp* r) {
-    if (lookupSymFromRefAny(r)) return;            // Already have a symbol for r
+    if (lookupSymFromRefAny(r))
+        return; // Already have a symbol for r
     Statement* def = r->getDef();
-    if (def) {
-        Exp* base = r->getSubExp1();
-        Type* ty = def->getTypeFor(base);
-        // No, get its name from the front end
-        if (base->isRegOf()) {
-            const char* regName = getRegName(base);
-            // Create a new local, for the base name if it doesn't exist yet, so we don't need several names for the
-            // same combination of location and type. However if it does already exist, addLocal will allocate a
-            // new name. Example: r8{0}->argc type int, r8->o0 type int, now r8->o0_1 type char*.
-            if (existsLocal(regName))
-                regName = newLocalName(r);
-            addLocal(ty, regName, base);
-        }
-        else {
-            char* locName = newLocalName(r);
-            addLocal(ty, locName, base);
-        }
+    if (!def)
+        return; //TODO: should this be logged ?
+    Exp* base = r->getSubExp1();
+    Type* ty = def->getTypeFor(base);
+    // No, get its name from the front end
+    const char* locName = NULL;
+    if (base->isRegOf()) {
+        locName = getRegName(base);
+        // Create a new local, for the base name if it doesn't exist yet, so we don't need several names for the
+        // same combination of location and type. However if it does already exist, addLocal will allocate a
+        // new name. Example: r8{0}->argc type int, r8->o0 type int, now r8->o0_1 type char*.
+        if (existsLocal(locName))
+            locName = newLocalName(r);
     }
+    else {
+        locName = newLocalName(r);
+    }
+    addLocal(ty, locName, base);
 }
 
 
@@ -5537,8 +5858,7 @@ public:
     Cluster *cluster;
 };
 
-Memo *LibProc::makeMemo(int mId)
-{
+Memo *LibProc::makeMemo(int mId) {
     LibProcMemo *m = new LibProcMemo(mId);
     m->visited = visited;
     m->prog = prog;
@@ -5557,8 +5877,7 @@ Memo *LibProc::makeMemo(int mId)
     return m;
 }
 
-void LibProc::readMemo(Memo *mm, bool dec)
-{
+void LibProc::readMemo(Memo *mm, bool dec) {
     LibProcMemo *m = dynamic_cast<LibProcMemo*>(mm);
     visited = m->visited;
     prog = m->prog;
@@ -5596,8 +5915,7 @@ public:
     std::list<Proc*> calleeList;
 };
 
-Memo *UserProc::makeMemo(int mId)
-{
+Memo *UserProc::makeMemo(int mId) {
     UserProcMemo *m = new UserProcMemo(mId);
     m->visited = visited;
     m->prog = prog;
@@ -5630,8 +5948,7 @@ Memo *UserProc::makeMemo(int mId)
     return m;
 }
 
-void UserProc::readMemo(Memo *mm, bool dec)
-{
+void UserProc::readMemo(Memo *mm, bool dec) {
     UserProcMemo *m = dynamic_cast<UserProcMemo*>(mm);
     visited = m->visited;
     prog = m->prog;

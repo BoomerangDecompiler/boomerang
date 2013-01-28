@@ -83,7 +83,7 @@ int condLengths[12] = {1, 2, 3, 5, 4, 7, 1, 3, 2, 5, 1, 2};
  * FUNCTION:      initFront
  * OVERVIEW:      Initialise the front end.
  * PARAMETERS:    <none>                
- * RETURNS:       <nothing>
+ * \returns        <nothing>
  *============================================================================*/
 void initFront()
 {
@@ -120,7 +120,7 @@ JCOND_TYPE getCond(const SemStr* pCond)
  *                pProc - the procedure object
  *                spec - true if a speculative decode
  *                os - output stream for rtl output
- * RETURNS:       True if successful decode
+ * \returns        True if successful decode
  *============================================================================*/
 bool FrontEndSrc::processProc(ADDRESS uAddr, UserProc* pProc, ofstream &os,
     bool spec /* = false */)
@@ -140,7 +140,7 @@ bool FrontEndSrc::processProc(ADDRESS uAddr, UserProc* pProc, ofstream &os,
  *                uUpper - the highest address of the text segment
  *                pProc - the procedure object
  *                decoder - NJMCDecoder object
- * RETURNS:       <nothing>
+ * \returns        <nothing>
  *============================================================================*/
 void processProc(ADDRESS uAddr, int delta, ADDRESS uUpper, UserProc* pProc,
     NJMCDecoder& decoder)

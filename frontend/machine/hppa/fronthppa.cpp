@@ -72,7 +72,7 @@ bool helperFunc(ADDRESS dest, ADDRESS addr, HRTLList* lrtl);
  * FUNCTION:        initFront
  * OVERVIEW:        Initialise any globals used by the front end.
  * PARAMETERS:      <none>
- * RETURNS:         <nothing>
+ * \returns          <nothing>
  *============================================================================*/
 // Initialise the front end
 void initFront()
@@ -96,7 +96,7 @@ void initFront()
  * OVERVIEW:         Emit a warning when encountering a DCTI couple.
  * PARAMETERS:       uAt - the address of the couple
  *                   uDest - the address of the first DCTI in the couple
- * RETURNS:          <nothing>
+ * \returns           <nothing>
  *============================================================================*/
 void warnDCTcouple(ADDRESS uAt, ADDRESS uDest)
 {
@@ -113,7 +113,7 @@ void warnDCTcouple(ADDRESS uAt, ADDRESS uDest)
  *                      a register used by the main instruction
  * PARAMETERS:       delayRtl: pointer to the HRTL for the delay slot instr
  *                   mainRtl: pointer to the HRTL for the main instruction
- * RETURNS:          true if interference detected
+ * \returns           true if interference detected
  *============================================================================*/
 bool interferes(HRTL* delayRtl, HRTL* mainRtl)
 {
@@ -152,7 +152,7 @@ bool interferes(HRTL* delayRtl, HRTL* mainRtl)
  *                    section
  * SIDE EFFECT:     Optionally displays an error message if the target of the
  *                    branch is the delay slot of another delayed CTI
- * RETURNS:         can optimise away the delay instruction
+ * \returns          can optimise away the delay instruction
  *============================================================================*/
 bool optimise_DelayCopy(ADDRESS src, ADDRESS dest, int delta, ADDRESS uUpper)
 {
@@ -177,7 +177,7 @@ bool optimise_DelayCopy(ADDRESS src, ADDRESS dest, int delta, ADDRESS uUpper)
  *                  hiAddress - the last address in the current procedure
  *                  cfg - the CFG of the current procedure
  *                  targets: queue of targets still to be processed
- * RETURNS:         <nothing>, but newBB may be changed if the destination of
+ * \returns          <nothing>, but newBB may be changed if the destination of
  *                  the branch is in the middle of an existing BB. It will then
  *                  be changed to point to a new BB beginning with the dest
  *============================================================================*/
@@ -212,7 +212,7 @@ void handleBranch(ADDRESS dest, ADDRESS hiAddress, BasicBlock*& newBB, Cfg* cfg,
  *                    offset - the offset from the call instruction to which an
  *                      outedge must be added. A value of 0 means no edge is to
  *                      be added.
- * RETURNS:           <nothing>
+ * \returns            <nothing>
  *============================================================================*/
 void handleCall(ADDRESS dest, BasicBlock* callBB, Cfg* cfg, ADDRESS address,
     int offset = 0)
@@ -244,7 +244,7 @@ void handleCall(ADDRESS dest, BasicBlock* callBB, Cfg* cfg, ADDRESS address,
  *                   written analysis code for yet. It simply displays an
  *                   informative warning and returns.
  * PARAMETERS:       addr - the address of the first CTI in the couple
- * RETURNS:          <nothing>
+ * \returns           <nothing>
  *============================================================================*/
 void case_unhandled_stub(ADDRESS addr)
 {
@@ -271,7 +271,7 @@ void case_unhandled_stub(ADDRESS addr)
  *                      a move_call_move pattern)
  *                   os - output stream for rtls
  * SIDE EFFECTS:     address may change; BB_rtls may be appended to or set NULL
- * RETURNS:          true if next instruction is to be fetched sequentially from
+ * \returns           true if next instruction is to be fetched sequentially from
  *                      this one
  *============================================================================*/
 bool case_CALL_NCT(ADDRESS& address, DecodeResult& inst,
@@ -421,7 +421,7 @@ bool case_CALL_NCT(ADDRESS& address, DecodeResult& inst,
  *                   targets: queue of targets still to be processed
  *                   os - output stream for rtls
  * SIDE EFFECTS:     address may change; BB_rtls may be appended to or set NULL
- * RETURNS:          <nothing>
+ * \returns           <nothing>
  *============================================================================*/
 void case_SD_NCT(ADDRESS& address, int delta, ADDRESS hiAddress,
     DecodeResult& inst, DecodeResult& delay_inst, list<HRTL*>*& BB_rtls,
@@ -488,7 +488,7 @@ void case_SD_NCT(ADDRESS& address, int delta, ADDRESS hiAddress,
  *                     be processed
  *                   size: size of this instruction (8 if delay slot)
  * SIDE EFFECTS:     address may change; BB_rtls may be appended to or set NULL
- * RETURNS:          true if next instruction is to be fetched sequentially from
+ * \returns           true if next instruction is to be fetched sequentially from
  *                      this one
  *============================================================================*/
 bool case_DD_NCT(ADDRESS& address, int delta, DecodeResult& inst,
@@ -618,7 +618,7 @@ bool case_DD_NCT(ADDRESS& address, int delta, DecodeResult& inst,
  *                   cfg - the CFG of the enclosing procedure
  *                   targets: queue of targets still to be processed
  * SIDE EFFECTS:     address may change; BB_rtls may be appended to or set NULL
- * RETURNS:          true if next instruction is to be fetched sequentially from
+ * \returns           true if next instruction is to be fetched sequentially from
  *                      this one
  *============================================================================*/
 bool case_SCD_NCT(ADDRESS& address, int delta, ADDRESS hiAddress,
@@ -751,7 +751,7 @@ bool case_SCD_NCT(ADDRESS& address, int delta, ADDRESS hiAddress,
  *                   cfg - the CFG of the enclosing procedure
  *                   targets: queue of targets still to be processed
  * SIDE EFFECTS:     address may change; BB_rtls may be appended to or set NULL
- * RETURNS:          true if next instruction is to be fetched sequentially from
+ * \returns           true if next instruction is to be fetched sequentially from
  *                      this one
  *============================================================================*/
 bool case_SCDAN_NCT(ADDRESS& address, int delta, ADDRESS hiAddress,
@@ -830,7 +830,7 @@ bool case_SCDAN_NCT(ADDRESS& address, int delta, ADDRESS hiAddress,
  *                   proc - the procedure object
  *                   spec - if true, this is a speculative decode
  *                   os - output stream for rtl output
- * RETURNS:          True if a good decode
+ * \returns           True if a good decode
  *============================================================================*/
 bool FrontEndSrc::processProc(ADDRESS address, UserProc* proc, ofstream &os,
     bool spec /* = false */)
@@ -1357,7 +1357,7 @@ bool FrontEndSrc::processProc(ADDRESS address, UserProc* proc, ofstream &os,
  * OVERVIEW:      Emit a null RTL with the given address.
  * PARAMETERS:    pRtls - List of RTLs to append this instruction to
  *                uAddr - Native address of this instruction
- * RETURNS:       <nothing>
+ * \returns        <nothing>
  *============================================================================*/
 void emitNop(HRTLList* pRtls, ADDRESS uAddr)
 {
@@ -1379,7 +1379,7 @@ void emitNop(HRTLList* pRtls, ADDRESS uAddr)
  *                  ADD  %o7, 20, %o0
  * PARAMETERS:    pRtls - list of RTLs to append to
  *                uAddr - native address for the RTL
- * RETURNS:       <nothing>
+ * \returns        <nothing>
  *============================================================================*/
 void emitCopyPC(HRTLList* pRtls, ADDRESS uAddr)
 {
@@ -1407,7 +1407,7 @@ void emitCopyPC(HRTLList* pRtls, ADDRESS uAddr)
  * PARAMETERS:      dest: destination of the call (native address)
  *                  addr: address of current instruction (native addr)
  *                  lrtl: list of RTL* for current BB
- * RETURNS:         True if a helper function was found and handled; false
+ * \returns          True if a helper function was found and handled; false
  *                      otherwise
  *============================================================================*/
 // Append one assignment to a list of RTLs
@@ -1609,7 +1609,7 @@ bool helperFuncLong(ADDRESS dest, ADDRESS addr, HRTLList* lrtl, string& name)
  * PARAMETERS:      epilogue: pointer to a CalleeEpilogue object that is to
  *                      have it's return spec set
  *                  iReg: The register that integers are returned in
- * RETURNS:         nothing
+ * \returns          nothing
  *============================================================================*/
 void setReturnLocations(CalleeEpilogue* epilogue, int iReg)
 {

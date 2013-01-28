@@ -8,7 +8,7 @@
 
 /*==============================================================================
  * FILE:       dfa.cpp
- * OVERVIEW:   Implementation of class Type functions related to solving type analysis in an iterative, data-flow-based
+ * \brief   Implementation of class Type functions related to solving type analysis in an iterative, data-flow-based
  *                manner
  ******************************************************************************/
 

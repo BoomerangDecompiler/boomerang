@@ -24,7 +24,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION( FrontendTest );
  * OVERVIEW:		Set up anything needed before all tests
  * NOTE:			Called before any tests
  * PARAMETERS:		<none>
- * RETURNS:			<nothing>
+ * \returns 			<nothing>
  *============================================================================*/
 void FrontendTest::setUp () {
 }
@@ -34,7 +34,7 @@ void FrontendTest::setUp () {
  * OVERVIEW:		Delete objects created in setUp
  * NOTE:			Called after all tests
  * PARAMETERS:		<none>
- * RETURNS:			<nothing>
+ * \returns 			<nothing>
  *============================================================================*/
 void FrontendTest::tearDown () {
 }

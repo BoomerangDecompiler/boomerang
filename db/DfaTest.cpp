@@ -31,7 +31,7 @@ public:
  * OVERVIEW:        Set up some expressions for use with all the tests
  * NOTE:            Called before any tests
  * PARAMETERS:        <none>
- * RETURNS:            <nothing>
+ * \returns             <nothing>
  *============================================================================*/
 static bool logset = false;
 void DfaTest::setUp ()
@@ -47,7 +47,7 @@ void DfaTest::setUp ()
  * OVERVIEW:        Delete expressions created in setUp
  * NOTE:            Called after all tests
  * PARAMETERS:        <none>
- * RETURNS:            <nothing>
+ * \returns             <nothing>
  *============================================================================*/
 void DfaTest::tearDown () {
 }

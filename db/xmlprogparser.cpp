@@ -3,7 +3,7 @@
  */
 /***************************************************************************//**
  * FILE:       xmlprogparser.cpp
- * OVERVIEW:   Implementation of the XMLProgParser and related classes.
+ * \brief   Implementation of the XMLProgParser and related classes.
  ******************************************************************************/
 /*
  * $Revision$    // 1.17.2.8

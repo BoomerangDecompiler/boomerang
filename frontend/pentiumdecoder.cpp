@@ -10,7 +10,7 @@
  *
  */
 /*============================================================================== * FILE:       decoder.m
- * OVERVIEW:   This file contains the high level decoding functionality, for example matching logues, calls, branches,
+ * \brief   This file contains the high level decoding functionality, for example matching logues, calls, branches,
  *                etc. Ordinary instructions are processed in decoder_low.m
  ******************************************************************************/
 /*
@@ -69,15 +69,15 @@ void genBSFR(ADDRESS pc, Exp* reg, Exp* modrm, int init, int size, OPER incdec,
  **********************************/
 /*==============================================================================
  * FUNCTION:       unused
- * OVERVIEW:       A dummy function to suppress "unused local variable" messages
+ * \brief       A dummy function to suppress "unused local variable" messages
  * PARAMETERS:       x: integer variable to be "used"
- * RETURNS:           Nothing
+ * \returns            Nothing
  ******************************************************************************/
 void PentiumDecoder::unused(int x)
 {}
 /*==============================================================================
  * FUNCTION:       PentiumDecoder::decodeInstruction
- * OVERVIEW:       Decodes a machine instruction and returns an RTL instance. In most cases a single instruction is
+ * \brief       Decodes a machine instruction and returns an RTL instance. In most cases a single instruction is
  *                    decoded. However, if a higher level construct that may consist of multiple instructions is matched,
  *                    then there may be a need to return more than one RTL. The caller_prologue2 is an example of such
  *                    a construct which encloses an abritary instruction that must be decoded into its own RTL.
@@ -87,7 +87,7 @@ void PentiumDecoder::unused(int x)
  *                   RTLDict - the dictionary of RTL templates used to instantiate the RTL for the instruction being
  *                    decoded
  *                   proc - the enclosing procedure
- * RETURNS:           a DecodeResult structure containing all the information gathered during decoding
+ * \returns            a DecodeResult structure containing all the information gathered during decoding
  ******************************************************************************/
 static DecodeResult result;
 DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
@@ -37090,11 +37090,11 @@ MATCH_finished_c: (void)0; /*placeholder for label*/
  ******************************************************************************/
 /*==============================================================================
  * FUNCTION:        dis_Mem
- * OVERVIEW:        Converts a dynamic address to a Exp* expression.
+ * \brief        Converts a dynamic address to a Exp* expression.
  *                    E.g. [1000] --> m[, 1000
  * PARAMETERS:        pc - the address of the Eaddr part of the instr
  *                    expr - the expression that will be built
- * RETURNS:            the Exp* representation of the given Eaddr
+ * \returns             the Exp* representation of the given Eaddr
  ******************************************************************************/
 Exp* PentiumDecoder::dis_Mem(ADDRESS pc)
 {
@@ -37289,13 +37289,13 @@ MATCH_finished_b: (void)0; /*placeholder for label*/
     return expr;
 }
 /*============================================================================== * FUNCTION:        dis_Eaddr
- * OVERVIEW:        Converts a dynamic address to a Exp* expression.
+ * \brief        Converts a dynamic address to a Exp* expression.
  *                    E.g. %ecx --> r[ 25 ]
  * CALLED FROM:        Macros DIS_EADDR32, DIS_EADDR16 and DIS_EADDR8
  * PARAMETERS:        pc - the instruction stream address of the dynamic
  *                      address
  *                    size - size of the operand (important if a register)
- * RETURNS:            the Exp* representation of the given Eaddr
+ * \returns             the Exp* representation of the given Eaddr
  ******************************************************************************/
 Exp* PentiumDecoder::dis_Eaddr(ADDRESS pc, int size)
 {
@@ -37336,11 +37336,11 @@ MATCH_finished_a: (void)0; /*placeholder for label*/
 //#line 2245 "frontend/machine/pentium/decoder.m"
 }
 /*============================================================================== * FUNCTION:      isFuncPrologue()
- * OVERVIEW:      Check to see if the instructions at the given offset match
+ * \brief      Check to see if the instructions at the given offset match
  *                    any callee prologue, i.e. does it look like this offset
  *                    is a pointer to a function?
  * PARAMETERS:      hostPC - pointer to the code in question (native address)
- * RETURNS:          True if a match found
+ * \returns           True if a match found
  ******************************************************************************/
 bool PentiumDecoder::isFuncPrologue(ADDRESS hostPC)
 {
@@ -37362,9 +37362,9 @@ bool PentiumDecoder::isFuncPrologue(ADDRESS hostPC)
  * These are the fetch routines.
  **********************************/
 /*============================================================================== * FUNCTION:        getWord
- * OVERVIEW:        Returns the word starting at the given address.
+ * \brief        Returns the word starting at the given address.
  * PARAMETERS:        lc - address at which to decode the double
- * RETURNS:            the decoded double
+ * \returns             the decoded double
  ******************************************************************************/
 Byte PentiumDecoder::getByte (intptr_t lc)
 /* getByte - returns next byte from image pointed to by lc.     */
@@ -37372,9 +37372,9 @@ Byte PentiumDecoder::getByte (intptr_t lc)
     return *(Byte *)lc;
 }
 /*============================================================================== * FUNCTION:        getWord
- * OVERVIEW:        Returns the word starting at the given address.
+ * \brief        Returns the word starting at the given address.
  * PARAMETERS:        lc - address at which to decode the double
- * RETURNS:            the decoded double
+ * \returns             the decoded double
  ******************************************************************************/
 SWord PentiumDecoder::getWord (intptr_t lc)
 /* get2Bytes - returns next 2-Byte from image pointed to by lc.     */
@@ -37382,9 +37382,9 @@ SWord PentiumDecoder::getWord (intptr_t lc)
     return (SWord)(*(Byte *)lc + (*(Byte *)(lc+1) << 8));
 }
 /*============================================================================== * FUNCTION:        getDword
- * OVERVIEW:        Returns the double starting at the given address.
+ * \brief        Returns the double starting at the given address.
  * PARAMETERS:        lc - address at which to decode the double
- * RETURNS:            the decoded double
+ * \returns             the decoded double
  ******************************************************************************/
 DWord PentiumDecoder::getDword (intptr_t lc)
 /* get4Bytes - returns the next 4-Byte word from image pointed to by lc. */
@@ -37393,9 +37393,9 @@ DWord PentiumDecoder::getDword (intptr_t lc)
     return (DWord)(*(Byte *)lc + (*(Byte *)(lc+1) << 8) + (*(Byte *)(lc+2) << 16) + (*(Byte *)(lc+3) << 24));
 }
 /*============================================================================== * FUNCTION:       PentiumDecoder::PentiumDecoder
- * OVERVIEW:       Constructor. The code won't work without this (not sure why the default constructor won't do...)
+ * \brief       Constructor. The code won't work without this (not sure why the default constructor won't do...)
  * PARAMETERS:       None
- * RETURNS:           N/A
+ * \returns            N/A
  ******************************************************************************/
 PentiumDecoder::PentiumDecoder(Prog* prog) : NJMCDecoder(prog)
 {
@@ -37406,7 +37406,7 @@ PentiumDecoder::PentiumDecoder(Prog* prog) : NJMCDecoder(prog)
 int PentiumDecoder::decodeAssemblyInstruction(ADDRESS, int)
 { return 0; }
 /*============================================================================== * FUNCTION:       genBSFR
- * OVERVIEW:       Generate statements for the BSF and BSR series (Bit Scan Forward/Reverse)
+ * \brief       Generate statements for the BSF and BSR series (Bit Scan Forward/Reverse)
  * PARAMETERS:       pc: native PC address (start of the BSF/BSR instruction)
  *                   reg: an expression for the destination register
  *                   modrm: an expression for the operand being scanned
@@ -37414,7 +37414,7 @@ int PentiumDecoder::decodeAssemblyInstruction(ADDRESS, int)
  *                   size: sizeof(modrm) (in bits)
  *                   incdec: either opPlus for Forward scans, or opMinus for Reverse scans
  *                   numBytes: number of bytes this instruction
- * RETURNS:           true if have to exit early (not in last state)
+ * \returns            true if have to exit early (not in last state)
  ******************************************************************************/
 static int BSFRstate = 0;        // State number for this state machine
 void genBSFR(ADDRESS pc, Exp* dest, Exp* modrm, int init, int size,

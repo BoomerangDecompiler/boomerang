@@ -10,7 +10,7 @@
 
 /*==============================================================================
  * FILE:       frontend/pentiumfrontend.cpp
- * OVERVIEW:   This file contains routines to manage the decoding of pentium instructions and the instantiation to RTLs.
+ * \brief   This file contains routines to manage the decoding of pentium instructions and the instantiation to RTLs.
  *               These functions replace frontend.cpp for decoding pentium instructions.
  ******************************************************************************/
 
@@ -60,10 +60,10 @@
 
 /*==============================================================================
  * FUNCTION:      isStoreFsw
- * OVERVIEW:      Return true if the given Statement is an assignment that stores the FSW (Floating point Status Word)
+ * \brief      Return true if the given Statement is an assignment that stores the FSW (Floating point Status Word)
  *                    reg
  * PARAMETERS:      s - Ptr to the given Statement
- * RETURNS:          True if it is
+ * \returns           True if it is
  ******************************************************************************/
 bool PentiumFrontEnd::isStoreFsw(Statement* s) {
     if (!s->isAssign()) return false;
@@ -74,9 +74,9 @@ bool PentiumFrontEnd::isStoreFsw(Statement* s) {
 }
 /*==============================================================================
  * FUNCTION:      isDecAh
- * OVERVIEW:      Return true if the given RTL is a decrement of register AH
+ * \brief      Return true if the given RTL is a decrement of register AH
  * PARAMETERS:      r - Ptr to the given RTL
- * RETURNS:          True if it is
+ * \returns           True if it is
  ******************************************************************************/
 bool PentiumFrontEnd::isDecAh(RTL* r) {
     // Check for decrement; RHS of middle Exp will be r[12]{8} - 1
@@ -94,9 +94,9 @@ bool PentiumFrontEnd::isDecAh(RTL* r) {
 }
 /*==============================================================================
  * FUNCTION:      isSetX
- * OVERVIEW:      Return true if the given Statement is a setX instruction
+ * \brief      Return true if the given Statement is a setX instruction
  * PARAMETERS:      s - Ptr to the given Statement
- * RETURNS:          True if it is
+ * \returns           True if it is
  ******************************************************************************/
 bool PentiumFrontEnd::isSetX(Statement* s) {
     // Check for SETX, i.e. <exp> ? 1 : 0
@@ -115,9 +115,9 @@ bool PentiumFrontEnd::isSetX(Statement* s) {
 }
 /*==============================================================================
  * FUNCTION:      isAssignFromTern
- * OVERVIEW:      Return true if the given Statement is an expression whose RHS is a ?: ternary
+ * \brief      Return true if the given Statement is an expression whose RHS is a ?: ternary
  * PARAMETERS:      e - Ptr to the given Statement
- * RETURNS:          True if it is
+ * \returns           True if it is
  ******************************************************************************/
 bool PentiumFrontEnd::isAssignFromTern(Statement* s) {
     if (!s->isAssign()) return false;
@@ -127,7 +127,7 @@ bool PentiumFrontEnd::isAssignFromTern(Statement* s) {
 }
 /*==============================================================================
  * FUNCTION:        PentiumFrontEnd::bumpRegisterAll
- * OVERVIEW:        Finds a subexpression within this expression of the form
+ * \brief        Finds a subexpression within this expression of the form
  *                      r[ int x] where min <= x <= max, and replaces it with
  *                      r[ int y] where y = min + (x - min + delta & mask)
  * PARAMETERS:        e: Expression to modify
@@ -137,7 +137,7 @@ bool PentiumFrontEnd::isAssignFromTern(Statement* s) {
  * APPLICATION:        Used to "flatten" stack floating point arithmetic (e.g. Pentium floating point code)
  *                      If registers are not replaced "all at once" like this, there can be subtle errors from
  *                      re-replacing already replaced registers
- * RETURNS:            Nothing
+ * \returns             Nothing
  ******************************************************************************/
 void PentiumFrontEnd::bumpRegisterAll(Exp* e, int min, int max, int delta, int mask) {
     std::list<Exp**> li;
@@ -158,13 +158,13 @@ void PentiumFrontEnd::bumpRegisterAll(Exp* e, int min, int max, int delta, int m
 }
 /*==============================================================================
  * FUNCTION:      PentiumFrontEnd::processProc
- * OVERVIEW:      Process a procedure, given a native (source machine) address.
+ * \brief      Process a procedure, given a native (source machine) address.
  * PARAMETERS:      address - the address at which the procedure starts
  *                  pProc - the procedure object
  *                  os - output stream for rtl output
  *                  frag - true if decoding only a fragment of the proc
  *                  spec - true if a speculative decode
- * RETURNS:          True if successful decode
+ * \returns           True if successful decode
  ******************************************************************************/
 bool PentiumFrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bool frag /* = false */,
                                   bool spec /* = false */) {
@@ -329,7 +329,7 @@ void PentiumFrontEnd::processFloatCode(Cfg* pCfg)
 
 /*==============================================================================
  * FUNCTION:      processFloatCode
- * OVERVIEW:      Process a basic block, and all its successors, for floating point code.
+ * \brief      Process a basic block, and all its successors, for floating point code.
  *                    Remove FPUSH/FPOP, instead decrementing or incrementing respectively the tos value to be used from
  *                    here down. Note: tos has to be a parameter, not a global, to get the right value at any point in
  *                    the call tree
@@ -337,7 +337,7 @@ void PentiumFrontEnd::processFloatCode(Cfg* pCfg)
  *                  tos: reference to the value of the "top of stack" pointer currently. Starts at zero, and is
  *                    decremented to 7 with the first load, so r[39] should be used first, then r[38] etc. However, it is
  *                    reset to 0 for calls, so that if a function returns a float, then it will always appear in r[32]
- * RETURNS:          <nothing>
+ * \returns           <nothing>
  ******************************************************************************/
 void PentiumFrontEnd::processFloatCode(PBB pBB, int& tos, Cfg* pCfg)
 {
@@ -476,12 +476,12 @@ void PentiumFrontEnd::emitSet(std::list<RTL*>* BB_rtls, std::list<RTL*>::iterato
 
 /*==============================================================================
  * FUNCTION:        helperFunc
- * OVERVIEW:        Checks for pentium specific helper functions like __xtol which have specific sematics.
+ * \brief        Checks for pentium specific helper functions like __xtol which have specific sematics.
  * NOTE:            This needs to be handled in a resourcable way.
  * PARAMETERS:        dest - the native destination of this call
  *                    addr - the native address of this call instruction
  *                    lrtl - pointer to a list of RTL pointers for this BB
- * RETURNS:            true if a helper function is converted; false otherwise
+ * \returns             true if a helper function is converted; false otherwise
  ******************************************************************************/
 bool PentiumFrontEnd::helperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL*>* lrtl)
 {
@@ -546,9 +546,9 @@ bool PentiumFrontEnd::helperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL*>* lr
 
 /*==============================================================================
  * FUNCTION:      construct
- * OVERVIEW:      Construct a new instance of PentiumFrontEnd
+ * \brief      Construct a new instance of PentiumFrontEnd
  * PARAMETERS:      Same as the FrontEnd constructor, except decoder is **
- * RETURNS:          <nothing>
+ * \returns           <nothing>
  ******************************************************************************/
 #ifdef DYNAMIC
 extern "C" {
@@ -562,11 +562,11 @@ PentiumFrontEnd* construct(Prog *prog, NJMCDecoder** decoder) {
 
 /*==============================================================================
  * FUNCTION:      PentiumFrontEnd::PentiumFrontEnd
- * OVERVIEW:      PentiumFrontEnd constructor
+ * \brief      PentiumFrontEnd constructor
  * NOTE:          Seems to be necessary to put this here; forces the vtable
  *                    entries to point to this dynamic linked library
  * PARAMETERS:      Same as the FrontEnd constructor
- * RETURNS:          <N/A>
+ * \returns           <N/A>
  ******************************************************************************/
 PentiumFrontEnd::PentiumFrontEnd(BinaryFile *pBF, Prog* prog, BinaryFileFactory* pbff) : FrontEnd(pBF, prog, pbff),
     idPF(-1) {
@@ -580,9 +580,9 @@ PentiumFrontEnd::~PentiumFrontEnd()
 
 /*==============================================================================
  * FUNCTION:    GetMainEntryPoint
- * OVERVIEW:    Locate the starting address of "main" in the code section
+ * \brief    Locate the starting address of "main" in the code section
  * PARAMETERS:    None
- * RETURNS:        Native pointer if found; NO_ADDRESS if not
+ * \returns         Native pointer if found; NO_ADDRESS if not
  ******************************************************************************/
 ADDRESS PentiumFrontEnd::getMainEntryPoint(bool& gotMain) {
     gotMain = true;

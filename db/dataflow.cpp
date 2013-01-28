@@ -9,7 +9,7 @@
 
 /*==============================================================================
  * FILE:       dataflow.cpp
- * OVERVIEW:   Implementation of the DataFlow class
+ * \brief   Implementation of the DataFlow class
  ******************************************************************************/
 
 /*

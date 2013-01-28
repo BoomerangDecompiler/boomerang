@@ -40,9 +40,9 @@
 
 /*==============================================================================
  * FUNCTION:      Register::Register
- * OVERVIEW:      Constructor.
+ * \brief      Constructor.
  * PARAMETERS:      <none>
- * RETURNS:          N/A
+ * \returns           N/A
  ******************************************************************************/
 Register::Register() : name(NULL), address(NULL), mappedIndex(-1),
     mappedOffset(-1), flt(false)
@@ -50,9 +50,9 @@ Register::Register() : name(NULL), address(NULL), mappedIndex(-1),
 
 /*==============================================================================
  * FUNCTION:      Register::Register
- * OVERVIEW:      Copy constructor.
+ * \brief      Copy constructor.
  * PARAMETERS:      Reference to another Register object to construct from
- * RETURNS:          N/A
+ * \returns           N/A
  ******************************************************************************/
 Register::Register(const Register& r) : name(NULL), size(r.size),
     address(r.address),    mappedIndex(r.mappedIndex),
@@ -64,9 +64,9 @@ Register::Register(const Register& r) : name(NULL), size(r.size),
 
 /*==============================================================================
  * FUNCTION:      Register::operator=
- * OVERVIEW:      Copy operator
+ * \brief      Copy operator
  * PARAMETERS:      Reference to another Register object (to be copied)
- * RETURNS:          This object
+ * \returns           This object
  ******************************************************************************/
 Register Register::operator=(const Register& r2)
 {
@@ -87,9 +87,9 @@ Register Register::operator=(const Register& r2)
 
 /*==============================================================================
  * FUNCTION:      Register::operator==
- * OVERVIEW:      Equality operator
+ * \brief      Equality operator
  * PARAMETERS:      Reference to another Register object
- * RETURNS:          True if the same
+ * \returns           True if the same
  ******************************************************************************/
 bool Register::operator==(const Register& r2) const {
     // compare on name
@@ -101,9 +101,9 @@ bool Register::operator==(const Register& r2) const {
 
 /*==============================================================================
  * FUNCTION:      Register::operator<
- * OVERVIEW:      Comparison operator (to establish an ordering)
+ * \brief      Comparison operator (to establish an ordering)
  * PARAMETERS:      Reference to another Register object
- * RETURNS:          true if this name is less than the given Register's name
+ * \returns           true if this name is less than the given Register's name
  ******************************************************************************/
 bool Register::operator<(const Register& r2) const
 {
@@ -117,9 +117,9 @@ bool Register::operator<(const Register& r2) const
 
 /*==============================================================================
  * FUNCTION:      Register::s_name
- * OVERVIEW:      Set the name for this register
+ * \brief      Set the name for this register
  * PARAMETERS:      s: name to set it to
- * RETURNS:          <nothing>
+ * \returns           <nothing>
  ******************************************************************************/
 void Register::s_name(const char *s)
 {
@@ -132,9 +132,9 @@ void Register::s_name(const char *s)
 
 /*==============================================================================
  * FUNCTION:      Register::g_name
- * OVERVIEW:      Get the name for this register
+ * \brief      Get the name for this register
  * PARAMETERS:      <none>
- * RETURNS:          The name as a character string
+ * \returns           The name as a character string
  ******************************************************************************/
 const char *Register::g_name() const {
     static char outname[100];
@@ -146,9 +146,9 @@ const char *Register::g_name() const {
 
 /*==============================================================================
  * FUNCTION:      Register::g_type
- * OVERVIEW:      Get the type for this register
+ * \brief      Get the type for this register
  * PARAMETERS:      <none>
- * RETURNS:          The type as a pointer to a Type object
+ * \returns           The type as a pointer to a Type object
  ******************************************************************************/
 Type* Register::g_type() const
 {

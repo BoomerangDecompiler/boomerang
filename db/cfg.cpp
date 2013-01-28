@@ -10,8 +10,8 @@
  */
 
 /***************************************************************************//**
- * FILE:       cfg.cpp
- * OVERVIEW:   Implementation of the CFG class.
+ * \file    cfg.cpp
+ * \brief   Implementation of the CFG class.
  ******************************************************************************/
 
 /*
@@ -26,23 +26,33 @@
  * Control Flow Graph class. Contains all the BasicBlock objects for a procedure.
  * These BBs contain all the RTLs for the procedure, so by traversing the Cfg,
  * one traverses the whole procedure.
- * \var myProc Pointer to the UserProc object that contains this CFG object
- * \var m_listBB BasicBlocks contained in this CFG
- * \var Ordering,revOrdering  Ordering of BBs for control flow structuring
- * \var m_mapBB The ADDRESS to PBB map.
- * \var entryBB The CFG entry BasicBlock.
- * \var exitBB The CFG exit BasicBlock.
- * \var m_bWellFormed
- * \var structured
- * \var callSites Set of the call instructions in this procedure.
- * \var lastLabel Last label (positive integer) used by any BB this Cfg
- * \var implicitMap Map from expression to implicit assignment. The purpose is
- * to prevent multiple implicit assignments for the same location.
- * \var bImplicitsDone True when the implicits are done; they can cause problems
- * (e.g. with ad-hoc global assignment)
- * \var m_vectorBB faster access
- * \var
- * \var
+ * \var Cfg::myProc
+ * Pointer to the UserProc object that contains this CFG object
+ * \var Cfg::m_listBB
+ * BasicBlock s contained in this CFG
+ * \var Cfg::Ordering
+ * Ordering of BBs for control flow structuring
+ * \var Cfg::revOrdering
+ * Ordering of BBs for control flow structuring
+ * \var Cfg::m_mapBB
+ * The ADDRESS to PBB map.
+ * \var Cfg::entryBB
+ * The CFG entry BasicBlock.
+ * \var Cfg::exitBB
+ * The CFG exit BasicBlock.
+ * \var Cfg::m_bWellFormed
+ * \var Cfg::structured
+ * \var Cfg::callSites
+ * Set of the call instructions in this procedure.
+ * \var Cfg::lastLabel
+ * Last label (positive integer) used by any BB this Cfg
+ * \var Cfg::implicitMap
+ * Map from expression to implicit assignment. The purpose is to prevent multiple implicit assignments
+ * for the same location.
+ * \var Cfg::bImplicitsDone
+ * True when the implicits are done; they can cause problems (e.g. with ad-hoc global assignment)
+ * \var Cfg::m_vectorBB
+ * faster access
  ******************************************************************************/
 
 /***************************************************************************//**
@@ -86,7 +96,7 @@ Cfg::Cfg()
 
 /***************************************************************************//**
  *
- * OVERVIEW:        Destructor. Note: destructs the component BBs as well
+ * \brief        Destructor. Note: destructs the component BBs as well
  *
  ******************************************************************************/
 Cfg::~Cfg() {
@@ -100,7 +110,7 @@ Cfg::~Cfg() {
 }
 /***************************************************************************//**
  *
- * OVERVIEW:        Set the pointer to the owning UserProc object
+ * \brief        Set the pointer to the owning UserProc object
  * PARAMETERS:        proc - pointer to the owning UserProc object
  * \returns            <nothing>
  ******************************************************************************/
@@ -110,7 +120,7 @@ void Cfg::setProc(UserProc* proc) {
 
 /***************************************************************************//**
  *
- * OVERVIEW:        Clear the CFG of all basic blocks, ready for decode
+ * \brief        Clear the CFG of all basic blocks, ready for decode
  * PARAMETERS:        <none>
  * \returns            <nothing>
  ******************************************************************************/
@@ -131,7 +141,7 @@ void Cfg::clear() {
 
 /***************************************************************************//**
  *
- * OVERVIEW:
+ * \brief
  * PARAMETERS:        <none>
  * \returns            <nothing>
  ******************************************************************************/
@@ -144,7 +154,7 @@ const Cfg& Cfg::operator=(const Cfg& other) {
 
 /***************************************************************************//**
  *
- * OVERVIEW:        Set the entry and exut BB pointers
+ * \brief        Set the entry and exut BB pointers
  * NOTE:            Each cfg should have only one exit node now
  * PARAMETERS:        bb: pointer to the entry BB
  * \returns            nothing
@@ -167,7 +177,7 @@ void Cfg::setExitBB(PBB bb) {
 /***************************************************************************//**
  *
  *
- * OVERVIEW:        Check the entry BB pointer; if zero, emit error message
+ * \brief        Check the entry BB pointer; if zero, emit error message
  *                      and return true
  * PARAMETERS:        <none>
  * \returns            true if was null
@@ -256,8 +266,7 @@ PBB Cfg::newBB(std::list<RTL*>* pRtls, BBTYPE bbType, int iNumOutEdges) throw(BB
 
         // Also add the address to the map from native (source) address to
         // pointer to BB, unless it's zero
-        if ( !addr.isZero() )
-        {
+        if ( !addr.isZero() ) {
             m_mapBB[addr] = pBB;            // Insert the mapping
             mi = m_mapBB.find(addr);
         }
@@ -312,7 +321,7 @@ PBB Cfg::newBB(std::list<RTL*>* pRtls, BBTYPE bbType, int iNumOutEdges) throw(BB
 // Use this function when there are outedges to BBs that are not created yet. Usually used via addOutEdge()
 /***************************************************************************//**
  *
- * OVERVIEW:
+ * \brief
  *
  * Allocates space for a new, incomplete BB, and the given address is added to the map. This BB will have to be
  * completed before calling WellFormCfg. This function will commonly be called via AddOutEdge()
@@ -355,7 +364,7 @@ void Cfg::addOutEdge(BasicBlock * pBB, BasicBlock * pDestBB, bool bSetLabel /* =
 
 /***************************************************************************//**
  *
- * OVERVIEW:        Add an out edge to this BB (and the in-edge to the dest BB)
+ * \brief        Add an out edge to this BB (and the in-edge to the dest BB)
  *                    May also set a label
  *
  * Adds an out-edge to the basic block pBB by filling in the first slot that is empty.    Note: an address is
@@ -448,8 +457,7 @@ PBB Cfg::splitBB (PBB pBB, ADDRESS uNativeAddr, PBB pNewBB /* = 0 */, bool bDelR
         // There must be a label here; else would not be splitting.  Give it a new label
         pNewBB->m_iLabelNum = ++lastLabel;
     }
-    else if (pNewBB->m_bIncomplete)
-    {
+    else if (pNewBB->m_bIncomplete) {
         // We have an existing BB and a map entry, but no details except for in-edges and m_bHasLabel.
         // First save the in-edges and m_iLabelNum
         std::vector<PBB> ins(pNewBB->m_InEdges);
@@ -544,7 +552,7 @@ BasicBlock * Cfg::getNextBB(BB_IT& it) {
  */
 /***************************************************************************//**
  *
- * OVERVIEW:    Checks whether the given native address is a label (explicit or non explicit) or not. Returns false for
+ * \brief    Checks whether the given native address is a label (explicit or non explicit) or not. Returns false for
  *                incomplete BBs.  So it returns true iff the address has already been decoded in some BB. If it was not
  *                already a label (i.e. the first instruction of some BB), the BB is split so that it becomes a label.
  *                Explicit labels are addresses that have already been tagged as being labels due to transfers of control
@@ -711,7 +719,7 @@ void Cfg::updateVectorBB() {
 
 /***************************************************************************//**
  *
- * OVERVIEW:        Checks that all BBs are complete, and all out edges are valid. However, ADDRESSes that are
+ * \brief        Checks that all BBs are complete, and all out edges are valid. However, ADDRESSes that are
  *                    interprocedural out edges are not checked or changed.
  * Transforms the input machine-dependent cfg, which has ADDRESS labels for each out-edge, into a machine-
  * independent cfg graph (i.e. a well-formed graph) which has references to basic blocks for each out-edge.
@@ -810,7 +818,7 @@ bool Cfg::mergeBBs( PBB pb1, PBB pb2) {
 
 /***************************************************************************//**
  *
- * OVERVIEW:        Complete the merge of two BBs by adjusting in and out edges.  If bDelete is true, delete pb1
+ * \brief        Complete the merge of two BBs by adjusting in and out edges.  If bDelete is true, delete pb1
  *
  * Completes the merge of pb1 and pb2 by adjusting out edges. No checks are made that the merge is valid
  * (hence this is a private function) Deletes pb1 if bDelete is true
@@ -980,7 +988,7 @@ void Cfg::unTraverse() {
 
 /***************************************************************************//**
  *
- * OVERVIEW:        Given a well-formed cfg graph, a partial ordering is established between the nodes. The ordering is
+ * \brief        Given a well-formed cfg graph, a partial ordering is established between the nodes. The ordering is
  *                    based on the final visit to each node during a depth first traversal such that if node n1 was
  *                    visited for the last time before node n2 was visited for the last time, n1 will be less than n2.
  *                    The return value indicates if all nodes where ordered. This will not be the case for incomplete CFGs
@@ -1023,7 +1031,7 @@ PBB Cfg::findRetNode() {
 
 /***************************************************************************//**
  *
- * OVERVIEW:        Performs establishDFTOrder on the reverse (flip) of the graph, assumes: establishDFTOrder has
+ * \brief        Performs establishDFTOrder on the reverse (flip) of the graph, assumes: establishDFTOrder has
  *                    already been called
  * PARAMETERS:        <none>
  * \returns            all nodes where ordered
@@ -1104,7 +1112,7 @@ int Cfg::pbbToIndex (PBB pBB) {
 
 /***************************************************************************//**
  *
- * OVERVIEW:        Add a call to the set of calls within this procedure.
+ * \brief        Add a call to the set of calls within this procedure.
  * PARAMETERS:        call - a call instruction
  * \returns            <nothing>
  ******************************************************************************/
@@ -1114,7 +1122,7 @@ void Cfg::addCall(CallStatement* call) {
 
 /***************************************************************************//**
  *
- * OVERVIEW:        Get the set of calls within this procedure.
+ * \brief        Get the set of calls within this procedure.
  * PARAMETERS:        <none>
  * \returns            the set of calls within this procedure
  ******************************************************************************/
@@ -1151,7 +1159,7 @@ bool Cfg::searchAll(Exp *search, std::list<Exp*> &result) {
 
 /***************************************************************************//**
  *
- * OVERVIEW:    "deep" delete for a list of pointers to RTLs
+ * \brief    "deep" delete for a list of pointers to RTLs
  * PARAMETERS:    pLrtl - the list
  * \returns        <none>
  ******************************************************************************/

@@ -85,19 +85,19 @@ typedef std::vector<Return*> Returns;
 
 class Signature {
 protected:
-        std::string    name;        // name of procedure
-        std::string sigFile;    // signature file this signature was read from (for libprocs)
+        std::string     name;        // name of procedure
+        std::string     sigFile;    // signature file this signature was read from (for libprocs)
         std::vector<Parameter*> params;
         // std::vector<ImplicitParameter*> implicitParams;
-        Returns        returns;
-        Type        *rettype;
-        bool        ellipsis;
-        bool        unknown;
+        Returns         returns;
+        Type *          rettype;
+        bool            ellipsis;
+        bool            unknown;
         //bool        bFullSig;            // True if have a full signature from a signature file etc
         // True if the signature is forced with a -sf entry, or is otherwise known, e.g. WinMain
-        bool        forced;
-        Type        *preferedReturn;
-        std::string    preferedName;
+        bool            forced;
+        Type *          preferedReturn;
+        std::string     preferedName;
         std::vector<int> preferedParams;
 
 //        void        updateParams(UserProc *p, Statement *stmt, bool checkreach = true);
@@ -130,15 +130,15 @@ virtual void        addReturn(Exp *e);
 virtual void        addReturn(Return *ret) { returns.push_back(ret); }
 virtual void        removeReturn(Exp *e);
 virtual unsigned    getNumReturns() {return returns.size();}
-virtual Exp            *getReturnExp(int n) {return returns[n]->exp;}
+virtual Exp *       getReturnExp(int n) {return returns[n]->exp;}
         void        setReturnExp(int n, Exp* e) {returns[n]->exp = e;}
-virtual Type        *getReturnType(int n) {return returns[n]->type;}
+virtual Type *      getReturnType(int n) {return returns[n]->type;}
 virtual void        setReturnType(int n, Type *ty);
-        int            findReturn(Exp *e);
-//        void        fixReturnsWithParameters();            // Needs description
+        int         findReturn(Exp *e);
+//      void        fixReturnsWithParameters();            // Needs description
         void        setRetType(Type *t) { rettype = t; }
-        Returns&    getReturns() {return returns;}
-        Type*        getTypeFor(Exp* e);
+        Returns &   getReturns() {return returns;}
+        Type *      getTypeFor(Exp* e);
 
         // get/set the name
 virtual const char    *getName();
@@ -161,19 +161,19 @@ virtual void        setNumParams(int n);
 
         // accessors for parameters
 virtual unsigned    getNumParams() {return params.size();}
-virtual const char    *getParamName(int n);
-virtual Exp            *getParamExp(int n);
-virtual Type        *getParamType(int n);
-virtual const char  *getParamBoundMax(int n);
+virtual const char *getParamName(int n);
+virtual Exp *       getParamExp(int n);
+virtual Type *      getParamType(int n);
+virtual const char *getParamBoundMax(int n);
 virtual void        setParamType(int n, Type *ty);
 virtual void        setParamType(const char* nam, Type *ty);
 virtual void        setParamType(Exp* e, Type *ty);
 virtual void        setParamName(int n, const char *nam);
 virtual void        setParamExp(int n, Exp *e);
-virtual int            findParam(Exp *e);
-virtual int            findParam(const char *nam);
+virtual int         findParam(Exp *e);
+virtual int         findParam(const char *nam);
         // accessor for argument expressions
-virtual Exp            *getArgumentExp(int n);
+virtual Exp *       getArgumentExp(int n);
 virtual bool        hasEllipsis() { return ellipsis; }
 
         void        renameParam(const char *oldName, const char *newName);

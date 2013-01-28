@@ -9,7 +9,7 @@
 
 /*==============================================================================
  * FILE:       constraint.cpp
- * OVERVIEW:   Implementation of objects related to type constraints
+ * \brief   Implementation of objects related to type constraints
  ******************************************************************************/
 
 /*
@@ -270,8 +270,8 @@ Exp* nextConjunct(Exp*& remainder) {
 bool Constraints::solve(std::list<ConstraintMap>& solns) {
     LOG << conSet.size() << " constraints:";
     std::ostringstream os;
-	conSet.print(os);
-	LOG << os.str().c_str();
+    conSet.print(os);
+    LOG << os.str().c_str();
     // Replace Ta[loc] = ptr(alpha) with
     //           Tloc = alpha
     LocationSet::iterator cc;

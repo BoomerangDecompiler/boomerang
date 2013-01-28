@@ -393,7 +393,7 @@ static SWord GccCallMain[] = {
 
 /***************************************************************************//**
  *
- * OVERVIEW:      Try to find a pattern
+ * \brief      Try to find a pattern
  * PARAMETERS:    start - pointer to code to start searching
  *                patt - pattern to look for
  *                pattSize - size of the pattern (in SWords)

@@ -3,7 +3,7 @@
  */
 /***************************************************************************//**
  * FILE:       boomerang.cpp
- * OVERVIEW:   Command line processing for the Boomerang decompiler
+ * \brief   Command line processing for the Boomerang decompiler
  ******************************************************************************/
 /*
  * $Revision$    // 1.115.2.5

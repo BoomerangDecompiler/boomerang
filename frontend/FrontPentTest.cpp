@@ -37,7 +37,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION( FrontPentTest );
  * NOTE:            Called before any tests
  * NOTE:            Also appears to be called before all tests!
  * PARAMETERS:        <none>
- * RETURNS:            <nothing>
+ * \returns             <nothing>
  *============================================================================*/
 static bool logset = false;
 void FrontPentTest::setUp () {
@@ -51,7 +51,7 @@ void FrontPentTest::setUp () {
  * OVERVIEW:        Delete objects created in setUp
  * NOTE:            Called after all tests
  * PARAMETERS:        <none>
- * RETURNS:            <nothing>
+ * \returns             <nothing>
  *============================================================================*/
 void FrontPentTest::tearDown () {
 }

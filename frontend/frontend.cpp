@@ -11,7 +11,7 @@
 
 /***************************************************************************//**
  * FILE:       frontend.cpp
- * OVERVIEW:   This file contains common code for all front ends. The majority
+ * \brief   This file contains common code for all front ends. The majority
  *                of frontend logic remains in the source dependent files such as
  *                frontsparc.cpp
  ******************************************************************************/
@@ -62,7 +62,7 @@
 
 /***************************************************************************//**
  *
- * OVERVIEW:      Construct the FrontEnd object
+ * \brief      Construct the FrontEnd object
  * PARAMETERS:      pBF: pointer to the BinaryFile object (loader)
  *                  prog: program being decoded
  *                  pbff: pointer to a BinaryFileFactory object (so the library can be unloaded)
@@ -384,7 +384,7 @@ DecodeResult& FrontEnd::decodeInstruction(ADDRESS pc) {
 
 /***************************************************************************//**
  *
- * OVERVIEW:       Read the library signatures from a file
+ * \brief       Read the library signatures from a file
  * PARAMETERS:       sPath: The file to read from
  *                   cc: the calling convention assumed
  * \returns           <nothing>
@@ -448,7 +448,7 @@ Signature *FrontEnd::getLibSignature(const char *name) {
 
 /***************************************************************************//**
  *
- * OVERVIEW:      Process a procedure, given a native (source machine) address.
+ * \brief      Process a procedure, given a native (source machine) address.
  * PARAMETERS:      address - the address at which the procedure starts
  *                  pProc - the procedure object
  *                  frag - if true, this is just a fragment of a procedure
@@ -1028,7 +1028,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 
 /***************************************************************************//**
  *
- * OVERVIEW:    Fetch the smallest (nop-sized) instruction, in an endianness independent manner
+ * \brief    Fetch the smallest (nop-sized) instruction, in an endianness independent manner
  * NOTE:        Frequently overridden
  * PARAMETERS:    addr - host address to getch from
  * \returns        An integer with the instruction in it
@@ -1041,7 +1041,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 
 /***************************************************************************//**
  *
- * OVERVIEW:    Visit a destination as a label, i.e. check whether we need to queue it as a new BB to create later.
+ * \brief    Visit a destination as a label, i.e. check whether we need to queue it as a new BB to create later.
  *                Note: at present, it is important to visit an address BEFORE an out edge is added to that address.
  *                This is because adding an out edge enters the address into the Cfg's BB map, and it looks like the
  *                BB has already been visited, and it gets overlooked. It would be better to have a scheme whereby
@@ -1066,7 +1066,7 @@ void TargetQueue::visit(Cfg* pCfg, ADDRESS uNewAddr, PBB& pNewBB) {
 
 /***************************************************************************//**
  *
- * OVERVIEW:    Seed the queue with an initial address
+ * \brief    Seed the queue with an initial address
  * NOTE:        Can be some targets already in the queue now
  * PARAMETERS:    uAddr: Native address to seed the queue with
  * \returns        <nothing>
@@ -1077,7 +1077,7 @@ void TargetQueue::initial(ADDRESS uAddr) {
 
 /***************************************************************************//**
  *
- * OVERVIEW:          Return the next target from the queue of non-processed
+ * \brief          Return the next target from the queue of non-processed
  *                      targets.
  * PARAMETERS:          cfg - the enclosing CFG
  * \returns              The next address to process, or NO_ADDRESS if none
@@ -1111,7 +1111,7 @@ void TargetQueue::dump() {
 
 /***************************************************************************//**
  *
- * OVERVIEW:      Decode the RTL at the given address
+ * \brief      Decode the RTL at the given address
  * PARAMETERS:      address - native address of the instruction
  *                  delta - difference between host and native addresses
  *                  decoder - decoder object
@@ -1126,7 +1126,7 @@ RTL* decodeRtl(ADDRESS address, int delta, NJMCDecoder* decoder) {
 
 /***************************************************************************//**
  *
- * OVERVIEW:    Get a Prog object (mainly for testing and not decoding)
+ * \brief    Get a Prog object (mainly for testing and not decoding)
  * PARAMETERS:    None
  * \returns        Pointer to a Prog object (with pFE and pBF filled in)
  ******************************************************************************/
@@ -1136,7 +1136,7 @@ Prog* FrontEnd::getProg() {
 
 /***************************************************************************//**
  *
- * OVERVIEW:    Create a Return or a Oneway BB if a return statement already exists
+ * \brief    Create a Return or a Oneway BB if a return statement already exists
  * PARAMETERS:    pProc: pointer to enclosing UserProc
  *                BB_rtls: list of RTLs for the current BB (not including pRtl)
  *                pRtl: pointer to the current RTL with the semantics for the return statement (including a

@@ -9,7 +9,7 @@
 
 /*==============================================================================
  * FILE:       table.h
- * OVERVIEW:   Provides the definition of class Table and children used by
+ * \brief   Provides the definition of class Table and children used by
  *               the SSL parser
  ******************************************************************************/
 

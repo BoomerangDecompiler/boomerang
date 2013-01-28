@@ -617,7 +617,7 @@ void c_null(ADDRESS hostpc, char **garble)
  *                 pc - the virtual address of the pc
  *                 result - a reference parameter that has a fields for the
  *                  number of bytes decoded, their validity, etc
- * RETURNS:        the instantiated list of RTs
+ * \returns         the instantiated list of RTs
  *============================================================================*/
 list<RT*>* NJMCDecoder::decodeLowLevelInstruction (ADDRESS hostPC, ADDRESS pc,
                         DecodeResult& result)

@@ -9,7 +9,7 @@
 
 /*==============================================================================
  * FILE:       managed.cpp
- * OVERVIEW:   Implementation of "managed" classes such as StatementSet, which feature makeUnion etc
+ * \brief   Implementation of "managed" classes such as StatementSet, which feature makeUnion etc
  ******************************************************************************/
 
 /*

@@ -11,7 +11,7 @@
 
 /***************************************************************************//**
  * FILE:        prog.cpp
- * OVERVIEW:    Implementation of the program class. Holds information of
+ * \brief    Implementation of the program class. Holds information of
  *                interest to the whole program.
  ******************************************************************************/
 
@@ -478,7 +478,7 @@ void Prog::clear() {
 /***************************************************************************//**
  *
  * NOTE:        Formally Frontend::newProc
- * OVERVIEW:    Call this function when a procedure is discovered (usually by
+ * \brief    Call this function when a procedure is discovered (usually by
  *                  decoding a call instruction). That way, it is given a name
  *                  that can be displayed in the dot file, etc. If we assign it
  *                  a number now, then it will retain this number always
@@ -660,7 +660,7 @@ BOOL CALLBACK addSymbol(
 
 /***************************************************************************//**
  *
- * OVERVIEW:    Creates a new Proc object, adds it to the list of procs in this Prog object, and adds the address to
+ * \brief    Creates a new Proc object, adds it to the list of procs in this Prog object, and adds the address to
  *                    the list
  * PARAMETERS:    name: Name for the proc
  *                uNative: Native address of the entry point of the proc
@@ -724,7 +724,7 @@ Proc* Prog::newProc (const char* name, ADDRESS uNative, bool bLib /*= false*/) {
 
 /***************************************************************************//**
  *
- * OVERVIEW:       Removes the UserProc from this Prog object's list, and deletes as much as possible of the Proc
+ * \brief       Removes the UserProc from this Prog object's list, and deletes as much as possible of the Proc
  * PARAMETERS:       proc: pointer to the UserProc object to be removed
  * \returns           <nothing>
  ******************************************************************************/
@@ -758,7 +758,7 @@ void Prog::removeProc(const char *name)
 
 /***************************************************************************//**
  *
- * OVERVIEW:    Return the number of real (non deleted) procedures
+ * \brief    Return the number of real (non deleted) procedures
  * PARAMETERS:    None
  * \returns        The number of procedures
  ******************************************************************************/
@@ -776,7 +776,7 @@ int Prog::getNumUserProcs() {
 
 /***************************************************************************//**
  *
- * OVERVIEW:    Return a pointer to the indexed Proc object
+ * \brief    Return a pointer to the indexed Proc object
  * PARAMETERS:    Index of the proc
  * \returns        Pointer to the Proc object, or 0 if index invalid
  ******************************************************************************/
@@ -794,7 +794,7 @@ Proc* Prog::getProc(int idx) const {
 
 /***************************************************************************//**
  *
- * OVERVIEW:    Return a pointer to the associated Proc object, or NULL if none
+ * \brief    Return a pointer to the associated Proc object, or NULL if none
  * NOTE:        Could return -1 for a deleted Proc
  * PARAMETERS:    Native address of the procedure entry point
  * \returns        Pointer to the Proc object, or 0 if none, or -1 if deleted
@@ -1080,7 +1080,7 @@ double Prog::getFloatConstant(ADDRESS uaddr, bool &ok, int bits) {
 
 /***************************************************************************//**
  *
- * OVERVIEW:    Return a pointer to the Proc object containing uAddr, or 0 if none
+ * \brief    Return a pointer to the Proc object containing uAddr, or 0 if none
  * NOTE:        Could return -1 for a deleted Proc
  * PARAMETERS:    Native address to search for
  * \returns        Pointer to the Proc object, or 0 if none, or -1 if deleted
@@ -1102,7 +1102,7 @@ Proc* Prog::findContainingProc(ADDRESS uAddr) const {
 
 /***************************************************************************//**
  *
- * OVERVIEW:    Return true if this is a real procedure
+ * \brief    Return true if this is a real procedure
  * PARAMETERS:    Native address of the procedure entry point
  * \returns        True if a real (non deleted) proc
  ******************************************************************************/
@@ -1114,7 +1114,7 @@ bool Prog::isProcLabel (ADDRESS addr) {
 
 /***************************************************************************//**
  *
- * OVERVIEW:    Get the name for the progam, without any path at the front
+ * \brief    Get the name for the progam, without any path at the front
  * PARAMETERS:    None
  * \returns        A string with the name
  ******************************************************************************/
@@ -1139,7 +1139,7 @@ std::string Prog::getNameNoPathNoExt() const {
 
 /***************************************************************************//**
  *
- * OVERVIEW:    Return a pointer to the first Proc object for this program
+ * \brief    Return a pointer to the first Proc object for this program
  * NOTE:        The it parameter must be passed to getNextProc
  * PARAMETERS:    it: An uninitialised PROGMAP::const_iterator
  * \returns        A pointer to the first Proc object; could be 0 if none
@@ -1155,7 +1155,7 @@ Proc* Prog::getFirstProc(PROGMAP::const_iterator& it) {
 
 /***************************************************************************//**
  *
- * OVERVIEW:    Return a pointer to the next Proc object for this program
+ * \brief    Return a pointer to the next Proc object for this program
  * NOTE:        The it parameter must be from a previous call to getFirstProc or getNextProc
  * PARAMETERS:    it: A PROGMAP::const_iterator as above
  * \returns        A pointer to the next Proc object; could be 0 if no more
@@ -1171,7 +1171,7 @@ Proc* Prog::getNextProc(PROGMAP::const_iterator& it) {
 
 /***************************************************************************//**
  *
- * OVERVIEW:    Return a pointer to the first UserProc object for this program
+ * \brief    Return a pointer to the first UserProc object for this program
  * NOTE:        The it parameter must be passed to getNextUserProc
  * PARAMETERS:    it: An uninitialised std::list<Proc*>::iterator
  * \returns        A pointer to the first UserProc object; could be 0 if none
@@ -1187,7 +1187,7 @@ UserProc* Prog::getFirstUserProc(std::list<Proc*>::iterator& it) {
 
 /***************************************************************************//**
  *
- * OVERVIEW:    Return a pointer to the next UserProc object for this program
+ * \brief    Return a pointer to the next UserProc object for this program
  * NOTE:        The it parameter must be from a previous call to
  *                  getFirstUserProc or getNextUserProc
  * PARAMETERS:    it: A std::list<Proc*>::iterator
@@ -1204,7 +1204,7 @@ UserProc* Prog::getNextUserProc(std::list<Proc*>::iterator& it) {
 
 /***************************************************************************//**
  *
- * OVERVIEW:    Lookup the given native address in the code section, returning a host pointer corresponding to the same
+ * \brief    Lookup the given native address in the code section, returning a host pointer corresponding to the same
  *                 address
  * PARAMETERS:    uNative: Native address of the candidate string or constant
  *                last: will be set to one past end of the code section (host)

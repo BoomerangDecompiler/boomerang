@@ -9,7 +9,7 @@
 
 /*==============================================================================
  * FILE:       st20decoder.h
- * OVERVIEW:   The definition of the instruction decoder for ST20.
+ * \brief   The definition of the instruction decoder for ST20.
  ******************************************************************************/
 
 /*

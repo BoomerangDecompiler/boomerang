@@ -1383,7 +1383,7 @@ SemStr* NJMCDecoder::dis_xd(ADDRESS hostpc)
  *                    address
  *                  ssb - SemStr* for the base register that gets modified
  *                  ssx - SemStr* for the amount to be added to ssb
- * RETURNS:         the SemStr representation of the given address
+ * \returns          the SemStr representation of the given address
  *============================================================================*/
 SemStr* NJMCDecoder::dis_c_addr(ADDRESS hostPC)
 {
@@ -1630,7 +1630,7 @@ SemStr* NJMCDecoder::dis_Sreg(int regNum)
  *                  any callee prologue, i.e. does it look like this offset
  *                  is a pointer to a function?
  * PARAMETERS:    hostPC - pointer to the code in question (native address)
- * RETURNS:       True if a match found
+ * \returns        True if a match found
  *============================================================================*/
 bool isFuncPrologue(ADDRESS hostPC)
 {

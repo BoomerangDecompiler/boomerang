@@ -10,7 +10,7 @@
 
 /*==============================================================================
  * FILE:       sparcdecoder.h
- * OVERVIEW:   The implementation of the instruction decoder for Sparc.
+ * \brief   The implementation of the instruction decoder for Sparc.
  ******************************************************************************/
 
 /*

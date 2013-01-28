@@ -3,7 +3,7 @@
  */
 /*==============================================================================
  * FILE:       visitor.cpp
- * OVERVIEW:   Provides the implementation for the various visitor and modifier classes.
+ * \brief   Provides the implementation for the various visitor and modifier classes.
  ******************************************************************************/
 /*
  * $Revision$

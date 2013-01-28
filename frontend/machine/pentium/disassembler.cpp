@@ -31,7 +31,7 @@
  * PARAMETERS:     pc - the native address of the pc
  *                 delta - the difference between the native address and
  *                  the host address of the pc
- * RETURNS:        number of bytes taken up by the decoded instruction
+ * \returns         number of bytes taken up by the decoded instruction
  *                  (i.e. number of bytes processed)
  *============================================================================*/
 int NJMCDecoder::decodeAssemblyInstruction (ADDRESS pc, int delta)

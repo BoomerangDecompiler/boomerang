@@ -78,7 +78,7 @@ public:
  *                uNewAddr - the address to be checked
  *                pNewBB - set to the lower part of the BB if the address already exists as a non explicit label
  *                (i.e. the BB has to be split)
- * RETURNS:        <nothing>
+ * \returns         <nothing>
  */
     void visit(Cfg* pCfg, ADDRESS uNewAddr, PBB& pNewBB);
 /*
@@ -91,7 +91,7 @@ public:
  * FUNCTION:      nextAddress
  * OVERVIEW:      Return the next target from the queue of non-processed targets.
  * PARAMETERS:      cfg - the enclosing CFG
- * RETURNS:          The next address to process, or 0 if none (queue is empty)
+ * \returns           The next address to process, or 0 if none (queue is empty)
  */
         ADDRESS        nextAddress(Cfg* cfg);
 

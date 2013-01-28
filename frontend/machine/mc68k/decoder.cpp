@@ -59,7 +59,7 @@
  *                   the RTL for the instruction being decoded
  *                 proc - the enclosing procedure
  *                 pProc - the enclosing procedure
- * RETURNS:        a DecodeResult structure containing all the information
+ * \returns         a DecodeResult structure containing all the information
  *                   gathered during decoding
  *============================================================================*/
 DecodeResult& NJMCDecoder::decodeInstruction (ADDRESS pc, int delta,
@@ -7216,7 +7216,7 @@ SemStr* NJMCDecoder::rmEAX(ADDRESS eax, ADDRESS x, DecodeResult& result,
  *                  any callee prologue, i.e. does it look like this offset
  *                  is a pointer to a function?
  * PARAMETERS:    hostPC - pointer to the code in question (native address)
- * RETURNS:       True if a match found
+ * \returns        True if a match found
  *============================================================================*/
 bool isFuncPrologue(ADDRESS hostPC)
 {

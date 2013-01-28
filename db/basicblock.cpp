@@ -11,7 +11,7 @@
 
 /***************************************************************************//**
  * FILE:     basicblock.cc
- * OVERVIEW: Implementation of the BasicBlock class.
+ * \brief Implementation of the BasicBlock class.
  ******************************************************************************/
 
 /*
@@ -63,7 +63,7 @@
 
 /***************************************************************************//**
  *
- * OVERVIEW:        Constructor.
+ * \brief        Constructor.
  * PARAMETERS:        <none>
  * \returns            <nothing>
  ******************************************************************************/
@@ -94,7 +94,7 @@ BasicBlock::BasicBlock()
 
 /***************************************************************************//**
  *
- * OVERVIEW:        Destructor.
+ * \brief        Destructor.
  * PARAMETERS:        <none>
  * \returns            <nothing>
  ******************************************************************************/
@@ -119,7 +119,7 @@ BasicBlock::~BasicBlock() {
 
 /***************************************************************************//**
  *
- * OVERVIEW:        Copy constructor.
+ * \brief        Copy constructor.
  * PARAMETERS:        bb - the BB to copy from
  * \returns            <nothing>
  ******************************************************************************/
@@ -151,7 +151,7 @@ BasicBlock::BasicBlock(const BasicBlock& bb)
 
 /***************************************************************************//**
  *
- * OVERVIEW:        Private constructor.
+ * \brief        Private constructor.
  * PARAMETERS:        pRtls -
  *                    bbType -
  *                    iNumOutEdges -
@@ -186,7 +186,7 @@ BasicBlock::BasicBlock(std::list<RTL*>* pRtls, BBTYPE bbType, int iNumOutEdges)
 
 /***************************************************************************//**
  *
- * OVERVIEW:        Returns nonzero if this BB has a label, in the sense that a label is required in the translated
+ * \brief        Returns nonzero if this BB has a label, in the sense that a label is required in the translated
  *                        source code
  * PARAMETERS:        <none>
  * \returns            An integer unique to this BB, or zero
@@ -205,7 +205,7 @@ bool BasicBlock::isCaseOption() {
 
 /***************************************************************************//**
  *
- * OVERVIEW:        Returns nonzero if this BB has been traversed
+ * \brief        Returns nonzero if this BB has been traversed
  * PARAMETERS:        <none>
  * \returns            True if traversed
  ******************************************************************************/
@@ -215,7 +215,7 @@ bool BasicBlock::isTraversed() {
 
 /***************************************************************************//**
  *
- * OVERVIEW:        Sets the traversed flag
+ * \brief        Sets the traversed flag
  * PARAMETERS:        bTraversed: true to set this BB to traversed
  * \returns            <nothing>
  ******************************************************************************/
@@ -225,7 +225,7 @@ void BasicBlock::setTraversed(bool bTraversed) {
 
 /***************************************************************************//**
  *
- * OVERVIEW:        Sets the RTLs for a basic block. This is the only place that the RTLs for a block must be set as we
+ * \brief        Sets the RTLs for a basic block. This is the only place that the RTLs for a block must be set as we
  *                        need to add the back link for a call instruction to its enclosing BB.
  * PARAMETERS:        rtls - a list of RTLs
  * \returns            <nothing>
@@ -239,7 +239,7 @@ void BasicBlock::setRTLs(std::list<RTL*>* rtls) {
 
 /***************************************************************************//**
  *
- * OVERVIEW:        Return the type of the basic block.
+ * \brief        Return the type of the basic block.
  * PARAMETERS:        <none>
  * \returns            the type of the basic block
  ******************************************************************************/
@@ -249,7 +249,7 @@ BBTYPE BasicBlock::getType() {
 
 /***************************************************************************//**
  *
- * OVERVIEW:        Update the type and number of out edges. Used for example where a COMPJUMP type is updated to an
+ * \brief        Update the type and number of out edges. Used for example where a COMPJUMP type is updated to an
  *                        NWAY when a switch idiom is discovered.
  * PARAMETERS:        bbType - the new type
  *                    iNumOutEdges - new number of inedges
@@ -263,7 +263,7 @@ void BasicBlock::updateType(BBTYPE bbType, int iNumOutEdges) {
 
 /***************************************************************************//**
  *
- * OVERVIEW:        Sets the "jump required" bit. This means that this BB is an orphan (not generated from input code),
+ * \brief        Sets the "jump required" bit. This means that this BB is an orphan (not generated from input code),
  *                        and that the "fall through" out edge needs to be implemented as a jump
  * PARAMETERS:        <none>
  * \returns            <nothing>
@@ -274,7 +274,7 @@ void BasicBlock::setJumpReqd() {
 
 /***************************************************************************//**
  *
- * OVERVIEW:        Returns the "jump required" bit. See above for details
+ * \brief        Returns the "jump required" bit. See above for details
  * PARAMETERS:        <none>
  * \returns            True if a jump is required
  ******************************************************************************/
@@ -284,7 +284,7 @@ bool BasicBlock::isJumpReqd() {
 
 /***************************************************************************//**
  *
- * OVERVIEW:        Print to a static string (for debugging)
+ * \brief        Print to a static string (for debugging)
  * PARAMETERS:        <none>
  * \returns            Address of the static buffer
  ******************************************************************************/
@@ -306,7 +306,7 @@ void BasicBlock::dump() {
 
 /***************************************************************************//**
  *
- * OVERVIEW:        Display the whole BB to the given stream
+ * \brief        Display the whole BB to the given stream
  *                    Used for "-R" option, and handy for debugging
  * PARAMETERS:        os - stream to output to
  * \returns            <nothing>
@@ -377,7 +377,7 @@ void printBB(PBB bb) {
 
 /***************************************************************************//**
  *
- * OVERVIEW:        Get the lowest real address associated with this BB. Note that although this is usually the address
+ * \brief        Get the lowest real address associated with this BB. Note that although this is usually the address
  *                        of the first RTL, it is not always so. For example, if the BB contains just a delayed branch,
  *                        and the delay instruction for the branch does not affect the branch, so the delay instruction is
  *                        copied in front of the branch instruction. Its address will be UpdateAddress()d to 0, since it
@@ -405,7 +405,7 @@ ADDRESS BasicBlock::getLowAddr() {
 
 /***************************************************************************//**
  *
- * OVERVIEW:        Get the highest address associated with this BB. This is
+ * \brief        Get the highest address associated with this BB. This is
  *                    always the address associated with the last RTL.
  * PARAMETERS:        <none>
  * \returns            <nothing>
@@ -417,7 +417,7 @@ ADDRESS BasicBlock::getHiAddr() {
 
 /***************************************************************************//**
  *
- * OVERVIEW:        Get pointer to the list of RTL*.
+ * \brief        Get pointer to the list of RTL*.
  * PARAMETERS:        <none>
  * \returns            <nothing>
  ******************************************************************************/
@@ -440,7 +440,7 @@ RTL* BasicBlock::getRTLWithStatement(Statement *stmt)
 
 /***************************************************************************//**
  *
- * OVERVIEW:        Get a constant reference to the vector of in edges.
+ * \brief        Get a constant reference to the vector of in edges.
  * PARAMETERS:        <none>
  * \returns            a constant reference to the vector of in edges
  ******************************************************************************/
@@ -450,7 +450,7 @@ std::vector<PBB>& BasicBlock::getInEdges() {
 
 /***************************************************************************//**
  *
- * OVERVIEW:        Get a constant reference to the vector of out edges.
+ * \brief        Get a constant reference to the vector of out edges.
  * PARAMETERS:        <none>
  * \returns            a constant reference to the vector of out edges
  ******************************************************************************/
@@ -460,7 +460,7 @@ std::vector<PBB>& BasicBlock::getOutEdges() {
 
 /***************************************************************************//**
  *
- * OVERVIEW:        Change the given in-edge (0 is first) to the given value
+ * \brief        Change the given in-edge (0 is first) to the given value
  *                    Needed for example when duplicating BBs
  * PARAMETERS:        i: index (0 based) of in-edge to change
  *                    pNewInEdge: pointer to BB that will be a new parent
@@ -472,7 +472,7 @@ void BasicBlock::setInEdge(int i, PBB pNewInEdge) {
 
 /***************************************************************************//**
  *
- * OVERVIEW:        Change the given out-edge (0 is first) to the given value
+ * \brief        Change the given out-edge (0 is first) to the given value
  *                    Needed for example when duplicating BBs
  * NOTE:            Cannot add an additional out-edge with this function; use addOutEdge for this rare case
  * PARAMETERS:        i: index (0 based) of out-edge to change
@@ -491,7 +491,7 @@ void BasicBlock::setOutEdge(int i, PBB pNewOutEdge) {
 
 /***************************************************************************//**
  *
- * OVERVIEW:        Returns the i-th out edge of this BB; counting starts at 0
+ * \brief        Returns the i-th out edge of this BB; counting starts at 0
  * NOTE:
  * PARAMETERS:        i: index (0 based) of the desired out edge
  * \returns            the i-th out edge; 0 if there is no such out edge
@@ -503,7 +503,7 @@ PBB BasicBlock::getOutEdge(unsigned int i) {
 
 /***************************************************************************//**
  *
- * OVERVIEW:        given an address this method returns the corresponding
+ * \brief        given an address this method returns the corresponding
  *                    out edge
  * NOTE:
  * PARAMETERS:        a: the address
@@ -521,7 +521,7 @@ PBB BasicBlock::getCorrectOutEdge(ADDRESS a) {
 
 /***************************************************************************//**
  *
- * OVERVIEW:        Add the given in-edge
+ * \brief        Add the given in-edge
  *                    Needed for example when duplicating BBs
  * PARAMETERS:        pNewInEdge: pointer to BB that will be a new parent
  * \returns            <nothing>
@@ -533,7 +533,7 @@ void BasicBlock::addInEdge(PBB pNewInEdge) {
 
 /***************************************************************************//**
  *
- * OVERVIEW:        Delete the in-edge from the given BB
+ * \brief        Delete the in-edge from the given BB
  *                    Needed for example when duplicating BBs
  * PARAMETERS:        it: iterator to BB that will no longer be a parent
  * SIDE EFFECTS:    The iterator argument is incremented.
@@ -570,7 +570,7 @@ void BasicBlock::deleteEdge(PBB edge) {
 
 /***************************************************************************//**
  *
- * OVERVIEW:        Traverse this node and recurse on its children in a depth first manner. Records the times at which
+ * \brief        Traverse this node and recurse on its children in a depth first manner. Records the times at which
  *                        this node was first visited and last visited
  * PARAMETERS:        first - the number of nodes that have been visited
  *                    last - the number of nodes that have been visited for the last time during this traversal
@@ -597,7 +597,7 @@ unsigned BasicBlock::DFTOrder(int& first, int& last) {
 
 /***************************************************************************//**
  *
- * OVERVIEW:    Traverse this node and recurse on its parents in a reverse depth first manner.
+ * \brief    Traverse this node and recurse on its parents in a reverse depth first manner.
  *                    Records the times at which this node was first visited and last visited
  * PARAMETERS:    first - the number of nodes that have been visited
  *                last - the number of nodes that have been visited for the last time during this traversal
@@ -626,7 +626,7 @@ unsigned BasicBlock::RevDFTOrder(int& first, int& last) {
 
 /***************************************************************************//**
  *
- * OVERVIEW:        Static comparison function that returns true if the first BB has an address less than the second BB.
+ * \brief        Static comparison function that returns true if the first BB has an address less than the second BB.
  * PARAMETERS:        bb1 - first BB
  *                    bb2 - last BB
  * \returns            bb1.address < bb2.address
@@ -637,7 +637,7 @@ bool BasicBlock::lessAddress(PBB bb1, PBB bb2) {
 
 /***************************************************************************//**
  *
- * OVERVIEW:        Static comparison function that returns true if the first BB has DFT first order less than the
+ * \brief        Static comparison function that returns true if the first BB has DFT first order less than the
  *                        second BB.
  * PARAMETERS:        bb1 - first BB
  *                    bb2 - last BB
@@ -650,7 +650,7 @@ bool BasicBlock::lessFirstDFT(PBB bb1, PBB bb2) {
 
 /***************************************************************************//**
  *
- * OVERVIEW:        Static comparison function that returns true if the first BB has DFT first order less than the
+ * \brief        Static comparison function that returns true if the first BB has DFT first order less than the
  *                        second BB.
  * PARAMETERS:        bb1 - first BB
  *                    bb2 - last BB
@@ -662,7 +662,7 @@ bool BasicBlock::lessLastDFT(PBB bb1, PBB bb2) {
 
 /***************************************************************************//**
  *
- * OVERVIEW:        Get the destination of the call, if this is a CALL BB with
+ * \brief        Get the destination of the call, if this is a CALL BB with
  *                        a fixed dest. Otherwise, return -1
  * PARAMETERS:        <none>
  * \returns            Native destination of the call, or -1
@@ -2300,7 +2300,7 @@ bool BasicBlock::decodeIndirectJmp(UserProc* proc) {
 
 /***************************************************************************//**
  *
- * OVERVIEW:    Called when a switch has been identified. Visits the destinations of the switch, adds out edges to the
+ * \brief    Called when a switch has been identified. Visits the destinations of the switch, adds out edges to the
  *                BB, etc
  * NOTE:        Used to be called as soon as a switch statement is discovered, but this causes decoded but unanalysed
  *                BBs (statements not numbered, locations not SSA renamed etc) to appear in the CFG. This caused problems
