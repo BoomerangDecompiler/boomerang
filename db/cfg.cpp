@@ -21,6 +21,29 @@
  * 20 Mar 11 - Mike: Added missing braces in Cfg::findLoopFollow()
  */
 
+/***************************************************************************//**
+ * \class Cfg
+ * Control Flow Graph class. Contains all the BasicBlock objects for a procedure.
+ * These BBs contain all the RTLs for the procedure, so by traversing the Cfg,
+ * one traverses the whole procedure.
+ * \var myProc Pointer to the UserProc object that contains this CFG object
+ * \var m_listBB BasicBlocks contained in this CFG
+ * \var Ordering,revOrdering  Ordering of BBs for control flow structuring
+ * \var m_mapBB The ADDRESS to PBB map.
+ * \var entryBB The CFG entry BasicBlock.
+ * \var exitBB The CFG exit BasicBlock.
+ * \var m_bWellFormed
+ * \var structured
+ * \var callSites Set of the call instructions in this procedure.
+ * \var lastLabel Last label (positive integer) used by any BB this Cfg
+ * \var implicitMap Map from expression to implicit assignment. The purpose is
+ * to prevent multiple implicit assignments for the same location.
+ * \var bImplicitsDone True when the implicits are done; they can cause problems
+ * (e.g. with ad-hoc global assignment)
+ * \var m_vectorBB faster access
+ * \var
+ * \var
+ ******************************************************************************/
 
 /***************************************************************************//**
  * Dependencies.
@@ -826,7 +849,7 @@ bool Cfg::mergeBBs( PBB pb1, PBB pb2)
  *                    bDelete: if true, pb1 is deleted as well
  * \returns            <nothing>
  ******************************************************************************/
-void Cfg::completeMerge(PBB pb1, PBB pb2, bool bDelete = false)
+void Cfg::completeMerge(PBB pb1, PBB pb2, bool bDelete)
 {
     // First we replace all of pb1's predecessors' out edges that used to point to pb1 (usually only one of these) with
     // pb2
@@ -891,7 +914,11 @@ bool Cfg::joinBB(PBB pb1, PBB pb2)
     m_listBB.erase(bbit);
     return true;
 }
-
+/***************************************************************************//**
+ *
+ * \brief Completely remove a BB from the CFG.
+ *
+ ******************************************************************************/
 void Cfg::removeBB( PBB bb)
 {
     BB_IT bbit = std::find(m_listBB.begin(), m_listBB.end(), bb);
@@ -1138,17 +1165,15 @@ void Cfg::addCall(CallStatement* call)
  * PARAMETERS:        <none>
  * \returns            the set of calls within this procedure
  ******************************************************************************/
-std::set<CallStatement*>& Cfg::getCalls()
+Cfg::sCallStatement & Cfg::getCalls()
 {
     return callSites;
 }
-
 /***************************************************************************//**
- *
- * OVERVIEW:        Replace all instances of search with replace.
- * PARAMETERS:        search - a location to search for
- *                    replace - the expression with which to replace it
- * \returns            <nothing>
+ * \brief Replace all instances of search with replace. Can be type sensitive if
+ * reqd
+ * \param search a location to search for
+ * \param replace the expression with which to replace it
  ******************************************************************************/
 void Cfg::searchAndReplace(Exp* search, Exp* replace) {
     for (BB_IT bb_it = m_listBB.begin(); bb_it != m_listBB.end(); bb_it++) {
@@ -1224,7 +1249,7 @@ void Cfg::setLabel(BasicBlock * pBB) {
 
 /***************************************************************************//**
  *
- * \breif Set an additional new out edge to a given value
+ * \brief Set an additional new out edge to a given value
  *
  * Append a new out-edge from the given BB to the other given BB
  * Needed for example when converting a one-way BB to a two-way BB
@@ -1247,6 +1272,11 @@ void Cfg::addNewOutEdge(PBB pFromBB, PBB pNewOutEdge)
     setLabel(pNewOutEdge);
 }
 
+/***************************************************************************//**
+ *
+ * \brief Simplify all the expressions in the CFG
+ *
+ ******************************************************************************/
 void Cfg::simplify() {
     if (VERBOSE)
         LOG << "simplifying...\n";
@@ -1679,7 +1709,9 @@ void Cfg::checkConds() {
         }
     }
 }
-
+/***************************************************************************//**
+ * \brief Structures the control flow graph
+ *******************************************************************************/
 void Cfg::structure() {
     if (structured) {
         unTraverse();
@@ -1696,7 +1728,13 @@ void Cfg::structure() {
     }
     structured = true;
 }
+/*
+ * Add/Remove Junction statements
+ */
 
+/***************************************************************************//**
+ * \brief Add Junction statements
+ *******************************************************************************/
 void Cfg::addJunctionStatements()
 {
     std::list<PBB>::iterator it;
@@ -1711,6 +1749,9 @@ void Cfg::addJunctionStatements()
     }
 }
 
+/***************************************************************************//**
+ * \brief Remove Junction statements
+ *******************************************************************************/
 void Cfg::removeJunctionStatements()
 {
     std::list<PBB>::iterator it;
@@ -2099,7 +2140,9 @@ bool Cfg::decodeIndirectJmp(UserProc* proc) {
     }
     return res;
 }
-
+/**
+ * \brief Change the BB enclosing stmt to be CALL, not COMPCALL
+ */
 void Cfg::undoComputedBB(Statement* stmt) {
     std::list<PBB>::iterator it;
     for (it = m_listBB.begin(); it != m_listBB.end(); it++) {
@@ -2126,7 +2169,7 @@ Statement* Cfg::findImplicitAssign(Exp* x) {
     }
     return def;
 }
-
+//! Find the existing implicit assign for x (if any)
 Statement* Cfg::findTheImplicitAssign(Exp* x) {
     // As per the above, but don't create an implicit if it doesn't already exist
     std::map<Exp*, Statement*, lessExpStar>::iterator it = implicitMap.find(x);
@@ -2134,7 +2177,7 @@ Statement* Cfg::findTheImplicitAssign(Exp* x) {
         return NULL;
     return it->second;
 }
-
+//! Find exiting implicit assign for parameter p
 Statement* Cfg::findImplicitParamAssign(Parameter* param) {
     // As per the above, but for parameters (signatures don't get updated with opParams)
     std::map<Exp*, Statement*, lessExpStar>::iterator it = implicitMap.find(param->getExp());
@@ -2146,7 +2189,7 @@ Statement* Cfg::findImplicitParamAssign(Parameter* param) {
         return NULL;
     return it->second;
 }
-
+//! Remove an existing implicit assignment for x
 void Cfg::removeImplicitAssign(Exp* x) {
     std::map<Exp*, Statement*, lessExpStar>::iterator it = implicitMap.find(x);
     assert(it != implicitMap.end());
