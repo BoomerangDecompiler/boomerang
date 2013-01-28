@@ -15,10 +15,10 @@
  *               instructions and the instantiation to RTLs, removing sparc
  *               dependent features such as delay slots in the process. These
  *               functions replace Frontend.cc for decoding sparc instructions.
- *============================================================================*/
+ ******************************************************************************/
 /*==============================================================================
  * Dependencies.
- *============================================================================*/
+ ******************************************************************************/
 
 #include <cassert>
 #include <iomanip>            // For setfill etc

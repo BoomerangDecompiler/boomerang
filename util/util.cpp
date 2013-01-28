@@ -13,7 +13,7 @@
  * FILE:       util.cc
  * OVERVIEW:   This file contains miscellaneous functions that don't belong to
  *             any particular subsystem of UQBT.
- *============================================================================*/
+ ******************************************************************************/
 
 /*
  * $Revision$
@@ -54,7 +54,7 @@
  * PARAMETERS:    s: the string to append to
  *                  i: the integer whose ascii representation is to be appended
  * RETURNS:       A copy of the modified string
- *============================================================================*/
+ ******************************************************************************/
 std::string operator+(const std::string& s, int i)
 {
     static char buf[50];
@@ -70,7 +70,7 @@ std::string operator+(const std::string& s, int i)
  *                    first character capitalised
  * PARAMETERS:    s: the string to capitalise
  * RETURNS:       A copy of the modified string
- *============================================================================*/
+ ******************************************************************************/
 std::string initCapital(const std::string& s)
 {
     std::string res(s);
@@ -85,7 +85,7 @@ std::string initCapital(const std::string& s)
  * PARAMETERS:    s: string representing a file name (e.g. string("foo.c"))
  *                e: the extension (e.g. ".o")
  * RETURNS:       Boolean indicating whether the file name has the extension.
- *============================================================================*/
+ ******************************************************************************/
 bool hasExt(const std::string& s, const char* ext)
 {
     std::string tailStr = std::string(".") + std::string(ext);
@@ -106,7 +106,7 @@ bool hasExt(const std::string& s, const char* ext)
  *                  (e.g. string("foo.c"))
  *                e: the new extension (e.g. ".o")
  * RETURNS:       The converted string (e.g. "foo.o")
- *============================================================================*/
+ ******************************************************************************/
 std::string changeExt(const std::string& s, const char* ext)
 {
     size_t i = s.rfind(".");
@@ -126,7 +126,7 @@ std::string changeExt(const std::string& s, const char* ext)
  *                match: the search string
  *                rep: the string to replace match with.
  * RETURNS:       The updated string.
- *============================================================================*/
+ ******************************************************************************/
 std::string searchAndReplace( const std::string &in, const std::string &match,
                               const std::string &rep )
 {
@@ -149,7 +149,7 @@ std::string searchAndReplace( const std::string &in, const std::string &match,
  * PARAMETERS:    s: the string (char*) to start with
  *                d: the string (char*) to write to (can be the same string)
  * RETURNS:       Nothing; the string is modified as a side effect
- *============================================================================*/
+ ******************************************************************************/
 void upperStr(const char* s, char* d)
 {
     int len = strlen(s);

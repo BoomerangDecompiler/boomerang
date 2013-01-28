@@ -7,12 +7,12 @@
  *
  */
 
-/*==============================================================================
+/***************************************************************************//**
  * FILE:        HpSomBinaryFile.cc
  * OVERVIEW:    This file contains the implementation of the class
  *              HpSomBinaryFile, for decoding PA/RISC SOM executable files.
  *              Derived from class BinaryFile
- *============================================================================*/
+ ******************************************************************************/
 
 /*
  * $Revision$
@@ -527,8 +527,8 @@ std::pair<ADDRESS,unsigned> HpSomBinaryFile::GetGlobalPointerInfo()
     return ret;
 }
 
-/*==============================================================================
- * FUNCTION:    HpSomBinaryFile::GetDynamicGlobalMap
+/***************************************************************************//**
+ *
  * OVERVIEW:    Get a map from ADDRESS to const char*. This map contains the
  *                native addresses and symbolic names of global data items
  *                (if any) which are shared with dynamically linked libraries.
@@ -536,8 +536,8 @@ std::pair<ADDRESS,unsigned> HpSomBinaryFile::GetGlobalPointerInfo()
  *                address of a pointer to the real dynamic data object.
  * NOTE:        The caller should delete the returned map.
  * PARAMETERS:  None
- * RETURNS:     Pointer to a new map with the info
- *============================================================================*/
+ * \returns     Pointer to a new map with the info
+ ******************************************************************************/
 std::map<ADDRESS, const char*>* HpSomBinaryFile::GetDynamicGlobalMap()
 {
     // Find the DL Table, if it exists

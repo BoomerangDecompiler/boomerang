@@ -13,7 +13,7 @@
  * FILE:       rtl.cc
  * OVERVIEW:   Implementation of the classes that describe a low level RTL (
  *               register transfer list)
- *============================================================================*/
+ ******************************************************************************/
 
 /*
  * $Revision$    // 1.33.2.3
@@ -62,7 +62,7 @@
  * OVERVIEW:        Constructor.
  * PARAMETERS:        <none>
  * RETURNS:            N/a
- *============================================================================*/
+ ******************************************************************************/
 RTL::RTL()
   : nativeAddr(ADDRESS::g(0L))
 { }
@@ -73,7 +73,7 @@ RTL::RTL()
  * PARAMETERS:        instNativeAddr - the native address of the instruction
  *                    listExp - ptr to existing list of Exps
  * RETURNS:            N/a
- *============================================================================*/
+ ******************************************************************************/
 RTL::RTL(ADDRESS instNativeAddr, std::list<Statement*>* listStmt /*= NULL*/)
     : nativeAddr(instNativeAddr) {
     if (listStmt)
@@ -86,7 +86,7 @@ RTL::RTL(ADDRESS instNativeAddr, std::list<Statement*>* listStmt /*= NULL*/)
  *                    so that the lists of Exps do not share memory.
  * PARAMETERS:        other: RTL to copy from
  * RETURNS:            N/a
- *============================================================================*/
+ ******************************************************************************/
 RTL::RTL(const RTL& other) : nativeAddr(other.nativeAddr) {
     std::list<Statement*>::const_iterator it;
     for (it = other.stmtList.begin(); it != other.stmtList.end(); it++) {
@@ -99,7 +99,7 @@ RTL::RTL(const RTL& other) : nativeAddr(other.nativeAddr) {
  * OVERVIEW:        Destructor.
  * PARAMETERS:        <none>
  * RETURNS:            N/a
- *============================================================================*/
+ ******************************************************************************/
 RTL::~RTL() { }
 
 /*==============================================================================
@@ -107,7 +107,7 @@ RTL::~RTL() { }
  * OVERVIEW:        Assignment copy (deep).
  * PARAMETERS:        other - RTL to copy
  * RETURNS:            a reference to this object
- *============================================================================*/
+ ******************************************************************************/
 RTL& RTL::operator=(RTL& other) {
     if (this != &other) {
         // Do a deep copy always
@@ -126,7 +126,7 @@ RTL& RTL::operator=(RTL& other) {
  *                     RTL object
  * PARAMETERS:        <none>
  * RETURNS:            Pointer to a new RTL that is a clone of this one
- *============================================================================*/
+ ******************************************************************************/
 RTL* RTL::clone() {
     std::list<Statement*> le;
     iterator it;
@@ -155,7 +155,7 @@ bool RTL::accept(StmtVisitor* visitor) {
  * OVERVIEW:        Make a copy of this RTLs list of Exp* to the given list
  * PARAMETERS:        Ref to empty list to copy to
  * RETURNS:            Nothing
- *============================================================================*/
+ ******************************************************************************/
 void RTL::deepCopyList(std::list<Statement*>& dest) {
     std::list<Statement*>::iterator it;
 
@@ -172,7 +172,7 @@ void RTL::deepCopyList(std::list<Statement*>& dest) {
  * NOTE:            stmt is NOT copied. This is different to how UQBT was!
  * PARAMETERS:        s: pointer to Statement to append
  * RETURNS:            Nothing
- *============================================================================*/
+ ******************************************************************************/
 void RTL::appendStmt(Statement* s) {
     if (stmtList.size()) {
         if (stmtList.back()->isFlagAssgn()) {
@@ -190,7 +190,7 @@ void RTL::appendStmt(Statement* s) {
  * NOTE:            No clone of the statement is made. This is different to how UQBT was
  * PARAMETERS:        s: Ptr to Statement to prepend
  * RETURNS:            Nothing
- *============================================================================*/
+ ******************************************************************************/
 void RTL::prependStmt(Statement* s) {
     stmtList.push_front(s);
 }
@@ -201,7 +201,7 @@ void RTL::prependStmt(Statement* s) {
  * NOTE:            A copy of the Statements in le are appended
  * PARAMETERS:        rtl: list of Exps to insert
  * RETURNS:            Nothing
- *============================================================================*/
+ ******************************************************************************/
 void RTL::appendListStmt(std::list<Statement*>& le) {
     iterator it;
     for (it = le.begin();  it != le.end();    it++) {
@@ -215,7 +215,7 @@ void RTL::appendListStmt(std::list<Statement*>& le) {
  * NOTE:            A copy of the Statements in r are appended
  * PARAMETERS:        r: reterence to RTL whose Exps we are to insert
  * RETURNS:            Nothing
- *============================================================================*/
+ ******************************************************************************/
 void RTL::appendRTL(RTL& r) {
     appendListStmt(r.stmtList);
 }
@@ -227,7 +227,7 @@ void RTL::appendRTL(RTL& r) {
  * PARAMETERS:        s: pointer to the Statement to insert
  *                    i: position to insert before (0 = first)
  * RETURNS:            Nothing
- *============================================================================*/
+ ******************************************************************************/
 void RTL::insertStmt(Statement* s, unsigned i) {
     // Check that position i is not out of bounds
     assert (i < stmtList.size() || stmtList.size() == 0);
@@ -250,7 +250,7 @@ void RTL::insertStmt(Statement* s, iterator it) {
  * PARAMETERS:        s: pointer to the new Exp
  *                    i: index of Exp position (0 = first)
  * RETURNS:            Nothing
- *============================================================================*/
+ ******************************************************************************/
 void RTL::updateStmt(Statement *s, unsigned i) {
     // Check that position i is not out of bounds
     assert (i < stmtList.size());
@@ -299,7 +299,7 @@ void RTL::replaceLastStmt(Statement* repl) {
  * OVERVIEW:        Get the number of Statements in this RTL
  * PARAMETERS:        None
  * RETURNS:            Integer number of Statements
- *============================================================================*/
+ ******************************************************************************/
 int RTL::getNumStmt() {
     return stmtList.size();
 }
@@ -311,7 +311,7 @@ int RTL::getNumStmt() {
  * PARAMETERS:        i - the index of the element we want (0 = first)
  * RETURNS:            the element at the given index or NULL if the index is out
  *                    of bounds
- *============================================================================*/
+ ******************************************************************************/
 Statement* RTL::elementAt(unsigned i) {
     iterator it;
     for (it = stmtList.begin();     i > 0 && it != stmtList.end();     i--, it++);
@@ -326,7 +326,7 @@ Statement* RTL::elementAt(unsigned i) {
  * OVERVIEW:        Prints this object to a stream in text form.
  * PARAMETERS:        os - stream to output to (often cout or cerr)
  * RETURNS:            <nothing>
- *============================================================================*/
+ ******************************************************************************/
 void RTL::print(std::ostream& os /*= cout*/, bool html /*=false*/) {
 
     if (html)
@@ -382,7 +382,7 @@ char* RTL::prints() {
  * PARAMETERS:        os: output stream to send to
  *                    p: ptr to RTL to print to the stream
  * RETURNS:            copy of os (for concatenation)
- *============================================================================*/
+ ******************************************************************************/
 std::ostream& operator<<(std::ostream& os, RTL* r) {
     if (r == NULL) {os << "NULL "; return os;}
     r->print(os);
@@ -394,7 +394,7 @@ std::ostream& operator<<(std::ostream& os, RTL* r) {
  * OVERVIEW:        Set the nativeAddr field
  * PARAMETERS:        Native address
  * RETURNS:            Nothing
- *============================================================================*/
+ ******************************************************************************/
 void RTL::updateAddress(ADDRESS addr) {
     nativeAddr = addr;
 }
@@ -405,7 +405,7 @@ void RTL::updateAddress(ADDRESS addr) {
  * PARAMETERS:        search - ptr to an expression to search for
  *                    replace - ptr to the expression with which to replace it
  * RETURNS:            <nothing>
- *============================================================================*/
+ ******************************************************************************/
 bool RTL::searchAndReplace(Exp* search, Exp* replace) {
     bool ch = false;
     for (iterator it = stmtList.begin(); it != stmtList.end(); it++)
@@ -420,7 +420,7 @@ bool RTL::searchAndReplace(Exp* search, Exp* replace) {
  *                    result - a list which will have any matching exprs
  *                             appended to it
  * RETURNS:            true if there were any matches
- *============================================================================*/
+ ******************************************************************************/
 bool RTL::searchAll(Exp* search, std::list<Exp *> &result) {
     bool found = false;
     for (iterator it = stmtList.begin(); it != stmtList.end(); it++) {
@@ -439,7 +439,7 @@ bool RTL::searchAll(Exp* search, std::list<Exp *> &result) {
  * OVERVIEW:        Clear the list of Exps
  * PARAMETERS:        None
  * RETURNS:            Nothing
- *============================================================================*/
+ ******************************************************************************/
 void RTL::clear() {
     stmtList.clear();
 }
@@ -459,7 +459,7 @@ void RTL::clear() {
  *                    prep: true if prepend (else append)
  *                    type: type of the transfer, or NULL
  * RETURNS:            <nothing>
- *============================================================================*/
+ ******************************************************************************/
 void RTL::insertAssign(Exp* pLhs, Exp* pRhs, bool prep,
                        Type* type /*= NULL */) {
     // Generate the assignment expression
@@ -487,7 +487,7 @@ void RTL::insertAssign(Exp* pLhs, Exp* pRhs, bool prep,
  *                    size: size of the transfer, or -1 to be the same as the
  *                      first assign this RTL
  * RETURNS:            <nothing>
- *============================================================================*/
+ ******************************************************************************/
 void RTL::insertAfterTemps(Exp* pLhs, Exp* pRhs, Type* type     /* NULL */) {
     iterator it;
     // First skip all assignments with temps on LHS
@@ -526,7 +526,7 @@ void RTL::insertAfterTemps(Exp* pLhs, Exp* pRhs, Type* type     /* NULL */) {
  *                      want!
  * PARAMETERS:        None
  * RETURNS:            A pointer to the type
- *============================================================================*/
+ ******************************************************************************/
 Type* RTL::getType() {
     iterator it;
     for (it = stmtList.begin(); it != stmtList.end(); it++) {
@@ -543,7 +543,7 @@ Type* RTL::getType() {
  * NOTE:          Assumes that if there is a flag call Exp, then it is the last
  * PARAMETERS:      None
  * RETURNS:          Boolean as above
- *============================================================================*/
+ ******************************************************************************/
 bool RTL::areFlagsAffected() {
     if (stmtList.size() == 0) return false;
     // Get an iterator to the last RT
@@ -607,7 +607,7 @@ void RTL::simplify() {
  * PARAMETERS:        iReg: ref to integer to set with the register index
  *                    expOperand: ref to ptr to expression of operand
  * RETURNS:            True if found
- *============================================================================*/
+ ******************************************************************************/
 bool RTL::isCompare(int& iReg, Exp*& expOperand) {
     // Expect to see a subtract, then a setting of the flags
     // Dest of subtract should be a register (could be the always zero register)

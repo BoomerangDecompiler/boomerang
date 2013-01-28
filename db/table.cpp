@@ -12,7 +12,7 @@
  * FILE:       table.cc
  * OVERVIEW:   Provides the implementation of classes Table, OpTable, and
  *               ExprTable
- *============================================================================*/
+ ******************************************************************************/
 
 /*
  * 25 Feb 01 - Simon: sorted out dependancies

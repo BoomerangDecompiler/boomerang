@@ -9,12 +9,12 @@
  *
  */
 
-/*==============================================================================
+/***************************************************************************//**
  * FILE:       frontend.cpp
  * OVERVIEW:   This file contains common code for all front ends. The majority
  *                of frontend logic remains in the source dependent files such as
  *                frontsparc.cpp
- *============================================================================*/
+ ******************************************************************************/
 
 /*
  * $Revision$    // 1.89.2.7
@@ -60,14 +60,14 @@
 #include "log.h"
 #include "ansi-c-parser.h"
 
-/*==============================================================================
- * FUNCTION:      FrontEnd::FrontEnd
+/***************************************************************************//**
+ *
  * OVERVIEW:      Construct the FrontEnd object
  * PARAMETERS:      pBF: pointer to the BinaryFile object (loader)
  *                  prog: program being decoded
  *                  pbff: pointer to a BinaryFileFactory object (so the library can be unloaded)
- * RETURNS:          <N/a>
- *============================================================================*/
+ * \returns          <N/a>
+ ******************************************************************************/
 FrontEnd::FrontEnd(BinaryFile *pBF, Prog* prog, BinaryFileFactory* pbff) : pBF(pBF), pbff(pbff), prog(prog)
 {}
 
@@ -207,8 +207,7 @@ std::vector<ADDRESS> FrontEnd::getEntryPoints()
                 ADDRESS a = pBF->GetAddressByName(name, true);
                 if (a != NO_ADDRESS) {
                     ADDRESS setup, teardown;
-                    uint32_t vers;
-                    vers = pBF->readNative4(a);
+                    uint32_t vers = pBF->readNative4(a);
                     setup = ADDRESS::g(pBF->readNative4(a+4));
                     teardown = ADDRESS::g(pBF->readNative4(a+8));
                     if ( !setup.isZero() ) {
@@ -383,13 +382,13 @@ DecodeResult& FrontEnd::decodeInstruction(ADDRESS pc) {
     return decoder->decodeInstruction(pc, pBF->getTextDelta());
 }
 
-/*==============================================================================
- * FUNCTION:       FrontEnd::readLibrarySignatures
+/***************************************************************************//**
+ *
  * OVERVIEW:       Read the library signatures from a file
  * PARAMETERS:       sPath: The file to read from
  *                   cc: the calling convention assumed
- * RETURNS:           <nothing>
- *============================================================================*/
+ * \returns           <nothing>
+ ******************************************************************************/
 void FrontEnd::readLibrarySignatures(const char *sPath, callconv cc) {
     std::ifstream ifs;
 
@@ -447,8 +446,8 @@ Signature *FrontEnd::getLibSignature(const char *name) {
     return signature;
 }
 
-/*==============================================================================
- * FUNCTION:      FrontEnd::processProc
+/***************************************************************************//**
+ *
  * OVERVIEW:      Process a procedure, given a native (source machine) address.
  * PARAMETERS:      address - the address at which the procedure starts
  *                  pProc - the procedure object
@@ -457,8 +456,8 @@ Signature *FrontEnd::getLibSignature(const char *name) {
  *                  os - the output stream for .rtl output
  * NOTE:          This is a sort of generic front end. For many processors, this will be overridden
  *                    in the FrontEnd derived class, sometimes calling this function to do most of the work
- * RETURNS:          true for a good decode (no illegal instructions)
- *============================================================================*/
+ * \returns          true for a good decode (no illegal instructions)
+ ******************************************************************************/
 bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bool frag /* = false */,
                            bool spec /* = false */) {
     PBB pBB;                    // Pointer to the current basic block
@@ -1027,21 +1026,21 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
     return true;
 }
 
-/*==============================================================================
- * FUNCTION:    FrontEnd::getInst
+/***************************************************************************//**
+ *
  * OVERVIEW:    Fetch the smallest (nop-sized) instruction, in an endianness independent manner
  * NOTE:        Frequently overridden
  * PARAMETERS:    addr - host address to getch from
- * RETURNS:        An integer with the instruction in it
- *============================================================================*/
+ * \returns        An integer with the instruction in it
+ ******************************************************************************/
 //int FrontEnd::getInst(int addr)
 //{
 //    return (int)(*(unsigned char*)addr);
 //}
 
 
-/*==============================================================================
- * FUNCTION:    TargetQueue::visit
+/***************************************************************************//**
+ *
  * OVERVIEW:    Visit a destination as a label, i.e. check whether we need to queue it as a new BB to create later.
  *                Note: at present, it is important to visit an address BEFORE an out edge is added to that address.
  *                This is because adding an out edge enters the address into the Cfg's BB map, and it looks like the
@@ -1051,8 +1050,8 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
  *                uNewAddr - the address to be checked
  *                pNewBB - set to the lower part of the BB if the address
  *                already exists as a non explicit label (BB has to be split)
- * RETURNS:        <nothing>
- *============================================================================*/
+ * \returns        <nothing>
+ ******************************************************************************/
 void TargetQueue::visit(Cfg* pCfg, ADDRESS uNewAddr, PBB& pNewBB) {
     // Find out if we've already parsed the destination
     bool bParsed = pCfg->label(uNewAddr, pNewBB);
@@ -1065,25 +1064,25 @@ void TargetQueue::visit(Cfg* pCfg, ADDRESS uNewAddr, PBB& pNewBB) {
     }
 }
 
-/*==============================================================================
- * FUNCTION:    TargetQueue::initial
+/***************************************************************************//**
+ *
  * OVERVIEW:    Seed the queue with an initial address
  * NOTE:        Can be some targets already in the queue now
  * PARAMETERS:    uAddr: Native address to seed the queue with
- * RETURNS:        <nothing>
- *============================================================================*/
+ * \returns        <nothing>
+ ******************************************************************************/
 void TargetQueue::initial(ADDRESS uAddr) {
     targets.push(uAddr);
 }
 
-/*==============================================================================
- * FUNCTION:          TergetQueue::nextAddress
+/***************************************************************************//**
+ *
  * OVERVIEW:          Return the next target from the queue of non-processed
  *                      targets.
  * PARAMETERS:          cfg - the enclosing CFG
- * RETURNS:              The next address to process, or NO_ADDRESS if none
+ * \returns              The next address to process, or NO_ADDRESS if none
  *                        (targets is empty)
- *============================================================================*/
+ ******************************************************************************/
 ADDRESS TargetQueue::nextAddress(Cfg* cfg) {
     while (!targets.empty())
     {
@@ -1110,40 +1109,40 @@ void TargetQueue::dump() {
 }
 
 
-/*==============================================================================
- * FUNCTION:      decodeRtl
+/***************************************************************************//**
+ *
  * OVERVIEW:      Decode the RTL at the given address
  * PARAMETERS:      address - native address of the instruction
  *                  delta - difference between host and native addresses
  *                  decoder - decoder object
  * NOTE:          Only called from findCoverage()
- * RETURNS:          a pointer to the decoded RTL
- *============================================================================*/
+ * \returns          a pointer to the decoded RTL
+ ******************************************************************************/
 RTL* decodeRtl(ADDRESS address, int delta, NJMCDecoder* decoder) {
     DecodeResult inst = decoder->decodeInstruction(address, delta);
     RTL*    rtl    = inst.rtl;
     return rtl;
 }
 
-/*==============================================================================
- * FUNCTION:    FrontEnd::getProg
+/***************************************************************************//**
+ *
  * OVERVIEW:    Get a Prog object (mainly for testing and not decoding)
  * PARAMETERS:    None
- * RETURNS:        Pointer to a Prog object (with pFE and pBF filled in)
- *============================================================================*/
+ * \returns        Pointer to a Prog object (with pFE and pBF filled in)
+ ******************************************************************************/
 Prog* FrontEnd::getProg() {
     return prog;
 }
 
-/*==============================================================================
- * FUNCTION:    createReturnBlock
+/***************************************************************************//**
+ *
  * OVERVIEW:    Create a Return or a Oneway BB if a return statement already exists
  * PARAMETERS:    pProc: pointer to enclosing UserProc
  *                BB_rtls: list of RTLs for the current BB (not including pRtl)
  *                pRtl: pointer to the current RTL with the semantics for the return statement (including a
  *                    ReturnStatement as the last statement)
- * RETURNS:        Pointer to the newly created BB
- *============================================================================*/
+ * \returns        Pointer to the newly created BB
+ ******************************************************************************/
 PBB FrontEnd::createReturnBlock(UserProc* pProc, std::list<RTL*>* BB_rtls, RTL* pRtl) {
     Cfg* pCfg = pProc->getCFG();
     PBB pBB;

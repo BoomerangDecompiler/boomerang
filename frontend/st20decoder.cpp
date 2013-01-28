@@ -14,7 +14,7 @@
 /*==============================================================================
  * FILE:       decoder.m
  * OVERVIEW:   This file contains the high level decoding functionality, for matching ST-20 instructions.
- *============================================================================*/
+ ******************************************************************************/
 /*
  * $Revision$    // 1.2.2.2
  *
@@ -40,7 +40,7 @@
  * OVERVIEW:       A dummy function to suppress "unused local variable" messages
  * PARAMETERS:       x: integer variable to be "used"
  * RETURNS:           Nothing
- *============================================================================*/
+ ******************************************************************************/
 void ST20Decoder::unused(int x)
 {}
 
@@ -53,7 +53,7 @@ void ST20Decoder::unused(int x)
  *                   RTLDict - the dictionary of RTL templates used to instantiate the RTL for the instruction being decoded
  *                   proc - the enclosing procedure
  * RETURNS:           a DecodeResult structure containing all the information gathered during decoding
- *============================================================================*/
+ ******************************************************************************/
 static    DecodeResult result;
 DecodeResult& ST20Decoder::decodeInstruction (ADDRESS pc, int delta) {
     result.reset();                            // Clear the result structure (numBytes = 0 etc)
@@ -620,7 +620,7 @@ MATCH_finished_a: (void)0; /*placeholder for label*/
 
 /*==============================================================================
  * These are machine specific functions used to decode instruction operands into Exp*s.
- *============================================================================*/
+ ******************************************************************************/
 
 /**********************************
  * These are the fetch routines.
@@ -631,7 +631,7 @@ MATCH_finished_a: (void)0; /*placeholder for label*/
  * OVERVIEW:        Returns the word starting at the given address.
  * PARAMETERS:        lc - address at which to decode the double
  * RETURNS:            the decoded double
- *============================================================================*/
+ ******************************************************************************/
 Byte ST20Decoder::getByte (intptr_t lc)
 /* getByte - returns next byte from image pointed to by lc.     */
 {
@@ -643,7 +643,7 @@ Byte ST20Decoder::getByte (intptr_t lc)
  * OVERVIEW:        Returns the word starting at the given address.
  * PARAMETERS:        lc - address at which to decode the double
  * RETURNS:            the decoded double
- *============================================================================*/
+ ******************************************************************************/
 SWord ST20Decoder::getWord (intptr_t lc)
 /* get2Bytes - returns next 2-Byte from image pointed to by lc.     */
 {
@@ -655,7 +655,7 @@ SWord ST20Decoder::getWord (intptr_t lc)
  * OVERVIEW:        Returns the double starting at the given address.
  * PARAMETERS:        lc - address at which to decode the double
  * RETURNS:            the decoded double
- *============================================================================*/
+ ******************************************************************************/
 DWord ST20Decoder::getDword (intptr_t lc)
 /* get4Bytes - returns the next 4-Byte word from image pointed to by lc. */
 {
@@ -669,7 +669,7 @@ DWord ST20Decoder::getDword (intptr_t lc)
  * OVERVIEW:       Constructor. The code won't work without this (not sure why the default constructor won't do...)
  * PARAMETERS:       None
  * RETURNS:           N/A
- *============================================================================*/
+ ******************************************************************************/
 ST20Decoder::ST20Decoder() : NJMCDecoder(prog)
 {
     std::string file = Boomerang::get()->getProgPath() + "frontend/machine/st20/st20.ssl";

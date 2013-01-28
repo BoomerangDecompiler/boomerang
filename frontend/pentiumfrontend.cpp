@@ -12,7 +12,7 @@
  * FILE:       frontend/pentiumfrontend.cpp
  * OVERVIEW:   This file contains routines to manage the decoding of pentium instructions and the instantiation to RTLs.
  *               These functions replace frontend.cpp for decoding pentium instructions.
- *============================================================================*/
+ ******************************************************************************/
 
 /*
  * $Revision$    // 1.51.2.3
@@ -53,7 +53,7 @@
 
 /*==============================================================================
  * Forward declarations.
- *============================================================================*/
+ ******************************************************************************/
 
 #define FSW 40                // Numeric registers
 #define AH 12
@@ -64,7 +64,7 @@
  *                    reg
  * PARAMETERS:      s - Ptr to the given Statement
  * RETURNS:          True if it is
- *============================================================================*/
+ ******************************************************************************/
 bool PentiumFrontEnd::isStoreFsw(Statement* s) {
     if (!s->isAssign()) return false;
     Exp* rhs = ((Assign*)s)->getRight();
@@ -77,7 +77,7 @@ bool PentiumFrontEnd::isStoreFsw(Statement* s) {
  * OVERVIEW:      Return true if the given RTL is a decrement of register AH
  * PARAMETERS:      r - Ptr to the given RTL
  * RETURNS:          True if it is
- *============================================================================*/
+ ******************************************************************************/
 bool PentiumFrontEnd::isDecAh(RTL* r) {
     // Check for decrement; RHS of middle Exp will be r[12]{8} - 1
     if (r->getNumStmt() != 3) return false;
@@ -97,7 +97,7 @@ bool PentiumFrontEnd::isDecAh(RTL* r) {
  * OVERVIEW:      Return true if the given Statement is a setX instruction
  * PARAMETERS:      s - Ptr to the given Statement
  * RETURNS:          True if it is
- *============================================================================*/
+ ******************************************************************************/
 bool PentiumFrontEnd::isSetX(Statement* s) {
     // Check for SETX, i.e. <exp> ? 1 : 0
     // i.e. ?: <exp> Const 1 Const 0
@@ -118,7 +118,7 @@ bool PentiumFrontEnd::isSetX(Statement* s) {
  * OVERVIEW:      Return true if the given Statement is an expression whose RHS is a ?: ternary
  * PARAMETERS:      e - Ptr to the given Statement
  * RETURNS:          True if it is
- *============================================================================*/
+ ******************************************************************************/
 bool PentiumFrontEnd::isAssignFromTern(Statement* s) {
     if (!s->isAssign()) return false;
     Assign* asgn = (Assign*)s;
@@ -138,7 +138,7 @@ bool PentiumFrontEnd::isAssignFromTern(Statement* s) {
  *                      If registers are not replaced "all at once" like this, there can be subtle errors from
  *                      re-replacing already replaced registers
  * RETURNS:            Nothing
- *============================================================================*/
+ ******************************************************************************/
 void PentiumFrontEnd::bumpRegisterAll(Exp* e, int min, int max, int delta, int mask) {
     std::list<Exp**> li;
     std::list<Exp**>::iterator it;
@@ -165,7 +165,7 @@ void PentiumFrontEnd::bumpRegisterAll(Exp* e, int min, int max, int delta, int m
  *                  frag - true if decoding only a fragment of the proc
  *                  spec - true if a speculative decode
  * RETURNS:          True if successful decode
- *============================================================================*/
+ ******************************************************************************/
 bool PentiumFrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bool frag /* = false */,
                                   bool spec /* = false */) {
 
@@ -338,7 +338,7 @@ void PentiumFrontEnd::processFloatCode(Cfg* pCfg)
  *                    decremented to 7 with the first load, so r[39] should be used first, then r[38] etc. However, it is
  *                    reset to 0 for calls, so that if a function returns a float, then it will always appear in r[32]
  * RETURNS:          <nothing>
- *============================================================================*/
+ ******************************************************************************/
 void PentiumFrontEnd::processFloatCode(PBB pBB, int& tos, Cfg* pCfg)
 {
     std::list<RTL*>::iterator rit;
@@ -482,7 +482,7 @@ void PentiumFrontEnd::emitSet(std::list<RTL*>* BB_rtls, std::list<RTL*>::iterato
  *                    addr - the native address of this call instruction
  *                    lrtl - pointer to a list of RTL pointers for this BB
  * RETURNS:            true if a helper function is converted; false otherwise
- *============================================================================*/
+ ******************************************************************************/
 bool PentiumFrontEnd::helperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL*>* lrtl)
 {
     if (dest == NO_ADDRESS) return false;
@@ -549,7 +549,7 @@ bool PentiumFrontEnd::helperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL*>* lr
  * OVERVIEW:      Construct a new instance of PentiumFrontEnd
  * PARAMETERS:      Same as the FrontEnd constructor, except decoder is **
  * RETURNS:          <nothing>
- *============================================================================*/
+ ******************************************************************************/
 #ifdef DYNAMIC
 extern "C" {
 PentiumFrontEnd* construct(Prog *prog, NJMCDecoder** decoder) {
@@ -567,7 +567,7 @@ PentiumFrontEnd* construct(Prog *prog, NJMCDecoder** decoder) {
  *                    entries to point to this dynamic linked library
  * PARAMETERS:      Same as the FrontEnd constructor
  * RETURNS:          <N/A>
- *============================================================================*/
+ ******************************************************************************/
 PentiumFrontEnd::PentiumFrontEnd(BinaryFile *pBF, Prog* prog, BinaryFileFactory* pbff) : FrontEnd(pBF, prog, pbff),
     idPF(-1) {
     decoder = new PentiumDecoder(prog);
@@ -583,7 +583,7 @@ PentiumFrontEnd::~PentiumFrontEnd()
  * OVERVIEW:    Locate the starting address of "main" in the code section
  * PARAMETERS:    None
  * RETURNS:        Native pointer if found; NO_ADDRESS if not
- *============================================================================*/
+ ******************************************************************************/
 ADDRESS PentiumFrontEnd::getMainEntryPoint(bool& gotMain) {
     gotMain = true;
     ADDRESS start = pBF->GetMainEntryPoint();

@@ -9,10 +9,10 @@
  *
  */
 
-/*==============================================================================
+/***************************************************************************//**
  * FILE:       cfg.cpp
  * OVERVIEW:   Implementation of the CFG class.
- *============================================================================*/
+ ******************************************************************************/
 
 /*
  * $Revision$    // 1.95.2.5
@@ -22,9 +22,9 @@
  */
 
 
-/*==============================================================================
+/***************************************************************************//**
  * Dependencies.
- *============================================================================*/
+ ******************************************************************************/
 
 #include <cassert>
 #if defined(_MSC_VER) && _MSC_VER <= 1200
@@ -57,22 +57,22 @@ void erase_lrtls(std::list<RTL*>* pLrtl, std::list<RTL*>::iterator begin,
  * Cfg methods.
  **********************************/
 
-/*==============================================================================
- * FUNCTION:        Cfg::Cfg
+/***************************************************************************//**
+ *
  * OVERVIEW:
  * PARAMETERS:        <none>
- * RETURNS:            <nothing>
- *============================================================================*/
+ * \returns            <nothing>
+ ******************************************************************************/
 Cfg::Cfg()
     : entryBB(NULL), exitBB(NULL), m_bWellFormed(false), structured(false), lastLabel(0), bImplicitsDone(false)
 {}
 
-/*==============================================================================
- * FUNCTION:        Cfg::~Cfg
+/***************************************************************************//**
+ *
  * OVERVIEW:        Destructor. Note: destructs the component BBs as well
  * PARAMETERS:        <none>
- * RETURNS:            <nothing>
- *============================================================================*/
+ * \returns            <nothing>
+ ******************************************************************************/
 Cfg::~Cfg() {
     // Delete the BBs
     BB_IT it;
@@ -82,24 +82,23 @@ Cfg::~Cfg() {
         }
     }
 }
-
-/*==============================================================================
- * FUNCTION:        Cfg::setProc
+/***************************************************************************//**
+ *
  * OVERVIEW:        Set the pointer to the owning UserProc object
  * PARAMETERS:        proc - pointer to the owning UserProc object
- * RETURNS:            <nothing>
- *============================================================================*/
+ * \returns            <nothing>
+ ******************************************************************************/
 void Cfg::setProc(UserProc* proc)
 {
     myProc = proc;
 }
 
-/*==============================================================================
- * FUNCTION:        Cfg::clear
+/***************************************************************************//**
+ *
  * OVERVIEW:        Clear the CFG of all basic blocks, ready for decode
  * PARAMETERS:        <none>
- * RETURNS:            <nothing>
- *============================================================================*/
+ * \returns            <nothing>
+ ******************************************************************************/
 void Cfg::clear() {
     // Don't delete the BBs; this will delete any CaseStatements we want to save for the re-decode. Just let the garbage
     // collection take care of it.
@@ -115,12 +114,12 @@ void Cfg::clear() {
     lastLabel = 0;
 }
 
-/*==============================================================================
- * FUNCTION:        Cfg::operator=
+/***************************************************************************//**
+ *
  * OVERVIEW:
  * PARAMETERS:        <none>
- * RETURNS:            <nothing>
- *============================================================================*/
+ * \returns            <nothing>
+ ******************************************************************************/
 const Cfg& Cfg::operator=(const Cfg& other)
 {
     m_listBB = other.m_listBB;
@@ -129,16 +128,15 @@ const Cfg& Cfg::operator=(const Cfg& other)
     return *this;
 }
 
-/*==============================================================================
- * FUNCTION:        setEntryBB
+/***************************************************************************//**
+ *
  * OVERVIEW:        Set the entry and exut BB pointers
  * NOTE:            Each cfg should have only one exit node now
  * PARAMETERS:        bb: pointer to the entry BB
- * RETURNS:            nothing
- *============================================================================*/
+ * \returns            nothing
+ ******************************************************************************/
 void Cfg::setEntryBB(PBB bb) {
     BB_IT it;
-    entryBB = bb;
     for (it=m_listBB.begin(); it != m_listBB.end(); it++) {
         if ((*it)->getType() == RET) {
             exitBB = *it;
@@ -152,13 +150,14 @@ void Cfg::setExitBB(PBB bb) {
     exitBB = bb;
 }
 
-/*==============================================================================
- * FUNCTION:        checkEntryBB
+/***************************************************************************//**
+ *
+ *
  * OVERVIEW:        Check the entry BB pointer; if zero, emit error message
  *                      and return true
  * PARAMETERS:        <none>
- * RETURNS:            true if was null
- *============================================================================*/
+ * \returns            true if was null
+ ******************************************************************************/
 bool Cfg::checkEntryBB()
 {
     if (entryBB == NULL) {
@@ -172,13 +171,25 @@ bool Cfg::checkEntryBB()
     return false;
 }
 
-/*==============================================================================
- * FUNCTION:        Cfg::newBB
- * OVERVIEW:        Add a new basic block to this cfg
- * PARAMETERS:        pRtls: list of pointers to RTLs to initialise the BB with bbType: the type of the BB (e.g. TWOWAY)
- *                    iNumOutEdges: number of out edges this BB will eventually have
- * RETURNS:            Pointer to the newly created BB, or 0 if there is already an incomplete BB with the same address
- *============================================================================*/
+/***************************************************************************//**
+ *
+ * \brief        Add a new basic block to this cfg
+ *
+ * Checks to see if the address associated with pRtls is already in the map as an incomplete BB; if so, it is
+ * completed now and a pointer to that BB is returned. Otherwise, allocates memory for a new basic block node,
+ * initializes its list of RTLs with pRtls, its type to the given type, and allocates enough space to hold
+ * pointers to the out-edges (based on given numOutEdges).
+ * The native address associated with the start of the BB is taken from pRtls, and added to the map (unless 0).
+ * \note You cannot assume that the returned BB will have the RTL associated with pStart as its first RTL, since
+ * the BB could be split. You can however assume that the returned BB is suitable for adding out edges (i.e. if
+ * the BB is split, you get the "bottom" part of the BB, not the "top" (with lower addresses at the "top").
+ * Returns NULL if not successful, or if there already exists a completed BB at this address (this can happen
+ * with certain kinds of forward branches).
+ *
+ * \param   pRtls list of pointers to RTLs to initialise the BB with bbType: the type of the BB (e.g. TWOWAY)
+ * \param   iNumOutEdges number of out edges this BB will eventually have
+ * \returns Pointer to the newly created BB, or 0 if there is already an incomplete BB with the same address
+ ******************************************************************************/
 PBB Cfg::newBB(std::list<RTL*>* pRtls, BBTYPE bbType, int iNumOutEdges) throw(BBAlreadyExistsError)
 {
     MAPBB::iterator mi;
@@ -288,13 +299,15 @@ PBB Cfg::newBB(std::list<RTL*>* pRtls, BBTYPE bbType, int iNumOutEdges) throw(BB
 }
 
 // Use this function when there are outedges to BBs that are not created yet. Usually used via addOutEdge()
-/*==============================================================================
- * FUNCTION:        Cfg::newIncompleteBB
+/***************************************************************************//**
+ *
  * OVERVIEW:
- * PARAMETERS:        <none>
- * RETURNS:            <nothing>
- *============================================================================*/
-PBB Cfg::newIncompleteBB(ADDRESS addr)
+ *
+ * Allocates space for a new, incomplete BB, and the given address is added to the map. This BB will have to be
+ * completed before calling WellFormCfg. This function will commonly be called via AddOutEdge()
+ * \returns           pointer to allocated BasicBlock
+ ******************************************************************************/
+BasicBlock * Cfg::newIncompleteBB(ADDRESS addr)
 {
     // Create a new (basically empty) BB
     PBB pBB = new BasicBlock();
@@ -304,18 +317,22 @@ PBB Cfg::newIncompleteBB(ADDRESS addr)
     return pBB;
 }
 
-/*==============================================================================
- * FUNCTION:        Cfg::addOutEdge
- * OVERVIEW:        Add an out edge to this BB (and the in-edge to the dest BB)
- *                    May also set a label
- * NOTE:            Overloaded with address as 2nd argument (calls this proc in the end)
- * NOTE ALSO:        Does not increment m_iNumOutEdges; this is supposed to be constant for a BB.
+/***************************************************************************//**
+ *
+ * \brief Add an out edge to this BB (and the in-edge to the dest BB)
+ *                  May also set a label
+ *
+ * Adds an out-edge to the basic block pBB by filling in the first slot that is empty.    Note: a pointer to a BB
+ * is given here.
+ *
+ * \note    Overloaded with address as 2nd argument (calls this proc in the end)
+ * \note    Does not increment m_iNumOutEdges; this is supposed to be constant for a BB.
  *                      (But see BasicBlock::addNewOutEdge())
- * PARAMETERS:        pBB: source BB (to have the out edge added to)
- *                    pDestBB: destination BB (to have the out edge point to)
- * RETURNS:            <nothing>
- *============================================================================*/
-void Cfg::addOutEdge(PBB pBB, PBB pDestBB, bool bSetLabel /* = false */)
+ * \param   pBB source BB (to have the out edge added to)
+ * \param   pDestBB destination BB (to have the out edge point to)
+ * \returns            <nothing>
+ ******************************************************************************/
+void Cfg::addOutEdge(BasicBlock * pBB, BasicBlock * pDestBB, bool bSetLabel /* = false */)
 {
     // Add the given BB pointer to the list of out edges
     pBB->m_OutEdges.push_back(pDestBB);
@@ -323,20 +340,26 @@ void Cfg::addOutEdge(PBB pBB, PBB pDestBB, bool bSetLabel /* = false */)
     // Add the in edge to the destination BB
     pDestBB->m_InEdges.push_back(pBB);
     pDestBB->m_iNumInEdges++;            // Inc the count
-    if (bSetLabel) setLabel(pDestBB);    // Indicate "label required"
+    if (bSetLabel)
+        setLabel(pDestBB);    // Indicate "label required"
 }
 
-/*==============================================================================
- * FUNCTION:        Cfg::addOutEdge
+/***************************************************************************//**
+ *
  * OVERVIEW:        Add an out edge to this BB (and the in-edge to the dest BB)
  *                    May also set a label
+ *
+ * Adds an out-edge to the basic block pBB by filling in the first slot that is empty.    Note: an address is
+ * given here; the out edge will be filled in as a pointer to a BB. An incomplete BB will be created if
+ * required. If bSetLabel is true, the destination BB will have its "label required" bit set.
+ *
  * NOTE:            Calls the above
  * PARAMETERS:        pBB: source BB (to have the out edge added to)
  *                    addr: source address of destination (the out edge is to point to the BB whose lowest address is
  *                      addr)
  *                    bSetLabel: if true, set a label at the destination address.  Set true on "true" branches of labels
- * RETURNS:            <nothing>
- *============================================================================*/
+ * \returns            <nothing>
+ ******************************************************************************/
 void Cfg::addOutEdge(PBB pBB, ADDRESS addr, bool bSetLabel /* = false */)
 {
     // Check to see if the address is in the map, i.e. we already have a BB for this address
@@ -353,35 +376,38 @@ void Cfg::addOutEdge(PBB pBB, ADDRESS addr, bool bSetLabel /* = false */)
     addOutEdge(pBB, pDestBB, bSetLabel);
 }
 
-/*==============================================================================
- * FUNCTION:        Cfg::existsBB
- * OVERVIEW:        Return true if the given address is the start of a basic block, complete or not
- * PARAMETERS:        uNativeAddr: native address to look up
- * RETURNS:            True if uNativeAddr starts a BB
- *============================================================================*/
-// Note: must ignore entries with a null pBB, since these are caused by
-// calls to Label that failed, i.e. the instruction is not decoded yet.
+/***************************************************************************//**
+ *
+ * \brief        Return true if the given address is the start of a basic block, complete or not
+ *
+ * Just checks to see if there exists a BB starting with this native address. If not, the address is NOT added
+ * to the map of labels to BBs.
+ * \note must ignore entries with a null pBB, since these are caused by
+ * calls to Label that failed, i.e. the instruction is not decoded yet.
+ *
+ * \param        uNativeAddr: native address to look up
+ * \returns      True if uNativeAddr starts a BB
+ ******************************************************************************/
 bool Cfg::existsBB (ADDRESS uNativeAddr)
 {
     MAPBB::iterator mi;
     mi = m_mapBB.find (uNativeAddr);
     return (mi != m_mapBB.end() && (*mi).second);
 }
-
-/*==============================================================================
- * FUNCTION:    Cfg::splitBB (private)
- * OVERVIEW:    Split the given basic block at the RTL associated with uNativeAddr. The first node's type becomes
- *                fall-through and ends at the RTL prior to that associated with uNativeAddr.  The second node's type
- *                becomes the type of the original basic block (pBB), and its out-edges are those of the original basic
- *                block. In edges of the new BB's descendants are changed.
+/***************************************************************************//**
+ *
+ * Split the given basic block at the RTL associated with uNativeAddr. The first node's type becomes
+ * fall-through and ends at the RTL prior to that associated with uNativeAddr.  The second node's type becomes
+ * the type of the original basic block (pBB), and its out-edges are those of the original basic block.
+ * In edges of the new BB's descendants are changed.
  * PRECONDITION: assumes uNativeAddr is an address within the boundaries of the given basic block.
- * PARAMETERS:    pBB -  pointer to the BB to be split
- *                uNativeAddr - address of RTL to become the start of the new BB
- *                pNewBB -  if non zero, it remains as the "bottom" part of the BB, and splitBB only modifies the top part *                to not overlap.
- *                bDelRtls - if true, deletes the RTLs removed from the existing BB after the split point. Only used if
+ * \param   pBB -  pointer to the BB to be split
+ * \param   uNativeAddr - address of RTL to become the start of the new BB
+ * \param   pNewBB -  if non zero, it remains as the "bottom" part of the BB, and splitBB only modifies the top part *                to not overlap.
+ * \param   bDelRtls - if true, deletes the RTLs removed from the existing BB after the split point. Only used if
  *                there is an overlap with existing instructions
- * RETURNS:        Returns a pointer to the "bottom" (new) part of the split BB.
- *============================================================================*/
+ * \returns Returns a pointer to the "bottom" (new) part of the split BB.
+ ******************************************************************************/
 PBB Cfg::splitBB (PBB pBB, ADDRESS uNativeAddr, PBB pNewBB /* = 0 */, bool bDelRtls /* = false */) {
     std::list<RTL*>::iterator ri;
 
@@ -469,32 +495,50 @@ PBB Cfg::splitBB (PBB pBB, ADDRESS uNativeAddr, PBB pNewBB /* = 0 */, bool bDelR
     return pNewBB;
 }
 
-/*==============================================================================
- * FUNCTION:        Cfg::getFirstBB
- * OVERVIEW:        Get the first BB of this cfg
- * PARAMETERS:        it: set to an value that must be passed to getNextBB
- * RETURNS:            Pointer to the first BB this cfg, or NULL if none
- *============================================================================*/
+/***************************************************************************//**
+ *
+ * \brief Get the first BB of this cfg
+ *
+ * Gets a pointer to the first BB this cfg. Also initialises `it' so that calling GetNextBB will return the
+ * second BB, etc.  Also, *it is the first BB.  Returns 0 if there are no BBs this CFG.
+ *
+ * \param       it set to an value that must be passed to getNextBB
+ * \returns     Pointer to the first BB this cfg, or NULL if none
+ ******************************************************************************/
 PBB Cfg::getFirstBB(BB_IT& it)
 {
-    if ((it = m_listBB.begin()) == m_listBB.end()) return 0;
+    it = m_listBB.begin();
+    if (it == m_listBB.end())
+        return 0;
     return *it;
 }
 
-/*==============================================================================
- * FUNCTION:        Cfg::getNextBB
- * OVERVIEW:        Get the next BB this cfg. Basically increments the given iterator and returns it
+/***************************************************************************//**
+ *
+ * \brief Get the next BB this cfg. Basically increments the given iterator and returns it
+ *
+ * Gets a pointer to the next BB this cfg. `it' must be from a call to GetFirstBB(), or from a subsequent call
+ * to GetNextBB().  Also, *it is the current BB.  Returns 0 if there are no more BBs this CFG.
  * PARAMETERS:        iterator from a call to getFirstBB or getNextBB
- * RETURNS:            pointer to the BB, or NULL if no more
- *============================================================================*/
-PBB Cfg::getNextBB(BB_IT& it)
+ * \returns            pointer to the BB, or NULL if no more
+ ******************************************************************************/
+BasicBlock * Cfg::getNextBB(BB_IT& it)
 {
-    if (++it == m_listBB.end()) return 0;
+    if (++it == m_listBB.end())
+        return 0;
     return *it;
 }
-
-/*==============================================================================
- * FUNCTION:    Cfg::label
+/*
+ * Checks whether the given native address is a label (explicit or non explicit) or not.  Explicit labels are
+ * addresses that have already been tagged as being labels due to transfers of control to that address.
+ * Non explicit labels are those that belong to basic blocks that have already been constructed (i.e. have
+ * previously been parsed) and now need to be made explicit labels.     In the case of non explicit labels, the
+ * basic block is split into two and types and edges are adjusted accordingly. pNewBB is set to the lower part
+ * of the split BB.
+ * Returns true if the native address is that of an explicit or non explicit label, false otherwise.
+ */
+/***************************************************************************//**
+ *
  * OVERVIEW:    Checks whether the given native address is a label (explicit or non explicit) or not. Returns false for
  *                incomplete BBs.  So it returns true iff the address has already been decoded in some BB. If it was not
  *                already a label (i.e. the first instruction of some BB), the BB is split so that it becomes a label.
@@ -506,11 +550,11 @@ PBB Cfg::getNextBB(BB_IT& it)
  *                address of the new (lower) part of the split BB.
  *                If there is an incomplete entry in the table for this address which overlaps with a completed address,
  *                the completed BB is split and the BB for this address is completed.
- * PARAMETERS:    uNativeAddress - native (source) address to check
- *                pCurBB - See above
- * RETURNS:        True if uNativeAddr is a label, i.e. (now) the start of a BB
+ * \param         uNativeAddress - native (source) address to check
+ * \param         pCurBB - See above
+ * \returns       True if uNativeAddr is a label, i.e. (now) the start of a BB
  *                Note: pCurBB may be modified (as above)
- *============================================================================*/
+ ******************************************************************************/
 bool Cfg::label ( ADDRESS uNativeAddr, PBB& pCurBB )
 {
     MAPBB::iterator mi, newi;
@@ -589,12 +633,16 @@ bool Cfg::label ( ADDRESS uNativeAddr, PBB& pCurBB )
 }
 
 // Return true if there is an incomplete BB already at this address
-/*==============================================================================
- * FUNCTION:        Cfg::isIncomplete
- * OVERVIEW:        Return true if given address is the start of an incomplete basic block
- * PARAMETERS:        uAddr: Address to look up
- * RETURNS:            True if uAddr starts an incomplete BB
- *============================================================================*/
+/***************************************************************************//**
+ *
+ * \brief        Return true if given address is the start of an incomplete basic block
+ *
+ * Checks whether the given native address is in the map. If not, returns false. If so, returns true if it is
+ * incomplete. Otherwise, returns false.
+ *
+ * \param       uAddr Address to look up
+ * \returns     True if uAddr starts an incomplete BB
+ ******************************************************************************/
 bool Cfg::isIncomplete(ADDRESS uAddr)
 {
     MAPBB::iterator mi = m_mapBB.find(uAddr);
@@ -602,29 +650,28 @@ bool Cfg::isIncomplete(ADDRESS uAddr)
         // No entry at all
         return false;
     // Else, there is a BB there. If it's incomplete, return true
-    PBB pBB = (*mi).second;
+    BasicBlock * pBB = (*mi).second;
     return pBB->m_bIncomplete;
 }
 
-/*==============================================================================
- * FUNCTION:        Cfg::sortByAddress
- * OVERVIEW:        Sorts the BBs in a cfg by first address. Just makes it more convenient to read when BBs are
- *                    iterated.
- * PARAMETERS:        <none>
- * RETURNS:            <nothing>
- *============================================================================*/
-
+/***************************************************************************//**
+ *
+ * \brief   Sorts the BBs in a cfg by first address. Just makes it more convenient to read when BBs are
+ * iterated.
+ *
+ * Sorts the BBs in the CFG according to the low address of each BB.  Useful because it makes printouts easier,
+ * if they used iterators to traverse the list of BBs.
+ *
+ ******************************************************************************/
 void Cfg::sortByAddress()
 {
     m_listBB.sort(BasicBlock::lessAddress);
 }
 
-/*==============================================================================
- * FUNCTION:        Cfg::sortByFirstDFT
- * OVERVIEW:        Sorts the BBs in a cfg by their first DFT numbers.
- * PARAMETERS:        <none>
- * RETURNS:            <nothing>
- *============================================================================*/
+/***************************************************************************//**
+ *
+ * \brief        Sorts the BBs in a cfg by their first DFT numbers.
+ ******************************************************************************/
 void Cfg::sortByFirstDFT()
 {
 #ifndef _WIN32
@@ -639,12 +686,9 @@ void Cfg::sortByFirstDFT()
 #endif
 }
 
-/*==============================================================================
- * FUNCTION:        Cfg::sortByLastDFT
- * OVERVIEW:        Sorts the BBs in a cfg by their last DFT numbers.
- * PARAMETERS:        <none>
- * RETURNS:            <nothing>
- *============================================================================*/
+/***************************************************************************//**
+ * \brief        Sorts the BBs in a cfg by their last DFT numbers.
+ ******************************************************************************/
 void Cfg::sortByLastDFT()
 {
 #ifndef _WIN32
@@ -659,12 +703,9 @@ void Cfg::sortByLastDFT()
 #endif
 }
 
-/*==============================================================================
- * FUNCTION:        Cfg::updateVectorBB
- * OVERVIEW:        Updates m_vectorBB to m_listBB
- * PARAMETERS:        <none>
- * RETURNS:            <nothing>
- *============================================================================*/
+/***************************************************************************//**
+ * \brief        Updates m_vectorBB to m_listBB
+ ******************************************************************************/
 void Cfg::updateVectorBB()
 {
     m_vectorBB.clear();
@@ -673,13 +714,15 @@ void Cfg::updateVectorBB()
 }
 
 
-/*==============================================================================
- * FUNCTION:        Cfg::wellFormCfg
+/***************************************************************************//**
+ *
  * OVERVIEW:        Checks that all BBs are complete, and all out edges are valid. However, ADDRESSes that are
  *                    interprocedural out edges are not checked or changed.
- * PARAMETERS:        <none>
- * RETURNS:            transformation was successful
- *============================================================================*/
+ * Transforms the input machine-dependent cfg, which has ADDRESS labels for each out-edge, into a machine-
+ * independent cfg graph (i.e. a well-formed graph) which has references to basic blocks for each out-edge.
+ * Returns false if not successful.
+ * \returns            True if transformation was successful
+ ******************************************************************************/
 bool Cfg::wellFormCfg()
 {
     m_bWellFormed = true;
@@ -748,12 +791,14 @@ bool Cfg::wellFormCfg()
     return m_bWellFormed;
 }
 
-/*==============================================================================
- * FUNCTION:        Cfg::mergeBBs
- * OVERVIEW:
- * PARAMETERS:        <none>
- * RETURNS:            <nothing>
- *============================================================================*/
+/***************************************************************************//**
+ *
+ * Given two basic blocks that belong to a well-formed graph, merges the second block onto the first one and
+ * returns the new block.  The in and out edges links are updated accordingly.
+ * Note that two basic blocks can only be merged if each has a unique out-edge and in-edge respectively, and
+ * these edges correspond to each other.
+ * \returns            true if the blocks are merged.
+ ******************************************************************************/
 bool Cfg::mergeBBs( PBB pb1, PBB pb2)
 {
     // Can only merge if pb1 has only one outedge to pb2, and pb2 has only one in-edge, from pb1. This can only be done
@@ -770,13 +815,17 @@ bool Cfg::mergeBBs( PBB pb1, PBB pb2)
     return true;
 }
 
-/*==============================================================================
- * FUNCTION:        Cfg::completeMerge
+/***************************************************************************//**
+ *
  * OVERVIEW:        Complete the merge of two BBs by adjusting in and out edges.  If bDelete is true, delete pb1
+ *
+ * Completes the merge of pb1 and pb2 by adjusting out edges. No checks are made that the merge is valid
+ * (hence this is a private function) Deletes pb1 if bDelete is true
+ *
  * PARAMETERS:        pb1, pb2: pointers to the two BBs to merge
  *                    bDelete: if true, pb1 is deleted as well
- * RETURNS:            <nothing>
- *============================================================================*/
+ * \returns            <nothing>
+ ******************************************************************************/
 void Cfg::completeMerge(PBB pb1, PBB pb2, bool bDelete = false)
 {
     // First we replace all of pb1's predecessors' out edges that used to point to pb1 (usually only one of these) with
@@ -810,13 +859,19 @@ void Cfg::completeMerge(PBB pb1, PBB pb2, bool bDelete = false)
     }
 }
 
-/*==============================================================================
- * FUNCTION:        Cfg::joinBB
- * OVERVIEW:        Amalgamate the RTLs for pb1 and pb2, and place the result into pb2
- * PARAMETERS:        pb1, pb2: pointers to the BBs to join
- * ASSUMES:            Fallthrough of *pb1 is *pb2
- * RETURNS:            True if successful
- *============================================================================*/
+/***************************************************************************//**
+ *
+ * \brief Amalgamate the RTLs for pb1 and pb2, and place the result into pb2
+ *
+ * This is called where a two-way branch is deleted, thereby joining a two-way BB with it's successor.
+ * This happens for example when transforming Intel floating point branches, and a branch on parity is deleted.
+ * The joined BB becomes the type of the successor.
+ *
+ * \note Assumes that fallthrough of *pb1 is *pb2
+ *
+ * \param        pb1, pb2 pointers to the BBs to join
+ * \returns            True if successful
+ ******************************************************************************/
 bool Cfg::joinBB(PBB pb1, PBB pb2)
 {
     // Ensure that the fallthrough case for pb1 is pb2
@@ -843,13 +898,17 @@ void Cfg::removeBB( PBB bb)
     m_listBB.erase(bbit);
 }
 
-/*==============================================================================
- * FUNCTION:        Cfg::compressCfg
- * OVERVIEW:        Compress the CFG. For now, it only removes BBs that are
- *                      just branches
- * PARAMETERS:        <none>
- * RETURNS:            False if not well formed; true otherwise
- *============================================================================*/
+/***************************************************************************//**
+ *
+ * \brief   Compress the CFG. For now, it only removes BBs that are just branches
+ *
+ * Given a well-formed cfg graph, optimizations are performed on the graph to reduce the number of basic blocks
+ * and edges.
+ * Optimizations performed are: removal of branch chains (i.e. jumps to jumps), removal of redundant jumps (i.e.
+ *  jump to the next instruction), merge basic blocks where possible, and remove redundant basic blocks created
+ *  by the previous optimizations.
+ * \returns            Returns false if not successful.
+ ******************************************************************************/
 bool Cfg::compressCfg()
 {
     // must be well formed
@@ -916,12 +975,14 @@ bool Cfg::compressCfg()
     return true;
 }
 
-/*==============================================================================
- * FUNCTION:        Cfg::unTraverse
- * OVERVIEW:        Reset all the traversed flags.
- * PARAMETERS:        <none>
- * RETURNS:            <nothing>
- *============================================================================*/
+/***************************************************************************//**
+ *
+ * \breif   Reset all the traversed flags.
+ *
+ * Reset all the traversed flags.
+ * To make this a useful public function, we need access to the traversed flag with other public functions.
+ *
+ ******************************************************************************/
 void Cfg::unTraverse()
 {
     for (BB_IT it = m_listBB.begin(); it != m_listBB.end(); it++)
@@ -931,17 +992,16 @@ void Cfg::unTraverse()
     }
 }
 
-/*==============================================================================
- * FUNCTION:        Cfg::establishDFTOrder
+/***************************************************************************//**
+ *
  * OVERVIEW:        Given a well-formed cfg graph, a partial ordering is established between the nodes. The ordering is
  *                    based on the final visit to each node during a depth first traversal such that if node n1 was
  *                    visited for the last time before node n2 was visited for the last time, n1 will be less than n2.
  *                    The return value indicates if all nodes where ordered. This will not be the case for incomplete CFGs
  *                    (e.g. switch table not completely recognised) or where there are nodes unreachable from the entry
  *                    node.
- * PARAMETERS:        <none>
- * RETURNS:            all nodes where ordered
- *============================================================================*/
+ * \returns            all nodes where ordered
+ ******************************************************************************/
 bool Cfg::establishDFTOrder()
 {
     // Must be well formed.
@@ -978,13 +1038,13 @@ PBB Cfg::findRetNode()
     return retNode;
 }
 
-/*==============================================================================
- * FUNCTION:        Cfg::establishRevDFTOrder
+/***************************************************************************//**
+ *
  * OVERVIEW:        Performs establishDFTOrder on the reverse (flip) of the graph, assumes: establishDFTOrder has
  *                    already been called
  * PARAMETERS:        <none>
- * RETURNS:            all nodes where ordered
- *============================================================================*/
+ * \returns            all nodes where ordered
+ ******************************************************************************/
 bool Cfg::establishRevDFTOrder()
 {
     // Must be well formed.
@@ -1011,23 +1071,22 @@ bool Cfg::establishRevDFTOrder()
     return numTraversed == m_listBB.size();
 }
 
-/*==============================================================================
- * FUNCTION:        Cfg::isWellFormed
- * OVERVIEW:
- * PARAMETERS:        <none>
- * RETURNS:            <nothing>
- *============================================================================*/
+/***************************************************************************//**
+ *
+ * \brief Query the wellformed'ness status
+ * \returns m_bWellFormed
+ ******************************************************************************/
 bool Cfg::isWellFormed()
 {
     return m_bWellFormed;
 }
 
-/*==============================================================================
- * FUNCTION:        Cfg::isOrphan
- * OVERVIEW:
- * PARAMETERS:        <none>
- * RETURNS:            <nothing>
- *============================================================================*/
+/***************************************************************************//**
+ *
+ * \brief Return true if there is a BB at the address given whose first RTL is an orphan,
+ * i.e. GetAddress() returns 0.
+ * \returns            <nothing>
+ ******************************************************************************/
 bool Cfg::isOrphan(ADDRESS uAddr)
 {
     MAPBB::iterator mi = m_mapBB.find(uAddr);
@@ -1041,13 +1100,17 @@ bool Cfg::isOrphan(ADDRESS uAddr)
     return pBB->m_pRtls->front()->getAddress().isZero();
 }
 
-/*==============================================================================
- * FUNCTION:        Cfg::pbbToIndex
- * OVERVIEW:        Return an index for the given PBB
- * NOTE:            Linear search: O(N) complexity
- * PARAMETERS:        <none>
- * RETURNS:            Index, or -1 for unknown PBB
- *============================================================================*/
+/***************************************************************************//**
+ *
+ * \brief   Return an index for the given PBB
+ *
+ * Given a pointer to a basic block, return an index (e.g. 0 for the first basic block, 1 for the next, ... n-1
+ * for the last BB.
+ *
+ * \note Linear search: O(N) complexity
+ * \param pBB - BasicBlock to find
+ * \returns     Index, or -1 for unknown PBB
+ ******************************************************************************/
 int Cfg::pbbToIndex (PBB pBB) {
     BB_IT it = m_listBB.begin();
     int i = 0;
@@ -1058,35 +1121,35 @@ int Cfg::pbbToIndex (PBB pBB) {
     return -1;
 }
 
-/*==============================================================================
- * FUNCTION:        Cfg::addCall
+/***************************************************************************//**
+ *
  * OVERVIEW:        Add a call to the set of calls within this procedure.
  * PARAMETERS:        call - a call instruction
- * RETURNS:            <nothing>
- *============================================================================*/
+ * \returns            <nothing>
+ ******************************************************************************/
 void Cfg::addCall(CallStatement* call)
 {
     callSites.insert(call);
 }
 
-/*==============================================================================
- * FUNCTION:        Cfg::getCalls
+/***************************************************************************//**
+ *
  * OVERVIEW:        Get the set of calls within this procedure.
  * PARAMETERS:        <none>
- * RETURNS:            the set of calls within this procedure
- *============================================================================*/
+ * \returns            the set of calls within this procedure
+ ******************************************************************************/
 std::set<CallStatement*>& Cfg::getCalls()
 {
     return callSites;
 }
 
-/*==============================================================================
- * FUNCTION:        Cfg::searchAndReplace
+/***************************************************************************//**
+ *
  * OVERVIEW:        Replace all instances of search with replace.
  * PARAMETERS:        search - a location to search for
  *                    replace - the expression with which to replace it
- * RETURNS:            <nothing>
- *============================================================================*/
+ * \returns            <nothing>
+ ******************************************************************************/
 void Cfg::searchAndReplace(Exp* search, Exp* replace) {
     for (BB_IT bb_it = m_listBB.begin(); bb_it != m_listBB.end(); bb_it++) {
         std::list<RTL*>& rtls = *((*bb_it)->getRTLs());
@@ -1110,12 +1173,12 @@ bool Cfg::searchAll(Exp *search, std::list<Exp*> &result)
     return ch;
 }
 
-/*==============================================================================
- * FUNCTION:    delete_lrtls
+/***************************************************************************//**
+ *
  * OVERVIEW:    "deep" delete for a list of pointers to RTLs
  * PARAMETERS:    pLrtl - the list
- * RETURNS:        <none>
- *============================================================================*/
+ * \returns        <none>
+ ******************************************************************************/
 void delete_lrtls(std::list<RTL*>* pLrtl)
 {
     std::list<RTL*>::iterator it;
@@ -1124,14 +1187,14 @@ void delete_lrtls(std::list<RTL*>* pLrtl)
     }
 }
 
-/*==============================================================================
- * FUNCTION:    erase_lrtls
+/***************************************************************************//**
+ *
  * OVERVIEW:    "deep" erase for a list of pointers to RTLs
  * PARAMETERS:    pLrtls - the list
  *                begin - iterator to first (inclusive) item to delete
  *                end - iterator to last (exclusive) item to delete
- * RETURNS:        <none>
- *============================================================================*/
+ * \returns        <none>
+ ******************************************************************************/
 void erase_lrtls(std::list<RTL*>* pLrtl, std::list<RTL*>::iterator begin,
                  std::list<RTL*>::iterator end)
 {
@@ -1141,30 +1204,39 @@ void erase_lrtls(std::list<RTL*>* pLrtl, std::list<RTL*>::iterator begin,
     }
     pLrtl->erase(begin, end);
 }
+/*
+ *
+ */
 
-/*==============================================================================
- * FUNCTION:        Cfg::setLabel
- * OVERVIEW:        Sets a flag indicating that this BB has a label, in the sense that a label is required in the
- *                    translated source code
- * PARAMETERS:        pBB: Pointer to the BB whose label will be set
- * RETURNS:            <nothing>
- *============================================================================*/
-void Cfg::setLabel(PBB pBB) {
+/***************************************************************************//**
+ *
+ * \brief Adds a label for the given basicblock. The label number will be a non-zero integer
+ *
+ *        Sets a flag indicating that this BB has a label, in the sense that a label is required in the
+ * translated source code
+ * \note         The label is only set if it was not set previously
+ * \param        pBB Pointer to the BB whose label will be set
+ ******************************************************************************/
+void Cfg::setLabel(BasicBlock * pBB) {
     if (pBB->m_iLabelNum == 0)
         pBB->m_iLabelNum = ++lastLabel;
 }
 
-/*==============================================================================
- * FUNCTION:        Cfg::addNewOutEdge
- * OVERVIEW:        Append a new out-edge from the given BB to the other given BB
- *                    Needed for example when converting a one-way BB to a two-way BB
- * NOTE:            Use BasicBlock::setOutEdge() for the common case where an existing out edge is merely changed
- * NOTE ALSO:        Use Cfg::addOutEdge for ordinary BB creation; this is for unusual cfg manipulation
- * PARAMETERS:        pFromBB: pointer to the BB getting the new out edge
- *                    pNewOutEdge: pointer to BB that will be the new successor
- * SIDE EFFECTS:    Increments m_iNumOutEdges
- * RETURNS:            <nothing>
- *============================================================================*/
+/***************************************************************************//**
+ *
+ * \breif Set an additional new out edge to a given value
+ *
+ * Append a new out-edge from the given BB to the other given BB
+ * Needed for example when converting a one-way BB to a two-way BB
+ *
+ * \note        Use BasicBlock::setOutEdge() for the common case where an existing out edge is merely changed
+ * \note        Use Cfg::addOutEdge for ordinary BB creation; this is for unusual cfg manipulation
+ * \note        side effect : Increments m_iNumOutEdges
+ *
+ * \param pFromBB pointer to the BB getting the new out edge
+ * \param pNewOutEdge pointer to BB that will be the new successor
+ * \returns            <nothing>
+ ******************************************************************************/
 void Cfg::addNewOutEdge(PBB pFromBB, PBB pNewOutEdge)
 {
     pFromBB->m_OutEdges.push_back(pNewOutEdge);
@@ -1833,13 +1905,13 @@ void dumpBB(PBB bb) {
 }
 
 /*    pBB-> +----+    +----+ <-pBB
- * Change | A  | to | A     | where A and B could be empty. S is the string
- *          |       |    |     | instruction (with will branch to itself and to the
+ *   Change | A  | to | A  | where A and B could be empty. S is the string
+ *          |    |    |    | instruction (with will branch to itself and to the
  *          +----+    +----+ start of the next instruction, i.e. the start of B,
  *          | S  |      |       if B is non empty).
  *          +----+      V
  *          | B  |    +----+ <-skipBB
- *          |       |    +-b1-+              b1 is just a branch for the skip part
+ *          |    |    +-b1-+              b1 is just a branch for the skip part
  *          +----+      |
  *                      V
  *                    +----+ <-rptBB
@@ -1848,13 +1920,16 @@ void dumpBB(PBB bb) {
  *                      |
  *                      V
  *                    +----+ <-newBb
- *                    | B     |
- *                    |     |
+ *                    | B  |
+ *                    |    |
  *                    +----+
  * S is an RTL with 6 statements representing one string instruction (so this function is highly specialised for the job
  * of replacing the %SKIP and %RPT parts of string instructions)
  */
-
+/**
+ * Split the given BB at the RTL given, and turn it into the BranchStatement given. Sort out all the in and out
+ * edges.
+ */
 PBB Cfg::splitForBranch(PBB pBB, RTL* rtl, BranchStatement* br1, BranchStatement* br2, BB_IT& it) {
 
 #if 0
@@ -2013,7 +2088,9 @@ PBB Cfg::splitForBranch(PBB pBB, RTL* rtl, BranchStatement* br1, BranchStatement
     return newBb;
 }
 
-// Check for indirect jumps and calls in all my BBs; decode any new code
+/**
+ * \brief Check for indirect jumps and calls. If any found, decode the extra code and return true
+ */
 bool Cfg::decodeIndirectJmp(UserProc* proc) {
     std::list<PBB>::iterator it;
     bool res = false;
@@ -2030,7 +2107,7 @@ void Cfg::undoComputedBB(Statement* stmt) {
             break;
     }
 }
-
+//! Find or create an implicit assign for x
 Statement* Cfg::findImplicitAssign(Exp* x) {
     Statement* def;
     std::map<Exp*, Statement*, lessExpStar>::iterator it = implicitMap.find(x);

@@ -9,10 +9,10 @@
  *
  */
 
-/*==============================================================================
+/***************************************************************************//**
  * FILE:       basicblock.h
  * OVERVIEW:   Interface for the basic block class, which form nodes of the control flow graph
- *============================================================================*/
+ ******************************************************************************/
 
 /*
  * $Revision$    // 1.1.2.2
@@ -57,7 +57,7 @@ enum travType {
 };
 
 // an enumerated type for the class of stucture determined for a node
-enum structType { 
+enum structType {
     Loop,       // Header of a loop only
     Cond,       // Header of a conditional only (if-then-else or switch)
     LoopCond,  // Header of a loop and a conditional
@@ -123,9 +123,9 @@ enum SBBTYPE {
 
 typedef std::list<PBB>::iterator BB_IT;
 
-/*==============================================================================
+/***************************************************************************//**
  * BasicBlock class. <more comments>
- *============================================================================*/
+ ******************************************************************************/
 class BasicBlock {
         /*
          * Objects of class Cfg can access the internals of a BasicBlock object.
@@ -337,7 +337,7 @@ static bool            lessLastDFT(PBB bb1, PBB bb2);
          */
 
         PBB            getCorrectOutEdge(ADDRESS a);
-        
+
         /*
          * Depth first traversal of all bbs, numbering as we go and as we come back, forward and reverse passes.
          * Use Cfg::establishDFTOrder() and CFG::establishRevDFTOrder to create these values.
@@ -372,7 +372,7 @@ public:
         PBB            m_caseHead;        // head of the most nested enclosing case
         PBB            m_condFollow;    // follow of a conditional header
         PBB            m_loopFollow;    // follow of a loop header
-        PBB            m_latchNode;    // latch node of a loop header    
+        PBB            m_latchNode;    // latch node of a loop header
 
 protected:
 /* general basic block information */
@@ -490,7 +490,7 @@ protected:
         // establish if this bb has any back edges leading FROM it
         bool         hasBackEdge() {
                         for (unsigned int i = 0; i < m_OutEdges.size(); i++)
-                            if (hasBackEdgeTo(m_OutEdges[i])) 
+                            if (hasBackEdgeTo(m_OutEdges[i]))
                                 return true;
                         return false;
                     }
@@ -543,7 +543,7 @@ protected:
         friend class XMLProgParser;
         void        addOutEdge(PBB bb) { m_OutEdges.push_back(bb); }
         void        addRTL(RTL *rtl) {
-                        if (m_pRtls == NULL) 
+                        if (m_pRtls == NULL)
                             m_pRtls = new std::list<RTL*>;
                         m_pRtls->push_back(rtl);
                     }

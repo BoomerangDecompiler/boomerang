@@ -11,7 +11,7 @@
  * FILE:       statement.cpp
  * OVERVIEW:   Implementation of the Statement and related classes.
  *               (Was dataflow.cpp a long time ago)
- *============================================================================*/
+ ******************************************************************************/
 
 /*
  * $Revision$    // 1.148.2.38
@@ -21,7 +21,7 @@
 
 /*==============================================================================
  * Dependencies.
- *============================================================================*/
+ ******************************************************************************/
 
 #include <cassert>
 #include <cstring>
@@ -628,7 +628,7 @@ Statement *Statement::getNextStatementInBB()
  * PARAMETERS:        os: output stream to send to
  *                    p: ptr to Statement to print to the stream
  * RETURNS:            copy of os (for concatenation)
- *============================================================================*/
+ ******************************************************************************/
 std::ostream& operator<<(std::ostream& os, Statement* s) {
     if (s == NULL) {os << "NULL "; return os;}
     s->print(os);
@@ -985,7 +985,7 @@ bool Statement::isFpop() {
  * PARAMETERS:        listStmt: a list of Statements (not the same as an RTL)
  *                      to serve as the initial list of statements
  * RETURNS:            N/a
- *============================================================================*/
+ ******************************************************************************/
 GotoStatement::GotoStatement()
     : pDest(NULL), m_isComputed(false) {
     kind = STMT_GOTO;
@@ -996,7 +996,7 @@ GotoStatement::GotoStatement()
  * OVERVIEW:        Construct a jump to a fixed address
  * PARAMETERS:        uDest: native address of destination
  * RETURNS:            N/a
- *============================================================================*/
+ ******************************************************************************/
 GotoStatement::GotoStatement(ADDRESS uDest) : m_isComputed(false) {
     kind = STMT_GOTO;
     pDest = new Const(uDest);
@@ -1007,7 +1007,7 @@ GotoStatement::GotoStatement(ADDRESS uDest) : m_isComputed(false) {
  * OVERVIEW:        Destructor
  * PARAMETERS:        None
  * RETURNS:            N/a
- *============================================================================*/
+ ******************************************************************************/
 GotoStatement::~GotoStatement() {
     if (pDest) ;//delete pDest;
 }
@@ -1021,7 +1021,7 @@ GotoStatement::~GotoStatement() {
  * PARAMETERS:        <none>
  * RETURNS:            Fixed dest or NO_ADDRESS if there isn't one, For dynamic CTIs,
  *                     returns NO_ADDRESS.
- *============================================================================*/
+ ******************************************************************************/
 ADDRESS GotoStatement::getFixedDest() {
     if (pDest->getOper() != opIntConst)
         return NO_ADDRESS;
@@ -1033,7 +1033,7 @@ ADDRESS GotoStatement::getFixedDest() {
  * OVERVIEW:        Set the destination of this jump to be a given expression.
  * PARAMETERS:        addr - the new fixed address
  * RETURNS:            Nothing
- *============================================================================*/
+ ******************************************************************************/
 void GotoStatement::setDest(Exp* pd) {
     pDest = pd;
 }
@@ -1043,7 +1043,7 @@ void GotoStatement::setDest(Exp* pd) {
  * OVERVIEW:        Set the destination of this jump to be a given fixed address.
  * PARAMETERS:        addr - the new fixed address
  * RETURNS:            <nothing>
- *============================================================================*/
+ ******************************************************************************/
 void GotoStatement::setDest(ADDRESS addr) {
     // This fails in FrontSparcTest, do you really want it to Mike? -trent
     //    assert(addr >= prog.limitTextLow && addr < prog.limitTextHigh);
@@ -1058,7 +1058,7 @@ void GotoStatement::setDest(ADDRESS addr) {
  * OVERVIEW:        Returns the destination of this CTI.
  * PARAMETERS:        None
  * RETURNS:            Pointer to the SS representing the dest of this jump
- *============================================================================*/
+ ******************************************************************************/
 Exp* GotoStatement::getDest() {
     return pDest;
 }
@@ -1071,7 +1071,7 @@ Exp* GotoStatement::getDest() {
  * PARAMETERS:        delta - the amount to add to the destination (can be
  *                    negative)
  * RETURNS:            <nothing>
- *============================================================================*/
+ ******************************************************************************/
 void GotoStatement::adjustFixedDest(int delta) {
     // Ensure that the destination is fixed.
     if (pDest == 0 || pDest->getOper() != opIntConst)
@@ -1095,7 +1095,7 @@ bool GotoStatement::search(Exp* search, Exp*& result) {
  *                    replace - the expression with which to replace it
  *                    cc - ignored
  * RETURNS:            True if any change
- *============================================================================*/
+ ******************************************************************************/
 bool GotoStatement::searchAndReplace(Exp* search, Exp* replace, bool cc) {
     bool change = false;
     if (pDest) {
@@ -1111,7 +1111,7 @@ bool GotoStatement::searchAndReplace(Exp* search, Exp* replace, bool cc) {
  *                    result - a list which will have any matching exprs
  *                             appended to it
  * RETURNS:            true if there were any matches
- *============================================================================*/
+ ******************************************************************************/
 bool GotoStatement::searchAll(Exp* search, std::list<Exp*> &result) {
     if (pDest)    return pDest->searchAll(search, result);
     return false;
@@ -1124,7 +1124,7 @@ bool GotoStatement::searchAll(Exp* search, std::list<Exp*> &result) {
  *                      chars of the print have already been output to os
  * PARAMETERS:        os: stream to write to
  * RETURNS:            Nothing
- *============================================================================*/
+ ******************************************************************************/
 void GotoStatement::print(std::ostream& os, bool html) {
     os << std::setw(4) << std::dec << number << " ";
     if (html) {
@@ -1149,7 +1149,7 @@ void GotoStatement::print(std::ostream& os, bool html) {
  *                    HLNwayCall are implemented properly
  * PARAMETERS:      <none>
  * RETURNS:          <nothing>
- *============================================================================*/
+ ******************************************************************************/
 void GotoStatement::setIsComputed(bool b) {
     m_isComputed = b;
 }
@@ -1161,7 +1161,7 @@ void GotoStatement::setIsComputed(bool b) {
  *                    are implemented properly
  * PARAMETERS:      <none>
  * RETURNS:          this call is computed
- *============================================================================*/
+ ******************************************************************************/
 bool GotoStatement::isComputed() {
     return m_isComputed;
 }
@@ -1171,7 +1171,7 @@ bool GotoStatement::isComputed() {
  * OVERVIEW:        Deep copy clone
  * PARAMETERS:        <none>
  * RETURNS:            Pointer to a new Statement, a clone of this GotoStatement
- *============================================================================*/
+ ******************************************************************************/
 Statement* GotoStatement::clone() {
     GotoStatement* ret = new GotoStatement();
     ret->pDest = pDest->clone();
@@ -1208,7 +1208,7 @@ void GotoStatement::simplify() {
  * OVERVIEW:        Constructor.
  * PARAMETERS:        None
  * RETURNS:            N/a
- *============================================================================*/
+ ******************************************************************************/
 BranchStatement::BranchStatement() : jtCond((BRANCH_TYPE)0), pCond(NULL), bFloat(false), size(0) {
     kind = STMT_BRANCH;
 }
@@ -1218,7 +1218,7 @@ BranchStatement::BranchStatement() : jtCond((BRANCH_TYPE)0), pCond(NULL), bFloat
  * OVERVIEW:        Destructor
  * PARAMETERS:        None
  * RETURNS:            N/a
- *============================================================================*/
+ ******************************************************************************/
 BranchStatement::~BranchStatement() {
     if (pCond)
         ;//delete pCond;
@@ -1233,7 +1233,7 @@ BranchStatement::~BranchStatement() {
  *                    usesFloat - this condional jump checks the floating point
  *                      condition codes
  * RETURNS:            a semantic string
- *============================================================================*/
+ ******************************************************************************/
 void BranchStatement::setCondType(BRANCH_TYPE cond, bool usesFloat /*= false*/) {
     jtCond = cond;
     bFloat = usesFloat;
@@ -1303,7 +1303,7 @@ void BranchStatement::setCondType(BRANCH_TYPE cond, bool usesFloat /*= false*/) 
  * OVERVIEW:        Change this from an unsigned to a signed branch
  * PARAMETERS:        <none>
  * RETURNS:            <nothing>
- *============================================================================*/
+ ******************************************************************************/
 void BranchStatement::makeSigned() {
     // Make this into a signed branch
     switch (jtCond)
@@ -1323,7 +1323,7 @@ void BranchStatement::makeSigned() {
  * OVERVIEW:        Return the SemStr expression containing the HL condition.
  * PARAMETERS:        <none>
  * RETURNS:            ptr to an expression
- *============================================================================*/
+ ******************************************************************************/
 Exp* BranchStatement::getCondExpr() {
     return pCond;
 }
@@ -1333,7 +1333,7 @@ Exp* BranchStatement::getCondExpr() {
  * OVERVIEW:        Set the SemStr expression containing the HL condition.
  * PARAMETERS:        Pointer to Exp to set
  * RETURNS:            <nothing>
- *============================================================================*/
+ ******************************************************************************/
 void BranchStatement::setCondExpr(Exp* e) {
     if (pCond) ;//delete pCond;
     pCond = e;
@@ -1421,7 +1421,7 @@ bool BranchStatement::search(Exp* search, Exp*& result) {
  *                    replace - the expression with which to replace it
  *                    cc - ignored
  * RETURNS:            True if any change
- *============================================================================*/
+ ******************************************************************************/
 bool BranchStatement::searchAndReplace(Exp* search, Exp* replace, bool cc) {
     GotoStatement::searchAndReplace(search, replace, cc);
     bool change = false;
@@ -1437,7 +1437,7 @@ bool BranchStatement::searchAndReplace(Exp* search, Exp* replace, bool cc) {
  *                    result - a list which will have any matching exprs
  *                             appended to it
  * RETURNS:            true if there were any matches
- *============================================================================*/
+ ******************************************************************************/
 bool BranchStatement::searchAll(Exp* search, std::list<Exp*> &result) {
     if (pCond) return pCond->searchAll(search, result);
     return false;
@@ -1449,7 +1449,7 @@ bool BranchStatement::searchAll(Exp* search, std::list<Exp*> &result) {
  * OVERVIEW:        Write a text representation to the given stream
  * PARAMETERS:        os: stream
  * RETURNS:            Nothing
- *============================================================================*/
+ ******************************************************************************/
 void BranchStatement::print(std::ostream& os, bool html) {
     os << std::setw(4) << std::dec << number << " ";
     if (html) {
@@ -1500,7 +1500,7 @@ void BranchStatement::print(std::ostream& os, bool html) {
  * OVERVIEW:        Deep copy clone
  * PARAMETERS:        <none>
  * RETURNS:            Pointer to a new Statement, a clone of this BranchStatement
- *============================================================================*/
+ ******************************************************************************/
 Statement* BranchStatement::clone() {
     BranchStatement* ret = new BranchStatement();
     ret->pDest = pDest->clone();
@@ -1798,7 +1798,7 @@ void BranchStatement::simplify() {
  * OVERVIEW:        Constructor.
  * PARAMETERS:        None
  * RETURNS:            N/a
- *============================================================================*/
+ ******************************************************************************/
 CaseStatement::CaseStatement() :
     pSwitchInfo(NULL) {
     kind = STMT_CASE;
@@ -1810,7 +1810,7 @@ CaseStatement::CaseStatement() :
  * NOTE:            Don't delete the pSwitchVar; it's always a copy of something else (so don't delete twice)
  * PARAMETERS:        None
  * RETURNS:            N/a
- *============================================================================*/
+ ******************************************************************************/
 CaseStatement::~CaseStatement() {
     if (pSwitchInfo)
         ;//delete pSwitchInfo;
@@ -1821,7 +1821,7 @@ CaseStatement::~CaseStatement() {
  * OVERVIEW:        Return a pointer to a struct with switch information in it
  * PARAMETERS:        <none>
  * RETURNS:            a semantic string
- *============================================================================*/
+ ******************************************************************************/
 SWITCH_INFO* CaseStatement::getSwitchInfo() {
     return pSwitchInfo;
 }
@@ -1831,7 +1831,7 @@ SWITCH_INFO* CaseStatement::getSwitchInfo() {
  * OVERVIEW:        Set a pointer to a SWITCH_INFO struct
  * PARAMETERS:        Pointer to SWITCH_INFO struct
  * RETURNS:            <nothing>
- *============================================================================*/
+ ******************************************************************************/
 void CaseStatement::setSwitchInfo(SWITCH_INFO* psi) {
     pSwitchInfo = psi;
 }
@@ -1843,7 +1843,7 @@ void CaseStatement::setSwitchInfo(SWITCH_INFO* psi) {
  *                    replace - the expression with which to replace it
  *                    cc - ignored
  * RETURNS:            True if any change
- *============================================================================*/
+ ******************************************************************************/
 bool CaseStatement::searchAndReplace(Exp* search, Exp* replace, bool cc) {
     bool ch = GotoStatement::searchAndReplace(search, replace, cc);
     bool ch2 = false;
@@ -1859,7 +1859,7 @@ bool CaseStatement::searchAndReplace(Exp* search, Exp* replace, bool cc) {
  *                    result - a list which will have any matching exprs appended to it
  * NOTES:            search can't easily be made const
  * RETURNS:            true if there were any matches
- *============================================================================*/
+ ******************************************************************************/
 bool CaseStatement::searchAll(Exp* search, std::list<Exp*> &result) {
     return GotoStatement::searchAll(search, result) ||
             ( pSwitchInfo && pSwitchInfo->pSwitchVar && pSwitchInfo->pSwitchVar->searchAll(search, result) );
@@ -1871,7 +1871,7 @@ bool CaseStatement::searchAll(Exp* search, std::list<Exp*> &result) {
  * PARAMETERS:        os: stream
  *                    indent: number of columns to skip
  * RETURNS:            Nothing
- *============================================================================*/
+ ******************************************************************************/
 void CaseStatement::print(std::ostream& os, bool html) {
     os << std::setw(4) << std::dec << number << " ";
     if (html) {
@@ -1896,7 +1896,7 @@ void CaseStatement::print(std::ostream& os, bool html) {
  * OVERVIEW:        Deep copy clone
  * PARAMETERS:        <none>
  * RETURNS:            Pointer to a new Statement that is a clone of this one
- *============================================================================*/
+ ******************************************************************************/
 Statement* CaseStatement::clone() {
     CaseStatement* ret = new CaseStatement();
     ret->pDest = pDest->clone();
@@ -1947,7 +1947,7 @@ void CaseStatement::simplify() {
  * OVERVIEW:         Constructor for a call
  * PARAMETERS:         None
  * RETURNS:             <nothing>
- *============================================================================*/
+ ******************************************************************************/
 CallStatement::CallStatement(): returnAfterCall(false), calleeReturn(NULL) {
     kind = STMT_CALL;
     procDest = NULL;
@@ -1959,7 +1959,7 @@ CallStatement::CallStatement(): returnAfterCall(false), calleeReturn(NULL) {
  * OVERVIEW:      Destructor
  * PARAMETERS:      BB - the enclosing basic block of this call
  * RETURNS:          <nothing>
- *============================================================================*/
+ ******************************************************************************/
 CallStatement::~CallStatement() {
 }
 
@@ -2023,7 +2023,7 @@ void CallStatement::setArgumentType(int i, Type *ty)
  * OVERVIEW:      Set the arguments of this call.
  * PARAMETERS:      arguments - the list of locations to set the arguments to (for testing)
  * RETURNS:          <nothing>
- *============================================================================*/
+ ******************************************************************************/
 void CallStatement::setArguments(StatementList& args) {
     arguments.clear();
     arguments.append(args);
@@ -2040,7 +2040,7 @@ void CallStatement::setArguments(StatementList& args) {
  * NOTE:          Should only be called for calls to library functions
  * PARAMETERS:      None
  * RETURNS:          <nothing>
- *============================================================================*/
+ ******************************************************************************/
 void CallStatement::setSigArguments() {
     if (signature) return;                // Already done
     if (procDest == NULL)
@@ -2096,7 +2096,7 @@ bool CallStatement::search(Exp* search, Exp*& result) {
  *                    replace - the expression with which to replace it
  *                    cc - true to replace in collectors
  * RETURNS:            True if any change
- *============================================================================*/
+ ******************************************************************************/
 bool CallStatement::searchAndReplace(Exp* search, Exp* replace, bool cc) {
     bool change = GotoStatement::searchAndReplace(search, replace, cc);
     StatementList::iterator ss;
@@ -2119,7 +2119,7 @@ bool CallStatement::searchAndReplace(Exp* search, Exp* replace, bool cc) {
  * PARAMETERS:        search - a location to search for
  *                    result - a list which will have any matching exprs appended to it
  * RETURNS:            true if there were any matches
- *============================================================================*/
+ ******************************************************************************/
 bool CallStatement::searchAll(Exp* search, std::list<Exp *>& result) {
     bool found = GotoStatement::searchAll(search, result);
     StatementList::iterator ss;
@@ -2139,7 +2139,7 @@ bool CallStatement::searchAll(Exp* search, std::list<Exp *>& result) {
  * OVERVIEW:        Write a text representation of this RTL to the given stream
  * PARAMETERS:        os: stream to write to
  * RETURNS:            Nothing
- *============================================================================*/
+ ******************************************************************************/
 void CallStatement::print(std::ostream& os, bool html) {
     os << std::setw(4) << std::dec << number << " ";
     if (html) {
@@ -2227,7 +2227,7 @@ void CallStatement::print(std::ostream& os, bool html) {
  *                        Sparc when there is a restore in the delay slot of the call
  * PARAMETERS:         b: true if this is to be set; false to clear the bit
  * RETURNS:             <nothing>
- *============================================================================*/
+ ******************************************************************************/
 void CallStatement::setReturnAfterCall(bool b) {
     returnAfterCall = b;
 }
@@ -2238,7 +2238,7 @@ void CallStatement::setReturnAfterCall(bool b) {
  *                        Sparc when there is a restore in the delay slot of the call
  * PARAMETERS:         none
  * RETURNS:             True if this call is effectively followed by a return
- *============================================================================*/
+ ******************************************************************************/
 bool CallStatement::isReturnAfterCall() {
     return returnAfterCall;
 }
@@ -2248,7 +2248,7 @@ bool CallStatement::isReturnAfterCall() {
  * OVERVIEW:        Deep copy clone
  * PARAMETERS:        <none>
  * RETURNS:            Pointer to a new Statement, a clone of this CallStatement
- *============================================================================*/
+ ******************************************************************************/
 Statement* CallStatement::clone() {
     CallStatement* ret = new CallStatement();
     ret->pDest = pDest->clone();
@@ -2866,7 +2866,7 @@ void CallStatement::addSigParam(Type* ty, bool isScanf) {
  * OVERVIEW:         Constructor.
  * PARAMETERS:         None
  * RETURNS:             <nothing>
- *============================================================================*/
+ ******************************************************************************/
 ReturnStatement::ReturnStatement() : retAddr(NO_ADDRESS) {
     kind = STMT_RET;
 }
@@ -2876,7 +2876,7 @@ ReturnStatement::ReturnStatement() : retAddr(NO_ADDRESS) {
  * OVERVIEW:         Destructor.
  * PARAMETERS:         <none>
  * RETURNS:             <nothing>
- *============================================================================*/
+ ******************************************************************************/
 ReturnStatement::~ReturnStatement() {
 }
 
@@ -2885,7 +2885,7 @@ ReturnStatement::~ReturnStatement() {
  * OVERVIEW:        Deep copy clone
  * PARAMETERS:        <none>
  * RETURNS:            Pointer to a new Statement, a clone of this ReturnStatement
- *============================================================================*/
+ ******************************************************************************/
 Statement* ReturnStatement::clone() {
     ReturnStatement* ret = new ReturnStatement();
     iterator rr;
@@ -2997,7 +2997,7 @@ bool ReturnStatement::usesExp(Exp *e) {
  * OVERVIEW:         Constructor.
  * PARAMETERS:         sz: size of the assignment
  * RETURNS:             <N/a>
- *============================================================================*/
+ ******************************************************************************/
 BoolAssign::BoolAssign(int sz): Assignment(NULL), jtCond((BRANCH_TYPE)0),
     pCond(NULL), bFloat(false), size(sz) {
     kind = STMT_BOOLASSIGN;
@@ -3008,7 +3008,7 @@ BoolAssign::BoolAssign(int sz): Assignment(NULL), jtCond((BRANCH_TYPE)0),
  * OVERVIEW:        Destructor
  * PARAMETERS:        None
  * RETURNS:            N/a
- *============================================================================*/
+ ******************************************************************************/
 BoolAssign::~BoolAssign() {
     if (pCond)
         ;//delete pCond;
@@ -3023,7 +3023,7 @@ BoolAssign::~BoolAssign() {
  *                    usesFloat - this condional jump checks the floating point
  *                      condition codes
  * RETURNS:            a semantic string
- *============================================================================*/
+ ******************************************************************************/
 void BoolAssign::setCondType(BRANCH_TYPE cond, bool usesFloat /*= false*/) {
     jtCond = cond;
     bFloat = usesFloat;
@@ -3036,7 +3036,7 @@ void BoolAssign::setCondType(BRANCH_TYPE cond, bool usesFloat /*= false*/) {
  * NOTE:            Not sure if this is ever going to be used
  * PARAMETERS:        <none>
  * RETURNS:            <nothing>
- *============================================================================*/
+ ******************************************************************************/
 void BoolAssign::makeSigned() {
     // Make this into a signed branch
     switch (jtCond)
@@ -3056,7 +3056,7 @@ void BoolAssign::makeSigned() {
  * OVERVIEW:        Return the Exp expression containing the HL condition.
  * PARAMETERS:        <none>
  * RETURNS:            a semantic string
- *============================================================================*/
+ ******************************************************************************/
 Exp* BoolAssign::getCondExpr() {
     return pCond;
 }
@@ -3066,7 +3066,7 @@ Exp* BoolAssign::getCondExpr() {
  * OVERVIEW:        Set the Exp expression containing the HL condition.
  * PARAMETERS:        Pointer to semantic string to set
  * RETURNS:            <nothing>
- *============================================================================*/
+ ******************************************************************************/
 void BoolAssign::setCondExpr(Exp* pss) {
     if (pCond) ;//delete pCond;
     pCond = pss;
@@ -3077,7 +3077,7 @@ void BoolAssign::setCondExpr(Exp* pss) {
  * OVERVIEW:        Write a text representation to the given stream
  * PARAMETERS:        os: stream
  * RETURNS:            <Nothing>
- *============================================================================*/
+ ******************************************************************************/
 void BoolAssign::printCompact(std::ostream& os /*= cout*/, bool html) {
     os << "BOOL ";
     lhs->print(os);
@@ -3118,7 +3118,7 @@ void BoolAssign::printCompact(std::ostream& os /*= cout*/, bool html) {
  * OVERVIEW:        Deep copy clone
  * PARAMETERS:        <none>
  * RETURNS:            Pointer to a new Statement, a clone of this BoolAssign
- *============================================================================*/
+ ******************************************************************************/
 Statement* BoolAssign::clone() {
     BoolAssign* ret = new BoolAssign(size);
     ret->jtCond = jtCond;

@@ -14,7 +14,7 @@
 /*==============================================================================
  * FILE:       decoder.m
  * OVERVIEW:   Implementation of the PPC specific parts of the PPCDecoder class.
- *============================================================================*/
+ ******************************************************************************/
 
 /* $Revision$    // 1.24.2.1
  *
@@ -24,7 +24,7 @@
 
 /*==============================================================================
  * Dependencies.
- *============================================================================*/
+ ******************************************************************************/
 
 #include <cassert>
 #include <cstring>
@@ -88,7 +88,7 @@ Exp*    crBit(int bitNum);    // Get an expression for a CR bit access
  * OVERVIEW:       A dummy function to suppress "unused local variable" messages
  * PARAMETERS:       x: integer variable to be "used"
  * RETURNS:           Nothing
- *============================================================================*/
+ ******************************************************************************/
 void PPCDecoder::unused(int x)
 {}
 void unused(const char* x) {}
@@ -110,7 +110,7 @@ void unused(const char* x) {}
  *                     those of us who are using this method in an interpreter
  * RETURNS:           a DecodeResult structure containing all the information
  *                     gathered during decoding
- *============================================================================*/
+ ******************************************************************************/
 DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
     static DecodeResult result;
     ADDRESS hostPC = pc+delta;
@@ -4551,7 +4551,7 @@ MATCH_finished_a: (void)0; /*placeholder for label*/
  * OVERVIEW:        Decode the register
  * PARAMETERS:        r - register (0-31)
  * RETURNS:            the expression representing the register
- *============================================================================*/
+ ******************************************************************************/
 Exp* PPCDecoder::dis_Reg(unsigned r)
 {
     return Location::regOf(r);
@@ -4562,7 +4562,7 @@ Exp* PPCDecoder::dis_Reg(unsigned r)
  * OVERVIEW:        Decode the register rA when rA represents constant 0 if r == 0
  * PARAMETERS:        r - register (0-31)
  * RETURNS:            the expression representing the register
- *============================================================================*/
+ ******************************************************************************/
 Exp* PPCDecoder::dis_RAmbz(unsigned r)
 {
     if (r == 0)
@@ -4578,7 +4578,7 @@ Exp* PPCDecoder::dis_RAmbz(unsigned r)
  *                    is a pointer to a function?
  * PARAMETERS:      hostPC - pointer to the code in question (host address)
  * RETURNS:          True if a match found
- *============================================================================*/
+ ******************************************************************************/
 bool PPCDecoder::isFuncPrologue(ADDRESS hostPC)
 {
 
@@ -4595,7 +4595,7 @@ bool PPCDecoder::isFuncPrologue(ADDRESS hostPC)
  * OVERVIEW:        Returns the double starting at the given address.
  * PARAMETERS:        lc - address at which to decode the double
  * RETURNS:            the decoded double
- *============================================================================*/
+ ******************************************************************************/
 DWord PPCDecoder::getDword(ADDRESS lc)
 {
   Byte* p = (Byte*)lc.m_value;
@@ -4607,7 +4607,7 @@ DWord PPCDecoder::getDword(ADDRESS lc)
  * OVERVIEW:
  * PARAMETERS:       None
  * RETURNS:           N/A
- *============================================================================*/
+ ******************************************************************************/
 PPCDecoder::PPCDecoder(Prog* prog) : NJMCDecoder(prog)
 {
     std::string file = Boomerang::get()->getProgPath() + "frontend/machine/ppc/ppc.ssl";

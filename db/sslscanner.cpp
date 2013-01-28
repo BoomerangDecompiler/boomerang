@@ -214,7 +214,7 @@ int read();
  * FILE:          sslscanner.l
  * OVERVIEW:      Defines a scanner to parse the tokens of a Semantic
  *                  Specification Language specification.
- *============================================================================*/
+ ******************************************************************************/
 /*
  * Shane Sendall (original C version) Dec 1997
  * Doug Simon (C++ version) Jan 1998

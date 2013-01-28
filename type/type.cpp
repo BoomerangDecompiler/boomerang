@@ -9,10 +9,10 @@
  *
  */
 
-/*==============================================================================
+/***************************************************************************//**
  * FILE:       type.cpp
  * OVERVIEW:   Implementation of the Type class: low level type information
- *============================================================================*/
+ ******************************************************************************/
 
 /*
  * $Revision$    // 1.44.2.1
@@ -55,12 +55,12 @@ bool Type::isCString()
     return p->resolvesToChar();
 }
 
-/*==============================================================================
- * FUNCTION:        Type::Type
+/***************************************************************************//**
+ *
  * OVERVIEW:        Default constructor
  * PARAMETERS:        <none>
- * RETURNS:            <Not applicable>
- *============================================================================*/
+ * \returns            <Not applicable>
+ ******************************************************************************/
 Type::Type(eType id) : id(id)
 {}
 
@@ -137,12 +137,12 @@ UnionType::UnionType() : Type(eUnion)
 {
 }
 
-/*==============================================================================
- * FUNCTION:        Type::~Type
+/***************************************************************************//**
+ *
  * OVERVIEW:        Virtual destructor
  * PARAMETERS:        <none>
- * RETURNS:            <Not applicable>
- *============================================================================*/
+ * \returns            <Not applicable>
+ ******************************************************************************/
 Type::~Type() { }
 VoidType::~VoidType() { }
 FuncType::~FuncType() { }
@@ -160,12 +160,12 @@ NamedType::~NamedType() { }
 CompoundType::~CompoundType() { }
 UnionType::~UnionType() { }
 
-/*==============================================================================
- * FUNCTION:        *Type::clone
+/***************************************************************************//**
+ *
  * OVERVIEW:        Deep copy of this type
  * PARAMETERS:        <none>
- * RETURNS:            Copy of the type
- *============================================================================*/
+ * \returns            Copy of the type
+ ******************************************************************************/
 Type *IntegerType::clone() const
 {
     IntegerType *t = new IntegerType(size, signedness);
@@ -255,12 +255,12 @@ Type* LowerType::clone() const
 }
 
 
-/*==============================================================================
- * FUNCTION:        *Type::getSize
+/***************************************************************************//**
+ *
  * OVERVIEW:        Get the size of this type
  * PARAMETERS:        <none>
- * RETURNS:            Size of the type (in bits)
- *============================================================================*/
+ * \returns            Size of the type (in bits)
+ ******************************************************************************/
 size_t IntegerType::getSize() const { return size; }
 size_t FloatType::getSize() const { return size; }
 size_t BooleanType::getSize() const { return 1; }
@@ -404,23 +404,23 @@ unsigned CompoundType::getOffsetRemainder(unsigned n)
     return r;
 }
 
-/*==============================================================================
- * FUNCTION:        Type::parseType
+/***************************************************************************//**
+ *
  * OVERVIEW:        static Constructor from string
  * PARAMETERS:        str: string to parse
- * RETURNS:            <Not applicable>
- *============================================================================*/
+ * \returns            <Not applicable>
+ ******************************************************************************/
 Type *Type::parseType(const char *str)
 {
     return NULL;
 }
 
-/*==============================================================================
- * FUNCTION:        *Type::operator==
+/***************************************************************************//**
+ *
  * OVERVIEW:        Equality comparsion.
  * PARAMETERS:        other - Type being compared to
- * RETURNS:            this == other
- *============================================================================*/
+ * \returns            this == other
+ ******************************************************************************/
 bool IntegerType::operator==(const Type& other) const {
     IntegerType& otherInt = (IntegerType&) other;
     return other.isInteger() &&
@@ -514,24 +514,24 @@ bool LowerType::operator==(const Type& other) const {
 }
 
 
-/*==============================================================================
- * FUNCTION:        Type::operator!=
+/***************************************************************************//**
+ *
  * OVERVIEW:        Inequality comparsion.
  * PARAMETERS:        other - Type being compared to
- * RETURNS:            this == other
- *============================================================================*/
+ * \returns            this == other
+ ******************************************************************************/
 bool Type::operator!=(const Type& other) const
 {
     return !(*this == other);
 }
 
-/*==============================================================================
- * FUNCTION:        *Type::operator-=
+/***************************************************************************//**
+ *
  * OVERVIEW:        Equality operator, ignoring sign. True if equal in broad
  *                      type and size, but not necessarily sign
  *                      Considers all float types > 64 bits to be the same
  * PARAMETERS:        other - Type being compared to
- * RETURNS:            this == other (ignoring sign)
+ * \returns            this == other (ignoring sign)
  *============================================================================
 bool IntegerType::operator-=(const Type& other) const
 {
@@ -548,13 +548,13 @@ bool FloatType::operator-=(const Type& other) const
 }
 
 */
-/*==============================================================================
- * FUNCTION:        *Type::operator<
+/***************************************************************************//**
+ *
  * OVERVIEW:        Defines an ordering between Type's
  *                      (and hence sets etc of Exp* using lessExpStar).
  * PARAMETERS:        other - Type being compared to
- * RETURNS:            this is less than other
- *============================================================================*/
+ * \returns            this is less than other
+ ******************************************************************************/
 bool IntegerType::operator<(const Type& other) const {
     if (id < other.getId()) return true;
     if (id > other.getId()) return false;
@@ -638,12 +638,12 @@ bool LowerType::operator<(const Type& other) const {
     return (*base_type < *((LowerType&)other).base_type);
 }
 
-/*==============================================================================
- * FUNCTION:        *Type::match
+/***************************************************************************//**
+ *
  * OVERVIEW:        Match operation.
  * PARAMETERS:        pattern - Type to match
- * RETURNS:            Exp list of bindings if match or NULL
- *============================================================================*/
+ * \returns            Exp list of bindings if match or NULL
+ ******************************************************************************/
 Exp *Type::match(Type *pattern)
 {
     if (pattern->isNamed()) {
@@ -720,12 +720,12 @@ Exp *UnionType::match(Type *pattern)
 }
 
 
-/*==============================================================================
- * FUNCTION:        *Type::getCtype
+/***************************************************************************//**
+ *
  * OVERVIEW:        Return a string representing this type
  * PARAMETERS:        final: if true, this is final output
- * RETURNS:            Pointer to a constant string of char
- *============================================================================*/
+ * \returns            Pointer to a constant string of char
+ ******************************************************************************/
 const char *VoidType::getCtype(bool final) const { return "void"; }
 
 const char *FuncType::getCtype(bool final) const {
@@ -926,13 +926,13 @@ void Type::dumpNames() {
         std::cerr << it->first << " -> " << it->second->getCtype() << "\n";
 }
 
-/*==============================================================================
- * FUNCTION:    getTempType
+/***************************************************************************//**
+ *
  * OVERVIEW:    Given the name of a temporary variable, return its Type
  * NOTE:        Caller must delete result
  * PARAMETERS:    name: reference to a string (e.g. "tmp", "tmpd")
- * RETURNS:        Ptr to a new Type object
- *============================================================================*/
+ * \returns        Ptr to a new Type object
+ ******************************************************************************/
 Type* Type::getTempType(const std::string& name)
 {
     Type* ty;
@@ -953,15 +953,15 @@ Type* Type::getTempType(const std::string& name)
 }
 
 
-/*==============================================================================
- * FUNCTION:    *Type::getTempName
+/***************************************************************************//**
+ *
  * OVERVIEW:    Return a minimal temporary name for this type. It'd be even
  *                nicer to return a unique name, but we don't know scope at
  *                this point, and even so we could still clash with a user-defined
  *                name later on :(
  * PARAMETERS:
- * RETURNS:        a string
- *============================================================================*/
+ * \returns        a string
+ ******************************************************************************/
 std::string IntegerType::getTempName() const
 {
     switch( size ) {

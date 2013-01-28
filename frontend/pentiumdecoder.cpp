@@ -12,7 +12,7 @@
 /*============================================================================== * FILE:       decoder.m
  * OVERVIEW:   This file contains the high level decoding functionality, for example matching logues, calls, branches,
  *                etc. Ordinary instructions are processed in decoder_low.m
- *============================================================================*/
+ ******************************************************************************/
 /*
  * $Revision$    // 1.33.2.2
  *
@@ -72,7 +72,7 @@ void genBSFR(ADDRESS pc, Exp* reg, Exp* modrm, int init, int size, OPER incdec,
  * OVERVIEW:       A dummy function to suppress "unused local variable" messages
  * PARAMETERS:       x: integer variable to be "used"
  * RETURNS:           Nothing
- *============================================================================*/
+ ******************************************************************************/
 void PentiumDecoder::unused(int x)
 {}
 /*==============================================================================
@@ -88,7 +88,7 @@ void PentiumDecoder::unused(int x)
  *                    decoded
  *                   proc - the enclosing procedure
  * RETURNS:           a DecodeResult structure containing all the information gathered during decoding
- *============================================================================*/
+ ******************************************************************************/
 static DecodeResult result;
 DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
 {
@@ -37087,7 +37087,7 @@ MATCH_finished_c: (void)0; /*placeholder for label*/
 /*==============================================================================
  * These are machine specific functions used to decode instruction operands into
  * Exps.
- *============================================================================*/
+ ******************************************************************************/
 /*==============================================================================
  * FUNCTION:        dis_Mem
  * OVERVIEW:        Converts a dynamic address to a Exp* expression.
@@ -37095,7 +37095,7 @@ MATCH_finished_c: (void)0; /*placeholder for label*/
  * PARAMETERS:        pc - the address of the Eaddr part of the instr
  *                    expr - the expression that will be built
  * RETURNS:            the Exp* representation of the given Eaddr
- *============================================================================*/
+ ******************************************************************************/
 Exp* PentiumDecoder::dis_Mem(ADDRESS pc)
 {
     Exp* expr = NULL;
@@ -37296,7 +37296,7 @@ MATCH_finished_b: (void)0; /*placeholder for label*/
  *                      address
  *                    size - size of the operand (important if a register)
  * RETURNS:            the Exp* representation of the given Eaddr
- *============================================================================*/
+ ******************************************************************************/
 Exp* PentiumDecoder::dis_Eaddr(ADDRESS pc, int size)
 {
 //#line 2231 "frontend/machine/pentium/decoder.m"
@@ -37341,7 +37341,7 @@ MATCH_finished_a: (void)0; /*placeholder for label*/
  *                    is a pointer to a function?
  * PARAMETERS:      hostPC - pointer to the code in question (native address)
  * RETURNS:          True if a match found
- *============================================================================*/
+ ******************************************************************************/
 bool PentiumDecoder::isFuncPrologue(ADDRESS hostPC)
 {
 #if 0
@@ -37365,7 +37365,7 @@ bool PentiumDecoder::isFuncPrologue(ADDRESS hostPC)
  * OVERVIEW:        Returns the word starting at the given address.
  * PARAMETERS:        lc - address at which to decode the double
  * RETURNS:            the decoded double
- *============================================================================*/
+ ******************************************************************************/
 Byte PentiumDecoder::getByte (intptr_t lc)
 /* getByte - returns next byte from image pointed to by lc.     */
 {
@@ -37375,7 +37375,7 @@ Byte PentiumDecoder::getByte (intptr_t lc)
  * OVERVIEW:        Returns the word starting at the given address.
  * PARAMETERS:        lc - address at which to decode the double
  * RETURNS:            the decoded double
- *============================================================================*/
+ ******************************************************************************/
 SWord PentiumDecoder::getWord (intptr_t lc)
 /* get2Bytes - returns next 2-Byte from image pointed to by lc.     */
 {
@@ -37385,7 +37385,7 @@ SWord PentiumDecoder::getWord (intptr_t lc)
  * OVERVIEW:        Returns the double starting at the given address.
  * PARAMETERS:        lc - address at which to decode the double
  * RETURNS:            the decoded double
- *============================================================================*/
+ ******************************************************************************/
 DWord PentiumDecoder::getDword (intptr_t lc)
 /* get4Bytes - returns the next 4-Byte word from image pointed to by lc. */
 {
@@ -37396,7 +37396,7 @@ DWord PentiumDecoder::getDword (intptr_t lc)
  * OVERVIEW:       Constructor. The code won't work without this (not sure why the default constructor won't do...)
  * PARAMETERS:       None
  * RETURNS:           N/A
- *============================================================================*/
+ ******************************************************************************/
 PentiumDecoder::PentiumDecoder(Prog* prog) : NJMCDecoder(prog)
 {
     std::string file = Boomerang::get()->getProgPath() + "frontend/machine/pentium/pentium.ssl";
@@ -37415,7 +37415,7 @@ int PentiumDecoder::decodeAssemblyInstruction(ADDRESS, int)
  *                   incdec: either opPlus for Forward scans, or opMinus for Reverse scans
  *                   numBytes: number of bytes this instruction
  * RETURNS:           true if have to exit early (not in last state)
- *============================================================================*/
+ ******************************************************************************/
 static int BSFRstate = 0;        // State number for this state machine
 void genBSFR(ADDRESS pc, Exp* dest, Exp* modrm, int init, int size,
              OPER incdec, int numBytes) {

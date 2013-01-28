@@ -27,9 +27,9 @@
  * 12 Jul 05 - Mike: fixed an endless loop in findRelPltOffset for pre-3.3.3 gcc compiled input files
 */
 
-/*==============================================================================
+/***************************************************************************//**
  * Dependencies.
- *============================================================================*/
+ ******************************************************************************/
 
 #include <sys/types.h>        // Next three for open()
 #include <sys/stat.h>
@@ -832,14 +832,14 @@ size_t ElfBinaryFile::getImageSize() {
     return m_uImageSize;
 }
 
-/*==============================================================================
- * FUNCTION:      ElfBinaryFile::GetImportStubs
+/***************************************************************************//**
+ *
  * OVERVIEW:      Get an array of addresses of imported function stubs
  *                    This function relies on the fact that the symbols are sorted by address, and that Elf PLT
  *                    entries have successive addresses beginning soon after m_PltMin
  * PARAMETERS:      numImports - reference to integer set to the number of these
- * RETURNS:          An array of native ADDRESSes
- *============================================================================*/
+ * \returns          An array of native ADDRESSes
+ ******************************************************************************/
 ADDRESS* ElfBinaryFile::GetImportStubs(int& numImports) {
     ADDRESS a = m_uPltMin;
     int n = 0;
@@ -875,8 +875,8 @@ ADDRESS* ElfBinaryFile::GetImportStubs(int& numImports) {
     return m_pImportStubs;
 }
 
-/*==============================================================================
- * FUNCTION:    ElfBinaryFile::GetDynamicGlobalMap
+/***************************************************************************//**
+ *
  * OVERVIEW:    Get a map from ADDRESS to const char*. This map contains the native addresses
  *                    and symbolic names of global data items (if any) which are shared with dynamically
  *                    linked libraries.
@@ -884,8 +884,8 @@ ADDRESS* ElfBinaryFile::GetImportStubs(int& numImports) {
  *                    to the real dynamic data object.
  * NOTE:        The caller should delete the returned map.
  * PARAMETERS:    None
- * RETURNS:        Pointer to a new map with the info, or 0 if none
- *============================================================================*/
+ * \returns        Pointer to a new map with the info, or 0 if none
+ ******************************************************************************/
 std::map<ADDRESS, const char*>* ElfBinaryFile::GetDynamicGlobalMap() {
     std::map<ADDRESS, const char*>* ret = new std::map<ADDRESS, const char*>;
     SectionInfo* pSect = GetSectionInfoByName(".rel.bss");
@@ -923,13 +923,13 @@ std::map<ADDRESS, const char*>* ElfBinaryFile::GetDynamicGlobalMap() {
     return ret;
 }
 
-/*==============================================================================
- * FUNCTION:    ElfBinaryFile::elfRead2 and elfRead4
+/***************************************************************************//**
+ *
  * OVERVIEW:    Read a 2 or 4 byte quantity from host address (C pointer) p
  * NOTE:        Takes care of reading the correct endianness, set early on into m_elfEndianness
  * PARAMETERS:    ps or pi: host pointer to the data
- * RETURNS:        An integer representing the data
- *============================================================================*/
+ * \returns        An integer representing the data
+ ******************************************************************************/
 int ElfBinaryFile::elfRead2(short* ps) const {
     unsigned char* p = (unsigned char*)ps;
     if (m_elfEndianness) {

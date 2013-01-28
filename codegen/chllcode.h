@@ -18,7 +18,7 @@
  * OVERVIEW:   Concrete class for the "C" high level language
  *               This class provides methods which are specific for the C language binding.
  *               I guess this will be the most popular output language unless we do C++.
- *============================================================================*/
+ ******************************************************************************/
 
 #ifndef _CHLLCODE_H_
 #define _CHLLCODE_H_

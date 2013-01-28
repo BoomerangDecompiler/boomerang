@@ -11,7 +11,7 @@
  * OVERVIEW:   Concrete backend class for the "C" high level language
  *               This class is provides methods which are specific for the C language binding.
  *               I guess this will be the most popular output language unless we do C++.
- *============================================================================*/
+ ******************************************************************************/
 
 /*
  * $Revision$    // 1.90.2.16

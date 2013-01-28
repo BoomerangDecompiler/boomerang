@@ -391,15 +391,15 @@ static SWord GccCallMain[] = {
     0x3F06,             // movew d6, -(a7)
     0x6100, WILD};      // bsr PilotMain
 
-/*==============================================================================
- * FUNCTION:      findPattern
+/***************************************************************************//**
+ *
  * OVERVIEW:      Try to find a pattern
  * PARAMETERS:    start - pointer to code to start searching
  *                patt - pattern to look for
  *                pattSize - size of the pattern (in SWords)
  *                max - max number of SWords to search
- * RETURNS:       0 if no match; pointer to start of match if found
- *============================================================================*/
+ * \returns       0 if no match; pointer to start of match if found
+ ******************************************************************************/
 SWord* findPattern(SWord* start, const SWord* patt, int pattSize, int max)
 {
     const SWord* last = start + max;

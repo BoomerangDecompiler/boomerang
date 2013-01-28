@@ -15,7 +15,7 @@
  * FILE:       decoder.m
  * OVERVIEW:   Implementation of the SPARC specific parts of the
  *               SparcDecoder class.
- *============================================================================*/
+ ******************************************************************************/
 
 /* $Revision$    // 1.20.2.2
  *
@@ -31,7 +31,7 @@
 
 /*==============================================================================
  * Dependencies.
- *============================================================================*/
+ ******************************************************************************/
 
 #include <cassert>
 #include <cstring>
@@ -70,7 +70,7 @@
  * OVERVIEW:       A dummy function to suppress "unused local variable" messages
  * PARAMETERS:       x: integer variable to be "used"
  * RETURNS:           Nothing
- *============================================================================*/
+ ******************************************************************************/
 void SparcDecoder::unused(int x)
 {}
 
@@ -81,7 +81,7 @@ void SparcDecoder::unused(int x)
  *                   stmts - ptr to list of Statement pointers
  *                   name - instruction name (e.g. "BNE,a", or "BPNE")
  * RETURNS:           Pointer to newly created RTL, or NULL if invalid
- *============================================================================*/
+ ******************************************************************************/
 RTL* SparcDecoder::createBranchRtl(ADDRESS pc, std::list<Statement*>* stmts, const char* name) {
     RTL* res = new RTL(pc, stmts);
     BranchStatement* br = new BranchStatement();
@@ -203,7 +203,7 @@ RTL* SparcDecoder::createBranchRtl(ADDRESS pc, std::list<Statement*>* stmts, con
  *                   proc - the enclosing procedure. This can be NULL for those of us who are using this method in an
  *                    interpreter
  * RETURNS:           a DecodeResult structure containing all the information gathered during decoding
- *============================================================================*/
+ ******************************************************************************/
 DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
     static DecodeResult result;
     ADDRESS hostPC = pc+delta;
@@ -2743,7 +2743,7 @@ MATCH_finished_d: (void)0; /*placeholder for label*/
  * OVERVIEW:        Decode the register on the LHS
  * PARAMETERS:        r - register (0-31)
  * RETURNS:            the expression representing the register
- *============================================================================*/
+ ******************************************************************************/
 Exp* SparcDecoder::dis_RegLhs(unsigned r)
 {
     return Location::regOf(r);
@@ -2756,7 +2756,7 @@ Exp* SparcDecoder::dis_RegLhs(unsigned r)
  * NOTE:            Not used by DIS_RD since don't want 0 on LHS
  * PARAMETERS:        r - register (0-31)
  * RETURNS:            the expression representing the register
- *============================================================================*/
+ ******************************************************************************/
 Exp* SparcDecoder::dis_RegRhs(unsigned r)
 {
     if (r == 0)
@@ -2770,7 +2770,7 @@ Exp* SparcDecoder::dis_RegRhs(unsigned r)
  * NOTE:            Used via macro DIS_ROI
  * PARAMETERS:        pc - an address in the instruction stream
  * RETURNS:            the register or immediate at the given address
- *============================================================================*/
+ ******************************************************************************/
 Exp* SparcDecoder::dis_RegImm(ADDRESS pc)
 {
 
@@ -2830,7 +2830,7 @@ MATCH_finished_c: (void)0; /*placeholder for label*/
  * PARAMETERS:        pc - the instruction stream address of the dynamic address
  *                    ignore - redundant parameter on SPARC
  * RETURNS:            the Exp* representation of the given address
- *============================================================================*/
+ ******************************************************************************/
 Exp* SparcDecoder::dis_Eaddr(ADDRESS pc, int ignore /* = 0 */)
 {
     Exp* expr;
@@ -2927,7 +2927,7 @@ MATCH_finished_b: (void)0; /*placeholder for label*/
  *                    like this offset is a pointer to a function?
  * PARAMETERS:      hostPC - pointer to the code in question (host address)
  * RETURNS:          True if a match found
- *============================================================================*/
+ ******************************************************************************/
 bool SparcDecoder::isFuncPrologue(ADDRESS hostPC)
 {
     return false;
@@ -2938,7 +2938,7 @@ bool SparcDecoder::isFuncPrologue(ADDRESS hostPC)
  * OVERVIEW:      Check to see if the instruction at the given offset is a restore instruction
  * PARAMETERS:      hostPC - pointer to the code in question (host address)
  * RETURNS:          True if a match found
- *============================================================================*/
+ ******************************************************************************/
 bool SparcDecoder::isRestore(ADDRESS hostPC) {
 
 
@@ -3006,7 +3006,7 @@ MATCH_finished_a: (void)0; /*placeholder for label*/
  * OVERVIEW:        Returns the double starting at the given address.
  * PARAMETERS:        lc - address at which to decode the double
  * RETURNS:            the decoded double
- *============================================================================*/
+ ******************************************************************************/
 DWord SparcDecoder::getDword(ADDRESS lc)
 {
     Byte* p = (Byte*)lc.m_value;
@@ -3018,7 +3018,7 @@ DWord SparcDecoder::getDword(ADDRESS lc)
  * OVERVIEW:
  * PARAMETERS:       None
  * RETURNS:           N/A
- *============================================================================*/
+ ******************************************************************************/
 SparcDecoder::SparcDecoder(Prog* prog) : NJMCDecoder(prog)
 {
     std::string file = Boomerang::get()->getProgPath() + "frontend/machine/sparc/sparc.ssl";

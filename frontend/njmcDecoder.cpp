@@ -12,7 +12,7 @@
 /*==============================================================================
  * FILE:       njmcDecoder.cc
  * OVERVIEW:   This file contains the machine independent decoding functionality.
- *============================================================================*/
+ ******************************************************************************/
 /*
  * $Revision$    // 1.19.2.3
  *
@@ -48,7 +48,7 @@
  * OVERVIEW:
  * PARAMETERS:       prog: Pointer to the Prog object
  * RETURNS:           N/A
- *============================================================================*/
+ ******************************************************************************/
 NJMCDecoder::NJMCDecoder(Prog* prog) : prog(prog)
 {}
 
@@ -61,7 +61,7 @@ NJMCDecoder::NJMCDecoder(Prog* prog) : prog(prog)
  *                   name - instruction name
  *                   ... - Semantic String ptrs representing actual operands
  * RETURNS:           an instantiated list of Exps
- *============================================================================*/
+ ******************************************************************************/
 std::list<Statement*>* NJMCDecoder::instantiate(ADDRESS pc, const char* name, ...) {
     // Get the signature of the instruction and extract its parts
     std::pair<std::string,unsigned> sig = RTLDict.getSignature(name);
@@ -107,7 +107,7 @@ std::list<Statement*>* NJMCDecoder::instantiate(ADDRESS pc, const char* name, ..
  * PARAMETERS:       name - parameter name
  *                   ... - Exp* representing actual operands
  * RETURNS:           an instantiated list of Exps
- *============================================================================*/
+ ******************************************************************************/
 Exp* NJMCDecoder::instantiateNamedParam(char* name, ...) {
     if (RTLDict.ParamSet.find(name) == RTLDict.ParamSet.end()) {
         std::cerr << "No entry for named parameter '" << name << "'\n";
@@ -146,7 +146,7 @@ Exp* NJMCDecoder::instantiateNamedParam(char* name, ...) {
  *                   exp - expression to instantiate into
  *                   ... - Exp* representing actual operands
  * RETURNS:           an instantiated list of Exps
- *============================================================================*/
+ ******************************************************************************/
 void NJMCDecoder::substituteCallArgs(char *name, Exp*& exp, ...)
 {
     if (RTLDict.ParamSet.find(name) == RTLDict.ParamSet.end()) {
@@ -175,7 +175,7 @@ void NJMCDecoder::substituteCallArgs(char *name, Exp*& exp, ...)
  * OVERVIEW:       Resets the fields of a DecodeResult to their default values.
  * PARAMETERS:       <none>
  * RETURNS:           <nothing>
- *============================================================================*/
+ ******************************************************************************/
 void DecodeResult::reset()
 {
     numBytes = 0;
@@ -189,14 +189,14 @@ void DecodeResult::reset()
 /*==============================================================================
  * These are functions used to decode instruction operands into
  * Exp*s.
- *============================================================================*/
+ ******************************************************************************/
 
 /*==============================================================================
  * FUNCTION:        NJMCDecoder::dis_Reg
  * OVERVIEW:        Converts a numbered register to a suitable expression.
  * PARAMETERS:        reg - the register number, e.g. 0 for eax
  * RETURNS:            the Exp* for the register NUMBER (e.g. "int 36" for %f4)
- *============================================================================*/
+ ******************************************************************************/
 Exp* NJMCDecoder::dis_Reg(int regNum)
 {
     Exp* expr = Location::regOf(regNum);
@@ -208,7 +208,7 @@ Exp* NJMCDecoder::dis_Reg(int regNum)
  * OVERVIEW:        Converts a number to a Exp* expression.
  * PARAMETERS:        num - a number
  * RETURNS:            the Exp* representation of the given number
- *============================================================================*/
+ ******************************************************************************/
 Exp* NJMCDecoder::dis_Num(unsigned num)
 {
     Exp* expr = new Const((int)num);
@@ -221,7 +221,7 @@ Exp* NJMCDecoder::dis_Num(unsigned num)
  *                    Also check if the destination is a label (MVE: is this done?)
  * PARAMETERS:
  * RETURNS:            <none>
- *============================================================================*/
+ ******************************************************************************/
 void NJMCDecoder::unconditionalJump(const char* name, int size, ADDRESS relocd, int delta, ADDRESS pc,
                                     std::list<Statement*>* stmts, DecodeResult& result) {
     result.rtl = new RTL(pc, stmts);
@@ -242,7 +242,7 @@ void NJMCDecoder::unconditionalJump(const char* name, int size, ADDRESS relocd, 
  *                    stmts: list of statements (?)
  *                    result: ref to decoder result object
  * RETURNS:            <none>
- *============================================================================*/
+ ******************************************************************************/
 void NJMCDecoder::computedJump(const char* name, int size, Exp* dest, ADDRESS pc, std::list<Statement*>* stmts,
                                DecodeResult& result) {
     result.rtl = new RTL(pc, stmts);
@@ -264,7 +264,7 @@ void NJMCDecoder::computedJump(const char* name, int size, Exp* dest, ADDRESS pc
  *                    stmts: list of statements (?)
  *                    result: ref to decoder result object
  * RETURNS:            <none>
- *============================================================================*/
+ ******************************************************************************/
 void NJMCDecoder::computedCall(const char* name, int size, Exp* dest, ADDRESS pc, std::list<Statement*>* stmts,
                                DecodeResult& result) {
     result.rtl = new RTL(pc, stmts);

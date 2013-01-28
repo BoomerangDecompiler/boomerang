@@ -15,7 +15,7 @@
  * FILE:       sslinst.cc
  * OVERVIEW:   This file defines the classes used to represent the semantic
  *               definitions of instructions and given in a .ssl file.
- *============================================================================*/
+ ******************************************************************************/
 
 /*
  * $Revision$    // 1.27.2.2
@@ -29,7 +29,7 @@
 
 /*==============================================================================
  * Dependencies.
- *============================================================================*/
+ ******************************************************************************/
 
 #include <cassert>
 #if defined(_MSC_VER) && _MSC_VER <= 1200
@@ -62,7 +62,7 @@
  * OVERVIEW:        Constructor
  * PARAMETERS:        <none>
  * RETURNS:            <nothing>
- *============================================================================*/
+ ******************************************************************************/
 TableEntry::TableEntry() { flags = 0; }
 
 /*==============================================================================
@@ -71,7 +71,7 @@ TableEntry::TableEntry() { flags = 0; }
  * PARAMETERS:        p -
  *                    r - reference to a RTL
  * RETURNS:            <nothing>
- *============================================================================*/
+ ******************************************************************************/
 TableEntry::TableEntry(std::list<std::string>& p, RTL& r) : rtl(r)
 {
     for (std::list<std::string>::iterator it = p.begin(); it != p.end(); it++)
@@ -84,7 +84,7 @@ TableEntry::TableEntry(std::list<std::string>& p, RTL& r) : rtl(r)
  * OVERVIEW:        Set the parameter list.
  * PARAMETERS:        p - a list of strings
  * RETURNS:            <nothing>
- *============================================================================*/
+ ******************************************************************************/
 void TableEntry::setParam(std::list<std::string>& p) { params = p; }
 
 /*==============================================================================
@@ -92,7 +92,7 @@ void TableEntry::setParam(std::list<std::string>& p) { params = p; }
  * OVERVIEW:        Set the RTL.
  * PARAMETERS:        r - a RTL
  * RETURNS:            <nothing>
- *============================================================================*/
+ ******************************************************************************/
 void TableEntry::setRTL(RTL& r) {
     rtl = r;
 }
@@ -103,7 +103,7 @@ void TableEntry::setRTL(RTL& r) {
  *                    different from the semantics of operator= for an RTL which only does a shallow copy!
  * PARAMETERS:        other - the object to copy
  * RETURNS:            a reference to this object
- *============================================================================*/
+ ******************************************************************************/
 const TableEntry& TableEntry::operator=(const TableEntry& other) {
     for (std::list<std::string>::const_iterator it = other.params.begin(); it != other.params.end(); it++)
         params.push_back(*it);
@@ -117,7 +117,7 @@ const TableEntry& TableEntry::operator=(const TableEntry& other) {
  * PARAMETERS:        p: reference to list of formal parameters (as strings)
  *                    r: reference to RTL with list of Exps to append
  * RETURNS:            0 for success
- *============================================================================*/
+ ******************************************************************************/
 int TableEntry::appendRTL(std::list<std::string>& p, RTL& r) {
     bool match = (p.size() == params.size());
     std::list<std::string>::iterator a, b;
@@ -138,7 +138,7 @@ int TableEntry::appendRTL(std::list<std::string>& p, RTL& r) {
  *                    p: list of formal parameters (as strings) for the RTL to add
  *                    r: reference to the RTL to add
  * RETURNS:            0 for success
- *============================================================================*/
+ ******************************************************************************/
 int RTLInstDict::appendToDict(std::string &n, std::list<std::string>& p, RTL& r)
 {
     char *opcode = new char[n.size() + 1];
@@ -170,7 +170,7 @@ RTLInstDict::~RTLInstDict()
  *                    This also reads and sets up the register map and flag functions.
  * PARAMETERS:        SSLFileName - the name of the file containing the SSL specification.
  * RETURNS:            the file was successfully read
- *============================================================================*/
+ ******************************************************************************/
 bool RTLInstDict::readSSLFile(const std::string& SSLFileName)
 {
     // emptying the rtl dictionary
@@ -209,7 +209,7 @@ bool RTLInstDict::readSSLFile(const std::string& SSLFileName)
  * OVERVIEW:        Add a new register definition to the dictionary
  * PARAMETERS:
  * RETURNS:            <nothing>
- *============================================================================*/
+ ******************************************************************************/
 void RTLInstDict::addRegister( const char *name, int id, int size, bool flt )
 {
     RegMap[name] = id;
@@ -236,7 +236,7 @@ void RTLInstDict::addRegister( const char *name, int id, int size, bool flt )
  * OVERVIEW:        Print a textual representation of the dictionary.
  * PARAMETERS:        std::cout - stream used for printing
  * RETURNS:            <nothing>
- *============================================================================*/
+ ******************************************************************************/
 void RTLInstDict::print(std::ostream& os /*= std::cout*/)
 {
     for (std::map<std::string, TableEntry>::iterator p = idict.begin();
@@ -281,7 +281,7 @@ void RTLInstDict::print(std::ostream& os /*= std::cout*/)
  *                     where the arms are lambdas.
  * PARAMETERS:         None
  * RETURNS:             Nothing
- *============================================================================*/
+ ******************************************************************************/
 void RTLInstDict::fixupParams( )
 {
     std::map<std::string,ParamEntry>::iterator param;
@@ -355,7 +355,7 @@ void RTLInstDict::fixupParamsSub( std::string s, std::list<std::string>& funcPar
  * OVERVIEW:         Returns the signature of the given instruction.
  * PARAMETERS:         name -
  * RETURNS:             the signature (name + number of operands)
- *============================================================================*/
+ ******************************************************************************/
 std::pair<std::string,unsigned> RTLInstDict::getSignature(const char* name) {
     // Take the argument, convert it to upper case and remove any _'s and .'s
     char *opcode = new char[strlen(name) + 1];
@@ -384,7 +384,7 @@ std::pair<std::string,unsigned> RTLInstDict::getSignature(const char* name) {
  * PARAMETERS:         exp - points to a Exp* to be scanned
  *                     ty - ref to a Type object to put the partial type into
  * RETURNS:             True if a partial type is found
- *============================================================================*/
+ ******************************************************************************/
 bool RTLInstDict::partialType(Exp* exp, Type& ty)
 {
     if (exp->isSizeCast()) {
@@ -405,7 +405,7 @@ bool RTLInstDict::partialType(Exp* exp, Type& ty)
  * PARAMETERS:         name - the name of the instruction (must correspond to one defined in the SSL file).
  *                     actuals - the actual values
  * RETURNS:             the instantiated list of Exps
- *============================================================================*/
+ ******************************************************************************/
 std::list<Statement*>* RTLInstDict::instantiateRTL(std::string& name, ADDRESS natPC, std::vector<Exp*>& actuals) {
     // If -f is in force, use the fast (but not as precise) name instead
     const std::string* lname = &name;
@@ -434,7 +434,7 @@ std::list<Statement*>* RTLInstDict::instantiateRTL(std::string& name, ADDRESS na
  *                     params - a list of formal parameters
  *                     actuals - the actual parameter values
  * RETURNS:             the instantiated list of Exps
- *============================================================================*/
+ ******************************************************************************/
 std::list<Statement*>* RTLInstDict::instantiateRTL(RTL& rtl, ADDRESS natPC, std::list<std::string>& params,
                                                    std::vector<Exp*>& actuals) {
     assert(params.size() == actuals.size());

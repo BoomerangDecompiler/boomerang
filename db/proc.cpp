@@ -8,7 +8,7 @@
  *
  */
 
-/*==============================================================================
+/***************************************************************************//**
  * FILE:       proc.cc
  * OVERVIEW:   Implementation of the Proc hierachy (Proc, UserProc, LibProc).
  *               All aspects of a procedure, apart from the actual code in the
@@ -16,7 +16,7 @@
  *
  * Copyright (C) 1997-2001, The University of Queensland, BT group
  * Copyright (C) 2000-2001, Sun Microsystems, Inc
- *============================================================================*/
+ ******************************************************************************/
 
 /*
  * $Revision$    // 1.238.2.44
@@ -29,9 +29,9 @@
  * 08 Mar 06 - Mike: fixed use of invalidated iterator in set/map::erase() (thanks, tamlin!)
  */
 
-/*==============================================================================
+/***************************************************************************//**
  * Dependencies.
- *============================================================================*/
+ ******************************************************************************/
 
 #include <sstream>
 #include <algorithm>        // For find()
@@ -81,12 +81,12 @@ extern char debug_buffer[];        // Defined in basicblock.cpp, size DEBUG_BUFS
 Proc::~Proc()
 {}
 
-/*==============================================================================
- * FUNCTION:        Proc::Proc
+/***************************************************************************//**
+ *
  * OVERVIEW:        Constructor with name, native address.
  * PARAMETERS:        uNative - Native address of entry point of procedure
- * RETURNS:            <nothing>
- *============================================================================*/
+ * \returns            <nothing>
+ ******************************************************************************/
 Proc::Proc(Prog *prog, ADDRESS uNative, Signature *sig)
     : prog(prog), signature(sig), address(uNative), m_firstCaller(NULL)
 {
@@ -96,35 +96,35 @@ Proc::Proc(Prog *prog, ADDRESS uNative, Signature *sig)
         cluster = prog->getRootCluster();
 }
 
-/*==============================================================================
- * FUNCTION:        Proc::getName
+/***************************************************************************//**
+ *
  * OVERVIEW:        Returns the name of this procedure
  * PARAMETERS:        <none>
- * RETURNS:            the name of this procedure
- *============================================================================*/
+ * \returns            the name of this procedure
+ ******************************************************************************/
 const char* Proc::getName() {
     assert(signature);
     return signature->getName();
 }
 
-/*==============================================================================
- * FUNCTION:        Proc::setName
+/***************************************************************************//**
+ *
  * OVERVIEW:        Sets the name of this procedure
  * PARAMETERS:        new name
- * RETURNS:            <nothing>
- *============================================================================*/
+ * \returns            <nothing>
+ ******************************************************************************/
 void Proc::setName(const char *nam) {
     assert(signature);
     signature->setName(nam);
 }
 
 
-/*==============================================================================
- * FUNCTION:        Proc::getNativeAddress
+/***************************************************************************//**
+ *
  * OVERVIEW:        Get the native address (entry point).
  * PARAMETERS:        <none>
- * RETURNS:            the native address of this procedure (entry point)
- *============================================================================*/
+ * \returns            the native address of this procedure (entry point)
+ ******************************************************************************/
 ADDRESS Proc::getNativeAddress() {
     return address;
 }
@@ -156,12 +156,12 @@ bool UserProc::isNoReturn()
     return false;
 }
 
-/*==============================================================================
- * FUNCTION:      Proc::containsAddr
+/***************************************************************************//**
+ *
  * OVERVIEW:      Return true if this procedure contains the given address
  * PARAMETERS:      address
- * RETURNS:          true if it does
- *============================================================================*/
+ * \returns          true if it does
+ ******************************************************************************/
 bool UserProc::containsAddr(ADDRESS uAddr) {
     BB_IT it;
     for (PBB bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it))
@@ -347,13 +347,13 @@ void UserProc::printUseGraph()
     out.close();
 }
 
-/*==============================================================================
- * FUNCTION:        operator<<
+/***************************************************************************//**
+ *
  * OVERVIEW:        Output operator for a Proc object.
  * PARAMETERS:        os - output stream
  *                    proc -
- * RETURNS:            os
- *============================================================================*/
+ * \returns            os
+ ******************************************************************************/
 //std::ostream& operator<<(std::ostream& os, Proc& proc) {
 //    return proc.put(os);
 //}
@@ -372,13 +372,13 @@ Proc *Proc::getFirstCaller() {
  * LibProc methods.
  *********************/
 
-/*==============================================================================
- * FUNCTION:        LibProc::LibProc
+/***************************************************************************//**
+ *
  * OVERVIEW:        Constructor with name, native address.
  * PARAMETERS:        name - Name of procedure
  *                    uNative - Native address of entry point of procedure
- * RETURNS:            <nothing>
- *============================================================================*/
+ * \returns            <nothing>
+ ******************************************************************************/
 LibProc::LibProc(Prog *prog, std::string& name, ADDRESS uNative) : Proc(prog, uNative, NULL) {
     Signature* sig = prog->getLibSignature(name.c_str());
     signature = sig;
@@ -387,12 +387,12 @@ LibProc::LibProc(Prog *prog, std::string& name, ADDRESS uNative) : Proc(prog, uN
 LibProc::~LibProc()
 {}
 
-/*==============================================================================
- * FUNCTION:        LibProc::put
+/***************************************************************************//**
+ *
  * OVERVIEW:        Display on os.
  * PARAMETERS:        os -
- * RETURNS:            os
- *============================================================================*/
+ * \returns            os
+ ******************************************************************************/
 //std::ostream& LibProc::put(std::ostream& os) {
 //    os << "library procedure `" << signature->getName() << "' resides at 0x";
 //    return os << std::hex << address << std::endl;
@@ -411,13 +411,13 @@ bool LibProc::isPreserved(Exp* e) {
  * UserProc methods.
  *********************/
 
-/*==============================================================================
- * FUNCTION:        UserProc::UserProc
+/***************************************************************************//**
+ *
  * OVERVIEW:        Constructor with name, native address.
  * PARAMETERS:        name - Name of procedure
  *                    uNative - Native address of entry point of procedure
- * RETURNS:            <nothing>
- *============================================================================*/
+ * \returns            <nothing>
+ ******************************************************************************/
 UserProc::UserProc() : Proc(), cfg(NULL), status(PROC_UNDECODED),
     // decoded(false), analysed(false),
     nextLocal(0), nextParam(0),    // decompileSeen(false), decompiled(false), isRecursive(false)
@@ -441,13 +441,13 @@ UserProc::~UserProc() {
         delete cfg;
 }
 
-/*==============================================================================
- * FUNCTION:        UserProc::deleteCFG
+/***************************************************************************//**
+ *
  * OVERVIEW:        Deletes the whole CFG for this proc object. Also clears the
  *                    cfg pointer, to prevent strange errors after this is called
  * PARAMETERS:        <none>
- * RETURNS:            <nothing>
- *============================================================================*/
+ * \returns            <nothing>
+ ******************************************************************************/
 void UserProc::deleteCFG() {
     delete cfg;
     cfg = NULL;
@@ -543,44 +543,44 @@ void UserProc::printAST(SyntaxNode *a)
     of.close();
 }
 
-/*==============================================================================
- * FUNCTION:        UserProc::setDecoded
+/***************************************************************************//**
+ *
  * OVERVIEW:
  * PARAMETERS:
- * RETURNS:
- *============================================================================*/
+ * \returns
+ ******************************************************************************/
 void UserProc::setDecoded() {
     setStatus(PROC_DECODED);
     printDecodedXML();
 }
 
-/*==============================================================================
- * FUNCTION:        UserProc::unDecode
+/***************************************************************************//**
+ *
  * OVERVIEW:
  * PARAMETERS:
- * RETURNS:
- *============================================================================*/
+ * \returns
+ ******************************************************************************/
 void UserProc::unDecode() {
     cfg->clear();
     setStatus(PROC_UNDECODED);
 }
 
-/*==============================================================================
- * FUNCTION:    UserProc::getEntryBB
+/***************************************************************************//**
+ *
  * OVERVIEW:    Get the BB with the entry point address for this procedure
  * PARAMETERS:
- * RETURNS:        Pointer to the entry point BB, or NULL if not found
- *============================================================================*/
+ * \returns        Pointer to the entry point BB, or NULL if not found
+ ******************************************************************************/
 PBB UserProc::getEntryBB() {
     return cfg->getEntryBB();
 }
 
-/*==============================================================================
- * FUNCTION:        UserProc::setEntryBB
+/***************************************************************************//**
+ *
  * OVERVIEW:        Set the entry BB for this procedure
  * PARAMETERS:        <none>
- * RETURNS:            <nothing>
- *============================================================================*/
+ * \returns            <nothing>
+ ******************************************************************************/
 void UserProc::setEntryBB() {
     std::list<PBB>::iterator bbit;
     PBB pBB = cfg->getFirstBB(bbit);        // Get an iterator to the first BB
@@ -591,12 +591,12 @@ void UserProc::setEntryBB() {
     cfg->setEntryBB(pBB);
 }
 
-/*==============================================================================
- * FUNCTION:        UserProc::addCallee
+/***************************************************************************//**
+ *
  * OVERVIEW:        Add this callee to the set of callees for this proc
  * PARAMETERS:        A pointer to the Proc object for the callee
- * RETURNS:            <nothing>
- *============================================================================*/
+ * \returns            <nothing>
+ ******************************************************************************/
 void UserProc::addCallee(Proc* callee) {
     // is it already in? (this is much slower than using a set)
     std::list<Proc*>::iterator cc;
@@ -2457,7 +2457,8 @@ Exp *UserProc::getSymbolExp(Exp *le, Type *ty, bool lastPass) {
         // type early results in aliases to this local not being recognised
         if (ty) {
             Exp* base = le;
-            if (le->isSubscript()) base = ((RefExp*)le)->getSubExp1();
+            if (le->isSubscript())
+                base = ((RefExp*)le)->getSubExp1();
             e = newLocal(ty->clone(), le);
             mapSymbolTo(le->clone(), e);
             e = e->clone();

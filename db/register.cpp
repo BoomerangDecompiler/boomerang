@@ -13,7 +13,7 @@
  * File: register.cc
  * Desc: Register class descriptions.  Holds detailed information about
  *         a single register.
- *============================================================================*/
+ ******************************************************************************/
 
 /* $Revision$
  *
@@ -43,7 +43,7 @@
  * OVERVIEW:      Constructor.
  * PARAMETERS:      <none>
  * RETURNS:          N/A
- *============================================================================*/
+ ******************************************************************************/
 Register::Register() : name(NULL), address(NULL), mappedIndex(-1),
     mappedOffset(-1), flt(false)
 {}
@@ -53,7 +53,7 @@ Register::Register() : name(NULL), address(NULL), mappedIndex(-1),
  * OVERVIEW:      Copy constructor.
  * PARAMETERS:      Reference to another Register object to construct from
  * RETURNS:          N/A
- *============================================================================*/
+ ******************************************************************************/
 Register::Register(const Register& r) : name(NULL), size(r.size),
     address(r.address),    mappedIndex(r.mappedIndex),
     mappedOffset(r.mappedOffset), flt(r.flt)
@@ -67,7 +67,7 @@ Register::Register(const Register& r) : name(NULL), size(r.size),
  * OVERVIEW:      Copy operator
  * PARAMETERS:      Reference to another Register object (to be copied)
  * RETURNS:          This object
- *============================================================================*/
+ ******************************************************************************/
 Register Register::operator=(const Register& r2)
 {
     // copy operator
@@ -90,7 +90,7 @@ Register Register::operator=(const Register& r2)
  * OVERVIEW:      Equality operator
  * PARAMETERS:      Reference to another Register object
  * RETURNS:          True if the same
- *============================================================================*/
+ ******************************************************************************/
 bool Register::operator==(const Register& r2) const {
     // compare on name
     assert(name != NULL && r2.name != NULL);
@@ -104,7 +104,7 @@ bool Register::operator==(const Register& r2) const {
  * OVERVIEW:      Comparison operator (to establish an ordering)
  * PARAMETERS:      Reference to another Register object
  * RETURNS:          true if this name is less than the given Register's name
- *============================================================================*/
+ ******************************************************************************/
 bool Register::operator<(const Register& r2) const
 {
     assert(name != NULL && r2.name != NULL);
@@ -120,7 +120,7 @@ bool Register::operator<(const Register& r2) const
  * OVERVIEW:      Set the name for this register
  * PARAMETERS:      s: name to set it to
  * RETURNS:          <nothing>
- *============================================================================*/
+ ******************************************************************************/
 void Register::s_name(const char *s)
 {
     assert(s != NULL);
@@ -135,7 +135,7 @@ void Register::s_name(const char *s)
  * OVERVIEW:      Get the name for this register
  * PARAMETERS:      <none>
  * RETURNS:          The name as a character string
- *============================================================================*/
+ ******************************************************************************/
 const char *Register::g_name() const {
     static char outname[100];
 
@@ -149,7 +149,7 @@ const char *Register::g_name() const {
  * OVERVIEW:      Get the type for this register
  * PARAMETERS:      <none>
  * RETURNS:          The type as a pointer to a Type object
- *============================================================================*/
+ ******************************************************************************/
 Type* Register::g_type() const
 {
     if (flt)

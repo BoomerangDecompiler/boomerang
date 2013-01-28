@@ -9,10 +9,10 @@
  *
  */
 
-/*==============================================================================
+/***************************************************************************//**
  * FILE:     basicblock.cc
  * OVERVIEW: Implementation of the BasicBlock class.
- *============================================================================*/
+ ******************************************************************************/
 
 /*
  * $Revision$    // 1.93.2.8
@@ -26,9 +26,9 @@
 */
 
 
-/*==============================================================================
+/***************************************************************************//**
  * Dependencies.
- *============================================================================*/
+ ******************************************************************************/
 
 #include <cassert>
 #include <cstring>
@@ -61,12 +61,12 @@
  * BasicBlock methods
  **********************************/
 
-/*==============================================================================
- * FUNCTION:        BasicBlock::BasicBlock
+/***************************************************************************//**
+ *
  * OVERVIEW:        Constructor.
  * PARAMETERS:        <none>
- * RETURNS:            <nothing>
- *============================================================================*/
+ * \returns            <nothing>
+ ******************************************************************************/
 BasicBlock::BasicBlock()
     :
       m_DFTfirst(0), m_DFTlast(0),
@@ -92,12 +92,12 @@ BasicBlock::BasicBlock()
 {
 }
 
-/*==============================================================================
- * FUNCTION:        BasicBlock::~BasicBlock
+/***************************************************************************//**
+ *
  * OVERVIEW:        Destructor.
  * PARAMETERS:        <none>
- * RETURNS:            <nothing>
- *============================================================================*/
+ * \returns            <nothing>
+ ******************************************************************************/
 BasicBlock::~BasicBlock() {
     if (m_pRtls)
     {
@@ -117,12 +117,12 @@ BasicBlock::~BasicBlock() {
 }
 
 
-/*==============================================================================
- * FUNCTION:        BasicBlock::BasicBlock
+/***************************************************************************//**
+ *
  * OVERVIEW:        Copy constructor.
  * PARAMETERS:        bb - the BB to copy from
- * RETURNS:            <nothing>
- *============================================================================*/
+ * \returns            <nothing>
+ ******************************************************************************/
 BasicBlock::BasicBlock(const BasicBlock& bb)
     :    m_DFTfirst(0), m_DFTlast(0),
       m_structType(bb.m_structType), m_loopCondType(bb.m_loopCondType),
@@ -149,14 +149,14 @@ BasicBlock::BasicBlock(const BasicBlock& bb)
     setRTLs(bb.m_pRtls);
 }
 
-/*==============================================================================
- * FUNCTION:        BasicBlock::BasicBlock
+/***************************************************************************//**
+ *
  * OVERVIEW:        Private constructor.
  * PARAMETERS:        pRtls -
  *                    bbType -
  *                    iNumOutEdges -
- * RETURNS:            <nothing>
- *============================================================================*/
+ * \returns            <nothing>
+ ******************************************************************************/
 BasicBlock::BasicBlock(std::list<RTL*>* pRtls, BBTYPE bbType, int iNumOutEdges)
     :    m_DFTfirst(0), m_DFTlast(0),
       m_structType(NONE), m_loopCondType(NONE),
@@ -184,13 +184,13 @@ BasicBlock::BasicBlock(std::list<RTL*>* pRtls, BBTYPE bbType, int iNumOutEdges)
 
 }
 
-/*==============================================================================
- * FUNCTION:        BasicBlock::getLabel
+/***************************************************************************//**
+ *
  * OVERVIEW:        Returns nonzero if this BB has a label, in the sense that a label is required in the translated
  *                        source code
  * PARAMETERS:        <none>
- * RETURNS:            An integer unique to this BB, or zero
- *============================================================================*/
+ * \returns            An integer unique to this BB, or zero
+ ******************************************************************************/
 int BasicBlock::getLabel() {
     return m_iLabelNum;
 }
@@ -203,33 +203,33 @@ bool BasicBlock::isCaseOption() {
     return false;
 }
 
-/*==============================================================================
- * FUNCTION:        BasicBlock::isTraversed
+/***************************************************************************//**
+ *
  * OVERVIEW:        Returns nonzero if this BB has been traversed
  * PARAMETERS:        <none>
- * RETURNS:            True if traversed
- *============================================================================*/
+ * \returns            True if traversed
+ ******************************************************************************/
 bool BasicBlock::isTraversed() {
     return m_iTraversed;
 }
 
-/*==============================================================================
- * FUNCTION:        BasicBlock::setTraversed
+/***************************************************************************//**
+ *
  * OVERVIEW:        Sets the traversed flag
  * PARAMETERS:        bTraversed: true to set this BB to traversed
- * RETURNS:            <nothing>
- *============================================================================*/
+ * \returns            <nothing>
+ ******************************************************************************/
 void BasicBlock::setTraversed(bool bTraversed) {
     m_iTraversed = bTraversed;
 }
 
-/*==============================================================================
- * FUNCTION:        BasicBlock::setRTLs
+/***************************************************************************//**
+ *
  * OVERVIEW:        Sets the RTLs for a basic block. This is the only place that the RTLs for a block must be set as we
  *                        need to add the back link for a call instruction to its enclosing BB.
  * PARAMETERS:        rtls - a list of RTLs
- * RETURNS:            <nothing>
- *============================================================================*/
+ * \returns            <nothing>
+ ******************************************************************************/
 void BasicBlock::setRTLs(std::list<RTL*>* rtls) {
     // should we delete old ones here?    breaks some things - trent
     m_pRtls = rtls;
@@ -237,57 +237,57 @@ void BasicBlock::setRTLs(std::list<RTL*>* rtls) {
     // Used to set the link between the last instruction (a call) and this BB if this is a call BB
 }
 
-/*==============================================================================
- * FUNCTION:        BasicBlock::getType
+/***************************************************************************//**
+ *
  * OVERVIEW:        Return the type of the basic block.
  * PARAMETERS:        <none>
- * RETURNS:            the type of the basic block
- *============================================================================*/
+ * \returns            the type of the basic block
+ ******************************************************************************/
 BBTYPE BasicBlock::getType() {
     return m_nodeType;
 }
 
-/*==============================================================================
- * FUNCTION:        BasicBlock::updateType
+/***************************************************************************//**
+ *
  * OVERVIEW:        Update the type and number of out edges. Used for example where a COMPJUMP type is updated to an
  *                        NWAY when a switch idiom is discovered.
  * PARAMETERS:        bbType - the new type
  *                    iNumOutEdges - new number of inedges
- * RETURNS:            <nothing>
- *============================================================================*/
+ * \returns            <nothing>
+ ******************************************************************************/
 void BasicBlock::updateType(BBTYPE bbType, int iNumOutEdges) {
     m_nodeType = bbType;
     m_iNumOutEdges = iNumOutEdges;
     //m_OutEdges.resize(iNumOutEdges);
 }
 
-/*==============================================================================
- * FUNCTION:        BasicBlock::setJumpReqd
+/***************************************************************************//**
+ *
  * OVERVIEW:        Sets the "jump required" bit. This means that this BB is an orphan (not generated from input code),
  *                        and that the "fall through" out edge needs to be implemented as a jump
  * PARAMETERS:        <none>
- * RETURNS:            <nothing>
- *============================================================================*/
+ * \returns            <nothing>
+ ******************************************************************************/
 void BasicBlock::setJumpReqd() {
     m_bJumpReqd = true;
 }
 
-/*==============================================================================
- * FUNCTION:        BasicBlock::isJumpReqd
+/***************************************************************************//**
+ *
  * OVERVIEW:        Returns the "jump required" bit. See above for details
  * PARAMETERS:        <none>
- * RETURNS:            True if a jump is required
- *============================================================================*/
+ * \returns            True if a jump is required
+ ******************************************************************************/
 bool BasicBlock::isJumpReqd() {
     return m_bJumpReqd;
 }
 
-/*==============================================================================
- * FUNCTION:        BasicBlock::prints
+/***************************************************************************//**
+ *
  * OVERVIEW:        Print to a static string (for debugging)
  * PARAMETERS:        <none>
- * RETURNS:            Address of the static buffer
- *============================================================================*/
+ * \returns            Address of the static buffer
+ ******************************************************************************/
 char debug_buffer[DEBUG_BUFSIZE];
 
 char* BasicBlock::prints() {
@@ -304,13 +304,13 @@ void BasicBlock::dump() {
     print(std::cerr);
 }
 
-/*==============================================================================
- * FUNCTION:        BasicBlock::print()
+/***************************************************************************//**
+ *
  * OVERVIEW:        Display the whole BB to the given stream
  *                    Used for "-R" option, and handy for debugging
  * PARAMETERS:        os - stream to output to
- * RETURNS:            <nothing>
- *============================================================================*/
+ * \returns            <nothing>
+ ******************************************************************************/
 void BasicBlock::print(std::ostream& os, bool html) {
     if (html)
         os << "<br>";
@@ -375,16 +375,16 @@ void printBB(PBB bb) {
     bb->print(std::cerr);
 }
 
-/*==============================================================================
- * FUNCTION:        BasicBlock::getLowAddr
+/***************************************************************************//**
+ *
  * OVERVIEW:        Get the lowest real address associated with this BB. Note that although this is usually the address
  *                        of the first RTL, it is not always so. For example, if the BB contains just a delayed branch,
  *                        and the delay instruction for the branch does not affect the branch, so the delay instruction is
  *                        copied in front of the branch instruction. Its address will be UpdateAddress()d to 0, since it
  *                        is "not really there", so the low address for this BB will be the address of the branch.
  * PARAMETERS:        <none>
- * RETURNS:            the lowest real address associated with this BB
- *============================================================================*/
+ * \returns            the lowest real address associated with this BB
+ ******************************************************************************/
 ADDRESS BasicBlock::getLowAddr() {
     if (m_pRtls == NULL || m_pRtls->size() == 0)
         return ADDRESS::g(0L);
@@ -403,24 +403,24 @@ ADDRESS BasicBlock::getLowAddr() {
     return a;
 }
 
-/*==============================================================================
- * FUNCTION:        BasicBlock::getHiAddr
+/***************************************************************************//**
+ *
  * OVERVIEW:        Get the highest address associated with this BB. This is
  *                    always the address associated with the last RTL.
  * PARAMETERS:        <none>
- * RETURNS:            <nothing>
- *============================================================================*/
+ * \returns            <nothing>
+ ******************************************************************************/
 ADDRESS BasicBlock::getHiAddr() {
     assert(m_pRtls != NULL);
     return m_pRtls->back()->getAddress();
 }
 
-/*==============================================================================
- * FUNCTION:        BasicBlock::getRTLs
+/***************************************************************************//**
+ *
  * OVERVIEW:        Get pointer to the list of RTL*.
  * PARAMETERS:        <none>
- * RETURNS:            <nothing>
- *============================================================================*/
+ * \returns            <nothing>
+ ******************************************************************************/
 std::list<RTL*>* BasicBlock::getRTLs() {
     return m_pRtls;
 }
@@ -438,47 +438,47 @@ RTL* BasicBlock::getRTLWithStatement(Statement *stmt)
     return NULL;
 }
 
-/*==============================================================================
- * FUNCTION:        BasicBlock::getInEdges
+/***************************************************************************//**
+ *
  * OVERVIEW:        Get a constant reference to the vector of in edges.
  * PARAMETERS:        <none>
- * RETURNS:            a constant reference to the vector of in edges
- *============================================================================*/
+ * \returns            a constant reference to the vector of in edges
+ ******************************************************************************/
 std::vector<PBB>& BasicBlock::getInEdges() {
     return m_InEdges;
 }
 
-/*==============================================================================
- * FUNCTION:        BasicBlock::getOutEdges
+/***************************************************************************//**
+ *
  * OVERVIEW:        Get a constant reference to the vector of out edges.
  * PARAMETERS:        <none>
- * RETURNS:            a constant reference to the vector of out edges
- *============================================================================*/
+ * \returns            a constant reference to the vector of out edges
+ ******************************************************************************/
 std::vector<PBB>& BasicBlock::getOutEdges() {
     return m_OutEdges;
 }
 
-/*==============================================================================
- * FUNCTION:        BasicBlock::setInEdge
+/***************************************************************************//**
+ *
  * OVERVIEW:        Change the given in-edge (0 is first) to the given value
  *                    Needed for example when duplicating BBs
  * PARAMETERS:        i: index (0 based) of in-edge to change
  *                    pNewInEdge: pointer to BB that will be a new parent
- * RETURNS:            <nothing>
- *============================================================================*/
+ * \returns            <nothing>
+ ******************************************************************************/
 void BasicBlock::setInEdge(int i, PBB pNewInEdge) {
     m_InEdges[i] = pNewInEdge;
 }
 
-/*==============================================================================
- * FUNCTION:        BasicBlock::setOutEdge
+/***************************************************************************//**
+ *
  * OVERVIEW:        Change the given out-edge (0 is first) to the given value
  *                    Needed for example when duplicating BBs
  * NOTE:            Cannot add an additional out-edge with this function; use addOutEdge for this rare case
  * PARAMETERS:        i: index (0 based) of out-edge to change
  *                    pNewOutEdge: pointer to BB that will be the new successor
- * RETURNS:            <nothing>
- *============================================================================*/
+ * \returns            <nothing>
+ ******************************************************************************/
 void BasicBlock::setOutEdge(int i, PBB pNewOutEdge) {
     if (m_OutEdges.size() == 0) {
         assert(i == 0);
@@ -489,26 +489,26 @@ void BasicBlock::setOutEdge(int i, PBB pNewOutEdge) {
     }
 }
 
-/*==============================================================================
- * FUNCTION:        BasicBlock::getOutEdge
+/***************************************************************************//**
+ *
  * OVERVIEW:        Returns the i-th out edge of this BB; counting starts at 0
  * NOTE:
  * PARAMETERS:        i: index (0 based) of the desired out edge
- * RETURNS:            the i-th out edge; 0 if there is no such out edge
- *============================================================================*/
+ * \returns            the i-th out edge; 0 if there is no such out edge
+ ******************************************************************************/
 PBB BasicBlock::getOutEdge(unsigned int i) {
     if (i < m_OutEdges.size()) return m_OutEdges[i];
     else return 0;
 }
 
-/*==============================================================================
- * FUNCTION:        BasicBlock::getCorrectOutEdge
+/***************************************************************************//**
+ *
  * OVERVIEW:        given an address this method returns the corresponding
  *                    out edge
  * NOTE:
  * PARAMETERS:        a: the address
- * RETURNS:
- *============================================================================*/
+ * \returns
+ ******************************************************************************/
 
 PBB BasicBlock::getCorrectOutEdge(ADDRESS a) {
     std::vector<PBB>::iterator it;
@@ -519,28 +519,28 @@ PBB BasicBlock::getCorrectOutEdge(ADDRESS a) {
 }
 
 
-/*==============================================================================
- * FUNCTION:        BasicBlock::addInEdge
+/***************************************************************************//**
+ *
  * OVERVIEW:        Add the given in-edge
  *                    Needed for example when duplicating BBs
  * PARAMETERS:        pNewInEdge: pointer to BB that will be a new parent
- * RETURNS:            <nothing>
- *============================================================================*/
+ * \returns            <nothing>
+ ******************************************************************************/
 void BasicBlock::addInEdge(PBB pNewInEdge) {
     m_InEdges.push_back(pNewInEdge);
     m_iNumInEdges++;
 }
 
-/*==============================================================================
- * FUNCTION:        BasicBlock::deleteInEdge
+/***************************************************************************//**
+ *
  * OVERVIEW:        Delete the in-edge from the given BB
  *                    Needed for example when duplicating BBs
  * PARAMETERS:        it: iterator to BB that will no longer be a parent
  * SIDE EFFECTS:    The iterator argument is incremented.
  * USAGE:            It should be used like this:
  *                        if (pred) deleteInEdge(it) else it++;
- * RETURNS:            <nothing>
- *============================================================================*/
+ * \returns            <nothing>
+ ******************************************************************************/
 void BasicBlock::deleteInEdge(std::vector<PBB>::iterator& it) {
     it = m_InEdges.erase(it);
     m_iNumInEdges--;
@@ -568,14 +568,14 @@ void BasicBlock::deleteEdge(PBB edge) {
     }
 }
 
-/*==============================================================================
- * FUNCTION:        BasicBlock::DFTOrder
+/***************************************************************************//**
+ *
  * OVERVIEW:        Traverse this node and recurse on its children in a depth first manner. Records the times at which
  *                        this node was first visited and last visited
  * PARAMETERS:        first - the number of nodes that have been visited
  *                    last - the number of nodes that have been visited for the last time during this traversal
- * RETURNS:            the number of nodes (including this one) that were traversed from this node
- *============================================================================*/
+ * \returns            the number of nodes (including this one) that were traversed from this node
+ ******************************************************************************/
 unsigned BasicBlock::DFTOrder(int& first, int& last) {
     first++;
     m_DFTfirst = first;
@@ -595,14 +595,14 @@ unsigned BasicBlock::DFTOrder(int& first, int& last) {
     return numTraversed;
 }
 
-/*==============================================================================
- * FUNCTION:    BasicBlock::RevDFTOrder
+/***************************************************************************//**
+ *
  * OVERVIEW:    Traverse this node and recurse on its parents in a reverse depth first manner.
  *                    Records the times at which this node was first visited and last visited
  * PARAMETERS:    first - the number of nodes that have been visited
  *                last - the number of nodes that have been visited for the last time during this traversal
- * RETURNS:        the number of nodes (including this one) that were traversed from this node
- *============================================================================*/
+ * \returns        the number of nodes (including this one) that were traversed from this node
+ ******************************************************************************/
 unsigned BasicBlock::RevDFTOrder(int& first, int& last) {
     first++;
     m_DFTrevfirst = first;
@@ -624,49 +624,49 @@ unsigned BasicBlock::RevDFTOrder(int& first, int& last) {
     return numTraversed;
 }
 
-/*==============================================================================
- * FUNCTION:        BasicBlock::lessAddress
+/***************************************************************************//**
+ *
  * OVERVIEW:        Static comparison function that returns true if the first BB has an address less than the second BB.
  * PARAMETERS:        bb1 - first BB
  *                    bb2 - last BB
- * RETURNS:            bb1.address < bb2.address
- *============================================================================*/
+ * \returns            bb1.address < bb2.address
+ ******************************************************************************/
 bool BasicBlock::lessAddress(PBB bb1, PBB bb2) {
     return bb1->getLowAddr() < bb2->getLowAddr();
 }
 
-/*==============================================================================
- * FUNCTION:        BasicBlock::lessFirstDFT
+/***************************************************************************//**
+ *
  * OVERVIEW:        Static comparison function that returns true if the first BB has DFT first order less than the
  *                        second BB.
  * PARAMETERS:        bb1 - first BB
  *                    bb2 - last BB
- * RETURNS:            bb1.first_DFS < bb2.first_DFS
- *============================================================================*/
+ * \returns            bb1.first_DFS < bb2.first_DFS
+ ******************************************************************************/
 bool BasicBlock::lessFirstDFT(PBB bb1, PBB bb2) {
     return bb1->m_DFTfirst < bb2->m_DFTfirst;
 }
 
 
-/*==============================================================================
- * FUNCTION:        BasicBlock::lessLastDFT
+/***************************************************************************//**
+ *
  * OVERVIEW:        Static comparison function that returns true if the first BB has DFT first order less than the
  *                        second BB.
  * PARAMETERS:        bb1 - first BB
  *                    bb2 - last BB
- * RETURNS:            bb1.last_DFS < bb2.last_DFS
- *============================================================================*/
+ * \returns            bb1.last_DFS < bb2.last_DFS
+ ******************************************************************************/
 bool BasicBlock::lessLastDFT(PBB bb1, PBB bb2) {
     return bb1->m_DFTlast < bb2->m_DFTlast;
 }
 
-/*==============================================================================
- * FUNCTION:        BasicBlock::getCallDest
+/***************************************************************************//**
+ *
  * OVERVIEW:        Get the destination of the call, if this is a CALL BB with
  *                        a fixed dest. Otherwise, return -1
  * PARAMETERS:        <none>
- * RETURNS:            Native destination of the call, or -1
- *============================================================================*/
+ * \returns            Native destination of the call, or -1
+ ******************************************************************************/
 ADDRESS BasicBlock::getCallDest() {
     if (m_nodeType != CALL)
                 return NO_ADDRESS;
@@ -2298,16 +2298,16 @@ bool BasicBlock::decodeIndirectJmp(UserProc* proc) {
     return false;
 }
 
-/*==============================================================================
- * FUNCTION:    processSwitch
+/***************************************************************************//**
+ *
  * OVERVIEW:    Called when a switch has been identified. Visits the destinations of the switch, adds out edges to the
  *                BB, etc
  * NOTE:        Used to be called as soon as a switch statement is discovered, but this causes decoded but unanalysed
  *                BBs (statements not numbered, locations not SSA renamed etc) to appear in the CFG. This caused problems
  *                when there were nested switch statements. Now only called when re-decoding a switch statement
  * PARAMETERS:    proc - Pointer to the UserProc object for this code
- * RETURNS:        <nothing>
- *============================================================================*/
+ * \returns        <nothing>
+ ******************************************************************************/
 void BasicBlock::processSwitch(UserProc* proc) {
 
     RTL* last = m_pRtls->back();
