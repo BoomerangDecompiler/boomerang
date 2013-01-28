@@ -86,7 +86,7 @@ void PointerType::setPointsTo(Type* p) {
     if (p == this) {                    // Note: comparing pointers
         points_to = new VoidType();        // Can't point to self; impossible to compare, print, etc
         if (VERBOSE)
-            LOG << "Warning: attempted to create pointer to self: " << ADDRESS::g(this) << "\n";
+            LOG << "Warning: attempted to create pointer to self: " << ADDRESS::host_ptr(this) << "\n";
     } else
         points_to = p;
 }
@@ -1107,7 +1107,7 @@ RESOLVES_TO_TYPE(Lower)
 bool Type::isPointerToAlpha() {
     return isPointer() && asPointer()->pointsToAlpha();
 }
-
+//! Print in *i32* format
 void Type::starPrint(std::ostream& os) {
     os << "*" << this << "*";
 }
@@ -1202,12 +1202,12 @@ bool UnionType::findType(Type* ty) {
     return false;
 }
 
-void UpperType::setSize(int size) {
+void UpperType::setSize(size_t size) {
     // Does this make sense?
     assert(0);
 }
 
-void LowerType::setSize(int size) {
+void LowerType::setSize(size_t size) {
     // Does this make sense?
     assert(0);
 }

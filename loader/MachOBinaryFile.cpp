@@ -359,9 +359,9 @@ bool MachOBinaryFile::RealLoad(const char* sName)
         fprintf(stdout, "processing objective-c section\n");
 #endif
         for (unsigned i = 0; i < objc_modules_size; ) {
-            struct objc_module *module = (struct objc_module *)(ADDRESS::g(base) + objc_modules - loaded_addr + i).m_value;
+            struct objc_module *module = (struct objc_module *)(ADDRESS::host_ptr(base) + objc_modules - loaded_addr + i).m_value;
             char *name = (char *)(intptr_t(base) + BMMH(module->name) - loaded_addr.m_value);
-            Symtab symtab = (Symtab)(ADDRESS::g(base) + BMMH(module->symtab) - loaded_addr).m_value;
+            Symtab symtab = (Symtab)(ADDRESS::host_ptr(base) + BMMH(module->symtab) - loaded_addr).m_value;
 #ifdef DEBUG_MACHO_LOADER_OBJC
             fprintf(stdout, "module %s (%i classes)\n", name, BMMHW(symtab->cls_def_cnt));
 #endif
@@ -669,7 +669,7 @@ DWord MachOBinaryFile::getDelta()
     // Stupid function anyway: delta depends on section
     // This should work for the header only
     //    return (DWord)base - LMMH(m_pPEHeader->Imagebase);
-    return (ADDRESS::g(base) - loaded_addr).m_value;
+    return (ADDRESS::host_ptr(base) - loaded_addr).m_value;
 }
 
 // This function is called via dlopen/dlsym; it returns a new BinaryFile

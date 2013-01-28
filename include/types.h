@@ -16,23 +16,23 @@ struct ADDRESS { /* pointer. size depends on platform */
 //    ADDRESS(uint32_t v) : m_value(v) {}
     typedef intptr_t value_type;
     value_type m_value;
-    static ADDRESS g(value_type x) {
+    static ADDRESS g(value_type x) { // construct host/native oblivious address
         ADDRESS z;
         z.m_value =x;
         return z;
     }
-    static ADDRESS g(void *x) { // construct host/native oblivious address
+    static ADDRESS host_ptr(void *x) {
         ADDRESS z;
         z.m_value =value_type(x);
         return z;
     }
-	bool isZero() const {return m_value==0;}
-	bool operator==(const ADDRESS &other) const { return m_value==other.m_value; }
-	bool operator!=(const ADDRESS &other) const { return m_value!=other.m_value; }
+        bool isZero() const {return m_value==0;}
+        bool operator==(const ADDRESS &other) const { return m_value==other.m_value; }
+        bool operator!=(const ADDRESS &other) const { return m_value!=other.m_value; }
     bool operator<(const ADDRESS &other) const  { return m_value < other.m_value; }
     bool operator>(const ADDRESS &other) const  { return m_value > other.m_value; }
     bool operator>=(const ADDRESS &other) const { return m_value >= other.m_value;}
-	bool operator<=(const ADDRESS &other) const { return m_value <= other.m_value;}
+        bool operator<=(const ADDRESS &other) const { return m_value <= other.m_value;}
 
     ADDRESS operator+(const ADDRESS &other) const {
         return ADDRESS::g(m_value + other.m_value);
@@ -67,7 +67,7 @@ struct ADDRESS { /* pointer. size depends on platform */
     ADDRESS operator-(int other) const {
         return ADDRESS::g(m_value - other);
     }
-	friend std::ostream& operator<< (std::ostream& stream, const ADDRESS& addr);
+        friend std::ostream& operator<< (std::ostream& stream, const ADDRESS& addr);
     //operator intptr_t() const {return int(m_value);}
 };
 

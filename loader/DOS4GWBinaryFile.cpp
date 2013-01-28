@@ -207,7 +207,7 @@ bool DOS4GWBinaryFile::RealLoad(const char* sName) {
             m_pSections[n].pSectionName = new char[9];
             sprintf(m_pSections[n].pSectionName, "seg%i", n);   // no section names in LX
             m_pSections[n].uNativeAddr = LMMH(m_pLXObjects[n].RelocBaseAddr);
-            m_pSections[n].uHostAddr = ADDRESS::g((LMMH(m_pLXObjects[n].RelocBaseAddr) - LMMH(m_pLXObjects[0].RelocBaseAddr) + base));
+            m_pSections[n].uHostAddr = ADDRESS::host_ptr(base + (m_pSections[n].uNativeAddr - m_pSections[0].uNativeAddr).m_value);
             m_pSections[n].uSectionSize=LMMH(m_pLXObjects[n].VirtualSize);
             DWord Flags = LMMH(m_pLXObjects[n].ObjectFlags);
             m_pSections[n].bBss        = 0; // TODO

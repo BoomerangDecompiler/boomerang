@@ -20,8 +20,8 @@ def perform_test(exepath,machine,test,args)
         log_name = File.join(output_path,test)
         joined_args = args.join(' ')
         STDERR << "Errors for : #{machine}/#{args[1]}\n"
-        STDOUT << "Running command '#{exepath} -o #{output_path} #{joined_args} #{test_file}'\n"
-        result = `#{exepath} -o #{output_path} #{joined_args} #{test_file} >#{log_name+".stdout"} 2>#{log_name+".stderr"}`
+        STDOUT << "Running command '#{exepath} -P #{Dir.pwd} -o #{output_path} #{joined_args} #{test_file}'\n"
+        result = `#{exepath} -P #{Dir.pwd} -o #{output_path} #{joined_args} #{test_file} >#{log_name+".stdout"} 2>#{log_name+".stderr"}`
         puts result
         p $?
 end
@@ -33,7 +33,6 @@ if(File.exists?(File.join(TESTS_DIR,"outputs")))
 end
 #exit(1)
 #sh -c "./boomerang -o functest $4 test/$1/$2 2>/dev/null >/dev/null"
-
 Dir.open(TEST_INPUT).each() {|f|
         next if f=="." or f==".."
         machine_dir = File.join(TEST_INPUT,f)

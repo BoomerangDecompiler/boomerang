@@ -158,17 +158,17 @@ virtual Type*        mergeWith(Type* other) { assert(0); return 0; }
                     // Acccess functions
 virtual size_t      getSize() const = 0;
         unsigned    getBytes() const {return (getSize() + 7) / 8; }
-virtual void        setSize(int sz) {assert(0);}
+virtual void        setSize(size_t sz) {assert(0);}
 
                     // Print and format functions
                     // Get the C type, e.g. "unsigned int". If not final, include comment for lack of sign information.
                     // When final, choose a signedness etc
 virtual const char    *getCtype(bool final = false) const = 0;
-                    // Print in *i32* format
+
         void        starPrint(std::ostream& os);
-        const char*    prints();            // For debugging
+        const char* prints();            // For debugging
         void        dump();                // For debugging
-static    void        dumpNames();        // For debugging
+static  void        dumpNames();        // For debugging
 
 virtual std::string getTempName() const; // Get a temporary name for the type
 
@@ -282,7 +282,7 @@ virtual Type*       mergeWith(Type* other);
 virtual Exp*        match(Type *pattern);
 
 virtual size_t      getSize() const;            // Get size in bits
-virtual void        setSize(int sz) {size = sz;}
+virtual void        setSize(size_t sz) {size = sz;}
                     // Is it signed? 0=unknown, pos=yes, neg = no
         bool        isSigned() { return signedness >= 0; }        // True if not unsigned
         bool        isUnsigned() {return signedness <= 0; }        // True if not definately signed
@@ -322,7 +322,7 @@ virtual bool        operator< (const Type& other) const;
 virtual Exp            *match(Type *pattern);
 
 virtual size_t      getSize() const;
-virtual void        setSize(int sz) {size = sz;}
+virtual void        setSize(size_t sz) {size = sz;}
 
 virtual const char    *getCtype(bool final = false) const;
 
@@ -393,24 +393,24 @@ virtual                ~PointerType();
 virtual bool        isPointer() const { return true; }
         void        setPointsTo(Type *p);
         Type        *getPointsTo() { return points_to; }
-static    PointerType *newPtrAlpha();
+static  PointerType *newPtrAlpha();
         bool        pointsToAlpha();
-        int            pointerDepth();        // Return 2 for **x
-        Type*        getFinalPointsTo();    // Return x for **x
+        int         pointerDepth();        // Return 2 for **x
+        Type*       getFinalPointsTo();    // Return x for **x
 
 virtual Type*        clone() const;
 
 virtual bool        operator==(const Type& other) const;
 //virtual bool        operator-=(const Type& other) const;
 virtual bool        operator< (const Type& other) const;
-virtual Exp            *match(Type *pattern);
+virtual Exp *       match(Type *pattern);
 
 virtual size_t      getSize() const;
-virtual void        setSize(int sz) {assert(sz == STD_SIZE);}
+virtual void        setSize(size_t sz) {assert(sz == STD_SIZE);}
 
-virtual const char    *getCtype(bool final = false) const;
+virtual const char *getCtype(bool final = false) const;
 
-virtual Type*        meetWith(Type* other, bool& ch, bool bHighestPtr);
+virtual Type *      meetWith(Type* other, bool& ch, bool bHighestPtr);
 virtual bool        isCompatible(Type* other, bool all);
 
 protected:
@@ -628,7 +628,7 @@ virtual Type*        mergeWith(Type* other);
         void        setBaseType(Type *b) { base_type = b; }
 
 virtual size_t      getSize() const {return base_type->getSize()/2;}
-virtual void        setSize(int sz);        // Does this make sense?
+virtual void        setSize(size_t sz);        // Does this make sense?
 virtual bool        isUpper() const { return true; }
 virtual bool        isComplete() {return base_type->isComplete();}
 virtual const char* getCtype(bool final = false) const;
@@ -653,7 +653,7 @@ virtual Type*        mergeWith(Type* other);
         void        setBaseType(Type *b) { base_type = b; }
 
 virtual size_t      getSize() const {return base_type->getSize()/2;}
-virtual void        setSize(int sz);        // Does this make sense?
+virtual void        setSize(size_t sz);        // Does this make sense?
 virtual bool        isLower() const { return true; }
 virtual bool        isComplete() {return base_type->isComplete();}
 virtual const char* getCtype(bool final = false) const;

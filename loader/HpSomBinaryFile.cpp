@@ -196,7 +196,7 @@ bool HpSomBinaryFile::RealLoad(const char* sName) {
     }
 
     // Find the main symbol table, if it exists
-    ADDRESS symPtr = ADDRESS::g(m_pImage) + UINT4(m_pImage + 0x5C);
+    ADDRESS symPtr = ADDRESS::host_ptr(m_pImage) + UINT4(m_pImage + 0x5C);
     unsigned numSym = UINT4(m_pImage + 0x60);
 
     // Find the DL Table, if it exists
@@ -221,7 +221,7 @@ bool HpSomBinaryFile::RealLoad(const char* sName) {
     // Section 0: header
     m_pSections[0].pSectionName = const_cast<char *>("$HEADER$");
     m_pSections[0].uNativeAddr = 0;         // Not applicable
-    m_pSections[0].uHostAddr = ADDRESS::g(m_pImage);
+    m_pSections[0].uHostAddr = ADDRESS::host_ptr(m_pImage);
     //  m_pSections[0].uSectionSize = AUXHDR(4);
     // There is nothing that appears in memory space here; to give this a size
     // is to invite GetSectionInfoByAddr to return this section!
@@ -236,7 +236,7 @@ bool HpSomBinaryFile::RealLoad(const char* sName) {
     // Section 1: text (code)
     m_pSections[1].pSectionName = const_cast<char *>("$TEXT$");
     m_pSections[1].uNativeAddr = AUXHDR(3);
-    m_pSections[1].uHostAddr = ADDRESS::g(m_pImage) + AUXHDR(4);
+    m_pSections[1].uHostAddr = ADDRESS::host_ptr(m_pImage) + AUXHDR(4);
     m_pSections[1].uSectionSize = AUXHDR(2);
     m_pSections[1].uSectionEntrySize = 1;   // Not applicable
     m_pSections[1].bCode = 1;
@@ -247,7 +247,7 @@ bool HpSomBinaryFile::RealLoad(const char* sName) {
     // Section 2: initialised data
     m_pSections[2].pSectionName = const_cast<char *>("$DATA$");
     m_pSections[2].uNativeAddr = AUXHDR(6);
-    m_pSections[2].uHostAddr = ADDRESS::g(m_pImage) + AUXHDR(7);
+    m_pSections[2].uHostAddr = ADDRESS::host_ptr(m_pImage) + AUXHDR(7);
     m_pSections[2].uSectionSize = AUXHDR(5);
     m_pSections[2].uSectionEntrySize = 1;   // Not applicable
     m_pSections[2].bCode = 0;

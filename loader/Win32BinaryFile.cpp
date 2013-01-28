@@ -463,7 +463,7 @@ bool Win32BinaryFile::RealLoad(const char* sName)
         //        if (!strcmp(sect.pSectionName, ".reloc"))
         //            reloc = &sect;
         sect.uNativeAddr=ADDRESS::g(LMMH(o->RVA) + LMMH(m_pPEHeader->Imagebase));
-        sect.uHostAddr=ADDRESS::g(LMMH(o->RVA) + base);
+        sect.uHostAddr=ADDRESS::host_ptr(LMMH(o->RVA) + base);
         sect.uSectionSize=LMMH(o->VirtualSize);
         DWord Flags = LMMH(o->Flags);
         sect.bBss      = (Flags&IMAGE_SCN_CNT_UNINITIALIZED_DATA)?1:0;
@@ -502,8 +502,8 @@ bool Win32BinaryFile::RealLoad(const char* sName)
                     // Normal case (IMAGE_IMPORT_BY_NAME). Skip the useless hint (2 bytes)
                     std::string name((const char*)(iatEntry+2+base));
                     dlprocptrs[paddr] = name;
-                    if (paddr != ADDRESS::g(iat) - ADDRESS::g(base) + LMMH(m_pPEHeader->Imagebase))
-                        dlprocptrs[ADDRESS::g(iat) - ADDRESS::g(base) + LMMH(m_pPEHeader->Imagebase)]
+                    if (paddr != ADDRESS::host_ptr(iat) - ADDRESS::host_ptr(base) + LMMH(m_pPEHeader->Imagebase))
+                        dlprocptrs[ADDRESS::host_ptr(iat) - ADDRESS::host_ptr(base) + LMMH(m_pPEHeader->Imagebase)]
                                 = std::string("old_") + name; // add both possibilities
                     // printf("Added symbol %s value %x\n", name.c_str(), paddr);
                     // printf("Also added old_%s value %x\n", name.c_str(), (int)iat - (int)base +

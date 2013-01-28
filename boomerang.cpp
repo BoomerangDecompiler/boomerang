@@ -939,8 +939,10 @@ int Boomerang::commandLine(int argc, const char **argv)
                 break;
             case 'P':
                 progPath = argv[++i];
-                if (progPath[progPath.length()-1] != '\\')
-                    progPath += "\\";
+                if (progPath[progPath.length()-1] != '/')
+                    progPath += "/";
+//                if (progPath[progPath.length()-1] != '\\')
+//                    progPath += "\\";
                 break;
             case 'a':
                 assumeABI = true;

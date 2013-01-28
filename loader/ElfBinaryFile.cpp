@@ -195,7 +195,7 @@ bool ElfBinaryFile::RealLoad(const char* sName)
         m_pSections[i].pSectionName = pName;
         int off = elfRead4(&pShdr->sh_offset);
         if (off)
-            m_pSections[i].uHostAddr = ADDRESS::g(m_pImage + off);
+            m_pSections[i].uHostAddr = ADDRESS::host_ptr(m_pImage + off);
         m_pSections[i].uNativeAddr = elfRead4(&pShdr->sh_addr);
         m_pSections[i].uSectionSize = elfRead4(&pShdr->sh_size);
         if (m_pSections[i].uNativeAddr.isZero() && strncmp(pName, ".rel", 4)) {
