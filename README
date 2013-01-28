@@ -1,7 +1,8 @@
 This is an experimental branch of boomerang project, the inital goals are:
-- 'clean' up the repository ( removing old .cvsignore files and such )
-- move all old build systems into "out of sight" storage.
-
+- 'clean' up the repository ( removing old .cvsignore files and such ) [done]
+- move all old build systems into "out of sight" storage. [done]
+- try to fix all warnings from gcc -Wall, and clang -Wall
+- verify stability of decompilation results : compare 2 run results, they should be exactly the same.
 
 
 For build instructions please see 
