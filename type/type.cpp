@@ -897,7 +897,7 @@ void Type::addNamedType(const char *name, Type *type)
             std::cerr << "Warning: Type::addNamedType: Redefinition of type " << name << "\n";
             std::cerr << " type     = " << type->prints() << "\n";
             std::cerr << " previous = " << namedTypes[name]->prints() << "\n";
-            *type == *namedTypes[name];
+            *type = *namedTypes[name]; //WARN: was *type==*namedTypes[name], verify !
         }
     } else {
         // check if it is:
