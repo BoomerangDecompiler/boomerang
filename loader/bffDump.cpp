@@ -87,7 +87,7 @@ int main(int argc, char* argv[])
             ADDRESS a = pSect->uNativeAddr;
             unsigned char* p = (unsigned char*) pSect->uHostAddr.m_value;
             for (unsigned off = 0; off < pSect->uSectionSize; ) {
-                printf("%04X: ", a);
+                printf("%04X: ", a.m_value);
                 for (int j=0; (j < 16) && (off < pSect->uSectionSize); j++) {
                     printf("%02X ", *p++);
                     a++;
@@ -108,7 +108,7 @@ int main(int argc, char* argv[])
             ADDRESS a = pSect->uNativeAddr;
             unsigned char* p = (unsigned char*) pSect->uHostAddr.m_value;
             for (unsigned off = 0; off < pSect->uSectionSize; ) {
-                printf("%04X: ", a);
+                printf("%04X: ", a.m_value);
                 for (int j=0; (j < 16) && (off < pSect->uSectionSize); j++) {
                     printf("%02X ", *p++);
                     a++;

@@ -829,9 +829,9 @@ int Boomerang::commandLine(int argc, const char **argv)
                     return 1;
                 }
                 if (argv[i][0] == '0' && argv[i+1][1] == 'x') {
-                    n = sscanf(argv[i], "0x%x", &addr);
+                    n = sscanf(argv[i], "0x%x", &addr.m_value);
                 } else {
-                    n = sscanf(argv[i], "%i", &addr);
+                    n = sscanf(argv[i], "%i", &addr.m_value);
                 }
                 if (n != 1) {
                     std::cerr << "bad address: " << argv[i] << std::endl;
@@ -854,9 +854,9 @@ int Boomerang::commandLine(int argc, const char **argv)
                     return 1;
                 }
                 if (argv[i][0] == '0' && argv[i+1][1] == 'x') {
-                    n = sscanf(argv[i], "0x%x", &addr);
+                    n = sscanf(argv[i], "0x%x", &addr.m_value);
                 } else {
-                    n = sscanf(argv[i], "%i", &addr);
+                    n = sscanf(argv[i], "%i", &addr.m_value);
                 }
                 if (n != 1) {
                     std::cerr << "bad address: " << argv[i+1] << std::endl;
