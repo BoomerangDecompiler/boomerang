@@ -732,7 +732,8 @@ bool Cfg::wellFormCfg() {
     for (BB_IT it = m_listBB.begin(); it != m_listBB.end(); it++) {
         // it iterates through all BBs in the list
         // Check that it's complete
-        if ((*it)->m_bIncomplete) {
+        BasicBlock *current = *it;
+        if (current->m_bIncomplete) {
             m_bWellFormed = false;
             MAPBB::iterator itm;
             for (itm = m_mapBB.begin(); itm != m_mapBB.end(); itm++)
@@ -745,18 +746,18 @@ bool Cfg::wellFormCfg() {
             }
         } else {
             // Complete. Test the out edges
-            assert((int)(*it)->m_OutEdges.size() == (*it)->m_iNumOutEdges);
-            for (int i=0; i < (*it)->m_iNumOutEdges; i++) {
+            assert((int)current->m_OutEdges.size() == current->m_iNumOutEdges);
+            for (int i=0; i < current->m_iNumOutEdges; i++) {
                 // check if address is interprocedural
                 //                if ((*it)->m_OutEdgeInterProc[i] == false)
                 {
                     // i iterates through the outedges in the BB *it
-                    PBB pBB = (*it)->m_OutEdges[i];
+                    PBB pBB = current->m_OutEdges[i];
 
                     // Check that the out edge has been written (i.e. nonzero)
                     if (pBB == NULL) {
                         m_bWellFormed = false;    // At least one problem
-                        ADDRESS addr = (*it)->getLowAddr();
+                        ADDRESS addr = current->getLowAddr();
                         std::cerr << "WellFormCfg: BB with native address " << std::hex << addr <<
                                      " is missing outedge " << i << std::endl;
                     }
@@ -764,9 +765,9 @@ bool Cfg::wellFormCfg() {
                         // Check that there is a corresponding in edge from the
                         // child to here
                         std::vector<PBB>::iterator ii;
-                        for (ii=pBB->m_InEdges.begin();
-                             ii != pBB->m_InEdges.end(); ii++)
-                            if (*ii == *it) break;
+                        for (ii=pBB->m_InEdges.begin(); ii != pBB->m_InEdges.end(); ii++)
+                            if (*ii == *it)
+                                break;
                         if (ii == pBB->m_InEdges.end()) {
                             std::cerr << "WellFormCfg: No in edge to BB at " << std::hex << (*it)->getLowAddr() <<
                                          " from successor BB at " << pBB->getLowAddr() << std::endl;
