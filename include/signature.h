@@ -46,19 +46,19 @@ private:
 public:
                     Parameter(Type *type, const char *name, Exp *exp = NULL, const char *boundMax = "") :
                     type(type), name(name), exp(exp), boundMax(boundMax)    { }
-virtual                ~Parameter() { delete type; delete exp; }
+virtual             ~Parameter() { delete type; delete exp; }
         bool        operator==(Parameter& other);
-        Parameter*    clone();
+        Parameter * clone();
 
-        Type        *getType() { return type; }
+        Type *      getType() { return type; }
         void        setType(Type *ty) { type = ty; }
-        const char    *getName() { return name.c_str(); }
-        void        setName(const char *nam) { name = nam; }
-        Exp            *getExp()        { return exp; }
+        const char *getName() { return name.c_str(); }
+        void        setName(const std::string &nam) { name = nam; }
+        Exp *       getExp()        { return exp; }
         void        setExp(Exp *e) { exp = e; }
 
         // this parameter is the bound of another parameter with name nam
-        const char  *getBoundMax() { return boundMax.c_str(); }
+        const char *getBoundMax() { return boundMax.c_str(); }
         void        setBoundMax(const char *nam);
 
 protected:

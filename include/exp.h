@@ -233,7 +233,7 @@ virtual bool        isTerminal() { return false; }
 virtual Exp            *match(Exp *pattern);
 
         // match a string pattern
-virtual bool         match(const char *pattern, std::map<std::string, Exp*> &bindings);
+virtual bool         match(const std::string & pattern, std::map<std::string, Exp*> &bindings);
 
             //    //    //    //    //    //    //
             //    Search and Replace    //
@@ -374,15 +374,15 @@ std::ostream& operator<<(std::ostream& os, Exp* p);     // Print the Exp poited 
  *============================================================================*/
 class Const : public Exp {
         union {
-            int        i;            // Integer
-                                     // Note: although we have i and a as unions, both often use the same operator (opIntConst).
-                                     // There is no opCodeAddr any more.
-            ADDRESS    a;            // void* conflated with unsigned int: needs fixing
-            QWord    ll;            // 64 bit integer
-            double    d;            // Double precision float
+            int         i;          // Integer
+                                    // Note: although we have i and a as unions, both often use the same operator (opIntConst).
+                                    // There is no opCodeAddr any more.
+            ADDRESS     a;          // void* conflated with unsigned int: needs fixing
+            QWord       ll;         // 64 bit integer
+            double      d;          // Double precision float
             const char* p;          // Pointer to string
                                     // Don't store string: function could be renamed
-            Proc*    pp;            // Pointer to function
+            Proc*       pp;         // Pointer to function
         } u;
         int            conscript;    // like a subscript for constants
         Type*        type;        // Constants need types during type analysis
@@ -530,8 +530,8 @@ virtual void        printx(int ind);
         // Get a reference to subexpression 1
         Exp*&        refSubExp1();
 
-virtual Exp*        match(Exp *pattern);
-virtual bool         match(const char *pattern, std::map<std::string, Exp*> &bindings);
+virtual Exp *       match(Exp *pattern);
+virtual bool        match(const std::string & pattern, std::map<std::string, Exp*> &bindings);
 
         // Search children
         void             doSearchChildren(Exp* search, std::list<Exp**>& li, bool once);

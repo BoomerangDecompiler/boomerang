@@ -211,11 +211,9 @@ std::vector<ADDRESS> FrontEnd::getEntryPoints() {
                 p--;
             if (p != fname) {
                 p++;
-                char *name = (char*)malloc(strlen(p) + 30);
-                strcpy(name, p);
-                name[strlen(name)-6] = 0;
-                strcat(name, "ModuleData");
-                ADDRESS a = pBF->GetAddressByName(name, true);
+                std::string name(p);
+                name = name.substr(0,name.length()-6)+"ModuleData";
+                ADDRESS a = pBF->GetAddressByName(name.c_str(), true);
                 if (a != NO_ADDRESS) {
                     ADDRESS setup, teardown;
                     uint32_t vers = pBF->readNative4(a);

@@ -1333,6 +1333,7 @@ Exp* TypeVal::match(Exp *pattern) {
 #endif
 
 #define ISVARIABLE(x) (strspn((x), "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789") == strlen((x)))
+#define ISVARIABLE_S(x) (strspn((x.c_str()), "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789") == (x).length())
 //#define DEBUG_MATCH
 
 const char *tlstrchr(const char *str, char ch) {
@@ -1361,7 +1362,7 @@ const char *tlstrchr(const char *str, char ch) {
  * \param bindings a map
  * \returns            true if match, false otherwise
  ******************************************************************************/
-bool Exp::match(const char *pattern, std::map<std::string, Exp*> &bindings) {
+bool Exp::match(const std::string &pattern, std::map<std::string, Exp*> &bindings) {
     // most obvious
     std::ostringstream ostr;
     this->print(ostr);
@@ -1369,24 +1370,21 @@ bool Exp::match(const char *pattern, std::map<std::string, Exp*> &bindings) {
         return true;
 
     // alright, is pattern an acceptable variable?
-    if (ISVARIABLE(pattern)) {
+    if (ISVARIABLE_S(pattern)) {
         bindings[pattern] = this;
         return true;
     }
-
     // no, fail
     return false;
 }
-bool Unary::match(const char *pattern, std::map<std::string, Exp*> &bindings) {
+bool Unary::match(const std::string &pattern, std::map<std::string, Exp*> &bindings) {
     if (Exp::match(pattern, bindings))
         return true;
 #ifdef DEBUG_MATCH
     LOG << "unary::match " << this << " to " << pattern << ".\n";
 #endif
-    if (op == opAddrOf && pattern[0] == 'a' && pattern[1] == '[' &&
-            pattern[strlen(pattern)-1] == ']') {
-        char *sub1 = strdup(pattern+2);
-        sub1[strlen(sub1)-1] = 0;
+    if (op == opAddrOf && pattern[0] == 'a' && pattern[1] == '[' && pattern.back() == ']') {
+        std::string sub1(pattern.substr(2,pattern.size()-1)); // eliminate 'a[' and ']'
         return subExp1->match(sub1, bindings);
     }
     return false;
@@ -3849,7 +3847,7 @@ Exp* Exp::expSubscriptAllNull(/*Cfg* cfg*/) {
 }
 
 Location* Location::local(const char *nam, UserProc *p) {
-    return new Location(opLocal, new Const((char*)nam), p);
+    return new Location(opLocal, new Const(nam), p);
 }
 
 // Don't put in exp.h, as this would require statement.h including before exp.h
