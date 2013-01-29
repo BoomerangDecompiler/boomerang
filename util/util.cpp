@@ -248,7 +248,7 @@ char* escapeStr(const char* str) {
 #include "types.h"
 #include <iomanip>
 std::ostream& operator<< (std::ostream& stream, const ADDRESS& addr) {
-    stream << "0x" << std::hex << addr.m_value << std::dec;
+    stream << std::hex << addr.m_value << std::dec;
     return stream;
 }
 

@@ -322,11 +322,11 @@ void BasicBlock::print(std::ostream& os, bool html) {
     os << ":\n";
     os << "in edges: ";
     for (unsigned int i = 0; i < m_InEdges.size(); i++)
-        os << std::hex << m_InEdges[i]->getHiAddr() << " ";
+        os << m_InEdges[i]->getHiAddr() << " ";
     os << std::dec << "\n";
     os << "out edges: ";
     for (unsigned int i = 0; i < m_OutEdges.size(); i++)
-        os << std::hex << m_OutEdges[i]->getLowAddr() << " ";
+        os << m_OutEdges[i]->getLowAddr() << " ";
     os << std::dec << "\n";
     if (m_pRtls) {                    // Can be zero if e.g. INVALID
         if (html)
