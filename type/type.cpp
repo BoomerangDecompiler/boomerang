@@ -1468,14 +1468,16 @@ void UnionType::addType(Type *n, const char *str) {
 // Update this compound to use the fact that offset off has type ty
 void CompoundType::updateGenericMember(int off, Type* ty, bool& ch) {
     assert(generic);
-    Type* existingType = getTypeAtOffset(off);
+    int bit_offset = off * 8;
+    Type* existingType = getTypeAtOffset(bit_offset);
     if (existingType) {
         existingType = existingType->meetWith(ty, ch);
+        setTypeAtOffset(bit_offset, existingType);
     } else {
         std::ostringstream ost;
         ost << "member" << std::dec << nextGenericMemberNum++;
-        setTypeAtOffset(off*8, ty);
-        setNameAtOffset(off*8, ost.str().c_str());
+        setTypeAtOffset(bit_offset, ty);
+        setNameAtOffset(bit_offset, ost.str().c_str());
     }
 }
 
