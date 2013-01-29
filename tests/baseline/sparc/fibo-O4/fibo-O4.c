@@ -1,6 +1,6 @@
 int fib(int param1);
 
-// address: 0x10ad0
+// address: 10ad0
 int main(int argc, char *argv[], char *envp[]) {
     int local0; 		// m[o6 - 20]
     int o0; 		// r8
@@ -19,7 +19,7 @@ int main(int argc, char *argv[], char *envp[]) {
     return 0;
 }
 
-// address: 0x10a9c
+// address: 10a9c
 int fib(int param1) {
     int i0; 		// r24
     int o0; 		// r8

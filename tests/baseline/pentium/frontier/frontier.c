@@ -1,4 +1,4 @@
-// address: 0x80482f4
+// address: 80482f4
 int main(int argc, int argv, int envp) {
     int local1; 		// m[esp + 4]{38}
     int local2; 		// local1{110}

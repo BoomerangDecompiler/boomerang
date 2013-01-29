@@ -1,16 +1,16 @@
-// address: 0x8048328
+// address: 8048328
 int main(int argc, char *argv[], char *envp[]) {
     if (argc > (unsigned int)0xee6b27ff) {
-        proc1();
+        printf("Population exceeds %u\n", (unsigned int)0xee6b2800);
     }
     if (argc <= (unsigned int)0xefffffff) {
-        proc1();
+        printf("The mask is %x\n", (unsigned int)0xf0000000);
     }
     if (argc > 1) {
-        proc1();
+        printf("Arguments supplied\n");
     }
     if (0 - argc < -2) {
-        proc1();
+        printf("Three or more arguments\n");
     }
     return 0;
 }

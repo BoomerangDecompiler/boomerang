@@ -1,6 +1,6 @@
 __size32 proc1(__size32 param1, __size32 param2);
 
-// address: 0x1000044c
+// address: 1000044c
 int main(int argc, char *argv[], char *envp[]) {
     int g3; 		// r3
 
@@ -11,7 +11,7 @@ int main(int argc, char *argv[], char *envp[]) {
     return g3;
 }
 
-// address: 0x10000418
+// address: 10000418
 __size32 proc1(__size32 param1, __size32 param2) {
     return param1 + param2;
 }

@@ -1,4 +1,4 @@
-// address: 0x1000040c
+// address: 1000040c
 int main(int argc, char *argv[], char *envp[]) {
     if (argc >= 3) {
         if (argc <= 3) {

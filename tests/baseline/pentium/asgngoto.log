@@ -1,10 +1,13 @@
-Unknown library function proc1
-Unknown library function proc2
-Unknown library function proc3
-Unknown library function proc4
-Unknown library function proc5
-Unknown library function proc6
-Unknown library function proc7
+Unknown library function f_setarg
+Unknown library function f_setsig
+Unknown library function f_init
+Unknown library function s_wsle
+Unknown library function do_lio
+Unknown library function e_wsle
+Unknown library function s_rsle
+Unknown library function e_rsle
+COMPUTED JUMP at 0x804875e, pDest = r24
+Unknown library function __cxa_atexit
 after removing matching assigns (t[WILDSTR]).
 after removing matching assigns (%pc).
 in proc atexit adding addrExp r28{0} - 4 to local table
@@ -16,7 +19,83 @@ in proc atexit adding addrExp r28{0} - 20 to local table
 in proc atexit adding addrExp r28{0} - 24 to local table
 finding final parameters for atexit
 after removing matching assigns (%pc).
-### WARNING: iteration limit exceeded for dfaTypeAnalysis of procedure main ###
+=== about to restart decompilation of MAIN__ because indirect jumps or calls have been analysed
+
+after removing matching assigns (%pc).
+in proc MAIN__ adding addrExp r28{0} - 8 to local table
+in proc MAIN__ adding addrExp r28{0} - 4 to local table
+in proc MAIN__ adding addrExp r28{0} - 44 to local table
+in proc MAIN__ adding addrExp r28{0} - 48 to local table
+in proc MAIN__ adding addrExp r28{0} - 32 to local table
+in proc MAIN__ adding addrExp r28{0} - 36 to local table
+in proc MAIN__ adding addrExp r28{0} - 40 to local table
+in proc MAIN__ adding addrExp r28{0} - 44 to local table
+in proc MAIN__ adding addrExp r28{0} - 48 to local table
+in proc MAIN__ adding addrExp r28{0} - 32 to local table
+in proc MAIN__ adding addrExp r28{0} - 44 to local table
+in proc MAIN__ adding addrExp r28{0} - 48 to local table
+in proc MAIN__ adding addrExp r28{0} - 32 to local table
+in proc MAIN__ adding addrExp r28{0} - 36 to local table
+in proc MAIN__ adding addrExp r28{0} - 40 to local table
+in proc MAIN__ adding addrExp r28{0} - 44 to local table
+in proc MAIN__ adding addrExp r28{0} - 48 to local table
+in proc MAIN__ adding addrExp r28{0} - 32 to local table
+in proc MAIN__ adding addrExp r28{0} - 16 to local table
+in proc MAIN__ adding addrExp r28{0} - 16 to local table
+in proc MAIN__ adding addrExp r28{0} - 16 to local table
+in proc MAIN__ adding addrExp r28{0} - 16 to local table
+in proc MAIN__ adding addrExp r28{0} - 44 to local table
+in proc MAIN__ adding addrExp r28{0} - 48 to local table
+in proc MAIN__ adding addrExp r28{0} - 32 to local table
+in proc MAIN__ adding addrExp r28{0} - 36 to local table
+in proc MAIN__ adding addrExp r28{0} - 40 to local table
+in proc MAIN__ adding addrExp r28{0} - 44 to local table
+in proc MAIN__ adding addrExp r28{0} - 48 to local table
+in proc MAIN__ adding addrExp r28{0} - 32 to local table
+in proc MAIN__ adding addrExp r28{0} - 44 to local table
+in proc MAIN__ adding addrExp r28{0} - 48 to local table
+in proc MAIN__ adding addrExp r28{0} - 32 to local table
+in proc MAIN__ adding addrExp r28{0} - 36 to local table
+in proc MAIN__ adding addrExp r28{0} - 40 to local table
+in proc MAIN__ adding addrExp r28{0} - 44 to local table
+in proc MAIN__ adding addrExp r28{0} - 48 to local table
+in proc MAIN__ adding addrExp r28{0} - 32 to local table
+in proc MAIN__ adding addrExp r28{0} - 44 to local table
+in proc MAIN__ adding addrExp r28{0} - 48 to local table
+in proc MAIN__ adding addrExp r28{0} - 32 to local table
+in proc MAIN__ adding addrExp r28{0} - 36 to local table
+in proc MAIN__ adding addrExp r28{0} - 40 to local table
+in proc MAIN__ adding addrExp r28{0} - 44 to local table
+in proc MAIN__ adding addrExp r28{0} - 48 to local table
+in proc MAIN__ adding addrExp r28{0} - 32 to local table
+in proc MAIN__ adding addrExp r28{0} - 44 to local table
+in proc MAIN__ adding addrExp r28{0} - 48 to local table
+in proc MAIN__ adding addrExp r28{0} - 32 to local table
+in proc MAIN__ adding addrExp r28{0} - 36 to local table
+in proc MAIN__ adding addrExp r28{0} - 40 to local table
+in proc MAIN__ adding addrExp r28{0} - 44 to local table
+in proc MAIN__ adding addrExp r28{0} - 48 to local table
+in proc MAIN__ adding addrExp r28{0} - 32 to local table
+in proc MAIN__ adding addrExp r28{0} - 32 to local table
+in proc MAIN__ adding addrExp r28{0} - 36 to local table
+in proc MAIN__ adding addrExp r28{0} - 40 to local table
+TYPE ERROR: Existing type at address 0xffffffffffffffd8 is not structure or array type
+in proc MAIN__ adding addrExp r28{0} - 44 to local table
+TYPE ERROR: Existing type at address 0xffffffffffffffd4 is not structure or array type
+in proc MAIN__ adding addrExp r28{0} - 48 to local table
+finding final parameters for MAIN__
+potential param r28
+found new parameter r28
+potential param m[r28{0} - 8]
+found new parameter m[r28{0} - 8]
+finding final parameters for MAIN__
+potential param r28
+found new parameter r28
+potential param m[r28{0} - 8]
+found new parameter m[r28{0} - 8]
+after removing matching assigns (t[WILDSTR]).
+after removing matching assigns (%pc).
+in proc main adding addrExp r28{0} - 40 to local table
 in proc main adding addrExp r28{0} - 4 to local table
 in proc main adding addrExp r28{0} - 24 to local table
 in proc main adding addrExp r28{0} - 28 to local table
@@ -28,45 +107,15 @@ in proc main adding addrExp r28{0} - 32 to local table
 in proc main adding addrExp r28{0} - 32 to local table
 in proc main adding addrExp r28{0} - 28 to local table
 in proc main adding addrExp r28{0} - 32 to local table
-in proc main adding addrExp r28{0} - 32 to local table
-in proc main adding addrExp r28{0} - 36 to local table
 in proc main adding addrExp r28{0} - 40 to local table
-in proc main adding addrExp r28{0} - 44 to local table
-in proc main adding addrExp r28{0} - 60 to local table
-in proc main adding addrExp r28{0} - 60 to local table
-in proc main adding addrExp r28{0} - 48 to local table
-in proc main adding addrExp r28{0} - 4 to local table
-in proc main adding addrExp r28{0} - 24 to local table
-in proc main adding addrExp r28{0} - 28 to local table
-in proc main adding addrExp r28{0} - 32 to local table
-in proc main adding addrExp r28{0} - 36 to local table
-in proc main adding addrExp r28{0} - 40 to local table
-in proc main adding addrExp r28{0} - 44 to local table
-in proc main adding addrExp r28{0} - 48 to local table
-in proc main adding addrExp r28{0} - 60 to local table
-in proc main adding addrExp r28{0} - 4 to local table
-TYPE ERROR: Existing type at address 0x0xfffffffffffffffc is not structure or array type
-in proc main adding addrExp r28{0} - 24 to local table
-TYPE ERROR: Existing type at address 0x0xffffffffffffffe8 is not structure or array type
-in proc main adding addrExp r28{0} - 28 to local table
-TYPE ERROR: Existing type at address 0x0xffffffffffffffe4 is not structure or array type
-in proc main adding addrExp r28{0} - 32 to local table
-TYPE ERROR: Existing type at address 0x0xffffffffffffffe0 is not structure or array type
-in proc main adding addrExp r28{0} - 36 to local table
-TYPE ERROR: Existing type at address 0x0xffffffffffffffdc is not structure or array type
-in proc main adding addrExp r28{0} - 40 to local table
-TYPE ERROR: Existing type at address 0x0xffffffffffffffd8 is not structure or array type
-in proc main adding addrExp r28{0} - 44 to local table
-TYPE ERROR: Existing type at address 0x0xffffffffffffffd4 is not structure or array type
-in proc main adding addrExp r28{0} - 48 to local table
-TYPE ERROR: Existing type at address 0x0xffffffffffffffd0 is not structure or array type
-in proc main adding addrExp r28{0} - 60 to local table
-TYPE ERROR: Existing type at address 0x0xffffffffffffffc4 is not structure or array type
-### WARNING: iteration limit exceeded for dfaTypeAnalysis of procedure main ###
 could not set type for unknown parameter expression m[r28{0} + 12]
+in proc MAIN__ adding addrExp r28{0} - 8 to local table
 finding final parameters for atexit
-local ecx has type int that doesn't agree with type of define void of a library, why?
-local edx has type int that doesn't agree with type of define void of a library, why?
+finding final parameters for MAIN__
+potential param r28
+found new parameter r28
+potential param m[r28{0} - 8]
+found new parameter m[r28{0} - 8]
 local esp has type void * that doesn't agree with type of define void of a library, why?
-local ecx has type void that doesn't agree with type of define int of a library, why?
 local edx has type __size32 * that doesn't agree with type of define __size32 of a library, why?
+local esp has type void * that doesn't agree with type of define void of a library, why?

@@ -2,7 +2,7 @@ warning: textDelta different for section .got (ignoring).
 decompiling entry point main
 WARNING: no out edge for this BB in main:
 L2: Invalid BB:
-in edges: 0x10000450 
+in edges: 10000450 
 out edges: 
-0000000x10010428
+10010428
 

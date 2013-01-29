@@ -1,5 +1,338 @@
 got filename branch.c for main
-Unknown library function proc1
-Unknown library function proc2
-Error: Instruction at 0x0x8048651 branches beyond end of section, to 0x0x10804844e
-Unknown library function proc3
+assgn   28 *32* r24 := m[0x8049854]
+assgn   41 *32* r24 := m[0x8049854]
+assgn   53 *32* r24 := m[0x8049854]
+assgn   65 *32* r24 := m[0x8049854]
+assgn   77 *32* r24 := m[0x8049854]
+assgn   89 *32* r24 := m[0x8049854]
+assgn  101 *32* r24 := m[0x8049854]
+assgn  113 *32* r24 := m[0x8049854]
+assgn  125 *32* r24 := m[0x8049854]
+assgn  138 *32* r24 := m[0x8049854]
+assgn  158 *32* r24 := m[0x8049854]
+assgn  168 *32* r24 := m[0x8049854]
+after removing matching assigns (%pc).
+### WARNING: iteration limit exceeded for dfaTypeAnalysis of procedure main ###
+in proc main adding addrExp r28{0} - 12 to local table
+in proc main adding addrExp r28{0} - 32 to local table
+in proc main adding addrExp r28{0} - 36 to local table
+in proc main adding addrExp r28{0} - 16 to local table
+in proc main adding addrExp r28{0} - 4 to local table
+in proc main adding addrExp r28{0} - 8 to local table
+in proc main adding addrExp r28{0} - 40 to local table
+in proc main adding addrExp r28{0} - 44 to local table
+in proc main adding addrExp r28{0} - 48 to local table
+in proc main adding addrExp r28{0} - 40 to local table
+in proc main adding addrExp r28{0} - 44 to local table
+in proc main adding addrExp r28{0} - 48 to local table
+in proc main adding addrExp r28{0} - 32 to local table
+in proc main adding addrExp r28{0} - 36 to local table
+in proc main adding addrExp r28{0} - 40 to local table
+in proc main adding addrExp r28{0} - 44 to local table
+in proc main adding addrExp r28{0} - 48 to local table
+in proc main adding addrExp r28{0} - 36 to local table
+in proc main adding addrExp r28{0} - 40 to local table
+in proc main adding addrExp r28{0} - 44 to local table
+in proc main adding addrExp r28{0} - 32 to local table
+in proc main adding addrExp r28{0} - 48 to local table
+in proc main adding addrExp r28{0} - 32 to local table
+TYPE ERROR: Existing type at address 0xffffffffffffffe0 is not structure or array type
+in proc main adding addrExp r28{0} - 36 to local table
+in proc main adding addrExp r28{0} - 40 to local table
+TYPE ERROR: Existing type at address 0xffffffffffffffd8 is not structure or array type
+in proc main adding addrExp r28{0} - 44 to local table
+in proc main adding addrExp r28{0} - 48 to local table
+in proc main adding addrExp r28{0} - 36 to local table
+in proc main adding addrExp r28{0} - 40 to local table
+in proc main adding addrExp r28{0} - 44 to local table
+in proc main adding addrExp r28{0} - 32 to local table
+in proc main adding addrExp r28{0} - 48 to local table
+in proc main adding addrExp r28{0} - 32 to local table
+TYPE ERROR: Existing type at address 0xffffffffffffffe0 is not structure or array type
+in proc main adding addrExp r28{0} - 36 to local table
+in proc main adding addrExp r28{0} - 40 to local table
+TYPE ERROR: Existing type at address 0xffffffffffffffd8 is not structure or array type
+in proc main adding addrExp r28{0} - 44 to local table
+in proc main adding addrExp r28{0} - 48 to local table
+in proc main adding addrExp r28{0} - 36 to local table
+in proc main adding addrExp r28{0} - 40 to local table
+in proc main adding addrExp r28{0} - 44 to local table
+in proc main adding addrExp r28{0} - 32 to local table
+in proc main adding addrExp r28{0} - 48 to local table
+in proc main adding addrExp r28{0} - 32 to local table
+TYPE ERROR: Existing type at address 0xffffffffffffffe0 is not structure or array type
+in proc main adding addrExp r28{0} - 36 to local table
+in proc main adding addrExp r28{0} - 40 to local table
+TYPE ERROR: Existing type at address 0xffffffffffffffd8 is not structure or array type
+in proc main adding addrExp r28{0} - 44 to local table
+in proc main adding addrExp r28{0} - 48 to local table
+in proc main adding addrExp r28{0} - 36 to local table
+in proc main adding addrExp r28{0} - 40 to local table
+in proc main adding addrExp r28{0} - 44 to local table
+in proc main adding addrExp r28{0} - 32 to local table
+in proc main adding addrExp r28{0} - 48 to local table
+in proc main adding addrExp r28{0} - 32 to local table
+TYPE ERROR: Existing type at address 0xffffffffffffffe0 is not structure or array type
+in proc main adding addrExp r28{0} - 36 to local table
+in proc main adding addrExp r28{0} - 40 to local table
+TYPE ERROR: Existing type at address 0xffffffffffffffd8 is not structure or array type
+in proc main adding addrExp r28{0} - 44 to local table
+in proc main adding addrExp r28{0} - 48 to local table
+in proc main adding addrExp r28{0} - 36 to local table
+in proc main adding addrExp r28{0} - 40 to local table
+in proc main adding addrExp r28{0} - 44 to local table
+in proc main adding addrExp r28{0} - 32 to local table
+in proc main adding addrExp r28{0} - 48 to local table
+in proc main adding addrExp r28{0} - 32 to local table
+TYPE ERROR: Existing type at address 0xffffffffffffffe0 is not structure or array type
+in proc main adding addrExp r28{0} - 36 to local table
+in proc main adding addrExp r28{0} - 40 to local table
+TYPE ERROR: Existing type at address 0xffffffffffffffd8 is not structure or array type
+in proc main adding addrExp r28{0} - 44 to local table
+in proc main adding addrExp r28{0} - 48 to local table
+in proc main adding addrExp r28{0} - 36 to local table
+in proc main adding addrExp r28{0} - 40 to local table
+in proc main adding addrExp r28{0} - 44 to local table
+in proc main adding addrExp r28{0} - 32 to local table
+in proc main adding addrExp r28{0} - 48 to local table
+in proc main adding addrExp r28{0} - 32 to local table
+TYPE ERROR: Existing type at address 0xffffffffffffffe0 is not structure or array type
+in proc main adding addrExp r28{0} - 36 to local table
+in proc main adding addrExp r28{0} - 40 to local table
+TYPE ERROR: Existing type at address 0xffffffffffffffd8 is not structure or array type
+in proc main adding addrExp r28{0} - 44 to local table
+in proc main adding addrExp r28{0} - 48 to local table
+in proc main adding addrExp r28{0} - 36 to local table
+in proc main adding addrExp r28{0} - 40 to local table
+in proc main adding addrExp r28{0} - 44 to local table
+in proc main adding addrExp r28{0} - 32 to local table
+in proc main adding addrExp r28{0} - 48 to local table
+in proc main adding addrExp r28{0} - 32 to local table
+TYPE ERROR: Existing type at address 0xffffffffffffffe0 is not structure or array type
+in proc main adding addrExp r28{0} - 36 to local table
+in proc main adding addrExp r28{0} - 40 to local table
+TYPE ERROR: Existing type at address 0xffffffffffffffd8 is not structure or array type
+in proc main adding addrExp r28{0} - 44 to local table
+in proc main adding addrExp r28{0} - 48 to local table
+in proc main adding addrExp r28{0} - 36 to local table
+in proc main adding addrExp r28{0} - 40 to local table
+in proc main adding addrExp r28{0} - 44 to local table
+in proc main adding addrExp r28{0} - 32 to local table
+in proc main adding addrExp r28{0} - 48 to local table
+in proc main adding addrExp r28{0} - 32 to local table
+TYPE ERROR: Existing type at address 0xffffffffffffffe0 is not structure or array type
+in proc main adding addrExp r28{0} - 36 to local table
+in proc main adding addrExp r28{0} - 40 to local table
+TYPE ERROR: Existing type at address 0xffffffffffffffd8 is not structure or array type
+in proc main adding addrExp r28{0} - 44 to local table
+in proc main adding addrExp r28{0} - 48 to local table
+in proc main adding addrExp r28{0} - 36 to local table
+in proc main adding addrExp r28{0} - 40 to local table
+in proc main adding addrExp r28{0} - 44 to local table
+in proc main adding addrExp r28{0} - 32 to local table
+in proc main adding addrExp r28{0} - 48 to local table
+in proc main adding addrExp r28{0} - 32 to local table
+TYPE ERROR: Existing type at address 0xffffffffffffffe0 is not structure or array type
+in proc main adding addrExp r28{0} - 36 to local table
+in proc main adding addrExp r28{0} - 40 to local table
+TYPE ERROR: Existing type at address 0xffffffffffffffd8 is not structure or array type
+in proc main adding addrExp r28{0} - 44 to local table
+in proc main adding addrExp r28{0} - 48 to local table
+in proc main adding addrExp r28{0} - 36 to local table
+in proc main adding addrExp r28{0} - 40 to local table
+in proc main adding addrExp r28{0} - 44 to local table
+in proc main adding addrExp r28{0} - 32 to local table
+in proc main adding addrExp r28{0} - 48 to local table
+in proc main adding addrExp r28{0} - 32 to local table
+TYPE ERROR: Existing type at address 0xffffffffffffffe0 is not structure or array type
+in proc main adding addrExp r28{0} - 36 to local table
+in proc main adding addrExp r28{0} - 40 to local table
+TYPE ERROR: Existing type at address 0xffffffffffffffd8 is not structure or array type
+in proc main adding addrExp r28{0} - 44 to local table
+in proc main adding addrExp r28{0} - 48 to local table
+in proc main adding addrExp r28{0} - 32 to local table
+TYPE ERROR: Existing type at address 0xffffffffffffffe0 is not structure or array type
+in proc main adding addrExp r28{0} - 36 to local table
+in proc main adding addrExp r28{0} - 40 to local table
+TYPE ERROR: Existing type at address 0xffffffffffffffd8 is not structure or array type
+in proc main adding addrExp r28{0} - 44 to local table
+in proc main adding addrExp r28{0} - 48 to local table
+in proc main adding addrExp r28{0} - 36 to local table
+in proc main adding addrExp r28{0} - 40 to local table
+in proc main adding addrExp r28{0} - 44 to local table
+in proc main adding addrExp r28{0} - 32 to local table
+in proc main adding addrExp r28{0} - 48 to local table
+in proc main adding addrExp r28{0} - 36 to local table
+in proc main adding addrExp r28{0} - 40 to local table
+in proc main adding addrExp r28{0} - 44 to local table
+in proc main adding addrExp r28{0} - 32 to local table
+in proc main adding addrExp r28{0} - 48 to local table
+### WARNING: iteration limit exceeded for dfaTypeAnalysis of procedure main ###
+in proc main adding addrExp r28{0} - 12 to local table
+in proc main adding addrExp r28{0} - 32 to local table
+in proc main adding addrExp r28{0} - 36 to local table
+in proc main adding addrExp r28{0} - 16 to local table
+in proc main adding addrExp r28{0} - 4 to local table
+in proc main adding addrExp r28{0} - 8 to local table
+in proc main adding addrExp r28{0} - 40 to local table
+in proc main adding addrExp r28{0} - 44 to local table
+in proc main adding addrExp r28{0} - 48 to local table
+in proc main adding addrExp r28{0} - 40 to local table
+in proc main adding addrExp r28{0} - 44 to local table
+in proc main adding addrExp r28{0} - 48 to local table
+in proc main adding addrExp r28{0} - 32 to local table
+in proc main adding addrExp r28{0} - 36 to local table
+in proc main adding addrExp r28{0} - 40 to local table
+in proc main adding addrExp r28{0} - 44 to local table
+in proc main adding addrExp r28{0} - 48 to local table
+in proc main adding addrExp r28{0} - 36 to local table
+in proc main adding addrExp r28{0} - 40 to local table
+in proc main adding addrExp r28{0} - 44 to local table
+in proc main adding addrExp r28{0} - 32 to local table
+in proc main adding addrExp r28{0} - 48 to local table
+in proc main adding addrExp r28{0} - 32 to local table
+TYPE ERROR: Existing type at address 0xffffffffffffffe0 is not structure or array type
+in proc main adding addrExp r28{0} - 36 to local table
+in proc main adding addrExp r28{0} - 40 to local table
+TYPE ERROR: Existing type at address 0xffffffffffffffd8 is not structure or array type
+in proc main adding addrExp r28{0} - 44 to local table
+in proc main adding addrExp r28{0} - 48 to local table
+in proc main adding addrExp r28{0} - 36 to local table
+in proc main adding addrExp r28{0} - 40 to local table
+in proc main adding addrExp r28{0} - 44 to local table
+in proc main adding addrExp r28{0} - 32 to local table
+in proc main adding addrExp r28{0} - 48 to local table
+in proc main adding addrExp r28{0} - 32 to local table
+TYPE ERROR: Existing type at address 0xffffffffffffffe0 is not structure or array type
+in proc main adding addrExp r28{0} - 36 to local table
+in proc main adding addrExp r28{0} - 40 to local table
+TYPE ERROR: Existing type at address 0xffffffffffffffd8 is not structure or array type
+in proc main adding addrExp r28{0} - 44 to local table
+in proc main adding addrExp r28{0} - 48 to local table
+in proc main adding addrExp r28{0} - 36 to local table
+in proc main adding addrExp r28{0} - 40 to local table
+in proc main adding addrExp r28{0} - 44 to local table
+in proc main adding addrExp r28{0} - 32 to local table
+in proc main adding addrExp r28{0} - 48 to local table
+in proc main adding addrExp r28{0} - 32 to local table
+TYPE ERROR: Existing type at address 0xffffffffffffffe0 is not structure or array type
+in proc main adding addrExp r28{0} - 36 to local table
+in proc main adding addrExp r28{0} - 40 to local table
+TYPE ERROR: Existing type at address 0xffffffffffffffd8 is not structure or array type
+in proc main adding addrExp r28{0} - 44 to local table
+in proc main adding addrExp r28{0} - 48 to local table
+in proc main adding addrExp r28{0} - 36 to local table
+in proc main adding addrExp r28{0} - 40 to local table
+in proc main adding addrExp r28{0} - 44 to local table
+in proc main adding addrExp r28{0} - 32 to local table
+in proc main adding addrExp r28{0} - 48 to local table
+in proc main adding addrExp r28{0} - 32 to local table
+TYPE ERROR: Existing type at address 0xffffffffffffffe0 is not structure or array type
+in proc main adding addrExp r28{0} - 36 to local table
+in proc main adding addrExp r28{0} - 40 to local table
+TYPE ERROR: Existing type at address 0xffffffffffffffd8 is not structure or array type
+in proc main adding addrExp r28{0} - 44 to local table
+in proc main adding addrExp r28{0} - 48 to local table
+in proc main adding addrExp r28{0} - 36 to local table
+in proc main adding addrExp r28{0} - 40 to local table
+in proc main adding addrExp r28{0} - 44 to local table
+in proc main adding addrExp r28{0} - 32 to local table
+in proc main adding addrExp r28{0} - 48 to local table
+in proc main adding addrExp r28{0} - 32 to local table
+TYPE ERROR: Existing type at address 0xffffffffffffffe0 is not structure or array type
+in proc main adding addrExp r28{0} - 36 to local table
+in proc main adding addrExp r28{0} - 40 to local table
+TYPE ERROR: Existing type at address 0xffffffffffffffd8 is not structure or array type
+in proc main adding addrExp r28{0} - 44 to local table
+in proc main adding addrExp r28{0} - 48 to local table
+in proc main adding addrExp r28{0} - 36 to local table
+in proc main adding addrExp r28{0} - 40 to local table
+in proc main adding addrExp r28{0} - 44 to local table
+in proc main adding addrExp r28{0} - 32 to local table
+in proc main adding addrExp r28{0} - 48 to local table
+in proc main adding addrExp r28{0} - 32 to local table
+TYPE ERROR: Existing type at address 0xffffffffffffffe0 is not structure or array type
+in proc main adding addrExp r28{0} - 36 to local table
+in proc main adding addrExp r28{0} - 40 to local table
+TYPE ERROR: Existing type at address 0xffffffffffffffd8 is not structure or array type
+in proc main adding addrExp r28{0} - 44 to local table
+in proc main adding addrExp r28{0} - 48 to local table
+in proc main adding addrExp r28{0} - 36 to local table
+in proc main adding addrExp r28{0} - 40 to local table
+in proc main adding addrExp r28{0} - 44 to local table
+in proc main adding addrExp r28{0} - 32 to local table
+in proc main adding addrExp r28{0} - 48 to local table
+in proc main adding addrExp r28{0} - 32 to local table
+TYPE ERROR: Existing type at address 0xffffffffffffffe0 is not structure or array type
+in proc main adding addrExp r28{0} - 36 to local table
+in proc main adding addrExp r28{0} - 40 to local table
+TYPE ERROR: Existing type at address 0xffffffffffffffd8 is not structure or array type
+in proc main adding addrExp r28{0} - 44 to local table
+in proc main adding addrExp r28{0} - 48 to local table
+in proc main adding addrExp r28{0} - 36 to local table
+in proc main adding addrExp r28{0} - 40 to local table
+in proc main adding addrExp r28{0} - 44 to local table
+in proc main adding addrExp r28{0} - 32 to local table
+in proc main adding addrExp r28{0} - 48 to local table
+in proc main adding addrExp r28{0} - 32 to local table
+TYPE ERROR: Existing type at address 0xffffffffffffffe0 is not structure or array type
+in proc main adding addrExp r28{0} - 36 to local table
+in proc main adding addrExp r28{0} - 40 to local table
+TYPE ERROR: Existing type at address 0xffffffffffffffd8 is not structure or array type
+in proc main adding addrExp r28{0} - 44 to local table
+in proc main adding addrExp r28{0} - 48 to local table
+in proc main adding addrExp r28{0} - 36 to local table
+in proc main adding addrExp r28{0} - 40 to local table
+in proc main adding addrExp r28{0} - 44 to local table
+in proc main adding addrExp r28{0} - 32 to local table
+in proc main adding addrExp r28{0} - 48 to local table
+in proc main adding addrExp r28{0} - 32 to local table
+TYPE ERROR: Existing type at address 0xffffffffffffffe0 is not structure or array type
+in proc main adding addrExp r28{0} - 36 to local table
+in proc main adding addrExp r28{0} - 40 to local table
+TYPE ERROR: Existing type at address 0xffffffffffffffd8 is not structure or array type
+in proc main adding addrExp r28{0} - 44 to local table
+in proc main adding addrExp r28{0} - 48 to local table
+in proc main adding addrExp r28{0} - 36 to local table
+in proc main adding addrExp r28{0} - 40 to local table
+in proc main adding addrExp r28{0} - 44 to local table
+in proc main adding addrExp r28{0} - 32 to local table
+in proc main adding addrExp r28{0} - 48 to local table
+in proc main adding addrExp r28{0} - 32 to local table
+TYPE ERROR: Existing type at address 0xffffffffffffffe0 is not structure or array type
+in proc main adding addrExp r28{0} - 36 to local table
+in proc main adding addrExp r28{0} - 40 to local table
+TYPE ERROR: Existing type at address 0xffffffffffffffd8 is not structure or array type
+in proc main adding addrExp r28{0} - 44 to local table
+in proc main adding addrExp r28{0} - 48 to local table
+in proc main adding addrExp r28{0} - 32 to local table
+TYPE ERROR: Existing type at address 0xffffffffffffffe0 is not structure or array type
+in proc main adding addrExp r28{0} - 36 to local table
+in proc main adding addrExp r28{0} - 40 to local table
+TYPE ERROR: Existing type at address 0xffffffffffffffd8 is not structure or array type
+in proc main adding addrExp r28{0} - 44 to local table
+in proc main adding addrExp r28{0} - 48 to local table
+in proc main adding addrExp r28{0} - 36 to local table
+in proc main adding addrExp r28{0} - 40 to local table
+in proc main adding addrExp r28{0} - 44 to local table
+in proc main adding addrExp r28{0} - 32 to local table
+in proc main adding addrExp r28{0} - 48 to local table
+in proc main adding addrExp r28{0} - 36 to local table
+in proc main adding addrExp r28{0} - 40 to local table
+in proc main adding addrExp r28{0} - 44 to local table
+in proc main adding addrExp r28{0} - 32 to local table
+in proc main adding addrExp r28{0} - 48 to local table
+### WARNING: iteration limit exceeded for dfaTypeAnalysis of procedure main ###
+in proc main adding addrExp r28{0} - 12 to local table
+in proc main adding addrExp r28{0} - 16 to local table
+could not set type for unknown parameter expression m[r28{0} + 4]
+could not set type for unknown parameter expression m[r28{0} + 8]
+could not set type for unknown parameter expression m[r28{0} + 12]
+local eax has type FILE * that doesn't agree with type of define __size32 of a library, why?
+local esp has type void * that doesn't agree with type of define void of a library, why?
+local eax has type __size32 that doesn't agree with type of define int of a library, why?
+local eax has type int that doesn't agree with type of define __size32 of a library, why?
+local eax has type __size32 that doesn't agree with type of define int of a library, why?
+local eax has type int that doesn't agree with type of define __size32 of a library, why?
+local eax has type __size32 that doesn't agree with type of define int of a library, why?
+local eax has type int that doesn't agree with type of define __size32 of a library, why?

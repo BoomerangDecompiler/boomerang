@@ -1,6 +1,16 @@
 got filename testarray1.c for main
-Unknown library function proc1
 after removing matching assigns (%pc).
+in proc main adding addrExp r28{0} - 4 to local table
+in proc main adding addrExp r28{0} - 12 to local table
+in proc main adding addrExp r28{0} - 8 to local table
+in proc main adding addrExp r28{0} - 8 to local table
+in proc main adding addrExp r28{0} - 12 to local table
+in proc main adding addrExp r28{0} - 12 to local table
+in proc main adding addrExp r28{0} - 8 to local table
+in proc main adding addrExp r28{0} - 40 to local table
+in proc main adding addrExp r28{0} - 44 to local table
+in proc main adding addrExp r28{0} - 48 to local table
+### WARNING: iteration limit exceeded for dfaTypeAnalysis of procedure main ###
 in proc main adding addrExp r28{0} - 4 to local table
 in proc main adding addrExp r28{0} - 12 to local table
 in proc main adding addrExp r28{0} - 8 to local table

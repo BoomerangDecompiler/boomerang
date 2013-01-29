@@ -1,7 +1,7 @@
-// address: 0x8048368
+// address: 8048368
 int main(int argc, char *argv[], char *envp[]) {
     __size32 edx; 		// r26
-    __size32 local0; 		// m[esp - 12]
+    int local0; 		// m[esp - 12]
     int local1; 		// m[esp - 8]
 
     local0 = 0;
@@ -11,7 +11,7 @@ int main(int argc, char *argv[], char *envp[]) {
         local0 += edx;
         local1++;
     }
-    proc1();
+    printf("Sum is %d\n", local0);
     return 0;
 }
 

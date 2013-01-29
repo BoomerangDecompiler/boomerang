@@ -1,4 +1,4 @@
-// address: 0x10704
+// address: 10704
 int main(int argc, char *argv[], char *envp[]) {
     int local0; 		// m[o6 - 32]
     int local1; 		// m[o6 - 36]

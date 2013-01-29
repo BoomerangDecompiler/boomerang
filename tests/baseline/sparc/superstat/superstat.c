@@ -1,4 +1,4 @@
-// address: 0x106a8
+// address: 106a8
 int main(int argc, char *argv[], char *envp[]) {
     struct stat local0; 		// m[o6 - 152]
     int local1; 		// m[o6 - 136]

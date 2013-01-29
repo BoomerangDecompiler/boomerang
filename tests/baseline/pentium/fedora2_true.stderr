@@ -1,8 +1,45 @@
-main function not found
-decompiling entry point _start
-WARNING: no out edge for this BB in _start:
-Invalid BB:
-in edges: 0x804899c 
+decompiling entry point main
+rprrrprttttrprttWARNING: no out edge for this BB in main:
+L3: Call BB:
+in edges: 8048ba8 
 out edges: 
-0000000x80489a1
+08048bfa
+08048c01  104 CALL proc4(
+                *i32* local0 := 0
+              )
+              Reaching definitions: r24=7,   r25=r25{125},   r26=r26{50},   r27=m[r28{0} + 8]{0},   r28=r28{0} - 48,
+                r29=r28{0} - 4,   r30=r30{126},   r31=r31{127},   m[r28{0} + 4]=m[r28{0} + 4]{0},
+                m[r28{0} + 8]=m[r28{0} + 8]{0},   m[r28{0} + 12]=m[r28{0} + 12]{0},   m[r28{0} - 4]=r29{0},
+                m[r28{0} - 8]=r31{0},   m[r28{0} - 12]=r30{0},   m[r28{0} - 16]=r27{0},   m[r28{0} - 20]=r24{55},
+                m[r28{0} - 40]=0x804a033,   m[r28{0} - 44]=0,   m[r28{0} - 48]=%pc,   tmp1=r24{50},   tmpb=tmpb{128},
+                %flags=%flags{129},   %ZF=%ZF{130},   %CF=%CF{131}
+              Live variables: 
+
+WARNING: no out edge for this BB in main:
+Call BB:
+in edges: 8048bbc 
+out edges: 
+08048bbe
+08048bc0
+08048bc5
+08048bca   86 *32* m[r28 + 20] := r24
+08048bce
+08048bd3
+08048bd8   89 *32* m[r28 + 16] := r31
+08048bdc
+08048be1   91 *32* m[r28 + 12] := r30
+08048be5   92 *32* m[r28 + 8] := r27
+08048be9   93 *32* m[r28 + 4] := r25
+08048bed   94 *32* m[r28] := r24
+08048bf0   96 *u32* m[r28] := %pc
+           98 *32* eax := CALL proc3(
+                *c** m[r28 - 72] := m[r28 - 72]
+                *FILE** m[r28 + 4] := m[r28 + 4]
+                *[c]** m[r28 + 8] := m[r28 + 8]
+                *[c]** m[r28 + 12] := m[r28 + 12]
+                *[c]** m[r28 + 16] := m[r28 + 16]
+                *32* m[r28 + 20] := m[r28 + 20]
+              )
+              Reaching definitions: 
+              Live variables: 
 

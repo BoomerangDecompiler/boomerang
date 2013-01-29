@@ -1,10 +1,6 @@
-__size32 global4 = 0x21794;// 4 bytes
-__size32 global9 = 0x112c8;// 4 bytes
-__size32 global5 = 0x21774;// 4 bytes
+__size32 global4 = 0x21774;// 4 bytes
 
-void _ZN1D3fooEv();
-
-// address: 0x10f58
+// address: 10f58
 int main(int argc, char *argv[], char *envp[]) {
     __size32 fp; 		// r30
     __size32 g0; 		// r0
@@ -103,8 +99,7 @@ int main(int argc, char *argv[], char *envp[]) {
     int o1; 		// r9
     int o2; 		// r10
     int o3; 		// r11
-    __size32 *o3_1; 		// r11
-    int o3_2; 		// r11{50}
+    int o3_1; 		// r11{50}
     int o4; 		// r12
     int o5; 		// r13
     int o6; 		// r14
@@ -119,14 +114,15 @@ int main(int argc, char *argv[], char *envp[]) {
     *(__size32*)(o0_1 + 32) = 0x217d8;
     o2 = *0x21740;
     *(void **)o0_1 = o2;
-    o3_2 = *(o2 - 12);
-    *(__size32*)(o0_1 + o3_2) = global4;
+    o1 = *0x21744;
+    o3_1 = *(o2 - 12);
+    *(__size32*)(o0_1 + o3_1) = o1;
     *(__size32*)(o0_1 + 8) = 4;
     *(__size32*)(o0_1 + 4) = 3;
     o2 = *0x21748;
     *(void **)(o0_1 + 12) = o2;
     o7_1 = *(o2 - 12);
-    *(__size32*)(o0_1 + o7_1 + 12) = global5;
+    *(__size32*)(o0_1 + o7_1 + 12) = global4;
     *(__size32*)(o0_1 + 16) = 5;
     *(__size32*)(o0_1 + 20) = 6;
     *(__size32*)(o0_1 + 32) = 0x217c8;
@@ -134,7 +130,8 @@ int main(int argc, char *argv[], char *envp[]) {
     *(void **)o0_1 = 0x217a4;
     *(__size32*)(o0_1 + 28) = 8;
     *(__size32*)(o0_1 + 24) = 7;
-    g0 = _ZN1D3fooEv(o0_1, global9, 8, 0x217a4, 0x21740, global5, o7_1, o0_1, l1, o0_1 + 12, l3, l4, l5, l6, l7, 0, argv, envp, o3, o4, o5, o6, o7, l1, l2, l3, l4, l5, l6, l7, i0, i1, i2, i3, i4, i5, fp, i7); /* Warning: also results in o3, o4, o5, o7, l0, l1, l2, l3, l4, l5, l6, l7, i0, i1, i2, i3, i4, i5, fp, i7 */
+    o1 = *0x217a8;
+    (*o1)(o0_1, o1, 8, 0x217a4, 0x21740, global4, o7_1, o0_1, l1, o0_1 + 12, l3, l4, l5, l6, l7, 0, argv, envp, o3, o4, o5, o6, o7, l1, l2, l3, l4, l5, l6, l7, i0, i1, i2, i3, i4, i5, fp, i7);
     o2 = *l0;
     o1 = *o2;
     (*o1)(l0, o1, o2, o3, o4, o5, g0, o7, l0, l1, l2, l3, l4, l5, l6, l7, i0, i1, i2, i3, i4, i5, fp, i7, local15, local19, local23, local27, local31, local35, local39, local43, local47, local51, local55, local59, local63, local67, local71, <all>);
@@ -155,17 +152,5 @@ int main(int argc, char *argv[], char *envp[]) {
     o1 = *o3;
     (*o1)(l3, o1, o2, o3, o4, o5, g0, o7, l0, l1, l2, l3, l4, l5, l6, l7, i0, i1, i2, i3, i4, i5, fp, i7, local0, local1, local2, local3, local4, local5, local6, local7, local8, local9, local10, local11, local12, local13, local14, <all>);
     return i0;
-}
-
-// address: 0x112c8
-void _ZN1D3fooEv() {
-    __size32 o0; 		// r8
-
-    _ZStlsISt11char_traitsIcEERSt13basic_ostreamIcT_ES5_PKc(0x21888, "D::foo(");
-    _ZNSolsEPFRSt8ios_baseS0_E();
-    _ZNSolsEPKv();
-    _ZStlsISt11char_traitsIcEERSt13basic_ostreamIcT_ES5_PKc(o0, ")");
-    _ZNSolsEPFRSoS_E(o0, 0x214e4);
-    return;
 }
 

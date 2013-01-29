@@ -25,6 +25,7 @@ after removing matching assigns (%pc).
 in proc main adding addrExp r1{0} - 32 to local table
 in proc main adding addrExp r1{0} - 4 to local table
 in proc main adding addrExp r1{0} + 4 to local table
+size 64 meet with size 32!
 ### WARNING: iteration limit exceeded for dfaTypeAnalysis of procedure main ###
 in proc main adding addrExp r1{0} - 32 to local table
 in proc main adding addrExp r1{0} - 4 to local table

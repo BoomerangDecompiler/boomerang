@@ -1,4 +1,4 @@
-// address: 0x1060c
+// address: 1060c
 int main(int argc, char *argv[], char *envp[]) {
     if (argc >= 2) {
         switch(argc - 2 & 0x7) {

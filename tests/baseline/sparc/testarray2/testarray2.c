@@ -1,7 +1,7 @@
 void mid(__size32 param1);
 void fst(__size32 param1);
 
-// address: 0x10744
+// address: 10744
 int main(int argc, char *argv[], char *envp[]) {
     int local0; 		// m[o6 - 24]
     unsigned char *local1; 		// m[o6 - 28]
@@ -23,7 +23,7 @@ int main(int argc, char *argv[], char *envp[]) {
     return 0;
 }
 
-// address: 0x106cc
+// address: 106cc
 void mid(__size32 param1) {
     int o0; 		// r8
 
@@ -32,7 +32,7 @@ void mid(__size32 param1) {
     return;
 }
 
-// address: 0x10708
+// address: 10708
 void fst(__size32 param1) {
     int o0; 		// r8
 

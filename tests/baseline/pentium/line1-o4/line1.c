@@ -1,23 +1,26 @@
-// address: 0x8048450
+// address: 8048450
 int main(int argc, char *argv[], char *envp[]) {
     __size32 eax; 		// r24
-    union { __size8 * x1; int x2; } eax_1; 		// r24{20}
+    FILE *eax_1; 		// r24{20}
+    __size32 edx; 		// r26
+    char local0[1024]; 		// m[esp - 0x40c]
 
     if (argc <= 1) {
         eax = 1;
     } else {
-        proc1();
+        edx = *(argv + 4);
+        fopen(edx, "r");
         eax = 1;
         if (eax_1 != 0) {
-            proc2();
+            fgets(&local0, 1024, eax_1);
             if (eax != 0) {
-                proc3();
+                strchr(eax, '\n');
                 if (eax != 0) {
                     *(__size8*)eax = 0;
                 }
-                proc4();
+                puts(&local0);
             }
-            proc5();
+            fclose(eax_1);
         }
     }
     return eax;

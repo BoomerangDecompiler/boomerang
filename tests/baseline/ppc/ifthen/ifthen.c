@@ -1,4 +1,4 @@
-// address: 0x10000418
+// address: 10000418
 int main(int argc, char *argv[], char *envp[]) {
     __size32 g3; 		// r3
     int local0; 		// m[g1 - 32]

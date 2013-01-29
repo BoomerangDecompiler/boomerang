@@ -1,6 +1,6 @@
 void test(int param1);
 
-// address: 0x1000048c
+// address: 1000048c
 int main(int argc, char *argv[], char *envp[]) {
     test(-5);
     test(-2);
@@ -10,7 +10,7 @@ int main(int argc, char *argv[], char *envp[]) {
     return 0;
 }
 
-// address: 0x10000418
+// address: 10000418
 void test(int param1) {
     int local0; 		// m[g1 - 24]
 

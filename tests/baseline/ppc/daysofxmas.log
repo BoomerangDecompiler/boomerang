@@ -10,7 +10,7 @@ in proc main adding addrExp r1{0} - 40 to local table
 in proc main adding addrExp r1{0} - 36 to local table
 in proc main adding addrExp r1{0} - 32 to local table
 in proc main adding addrExp r1{0} + 4 to local table
-TYPE ERROR: Existing type at address 0x0x4 is not structure or array type
+TYPE ERROR: Existing type at address 0x4 is not structure or array type
 in proc main adding addrExp r1{0} - 4 to local table
 in proc main adding addrExp r1{0} - 28 to local table
 in proc main adding addrExp r1{0} - 32 to local table
@@ -18,7 +18,7 @@ in proc main adding addrExp r1{0} - 36 to local table
 in proc main adding addrExp r1{0} - 40 to local table
 in proc main adding addrExp r1{0} - 48 to local table
 in proc main adding addrExp r1{0} + 4 to local table
-TYPE ERROR: Existing type at address 0x0x4 is not structure or array type
+TYPE ERROR: Existing type at address 0x4 is not structure or array type
 in proc main adding addrExp r1{0} - 4 to local table
 in proc main adding addrExp r1{0} - 28 to local table
 in proc main adding addrExp r1{0} - 32 to local table
@@ -35,17 +35,17 @@ in proc main adding addrExp r1{0} - 28 to local table
 in proc main adding addrExp r1{0} - 28 to local table
 in proc main adding addrExp r1{0} - 28 to local table
 in proc main adding addrExp r1{0} + 4 to local table
-TYPE ERROR: Existing type at address 0x0x4 is not structure or array type
+TYPE ERROR: Existing type at address 0x4 is not structure or array type
 in proc main adding addrExp r1{0} - 4 to local table
 in proc main adding addrExp r1{0} - 28 to local table
-TYPE ERROR: Existing type at address 0x0xffffffffffffffe4 is not structure or array type
+TYPE ERROR: Existing type at address 0xffffffffffffffe4 is not structure or array type
 in proc main adding addrExp r1{0} - 32 to local table
 in proc main adding addrExp r1{0} - 36 to local table
 in proc main adding addrExp r1{0} - 40 to local table
 in proc main adding addrExp r1{0} - 48 to local table
 in proc main adding addrExp r1{0} - 28 to local table
 in proc main adding addrExp r1{0} + 4 to local table
-TYPE ERROR: Existing type at address 0x0x4 is not structure or array type
+TYPE ERROR: Existing type at address 0x4 is not structure or array type
 in proc main adding addrExp r1{0} - 4 to local table
 in proc main adding addrExp r1{0} - 28 to local table
 in proc main adding addrExp r1{0} - 32 to local table

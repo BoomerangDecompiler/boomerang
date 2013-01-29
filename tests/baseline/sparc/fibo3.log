@@ -40,9 +40,9 @@ in proc fib adding addrExp r14{0} + 56 to local table
 in proc fib adding addrExp r14{0} + 60 to local table
 in proc fib adding addrExp r14{0} + 68 to local table
 in proc fib adding addrExp r14{0} + 72 to local table
-TYPE ERROR: Existing type at address 0x0x48 is not structure or array type
+TYPE ERROR: Existing type at address 0x48 is not structure or array type
 in proc fib adding addrExp r14{0} - 16 to local table
-TYPE ERROR: Existing type at address 0x0xfffffffffffffff0 is not structure or array type
+TYPE ERROR: Existing type at address 0xfffffffffffffff0 is not structure or array type
 in proc fib adding addrExp r14{0} - 20 to local table
 in proc fib adding addrExp r14{0} to local table
 finding final parameters for fib

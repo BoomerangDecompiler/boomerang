@@ -1,5 +1,5 @@
-ERROR: attempted to decode outside any known segment 0x0x10010454
-ERROR: attempted to decode outside any known segment 0x0x10010478
+ERROR: attempted to decode outside any known segment 0x10010454
+ERROR: attempted to decode outside any known segment 0x10010478
 ### WARNING: iteration limit exceeded for dfaTypeAnalysis of procedure main ###
 in proc main adding addrExp r1{0} - 48 to local table
 in proc main adding addrExp r1{0} - 4 to local table

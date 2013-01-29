@@ -1,4 +1,4 @@
-// address: 0x100003f0
+// address: 100003f0
 int main(int argc, char *argv[], char *envp[]) {
     int local0; 		// m[g1 - 40]
 

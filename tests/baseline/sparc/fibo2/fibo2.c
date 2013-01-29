@@ -1,6 +1,6 @@
 void fib1();
 
-// address: 0x10738
+// address: 10738
 int main(int argc, char *argv[], char *envp[]) {
     void *fp; 		// r30
     __size32 i0; 		// r24
@@ -36,7 +36,7 @@ int main(int argc, char *argv[], char *envp[]) {
     fib1(local0, o1, o2, o3_1, o4_1, o5_1, 0x10800, o7_1, l0, l1, l2, l3, l4, l5, l6, l7, 0, argv, envp, o3, o4, o5, o6, o7, l1, l2, l3, l4, l5, l6, l7, i0, i1, i2, i3, i4, i5, fp, i7, local0);
 }
 
-// address: 0x106f4
+// address: 106f4
 void fib1() {
 /* goto 0x10704*/
 }

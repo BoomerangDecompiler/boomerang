@@ -1,4 +1,4 @@
-// address: 0x1090c
+// address: 1090c
 int main(int argc, char *argv[], char *envp[]) {
     if ((unsigned int)(argc - 2) > 5) {
         printf("Other!\n");

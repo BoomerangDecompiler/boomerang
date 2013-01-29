@@ -1,9 +1,9 @@
 __size32 a[10] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
 
-// address: 0x8048328
+// address: 8048328
 int main(int argc, char *argv[], char *envp[]) {
     __size32 edx; 		// r26
-    __size32 local0; 		// m[esp - 8]
+    int local0; 		// m[esp - 8]
     int local1; 		// m[esp - 12]
 
     local0 = 0;
@@ -13,7 +13,7 @@ int main(int argc, char *argv[], char *envp[]) {
         local0 += edx;
         local1++;
     }
-    proc1();
+    printf("Sum is %d\n", local0);
     return 0;
 }
 

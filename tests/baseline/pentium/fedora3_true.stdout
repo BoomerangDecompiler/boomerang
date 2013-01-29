@@ -3,11 +3,26 @@ loading...
 decoding entry point...
 decoding anything undecoded...
 finishing decode...
-found 1 procs
+found 6 procs
 decompiling...
- considering _start
- decompiling _start
-global type analysis for _start
-generating code...
+ considering main
+  considering proc2
+  decompiling proc2
+  considering proc3
+  decompiling proc3
+  considering proc5
+  decompiling proc5
+  considering proc4
+   considering proc6
+   decompiling proc6
+  decompiling proc4
+ decompiling main
+global type analysis for main
+global type analysis for proc2
+global type analysis for proc3
+global type analysis for proc4
+global type analysis for proc5
+global type analysis for proc6
+iiigenerating code...
 output written to ./tests/outputs/pentium/fedora3_true
-completed in 0 secs.
+completed in 1 sec.

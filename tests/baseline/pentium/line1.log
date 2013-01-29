@@ -1,21 +1,87 @@
 got filename line1.c for main
-Unknown library function proc1
-Unknown library function proc2
-Unknown library function proc3
-Unknown library function proc4
+got filename line1.c for chomp
 after removing matching assigns (%pc).
+### WARNING: iteration limit exceeded for dfaTypeAnalysis of procedure chomp ###
+in proc chomp adding addrExp r28{0} - 12 to local table
+in proc chomp adding addrExp r28{0} - 4 to local table
+in proc chomp adding addrExp r28{0} - 20 to local table
+in proc chomp adding addrExp r28{0} - 24 to local table
+in proc chomp adding addrExp r28{0} - 28 to local table
+in proc chomp adding addrExp r28{0} - 32 to local table
+in proc chomp adding addrExp r28{0} - 8 to local table
+in proc chomp adding addrExp r28{0} - 24 to local table
+in proc chomp adding addrExp r28{0} - 28 to local table
+in proc chomp adding addrExp r28{0} - 32 to local table
+in proc chomp adding addrExp r28{0} - 12 to local table
+in proc chomp adding addrExp r28{0} - 12 to local table
+in proc chomp adding addrExp r28{0} - 24 to local table
+in proc chomp adding addrExp r28{0} - 28 to local table
+in proc chomp adding addrExp r28{0} - 32 to local table
+finding final parameters for chomp
+potential param m[r28{0} + 12]
+found new parameter m[r28{0} + 12]
+potential param m[r28{0} + 8]
+found new parameter m[r28{0} + 8]
+potential param m[r28{0} + 4]
+found new parameter m[r28{0} + 4]
+after removing matching assigns (%pc).
+### WARNING: iteration limit exceeded for dfaTypeAnalysis of procedure main ###
+in proc main adding addrExp r28{0} - 0x41c to local table
 in proc main adding addrExp r28{0} - 16 to local table
+TYPE ERROR: At address 0xfffffffffffffff0 type FILE * is not compatible with existing array member type char
 in proc main adding addrExp r28{0} - 0x420 to local table
 in proc main adding addrExp r28{0} - 0x434 to local table
 in proc main adding addrExp r28{0} - 0x438 to local table
 in proc main adding addrExp r28{0} - 0x43c to local table
 in proc main adding addrExp r28{0} - 0x440 to local table
 in proc main adding addrExp r28{0} - 4 to local table
+TYPE ERROR: At address 0xfffffffffffffffc type __size32 is not compatible with existing array member type char
 in proc main adding addrExp r28{0} - 0x420 to local table
 in proc main adding addrExp r28{0} - 0x438 to local table
 in proc main adding addrExp r28{0} - 0x43c to local table
 in proc main adding addrExp r28{0} - 0x440 to local table
 in proc main adding addrExp r28{0} - 16 to local table
+TYPE ERROR: At address 0xfffffffffffffff0 type FILE * is not compatible with existing array member type char
+in proc main adding addrExp r28{0} - 0x420 to local table
+in proc main adding addrExp r28{0} - 0x434 to local table
+in proc main adding addrExp r28{0} - 0x438 to local table
+in proc main adding addrExp r28{0} - 0x43c to local table
+TYPE DIFFERENCE (could be OK): At address 0xfffffffffffffbc4 existing type FILE * but added type /*signed?*/int
+in proc main adding addrExp r28{0} - 0x440 to local table
+in proc main adding addrExp r28{0} - 0x438 to local table
+in proc main adding addrExp r28{0} - 0x43c to local table
+TYPE DIFFERENCE (could be OK): At address 0xfffffffffffffbc4 existing type FILE * but added type /*signed?*/int
+in proc main adding addrExp r28{0} - 0x440 to local table
+in proc main adding addrExp r28{0} - 0x438 to local table
+in proc main adding addrExp r28{0} - 0x43c to local table
+TYPE DIFFERENCE (could be OK): At address 0xfffffffffffffbc4 existing type FILE * but added type /*signed?*/int
+in proc main adding addrExp r28{0} - 0x440 to local table
+in proc main adding addrExp r28{0} - 0x43c to local table
+in proc main adding addrExp r28{0} - 0x440 to local table
+in proc main adding addrExp r28{0} - 16 to local table
+TYPE ERROR: At address 0xfffffffffffffff0 type FILE * is not compatible with existing array member type char
+in proc main adding addrExp r28{0} - 0x420 to local table
+in proc main adding addrExp r28{0} - 0x434 to local table
+in proc main adding addrExp r28{0} - 0x438 to local table
+in proc main adding addrExp r28{0} - 0x43c to local table
+in proc main adding addrExp r28{0} - 0x440 to local table
+### WARNING: iteration limit exceeded for dfaTypeAnalysis of procedure main ###
+in proc main adding addrExp r28{0} - 0x41c to local table
+in proc main adding addrExp r28{0} - 16 to local table
+TYPE ERROR: At address 0xfffffffffffffff0 type FILE * is not compatible with existing array member type char
+in proc main adding addrExp r28{0} - 0x420 to local table
+in proc main adding addrExp r28{0} - 0x434 to local table
+in proc main adding addrExp r28{0} - 0x438 to local table
+in proc main adding addrExp r28{0} - 0x43c to local table
+in proc main adding addrExp r28{0} - 0x440 to local table
+in proc main adding addrExp r28{0} - 4 to local table
+TYPE ERROR: At address 0xfffffffffffffffc type __size32 is not compatible with existing array member type char
+in proc main adding addrExp r28{0} - 0x420 to local table
+in proc main adding addrExp r28{0} - 0x438 to local table
+in proc main adding addrExp r28{0} - 0x43c to local table
+in proc main adding addrExp r28{0} - 0x440 to local table
+in proc main adding addrExp r28{0} - 16 to local table
+TYPE ERROR: At address 0xfffffffffffffff0 type FILE * is not compatible with existing array member type char
 in proc main adding addrExp r28{0} - 0x420 to local table
 in proc main adding addrExp r28{0} - 0x434 to local table
 in proc main adding addrExp r28{0} - 0x438 to local table
@@ -30,15 +96,30 @@ in proc main adding addrExp r28{0} - 0x440 to local table
 in proc main adding addrExp r28{0} - 0x43c to local table
 in proc main adding addrExp r28{0} - 0x440 to local table
 in proc main adding addrExp r28{0} - 16 to local table
+TYPE ERROR: At address 0xfffffffffffffff0 type FILE * is not compatible with existing array member type char
 in proc main adding addrExp r28{0} - 0x420 to local table
 in proc main adding addrExp r28{0} - 0x434 to local table
 in proc main adding addrExp r28{0} - 0x438 to local table
 in proc main adding addrExp r28{0} - 0x43c to local table
 in proc main adding addrExp r28{0} - 0x440 to local table
 could not set type for unknown parameter expression m[r28{0} + 4]
+could not set type for unknown parameter expression m[r28{0} + 8]
+in proc main adding addrExp r28{0} - 0x41c to local table
 in proc main adding addrExp r28{0} - 0x420 to local table
 could not set type for unknown parameter expression m[r28{0} + 12]
 in proc main adding addrExp r28{0} - 0x420 to local table
 in proc main adding addrExp r28{0} - 0x420 to local table
 in proc main adding addrExp r28{0} - 0x420 to local table
+### WARNING: iteration limit exceeded for dfaTypeAnalysis of procedure chomp ###
+finding final parameters for chomp
+potential param m[r28{0} + 12]
+found new parameter m[r28{0} + 12]
+potential param m[r28{0} + 8]
+found new parameter m[r28{0} + 8]
+potential param m[r28{0} + 4]
+found new parameter m[r28{0} + 4]
 local esp has type void * that doesn't agree with type of define void of a library, why?
+local eax_1 has type FILE * that doesn't agree with type of define union { /*signed?*/int x11; FILE * x12; } of a library, why?
+local eax_1 has type union { /*signed?*/int x11; FILE * x12; } that doesn't agree with type of define FILE * of a library, why?
+local esp has type __size32 that doesn't agree with type of define void of a library, why?
+local eax has type union { char[] x1; __size8 x2; } * that doesn't agree with type of define union { char[] x5; __size8 x6; __size8 x4; __size8 x2; } * of a library, why?

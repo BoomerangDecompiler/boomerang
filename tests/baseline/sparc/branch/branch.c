@@ -1,4 +1,4 @@
-// address: 0x10a80
+// address: 10a80
 int main(int argc, char *argv[], char *envp[]) {
     int local0; 		// m[o6 - 20]
     unsigned int local1; 		// m[o6 - 24]

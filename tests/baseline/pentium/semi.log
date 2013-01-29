@@ -1,6 +1,40 @@
 got filename semi.c for main
-Unknown library function proc1
 after removing matching assigns (%pc).
+in proc main adding addrExp r28{0} - 28 to local table
+in proc main adding addrExp r28{0} - 32 to local table
+in proc main adding addrExp r28{0} - 4 to local table
+in proc main adding addrExp r28{0} - 8 to local table
+in proc main adding addrExp r28{0} - 8 to local table
+in proc main adding addrExp r28{0} - 28 to local table
+in proc main adding addrExp r28{0} - 32 to local table
+in proc main adding addrExp r28{0} - 8 to local table
+in proc main adding addrExp r28{0} - 8 to local table
+in proc main adding addrExp r28{0} - 8 to local table
+in proc main adding addrExp r28{0} - 8 to local table
+in proc main adding addrExp r28{0} - 28 to local table
+in proc main adding addrExp r28{0} - 32 to local table
+in proc main adding addrExp r28{0} - 8 to local table
+in proc main adding addrExp r28{0} - 28 to local table
+in proc main adding addrExp r28{0} - 32 to local table
+in proc main adding addrExp r28{0} - 8 to local table
+in proc main adding addrExp r28{0} - 8 to local table
+in proc main adding addrExp r28{0} - 8 to local table
+in proc main adding addrExp r28{0} - 28 to local table
+in proc main adding addrExp r28{0} - 32 to local table
+in proc main adding addrExp r28{0} - 8 to local table
+in proc main adding addrExp r28{0} - 8 to local table
+in proc main adding addrExp r28{0} - 28 to local table
+in proc main adding addrExp r28{0} - 32 to local table
+in proc main adding addrExp r28{0} - 8 to local table
+in proc main adding addrExp r28{0} - 8 to local table
+in proc main adding addrExp r28{0} - 8 to local table
+in proc main adding addrExp r28{0} - 8 to local table
+in proc main adding addrExp r28{0} - 8 to local table
+in proc main adding addrExp r28{0} - 8 to local table
+in proc main adding addrExp r28{0} - 8 to local table
+in proc main adding addrExp r28{0} - 28 to local table
+in proc main adding addrExp r28{0} - 32 to local table
+in proc main adding addrExp r28{0} - 8 to local table
 in proc main adding addrExp r28{0} - 28 to local table
 in proc main adding addrExp r28{0} - 32 to local table
 in proc main adding addrExp r28{0} - 4 to local table

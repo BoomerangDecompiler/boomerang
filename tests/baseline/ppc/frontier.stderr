@@ -2,13 +2,13 @@ warning: textDelta different for section .got (ignoring).
 decompiling entry point main
 rtWARNING: no out edge for this BB in main:
 L11: Invalid BB:
-in edges: 0x100004e4 
+in edges: 100004e4 
 out edges: 
-0000000x10010478
+10010478
 
 WARNING: no out edge for this BB in main:
 L9: Invalid BB:
-in edges: 0x10000464 
+in edges: 10000464 
 out edges: 
-0000000x10010454
+10010454
 

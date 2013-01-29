@@ -1,7 +1,33 @@
 got filename fibo2.c for main
-Unknown library function proc1
-Unknown library function proc2
-Unknown library function proc3
+got filename fibo2.c for fib1
+after removing matching assigns (t[WILDSTR]).
+after removing matching assigns (%pc).
+### WARNING: iteration limit exceeded for dfaTypeAnalysis of procedure fib1 ###
+in proc fib1 adding addrExp r28{0} - 28 to local table
+in proc fib1 adding addrExp r28{0} - 32 to local table
+in proc fib1 adding addrExp r28{0} - 4 to local table
+in proc fib1 adding addrExp r28{0} - 4 to local table
+in proc fib1 adding addrExp r28{0} - 8 to local table
+in proc fib1 adding addrExp r28{0} - 12 to local table
+in proc fib1 adding addrExp r28{0} - 4 to local table
+in proc fib1 adding addrExp r28{0} - 8 to local table
+in proc fib1 adding addrExp r28{0} - 12 to local table
+in proc fib1 adding addrExp r28{0} - 28 to local table
+in proc fib1 adding addrExp r28{0} - 32 to local table
+in proc fib1 adding addrExp r28{0} - 28 to local table
+in proc fib1 adding addrExp r28{0} - 32 to local table
+in proc fib1 adding addrExp r28{0} - 28 to local table
+in proc fib1 adding addrExp r28{0} - 32 to local table
+finding final parameters for fib1
+potential param m[r28{0} + 4]
+found new parameter m[r28{0} + 4]
+potential param r26
+found new parameter r26
+finding final parameters for fib1
+potential param m[r28{0} + 4]
+found new parameter m[r28{0} + 4]
+potential param r26
+found new parameter r26
 after removing matching assigns (t[WILDSTR]).
 after removing matching assigns (%pc).
 in proc main adding addrExp r28{0} - 24 to local table
@@ -18,6 +44,27 @@ in proc main adding addrExp r28{0} - 20 to local table
 in proc main adding addrExp r28{0} - 24 to local table
 in proc main adding addrExp r28{0} - 28 to local table
 in proc main adding addrExp r28{0} - 32 to local table
+### WARNING: iteration limit exceeded for dfaTypeAnalysis of procedure main ###
+in proc main adding addrExp r28{0} - 24 to local table
+in proc main adding addrExp r28{0} - 8 to local table
+in proc main adding addrExp r28{0} - 4 to local table
+in proc main adding addrExp r28{0} - 28 to local table
+in proc main adding addrExp r28{0} - 32 to local table
+in proc main adding addrExp r28{0} - 24 to local table
+in proc main adding addrExp r28{0} - 28 to local table
+in proc main adding addrExp r28{0} - 32 to local table
+in proc main adding addrExp r28{0} - 28 to local table
+in proc main adding addrExp r28{0} - 32 to local table
+in proc main adding addrExp r28{0} - 20 to local table
+in proc main adding addrExp r28{0} - 24 to local table
+in proc main adding addrExp r28{0} - 28 to local table
+in proc main adding addrExp r28{0} - 32 to local table
+in proc main adding addrExp r28{0} - 8 to local table
 could not set type for unknown parameter expression m[r28{0} + 4]
 could not set type for unknown parameter expression m[r28{0} + 8]
 could not set type for unknown parameter expression m[r28{0} + 12]
+finding final parameters for fib1
+potential param m[r28{0} + 4]
+found new parameter m[r28{0} + 4]
+local eax has type /*signed?*/int that doesn't agree with type of define __size32 of a library, why?
+local esp has type void * that doesn't agree with type of define void of a library, why?

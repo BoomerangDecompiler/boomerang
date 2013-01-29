@@ -1,2 +1,2 @@
-void rux_encrypt(unsigned char *param1);
+void rux_encrypt(__size32 *param1);
 

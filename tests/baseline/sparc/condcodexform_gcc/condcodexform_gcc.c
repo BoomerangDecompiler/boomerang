@@ -1,4 +1,4 @@
-// address: 0x10bac
+// address: 10bac
 int main(int argc, char *argv[], char *envp[]) {
     unsigned int i0_1; 		// r24{77}
     int o0; 		// r8

@@ -1,4 +1,4 @@
-// address: 0x8048334
+// address: 8048334
 int main(int argc, int argv, int envp) {
     union { __size8 * x1; int x2; } eax; 		// r24
     void *esp; 		// r28

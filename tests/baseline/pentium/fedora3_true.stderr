@@ -1,8 +1,26 @@
-main function not found
-decompiling entry point _start
-WARNING: no out edge for this BB in _start:
-Invalid BB:
-in edges: 0x8048adc 
+decompiling entry point main
+rprtrtprttrWARNING: no out edge for this BB in main:
+L3: Call BB:
+in edges: 8048cf1 
 out edges: 
-0000000x8048ae1
+08048d4d
+08048d54  122 CALL proc5(
+                *i32* local0 := 0
+              )
+              Reaching definitions: r8=7,   r24=(r24{67}@31:8) | 7,   r25=r25{145},   r26=r26{67},
+                r27=r27{13} + 0x2cf7,   r28=r28{0} - 80,   r29=r28{0} - 4,   r30=r30{146},   r31=r31{147},
+                m[r28{0} + 4]=m[r28{0} + 4]{0},   m[r28{0} + 8]=m[r28{0} + 8]{0},   m[r28{0} + 12]=m[r28{0} + 12]{0},
+                m[r28{0} - 4]=r29{0},   m[r28{0} - 8]=r31{0},   m[r28{0} - 12]=r30{0},   m[r28{0} - 16]=r27{0},
+                m[r28{0} - 20]=%pc,   m[r28{0} - 28]=r25{75},   m[r28{0} - 72]=r27{13} + 0x15ee,   m[r28{0} - 76]=0,
+                m[r28{0} - 80]=%pc,   tmp1=r24{67},   tmpb=tmpb{148},   %flags=%flags{149},   %ZF=%ZF{150},
+                %CF=%CF{151}
+              Live variables: 
+
+WARNING: no out edge for this BB in proc6:
+Computed jump BB:
+in edges: 8049b24 
+out edges: 
+08049b26
+08049b2d
+08049b2f   63 CASE [(m[(ebx + (esi * 4)) + 0xd1f] + ebx) + 0x1e7f]
 

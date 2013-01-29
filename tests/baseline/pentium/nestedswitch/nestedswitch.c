@@ -1,8 +1,8 @@
-// address: 0x804837c
+// address: 804837c
 int main(int argc, char *argv[], char *envp[]) {
     if (argc > 7) {
 L2:
-        proc1();
+        puts("Other!");
         break;
     }
     switch(argc) {
@@ -12,29 +12,29 @@ L2:
         goto L2;
     case 2:
 L4:
-        proc1();
+        puts("Two!");
         break;
     case 3:
 L6:
-        proc1();
+        puts("Three!");
         break;
     case 4:
         if (7 - argc <= 5) {
             switch(7 - argc) {
             case 0:
 L8:
-                proc1();
+                puts("Seven!");
                 break;
             case 1:
 L10:
-                proc1();
+                puts("Six!");
                 break;
             case 2:
 L12:
-                proc1();
+                puts("Five!");
                 break;
             case 3:
-                proc1();
+                puts("Four!");
                 break;
             case 4:
                 goto L6;

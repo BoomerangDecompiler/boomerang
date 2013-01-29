@@ -1,4 +1,4 @@
-// address: 0x10604
+// address: 10604
 int main(int argc, char *argv[], char *envp[]) {
     int g2; 		// r2
 

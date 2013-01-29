@@ -1,4 +1,3 @@
-Unknown library function proc1
 assgn   42 *32* %pc := m[0x8049c18]
 undoComputedBB for statement   43 <all> := CALL __thunk_36_foo__1D(<all>)
               Reaching definitions: r24=r24{20},   r25=r25{18},   r26=r26{18},   r27=r27{21},   r28=r28{40},
@@ -16,10 +15,10 @@ in proc main adding addrExp r28{0} - 44 to local table
 in proc main adding addrExp r28{0} - 48 to local table
 in proc main adding addrExp r28{0} - 44 to local table
 in proc main adding addrExp r28{0} - 48 to local table
-Unknown library function proc2
-Unknown library function proc3
-Unknown library function proc4
-Unknown library function proc5
+Unknown library function __ls__7ostreamPCc
+Unknown library function hex__FR3ios
+Unknown library function __ls__7ostreamPCv
+Unknown library function endl__FR7ostream
 after removing matching assigns (%pc).
 in proc __thunk_36_foo__1D adding addrExp r28{0} - 4 to local table
 in proc __thunk_36_foo__1D adding addrExp r28{0} - 8 to local table

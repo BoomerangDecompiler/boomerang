@@ -1,4 +1,4 @@
-// address: 0x10000418
+// address: 10000418
 int main(int argc, char *argv[], char *envp[]) {
     if ((unsigned int)argc > (unsigned int)0xee6b27ff) {
         printf("Population exceeds %u\n", (unsigned int)0xee6b2800);

@@ -7,10 +7,7 @@ found 1 procs
 decompiling...
  considering main
  decompiling main
- considering _ZN1D3fooEv
- decompiling _ZN1D3fooEv
 global type analysis for main
-global type analysis for _ZN1D3fooEv
 generating code...
 output written to ./tests/outputs/sparc/shared2
-completed in 1 sec.
+completed in 0 secs.

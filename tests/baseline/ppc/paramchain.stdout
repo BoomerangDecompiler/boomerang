@@ -16,4 +16,4 @@ global type analysis for passem
 global type analysis for addem
 generating code...
 output written to ./tests/outputs/ppc/paramchain
-completed in 1 sec.
+completed in 0 secs.

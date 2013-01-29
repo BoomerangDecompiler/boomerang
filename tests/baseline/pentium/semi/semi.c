@@ -1,4 +1,4 @@
-// address: 0x8048328
+// address: 8048328
 int main(int argc, char *argv[], char *envp[]) {
     __size32 eax; 		// r24
     __size32 local0; 		// m[esp - 28]
@@ -17,10 +17,10 @@ L1:
             if (argc <= 2) {
                 if (argc <= 3) {
 L8:
-                    proc1();
+                    printf("9");
 L6:
                     local0 = 0x804849c;
-                    proc1();
+                    printf("5");
                 } else {
                     if (argc <= 4) {
                         goto L4;

@@ -1,4 +1,4 @@
-// address: 0x401bfc
+// address: 401bfc
 int main(int argc, char *argv[], char *envp[]) {
     __size32 eax; 		// r24
 

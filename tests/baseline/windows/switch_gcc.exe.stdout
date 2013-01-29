@@ -2,3 +2,24 @@ Boomerang alpha 0.3.1 09/Sep/2006
 loading...
 decoding entry point...
 decoding anything undecoded...
+finishing decode...
+found 5 procs
+decompiling...
+ considering _start
+  considering proc1
+   considering proc2
+    considering proc4
+     considering proc6
+     decompiling proc6
+    decompiling proc4
+   decompiling proc2
+  decompiling proc1
+ decompiling _start
+global type analysis for _start
+global type analysis for proc1
+global type analysis for proc2
+global type analysis for proc4
+global type analysis for proc6
+igenerating code...
+output written to ./tests/outputs/windows/switch_gcc
+completed in 0 secs.

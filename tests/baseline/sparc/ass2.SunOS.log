@@ -405,69 +405,69 @@ in proc __glutDetermineVisual adding addrExp r14{0} + 52 to local table
 in proc __glutDetermineVisual adding addrExp r14{0} + 56 to local table
 in proc __glutDetermineVisual adding addrExp r14{0} + 60 to local table
 in proc __glutDetermineVisual adding addrExp r14{0} + 4 to local table
-TYPE ERROR: Existing type at address 0x0x4 is not structure or array type
+TYPE ERROR: Existing type at address 0x4 is not structure or array type
 in proc __glutDetermineVisual adding addrExp r14{0} + 8 to local table
-TYPE ERROR: Existing type at address 0x0x8 is not structure or array type
+TYPE ERROR: Existing type at address 0x8 is not structure or array type
 in proc __glutDetermineVisual adding addrExp r14{0} + 12 to local table
-TYPE ERROR: Existing type at address 0x0xc is not structure or array type
+TYPE ERROR: Existing type at address 0xc is not structure or array type
 in proc __glutDetermineVisual adding addrExp r14{0} + 16 to local table
-TYPE ERROR: Existing type at address 0x0x10 is not structure or array type
+TYPE ERROR: Existing type at address 0x10 is not structure or array type
 in proc __glutDetermineVisual adding addrExp r14{0} + 20 to local table
-TYPE ERROR: Existing type at address 0x0x14 is not structure or array type
+TYPE ERROR: Existing type at address 0x14 is not structure or array type
 in proc __glutDetermineVisual adding addrExp r14{0} + 24 to local table
-TYPE ERROR: Existing type at address 0x0x18 is not structure or array type
+TYPE ERROR: Existing type at address 0x18 is not structure or array type
 in proc __glutDetermineVisual adding addrExp r14{0} + 28 to local table
-TYPE ERROR: Existing type at address 0x0x1c is not structure or array type
+TYPE ERROR: Existing type at address 0x1c is not structure or array type
 in proc __glutDetermineVisual adding addrExp r14{0} + 32 to local table
-TYPE ERROR: Existing type at address 0x0x20 is not structure or array type
+TYPE ERROR: Existing type at address 0x20 is not structure or array type
 in proc __glutDetermineVisual adding addrExp r14{0} + 36 to local table
-TYPE ERROR: Existing type at address 0x0x24 is not structure or array type
+TYPE ERROR: Existing type at address 0x24 is not structure or array type
 in proc __glutDetermineVisual adding addrExp r14{0} + 40 to local table
-TYPE ERROR: Existing type at address 0x0x28 is not structure or array type
+TYPE ERROR: Existing type at address 0x28 is not structure or array type
 in proc __glutDetermineVisual adding addrExp r14{0} + 44 to local table
-TYPE ERROR: Existing type at address 0x0x2c is not structure or array type
+TYPE ERROR: Existing type at address 0x2c is not structure or array type
 in proc __glutDetermineVisual adding addrExp r14{0} + 48 to local table
-TYPE ERROR: Existing type at address 0x0x30 is not structure or array type
+TYPE ERROR: Existing type at address 0x30 is not structure or array type
 in proc __glutDetermineVisual adding addrExp r14{0} + 52 to local table
-TYPE ERROR: Existing type at address 0x0x34 is not structure or array type
+TYPE ERROR: Existing type at address 0x34 is not structure or array type
 in proc __glutDetermineVisual adding addrExp r14{0} + 56 to local table
-TYPE ERROR: Existing type at address 0x0x38 is not structure or array type
+TYPE ERROR: Existing type at address 0x38 is not structure or array type
 in proc __glutDetermineVisual adding addrExp r14{0} + 60 to local table
-TYPE ERROR: Existing type at address 0x0x3c is not structure or array type
+TYPE ERROR: Existing type at address 0x3c is not structure or array type
 in proc __glutDetermineVisual adding addrExp r14{0} to local table
-TYPE ERROR: Existing type at address 0x0x0 is not structure or array type
+TYPE ERROR: Existing type at address 0x0 is not structure or array type
 in proc __glutDetermineVisual adding addrExp r14{0} + 4 to local table
-TYPE ERROR: Existing type at address 0x0x4 is not structure or array type
+TYPE ERROR: Existing type at address 0x4 is not structure or array type
 in proc __glutDetermineVisual adding addrExp r14{0} + 8 to local table
-TYPE ERROR: Existing type at address 0x0x8 is not structure or array type
+TYPE ERROR: Existing type at address 0x8 is not structure or array type
 in proc __glutDetermineVisual adding addrExp r14{0} + 12 to local table
-TYPE ERROR: Existing type at address 0x0xc is not structure or array type
+TYPE ERROR: Existing type at address 0xc is not structure or array type
 in proc __glutDetermineVisual adding addrExp r14{0} + 16 to local table
-TYPE ERROR: Existing type at address 0x0x10 is not structure or array type
+TYPE ERROR: Existing type at address 0x10 is not structure or array type
 in proc __glutDetermineVisual adding addrExp r14{0} + 20 to local table
-TYPE ERROR: Existing type at address 0x0x14 is not structure or array type
+TYPE ERROR: Existing type at address 0x14 is not structure or array type
 in proc __glutDetermineVisual adding addrExp r14{0} + 24 to local table
-TYPE ERROR: Existing type at address 0x0x18 is not structure or array type
+TYPE ERROR: Existing type at address 0x18 is not structure or array type
 in proc __glutDetermineVisual adding addrExp r14{0} + 28 to local table
-TYPE ERROR: Existing type at address 0x0x1c is not structure or array type
+TYPE ERROR: Existing type at address 0x1c is not structure or array type
 in proc __glutDetermineVisual adding addrExp r14{0} + 32 to local table
-TYPE ERROR: Existing type at address 0x0x20 is not structure or array type
+TYPE ERROR: Existing type at address 0x20 is not structure or array type
 in proc __glutDetermineVisual adding addrExp r14{0} + 36 to local table
-TYPE ERROR: Existing type at address 0x0x24 is not structure or array type
+TYPE ERROR: Existing type at address 0x24 is not structure or array type
 in proc __glutDetermineVisual adding addrExp r14{0} + 40 to local table
-TYPE ERROR: Existing type at address 0x0x28 is not structure or array type
+TYPE ERROR: Existing type at address 0x28 is not structure or array type
 in proc __glutDetermineVisual adding addrExp r14{0} + 44 to local table
-TYPE ERROR: Existing type at address 0x0x2c is not structure or array type
+TYPE ERROR: Existing type at address 0x2c is not structure or array type
 in proc __glutDetermineVisual adding addrExp r14{0} + 48 to local table
-TYPE ERROR: Existing type at address 0x0x30 is not structure or array type
+TYPE ERROR: Existing type at address 0x30 is not structure or array type
 in proc __glutDetermineVisual adding addrExp r14{0} + 52 to local table
-TYPE ERROR: Existing type at address 0x0x34 is not structure or array type
+TYPE ERROR: Existing type at address 0x34 is not structure or array type
 in proc __glutDetermineVisual adding addrExp r14{0} + 56 to local table
-TYPE ERROR: Existing type at address 0x0x38 is not structure or array type
+TYPE ERROR: Existing type at address 0x38 is not structure or array type
 in proc __glutDetermineVisual adding addrExp r14{0} + 60 to local table
-TYPE ERROR: Existing type at address 0x0x3c is not structure or array type
+TYPE ERROR: Existing type at address 0x3c is not structure or array type
 in proc __glutDetermineVisual adding addrExp r14{0} to local table
-TYPE ERROR: Existing type at address 0x0x0 is not structure or array type
+TYPE ERROR: Existing type at address 0x0 is not structure or array type
 finding final parameters for __glutDetermineVisual
 after removing matching assigns (t[WILDSTR]).
 in proc __glutDetermineWindowVisual adding addrExp r14{0} to local table
@@ -492,7 +492,7 @@ found new parameter r9
 potential param r10
 found new parameter r10
 after removing matching assigns (t[WILDSTR]).
-Could not find number of cases for n-way at address 0x0x1df0c
+Could not find number of cases for n-way at address 0x1df0c
 === about to restart decompilation of __glutSetupColormap because indirect jumps or calls have been analysed
 
 Unknown library function XCreateColormap
@@ -1061,37 +1061,37 @@ in proc proc1 adding addrExp r14{0} + 56 to local table
 in proc proc1 adding addrExp r14{0} + 60 to local table
 in proc proc1 adding addrExp r14{0} to local table
 in proc proc1 adding addrExp r14{0} + 4 to local table
-TYPE ERROR: Existing type at address 0x0x4 is not structure or array type
+TYPE ERROR: Existing type at address 0x4 is not structure or array type
 in proc proc1 adding addrExp r14{0} + 8 to local table
-TYPE ERROR: Existing type at address 0x0x8 is not structure or array type
+TYPE ERROR: Existing type at address 0x8 is not structure or array type
 in proc proc1 adding addrExp r14{0} + 12 to local table
-TYPE ERROR: Existing type at address 0x0xc is not structure or array type
+TYPE ERROR: Existing type at address 0xc is not structure or array type
 in proc proc1 adding addrExp r14{0} + 16 to local table
-TYPE ERROR: Existing type at address 0x0x10 is not structure or array type
+TYPE ERROR: Existing type at address 0x10 is not structure or array type
 in proc proc1 adding addrExp r14{0} + 20 to local table
-TYPE ERROR: Existing type at address 0x0x14 is not structure or array type
+TYPE ERROR: Existing type at address 0x14 is not structure or array type
 in proc proc1 adding addrExp r14{0} + 24 to local table
-TYPE ERROR: Existing type at address 0x0x18 is not structure or array type
+TYPE ERROR: Existing type at address 0x18 is not structure or array type
 in proc proc1 adding addrExp r14{0} + 28 to local table
-TYPE ERROR: Existing type at address 0x0x1c is not structure or array type
+TYPE ERROR: Existing type at address 0x1c is not structure or array type
 in proc proc1 adding addrExp r14{0} + 32 to local table
-TYPE ERROR: Existing type at address 0x0x20 is not structure or array type
+TYPE ERROR: Existing type at address 0x20 is not structure or array type
 in proc proc1 adding addrExp r14{0} + 36 to local table
-TYPE ERROR: Existing type at address 0x0x24 is not structure or array type
+TYPE ERROR: Existing type at address 0x24 is not structure or array type
 in proc proc1 adding addrExp r14{0} + 40 to local table
-TYPE ERROR: Existing type at address 0x0x28 is not structure or array type
+TYPE ERROR: Existing type at address 0x28 is not structure or array type
 in proc proc1 adding addrExp r14{0} + 44 to local table
-TYPE ERROR: Existing type at address 0x0x2c is not structure or array type
+TYPE ERROR: Existing type at address 0x2c is not structure or array type
 in proc proc1 adding addrExp r14{0} + 48 to local table
-TYPE ERROR: Existing type at address 0x0x30 is not structure or array type
+TYPE ERROR: Existing type at address 0x30 is not structure or array type
 in proc proc1 adding addrExp r14{0} + 52 to local table
-TYPE ERROR: Existing type at address 0x0x34 is not structure or array type
+TYPE ERROR: Existing type at address 0x34 is not structure or array type
 in proc proc1 adding addrExp r14{0} + 56 to local table
-TYPE ERROR: Existing type at address 0x0x38 is not structure or array type
+TYPE ERROR: Existing type at address 0x38 is not structure or array type
 in proc proc1 adding addrExp r14{0} + 60 to local table
-TYPE ERROR: Existing type at address 0x0x3c is not structure or array type
+TYPE ERROR: Existing type at address 0x3c is not structure or array type
 in proc proc1 adding addrExp r14{0} to local table
-TYPE ERROR: Existing type at address 0x0x0 is not structure or array type
+TYPE ERROR: Existing type at address 0x0 is not structure or array type
 finding final parameters for proc1
 finding final parameters for proc1
 after removing matching assigns (t[WILDSTR]).
@@ -1403,7 +1403,7 @@ found new parameter r2
 potential param r4
 found new parameter r4
 after removing matching assigns (t[WILDSTR]).
-Could not find number of cases for n-way at address 0x0x18f6c
+Could not find number of cases for n-way at address 0x18f6c
 === about to restart decompilation of proc4 because indirect jumps or calls have been analysed
 
 after removing matching assigns (t[WILDSTR]).

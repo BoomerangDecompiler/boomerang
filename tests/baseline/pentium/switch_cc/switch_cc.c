@@ -1,28 +1,28 @@
-// address: 0x80488f0
+// address: 80488f0
 int main(int argc, char *argv[], char *envp[]) {
     if ((unsigned int)(argc - 2) <= 5) {
         switch(argc) {
         case 2:
-            proc1();
+            printf("Two!\n");
             break;
         case 3:
-            proc1();
+            printf("Three!\n");
             break;
         case 4:
-            proc1();
+            printf("Four!\n");
             break;
         case 5:
-            proc1();
+            printf("Five!\n");
             break;
         case 6:
-            proc1();
+            printf("Six!\n");
             break;
         case 7:
-            proc1();
+            printf("Seven!\n");
             break;
         }
     } else {
-        proc1();
+        printf("Other!\n");
     }
     return 0;
 }

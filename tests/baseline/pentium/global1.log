@@ -1,6 +1,23 @@
 got filename global1.c for main
-Unknown library function proc1
-Unknown library function proc2
+got filename global1.c for foo1
+got filename global1.c for foo2
+assgn   11 *32* m[r28 - 4] := m[0x804945c]
+after removing matching assigns (t[WILDSTR]).
+after removing matching assigns (%pc).
+in proc foo2 adding addrExp r28{0} - 4 to local table
+in proc foo2 adding addrExp r28{0} - 24 to local table
+in proc foo2 adding addrExp r28{0} - 28 to local table
+in proc foo2 adding addrExp r28{0} - 32 to local table
+in proc foo2 adding addrExp r28{0} - 4 to local table
+in proc foo2 adding addrExp r28{0} - 24 to local table
+in proc foo2 adding addrExp r28{0} - 28 to local table
+in proc foo2 adding addrExp r28{0} - 32 to local table
+finding final parameters for foo2
+after removing matching assigns (t[WILDSTR]).
+after removing matching assigns (%pc).
+in proc foo1 adding addrExp r28{0} - 4 to local table
+in proc foo1 adding addrExp r28{0} - 16 to local table
+finding final parameters for foo1
 assgn   18 *32* m[r28 - 4] := m[0x8049460]
 after removing matching assigns (t[WILDSTR]).
 after removing matching assigns (%pc).
@@ -9,6 +26,16 @@ in proc main adding addrExp r28{0} - 16 to local table
 in proc main adding addrExp r28{0} - 24 to local table
 in proc main adding addrExp r28{0} - 28 to local table
 in proc main adding addrExp r28{0} - 32 to local table
+in proc main adding addrExp r28{0} - 4 to local table
+in proc main adding addrExp r28{0} - 16 to local table
+in proc main adding addrExp r28{0} - 24 to local table
+in proc main adding addrExp r28{0} - 28 to local table
+in proc main adding addrExp r28{0} - 32 to local table
 could not set type for unknown parameter expression m[r28{0} + 4]
 could not set type for unknown parameter expression m[r28{0} + 8]
 could not set type for unknown parameter expression m[r28{0} + 12]
+finding final parameters for foo1
+finding final parameters for foo2
+finding final parameters for foo1
+local esp has type __size32 that doesn't agree with type of define void of a library, why?
+local esp has type __size32 that doesn't agree with type of define void of a library, why?

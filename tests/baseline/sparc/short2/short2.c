@@ -1,6 +1,6 @@
 int test(int param1, int param2, int param3);
 
-// address: 0x106b4
+// address: 106b4
 int main(int argc, char *argv[], char *envp[]) {
     int o0; 		// r8
 
@@ -15,7 +15,7 @@ int main(int argc, char *argv[], char *envp[]) {
     return 0;
 }
 
-// address: 0x10688
+// address: 10688
 int test(int param1, int param2, int param3) {
     int g1; 		// r1
     int o0; 		// r8

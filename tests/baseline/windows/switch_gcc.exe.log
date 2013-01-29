@@ -1,7 +1,137 @@
 Unknown library function dll_crt0__FP11per_process
 Unknown library function GetModuleHandleA
 Unknown library function cygwin_internal
-Error: Instruction at 0x0x40164c branches beyond end of section, to 0x0x100401544
-Error: Instruction at 0x0x40162b branches beyond end of section, to 0x0x100401594
-COMPUTED JUMP at 0x0x401780, pDest = m[0x4040c4]
-ERROR: attempted to decode outside any known segment 0x0x100401670
+after removing matching assigns (%pc).
+### WARNING: iteration limit exceeded for dfaTypeAnalysis of procedure proc6 ###
+in proc proc6 adding addrExp r28{0} - 4 to local table
+in proc proc6 adding addrExp r28{0} - 8 to local table
+in proc proc6 adding addrExp r28{0} - 12 to local table
+finding final parameters for proc6
+potential param r28
+found new parameter r28
+potential param m[r28{0} + 4]
+found new parameter m[r28{0} + 4]
+potential param m[r28{0} + 12]
+found new parameter m[r28{0} + 12]
+potential param m[r28{0} + 8]
+found new parameter m[r28{0} + 8]
+potential param r24
+found new parameter r24
+potential param r26
+found new parameter r26
+after removing matching assigns (t[WILDSTR]).
+after removing matching assigns (%pc).
+in proc proc4 adding addrExp r28{0} - 4 to local table
+in proc proc4 adding addrExp r28{0} - 20 to local table
+in proc proc4 adding addrExp r28{0} - 24 to local table
+in proc proc4 adding addrExp r28{0} - 28 to local table
+in proc proc4 adding addrExp r28{0} - 32 to local table
+finding final parameters for proc4
+potential param r24
+found new parameter r24
+potential param r26
+found new parameter r26
+after removing matching assigns (t[WILDSTR]).
+after removing matching assigns (%pc).
+in proc proc2 adding addrExp r28{0} - 12 to local table
+in proc proc2 adding addrExp r28{0} - 16 to local table
+in proc proc2 adding addrExp r28{0} - 20 to local table
+in proc proc2 adding addrExp r28{0} - 4 to local table
+in proc proc2 adding addrExp r28{0} - 8 to local table
+in proc proc2 adding addrExp r28{0} - 12 to local table
+in proc proc2 adding addrExp r28{0} - 16 to local table
+in proc proc2 adding addrExp r28{0} - 12 to local table
+in proc proc2 adding addrExp r28{0} - 16 to local table
+in proc proc2 adding addrExp r28{0} - 20 to local table
+in proc proc2 adding addrExp r28{0} - 12 to local table
+in proc proc2 adding addrExp r28{0} - 16 to local table
+in proc proc2 adding addrExp r28{0} - 20 to local table
+in proc proc2 adding addrExp r28{0} - 12 to local table
+in proc proc2 adding addrExp r28{0} - 16 to local table
+finding final parameters for proc2
+potential param r29
+found new parameter r29
+potential param m[r28{0} + 8]
+found new parameter m[r28{0} + 8]
+potential param m[r28{0} + 4]
+found new parameter m[r28{0} + 4]
+assgn   25 *32* %pc := m[0x404098]
+after removing matching assigns (t[WILDSTR]).
+after removing matching assigns (%pc).
+### WARNING: iteration limit exceeded for dfaTypeAnalysis of procedure proc1 ###
+in proc proc1 adding addrExp r28{0} - 4 to local table
+in proc proc1 adding addrExp r28{0} - 8 to local table
+in proc proc1 adding addrExp r28{0} - 12 to local table
+in proc proc1 adding addrExp r28{0} - 24 to local table
+in proc proc1 adding addrExp r28{0} - 28 to local table
+in proc proc1 adding addrExp r28{0} - 32 to local table
+in proc proc1 adding addrExp r28{0} - 28 to local table
+in proc proc1 adding addrExp r28{0} - 28 to local table
+in proc proc1 adding addrExp r28{0} - 28 to local table
+finding final parameters for proc1
+potential param r28
+found new parameter r28
+potential param m[r28{0} + 4]
+found new parameter m[r28{0} + 4]
+assgn    7 *32* r24 := m[0x403000]
+after removing matching assigns (t[WILDSTR]).
+after removing matching assigns (%pc).
+in proc _start adding addrExp r28{0} - 4 to local table
+in proc _start adding addrExp r28{0} - 6 to local table
+in proc _start adding addrExp r28{0} - 6 to local table
+in proc _start adding addrExp r28{0} - 6 to local table
+in proc _start adding addrExp r28{0} - 12 to local table
+in proc _start adding addrExp r28{0} - 16 to local table
+finding final parameters for _start
+potential param r28
+found new parameter r28
+potential param r42
+found new parameter r42
+### WARNING: iteration limit exceeded for dfaTypeAnalysis of procedure proc1 ###
+in proc proc1 adding addrExp r28{0} - 28 to local table
+in proc proc1 adding addrExp r28{0} - 28 to local table
+in proc proc1 adding addrExp r28{0} - 28 to local table
+in proc proc1 adding addrExp r28{0} - 28 to local table
+### WARNING: iteration limit exceeded for dfaTypeAnalysis of procedure proc6 ###
+finding final parameters for _start
+potential param r28
+found new parameter r28
+potential param r42
+found new parameter r42
+finding final parameters for proc2
+potential param r29
+found new parameter r29
+potential param m[r28{0} + 8]
+found new parameter m[r28{0} + 8]
+potential param m[r28{0} + 4]
+found new parameter m[r28{0} + 4]
+finding final parameters for proc1
+potential param r28
+found new parameter r28
+potential param m[r28{0} + 4]
+found new parameter m[r28{0} + 4]
+finding final parameters for proc4
+potential param r24
+found new parameter r24
+potential param r26
+found new parameter r26
+finding final parameters for proc2
+potential param r29
+found new parameter r29
+potential param m[r28{0} + 8]
+found new parameter m[r28{0} + 8]
+potential param m[r28{0} + 4]
+found new parameter m[r28{0} + 4]
+finding final parameters for proc6
+potential param r28
+found new parameter r28
+potential param m[r28{0} + 4]
+found new parameter m[r28{0} + 4]
+potential param m[r28{0} + 12]
+found new parameter m[r28{0} + 12]
+potential param m[r28{0} + 8]
+found new parameter m[r28{0} + 8]
+finding final parameters for proc4
+local esp has type __size32 that doesn't agree with type of define void of a library, why?
+found seq with more than one outedge!
+taken branch is first out edge

@@ -3,7 +3,7 @@ void proc2(__size32 param1);
 void proc3();
 void proc4();
 
-// address: 0x401150
+// address: 401150
 int main(int argc, char *argv[], char *envp[]) {
     if (argc > 7) {
 L2:
@@ -37,13 +37,13 @@ L2:
     return 0;
 }
 
-// address: 0x4038e4
+// address: 4038e4
 __size32 proc1(__size32 param1) {
     proc2(0);
     return param1;
 }
 
-// address: 0x403ad0
+// address: 403ad0
 void proc2(__size32 param1) {
     if (param1 != 0) {
 L26:
@@ -62,44 +62,53 @@ L0:
             *(__size32*)(ebp - 8) = edx;
             *(__size32*)(ebp - 4) = edx;
             *(__size32*)(ebp - 28) = ecx;
-            do {
-                if (flags || flags) {
+L20:
+            while ( !(flags || flags)) {
+                if (flags) {
+                    continue;
+                }
+                switch(ecx) {
+                case 0:
+                case 1:
+                    if ( !flags) {
+                        goto L20;
+                    }
+                    goto L5;
+                case 2:
+                    *(__size32*)(ebp + 28) += 4;
+                    *(__size32*)(ebp - 48) = ecx;
+                    if ( !flags) {
+                        if ( !flags) {
+                            *(__size32*)(ebp - 4) = eax;
+L13:
+                            goto L20;
+                        }
+                        *(__size32*)(ebp - 4) = edx;
+                        goto L13;
+                    }
+                    if ( !flags) {
+                        *(__size32*)(ebp - 8) = edx;
+                        goto L20;
+                    }
                     goto L5;
                 }
-            } while (flags);
-            switch(ecx) {
-            case 0:
-            case 1:
-                if ( !flags) {
+                if (flags) {
+                    break;
                 }
+                if (flags) {
+                    continue;
+                }
+                *(__size8*)(ebp - 9) = bl;
+L20:
+            }
 L5:
-                *(__size32*)(ebp - 20)++;
-                if ( !flags) {
-                    goto L0;
-                }
-                *(__size32*)(esp - 4) = edx;
-                *(__size32*)(esp - 4) = eax;
-                proc3();
-            case 2:
-                *(__size32*)(ebp + 28) += 4;
-                *(__size32*)(ebp - 48) = ecx;
-                if ( !flags) {
-                    if ( !flags) {
-                        *(__size32*)(ebp - 4) = eax;
-L13:
-                    }
-                    *(__size32*)(ebp - 4) = edx;
-                    goto L13;
-                }
-                if ( !flags) {
-                    *(__size32*)(ebp - 8) = edx;
-                }
-                goto L5;
+            *(__size32*)(ebp - 20)++;
+            if ( !flags) {
+                goto L0;
             }
-            if (flags) {
-                goto L5;
-            }
-            *(__size8*)(ebp - 9) = bl;
+            *(__size32*)(esp - 4) = edx;
+            *(__size32*)(esp - 4) = eax;
+            proc3();
         }
 L3:
         if ( !(flags || flags)) {
@@ -114,11 +123,11 @@ L3:
     goto L26;
 }
 
-// address: 0x100403a68
+// address: 100403a68
 void proc3() {
 }
 
-// address: 0x100403a20
+// address: 100403a20
 void proc4() {
 }
 
