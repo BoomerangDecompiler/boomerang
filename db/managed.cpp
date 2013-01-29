@@ -706,8 +706,8 @@ Range::Range(int stride, int lowerBound, int upperBound, Exp *base) :
         this->base = base->getSubExp1();
     } else {
         if (base == NULL)
-            //FIXME: use this->base here ?
-            base = new Const(0);
+            //NOTE: was "base = new Const(0);"
+            this->base = new Const(0);
         if (lowerBound > upperBound)
             this->upperBound = lowerBound;
         if (upperBound < lowerBound)

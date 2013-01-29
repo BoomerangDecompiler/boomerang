@@ -2558,7 +2558,7 @@ void UserProc::processFloatConstants() {
             if (fsize->getSubExp3()->getOper() == opMemOf &&
                     fsize->getSubExp3()->getSubExp1()->getOper() == opIntConst) {
                 Exp *memof = fsize->getSubExp3();
-                                ADDRESS u = ADDRESS::g(((Const*)memof->getSubExp1())->getInt()); //TODO: use getAddr
+                ADDRESS u = ADDRESS::g(((Const*)memof->getSubExp1())->getInt()); //TODO: use getAddr
                 bool ok;
                 double d = prog->getFloatConstant(u, ok);
                 if (ok) {

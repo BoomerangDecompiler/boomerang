@@ -52,7 +52,7 @@ typedef BinaryFile* (*constructFcn)();
 BinaryFile* BinaryFileFactory::getInstanceFor( const char *sName ) {
     FILE *f;
     unsigned char buf[64];
-    string libName,base_plugin_path=m_base_path;
+        string libName,base_plugin_path=m_base_path;
     BinaryFile *res = NULL;
 
     f = fopen (sName, "rb");
