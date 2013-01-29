@@ -26,7 +26,7 @@
 #if defined(_MSC_VER)
 #pragma warning(disable:4290)
 #endif
-
+#include "types.h"
 #include "managed.h"            // For LocationSet etc
 
 class Location;
@@ -131,276 +131,131 @@ class BasicBlock {
          * Objects of class Cfg can access the internals of a BasicBlock object.
          */
         friend class Cfg;
-
 public:
-        /*
-         * Constructor.
-         */
-                    BasicBlock();
+                        BasicBlock();
+                        ~BasicBlock();
+                        BasicBlock(const BasicBlock& bb);
+        BBTYPE          getType();
 
-        /*
-         * Destructor.
-         */
-                    ~BasicBlock();
+        int             getLabel();
+        std::string &   getLabelStr() { return m_labelStr; }
+        void            setLabelStr(std::string &s) { m_labelStr = s; }
+        bool            isLabelNeeded() { return m_labelneeded; }
+        void            setLabelNeeded(bool b) { m_labelneeded = b; }
+        bool            isCaseOption();
+        bool            isTraversed();
+        void            setTraversed(bool bTraversed);
+        void            print(std::ostream& os, bool html = false);
+        void            printToLog();
+        char *          prints();                        // For debugging
+        void            dump();
+        void            updateType(BBTYPE bbType, int iNumOutEdges);
+        void            setJumpReqd();
+        bool            isJumpReqd();
 
-        /*
-         * Copy constructor.
-         */
-                    BasicBlock(const BasicBlock& bb);
+        ADDRESS         getLowAddr();
+        ADDRESS         getHiAddr();
 
-        /*
-         * Return the type of the basic block.
-         */
-        BBTYPE        getType();
-
-        /*
-         * Check if this BB has a label. If so, return the numeric value of the label (nonzero integer). If not, returns
-         * zero.  See also Cfg::setLabel()
-         */
-        int            getLabel();
-
-        std::string &getLabelStr() { return m_labelStr; }
-        void        setLabelStr(std::string &s) { m_labelStr = s; }
-        bool        isLabelNeeded() { return m_labelneeded; }
-        void        setLabelNeeded(bool b) { m_labelneeded = b; }
-        bool        isCaseOption();
-
-        /*
-         * Return whether this BB has been traversed or not
-         */
-        bool        isTraversed();
-
-        /*
-         * Set the traversed flag
-         */
-        void        setTraversed(bool bTraversed);
-
-        /*
-         * Print the BB. For -R and for debugging
-         * Don't use = std::cout, because gdb doesn't know about std::
-         */
-        void        print(std::ostream& os, bool html = false);
-        void        printToLog();
-        char*        prints();                        // For debugging
-        void        dump();
-
-        /*
-         * Set the type of the basic block.
-         */
-        void        updateType(BBTYPE bbType, int iNumOutEdges);
-
-        /*
-         * Set the "jump reqd" bit. This means that this is an orphan BB (it is generated, not part of the original
-         * program), and that the "fall through" out edge (m_OutEdges[1]) has to be implemented as a jump. The back end
-         * needs to take heed of this bit
-         */
-        void        setJumpReqd();
-
-        /*
-         * Check if jump is required (see above).
-         */
-        bool        isJumpReqd();
-
-        /*
-         * Get the address associated with the BB
-         * Note that this is not always the same as getting the address of the first RTL (e.g. if the first RTL is a
-         * delay instruction of a DCTI instruction; then the address of this RTL will be 0)
-         */
-        ADDRESS        getLowAddr();
-        ADDRESS        getHiAddr();
-
-        /*
-         * Get ptr to the list of RTLs.
-         */
         std::list<RTL*>* getRTLs();
 
-        RTL* getRTLWithStatement(Statement *stmt);
+        RTL *           getRTLWithStatement(Statement *stmt);
 
-        /*
-         * Get the set of in edges.
-         */
         std::vector<PBB>& getInEdges();
 
-        int            getNumInEdges() { return m_iNumInEdges; }
+        int             getNumInEdges() { return m_iNumInEdges; }
 
-        /*
-         * Get the set of out edges.
-         */
         std::vector<PBB>& getOutEdges();
+        void            setInEdge(int i, PBB newIn);
+        void            setOutEdge(int i, PBB newInEdge);
 
-        /*
-         * Set an in edge to a new value; same number of in edges as before
-         */
-        void        setInEdge(int i, PBB newIn);
+        BasicBlock *    getOutEdge(unsigned int i);
+        int             getNumOutEdges() { return m_iNumOutEdges; }
+        int             whichPred(PBB pred);
+        void            addInEdge(PBB newInEdge);
+        void            deleteEdge(PBB edge);
+        void            deleteInEdge(std::vector<PBB>::iterator& it);
+        void            deleteInEdge(PBB edge);
+        ADDRESS         getCallDest();
+        Proc *          getCallDestProc();
+        unsigned        DFTOrder(int& first, int& last);
+        unsigned        RevDFTOrder(int& first, int& last);
 
-        /*
-         * Set an out edge to a new value; same number of out edges as before
-         */
-        void        setOutEdge(int i, PBB newInEdge);
-
-        /*
-         * Get the n-th out edge or 0 if it does not exist
-         */
-        PBB            getOutEdge(unsigned int i);
-
-        int            getNumOutEdges() { return m_iNumOutEdges; }
-
-        /*
-         * Get the index of my in-edges is BB pred
-         */
-        int            whichPred(PBB pred);
-
-        /*
-         * Add an in-edge
-         */
-        void        addInEdge(PBB newInEdge);
-        void        deleteEdge(PBB edge);
-
-        /*
-         * Delete an in-edge
-         */
-        void        deleteInEdge(std::vector<PBB>::iterator& it);
-        void        deleteInEdge(PBB edge);
-
-        /*
-         * If this is a call BB, find the fixed destination (if any).  Returns -1 otherwise
-         */
-        ADDRESS        getCallDest();
-        Proc        *getCallDestProc();
-
-        /*
-         * Traverse this node and recurse on its children in a depth first manner.
-         * Records the times at which this node was first visited and last visited.
-         * Returns the number of nodes traversed.
-         */
-        unsigned    DFTOrder(int& first, int& last);
-
-        /*
-         * Traverse this node and recurse on its parents in a reverse depth first manner.
-         * Records the times at which this node was first visited and last visited.
-         * Returns the number of nodes traversed.
-         */
-        unsigned    RevDFTOrder(int& first, int& last);
-
-        /*
-         * Static comparison function that returns true if the first BB has an address less than the second BB.
-         */
-static bool            lessAddress(PBB bb1, PBB bb2);
-
-        /*
-         * Static comparison function that returns true if the first BB has an DFT first number less than the second BB.
-         */
-static bool            lessFirstDFT(PBB bb1, PBB bb2);
-
-        /*
-         * Static comparison function that returns true if the first BB has an DFT last less than the second BB.
-         */
-static bool            lessLastDFT(PBB bb1, PBB bb2);
-
-        /*
-         * Resets the DFA sets of this BB.
-         */
-        void        resetDFASets();
+static  bool            lessAddress(PBB bb1, PBB bb2);
+static  bool            lessFirstDFT(PBB bb1, PBB bb2);
+static  bool            lessLastDFT(PBB bb1, PBB bb2);
 
         class LastStatementNotABranchError : public std::exception {
         public:
             Statement *stmt;
             LastStatementNotABranchError(Statement *stmt) : stmt(stmt) { }
         };
-        /* get the condition */
-        Exp            *getCond() throw(LastStatementNotABranchError);
-
-        /* set the condition */
-        void        setCond(Exp *e) throw(LastStatementNotABranchError);
-
         class LastStatementNotAGotoError : public std::exception {
         public:
             Statement *stmt;
             LastStatementNotAGotoError(Statement *stmt) : stmt(stmt) { }
         };
-        /* Get the destination expression, if any */
-        Exp*        getDest() throw(LastStatementNotAGotoError);
 
-        /* Check if there is a jump if equals relation */
-        bool        isJmpZ(PBB dest);
-
-        /* get the loop body */
-        BasicBlock    *getLoopBody();
-
-        /* Simplify all the expressions in this BB
-         */
-        void        simplify();
-
-
-        /*
-         *    given an address, returns the outedge which corresponds to that address or 0 if there was no such outedge
-         */
-
-        PBB            getCorrectOutEdge(ADDRESS a);
+        Exp *           getCond() throw(LastStatementNotABranchError);
+        void            setCond(Exp *e) throw(LastStatementNotABranchError);
+        Exp*            getDest() throw(LastStatementNotAGotoError);
+        bool            isJmpZ(PBB dest);
+        BasicBlock *    getLoopBody();
+        void            simplify();
+        BasicBlock *    getCorrectOutEdge(ADDRESS a);
 
         /*
          * Depth first traversal of all bbs, numbering as we go and as we come back, forward and reverse passes.
          * Use Cfg::establishDFTOrder() and CFG::establishRevDFTOrder to create these values.
          */
-        int            m_DFTfirst;           // depth-first traversal first visit
-        int            m_DFTlast;           // depth-first traversal last visit
-        int            m_DFTrevfirst;       // reverse depth-first traversal first visit
-        int            m_DFTrevlast;       // reverse depth-first traversal last visit
+        int             m_DFTfirst;         //!< depth-first traversal first visit
+        int             m_DFTlast;          //!< depth-first traversal last visit
+        int             m_DFTrevfirst;      //!< reverse depth-first traversal first visit
+        int             m_DFTrevlast;       //!< reverse depth-first traversal last visit
 
 private:
         /*
          * Constructor. Called by Cfg::NewBB.
          */
-                    BasicBlock(std::list<RTL*>* pRtls, BBTYPE bbType, int iNumOutEdges);
-
-        /*
-         * Sets the RTLs for this BB. This is the only place that
-         * the RTLs for a block must be set as we need to add the back
-         * link for a call instruction to its enclosing BB.
-         */
-        void        setRTLs(std::list<RTL*>* rtls);
+                        BasicBlock(std::list<RTL*>* pRtls, BBTYPE bbType, int iNumOutEdges);
+        void            setRTLs(std::list<RTL*>* rtls);
 
 public:
-
-        // code generation
-        void        generateBodyCode(HLLCode &hll, bool dup = false);
-
-/* high level structuring */
-        SBBTYPE        m_structType;    // structured type of this node
-        SBBTYPE        m_loopCondType; // type of conditional to treat this loop header as (if any)
-        PBB            m_loopHead;        // head of the most nested enclosing loop
-        PBB            m_caseHead;        // head of the most nested enclosing case
-        PBB            m_condFollow;    // follow of a conditional header
-        PBB            m_loopFollow;    // follow of a loop header
-        PBB            m_latchNode;    // latch node of a loop header
+                        /* high level structuring */
+        SBBTYPE         m_structType;       //!< structured type of this node
+        SBBTYPE         m_loopCondType;     //!< type of conditional to treat this loop header as (if any)
+        BasicBlock *    m_loopHead;         //!< head of the most nested enclosing loop
+        BasicBlock *    m_caseHead;         //!< head of the most nested enclosing case
+        BasicBlock *    m_condFollow;       //!< follow of a conditional header
+        BasicBlock *    m_loopFollow;       //!< follow of a loop header
+        BasicBlock *    m_latchNode;        //!< latch node of a loop header
 
 protected:
-/* general basic block information */
-        BBTYPE        m_nodeType;        // type of basic block
-        std::list<RTL*>* m_pRtls;    // Ptr to list of RTLs
-        int            m_iLabelNum;    // Nonzero if start of BB needs label
-        std::string    m_labelStr;        // string label of this bb.
-        bool        m_labelneeded;
-        bool        m_bIncomplete;    // True if not yet complete
-        bool        m_bJumpReqd;    // True if jump required for "fall through"
+                        /* general basic block information */
+        BBTYPE          m_nodeType;         //!< type of basic block
+        std::list<RTL*>* m_pRtls;           //!< Ptr to list of RTLs
+        int             m_iLabelNum;        //!< Nonzero if start of BB needs label
+        std::string     m_labelStr;         //!< string label of this bb.
+        bool            m_labelneeded;
+        bool            m_bIncomplete;      //!< True if not yet complete
+        bool            m_bJumpReqd;        //!< True if jump required for "fall through"
 
-/* in-edges and out-edges */
-        std::vector<PBB> m_InEdges;    // Vector of in-edges
-        std::vector<PBB> m_OutEdges;// Vector of out-edges
-        int            m_iNumInEdges;    // We need these two because GCC doesn't
-        int            m_iNumOutEdges;    // support resize() of vectors!
+                        /* in-edges and out-edges */
+        std::vector<BasicBlock *> m_InEdges;//!< Vector of in-edges
+        std::vector<BasicBlock *> m_OutEdges;//!< Vector of out-edges
+        int             m_iNumInEdges;      //!< We need these two because GCC doesn't
+        int             m_iNumOutEdges;     //!< support resize() of vectors!
 
-/* for traversal */
-        bool        m_iTraversed;    // traversal marker
+                        /* for traversal */
+        bool            m_iTraversed;       //!< traversal marker
 
-/* Liveness */
-        LocationSet    liveIn;            // Set of locations live at BB start
+                        /* Liveness */
+        LocationSet     liveIn;             //!< Set of locations live at BB start
 
 public:
 
-        bool        isPostCall();
-static void            doAvail(StatementSet& s, PBB inEdge);
-        Proc*        getDestProc();
+        bool            isPostCall();
+static  void             doAvail(StatementSet& s, PBB inEdge);
+        Proc *          getDestProc();
 
         /**
          * Get first/next statement this BB
@@ -410,144 +265,117 @@ static void            doAvail(StatementSet& s, PBB inEdge);
         typedef std::list<RTL*>::iterator rtlit;
         typedef std::list<RTL*>::reverse_iterator rtlrit;
         typedef std::list<Exp*>::iterator elit;
-        Statement*    getFirstStmt(rtlit& rit, StatementList::iterator& sit);
-        Statement*    getNextStmt(rtlit& rit, StatementList::iterator& sit);
-        Statement*    getLastStmt(rtlrit& rit, StatementList::reverse_iterator& sit);
-        Statement*    getFirstStmt(); // for those of us that don't want the iterators
-        Statement*    getLastStmt(); // for those of us that don't want the iterators
-        Statement*    getPrevStmt(rtlrit& rit, StatementList::reverse_iterator& sit);
-        RTL*        getLastRtl() {return m_pRtls->back();}
-
-        void        getStatements(StatementList &stmts);
-
-        /**
-         * Get the statement number for the first BB as a character array.
-         * If not possible (e.g. because the BB has no statements), return
-         * a unique string (e.g. bb8048c10)
-         */
-        char*        getStmtNumber();
-
+        Statement *     getFirstStmt(rtlit& rit, StatementList::iterator& sit);
+        Statement *     getNextStmt(rtlit& rit, StatementList::iterator& sit);
+        Statement *     getLastStmt(rtlrit& rit, StatementList::reverse_iterator& sit);
+        Statement *     getFirstStmt();
+        Statement *     getLastStmt();
+        Statement *     getPrevStmt(rtlrit& rit, StatementList::reverse_iterator& sit);
+        RTL *           getLastRtl() { return m_pRtls->back(); }
+        void            getStatements(StatementList &stmts);
+        char *          getStmtNumber();
 protected:
         /* Control flow analysis stuff, lifted from Doug Simon's honours thesis.
          */
-        int            ord;     // node's position within the ordering structure
-        int            revOrd;     // position within ordering structure for the reverse graph
-        int            inEdgesVisited; // counts the number of in edges visited during a DFS
-        int            numForwardInEdges; // inedges to this node that aren't back edges
-        int            loopStamps[2], revLoopStamps[2]; // used for structuring analysis
-        travType    traversed; // traversal flag for the numerous DFS's
-        bool        hllLabel; // emit a label for this node when generating HL code?
-        char*        labelStr; // the high level label for this node (if needed)
-        int            indentLevel; // the indentation level of this node in the final code
+        int             ord;                //!< node's position within the ordering structure
+        int             revOrd;             //!< position within ordering structure for the reverse graph
+        int             inEdgesVisited;     //!< counts the number of in edges visited during a DFS
+        int             numForwardInEdges;  //!< inedges to this node that aren't back edges
+        int             loopStamps[2], revLoopStamps[2]; //!< used for structuring analysis
+        travType        traversed;          //!< traversal flag for the numerous DFS's
+        bool            hllLabel;           //!< emit a label for this node when generating HL code?
+        char *          labelStr;           //!< the high level label for this node (if needed)
+        int             indentLevel;        //!< the indentation level of this node in the final code
 
         // analysis information
-        PBB            immPDom; // immediate post dominator
-        PBB            loopHead; // head of the most nested enclosing loop
-        PBB            caseHead; // head of the most nested enclosing case
-        PBB            condFollow; // follow of a conditional header
-        PBB            loopFollow; // follow of a loop header
-        PBB            latchNode; // latching node of a loop header
+        BasicBlock *    immPDom;            //!< immediate post dominator
+        BasicBlock *    loopHead;           //!< head of the most nested enclosing loop
+        BasicBlock *    caseHead;           //!< head of the most nested enclosing case
+        BasicBlock *    condFollow;         //!< follow of a conditional header
+        BasicBlock *    loopFollow;         //!< follow of a loop header
+        BasicBlock *    latchNode;          //!< latching node of a loop header
 
         // Structured type of the node
-        structType    sType; // the structuring class (Loop, Cond , etc)
-        unstructType usType; // the restructured type of a conditional header
-        loopType    lType; // the loop type of a loop header
-        condType    cType; // the conditional type of a conditional header
+        structType      sType;              //!< the structuring class (Loop, Cond , etc)
+        unstructType    usType;             //!< the restructured type of a conditional header
+        loopType        lType;              //!< the loop type of a loop header
+        condType        cType;              //!< the conditional type of a conditional header
 
-        void        setLoopStamps(int &time, std::vector<PBB> &order);
-        void        setRevLoopStamps(int &time);
-        void        setRevOrder(std::vector<PBB> &order);
-
-        void        setLoopHead(PBB head) { loopHead = head; }
-        PBB            getLoopHead() { return loopHead; }
-        void        setLatchNode(PBB latch) { latchNode = latch; }
-        bool        isLatchNode() { return loopHead && loopHead->latchNode == this; }
-        PBB            getLatchNode() { return latchNode; }
-        PBB            getCaseHead() { return caseHead; }
-        void        setCaseHead(PBB head, PBB follow);
-
-        structType    getStructType() { return sType; }
-        void        setStructType(structType s);
-
-        unstructType getUnstructType();
-        void        setUnstructType(unstructType us);
-
-        loopType    getLoopType();
-        void        setLoopType(loopType l);
-
-        condType    getCondType();
-        void        setCondType(condType l);
-
-        void        setLoopFollow(PBB other) { loopFollow = other; }
-        PBB            getLoopFollow() { return loopFollow; }
-
-        void        setCondFollow(PBB other) { condFollow = other; }
-        PBB            getCondFollow() { return condFollow; }
-
-        // establish if this bb has a back edge to the given destination
-        bool        hasBackEdgeTo(BasicBlock *dest);
-
-        // establish if this bb has any back edges leading FROM it
-        bool         hasBackEdge() {
-                        for (unsigned int i = 0; i < m_OutEdges.size(); i++)
-                            if (hasBackEdgeTo(m_OutEdges[i]))
-                                return true;
-                        return false;
-                    }
-
+        void            setLoopStamps(int &time, std::vector<PBB> &order);
+        void            setRevLoopStamps(int &time);
+        void            setRevOrder(std::vector<PBB> &order);
+        void            setLoopHead(PBB head) { loopHead = head; }
+        PBB             getLoopHead() { return loopHead; }
+        void            setLatchNode(PBB latch) { latchNode = latch; }
+        bool            isLatchNode() { return loopHead && loopHead->latchNode == this; }
+        PBB             getLatchNode() { return latchNode; }
+        PBB             getCaseHead() { return caseHead; }
+        void            setCaseHead(PBB head, PBB follow);
+        structType      getStructType() { return sType; }
+        void            setStructType(structType s);
+        unstructType    getUnstructType();
+        void            setUnstructType(unstructType us);
+        loopType        getLoopType();
+        void            setLoopType(loopType l);
+        condType        getCondType();
+        void            setCondType(condType l);
+        void            setLoopFollow(PBB other) { loopFollow = other; }
+        PBB             getLoopFollow() { return loopFollow; }
+        void            setCondFollow(PBB other) { condFollow = other; }
+        PBB             getCondFollow() { return condFollow; }
+        bool            hasBackEdgeTo(BasicBlock *dest);
+                        //! establish if this bb has any back edges leading FROM it
+        bool            hasBackEdge() {
+                            for (auto bb : m_OutEdges)
+                                if (hasBackEdgeTo(bb))
+                                    return true;
+                            return false;
+                        }
 public:
-        bool        isBackEdge(int inEdge);
-
+        bool            isBackEdge(int inEdge);
 protected:
-        // establish if this bb is an ancestor of another BB
-        bool        isAncestorOf(BasicBlock *other);
 
-        bool        inLoop(PBB header, PBB latch);
+        bool            isAncestorOf(BasicBlock *other);
+        bool            inLoop(PBB header, PBB latch);
+        bool            isIn(std::list<PBB> &set, PBB bb) {
+                            for (std::list<PBB>::iterator it = set.begin(); it != set.end(); it++)
+                                if (*it == bb) return true;
+                            return false;
+                        }
 
-        bool        isIn(std::list<PBB> &set, PBB bb) {
-                        for (std::list<PBB>::iterator it = set.begin(); it != set.end(); it++)
-                            if (*it == bb) return true;
-                        return false;
-                    }
-
-        char*        indent(int indLevel, int extra = 0);
-        bool        allParentsGenerated();
-        void        emitGotoAndLabel(HLLCode *hll, int indLevel, PBB dest);
-        void        WriteBB(HLLCode *hll, int indLevel);
+        char *          indent(int indLevel, int extra = 0);
+        bool            allParentsGenerated();
+        void            emitGotoAndLabel(HLLCode *hll, int indLevel, PBB dest);
+        void            WriteBB(HLLCode *hll, int indLevel);
 
 public:
-        void        generateCode(HLLCode *hll, int indLevel, PBB latch, std::list<PBB> &followSet,
-                        std::list<PBB> &gotoSet, UserProc* proc);
-        // For prepending phi functions
-        void        prependStmt(Statement* s, UserProc* proc);
+        void            generateCode(HLLCode *hll, int indLevel, PBB latch, std::list<PBB> &followSet,
+                                     std::list<PBB> &gotoSet, UserProc* proc);
+
+        void            prependStmt(Statement* s, UserProc* proc);
 
         // Liveness
-        bool        calcLiveness(ConnectionGraph& ig, UserProc* proc);
-        void        getLiveOut(LocationSet& live, LocationSet& phiLocs);
+        bool            calcLiveness(ConnectionGraph& ig, UserProc* proc);
+        void            getLiveOut(LocationSet& live, LocationSet& phiLocs);
 
-        // Find indirect jumps and calls
-        bool        decodeIndirectJmp(UserProc* proc);
-        void        processSwitch(UserProc* proc);
-        int            findNumCases();
+        bool            decodeIndirectJmp(UserProc* proc);
+        void            processSwitch(UserProc* proc);
+        int             findNumCases();
+        bool            undoComputedBB(Statement* stmt);
 
-        /*
-         * Change the BB enclosing stmt to be CALL, not COMPCALL
-         */
-        bool        undoComputedBB(Statement* stmt);
-
-        // true if processing for overlapped registers on statements in this BB
-        // has been completed.
-        bool        overlappedRegProcessingDone;
+                        // true if processing for overlapped registers on statements in this BB
+                        // has been completed.
+        bool            overlappedRegProcessingDone;
 
 protected:
         friend class XMLProgParser;
-        void        addOutEdge(PBB bb) { m_OutEdges.push_back(bb); }
-        void        addRTL(RTL *rtl) {
-                        if (m_pRtls == NULL)
-                            m_pRtls = new std::list<RTL*>;
-                        m_pRtls->push_back(rtl);
-                    }
-        void        addLiveIn(Exp *e) { liveIn.insert(e); }
+        void            addOutEdge(PBB bb) { m_OutEdges.push_back(bb); }
+        void            addRTL(RTL *rtl) {
+                            if (m_pRtls == NULL)
+                                m_pRtls = new std::list<RTL*>;
+                            m_pRtls->push_back(rtl);
+                        }
+        void            addLiveIn(Exp *e) { liveIn.insert(e); }
 
 };        // class BasicBlock
 
