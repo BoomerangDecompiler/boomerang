@@ -857,7 +857,9 @@ Exp *RangeMap::substInto(Exp *e, std::set<Exp*, lessExpStar> *only) {
             if (only && only->find((*it).first) == only->end())
                 continue;
             bool change = false;
-            Exp *eold = e->clone();
+            Exp *eold = nullptr;
+            if(DEBUG_RANGE_ANALYSIS)
+                eold=e->clone();
             if ((*it).second.getLowerBound() == (*it).second.getUpperBound()) {
                 e = e->searchReplaceAll((*it).first, (new Binary(opPlus, (*it).second.getBase(), new Const((*it).second.getLowerBound())))->simplify(), change);
             }

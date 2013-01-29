@@ -857,10 +857,10 @@ static Location*    regOf(Exp *e) {return new Location(opRegOf, e, NULL);}
 static Location*    memOf(Exp *e, UserProc* p = NULL) {return new Location(opMemOf, e, p);}
 static Location*    tempOf(Exp* e) {return new Location(opTemp, e, NULL);}
 static Location*    global(const char *nam, UserProc *p) {
-                        return new Location(opGlobal, new Const((char*)nam), p);}
+                        return new Location(opGlobal, new Const(nam), p);}
 static Location*    local(const char *nam, UserProc *p);
 static Location*    param(const char *nam, UserProc *p = NULL) {
-                        return new Location(opParam, new Const((char*)nam), p);}
+                        return new Location(opParam, new Const(nam), p);}
         // Clone
 virtual Exp*        clone();
 

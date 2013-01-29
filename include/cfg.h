@@ -136,7 +136,6 @@ typedef BB_IT           iterator;
         bool            joinBB( PBB pb1, PBB pb2);
 
         void            removeBB( PBB bb);
-        void            resetDFASets(); //!< Resets the DFA sets of all the BBs.
         void            addCall(CallStatement* call);
         sCallStatement& getCalls();
         void            searchAndReplace(Exp* search, Exp* replace);

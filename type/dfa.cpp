@@ -281,7 +281,7 @@ void UserProc::dfaTypeAnalysis() {
             const char* nam = prog->getGlobalName(K2);
             if (nam == NULL)
                 nam = prog->newGlobalName(K2);
-            Exp* arr = new Binary(opArrayIndex,            //
+            Exp* arr = new Binary(opArrayIndex,
                                   Location::global(nam, this),
                                   idx);
             if (s->searchAndReplace(scaledArrayPat, arr)) {
