@@ -909,8 +909,9 @@ int Win32BinaryFile::readNative2(ADDRESS nat) {
 
 // Read 4 bytes from given native address
 int Win32BinaryFile::readNative4(ADDRESS nat) {
-    PSectionInfo si = GetSectionInfoByAddr(nat);
-    if (si == 0) return 0;
+    SectionInfo *si = GetSectionInfoByAddr(nat);
+    if (si == 0)
+        return 0;
     ADDRESS host = si->uHostAddr - si->uNativeAddr + nat;
     int n = win32Read4((int*)host.m_value);
     return n;

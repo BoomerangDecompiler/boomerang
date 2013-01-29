@@ -211,7 +211,7 @@ Exp* NJMCDecoder::dis_Reg(int regNum)
  ******************************************************************************/
 Exp* NJMCDecoder::dis_Num(unsigned num)
 {
-    Exp* expr = new Const((int)num);
+    Exp* expr = new Const((int)num); //TODO: what about signed values ?
     return expr;
 }
 
@@ -227,7 +227,7 @@ void NJMCDecoder::unconditionalJump(const char* name, int size, ADDRESS relocd, 
     result.rtl = new RTL(pc, stmts);
     result.numBytes = size;
     GotoStatement* jump = new GotoStatement();
-    jump->setDest(relocd-delta);
+    jump->setDest((relocd-delta).native());
     result.rtl->appendStmt(jump);
     SHOW_ASM(name<<" 0x"<<std::hex<<relocd-delta)
 }

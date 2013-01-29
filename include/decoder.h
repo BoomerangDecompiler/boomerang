@@ -14,7 +14,7 @@
  * OVERVIEW:   The interface to the instruction decoder.
  *============================================================================*/
 
-/* 
+/*
  * $Revision$    // 1.16.2.2
  *
  * 08 Apr 02 - Mike: Mods for boomerang
@@ -214,9 +214,9 @@ protected:
     BranchStatement* jump = new BranchStatement; \
     result.rtl->appendStmt(jump); \
     result.numBytes = size; \
-    jump->setDest(relocd-ADDRESS::g(delta)); \
+    jump->setDest((relocd-ADDRESS::g(delta)).native()); \
     jump->setCondType(cond); \
-    SHOW_ASM(name<<" "<<relocd)
+    SHOW_ASM(name<<" "<<relocd.native())
 
 // This one is X86 specific
 #define SETS(name, dest, cond) \

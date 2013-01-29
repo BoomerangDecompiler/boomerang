@@ -1327,6 +1327,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                     MATCH_w_32_16 = getDword(MATCH_p+2);
                                                 {
                                                     ADDRESS relocd =addressToPC(MATCH_p)+ 6 + MATCH_w_32_16 /* i32 at 16 */;
+
                                                     nextPC = MATCH_p+6;
 //#line 252 "frontend/machine/pentium/decoder.m"
                                                     COND_JUMP("Jv.NZod", 6, relocd, BRANCH_JNE)
@@ -9867,7 +9868,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                 assert(reloc->isIntConst());
                                 // Subtract off the host pc
                                 reloc->setInt(reloc->getInt() - hostPC.m_value);
-                                ADDRESS nativeDest = relocd-delta;
+                                ADDRESS nativeDest = (relocd-delta).native();
                                 if (nativeDest == pc+5) {
                                     // This is a call $+5
                                     // Use the standard semantics, except for the last statement
@@ -24073,7 +24074,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                 ADDRESS relocd = addressToPC(MATCH_p) + 2 + sign_extend((MATCH_w_8_8 & 0xff) ,8);
                                 nextPC = MATCH_p+2;
 //#line 1052 "frontend/machine/pentium/decoder.m"
-                                stmts = instantiate(pc,     "LOOPNE", dis_Num((relocd - hostPC - 2).m_value));
+                                stmts = instantiate(pc,     "LOOPNE", dis_Num((relocd - hostPC - 2).native().m_value));
                             }
                                 break;
                             case 1:
@@ -24082,7 +24083,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                 ADDRESS relocd = addressToPC(MATCH_p) + 2 + sign_extend((MATCH_w_8_8 & 0xff) ,8);
                                 nextPC = MATCH_p+2;
 //#line 1055 "frontend/machine/pentium/decoder.m"
-                                stmts = instantiate(pc,     "LOOPE", dis_Num((relocd-hostPC-2).m_value));
+                                stmts = instantiate(pc,     "LOOPE", dis_Num((relocd-hostPC-2).native().native().m_value));
                             }
                                 break;
                             case 2:
@@ -24091,7 +24092,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                 ADDRESS relocd = addressToPC(MATCH_p) + 2 + sign_extend((MATCH_w_8_8 & 0xff) ,8);
                                 nextPC = MATCH_p+2;
 //#line 1058 "frontend/machine/pentium/decoder.m"
-                                stmts = instantiate(pc,     "LOOP", dis_Num((relocd-hostPC-2).m_value));
+                                stmts = instantiate(pc,     "LOOP", dis_Num((relocd-hostPC-2).native().m_value));
                             }
                                 break;
                             case 3: case 4: case 5: case 6: case 7:
@@ -37171,10 +37172,8 @@ Exp* PentiumDecoder::dis_Mem(ADDRESS pc)
                         case 5:
                             MATCH_w_32_8 = getDword(MATCH_p+1);
                         {
-                            unsigned a = MATCH_w_32_8 /* i32 at 8 */;
-//#line 2150 "frontend/machine/pentium/decoder.m"
                             // [a]
-                            expr = Location::memOf(addReloc(new Const(a)));
+                            expr = Location::memOf(addReloc(new Const(ADDRESS::g(MATCH_w_32_8))));
                         }
                             break;
                         default: assert(0);
@@ -37371,7 +37370,7 @@ Byte PentiumDecoder::getByte (intptr_t lc)
 {
     return *(Byte *)lc;
 }
-/***************************************************************************//** * FUNCTION:        getWord
+/***************************************************************************//**
  * \brief        Returns the word starting at the given address.
  * PARAMETERS:        lc - address at which to decode the double
  * \returns             the decoded double
@@ -37381,20 +37380,21 @@ SWord PentiumDecoder::getWord (intptr_t lc)
 {
     return (SWord)(*(Byte *)lc + (*(Byte *)(lc+1) << 8));
 }
-/***************************************************************************//** * FUNCTION:        getDword
+/***************************************************************************//**
  * \brief        Returns the double starting at the given address.
- * PARAMETERS:        lc - address at which to decode the double
- * \returns             the decoded double
+ * \param lc - address at which to decode the double
+ * \returns the decoded DWord
  ******************************************************************************/
 DWord PentiumDecoder::getDword (intptr_t lc)
 /* get4Bytes - returns the next 4-Byte word from image pointed to by lc. */
 {
     lastDwordLc = lc - prog->getTextDelta();
-    return (DWord)(*(Byte *)lc + (*(Byte *)(lc+1) << 8) + (*(Byte *)(lc+2) << 16) + (*(Byte *)(lc+3) << 24));
+    return prog->readNative4(lastDwordLc);
+//    assert(lc<prog->getLimitTextHigh().m_value);
+//    return (DWord)(*(Byte *)lc + (*(Byte *)(lc+1) << 8) + (*(Byte *)(lc+2) << 16) + (*(Byte *)(lc+3) << 24));
 }
-/***************************************************************************//** * FUNCTION:       PentiumDecoder::PentiumDecoder
+/***************************************************************************//**
  * \brief       Constructor. The code won't work without this (not sure why the default constructor won't do...)
- * PARAMETERS:       None
  * \returns            N/A
  ******************************************************************************/
 PentiumDecoder::PentiumDecoder(Prog* prog) : NJMCDecoder(prog)
@@ -37509,7 +37509,7 @@ void genBSFR(ADDRESS pc, Exp* dest, Exp* modrm, int init, int size,
 }
 Exp *PentiumDecoder::addReloc(Exp *e)
 {
-        if (lastDwordLc != NO_ADDRESS)
+    if (lastDwordLc != NO_ADDRESS)
         e = prog->addReloc(e, lastDwordLc);
     return e;
 }

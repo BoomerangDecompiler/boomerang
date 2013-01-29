@@ -30,6 +30,7 @@
 #include "types.h"
 //#include "SymTab.h"    // Was used for relocaton stuff
 #include <list>
+#include <cstddef>
 #include <map>
 #include <string>
 #include <vector>
@@ -249,7 +250,7 @@ virtual std::map<std::string, ObjcModule> &getObjcModules() { return *new std::m
 
         ADDRESS         getLimitTextLow() { return limitTextLow; }
         ADDRESS         getLimitTextHigh() { return limitTextHigh; }
-        int             getTextDelta() { return textDelta; }
+        ptrdiff_t       getTextDelta() { return textDelta; }
 
 virtual bool            hasDebugInfo() { return false; }
 
@@ -271,7 +272,7 @@ protected:
         // Also the difference between the host and native addresses (host - native)
         // At this stage, we are assuming that the difference is the same for all
         // text sections of the BinaryFile image
-        int             textDelta;
+        ptrdiff_t       textDelta;
 };
 
 #endif        // #ifndef __BINARYFILE_H__
