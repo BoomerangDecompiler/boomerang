@@ -336,7 +336,7 @@ public:
 protected:
 
         bool            isAncestorOf(BasicBlock *other);
-        bool            inLoop(PBB header, PBB latch);
+        bool            inLoop(BasicBlock *header, BasicBlock *latch);
         bool            isIn(std::list<PBB> &set, PBB bb) {
                             for (std::list<PBB>::iterator it = set.begin(); it != set.end(); it++)
                                 if (*it == bb) return true;
