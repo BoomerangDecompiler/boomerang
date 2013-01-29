@@ -3693,8 +3693,9 @@ void CallStatement::genConstraints(LocationSet& cons) {
 }
 
 void BranchStatement::genConstraints(LocationSet& cons) {
-    if (pCond == NULL && VERBOSE) {
-        LOG << "Warning: BranchStatment " << number << " has no condition expression!\n";
+    if (pCond == NULL) {
+        if(VERBOSE)
+            LOG << "Warning: BranchStatment " << number << " has no condition expression!\n";
         return;
     }
     Type* opsType;
