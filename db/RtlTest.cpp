@@ -1,5 +1,5 @@
-/*==============================================================================
- * FILE:       RtlTest.cc
+/***************************************************************************//**
+ * \file       RtlTest.cc
  * OVERVIEW:   Provides the implementation for the RtlTest class, which
  *                tests the RTL and derived classes
  *============================================================================*/
@@ -26,27 +26,27 @@ CPPUNIT_TEST_SUITE_REGISTRATION( RtlTest );
 #define SWITCH_SPARC		"test/sparc/switch_cc"
 #define SWITCH_PENT			"test/pentium/switch_cc"
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        RtlTest::setUp
  * OVERVIEW:        Set up some expressions for use with all the tests
  * NOTE:            Called before any tests
  * PARAMETERS:        <none>
- * RETURNS:            <nothing>
+ * \returns             <nothing>
  *============================================================================*/
 void RtlTest::setUp () {
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        RtlTest::tearDown
  * OVERVIEW:        Delete expressions created in setUp
  * NOTE:            Called after all tests
  * PARAMETERS:        <none>
- * RETURNS:            <nothing>
+ * \returns             <nothing>
  *============================================================================*/
 void RtlTest::tearDown () {
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        RtlTest::testAppend
  * OVERVIEW:        Test appendExp and printing of RTLs
  *============================================================================*/
@@ -69,7 +69,7 @@ void RtlTest::testAppend () {
     // delete a;
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        RtlTest::testClone
  * OVERVIEW:        Test constructor from list of expressions; cloning of RTLs
  *============================================================================*/
@@ -101,7 +101,7 @@ void RtlTest::testClone () {
     CPPUNIT_ASSERT_EQUAL(expected, act2);
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        RtlTest::testVisitor
  * OVERVIEW:        Test the accept function for correct visiting behaviour.
  * NOTES:            Stub class to test.
@@ -186,7 +186,7 @@ void RtlTest::testVisitor()
     delete visitor;
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        RtlTest::testIsCompare
  * OVERVIEW:        Test the isCompare function
  *============================================================================*/

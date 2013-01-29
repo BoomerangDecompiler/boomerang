@@ -2,8 +2,8 @@
 #include <assert.h>
 
 #line 2 "machine/mc68k/decoder_low.m"
-/*==============================================================================
- * FILE:       decoder_low.m
+/***************************************************************************//**
+ * \file       decoder_low.m
  * OVERVIEW:   Implementation of the low level mc68000 specific parts of the
  *             NJMCDecoder class.
  *============================================================================*/
@@ -58,11 +58,11 @@ static char sslName[20];            // Modifiable; [name] from the toolkit is
                                     // in the text section and read-only
 static int temp1 = 0;               // id of a temp; initialised on first use
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        getWord
  * OVERVIEW:        Returns the word starting at the given address.
  * PARAMETERS:      lc - host address at which to decode 
- * RETURNS:         the decoded double
+ * \returns          the decoded double
  *============================================================================*/
 SWord getWord (ADDRESS lc)
 /* get2Bytes - returns next 2-Byte from image pointed to by lc.
@@ -72,11 +72,11 @@ SWord getWord (ADDRESS lc)
 }
 
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        decodeTrapName
  * OVERVIEW:        Places the name of the system call in _assembly.
  * PARAMETERS:      pc - address at which to decode 
- * RETURNS:         nil
+ * \returns          nil
  *============================================================================*/
 void decodeTrapName (ADDRESS pc)
 {
@@ -118,13 +118,13 @@ void chopBoth(char* name)
     sslName[l-1] = '\0';
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:       bumpRegister
  * OVERVIEW:       Add an RTAssgn to bump a register by an amount
  * PARAMETERS:     RTs: list of RTs to add this RTAssgn to
  *                 bump: amount to add to the register
  *                 bumpr: register to bump
- * RETURNS:        <nothing>
+ * \returns         <nothing>
  *============================================================================*/
 void bumpRegister(list<RT*>* RTs, int bump, int bumpr)
 {
@@ -140,14 +140,14 @@ void bumpRegister(list<RT*>* RTs, int bump, int bumpr)
     RTs->push_back(pRT);
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:       assignTemp
  * OVERVIEW:       Add an RTAssgn to assign src to temp1
  * PARAMETERS:     src: Pointer to SemStr for src
  *                 size: size of the assignment, in bits
  *                 temp: this function sets this parameter to point to a copy
  *                  of a SemStr that represents "temp1"
- * RETURNS:        Pointer to the assignment RT
+ * \returns         Pointer to the assignment RT
  *============================================================================*/
 RT* assignTemp(SemStr* src, int size, SemStr*& temp)
 {
@@ -161,7 +161,7 @@ RT* assignTemp(SemStr* src, int size, SemStr*& temp)
     return pRT;
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:       sgnExTemp
  * OVERVIEW:       Add an RTAssgn to sign extend src to temp1
  * PARAMETERS:     dest: Pointer to SemStr for dest
@@ -169,7 +169,7 @@ RT* assignTemp(SemStr* src, int size, SemStr*& temp)
  *                 size2: size of the destination, in bits
  *                 temp: this function sets this parameter to point to a copy
  *                  of a SemStr that represents "temp1"
- * RETURNS:        Pointer to the assignment RT
+ * \returns         Pointer to the assignment RT
  *============================================================================*/
 RT* sgnExTemp(SemStr* src, int size, int size2, SemStr*& temp)
 {
@@ -189,7 +189,7 @@ RT* sgnExTemp(SemStr* src, int size, int size2, SemStr*& temp)
 // Macro to handle bumping register if reqd
 #define ADDBUMP {if (bump) bumpRegister(RTs, bump, bumpr);}
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:       NJMCDecoder::decodeLowLevelInstruction
  * OVERVIEW:       Decodes a machine instruction and returns an instantiated
  *                 list of RTs.
@@ -197,7 +197,7 @@ RT* sgnExTemp(SemStr* src, int size, int size2, SemStr*& temp)
  *                 pc - the virtual address of the pc
  *                 result - a reference parameter that has a field that will be
  *                   set to false if an invalid or UNIMP instruction was decoded
- * RETURNS:        the instantiated list of RTs
+ * \returns         the instantiated list of RTs
  *============================================================================*/
 list<RT*>* NJMCDecoder::decodeLowLevelInstruction (ADDRESS hostPC, ADDRESS pc,
     DecodeResult& result) 

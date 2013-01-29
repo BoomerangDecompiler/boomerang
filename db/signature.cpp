@@ -7,9 +7,9 @@
  *
  */
 
-/*==============================================================================
- * FILE:       signature.cpp
- * OVERVIEW:   Implementation of the classes that describe a procedure signature
+/***************************************************************************//**
+ * \file       signature.cpp
+ * \brief   Implementation of the classes that describe a procedure signature
  ******************************************************************************/
 
 /*
@@ -285,8 +285,7 @@ void Parameter::setBoundMax(const char *nam) {
     boundMax = nam;
 }
 
-Signature *CallingConvention::Win32Signature::clone()
-{
+Signature *CallingConvention::Win32Signature::clone() {
     Win32Signature *n = new Win32Signature(name.c_str());
     cloneVec(params, n->params);
     // cloneVec(implicitParams, n->implicitParams);
@@ -300,8 +299,7 @@ Signature *CallingConvention::Win32Signature::clone()
     return n;
 }
 
-Signature *CallingConvention::Win32TcSignature::clone()
-{
+Signature *CallingConvention::Win32TcSignature::clone() {
     Win32TcSignature *n = new Win32TcSignature(name.c_str());
     cloneVec(params, n->params);
     // cloneVec(implicitParams, n->implicitParams);
@@ -315,8 +313,7 @@ Signature *CallingConvention::Win32TcSignature::clone()
     return n;
 }
 
-bool CallingConvention::Win32Signature::operator==(Signature& other)
-{
+bool CallingConvention::Win32Signature::operator==(Signature& other) {
     return Signature::operator==(other);
 }
 
@@ -327,7 +324,8 @@ static Exp* stackPlusFour = new Binary(opPlus,
 
 bool CallingConvention::Win32Signature::qualified(UserProc *p, Signature &candidate) {
     platform plat = p->getProg()->getFrontEndId();
-    if (plat != PLAT_PENTIUM || !p->getProg()->isWin32()) return false;
+    if (plat != PLAT_PENTIUM || !p->getProg()->isWin32())
+        return false;
 
     if (VERBOSE)
         LOG << "consider promotion to stdc win32 signature for " << p->getName() << "\n";
@@ -348,8 +346,7 @@ bool CallingConvention::Win32Signature::qualified(UserProc *p, Signature &candid
     return gotcorrectret1 && gotcorrectret2;
 }
 
-void CallingConvention::Win32Signature::addReturn(Type *type, Exp *e)
-{
+void CallingConvention::Win32Signature::addReturn(Type *type, Exp *e) {
     if (type->isVoid())
         return;
     if (e == NULL) {
@@ -361,8 +358,7 @@ void CallingConvention::Win32Signature::addReturn(Type *type, Exp *e)
     Signature::addReturn(type, e);
 }
 
-void CallingConvention::Win32Signature::addParameter(Type *type, const char *nam /*= NULL*/, Exp *e /*= NULL*/, const char *boundMax /*= ""*/)
-{
+void CallingConvention::Win32Signature::addParameter(Type *type, const char *nam /*= NULL*/, Exp *e /*= NULL*/, const char *boundMax /*= ""*/) {
     if (e == NULL) {
         e = getArgumentExp(params.size());
     }
@@ -393,8 +389,7 @@ Exp* CallingConvention::Win32TcSignature::getArgumentExp(int n) {
     return e;
 }
 
-Signature *CallingConvention::Win32Signature::promote(UserProc *p)
-{
+Signature *CallingConvention::Win32Signature::promote(UserProc *p) {
     // no promotions from win32 signature up, yet.
     // a possible thing to investigate would be COM objects
     return this;
@@ -475,8 +470,7 @@ void CallingConvention::Win32Signature::setLibraryDefines(StatementList* defs) {
     defs->append(new ImplicitAssign(Location::regOf(28)));        // esp
 }
 
-Exp *CallingConvention::Win32TcSignature::getProven(Exp *left)
-{
+Exp *CallingConvention::Win32TcSignature::getProven(Exp *left) {
     if (left->isRegOfK()) {
         if (((Const*)left->getSubExp1())->getInt() == 28) {
             int nparams = params.size();
@@ -494,20 +488,17 @@ Exp *CallingConvention::Win32TcSignature::getProven(Exp *left)
 }
 
 
-CallingConvention::StdC::PentiumSignature::PentiumSignature(const char *nam) : Signature(nam)
-{
+CallingConvention::StdC::PentiumSignature::PentiumSignature(const char *nam) : Signature(nam) {
     Signature::addReturn(Location::regOf(28));
     // Signature::addImplicitParameter(new PointerType(new IntegerType()), "esp",
     //                                 Location::regOf(28), NULL);
 }
 
-CallingConvention::StdC::PentiumSignature::PentiumSignature(Signature &old) : Signature(old)
-{
+CallingConvention::StdC::PentiumSignature::PentiumSignature(Signature &old) : Signature(old) {
 
 }
 
-Signature *CallingConvention::StdC::PentiumSignature::clone()
-{
+Signature *CallingConvention::StdC::PentiumSignature::clone() {
     PentiumSignature *n = new PentiumSignature(name.c_str());
     cloneVec(params, n->params);
     // cloneVec(implicitParams, n->implicitParams);
@@ -522,8 +513,7 @@ Signature *CallingConvention::StdC::PentiumSignature::clone()
     return n;
 }
 
-bool CallingConvention::StdC::PentiumSignature::operator==(Signature& other)
-{
+bool CallingConvention::StdC::PentiumSignature::operator==(Signature& other) {
     return Signature::operator==(other);
 }
 
@@ -575,8 +565,7 @@ bool CallingConvention::StdC::PentiumSignature::qualified(UserProc *p, Signature
 #endif
 }
 
-void CallingConvention::StdC::PentiumSignature::addReturn(Type *type, Exp *e)
-{
+void CallingConvention::StdC::PentiumSignature::addReturn(Type *type, Exp *e) {
     if (type->isVoid())
         return;
     if (e == NULL) {
@@ -588,8 +577,7 @@ void CallingConvention::StdC::PentiumSignature::addReturn(Type *type, Exp *e)
     Signature::addReturn(type, e);
 }
 
-void CallingConvention::StdC::PentiumSignature::addParameter(Type *type, const char *nam /*= NULL*/, Exp *e /*= NULL*/, const char *boundMax /*= ""*/)
-{
+void CallingConvention::StdC::PentiumSignature::addParameter(Type *type, const char *nam /*= NULL*/, Exp *e /*= NULL*/, const char *boundMax /*= ""*/) {
     if (e == NULL) {
         e = getArgumentExp(params.size());
     }
@@ -715,8 +703,7 @@ Exp *CallingConvention::StdC::PPCSignature::getArgumentExp(int n) {
     return e;
 }
 
-void CallingConvention::StdC::PPCSignature::addReturn(Type *type, Exp *e)
-{
+void CallingConvention::StdC::PPCSignature::addReturn(Type *type, Exp *e) {
     if (type->isVoid())
         return;
     if (e == NULL) {
@@ -775,8 +762,7 @@ CallingConvention::StdC::ST20Signature::ST20Signature(const char *nam) : Signatu
     // FIXME: Should also add m[sp+0] as an implicit parameter? Holds return address
 }
 
-CallingConvention::StdC::ST20Signature::ST20Signature(Signature &old) : Signature(old)
-{
+CallingConvention::StdC::ST20Signature::ST20Signature(Signature &old) : Signature(old) {
 
 }
 
@@ -793,8 +779,7 @@ Signature *CallingConvention::StdC::ST20Signature::clone() {
     return n;
 }
 
-bool CallingConvention::StdC::ST20Signature::operator==(Signature& other)
-{
+bool CallingConvention::StdC::ST20Signature::operator==(Signature& other) {
     return Signature::operator==(other);
 }
 
@@ -810,8 +795,7 @@ Exp *CallingConvention::StdC::ST20Signature::getArgumentExp(int n) {
     return e;
 }
 
-void CallingConvention::StdC::ST20Signature::addReturn(Type *type, Exp *e)
-{
+void CallingConvention::StdC::ST20Signature::addReturn(Type *type, Exp *e) {
     if (type->isVoid())
         return;
     if (e == NULL) {
@@ -825,8 +809,7 @@ Signature *CallingConvention::StdC::ST20Signature::promote(UserProc *p) {
     return this;
 }
 
-void CallingConvention::StdC::ST20Signature::addParameter(Type *type, const char *nam /*= NULL*/, Exp *e /*= NULL*/, const char *boundMax /*= ""*/)
-{
+void CallingConvention::StdC::ST20Signature::addParameter(Type *type, const char *nam /*= NULL*/, Exp *e /*= NULL*/, const char *boundMax /*= ""*/) {
     if (e == NULL) {
         e = getArgumentExp(params.size());
     }
@@ -975,8 +958,7 @@ bool CallingConvention::StdC::MIPSSignature::qualified(UserProc *p, Signature &c
 }
 
 
-void CallingConvention::StdC::SparcSignature::addReturn(Type *type, Exp *e)
-{
+void CallingConvention::StdC::SparcSignature::addReturn(Type *type, Exp *e) {
     if (type->isVoid())
         return;
     if (e == NULL) {
@@ -1092,8 +1074,7 @@ Signature::Signature(const char *nam) : rettype(new VoidType()), ellipsis(false)
 CustomSignature::CustomSignature(const char *nam) : Signature(nam), sp(0) {
 }
 
-void CustomSignature::setSP(int nsp)
-{
+void CustomSignature::setSP(int nsp) {
     sp = nsp;
     if (sp) {
         addReturn(Location::regOf(sp));
@@ -1102,8 +1083,7 @@ void CustomSignature::setSP(int nsp)
     }
 }
 
-Signature *Signature::clone()
-{
+Signature *Signature::clone() {
     Signature *n = new Signature(name.c_str());
     cloneVec(params, n->params);
     // cloneVec(implicitParams, n->implicitParams);
@@ -1119,8 +1099,7 @@ Signature *Signature::clone()
     return n;
 }
 
-Signature *CustomSignature::clone()
-{
+Signature *CustomSignature::clone() {
     CustomSignature *n = new CustomSignature(name.c_str());
     cloneVec(params, n->params);
     // cloneVec(implicitParams, n->implicitParams);
@@ -1136,28 +1115,29 @@ Signature *CustomSignature::clone()
 }
 
 
-bool Signature::operator==(Signature& other)
-{
+bool Signature::operator==(Signature& other) {
     //if (name != other.name) return false;        // MVE: should the name be significant? I'm thinking no
-    if (params.size() != other.params.size()) return false;
+    if (params.size() != other.params.size())
+        return false;
     // Only care about the first return location (at present)
     std::vector<Parameter*>::iterator it1, it2;
     for (it1 = params.begin(), it2 = other.params.begin(); it1 != params.end(); it1++, it2++)
-        if (!(**it1 == **it2)) return false;
-    if (returns.size() != other.returns.size()) return false;
+        if (!(**it1 == **it2))
+            return false;
+    if (returns.size() != other.returns.size())
+        return false;
     std::vector<Return*>::iterator rr1, rr2;
     for (rr1 = returns.begin(), rr2 = other.returns.begin(); rr1 != returns.end(); ++rr1, ++rr2)
-        if (!(**rr1 == **rr2)) return false;
+        if (!(**rr1 == **rr2))
+            return false;
     return true;
 }
 
-const char *Signature::getName()
-{
+const char *Signature::getName() {
     return name.c_str();
 }
 
-void Signature::setName(const char *nam)
-{
+void Signature::setName(const char *nam) {
     name = nam;
 }
 
@@ -1205,8 +1185,7 @@ void Signature::addParameter(Type *type, const char *nam /*= NULL*/, Exp *e /*= 
     // addImplicitParametersFor(p);
 }
 
-void Signature::addParameter(Parameter *param)
-{
+void Signature::addParameter(Parameter *param) {
     Type *ty = param->getType();
     const char *nam = param->getName();
     Exp *e = param->getExp();
@@ -1290,13 +1269,11 @@ void Signature::setParamType(Exp* e, Type* ty) {
     params[idx]->setType(ty);
 }
 
-void Signature::setParamName(int n, const char *name)
-{
+void Signature::setParamName(int n, const char *name) {
     params[n]->setName(name);
 }
 
-void Signature::setParamExp(int n, Exp *e)
-{
+void Signature::setParamExp(int n, Exp *e) {
     params[n]->setExp(e);
 }
 
@@ -1308,8 +1285,7 @@ int Signature::findParam(Exp *e) {
     return -1;
 }
 
-void Signature::renameParam(const char *oldName, const char *newName)
-{
+void Signature::renameParam(const char *oldName, const char *newName) {
     for (unsigned i = 0; i < getNumParams(); i++)
         if (!strcmp(params[i]->getName(), oldName)) {
             params[i]->setName(newName);
@@ -1342,8 +1318,7 @@ void Signature::addReturn(Exp *exp) {
     addReturn(new VoidType(), exp);
 }
 
-void Signature::removeReturn(Exp *e)
-{
+void Signature::removeReturn(Exp *e) {
     int i = findReturn(e);
     if (i != -1) {
         for (unsigned j = i+1; j < returns.size(); j++)
@@ -1426,8 +1401,7 @@ Signature *Signature::instantiate(platform plat, callconv cc, const char *nam) {
     return NULL;
 }
 
-void Signature::print(std::ostream &out, bool html)
-{
+void Signature::print(std::ostream &out, bool html) {
     if (isForced())
         out << "*forced* ";
     if (returns.size() > 0) {
@@ -1460,8 +1434,7 @@ char* Signature::prints() {
     return debug_buffer;
 }
 
-void Signature::printToLog()
-{
+void Signature::printToLog() {
     std::ostringstream os;
     print(os);
     LOG << os.str().c_str();
@@ -1751,8 +1724,7 @@ public:
     std::vector<int> preferedParams;
 };
 
-Memo *Signature::makeMemo(int mId)
-{
+Memo *Signature::makeMemo(int mId) {
     SignatureMemo *m = new SignatureMemo(mId);
     m->name = name;
     m->params = params;
@@ -1777,8 +1749,7 @@ Memo *Signature::makeMemo(int mId)
     return m;
 }
 
-void Signature::readMemo(Memo *mm, bool dec)
-{
+void Signature::readMemo(Memo *mm, bool dec) {
     SignatureMemo *m = dynamic_cast<SignatureMemo*>(mm);
 
     name = m->name;
@@ -1812,8 +1783,7 @@ public:
     Exp *exp;
 };
 
-Memo *Parameter::makeMemo(int mId)
-{
+Memo *Parameter::makeMemo(int mId) {
     ParameterMemo *m = new ParameterMemo(mId);
 
     m->type = type;
@@ -1826,8 +1796,7 @@ Memo *Parameter::makeMemo(int mId)
     return m;
 }
 
-void Parameter::readMemo(Memo *mm, bool dec)
-{
+void Parameter::readMemo(Memo *mm, bool dec) {
     ParameterMemo *m = dynamic_cast<ParameterMemo*>(mm);
     type = m->type;
     name = m->name;
@@ -1845,8 +1814,7 @@ public:
     Parameter *parent;
 };
 
-Memo *ImplicitParameter::makeMemo(int mId)
-{
+Memo *ImplicitParameter::makeMemo(int mId) {
     ImplicitParameterMemo *m = new ImplicitParameterMemo(mId);
 
     m->type = getType();
@@ -1860,8 +1828,7 @@ Memo *ImplicitParameter::makeMemo(int mId)
     return m;
 }
 
-void ImplicitParameter::readMemo(Memo *mm, bool dec)
-{
+void ImplicitParameter::readMemo(Memo *mm, bool dec) {
     ImplicitParameterMemo *m = dynamic_cast<ImplicitParameterMemo*>(mm);
     setType(m->type);
     setName(m->name.c_str());
@@ -2024,8 +1991,7 @@ public:
     Exp *exp;
 };
 
-Memo *Return::makeMemo(int mId)
-{
+Memo *Return::makeMemo(int mId) {
     ReturnMemo *m = new ReturnMemo(mId);
 
     m->type = type;
@@ -2037,8 +2003,7 @@ Memo *Return::makeMemo(int mId)
     return m;
 }
 
-void Return::readMemo(Memo *mm, bool dec)
-{
+void Return::readMemo(Memo *mm, bool dec) {
     ReturnMemo *m = dynamic_cast<ReturnMemo*>(mm);
     type = m->type;
     exp = m->exp;

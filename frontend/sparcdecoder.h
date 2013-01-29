@@ -8,9 +8,9 @@
  *
  */
 
-/*==============================================================================
- * FILE:       sparcdecoder.h
- * OVERVIEW:   The implementation of the instruction decoder for Sparc.
+/***************************************************************************//**
+ * \file       sparcdecoder.h
+ * \brief   The implementation of the instruction decoder for Sparc.
  ******************************************************************************/
 
 /*

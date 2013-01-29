@@ -1,8 +1,8 @@
 /*
  * Copyright (C) 2004-2006, Mike Van Emmerik and Trent Waddington
  */
-/*==============================================================================
- * FILE:       visitor.h
+/***************************************************************************//**
+ * \file       visitor.h
  * OVERVIEW:   Provides the definition for the various visitor and modifier classes.
  *                These classes sometimes are associated with Statement and Exp classes, so they are here to avoid
  *                #include problems, to make exp.cpp and statement.cpp a little less huge.
@@ -66,7 +66,7 @@ typedef BasicBlock* PBB;
 class LocationSet;
 
 /*
- * The ExpVisitor class is used to iterate over all subexpressions in an expression. 
+ * The ExpVisitor class is used to iterate over all subexpressions in an expression.
  */
 
 class ExpVisitor {
@@ -167,7 +167,7 @@ virtual Exp*        postVisit(Terminal    *e) {return e;}
 virtual Exp*        postVisit(TypeVal    *e)    {return e;}
 };
 
-/* 
+/*
  * The StmtVisitor class is used for code that has to work with all the Statement classes. One advantage is that you
  * don't need to declare a function in every class derived from Statement: the accept methods already do that for you.
  * It does not automatically visit the expressions in the statement.
@@ -177,7 +177,7 @@ public:
     StmtVisitor() { }
 virtual                ~StmtVisitor() { }
 
-    // visitor functions, 
+    // visitor functions,
     // returns true to continue iterating the container
 virtual bool        visit(RTL                *rtl);    // By default, visits all statements
 virtual bool        visit(Assign            *stmt)    { return true;}
@@ -286,7 +286,7 @@ virtual void        visit(ImpRefStatement *s,    bool& recur) {recur = true;}
 class PhiStripper : public StmtModifier {
         bool        del;            // Set true if this statment is to be deleted
 public:
-                    PhiStripper(ExpModifier* em) : StmtModifier(em) {del = false;} 
+                    PhiStripper(ExpModifier* em) : StmtModifier(em) {del = false;}
 virtual void        visit(PhiAssign* stmt, bool& recur);
         bool        getDelete() {return del;}
 };
@@ -513,34 +513,34 @@ class Localiser : public SimpExpModifier {
         CallStatement* call;                    // The call to localise to
 public:
                     Localiser(CallStatement* call) : call(call) { }
-        Exp*        preVisit(RefExp* e, bool& recur);
-        Exp*        preVisit(Location* e, bool& recur);
-        Exp*        postVisit(Location* e);
-        Exp*        postVisit(Terminal* e);
+        Exp *       preVisit(RefExp* e, bool& recur);
+        Exp *       preVisit(Location* e, bool& recur);
+        Exp *       postVisit(Location* e);
+        Exp *       postVisit(Terminal* e);
 };
 
 
 class ComplexityFinder : public ExpVisitor {
-        int            count;
-        UserProc*    proc;
+        int         count;
+        UserProc*   proc;
 public:
-                ComplexityFinder(UserProc* p) : count(0), proc(p) {}
-        int        getDepth() {return count;}
+                    ComplexityFinder(UserProc* p) : count(0), proc(p) {}
+        int         getDepth() {return count;}
 
-virtual bool    visit(Unary *e,        bool& override);
-virtual bool    visit(Binary *e,    bool& override);
-virtual bool    visit(Ternary *e,    bool& override);
-virtual bool    visit(Location *e,    bool& override);
+virtual bool        visit(Unary *e,        bool& override);
+virtual bool        visit(Binary *e,    bool& override);
+virtual bool        visit(Ternary *e,    bool& override);
+virtual bool        visit(Location *e,    bool& override);
 
 };
 
 // Used by range analysis
 class MemDepthFinder : public ExpVisitor {
-        int        depth;
+        int         depth;
 public:
-                MemDepthFinder() : depth(0) {}
-virtual bool    visit(Location *e,    bool& override);
-        int        getDepth() {return depth;}
+                    MemDepthFinder() : depth(0) {}
+virtual bool        visit(Location *e, bool& override);
+        int         getDepth() {return depth;}
 };
 
 
@@ -562,35 +562,35 @@ class PrimitiveTester : public ExpVisitor {
 public:
                     PrimitiveTester() : result(true) {}        // Initialise result true: need AND of all components
         bool        getResult() {return result;}
-        bool         visit(Location *e, bool& override);
-        bool         visit(RefExp *e, bool& override);
+        bool        visit(Location *e, bool& override);
+        bool        visit(RefExp *e, bool& override);
 };
 
 // Test if an expression (usually the RHS on an assignment) contains memory expressions. If so, it may not be safe to
 // propagate the assignment. NO LONGER USED.
 class ExpHasMemofTester : public ExpVisitor {
         bool        result;
-        UserProc*    proc;
+        UserProc *  proc;
 public:
                     ExpHasMemofTester(UserProc* proc) : result(false), proc(proc) {}
         bool        getResult() {return result;}
-        bool         visit(Location *e, bool& override);
+        bool        visit(Location *e, bool& override);
 };
 
 class TempToLocalMapper : public ExpVisitor {
-        UserProc*    proc;                                    // Proc object for storing the symbols
+        UserProc *  proc;                                    // Proc object for storing the symbols
 public:
                     TempToLocalMapper(UserProc* p) : proc(p) {}
-        bool         visit(Location *e, bool& override);
+        bool        visit(Location *e, bool& override);
 };
 
 // Name registers and temporaries
 class ExpRegMapper : public ExpVisitor {
-        UserProc*    proc;                                    // Proc object for storing the symbols
-        Prog*        prog;
+        UserProc *  proc;                                    // Proc object for storing the symbols
+        Prog *      prog;
 public:
                     ExpRegMapper(UserProc* proc);
-        bool         visit(RefExp *e, bool& override);
+        bool        visit(RefExp *e, bool& override);
 };
 
 class StmtRegMapper : public StmtExpVisitor {
@@ -616,7 +616,7 @@ class ExpDestCounter : public ExpVisitor {
         std::map<Exp*, int, lessExpStar>& destCounts;
 public:
                     ExpDestCounter(std::map<Exp*, int, lessExpStar>& dc) : destCounts(dc) {}
-        bool         visit(RefExp *e, bool& override);
+        bool        visit(RefExp *e, bool& override);
 };
 
 // FIXME: do I need to count collectors? All the visitors and modifiers should be refactored to conditionally visit

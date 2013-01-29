@@ -10,8 +10,8 @@
  */
 
 /***************************************************************************//**
- * FILE:       frontend.cpp
- * OVERVIEW:   This file contains common code for all front ends. The majority
+ * \file       frontend.cpp
+ * \brief   This file contains common code for all front ends. The majority
  *                of frontend logic remains in the source dependent files such as
  *                frontsparc.cpp
  ******************************************************************************/
@@ -62,16 +62,22 @@
 
 /***************************************************************************//**
  *
- * OVERVIEW:      Construct the FrontEnd object
- * PARAMETERS:      pBF: pointer to the BinaryFile object (loader)
- *                  prog: program being decoded
- *                  pbff: pointer to a BinaryFileFactory object (so the library can be unloaded)
- * \returns          <N/a>
+ * \brief      Construct the FrontEnd object
+ * \param pBF: pointer to the BinaryFile object (loader)
+ * \param prog: program being decoded
+ * \param pbff: pointer to a BinaryFileFactory object (so the library can be unloaded)
  ******************************************************************************/
 FrontEnd::FrontEnd(BinaryFile *pBF, Prog* prog, BinaryFileFactory* pbff) : pBF(pBF), pbff(pbff), prog(prog)
 {}
 
-// Static function to instantiate an appropriate concrete front end
+/***************************************************************************//**
+ *
+ * \brief Create from a binary file
+ * Static function to instantiate an appropriate concrete front end
+ * \param pBF: pointer to the BinaryFile object (loader)
+ * \param prog: program being decoded
+ * \param pbff: pointer to a BinaryFileFactory object (so the library can be unloaded)
+ ******************************************************************************/
 FrontEnd* FrontEnd::instantiate(BinaryFile *pBF, Prog* prog, BinaryFileFactory* pbff) {
     switch(pBF->GetMachine()) {
         case MACHINE_PENTIUM:
@@ -90,6 +96,13 @@ FrontEnd* FrontEnd::instantiate(BinaryFile *pBF, Prog* prog, BinaryFileFactory* 
     return NULL;
 }
 
+/***************************************************************************//**
+ *
+ * \brief Create FrontEnd instance given \a fname and \a prog
+ * \param fname: string with full path to decoded file
+ * \param prog: program being decoded
+ * \returns Binary-specific frontend.
+ ******************************************************************************/
 FrontEnd* FrontEnd::Load(const char *fname, Prog* prog) {
     BinaryFileFactory* pbff = new BinaryFileFactory;
     if (pbff == NULL) return NULL;
@@ -122,8 +135,7 @@ bool FrontEnd::isWin32() {
     return pBF->GetFormat() == LOADFMT_PE;
 }
 
-bool FrontEnd::noReturnCallDest(const char *name)
-{
+bool FrontEnd::noReturnCallDest(const char *name) {
     return ((strcmp(name, "_exit") == 0) || (strcmp(name,    "exit") == 0) || (strcmp(name, "ExitProcess") == 0) || (strcmp(name, "abort") == 0) || (strcmp(name, "_assert") == 0));
 }
 
@@ -184,8 +196,7 @@ void FrontEnd::readLibraryCatalog() {
     }
 }
 
-std::vector<ADDRESS> FrontEnd::getEntryPoints()
-{
+std::vector<ADDRESS> FrontEnd::getEntryPoints() {
     std::vector<ADDRESS> entrypoints;
     bool gotMain = false;
     ADDRESS a = getMainEntryPoint(gotMain);
@@ -384,7 +395,7 @@ DecodeResult& FrontEnd::decodeInstruction(ADDRESS pc) {
 
 /***************************************************************************//**
  *
- * OVERVIEW:       Read the library signatures from a file
+ * \brief       Read the library signatures from a file
  * PARAMETERS:       sPath: The file to read from
  *                   cc: the calling convention assumed
  * \returns           <nothing>
@@ -416,8 +427,7 @@ void FrontEnd::readLibrarySignatures(const char *sPath, callconv cc) {
     ifs.close();
 }
 
-Signature *FrontEnd::getDefaultSignature(const char *name)
-{
+Signature *FrontEnd::getDefaultSignature(const char *name) {
     Signature *signature = NULL;
     // Get a default library signature
     if (isWin32())
@@ -448,7 +458,7 @@ Signature *FrontEnd::getLibSignature(const char *name) {
 
 /***************************************************************************//**
  *
- * OVERVIEW:      Process a procedure, given a native (source machine) address.
+ * \brief      Process a procedure, given a native (source machine) address.
  * PARAMETERS:      address - the address at which the procedure starts
  *                  pProc - the procedure object
  *                  frag - if true, this is just a fragment of a procedure
@@ -625,8 +635,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
                     }
                 }
 
-                switch (s->getKind())
-                {
+                switch (s->getKind()) {
 
                     case STMT_GOTO: {
                         uDest = stmt_jump->getFixedDest();
@@ -781,7 +790,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 
                         // Is the called function a thunk calling a library function?
                         // A "thunk" is a function which only consists of: "GOTO library_function"
-                        if(    call &&    call->getFixedDest() != NO_ADDRESS ) {
+                        if ( call && call->getFixedDest() != NO_ADDRESS ) {
                             // Get the address of the called function.
                             ADDRESS callAddr=call->getFixedDest();
                             // It should not be in the PLT either, but getLimitTextHigh() takes this into account
@@ -802,8 +811,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
                                              stmt_jump->getDest()->getOper() == opMemOf &&
                                              stmt_jump->getDest()->getSubExp1()->getOper() == opIntConst &&
                                              pBF->IsDynamicLinkedProcPointer(((Const*)stmt_jump->getDest()->getSubExp1())->
-                                                                             getAddr())) // Is it an "DynamicLinkedProcPointer"?
-                                        {
+                                                                             getAddr())) { // Is it an "DynamicLinkedProcPointer"?
                                             // Yes, it's a library function. Look up it's name.
                                             ADDRESS a = ((Const*)stmt_jump->getDest()->getSubExp1())->getAddr();
                                             const char *nam = pBF->GetDynamicProcName(a);
@@ -1028,7 +1036,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 
 /***************************************************************************//**
  *
- * OVERVIEW:    Fetch the smallest (nop-sized) instruction, in an endianness independent manner
+ * \brief    Fetch the smallest (nop-sized) instruction, in an endianness independent manner
  * NOTE:        Frequently overridden
  * PARAMETERS:    addr - host address to getch from
  * \returns        An integer with the instruction in it
@@ -1041,7 +1049,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 
 /***************************************************************************//**
  *
- * OVERVIEW:    Visit a destination as a label, i.e. check whether we need to queue it as a new BB to create later.
+ * \brief    Visit a destination as a label, i.e. check whether we need to queue it as a new BB to create later.
  *                Note: at present, it is important to visit an address BEFORE an out edge is added to that address.
  *                This is because adding an out edge enters the address into the Cfg's BB map, and it looks like the
  *                BB has already been visited, and it gets overlooked. It would be better to have a scheme whereby
@@ -1066,7 +1074,7 @@ void TargetQueue::visit(Cfg* pCfg, ADDRESS uNewAddr, PBB& pNewBB) {
 
 /***************************************************************************//**
  *
- * OVERVIEW:    Seed the queue with an initial address
+ * \brief    Seed the queue with an initial address
  * NOTE:        Can be some targets already in the queue now
  * PARAMETERS:    uAddr: Native address to seed the queue with
  * \returns        <nothing>
@@ -1077,15 +1085,14 @@ void TargetQueue::initial(ADDRESS uAddr) {
 
 /***************************************************************************//**
  *
- * OVERVIEW:          Return the next target from the queue of non-processed
+ * \brief          Return the next target from the queue of non-processed
  *                      targets.
  * PARAMETERS:          cfg - the enclosing CFG
  * \returns              The next address to process, or NO_ADDRESS if none
  *                        (targets is empty)
  ******************************************************************************/
 ADDRESS TargetQueue::nextAddress(Cfg* cfg) {
-    while (!targets.empty())
-    {
+    while (!targets.empty()) {
         ADDRESS address = targets.front();
         targets.pop();
         if (Boomerang::get()->traceDecoder)
@@ -1111,7 +1118,7 @@ void TargetQueue::dump() {
 
 /***************************************************************************//**
  *
- * OVERVIEW:      Decode the RTL at the given address
+ * \brief      Decode the RTL at the given address
  * PARAMETERS:      address - native address of the instruction
  *                  delta - difference between host and native addresses
  *                  decoder - decoder object
@@ -1126,7 +1133,7 @@ RTL* decodeRtl(ADDRESS address, int delta, NJMCDecoder* decoder) {
 
 /***************************************************************************//**
  *
- * OVERVIEW:    Get a Prog object (mainly for testing and not decoding)
+ * \brief    Get a Prog object (mainly for testing and not decoding)
  * PARAMETERS:    None
  * \returns        Pointer to a Prog object (with pFE and pBF filled in)
  ******************************************************************************/
@@ -1136,7 +1143,7 @@ Prog* FrontEnd::getProg() {
 
 /***************************************************************************//**
  *
- * OVERVIEW:    Create a Return or a Oneway BB if a return statement already exists
+ * \brief    Create a Return or a Oneway BB if a return statement already exists
  * PARAMETERS:    pProc: pointer to enclosing UserProc
  *                BB_rtls: list of RTLs for the current BB (not including pRtl)
  *                pRtl: pointer to the current RTL with the semantics for the return statement (including a

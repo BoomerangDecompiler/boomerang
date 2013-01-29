@@ -1,5 +1,5 @@
-/*==============================================================================
- * FILE:       LoaderTest.cc
+/***************************************************************************//**
+ * \file       LoaderTest.cc
  * OVERVIEW:   Provides the implementation for the LoaderTest class, which
  *              tests the BinaryFile and derived classes
  *============================================================================*/
@@ -36,11 +36,11 @@
 #include <dlfcn.h>          // dlopen, dlsym
 #endif
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        LoaderTest::registerTests
  * OVERVIEW:        Register the test functions in the given suite
  * PARAMETERS:      Pointer to the test suite
- * RETURNS:         <nothing>
+ * \returns          <nothing>
  *============================================================================*/
 #define MYTEST(name) \
 suite->addTest(new CppUnit::TestCaller<LoaderTest> ("LoaderTest", \
@@ -62,27 +62,27 @@ void LoaderTest::registerTests(CppUnit::TestSuite* suite) {
 int LoaderTest::countTestCases () const
 { return 7; }   // ? What's this for?
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        LoaderTest::setUp
  * OVERVIEW:        Set up anything needed before all tests
  * NOTE:            Called before any tests
  * PARAMETERS:      <none>
- * RETURNS:         <nothing>
+ * \returns          <nothing>
  *============================================================================*/
 void LoaderTest::setUp () {
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        LoaderTest::tearDown
  * OVERVIEW:        Delete objects created in setUp
  * NOTE:            Called after all tests
  * PARAMETERS:      <none>
- * RETURNS:         <nothing>
+ * \returns          <nothing>
  *============================================================================*/
 void LoaderTest::tearDown () {
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        LoaderTest::testSparcLoad
  * OVERVIEW:        Test loading the sparc hello world program
  *============================================================================*/
@@ -110,7 +110,7 @@ void LoaderTest::testSparcLoad () {
     bff.UnLoad();
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        LoaderTest::testPentiumLoad
  * OVERVIEW:        Test loading the pentium (Solaris) hello world program
  *============================================================================*/
@@ -140,7 +140,7 @@ void LoaderTest::testPentiumLoad () {
     bff.UnLoad();
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        LoaderTest::testHppaLoad
  * OVERVIEW:        Test loading the sparc hello world program
  *============================================================================*/
@@ -167,7 +167,7 @@ void LoaderTest::testHppaLoad () {
     bff.UnLoad();
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        LoaderTest::testPalmLoad
  * OVERVIEW:        Test loading the Palm 68328 Starter.prc program
  *============================================================================*/
@@ -195,7 +195,7 @@ void LoaderTest::testPalmLoad () {
     bff.UnLoad();
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        LoaderTest::testWinLoad
  * OVERVIEW:        Test loading Windows programs
  *============================================================================*/
@@ -291,7 +291,7 @@ void LoaderTest::testWinLoad () {
     bff.UnLoad();
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        LoaderTest::testMicroDis
  * OVERVIEW:        Test the micro disassembler
  *============================================================================*/

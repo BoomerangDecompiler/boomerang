@@ -37,8 +37,7 @@
 #include "Win32BinaryFile.h"
 
 
-int main(int argc, char* argv[])
-{
+int main(int argc, char* argv[]) {
     // Usage
 
     if (argc != 2) {

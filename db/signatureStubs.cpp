@@ -1,6 +1,6 @@
 #include "signature.h"
 
-std::list<Exp*> *Signature::getCallerSave(Prog* prog) {return NULL;}
+//std::list<Exp*> *Signature::getCallerSave(Prog* prog) {return NULL;}
 Signature::Signature(const char *nam) {}
 bool Signature::operator==(const Signature& other) const {return false;}
 Signature *Signature::clone() {return 0;}
@@ -11,7 +11,7 @@ void Signature::setReturnType(Type *t) {}
 const char *Signature::getName() {return NULL;}
 void Signature::setName(const char *nam) {}
 void Signature::addParameter(const char *nam) {}
-void Signature::addParameter(Type *type, const char *nam, Exp *e) {}
+void Signature::addParameter(Type *type, const char *nam, Exp *e,const char *boundMax) {}
 void Signature::addParameter(Exp *e) {}
 void Signature::setNumParams(int n) {}
 int Signature::getNumParams() {return 0;}

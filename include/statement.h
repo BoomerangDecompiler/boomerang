@@ -7,8 +7,8 @@
  *
  */
 
-/*==============================================================================
- * FILE:       statement.h
+/***************************************************************************//**
+ * \file       statement.h
  * OVERVIEW:   The Statement and related classes (was dataflow.h)
  *============================================================================*/
 
@@ -82,7 +82,7 @@ class ReturnStatement;
 
 typedef std::set<UserProc*> CycleSet;
 
-/*==============================================================================
+/***************************************************************************//**
  * Kinds of Statements, or high-level register transfer lists.
  * changing the order of these will result in save files not working - trent
  *============================================================================*/
@@ -101,7 +101,7 @@ enum STMT_KIND {
     STMT_JUNCTION
 };
 
-/*==============================================================================
+/***************************************************************************//**
  * BRANCH_TYPE: These values indicate what kind of conditional jump or
  * conditonal assign is being performed.
  * Changing the order of these will result in save files not working - trent
@@ -383,7 +383,7 @@ std::ostream& operator<<(std::ostream& os, Statement* p);
 std::ostream& operator<<(std::ostream& os, StatementSet* p);
 std::ostream& operator<<(std::ostream& os, LocationSet* p);
 
-/*==============================================================================
+/***************************************************************************//**
  * TypingStatement is an abstract subclass of Statement. It has a type, representing the type of a reference or an
  * assignment
  *============================================================================*/
@@ -557,7 +557,7 @@ virtual void        genConstraints(LocationSet& cons);
     friend class XMLProgParser;
 };    // class Assign
 
-/*==============================================================================
+/***************************************************************************//**
  * PhiAssign is a subclass of Assignment, having a left hand side, and a StatementVec with the references.
  * Example:
  * m[1000] := phi{3 7 10}    m[1000] is defined at statements 3, 7, and 10
@@ -682,7 +682,7 @@ virtual bool        accept(StmtPartModifier* visitor);
 
 };        // class ImplicitAssign
 
-/*==============================================================================
+/***************************************************************************//**
  * BoolAssign represents "setCC" type instructions, where some destination is set (to 1 or 0) depending on the
  * condition codes. It has a condition Exp, similar to the BranchStatement class.
  * *==========================================================================*/
@@ -879,7 +879,7 @@ public:
     bool        isLoopJunction();
 };
 
-/*================================================================================
+/***************************************************************************//**==
  * BranchStatement has a condition Exp in addition to the destination of the jump.
  *==============================================================================*/
 class BranchStatement: public GotoStatement {
@@ -963,7 +963,7 @@ virtual void        genConstraints(LocationSet& cons);
         friend class XMLProgParser;
 };        // class BranchStatement
 
-/*==============================================================================
+/***************************************************************************//**
  * CaseStatement is derived from GotoStatement. In addition to the destination
  * of the jump, it has a switch variable Exp.
  *============================================================================*/
@@ -1019,7 +1019,7 @@ virtual void        simplify();
         friend class XMLProgParser;
 };        // class CaseStatement
 
-/*==============================================================================
+/***************************************************************************//**
  * CallStatement: represents a high level call. Information about parameters and the like are stored here.
  *============================================================================*/
 class CallStatement: public GotoStatement {

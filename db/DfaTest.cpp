@@ -1,5 +1,5 @@
-/*==============================================================================
- * FILE:       DfaTest.cc
+/***************************************************************************//**
+ * \file       DfaTest.cc
  * OVERVIEW:   Provides the implementation for the DfaTest class, which
  *                tests the data flow based type analysis code
  *============================================================================*/
@@ -26,12 +26,12 @@ public:
     virtual ~ErrLogger() {}
 };
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        DfaTest::setUp
  * OVERVIEW:        Set up some expressions for use with all the tests
  * NOTE:            Called before any tests
  * PARAMETERS:        <none>
- * RETURNS:            <nothing>
+ * \returns             <nothing>
  *============================================================================*/
 static bool logset = false;
 void DfaTest::setUp ()
@@ -42,17 +42,17 @@ void DfaTest::setUp ()
       Boomerang::get()->setLogger(new NullLogger());
     }
 }
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        DfaTest::tearDown
  * OVERVIEW:        Delete expressions created in setUp
  * NOTE:            Called after all tests
  * PARAMETERS:        <none>
- * RETURNS:            <nothing>
+ * \returns             <nothing>
  *============================================================================*/
 void DfaTest::tearDown () {
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        DfaTest::testMeetInt
  * OVERVIEW:        Test meeting IntegerTypes with various other types
  *============================================================================*/
@@ -142,7 +142,7 @@ void DfaTest::testMeetInt () {
     CPPUNIT_ASSERT_EQUAL(expected, actual);
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        DfaTest::testMeetSize
  * OVERVIEW:        Test meeting IntegerTypes with various other types
  *============================================================================*/
@@ -190,7 +190,7 @@ void DfaTest::testMeetSize () {
 
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        DfaTest::testMeetPointer
  * OVERVIEW:        Test meeting IntegerTypes with various other types
  *============================================================================*/
@@ -229,7 +229,7 @@ void DfaTest::testMeetPointer() {
 
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        DfaTest::testMeetUnion
  * OVERVIEW:        Test meeting IntegerTypes with various other types
  *============================================================================*/

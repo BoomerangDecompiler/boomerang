@@ -2890,11 +2890,11 @@ YY_SSLParser_PARSE_PARAM_DEF
 //#line 1180 "db/sslparser.y"
 
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        SSLParser::SSLParser
- * OVERVIEW:        Constructor for an existing stream.
+ * \brief        Constructor for an existing stream.
  * PARAMETERS:        The stream, whether or not to debug
- * RETURNS:            <nothing>
+ * \returns             <nothing>
  ******************************************************************************/
 SSLParser::SSLParser(std::istream &in, bool trace) : sslFile("input"), bFloat(false)
 {
@@ -2902,11 +2902,11 @@ SSLParser::SSLParser(std::istream &in, bool trace) : sslFile("input"), bFloat(fa
     if (trace) yydebug = 1; else yydebug=0;
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        SSLParser::parseExp
- * OVERVIEW:        Parses an assignment from a string.
+ * \brief        Parses an assignment from a string.
  * PARAMETERS:        the string
- * RETURNS:            an Assignment or NULL.
+ * \returns             an Assignment or NULL.
  ******************************************************************************/
 Statement* SSLParser::parseExp(const char *str) {
     std::istringstream ss(str);
@@ -2916,11 +2916,11 @@ Statement* SSLParser::parseExp(const char *str) {
     return p.the_asgn;
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        SSLParser::~SSLParser
- * OVERVIEW:        Destructor.
+ * \brief        Destructor.
  * PARAMETERS:        <none>
- * RETURNS:            <nothing>
+ * \returns             <nothing>
  ******************************************************************************/
 SSLParser::~SSLParser()
 {
@@ -2931,22 +2931,22 @@ SSLParser::~SSLParser()
         delete loc->second;
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        SSLParser::yyyerror
- * OVERVIEW:        Display an error message and exit.
+ * \brief        Display an error message and exit.
  * PARAMETERS:        msg - an error message
- * RETURNS:            <nothing>
+ * \returns             <nothing>
  ******************************************************************************/
 void SSLParser::yyerror(char* msg)
 {
     std::cerr << sslFile << ":" << theScanner->theLine << ": " << msg << std::endl;
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        SSLParser::yylex
- * OVERVIEW:        The scanner driver than returns the next token.
+ * \brief        The scanner driver than returns the next token.
  * PARAMETERS:        <none>
- * RETURNS:            the next token
+ * \returns             the next token
  ******************************************************************************/
 int SSLParser::yylex()
 {
@@ -2954,14 +2954,14 @@ int SSLParser::yylex()
     return token;
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        SSLParser::strToOper
- * OVERVIEW:        Convert a string operator (e.g. "+f") to an OPER (opFPlus)
+ * \brief        Convert a string operator (e.g. "+f") to an OPER (opFPlus)
  * NOTE:            An attempt is made to make this moderately efficient, else we might have a skip chain of string
  *                    comparisons
  * NOTE:            This is a member of SSLParser so we can call yyyerror and have line number etc printed out
  * PARAMETERS:        s: pointer to the operator C string
- * RETURNS:            An OPER, or -1 if not found (enum opWild)
+ * \returns             An OPER, or -1 if not found (enum opWild)
  ******************************************************************************/
 OPER SSLParser::strToOper(const char* s) {
     switch (s[0]) {
@@ -3144,13 +3144,13 @@ OPER strToTerm(char* s) {
     return (OPER) 0;
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        listExpToExp
- * OVERVIEW:        Convert a list of actual parameters in the form of a STL list of Exps into one expression
+ * \brief        Convert a list of actual parameters in the form of a STL list of Exps into one expression
  *                      (using opList)
  * NOTE:            The expressions in the list are not cloned; they are simply copied to the new opList
  * PARAMETERS:        le: the list of expressions
- * RETURNS:            The opList Expression
+ * \returns             The opList Expression
  ******************************************************************************/
 Exp* listExpToExp(std::list<Exp*>* le) {
     Exp* e;
@@ -3166,12 +3166,12 @@ Exp* listExpToExp(std::list<Exp*>* le) {
     return e;
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        listStrToExp
- * OVERVIEW:        Convert a list of formal parameters in the form of a STL list of strings into one expression
+ * \brief        Convert a list of formal parameters in the form of a STL list of strings into one expression
  *                      (using opList)
  * PARAMETERS:        ls - the list of strings
- * RETURNS:            The opList expression
+ * \returns             The opList expression
  ******************************************************************************/
 Exp* listStrToExp(std::list<std::string>* ls) {
     Exp* e;
@@ -3185,15 +3185,15 @@ Exp* listStrToExp(std::list<std::string>* ls) {
     return e;
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        SSLParser::expandTables
- * OVERVIEW:        Expand tables in an RTL and save to dictionary
+ * \brief        Expand tables in an RTL and save to dictionary
  * NOTE:            This may generate many entries
  * PARAMETERS:        iname: Parser object representing the instruction name
  *                    params: Parser object representing the instruction params
  *                    o_rtlist: Original rtlist object (before expanding)
  *                    Dict: Ref to the dictionary that will contain the results of the parse
- * RETURNS:            <nothing>
+ * \returns             <nothing>
  ******************************************************************************/
 static Exp* srchExpr = new Binary(opExpTable,
                                   new Terminal(opWild),
@@ -3270,16 +3270,16 @@ void SSLParser::expandTables(InsNameElem* iname, std::list<std::string>* params,
     indexrefmap.erase(indexrefmap.begin(), indexrefmap.end());
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        SSLParser::makeSuccessor
- * OVERVIEW:        Make the successor of the given expression, e.g. given r[2], return succ( r[2] )
+ * \brief        Make the successor of the given expression, e.g. given r[2], return succ( r[2] )
  *                      (using opSuccessor)
  *                    We can't do the successor operation here, because the parameters are not yet instantiated
  *                      (still of the form param(rd)). Actual successor done in Exp::fixSuccessor()
  * NOTE:            The given expression should be of the form    r[const]
  * NOTE:            The parameter expresion is copied (not cloned) in the result
  * PARAMETERS:        The expression to find the successor of
- * RETURNS:            The modified expression
+ * \returns             The modified expression
  ******************************************************************************/
 Exp* SSLParser::makeSuccessor(Exp* e) {
     return new Unary(opSuccessor, e);

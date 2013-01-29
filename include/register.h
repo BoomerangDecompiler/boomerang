@@ -7,8 +7,8 @@
  *
  */
 
-/*==============================================================================
- * FILE:        register.h
+/***************************************************************************//**
+ * \file        register.h
  * OVERVIEW:    Header information for the Register class.
  *============================================================================*/
 
@@ -23,7 +23,7 @@
 
 class Type;
 
-/*==============================================================================
+/***************************************************************************//**
  * The Register class summarises one line of the @REGISTERS section of an SSL
  * file. This class is used extensively in sslparser.y, and there is a public
  * member of RTLInstDict called DetRegMap which gives a Register object from

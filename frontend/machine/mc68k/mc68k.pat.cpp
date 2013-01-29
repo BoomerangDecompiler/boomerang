@@ -3,7 +3,7 @@
 
 #line 2 "machine/mc68k/mc68k.pat.m"
 /*==============================================
- * FILE:      mc68k.pat.m
+ * \file      mc68k.pat.m
  * OVERVIEW:  Generated file; do not edit
  *==============================================*/
 

@@ -11,9 +11,9 @@
  *
  */
 
-/*==============================================================================
- * FILE:       decoder.m
- * OVERVIEW:   Implementation of the PPC specific parts of the PPCDecoder class.
+/***************************************************************************//**
+ * \file       decoder.m
+ * \brief   Implementation of the PPC specific parts of the PPCDecoder class.
  ******************************************************************************/
 
 /* $Revision$    // 1.24.2.1
@@ -22,7 +22,7 @@
  * 26/Sep/05 - Mike: Added Xsab_, Xsax_; DIS_INDEX uses RAZ not RA now; A2c_ -> Ac_ (does single as well as double prec)
  **/
 
-/*==============================================================================
+/***************************************************************************//**
  * Dependencies.
  ******************************************************************************/
 
@@ -83,20 +83,20 @@ Exp*    crBit(int bitNum);    // Get an expression for a CR bit access
     jump->setCondType(cond); \
     SHOW_ASM(name<<" "<<BIcr<<", 0x"<<std::hex<<relocd-delta)
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:       unused
- * OVERVIEW:       A dummy function to suppress "unused local variable" messages
+ * \brief       A dummy function to suppress "unused local variable" messages
  * PARAMETERS:       x: integer variable to be "used"
- * RETURNS:           Nothing
+ * \returns            Nothing
  ******************************************************************************/
 void PPCDecoder::unused(int x)
 {}
 void unused(const char* x) {}
 
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:       PPCDecoder::decodeInstruction
- * OVERVIEW:       Attempt to decode the high level instruction at a given
+ * \brief       Attempt to decode the high level instruction at a given
  *                   address and return the corresponding HL type (e.g. CallStatement,
  *                   GotoStatement etc). If no high level instruction exists at the
  *                   given address, then simply return the RTL for the low level
@@ -108,7 +108,7 @@ void unused(const char* x) {}
  *                     in the loaded object file)
  *                   proc - the enclosing procedure. This can be NULL for
  *                     those of us who are using this method in an interpreter
- * RETURNS:           a DecodeResult structure containing all the information
+ * \returns            a DecodeResult structure containing all the information
  *                     gathered during decoding
  ******************************************************************************/
 DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
@@ -4546,22 +4546,22 @@ MATCH_finished_a: (void)0; /*placeholder for label*/
  * expressions (Exp*s).
  **********************************************************************/
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        PPCDecoder::dis_Reg
- * OVERVIEW:        Decode the register
+ * \brief        Decode the register
  * PARAMETERS:        r - register (0-31)
- * RETURNS:            the expression representing the register
+ * \returns             the expression representing the register
  ******************************************************************************/
 Exp* PPCDecoder::dis_Reg(unsigned r)
 {
     return Location::regOf(r);
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        PPCDecoder::dis_RAmbz
- * OVERVIEW:        Decode the register rA when rA represents constant 0 if r == 0
+ * \brief        Decode the register rA when rA represents constant 0 if r == 0
  * PARAMETERS:        r - register (0-31)
- * RETURNS:            the expression representing the register
+ * \returns             the expression representing the register
  ******************************************************************************/
 Exp* PPCDecoder::dis_RAmbz(unsigned r)
 {
@@ -4571,13 +4571,13 @@ Exp* PPCDecoder::dis_RAmbz(unsigned r)
 }
 
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:      isFuncPrologue()
- * OVERVIEW:      Check to see if the instructions at the given offset match
+ * \brief      Check to see if the instructions at the given offset match
  *                    any callee prologue, i.e. does it look like this offset
  *                    is a pointer to a function?
  * PARAMETERS:      hostPC - pointer to the code in question (host address)
- * RETURNS:          True if a match found
+ * \returns           True if a match found
  ******************************************************************************/
 bool PPCDecoder::isFuncPrologue(ADDRESS hostPC)
 {
@@ -4590,11 +4590,11 @@ bool PPCDecoder::isFuncPrologue(ADDRESS hostPC)
  * These are the fetch routines.
  **********************************/
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        getDword
- * OVERVIEW:        Returns the double starting at the given address.
+ * \brief        Returns the double starting at the given address.
  * PARAMETERS:        lc - address at which to decode the double
- * RETURNS:            the decoded double
+ * \returns             the decoded double
  ******************************************************************************/
 DWord PPCDecoder::getDword(ADDRESS lc)
 {
@@ -4602,11 +4602,11 @@ DWord PPCDecoder::getDword(ADDRESS lc)
     return (p[0] << 24) + (p[1] << 16) + (p[2] << 8) + p[3];
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:       PPCDecoder::PPCDecoder
- * OVERVIEW:
+ * \brief
  * PARAMETERS:       None
- * RETURNS:           N/A
+ * \returns            N/A
  ******************************************************************************/
 PPCDecoder::PPCDecoder(Prog* prog) : NJMCDecoder(prog)
 {

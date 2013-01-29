@@ -1,4 +1,4 @@
-/*==============================================================================
+/***************************************************************************//**
  * FILE:	   StatementTest.h
  * OVERVIEW:   Provides the interface for the StatementTest class, which
  *				tests the dataflow subsystems

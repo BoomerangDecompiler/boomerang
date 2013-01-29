@@ -8,7 +8,7 @@
  */
 
 /*=============================================================================
- * FILE:        XMLProgParser.h
+ * \file        XMLProgParser.h
  * OVERVIEW:    parses persisted XML output and creates a new prog.
  *============================================================================*/
 /*

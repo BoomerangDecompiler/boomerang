@@ -41,18 +41,18 @@
 
 /********************************************************************************
  * FUNCTION:       unused
- * OVERVIEW:       A dummy function to suppress "unused local variable" messages
+ * \brief       A dummy function to suppress "unused local variable" messages
  * PARAMETERS:       x: integer variable to be "used"
- * RETURNS:           Nothing
+ * \returns            Nothing
  ********************************************************************************/
 void MIPSDecoder::unused(int x)
 {}
 
 /********************************************************************************
  * FUNCTION:       MIPSDecoder::MIPSDecoder
- * OVERVIEW:
+ * \brief
  * PARAMETERS:     None
- * RETURNS:                N/A
+ * \returns                 N/A
  *********************************************************************************/
 MIPSDecoder::MIPSDecoder(Prog* prog) : NJMCDecoder(prog)
 {
@@ -66,7 +66,7 @@ int MIPSDecoder::decodeAssemblyInstruction(ADDRESS, int)
 
 /********************************************************************************
  * FUNCTION:       MIPSDecoder::decodeInstruction
- * OVERVIEW:       Attempt to decode the high level instruction at a given
+ * \brief       Attempt to decode the high level instruction at a given
  *                   address and return the corresponding HL type (e.g. CallStatement,
  *                   GotoStatement etc). If no high level instruction exists at the
  *                   given address, then simply return the RTL for the low level
@@ -78,7 +78,7 @@ int MIPSDecoder::decodeAssemblyInstruction(ADDRESS, int)
  *                     in the loaded object file)
  *                   proc - the enclosing procedure. This can be NULL for
  *                     those of us who are using this method in an interpreter
- * RETURNS:           a DecodeResult structure containing all the information
+ * \returns            a DecodeResult structure containing all the information
  *                     gathered during decoding
  *********************************************************************************/
 

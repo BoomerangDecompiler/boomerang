@@ -3,7 +3,7 @@
 
 #line 2 "machine/hppa/hppa.pat.m"
 /*==============================================
- * FILE:      hppa.pat.m
+ * \file      hppa.pat.m
  * OVERVIEW:  Generated file; do not edit
  *
  * (C) 1998-2000 The University of Queensland, BT group

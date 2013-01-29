@@ -10,8 +10,8 @@
  *
  */
 
-/*==============================================================================
- * FILE:        frontend.h
+/***************************************************************************//**
+ * \file        frontend.h
  * OVERVIEW:    This file contains the definition for the FrontEnd class, which implements the source indendent parts of
  *                the front end: decoding machine instructions into a control flow graph populated with low and high level
  *                RTLs.
@@ -78,7 +78,7 @@ public:
  *                uNewAddr - the address to be checked
  *                pNewBB - set to the lower part of the BB if the address already exists as a non explicit label
  *                (i.e. the BB has to be split)
- * RETURNS:        <nothing>
+ * \returns         <nothing>
  */
     void visit(Cfg* pCfg, ADDRESS uNewAddr, PBB& pNewBB);
 /*
@@ -91,7 +91,7 @@ public:
  * FUNCTION:      nextAddress
  * OVERVIEW:      Return the next target from the queue of non-processed targets.
  * PARAMETERS:      cfg - the enclosing CFG
- * RETURNS:          The next address to process, or 0 if none (queue is empty)
+ * \returns           The next address to process, or 0 if none (queue is empty)
  */
         ADDRESS        nextAddress(Cfg* cfg);
 
@@ -126,7 +126,7 @@ public:
          * Constructor. Takes some parameters to save passing these around a lot
          */
                         FrontEnd(BinaryFile *pBF, Prog* prog, BinaryFileFactory* pbff);
-static  FrontEnd *      instantiate(BinaryFile *pBF, Prog* prog, BinaryFileFactory* pbff); //!< Create from a binary file
+static  FrontEnd *      instantiate(BinaryFile *pBF, Prog* prog, BinaryFileFactory* pbff);
 static  FrontEnd *      Load(const char *fname, Prog* prog); //!< Load a binary
                         //! Add a symbol to the loader
         void            AddSymbol(ADDRESS addr, const char *nam) { pBF->AddSymbol(addr, nam); }
@@ -240,7 +240,7 @@ static  void            closeInstance(void* dlHandle); //!<Close the library ope
 };    // class FrontEnd
 
 
-/*==============================================================================
+/***************************************************************************//**
  * These functions are the machine specific parts of the front end. They consist
  * of those that actually drive the decoding and analysis of the procedures of
  * the program being translated.

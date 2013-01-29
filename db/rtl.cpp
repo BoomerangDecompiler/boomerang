@@ -9,9 +9,9 @@
  *
  */
 
-/*==============================================================================
- * FILE:       rtl.cc
- * OVERVIEW:   Implementation of the classes that describe a low level RTL (
+/***************************************************************************//**
+ * \file       rtl.cc
+ * \brief   Implementation of the classes that describe a low level RTL (
  *               register transfer list)
  ******************************************************************************/
 
@@ -57,22 +57,22 @@
  * Class RTL represents low-level register transfer lists.
  *****************************************************************************/
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        RTL::RTL
- * OVERVIEW:        Constructor.
+ * \brief        Constructor.
  * PARAMETERS:        <none>
- * RETURNS:            N/a
+ * \returns             N/a
  ******************************************************************************/
 RTL::RTL()
   : nativeAddr(ADDRESS::g(0L))
 { }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        RTL::RTL
- * OVERVIEW:        Constructor.
+ * \brief        Constructor.
  * PARAMETERS:        instNativeAddr - the native address of the instruction
  *                    listExp - ptr to existing list of Exps
- * RETURNS:            N/a
+ * \returns             N/a
  ******************************************************************************/
 RTL::RTL(ADDRESS instNativeAddr, std::list<Statement*>* listStmt /*= NULL*/)
     : nativeAddr(instNativeAddr) {
@@ -80,12 +80,12 @@ RTL::RTL(ADDRESS instNativeAddr, std::list<Statement*>* listStmt /*= NULL*/)
         stmtList = *listStmt;
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        RTL::RTL
- * OVERVIEW:        Copy constructor. A deep clone is made of the given object
+ * \brief        Copy constructor. A deep clone is made of the given object
  *                    so that the lists of Exps do not share memory.
  * PARAMETERS:        other: RTL to copy from
- * RETURNS:            N/a
+ * \returns             N/a
  ******************************************************************************/
 RTL::RTL(const RTL& other) : nativeAddr(other.nativeAddr) {
     std::list<Statement*>::const_iterator it;
@@ -94,19 +94,19 @@ RTL::RTL(const RTL& other) : nativeAddr(other.nativeAddr) {
     }
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        RTL::~RTL
- * OVERVIEW:        Destructor.
+ * \brief        Destructor.
  * PARAMETERS:        <none>
- * RETURNS:            N/a
+ * \returns             N/a
  ******************************************************************************/
 RTL::~RTL() { }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        RTL::operator=
- * OVERVIEW:        Assignment copy (deep).
+ * \brief        Assignment copy (deep).
  * PARAMETERS:        other - RTL to copy
- * RETURNS:            a reference to this object
+ * \returns             a reference to this object
  ******************************************************************************/
 RTL& RTL::operator=(RTL& other) {
     if (this != &other) {
@@ -120,12 +120,12 @@ RTL& RTL::operator=(RTL& other) {
     return *this;
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        RTL:clone
- * OVERVIEW:        Deep copy clone; deleting the clone will not affect this
+ * \brief        Deep copy clone; deleting the clone will not affect this
  *                     RTL object
  * PARAMETERS:        <none>
- * RETURNS:            Pointer to a new RTL that is a clone of this one
+ * \returns             Pointer to a new RTL that is a clone of this one
  ******************************************************************************/
 RTL* RTL::clone() {
     std::list<Statement*> le;
@@ -150,11 +150,11 @@ bool RTL::accept(StmtVisitor* visitor) {
     return true;
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        RTL::deepCopyList
- * OVERVIEW:        Make a copy of this RTLs list of Exp* to the given list
+ * \brief        Make a copy of this RTLs list of Exp* to the given list
  * PARAMETERS:        Ref to empty list to copy to
- * RETURNS:            Nothing
+ * \returns             Nothing
  ******************************************************************************/
 void RTL::deepCopyList(std::list<Statement*>& dest) {
     std::list<Statement*>::iterator it;
@@ -164,14 +164,14 @@ void RTL::deepCopyList(std::list<Statement*>& dest) {
     }
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        RTL::appendStmt
- * OVERVIEW:        Append the given Statement at the end of this RTL
+ * \brief        Append the given Statement at the end of this RTL
  * NOTE:            Exception: Leaves any flag call at the end (so may push exp
  *                     to second last position, instead of last)
  * NOTE:            stmt is NOT copied. This is different to how UQBT was!
  * PARAMETERS:        s: pointer to Statement to append
- * RETURNS:            Nothing
+ * \returns             Nothing
  ******************************************************************************/
 void RTL::appendStmt(Statement* s) {
     if (stmtList.size()) {
@@ -184,23 +184,23 @@ void RTL::appendStmt(Statement* s) {
     stmtList.push_back(s);
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        RTL::prependStmt
- * OVERVIEW:        Prepend the given Statement at the start of this RTL
+ * \brief        Prepend the given Statement at the start of this RTL
  * NOTE:            No clone of the statement is made. This is different to how UQBT was
  * PARAMETERS:        s: Ptr to Statement to prepend
- * RETURNS:            Nothing
+ * \returns             Nothing
  ******************************************************************************/
 void RTL::prependStmt(Statement* s) {
     stmtList.push_front(s);
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        RTL::appendListStmt
- * OVERVIEW:        Append a given list of Statements to this RTL
+ * \brief        Append a given list of Statements to this RTL
  * NOTE:            A copy of the Statements in le are appended
  * PARAMETERS:        rtl: list of Exps to insert
- * RETURNS:            Nothing
+ * \returns             Nothing
  ******************************************************************************/
 void RTL::appendListStmt(std::list<Statement*>& le) {
     iterator it;
@@ -209,24 +209,24 @@ void RTL::appendListStmt(std::list<Statement*>& le) {
     }
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        RTL::appendRTL
- * OVERVIEW:        Append the Statemens of another RTL to this object
+ * \brief        Append the Statemens of another RTL to this object
  * NOTE:            A copy of the Statements in r are appended
  * PARAMETERS:        r: reterence to RTL whose Exps we are to insert
- * RETURNS:            Nothing
+ * \returns             Nothing
  ******************************************************************************/
 void RTL::appendRTL(RTL& r) {
     appendListStmt(r.stmtList);
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        RTL::insertStmt
- * OVERVIEW:        Insert the given Statement before index i
+ * \brief        Insert the given Statement before index i
  * NOTE:            No copy of stmt is made. This is different to UQBT
  * PARAMETERS:        s: pointer to the Statement to insert
  *                    i: position to insert before (0 = first)
- * RETURNS:            Nothing
+ * \returns             Nothing
  ******************************************************************************/
 void RTL::insertStmt(Statement* s, unsigned i) {
     // Check that position i is not out of bounds
@@ -244,12 +244,12 @@ void RTL::insertStmt(Statement* s, iterator it) {
     stmtList.insert(it, s);
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        RTL::updateStmt
- * OVERVIEW:        Replace the ith Statement with the given one
+ * \brief        Replace the ith Statement with the given one
  * PARAMETERS:        s: pointer to the new Exp
  *                    i: index of Exp position (0 = first)
- * RETURNS:            Nothing
+ * \returns             Nothing
  ******************************************************************************/
 void RTL::updateStmt(Statement *s, unsigned i) {
     // Check that position i is not out of bounds
@@ -294,22 +294,22 @@ void RTL::replaceLastStmt(Statement* repl) {
 }
 
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        RTL::getNumStmt
- * OVERVIEW:        Get the number of Statements in this RTL
+ * \brief        Get the number of Statements in this RTL
  * PARAMETERS:        None
- * RETURNS:            Integer number of Statements
+ * \returns             Integer number of Statements
  ******************************************************************************/
 int RTL::getNumStmt() {
     return stmtList.size();
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        RTL::at
- * OVERVIEW:        Provides indexing on a list. Changed from operator[] so that
+ * \brief        Provides indexing on a list. Changed from operator[] so that
  *                    we keep in mind it is linear in its execution time.
  * PARAMETERS:        i - the index of the element we want (0 = first)
- * RETURNS:            the element at the given index or NULL if the index is out
+ * \returns             the element at the given index or NULL if the index is out
  *                    of bounds
  ******************************************************************************/
 Statement* RTL::elementAt(unsigned i) {
@@ -321,11 +321,11 @@ Statement* RTL::elementAt(unsigned i) {
     return *it;
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        RTL::print
- * OVERVIEW:        Prints this object to a stream in text form.
+ * \brief        Prints this object to a stream in text form.
  * PARAMETERS:        os - stream to output to (often cout or cerr)
- * RETURNS:            <nothing>
+ * \returns             <nothing>
  ******************************************************************************/
 void RTL::print(std::ostream& os /*= cout*/, bool html /*=false*/) {
 
@@ -375,13 +375,13 @@ char* RTL::prints() {
     return debug_buffer;
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        operator<<
- * OVERVIEW:        Output operator for RTL*
+ * \brief        Output operator for RTL*
  *                    Just makes it easier to use e.g. std::cerr << myRTLptr
  * PARAMETERS:        os: output stream to send to
  *                    p: ptr to RTL to print to the stream
- * RETURNS:            copy of os (for concatenation)
+ * \returns             copy of os (for concatenation)
  ******************************************************************************/
 std::ostream& operator<<(std::ostream& os, RTL* r) {
     if (r == NULL) {os << "NULL "; return os;}
@@ -389,22 +389,22 @@ std::ostream& operator<<(std::ostream& os, RTL* r) {
     return os;
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        RTL::updateAddress
- * OVERVIEW:        Set the nativeAddr field
+ * \brief        Set the nativeAddr field
  * PARAMETERS:        Native address
- * RETURNS:            Nothing
+ * \returns             Nothing
  ******************************************************************************/
 void RTL::updateAddress(ADDRESS addr) {
     nativeAddr = addr;
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        RTL::searchReplace
- * OVERVIEW:        Replace all instances of search with replace.
+ * \brief        Replace all instances of search with replace.
  * PARAMETERS:        search - ptr to an expression to search for
  *                    replace - ptr to the expression with which to replace it
- * RETURNS:            <nothing>
+ * \returns             <nothing>
  ******************************************************************************/
 bool RTL::searchAndReplace(Exp* search, Exp* replace) {
     bool ch = false;
@@ -413,13 +413,13 @@ bool RTL::searchAndReplace(Exp* search, Exp* replace) {
     return ch;
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        RTL::searchAll
- * OVERVIEW:        Find all instances of the search expression
+ * \brief        Find all instances of the search expression
  * PARAMETERS:        search - a location to search for
  *                    result - a list which will have any matching exprs
  *                             appended to it
- * RETURNS:            true if there were any matches
+ * \returns             true if there were any matches
  ******************************************************************************/
 bool RTL::searchAll(Exp* search, std::list<Exp *> &result) {
     bool found = false;
@@ -434,19 +434,19 @@ bool RTL::searchAll(Exp* search, std::list<Exp *> &result) {
     return found;
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        RTL::clear
- * OVERVIEW:        Clear the list of Exps
+ * \brief        Clear the list of Exps
  * PARAMETERS:        None
- * RETURNS:            Nothing
+ * \returns             Nothing
  ******************************************************************************/
 void RTL::clear() {
     stmtList.clear();
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        RTL::insertAssign
- * OVERVIEW:        Prepends or appends an assignment to the front or back of
+ * \brief        Prepends or appends an assignment to the front or back of
  *                      this RTL
  * NOTE:            Is this really used? What about types?
  * ASSUMES:            Assumes that pLhs and pRhs are "new" Exp's that are
@@ -458,7 +458,7 @@ void RTL::clear() {
  *                    pRhs: ptr to Exp to place on the RHS
  *                    prep: true if prepend (else append)
  *                    type: type of the transfer, or NULL
- * RETURNS:            <nothing>
+ * \returns             <nothing>
  ******************************************************************************/
 void RTL::insertAssign(Exp* pLhs, Exp* pRhs, bool prep,
                        Type* type /*= NULL */) {
@@ -470,9 +470,9 @@ void RTL::insertAssign(Exp* pLhs, Exp* pRhs, bool prep,
         appendStmt(asgn);
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        RTL::insertAfterTemps
- * OVERVIEW:        Inserts an assignment at or near the top of this RTL, after
+ * \brief        Inserts an assignment at or near the top of this RTL, after
  *                      any assignments to temporaries. If the last assignment
  *                      is to a temp, the insertion is done before that last
  *                      assignment
@@ -486,7 +486,7 @@ void RTL::insertAssign(Exp* pLhs, Exp* pRhs, bool prep,
  *                    pRhs: ptr to Exp to place on the RHS
  *                    size: size of the transfer, or -1 to be the same as the
  *                      first assign this RTL
- * RETURNS:            <nothing>
+ * \returns             <nothing>
  ******************************************************************************/
 void RTL::insertAfterTemps(Exp* pLhs, Exp* pRhs, Type* type     /* NULL */) {
     iterator it;
@@ -518,14 +518,14 @@ void RTL::insertAfterTemps(Exp* pLhs, Exp* pRhs, Type* type     /* NULL */) {
     stmtList.insert(it, asgn);
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        RTL::getType
- * OVERVIEW:        Get the "type" for this RTL. Just gets the type of
+ * \brief        Get the "type" for this RTL. Just gets the type of
  *                      the first assignment Exp
  * NOTE:            The type of the first assign may not be the type that you
  *                      want!
  * PARAMETERS:        None
- * RETURNS:            A pointer to the type
+ * \returns             A pointer to the type
  ******************************************************************************/
 Type* RTL::getType() {
     iterator it;
@@ -537,12 +537,12 @@ Type* RTL::getType() {
     return new IntegerType();    //    Default to 32 bit integer if no assignments
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:      RTL::areFlagsAffected
- * OVERVIEW:      Return true if this RTL affects the condition codes
+ * \brief      Return true if this RTL affects the condition codes
  * NOTE:          Assumes that if there is a flag call Exp, then it is the last
  * PARAMETERS:      None
- * RETURNS:          Boolean as above
+ * \returns           Boolean as above
  ******************************************************************************/
 bool RTL::areFlagsAffected() {
     if (stmtList.size() == 0) return false;
@@ -596,9 +596,9 @@ void RTL::simplify() {
     }
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        RTL::isCompare
- * OVERVIEW:        Return true if this is an unmodified compare instruction
+ * \brief        Return true if this is an unmodified compare instruction
  *                      of a register with an operand
  * NOTE:            Will also match a subtract if the flags are set
  * NOTE:            expOperand, if set, is not cloned
@@ -606,7 +606,7 @@ void RTL::simplify() {
  *                      compare operation
  * PARAMETERS:        iReg: ref to integer to set with the register index
  *                    expOperand: ref to ptr to expression of operand
- * RETURNS:            True if found
+ * \returns             True if found
  ******************************************************************************/
 bool RTL::isCompare(int& iReg, Exp*& expOperand) {
     // Expect to see a subtract, then a setting of the flags

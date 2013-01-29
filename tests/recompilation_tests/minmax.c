@@ -1,5 +1,5 @@
-/*==============================================================================
- * FILE:       minmax.c
+/***************************************************************************//**
+ * \file       minmax.c
  * OVERVIEW:   Test program to exercise the matching of definitions and uses
  *              of CCs involving the carry flag. Also tests some RTL
  *              simplification code for the Sparc subx instruction (especially

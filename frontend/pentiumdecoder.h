@@ -8,9 +8,9 @@
  *
  */
 
-/*==============================================================================
- * FILE:       pentdecoder.h
- * OVERVIEW:   The implementation of the instruction decoder for Pentium.
+/***************************************************************************//**
+ * \file       pentdecoder.h
+ * \brief   The implementation of the instruction decoder for Pentium.
  ******************************************************************************/
 
 /*

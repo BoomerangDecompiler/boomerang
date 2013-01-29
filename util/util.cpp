@@ -9,9 +9,9 @@
  *
  */
 
-/*==============================================================================
- * FILE:       util.cc
- * OVERVIEW:   This file contains miscellaneous functions that don't belong to
+/***************************************************************************//**
+ * \file       util.cc
+ * \brief   This file contains miscellaneous functions that don't belong to
  *             any particular subsystem of UQBT.
  ******************************************************************************/
 
@@ -48,12 +48,12 @@
 #include <fcntl.h>
 #include <iomanip>          // For setw
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:      string::operator+(string, int)
- * OVERVIEW:      Append an int to a string
+ * \brief      Append an int to a string
  * PARAMETERS:    s: the string to append to
  *                  i: the integer whose ascii representation is to be appended
- * RETURNS:       A copy of the modified string
+ * \returns        A copy of the modified string
  ******************************************************************************/
 std::string operator+(const std::string& s, int i)
 {
@@ -64,12 +64,12 @@ std::string operator+(const std::string& s, int i)
     return ret.append(buf);
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:      initCapital
- * OVERVIEW:      Return a string the same as the input string, but with the
+ * \brief      Return a string the same as the input string, but with the
  *                    first character capitalised
  * PARAMETERS:    s: the string to capitalise
- * RETURNS:       A copy of the modified string
+ * \returns        A copy of the modified string
  ******************************************************************************/
 std::string initCapital(const std::string& s)
 {
@@ -78,13 +78,13 @@ std::string initCapital(const std::string& s)
     return res;
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:      hasExt
- * OVERVIEW:      Returns true if the given file name has the given extension
+ * \brief      Returns true if the given file name has the given extension
  *                and false otherwise.
  * PARAMETERS:    s: string representing a file name (e.g. string("foo.c"))
  *                e: the extension (e.g. ".o")
- * RETURNS:       Boolean indicating whether the file name has the extension.
+ * \returns        Boolean indicating whether the file name has the extension.
  ******************************************************************************/
 bool hasExt(const std::string& s, const char* ext)
 {
@@ -99,13 +99,13 @@ bool hasExt(const std::string& s, const char* ext)
     }
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:      changeExt
- * OVERVIEW:      Change the extension of the given file name
+ * \brief      Change the extension of the given file name
  * PARAMETERS:    s: string representing the file name to be modified
  *                  (e.g. string("foo.c"))
  *                e: the new extension (e.g. ".o")
- * RETURNS:       The converted string (e.g. "foo.o")
+ * \returns        The converted string (e.g. "foo.o")
  ******************************************************************************/
 std::string changeExt(const std::string& s, const char* ext)
 {
@@ -118,14 +118,14 @@ std::string changeExt(const std::string& s, const char* ext)
     }
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:      searchAndReplace
- * OVERVIEW:      returns a copy of a string will all occurances of match
+ * \brief      returns a copy of a string will all occurances of match
  *                replaced with rep. (simple version of s/match/rep/g)
  * PARAMETERS:    in: the source string
  *                match: the search string
  *                rep: the string to replace match with.
- * RETURNS:       The updated string.
+ * \returns        The updated string.
  ******************************************************************************/
 std::string searchAndReplace( const std::string &in, const std::string &match,
                               const std::string &rep )
@@ -143,12 +143,12 @@ std::string searchAndReplace( const std::string &in, const std::string &match,
     return result;
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:      upperStr
- * OVERVIEW:      Uppercase a C string
+ * \brief      Uppercase a C string
  * PARAMETERS:    s: the string (char*) to start with
  *                d: the string (char*) to write to (can be the same string)
- * RETURNS:       Nothing; the string is modified as a side effect
+ * \returns        Nothing; the string is modified as a side effect
  ******************************************************************************/
 void upperStr(const char* s, char* d)
 {

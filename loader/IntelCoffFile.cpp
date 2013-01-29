@@ -24,8 +24,7 @@ struct struc_coff_sect          // segment information
 
 struct coff_symbol      // symbol information
 {
-        union
-        {
+        union {
                 struct {
                         uint32_t zeros;
                         uint32_t offset;
@@ -57,8 +56,7 @@ struct struct_coff_rel
 } PACKED;
 
 
-PSectionInfo IntelCoffFile::AddSection(PSectionInfo psi)
-{
+PSectionInfo IntelCoffFile::AddSection(PSectionInfo psi) {
     int idxSect = m_iNumSections++;
     PSectionInfo ps = new SectionInfo[m_iNumSections];
     for ( int i = 0; i < idxSect; i++ )
@@ -69,25 +67,21 @@ PSectionInfo IntelCoffFile::AddSection(PSectionInfo psi)
     return ps + idxSect;
 }
 
-IntelCoffFile::IntelCoffFile() : BinaryFile(false)
-{
+IntelCoffFile::IntelCoffFile() : BinaryFile(false) {
     m_pFilename = NULL;
     m_fd = -1;
 }
 
-IntelCoffFile::~IntelCoffFile()
-{
+IntelCoffFile::~IntelCoffFile() {
     if ( m_fd != -1 ) close(m_fd);
 }
 
-bool IntelCoffFile::Open(const char *sName)
-{
+bool IntelCoffFile::Open(const char *sName) {
     printf("IntelCoffFile::Open called\n");
     return false;
 }
 
-bool IntelCoffFile::RealLoad(const char *sName)
-{
+bool IntelCoffFile::RealLoad(const char *sName) {
     printf("IntelCoffFile::RealLoad('%s') called\n", sName);
 
     m_pFilename = sName;
@@ -102,8 +96,7 @@ bool IntelCoffFile::RealLoad(const char *sName)
     printf("Read COFF header\n");
 
     // Skip the optional header, if present
-    if ( m_Header.coff_opthead_size )
-    {
+    if ( m_Header.coff_opthead_size ) {
         printf("Skipping optional header of %d bytes.\n", (int)m_Header.coff_opthead_size);
         if ( (off_t)-1 == lseek(m_fd, m_Header.coff_opthead_size, SEEK_CUR) )
             return false;
@@ -113,13 +106,11 @@ bool IntelCoffFile::RealLoad(const char *sName)
     if ( !psh )
         return false;
 
-    if ( static_cast<signed long>(sizeof *psh * m_Header.coff_sections) != read(m_fd, psh, sizeof *psh * m_Header.coff_sections) )
-    {
+    if ( static_cast<signed long>(sizeof *psh * m_Header.coff_sections) != read(m_fd, psh, sizeof *psh * m_Header.coff_sections) ) {
         free(psh);
         return false;
     }
-    for ( int iSection = 0; iSection < m_Header.coff_sections; iSection++ )
-    {
+    for ( int iSection = 0; iSection < m_Header.coff_sections; iSection++ ) {
 //        assert(0 == psh[iSection].sch_virtaddr);
 //        assert(0 == psh[iSection].sch_physaddr);
 
@@ -129,8 +120,7 @@ bool IntelCoffFile::RealLoad(const char *sName)
 
         PSectionInfo psi = NULL;
         int sidx = GetSectionIndexByName(sectname);
-        if ( -1 == sidx )
-        {
+        if ( -1 == sidx ) {
             SectionInfo si;
             si.bCode = 0 != (psh[iSection].sch_flags & 0x20);
             si.bData = 0 != (psh[iSection].sch_flags & 0x40);
@@ -141,8 +131,7 @@ bool IntelCoffFile::RealLoad(const char *sName)
             sidx = m_iNumSections;
             psi = AddSection(&si);
         }
-        else
-        {
+        else {
             psi = GetSectionInfo(sidx);
         }
 
@@ -154,11 +143,9 @@ bool IntelCoffFile::RealLoad(const char *sName)
     printf("Loaded %d section headers\n", (int)m_Header.coff_sections);
 
     ADDRESS a = 0x40000000;
-    for ( int sidx = 0; sidx < m_iNumSections; sidx++ )
-    {
+    for ( int sidx = 0; sidx < m_iNumSections; sidx++ ) {
         PSectionInfo psi = GetSectionInfo(sidx);
-        if ( psi->uSectionSize > 0 )
-        {
+        if ( psi->uSectionSize > 0 ) {
             void *pData = malloc(psi->uSectionSize);
             if ( !pData )
                 return false;
@@ -169,8 +156,7 @@ bool IntelCoffFile::RealLoad(const char *sName)
     }
     printf("Allocated %d segments. a=%08x", m_iNumSections, a);
     
-    for ( int iSection = 0; iSection < m_Header.coff_sections; iSection++ )
-    {
+    for ( int iSection = 0; iSection < m_Header.coff_sections; iSection++ ) {
         printf("Loading section %d of %hd\n", iSection+1, m_Header.coff_sections);
 
         PSectionInfo psi = GetSectionInfo(psh[iSection].sch_physaddr);
@@ -179,8 +165,7 @@ bool IntelCoffFile::RealLoad(const char *sName)
             return false;
 
         char *pData = (char*)psi->uHostAddr + psh[iSection].sch_virtaddr;
-        if ( !(psh[iSection].sch_flags & 0x80) )
-        {
+        if ( !(psh[iSection].sch_flags & 0x80) ) {
             if ( static_cast<signed long>(psh[iSection].sch_sectsize) != read(m_fd, pData, psh[iSection].sch_sectsize) )
                 return false;
         }
@@ -205,12 +190,10 @@ bool IntelCoffFile::RealLoad(const char *sName)
     ADDRESS fakeForImport = (ADDRESS)0xfffe0000;
      
 printf("Size of one symbol: %u\n", sizeof pSymbols[0]);
-    for (unsigned int iSym = 0; iSym < m_Header.coff_num_syment; iSym += pSymbols[iSym].csym_numaux+1)
-    {
+    for (unsigned int iSym = 0; iSym < m_Header.coff_num_syment; iSym += pSymbols[iSym].csym_numaux+1) {
         char tmp_name[9]; tmp_name[8] = 0;
         char* name = tmp_name;
-        if ( pSymbols[iSym].csym_zeros == 0 )
-        {
+        if ( pSymbols[iSym].csym_zeros == 0 ) {
             // TODO: the symbol is found in a string table behind the symbol table at offset csym_offset
 //            snprintf(tmp_name, 8, "n%07lx", pSymbols[iSym].csym_offset);
             name = pStrings + pSymbols[iSym].csym_offset;
@@ -218,16 +201,13 @@ printf("Size of one symbol: %u\n", sizeof pSymbols[0]);
         else
             memcpy(tmp_name, pSymbols[iSym].csym_name, 8);
 
-        if ( !(pSymbols[iSym].csym_loadclass & 0x60) && (pSymbols[iSym].csym_sectnum <= m_Header.coff_sections) )
-        {
-            if ( pSymbols[iSym].csym_sectnum > 0 )
-            {
+        if ( !(pSymbols[iSym].csym_loadclass & 0x60) && (pSymbols[iSym].csym_sectnum <= m_Header.coff_sections) ) {
+            if ( pSymbols[iSym].csym_sectnum > 0 ) {
                 PSectionInfo psi = GetSectionInfo(psh[pSymbols[iSym].csym_sectnum-1].sch_physaddr);
                 pSymbols[iSym].csym_value += psh[pSymbols[iSym].csym_sectnum-1].sch_virtaddr + psi->uNativeAddr;
                 if ( strcmp(name, ".strip.") )
                     m_Symbols.Add(pSymbols[iSym].csym_value, name);
-                if ( pSymbols[iSym].csym_type & 0x20 && psi->bCode )
-                {
+                if ( pSymbols[iSym].csym_type & 0x20 && psi->bCode ) {
                     PSectionInfo si = new SectionInfo();
                     *si = *psi;
                     si->uNativeAddr = pSymbols[iSym].csym_value;
@@ -239,18 +219,15 @@ printf("Size of one symbol: %u\n", sizeof pSymbols[0]);
 //                    printf("Made '%s' an entry point.\n", name);
                 }
             }
-            else
-            {
-                if ( pSymbols[iSym].csym_type & 0x20 )
-                {
+            else {
+                if ( pSymbols[iSym].csym_type & 0x20 ) {
                     pSymbols[iSym].csym_value = fakeForImport; // TODO: external reference
                     fakeForImport -= 0x10000;
                     m_Symbols.Add(pSymbols[iSym].csym_value, name);
                 }
                 else if ( pSymbols[iSym].csym_value != 0 )
                     assert(false); //    pSymbols[iSym].csym_value = ield_1C->SetName(var_8, 0, this, field_4[var_4].csym_value);
-                else
-                {
+                else {
                     pSymbols[iSym].csym_value = fakeForImport; // TODO: external reference
                     fakeForImport -= 0x10000;
                     m_Symbols.Add(pSymbols[iSym].csym_value, name);
@@ -261,8 +238,7 @@ printf("Size of one symbol: %u\n", sizeof pSymbols[0]);
         printf("Symbol %d: %s %08lx\n", iSym, name, (long)pSymbols[iSym].csym_value); 
     }
 
-    for ( int iSection = 0; iSection < m_Header.coff_sections; iSection++ )
-    {
+    for ( int iSection = 0; iSection < m_Header.coff_sections; iSection++ ) {
 //        printf("Relocating section %d of %hd\n", iSection+1, m_Header.coff_sections);
         PSectionInfo psi = GetSectionInfo(psh[iSection].sch_physaddr);
         char *pData = (char*)psi->uHostAddr + psh[iSection].sch_virtaddr;
@@ -280,15 +256,13 @@ printf("Size of one symbol: %u\n", sizeof pSymbols[0]);
         if (static_cast<signed long>(sizeof (struct struct_coff_rel) * psh[iSection].sch_nreloc) != read(m_fd, pRel, sizeof (struct struct_coff_rel) * psh[iSection].sch_nreloc) )
             return false;
 
-        for ( int iReloc = 0; iReloc < psh[iSection].sch_nreloc; iReloc++ )
-        {
+        for ( int iReloc = 0; iReloc < psh[iSection].sch_nreloc; iReloc++ ) {
             struct struct_coff_rel *tRel = pRel + iReloc;
                         struct coff_symbol* pSym = pSymbols+tRel->r_symndx;
             uint32_t *pPatch = (uint32_t*)(pData + tRel->r_vaddr);
 //printf("Relocating at %08lx: type %d, dest %08lx\n", tRel->r_vaddr + psi->uNativeAddr + psh[iSection].sch_virtaddr, (int)tRel->r_type, pSym->csym_value);
 
-            switch ( tRel->r_type )
-            {
+            switch ( tRel->r_type ) {
             case RELOC_ADDR32:
             case RELOC_ADDR32+1:
                 // TODO: Handle external references
@@ -311,10 +285,8 @@ printf("Size of one symbol: %u\n", sizeof pSymbols[0]);
         free(pRel);
 
 /*
-        if ( iSection == 0 )
-        {
-            for ( int i = 0; i < psh[iSection].sch_sectsize ; i += 8 )
-            {
+        if ( iSection == 0 ) {
+            for ( int i = 0; i < psh[iSection].sch_sectsize ; i += 8 ) {
                 printf("%08x", i);
                 for ( int j=0; j < 8; j++ )
                     printf(" %02x", pData[i+j] & 0xff);
@@ -330,60 +302,50 @@ printf("Size of one symbol: %u\n", sizeof pSymbols[0]);
     return true;
 }
 
-bool IntelCoffFile::PostLoad(void*)
-{
+bool IntelCoffFile::PostLoad(void*) {
     // There seems to be no need to implement this since one file is loaded ever.
     printf("IntelCoffFile::PostLoad called\n");
     return false;
 }
 
-void IntelCoffFile::Close()
-{
+void IntelCoffFile::Close() {
     printf("IntelCoffFile::Close called\n");
 }
 
-LOAD_FMT IntelCoffFile::GetFormat() const
-{
+LOAD_FMT IntelCoffFile::GetFormat() const {
     return LOADFMT_COFF;
 }
 
-MACHINE IntelCoffFile::GetMachine() const
-{
+MACHINE IntelCoffFile::GetMachine() const {
     return MACHINE_PENTIUM;
 }
 
-const char *IntelCoffFile::getFilename() const
-{
+const char *IntelCoffFile::getFilename() const {
     return m_pFilename;
 }
 
-bool IntelCoffFile::isLibrary() const
-{
+bool IntelCoffFile::isLibrary() const {
     printf("IntelCoffFile::isLibrary called\n");
     return false;
 }
 
-void IntelCoffFile::UnLoad()
-{
+void IntelCoffFile::UnLoad() {
     printf("IntelCoffFile::Unload called\n");
     // TODO: Implement when we know what is going on.
 }
 
-ADDRESS IntelCoffFile::getImageBase()
-{
+ADDRESS IntelCoffFile::getImageBase() {
     // TODO: Do they really always start at 0?
     return (ADDRESS)0;
 }
 
-size_t IntelCoffFile::getImageSize()
-{
+size_t IntelCoffFile::getImageSize() {
     printf("IntelCoffFile::getImageSize called\n");
     // TODO: Implement it. We will have to load complete before knowing the size
     return 0;
 }
 
-ADDRESS IntelCoffFile::GetMainEntryPoint()
-{
+ADDRESS IntelCoffFile::GetMainEntryPoint() {
     printf("IntelCoffFile::GetMainEntryPoint called\n");
     // There is no such thing, but we need to deliver one since the first entry point might
     // be zero and this is skipped when returned by GetEntryPoint().
@@ -391,8 +353,7 @@ ADDRESS IntelCoffFile::GetMainEntryPoint()
     return GetEntryPoint();
 }
 
-ADDRESS IntelCoffFile::GetEntryPoint()
-{
+ADDRESS IntelCoffFile::GetEntryPoint() {
     printf("IntelCoffFile::GetEntryPoint called\n");
     // There is no such thing, but we have to deliver one
     if ( m_EntryPoints.empty() )
@@ -407,8 +368,7 @@ ADDRESS IntelCoffFile::GetEntryPoint()
     return (*it)->uNativeAddr;
 }
 
-std::list<SectionInfo*>& IntelCoffFile::GetEntryPoints(const char* pEntry)
-{
+std::list<SectionInfo*>& IntelCoffFile::GetEntryPoints(const char* pEntry) {
 //    unused(pEntry);
     printf("IntelCoffFile::GetEntryPoints called\n");
     // TODO: Provide a list of all code exported public. We can return the list already
@@ -416,8 +376,7 @@ std::list<SectionInfo*>& IntelCoffFile::GetEntryPoints(const char* pEntry)
     return m_EntryPoints;
 }
 
-std::list<const char *> IntelCoffFile::getDependencyList()
-{
+std::list<const char *> IntelCoffFile::getDependencyList() {
     std::list<const char *> dummy;
     return dummy;    // TODO: How ever return this is ought to work out
 }
@@ -426,8 +385,7 @@ extern "C" {
 #ifdef _WIN32
         __declspec(dllexport)
 #endif
-    BinaryFile* construct()
-    {
+    BinaryFile* construct() {
         return new IntelCoffFile();
     }
 }
@@ -442,56 +400,45 @@ bool IntelCoffFile::IsDynamicLinkedProc(ADDRESS uNative) {
     return false;
 }
 
-bool IntelCoffFile::IsRelocationAt(ADDRESS uNative)
-{
-    for ( std::list<ADDRESS>::iterator it = m_Relocations.begin(); it != m_Relocations.end(); it++ )
-    {
+bool IntelCoffFile::IsRelocationAt(ADDRESS uNative) {
+    for ( std::list<ADDRESS>::iterator it = m_Relocations.begin(); it != m_Relocations.end(); it++ ) {
         if ( *it == uNative ) return true;
     }
     return false;
 }
 
-std::map<ADDRESS, std::string>& IntelCoffFile::getSymbols()
-{
+std::map<ADDRESS, std::string>& IntelCoffFile::getSymbols() {
     return m_Symbols.getAll();
 }
 
-unsigned char* IntelCoffFile::getAddrPtr(ADDRESS a, ADDRESS range)
-{
-    for ( int iSection = 0; iSection < m_iNumSections; iSection++ )
-    {
+unsigned char* IntelCoffFile::getAddrPtr(ADDRESS a, ADDRESS range) {
+    for ( int iSection = 0; iSection < m_iNumSections; iSection++ ) {
         PSectionInfo psi = GetSectionInfo(iSection);
-        if ( a >= psi->uNativeAddr && (a+range) < (psi->uNativeAddr + psi->uSectionSize) )
-        {
+        if ( a >= psi->uNativeAddr && (a+range) < (psi->uNativeAddr + psi->uSectionSize) ) {
             return (unsigned char*)(psi->uHostAddr + (a-psi->uNativeAddr));
         }
     }
     return 0;
 }
-int IntelCoffFile::readNative(ADDRESS a, unsigned short n)
-{
+int IntelCoffFile::readNative(ADDRESS a, unsigned short n) {
     unsigned char *buf = getAddrPtr(a, (ADDRESS)n);
     if ( !a ) return 0;
 
     unsigned long tmp = 0;
     unsigned long mult = 1;
-    for ( unsigned short o = 0; o < n; o++ )
-    {
+    for ( unsigned short o = 0; o < n; o++ ) {
         tmp += (unsigned long)(*buf++) * mult;
         mult *= 256;
     }
     return tmp;
 }
 
-int IntelCoffFile::readNative4(ADDRESS a)
-{
+int IntelCoffFile::readNative4(ADDRESS a) {
     return readNative(a, 4);
 /*
-    for ( int iSection = 0; iSection < m_iNumSections; iSection++ )
-    {
+    for ( int iSection = 0; iSection < m_iNumSections; iSection++ ) {
         PSectionInfo psi = GetSectionInfo(iSection);
-        if ( a >= psi->uNativeAddr && (a+3) < (psi->uNativeAddr + psi->uSectionSize) )
-        {
+        if ( a >= psi->uNativeAddr && (a+3) < (psi->uNativeAddr + psi->uSectionSize) ) {
             unsigned long tmp;
             unsigned char *buf = (unsigned char*)(psi->uHostAddr + (a-psi->uNativeAddr));
             tmp = *buf++;
@@ -505,12 +452,10 @@ int IntelCoffFile::readNative4(ADDRESS a)
 */
 }
 
-int IntelCoffFile::readNative2(ADDRESS a)
-{
+int IntelCoffFile::readNative2(ADDRESS a) {
     return readNative(a, 2);
 }
 
-int IntelCoffFile::readNative1(ADDRESS a)
-{
+int IntelCoffFile::readNative1(ADDRESS a) {
     return readNative(a, 1);
 }

@@ -8,9 +8,9 @@
  *
  */
 
-/*==============================================================================
- * FILE:       table.cc
- * OVERVIEW:   Provides the implementation of classes Table, OpTable, and
+/***************************************************************************//**
+ * \file       table.cc
+ * \brief   Provides the implementation of classes Table, OpTable, and
  *               ExprTable
  ******************************************************************************/
 
@@ -48,8 +48,7 @@ ExprTable::ExprTable(std::deque<Exp*>& exprs) :
     Table(EXPRTABLE),expressions(exprs)
 {}
 
-ExprTable::~ExprTable(void)
-{
+ExprTable::~ExprTable(void) {
     std::deque<Exp*>::iterator loc;
     for (loc = expressions.begin(); loc != expressions.end(); loc++)
         delete (*loc);

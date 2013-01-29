@@ -8,7 +8,7 @@
  */
 
 /*******************************************************************************
- * File: ElfBinaryFile.cc
+ * \file ElfBinaryFile.cc
  * Desc: This file contains the implementation of the class ElfBinaryFile.
  ******************************************************************************/
 
@@ -55,8 +55,7 @@ ElfBinaryFile::ElfBinaryFile(bool bArchive /* = false */)
     Init();                    // Initialise all the common stuff
 }
 
-ElfBinaryFile::~ElfBinaryFile()
-{
+ElfBinaryFile::~ElfBinaryFile() {
     if (m_pImportStubs)
         // Delete the array of import stubs
         delete [] m_pImportStubs;
@@ -64,8 +63,7 @@ ElfBinaryFile::~ElfBinaryFile()
 
 // Reset internal state, except for those that keep track of which member
 // we're up to
-void ElfBinaryFile::Init()
-{
+void ElfBinaryFile::Init() {
     m_pImage = 0;
     m_pPhdrs = 0;            // No program headers
     m_pShdrs = 0;            // No section headers
@@ -101,8 +99,7 @@ unsigned elf_hash(const char* o0) {
 }    // extern "C"
 
 // Return true for a good load
-bool ElfBinaryFile::RealLoad(const char* sName)
-{
+bool ElfBinaryFile::RealLoad(const char* sName) {
     int i;
 
     if (m_bArchive) {
@@ -286,18 +283,15 @@ bool ElfBinaryFile::RealLoad(const char* sName)
 }
 
 // Clean up and unload the binary image
-void ElfBinaryFile::UnLoad()
-{
+void ElfBinaryFile::UnLoad() {
     if (m_pImage) delete [] m_pImage;
     fclose (m_fd);
     Init();                        // Set all internal state to 0
 }
 
 // Like a replacement for elf_strptr()
-char* ElfBinaryFile::GetStrPtr(int idx, int offset)
-{
-    if (idx < 0)
-    {
+char* ElfBinaryFile::GetStrPtr(int idx, int offset) {
+    if (idx < 0) {
         // Most commonly, this will be an index of -1, because a call to GetSectionIndexByName() failed
         fprintf(stderr, "Error! GetStrPtr passed index of %d\n", idx);
         return (char*)"Error!";
@@ -400,8 +394,7 @@ void ElfBinaryFile::AddSyms(int secIndex) {
     return;
 }
 
-std::vector<ADDRESS> ElfBinaryFile::GetExportedAddresses(bool funcsOnly)
-{
+std::vector<ADDRESS> ElfBinaryFile::GetExportedAddresses(bool funcsOnly) {
     std::vector<ADDRESS> exported;
 
     int i;
@@ -517,8 +510,7 @@ bool ElfBinaryFile::ValueByName(const char* pName, SymValue* pVal, bool bNoTypeO
     PSectionInfo pSect;
 
     pSect = GetSectionInfoByName(".dynsym");
-    if (pSect == 0)
-    {
+    if (pSect == 0) {
         // We have a file with no .dynsym section, and hence no .hash section (from my understanding - MVE).
         // It seems that the only alternative is to linearly search the symbol tables.
         // This must be one of the big reasons that linking is so slow! (at least, for statically linked files)
@@ -576,8 +568,7 @@ bool ElfBinaryFile::ValueByName(const char* pName, SymValue* pVal, bool bNoTypeO
 }
 
 // Lookup the symbol table using linear searching. See comments above for why this appears to be needed.
-bool ElfBinaryFile::SearchValueByName(const char* pName, SymValue* pVal, const char* pSectName, const char* pStrName)
-{
+bool ElfBinaryFile::SearchValueByName(const char* pName, SymValue* pVal, const char* pSectName, const char* pStrName) {
     // Note: this assumes .symtab. Many files don't have this section!!!
     PSectionInfo pSect, pStrSect;
 
@@ -642,8 +633,7 @@ int ElfBinaryFile::GetSizeByName(const char* pName, bool bNoTypeOK /* = false */
 
 // Guess the size of a function by finding the next symbol after it, and subtracting the distance.
 // This function is NOT efficient; it has to compare the closeness of ALL symbols in the symbol table
-int ElfBinaryFile::GetDistanceByName(const char* sName, const char* pSectName)
-{
+int ElfBinaryFile::GetDistanceByName(const char* sName, const char* pSectName) {
     int size = GetSizeByName(sName);
     if (size) return size;            // No need to guess!
     // No need to guess, but if there are fillers, then subtracting labels will give a better answer for coverage
@@ -834,7 +824,7 @@ size_t ElfBinaryFile::getImageSize() {
 
 /***************************************************************************//**
  *
- * OVERVIEW:      Get an array of addresses of imported function stubs
+ * \brief      Get an array of addresses of imported function stubs
  *                    This function relies on the fact that the symbols are sorted by address, and that Elf PLT
  *                    entries have successive addresses beginning soon after m_PltMin
  * PARAMETERS:      numImports - reference to integer set to the number of these
@@ -877,7 +867,7 @@ ADDRESS* ElfBinaryFile::GetImportStubs(int& numImports) {
 
 /***************************************************************************//**
  *
- * OVERVIEW:    Get a map from ADDRESS to const char*. This map contains the native addresses
+ * \brief    Get a map from ADDRESS to const char*. This map contains the native addresses
  *                    and symbolic names of global data items (if any) which are shared with dynamically
  *                    linked libraries.
  *                    Example: __iob (basis for stdout). The ADDRESS is the native address of a pointer
@@ -925,7 +915,7 @@ std::map<ADDRESS, const char*>* ElfBinaryFile::GetDynamicGlobalMap() {
 
 /***************************************************************************//**
  *
- * OVERVIEW:    Read a 2 or 4 byte quantity from host address (C pointer) p
+ * \brief    Read a 2 or 4 byte quantity from host address (C pointer) p
  * NOTE:        Takes care of reading the correct endianness, set early on into m_elfEndianness
  * PARAMETERS:    ps or pi: host pointer to the data
  * \returns        An integer representing the data
@@ -1175,8 +1165,7 @@ void ElfBinaryFile::applyRelocations() {
     }
 }
 
-bool ElfBinaryFile::IsRelocationAt(ADDRESS uNative)
-{
+bool ElfBinaryFile::IsRelocationAt(ADDRESS uNative) {
     //int nextFakeLibAddr = -2;            // See R_386_PC32 below; -1 sometimes used for main
     if (m_pImage == 0) return false;            // No file loaded
     int machine = elfRead2(&((Elf32_Ehdr*)m_pImage)->e_machine);
@@ -1234,8 +1223,7 @@ bool ElfBinaryFile::IsRelocationAt(ADDRESS uNative)
     return false;
 }
 
-const char *ElfBinaryFile::getFilenameSymbolFor(const char *sym)
-{
+const char *ElfBinaryFile::getFilenameSymbolFor(const char *sym) {
     int i;
     int secIndex = 0;
     for (i=1; i < m_iNumSections; ++i) {
@@ -1281,8 +1269,7 @@ const char *ElfBinaryFile::getFilenameSymbolFor(const char *sym)
 }
 
 // A map for extra symbols, those not in the usual Elf symbol tables
-void ElfBinaryFile::AddSymbol(ADDRESS uNative, const char *pName)
-{
+void ElfBinaryFile::AddSymbol(ADDRESS uNative, const char *pName) {
     m_SymTab[uNative] = pName;
 }
 

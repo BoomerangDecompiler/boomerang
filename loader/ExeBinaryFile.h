@@ -67,8 +67,7 @@ typedef struct {            /*      EXE file header          */
     SWord  overlayNum;     /* Overlay number                */
 } exeHeader;
 
-class ExeBinaryFile : public BinaryFile
-{
+class ExeBinaryFile : public BinaryFile {
 public:
     ExeBinaryFile();                // Default constructor
     virtual void  UnLoad();                       // Unload the image

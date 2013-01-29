@@ -6,9 +6,9 @@
  *
  */
 
-/*==============================================================================
- * FILE:       chllcode.cpp
- * OVERVIEW:   Concrete backend class for the "C" high level language
+/***************************************************************************//**
+ * \file       chllcode.cpp
+ * \brief   Concrete backend class for the "C" high level language
  *               This class is provides methods which are specific for the C language binding.
  *               I guess this will be the most popular output language unless we do C++.
  ******************************************************************************/
@@ -60,7 +60,7 @@ CHLLCode::CHLLCode(UserProc *p) : HLLCode(p)
 CHLLCode::~CHLLCode()
 {}
 
-/// Output 4 * \a indLevel spaces to \a str
+/// Output 4 * \param indLevel spaces to \a str
 void CHLLCode::indent(std::ostringstream& str, int indLevel) {
     // Can probably do more efficiently
     for (int i=0; i < indLevel; i++)

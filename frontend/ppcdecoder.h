@@ -8,9 +8,9 @@
  *
  */
 
-/*==============================================================================
- * FILE:       ppcdecoder.h
- * OVERVIEW:   The implementation of the instruction decoder for PPC.
+/***************************************************************************//**
+ * \file       ppcdecoder.h
+ * \brief   The implementation of the instruction decoder for PPC.
  ******************************************************************************/
 
 /*

@@ -1,9 +1,9 @@
 /*
  * Copyright (C) 2004-2006, Mike Van Emmerik and Trent Waddington
  */
-/*==============================================================================
- * FILE:       visitor.cpp
- * OVERVIEW:   Provides the implementation for the various visitor and modifier classes.
+/***************************************************************************//**
+ * \file       visitor.cpp
+ * \brief   Provides the implementation for the various visitor and modifier classes.
  ******************************************************************************/
 /*
  * $Revision$
@@ -175,7 +175,7 @@ Exp* CallBypasser::postVisit(RefExp* r) {
 }
 
 
-Exp* CallBypasser::postVisit(Location *e)       {
+Exp* CallBypasser::postVisit(Location *e) {
     // Hack to preserve a[m[x]]. Can likely go when ad hoc TA goes.
     bool isAddrOfMem = e->isAddrOf() && e->getSubExp1()->isMemOf();
     if (isAddrOfMem) return e;
@@ -186,57 +186,57 @@ Exp* CallBypasser::postVisit(Location *e)       {
 }
 
 
-Exp* SimpExpModifier::postVisit(Location *e)       {
+Exp* SimpExpModifier::postVisit(Location *e) {
     Exp* ret = e;
     if (!(unchanged & mask)) ret = e->simplify();
     mask >>= 1;
     return ret;
 }
-Exp* SimpExpModifier::postVisit(RefExp *e)       {
+Exp* SimpExpModifier::postVisit(RefExp *e) {
     Exp* ret = e;
     if (!(unchanged & mask)) ret = e->simplify();
     mask >>= 1;
     return ret;
 }
-Exp* SimpExpModifier::postVisit(Unary *e)       {
+Exp* SimpExpModifier::postVisit(Unary *e) {
     Exp* ret = e;
     if (!(unchanged & mask)) ret = e->simplify();
     mask >>= 1;
     return ret;
 }
-Exp* SimpExpModifier::postVisit(Binary *e)    {
+Exp* SimpExpModifier::postVisit(Binary *e) {
     Exp* ret = e;
     if (!(unchanged & mask)) ret = e->simplifyArith()->simplify();
     mask >>= 1;
     return ret;
 }
-Exp* SimpExpModifier::postVisit(Ternary *e)     {
+Exp* SimpExpModifier::postVisit(Ternary *e) {
     Exp* ret = e;
     if (!(unchanged & mask)) ret = e->simplify();
     mask >>= 1;
     return ret;
 }
-Exp* SimpExpModifier::postVisit(TypedExp *e)      {
+Exp* SimpExpModifier::postVisit(TypedExp *e) {
     Exp* ret = e;
     if (!(unchanged & mask)) ret = e->simplify();
     mask >>= 1;
     return ret;
 }
-Exp* SimpExpModifier::postVisit(FlagDef *e)     {
+Exp* SimpExpModifier::postVisit(FlagDef *e) {
     Exp* ret = e;
     if (!(unchanged & mask)) ret = e->simplify();
     mask >>= 1;
     return ret;
 }
-Exp* SimpExpModifier::postVisit(Const *e)       {
+Exp* SimpExpModifier::postVisit(Const *e) {
     mask >>= 1;
     return e;
 }
-Exp* SimpExpModifier::postVisit(TypeVal *e)     {
+Exp* SimpExpModifier::postVisit(TypeVal *e) {
     mask >>= 1;
     return e;
 }
-Exp* SimpExpModifier::postVisit(Terminal *e)      {
+Exp* SimpExpModifier::postVisit(Terminal *e) {
     mask >>= 1;
     return e;
 }
@@ -478,7 +478,8 @@ bool UsedLocsVisitor::visit(BoolAssign* s, bool& override) {
     if (pCond)
         pCond->accept(ev);                // Condition is used
     Exp* lhs = s->getLeft();
-    if (lhs && lhs->isMemOf()) {    // If dest is of form m[x]...
+    assert(lhs);
+    if (lhs->isMemOf()) {    // If dest is of form m[x]...
         Exp* x = ((Location*)lhs)->getSubExp1();
         UsedLocsFinder* ulf = dynamic_cast<UsedLocsFinder*>(ev);
         if (ulf) {

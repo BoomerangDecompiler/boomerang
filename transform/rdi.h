@@ -1,8 +1,8 @@
 /*
  * Copyright (C) 2004, Trent Waddington
  */
-/*==============================================================================
- * FILE:       removedoubleindirection.h
+/***************************************************************************//**
+ * \file       removedoubleindirection.h
  * OVERVIEW:   Provides the definition for the remove double indirection exp 
                tranformer.
  *============================================================================*/

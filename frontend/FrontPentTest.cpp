@@ -1,5 +1,5 @@
-/*==============================================================================
- * FILE:       FrontPentTest.cc
+/***************************************************************************//**
+ * \file       FrontPentTest.cc
  * OVERVIEW:   Provides the implementation for the FrontPentTest class, which
  *                tests the sparc front end
  *============================================================================*/
@@ -31,13 +31,13 @@ CPPUNIT_TEST_SUITE_REGISTRATION( FrontPentTest );
 #define SUSE_TRUE        "test/pentium/suse_true"
 
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        FrontPentTest::setUp
  * OVERVIEW:        Set up anything needed before all tests
  * NOTE:            Called before any tests
  * NOTE:            Also appears to be called before all tests!
  * PARAMETERS:        <none>
- * RETURNS:            <nothing>
+ * \returns             <nothing>
  *============================================================================*/
 static bool logset = false;
 void FrontPentTest::setUp () {
@@ -46,17 +46,17 @@ void FrontPentTest::setUp () {
         Boomerang::get()->setLogger(new NullLogger());
     }
 }
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        FrontPentTest::tearDown
  * OVERVIEW:        Delete objects created in setUp
  * NOTE:            Called after all tests
  * PARAMETERS:        <none>
- * RETURNS:            <nothing>
+ * \returns             <nothing>
  *============================================================================*/
 void FrontPentTest::tearDown () {
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        FrontPentTest::test1
  * OVERVIEW:        Test decoding some pentium instructions
  *============================================================================*/

@@ -13,9 +13,9 @@
  * 22 Nov 02 - Mike: Re-ordered initialisations to keep gcc quiet
  */
 
-/*==============================================================================
- * FILE:       chllcode.h
- * OVERVIEW:   Concrete class for the "C" high level language
+/***************************************************************************//**
+ * \file       chllcode.h
+ * \brief   Concrete class for the "C" high level language
  *               This class provides methods which are specific for the C language binding.
  *               I guess this will be the most popular output language unless we do C++.
  ******************************************************************************/

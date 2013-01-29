@@ -2,8 +2,8 @@
 #include <assert.h>
 
 #line 2 "machine/sparc/disassembler.m"
-/*==============================================================================
- * FILE:       disassembler.m
+/***************************************************************************//**
+ * \file       disassembler.m
  * OVERVIEW:   Skeleton file for a disassembler of SPARC instructions. 
  *============================================================================*/
 
@@ -31,7 +31,7 @@ extern  char _assembly[81];
  * FUNCTION:        getDword
  * OVERVIEW:        Returns the double starting at the given address.
  * PARAMETERS:      lc - address at which to decode the double
- * RETURNS:         the decoded double
+ * \returns          the decoded double
  */
 
 DWord getDword(ADDRESS lc)
@@ -46,7 +46,7 @@ DWord getDword(ADDRESS lc)
  * FUNCTION:         dis_RegImm
  * OVERVIEW:        decodes a register or an immediate value
  * PARAMETERS:         address pointer to be decoded
- * RETURNS:         string with information about register or immediate 
+ * \returns          string with information about register or immediate 
  */
 
 char *NJMCDecoder::dis_RegImm (ADDRESS pc)
@@ -102,7 +102,7 @@ char *NJMCDecoder::dis_RegImm (ADDRESS pc)
  * FUNCTION:         dis_Eaddr
  * OVERVIEW:        decodes an effective address
  * PARAMETERS:         address pointer to be decoded
- * RETURNS:         string with effective address in assembly format
+ * \returns          string with effective address in assembly format
  */
 
 char* NJMCDecoder::dis_Eaddr (ADDRESS pc)
@@ -186,14 +186,14 @@ char* NJMCDecoder::dis_Eaddr (ADDRESS pc)
     return _buffer;
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:       NJMCDecoder::decodeAssemblyInstruction
  * OVERVIEW:       Decodes a machine instruction and displays its assembly
  *                 representation onto the external array _assembly[].
  * PARAMETERS:     pc - the native address of the pc
  *                   delta - the difference between the native address and 
  *                    the host address of the pc
- * RETURNS:        number of bytes taken up by the decoded instruction 
+ * \returns         number of bytes taken up by the decoded instruction 
  *                    (i.e. number of bytes processed)
  *============================================================================*/
 

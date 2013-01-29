@@ -7,8 +7,8 @@
  *
  */
 
-/*==============================================================================
- * FILE:       hllcode.h
+/***************************************************************************//**
+ * \file       hllcode.h
  * OVERVIEW:   Interface for a high level language code base class.
  *               This class is provides methods which are generic of procedural
  *               languages like C, Pascal, Fortran, etc.    Included in the base class

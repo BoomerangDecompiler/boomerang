@@ -11,8 +11,8 @@
  *
  */
 
-/*==============================================================================
- * FILE:       disassembler.m
+/***************************************************************************//**
+ * \file       disassembler.m
  * OVERVIEW:   disassembler skeleton file for x86 SLED specification
  *
  * Created: 7 Jan 02 - Cristina, based on machine/pentium/decoder_low.m and 
@@ -24,14 +24,14 @@
 #include "decoder.h"
 
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:       NJMCDecoder::decodeAssemblyInstruction
  * OVERVIEW:       Decodes a machine instruction and displays its assembly
  *                 representation onto the external array _assembly[].
  * PARAMETERS:     pc - the native address of the pc
  *                 delta - the difference between the native address and
  *                  the host address of the pc
- * RETURNS:        number of bytes taken up by the decoded instruction
+ * \returns         number of bytes taken up by the decoded instruction
  *                  (i.e. number of bytes processed)
  *============================================================================*/
 int NJMCDecoder::decodeAssemblyInstruction (ADDRESS pc, int delta)

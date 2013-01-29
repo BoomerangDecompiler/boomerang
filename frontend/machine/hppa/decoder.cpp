@@ -2,8 +2,8 @@
 #include <assert.h>
 
 #line 1 "machine/hppa/decoder.m"
-/*==============================================================================
- * FILE:       decoder.m
+/***************************************************************************//**
+ * \file       decoder.m
  * OVERVIEW:   Implementation of the HP pa-risc specific parts of the
  *             NJMCDecoder class.
  *
@@ -1375,7 +1375,7 @@ SemStr* NJMCDecoder::dis_xd(ADDRESS hostpc)
     return result;
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        c_addr
  * OVERVIEW:        Processes completers for various addressing modes
  * NOTE:            I think we need to pass the base register to this function
@@ -1383,7 +1383,7 @@ SemStr* NJMCDecoder::dis_xd(ADDRESS hostpc)
  *                    address
  *                  ssb - SemStr* for the base register that gets modified
  *                  ssx - SemStr* for the amount to be added to ssb
- * RETURNS:         the SemStr representation of the given address
+ * \returns          the SemStr representation of the given address
  *============================================================================*/
 SemStr* NJMCDecoder::dis_c_addr(ADDRESS hostPC)
 {
@@ -1624,13 +1624,13 @@ SemStr* NJMCDecoder::dis_Sreg(int regNum)
     return ss;
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:      isFuncPrologue()
  * OVERVIEW:      Check to see if the instructions at the given offset match
  *                  any callee prologue, i.e. does it look like this offset
  *                  is a pointer to a function?
  * PARAMETERS:    hostPC - pointer to the code in question (native address)
- * RETURNS:       True if a match found
+ * \returns        True if a match found
  *============================================================================*/
 bool isFuncPrologue(ADDRESS hostPC)
 {

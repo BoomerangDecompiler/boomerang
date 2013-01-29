@@ -7,9 +7,9 @@
  *
  */
 
-/*==============================================================================
- * FILE:        SymTab.cpp
- * OVERVIEW:    This file contains the implementation of the class SymTab, a simple class to maintain a pair of maps
+/***************************************************************************//**
+ * \file        SymTab.cpp
+ * \brief    This file contains the implementation of the class SymTab, a simple class to maintain a pair of maps
  *                so that symbols can be accessed by symbol or by name
  ******************************************************************************/
 /*

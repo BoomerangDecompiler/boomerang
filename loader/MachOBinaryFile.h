@@ -29,7 +29,7 @@
 
 // Given a little endian value x, load its value assuming big endian order
 // Note: must be able to take address of x
-// Note: Unlike the LH macro in BinaryFile.h, the paraeter is not a pointer
+// Note: Unlike the LH macro in BinaryFile.h, the parameter is not a pointer
 #define _BMMH(x) ((unsigned)((Byte *)(&x))[3] + ((unsigned)((Byte *)(&x))[2] << 8) + \
     ((unsigned)((Byte *)(&x))[1] << 16) + ((unsigned)((Byte *)(&x))[0] << 24))
 // With this one, x IS a pounsigneder

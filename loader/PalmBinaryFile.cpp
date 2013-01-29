@@ -8,8 +8,8 @@
  *
  */
 
-/* File: PalmBinaryFile.cc
- * Desc: This class loads a Palm Pilot .prc file. Derived from class BinaryFile
+/** \file PalmBinaryFile.cc
+ * This class loads a Palm Pilot .prc file. Derived from class BinaryFile
  */
 
 /*
@@ -38,12 +38,10 @@
     UC((p).m_value)[3])
 
 PalmBinaryFile::PalmBinaryFile()
-    : m_pImage(0), m_pData(0)
-{
+    : m_pImage(0), m_pData(0) {
 }
 
-PalmBinaryFile::~PalmBinaryFile()
-{
+PalmBinaryFile::~PalmBinaryFile() {
     for (int i=0; i < m_iNumSections; i++)
         if (m_pSections[i].pSectionName != 0)
             delete [] m_pSections[i].pSectionName;
@@ -55,8 +53,7 @@ PalmBinaryFile::~PalmBinaryFile()
     }
 }
 
-bool PalmBinaryFile::RealLoad(const char* sName)
-{
+bool PalmBinaryFile::RealLoad(const char* sName) {
     FILE    *fp;
     char    buf[32];
 
@@ -249,8 +246,7 @@ bool PalmBinaryFile::RealLoad(const char* sName)
     return true;
 }
 
-void PalmBinaryFile::UnLoad()
-{
+void PalmBinaryFile::UnLoad() {
     if (m_pImage) {
         delete [] m_pImage;
         m_pImage = 0;
@@ -259,8 +255,7 @@ void PalmBinaryFile::UnLoad()
 
 // This is provided for completeness only...
 std::list<SectionInfo*>& PalmBinaryFile::GetEntryPoints(const char* pEntry
-                                                        /* = "main" */)
-{
+                                                        /* = "main" */) {
     std::list<SectionInfo*>* ret = new std::list<SectionInfo*>;
     SectionInfo* pSect = GetSectionInfoByName("code1");
     if (pSect == 0)
@@ -269,60 +264,49 @@ std::list<SectionInfo*>& PalmBinaryFile::GetEntryPoints(const char* pEntry
     return *ret;
 }
 
-ADDRESS PalmBinaryFile::GetEntryPoint()
-{
+ADDRESS PalmBinaryFile::GetEntryPoint() {
     assert(0); /* FIXME: Need to be implemented */
     return ADDRESS::g(0L);
 }
 
-bool PalmBinaryFile::Open(const char* sName)
-{
+bool PalmBinaryFile::Open(const char* sName) {
     // Not implemented yet
     return false;
 }
-void PalmBinaryFile::Close()
-{
+void PalmBinaryFile::Close() {
     // Not implemented yet
     return;
 }
-bool PalmBinaryFile::PostLoad(void* handle)
-{
+bool PalmBinaryFile::PostLoad(void* handle) {
     // Not needed: for archives only
     return false;
 }
 
-LOAD_FMT PalmBinaryFile::GetFormat() const
-{
+LOAD_FMT PalmBinaryFile::GetFormat() const {
     return LOADFMT_PALM;
 }
 
-MACHINE PalmBinaryFile::GetMachine() const
-{
+MACHINE PalmBinaryFile::GetMachine() const {
     return MACHINE_PALM;
 }
 
-bool PalmBinaryFile::isLibrary() const
-{
+bool PalmBinaryFile::isLibrary() const {
     return (strncmp((char*)(m_pImage+0x3C), "libr", 4) == 0);
 }
-std::list<const char *> PalmBinaryFile::getDependencyList()
-{
+std::list<const char *> PalmBinaryFile::getDependencyList() {
     return std::list<const char *>(); /* doesn't really exist on palm */
 }
 
-ADDRESS PalmBinaryFile::getImageBase()
-{
+ADDRESS PalmBinaryFile::getImageBase() {
     return ADDRESS::g(0L); /* FIXME */
 }
 
-size_t PalmBinaryFile::getImageSize()
-{
+size_t PalmBinaryFile::getImageSize() {
     return 0; /* FIXME */
 }
 
 // We at least need to be able to name the main function and system calls
-const char* PalmBinaryFile::SymbolByAddress(ADDRESS dwAddr)
-{
+const char* PalmBinaryFile::SymbolByAddress(ADDRESS dwAddr) {
     if ((dwAddr.m_value & 0xFFFFF000) == 0xAAAAA000) {
         // This is the convention used to indicate an A-line system call
         unsigned offset = dwAddr.m_value & 0xFFF;
@@ -337,8 +321,7 @@ const char* PalmBinaryFile::SymbolByAddress(ADDRESS dwAddr)
 }
 
 // Not really dynamically linked, but the closest thing
-bool PalmBinaryFile::IsDynamicLinkedProc(ADDRESS uNative)
-{
+bool PalmBinaryFile::IsDynamicLinkedProc(ADDRESS uNative) {
     return ((uNative.m_value & 0xFFFFF000) == 0xAAAAA000);
 }
 
@@ -347,8 +330,7 @@ bool PalmBinaryFile::IsDynamicLinkedProc(ADDRESS uNative)
 // and the value for GLOBALOFFSET. For Palm, the latter is the amount of
 // space allocated below %a5, i.e. the difference between %a5 and %agp
 // (%agp points to the bottom of the global data area).
-std::pair<ADDRESS,unsigned> PalmBinaryFile::GetGlobalPointerInfo()
-{
+std::pair<ADDRESS,unsigned> PalmBinaryFile::GetGlobalPointerInfo() {
     ADDRESS agp = ADDRESS::g(0L);
     const SectionInfo* ps = GetSectionInfoByName("data0");
     if (ps) agp = ps->uNativeAddr;
@@ -360,8 +342,7 @@ std::pair<ADDRESS,unsigned> PalmBinaryFile::GetGlobalPointerInfo()
 //  Specific for Palm   //
 //  //  //  //  //  //  //
 
-int PalmBinaryFile::GetAppID() const
-{
+int PalmBinaryFile::GetAppID() const {
     // The answer is in the header. Return 0 if file not loaded
     if (m_pImage == 0)
         return 0;
@@ -393,15 +374,14 @@ static SWord GccCallMain[] = {
 
 /***************************************************************************//**
  *
- * OVERVIEW:      Try to find a pattern
+ * \brief      Try to find a pattern
  * PARAMETERS:    start - pointer to code to start searching
  *                patt - pattern to look for
  *                pattSize - size of the pattern (in SWords)
  *                max - max number of SWords to search
  * \returns       0 if no match; pointer to start of match if found
  ******************************************************************************/
-SWord* findPattern(SWord* start, const SWord* patt, int pattSize, int max)
-{
+SWord* findPattern(SWord* start, const SWord* patt, int pattSize, int max) {
     const SWord* last = start + max;
     for (; start < last; start++) {
         bool found = true;
@@ -422,8 +402,7 @@ SWord* findPattern(SWord* start, const SWord* patt, int pattSize, int max)
 
 // Find the native address for the start of the main entry function.
 // For Palm binaries, this is PilotMain.
-ADDRESS PalmBinaryFile::GetMainEntryPoint()
-{
+ADDRESS PalmBinaryFile::GetMainEntryPoint() {
     SectionInfo* pSect = GetSectionInfoByName("code1");
     if (pSect == 0)
         return ADDRESS::g(0L);               // Failed
@@ -465,8 +444,7 @@ ADDRESS PalmBinaryFile::GetMainEntryPoint()
     return ADDRESS::g(0L);
 }
 
-void PalmBinaryFile::GenerateBinFiles(const std::string& path) const
-{
+void PalmBinaryFile::GenerateBinFiles(const std::string& path) const {
     for (int i=0; i < m_iNumSections; i++) {
         SectionInfo* pSect = m_pSections + i;
         if ((strncmp(pSect->pSectionName, "code", 4) != 0) &&
@@ -499,8 +477,7 @@ extern "C" {
 #ifdef _WIN32
 __declspec(dllexport)
 #endif
-BinaryFile* construct()
-{
+BinaryFile* construct() {
     return new PalmBinaryFile;
 }
 }

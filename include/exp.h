@@ -1,8 +1,8 @@
 /*
  * Copyright (C) 2002-2006, Trent Waddington and Mike Van Emmerik
  */
-/*==============================================================================
- * FILE:       exp.h
+/***************************************************************************//**
+ * \file       exp.h
  * OVERVIEW:   Provides the definition for the Exp class and its subclasses.
  *============================================================================*/
 /*
@@ -64,7 +64,7 @@ typedef BasicBlock* PBB;
 #define DEBUG_BUFSIZE    5000        // Size of the debug print buffer
 
 
-/*==============================================================================
+/***************************************************************************//**
  * Exp is an expression class, though it will probably be used to hold many other things (e.g. perhaps transformations).
  * It is a standard tree representation. Exp itself is abstract. A special class Const is used for constants. Unary,
  * Binary, and Ternary hold 1, 2, and 3 subexpressions respectively. For efficiency of representation, these have to be
@@ -369,7 +369,7 @@ protected:
 // Not part of the Exp class, but logically belongs with it:
 std::ostream& operator<<(std::ostream& os, Exp* p);     // Print the Exp poited to by p
 
-/*==============================================================================
+/***************************************************************************//**
  * Const is a subclass of Exp, and holds either an integer, floating point, string, or address constant
  *============================================================================*/
 class Const : public Exp {
@@ -452,7 +452,7 @@ protected:
         friend class XMLProgParser;
 };        // class Const
 
-/*==============================================================================
+/***************************************************************************//**
  * Terminal is a subclass of Exp, and holds special zero arity items such as opFlags (abstract flags register)
  *============================================================================*/
 class Terminal : public Exp {
@@ -488,7 +488,7 @@ protected:
         friend class XMLProgParser;
 };        // class Terminal
 
-/*==============================================================================
+/***************************************************************************//**
  * Unary is a subclass of Exp, holding one subexpression
  *============================================================================*/
 class Unary : public Exp {
@@ -556,7 +556,7 @@ protected:
         friend class XMLProgParser;
 };    // class Unary
 
-/*==============================================================================
+/***************************************************************************//**
  * Binary is a subclass of Unary, holding two subexpressions
  *============================================================================*/
 class Binary : public Unary {
@@ -630,7 +630,7 @@ protected:
         friend class XMLProgParser;
 };    // class Binary
 
-/*==============================================================================
+/***************************************************************************//**
  * Ternary is a subclass of Binary, holding three subexpressions
  *============================================================================*/
 class Ternary : public Binary {
@@ -695,7 +695,7 @@ protected:
         friend class XMLProgParser;
 };    // class Ternary
 
-/*==============================================================================
+/***************************************************************************//**
  * TypedExp is a subclass of Unary, holding one subexpression and a Type
  *============================================================================*/
 class TypedExp : public Unary {
@@ -744,7 +744,7 @@ protected:
         friend class XMLProgParser;
 };        // class TypedExp
 
-/*==============================================================================
+/***************************************************************************//**
  * FlagDef is a subclass of Unary, and holds a list of parameters (in the subexpression), and a pointer to an RTL
  *============================================================================*/
 class FlagDef : public Unary {
@@ -764,7 +764,7 @@ protected:
         friend class XMLProgParser;
 };        // class FlagDef
 
-/*==============================================================================
+/***************************************************************************//**
  * RefExp is a subclass of Unary, holding an ordinary Exp pointer, and a pointer to a defining statement (could be a
  * phi assignment).  This is used for subscripting SSA variables. Example:
  *   m[1000] becomes m[1000]{3} if defined at statement 3
@@ -812,7 +812,7 @@ protected:
 };        // class RefExp
 
 
-/*==============================================================================
+/***************************************************************************//**
 class TypeVal. Just a Terminal with a Type. Used for type values in constraints
 ==============================================================================*/
 class TypeVal : public Terminal {
