@@ -161,6 +161,7 @@ const Cfg& Cfg::operator=(const Cfg& other) {
  ******************************************************************************/
 void Cfg::setEntryBB(PBB bb) {
     BB_IT it;
+    entryBB = bb;
     for (it=m_listBB.begin(); it != m_listBB.end(); it++) {
         if ((*it)->getType() == RET) {
             exitBB = *it;

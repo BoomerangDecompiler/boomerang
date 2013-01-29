@@ -2,8 +2,8 @@
 #include <assert.h>
 
 #line 2 "machine/mc68k/decoder_low.m"
-/*==============================================================================
- * FILE:       decoder_low.m
+/***************************************************************************//**
+ * \file       decoder_low.m
  * OVERVIEW:   Implementation of the low level mc68000 specific parts of the
  *             NJMCDecoder class.
  *============================================================================*/
@@ -58,7 +58,7 @@ static char sslName[20];            // Modifiable; [name] from the toolkit is
                                     // in the text section and read-only
 static int temp1 = 0;               // id of a temp; initialised on first use
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        getWord
  * OVERVIEW:        Returns the word starting at the given address.
  * PARAMETERS:      lc - host address at which to decode 
@@ -72,7 +72,7 @@ SWord getWord (ADDRESS lc)
 }
 
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        decodeTrapName
  * OVERVIEW:        Places the name of the system call in _assembly.
  * PARAMETERS:      pc - address at which to decode 
@@ -118,7 +118,7 @@ void chopBoth(char* name)
     sslName[l-1] = '\0';
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:       bumpRegister
  * OVERVIEW:       Add an RTAssgn to bump a register by an amount
  * PARAMETERS:     RTs: list of RTs to add this RTAssgn to
@@ -140,7 +140,7 @@ void bumpRegister(list<RT*>* RTs, int bump, int bumpr)
     RTs->push_back(pRT);
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:       assignTemp
  * OVERVIEW:       Add an RTAssgn to assign src to temp1
  * PARAMETERS:     src: Pointer to SemStr for src
@@ -161,7 +161,7 @@ RT* assignTemp(SemStr* src, int size, SemStr*& temp)
     return pRT;
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:       sgnExTemp
  * OVERVIEW:       Add an RTAssgn to sign extend src to temp1
  * PARAMETERS:     dest: Pointer to SemStr for dest
@@ -189,7 +189,7 @@ RT* sgnExTemp(SemStr* src, int size, int size2, SemStr*& temp)
 // Macro to handle bumping register if reqd
 #define ADDBUMP {if (bump) bumpRegister(RTs, bump, bumpr);}
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:       NJMCDecoder::decodeLowLevelInstruction
  * OVERVIEW:       Decodes a machine instruction and returns an instantiated
  *                 list of RTs.

@@ -22,7 +22,7 @@
 #include "ExeBinaryFile.h"
 
 using namespace std;
-const char * BinaryFileFactory::m_base_path = "";
+std::string BinaryFileFactory::m_base_path = "";
 
 BinaryFile *BinaryFileFactory::Load(const char *sName) {
     BinaryFile *pBF = getInstanceFor( sName );

@@ -1,5 +1,5 @@
-/*==============================================================================
- * FILE:       TypeTest.cc
+/***************************************************************************//**
+ * \file       TypeTest.cc
  * OVERVIEW:   Provides the implementation for the TypeTest class, which tests the Type class and some utility functions
  *============================================================================*/
 /*
@@ -23,7 +23,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TypeTest);
 
 #define HELLO_WINDOWS		"test/windows/hello.exe"
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        TypeTest::setUp
  * OVERVIEW:        Set up anything needed before all tests
  * NOTE:            Called before any tests
@@ -38,7 +38,7 @@ void TypeTest::setUp () {
         }
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        TypeTest::tearDown
  * OVERVIEW:        Delete objects created in setUp
  * NOTE:            Called after all tests
@@ -48,7 +48,7 @@ void TypeTest::setUp () {
 void TypeTest::tearDown () {
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        TypeTest::testTypeLong
  * OVERVIEW:        Test type unsigned long
  *============================================================================*/
@@ -60,7 +60,7 @@ void TypeTest::testTypeLong () {
     CPPUNIT_ASSERT_EQUAL(expected, actual);
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        TypeTest::testNotEqual
  * OVERVIEW:        Test type inequality
  *============================================================================*/
@@ -73,7 +73,7 @@ void TypeTest::testNotEqual () {
     CPPUNIT_ASSERT(t2 != t3);
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        TypeTest::testNotEqual
  * OVERVIEW:        Test type inequality
  *============================================================================*/
@@ -136,7 +136,7 @@ void TypeTest::testCompound() {
     delete pFE;
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        TypeTest::testDataInterval
  * OVERVIEW:        Test the DataIntervalMap class
  *============================================================================*/
@@ -221,7 +221,7 @@ void TypeTest::testDataInterval() {
     CPPUNIT_ASSERT_EQUAL(expected, actual);
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        TypeTest::testDataIntervalOverlaps
  * OVERVIEW:        Test the DataIntervalMap class with overlapping addItems
  *============================================================================*/

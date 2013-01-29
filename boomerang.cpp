@@ -2,7 +2,7 @@
  * Copyright (C) 2002-2006, Mike Van Emmerik and Trent Waddington
  */
 /***************************************************************************//**
- * FILE:       boomerang.cpp
+ * \file       boomerang.cpp
  * \brief   Command line processing for the Boomerang decompiler
  ******************************************************************************/
 /*
@@ -267,8 +267,7 @@ bool createDirectory(std::string dir) {
 /**
  * Prints a tree graph.
  */
-void Cluster::printTree(std::ostream &out)
-{
+void Cluster::printTree(std::ostream &out) {
     out << "\t\t" << name << "\n";
     for (unsigned i = 0; i < children.size(); i++)
         children[i]->printTree(out);
@@ -285,8 +284,7 @@ typedef char *crazy_vc_bug;
  *
  * \return The number of words found (argc).
  */
-int Boomerang::splitLine(char *line, char ***pargv)
-{
+int Boomerang::splitLine(char *line, char ***pargv) {
     int argc = 0;
     *pargv = new crazy_vc_bug[100];
     const char *p = strtok(line, " \r\n");
@@ -309,8 +307,7 @@ int Boomerang::splitLine(char *line, char ***pargv)
  * \retval 1 Faillure
  * \retval 2 The user exited with \a quit or \a exit
  */
-int Boomerang::parseCmd(int argc, const char **argv)
-{
+int Boomerang::parseCmd(int argc, const char **argv) {
     static Prog *prog = NULL;
     if (!strcmp(argv[0], "decode")) {
         if (argc <= 1) {
@@ -655,8 +652,7 @@ int Boomerang::parseCmd(int argc, const char **argv)
  * \retval 0 stdin was closed.
  * \retval 2 The user typed exit or quit.
  */
-int Boomerang::cmdLine()
-{
+int Boomerang::cmdLine() {
     char line[1024];
     printf("boomerang: ");
     fflush(stdout);
@@ -676,8 +672,7 @@ int Boomerang::cmdLine()
  *
  * \return Zero on success, nonzero on faillure.
  */
-int Boomerang::commandLine(int argc, const char **argv)
-{
+int Boomerang::commandLine(int argc, const char **argv) {
     printf("Boomerang %s\n", VERSION);        // Display a version and date (mainly for release versions)
     if (argc < 2) usage();
     progPath = argv[0];
@@ -819,8 +814,7 @@ int Boomerang::commandLine(int argc, const char **argv)
             case 'E':
                 noDecodeChildren = true;
                 // Fall through
-            case 'e':
-            {
+            case 'e': {
                 ADDRESS addr;
                 int n;
                 decodeMain = false;
@@ -840,8 +834,7 @@ int Boomerang::commandLine(int argc, const char **argv)
                 entrypoints.push_back(addr);
             }
                 break;
-            case 's':
-            {
+            case 's': {
                 if (argv[i][2] == 'f') {
                     symbolFiles.push_back(argv[i+1]);
                     i++;
@@ -975,8 +968,7 @@ int Boomerang::commandLine(int argc, const char **argv)
  * \retval true Success.
  * \retval false The directory could not be created.
  */
-bool Boomerang::setOutputDirectory(const char *path)
-{
+bool Boomerang::setOutputDirectory(const char *path) {
     outputPath = path;
     // Create the output directory, if needed
     if (!createDirectory(outputPath)) {
@@ -994,8 +986,7 @@ bool Boomerang::setOutputDirectory(const char *path)
  * \param modules A map from name to the Objective-C modules.
  * \param prog The Prog object to add the information to.
  */
-void Boomerang::objcDecode(std::map<std::string, ObjcModule> &modules, Prog *prog)
-{
+void Boomerang::objcDecode(std::map<std::string, ObjcModule> &modules, Prog *prog) {
     if (VERBOSE)
         LOG << "Adding Objective-C information to Prog.\n";
     Cluster *root = prog->getRootCluster();
@@ -1034,8 +1025,7 @@ void Boomerang::objcDecode(std::map<std::string, ObjcModule> &modules, Prog *pro
  *
  * \returns A Prog object.
  */
-Prog *Boomerang::loadAndDecode(const char *fname, const char *pname)
-{
+Prog *Boomerang::loadAndDecode(const char *fname, const char *pname) {
     std::cout << "loading...\n";
     Prog *prog = new Prog();
     FrontEnd *fe = FrontEnd::Load(fname, prog);
@@ -1102,10 +1092,7 @@ Prog *Boomerang::loadAndDecode(const char *fname, const char *pname)
 }
 
 #if defined(_WIN32) && !defined(__MINGW32__)
-DWORD WINAPI stopProcess(
-        time_t start
-        )
-{
+DWORD WINAPI stopProcess( time_t start ) {
     int mins = Boomerang::get()->minsToStopAfter;
     while(1) {
         time_t now;
@@ -1118,8 +1105,7 @@ DWORD WINAPI stopProcess(
     }
 }
 #else
-void stopProcess(int n)
-{
+void stopProcess(int n) {
     std::cerr << "\n\n Stopping process, timeout.\n";
     exit(1);
 }
@@ -1134,8 +1120,7 @@ void stopProcess(int n)
  *
  * \return Zero on success, nonzero on faillure.
  */
-int Boomerang::decompile(const char *fname, const char *pname)
-{
+int Boomerang::decompile(const char *fname, const char *pname) {
     Prog *prog;
     time_t start;
     time(&start);
@@ -1223,8 +1208,7 @@ int Boomerang::decompile(const char *fname, const char *pname)
  * Saves the state of the Prog object to a XML file.
  * \param prog The Prog object to save.
  */
-void Boomerang::persistToXML(Prog *prog)
-{
+void Boomerang::persistToXML(Prog *prog) {
     LOG << "saving persistable state...\n";
     XMLProgParser *p = new XMLProgParser();
     p->persistToXML(prog);
@@ -1234,8 +1218,7 @@ void Boomerang::persistToXML(Prog *prog)
  * \param fname The name of the XML file.
  * \return The loaded Prog object.
  */
-Prog *Boomerang::loadFromXML(const char *fname)
-{
+Prog *Boomerang::loadFromXML(const char *fname) {
     LOG << "loading persistable state...\n";
     XMLProgParser *p = new XMLProgParser();
     return p->parse(fname);

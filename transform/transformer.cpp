@@ -1,8 +1,8 @@
 /*
  * Copyright (C) 2004, Mike Van Emmerik and Trent Waddington
  */
-/*==============================================================================
- * FILE:        transformer.cpp
+/***************************************************************************//**
+ * \file        transformer.cpp
  * OVERVIEW:    Implementation of the Transformer and related classes.
  *============================================================================*/
 /*

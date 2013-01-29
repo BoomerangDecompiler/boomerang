@@ -8,7 +8,7 @@
  */
 
 /***************************************************************************//**
- * FILE:        HpSomBinaryFile.cc
+ * \file        HpSomBinaryFile.cc
  * \brief    This file contains the implementation of the class
  *              HpSomBinaryFile, for decoding PA/RISC SOM executable files.
  *              Derived from class BinaryFile
@@ -20,7 +20,7 @@
  * 22 Jun 00 - Mike: Initial version
  * 15 May 02 - Mike: Fixed several UINT4(&...) that were needed for endianness
 */
-
+#include <cstddef>
 #include <cassert>
 #if defined(_MSC_VER) && _MSC_VER <= 1200
 #include "exp.h"        // For MSVC 5.00
@@ -37,12 +37,10 @@
     UC(p)[3]))
 
 HpSomBinaryFile::HpSomBinaryFile()
-    : m_pImage(0)
-{
+    : m_pImage(0) {
 }
 
-HpSomBinaryFile::~HpSomBinaryFile()
-{
+HpSomBinaryFile::~HpSomBinaryFile() {
     if (m_pImage) {
         delete m_pImage;
     }
@@ -53,8 +51,7 @@ HpSomBinaryFile::~HpSomBinaryFile()
 // that addresses in the PLT do not always point to the BOR (Bind On Reference,
 // a kind of stub)
 #if 0
-bool isLDW(unsigned instr, int& offset, unsigned dest)
-{
+bool isLDW(unsigned instr, int& offset, unsigned dest) {
     if (((instr >> 26) == 0x12) &&              // Opcode
             (instr & 1) &&                          // Offset is neg
             (((instr >> 21) & 0x1f) == 27) &&       // register b
@@ -157,7 +154,7 @@ bool HpSomBinaryFile::RealLoad(const char* sName) {
     }
 
     // Find the array of aux headers
-    unsigned* auxHeaders = (unsigned*)UINT4(m_pImage + 0x1c);
+    unsigned* auxHeaders = (unsigned*)intptr_t(UINT4(m_pImage + 0x1c));
     if (auxHeaders == 0) {
         fprintf(stderr, "Error: auxilliary header array is not present\n");
         return false;
@@ -269,8 +266,8 @@ bool HpSomBinaryFile::RealLoad(const char* sName) {
 
     // Work through the imports, and find those for which there are stubs using that import entry.
     // Add the addresses of any such stubs.
-    int deltaText = (m_pSections[1].uHostAddr - m_pSections[1].uNativeAddr).m_value;
-    int deltaData = (m_pSections[2].uHostAddr - m_pSections[2].uNativeAddr).m_value;
+    ptrdiff_t deltaText = (m_pSections[1].uHostAddr - m_pSections[1].uNativeAddr).m_value;
+    ptrdiff_t deltaData = (m_pSections[2].uHostAddr - m_pSections[2].uNativeAddr).m_value;
     // The "end of data" where r27 points is not necessarily the same as
     // the end of the $DATA$ space. So we have to call getSubSpaceInfo
     std::pair<ADDRESS, int> pr = getSubspaceInfo("$GLOBAL$");
@@ -392,16 +389,14 @@ bool HpSomBinaryFile::RealLoad(const char* sName) {
     return true;
 }
 
-void HpSomBinaryFile::UnLoad()
-{
+void HpSomBinaryFile::UnLoad() {
     if (m_pImage) {
         delete [] m_pImage;
         m_pImage = 0;
     }
 }
 
-ADDRESS HpSomBinaryFile::GetEntryPoint()
-{
+ADDRESS HpSomBinaryFile::GetEntryPoint() {
     assert(0); /* FIXME: Someone who understands this file please implement */
     return ADDRESS::g(0L);
 }
@@ -418,51 +413,42 @@ std::list<SectionInfo*>& HpSomBinaryFile::GetEntryPoints(const char* pEntry
 }
 
 
-bool HpSomBinaryFile::Open(const char* sName)
-{
+bool HpSomBinaryFile::Open(const char* sName) {
     // Not implemented yet
     return false;
 }
-void HpSomBinaryFile::Close()
-{
+void HpSomBinaryFile::Close() {
     // Not implemented yet
     return;
 }
-bool HpSomBinaryFile::PostLoad(void* handle)
-{
+bool HpSomBinaryFile::PostLoad(void* handle) {
     // Not needed: for archives only
     return false;
 }
 
-LOAD_FMT HpSomBinaryFile::GetFormat() const
-{
+LOAD_FMT HpSomBinaryFile::GetFormat() const {
     return LOADFMT_PAR;
 }
 
-MACHINE HpSomBinaryFile::GetMachine() const
-{
+MACHINE HpSomBinaryFile::GetMachine() const {
     return MACHINE_HPRISC;
 }
 
-bool HpSomBinaryFile::isLibrary() const
-{
+bool HpSomBinaryFile::isLibrary() const {
     int type =  UINT4(m_pImage)&0xFFFF;
     return ( type == 0x0104 || type == 0x010D ||
              type == 0x010E || type == 0x0619 );
 }
 
-std::list<const char *> HpSomBinaryFile::getDependencyList()
-{
+std::list<const char *> HpSomBinaryFile::getDependencyList() {
     return std::list<const char *>(); /* FIXME */
 }
 
-ADDRESS HpSomBinaryFile::getImageBase()
-{
+ADDRESS HpSomBinaryFile::getImageBase() {
     return ADDRESS::g(0L); /* FIXME */
 }
 
-size_t HpSomBinaryFile::getImageSize()
-{
+size_t HpSomBinaryFile::getImageSize() {
     return UINT4(m_pImage + 0x24);
 }
 
@@ -471,8 +457,7 @@ const char* HpSomBinaryFile::SymbolByAddress(ADDRESS a) {
     return symbols.find(a);
 }
 
-ADDRESS HpSomBinaryFile::GetAddressByName(const char * pName, bool bNoTypeOK /* = false */)
-{
+ADDRESS HpSomBinaryFile::GetAddressByName(const char * pName, bool bNoTypeOK /* = false */) {
     // For now, we ignore the symbol table and do a linear search of our
     // SymTab table
     ADDRESS res = symbols.find(pName);
@@ -481,14 +466,12 @@ ADDRESS HpSomBinaryFile::GetAddressByName(const char * pName, bool bNoTypeOK /* 
     return res;
 }
 
-bool HpSomBinaryFile::IsDynamicLinkedProc(ADDRESS uNative)
-{
+bool HpSomBinaryFile::IsDynamicLinkedProc(ADDRESS uNative) {
     // Look up the address in the set of imports
     return imports.find(uNative) != imports.end();
 }
 
-std::pair<ADDRESS, int> HpSomBinaryFile::getSubspaceInfo(const char* ssname)
-{
+std::pair<ADDRESS, int> HpSomBinaryFile::getSubspaceInfo(const char* ssname) {
     std::pair<ADDRESS, int> ret(ADDRESS::g(0L), 0);
     // Get the start and length of the subspace with the given name
     struct subspace_dictionary_record* subSpaces =
@@ -516,8 +499,7 @@ std::pair<ADDRESS, int> HpSomBinaryFile::getSubspaceInfo(const char* ssname)
 // (first) and the value for GLOBALOFFSET (unused for ra-risc)
 // The understanding at present is that the global data pointer (%r27 for
 // pa-risc) points just past the end of the $GLOBAL$ subspace.
-std::pair<ADDRESS,unsigned> HpSomBinaryFile::GetGlobalPointerInfo()
-{
+std::pair<ADDRESS,unsigned> HpSomBinaryFile::GetGlobalPointerInfo() {
     std::pair<ADDRESS, unsigned> ret(ADDRESS::g(0L), 0);
     // Search the subspace names for "$GLOBAL$
     std::pair<ADDRESS, int> info = getSubspaceInfo("$GLOBAL$");
@@ -538,8 +520,7 @@ std::pair<ADDRESS,unsigned> HpSomBinaryFile::GetGlobalPointerInfo()
  * PARAMETERS:  None
  * \returns     Pointer to a new map with the info
  ******************************************************************************/
-std::map<ADDRESS, const char*>* HpSomBinaryFile::GetDynamicGlobalMap()
-{
+std::map<ADDRESS, const char*>* HpSomBinaryFile::GetDynamicGlobalMap() {
     // Find the DL Table, if it exists
     // The DL table (Dynamic Link info) is supposed to be at the start of
     // the $TEXT$ space, but the only way I can presently find that is to
@@ -570,8 +551,7 @@ std::map<ADDRESS, const char*>* HpSomBinaryFile::GetDynamicGlobalMap()
     return ret;
 }
 
-ADDRESS HpSomBinaryFile::GetMainEntryPoint()
-{
+ADDRESS HpSomBinaryFile::GetMainEntryPoint() {
     return symbols.find("main");
 #if 0
     if (mainExport == 0) {
@@ -623,8 +603,7 @@ extern "C" {
 #ifdef _WIN32
 __declspec(dllexport)
 #endif
-BinaryFile* construct()
-{
+BinaryFile* construct() {
     return new HpSomBinaryFile;
 }
 }

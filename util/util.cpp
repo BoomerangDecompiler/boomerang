@@ -9,8 +9,8 @@
  *
  */
 
-/*==============================================================================
- * FILE:       util.cc
+/***************************************************************************//**
+ * \file       util.cc
  * \brief   This file contains miscellaneous functions that don't belong to
  *             any particular subsystem of UQBT.
  ******************************************************************************/
@@ -48,7 +48,7 @@
 #include <fcntl.h>
 #include <iomanip>          // For setw
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:      string::operator+(string, int)
  * \brief      Append an int to a string
  * PARAMETERS:    s: the string to append to
@@ -64,7 +64,7 @@ std::string operator+(const std::string& s, int i)
     return ret.append(buf);
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:      initCapital
  * \brief      Return a string the same as the input string, but with the
  *                    first character capitalised
@@ -78,7 +78,7 @@ std::string initCapital(const std::string& s)
     return res;
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:      hasExt
  * \brief      Returns true if the given file name has the given extension
  *                and false otherwise.
@@ -99,7 +99,7 @@ bool hasExt(const std::string& s, const char* ext)
     }
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:      changeExt
  * \brief      Change the extension of the given file name
  * PARAMETERS:    s: string representing the file name to be modified
@@ -118,7 +118,7 @@ std::string changeExt(const std::string& s, const char* ext)
     }
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:      searchAndReplace
  * \brief      returns a copy of a string will all occurances of match
  *                replaced with rep. (simple version of s/match/rep/g)
@@ -143,7 +143,7 @@ std::string searchAndReplace( const std::string &in, const std::string &match,
     return result;
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:      upperStr
  * \brief      Uppercase a C string
  * PARAMETERS:    s: the string (char*) to start with

@@ -8,8 +8,8 @@
  *
  */
 
-/*==============================================================================
- * FILE:       front68k.cc
+/***************************************************************************//**
+ * \file       front68k.cc
  * OVERVIEW:   This file contains routines to manage the decoding of mc68k
  *             instructions and the instantiation to RTLs. These functions
  *             replace Frontend.cc for decoding mc68k instructions.
@@ -36,18 +36,18 @@
 #include "BinaryFile.h"     // For SymbolByAddress()
 #include "csr.h"            // For class CalleeEpilogue
 
-/*==============================================================================
+/***************************************************************************//**
  * Forward declarations.
  *============================================================================*/
 
-/*==============================================================================
+/***************************************************************************//**
  * File globals.
  *============================================================================*/
 
 // Queues used by various functions
 queue < ADDRESS> qLabels;       // Queue of labels this procedure
 
-/*==============================================================================
+/***************************************************************************//**
  * Forward declarations.
  *============================================================================*/
 void initCti();             // Imp in cti68k.cc
@@ -79,7 +79,7 @@ int arrConds[12][7] = {
 // Ugly. The lengths of the above arrays.
 int condLengths[12] = {1, 2, 3, 5, 4, 7, 1, 3, 2, 5, 1, 2};
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:      initFront
  * OVERVIEW:      Initialise the front end.
  * PARAMETERS:    <none>                
@@ -113,7 +113,7 @@ JCOND_TYPE getCond(const SemStr* pCond)
     return (JCOND_TYPE) (*mit).second;
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:      FrontEndSrc::processProc
  * OVERVIEW:      Process a procedure, given a native (source machine) address.
  * PARAMETERS:    address - the address at which the procedure starts
@@ -130,7 +130,7 @@ bool FrontEndSrc::processProc(ADDRESS uAddr, UserProc* pProc, ofstream &os,
 }
 
 #if 0
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:      processProc
  * OVERVIEW:      Process a procedure, given a native (source machine) address.
  * PARAMETERS:    address - the address at which the procedure starts

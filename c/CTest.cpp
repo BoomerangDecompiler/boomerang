@@ -1,5 +1,5 @@
-/*==============================================================================
- * FILE:       CTest.cc
+/***************************************************************************//**
+ * \file       CTest.cc
  * OVERVIEW:   Provides the implementation for the CTest class, which
  *              tests the c parser
  *============================================================================*/
@@ -14,7 +14,7 @@
 
 CPPUNIT_TEST_SUITE_REGISTRATION( CTest );
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        CTest::setUp
  * OVERVIEW:        Set up anything needed before all tests
  * NOTE:            Called before any tests
@@ -24,7 +24,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION( CTest );
 void CTest::setUp () {
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        CTest::tearDown
  * OVERVIEW:        Delete objects created in setUp
  * NOTE:            Called after all tests
@@ -34,7 +34,7 @@ void CTest::setUp () {
 void CTest::tearDown () {
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        CTest::testSignature
  * OVERVIEW:        Test
  * PARAMETERS:      <none>

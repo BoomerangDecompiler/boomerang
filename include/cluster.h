@@ -7,8 +7,8 @@
  *
  */
 
-/*==============================================================================
- * FILE:       cluster.h
+/***************************************************************************//**
+ * \file       cluster.h
  * OVERVIEW:   Definition of the classes that describe a Cluster, a grouping
  *           of functions irrespective of relationship.  For example, the
  *           Object Oriented Programming concept of a Class is a Cluster. 

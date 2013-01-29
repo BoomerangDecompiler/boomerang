@@ -43,14 +43,12 @@
 //#define DEBUG_MACHO_LOADER
 //#define DEBUG_MACHO_LOADER_OBJC
 
-MachOBinaryFile::MachOBinaryFile() : m_pFileName(0)
-{
+MachOBinaryFile::MachOBinaryFile() : m_pFileName(0) {
     machine = MACHINE_PPC;
     swap_bytes = false;
 }
 
-MachOBinaryFile::~MachOBinaryFile()
-{
+MachOBinaryFile::~MachOBinaryFile() {
     for (int i=0; i < m_iNumSections; i++) {
         if (m_pSections[i].pSectionName)
             delete [] m_pSections[i].pSectionName;
@@ -68,16 +66,14 @@ void MachOBinaryFile::Close() {
 }
 
 std::list<SectionInfo*>& MachOBinaryFile::GetEntryPoints(
-        const char* pEntry)
-{
+        const char* pEntry) {
     fprintf(stderr,"really don't know how to implement GetEntryPoints\n");
     exit(0);
     static std::list<SectionInfo*> l;
     return l;
 }
 
-ADDRESS MachOBinaryFile::GetEntryPoint()
-{
+ADDRESS MachOBinaryFile::GetEntryPoint() {
     return entrypoint;
 }
 
@@ -94,8 +90,7 @@ ADDRESS MachOBinaryFile::GetMainEntryPoint() {
 
 #define BE4(x) ((magic[(x)] << 24) | (magic[(x)+1] << 16) | (magic[(x)+2] << 8) | (magic[(x)+3]))
 
-bool MachOBinaryFile::RealLoad(const char* sName)
-{
+bool MachOBinaryFile::RealLoad(const char* sName) {
     m_pFileName = sName;
     FILE *fp = fopen(sName,"rb");
     unsigned int imgoffs = 0;
@@ -103,14 +98,12 @@ bool MachOBinaryFile::RealLoad(const char* sName)
     unsigned char magic[12*4];
     fread(magic, sizeof(magic), 1, fp);
 
-    if (magic[0] == 0xca && magic[1] == 0xfe && magic[2] == 0xba && magic[3] == 0xbe)
-        {
+    if (magic[0] == 0xca && magic[1] == 0xfe && magic[2] == 0xba && magic[3] == 0xbe) {
             int nimages = BE4(4);
 #ifdef DEBUG_MACHO_LOADER
             printf("binary is universal with %d images\n", nimages);
 #endif
-            for (int i = 0; i < nimages; i++)
-                {
+            for (int i = 0; i < nimages; i++) {
                     int fbh = 8 + i * 5*4;
                     unsigned int cputype = BE4(fbh);
                     unsigned int cpusubtype = BE4(fbh+4);
@@ -166,8 +159,7 @@ bool MachOBinaryFile::RealLoad(const char* sName)
         fread(&cmd, 1, sizeof(struct load_command), fp);
         fseek(fp, pos, SEEK_SET);
         switch(BMMH(cmd.cmd)) {
-            case LC_SEGMENT:
-            {
+            case LC_SEGMENT: {
                 struct segment_command seg;
                 fread(&seg, 1, sizeof(seg), fp);
                 segments.push_back(seg);
@@ -207,8 +199,7 @@ bool MachOBinaryFile::RealLoad(const char* sName)
                 }
             }
                 break;
-            case LC_SYMTAB:
-            {
+            case LC_SYMTAB: {
                 struct symtab_command syms;
                 fread(&syms, 1, sizeof(syms), fp);
                 fseek(fp,  imgoffs + BMMH(syms.stroff), SEEK_SET);
@@ -228,8 +219,7 @@ bool MachOBinaryFile::RealLoad(const char* sName)
 #endif
             }
                 break;
-            case LC_DYSYMTAB:
-            {
+            case LC_DYSYMTAB: {
                 struct dysymtab_command syms;
                 fread(&syms, 1, sizeof(syms), fp);
 #ifdef DEBUG_MACHO_LOADER
@@ -416,12 +406,10 @@ bool MachOBinaryFile::RealLoad(const char* sName)
 }
 
 // Clean up and unload the binary image
-void MachOBinaryFile::UnLoad()
-{
+void MachOBinaryFile::UnLoad() {
 }
 
-bool MachOBinaryFile::PostLoad(void* handle)
-{
+bool MachOBinaryFile::PostLoad(void* handle) {
     return false;
 }
 
@@ -446,14 +434,12 @@ ADDRESS MachOBinaryFile::GetAddressByName(const char* pName,
     return NO_ADDRESS;
 }
 
-void MachOBinaryFile::AddSymbol(ADDRESS uNative, const char *pName)
-{
+void MachOBinaryFile::AddSymbol(ADDRESS uNative, const char *pName) {
     m_SymA[uNative] = pName;
 }
 
 bool MachOBinaryFile::DisplayDetails(const char* fileName, FILE* f
-                                     /* = stdout */)
-{
+                                     /* = stdout */) {
     return false;
 }
 
@@ -480,53 +466,43 @@ int MachOBinaryFile::machORead4(int* pi) const{
 }
 
 /*
-void *MachOBinaryFile::BMMH(void *x)
-{
+void *MachOBinaryFile::BMMH(void *x) {
   if (swap_bytes) return _BMMH(x); else return x;
 }
 */
 
-char *MachOBinaryFile::BMMH(char *x)
-{
+char *MachOBinaryFile::BMMH(char *x) {
     if (swap_bytes) return (char *)_BMMH(x); else return x;
 }
 
-uintptr_t MachOBinaryFile::BMMH(void * x)
-{
+uintptr_t MachOBinaryFile::BMMH(void * x) {
     if (swap_bytes) return (uintptr_t)_BMMH(x); else return uintptr_t(x);
 }
 
-const char *MachOBinaryFile::BMMH(const char *x)
-{
+const char *MachOBinaryFile::BMMH(const char *x) {
     if (swap_bytes) return (const char *)_BMMH(x); else return x;
 }
 
-unsigned int MachOBinaryFile::BMMH(unsigned long x)
-{
+unsigned int MachOBinaryFile::BMMH(unsigned long x) {
     if (swap_bytes) return _BMMH(x); else return x;
 }
 
-unsigned int MachOBinaryFile::BMMH(long int & x)
-{
+unsigned int MachOBinaryFile::BMMH(long int & x) {
     if (swap_bytes) return _BMMH(x); else return x;
 }
 
-signed int MachOBinaryFile::BMMH(signed int x)
-{
+signed int MachOBinaryFile::BMMH(signed int x) {
     if (swap_bytes) return _BMMH(x); else return x;
 }
 
-unsigned int MachOBinaryFile::BMMH(unsigned int x)
-{
+unsigned int MachOBinaryFile::BMMH(unsigned int x) {
     if (swap_bytes) return _BMMH(x); else return x;
 }
 
-unsigned short MachOBinaryFile::BMMHW(unsigned short x)
-{
+unsigned short MachOBinaryFile::BMMHW(unsigned short x) {
     if (swap_bytes) return _BMMHW(x); else return x;
 }
-bool MachOBinaryFile::isReadOnly(ADDRESS uEntry)
-{
+bool MachOBinaryFile::isReadOnly(ADDRESS uEntry) {
     uint32_t entry_val(uEntry.m_value);
     for (size_t i = 0; i < sections.size(); i++) {
         if (entry_val >= BMMH(sections[i].addr) &&  entry_val < BMMH(sections[i].addr) + BMMH(sections[i].size)) {
@@ -537,8 +513,7 @@ bool MachOBinaryFile::isReadOnly(ADDRESS uEntry)
 }
 
 // constant.. hmm, seems __cstring is writable, what's with that?
-bool MachOBinaryFile::isStringConstant(ADDRESS uEntry)
-{
+bool MachOBinaryFile::isStringConstant(ADDRESS uEntry) {
     uint32_t entry_val(uEntry.m_value);
     for (size_t i = 0; i < sections.size(); i++) {
         if (entry_val >= BMMH(sections[i].addr) &&  entry_val < BMMH(sections[i].addr) + BMMH(sections[i].size)) {
@@ -550,8 +525,7 @@ bool MachOBinaryFile::isStringConstant(ADDRESS uEntry)
     return BinaryFile::isStringConstant(uEntry);
 }
 
-bool MachOBinaryFile::isCFStringConstant(ADDRESS uEntry)
-{
+bool MachOBinaryFile::isCFStringConstant(ADDRESS uEntry) {
     uint32_t entry_val(uEntry.m_value);
     for (size_t i = 0; i < sections.size(); i++) {
         if (entry_val >= BMMH(sections[i].addr) &&  entry_val < BMMH(sections[i].addr) + BMMH(sections[i].size)) {
@@ -629,43 +603,35 @@ double MachOBinaryFile::readNativeFloat8(ADDRESS nat) {
     return *(double*)raw;
 }
 
-const char *MachOBinaryFile::GetDynamicProcName(ADDRESS uNative)
-{
+const char *MachOBinaryFile::GetDynamicProcName(ADDRESS uNative) {
     return dlprocs[uNative].c_str();
 }
 
-LOAD_FMT MachOBinaryFile::GetFormat() const
-{
+LOAD_FMT MachOBinaryFile::GetFormat() const {
     return LOADFMT_MACHO;
 }
 
-MACHINE MachOBinaryFile::GetMachine() const
-{
+MACHINE MachOBinaryFile::GetMachine() const {
     return machine;
 }
 
-bool MachOBinaryFile::isLibrary() const
-{
+bool MachOBinaryFile::isLibrary() const {
     return false;
 }
 
-ADDRESS MachOBinaryFile::getImageBase()
-{
+ADDRESS MachOBinaryFile::getImageBase() {
     return loaded_addr;
 }
 
-size_t MachOBinaryFile::getImageSize()
-{
+size_t MachOBinaryFile::getImageSize() {
     return loaded_size;
 }
 
-std::list<const char *> MachOBinaryFile::getDependencyList()
-{
+std::list<const char *> MachOBinaryFile::getDependencyList() {
     return std::list<const char *>(); /* FIXME */
 }
 
-DWord MachOBinaryFile::getDelta()
-{
+DWord MachOBinaryFile::getDelta() {
     // Stupid function anyway: delta depends on section
     // This should work for the header only
     //    return (DWord)base - LMMH(m_pPEHeader->Imagebase);
@@ -680,8 +646,7 @@ extern "C" {
 #ifdef _WIN32
 __declspec(dllexport)
 #endif
-BinaryFile* construct()
-{
+BinaryFile* construct() {
     return new MachOBinaryFile;
 }
 }

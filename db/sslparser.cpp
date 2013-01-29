@@ -2890,7 +2890,7 @@ YY_SSLParser_PARSE_PARAM_DEF
 //#line 1180 "db/sslparser.y"
 
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        SSLParser::SSLParser
  * \brief        Constructor for an existing stream.
  * PARAMETERS:        The stream, whether or not to debug
@@ -2902,7 +2902,7 @@ SSLParser::SSLParser(std::istream &in, bool trace) : sslFile("input"), bFloat(fa
     if (trace) yydebug = 1; else yydebug=0;
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        SSLParser::parseExp
  * \brief        Parses an assignment from a string.
  * PARAMETERS:        the string
@@ -2916,7 +2916,7 @@ Statement* SSLParser::parseExp(const char *str) {
     return p.the_asgn;
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        SSLParser::~SSLParser
  * \brief        Destructor.
  * PARAMETERS:        <none>
@@ -2931,7 +2931,7 @@ SSLParser::~SSLParser()
         delete loc->second;
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        SSLParser::yyyerror
  * \brief        Display an error message and exit.
  * PARAMETERS:        msg - an error message
@@ -2942,7 +2942,7 @@ void SSLParser::yyerror(char* msg)
     std::cerr << sslFile << ":" << theScanner->theLine << ": " << msg << std::endl;
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        SSLParser::yylex
  * \brief        The scanner driver than returns the next token.
  * PARAMETERS:        <none>
@@ -2954,7 +2954,7 @@ int SSLParser::yylex()
     return token;
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        SSLParser::strToOper
  * \brief        Convert a string operator (e.g. "+f") to an OPER (opFPlus)
  * NOTE:            An attempt is made to make this moderately efficient, else we might have a skip chain of string
@@ -3144,7 +3144,7 @@ OPER strToTerm(char* s) {
     return (OPER) 0;
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        listExpToExp
  * \brief        Convert a list of actual parameters in the form of a STL list of Exps into one expression
  *                      (using opList)
@@ -3166,7 +3166,7 @@ Exp* listExpToExp(std::list<Exp*>* le) {
     return e;
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        listStrToExp
  * \brief        Convert a list of formal parameters in the form of a STL list of strings into one expression
  *                      (using opList)
@@ -3185,7 +3185,7 @@ Exp* listStrToExp(std::list<std::string>* ls) {
     return e;
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        SSLParser::expandTables
  * \brief        Expand tables in an RTL and save to dictionary
  * NOTE:            This may generate many entries
@@ -3270,7 +3270,7 @@ void SSLParser::expandTables(InsNameElem* iname, std::list<std::string>* params,
     indexrefmap.erase(indexrefmap.begin(), indexrefmap.end());
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        SSLParser::makeSuccessor
  * \brief        Make the successor of the given expression, e.g. given r[2], return succ( r[2] )
  *                      (using opSuccessor)

@@ -11,8 +11,8 @@
  *
  */
 
-/*==============================================================================
- * FILE:       decoder.m
+/***************************************************************************//**
+ * \file       decoder.m
  * \brief   This file contains the high level decoding functionality, for matching ST-20 instructions.
  ******************************************************************************/
 /*
@@ -35,7 +35,7 @@
  * ST20Decoder methods.
  **********************************/
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:       unused
  * \brief       A dummy function to suppress "unused local variable" messages
  * PARAMETERS:       x: integer variable to be "used"
@@ -44,7 +44,7 @@
 void ST20Decoder::unused(int x)
 {}
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:       ST20Decoder::decodeInstruction
  * \brief       Decodes a machine instruction and returns an RTL instance. In all cases a single instruction is decoded.
  * PARAMETERS:       pc - the native address of the pc
@@ -618,7 +618,7 @@ MATCH_finished_a: (void)0; /*placeholder for label*/
     return result;
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * These are machine specific functions used to decode instruction operands into Exp*s.
  ******************************************************************************/
 
@@ -626,7 +626,7 @@ MATCH_finished_a: (void)0; /*placeholder for label*/
  * These are the fetch routines.
  **********************************/
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        getWord
  * \brief        Returns the word starting at the given address.
  * PARAMETERS:        lc - address at which to decode the double
@@ -638,7 +638,7 @@ Byte ST20Decoder::getByte (intptr_t lc)
     return *(Byte *)lc;
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        getWord
  * \brief        Returns the word starting at the given address.
  * PARAMETERS:        lc - address at which to decode the double
@@ -650,7 +650,7 @@ SWord ST20Decoder::getWord (intptr_t lc)
     return (SWord)(*(Byte *)lc + (*(Byte *)(lc+1) << 8));
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        getDword
  * \brief        Returns the double starting at the given address.
  * PARAMETERS:        lc - address at which to decode the double
@@ -664,7 +664,7 @@ DWord ST20Decoder::getDword (intptr_t lc)
 }
 
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:       ST20Decoder::ST20Decoder
  * \brief       Constructor. The code won't work without this (not sure why the default constructor won't do...)
  * PARAMETERS:       None

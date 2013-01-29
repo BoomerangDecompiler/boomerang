@@ -28,8 +28,7 @@ ExeBinaryFile::ExeBinaryFile()
 {
 }
 
-bool ExeBinaryFile::RealLoad(const char* sName)
-{
+bool ExeBinaryFile::RealLoad(const char* sName) {
     FILE   *fp;
     int        i, cb;
     Byte    buf[4];
@@ -39,47 +38,40 @@ bool ExeBinaryFile::RealLoad(const char* sName)
 
     // Always just 3 sections
     m_pSections = new SectionInfo[3];
-    if (m_pSections == 0)
-    {
+    if (m_pSections == 0) {
         fprintf(stderr, "Could not allocate section information\n");
         return 0;
     }
     m_iNumSections = 3;
     m_pHeader = new exeHeader;
-    if (m_pHeader == 0)
-    {
+    if (m_pHeader == 0) {
         fprintf(stderr, "Could not allocate header memory\n");
         return 0;
     }
 
     /* Open the input file */
-    if ((fp = fopen(sName, "rb")) == NULL)
-    {
+    if ((fp = fopen(sName, "rb")) == NULL) {
         fprintf(stderr, "Could not open file %s\n", sName);
         return 0;
     }
 
     /* Read in first 2 bytes to check EXE signature */
-    if (fread(m_pHeader, 1, 2, fp) != 2)
-    {
+    if (fread(m_pHeader, 1, 2, fp) != 2) {
         fprintf(stderr, "Cannot read file %s\n", sName);
         return 0;
     }
 
     // Check for the "MZ" exe header
-    if (! (fCOM = (m_pHeader->sigLo != 0x4D || m_pHeader->sigHi != 0x5A)))
-    {
+    if (! (fCOM = (m_pHeader->sigLo != 0x4D || m_pHeader->sigHi != 0x5A))) {
         /* Read rest of m_pHeader */
         fseek(fp, 0, SEEK_SET);
-        if (fread(m_pHeader, sizeof(exeHeader), 1, fp) != 1)
-        {
+        if (fread(m_pHeader, sizeof(exeHeader), 1, fp) != 1) {
             fprintf(stderr, "Cannot read file %s\n", sName);
             return 0;
         }
 
         /* This is a typical DOS kludge! */
-        if (LH(&m_pHeader->relocTabOffset) == 0x40)
-        {
+        if (LH(&m_pHeader->relocTabOffset) == 0x40) {
             fprintf(stderr, "Error - NE format executable\n");
             return 0;
         }
@@ -91,8 +83,7 @@ bool ExeBinaryFile::RealLoad(const char* sName)
                 */
         cb = (DWord)LH(&m_pHeader->numPages) * 512 -
              (DWord)LH(&m_pHeader->numParaHeader) * 16;
-        if (m_pHeader->lastPageSize)
-        {
+        if (m_pHeader->lastPageSize) {
             cb -= 512 - LH(&m_pHeader->lastPageSize);
         }
 
@@ -107,11 +98,9 @@ bool ExeBinaryFile::RealLoad(const char* sName)
         m_cReloc = (SWord)LH(&m_pHeader->numReloc);
 
         /* Allocate the relocation table */
-        if (m_cReloc)
-        {
+        if (m_cReloc) {
             m_pRelocTable = new DWord[m_cReloc];
-            if (m_pRelocTable == 0)
-            {
+            if (m_pRelocTable == 0) {
                 fprintf(stderr, "Could not allocate relocation table "
                         "(%d entries)\n", m_cReloc);
                 return 0;
@@ -119,8 +108,7 @@ bool ExeBinaryFile::RealLoad(const char* sName)
             fseek(fp, LH(&m_pHeader->relocTabOffset), SEEK_SET);
 
             /* Read in seg:offset pairs and convert to Image ptrs */
-            for (i = 0; i < m_cReloc; i++)
-            {
+            for (i = 0; i < m_cReloc; i++) {
                 fread(buf, 1, 4, fp);
                 m_pRelocTable[i] = LH(buf) +
                                    (((int)LH(buf+2))<<4);
@@ -135,10 +123,10 @@ bool ExeBinaryFile::RealLoad(const char* sName)
         m_uInitPC = ((LH(&m_pHeader->initCS)) << 16) + LH(&m_pHeader->initIP);
         m_uInitSP = ((LH(&m_pHeader->initSS)) << 16) + LH(&m_pHeader->initSP);
     }
-    else
-    {    /* COM file
-                 * In this case the load module size is just the file length
-                */
+    else {
+        /* COM file
+         * In this case the load module size is just the file length
+         */
         fseek(fp, 0, SEEK_END);
         cb = ftell(fp);
 
@@ -157,17 +145,14 @@ bool ExeBinaryFile::RealLoad(const char* sName)
     m_cbImage  = cb;
     m_pImage    = new Byte[m_cbImage];
 
-    if (cb != (int)fread(m_pImage, 1, (size_t)cb, fp))
-    {
+    if (cb != (int)fread(m_pImage, 1, (size_t)cb, fp)) {
         fprintf(stderr, "Cannot read file %s\n", sName);
         return 0;
     }
 
     /* Relocate segment constants */
-    if (m_cReloc)
-    {
-        for (i = 0; i < m_cReloc; i++)
-        {
+    if (m_cReloc) {
+        for (i = 0; i < m_cReloc; i++) {
             Byte *p = &m_pImage[m_pRelocTable[i]];
             SWord  w = (SWord)LH(p);
             *p++    = (Byte)(w & 0x00FF);
@@ -204,15 +189,13 @@ bool ExeBinaryFile::RealLoad(const char* sName)
 }
 
 // Clean up and unload the binary image
-void ExeBinaryFile::UnLoad()
-{
-    if (m_pHeader) delete m_pHeader;
-    if (m_pImage) delete [] m_pImage;
-    if (m_pRelocTable) delete [] m_pRelocTable;
+void ExeBinaryFile::UnLoad() {
+    delete m_pHeader;
+    delete [] m_pImage;
+    delete [] m_pRelocTable;
 }
 
-char* ExeBinaryFile::SymbolByAddr(ADDRESS dwAddr)
-{
+char* ExeBinaryFile::SymbolByAddr(ADDRESS dwAddr) {
     if (dwAddr == GetMainEntryPoint())
         return const_cast<char *>("main");
 
@@ -221,65 +204,53 @@ char* ExeBinaryFile::SymbolByAddr(ADDRESS dwAddr)
 }
 
 bool ExeBinaryFile::DisplayDetails(const char* fileName, FILE* f
-                                   /* = stdout */)
-{
+                                   /* = stdout */) {
     return false;
 }
 
-LOAD_FMT ExeBinaryFile::GetFormat() const
-{
+LOAD_FMT ExeBinaryFile::GetFormat() const {
     return LOADFMT_EXE;
 }
 
-MACHINE ExeBinaryFile::GetMachine() const
-{
+MACHINE ExeBinaryFile::GetMachine() const {
     return MACHINE_PENTIUM;
 }
 
-bool ExeBinaryFile::Open(const char* sName)
-{
+bool ExeBinaryFile::Open(const char* sName) {
     // Not implemented yet
     return false;
 }
-void ExeBinaryFile::Close()
-{
+void ExeBinaryFile::Close() {
     // Not implemented yet
     return;
 }
-bool ExeBinaryFile::PostLoad(void* handle)
-{
+bool ExeBinaryFile::PostLoad(void* handle) {
     // Not needed: for archives only
     return false;
 }
 
-bool ExeBinaryFile::isLibrary() const
-{
+bool ExeBinaryFile::isLibrary() const {
     return false;
 }
 
-std::list<const char *> ExeBinaryFile::getDependencyList()
-{
+std::list<const char *> ExeBinaryFile::getDependencyList() {
     return std::list<const char *>(); /* for now */
 }
 
-ADDRESS ExeBinaryFile::getImageBase()
-{
+ADDRESS ExeBinaryFile::getImageBase() {
     return ADDRESS::g(0L); /* FIXME */
 }
 
-size_t ExeBinaryFile::getImageSize()
-{
+size_t ExeBinaryFile::getImageSize() {
     return 0; /* FIXME */
 }
 
 // Should be doing a search for this
-ADDRESS ExeBinaryFile::GetMainEntryPoint()
-{
+ADDRESS ExeBinaryFile::GetMainEntryPoint() {
     return NO_ADDRESS;
 }
 
-ADDRESS ExeBinaryFile::GetEntryPoint()
-{
+ADDRESS ExeBinaryFile::GetEntryPoint() {
     // Check this...
     return ADDRESS::g((LH(&m_pHeader->initCS) << 4) + LH(&m_pHeader->initIP));
 }
@@ -305,8 +276,7 @@ extern "C" {
 #ifdef _WIN32
 __declspec(dllexport)
 #endif
-BinaryFile* construct()
-{
+BinaryFile* construct() {
     return new ExeBinaryFile;
 }
 }

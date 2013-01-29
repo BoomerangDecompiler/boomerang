@@ -1,5 +1,5 @@
-/*==============================================================================
- * FILE:       ProgTest.cc
+/***************************************************************************//**
+ * \file       ProgTest.cc
  * OVERVIEW:   Provides the implementation for the ProgTest class, which
  *                tests the Exp and derived classes
  *============================================================================*/
@@ -21,7 +21,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION( ProgTest );
 #define HELLO_PENTIUM		"test/pentium/hello"
 
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        ProgTest::setUp
  * OVERVIEW:        Set up some expressions for use with all the tests
  * NOTE:            Called before any tests
@@ -32,7 +32,7 @@ void ProgTest::setUp () {
     //prog.setName("default name");
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        ProgTest::tearDown
  * OVERVIEW:        Delete expressions created in setUp
  * NOTE:            Called after all tests
@@ -42,7 +42,7 @@ void ProgTest::setUp () {
 void ProgTest::tearDown () {
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        ProgTest::testName
  * OVERVIEW:        Test setting and reading name
  *============================================================================*/

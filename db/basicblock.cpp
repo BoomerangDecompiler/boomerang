@@ -10,7 +10,7 @@
  */
 
 /***************************************************************************//**
- * FILE:     basicblock.cc
+ * \file     basicblock.cc
  * \brief Implementation of the BasicBlock class.
  ******************************************************************************/
 
@@ -89,8 +89,7 @@ BasicBlock::BasicBlock()
       usType(Structured),
       // Others
       overlappedRegProcessingDone(false)
-{
-}
+{ }
 
 /***************************************************************************//**
  *
@@ -99,17 +98,13 @@ BasicBlock::BasicBlock()
  * \returns            <nothing>
  ******************************************************************************/
 BasicBlock::~BasicBlock() {
-    if (m_pRtls)
-    {
+    if (m_pRtls) {
         // Delete the RTLs
-        for (std::list<RTL*>::iterator it = m_pRtls->begin(); it != m_pRtls->end(); it++)
-        {
-            if (*it)
-            {
+        for (std::list<RTL*>::iterator it = m_pRtls->begin(); it != m_pRtls->end(); it++) {
+            if (*it) {
                 delete *it;
             }
         }
-
         // and delete the list
         delete m_pRtls;
         m_pRtls = NULL;
@@ -119,9 +114,8 @@ BasicBlock::~BasicBlock() {
 
 /***************************************************************************//**
  *
- * \brief        Copy constructor.
- * PARAMETERS:        bb - the BB to copy from
- * \returns            <nothing>
+ * \brief Copy constructor.
+ * \param bb - the BB to copy from
  ******************************************************************************/
 BasicBlock::BasicBlock(const BasicBlock& bb)
     :    m_DFTfirst(0), m_DFTlast(0),
@@ -152,10 +146,9 @@ BasicBlock::BasicBlock(const BasicBlock& bb)
 /***************************************************************************//**
  *
  * \brief        Private constructor.
- * PARAMETERS:        pRtls -
- *                    bbType -
- *                    iNumOutEdges -
- * \returns            <nothing>
+ * \param pRtls -
+ * \param bbType -
+ * \param iNumOutEdges -
  ******************************************************************************/
 BasicBlock::BasicBlock(std::list<RTL*>* pRtls, BBTYPE bbType, int iNumOutEdges)
     :    m_DFTfirst(0), m_DFTlast(0),
@@ -418,15 +411,13 @@ ADDRESS BasicBlock::getHiAddr() {
 /***************************************************************************//**
  *
  * \brief        Get pointer to the list of RTL*.
- * PARAMETERS:        <none>
- * \returns            <nothing>
+ * \returns     the pointer
  ******************************************************************************/
 std::list<RTL*>* BasicBlock::getRTLs() {
     return m_pRtls;
 }
 
-RTL* BasicBlock::getRTLWithStatement(Statement *stmt)
-{
+RTL* BasicBlock::getRTLWithStatement(Statement *stmt) {
     if (m_pRtls == NULL)
         return NULL;
     for (std::list<RTL*>::iterator it = m_pRtls->begin(); it != m_pRtls->end(); it++) {
@@ -441,7 +432,6 @@ RTL* BasicBlock::getRTLWithStatement(Statement *stmt)
 /***************************************************************************//**
  *
  * \brief        Get a constant reference to the vector of in edges.
- * PARAMETERS:        <none>
  * \returns            a constant reference to the vector of in edges
  ******************************************************************************/
 std::vector<PBB>& BasicBlock::getInEdges() {
@@ -451,7 +441,6 @@ std::vector<PBB>& BasicBlock::getInEdges() {
 /***************************************************************************//**
  *
  * \brief        Get a constant reference to the vector of out edges.
- * PARAMETERS:        <none>
  * \returns            a constant reference to the vector of out edges
  ******************************************************************************/
 std::vector<PBB>& BasicBlock::getOutEdges() {
@@ -460,11 +449,10 @@ std::vector<PBB>& BasicBlock::getOutEdges() {
 
 /***************************************************************************//**
  *
- * \brief        Change the given in-edge (0 is first) to the given value
- *                    Needed for example when duplicating BBs
- * PARAMETERS:        i: index (0 based) of in-edge to change
- *                    pNewInEdge: pointer to BB that will be a new parent
- * \returns            <nothing>
+ * \brief Change the given in-edge (0 is first) to the given value
+ * Needed for example when duplicating BBs
+ * \param i - index (0 based) of in-edge to change
+ * \param pNewInEdge - pointer to BasicBlock that will be a new parent
  ******************************************************************************/
 void BasicBlock::setInEdge(int i, PBB pNewInEdge) {
     m_InEdges[i] = pNewInEdge;
@@ -473,11 +461,10 @@ void BasicBlock::setInEdge(int i, PBB pNewInEdge) {
 /***************************************************************************//**
  *
  * \brief        Change the given out-edge (0 is first) to the given value
- *                    Needed for example when duplicating BBs
- * NOTE:            Cannot add an additional out-edge with this function; use addOutEdge for this rare case
- * PARAMETERS:        i: index (0 based) of out-edge to change
- *                    pNewOutEdge: pointer to BB that will be the new successor
- * \returns            <nothing>
+ * Needed for example when duplicating BBs
+ * \note Cannot add an additional out-edge with this function; use addOutEdge for this rare case
+ * \param i - index (0 based) of out-edge to change
+ * \param pNewOutEdge - pointer to BB that will be the new successor
  ******************************************************************************/
 void BasicBlock::setOutEdge(int i, PBB pNewOutEdge) {
     if (m_OutEdges.size() == 0) {
@@ -779,8 +766,7 @@ Statement* BasicBlock::getLastStmt() {
     return NULL;
 }
 
-void BasicBlock::getStatements(StatementList &stmts)
-{
+void BasicBlock::getStatements(StatementList &stmts) {
     std::list<RTL*> *rtls = getRTLs();
     if (rtls) {
         for (std::list<RTL*>::iterator rit = rtls->begin(); rit != rtls->end(); rit++) {
@@ -991,8 +977,7 @@ bool BasicBlock::hasBackEdgeTo(BasicBlock* dest) {
 
 // Return true if every parent (i.e. forward in edge source) of this node has
 // had its code generated
-bool BasicBlock::allParentsGenerated()
-{
+bool BasicBlock::allParentsGenerated() {
     for (unsigned int i = 0; i < m_InEdges.size(); i++)
         if (!m_InEdges[i]->hasBackEdgeTo(this) &&
                 m_InEdges[i]->traversed != DFS_CODEGEN)
@@ -1004,8 +989,7 @@ bool BasicBlock::allParentsGenerated()
 // just before the destination code if it isn't already there.    If the goto is to the return block, it would be nice to
 // emit a 'return' instead (but would have to duplicate the other code in that return BB).    Also, 'continue' and 'break'
 // statements are used instead if possible
-void BasicBlock::emitGotoAndLabel(HLLCode *hll, int indLevel, PBB dest)
-{
+void BasicBlock::emitGotoAndLabel(HLLCode *hll, int indLevel, PBB dest) {
     if (loopHead && (loopHead == dest || loopHead->loopFollow == dest)) {
         if (loopHead == dest)
             hll->AddContinue(indLevel);
@@ -1013,14 +997,12 @@ void BasicBlock::emitGotoAndLabel(HLLCode *hll, int indLevel, PBB dest)
             hll->AddBreak(indLevel);
     } else {
         hll->AddGoto(indLevel, dest->ord);
-
         dest->hllLabel = true;
     }
 }
 
 // Generates code for each non CTI (except procedure calls) statement within the block.
-void BasicBlock::WriteBB(HLLCode *hll, int indLevel)
-{
+void BasicBlock::WriteBB(HLLCode *hll, int indLevel) {
     if (DEBUG_GEN)
         LOG << "Generating code for BB at " << getLowAddr() << "\n";
 
@@ -1183,8 +1165,7 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
             }
             break;
 
-        case Cond:
-        {
+        case Cond: {
             // reset this back to LoopCond if it was originally of this type
             if (latchNode)
                 sType = LoopCond;
@@ -1463,8 +1444,7 @@ void BasicBlock::setLoopStamps(int &time, std::vector<PBB> &order) {
     order.push_back(this);
 }
 
-void BasicBlock::setRevLoopStamps(int &time)
-{
+void BasicBlock::setRevLoopStamps(int &time) {
     // timestamp the current node with the current time and set its traversed flag
     traversed = DFS_RNUM;
     revLoopStamps[0] = time;
@@ -1480,8 +1460,7 @@ void BasicBlock::setRevLoopStamps(int &time)
     revLoopStamps[1] = ++time;
 }
 
-void BasicBlock::setRevOrder(std::vector<PBB> &order)
-{
+void BasicBlock::setRevOrder(std::vector<PBB> &order) {
     // Set this node as having been traversed during the post domimator DFS ordering traversal
     traversed = DFS_PDOM;
 
@@ -1496,8 +1475,7 @@ void BasicBlock::setRevOrder(std::vector<PBB> &order)
     order.push_back(this);
 }
 
-void BasicBlock::setCaseHead(PBB head, PBB follow)
-{
+void BasicBlock::setCaseHead(PBB head, PBB follow) {
     assert(!caseHead);
 
     traversed = DFS_CASE;
@@ -2053,7 +2031,7 @@ bool BasicBlock::decodeIndirectJmp(UserProc* proc) {
         // We used to use ordinary propagation here to get the memory expression, but now it refuses to propagate memofs
         // because of the alias safety issue. Eventually, we should use an alias-safe incremental propagation, but for
         // now we'll assume no alias problems and force the propagation
-        bool convert;
+        bool convert; // FIXME: uninitialized value passed to propagateTo
         lastStmt->propagateTo(convert, NULL, NULL, true /* force */);
         Exp* e = lastStmt->getDest();
         int n = sizeof(hlForms) / sizeof(Exp*);
@@ -2082,8 +2060,7 @@ bool BasicBlock::decodeIndirectJmp(UserProc* proc) {
                     for (int iPtr = 0; iPtr < swi->iNumTable; ++iPtr) {
                         ADDRESS uSwitch = ADDRESS::g(prog->readNative4(swi->uTable + iPtr*4));
                         if (uSwitch >= prog->getLimitTextHigh() ||
-                                uSwitch <  prog->getLimitTextLow())
-                        {
+                                uSwitch <  prog->getLimitTextLow()) {
                             if (DEBUG_SWITCH)
                                 LOG << "Truncating type A indirect jump array to " << iPtr << " entries "
                                        "due to finding an array entry pointing outside valid code " << uSwitch << " isn't in " << prog->getLimitTextLow() << " .. " << prog->getLimitTextHigh() << "\n";

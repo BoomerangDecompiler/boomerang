@@ -12,8 +12,8 @@
 #include <assert.h>
 
 
-/*==============================================================================
- * FILE:       decoder.m
+/***************************************************************************//**
+ * \file       decoder.m
  * OVERVIEW:   Implementation of the higher level mc68000 specific parts of the
  *             NJMCDecoder class.
  *============================================================================*/
@@ -42,7 +42,7 @@
  * NJMCDecoder methods.
  **********************************/   
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:       NJMCDecoder::decodeInstruction
  * OVERVIEW:       Decodes a machine instruction and returns an RTL instance. In
  *                 most cases a single instruction is decoded. However, if a
@@ -1233,7 +1233,7 @@ DecodeResult& NJMCDecoder::decodeInstruction (ADDRESS pc, int delta,
     return result;
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * These are machine specific functions used to decode instruction
  * operands into SemStrs.
  *============================================================================*/
@@ -7210,7 +7210,7 @@ SemStr* NJMCDecoder::rmEAX(ADDRESS eax, ADDRESS x, DecodeResult& result,
   return ret;
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:      isFuncPrologue()
  * OVERVIEW:      Check to see if the instructions at the given offset match
  *                  any callee prologue, i.e. does it look like this offset

@@ -9,8 +9,8 @@
  *
  */
 
-/*==============================================================================
- * FILE:       frontend/sparcfrontend.cpp
+/***************************************************************************//**
+ * \file       frontend/sparcfrontend.cpp
  * \brief   This file contains routines to manage the decoding of sparc instructions and the instantiation to RTLs,
  *                removing sparc dependent features such as delay slots in the process. These functions replace
  *                frontend.cpp for decoding sparc instructions.
@@ -24,7 +24,7 @@
  * 12 Dec 02 - Mike: Fixed various bugs in move/call/move (etc) pattern handling
  */
 
-/*==============================================================================
+/***************************************************************************//**
  * Dependencies.
  ******************************************************************************/
 
@@ -52,7 +52,7 @@
 #include "signature.h"
 #include "log.h"
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:         warnDCTcouple
  * \brief         Emit a warning when encountering a DCTI couple.
  * PARAMETERS:         uAt - the address of the couple
@@ -65,7 +65,7 @@ void SparcFrontEnd::warnDCTcouple(ADDRESS uAt, ADDRESS uDest)
     std::cerr << "Decompilation will likely be incorrect\n";
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        optimise_DelayCopy
  * \brief        Determines if a delay instruction is exactly the same as the instruction immediately preceding the
  *                    destination of a CTI; i.e. has been copied from the real destination to the delay slot as an
@@ -88,7 +88,7 @@ bool SparcFrontEnd::optimise_DelayCopy(ADDRESS src, ADDRESS dest, int delta, ADD
     return (delay_inst == inst_before_dest);
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        optimise_CallReturn
  * \brief        Determines if the given call and delay instruction consitute a call where callee returns to
  *                    the caller's caller. That is:
@@ -138,7 +138,7 @@ BasicBlock* SparcFrontEnd::optimise_CallReturn(CallStatement* call, RTL* rtl, RT
         return NULL;
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        handleBranch
  * \brief        Adds the destination of a branch to the queue of address that must be decoded (if this destination
  *                    has not already been visited).
@@ -163,7 +163,7 @@ void SparcFrontEnd::handleBranch(ADDRESS dest, ADDRESS hiAddress, BasicBlock*& n
         std::cerr << "Error: branch to " << std::hex << dest << " goes beyond section.\n";
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:          handleCall
  * \brief          Records the fact that there is a procedure at a given address. Also adds the out edge to the
  *                        lexical successor of the call site (taking into consideration the delay slot and possible UNIMP
@@ -197,7 +197,7 @@ void SparcFrontEnd::handleCall(UserProc *proc, ADDRESS dest, BasicBlock* callBB,
 
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:         case_unhandled_stub
  * \brief         This is the stub for cases of DCTI couples that we haven't written analysis code for yet. It simply
  *                        displays an informative warning and returns.
@@ -209,7 +209,7 @@ void SparcFrontEnd::case_unhandled_stub(ADDRESS addr)
     std::cerr << "Error: DCTI couple at " << std::hex << addr << std::endl;
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:         case_CALL
  * \brief         Handles a call instruction
  * PARAMETERS:         address - the native address of the call instruction
@@ -340,7 +340,7 @@ bool SparcFrontEnd::case_CALL(ADDRESS& address, DecodeResult& inst, DecodeResult
     }
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:         case_SD
  * \brief         Handles a non-call, static delayed (SD) instruction
  * PARAMETERS:         address - the native address of the SD
@@ -395,7 +395,7 @@ void SparcFrontEnd::case_SD(ADDRESS& address, int delta, ADDRESS hiAddress, Deco
 }
 
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:         case_DD
  * \brief         Handles all dynamic delayed jumps (jmpl, also dynamic calls)
  * PARAMETERS:         address - the native address of the DD
@@ -498,7 +498,7 @@ bool SparcFrontEnd::case_DD(ADDRESS& address, int delta, DecodeResult& inst, Dec
     return bRet;
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:         case_SCD
  * \brief         Handles all Static Conditional Delayed non-anulled branches
  * PARAMETERS:         address - the native address of the DD
@@ -610,7 +610,7 @@ bool SparcFrontEnd::case_SCD(ADDRESS& address, int delta, ADDRESS hiAddress,
     return true;
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        case_SCDAN
  * \brief        Handles all static conditional delayed anulled branches followed by an NCT (but not NOP)
  *                    instruction.
@@ -710,7 +710,7 @@ std::vector<Exp*> &SparcFrontEnd::getDefaultReturns()
     return returns;
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:         SparcFrontEnd::processProc
  * \brief         Builds the CFG for a procedure out of the RTLs constructed
  *                     during decoding. The semantics of delayed CTIs are
@@ -1201,7 +1201,7 @@ bool SparcFrontEnd::processProc(ADDRESS address, UserProc* proc, std::ofstream &
     return true;
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:      emitNop
  * \brief      Emit a null RTL with the given address.
  * PARAMETERS:      pRtls - List of RTLs to append this instruction to
@@ -1217,7 +1217,7 @@ void SparcFrontEnd::emitNop(std::list<RTL*>* pRtls, ADDRESS uAddr)
     pRtls->push_back(pRtl);
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:      emitCopyPC
  * \brief      Emit the RTL for a call $+8 instruction, which is merely %o7 = %pc
  * NOTE:          Assumes that the delay slot RTL has already been pushed; we must push the semantics BEFORE that RTL,
@@ -1241,7 +1241,7 @@ void SparcFrontEnd::emitCopyPC(std::list<RTL*>* pRtls, ADDRESS uAddr)
     pRtls->insert(--pRtls->end(), pRtl);
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        helperFunc
  * \brief        Checks for sparc specific helper functions like .urem, which have specific sematics.
  * NOTE:            This needs to be handled in a resourcable way.
@@ -1472,7 +1472,7 @@ bool SparcFrontEnd::helperFuncLong(ADDRESS dest, ADDRESS addr, std::list<RTL*>* 
 }
 
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:      construct
  * \brief      Construct a new instance of SparcFrontEnd
  * PARAMETERS:      Same as the FrontEnd constructor, except decoder is **
@@ -1488,7 +1488,7 @@ SparcFrontEnd* construct(Prog *prog, NJMCDecoder** decoder) {
 }
 #endif
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:      SparcFrontEnd::SparcFrontEnd
  * \brief      SparcFrontEnd constructor
  * PARAMETERS:      Same as the FrontEnd constructor
@@ -1507,7 +1507,7 @@ SparcFrontEnd::~SparcFrontEnd()
 {
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:    GetMainEntryPoint
  * \brief    Locate the starting address of "main" in the code section
  * PARAMETERS:    None

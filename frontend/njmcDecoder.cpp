@@ -9,8 +9,8 @@
  *
  */
 
-/*==============================================================================
- * FILE:       njmcDecoder.cc
+/***************************************************************************//**
+ * \file       njmcDecoder.cc
  * \brief   This file contains the machine independent decoding functionality.
  ******************************************************************************/
 /*
@@ -43,7 +43,7 @@
  * NJMCDecoder methods.
  **********************************/
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:       NJMCDecoder::NJMCDecoder
  * \brief
  * PARAMETERS:       prog: Pointer to the Prog object
@@ -52,7 +52,7 @@
 NJMCDecoder::NJMCDecoder(Prog* prog) : prog(prog)
 {}
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:       NJMCDecoder::instantiate
  * \brief       Given an instruction name and a variable list of expressions representing the actual operands of
  *                    the instruction, use the RTL template dictionary to return the instantiated RTL representing the
@@ -99,7 +99,7 @@ std::list<Statement*>* NJMCDecoder::instantiate(ADDRESS pc, const char* name, ..
     return instance;
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:       NJMCDecoder::instantiateNamedParam
  * \brief       Similarly to the above, given a parameter name and a list of Exp*'s representing sub-parameters,
  *                    return a fully substituted Exp for the whole expression
@@ -135,7 +135,7 @@ Exp* NJMCDecoder::instantiateNamedParam(char* name, ...) {
     return result;
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:       NJMCDecoder::substituteCallArgs
  * \brief       In the event that it's necessary to synthesize the call of a named parameter generated with
  *                    instantiateNamedParam(), this substituteCallArgs() will substitute the arguments that follow into
@@ -170,7 +170,7 @@ void NJMCDecoder::substituteCallArgs(char *name, Exp*& exp, ...)
     }
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:       DecodeResult::reset
  * \brief       Resets the fields of a DecodeResult to their default values.
  * PARAMETERS:       <none>
@@ -186,12 +186,12 @@ void DecodeResult::reset()
     forceOutEdge = ADDRESS::g(0L);
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * These are functions used to decode instruction operands into
  * Exp*s.
  ******************************************************************************/
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        NJMCDecoder::dis_Reg
  * \brief        Converts a numbered register to a suitable expression.
  * PARAMETERS:        reg - the register number, e.g. 0 for eax
@@ -203,7 +203,7 @@ Exp* NJMCDecoder::dis_Reg(int regNum)
     return expr;
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        NJMCDecoder::dis_Num
  * \brief        Converts a number to a Exp* expression.
  * PARAMETERS:        num - a number
@@ -215,7 +215,7 @@ Exp* NJMCDecoder::dis_Num(unsigned num)
     return expr;
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        NJMCDecoder::unconditionalJump
  * \brief        Process an unconditional jump instruction
  *                    Also check if the destination is a label (MVE: is this done?)
@@ -232,7 +232,7 @@ void NJMCDecoder::unconditionalJump(const char* name, int size, ADDRESS relocd, 
     SHOW_ASM(name<<" 0x"<<std::hex<<relocd-delta)
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        NJMCDecoder::computedJump
  * \brief        Process an indirect jump instruction
  * PARAMETERS:        name: name of instruction (for debugging)
@@ -254,7 +254,7 @@ void NJMCDecoder::computedJump(const char* name, int size, Exp* dest, ADDRESS pc
     SHOW_ASM(name<<" "<<dest)
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        NJMCDecoder::computedCall
  * \brief        Process an indirect call instruction
  * PARAMETERS:        name: name of instruction (for debugging)

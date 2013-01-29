@@ -9,9 +9,9 @@
  *
  */
 
-/* File: Win32BinaryFile.cc
- * $Revision$
- * Desc: This file contains the implementation of the class Win32BinaryFile.
+/***************************************************************************//**
+ * \file Win32BinaryFile.cpp
+ * This file contains the implementation of the class Win32BinaryFile.
  */
 
 /* Win32 binary file format.
@@ -79,10 +79,8 @@ SectionObjectMap s_sectionObjects;
 
 // Note that PESectionInfo currently must be the exact same size as
 // SectionInfo due to the already mentioned array held by BinaryFile.
-class PESectionInfo : public SectionInfo
-{
-    virtual bool isAddressBss(ADDRESS a) const
-    {
+class PESectionInfo : public SectionInfo {
+    virtual bool isAddressBss(ADDRESS a) const {
         if (a < uNativeAddr || a >= uNativeAddr + uSectionSize) {
             return false; // not even within this section
         }
@@ -119,8 +117,7 @@ typedef char ct_failure[sizeof(SectionInfo) == sizeof(PESectionInfo)];
 Win32BinaryFile::Win32BinaryFile() : m_pFileName(0), mingw_main(false)
 { }
 
-Win32BinaryFile::~Win32BinaryFile()
-{
+Win32BinaryFile::~Win32BinaryFile() {
     for (int i=0; i < m_iNumSections; i++) {
         if (m_pSections[i].pSectionName)
             delete [] m_pSections[i].pSectionName;
@@ -138,16 +135,14 @@ void Win32BinaryFile::Close() {
 }
 
 std::list<SectionInfo*>& Win32BinaryFile::GetEntryPoints(
-        const char* pEntry)
-{
+        const char* pEntry) {
     fprintf(stderr,"really don't know how to implement GetEntryPoints\n");
     exit(0);
     static std::list<SectionInfo*> l;
     return l;
 }
 
-ADDRESS Win32BinaryFile::GetEntryPoint()
-{
+ADDRESS Win32BinaryFile::GetEntryPoint() {
     return ADDRESS::g(LMMH(m_pPEHeader->EntrypointRVA) + LMMH(m_pPEHeader->Imagebase));
 }
 
@@ -402,15 +397,13 @@ ADDRESS Win32BinaryFile::GetMainEntryPoint() {
 BOOL CALLBACK lookforsource(
         dbghelp::PSOURCEFILE pSourceFile,
         PVOID UserContext
-        )
-{
+        ) {
     *(bool*)UserContext = true;
     return FALSE;
 }
 #endif
 
-bool Win32BinaryFile::RealLoad(const char* sName)
-{
+bool Win32BinaryFile::RealLoad(const char* sName) {
     m_pFileName = sName;
     FILE *fp = fopen(sName,"rb");
 
@@ -549,12 +542,10 @@ bool Win32BinaryFile::RealLoad(const char* sName)
 
     dbghelp::SymSetOptions(SYMOPT_LOAD_LINES);
 
-    if (dbghelp::SymInitialize(hProcess, NULL, FALSE))
-    {
+    if (dbghelp::SymInitialize(hProcess, NULL, FALSE)) {
         // SymInitialize returned success
     }
-    else
-    {
+    else {
         // SymInitialize failed
         error = GetLastError();
         printf("SymInitialize returned error : %d\n", error);
@@ -563,15 +554,13 @@ bool Win32BinaryFile::RealLoad(const char* sName)
 
     DWORD64 dwBaseAddr = 0;
 
-    if (dwBaseAddr = dbghelp::SymLoadModule64(hProcess, NULL, (PSTR)sName, NULL, dwBaseAddr, 0))
-    {
+    if (dwBaseAddr = dbghelp::SymLoadModule64(hProcess, NULL, (PSTR)sName, NULL, dwBaseAddr, 0)) {
         assert(dwBaseAddr == m_pPEHeader->Imagebase);
         bool found = false;
         dbghelp::SymEnumSourceFiles(hProcess, dwBaseAddr,  0, lookforsource, &found);
         haveDebugInfo = found;
     }
-    else
-    {
+    else {
         // SymLoadModule64 failed
         error = GetLastError();
         printf("SymLoadModule64 returned error : %d\n", error);
@@ -614,12 +603,10 @@ void Win32BinaryFile::findJumps(ADDRESS curr) {
 }
 
 // Clean up and unload the binary image
-void Win32BinaryFile::UnLoad()
-{
+void Win32BinaryFile::UnLoad() {
 }
 
-bool Win32BinaryFile::PostLoad(void* handle)
-{
+bool Win32BinaryFile::PostLoad(void* handle) {
     return false;
 }
 
@@ -658,8 +645,7 @@ char *SymTagEnums[] = { "SymTagNull",
                         "SymTagDimension"
                       };
 
-enum SymTagEnum
-{
+enum SymTagEnum {
     SymTagNull,
     SymTagExe,
     SymTagCompiland,
@@ -693,8 +679,7 @@ enum SymTagEnum
     SymTagDimension
 };
 
-char *basicTypes[] =
-{
+char *basicTypes[] = {
     "notype",
     "void",
     "char",
@@ -712,8 +697,7 @@ char *basicTypes[] =
     "unsigned long",
 };
 
-void printType(DWORD index, DWORD64 ImageBase)
-{
+void printType(DWORD index, DWORD64 ImageBase) {
     HANDLE hProcess = GetCurrentProcess();
 
     int got;
@@ -731,8 +715,7 @@ void printType(DWORD index, DWORD64 ImageBase)
     assert(got);
 
     switch(d) {
-        case SymTagPointerType:
-        {
+        case SymTagPointerType: {
             got = dbghelp::SymGetTypeInfo(hProcess, ImageBase, index, dbghelp::TI_GET_TYPE, &d);
             assert(got);
             printType(d, ImageBase);
@@ -755,8 +738,7 @@ BOOL CALLBACK printem(
         dbghelp::PSYMBOL_INFO pSymInfo,
         ULONG SymbolSize,
         PVOID UserContext
-        )
-{
+        ) {
     HANDLE hProcess = GetCurrentProcess();
     printType(pSymInfo->TypeIndex, pSymInfo->ModBase);
     std::cout << " " << pSymInfo->Name << " flags: ";
@@ -792,8 +774,7 @@ BOOL CALLBACK printem(
 }
 #endif
 
-const char* Win32BinaryFile::SymbolByAddress(ADDRESS dwAddr)
-{
+const char* Win32BinaryFile::SymbolByAddress(ADDRESS dwAddr) {
     if (m_pPEHeader->Subsystem == 1 &&                // native
             LMMH(m_pPEHeader->EntrypointRVA) + LMMH(m_pPEHeader->Imagebase) == dwAddr.m_value)
         return "DriverEntry";
@@ -884,14 +865,12 @@ ADDRESS Win32BinaryFile::GetAddressByName(const char* pName,
     return NO_ADDRESS;
 }
 
-void Win32BinaryFile::AddSymbol(ADDRESS uNative, const char *pName)
-{
+void Win32BinaryFile::AddSymbol(ADDRESS uNative, const char *pName) {
     dlprocptrs[uNative] = pName;
 }
 
 bool Win32BinaryFile::DisplayDetails(const char* fileName, FILE* f
-                                     /* = stdout */)
-{
+                                     /* = stdout */) {
     return false;
 }
 
@@ -976,15 +955,13 @@ double Win32BinaryFile::readNativeFloat8(ADDRESS nat) {
     return *(double*)raw;
 }
 
-bool Win32BinaryFile::IsDynamicLinkedProcPointer(ADDRESS uNative)
-{
+bool Win32BinaryFile::IsDynamicLinkedProcPointer(ADDRESS uNative) {
     if (dlprocptrs.find(uNative) != dlprocptrs.end())
         return true;
     return false;
 }
 
-bool Win32BinaryFile::IsStaticLinkedLibProc(ADDRESS uNative)
-{
+bool Win32BinaryFile::IsStaticLinkedLibProc(ADDRESS uNative) {
 #if defined(_WIN32) && !defined(__MINGW32__)
     HANDLE hProcess = GetCurrentProcess();
     dbghelp::IMAGEHLP_LINE64 line;
@@ -1003,8 +980,7 @@ bool Win32BinaryFile::IsStaticLinkedLibProc(ADDRESS uNative)
     return false;
 }
 
-bool Win32BinaryFile::IsMinGWsAllocStack(ADDRESS uNative)
-{
+bool Win32BinaryFile::IsMinGWsAllocStack(ADDRESS uNative) {
     if (mingw_main) {
         PSectionInfo si = GetSectionInfoByAddr(uNative);
         if (si) {
@@ -1024,8 +1000,7 @@ bool Win32BinaryFile::IsMinGWsAllocStack(ADDRESS uNative)
     return false;
 }
 
-bool Win32BinaryFile::IsMinGWsFrameInit(ADDRESS uNative)
-{
+bool Win32BinaryFile::IsMinGWsFrameInit(ADDRESS uNative) {
     if (mingw_main) {
         PSectionInfo si = GetSectionInfoByAddr(uNative);
         if (si) {
@@ -1052,8 +1027,7 @@ bool Win32BinaryFile::IsMinGWsFrameInit(ADDRESS uNative)
     return false;
 }
 
-bool Win32BinaryFile::IsMinGWsFrameEnd(ADDRESS uNative)
-{
+bool Win32BinaryFile::IsMinGWsFrameEnd(ADDRESS uNative) {
     if (mingw_main) {
         PSectionInfo si = GetSectionInfoByAddr(uNative);
         if (si) {
@@ -1075,8 +1049,7 @@ bool Win32BinaryFile::IsMinGWsFrameEnd(ADDRESS uNative)
     return false;
 }
 
-bool Win32BinaryFile::IsMinGWsCleanupSetup(ADDRESS uNative)
-{
+bool Win32BinaryFile::IsMinGWsCleanupSetup(ADDRESS uNative) {
     if (mingw_main) {
         PSectionInfo si = GetSectionInfoByAddr(uNative);
         if (si) {
@@ -1100,8 +1073,7 @@ bool Win32BinaryFile::IsMinGWsCleanupSetup(ADDRESS uNative)
     return false;
 }
 
-bool Win32BinaryFile::IsMinGWsMalloc(ADDRESS uNative)
-{
+bool Win32BinaryFile::IsMinGWsMalloc(ADDRESS uNative) {
     if (mingw_main) {
         PSectionInfo si = GetSectionInfoByAddr(uNative);
         if (si) {
@@ -1121,45 +1093,37 @@ bool Win32BinaryFile::IsMinGWsMalloc(ADDRESS uNative)
     return false;
 }
 
-ADDRESS Win32BinaryFile::IsJumpToAnotherAddr(ADDRESS uNative)
-{
+ADDRESS Win32BinaryFile::IsJumpToAnotherAddr(ADDRESS uNative) {
     if ((readNative1(uNative) & 0xff) != 0xe9)
         return NO_ADDRESS;
     return ADDRESS::g(readNative4(uNative+1)) + uNative + 5;
 }
 
-const char *Win32BinaryFile::GetDynamicProcName(ADDRESS uNative)
-{
+const char *Win32BinaryFile::GetDynamicProcName(ADDRESS uNative) {
     return dlprocptrs[uNative].c_str();
 }
 
-LOAD_FMT Win32BinaryFile::GetFormat() const
-{
+LOAD_FMT Win32BinaryFile::GetFormat() const {
     return LOADFMT_PE;
 }
 
-MACHINE Win32BinaryFile::GetMachine() const
-{
+MACHINE Win32BinaryFile::GetMachine() const {
     return MACHINE_PENTIUM;
 }
 
-bool Win32BinaryFile::isLibrary() const
-{
+bool Win32BinaryFile::isLibrary() const {
     return ( (m_pPEHeader->Flags & 0x2000) != 0 );
 }
 
-ADDRESS Win32BinaryFile::getImageBase()
-{
+ADDRESS Win32BinaryFile::getImageBase() {
     return ADDRESS::g(m_pPEHeader->Imagebase);
 }
 
-size_t Win32BinaryFile::getImageSize()
-{
+size_t Win32BinaryFile::getImageSize() {
     return m_pPEHeader->ImageSize;
 }
 
-std::list<const char *> Win32BinaryFile::getDependencyList()
-{
+std::list<const char *> Win32BinaryFile::getDependencyList() {
     return std::list<const char *>(); /* FIXME */
 }
 
@@ -1177,8 +1141,7 @@ extern "C" {
 #ifdef _WIN32
 __declspec(dllexport)
 #endif
-BinaryFile* construct()
-{
+BinaryFile* construct() {
     return new Win32BinaryFile;
 }
 }

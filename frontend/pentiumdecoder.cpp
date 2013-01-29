@@ -9,7 +9,7 @@
  * WARRANTIES.
  *
  */
-/*============================================================================== * FILE:       decoder.m
+/***************************************************************************//** * \file       decoder.m
  * \brief   This file contains the high level decoding functionality, for example matching logues, calls, branches,
  *                etc. Ordinary instructions are processed in decoder_low.m
  ******************************************************************************/
@@ -67,7 +67,7 @@ void genBSFR(ADDRESS pc, Exp* reg, Exp* modrm, int init, int size, OPER incdec,
 /**********************************
  * PentiumDecoder methods.
  **********************************/
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:       unused
  * \brief       A dummy function to suppress "unused local variable" messages
  * PARAMETERS:       x: integer variable to be "used"
@@ -75,7 +75,7 @@ void genBSFR(ADDRESS pc, Exp* reg, Exp* modrm, int init, int size, OPER incdec,
  ******************************************************************************/
 void PentiumDecoder::unused(int x)
 {}
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:       PentiumDecoder::decodeInstruction
  * \brief       Decodes a machine instruction and returns an RTL instance. In most cases a single instruction is
  *                    decoded. However, if a higher level construct that may consist of multiple instructions is matched,
@@ -37084,11 +37084,11 @@ MATCH_finished_c: (void)0; /*placeholder for label*/
     result.numBytes = (nextPC-hostPC).m_value;
     return result;
 }
-/*==============================================================================
+/***************************************************************************//**
  * These are machine specific functions used to decode instruction operands into
  * Exps.
  ******************************************************************************/
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        dis_Mem
  * \brief        Converts a dynamic address to a Exp* expression.
  *                    E.g. [1000] --> m[, 1000
@@ -37288,7 +37288,7 @@ MATCH_finished_b: (void)0; /*placeholder for label*/
 //#line 2217 "frontend/machine/pentium/decoder.m"
     return expr;
 }
-/*============================================================================== * FUNCTION:        dis_Eaddr
+/***************************************************************************//** * FUNCTION:        dis_Eaddr
  * \brief        Converts a dynamic address to a Exp* expression.
  *                    E.g. %ecx --> r[ 25 ]
  * CALLED FROM:        Macros DIS_EADDR32, DIS_EADDR16 and DIS_EADDR8
@@ -37335,7 +37335,7 @@ MATCH_finished_a: (void)0; /*placeholder for label*/
     }
 //#line 2245 "frontend/machine/pentium/decoder.m"
 }
-/*============================================================================== * FUNCTION:      isFuncPrologue()
+/***************************************************************************//** * FUNCTION:      isFuncPrologue()
  * \brief      Check to see if the instructions at the given offset match
  *                    any callee prologue, i.e. does it look like this offset
  *                    is a pointer to a function?
@@ -37361,7 +37361,7 @@ bool PentiumDecoder::isFuncPrologue(ADDRESS hostPC)
 /**********************************
  * These are the fetch routines.
  **********************************/
-/*============================================================================== * FUNCTION:        getWord
+/***************************************************************************//** * FUNCTION:        getWord
  * \brief        Returns the word starting at the given address.
  * PARAMETERS:        lc - address at which to decode the double
  * \returns             the decoded double
@@ -37371,7 +37371,7 @@ Byte PentiumDecoder::getByte (intptr_t lc)
 {
     return *(Byte *)lc;
 }
-/*============================================================================== * FUNCTION:        getWord
+/***************************************************************************//** * FUNCTION:        getWord
  * \brief        Returns the word starting at the given address.
  * PARAMETERS:        lc - address at which to decode the double
  * \returns             the decoded double
@@ -37381,7 +37381,7 @@ SWord PentiumDecoder::getWord (intptr_t lc)
 {
     return (SWord)(*(Byte *)lc + (*(Byte *)(lc+1) << 8));
 }
-/*============================================================================== * FUNCTION:        getDword
+/***************************************************************************//** * FUNCTION:        getDword
  * \brief        Returns the double starting at the given address.
  * PARAMETERS:        lc - address at which to decode the double
  * \returns             the decoded double
@@ -37392,7 +37392,7 @@ DWord PentiumDecoder::getDword (intptr_t lc)
     lastDwordLc = lc - prog->getTextDelta();
     return (DWord)(*(Byte *)lc + (*(Byte *)(lc+1) << 8) + (*(Byte *)(lc+2) << 16) + (*(Byte *)(lc+3) << 24));
 }
-/*============================================================================== * FUNCTION:       PentiumDecoder::PentiumDecoder
+/***************************************************************************//** * FUNCTION:       PentiumDecoder::PentiumDecoder
  * \brief       Constructor. The code won't work without this (not sure why the default constructor won't do...)
  * PARAMETERS:       None
  * \returns            N/A
@@ -37405,7 +37405,7 @@ PentiumDecoder::PentiumDecoder(Prog* prog) : NJMCDecoder(prog)
 // For now...
 int PentiumDecoder::decodeAssemblyInstruction(ADDRESS, int)
 { return 0; }
-/*============================================================================== * FUNCTION:       genBSFR
+/***************************************************************************//** * FUNCTION:       genBSFR
  * \brief       Generate statements for the BSF and BSR series (Bit Scan Forward/Reverse)
  * PARAMETERS:       pc: native PC address (start of the BSF/BSR instruction)
  *                   reg: an expression for the destination register

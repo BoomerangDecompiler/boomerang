@@ -10,7 +10,7 @@
  */
 
 /***************************************************************************//**
- * FILE:       frontend.cpp
+ * \file       frontend.cpp
  * \brief   This file contains common code for all front ends. The majority
  *                of frontend logic remains in the source dependent files such as
  *                frontsparc.cpp
@@ -63,15 +63,21 @@
 /***************************************************************************//**
  *
  * \brief      Construct the FrontEnd object
- * PARAMETERS:      pBF: pointer to the BinaryFile object (loader)
- *                  prog: program being decoded
- *                  pbff: pointer to a BinaryFileFactory object (so the library can be unloaded)
- * \returns          <N/a>
+ * \param pBF: pointer to the BinaryFile object (loader)
+ * \param prog: program being decoded
+ * \param pbff: pointer to a BinaryFileFactory object (so the library can be unloaded)
  ******************************************************************************/
 FrontEnd::FrontEnd(BinaryFile *pBF, Prog* prog, BinaryFileFactory* pbff) : pBF(pBF), pbff(pbff), prog(prog)
 {}
 
-// Static function to instantiate an appropriate concrete front end
+/***************************************************************************//**
+ *
+ * \brief Create from a binary file
+ * Static function to instantiate an appropriate concrete front end
+ * \param pBF: pointer to the BinaryFile object (loader)
+ * \param prog: program being decoded
+ * \param pbff: pointer to a BinaryFileFactory object (so the library can be unloaded)
+ ******************************************************************************/
 FrontEnd* FrontEnd::instantiate(BinaryFile *pBF, Prog* prog, BinaryFileFactory* pbff) {
     switch(pBF->GetMachine()) {
         case MACHINE_PENTIUM:
@@ -90,6 +96,13 @@ FrontEnd* FrontEnd::instantiate(BinaryFile *pBF, Prog* prog, BinaryFileFactory* 
     return NULL;
 }
 
+/***************************************************************************//**
+ *
+ * \brief Create FrontEnd instance given \a fname and \a prog
+ * \param fname: string with full path to decoded file
+ * \param prog: program being decoded
+ * \returns Binary-specific frontend.
+ ******************************************************************************/
 FrontEnd* FrontEnd::Load(const char *fname, Prog* prog) {
     BinaryFileFactory* pbff = new BinaryFileFactory;
     if (pbff == NULL) return NULL;
@@ -122,8 +135,7 @@ bool FrontEnd::isWin32() {
     return pBF->GetFormat() == LOADFMT_PE;
 }
 
-bool FrontEnd::noReturnCallDest(const char *name)
-{
+bool FrontEnd::noReturnCallDest(const char *name) {
     return ((strcmp(name, "_exit") == 0) || (strcmp(name,    "exit") == 0) || (strcmp(name, "ExitProcess") == 0) || (strcmp(name, "abort") == 0) || (strcmp(name, "_assert") == 0));
 }
 
@@ -184,8 +196,7 @@ void FrontEnd::readLibraryCatalog() {
     }
 }
 
-std::vector<ADDRESS> FrontEnd::getEntryPoints()
-{
+std::vector<ADDRESS> FrontEnd::getEntryPoints() {
     std::vector<ADDRESS> entrypoints;
     bool gotMain = false;
     ADDRESS a = getMainEntryPoint(gotMain);
@@ -416,8 +427,7 @@ void FrontEnd::readLibrarySignatures(const char *sPath, callconv cc) {
     ifs.close();
 }
 
-Signature *FrontEnd::getDefaultSignature(const char *name)
-{
+Signature *FrontEnd::getDefaultSignature(const char *name) {
     Signature *signature = NULL;
     // Get a default library signature
     if (isWin32())
@@ -625,8 +635,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
                     }
                 }
 
-                switch (s->getKind())
-                {
+                switch (s->getKind()) {
 
                     case STMT_GOTO: {
                         uDest = stmt_jump->getFixedDest();
@@ -781,7 +790,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 
                         // Is the called function a thunk calling a library function?
                         // A "thunk" is a function which only consists of: "GOTO library_function"
-                        if(    call &&    call->getFixedDest() != NO_ADDRESS ) {
+                        if ( call && call->getFixedDest() != NO_ADDRESS ) {
                             // Get the address of the called function.
                             ADDRESS callAddr=call->getFixedDest();
                             // It should not be in the PLT either, but getLimitTextHigh() takes this into account
@@ -802,8 +811,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
                                              stmt_jump->getDest()->getOper() == opMemOf &&
                                              stmt_jump->getDest()->getSubExp1()->getOper() == opIntConst &&
                                              pBF->IsDynamicLinkedProcPointer(((Const*)stmt_jump->getDest()->getSubExp1())->
-                                                                             getAddr())) // Is it an "DynamicLinkedProcPointer"?
-                                        {
+                                                                             getAddr())) { // Is it an "DynamicLinkedProcPointer"?
                                             // Yes, it's a library function. Look up it's name.
                                             ADDRESS a = ((Const*)stmt_jump->getDest()->getSubExp1())->getAddr();
                                             const char *nam = pBF->GetDynamicProcName(a);
@@ -1084,8 +1092,7 @@ void TargetQueue::initial(ADDRESS uAddr) {
  *                        (targets is empty)
  ******************************************************************************/
 ADDRESS TargetQueue::nextAddress(Cfg* cfg) {
-    while (!targets.empty())
-    {
+    while (!targets.empty()) {
         ADDRESS address = targets.front();
         targets.pop();
         if (Boomerang::get()->traceDecoder)

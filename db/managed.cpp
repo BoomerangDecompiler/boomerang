@@ -7,8 +7,8 @@
  *
  */
 
-/*==============================================================================
- * FILE:       managed.cpp
+/***************************************************************************//**
+ * \file       managed.cpp
  * \brief   Implementation of "managed" classes such as StatementSet, which feature makeUnion etc
  ******************************************************************************/
 
@@ -432,15 +432,19 @@ bool LocationSet::existsImplicit(Exp* e) {
 // Find a location with a different def, but same expression. For example, pass r28{10},
 // return true if r28{20} in the set. If return true, dr points to the first different ref
 bool LocationSet::findDifferentRef(RefExp* e, Exp *&dr) {
+    assert(e);
     RefExp search(e->getSubExp1()->clone(), (Statement*)-1);
     std::set<Exp*, lessExpStar>::iterator pos = lset.find(&search);
-    if (pos == lset.end()) return false;
+    if (pos == lset.end())
+        return false;
     while (pos != lset.end()) {
+        assert(*pos);
         // Exit if we've gone to a new base expression
         // E.g. searching for r13{10} and **pos is r14{0}
         // Note: we want a ref-sensitive compare, but with the outer refs stripped off
         // For example: m[r29{10} - 16]{any} is different from m[r29{20} - 16]{any}
-        if (!(*(*pos)->getSubExp1() == *e->getSubExp1())) break;
+        if (!(*(*pos)->getSubExp1() == *e->getSubExp1()))
+            break;
         // Bases are the same; return true if only different ref
         if (!(**pos == *e)) {
             dr = *pos;
@@ -687,8 +691,7 @@ void LocationSet::diff(LocationSet* o) {
     if (printed1not2)
         std::cerr << "\n";
 }
-Range::Range() : stride(1), lowerBound(MIN), upperBound(MAX)
-{
+Range::Range() : stride(1), lowerBound(MIN), upperBound(MAX) {
     base = new Const(0);
 }
 
@@ -703,6 +706,7 @@ Range::Range(int stride, int lowerBound, int upperBound, Exp *base) :
         this->base = base->getSubExp1();
     } else {
         if (base == NULL)
+            //FIXME: use this->base here ?
             base = new Const(0);
         if (lowerBound > upperBound)
             this->upperBound = lowerBound;
@@ -711,8 +715,7 @@ Range::Range(int stride, int lowerBound, int upperBound, Exp *base) :
     }
 }
 
-void Range::print(std::ostream &os)
-{
+void Range::print(std::ostream &os) {
     assert(lowerBound <= upperBound);
     if (base->isIntConst() && ((Const*)base)->getInt() == 0 &&
             lowerBound == MIN && upperBound == MAX) {
@@ -753,10 +756,10 @@ void Range::print(std::ostream &os)
     }
 }
 
-void Range::unionWith(Range &r)
-{
+void Range::unionWith(Range &r) {
     if (VERBOSE && DEBUG_RANGE_ANALYSIS)
         LOG << "unioning " << this << " with " << r << " got ";
+    assert(base && r.base);
     if (base->getOper() == opMinus && r.base->getOper() == opMinus &&
             *base->getSubExp1() == *r.base->getSubExp1() &&
             base->getSubExp2()->isIntConst() && r.base->getSubExp2()->isIntConst()) {
@@ -790,8 +793,7 @@ void Range::unionWith(Range &r)
         LOG << this << "\n";
 }
 
-void Range::widenWith(Range &r)
-{
+void Range::widenWith(Range &r) {
     if (VERBOSE && DEBUG_RANGE_ANALYSIS)
         LOG << "widening " << this << " with " << r << " got ";
     if (!(*base == *r.base)) {
@@ -815,8 +817,7 @@ Range &RangeMap::getRange(Exp *loc) {
     return ranges[loc];
 }
 
-void RangeMap::unionwith(RangeMap &other)
-{
+void RangeMap::unionwith(RangeMap &other) {
     for (std::map<Exp*, Range, lessExpStar>::iterator it = other.ranges.begin(); it != other.ranges.end(); it++) {
         if (ranges.find((*it).first) == ranges.end()) {
             ranges[(*it).first] = (*it).second;
@@ -826,8 +827,7 @@ void RangeMap::unionwith(RangeMap &other)
     }
 }
 
-void RangeMap::widenwith(RangeMap &other)
-{
+void RangeMap::widenwith(RangeMap &other) {
     for (std::map<Exp*, Range, lessExpStar>::iterator it = other.ranges.begin(); it != other.ranges.end(); it++) {
         if (ranges.find((*it).first) == ranges.end()) {
             ranges[(*it).first] = (*it).second;
@@ -838,8 +838,7 @@ void RangeMap::widenwith(RangeMap &other)
 }
 
 
-void RangeMap::print(std::ostream &os)
-{
+void RangeMap::print(std::ostream &os) {
     for (std::map<Exp*, Range, lessExpStar>::iterator it = ranges.begin(); it != ranges.end(); it++) {
         if (it != ranges.begin())
             os << ", ";
@@ -849,8 +848,7 @@ void RangeMap::print(std::ostream &os)
     }
 }
 
-Exp *RangeMap::substInto(Exp *e, std::set<Exp*, lessExpStar> *only)
-{
+Exp *RangeMap::substInto(Exp *e, std::set<Exp*, lessExpStar> *only) {
     bool changes;
     int count = 0;
     do {
@@ -876,8 +874,7 @@ Exp *RangeMap::substInto(Exp *e, std::set<Exp*, lessExpStar> *only)
     return e;
 }
 
-void RangeMap::killAllMemOfs()
-{
+void RangeMap::killAllMemOfs() {
     for (std::map<Exp*, Range, lessExpStar>::iterator it = ranges.begin(); it != ranges.end(); it++) {
         if ((*it).first->isMemOf()) {
             Range empty;
@@ -886,8 +883,7 @@ void RangeMap::killAllMemOfs()
     }
 }
 
-bool Range::operator==(Range &other)
-{
+bool Range::operator==(Range &other) {
     return stride == other.stride && lowerBound == other.lowerBound && upperBound == other.upperBound && *base == *other.base;
 }
 

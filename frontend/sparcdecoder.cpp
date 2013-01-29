@@ -11,8 +11,8 @@
  *
  */
 
-/*==============================================================================
- * FILE:       decoder.m
+/***************************************************************************//**
+ * \file       decoder.m
  * \brief   Implementation of the SPARC specific parts of the
  *               SparcDecoder class.
  ******************************************************************************/
@@ -29,7 +29,7 @@
  * 03 Nov 04 - Mike: DIS_FDS was returning numbers for the double precision registers
 */
 
-/*==============================================================================
+/***************************************************************************//**
  * Dependencies.
  ******************************************************************************/
 
@@ -65,7 +65,7 @@
 #define DIS_FS1Q    (dis_RegRhs((fs1q>>2)+80))
 #define DIS_FS2Q    (dis_RegRhs((fs2q>>2)+80))
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:       unused
  * \brief       A dummy function to suppress "unused local variable" messages
  * PARAMETERS:       x: integer variable to be "used"
@@ -74,7 +74,7 @@
 void SparcDecoder::unused(int x)
 {}
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:       createBranchRtl
  * \brief       Create an RTL for a Bx instruction
  * PARAMETERS:       pc - the location counter
@@ -191,7 +191,7 @@ RTL* SparcDecoder::createBranchRtl(ADDRESS pc, std::list<Statement*>* stmts, con
 }
 
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:       SparcDecoder::decodeInstruction
  * \brief       Attempt to decode the high level instruction at a given address and return the corresponding HL type
  *                    (e.g. CallStatement, GotoStatement etc). If no high level instruction exists at the given address,
@@ -2738,7 +2738,7 @@ MATCH_finished_d: (void)0; /*placeholder for label*/
  * expressions (Exp*s).
  **********************************************************************/
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        SparcDecoder::dis_RegLhs
  * \brief        Decode the register on the LHS
  * PARAMETERS:        r - register (0-31)
@@ -2749,7 +2749,7 @@ Exp* SparcDecoder::dis_RegLhs(unsigned r)
     return Location::regOf(r);
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        SparcDecoder::dis_RegRhs
  * \brief        Decode the register on the RHS
  * NOTE:            Replaces r[0] with const 0
@@ -2764,7 +2764,7 @@ Exp* SparcDecoder::dis_RegRhs(unsigned r)
     return Location::regOf(r);
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        SparcDecoder::dis_RegImm
  * \brief        Decode the register or immediate at the given address.
  * NOTE:            Used via macro DIS_ROI
@@ -2823,7 +2823,7 @@ MATCH_finished_c: (void)0; /*placeholder for label*/
 //#line 702 "frontend/machine/sparc/decoder.m"
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        SparcDecoder::dis_Eaddr
  * \brief        Converts a dynamic address to a Exp* expression.
  *                    E.g. %o7 --> r[ 15 ]
@@ -2921,7 +2921,7 @@ MATCH_finished_b: (void)0; /*placeholder for label*/
     return expr;
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:      isFuncPrologue()
  * \brief      Check to see if the instructions at the given offset match any callee prologue, i.e. does it look
  *                    like this offset is a pointer to a function?
@@ -2933,7 +2933,7 @@ bool SparcDecoder::isFuncPrologue(ADDRESS hostPC)
     return false;
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:      isRestore()
  * \brief      Check to see if the instruction at the given offset is a restore instruction
  * PARAMETERS:      hostPC - pointer to the code in question (host address)
@@ -3001,7 +3001,7 @@ MATCH_finished_a: (void)0; /*placeholder for label*/
  * These are the fetch routines.
  **********************************/
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        getDword
  * \brief        Returns the double starting at the given address.
  * PARAMETERS:        lc - address at which to decode the double
@@ -3013,7 +3013,7 @@ DWord SparcDecoder::getDword(ADDRESS lc)
     return (p[0] << 24) + (p[1] << 16) + (p[2] << 8) + p[3];
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:       SparcDecoder::SparcDecoder
  * \brief
  * PARAMETERS:       None

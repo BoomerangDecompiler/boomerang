@@ -23,7 +23,7 @@
 #ifndef __BINARYFILE_H__
 #define __BINARYFILE_H__
 
-/*==============================================================================
+/***************************************************************************//**
  * Dependencies.
  *============================================================================*/
 
@@ -134,9 +134,9 @@ class BinaryFileFactory {
         // code. So just cast as needed.
         void *          dlHandle;        // Needed for UnLoading the library
         BinaryFile *    getInstanceFor(const char *sName);
-static  const char *    m_base_path; //!< path from which the executable is being ran, used to find lib/ directory
+static  std::string     m_base_path; //!< path from which the executable is being ran, used to find lib/ directory
 public:
-static  void            setBasePath(const char *path) {m_base_path=path;} //!< sets the base directory for plugin search
+static  void            setBasePath(const std::string &path) {m_base_path=path;} //!< sets the base directory for plugin search
         BinaryFile *    Load( const char *sName );
         void            UnLoad();
 };
@@ -151,30 +151,27 @@ public:
         typedef         std::map<ADDRESS, std::string> tMapAddrToString;
 virtual                 ~BinaryFile() {}
                         BinaryFile(bool bArchive = false);
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// General loader functions
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-                        // General loader functions
-                        // Unload the file. Pure virtual
-virtual void            UnLoad() = 0;
-                        // Open the file for r/w; pure virt
-virtual bool            Open(const char* sName) = 0;
-                        // Close file opened with Open()
-virtual void            Close() = 0;
-                        // Get the format (e.g. LOADFMT_ELF)
-virtual LOAD_FMT        GetFormat() const = 0;
-                        // Get the expected machine (e.g. MACHINE_PENTIUM)
-virtual MACHINE         GetMachine() const = 0;
+virtual void            UnLoad() = 0;           //!< Unload the file. Pure virtual
+virtual bool            Open(const char* sName) = 0; //!< Open the file for r/w; pure virt
+virtual void            Close() = 0;            //!< Close file opened with Open()
+virtual LOAD_FMT        GetFormat() const = 0;  //!< Get the format (e.g. LOADFMT_ELF)
+virtual MACHINE         GetMachine() const = 0; //!< Get the expected machine (e.g. MACHINE_PENTIUM)
 virtual const char *    getFilename() const = 0;
 
-                        // Return whether or not the object is a library file.
+                        //! Return whether or not the object is a library file.
 virtual bool            isLibrary() const = 0;
-                        // Return whether the object can be relocated if necessary
-                        // (ie if it is not tied to a particular base address). If not, the object
-                        // must be loaded at the address given by getImageBase()
+                        /// Return whether the object can be relocated if necessary
+                        /// (ie if it is not tied to a particular base address). If not, the object
+                        /// must be loaded at the address given by getImageBase()
 virtual bool            isRelocatable() const { return isLibrary(); }
-                        // Return a list of library names which the binary file depends on
+                        //! Return a list of library names which the binary file depends on
 virtual std::list<const char *> getDependencyList() = 0;
-                        // Return the virtual address at which the binary expects to be loaded.
-                        // For position independent / relocatable code this should be NO_ADDDRESS
+                        /// Return the virtual address at which the binary expects to be loaded.
+                        /// For position independent / relocatable code this should be NO_ADDDRESS
 virtual ADDRESS         getImageBase() = 0;
 virtual size_t          getImageSize() = 0; //!< Return the total size of the loaded image
 
@@ -207,15 +204,11 @@ virtual float           readNativeFloat4(ADDRESS a) {return 0.;}
 virtual double          readNativeFloat8(ADDRESS a) {return 0.;}
 
 // Symbol table functions
-                        // Lookup the address, return the name, or 0 if not found
 virtual const char*     SymbolByAddress(ADDRESS uNative);
-                        // Lookup the name, return the address. If not found, return NO_ADDRESS
 virtual ADDRESS         GetAddressByName(const char* pName, bool bNoTypeOK = false);
 virtual void            AddSymbol(ADDRESS uNative, const char *pName) { }
-                        // Lookup the name, return the size
+
 virtual int             GetSizeByName(const char* pName, bool bTypeOK = false);
-                        // Get an array of addresses of imported function stubs
-                        // Set number of these to numImports
 virtual ADDRESS *       GetImportStubs(int& numImports);
 virtual const char *    getFilenameSymbolFor(const char *sym) { return NULL; }
 virtual std::vector<ADDRESS> GetExportedAddresses(bool funcsOnly = true) { return std::vector<ADDRESS>(); }
@@ -228,18 +221,8 @@ virtual std::vector<ADDRESS> GetExportedAddresses(bool funcsOnly = true) { retur
 //virtual const char* GetRelocSym(ADDRESS uNative, ADDRESS *a = NULL, unsigned int *sz = NULL) { return NULL; }
 virtual bool            IsRelocationAt(ADDRESS uNative) { return false; }
 
-                        // Specific to BinaryFile objects that implement a "global pointer"
-                        // Gets a pair of unsigned integers representing the address of the
-                        // abstract global pointer (%agp) (in first) and a constant that will
-                        // be available in the csrparser as GLOBALOFFSET (second). At present,
-                        // the latter is only used by the Palm machine, to represent the space
-                        // allocated below the %a5 register (i.e. the difference between %a5 and
-                        // %agp). This value could possibly be used for other purposes.
 virtual std::pair<ADDRESS,unsigned> GetGlobalPointerInfo();
 
-                        // Get a map from ADDRESS to const char*. This map contains the native addresses and symbolic names of global
-                        // data items (if any) which are shared with dynamically linked libraries. Example: __iob (basis for stdout).
-                        // The ADDRESS is the native address of a pointer to the real dynamic data object.
 virtual std::map<ADDRESS, const char*>* GetDynamicGlobalMap();
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -255,15 +238,8 @@ virtual ADDRESS         IsJumpToAnotherAddr(ADDRESS uNative);
 virtual const char *    GetDynamicProcName(ADDRESS uNative);
 virtual std::list<SectionInfo*>& GetEntryPoints(const char* pEntry = "main") = 0;
 virtual ADDRESS         GetMainEntryPoint() = 0;
-
-                        /*
-                         * Return the "real" entry point, ie where execution of the program begins
-                         */
-virtual ADDRESS         GetEntryPoint() = 0;
-                        // Find section index given name, or -1 if not found
+virtual ADDRESS         GetEntryPoint() = 0;  //!< Return the "real" entry point, ie where execution of the program begins
         int             GetSectionIndexByName(const char* sName);
-
-
 virtual bool            RealLoad(const char* sName) = 0;
 
 virtual tMapAddrToString &getFuncSymbols() { return *new std::map<ADDRESS, std::string>(); }
@@ -278,30 +254,24 @@ virtual std::map<std::string, ObjcModule> &getObjcModules() { return *new std::m
 virtual bool            hasDebugInfo() { return false; }
 
 ///////////////////////////////////////////////////////////////////////////////
-
-protected:
 // Special load function for archive members
-virtual bool            PostLoad(void* handle) = 0;        // Called after loading archive member
+protected:
+virtual bool            PostLoad(void* handle) = 0; //!< Called after loading archive member
 public:
-                        // Get the lower and upper limits of the text segment
         void            getTextLimits();
 protected:
         // Data
-        bool            m_bArchive;                 // True if archive member
-        int             m_iNumSections;             // Number of sections
-        SectionInfo *   m_pSections;                // The section info
-        ADDRESS         m_uInitPC;                  // Initial program counter
-        ADDRESS         m_uInitSP;                  // Initial stack pointer
-
-        // Public addresses being the lowest used native address (inclusive), and
-        // the highest used address (not inclusive) in the text segment
-        ADDRESS         limitTextLow;
-        ADDRESS         limitTextHigh;
+        bool            m_bArchive;                 //!< True if archive member
+        int             m_iNumSections;             //!< Number of sections
+        SectionInfo *   m_pSections;                //!< The section info
+        ADDRESS         m_uInitPC;                  //!< Initial program counter
+        ADDRESS         m_uInitSP;                  //!< Initial stack pointer
+        ADDRESS         limitTextLow;               //!< Public addresses being the lowest used native address (inclusive)
+        ADDRESS         limitTextHigh;              //!< the highest used address (not inclusive) in the text segment
         // Also the difference between the host and native addresses (host - native)
         // At this stage, we are assuming that the difference is the same for all
         // text sections of the BinaryFile image
         int             textDelta;
-
 };
 
 #endif        // #ifndef __BINARYFILE_H__

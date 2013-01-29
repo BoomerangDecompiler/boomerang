@@ -1,5 +1,5 @@
-/*==============================================================================
- * FILE:       CfgTest.cc
+/***************************************************************************//**
+ * \file       CfgTest.cc
  * OVERVIEW:   Provides the implementation for the CfgTest class, which
  *                tests the Exp and derived classes
  *============================================================================*/
@@ -25,7 +25,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION( CfgTest );
 #define SEMI_PENTIUM			"test/pentium/semi"
 #define IFTHEN_PENTIUM			"test/pentium/ifthen"
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        CfgTest::setUp
  * OVERVIEW:        Set up some expressions for use with all the tests
  * NOTE:            Called before any tests
@@ -42,7 +42,7 @@ void CfgTest::setUp ()
     }
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        CfgTest::tearDown
  * OVERVIEW:        Delete expressions created in setUp
  * NOTE:            Called after all tests
@@ -52,7 +52,7 @@ void CfgTest::setUp ()
 void CfgTest::tearDown () {
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        CfgTest::testDominators
  * OVERVIEW:        Test the dominator frontier code
  *============================================================================*/
@@ -105,7 +105,7 @@ void CfgTest::testDominators () {
 }
 
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        CfgTest::testSemiDominators
  * OVERVIEW:        Test a case where semi dominators are different to dominators
  *============================================================================*/
@@ -162,7 +162,7 @@ void CfgTest::testSemiDominators () {
     delete pFE;
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        CfgTest::testPlacePhi
  * OVERVIEW:        Test the placing of phi functions
  *============================================================================*/
@@ -203,7 +203,7 @@ void CfgTest::testPlacePhi () {
     delete pFE;
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        CfgTest::testPlacePhi2
  * OVERVIEW:        Test a case where a phi function is not needed
  *============================================================================*/
@@ -263,7 +263,7 @@ void CfgTest::testPlacePhi2 () {
     delete pFE;
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        CfgTest::testRenameVars
  * OVERVIEW:        Test the renaming of variables
  *============================================================================*/

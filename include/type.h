@@ -7,8 +7,8 @@
  *
  */
 
-/*==============================================================================
- * FILE:       type.h
+/***************************************************************************//**
+ * \file       type.h
  * OVERVIEW:   Definition of the Type class: low level type information
  *               Note that we may have a compeltely different system for
  *                recording high level types

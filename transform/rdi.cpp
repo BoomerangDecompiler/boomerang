@@ -1,8 +1,8 @@
 /*
  * Copyright (C) 2004, Mike Van Emmerik and Trent Waddington
  */
-/*==============================================================================
- * FILE:       generic.cpp
+/***************************************************************************//**
+ * \file       generic.cpp
  * OVERVIEW:   Implementation of the RDIExpTransformer and related classes.
  *============================================================================*/
 /*

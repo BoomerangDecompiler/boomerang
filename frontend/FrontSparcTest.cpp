@@ -1,5 +1,5 @@
-/*==============================================================================
- * FILE:       FrontSparcTest.cc
+/***************************************************************************//**
+ * \file       FrontSparcTest.cc
  * OVERVIEW:   Provides the implementation for the FrontSparcTest class, which
  *                tests the sparc front end
  *============================================================================*/
@@ -27,7 +27,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION( FrontSparcTest );
 #define HELLO_SPARC		"test/sparc/hello"
 #define BRANCH_SPARC	"test/sparc/branch"
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:		FrontSparcTest::setUp
  * OVERVIEW:		Set up anything needed before all tests
  * NOTE:			Called before any tests
@@ -43,7 +43,7 @@ void FrontSparcTest::setUp () {
     }
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        FrontSparcTest::tearDown
  * OVERVIEW:        Delete objects created in setUp
  * NOTE:            Called after all tests
@@ -53,7 +53,7 @@ void FrontSparcTest::setUp () {
 void FrontSparcTest::tearDown () {
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        FrontSparcTest::test1
  * OVERVIEW:        Test decoding some sparc instructions
  *============================================================================*/

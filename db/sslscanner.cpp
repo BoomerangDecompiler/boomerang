@@ -210,8 +210,8 @@ int read();
  * WARRANTIES.
  *
  */
-/*==============================================================================
- * FILE:          sslscanner.l
+/***************************************************************************//**
+ * \file          sslscanner.l
  * \brief      Defines a scanner to parse the tokens of a Semantic
  *                  Specification Language specification.
  ******************************************************************************/

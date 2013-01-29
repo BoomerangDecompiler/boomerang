@@ -1,4 +1,4 @@
-/*==============================================================================
+/***************************************************************************//**
  * FILE:	   FrontendTest.cc
  * OVERVIEW:   Provides the implementation for the FrontendTest class, which
  *				tests the FrontEnd and related classes
@@ -19,7 +19,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION( FrontendTest );
 #define HELLO_HPPA		"test/hppa/hello"
 #define STARTER_PALM	"test/mc68328/Starter.prc"
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:		FrontendTest::setUp
  * OVERVIEW:		Set up anything needed before all tests
  * NOTE:			Called before any tests
@@ -29,7 +29,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION( FrontendTest );
 void FrontendTest::setUp () {
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:		FrontendTest::tearDown
  * OVERVIEW:		Delete objects created in setUp
  * NOTE:			Called after all tests
@@ -39,7 +39,7 @@ void FrontendTest::setUp () {
 void FrontendTest::tearDown () {
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:		FrontendTest::test1
  * OVERVIEW:		Test loading the sparc hello world program
  *============================================================================*/

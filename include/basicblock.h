@@ -10,7 +10,7 @@
  */
 
 /***************************************************************************//**
- * FILE:       basicblock.h
+ * \file       basicblock.h
  * \brief   Interface for the basic block class, which form nodes of the control flow graph
  ******************************************************************************/
 

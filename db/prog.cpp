@@ -10,7 +10,7 @@
  */
 
 /***************************************************************************//**
- * FILE:        prog.cpp
+ * \file     prog.cpp
  * \brief    Implementation of the program class. Holds information of
  *                interest to the whole program.
  ******************************************************************************/
@@ -145,8 +145,7 @@ bool Prog::wellForm() {
 
 // last fixes after decoding everything
 // was in analysis.cpp
-void Prog::finishDecode()
-{
+void Prog::finishDecode() {
     for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end(); it++) {
         Proc *pProc = *it;
 
@@ -291,8 +290,7 @@ void Prog::generateRTL(Cluster *cluster, UserProc *proc) {
     m_rootCluster->closeStreams();
 }
 
-Statement *Prog::getStmtAtLex(Cluster *cluster, unsigned int begin, unsigned int end)
-{
+Statement *Prog::getStmtAtLex(Cluster *cluster, unsigned int begin, unsigned int end) {
     for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end(); it++) {
         Proc *pProc = *it;
         if (pProc->isLib()) continue;
@@ -311,8 +309,7 @@ Statement *Prog::getStmtAtLex(Cluster *cluster, unsigned int begin, unsigned int
 }
 
 
-const char *Cluster::makeDirs()
-{
+const char *Cluster::makeDirs() {
     std::string path;
     if (parent)
         path = parent->makeDirs();
@@ -329,8 +326,7 @@ const char *Cluster::makeDirs()
     return strdup(path.c_str());
 }
 
-void Cluster::removeChild(Cluster *n)
-{
+void Cluster::removeChild(Cluster *n) {
     std::vector<Cluster*>::iterator it;
     for (it = children.begin(); it != children.end(); it++)
         if (*it == n)
@@ -339,16 +335,14 @@ void Cluster::removeChild(Cluster *n)
     children.erase(it);
 }
 
-void Cluster::addChild(Cluster *n)
-{
+void Cluster::addChild(Cluster *n) {
     if (n->parent)
         n->parent->removeChild(n);
     children.push_back(n);
     n->parent = this;
 }
 
-Cluster *Cluster::find(const char *nam)
-{
+Cluster *Cluster::find(const char *nam) {
     if (name == nam)
         return this;
     for (unsigned i = 0; i < children.size(); i++) {
@@ -359,15 +353,13 @@ Cluster *Cluster::find(const char *nam)
     return NULL;
 }
 
-const char *Cluster::getOutPath(const char *ext)
-{
+const char *Cluster::getOutPath(const char *ext) {
     std::string basedir = makeDirs();
     // Ugh - should probably return a whole std::string
     return strdup((basedir + "/" + name + "." + ext).c_str());
 }
 
-void Cluster::openStream(const char *ext)
-{
+void Cluster::openStream(const char *ext) {
     if (out.is_open())
         return;
     out.open(getOutPath(ext));
@@ -379,15 +371,13 @@ void Cluster::openStream(const char *ext)
     }
 }
 
-void Cluster::openStreams(const char *ext)
-{
+void Cluster::openStreams(const char *ext) {
     openStream(ext);
     for (unsigned i = 0; i < children.size(); i++)
         children[i]->openStreams(ext);
 }
 
-void Cluster::closeStreams()
-{
+void Cluster::closeStreams() {
     if (out.is_open()) {
         out.close();
     }
@@ -395,16 +385,14 @@ void Cluster::closeStreams()
         children[i]->closeStreams();
 }
 
-bool Prog::clusterUsed(Cluster *c)
-{
+bool Prog::clusterUsed(Cluster *c) {
     for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end(); it++)
         if ((*it)->getCluster() == c)
             return true;
     return false;
 }
 
-Cluster    *Prog::getDefaultCluster(const char *name)
-{
+Cluster    *Prog::getDefaultCluster(const char *name) {
     const char *cfname = NULL;
     if (pBF) cfname = pBF->getFilenameSymbolFor(name);
     if (cfname == NULL)
@@ -477,12 +465,12 @@ void Prog::clear() {
 
 /***************************************************************************//**
  *
- * NOTE:        Formally Frontend::newProc
+ * \note     Formally Frontend::newProc
  * \brief    Call this function when a procedure is discovered (usually by
  *                  decoding a call instruction). That way, it is given a name
  *                  that can be displayed in the dot file, etc. If we assign it
  *                  a number now, then it will retain this number always
- * PARAMETERS:    uAddr - Native address of the procedure entry point
+ * \param uAddr - Native address of the procedure entry point
  * \returns        Pointer to the Proc object, or 0 if this is a deleted (not to
  *                  be decoded) address
  ******************************************************************************/
@@ -518,8 +506,7 @@ Proc* Prog::setNewProc(ADDRESS uAddr) {
 
 Type *typeFromDebugInfo(int index, DWORD64 ModBase);
 
-Type *makeUDT(int index, DWORD64 ModBase)
-{
+Type *makeUDT(int index, DWORD64 ModBase) {
     HANDLE hProcess = GetCurrentProcess();
     int got;
     WCHAR *name;
@@ -555,8 +542,7 @@ Type *makeUDT(int index, DWORD64 ModBase)
     return NULL;
 }
 
-Type *typeFromDebugInfo(int index, DWORD64 ModBase)
-{
+Type *typeFromDebugInfo(int index, DWORD64 ModBase) {
     HANDLE hProcess = GetCurrentProcess();
 
     int got;
@@ -633,8 +619,7 @@ BOOL CALLBACK addSymbol(
         dbghelp::PSYMBOL_INFO pSymInfo,
         ULONG SymbolSize,
         PVOID UserContext
-        )
-{
+        ) {
     Proc *proc = (Proc*)UserContext;
     const char *name = proc->getName();
     if (pSymInfo->Flags & SYMFLAG_PARAMETER) {
@@ -746,8 +731,7 @@ void Prog::remProc(UserProc* uProc) {
     delete uProc;
 }
 
-void Prog::removeProc(const char *name)
-{
+void Prog::removeProc(const char *name) {
     for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end(); it++)
         if (std::string(name) == (*it)->getName()) {
             Boomerang::get()->alert_remove(*it);
@@ -828,8 +812,7 @@ Signature* Prog::getLibSignature(const char *nam) {
     return pFE->getLibSignature(nam);
 }
 
-void Prog::rereadLibSignatures()
-{
+void Prog::rereadLibSignatures() {
     pFE->readLibraryCatalog();
     for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end(); it++) {
         if ((*it)->isLib()) {
@@ -846,18 +829,15 @@ platform Prog::getFrontEndId() {
     return pFE->getFrontEndId();
 }
 
-Signature *Prog::getDefaultSignature(const char *name)
-{
+Signature *Prog::getDefaultSignature(const char *name) {
     return pFE->getDefaultSignature(name);
 }
 
-std::vector<Exp*> &Prog::getDefaultParams()
-{
+std::vector<Exp*> &Prog::getDefaultParams() {
     return pFE->getDefaultParams();
 }
 
-std::vector<Exp*> &Prog::getDefaultReturns()
-{
+std::vector<Exp*> &Prog::getDefaultReturns() {
     return pFE->getDefaultReturns();
 }
 
@@ -867,8 +847,7 @@ bool Prog::isWin32() {
     return pFE->isWin32();
 }
 
-const char *Prog::getGlobalName(ADDRESS uaddr)
-{
+const char *Prog::getGlobalName(ADDRESS uaddr) {
     // FIXME: inefficient
     for (std::set<Global*>::iterator it = globals.begin(); it != globals.end(); it++) {
         if ((*it)->getAddress() == uaddr)
@@ -889,8 +868,7 @@ void Prog::dumpGlobals() {
     }
 }
 
-ADDRESS Prog::getGlobalAddr(const char *nam)
-{
+ADDRESS Prog::getGlobalAddr(const char *nam) {
     for (std::set<Global*>::iterator it = globals.begin(); it != globals.end(); it++) {
         if (!strcmp((*it)->getName(), nam))
             return (*it)->getAddress();
@@ -956,13 +934,13 @@ bool Prog::globalUsed(ADDRESS uaddr, Type* knownType) {
     return true;
 }
 
-std::map<ADDRESS, std::string> &Prog::getSymbols()
-{
+std::map<ADDRESS, std::string> &Prog::getSymbols() {
     return pBF->getSymbols();
 }
 
 ArrayType* Prog::makeArrayType(ADDRESS u, Type* t) {
     const char* nam = newGlobalName(u);
+    assert(pBF);
     int sz = pBF->GetSizeByName(nam);
     if (sz == 0)
         return new ArrayType(t);        // An "unbounded" array
@@ -1003,8 +981,7 @@ Type *Prog::guessGlobalType(const char *nam, ADDRESS u) {
     return ty;
 }
 
-const char *Prog::newGlobalName(ADDRESS uaddr)
-{
+const char *Prog::newGlobalName(ADDRESS uaddr) {
     const char *nam = getGlobalName(uaddr);
     if (nam == NULL) {
         std::ostringstream os;
@@ -1206,9 +1183,9 @@ UserProc* Prog::getNextUserProc(std::list<Proc*>::iterator& it) {
  *
  * \brief    Lookup the given native address in the code section, returning a host pointer corresponding to the same
  *                 address
- * PARAMETERS:    uNative: Native address of the candidate string or constant
- *                last: will be set to one past end of the code section (host)
- *                delta: will be set to the difference between the host and native addresses
+ * \param uNative: Native address of the candidate string or constant
+ * \param last: will be set to one past end of the code section (host)
+ * \param delta: will be set to the difference between the host and native addresses
  * \returns        Host pointer if in range; NULL if not
  *                Also sets 2 reference parameters (see above)
  ******************************************************************************/
@@ -1482,8 +1459,7 @@ void Prog::globalTypeAnalysis() {
         LOG << "### end type analysis ###\n";
 }
 
-void Prog::rangeAnalysis()
-{
+void Prog::rangeAnalysis() {
     std::list<Proc*>::iterator pp;
     for (pp = m_procs.begin(); pp != m_procs.end(); pp++) {
         UserProc* proc = (UserProc*)(*pp);
@@ -1544,8 +1520,7 @@ void Prog::printCallGraph() {
     unlockFile(fd2);
 }
 
-void printProcsRecursive(Proc* proc, int indent, std::ofstream &f,std::set<Proc*> &seen)
-{
+void printProcsRecursive(Proc* proc, int indent, std::ofstream &f,std::set<Proc*> &seen) {
     bool fisttime=false;
     if (seen.find(proc) == seen.end()) {
         seen.insert(proc);
@@ -1554,8 +1529,7 @@ void printProcsRecursive(Proc* proc, int indent, std::ofstream &f,std::set<Proc*
     for (int i = 0; i < indent; i++)
         f << "     ";
 
-    if(!proc->isLib() && fisttime) // seen lib proc
-    {
+    if(!proc->isLib() && fisttime) { // seen lib proc
         f << proc->getNativeAddress();
         f << " __nodecode __incomplete void " << proc->getName() << "();\n";
 
@@ -1691,8 +1665,7 @@ void Global::print(std::ostream& os, Prog* prog) {
           (init ? init->prints() : "<none>");
 }
 
-Exp *Prog::readNativeAs(ADDRESS uaddr, Type *type)
-{
+Exp *Prog::readNativeAs(ADDRESS uaddr, Type *type) {
     Exp *e = NULL;
     SectionInfo *si = getSectionInfoByAddr(uaddr);
     if (si == NULL)
@@ -1823,8 +1796,7 @@ public:
     Cluster *parent;
 };
 
-Memo *Cluster::makeMemo(int mId)
-{
+Memo *Cluster::makeMemo(int mId) {
     ClusterMemo *m = new ClusterMemo(mId);
     m->name = name;
     m->children = children;
@@ -1832,8 +1804,7 @@ Memo *Cluster::makeMemo(int mId)
     return m;
 }
 
-void Cluster::readMemo(Memo *mm, bool dec)
-{
+void Cluster::readMemo(Memo *mm, bool dec) {
     ClusterMemo *m = dynamic_cast<ClusterMemo*>(mm);
 
     name = m->name;
@@ -1853,8 +1824,7 @@ public:
     std::string nam;
 };
 
-Memo *Global::makeMemo(int mId)
-{
+Memo *Global::makeMemo(int mId) {
     GlobalMemo *m = new GlobalMemo(mId);
     m->type = type;
     m->uaddr = uaddr;
@@ -1864,8 +1834,7 @@ Memo *Global::makeMemo(int mId)
     return m;
 }
 
-void Global::readMemo(Memo *mm, bool dec)
-{
+void Global::readMemo(Memo *mm, bool dec) {
     GlobalMemo *m = dynamic_cast<GlobalMemo*>(mm);
 
     type = m->type;
@@ -1888,8 +1857,7 @@ public:
     Cluster *m_rootCluster;
 };
 
-Memo *Prog::makeMemo(int mId)
-{
+Memo *Prog::makeMemo(int mId) {
     ProgMemo *m = new ProgMemo(mId);
     m->m_name = m_name;
     m->m_path = m_path;
@@ -1909,8 +1877,7 @@ Memo *Prog::makeMemo(int mId)
     return m;
 }
 
-void Prog::readMemo(Memo *mm, bool dec)
-{
+void Prog::readMemo(Memo *mm, bool dec) {
     ProgMemo *m = dynamic_cast<ProgMemo*>(mm);
     m_name = m->m_name;
     m_path = m->m_path;
@@ -1956,8 +1923,7 @@ void Prog::readMemo(Memo *mm, bool dec)
 
  */
 
-void Memoisable::takeMemo(int mId)
-{
+void Memoisable::takeMemo(int mId) {
     if (cur_memo != memos.end() && (*cur_memo)->mId == mId && mId != -1)
         return;
 
@@ -1980,8 +1946,7 @@ void Memoisable::takeMemo(int mId)
     cur_memo = memos.begin();
 }
 
-void Memoisable::restoreMemo(int mId, bool dec)
-{
+void Memoisable::restoreMemo(int mId, bool dec) {
     if (memos.begin() == memos.end())
         return;
 
@@ -2008,8 +1973,7 @@ void Memoisable::restoreMemo(int mId, bool dec)
 }
 
 
-bool Memoisable::canRestore(bool dec)
-{
+bool Memoisable::canRestore(bool dec) {
     if (memos.begin() == memos.end())
         return false;
 
@@ -2027,20 +1991,17 @@ bool Memoisable::canRestore(bool dec)
     return true;
 }
 
-void Memoisable::takeMemo()
-{
+void Memoisable::takeMemo() {
     takeMemo(-1);
 }
 
-void Memoisable::restoreMemo(bool dec)
-{
+void Memoisable::restoreMemo(bool dec) {
     restoreMemo(-1, dec);
 }
 
 #endif        // #ifdef USING_MEMO
 
-void Prog::decodeFragment(UserProc* proc, ADDRESS a)
-{
+void Prog::decodeFragment(UserProc* proc, ADDRESS a) {
     if (a >= pBF->getLimitTextLow() && a < pBF->getLimitTextHigh())
         pFE->decodeFragment(proc, a);
     else {
@@ -2050,8 +2011,7 @@ void Prog::decodeFragment(UserProc* proc, ADDRESS a)
     }
 }
 
-Exp    *Prog::addReloc(Exp *e, ADDRESS lc)
-{
+Exp    *Prog::addReloc(Exp *e, ADDRESS lc) {
     assert(e->isConst());
     Const *c = (Const*)e;
 

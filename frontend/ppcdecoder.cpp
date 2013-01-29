@@ -11,8 +11,8 @@
  *
  */
 
-/*==============================================================================
- * FILE:       decoder.m
+/***************************************************************************//**
+ * \file       decoder.m
  * \brief   Implementation of the PPC specific parts of the PPCDecoder class.
  ******************************************************************************/
 
@@ -22,7 +22,7 @@
  * 26/Sep/05 - Mike: Added Xsab_, Xsax_; DIS_INDEX uses RAZ not RA now; A2c_ -> Ac_ (does single as well as double prec)
  **/
 
-/*==============================================================================
+/***************************************************************************//**
  * Dependencies.
  ******************************************************************************/
 
@@ -83,7 +83,7 @@ Exp*    crBit(int bitNum);    // Get an expression for a CR bit access
     jump->setCondType(cond); \
     SHOW_ASM(name<<" "<<BIcr<<", 0x"<<std::hex<<relocd-delta)
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:       unused
  * \brief       A dummy function to suppress "unused local variable" messages
  * PARAMETERS:       x: integer variable to be "used"
@@ -94,7 +94,7 @@ void PPCDecoder::unused(int x)
 void unused(const char* x) {}
 
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:       PPCDecoder::decodeInstruction
  * \brief       Attempt to decode the high level instruction at a given
  *                   address and return the corresponding HL type (e.g. CallStatement,
@@ -4546,7 +4546,7 @@ MATCH_finished_a: (void)0; /*placeholder for label*/
  * expressions (Exp*s).
  **********************************************************************/
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        PPCDecoder::dis_Reg
  * \brief        Decode the register
  * PARAMETERS:        r - register (0-31)
@@ -4557,7 +4557,7 @@ Exp* PPCDecoder::dis_Reg(unsigned r)
     return Location::regOf(r);
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        PPCDecoder::dis_RAmbz
  * \brief        Decode the register rA when rA represents constant 0 if r == 0
  * PARAMETERS:        r - register (0-31)
@@ -4571,7 +4571,7 @@ Exp* PPCDecoder::dis_RAmbz(unsigned r)
 }
 
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:      isFuncPrologue()
  * \brief      Check to see if the instructions at the given offset match
  *                    any callee prologue, i.e. does it look like this offset
@@ -4590,7 +4590,7 @@ bool PPCDecoder::isFuncPrologue(ADDRESS hostPC)
  * These are the fetch routines.
  **********************************/
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        getDword
  * \brief        Returns the double starting at the given address.
  * PARAMETERS:        lc - address at which to decode the double
@@ -4602,7 +4602,7 @@ DWord PPCDecoder::getDword(ADDRESS lc)
     return (p[0] << 24) + (p[1] << 16) + (p[2] << 8) + p[3];
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:       PPCDecoder::PPCDecoder
  * \brief
  * PARAMETERS:       None

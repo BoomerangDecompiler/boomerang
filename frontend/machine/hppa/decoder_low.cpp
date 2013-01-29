@@ -2,8 +2,8 @@
 #include <assert.h>
 
 #line 2 "machine/hppa/decoder_low.m"
-/*==============================================================================
- * FILE:        decoder_low.m
+/***************************************************************************//**
+ * \file        decoder_low.m
  * OVERVIEW:    Low level New Jersey Machine Code Toolkit match file for the
  *              HP Pa/risc architecture (basically PA/RISC version 1.1)
  *
@@ -606,7 +606,7 @@ void c_null(ADDRESS hostpc, char **garble)
 #endif
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:       NJMCDecoder::decodeLowLevelInstruction
  * OVERVIEW:       Decodes a machine instruction and returns an instantiated
  *                  list of RTs.

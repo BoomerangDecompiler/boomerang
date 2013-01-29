@@ -1,5 +1,5 @@
-/*==============================================================================
- * FILE:       ProcTest.cc
+/***************************************************************************//**
+ * \file       ProcTest.cc
  * OVERVIEW:   Provides the implementation for the ProcTest class, which
  *                tests the Proc class
  *============================================================================*/
@@ -23,7 +23,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION( ProcTest );
 
 #define HELLO_PENTIUM		"test/pentium/hello"
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        ProcTest::setUp
  * OVERVIEW:        Set up some expressions for use with all the tests
  * NOTE:            Called before any tests
@@ -33,7 +33,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION( ProcTest );
 void ProcTest::setUp () {
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        ProcTest::tearDown
  * OVERVIEW:        Delete expressions created in setUp
  * NOTE:            Called after all tests
@@ -44,7 +44,7 @@ void ProcTest::tearDown () {
     delete m_proc;
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        ProcTest::testName
  * OVERVIEW:        Test setting and reading name, constructor, native address
  *============================================================================*/

@@ -7,8 +7,8 @@
  *
  */
 
-/*===============================================================================================
- * FILE:       managed.h
+/***************************************************************************//**=================
+ * \file       managed.h
  * OVERVIEW:   Definition of "managed" classes such as StatementSet, which feature makeUnion etc
  * CLASSES:        StatementSet
  *                AssignSet

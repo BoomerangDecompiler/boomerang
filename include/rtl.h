@@ -9,15 +9,15 @@
  *
  */
 
-/*==============================================================================
- * FILE:       rtl.h
+/***************************************************************************//**
+ * \file       rtl.h
  * OVERVIEW:   Definition of the classes that describe an RTL, a low-level
  *               register transfer list. Higher-level RTLs (instance
  *               of class HLJump, HLCall, etc.) represent information about
  *               a control transfer instruction (CTI) in the source program.
  *               analysis code adds information to existing higher-level
  *               RTLs and sometimes creates new higher-level RTLs (e.g., for
- *               switch statements). 
+ *               switch statements).
  *============================================================================*/
 
 /*
@@ -53,7 +53,7 @@ class XMLProgParser;
 class StmtVisitor;
 
 
-/*==============================================================================
+/***************************************************************************//**
  * Class RTL: describes low level register transfer lists (actually lists of statements).
  * NOTE: when time permits, this class could be removed, replaced with new Statements that mark the current native
  * address
@@ -88,7 +88,7 @@ virtual bool        accept(StmtVisitor* visitor);
         // Statement list enquiry methods
         int            getNumStmt();                            // Return the number of Stmts in RTL.
         Statement*    elementAt(unsigned i);                    // Return the i'th element in RTL.
-        
+
         // Statement list editing methods
         void        appendStmt(Statement *s);                // Add s to end of RTL.
         void        prependStmt(Statement *s);                // Add s to start of RTL.
@@ -100,7 +100,7 @@ virtual bool        accept(StmtVisitor* visitor);
         void        replaceLastStmt(Statement* repl);        // Replace the last Statement
         void        clear();                                // Remove all statements from this RTL.
         // Append list of exps to end.
-        void        appendListStmt(std::list<Statement*>& le); 
+        void        appendListStmt(std::list<Statement*>& le);
         void        appendRTL(RTL& rtl);                    // Append Statements from other RTL to end
         // Make a deep copy of the list of Exp*
         void        deepCopyList(std::list<Statement*>& dest);
@@ -147,7 +147,7 @@ virtual void        print(std::ostream& os = std::cout, bool html = false);
 
         // Replace all instances of "search" with "replace".
 virtual bool        searchAndReplace(Exp* search, Exp* replace);
-        
+
         // Searches for all instances of "search" and adds them to "result" in reverse nesting order. The search is
         // optionally type sensitive.
 virtual bool        searchAll(Exp* search, std::list<Exp*> &result);
@@ -182,7 +182,7 @@ protected:
 
 
 
-/*==============================================================================
+/***************************************************************************//**
  * The TableEntry class represents a single instruction - a string/RTL pair.
  *
  * This class plus ParamEntry and RTLInstDict should be moved to a separate
@@ -197,20 +197,20 @@ public:
 
     void setParam(std::list<std::string>& p);
     void setRTL(RTL& rtl);
-    
+
     // non-zero return indicates failure
     int appendRTL(std::list<std::string>& p, RTL& rtl);
-    
+
 public:
     std::list<std::string> params;
     RTL rtl;
 
-#define TEF_NEXTPC 1        
-    int flags;                    // aka required capabilities. Init. to 0 
+#define TEF_NEXTPC 1
+    int flags;                    // aka required capabilities. Init. to 0
 };
 
 
-/*==============================================================================
+/***************************************************************************//**
  * The ParamEntry class represents the details of a single parameter.
  *============================================================================*/
 typedef enum {PARAM_SIMPLE, PARAM_ASGN, PARAM_LAMBDA, PARAM_VARIANT} ParamKind;
@@ -229,7 +229,7 @@ public:
             if (type) delete type;
             if (regType) delete regType;
         }
-        
+
         std::list<std::string> params;        /* PARAM_VARIANT & PARAM_ASGN only */
         std::list<std::string> funcParams;    /* PARAM_LAMBDA - late bound params */
         Statement*    asgn;                    /* PARAM_ASGN only */
@@ -242,12 +242,12 @@ public:
 };
 
 
-/*==============================================================================
+/***************************************************************************//**
  * The RTLInstDict represents a dictionary that maps instruction names to the
  * parameters they take and a template for the Exp list describing their
  * semantics. It handles both the parsing of the SSL file that fills in
  * the dictionary entries as well as instantiation of an Exp list for a given
- * instruction name and list of actual parameters. 
+ * instruction name and list of actual parameters.
  *============================================================================*/
 
 class RTLInstDict {
@@ -268,7 +268,7 @@ public:
         // Appends an RTL to an idict entry, or Adds it to idict if an entry does not already exist. A non-zero return
         // indicates failure.
         int appendToDict(std::string &n, std::list<std::string>& p, RTL& rtl);
-        
+
         // Given an instruction name and list of actual parameters, return an instantiated RTL for the corresponding
         // instruction entry.
         std::list<Statement*>* instantiateRTL(std::string& name, ADDRESS natPC, std::vector<Exp*>& actuals);
@@ -276,15 +276,10 @@ public:
         std::list<Statement*>* instantiateRTL(RTL& rtls, ADDRESS natPC, std::list<std::string> &params,
             std::vector<Exp*>& actuals);
 
-        // Transform the given list into another list which doesn't have post-variables, by either adding temporaries or
-        // just removing them where possible. Modifies the list passed, and also returns a pointer to it. Second
-        // parameter indicates whether the routine should attempt to optimize the resulting output, ie to minimize the
-        // number of temporaries. This is recommended for fully expanded expressions (ie within uqbt), but unsafe
-        // otherwise.
         std::list<Statement*>* transformPostVars(std::list<Statement*> *rts, bool optimise);
 
         void        print(std::ostream& os = std::cout);
-        
+
         // Add a new register to the machine
         void        addRegister(const char *name, int id, int size, bool flt);
 

@@ -7,8 +7,8 @@
  *
  */
 
-/*==============================================================================
- * FILE:        SymTab.h
+/***************************************************************************//**
+ * \file        SymTab.h
  * \brief    This file contains the definition of the class SymTab, a simple class to implement a symbol table
  *                than can be looked up by address or my name.
  *                NOTE: Can't readily use operator[] overloaded for address and string parameters. The main problem is

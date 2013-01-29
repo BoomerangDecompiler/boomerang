@@ -8,8 +8,8 @@
  *
  */
 
-/*==============================================================================
- * FILE:       palmsystraps.h
+/***************************************************************************//**
+ * \file       palmsystraps.h
  * OVERVIEW:   Enumerated types for system trap names
  *             Based on code from the Metrowerks Compiler, PalmOS 2.0 support
  *============================================================================*/

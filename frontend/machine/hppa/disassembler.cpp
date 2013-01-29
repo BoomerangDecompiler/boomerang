@@ -2,8 +2,8 @@
 #include <assert.h>
 
 #line 2 "machine/hppa/disassembler.m"
-/*==============================================================================
- * FILE:     disassembler.m
+/***************************************************************************//**
+ * \file     disassembler.m
  * OVERVIEW: Matcher file for a stand alone disassembler tool
  *
  (C) 2000-2001 The University of Queensland, BT group

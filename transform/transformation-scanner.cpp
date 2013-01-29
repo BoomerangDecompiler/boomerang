@@ -198,8 +198,8 @@ int read();
 /* % section 1 definitions go here */ 
 #line 1 "transformation.l"
 #define INITIAL 0
-/*==============================================================================
- * FILE:       transformation.l
+/***************************************************************************//**
+ * \file       transformation.l
  * OVERVIEW:   Scanner for transformation language.
  *============================================================================*/
 /*

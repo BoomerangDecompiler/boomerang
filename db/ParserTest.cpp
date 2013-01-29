@@ -1,5 +1,5 @@
-/*==============================================================================
- * FILE:       ParserTest.cc
+/***************************************************************************//**
+ * \file       ParserTest.cc
  * OVERVIEW:   Provides the implementation for the ParserTest class, which
  *                tests the sslparser.y etc
  *============================================================================*/
@@ -18,7 +18,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION( ParserTest );
 #define SPARC_SSL		Boomerang::get()->getProgPath() + "frontend/machine/sparc/sparc.ssl"
 
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        ParserTest::setUp
  * OVERVIEW:        Set up some expressions for use with all the tests
  * NOTE:            Called before any tests
@@ -28,7 +28,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION( ParserTest );
 void ParserTest::setUp () {
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        ParserTest::tearDown
  * OVERVIEW:        Delete expressions created in setUp
  * NOTE:            Called after all tests
@@ -38,7 +38,7 @@ void ParserTest::setUp () {
 void ParserTest::tearDown () {
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        ParserTest::testRead
  * OVERVIEW:        Test reading the SSL file
  *============================================================================*/
@@ -47,7 +47,7 @@ void ParserTest::testRead () {
     CPPUNIT_ASSERT(d.readSSLFile(SPARC_SSL));
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        ParserTest::testExp
  * OVERVIEW:        Test parsing an expression
  *============================================================================*/

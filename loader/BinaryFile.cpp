@@ -9,12 +9,12 @@
  *
  */
 
-/* File: BinaryFile.cpp
- * Desc: This file contains the implementation of the class BinaryFile
+/** \file BinaryFile.cpp
+ * This file contains the implementation of the class BinaryFile
  *
  * This file implements the abstract BinaryFile class.
  * All classes derived from this class must implement the Load()
- *function.
+ * function.
 */
 
 /*
@@ -24,7 +24,7 @@
  * 14 Jun 02 - Mike: Fixed a bug where Windows programs chose the Exe loader
 */
 
-/*==============================================================================
+/***************************************************************************//**
  * Dependencies.
  ******************************************************************************/
 
@@ -59,7 +59,7 @@ int BinaryFile::GetNumSections() const {
 SectionInfo *BinaryFile::GetSectionInfo(int idx) const {
     return m_pSections + idx;
 }
-
+//! Find section index given name, or -1 if not found
 int BinaryFile::GetSectionIndexByName(const char* sName) {
     for (int i=0; i < m_iNumSections; i++) {
         if (strcmp(m_pSections[i].pSectionName, sName) == 0) {
@@ -94,15 +94,15 @@ SectionInfo * BinaryFile::GetSectionInfoByName(const char* sName) {
 // Trivial functions //
 // Overridden if reqd//
 ///////////////////////
-
+//! Lookup the address, return the name, or 0 if not found
 const char* BinaryFile::SymbolByAddress(ADDRESS uNative) {
     return 0;        // Overridden by subclasses that support syms
 }
-
+//! Lookup the name, return the address. If not found, return NO_ADDRESS
 ADDRESS BinaryFile::GetAddressByName(const char* pName, bool bNoTypeOK) {
     return ADDRESS::g(0L);
 }
-
+//! Lookup the name, return the size
 int BinaryFile::GetSizeByName(const char* pName, bool bNoTypeOK) {
     return 0;
 }
@@ -134,27 +134,51 @@ bool BinaryFile::DisplayDetails(const char* fileName, FILE* f /* = stdout */) {
     // as contents of each of the sections.
 }
 
-// Specific to BinaryFile objects that implement a "global pointer"
-// Gets a pair of unsigned integers representing the address of %agp, and
-// a machine specific value (GLOBALOFFSET)
-// This is a stub routine that should be overridden if required
+/***************************************************************************//**
+ *
+ * Specific to BinaryFile objects that implement a "global pointer"
+ * Gets a pair of unsigned integers representing the address of the
+ * abstract global pointer (%agp) (in first) and a constant that will
+ * be available in the csrparser as GLOBALOFFSET (second). At present,
+ * the latter is only used by the Palm machine, to represent the space
+ * allocated below the %a5 register (i.e. the difference between %a5 and
+ * %agp). This value could possibly be used for other purposes.
+ *
+ ******************************************************************************/
 std::pair<ADDRESS,unsigned> BinaryFile::GetGlobalPointerInfo() {
     return std::pair<ADDRESS, unsigned>(ADDRESS::g(0L), 0);
 }
 
-// Get a pointer to a new map of dynamic global data items.
-// If the derived class doesn't implement this function, return an empty map
-// Caller should delete the returned map
+/***************************************************************************//**
+ *
+ * \brief Get a map from native addresses to symbolic names of global data items
+ * (if any).
+ *
+ * Those are shared with dynamically linked libraries.
+ * Example: __iob (basis for stdout).
+ * The ADDRESS is the native address of a pointer to the real dynamic data object.
+ * If the derived class doesn't implement this function, return an empty map
+ *
+ * \note Caller should delete the returned map
+ * \returns  map of globals
+ ******************************************************************************/
+
 std::map<ADDRESS, const char*>* BinaryFile::GetDynamicGlobalMap() {
     return new std::map<ADDRESS, const char*>;
 }
 
-// Get an array of exported function stub addresses. Normally overridden.
+/***************************************************************************//**
+ *
+ * \brief Get an array of addresses of imported function stubs
+ * Set number of these to numImports
+ * \param numExports size of returned array
+ * \returns  array of stubs
+ ******************************************************************************/
 ADDRESS* BinaryFile::GetImportStubs(int& numExports) {
     numExports = 0;
     return NULL;
 }
-
+//! Get the lower and upper limits of the text segment
 void BinaryFile::getTextLimits() {
     int n = GetNumSections();
     limitTextLow = ADDRESS::g(0xFFFFFFFF);

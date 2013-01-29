@@ -9,8 +9,8 @@
  *
  */
 
-/*==============================================================================
- * FILE:       rtl.cc
+/***************************************************************************//**
+ * \file       rtl.cc
  * \brief   Implementation of the classes that describe a low level RTL (
  *               register transfer list)
  ******************************************************************************/
@@ -57,7 +57,7 @@
  * Class RTL represents low-level register transfer lists.
  *****************************************************************************/
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        RTL::RTL
  * \brief        Constructor.
  * PARAMETERS:        <none>
@@ -67,7 +67,7 @@ RTL::RTL()
   : nativeAddr(ADDRESS::g(0L))
 { }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        RTL::RTL
  * \brief        Constructor.
  * PARAMETERS:        instNativeAddr - the native address of the instruction
@@ -80,7 +80,7 @@ RTL::RTL(ADDRESS instNativeAddr, std::list<Statement*>* listStmt /*= NULL*/)
         stmtList = *listStmt;
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        RTL::RTL
  * \brief        Copy constructor. A deep clone is made of the given object
  *                    so that the lists of Exps do not share memory.
@@ -94,7 +94,7 @@ RTL::RTL(const RTL& other) : nativeAddr(other.nativeAddr) {
     }
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        RTL::~RTL
  * \brief        Destructor.
  * PARAMETERS:        <none>
@@ -102,7 +102,7 @@ RTL::RTL(const RTL& other) : nativeAddr(other.nativeAddr) {
  ******************************************************************************/
 RTL::~RTL() { }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        RTL::operator=
  * \brief        Assignment copy (deep).
  * PARAMETERS:        other - RTL to copy
@@ -120,7 +120,7 @@ RTL& RTL::operator=(RTL& other) {
     return *this;
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        RTL:clone
  * \brief        Deep copy clone; deleting the clone will not affect this
  *                     RTL object
@@ -150,7 +150,7 @@ bool RTL::accept(StmtVisitor* visitor) {
     return true;
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        RTL::deepCopyList
  * \brief        Make a copy of this RTLs list of Exp* to the given list
  * PARAMETERS:        Ref to empty list to copy to
@@ -164,7 +164,7 @@ void RTL::deepCopyList(std::list<Statement*>& dest) {
     }
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        RTL::appendStmt
  * \brief        Append the given Statement at the end of this RTL
  * NOTE:            Exception: Leaves any flag call at the end (so may push exp
@@ -184,7 +184,7 @@ void RTL::appendStmt(Statement* s) {
     stmtList.push_back(s);
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        RTL::prependStmt
  * \brief        Prepend the given Statement at the start of this RTL
  * NOTE:            No clone of the statement is made. This is different to how UQBT was
@@ -195,7 +195,7 @@ void RTL::prependStmt(Statement* s) {
     stmtList.push_front(s);
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        RTL::appendListStmt
  * \brief        Append a given list of Statements to this RTL
  * NOTE:            A copy of the Statements in le are appended
@@ -209,7 +209,7 @@ void RTL::appendListStmt(std::list<Statement*>& le) {
     }
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        RTL::appendRTL
  * \brief        Append the Statemens of another RTL to this object
  * NOTE:            A copy of the Statements in r are appended
@@ -220,7 +220,7 @@ void RTL::appendRTL(RTL& r) {
     appendListStmt(r.stmtList);
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        RTL::insertStmt
  * \brief        Insert the given Statement before index i
  * NOTE:            No copy of stmt is made. This is different to UQBT
@@ -244,7 +244,7 @@ void RTL::insertStmt(Statement* s, iterator it) {
     stmtList.insert(it, s);
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        RTL::updateStmt
  * \brief        Replace the ith Statement with the given one
  * PARAMETERS:        s: pointer to the new Exp
@@ -294,7 +294,7 @@ void RTL::replaceLastStmt(Statement* repl) {
 }
 
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        RTL::getNumStmt
  * \brief        Get the number of Statements in this RTL
  * PARAMETERS:        None
@@ -304,7 +304,7 @@ int RTL::getNumStmt() {
     return stmtList.size();
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        RTL::at
  * \brief        Provides indexing on a list. Changed from operator[] so that
  *                    we keep in mind it is linear in its execution time.
@@ -321,7 +321,7 @@ Statement* RTL::elementAt(unsigned i) {
     return *it;
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        RTL::print
  * \brief        Prints this object to a stream in text form.
  * PARAMETERS:        os - stream to output to (often cout or cerr)
@@ -375,7 +375,7 @@ char* RTL::prints() {
     return debug_buffer;
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        operator<<
  * \brief        Output operator for RTL*
  *                    Just makes it easier to use e.g. std::cerr << myRTLptr
@@ -389,7 +389,7 @@ std::ostream& operator<<(std::ostream& os, RTL* r) {
     return os;
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        RTL::updateAddress
  * \brief        Set the nativeAddr field
  * PARAMETERS:        Native address
@@ -399,7 +399,7 @@ void RTL::updateAddress(ADDRESS addr) {
     nativeAddr = addr;
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        RTL::searchReplace
  * \brief        Replace all instances of search with replace.
  * PARAMETERS:        search - ptr to an expression to search for
@@ -413,7 +413,7 @@ bool RTL::searchAndReplace(Exp* search, Exp* replace) {
     return ch;
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        RTL::searchAll
  * \brief        Find all instances of the search expression
  * PARAMETERS:        search - a location to search for
@@ -434,7 +434,7 @@ bool RTL::searchAll(Exp* search, std::list<Exp *> &result) {
     return found;
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        RTL::clear
  * \brief        Clear the list of Exps
  * PARAMETERS:        None
@@ -444,7 +444,7 @@ void RTL::clear() {
     stmtList.clear();
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        RTL::insertAssign
  * \brief        Prepends or appends an assignment to the front or back of
  *                      this RTL
@@ -470,7 +470,7 @@ void RTL::insertAssign(Exp* pLhs, Exp* pRhs, bool prep,
         appendStmt(asgn);
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        RTL::insertAfterTemps
  * \brief        Inserts an assignment at or near the top of this RTL, after
  *                      any assignments to temporaries. If the last assignment
@@ -518,7 +518,7 @@ void RTL::insertAfterTemps(Exp* pLhs, Exp* pRhs, Type* type     /* NULL */) {
     stmtList.insert(it, asgn);
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        RTL::getType
  * \brief        Get the "type" for this RTL. Just gets the type of
  *                      the first assignment Exp
@@ -537,7 +537,7 @@ Type* RTL::getType() {
     return new IntegerType();    //    Default to 32 bit integer if no assignments
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:      RTL::areFlagsAffected
  * \brief      Return true if this RTL affects the condition codes
  * NOTE:          Assumes that if there is a flag call Exp, then it is the last
@@ -596,7 +596,7 @@ void RTL::simplify() {
     }
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:        RTL::isCompare
  * \brief        Return true if this is an unmodified compare instruction
  *                      of a register with an operand

@@ -2,8 +2,8 @@
 #include <assert.h>
 
 #line 2 "machine/sparc/disassembler.m"
-/*==============================================================================
- * FILE:       disassembler.m
+/***************************************************************************//**
+ * \file       disassembler.m
  * OVERVIEW:   Skeleton file for a disassembler of SPARC instructions. 
  *============================================================================*/
 
@@ -186,7 +186,7 @@ char* NJMCDecoder::dis_Eaddr (ADDRESS pc)
     return _buffer;
 }
 
-/*==============================================================================
+/***************************************************************************//**
  * FUNCTION:       NJMCDecoder::decodeAssemblyInstruction
  * OVERVIEW:       Decodes a machine instruction and displays its assembly
  *                 representation onto the external array _assembly[].
