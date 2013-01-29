@@ -138,7 +138,9 @@ BasicBlock::BasicBlock(const BasicBlock& bb)
       ord(bb.ord), revOrd(bb.revOrd), inEdgesVisited(bb.inEdgesVisited), numForwardInEdges(bb.numForwardInEdges),
       traversed(bb.traversed), hllLabel(bb.hllLabel), indentLevel(bb.indentLevel), immPDom(bb.immPDom), loopHead(bb.loopHead),
       caseHead(bb.caseHead), condFollow(bb.condFollow), loopFollow(bb.loopFollow), latchNode(bb.latchNode), sType(bb.sType),
-      usType(bb.usType)
+      usType(bb.usType),
+      // Others
+      overlappedRegProcessingDone(false)
 {
     setRTLs(bb.m_pRtls);
 }
@@ -168,7 +170,9 @@ BasicBlock::BasicBlock(std::list<RTL*>* pRtls, BBTYPE bbType, int iNumOutEdges)
       // From Doug's code
       ord(-1), revOrd(-1), inEdgesVisited(0), numForwardInEdges(-1), traversed(UNTRAVERSED), hllLabel(false), indentLevel(0),
       immPDom(NULL), loopHead(NULL), caseHead(NULL), condFollow(NULL), loopFollow(NULL), latchNode(NULL), sType(Seq),
-      usType(Structured)
+      usType(Structured),
+      // Others
+      overlappedRegProcessingDone(false)
 {
     m_OutEdges.reserve(iNumOutEdges);                // Reserve the space; values added with AddOutEdge()
 
