@@ -45,6 +45,7 @@
 #include <fstream>
 #include <sstream>
 #include <vector>
+#include <algorithm>
 #include <cmath>
 #ifdef _WIN32
 #include <direct.h>                    // For Windows mkdir()
@@ -113,11 +114,10 @@ Prog::Prog(const char* name) :
 }
 
 Prog::~Prog() {
-    if (pBF) delete pBF;
-    if (pFE) delete pFE;
-    for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end(); it++) {
-        if (*it)
-            delete *it;
+    delete pBF;
+    delete pFE;
+    for (Proc* proc : m_procs) {
+        delete proc;
     }
     m_procs.clear();
 }
@@ -135,9 +135,9 @@ char* Prog::getName() {
 bool Prog::wellForm() {
     bool wellformed = true;
 
-    for (std::list<Proc *>::iterator it = m_procs.begin(); it != m_procs.end(); it++)
-        if (!(*it)->isLib()) {
-            UserProc *u = (UserProc*)*it;
+    for (Proc* proc : m_procs)
+        if (!proc->isLib()) {
+            UserProc *u = (UserProc*)proc;
             wellformed &= u->getCFG()->wellFormCfg();
         }
     return wellformed;
@@ -146,13 +146,12 @@ bool Prog::wellForm() {
 // last fixes after decoding everything
 // was in analysis.cpp
 void Prog::finishDecode() {
-    for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end(); it++) {
-        Proc *pProc = *it;
-
-        if (pProc->isLib()) continue;
+    for (Proc* pProc : m_procs) {
+        if (pProc->isLib())
+            continue;
         UserProc *p = (UserProc*)pProc;
-        if (!p->isDecoded()) continue;
-
+        if (!p->isDecoded())
+            continue;
         p->assignProcsToCalls();
         p->finalSimplify();
     }
@@ -164,11 +163,12 @@ void Prog::generateDotFile() {
     std::ofstream of(Boomerang::get()->dotFile);
     of << "digraph Cfg {" << std::endl;
 
-    for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end(); it++) {
-        Proc *pProc = *it;
-        if (pProc->isLib()) continue;
+    for (Proc* pProc : m_procs) {
+        if (pProc->isLib())
+            continue;
         UserProc *p = (UserProc*)pProc;
-        if (!p->isDecoded()) continue;
+        if (!p->isDecoded())
+            continue;
         // Subgraph for the proc name
         of << "\nsubgraph cluster_" << p->getName() << " {\n" << "       color=gray;\n    label=" << p->getName() <<
               ";\n";
@@ -233,14 +233,14 @@ void Prog::generateCode(Cluster *cluster, UserProc *proc, bool intermixRTL) {
     // First declare prototypes for all but the first proc
     std::list<Proc*>::iterator it = m_procs.begin();
     bool first = true, proto = false;
-    for (it = m_procs.begin(); it != m_procs.end(); it++) {
-        if ((*it)->isLib()) continue;
+    for (Proc* pProc : m_procs) {
+        if (pProc->isLib()) continue;
         if (first) {
             first = false;
             continue;
         }
         proto = true;
-        UserProc* up = (UserProc*)*it;
+        UserProc* up = (UserProc*)pProc;
         HLLCode *code = Boomerang::get()->getHLLCode(up);
         code->AddPrototype(up);                    // May be the wrong signature if up has ellipsis
         if (cluster == NULL || cluster == m_rootCluster)
@@ -249,9 +249,9 @@ void Prog::generateCode(Cluster *cluster, UserProc *proc, bool intermixRTL) {
     if ((proto && cluster == NULL) || cluster == m_rootCluster)
         os << "\n";                // Separate prototype(s) from first proc
 
-    for (it = m_procs.begin(); it != m_procs.end(); it++) {
-        Proc *pProc = *it;
-        if (pProc->isLib()) continue;
+    for (Proc* pProc : m_procs) {
+        if (pProc->isLib())
+            continue;
         UserProc *up = (UserProc*)pProc;
         if (!up->isDecoded()) continue;
         if (proc != NULL && up != proc)
@@ -274,11 +274,12 @@ void Prog::generateCode(Cluster *cluster, UserProc *proc, bool intermixRTL) {
 }
 
 void Prog::generateRTL(Cluster *cluster, UserProc *proc) {
-    for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end(); it++) {
-        Proc *pProc = *it;
-        if (pProc->isLib()) continue;
+    for (Proc* pProc : m_procs) {
+        if (pProc->isLib())
+            continue;
         UserProc *p = (UserProc*)pProc;
-        if (!p->isDecoded()) continue;
+        if (!p->isDecoded())
+            continue;
         if (proc != NULL && p != proc)
             continue;
         if (cluster != NULL && p->getCluster() != cluster)
@@ -291,11 +292,12 @@ void Prog::generateRTL(Cluster *cluster, UserProc *proc) {
 }
 
 Statement *Prog::getStmtAtLex(Cluster *cluster, unsigned int begin, unsigned int end) {
-    for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end(); it++) {
-        Proc *pProc = *it;
-        if (pProc->isLib()) continue;
+    for (Proc* pProc : m_procs) {
+        if (pProc->isLib())
+            continue;
         UserProc *p = (UserProc*)pProc;
-        if (!p->isDecoded()) continue;
+        if (!p->isDecoded())
+            continue;
         if (cluster != NULL && p->getCluster() != cluster)
             continue;
 
@@ -327,8 +329,8 @@ const char *Cluster::makeDirs() {
 }
 
 void Cluster::removeChild(Cluster *n) {
-    std::vector<Cluster*>::iterator it;
-    for (it = children.begin(); it != children.end(); it++)
+    auto it= children.begin();
+    for (; it != children.end(); it++)
         if (*it == n)
             break;
     assert(it != children.end());
@@ -345,8 +347,8 @@ void Cluster::addChild(Cluster *n) {
 Cluster *Cluster::find(const char *nam) {
     if (name == nam)
         return this;
-    for (unsigned i = 0; i < children.size(); i++) {
-        Cluster *c = children[i]->find(nam);
+    for (Cluster * child : children) {
+        Cluster *c = child->find(nam);
         if (c)
             return c;
     }
@@ -373,28 +375,29 @@ void Cluster::openStream(const char *ext) {
 
 void Cluster::openStreams(const char *ext) {
     openStream(ext);
-    for (unsigned i = 0; i < children.size(); i++)
-        children[i]->openStreams(ext);
+    for (Cluster * child : children)
+        child->openStreams(ext);
 }
 
 void Cluster::closeStreams() {
     if (out.is_open()) {
         out.close();
     }
-    for (unsigned i = 0; i < children.size(); i++)
-        children[i]->closeStreams();
+    for (Cluster * child : children)
+        child->closeStreams();
 }
 
 bool Prog::clusterUsed(Cluster *c) {
-    for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end(); it++)
-        if ((*it)->getCluster() == c)
+    for (Proc* pProc : m_procs)
+        if (pProc->getCluster() == c)
             return true;
     return false;
 }
 
 Cluster    *Prog::getDefaultCluster(const char *name) {
     const char *cfname = NULL;
-    if (pBF) cfname = pBF->getFilenameSymbolFor(name);
+    if (pBF)
+        cfname = pBF->getFilenameSymbolFor(name);
     if (cfname == NULL)
         return m_rootCluster;
     if (strcmp(cfname + strlen(cfname) - 2, ".c"))
@@ -412,20 +415,21 @@ Cluster    *Prog::getDefaultCluster(const char *name) {
 
 void Prog::generateCode(std::ostream &os) {
     HLLCode *code = Boomerang::get()->getHLLCode();
-    for (std::set<Global*>::iterator it1 = globals.begin(); it1 != globals.end(); it1++) {
+    for ( Global *glob : globals) {
         // Check for an initial value
         Exp *e = NULL;
-        e = (*it1)->getInitialValue(this);
+        e = glob->getInitialValue(this);
         if (e)
-            code->AddGlobal((*it1)->getName(), (*it1)->getType(), e);
+            code->AddGlobal(glob->getName(), glob->getType(), e);
     }
     code->print(os);
     delete code;
-    for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end(); it++) {
-        Proc *pProc = *it;
-        if (pProc->isLib()) continue;
+    for (Proc* pProc : m_procs) {
+        if (pProc->isLib())
+            continue;
         UserProc *p = (UserProc*)pProc;
-        if (!p->isDecoded()) continue;
+        if (!p->isDecoded())
+            continue;
         p->getCFG()->compressCfg();
         code = Boomerang::get()->getHLLCode(p);
         p->generateCode(code);
@@ -436,11 +440,12 @@ void Prog::generateCode(std::ostream &os) {
 
 // Print this program, mainly for debugging
 void Prog::print(std::ostream &out) {
-    for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end(); it++) {
-        Proc *pProc = *it;
-        if (pProc->isLib()) continue;
+    for (Proc* pProc : m_procs) {
+        if (pProc->isLib())
+            continue;
         UserProc *p = (UserProc*)pProc;
-        if (!p->isDecoded()) continue;
+        if (!p->isDecoded())
+            continue;
 
         // decoded userproc.. print it
         p->print(out);
@@ -450,16 +455,13 @@ void Prog::print(std::ostream &out) {
 // clear the current project
 void Prog::clear() {
     m_name = std::string("");
-    for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end(); it++)
-        if (*it)
-            delete *it;
+    for (Proc* pProc : m_procs)
+        delete pProc;
     m_procs.clear();
     m_procLabels.clear();
-    if (pBF)
-        delete pBF;
+    delete pBF;
     pBF = NULL;
-    if (pFE)
-        delete pFE;
+    delete pFE;
     pFE = NULL;
 }
 
@@ -752,8 +754,8 @@ int Prog::getNumProcs() {
 
 int Prog::getNumUserProcs() {
     int n = 0;
-    for (std::list<Proc*>::const_iterator it = m_procs.begin(); it != m_procs.end(); it++)
-        if (!(*it)->isLib())
+    for (Proc* pProc : m_procs)
+        if (!pProc->isLib())
             n++;
     return n;
 }
@@ -767,11 +769,10 @@ int Prog::getNumUserProcs() {
 Proc* Prog::getProc(int idx) const {
     // Return the indexed procedure. If this is used often, we should use a vector instead of a list
     // If index is invalid, result will be 0
-    if ((idx < 0) || (idx >= (int)m_procs.size())) return 0;
-    std::list<Proc*>::const_iterator it;
-    it = m_procs.begin();
-    for (int i=0; i < idx; i++)
-        it++;
+    if ((idx < 0) || (idx >= (int)m_procs.size()))
+        return 0;
+    std::list<Proc*>::const_iterator it = m_procs.begin();
+    std::advance(it,idx);
     return (*it);
 }
 
@@ -788,16 +789,18 @@ Proc* Prog::findProc(ADDRESS uAddr) const {
     it = m_procLabels.find(uAddr);
     if (it == m_procLabels.end())
         return NULL;
-    else
-        return (*it).second;
+    return (*it).second;
 }
 
 Proc* Prog::findProc(const char *name) const {
     std::list<Proc *>::const_iterator it;
-    for (it = m_procs.begin(); it != m_procs.end(); it++)
-        if (!strcmp((*it)->getName(), name))
-            return *it;
-    return NULL;
+    it = std::find_if(m_procs.begin(),m_procs.end(),
+                      [name](Proc *p) -> bool {
+                        return !strcmp(p->getName(), name);
+                      });
+    if(it==m_procs.end())
+        return NULL;
+    return *it;
 }
 
 // get a library procedure by name; create if does not exist
@@ -814,13 +817,12 @@ Signature* Prog::getLibSignature(const char *nam) {
 
 void Prog::rereadLibSignatures() {
     pFE->readLibraryCatalog();
-    for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end(); it++) {
-        if ((*it)->isLib()) {
-            (*it)->setSignature(getLibSignature((*it)->getName()));
-            std::set<CallStatement*> &callers = (*it)->getCallers();
-            for (std::set<CallStatement*>::iterator it1 = callers.begin(); it1 != callers.end(); it1++)
-                (*it1)->setSigArguments();
-            Boomerang::get()->alert_update_signature(*it);
+    for (Proc* pProc : m_procs) {
+        if (pProc->isLib()) {
+            pProc->setSignature(getLibSignature(pProc->getName()));
+            for (CallStatement * call_stmt : pProc->getCallers())
+                call_stmt->setSigArguments();
+            Boomerang::get()->alert_update_signature(pProc);
         }
     }
 }
@@ -862,16 +864,16 @@ const char *Prog::getGlobalName(ADDRESS uaddr) {
 }
 
 void Prog::dumpGlobals() {
-    for (std::set<Global*>::iterator it = globals.begin(); it != globals.end(); it++) {
-        (*it)->print(std::cerr, this);
+    for (Global *glob : globals) {
+        glob->print(std::cerr, this);
         std::cerr << "\n";
     }
 }
 
 ADDRESS Prog::getGlobalAddr(const char *nam) {
-    for (std::set<Global*>::iterator it = globals.begin(); it != globals.end(); it++) {
-        if (!strcmp((*it)->getName(), nam))
-            return (*it)->getAddress();
+    for (Global *glob : globals) {
+        if (!strcmp(glob->getName(), nam))
+            return glob->getAddress();
     }
     return pBF->GetAddressByName(nam);
 }
@@ -994,19 +996,19 @@ const char *Prog::newGlobalName(ADDRESS uaddr) {
 }
 
 Type *Prog::getGlobalType(const char* nam) {
-    for (std::set<Global*>::iterator it = globals.begin(); it != globals.end(); it++)
-        if (!strcmp((*it)->getName(), nam))
-            return (*it)->getType();
+    for (Global * gl : globals )
+        if (!strcmp(gl->getName(), nam))
+            return gl->getType();
     return NULL;
 }
 
 void Prog::setGlobalType(const char* nam, Type* ty) {
     // FIXME: inefficient
-    for (std::set<Global*>::iterator it = globals.begin(); it != globals.end(); it++) {
-        if (!strcmp((*it)->getName(), nam)) {
-            (*it)->setType(ty);
-            return;
-        }
+    for (Global * gl : globals ) {
+        if (strcmp(gl->getName(), nam))
+            continue;
+        gl->setType(ty);
+        return;
     }
 }
 
