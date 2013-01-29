@@ -428,7 +428,6 @@ public:
         void                setLocalType(const char *nam, Type *ty);
         Type *              getParamType(const char *nam);
         Exp *               expFromSymbol(const char *nam);
-        void                setExpSymbol(const char *nam, Exp *e, Type* ty);
         void                mapSymbolTo(Exp* from, Exp* to);
         void                mapSymbolToRepl(Exp* from, Exp* oldTo, Exp* newTo);
         void                removeSymbolMapping(Exp* from, Exp* to);

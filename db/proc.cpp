@@ -324,7 +324,7 @@ void UserProc::renameLocal(const char *oldName, const char *newName) {
     Exp *oldLoc = getSymbolFor(oldExp, ty);
     Exp *newLoc = Location::local(strdup(newName), this);
     mapSymbolToRepl(oldExp, oldLoc, newLoc);
-    locals[strdup(newName)] = ty;
+    locals[newName] = ty;
     cfg->searchAndReplace(oldLoc, newLoc);
 }
 
@@ -2580,7 +2580,7 @@ void UserProc::addParameterSymbols() {
         Exp* lhs = ((Assignment*)*it)->getLeft();
         lhs = lhs->expSubscriptAllNull();
         lhs = lhs->accept(&ic);
-        Location* to = Location::param(strdup((char*)signature->getParamName(i)), this);
+        Location* to = Location::param(strdup(signature->getParamName(i)), this);
         mapSymbolTo(lhs, to);
     }
 }
@@ -3003,10 +3003,10 @@ Type *UserProc::getParamType(const char *nam) {
     return NULL;
 }
 
-void UserProc::setExpSymbol(const char *nam, Exp *e, Type* ty) {
-    TypedExp *te = new TypedExp(ty, Location::local(strdup(nam), this));
-    mapSymbolTo(e, te);
-}
+//void UserProc::setExpSymbol(const char *nam, Exp *e, Type* ty) {
+//    TypedExp *te = new TypedExp(ty, Location::local(strdup(nam), this));
+//    mapSymbolTo(e, te);
+//}
 
 /// As above but with replacement
 void UserProc::mapSymbolToRepl(Exp* from, Exp* oldTo, Exp* newTo) {
@@ -3697,19 +3697,23 @@ bool UserProc::prover(Exp *query, std::set<PhiAssign*>& lastPhis, std::map<PhiAs
             }
 
             // move constants to the right
-            Exp *plus = query->getSubExp1();
-            Exp *s1s2 = plus ? plus->getSubExp2() : NULL;
-            if (!change && plus->getOper() == opPlus && s1s2->isIntConst()) {
-                query->setSubExp2(new Binary(opPlus,
-                                             query->getSubExp2(),
-                                             new Unary(opNeg, s1s2->clone())));
-                query->setSubExp1(((Binary*)plus)->getSubExp1());
-                change = true;
-            }
-            if (!change && plus->getOper() == opMinus && s1s2->isIntConst()) {
-                query->setSubExp2(new Binary(opPlus, query->getSubExp2(), s1s2->clone()));
-                query->setSubExp1(((Binary*)plus)->getSubExp1());
-                change = true;
+            if(!change) {
+                Exp *plus = query->getSubExp1();
+                Exp *s1s2 = plus ? plus->getSubExp2() : NULL;
+                if(plus && s1s2) {
+                    if (plus->getOper() == opPlus && s1s2->isIntConst()) {
+                        query->setSubExp2(new Binary(opPlus,
+                                                     query->getSubExp2(),
+                                                     new Unary(opNeg, s1s2->clone())));
+                        query->setSubExp1(((Binary*)plus)->getSubExp1());
+                        change = true;
+                    }
+                    if (plus->getOper() == opMinus && s1s2->isIntConst()) {
+                        query->setSubExp2(new Binary(opPlus, query->getSubExp2(), s1s2->clone()));
+                        query->setSubExp1(((Binary*)plus)->getSubExp1());
+                        change = true;
+                    }
+                }
             }
 
 
