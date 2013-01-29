@@ -52,7 +52,13 @@ virtual                ~Global();
         Type        *getType() { return type; }
         void          setType(Type* ty) { type = ty; }
         void          meetType(Type* ty);
-        ADDRESS        getAddress() { return uaddr; }
+        ADDRESS     getAddress() { return uaddr; }
+        bool        addressWithinGlobal(ADDRESS addr) {
+                        // TODO: use getType()->getBytes()
+                        if(addr==uaddr)
+                            return true;
+                        return (addr > uaddr) && addr <= (uaddr + (getType()->getSize() / 8));
+                    }
         const char *getName() { return nam.c_str(); }
         Exp*        getInitialValue(Prog* prog);    // Get the initial value as an expression
                                                     // (or NULL if not initialised)
@@ -66,32 +72,32 @@ protected:
 class Prog {
 public:
                     Prog();                            // Default constructor
-virtual                ~Prog();
+virtual             ~Prog();
                     Prog(const char* name);            // Constructor with name
         void        setFrontEnd(FrontEnd* fe);
         void        setName(const char *name);        // Set the name of this program
-        Proc*        setNewProc(ADDRESS uNative);    // Set up new proc
+        Proc*       setNewProc(ADDRESS uNative);    // Set up new proc
         // Return a pointer to a new proc
-        Proc*        newProc(const char* name, ADDRESS uNative, bool bLib = false);
+        Proc*       newProc(const char* name, ADDRESS uNative, bool bLib = false);
         void        remProc(UserProc* proc);        // Remove the given UserProc
         void        removeProc(const char *name);
-        char*        getName();                        // Get the name of this program
+        char*       getName();                        // Get the name of this program
         const char *getPath() { return m_path.c_str(); }
         const char *getPathAndName() {return (m_path+m_name).c_str(); }
-        int            getNumProcs();                    // # of procedures stored in prog
-        int            getNumUserProcs();                // # of user procedures stored in prog
-        Proc*        getProc(int i) const;            // returns pointer to indexed proc
+        int         getNumProcs();                    // # of procedures stored in prog
+        int         getNumUserProcs();                // # of user procedures stored in prog
+        Proc*       getProc(int i) const;            // returns pointer to indexed proc
         // Find the Proc with given address, NULL if none, -1 if deleted
-        Proc*        findProc(ADDRESS uAddr) const;
+        Proc*       findProc(ADDRESS uAddr) const;
         // Find the Proc with the given name
-        Proc*        findProc(const char *name) const;
+        Proc*       findProc(const char *name) const;
         // Find the Proc that contains the given address
-        Proc*        findContainingProc(ADDRESS uAddr) const;
+        Proc*       findContainingProc(ADDRESS uAddr) const;
         bool        isProcLabel (ADDRESS addr);     // Checks if addr is a label or not
         // Create a dot file for all CFGs
         bool        createDotFile(const char*, bool bMainOnly = false) const;
         // get the filename of this program
-        std::string     getNameNoPath() const;
+        std::string  getNameNoPath() const;
         std::string  getNameNoPathNoExt() const;
         // This pair of functions allows the user to iterate through all the procs
         // The procs will appear in order of native address
@@ -167,7 +173,6 @@ virtual                ~Prog();
         void        conTypeAnalysis();
         void        dfaTypeAnalysis();
 
-        // Range analysis
         void        rangeAnalysis();
 
         // Generate dotty file
@@ -238,8 +243,7 @@ virtual                ~Prog();
                         { return pBF->GetMachine();}    // e.g. MACHINE_SPARC
         const char*    symbolByAddress(ADDRESS dest) // Get a symbol from an address
                         { return pBF->SymbolByAddress(dest);}
-        PSectionInfo getSectionInfoByAddr(ADDRESS a)
-                        { return pBF->GetSectionInfoByAddr(a);}
+        SectionInfo *   getSectionInfoByAddr(ADDRESS a) { return pBF->GetSectionInfoByAddr(a);}
         ADDRESS        getLimitTextLow() {return pBF->getLimitTextLow();}
         ADDRESS        getLimitTextHigh() {return pBF->getLimitTextHigh();}
         bool        isReadOnly(ADDRESS a) { return pBF->isReadOnly(a); }
@@ -254,7 +258,7 @@ virtual                ~Prog();
         double        readNativeFloat8(ADDRESS a) {return pBF->readNativeFloat8(a);}
         QWord        readNative8(ADDRESS a) {return pBF->readNative8(a);}
         Exp              *readNativeAs(ADDRESS uaddr, Type *type);
-        int            getTextDelta() { return pBF->getTextDelta(); }
+        ptrdiff_t     getTextDelta() { return pBF->getTextDelta(); }
 
         bool        isDynamicLinkedProcPointer(ADDRESS dest) { return pBF->IsDynamicLinkedProcPointer(dest); }
         const char*    GetDynamicProcName(ADDRESS uNative) { return pBF->GetDynamicProcName(uNative); }
