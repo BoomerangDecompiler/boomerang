@@ -151,6 +151,6 @@ IF(MSVC)
 ENDIF()
 ADD_EXECUTABLE(boomerang ${boomerang_SRC})
 
-TARGET_LINK_LIBRARIES(boomerang ${DL_LIBS} ${GC_LIBS} ${DEBUG_LIB} "${EXPAT_LIBRARIES}" BinaryFile frontend db type boomerang_DSLs codegen util)
+TARGET_LINK_LIBRARIES(boomerang ${DL_LIBS} ${GC_LIBS} ${DEBUG_LIB} "${EXPAT_LIBRARIES}" frontend db type boomerang_DSLs codegen util BinaryFile)
 
 ADD_SUBDIRECTORY(loader)
