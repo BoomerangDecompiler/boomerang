@@ -124,7 +124,7 @@ typedef BB_IT           iterator;
         void            updateVectorBB();
 
         bool            wellFormCfg ( );
-        bool            mergeBBs ( PBB pb1, PBB pb2 );
+        bool            mergeBBs (BasicBlock *pb1, BasicBlock *pb2 );
         bool            compressCfg ( );
         bool            establishDFTOrder();
         bool            establishRevDFTOrder();
@@ -198,7 +198,7 @@ public:
         /////////////////////////////////////////////////////////////////////////
         // Set the entry-point BB (and exit BB as well)
         /////////////////////////////////////////////////////////////////////////
-        void            setEntryBB(PBB bb);
+        void            setEntryBB(BasicBlock *bb);
         void            setExitBB(PBB bb);
 
         PBB             findRetNode();
