@@ -44,7 +44,7 @@
 
 // Some Windows voodoo; Windows doesn't seem to export everything unless you tell it to
 #ifdef _WIN32
-#if defined _MSC_VER || defined BUILDING_LIBBINARYFILE            // If don't use dllexport, get Vtable undefined!
+#if defined BinaryFile_EXPORTS            // If don't use dllexport, get Vtable undefined!
 #define IMPORT_BINARYFILE __declspec(dllexport)
 #else
 #define IMPORT_BINARYFILE __declspec(dllimport)
