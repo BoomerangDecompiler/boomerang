@@ -1271,7 +1271,7 @@ void Cfg::setTimeStamps() {
 }
 
 // Finds the common post dominator of the current immediate post dominator and its successor's immediate post dominator
-PBB Cfg::commonPDom(BasicBlock *  curImmPDom, BasicBlock *  succImmPDom) {
+BasicBlock *Cfg::commonPDom(BasicBlock *  curImmPDom, BasicBlock *  succImmPDom) {
     if (!curImmPDom)
         return succImmPDom;
     if (!succImmPDom)
@@ -1352,8 +1352,7 @@ void Cfg::findImmedPDom() {
 // Structures all conditional headers (i.e. nodes with more than one outedge)
 void Cfg::structConds() {
     // Process the nodes in order
-    for (unsigned int i = 0; i < Ordering.size(); i++) {
-        PBB curNode = Ordering[i];
+    for ( BasicBlock *curNode : Ordering) {
 
         // does the current node have more than one out edge?
         if (curNode->getOutEdges().size() > 1) {
@@ -1677,9 +1676,7 @@ void Cfg::structure() {
  * \brief Add Junction statements
  *******************************************************************************/
 void Cfg::addJunctionStatements() {
-    std::list<PBB>::iterator it;
-    for (it = m_listBB.begin(); it != m_listBB.end(); it++) {
-        PBB pbb = *it;
+    for (BasicBlock * pbb : m_listBB) {
         if (pbb->getNumInEdges() > 1 && (pbb->getFirstStmt() == NULL || !pbb->getFirstStmt()->isJunction())) {
             assert(pbb->getRTLs());
             JunctionStatement *j = new JunctionStatement();
@@ -1693,9 +1690,7 @@ void Cfg::addJunctionStatements() {
  * \brief Remove Junction statements
  *******************************************************************************/
 void Cfg::removeJunctionStatements() {
-    std::list<PBB>::iterator it;
-    for (it = m_listBB.begin(); it != m_listBB.end(); it++) {
-        PBB pbb = *it;
+    for (BasicBlock * pbb : m_listBB) {
         if (pbb->getFirstStmt() && pbb->getFirstStmt()->isJunction()) {
             assert(pbb->getRTLs());
             pbb->getRTLs()->front()->deleteStmt(0);
@@ -1711,10 +1706,10 @@ void Cfg::removeUnneededLabels(HLLCode *hll) {
 void Cfg::generateDotFile(std::ofstream& of) {
     ADDRESS aret = NO_ADDRESS;
     // The nodes
-    std::list<PBB>::iterator it;
-    for (it = m_listBB.begin(); it != m_listBB.end(); it++) {
-        of << "       " << "bb" << std::hex << (*it)->getLowAddr() << " [" << "label=\"";
-        char* p = (*it)->getStmtNumber();
+    //std::list<PBB>::iterator it;
+    for (BasicBlock * pbb : m_listBB) {
+        of << "       " << "bb" << std::hex << pbb->getLowAddr() << " [" << "label=\"";
+        char* p = pbb->getStmtNumber();
 #if BBINDEX
         of << std::dec << indices[*it];
         if (p[0] != 'b')
@@ -1722,12 +1717,12 @@ void Cfg::generateDotFile(std::ofstream& of) {
             of << ":";
 #endif
         of << p << " ";
-        switch((*it)->getType()) {
+        switch(pbb->getType()) {
             case ONEWAY: of << "oneway"; break;
             case TWOWAY:
-                if ((*it)->getCond()) {
+                if (pbb->getCond()) {
                     of << "\\n";
-                    (*it)->getCond()->print(of);
+                    pbb->getCond()->print(of);
                     of << "\" shape=diamond];\n";
                     continue;
                 }
@@ -1736,7 +1731,7 @@ void Cfg::generateDotFile(std::ofstream& of) {
                 break;
             case NWAY: {
                 of << "nway";
-                Exp* de = (*it)->getDest();
+                Exp* de = pbb->getDest();
                 if (de) {
                     of << "\\n";
                     of << de;
@@ -1746,14 +1741,14 @@ void Cfg::generateDotFile(std::ofstream& of) {
             }
             case CALL: {
                 of << "call";
-                Proc* dest = (*it)->getDestProc();
+                Proc* dest = pbb->getDestProc();
                 if (dest) of << "\\n" << dest->getName();
                 break;
             }
             case RET: {
                 of << "ret\" shape=triangle];\n";
                 // Remember the (unbique) return BB's address
-                aret = (*it)->getLowAddr();
+                aret = pbb->getLowAddr();
                 continue;
             }
             case FALL: of << "fall"; break;
@@ -1773,12 +1768,12 @@ void Cfg::generateDotFile(std::ofstream& of) {
     of << "}\n";
 
     // Now the edges
-    for (it = m_listBB.begin(); it != m_listBB.end(); it++) {
-        std::vector<PBB>& outEdges = (*it)->getOutEdges();
+    for (BasicBlock * pbb : m_listBB) {
+        std::vector<PBB>& outEdges = pbb->getOutEdges();
         for (unsigned int j = 0; j < outEdges.size(); j++) {
-            of << "       " << "bb" << std::hex << (*it)->getLowAddr() << " -> ";
+            of << "       " << "bb" << std::hex << pbb->getLowAddr() << " -> ";
             of << "bb" << std::hex << outEdges[j]->getLowAddr();
-            if ((*it)->getType() == TWOWAY) {
+            if (pbb->getType() == TWOWAY) {
                 if (j == 0)
                     of << " [label=\"true\"]";
                 else
@@ -1807,10 +1802,7 @@ void Cfg::generateDotFile(std::ofstream& of) {
 
 void updateWorkListRev(PBB currBB, std::list<PBB>&workList, std::set<PBB>& workSet) {
     // Insert inedges of currBB into the worklist, unless already there
-    std::vector<PBB>& ins = currBB->getInEdges();
-    int n = ins.size();
-    for (int i=0; i < n; i++) {
-        PBB currIn = ins[i];
+    for ( BasicBlock * currIn : currBB->getInEdges() ) {
         if (workSet.find(currIn) == workSet.end()) {
             workList.push_front(currIn);
             workSet.insert(currIn);
@@ -1841,23 +1833,24 @@ void Cfg::findInterferences(ConnectionGraph& cg) {
         workSet.erase(currBB);
         // Calculate live locations and interferences
         change = currBB->calcLiveness(cg, myProc);
-        if (change) {
-            if (DEBUG_LIVENESS) {
-                LOG << "Revisiting BB ending with stmt ";
-                Statement* last = NULL;
-                if (currBB->m_pRtls->size()) {
-                    RTL* lastRtl = currBB->m_pRtls->back();
-                    std::list<Statement*>& lst = lastRtl->getList();
-                    if (lst.size()) last = lst.back();
-                }
-                if (last)
-                    LOG << last->getNumber();
-                else
-                    LOG << "<none>";
-                LOG << " due to change\n";
+        if (!change)
+            continue;
+        if (DEBUG_LIVENESS) {
+            LOG << "Revisiting BB ending with stmt ";
+            Statement* last = NULL;
+            if (currBB->m_pRtls->size()) {
+                RTL* lastRtl = currBB->m_pRtls->back();
+                std::list<Statement*>& lst = lastRtl->getList();
+                if (lst.size())
+                    last = lst.back();
             }
-            updateWorkListRev(currBB, workList, workSet);
+            if (last)
+                LOG << last->getNumber();
+            else
+                LOG << "<none>";
+            LOG << " due to change\n";
         }
+        updateWorkListRev(currBB, workList, workSet);
     }
 }
 
@@ -1865,9 +1858,7 @@ void Cfg::appendBBs(std::list<PBB>& worklist, std::set<PBB>& workset) {
     // Append my list of BBs to the worklist
     worklist.insert(worklist.end(), m_listBB.begin(), m_listBB.end());
     // Do the same for the workset
-    std::list<PBB>::iterator it;
-    for (it = m_listBB.begin(); it != m_listBB.end(); it++)
-        workset.insert(*it);
+    std::copy(m_listBB.begin(),m_listBB.end(),std::inserter(workset,workset.end()));
 }
 
 void dumpBB(PBB bb) {
@@ -1931,15 +1922,12 @@ PBB Cfg::splitForBranch(PBB pBB, RTL* rtl, BranchStatement* br1, BranchStatement
     ADDRESS addr = rtl->getAddress();
 
     // Make a BB for the br1 instruction
-    std::list<RTL*>* pRtls = new std::list<RTL*>;
-    std::list<Statement*>* ls = new std::list<Statement*>;
-    ls->push_back(br1);
+
     // Don't give this "instruction" the same address as the rest of the string instruction (causes problems when
     // creating the rptBB). Or if there is no A, temporarily use 0
     ADDRESS a = (haveA) ? addr : ADDRESS::g(0L);
-    RTL* skipRtl = new RTL(a, ls);
-    pRtls->push_back(skipRtl);
-    PBB skipBB = newBB(pRtls, TWOWAY, 2);
+    RTL* skipRtl = new RTL(a, new std::list<Statement*> { br1 }); // list initializer in braces
+    BasicBlock * skipBB = newBB(new std::list<RTL*> { skipRtl }, TWOWAY, 2);
     rtl->updateAddress(addr+1);
     if (!haveA) {
         skipRtl->updateAddress(addr);
@@ -1969,9 +1957,7 @@ PBB Cfg::splitForBranch(PBB pBB, RTL* rtl, BranchStatement* br1, BranchStatement
     li.push_back(br2);
 
     // Move the remainder of the string RTL into a new BB
-    pRtls = new std::list<RTL*>;
-    pRtls->push_back(*ri);
-    PBB rptBB = newBB(pRtls, TWOWAY, 2);
+    PBB rptBB = newBB(new std::list<RTL*> { *ri }, TWOWAY, 2);
     ri = pBB->m_pRtls->erase(ri);
 
     // Move the remaining RTLs (if any) to a new list of RTLs
@@ -1979,7 +1965,7 @@ PBB Cfg::splitForBranch(PBB pBB, RTL* rtl, BranchStatement* br1, BranchStatement
     unsigned oldOutEdges = 0;
     bool haveB = true;
     if (ri != pBB->m_pRtls->end()) {
-        pRtls = new std::list<RTL*>;
+        auto pRtls = new std::list<RTL*>;
         while (ri != pBB->m_pRtls->end()) {
             pRtls->push_back(*ri);
             ri = pBB->m_pRtls->erase(ri);
@@ -2072,10 +2058,9 @@ PBB Cfg::splitForBranch(PBB pBB, RTL* rtl, BranchStatement* br1, BranchStatement
  * \brief Check for indirect jumps and calls. If any found, decode the extra code and return true
  */
 bool Cfg::decodeIndirectJmp(UserProc* proc) {
-    std::list<PBB>::iterator it;
     bool res = false;
-    for (it = m_listBB.begin(); it != m_listBB.end(); it++) {
-        res |= (*it)->decodeIndirectJmp(proc);
+    for (BasicBlock * bb : m_listBB ) {
+        res |= bb->decodeIndirectJmp(proc);
     }
     return res;
 }
@@ -2083,9 +2068,8 @@ bool Cfg::decodeIndirectJmp(UserProc* proc) {
  * \brief Change the BB enclosing stmt to be CALL, not COMPCALL
  */
 void Cfg::undoComputedBB(Statement* stmt) {
-    std::list<PBB>::iterator it;
-    for (it = m_listBB.begin(); it != m_listBB.end(); it++) {
-        if ((*it)->undoComputedBB(stmt))
+    for (BasicBlock * bb : m_listBB) {
+        if (bb->undoComputedBB(stmt))
             break;
     }
 }
@@ -2111,26 +2095,26 @@ Statement* Cfg::findImplicitAssign(Exp* x) {
 //! Find the existing implicit assign for x (if any)
 Statement* Cfg::findTheImplicitAssign(Exp* x) {
     // As per the above, but don't create an implicit if it doesn't already exist
-    std::map<Exp*, Statement*, lessExpStar>::iterator it = implicitMap.find(x);
+    auto it = implicitMap.find(x);
     if (it == implicitMap.end())
-        return NULL;
+        return nullptr;
     return it->second;
 }
 //! Find exiting implicit assign for parameter p
 Statement* Cfg::findImplicitParamAssign(Parameter* param) {
     // As per the above, but for parameters (signatures don't get updated with opParams)
-    std::map<Exp*, Statement*, lessExpStar>::iterator it = implicitMap.find(param->getExp());
+    auto it = implicitMap.find(param->getExp());
     if (it == implicitMap.end()) {
         Exp* eParam = Location::param(param->getName());
         it = implicitMap.find(eParam);
     }
     if (it == implicitMap.end())
-        return NULL;
+        return nullptr;
     return it->second;
 }
 //! Remove an existing implicit assignment for x
 void Cfg::removeImplicitAssign(Exp* x) {
-    std::map<Exp*, Statement*, lessExpStar>::iterator it = implicitMap.find(x);
+    auto it = implicitMap.find(x);
     assert(it != implicitMap.end());
     Statement* ia = it->second;
     implicitMap.erase(it);                // Delete the mapping

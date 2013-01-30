@@ -77,9 +77,7 @@ typedef std::map<Exp*, Statement*, lessExpStar> mExpStatement;
         std::list<PBB>  m_listBB;
         std::vector<PBB> Ordering;
         std::vector<PBB> revOrdering;
-
         MAPBB           m_mapBB;
-
         BasicBlock *    entryBB;
         BasicBlock *    exitBB;
         sCallStatement  callSites;
@@ -140,23 +138,11 @@ typedef BB_IT           iterator;
         sCallStatement& getCalls();
         void            searchAndReplace(Exp* search, Exp* replace);
         bool            searchAll(Exp* search, std::list<Exp*> &result);
-        //! Set the return value for this CFG (assumes there is only one exit bb)
-        void            setReturnVal(Exp *e); //TODO: not used, nor defined.
         Exp *           getReturnVal();
         void            structure();
         void            addJunctionStatements();
         void            removeJunctionStatements();
-        /*
-         * Resolves goto/branch destinations to statements
-         * Good to do this late, as removing statements doesn't update this information.
-         */
-        void            resolveGotos(); //TODO: not used, nor defined
-
-        //! Virtual Function Call analysis
-        void            virtualFunctionCalls(Prog* prog); //TODO: not used, nor defined
-
         std::vector<PBB> m_vectorBB;
-
         //! return a bb given an address
         PBB             bbForAddr(ADDRESS addr) { return m_mapBB[addr]; }
         void            simplify();
@@ -176,7 +162,7 @@ public:
         // Control flow analysis stuff, lifted from Doug Simon's honours thesis.
         /////////////////////////////////////////////////////////////////////////
         void            setTimeStamps();
-        PBB             commonPDom(PBB curImmPDom, PBB succImmPDom);
+        BasicBlock *    commonPDom(BasicBlock *curImmPDom, BasicBlock *succImmPDom);
         void            findImmedPDom();
         void            structConds();
         void            structLoops();
