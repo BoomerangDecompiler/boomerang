@@ -2,20 +2,22 @@ This repository is now connected to continous integration server:
 http://boomerang.nemerle.eu
 
 This is an experimental branch of boomerang project, the inital goals are:
-- 'clean' up the repository ( removing old .cvsignore files and such ) [done]
-- move all old build systems into "out of sight" storage. [done]
-- try to fix all warnings from gcc -Wall, and clang -Wall
-- verify stability of decompilation results : compare 2 run results, they should be exactly the same.
+1. try to fix all warnings from gcc -Wall, and clang -Wall
+2. verify stability of decompilation results : compare 2 run results, they should be exactly the same.
+3. simplify code base using features available in c++11 
 
+Considering pt. 3, the target compilers are gcc >=4.6 family (mingw on windows), and clang
 
-For build instructions please see
+For full ( and slightly stale :) ) build instructions please see
 
         http://boomerang.sourceforge.net/making.html
 
 Note that on a debian system you can usually get away with:
-
   sudo apt-get install libgc-dev
   sudo apt-get install libexpat-dev
+  cd YOUR_FAVOURITE_DEVELOPMENT_DIRECTORY
+  git clone git://github.com/nemerle/boomerang.git
+  cd boomerang
   mkdir build && cd build
   cmake ..
   make
