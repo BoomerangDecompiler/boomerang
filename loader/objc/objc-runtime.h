@@ -2,7 +2,7 @@
  * Copyright (c) 1999 Apple Computer, Inc. All rights reserved.
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
+ *
  * Portions Copyright (c) 1999 Apple Computer, Inc.  All Rights
  * Reserved.  This file contains Original Code and/or Modifications of
  * Original Code as defined in and that are subject to the Apple Public
@@ -10,7 +10,7 @@
  * except in compliance with the License.  Please obtain a copy of the
  * License at http://www.apple.com/publicsource and read it before using
  * this file.
- * 
+ *
  * The Original Code and all software distributed under the License are
  * distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, EITHER
  * EXPRESS OR IMPLIED, AND APPLE HEREBY DISCLAIMS ALL SUCH WARRANTIES,
@@ -18,7 +18,7 @@
  * FITNESS FOR A PARTICULAR PURPOSE OR NON- INFRINGEMENT.  Please see the
  * License for the specific language governing rights and limitations
  * under the License.
- * 
+ *
  * @APPLE_LICENSE_HEADER_END@
  */
 /*
@@ -36,20 +36,20 @@
 typedef struct objc_symtab *Symtab;
 
 struct objc_symtab {
-    unsigned long     sel_ref_cnt;
-    SEL         *refs;        
+    uint32_t     sel_ref_cnt;
+    SEL         *refs;
     unsigned short     cls_def_cnt;
     unsigned short     cat_def_cnt;
-    void          *defs[1];    /* variable size */
+    uint32_t    defs[1];    /* variable size */
 };
 
 typedef struct objc_module *Module;
 
 struct objc_module {
-    unsigned long    version;
-    unsigned long    size;
-    const char    *name;
-    Symtab         symtab;    
+    uint32_t    version;
+    uint32_t    size;
+    uint32_t    name;
+    uint32_t    symtab;
 };
 
 struct objc_super {
@@ -84,9 +84,9 @@ OBJC_EXPORT void objc_msgSendSuper_stret(void * stretAddr, struct objc_super *su
 OBJC_EXPORT id objc_msgSendv(id self, SEL op, unsigned arg_size, marg_list arg_frame);
 OBJC_EXPORT void objc_msgSendv_stret(void * stretAddr, id self, SEL op, unsigned arg_size, marg_list arg_frame);
 
-/* 
+/*
     getting all the classes in the application...
-    
+
     int objc_getClassList(buffer, bufferLen)
     classes is an array of Class values (which are pointers)
         which will be filled by the function; if this

@@ -43,9 +43,9 @@
 //#endif
 
 #ifndef _MACH_MACHINE_H_                // On OS X, this is already defined
-typedef unsigned long cpu_type_t;        // I guessed
-typedef unsigned long cpu_subtype_t;    // I guessed
-typedef unsigned long vm_prot_t;        // I guessed
+typedef uint32_t cpu_type_t;        // I guessed
+typedef uint32_t cpu_subtype_t;    // I guessed
+typedef uint32_t vm_prot_t;        // I guessed
 #endif
 
 //#ifdef WIN32
@@ -92,13 +92,11 @@ protected:
     int machORead4(int *pi) const;     // Read 4 bytes from native addr
 
     //void *            BMMH(void *x);
-    char *              BMMH(char *x);
-    const char *        BMMH(const char *x);
-    unsigned int        BMMH(long int & x);
-    uintptr_t           BMMH(void *x);
-    unsigned int        BMMH(unsigned long x);
-    signed int          BMMH(signed int x);
-    unsigned int        BMMH(unsigned int x);
+//    char *              BMMH(char *x);
+//    const char *        BMMH(const char *x);
+    //unsigned int        BMMH(long int & x);
+    int32_t BMMH(int32_t x);
+    uint32_t            BMMH(uint32_t x);
     unsigned short      BMMHW(unsigned short x);
 
 public:

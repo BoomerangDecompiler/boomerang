@@ -106,11 +106,11 @@ bool MachOBinaryFile::RealLoad(const char* sName) {
             for (int i = 0; i < nimages; i++) {
                     int fbh = 8 + i * 5*4;
                     unsigned int cputype = BE4(fbh);
-                    unsigned int cpusubtype = BE4(fbh+4);
                     unsigned int offset = BE4(fbh+8);
+#ifdef DEBUG_MACHO_LOADER
+                    unsigned int cpusubtype = BE4(fbh+4);
                     unsigned int size = BE4(fbh+12);
                     unsigned int pad = BE4(fbh+16);
-#ifdef DEBUG_MACHO_LOADER
                     printf("cputype: %08x\n", cputype);
                     printf("cpusubtype: %08x\n", cpusubtype);
                     printf("offset: %08x\n", offset);
@@ -145,7 +145,7 @@ bool MachOBinaryFile::RealLoad(const char* sName) {
     sections.clear();
     std::vector<struct segment_command> segments;
     std::vector<struct nlist> symbols;
-    unsigned startlocal, nlocal, startdef, ndef, startundef, nundef;
+    uint32_t startlocal, nlocal, startdef, ndef, startundef, nundef;
     std::vector<struct section> stubs_sects;
     char *strtbl = NULL;
     unsigned *indirectsymtbl = NULL;
@@ -390,7 +390,7 @@ bool MachOBinaryFile::RealLoad(const char* sName) {
                     ObjcMethod *me = &cl->methods[name];
                     me->name = name;
                     me->types = types;
-                    me->addr = BMMH((void*)method->method_imp);
+                    me->addr = ADDRESS::g(BMMH(method->method_imp));
                 }
             }
             i += BMMH(module->size);
@@ -465,33 +465,11 @@ int MachOBinaryFile::machORead4(int* pi) const{
     return n;
 }
 
-/*
-void *MachOBinaryFile::BMMH(void *x) {
-  if (swap_bytes) return _BMMH(x); else return x;
-}
-*/
+//unsigned int MachOBinaryFile::BMMH(long int & x) {
+//    if (swap_bytes) return _BMMH(x); else return x;
+//}
 
-char *MachOBinaryFile::BMMH(char *x) {
-    if (swap_bytes) return (char *)_BMMH(x); else return x;
-}
-
-uintptr_t MachOBinaryFile::BMMH(void * x) {
-    if (swap_bytes) return (uintptr_t)_BMMH(x); else return uintptr_t(x);
-}
-
-const char *MachOBinaryFile::BMMH(const char *x) {
-    if (swap_bytes) return (const char *)_BMMH(x); else return x;
-}
-
-unsigned int MachOBinaryFile::BMMH(unsigned long x) {
-    if (swap_bytes) return _BMMH(x); else return x;
-}
-
-unsigned int MachOBinaryFile::BMMH(long int & x) {
-    if (swap_bytes) return _BMMH(x); else return x;
-}
-
-signed int MachOBinaryFile::BMMH(signed int x) {
+int32_t MachOBinaryFile::BMMH(int32_t x) {
     if (swap_bytes) return _BMMH(x); else return x;
 }
 

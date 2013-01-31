@@ -1,7 +1,7 @@
 struct nlist {
     union {
-        char      *n_name;   /* for use when in-core */
-        long       n_strx;   /* index into file string table */
+        uint32_t n_name;   /* for use when in-core */
+        uint32_t     n_strx;   /* index into file string table */
     } n_un;
     unsigned char  n_type;   /* type flag; see below */
     unsigned char  n_sect;   /* section number or NO_SECT */

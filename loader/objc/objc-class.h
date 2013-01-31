@@ -2,7 +2,7 @@
  * Copyright (c) 1999 Apple Computer, Inc. All rights reserved.
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
+ *
  * Portions Copyright (c) 1999 Apple Computer, Inc.  All Rights
  * Reserved.  This file contains Original Code and/or Modifications of
  * Original Code as defined in and that are subject to the Apple Public
@@ -10,7 +10,7 @@
  * except in compliance with the License.  Please obtain a copy of the
  * License at http://www.apple.com/publicsource and read it before using
  * this file.
- * 
+ *
  * The Original Code and all software distributed under the License are
  * distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, EITHER
  * EXPRESS OR IMPLIED, AND APPLE HEREBY DISCLAIMS ALL SUCH WARRANTIES,
@@ -18,7 +18,7 @@
  * FITNESS FOR A PARTICULAR PURPOSE OR NON- INFRINGEMENT.  Please see the
  * License for the specific language governing rights and limitations
  * under the License.
- * 
+ *
  * @APPLE_LICENSE_HEADER_END@
  */
 /*
@@ -30,22 +30,22 @@
 #define _OBJC_CLASS_H_
 
 #include "objc/objc.h"
-/* 
+/*
  *    Class Template
  */
-struct objc_class {            
-    struct objc_class *isa;    
-    struct objc_class *super_class;    
-    const char *name;        
+struct objc_class {
+    struct objc_class *isa;
+    struct objc_class *super_class;
+    uint32_t name;
     long version;
     long info;
     long instance_size;
-    struct objc_ivar_list *ivars;
+    uint32_t ivars; //struct objc_ivar_list *
 
-    struct objc_method_list **methodLists;
+    uint32_t methodLists; //struct objc_method_list **
 
-    struct objc_cache *cache;
-     struct objc_protocol_list *protocols;
+    uint32_t cache; //struct objc_cache *
+    uint32_t protocols; //struct objc_protocol_list *
 };
 #define CLS_GETINFO(cls,infomask)    ((cls)->info & (infomask))
 #define CLS_SETINFO(cls,infomask)    ((cls)->info |= (infomask))
@@ -67,10 +67,10 @@ struct objc_class {
 
 /*
  * (true as of 2001-9-24)
- * Thread-safety note: changes to these flags are not atomic, so 
+ * Thread-safety note: changes to these flags are not atomic, so
  * the only thing preventing lost updates is the timing of the changes.
  *
- * As long as the following are isolated from each other for any one class, 
+ * As long as the following are isolated from each other for any one class,
  * nearly all flag updates will be safe:
  * - compile-time
  * - loading in one thread (not including +load) without messaging
@@ -87,7 +87,7 @@ struct objc_class {
  * CLS_MAPPED: compile-time
  * CLS_FLUSH_CACHE: messaging
  * CLS_GROW_CACHE: messaging
- *   FLUSH_CACHE and GROW_CACHE are protected from each other by the 
+ *   FLUSH_CACHE and GROW_CACHE are protected from each other by the
  *   cacheUpdateLock.
  * CLS_NEED_BIND: load, initialize
  * CLS_METHOD_ARRAY: load
@@ -98,16 +98,16 @@ struct objc_class {
  * The only unsafe updates are:
  * - posing (unsafe anyway)
  * - hand-built classes (including JavaBridge classes)
- *   There is a short time between objc_addClass inserts the new class 
- *   into the class_hash and the builder setting the right flags. 
- *   A thread looking at the class_hash could send a message to the class 
- *   and trigger initialization, and the changes to the initialization 
- *   flags and the hand-adjusted flags could collide. 
- *   Solution: don't do that. 
+ *   There is a short time between objc_addClass inserts the new class
+ *   into the class_hash and the builder setting the right flags.
+ *   A thread looking at the class_hash could send a message to the class
+ *   and trigger initialization, and the changes to the initialization
+ *   flags and the hand-adjusted flags could collide.
+ *   Solution: don't do that.
  */
 
 
-/* 
+/*
  *    Category Template
  */
 typedef struct objc_category *Category;
@@ -115,19 +115,19 @@ typedef struct objc_category *Category;
 struct objc_category {
     char *category_name;
     char *class_name;
-    struct objc_method_list *instance_methods;
-    struct objc_method_list *class_methods;
-     struct objc_protocol_list *protocols;
+    uint32_t instance_methods; //struct objc_method_list *
+    uint32_t class_methods; //struct objc_method_list *
+    uint32_t protocols; //struct objc_protocol_list *
 };
 
-/* 
+/*
  *    Instance Variable Template
  */
 typedef struct objc_ivar *Ivar;
 
 struct objc_ivar {
-    char *ivar_name;
-    char *ivar_type;
+    uint32_t ivar_name; //char *
+    uint32_t ivar_type; //char *
     int ivar_offset;
 #ifdef __alpha__
     int space;
@@ -145,15 +145,15 @@ struct objc_ivar_list {
 OBJC_EXPORT Ivar object_setInstanceVariable(id, const char *name, void *);
 OBJC_EXPORT Ivar object_getInstanceVariable(id, const char *name, void **);
 
-/* 
+/*
  *    Method Template
  */
 typedef struct objc_method *Method;
 
 struct objc_method {
-    SEL method_name;
-    char *method_types;
-    IMP method_imp;
+    uint32_t method_name; //SEL
+    uint32_t method_types; //char *
+    uint32_t method_imp; //IMP
 };
 
 struct objc_method_list {
@@ -214,7 +214,7 @@ typedef struct objc_cache *    Cache;
 #define CACHE_HASH(sel, mask) (((uarith_t)(sel)>>2) & (mask))
 struct objc_cache {
     unsigned int mask;            /* total = mask + 1 */
-    unsigned int occupied;        
+    unsigned int occupied;
     Method buckets[1];
 };
 
@@ -265,7 +265,7 @@ typedef void *marg_list;
     do { \
         free(margs); \
     } while (0)
-    
+
 #define marg_adjustedOffset(method, offset) \
     (marg_prearg_size + offset)
 
