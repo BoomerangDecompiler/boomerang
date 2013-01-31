@@ -48,6 +48,7 @@
 #include "codegen/chllcode.h"
 //#include "transformer.h"
 #include "boomerang.h"
+#include "util.h"
 #include "log.h"
 #if USE_XML
 #include "xmlprogparser.h"

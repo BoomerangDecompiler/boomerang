@@ -252,3 +252,10 @@ std::ostream& operator<< (std::ostream& stream, const ADDRESS& addr) {
     return stream;
 }
 
+#ifndef strdup
+char *strdup(const char *s) {
+    char *res = (char *)malloc(strlen(s));
+    strcpy(res,s);
+    return res;
+}
+#endif
