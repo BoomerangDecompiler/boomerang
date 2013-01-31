@@ -1,3 +1,6 @@
+This repository is now connected to continous integration server:
+http://boomerang.nemerle.eu
+
 This is an experimental branch of boomerang project, the inital goals are:
 - 'clean' up the repository ( removing old .cvsignore files and such ) [done]
 - move all old build systems into "out of sight" storage. [done]
@@ -5,9 +8,9 @@ This is an experimental branch of boomerang project, the inital goals are:
 - verify stability of decompilation results : compare 2 run results, they should be exactly the same.
 
 
-For build instructions please see 
+For build instructions please see
 
-	http://boomerang.sourceforge.net/making.html
+        http://boomerang.sourceforge.net/making.html
 
 Note that on a debian system you can usually get away with:
 
