@@ -251,8 +251,7 @@ std::ostream& operator<< (std::ostream& stream, const ADDRESS& addr) {
     stream << std::hex << addr.m_value << std::dec;
     return stream;
 }
-
-#ifndef strdup
+#ifdef __MINGW32__
 #include <cstdlib>
 char *strdup(const char *s) {
     char *res = (char *)malloc(strlen(s));
