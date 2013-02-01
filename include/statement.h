@@ -263,7 +263,7 @@ virtual bool        search(Exp *search, Exp *&result) = 0;
 virtual bool        searchAll(Exp* search, std::list<Exp*>& result) = 0;
 
         // general search and replace. Set cc true to change collectors as well. Return true if any change
-virtual bool        searchAndReplace(Exp *search, Exp *replace, bool cc = false) = 0;
+virtual bool        searchAndReplace(Exp *search, Exp *replace, bool cc = false) = 0; //TODO: consider constness
 
         // True if can propagate to expression e in this Statement.
 static    bool        canPropagateToExp(Exp* e);

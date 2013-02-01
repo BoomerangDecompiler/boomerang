@@ -2640,7 +2640,7 @@ Exp *UserProc::getSymbolExp(Exp *le, Type *ty, bool lastPass) {
             Exp* base = le;
             if (le->isSubscript())
                 base = ((RefExp*)le)->getSubExp1();
-            e = newLocal(ty->clone(), le);
+            e = newLocal(ty->clone(), le); //TODO: maybe this should be using 'base' instead of 'le'??
             mapSymbolTo(le->clone(), e);
             e = e->clone();
         }

@@ -276,7 +276,7 @@ public:
         std::list<Statement*>* instantiateRTL(RTL& rtls, ADDRESS natPC, std::list<std::string> &params,
             std::vector<Exp*>& actuals);
 
-        std::list<Statement*>* transformPostVars(std::list<Statement*> *rts, bool optimise);
+        void transformPostVars(std::list<Statement*> &rts, bool optimise);
 
         void        print(std::ostream& os = std::cout);
 
