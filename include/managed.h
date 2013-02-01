@@ -94,6 +94,8 @@ typedef std::set<Assign*, lessAssign>::const_iterator const_iterator;
         //Statement* getNext (StmtSetIter& it);              // Get next
         iterator    begin()    {return aset.begin();}
         iterator    end()    {return aset.end();}
+        const_iterator    begin() const  {return aset.begin();}
+        const_iterator    end() const   {return aset.end();}
 
         void        insert(Assign* a) {aset.insert(a);}        // Insertion
         bool        remove(Assign* a);                        // Removal; rets false if not found
@@ -119,11 +121,14 @@ class StatementList {
 
 public:
 typedef std::list<Statement*>::iterator iterator;
+typedef std::list<Statement*>::const_iterator const_iterator;
 typedef std::list<Statement*>::reverse_iterator reverse_iterator;
                     ~StatementList() {}
         unsigned    size() {return slist.size();}             // Number of elements
         iterator    begin()  {return slist.begin();}
         iterator    end()      {return slist.end();}
+        const_iterator    begin() const  {return slist.begin();}
+        const_iterator    end() const      {return slist.end();}
         reverse_iterator rbegin() {return slist.rbegin();}
         reverse_iterator rend()      {return slist.rend();}
 

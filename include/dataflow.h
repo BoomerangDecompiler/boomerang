@@ -161,7 +161,7 @@ public:
         /**
          * makeCloneOf(): clone the given Collector into this one
          */
-        void        makeCloneOf(DefCollector& other);
+        void        makeCloneOf(const DefCollector & other);
 
         /*
          * Return true if initialised
@@ -192,9 +192,12 @@ Assign* dumpAddrOfFourth();
         /*
          * begin() and end() so we can iterate through the locations
          */
+        typedef AssignSet::const_iterator const_iterator;
         typedef AssignSet::iterator iterator;
         iterator    begin() {return defs.begin();}
         iterator    end()     {return defs.end();}
+        const_iterator    begin() const {return defs.begin();}
+        const_iterator    end() const    {return defs.end();}
         bool        existsOnLeft(Exp* e) {return defs.definesLoc(e);}
 
         /*

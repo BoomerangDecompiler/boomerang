@@ -1157,7 +1157,7 @@ bool GotoStatement::isComputed() {
  * PARAMETERS:        <none>
  * \returns             Pointer to a new Statement, a clone of this GotoStatement
  ******************************************************************************/
-Statement* GotoStatement::clone() {
+Statement* GotoStatement::clone() const {
     GotoStatement* ret = new GotoStatement();
     ret->pDest = pDest->clone();
     ret->m_isComputed = m_isComputed;
@@ -1481,7 +1481,7 @@ void BranchStatement::print(std::ostream& os, bool html) {
  * PARAMETERS:        <none>
  * \returns             Pointer to a new Statement, a clone of this BranchStatement
  ******************************************************************************/
-Statement* BranchStatement::clone() {
+Statement* BranchStatement::clone() const {
     BranchStatement* ret = new BranchStatement();
     ret->pDest = pDest->clone();
     ret->m_isComputed = m_isComputed;
@@ -1877,7 +1877,7 @@ void CaseStatement::print(std::ostream& os, bool html) {
  * PARAMETERS:        <none>
  * \returns             Pointer to a new Statement that is a clone of this one
  ******************************************************************************/
-Statement* CaseStatement::clone() {
+Statement* CaseStatement::clone() const {
     CaseStatement* ret = new CaseStatement();
     ret->pDest = pDest->clone();
     ret->m_isComputed = m_isComputed;
@@ -2228,11 +2228,11 @@ bool CallStatement::isReturnAfterCall() {
  * PARAMETERS:        <none>
  * \returns             Pointer to a new Statement, a clone of this CallStatement
  ******************************************************************************/
-Statement* CallStatement::clone() {
+Statement* CallStatement::clone() const {
     CallStatement* ret = new CallStatement();
     ret->pDest = pDest->clone();
     ret->m_isComputed = m_isComputed;
-    StatementList::iterator ss;
+    StatementList::const_iterator ss;
     for (ss = arguments.begin(); ss != arguments.end(); ++ss)
         ret->arguments.append((*ss)->clone());
     for (ss = defines.begin(); ss != defines.end(); ++ss)
@@ -2847,17 +2847,14 @@ ReturnStatement::~ReturnStatement() {
 }
 
 /***************************************************************************//**
- * FUNCTION:        ReturnStatement::clone
  * \brief        Deep copy clone
- * PARAMETERS:        <none>
  * \returns             Pointer to a new Statement, a clone of this ReturnStatement
  ******************************************************************************/
-Statement* ReturnStatement::clone() {
+Statement* ReturnStatement::clone() const {
     ReturnStatement* ret = new ReturnStatement();
-    iterator rr;
-    for (rr = modifieds.begin(); rr != modifieds.end(); ++rr)
+    for (auto rr = modifieds.begin(); rr != modifieds.end(); ++rr)
         ret->modifieds.append((ImplicitAssign*)(*rr)->clone());
-    for (rr = returns.begin(); rr != returns.end(); ++rr)
+    for (auto rr = returns.begin(); rr != returns.end(); ++rr)
         ret->returns.append((Assignment*)(*rr)->clone());
     ret->retAddr = retAddr;
     ret->col.makeCloneOf(col);
@@ -3069,7 +3066,7 @@ void BoolAssign::printCompact(std::ostream& os /*= cout*/, bool html) {
  * PARAMETERS:        <none>
  * \returns             Pointer to a new Statement, a clone of this BoolAssign
  ******************************************************************************/
-Statement* BoolAssign::clone() {
+Statement* BoolAssign::clone() const {
     BoolAssign* ret = new BoolAssign(size);
     ret->jtCond = jtCond;
     if (pCond) ret->pCond = pCond->clone();
@@ -3192,7 +3189,7 @@ ImplicitAssign::ImplicitAssign(ImplicitAssign& o) : Assignment(type?type->clone(
 // The first virtual function (here the destructor) can't be in statement.h file for gcc
 ImplicitAssign::~ImplicitAssign() { }
 
-Statement* Assign::clone() {
+Statement* Assign::clone() const {
     Assign* a = new Assign(type == nullptr ? nullptr : type->clone(), lhs->clone(), rhs->clone(),
                            guard == nullptr ? nullptr : guard->clone());
     // Statement members
@@ -3202,9 +3199,9 @@ Statement* Assign::clone() {
     return a;
 }
 
-Statement* PhiAssign::clone() {
+Statement* PhiAssign::clone() const {
     PhiAssign* pa = new PhiAssign(type, lhs);
-    Definitions::iterator dd;
+    Definitions::const_iterator dd;
     for (dd = defVec.begin(); dd != defVec.end(); dd++) {
         PhiInfo pi;
         pi.def = dd->def;            // Don't clone the Statement pointer (never moves)
@@ -3214,7 +3211,7 @@ Statement* PhiAssign::clone() {
     return pa;
 }
 
-Statement* ImplicitAssign::clone() {
+Statement* ImplicitAssign::clone() const {
     ImplicitAssign* ia = new ImplicitAssign(type, lhs);
     return ia;
 }
@@ -4981,7 +4978,7 @@ void ImpRefStatement::meetWith(Type* ty, bool& ch) {
     type = type->meetWith(ty, ch);
 }
 
-Statement* ImpRefStatement::clone() {
+Statement* ImpRefStatement::clone() const {
     return new ImpRefStatement(type->clone(), addressExp->clone());
 }
 bool ImpRefStatement::accept(StmtVisitor* visitor) {

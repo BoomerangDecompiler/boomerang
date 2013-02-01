@@ -178,7 +178,7 @@ virtual    void        setNumber(int num) {number = num;}        // Overridden f
         RangeMap &getRanges() { return ranges; }
         void      clearRanges() { ranges.clear(); }
 
-virtual Statement*    clone() = 0;               // Make copy of self
+virtual Statement*    clone() const = 0;               // Make copy of self
 
         // Accept a visitor (of various kinds) to this Statement. Return true to continue visiting
 virtual bool        accept(StmtVisitor* visitor) = 0;
@@ -415,7 +415,7 @@ public:
 virtual                ~Assignment();
 
         // Clone
-virtual Statement* clone() = 0;
+virtual Statement* clone() const = 0;
 
         // We also want operator< for assignments. For example, we want ReturnStatement to contain a set of (pointers
         // to) Assignments, so we can automatically make sure that existing assignments are not duplicated
@@ -493,7 +493,7 @@ public:
                     ~Assign() {}
 
     // Clone
-virtual Statement*    clone();
+virtual Statement*    clone() const;
 
     // get how to replace this statement in a use
 virtual Exp*        getRight() { return rhs; }
@@ -592,7 +592,7 @@ public:
 virtual                ~PhiAssign() {}
 
                         // Clone
-virtual Statement*      clone();
+virtual Statement*      clone() const;
 
                         // get how to replace this statement in a use
 virtual Exp*            getRight() { return nullptr; }
@@ -658,7 +658,7 @@ public:
                     ImplicitAssign(ImplicitAssign& o);
 virtual             ~ImplicitAssign();
 
-virtual Statement * clone();
+virtual Statement * clone() const;
         void        dfaTypeAnalysis(bool& ch);
 
         // general search
@@ -697,7 +697,7 @@ public:
 virtual             ~BoolAssign();
 
         // Make a deep copy, and make the copy a derived object if needed.
-virtual Statement * clone();
+virtual Statement * clone() const;
 
                     // Accept a visitor to this Statement
 virtual bool        accept(StmtVisitor* visitor);
@@ -755,7 +755,7 @@ public:
         void        meetWith(Type* ty, bool& ch);        // Meet the internal type with ty. Set ch if a change
 
         // Virtuals
-virtual Statement * clone();
+virtual Statement * clone() const;
 virtual bool        accept(StmtVisitor*);
 virtual bool        accept(StmtExpVisitor*);
 virtual bool        accept(StmtModifier*);
@@ -795,7 +795,7 @@ public:
 virtual             ~GotoStatement();
 
 
-virtual Statement * clone(); //!< Make a deep copy, and make the copy a derived object if needed.
+virtual Statement * clone() const; //!< Make a deep copy, and make the copy a derived object if needed.
 
                     // Accept a visitor to this Statement
 virtual bool        accept(StmtVisitor* visitor);
@@ -847,7 +847,7 @@ class JunctionStatement: public Statement {
 public:
     JunctionStatement() { kind = STMT_JUNCTION; }
 
-    Statement*    clone() { return new JunctionStatement(); }
+    Statement*    clone() const { return new JunctionStatement(); }
 
     // Accept a visitor (of various kinds) to this Statement. Return true to continue visiting
     bool        accept(StmtVisitor* visitor);
@@ -896,7 +896,7 @@ public:
 virtual                ~BranchStatement();
 
     // Make a deep copy, and make the copy a derived object if needed.
-virtual Statement* clone();
+virtual Statement* clone() const;
 
     // Accept a visitor to this Statement
 virtual bool        accept(StmtVisitor* visitor);
@@ -985,7 +985,7 @@ public:
 virtual                ~CaseStatement();
 
     // Make a deep copy, and make the copy a derived object if needed.
-virtual Statement*    clone();
+virtual Statement*    clone() const;
 
     // Accept a visitor to this Statememt
 virtual bool        accept(StmtVisitor* visitor);
@@ -1061,7 +1061,7 @@ virtual                ~CallStatement();
 
 virtual    void        setNumber(int num);
         // Make a deep copy, and make the copy a derived object if needed.
-virtual Statement*    clone();
+virtual Statement*    clone() const;
 
         // Accept a visitor to this stmt
 virtual bool        accept(StmtVisitor* visitor);
@@ -1283,7 +1283,7 @@ virtual bool        isDefinition() { return true; }
         Exp*        subscriptWithDef(Exp* e);
 
         // Make a deep copy, and make the copy a derived object if needed.
-virtual Statement* clone();
+virtual Statement * clone() const;
 
         // Accept a visitor to this Statement
 virtual bool        accept(StmtVisitor* visitor);

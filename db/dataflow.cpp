@@ -689,10 +689,10 @@ void UseCollector::makeCloneOf(UseCollector& other) {
         locs.insert((*it)->clone());
 }
 
-void DefCollector::makeCloneOf(DefCollector& other) {
+void DefCollector::makeCloneOf(const DefCollector& other) {
     initialised = other.initialised;
     defs.clear();
-    for (iterator it = other.begin(); it != other.end(); ++it)
+    for (auto it = other.begin(); it != other.end(); ++it)
         defs.insert((Assign*)(*it)->clone());
 }
 
