@@ -11,13 +11,13 @@
 
 /***************************************************************************//**
  * \file       rtl.h
- * OVERVIEW:   Definition of the classes that describe an RTL, a low-level
- *               register transfer list. Higher-level RTLs (instance
- *               of class HLJump, HLCall, etc.) represent information about
- *               a control transfer instruction (CTI) in the source program.
- *               analysis code adds information to existing higher-level
- *               RTLs and sometimes creates new higher-level RTLs (e.g., for
- *               switch statements).
+ * Definition of the classes that describe an RTL, a low-level
+ *       register transfer list. Higher-level RTLs (instance
+ *       of class HLJump, HLCall, etc.) represent information about
+ *       a control transfer instruction (CTI) in the source program.
+ *       analysis code adds information to existing higher-level
+ *       RTLs and sometimes creates new higher-level RTLs (e.g., for
+ *       switch statements).
  *============================================================================*/
 
 /*
@@ -35,7 +35,7 @@
 #include <vector>
 #include <map>
 #include <set>
-#include <iostream>
+#include <iosfwd>
 #include "exp.h"
 #include "register.h"
 
@@ -51,7 +51,7 @@ class Register;
 class Proc;
 class XMLProgParser;
 class StmtVisitor;
-
+enum STMT_KIND : uint8_t;
 
 /***************************************************************************//**
  * Class RTL: describes low level register transfer lists (actually lists of statements).
@@ -59,124 +59,68 @@ class StmtVisitor;
  * address
  *============================================================================*/
 class RTL {
-        ADDRESS        nativeAddr;                            // RTL's source program instruction address
+        ADDRESS     nativeAddr;                            // RTL's source program instruction address
         std::list<Statement*> stmtList;                    // List of expressions in this RTL.
 public:
                     RTL();
                     RTL(ADDRESS instNativeAddr, std::list<Statement*>* listStmt = nullptr);
                     RTL(const RTL& other);                    // Makes deep copy of "other"
-virtual                ~RTL();
+virtual             ~RTL();
 
 typedef    std::list<Statement*>::iterator iterator;
 typedef    std::list<Statement*>::reverse_iterator reverse_iterator;
 
         // Return a deep copy, including a deep copy of the list of Statements
-virtual RTL* clone();
+virtual RTL *       clone();
 
         // Assignment copy: set this RTL to a deep copy of "other".
-        RTL& operator=(RTL &other);
+        RTL &       operator=(RTL &other);
 
         // Accept a visitor to this RTL
 virtual bool        accept(StmtVisitor* visitor);
 
         // Common enquiry methods
-        ADDRESS        getAddress() {return nativeAddr;}        // Return RTL's native address
+        ADDRESS     getAddress() {return nativeAddr;}        // Return RTL's native address
         void        setAddress(ADDRESS a) {nativeAddr=a;}    // Set the address
-        Type*        getType();                                // Return type of first Assign.
+        Type *      getType();                                // Return type of first Assign.
         bool        areFlagsAffected();                        // True if flags are affected
 
         // Statement list enquiry methods
-        int            getNumStmt();                            // Return the number of Stmts in RTL.
-        Statement*    elementAt(unsigned i);                    // Return the i'th element in RTL.
+        size_t getNumStmt();                            // Return the number of Stmts in RTL.
+        Statement * elementAt(unsigned i);                    // Return the i'th element in RTL.
 
         // Statement list editing methods
         void        appendStmt(Statement *s);                // Add s to end of RTL.
         void        prependStmt(Statement *s);                // Add s to start of RTL.
         void        insertStmt(Statement *s, unsigned i);    // Insert s before expression at position i
         void        insertStmt(Statement *s, iterator it);    // Insert s before iterator it
-        void        updateStmt(Statement *s, unsigned i);    // Change stmt at position i.
-        void        deleteStmt(unsigned int);                // Delete expression at position i.
+        void        deleteStmt(unsigned i);
         void        deleteLastStmt();                        // Delete the last statement
         void        replaceLastStmt(Statement* repl);        // Replace the last Statement
         void        clear();                                // Remove all statements from this RTL.
-        // Append list of exps to end.
+
         void        appendListStmt(std::list<Statement*>& le);
-        void        appendRTL(RTL& rtl);                    // Append Statements from other RTL to end
+        void        appendRTL(RTL& rtl);
         // Make a deep copy of the list of Exp*
         void        deepCopyList(std::list<Statement*>& dest);
-        // direct access to the list of expressions
-        std::list<Statement*> &getList() { return stmtList; }
+
+        std::list<Statement*> &getList() { return stmtList; }//!< direct access to the list of expressions
 
          // Print RTL to a stream.
-virtual void        print(std::ostream& os = std::cout, bool html = false);
+virtual void        print(std::ostream& os = std::cout, bool html = false) const;
 
         void        dump();
-
-        // Set the RTL's source address
         void        updateAddress(ADDRESS addr);
-
-        // Is this RTL a compare instruction? If so, the passed register and compared value (a semantic string) are set.
-        bool        isCompare(int& iReg, Exp*& pTerm);
-
-        // Return true if RTL loads the high half of an immediate constant into anything. If so, loads the already
-        // shifted high value into the parameter.
-        bool        isHiImmedLoad(ADDRESS& uHiHalf);
-
-        // As above for low half. Extra parameters are required for SPARC, where bits are potentially transferred from
-        // one register to another.
-        bool        isLoImmedLoad(ADDRESS& uLoHalf, bool& bTrans, int& iSrc);
-
-        // Do a machine dependent, and a standard simplification of the RTL.
-        void        allSimplify();
-
-        // Perform forward substitutions of temps, if possible. Called from the above
-        void        forwardSubs();
-
-        // Insert an assignment into this RTL
-        //     ssLhs: ptr to Exp to place on LHS
-        //     ssRhs: ptr to Exp to place on RHS
-        //     prep:    true if prepend (else append)
-        //     type:    type of the transfer, or nullptr
-        void        insertAssign(Exp* ssLhs, Exp* ssRhs, bool prep, Type* type = nullptr);
-
-        // Insert an assignment into this RTL, after temps have been defined
-        //     ssLhs: ptr to Exp to place on LHS
-        //     ssRhs: ptr to Exp to place on RHS
-        //     type:    type of the transfer, or nullptr
-        void        insertAfterTemps(Exp* ssLhs, Exp* ssRhs, Type* type = nullptr);
-
-        // Replace all instances of "search" with "replace".
 virtual bool        searchAndReplace(Exp* search, Exp* replace);
-
-        // Searches for all instances of "search" and adds them to "result" in reverse nesting order. The search is
-        // optionally type sensitive.
 virtual bool        searchAll(Exp* search, std::list<Exp*> &result);
-
-        // code generation
 virtual void        generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel);
 
-        // simplify all the uses/defs in this RTL
-virtual void        simplify();
-
-        // True if this RTL ends in a GotoStatement
-        bool        isGoto();
-
-        // Is this RTL a call instruction?
-        bool        isCall();
-
-        // Is this RTL a branch instruction?
-        bool        isBranch();
-
-        // Get the "special" (High Level) Statement this RTL (else nullptr)
-        Statement*    getHlStmt();
-
-        // Print to a string (mainly for debugging)
-        char*        prints();
-
-        // Set or clear all the "constant subscripts" (conscripts) in this RTL
-        int            setConscripts(int n, bool bClear);
+        bool        isCall(); // Is this RTL a call instruction?
+        Statement * getHlStmt();
+        char *      prints() const; // Print to a string (mainly for debugging)
+        void        simplify();
 protected:
-
+        bool        isKindOf(STMT_KIND k);
         friend class XMLProgParser;
 };
 
@@ -255,8 +199,6 @@ public:
         RTLInstDict();
         ~RTLInstDict();
 
-        // Parse a file containing a list of instructions definitions in SSL format and build the contents of this
-        // dictionary.
         bool    readSSLFile(const std::string& SSLFileName);
 
         // Reset the object to "undo" a readSSLFile()

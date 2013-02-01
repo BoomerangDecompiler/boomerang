@@ -141,7 +141,7 @@ RTLInstDict::~RTLInstDict() { }
  * \brief        Read and parse the SSL file, and initialise the expanded instruction dictionary (this object).
  * This also reads and sets up the register map and flag functions.
  * \param SSLFileName - the name of the file containing the SSL specification.
- * \returns             the file was successfully read
+ * \returns        true if the file was successfully read
  ******************************************************************************/
 bool RTLInstDict::readSSLFile(const std::string& SSLFileName) {
     // emptying the rtl dictionary
@@ -181,7 +181,6 @@ bool RTLInstDict::readSSLFile(const std::string& SSLFileName) {
  * \param id
  * \param size - register size in bits
  * \param flt - is float ?
- * \returns             <nothing>
  ******************************************************************************/
 void RTLInstDict::addRegister( const char *name, int id, int size, bool flt ) {
     RegMap[name] = id;

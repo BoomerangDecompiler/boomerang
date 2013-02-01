@@ -86,7 +86,7 @@ typedef std::set<UserProc*> CycleSet;
  * Kinds of Statements, or high-level register transfer lists.
  * changing the order of these will result in save files not working - trent
  *============================================================================*/
-enum STMT_KIND {
+enum STMT_KIND : uint8_t { // ' : uint8_t' so that it can be forward declared in rtl.h
     STMT_ASSIGN = 0,
     STMT_PHIASSIGN,
     STMT_IMPASSIGN,
@@ -135,20 +135,20 @@ enum BRANCH_TYPE {
  */
 class Statement {
 protected:
-        PBB            pbb;            // contains a pointer to the enclosing BB
-        UserProc    *proc;            // procedure containing this statement
-        int            number;            // Statement number for printing
+        BasicBlock *    pbb;            // contains a pointer to the enclosing BB
+        UserProc *      proc;            // procedure containing this statement
+        int             number;            // Statement number for printing
 #if        USE_DOMINANCE_NUMS
-        int            dominanceNum;    // Like a statement number, but has dominance properties
+        int             dominanceNum;    // Like a statement number, but has dominance properties
 public:
-        int            getDomNumber() {return dominanceNum;}
-        void        setDomNumber(int dn) {dominanceNum = dn;}
+        int             getDomNumber() {return dominanceNum;}
+        void            setDomNumber(int dn) {dominanceNum = dn;}
 protected:
 #endif
-        STMT_KIND    kind;            // Statement kind (e.g. STMT_BRANCH)
-        Statement    *parent;        // The statement that contains this one
-        RangeMap    ranges;            // overestimation of ranges of locations
-        RangeMap    savedInputRanges;  // saved overestimation of ranges of locations
+        STMT_KIND       kind;            // Statement kind (e.g. STMT_BRANCH)
+        Statement *     parent;        // The statement that contains this one
+        RangeMap        ranges;            // overestimation of ranges of locations
+        RangeMap        savedInputRanges;  // saved overestimation of ranges of locations
 
         unsigned int lexBegin, lexEnd;
 
