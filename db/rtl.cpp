@@ -70,7 +70,7 @@ RTL::RTL()
 RTL::RTL(ADDRESS instNativeAddr, std::list<Statement*>* listStmt /*= nullptr*/)
     : nativeAddr(instNativeAddr) {
     if (listStmt)
-        stmtList = *listStmt;
+        *(std::list<Statement*>*)this = *listStmt;
 }
 
 /***************************************************************************//**
@@ -80,8 +80,8 @@ RTL::RTL(ADDRESS instNativeAddr, std::list<Statement*>* listStmt /*= nullptr*/)
  ******************************************************************************/
 RTL::RTL(const RTL& other) : nativeAddr(other.nativeAddr) {
     std::list<Statement*>::const_iterator it;
-    for (it = other.stmtList.begin(); it != other.stmtList.end(); it++) {
-        stmtList.push_back((*it)->clone());
+    for (it = other.begin(); it != other.end(); it++) {
+        push_back((*it)->clone());
     }
 }
 
@@ -96,14 +96,15 @@ RTL& RTL::operator=(RTL& other) {
     if (this != &other) {
         // Do a deep copy always
         iterator it;
-        for (it = other.stmtList.begin(); it != other.stmtList.end(); it++)
-            stmtList.push_back((*it)->clone());
+        for (it = other.begin(); it != other.end(); it++)
+            push_back((*it)->clone());
 
         nativeAddr = other.nativeAddr;
     }
     return *this;
 }
 
+// Return a deep copy, including a deep copy of the list of Statements
 /***************************************************************************//**
  * \brief        Deep copy clone; deleting the clone will not affect this
  *                     RTL object
@@ -111,7 +112,7 @@ RTL& RTL::operator=(RTL& other) {
  ******************************************************************************/
 RTL* RTL::clone() {
     std::list<Statement*> le;
-    for (iterator it = stmtList.begin(); it != stmtList.end(); it++) {
+    for (iterator it = begin(); it != end(); it++) {
         le.push_back((*it)->clone());
     }
     return new RTL(nativeAddr, &le);
@@ -122,7 +123,7 @@ bool RTL::accept(StmtVisitor* visitor) {
     // Might want to do something at the RTL level:
     if (!visitor->visit(this)) return false;
     iterator it;
-    for (it = stmtList.begin(); it != stmtList.end(); it++) {
+    for (it = begin(); it != end(); it++) {
         if (! (*it)->accept(visitor))
             return false;
     }
@@ -137,7 +138,7 @@ bool RTL::accept(StmtVisitor* visitor) {
 void RTL::deepCopyList(std::list<Statement*>& dest) {
     std::list<Statement*>::iterator it;
 
-    for (it = stmtList.begin(); it != stmtList.end(); it++) {
+    for (it = begin(); it != end(); it++) {
         dest.push_back((*it)->clone());
     }
 }
@@ -151,14 +152,14 @@ void RTL::deepCopyList(std::list<Statement*>& dest) {
  * \returns             Nothing
  ******************************************************************************/
 void RTL::appendStmt(Statement* s) {
-    if (stmtList.size()) {
-        if (stmtList.back()->isFlagAssgn()) {
-            iterator it = stmtList.end();
-            stmtList.insert(--it, s);
+    if (size()) {
+        if (back()->isFlagAssgn()) {
+            iterator it = end();
+            insert(--it, s);
             return;
         }
     }
-    stmtList.push_back(s);
+    push_back(s);
 }
 
 /***************************************************************************//**
@@ -167,7 +168,7 @@ void RTL::appendStmt(Statement* s) {
  * \param        s: Ptr to Statement to prepend
  ******************************************************************************/
 void RTL::prependStmt(Statement* s) {
-    stmtList.push_front(s);
+    push_front(s);
 }
 
 /***************************************************************************//**
@@ -177,7 +178,7 @@ void RTL::prependStmt(Statement* s) {
  ******************************************************************************/
 void RTL::appendListStmt(std::list<Statement*>& le) {
     for (Statement * it : le) {
-        stmtList.push_back(it->clone());
+        push_back(it->clone());
     }
 }
 
@@ -187,7 +188,7 @@ void RTL::appendListStmt(std::list<Statement*>& le) {
  * \param        r: reterence to RTL whose Exps we are to insert
  ******************************************************************************/
 void RTL::appendRTL(RTL& r) {
-    appendListStmt(r.stmtList);
+    appendListStmt(r);
 }
 
 /***************************************************************************//**
@@ -198,39 +199,39 @@ void RTL::appendRTL(RTL& r) {
  ******************************************************************************/
 void RTL::insertStmt(Statement* s, unsigned i) {
     // Check that position i is not out of bounds
-    assert (i < stmtList.size() || stmtList.size() == 0);
+    assert (i < size() || size() == 0);
 
     // Find the position
-    iterator pp = stmtList.begin();
+    iterator pp = begin();
     for (; i > 0; i--, pp++);
 
     // Do the insertion
-    stmtList.insert(pp, s);
+    insert(pp, s);
 }
 
 void RTL::insertStmt(Statement* s, iterator it) {
-    stmtList.insert(it, s);
+    insert(it, s);
 }
 
 void RTL::deleteStmt(unsigned i) {
     // check that position i is not out of bounds
-    assert (i < stmtList.size());
+    assert (i < size());
 
     // find the position
-    iterator pp = stmtList.begin();
+    iterator pp = this->begin();
     std::advance(pp,i);
     // do the delete
-    stmtList.erase(pp);
+    this->erase(pp);
 }
 
 void RTL::deleteLastStmt() {
-    assert(stmtList.size());
-    stmtList.erase(--stmtList.end());
+    assert(this->size());
+    this->erase(--this->end());
 }
 
 void RTL::replaceLastStmt(Statement* repl) {
-    assert(stmtList.size());
-    Statement*& last = stmtList.back();
+    assert(this->size());
+    Statement*& last = this->back();
     last = repl;
 }
 
@@ -240,7 +241,7 @@ void RTL::replaceLastStmt(Statement* repl) {
  * \returns             Integer number of Statements
  ******************************************************************************/
 size_t RTL::getNumStmt() {
-    return stmtList.size();
+    return this->size();
 }
 
 /***************************************************************************//**
@@ -251,8 +252,8 @@ size_t RTL::getNumStmt() {
  *          of bounds
  ******************************************************************************/
 Statement* RTL::elementAt(unsigned i) {
-    iterator it=stmtList.begin();
-    if(i>=stmtList.size())
+    iterator it=this->begin();
+    if(i>=this->size())
         return nullptr;
     std::advance(it,i);
     return *it;
@@ -276,7 +277,7 @@ void RTL::print(std::ostream& os /*= cout*/, bool html /*=false*/) const {
     // Print the statements
     // First line has 8 extra chars as above
     bool bFirst = true;
-    for (Statement * stmt : stmtList) {
+    for (Statement * stmt : *this) {
         if (html) {
             if (!bFirst) os << "<tr><td></td>";
             os << "<td width=\"50\" align=\"center\">";
@@ -292,7 +293,7 @@ void RTL::print(std::ostream& os /*= cout*/, bool html /*=false*/) const {
         os << "\n";
         bFirst = false;
     }
-    if (stmtList.empty())
+    if (this->empty())
         os << std::endl;       // New line for NOP
 }
 
@@ -341,7 +342,7 @@ void RTL::updateAddress(ADDRESS addr) {
  ******************************************************************************/
 bool RTL::searchAndReplace(Exp* search, Exp* replace) {
     bool ch = false;
-    for (iterator it = stmtList.begin(); it != stmtList.end(); it++)
+    for (iterator it = this->begin(); it != this->end(); it++)
         ch |= (*it)->searchAndReplace(search, replace);
     return ch;
 }
@@ -359,7 +360,7 @@ bool RTL::searchAndReplace(Exp* search, Exp* replace) {
  ******************************************************************************/
 bool RTL::searchAll(Exp* search, std::list<Exp *> &result) {
     bool found = false;
-    for (Statement * e : stmtList) {
+    for (Statement * e : *this) {
         Exp* res;
         if (e->search(search, res)) {
             found = true;
@@ -373,9 +374,6 @@ bool RTL::searchAll(Exp* search, std::list<Exp *> &result) {
  * \brief        Clear the list of Exps
  * \returns             Nothing
  ******************************************************************************/
-void RTL::clear() {
-    stmtList.clear();
-}
 
 /***************************************************************************//**
  * \brief       Get the "type" for this RTL. Just gets the type of
@@ -385,7 +383,7 @@ void RTL::clear() {
  * \returns     A pointer to the type
  ******************************************************************************/
 Type* RTL::getType() {
-    for (Statement *e : stmtList) {
+    for (Statement *e : *this) {
         if (e->isAssign())
             return ((Assign*)e)->getType();
     }
@@ -398,22 +396,22 @@ Type* RTL::getType() {
  * \returns           Boolean as above
  ******************************************************************************/
 bool RTL::areFlagsAffected() {
-    if (stmtList.empty())
+    if (this->empty())
         return false;
-    Statement *e = stmtList.back();
+    Statement *e = this->back();
     // If it is a flag call, then the CCs are affected
     return e->isFlagAssgn();
 }
 
 // Generata code for all statements in this rtl
 void RTL::generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) {
-    for (Statement * st : stmtList) {
+    for (Statement * st : *this) {
         st->generateCode(hll, pbb, indLevel);
     }
 }
 
 void RTL::simplify() {
-    for (iterator it = stmtList.begin(); it != stmtList.end(); ) {
+    for (iterator it = this->begin(); it != this->end(); ) {
         Statement *s = *it;
         s->simplify();
         if (s->isBranch()) {
@@ -422,7 +420,7 @@ void RTL::simplify() {
                 if (((Const*)cond)->getInt() == 0) {
                     if (VERBOSE)
                         LOG << "removing branch with false condition at " << getAddress()  << " " << *it << "\n";
-                    it = stmtList.erase(it);
+                    it = this->erase(it);
                     continue;
                 } else {
                     if (VERBOSE)
@@ -437,7 +435,7 @@ void RTL::simplify() {
                 // This assignment statement can be deleted
                 if (VERBOSE)
                     LOG << "removing assignment with false guard at " << getAddress() << " " << *it << "\n";
-                it = stmtList.erase(it);
+                it = this->erase(it);
                 continue;
             }
         }
@@ -454,7 +452,7 @@ bool RTL::isCall() {
 // Get the "special" (High Level) Statement this RTL (else nullptr)
 Statement* RTL::getHlStmt() {
     reverse_iterator rit;
-    for (rit = stmtList.rbegin(); rit != stmtList.rend(); rit++) {
+    for (rit = this->rbegin(); rit != this->rend(); rit++) {
         if ((*rit)->getKind() != STMT_ASSIGN)
             return *rit;
     }
@@ -468,8 +466,8 @@ Statement* RTL::getHlStmt() {
 //}
 
 bool RTL::isKindOf(STMT_KIND k) {
-    if (stmtList.empty())
+    if (this->empty())
         return false;
-    Statement* last = stmtList.back();
+    Statement* last = this->back();
     return last->getKind() == k;
 }

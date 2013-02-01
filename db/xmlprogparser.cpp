@@ -2513,7 +2513,7 @@ void XMLProgParser::persistToXML(std::ostream &out, BasicBlock *bb) {
 
 void XMLProgParser::persistToXML(std::ostream &out, RTL *rtl) {
     out << "<rtl id=\"" << ADDRESS::host_ptr(rtl) << "\" addr=\"" << rtl->nativeAddr << "\">\n";
-    for (std::list<Statement*>::iterator it = rtl->stmtList.begin(); it != rtl->stmtList.end(); it++) {
+    for (std::list<Statement*>::iterator it = rtl->begin(); it != rtl-> end(); it++) {
         out << "<stmt>\n";
         persistToXML(out, *it);
         out << "</stmt>\n";

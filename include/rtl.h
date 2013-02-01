@@ -58,19 +58,14 @@ enum STMT_KIND : uint8_t;
  * NOTE: when time permits, this class could be removed, replaced with new Statements that mark the current native
  * address
  *============================================================================*/
-class RTL {
+class RTL : public std::list<Statement*> {
         ADDRESS     nativeAddr;                            // RTL's source program instruction address
-        std::list<Statement*> stmtList;                    // List of expressions in this RTL.
 public:
                     RTL();
                     RTL(ADDRESS instNativeAddr, std::list<Statement*>* listStmt = nullptr);
                     RTL(const RTL& other);                    // Makes deep copy of "other"
 virtual             ~RTL();
 
-typedef    std::list<Statement*>::iterator iterator;
-typedef    std::list<Statement*>::reverse_iterator reverse_iterator;
-
-        // Return a deep copy, including a deep copy of the list of Statements
 virtual RTL *       clone();
 
         // Assignment copy: set this RTL to a deep copy of "other".
@@ -97,14 +92,13 @@ virtual bool        accept(StmtVisitor* visitor);
         void        deleteStmt(unsigned i);
         void        deleteLastStmt();                        // Delete the last statement
         void        replaceLastStmt(Statement* repl);        // Replace the last Statement
-        void        clear();                                // Remove all statements from this RTL.
 
         void        appendListStmt(std::list<Statement*>& le);
         void        appendRTL(RTL& rtl);
         // Make a deep copy of the list of Exp*
         void        deepCopyList(std::list<Statement*>& dest);
 
-        std::list<Statement*> &getList() { return stmtList; }//!< direct access to the list of expressions
+        std::list<Statement*> &getList() { return *this; }//!< direct access to the list of expressions
 
          // Print RTL to a stream.
 virtual void        print(std::ostream& os = std::cout, bool html = false) const;

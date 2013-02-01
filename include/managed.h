@@ -67,33 +67,24 @@ public:
 
 // As above, but the Statements are known to be Assigns, and are sorted sensibly
 class AssignSet : public std::set<Assign*, lessAssign> {
-
 public:
-typedef std::set<Assign*, lessAssign>::iterator iterator;
-typedef std::set<Assign*, lessAssign>::const_iterator const_iterator;
-
                     ~AssignSet() {}
         void        makeUnion(AssignSet& other);        // Set union
         void        makeDiff (AssignSet& other);        // Set difference
         void        makeIsect(AssignSet& other);        // Set intersection
         bool        isSubSetOf(AssignSet& other);        // Subset relation
-
-        //Statement* getFirst(StmtSetIter& it);              // Get the first Statement
-        //Statement* getNext (StmtSetIter& it);              // Get next
-
         bool        remove(Assign* a);                        // Removal; rets false if not found
         bool        removeIfDefines(Exp* given);            // Remove if given exp is defined
         bool        removeIfDefines(AssignSet& given);        // Remove if any given is def'd
         bool        exists(Assign* s);                        // Search; returns false if !found
         bool        definesLoc(Exp* loc);                    // Search; returns true if any assignment defines loc
-        Assign*        lookupLoc(Exp* loc);                    // Search for loc on LHS, return ptr to Assign if found
+        Assign *    lookupLoc(Exp* loc);                    // Search for loc on LHS, return ptr to Assign if found
 
         bool        operator<(const AssignSet& o) const;    // Compare if less
         void        print(std::ostream& os);                // Print to os
         void        printNums(std::ostream& os);            // Print statements as numbers
-        char*        prints();                                // Print to string (for debug)
+        char *      prints();                                // Print to string (for debug)
         void        dump();                                    // Print to standard error for debugging
-        //bool    isLast(StmtSetIter& it);                    // returns true if it is at end
 };        // class AssignSet
 
 class StatementList : public std::list<Statement*> {
