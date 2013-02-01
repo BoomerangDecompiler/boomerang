@@ -1347,11 +1347,11 @@ Logue* InstructionPatterns::std_call(CSR& csr, ADDRESS& lc, int& addr)
     if (
     call__(lc, addr, VAR)) {
         vector<int> params(1); params[0] = addr; 
-        if (__save == lc) return NULL;
+        if (__save == lc) return nullptr;
         return csr.instantiateLogue("std_call",params);
     } else {
         lc = __save;
-        return NULL;
+        return nullptr;
     }
 }
 Logue* InstructionPatterns::struct_call(CSR& csr, ADDRESS& lc, int& addr, int& imm22)
@@ -1362,11 +1362,11 @@ Logue* InstructionPatterns::struct_call(CSR& csr, ADDRESS& lc, int& addr, int& i
     (lc += 4, true) && 
     UNIMP(lc, imm22, VAR)) {
         vector<int> params(2); params[0] = addr; params[1] = imm22; 
-        if (__save == lc) return NULL;
+        if (__save == lc) return nullptr;
         return csr.instantiateLogue("struct_call",params);
     } else {
         lc = __save;
-        return NULL;
+        return nullptr;
     }
 }
 Logue* InstructionPatterns::call_rst_ui_reg(CSR& csr, ADDRESS& lc, int& addr, int& imm22, int& rs1, int& rs2, int& rd)
@@ -1377,11 +1377,11 @@ Logue* InstructionPatterns::call_rst_ui_reg(CSR& csr, ADDRESS& lc, int& addr, in
     RESTORE$rmode(lc, rs1, VAR, rs2, VAR, rd, VAR) && 
     UNIMP(lc, imm22, VAR)) {
         vector<int> params(5); params[0] = addr; params[1] = imm22; params[2] = rs1; params[3] = rs2; params[4] = rd; 
-        if (__save == lc) return NULL;
+        if (__save == lc) return nullptr;
         return csr.instantiateLogue("call_rst_ui_reg",params);
     } else {
         lc = __save;
-        return NULL;
+        return nullptr;
     }
 }
 Logue* InstructionPatterns::call_rst_ui_imm(CSR& csr, ADDRESS& lc, int& addr, int& imm22, int& rs1, int& imm, int& rd)
@@ -1392,11 +1392,11 @@ Logue* InstructionPatterns::call_rst_ui_imm(CSR& csr, ADDRESS& lc, int& addr, in
     RESTORE$imode(lc, rs1, VAR, imm, VAR, rd, VAR) && 
     UNIMP(lc, imm22, VAR)) {
         vector<int> params(5); params[0] = addr; params[1] = imm22; params[2] = rs1; params[3] = imm; params[4] = rd; 
-        if (__save == lc) return NULL;
+        if (__save == lc) return nullptr;
         return csr.instantiateLogue("call_rst_ui_imm",params);
     } else {
         lc = __save;
-        return NULL;
+        return nullptr;
     }
 }
 Logue* InstructionPatterns::call_restore_reg(CSR& csr, ADDRESS& lc, int& addr, int& rs1, int& rs2, int& rd)
@@ -1406,11 +1406,11 @@ Logue* InstructionPatterns::call_restore_reg(CSR& csr, ADDRESS& lc, int& addr, i
     call__(lc, addr, VAR) && 
     RESTORE$rmode(lc, rs1, VAR, rs2, VAR, rd, VAR)) {
         vector<int> params(4); params[0] = addr; params[1] = rs1; params[2] = rs2; params[3] = rd; 
-        if (__save == lc) return NULL;
+        if (__save == lc) return nullptr;
         return csr.instantiateLogue("call_restore_reg",params);
     } else {
         lc = __save;
-        return NULL;
+        return nullptr;
     }
 }
 Logue* InstructionPatterns::call_restore_imm(CSR& csr, ADDRESS& lc, int& addr, int& rs1, int& imm, int& rd)
@@ -1420,11 +1420,11 @@ Logue* InstructionPatterns::call_restore_imm(CSR& csr, ADDRESS& lc, int& addr, i
     call__(lc, addr, VAR) && 
     RESTORE$imode(lc, rs1, VAR, imm, VAR, rd, VAR)) {
         vector<int> params(4); params[0] = addr; params[1] = rs1; params[2] = imm; params[3] = rd; 
-        if (__save == lc) return NULL;
+        if (__save == lc) return nullptr;
         return csr.instantiateLogue("call_restore_imm",params);
     } else {
         lc = __save;
-        return NULL;
+        return nullptr;
     }
 }
 Logue* InstructionPatterns::move_call_move(CSR& csr, ADDRESS& lc, int& addr, int& rd)
@@ -1435,11 +1435,11 @@ Logue* InstructionPatterns::move_call_move(CSR& csr, ADDRESS& lc, int& addr, int
     call__(lc, addr, VAR) && 
     mov_(lc, rd, VAR, o7, VAL)) {
         vector<int> params(2); params[0] = addr; params[1] = rd; 
-        if (__save == lc) return NULL;
+        if (__save == lc) return nullptr;
         return csr.instantiateLogue("move_call_move",params);
     } else {
         lc = __save;
-        return NULL;
+        return nullptr;
     }
 }
 Logue* InstructionPatterns::move_x_call_move(CSR& csr, ADDRESS& lc, int& addr, int& rd)
@@ -1451,11 +1451,11 @@ Logue* InstructionPatterns::move_x_call_move(CSR& csr, ADDRESS& lc, int& addr, i
     call__(lc, addr, VAR) && 
     mov_(lc, rd, VAR, o7, VAL)) {
         vector<int> params(2); params[0] = addr; params[1] = rd; 
-        if (__save == lc) return NULL;
+        if (__save == lc) return nullptr;
         return csr.instantiateLogue("move_x_call_move",params);
     } else {
         lc = __save;
-        return NULL;
+        return nullptr;
     }
 }
 Logue* InstructionPatterns::call_add(CSR& csr, ADDRESS& lc, int& addr, int& imm)
@@ -1465,11 +1465,11 @@ Logue* InstructionPatterns::call_add(CSR& csr, ADDRESS& lc, int& addr, int& imm)
     call__(lc, addr, VAR) && 
     ADD$imode(lc, o7, VAL, imm, VAR, o7, VAL)) {
         vector<int> params(2); params[0] = addr; params[1] = imm; 
-        if (__save == lc) return NULL;
+        if (__save == lc) return nullptr;
         return csr.instantiateLogue("call_add",params);
     } else {
         lc = __save;
-        return NULL;
+        return nullptr;
     }
 }
 Logue* InstructionPatterns::jmp_restore_reg(CSR& csr, ADDRESS& lc, int& rs1j, int& rdj, int& rs1, int& rs2, int& rd)
@@ -1479,11 +1479,11 @@ Logue* InstructionPatterns::jmp_restore_reg(CSR& csr, ADDRESS& lc, int& rs1j, in
     JMPL$indirectA(lc, rs1j, VAR, rdj, VAR) && 
     RESTORE$rmode(lc, rs1, VAR, rs2, VAR, rd, VAR)) {
         vector<int> params(5); params[0] = rs1j; params[1] = rdj; params[2] = rs1; params[3] = rs2; params[4] = rd; 
-        if (__save == lc) return NULL;
+        if (__save == lc) return nullptr;
         return csr.instantiateLogue("jmp_restore_reg",params);
     } else {
         lc = __save;
-        return NULL;
+        return nullptr;
     }
 }
 Logue* InstructionPatterns::jmp_restore_imm(CSR& csr, ADDRESS& lc, int& rs1j, int& rdj, int& rs1, int& imm, int& rd)
@@ -1493,11 +1493,11 @@ Logue* InstructionPatterns::jmp_restore_imm(CSR& csr, ADDRESS& lc, int& rs1j, in
     JMPL$indirectA(lc, rs1j, VAR, rdj, VAR) && 
     RESTORE$imode(lc, rs1, VAR, imm, VAR, rd, VAR)) {
         vector<int> params(5); params[0] = rs1j; params[1] = rdj; params[2] = rs1; params[3] = imm; params[4] = rd; 
-        if (__save == lc) return NULL;
+        if (__save == lc) return nullptr;
         return csr.instantiateLogue("jmp_restore_imm",params);
     } else {
         lc = __save;
-        return NULL;
+        return nullptr;
     }
 }
 Logue* InstructionPatterns::new_reg_win(CSR& csr, ADDRESS& lc, int& locals)
@@ -1506,11 +1506,11 @@ Logue* InstructionPatterns::new_reg_win(CSR& csr, ADDRESS& lc, int& locals)
     if (
     SAVE$imode(lc, SP, VAL, locals, VAR, SP, VAL)) {
         vector<int> params(1); params[0] = locals; 
-        if (__save == lc) return NULL;
+        if (__save == lc) return nullptr;
         return csr.instantiateLogue("new_reg_win",params);
     } else {
         lc = __save;
-        return NULL;
+        return nullptr;
     }
 }
 Logue* InstructionPatterns::same_reg_win(CSR& csr, ADDRESS& lc, int& locals)
@@ -1519,11 +1519,11 @@ Logue* InstructionPatterns::same_reg_win(CSR& csr, ADDRESS& lc, int& locals)
     if (
     ADD$imode(lc, SP, VAL, locals, VAR, SP, VAL)) {
         vector<int> params(1); params[0] = locals; 
-        if (__save == lc) return NULL;
+        if (__save == lc) return nullptr;
         return csr.instantiateLogue("same_reg_win",params);
     } else {
         lc = __save;
-        return NULL;
+        return nullptr;
     }
 }
 Logue* InstructionPatterns::new_reg_win_large(CSR& csr, ADDRESS& lc, int& hiVal, int& loVal, int& reg)
@@ -1535,11 +1535,11 @@ Logue* InstructionPatterns::new_reg_win_large(CSR& csr, ADDRESS& lc, int& hiVal,
     OR$imode(lc, reg, VAR, loVal, VAR, reg, VAR)) && 
     SAVE$rmode(lc, SP, VAL, reg, VAR, SP, VAL)) {
         vector<int> params(3); params[0] = hiVal; params[1] = loVal; params[2] = reg; 
-        if (__save == lc) return NULL;
+        if (__save == lc) return nullptr;
         return csr.instantiateLogue("new_reg_win_large",params);
     } else {
         lc = __save;
-        return NULL;
+        return nullptr;
     }
 }
 Logue* InstructionPatterns::same_reg_win_large(CSR& csr, ADDRESS& lc, int& hiVal, int& loVal, int& reg)
@@ -1551,11 +1551,11 @@ Logue* InstructionPatterns::same_reg_win_large(CSR& csr, ADDRESS& lc, int& hiVal
     OR$imode(lc, reg, VAR, loVal, VAR, reg, VAR)) && 
     ADD$rmode(lc, SP, VAL, reg, VAR, SP, VAL)) {
         vector<int> params(3); params[0] = hiVal; params[1] = loVal; params[2] = reg; 
-        if (__save == lc) return NULL;
+        if (__save == lc) return nullptr;
         return csr.instantiateLogue("same_reg_win_large",params);
     } else {
         lc = __save;
-        return NULL;
+        return nullptr;
     }
 }
 Logue* InstructionPatterns::none(CSR& csr, ADDRESS& lc)
@@ -1564,11 +1564,11 @@ Logue* InstructionPatterns::none(CSR& csr, ADDRESS& lc)
     if (
     (lc += 0, true)) {
         vector<int> params(0); 
-        if (__save == lc) return NULL;
+        if (__save == lc) return nullptr;
         return csr.instantiateLogue("none",params);
     } else {
         lc = __save;
-        return NULL;
+        return nullptr;
     }
 }
 Logue* InstructionPatterns::std_ret(CSR& csr, ADDRESS& lc)
@@ -1580,11 +1580,11 @@ Logue* InstructionPatterns::std_ret(CSR& csr, ADDRESS& lc)
     JMPL$dispA(lc, i7, VAL, __loc0 = 12, VAL, g0, VAL)) && 
     restore_(lc)) {
         vector<int> params(0); 
-        if (__save == lc) return NULL;
+        if (__save == lc) return nullptr;
         return csr.instantiateLogue("std_ret",params);
     } else {
         lc = __save;
-        return NULL;
+        return nullptr;
     }
 }
 Logue* InstructionPatterns::ret_reg_val(CSR& csr, ADDRESS& lc, int& rs1, int& rs2)
@@ -1596,11 +1596,11 @@ Logue* InstructionPatterns::ret_reg_val(CSR& csr, ADDRESS& lc, int& rs1, int& rs
     JMPL$dispA(lc, i7, VAL, __loc0 = 12, VAL, g0, VAL)) && 
     RESTORE$rmode(lc, rs1, VAR, rs2, VAR, o0, VAL)) {
         vector<int> params(2); params[0] = rs1; params[1] = rs2; 
-        if (__save == lc) return NULL;
+        if (__save == lc) return nullptr;
         return csr.instantiateLogue("ret_reg_val",params);
     } else {
         lc = __save;
-        return NULL;
+        return nullptr;
     }
 }
 Logue* InstructionPatterns::ret_imm_val(CSR& csr, ADDRESS& lc, int& rs1, int& imm)
@@ -1612,11 +1612,11 @@ Logue* InstructionPatterns::ret_imm_val(CSR& csr, ADDRESS& lc, int& rs1, int& im
     JMPL$dispA(lc, i7, VAL, __loc0 = 12, VAL, g0, VAL)) && 
     RESTORE$imode(lc, rs1, VAR, imm, VAR, o0, VAL)) {
         vector<int> params(2); params[0] = rs1; params[1] = imm; 
-        if (__save == lc) return NULL;
+        if (__save == lc) return nullptr;
         return csr.instantiateLogue("ret_imm_val",params);
     } else {
         lc = __save;
-        return NULL;
+        return nullptr;
     }
 }
 Logue* InstructionPatterns::leaf_ret(CSR& csr, ADDRESS& lc)
@@ -1628,11 +1628,11 @@ Logue* InstructionPatterns::leaf_ret(CSR& csr, ADDRESS& lc)
     JMPL$dispA(lc, o7, VAL, __loc0 = 12, VAL, g0, VAL)) && 
     ((SUB$imode(lc, SP, VAL, __loc0, VAR, SP, VAL)) || true)) {
         vector<int> params(0); 
-        if (__save == lc) return NULL;
+        if (__save == lc) return nullptr;
         return csr.instantiateLogue("leaf_ret",params);
     } else {
         lc = __save;
-        return NULL;
+        return nullptr;
     }
 }
 Logue* InstructionPatterns::ret_struct4(CSR& csr, ADDRESS& lc)
@@ -1641,11 +1641,11 @@ Logue* InstructionPatterns::ret_struct4(CSR& csr, ADDRESS& lc)
     if (
 false) {
         vector<int> params(0); 
-        if (__save == lc) return NULL;
+        if (__save == lc) return nullptr;
         return csr.instantiateLogue("ret_struct4",params);
     } else {
         lc = __save;
-        return NULL;
+        return nullptr;
     }
 }
 LogueDict::LogueDict()

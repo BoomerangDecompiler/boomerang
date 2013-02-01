@@ -138,7 +138,7 @@ bool is_null(ADDRESS hostPC)
 
 
 DecodeResult& NJMCDecoder::decodeInstruction (ADDRESS pc, int delta,
-    UserProc* proc /* = NULL */)
+    UserProc* proc /* = nullptr */)
 { 
     static DecodeResult result;
     ADDRESS hostPC = pc+delta;
@@ -147,9 +147,9 @@ DecodeResult& NJMCDecoder::decodeInstruction (ADDRESS pc, int delta,
     result.reset();
 
     // The actual list of instantiated RTs
-    list<RT*>* RTs = NULL;
-    preInstSem = NULL;          // No semantics before the instruction yet
-    postInstSem = NULL;         // No semantics after the instruction yet
+    list<RT*>* RTs = nullptr;
+    preInstSem = nullptr;          // No semantics before the instruction yet
+    postInstSem = nullptr;         // No semantics after the instruction yet
 
     ADDRESS nextPC;
 
@@ -158,7 +158,7 @@ DecodeResult& NJMCDecoder::decodeInstruction (ADDRESS pc, int delta,
     int addr, locals, libstub;
     Logue* logue;
 
-    if ((logue = InstructionPatterns::std_call(csr,hostPC,addr)) != NULL) {
+    if ((logue = InstructionPatterns::std_call(csr,hostPC,addr)) != nullptr) {
         /*
          * Ordinary call to fixed dest
          */
@@ -187,12 +187,12 @@ DecodeResult& NJMCDecoder::decodeInstruction (ADDRESS pc, int delta,
     // Callee prologues
     //
     else if ((logue = InstructionPatterns::gcc_frame(csr,hostPC, locals))
-      != NULL) {
+      != nullptr) {
         /*
          * Standard prologue for gcc: sets up frame in %r3; optionally saves
          * several registers to the stack
          */
-        if (proc != NULL) {
+        if (proc != nullptr) {
 
             // Record the prologue of this callee
             assert(logue->getType() == Logue::CALLEE_PROLOGUE);
@@ -205,11 +205,11 @@ DecodeResult& NJMCDecoder::decodeInstruction (ADDRESS pc, int delta,
         SHOW_ASM("gcc_frame " << dec << locals)
     }
     else if ((logue = InstructionPatterns::gcc_frameless(csr,hostPC, locals))
-      != NULL) {
+      != nullptr) {
         /*
          * Gcc prologue where optimisation is on, and no frame pointer is needed
          */
-        if (proc != NULL) {
+        if (proc != nullptr) {
 
             // Record the prologue of this callee
             assert(logue->getType() == Logue::CALLEE_PROLOGUE);
@@ -222,12 +222,12 @@ DecodeResult& NJMCDecoder::decodeInstruction (ADDRESS pc, int delta,
         SHOW_ASM("gcc_frameless " << dec << locals)
     }
     else if ((locals=8, logue = InstructionPatterns::param_reloc1(csr,hostPC,
-      libstub, locals)) != NULL) {
+      libstub, locals)) != nullptr) {
         /*
          * Parameter relocation stub common when passing a double as the second
          * parameter to printf
          */
-        if (proc != NULL) {
+        if (proc != nullptr) {
             // Record the prologue of this callee
             assert(logue->getType() == Logue::CALLEE_PROLOGUE);
             proc->setPrologue((CalleePrologue*)logue);
@@ -275,7 +275,7 @@ DecodeResult& NJMCDecoder::decodeInstruction (ADDRESS pc, int delta,
     //
     // Callee epilogues
     //
-    else if ((logue = InstructionPatterns::gcc_unframe(csr, hostPC)) != NULL) {
+    else if ((logue = InstructionPatterns::gcc_unframe(csr, hostPC)) != nullptr) {
         /*
          * Standard removal of current frame for gcc; optional restore of
          * several registers from stack
@@ -285,7 +285,7 @@ DecodeResult& NJMCDecoder::decodeInstruction (ADDRESS pc, int delta,
         result.type = DU;
 
         // Record the epilogue of this callee
-        if (proc != NULL) {
+        if (proc != nullptr) {
             assert(logue->getType() == Logue::CALLEE_EPILOGUE);
             proc->setEpilogue((CalleeEpilogue*)logue);
         }
@@ -293,7 +293,7 @@ DecodeResult& NJMCDecoder::decodeInstruction (ADDRESS pc, int delta,
         SHOW_ASM("gcc_unframe");
     }
     else if ((logue = InstructionPatterns::gcc_unframeless1(csr, hostPC)) !=
-      NULL) {
+      nullptr) {
         /*
          * Removal of current frame for gcc (where no frame pointer was used)
          */
@@ -304,7 +304,7 @@ DecodeResult& NJMCDecoder::decodeInstruction (ADDRESS pc, int delta,
         result.type = DU;
 
         // Record the epilogue of this callee
-        if (proc != NULL) {
+        if (proc != nullptr) {
             assert(logue->getType() == Logue::CALLEE_EPILOGUE);
             proc->setEpilogue((CalleeEpilogue*)logue);
         }
@@ -312,7 +312,7 @@ DecodeResult& NJMCDecoder::decodeInstruction (ADDRESS pc, int delta,
         SHOW_ASM("gcc_unframeless1");
     }
     else if ((logue = InstructionPatterns::gcc_unframeless2(csr, hostPC)) !=
-      NULL) {
+      nullptr) {
         /*
          * Removal of current frame for gcc (where no frame pointer was used)
          */
@@ -321,14 +321,14 @@ DecodeResult& NJMCDecoder::decodeInstruction (ADDRESS pc, int delta,
         result.type = DU;
 
         // Record the epilogue of this callee
-        if (proc != NULL) {
+        if (proc != nullptr) {
             assert(logue->getType() == Logue::CALLEE_EPILOGUE);
             proc->setEpilogue((CalleeEpilogue*)logue);
         }
     
         SHOW_ASM("gcc_unframeless2");
     }
-    else if ((logue = InstructionPatterns::bare_ret(csr, hostPC)) != NULL) {
+    else if ((logue = InstructionPatterns::bare_ret(csr, hostPC)) != nullptr) {
         /*
          * Just a bare (non anulled) return statement
          */
@@ -339,7 +339,7 @@ DecodeResult& NJMCDecoder::decodeInstruction (ADDRESS pc, int delta,
         result.type = DD;
 
         // Record the epilogue of this callee
-        if (proc != NULL) {
+        if (proc != nullptr) {
             assert(logue->getType() == Logue::CALLEE_EPILOGUE);
             proc->setEpilogue((CalleeEpilogue*)logue);
         }
@@ -347,7 +347,7 @@ DecodeResult& NJMCDecoder::decodeInstruction (ADDRESS pc, int delta,
         SHOW_ASM("bare_ret");
     }
     else if ((logue = InstructionPatterns::bare_ret_anulled(csr, hostPC))
-      != NULL) {
+      != nullptr) {
         /*
          * Just a bare (anulled) return statement
          */
@@ -356,7 +356,7 @@ DecodeResult& NJMCDecoder::decodeInstruction (ADDRESS pc, int delta,
         result.type = DU;       // No delay slot to decode
 
         // Record the epilogue of this callee
-        if (proc != NULL) {
+        if (proc != nullptr) {
             assert(logue->getType() == Logue::CALLEE_EPILOGUE);
             proc->setEpilogue((CalleeEpilogue*)logue);
         }
@@ -1387,7 +1387,7 @@ SemStr* NJMCDecoder::dis_xd(ADDRESS hostpc)
  *============================================================================*/
 SemStr* NJMCDecoder::dis_c_addr(ADDRESS hostPC)
 {
-    SemStr* result = NULL;
+    SemStr* result = nullptr;
 
 
 #line 578 "machine/hppa/decoder.m"
@@ -1636,16 +1636,16 @@ bool isFuncPrologue(ADDRESS hostPC)
 {
 #if 0
     int hiVal, loVal, reg, locals;
-    if ((InstructionPatterns::new_reg_win(prog.csrSrc,hostPC, locals)) != NULL)
+    if ((InstructionPatterns::new_reg_win(prog.csrSrc,hostPC, locals)) != nullptr)
             return true;
     if ((InstructionPatterns::new_reg_win_large(prog.csrSrc, hostPC,
-        hiVal, loVal, reg)) != NULL)
+        hiVal, loVal, reg)) != nullptr)
             return true;
     if ((InstructionPatterns::same_reg_win(prog.csrSrc, hostPC, locals))
-        != NULL)
+        != nullptr)
             return true;
     if ((InstructionPatterns::same_reg_win_large(prog.csrSrc, hostPC,
-        hiVal, loVal, reg)) != NULL)
+        hiVal, loVal, reg)) != nullptr)
             return true;
 #endif
 

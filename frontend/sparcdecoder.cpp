@@ -80,7 +80,7 @@ void SparcDecoder::unused(int x)
  * PARAMETERS:       pc - the location counter
  *                   stmts - ptr to list of Statement pointers
  *                   name - instruction name (e.g. "BNE,a", or "BPNE")
- * \returns            Pointer to newly created RTL, or NULL if invalid
+ * \returns            Pointer to newly created RTL, or nullptr if invalid
  ******************************************************************************/
 RTL* SparcDecoder::createBranchRtl(ADDRESS pc, std::list<Statement*>* stmts, const char* name) {
     RTL* res = new RTL(pc, stmts);
@@ -118,7 +118,7 @@ RTL* SparcDecoder::createBranchRtl(ADDRESS pc, std::list<Statement*>* stmts, con
             default:
                 std::cerr << "unknown float branch " << name << std::endl;
                 delete res;
-                res = NULL;
+                res = nullptr;
         }
         return res;
     }
@@ -200,7 +200,7 @@ RTL* SparcDecoder::createBranchRtl(ADDRESS pc, std::list<Statement*>* stmts, con
  * PARAMETERS:       pc - the native address of the pc
  *                   delta - the difference between the above address and the host address of the pc (i.e. the address
  *                    that the pc is at in the loaded object file)
- *                   proc - the enclosing procedure. This can be NULL for those of us who are using this method in an
+ *                   proc - the enclosing procedure. This can be nullptr for those of us who are using this method in an
  *                    interpreter
  * \returns            a DecodeResult structure containing all the information gathered during decoding
  ******************************************************************************/
@@ -212,7 +212,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
     result.reset();
 
     // The actual list of instantiated statements
-    std::list<Statement*>* stmts = NULL;
+    std::list<Statement*>* stmts = nullptr;
 
     ADDRESS nextPC = NO_ADDRESS;
 
@@ -339,7 +339,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
 
                             unused(n);
 
-                            stmts = NULL;
+                            stmts = nullptr;
 
                             result.valid = false;
 
@@ -431,7 +431,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
 
                                         GotoStatement* jump = 0;
 
-                                        RTL* rtl = NULL;
+                                        RTL* rtl = nullptr;
 
                                         if (strcmp(name,"BPN") == 0) {
 
@@ -639,7 +639,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
 
                     Proc* destProc = prog->setNewProc(nativeDest);
 
-                    if (destProc == (Proc*)-1) destProc = NULL;
+                    if (destProc == (Proc*)-1) destProc = nullptr;
 
                     newCall->setDestProc(destProc);
 
@@ -1981,7 +1981,7 @@ MATCH_label_d0: (void)0; /*placeholder for label*/
 
             GotoStatement* jump = 0;
 
-            RTL* rtl = NULL;                    // Init to NULL to suppress a warning
+            RTL* rtl = nullptr;                    // Init to nullptr to suppress a warning
 
             if (strcmp(name,"BPA,a") == 0 || strcmp(name,"BPN,a") == 0) {
 
@@ -2082,7 +2082,7 @@ MATCH_label_d1: (void)0; /*placeholder for label*/
 
             GotoStatement* jump = 0;
 
-            RTL* rtl = NULL;
+            RTL* rtl = nullptr;
 
             if (strcmp(name,"BA") == 0 || strcmp(name,"BN") == 0) {
 
@@ -2183,7 +2183,7 @@ MATCH_label_d2: (void)0; /*placeholder for label*/
 
             GotoStatement* jump = 0;
 
-            RTL* rtl = NULL;                    // Init to NULL to suppress a warning
+            RTL* rtl = nullptr;                    // Init to nullptr to suppress a warning
 
             if (strcmp(name,"BA,a") == 0 || strcmp(name,"BN,a") == 0) {
 
@@ -2259,7 +2259,7 @@ MATCH_label_d3: (void)0; /*placeholder for label*/
 
             result.valid = false;
 
-            stmts = NULL;
+            stmts = nullptr;
 
 
 

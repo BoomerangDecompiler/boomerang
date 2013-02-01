@@ -229,7 +229,7 @@ virtual bool        isTerminal() { return false; }
 
         // FIXME: are these used?
         // Matches this expression to the pattern, if successful returns a list of variable bindings, otherwise returns
-        // NULL
+        // nullptr
 virtual Exp            *match(Exp *pattern);
 
         // match a string pattern
@@ -795,7 +795,7 @@ virtual Exp*        polySimplify(bool& bMod);
 virtual Exp            *match(Exp *pattern);
 virtual bool         match(const char *pattern, std::map<std::string, Exp*> &bindings);
 
-        // Before type analysis, implicit definitions are NULL.  During and after TA, they point to an implicit
+        // Before type analysis, implicit definitions are nullptr.  During and after TA, they point to an implicit
         // assignment statement.  Don't implement here, since it would require #including of statement.h
         bool        isImplicitDef();
 
@@ -807,7 +807,7 @@ virtual    Type*        ascendType();
 virtual void        descendType(Type* parentType, bool& ch, Statement* s);
 
 protected:
-                    RefExp() : Unary(opSubscript), def(NULL) { }
+                    RefExp() : Unary(opSubscript), def(nullptr) { }
         friend class XMLProgParser;
 };        // class RefExp
 
@@ -831,7 +831,7 @@ virtual bool        operator*=(Exp& o);
 virtual void        print(std::ostream& os, bool html = false);
 virtual void        printx(int ind);
 virtual Exp*        genConstraints(Exp* restrictTo) {
-                        assert(0); return NULL;} // Should not be constraining constraints
+                        assert(0); return nullptr;} // Should not be constraining constraints
 //virtual Exp        *match(Exp *pattern);
 
         // Visitation
@@ -852,14 +852,14 @@ public:
         // Copy constructor
                     Location(Location& o);
         // Custom constructor
-static Location*    regOf(int r) {return new Location(opRegOf, new Const(r), NULL);}
-static Location*    regOf(Exp *e) {return new Location(opRegOf, e, NULL);}
-static Location*    memOf(Exp *e, UserProc* p = NULL) {return new Location(opMemOf, e, p);}
-static Location*    tempOf(Exp* e) {return new Location(opTemp, e, NULL);}
+static Location*    regOf(int r) {return new Location(opRegOf, new Const(r), nullptr);}
+static Location*    regOf(Exp *e) {return new Location(opRegOf, e, nullptr);}
+static Location*    memOf(Exp *e, UserProc* p = nullptr) {return new Location(opMemOf, e, p);}
+static Location*    tempOf(Exp* e) {return new Location(opTemp, e, nullptr);}
 static Location*    global(const char *nam, UserProc *p) {
                         return new Location(opGlobal, new Const(nam), p);}
 static Location*    local(const char *nam, UserProc *p);
-static Location*    param(const char *nam, UserProc *p = NULL) {
+static Location*    param(const char *nam, UserProc *p = nullptr) {
                         return new Location(opParam, new Const(nam), p);}
         // Clone
 virtual Exp*        clone();
@@ -877,7 +877,7 @@ virtual bool         match(const char *pattern, std::map<std::string, Exp*> &bin
 
 protected:
         friend class XMLProgParser;
-                    Location(OPER op) : Unary(op), proc(NULL) { }
+                    Location(OPER op) : Unary(op), proc(nullptr) { }
 };    // class Location
 
 #endif // __EXP_H__

@@ -385,7 +385,7 @@ bool DataFlow::renameBlockVars(UserProc* proc, int n, bool clearStacks /* = fals
                 Exp* x = *xx;
                 // Don't rename memOfs that are not renamable according to the current policy
                 if (!canRename(x, proc)) continue;
-                Statement* def = NULL;
+                Statement* def = nullptr;
                 if (x->isSubscript()) {                    // Already subscripted?
                     // No renaming required, but redo the usage analysis, in case this is a new return, and also because
                     // we may have just removed all call livenesses
@@ -398,7 +398,7 @@ bool DataFlow::renameBlockVars(UserProc* proc, int n, bool clearStacks /* = fals
                         continue;
                     }
                     // Update use collector in the proc (for parameters)
-                    if (def == NULL)
+                    if (def == nullptr)
                         proc->useBeforeDefine(base->clone());
                     continue;                            // Don't re-rename the renamed variable
                 }
@@ -407,10 +407,10 @@ bool DataFlow::renameBlockVars(UserProc* proc, int n, bool clearStacks /* = fals
                     if (!Stacks[defineAll].empty())
                         def = Stacks[defineAll].top();
                     else {
-                        // If the both stacks are empty, use a NULL definition. This will be changed into a pointer
+                        // If the both stacks are empty, use a nullptr definition. This will be changed into a pointer
                         // to an implicit definition at the start of type analysis, but not until all the m[...]
                         // have stopped changing their expressions (complicates implicit assignments considerably).
-                        def = NULL;
+                        def = nullptr;
                         // Update the collector at the start of the UserProc
                         proc->useBeforeDefine(x->clone());
                     }
@@ -504,7 +504,7 @@ bool DataFlow::renameBlockVars(UserProc* proc, int n, bool clearStacks /* = fals
             if (!canRename(a, proc)) continue;
             Statement* def;
             if (STACKS_EMPTY(a))
-                def = NULL;                // No reaching definition
+                def = nullptr;                // No reaching definition
             else
                 def = Stacks[a].top();
             // "Replace jth operand with a_i"
@@ -605,7 +605,7 @@ void DefCollector::updateDefs(std::map<Exp*, std::stack<Statement*>, lessExpStar
     initialised = true;
 }
 
-// Find the definition for e that reaches this Collector. If none reaches here, return NULL
+// Find the definition for e that reaches this Collector. If none reaches here, return nullptr
 Exp* DefCollector::findDefFor(Exp* e) {
     iterator it;
     for (it = defs.begin(); it != defs.end(); ++it) {
@@ -613,7 +613,7 @@ Exp* DefCollector::findDefFor(Exp* e) {
         if (*lhs == *e)
             return (*it)->getRight();
     }
-    return NULL;                    // Not explicitly defined here
+    return nullptr;                    // Not explicitly defined here
 }
 
 void UseCollector::print(std::ostream& os, bool html) {

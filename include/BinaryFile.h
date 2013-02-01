@@ -111,7 +111,7 @@ public:
 
 /*
  * callback function, which when given the name of a library, should return
- * a pointer to an opened BinaryFile, or NULL if the name cannot be resolved.
+ * a pointer to an opened BinaryFile, or nullptr if the name cannot be resolved.
  */
 class BinaryFile;
 typedef BinaryFile *(*get_library_callback_t)(char *name);
@@ -211,7 +211,7 @@ virtual void            AddSymbol(ADDRESS uNative, const char *pName) { }
 
 virtual int             GetSizeByName(const char* pName, bool bTypeOK = false);
 virtual ADDRESS *       GetImportStubs(int& numImports);
-virtual const char *    getFilenameSymbolFor(const char *sym) { return NULL; }
+virtual const char *    getFilenameSymbolFor(const char *sym) { return nullptr; }
 virtual std::vector<ADDRESS> GetExportedAddresses(bool funcsOnly = true) { return std::vector<ADDRESS>(); }
 
 // Relocation table functions
@@ -219,7 +219,7 @@ virtual std::vector<ADDRESS> GetExportedAddresses(bool funcsOnly = true) { retur
 //virtual ADDRESS GetRelocatedAddress(ADDRESS uNative);
 //virtual    ADDRESS    ApplyRelocation(ADDRESS uNative, ADDRESS uWord);
         // Get symbol associated with relocation at address, if any
-//virtual const char* GetRelocSym(ADDRESS uNative, ADDRESS *a = NULL, unsigned int *sz = NULL) { return NULL; }
+//virtual const char* GetRelocSym(ADDRESS uNative, ADDRESS *a = nullptr, unsigned int *sz = nullptr) { return nullptr; }
 virtual bool            IsRelocationAt(ADDRESS uNative) { return false; }
 
 virtual std::pair<ADDRESS,unsigned> GetGlobalPointerInfo();

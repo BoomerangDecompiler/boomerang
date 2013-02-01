@@ -50,7 +50,7 @@ bool ExeBinaryFile::RealLoad(const char* sName) {
     }
 
     /* Open the input file */
-    if ((fp = fopen(sName, "rb")) == NULL) {
+    if ((fp = fopen(sName, "rb")) == nullptr) {
         fprintf(stderr, "Could not open file %s\n", sName);
         return 0;
     }

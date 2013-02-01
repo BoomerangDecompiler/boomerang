@@ -58,22 +58,22 @@ extern void malloc_destroy_zone(malloc_zone_t *zone);
 /*********    Block creation and manipulation    ************/
 
 extern void *malloc_zone_malloc(malloc_zone_t *zone, size_t size);
-    /* Allocates a new pointer of size size; zone must be non-NULL */
+    /* Allocates a new pointer of size size; zone must be non-nullptr */
 
 extern void *malloc_zone_calloc(malloc_zone_t *zone, size_t num_items, size_t size);
-    /* Allocates a new pointer of size num_items * size; block is cleared; zone must be non-NULL */
+    /* Allocates a new pointer of size num_items * size; block is cleared; zone must be non-nullptr */
 
 extern void *malloc_zone_valloc(malloc_zone_t *zone, size_t size);
-    /* Allocates a new pointer of size size; zone must be non-NULL; Pointer is guaranteed to be page-aligned and block is cleared */
+    /* Allocates a new pointer of size size; zone must be non-nullptr; Pointer is guaranteed to be page-aligned and block is cleared */
 
 extern void malloc_zone_free(malloc_zone_t *zone, void *ptr);
-    /* Frees pointer in zone; zone must be non-NULL */
+    /* Frees pointer in zone; zone must be non-nullptr */
 
 extern void *malloc_zone_realloc(malloc_zone_t *zone, void *ptr, size_t size);
-    /* Enlarges block if necessary; zone must be non-NULL */
+    /* Enlarges block if necessary; zone must be non-nullptr */
 
 extern malloc_zone_t *malloc_zone_from_ptr(const void *ptr);
-    /* Returns the zone for a pointer, or NULL if not in any zone.
+    /* Returns the zone for a pointer, or nullptr if not in any zone.
     The ptr must have been returned from a malloc or realloc call. */
 
 extern size_t malloc_size(const void *ptr);

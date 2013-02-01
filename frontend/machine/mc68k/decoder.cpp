@@ -63,7 +63,7 @@
  *                   gathered during decoding
  *============================================================================*/
 DecodeResult& NJMCDecoder::decodeInstruction (ADDRESS pc, int delta,
-    UserProc* proc = NULL)
+    UserProc* proc = nullptr)
 {
     static DecodeResult result;
     ADDRESS hostPC = pc + delta;
@@ -72,13 +72,13 @@ DecodeResult& NJMCDecoder::decodeInstruction (ADDRESS pc, int delta,
     result.reset();
 
     // The actual list of instantiated RTs
-    list<RT*>* RTs = NULL;
+    list<RT*>* RTs = nullptr;
 
     // Try matching a logue first
     int addr, regs, locals, stackSize, d16, d32, reg;
     ADDRESS saveHostPC = hostPC;
     Logue* logue;
-    if ((logue = InstructionPatterns::std_call(csr, hostPC, addr)) != NULL) {
+    if ((logue = InstructionPatterns::std_call(csr, hostPC, addr)) != nullptr) {
         /*
          * Direct call
          */
@@ -96,7 +96,7 @@ DecodeResult& NJMCDecoder::decodeInstruction (ADDRESS pc, int delta,
     }
 
     else if ((logue = InstructionPatterns::near_call(csr, hostPC, addr))
-        != NULL) {
+        != nullptr) {
         /*
          * Call with short displacement (16 bit instruction)
          */
@@ -114,7 +114,7 @@ DecodeResult& NJMCDecoder::decodeInstruction (ADDRESS pc, int delta,
     }
 
     else if ((logue = InstructionPatterns::pea_pea_add_rts(csr, hostPC, d32))
-        != NULL) {
+        != nullptr) {
         /*
          * pea E(pc) pea 4(pc) / addil #d32, (a7) / rts
          * Handle as a call
@@ -134,7 +134,7 @@ DecodeResult& NJMCDecoder::decodeInstruction (ADDRESS pc, int delta,
     }
 
     else if ((logue = InstructionPatterns::pea_add_rts(csr, hostPC, d32))
-        != NULL) {
+        != nullptr) {
         /*
          * pea 4(pc) / addil #d32, (a7) / rts
          * Handle as a call followed by a return
@@ -157,7 +157,7 @@ DecodeResult& NJMCDecoder::decodeInstruction (ADDRESS pc, int delta,
     }
 
     else if ((logue = InstructionPatterns::trap_syscall(csr, hostPC, d16))
-        != NULL) {
+        != nullptr) {
         /*
          * trap / AXXX  (d16 set to the XXX)
          * Handle as a library call
@@ -177,12 +177,12 @@ DecodeResult& NJMCDecoder::decodeInstruction (ADDRESS pc, int delta,
  * CALLEE PROLOGUES
  */
     else if ((logue = InstructionPatterns::link_save(csr, hostPC,
-        locals, d16)) != NULL)
+        locals, d16)) != nullptr)
     {
         /*
          * Standard link with save of registers using movem
          */
-        if (proc != NULL) {
+        if (proc != nullptr) {
 
             // Record the prologue of this callee
             assert(logue->getType() == Logue::CALLEE_PROLOGUE);
@@ -194,12 +194,12 @@ DecodeResult& NJMCDecoder::decodeInstruction (ADDRESS pc, int delta,
     }
 
     else if ((logue = InstructionPatterns::link_save1(csr, hostPC,
-        locals, reg)) != NULL)
+        locals, reg)) != nullptr)
     {
         /*
          * Standard link with save of 1 D register using move dn,-(a7)
          */
-        if (proc != NULL) {
+        if (proc != nullptr) {
 
             // Record the prologue of this callee
             assert(logue->getType() == Logue::CALLEE_PROLOGUE);
@@ -211,14 +211,14 @@ DecodeResult& NJMCDecoder::decodeInstruction (ADDRESS pc, int delta,
     }
 
     else if ((logue = InstructionPatterns::push_lea(csr, hostPC,
-        locals, reg)) != NULL)
+        locals, reg)) != nullptr)
     {
         /*
          * Just save of 1 D register using move dn,-(a7);
          * then an lea d16(a7), a7 to allocate the stack
          */
         //locals = 0;             // No locals for this prologue
-        if (proc != NULL) {
+        if (proc != nullptr) {
 
             // Record the prologue of this callee
             assert(logue->getType() == Logue::CALLEE_PROLOGUE);
@@ -230,12 +230,12 @@ DecodeResult& NJMCDecoder::decodeInstruction (ADDRESS pc, int delta,
     }
 
     else if ((logue = InstructionPatterns::std_link(csr, hostPC,
-        locals)) != NULL)
+        locals)) != nullptr)
     {
         /*
          * Standard link
          */
-        if (proc != NULL) {
+        if (proc != nullptr) {
 
             // Record the prologue of this callee
             assert(logue->getType() == Logue::CALLEE_PROLOGUE);
@@ -247,12 +247,12 @@ DecodeResult& NJMCDecoder::decodeInstruction (ADDRESS pc, int delta,
     }
 
     else if ((logue = InstructionPatterns::bare_ret(csr, hostPC))
-        != NULL)
+        != nullptr)
     {
         /*
          * Just a bare rts instruction
          */
-        if (proc != NULL) {
+        if (proc != nullptr) {
 
             // Record the prologue of this callee
             assert(logue->getType() == Logue::CALLEE_PROLOGUE);
@@ -264,11 +264,11 @@ DecodeResult& NJMCDecoder::decodeInstruction (ADDRESS pc, int delta,
         SHOW_ASM("bare_ret")
     }
 
-    else if ((logue = InstructionPatterns::std_ret(csr, hostPC)) != NULL) {
+    else if ((logue = InstructionPatterns::std_ret(csr, hostPC)) != nullptr) {
         /*
          * An unlink and return
          */
-        if (proc!= NULL) {
+        if (proc!= nullptr) {
 
             // Record the epilogue of this callee
             assert(logue->getType() == Logue::CALLEE_EPILOGUE);
@@ -280,12 +280,12 @@ DecodeResult& NJMCDecoder::decodeInstruction (ADDRESS pc, int delta,
         SHOW_ASM("std_ret")
     }
 
-    else if ((logue = InstructionPatterns::rest_ret(csr, hostPC, d16)) != NULL)
+    else if ((logue = InstructionPatterns::rest_ret(csr, hostPC, d16)) != nullptr)
     {
         /*
          * A restore (movem stack to registers) then return
          */
-        if (proc!= NULL) {
+        if (proc!= nullptr) {
 
             // Record the epilogue of this callee
             assert(logue->getType() == Logue::CALLEE_EPILOGUE);
@@ -297,12 +297,12 @@ DecodeResult& NJMCDecoder::decodeInstruction (ADDRESS pc, int delta,
         SHOW_ASM("rest_ret")
     }
 
-    else if ((logue = InstructionPatterns::rest1_ret(csr, hostPC, reg)) != NULL)
+    else if ((logue = InstructionPatterns::rest1_ret(csr, hostPC, reg)) != nullptr)
     {
         /*
          * A pop (move (a7)+ to one D register) then unlink and return
          */
-        if (proc!= NULL) {
+        if (proc!= nullptr) {
 
             // Record the epilogue of this callee
             assert(logue->getType() == Logue::CALLEE_EPILOGUE);
@@ -314,12 +314,12 @@ DecodeResult& NJMCDecoder::decodeInstruction (ADDRESS pc, int delta,
         SHOW_ASM("rest1_ret")
     }
 
-    else if ((logue = InstructionPatterns::pop_ret(csr, hostPC, reg)) != NULL)
+    else if ((logue = InstructionPatterns::pop_ret(csr, hostPC, reg)) != nullptr)
     {
         /*
          * A pop (move (a7)+ to one D register) then just return
          */
-        if (proc!= NULL) {
+        if (proc!= nullptr) {
 
             // Record the epilogue of this callee
             assert(logue->getType() == Logue::CALLEE_EPILOGUE);
@@ -332,7 +332,7 @@ DecodeResult& NJMCDecoder::decodeInstruction (ADDRESS pc, int delta,
     }
 
     else if ((logue = InstructionPatterns::clear_stack(csr, hostPC, stackSize))
-        != NULL)
+        != nullptr)
     {
         /*
          * Remove parameters from the stack
@@ -7223,15 +7223,15 @@ bool isFuncPrologue(ADDRESS hostPC)
     int locals, reg, d16;
 
     if ((InstructionPatterns::link_save(prog.csrSrc, hostPC, locals, d16))
-        != NULL)
+        != nullptr)
             return true;
     if ((InstructionPatterns::link_save1(prog.csrSrc, hostPC, locals, reg))
-        != NULL)
+        != nullptr)
             return true;
     if ((InstructionPatterns::push_lea(prog.csrSrc, hostPC, locals, reg))
-        != NULL)
+        != nullptr)
             return true;
-    if ((InstructionPatterns::std_link(prog.csrSrc, hostPC, locals)) != NULL)
+    if ((InstructionPatterns::std_link(prog.csrSrc, hostPC, locals)) != nullptr)
         return true;
 
     return false;

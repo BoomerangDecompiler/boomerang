@@ -74,7 +74,7 @@ typedef union {
     sslFile(sslFile), bFloat(false)
 #define YY_SSLParser_CONSTRUCTOR_CODE  \
     std::fstream *fin = new std::fstream(sslFile.c_str(), std::ios::in); \
-    theScanner = NULL; \
+    theScanner = nullptr; \
     if (!*fin) { \
     std::cerr << "can't open `" << sslFile << "' for reading\n"; \
     return; \

@@ -68,7 +68,7 @@ PSectionInfo IntelCoffFile::AddSection(PSectionInfo psi) {
 }
 
 IntelCoffFile::IntelCoffFile() : BinaryFile(false) {
-    m_pFilename = NULL;
+    m_pFilename = nullptr;
     m_fd = -1;
 }
 
@@ -118,7 +118,7 @@ bool IntelCoffFile::RealLoad(const char *sName) {
         strncpy(sectname, psh[iSection].sch_sectname, sizeof psh->sch_sectname);
         sectname[sizeof psh->sch_sectname] = '\0';
 
-        PSectionInfo psi = NULL;
+        PSectionInfo psi = nullptr;
         int sidx = GetSectionIndexByName(sectname);
         if ( -1 == sidx ) {
             SectionInfo si;

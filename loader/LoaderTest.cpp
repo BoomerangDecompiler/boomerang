@@ -92,7 +92,7 @@ void LoaderTest::testSparcLoad () {
     // Load SPARC hello world
     BinaryFileFactory bff;
     BinaryFile* pBF = bff.Load(HELLO_SPARC);
-    CPPUNIT_ASSERT(pBF != NULL);
+    CPPUNIT_ASSERT(pBF != nullptr);
     int n;
     SectionInfo* si;
     n = pBF->GetNumSections();
@@ -120,7 +120,7 @@ void LoaderTest::testPentiumLoad () {
     // Load Pentium hello world
     BinaryFileFactory bff;
     BinaryFile* pBF = bff.Load(HELLO_PENTIUM);
-    CPPUNIT_ASSERT(pBF != NULL);
+    CPPUNIT_ASSERT(pBF != nullptr);
     int n;
     SectionInfo* si;
     n = pBF->GetNumSections();
@@ -150,7 +150,7 @@ void LoaderTest::testHppaLoad () {
     // Load HPPA hello world
     BinaryFileFactory bff;
     BinaryFile* pBF = bff.Load(HELLO_HPPA);
-    CPPUNIT_ASSERT(pBF != NULL);
+    CPPUNIT_ASSERT(pBF != nullptr);
     int n;
     SectionInfo* si;
     n = pBF->GetNumSections();
@@ -177,7 +177,7 @@ void LoaderTest::testPalmLoad () {
     // Load Palm Starter.prc
     BinaryFileFactory bff;
     BinaryFile* pBF = bff.Load(STARTER_PALM);
-    CPPUNIT_ASSERT(pBF != NULL);
+    CPPUNIT_ASSERT(pBF != nullptr);
     int n;
     SectionInfo* si;
     n = pBF->GetNumSections();
@@ -206,7 +206,7 @@ void LoaderTest::testWinLoad () {
     // Load Windows program calc.exe
     BinaryFileFactory bff;
     BinaryFile* pBF = bff.Load(CALC_WINDOWS);
-    CPPUNIT_ASSERT(pBF != NULL);
+    CPPUNIT_ASSERT(pBF != nullptr);
     int n;
     SectionInfo* si;
     n = pBF->GetNumSections();
@@ -242,7 +242,7 @@ void LoaderTest::testWinLoad () {
 
     // Test loading the "new style" exes, as found in winXP etc
     pBF = bff.Load(CALC_WINXP);
-    CPPUNIT_ASSERT(pBF != NULL);
+    CPPUNIT_ASSERT(pBF != nullptr);
     addr = pBF->GetMainEntryPoint();
     std::ostringstream ost1;
     ost1 << std::hex << addr;
@@ -254,7 +254,7 @@ void LoaderTest::testWinLoad () {
 
     // Test loading the calc.exe found in Windows 2000 (more NT based)
     pBF = bff.Load(CALC_WIN2000);
-    CPPUNIT_ASSERT(pBF != NULL);
+    CPPUNIT_ASSERT(pBF != nullptr);
     expected = "1001680";
     addr = pBF->GetMainEntryPoint();
     std::ostringstream ost2;
@@ -266,7 +266,7 @@ void LoaderTest::testWinLoad () {
 
     // Test loading the lpq.exe program - console mode PE file
     pBF = bff.Load(LPQ_WINDOWS);
-    CPPUNIT_ASSERT(pBF != NULL);
+    CPPUNIT_ASSERT(pBF != nullptr);
     addr = pBF->GetMainEntryPoint();
     std::ostringstream ost3;
     ost3 << std::hex << addr;
@@ -280,7 +280,7 @@ void LoaderTest::testWinLoad () {
     // Borland
     BinaryFileFactory bff;
     BinaryFile* pBF = bff.Load(SWITCH_BORLAND);
-    CPPUNIT_ASSERT(pBF != NULL);
+    CPPUNIT_ASSERT(pBF != nullptr);
     ADDRESS addr = pBF->GetMainEntryPoint();
     std::ostringstream ost4;
     ost4 << std::hex << addr;

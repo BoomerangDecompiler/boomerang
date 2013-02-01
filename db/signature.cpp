@@ -16,7 +16,7 @@
  * $Revision$    // 1.98.2.12
  *
  * 15 Jul 02 - Trent: Created.
- * 18 Jul 02 - Mike: Changed addParameter's last param to deflt to "", not NULL
+ * 18 Jul 02 - Mike: Changed addParameter's last param to deflt to "", not nullptr
  * 02 Jan 03 - Mike: Fixed SPARC getParamExp and getArgExp
  * 09 Nov 04 - Mike: Fixed clone() functions
  * 01 Feb 05 - Mike: Parameters default to void type unless ad-hoc TA
@@ -80,8 +80,8 @@ public:
     virtual bool        operator==(Signature& other);
     static    bool        qualified(UserProc *p, Signature &candidate);
 
-    virtual void        addReturn(Type *type, Exp *e = NULL);
-    virtual void        addParameter(Type *type, const char *nam = NULL, Exp *e = NULL, const char *boundMax = "");
+    virtual void        addReturn(Type *type, Exp *e = nullptr);
+    virtual void        addParameter(Type *type, const char *nam = nullptr, Exp *e = nullptr, const char *boundMax = "");
     virtual Exp            *getArgumentExp(int n);
 
     virtual Signature     *promote(UserProc *p);
@@ -121,8 +121,8 @@ public:
     virtual bool        operator==(Signature& other);
     static    bool        qualified(UserProc *p, Signature &candidate);
 
-    virtual void        addReturn(Type *type, Exp *e = NULL);
-    virtual void        addParameter(Type *type, const char *nam = NULL, Exp *e = NULL, const char *boundMax = "");
+    virtual void        addReturn(Type *type, Exp *e = nullptr);
+    virtual void        addParameter(Type *type, const char *nam = nullptr, Exp *e = nullptr, const char *boundMax = "");
     virtual Exp            *getArgumentExp(int n);
 
     virtual Signature    *promote(UserProc *p);
@@ -147,8 +147,8 @@ public:
     virtual bool        operator==(Signature& other);
     static    bool        qualified(UserProc *p, Signature &candidate);
 
-    virtual void        addReturn(Type *type, Exp *e = NULL);
-    virtual void        addParameter(Type *type, const char *nam = NULL, Exp *e = NULL,
+    virtual void        addReturn(Type *type, Exp *e = nullptr);
+    virtual void        addParameter(Type *type, const char *nam = nullptr, Exp *e = nullptr,
                                              const char *boundMax = "");
     virtual Exp            *getArgumentExp(int n);
 
@@ -184,9 +184,9 @@ public:
     virtual                ~PPCSignature() { }
     virtual    Signature    *clone();
     static    bool        qualified(UserProc *p, Signature &candidate);
-    virtual void        addReturn(Type *type, Exp *e = NULL);
+    virtual void        addReturn(Type *type, Exp *e = nullptr);
     virtual    Exp            *getArgumentExp(int n);
-    virtual    void        addParameter(Type *type, const char *nam /*= NULL*/, Exp *e /*= NULL*/, const char *boundMax /*= ""*/);
+    virtual    void        addParameter(Type *type, const char *nam /*= nullptr*/, Exp *e /*= nullptr*/, const char *boundMax /*= ""*/);
     virtual Exp            *getStackWildcard();
     virtual int            getStackRegister() throw(StackRegisterNotDefinedException) {return 1; }
     virtual Exp            *getProven(Exp *left);
@@ -204,9 +204,9 @@ public:
     virtual            ~MIPSSignature() { }
     virtual    Signature    *clone();
     static    bool        qualified(UserProc *p, Signature &candidate);
-    virtual void        addReturn(Type *type, Exp *e = NULL);
+    virtual void        addReturn(Type *type, Exp *e = nullptr);
     virtual    Exp            *getArgumentExp(int n);
-    virtual    void        addParameter(Type *type, const char *nam /*= NULL*/, Exp *e /*= NULL*/, const char *boundMax /*= ""*/);
+    virtual    void        addParameter(Type *type, const char *nam /*= nullptr*/, Exp *e /*= nullptr*/, const char *boundMax /*= ""*/);
     virtual Exp            *getStackWildcard();
     virtual int            getStackRegister() throw(StackRegisterNotDefinedException) {return 1; }
     virtual Exp            *getProven(Exp *left);
@@ -226,8 +226,8 @@ public:
     virtual bool operator==(Signature& other);
     static bool qualified(UserProc *p, Signature &candidate);
 
-    virtual void addReturn(Type *type, Exp *e = NULL);
-    void addParameter(Type *type, const char *nam /*= NULL*/, Exp *e /*= NULL*/, const char *boundMax /*= ""*/);
+    virtual void addReturn(Type *type, Exp *e = nullptr);
+    void addParameter(Type *type, const char *nam /*= nullptr*/, Exp *e /*= nullptr*/, const char *boundMax /*= ""*/);
     Exp *getArgumentExp(int n);
 
     virtual Signature *promote(UserProc *p);
@@ -245,7 +245,7 @@ public:
 CallingConvention::Win32Signature::Win32Signature(const char *nam) : Signature(nam) {
     Signature::addReturn(Location::regOf(28));
     // Signature::addImplicitParameter(new PointerType(new IntegerType()), "esp",
-    //                                Location::regOf(28), NULL);
+    //                                Location::regOf(28), nullptr);
 }
 
 CallingConvention::Win32Signature::Win32Signature(Signature &old) : Signature(old) {
@@ -254,7 +254,7 @@ CallingConvention::Win32Signature::Win32Signature(Signature &old) : Signature(ol
 CallingConvention::Win32TcSignature::Win32TcSignature(const char *nam) : Win32Signature(nam) {
     Signature::addReturn(Location::regOf(28));
     // Signature::addImplicitParameter(new PointerType(new IntegerType()), "esp",
-    //                                Location::regOf(28), NULL);
+    //                                Location::regOf(28), nullptr);
 }
 
 CallingConvention::Win32TcSignature::Win32TcSignature(Signature &old) : Win32Signature(old) {
@@ -294,7 +294,7 @@ Signature *CallingConvention::Win32Signature::clone() {
     n->rettype = rettype->clone();
     n->preferedName = preferedName;
     if (preferedReturn) n->preferedReturn = preferedReturn->clone();
-    else n->preferedReturn = NULL;
+    else n->preferedReturn = nullptr;
     n->preferedParams = preferedParams;
     return n;
 }
@@ -308,7 +308,7 @@ Signature *CallingConvention::Win32TcSignature::clone() {
     n->rettype = rettype->clone();
     n->preferedName = preferedName;
     if (preferedReturn) n->preferedReturn = preferedReturn->clone();
-    else n->preferedReturn = NULL;
+    else n->preferedReturn = nullptr;
     n->preferedParams = preferedParams;
     return n;
 }
@@ -349,7 +349,7 @@ bool CallingConvention::Win32Signature::qualified(UserProc *p, Signature &candid
 void CallingConvention::Win32Signature::addReturn(Type *type, Exp *e) {
     if (type->isVoid())
         return;
-    if (e == NULL) {
+    if (e == nullptr) {
         if (type->isFloat())
             e = Location::regOf(32);
         else
@@ -358,8 +358,8 @@ void CallingConvention::Win32Signature::addReturn(Type *type, Exp *e) {
     Signature::addReturn(type, e);
 }
 
-void CallingConvention::Win32Signature::addParameter(Type *type, const char *nam /*= NULL*/, Exp *e /*= NULL*/, const char *boundMax /*= ""*/) {
-    if (e == NULL) {
+void CallingConvention::Win32Signature::addParameter(Type *type, const char *nam /*= nullptr*/, Exp *e /*= nullptr*/, const char *boundMax /*= ""*/) {
+    if (e == nullptr) {
         e = getArgumentExp(params.size());
     }
     Signature::addParameter(type, nam, e, boundMax);
@@ -425,7 +425,7 @@ Exp *CallingConvention::Win32Signature::getProven(Exp *left) {
                 // there are other things that must be preserved here, look at calling convention
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 bool CallingConvention::Win32Signature::isPreserved(Exp* e) {
@@ -491,7 +491,7 @@ Exp *CallingConvention::Win32TcSignature::getProven(Exp *left) {
 CallingConvention::StdC::PentiumSignature::PentiumSignature(const char *nam) : Signature(nam) {
     Signature::addReturn(Location::regOf(28));
     // Signature::addImplicitParameter(new PointerType(new IntegerType()), "esp",
-    //                                 Location::regOf(28), NULL);
+    //                                 Location::regOf(28), nullptr);
 }
 
 CallingConvention::StdC::PentiumSignature::PentiumSignature(Signature &old) : Signature(old) {
@@ -507,7 +507,7 @@ Signature *CallingConvention::StdC::PentiumSignature::clone() {
     n->rettype = rettype->clone();
     n->preferedName = preferedName;
     if (preferedReturn) n->preferedReturn = preferedReturn->clone();
-    else n->preferedReturn = NULL;
+    else n->preferedReturn = nullptr;
     n->preferedParams = preferedParams;
     n->unknown = unknown;
     return n;
@@ -540,7 +540,7 @@ bool CallingConvention::StdC::PentiumSignature::qualified(UserProc *p, Signature
     StmtListIter it;
     for (Statement* s = internal.getFirst(it); s; s = internal.getNext(it)) {
         Assign *e = dynamic_cast<Assign*>(s);
-        if (e == NULL) continue;
+        if (e == nullptr) continue;
         if (e->getLeft()->getOper() == opPC) {
             if (e->getRight()->isMemOf() && e->getRight()->getSubExp1()->isRegOfN(28)) {
                 if (VERBOSE)
@@ -568,7 +568,7 @@ bool CallingConvention::StdC::PentiumSignature::qualified(UserProc *p, Signature
 void CallingConvention::StdC::PentiumSignature::addReturn(Type *type, Exp *e) {
     if (type->isVoid())
         return;
-    if (e == NULL) {
+    if (e == nullptr) {
         if (type->isFloat())
             e = Location::regOf(32);
         else
@@ -577,8 +577,8 @@ void CallingConvention::StdC::PentiumSignature::addReturn(Type *type, Exp *e) {
     Signature::addReturn(type, e);
 }
 
-void CallingConvention::StdC::PentiumSignature::addParameter(Type *type, const char *nam /*= NULL*/, Exp *e /*= NULL*/, const char *boundMax /*= ""*/) {
-    if (e == NULL) {
+void CallingConvention::StdC::PentiumSignature::addParameter(Type *type, const char *nam /*= nullptr*/, Exp *e /*= nullptr*/, const char *boundMax /*= ""*/) {
+    if (e == nullptr) {
         e = getArgumentExp(params.size());
     }
     Signature::addParameter(type, nam, e, boundMax);
@@ -617,7 +617,7 @@ Exp *CallingConvention::StdC::PentiumSignature::getProven(Exp *left) {
                 return Location::regOf(r);
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 bool CallingConvention::StdC::PentiumSignature::isPreserved(Exp* e) {
@@ -665,7 +665,7 @@ void CallingConvention::StdC::PentiumSignature::setLibraryDefines(StatementList*
 CallingConvention::StdC::PPCSignature::PPCSignature(const char *nam) : Signature(nam) {
     Signature::addReturn(Location::regOf(1));
     // Signature::addImplicitParameter(new PointerType(new IntegerType()), "r1",
-    //                                 Location::regOf(1), NULL);
+    //                                 Location::regOf(1), nullptr);
     // FIXME: Should also add m[r1+4] as an implicit parameter? Holds return address
 }
 
@@ -681,7 +681,7 @@ Signature *CallingConvention::StdC::PPCSignature::clone() {
     n->rettype = rettype->clone();
     n->preferedName = preferedName;
     if (preferedReturn) n->preferedReturn = preferedReturn->clone();
-    else n->preferedReturn = NULL;
+    else n->preferedReturn = nullptr;
     n->preferedParams = preferedParams;
     n->unknown = unknown;
     return n;
@@ -706,15 +706,15 @@ Exp *CallingConvention::StdC::PPCSignature::getArgumentExp(int n) {
 void CallingConvention::StdC::PPCSignature::addReturn(Type *type, Exp *e) {
     if (type->isVoid())
         return;
-    if (e == NULL) {
+    if (e == nullptr) {
         e = Location::regOf(3);
     }
     Signature::addReturn(type, e);
 }
 
 
-void CallingConvention::StdC::PPCSignature::addParameter(Type *type, const char *nam /*= NULL*/, Exp *e /*= NULL*/, const char *boundMax /*= ""*/) {
-    if (e == NULL) {
+void CallingConvention::StdC::PPCSignature::addParameter(Type *type, const char *nam /*= nullptr*/, Exp *e /*= nullptr*/, const char *boundMax /*= ""*/) {
+    if (e == nullptr) {
         e = getArgumentExp(params.size());
     }
     Signature::addParameter(type, nam, e, boundMax);
@@ -736,7 +736,7 @@ Exp *CallingConvention::StdC::PPCSignature::getProven(Exp* left) {
                 return left;
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 bool CallingConvention::StdC::PPCSignature::isPreserved(Exp* e) {
@@ -758,7 +758,7 @@ void CallingConvention::StdC::PPCSignature::setLibraryDefines(StatementList* def
 
 CallingConvention::StdC::ST20Signature::ST20Signature(const char *nam) : Signature(nam) {
     Signature::addReturn(Location::regOf(3));
-    // Signature::addImplicitParameter(new PointerType(new IntegerType()), "sp", Location::regOf(3), NULL);
+    // Signature::addImplicitParameter(new PointerType(new IntegerType()), "sp", Location::regOf(3), nullptr);
     // FIXME: Should also add m[sp+0] as an implicit parameter? Holds return address
 }
 
@@ -798,7 +798,7 @@ Exp *CallingConvention::StdC::ST20Signature::getArgumentExp(int n) {
 void CallingConvention::StdC::ST20Signature::addReturn(Type *type, Exp *e) {
     if (type->isVoid())
         return;
-    if (e == NULL) {
+    if (e == nullptr) {
         e = Location::regOf(0);
     }
     Signature::addReturn(type, e);
@@ -809,8 +809,8 @@ Signature *CallingConvention::StdC::ST20Signature::promote(UserProc *p) {
     return this;
 }
 
-void CallingConvention::StdC::ST20Signature::addParameter(Type *type, const char *nam /*= NULL*/, Exp *e /*= NULL*/, const char *boundMax /*= ""*/) {
-    if (e == NULL) {
+void CallingConvention::StdC::ST20Signature::addParameter(Type *type, const char *nam /*= nullptr*/, Exp *e /*= nullptr*/, const char *boundMax /*= ""*/) {
+    if (e == nullptr) {
         e = getArgumentExp(params.size());
     }
     Signature::addParameter(type, nam, e, boundMax);
@@ -837,7 +837,7 @@ Exp *CallingConvention::StdC::ST20Signature::getProven(Exp *left) {
                 return Location::regOf(r);
         }
     }
-    return NULL;
+    return nullptr;
 }
 #else
 Exp *CallingConvention::StdC::ST20Signature::getProven(Exp* left) {
@@ -848,7 +848,7 @@ Exp *CallingConvention::StdC::ST20Signature::getProven(Exp* left) {
                 return left;
         }
     }
-    return NULL;
+    return nullptr;
 }
 #endif
 
@@ -878,7 +878,7 @@ bool CallingConvention::StdC::PPCSignature::isAddrOfStackLocal(Prog* prog, Exp* 
 CallingConvention::StdC::SparcSignature::SparcSignature(const char *nam) : Signature(nam) {
     Signature::addReturn(Location::regOf(14));
     // Signature::addImplicitParameter(new PointerType(new IntegerType()), "sp",
-    //                                Location::regOf(14), NULL);
+    //                                Location::regOf(14), nullptr);
 }
 
 CallingConvention::StdC::SparcSignature::SparcSignature(Signature &old) : Signature(old) {
@@ -893,7 +893,7 @@ Signature *CallingConvention::StdC::SparcSignature::clone() {
     n->rettype = rettype->clone();
     n->preferedName = preferedName;
     if (preferedReturn) n->preferedReturn = preferedReturn->clone();
-    else n->preferedReturn = NULL;
+    else n->preferedReturn = nullptr;
     n->preferedParams = preferedParams;
     n->unknown = unknown;
     return n;
@@ -908,7 +908,7 @@ Signature *CallingConvention::StdC::SparcLibSignature::clone() {
     n->rettype = rettype->clone();
     n->preferedName = preferedName;
     if (preferedReturn) n->preferedReturn = preferedReturn->clone();
-    else n->preferedReturn = NULL;
+    else n->preferedReturn = nullptr;
     n->preferedParams = preferedParams;
     return n;
 }
@@ -961,14 +961,14 @@ bool CallingConvention::StdC::MIPSSignature::qualified(UserProc *p, Signature &c
 void CallingConvention::StdC::SparcSignature::addReturn(Type *type, Exp *e) {
     if (type->isVoid())
         return;
-    if (e == NULL) {
+    if (e == nullptr) {
         e = Location::regOf(8);
     }
     Signature::addReturn(type, e);
 }
 
-void CallingConvention::StdC::SparcSignature::addParameter(Type *type, const char *nam /*= NULL*/, Exp *e /*= NULL*/, const char *boundMax /*= ""*/) {
-    if (e == NULL) {
+void CallingConvention::StdC::SparcSignature::addParameter(Type *type, const char *nam /*= nullptr*/, Exp *e /*= nullptr*/, const char *boundMax /*= ""*/) {
+    if (e == nullptr) {
         e = getArgumentExp(params.size());
     }
     Signature::addParameter(type, nam, e, boundMax);
@@ -1013,7 +1013,7 @@ Exp *CallingConvention::StdC::SparcSignature::getProven(Exp* left) {
                 return left;
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 bool CallingConvention::StdC::SparcSignature::isPreserved(Exp* e) {
@@ -1058,14 +1058,14 @@ Exp *CallingConvention::StdC::SparcLibSignature::getProven(Exp* left) {
                 return left;
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 
 
 Signature::Signature(const char *nam) : rettype(new VoidType()), ellipsis(false), unknown(true), forced(false),
-    preferedReturn(NULL) {
-    if (nam == NULL)
+    preferedReturn(nullptr) {
+    if (nam == nullptr)
         name = "<ANON>";
     else
         name = nam;
@@ -1079,7 +1079,7 @@ void CustomSignature::setSP(int nsp) {
     if (sp) {
         addReturn(Location::regOf(sp));
         // addImplicitParameter(new PointerType(new IntegerType()), "sp",
-        //                            Location::regOf(sp), NULL);
+        //                            Location::regOf(sp), nullptr);
     }
 }
 
@@ -1092,7 +1092,7 @@ Signature *Signature::clone() {
     n->rettype = rettype->clone();
     n->preferedName = preferedName;
     if (preferedReturn) n->preferedReturn = preferedReturn->clone();
-    else n->preferedReturn = NULL;
+    else n->preferedReturn = nullptr;
     n->preferedParams = preferedParams;
     n->unknown = unknown;
     n->sigFile = sigFile;
@@ -1109,7 +1109,7 @@ Signature *CustomSignature::clone() {
     n->sp = sp;
     n->preferedName = preferedName;
     if (preferedReturn) n->preferedReturn = preferedReturn->clone();
-    else n->preferedReturn = NULL;
+    else n->preferedReturn = nullptr;
     n->preferedParams = preferedParams;
     return n;
 }
@@ -1141,22 +1141,22 @@ void Signature::setName(const char *nam) {
     name = nam;
 }
 
-void Signature::addParameter(const char *nam /*= NULL*/) {
+void Signature::addParameter(const char *nam /*= nullptr*/) {
     addParameter(new VoidType(), nam);
 }
 
 void Signature::addParameter(Exp *e, Type* ty) {
-    addParameter(ty, NULL, e);
+    addParameter(ty, nullptr, e);
 }
 
-void Signature::addParameter(Type *type, const char *nam /*= NULL*/, Exp *e /*= NULL*/, const char *boundMax /*= ""*/) {
-    if (e == NULL) {
+void Signature::addParameter(Type *type, const char *nam /*= nullptr*/, Exp *e /*= nullptr*/, const char *boundMax /*= ""*/) {
+    if (e == nullptr) {
         std::cerr << "No expression for parameter ";
-        if (type == NULL)
+        if (type == nullptr)
             std::cerr << "<notype> ";
         else
             std::cerr << type->getCtype() << " ";
-        if (nam == NULL)
+        if (nam == nullptr)
             std::cerr << "<noname>";
         else
             std::cerr << nam;
@@ -1165,7 +1165,7 @@ void Signature::addParameter(Type *type, const char *nam /*= NULL*/, Exp *e /*= 
     }
 
     std::string s;
-    if (nam == NULL) {
+    if (nam == nullptr) {
         int n = params.size()+1;
         bool ok = false;
         while (!ok) {
@@ -1191,9 +1191,9 @@ void Signature::addParameter(Parameter *param) {
     Exp *e = param->getExp();
 
     if (strlen(nam) == 0)
-        nam = NULL;
+        nam = nullptr;
 
-    if (ty == NULL || e == NULL || nam == NULL) {
+    if (ty == nullptr || e == nullptr || nam == nullptr) {
         addParameter(ty, nam, e, param->getBoundMax());
     } else
         params.push_back(param);
@@ -1234,16 +1234,16 @@ Exp *Signature::getParamExp(int n) {
 Type *Signature::getParamType(int n) {
     //assert(n < (int)params.size() || ellipsis);
     // With recursion, parameters not set yet. Hack for now:
-    if (n >= (int)params.size()) return NULL;
+    if (n >= (int)params.size()) return nullptr;
     return params[n]->getType();
 }
 
 const char *Signature::getParamBoundMax(int n)
 {
-    if (n >= (int)params.size()) return NULL;
+    if (n >= (int)params.size()) return nullptr;
     const char *s = params[n]->getBoundMax();
     if (strlen(s) == 0)
-        return NULL;
+        return nullptr;
     return s;
 }
 
@@ -1398,7 +1398,7 @@ Signature *Signature::instantiate(platform plat, callconv cc, const char *nam) {
             std::cerr << "unknown signature: " << conventionName(cc) << " " << platformName(plat) << "\n";
             assert(false);
     }
-    return NULL;
+    return nullptr;
 }
 
 void Signature::print(std::ostream &out, bool html) {
@@ -1511,9 +1511,9 @@ Exp* Signature::getFirstArgLoc(Prog* prog) {
             return Location::regOf(0);
         default:
             std::cerr << "getReturnExp2: machine not handled\n";
-            return NULL;
+            return nullptr;
     }
-    return NULL;
+    return nullptr;
 }
 
 // Not very satisfying to do things this way. Problem is that the polymorphic CallingConvention objects are set up
@@ -1568,7 +1568,7 @@ Exp* Signature::getEarlyParamExp(int n, Prog* prog) {
             break;
     }
     assert(0);            // Machine not handled
-    return NULL;
+    return nullptr;
 }
 
 StatementList& Signature::getStdRetStmt(Prog* prog) {
@@ -1634,7 +1634,12 @@ int Signature::getStackRegister(Prog* prog) throw(StackRegisterNotDefinedExcepti
             throw StackRegisterNotDefinedException();
     }
 }
-
+/**
+Does expression e represent a local stack-based variable?
+Result can be ABI specific, e.g. sparc has locals in the parent's stack frame, at POSITIVE offsets from the
+stack pointer register
+Also, I believe that the PA/RISC stack grows away from 0
+*/
 bool Signature::isStackLocal(Prog* prog, Exp *e) {
     // e must be m[...]
     if (e->isSubscript())
@@ -2019,5 +2024,5 @@ Type* Signature::getTypeFor(Exp* e) {
         if (*returns[i]->exp == *e)
             return returns[i]->type;
     }
-    return NULL;
+    return nullptr;
 }

@@ -87,8 +87,8 @@ namespace dbghelp {
 #include <sys/types.h>
 
 Prog::Prog() :
-    pBF(NULL),
-    pFE(NULL),
+    pBF(nullptr),
+    pFE(nullptr),
     m_iNumberedProc(1),
     m_rootCluster(new Cluster("prog")) {
     // Default constructor
@@ -104,8 +104,8 @@ void Prog::setFrontEnd(FrontEnd *pFE) {
 }
 
 Prog::Prog(const char* name) :
-    pBF(NULL),
-    pFE(NULL),
+    pBF(nullptr),
+    pFE(nullptr),
     m_name(name),
     m_iNumberedProc(1),
     m_rootCluster(new Cluster(getNameNoPathNoExt().c_str())) {
@@ -187,9 +187,9 @@ void Prog::generateCode(Cluster *cluster, UserProc *proc, bool intermixRTL) {
         cluster->openStream("c");
         cluster->closeStreams();
     }
-    if (cluster == NULL || cluster == m_rootCluster) {
+    if (cluster == nullptr || cluster == m_rootCluster) {
         os.open(m_rootCluster->getOutPath("c"));
-        if (proc == NULL) {
+        if (proc == nullptr) {
             HLLCode *code = Boomerang::get()->getHLLCode();
             bool global = false;
             if (Boomerang::get()->noDecompile) {
@@ -243,10 +243,10 @@ void Prog::generateCode(Cluster *cluster, UserProc *proc, bool intermixRTL) {
         UserProc* up = (UserProc*)pProc;
         HLLCode *code = Boomerang::get()->getHLLCode(up);
         code->AddPrototype(up);                    // May be the wrong signature if up has ellipsis
-        if (cluster == NULL || cluster == m_rootCluster)
+        if (cluster == nullptr || cluster == m_rootCluster)
             code->print(os);
     }
-    if ((proto && cluster == NULL) || cluster == m_rootCluster)
+    if ((proto && cluster == nullptr) || cluster == m_rootCluster)
         os << "\n";                // Separate prototype(s) from first proc
 
     for (Proc* pProc : m_procs) {
@@ -254,16 +254,16 @@ void Prog::generateCode(Cluster *cluster, UserProc *proc, bool intermixRTL) {
             continue;
         UserProc *up = (UserProc*)pProc;
         if (!up->isDecoded()) continue;
-        if (proc != NULL && up != proc)
+        if (proc != nullptr && up != proc)
             continue;
         up->getCFG()->compressCfg();
         HLLCode *code = Boomerang::get()->getHLLCode(up);
         up->generateCode(code);
         if (up->getCluster() == m_rootCluster) {
-            if (cluster == NULL || cluster == m_rootCluster)
+            if (cluster == nullptr || cluster == m_rootCluster)
                 code->print(os);
         } else {
-            if (cluster == NULL || cluster == up->getCluster()) {
+            if (cluster == nullptr || cluster == up->getCluster()) {
                 up->getCluster()->openStream("c");
                 code->print(up->getCluster()->getStream());
             }
@@ -280,9 +280,9 @@ void Prog::generateRTL(Cluster *cluster, UserProc *proc) {
         UserProc *p = (UserProc*)pProc;
         if (!p->isDecoded())
             continue;
-        if (proc != NULL && p != proc)
+        if (proc != nullptr && p != proc)
             continue;
-        if (cluster != NULL && p->getCluster() != cluster)
+        if (cluster != nullptr && p->getCluster() != cluster)
             continue;
 
         p->getCluster()->openStream("rtl");
@@ -298,7 +298,7 @@ Statement *Prog::getStmtAtLex(Cluster *cluster, unsigned int begin, unsigned int
         UserProc *p = (UserProc*)pProc;
         if (!p->isDecoded())
             continue;
-        if (cluster != NULL && p->getCluster() != cluster)
+        if (cluster != nullptr && p->getCluster() != cluster)
             continue;
 
         if (p->getCluster() == cluster) {
@@ -307,7 +307,7 @@ Statement *Prog::getStmtAtLex(Cluster *cluster, unsigned int begin, unsigned int
                 return s;
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 
@@ -317,7 +317,7 @@ const char *Cluster::makeDirs() {
         path = parent->makeDirs();
     else
         path = Boomerang::get()->getOutputPath();
-    if (getNumChildren() > 0 || parent == NULL) {
+    if (getNumChildren() > 0 || parent == nullptr) {
         path = path + "/" + name;
 #ifdef _WIN32
         mkdir(path.c_str());
@@ -352,7 +352,7 @@ Cluster *Cluster::find(const char *nam) {
         if (c)
             return c;
     }
-    return NULL;
+    return nullptr;
 }
 
 const char *Cluster::getOutPath(const char *ext) {
@@ -368,7 +368,7 @@ void Cluster::openStream(const char *ext) {
     stream_ext = ext;
     if (!strcmp(ext, "xml")) {
         out << "<?xml version=\"1.0\"?>\n";
-        if (parent != NULL)
+        if (parent != nullptr)
             out << "<procs>\n";
     }
 }
@@ -395,10 +395,10 @@ bool Prog::clusterUsed(Cluster *c) {
 }
 
 Cluster    *Prog::getDefaultCluster(const char *name) {
-    const char *cfname = NULL;
+    const char *cfname = nullptr;
     if (pBF)
         cfname = pBF->getFilenameSymbolFor(name);
-    if (cfname == NULL)
+    if (cfname == nullptr)
         return m_rootCluster;
     if (strcmp(cfname + strlen(cfname) - 2, ".c"))
         return m_rootCluster;
@@ -406,7 +406,7 @@ Cluster    *Prog::getDefaultCluster(const char *name) {
     char *fname = strdup(cfname);
     fname[strlen(fname) - 2] = 0;
     Cluster *c = findCluster(fname);
-    if (c == NULL) {
+    if (c == nullptr) {
         c = new Cluster(fname);
         m_rootCluster->addChild(c);
     }
@@ -417,7 +417,7 @@ void Prog::generateCode(std::ostream &os) {
     HLLCode *code = Boomerang::get()->getHLLCode();
     for ( Global *glob : globals) {
         // Check for an initial value
-        Exp *e = NULL;
+        Exp *e = nullptr;
         e = glob->getInitialValue(this);
         if (e)
             code->AddGlobal(glob->getName(), glob->getType(), e);
@@ -460,9 +460,9 @@ void Prog::clear() {
     m_procs.clear();
     m_procLabels.clear();
     delete pBF;
-    pBF = NULL;
+    pBF = nullptr;
     delete pFE;
-    pFE = NULL;
+    pFE = nullptr;
 }
 
 /***************************************************************************//**
@@ -492,7 +492,7 @@ Proc* Prog::setNewProc(ADDRESS uAddr) {
         uAddr = other;
     const char* pName = pBF->SymbolByAddress(uAddr);
     bool bLib = pBF->IsDynamicLinkedProc(uAddr) | pBF->IsStaticLinkedLibProc(uAddr);
-    if (pName == NULL) {
+    if (pName == nullptr) {
         // No name. Give it a numbered name
         std::ostringstream ost;
         ost << "proc" << m_iNumberedProc++;
@@ -516,7 +516,7 @@ Type *makeUDT(int index, DWORD64 ModBase) {
     assert(got);
     if (got) {
         char nameA[1024];
-        WideCharToMultiByte(CP_ACP,0,name,-1,nameA,sizeof(nameA),0,NULL);
+        WideCharToMultiByte(CP_ACP,0,name,-1,nameA,sizeof(nameA),0,nullptr);
         Type *ty = Type::getNamedType(nameA);
         if (ty)
             return new NamedType(nameA);
@@ -531,7 +531,7 @@ Type *makeUDT(int index, DWORD64 ModBase) {
         for (unsigned int i = 0; i < count; i++) {
             char fieldName[1024];
             got = dbghelp::SymGetTypeInfo(hProcess, ModBase, pFC->ChildId[i], dbghelp::TI_GET_SYMNAME, &name);
-            WideCharToMultiByte(CP_ACP,0,name,-1,fieldName,sizeof(fieldName),0,NULL);
+            WideCharToMultiByte(CP_ACP,0,name,-1,fieldName,sizeof(fieldName),0,nullptr);
             DWORD mytype;
             got = dbghelp::SymGetTypeInfo(hProcess, ModBase, pFC->ChildId[i], dbghelp::TI_GET_TYPE, &mytype);
             cty->addType(typeFromDebugInfo(mytype, ModBase), fieldName);
@@ -541,7 +541,7 @@ Type *makeUDT(int index, DWORD64 ModBase) {
         assert(ty);
         return new NamedType(nameA);
     }
-    return NULL;
+    return nullptr;
 }
 
 Type *typeFromDebugInfo(int index, DWORD64 ModBase) {
@@ -601,7 +601,7 @@ Type *typeFromDebugInfo(int index, DWORD64 ModBase) {
             std::cerr << "unhandled symtag " << d << "\n";
             assert(false);
     }
-    return NULL;
+    return nullptr;
 }
 
 int debugRegister(int r) {
@@ -695,7 +695,7 @@ Proc* Prog::newProc (const char* name, ADDRESS uNative, bool bLib /*= false*/) {
             dbghelp::IMAGEHLP_STACK_FRAME stack;
             stack.InstructionOffset = uNative.m_value;
             dbghelp::SymSetContext(hProcess, &stack, 0);
-            dbghelp::SymEnumSymbols(hProcess, 0, NULL, addSymbol, pProc);
+            dbghelp::SymEnumSymbols(hProcess, 0, nullptr, addSymbol, pProc);
 
             LOG << "final signature: ";
             pProc->getSignature()->printToLog();
@@ -782,7 +782,7 @@ Proc* Prog::getProc(int idx) const {
 
 /***************************************************************************//**
  *
- * \brief    Return a pointer to the associated Proc object, or NULL if none
+ * \brief    Return a pointer to the associated Proc object, or nullptr if none
  * \note        Could return -1 for a deleted Proc
  * \param uAddr - Native address of the procedure entry point
  * \returns Pointer to the Proc object, or 0 if none, or -1 if deleted
@@ -791,11 +791,11 @@ Proc* Prog::findProc(ADDRESS uAddr) const {
     PROGMAP::const_iterator it;
     it = m_procLabels.find(uAddr);
     if (it == m_procLabels.end())
-        return NULL;
+        return nullptr;
     return (*it).second;
 }
 /***************************************************************************//**
- * \brief    Return a pointer to the associated Proc object, or NULL if none
+ * \brief    Return a pointer to the associated Proc object, or nullptr if none
  * \note        Could return -1 for a deleted Proc
  * \param name - name of the searched-for procedure
  * \returns Pointer to the Proc object, or 0 if none, or -1 if deleted
@@ -807,7 +807,7 @@ Proc* Prog::findProc(const char *name) const {
                         return !strcmp(p->getName(), name);
                       });
     if(it==m_procs.end())
-        return NULL;
+        return nullptr;
     return *it;
 }
 
@@ -868,7 +868,7 @@ const char *Prog::getGlobalName(ADDRESS uaddr) {
     }
     if (pBF)
         return pBF->SymbolByAddress(uaddr);
-    return NULL;
+    return nullptr;
 }
 //! Dump the globals to stderr for debugging
 void Prog::dumpGlobals() {
@@ -890,7 +890,7 @@ Global* Prog::getGlobal(const char *nam) {
                              [nam](Global *g) -> bool { return !strcmp(g->getName(),nam); }
                             );
     if(iter==globals.end())
-        return NULL;
+        return nullptr;
     return *iter;
 }
 //! Indicate that a given global has been seen used in the program.
@@ -903,7 +903,7 @@ bool Prog::globalUsed(ADDRESS uaddr, Type* knownType) {
         }
     }
 
-    if (pBF->GetSectionInfoByAddr(uaddr) == NULL) {
+    if (pBF->GetSectionInfoByAddr(uaddr) == nullptr) {
         if (VERBOSE)
             LOG << "refusing to create a global at address that is in no known section of the binary: " << uaddr << "\n";
         return false;
@@ -990,7 +990,7 @@ Type *Prog::guessGlobalType(const char *nam, ADDRESS u) {
 //! Make up a name for a new global at address \a uaddr (or return an existing name if address already used)
 const char *Prog::newGlobalName(ADDRESS uaddr) {
     const char *nam = getGlobalName(uaddr);
-    if (nam == NULL) {
+    if (nam == nullptr) {
         std::ostringstream os;
         os << "global" << globals.size();
         nam = strdup(os.str().c_str());
@@ -1004,7 +1004,7 @@ Type *Prog::getGlobalType(const char* nam) {
     for (Global * gl : globals )
         if (!strcmp(gl->getName(), nam))
             return gl->getType();
-    return NULL;
+    return nullptr;
 }
 //! Set the type of a global variable
 void Prog::setGlobalType(const char* nam, Type* ty) {
@@ -1045,7 +1045,7 @@ const char *Prog::getStringConstant(ADDRESS uaddr, bool knownString /* = false *
         if (last == '\n' && printable >= 2)
             return p;
     }
-    return NULL;
+    return nullptr;
 }
 
 double Prog::getFloatConstant(ADDRESS uaddr, bool &ok, int bits) {
@@ -1066,7 +1066,7 @@ double Prog::getFloatConstant(ADDRESS uaddr, bool &ok, int bits) {
 /***************************************************************************//**
  *
  * \brief    Return a pointer to the Proc object containing uAddr, or 0 if none
- * \note     Could return NULL for a deleted Proc
+ * \note     Could return nullptr for a deleted Proc
  * \param uAddr - Native address to search for
  * \returns        Pointer to the Proc object, or 0 if none, or -1 if deleted
  ******************************************************************************/
@@ -1080,7 +1080,7 @@ Proc* Prog::findContainingProc(ADDRESS uAddr) const {
         if (u->containsAddr(uAddr))
             return p;
     }
-    return NULL;
+    return nullptr;
 }
 
 /***************************************************************************//**
@@ -1195,7 +1195,7 @@ UserProc* Prog::getNextUserProc(std::list<Proc*>::iterator& it) {
  * \param uNative: Native address of the candidate string or constant
  * \param last: will be set to one past end of the code section (host)
  * \param delta: will be set to the difference between the host and native addresses
- * \returns        Host pointer if in range; NULL if not
+ * \returns        Host pointer if in range; nullptr if not
  *                Also sets 2 reference parameters (see above)
  ******************************************************************************/
 const void* Prog::getCodeInfo(ADDRESS uAddr, const char*& last, int& delta) {
@@ -1203,7 +1203,7 @@ const void* Prog::getCodeInfo(ADDRESS uAddr, const char*& last, int& delta) {
     last=0;
 #ifdef _WIN32
     // this is broken obviously
-    return NULL;
+    return nullptr;
 #else
     int n = pBF->GetNumSections();
     int i;
@@ -1219,7 +1219,7 @@ const void* Prog::getCodeInfo(ADDRESS uAddr, const char*& last, int& delta) {
         const char* p = (const char *) (uAddr + delta).m_value;
         return p;
     }
-    return NULL;
+    return nullptr;
 #endif
 }
 
@@ -1651,7 +1651,7 @@ void Prog::readSymbolFile(const char *fname) {
                 nam = newGlobalName(sym->addr);
             }
             Type *ty = sym->ty;
-            if (ty == NULL) {
+            if (ty == nullptr) {
                 ty = guessGlobalType(nam, sym->addr);
             }
             globals.insert(new Global(ty, sym->addr, nam));
@@ -1669,7 +1669,7 @@ void Prog::readSymbolFile(const char *fname) {
 Global::~Global() {
     // Do-nothing d'tor
 }
-//! Get the initial value as an expression (or NULL if not initialised)
+//! Get the initial value as an expression (or nullptr if not initialised)
 Exp* Global::getInitialValue(Prog* prog) {
     SectionInfo *si = prog->getSectionInfoByAddr(uaddr);
     if (si && si->isAddressBss(uaddr))
@@ -1688,7 +1688,7 @@ void Global::print(std::ostream& os, Prog* prog) {
 }
 
 Exp *Prog::readNativeAs(ADDRESS uaddr, Type *type) {
-    Exp *e = NULL;
+    Exp *e = nullptr;
     SectionInfo *si = getSectionInfoByAddr(uaddr);
     if (si == nullptr)
         return nullptr;
@@ -1697,12 +1697,12 @@ Exp *Prog::readNativeAs(ADDRESS uaddr, Type *type) {
         if ( init.isZero() )
             return new Const(0);
         const char *nam = getGlobalName(init);
-        if (nam != NULL)
+        if (nam != nullptr)
             // TODO: typecast?
-            return Location::global(nam, NULL);
+            return Location::global(nam, nullptr);
         if (type->asPointer()->getPointsTo()->resolvesToChar()) {
             const char *str = getStringConstant(init);
-            if (str != NULL)
+            if (str != nullptr)
                 return new Const(str);
         }
     }
@@ -1713,7 +1713,7 @@ Exp *Prog::readNativeAs(ADDRESS uaddr, Type *type) {
             ADDRESS addr = uaddr + c->getOffsetTo(i) / 8;
             Type *t = c->getType(i);
             Exp *v = readNativeAs(addr, t);
-            if (v == NULL) {
+            if (v == nullptr) {
                 LOG << "unable to read native address " << addr << " as type " << t->getCtype() << "\n";
                 v = new Const(-1);
             }
@@ -1739,12 +1739,12 @@ Exp *Prog::readNativeAs(ADDRESS uaddr, Type *type) {
         int nelems = -1;
         const char *nam = getGlobalName(uaddr);
         int base_sz = type->asArray()->getBaseType()->getSize() / 8;
-        if (nam != NULL)
+        if (nam != nullptr)
             nelems = pBF->GetSizeByName(nam) / base_sz;
         Exp *n = e = new Terminal(opNil);
         for (int i = 0; nelems == -1 || i < nelems; i++) {
             Exp *v = readNativeAs(uaddr + i * base_sz, type->asArray()->getBaseType());
-            if (v == NULL)
+            if (v == nullptr)
                 break;
             if (n->isNil()) {
                 n = new Binary(opList, v, n);
@@ -2058,11 +2058,11 @@ Exp * Prog::addReloc(Exp *e, ADDRESS lc) {
     if (found_at != symbols.end()) { //TODO: use getAddr instead of getInt
         const char *n = found_at->second.c_str();
         unsigned int sz = pBF->GetSizeByName(n);
-        if (getGlobal((char*)n) == NULL) {
+        if (getGlobal((char*)n) == nullptr) {
             Global *global = new Global(new SizeType(sz*8), c_addr, n);
             globals.insert(global);
         }
-        e = new Unary(opAddrOf, Location::global(n, NULL));
+        e = new Unary(opAddrOf, Location::global(n, nullptr));
     } else {
         const char *str = getStringConstant(c_addr);
         if (str)
@@ -2073,7 +2073,7 @@ Exp * Prog::addReloc(Exp *e, ADDRESS lc) {
                 if (it.first < c_addr && it.first + pBF->GetSizeByName(it.second.c_str()) > c_addr) {
                     int off = (c->getAddr() - it.first).m_value;
                     e = new Binary(opPlus,
-                                   new Unary(opAddrOf, Location::global(it.second.c_str(), NULL)),
+                                   new Unary(opAddrOf, Location::global(it.second.c_str(), nullptr)),
                                    new Const(off));
                     break;
                 }

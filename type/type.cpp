@@ -287,7 +287,7 @@ Type *CompoundType::getType(const char *nam) {
     for (unsigned i = 0; i < types.size(); i++)
         if (names[i] == nam)
             return types[i];
-    return NULL;
+    return nullptr;
 }
 
 // Note: n is a BIT offset
@@ -298,7 +298,7 @@ Type *CompoundType::getTypeAtOffset(unsigned n) {
             return types[i];
         offset += types[i]->getSize();
     }
-    return NULL;
+    return nullptr;
 }
 
 // Note: n is a BIT offset
@@ -345,7 +345,7 @@ const char *CompoundType::getNameAtOffset(unsigned n) {
             return names[i].c_str();
         offset += types[i]->getSize();
     }
-    return NULL;
+    return nullptr;
 }
 
 unsigned CompoundType::getOffsetTo(unsigned n) {
@@ -385,7 +385,7 @@ unsigned CompoundType::getOffsetRemainder(unsigned n) {
  * \returns            <Not applicable>
  ******************************************************************************/
 Type *Type::parseType(const char *str) {
-    return NULL;
+    return nullptr;
 }
 
 /***************************************************************************//**
@@ -426,7 +426,7 @@ bool VoidType::operator==(const Type& other) const {
 bool FuncType::operator==(const Type& other) const {
     if (!other.isFunc()) return false;
     // Note: some functions don't have a signature (e.g. indirect calls that have not yet been successfully analysed)
-    if (signature == NULL) return ((FuncType&)other).signature == NULL;
+    if (signature == nullptr) return ((FuncType&)other).signature == nullptr;
     return *signature == *((FuncType&)other).signature;
 }
 
@@ -612,7 +612,7 @@ bool LowerType::operator<(const Type& other) const {
  *
  * \brief        Match operation.
  * PARAMETERS:        pattern - Type to match
- * \returns            Exp list of bindings if match or NULL
+ * \returns            Exp list of bindings if match or nullptr
  ******************************************************************************/
 Exp *Type::match(Type *pattern) {
     if (pattern->isNamed()) {
@@ -624,7 +624,7 @@ Exp *Type::match(Type *pattern) {
                                      new TypeVal(this->clone())),
                           new Terminal(opNil));
     }
-    return NULL;
+    return nullptr;
 }
 
 Exp *IntegerType::match(Type *pattern) {
@@ -687,7 +687,7 @@ Exp *UnionType::match(Type *pattern) {
 const char *VoidType::getCtype(bool final) const { return "void"; }
 
 const char *FuncType::getCtype(bool final) const {
-    if (signature == NULL)
+    if (signature == nullptr)
         return "void (void)";
     std::string s;
     if (signature->getNumReturns() == 0)
@@ -705,7 +705,7 @@ const char *FuncType::getCtype(bool final) const {
 
 // As above, but split into the return and parameter parts
 void FuncType::getReturnAndParam(const char*& ret, const char*& param) {
-    if (signature == NULL) {
+    if (signature == nullptr) {
         ret = "void";
         param = "(void)";
         return;
@@ -873,7 +873,7 @@ void Type::addNamedType(const char *name, Type *type) {
 Type *Type::getNamedType(const char *name) {
     if (namedTypes.find(name) != namedTypes.end())
         return namedTypes[name];
-    return NULL;
+    return nullptr;
 }
 
 void Type::dumpNames() {
@@ -987,7 +987,7 @@ Type *NamedType::resolvesTo() const {
 }
 
 void ArrayType::fixBaseType(Type *b) {
-    if (base_type == NULL)
+    if (base_type == nullptr)
         base_type = b;
     else {
         assert(base_type->isArray());
@@ -1063,7 +1063,7 @@ void Type::starPrint(std::ostream& os) {
 
 // A crude shortcut representation of a type
 std::ostream& operator<<(std::ostream& os, Type* t) {
-    if (t == NULL) return os << '0';
+    if (t == nullptr) return os << '0';
     switch (t->getId()) {
         case eInteger: {
             int sg = ((IntegerType*)t)->getSignedness();
@@ -1094,7 +1094,7 @@ std::ostream& operator<<(std::ostream& os, Type* t) {
 // Merge this IntegerType with another
 Type* IntegerType::mergeWith(Type* other) {
     if (*this == *other) return this;
-    if (!other->isInteger()) return NULL;        // Can you merge with a pointer?
+    if (!other->isInteger()) return nullptr;        // Can you merge with a pointer?
     IntegerType* oth = (IntegerType*)other;
     IntegerType* ret = (IntegerType*)this->clone();
     if (size == 0) ret->setSize(oth->getSize());
@@ -1185,7 +1185,7 @@ DataIntervalMap::iterator DataIntervalMap::find_it(ADDRESS addr) {
 DataIntervalEntry* DataIntervalMap::find(ADDRESS addr) {
     iterator it = find_it(addr);
     if (it == dimap.end())
-        return NULL;
+        return nullptr;
     return &*it;
 }
 
@@ -1214,10 +1214,10 @@ bool DataIntervalMap::isClear(ADDRESS addr, unsigned size) {
 // With the forced parameter: are we forcing the name, the type, or always both?
 //! Add a new data item
 void DataIntervalMap::addItem(ADDRESS addr, const char* name, Type* ty, bool forced /* = false */) {
-    if (name == NULL)
+    if (name == nullptr)
         name = "<noname>";
     DataIntervalEntry* pdie = find(addr);
-    if (pdie == NULL) {
+    if (pdie == nullptr) {
         // Check that this new item is compatible with any items it overlaps with, and insert it
         replaceComponents(addr, name, ty, forced);
         return;
@@ -1416,7 +1416,7 @@ char* DataIntervalMap::prints() {
 ComplexTypeCompList& Type::compForAddress(ADDRESS addr, DataIntervalMap& dim) {
     DataIntervalEntry* pdie = dim.find(addr);
     ComplexTypeCompList* res = new ComplexTypeCompList;
-    if (pdie == NULL) return *res;
+    if (pdie == nullptr) return *res;
     ADDRESS startCurrent = pdie->first;
     Type* curType = pdie->second.type;
     while (startCurrent < addr) {

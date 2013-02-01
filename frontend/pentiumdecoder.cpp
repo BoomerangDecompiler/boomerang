@@ -96,7 +96,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
     // Clear the result structure;
     result.reset();
     // The actual list of instantiated Statements
-    std::list<Statement*>* stmts = NULL;
+    std::list<Statement*>* stmts = nullptr;
     ADDRESS nextPC = NO_ADDRESS;
 //#line 112 "frontend/machine/pentium/decoder.m"
     {
@@ -9881,7 +9881,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     call->setDest(nativeDest);
                                     stmts->push_back(call);
                                     Proc* destProc = prog->setNewProc(nativeDest);
-                                    if (destProc == (Proc*)-1) destProc = NULL;        // In case a deleted Proc
+                                    if (destProc == (Proc*)-1) destProc = nullptr;        // In case a deleted Proc
                                     call->setDestProc(destProc);
                                 }
                                 result.rtl = new RTL(pc, stmts);
@@ -25967,7 +25967,7 @@ MATCH_label_c64: (void)0; /*placeholder for label*/
             nextPC = MATCH_p;
 //#line 2119 "frontend/machine/pentium/decoder.m"
             result.valid = false;        // Invalid instruction
-            result.rtl = NULL;
+            result.rtl = nullptr;
             result.numBytes = 0;
             return result;
         }
@@ -37099,7 +37099,7 @@ MATCH_finished_c: (void)0; /*placeholder for label*/
  ******************************************************************************/
 Exp* PentiumDecoder::dis_Mem(ADDRESS pc)
 {
-    Exp* expr = NULL;
+    Exp* expr = nullptr;
     lastDwordLc = (unsigned)-1;
 //#line 2148 "frontend/machine/pentium/decoder.m"
     {
@@ -37346,13 +37346,13 @@ bool PentiumDecoder::isFuncPrologue(ADDRESS hostPC)
 #if 0
     int locals, regs;
     if ((InstructionPatterns::frameless_pro(prog.csrSrc, hostPC, locals, regs))
-            != NULL)
+            != nullptr)
         return true;
     if ((InstructionPatterns::struct_ptr(prog.csrSrc, hostPC, locals, regs))
-            != NULL)
+            != nullptr)
         return true;
     if ((InstructionPatterns::std_entry(prog.csrSrc, hostPC, locals, regs))
-            != NULL)
+            != nullptr)
         return true;
 #endif
     return false;

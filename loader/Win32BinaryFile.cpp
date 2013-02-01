@@ -167,7 +167,7 @@ ADDRESS Win32BinaryFile::GetMainEntryPoint() {
     int borlandState = 0;    // State machine for Borland
 
     SectionInfo* si = GetSectionInfoByName(".text");
-    if (si == NULL) si = GetSectionInfoByName("CODE");
+    if (si == nullptr) si = GetSectionInfoByName("CODE");
     assert(si);
     unsigned textSize = si->uSectionSize;
     if (textSize < 0x200)
@@ -446,7 +446,7 @@ bool Win32BinaryFile::RealLoad(const char* sName) {
     const PEObject *o = (PEObject *)(((char *)m_pPEHeader) + LH(&m_pPEHeader->NtHdrSize) + 24);
     m_iNumSections = LH(&m_pPEHeader->numObjects);
     m_pSections = new PESectionInfo[m_iNumSections];
-    //    SectionInfo *reloc = NULL;
+    //    SectionInfo *reloc = nullptr;
     for (int i=0; i<m_iNumSections; i++, o++) {
         SectionInfo& sect = m_pSections[i];
         //    printf("%.8s RVA=%08X Offset=%08X size=%08X\n", (char*)o->ObjectName, LMMH(o->RVA), LMMH(o->PhysicalOffset),
@@ -542,7 +542,7 @@ bool Win32BinaryFile::RealLoad(const char* sName) {
 
     dbghelp::SymSetOptions(SYMOPT_LOAD_LINES);
 
-    if (dbghelp::SymInitialize(hProcess, NULL, FALSE)) {
+    if (dbghelp::SymInitialize(hProcess, nullptr, FALSE)) {
         // SymInitialize returned success
     }
     else {
@@ -554,7 +554,7 @@ bool Win32BinaryFile::RealLoad(const char* sName) {
 
     DWORD64 dwBaseAddr = 0;
 
-    if (dwBaseAddr = dbghelp::SymLoadModule64(hProcess, NULL, (PSTR)sName, NULL, dwBaseAddr, 0)) {
+    if (dwBaseAddr = dbghelp::SymLoadModule64(hProcess, nullptr, (PSTR)sName, nullptr, dwBaseAddr, 0)) {
         assert(dwBaseAddr == m_pPEHeader->Imagebase);
         bool found = false;
         dbghelp::SymEnumSourceFiles(hProcess, dwBaseAddr,  0, lookforsource, &found);
@@ -581,7 +581,7 @@ bool Win32BinaryFile::RealLoad(const char* sName) {
 void Win32BinaryFile::findJumps(ADDRESS curr) {
     int cnt = 0;            // Count of bytes with no match
     SectionInfo* sec = GetSectionInfoByName(".text");
-    if (sec == NULL) sec = GetSectionInfoByName("CODE");
+    if (sec == nullptr) sec = GetSectionInfoByName("CODE");
     assert(sec);
     // Add to native addr to get host:
     int delta = (sec->uHostAddr - sec->uNativeAddr).m_value;
@@ -705,7 +705,7 @@ void printType(DWORD index, DWORD64 ImageBase) {
     got = dbghelp::SymGetTypeInfo(hProcess, ImageBase, index, dbghelp::TI_GET_SYMNAME, &name);
     if (got) {
         char nameA[1024];
-        WideCharToMultiByte(CP_ACP,0,name,-1,nameA,sizeof(nameA),0,NULL);
+        WideCharToMultiByte(CP_ACP,0,name,-1,nameA,sizeof(nameA),0,nullptr);
         std::cout << nameA;
         return;
     }
@@ -838,7 +838,7 @@ const char* Win32BinaryFile::SymbolByAddress(ADDRESS dwAddr) {
         dbghelp::IMAGEHLP_STACK_FRAME stack;
         stack.InstructionOffset = dwAddr;
         dbghelp::SymSetContext(hProcess, &stack, 0);
-        dbghelp::SymEnumSymbols(hProcess, 0, NULL, printem, 0);
+        dbghelp::SymEnumSymbols(hProcess, 0, nullptr, printem, 0);
 #endif
         free(sym);
         return n;
@@ -967,9 +967,9 @@ bool Win32BinaryFile::IsStaticLinkedLibProc(ADDRESS uNative) {
     HANDLE hProcess = GetCurrentProcess();
     dbghelp::IMAGEHLP_LINE64 line;
     line.SizeOfStruct = sizeof(line);
-    line.FileName = NULL;
+    line.FileName = nullptr;
     dbghelp::SymGetLineFromAddr64(hProcess, uNative.m_value, 0, &line);
-    if (haveDebugInfo && line.FileName == NULL || line.FileName && *line.FileName == 'f')
+    if (haveDebugInfo && line.FileName == nullptr || line.FileName && *line.FileName == 'f')
         return true;
 #endif
 

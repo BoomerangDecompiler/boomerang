@@ -624,7 +624,7 @@ list<RT*>* NJMCDecoder::decodeLowLevelInstruction (ADDRESS hostPC, ADDRESS pc,
 {
     ADDRESS nextPC; 
   
-    list<RT*>* RTs = NULL;
+    list<RT*>* RTs = nullptr;
     int condvalue;
 
 
@@ -1948,7 +1948,7 @@ list<RT*>* NJMCDecoder::decodeLowLevelInstruction (ADDRESS hostPC, ADDRESS pc,
       #line 331 "machine/hppa/decoder_low.m"
       {
 
-                  //RTs = NULL;
+                  //RTs = nullptr;
 
                   result.valid = false;
 

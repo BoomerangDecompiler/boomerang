@@ -90,7 +90,7 @@ OBJC_EXPORT void objc_msgSendv_stret(void * stretAddr, id self, SEL op, unsigned
     int objc_getClassList(buffer, bufferLen)
     classes is an array of Class values (which are pointers)
         which will be filled by the function; if this
-        argument is NULL, no copying is done, only the
+        argument is nullptr, no copying is done, only the
         return value is returned
     bufferLen is the number of Class values the given buffer
         can hold; if the buffer is not large enough to
@@ -102,14 +102,14 @@ OBJC_EXPORT void objc_msgSendv_stret(void * stretAddr, id self, SEL op, unsigned
         in the buffer if the buffer was large enough,
         or the length the buffer should have been
 
-    int numClasses = 0, newNumClasses = objc_getClassList(NULL, 0);
-    Class *classes = NULL;
+    int numClasses = 0, newNumClasses = objc_getClassList(nullptr, 0);
+    Class *classes = nullptr;
     while (numClasses < newNumClasses) {
         numClasses = newNumClasses;
         classes = realloc(classes, sizeof(Class) * numClasses);
         newNumClasses = objc_getClassList(classes, numClasses);
     }
-    // now, can use the classes list; if NULL, there are no classes
+    // now, can use the classes list; if nullptr, there are no classes
     free(classes);
 
 */

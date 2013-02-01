@@ -65,7 +65,7 @@ void FrontPentTest::test1 () {
 
     BinaryFileFactory bff;
     BinaryFile *pBF = bff.Load(HELLO_PENT);
-    if (pBF == NULL)
+    if (pBF == nullptr)
         pBF = new BinaryFileStub();
     CPPUNIT_ASSERT(pBF != 0);
     CPPUNIT_ASSERT(pBF->GetMachine() == MACHINE_PENTIUM);
@@ -112,7 +112,7 @@ void FrontPentTest::test2() {
 
     BinaryFileFactory bff;
     BinaryFile *pBF = bff.Load(HELLO_PENT);
-    if (pBF == NULL)
+    if (pBF == nullptr)
         pBF = new BinaryFileStub();
     CPPUNIT_ASSERT(pBF != 0);
     CPPUNIT_ASSERT(pBF->GetMachine() == MACHINE_PENTIUM);
@@ -152,7 +152,7 @@ void FrontPentTest::test3() {
 
     BinaryFileFactory bff;
     BinaryFile *pBF = bff.Load(HELLO_PENT);
-    if (pBF == NULL)
+    if (pBF == nullptr)
         pBF = new BinaryFileStub();
     CPPUNIT_ASSERT(pBF != 0);
     CPPUNIT_ASSERT(pBF->GetMachine() == MACHINE_PENTIUM);
@@ -191,7 +191,7 @@ void FrontPentTest::testBranch() {
 
     BinaryFileFactory bff;
     BinaryFile *pBF = bff.Load(BRANCH_PENT);
-    if (pBF == NULL)
+    if (pBF == nullptr)
         pBF = new BinaryFileStub();
     CPPUNIT_ASSERT(pBF != 0);
     CPPUNIT_ASSERT(pBF->GetMachine() == MACHINE_PENTIUM);
@@ -235,11 +235,11 @@ void FrontPentTest::testFindMain() {
     // Also tests the loader hack
     BinaryFileFactory bff;
     BinaryFile* pBF = bff.Load(FEDORA2_TRUE);
-    CPPUNIT_ASSERT(pBF != NULL);
+    CPPUNIT_ASSERT(pBF != nullptr);
     Prog* prog = new Prog;
     FrontEnd* pFE = new PentiumFrontEnd(pBF, prog, &bff);
     prog->setFrontEnd(pFE);
-    CPPUNIT_ASSERT(pFE != NULL);
+    CPPUNIT_ASSERT(pFE != nullptr);
     bool found;
     ADDRESS addr = pFE->getMainEntryPoint(found);
     ADDRESS expected = 0x8048b10;
@@ -248,10 +248,10 @@ void FrontPentTest::testFindMain() {
     bff.UnLoad();
 
     pBF = bff.Load(FEDORA3_TRUE);
-    CPPUNIT_ASSERT(pBF != NULL);
+    CPPUNIT_ASSERT(pBF != nullptr);
     pFE = new PentiumFrontEnd(pBF, prog, &bff);
     prog->setFrontEnd(pFE);
-    CPPUNIT_ASSERT(pFE != NULL);
+    CPPUNIT_ASSERT(pFE != nullptr);
     addr = pFE->getMainEntryPoint(found);
     expected = 0x8048c4a;
     CPPUNIT_ASSERT_EQUAL(expected, addr);
@@ -259,10 +259,10 @@ void FrontPentTest::testFindMain() {
     bff.UnLoad();
 
     pBF = bff.Load(SUSE_TRUE);
-    CPPUNIT_ASSERT(pBF != NULL);
+    CPPUNIT_ASSERT(pBF != nullptr);
     pFE = new PentiumFrontEnd(pBF, prog, &bff);
     prog->setFrontEnd(pFE);
-    CPPUNIT_ASSERT(pFE != NULL);
+    CPPUNIT_ASSERT(pFE != nullptr);
     addr = pFE->getMainEntryPoint(found);
     expected = 0x8048b60;
     CPPUNIT_ASSERT_EQUAL(expected, addr);

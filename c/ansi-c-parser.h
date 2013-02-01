@@ -68,8 +68,8 @@ public:
     Signature *sig;
     SymbolMods *mods;
 
-    Symbol(ADDRESS a) : addr(a), nam(""), ty(NULL), sig(NULL),
-        mods(NULL) { }
+    Symbol(ADDRESS a) : addr(a), nam(""), ty(nullptr), sig(nullptr),
+        mods(nullptr) { }
 };
 
 class SymbolMods {
@@ -85,7 +85,7 @@ public:
     Exp *exp;
     int sp;
 
-    CustomOptions() : exp(NULL), sp(0) { }
+    CustomOptions() : exp(nullptr), sp(0) { }
 };
 
 class SymbolRef {

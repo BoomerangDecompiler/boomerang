@@ -47,7 +47,7 @@ BinaryFile::BinaryFile(bool bArch /*= false*/) {
 // This struct used to be initialised with a memset, but now that overwrites the virtual table (if compiled under gcc
 // and possibly others)
 SectionInfo::SectionInfo() :
-    pSectionName(NULL), uNativeAddr(ADDRESS::g(0L)), uHostAddr(ADDRESS::g(0L)), uSectionSize(0), uSectionEntrySize(0),
+    pSectionName(nullptr), uNativeAddr(ADDRESS::g(0L)), uHostAddr(ADDRESS::g(0L)), uSectionSize(0), uSectionEntrySize(0),
     uType(0), bCode(false), bData(false), bBss(0), bReadOnly(0) {
 
 }
@@ -79,7 +79,7 @@ SectionInfo *BinaryFile::GetSectionInfoByAddr(ADDRESS uEntry) const {
         }
     }
     // Failed to find the address
-    return NULL;
+    return nullptr;
 }
 
 SectionInfo * BinaryFile::GetSectionInfoByName(const char* sName) {
@@ -176,7 +176,7 @@ std::map<ADDRESS, const char*>* BinaryFile::GetDynamicGlobalMap() {
  ******************************************************************************/
 ADDRESS* BinaryFile::GetImportStubs(int& numExports) {
     numExports = 0;
-    return NULL;
+    return nullptr;
 }
 //! Get the lower and upper limits of the text segment
 void BinaryFile::getTextLimits() {

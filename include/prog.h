@@ -64,7 +64,7 @@ virtual             ~Global();
         void        print(std::ostream& os, Prog* prog);    // Print to stream os
 
 protected:
-                    Global() : type(NULL), uaddr(ADDRESS::g(0L)), nam("") { }
+                    Global() : type(nullptr), uaddr(ADDRESS::g(0L)), nam("") { }
         friend class XMLProgParser;
 };        // class Global
 
@@ -120,8 +120,8 @@ virtual                 ~Prog();
         void            rangeAnalysis();
         void            generateDotFile();
         void            generateCode(std::ostream &os);
-        void            generateCode(Cluster *cluster = NULL, UserProc *proc = NULL, bool intermixRTL = false);
-        void            generateRTL(Cluster *cluster = NULL, UserProc *proc = NULL);
+        void            generateCode(Cluster *cluster = nullptr, UserProc *proc = nullptr, bool intermixRTL = false);
+        void            generateRTL(Cluster *cluster = nullptr, UserProc *proc = nullptr);
         void            print(std::ostream &out);
         LibProc *       getLibraryProc(const char *nam);
         Signature *     getLibSignature(const char *name);
@@ -142,7 +142,7 @@ virtual                 ~Prog();
         const char *    newGlobalName(ADDRESS uaddr);
         Type *          guessGlobalType(const char *nam, ADDRESS u);
         ArrayType *     makeArrayType(ADDRESS u, Type* t);
-        bool            globalUsed(ADDRESS uaddr, Type* knownType = NULL);
+        bool            globalUsed(ADDRESS uaddr, Type* knownType = nullptr);
         Type *          getGlobalType(const char *nam);
         void            setGlobalType(const char* name, Type* ty);
         void            dumpGlobals();

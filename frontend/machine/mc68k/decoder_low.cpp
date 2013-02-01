@@ -214,7 +214,7 @@ list<RT*>* NJMCDecoder::decodeLowLevelInstruction (ADDRESS hostPC, ADDRESS pc,
     int delta = hostPC - pc;
 
     // The list of instantiated RTs.
-    list<RT*>* RTs = NULL;
+    list<RT*>* RTs = nullptr;
 
 
 
@@ -8445,7 +8445,7 @@ list<RT*>* NJMCDecoder::decodeLowLevelInstruction (ADDRESS hostPC, ADDRESS pc,
 
                         warning(str(ost));
 
-                        RTs = NULL;
+                        RTs = nullptr;
 
                     }
 

@@ -187,7 +187,7 @@ void processProc(ADDRESS uAddr, int delta, ADDRESS uUpper, UserProc* pProc,
             // Need to construct a new list of RTLs if a basic block has just
             // been finished but decoding is continuing from its lexical
             // successor
-            if (BB_rtls == NULL)
+            if (BB_rtls == nullptr)
                 BB_rtls = new list<HRTL*>();
 
             HRTL* pRtl = inst.rtl;
@@ -203,7 +203,7 @@ void processProc(ADDRESS uAddr, int delta, ADDRESS uUpper, UserProc* pProc,
                 // some other clues
                 BB_rtls->push_back(new RTL(uAddr));  
                 pBB = pCfg->newBB(BB_rtls, INVALID, 0);
-                sequentialDecode = false; BB_rtls = NULL; continue;
+                sequentialDecode = false; BB_rtls = nullptr; continue;
             }
     
             HLJump* rtl_jump = static_cast<HLJump*>(pRtl);
@@ -231,7 +231,7 @@ void processProc(ADDRESS uAddr, int delta, ADDRESS uUpper, UserProc* pProc,
                     // basic block already existed
                     if (pBB == 0) {
                         sequentialDecode = false;
-                        BB_rtls = NULL;
+                        BB_rtls = nullptr;
                         break;
                     }
 
@@ -269,7 +269,7 @@ void processProc(ADDRESS uAddr, int delta, ADDRESS uUpper, UserProc* pProc,
                     ost << "COMPUTED " << sKind << " at "
                     << hex << uAddr << endl;
                     warning(str(ost));
-                    BB_rtls = NULL;    // New HRTLList for next BB
+                    BB_rtls = nullptr;    // New HRTLList for next BB
                 }
                 sequentialDecode = false;
                 break;     
@@ -309,7 +309,7 @@ void processProc(ADDRESS uAddr, int delta, ADDRESS uUpper, UserProc* pProc,
 
                 // Create the list of RTLs for the next basic block and continue
                 // with the next instruction.
-                BB_rtls = NULL;
+                BB_rtls = nullptr;
                 break;
             }
 
@@ -344,7 +344,7 @@ void processProc(ADDRESS uAddr, int delta, ADDRESS uUpper, UserProc* pProc,
                     // Record the called address as the start of a new
                     // procedure if it didn't already exist.
                     if ((uNewAddr != NO_ADDRESS) &&
-                      prog.findProc(uNewAddr) == NULL) {
+                      prog.findProc(uNewAddr) == nullptr) {
                         prog.visitProc(uNewAddr);
                         if (progOptions.trace)
                             cout << "p" << hex << uNewAddr << "\t" << flush;
@@ -369,7 +369,7 @@ void processProc(ADDRESS uAddr, int delta, ADDRESS uUpper, UserProc* pProc,
                             list<HRTL*>* rtls = new list<HRTL*>();
                             // The only RTL in the basic block is a high level
                             // return that doesn't have any RTs.
-                            rtls->push_back(new HLReturn(0, NULL));
+                            rtls->push_back(new HLReturn(0, nullptr));
         
                             BasicBlock* returnBB = pCfg->newBB(rtls, RET, 0);
                             // Add out edge from call to return
@@ -389,7 +389,7 @@ void processProc(ADDRESS uAddr, int delta, ADDRESS uUpper, UserProc* pProc,
                         {
                             // Add the fall through edge if the block didn't
                             // already exist
-                            if (pBB != NULL)
+                            if (pBB != nullptr)
                                 pCfg->addOutEdge(pBB, uAddr + inst.numBytes);
                         }
                     }
@@ -397,7 +397,7 @@ void processProc(ADDRESS uAddr, int delta, ADDRESS uUpper, UserProc* pProc,
 
                 // Create the list of RTLs for the next basic block and continue
                 // with the next instruction.
-                BB_rtls = NULL;
+                BB_rtls = nullptr;
                 break;  
             }
 
@@ -412,7 +412,7 @@ void processProc(ADDRESS uAddr, int delta, ADDRESS uUpper, UserProc* pProc,
 
                 // Create the list of RTLs for the next basic block and continue
                 // with the next instruction.
-                BB_rtls = NULL;    // New HRTLList for next BB
+                BB_rtls = nullptr;    // New HRTLList for next BB
                 break;
 
             case SCOND_HRTL:
@@ -446,7 +446,7 @@ void processProc(ADDRESS uAddr, int delta, ADDRESS uUpper, UserProc* pProc,
                     // Add an out edge to this address
                     if (pBB) {
                         pCfg->addOutEdge(pBB, uAddr);
-                        BB_rtls = NULL;         // Need new list of RTLs
+                        BB_rtls = nullptr;         // Need new list of RTLs
                     }
                 }
                 // Pick a new address to decode from, if the BB is complete

@@ -1300,7 +1300,7 @@ case 4:
     break;}
 case 5:
 #line 100 "transformation.y"
-{ yyval.exp = NULL; ;
+{ yyval.exp = nullptr; ;
     break;}
 case 6:
 #line 104 "transformation.y"

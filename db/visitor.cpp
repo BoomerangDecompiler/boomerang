@@ -36,7 +36,7 @@ bool FixProcVisitor::visit(Location* l, bool& override) {
 bool GetProcVisitor::visit(Location* l, bool& override) {
     proc = l->getProc();
     override = false;
-    return proc == NULL;        // Continue recursion only if failed so far
+    return proc == nullptr;        // Continue recursion only if failed so far
 }
 
 // SetConscripts class
@@ -397,7 +397,7 @@ bool UsedLocsVisitor::visit(PhiAssign* s, bool& override) {
     for (uu = s->begin(); uu != s->end(); uu++) {
         // Note: don't make the RefExp based on lhs, since it is possible that the lhs was renamed in fromSSA()
         // Use the actual expression in the PhiAssign
-        // Also note that it's possible for uu->e to be NULL. Suppose variable a can be assigned to along in-edges
+        // Also note that it's possible for uu->e to be nullptr. Suppose variable a can be assigned to along in-edges
         // 0, 1, and 3; inserting the phi parameter at index 3 will cause a null entry at 2
         if (uu->e) {
             RefExp* temp = new RefExp(uu->e, uu->def);
@@ -613,9 +613,9 @@ bool ConstFinder::visit(Location* e, bool& override) {
 }
 
 // This is in the POST visit function, because it's important to process any child expressions first.
-// Otherwise, for m[r28{0} - 12]{0}, you could be adding an implicit assignment with a NULL definition for r28.
+// Otherwise, for m[r28{0} - 12]{0}, you could be adding an implicit assignment with a nullptr definition for r28.
 Exp* ImplicitConverter::postVisit(RefExp* e) {
-    if (e->getDef() == NULL)
+    if (e->getDef() == nullptr)
         e->setDef(cfg->findImplicitAssign(e->getSubExp1()));
     return e;
 }
@@ -626,8 +626,8 @@ void StmtImplicitConverter::visit(PhiAssign* s, bool& recur) {
     s->setLeft(s->getLeft()->accept(mod));
     PhiAssign::iterator uu;
     for (uu = s->begin(); uu != s->end(); uu++) {
-        if (uu->e == NULL) continue;
-        if (uu->def == NULL)
+        if (uu->e == nullptr) continue;
+        if (uu->def == nullptr)
             uu->def = cfg->findImplicitAssign(uu->e);
     }
     recur = false;        // Already done LHS
@@ -664,7 +664,7 @@ Exp* Localiser::postVisit(Location* e) {
         unchanged &= ~mask;
         mod = true;
     } else
-        ret = new RefExp(ret, NULL);                // No definition reaches, so subscript with {-}
+        ret = new RefExp(ret, nullptr);                // No definition reaches, so subscript with {-}
     return ret;
 }
 
@@ -679,12 +679,12 @@ Exp* Localiser::postVisit(Terminal* e) {
         unchanged &= ~mask;
         mod = true;
     } else
-        ret = new RefExp(ret, NULL);                // No definition reaches, so subscript with {-}
+        ret = new RefExp(ret, nullptr);                // No definition reaches, so subscript with {-}
     return ret;
 }
 
 bool ComplexityFinder::visit(Location* e, bool& override) {
-    if (proc && proc->findFirstSymbol(e) != NULL) {
+    if (proc && proc->findFirstSymbol(e) != nullptr) {
         // This is mapped to a local. Count it as zero, not about 3 (m[r28+4] -> memof, regof, plus)
         override = true;
         return true;
@@ -745,7 +745,7 @@ bool PrimitiveTester::visit(Location* e, bool& override) {
 bool PrimitiveTester::visit(RefExp* e, bool& override) {
     Statement* def = e->getDef();
     // If defined by a call, e had better not be a memory location (crude approximation for now)
-    if (def == NULL || def->getNumber() == 0 || (def->isCall() && !e->getSubExp1()->isMemOf())) {
+    if (def == nullptr || def->getNumber() == 0 || (def->isCall() && !e->getSubExp1()->isMemOf())) {
         // Implicit definitions are always primitive
         // The results of calls are always primitive
         override = true;    // Don't recurse into the reference
@@ -805,7 +805,7 @@ bool StmtRegMapper::common(Assignment *stmt, bool& override) {
 
 bool StmtRegMapper::visit(          Assign* stmt, bool& override) {return common(stmt, override);}
 bool StmtRegMapper::visit(       PhiAssign* stmt, bool& override) {return common(stmt, override);}
-bool StmtRegMapper::visit(ImplicitAssign* stmt, bool& override) {return common(stmt, override);}
+bool StmtRegMapper::visit(  ImplicitAssign* stmt, bool& override) {return common(stmt, override);}
 bool StmtRegMapper::visit(      BoolAssign* stmt, bool& override) {return common(stmt, override);}
 
 // Constant global converter. Example: m[m[r24{16} + m[0x8048d60]{-}]{-}]{-} -> m[m[r24{16} + 32]{-}]{-}
@@ -813,7 +813,7 @@ bool StmtRegMapper::visit(      BoolAssign* stmt, bool& override) {return common
 Exp* ConstGlobalConverter::preVisit(RefExp* e, bool& recur) {
     Statement* def = e->getDef();
     Exp *base, *addr, *idx, *glo;
-    if (def == NULL || def->isImplicit()) {
+    if (def == nullptr || def->isImplicit()) {
         if (    (base = e->getSubExp1(), base->isMemOf()) &&
                 (addr = ((Location*)base)->getSubExp1(), addr->isIntConst())) {
             // We have a m[K]{-}
@@ -889,7 +889,7 @@ bool BadMemofFinder::visit(RefExp* e, bool& override) {
             return false;    // Don't continue searching
 #if NEW            // FIXME: not ready for this until have incremental propagation
       const char* sym = proc->lookupSym(e);
-        if (sym == NULL) {
+        if (sym == nullptr) {
             found = true;            // Found a memof that is not a symbol
             override = true;        // Don't look inside the refexp
             return false;
@@ -1004,7 +1004,7 @@ bool StmtCastInserter::common(Assignment* s) {
 
 Exp* ExpSsaXformer::postVisit(RefExp *e) {
     const char* sym = proc->lookupSymFromRefAny(e);
-    if (sym != NULL)
+    if (sym != nullptr)
         return Location::local(sym, proc);
     // We should not get here: all locations should be replaced with Locals or Parameters
     //LOG << "ERROR! Could not find local or parameter for " << e << " !!\n";
@@ -1044,10 +1044,10 @@ void StmtSsaXformer::visit(PhiAssign *s, bool& recur) {
     PhiAssign::iterator it;
     UserProc* proc = ((ExpSsaXformer*)mod)->getProc();
     for (it = s->begin(); it != s->end(); it++) {
-        if (it->e == NULL) continue;
+        if (it->e == nullptr) continue;
         RefExp* r = new RefExp(it->e, it->def);
         const char* sym = proc->lookupSymFromRefAny(r);
-        if (sym != NULL)
+        if (sym != nullptr)
             it->e = Location::local(sym, proc);        // Some may be parameters, but hopefully it won't matter
     }
 }
@@ -1127,7 +1127,7 @@ bool DfaLocalMapper::processExp(Exp* e) {
 Exp* DfaLocalMapper::preVisit(Location* e, bool& recur) {
 
     recur = true;
-    if (e->isMemOf() && proc->findFirstSymbol(e) == NULL) {        // Need the 2nd test to ensure change set correctly
+    if (e->isMemOf() && proc->findFirstSymbol(e) == nullptr) {        // Need the 2nd test to ensure change set correctly
         recur = processExp(e);
     }
     return e;
@@ -1137,7 +1137,7 @@ Exp* DfaLocalMapper::preVisit(Binary* e, bool& recur) {
 #if 1
     // Check for sp -/+ K
     Exp* memOf_e = Location::memOf(e);
-    if (proc->findFirstSymbol(memOf_e) != NULL) {
+    if (proc->findFirstSymbol(memOf_e) != nullptr) {
         recur = false;                                // Already done; don't recurse
         return e;
     } else {

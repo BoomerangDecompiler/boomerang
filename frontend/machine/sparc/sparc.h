@@ -43,7 +43,7 @@ extern disasm_fmt_t defDisasmFmt;
 /*
  * Low-level disassembly function. Given mem relative pc,
  * disassembles one instruction, returning the operands as a string in 
- * params, and setting name (if not NULL) to the operation name.
+ * params, and setting name (if not nullptr) to the operation name.
  * Returns the pc of the immediately following instruction
  */
 int disassembleInstruction( int pc, char *params, size_t paramlen,

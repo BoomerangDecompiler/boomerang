@@ -130,7 +130,7 @@ static const char * getVersionStr();
         bool        setOutputDirectory(const char *path);
 
 
-        HLLCode *   getHLLCode(UserProc *p = NULL);
+        HLLCode *   getHLLCode(UserProc *p = nullptr);
         int         commandLine(int argc, const char **argv);
                     /// Set the path to the %Boomerang executable.
         void        setProgPath(const char* p) { progPath = p; }
@@ -141,8 +141,8 @@ static const char * getVersionStr();
         /// Returns the path to where the output files are saved.
         const std::string& getOutputPath() { return outputPath; }
 
-        Prog        *loadAndDecode(const char *fname, const char *pname = NULL);
-        int            decompile(const char *fname, const char *pname = NULL);
+        Prog        *loadAndDecode(const char *fname, const char *pname = nullptr);
+        int            decompile(const char *fname, const char *pname = nullptr);
         /// Add a Watcher to the set of Watchers for this Boomerang object.
         void        addWatcher(Watcher *watcher) { watchers.insert(watcher); }
         void        persistToXML(Prog *prog);

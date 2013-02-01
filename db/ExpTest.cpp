@@ -31,7 +31,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION( ExpTest );
  *============================================================================*/
 void ExpTest::setUp () {
     m_99 = new Const(99);
-    m_rof2 = new Location(opRegOf, new Const(2), NULL);
+    m_rof2 = new Location(opRegOf, new Const(2), nullptr);
 }
 
 /***************************************************************************//**
@@ -197,7 +197,7 @@ void ExpTest::testCompare3 () {
     CPPUNIT_ASSERT(! (*m_99 == minus));
 }
 void ExpTest::testCompare4 () {
-    Location regOf2(opRegOf, new Const(2), NULL);
+    Location regOf2(opRegOf, new Const(2), nullptr);
     CPPUNIT_ASSERT(regOf2 == *m_rof2);
 }
 void ExpTest::testCompare5 () {
@@ -301,7 +301,7 @@ void ExpTest::testSearch2() {
     // Search using wildcards
     Binary e(opDivs, m_rof2->clone(), m_99->clone());    // r2 /! 99
     Exp* result;
-    Location search(opRegOf, new Terminal(opWild), NULL);     // r[?]
+    Location search(opRegOf, new Terminal(opWild), nullptr);     // r[?]
     CPPUNIT_ASSERT(e.search(&search, result));
     CPPUNIT_ASSERT(*result == *m_rof2);                // Should be r2
 
@@ -319,7 +319,7 @@ void ExpTest::testSearch3() {
             Location::memOf(new Const(1000)),
             new Const(4)));
     Const four(4);
-    Location mem1000(opMemOf, new Const(1000), NULL);
+    Location mem1000(opMemOf, new Const(1000), nullptr);
     Binary prod(opMult, m_rof2->clone(), m_99->clone());
     CPPUNIT_ASSERT(e.search(&four,     result));
     CPPUNIT_ASSERT(e.search(&mem1000,result));
@@ -332,7 +332,7 @@ void ExpTest::testSearch3() {
 void ExpTest::testSearchAll() {
     // A more complex expression:
     // (r2 * 99) + (r8 * 4)
-    Location search(opRegOf, new Terminal(opWild), NULL);     // r[?]
+    Location search(opRegOf, new Terminal(opWild), nullptr);     // r[?]
     std::list<Exp*> result;
     Binary e(opPlus, new Binary(opMult, m_rof2->clone(), m_99->clone()),
         new Binary(opMult,
@@ -341,7 +341,7 @@ void ExpTest::testSearchAll() {
     CPPUNIT_ASSERT(e.searchAll(&search, result));
     CPPUNIT_ASSERT(result.size() == 2);
     CPPUNIT_ASSERT(*result.front() == *m_rof2);
-    Location rof8(opRegOf, new Const(8), NULL);
+    Location rof8(opRegOf, new Const(8), nullptr);
     CPPUNIT_ASSERT(*result.back() == rof8);
 }
 /***************************************************************************//**
@@ -349,7 +349,7 @@ void ExpTest::testSearchAll() {
  * OVERVIEW:        Test the Accumulate function
  *============================================================================*/
 void ExpTest::testAccumulate () {
-    Location rof2(opRegOf, new Const(2), NULL);
+    Location rof2(opRegOf, new Const(2), nullptr);
     Const nineNine(99);
     // Zero terms
     std::list<Exp*> le;
@@ -798,7 +798,7 @@ void ExpTest::testMapOfExp() {
             new Binary(opMult, new Const(2), new Const(3)),
             new Binary(opMult, new Const(4), new Const(5))));
     m[e] = -100;
-    Location rof2(opRegOf, new Const(2), NULL);
+    Location rof2(opRegOf, new Const(2), nullptr);
     m[&rof2] = 2;             // Should overwrite
 
     int i = m.size();
@@ -832,7 +832,7 @@ void ExpTest::testList () {
 
     // 1 element list
     l1 = new Binary(opList,
-        new Location(opParam, new Const("a"), NULL),
+        new Location(opParam, new Const("a"), nullptr),
         new Terminal(opNil));
     o1 << l1;
     std::string expected1("a");
@@ -842,9 +842,9 @@ void ExpTest::testList () {
 
     // 2 element list
     l2 = new Binary(opList,
-        new Location(opParam, new Const("a"), NULL),
+        new Location(opParam, new Const("a"), nullptr),
         new Binary(opList,
-            new Location(opParam, new Const("b"), NULL),
+            new Location(opParam, new Const("b"), nullptr),
             new Terminal(opNil)));
     o2 << l2;
     std::string expected2("a, b");
@@ -854,11 +854,11 @@ void ExpTest::testList () {
 
     // 3 element list
     l3 = new Binary(opList,
-        new Location(opParam, new Const("a"), NULL),
+        new Location(opParam, new Const("a"), nullptr),
         new Binary(opList,
-            new Location(opParam, new Const("b"), NULL),
+            new Location(opParam, new Const("b"), nullptr),
             new Binary(opList,
-                new Location(opParam, new Const("c"), NULL),
+                new Location(opParam, new Const("c"), nullptr),
                 new Terminal(opNil))));
     o3 << l3;
     std::string expected3("a, b, c");
@@ -868,13 +868,13 @@ void ExpTest::testList () {
 
     // 4 element list
     l4 = new Binary(opList,
-        new Location(opParam, new Const("a"), NULL),
+        new Location(opParam, new Const("a"), nullptr),
         new Binary(opList,
-            new Location(opParam, new Const("b"), NULL),
+            new Location(opParam, new Const("b"), nullptr),
             new Binary(opList,
-                new Location(opParam, new Const("c"), NULL),
+                new Location(opParam, new Const("c"), nullptr),
                 new Binary(opList,
-                    new Location(opParam, new Const("d"), NULL),
+                    new Location(opParam, new Const("d"), nullptr),
                     new Terminal(opNil)))));
     o4 << l4;
     std::string expected4("a, b, c, d");
@@ -890,14 +890,14 @@ void ExpTest::testList () {
 void ExpTest::testParen () {
     Assign a(
         Location::regOf(
-            new Location(opParam, new Const("rd"), NULL)),
+            new Location(opParam, new Const("rd"), nullptr)),
         new Binary(opBitAnd,
             Location::regOf(
-                new Location(opParam, new Const("rs1"), NULL)),
+                new Location(opParam, new Const("rs1"), nullptr)),
             new Binary(opMinus,
                 new Binary(opMinus,
                     new Const(0),
-                    new Location(opParam, new Const("reg_or_imm"), NULL)),
+                    new Location(opParam, new Const("reg_or_imm"), nullptr)),
                 new Const(1))));
     std::string expected("   0 *v* r[rd] := r[rs1] & ((0 - reg_or_imm) - 1)");
     std::ostringstream o;
@@ -1104,7 +1104,7 @@ void ExpTest::testSetConscripts() {
     // m[1000] + 1000
     Exp* e = new Binary(opPlus,
         Location::memOf(
-            new Const(1000), NULL),
+            new Const(1000), nullptr),
         new Const(1000));
     e->setConscripts(0, false);
     std::string expected("m[1000\\1\\] + 1000\\2\\");
@@ -1328,7 +1328,7 @@ void ExpTest::testSubscriptVars() {
     // r24{7} with r24{7} and 0: should not change: RefExps should not compare
     // at the top level, only with their base expression (here r24, not r24{7})
     e = new RefExp(Location::regOf(24), &s7);
-    e = e->expSubscriptVar(e->clone(), NULL);
+    e = e->expSubscriptVar(e->clone(), nullptr);
     expected = "r24{7}";
     std::ostringstream ost7;
     ost7 << e;

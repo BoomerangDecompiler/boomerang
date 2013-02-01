@@ -1,14 +1,14 @@
 #include "signature.h"
 
-//std::list<Exp*> *Signature::getCallerSave(Prog* prog) {return NULL;}
+//std::list<Exp*> *Signature::getCallerSave(Prog* prog) {return nullptr;}
 Signature::Signature(const char *nam) {}
 bool Signature::operator==(const Signature& other) const {return false;}
 Signature *Signature::clone() {return 0;}
 Exp *Signature::getReturnExp() {return 0;}
-Exp *Signature::getReturnExp2(BinaryFile *pBF) {return NULL;}
+Exp *Signature::getReturnExp2(BinaryFile *pBF) {return nullptr;}
 Type *Signature::getReturnType() {return 0;}
 void Signature::setReturnType(Type *t) {}
-const char *Signature::getName() {return NULL;}
+const char *Signature::getName() {return nullptr;}
 void Signature::setName(const char *nam) {}
 void Signature::addParameter(const char *nam) {}
 void Signature::addParameter(Type *type, const char *nam, Exp *e,const char *boundMax) {}

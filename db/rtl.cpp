@@ -74,7 +74,7 @@ RTL::RTL()
  *                    listExp - ptr to existing list of Exps
  * \returns             N/a
  ******************************************************************************/
-RTL::RTL(ADDRESS instNativeAddr, std::list<Statement*>* listStmt /*= NULL*/)
+RTL::RTL(ADDRESS instNativeAddr, std::list<Statement*>* listStmt /*= nullptr*/)
     : nativeAddr(instNativeAddr) {
     if (listStmt)
         stmtList = *listStmt;
@@ -309,14 +309,14 @@ int RTL::getNumStmt() {
  * \brief        Provides indexing on a list. Changed from operator[] so that
  *                    we keep in mind it is linear in its execution time.
  * PARAMETERS:        i - the index of the element we want (0 = first)
- * \returns             the element at the given index or NULL if the index is out
+ * \returns             the element at the given index or nullptr if the index is out
  *                    of bounds
  ******************************************************************************/
 Statement* RTL::elementAt(unsigned i) {
     iterator it;
     for (it = stmtList.begin();     i > 0 && it != stmtList.end();     i--, it++);
     if (it == stmtList.end()) {
-        return NULL;
+        return nullptr;
     }
     return *it;
 }
@@ -376,23 +376,21 @@ char* RTL::prints() {
 }
 
 /***************************************************************************//**
- * FUNCTION:        operator<<
  * \brief        Output operator for RTL*
- *                    Just makes it easier to use e.g. std::cerr << myRTLptr
- * PARAMETERS:        os: output stream to send to
- *                    p: ptr to RTL to print to the stream
+ * Just makes it easier to use e.g. std::cerr << myRTLptr
+ * \param os: output stream to send to
+ *        r: ptr to RTL to print to the stream
  * \returns             copy of os (for concatenation)
  ******************************************************************************/
 std::ostream& operator<<(std::ostream& os, RTL* r) {
-    if (r == NULL) {os << "NULL "; return os;}
+    if (r == nullptr) {os << "nullptr "; return os;}
     r->print(os);
     return os;
 }
 
 /***************************************************************************//**
- * FUNCTION:        RTL::updateAddress
- * \brief        Set the nativeAddr field
- * PARAMETERS:        Native address
+ * \brief Set the nativeAddr field
+ * \param addr Native address
  * \returns             Nothing
  ******************************************************************************/
 void RTL::updateAddress(ADDRESS addr) {
@@ -400,7 +398,6 @@ void RTL::updateAddress(ADDRESS addr) {
 }
 
 /***************************************************************************//**
- * FUNCTION:        RTL::searchReplace
  * \brief        Replace all instances of search with replace.
  * PARAMETERS:        search - ptr to an expression to search for
  *                    replace - ptr to the expression with which to replace it
@@ -414,12 +411,11 @@ bool RTL::searchAndReplace(Exp* search, Exp* replace) {
 }
 
 /***************************************************************************//**
- * FUNCTION:        RTL::searchAll
  * \brief        Find all instances of the search expression
- * PARAMETERS:        search - a location to search for
- *                    result - a list which will have any matching exprs
- *                             appended to it
- * \returns             true if there were any matches
+ * \param search - a location to search for
+ * \param result - a list which will have any matching exprs
+ *                 appended to it
+ * \returns true if there were any matches
  ******************************************************************************/
 bool RTL::searchAll(Exp* search, std::list<Exp *> &result) {
     bool found = false;
@@ -457,11 +453,11 @@ void RTL::clear() {
  * PARAMETERS:        pLhs: ptr to Exp to place on LHS
  *                    pRhs: ptr to Exp to place on the RHS
  *                    prep: true if prepend (else append)
- *                    type: type of the transfer, or NULL
+ *                    type: type of the transfer, or nullptr
  * \returns             <nothing>
  ******************************************************************************/
 void RTL::insertAssign(Exp* pLhs, Exp* pRhs, bool prep,
-                       Type* type /*= NULL */) {
+                       Type* type /*= nullptr */) {
     // Generate the assignment expression
     Assign* asgn = new Assign(type, pLhs, pRhs);
     if (prep)
@@ -479,7 +475,7 @@ void RTL::insertAssign(Exp* pLhs, Exp* pRhs, bool prep,
  * ASSUMES:            Assumes that ssLhs and ssRhs are "new" Exp's that are
  *                    not part of other Exps. (Otherwise, there will be problems
  *                    when deleting this Exp)
- *                    If type == NULL, assumes there is already at least one
+ *                    If type == nullptr, assumes there is already at least one
  *                      assignment in this RTL (?)
  * NOTE:            Hopefully this is only a temporary measure
  * PARAMETERS:        pLhs: ptr to Exp to place on LHS
@@ -488,7 +484,7 @@ void RTL::insertAssign(Exp* pLhs, Exp* pRhs, bool prep,
  *                      first assign this RTL
  * \returns             <nothing>
  ******************************************************************************/
-void RTL::insertAfterTemps(Exp* pLhs, Exp* pRhs, Type* type     /* NULL */) {
+void RTL::insertAfterTemps(Exp* pLhs, Exp* pRhs, Type* type     /* nullptr */) {
     iterator it;
     // First skip all assignments with temps on LHS
     for (it = stmtList.begin(); it != stmtList.end(); it++) {
@@ -508,7 +504,7 @@ void RTL::insertAfterTemps(Exp* pLhs, Exp* pRhs, Type* type     /* NULL */) {
             it--;
     }
 
-    if (type == NULL)
+    if (type == nullptr)
         type = getType();
 
     // Generate the assignment expression
@@ -538,10 +534,8 @@ Type* RTL::getType() {
 }
 
 /***************************************************************************//**
- * FUNCTION:      RTL::areFlagsAffected
  * \brief      Return true if this RTL affects the condition codes
- * NOTE:          Assumes that if there is a flag call Exp, then it is the last
- * PARAMETERS:      None
+ * \note          Assumes that if there is a flag call Exp, then it is the last
  * \returns           Boolean as above
  ******************************************************************************/
 bool RTL::areFlagsAffected() {
@@ -549,7 +543,7 @@ bool RTL::areFlagsAffected() {
     // Get an iterator to the last RT
     iterator it = stmtList.end();
     if (it == stmtList.begin())
-        return false;            // Not expressions at all
+        return false;            // No expressions at all
     it--;                        // Will now point to the end of the list
     Statement *e = *it;
     // If it is a flag call, then the CCs are affected
@@ -557,8 +551,7 @@ bool RTL::areFlagsAffected() {
 }
 
 void RTL::generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) {
-    for (iterator it = stmtList.begin();
-         it != stmtList.end(); it++) {
+    for (iterator it = stmtList.begin(); it != stmtList.end(); it++) {
         (*it)->generateCode(hll, pbb, indLevel);
     }
 }
@@ -597,21 +590,21 @@ void RTL::simplify() {
 }
 
 /***************************************************************************//**
- * FUNCTION:        RTL::isCompare
  * \brief        Return true if this is an unmodified compare instruction
  *                      of a register with an operand
- * NOTE:            Will also match a subtract if the flags are set
- * NOTE:            expOperand, if set, is not cloned
- * NOTE:            Assumes that the first subtract on the RHS is the actual
+ * \note            Will also match a subtract if the flags are set
+ * \note            expOperand, if set, is not cloned
+ * \note            Assumes that the first subtract on the RHS is the actual
  *                      compare operation
- * PARAMETERS:        iReg: ref to integer to set with the register index
- *                    expOperand: ref to ptr to expression of operand
- * \returns             True if found
+ * \param iReg: ref to integer to set with the register index
+ * \param expOperand: ref to ptr to expression of operand
+ * \returns True if found
  ******************************************************************************/
 bool RTL::isCompare(int& iReg, Exp*& expOperand) {
     // Expect to see a subtract, then a setting of the flags
     // Dest of subtract should be a register (could be the always zero register)
-    if (getNumStmt() < 2) return false;
+    if (getNumStmt() < 2)
+        return false;
     // Could be first some assignments to temporaries
     // But the actual compare could also be an assignment to a temporary
     // So we search for the first RHS with an opMinus, that has a LHS to
@@ -621,18 +614,22 @@ bool RTL::isCompare(int& iReg, Exp*& expOperand) {
     Statement* cur;
     do {
         cur = elementAt(i);
-        if (cur->getKind() != STMT_ASSIGN) return false;
+        if (cur->getKind() != STMT_ASSIGN)
+            return false;
         rhs = ((Assign*)cur)->getRight();
         i++;
     } while (rhs->getOper() != opMinus && i < getNumStmt());
-    if (rhs->getOper() != opMinus) return false;
+    if (rhs->getOper() != opMinus)
+        return false;
     // We have a subtract assigning to a register.
     // Check if there is a subflags last
     Statement* last = elementAt(getNumStmt()-1);
-    if (!last->isFlagAssgn()) return false;
+    if (!last->isFlagAssgn())
+        return false;
     Exp* sub = ((Binary*)rhs)->getSubExp1();
     // Should be a compare of a register and something (probably a constant)
-    if (!sub->isRegOf()) return false;
+    if (!sub->isRegOf())
+        return false;
     // Set the register and operand expression, and return true
     iReg = ((Const*)((Unary*)sub)->getSubExp1())->getInt();
     expOperand = ((Binary*)rhs)->getSubExp2();
@@ -640,19 +637,22 @@ bool RTL::isCompare(int& iReg, Exp*& expOperand) {
 }
 
 bool RTL::isGoto() {
-    if (stmtList.empty()) return false;
+    if (stmtList.empty())
+        return false;
     Statement* last = stmtList.back();
     return last->getKind() == STMT_GOTO;
 }
 
 bool RTL::isBranch() {
-    if (stmtList.empty()) return false;
+    if (stmtList.empty())
+        return false;
     Statement* last = stmtList.back();
     return last->getKind() == STMT_BRANCH;
 }
 
 bool RTL::isCall() {
-    if (stmtList.empty()) return false;
+    if (stmtList.empty())
+        return false;
     Statement* last = stmtList.back();
     return last->getKind() == STMT_CALL;
 }
@@ -664,7 +664,7 @@ Statement* RTL::getHlStmt() {
         if ((*rit)->getKind() != STMT_ASSIGN)
             return *rit;
     }
-    return NULL;
+    return nullptr;
 }
 
 int RTL::setConscripts(int n, bool bClear) {

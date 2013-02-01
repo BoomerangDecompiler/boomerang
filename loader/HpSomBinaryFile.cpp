@@ -119,7 +119,7 @@ bool HpSomBinaryFile::RealLoad(const char* sName) {
 
     m_pFileName = sName;
 
-    if ((fp = fopen(sName, "rb")) == NULL) {
+    if ((fp = fopen(sName, "rb")) == nullptr) {
         fprintf(stderr, "Could not open binary file %s\n", sName);
         return false;
     }

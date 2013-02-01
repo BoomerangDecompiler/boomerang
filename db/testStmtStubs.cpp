@@ -25,8 +25,8 @@ void BasicBlock::addInEdge(PBB pNewInEdge) {}
 Prog::Prog() {}
 Prog::~Prog() {}
 Prog::Prog(BinaryFile *pBF, FrontEnd *pFE) {}
-char *Prog::getStringConstant(ADDRESS uaddr) {return NULL;}
-Proc* Prog::findProc(ADDRESS uAddr) const {return NULL;}
+char *Prog::getStringConstant(ADDRESS uaddr) {return nullptr;}
+Proc* Prog::findProc(ADDRESS uAddr) const {return nullptr;}
 void Prog::analyse() {}
 void Prog::decompile() {}
 void Prog::toSSAform() {}
@@ -42,7 +42,7 @@ PentiumFrontEnd::~PentiumFrontEnd() {}
 FrontEnd::~FrontEnd() {}
 int FrontEnd::getInst(int addr) {return 0;}
 bool PentiumFrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
-    bool spec /* = false */, PHELPER helperFunc /* = NULL */) {return false;}
+    bool spec /* = false */, PHELPER helperFunc /* = nullptr */) {return false;}
 ADDRESS PentiumFrontEnd::getMainEntryPoint( bool &gotMain ) {return 0;}
 FrontEnd* FrontEnd::Load(const char *fname) {return 0;}
 Prog *FrontEnd::decode() {return 0;}
@@ -56,7 +56,7 @@ void Cfg::setEntryBB(PBB bb) {}
 
 //Misc
 Boomerang::Boomerang() {}
-Boomerang *Boomerang::boomerang = NULL;
+Boomerang *Boomerang::boomerang = nullptr;
 
 // loader
 BinaryFile *BinaryFile::Load( const char *sName ) {return 0;}

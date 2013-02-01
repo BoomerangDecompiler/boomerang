@@ -128,7 +128,7 @@ void UserProc::dfaTypeAnalysis() {
             if (s->isCall()) {
                 CallStatement* call = (CallStatement*)s;
                 ReturnStatement* rs = call->getCalleeReturn();
-                if (rs == NULL) continue;
+                if (rs == nullptr) continue;
                 UseCollector* uc = call->getUseCollector();
                 ReturnStatement::iterator rr;
                 bool first = true;
@@ -206,7 +206,7 @@ void UserProc::dfaTypeAnalysis() {
                             Type *ty = prog->getGlobalType((char*)gloName);
                             if (s->isAssign() && ((Assign*)s)->getType()) {
                                 int bits = ((Assign*)s)->getType()->getSize();
-                                if (ty == NULL || ty->getSize() == 0)
+                                if (ty == nullptr || ty->getSize() == 0)
                                     prog->setGlobalType((char*)gloName, new IntegerType(bits));
                             }
                             Location *g = Location::global(strdup(gloName), this);
@@ -279,7 +279,7 @@ void UserProc::dfaTypeAnalysis() {
             Exp* idx = ((Binary*)l)->getSubExp1();
             // Replace with the array expression
             const char* nam = prog->getGlobalName(K2);
-            if (nam == NULL)
+            if (nam == nullptr)
                 nam = prog->newGlobalName(K2);
             Exp* arr = new Binary(opArrayIndex,
                                   Location::global(nam, this),
@@ -317,8 +317,8 @@ void UserProc::dfaTypeAnalysis() {
 
         // 4) Add the locals (soon globals as well) to the localTable, to sort out the overlaps
         if (s->isTyping()) {
-            Exp* addrExp = NULL;
-            Type* typeExp = NULL;
+            Exp* addrExp = nullptr;
+            Type* typeExp = nullptr;
             if (s->isAssignment()) {
                 Exp* lhs = ((Assignment*)s)->getLeft();
                 if (lhs->isMemOf()) {
@@ -781,19 +781,19 @@ void ReturnStatement::dfaTypeAnalysis(bool& ch) {
 // ...
 void PhiAssign::dfaTypeAnalysis(bool& ch) {
     iterator it = defVec.begin();
-    while (it->e == NULL && it != defVec.end())
+    while (it->e == nullptr && it != defVec.end())
         ++it;
     assert(it != defVec.end());
     Type* meetOfArgs = it->def->getTypeFor(lhs);
     for (++it; it != defVec.end(); it++) {
-        if (it->e == NULL) continue;
+        if (it->e == nullptr) continue;
         assert(it->def);
         Type* typeOfDef = it->def->getTypeFor(it->e);
         meetOfArgs = meetOfArgs->meetWith(typeOfDef, ch);
     }
     type = type->meetWith(meetOfArgs, ch);
     for (it = defVec.begin(); it != defVec.end(); it++) {
-        if (it->e == NULL) continue;
+        if (it->e == nullptr) continue;
         it->def->meetWithFor(type, it->e, ch);
     }
     Assignment::dfaTypeAnalysis(ch);            // Handle the LHS
@@ -993,7 +993,7 @@ Type* Binary::ascendType() {
 
 // Constants and subscripted locations are at the leaves of the expression tree. Just return their stored types.
 Type* RefExp::ascendType() {
-    if (def == NULL) {
+    if (def == nullptr) {
         std::cerr << "Warning! Null reference in " << this << "\n";
         return new VoidType;
     }

@@ -35,7 +35,7 @@ const char* SymTab::find(ADDRESS a) {
     std::map<ADDRESS, std::string>::iterator ff;
     ff = amap.find(a);
     if (ff == amap.end())
-        return NULL;
+        return nullptr;
     return ff->second.c_str();
 }
 

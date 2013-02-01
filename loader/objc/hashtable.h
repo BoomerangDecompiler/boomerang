@@ -102,7 +102,7 @@ OBJC_EXPORT int NXHashMember (NXHashTable *table, const void *data);
     */
     
 OBJC_EXPORT void *NXHashGet (NXHashTable *table, const void *data);
-    /* return original table data or NULL.
+    /* return original table data or nullptr.
     Example of use when the hashed data is a struct containing the key,
     and when the callee only has a key:
     MyStruct    pseudo;
@@ -112,14 +112,14 @@ OBJC_EXPORT void *NXHashGet (NXHashTable *table, const void *data);
     */
     
 OBJC_EXPORT void *NXHashInsert (NXHashTable *table, const void *data);
-    /* previous data or NULL is returned. */
+    /* previous data or nullptr is returned. */
     
 OBJC_EXPORT void *NXHashInsertIfAbsent (NXHashTable *table, const void *data);
     /* If data already in table, returns the one in table
     else adds argument to table and returns argument. */
 
 OBJC_EXPORT void *NXHashRemove (NXHashTable *table, const void *data);
-    /* previous data or NULL is returned */
+    /* previous data or nullptr is returned */
     
 /* Iteration over all elements of a table consists in setting up an iteration state and then to progress until all entries have been visited.  An example of use for counting elements in a table is:
     unsigned    count = 0;
@@ -150,7 +150,7 @@ OBJC_EXPORT uarith_t NXStrHash(const void *info, const void *data);
 OBJC_EXPORT int NXPtrIsEqual(const void *info, const void *data1, const void *data2);
     /* pointer comparison; info unused */
 OBJC_EXPORT int NXStrIsEqual(const void *info, const void *data1, const void *data2);
-    /* string comparison; NULL ok; info unused */
+    /* string comparison; nullptr ok; info unused */
 OBJC_EXPORT void NXNoEffectFree(const void *info, void *data);
     /* no effect; info unused */
 OBJC_EXPORT void NXReallyFree(const void *info, void *data);
@@ -187,12 +187,12 @@ typedef const char *NXAtom;
 OBJC_EXPORT NXAtom NXUniqueString(const char *buffer);
     /* assumes that buffer is \0 terminated, and returns
      a previously created string or a new string that is a copy of buffer.
-    If NULL is passed returns NULL.
+    If nullptr is passed returns nullptr.
     Returned string should never be modified.  To ensure this invariant,
     allocations are made in a special read only zone. */
     
 OBJC_EXPORT NXAtom NXUniqueStringWithLength(const char *buffer, int length);
-    /* assumes that buffer is a non NULL buffer of at least 
+    /* assumes that buffer is a non nullptr buffer of at least 
     length characters.  Returns a previously created string or 
     a new string that is a copy of buffer. 
     If buffer contains \0, string will be truncated.

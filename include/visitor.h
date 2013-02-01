@@ -36,8 +36,8 @@
 #ifndef __VISITOR_H__
 #define __VISITOR_H__
 
-#ifndef NULL
-#define NULL 0                // Often defined in stdio.h
+#ifndef nullptr
+#define nullptr 0                // Often defined in stdio.h
 #endif
 
 #include "exp.h"            // Needs to know class hierarchy, e.g. so that can convert Unary* to Exp* in return of
@@ -103,10 +103,10 @@ virtual bool        visit(Location *e, bool& override);
 
 // This class is more or less the opposite of the above. It finds a proc by visiting the whole expression if necessary
 class GetProcVisitor : public ExpVisitor {
-        UserProc*    proc;            // The result (or NULL)
+        UserProc*    proc;            // The result (or nullptr)
 
 public:
-                    GetProcVisitor() {proc = NULL;}    // Constructor
+                    GetProcVisitor() {proc = nullptr;}    // Constructor
         UserProc*    getProc() {return proc;}
 virtual bool        visit(Location *e, bool& override);
     // All others inherit and visit their children

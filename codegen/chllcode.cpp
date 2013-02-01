@@ -79,7 +79,7 @@ void CHLLCode::indent(std::ostringstream& str, int indLevel) {
  */
 static int progress = 0;
 void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool uns /* = false */ ) {
-    if (exp == NULL) return;                // ?
+    if (exp == nullptr) return;                // ?
 
     if (++progress > 500) {
         std::cerr << 'g' << std::flush;
@@ -205,7 +205,7 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
                 }
             }
 #if SYMS_IN_BACK_END
-            if (sub->isMemOf() && m_proc->lookupSym(sub) == NULL) {    // }
+            if (sub->isMemOf() && m_proc->lookupSym(sub) == nullptr) {    // }
 #else
             if (sub->isMemOf()) {
 #endif
@@ -235,7 +235,7 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 #if 0            // Suspect only for ADHOC TA
             Type *ty = b->getSubExp1()->getType();
             if (ty && ty->isPointer() && b->getSubExp2()->isIntConst() && ((Const*)b->getSubExp2())->getInt() == 0)
-                str << "NULL";
+                str << "nullptr";
             else
 #endif
                 appendExp(str, b->getSubExp2(), PREC_EQUAL);
@@ -250,7 +250,7 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 #if 0            // Suspect only for ADHOC_TA
             Type *ty = b->getSubExp1()->getType();
             if (ty && ty->isPointer() && b->getSubExp2()->isIntConst() && ((Const*)b->getSubExp2())->getInt() == 0)
-                str << "NULL";
+                str << "nullptr";
             else
 #endif
                 appendExp(str, b->getSubExp2(), PREC_EQUAL);
@@ -672,7 +672,7 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
                     str << "*";
 #if 0                // Suspect ADHOC TA only
                     Type *ty = t->getSubExp3()->getSubExp1()->getType();
-                    if (ty == NULL || !ty->isPointer() ||
+                    if (ty == nullptr || !ty->isPointer() ||
                             !ty->asPointer()->getPointsTo()->isInteger() ||
                             ty->asPointer()->getPointsTo()->asInteger()->getSize() != sz) {
 #endif
@@ -720,11 +720,11 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 #if 0            // ADHOC TA
                 PointerType *pty = dynamic_cast<PointerType*>(u->getSubExp1()->getSubExp1()->getType());
 #else
-                PointerType* pty = NULL;
+                PointerType* pty = nullptr;
 #endif
                 // pty = T(x)
                 Type *tt = ((TypedExp*)u)->getType();
-                if (pty != NULL && (*pty->getPointsTo() == *tt ||
+                if (pty != nullptr && (*pty->getPointsTo() == *tt ||
                                     (tt->isSize() && pty->getPointsTo()->getSize() == tt->getSize())))
                     str << "*";
                 else {
@@ -858,9 +858,9 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 #if 0            // ADHOC TA
             Type *ty = b->getSubExp1()->getType();
 #else
-            Type* ty = NULL;
+            Type* ty = nullptr;
 #endif
-            if (ty == NULL) {
+            if (ty == nullptr) {
                 LOG << "type failure: no type for subexp1 of " << b << "\n";
                 //ty = b->getSubExp1()->getType();
                 // No idea why this is hitting! - trentw
@@ -887,7 +887,7 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 #if 0            // ADHOC TA
                 Type *ty = b->getSubExp1()->getSubExp1()->getType();
 #else
-                Type* ty = NULL;
+                Type* ty = nullptr;
 #endif
                 if (ty && ty->resolvesToPointer() &&
                         ty->asPointer()->getPointsTo()->resolvesToArray()) {
@@ -925,7 +925,7 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 /// Print the type represented by \a typ to \a str.
 void CHLLCode::appendType(std::ostringstream& str, Type *typ)
 {
-    if (typ == NULL) {
+    if (typ == nullptr) {
         str << "int";            // Default type for C
         return;
     }
@@ -943,7 +943,7 @@ void CHLLCode::appendType(std::ostringstream& str, Type *typ)
  * Print the indented type to \a str.
  */
 void CHLLCode::appendTypeIdent(std::ostringstream& str, Type *typ, const char *ident) {
-    if (typ == NULL) return;
+    if (typ == nullptr) return;
     if (typ->isPointer() && typ->asPointer()->getPointsTo()->isArray()) {
         appendType(str, typ->asPointer()->getPointsTo()->asArray()->getBaseType());
         str << " *" << ident;
@@ -960,7 +960,7 @@ void CHLLCode::appendTypeIdent(std::ostringstream& str, Type *typ, const char *i
     } else if (typ->isVoid()) {
         // Can happen in e.g. twoproc, where really need global parameter and return analysis
 #if 1 // TMN: Stop crashes by this workaround
-        if (ident == NULL) {
+        if (ident == nullptr) {
             static const char szFoo[] = "unknownVoidType";
             ident = szFoo;
         }
@@ -1196,9 +1196,9 @@ bool isBareMemof(Exp* e, UserProc* proc) {
 #if SYMS_IN_BACK_END
     // Check if it maps to a symbol
     const char* sym = proc->lookupSym(e);
-    if (sym == NULL)
+    if (sym == nullptr)
         sym = proc->lookupSym(e->getSubExp1());
-    return sym == NULL;            // Only a bare memof if it is not a symbol
+    return sym == nullptr;            // Only a bare memof if it is not a symbol
 #else
     return true;
 #endif
@@ -1482,7 +1482,7 @@ void CHLLCode::AddPrototype(UserProc* proc) {
 void CHLLCode::AddProcDec(UserProc* proc, bool open) {
     std::ostringstream s;
     ReturnStatement* returns = proc->getTheReturnStatement();
-    Type *retType = NULL;
+    Type *retType = nullptr;
     if (proc->getSignature()->isForced()) {
         if (proc->getSignature()->getNumReturns() == 0)
             s << "void ";
@@ -1493,15 +1493,15 @@ void CHLLCode::AddProcDec(UserProc* proc, bool open) {
                 n = 1;
             if (n < proc->getSignature()->getNumReturns())
                 retType = proc->getSignature()->getReturnType(n);
-            if (retType == NULL)
+            if (retType == nullptr)
                 s << "void ";
         }
-    } else if (returns == NULL || returns->getNumReturns() == 0) {
+    } else if (returns == nullptr || returns->getNumReturns() == 0) {
         s << "void ";
     } else {
         Assign* firstRet = (Assign*)*returns->begin();
         retType = firstRet->getType();
-        if (retType == NULL || retType->isVoid())
+        if (retType == nullptr || retType->isVoid())
             // There is a real return; make it integer (Remove with AD HOC type analysis)
             retType = new IntegerType();
     }
@@ -1528,7 +1528,7 @@ void CHLLCode::AddProcDec(UserProc* proc, bool open) {
         Assign* as = (Assign*)*pp;
         Exp* left = as->getLeft();
         Type *ty = as->getType();
-        if (ty == NULL) {
+        if (ty == nullptr) {
             if (VERBOSE)
                 LOG << "ERROR in CHLLCode::AddProcDec: no type for parameter " << left << "!\n";
             ty = new IntegerType();
@@ -1545,7 +1545,7 @@ void CHLLCode::AddProcDec(UserProc* proc, bool open) {
             // Replace all m[param] with foo, param with foo, then foo with param
             ty = ((PointerType*)ty)->getPointsTo();
             Exp *foo = new Const(const_cast<char *>("foo123412341234"));
-            m_proc->searchAndReplace(Location::memOf(left, NULL), foo);
+            m_proc->searchAndReplace(Location::memOf(left, nullptr), foo);
             m_proc->searchAndReplace(left, foo);
             m_proc->searchAndReplace(foo, left);
         }
@@ -1636,7 +1636,7 @@ void CHLLCode::AddGlobal(const char *name, Type *type, Exp *init) {
 void CHLLCode::print(std::ostream &os) {
     for (std::list<char*>::iterator it = lines.begin(); it != lines.end(); it++)
         os << *it << std::endl;
-    if (m_proc == NULL)
+    if (m_proc == nullptr)
         os << std::endl;
 }
 

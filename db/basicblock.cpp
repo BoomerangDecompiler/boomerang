@@ -65,11 +65,11 @@ BasicBlock::BasicBlock()
     :
       m_DFTfirst(0), m_DFTlast(0),
       m_structType(NONE), m_loopCondType(NONE),
-      m_loopHead(NULL), m_caseHead(NULL),
-      m_condFollow(NULL), m_loopFollow(NULL),
-      m_latchNode(NULL),
+      m_loopHead(nullptr), m_caseHead(nullptr),
+      m_condFollow(nullptr), m_loopFollow(nullptr),
+      m_latchNode(nullptr),
       m_nodeType(INVALID),
-      m_pRtls(NULL),
+      m_pRtls(nullptr),
       m_iLabelNum(0),
       m_labelneeded(false),
       m_bIncomplete(true),
@@ -79,7 +79,7 @@ BasicBlock::BasicBlock()
       m_iTraversed(false),
       // From Doug's code
       ord(-1), revOrd(-1), inEdgesVisited(0), numForwardInEdges(-1), traversed(UNTRAVERSED), hllLabel(false), indentLevel(0),
-      immPDom(NULL), loopHead(NULL), caseHead(NULL), condFollow(NULL), loopFollow(NULL), latchNode(NULL), sType(Seq),
+      immPDom(nullptr), loopHead(nullptr), caseHead(nullptr), condFollow(nullptr), loopFollow(nullptr), latchNode(nullptr), sType(Seq),
       usType(Structured),
       // Others
       overlappedRegProcessingDone(false)
@@ -93,7 +93,7 @@ BasicBlock::~BasicBlock() {
         }
         // and delete the list
         delete m_pRtls;
-        m_pRtls = NULL;
+        m_pRtls = nullptr;
     }
 }
 
@@ -110,7 +110,7 @@ BasicBlock::BasicBlock(const BasicBlock& bb)
       m_condFollow(bb.m_condFollow), m_loopFollow(bb.m_loopFollow),
       m_latchNode(bb.m_latchNode),
       m_nodeType(bb.m_nodeType),
-      m_pRtls(NULL),
+      m_pRtls(nullptr),
       m_iLabelNum(bb.m_iLabelNum),
       m_labelneeded(false),
       m_bIncomplete(bb.m_bIncomplete),
@@ -141,11 +141,11 @@ BasicBlock::BasicBlock(const BasicBlock& bb)
 BasicBlock::BasicBlock(std::list<RTL*>* pRtls, BBTYPE bbType, int iNumOutEdges)
     :    m_DFTfirst(0), m_DFTlast(0),
       m_structType(NONE), m_loopCondType(NONE),
-      m_loopHead(NULL), m_caseHead(NULL),
-      m_condFollow(NULL), m_loopFollow(NULL),
-      m_latchNode(NULL),
+      m_loopHead(nullptr), m_caseHead(nullptr),
+      m_condFollow(nullptr), m_loopFollow(nullptr),
+      m_latchNode(nullptr),
       m_nodeType(bbType),
-      m_pRtls(NULL),
+      m_pRtls(nullptr),
       m_iLabelNum(0),
       m_labelneeded(false),
       m_bIncomplete(false),
@@ -155,7 +155,7 @@ BasicBlock::BasicBlock(std::list<RTL*>* pRtls, BBTYPE bbType, int iNumOutEdges)
       m_iTraversed(false),
       // From Doug's code
       ord(-1), revOrd(-1), inEdgesVisited(0), numForwardInEdges(-1), traversed(UNTRAVERSED), hllLabel(false), indentLevel(0),
-      immPDom(NULL), loopHead(NULL), caseHead(NULL), condFollow(NULL), loopFollow(NULL), latchNode(NULL), sType(Seq),
+      immPDom(nullptr), loopHead(nullptr), caseHead(nullptr), condFollow(nullptr), loopFollow(nullptr), latchNode(nullptr), sType(Seq),
       usType(Structured),
       // Others
       overlappedRegProcessingDone(false)
@@ -371,7 +371,7 @@ void printBB(PBB bb) {
  * \returns            the lowest real address associated with this BB
  ******************************************************************************/
 ADDRESS BasicBlock::getLowAddr() {
-    if (m_pRtls == NULL || m_pRtls->size() == 0)
+    if (m_pRtls == nullptr || m_pRtls->size() == 0)
         return ADDRESS::g(0L);
     ADDRESS a = m_pRtls->front()->getAddress();
 
@@ -395,7 +395,7 @@ ADDRESS BasicBlock::getLowAddr() {
  * \returns     the address
  ******************************************************************************/
 ADDRESS BasicBlock::getHiAddr() {
-    assert(m_pRtls != NULL);
+    assert(m_pRtls != nullptr);
     return m_pRtls->back()->getAddress();
 }
 
@@ -719,7 +719,7 @@ Statement* BasicBlock::getLastStmt(rtlrit& rit, StatementList::reverse_iterator&
             return *sit;
         rit++;
     }
-    return NULL;
+    return nullptr;
 }
 
 Statement* BasicBlock::getFirstStmt() {
@@ -732,7 +732,7 @@ Statement* BasicBlock::getFirstStmt() {
     return nullptr;
 }
 Statement* BasicBlock::getLastStmt() {
-    if (m_pRtls == NULL) return NULL;
+    if (m_pRtls == nullptr) return nullptr;
     rtlrit rit = m_pRtls->rbegin();
     while (rit != m_pRtls->rend()) {
         RTL* rtl = *rit;
@@ -740,7 +740,7 @@ Statement* BasicBlock::getLastStmt() {
             return rtl->getList().back();
         rit++;
     }
-    return NULL;
+    return nullptr;
 }
 
 void BasicBlock::getStatements(StatementList &stmts) {
@@ -816,7 +816,7 @@ void BasicBlock::setCond(Exp *e) throw(LastStatementNotABranchError) {
             return;
         }
     }
-    throw LastStatementNotABranchError(NULL);
+    throw LastStatementNotABranchError(nullptr);
 }
 
 /*! Check for branch if equal relation */
@@ -1003,7 +1003,7 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
                               std::list<PBB> &followSet, std::list<PBB> &gotoSet, UserProc* proc) {
     // If this is the follow for the most nested enclosing conditional, then don't generate anything. Otherwise if it is
     // in the follow set generate a goto to the follow
-    PBB enclFollow = followSet.size() == 0 ? NULL : followSet.back();
+    PBB enclFollow = followSet.size() == 0 ? nullptr : followSet.back();
 
     if (isIn(gotoSet, this) && !isLatchNode() &&
             ((latch && latch->loopHead && this == latch->loopHead->loopFollow) ||
@@ -1043,7 +1043,7 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
         }
     }
 
-    PBB child = NULL;
+    PBB child = nullptr;
     switch(sType) {
         case Loop:
         case LoopCond:
@@ -1147,7 +1147,7 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
 
             // for 2 way conditional headers that are effectively jumps into
             // or out of a loop or case body, we will need a new follow node
-            PBB tmpCondFollow = NULL;
+            PBB tmpCondFollow = nullptr;
 
             // keep track of how many nodes were added to the goto set so that
             // the correct number are removed
@@ -1201,7 +1201,7 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
             WriteBB(hll, indLevel);
 
             // write the conditional header
-            SWITCH_INFO* psi = NULL;                    // Init to NULL to suppress a warning
+            SWITCH_INFO* psi = nullptr;                    // Init to nullptr to suppress a warning
             if (cType == Case) {
                 // The CaseStatement will be in the last RTL this BB
                 RTL* last = m_pRtls->back();
@@ -1211,7 +1211,7 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
                 hll->AddCaseCondHeader(indLevel, psi->pSwitchVar);
             } else {
                 Exp *cond = getCond();
-                if (cond == NULL)
+                if (cond == nullptr)
                     cond = new Const(ADDRESS::g(0xfeedface));  // hack, but better than a crash
                 if (cType == IfElse) {
                     cond = new Unary(opNot, cond->clone());
@@ -1371,7 +1371,7 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
                 if (caseHead && child == caseHead->condFollow) {
                     // generate the 'break' statement
                     hll->AddCaseCondOptionEnd(indLevel);
-                } else if (caseHead == NULL || caseHead != child->caseHead || !child->isCaseOption())
+                } else if (caseHead == nullptr || caseHead != child->caseHead || !child->isCaseOption())
                     child->generateCode(hll, indLevel, latch, followSet, gotoSet, proc);
             }
             break;
@@ -1388,7 +1388,7 @@ Proc* BasicBlock::getDestProc() {
     CallStatement* call = (CallStatement*)(m_pRtls->back()->getHlStmt());
     assert(call->getKind() == STMT_CALL);
     Proc* proc = call->getDestProc();
-    if (proc == NULL) {
+    if (proc == nullptr) {
         std::cerr << "Indirect calls not handled yet\n";
         assert(0);
     }
@@ -1614,7 +1614,7 @@ bool BasicBlock::calcLiveness(ConnectionGraph& ig, UserProc* myProc) {
     checkForOverlap(liveLocs, phiLocs, ig, myProc);
     // For each RTL in this BB
     std::list<RTL*>::reverse_iterator rit;
-    if (m_pRtls)  // this can be NULL
+    if (m_pRtls)  // this can be nullptr
         for (rit = m_pRtls->rbegin(); rit != m_pRtls->rend(); rit++) {
             std::list<Statement*>& stmts = (*rit)->getList();
             std::list<Statement*>::reverse_iterator sit;
@@ -1675,7 +1675,7 @@ void BasicBlock::getLiveOut(LocationSet &liveout, LocationSet& phiLocs) {
         liveout.makeUnion(currBB->liveIn);
         int j = currBB->whichPred(this);
         // The first RTL will have the phi functions, if any
-        if (currBB->m_pRtls == NULL || currBB->m_pRtls->size() == 0)
+        if (currBB->m_pRtls == nullptr || currBB->m_pRtls->size() == 0)
             continue;
         RTL* phiRtl = currBB->m_pRtls->front();
         for (Statement* st : phiRtl->getList()) {
@@ -1803,7 +1803,7 @@ void init_basicblock() {
 // Pattern 0: global<wild>[0]
 static Binary* vfc_funcptr = new Binary(opArrayIndex,
                                         new Location(opGlobal,
-                                                     new Terminal(opWildStrConst), NULL),
+                                                     new Terminal(opWildStrConst), nullptr),
                                         new Const(0));
 
 // Pattern 1: m[ m[ <expr> + K1 ] + K2 ]
@@ -1913,7 +1913,7 @@ void findSwParams(char form, Exp* e, Exp*& expr, ADDRESS& T) {
             break;
         }
         default:
-            expr = NULL;
+            expr = nullptr;
             T = NO_ADDRESS;
     }
 }
@@ -1987,7 +1987,7 @@ bool BasicBlock::decodeIndirectJmp(UserProc* proc) {
             workSet.remove(pi);
             PhiAssign::Definitions::iterator it;
             for (it = pi->begin(); it != pi->end(); it++) {
-                if (it->def == NULL) continue;
+                if (it->def == nullptr) continue;
                 if (!it->def->isPhi()) continue;
                 if (seenSet.exists(it->def)) {
                     std::cerr << "Real phi loop involving statements " << originalPhi->getNumber() << " and " <<
@@ -2014,7 +2014,7 @@ bool BasicBlock::decodeIndirectJmp(UserProc* proc) {
         // because of the alias safety issue. Eventually, we should use an alias-safe incremental propagation, but for
         // now we'll assume no alias problems and force the propagation
         bool convert; // FIXME: uninitialized value passed to propagateTo
-        lastStmt->propagateTo(convert, NULL, NULL, true /* force */);
+        lastStmt->propagateTo(convert, nullptr, nullptr, true /* force */);
         Exp* e = lastStmt->getDest();
         int n = sizeof(hlForms) / sizeof(Exp*);
         char form = 0;
@@ -2064,7 +2064,7 @@ bool BasicBlock::decodeIndirectJmp(UserProc* proc) {
                     expr = ((Binary*)expr)->getSubExp1();
                 }
                 swi->pSwitchVar = expr;
-                lastStmt->setDest((Exp*)NULL);
+                lastStmt->setDest((Exp*)nullptr);
                 lastStmt->setSwitchInfo(swi);
                 return swi->iNumTable != 0;
             }
@@ -2244,7 +2244,7 @@ bool BasicBlock::decodeIndirectJmp(UserProc* proc) {
         if (decodeThru && vtExp && vtExp->isIntConst()) {
             int addr = ((Const*)vtExp)->getInt(); // TODO: user getAddr ?
             ADDRESS pfunc = ADDRESS::g(prog->readNative4(ADDRESS::g(addr)));
-            if (prog->findProc(pfunc) == NULL) {
+            if (prog->findProc(pfunc) == nullptr) {
                 // A new, undecoded procedure
                 if (Boomerang::get()->noDecodeChildren)
                     return false;

@@ -371,7 +371,7 @@ protected:
         friend class XMLProgParser;
         void            addOutEdge(PBB bb) { m_OutEdges.push_back(bb); }
         void            addRTL(RTL *rtl) {
-                            if (m_pRtls == NULL)
+                            if (m_pRtls == nullptr)
                                 m_pRtls = new std::list<RTL*>;
                             m_pRtls->push_back(rtl);
                         }

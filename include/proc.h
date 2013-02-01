@@ -74,7 +74,7 @@ virtual                 ~Proc();
         void            setProg(Prog *p) { prog = p; }
         Proc *          getFirstCaller();
                         //! Set the first procedure that calls this procedure (or null for main/start).
-        void            setFirstCaller(Proc *p) { if (m_firstCaller == NULL) m_firstCaller = p; }
+        void            setFirstCaller(Proc *p) { if (m_firstCaller == nullptr) m_firstCaller = p; }
         Signature *     getSignature() { return signature; } //!< Returns a pointer to the Signature
         void            setSignature(Signature *sig) { signature = sig; }
 
@@ -141,9 +141,9 @@ typedef std::map<Exp*, Exp*, lessExpStar> mExpExp;
         std::set<CallStatement*> callerSet;
         Cluster *       cluster;
 
-                        Proc() : visited(false), prog(NULL), signature(NULL), address(ADDRESS::g(0L)),
-                            m_firstCaller(NULL), m_firstCallerAddr(ADDRESS::g(0L)),
-                            cluster(NULL)
+                        Proc() : visited(false), prog(nullptr), signature(nullptr), address(ADDRESS::g(0L)),
+                            m_firstCaller(nullptr), m_firstCallerAddr(ADDRESS::g(0L)),
+                            cluster(nullptr)
                         { }
 };    // class Proc
 
@@ -161,7 +161,7 @@ virtual                ~LibProc();
         bool        isLib() {return true;} //!< Return true, since is a library proc
 virtual bool        isNoReturn();
 virtual Exp*        getProven(Exp* left);
-virtual Exp*        getPremised(Exp* left) {return NULL;}   //!< Get the RHS that is premised for left
+virtual Exp*        getPremised(Exp* left) {return nullptr;}   //!< Get the RHS that is premised for left
 virtual bool        isPreserved(Exp* e);                    //!< Return whether e is preserved by this proc
         //std::ostream& put(std::ostream& os); //!< Prints this procedure to an output stream.
 
@@ -264,12 +264,12 @@ virtual                     ~UserProc();
 virtual bool                isNoReturn();
 
         SyntaxNode *        getAST();
-        void                printAST(SyntaxNode *a = NULL);
+        void                printAST(SyntaxNode *a = nullptr);
 
                             //! Returns whether or not this procedure can be decoded (i.e. has it already been decoded).
         bool                isDecoded() { return status >= PROC_DECODED; }
         bool                isDecompiled() { return status >= PROC_FINAL; }
-        bool                isEarlyRecursive() {return cycleGrp != NULL && status <= PROC_INCYCLE;}
+        bool                isEarlyRecursive() {return cycleGrp != nullptr && status <= PROC_INCYCLE;}
         bool                doesRecurseTo(UserProc* p) {return cycleGrp && cycleGrp->find(p) != cycleGrp->end();}
 
         bool                isSorted() { return status >= PROC_SORTED; }
@@ -406,7 +406,7 @@ typedef std::map<Statement*, int> RefCounter;
         bool                prove(Exp *query, bool conditional = false);
 
         bool                prover(Exp *query, std::set<PhiAssign*> &lastPhis, std::map<PhiAssign*, Exp*> &cache,
-                                   Exp* original, PhiAssign *lastPhi = NULL);
+                                   Exp* original, PhiAssign *lastPhi = nullptr);
         void                promoteSignature();
         void                getStatements(StatementList &stmts);
 virtual void                removeReturn(Exp *e);
@@ -421,8 +421,8 @@ virtual void                removeReturn(Exp *e);
         StatementList&      getModifieds() { return theReturnStatement->getModifieds(); }
 
 public:
-        Exp *               getSymbolExp(Exp *le, Type *ty = NULL, bool lastPass = false);
-        Exp *               newLocal(Type* ty, Exp* e, char* nam = NULL);
+        Exp *               getSymbolExp(Exp *le, Type *ty = nullptr, bool lastPass = false);
+        Exp *               newLocal(Type* ty, Exp* e, char* nam = nullptr);
         void                addLocal(Type *ty, const char *nam, Exp *e);
         Type *              getLocalType(const char *nam);
         void                setLocalType(const char *nam, Type *ty);
@@ -489,10 +489,10 @@ private:
         int                 DFGcount;
 public:
         ADDRESS             getTheReturnAddr() {
-                                return theReturnStatement == NULL ? NO_ADDRESS : theReturnStatement->getRetAddr();
+                                return theReturnStatement == nullptr ? NO_ADDRESS : theReturnStatement->getRetAddr();
                             }
         void                setTheReturnAddr(ReturnStatement* s, ADDRESS r) {
-                                assert(theReturnStatement == NULL);
+                                assert(theReturnStatement == nullptr);
                                 theReturnStatement = s;
                                 theReturnStatement->setRetAddr(r);
                             }

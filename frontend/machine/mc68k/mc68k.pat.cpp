@@ -1321,11 +1321,11 @@ Logue* InstructionPatterns::std_call(CSR& csr, ADDRESS& lc, int& addr)
     if (
     call_(lc, addr, VAR)) {
         vector<int> params(1); params[0] = addr; 
-        if (__save == lc) return NULL;
+        if (__save == lc) return nullptr;
         return csr.instantiateLogue("std_call",params);
     } else {
         lc = __save;
-        return NULL;
+        return nullptr;
     }
 }
 Logue* InstructionPatterns::near_call(CSR& csr, ADDRESS& lc, int& addr)
@@ -1334,11 +1334,11 @@ Logue* InstructionPatterns::near_call(CSR& csr, ADDRESS& lc, int& addr)
     if (
     bsr(lc, addr, VAR)) {
         vector<int> params(1); params[0] = addr; 
-        if (__save == lc) return NULL;
+        if (__save == lc) return nullptr;
         return csr.instantiateLogue("near_call",params);
     } else {
         lc = __save;
-        return NULL;
+        return nullptr;
     }
 }
 Logue* InstructionPatterns::pea_add_rts(CSR& csr, ADDRESS& lc, int& d32)
@@ -1350,11 +1350,11 @@ Logue* InstructionPatterns::pea_add_rts(CSR& csr, ADDRESS& lc, int& d32)
     addil$daIndirect(lc, d32, VAR, SP, VAL) && 
     rts(lc)) {
         vector<int> params(1); params[0] = d32; 
-        if (__save == lc) return NULL;
+        if (__save == lc) return nullptr;
         return csr.instantiateLogue("pea_add_rts",params);
     } else {
         lc = __save;
-        return NULL;
+        return nullptr;
     }
 }
 Logue* InstructionPatterns::pea_pea_add_rts(CSR& csr, ADDRESS& lc, int& d32)
@@ -1367,11 +1367,11 @@ Logue* InstructionPatterns::pea_pea_add_rts(CSR& csr, ADDRESS& lc, int& d32)
     addil$daIndirect(lc, d32, VAR, SP, VAL) && 
     rts(lc)) {
         vector<int> params(1); params[0] = d32; 
-        if (__save == lc) return NULL;
+        if (__save == lc) return nullptr;
         return csr.instantiateLogue("pea_pea_add_rts",params);
     } else {
         lc = __save;
-        return NULL;
+        return nullptr;
     }
 }
 Logue* InstructionPatterns::trap_syscall(CSR& csr, ADDRESS& lc, int& d16)
@@ -1382,11 +1382,11 @@ Logue* InstructionPatterns::trap_syscall(CSR& csr, ADDRESS& lc, int& d16)
     trap(lc, __loc0 = 15, VAL) && 
     Aline(lc, d16, VAR)) {
         vector<int> params(1); params[0] = d16; 
-        if (__save == lc) return NULL;
+        if (__save == lc) return nullptr;
         return csr.instantiateLogue("trap_syscall",params);
     } else {
         lc = __save;
-        return NULL;
+        return nullptr;
     }
 }
 Logue* InstructionPatterns::std_link(CSR& csr, ADDRESS& lc, int& locals)
@@ -1395,11 +1395,11 @@ Logue* InstructionPatterns::std_link(CSR& csr, ADDRESS& lc, int& locals)
     if (
     link(lc, FP, VAL, locals, VAR)) {
         vector<int> params(1); params[0] = locals; 
-        if (__save == lc) return NULL;
+        if (__save == lc) return nullptr;
         return csr.instantiateLogue("std_link",params);
     } else {
         lc = __save;
-        return NULL;
+        return nullptr;
     }
 }
 Logue* InstructionPatterns::link_save(CSR& csr, ADDRESS& lc, int& locals, int& d16)
@@ -1409,11 +1409,11 @@ Logue* InstructionPatterns::link_save(CSR& csr, ADDRESS& lc, int& locals, int& d
     link(lc, FP, VAL, locals, VAR) && 
     moverml$daPreDec(lc, d16, VAR, SP, VAL)) {
         vector<int> params(2); params[0] = locals; params[1] = d16; 
-        if (__save == lc) return NULL;
+        if (__save == lc) return nullptr;
         return csr.instantiateLogue("link_save",params);
     } else {
         lc = __save;
-        return NULL;
+        return nullptr;
     }
 }
 Logue* InstructionPatterns::link_save1(CSR& csr, ADDRESS& lc, int& locals, int& reg)
@@ -1423,11 +1423,11 @@ Logue* InstructionPatterns::link_save1(CSR& csr, ADDRESS& lc, int& locals, int& 
     link(lc, FP, VAL, locals, VAR) && 
     pushreg(lc, reg, VAR)) {
         vector<int> params(2); params[0] = locals; params[1] = reg; 
-        if (__save == lc) return NULL;
+        if (__save == lc) return nullptr;
         return csr.instantiateLogue("link_save1",params);
     } else {
         lc = __save;
-        return NULL;
+        return nullptr;
     }
 }
 Logue* InstructionPatterns::push_lea(CSR& csr, ADDRESS& lc, int& locals, int& reg)
@@ -1437,11 +1437,11 @@ Logue* InstructionPatterns::push_lea(CSR& csr, ADDRESS& lc, int& locals, int& re
     pushreg(lc, reg, VAR) && 
     leaSpSp(lc, locals, VAR)) {
         vector<int> params(2); params[0] = locals; params[1] = reg; 
-        if (__save == lc) return NULL;
+        if (__save == lc) return nullptr;
         return csr.instantiateLogue("push_lea",params);
     } else {
         lc = __save;
-        return NULL;
+        return nullptr;
     }
 }
 Logue* InstructionPatterns::bare_ret(CSR& csr, ADDRESS& lc)
@@ -1450,11 +1450,11 @@ Logue* InstructionPatterns::bare_ret(CSR& csr, ADDRESS& lc)
     if (
     rts(lc)) {
         vector<int> params(0); 
-        if (__save == lc) return NULL;
+        if (__save == lc) return nullptr;
         return csr.instantiateLogue("bare_ret",params);
     } else {
         lc = __save;
-        return NULL;
+        return nullptr;
     }
 }
 Logue* InstructionPatterns::std_ret(CSR& csr, ADDRESS& lc)
@@ -1464,11 +1464,11 @@ Logue* InstructionPatterns::std_ret(CSR& csr, ADDRESS& lc)
     unlk(lc, FP, VAL) && 
     rts(lc)) {
         vector<int> params(0); 
-        if (__save == lc) return NULL;
+        if (__save == lc) return nullptr;
         return csr.instantiateLogue("std_ret",params);
     } else {
         lc = __save;
-        return NULL;
+        return nullptr;
     }
 }
 Logue* InstructionPatterns::rest_ret(CSR& csr, ADDRESS& lc, int& d16)
@@ -1479,11 +1479,11 @@ Logue* InstructionPatterns::rest_ret(CSR& csr, ADDRESS& lc, int& d16)
     unlk(lc, FP, VAL) && 
     rts(lc)) {
         vector<int> params(1); params[0] = d16; 
-        if (__save == lc) return NULL;
+        if (__save == lc) return nullptr;
         return csr.instantiateLogue("rest_ret",params);
     } else {
         lc = __save;
-        return NULL;
+        return nullptr;
     }
 }
 Logue* InstructionPatterns::rest1_ret(CSR& csr, ADDRESS& lc, int& reg)
@@ -1494,11 +1494,11 @@ Logue* InstructionPatterns::rest1_ret(CSR& csr, ADDRESS& lc, int& reg)
     unlk(lc, FP, VAL) && 
     rts(lc)) {
         vector<int> params(1); params[0] = reg; 
-        if (__save == lc) return NULL;
+        if (__save == lc) return nullptr;
         return csr.instantiateLogue("rest1_ret",params);
     } else {
         lc = __save;
-        return NULL;
+        return nullptr;
     }
 }
 Logue* InstructionPatterns::pop_ret(CSR& csr, ADDRESS& lc, int& reg)
@@ -1508,11 +1508,11 @@ Logue* InstructionPatterns::pop_ret(CSR& csr, ADDRESS& lc, int& reg)
     popreg(lc, reg, VAR) && 
     rts(lc)) {
         vector<int> params(1); params[0] = reg; 
-        if (__save == lc) return NULL;
+        if (__save == lc) return nullptr;
         return csr.instantiateLogue("pop_ret",params);
     } else {
         lc = __save;
-        return NULL;
+        return nullptr;
     }
 }
 Logue* InstructionPatterns::clear_stack(CSR& csr, ADDRESS& lc, int& n)
@@ -1522,11 +1522,11 @@ Logue* InstructionPatterns::clear_stack(CSR& csr, ADDRESS& lc, int& n)
     (leaSpSp(lc, n, VAR) || 
     addaw_d16(lc, n, VAR))) {
         vector<int> params(1); params[0] = n; 
-        if (__save == lc) return NULL;
+        if (__save == lc) return nullptr;
         return csr.instantiateLogue("clear_stack",params);
     } else {
         lc = __save;
-        return NULL;
+        return nullptr;
     }
 }
 LogueDict::LogueDict()

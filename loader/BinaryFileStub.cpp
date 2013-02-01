@@ -241,7 +241,7 @@ ADDRESS BinaryFileStub::GetFirstHeaderAddress() {
 }
 
 ADDRESS* BinaryFileStub::GetImportStubs(int& numImports) {
-    return NULL;
+    return nullptr;
 }
 
 bool BinaryFileStub::DisplayDetails(const char* fileName, FILE* f) {
@@ -265,7 +265,7 @@ std::map<ADDRESS, const char*>* BinaryFileStub::GetDynamicGlobalMap() {
 }
 
 char* BinaryFileStub::GetStrPtr(int idx, int offset) {
-    return NULL;
+    return nullptr;
 }
 
 void BinaryFileStub::SetLinkAndInfo(int idx, int link, int info) {

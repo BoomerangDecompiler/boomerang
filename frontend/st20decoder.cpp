@@ -58,7 +58,7 @@ static    DecodeResult result;
 DecodeResult& ST20Decoder::decodeInstruction (ADDRESS pc, int delta) {
     result.reset();                            // Clear the result structure (numBytes = 0 etc)
     ADDRESS hostPC = pc + delta;
-    std::list<Statement*>* stmts = NULL;     // The actual list of instantiated Statements
+    std::list<Statement*>* stmts = nullptr;     // The actual list of instantiated Statements
     int total = 0;                        // Total value from all prefixes
 
     while (1) {
@@ -224,7 +224,7 @@ DecodeResult& ST20Decoder::decodeInstruction (ADDRESS pc, int delta) {
 
                         total |= oper;
 
-                        const char* name = NULL;
+                        const char* name = nullptr;
 
                         bool isRet = false;
 
@@ -582,7 +582,7 @@ DecodeResult& ST20Decoder::decodeInstruction (ADDRESS pc, int delta) {
 
                             result.valid = false;        // Invalid instruction
 
-                            result.rtl = NULL;
+                            result.rtl = nullptr;
 
                             result.numBytes = 0;
 

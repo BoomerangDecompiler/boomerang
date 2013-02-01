@@ -63,7 +63,7 @@ class RTL {
         std::list<Statement*> stmtList;                    // List of expressions in this RTL.
 public:
                     RTL();
-                    RTL(ADDRESS instNativeAddr, std::list<Statement*>* listStmt = NULL);
+                    RTL(ADDRESS instNativeAddr, std::list<Statement*>* listStmt = nullptr);
                     RTL(const RTL& other);                    // Makes deep copy of "other"
 virtual                ~RTL();
 
@@ -136,14 +136,14 @@ virtual void        print(std::ostream& os = std::cout, bool html = false);
         //     ssLhs: ptr to Exp to place on LHS
         //     ssRhs: ptr to Exp to place on RHS
         //     prep:    true if prepend (else append)
-        //     type:    type of the transfer, or NULL
-        void        insertAssign(Exp* ssLhs, Exp* ssRhs, bool prep, Type* type = NULL);
+        //     type:    type of the transfer, or nullptr
+        void        insertAssign(Exp* ssLhs, Exp* ssRhs, bool prep, Type* type = nullptr);
 
         // Insert an assignment into this RTL, after temps have been defined
         //     ssLhs: ptr to Exp to place on LHS
         //     ssRhs: ptr to Exp to place on RHS
-        //     type:    type of the transfer, or NULL
-        void        insertAfterTemps(Exp* ssLhs, Exp* ssRhs, Type* type = NULL);
+        //     type:    type of the transfer, or nullptr
+        void        insertAfterTemps(Exp* ssLhs, Exp* ssRhs, Type* type = nullptr);
 
         // Replace all instances of "search" with "replace".
 virtual bool        searchAndReplace(Exp* search, Exp* replace);
@@ -167,7 +167,7 @@ virtual void        simplify();
         // Is this RTL a branch instruction?
         bool        isBranch();
 
-        // Get the "special" (High Level) Statement this RTL (else NULL)
+        // Get the "special" (High Level) Statement this RTL (else nullptr)
         Statement*    getHlStmt();
 
         // Print to a string (mainly for debugging)
@@ -218,10 +218,10 @@ typedef enum {PARAM_SIMPLE, PARAM_ASGN, PARAM_LAMBDA, PARAM_VARIANT} ParamKind;
 class ParamEntry {
 public:
         ParamEntry() {
-            asgn = NULL;
+            asgn = nullptr;
             kind = PARAM_SIMPLE;
-            type = NULL;
-            regType = NULL;
+            type = nullptr;
+            regType = nullptr;
             lhs = false;
             mark = 0;
         }

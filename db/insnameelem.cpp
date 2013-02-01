@@ -34,7 +34,7 @@
 InsNameElem::InsNameElem(const char *name) {
     elemname = name;
     value = 0;
-    nextelem = NULL;
+    nextelem = nullptr;
 }
 
 InsNameElem::~InsNameElem(void) {
@@ -46,33 +46,33 @@ int InsNameElem::ntokens(void) {
 }
 
 std::string InsNameElem::getinstruction(void) {
-    return (nextelem != NULL)? (elemname + nextelem->getinstruction()): elemname;
+    return (nextelem != nullptr)? (elemname + nextelem->getinstruction()): elemname;
 }
 
 std::string InsNameElem::getinspattern(void) {
-    return (nextelem != NULL)? (elemname + nextelem->getinspattern()): elemname;
+    return (nextelem != nullptr)? (elemname + nextelem->getinspattern()): elemname;
 }
 
 void InsNameElem::getrefmap(std::map<std::string, InsNameElem*> &m) {
-    if (nextelem != NULL)
+    if (nextelem != nullptr)
         nextelem->getrefmap(m);
     else
         m.erase(m.begin(), m.end());
 }
 
 int InsNameElem::ninstructions(void) {
-    return (nextelem != NULL)? (nextelem->ninstructions() * ntokens()): ntokens();
+    return (nextelem != nullptr)? (nextelem->ninstructions() * ntokens()): ntokens();
 }
 
 void InsNameElem::append(InsNameElem* next) {
-    if (nextelem == NULL)
+    if (nextelem == nullptr)
         nextelem = next;
     else
         nextelem->append(next);
 }
 
 bool InsNameElem::increment(void) {
-    if ((nextelem == NULL) || nextelem->increment())
+    if ((nextelem == nullptr) || nextelem->increment())
         value++;
     if (value >= ntokens()) {
         value = 0;
@@ -83,7 +83,7 @@ bool InsNameElem::increment(void) {
 
 void InsNameElem::reset(void) {
     value = 0;
-    if (nextelem != NULL) nextelem->reset();
+    if (nextelem != nullptr) nextelem->reset();
 }
 
 int InsNameElem::getvalue(void) {
@@ -99,7 +99,7 @@ int InsOptionElem::ntokens(void) {
 }
 
 std::string InsOptionElem::getinstruction(void) {
-    std::string s = (nextelem != NULL)
+    std::string s = (nextelem != nullptr)
                     ? ((getvalue() == 0)
                        ? (elemname + nextelem->getinstruction())
                        : nextelem->getinstruction())
@@ -110,7 +110,7 @@ std::string InsOptionElem::getinstruction(void) {
 }
 
 std::string InsOptionElem::getinspattern(void) {
-    return (nextelem != NULL)
+    return (nextelem != nullptr)
             ? ('\'' + elemname + '\'' + nextelem->getinspattern())
             : ('\'' + elemname + '\'');
 }
@@ -126,19 +126,19 @@ int InsListElem::ntokens(void) {
 }
 
 std::string InsListElem::getinstruction(void) {
-    return (nextelem != NULL)
+    return (nextelem != nullptr)
             ? (thetable->records[getvalue()] + nextelem->getinstruction())
             : thetable->records[getvalue()];
 }
 
 std::string InsListElem::getinspattern(void) {
-    return (nextelem != NULL)
+    return (nextelem != nullptr)
             ? (elemname + '[' + indexname + ']' + nextelem->getinspattern())
             : (elemname + '[' + indexname + ']');
 }
 
 void InsListElem::getrefmap(std::map<std::string, InsNameElem*> &m) {
-    if (nextelem != NULL)
+    if (nextelem != nullptr)
         nextelem->getrefmap(m);
     else
         m.erase(m.begin(), m.end());

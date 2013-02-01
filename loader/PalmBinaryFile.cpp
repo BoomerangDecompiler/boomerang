@@ -59,7 +59,7 @@ bool PalmBinaryFile::RealLoad(const char* sName) {
 
     m_pFileName = sName;
 
-    if ((fp = fopen(sName, "rb")) == NULL) {
+    if ((fp = fopen(sName, "rb")) == nullptr) {
         fprintf(stderr, "Could not open binary file %s\n", sName);
         return false;
     }
@@ -458,7 +458,7 @@ void PalmBinaryFile::GenerateBinFiles(const std::string& path) const {
             fullName += name;
             // Create the file
             FILE* f = fopen(fullName.c_str(), "w");
-            if (f == NULL) {
+            if (f == nullptr) {
                 fprintf( stderr, "Could not open %s for writing binary file\n",
                          fullName.c_str() );
                 return;

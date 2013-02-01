@@ -234,7 +234,7 @@ class FuncType : public Type {
 private:
     Signature*      signature;
 public:
-                    FuncType(Signature *sig = NULL);
+                    FuncType(Signature *sig = nullptr);
 virtual             ~FuncType();
 virtual bool        isFunc() const { return true; }
 
@@ -451,7 +451,7 @@ virtual bool        isCompatible(Type* other, bool all);
 
 protected:
     friend class XMLProgParser;
-                    ArrayType() : Type(eArray), base_type(NULL), length(0) { }
+                    ArrayType() : Type(eArray), base_type(nullptr), length(0) { }
 };    // class ArrayType
 
 class NamedType : public Type {
@@ -683,12 +683,12 @@ typedef std::pair<const ADDRESS, DataInterval> DataIntervalEntry;        // For 
 
 class DataIntervalMap {
         std::map<ADDRESS, DataInterval> dimap;
-        UserProc*    proc;                            // If used for locals, has ptr to UserProc, else NULL
+        UserProc*    proc;                            // If used for locals, has ptr to UserProc, else nullptr
 public:
                     DataIntervalMap() {}
 typedef    std::map<ADDRESS, DataInterval>::iterator iterator;
         void        setProc(UserProc* p) {proc = p;}// Initialise the proc pointer
-        DataIntervalEntry* find(ADDRESS addr);        // Find the DataInterval at address addr, or NULL if none
+        DataIntervalEntry* find(ADDRESS addr);        // Find the DataInterval at address addr, or nullptr if none
         iterator    find_it(ADDRESS addr);            // Return an iterator to the entry for it, or end() if none
         bool        isClear(ADDRESS addr, unsigned size);        // True if from addr for size bytes is clear
         void        addItem(ADDRESS addr, const char* name, Type* ty, bool forced = false);

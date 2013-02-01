@@ -26,14 +26,14 @@ std::string BinaryFileFactory::m_base_path = "";
 
 BinaryFile *BinaryFileFactory::Load(const char *sName) {
     BinaryFile *pBF = getInstanceFor( sName );
-    if( pBF == NULL ) {
+    if( pBF == nullptr ) {
         std::cerr << "unrecognised binary file format.\n";
-        return NULL;
+        return nullptr;
     }
     if( pBF->RealLoad( sName ) == 0 ) {
         fprintf( stderr, "Loading '%s' failed\n", sName );
         delete pBF;
-        return NULL;
+        return nullptr;
     }
     pBF->getTextLimits();
     return pBF;
@@ -53,12 +53,12 @@ BinaryFile* BinaryFileFactory::getInstanceFor( const char *sName ) {
     FILE *f;
     unsigned char buf[64];
     string libName,base_plugin_path=m_base_path;
-    BinaryFile *res = NULL;
+    BinaryFile *res = nullptr;
 
     f = fopen (sName, "rb");
-    if( f == NULL ) {
+    if( f == nullptr ) {
         fprintf(stderr, "Unable to open binary file: %s\n", sName );
-        return NULL;
+        return nullptr;
     }
     fread (buf, sizeof(buf), 1, f);
     if( TESTMAGIC4(buf,0, '\177','E','L','F') ) {
@@ -96,7 +96,7 @@ BinaryFile* BinaryFileFactory::getInstanceFor( const char *sName ) {
         fprintf(stderr, "Sorry, Cygwin-hosted Boomerang cannot compile the MachOBinaryFile module at present"
                 "\n");
         fclose(f);
-        return NULL;
+        return nullptr;
 #endif
     } else if( buf[0] == 0x02 && buf[2] == 0x01 &&
                (buf[1] == 0x10 || buf[1] == 0x0B) &&
@@ -108,7 +108,7 @@ BinaryFile* BinaryFileFactory::getInstanceFor( const char *sName ) {
     } else {
         fprintf( stderr, "Unrecognised binary file\n" );
         fclose(f);
-        return NULL;
+        return nullptr;
     }
 
     // Load the specific loader library
@@ -125,11 +125,11 @@ BinaryFile* BinaryFileFactory::getInstanceFor( const char *sName ) {
 #endif
     libName = base_plugin_path + libName;
     dlHandle = dlopen(libName.c_str(), RTLD_LAZY);
-    if (dlHandle == NULL) {
+    if (dlHandle == nullptr) {
         fprintf( stderr, "Could not open dynamic loader library %s\n", libName.c_str());
         fprintf( stderr, "%s\n", dlerror());
         fclose(f);
-        return NULL;
+        return nullptr;
     }
     // Use the handle to find the "construct" function
 #if 0    // HOST_OSX_10_2    // Not sure when the underscore is really needed
@@ -144,23 +144,23 @@ BinaryFile* BinaryFileFactory::getInstanceFor( const char *sName ) {
     libName = "lib/lib" + libName;
 #endif
     dlHandle = LoadLibraryA(libName.c_str());
-    if(dlHandle == NULL) {
+    if(dlHandle == nullptr) {
         int err = GetLastError();
         fprintf( stderr, "Could not open dynamic loader library %s (error #%d)\n", libName.c_str(), err);
         fclose(f);
-        return NULL;
+        return nullptr;
     }
     // Use the handle to find the "construct" function
     constructFcn pFcn = (constructFcn) GetProcAddress((HINSTANCE)dlHandle, "construct");
 #endif
 
-    if (pFcn == NULL) {
+    if (pFcn == nullptr) {
         fprintf( stderr, "Loader library %s does not have a construct function\n", libName.c_str());
 #ifndef _WIN32
         fprintf( stderr, "dlerror returns %s\n", dlerror());
 #endif
         fclose(f);
-        return NULL;
+        return nullptr;
     }
     // Call the construct function
     res = (*pFcn)();

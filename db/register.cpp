@@ -34,8 +34,8 @@
 #if defined(_MSC_VER) && _MSC_VER >= 1400
 #pragma warning(disable:4996)        // Warnings about e.g. _strdup deprecated in VS 2005
 #endif
-#ifndef NULL                        // Don't always include stdio.h
-#define NULL 0
+#ifndef nullptr                        // Don't always include stdio.h
+#define nullptr 0
 #endif
 
 /***************************************************************************//**
@@ -44,7 +44,7 @@
  * PARAMETERS:      <none>
  * \returns           N/A
  ******************************************************************************/
-Register::Register() : name(NULL), address(NULL), mappedIndex(-1),
+Register::Register() : name(nullptr), address(nullptr), mappedIndex(-1),
     mappedOffset(-1), flt(false)
 {}
 
@@ -54,11 +54,11 @@ Register::Register() : name(NULL), address(NULL), mappedIndex(-1),
  * PARAMETERS:      Reference to another Register object to construct from
  * \returns           N/A
  ******************************************************************************/
-Register::Register(const Register& r) : name(NULL), size(r.size),
+Register::Register(const Register& r) : name(nullptr), size(r.size),
     address(r.address),    mappedIndex(r.mappedIndex),
     mappedOffset(r.mappedOffset), flt(r.flt)
 {
-    if (r.name != NULL)
+    if (r.name != nullptr)
         name = strdup(r.name);
 }
 
@@ -71,7 +71,7 @@ Register::Register(const Register& r) : name(NULL), size(r.size),
 Register Register::operator=(const Register& r2) {
     // copy operator
 
-    //if (name != NULL)
+    //if (name != nullptr)
     //free(name);
     name = r2.name;
     size = r2.size;
@@ -92,7 +92,7 @@ Register Register::operator=(const Register& r2) {
  ******************************************************************************/
 bool Register::operator==(const Register& r2) const {
     // compare on name
-    assert(name != NULL && r2.name != NULL);
+    assert(name != nullptr && r2.name != nullptr);
     if (strcmp(name, r2.name) != 0)
         return false;
     return true;
@@ -105,7 +105,7 @@ bool Register::operator==(const Register& r2) const {
  * \returns           true if this name is less than the given Register's name
  ******************************************************************************/
 bool Register::operator<(const Register& r2) const {
-    assert(name != NULL && r2.name != NULL);
+    assert(name != nullptr && r2.name != nullptr);
 
     // compare on name
     if (strcmp(name, r2.name) < 0)
@@ -120,9 +120,9 @@ bool Register::operator<(const Register& r2) const {
  * \returns           <nothing>
  ******************************************************************************/
 void Register::s_name(const char *s) {
-    assert(s != NULL);
+    assert(s != nullptr);
 
-    //if (name != NULL)
+    //if (name != nullptr)
     //free(name);
     name = strdup(s);
 }

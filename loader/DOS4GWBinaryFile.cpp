@@ -88,8 +88,8 @@ ADDRESS DOS4GWBinaryFile::GetMainEntryPoint() {
     bool lastWasCall = false;        // True if the last instruction was a call
 
     SectionInfo* si = GetSectionInfoByName("seg0");        // Assume the first section is text
-    if (si == NULL) si = GetSectionInfoByName(".text");
-    if (si == NULL) si = GetSectionInfoByName("CODE");
+    if (si == nullptr) si = GetSectionInfoByName(".text");
+    if (si == nullptr) si = GetSectionInfoByName("CODE");
     assert(si);
     ADDRESS nativeOrigin = si->uNativeAddr;
     unsigned textSize = si->uSectionSize;

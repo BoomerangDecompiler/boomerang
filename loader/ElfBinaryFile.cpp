@@ -110,7 +110,7 @@ bool ElfBinaryFile::RealLoad(const char* sName) {
 
     m_pFileName = sName;
     m_fd = fopen (sName, "rb");
-    if (m_fd == NULL) return 0;
+    if (m_fd == nullptr) return 0;
 
     // Determine file size
     if (fseek(m_fd, 0, SEEK_END)) {
@@ -342,7 +342,7 @@ void ElfBinaryFile::AddSyms(int secIndex) {
     ADDRESS addrPlt = siPlt ? siPlt->uNativeAddr : ADDRESS::g(0L);
     PSectionInfo siRelPlt = GetSectionInfoByName(".rel.plt");
     int sizeRelPlt = 8;            // Size of each entry in the .rel.plt table
-    if (siRelPlt == NULL) {
+    if (siRelPlt == nullptr) {
         siRelPlt = GetSectionInfoByName(".rela.plt");
         sizeRelPlt = 12;        // Size of each entry in the .rela.plt table is 12 bytes
     }
@@ -790,7 +790,7 @@ std::list<const char *> ElfBinaryFile::getDependencyList() {
     std::list<const char *> result;
     ADDRESS stringtab = NO_ADDRESS;
     PSectionInfo dynsect = GetSectionInfoByName(".dynamic");
-    if( dynsect == NULL )
+    if( dynsect == nullptr )
         return result; /* no dynamic section = statically linked */
 
     Elf32_Dyn *dyn;
@@ -808,7 +808,7 @@ std::list<const char *> ElfBinaryFile::getDependencyList() {
     for( dyn = (Elf32_Dyn *)dynsect->uHostAddr.m_value; dyn->d_tag != DT_NULL; dyn++ ) {
         if( dyn->d_tag == DT_NEEDED ) {
             const char *need = (char *)(stringtab + dyn->d_un.d_val).m_value;
-            if( need != NULL )
+            if( need != nullptr )
                 result.push_back( need );
         }
     }
@@ -1235,7 +1235,7 @@ const char *ElfBinaryFile::getFilenameSymbolFor(const char *sym) {
         }
     }
     if (secIndex == 0)
-        return NULL;
+        return nullptr;
 
     //int e_type = elfRead2(&((Elf32_Ehdr*)m_pImage)->e_type);
     PSectionInfo pSect = &m_pSections[secIndex];
@@ -1263,10 +1263,10 @@ const char *ElfBinaryFile::getFilenameSymbolFor(const char *sym) {
         if (str == sym) {
             if (filename.length())
                 return strdup(filename.c_str());
-            return NULL;
+            return nullptr;
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 // A map for extra symbols, those not in the usual Elf symbol tables

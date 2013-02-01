@@ -171,7 +171,7 @@ virtual std::vector<Exp*> &getDefaultReturns() = 0;
         /*
          * Decode all undecoded procedures and return a new program containing them.
          */
-        void            decode(Prog* prog, bool decodeMain = true, const char *pname = NULL);
+        void            decode(Prog* prog, bool decodeMain = true, const char *pname = nullptr);
                         // Decode all procs starting at a given address in a given program.
         void            decode(Prog *prog, ADDRESS a);
                         // Decode one proc starting at a given address in a given program.
@@ -192,7 +192,7 @@ virtual bool            processProc(ADDRESS uAddr, UserProc* pProc, std::ofstrea
          * Given the dest of a call, determine if this is a machine specific helper function with special semantics.
          * If so, return true and set the semantics in lrtl.  addr is the native address of the call instruction
          */
-virtual bool            helperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL*>* lrtl) {return false; }
+virtual bool            helperFunc(ADDRESS /*dest*/, ADDRESS /*addr*/, std::list<RTL*>* /*lrtl*/) {return false; }
 
         /*
          * Locate the starting address of "main", returning a native address

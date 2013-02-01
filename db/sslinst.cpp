@@ -157,7 +157,7 @@ bool RTLInstDict::readSSLFile(const std::string& SSLFileName) {
                         false
                     #endif
                         );
-    if (theParser.theScanner == NULL)
+    if (theParser.theScanner == nullptr)
         return false;
     addRegister( "%CTI", -1, 1, false );
     addRegister( "%NEXT", -1, 32, false );
@@ -189,14 +189,14 @@ void RTLInstDict::addRegister( const char *name, int id, int size, bool flt ) {
         SpecialRegMap[name].s_name(name);
         SpecialRegMap[name].s_size(size);
         SpecialRegMap[name].s_float(flt);
-        SpecialRegMap[name].s_address(NULL);
+        SpecialRegMap[name].s_address(nullptr);
         SpecialRegMap[name].s_mappedIndex(-1);
         SpecialRegMap[name].s_mappedOffset(-1);
     } else {
         DetRegMap[id].s_name(name);
         DetRegMap[id].s_size(size);
         DetRegMap[id].s_float(flt);
-        DetRegMap[id].s_address(NULL);
+        DetRegMap[id].s_address(nullptr);
         DetRegMap[id].s_mappedIndex(-1);
         DetRegMap[id].s_mappedOffset(-1);
     }
@@ -295,7 +295,7 @@ void RTLInstDict::fixupParamsSub( std::string s, std::list<std::string>& funcPar
             std::cerr << "Error in SSL File: Variant operand " << s << " does not have a fixed number of functional "
                          "parameters:\n" << "Expected " << funcParams.size() << ", but branch " << name << " has " <<
                          sub.funcParams.size() << ".\n";
-        } else if (funcParams != sub.funcParams && sub.asgn != NULL ) {
+        } else if (funcParams != sub.funcParams && sub.asgn != nullptr ) {
             /* Rename so all the parameter names match */
             std::list<std::string>::iterator i,j;
             for( i = funcParams.begin(), j = sub.funcParams.begin(); i != funcParams.end(); i++, j++ ) {
@@ -378,7 +378,7 @@ std::list<Statement*>* RTLInstDict::instantiateRTL(std::string& name, ADDRESS na
     // Retrieve the dictionary entry for the named instruction
     if ( idict.find(*lname) == idict.end() ) { /* lname is not in dictionary */
         std::cerr << "ERROR: unknown instruction " << *lname << " at 0x" << std::hex << natPC << ", ignoring.\n";
-        return NULL;
+        return nullptr;
     }
     TableEntry& entry = idict[*lname];
 
@@ -523,7 +523,7 @@ void RTLInstDict::transformPostVars(std::list<Statement *> &rts, bool optimise) 
             // An opFlagCall is assumed to be a Binary with a string and an opList of parameters
             ss = (Binary*) ((Binary*)rt)->getSubExp2();
         } else
-            ss = NULL;
+            ss = nullptr;
 
         /* Look for usages of post-variables' referents
          * Trickier than you'd think, as we need to make sure to skip over the post-variables themselves. ie match

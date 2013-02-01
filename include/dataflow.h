@@ -120,7 +120,7 @@ public:
         // For testing:
         int            pbbToNode(PBB bb) {return indices[bb];}
         std::set<int>& getDF(int node) {return DF[node];}
-        PBB            nodeToBB(int node) {return BBs[node];} 
+        PBB            nodeToBB(int node) {return BBs[node];}
         int            getIdom(int node) {return idom[node];}
         int            getSemi(int node) {return semi[node];}
         std::set<int>& getA_phi(Exp* e) {return A_phi[e];}
@@ -204,7 +204,7 @@ Assign* dumpAddrOfFourth();
         void        updateDefs(std::map<Exp*, std::stack<Statement*>, lessExpStar>& Stacks, UserProc* proc);
 
         /**
-         * Find the definition for a location. If not found, return NULL
+         * Find the definition for a location. If not found, return nullptr
          */
         Exp*        findDefFor(Exp* e);
 
@@ -215,7 +215,7 @@ Assign* dumpAddrOfFourth();
 };        // class DefCollector
 
 /**
- * UseCollector class. This class collects all uses (live variables) that will be defined by the statement that 
+ * UseCollector class. This class collects all uses (live variables) that will be defined by the statement that
  * contains this collector (or the UserProc that contains it).
  * Typically the entries are not subscripted, like parameters or locations on the LHS of assignments
  */

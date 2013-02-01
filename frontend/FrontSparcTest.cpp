@@ -62,7 +62,7 @@ void FrontSparcTest::test1 () {
 
     BinaryFileFactory bff;
     BinaryFile *pBF = bff.Load(HELLO_SPARC);
-    if (pBF == NULL)
+    if (pBF == nullptr)
         pBF = new BinaryFileStub();       // fallback on stub
     CPPUNIT_ASSERT(pBF != 0);
     CPPUNIT_ASSERT(pBF->GetMachine() == MACHINE_SPARC);
@@ -76,7 +76,7 @@ void FrontSparcTest::test1 () {
 
     // Decode first instruction
     DecodeResult inst = pFE->decodeInstruction(addr);
-    CPPUNIT_ASSERT(inst.rtl != NULL);
+    CPPUNIT_ASSERT(inst.rtl != nullptr);
     inst.rtl->print(ost);
 
     std::string expected(
@@ -132,7 +132,7 @@ void FrontSparcTest::test2() {
 
     BinaryFileFactory bff;
     BinaryFile *pBF = bff.Load(HELLO_SPARC);
-    if (pBF == NULL)
+    if (pBF == nullptr)
         pBF = new BinaryFileStub();       // fallback on stub
     CPPUNIT_ASSERT(pBF != 0);
     CPPUNIT_ASSERT(pBF->GetMachine() == MACHINE_SPARC);
@@ -179,7 +179,7 @@ void FrontSparcTest::test3() {
 
     BinaryFileFactory bff;
     BinaryFile *pBF = bff.Load(HELLO_SPARC);
-    if (pBF == NULL)
+    if (pBF == nullptr)
         pBF = new BinaryFileStub();       // fallback on stub
     CPPUNIT_ASSERT(pBF != 0);
     CPPUNIT_ASSERT(pBF->GetMachine() == MACHINE_SPARC);
@@ -244,7 +244,7 @@ void FrontSparcTest::testBranch() {
 
     BinaryFileFactory bff;
     BinaryFile *pBF = bff.Load(BRANCH_SPARC);
-    if (pBF == NULL)
+    if (pBF == nullptr)
         pBF = new BinaryFileStub();       // fallback on stub
     CPPUNIT_ASSERT(pBF != 0);
     CPPUNIT_ASSERT(pBF->GetMachine() == MACHINE_SPARC);
@@ -287,7 +287,7 @@ void FrontSparcTest::testDelaySlot() {
 
     BinaryFileFactory bff;
     BinaryFile *pBF = bff.Load(BRANCH_SPARC);
-    if (pBF == NULL)
+    if (pBF == nullptr)
         pBF = new BinaryFileStub();       // fallback on stub
     CPPUNIT_ASSERT(pBF != 0);
     CPPUNIT_ASSERT(pBF->GetMachine() == MACHINE_SPARC);

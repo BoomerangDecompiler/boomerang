@@ -1925,7 +1925,7 @@ int NJMCDecoder::decodeAssemblyInstruction (ADDRESS pc, int delta)
 
               // What does this mean?
 
-              NULL;
+              nullptr;
 
       
 

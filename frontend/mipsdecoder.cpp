@@ -76,7 +76,7 @@ int MIPSDecoder::decodeAssemblyInstruction(ADDRESS, int)
  *                   delta - the difference between the above address and the
  *                     host address of the pc (i.e. the address that the pc is at
  *                     in the loaded object file)
- *                   proc - the enclosing procedure. This can be NULL for
+ *                   proc - the enclosing procedure. This can be nullptr for
  *                     those of us who are using this method in an interpreter
  * \returns            a DecodeResult structure containing all the information
  *                     gathered during decoding
@@ -92,7 +92,7 @@ DecodeResult& MIPSDecoder::decodeInstruction(ADDRESS pc, int delta)
     result.reset();
 
     // The actual list of instantiated statements
-    std::list<Statement*>* stmts = NULL;
+    std::list<Statement*>* stmts = nullptr;
 
     ADDRESS nextPC = NO_ADDRESS;
 	return result;

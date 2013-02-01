@@ -309,7 +309,7 @@ void TypeTest::testDataIntervalOverlaps() {
 
     dim.addItem(0xFF8, "newArray3", &at);        // Should fail
     pdie = dim.find(0xFF8);
-    unsigned ue = 0;                            // Expect NULL
+    unsigned ue = 0;                            // Expect nullptr
     unsigned ua = (unsigned)pdie;
     CPPUNIT_ASSERT_EQUAL(ue, ua);
 }

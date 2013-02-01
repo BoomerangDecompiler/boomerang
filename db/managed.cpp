@@ -152,7 +152,7 @@ void StatementSet::printNums(std::ostream& os) {
         if (*it)
             (*it)->printNum(os);
         else
-            os << "-";                // Special case for NULL definition
+            os << "-";                // Special case for nullptr definition
         if (++it != sset.end())
             os << " ";
     }
@@ -241,7 +241,7 @@ bool AssignSet::definesLoc(Exp* loc) {
 Assign* AssignSet::lookupLoc(Exp* loc) {
     Assign* as = new Assign(loc, new Terminal(opWild));
     iterator ff = aset.find(as);
-    if (ff == aset.end()) return NULL;
+    if (ff == aset.end()) return nullptr;
     return *ff;
 }
 
@@ -279,7 +279,7 @@ void AssignSet::printNums(std::ostream& os) {
         if (*it)
             (*it)->printNum(os);
         else
-            os << "-";                // Special case for NULL definition
+            os << "-";                // Special case for nullptr definition
         if (++it != aset.end())
             os << " ";
     }
@@ -402,22 +402,22 @@ bool LocationSet::exists(Exp* e) {
 // location e in the set
 Exp* LocationSet::findNS(Exp* e) {
     // Note: can't search with a wildcard, since it doesn't have the weak ordering required (I think)
-    RefExp r(e, NULL);
-    // Note: the below assumes that NULL is less than any other pointer
+    RefExp r(e, nullptr);
+    // Note: the below assumes that nullptr is less than any other pointer
     iterator it = lset.lower_bound(&r);
     if (it == lset.end())
-        return NULL;
+        return nullptr;
     if ((*((RefExp*) *it)->getSubExp1() == *e))
         return *it;
     else
-        return NULL;
+        return nullptr;
 }
 
 // Given an unsubscripted location e, return true if e{-} or e{0} exists in the set
 bool LocationSet::existsImplicit(Exp* e) {
-    RefExp r(e, NULL);
+    RefExp r(e, nullptr);
     iterator it = lset.lower_bound(&r);        // First element >= r
-    // Note: the below relies on the fact that NULL is less than any other pointer. Try later entries in the set:
+    // Note: the below relies on the fact that nullptr is less than any other pointer. Try later entries in the set:
     while (it != lset.end()) {
         if (!(*it)->isSubscript()) return false;        // Looking for e{something} (could be e.g. %pc)
         if (!(*((RefExp*) *it)->getSubExp1() == *e))    // Gone past e{anything}?
@@ -468,9 +468,9 @@ void LocationSet::addSubscript(Statement* d /* , Cfg* cfg */) {
 // Substitute s into all members of the set
 void LocationSet::substitute(Assign& a) {
     Exp* lhs = a.getLeft();
-    if (lhs == NULL) return;
+    if (lhs == nullptr) return;
     Exp* rhs = a.getRight();
-    if (rhs == NULL) return;        // ? Will this ever happen?
+    if (rhs == nullptr) return;        // ? Will this ever happen?
     std::set<Exp*, lessExpStar>::iterator it;
     // Note: it's important not to change the pointer in the set of pointers to expressions, without removing and
     // inserting again. Otherwise, the set becomes out of order, and operations such as set comparison fail!
@@ -564,7 +564,7 @@ char* StatementList::prints() {
 
 void StatementVec::putAt(int idx, Statement* s) {
     if (idx >= (int)svec.size())
-        svec.resize(idx+1, NULL);
+        svec.resize(idx+1, nullptr);
     svec[idx] = s;
 }
 
@@ -646,7 +646,7 @@ void StatementList::removeDefOf(Exp* loc) {
 // Find the first Assignment with loc on the LHS
 Assignment* StatementList::findOnLeft(Exp* loc) {
     if (slist.size() == 0)
-        return NULL;
+        return nullptr;
     for (iterator it = slist.begin(); it != slist.end(); it++) {
         Exp *left = ((Assignment*)*it)->getLeft();
         if (*left == *loc)
@@ -659,7 +659,7 @@ Assignment* StatementList::findOnLeft(Exp* loc) {
             }
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 void LocationSet::diff(LocationSet* o) {
@@ -705,7 +705,7 @@ Range::Range(int stride, int lowerBound, int upperBound, Exp *base) :
         this->upperBound = this->lowerBound;
         this->base = base->getSubExp1();
     } else {
-        if (base == NULL)
+        if (base == nullptr)
             //NOTE: was "base = new Const(0);"
             this->base = new Const(0);
         if (lowerBound > upperBound)
@@ -828,7 +828,7 @@ void RangeMap::unionwith(RangeMap &other) {
 }
 
 void RangeMap::widenwith(RangeMap &other) {
-    for (std::map<Exp*, Range, lessExpStar>::iterator it = other.ranges.begin(); it != other.ranges.end(); it++) {
+    for (auto it = other.ranges.begin(); it != other.ranges.end(); it++) {
         if (ranges.find((*it).first) == ranges.end()) {
             ranges[(*it).first] = (*it).second;
         } else {
@@ -839,7 +839,7 @@ void RangeMap::widenwith(RangeMap &other) {
 
 
 void RangeMap::print(std::ostream &os) {
-    for (std::map<Exp*, Range, lessExpStar>::iterator it = ranges.begin(); it != ranges.end(); it++) {
+    for (auto it = ranges.begin(); it != ranges.end(); it++) {
         if (it != ranges.begin())
             os << ", ";
         (*it).first->print(os);
@@ -891,16 +891,16 @@ bool Range::operator==(Range &other) {
 
 // return true if this range map is a subset of the other range map
 bool RangeMap::isSubset(RangeMap &other) {
-    for (std::map<Exp*, Range, lessExpStar>::iterator it = ranges.begin(); it != ranges.end(); it++) {
-        if (other.ranges.find((*it).first) == other.ranges.end()) {
+    for (std::pair<Exp*, Range> it : ranges) {
+        if (other.ranges.find(it.first) == other.ranges.end()) {
             if (VERBOSE && DEBUG_RANGE_ANALYSIS)
-                LOG << "did not find " << (*it).first << " in other, not a subset\n";
+                LOG << "did not find " << it.first << " in other, not a subset\n";
             return false;
         }
-        Range &r = other.ranges[(*it).first];
-        if (!((*it).second == r)) {
+        Range &r = other.ranges[it.first];
+        if (!(it.second == r)) {
             if (VERBOSE && DEBUG_RANGE_ANALYSIS)
-                LOG << "range for " << (*it).first << " in other " << r << " is not equal to range in this " << (*it).second << ", not a subset\n";
+                LOG << "range for " << it.first << " in other " << r << " is not equal to range in this " << it.second << ", not a subset\n";
             return false;
         }
     }
@@ -925,9 +925,9 @@ void ConnectionGraph::connect(Exp* a, Exp* b) {
     add(a, b);
     add(b, a);
 }
-
-int ConnectionGraph::count(Exp* e) {
-    iterator ff = emap.find(e);
+//! Return a count of locations connected to \a e
+int ConnectionGraph::count(Exp* e) const {
+    const_iterator ff = emap.find(e);
     int n = 0;
     while (ff != emap.end() && *ff->first == *e) {
         ++n;
@@ -935,11 +935,11 @@ int ConnectionGraph::count(Exp* e) {
     }
     return n;
 }
-
-bool ConnectionGraph::isConnected(Exp* a, Exp* b) {
-    iterator ff = emap.find(a);
+//! Return true if a is connected to b
+bool ConnectionGraph::isConnected(Exp* a, const Exp& b) const {
+    const_iterator ff = emap.find(a);
     while (ff != emap.end() && *ff->first == *a) {
-        if (*ff->second == *b)
+        if (*ff->second == b)
             return true;                    // Found the connection
         ++ff;
     }
@@ -948,6 +948,7 @@ bool ConnectionGraph::isConnected(Exp* a, Exp* b) {
 
 
 // Modify the map so that a <-> b becomes a <-> c
+//! Update the map that used to be a <-> b, now it is a <-> c
 void ConnectionGraph::update(Exp* a, Exp* b, Exp* c) {
     // find a->b
     iterator ff = emap.find(a);
@@ -984,14 +985,13 @@ ConnectionGraph::iterator ConnectionGraph::remove(iterator aa) {
 }
 
 // For debugging
-void dumpConnectionGraph(ConnectionGraph* cg) {
-    ConnectionGraph::iterator cc;
+void dumpConnectionGraph(const ConnectionGraph* cg) {
+    ConnectionGraph::const_iterator cc;
     for (cc = cg->begin(); cc != cg->end(); ++cc)
         std::cerr << cc->first << " <-> " << cc->second << "\n";
 }
 
-void ConnectionGraph::dump() {
-    iterator cc;
-    for (cc = begin(); cc != end(); ++cc)
-        std::cerr << cc->first << " <-> " << cc->second << "\n";
+void ConnectionGraph::dump() const {
+    for (auto iter : *this)
+        std::cerr << iter.first << " <-> " << iter.second << "\n";
 }

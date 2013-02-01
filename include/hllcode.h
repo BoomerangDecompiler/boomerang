@@ -114,7 +114,7 @@ virtual void    AddReturnStatement(int indLevel, StatementList* rets) = 0;
 virtual void    AddProcStart(UserProc* proc) = 0;
 virtual void    AddProcEnd() = 0;
 virtual void    AddLocal(const char *name, Type *type, bool last = false) = 0;
-virtual void    AddGlobal(const char *name, Type *type, Exp *init = NULL) = 0;
+virtual void    AddGlobal(const char *name, Type *type, Exp *init = nullptr) = 0;
 virtual void    AddPrototype(UserProc* proc) = 0;
 
     // comments
@@ -156,7 +156,7 @@ virtual bool    endsWithGoto() = 0;
 virtual bool    startsWith(SyntaxNode *node) { return this == node; }
 
 virtual SyntaxNode *getEnclosingLoop(SyntaxNode *pFor, 
-                                         SyntaxNode *cur = NULL) = 0;
+                                         SyntaxNode *cur = nullptr) = 0;
 
         int        getScore();
         void    addToScore(int n) { score = getScore() + n; }
@@ -181,7 +181,7 @@ public:
     BlockSyntaxNode();
     virtual ~BlockSyntaxNode();
 
-    virtual bool isBlock() { return pbb == NULL; }
+    virtual bool isBlock() { return pbb == nullptr; }
 
     virtual void ignoreGoto() {
         if (pbb) notGoto = true;
@@ -193,22 +193,22 @@ public:
         return pbb ? 0 : statements.size(); 
     }
     SyntaxNode *getStatement(int n) {
-        assert(pbb == NULL);
+        assert(pbb == nullptr);
         return statements[n]; 
     }
     void prependStatement(SyntaxNode *n) {
-        assert(pbb == NULL);
+        assert(pbb == nullptr);
         statements.resize(statements.size()+1);
         for (int i = statements.size()-1; i > 0;  i--)
             statements[i] = statements[i-1];
         statements[0] = n;
     }
     void addStatement(SyntaxNode *n) { 
-        assert(pbb == NULL);
+        assert(pbb == nullptr);
         statements.push_back(n); 
     }
     void setStatement(int i, SyntaxNode *n) { 
-        assert(pbb == NULL);
+        assert(pbb == nullptr);
         statements[i] = n; 
     }
 
@@ -224,13 +224,13 @@ virtual bool endsWithGoto() {
 virtual bool    startsWith(SyntaxNode *node) { 
             return this == node || (statements.size() > 0 && statements[0]->startsWith(node)); 
         }
-virtual SyntaxNode *getEnclosingLoop(SyntaxNode *pFor, SyntaxNode *cur = NULL) {
+virtual SyntaxNode *getEnclosingLoop(SyntaxNode *pFor, SyntaxNode *cur = nullptr) {
             if (this == pFor) return cur;
             for (unsigned i = 0; i < statements.size(); i++) {
                 SyntaxNode *n = statements[i]->getEnclosingLoop(pFor, cur);
                 if (n) return n;
             }
-            return NULL;
+            return nullptr;
         }
 
 virtual SyntaxNode *clone();
@@ -263,7 +263,7 @@ virtual bool    endsWithGoto() { return false; }
 virtual SyntaxNode *clone();
 virtual SyntaxNode *replace(SyntaxNode *from, SyntaxNode *to);
 
-virtual SyntaxNode *getEnclosingLoop(SyntaxNode *pFor, SyntaxNode *cur = NULL) {
+virtual SyntaxNode *getEnclosingLoop(SyntaxNode *pFor, SyntaxNode *cur = nullptr) {
             if (this == pFor) return cur;
             return pThen->getEnclosingLoop(pFor, cur);
         }
@@ -300,7 +300,7 @@ virtual SyntaxNode *getOutEdge(SyntaxNode *root, int n) {
         }
 virtual bool    endsWithGoto() { return false; }
 
-virtual SyntaxNode *getEnclosingLoop(SyntaxNode *pFor, SyntaxNode *cur = NULL) {
+virtual SyntaxNode *getEnclosingLoop(SyntaxNode *pFor, SyntaxNode *cur = nullptr) {
             if (this == pFor) return cur;
             SyntaxNode *n = pThen->getEnclosingLoop(pFor, cur);
             if (n) return n;
@@ -338,7 +338,7 @@ virtual int        getNumOutEdges() {
     }
 virtual SyntaxNode *getOutEdge(SyntaxNode *root, int n);
 virtual bool    endsWithGoto() { return false; }
-virtual SyntaxNode *getEnclosingLoop(SyntaxNode *pFor, SyntaxNode *cur = NULL) {
+virtual SyntaxNode *getEnclosingLoop(SyntaxNode *pFor, SyntaxNode *cur = nullptr) {
             if (this == pFor) return cur;
             return pBody->getEnclosingLoop(pFor, this);
         }
@@ -371,7 +371,7 @@ virtual int        getNumOutEdges() {
         }
 virtual SyntaxNode *getOutEdge(SyntaxNode *root, int n);
 virtual bool    endsWithGoto() { return false; }
-virtual SyntaxNode *getEnclosingLoop(SyntaxNode *pFor, SyntaxNode *cur = NULL) {
+virtual SyntaxNode *getEnclosingLoop(SyntaxNode *pFor, SyntaxNode *cur = nullptr) {
             if (this == pFor) return cur;
             return pBody->getEnclosingLoop(pFor, this);
         }
@@ -402,10 +402,10 @@ virtual int getNumOutEdges() {
             return 0;
         }
 virtual SyntaxNode *getOutEdge(SyntaxNode *root, int n) {
-            return NULL;
+            return nullptr;
         }
 virtual bool endsWithGoto() { return false; }
-virtual SyntaxNode *getEnclosingLoop(SyntaxNode *pFor, SyntaxNode *cur = NULL) {
+virtual SyntaxNode *getEnclosingLoop(SyntaxNode *pFor, SyntaxNode *cur = nullptr) {
             if (this == pFor) return cur;
             return pBody->getEnclosingLoop(pFor, this);
         }

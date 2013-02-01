@@ -121,8 +121,8 @@ Ternary::Ternary(Ternary& o)
     assert(subExp1 && subExp2 && subExp3);
 }
 
-TypedExp::TypedExp() : Unary(opTypedExp), type(NULL) { }
-TypedExp::TypedExp(Exp* e1) : Unary(opTypedExp, e1), type(NULL) { }
+TypedExp::TypedExp() : Unary(opTypedExp), type(nullptr) { }
+TypedExp::TypedExp(Exp* e1) : Unary(opTypedExp, e1), type(nullptr) { }
 TypedExp::TypedExp(Type* ty, Exp* e1) : Unary(opTypedExp, e1), type(ty) { }
 TypedExp::TypedExp(TypedExp& o) : Unary(opTypedExp) {
     subExp1 = o.subExp1->clone();
@@ -144,12 +144,12 @@ TypeVal::TypeVal(Type* ty) : Terminal(opTypeVal), val(ty) { }
  */
 Location::Location(OPER op, Exp *exp, UserProc *proc) : Unary(op, exp), proc(proc) {
     assert(op == opRegOf || op == opMemOf || op == opLocal || op == opGlobal || op == opParam || op == opTemp);
-    if (proc == NULL) {
+    if (proc == nullptr) {
         // eep.. this almost always causes problems
         Exp *e = exp;
         if (e) {
             bool giveUp = false;
-            while (this->proc == NULL && !giveUp) {
+            while (this->proc == nullptr && !giveUp) {
                 switch(e->getOper()) {
                     case opRegOf:
                     case opMemOf:
@@ -402,10 +402,10 @@ bool RefExp::operator==(const Exp& o) const {
     if (!( *subExp1 == *((RefExp&)o).subExp1)) return false;
     // Allow a def of (Statement*)-1 as a wild card
     if ((long)def == -1) return true;
-    // Allow a def of NULL to match a def of an implicit assignment
+    // Allow a def of nullptr to match a def of an implicit assignment
     if ((long)((RefExp&)o).def == -1) return true;
-    if (def == NULL && ((RefExp&)o).isImplicitDef()) return true;
-    if (((RefExp&)o).def == NULL && def && def->isImplicit()) return true;
+    if (def == nullptr && ((RefExp&)o).isImplicitDef()) return true;
+    if (((RefExp&)o).def == nullptr && def && def->isImplicit()) return true;
     return def == ((RefExp&)o).def;
 }
 
@@ -696,8 +696,8 @@ void Binary::print(std::ostream& os, bool html) {
     }
 
     // Ordinary infix operators. Emit parens around the binary
-    if (p1 == NULL)
-        os << "<NULL>";
+    if (p1 == nullptr)
+        os << "<nullptr>";
     else
         p1->printr(os, html);
     switch (op) {
@@ -745,8 +745,8 @@ void Binary::print(std::ostream& os, bool html) {
             assert(0);
     }
 
-    if (p2 == NULL)
-        os << "<NULL>";
+    if (p2 == nullptr)
+        os << "<nullptr>";
     else
         p2->printr(os, html);
 
@@ -963,26 +963,26 @@ void Ternary::print(std::ostream& os, bool html) {
             }
             // Use print not printr here, since , has the lowest precendence of all.
             // Also it makes it the same as UQBT, so it's easier to test
-            if (p1) p1->print(os, html); else os << "<NULL>"; os << ",";
-            if (p2) p2->print(os, html); else os << "<NULL>"; os << ",";
-            if (p3) p3->print(os, html); else os << "<NULL>"; os << ")";
+            if (p1) p1->print(os, html); else os << "<nullptr>"; os << ",";
+            if (p2) p2->print(os, html); else os << "<nullptr>"; os << ",";
+            if (p3) p3->print(os, html); else os << "<nullptr>"; os << ")";
             return;
         default:
             break;
     }
     // Else must be ?: or @ (traditional ternary operators)
-    if (p1) p1->printr(os, html); else os << "<NULL>";
+    if (p1) p1->printr(os, html); else os << "<nullptr>";
     if (op == opTern) {
         os << " ? ";
-        if (p2) p2->printr(os, html); else os << "<NULL>";
+        if (p2) p2->printr(os, html); else os << "<nullptr>";
         os << " : ";        // Need wide spacing here
-        if (p3) p3->print(os, html); else os << "<NULL>";
+        if (p3) p3->print(os, html); else os << "<nullptr>";
     }
     else if (op == opAt) {
         os << "@";
-        if (p2) p2->printr(os, html); else os << "NULL>";
+        if (p2) p2->printr(os, html); else os << "nullptr>";
         os << ":";
-        if (p3) p3->printr(os, html); else os << "NULL>";
+        if (p3) p3->printr(os, html); else os << "nullptr>";
     } else {
         LOG << "Ternary::print invalid operator " << operStrings[op] << "\n";
         assert(0);
@@ -1005,7 +1005,7 @@ void TypedExp::print(std::ostream& os, bool html) {
 //    //    //    //
 void RefExp::print(std::ostream& os, bool html) {
     if (subExp1) subExp1->print(os, html);
-    else os << "<NULL>";
+    else os << "<nullptr>";
     if (html)
         os << "<sub>";
     else
@@ -1032,7 +1032,7 @@ void TypeVal::print(std::ostream& os, bool html) {
     if (val)
         os << "<" << val->getCtype() << ">";
     else
-        os << "<NULL>";
+        os << "<nullptr>";
 }
 
 /***************************************************************************//**
@@ -1250,14 +1250,14 @@ int Exp::getVarIndex() {
  ******************************************************************************/
 Exp* Exp::getGuard() {
     if (op == opGuard) return ((Unary*)this)->getSubExp1();
-    return NULL;
+    return nullptr;
 }
 
 /***************************************************************************//**
  *
  * \brief        Matches this expression to the given patten
  * PARAMETERS:        pattern to match
- * \returns            list of variable bindings, or NULL if matching fails
+ * \returns            list of variable bindings, or nullptr if matching fails
  ******************************************************************************/
 Exp* Exp::match(Exp *pattern) {
     if (*this == *pattern)
@@ -1267,7 +1267,7 @@ Exp* Exp::match(Exp *pattern) {
                           new Binary(opEquals, pattern->clone(), this->clone()),
                           new Terminal(opNil));
     }
-    return NULL;
+    return nullptr;
 }
 Exp* Unary::match(Exp *pattern) {
     assert(subExp1);
@@ -1280,11 +1280,11 @@ Exp* Binary::match(Exp *pattern) {
     assert(subExp1 && subExp2);
     if (op == pattern->getOper()) {
         Exp *b_lhs = subExp1->match(pattern->getSubExp1());
-        if (b_lhs == NULL)
-            return NULL;
+        if (b_lhs == nullptr)
+            return nullptr;
         Exp *b_rhs = subExp2->match(pattern->getSubExp2());
-        if (b_rhs == NULL)
-            return NULL;
+        if (b_rhs == nullptr)
+            return nullptr;
         if (b_lhs->getOper() == opNil)
             return b_rhs;
         if (b_rhs->getOper() == opNil)
@@ -1302,7 +1302,7 @@ Exp* Binary::match(Exp *pattern) {
                     LOG << "disagreement in match: " << l->getSubExp1()->getSubExp2() << " != " <<
                            r->getSubExp1()->getSubExp2() << "\n";
 #endif
-                    return NULL;        // must be agreement between LHS and RHS
+                    return nullptr;        // must be agreement between LHS and RHS
                 } else
                     result = new Binary(opList, l->getSubExp1()->clone(), result);
         for (Exp *r = b_rhs; r->getOper() != opNil; r = r->getSubExp2())
@@ -1352,7 +1352,7 @@ const char *tlstrchr(const char *str, char ch) {
         if (*str)
             str++;
     }
-    return NULL;
+    return nullptr;
 }
 
 /***************************************************************************//**
@@ -1460,7 +1460,7 @@ bool RefExp::match(const char *pattern, std::map<std::string, Exp*> &bindings) {
     const char *end = pattern + strlen(pattern) - 1;
     if (end > pattern && *end == '}') {
         end--;
-        if (*end == '-' && def == NULL) {
+        if (*end == '-' && def == nullptr) {
             char *sub = strdup(pattern);
             *(sub + (end - 1 - pattern)) = 0;
             return subExp1->match(sub, bindings);
@@ -2534,7 +2534,7 @@ Exp* Binary::polySimplify(bool& bMod) {
     // FIXME: suspect this was only needed for ADHOC TA
     // check for exp + n where exp is a pointer to a compound type
     // becomes &m[exp].m + r where m is the member at offset n and r is n - the offset to member m
-    Type* ty = NULL;            // Type of subExp1
+    Type* ty = nullptr;            // Type of subExp1
     if (subExp1->isSubscript()) {
         Statement* def = ((RefExp*)subExp1)->getDef();
         if (def)
@@ -2549,7 +2549,7 @@ Exp* Binary::polySimplify(bool& bMod) {
             unsigned r = c->getOffsetRemainder(n*8);
             assert((r % 8) == 0);
             const char *nam = c->getNameAtOffset(n*8);
-            if (nam != NULL && std::string("pad") != nam) {
+            if (nam != nullptr && std::string("pad") != nam) {
                 Location *l = Location::memOf(subExp1);
                 //l->setType(c);
                 res = new Binary(opPlus,
@@ -2724,7 +2724,7 @@ Exp* Binary::polySimplify(bool& bMod) {
         Location *loc = (Location*)subExp2;
         unsigned n = (unsigned)((Const*)subExp1)->getInt();
         Type *ty = loc->getType();
-        if (ty == NULL)
+        if (ty == nullptr)
             loc->setType(new SizeType(n));
         else if (ty->getSize() != n)
             ty->setSize(n);
@@ -2895,7 +2895,7 @@ Exp* RefExp::polySimplify(bool& bMod) {
     /* This is a nasty hack.  We assume that %DF{0} is 0.  This happens when string instructions are used without first
          * clearing the direction flag.  By convention, the direction flag is assumed to be clear on entry to a procedure.
          */
-    if (subExp1->getOper() == opDF && def == NULL) {
+    if (subExp1->getOper() == opDF && def == nullptr) {
         res = new Const(0);
         bMod = true;
         return res;
@@ -3114,7 +3114,7 @@ Exp *Exp::removeSubscripts(bool& allZero) {
         if ((*xx)->getOper() == opSubscript) {
             RefExp *r1 = (RefExp*)*xx;
             Statement* def = r1->getDef();
-            if (!(def == NULL || def->getNumber() == 0)) {
+            if (!(def == nullptr || def->getNumber() == 0)) {
                 allZero = false;
             }
             bool change;
@@ -3228,7 +3228,7 @@ Exp* Const::genConstraints(Exp* result) {
             t = new FloatType();    // size is not known. Assume double for now
             break;
         default:
-            return NULL;
+            return nullptr;
     }
     TypeVal* tv = new TypeVal(t);
     Exp* e = new Binary(opEquals, result->clone(), tv);
@@ -3256,8 +3256,8 @@ Exp* Unary::genConstraints(Exp* result) {
 }
 
 Exp* Ternary::genConstraints(Exp* result) {
-    Type* argHasToBe = NULL;
-    Type* retHasToBe = NULL;
+    Type* argHasToBe = nullptr;
+    Type* retHasToBe = nullptr;
     switch (op) {
         case opFsize:
         case opItof:
@@ -3292,7 +3292,7 @@ Exp* Ternary::genConstraints(Exp* result) {
         default:
             break;
     }
-    Exp* res = NULL;
+    Exp* res = nullptr;
     if (retHasToBe) {
         if (result->isTypeVal()) {
             // result is a constant type, or possibly a partial type such as
@@ -3315,7 +3315,7 @@ Exp* Ternary::genConstraints(Exp* result) {
         if (res) res = new Binary(opAnd, res, con);
         else res = con;
     }
-    if (res == NULL)
+    if (res == nullptr)
         return new Terminal(opTrue);
     return res;
 }
@@ -3348,10 +3348,10 @@ Exp* Binary::constrainSub(TypeVal* typeVal1, TypeVal* typeVal2) {
 Exp* Binary::genConstraints(Exp* result) {
     assert(subExp1 && subExp2);
 
-    Type* restrictTo = NULL;
+    Type* restrictTo = nullptr;
     if (result->isTypeVal())
         restrictTo = ((TypeVal*)result)->getType();
-    Exp* res = NULL;
+    Exp* res = nullptr;
     IntegerType* intType = new IntegerType(0);    // Wild size (=0)
     TypeVal intVal(intType);
     switch (op) {
@@ -3734,13 +3734,13 @@ Exp* TypeVal::accept(ExpModifier* v) {
 }
 
 void child(Exp* e, int ind) {
-    if (e == NULL) {
-        std::cerr << std::setw(ind+4) << " " << "<NULL>\n" << std::flush;
+    if (e == nullptr) {
+        std::cerr << std::setw(ind+4) << " " << "<nullptr>\n" << std::flush;
         return;
     }
     void* vt = *(void**)e;
-    if (vt == NULL) {
-        std::cerr << std::setw(ind+4) << " " << "<NULL VT>\n" << std::flush;
+    if (vt == nullptr) {
+        std::cerr << std::setw(ind+4) << " " << "<nullptr VT>\n" << std::flush;
         return;
     }
     e->printx(ind+4);
@@ -3803,7 +3803,7 @@ void Terminal::printx(int ind) {
 void RefExp::printx(int ind) {
     std::cerr << std::setw(ind) << " " << operStrings[op] << " ";
     std::cerr << "{";
-    if (def == 0) std::cerr << "NULL";
+    if (def == 0) std::cerr << "nullptr";
         else std::cerr << ADDRESS::host_ptr(def) << "=" << def->getNumber();
     std::cerr << "}\n" << std::flush;
     child(subExp1, ind);
@@ -3818,7 +3818,7 @@ const char* Exp::getAnyStrConst() {
         if (e->op == opMemOf)
             e = ((Location*)e)->getSubExp1();
     }
-    if (e->op != opStrConst) return NULL;
+    if (e->op != opStrConst) return nullptr;
     return ((Const*)e)->getStr();
 }
 
@@ -3835,15 +3835,15 @@ Exp* Exp::expSubscriptVar(Exp* e, Statement* def) {
     return accept(&es);
 }
 
-// Subscript any occurrences of e with e{-} in this expression Note: subscript with NULL, not implicit assignments as
+// Subscript any occurrences of e with e{-} in this expression Note: subscript with nullptr, not implicit assignments as
 // above
 Exp* Exp::expSubscriptValNull(Exp* e) {
-    return expSubscriptVar(e, NULL);
+    return expSubscriptVar(e, nullptr);
 }
 
 // Subscript all locations in this expression with their implicit assignments
 Exp* Exp::expSubscriptAllNull(/*Cfg* cfg*/) {
-    return expSubscriptVar(new Terminal(opWild), NULL /* was NULL, NULL, cfg */);
+    return expSubscriptVar(new Terminal(opWild), nullptr /* was nullptr, nullptr, cfg */);
 }
 
 Location* Location::local(const char *nam, UserProc *p) {
@@ -3852,11 +3852,11 @@ Location* Location::local(const char *nam, UserProc *p) {
 
 // Don't put in exp.h, as this would require statement.h including before exp.h
 bool RefExp::isImplicitDef() {
-    return def == NULL || def->getKind() == STMT_IMPASSIGN;
+    return def == nullptr || def->getKind() == STMT_IMPASSIGN;
 }
 
 Exp* Exp::bypass() {
-    CallBypasser cb(NULL);
+    CallBypasser cb(nullptr);
     return accept(&cb);
 }
 

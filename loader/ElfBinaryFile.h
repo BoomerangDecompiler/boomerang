@@ -203,7 +203,7 @@ public:
     ADDRESS        GetRelocatedAddress(ADDRESS uNative);
     //ADDRESS        ApplyRelocation(ADDRESS uNative, ADDRESS uWord);
     // Get symbol associated with relocation at address, if any
-    //const char* GetRelocSym(ADDRESS uNative, ADDRESS *a = NULL, unsigned int *sz = NULL);
+    //const char* GetRelocSym(ADDRESS uNative, ADDRESS *a = nullptr, unsigned int *sz = nullptr);
     virtual bool IsRelocationAt(ADDRESS uNative);
     virtual    const char *getFilenameSymbolFor(const char *sym);
 

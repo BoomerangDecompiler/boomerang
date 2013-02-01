@@ -208,7 +208,7 @@ typedef std::set<Exp*, lessExpStar>::iterator iterator;
         void        dump();
         void        diff(LocationSet* o);                    // Diff 2 location sets to std::cerr
         bool        exists(Exp* e);                         // Return true if the location exists in the set
-        Exp*        findNS(Exp* e);                            // Find location e (no subscripts); NULL if not found
+        Exp*        findNS(Exp* e);                            // Find location e (no subscripts); nullptr if not found
         bool        existsImplicit(Exp* e);                    // Search for location e{-} or e{0} (e has no subscripts)
         // Return an iterator to the found item (or end() if not). Only really makes sense if e has a wildcard
         iterator    find(Exp* e) {return lset.find(e); }
@@ -252,7 +252,7 @@ public:
         void        unionwith(RangeMap &other);
         void        widenwith(RangeMap &other);
         void        print(std::ostream &os);
-        Exp            * substInto(Exp *e, std::set<Exp*, lessExpStar> *only = NULL);
+        Exp            * substInto(Exp *e, std::set<Exp*, lessExpStar> *only = nullptr);
         void        killAllMemOfs();
         void        clear() { ranges.clear(); }
         bool        isSubset(RangeMap &other);
@@ -269,18 +269,20 @@ class ConnectionGraph {
     std::multimap<Exp*, Exp*, lessExpStar> emap;                // The map
 public:
 typedef std::multimap<Exp*, Exp*, lessExpStar>::iterator iterator;
-                    ConnectionGraph() {}
+typedef std::multimap<Exp*, Exp*, lessExpStar>::const_iterator const_iterator;
+                        ConnectionGraph() {}
 
-        void        add(Exp* a, Exp* b);            // Add pair with check for existing
-        void        connect(Exp* a, Exp* b);
-        iterator    begin() {return emap.begin();}
-        iterator    end() {return emap.end();}
-        int            count(Exp* a);                    // Return a count of locations connected to a
-        bool        isConnected(Exp* a, Exp* b);    // Return true if a is connected to b
-        // Update the map that used to be a <-> b, now it is a <-> c
-        void        update(Exp* a, Exp* b, Exp* c);
-        iterator    remove(iterator aa);            // Remove the mapping at *aa
-        void        dump();                            // Dump for debugging
+        void            add(Exp* a, Exp* b);            // Add pair with check for existing
+        void            connect(Exp* a, Exp* b);
+        iterator        begin() {return emap.begin();}
+        iterator        end() {return emap.end();}
+        const_iterator  begin() const {return emap.begin();}
+        const_iterator  end() const {return emap.end();}
+        int             count(Exp* a) const;
+        bool            isConnected(Exp *a, const Exp& b) const;
+        void            update(Exp* a, Exp *b, Exp *c);
+        iterator        remove(iterator aa);            // Remove the mapping at *aa
+        void            dump() const;                            // Dump for debugging
 };
 
 #endif    // #ifdef __MANAGED_H__

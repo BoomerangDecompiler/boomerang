@@ -131,8 +131,8 @@ public:
     Signature *sig;
     SymbolMods *mods;
 
-    Symbol(ADDRESS a) : addr(a), nam(""), ty(NULL), sig(NULL),
-        mods(NULL) { }
+    Symbol(ADDRESS a) : addr(a), nam(""), ty(nullptr), sig(nullptr),
+        mods(nullptr) { }
 };
 
 class SymbolMods {
@@ -148,7 +148,7 @@ public:
     Exp *exp;
     int sp;
 
-    CustomOptions() : exp(NULL), sp(0) { }
+    CustomOptions() : exp(nullptr), sp(0) { }
 };
 
 class SymbolRef {
@@ -1668,7 +1668,7 @@ YY_AnsiCParser_PARSE_PARAM_DEF
             break;}
         case 28:
 #line 278 "c/ansi-c.y"
-        { Signature *sig = Signature::instantiate(plat, cc, NULL);
+        { Signature *sig = Signature::instantiate(plat, cc, nullptr);
             sig->addReturn(yyvsp[-7].type);
             for (std::list<Parameter*>::iterator it = yyvsp[-1].param_list->begin();
                  it != yyvsp[-1].param_list->end(); it++)
@@ -1692,7 +1692,7 @@ YY_AnsiCParser_PARSE_PARAM_DEF
             break;}
         case 31:
 #line 298 "c/ansi-c.y"
-        { Signature *sig = Signature::instantiate(plat, cc, NULL);
+        { Signature *sig = Signature::instantiate(plat, cc, nullptr);
             sig->addReturn(yyvsp[-8].type);
             for (std::list<Parameter*>::iterator it = yyvsp[-2].param_list->begin();
                  it != yyvsp[-2].param_list->end(); it++)
@@ -1860,12 +1860,12 @@ YY_AnsiCParser_PARSE_PARAM_DEF
             break;}
         case 48:
 #line 451 "c/ansi-c.y"
-        { yyval.type = new ArrayType(NULL, yyvsp[-1].ival);
+        { yyval.type = new ArrayType(nullptr, yyvsp[-1].ival);
             ;
             break;}
         case 49:
 #line 454 "c/ansi-c.y"
-        { yyval.type = new ArrayType(NULL);
+        { yyval.type = new ArrayType(nullptr);
             ;
             break;}
         case 50:
@@ -1980,7 +1980,7 @@ YY_AnsiCParser_PARSE_PARAM_DEF
         case 73:
 #line 526 "c/ansi-c.y"
         { //$$ = Type::getNamedType($1);
-            //if ($$ == NULL)
+            //if ($$ == nullptr)
             yyval.type = new NamedType(yyvsp[0].str);
             ;
             break;}

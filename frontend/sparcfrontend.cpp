@@ -109,7 +109,7 @@ bool SparcFrontEnd::optimise_DelayCopy(ADDRESS src, ADDRESS dest, int delta, ADD
  *                    rtl - pointer to the RTL for the call instruction
  *                    delay - the RTL for the delay instruction (e.g. "restore")
  *                    cfg - the CFG of the procedure
- * \returns             The basic block containing the single return instruction if this optimisation applies, NULL
+ * \returns             The basic block containing the single return instruction if this optimisation applies, nullptr
  *                    otherwise.
  ******************************************************************************/
 BasicBlock* SparcFrontEnd::optimise_CallReturn(CallStatement* call, RTL* rtl, RTL* delay, UserProc* pProc) {
@@ -135,14 +135,14 @@ BasicBlock* SparcFrontEnd::optimise_CallReturn(CallStatement* call, RTL* rtl, RT
     }
     else
         // May want to put code here that checks whether or not the delay instruction redefines %o7
-        return NULL;
+        return nullptr;
 }
 
 /***************************************************************************//**
  * FUNCTION:        handleBranch
  * \brief        Adds the destination of a branch to the queue of address that must be decoded (if this destination
  *                    has not already been visited).
- * PARAMETERS:        newBB - the new basic block delimited by the branch instruction. May be NULL if this block has been
+ * PARAMETERS:        newBB - the new basic block delimited by the branch instruction. May be nullptr if this block has been
  *                    built before.
  *                    dest - the destination being branched to
  *                    hiAddress - the last address in the current procedure
@@ -152,7 +152,7 @@ BasicBlock* SparcFrontEnd::optimise_CallReturn(CallStatement* call, RTL* rtl, RT
  *                    BB. It will then be changed to point to a new BB beginning with the dest
  ******************************************************************************/
 void SparcFrontEnd::handleBranch(ADDRESS dest, ADDRESS hiAddress, BasicBlock*& newBB, Cfg* cfg, TargetQueue& tq) {
-    if (newBB == NULL)
+    if (newBB == nullptr)
         return;
 
     if (dest < hiAddress) {
@@ -179,7 +179,7 @@ void SparcFrontEnd::handleBranch(ADDRESS dest, ADDRESS hiAddress, BasicBlock*& n
 void SparcFrontEnd::handleCall(UserProc *proc, ADDRESS dest, BasicBlock* callBB, Cfg* cfg, ADDRESS address,
                                int offset/* = 0*/)
 {
-    if (callBB == NULL)
+    if (callBB == nullptr)
         return;
 
     // If the destination address is the same as this very instruction, we have a call with iDisp30 == 0. Don't treat
@@ -220,7 +220,7 @@ void SparcFrontEnd::case_unhandled_stub(ADDRESS addr)
  *                     callList - a list of pointers to CallStatements for procs yet to be processed
  *                     os - output stream for rtls
  *                     isPattern - true if the call is an idiomatic pattern (e.g. a move_call_move pattern)
- * SIDE EFFECTS:     address may change; BB_rtls may be appended to or set NULL
+ * SIDE EFFECTS:     address may change; BB_rtls may be appended to or set nullptr
  * \returns              true if next instruction is to be fetched sequentially from this one
  ******************************************************************************/
 bool SparcFrontEnd::case_CALL(ADDRESS& address, DecodeResult& inst, DecodeResult& delay_inst,
@@ -247,7 +247,7 @@ bool SparcFrontEnd::case_CALL(ADDRESS& address, DecodeResult& inst, DecodeResult
     // Don't test for small offsets if part of a move_call_move pattern.
     // These patterns assign to %o7 in the delay slot, and so can't possibly be used to copy %pc to %o7
     // Similarly if followed by a restore
-    if (!isPattern && (returnBB == NULL) && (disp30 == 2 || disp30 == 3)) {
+    if (!isPattern && (returnBB == nullptr) && (disp30 == 2 || disp30 == 3)) {
         // This is the idiomatic case where the destination is 1 or 2 instructions after the delayed instruction.
         // Only emit the side effect of the call (%o7 := %pc) in this case.  Note that the side effect occurs before the
         // delay slot instruction (which may use the value of %o7)
@@ -261,7 +261,7 @@ bool SparcFrontEnd::case_CALL(ADDRESS& address, DecodeResult& inst, DecodeResult
         // First check for helper functions
         ADDRESS dest = call_stmt->getFixedDest();
         // Special check for calls to weird PLT entries which don't have symbols
-        if ((pBF->IsDynamicLinkedProc(dest)) && (pBF->SymbolByAddress(dest) == NULL)) {
+        if ((pBF->IsDynamicLinkedProc(dest)) && (pBF->SymbolByAddress(dest) == nullptr)) {
             // This is one of those. Flag this as an invalid instruction
             inst.valid = false;
         }
@@ -276,7 +276,7 @@ bool SparcFrontEnd::case_CALL(ADDRESS& address, DecodeResult& inst, DecodeResult
         // End the current basic block
         Cfg* cfg = proc->getCFG();
         BasicBlock* callBB = cfg->newBB(BB_rtls, CALL, 1);
-        if (callBB == NULL)
+        if (callBB == nullptr)
             return false;
 
         // Add this call site to the set of call sites which need to be analysed later.
@@ -333,7 +333,7 @@ bool SparcFrontEnd::case_CALL(ADDRESS& address, DecodeResult& inst, DecodeResult
                 // Continue decoding from the lexical successor
                 address += offset;
             }
-            BB_rtls = NULL;
+            BB_rtls = nullptr;
 
             return ret;
         }
@@ -352,7 +352,7 @@ bool SparcFrontEnd::case_CALL(ADDRESS& address, DecodeResult& inst, DecodeResult
  *                     cfg - the CFG of the enclosing procedure
  *                     tq: Object managing the target queue
  *                     os - output stream for rtls
- * SIDE EFFECTS:     address may change; BB_rtls may be appended to or set NULL
+ * SIDE EFFECTS:     address may change; BB_rtls may be appended to or set nullptr
  * \returns              <nothing>
  ******************************************************************************/
 void SparcFrontEnd::case_SD(ADDRESS& address, int delta, ADDRESS hiAddress, DecodeResult& inst,
@@ -386,12 +386,12 @@ void SparcFrontEnd::case_SD(ADDRESS& address, int delta, ADDRESS hiAddress, Deco
 
     // Add the one-way branch BB
     PBB pBB = cfg->newBB(BB_rtls, ONEWAY, 1);
-    if (pBB == 0) { BB_rtls = NULL; return; }
+    if (pBB == 0) { BB_rtls = nullptr; return; }
 
     // Visit the destination, and add the out-edge
     ADDRESS uDest = SD_stmt->getFixedDest();
     handleBranch(uDest, hiAddress, pBB, cfg, tq);
-    BB_rtls = NULL;
+    BB_rtls = nullptr;
 }
 
 
@@ -407,7 +407,7 @@ void SparcFrontEnd::case_SD(ADDRESS& address, int delta, ADDRESS hiAddress, Deco
  *                     tq: Object managing the target queue
  *                     proc: pointer to the current Proc object
  *                     callSet - a set of pointers to CallStatements for procs yet to be processed
- * SIDE EFFECTS:     address may change; BB_rtls may be appended to or set NULL
+ * SIDE EFFECTS:     address may change; BB_rtls may be appended to or set nullptr
  * \returns              true if next instruction is to be fetched sequentially from this one
  ******************************************************************************/
 bool SparcFrontEnd::case_DD(ADDRESS& address, int delta, DecodeResult& inst, DecodeResult& delay_inst,
@@ -445,7 +445,7 @@ bool SparcFrontEnd::case_DD(ADDRESS& address, int delta, DecodeResult& inst, Dec
             newBB = cfg->newBB(BB_rtls, COMPJUMP, 0);
             bRet = false;
             Exp* pDest = ((CaseStatement*)lastStmt)->getDest();
-            if (pDest == NULL) {                // Happens if already analysed (we are now redecoding)
+            if (pDest == nullptr) {                // Happens if already analysed (we are now redecoding)
                 //SWITCH_INFO* psi = ((CaseStatement*)lastStmt)->getSwitchInfo();
                 // processSwitch will update the BB type and number of outedges, decode arms, set out edges, etc
                 newBB->processSwitch(proc);
@@ -453,10 +453,10 @@ bool SparcFrontEnd::case_DD(ADDRESS& address, int delta, DecodeResult& inst, Dec
             break;
         }
         default:
-            newBB = NULL;
+            newBB = nullptr;
             break;
     }
-    if (newBB == NULL) return false;
+    if (newBB == nullptr) return false;
 
     Statement* last = inst.rtl->getList().back();
     // Do extra processing for for special types of DD
@@ -465,7 +465,7 @@ bool SparcFrontEnd::case_DD(ADDRESS& address, int delta, DecodeResult& inst, Dec
         // Attempt to add a return BB if the delay instruction is a RESTORE
         CallStatement*    call_stmt = (CallStatement*)(inst.rtl->getList().back());
         BasicBlock* returnBB = optimise_CallReturn(call_stmt, inst.rtl, delay_inst.rtl, proc);
-        if (returnBB != NULL) {
+        if (returnBB != nullptr) {
             cfg->addOutEdge(newBB,returnBB);
 
             // We have to set the epilogue for the enclosing procedure (all proc's must have an
@@ -494,7 +494,7 @@ bool SparcFrontEnd::case_DD(ADDRESS& address, int delta, DecodeResult& inst, Dec
 
     // Set the address of the lexical successor of the call that is to be decoded next and create a new list of
     // RTLs for the next basic block.
-    BB_rtls = NULL;
+    BB_rtls = nullptr;
     return bRet;
 }
 
@@ -510,7 +510,7 @@ bool SparcFrontEnd::case_DD(ADDRESS& address, int delta, DecodeResult& inst, Dec
  *                     BB_rtls - the list of RTLs currently built for the BB under construction
  *                     cfg - the CFG of the enclosing procedure
  *                     tq: Object managing the target queue
- * SIDE EFFECTS:     address may change; BB_rtls may be appended to or set NULL
+ * SIDE EFFECTS:     address may change; BB_rtls may be appended to or set nullptr
  * \returns              true if next instruction is to be fetched sequentially from this one
  ******************************************************************************/
 bool SparcFrontEnd::case_SCD(ADDRESS& address, int delta, ADDRESS hiAddress,
@@ -534,7 +534,7 @@ bool SparcFrontEnd::case_SCD(ADDRESS& address, int delta, ADDRESS hiAddress,
         cfg->addOutEdge(pBB, address+4);
         address += 4;            // Skip the SCD only
         // Start a new list of RTLs for the next BB
-        BB_rtls = NULL;
+        BB_rtls = nullptr;
         std::cerr << "Warning: instruction at " << std::hex << address <<
                      " not copied to true leg of preceeding branch\n";
         return true;
@@ -606,7 +606,7 @@ bool SparcFrontEnd::case_SCD(ADDRESS& address, int delta, ADDRESS hiAddress,
         address += 4;
     }
     // Start a new list of RTLs for the next BB
-    BB_rtls = NULL;
+    BB_rtls = nullptr;
     return true;
 }
 
@@ -623,7 +623,7 @@ bool SparcFrontEnd::case_SCD(ADDRESS& address, int delta, ADDRESS hiAddress,
  *                    BB_rtls - the list of RTLs currently built for the BB under construction
  *                    cfg - the CFG of the enclosing procedure
  *                    tq: Object managing the target queue
- * SIDE EFFECTS:    address may change; BB_rtls may be appended to or set NULL
+ * SIDE EFFECTS:    address may change; BB_rtls may be appended to or set nullptr
  * \returns             true if next instruction is to be fetched sequentially from this one
  ******************************************************************************/
 bool SparcFrontEnd::case_SCDAN(ADDRESS& address, int delta, ADDRESS hiAddress,
@@ -676,7 +676,7 @@ bool SparcFrontEnd::case_SCDAN(ADDRESS& address, int delta, ADDRESS hiAddress,
     // Could need a jump to the following BB, e.g. if uDest is the delay slot instruction itself! e.g. beq,a $+8
     pBB->setJumpReqd();
     address += 8;            // Skip branch and delay
-    BB_rtls = NULL;            // Start new BB return true;
+    BB_rtls = nullptr;            // Start new BB return true;
     return true;
 }
 
@@ -804,13 +804,13 @@ bool SparcFrontEnd::processProc(ADDRESS address, UserProc* proc, std::ofstream &
 
             // Need to construct a new list of RTLs if a basic block has just been finished but decoding is continuing
             // from its lexical successor
-            if (BB_rtls == NULL)
+            if (BB_rtls == nullptr)
                 BB_rtls = new std::list<RTL*>();
 
             // Define aliases to the RTLs so that they can be treated as a high level types where appropriate.
             RTL* rtl = inst.rtl;
-            GotoStatement*     stmt_jump = NULL;
-            Statement* last = NULL;
+            GotoStatement*     stmt_jump = nullptr;
+            Statement* last = nullptr;
             std::list<Statement*>& slist = rtl->getList();
             if (slist.size()) {
                 last = slist.back();
@@ -1010,8 +1010,8 @@ bool SparcFrontEnd::processProc(ADDRESS address, UserProc* proc, std::ofstream &
                                 handleCall(proc, dest, cfg->newBB(BB_rtls,CALL, 1), cfg, address, 8);
 
                                 // Set the address of the lexical successor of the call that is to be decoded next. Set RTLs
-                                // to NULL so that a new list of RTLs will be created for the next BB.
-                                BB_rtls = NULL;
+                                // to nullptr so that a new list of RTLs will be created for the next BB.
+                                BB_rtls = nullptr;
                                 address = address + 8;
 
                                 // Add this call site to the set of call sites which need to be analyzed later.
@@ -1049,7 +1049,7 @@ bool SparcFrontEnd::processProc(ADDRESS address, UserProc* proc, std::ofstream &
                     RTL* delay_rtl = delay_inst.rtl;
 
                     // Display RTL representation if asked
-                    if (Boomerang::get()->printRtl && delay_rtl != NULL)
+                    if (Boomerang::get()->printRtl && delay_rtl != nullptr)
                         delay_rtl->print(os);
 
                     switch(delay_inst.type) {
@@ -1079,7 +1079,7 @@ bool SparcFrontEnd::processProc(ADDRESS address, UserProc* proc, std::ofstream &
                     RTL* delay_rtl = delay_inst.rtl;
 
                     // Display low level RTL representation if asked
-                    if (Boomerang::get()->printRtl && delay_rtl != NULL)
+                    if (Boomerang::get()->printRtl && delay_rtl != nullptr)
                         delay_rtl->print(os);
 
                     switch(delay_inst.type) {
@@ -1111,7 +1111,7 @@ bool SparcFrontEnd::processProc(ADDRESS address, UserProc* proc, std::ofstream &
                     RTL* delay_rtl = delay_inst.rtl;
 
                     // Display RTL representation if asked
-                    if (Boomerang::get()->printRtl && delay_rtl != NULL)
+                    if (Boomerang::get()->printRtl && delay_rtl != nullptr)
                         delay_rtl->print(os);
 
                     switch(delay_inst.type) {
@@ -1130,7 +1130,7 @@ bool SparcFrontEnd::processProc(ADDRESS address, UserProc* proc, std::ofstream &
                             // Add the "false" leg: point past the delay inst
                             cfg->addOutEdge(pBB, address+8);
                             address += 8;            // Skip branch and delay
-                            BB_rtls = NULL;            // Start new BB
+                            BB_rtls = nullptr;            // Start new BB
                             break;
                         }
 
@@ -1164,7 +1164,7 @@ bool SparcFrontEnd::processProc(ADDRESS address, UserProc* proc, std::ofstream &
                     // Add an out edge to this address
                     if (pBB) {
                         cfg->addOutEdge(pBB, address);
-                        BB_rtls = NULL;            // Need new list of RTLs
+                        BB_rtls = nullptr;            // Need new list of RTLs
                     }
                 }
                 // Pick a new address to decode from, if the BB is complete
@@ -1279,7 +1279,7 @@ void SparcFrontEnd::quadOperation(ADDRESS addr, std::list<RTL*>* lrtl, OPER op)
 bool SparcFrontEnd::helperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL*>* lrtl) {
     if (!pBF->IsDynamicLinkedProc(dest)) return false;
     const char* p = pBF->SymbolByAddress(dest);
-    if (p == NULL) {
+    if (p == nullptr) {
         std::cerr << "Error: Can't find symbol for PLT address " << std::hex << dest << std::endl;
         return false;
     }

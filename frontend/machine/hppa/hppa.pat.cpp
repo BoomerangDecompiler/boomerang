@@ -1809,11 +1809,11 @@ Logue* InstructionPatterns::std_call(CSR& csr, ADDRESS& lc, int& addr)
     if (
     BL$c_br_nnull(lc, addr, VAR, RP, VAL)) {
         vector<int> params(1); params[0] = addr; 
-        if (__save == lc) return NULL;
+        if (__save == lc) return nullptr;
         return csr.instantiateLogue("std_call",params);
     } else {
         lc = __save;
-        return NULL;
+        return nullptr;
     }
 }
 Logue* InstructionPatterns::gcc_frame(CSR& csr, ADDRESS& lc, int& locals)
@@ -1830,11 +1830,11 @@ Logue* InstructionPatterns::gcc_frame(CSR& csr, ADDRESS& lc, int& locals)
     STWM$l_addr_16_old$c_l_addr_none(lc, __loc0 = 1, VAL, locals, VAR, __loc1 = 0, VAL, SP, VAL) && 
     ((STW$l_addr_16_old$c_l_addr_none(lc, __loc0 = 4, VAL, __loc1 = 8, VAL, __loc2 = 0, VAL, __loc3 = 3, VAL)) || true)) {
         vector<int> params(1); params[0] = locals; 
-        if (__save == lc) return NULL;
+        if (__save == lc) return nullptr;
         return csr.instantiateLogue("gcc_frame",params);
     } else {
         lc = __save;
-        return NULL;
+        return nullptr;
     }
 }
 Logue* InstructionPatterns::gcc_frameless(CSR& csr, ADDRESS& lc, int& locals)
@@ -1849,11 +1849,11 @@ Logue* InstructionPatterns::gcc_frameless(CSR& csr, ADDRESS& lc, int& locals)
     STWM$l_addr_16_old$c_l_addr_none(lc, __loc0, VAR, locals, VAR, __loc1 = 0, VAL, SP, VAL)) && 
     ((STW$l_addr_16_old$c_l_addr_none(lc, __loc0, VAR, __loc1, VAR, __loc2 = 0, VAL, SP, VAL)) || true)) {
         vector<int> params(1); params[0] = locals; 
-        if (__save == lc) return NULL;
+        if (__save == lc) return nullptr;
         return csr.instantiateLogue("gcc_frameless",params);
     } else {
         lc = __save;
-        return NULL;
+        return nullptr;
     }
 }
 Logue* InstructionPatterns::param_reloc1(CSR& csr, ADDRESS& lc, int& libstub, int& locals)
@@ -1868,11 +1868,11 @@ Logue* InstructionPatterns::param_reloc1(CSR& csr, ADDRESS& lc, int& libstub, in
     LDWS$s_addr_im_r$c_s_addr_mb(lc, __loc0 = -8, VAL, __loc1 = 0, VAL, SP, VAL, __loc2 = 23, VAL) && 
     BL$c_br_null(lc, libstub, VAR, __loc0 = 0, VAL)) {
         vector<int> params(2); params[0] = libstub; params[1] = locals; 
-        if (__save == lc) return NULL;
+        if (__save == lc) return nullptr;
         return csr.instantiateLogue("param_reloc1",params);
     } else {
         lc = __save;
-        return NULL;
+        return nullptr;
     }
 }
 Logue* InstructionPatterns::gcc_unframe(CSR& csr, ADDRESS& lc)
@@ -1889,11 +1889,11 @@ Logue* InstructionPatterns::gcc_unframe(CSR& csr, ADDRESS& lc)
     LDWM$l_addr_16_old$c_l_addr_none(lc, __loc0, VAR, __loc1 = 0, VAL, SP, VAL, __loc2 = 3, VAL) && 
     BV$c_br_null(lc, R0, VAL, RP, VAL)) {
         vector<int> params(0); 
-        if (__save == lc) return NULL;
+        if (__save == lc) return nullptr;
         return csr.instantiateLogue("gcc_unframe",params);
     } else {
         lc = __save;
-        return NULL;
+        return nullptr;
     }
 }
 Logue* InstructionPatterns::gcc_unframeless1(CSR& csr, ADDRESS& lc)
@@ -1908,11 +1908,11 @@ Logue* InstructionPatterns::gcc_unframeless1(CSR& csr, ADDRESS& lc)
     BV$c_br_nnull(lc, R0, VAL, RP, VAL) && 
     LDWM$l_addr_16_old$c_l_addr_none(lc, __loc0, VAR, __loc1 = 0, VAL, SP, VAL, __loc2, VAR)) {
         vector<int> params(0); 
-        if (__save == lc) return NULL;
+        if (__save == lc) return nullptr;
         return csr.instantiateLogue("gcc_unframeless1",params);
     } else {
         lc = __save;
-        return NULL;
+        return nullptr;
     }
 }
 Logue* InstructionPatterns::gcc_unframeless2(CSR& csr, ADDRESS& lc)
@@ -1927,11 +1927,11 @@ Logue* InstructionPatterns::gcc_unframeless2(CSR& csr, ADDRESS& lc)
     BV$c_br_nnull(lc, R0, VAL, RP, VAL) && 
     LDO(lc, __loc0, VAR, SP, VAL, SP, VAL)) {
         vector<int> params(0); 
-        if (__save == lc) return NULL;
+        if (__save == lc) return nullptr;
         return csr.instantiateLogue("gcc_unframeless2",params);
     } else {
         lc = __save;
-        return NULL;
+        return nullptr;
     }
 }
 Logue* InstructionPatterns::bare_ret(CSR& csr, ADDRESS& lc)
@@ -1940,11 +1940,11 @@ Logue* InstructionPatterns::bare_ret(CSR& csr, ADDRESS& lc)
     if (
     BV$c_br_nnull(lc, R0, VAL, RP, VAL)) {
         vector<int> params(0); 
-        if (__save == lc) return NULL;
+        if (__save == lc) return nullptr;
         return csr.instantiateLogue("bare_ret",params);
     } else {
         lc = __save;
-        return NULL;
+        return nullptr;
     }
 }
 Logue* InstructionPatterns::bare_ret_anulled(CSR& csr, ADDRESS& lc)
@@ -1953,11 +1953,11 @@ Logue* InstructionPatterns::bare_ret_anulled(CSR& csr, ADDRESS& lc)
     if (
     BV$c_br_null(lc, R0, VAL, RP, VAL)) {
         vector<int> params(0); 
-        if (__save == lc) return NULL;
+        if (__save == lc) return nullptr;
         return csr.instantiateLogue("bare_ret_anulled",params);
     } else {
         lc = __save;
-        return NULL;
+        return nullptr;
     }
 }
 LogueDict::LogueDict()

@@ -48,11 +48,11 @@ int main(int argc, char* argv[]) {
 
     // Load the file
 
-    BinaryFile *pbf = NULL;
+    BinaryFile *pbf = nullptr;
     BinaryFileFactory bff;
     pbf = bff.Load(argv[1]);
 
-    if (pbf == NULL) {
+    if (pbf == nullptr) {
         return 2;
     }
 

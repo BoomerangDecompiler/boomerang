@@ -232,7 +232,7 @@ void Constraints::substIntoEquates(ConstraintMap& in) {
 // Could also be just a (a conjunction, or a single constraint)
 // Note: remainder is changed by this function
 Exp* nextDisjunct(Exp*& remainder) {
-    if (remainder == NULL) return NULL;
+    if (remainder == nullptr) return nullptr;
     if (remainder->isDisjunction()) {
         Exp* d1 = ((Binary*)remainder)->getSubExp1();
         Exp* d2 = ((Binary*)remainder)->getSubExp2();
@@ -245,12 +245,12 @@ Exp* nextDisjunct(Exp*& remainder) {
     }
     // Else, we have one disjunct. Return it
     Exp* ret = remainder;
-    remainder = NULL;
+    remainder = nullptr;
     return ret;
 }
 
 Exp* nextConjunct(Exp*& remainder) {
-    if (remainder == NULL) return NULL;
+    if (remainder == nullptr) return nullptr;
     if (remainder->isConjunction()) {
         Exp* c1 = ((Binary*)remainder)->getSubExp1();
         Exp* c2 = ((Binary*)remainder)->getSubExp2();
@@ -263,7 +263,7 @@ Exp* nextConjunct(Exp*& remainder) {
     }
     // Else, we have one conjunct. Return it
     Exp* ret = remainder;
-    remainder = NULL;
+    remainder = nullptr;
     return ret;
 }
 
@@ -293,7 +293,7 @@ bool Constraints::solve(std::list<ConstraintMap>& solns) {
         leftSub = ((Unary*)left)->getSubExp1();
         Exp* something = ((Unary*)leftSub)->getSubExp1();
         ((Unary*)left)->setSubExp1ND(something);
-        ((Unary*)leftSub)->setSubExp1ND(NULL);
+        ((Unary*)leftSub)->setSubExp1ND(nullptr);
         delete leftSub;
         // right is <alpha*> -> <alpha>
         right = ((Binary*)clone)->getSubExp2();
@@ -324,7 +324,7 @@ bool Constraints::solve(std::list<ConstraintMap>& solns) {
         }
         // Break up conjunctions into terms
         Exp* rem = c, *term;
-        while ((term = nextConjunct(rem)) != NULL) {
+        while ((term = nextConjunct(rem)) != nullptr) {
             assert(term->isEquality());
             Exp* lhs = ((Binary*)term)->getSubExp1();
             Exp* rhs = ((Binary*)term)->getSubExp2();
@@ -410,8 +410,8 @@ bool Constraints::doSolve(std::list<Exp*>::iterator it, ConstraintMap& soln, std
     Exp* rem1 = dj;          // Remainder
     bool anyUnified = false;
     Exp* d;
-    while ((d = nextDisjunct(rem1)) != NULL) {
-        LOG << " $$ d is " << d << ", rem1 is " << ((rem1==0)?"NULL":rem1->prints()) << " $$\n";
+    while ((d = nextDisjunct(rem1)) != nullptr) {
+        LOG << " $$ d is " << d << ", rem1 is " << ((rem1==0)?"nullptr":rem1->prints()) << " $$\n";
         // Match disjunct d against the fixed types; it could be compatible,
         // compatible and generate an additional constraint, or be
         // incompatible
@@ -419,8 +419,8 @@ bool Constraints::doSolve(std::list<Exp*>::iterator it, ConstraintMap& soln, std
         Exp* c;
         Exp* rem2 = d;
         bool unified = true;
-        while ((c = nextConjunct(rem2)) != NULL) {
-            LOG << "   $$ c is " << c << ", rem2 is " << ((rem2==0)?"NULL":rem2->prints()) << " $$\n";
+        while ((c = nextConjunct(rem2)) != nullptr) {
+            LOG << "   $$ c is " << c << ", rem2 is " << ((rem2==0)?"nullptr":rem2->prints()) << " $$\n";
             if (c->isFalse()) {
                 unified = false;
                 break;
@@ -518,10 +518,10 @@ void Constraints::alphaSubst() {
         Exp* temp = (*it)->clone();
         Exp* term;
         bool found = false;
-        Exp* trm1 = NULL;
-        Exp* trm2 = NULL;
-        Type* t1 = NULL, *t2;
-        while ((term = nextConjunct(temp)) != NULL) {
+        Exp* trm1 = nullptr;
+        Exp* trm2 = nullptr;
+        Type* t1 = nullptr, *t2;
+        while ((term = nextConjunct(temp)) != nullptr) {
             if (!term->isEquality())
                 continue;
             trm1 = ((Binary*)term)->getSubExp1();

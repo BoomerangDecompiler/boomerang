@@ -154,7 +154,7 @@ protected:
 
 public:
 
-                    Statement() : pbb(NULL), proc(NULL), number(0), parent(NULL) { }
+                    Statement() : pbb(nullptr), proc(nullptr), number(0), parent(nullptr) { }
 virtual                ~Statement() { }
 
         // get/set the enclosing BB, etc
@@ -272,8 +272,8 @@ static    bool        canPropagateToExp(Exp* e);
         // dnp is a StatementSet with statements that should not be propagated
         // Set convert if an indirect call is changed to direct (otherwise, no change)
         // Set force to true to propagate even memofs (for switch analysis)
-        bool        propagateTo(bool& convert, std::map<Exp*, int, lessExpStar>* destCounts = NULL,
-                        LocationSet* usedByDomPhi = NULL, bool force = false);
+        bool        propagateTo(bool& convert, std::map<Exp*, int, lessExpStar>* destCounts = nullptr,
+                        LocationSet* usedByDomPhi = nullptr, bool force = false);
         bool        propagateFlagsTo();
 
         // code generation
@@ -364,11 +364,11 @@ virtual void        rangeAnalysis(std::list<Statement*> &execution_paths);
 
         // Get the type for the definition, if any, for expression e in this statement
         // Overridden only by Assignment and CallStatement, and ReturnStatement.
-virtual    Type*        getTypeFor(Exp* e) { return NULL;}
+virtual    Type*        getTypeFor(Exp* e) { return nullptr;}
         // Set the type for the definition of e in this Statement
 virtual    void        setTypeFor(Exp* e, Type* ty) {assert(0);}
 
-//virtual    Type*    getType() {return NULL;}            // Assignment, ReturnStatement and
+//virtual    Type*    getType() {return nullptr;}            // Assignment, ReturnStatement and
 //virtual    void    setType(Type* t) {assert(0);}        // CallStatement override
 
         bool        doPropagateTo(Exp* e, Assign* def, bool& convert);
@@ -482,11 +482,11 @@ class Assign : public Assignment {
 
 public:
         // Constructor, subexpressions
-                    Assign(Exp* lhs, Exp* rhs, Exp* guard = NULL);
+                    Assign(Exp* lhs, Exp* rhs, Exp* guard = nullptr);
         // Constructor, type and subexpressions
-                    Assign(Type* ty, Exp* lhs, Exp* rhs, Exp* guard = NULL);
+                    Assign(Type* ty, Exp* lhs, Exp* rhs, Exp* guard = nullptr);
         // Default constructor, for XML parser
-                    Assign() : Assignment(NULL), rhs(NULL), guard(NULL) {}
+                    Assign() : Assignment(nullptr), rhs(nullptr), guard(nullptr) {}
         // Copy constructor
                     Assign(Assign& o);
         // Destructor
@@ -515,7 +515,7 @@ virtual void        printCompact(std::ostream& os, bool html = false);    // Wit
         // Guard
         void        setGuard(Exp* g) {guard = g;}
         Exp*        getGuard() {return guard;}
-        bool        isGuarded() {return guard != NULL;}
+        bool        isGuarded() {return guard != nullptr;}
 
 virtual bool        usesExp(Exp *e);
 virtual bool        isDefinition() { return true; }
@@ -595,7 +595,7 @@ virtual                ~PhiAssign() {}
 virtual Statement*      clone();
 
                         // get how to replace this statement in a use
-virtual Exp*            getRight() { return NULL; }
+virtual Exp*            getRight() { return nullptr; }
 
                         // Accept a visitor to this Statement
 virtual bool            accept(StmtVisitor* visitor);
@@ -671,7 +671,7 @@ virtual bool        searchAndReplace(Exp *search, Exp *replace, bool cc = false)
 virtual void        printCompact(std::ostream& os, bool html = false);
 
         // Statement and Assignment functions
-virtual Exp*        getRight() { return NULL; }
+virtual Exp*        getRight() { return nullptr; }
 virtual void        simplify() {}
 
         // Visitation
@@ -1035,7 +1035,7 @@ class CallStatement: public GotoStatement {
 
         // Destination of call. In the case of an analysed indirect call, this will be ONE target's return statement.
         // For an unanalysed indirect call, or a call whose callee is not yet sufficiently decompiled due to recursion,
-        // this will be NULL
+        // this will be nullptr
         Proc*        procDest;
 
         // The signature for this call. NOTE: this used to be stored in the Proc, but this does not make sense when
@@ -1082,7 +1082,7 @@ virtual bool        accept(StmtPartModifier* visitor);
         void        addDefine(ImplicitAssign* as);    // For testing
         //void        ignoreReturn(Exp *e);
         //void        ignoreReturn(int n);
-        //void        addReturn(Exp *e, Type* ty = NULL);
+        //void        addReturn(Exp *e, Type* ty = nullptr);
         void        updateDefines();                // Update the defines based on a callee change
         StatementList* calcResults();                // Calculate defines(this) isect live(this)
         ReturnStatement* getCalleeReturn() {return calleeReturn; }
@@ -1160,7 +1160,7 @@ virtual void        getDefinitions(LocationSet &defs);
 virtual bool        definesLoc(Exp* loc);                    // True if this Statement defines loc
 virtual void        setLeftFor(Exp* forExp, Exp* newExp);
         // get how to replace this statement in a use
-//virtual Exp*        getRight() { return NULL; }
+//virtual Exp*        getRight() { return nullptr; }
 
         // simplify all the uses/defs in this Statement
 virtual void        simplify();

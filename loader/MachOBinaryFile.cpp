@@ -147,8 +147,8 @@ bool MachOBinaryFile::RealLoad(const char* sName) {
     std::vector<struct nlist> symbols;
     uint32_t startlocal, nlocal, startdef, ndef, startundef, nundef;
     std::vector<struct section> stubs_sects;
-    char *strtbl = NULL;
-    unsigned *indirectsymtbl = NULL;
+    char *strtbl = nullptr;
+    unsigned *indirectsymtbl = nullptr;
     ADDRESS objc_symbols = NO_ADDRESS, objc_modules = NO_ADDRESS, objc_strings = NO_ADDRESS, objc_refs = NO_ADDRESS;
     unsigned objc_modules_size = 0;
 

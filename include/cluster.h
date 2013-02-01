@@ -44,8 +44,8 @@ protected:
         std::string    stream_ext;
 
 public:
-                    Cluster() : name(""), parent(NULL) { }
-                    Cluster(const char *name) : name(name), parent(NULL) { }
+                    Cluster() : name(""), parent(nullptr) { }
+                    Cluster(const char *name) : name(name), parent(nullptr) { }
 virtual                ~Cluster() {}
         const        char *getName() { return name.c_str(); }
         void        setName(const char *nam) { name = nam; }

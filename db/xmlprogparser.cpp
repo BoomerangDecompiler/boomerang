@@ -145,7 +145,7 @@ public:
     Exp *exp, *symbol;
     std::list<Proc*> procs;
 
-    Context(int tag) : tag(tag), prog(NULL), proc(NULL), signature(NULL), cfg(NULL), bb(NULL), rtl(NULL), stmt(NULL), param(NULL), /*implicitParam(NULL),*/ ret(NULL), type(NULL), exp(NULL) { }
+    Context(int tag) : tag(tag), prog(nullptr), proc(nullptr), signature(nullptr), cfg(nullptr), bb(nullptr), rtl(nullptr), stmt(nullptr), param(nullptr), /*implicitParam(nullptr),*/ ret(nullptr), type(nullptr), exp(nullptr) { }
 };
 
 static void XMLCALL
@@ -174,7 +174,7 @@ const char *XMLProgParser::getAttr(const char **attr, const char *name) {
     for (int i = 0; attr[i]; i += 2)
         if (!strcmp(attr[i], name))
             return attr[i+1];
-    return NULL;
+    return nullptr;
 }
 
 void XMLProgParser::handleElementStart(const char *el, const char **attr) {
@@ -213,16 +213,16 @@ void XMLProgParser::addId(const char **attr, void *x) {
 }
 
 void *XMLProgParser::findId(const char *id) {
-    if (id == NULL)
-        return NULL;
+    if (id == nullptr)
+        return nullptr;
     int n = atoi(id);
     if (n == 0)
-        return NULL;
+        return nullptr;
     std::map<int, void*>::iterator it = idToX.find(n);
     if (it == idToX.end()) {
         std::cerr << "findId could not find \"" << id << "\"\n";
         assert(false);
-        return NULL;
+        return nullptr;
     }
     return (*it).second;
 }
@@ -981,7 +981,7 @@ void XMLProgParser::start_inedge(const char **attr) {
     if (phase == 1)
         stack.front()->bb = (BasicBlock*)findId(getAttr(attr, "bb"));
     else
-        stack.front()->bb = NULL;
+        stack.front()->bb = nullptr;
 }
 
 void XMLProgParser::addToContext_inedge(Context *c, int e) {
@@ -999,7 +999,7 @@ void XMLProgParser::start_outedge(const char **attr) {
     if (phase == 1)
         stack.front()->bb = (BasicBlock*)findId(getAttr(attr, "bb"));
     else
-        stack.front()->bb = NULL;
+        stack.front()->bb = nullptr;
 }
 
 void XMLProgParser::addToContext_outedge(Context *c, int e) {
@@ -1023,7 +1023,7 @@ void XMLProgParser::start_order(const char **attr) {
     if (phase == 1)
         stack.front()->bb = (PBB)findId(getAttr(attr, "bb"));
     else
-        stack.front()->bb = NULL;
+        stack.front()->bb = nullptr;
 }
 
 void XMLProgParser::addToContext_order(Context *c, int e) {
@@ -1041,7 +1041,7 @@ void XMLProgParser::start_revorder(const char **attr) {
     if (phase == 1)
         stack.front()->bb = (PBB)findId(getAttr(attr, "bb"));
     else
-        stack.front()->bb = NULL;
+        stack.front()->bb = nullptr;
 }
 
 void XMLProgParser::addToContext_revorder(Context *c, int e) {
@@ -1179,7 +1179,7 @@ void XMLProgParser::addToContext_callstmt(Context *c, int e) {
         }
         return;
     }
-    Exp* returnExp = NULL;
+    Exp* returnExp = nullptr;
     switch(e) {
         case e_dest:
             call->setDest(stack.front()->exp);
@@ -1624,7 +1624,7 @@ void XMLProgParser::start_pointertype(const char **attr) {
         stack.front()->type = (Type*)findId(getAttr(attr, "id"));
         return;
     }
-    stack.front()->type = new PointerType(NULL);
+    stack.front()->type = new PointerType(nullptr);
     addId(attr, stack.front()->type);
 }
 
@@ -1973,12 +1973,12 @@ void XMLProgParser::addToContext_def(Context *c, int e) {
 
 Prog *XMLProgParser::parse(const char *filename) {
     FILE *f = fopen(filename, "r");
-    if (f == NULL)
-        return NULL;
+    if (f == nullptr)
+        return nullptr;
     fclose(f);
 
     stack.clear();
-    Prog *prog = NULL;
+    Prog *prog = nullptr;
     for (phase = 0; phase < 2; phase++) {
         parseFile(filename);
         if (stack.front()->prog) {
@@ -1986,8 +1986,8 @@ Prog *XMLProgParser::parse(const char *filename) {
             parseChildren(prog->getRootCluster());
         }
     }
-    if (prog == NULL)
-        return NULL;
+    if (prog == nullptr)
+        return nullptr;
     //FrontEnd *pFE = FrontEnd::Load(prog->getPath(), prog);        // Path is usually empty!?
     FrontEnd *pFE = FrontEnd::Load(prog->getPathAndName(), prog);
     prog->setFrontEnd(pFE);
@@ -1996,9 +1996,9 @@ Prog *XMLProgParser::parse(const char *filename) {
 
 void XMLProgParser::parseFile(const char *filename) {
     FILE *f = fopen(filename, "r");
-    if (f == NULL)
+    if (f == nullptr)
         return;
-    XML_Parser p = XML_ParserCreate(NULL);
+    XML_Parser p = XML_ParserCreate(nullptr);
     if (! p) {
         fprintf(stderr, "Couldn't allocate memory for parser\n");
         return;

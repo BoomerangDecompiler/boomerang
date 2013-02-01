@@ -93,7 +93,7 @@ FrontEnd* FrontEnd::instantiate(BinaryFile *pBF, Prog* prog, BinaryFileFactory* 
         default:
             std::cerr << "Machine architecture not supported!\n";
     }
-    return NULL;
+    return nullptr;
 }
 
 /***************************************************************************//**
@@ -105,9 +105,9 @@ FrontEnd* FrontEnd::instantiate(BinaryFile *pBF, Prog* prog, BinaryFileFactory* 
  ******************************************************************************/
 FrontEnd* FrontEnd::Load(const char *fname, Prog* prog) {
     BinaryFileFactory* pbff = new BinaryFileFactory;
-    if (pbff == NULL) return NULL;
+    if (pbff == nullptr) return nullptr;
     BinaryFile *pBF = pbff->Load(fname);
-    if (pBF == NULL) return NULL;
+    if (pBF == nullptr) return nullptr;
     return instantiate(pBF, prog, pbff);
 }
 
@@ -122,7 +122,7 @@ const char *FrontEnd::getRegName(int idx) {
     for (it = decoder->getRTLDict().RegMap.begin();     it != decoder->getRTLDict().RegMap.end(); it++)
         if ((*it).second == idx)
             return (*it).first.c_str();
-    return NULL;
+    return nullptr;
 }
 
 int FrontEnd::getRegSize(int idx) {
@@ -142,16 +142,16 @@ bool FrontEnd::noReturnCallDest(const char *name) {
 // FIXME: Is this ever used? Need to pass a real pbff?
 FrontEnd *FrontEnd::createById(std::string &str, BinaryFile *pBF, Prog* prog) {
     if (str == "pentium")
-        return new PentiumFrontEnd(pBF, prog, NULL);
+        return new PentiumFrontEnd(pBF, prog, nullptr);
     if (str == "sparc")
-        return new SparcFrontEnd(pBF, prog, NULL);
+        return new SparcFrontEnd(pBF, prog, nullptr);
     if (str == "ppc")
-        return new PPCFrontEnd(pBF, prog, NULL);
+        return new PPCFrontEnd(pBF, prog, nullptr);
     if (str == "mips")
-        return new MIPSFrontEnd(pBF, prog, NULL);
+        return new MIPSFrontEnd(pBF, prog, nullptr);
     if (str == "st20")
-        return new ST20FrontEnd(pBF, prog, NULL);
-    return NULL;
+        return new ST20FrontEnd(pBF, prog, nullptr);
+    return nullptr;
 }
 
 void FrontEnd::readLibraryCatalog(const char *sPath) {
@@ -287,18 +287,18 @@ void FrontEnd::decode(Prog* prog, bool decodeMain, const char *pname) {
     if (gotMain) {
         static const char *mainName[] = { "main", "WinMain", "DriverEntry" };
         const char *name = pBF->SymbolByAddress(a);
-        if (name == NULL)
+        if (name == nullptr)
             name = mainName[0];
         for (size_t i = 0; i < sizeof(mainName)/sizeof(char*); i++) {
             if (!strcmp(name, mainName[i])) {
                 Proc *proc = prog->findProc(a);
-                if (proc == NULL) {
+                if (proc == nullptr) {
                     if (VERBOSE)
                         LOG << "no proc found for address " << a << "\n";
                     return;
                 }
                 FuncType *fty = dynamic_cast<FuncType*>(Type::getNamedType(name));
-                if (fty == NULL)
+                if (fty == nullptr)
                     LOG << "unable to find signature for known entrypoint " << name << "\n";
                 else {
                     proc->setSignature(fty->getSignature()->clone());
@@ -320,7 +320,7 @@ void FrontEnd::decode(Prog *prog, ADDRESS a) {
         if (VERBOSE)
             LOG << "starting decode at address " << a << "\n";
         UserProc* p = (UserProc*)prog->findProc(a);
-        if (p == NULL) {
+        if (p == nullptr) {
             if (VERBOSE)
                 LOG << "no proc found at address " << a << "\n";
             return;
@@ -338,7 +338,7 @@ void FrontEnd::decode(Prog *prog, ADDRESS a) {
         while (change) {
             change = false;
             PROGMAP::const_iterator it;
-            for (Proc *pProc = prog->getFirstProc(it); pProc != NULL; pProc = prog->getNextProc(it)) {
+            for (Proc *pProc = prog->getFirstProc(it); pProc != nullptr; pProc = prog->getNextProc(it)) {
                 if (pProc->isLib()) continue;
                 UserProc *p = (UserProc*)pProc;
                 if (p->isDecoded()) continue;
@@ -381,7 +381,7 @@ void FrontEnd::decodeFragment(UserProc* proc, ADDRESS a) {
 }
 
 DecodeResult& FrontEnd::decodeInstruction(ADDRESS pc) {
-    if (pBF->GetSectionInfoByAddr(pc) == NULL) {
+    if (pBF->GetSectionInfoByAddr(pc) == nullptr) {
         LOG << "ERROR: attempted to decode outside any known segment " << pc << "\n";
         static DecodeResult invalid;
         invalid.reset();
@@ -426,7 +426,7 @@ void FrontEnd::readLibrarySignatures(const char *sPath, callconv cc) {
 }
 
 Signature *FrontEnd::getDefaultSignature(const char *name) {
-    Signature *signature = NULL;
+    Signature *signature = nullptr;
     // Get a default library signature
     if (isWin32())
         signature = Signature::instantiate(PLAT_PENTIUM, CONV_PASCAL, name);
@@ -522,7 +522,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 
             // Need to construct a new list of RTLs if a basic block has just been finished but decoding is
             // continuing from its lexical successor
-            if (BB_rtls == NULL)
+            if (BB_rtls == nullptr)
                 BB_rtls = new std::list<RTL*>();
 
             RTL* pRtl = inst.rtl;
@@ -542,7 +542,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
                 // Emit the RTL anyway, so we have the address and maybe some other clues
                 BB_rtls->push_back(new RTL(uAddr));
                 pBB = pCfg->newBB(BB_rtls, INVALID, 0);
-                sequentialDecode = false; BB_rtls = NULL; continue;
+                sequentialDecode = false; BB_rtls = nullptr; continue;
             }
 
             // alert the watchers that we have decoded an instruction
@@ -556,7 +556,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
             if (ff != previouslyDecoded.end())
                 pRtl = ff->second;
 
-            if (pRtl == NULL) {
+            if (pRtl == nullptr) {
                 // This can happen if an instruction is "cancelled", e.g. call to __main in a hppa program
                 // Just ignore the whole instruction
                 if (inst.numBytes > 0)
@@ -613,11 +613,11 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
                     dest = stmt_jump->getFixedDest();
                     if (dest != NO_ADDRESS) {
                         proc = prog->findProc(dest);
-                        if (proc == NULL) {
+                        if (proc == nullptr) {
                             if (pBF->IsDynamicLinkedProc(dest))
                                 proc = prog->setNewProc(dest);
                         }
-                        if (proc != NULL && proc != (Proc*)-1) {
+                        if (proc != nullptr && proc != (Proc*)-1) {
                             s = new CallStatement();
                             CallStatement *call = static_cast<CallStatement*>(s);
                             call->setDest(dest);
@@ -645,7 +645,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
                             sequentialDecode = false;
 
                             pBB = pCfg->newBB(BB_rtls,ONEWAY,1);
-                            BB_rtls = NULL;        // Clear when make new BB
+                            BB_rtls = nullptr;        // Clear when make new BB
 
                             // Exit the switch now if the basic block already existed
                             if (pBB == 0) {
@@ -668,13 +668,13 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 
                     case STMT_CASE: {
                         Exp* pDest = stmt_jump->getDest();
-                        if (pDest == NULL) {                // Happens if already analysed (now redecoding)
+                        if (pDest == nullptr) {                // Happens if already analysed (now redecoding)
                             // SWITCH_INFO* psi = ((CaseStatement*)stmt_jump)->getSwitchInfo();
                             BB_rtls->push_back(pRtl);
                             pBB = pCfg->newBB(BB_rtls, NWAY, 0);    // processSwitch will update num outedges
                             pBB->processSwitch(pProc);        // decode arms, set out edges, etc
                             sequentialDecode = false;        // Don't decode after the jump
-                            BB_rtls = NULL;                    // New RTLList for next BB
+                            BB_rtls = nullptr;                    // New RTLList for next BB
                             break;                            // Just leave it alone
                         }
                         // Check for indirect calls to library functions, especially in Win32 programs
@@ -690,8 +690,8 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
                             CallStatement *call = new CallStatement;
                             call->setDest(stmt_jump->getDest()->clone());
                             LibProc *lp = pProc->getProg()->getLibraryProc(func.c_str());
-                            if (lp == NULL)
-                                LOG << "getLibraryProc returned NULL, aborting\n";
+                            if (lp == nullptr)
+                                LOG << "getLibraryProc returned nullptr, aborting\n";
                             assert(lp);
                             call->setDestProc(lp);
                             std::list<Statement*>* stmt_list = new std::list<Statement*>;
@@ -700,7 +700,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
                             pBB = pCfg->newBB(BB_rtls, CALL, 1);
                             appendSyntheticReturn(pBB, pProc, pRtl);
                             sequentialDecode = false;
-                            BB_rtls = NULL;
+                            BB_rtls = nullptr;
                             if (pRtl->getAddress() == pProc->getNativeAddress()) {
                                 // it's a thunk
                                 // Proc *lp = prog->findProc(func.c_str());
@@ -738,7 +738,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
                             }
                         }
                         sequentialDecode = false;
-                        BB_rtls = NULL;        // New RTLList for next BB
+                        BB_rtls = nullptr;        // New RTLList for next BB
                         break;
                     }
 
@@ -768,7 +768,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
                         }
 
                         // Create the list of RTLs for the next basic block and continue with the next instruction.
-                        BB_rtls = NULL;
+                        BB_rtls = nullptr;
                         break;
                     }
 
@@ -856,7 +856,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
                             // calls
                             if (helperFunc(uNewAddr, uAddr, BB_rtls)) {
                                 // We have already added to BB_rtls
-                                pRtl = NULL;        // Discard the call semantics
+                                pRtl = nullptr;        // Discard the call semantics
                                 break;
                             }
 
@@ -867,7 +867,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
                             callList.push_back(call);
 
                             // Record the called address as the start of a new procedure if it didn't already exist.
-                            if ( !uNewAddr.isZero() && uNewAddr != NO_ADDRESS && pProc->getProg()->findProc(uNewAddr) == NULL) {
+                            if ( !uNewAddr.isZero() && uNewAddr != NO_ADDRESS && pProc->getProg()->findProc(uNewAddr) == nullptr) {
                                 callList.push_back(call);
                                 //newProc(pProc->getProg(), uNewAddr);
                                 if (Boomerang::get()->traceDecoder)
@@ -877,7 +877,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
                             // Check if this is the _exit or exit function. May prevent us from attempting to decode
                             // invalid instructions, and getting invalid stack height errors
                             const char* name = pBF->SymbolByAddress(uNewAddr);
-                            if (name == NULL && call->getDest()->isMemOf() &&
+                            if (name == nullptr && call->getDest()->isMemOf() &&
                                     call->getDest()->getSubExp1()->isIntConst()) {
                                     //TODO : use getAddr
                                     ADDRESS a = ADDRESS::g(((Const*)call->getDest()->getSubExp1())->getInt());
@@ -919,7 +919,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
                                 else {
                                     // Add the fall through edge if the block didn't
                                     // already exist
-                                    if (pBB != NULL)
+                                    if (pBB != nullptr)
                                         pCfg->addOutEdge(pBB, uAddr+inst.numBytes);
                                 }
                             }
@@ -928,7 +928,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
                         extraProcessCall(call, BB_rtls);
 
                         // Create the list of RTLs for the next basic block and continue with the next instruction.
-                        BB_rtls = NULL;
+                        BB_rtls = nullptr;
                         break;
                     }
 
@@ -940,7 +940,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 
                         // Create the list of RTLs for the next basic block and
                         // continue with the next instruction.
-                        BB_rtls = NULL;        // New RTLList for next BB
+                        BB_rtls = nullptr;        // New RTLList for next BB
                     }
                         break;
 
@@ -982,7 +982,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
                     // Add an out edge to this address
                     if (pBB) {
                         pCfg->addOutEdge(pBB, uAddr);
-                        BB_rtls = NULL;            // Need new list of RTLs
+                        BB_rtls = nullptr;            // Need new list of RTLs
                     }
                 }
                 // Pick a new address to decode from, if the BB is complete
@@ -1013,11 +1013,11 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
             pCfg->addCall(*it);
             // Don't visit the destination of a register call
             Proc *np = (*it)->getDestProc();
-            if (np == NULL && dest != NO_ADDRESS) {
+            if (np == nullptr && dest != NO_ADDRESS) {
                 //np = newProc(pProc->getProg(), dest);
                 np = pProc->getProg()->setNewProc(dest);
             }
-            if (np != NULL) {
+            if (np != nullptr) {
                 np->setFirstCaller(pProc);
                 pProc->addCallee(np);
             }
@@ -1153,7 +1153,7 @@ PBB FrontEnd::createReturnBlock(UserProc* pProc, std::list<RTL*>* BB_rtls, RTL* 
     PBB pBB;
     // Add the RTL to the list; this has the semantics for the return instruction as well as the ReturnStatement
     // The last Statement may get replaced with a GotoStatement
-    if (BB_rtls == NULL) BB_rtls = new std::list<RTL*>;        // In case no other semantics
+    if (BB_rtls == nullptr) BB_rtls = new std::list<RTL*>;        // In case no other semantics
     BB_rtls->push_back(pRtl);
     ADDRESS retAddr = pProc->getTheReturnAddr();
     // LOG << "retAddr = " << retAddr << " rtl = " << pRtl->getAddress() << "\n";

@@ -376,7 +376,7 @@ struct section {
 /* The currently known segment names and the section names in those segments */
 
 #define    SEG_PAGEZERO    "__PAGEZERO"    /* the pagezero segment which has no */
-                    /* protections and catches NULL */
+                    /* protections and catches nullptr */
                     /* references for MH_EXECUTE files */
 
 

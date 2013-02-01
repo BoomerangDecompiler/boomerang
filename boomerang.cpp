@@ -67,7 +67,7 @@
 #endif
 
 
-Boomerang *Boomerang::boomerang = NULL;
+Boomerang *Boomerang::boomerang = nullptr;
 
 /**
  * Initializes the Boomerang object.
@@ -78,14 +78,14 @@ Boomerang *Boomerang::boomerang = NULL;
  * - The path to the executable is "./"
  * - The output directory is "./output/"
  */
-Boomerang::Boomerang() : logger(NULL), vFlag(false), printRtl(false),
+Boomerang::Boomerang() : logger(nullptr), vFlag(false), printRtl(false),
     noBranchSimplify(false), noRemoveNull(false), noLocals(false),
     noRemoveLabels(false), noDataflow(false), noDecompile(false), stopBeforeDecompile(false),
-    traceDecoder(false), dotFile(NULL), numToPropagate(-1),
+    traceDecoder(false), dotFile(nullptr), numToPropagate(-1),
     noPromote(false), propOnlyToAll(false), debugGen(false),
     maxMemDepth(99), debugSwitch(false), noParameterNames(false), debugLiveness(false),
     stopAtDebugPoints(false), debugTA(false), decodeMain(true), printAST(false), dumpXML(false),
-    noRemoveReturns(false), debugDecoder(false), decodeThruIndCall(false), ofsIndCallReport(NULL),
+    noRemoveReturns(false), debugDecoder(false), decodeThruIndCall(false), ofsIndCallReport(nullptr),
     noDecodeChildren(false), debugProof(false), debugUnused(false),
     loadBeforeDecompile(false), saveBeforeDecompile(false),
     noProve(false), noChangeSignatures(false), conTypeAnalysis(false), dfaTypeAnalysis(true),
@@ -214,7 +214,7 @@ void Boomerang::help() {
 #ifdef HAVE_LIBGC
     std::cout << "  -nG              : No garbage collection\n";
 #endif
-    std::cout << "  -nn              : No removal of NULL and unused statements\n";
+    std::cout << "  -nn              : No removal of nullptr and unused statements\n";
     std::cout << "  -np              : No replacement of expressions with Parameter names\n";
     std::cout << "  -nP              : No promotion of signatures (other than main/WinMain/\n";
     std::cout << "                     DriverMain)\n";
@@ -291,7 +291,7 @@ int Boomerang::splitLine(char *line, char ***pargv) {
     const char *p = strtok(line, " \r\n");
     while(p) {
         (*pargv)[argc++] = (char*)p;
-        p = strtok(NULL, " \r\n");
+        p = strtok(nullptr, " \r\n");
     }
     return argc;
 }
@@ -337,7 +337,7 @@ static int commandNameToID(const char *cmd) {
  * \retval 2 The user exited with \a quit or \a exit
  */
 int Boomerang::parseCmd(int argc, const char **argv) {
-    static Prog *prog = NULL;
+    static Prog *prog = nullptr;
     int command = commandNameToID(argv[0]);
     switch (command) {
         case 1: {
@@ -347,7 +347,7 @@ int Boomerang::parseCmd(int argc, const char **argv) {
             }
             const char *fname = argv[1];
             Prog *p = loadAndDecode(fname);
-            if (p == NULL) {
+            if (p == nullptr) {
                 std::cerr << "failed to load " << fname << "\n";
                 return 1;
             }
@@ -363,10 +363,10 @@ int Boomerang::parseCmd(int argc, const char **argv) {
             const char *fname = argv[1];
             XMLProgParser *p = new XMLProgParser();
             Prog *pr = p->parse(fname);
-            if (pr == NULL) {
+            if (pr == nullptr) {
                 // try guessing
                 pr = p->parse((outputPath + fname + "/" + fname + ".xml").c_str());
-                if (pr == NULL) {
+                if (pr == nullptr) {
                     std::cerr << "failed to read xml " << fname << "\n";
                     return 1;
                 }
@@ -375,7 +375,7 @@ int Boomerang::parseCmd(int argc, const char **argv) {
             break;
         }
         case 3: {
-            if (prog == NULL) {
+            if (prog == nullptr) {
                 std::cerr << "need to load or decode before save!\n";
                 return 1;
             }
@@ -385,14 +385,14 @@ int Boomerang::parseCmd(int argc, const char **argv) {
         }
 #endif
         case 4: {
-            if (prog == NULL) {
+            if (prog == nullptr) {
                 std::cerr << "no valid Prog object !\n";
                 return 1;
             }
 
             if (argc > 1) {
                 Proc *proc = prog->findProc(argv[1]);
-                if (proc == NULL) {
+                if (proc == nullptr) {
                     std::cerr << "cannot find proc " << argv[1] << "\n";
                     return 1;
                 }
@@ -407,13 +407,13 @@ int Boomerang::parseCmd(int argc, const char **argv) {
             }
         }
         case 5: {
-            if (prog == NULL) {
+            if (prog == nullptr) {
                 std::cerr << "no valid Prog object !\n";
                 return 1;
             }
             if (argc > 1 ) {
                 Cluster *cluster = prog->findCluster(argv[1]);
-                if (cluster == NULL) {
+                if (cluster == nullptr) {
                     std::cerr << "cannot find cluster " << argv[1] << "\n";
                     return 1;
                 }
@@ -423,7 +423,7 @@ int Boomerang::parseCmd(int argc, const char **argv) {
             }
         }
         case 6: {
-            if (prog == NULL) {
+            if (prog == nullptr) {
                 std::cerr << "no valid Prog object !\n";
                 return 1;
             }
@@ -438,13 +438,13 @@ int Boomerang::parseCmd(int argc, const char **argv) {
                 }
 
                 Proc *proc = prog->findProc(argv[2]);
-                if (proc == NULL) {
+                if (proc == nullptr) {
                     std::cerr << "cannot find proc " << argv[2] << "\n";
                     return 1;
                 }
 
                 Cluster *cluster = prog->findCluster(argv[3]);
-                if (cluster == NULL) {
+                if (cluster == nullptr) {
                     std::cerr << "cannot find cluster " << argv[3] << "\n";
                     return 1;
                 }
@@ -456,13 +456,13 @@ int Boomerang::parseCmd(int argc, const char **argv) {
                 }
 
                 Cluster *cluster = prog->findCluster(argv[2]);
-                if (cluster == NULL) {
+                if (cluster == nullptr) {
                     std::cerr << "cannot find cluster " << argv[2] << "\n";
                     return 1;
                 }
 
                 Cluster *parent = prog->findCluster(argv[3]);
-                if (parent == NULL) {
+                if (parent == nullptr) {
                     std::cerr << "cannot find cluster " << argv[3] << "\n";
                     return 1;
                 }
@@ -474,7 +474,7 @@ int Boomerang::parseCmd(int argc, const char **argv) {
             }
         }
         case 7: {
-            if (prog == NULL) {
+            if (prog == nullptr) {
                 std::cerr << "no valid Prog object !\n";
                 return 1;
             }
@@ -489,7 +489,7 @@ int Boomerang::parseCmd(int argc, const char **argv) {
                 }
 
                 Cluster *cluster = new Cluster(argv[2]);
-                if (cluster == NULL) {
+                if (cluster == nullptr) {
                     std::cerr << "cannot create cluster " << argv[2] << "\n";
                     return 1;
                 }
@@ -497,7 +497,7 @@ int Boomerang::parseCmd(int argc, const char **argv) {
                 Cluster *parent = prog->getRootCluster();
                 if (argc > 3) {
                     parent = prog->findCluster(argv[3]);
-                    if (cluster == NULL) {
+                    if (cluster == nullptr) {
                         std::cerr << "cannot find cluster " << argv[3] << "\n";
                         return 1;
                     }
@@ -510,7 +510,7 @@ int Boomerang::parseCmd(int argc, const char **argv) {
             }
         }
         case 8: {
-            if (prog == NULL) {
+            if (prog == nullptr) {
                 std::cerr << "no valid Prog object !\n";
                 return 1;
             }
@@ -525,7 +525,7 @@ int Boomerang::parseCmd(int argc, const char **argv) {
                 }
 
                 Cluster *cluster = prog->findCluster(argv[2]);
-                if (cluster == NULL) {
+                if (cluster == nullptr) {
                     std::cerr << "cannot find cluster " << argv[2] << "\n";
                     return 1;
                 }
@@ -550,7 +550,7 @@ int Boomerang::parseCmd(int argc, const char **argv) {
             }
         }
         case 9: {
-            if (prog == NULL) {
+            if (prog == nullptr) {
                 std::cerr << "no valid Prog object !\n";
                 return 1;
             }
@@ -565,13 +565,13 @@ int Boomerang::parseCmd(int argc, const char **argv) {
                 }
 
                 Proc *proc = prog->findProc(argv[2]);
-                if (proc == NULL) {
+                if (proc == nullptr) {
                     std::cerr << "cannot find proc " << argv[2] << "\n";
                     return 1;
                 }
 
                 Proc *nproc = prog->findProc(argv[3]);
-                if (nproc != NULL) {
+                if (nproc != nullptr) {
                     std::cerr << "proc " << argv[3] << " already exists\n";
                     return 1;
                 }
@@ -584,13 +584,13 @@ int Boomerang::parseCmd(int argc, const char **argv) {
                 }
 
                 Cluster *cluster = prog->findCluster(argv[2]);
-                if (cluster == NULL) {
+                if (cluster == nullptr) {
                     std::cerr << "cannot find cluster " << argv[2] << "\n";
                     return 1;
                 }
 
                 Cluster *ncluster = prog->findCluster(argv[3]);
-                if (ncluster == NULL) {
+                if (ncluster == nullptr) {
                     std::cerr << "cluster " << argv[3] << " already exists\n";
                     return 1;
                 }
@@ -602,7 +602,7 @@ int Boomerang::parseCmd(int argc, const char **argv) {
             }
         }
         case 10: {
-            if (prog == NULL) {
+            if (prog == nullptr) {
                 std::cerr << "no valid Prog object !\n";
                 return 1;
             }
@@ -634,7 +634,7 @@ int Boomerang::parseCmd(int argc, const char **argv) {
                 }
 
                 Cluster *cluster = prog->findCluster(argv[2]);
-                if (cluster == NULL) {
+                if (cluster == nullptr) {
                     std::cerr << "cannot find cluster " << argv[2] << "\n";
                     return 1;
                 }
@@ -659,7 +659,7 @@ int Boomerang::parseCmd(int argc, const char **argv) {
                 }
 
                 Proc *proc = prog->findProc(argv[2]);
-                if (proc == NULL) {
+                if (proc == nullptr) {
                     std::cerr << "cannot find proc " << argv[2] << "\n";
                     return 1;
                 }
@@ -686,7 +686,7 @@ int Boomerang::parseCmd(int argc, const char **argv) {
             }
         }
         case 11: {
-            if (prog == NULL) {
+            if (prog == nullptr) {
                 std::cerr << "no valid Prog object !\n";
                 return 1;
             }
@@ -696,7 +696,7 @@ int Boomerang::parseCmd(int argc, const char **argv) {
             }
 
             Proc *proc = prog->findProc(argv[1]);
-            if (proc == NULL) {
+            if (proc == nullptr) {
                 std::cerr << "cannot find proc " << argv[1] << "\n";
                 return 1;
             }
@@ -1052,7 +1052,7 @@ bool Boomerang::setOutputDirectory(const char *path) {
         std::cerr << "Warning! Could not create path " << outputPath << "!\n";
         return false;
     }
-    if (logger == NULL)
+    if (logger == nullptr)
         setLogger(new FileLogger());
     return true;
 }
@@ -1106,9 +1106,9 @@ Prog *Boomerang::loadAndDecode(const char *fname, const char *pname) {
     std::cout << "loading...\n";
     Prog *prog = new Prog();
     FrontEnd *fe = FrontEnd::Load(fname, prog);
-    if (fe == NULL) {
+    if (fe == nullptr) {
         std::cerr << "failed.\n";
-        return NULL;
+        return nullptr;
     }
     prog->setFrontEnd(fe);
 
@@ -1206,7 +1206,7 @@ int Boomerang::decompile(const char *fname, const char *pname) {
         std::cout << "stopping decompile after " << minsToStopAfter << " minutes.\n";
 #if defined(_WIN32)             // Includes MinGW
         DWORD id;
-        CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)stopProcess, (LPVOID)start, 0, &id);
+        CreateThread(nullptr, 0, (LPTHREAD_START_ROUTINE)stopProcess, (LPVOID)start, 0, &id);
 #else
         signal(SIGALRM, stopProcess);
         alarm(minsToStopAfter * 60);
@@ -1225,7 +1225,7 @@ int Boomerang::decompile(const char *fname, const char *pname) {
 #endif
     {
         prog = loadAndDecode(fname, pname);
-        if (prog == NULL)
+        if (prog == nullptr)
             return 1;
     }
 
@@ -1312,9 +1312,9 @@ void Boomerang::logTail() {
 void Boomerang::alert_decompile_debug_point(UserProc *p, const char *description) {
     if (stopAtDebugPoints) {
         std::cout << "decompiling " << p->getName() << ": " << description << "\n";
-        static char *stopAt = NULL;
+        static char *stopAt = nullptr;
         static std::set<Statement*> watches;
-        if (stopAt == NULL || !strcmp(p->getName(), stopAt)) {
+        if (stopAt == nullptr || !strcmp(p->getName(), stopAt)) {
             // This is a mini command line debugger.  Feel free to expand it.
             for (std::set<Statement*>::iterator it = watches.begin(); it != watches.end(); it++) {
                 (*it)->print(std::cout);

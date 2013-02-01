@@ -146,7 +146,7 @@ Exp* listStrToExp(std::list<std::string>* ls);// Convert a STL list of strings t
     sslFile(sslFile), bFloat(false)
 #define YY_SSLParser_CONSTRUCTOR_CODE  \
     std::fstream *fin = new std::fstream(sslFile.c_str(), std::ios::in); \
-    theScanner = NULL; \
+    theScanner = nullptr; \
     if (!*fin) { \
     std::cerr << "can't open `" << sslFile << "' for reading\n"; \
     return; \
@@ -1712,7 +1712,7 @@ YY_SSLParser_PARSE_PARAM_DEF
                 yyyerror("Index used for more than one register\n");
             Dict.DetRegMap[yyvsp[-4].num].s_name(yyvsp[-9].str);
             Dict.DetRegMap[yyvsp[-4].num].s_size(yyvsp[-7].num);
-            Dict.DetRegMap[yyvsp[-4].num].s_address(NULL);
+            Dict.DetRegMap[yyvsp[-4].num].s_address(nullptr);
             // check range is legitimate for size. 8,10
             if ((Dict.RegMap.find(yyvsp[-2].str) == Dict.RegMap.end()) || (Dict.RegMap.find(yyvsp[0].str) == Dict.RegMap.end()))
                 yyyerror("Undefined range\n");
@@ -1749,7 +1749,7 @@ YY_SSLParser_PARSE_PARAM_DEF
                 yyyerror("Index used for more than one register\n");
             Dict.DetRegMap[yyvsp[-8].num].s_name(yyvsp[-13].str);
             Dict.DetRegMap[yyvsp[-8].num].s_size(yyvsp[-11].num);
-            Dict.DetRegMap[yyvsp[-8].num].s_address(NULL);
+            Dict.DetRegMap[yyvsp[-8].num].s_address(nullptr);
             // Do checks
             if (yyvsp[-11].num != (yyvsp[-1].num - yyvsp[-3].num) + 1)
                 yyyerror("Size does not equal range\n");
@@ -2151,7 +2151,7 @@ YY_SSLParser_PARSE_PARAM_DEF
         {
             // append any automatically generated register transfers and clear the list they were stored in.
             // Do nothing for a NOP (i.e. $2 = 0)
-            if (yyvsp[0].regtransfer != NULL) {
+            if (yyvsp[0].regtransfer != nullptr) {
                 yyvsp[-1].rtlist->appendStmt(yyvsp[0].regtransfer);
             }
             yyval.rtlist = yyvsp[-1].rtlist;
@@ -2161,7 +2161,7 @@ YY_SSLParser_PARSE_PARAM_DEF
 //#line 722 "db/sslparser.y"
         {
             yyval.rtlist = new RTL(ADDRESS::g(0L)); //WARN: the code here was RTL(STMT_ASSIGN), which is not right, since RTL parameter is an address
-            if (yyvsp[0].regtransfer != NULL)
+            if (yyvsp[0].regtransfer != nullptr)
                 yyval.rtlist->appendStmt(yyvsp[0].regtransfer);
             ;
             break;}
@@ -2205,7 +2205,7 @@ YY_SSLParser_PARSE_PARAM_DEF
         case 81:
 //#line 759 "db/sslparser.y"
         {
-            yyval.regtransfer = NULL;
+            yyval.regtransfer = nullptr;
             ;
             break;}
         case 82:
@@ -2309,7 +2309,7 @@ YY_SSLParser_PARSE_PARAM_DEF
         case 95:
 //#line 846 "db/sslparser.y"
         {
-            yyval.regtransfer = new Assign(yyvsp[-1].typ, NULL, yyvsp[0].exp);
+            yyval.regtransfer = new Assign(yyvsp[-1].typ, nullptr, yyvsp[0].exp);
             ;
             break;}
         case 96:
@@ -2588,7 +2588,7 @@ YY_SSLParser_PARSE_PARAM_DEF
             Exp* s;
             std::set<std::string>::iterator it = Dict.ParamSet.find(yyvsp[0].str);
             if (it != Dict.ParamSet.end()) {
-                s = new Location(opParam, new Const(yyvsp[0].str), NULL);
+                s = new Location(opParam, new Const(yyvsp[0].str), nullptr);
             } else if (ConstTable.find(yyvsp[0].str) != ConstTable.end()) {
                 s = new Const(ConstTable[yyvsp[0].str]);
             } else {
@@ -2906,7 +2906,7 @@ SSLParser::SSLParser(std::istream &in, bool trace) : sslFile("input"), bFloat(fa
  * FUNCTION:        SSLParser::parseExp
  * \brief        Parses an assignment from a string.
  * PARAMETERS:        the string
- * \returns             an Assignment or NULL.
+ * \returns             an Assignment or nullptr.
  ******************************************************************************/
 Statement* SSLParser::parseExp(const char *str) {
     std::istringstream ss(str);
@@ -2925,7 +2925,7 @@ Statement* SSLParser::parseExp(const char *str) {
 SSLParser::~SSLParser()
 {
     std::map<std::string, Table*>::iterator loc;
-    if (theScanner != NULL)
+    if (theScanner != nullptr)
         delete theScanner;
     for(loc = TableDict.begin(); loc != TableDict.end(); loc++)
         delete loc->second;
@@ -3178,7 +3178,7 @@ Exp* listStrToExp(std::list<std::string>* ls) {
     Exp** cur = &e;
     Exp *end = new Terminal(opNil);             // Terminate the chain
     for (std::list<std::string>::iterator it = ls->begin(); it != ls->end(); it++) {
-        *cur = new Binary(opList, new Location(opParam, new Const((char*)(*it).c_str()), NULL), end);
+        *cur = new Binary(opList, new Location(opParam, new Const((char*)(*it).c_str()), nullptr), end);
         cur = &(*cur)->refSubExp2();
     }
     *cur = new Terminal(opNil);             // Terminate the chain

@@ -18,7 +18,7 @@ void Cfg::renameBlockVars(DOM* d, int n, int memDepth) {}
 
 //Misc
 Boomerang::Boomerang() {}
-Boomerang *Boomerang::boomerang = NULL;
+Boomerang *Boomerang::boomerang = nullptr;
 bool isSwitch(PBB pSwitchBB, Exp* pDest, UserProc* pProc, BinaryFile* pBF)
 {return false;}
 void processSwitch(PBB pBB, int delta, Cfg* pCfg, TargetQueue& tq,
