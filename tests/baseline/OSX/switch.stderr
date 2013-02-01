@@ -1,0 +1,18 @@
+decompiling entry point main
+WARNING: no out edge for this BB in main:
+Invalid BB:
+in edges: 1ca4 
+out edges: 
+00001ca8
+00001cac
+00001cb0
+00001cb4
+00001cb8
+00001cbc
+00001cc0
+00001cc4
+00001cc8
+00001ccc
+00001cd0   87 GOTO machine("%CTR")
+00001cd4
+

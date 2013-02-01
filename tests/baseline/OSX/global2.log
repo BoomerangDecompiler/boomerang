@@ -1,0 +1,53 @@
+after removing matching assigns (t[WILDSTR]).
+after removing matching assigns (%pc).
+size 64 meet with size 32!
+size 32 meet with size 64!
+size 64 meet with size 32!
+size 32 meet with size 64!
+size 64 meet with size 32!
+size 32 meet with size 64!
+size 64 meet with size 32!
+size 32 meet with size 64!
+size 32 meet with size 64!
+size 32 meet with size 64!
+size 64 meet with size 32!
+size 32 meet with size 64!
+### WARNING: iteration limit exceeded for dfaTypeAnalysis of procedure foo2 ###
+in proc foo2 adding addrExp r1{0} + 112 to local table
+in proc foo2 adding addrExp r1{0} + 116 to local table
+TYPE ERROR: attempt to insert item <noname> at 0x74 of type __size64 which weaves after <noname> at 0x70 of type __size64
+in proc foo2 adding addrExp r1{0} + 8 to local table
+in proc foo2 adding addrExp r1{0} - 80 to local table
+finding final parameters for foo2
+potential param r1
+found new parameter r1
+potential param r[tmp + 30]
+found new parameter r[tmp + 30]
+after removing matching assigns (t[WILDSTR]).
+after removing matching assigns (%pc).
+in proc foo1 adding addrExp r1{0} + 112 to local table
+in proc foo1 adding addrExp r1{0} + 116 to local table
+in proc foo1 adding addrExp r1{0} + 8 to local table
+in proc foo1 adding addrExp r1{0} - 80 to local table
+finding final parameters for foo1
+potential param r[tmp + 30]
+found new parameter r[tmp + 30]
+potential param r61
+found new parameter r61
+after removing matching assigns (t[WILDSTR]).
+after removing matching assigns (%pc).
+size 32 meet with size 64!
+in proc main adding addrExp r1{0} + 112 to local table
+in proc main adding addrExp r1{0} + 116 to local table
+in proc main adding addrExp r1{0} + 8 to local table
+in proc main adding addrExp r1{0} - 80 to local table
+size 32 meet with size 64!
+size 32 meet with size 64!
+size 32 meet with size 64!
+finding final parameters for foo1
+potential param r61
+found new parameter r61
+finding final parameters for foo2
+finding final parameters for foo1
+local g3 has type char * that doesn't agree with type of define void of a library, why?
+local g3 has type char * that doesn't agree with type of define __size32 of a library, why?

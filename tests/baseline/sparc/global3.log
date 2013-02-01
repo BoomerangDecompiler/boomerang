@@ -35,6 +35,7 @@ in proc foo2 adding addrExp r14{0} + 56 to local table
 in proc foo2 adding addrExp r14{0} + 60 to local table
 integer size 64 meet with SizeType size 32!
 integer size 64 meet with SizeType size 32!
+integer size 64 meet with SizeType size 32!
 finding final parameters for foo2
 after removing matching assigns (t[WILDSTR]).
 in proc foo1 adding addrExp r14{0} to local table
@@ -71,6 +72,8 @@ in proc main adding addrExp r14{0} + 48 to local table
 in proc main adding addrExp r14{0} + 52 to local table
 in proc main adding addrExp r14{0} + 56 to local table
 in proc main adding addrExp r14{0} + 60 to local table
+integer size 64 meet with SizeType size 32!
+integer size 64 meet with SizeType size 32!
 in proc main adding addrExp r14{0} to local table
 in proc main adding addrExp r14{0} + 4 to local table
 in proc main adding addrExp r14{0} + 8 to local table
@@ -87,6 +90,7 @@ in proc main adding addrExp r14{0} + 48 to local table
 in proc main adding addrExp r14{0} + 52 to local table
 in proc main adding addrExp r14{0} + 56 to local table
 in proc main adding addrExp r14{0} + 60 to local table
+integer size 64 meet with SizeType size 32!
 finding final parameters for foo1
 finding final parameters for foo2
 finding final parameters for foo1

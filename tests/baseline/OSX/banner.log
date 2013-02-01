@@ -1,0 +1,116 @@
+after removing matching assigns (t[WILDSTR]).
+after removing matching assigns (%pc).
+size 64 meet with size 32!
+size 32 meet with size 64!
+size 32 meet with size 64!
+size 64 meet with size 32!
+size 32 meet with size 64!
+size 32 meet with size 64!
+size 64 meet with size 32!
+size 32 meet with size 64!
+size 64 meet with size 32!
+size 32 meet with size 64!
+size 32 meet with size 64!
+size 32 meet with size 64!
+size 64 meet with size 32!
+size 32 meet with size 64!
+### WARNING: iteration limit exceeded for dfaTypeAnalysis of procedure main ###
+in proc main adding addrExp r1{0} - 104 to local table
+in proc main adding addrExp r1{0} - 108 to local table
+in proc main adding addrExp r1{0} - 112 to local table
+in proc main adding addrExp r1{0} - 116 to local table
+in proc main adding addrExp r1{0} - 120 to local table
+in proc main adding addrExp r1{0} - 96 to local table
+in proc main adding addrExp r1{0} + 112 to local table
+in proc main adding addrExp r1{0} + 116 to local table
+TYPE ERROR: attempt to insert item <noname> at 0x74 of type __size64 which weaves after <noname> at 0x70 of type __size64
+in proc main adding addrExp r1{0} + 8 to local table
+in proc main adding addrExp r1{0} - 192 to local table
+in proc main adding addrExp r1{0} - 124 to local table
+in proc main adding addrExp r1{0} - 128 to local table
+in proc main adding addrExp r1{0} - 124 to local table
+in proc main adding addrExp r1{0} - 104 to local table
+in proc main adding addrExp r1{0} - 108 to local table
+in proc main adding addrExp r1{0} - 112 to local table
+in proc main adding addrExp r1{0} - 116 to local table
+in proc main adding addrExp r1{0} - 120 to local table
+in proc main adding addrExp r1{0} - 124 to local table
+in proc main adding addrExp r1{0} - 128 to local table
+in proc main adding addrExp r1{0} - 128 to local table
+in proc main adding addrExp r1{0} - 108 to local table
+in proc main adding addrExp r1{0} - 108 to local table
+in proc main adding addrExp r1{0} - 108 to local table
+in proc main adding addrExp r1{0} - 120 to local table
+in proc main adding addrExp r1{0} - 104 to local table
+in proc main adding addrExp r1{0} - 112 to local table
+in proc main adding addrExp r1{0} - 116 to local table
+in proc main adding addrExp r1{0} - 120 to local table
+in proc main adding addrExp r1{0} - 116 to local table
+in proc main adding addrExp r1{0} - 104 to local table
+in proc main adding addrExp r1{0} - 112 to local table
+in proc main adding addrExp r1{0} - 116 to local table
+in proc main adding addrExp r1{0} - 104 to local table
+in proc main adding addrExp r1{0} - 104 to local table
+in proc main adding addrExp r1{0} - 104 to local table
+in proc main adding addrExp r1{0} - 112 to local table
+in proc main adding addrExp r1{0} - 112 to local table
+in proc main adding addrExp r1{0} - 112 to local table
+integer size 32 meet with SizeType size 8!
+in proc main adding addrExp r1{0} - 116 to local table
+in proc main adding addrExp r1{0} - 116 to local table
+in proc main adding addrExp r1{0} - 116 to local table
+integer size 32 meet with SizeType size 8!
+in proc main adding addrExp r1{0} - 116 to local table
+in proc main adding addrExp r1{0} - 120 to local table
+in proc main adding addrExp r1{0} - 124 to local table
+### WARNING: iteration limit exceeded for dfaTypeAnalysis of procedure main ###
+in proc main adding addrExp r1{0} - 104 to local table
+in proc main adding addrExp r1{0} - 112 to local table
+in proc main adding addrExp r1{0} - 116 to local table
+in proc main adding addrExp r1{0} - 96 to local table
+in proc main adding addrExp r1{0} - 128 to local table
+in proc main adding addrExp r1{0} - 124 to local table
+in proc main adding addrExp r1{0} - 104 to local table
+in proc main adding addrExp r1{0} - 112 to local table
+in proc main adding addrExp r1{0} - 116 to local table
+in proc main adding addrExp r1{0} - 124 to local table
+in proc main adding addrExp r1{0} - 128 to local table
+in proc main adding addrExp r1{0} - 128 to local table
+in proc main adding addrExp r1{0} - 108 to local table
+in proc main adding addrExp r1{0} - 108 to local table
+in proc main adding addrExp r1{0} - 108 to local table
+in proc main adding addrExp r1{0} - 120 to local table
+in proc main adding addrExp r1{0} - 104 to local table
+in proc main adding addrExp r1{0} - 112 to local table
+in proc main adding addrExp r1{0} - 116 to local table
+in proc main adding addrExp r1{0} - 120 to local table
+in proc main adding addrExp r1{0} - 116 to local table
+in proc main adding addrExp r1{0} - 104 to local table
+in proc main adding addrExp r1{0} - 112 to local table
+in proc main adding addrExp r1{0} - 116 to local table
+in proc main adding addrExp r1{0} - 104 to local table
+in proc main adding addrExp r1{0} - 104 to local table
+in proc main adding addrExp r1{0} - 104 to local table
+in proc main adding addrExp r1{0} - 112 to local table
+in proc main adding addrExp r1{0} - 112 to local table
+in proc main adding addrExp r1{0} - 112 to local table
+integer size 32 meet with SizeType size 8!
+in proc main adding addrExp r1{0} - 116 to local table
+in proc main adding addrExp r1{0} - 116 to local table
+in proc main adding addrExp r1{0} - 116 to local table
+integer size 32 meet with SizeType size 8!
+in proc main adding addrExp r1{0} - 116 to local table
+in proc main adding addrExp r1{0} - 120 to local table
+in proc main adding addrExp r1{0} - 124 to local table
+local g3 has type size_t that doesn't agree with type of define __size32 of a library, why?
+local g9 has type char[] * that doesn't agree with type of define void of a library, why?
+local g10 has type __size8 * that doesn't agree with type of define __size32 of a library, why?
+local g11 has type void ** that doesn't agree with type of define void of a library, why?
+local g3 has type __size32 that doesn't agree with type of define int of a library, why?
+local g9 has type void that doesn't agree with type of define int of a library, why?
+local g10 has type __size32 that doesn't agree with type of define __size8 * of a library, why?
+local g11 has type void that doesn't agree with type of define void ** of a library, why?
+local g9 has type int that doesn't agree with type of define void of a library, why?
+local g3 has type int that doesn't agree with type of define __size32 of a library, why?
+local g10 has type __size8 * that doesn't agree with type of define __size32 of a library, why?
+local g11 has type void ** that doesn't agree with type of define __size32 of a library, why?

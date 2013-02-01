@@ -1,5 +1,5 @@
-int b = 7;
 double a = 5.2;
+int b = 7;
 
 void foo1();
 void foo2();

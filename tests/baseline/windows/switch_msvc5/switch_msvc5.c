@@ -6726,115 +6726,116 @@ __size32 proc34(__size32 param1, __size32 param2, __size32 param3, __size32 para
     void *esp_9; 		// r28{136}
     LPCSTR local0; 		// m[esp - 16]
     unsigned int local1; 		// m[esp - 24]
-    __size32 local10; 		// m[esp - 8]{178}
-    int local11; 		// m[esp - 12]{31}
-    __size32 local12; 		// m[esp - 12]{167}
-    __size32 local13; 		// m[esp - 12]{179}
-    int local14; 		// m[esp - 16]{31}
-    __size32 local15; 		// m[esp - 16]{168}
-    __size32 local16; 		// m[esp - 16]{180}
-    int local17; 		// m[esp - 20]{31}
-    unsigned int local18; 		// m[esp - 20]{169}
-    unsigned int local19; 		// m[esp - 20]{181}
+    __size32 local10; 		// m[esp - 8]{166}
+    __size32 local11; 		// m[esp - 8]{178}
+    int local12; 		// m[esp - 12]{31}
+    __size32 local13; 		// m[esp - 12]{167}
+    __size32 local14; 		// m[esp - 12]{179}
+    int local15; 		// m[esp - 16]{31}
+    __size32 local16; 		// m[esp - 16]{168}
+    __size32 local17; 		// m[esp - 16]{180}
+    int local18; 		// m[esp - 20]{31}
+    unsigned int local19; 		// m[esp - 20]{169}
     __size32 local2; 		// m[esp - 20]
-    int local20; 		// m[esp - 24]{31}
-    int local21; 		// m[esp - 24]{170}
-    int local22; 		// m[esp - 24]{182}
-    int local23; 		// %flags{43}
-    int local24; 		// %flags{64}
-    int local25; 		// %flags{68}
-    int local26; 		// %flags{75}
-    int local27; 		// %ZF{43}
-    int local28; 		// %ZF{64}
-    int local29; 		// %ZF{68}
+    unsigned int local20; 		// m[esp - 20]{181}
+    int local21; 		// m[esp - 24]{31}
+    int local22; 		// m[esp - 24]{170}
+    int local23; 		// m[esp - 24]{182}
+    int local24; 		// %flags{43}
+    int local25; 		// %flags{64}
+    int local26; 		// %flags{68}
+    int local27; 		// %flags{75}
+    int local28; 		// %ZF{43}
+    int local29; 		// %ZF{64}
     __size32 local3; 		// m[esp - 12]
-    int local30; 		// %ZF{75}
-    int local31; 		// %CF{43}
-    int local32; 		// %CF{64}
-    int local33; 		// %CF{68}
-    int local34; 		// %CF{75}
-    __size32 local35; 		// param1{111}
-    __size32 local36; 		// param2{112}
-    void *local37; 		// esp_7{114}
-    __size32 local38; 		// param3{115}
-    __size32 local39; 		// param4{116}
+    int local30; 		// %ZF{68}
+    int local31; 		// %ZF{75}
+    int local32; 		// %CF{43}
+    int local33; 		// %CF{64}
+    int local34; 		// %CF{68}
+    int local35; 		// %CF{75}
+    __size32 local36; 		// param1{111}
+    __size32 local37; 		// param2{112}
+    void *local38; 		// esp_7{114}
+    __size32 local39; 		// param3{115}
     __size32 local4; 		// m[esp - 8]
-    __size32 local40; 		// ecx{122}
-    __size32 local41; 		// edx{123}
-    void *local42; 		// esp_8{125}
-    __size32 local43; 		// esi{126}
-    __size32 local44; 		// edi{127}
-    void *local45; 		// esp_9{136}
-    int local46; 		// local24{140}
-    int local47; 		// local28{141}
-    int local48; 		// local32{142}
+    __size32 local40; 		// param4{116}
+    __size32 local41; 		// ecx{122}
+    __size32 local42; 		// edx{123}
+    void *local43; 		// esp_8{125}
+    __size32 local44; 		// esi{126}
+    __size32 local45; 		// edi{127}
+    void *local46; 		// esp_9{136}
+    int local47; 		// local25{140}
+    int local48; 		// local29{141}
+    int local49; 		// local33{142}
     __size32 local5; 		// m[esp - 4]
     int local6; 		// m[esp - 4]{31}
-    __size32 local7; 		// m[esp - 4]{171}
-    int local8; 		// m[esp - 8]{31}
-    __size32 local9; 		// m[esp - 8]{166}
+    __size32 local7; 		// m[esp - 4]{165}
+    __size32 local8; 		// m[esp - 4]{177}
+    int local9; 		// m[esp - 8]{31}
 
     eax = *(&global100 + 1072);
     ebx_1 = 0;
     esp_1 = esp - 12;
-    local35 = param1;
-    local36 = param2;
-    local37 = esp_1;
-    local38 = param3;
-    local39 = param4;
+    local36 = param1;
+    local37 = param2;
+    local38 = esp_1;
+    local39 = param3;
+    local40 = param4;
     if (eax != 0) {
 L9:
-        param1 = local35;
-        param2 = local36;
-        esp_7 = local37;
-        param3 = local38;
-        param4 = local39;
+        param1 = local36;
+        param2 = local37;
+        esp_7 = local38;
+        param3 = local39;
+        param4 = local40;
         eax = *(&global100 + 1076);
-        local40 = param1;
-        local41 = param2;
-        local42 = esp_7;
-        local43 = param3;
-        local44 = param4;
+        local41 = param1;
+        local42 = param2;
+        local43 = esp_7;
+        local44 = param3;
+        local45 = param4;
         if (eax != 0) {
-            (*eax)(local21, local18, local15, local12, local9, local5, eax, param1, param2, ebx_1, param3, param4, LOGICALFLAGS32(eax), LOGICALFLAGS32(eax), LOGICALFLAGS32(eax));
-            local40 = ecx;
-            local41 = edx;
-            local42 = esp_5;
-            local43 = esi;
-            local44 = edi;
+            (*eax)(local22, local19, local16, local13, local10, local7, eax, param1, param2, ebx_1, param3, param4, LOGICALFLAGS32(eax), LOGICALFLAGS32(eax), LOGICALFLAGS32(eax));
+            local41 = ecx;
+            local42 = edx;
+            local43 = esp_5;
+            local44 = esi;
+            local45 = edi;
             ebx_1 = eax;
         }
-        ecx = local40;
-        edx = local41;
-        esp_8 = local42;
-        esi = local43;
-        edi = local44;
-        local24 = LOGICALFLAGS32(ebx_1);
-        local45 = esp_8;
-        local45 = esp_8;
-        local46 = local24;
-        local47 = local28;
-        local48 = local32;
+        ecx = local41;
+        edx = local42;
+        esp_8 = local43;
+        esi = local44;
+        edi = local45;
+        local25 = LOGICALFLAGS32(ebx_1);
+        local46 = esp_8;
+        local46 = esp_8;
+        local47 = local25;
+        local48 = local29;
+        local49 = local33;
         if (ebx_1 != 0) {
             eax = *(&global100 + 1080);
-            local25 = LOGICALFLAGS32(eax);
-            local46 = local25;
-            local47 = local29;
-            local48 = local33;
+            local26 = LOGICALFLAGS32(eax);
+            local47 = local26;
+            local48 = local30;
+            local49 = local34;
             if (eax != 0) {
                 *(__size32*)(esp_8 - 4) = ebx_1;
-                (*eax)(local1, local2, local0, local3, local4, local7, eax, ecx, edx, ebx_1, esi, edi, LOGICALFLAGS32(eax), LOGICALFLAGS32(eax), LOGICALFLAGS32(eax));
-                local45 = esp_6;
-                local46 = local26;
-                local47 = local30;
-                local48 = local34;
+                (*eax)(local1, local2, local0, local3, local4, local5, eax, ecx, edx, ebx_1, esi, edi, LOGICALFLAGS32(eax), LOGICALFLAGS32(eax), LOGICALFLAGS32(eax));
+                local46 = esp_6;
+                local47 = local27;
+                local48 = local31;
+                local49 = local35;
                 ebx_1 = eax;
             }
         }
-        esp_9 = local45;
-        local24 = local46;
-        local28 = local47;
-        local32 = local48;
+        esp_9 = local46;
+        local25 = local47;
+        local29 = local48;
+        local33 = local49;
         eax = *(esp_9 + 24);
         ecx = *(esp_9 + 20);
         edx = *(esp_9 + 16);
@@ -6842,7 +6843,7 @@ L9:
         *(__size32*)(esp_9 - 8) = ecx;
         *(__size32*)(esp_9 - 12) = edx;
         *(__size32*)(esp_9 - 16) = ebx_1;
-        (*global92)(local22, local19, local16, local13, local10, local5, eax, ecx, edx, ebx_1, esi, edi, local24, local28, local32);
+        (*global92)(local23, local20, local17, local14, local11, local8, eax, ecx, edx, ebx_1, esi, edi, local25, local29, local33);
     } else {
         LoadLibraryA("user32.dll");
         if (eax == 0) {
@@ -6856,16 +6857,16 @@ L10:
             } else {
                 *(__size32*)(esp_2 - 4) = 0x405388;
                 *(__size32*)(esp_2 - 8) = esi;
-                (*edi)(local20, local17, local14, local11, local8, local6, eax, ecx, edx, ebx, esi, edi, <all>, LOGICALFLAGS32(eax), LOGICALFLAGS32(eax), LOGICALFLAGS32(eax));
+                (*edi)(local21, local18, local15, local12, local9, local6, eax, ecx, edx, ebx, esi, edi, <all>, LOGICALFLAGS32(eax), LOGICALFLAGS32(eax), LOGICALFLAGS32(eax));
                 *(__size32*)(esp_3 - 4) = 0x405374;
                 *(__size32*)(esp_3 - 8) = esi;
                 *(__size32*)(&global100 + 1076) = eax;
-                (*edi)(local1, local2, local0, local3, local4, local5, eax, ecx, edx, ebx, esi, edi, <all>, local23, local27, local31);
-                local35 = ecx;
-                local36 = edx;
-                local37 = esp_4;
-                local38 = esi;
-                local39 = edi;
+                (*edi)(local1, local2, local0, local3, local4, local5, eax, ecx, edx, ebx, esi, edi, <all>, local24, local28, local32);
+                local36 = ecx;
+                local37 = edx;
+                local38 = esp_4;
+                local39 = esi;
+                local40 = edi;
                 *(__size32*)(&global100 + 1080) = eax;
                 goto L9;
             }

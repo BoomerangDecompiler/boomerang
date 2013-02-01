@@ -1,2 +1,2 @@
 decompiling entry point main
-boomerang: /terra/development/Hobby/Decompilation/Systems/boomerang_git/db/basicblock.cpp:2077: bool BasicBlock::decodeIndirectJmp(UserProc*): Assertion `swi->iNumTable > 0' failed.
+boomerang: /terra/development/Hobby/Decompilation/Systems/boomerang_git/db/basicblock.cpp:2057: bool BasicBlock::decodeIndirectJmp(UserProc*): Assertion `swi->iNumTable > 0' failed.

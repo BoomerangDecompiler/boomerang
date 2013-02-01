@@ -1,0 +1,38 @@
+Unknown library function objc_msgSend
+after removing matching assigns (t[WILDSTR]).
+after removing matching assigns (%pc).
+### WARNING: iteration limit exceeded for dfaTypeAnalysis of procedure main ###
+in proc main adding addrExp r1{0} + 112 to local table
+in proc main adding addrExp r1{0} + 116 to local table
+in proc main adding addrExp r1{0} + 8 to local table
+in proc main adding addrExp r1{0} - 96 to local table
+in proc main adding addrExp r1{0} - 32 to local table
+  80 {*32* r3, *32* r4, *v* r5, *v* r6, *v* r7, *v* r8, *32* r9, *v* r10, *32* r11, *v* r12} := CALL objc_msgSend(
+              )
+              Reaching definitions: r0=machine("%LR"),   r1=r1{0} - 96,   r3=r3{76},   r4=r4{77},
+                r9=machine("%LR") + 0x12fc,   r11=machine("%LR") + 0x12f4,   r30=r1{0} - 96,   r31=machine("%LR"),
+                m[r1{0} + 8]=machine("%LR"),   m[r1{0} + 112]=r[tmp + 30]{0},   m[r1{0} + 116]=r[tmp + 30]{0},
+                m[r1{0} - 96]=r1{0},   tmp=31
+              Live variables: r3,  r4,  r5,  r6,  r7,  r8,  r9,  r10,  r11,  r12
+  90 {*32* r3, *32* r4, *v* r5, *v* r6, *v* r7, *v* r8, *32* r9, *v* r10, *32* r11, *v* r12} := CALL objc_msgSend(
+              )
+              Reaching definitions: r0=r3{80},   r1=r1{0} - 96,   r3=r3{80},   r4=r4{87},   r5=r5{95},   r6=r6{96},
+                r7=r7{97},   r8=r8{98},   r9=machine("%LR") + 0x12f8,   r10=r10{100},   r11=r11{101},   r12=r12{102},
+                r30=r1{0} - 96,   r31=machine("%LR"),   m[r1{0} + 8]=machine("%LR"),   m[r1{0} + 112]=r[tmp + 30]{0},
+                m[r1{0} + 116]=r[tmp + 30]{0},   m[r1{0} - 32]=r3{80},   m[r1{0} - 96]=r1{0},   tmp=31
+              Live variables: r3,  r4,  r5,  r6,  r7,  r8,  r9,  r10,  r11,  r12
+  80 {*32* r3, *32* r4, *v* r5, *v* r6, *v* r7, *v* r8, *32* r9, *v* r10, *32* r11, *v* r12} := CALL objc_msgSend(
+              )
+              Reaching definitions: r[tmp + 30]=r[tmp + 30]{0},   r0=machine("%LR"),   r1=r1{0} - 96,   r3=r3{76},
+                r4=r4{77},   r9=machine("%LR") + 0x12fc,   r11=machine("%LR") + 0x12f4,   r30=r1{0} - 96,
+                r31=machine("%LR"),   m[r1{0} + 8]=machine("%LR"),   m[r1{0} + 112]=r[tmp + 30]{0},
+                m[r1{0} + 116]=r[tmp + 30]{0},   m[r1{0} - 96]=r1{0},   tmp=31
+              Live variables: 
+  90 {*32* r3, *32* r4, *v* r5, *v* r6, *v* r7, *v* r8, *32* r9, *v* r10, *32* r11, *v* r12} := CALL objc_msgSend(
+              )
+              Reaching definitions: r[tmp + 30]=r[tmp + 30]{0},   r0=r3{80},   r1=r1{0} - 96,   r3=r3{80},   r4=r4{87},
+                r5=r5{95},   r6=r6{96},   r7=r7{97},   r8=r8{98},   r9=machine("%LR") + 0x12f8,   r10=r10{100},
+                r11=r11{101},   r12=r12{102},   r30=r1{0} - 96,   r31=machine("%LR"),   m[r1{0} + 8]=machine("%LR"),
+                m[r1{0} + 112]=r[tmp + 30]{0},   m[r1{0} + 116]=r[tmp + 30]{0},   m[r1{0} - 32]=r3{80},
+                m[r1{0} - 96]=r1{0},   tmp=31
+              Live variables: 

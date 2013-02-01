@@ -1,0 +1,49 @@
+after removing matching assigns (t[WILDSTR]).
+after removing matching assigns (%pc).
+size 64 meet with size 32!
+size 32 meet with size 64!
+size 64 meet with size 32!
+size 32 meet with size 64!
+size 64 meet with size 32!
+size 32 meet with size 64!
+size 64 meet with size 32!
+size 32 meet with size 64!
+size 32 meet with size 64!
+size 32 meet with size 64!
+size 64 meet with size 32!
+size 32 meet with size 64!
+### WARNING: iteration limit exceeded for dfaTypeAnalysis of procedure test ###
+in proc test adding addrExp r1{0} + 112 to local table
+in proc test adding addrExp r1{0} + 116 to local table
+TYPE ERROR: attempt to insert item <noname> at 0x74 of type __size64 which weaves after <noname> at 0x70 of type __size64
+in proc test adding addrExp r1{0} + 8 to local table
+in proc test adding addrExp r1{0} - 80 to local table
+in proc test adding addrExp r1{0} + 24 to local table
+in proc test adding addrExp r1{0} + 24 to local table
+in proc test adding addrExp r1{0} + 24 to local table
+in proc test adding addrExp r1{0} + 24 to local table
+in proc test adding addrExp r1{0} + 24 to local table
+finding final parameters for test
+potential param r1
+found new parameter r1
+potential param r[tmp + 30]
+found new parameter r[tmp + 30]
+potential param r3
+found new parameter r3
+after removing matching assigns (t[WILDSTR]).
+after removing matching assigns (%pc).
+in proc main adding addrExp r1{0} + 112 to local table
+in proc main adding addrExp r1{0} + 116 to local table
+in proc main adding addrExp r1{0} + 8 to local table
+in proc main adding addrExp r1{0} - 80 to local table
+in proc main adding addrExp r1{0} + 24 to local table
+in proc test adding addrExp r1{0} + 24 to local table
+in proc test adding addrExp r1{0} + 24 to local table
+in proc test adding addrExp r1{0} + 24 to local table
+finding final parameters for test
+potential param r1
+found new parameter r1
+potential param r[tmp + 30]
+found new parameter r[tmp + 30]
+potential param r3
+found new parameter r3

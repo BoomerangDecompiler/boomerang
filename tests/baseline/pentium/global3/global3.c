@@ -1,5 +1,5 @@
-long long a = 0x7048860ddf79LL;
 int b = 7;
+long long a = 0x7048860ddf79LL;
 
 void foo1();
 void foo2();

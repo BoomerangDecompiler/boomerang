@@ -1,5 +1,5 @@
-int b = 7;
 int a = 5;
+int b = 7;
 
 void foo1();
 void foo2();
