@@ -116,41 +116,26 @@ typedef std::set<Assign*, lessAssign>::const_iterator const_iterator;
         //bool    isLast(StmtSetIter& it);                    // returns true if it is at end
 };        // class AssignSet
 
-class StatementList {
-        std::list<Statement*> slist;                          // For now, use use standard list
+class StatementList : public std::list<Statement*> {
 
 public:
-typedef std::list<Statement*>::iterator iterator;
-typedef std::list<Statement*>::const_iterator const_iterator;
-typedef std::list<Statement*>::reverse_iterator reverse_iterator;
                     ~StatementList() {}
-        unsigned    size() {return slist.size();}             // Number of elements
-        iterator    begin()  {return slist.begin();}
-        iterator    end()      {return slist.end();}
-        const_iterator    begin() const  {return slist.begin();}
-        const_iterator    end() const      {return slist.end();}
-        reverse_iterator rbegin() {return slist.rbegin();}
-        reverse_iterator rend()      {return slist.rend();}
 
         // A special intersection operator; this becomes the intersection of StatementList a (assumed to be a list of
         // Assignment*s) with the LocationSet b.
         // Used for calculating returns for a CallStatement
         void        makeIsect(StatementList& a, LocationSet& b);
 
-        void        append(Statement* s) {slist.push_back(s);} // Insert at end
+        void        append(Statement* s) {push_back(s);} // Insert at end
         void        append(StatementList& sl);            // Append whole StatementList
         void        append(StatementSet& sl);            // Append whole StatementSet
         bool        remove(Statement* s);                // Removal; rets false if not found
         void        removeDefOf(Exp* loc);                // Remove definitions of loc
         // This one is needed where you remove in the middle of a loop
         // Use like this: it = mystatementlist.erase(it);
-        iterator    erase(iterator it) {return slist.erase(it);}
-        iterator    erase(iterator first, iterator last) {return slist.erase(first, last);}
-        iterator    insert(iterator it, Statement* s) {return slist.insert(it, s);}
         bool        exists(Statement* s);                // Search; returns false if not found
         char*        prints();                            // Print to string (for debugging)
         void        dump();                                // Print to standard error for debugging
-        void        clear() { slist.clear(); }
         void        makeCloneOf(StatementList& o);        // Make this a clone of o
         bool        existsOnLeft(Exp* loc);                // True if loc exists on the LHS of any Assignment in this list
         Assignment*    findOnLeft(Exp* loc);                // Return the first stmt with loc on the LHS

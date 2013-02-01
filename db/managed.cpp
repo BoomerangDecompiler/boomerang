@@ -526,10 +526,10 @@ void LocationSet::substitute(Assign& a) {
 //
 
 bool StatementList::remove(Statement* s) {
-    std::list<Statement*>::iterator it;
-    for (it = slist.begin(); it != slist.end(); it++) {
+    iterator it;
+    for (it = begin(); it != end(); it++) {
         if (*it == s) {
-            slist.erase(it);
+            erase(it);
             return true;
         }
     }
@@ -537,20 +537,16 @@ bool StatementList::remove(Statement* s) {
 }
 
 void StatementList::append(StatementList& sl) {
-    for (iterator it = sl.slist.begin(); it != sl.slist.end(); it++) {
-        slist.push_back(*it);
-    }
+    insert(end(),sl.begin(),sl.end());
 }
 
 void StatementList::append(StatementSet& ss) {
-    for (StatementSet::iterator it = ss.begin(); it != ss.end(); it++) {
-        slist.push_back(*it);
-    }
+    insert(end(),ss.begin(),ss.end());
 }
 
 char* StatementList::prints() {
     std::ostringstream ost;
-    for (iterator it = slist.begin(); it != slist.end(); it++) {
+    for (iterator it = begin(); it != end(); it++) {
         ost << *it << ",\t";
     }
     strncpy(debug_buffer, ost.str().c_str(), DEBUG_BUFSIZE-1);
@@ -608,24 +604,24 @@ void StatementVec::printNums(std::ostream& os) {
 
 // Special intersection method: this := a intersect b
 void StatementList::makeIsect(StatementList& a, LocationSet& b) {
-    slist.clear();
-    for (iterator it = a.slist.begin(); it != a.slist.end(); ++it) {
+    clear();
+    for (iterator it = a.begin(); it != a.end(); ++it) {
         Assignment* as = (Assignment*)*it;
         if (b.exists(as->getLeft()))
-            slist.push_back(as);
+            push_back(as);
     }
 }
 
 void StatementList::makeCloneOf(StatementList& o) {
-    slist.clear();
-    for (iterator it = o.slist.begin(); it != o.slist.end(); it++)
-        slist.push_back((*it)->clone());
+    clear();
+    for (iterator it = o.begin(); it != o.end(); it++)
+        push_back((*it)->clone());
 }
 
 // Return true if loc appears on the left of any statements in this list
 // Note: statements in this list are assumed to be assignments
 bool StatementList::existsOnLeft(Exp* loc) {
-    for (iterator it = slist.begin(); it != slist.end(); it++) {
+    for (iterator it = begin(); it != end(); it++) {
         if (*((Assignment*)*it)->getLeft() == *loc)
             return true;
     }
@@ -635,7 +631,7 @@ bool StatementList::existsOnLeft(Exp* loc) {
 // Remove the first definition where loc appears on the left
 // Note: statements in this list are assumed to be assignments
 void StatementList::removeDefOf(Exp* loc) {
-    for (iterator it = slist.begin(); it != slist.end(); it++) {
+    for (iterator it = begin(); it != end(); it++) {
         if (*((Assignment*)*it)->getLeft() == *loc) {
             erase(it);
             return;
@@ -645,9 +641,9 @@ void StatementList::removeDefOf(Exp* loc) {
 
 // Find the first Assignment with loc on the LHS
 Assignment* StatementList::findOnLeft(Exp* loc) {
-    if (slist.size() == 0)
+    if (empty())
         return nullptr;
-    for (iterator it = slist.begin(); it != slist.end(); it++) {
+    for (iterator it = begin(); it != end(); it++) {
         Exp *left = ((Assignment*)*it)->getLeft();
         if (*left == *loc)
             return (Assignment*)*it;
