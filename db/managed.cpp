@@ -56,16 +56,16 @@ std::ostream& operator<<(std::ostream& os, LocationSet* ls) {
 // Make this set the union of itself and other
 void StatementSet::makeUnion(StatementSet& other) {
     std::set<Statement*>::iterator it;
-    for (it = other.sset.begin(); it != other.sset.end(); it++) {
-        sset.insert(*it);
+    for (it = other.begin(); it != other.end(); it++) {
+        insert(*it);
     }
 }
 
 // Make this set the difference of itself and other
 void StatementSet::makeDiff(StatementSet& other) {
     std::set<Statement*>::iterator it;
-    for (it = other.sset.begin(); it != other.sset.end(); it++) {
-        sset.erase(*it);
+    for (it = other.begin(); it != other.end(); it++) {
+        erase(*it);
     }
 }
 
@@ -73,11 +73,11 @@ void StatementSet::makeDiff(StatementSet& other) {
 // Make this set the intersection of itself and other
 void StatementSet::makeIsect(StatementSet& other) {
     std::set<Statement*>::iterator it, ff;
-    for (it = sset.begin(); it != sset.end(); it++) {
-        ff = other.sset.find(*it);
-        if (ff == other.sset.end())
+    for (it = begin(); it != end(); it++) {
+        ff = other.find(*it);
+        if (ff == other.end())
             // Not in both sets
-            sset.erase(it);
+            erase(it);
     }
 }
 
@@ -85,9 +85,9 @@ void StatementSet::makeIsect(StatementSet& other) {
 // other. Effectively (this intersect other) == this
 bool StatementSet::isSubSetOf(StatementSet& other) {
     std::set<Statement*>::iterator it, ff;
-    for (it = sset.begin(); it != sset.end(); it++) {
-        ff = other.sset.find(*it);
-        if (ff == other.sset.end())
+    for (it = begin(); it != end(); it++) {
+        ff = other.find(*it);
+        if (ff == other.end())
             return false;
     }
     return true;
@@ -96,8 +96,8 @@ bool StatementSet::isSubSetOf(StatementSet& other) {
 
 // Remove this Statement. Return false if it was not found
 bool StatementSet::remove(Statement* s) {
-    if (sset.find(s) != sset.end()) {
-        sset.erase(s);
+    if (find(s) != end()) {
+        erase(s);
         return true;
     }
     return false;
@@ -105,13 +105,13 @@ bool StatementSet::remove(Statement* s) {
 
 // Search for s in this Statement set. Return true if found
 bool StatementSet::exists(Statement* s) {
-    std::set<Statement*>::iterator it = sset.find(s);
-    return (it != sset.end());
+    iterator it = find(s);
+    return (it != end());
 }
 
 // Find a definition for loc in this Statement set. Return true if found
 bool StatementSet::definesLoc(Exp* loc) {
-    for (iterator it = sset.begin(); it != sset.end(); it++) {
+    for (iterator it = begin(); it != end(); it++) {
         if ((*it)->definesLoc(loc))
             return true;
     }
@@ -122,8 +122,8 @@ bool StatementSet::definesLoc(Exp* loc) {
 char* StatementSet::prints() {
     std::ostringstream ost;
     std::set<Statement*>::iterator it;
-    for (it = sset.begin(); it != sset.end(); it++) {
-        if (it != sset.begin()) ost << ",\t";
+    for (it = begin(); it != end(); it++) {
+        if (it != begin()) ost << ",\t";
         ost << *it;
     }
     ost << "\n";
@@ -138,8 +138,8 @@ void StatementSet::dump() {
 
 void StatementSet::print(std::ostream& os) {
     std::set<Statement*>::iterator it;
-    for (it = sset.begin(); it != sset.end(); it++) {
-        if (it != sset.begin()) os << ",\t";
+    for (it = begin(); it != end(); it++) {
+        if (it != begin()) os << ",\t";
         os << *it;
     }
     os << "\n";
@@ -148,21 +148,21 @@ void StatementSet::print(std::ostream& os) {
 // Print just the numbers to stream os
 void StatementSet::printNums(std::ostream& os) {
     os << std::dec;
-    for (iterator it = sset.begin(); it != sset.end(); ) {
+    for (iterator it = begin(); it != end(); ) {
         if (*it)
             (*it)->printNum(os);
         else
             os << "-";                // Special case for nullptr definition
-        if (++it != sset.end())
+        if (++it != end())
             os << " ";
     }
 }
 
 bool StatementSet::operator<(const StatementSet& o) const {
-    if (sset.size() < o.sset.size()) return true;
-    if (sset.size() > o.sset.size()) return false;
-    std::set<Statement*>::const_iterator it1, it2;
-    for (it1 = sset.begin(), it2 = o.sset.begin(); it1 != sset.end();
+    if (size() < o.size()) return true;
+    if (size() > o.size()) return false;
+    const_iterator it1, it2;
+    for (it1 = begin(), it2 = o.begin(); it1 != end();
          it1++, it2++) {
         if (*it1 < *it2) return true;
         if (*it1 > *it2) return false;
@@ -177,16 +177,16 @@ bool StatementSet::operator<(const StatementSet& o) const {
 // Make this set the union of itself and other
 void AssignSet::makeUnion(AssignSet& other) {
     iterator it;
-    for (it = other.aset.begin(); it != other.aset.end(); it++) {
-        aset.insert(*it);
+    for (it = other.begin(); it != other.end(); it++) {
+        insert(*it);
     }
 }
 
 // Make this set the difference of itself and other
 void AssignSet::makeDiff(AssignSet& other) {
     iterator it;
-    for (it = other.aset.begin(); it != other.aset.end(); it++) {
-        aset.erase(*it);
+    for (it = other.begin(); it != other.end(); it++) {
+        erase(*it);
     }
 }
 
@@ -194,11 +194,11 @@ void AssignSet::makeDiff(AssignSet& other) {
 // Make this set the intersection of itself and other
 void AssignSet::makeIsect(AssignSet& other) {
     iterator it, ff;
-    for (it = aset.begin(); it != aset.end(); it++) {
-        ff = other.aset.find(*it);
-        if (ff == other.aset.end())
+    for (it = begin(); it != end(); it++) {
+        ff = other.find(*it);
+        if (ff == other.end())
             // Not in both sets
-            aset.erase(it);
+            erase(it);
     }
 }
 
@@ -206,9 +206,9 @@ void AssignSet::makeIsect(AssignSet& other) {
 // other. Effectively (this intersect other) == this
 bool AssignSet::isSubSetOf(AssignSet& other) {
     iterator it, ff;
-    for (it = aset.begin(); it != aset.end(); it++) {
-        ff = other.aset.find(*it);
-        if (ff == other.aset.end())
+    for (it = begin(); it != end(); it++) {
+        ff = other.find(*it);
+        if (ff == other.end())
             return false;
     }
     return true;
@@ -217,8 +217,8 @@ bool AssignSet::isSubSetOf(AssignSet& other) {
 
 // Remove this Assign. Return false if it was not found
 bool AssignSet::remove(Assign* a) {
-    if (aset.find(a) != aset.end()) {
-        aset.erase(a);
+    if (find(a) != end()) {
+        erase(a);
         return true;
     }
     return false;
@@ -226,22 +226,22 @@ bool AssignSet::remove(Assign* a) {
 
 // Search for a in this Assign set. Return true if found
 bool AssignSet::exists(Assign* a) {
-    iterator it = aset.find(a);
-    return (it != aset.end());
+    iterator it = find(a);
+    return (it != end());
 }
 
 // Find a definition for loc in this Assign set. Return true if found
 bool AssignSet::definesLoc(Exp* loc) {
     Assign* as = new Assign(loc, new Terminal(opWild));
-    iterator ff = aset.find(as);
-    return ff != aset.end();
+    iterator ff = find(as);
+    return ff != end();
 }
 
 // Find a definition for loc on the LHS in this Assign set. If found, return pointer to the Assign with that LHS
 Assign* AssignSet::lookupLoc(Exp* loc) {
     Assign* as = new Assign(loc, new Terminal(opWild));
-    iterator ff = aset.find(as);
-    if (ff == aset.end()) return nullptr;
+    iterator ff = find(as);
+    if (ff == end()) return nullptr;
     return *ff;
 }
 
@@ -249,8 +249,8 @@ Assign* AssignSet::lookupLoc(Exp* loc) {
 char* AssignSet::prints() {
     std::ostringstream ost;
     iterator it;
-    for (it = aset.begin(); it != aset.end(); it++) {
-        if (it != aset.begin()) ost << ",\t";
+    for (it = begin(); it != end(); it++) {
+        if (it != begin()) ost << ",\t";
         ost << *it;
     }
     ost << "\n";
@@ -265,8 +265,9 @@ void AssignSet::dump() {
 
 void AssignSet::print(std::ostream& os) {
     iterator it;
-    for (it = aset.begin(); it != aset.end(); it++) {
-        if (it != aset.begin()) os << ",\t";
+    for (it = begin(); it != end(); it++) {
+        if (it != begin())
+            os << ",\t";
         os << *it;
     }
     os << "\n";
@@ -275,21 +276,21 @@ void AssignSet::print(std::ostream& os) {
 // Print just the numbers to stream os
 void AssignSet::printNums(std::ostream& os) {
     os << std::dec;
-    for (iterator it = aset.begin(); it != aset.end(); ) {
+    for (iterator it = begin(); it != end(); ) {
         if (*it)
             (*it)->printNum(os);
         else
             os << "-";                // Special case for nullptr definition
-        if (++it != aset.end())
+        if (++it != end())
             os << " ";
     }
 }
 
 bool AssignSet::operator<(const AssignSet& o) const {
-    if (aset.size() < o.aset.size()) return true;
-    if (aset.size() > o.aset.size()) return false;
+    if (size() < o.size()) return true;
+    if (size() > o.size()) return false;
     const_iterator it1, it2;
-    for (it1 = aset.begin(), it2 = o.aset.begin(); it1 != aset.end();
+    for (it1 = begin(), it2 = o.begin(); it1 != end();
          it1++, it2++) {
         if (*it1 < *it2) return true;
         if (*it1 > *it2) return false;

@@ -42,11 +42,9 @@ class Cfg;
 class LocationSet;
 
 // A class to implement sets of statements
-class StatementSet {
-        std::set<Statement*> sset;                            // For now, use use standard sets
+class StatementSet : public std::set<Statement*> {
 
 public:
-typedef std::set<Statement*>::iterator iterator;
 
                     ~StatementSet() {}
         void        makeUnion(StatementSet& other);        // Set union
@@ -54,20 +52,12 @@ typedef std::set<Statement*>::iterator iterator;
         void        makeIsect(StatementSet& other);        // Set intersection
         bool        isSubSetOf(StatementSet& other);    // Subset relation
 
-        unsigned    size() {return sset.size();}        // Number of elements
-        iterator    begin()    {return sset.begin();}
-        iterator    end()    {return sset.end();}
-
-        void        insert(Statement* s) {sset.insert(s);}    // Insertion
         bool        remove(Statement* s);                    // Removal; rets false if not found
         bool        removeIfDefines(Exp* given);            // Remove if given exp is defined
         bool        removeIfDefines(StatementSet& given);    // Remove if any given is def'd
         bool        exists(Statement* s);                    // Search; returns false if !found
         bool        definesLoc(Exp* loc);                    // Search; returns true if any
                                                             // statement defines loc
-        void        clear() {sset.clear();}                    // Clear the set
-        bool        operator==(const StatementSet& o) const    // Compare if equal
-                        { return sset == o.sset;}
         bool        operator<(const StatementSet& o) const;    // Compare if less
         void        print(std::ostream& os);                // Print to os
         void        printNums(std::ostream& os);            // Print statements as numbers
@@ -76,8 +66,7 @@ typedef std::set<Statement*>::iterator iterator;
 };        // class StatementSet
 
 // As above, but the Statements are known to be Assigns, and are sorted sensibly
-class AssignSet {
-        std::set<Assign*, lessAssign> aset;            // For now, use use standard sets
+class AssignSet : public std::set<Assign*, lessAssign> {
 
 public:
 typedef std::set<Assign*, lessAssign>::iterator iterator;
@@ -89,15 +78,9 @@ typedef std::set<Assign*, lessAssign>::const_iterator const_iterator;
         void        makeIsect(AssignSet& other);        // Set intersection
         bool        isSubSetOf(AssignSet& other);        // Subset relation
 
-        unsigned    size() {return aset.size();}        // Number of elements
         //Statement* getFirst(StmtSetIter& it);              // Get the first Statement
         //Statement* getNext (StmtSetIter& it);              // Get next
-        iterator    begin()    {return aset.begin();}
-        iterator    end()    {return aset.end();}
-        const_iterator    begin() const  {return aset.begin();}
-        const_iterator    end() const   {return aset.end();}
 
-        void        insert(Assign* a) {aset.insert(a);}        // Insertion
         bool        remove(Assign* a);                        // Removal; rets false if not found
         bool        removeIfDefines(Exp* given);            // Remove if given exp is defined
         bool        removeIfDefines(AssignSet& given);        // Remove if any given is def'd
@@ -105,9 +88,6 @@ typedef std::set<Assign*, lessAssign>::const_iterator const_iterator;
         bool        definesLoc(Exp* loc);                    // Search; returns true if any assignment defines loc
         Assign*        lookupLoc(Exp* loc);                    // Search for loc on LHS, return ptr to Assign if found
 
-        void        clear() {aset.clear();}                    // Clear the set
-        bool        operator==(const AssignSet& o) const    // Compare if equal
-                        { return aset == o.aset;}
         bool        operator<(const AssignSet& o) const;    // Compare if less
         void        print(std::ostream& os);                // Print to os
         void        printNums(std::ostream& os);            // Print statements as numbers
