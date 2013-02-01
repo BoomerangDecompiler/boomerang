@@ -741,33 +741,28 @@ void DefCollector::insert(Assign* a) {
 void DataFlow::convertImplicits(Cfg* cfg) {
     // Convert statements in A_phi from m[...]{-} to m[...]{0}
     std::map<Exp*, std::set<int>, lessExpStar> A_phi_copy = A_phi;            // Object copy
-    std::map<Exp*, std::set<int>, lessExpStar>::iterator it;
     ImplicitConverter ic(cfg);
     A_phi.clear();
-    for (it = A_phi_copy.begin(); it != A_phi_copy.end(); ++it) {
-        Exp* e = it->first->clone();
+    for (std::pair<Exp *,std::set<int> > it : A_phi_copy) {
+        Exp* e = it.first->clone();
         e = e->accept(&ic);
-        A_phi[e] = it->second;                    // Copy the set (doesn't have to be deep)
+        A_phi[e] = it.second;                    // Copy the set (doesn't have to be deep)
     }
 
     std::map<Exp*, std::set<int>, lessExpStar > defsites_copy = defsites;    // Object copy
-    std::map<Exp*, std::set<int>, lessExpStar >::iterator dd;
     defsites.clear();
-    for (dd = A_phi_copy.begin(); dd != A_phi_copy.end(); ++dd) {
-        Exp* e = dd->first->clone();
+    for (std::pair<Exp *,std::set<int> > dd : defsites_copy) {
+        Exp* e = dd.first->clone();
         e = e->accept(&ic);
-        defsites[e] = dd->second;                // Copy the set (doesn't have to be deep)
+        defsites[e] = dd.second;                // Copy the set (doesn't have to be deep)
     }
 
-    std::vector<std::set<Exp*, lessExpStar> > A_orig_copy;
-    std::vector<std::set<Exp*, lessExpStar> >::iterator oo;
+    std::vector<std::set<Exp*, lessExpStar> > A_orig_copy=A_orig;
     A_orig.clear();
-    for (oo = A_orig_copy.begin(); oo != A_orig_copy.end(); ++oo) {
-        std::set<Exp*, lessExpStar>& se = *oo;
+    for (std::set<Exp*, lessExpStar> &se : A_orig_copy) {
         std::set<Exp*, lessExpStar> se_new;
-        std::set<Exp*, lessExpStar>::iterator ee;
-        for (ee = se.begin(); ee != se.end(); ++ee) {
-            Exp* e = (*ee)->clone();
+        for (Exp * ee : se) {
+            Exp* e = ee->clone();
             e = e->accept(&ic);
             se_new.insert(e);
         }
@@ -814,16 +809,15 @@ void DataFlow::findLiveAtDomPhi(int n, LocationSet& usedByDomPhi, LocationSet& u
         LocationSet ls;
         S->addUsedLocs(ls);
         // Consider uses of this statement
-        LocationSet::iterator it;
-        for (it = ls.begin(); it != ls.end(); ++it) {
+        for (Exp *it : ls) {
             // Remove this entry from the map, since it is not unused
-            defdByPhi.erase(*it);
+            defdByPhi.erase(it);
         }
         // Now process any definitions
         ls.clear();
         S->getDefinitions(ls);
-        for (it = ls.begin(); it != ls.end(); ++it) {
-            RefExp* wrappedDef = new RefExp(*it, S);
+        for (Exp* it : ls) {
+            RefExp* wrappedDef = new RefExp(it, S);
             // If this definition is in the usedByDomPhi0 set, then it is in fact dominated by a phi use, so move it to
             // the final usedByDomPhi set
             if (usedByDomPhi0.find(wrappedDef) != usedByDomPhi0.end()) {
@@ -848,13 +842,14 @@ void DataFlow::findLiveAtDomPhi(int n, LocationSet& usedByDomPhi, LocationSet& u
 #if USE_DOMINANCE_NUMS
 void DataFlow::setDominanceNums(int n, int& currNum) {
     BasicBlock::rtlit rit; StatementList::iterator sit;
-    PBB bb = BBs[n];
+    BasicBlock *bb = BBs[n];
     Statement* S;
     for (S = bb->getFirstStmt(rit, sit); S; S = bb->getNextStmt(rit, sit))
         S->setDomNumber(currNum++);
     int sz = idom.size();
     for (int c = 0; c < sz; ++c) {
-        if (idom[c] != n) continue;
+        if (idom[c] != n)
+            continue;
         // Recurse to the child
         setDominanceNums(c, currNum);
     }
