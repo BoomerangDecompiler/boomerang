@@ -1437,7 +1437,7 @@ char* Signature::prints() {
 void Signature::printToLog() {
     std::ostringstream os;
     print(os);
-    LOG << os.str().c_str();
+    LOG << os.str();
 }
 
 bool Signature::usesNewParam(UserProc *p, Statement *stmt, bool checkreach, int &n) {

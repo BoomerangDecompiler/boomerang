@@ -17,7 +17,7 @@ class Log
 {
 public:
     Log() { }
-    virtual Log &operator<<(const char *str) = 0;
+    virtual Log &operator<<(const std::string& s) = 0;
     virtual Log &operator<<(Statement *s);
     virtual Log &operator<<(Exp *e);
     virtual Log &operator<<(Type *ty);
@@ -31,8 +31,7 @@ public:
     virtual Log &operator<<(double d);
     virtual Log &operator<<(ADDRESS a);
     virtual Log &operator<<(LocationSet *l);
-            Log &operator<<(std::string& s) {return operator<<(s.c_str());}
-    virtual ~Log() {};
+    virtual ~Log() {}
     virtual void tail();
 };
 
@@ -42,7 +41,7 @@ protected:
 public:
             FileLogger();        // Implemented in boomerang.cpp
     void    tail();
-    virtual Log &operator<<(const char *str) {
+    virtual Log &operator<<(const std::string& str) {
         out << str << std::flush;
         return *this;
     }
@@ -51,7 +50,7 @@ public:
 class NullLogger : public Log
 {
 public:
-    virtual Log &operator<<(const char *str)
+    virtual Log &operator<<(const std::string& str)
     {
         // std::cerr << str;
         return *this;

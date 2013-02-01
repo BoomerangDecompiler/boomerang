@@ -4325,7 +4325,7 @@ void ReturnStatement::print(std::ostream& os, bool html) {
             os << ",   ";
             column += 4;
         }
-        os << ost.str().c_str();
+        os << ost.str();
         column += len;
     }
     if (html)
@@ -4353,7 +4353,7 @@ void ReturnStatement::print(std::ostream& os, bool html) {
             os << ",  ";
             column += 3;
         }
-        os << ost.str().c_str();
+        os << ost.str();
         column += len;
     }
 #if 1

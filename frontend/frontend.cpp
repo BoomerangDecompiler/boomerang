@@ -568,7 +568,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
             if (Boomerang::get()->printRtl) {
                 std::ostringstream st;
                 pRtl->print(st);
-                LOG << st.str().c_str();
+                LOG << st.str();
             }
 
             ADDRESS uDest;

@@ -826,7 +826,7 @@ void UserProc::dump() {
 void UserProc::printToLog() {
     std::ostringstream ost;
     print(ost);
-    LOG << ost.str().c_str();
+    LOG << ost.str();
 }
 
 void UserProc::printDFG() {
@@ -2228,7 +2228,7 @@ void UserProc::removeMatchingAssignsIfPossible(Exp *e) {
     str.str("");
     str << "after removing matching assigns (" << e << ").";
     Boomerang::get()->alert_decompile_debug_point(this, str.str().c_str());
-    LOG << str.str().c_str() << "\n";
+    LOG << str.str() << "\n";
 
 }
 
@@ -4300,7 +4300,7 @@ void UserProc::updateArguments() {
         if (VERBOSE) {
             std::ostringstream ost;
             c->print(ost);
-            LOG << ost.str().c_str() << "\n";
+            LOG << ost.str() << "\n";
         }
     }
     if (VERBOSE)
@@ -4828,7 +4828,7 @@ void UserProc::initialParameters() {
     if (VERBOSE) {
         std::ostringstream ost;
         printParams(ost);
-        LOG << ost.str().c_str();
+        LOG << ost.str();
     }
 }
 
@@ -5222,7 +5222,7 @@ bool UserProc::removeRedundantReturns(std::set<UserProc*>& removeRetSet) {
     if (DEBUG_UNUSED) {
         std::ostringstream ost;
         unionOfCallerLiveLocs.print(ost);
-        LOG << "%%%  union of caller live locations for " << getName() << ": " << ost.str().c_str() << "\n";
+        LOG << "%%%  union of caller live locations for " << getName() << ": " << ost.str() << "\n";
         LOG << "%%%  final returns for " << getName() << ": " << theReturnStatement->getReturns().prints() << "\n";
     }
 
