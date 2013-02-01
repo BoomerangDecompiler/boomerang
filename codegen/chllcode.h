@@ -177,7 +177,7 @@ private:
 public:
 
     // comments
-    virtual void    AddLineComment(char* cmt);
+    virtual void    AddLineComment(const std::string & cmt);
 
     /*
                  * output functions

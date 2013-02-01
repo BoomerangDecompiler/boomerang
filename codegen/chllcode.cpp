@@ -1641,7 +1641,7 @@ void CHLLCode::print(std::ostream &os) {
 }
 
 /// Adds one line of comment to the code.
-void CHLLCode::AddLineComment(char* cmt) {
+void CHLLCode::AddLineComment(const std::string & cmt) {
     std::ostringstream s;
     s << "/* " << cmt << "*/";
     appendLine(s);

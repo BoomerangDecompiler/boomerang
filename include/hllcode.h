@@ -118,8 +118,8 @@ virtual void    AddGlobal(const char *name, Type *type, Exp *init = nullptr) = 0
 virtual void    AddPrototype(UserProc* proc) = 0;
 
     // comments
-virtual void    AddLineComment(char* cmt) = 0;
-    
+virtual void    AddLineComment(const std::string & cmt) = 0;
+
         /*
          * output functions, pure virtual.
          */
@@ -155,7 +155,7 @@ virtual SyntaxNode *getOutEdge(SyntaxNode *root, int n) = 0;
 virtual bool    endsWithGoto() = 0;
 virtual bool    startsWith(SyntaxNode *node) { return this == node; }
 
-virtual SyntaxNode *getEnclosingLoop(SyntaxNode *pFor, 
+virtual SyntaxNode *getEnclosingLoop(SyntaxNode *pFor,
                                          SyntaxNode *cur = nullptr) = 0;
 
         int        getScore();
@@ -189,12 +189,12 @@ public:
             statements[statements.size()-1]->ignoreGoto();
     }
 
-    int getNumStatements() { 
-        return pbb ? 0 : statements.size(); 
+    int getNumStatements() {
+        return pbb ? 0 : statements.size();
     }
     SyntaxNode *getStatement(int n) {
         assert(pbb == nullptr);
-        return statements[n]; 
+        return statements[n];
     }
     void prependStatement(SyntaxNode *n) {
         assert(pbb == nullptr);
@@ -203,13 +203,13 @@ public:
             statements[i] = statements[i-1];
         statements[0] = n;
     }
-    void addStatement(SyntaxNode *n) { 
+    void addStatement(SyntaxNode *n) {
         assert(pbb == nullptr);
-        statements.push_back(n); 
+        statements.push_back(n);
     }
-    void setStatement(int i, SyntaxNode *n) { 
+    void setStatement(int i, SyntaxNode *n) {
         assert(pbb == nullptr);
-        statements[i] = n; 
+        statements[i] = n;
     }
 
 virtual int getNumOutEdges();
@@ -221,8 +221,8 @@ virtual bool endsWithGoto() {
                 last = statements[statements.size()-1]->endsWithGoto();
             return last;
         }
-virtual bool    startsWith(SyntaxNode *node) { 
-            return this == node || (statements.size() > 0 && statements[0]->startsWith(node)); 
+virtual bool    startsWith(SyntaxNode *node) {
+            return this == node || (statements.size() > 0 && statements[0]->startsWith(node));
         }
 virtual SyntaxNode *getEnclosingLoop(SyntaxNode *pFor, SyntaxNode *cur = nullptr) {
             if (this == pFor) return cur;
