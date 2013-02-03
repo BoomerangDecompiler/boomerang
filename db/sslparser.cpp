@@ -3145,12 +3145,11 @@ OPER strToTerm(char* s) {
 }
 
 /***************************************************************************//**
- * FUNCTION:        listExpToExp
  * \brief        Convert a list of actual parameters in the form of a STL list of Exps into one expression
  *                      (using opList)
- * NOTE:            The expressions in the list are not cloned; they are simply copied to the new opList
- * PARAMETERS:        le: the list of expressions
- * \returns             The opList Expression
+ * \note The expressions in the list are not cloned; they are simply copied to the new opList
+ * \param le: the list of expressions
+ * \returns The opList Expression
  ******************************************************************************/
 Exp* listExpToExp(std::list<Exp*>* le) {
     Exp* e;
@@ -3167,10 +3166,10 @@ Exp* listExpToExp(std::list<Exp*>* le) {
 }
 
 /***************************************************************************//**
- * FUNCTION:        listStrToExp
+ *
  * \brief        Convert a list of formal parameters in the form of a STL list of strings into one expression
  *                      (using opList)
- * PARAMETERS:        ls - the list of strings
+ * \param        ls - the list of strings
  * \returns             The opList expression
  ******************************************************************************/
 Exp* listStrToExp(std::list<std::string>* ls) {
@@ -3185,16 +3184,6 @@ Exp* listStrToExp(std::list<std::string>* ls) {
     return e;
 }
 
-/***************************************************************************//**
- * FUNCTION:        SSLParser::expandTables
- * \brief        Expand tables in an RTL and save to dictionary
- * NOTE:            This may generate many entries
- * PARAMETERS:        iname: Parser object representing the instruction name
- *                    params: Parser object representing the instruction params
- *                    o_rtlist: Original rtlist object (before expanding)
- *                    Dict: Ref to the dictionary that will contain the results of the parse
- * \returns             <nothing>
- ******************************************************************************/
 static Exp* srchExpr = new Binary(opExpTable,
                                   new Terminal(opWild),
                                   new Terminal(opWild));
@@ -3210,6 +3199,15 @@ void init_sslparser() {
 #endif
 }
 
+/***************************************************************************//**
+ *
+ * \brief   Expand tables in an RTL and save to dictionary
+ * \note    This may generate many entries
+ * \param   iname: Parser object representing the instruction name
+ * \param   params: Parser object representing the instruction params
+ * \param   o_rtlist: Original rtlist object (before expanding)
+ * \param   Dict: Ref to the dictionary that will contain the results of the parse
+ ******************************************************************************/
 void SSLParser::expandTables(InsNameElem* iname, std::list<std::string>* params, RTL* o_rtlist, RTLInstDict& Dict) {
     int i, m;
     std::string nam;
@@ -3269,11 +3267,10 @@ void SSLParser::expandTables(InsNameElem* iname, std::list<std::string>* params,
 }
 
 /***************************************************************************//**
- * FUNCTION:        SSLParser::makeSuccessor
  * \brief        Make the successor of the given expression, e.g. given r[2], return succ( r[2] )
- *                      (using opSuccessor)
- *                    We can't do the successor operation here, because the parameters are not yet instantiated
- *                      (still of the form param(rd)). Actual successor done in Exp::fixSuccessor()
+ *              (using opSuccessor)
+ *          We can't do the successor operation here, because the parameters are not yet instantiated
+ *          (still of the form param(rd)). Actual successor done in Exp::fixSuccessor()
  * \note            The given expression should be of the form    r[const]
  * \note            The parameter expresion is copied (not cloned) in the result
  * \param        The expression to find the successor of
