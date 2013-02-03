@@ -10,7 +10,7 @@
 /*
  * insnameelem.h
  *
- * header for insnameelem.cc
+ * header for insnameelem.cpp
  * class declarations for class InsNameElem
  *
  * Last Modified

@@ -118,28 +118,13 @@ RTL* RTL::clone() {
     return new RTL(nativeAddr, &le);
 }
 
-// visit this RTL, and all its Statements
-bool RTL::accept(StmtVisitor* visitor) {
-    // Might want to do something at the RTL level:
-    if (!visitor->visit(this)) return false;
-    iterator it;
-    for (it = begin(); it != end(); it++) {
-        if (! (*it)->accept(visitor))
-            return false;
-    }
-    return true;
-}
-
 /***************************************************************************//**
  * \brief        Make a copy of this RTLs list of Exp* to the given list
  * \param        Ref to empty list to copy to
- * \returns             Nothing
  ******************************************************************************/
 void RTL::deepCopyList(std::list<Statement*>& dest) {
-    std::list<Statement*>::iterator it;
-
-    for (it = begin(); it != end(); it++) {
-        dest.push_back((*it)->clone());
+    for (Statement * it : *this) {
+        dest.push_back(it->clone());
     }
 }
 
@@ -152,7 +137,7 @@ void RTL::deepCopyList(std::list<Statement*>& dest) {
  * \returns             Nothing
  ******************************************************************************/
 void RTL::appendStmt(Statement* s) {
-    if (size()) {
+    if (not empty()) {
         if (back()->isFlagAssgn()) {
             iterator it = end();
             insert(--it, s);
@@ -163,88 +148,14 @@ void RTL::appendStmt(Statement* s) {
 }
 
 /***************************************************************************//**
- * \brief        Prepend the given Statement at the start of this RTL
- * \note            No clone of the statement is made. This is different to how UQBT was
- * \param        s: Ptr to Statement to prepend
- ******************************************************************************/
-void RTL::prependStmt(Statement* s) {
-    push_front(s);
-}
-
-/***************************************************************************//**
  * \brief        Append a given list of Statements to this RTL
  * \note            A copy of the Statements in le are appended
- * \param        rtl: list of Exps to insert
+ * \param        rtl: list of Statements to insert
  ******************************************************************************/
 void RTL::appendListStmt(std::list<Statement*>& le) {
     for (Statement * it : le) {
         push_back(it->clone());
     }
-}
-
-/***************************************************************************//**
- * \brief        Append the Statemens of another RTL to this object
- * \note            A copy of the Statements in r are appended
- * \param        r: reterence to RTL whose Exps we are to insert
- ******************************************************************************/
-void RTL::appendRTL(RTL& r) {
-    appendListStmt(r);
-}
-
-/***************************************************************************//**
- * \brief        Insert the given Statement before index i
- * \note            No copy of stmt is made. This is different to UQBT
- * \param        s: pointer to the Statement to insert
- *                    i: position to insert before (0 = first)
- ******************************************************************************/
-void RTL::insertStmt(Statement* s, unsigned i) {
-    // Check that position i is not out of bounds
-    assert (i < size() || size() == 0);
-
-    // Find the position
-    iterator pp = begin();
-    for (; i > 0; i--, pp++);
-
-    // Do the insertion
-    insert(pp, s);
-}
-
-void RTL::insertStmt(Statement* s, iterator it) {
-    insert(it, s);
-}
-
-void RTL::deleteStmt(unsigned i) {
-    // check that position i is not out of bounds
-    assert (i < size());
-
-    // find the position
-    iterator pp = this->begin();
-    std::advance(pp,i);
-    // do the delete
-    this->erase(pp);
-}
-
-/***************************************************************************//**
- * \brief        Get the number of Statements in this RTL
- * \returns             Integer number of Statements
- ******************************************************************************/
-size_t RTL::getNumStmt() {
-    return this->size();
-}
-
-/***************************************************************************//**
- * \brief   Provides indexing on a list. Changed from operator[] so that
- *          we keep in mind it is linear in its execution time.
- * \param   i - the index of the element we want (0 = first)
- * \returns the element at the given index or nullptr if the index is out
- *          of bounds
- ******************************************************************************/
-Statement* RTL::elementAt(unsigned i) {
-    iterator it=this->begin();
-    if(i>=this->size())
-        return nullptr;
-    std::advance(it,i);
-    return *it;
 }
 
 /***************************************************************************//**
@@ -314,13 +225,6 @@ std::ostream& operator<<(std::ostream& os, RTL* r) {
     r->print(os);
     return os;
 }
-/***************************************************************************//**
- * \brief Set the RTL's source address nativeAddr field
- * \param addr Native address
- ******************************************************************************/
-void RTL::updateAddress(ADDRESS addr) {
-    nativeAddr = addr;
-}
 
 /***************************************************************************//**
  * \brief Replace all instances of search with replace.
@@ -370,13 +274,13 @@ bool RTL::searchAll(Exp* search, std::list<Exp *> &result) {
  *              want!
  * \returns     A pointer to the type
  ******************************************************************************/
-Type* RTL::getType() {
-    for (Statement *e : *this) {
-        if (e->isAssign())
-            return ((Assign*)e)->getType();
-    }
-    return new IntegerType();    //    Default to 32 bit integer if no assignments
-}
+//Type* RTL::getType() {
+//    for (Statement *e : *this) {
+//        if (e->isAssign())
+//            return ((Assign*)e)->getType();
+//    }
+//    return new IntegerType();    //    Default to 32 bit integer if no assignments
+//}
 
 /***************************************************************************//**
  * \brief      Return true if this RTL affects the condition codes
@@ -389,13 +293,6 @@ bool RTL::areFlagsAffected() {
     Statement *e = this->back();
     // If it is a flag call, then the CCs are affected
     return e->isFlagAssgn();
-}
-
-// Generata code for all statements in this rtl
-void RTL::generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) {
-    for (Statement * st : *this) {
-        st->generateCode(hll, pbb, indLevel);
-    }
 }
 
 void RTL::simplify() {
@@ -433,7 +330,10 @@ void RTL::simplify() {
 // Is this RTL a compare instruction? If so, the passed register and compared value (a semantic string) are set.
 
 bool RTL::isCall() {
-    return isKindOf(STMT_CALL);
+    if (this->empty())
+        return false;
+    Statement* last = this->back();
+    return last->getKind() == STMT_CALL;
 }
 
 // Use this slow function when you can't be sure that the HL Statement is last
@@ -452,10 +352,3 @@ Statement* RTL::getHlStmt() {
 //    accept(&ssc);
 //    return ssc.getLast();
 //}
-
-bool RTL::isKindOf(STMT_KIND k) {
-    if (this->empty())
-        return false;
-    Statement* last = this->back();
-    return last->getKind() == k;
-}

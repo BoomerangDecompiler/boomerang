@@ -867,8 +867,10 @@ bool Statement::doPropagateTo(Exp* e, Assign* def, bool& convert) {
     return change;
 }
 
-// replace a use of def->getLeft() by def->getRight() in this statement
-// return true if change
+//! replace a use of def->getLeft() by def->getRight() in this statement
+//! replaces a use in this statement with an expression from an ordinary assignment
+//! \returns true if change
+//! \note Internal use only
 bool Statement::replaceRef(Exp* e, Assign *def, bool& convert) {
     Exp* rhs = def->getRight();
     assert(rhs);
@@ -3733,7 +3735,7 @@ void BranchStatement::genConstraints(LocationSet& cons) {
     con = new Binary(opEquals, Tb, new TypeVal(opsType));
     cons.insert(con);
 }
-
+//! Set or clear the constant subscripts (using a visitor)
 int Statement::setConscripts(int n) {
     StmtConscriptSetter scs(n, false);
     accept(&scs);
@@ -3752,7 +3754,7 @@ bool Statement::castConst(int num, Type* ty) {
     accept(&scc);
     return ecc.isChanged();
 }
-
+//! Strip all size casts
 void Statement::stripSizes() {
     SizeStripper ss;
     StmtModifier sm(&ss);
@@ -4116,7 +4118,8 @@ bool BoolAssign::accept(StmtPartModifier* v) {
     return true;
 }
 
-// Fix references to the returns of call statements
+//! Fix references to the returns of call statements
+//! Bypass calls for references in this statement
 void Statement::bypass() {
     CallBypasser cb(this);
     StmtPartModifier sm(&cb);            // Use the Part modifier so we don't change the top level of LHS of assigns etc
@@ -4125,15 +4128,17 @@ void Statement::bypass() {
         simplify();                        // E.g. m[esp{20}] := blah -> m[esp{-}-20+4] := blah
 }
 
-// Find the locations used by expressions in this Statement.
-// Use the StmtExpVisitor and UsedLocsFinder visitor classes
-// cc = count collectors
+//! Find the locations used by expressions in this Statement.
+//! Use the StmtExpVisitor and UsedLocsFinder visitor classes
+//! \param cc count collectors
+//! Adds (inserts) all locations (registers or memory etc) used by this statement
+//! Set \a cc to true to count the uses in collectors
 void Statement::addUsedLocs(LocationSet& used, bool cc /* = false */, bool memOnly /*= false */) {
     UsedLocsFinder ulf(used, memOnly);
     UsedLocsVisitor ulv(&ulf, cc);
     accept(&ulv);
 }
-
+//! Special version of Statement::addUsedLocs for finding used locations. Returns true if defineAll was found
 bool Statement::addUsedLocals(LocationSet& used) {
     UsedLocalFinder ulf(used, proc);
     UsedLocsVisitor ulv(&ulf, false);
@@ -4141,14 +4146,14 @@ bool Statement::addUsedLocals(LocationSet& used) {
     return ulf.wasAllFound();
 }
 
-// For all expressions in this Statement, replace any e with e{def}
+//! For all expressions in this Statement, replace any e with e{def}
 void Statement::subscriptVar(Exp* e, Statement* def /*, Cfg* cfg */) {
     ExpSubscripter es(e, def /*, cfg*/);
     StmtSubscripter ss(&es);
     accept(&ss);
 }
 
-// Find all constants in this Statement
+//! Find all constants in this statement
 void Statement::findConstants(std::list<Const*>& lc) {
     ConstFinder cf(lc);
     StmtConstFinder scf(&cf);

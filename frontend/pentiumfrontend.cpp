@@ -73,16 +73,16 @@ bool PentiumFrontEnd::isStoreFsw(Statement* s) {
     return res;
 }
 /***************************************************************************//**
- * FUNCTION:      isDecAh
  * \brief      Return true if the given RTL is a decrement of register AH
- * PARAMETERS:      r - Ptr to the given RTL
+ * \param r - Ptr to the given RTL
  * \returns           True if it is
  ******************************************************************************/
 bool PentiumFrontEnd::isDecAh(RTL* r) {
     // Check for decrement; RHS of middle Exp will be r[12]{8} - 1
     if (r->size() != 3)
         return false;
-    Statement* mid = r->elementAt(1);
+    auto iter=r->begin();
+    Statement* mid = *(++iter);
     if (!mid->isAssign())
         return false;
     Assign* asgn = (Assign*)mid;
@@ -248,70 +248,70 @@ void PentiumFrontEnd::processFloatCode(Cfg* pCfg) {
             // For example, incomplete BB
             return;
         }
-        for (RTL *rtl : BB_rtls) {
+        for (RTL *rtl : *BB_rtls) {
             for (auto iter=rtl->begin(); iter!=rtl->end(); /*incremented inside*/) {
                 // Get the current Exp
                 st = *iter;
                 if (st->isFpush()) {
-                    rtl->insertStmt(new Assign(new FloatType(80),
+                    rtl->insert(iter,new Assign(new FloatType(80),
                                                   Location::tempOf(new Const(const_cast<char *>("tmpD9"))),
-                                                  Location::regOf(39)), iter);
-                    rtl->insertStmt(new Assign(new FloatType(80),
+                                                  Location::regOf(39)));
+                    rtl->insert(iter,new Assign(new FloatType(80),
                                                   Location::regOf(39),
-                                                  Location::regOf(38)), iter);
-                    rtl->insertStmt(new Assign(new FloatType(80),
+                                                  Location::regOf(38)));
+                    rtl->insert(iter,new Assign(new FloatType(80),
                                                   Location::regOf(38),
-                                                  Location::regOf(37)), iter);
-                    rtl->insertStmt(new Assign(new FloatType(80),
+                                                  Location::regOf(37)));
+                    rtl->insert(iter,new Assign(new FloatType(80),
                                                   Location::regOf(37),
-                                                  Location::regOf(36)), iter);
-                    rtl->insertStmt(new Assign(new FloatType(80),
+                                                  Location::regOf(36)));
+                    rtl->insert(iter,new Assign(new FloatType(80),
                                                   Location::regOf(36),
-                                                  Location::regOf(35)), iter);
-                    rtl->insertStmt(new Assign(new FloatType(80),
+                                                  Location::regOf(35)));
+                    rtl->insert(iter,new Assign(new FloatType(80),
                                                   Location::regOf(35),
-                                                  Location::regOf(34)), iter);
-                    rtl->insertStmt(new Assign(new FloatType(80),
+                                                  Location::regOf(34)));
+                    rtl->insert(iter,new Assign(new FloatType(80),
                                                   Location::regOf(34),
-                                                  Location::regOf(33)), iter);
-                    rtl->insertStmt(new Assign(new FloatType(80),
+                                                  Location::regOf(33)));
+                    rtl->insert(iter,new Assign(new FloatType(80),
                                                   Location::regOf(33),
-                                                  Location::regOf(32)), iter);
-                    rtl->insertStmt(new Assign(new FloatType(80),
+                                                  Location::regOf(32)));
+                    rtl->insert(iter,new Assign(new FloatType(80),
                                                   Location::regOf(32),
-                                                  Location::tempOf(new Const(const_cast<char *>("tmpD9")))), iter);
+                                                  Location::tempOf(new Const(const_cast<char *>("tmpD9")))));
                     // Remove the FPUSH
                     iter=rtl->erase(iter);
                     continue;
                 }
                 else if (st->isFpop()) {
-                    rtl->insertStmt(new Assign(new FloatType(80),
+                    rtl->insert(iter,new Assign(new FloatType(80),
                                                   Location::tempOf(new Const(const_cast<char *>("tmpD9"))),
-                                                  Location::regOf(32)), iter);
-                    rtl->insertStmt(new Assign(new FloatType(80),
+                                                  Location::regOf(32)));
+                    rtl->insert(iter,new Assign(new FloatType(80),
                                                   Location::regOf(32),
-                                                  Location::regOf(33)), iter);
-                    rtl->insertStmt(new Assign(new FloatType(80),
+                                                  Location::regOf(33)));
+                    rtl->insert(iter,new Assign(new FloatType(80),
                                                   Location::regOf(33),
-                                                  Location::regOf(34)), iter);
-                    rtl->insertStmt(new Assign(new FloatType(80),
+                                                  Location::regOf(34)));
+                    rtl->insert(iter,new Assign(new FloatType(80),
                                                   Location::regOf(34),
-                                                  Location::regOf(35)), iter);
-                    rtl->insertStmt(new Assign(new FloatType(80),
+                                                  Location::regOf(35)));
+                    rtl->insert(iter,new Assign(new FloatType(80),
                                                   Location::regOf(35),
-                                                  Location::regOf(36)), iter);
-                    rtl->insertStmt(new Assign(new FloatType(80),
+                                                  Location::regOf(36)));
+                    rtl->insert(iter,new Assign(new FloatType(80),
                                                   Location::regOf(36),
-                                                  Location::regOf(37)), iter);
-                    rtl->insertStmt(new Assign(new FloatType(80),
+                                                  Location::regOf(37)));
+                    rtl->insert(iter,new Assign(new FloatType(80),
                                                   Location::regOf(37),
-                                                  Location::regOf(38)), iter);
-                    rtl->insertStmt(new Assign(new FloatType(80),
+                                                  Location::regOf(38)));
+                    rtl->insert(iter,new Assign(new FloatType(80),
                                                   Location::regOf(38),
-                                                  Location::regOf(39)), iter);
-                    rtl->insertStmt(new Assign(new FloatType(80),
+                                                  Location::regOf(39)));
+                    rtl->insert(iter,new Assign(new FloatType(80),
                                                   Location::regOf(39),
-                                                  Location::tempOf(new Const(const_cast<char *>("tmpD9")))), iter);
+                                                  Location::tempOf(new Const(const_cast<char *>("tmpD9")))));
                     // Remove the FPOP
                     iter=rtl->erase(iter);
                     continue;
@@ -351,7 +351,11 @@ void PentiumFrontEnd::processFloatCode(PBB pBB, int& tos, Cfg* pCfg) {
             // returning floats, the value will appear to be returned in registers r[32], then r[33], etc.
             tos = 0;
         }
-        if ((*rit)->getNumStmt() == 0) { rit++; continue; }
+        if ((*rit)->empty()) {
+            rit++;
+            continue;
+        }
+        RTL *rtl=*rit;
 #if PROCESS_FNSTSW
         // Check for f(n)stsw
         if (isStoreFsw((*rit)->elementAt(0))) {
@@ -371,24 +375,22 @@ void PentiumFrontEnd::processFloatCode(PBB pBB, int& tos, Cfg* pCfg) {
             continue;
         }
 #endif
-        for (int i=0; i < (*rit)->getNumStmt(); i++) {
+        for (auto iter=rtl->begin(); iter != rtl->end(); /*iter incremented inside loop*/) {
             // Get the current Exp
-            st = (*rit)->elementAt(i);
+            st = *iter;
             if (!st->isFlagAssgn()) {
                 // We are interested in either FPUSH/FPOP, or r[32..39] appearing in either the left or right hand
                 // sides, or calls
                 if (st->isFpush()) {
                     tos = (tos - 1) & 7;
                     // Remove the FPUSH
-                    (*rit)->deleteStmt(i);
-                    i--;            // Adjust the index
+                    iter = rtl->erase(iter);
                     continue;
                 }
                 else if (st->isFpop()) {
                     tos = (tos + 1) & 7;
                     // Remove the FPOP
-                    (*rit)->deleteStmt(i);
-                    i--;            // Adjust the index
+                    iter = rtl->erase(iter);
                     continue;
                 }
                 else if (st->isAssign()) {
@@ -424,6 +426,7 @@ void PentiumFrontEnd::processFloatCode(PBB pBB, int& tos, Cfg* pCfg) {
                 }
 
             }
+            ++iter;
         }
         rit++;
     }
@@ -609,7 +612,7 @@ ADDRESS PentiumFrontEnd::getMainEntryPoint(bool& gotMain) {
             int oNumBytes = inst.numBytes;
             inst = decodeInstruction(addr + oNumBytes);
             if (inst.valid && inst.rtl->size() == 2) {
-                Assign* a = dynamic_cast<Assign*>(inst.rtl->elementAt(1));
+                Assign* a = dynamic_cast<Assign*>(inst.rtl->back()); // using back instead of rtl[1], since size()==2
                 if (a && *a->getRight() == *Location::regOf(24)) {
 #if 0
                     std::cerr << "is followed by push eax.. " << "good" << std::endl;

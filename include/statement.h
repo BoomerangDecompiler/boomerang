@@ -278,9 +278,7 @@ static    bool        canPropagateToExp(Exp* e);
 
         // code generation
 virtual void        generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) = 0;
-
-        // simpify internal expressions
-virtual void        simplify() = 0;
+virtual void        simplify() = 0; //!< simpify internal expressions
 
         // simplify internal address expressions (a[m[x]] -> x) etc
         // Only Assignments override at present
@@ -303,22 +301,22 @@ virtual void        fixSuccessor() {}
 virtual void        genConstraints(LocationSet& cons) {}
 
         // Data flow based type analysis
-virtual    void        dfaTypeAnalysis(bool& ch) {}            // Use the type information in this Statement
-        Type*        meetWithFor(Type* ty, Exp* e, bool& ch);// Meet the type associated with e with ty
+virtual void        dfaTypeAnalysis(bool& ch) {}            // Use the type information in this Statement
+        Type *      meetWithFor(Type* ty, Exp* e, bool& ch);// Meet the type associated with e with ty
 
         // Range analysis
 protected:
         void        updateRanges(RangeMap &output, std::list<Statement*> &execution_paths, bool notTaken = false);
 public:
-        RangeMap    &getSavedInputRanges() { return savedInputRanges; }
+        RangeMap &  getSavedInputRanges() { return savedInputRanges; }
         RangeMap    getInputRanges();
 virtual void        rangeAnalysis(std::list<Statement*> &execution_paths);
 
         // helper functions
         bool        isFirstStatementInBB();
         bool        isLastStatementInBB();
-        Statement*    getNextStatementInBB();
-        Statement*    getPreviousStatementInBB();
+        Statement * getNextStatementInBB();
+        Statement * getPreviousStatementInBB();
 
 
 //    //    //    //    //    //    //    //    //    //
@@ -327,30 +325,14 @@ virtual void        rangeAnalysis(std::list<Statement*> &execution_paths);
 //                                    //
 //    //    //    //    //    //    //    //    //    //
 
-        // Adds (inserts) all locations (registers or memory etc) used by this statement
-        // Set cc to true to count the uses in collectors
         void        addUsedLocs(LocationSet& used, bool cc = false, bool memOnly = false);
-        // Special version of the above for finding used locations. Returns true if defineAll was found
         bool        addUsedLocals(LocationSet& used);
-        // Bypass calls for references in this statement
         void        bypass();
-
-
-        // replaces a use in this statement with an expression from an ordinary assignment
-        // Internal use only
         bool        replaceRef(Exp* e, Assign *def, bool& convert);
-
-        // Find all constants in this statement
         void        findConstants(std::list<Const*>& lc);
-
-        // Set or clear the constant subscripts (using a visitor)
-        int            setConscripts(int n);
+        int         setConscripts(int n);
         void        clearConscripts();
-
-        // Strip all size casts
         void        stripSizes();
-
-        // For all expressions in this Statement, replace all e with e{def}
         void        subscriptVar(Exp* e, Statement* def /*, Cfg* cfg */);
 
         // Cast the constant num to type ty. If a change was made, return true

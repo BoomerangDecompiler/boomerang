@@ -105,7 +105,7 @@ int TableEntry::appendRTL(std::list<std::string>& p, RTL& r) {
          match = (*a == *b), a++, b++)
         ;
     if (match) {
-        rtl.appendRTL(r);
+        rtl.appendListStmt(r);
         return 0;
     }
     return -1;
@@ -314,7 +314,7 @@ void RTLInstDict::fixupParamsSub( std::string s, std::list<std::string>& funcPar
 
 /***************************************************************************//**
  * \brief         Returns the signature of the given instruction.
- * \param name -
+ * \param name - instruction name
  * \returns              the signature (name + number of operands)
  ******************************************************************************/
 std::pair<std::string,unsigned> RTLInstDict::getSignature(const char* name) {
@@ -598,7 +598,10 @@ void RTLInstDict::transformPostVars(std::list<Statement *> &rts, bool optimise) 
     //return rts;
 }
 
-// Call from test code if (e.g.) want to call readSSLFile() twice
+/** Reset the object to "undo" a readSSLFile()
+ *
+ * Called from test code if (e.g.) want to call readSSLFile() twice
+*/
 void RTLInstDict::reset() {
     RegMap.clear();
     DetRegMap.clear();

@@ -3220,9 +3220,7 @@ void SSLParser::expandTables(InsNameElem* iname, std::list<std::string>* params,
         nam = iname->getinstruction();
         // Need to make substitutions to a copy of the RTL
         RTL* rtl = o_rtlist->clone();
-        int n = rtl->size();
-        for (int j=0; j < n; j++) {
-            Statement* s = rtl->elementAt(j);
+        for (Statement *s : *rtl) {
             std::list<Exp*> le;
             // Expression tables
             assert(s->getKind() == STMT_ASSIGN);
@@ -3276,9 +3274,9 @@ void SSLParser::expandTables(InsNameElem* iname, std::list<std::string>* params,
  *                      (using opSuccessor)
  *                    We can't do the successor operation here, because the parameters are not yet instantiated
  *                      (still of the form param(rd)). Actual successor done in Exp::fixSuccessor()
- * NOTE:            The given expression should be of the form    r[const]
- * NOTE:            The parameter expresion is copied (not cloned) in the result
- * PARAMETERS:        The expression to find the successor of
+ * \note            The given expression should be of the form    r[const]
+ * \note            The parameter expresion is copied (not cloned) in the result
+ * \param        The expression to find the successor of
  * \returns             The modified expression
  ******************************************************************************/
 Exp* SSLParser::makeSuccessor(Exp* e) {

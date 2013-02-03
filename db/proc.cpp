@@ -2761,8 +2761,7 @@ void UserProc::mapExpressionsToLocals(bool lastPass) {
         Statement* s = *it;
         std::list<Exp*> results;
         s->searchAll(l, results);
-        for (std::list<Exp*>::iterator it1 = results.begin(); it1 != results.end(); it1++) {
-            Exp *result = *it1;
+        for (Exp *result : results) {
             // arr = m[sp{0} - K2]
             Location *arr = Location::memOf(
                                 new Binary(opMinus,
@@ -2776,7 +2775,7 @@ void UserProc::mapExpressionsToLocals(bool lastPass) {
                 if(at && at->getSize() != 0)
                     base = ((Assign*)s)->getType()->clone();
             }
-            //arr->setType(new ArrayType(base, n / (base->getSize() / 8)));
+            //arr->setType(new ArrayType(base, n / (base->getSize() / 8))); //TODO: why is this commented out ?
             if (VERBOSE)
                 LOG << "found a local array using " << n << " bytes\n";
             Exp *replace = Location::memOf(
@@ -5592,7 +5591,7 @@ void UserProc::setImplicitRef(Statement* s, Exp* a, Type* ty) {
                     irs->meetWith(ty, ch);
                 } else {
                     ImpRefStatement* irs = new ImpRefStatement(ty, a);
-                    rtlForS->insertStmt(irs, itForS);
+                    rtlForS->insert(itForS,irs);
                 }
                 return;
             }

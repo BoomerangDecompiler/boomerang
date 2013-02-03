@@ -991,7 +991,9 @@ void BasicBlock::WriteBB(HLLCode *hll, int indLevel) {
         for ( RTL * rtl : *m_pRtls ) {
             if (DEBUG_GEN)
                 LOG << rtl->getAddress() << "\t";
-            rtl->generateCode(hll, this, indLevel);
+            for (Statement * st : *rtl) {
+                st->generateCode(hll, this, indLevel);
+            }
         }
         if (DEBUG_GEN)
             LOG << "\n";
@@ -2369,4 +2371,23 @@ bool BasicBlock::undoComputedBB(Statement* stmt) {
         }
     }
     return false;
+}
+
+bool BasicBlock::searchAll(Exp *search_for, std::list<Exp *> &results) {
+    bool ch=false;
+    for (RTL * rtl_it : *m_pRtls) {
+        ch |= rtl_it->searchAll(search_for, results);
+    }
+    return ch;
+}
+/***************************************************************************//**
+ * \brief Replace all instances of search with replace. Can be type sensitive if
+ * reqd
+ * \param search a location to search for
+ * \param replace the expression with which to replace it
+ ******************************************************************************/
+void BasicBlock::searchAndReplace(Exp* search, Exp* replace) {
+    for (RTL * rtl_it : *m_pRtls) {
+        rtl_it->searchAndReplace(search,replace);
+    }
 }

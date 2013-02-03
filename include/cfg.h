@@ -210,6 +210,7 @@ public:
         void            findInterferences(ConnectionGraph& ig);
         void            appendBBs(std::list<PBB>& worklist, std::set<PBB>& workset);
         void            removeUsedGlobals(std::set<Global*> &unusedGlobals);
+        void bbSearchAll(Exp *search, std::list<Exp*> &result, bool ch);
 protected:
         void            addBB(BasicBlock * bb) { m_listBB.push_back(bb); }
         friend class XMLProgParser;

@@ -234,7 +234,7 @@ bool SparcFrontEnd::case_CALL(ADDRESS& address, DecodeResult& inst, DecodeResult
     // Emit the delay instruction, unless the delay instruction is a nop, or we have a pattern, or are followed by a
     // restore
     if ((delay_inst.type != NOP) && !call_stmt->isReturnAfterCall()) {
-        delay_rtl->updateAddress(address);
+        delay_rtl->setAddress(address);
         BB_rtls->push_back(delay_rtl);
         if (Boomerang::get()->printRtl)
             delay_rtl->print(os);
@@ -369,7 +369,7 @@ void SparcFrontEnd::case_SD(ADDRESS& address, int delta, ADDRESS hiAddress, Deco
             SD_stmt->adjustFixedDest(-4);
         else {
             // Move the delay instruction before the SD. Must update the address in case there is a branch to the SD
-            delay_rtl->updateAddress(address);
+            delay_rtl->setAddress(address);
             BB_rtls->push_back(delay_rtl);
             // Display RTL representation if asked
             //if (progOptions.rtl)
@@ -417,7 +417,7 @@ bool SparcFrontEnd::case_DD(ADDRESS& address, int delta, DecodeResult& inst, Dec
 
     if (delay_inst.type != NOP) {
         // Emit the delayed instruction, unless a NOP
-        delay_inst.rtl->updateAddress(address);
+        delay_inst.rtl->setAddress(address);
         BB_rtls->push_back(delay_inst.rtl);
     }
 
@@ -499,19 +499,18 @@ bool SparcFrontEnd::case_DD(ADDRESS& address, int delta, DecodeResult& inst, Dec
 }
 
 /***************************************************************************//**
- * FUNCTION:         case_SCD
- * \brief         Handles all Static Conditional Delayed non-anulled branches
- * PARAMETERS:         address - the native address of the DD
- *                     delta - the offset of the above address from the logical address at which the procedure starts
- *                         (i.e. the one given by dis)
-                                         hiAddress - first address outside this code section
- *                     inst - the info summaries when decoding the SD instruction
- *                     delay_inst - the info summaries when decoding the delay instruction
- *                     BB_rtls - the list of RTLs currently built for the BB under construction
- *                     cfg - the CFG of the enclosing procedure
- *                     tq: Object managing the target queue
+ * \brief   Handles all Static Conditional Delayed non-anulled branches
+ * \param   address - the native address of the DD
+ * \param   delta - the offset of the above address from the logical address at which the procedure starts
+ *                  (i.e. the one given by dis)
+ * \param   hiAddress - first address outside this code section
+ * \param   inst - the info summaries when decoding the SD instruction
+ * \param   delay_inst - the info summaries when decoding the delay instruction
+ * \param   BB_rtls - the list of RTLs currently built for the BB under construction
+ * \param   cfg - the CFG of the enclosing procedure
+ * \param   tq: Object managing the target queue
  * SIDE EFFECTS:     address may change; BB_rtls may be appended to or set nullptr
- * \returns              true if next instruction is to be fetched sequentially from this one
+ * \returns true if next instruction is to be fetched sequentially from this one
  ******************************************************************************/
 bool SparcFrontEnd::case_SCD(ADDRESS& address, int delta, ADDRESS hiAddress,
                              DecodeResult& inst, DecodeResult& delay_inst, std::list<RTL*>*& BB_rtls,
@@ -547,7 +546,7 @@ bool SparcFrontEnd::case_SCD(ADDRESS& address, int delta, ADDRESS hiAddress,
             BB_rtls->push_back(delay_inst.rtl);
             // This is in case we have an in-edge to the branch. If the BB is split, we want the split to happen
             // here, so this delay instruction is active on this path
-            delay_inst.rtl->updateAddress(address);
+            delay_inst.rtl->setAddress(address);
         }
         // Now emit the branch
         BB_rtls->push_back(inst.rtl);
@@ -589,7 +588,7 @@ bool SparcFrontEnd::case_SCD(ADDRESS& address, int delta, ADDRESS hiAddress,
         // be several jumps to the same destination that all require an orphan. The instruction in the orphan will
         // often but not necessarily be the same, so we can't use the same orphan BB. newBB knows to consider BBs
         // with address 0 as being in the map, so several BBs can exist with address 0
-        delay_inst.rtl->updateAddress(ADDRESS::g(0L));
+        delay_inst.rtl->setAddress(ADDRESS::g(0L));
         // Add a branch from the orphan instruction to the dest of the branch. Again, we can't even give the jumps
         // a special address like 1, since then the BB would have this getLowAddr.
         std::list<Statement*>* gl = new std::list<Statement*>;
@@ -658,7 +657,7 @@ bool SparcFrontEnd::case_SCDAN(ADDRESS& address, int delta, ADDRESS hiAddress,
         pOrphan->push_back(delay_inst.rtl);
         // Change the address to 0, since this code has no source address (else we may branch to here when we want to
         // branch to the real BB with this instruction).
-        delay_inst.rtl->updateAddress(ADDRESS::g(0L));
+        delay_inst.rtl->setAddress(ADDRESS::g(0L));
         // Add a branch from the orphan instruction to the dest of the branch
         std::list<Statement*>* gl = new std::list<Statement*>;
         gl->push_back(new GotoStatement(uDest));
@@ -908,7 +907,7 @@ bool SparcFrontEnd::processProc(ADDRESS address, UserProc* proc, std::ofstream &
                         // 142cc:  91 e8 3f ff          restore       %g0, -1, %o0
                         if (((SparcDecoder*)decoder)->isRestore(address+4+pBF->getTextDelta())) {
                             // Give the address of the call; I think that this is actually important, if faintly annoying
-                            delay_inst.rtl->updateAddress(address);
+                            delay_inst.rtl->setAddress(address);
                             BB_rtls->push_back(delay_inst.rtl);
                             // The restore means it is effectively followed by a return (since the resore semantics chop
                             // off one level of return address)
@@ -1201,18 +1200,16 @@ bool SparcFrontEnd::processProc(ADDRESS address, UserProc* proc, std::ofstream &
 }
 
 /***************************************************************************//**
- * FUNCTION:      emitNop
- * \brief      Emit a null RTL with the given address.
- * PARAMETERS:      pRtls - List of RTLs to append this instruction to
- *                  uAddr - Native address of this instruction
- * \returns           <nothing>
+ * \brief   Emit a null RTL with the given address.
+ * \param   pRtls - List of RTLs to append this instruction to
+ * \param   uAddr - Native address of this instruction
+ * \returns <nothing>
  ******************************************************************************/
 void SparcFrontEnd::emitNop(std::list<RTL*>* pRtls, ADDRESS uAddr)
 {
     // Emit a null RTL with the given address. Required to cope with
     // SKIP instructions. Yes, they really happen, e.g. /usr/bin/vi 2.5
-    RTL* pRtl = new RTL;
-    pRtl->updateAddress(uAddr);
+    RTL* pRtl = new RTL(uAddr);
     pRtls->push_back(pRtl);
 }
 

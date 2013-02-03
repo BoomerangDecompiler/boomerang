@@ -1124,28 +1124,21 @@ Cfg::sCallStatement & Cfg::getCalls() {
     return callSites;
 }
 /***************************************************************************//**
- * \brief Replace all instances of search with replace. Can be type sensitive if
- * reqd
+ * \brief Replace all instances of \a search with \a replace in all BasicBlock's
+ * belonging to this Cfg. Can be type sensitive if reqd
  * \param search a location to search for
  * \param replace the expression with which to replace it
  ******************************************************************************/
 void Cfg::searchAndReplace(Exp* search, Exp* replace) {
     for (BasicBlock *bb : m_listBB) {
-        for (RTL * rtl_it : *bb->getRTLs()) {
-            RTL& rtl(*rtl_it);
-            rtl.searchAndReplace(search,replace);
-        }
+        bb->searchAndReplace(search,replace);
     }
 }
 
 bool Cfg::searchAll(Exp *search, std::list<Exp*> &result) {
     bool ch = false;
     for (BasicBlock *bb : m_listBB) {
-        std::list<RTL*>& rtls(*bb->getRTLs());
-        for (RTL * rtl_it : rtls) {
-            RTL& rtl(*rtl_it);
-            ch |= rtl.searchAll(search, result);
-        }
+        ch |= bb->searchAll(search,result);
     }
     return ch;
 }
@@ -1681,7 +1674,7 @@ void Cfg::addJunctionStatements() {
             assert(pbb->getRTLs());
             JunctionStatement *j = new JunctionStatement();
             j->setBB(pbb);
-            pbb->getRTLs()->front()->prependStmt(j);
+            pbb->getRTLs()->front()->push_front(j);
         }
     }
 }
@@ -1693,7 +1686,7 @@ void Cfg::removeJunctionStatements() {
     for (BasicBlock * pbb : m_listBB) {
         if (pbb->getFirstStmt() && pbb->getFirstStmt()->isJunction()) {
             assert(pbb->getRTLs());
-            pbb->getRTLs()->front()->deleteStmt(0);
+            pbb->getRTLs()->front()->pop_front();
         }
     }
 }
@@ -1927,9 +1920,9 @@ PBB Cfg::splitForBranch(PBB pBB, RTL* rtl, BranchStatement* br1, BranchStatement
     ADDRESS a = (haveA) ? addr : ADDRESS::g(0L);
     RTL* skipRtl = new RTL(a, new std::list<Statement*> { br1 }); // list initializer in braces
     BasicBlock * skipBB = newBB(new std::list<RTL*> { skipRtl }, TWOWAY, 2);
-    rtl->updateAddress(addr+1);
+    rtl->setAddress(addr+1);
     if (!haveA) {
-        skipRtl->updateAddress(addr);
+        skipRtl->setAddress(addr);
         // Address addr now refers to the splitBB
         m_mapBB[addr] = skipBB;
         // Fix all predecessors of pBB to point to splitBB instead

@@ -66,52 +66,33 @@ public:
                     RTL(const RTL& other);                    // Makes deep copy of "other"
 virtual             ~RTL();
 
-virtual RTL *       clone();
-
-        // Assignment copy: set this RTL to a deep copy of "other".
+        RTL *       clone();
         RTL &       operator=(RTL &other);
 
-        // Accept a visitor to this RTL
-virtual bool        accept(StmtVisitor* visitor);
-
         // Common enquiry methods
-        ADDRESS     getAddress() {return nativeAddr;}        // Return RTL's native address
-        void        setAddress(ADDRESS a) {nativeAddr=a;}    // Set the address
-        Type *      getType();                                // Return type of first Assign.
-        bool        areFlagsAffected();                        // True if flags are affected
-
-        // Statement list enquiry methods
-        size_t      getNumStmt();                            // Return the number of Stmts in RTL.
-        Statement * elementAt(unsigned i);                    // Return the i'th element in RTL.
+        ADDRESS     getAddress() {return nativeAddr;}       //!< Return RTL's native address
+        void        setAddress(ADDRESS a) {nativeAddr=a;}   //!< Set the address
+        bool        areFlagsAffected();                     //!< True if flags are affected
 
         // Statement list editing methods
         void        appendStmt(Statement *s);                // Add s to end of RTL.
-        void        prependStmt(Statement *s);                // Add s to start of RTL.
-        void        insertStmt(Statement *s, unsigned i);    // Insert s before expression at position i
-        void        insertStmt(Statement *s, iterator it);    // Insert s before iterator it
-        void        deleteStmt(unsigned i);
-
         void        appendListStmt(std::list<Statement*>& le);
-        void        appendRTL(RTL& rtl);
         // Make a deep copy of the list of Exp*
         void        deepCopyList(std::list<Statement*>& dest);
 
          // Print RTL to a stream.
-virtual void        print(std::ostream& os = std::cout, bool html = false) const;
-
+        void        print(std::ostream& os = std::cout, bool html = false) const;
         void        dump();
-        void        updateAddress(ADDRESS addr);
-virtual bool        searchAndReplace(Exp* search, Exp* replace);
-virtual bool        searchAll(Exp* search, std::list<Exp*> &result);
-virtual void        generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel);
 
         bool        isCall(); // Is this RTL a call instruction?
         Statement * getHlStmt();
         char *      prints() const; // Print to a string (mainly for debugging)
-        void        simplify();
 protected:
-        bool        isKindOf(STMT_KIND k);
+        bool        searchAndReplace(Exp* search, Exp* replace);
+        bool        searchAll(Exp* search, std::list<Exp*> &result);
+        void        simplify();
         friend class XMLProgParser;
+        friend class BasicBlock;
 };
 
 
@@ -190,11 +171,7 @@ public:
         ~RTLInstDict();
 
         bool    readSSLFile(const std::string& SSLFileName);
-
-        // Reset the object to "undo" a readSSLFile()
         void    reset();
-
-        // Return the signature of the given instruction.
         std::pair<std::string,unsigned> getSignature(const char* name);
 
         // Appends an RTL to an idict entry, or Adds it to idict if an entry does not already exist. A non-zero return
@@ -252,7 +229,7 @@ public:
     std::map<std::string, TableEntry, std::less<std::string> > idict;
 
     // An RTL describing the machine's basic fetch-execute cycle
-    RTL *fetchExecCycle;
+    std::list<Statement*>*fetchExecCycle;
 
     void fixupParamsSub(std::string s, std::list<std::string>& funcParams, bool& haveCount, int mark);
 };
