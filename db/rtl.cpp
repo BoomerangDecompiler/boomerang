@@ -10,7 +10,7 @@
  */
 
 /***************************************************************************//**
- * \file       rtl.cc
+ * \file       rtl.cpp
  * \brief   Implementation of the classes that describe a low level RTL (
  *               register transfer list)
  ******************************************************************************/
@@ -86,8 +86,6 @@ RTL::RTL(const RTL& other) : nativeAddr(other.nativeAddr) {
     }
 }
 
-RTL::~RTL() { }
-
 /***************************************************************************//**
  * \brief        Assignment copy (deep).
  * \param        other - RTL to copy
@@ -125,7 +123,6 @@ RTL* RTL::clone() const {
  * \param        Ref to empty list to copy to
  ******************************************************************************/
 void RTL::deepCopyList(std::list<Statement*>& dest) {
-    assert(dest.empty());
     for (Statement * it : *this) {
         dest.push_back(it->clone());
     }
@@ -230,41 +227,6 @@ std::ostream& operator<<(std::ostream& os, RTL* r) {
     return os;
 }
 
-/***************************************************************************//**
- * \brief Replace all instances of search with replace.
- * \param search - ptr to an expression to search for
- * \param replace - ptr to the expression with which to replace it
- * \returns true if replacement took place
- ******************************************************************************/
-bool RTL::searchAndReplace(Exp* search, Exp* replace) {
-    bool ch = false;
-    for (iterator it = this->begin(); it != this->end(); it++)
-        ch |= (*it)->searchAndReplace(search, replace);
-    return ch;
-}
-//
-//
-
-/***************************************************************************//**
- * \brief        Searches for all instances of "search" and adds them to "result"
- * in reverse nesting order. The search is optionally type sensitive.
- * \note out of date doc ?
- * \param search - a location to search for
- * \param result - a list which will have any matching exprs
- *                 appended to it
- * \returns true if there were any matches
- ******************************************************************************/
-bool RTL::searchAll(Exp* search, std::list<Exp *> &result) {
-    bool found = false;
-    for (Statement * e : *this) {
-        Exp* res;
-        if (e->search(search, res)) {
-            found = true;
-            result.push_back(res);
-        }
-    }
-    return found;
-}
 /***************************************************************************//**
  * \brief      Return true if this RTL affects the condition codes
  * \note          Assumes that if there is a flag call Exp, then it is the last

@@ -2373,21 +2373,41 @@ bool BasicBlock::undoComputedBB(Statement* stmt) {
     return false;
 }
 
+/***************************************************************************//**
+ * \brief        Searches for all instances of "search" and adds them to "result"
+ * in reverse nesting order. The search is optionally type sensitive.
+ * \note out of date doc, unless type senistivity is a part of \a search_for ?
+ * \param search - a location to search for
+ * \param result - a list which will have any matching exprs
+ *                 appended to it
+ * \returns true if there were any matches
+ ******************************************************************************/
 bool BasicBlock::searchAll(Exp *search_for, std::list<Exp *> &results) {
     bool ch=false;
     for (RTL * rtl_it : *m_pRtls) {
-        ch |= rtl_it->searchAll(search_for, results);
+        for (Statement * e : *rtl_it) {
+            Exp* res; // searchAll can be used here too, would it change anything ?
+            if (e->search(search_for, res)) {
+                ch = true;
+                results.push_back(res);
+            }
+        }
     }
     return ch;
 }
 /***************************************************************************//**
  * \brief Replace all instances of search with replace. Can be type sensitive if
  * reqd
- * \param search a location to search for
+ * \param search - ptr to an expression to search for
  * \param replace the expression with which to replace it
+ * \returns true if replacement took place
  ******************************************************************************/
-void BasicBlock::searchAndReplace(Exp* search, Exp* replace) {
+bool BasicBlock::searchAndReplace(Exp* search, Exp* replace) {
+    bool ch = false;
+
     for (RTL * rtl_it : *m_pRtls) {
-        rtl_it->searchAndReplace(search,replace);
+        for (auto it = rtl_it->begin(); it != rtl_it->end(); it++)
+                ch |= (*it)->searchAndReplace(search, replace);
     }
+    return ch;
 }

@@ -363,7 +363,7 @@ public:
         int             findNumCases();
         bool            undoComputedBB(Statement* stmt);
         bool            searchAll(Exp *search_for,std::list<Exp *> &results);
-        void            searchAndReplace(Exp *search, Exp *replace);
+        bool            searchAndReplace(Exp *search, Exp *replace);
                         // true if processing for overlapped registers on statements in this BB
                         // has been completed.
         bool            overlappedRegProcessingDone;

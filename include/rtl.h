@@ -64,7 +64,6 @@ public:
                     RTL();
                     RTL(ADDRESS instNativeAddr, std::list<Statement*>* listStmt = nullptr);
                     RTL(const RTL& other);                    // Makes deep copy of "other"
-virtual             ~RTL();
 
         RTL *       clone() const;
         RTL &       operator=(const RTL &other);
@@ -88,8 +87,6 @@ virtual             ~RTL();
         Statement * getHlStmt();
         char *      prints() const; // Print to a string (mainly for debugging)
 protected:
-        bool        searchAndReplace(Exp* search, Exp* replace);
-        bool        searchAll(Exp* search, std::list<Exp*> &result);
         void        simplify();
         friend class XMLProgParser;
         friend class BasicBlock;

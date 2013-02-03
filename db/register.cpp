@@ -10,7 +10,7 @@
  */
 
 /***************************************************************************//**
- * \file register.cc
+ * \file register.cpp
  * Desc: Register class descriptions.  Holds detailed information about
  *         a single register.
  ******************************************************************************/

@@ -9,7 +9,7 @@
  */
 
 /***************************************************************************//**
- * \file       table.cc
+ * \file       table.cpp
  * \brief   Provides the implementation of classes Table, OpTable, and
  *               ExprTable
  ******************************************************************************/

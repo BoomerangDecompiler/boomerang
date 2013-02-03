@@ -144,7 +144,6 @@ std::string searchAndReplace( const std::string &in, const std::string &match,
 }
 
 /***************************************************************************//**
- * FUNCTION:      upperStr
  * \brief      Uppercase a C string
  * PARAMETERS:    s: the string (char*) to start with
  *                d: the string (char*) to write to (can be the same string)
