@@ -10,7 +10,7 @@
  */
 
 /***************************************************************************//**
- * \file       njmcDecoder.cc
+ * \file       njmcDecoder.cpp
  * \brief   This file contains the machine independent decoding functionality.
  ******************************************************************************/
 /*
@@ -53,14 +53,13 @@ NJMCDecoder::NJMCDecoder(Prog* prog) : prog(prog)
 {}
 
 /***************************************************************************//**
- * FUNCTION:       NJMCDecoder::instantiate
- * \brief       Given an instruction name and a variable list of expressions representing the actual operands of
- *                    the instruction, use the RTL template dictionary to return the instantiated RTL representing the
- *                    semantics of the instruction.
- * PARAMETERS:       pc: native PC
- *                   name - instruction name
- *                   ... - Semantic String ptrs representing actual operands
- * \returns            an instantiated list of Exps
+ * \brief   Given an instruction name and a variable list of expressions representing the actual operands of
+ *              the instruction, use the RTL template dictionary to return the instantiated RTL representing the
+ *              semantics of the instruction.
+ * \param   pc: native PC
+ * \param   name - instruction name
+ * \param   ... - Semantic String ptrs representing actual operands
+ * \returns an instantiated list of Exps
  ******************************************************************************/
 std::list<Statement*>* NJMCDecoder::instantiate(ADDRESS pc, const char* name, ...) {
     // Get the signature of the instruction and extract its parts
@@ -100,13 +99,12 @@ std::list<Statement*>* NJMCDecoder::instantiate(ADDRESS pc, const char* name, ..
 }
 
 /***************************************************************************//**
- * FUNCTION:       NJMCDecoder::instantiateNamedParam
- * \brief       Similarly to the above, given a parameter name and a list of Exp*'s representing sub-parameters,
- *                    return a fully substituted Exp for the whole expression
- * NOTE:           Caller must delete result
- * PARAMETERS:       name - parameter name
- *                   ... - Exp* representing actual operands
- * \returns            an instantiated list of Exps
+ * \brief   Similarly to the above, given a parameter name and a list of Exp*'s representing sub-parameters,
+ *              return a fully substituted Exp for the whole expression
+ * \note    Caller must delete result
+ * \param   name - parameter name
+ *          ... - Exp* representing actual operands
+ * \returns an instantiated list of Exps
  ******************************************************************************/
 Exp* NJMCDecoder::instantiateNamedParam(char* name, ...) {
     if (RTLDict.ParamSet.find(name) == RTLDict.ParamSet.end()) {
@@ -136,16 +134,15 @@ Exp* NJMCDecoder::instantiateNamedParam(char* name, ...) {
 }
 
 /***************************************************************************//**
- * FUNCTION:       NJMCDecoder::substituteCallArgs
- * \brief       In the event that it's necessary to synthesize the call of a named parameter generated with
- *                    instantiateNamedParam(), this substituteCallArgs() will substitute the arguments that follow into
- *                    the expression.
- * NOTE:           Should only be used after instantiateNamedParam(name, ..);
- * NOTE:           exp (the pointer) could be changed
- * PARAMETERS:       name - parameter name
- *                   exp - expression to instantiate into
- *                   ... - Exp* representing actual operands
- * \returns            an instantiated list of Exps
+ * \brief   In the event that it's necessary to synthesize the call of a named parameter generated with
+ *          instantiateNamedParam(), this substituteCallArgs() will substitute the arguments that follow into
+ *          the expression.
+ * \note    Should only be used after instantiateNamedParam(name, ..);
+ * \note    exp (the pointer) could be changed
+ * \param   name - parameter name
+ * \param   exp - expression to instantiate into
+ * \param   ... - Exp* representing actual operands
+ * \returns an instantiated list of Exps
  ******************************************************************************/
 void NJMCDecoder::substituteCallArgs(char *name, Exp*& exp, ...)
 {
@@ -171,10 +168,7 @@ void NJMCDecoder::substituteCallArgs(char *name, Exp*& exp, ...)
 }
 
 /***************************************************************************//**
- * FUNCTION:       DecodeResult::reset
  * \brief       Resets the fields of a DecodeResult to their default values.
- * PARAMETERS:       <none>
- * \returns            <nothing>
  ******************************************************************************/
 void DecodeResult::reset()
 {
@@ -192,10 +186,9 @@ void DecodeResult::reset()
  ******************************************************************************/
 
 /***************************************************************************//**
- * FUNCTION:        NJMCDecoder::dis_Reg
- * \brief        Converts a numbered register to a suitable expression.
- * PARAMETERS:        reg - the register number, e.g. 0 for eax
- * \returns             the Exp* for the register NUMBER (e.g. "int 36" for %f4)
+ * \brief   Converts a numbered register to a suitable expression.
+ * \param   reg - the register number, e.g. 0 for eax
+ * \returns the Exp* for the register NUMBER (e.g. "int 36" for %f4)
  ******************************************************************************/
 Exp* NJMCDecoder::dis_Reg(int regNum)
 {

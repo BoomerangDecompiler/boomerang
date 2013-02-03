@@ -486,130 +486,68 @@ yyltype;
 class YY_SSLParser_CLASS YY_SSLParser_INHERIT
 {
 public:
-#if YY_SSLParser_USE_CONST_TOKEN != 0
-    /* static const int token ... */
+    enum YY_SSLParser_ENUM_TOKEN {
+        YY_SSLParser_NULL_TOKEN=0
 
-    /* //#line 280 "/usr/local/lib/bison.cc" */
-//#line 485 "db/sslparser.cpp"
-    static const int COND_OP;
-    static const int BIT_OP;
-    static const int ARITH_OP;
-    static const int LOG_OP;
-    static const int NAME;
-    static const int ASSIGNTYPE;
-    static const int REG_ID;
-    static const int REG_NUM;
-    static const int COND_TNAME;
-    static const int DECOR;
-    static const int FARITH_OP;
-    static const int FPUSH;
-    static const int FPOP;
-    static const int TEMP;
-    static const int SHARES;
-    static const int CONV_FUNC;
-    static const int TRUNC_FUNC;
-    static const int TRANSCEND;
-    static const int FABS_FUNC;
-    static const int BIG;
-    static const int LITTLE;
-    static const int NAME_CALL;
-    static const int NAME_LOOKUP;
-    static const int ENDIANNESS;
-    static const int COVERS;
-    static const int INDEX;
-    static const int NOT;
-    static const int LNOT;
-    static const int FNEG;
-    static const int THEN;
-    static const int LOOKUP_RDC;
-    static const int BOGUS;
-    static const int ASSIGN;
-    static const int TO;
-    static const int COLON;
-    static const int S_E;
-    static const int AT;
-    static const int ADDR;
-    static const int REG_IDX;
-    static const int EQUATE;
-    static const int MEM_IDX;
-    static const int TOK_INTEGER;
-    static const int TOK_FLOAT;
-    static const int FAST;
-    static const int OPERAND;
-    static const int FETCHEXEC;
-    static const int CAST_OP;
-    static const int FLAGMACRO;
-    static const int SUCCESSOR;
-    static const int NUM;
-    static const int FLOATNUM;
-    static const int FCHS;
-
-
-//#line 280 "/usr/local/lib/bison.cc"
-    /* decl const */
-#else
-    enum YY_SSLParser_ENUM_TOKEN { YY_SSLParser_NULL_TOKEN=0
-
-                                   /* //#line 283 "/usr/local/lib/bison.cc" */
-                           //#line 546 "db/sslparser.cpp"
-                                   ,COND_OP=258
-                                   ,BIT_OP=259
-                                   ,ARITH_OP=260
-                                   ,LOG_OP=261
-                                   ,NAME=262
-                                   ,ASSIGNTYPE=263
-                                   ,REG_ID=264
-                                   ,REG_NUM=265
-                                   ,COND_TNAME=266
-                                   ,DECOR=267
-                                   ,FARITH_OP=268
-                                   ,FPUSH=269
-                                   ,FPOP=270
-                                   ,TEMP=271
-                                   ,SHARES=272
-                                   ,CONV_FUNC=273
-                                   ,TRUNC_FUNC=274
-                                   ,TRANSCEND=275
-                                   ,FABS_FUNC=276
-                                   ,BIG=277
-                                   ,LITTLE=278
-                                   ,NAME_CALL=279
-                                   ,NAME_LOOKUP=280
-                                   ,ENDIANNESS=281
-                                   ,COVERS=282
-                                   ,INDEX=283
-                                   ,NOT=284
-                                   ,LNOT=285
-                                   ,FNEG=286
-                                   ,THEN=287
-                                   ,LOOKUP_RDC=288
-                                   ,BOGUS=289
-                                   ,ASSIGN=290
-                                   ,TO=291
-                                   ,COLON=292
-                                   ,S_E=293
-                                   ,AT=294
-                                   ,ADDR=295
-                                   ,REG_IDX=296
-                                   ,EQUATE=297
-                                   ,MEM_IDX=298
-                                   ,TOK_INTEGER=299
-                                   ,TOK_FLOAT=300
-                                   ,FAST=301
-                                   ,OPERAND=302
-                                   ,FETCHEXEC=303
-                                   ,CAST_OP=304
-                                   ,FLAGMACRO=305
-                                   ,SUCCESSOR=306
-                                   ,NUM=307
-                                   ,FLOATNUM=308
-                                   ,FCHS=309
+        /* //#line 283 "/usr/local/lib/bison.cc" */
+        //#line 546 "db/sslparser.cpp"
+        ,COND_OP=258
+        ,BIT_OP=259
+        ,ARITH_OP=260
+        ,LOG_OP=261
+        ,NAME=262
+        ,ASSIGNTYPE=263
+        ,REG_ID=264
+        ,REG_NUM=265
+        ,COND_TNAME=266
+        ,DECOR=267
+        ,FARITH_OP=268
+        ,FPUSH=269
+        ,FPOP=270
+        ,TEMP=271
+        ,SHARES=272
+        ,CONV_FUNC=273
+        ,TRUNC_FUNC=274
+        ,TRANSCEND=275
+        ,FABS_FUNC=276
+        ,BIG=277
+        ,LITTLE=278
+        ,NAME_CALL=279
+        ,NAME_LOOKUP=280
+        ,ENDIANNESS=281
+        ,COVERS=282
+        ,INDEX=283
+        ,NOT=284
+        ,LNOT=285
+        ,FNEG=286
+        ,THEN=287
+        ,LOOKUP_RDC=288
+        ,BOGUS=289
+        ,ASSIGN=290
+        ,TO=291
+        ,COLON=292
+        ,S_E=293
+        ,AT=294
+        ,ADDR=295
+        ,REG_IDX=296
+        ,EQUATE=297
+        ,MEM_IDX=298
+        ,TOK_INTEGER=299
+        ,TOK_FLOAT=300
+        ,FAST=301
+        ,OPERAND=302
+        ,FETCHEXEC=303
+        ,CAST_OP=304
+        ,FLAGMACRO=305
+        ,SUCCESSOR=306
+        ,NUM=307
+        ,FLOATNUM=308
+        ,FCHS=309
 
 
-                           //#line 283 "/usr/local/lib/bison.cc"
-                                   /* enum token */
-                                 }; /* end of enum declaration */
-#endif
+        //#line 283 "/usr/local/lib/bison.cc"
+        /* enum token */
+    }; /* end of enum declaration */
 public:
     int YY_SSLParser_PARSE (YY_SSLParser_PARSE_PARAM);
     virtual void YY_SSLParser_ERROR(char *msg) YY_SSLParser_ERROR_BODY;

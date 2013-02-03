@@ -9,7 +9,8 @@
  * WARRANTIES.
  *
  */
-/***************************************************************************//** * \file       decoder.m
+/***************************************************************************//**
+ * \file       pentiumdecoder.cpp
  * \brief   This file contains the high level decoding functionality, for example matching logues, calls, branches,
  *                etc. Ordinary instructions are processed in decoder_low.m
  ******************************************************************************/

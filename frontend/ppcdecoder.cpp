@@ -12,7 +12,7 @@
  */
 
 /***************************************************************************//**
- * \file       decoder.m
+ * \file       ppcdecoder.cpp
  * \brief   Implementation of the PPC specific parts of the PPCDecoder class.
  ******************************************************************************/
 

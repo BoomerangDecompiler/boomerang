@@ -7,7 +7,7 @@
  *
  */
 
-/* File: ArchiveFile.cc
+/** \file ArchiveFile.cpp
  * Desc: This file contains the implementation of the ArchiveFile class
 */
 

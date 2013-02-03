@@ -12,7 +12,7 @@
  */
 
 /***************************************************************************//**
- * \file       decoder.m
+ * \file       sparcdecoder.cpp
  * \brief   Implementation of the SPARC specific parts of the
  *               SparcDecoder class.
  ******************************************************************************/

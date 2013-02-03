@@ -8,7 +8,7 @@
  *
  */
 
-/** \file PalmBinaryFile.cc
+/** \file PalmBinaryFile.cpp
  * This class loads a Palm Pilot .prc file. Derived from class BinaryFile
  */
 

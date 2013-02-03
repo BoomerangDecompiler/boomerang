@@ -8,7 +8,7 @@
  */
 
 /***************************************************************************//**
- * \file        HpSomBinaryFile.cc
+ * \file        HpSomBinaryFile.cpp
  * \brief    This file contains the implementation of the class
  *              HpSomBinaryFile, for decoding PA/RISC SOM executable files.
  *              Derived from class BinaryFile

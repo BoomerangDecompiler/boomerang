@@ -7,11 +7,14 @@
  *
  */
 
-/* File: ElfArchiveFile.cc
+/**
+ * \file ElfArchiveFile.cpp
  * Desc: This file contains the implementation of the ElfArchiveFile class
- * Revisions: 
+ */
+/*
+ * Revisions:
  * 98 - Mike: Created
-*/
+ */
 
 #include "global.h"
 

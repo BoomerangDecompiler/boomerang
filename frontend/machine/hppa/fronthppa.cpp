@@ -9,10 +9,10 @@
  */
 
 /***************************************************************************//**
- * \file       fronthppa.cc
+ * \file       fronthppa.cpp
  * OVERVIEW:   This file contains routines to manage the decoding of HP pc-risc
  *             instructions and the instantiation to RTLs. These functions
- *             replace Frontend.cc for decoding hppa instructions.
+ *             replace Frontend.cpp for decoding hppa instructions.
  *============================================================================*/
 
 /*

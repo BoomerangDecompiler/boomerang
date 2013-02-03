@@ -9,8 +9,8 @@
  *
  */
 
-/* File: DOS4GWBinaryFile.cc
- * $Revision$
+/**
+ * \file DOS4GWBinaryFile.cpp
  * Desc: This file contains the implementation of the class DOS4GWBinaryFile.
  */
 

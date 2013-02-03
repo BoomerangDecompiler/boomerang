@@ -8,11 +8,13 @@
  *
  */
 
-/*
- * insnameelem.cc
+/**
+ * \file insnameelem.cpp
  *
  * an element of an instruction name - contains definition of class InsNameElem
  *
+ */
+/* Changelog:
  * 19 Feb 01 - Simon: created
  * 01 May 02 - Mike: Mods for boomerang
  */

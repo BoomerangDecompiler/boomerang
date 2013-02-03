@@ -12,7 +12,7 @@
  */
 
 /***************************************************************************//**
- * \file       decoder.m
+ * \file       st20decoder.cpp
  * \brief   This file contains the high level decoding functionality, for matching ST-20 instructions.
  ******************************************************************************/
 /*
@@ -36,10 +36,8 @@
  **********************************/
 
 /***************************************************************************//**
- * FUNCTION:       unused
- * \brief       A dummy function to suppress "unused local variable" messages
- * PARAMETERS:       x: integer variable to be "used"
- * \returns            Nothing
+ * \brief   A dummy function to suppress "unused local variable" messages
+ * \param   x: integer variable to be "used"
  ******************************************************************************/
 void ST20Decoder::unused(int x)
 {}
