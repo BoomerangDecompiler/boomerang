@@ -87,8 +87,7 @@ void TableEntry::setRTL(RTL& r) {
  ******************************************************************************/
 const TableEntry& TableEntry::operator=(const TableEntry& other) {
     params = other.params;
-    //params.insert(params.end(),other.params.begin(),other.params.end());
-    rtl = *(new RTL(other.rtl));
+    rtl = other.rtl;
     return *this;
 }
 
@@ -110,21 +109,23 @@ int TableEntry::appendRTL(std::list<std::string>& p, RTL& r) {
     }
     return -1;
 }
-
+// Appends an RTL to an idict entry, or Adds it to idict if an entry does not already exist. A non-zero return
+// indicates failure.
 /***************************************************************************//**
- * \brief        Appends one RTL to the dictionary
+ * \brief        Appends one RTL to the dictionary,or Adds it to idict if an
+ * entry does not already exist.
  * \param n: name of the instruction to add to
  * \param p: list of formal parameters (as strings) for the RTL to add
  * \param r: reference to the RTL to add
  * \returns 0 for success
  ******************************************************************************/
 int RTLInstDict::appendToDict(std::string &n, std::list<std::string>& p, RTL& r) {
-    char *opcode = new char[n.size() + 1];
-    strcpy(opcode, n.c_str());
-    upperStr(opcode, opcode);
-    std::remove(opcode, opcode+strlen(opcode)+1,'.');
+    std::string opcode = n;
+    std::transform(opcode.begin(), opcode.end(), opcode.begin(), ::toupper);
+    auto new_end = std::remove(opcode.begin(), opcode.end(),'.');
+    opcode.resize(new_end-opcode.begin());
     std::string s(opcode);
-    //delete [] opcode;
+
 
     if (idict.find(s) == idict.end()) {
         idict[s] = TableEntry(p, r);
