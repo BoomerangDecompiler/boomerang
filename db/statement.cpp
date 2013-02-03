@@ -563,8 +563,8 @@ bool Statement::isFirstStatementInBB() {
     assert(pbb->getRTLs());
     assert(pbb->getRTLs()->size());
     assert(pbb->getRTLs()->front());
-    assert(pbb->getRTLs()->front()->getList().size());
-    return this == pbb->getRTLs()->front()->getList().front();
+    assert(pbb->getRTLs()->front()->size());
+    return this == pbb->getRTLs()->front()->front();
 }
 
 bool Statement::isLastStatementInBB() {
@@ -579,10 +579,10 @@ Statement*    Statement::getPreviousStatementInBB() {
     Statement *previous = nullptr;
     for (std::list<RTL*>::iterator rit = rtls->begin(); rit != rtls->end(); rit++) {
         RTL *rtl = *rit;
-        for (RTL::iterator it = rtl->getList().begin(); it != rtl->getList().end(); it++) {
-            if (*it == this)
+        for (Statement * it : *rtl) {
+            if (it == this)
                 return previous;
-            previous = *it;
+            previous = it;
         }
     }
     return nullptr;
@@ -595,10 +595,10 @@ Statement *Statement::getNextStatementInBB() {
     bool wantNext = false;
     for (std::list<RTL*>::iterator rit = rtls->begin(); rit != rtls->end(); rit++) {
         RTL *rtl = *rit;
-        for (RTL::iterator it = rtl->getList().begin(); it != rtl->getList().end(); it++) {
+        for (Statement * it : *rtl) {
             if (wantNext)
-                return *it;
-            if (*it == this)
+                return it;
+            if (it == this)
                 wantNext = true;
         }
     }

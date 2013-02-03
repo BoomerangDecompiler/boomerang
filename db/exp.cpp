@@ -1179,7 +1179,7 @@ void FlagDef::appendDotFile(std::ofstream& of) {
         of << "opFlagDef \\n" << ADDRESS::host_ptr(this) << "| ";
     // Display the RTL as "RTL <r1> <r2>..." vertically (curly brackets)
     of << "{ RTL ";
-    int n = rtl->getNumStmt();
+    int n = rtl->size();
     for (int i=0; i < n; i++)
         of << "| <r" << std::dec << i << "> ";
     of << "} | <p1> }\"];\n";

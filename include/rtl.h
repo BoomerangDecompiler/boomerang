@@ -81,7 +81,7 @@ virtual bool        accept(StmtVisitor* visitor);
         bool        areFlagsAffected();                        // True if flags are affected
 
         // Statement list enquiry methods
-        size_t getNumStmt();                            // Return the number of Stmts in RTL.
+        size_t      getNumStmt();                            // Return the number of Stmts in RTL.
         Statement * elementAt(unsigned i);                    // Return the i'th element in RTL.
 
         // Statement list editing methods
@@ -90,15 +90,11 @@ virtual bool        accept(StmtVisitor* visitor);
         void        insertStmt(Statement *s, unsigned i);    // Insert s before expression at position i
         void        insertStmt(Statement *s, iterator it);    // Insert s before iterator it
         void        deleteStmt(unsigned i);
-        void        deleteLastStmt();                        // Delete the last statement
-        void        replaceLastStmt(Statement* repl);        // Replace the last Statement
 
         void        appendListStmt(std::list<Statement*>& le);
         void        appendRTL(RTL& rtl);
         // Make a deep copy of the list of Exp*
         void        deepCopyList(std::list<Statement*>& dest);
-
-        std::list<Statement*> &getList() { return *this; }//!< direct access to the list of expressions
 
          // Print RTL to a stream.
 virtual void        print(std::ostream& os = std::cout, bool html = false) const;

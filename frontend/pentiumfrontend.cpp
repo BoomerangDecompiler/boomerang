@@ -80,9 +80,11 @@ bool PentiumFrontEnd::isStoreFsw(Statement* s) {
  ******************************************************************************/
 bool PentiumFrontEnd::isDecAh(RTL* r) {
     // Check for decrement; RHS of middle Exp will be r[12]{8} - 1
-    if (r->getNumStmt() != 3) return false;
+    if (r->size() != 3)
+        return false;
     Statement* mid = r->elementAt(1);
-    if (!mid->isAssign()) return false;
+    if (!mid->isAssign())
+        return false;
     Assign* asgn = (Assign*)mid;
     Exp* rhs = asgn->getRight();
     Binary ahm1(opMinus,
@@ -238,7 +240,6 @@ std::vector<Exp*> &PentiumFrontEnd::getDefaultReturns() {
 void PentiumFrontEnd::processFloatCode(Cfg* pCfg) {
     BB_IT it;
     for (PBB pBB = pCfg->getFirstBB(it); pBB; pBB = pCfg->getNextBB(it)) {
-        std::list<RTL*>::iterator rit;
         Statement* st;
 
         // Loop through each RTL this BB
@@ -247,79 +248,76 @@ void PentiumFrontEnd::processFloatCode(Cfg* pCfg) {
             // For example, incomplete BB
             return;
         }
-        rit = BB_rtls->begin();
-        while (rit != BB_rtls->end()) {
-            for (int i=0; i < (*rit)->getNumStmt(); i++) {
+        for (RTL *rtl : BB_rtls) {
+            for (auto iter=rtl->begin(); iter!=rtl->end(); /*incremented inside*/) {
                 // Get the current Exp
-                st = (*rit)->elementAt(i);
+                st = *iter;
                 if (st->isFpush()) {
-                    (*rit)->insertStmt(new Assign(new FloatType(80),
+                    rtl->insertStmt(new Assign(new FloatType(80),
                                                   Location::tempOf(new Const(const_cast<char *>("tmpD9"))),
-                                                  Location::regOf(39)), i++);
-                    (*rit)->insertStmt(new Assign(new FloatType(80),
+                                                  Location::regOf(39)), iter);
+                    rtl->insertStmt(new Assign(new FloatType(80),
                                                   Location::regOf(39),
-                                                  Location::regOf(38)), i++);
-                    (*rit)->insertStmt(new Assign(new FloatType(80),
+                                                  Location::regOf(38)), iter);
+                    rtl->insertStmt(new Assign(new FloatType(80),
                                                   Location::regOf(38),
-                                                  Location::regOf(37)), i++);
-                    (*rit)->insertStmt(new Assign(new FloatType(80),
+                                                  Location::regOf(37)), iter);
+                    rtl->insertStmt(new Assign(new FloatType(80),
                                                   Location::regOf(37),
-                                                  Location::regOf(36)), i++);
-                    (*rit)->insertStmt(new Assign(new FloatType(80),
+                                                  Location::regOf(36)), iter);
+                    rtl->insertStmt(new Assign(new FloatType(80),
                                                   Location::regOf(36),
-                                                  Location::regOf(35)), i++);
-                    (*rit)->insertStmt(new Assign(new FloatType(80),
+                                                  Location::regOf(35)), iter);
+                    rtl->insertStmt(new Assign(new FloatType(80),
                                                   Location::regOf(35),
-                                                  Location::regOf(34)), i++);
-                    (*rit)->insertStmt(new Assign(new FloatType(80),
+                                                  Location::regOf(34)), iter);
+                    rtl->insertStmt(new Assign(new FloatType(80),
                                                   Location::regOf(34),
-                                                  Location::regOf(33)), i++);
-                    (*rit)->insertStmt(new Assign(new FloatType(80),
+                                                  Location::regOf(33)), iter);
+                    rtl->insertStmt(new Assign(new FloatType(80),
                                                   Location::regOf(33),
-                                                  Location::regOf(32)), i++);
-                    (*rit)->insertStmt(new Assign(new FloatType(80),
+                                                  Location::regOf(32)), iter);
+                    rtl->insertStmt(new Assign(new FloatType(80),
                                                   Location::regOf(32),
-                                                  Location::tempOf(new Const(const_cast<char *>("tmpD9")))), i++);
+                                                  Location::tempOf(new Const(const_cast<char *>("tmpD9")))), iter);
                     // Remove the FPUSH
-                    (*rit)->deleteStmt(i);
-                    i--;
+                    iter=rtl->erase(iter);
                     continue;
                 }
                 else if (st->isFpop()) {
-                    (*rit)->insertStmt(new Assign(new FloatType(80),
+                    rtl->insertStmt(new Assign(new FloatType(80),
                                                   Location::tempOf(new Const(const_cast<char *>("tmpD9"))),
-                                                  Location::regOf(32)), i++);
-                    (*rit)->insertStmt(new Assign(new FloatType(80),
+                                                  Location::regOf(32)), iter);
+                    rtl->insertStmt(new Assign(new FloatType(80),
                                                   Location::regOf(32),
-                                                  Location::regOf(33)), i++);
-                    (*rit)->insertStmt(new Assign(new FloatType(80),
+                                                  Location::regOf(33)), iter);
+                    rtl->insertStmt(new Assign(new FloatType(80),
                                                   Location::regOf(33),
-                                                  Location::regOf(34)), i++);
-                    (*rit)->insertStmt(new Assign(new FloatType(80),
+                                                  Location::regOf(34)), iter);
+                    rtl->insertStmt(new Assign(new FloatType(80),
                                                   Location::regOf(34),
-                                                  Location::regOf(35)), i++);
-                    (*rit)->insertStmt(new Assign(new FloatType(80),
+                                                  Location::regOf(35)), iter);
+                    rtl->insertStmt(new Assign(new FloatType(80),
                                                   Location::regOf(35),
-                                                  Location::regOf(36)), i++);
-                    (*rit)->insertStmt(new Assign(new FloatType(80),
+                                                  Location::regOf(36)), iter);
+                    rtl->insertStmt(new Assign(new FloatType(80),
                                                   Location::regOf(36),
-                                                  Location::regOf(37)), i++);
-                    (*rit)->insertStmt(new Assign(new FloatType(80),
+                                                  Location::regOf(37)), iter);
+                    rtl->insertStmt(new Assign(new FloatType(80),
                                                   Location::regOf(37),
-                                                  Location::regOf(38)), i++);
-                    (*rit)->insertStmt(new Assign(new FloatType(80),
+                                                  Location::regOf(38)), iter);
+                    rtl->insertStmt(new Assign(new FloatType(80),
                                                   Location::regOf(38),
-                                                  Location::regOf(39)), i++);
-                    (*rit)->insertStmt(new Assign(new FloatType(80),
+                                                  Location::regOf(39)), iter);
+                    rtl->insertStmt(new Assign(new FloatType(80),
                                                   Location::regOf(39),
-                                                  Location::tempOf(new Const(const_cast<char *>("tmpD9")))), i++);
+                                                  Location::tempOf(new Const(const_cast<char *>("tmpD9")))), iter);
                     // Remove the FPOP
-                    (*rit)->deleteStmt(i);
-                    i--;
+                    iter=rtl->erase(iter);
                     continue;
                 }
+                ++iter;
             }
-            rit++;
         }
     }
 }
@@ -596,8 +594,8 @@ ADDRESS PentiumFrontEnd::getMainEntryPoint(bool& gotMain) {
             // Must have gotten out of step
             break;
         CallStatement* cs = nullptr;
-        if (inst.rtl->getList().size())
-            cs = (CallStatement*)(inst.rtl->getList().back());
+        if (not inst.rtl->empty())
+            cs = (CallStatement*)(inst.rtl->back());
         if (cs && cs->getKind() == STMT_CALL &&
                 cs->getDest()->getOper() == opMemOf &&
                 cs->getDest()->getSubExp1()->getOper() == opIntConst &&
@@ -610,15 +608,15 @@ ADDRESS PentiumFrontEnd::getMainEntryPoint(bool& gotMain) {
 #endif
             int oNumBytes = inst.numBytes;
             inst = decodeInstruction(addr + oNumBytes);
-            if (inst.valid && inst.rtl->getNumStmt() == 2) {
+            if (inst.valid && inst.rtl->size() == 2) {
                 Assign* a = dynamic_cast<Assign*>(inst.rtl->elementAt(1));
                 if (a && *a->getRight() == *Location::regOf(24)) {
 #if 0
                     std::cerr << "is followed by push eax.. " << "good" << std::endl;
 #endif
                     inst = decodeInstruction(addr + oNumBytes + inst.numBytes);
-                    if (inst.rtl->getList().size()) {
-                        CallStatement *toMain = dynamic_cast<CallStatement*>(inst.rtl->getList().back());
+                    if (not inst.rtl->empty()) {
+                        CallStatement *toMain = dynamic_cast<CallStatement*>(inst.rtl->back());
                         if (toMain && toMain->getFixedDest() != NO_ADDRESS) {
                             pBF->AddSymbol(toMain->getFixedDest(), "WinMain");
                             gotMain = true;
@@ -641,8 +639,8 @@ ADDRESS PentiumFrontEnd::getMainEntryPoint(bool& gotMain) {
                 // Note: the RTL changed recently from esp = esp-4; m[esp] = K tp m[esp-4] = K; esp = esp-4
                 inst = decodeInstruction(addr-5);
                 assert(inst.valid);
-                assert(inst.rtl->getNumStmt() == 2);
-                Assign* a = (Assign*) inst.rtl->elementAt(0);        // Get m[esp-4] = K
+                assert(inst.rtl->size() == 2);
+                Assign* a = (Assign*) inst.rtl->front();        // Get m[esp-4] = K
                 Exp* rhs = a->getRight();
                 assert(rhs->isIntConst());
                 gotMain = true;
@@ -674,9 +672,9 @@ ADDRESS PentiumFrontEnd::getMainEntryPoint(bool& gotMain) {
 
 void toBranches(ADDRESS a, bool lastRtl, Cfg* cfg, RTL* rtl, PBB bb, BB_IT& it) {
     BranchStatement* br1 = new BranchStatement;
-    assert(rtl->getList().size() >= 4);        // They vary; at least 5 or 6
-    Statement* s1 = *rtl->getList().begin();
-    Statement* s6 = *(--rtl->getList().end());
+    assert(rtl->size() >= 4);        // They vary; at least 5 or 6
+    Statement* s1 = *rtl->begin();
+    Statement* s6 = *(--rtl->end());
     if (s1->isAssign())
         br1->setCondExpr(((Assign*)s1)->getRight());
     else
@@ -708,8 +706,8 @@ void PentiumFrontEnd::processStringInst(UserProc* proc) {
             RTL *rtl = *rit;
             prev = addr;
             addr = rtl->getAddress();
-            if (rtl->getList().size()) {
-                Statement* firstStmt = *rtl->getList().begin();
+            if (not rtl->empty()) {
+                Statement* firstStmt = rtl->front();
                 if (firstStmt->isAssign()) {
                     Exp* lhs = ((Assign*)firstStmt)->getLeft();
                     if (lhs->isMachFtr()) {
@@ -1062,8 +1060,8 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, std::list<RTL*> *BB_
             unsigned int pushcount = 0;
             for (itr = BB_rtls->rbegin(); itr != BB_rtls->rend() && !found; itr++) {
                 RTL *rtl = *itr;
-                for (int n = rtl->getNumStmt() - 1; n >= 0; n--) {
-                    Statement *stmt = rtl->elementAt(n);
+                for (auto rtl_iter = rtl->rbegin(); rtl_iter!=rtl->rend(); ++rtl_iter) {
+                    Statement *stmt = *rtl_iter;
                     if (stmt->isAssign()) {
                         Assign *asgn = (Assign*)stmt;
                         if (asgn->getLeft()->isRegN(28) && asgn->getRight()->getOper() == opMinus)
@@ -1136,8 +1134,8 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, std::list<RTL*> *BB_
             int pushcount = 0;
             for (itr = BB_rtls->rbegin(); itr != BB_rtls->rend() && !found; itr++) {
                 RTL *rtl = *itr;
-                for (int n = rtl->getNumStmt() - 1; n >= 0; n--) {
-                    Statement *stmt = rtl->elementAt(n);
+                for (auto rtl_iter = rtl->rbegin(); rtl_iter!=rtl->rend(); ++rtl_iter) {
+                    Statement *stmt = *rtl_iter;
                     if (stmt->isAssign()) {
                         Assign *asgn = (Assign*)stmt;
                         if (asgn->getLeft()->isRegN(28) && asgn->getRight()->getOper() == opMinus)

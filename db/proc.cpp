@@ -961,11 +961,10 @@ void UserProc::removeStatement(Statement *stmt) {
     // remove from BB/RTL
     PBB bb = stmt->getBB();            // Get our enclosing BB
     std::list<RTL*> *rtls = bb->getRTLs();
-    for (std::list<RTL*>::iterator rit = rtls->begin(); rit != rtls->end(); rit++) {
-        std::list<Statement*>& stmts = (*rit)->getList();
-        for (RTL::iterator it = stmts.begin(); it != stmts.end(); it++) {
+    for (RTL* rit : *rtls) {
+        for (RTL::iterator it = rit->begin(); it != rit->end(); it++) {
             if (*it == stmt) {
-                stmts.erase(it);
+                rit->erase(it);
                 return;
             }
         }
@@ -980,7 +979,7 @@ void UserProc::insertAssignAfter(Statement* s, Exp* left, Exp* right) {
         PBB entryBB = cfg->getEntryBB();
         std::list<RTL*> *rtls = entryBB->getRTLs();
         assert(rtls->size());        // Entry BB should have at least 1 RTL
-        stmts = &rtls->front()->getList();
+        stmts = rtls->front();
         it = stmts->begin();
     } else {
         // An ordinary definition; put the assignment at the end of s's BB
@@ -988,7 +987,7 @@ void UserProc::insertAssignAfter(Statement* s, Exp* left, Exp* right) {
         std::list<RTL*> *rtls = bb->getRTLs();
         assert(rtls->size());        // If s is defined here, there should be
         // at least 1 RTL
-        stmts = &rtls->back()->getList();
+        stmts = rtls->back();
         it = stmts->end();            // Insert before the end
     }
     Assign* as = new Assign(left, right);
@@ -1007,13 +1006,12 @@ void UserProc::insertStatementAfter(Statement* s, Statement* a) {
         std::list<RTL*>* rtls = (*bb)->getRTLs();
         if (rtls == nullptr)
             continue;            // e.g. *bb is (as yet) invalid
-        for (rr = rtls->begin(); rr != rtls->end(); rr++) {
-            std::list<Statement*>& stmts = (*rr)->getList();
+        for (RTL *rr : *rtls) {
             std::list<Statement*>::iterator ss;
-            for (ss = stmts.begin(); ss != stmts.end(); ss++) {
+            for (ss = rr->begin(); ss != rr->end(); ss++) {
                 if (*ss == s) {
                     ss++;        // This is the point to insert before
-                    stmts.insert(ss, a);
+                    rr->insert(ss, a);
                     return;
                 }
             }
@@ -2249,7 +2247,7 @@ void UserProc::assignProcsToCalls() {
         }
         for (std::list<RTL*>::iterator it2 = rtls->begin(); it2 != rtls->end(); it2++) {
             if (!(*it2)->isCall()) continue;
-            CallStatement* call = (CallStatement*)(*it2)->getList().back();
+            CallStatement* call = (CallStatement*)(*it2)->back();
             if (call->getDestProc() == nullptr && !call->isComputed()) {
                 Proc *p = prog->findProc(call->getFixedDest());
                 if (p == nullptr) {
@@ -2280,10 +2278,8 @@ void UserProc::finalSimplify() {
             pBB = cfg->getNextBB(it);
             continue;
         }
-        std::list<RTL*>::iterator rit;
-        for (rit = pRtls->begin(); rit != pRtls->end(); rit++) {
-            for (int i=0; i < (*rit)->getNumStmt(); i++) {
-                Statement* rt = (*rit)->elementAt(i);
+        for (RTL * rit : *pRtls) {
+            for (Statement* rt : *rit) {
                 rt->simplifyAddr();
                 // Also simplify everything; in particular, stack offsets are
                 // often negative, so we at least canonicalise [esp + -8] to [esp-8]
@@ -5548,10 +5544,9 @@ void UserProc::setImplicitRef(Statement* s, Exp* a, Type* ty) {
     PBB bb = s->getBB();            // Get s' enclosing BB
     std::list<RTL*> *rtls = bb->getRTLs();
     for (std::list<RTL*>::iterator rit = rtls->begin(); rit != rtls->end(); rit++) {
-        std::list<Statement*>& stmts = (*rit)->getList();
         RTL::iterator it, itForS;
         RTL* rtlForS;
-        for (it = stmts.begin(); it != stmts.end(); it++) {
+        for (it = (*rit)->begin(); it != (*rit)->end(); it++) {
             if (*it == s ||
                     // Not the searched for statement. But if it is a call or return statement, it will be the last, and
                     // s must be a substatement (e.g. argument, return, define, etc).
@@ -5561,7 +5556,7 @@ void UserProc::setImplicitRef(Statement* s, Exp* a, Type* ty) {
                 rtlForS = *rit;
                 bool found = false;
                 bool searchEarlierRtls = true;
-                while (it != stmts.begin()) {
+                while (it != (*rit)->begin()) {
                     ImpRefStatement* irs = (ImpRefStatement*) *--it;
                     if (!irs->isImpRef()) {
                         searchEarlierRtls = false;
@@ -5575,9 +5570,8 @@ void UserProc::setImplicitRef(Statement* s, Exp* a, Type* ty) {
                 }
                 while (searchEarlierRtls && rit != rtls->begin()) {
                     for (std::list<RTL*>::reverse_iterator revit = rtls->rbegin(); revit != rtls->rend(); ++revit) {
-                        std::list<Statement*>& stmts2 = (*revit)->getList();
-                        it = stmts2.end();
-                        while (it != stmts2.begin()) {
+                        it = (*revit)->end();
+                        while (it != (*revit)->begin()) {
                             ImpRefStatement* irs = (ImpRefStatement*) *--it;
                             if (!irs->isImpRef()) {
                                 searchEarlierRtls = false;

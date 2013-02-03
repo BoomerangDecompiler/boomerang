@@ -920,8 +920,8 @@ bool Cfg::compressCfg() {
             PBB bb = (*it);                // Pointer to A
             if (pSucc->m_InEdges.size()==1 && pSucc->m_OutEdges.size()==1 &&
                     pSucc->m_pRtls->size()==1 &&
-                    pSucc->m_pRtls->front()->getNumStmt() == 1 &&
-                    pSucc->m_pRtls->front()->elementAt(0)->isGoto()) {
+                    pSucc->m_pRtls->front()->size() == 1 &&
+                    pSucc->m_pRtls->front()->front()->isGoto()) {
                 // Found an out-edge to an only-jump BB
                 /* std::cout << "outedge to jump detected at " << std::hex << bb->getLowAddr() << " to ";
                                         std::cout << pSucc->getLowAddr() << " to " << pSucc->m_OutEdges.front()->getLowAddr() << std::dec <<
@@ -1840,9 +1840,8 @@ void Cfg::findInterferences(ConnectionGraph& cg) {
             Statement* last = nullptr;
             if (currBB->m_pRtls->size()) {
                 RTL* lastRtl = currBB->m_pRtls->back();
-                std::list<Statement*>& lst = lastRtl->getList();
-                if (lst.size())
-                    last = lst.back();
+                if (lastRtl->size())
+                    last = lastRtl->back();
             }
             if (last)
                 LOG << last->getNumber();
@@ -1948,13 +1947,10 @@ PBB Cfg::splitForBranch(PBB pBB, RTL* rtl, BranchStatement* br1, BranchStatement
     }
 
     // Remove the SKIP from the start of the string instruction RTL
-    std::list<Statement*>& li = rtl->getList();
-    assert(li.size() >= 4);
-    li.erase(li.begin());
+    assert(rtl->size() >= 4);
+    rtl->pop_front();
     // Replace the last statement with br2
-    std::list<Statement*>::iterator ll = --li.end();
-    li.erase(ll);
-    li.push_back(br2);
+    rtl->back() = br2;
 
     // Move the remainder of the string RTL into a new BB
     PBB rptBB = newBB(new std::list<RTL*> { *ri }, TWOWAY, 2);

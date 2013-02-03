@@ -3220,7 +3220,7 @@ void SSLParser::expandTables(InsNameElem* iname, std::list<std::string>* params,
         nam = iname->getinstruction();
         // Need to make substitutions to a copy of the RTL
         RTL* rtl = o_rtlist->clone();
-        int n = rtl->getNumStmt();
+        int n = rtl->size();
         for (int j=0; j < n; j++) {
             Statement* s = rtl->elementAt(j);
             std::list<Exp*> le;

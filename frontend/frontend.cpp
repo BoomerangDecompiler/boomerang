@@ -574,8 +574,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
             ADDRESS uDest;
 
             // For each Statement in the RTL
-            //std::list<Statement*>& sl = pRtl->getList();
-            std::list<Statement*> sl = pRtl->getList();
+            std::list<Statement*> sl = *(std::list<Statement*> *)pRtl;
             // Make a copy (!) of the list. This is needed temporarily to work around the following problem.
             // We are currently iterating an RTL, which could be a return instruction. The RTL is passed to
             // createReturnBlock; if this is not the first return statement, it will get cleared, and this will
@@ -627,7 +626,8 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
                             std::list<Statement*>::iterator ss1 = ss;
                             ss1++;
                             assert(ss1 == sl.end());
-                            pRtl->replaceLastStmt(s);
+                            assert(not pRtl->empty());
+                            pRtl->back() = s;
                             *ss = s;
                         }
                     }
@@ -798,7 +798,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
                                 if (decoded.valid) { // is the instruction decoded succesfully?
                                     // Yes, it is. Create a Statement from it.
                                     RTL *rtl = decoded.rtl;
-                                    Statement* first_statement = *rtl->getList().begin();
+                                    Statement* first_statement = rtl->front();
                                     if (first_statement) {
                                         first_statement->setProc(pProc);
                                         first_statement->simplify();
@@ -1160,7 +1160,7 @@ PBB FrontEnd::createReturnBlock(UserProc* pProc, std::list<RTL*>* BB_rtls, RTL* 
     if (retAddr == NO_ADDRESS) {
         // Create the basic block
         pBB = pCfg->newBB(BB_rtls, RET, 0);
-        Statement* s = pRtl->getList().back();        // The last statement should be the ReturnStatement
+        Statement* s = pRtl->back();        // The last statement should be the ReturnStatement
         pProc->setTheReturnAddr((ReturnStatement*)s, pRtl->getAddress());
     } else {
         // We want to replace the *whole* RTL with a branch to THE first return's RTL. There can sometimes be extra
@@ -1173,7 +1173,8 @@ PBB FrontEnd::createReturnBlock(UserProc* pProc, std::list<RTL*>* BB_rtls, RTL* 
         assert(retBB);
         if (retBB->getFirstStmt()->isReturn()) {
             // ret node has no semantics, clearly we need to keep ours
-            pRtl->deleteLastStmt();
+            assert(!pRtl->empty());
+            pRtl->pop_back();
         } else
             pRtl->clear();
         pRtl->appendStmt(new GotoStatement(retAddr));

@@ -455,7 +455,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
 
                                             // The BranchStatement will be the last Stmt of the rtl
 
-                                            jump = (GotoStatement*)rtl->getList().back();
+                                            jump = (GotoStatement*)rtl->back();
 
                                         }
 
@@ -2003,7 +2003,7 @@ MATCH_label_d0: (void)0; /*placeholder for label*/
 
                 rtl = createBranchRtl(pc, stmts, name);
 
-                jump = (GotoStatement*) rtl->getList().back();
+                jump = (GotoStatement*) rtl->back();
 
             }
 
@@ -2104,7 +2104,7 @@ MATCH_label_d1: (void)0; /*placeholder for label*/
 
                 rtl = createBranchRtl(pc, stmts, name);
 
-                jump = (BranchStatement*) rtl->getList().back();
+                jump = (BranchStatement*) rtl->back();
 
             }
 
@@ -2205,7 +2205,7 @@ MATCH_label_d2: (void)0; /*placeholder for label*/
 
                 rtl = createBranchRtl(pc, stmts, name);
 
-                jump = (GotoStatement*) rtl->getList().back();
+                jump = (GotoStatement*) rtl->back();
 
             }
 

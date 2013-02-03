@@ -1336,7 +1336,7 @@ void CHLLCode::AddCallStatement(int indLevel, Proc *proc, const char *name, Stat
 {
     std::ostringstream s;
     indent(s, indLevel);
-    if (results->size() >= 1) {
+    if (not results->empty()) {
         // FIXME: Needs changing if more than one real result (return a struct)
         Exp* firstRet = ((Assignment*)*results->begin())->getLeft();
         appendExp(s, firstRet, PREC_ASSIGN);

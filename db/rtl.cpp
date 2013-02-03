@@ -224,18 +224,6 @@ void RTL::deleteStmt(unsigned i) {
     this->erase(pp);
 }
 
-void RTL::deleteLastStmt() {
-    assert(this->size());
-    this->erase(--this->end());
-}
-
-void RTL::replaceLastStmt(Statement* repl) {
-    assert(this->size());
-    Statement*& last = this->back();
-    last = repl;
-}
-
-
 /***************************************************************************//**
  * \brief        Get the number of Statements in this RTL
  * \returns             Integer number of Statements
