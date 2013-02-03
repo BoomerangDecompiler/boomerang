@@ -66,8 +66,8 @@ public:
                     RTL(const RTL& other);                    // Makes deep copy of "other"
 virtual             ~RTL();
 
-        RTL *       clone();
-        RTL &       operator=(RTL &other);
+        RTL *       clone() const;
+        RTL &       operator=(const RTL &other);
 
         // Common enquiry methods
         ADDRESS     getAddress() {return nativeAddr;}       //!< Return RTL's native address
@@ -141,19 +141,19 @@ public:
             mark = 0;
         }
         ~ParamEntry() {
-            if (type) delete type;
-            if (regType) delete regType;
+            delete type;
+            delete regType;
         }
 
-        std::list<std::string> params;        /* PARAM_VARIANT & PARAM_ASGN only */
-        std::list<std::string> funcParams;    /* PARAM_LAMBDA - late bound params */
-        Statement*    asgn;                    /* PARAM_ASGN only */
-        bool        lhs;                    /* True if this param ever appears on the LHS of an expression */
-        ParamKind    kind;
-        Type*        type;
-        Type*        regType;                /* Type of r[this], if any (void otherwise) */
-        std::set<int> regIdx;                /* Values this param can take as an r[param] */
-        int            mark;                    /* Traversal mark. (free temporary use, basically) */
+        std::list<std::string> params;        //!< PARAM_VARIANT & PARAM_ASGN only */
+        std::list<std::string> funcParams;    //!< PARAM_LAMBDA - late bound params */
+        Statement *     asgn;                    //!< PARAM_ASGN only */
+        bool            lhs;                    //!< True if this param ever appears on the LHS of an expression */
+        ParamKind       kind;
+        Type *          type;
+        Type *          regType;                //!< Type of r[this], if any (void otherwise)
+        std::set<int>   regIdx;                //!< Values this param can take as an r[param]
+        int             mark;                    //!< Traversal mark. (free temporary use, basically)
 };
 
 
@@ -174,8 +174,6 @@ public:
         void    reset();
         std::pair<std::string,unsigned> getSignature(const char* name);
 
-        // Appends an RTL to an idict entry, or Adds it to idict if an entry does not already exist. A non-zero return
-        // indicates failure.
         int appendToDict(std::string &n, std::list<std::string>& p, RTL& rtl);
 
         // Given an instruction name and list of actual parameters, return an instantiated RTL for the corresponding

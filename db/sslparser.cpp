@@ -3217,8 +3217,8 @@ void SSLParser::expandTables(InsNameElem* iname, std::list<std::string>* params,
     for (i = 0, iname->reset(); i < m; i++, iname->increment()) {
         nam = iname->getinstruction();
         // Need to make substitutions to a copy of the RTL
-        RTL* rtl = o_rtlist->clone();
-        for (Statement *s : *rtl) {
+        RTL rtl = *o_rtlist; // deep copy of contents
+        for (Statement *s : rtl) {
             std::list<Exp*> le;
             // Expression tables
             assert(s->getKind() == STMT_ASSIGN);
@@ -3258,7 +3258,7 @@ void SSLParser::expandTables(InsNameElem* iname, std::list<std::string>* params,
             }
         }
 
-        if (Dict.appendToDict(nam, *params, *rtl) != 0) {
+        if (Dict.appendToDict(nam, *params, rtl) != 0) {
             o << "Pattern " << iname->getinspattern() << " conflicts with an earlier declaration of " << nam << ".\n";
             yyyerror(STR(o));
         }

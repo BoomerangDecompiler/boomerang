@@ -80,6 +80,7 @@ RTL::RTL(ADDRESS instNativeAddr, std::list<Statement*>* listStmt /*= nullptr*/)
  ******************************************************************************/
 RTL::RTL(const RTL& other) : nativeAddr(other.nativeAddr) {
     std::list<Statement*>::const_iterator it;
+    assert(empty());
     for (it = other.begin(); it != other.end(); it++) {
         push_back((*it)->clone());
     }
@@ -92,10 +93,11 @@ RTL::~RTL() { }
  * \param        other - RTL to copy
  * \returns             a reference to this object
  ******************************************************************************/
-RTL& RTL::operator=(RTL& other) {
+RTL& RTL::operator=(const RTL& other) {
     if (this != &other) {
         // Do a deep copy always
-        iterator it;
+        clear();
+        const_iterator it;
         for (it = other.begin(); it != other.end(); it++)
             push_back((*it)->clone());
 
@@ -110,9 +112,9 @@ RTL& RTL::operator=(RTL& other) {
  *                     RTL object
  * \returns             Pointer to a new RTL that is a clone of this one
  ******************************************************************************/
-RTL* RTL::clone() {
+RTL* RTL::clone() const {
     std::list<Statement*> le;
-    for (iterator it = begin(); it != end(); it++) {
+    for (const_iterator it = begin(); it != end(); it++) {
         le.push_back((*it)->clone());
     }
     return new RTL(nativeAddr, &le);
@@ -123,6 +125,7 @@ RTL* RTL::clone() {
  * \param        Ref to empty list to copy to
  ******************************************************************************/
 void RTL::deepCopyList(std::list<Statement*>& dest) {
+    assert(dest.empty());
     for (Statement * it : *this) {
         dest.push_back(it->clone());
     }
@@ -137,6 +140,7 @@ void RTL::deepCopyList(std::list<Statement*>& dest) {
  * \returns             Nothing
  ******************************************************************************/
 void RTL::appendStmt(Statement* s) {
+    assert(s!=nullptr);
     if (not empty()) {
         if (back()->isFlagAssgn()) {
             iterator it = end();
@@ -261,27 +265,6 @@ bool RTL::searchAll(Exp* search, std::list<Exp *> &result) {
     }
     return found;
 }
-
-/***************************************************************************//**
- * \brief        Clear the list of Exps
- * \returns             Nothing
- ******************************************************************************/
-
-/***************************************************************************//**
- * \brief       Get the "type" for this RTL. Just gets the type of
- *              the first assignment Exp
- * \note        The type of the first assign may not be the type that you
- *              want!
- * \returns     A pointer to the type
- ******************************************************************************/
-//Type* RTL::getType() {
-//    for (Statement *e : *this) {
-//        if (e->isAssign())
-//            return ((Assign*)e)->getType();
-//    }
-//    return new IntegerType();    //    Default to 32 bit integer if no assignments
-//}
-
 /***************************************************************************//**
  * \brief      Return true if this RTL affects the condition codes
  * \note          Assumes that if there is a flag call Exp, then it is the last
