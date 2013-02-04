@@ -71,6 +71,10 @@ struct ADDRESS { /* pointer. size depends on platform */
         friend std::ostream& operator<< (std::ostream& stream, const ADDRESS& addr);
     //operator intptr_t() const {return int(m_value);}
 };
+template<class T,class U>
+bool IN_RANGE(const T &val,const U &range_start,const U &range_end) {
+    return ((val>=range_start)&&(val<range_end));
+}
 
 #define STD_SIZE    32                    // Standard size
 // Note: there is a known name collision with NO_ADDRESS in WinSock.h

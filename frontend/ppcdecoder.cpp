@@ -42,7 +42,6 @@
 #include "boomerang.h"
 #include <iostream>
 
-#define IN_RANGE(val,range_start,range_end) (((val)>=(range_start))&&((val)<(range_end)))
 
 Exp*    crBit(int bitNum);    // Get an expression for a CR bit access
 
