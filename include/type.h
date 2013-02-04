@@ -460,7 +460,7 @@ private:
 static    int            nextAlpha;
 
 public:
-                    NamedType(const char *name);
+                    NamedType(const std::string & _name);
 virtual             ~NamedType();
 virtual bool        isNamed() const { return true; }
         const char    *getName() { return name.c_str(); }

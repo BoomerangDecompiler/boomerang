@@ -122,7 +122,7 @@ void ArrayType::setBaseType(Type* b) {
 }
 
 
-NamedType::NamedType(const char *name) : Type(eNamed), name(name) {
+NamedType::NamedType(const std::string &_name) : Type(eNamed), name(_name) {
 }
 
 CompoundType::CompoundType(bool generic /* = false */) : Type(eCompound), nextGenericMemberNum(1), generic(generic) {
@@ -946,7 +946,7 @@ int NamedType::nextAlpha = 0;
 NamedType* NamedType::getAlpha() {
     std::ostringstream ost;
     ost << "alpha" << nextAlpha++;
-    return new NamedType(strdup(ost.str().c_str()));
+    return new NamedType(ost.str());
 }
 
 PointerType* PointerType::newPtrAlpha() {
