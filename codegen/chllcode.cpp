@@ -1143,9 +1143,9 @@ void CHLLCode::AddGoto(int indLevel, int ord) {
 void CHLLCode::RemoveUnusedLabels(int maxOrd) {
     for (std::list<char *>::iterator it = lines.begin(); it != lines.end();) {
         if ((*it)[0] == 'L' && strchr(*it, ':')) {
-            char *s = strdup(*it);
-            *strchr(s, ':') = 0;
-            int n = atoi(s+1);
+            std::string sx = *it;
+            sx.resize(sx.find_first_of(':'));
+            int n = atoi(sx.c_str()+1);
             if (usedLabels.find(n) == usedLabels.end()) {
                 it = lines.erase(it);
                 continue;
