@@ -412,7 +412,7 @@ void JunctionStatement::rangeAnalysis(std::list<Statement*> &execution_paths) {
             if (r.getLowerBound() != r.getUpperBound() && r.getLowerBound() != Range::MIN) {
                 if (VERBOSE)
                     LOG << "stack height assumption violated " << r << " my bb: " << pbb->getLowAddr() << "\n";
-                proc->printToLog();
+                LOG << *proc;
                 assert(false);
             }
         }
@@ -488,9 +488,9 @@ void CallStatement::rangeAnalysis(std::list<Statement*> &execution_paths) {
         } else if (!procDest->isLib()) {
             UserProc *p = (UserProc*)procDest;
             if (VERBOSE) {
-                LOG << "== checking for number of bytes popped ==\n";
-                p->printToLog();
-                LOG << "== end it ==\n";
+                LOG << "== checking for number of bytes popped ==\n"
+                    << *p
+                    << "== end it ==\n";
             }
             Exp *eq = p->getProven(Location::regOf(28));
             if (eq) {

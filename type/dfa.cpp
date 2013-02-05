@@ -51,13 +51,6 @@ int max(int a, int b) {        // Faster to write than to find the #include for
 
 #define DFA_ITER_LIMIT 20
 
-// m[idx*K1 + K2]; leave idx wild
-static Exp* scaledArrayPat = Location::memOf(
-                                 new Binary(opPlus,
-                                            new Binary(opMult,
-                                                       new Terminal(opWild),
-                                                       new Terminal(opWildIntConst)),
-                                            new Terminal(opWildIntConst)));
 // idx + K; leave idx wild
 static Exp* unscaledArrayPat = new Binary(opPlus,
                                           new Terminal(opWild),
@@ -266,54 +259,10 @@ void UserProc::dfaTypeAnalysis() {
         }
 
         // 2) Search for the scaled array pattern and replace it with an array use m[idx*K1 + K2]
-        std::list<Exp*> result;
-        s->searchAll(scaledArrayPat, result);
-        for (std::list<Exp*>::iterator rr = result.begin(); rr != result.end(); rr++) {
-            //Type* ty = s->getTypeFor(*rr);
-            // FIXME: should check that we use with array type...
-            // Find idx and K2
-            Exp* t = ((Unary*)(*rr)->getSubExp1());        // idx*K1 + K2
-            Exp* l = ((Binary*)t)->getSubExp1();        // idx*K1
-            Exp* r = ((Binary*)t)->getSubExp2();        // K2
-            ADDRESS K2 = ADDRESS::g(((Const*)r)->getInt());
-            Exp* idx = ((Binary*)l)->getSubExp1();
-            // Replace with the array expression
-            const char* nam = prog->getGlobalName(K2);
-            if (nam == nullptr)
-                nam = prog->newGlobalName(K2);
-            Exp* arr = new Binary(opArrayIndex,
-                                  Location::global(nam, this),
-                                  idx);
-            if (s->searchAndReplace(scaledArrayPat, arr)) {
-                if (s->isImplicit())
-                    // Register an array of appropriate type
-                    prog->globalUsed(K2, new ArrayType(((ImplicitAssign*)s)->getType()));
-            }
-        }
+        dfa_analyze_scaled_array_ref(s, prog);
 
         // 3) Check implicit assigns for parameter and global types.
-        if (s->isImplicit()) {
-            Exp* lhs = ((ImplicitAssign*)s)->getLeft();
-            Type* iType = ((ImplicitAssign*)s)->getType();
-            // Note: parameters are not explicit any more
-            //if (lhs->isParam()) {    // }
-            bool allZero;
-            Exp* slhs = lhs->clone()->removeSubscripts(allZero);
-            int i = signature->findParam(slhs);
-            if (i != -1)
-                setParamType(i, iType);
-            else if (lhs->isMemOf()) {
-                Exp* sub = ((Location*)lhs)->getSubExp1();
-                if (sub->isIntConst()) {
-                    // We have a m[K] := -
-                    int K = ((Const*)sub)->getInt(); //TODO: use getAddr
-                    prog->globalUsed(ADDRESS::g(K), iType);
-                }
-            } else if (lhs->isGlobal()) {
-                const char* gname = ((Const*)((Location*)lhs)->getSubExp1())->getStr();
-                prog->setGlobalType(gname, iType);
-            }
-        }
+        dfa_analyze_implict_assigns(s, prog);
 
         // 4) Add the locals (soon globals as well) to the localTable, to sort out the overlaps
         if (s->isTyping()) {
@@ -359,9 +308,9 @@ void UserProc::dfaTypeAnalysis() {
 
 
     if (VERBOSE) {
-        LOG << "### after application of dfa type analysis for " << getName() << " ###\n";
-        printToLog();
-        LOG << "### end application of dfa type analysis for " << getName() << " ###\n";
+        LOG << "### after application of dfa type analysis for " << getName() << " ###\n"
+            << *this
+            << "### end application of dfa type analysis for " << getName() << " ###\n";
     }
 
     Boomerang::get()->alert_decompile_debug_point(this, "after dfa type analysis");

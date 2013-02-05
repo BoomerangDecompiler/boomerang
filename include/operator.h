@@ -153,7 +153,7 @@ enum OPER
     opSqrt,                    // square root
     opExecute,                // Execute instruction at(addr)
 
-    opIntConst,                // integer constant
+    opIntConst,                // integer constant TODO: differentiate IntConst by adding AddressConst ?
     opLongConst,            // long integer constant
     opFltConst,                // floating point constant
     opStrConst,                // string constant

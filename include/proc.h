@@ -282,7 +282,7 @@ virtual bool                isNoReturn();
         void                printParams(std::ostream &out, bool html = false) const;
         char *              prints();
         void                dump();
-        void                printToLog();
+
         void                printDFG() const;
         void                printSymbolMap(std::ostream& out, bool html = false) const;
         void                dumpSymbolMap();
@@ -507,5 +507,6 @@ protected:
                             UserProc();
         void                setCFG(Cfg *c) { cfg = c; }
 };        // class UserProc
+Log& operator<< ( Log& out, const UserProc& c );
 
 #endif

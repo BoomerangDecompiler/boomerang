@@ -725,7 +725,7 @@ void UserProc::generateCode(HLLCode *hll) {
     // RefExps, which are all gone now (transformed out of SSA form)!
 
     if (VERBOSE || Boomerang::get()->printRtl)
-        printToLog();
+        LOG << *this;
 
     hll->AddProcStart(this);
 
@@ -819,12 +819,6 @@ char* UserProc::prints() {
 
 void UserProc::dump() {
     print(std::cerr);
-}
-
-void UserProc::printToLog() {
-    std::ostringstream ost;
-    print(ost);
-    LOG << ost.str();
 }
 
 void UserProc::printDFG() const {
@@ -1257,9 +1251,9 @@ void UserProc::initialiseDecompile() {
     initStatements();
 
     if (VERBOSE) {
-        LOG << "--- debug print before SSA for " << getName() << " ---\n";
-        printToLog();
-        LOG << "=== end debug print before SSA for " << getName() << " ===\n\n";
+        LOG << "--- debug print before SSA for " << getName() << " ---\n"
+            << *this
+            << "=== end debug print before SSA for " << getName() << " ===\n\n";
     }
 
     // Compute dominance frontier
@@ -1278,9 +1272,9 @@ void UserProc::initialiseDecompile() {
     }
 
     if (VERBOSE) {
-        LOG << "--- debug initial print after decoding for " << getName() << " ---\n";
-        printToLog();
-        LOG << "=== end initial debug print after decoding for " << getName() << " ===\n\n";
+        LOG << "--- debug initial print after decoding for " << getName() << " ---\n"
+            << *this
+            << "=== end initial debug print after decoding for " << getName() << " ===\n\n";
     }
 
     Boomerang::get()->alert_decompile_debug_point(this, "after initialise");
@@ -1326,17 +1320,17 @@ void UserProc::earlyDecompile() {
     // Rename variables
     doRenameBlockVars(1, true);
     if (VERBOSE) {
-        LOG << "\n--- after rename (1) for " << getName() << " 1st pass\n";
-        printToLog();
-        LOG << "\n=== done after rename (1) for " << getName() << " 1st pass\n\n";
+        LOG << "\n--- after rename (1) for " << getName() << " 1st pass\n"
+            << *this
+            << "\n=== done after rename (1) for " << getName() << " 1st pass\n\n";
     }
 
     bool convert;
     propagateStatements(convert, 1);
     if (VERBOSE) {
-        LOG << "\n--- after propagation (1) for " << getName() << " 1st pass ---\n";
-        printToLog();
-        LOG << "\n=== done after propagation (1) for " << getName() << " 1st pass ===\n\n";
+        LOG << "\n--- after propagation (1) for " << getName() << " 1st pass ---\n"
+            << *this
+            << "\n=== done after propagation (1) for " << getName() << " 1st pass ===\n\n";
     }
 
     Boomerang::get()->alert_decompile_debug_point(this, "after early");
@@ -1361,9 +1355,9 @@ ProcSet* UserProc::middleDecompile(ProcList* path, int indent) {
     if (status != PROC_INCYCLE)        // FIXME: need this test?
         propagateStatements(convert, 2);
     if (VERBOSE) {
-        LOG << "\n--- after call and phi bypass (1) of " << getName() << " ---\n";
-        printToLog();
-        LOG << "\n=== done after call and phi bypass (1) of " << getName() << " ===\n\n";
+        LOG << "\n--- after call and phi bypass (1) of " << getName() << " ---\n"
+            << *this
+            << "\n=== done after call and phi bypass (1) of " << getName() << " ===\n\n";
     }
 
     // This part used to be calle middleDecompile():
@@ -1375,9 +1369,9 @@ ProcSet* UserProc::middleDecompile(ProcList* path, int indent) {
     findPreserveds();
     fixCallAndPhiRefs();     // Propagate and bypass sp
     if (VERBOSE) {
-        LOG << "--- after preservation, bypass and propagation ---\n";
-        printToLog();
-        LOG << "=== end after preservation, bypass and propagation ===\n";
+        LOG << "--- after preservation, bypass and propagation ---\n"
+            << *this
+            << "=== end after preservation, bypass and propagation ===\n";
     }
     // Oh, no, we keep doing preservations till almost the end...
     //setStatus(PROC_PRESERVEDS);        // Preservation done
@@ -1432,9 +1426,9 @@ ProcSet* UserProc::middleDecompile(ProcList* path, int indent) {
 
         // Print if requested
         if (VERBOSE) {        // was if debugPrintSSA
-            LOG << "--- debug print SSA for " << getName() << " pass " << pass << " (no propagations) ---\n";
-            printToLog();
-            LOG << "=== end debug print SSA for " << getName() << " pass " << pass << " (no propagations) ===\n\n";
+            LOG << "--- debug print SSA for " << getName() << " pass " << pass << " (no propagations) ---\n"
+                << *this
+                << "=== end debug print SSA for " << getName() << " pass " << pass << " (no propagations) ===\n\n";
         }
 
         if (Boomerang::get()->dotFile)                            // Require -gd now (though doesn't listen to file name)
@@ -1459,9 +1453,9 @@ ProcSet* UserProc::middleDecompile(ProcList* path, int indent) {
             printXML();
             if (VERBOSE) {
                 LOG << "--- debug print SSA for " << getName() << " at pass " << pass <<
-                       " (after updating returns) ---\n";
-                printToLog();
-                LOG << "=== end debug print SSA for " << getName() << " at pass " << pass << " ===\n\n";
+                       " (after updating returns) ---\n"
+                    << *this
+                    << "=== end debug print SSA for " << getName() << " at pass " << pass << " ===\n\n";
             }
         }
 #endif
@@ -1469,10 +1463,9 @@ ProcSet* UserProc::middleDecompile(ProcList* path, int indent) {
         printXML();
         // Print if requested
         if (VERBOSE) {        // was if debugPrintSSA
-            LOG << "--- debug print SSA for " << getName() << " at pass " << pass <<
-                   " (after trimming return set) ---\n";
-            printToLog();
-            LOG << "=== end debug print SSA for " << getName() << " at pass " << pass << " ===\n\n";
+            LOG << "--- debug print SSA for " << getName() << " at pass "<< pass <<" (after trimming return set) ---\n"
+                << *this
+                << "=== end debug print SSA for " << getName() << " at pass " << pass << " ===\n\n";
         }
 
         Boomerang::get()->alert_decompile_beforePropagate(this, pass);
@@ -1496,17 +1489,17 @@ ProcSet* UserProc::middleDecompile(ProcList* path, int indent) {
                            " due to conversion of indirect to direct call(s)\n\n";
                 df.setRenameLocalsParams(false);
                 change |= doRenameBlockVars(0, true);             // Initial dataflow level 0
-                LOG << "\nafter rename (2) of " << getName() << ":\n";
-                printToLog();
-                LOG << "\ndone after rename (2) of " << getName() << ":\n\n";
+                LOG << "\nafter rename (2) of " << getName() << ":\n"
+                    << *this
+                    << "\ndone after rename (2) of " << getName() << ":\n\n";
             }
         } while (convert);
 
         printXML();
         if (VERBOSE) {
-            LOG << "--- after propagate for " << getName() << " at pass " << pass << " ---\n";
-            printToLog();
-            LOG << "=== end propagate for " << getName() << " at pass " << pass << " ===\n\n";
+            LOG << "--- after propagate for " << getName() << " at pass " << pass << " ---\n"
+                << *this
+                << "=== end propagate for " << getName() << " at pass " << pass << " ===\n\n";
         }
 
         Boomerang::get()->alert_decompile_afterPropagate(this, pass);
@@ -1546,9 +1539,9 @@ ProcSet* UserProc::middleDecompile(ProcList* path, int indent) {
     if (change) numberStatements();        // Number the new statements
     doRenameBlockVars(pass, false);        // MVE: do we want this parameter false or not?
     if (VERBOSE) {
-        LOG << "--- after setting phis for memofs, renaming them for " << getName() << "\n";
-        printToLog();
-        LOG << "=== done after setting phis for memofs, renaming them for " << getName() << "\n";
+        LOG << "--- after setting phis for memofs, renaming them for " << getName() << "\n"
+            << *this
+            << "=== done after setting phis for memofs, renaming them for " << getName() << "\n";
     }
     propagateStatements(convert, pass);
     // Now that memofs are renamed, the bypassing for memofs can work
@@ -1606,9 +1599,9 @@ ProcSet* UserProc::middleDecompile(ProcList* path, int indent) {
         //fixCallBypass();    // FIXME: surely this is not necessary now?
         //trimParameters();    // FIXME: surely there aren't any parameters to trim yet?
         if (VERBOSE) {
-            LOG << "--- after replacing expressions, trimming params and returns for " << getName() << " ---\n";
-            printToLog();
-            LOG << "=== end after replacing expressions, trimming params and returns for " << getName() << " ===\n";
+            LOG << "--- after replacing expressions, trimming params and returns for " << getName() << " ---\n"
+                << *this
+                << "=== end after replacing expressions, trimming params and returns for " << getName() << " ===\n";
         }
     }
 
@@ -1659,9 +1652,9 @@ void UserProc::remUnusedStmtEtc() {
         doRenameBlockVars(20);                // Rename the locals
         propagateStatements(convert, 20);    // Surely need propagation too
         if (VERBOSE) {
-            LOG << "--- after propagating locals for " << getName() << " ---\n";
-            printToLog();
-            LOG << "=== end after propagating locals for " << getName() << " ===\n\n";
+            LOG << "--- after propagating locals for " << getName() << " ---\n"
+                << *this
+                << "=== end after propagating locals for " << getName() << " ===\n\n";
         }
 #if 0
         // Note: processConstants is also where ellipsis processing is done
@@ -1689,9 +1682,9 @@ void UserProc::remUnusedStmtEtc() {
 
     printXML();
     if (VERBOSE && !Boomerang::get()->noRemoveNull) {
-        LOG << "--- after removing unused and null statements pass " << 1 << " for " << getName() << " ---\n";
-        printToLog();
-        LOG << "=== end after removing unused statements for " << getName() << " ===\n\n";
+        LOG << "--- after removing unused and null statements pass " << 1 << " for " << getName() << " ---\n"
+            << *this
+            << "=== end after removing unused statements for " << getName() << " ===\n\n";
     }
     Boomerang::get()->alert_decompile_afterRemoveStmts(this, 1);
 
@@ -1702,9 +1695,9 @@ void UserProc::remUnusedStmtEtc() {
         addParameterSymbols();
 
         if (VERBOSE) {
-            LOG << "--- after adding new parameters ---\n";
-            printToLog();
-            LOG << "=== end after adding new parameters ===\n";
+            LOG << "--- after adding new parameters ---\n"
+                << *this
+                << "=== end after adding new parameters ===\n";
         }
     }
 
@@ -1724,9 +1717,9 @@ void UserProc::remUnusedStmtEtc() {
     fixUglyBranches();
 
     if (VERBOSE) {
-        LOG << "--- after remove unused statements etc for " << getName() << "\n";
-        printToLog();
-        LOG << "=== after remove unused statements etc for " << getName() << "\n";
+        LOG << "--- after remove unused statements etc for " << getName() << "\n"
+            << *this
+            << "=== after remove unused statements etc for " << getName() << "\n";
     }
 
     Boomerang::get()->alert_decompile_debug_point(this, "after final");
@@ -1900,9 +1893,9 @@ void UserProc::updateCalls() {
     updateCallDefines();
     updateArguments();
     if (VERBOSE) {
-        LOG << "--- after update calls for " << getName() << "\n";
-        printToLog();
-        LOG << "=== after update calls for " << getName() << "\n";
+        LOG << "--- after update calls for " << getName() << "\n"
+            << *this
+            << "=== after update calls for " << getName() << "\n";
     }
 }
 
@@ -2015,9 +2008,9 @@ void UserProc::fixUglyBranches() {
     }
 
     if (VERBOSE) {
-        LOG << "--- after fixUglyBranches for " << getName() << "\n";
-        printToLog();
-        LOG << "=== after fixUglyBranches for " << getName() << "\n";
+        LOG << "--- after fixUglyBranches for " << getName() << "\n"
+            << *this
+            << "=== after fixUglyBranches for " << getName() << "\n";
     }
 }
 
@@ -5419,9 +5412,9 @@ void UserProc::rangeAnalysis() {
     clearRanges();
 
     if (VERBOSE) {
-        LOG << "=== Before performing range analysis for " << getName() << " ===\n";
-        printToLog();
-        LOG << "=== end before performing range analysis for " << getName() << " ===\n\n";
+        LOG << "=== Before performing range analysis for " << getName() << " ===\n"
+            << *this
+            << "=== end before performing range analysis for " << getName() << " ===\n\n";
     }
 
     std::list<Statement*> execution_paths;
@@ -5459,10 +5452,10 @@ void UserProc::rangeAnalysis() {
         if (watchdog > 10) {
             LOG << "  watchdog " << watchdog << "\n";
             if (watchdog > 45) {
-                LOG << (int)execution_paths.size() << " execution paths remaining.\n";
-                LOG << "=== After range analysis watchdog " << watchdog << " for " << getName() << " ===\n";
-                printToLog();
-                LOG << "=== end after range analysis watchdog " << watchdog << " for " << getName() << " ===\n\n";
+                LOG << (int)execution_paths.size() << " execution paths remaining.\n"
+                    << "=== After range analysis watchdog " << watchdog << " for " << getName() << " ===\n"
+                    << *this
+                    << "=== end after range analysis watchdog " << watchdog << " for " << getName() << " ===\n\n";
             }
         }
         if (watchdog > 50) {
@@ -5471,9 +5464,9 @@ void UserProc::rangeAnalysis() {
         }
     }
 
-    LOG << "=== After range analysis for " << getName() << " ===\n";
-    printToLog();
-    LOG << "=== end after range analysis for " << getName() << " ===\n\n";
+    LOG << "=== After range analysis for " << getName() << " ===\n"
+        << *this
+        << "=== end after range analysis for " << getName() << " ===\n\n";
 
     cfg->removeJunctionStatements();
 }
@@ -5981,3 +5974,86 @@ void UserProc::readMemo(Memo *mm, bool dec) {
     }
 }
 #endif        // #ifdef USING_MEMOS
+// 3) Check implicit assigns for parameter and global types.
+void UserProc::dfa_analyze_implict_assigns( Statement* s, Prog* prog )
+{
+    bool allZero;
+    Exp *lhs;
+    Exp *slhs;
+    Type *iType;
+    int i;
+
+    if (!s->isImplicit())
+        return;
+
+    lhs = ((ImplicitAssign*)s)->getLeft();
+    // Note: parameters are not explicit any more
+    //if (lhs->isParam()) {	// }
+    slhs = lhs->clone()->removeSubscripts(allZero);
+    iType = ((ImplicitAssign*)s)->getType();
+    i = signature->findParam(slhs);
+    if (i != -1)
+        setParamType(i, iType);
+    else if (lhs->isMemOf()) {
+        Exp* sub = ((Location*)lhs)->getSubExp1();
+        if (sub->isIntConst()) {
+            // We have a m[K] := -
+            ADDRESS K = ((Const*)sub)->getAddr();
+            prog->globalUsed(K, iType);
+        }
+    }
+    else if (lhs->isGlobal()) {
+        assert(dynamic_cast<Location*>(lhs)!=nullptr);
+        const char* gname = ((Const*)lhs->getSubExp1())->getStr();
+        prog->setGlobalType(gname, iType);
+    }
+}
+// m[idx*K1 + K2]; leave idx wild
+static Exp* scaledArrayPat = Location::memOf(
+    new Binary(opPlus,
+        new Binary(opMult,
+            new Terminal(opWild),
+            new Terminal(opWildIntConst)),
+        new Terminal(opWildIntConst)));
+
+void UserProc::dfa_analyze_scaled_array_ref( Statement* s, Prog* prog )
+{
+    Exp *arr;
+    std::list<Exp*> result;
+    const char* nam;
+    s->searchAll(scaledArrayPat, result);
+    // query: (memOf (opPlus (opMult ? ?:IntConst) ?:IntConst))
+    // rewrite_as (opArrayIndex (global `(getOrCreateGlobalName arg3) ) arg2 ) assert (= (typeSize (getOrCreateGlobalName arg3)) (arg1))
+    for (Exp * rr : result)
+    {
+        //Type* ty = s->getTypeFor(*rr);
+        // FIXME: should check that we use with array type...
+        // Find idx and K2
+        assert(((Unary*)rr)->getSubExp1() == rr->getSubExp1());
+        Exp* t = rr->getSubExp1();		// idx*K1 + K2
+        Exp* l = ((Binary*)t)->getSubExp1();		// idx*K1
+        Exp* r = ((Binary*)t)->getSubExp2();		// K2
+        ADDRESS K2 = ((Const*)r)->getAddr();
+        Exp* idx = ((Binary*)l)->getSubExp1();
+
+        // Replace with the array expression
+        nam = prog->getGlobalName(K2);
+        if (nam == nullptr)
+            nam = prog->newGlobalName(K2);
+        arr = new Binary(opArrayIndex,
+            Location::global(nam, this),
+            idx
+            );
+        if (s->searchAndReplace(scaledArrayPat, arr)) {
+            if (s->isImplicit())
+                // Register an array of appropriate type
+                prog->globalUsed(K2, new ArrayType(((ImplicitAssign*)s)->getType()));
+        }
+    }
+}
+Log& operator<< ( Log& out, const UserProc& c ) {
+    std::ostringstream ost;
+    c.print(ost);
+    out << ost.str().c_str();
+    return out;
+}
