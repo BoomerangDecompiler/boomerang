@@ -1,5 +1,4 @@
 #define sign_extend(N,SIZE) (((int)((N) << (sizeof(unsigned)*8-(SIZE)))) >> (sizeof(unsigned)*8-(SIZE)))
-#include <cassert>
 
 #line 1 "frontend/machine/mips/decoder.m"
 /****************************************************************
@@ -43,17 +42,10 @@
  * FUNCTION:       unused
  * \brief       A dummy function to suppress "unused local variable" messages
  * PARAMETERS:       x: integer variable to be "used"
- * \returns            Nothing
  ********************************************************************************/
 void MIPSDecoder::unused(int x)
 {}
 
-/********************************************************************************
- * FUNCTION:       MIPSDecoder::MIPSDecoder
- * \brief
- * PARAMETERS:     None
- * \returns                 N/A
- *********************************************************************************/
 MIPSDecoder::MIPSDecoder(Prog* prog) : NJMCDecoder(prog)
 {
     std::string file = Boomerang::get()->getProgPath() + "frontend/machine/mips/mips.ssl";
@@ -64,25 +56,22 @@ MIPSDecoder::MIPSDecoder(Prog* prog) : NJMCDecoder(prog)
 int MIPSDecoder::decodeAssemblyInstruction(ADDRESS, int)
 { return 0; }
 
-/********************************************************************************
- * FUNCTION:       MIPSDecoder::decodeInstruction
- * \brief       Attempt to decode the high level instruction at a given
- *                   address and return the corresponding HL type (e.g. CallStatement,
- *                   GotoStatement etc). If no high level instruction exists at the
- *                   given address, then simply return the RTL for the low level
- *                   instruction at this address. There is an option to also
- *                   include the low level statements for a HL instruction.
- * PARAMETERS:       pc - the native address of the pc
- *                   delta - the difference between the above address and the
- *                     host address of the pc (i.e. the address that the pc is at
- *                     in the loaded object file)
- *                   proc - the enclosing procedure. This can be nullptr for
- *                     those of us who are using this method in an interpreter
- * \returns            a DecodeResult structure containing all the information
- *                     gathered during decoding
- *********************************************************************************/
-
 // Stub from PPC...
+/****************************************************************************//**
+ * \brief   Attempt to decode the high level instruction at a given
+ *              address and return the corresponding HL type (e.g. CallStatement,
+ *              GotoStatement etc). If no high level instruction exists at the
+ *              given address, then simply return the RTL for the low level
+ *              instruction at this address. There is an option to also
+ *              include the low level statements for a HL instruction.
+ * \param   pc - the native address of the pc
+ * \param   delta - the difference between the above address and the
+ *              host address of the pc (i.e. the address that the pc is at in the loaded object file)
+ * \param   proc - the enclosing procedure. This can be nullptr for
+ *              those of us who are using this method in an interpreter
+ * \returns a DecodeResult structure containing all the information
+ *              gathered during decoding
+ *********************************************************************************/
 DecodeResult& MIPSDecoder::decodeInstruction(ADDRESS pc, int delta)
 {
     static DecodeResult result;

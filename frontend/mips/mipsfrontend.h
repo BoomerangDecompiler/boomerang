@@ -38,9 +38,6 @@ class MIPSFrontEnd : public FrontEnd
 {
 public:
     MIPSFrontEnd(BinaryFile *pBF, Prog* prog, BinaryFileFactory* pbff);
-    /**
-         * Virtual destructor.
-         */
     virtual ~MIPSFrontEnd();
 
     virtual platform getFrontEndId() { return PLAT_MIPS; }
