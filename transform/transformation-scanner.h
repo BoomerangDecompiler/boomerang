@@ -54,7 +54,9 @@
 
 /* % here is the declaration from section1 %header{  */ 
 #line 21 "transformation.l"
-#include <stdio.h>
+#include <cstring>
+#include <cstdlib>
+#include <cstdio>
 #include "transformation-parser.h"
 // For some reason, MSVC 5.00 complains about use of undefined type RTL a lot
 #if defined(_MSC_VER) && _MSC_VER <= 1100

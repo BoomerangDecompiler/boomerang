@@ -152,6 +152,7 @@ ADD_SUBDIRECTORY(codegen)
 ADD_SUBDIRECTORY(db)
 ADD_SUBDIRECTORY(frontend)
 ADD_SUBDIRECTORY(type)
+ADD_SUBDIRECTORY(transform)
 
 SET(boomerang_SRC
         boomerang.cpp

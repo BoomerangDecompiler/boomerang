@@ -1,3 +1,5 @@
+INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/platform/include/db)
+MESSAGE(WARN " TODO: Make transformation engine a part of the platform.")
 SET(boomerang_transform_sources
 		transformer.cpp
 		rdi.cpp
