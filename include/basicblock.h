@@ -121,7 +121,7 @@ enum SBBTYPE {
     CASE                     // case statement (switch)
 };
 
-typedef std::list<PBB>::iterator BB_IT;
+typedef std::list<BasicBlock *>::iterator BB_IT;
 
 /***************************************************************************//**
  * BasicBlock class. <more comments>
@@ -370,7 +370,7 @@ public:
 
 protected:
         friend class XMLProgParser;
-        void            addOutEdge(PBB bb) { m_OutEdges.push_back(bb); }
+        void            addOutEdge(BasicBlock * bb) { m_OutEdges.push_back(bb); }
         void            addRTL(RTL *rtl) {
                             if (m_pRtls == nullptr)
                                 m_pRtls = new std::list<RTL*>;

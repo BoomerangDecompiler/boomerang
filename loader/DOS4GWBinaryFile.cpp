@@ -414,7 +414,7 @@ int DOS4GWBinaryFile::dos4gwRead4(int* pi) const{
     return n;
 }
 
-// Read 2 bytes from given native address
+// Read 1 byte from given native address
 char DOS4GWBinaryFile::readNative1(ADDRESS nat) {
     PSectionInfo si = GetSectionInfoByAddr(nat);
     if (si == 0)

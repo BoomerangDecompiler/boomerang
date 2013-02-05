@@ -54,32 +54,26 @@ bool Type::isCString() {
     return p->resolvesToChar();
 }
 
-/***************************************************************************//**
- *
- * \brief        Default constructor
- * PARAMETERS:        <none>
- * \returns            <Not applicable>
- ******************************************************************************/
-Type::Type(eType id) : id(id)
-{}
+Type::Type(eType _id) : id(_id) {
+}
 
-VoidType::VoidType() : Type(eVoid)
-{}
+VoidType::VoidType() : Type(eVoid) {
+}
 
-FuncType::FuncType(Signature *sig) : Type(eFunc), signature(sig)
-{}
+FuncType::FuncType(Signature *sig) : Type(eFunc), signature(sig) {
+}
 
-IntegerType::IntegerType(int sz, int sign) : Type(eInteger), size(sz), signedness(sign)
-{}
+IntegerType::IntegerType(int sz, int sign) : Type(eInteger), size(sz), signedness(sign) {
+}
 
-FloatType::FloatType(int sz) : Type(eFloat), size(sz)
-{}
+FloatType::FloatType(int sz) : Type(eFloat), size(sz) {
+}
 
-BooleanType::BooleanType() : Type(eBoolean)
-{}
+BooleanType::BooleanType() : Type(eBoolean) {
+}
 
-CharType::CharType() : Type(eChar)
-{}
+CharType::CharType() : Type(eChar) {
+}
 
 void PointerType::setPointsTo(Type* p) {
     if (p == this) {                    // Note: comparing pointers
@@ -131,12 +125,6 @@ CompoundType::CompoundType(bool generic /* = false */) : Type(eCompound), nextGe
 UnionType::UnionType() : Type(eUnion) {
 }
 
-/***************************************************************************//**
- *
- * \brief        Virtual destructor
- * PARAMETERS:        <none>
- * \returns            <Not applicable>
- ******************************************************************************/
 Type::~Type() { }
 VoidType::~VoidType() { }
 FuncType::~FuncType() { }
@@ -157,7 +145,6 @@ UnionType::~UnionType() { }
 /***************************************************************************//**
  *
  * \brief        Deep copy of this type
- * PARAMETERS:        <none>
  * \returns            Copy of the type
  ******************************************************************************/
 Type *IntegerType::clone() const {
@@ -382,7 +369,7 @@ unsigned CompoundType::getOffsetRemainder(unsigned n) {
  *
  * \brief        static Constructor from string
  * PARAMETERS:        str: string to parse
- * \returns            <Not applicable>
+ * \returns       constructed type.
  ******************************************************************************/
 Type *Type::parseType(const char *str) {
     return nullptr;
