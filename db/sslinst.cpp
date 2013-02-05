@@ -169,7 +169,7 @@ bool RTLInstDict::readSSLFile(const std::string& SSLFileName) {
 
     if (Boomerang::get()->debugDecoder) {
         std::cout << "\n=======Expanded RTL template dictionary=======\n";
-        print();
+        print(std::cout);
         std::cout << "\n==============================================\n\n";
     }
 

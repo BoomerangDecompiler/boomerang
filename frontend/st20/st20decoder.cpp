@@ -1,5 +1,4 @@
 #define sign_extend(N,SIZE) (((int)((N) << (sizeof(unsigned)*8-(SIZE)))) >> (sizeof(unsigned)*8-(SIZE)))
-#include <cassert>
 
 //#line 1 "frontend/machine/st20/decoder.m"
 /*

@@ -4,7 +4,7 @@
  */
 #ifndef __TYPES_H__
 #define __TYPES_H__
-#include <iostream>
+#include <iosfwd>
 #include <stdint.h>
 
 // Machine types
@@ -27,13 +27,13 @@ struct ADDRESS { /* pointer. size depends on platform */
         z.m_value =value_type(x);
         return z;
     }
-        bool isZero() const {return m_value==0;}
-        bool operator==(const ADDRESS &other) const { return m_value==other.m_value; }
-        bool operator!=(const ADDRESS &other) const { return m_value!=other.m_value; }
-    bool operator<(const ADDRESS &other) const  { return m_value < other.m_value; }
-    bool operator>(const ADDRESS &other) const  { return m_value > other.m_value; }
-    bool operator>=(const ADDRESS &other) const { return m_value >= other.m_value;}
-        bool operator<=(const ADDRESS &other) const { return m_value <= other.m_value;}
+    bool    isZero() const {return m_value==0;}
+    bool    operator==(const ADDRESS &other) const { return m_value==other.m_value; }
+    bool    operator!=(const ADDRESS &other) const { return m_value!=other.m_value; }
+    bool    operator<(const ADDRESS &other) const  { return m_value < other.m_value; }
+    bool    operator>(const ADDRESS &other) const  { return m_value > other.m_value; }
+    bool    operator>=(const ADDRESS &other) const { return m_value >= other.m_value;}
+    bool operator<=(const ADDRESS &other) const { return m_value <= other.m_value;}
 
     ADDRESS operator+(const ADDRESS &other) const {
         return ADDRESS::g(m_value + other.m_value);

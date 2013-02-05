@@ -10,6 +10,7 @@
  * 12 Apr 02 - Mike: INDEX -> OPER
  */
 #pragma once
+
 // The OPER (and integer representation) of expressions (they can be a fair
 // bit different from operators)
 enum OPER

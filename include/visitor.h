@@ -36,9 +36,6 @@
 #ifndef __VISITOR_H__
 #define __VISITOR_H__
 
-#ifndef nullptr
-#define nullptr 0                // Often defined in stdio.h
-#endif
 
 #include "exp.h"            // Needs to know class hierarchy, e.g. so that can convert Unary* to Exp* in return of
                             // ExpModifier::preVisit()
