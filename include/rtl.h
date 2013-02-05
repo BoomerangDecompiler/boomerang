@@ -36,12 +36,12 @@
 #include <map>
 #include <set>
 #include <iosfwd>
-#include "exp.h"
+#include "type.h"
+//#include "exp.h"
 #include "register.h"
 
 class BasicBlock;
 class HLLCode;
-typedef BasicBlock* PBB;
 class Exp;
 class TypedExp;
 class DefSet;
@@ -51,6 +51,7 @@ class Register;
 class Proc;
 class XMLProgParser;
 class StmtVisitor;
+class Statement;
 enum STMT_KIND : uint8_t;
 
 /***************************************************************************//**

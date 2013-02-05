@@ -59,7 +59,6 @@
 #include "boomerang.h"    // For USE_DOMINANCE_NUMS etc
 
 class BasicBlock;
-typedef BasicBlock *PBB;
 class Prog;
 class Proc;
 class UserProc;
@@ -158,8 +157,8 @@ public:
 virtual                ~Statement() { }
 
         // get/set the enclosing BB, etc
-        PBB            getBB() { return pbb; }
-        void        setBB(PBB bb) {pbb = bb; }
+        BasicBlock *            getBB() { return pbb; }
+        void        setBB(BasicBlock * bb) {pbb = bb; }
 
 //        bool        operator==(Statement& o);
         // Get and set *enclosing* proc (not destination proc)
@@ -907,10 +906,10 @@ virtual bool        accept(StmtPartModifier* visitor);
         // As above, no delete (for subscripting)
         void        setCondExprND(Exp* e) { pCond = e; }
 
-        PBB            getFallBB();
-        PBB            getTakenBB();
-        void        setFallBB(PBB bb);
-        void        setTakenBB(PBB bb);
+        BasicBlock *            getFallBB();
+        BasicBlock *            getTakenBB();
+        void        setFallBB(BasicBlock * bb);
+        void        setTakenBB(BasicBlock * bb);
 
         // Probably only used in front386.cc: convert this from an unsigned to a
         // signed conditional branch
@@ -936,7 +935,7 @@ virtual bool        usesExp(Exp *e);
 
         // Range analysis
         void        rangeAnalysis(std::list<Statement*> &execution_paths);
-        RangeMap    &getRangesForOutEdgeTo(PBB out);
+        RangeMap    &getRangesForOutEdgeTo(BasicBlock * out);
         RangeMap    &getRanges2Ref() { return ranges2; }
         void        setRanges2(RangeMap &r) { ranges2 = r; }
         void        limitOutputWithCondition(RangeMap &output, Exp *e);

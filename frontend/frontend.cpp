@@ -471,7 +471,7 @@ Signature *FrontEnd::getLibSignature(const char *name) {
  ******************************************************************************/
 bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bool frag /* = false */,
                            bool spec /* = false */) {
-    PBB pBB;                    // Pointer to the current basic block
+    BasicBlock * pBB;                    // Pointer to the current basic block
 
     // just in case you missed it
     Boomerang::get()->alert_new(pProc);
@@ -981,7 +981,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
             if (sequentialDecode && pCfg->existsBB(uAddr)) {
                 // Create the fallthrough BB, if there are any RTLs at all
                 if (BB_rtls) {
-                    PBB pBB = pCfg->newBB(BB_rtls, FALL, 1);
+                    BasicBlock * pBB = pCfg->newBB(BB_rtls, FALL, 1);
                     // Add an out edge to this address
                     if (pBB) {
                         pCfg->addOutEdge(pBB, uAddr);
@@ -1082,9 +1082,9 @@ Prog* FrontEnd::getProg() {
  *                    ReturnStatement as the last statement)
  * \returns        Pointer to the newly created BB
  ******************************************************************************/
-PBB FrontEnd::createReturnBlock(UserProc* pProc, std::list<RTL*>* BB_rtls, RTL* pRtl) {
+BasicBlock * FrontEnd::createReturnBlock(UserProc* pProc, std::list<RTL*>* BB_rtls, RTL* pRtl) {
     Cfg* pCfg = pProc->getCFG();
-    PBB pBB;
+    BasicBlock * pBB;
     // Add the RTL to the list; this has the semantics for the return instruction as well as the ReturnStatement
     // The last Statement may get replaced with a GotoStatement
     if (BB_rtls == nullptr) BB_rtls = new std::list<RTL*>;        // In case no other semantics
@@ -1103,7 +1103,7 @@ PBB FrontEnd::createReturnBlock(UserProc* pProc, std::list<RTL*>* BB_rtls, RTL* 
         // appear in a previous RTL. It is assumed that THE return statement will have the same semantics (NOTE: may
         // not always be valid). To avoid this assumption, we need branches to statements, not just to native addresses
         // (RTLs).
-        PBB retBB = pProc->getCFG()->findRetNode();
+        BasicBlock * retBB = pProc->getCFG()->findRetNode();
         assert(retBB);
         if (retBB->getFirstStmt()->isReturn()) {
             // ret node has no semantics, clearly we need to keep ours
@@ -1129,12 +1129,12 @@ PBB FrontEnd::createReturnBlock(UserProc* pProc, std::list<RTL*>* BB_rtls, RTL* 
 
 // Add a synthetic return instruction (or branch to the existing return instruction).
 // NOTE: the call BB should be created with one out edge (the return or branch BB)
-void FrontEnd::appendSyntheticReturn(PBB pCallBB, UserProc* pProc, RTL* pRtl) {
+void FrontEnd::appendSyntheticReturn(BasicBlock * pCallBB, UserProc* pProc, RTL* pRtl) {
     ReturnStatement *ret = new ReturnStatement();
     std::list<RTL*> *ret_rtls = new std::list<RTL*>();
     std::list<Statement*>* stmt_list = new std::list<Statement*>;
     stmt_list->push_back(ret);
-    PBB pret = createReturnBlock(pProc, ret_rtls, new RTL(pRtl->getAddress()+1, stmt_list));
+    BasicBlock * pret = createReturnBlock(pProc, ret_rtls, new RTL(pRtl->getAddress()+1, stmt_list));
     pret->addInEdge(pCallBB);
     pCallBB->setOutEdge(0, pret);
 }

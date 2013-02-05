@@ -40,7 +40,6 @@ class Proc;
 class RTL;
 class NJMCDecoder;
 class BasicBlock;
-typedef BasicBlock* PBB;
 class Exp;
 class TypedExp;
 class Cfg;
@@ -179,7 +178,7 @@ static  void            closeInstance(void* dlHandle); //!<Close the library ope
          *                pRtl: pointer to the current RTL with the semantics for the return statement (including a
          *                    ReturnStatement as the last statement)
          */
-        PBB             createReturnBlock(UserProc* pProc, std::list<RTL*>* BB_rtls, RTL* pRtl);
+        BasicBlock *             createReturnBlock(UserProc* pProc, std::list<RTL*>* BB_rtls, RTL* pRtl);
 
         /*
          * Add a synthetic return instruction and basic block (or a branch to the existing return instruction).
@@ -187,7 +186,7 @@ static  void            closeInstance(void* dlHandle); //!<Close the library ope
          *                pProc: pointer to the enclosing UserProc
          *                pRtl: pointer to the current RTL with the call instruction
          */
-        void            appendSyntheticReturn(PBB pCallBB, UserProc* pProc, RTL* pRtl);
+        void            appendSyntheticReturn(BasicBlock * pCallBB, UserProc* pProc, RTL* pRtl);
 
         /*
          * Add an RTL to the map from native address to previously-decoded-RTLs. Used to restore case statements and

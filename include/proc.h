@@ -40,7 +40,6 @@ class Prog;
 class UserProc;
 class Cfg;
 class BasicBlock;
-typedef BasicBlock* PBB;
 class Exp;
 class TypedExp;
 class lessTI;

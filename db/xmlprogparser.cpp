@@ -763,10 +763,10 @@ void XMLProgParser::addToContext_rettype(Context *c, int e) {
 void XMLProgParser::start_cfg(const char **attr) {
     if (phase == 1) {
         stack.front()->cfg = (Cfg*)findId(getAttr(attr, "id"));
-        PBB entryBB = (PBB)findId(getAttr(attr, "entryBB"));
+        BasicBlock * entryBB = (BasicBlock *)findId(getAttr(attr, "entryBB"));
         if (entryBB)
             stack.front()->cfg->setEntryBB(entryBB);
-        PBB exitBB = (PBB)findId(getAttr(attr, "exitBB"));
+        BasicBlock * exitBB = (BasicBlock *)findId(getAttr(attr, "exitBB"));
         if (exitBB)
             stack.front()->cfg->setExitBB(exitBB);
         return;
@@ -813,41 +813,41 @@ void XMLProgParser::addToContext_cfg(Context *c, int e) {
 }
 
 void XMLProgParser::start_bb(const char **attr) {
-    PBB bb;
+    BasicBlock * bb;
     if (phase == 1) {
         bb = stack.front()->bb = (BasicBlock*)findId(getAttr(attr, "id"));
-        PBB h = (PBB)findId(getAttr(attr, "m_loopHead"));
+        BasicBlock * h = (BasicBlock *)findId(getAttr(attr, "m_loopHead"));
         if (h)
             bb->m_loopHead = h;
-        h = (PBB)findId(getAttr(attr, "m_caseHead"));
+        h = (BasicBlock *)findId(getAttr(attr, "m_caseHead"));
         if (h)
             bb->m_caseHead = h;
-        h = (PBB)findId(getAttr(attr, "m_condFollow"));
+        h = (BasicBlock *)findId(getAttr(attr, "m_condFollow"));
         if (h)
             bb->m_condFollow = h;
-        h = (PBB)findId(getAttr(attr, "m_loopFollow"));
+        h = (BasicBlock *)findId(getAttr(attr, "m_loopFollow"));
         if (h)
             bb->m_loopFollow = h;
-        h = (PBB)findId(getAttr(attr, "m_latchNode"));
+        h = (BasicBlock *)findId(getAttr(attr, "m_latchNode"));
         if (h)
             bb->m_latchNode = h;
         // note the rediculous duplication here
-        h = (PBB)findId(getAttr(attr, "immPDom"));
+        h = (BasicBlock *)findId(getAttr(attr, "immPDom"));
         if (h)
             bb->immPDom = h;
-        h = (PBB)findId(getAttr(attr, "loopHead"));
+        h = (BasicBlock *)findId(getAttr(attr, "loopHead"));
         if (h)
             bb->loopHead = h;
-        h = (PBB)findId(getAttr(attr, "caseHead"));
+        h = (BasicBlock *)findId(getAttr(attr, "caseHead"));
         if (h)
             bb->caseHead = h;
-        h = (PBB)findId(getAttr(attr, "condFollow"));
+        h = (BasicBlock *)findId(getAttr(attr, "condFollow"));
         if (h)
             bb->condFollow = h;
-        h = (PBB)findId(getAttr(attr, "loopFollow"));
+        h = (BasicBlock *)findId(getAttr(attr, "loopFollow"));
         if (h)
             bb->loopFollow = h;
-        h = (PBB)findId(getAttr(attr, "latchNode"));
+        h = (BasicBlock *)findId(getAttr(attr, "latchNode"));
         if (h)
             bb->latchNode = h;
         return;
@@ -1021,7 +1021,7 @@ void XMLProgParser::addToContext_livein(Context *c, int e) {
 
 void XMLProgParser::start_order(const char **attr) {
     if (phase == 1)
-        stack.front()->bb = (PBB)findId(getAttr(attr, "bb"));
+        stack.front()->bb = (BasicBlock *)findId(getAttr(attr, "bb"));
     else
         stack.front()->bb = nullptr;
 }
@@ -1039,7 +1039,7 @@ void XMLProgParser::addToContext_order(Context *c, int e) {
 
 void XMLProgParser::start_revorder(const char **attr) {
     if (phase == 1)
-        stack.front()->bb = (PBB)findId(getAttr(attr, "bb"));
+        stack.front()->bb = (BasicBlock *)findId(getAttr(attr, "bb"));
     else
         stack.front()->bb = nullptr;
 }
@@ -2423,7 +2423,7 @@ void XMLProgParser::persistToXML(std::ostream &out, Cfg *cfg) {
     out << " exitBB=\"" << ADDRESS::host_ptr(cfg->exitBB) << "\"";
     out << ">\n";
 
-    for (std::list<PBB>::iterator it = cfg->m_listBB.begin(); it != cfg->m_listBB.end(); it++)
+    for (std::list<BasicBlock *>::iterator it = cfg->m_listBB.begin(); it != cfg->m_listBB.end(); it++)
         persistToXML(out, *it);
 
     for (unsigned i = 0; i < cfg->Ordering.size(); i++)

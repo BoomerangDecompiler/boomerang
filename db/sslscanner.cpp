@@ -65,7 +65,7 @@ int read();
 #define YY_USE_CONST
 #endif
 #include <stdio.h>
-
+#include "operator.h"
 
 /*********************************************/
 /* COMPILER DEPENDENT   MACROS               */
@@ -233,7 +233,6 @@ int read();
 #pragma warning(disable:4996)        // Warnings about e.g. _strdup deprecated in VS 2005
 #endif
 
-#include "sslscanner.h"
 #include "sslscanner.h"
 #line 62 "db/sslscanner.l"
 #line 196 "//usr/local/lib/flexskel.cc"

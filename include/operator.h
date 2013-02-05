@@ -9,7 +9,7 @@
  * 05 Apr 02 - Mike: Created
  * 12 Apr 02 - Mike: INDEX -> OPER
  */
-
+#pragma once
 // The OPER (and integer representation) of expressions (they can be a fair
 // bit different from operators)
 enum OPER
@@ -164,7 +164,7 @@ enum OPER
     // Terminals (zero parameter special locations)
     // All machines are assumed to have these following registers:
     opPC,                    // program counter
-    // This is the abstract frame pointer register (CSR/PAL analysis). 
+    // This is the abstract frame pointer register (CSR/PAL analysis).
     opAFP,                    // abstract frame pointer
     // This is the abstract global pointer register (CSR/PAL analysis)
     opAGP,                    // abstract global pointer
@@ -207,8 +207,7 @@ enum OPER
     opFGF,                    // floating point greater flag
     opCTI,                    // Control transfer instruction (boolean)
     opNEXT,                    // Next PC pseudo-register
-    
+
     // ALWAYS LAST!
     opNumOf                    // Special index: MUST BE LAST!
 };
-

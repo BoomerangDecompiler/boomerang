@@ -59,7 +59,6 @@ class ExpModifier;
 class XMLProgParser;
 class Proc;
 class UserProc;
-typedef BasicBlock* PBB;
 
 #define DEBUG_BUFSIZE    5000        // Size of the debug print buffer
 
