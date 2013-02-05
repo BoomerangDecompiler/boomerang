@@ -408,6 +408,9 @@ ADDRESS BasicBlock::getHiAddr() {
 std::list<RTL*>* BasicBlock::getRTLs() {
     return m_pRtls;
 }
+const std::list<RTL*>* BasicBlock::getRTLs() const {
+    return m_pRtls;
+}
 
 RTL* BasicBlock::getRTLWithStatement(Statement *stmt) {
     if (m_pRtls == nullptr)
@@ -742,14 +745,14 @@ Statement* BasicBlock::getLastStmt() {
     return nullptr;
 }
 
-void BasicBlock::getStatements(StatementList &stmts) {
-    std::list<RTL*> *rtls = getRTLs();
+void BasicBlock::getStatements(StatementList &stmts) const {
+    const std::list<RTL*> *rtls = getRTLs();
     if (!rtls)
         return;
-    for (RTL* rtl : *rtls) {
+    for (const RTL* rtl : *rtls) {
         for (Statement *st : *rtl) {
             if (st->getBB() == nullptr) //TODO: why statement would have nullptr BB here ?
-                st->setBB(this);
+                st->setBB(const_cast<BasicBlock *>(this));
             stmts.append(st);
         }
     }

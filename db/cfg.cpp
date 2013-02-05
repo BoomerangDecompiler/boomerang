@@ -513,6 +513,12 @@ BasicBlock * Cfg::getFirstBB(BB_IT& it) {
         return 0;
     return *it;
 }
+const BasicBlock * Cfg::getFirstBB(BBC_IT &it) const {
+    it = m_listBB.begin();
+    if (it == m_listBB.end())
+        return 0;
+    return *it;
+}
 
 /***************************************************************************//**
  *
@@ -525,6 +531,11 @@ BasicBlock * Cfg::getFirstBB(BB_IT& it) {
  * \returns pointer to the BB, or nullptr if no more
  ******************************************************************************/
 BasicBlock * Cfg::getNextBB(BB_IT& it) {
+    if (++it == m_listBB.end())
+        return 0;
+    return *it;
+}
+const BasicBlock * Cfg::getNextBB(BBC_IT& it) const {
     if (++it == m_listBB.end())
         return 0;
     return *it;

@@ -155,7 +155,6 @@ void Proc::setName(const char *nam) {
 /***************************************************************************//**
  *
  * \brief        Get the native address (entry point).
- * PARAMETERS:        <none>
  * \returns            the native address of this procedure (entry point)
  ******************************************************************************/
 ADDRESS Proc::getNativeAddress() const {
@@ -307,7 +306,7 @@ void UserProc::setParamType(const char* nam, Type* ty) {
 void UserProc::setParamType(int idx, Type* ty) {
     int n = 0;
     StatementList::iterator it;
-    for (it = parameters.begin(); n != idx && it != parameters.end(); it++, n++)
+    for (it = parameters.begin(); n != idx && it != parameters.end(); it++, n++) // find n-th parameter it
         ;
     if (it != parameters.end()) {
         Assign *a = (Assign*)*it;
@@ -687,7 +686,6 @@ BasicBlock * UserProc::getEntryBB() {
 /***************************************************************************//**
  *
  * \brief        Set the entry BB for this procedure (constructor has the entry address)
- * PARAMETERS:        <none>
  * \returns            <nothing>
  ******************************************************************************/
 void UserProc::setEntryBB() {
@@ -761,7 +759,7 @@ void UserProc::generateCode(HLLCode *hll) {
 }
 
 /// print this proc, mainly for debugging
-void UserProc::print(std::ostream &out, bool html) {
+void UserProc::print(std::ostream &out, bool html) const {
     signature->print(out, html);
     if (html)
         out << "<br>";
@@ -793,12 +791,12 @@ void UserProc::setStatus(ProcStatus s) {
     Boomerang::get()->alert_proc_status_change(this);
 }
 
-void UserProc::printParams(std::ostream& out, bool html) {
+void UserProc::printParams( std::ostream &out, bool html /*= false*/ ) const {
     if (html)
         out << "<br>";
     out << "parameters: ";
     bool first = true;
-    for (StatementList::iterator pp = parameters.begin(); pp != parameters.end(); ++pp) {
+    for (StatementList::const_iterator pp = parameters.begin(); pp != parameters.end(); ++pp) {
         if (first)
             first = false;
         else
@@ -829,7 +827,7 @@ void UserProc::printToLog() {
     LOG << ost.str();
 }
 
-void UserProc::printDFG() {
+void UserProc::printDFG() const {
     char fname[1024];
     sprintf(fname, "%s%s-%i-dfg.dot", Boomerang::get()->getOutputPath().c_str(), getName(), DFGcount);
     DFGcount++;
@@ -913,17 +911,16 @@ void UserProc::numberStatements() {
 // get all statements
 // Get to a statement list, so they come out in a reasonable and consistent order
 /// get all the statements
-void UserProc::getStatements(StatementList &stmts) {
-    BB_IT it;
-    for (BasicBlock * bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it))
+void UserProc::getStatements(StatementList &stmts) const {
+    BBC_IT it;
+    for (const BasicBlock * bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it))
         bb->getStatements(stmts);
 
     for (StatementList::iterator it = stmts.begin(); it != stmts.end(); it++)
         if ((*it)->getProc() == nullptr)
-            (*it)->setProc(this);
+            (*it)->setProc(const_cast<UserProc *>(this));
 }
 
-///
 /***************************************************************************//**
  *
  * \brief Remove a statement
@@ -1634,6 +1631,8 @@ ProcSet* UserProc::middleDecompile(ProcList* path, int indent) {
 //! Remove unused statements.
 void UserProc::remUnusedStmtEtc() {
 
+    bool convert;
+    bool change;
     // NO! Removing of unused statements is an important part of the global removing unused returns analysis, which
     // happens after UserProc::decompile is complete
     //if (status >= PROC_FINAL)
@@ -1654,10 +1653,10 @@ void UserProc::remUnusedStmtEtc() {
     if (status < PROC_FINAL) {
         typeAnalysis();
         // Now that locals are identified, redo the dataflow
-        bool change = df.placePhiFunctions(this);
-        if (change) numberStatements();        // Number the new statements
+        change = df.placePhiFunctions(this);
+        if (change)
+            numberStatements();        // Number the new statements
         doRenameBlockVars(20);                // Rename the locals
-        bool convert;
         propagateStatements(convert, 20);    // Surely need propagation too
         if (VERBOSE) {
             LOG << "--- after propagating locals for " << getName() << " ---\n";
@@ -3054,11 +3053,11 @@ void UserProc::removeSymbolMapping(const Exp* from, Exp* to) {
 
 /// return a symbol's exp (note: the original exp, like r24, not local1)
 /// \note linear search!!
-const Exp *UserProc::expFromSymbol(const char *nam) {
-    for (SymbolMap::iterator it = symbolMap.begin(); it != symbolMap.end(); it++) {
-        Exp* e = it->second;
-        if (e->isLocal() && !strcmp(((Const*)((Location*)e)->getSubExp1())->getStr(), nam))
-            return it->first;
+const Exp *UserProc::expFromSymbol(const char *nam) const {
+    for (const std::pair<const Exp*,Exp*> & it : symbolMap) {
+        const Exp* e = it.second;
+        if (e->isLocal() && !strcmp(((const Const*)((const Location*)e)->getSubExp1())->getStr(), nam))
+            return it.first;
     }
     return nullptr;
 }
@@ -4194,15 +4193,14 @@ const char* UserProc::lookupSym(const Exp* e, Type* ty) {
     // Else there is no symbol
     return nullptr;
 }
-
-void UserProc::printSymbolMap(std::ostream &out, bool html) {
+//! Print just the symbol map
+void UserProc::printSymbolMap(std::ostream &out, bool html /*= false*/ ) const {
     if (html)
         out << "<br>";
     out << "symbols:\n";
-    SymbolMap::iterator it;
-    for (it = symbolMap.begin(); it != symbolMap.end(); it++) {
-        Type* ty = getTypeForLocation(it->second);
-        out << "  " << it->first << " maps to " << it->second << " type " << (ty ? ty->getCtype() : "nullptr") << "\n";
+    for (const std::pair<const Exp*,Exp*> &it : symbolMap) {
+        const Type* ty = getTypeForLocation(it.second);
+        out << "  " << it.first << " maps to " << it.second << " type " << (ty ? ty->getCtype() : "nullptr") << "\n";
         if (html)
             out << "<br>";
     }
@@ -4211,13 +4209,13 @@ void UserProc::printSymbolMap(std::ostream &out, bool html) {
     out << "end symbols\n";
 }
 
-void UserProc::dumpLocals(std::ostream& os, bool html) {
+void UserProc::dumpLocals(std::ostream& os, bool html) const {
     if (html)
         os << "<br>";
     os << "locals:\n";
-    for (std::map<std::string, Type*>::iterator it = locals.begin(); it != locals.end(); it++) {
-        os << it->second->getCtype() << " " << it->first.c_str() << " ";
-        const Exp *e = expFromSymbol((*it).first.c_str());
+    for (const std::pair<std::string, Type*> &it : locals) {
+        os << it.second->getCtype() << " " << it.first.c_str() << " ";
+        const Exp *e = expFromSymbol(it.first.c_str());
         // Beware: for some locals, expFromSymbol() returns nullptr (? No longer?)
         if (e)
             os << e << "\n";
@@ -4233,7 +4231,7 @@ void UserProc::dumpSymbolMap() {
     SymbolMap::iterator it;
     for (it = symbolMap.begin(); it != symbolMap.end(); it++) {
         Type* ty = getTypeForLocation(it->second);
-        std::cerr << "  " << it->first << " maps to " << it->second << " type " << (ty ? ty->getCtype() : "nullptr") <<
+        std::cerr << "  " << it->first << " maps to " << it->second << " type " << (ty ? ty->getCtype() : "NULL") <<
                      "\n";
     }
 }
@@ -4243,7 +4241,7 @@ void UserProc::dumpSymbolMapx() {
     SymbolMap::iterator it;
     for (it = symbolMap.begin(); it != symbolMap.end(); it++) {
         Type* ty = getTypeForLocation(it->second);
-        std::cerr << "  " << it->first << " maps to " << it->second << " type " << (ty ? ty->getCtype() : "nullptr") <<
+        std::cerr << "  " << it->first << " maps to " << it->second << " type " << (ty ? ty->getCtype() : "NULL") <<
                      "\n";
         it->first->printx(2);
     }
@@ -4313,6 +4311,12 @@ void UserProc::updateCallDefines() {
     }
 }
 //! Replace simple global constant references
+//! Statement level transform :
+//! PREDICATE: (statement IS_A Assign) AND (statement.rhs IS_A MemOf) AND (statement.rhs.sub(1) IS_A IntConst)
+//! ACTION:
+//!		$tmp_addr = assgn.rhs.sub(1);
+//!		$tmp_val  = prog->readNative($tmp_addr,statement.type.bitwidth/8);
+//!		statement.rhs.replace_with(Const($tmp_val))
 void UserProc::replaceSimpleGlobalConstants() {
     if (VERBOSE)
         LOG << "### replace simple global constants for " << getName() << " ###\n";
@@ -5758,7 +5762,9 @@ Type* UserProc::getTypeForLocation(Exp* e) {
     name = ((Const*)((Unary*)e)->getSubExp1())->getStr();
     return getParamType(name);
 }
-
+const Type* UserProc::getTypeForLocation(Exp* e) const {
+    return const_cast<UserProc *>(this)->getTypeForLocation(e);
+}
 /***************************************************************************//**
  *
  * \brief Add a mapping for the destinations of phi functions that have one

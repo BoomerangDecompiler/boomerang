@@ -278,17 +278,17 @@ virtual bool                isNoReturn();
         void                setStatus(ProcStatus s);
         void                generateCode(HLLCode *hll);
 
-        void                print(std::ostream &out, bool html = false);
-        void                printParams(std::ostream &out, bool html = false);
+        void                print(std::ostream &out, bool html = false) const;
+        void                printParams(std::ostream &out, bool html = false) const;
         char *              prints();
         void                dump();
         void                printToLog();
-        void                printDFG();
-        void                printSymbolMap(std::ostream& out, bool html = false);    ///< Print just the symbol map
+        void                printDFG() const;
+        void                printSymbolMap(std::ostream& out, bool html = false) const;
         void                dumpSymbolMap();
         void                dumpSymbolMapx();
         void                testSymbolMap();
-        void                dumpLocals(std::ostream& os, bool html = false);
+        void                dumpLocals(std::ostream& os, bool html = false) const;
         void                dumpLocals();
                             //! simplify the statements in this proc
         void                simplify() { cfg->simplify(); }
@@ -391,6 +391,9 @@ typedef std::map<Statement*, int> RefCounter;
 
         void                conTypeAnalysis();
         void                dfaTypeAnalysis();
+        void                dfa_analyze_scaled_array_ref( Statement* s, Prog* prog );
+
+        void                dfa_analyze_implict_assigns( Statement* s, Prog* prog );
         bool                ellipsisProcessing();
 
         // For the final pass of removing returns that are never used
@@ -407,7 +410,7 @@ typedef std::map<Statement*, int> RefCounter;
         bool                prover(Exp *query, std::set<PhiAssign*> &lastPhis, std::map<PhiAssign*, Exp*> &cache,
                                    Exp* original, PhiAssign *lastPhi = nullptr);
         void                promoteSignature();
-        void                getStatements(StatementList &stmts);
+        void                getStatements(StatementList &stmts) const;
 virtual void                removeReturn(Exp *e);
         void                removeStatement(Statement *stmt);
         bool                searchAll(Exp* search, std::list<Exp*> &result);
@@ -418,7 +421,6 @@ virtual void                removeReturn(Exp *e);
         void                makeParamsImplicit();
         StatementList&      getParameters() { return parameters; }
         StatementList&      getModifieds() { return theReturnStatement->getModifieds(); }
-
 public:
         Exp *               getSymbolExp(Exp *le, Type *ty = nullptr, bool lastPass = false);
         Exp *               newLocal(Type* ty, Exp* e, char* nam = nullptr);
@@ -426,7 +428,7 @@ public:
         Type *              getLocalType(const char *nam);
         void                setLocalType(const char *nam, Type *ty);
         Type *              getParamType(const char *nam);
-        const Exp *         expFromSymbol(const char *nam);
+        const Exp *         expFromSymbol(const char *nam) const;
         void                mapSymbolTo(const Exp *from, Exp* to);
         void                mapSymbolToRepl(const Exp* from, Exp* oldTo, Exp* newTo);
         void                removeSymbolMapping(const Exp *from, Exp* to);
@@ -437,6 +439,7 @@ public:
         const char *        lookupParam(Exp* e);
         void                checkLocalFor(RefExp* r);
         Type *              getTypeForLocation(Exp* e);
+        const Type *        getTypeForLocation(Exp *e) const;
         const char *        findLocal(Exp* e, Type* ty);
         const char *        findLocalFromRef(RefExp* r);
         const char *        findFirstSymbol(Exp* e);
@@ -485,7 +488,7 @@ virtual void                printCallGraphXML(std::ostream &os, int depth, bool 
 
 private:
         ReturnStatement *   theReturnStatement;
-        int                 DFGcount;
+        mutable int         DFGcount; //!< used in dotty output
 public:
         ADDRESS             getTheReturnAddr() {
                                 return theReturnStatement == nullptr ? NO_ADDRESS : theReturnStatement->getRetAddr();

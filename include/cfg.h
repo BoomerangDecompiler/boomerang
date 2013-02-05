@@ -104,8 +104,11 @@ public:
         void            addOutEdge(BasicBlock * pBB, ADDRESS adr, bool bSetLabel = false);
         void            addOutEdge(BasicBlock * pBB, BasicBlock * pDestBB, bool bSetLabel = false);
         void            setLabel(BasicBlock * pBB);
-        BasicBlock *             getFirstBB(BB_IT& it);
+        BasicBlock *    getFirstBB(BB_IT& it);
+        const BasicBlock *getFirstBB(BBC_IT &it) const;
+
         BasicBlock *    getNextBB(BB_IT& it);
+        const BasicBlock *getNextBB(BBC_IT &it) const;
 
         /*
          * An alternative to the above is to use begin() and end():

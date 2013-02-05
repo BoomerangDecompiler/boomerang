@@ -120,6 +120,7 @@ enum SBBTYPE {
 };
 
 typedef std::list<BasicBlock *>::iterator BB_IT;
+typedef std::list<BasicBlock *>::const_iterator BBC_IT;
 
 /***************************************************************************//**
  * BasicBlock class. <more comments>
@@ -155,6 +156,7 @@ public:
         ADDRESS         getHiAddr();
 
         std::list<RTL*>* getRTLs();
+        const std::list<RTL *> *getRTLs() const;
 
         RTL *           getRTLWithStatement(Statement *stmt);
 
@@ -270,7 +272,7 @@ static  void             doAvail(StatementSet& s, BasicBlock * inEdge);
         Statement *     getLastStmt();
         Statement *     getPrevStmt(rtlrit& rit, StatementList::reverse_iterator& sit);
         RTL *           getLastRtl() { return m_pRtls->back(); }
-        void            getStatements(StatementList &stmts);
+        void            getStatements(StatementList &stmts) const;
         char *          getStmtNumber();
 protected:
         /* Control flow analysis stuff, lifted from Doug Simon's honours thesis.
@@ -303,11 +305,11 @@ protected:
         void            setRevLoopStamps(int &time);
         void            setRevOrder(std::vector<BasicBlock *> &order);
         void            setLoopHead(BasicBlock * head) { loopHead = head; }
-        BasicBlock *             getLoopHead() { return loopHead; }
+        BasicBlock *    getLoopHead() { return loopHead; }
         void            setLatchNode(BasicBlock * latch) { latchNode = latch; }
         bool            isLatchNode() { return loopHead && loopHead->latchNode == this; }
-        BasicBlock *             getLatchNode() { return latchNode; }
-        BasicBlock *             getCaseHead() { return caseHead; }
+        BasicBlock *    getLatchNode() { return latchNode; }
+        BasicBlock *    getCaseHead() { return caseHead; }
         void            setCaseHead(BasicBlock * head, BasicBlock * follow);
         structType      getStructType() { return sType; }
         void            setStructType(structType s);
@@ -318,9 +320,9 @@ protected:
         condType        getCondType();
         void            setCondType(condType l);
         void            setLoopFollow(BasicBlock * other) { loopFollow = other; }
-        BasicBlock *             getLoopFollow() { return loopFollow; }
+        BasicBlock *    getLoopFollow() { return loopFollow; }
         void            setCondFollow(BasicBlock * other) { condFollow = other; }
-        BasicBlock *             getCondFollow() { return condFollow; }
+        BasicBlock *    getCondFollow() { return condFollow; }
         bool            hasBackEdgeTo(BasicBlock *dest);
                         //! establish if this bb has any back edges leading FROM it
         bool            hasBackEdge() {

@@ -118,10 +118,10 @@ virtual bool        operator==(Signature& other);
         // clone this signature
 virtual    Signature    *clone();
 
-        bool        isUnknown() { return unknown; }
+        bool        isUnknown() const { return unknown; }
         void        setUnknown(bool b) { unknown = b; }
-//        void        setFullSig(bool full) {bFullSig = full;}
-        bool        isForced() {return forced; }
+//      void        setFullSig(bool full) {bFullSig = full;}
+        bool        isForced() const {return forced; }
         void        setForced(bool f) {forced = f; }
 
         // get the return location
@@ -185,9 +185,9 @@ virtual bool        hasEllipsis() { return ellipsis; }
         bool        dfaTypeAnalysis(Cfg* cfg);
 
         // any signature can be promoted to a higher level signature, if available
-virtual Signature *promote(UserProc *p);
-        void        print(std::ostream &out, bool html = false);
-        char*        prints();            // For debugging
+virtual Signature * promote(UserProc *p);
+        void        print(std::ostream &out, bool html = false) const;
+        char *      prints();            // For debugging
         void        printToLog();
 
         // Special for Mike: find the location that conventionally holds the first outgoing (actual) parameter
