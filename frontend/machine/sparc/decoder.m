@@ -29,7 +29,7 @@
  * Dependencies.
  *============================================================================*/
 
-#include <assert.h>
+#include <cassert>
 #include <cstring>
 #if defined(_MSC_VER) && _MSC_VER <= 1100
 #include "signature.h"
