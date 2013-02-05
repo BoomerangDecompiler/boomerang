@@ -5751,18 +5751,16 @@ const char* UserProc::getRegName(Exp* r) {
     return regName;
 }
 //! Find the type of the local or parameter \a e
-Type* UserProc::getTypeForLocation(Exp* e) {
-    const char* name;
+Type* UserProc::getTypeForLocation(const Exp* e) {
+    const char* name=((const Const*)((const Unary*)e)->getSubExp1())->getStr();
     if (e->isLocal()) {
-        name = ((Const*)((Unary*)e)->getSubExp1())->getStr();
         if (locals.find(name) != locals.end())
             return locals[name];
     }
     // Sometimes parameters use opLocal, so fall through
-    name = ((Const*)((Unary*)e)->getSubExp1())->getStr();
     return getParamType(name);
 }
-const Type* UserProc::getTypeForLocation(Exp* e) const {
+const Type* UserProc::getTypeForLocation(const Exp* e) const {
     return const_cast<UserProc *>(this)->getTypeForLocation(e);
 }
 /***************************************************************************//**

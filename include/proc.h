@@ -438,8 +438,8 @@ public:
         const char *        lookupSymFromRefAny(RefExp* r);
         const char *        lookupParam(Exp* e);
         void                checkLocalFor(RefExp* r);
-        Type *              getTypeForLocation(Exp* e);
-        const Type *        getTypeForLocation(Exp *e) const;
+        Type *              getTypeForLocation(const Exp *e);
+        const Type *        getTypeForLocation(const Exp *e) const;
         const char *        findLocal(Exp* e, Type* ty);
         const char *        findLocalFromRef(RefExp* r);
         const char *        findFirstSymbol(Exp* e);
