@@ -35,7 +35,7 @@
 
 #include "frontend.h"
 #include <queue>
-#include <stdarg.h>            // For varargs
+#include <cstdarg>			// For varargs
 #include <sstream>
 #ifndef _WIN32
 #include <dlfcn.h>            // dlopen, dlsym
@@ -49,11 +49,11 @@
 #include "rtl.h"
 #include "BinaryFile.h"
 #include "decoder.h"
-#include "sparcfrontend.h"
-#include "pentiumfrontend.h"
-#include "ppcfrontend.h"
-#include "st20frontend.h"
-#include "mipsfrontend.h"
+#include "sparc/sparcfrontend.h"
+#include "pentium/pentiumfrontend.h"
+#include "ppc/ppcfrontend.h"
+#include "st20/st20frontend.h"
+#include "mips/mipsfrontend.h"
 #include "prog.h"
 #include "signature.h"
 #include "boomerang.h"
@@ -155,6 +155,7 @@ FrontEnd *FrontEnd::createById(std::string &str, BinaryFile *pBF, Prog* prog) {
 }
 
 void FrontEnd::readLibraryCatalog(const char *sPath) {
+    //TODO: this is a work for generic semantics provider plugin : HeaderReader
     std::ifstream inf(sPath);
     if (!inf.good()) {
         std::cerr << "can't open `" << sPath << "'\n";
@@ -180,6 +181,7 @@ void FrontEnd::readLibraryCatalog(const char *sPath) {
 }
 
 void FrontEnd::readLibraryCatalog() {
+    //TODO: this is a work for generic semantics provider plugin : HeaderReader
     librarySignatures.clear();
     std::string sList = Boomerang::get()->getProgPath() + "signatures/common.hs";
 
@@ -190,6 +192,7 @@ void FrontEnd::readLibraryCatalog() {
         sList = Boomerang::get()->getProgPath() + "signatures/win32.hs";
         readLibraryCatalog(sList.c_str());
     }
+    //TODO: change this to BinaryLayer query ("FILE_FORMAT","MACHO")
     if (pBF->GetFormat() == LOADFMT_MACHO) {
         sList = Boomerang::get()->getProgPath() + "signatures/objc.hs";
         readLibraryCatalog(sList.c_str());
@@ -199,6 +202,7 @@ void FrontEnd::readLibraryCatalog() {
 std::vector<ADDRESS> FrontEnd::getEntryPoints() {
     std::vector<ADDRESS> entrypoints;
     bool gotMain = false;
+    // AssemblyLayer
     ADDRESS a = getMainEntryPoint(gotMain);
     if (a != NO_ADDRESS)
         entrypoints.push_back(a);
@@ -284,30 +288,30 @@ void FrontEnd::decode(Prog* prog, bool decodeMain, const char *pname) {
     decode(prog, a);
     prog->setEntryPoint(a);
 
-    if (gotMain) {
-        static const char *mainName[] = { "main", "WinMain", "DriverEntry" };
-        const char *name = pBF->SymbolByAddress(a);
-        if (name == nullptr)
-            name = mainName[0];
-        for (size_t i = 0; i < sizeof(mainName)/sizeof(char*); i++) {
-            if (!strcmp(name, mainName[i])) {
-                Proc *proc = prog->findProc(a);
-                if (proc == nullptr) {
-                    if (VERBOSE)
-                        LOG << "no proc found for address " << a << "\n";
-                    return;
-                }
-                FuncType *fty = dynamic_cast<FuncType*>(Type::getNamedType(name));
-                if (fty == nullptr)
-                    LOG << "unable to find signature for known entrypoint " << name << "\n";
-                else {
-                    proc->setSignature(fty->getSignature()->clone());
-                    proc->getSignature()->setName(name);
-                    //proc->getSignature()->setFullSig(true);        // Don't add or remove parameters
-                    proc->getSignature()->setForced(true);            // Don't add or remove parameters
-                }
-                break;
+    if (not gotMain)
+        return;
+    static const char *mainName[] = { "main", "WinMain", "DriverEntry" };
+    const char *name = pBF->SymbolByAddress(a);
+    if (name == nullptr)
+        name = mainName[0];
+    for (size_t i = 0; i < sizeof(mainName)/sizeof(char*); i++) {
+        if (!strcmp(name, mainName[i])) {
+            Proc *proc = prog->findProc(a);
+        if (proc == nullptr) {
+                if (VERBOSE)
+                    LOG << "no proc found for address " << a << "\n";
+                return;
             }
+            FuncType *fty = dynamic_cast<FuncType*>(Type::getNamedType(name));
+            if (fty == nullptr)
+                LOG << "unable to find signature for known entrypoint " << name << "\n";
+            else {
+                proc->setSignature(fty->getSignature()->clone());
+                proc->getSignature()->setName(name);
+                //proc->getSignature()->setFullSig(true);        // Don't add or remove parameters
+                proc->getSignature()->setForced(true);            // Don't add or remove parameters
+            }
+            break;
         }
     }
     return;
@@ -347,10 +351,9 @@ void FrontEnd::decode(Prog *prog, ADDRESS a) {
                 change = true;
                 std::ofstream os;
                 int res = processProc(p->getNativeAddress(), p, os);
-                if (res == 1)
-                    p->setDecoded();
-                else
+                if (res != 1)
                     break;
+                p->setDecoded();
                 // Break out of the loops if not decoding children
                 if (Boomerang::get()->noDecodeChildren)
                     break;
@@ -394,10 +397,10 @@ DecodeResult& FrontEnd::decodeInstruction(ADDRESS pc) {
 /***************************************************************************//**
  *
  * \brief       Read the library signatures from a file
- * PARAMETERS:       sPath: The file to read from
- *                   cc: the calling convention assumed
- * \returns           <nothing>
- ******************************************************************************/
+ * \param	   	sPath The file to read from
+ * \param		cc the calling convention assumed
+ * \return 		<nothing>
+ */
 void FrontEnd::readLibrarySignatures(const char *sPath, callconv cc) {
     std::ifstream ifs;
 
@@ -457,13 +460,13 @@ Signature *FrontEnd::getLibSignature(const char *name) {
 /***************************************************************************//**
  *
  * \brief      Process a procedure, given a native (source machine) address.
- * PARAMETERS:      address - the address at which the procedure starts
- *                  pProc - the procedure object
- *                  frag - if true, this is just a fragment of a procedure
- *                  spec - if true, this is a speculative decode
- *                  os - the output stream for .rtl output
- * NOTE:          This is a sort of generic front end. For many processors, this will be overridden
- *                    in the FrontEnd derived class, sometimes calling this function to do most of the work
+ * \param address - the address at which the procedure starts
+ * \param pProc - the procedure object
+ * \param frag - if true, this is just a fragment of a procedure
+ * \param spec - if true, this is a speculative decode
+ * \param os - the output stream for .rtl output
+ * \note		  This is a sort of generic front end. For many processors, this will be overridden
+                    in the FrontEnd derived class, sometimes calling this function to do most of the work
  * \returns          true for a good decode (no illegal instructions)
  ******************************************************************************/
 bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bool frag /* = false */,
@@ -500,7 +503,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
     ADDRESS startAddr = uAddr;
     ADDRESS lastAddr = uAddr;
 
-    while ((uAddr = targetQueue.nextAddress(pCfg)) != NO_ADDRESS) {
+    while ((uAddr = targetQueue.nextAddress(*pCfg)) != NO_ADDRESS) {
         // The list of RTLs for the current basic block
         std::list<RTL*>* BB_rtls = new std::list<RTL*>();
 
@@ -1043,75 +1046,6 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 //{
 //    return (int)(*(unsigned char*)addr);
 //}
-
-
-/***************************************************************************//**
- *
- * \brief    Visit a destination as a label, i.e. check whether we need to queue it as a new BB to create later.
- *                Note: at present, it is important to visit an address BEFORE an out edge is added to that address.
- *                This is because adding an out edge enters the address into the Cfg's BB map, and it looks like the
- *                BB has already been visited, and it gets overlooked. It would be better to have a scheme whereby
- *                the order of calling these functions (i.e. visit() and AddOutEdge()) did not matter.
- * PARAMETERS:    pCfg - the enclosing CFG
- *                uNewAddr - the address to be checked
- *                pNewBB - set to the lower part of the BB if the address
- *                already exists as a non explicit label (BB has to be split)
- * \returns        <nothing>
- ******************************************************************************/
-void TargetQueue::visit(Cfg* pCfg, ADDRESS uNewAddr, PBB& pNewBB) {
-    // Find out if we've already parsed the destination
-    bool bParsed = pCfg->label(uNewAddr, pNewBB);
-    // Add this address to the back of the local queue,
-    // if not already processed
-    if (!bParsed) {
-        targets.push(uNewAddr);
-        if (Boomerang::get()->traceDecoder)
-            LOG << ">" << uNewAddr << "\t";
-    }
-}
-
-/***************************************************************************//**
- *
- * \brief    Seed the queue with an initial address
- * NOTE:        Can be some targets already in the queue now
- * PARAMETERS:    uAddr: Native address to seed the queue with
- * \returns        <nothing>
- ******************************************************************************/
-void TargetQueue::initial(ADDRESS uAddr) {
-    targets.push(uAddr);
-}
-
-/***************************************************************************//**
- *
- * \brief          Return the next target from the queue of non-processed
- *                      targets.
- * PARAMETERS:          cfg - the enclosing CFG
- * \returns              The next address to process, or NO_ADDRESS if none
- *                        (targets is empty)
- ******************************************************************************/
-ADDRESS TargetQueue::nextAddress(Cfg* cfg) {
-    while (!targets.empty()) {
-        ADDRESS address = targets.front();
-        targets.pop();
-        if (Boomerang::get()->traceDecoder)
-            LOG << "<" << address << "\t";
-
-        // If no label there at all, or if there is a BB, it's incomplete, then we can parse this address next
-        if (!cfg->existsBB(address) || cfg->isIncomplete(address))
-            return address;
-    }
-    return NO_ADDRESS;
-}
-
-void TargetQueue::dump() {
-    std::queue<ADDRESS> copy(targets);
-    while (!copy.empty()) {
-        ADDRESS a = copy.front();
-        copy.pop();
-        std::cerr << std::hex << a << ", ";
-    }
-    std::cerr << std::dec << "\n";
-}
 
 
 /***************************************************************************//**
