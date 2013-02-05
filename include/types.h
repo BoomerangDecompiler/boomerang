@@ -81,7 +81,7 @@ bool IN_RANGE(const T &val,const U &range_start,const U &range_end) {
 #ifdef NO_ADDRESS
 #undef NO_ADDRESS
 #endif
-#define NO_ADDRESS (ADDRESS::g(-1))		// For invalid ADDRESSes
+#define NO_ADDRESS (ADDRESS::g(-1))     // For invalid ADDRESSes
 
 #ifndef _MSC_VER
 typedef long unsigned long QWord;        // 64 bits

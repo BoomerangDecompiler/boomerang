@@ -51,12 +51,12 @@ extern char debug_buffer[];         ///< For prints functions
 
 // Derived class constructors
 
-Const::Const(uint32_t i)    : Exp(opIntConst),	conscript(0), type(new VoidType) {u.i = i;}
-Const::Const(int i)         : Exp(opIntConst),    conscript(0), type(new VoidType) {u.i = i;}
-Const::Const(QWord ll)      : Exp(opLongConst),    conscript(0), type(new VoidType) {u.ll= ll;}
-Const::Const(double d)      : Exp(opFltConst),    conscript(0), type(new VoidType) {u.d = d;}
-Const::Const(const char *p)       : Exp(opStrConst),    conscript(0), type(new VoidType) {u.p = p;}
-Const::Const(Proc* p)       : Exp(opFuncConst),    conscript(0), type(new VoidType) {u.pp = p;}
+Const::Const(uint32_t i)    : Exp(opIntConst),  conscript(0), type(new VoidType) {u.i = i;}
+Const::Const(int i)         : Exp(opIntConst),  conscript(0), type(new VoidType) {u.i = i;}
+Const::Const(QWord ll)      : Exp(opLongConst), conscript(0), type(new VoidType) {u.ll= ll;}
+Const::Const(double d)      : Exp(opFltConst),  conscript(0), type(new VoidType) {u.d = d;}
+Const::Const(const char *p) : Exp(opStrConst),  conscript(0), type(new VoidType) {u.p = p;}
+Const::Const(Proc* p)       : Exp(opFuncConst), conscript(0), type(new VoidType) {u.pp = p;}
 /// \remark This is bad. We need a way of constructing true unsigned constants
 Const::Const(ADDRESS a)    : Exp(opIntConst),    conscript(0), type(new VoidType) {u.a = a;}
 

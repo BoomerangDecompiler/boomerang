@@ -21,9 +21,9 @@
 
 CPPUNIT_TEST_SUITE_REGISTRATION( CfgTest );
 
-#define FRONTIER_PENTIUM		"test/pentium/frontier"
-#define SEMI_PENTIUM			"test/pentium/semi"
-#define IFTHEN_PENTIUM			"test/pentium/ifthen"
+#define FRONTIER_PENTIUM    "test/pentium/frontier"
+#define SEMI_PENTIUM        "test/pentium/semi"
+#define IFTHEN_PENTIUM      "test/pentium/ifthen"
 
 /***************************************************************************//**
  * FUNCTION:        CfgTest::setUp
@@ -254,7 +254,7 @@ void CfgTest::testPlacePhi2 () {
         new Binary(opMinus,
             Location::regOf(29),
             new Const(12)));
- 
+
     std::set<int>& s2 = df->getA_phi(e);
     for (pp = s2.begin(); pp != s2.end(); pp++)
         actual2 << *pp << " ";

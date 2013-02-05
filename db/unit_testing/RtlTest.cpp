@@ -23,8 +23,8 @@
 
 CPPUNIT_TEST_SUITE_REGISTRATION( RtlTest );
 
-#define SWITCH_SPARC		"test/sparc/switch_cc"
-#define SWITCH_PENT			"test/pentium/switch_cc"
+#define SWITCH_SPARC    "test/sparc/switch_cc"
+#define SWITCH_PENT     "test/pentium/switch_cc"
 
 /***************************************************************************//**
  * FUNCTION:        RtlTest::setUp

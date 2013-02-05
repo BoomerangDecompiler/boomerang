@@ -29,41 +29,30 @@ struct DecodeResult;
 class PentiumDecoder : public NJMCDecoder
 {
 public:
-    /* Default constructor */
-    PentiumDecoder(Prog* prog);
-
-    /*
-                             * Decodes the machine instruction at pc and returns an RTL instance for
-                             * the instruction.
-                             */
-    virtual DecodeResult&   decodeInstruction (ADDRESS pc, int delta);
-
-    /*
-                             * Disassembles the machine instruction at pc and returns the number of
-                             * bytes disassembled. Assembler output goes to global _assembly
-                             */
-    virtual int             decodeAssemblyInstruction (ADDRESS pc, int delta);
+                    PentiumDecoder(Prog* prog);
+virtual DecodeResult& decodeInstruction (ADDRESS pc, int delta);
+virtual int         decodeAssemblyInstruction (ADDRESS pc, int delta);
 
 private:
     /*
      * Various functions to decode the operands of an instruction into
      * a SemStr representation.
      */
-    Exp*            dis_Eaddr(ADDRESS pc, int size = 0);
-    Exp*            dis_Mem(ADDRESS ps);
-    Exp*            addReloc(Exp *e);
+    Exp *           dis_Eaddr(ADDRESS pc, int size = 0);
+    Exp *           dis_Mem(ADDRESS ps);
+    Exp *           addReloc(Exp *e);
 
     void            unused(int x);
     bool            isFuncPrologue(ADDRESS hostPC);
 
-        Byte	getByte(intptr_t lc); //TODO: switch to using ADDRESS objects
-        SWord	getWord(intptr_t lc);
-        DWord	getDword(intptr_t lc);
-        Byte	getByte(ADDRESS lc) {return getByte(lc.m_value);}
-        SWord	getWord(ADDRESS lc) {return getWord(lc.m_value);}
-        DWord	getDword(ADDRESS lc){return getDword(lc.m_value);}
+    Byte            getByte(intptr_t lc); //TODO: switch to using ADDRESS objects
+    SWord           getWord(intptr_t lc);
+    DWord           getDword(intptr_t lc);
+    Byte            getByte(ADDRESS lc) {return getByte(lc.m_value);}
+    SWord           getWord(ADDRESS lc) {return getWord(lc.m_value);}
+    DWord           getDword(ADDRESS lc){return getDword(lc.m_value);}
 
-        ADDRESS lastDwordLc;
+    ADDRESS         lastDwordLc;
 };
 
 #endif

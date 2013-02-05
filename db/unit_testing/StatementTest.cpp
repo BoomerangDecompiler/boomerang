@@ -37,8 +37,8 @@
 
 CPPUNIT_TEST_SUITE_REGISTRATION( StatementTest );
 
-#define HELLO_PENTIUM	   "test/pentium/hello"
-#define GLOBAL1_PENTIUM	   "test/pentium/global1"
+#define HELLO_PENTIUM   "test/pentium/hello"
+#define GLOBAL1_PENTIUM "test/pentium/global1"
 
 /***************************************************************************//**
  * FUNCTION:        StatementTest::setUp

@@ -34,7 +34,7 @@
 #include <map>
 #include <string>
 #include <vector>
-#include <cstdio>		// For FILE
+#include <cstdio>       // For FILE
 
 // Note: #including windows.h causes problems later in the objective C code.
 
@@ -192,7 +192,7 @@ virtual size_t          getImageSize() = 0; //!< Return the total size of the lo
   // returns true if the given address is in a "strings" section
 virtual bool            isStringConstant(ADDRESS uEntry) { return false; }
 virtual bool            isCFStringConstant(ADDRESS uEntry) { return false; }
-virtual char			readNative1(ADDRESS a) {return 0;}
+virtual char            readNative1(ADDRESS a) {return 0;}
                         // Read 2 bytes from given native address a; considers endianness
 virtual int             readNative2(ADDRESS a) {return 0;}
                         // Read 4 bytes from given native address a; considers endianness

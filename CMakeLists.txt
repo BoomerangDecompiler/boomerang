@@ -1,22 +1,40 @@
-cmake_minimum_required (VERSION 2.8)
-project (boomerang)
+PROJECT(Boomerang)
+###############################################################################
+# Settings related to build system, and target directories
+###############################################################################
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
+LIST(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake_scripts)
+
+SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/out)
+IF(WIN32)
+SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG ${PROJECT_SOURCE_DIR}/out)
+SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE ${PROJECT_SOURCE_DIR}/out)
+ENDIF()
+###############################################################################
+# Options section
+###############################################################################
+OPTION(BUILD_TESTING "Build the testing tree." OFF)
+IF(BUILD_TESTING)
+    ENABLE_TESTING()
+ENDIF(BUILD_TESTING)
+###############################################################################
+# Compiler specific flags section
+###############################################################################
+
 IF(CMAKE_CXX_COMPILER MATCHES cl.exe)
     message(SEND_ERROR "This is a c++11 build of boomerang it's highly likely it will fail under VisualStudio")
-    ADD_DEFINITIONS(-D_CRT_NONSTDC_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS)
+    ADD_DEFINITIONS(-D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_DEPRECATE -D_SCL_SECURE_NO_WARNINGS)
 ELSE()
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++0x" )
     SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall" )
     add_definitions(-D_GLIBCXX_DEBUG)
 ENDIF()
+###############################################################################
+# Defines section
+###############################################################################
+SET(VERSION "0.3.1")
+SET(MAIN_INCLUDE_DIRECTORY ${PROJECT_SOURCE_DIR}/include)
 
-if("${PROJECT_SOURCE_DIR}" STREQUAL "${PROJECT_BINARY_DIR}")
-    message(SEND_ERROR "In-source builds are not allowed! mkdir build, cd build, cmake ..")
-endif()
-SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/out)
-IF(WIN32)
-SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG ${PROJECT_SOURCE_DIR}/out)
-#SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE ${PROJECT_SOURCE_DIR}/out)
-ENDIF()
 INCLUDE(CheckIncludeFiles)
 INCLUDE(CheckLibraryExists)
 INCLUDE(CheckTypeSize)

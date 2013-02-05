@@ -2602,12 +2602,12 @@ bool CallStatement::objcSpecificProcessing(const char *formatStr) {
             int n = 1;
             char *p = (char*)formatStr;
             while ((p = strchr(p, ':'))) {
-                p++;				// Point past the :
+                p++;    // Point past the :
                 n++;
                 addSigParam(new PointerType(new VoidType()), false);
             }
             setNumArguments(format + n);
-            signature->killEllipsis();	// So we don't do this again
+            signature->killEllipsis();  // So we don't do this again
             return true;
         }
         else {

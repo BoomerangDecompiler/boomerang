@@ -50,12 +50,12 @@
 #define DIS_IDXP1 (dis_Reg((idx+1)%7+32))
 #define DIS_EADDR32 (dis_Eaddr(Eaddr, 32))
 #define DIS_EADDR16 (dis_Eaddr(Eaddr, 16))
-#define DIS_EADDR8	(dis_Eaddr(Eaddr,  8))
-#define DIS_MEM		(dis_Mem(Mem))
-#define DIS_MEM16	(dis_Mem(Mem16))	// Probably needs changing
-#define DIS_MEM32	(dis_Mem(Mem32))	// Probably needs changing
-#define DIS_MEM64	(dis_Mem(Mem64))	// Probably needs changing
-#define DIS_MEM80	(dis_Mem(Mem80))	// Probably needs changing
+#define DIS_EADDR8  (dis_Eaddr(Eaddr,  8))
+#define DIS_MEM     (dis_Mem(Mem))
+#define DIS_MEM16   (dis_Mem(Mem16))    // Probably needs changing
+#define DIS_MEM32   (dis_Mem(Mem32))    // Probably needs changing
+#define DIS_MEM64   (dis_Mem(Mem64))    // Probably needs changing
+#define DIS_MEM80   (dis_Mem(Mem80))    // Probably needs changing
 #define DIS_I32        (addReloc(new Const(i32)))
 #define DIS_I16        (new Const(i16))
 #define DIS_I8        (new Const(i8))
@@ -76,21 +76,20 @@ void genBSFR(ADDRESS pc, Exp* reg, Exp* modrm, int init, int size, OPER incdec,
  ******************************************************************************/
 void PentiumDecoder::unused(int x)
 {}
-/***************************************************************************//**
- * FUNCTION:       PentiumDecoder::decodeInstruction
- * \brief       Decodes a machine instruction and returns an RTL instance. In most cases a single instruction is
- *                    decoded. However, if a higher level construct that may consist of multiple instructions is matched,
- *                    then there may be a need to return more than one RTL. The caller_prologue2 is an example of such
- *                    a construct which encloses an abritary instruction that must be decoded into its own RTL.
- * PARAMETERS:       pc - the native address of the pc
- *                   delta - the difference between the above address and the host address of the pc (i.e. the address
- *                    that the pc is at in the loaded object file)
- *                   RTLDict - the dictionary of RTL templates used to instantiate the RTL for the instruction being
- *                    decoded
- *                   proc - the enclosing procedure
- * \returns            a DecodeResult structure containing all the information gathered during decoding
- ******************************************************************************/
 static DecodeResult result;
+/***************************************************************************//**
+ * \brief   Decodes a machine instruction and returns an RTL instance. In most cases a single instruction is
+ *              decoded. However, if a higher level construct that may consist of multiple instructions is matched,
+ *              then there may be a need to return more than one RTL. The caller_prologue2 is an example of such
+ *              a construct which encloses an abritary instruction that must be decoded into its own RTL.
+ * \param   pc - the native address of the pc
+ * \param   delta - the difference between the above address and the host address of the pc (i.e. the address
+ *              that the pc is at in the loaded object file)
+ * \param   RTLDict - the dictionary of RTL templates used to instantiate the RTL for the instruction being
+ *              decoded
+ * \param   proc - the enclosing procedure
+ * \returns a DecodeResult structure containing all the information gathered during decoding
+ ******************************************************************************/
 DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
 {
     ADDRESS hostPC = pc + delta;
@@ -37404,6 +37403,11 @@ PentiumDecoder::PentiumDecoder(Prog* prog) : NJMCDecoder(prog)
     RTLDict.readSSLFile(file.c_str());
 }
 // For now...
+/**
+ * Disassembles the machine instruction at pc and returns the number of
+ * bytes disassembled. Assembler output goes to global _assembly
+ */
+
 int PentiumDecoder::decodeAssemblyInstruction(ADDRESS, int)
 { return 0; }
 /***************************************************************************//** * FUNCTION:       genBSFR

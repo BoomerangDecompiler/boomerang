@@ -21,7 +21,7 @@
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TypeTest);
 
-#define HELLO_WINDOWS		"test/windows/hello.exe"
+#define HELLO_WINDOWS   "test/windows/hello.exe"
 
 /***************************************************************************//**
  * FUNCTION:        TypeTest::setUp
@@ -172,12 +172,12 @@ void TypeTest::testDataInterval() {
     expected = "second";
     actual = pdie->second.name;
     CPPUNIT_ASSERT_EQUAL(expected, actual);
-    
+
     pdie = dim.find(0x1007);
     CPPUNIT_ASSERT(pdie);
     actual = pdie->second.name;
     CPPUNIT_ASSERT_EQUAL(expected, actual);
-    
+
     CompoundType ct;
     ct.addType(new IntegerType(16, 1), "short1");
     ct.addType(new IntegerType(16, 1), "short2");

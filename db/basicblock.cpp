@@ -1267,7 +1267,7 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
                     // FIXME: Not valid for all switch types
                     Const caseVal(0);
                     if (psi->chForm == 'F')                            // "Fortran" style?
-                        caseVal.setInt(((int*)psi->uTable.m_value)[i]);		// Yes, use the table value itself
+                        caseVal.setInt(((int*)psi->uTable.m_value)[i]); // Yes, use the table value itself
                     // Note that uTable has the address of an int array
                     else
                         caseVal.setInt((int)(psi->iLower+i));
@@ -1883,7 +1883,7 @@ void findSwParams(char form, Exp* e, Exp*& expr, ADDRESS& T) {
         }
         case 'R': {
             // Pattern: %pc + m[%pc     + (<expr> * 4) + k]
-            T = ADDRESS::g(0L);		// ?
+            T = ADDRESS::g(0L); // ?
             // l = m[%pc  + (<expr> * 4) + k]:
             Exp* l = ((Binary*)e)->getSubExp2();
             if (l->isSubscript()) l = l->getSubExp1();
@@ -1899,7 +1899,7 @@ void findSwParams(char form, Exp* e, Exp*& expr, ADDRESS& T) {
         }
         case 'r': {
             // Pattern: %pc + m[%pc + ((<expr> * 4) - k)] - k
-            T = ADDRESS::g(0L);		// ?
+            T = ADDRESS::g(0L);     // ?
             // b = %pc + m[%pc + ((<expr> * 4) - k)]:
             Binary* b = (Binary*)((Binary*)e)->getSubExp1();
             // l = m[%pc + ((<expr> * 4) - k)]:
@@ -2091,7 +2091,7 @@ bool BasicBlock::decodeIndirectJmp(UserProc* proc) {
                         SWITCH_INFO* swi = new SWITCH_INFO;
                         swi->chForm = 'F';                    // The "Fortran" form
                         swi->pSwitchVar = e;
-                        swi->uTable = ADDRESS::host_ptr(destArray);	//WARN: Abuse the uTable member as a pointer
+                        swi->uTable = ADDRESS::host_ptr(destArray); //WARN: Abuse the uTable member as a pointer
                         swi->iNumTable = n;
                         swi->iLower = 1;                    // Not used, except to compute
                         swi->iUpper = n;                    // the number of options

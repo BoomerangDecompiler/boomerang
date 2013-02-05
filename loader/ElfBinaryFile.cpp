@@ -335,8 +335,8 @@ void ElfBinaryFile::AddSyms(int secIndex) {
     PSectionInfo pSect = &m_pSections[secIndex];
     // Calc number of symbols
     int nSyms = pSect->uSectionSize / pSect->uSectionEntrySize;
-    m_pSym = (Elf32_Sym*) pSect->uHostAddr.m_value;			// Pointer to symbols
-    int strIdx = m_sh_link[secIndex];                // sh_link points to the string table
+    m_pSym = (Elf32_Sym*) pSect->uHostAddr.m_value;     // Pointer to symbols
+    int strIdx = m_sh_link[secIndex];                   // sh_link points to the string table
 
     PSectionInfo siPlt = GetSectionInfoByName(".plt");
     ADDRESS addrPlt = siPlt ? siPlt->uNativeAddr : ADDRESS::g(0L);
@@ -414,8 +414,8 @@ std::vector<ADDRESS> ElfBinaryFile::GetExportedAddresses(bool funcsOnly) {
     PSectionInfo pSect = &m_pSections[secIndex];
     // Calc number of symbols
     int nSyms = pSect->uSectionSize / pSect->uSectionEntrySize;
-    m_pSym = (Elf32_Sym*) pSect->uHostAddr.m_value;			// Pointer to symbols
-    int strIdx = m_sh_link[secIndex];                // sh_link points to the string table
+    m_pSym = (Elf32_Sym*) pSect->uHostAddr.m_value;     // Pointer to symbols
+    int strIdx = m_sh_link[secIndex];                   // sh_link points to the string table
 
     // Index 0 is a dummy entry
     for (int i = 1; i < nSyms; i++) {
@@ -451,7 +451,7 @@ void ElfBinaryFile::AddRelocsAsSyms(int relSecIdx) {
     if (pSect == 0) return;
     // Calc number of relocations
     int nRelocs = pSect->uSectionSize / pSect->uSectionEntrySize;
-    m_pReloc = (Elf32_Rel*) pSect->uHostAddr.m_value;		// Pointer to symbols
+    m_pReloc = (Elf32_Rel*) pSect->uHostAddr.m_value;   // Pointer to symbols
     int symSecIdx = m_sh_link[relSecIdx];
     int strSecIdx = m_sh_link[symSecIdx];
 

@@ -33,8 +33,7 @@ void UtilTest::setUp () {
 void UtilTest::tearDown () {
 }
 /***************************************************************************//**
-* FUNCTION:		UtilTest::test_hasExt
-* OVERVIEW:		Test hasExt utility function
+* OVERVIEW:     Test hasExt utility function
 *============================================================================*/
 void UtilTest::test_hasExt()
 {
@@ -42,8 +41,7 @@ void UtilTest::test_hasExt()
 }
 
 /***************************************************************************//**
-* FUNCTION:		UtilTest::test_hasExt
-* OVERVIEW:		Test hasExt utility function
+* OVERVIEW:     Test hasExt utility function
 *============================================================================*/
 void UtilTest::test_changeExt()
 {
@@ -51,8 +49,7 @@ void UtilTest::test_changeExt()
 }
 
 /***************************************************************************//**
-* FUNCTION:		UtilTest::test_hasExt
-* OVERVIEW:		Test hasExt utility function
+* OVERVIEW:     Test hasExt utility function
 *============================================================================*/
 void UtilTest::test_searchAndReplace()
 {
