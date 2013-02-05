@@ -396,9 +396,8 @@ void Cfg::addOutEdge(PBB pBB, ADDRESS addr, bool bSetLabel /* = false */) {
  * \param        uNativeAddr: native address to look up
  * \returns      True if uNativeAddr starts a BB
  ******************************************************************************/
-bool Cfg::existsBB (ADDRESS uNativeAddr) {
-    MAPBB::iterator mi;
-    mi = m_mapBB.find (uNativeAddr);
+bool Cfg::existsBB (ADDRESS uNativeAddr) const {
+    auto mi = m_mapBB.find (uNativeAddr);
     return (mi != m_mapBB.end() && (*mi).second);
 }
 /***************************************************************************//**
@@ -407,7 +406,7 @@ bool Cfg::existsBB (ADDRESS uNativeAddr) {
  * fall-through and ends at the RTL prior to that associated with uNativeAddr.  The second node's type becomes
  * the type of the original basic block (pBB), and its out-edges are those of the original basic block.
  * In edges of the new BB's descendants are changed.
- * PRECONDITION: assumes uNativeAddr is an address within the boundaries of the given basic block.
+ * \pre assumes uNativeAddr is an address within the boundaries of the given basic block.
  * \param   pBB -  pointer to the BB to be split
  * \param   uNativeAddr - address of RTL to become the start of the new BB
  * \param   pNewBB -  if non zero, it remains as the "bottom" part of the BB, and splitBB only modifies the top part
@@ -642,11 +641,10 @@ bool Cfg::label ( ADDRESS uNativeAddr, PBB& pCurBB ) {
  * \param       uAddr Address to look up
  * \returns     True if uAddr starts an incomplete BB
  ******************************************************************************/
-bool Cfg::isIncomplete(ADDRESS uAddr) {
-    MAPBB::iterator mi = m_mapBB.find(uAddr);
+bool Cfg::isIncomplete(ADDRESS uAddr) const {
+    auto mi = m_mapBB.find(uAddr);
     if (mi == m_mapBB.end())
-        // No entry at all
-        return false;
+        return false; // No entry at all
     // Else, there is a BB there. If it's incomplete, return true
     BasicBlock * pBB = (*mi).second;
     return pBB->m_bIncomplete;

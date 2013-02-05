@@ -114,8 +114,8 @@ typedef BB_IT           iterator;
         iterator        begin() { return m_listBB.begin(); }
         iterator        end()   { return m_listBB.end(); }
         bool            label ( ADDRESS uNativeAddr, PBB& pNewBB );
-        bool            isIncomplete ( ADDRESS uNativeAddr );
-        bool            existsBB ( ADDRESS uNativeAddr );
+        bool            isIncomplete ( ADDRESS uNativeAddr ) const;
+        bool            existsBB ( ADDRESS uNativeAddr ) const;
         void            sortByAddress ();
         void            sortByFirstDFT();
         void            sortByLastDFT();
@@ -210,7 +210,7 @@ public:
         void            findInterferences(ConnectionGraph& ig);
         void            appendBBs(std::list<PBB>& worklist, std::set<PBB>& workset);
         void            removeUsedGlobals(std::set<Global*> &unusedGlobals);
-        void bbSearchAll(Exp *search, std::list<Exp*> &result, bool ch);
+        void            bbSearchAll(Exp *search, std::list<Exp*> &result, bool ch);
 protected:
         void            addBB(BasicBlock * bb) { m_listBB.push_back(bb); }
         friend class XMLProgParser;

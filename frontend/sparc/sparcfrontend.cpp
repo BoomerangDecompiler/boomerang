@@ -757,7 +757,7 @@ bool SparcFrontEnd::processProc(ADDRESS address, UserProc* proc, std::ofstream &
     // Get the next address from which to continue decoding and go from
     // there. Exit the loop if there are no more addresses or they all
     // correspond to locations that have been decoded.
-    while ((address = targetQueue.nextAddress(cfg)) != NO_ADDRESS) {
+    while ((address = targetQueue.nextAddress(*cfg)) != NO_ADDRESS) {
 
         // The list of RTLs for the current basic block
         std::list<RTL*>* BB_rtls = new std::list<RTL*>();
