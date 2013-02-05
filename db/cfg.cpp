@@ -1821,7 +1821,7 @@ void Cfg::findInterferences(ConnectionGraph& cg) {
             std::cout << "i" << std::flush;
             progress = 0;
         }
-        PBB currBB = workList.back();
+        BasicBlock * currBB = workList.back();
         workList.erase(--workList.end());
         workSet.erase(currBB);
         // Calculate live locations and interferences

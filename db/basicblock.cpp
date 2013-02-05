@@ -348,8 +348,8 @@ void BasicBlock::printToLog() {
     LOG << ost.str().c_str();
 }
 
-bool BasicBlock::isBackEdge(int inEdge) {
-    PBB in = m_InEdges[inEdge];
+bool BasicBlock::isBackEdge(int inEdge) const {
+    const BasicBlock * in = m_InEdges[inEdge];
     return this == in || (m_DFTfirst < in->m_DFTfirst && m_DFTlast > in->m_DFTlast);
 }
 

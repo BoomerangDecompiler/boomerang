@@ -87,7 +87,7 @@ private:
     std::list<char *> lines;
 
     void indent(std::ostringstream& str, int indLevel);
-    void appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool uns = false);
+    void appendExp(std::ostringstream& str, const Exp *exp, PREC curPrec, bool uns = false);
     void appendType(std::ostringstream& str, Type *typ);
     void appendTypeIdent(std::ostringstream& str, Type *typ, const char *ident);
     /// Adds: (

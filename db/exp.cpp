@@ -61,10 +61,10 @@ Const::Const(Proc* p)       : Exp(opFuncConst),    conscript(0), type(new VoidTy
 Const::Const(ADDRESS a)    : Exp(opIntConst),    conscript(0), type(new VoidType) {u.a = a;}
 
 // Copy constructor
-Const::Const(Const& o) : Exp(o.op) {u = o.u; conscript = o.conscript; type = o.type;}
+Const::Const(const Const& o) : Exp(o.op) {u = o.u; conscript = o.conscript; type = o.type;}
 
 Terminal::Terminal(OPER op) : Exp(op) {}
-Terminal::Terminal(Terminal& o) : Exp(o.op) {}        // Copy constructor
+Terminal::Terminal(const Terminal& o) : Exp(o.op) {}        // Copy constructor
 
 Unary::Unary(OPER op)
     : Exp(op) {
@@ -77,7 +77,7 @@ Unary::Unary(OPER op, Exp* e)
     subExp1 = e;        // Initialise the pointer
     assert(subExp1);
 }
-Unary::Unary(Unary& o)
+Unary::Unary(const Unary& o)
     : Exp(o.op) {
     subExp1 = o.subExp1->clone();
     assert(subExp1);
@@ -93,7 +93,7 @@ Binary::Binary(OPER op, Exp* e1, Exp* e2)
     subExp2 = e2;        // Initialise the 2nd pointer
     assert(subExp1 && subExp2);
 }
-Binary::Binary(Binary& o)
+Binary::Binary(const Binary& o)
     : Unary(op)
 {
     setSubExp1( subExp1->clone());
@@ -112,7 +112,7 @@ Ternary::Ternary(OPER op, Exp* e1, Exp* e2, Exp* e3)
     subExp3 = e3;
     assert(subExp1 && subExp2 && subExp3);
 }
-Ternary::Ternary(Ternary& o)
+Ternary::Ternary(const Ternary& o)
     : Binary(o.op)
 {
     subExp1 = o.subExp1->clone();
@@ -225,10 +225,13 @@ void Ternary::setSubExp3(Exp* e) {
 /***************************************************************************//**
  *
  * \brief        Get subexpression
- * PARAMETERS:        <none>
  * \returns            Pointer to the requested subexpression
  ******************************************************************************/
 Exp* Unary::getSubExp1() {
+    assert(subExp1);
+    return subExp1;
+}
+const Exp* Unary::getSubExp1() const {
     assert(subExp1);
     return subExp1;
 }
@@ -240,11 +243,19 @@ Exp* Binary::getSubExp2() {
     assert(subExp1 && subExp2);
     return subExp2;
 }
+const Exp* Binary::getSubExp2() const {
+    assert(subExp1 && subExp2);
+    return subExp2;
+}
 Exp*& Binary::refSubExp2() {
     assert(subExp1 && subExp2);
     return subExp2;
 }
 Exp* Ternary::getSubExp3() {
+    assert(subExp1 && subExp2 && subExp3);
+    return subExp3;
+}
+const Exp* Ternary::getSubExp3() const {
     assert(subExp1 && subExp2 && subExp3);
     return subExp3;
 }
@@ -283,20 +294,20 @@ void Binary::commute() {
  * PARAMETERS:        <none>
  * \returns            Pointer to cloned object
  ******************************************************************************/
-Exp* Const::clone() {
+Exp* Const::clone() const {
     // Note: not actually cloning the Type* type pointer. Probably doesn't matter with GC
     return new Const(*this);
 }
-Exp* Terminal::clone() {
+Exp* Terminal::clone() const {
     return new Terminal(*this);
 }
-Exp* Unary::clone() {
+Exp* Unary::clone() const {
     assert(subExp1);
     Unary* c = new Unary(op);
     c->subExp1 = subExp1->clone();
     return c;
 }
-Exp* Binary::clone() {
+Exp* Binary::clone() const {
     assert(subExp1 && subExp2);
     Binary* c = new Binary(op);
     c->subExp1 = subExp1->clone();
@@ -304,7 +315,7 @@ Exp* Binary::clone() {
     return c;
 }
 
-Exp* Ternary::clone() {
+Exp* Ternary::clone() const {
     assert(subExp1 && subExp2 && subExp3);
     Ternary* c = new Ternary(op);
     c->subExp1 = subExp1->clone();
@@ -312,21 +323,21 @@ Exp* Ternary::clone() {
     c->subExp3 = subExp3->clone();
     return c;
 }
-Exp* TypedExp::clone() {
+Exp* TypedExp::clone() const {
     TypedExp* c = new TypedExp(type, subExp1->clone());
     return c;
 }
-Exp* RefExp::clone() {
+Exp* RefExp::clone() const {
     RefExp* c = new RefExp(subExp1->clone(), def);
     return c;
 }
 
-Exp* TypeVal::clone() {
+Exp* TypeVal::clone() const {
     TypeVal* c = new TypeVal(val->clone());
     return c;
 }
 
-Exp* Location::clone() {
+Exp* Location::clone() const {
     Location* c = new Location(op, subExp1->clone(), proc);
     return c;
 }
@@ -581,7 +592,7 @@ bool TypeVal::operator*=(Exp& o) {
 //    //    //    //
 //    Const    //
 //    //    //    //
-void Const::print(std::ostream& os, bool html) {
+void Const::print(std::ostream& os, bool html) const {
     setLexBegin(os.tellp());
     switch (op) {
         case opIntConst:
@@ -623,7 +634,7 @@ void Const::printNoQuotes(std::ostream& os) {
 //    //    //    //
 //    Binary    //
 //    //    //    //
-void Binary::printr(std::ostream& os, bool html) {
+void Binary::printr(std::ostream& os, bool html) const {
     assert(subExp1 && subExp2);
     // The "r" is for recursive: the idea is that we don't want parentheses at the outer level, but a subexpression
     // (recursed from a higher level), we want the parens (at least for standard infix operators)
@@ -643,7 +654,7 @@ void Binary::printr(std::ostream& os, bool html) {
     os << ")";
 }
 
-void Binary::print(std::ostream& os, bool html) {
+void Binary::print(std::ostream& os, bool html) const {
     assert(subExp1 && subExp2);
     Exp* p1 = ((Binary*)this)->getSubExp1();
     Exp* p2 = ((Binary*)this)->getSubExp2();
@@ -756,7 +767,7 @@ void Binary::print(std::ostream& os, bool html) {
 //    //    //    //    //
 //     Terminal    //
 //    //    //    //    //
-void Terminal::print(std::ostream& os, bool html) {
+void Terminal::print(std::ostream& os, bool html) const {
     switch (op) {
         case opPC:        os << "%pc";   break;
         case opFlags:    os << "%flags"; break;
@@ -790,7 +801,7 @@ void Terminal::print(std::ostream& os, bool html) {
 //    //    //    //
 //     Unary    //
 //    //    //    //
-void Unary::print(std::ostream& os, bool html) {
+void Unary::print(std::ostream& os, bool html) const {
     Exp* p1 = ((Unary*)this)->getSubExp1();
     switch (op) {
         //    //    //    //    //    //    //
@@ -921,7 +932,7 @@ void Unary::print(std::ostream& os, bool html) {
 //    //    //    //
 //    Ternary //
 //    //    //    //
-void Ternary::printr(std::ostream& os, bool html) {
+void Ternary::printr(std::ostream& os, bool html) const {
     // The function-like operators don't need parentheses
     switch (op) {
         // The "function-like" ternaries
@@ -938,7 +949,7 @@ void Ternary::printr(std::ostream& os, bool html) {
     os << "(" << this << ")";
 }
 
-void Ternary::print(std::ostream& os, bool html) {
+void Ternary::print(std::ostream& os, bool html) const {
     Exp* p1 = ((Ternary*)this)->getSubExp1();
     Exp* p2 = ((Ternary*)this)->getSubExp2();
     Exp* p3 = ((Ternary*)this)->getSubExp3();
@@ -992,7 +1003,7 @@ void Ternary::print(std::ostream& os, bool html) {
 //    //    //    //
 // TypedExp //
 //    //    //    //
-void TypedExp::print(std::ostream& os, bool html) {
+void TypedExp::print(std::ostream& os, bool html) const {
     os << " ";
     type->starPrint(os);
     Exp* p1 = ((Ternary*)this)->getSubExp1();
@@ -1003,7 +1014,7 @@ void TypedExp::print(std::ostream& os, bool html) {
 //    //    //    //
 //    RefExp    //
 //    //    //    //
-void RefExp::print(std::ostream& os, bool html) {
+void RefExp::print(std::ostream& os, bool html) const {
     if (subExp1) subExp1->print(os, html);
     else os << "<nullptr>";
     if (html)
@@ -1028,7 +1039,7 @@ void RefExp::print(std::ostream& os, bool html) {
 //    //    //    //
 // TypeVal    //
 //    //    //    //
-void TypeVal::print(std::ostream& os, bool html) {
+void TypeVal::print(std::ostream& os, bool html) const {
     if (val)
         os << "<" << val->getCtype() << ">";
     else
@@ -1202,10 +1213,11 @@ bool Exp::isRegOfK() {
  * \param N - the specific register to be tested for
  * \returns            True if matches
  ******************************************************************************/
-bool Exp::isRegN(int N) {
-    if (op != opRegOf) return false;
-    Exp* sub = ((Unary*)this)->getSubExp1();
-    return (sub->getOper() == opIntConst && ((Const*)sub)->getInt() == N);
+bool Exp::isRegN(int N) const {
+    if (op != opRegOf)
+        return false;
+    const Exp* sub = ((const Unary*)this)->getSubExp1();
+    return (sub->getOper() == opIntConst && ((const Const*)sub)->getInt() == N);
 }
 /***************************************************************************//**
  *
@@ -2981,7 +2993,7 @@ const char *Exp::getOperName() const {
  *                      brackets>.
  * \param os Output stream to send the output to
  ******************************************************************************/
-void Exp::printt(std::ostream& os /*= cout*/) {
+void Exp::printt(std::ostream& os /*= cout*/) const {
     print(os);
     if (op != opTypedExp) return;
     Type* t = ((TypedExp*)this)->getType();
@@ -3030,7 +3042,7 @@ void Exp::printAsHL(std::ostream& os /*= cout*/) {
  * \param p ptr to Exp to print to the stream
  * \returns copy of os (for concatenation)
  ******************************************************************************/
-std::ostream& operator<<(std::ostream& os, Exp* p) {
+std::ostream& operator<<(std::ostream& os, const Exp* p) {
 #if 1
     // Useful for debugging, but can clutter the output
     p->printt(os);
@@ -3527,7 +3539,7 @@ void Location::getDefinitions(LocationSet& defs) {
 }
 
 
-const char* Const::getFuncName() {
+const char* Const::getFuncName() const {
     return u.pp->getName();
 }
 
@@ -3746,12 +3758,12 @@ void child(Exp* e, int ind) {
     e->printx(ind+4);
 }
 
-void Unary::printx(int ind) {
+void Unary::printx(int ind) const {
     std::cerr << std::setw(ind) << " " << operStrings[op] << "\n" << std::flush;
     child(subExp1, ind);
 }
 
-void Binary::printx(int ind) {
+void Binary::printx(int ind) const {
     assert(subExp1 && subExp2);
 
     std::cerr << std::setw(ind) << " " << operStrings[op] << "\n" << std::flush;
@@ -3759,14 +3771,14 @@ void Binary::printx(int ind) {
     child(subExp2, ind);
 }
 
-void Ternary::printx(int ind) {
+void Ternary::printx(int ind) const {
     std::cerr << std::setw(ind) << " " << operStrings[op] << "\n" << std::flush;
     child(subExp1, ind);
     child(subExp2, ind);
     child(subExp3, ind);
 }
 
-void Const::printx(int ind) {
+void Const::printx(int ind) const {
     std::cerr << std::setw(ind) << " " << operStrings[op] << " ";
     switch (op) {
         case opIntConst:
@@ -3785,22 +3797,22 @@ void Const::printx(int ind) {
     std::cerr << std::flush << "\n";
 }
 
-void TypeVal::printx(int ind) {
+void TypeVal::printx(int ind) const {
     std::cerr << std::setw(ind) << " " << operStrings[op] << " ";
     std::cerr << val->getCtype() << std::flush << "\n";
 }
 
-void TypedExp::printx(int ind) {
+void TypedExp::printx(int ind) const {
     std::cerr << std::setw(ind) << " " << operStrings[op] << " ";
     std::cerr << type->getCtype() << std::flush << "\n";
     child(subExp1, ind);
 }
 
-void Terminal::printx(int ind) {
+void Terminal::printx(int ind) const {
     std::cerr << std::setw(ind) << " " << operStrings[op] << "\n" << std::flush;
 }
 
-void RefExp::printx(int ind) {
+void RefExp::printx(int ind) const {
     std::cerr << std::setw(ind) << " " << operStrings[op] << " ";
     std::cerr << "{";
     if (def == 0) std::cerr << "nullptr";

@@ -332,7 +332,7 @@ protected:
                             return false;
                         }
 public:
-        bool            isBackEdge(int inEdge);
+        bool            isBackEdge(int inEdge) const;
 protected:
 
         bool            isAncestorOf(BasicBlock *other);

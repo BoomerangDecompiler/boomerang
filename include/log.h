@@ -18,19 +18,19 @@ class Log
 public:
     Log() { }
     virtual Log &operator<<(const std::string& s) = 0;
-    virtual Log &operator<<(Statement *s);
-    virtual Log &operator<<(Exp *e);
-    virtual Log &operator<<(Type *ty);
-    virtual Log &operator<<(RTL *r);
-    virtual Log &operator<<(Range *r);
-    virtual Log &operator<<(Range &r);
-    virtual Log &operator<<(RangeMap &r);
+    virtual Log &operator<<(const Statement *s);
+    virtual Log &operator<<(const Exp *e);
+    virtual Log &operator<<(const Type *ty);
+    virtual Log &operator<<(const RTL *r);
+    virtual Log &operator<<(const Range *r);
+    virtual Log &operator<<(const Range &r);
+    virtual Log &operator<<(const RangeMap &r);
     virtual Log &operator<<(int i);
     virtual Log &operator<<(size_t i);
     virtual Log &operator<<(char c);
     virtual Log &operator<<(double d);
     virtual Log &operator<<(ADDRESS a);
-    virtual Log &operator<<(LocationSet *l);
+    virtual Log &operator<<(const LocationSet *l);
     virtual ~Log() {}
     virtual void tail();
 };

@@ -1004,6 +1004,15 @@ void ArrayType::fixBaseType(Type *b) {
     x##Type *res = dynamic_cast<x##Type*>(ty);    \
     assert(res);        \
     return res;            \
+}\
+const x##Type *Type::as##x() const\
+{                        \
+    const Type *ty = this;    \
+    if (isNamed())        \
+    ty = ((const NamedType*)ty)->resolvesTo();    \
+    const x##Type *res = dynamic_cast<const x##Type*>(ty);    \
+    assert(res);        \
+    return res;            \
     }
 
 AS_TYPE(Void)
@@ -1024,6 +1033,12 @@ AS_TYPE(Lower)
 NamedType *Type::asNamed() {
     Type *ty = this;
     NamedType *res = dynamic_cast<NamedType*>(ty);
+    assert(res);
+    return res;
+}
+const NamedType *Type::asNamed() const{
+    const Type *ty = this;
+    const NamedType *res = dynamic_cast<const NamedType*>(ty);
     assert(res);
     return res;
 }
@@ -1062,8 +1077,9 @@ void Type::starPrint(std::ostream& os) {
 }
 
 // A crude shortcut representation of a type
-std::ostream& operator<<(std::ostream& os, Type* t) {
-    if (t == nullptr) return os << '0';
+std::ostream& operator<<(std::ostream& os,const  Type* t) {
+    if (t == nullptr)
+        return os << '0';
     switch (t->getId()) {
         case eInteger: {
             int sg = ((IntegerType*)t)->getSignedness();

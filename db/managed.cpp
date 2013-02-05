@@ -33,17 +33,17 @@
 extern char debug_buffer[];        // For prints functions
 
 
-std::ostream& operator<<(std::ostream& os, StatementSet* ss) {
+std::ostream& operator<<(std::ostream& os, const StatementSet* ss) {
     ss->print(os);
     return os;
 }
 
-std::ostream& operator<<(std::ostream& os, AssignSet* as) {
+std::ostream& operator<<(std::ostream& os, const AssignSet* as) {
     as->print(os);
     return os;
 }
 
-std::ostream& operator<<(std::ostream& os, LocationSet* ls) {
+std::ostream& operator<<(std::ostream& os, const LocationSet* ls) {
     ls->print(os);
     return os;
 }
@@ -136,7 +136,7 @@ void StatementSet::dump() {
     print(std::cerr);
 }
 
-void StatementSet::print(std::ostream& os) {
+void StatementSet::print(std::ostream& os) const {
     std::set<Statement*>::iterator it;
     for (it = begin(); it != end(); it++) {
         if (it != begin()) os << ",\t";
@@ -263,7 +263,7 @@ void AssignSet::dump() {
     print(std::cerr);
 }
 
-void AssignSet::print(std::ostream& os) {
+void AssignSet::print(std::ostream& os) const {
     iterator it;
     for (it = begin(); it != end(); it++) {
         if (it != begin())
@@ -335,7 +335,7 @@ void LocationSet::dump() {
     print(std::cerr);
 }
 
-void LocationSet::print(std::ostream& os) {
+void LocationSet::print(std::ostream& os) const {
     std::set<Exp*, lessExpStar>::iterator it;
     for (it = lset.begin(); it != lset.end(); it++) {
         if (it != lset.begin()) os << ",\t";
@@ -650,7 +650,7 @@ Assignment* StatementList::findOnLeft(Exp* loc) {
             return (Assignment*)*it;
         if (left->isLocal()) {
             Location *l = (Location*)left;
-            Exp *e = l->getProc()->expFromSymbol(((Const*)l->getSubExp1())->getStr());
+            const Exp *e = l->getProc()->expFromSymbol(((Const*)l->getSubExp1())->getStr());
             if (e && ((*e == *loc) || (e->isSubscript() && *e->getSubExp1() == *loc))) {
                 return (Assignment*)*it;
             }
@@ -712,7 +712,7 @@ Range::Range(int stride, int lowerBound, int upperBound, Exp *base) :
     }
 }
 
-void Range::print(std::ostream &os) {
+void Range::print(std::ostream &os) const {
     assert(lowerBound <= upperBound);
     if (base->isIntConst() && ((Const*)base)->getInt() == 0 &&
             lowerBound == MIN && upperBound == MAX) {
@@ -835,7 +835,7 @@ void RangeMap::widenwith(RangeMap &other) {
 }
 
 
-void RangeMap::print(std::ostream &os) {
+void RangeMap::print(std::ostream &os) const {
     for (auto it = ranges.begin(); it != ranges.end(); it++) {
         if (it != ranges.begin())
             os << ", ";

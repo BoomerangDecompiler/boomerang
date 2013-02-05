@@ -690,7 +690,7 @@ public:
                     StmtSsaXformer(ExpSsaXformer* esx, UserProc* proc) : StmtModifier(esx), proc(proc) {}
 //virtual            ~StmtSsaXformer() {}
         void        commonLhs(Assignment* s);
-
+//TODO: find out if recur should, or should not be set ?
 virtual void        visit(          Assign *s, bool& recur);
 virtual void        visit(       PhiAssign *s, bool& recur);
 virtual void        visit(ImplicitAssign *s, bool& recur);

@@ -135,7 +135,7 @@ Proc::Proc(Prog *prog, ADDRESS uNative, Signature *sig)
  * PARAMETERS:        <none>
  * \returns            the name of this procedure
  ******************************************************************************/
-const char* Proc::getName() {
+const char* Proc::getName() const {
     assert(signature);
     return signature->getName();
 }
@@ -158,7 +158,7 @@ void Proc::setName(const char *nam) {
  * PARAMETERS:        <none>
  * \returns            the native address of this procedure (entry point)
  ******************************************************************************/
-ADDRESS Proc::getNativeAddress() {
+ADDRESS Proc::getNativeAddress() const {
     return address;
 }
 
@@ -319,7 +319,7 @@ void UserProc::setParamType(int idx, Type* ty) {
 
 void UserProc::renameLocal(const char *oldName, const char *newName) {
     Type *ty = locals[oldName];
-    Exp *oldExp = expFromSymbol(oldName);
+    const Exp *oldExp = expFromSymbol(oldName);
     locals.erase(oldName);
     Exp *oldLoc = getSymbolFor(oldExp, ty);
     Exp *newLoc = Location::local(strdup(newName), this);
@@ -2599,13 +2599,13 @@ Exp *UserProc::getSymbolExp(Exp *le, Type *ty, bool lastPass) {
                 const char *nam = ((Const*)(*it).second->getSubExp1())->getStr();
                 if (locals.find(nam) != locals.end()) {
                     Type *lty = locals[nam];
-                    Exp *loc = (*it).first;
+                    const Exp *loc = (*it).first;
                     if (    loc->isMemOf() &&
                             loc->getSubExp1()->getOper() == opMinus &&
                             loc->getSubExp1()->getSubExp1()->isSubscript() &&
                             loc->getSubExp1()->getSubExp1()->getSubExp1()->isRegN(signature->getStackRegister()) &&
                             loc->getSubExp1()->getSubExp2()->isIntConst()) {
-                        int n = -((Const*)loc->getSubExp1()->getSubExp2())->getInt();
+                        int n = -((const Const*)loc->getSubExp1()->getSubExp2())->getInt();
                         int m = -((Const*)le->getSubExp1()->getSubExp2())->getInt();
                         if (m > n && m < n + (int)(lty->getSize() / 8)) {
                             e = Location::memOf(
@@ -3004,21 +3004,19 @@ Type *UserProc::getParamType(const char *nam) {
 //}
 
 /// As above but with replacement
-void UserProc::mapSymbolToRepl(Exp* from, Exp* oldTo, Exp* newTo) {
+void UserProc::mapSymbolToRepl(const Exp* from, Exp* oldTo, Exp* newTo) {
     removeSymbolMapping(from, oldTo);
     mapSymbolTo(from, newTo);        // The compiler could optimise this call to a fall through
 }
 
-void UserProc::mapSymbolTo(Exp* from, Exp* to) {
+void UserProc::mapSymbolTo(const Exp* from, Exp* to) {
     SymbolMap::iterator it = symbolMap.find(from);
     while (it != symbolMap.end() && *it->first == *from) {
         if (*it->second == *to)
             return;                // Already in the multimap
         ++it;
     }
-    std::pair<Exp*, Exp*> pr;
-    pr.first = from;
-    pr.second = to;
+    std::pair<const Exp*, Exp*> pr = {from,to};
     symbolMap.insert(pr);
 }
 
@@ -3026,7 +3024,7 @@ void UserProc::mapSymbolTo(Exp* from, Exp* to) {
 /// \brief Lookup the symbol map considering type
 /// Lookup the expression in the symbol map. Return nullptr or a C string with the symbol. Use the Type* ty to
 /// select from several names in the multimap; the name corresponding to the first compatible type is returned
-Exp* UserProc::getSymbolFor(Exp* from, Type* ty) {
+Exp* UserProc::getSymbolFor(const Exp* from, Type* ty) {
     SymbolMap::iterator ff = symbolMap.find(from);
     while (ff != symbolMap.end() && *ff->first == *from) {
         Exp* currTo = ff->second;
@@ -3041,7 +3039,7 @@ Exp* UserProc::getSymbolFor(Exp* from, Type* ty) {
     return nullptr;
 }
 /// Remove this mapping
-void UserProc::removeSymbolMapping(Exp* from, Exp* to) {
+void UserProc::removeSymbolMapping(const Exp* from, Exp* to) {
     SymbolMap::iterator it = symbolMap.find(from);
     while (it != symbolMap.end() && *it->first == *from) {
         if (*it->second == *to) {
@@ -3056,7 +3054,7 @@ void UserProc::removeSymbolMapping(Exp* from, Exp* to) {
 
 /// return a symbol's exp (note: the original exp, like r24, not local1)
 /// \note linear search!!
-Exp *UserProc::expFromSymbol(const char *nam) {
+const Exp *UserProc::expFromSymbol(const char *nam) {
     for (SymbolMap::iterator it = symbolMap.begin(); it != symbolMap.end(); it++) {
         Exp* e = it->second;
         if (e->isLocal() && !strcmp(((Const*)((Location*)e)->getSubExp1())->getStr(), nam))
@@ -3358,8 +3356,7 @@ void UserProc::fromSSAform() {
             else
                 rename = r1;
         }
-        Type *ty;
-        ty = rename->getDef()->getTypeFor(rename->getSubExp1());
+        Type *ty    = rename->getDef()->getTypeFor(rename->getSubExp1());
         Exp* local = newLocal(ty, rename);
         if (DEBUG_LIVENESS)
             LOG << "renaming " << rename << " to " << local << "\n";
@@ -3548,13 +3545,13 @@ void UserProc::removeSubscriptsFromSymbols() {
     symbolMap.clear();
     ExpSsaXformer esx(this);
     for (it = sm2.begin(); it != sm2.end(); ++it) {
-        Exp* from = it->first;
+        Exp* from = const_cast<Exp *>(it->first);
         if (from->isSubscript()) {
             // As noted above, don't touch the outer level of subscripts
             Exp*& sub = ((RefExp*)from)->refSubExp1();
             sub = sub->accept(&esx);
         } else
-            from = it->first->accept(&esx);
+            from = from->accept(&esx);
         mapSymbolTo(from, it->second);
     }
 }
@@ -4173,9 +4170,9 @@ const char* UserProc::lookupSymFromRefAny(RefExp* r) {
     return lookupSym(base, ty);            // Check for a general symbol
 }
 
-const char* UserProc::lookupSym(Exp* e, Type* ty) {
+const char* UserProc::lookupSym(const Exp* e, Type* ty) {
     if (e->isTypedExp())
-        e = ((TypedExp*)e)->getSubExp1();
+        e = ((const TypedExp*)e)->getSubExp1();
     SymbolMap::iterator it;
     it = symbolMap.find(e);
     while (it != symbolMap.end() && *it->first == *e) {
@@ -4220,7 +4217,7 @@ void UserProc::dumpLocals(std::ostream& os, bool html) {
     os << "locals:\n";
     for (std::map<std::string, Type*>::iterator it = locals.begin(); it != locals.end(); it++) {
         os << it->second->getCtype() << " " << it->first.c_str() << " ";
-        Exp *e = expFromSymbol((*it).first.c_str());
+        const Exp *e = expFromSymbol((*it).first.c_str());
         // Beware: for some locals, expFromSymbol() returns nullptr (? No longer?)
         if (e)
             os << e << "\n";
@@ -5682,7 +5679,7 @@ void UserProc::makeSymbolsImplicit() {
     symbolMap.clear();
     ImplicitConverter ic(cfg);
     for (it = sm2.begin(); it != sm2.end(); ++it) {
-        Exp* impFrom = it->first->accept(&ic);
+        Exp* impFrom = const_cast<Exp *>(it->first)->accept(&ic);
         mapSymbolTo(impFrom, it->second);
     }
 }
@@ -5805,7 +5802,8 @@ void UserProc::nameParameterPhis() {
                 }
             }
         }
-        if (multiple || firstName == nullptr) continue;
+        if (multiple || firstName == nullptr)
+            continue;
         mapSymbolTo(lhsRef, Location::param(firstName, this));
     }
 }

@@ -59,7 +59,7 @@ public:
         bool        definesLoc(Exp* loc);                    // Search; returns true if any
                                                             // statement defines loc
         bool        operator<(const StatementSet& o) const;    // Compare if less
-        void        print(std::ostream& os);                // Print to os
+        void        print(std::ostream& os) const;                // Print to os
         void        printNums(std::ostream& os);            // Print statements as numbers
         char*        prints();                                // Print to string (for debug)
         void        dump();                                    // Print to standard error for debugging
@@ -81,7 +81,7 @@ public:
         Assign *    lookupLoc(Exp* loc);                    // Search for loc on LHS, return ptr to Assign if found
 
         bool        operator<(const AssignSet& o) const;    // Compare if less
-        void        print(std::ostream& os);                // Print to os
+        void        print(std::ostream& os) const;                // Print to os
         void        printNums(std::ostream& os);            // Print statements as numbers
         char *      prints();                                // Print to string (for debug)
         void        dump();                                    // Print to standard error for debugging
@@ -148,6 +148,7 @@ class LocationSet {
         std::set<Exp*, lessExpStar> lset;
 public:
 typedef std::set<Exp*, lessExpStar>::iterator iterator;
+typedef std::set<Exp*, lessExpStar>::const_iterator const_iterator;
                     LocationSet() {}                        // Default constructor
                     ~LocationSet() {}                        // virtual destructor kills warning
                     LocationSet(const LocationSet& o);        // Copy constructor
@@ -157,6 +158,8 @@ typedef std::set<Exp*, lessExpStar>::iterator iterator;
         void        clear() {lset.clear();}                    // Clear the set
         iterator    begin() {return lset.begin();}
         iterator    end()     {return lset.end();}
+        const_iterator begin() const {return lset.begin();}
+        const_iterator end() const {return lset.begin();}
         void        insert(Exp* loc) {lset.insert(loc);}    // Insert the given location
         void        remove(Exp* loc);                        // Remove the given location
         void        remove(iterator ll) {lset.erase(ll);}    // Remove location, given iterator
@@ -164,7 +167,7 @@ typedef std::set<Exp*, lessExpStar>::iterator iterator;
         size_t      size() const {return lset.size();}        // Number of elements
         bool        operator==(const LocationSet& o) const; // Compare
         void        substitute(Assign& a);                    // Substitute the given assignment to all
-        void        print(std::ostream& os);                // Print to os
+        void        print(std::ostream& os) const;                // Print to os
         char*        prints();                                // Print to string for debugging
         void        dump();
         void        diff(LocationSet* o);                    // Diff 2 location sets to std::cerr
@@ -194,7 +197,7 @@ public:
         int            getUpperBound() { return upperBound; }
         void        unionWith(Range &r);
         void        widenWith(Range &r);
-        void        print(std::ostream &os);
+        void        print(std::ostream &os) const;
         bool        operator==(Range &other);
 
 static const int MAX = 2147483647;
@@ -212,12 +215,12 @@ public:
         Range        &getRange(Exp *loc);
         void        unionwith(RangeMap &other);
         void        widenwith(RangeMap &other);
-        void        print(std::ostream &os);
+        void        print(std::ostream &os) const;
         Exp            * substInto(Exp *e, std::set<Exp*, lessExpStar> *only = nullptr);
         void        killAllMemOfs();
         void        clear() { ranges.clear(); }
         bool        isSubset(RangeMap &other);
-        bool        empty() { return ranges.empty(); }
+        bool        empty() const { return ranges.empty(); }
 };
 
 /// A class to store connections in a graph, e.g. for interferences of types or live ranges, or the phi_unite relation

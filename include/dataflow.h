@@ -177,15 +177,8 @@ public:
          * Insert a new member (make sure none exists yet)
          */
         void        insert(Assign* a);
-        /*
-         * Print the collected locations to stream os
-         */
-        void        print(std::ostream& os, bool html = false);
-
-        /*
-         * Print to string or stdout (for debugging)
-         */
-        char*        prints();
+        void        print(std::ostream& os, bool html = false) const;
+        char*        prints() const;
         void        dump();
 Assign* dumpAddrOfFourth();
 
@@ -257,15 +250,8 @@ public:
          * Insert a new member
          */
         void        insert(Exp* e) {locs.insert(e);}
-        /*
-         * Print the collected locations to stream os
-         */
-        void        print(std::ostream& os, bool html = false);
-
-        /*
-         * Print to string or stderr (for debugging)
-         */
-        char*        prints();
+        void        print(std::ostream& os, bool html = false) const;
+        char*        prints() const;
         void        dump();
 
         /*

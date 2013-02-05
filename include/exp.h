@@ -77,7 +77,7 @@ class Exp {
 protected:
         OPER        op;               // The operator (e.g. opPlus)
 
-        unsigned    lexBegin, lexEnd;
+        mutable unsigned    lexBegin, lexEnd;
 
         // Constructor, with ID
                     Exp(OPER op) : op(op) {}
@@ -92,29 +92,29 @@ virtual                ~Exp() {}
         const char *getOperName() const;
         void        setOper(OPER x) {op = x;}      // A few simplifications use this
 
-        void        setLexBegin(unsigned int n) { lexBegin = n; }
-        void        setLexEnd(unsigned int n) { lexEnd = n; }
-        unsigned    getLexBegin() { return lexBegin; }
-        unsigned    getLexEnd() { return lexEnd; }
+        void        setLexBegin(unsigned int n) const { lexBegin = n; }
+        void        setLexEnd(unsigned int n) const { lexEnd = n; }
+        unsigned    getLexBegin() const { return lexBegin; }
+        unsigned    getLexEnd() const { return lexEnd; }
 
         // Print the expression to the given stream
-virtual void        print(std::ostream& os, bool html = false) = 0;
+virtual void        print(std::ostream& os, bool html = false) const = 0;
         // Print with <type>
-        void        printt(std::ostream& os = std::cout);
+        void        printt(std::ostream& os = std::cout) const;
         void        printAsHL(std::ostream& os = std::cout); // Print with v[5] as v5
         char*        prints();        // Print to string (for debugging and logging)
         void        dump();            // Print to standard error (for debugging)
         // Recursive print: don't want parens at the top level
 virtual void printr(std::ostream& os, bool html = false) { print(os, html);}       // But most classes want standard
         // For debugging: print in indented hex. In gdb: "p x->printx(0)"
-virtual void        printx(int ind) = 0;
+virtual void        printx(int ind) const = 0;
 
         // Display as a dotty graph
         void        createDotFile(char* name);
 virtual void        appendDotFile(std::ofstream& os) = 0;
 
         // Clone (make copy of self that can be deleted without affecting self)
-virtual Exp*        clone() = 0;
+virtual Exp*        clone() const  = 0;
 
         // Comparison
 // Type sensitive equality
@@ -136,19 +136,19 @@ virtual int getArity() {return 0;}        // Overridden for Unary, Binary, etc
         //    //    //    //    //    //    //
 
         // True if this is a call to a flag function
-        bool        isFlagCall() {return op == opFlagCall;}
+        bool        isFlagCall() const {return op == opFlagCall;}
         // True if this represents one of the abstract flags locations, int or float
-        bool        isFlags() {return op == opFlags || op == opFflags;}
+        bool        isFlags() const {return op == opFlags || op == opFflags;}
         // True if is one of the main 4 flags
-        bool        isMainFlag() {return op >= opZF && op <= opOF;}
+        bool        isMainFlag() const {return op >= opZF && op <= opOF;}
         // True if this is a register location
-        bool        isRegOf() {return op == opRegOf;}
+        bool        isRegOf() const {return op == opRegOf;}
         // True if this is a register location with a constant index
         bool        isRegOfK();
         // True if this is a specific numeric register
-        bool        isRegN(int n);
+        bool        isRegN(int n) const;
         // True if this is a memory location (any memory nesting depth)
-        bool        isMemOf() {return op == opMemOf;}
+        bool        isMemOf() const {return op == opMemOf;}
         // True if this is an address of
         bool        isAddrOf() {return op == opAddrOf;}
         // True if this is an array expression
@@ -166,41 +166,41 @@ virtual int getArity() {return 0;}        // Overridden for Unary, Binary, etc
         // True if is %afp, %afp+k, %afp-k, or a[m[<any of these]]
         bool        isAfpTerm();
         // True if is int const
-        bool        isIntConst() {return op == opIntConst;}
+        bool        isIntConst() const {return op == opIntConst;}
         // True if is string const
-        bool        isStrConst() {return op == opStrConst;}
+        bool        isStrConst() const {return op == opStrConst;}
         // Get string constant even if mangled
         const char *getAnyStrConst();
         // True if is flt point const
-        bool        isFltConst() {return op == opFltConst;}
+        bool        isFltConst()const  {return op == opFltConst;}
         // True if inteter or string constant
-        bool        isConst() {return op == opIntConst || op == opStrConst;}
+        bool        isConst() const {return op == opIntConst || op == opStrConst;}
         // True if is a post-var expression (var_op' in SSL file)
-        bool        isPostVar() {return op == opPostVar;}
+        bool        isPostVar() const {return op == opPostVar;}
         // True if this is an opSize (size case; deprecated)
-        bool        isSizeCast() {return op == opSize;}
+        bool        isSizeCast() const {return op == opSize;}
         // True if this is a subscripted expression (SSA)
-        bool        isSubscript() {return op == opSubscript;}
+        bool        isSubscript() const {return op == opSubscript;}
         // True if this is a phi assignmnet (SSA)
 //        bool        isPhi() {return op == opPhi;}
         // True if this is a local variable
-        bool        isLocal() {return op == opLocal;}
+        bool        isLocal() const {return op == opLocal;}
         // True if this is a global variable
-        bool        isGlobal() {return op == opGlobal;}
+        bool        isGlobal() const {return op == opGlobal;}
         // True if this is a typeof
-        bool        isTypeOf() {return op == opTypeOf;}
+        bool        isTypeOf() const {return op == opTypeOf;}
         // Get the index for this var
         int            getVarIndex();
         // True if this is a terminal
 virtual bool        isTerminal() { return false; }
         // True if this is the constant "true"
-        bool        isTrue() {return op == opTrue;}
+        bool        isTrue() const {return op == opTrue;}
         // True if this is the constant "false"
-        bool        isFalse() {return op == opFalse;}
+        bool        isFalse() const {return op == opFalse;}
         // True if this is a disjunction, i.e. x or y
-        bool        isDisjunction() {return op == opOr;}
+        bool        isDisjunction() const  {return op == opOr;}
         // True if this is a conjunction, i.e. x and y
-        bool        isConjunction() {return op == opAnd;}
+        bool        isConjunction() const {return op == opAnd;}
         // True if this is a boolean constant
         bool        isBoolConst() {return op == opTrue || op == opFalse;}
         // True if this is an equality (== or !=)
@@ -222,9 +222,8 @@ virtual bool        isTerminal() { return false; }
         bool        isLocation() { return    op == opMemOf || op == opRegOf ||
                                                op == opGlobal || op == opLocal ||
                                                op == opParam; }
-
         // True if this is a typed expression
-        bool        isTypedExp() { return op == opTypedExp;}
+        bool        isTypedExp() const { return op == opTypedExp;}
 
 
         // FIXME: are these used?
@@ -270,9 +269,12 @@ virtual void        doSearchChildren(Exp* search, std::list<Exp**>& li, bool onc
         // These are here so we can (optionally) prevent code clutter.
         // Using a *Exp (that is known to be a Binary* say), you can just directly call getSubExp2.
         // However, you can still choose to cast from Exp* to Binary* etc. and avoid the virtual call
-virtual Exp*        getSubExp1() {return 0;}
-virtual Exp*        getSubExp2() {return 0;}
-virtual Exp*        getSubExp3() {return 0;}
+virtual Exp*        getSubExp1() {return nullptr;}
+virtual const Exp * getSubExp1() const {return nullptr;}
+virtual Exp *       getSubExp2() {return nullptr;}
+virtual const Exp * getSubExp2() const {return nullptr;}
+virtual Exp*        getSubExp3() {return nullptr;}
+virtual const Exp * getSubExp3() const {return nullptr;}
 virtual Exp*&        refSubExp1();
 virtual Exp*&        refSubExp2();
 virtual Exp*&        refSubExp3();
@@ -367,7 +369,7 @@ protected:
 };        // class Exp
 
 // Not part of the Exp class, but logically belongs with it:
-std::ostream& operator<<(std::ostream& os, Exp* p);     // Print the Exp poited to by p
+std::ostream& operator<<(std::ostream& os, const Exp* p);     // Print the Exp poited to by p
 
 /***************************************************************************//**
  * Const is a subclass of Exp, and holds either an integer, floating point, string, or address constant
@@ -396,12 +398,12 @@ public:
                     Const(const char* p);
                     Const(Proc* p);
         // Copy constructor
-                    Const(Const& o);
+                    Const(const Const &o);
 
         // Nothing to destruct: Don't deallocate the string passed to constructor
 
         // Clone
-virtual Exp*            clone();
+virtual Exp*            clone() const;
 
         // Compare
 virtual bool        operator==(const Exp& o) const;
@@ -409,12 +411,12 @@ virtual bool        operator< (const Exp& o) const;
 virtual bool        operator*=(Exp& o);
 
         // Get the constant
-        int         getInt() {return u.i;}
-        QWord       getLong(){return u.ll;}
-        double      getFlt() {return u.d;}
-        const char* getStr() {return u.p;}
-        ADDRESS     getAddr() {return u.a;}
-        const char* getFuncName();
+        int         getInt() const {return u.i;}
+        QWord       getLong()const {return u.ll;}
+        double      getFlt() const {return u.d;}
+        const char* getStr() const {return u.p;}
+        ADDRESS     getAddr() const {return u.a;}
+        const char* getFuncName() const;
 
         // Set the constant
         void        setInt(int i)        {u.i = i;}
@@ -425,12 +427,13 @@ virtual bool        operator*=(Exp& o);
 
         // Get and set the type
         Type*       getType() { return type; }
+        const Type* getType() const { return type; }
         void        setType(Type* ty) { type = ty; }
 
-virtual void        print(std::ostream& os, bool html = false);
+virtual void        print(std::ostream& os, bool html = false) const;
         // Print "recursive" (extra parens not wanted at outer levels)
         void        printNoQuotes(std::ostream& os);
-virtual void        printx(int ind);
+virtual void        printx(int ind) const;
 
 
 virtual void        appendDotFile(std::ofstream& of);
@@ -459,19 +462,19 @@ class Terminal : public Exp {
 public:
         // Constructors
                     Terminal(OPER op);
-                    Terminal(Terminal& o);        // Copy constructor
+                    Terminal(const Terminal &o);        // Copy constructor
 
         // Clone
-virtual Exp*    clone();
+virtual Exp*    clone() const;
 
         // Compare
 virtual bool        operator==(const Exp& o) const;
 virtual bool        operator< (const Exp& o) const;
 virtual bool        operator*=(Exp& o);
 
-virtual void        print(std::ostream& os, bool html = false);
+virtual void        print(std::ostream& os, bool html = false) const;
 virtual void        appendDotFile(std::ofstream& of);
-virtual void        printx(int ind);
+virtual void        printx(int ind) const;
 
 virtual bool        isTerminal() { return true; }
 
@@ -501,10 +504,10 @@ public:
         // Constructor, with ID and subexpression
                     Unary(OPER op, Exp* e);
         // Copy constructor
-                    Unary(Unary& o);
+                    Unary(const Unary &o);
 
         // Clone
-virtual Exp*        clone();
+virtual Exp*        clone() const;
 
         // Compare
 virtual bool        operator==(const Exp& o) const;
@@ -518,15 +521,16 @@ virtual                ~Unary();
 virtual int            getArity() {return 1;}
 
         // Print
-virtual void        print(std::ostream& os, bool html = false);
+virtual void        print(std::ostream& os, bool html = false) const;
 virtual void        appendDotFile(std::ofstream& of);
-virtual void        printx(int ind);
+virtual void        printx(int ind) const;
 
         // Set first subexpression
         void        setSubExp1(Exp* e);
         void        setSubExp1ND(Exp* e) {subExp1 = e;}
         // Get first subexpression
         Exp*        getSubExp1();
+        const Exp*  getSubExp1() const;
         // Get a reference to subexpression 1
         Exp*&        refSubExp1();
 
@@ -570,15 +574,15 @@ public:
         // Constructor, with ID and subexpressions
                     Binary(OPER op, Exp* e1, Exp* e2);
         // Copy constructor
-                    Binary(Binary& o);
+                    Binary(const Binary &o);
 
         // Clone
-virtual Exp* clone();
+virtual Exp *       clone() const;
 
         // Compare
-virtual bool         operator==(const Exp& o) const ;
-virtual bool         operator< (const Exp& o) const ;
-virtual bool         operator*=(Exp& o);
+virtual bool        operator==(const Exp& o) const ;
+virtual bool        operator< (const Exp& o) const ;
+virtual bool        operator*=(Exp& o);
 
         // Destructor
 virtual                ~Binary();
@@ -587,15 +591,16 @@ virtual                ~Binary();
         int                getArity() {return 2;}
 
         // Print
-virtual void         print(std::ostream& os, bool html = false);
-virtual void         printr(std::ostream& os, bool html = false);
+virtual void         print(std::ostream& os, bool html = false) const;
+virtual void         printr(std::ostream& os, bool html = false) const;
 virtual void         appendDotFile(std::ofstream& of);
-virtual void         printx(int ind);
+virtual void         printx(int ind) const;
 
         // Set second subexpression
         void        setSubExp2(Exp* e);
         // Get second subexpression
         Exp*        getSubExp2();
+        const Exp * getSubExp2() const;
         // Commute the two operands
         void        commute();
         // Get a reference to subexpression 2
@@ -643,10 +648,10 @@ public:
         // Constructor, with operator and subexpressions
                     Ternary(OPER op, Exp* e1, Exp* e2, Exp* e3);
         // Copy constructor
-                    Ternary(Ternary& o);
+                    Ternary(const Ternary &o);
 
         // Clone
-virtual Exp*        clone();
+virtual Exp*        clone() const;
 
         // Compare
 virtual bool         operator==(const Exp& o) const ;
@@ -660,15 +665,16 @@ virtual                ~Ternary();
         int                getArity() {return 3;}
 
         // Print
-virtual void         print(std::ostream& os, bool html = false);
-virtual void         printr(std::ostream& os, bool html = false);
+virtual void         print(std::ostream& os, bool html = false) const;
+virtual void         printr(std::ostream& os, bool html = false) const;
 virtual void         appendDotFile(std::ofstream& of);
-virtual void         printx(int ind);
+virtual void         printx(int ind) const;
 
         // Set third subexpression
         void        setSubExp3(Exp* e);
         // Get third subexpression
         Exp*        getSubExp3();
+        const Exp * getSubExp3() const;
         // Get a reference to subexpression 3
         Exp*&        refSubExp3();
 
@@ -713,7 +719,7 @@ public:
                         TypedExp(TypedExp& o);
 
         // Clone
-virtual Exp* clone();
+virtual Exp* clone() const;
 
         // Compare
 virtual bool        operator==(const Exp& o) const;
@@ -722,9 +728,9 @@ virtual bool        operator<<(const Exp& o) const;
 virtual bool        operator*=(Exp& o);
 
 
-virtual void        print(std::ostream& os, bool html = false);
+virtual void        print(std::ostream& os, bool html = false) const;
 virtual void        appendDotFile(std::ofstream& of);
-virtual void        printx(int ind);
+virtual void        printx(int ind) const;
 
         // Get and set the type
 virtual Type*        getType() {return type;}
@@ -778,22 +784,22 @@ public:
                     RefExp(Exp* e, Statement* def);
         //RefExp(Exp* e);
         //RefExp(RefExp& o);
-virtual Exp*         clone();
+virtual Exp*         clone() const;
 virtual bool         operator==(const Exp& o) const;
 virtual bool         operator< (const Exp& o) const;
 virtual bool        operator*=(Exp& o);
 
-virtual void        print(std::ostream& os, bool html = false);
-virtual void        printx(int ind);
+virtual void        print(std::ostream& os, bool html = false) const;
+virtual void        printx(int ind) const;
 //virtual int        getNumRefs() {return 1;}
         Statement*    getDef() {return def;}        // Ugh was called getRef()
         Exp*        addSubscript(Statement* def) {this->def = def; return this;}
         void        setDef(Statement* def) {this->def = def;}
 virtual Exp*        genConstraints(Exp* restrictTo);
         bool        references(Statement* s) {return def == s;}
-virtual Exp*        polySimplify(bool& bMod);
-virtual Exp            *match(Exp *pattern);
-virtual bool         match(const char *pattern, std::map<std::string, Exp*> &bindings);
+virtual Exp *       polySimplify(bool& bMod);
+virtual Exp *       match(Exp *pattern);
+virtual bool        match(const char *pattern, std::map<std::string, Exp*> &bindings);
 
         // Before type analysis, implicit definitions are nullptr.  During and after TA, they point to an implicit
         // assignment statement.  Don't implement here, since it would require #including of statement.h
@@ -824,12 +830,12 @@ public:
 
 virtual Type*        getType() {return val;}
 virtual void        setType(Type* t) {val = t;}
-virtual Exp*        clone();
+virtual Exp*        clone() const;
 virtual bool        operator==(const Exp& o) const;
 virtual bool        operator< (const Exp& o) const;
 virtual bool        operator*=(Exp& o);
-virtual void        print(std::ostream& os, bool html = false);
-virtual void        printx(int ind);
+virtual void        print(std::ostream& os, bool html = false) const;
+virtual void        printx(int ind) const;
 virtual Exp*        genConstraints(Exp* restrictTo) {
                         assert(0); return nullptr;} // Should not be constraining constraints
 //virtual Exp        *match(Exp *pattern);
@@ -862,7 +868,7 @@ static Location*    local(const char *nam, UserProc *p);
 static Location*    param(const char *nam, UserProc *p = nullptr) {
                         return new Location(opParam, new Const(nam), p);}
         // Clone
-virtual Exp*        clone();
+virtual Exp*        clone() const;
 
         void        setProc(UserProc *p) { proc = p; }
         UserProc    *getProc() { return proc; }

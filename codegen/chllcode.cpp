@@ -78,7 +78,7 @@ void CHLLCode::indent(std::ostringstream& str, int indLevel) {
  * \todo This function is 800+ lines, and should possibly be split up.
  */
 static int progress = 0;
-void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool uns /* = false */ ) {
+void CHLLCode::appendExp(std::ostringstream& str, const Exp *exp, PREC curPrec, bool uns /* = false */ ) {
     if (exp == nullptr) return;                // ?
 
     if (++progress > 500) {
@@ -99,10 +99,10 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
     }
 #endif
 
-    Const    *c = (Const*)exp;
-    Unary    *u = (Unary*)exp;
-    Binary    *b = (Binary*)exp;
-    Ternary *t = (Ternary*)exp;
+    const Const    *c = (const Const*)exp;
+    const Unary    *u = (const Unary*)exp;
+    const Binary    *b = (const Binary*)exp;
+    const Ternary *t = (const Ternary*)exp;
 
     switch(op) {
         case opIntConst: {
@@ -187,7 +187,7 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
         case opFuncConst:
             str << c->getFuncName(); break;
         case opAddrOf: {
-            Exp* sub = u->getSubExp1();
+            const Exp* sub = u->getSubExp1();
 #if 0        // Suspect only ADHOC TA
             if (sub->getType() && sub->getType()->isArray()) {
                 appendExp(str, sub, curPrec);
@@ -196,7 +196,7 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 #endif
             if (sub->isGlobal()) {
                 Prog* prog = m_proc->getProg();
-                Const* con = (Const*)((Unary*)sub)->getSubExp1();
+                const Const* con = (const Const*)((const Unary*)sub)->getSubExp1();
                 Type* gt = prog->getGlobalType(con->getStr());
                 if (gt && (gt->isArray() || (gt->isPointer() && gt->asPointer()->getPointsTo()->isChar()))) {
                     // Special C requirement: don't emit "&" for address of an array or char*
@@ -223,7 +223,7 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
         case opParam:
         case opGlobal:
         case opLocal:
-            c = dynamic_cast<Const*>(u->getSubExp1());
+            c = dynamic_cast<const Const*>(u->getSubExp1());
             assert(c && c->getOper() == opStrConst);
             str << c->getStr();
             break;
@@ -629,7 +629,7 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
         case opList:
         {
             int elems_on_line = 0; // try to limit line lengths
-            Exp* e2 = b->getSubExp2();
+            const Exp* e2 = b->getSubExp2();
             str << "{ ";
             if (b->getSubExp1()->getOper() == opList)
                 str << "\n ";
@@ -644,7 +644,7 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
                 } else {
                     str << ", ";
                 }
-                b = static_cast<Binary*>(e2);
+                b = static_cast<const Binary*>(e2);
                 e2 = b->getSubExp2();
             }
             appendExp(str, b->getSubExp1(), PREC_NONE, uns);
@@ -772,8 +772,8 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
         }
         case opSgnEx:
         case opTruncs: {
-            Exp* s = t->getSubExp3();
-            int toSize = ((Const*)t->getSubExp2())->getInt();
+            const Exp* s = t->getSubExp3();
+            int toSize = ((const Const*)t->getSubExp2())->getInt();
             switch (toSize) {
                 case 8:        str << "(char) "; break;
                 case 16:    str << "(short) "; break;
@@ -784,8 +784,8 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
             break;
         }
         case opTruncu: {
-            Exp* s = t->getSubExp3();
-            int toSize = ((Const*)t->getSubExp2())->getInt();
+            const Exp* s = t->getSubExp3();
+            int toSize = ((const Const*)t->getSubExp2())->getInt();
             switch (toSize) {
                 case 8:        str << "(unsigned char) "; break;
                 case 16:    str << "(unsigned short) "; break;
@@ -797,9 +797,9 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
         }
         case opMachFtr: {
             str << "/* machine specific */ (int) ";
-            Exp* sub = u->getSubExp1();
+            const Exp* sub = u->getSubExp1();
             assert(sub->isStrConst());
-            const char* s = ((Const*)sub)->getStr();
+            const char* s = ((const Const*)sub)->getStr();
             if (s[0] == '%')        // e.g. %Y
                 str << s+1;            // Just use Y
             else
@@ -878,7 +878,7 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
                 appendExp(str, b->getSubExp1(), PREC_PRIM);
                 str << ".";
             }
-            str << ((Const*)b->getSubExp2())->getStr();
+            str << ((const Const*)b->getSubExp2())->getStr();
         }
             break;
         case opArrayIndex:
@@ -1573,7 +1573,7 @@ void CHLLCode::AddLocal(const char *name, Type *type, bool last) {
     std::ostringstream s;
     indent(s, 1);
     appendTypeIdent(s, type, name);
-    Exp *e = m_proc->expFromSymbol(name);
+    const Exp *e = m_proc->expFromSymbol(name);
     if (e) {
         // ? Should never see subscripts in the back end!
         if (e->getOper() == opSubscript && ((RefExp*)e)->isImplicitDef() &&

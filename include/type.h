@@ -112,19 +112,33 @@ virtual bool        isComplete() {return true;}
 
                     // These replace type casts
         VoidType    *asVoid();
+        const VoidType *asVoid() const;
         FuncType    *asFunc();
+        const FuncType *asFunc() const;
         BooleanType    *asBoolean();
+        const BooleanType *   asBoolean() const;
         CharType    *asChar();
+        const CharType *      asChar() const;
         IntegerType    *asInteger();
+        const IntegerType *   asInteger() const;
         FloatType    *asFloat();
+        const FloatType *     asFloat() const;
         NamedType    *asNamed();
+        const NamedType *     asNamed() const;
         PointerType    *asPointer();
+        const PointerType *   asPointer() const;
         ArrayType    *asArray();
+        const ArrayType *     asArray() const;
         CompoundType *asCompound();
+        const CompoundType *  asCompound() const;
         UnionType    *asUnion();
+        const UnionType *     asUnion() const;
         SizeType    *asSize();
+        const SizeType *      asSize() const;
         UpperType    *asUpper();
+        const UpperType *     asUpper() const;
         LowerType    *asLower();
+        const LowerType *     asLower() const;
 
                     // These replace calls to isNamed() and resolvesTo()
         bool        resolvesToVoid();
@@ -393,6 +407,7 @@ virtual                ~PointerType();
 virtual bool        isPointer() const { return true; }
         void        setPointsTo(Type *p);
         Type        *getPointsTo() { return points_to; }
+        const Type* getPointsTo() const { return points_to; }
 static  PointerType *newPtrAlpha();
         bool        pointsToAlpha();
         int         pointerDepth();        // Return 2 for **x
@@ -428,9 +443,10 @@ public:
 virtual             ~ArrayType();
 virtual bool        isArray() const { return true; }
         Type        *getBaseType() { return base_type; }
+        const Type *getBaseType() const { return base_type; }
         void        setBaseType(Type *b);
         void        fixBaseType(Type *b);
-        unsigned    getLength() { return length; }
+        unsigned    getLength() const { return length; }
         void        setLength(unsigned n) { length = n; }
         bool        isUnbounded() const;
 
@@ -463,8 +479,8 @@ public:
                     NamedType(const std::string & _name);
 virtual             ~NamedType();
 virtual bool        isNamed() const { return true; }
-        const char    *getName() { return name.c_str(); }
-        Type        *resolvesTo() const;
+        const char *getName() const { return name.c_str(); }
+        Type *      resolvesTo() const;
                     // Get a new type variable, e.g. alpha0, alpha55
 static    NamedType    *getAlpha();
 
@@ -624,7 +640,8 @@ virtual bool        operator==(const Type& other) const;
 virtual bool        operator< (const Type& other) const;
 //virtual Exp         *match(Type *pattern);
 virtual Type*        mergeWith(Type* other);
-        Type        *getBaseType() { return base_type; }
+        Type *       getBaseType() { return base_type; }
+        const Type * getBaseType() const { return base_type; }
         void        setBaseType(Type *b) { base_type = b; }
 
 virtual size_t      getSize() const {return base_type->getSize()/2;}
@@ -650,6 +667,7 @@ virtual bool        operator< (const Type& other) const;
 //virtual Exp         *match(Type *pattern);
 virtual Type*        mergeWith(Type* other);
         Type        *getBaseType() { return base_type; }
+        const Type *    getBaseType() const { return base_type; }
         void        setBaseType(Type *b) { base_type = b; }
 
 virtual size_t      getSize() const {return base_type->getSize()/2;}
@@ -704,7 +722,7 @@ private:
 };
 
 // Not part of the Type class, but logically belongs with it:
-std::ostream& operator<<(std::ostream& os, Type* t);  // Print the Type pointed to by t
+std::ostream& operator<<(std::ostream& os, const Type* t);  // Print the Type pointed to by t
 
 
 #endif    // __TYPE_H__

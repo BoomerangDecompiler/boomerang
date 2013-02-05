@@ -66,9 +66,9 @@ public:
                         Proc(Prog *prog, ADDRESS uNative, Signature *sig);
 virtual                 ~Proc();
 
-        const char*     getName();
+        const char*     getName() const;
         void            setName(const char *nam);
-        ADDRESS         getNativeAddress();
+        ADDRESS         getNativeAddress() const;
         void            setNativeAddress(ADDRESS a);
         Prog *          getProg() { return prog; } //!< Get the program this procedure belongs to.
         void            setProg(Prog *p) { prog = p; }
@@ -91,7 +91,7 @@ virtual bool            isNoReturn() = 0; //!< Return true if this procedure doe
         /**
          * OutPut operator for a Proc object.
          */
-        friend std::ostream& operator<<(std::ostream& os, Proc& proc);
+        friend std::ostream& operator<<(std::ostream& os, const Proc& proc);
 
 virtual Exp *           getProven(Exp *left) = 0;       //!< Get the RHS, if any, that is proven for left
 virtual Exp *           getPremised(Exp *left) = 0;     //!< Get the RHS, if any, that is premised for left
@@ -223,7 +223,7 @@ public:
          * It is a *multi*map because one location can have several default names differentiated by type.
          * E.g. r24 -> eax for int, r24 -> eax_1 for float
          */
-        typedef std::multimap<Exp*,Exp*,lessExpStar> SymbolMap;
+        typedef std::multimap<const Exp*,Exp*,lessExpStar> SymbolMap;
 private:
         SymbolMap    symbolMap;
         /**
@@ -269,7 +269,7 @@ virtual bool                isNoReturn();
                             //! Returns whether or not this procedure can be decoded (i.e. has it already been decoded).
         bool                isDecoded() { return status >= PROC_DECODED; }
         bool                isDecompiled() { return status >= PROC_FINAL; }
-        bool                isEarlyRecursive() {return cycleGrp != nullptr && status <= PROC_INCYCLE;}
+        bool                isEarlyRecursive() const {return cycleGrp != nullptr && status <= PROC_INCYCLE;}
         bool                doesRecurseTo(UserProc* p) {return cycleGrp && cycleGrp->find(p) != cycleGrp->end();}
 
         bool                isSorted() { return status >= PROC_SORTED; }
@@ -427,12 +427,12 @@ public:
         Type *              getLocalType(const char *nam);
         void                setLocalType(const char *nam, Type *ty);
         Type *              getParamType(const char *nam);
-        Exp *               expFromSymbol(const char *nam);
-        void                mapSymbolTo(Exp* from, Exp* to);
-        void                mapSymbolToRepl(Exp* from, Exp* oldTo, Exp* newTo);
-        void                removeSymbolMapping(Exp* from, Exp* to);
-        Exp *               getSymbolFor(Exp* e, Type* ty);
-        const char *        lookupSym(Exp* e, Type* ty);
+        const Exp *         expFromSymbol(const char *nam);
+        void                mapSymbolTo(const Exp *from, Exp* to);
+        void                mapSymbolToRepl(const Exp* from, Exp* oldTo, Exp* newTo);
+        void                removeSymbolMapping(const Exp *from, Exp* to);
+        Exp *               getSymbolFor(const Exp *e, Type* ty);
+        const char *        lookupSym(const Exp *e, Type* ty);
         const char *        lookupSymFromRef(RefExp* r);
         const char *        lookupSymFromRefAny(RefExp* r);
         const char *        lookupParam(Exp* e);

@@ -22,7 +22,7 @@ struct ADDRESS { /* pointer. size depends on platform */
         return z;
     }
     ADDRESS native() { return ADDRESS::g(m_value&0xFFFFFFFF); }
-    static ADDRESS host_ptr(void *x) {
+    static ADDRESS host_ptr(const void *x) {
         ADDRESS z;
         z.m_value =value_type(x);
         return z;

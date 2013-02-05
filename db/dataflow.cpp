@@ -312,7 +312,7 @@ bool DataFlow::placePhiFunctions(UserProc* proc) {
                     // Insert trivial phi function for a at top of block y: a := phi()
                     change = true;
                     Statement* as = new PhiAssign(a->clone());
-                    PBB Ybb = BBs[y];
+                    BasicBlock * Ybb = BBs[y];
                     Ybb->prependStmt(as, proc);
                     // A_phi[a] <- A_phi[a] U {y}
                     s.insert(y);
@@ -460,12 +460,11 @@ bool DataFlow::renameBlockVars(UserProc* proc, int n, bool clearStacks /* = fals
             }
             // FIXME: MVE: do we need this awful hack?
             if (a->getOper() == opLocal) {
-                Exp *a1 = S->getProc()->expFromSymbol(((Const*)a->getSubExp1())->getStr());
+                const Exp *a1 = S->getProc()->expFromSymbol(((Const*)a->getSubExp1())->getStr());
                 assert(a1);
-                a = a1;
                 // Stacks already has a definition for a (as just the bare local)
                 if (suitable) {
-                    Stacks[a->clone()].push(S);
+                    Stacks[a1->clone()].push(S);
                 }
             }
         }
@@ -486,7 +485,7 @@ bool DataFlow::renameBlockVars(UserProc* proc, int n, bool clearStacks /* = fals
     std::vector<PBB>& outEdges = bb->getOutEdges();
     unsigned numSucc = outEdges.size();
     for (unsigned succ = 0; succ < numSucc; succ++) {
-        PBB Ybb = outEdges[succ];
+        BasicBlock * Ybb = outEdges[succ];
         // Suppose n is the jth predecessor of Y
         int j = Ybb->whichPred(bb);
         // For each phi-function in Y
@@ -501,7 +500,8 @@ bool DataFlow::renameBlockVars(UserProc* proc, int n, bool clearStacks /* = fals
             // For now, just get the LHS
             Exp* a = pa->getLeft();
             // Only consider variables that can be renamed
-            if (!canRename(a, proc)) continue;
+            if (!canRename(a, proc))
+                continue;
             Statement* def;
             if (STACKS_EMPTY(a))
                 def = nullptr;                // No reaching definition
@@ -616,10 +616,12 @@ Exp* DefCollector::findDefFor(Exp* e) {
     return nullptr;                    // Not explicitly defined here
 }
 
-void UseCollector::print(std::ostream& os, bool html) {
-    LocationSet::iterator it;
+/*
+ * Print the collected locations to stream os
+ */
+void UseCollector::print(std::ostream& os, bool html) const {
     bool first = true;
-    for (it=locs.begin(); it != locs.end(); ++it) {
+    for (auto it=locs.begin(); it != locs.end(); ++it) {
         if (first)
             first = false;
         else
@@ -629,7 +631,8 @@ void UseCollector::print(std::ostream& os, bool html) {
 }
 
 #define DEFCOL_COLS 120
-void DefCollector::print(std::ostream& os, bool html) {
+//! Print the collected locations to stream os
+void DefCollector::print(std::ostream& os, bool html) const {
     iterator it;
     unsigned col = 36;
     bool first = true;
@@ -654,15 +657,18 @@ void DefCollector::print(std::ostream& os, bool html) {
     }
 }
 
-char* UseCollector::prints() {
+/*
+ * Print to string or stderr (for debugging)
+ */
+char* UseCollector::prints() const {
     std::ostringstream ost;
     print(ost);
     strncpy(debug_buffer, ost.str().c_str(), DEBUG_BUFSIZE-1);
     debug_buffer[DEBUG_BUFSIZE-1] = '\0';
     return debug_buffer;
 }
-
-char* DefCollector::prints() {
+//!Print to string or stdout (for debugging)
+char* DefCollector::prints() const {
     std::ostringstream ost;
     print(ost);
     strncpy(debug_buffer, ost.str().c_str(), DEBUG_BUFSIZE-1);

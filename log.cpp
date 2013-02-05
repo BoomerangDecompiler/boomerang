@@ -8,56 +8,56 @@
 #include "exp.h"
 #include "managed.h"
 
-Log &Log::operator<<(Statement *s) {
+Log &Log::operator<<(const Statement *s) {
     std::ostringstream st;
     s->print(st);
     *this << st.str();
     return *this;
 }
 
-Log &Log::operator<<(Exp *e) {
+Log &Log::operator<<(const Exp *e) {
     std::ostringstream st;
     e->print(st);
     *this << st.str();
     return *this;
 }
 
-Log &Log::operator<<(Type *ty) {
+Log &Log::operator<<(const Type *ty) {
     std::ostringstream st;
     st << ty;
     *this << st.str();
     return *this;
 }
 
-Log &Log::operator<<(Range *r) {
+Log &Log::operator<<(const Range *r) {
     std::ostringstream st;
     r->print(st);
     *this << st.str();
     return *this;
 }
 
-Log &Log::operator<<(Range &r) {
+Log &Log::operator<<(const Range &r) {
     std::ostringstream st;
     r.print(st);
     *this << st.str();
     return *this;
 }
 
-Log &Log::operator<<(RangeMap &r) {
+Log &Log::operator<<(const RangeMap &r) {
     std::ostringstream st;
     r.print(st);
     *this << st.str();
     return *this;
 }
 
-Log &Log::operator<<(RTL *r) {
+Log &Log::operator<<(const RTL *r) {
     std::ostringstream st;
     r->print(st);
     *this << st.str();
     return *this;
 }
 
-Log &Log::operator<<(LocationSet *l) {
+Log &Log::operator<<(const LocationSet *l) {
     std::ostringstream st;
     st << l;
     *this << st.str();

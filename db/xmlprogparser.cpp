@@ -2126,16 +2126,16 @@ void XMLProgParser::persistToXML(std::ostream &out, UserProc *proc) {
 
     persistToXML(out, proc->signature);
 
-    for (std::set<CallStatement*>::iterator it = proc->callerSet.begin(); it != proc->callerSet.end(); it++)
+    for (auto  it = proc->callerSet.begin(); it != proc->callerSet.end(); it++)
         out << "<caller call=\"" << ADDRESS::host_ptr(*it) << "\"/>\n";
-    for (std::map<Exp*, Exp*, lessExpStar>::iterator it = proc->provenTrue.begin(); it != proc->provenTrue.end(); it++) {
+    for (auto  it = proc->provenTrue.begin(); it != proc->provenTrue.end(); it++) {
         out << "<proven_true>\n";
         persistToXML(out, it->first);
         persistToXML(out, it->second);
         out << "</proven_true>\n";
     }
 
-    for (std::map<std::string, Type*>::iterator it1 = proc->locals.begin(); it1 != proc->locals.end(); it1++) {
+    for (auto it1 = proc->locals.begin(); it1 != proc->locals.end(); it1++) {
         out << "<local name=\"" << (*it1).first << "\">\n";
         out << "<type>\n";
         persistToXML(out, (*it1).second);
@@ -2143,7 +2143,7 @@ void XMLProgParser::persistToXML(std::ostream &out, UserProc *proc) {
         out << "</local>\n";
     }
 
-    for (std::multimap<Exp*, Exp*, lessExpStar>::iterator it2 = proc->symbolMap.begin(); it2 != proc->symbolMap.end(); it2++) {
+    for (auto it2 = proc->symbolMap.begin(); it2 != proc->symbolMap.end(); it2++) {
         out << "<symbol>\n";
         out << "<exp>\n";
         persistToXML(out, (*it2).first);
@@ -2155,7 +2155,7 @@ void XMLProgParser::persistToXML(std::ostream &out, UserProc *proc) {
     }
 
 
-    for (std::list<Proc*>::iterator it = proc->calleeList.begin(); it != proc->calleeList.end(); it++)
+    for (auto  it = proc->calleeList.begin(); it != proc->calleeList.end(); it++)
         out << "<callee proc=\"" << ADDRESS::host_ptr(*it) << "\"/>\n";
 
     persistToXML(out, proc->cfg);
@@ -2216,48 +2216,48 @@ void XMLProgParser::persistToXML(std::ostream &out, Signature *sig) {
 }
 
 
-void XMLProgParser::persistToXML(std::ostream &out, Type *ty) {
-    VoidType *v = dynamic_cast<VoidType*>(ty);
+void XMLProgParser::persistToXML(std::ostream &out, const Type *ty) {
+    const VoidType *v = dynamic_cast<const VoidType*>(ty);
     if (v) {
         out << "<voidtype id=\"" << ADDRESS::host_ptr(ty) << "\"/>\n";
         return;
     }
-    FuncType *f = dynamic_cast<FuncType*>(ty);
+    const FuncType *f = dynamic_cast<const FuncType*>(ty);
     if (f) {
         out << "<functype id=\"" << ADDRESS::host_ptr(ty) << "\">\n";
         persistToXML(out, f->signature);
         out << "</functype>\n";
         return;
     }
-    IntegerType *i = dynamic_cast<IntegerType*>(ty);
+    const IntegerType *i = dynamic_cast<const IntegerType*>(ty);
     if (i) {
         out << "<integertype id=\"" << ADDRESS::host_ptr(ty) << "\" size=\"" << i->size << "\" signedness=\"" << i->signedness <<
                "\"/>\n";
         return;
     }
-    FloatType *fl = dynamic_cast<FloatType*>(ty);
+    const FloatType *fl = dynamic_cast<const FloatType*>(ty);
     if (fl) {
         out << "<floattype id=\"" << ADDRESS::host_ptr(ty) << "\" size=\"" << fl->size << "\"/>\n";
         return;
     }
-    BooleanType *b = dynamic_cast<BooleanType*>(ty);
+    const BooleanType *b = dynamic_cast<const BooleanType*>(ty);
     if (b) {
         out << "<booleantype id=\"" << ADDRESS::host_ptr(ty) << "\"/>\n";
         return;
     }
-    CharType *c = dynamic_cast<CharType*>(ty);
+    const CharType *c = dynamic_cast<const CharType*>(ty);
     if (c) {
         out << "<chartype id=\"" << ADDRESS::host_ptr(ty) << "\"/>\n";
         return;
     }
-    PointerType *p = dynamic_cast<PointerType*>(ty);
+    const PointerType *p = dynamic_cast<const PointerType*>(ty);
     if (p) {
         out << "<pointertype id=\"" << ADDRESS::host_ptr(ty) << "\">\n";
         persistToXML(out, p->points_to);
         out << "</pointertype>\n";
         return;
     }
-    ArrayType *a = dynamic_cast<ArrayType*>(ty);
+    const ArrayType *a = dynamic_cast<const ArrayType*>(ty);
     if (a) {
         out << "<arraytype id=\"" << ADDRESS::host_ptr(ty) << "\" length=\"" << (int)a->length << "\">\n";
         out << "<basetype>\n";
@@ -2266,12 +2266,12 @@ void XMLProgParser::persistToXML(std::ostream &out, Type *ty) {
         out << "</arraytype>\n";
         return;
     }
-    NamedType *n = dynamic_cast<NamedType*>(ty);
+    const NamedType *n = dynamic_cast<const NamedType*>(ty);
     if (n) {
         out << "<namedtype id=\"" << ADDRESS::host_ptr(ty) << "\" name=\"" << n->name << "\"/>\n";
         return;
     }
-    CompoundType *co = dynamic_cast<CompoundType*>(ty);
+    const CompoundType *co = dynamic_cast<const CompoundType*>(ty);
     if (co) {
         out << "<compoundtype id=\"" << ADDRESS::host_ptr(ty) << "\">\n";
         for (unsigned i = 0; i < co->names.size(); i++) {
@@ -2282,7 +2282,7 @@ void XMLProgParser::persistToXML(std::ostream &out, Type *ty) {
         out << "</compoundtype>\n";
         return;
     }
-    SizeType *sz = dynamic_cast<SizeType*>(ty);
+    const SizeType *sz = dynamic_cast<const SizeType*>(ty);
     if (sz) {
         out << "<sizetype id=\"" << ADDRESS::host_ptr(ty) << "\" size=\"" << sz->getSize() << "\"/>\n";
         return;
@@ -2291,8 +2291,8 @@ void XMLProgParser::persistToXML(std::ostream &out, Type *ty) {
     assert(false);
 }
 
-void XMLProgParser::persistToXML(std::ostream &out, Exp *e) {
-    TypeVal *t = dynamic_cast<TypeVal*>(e);
+void XMLProgParser::persistToXML(std::ostream &out, const Exp *e) {
+    const TypeVal *t = dynamic_cast<const TypeVal*>(e);
     const char *op_name=e->getOperName();
     if (t) {
         out << "<typeval id=\"" << ADDRESS::host_ptr(e) << "\" op=\"" << op_name << "\">\n";
@@ -2302,12 +2302,12 @@ void XMLProgParser::persistToXML(std::ostream &out, Exp *e) {
         out << "</typeval>\n";
         return;
     }
-    Terminal *te = dynamic_cast<Terminal*>(e);
+    const Terminal *te = dynamic_cast<const Terminal*>(e);
     if (te) {
         out << "<terminal id=\"" << ADDRESS::host_ptr(e) << "\" op=\"" << op_name << "\"/>\n";
         return;
     }
-    Const *c = dynamic_cast<Const*>(e);
+    const Const *c = dynamic_cast<const Const*>(e);
     if (c) {
         out << "<const id=\"" << ADDRESS::host_ptr(e) << "\" op=\"" << op_name << "\"";
         out << " conscript=\"" << c->conscript << "\"";
@@ -2328,7 +2328,7 @@ void XMLProgParser::persistToXML(std::ostream &out, Exp *e) {
         out << "/>\n";
         return;
     }
-    Location *l = dynamic_cast<Location*>(e);
+    const Location *l = dynamic_cast<const Location*>(e);
     if (l) {
         out << "<location id=\"" << ADDRESS::host_ptr(e) << "\"";
         if (l->proc)
@@ -2340,7 +2340,7 @@ void XMLProgParser::persistToXML(std::ostream &out, Exp *e) {
         out << "</location>\n";
         return;
     }
-    RefExp *r = dynamic_cast<RefExp*>(e);
+    const RefExp *r = dynamic_cast<const RefExp*>(e);
     if (r) {
         out << "<refexp id=\"" << ADDRESS::host_ptr(e) << "\"";
         if (r->def)
@@ -2352,7 +2352,7 @@ void XMLProgParser::persistToXML(std::ostream &out, Exp *e) {
         out << "</refexp>\n";
         return;
     }
-    FlagDef *f = dynamic_cast<FlagDef*>(e);
+    const FlagDef *f = dynamic_cast<const FlagDef*>(e);
     if (f) {
         out << "<flagdef id=\"" << ADDRESS::host_ptr(e) << "\"";
         if (f->rtl)
@@ -2364,7 +2364,7 @@ void XMLProgParser::persistToXML(std::ostream &out, Exp *e) {
         out << "</flagdef>\n";
         return;
     }
-    TypedExp *ty = dynamic_cast<TypedExp*>(e);
+    const TypedExp *ty = dynamic_cast<const TypedExp*>(e);
     if (ty) {
         out << "<typedexp id=\"" << ADDRESS::host_ptr(e) << "\" op=\"" << op_name << "\">\n";
         out << "<subexp1>\n";
@@ -2376,7 +2376,7 @@ void XMLProgParser::persistToXML(std::ostream &out, Exp *e) {
         out << "</typedexp>\n";
         return;
     }
-    Ternary *tn = dynamic_cast<Ternary*>(e);
+    const Ternary *tn = dynamic_cast<const Ternary*>(e);
     if (tn) {
         out << "<ternary id=\"" << ADDRESS::host_ptr(e) << "\" op=\"" << op_name << "\">\n";
         out << "<subexp1>\n";
@@ -2391,7 +2391,7 @@ void XMLProgParser::persistToXML(std::ostream &out, Exp *e) {
         out << "</ternary>\n";
         return;
     }
-    Binary *b = dynamic_cast<Binary*>(e);
+    const Binary *b = dynamic_cast<const Binary*>(e);
     if (b) {
         out << "<binary id=\"" << ADDRESS::host_ptr(e) << "\" op=\"" << op_name << "\">\n";
         out << "<subexp1>\n";
@@ -2403,7 +2403,7 @@ void XMLProgParser::persistToXML(std::ostream &out, Exp *e) {
         out << "</binary>\n";
         return;
     }
-    Unary *u = dynamic_cast<Unary*>(e);
+    const Unary *u = dynamic_cast<const Unary*>(e);
     if (u) {
         out << "<unary id=\"" << ADDRESS::host_ptr(e) << "\" op=\"" << op_name << "\">\n";
         out << "<subexp1>\n";
@@ -2441,7 +2441,7 @@ void XMLProgParser::persistToXML(std::ostream &out, Cfg *cfg) {
     out << "</cfg>\n";
 }
 
-void XMLProgParser::persistToXML(std::ostream &out, BasicBlock *bb) {
+void XMLProgParser::persistToXML(std::ostream &out, const BasicBlock *bb) {
     out << "<bb id=\"" << ADDRESS::host_ptr(bb) << "\" nodeType=\"" << bb->m_nodeType << "\" labelNum=\""
         << bb->m_iLabelNum << "\" label=\"" << bb->m_labelStr << "\" labelneeded=\"" << (int)bb->m_labelneeded
         << "\"" << " incomplete=\"" << (int)bb->m_bIncomplete << "\" jumpreqd=\"" << (int)bb->m_bJumpReqd
@@ -2511,9 +2511,9 @@ void XMLProgParser::persistToXML(std::ostream &out, BasicBlock *bb) {
     out << "</bb>\n";
 }
 
-void XMLProgParser::persistToXML(std::ostream &out, RTL *rtl) {
+void XMLProgParser::persistToXML(std::ostream &out, const RTL *rtl) {
     out << "<rtl id=\"" << ADDRESS::host_ptr(rtl) << "\" addr=\"" << rtl->nativeAddr << "\">\n";
-    for (std::list<Statement*>::iterator it = rtl->begin(); it != rtl-> end(); it++) {
+    for (auto it = rtl->begin(); it != rtl-> end(); it++) {
         out << "<stmt>\n";
         persistToXML(out, *it);
         out << "</stmt>\n";
@@ -2521,8 +2521,8 @@ void XMLProgParser::persistToXML(std::ostream &out, RTL *rtl) {
     out << "</rtl>\n";
 }
 
-void XMLProgParser::persistToXML(std::ostream &out, Statement *stmt) {
-    BoolAssign *b = dynamic_cast<BoolAssign*>(stmt);
+void XMLProgParser::persistToXML(std::ostream &out, const Statement *stmt) {
+    const BoolAssign *b = dynamic_cast<const BoolAssign*>(stmt);
     if (b) {
         out << "<boolasgn id=\"" << ADDRESS::host_ptr(stmt) << "\" number=\"" << b->number << "\"";
         if (b->parent)
@@ -2541,7 +2541,7 @@ void XMLProgParser::persistToXML(std::ostream &out, Statement *stmt) {
         out << "</boolasgn>\n";
         return;
     }
-    ReturnStatement *r = dynamic_cast<ReturnStatement*>(stmt);
+    const ReturnStatement *r = dynamic_cast<const ReturnStatement*>(stmt);
     if (r) {
         out << "<returnstmt id=\"" << ADDRESS::host_ptr(stmt) << "\" number=\"" << r->number << "\"";
         if (r->parent)
@@ -2551,13 +2551,12 @@ void XMLProgParser::persistToXML(std::ostream &out, Statement *stmt) {
         out << " retAddr=\"" << r->retAddr << "\"";
         out << ">\n";
 
-        ReturnStatement::iterator rr;
-        for (rr = r->modifieds.begin(); rr != r->modifieds.end(); ++rr) {
+        for (auto rr = r->modifieds.begin(); rr != r->modifieds.end(); ++rr) {
             out << "<modifieds>\n";
             persistToXML(out, *rr);
             out << "</modifieds>\n";
         }
-        for (rr = r->returns.begin(); rr != r->returns.end(); ++rr) {
+        for (auto rr = r->returns.begin(); rr != r->returns.end(); ++rr) {
             out << "<returns>\n";
             persistToXML(out, *rr);
             out << "</returns>\n";
@@ -2566,7 +2565,7 @@ void XMLProgParser::persistToXML(std::ostream &out, Statement *stmt) {
         out << "</returnstmt>\n";
         return;
     }
-    CallStatement *c = dynamic_cast<CallStatement*>(stmt);
+    const CallStatement *c = dynamic_cast<const CallStatement*>(stmt);
     if (c) {
         out << "<callstmt id=\"" << ADDRESS::host_ptr(stmt) << "\" number=\"" << c->number
             << "\" computed=\"" << (int)c->m_isComputed << "\"";
@@ -2586,14 +2585,13 @@ void XMLProgParser::persistToXML(std::ostream &out, Statement *stmt) {
             out << "</dest>\n";
         }
 
-        StatementList::iterator ss;
-        for (ss = c->arguments.begin(); ss != c->arguments.end(); ++ss) {
+        for (auto ss = c->arguments.begin(); ss != c->arguments.end(); ++ss) {
             out << "<argument>\n";
             persistToXML(out, *ss);
             out << "</argument>\n";
         }
 
-        for (ss = c->defines.begin(); ss != c->defines.end(); ++ss) {
+        for (auto ss = c->defines.begin(); ss != c->defines.end(); ++ss) {
             out << "<defines>\n";
             persistToXML(out, *ss);
             out << "</defines>\n";
@@ -2602,7 +2600,7 @@ void XMLProgParser::persistToXML(std::ostream &out, Statement *stmt) {
         out << "</callstmt>\n";
         return;
     }
-    CaseStatement *ca = dynamic_cast<CaseStatement*>(stmt);
+    const CaseStatement *ca = dynamic_cast<const CaseStatement*>(stmt);
     if (ca) {
         out << "<casestmt id=\"" << ADDRESS::host_ptr(stmt) << "\" number=\"" << ca->number
             << "\" computed=\"" << (int)ca->m_isComputed << "\"";
@@ -2621,7 +2619,7 @@ void XMLProgParser::persistToXML(std::ostream &out, Statement *stmt) {
         out << "</casestmt>\n";
         return;
     }
-    BranchStatement *br = dynamic_cast<BranchStatement*>(stmt);
+    const BranchStatement *br = dynamic_cast<const BranchStatement*>(stmt);
     if (br) {
         out << "<branchstmt id=\"" << ADDRESS::host_ptr(stmt) << "\" number=\"" << br->number
             << "\" computed=\"" << (int)br->m_isComputed << "\""
@@ -2644,7 +2642,7 @@ void XMLProgParser::persistToXML(std::ostream &out, Statement *stmt) {
         out << "</branchstmt>\n";
         return;
     }
-    GotoStatement *g = dynamic_cast<GotoStatement*>(stmt);
+    const GotoStatement *g = dynamic_cast<const GotoStatement*>(stmt);
     if (g) {
         out << "<gotostmt id=\"" << ADDRESS::host_ptr(stmt) << "\" number=\"" << g->number << "\""
             << " computed=\"" << (int) g->m_isComputed << "\"";
@@ -2661,7 +2659,7 @@ void XMLProgParser::persistToXML(std::ostream &out, Statement *stmt) {
         out << "</gotostmt>\n";
         return;
     }
-    PhiAssign *p = dynamic_cast<PhiAssign*>(stmt);
+    const PhiAssign *p = dynamic_cast<const PhiAssign*>(stmt);
     if (p) {
         out << "<phiassign id=\"" << ADDRESS::host_ptr(stmt) << "\" number=\"" << p->number << "\"";
         if (p->parent)
@@ -2672,13 +2670,12 @@ void XMLProgParser::persistToXML(std::ostream &out, Statement *stmt) {
         out << "<lhs>\n";
         persistToXML(out, p->lhs);
         out << "</lhs>\n";
-        PhiAssign::iterator it;
-        for (it = p->begin(); it != p->end(); p++)
+        for (auto it = p->begin(); it != p->end(); p++)
             out << "<def stmt=\"" << ADDRESS::host_ptr(it->def) << "\" exp=\"" << ADDRESS::host_ptr(it->e) << "\" />\n";
         out << "</phiassign>\n";
         return;
     }
-    Assign *a = dynamic_cast<Assign*>(stmt);
+    const Assign *a = dynamic_cast<const Assign*>(stmt);
     if (a) {
         out << "<assign id=\"" << ADDRESS::host_ptr(stmt) << "\" number=\"" << a->number << "\"";
         if (a->parent)

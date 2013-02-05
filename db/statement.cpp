@@ -544,7 +544,7 @@ void CallStatement::rangeAnalysis(std::list<Statement*> &execution_paths) {
     updateRanges(output, execution_paths);
 }
 
-bool JunctionStatement::isLoopJunction() {
+bool JunctionStatement::isLoopJunction() const {
     for (int i = 0; i < pbb->getNumInEdges(); i++)
         if (pbb->isBackEdge(i))
             return true;
@@ -606,14 +606,13 @@ Statement *Statement::getNextStatementInBB() {
 }
 
 /***************************************************************************//**
- * FUNCTION:        operator<<
  * \brief        Output operator for Statement*
  *                    Just makes it easier to use e.g. std::cerr << myStmtStar
  * PARAMETERS:        os: output stream to send to
  *                    p: ptr to Statement to print to the stream
  * \returns             copy of os (for concatenation)
  ******************************************************************************/
-std::ostream& operator<<(std::ostream& os, Statement* s) {
+std::ostream& operator<<(std::ostream& os, const Statement* s) {
     if (s == nullptr) {os << "nullptr "; return os;}
     s->print(os);
     return os;
@@ -1000,36 +999,30 @@ GotoStatement::~GotoStatement() {
 }
 //!< Return the fixed destination of this CTI.
 /***************************************************************************//**
- * FUNCTION:        GotoStatement::getFixedDest
  * \brief        Get the fixed destination of this CTI. Assumes destination
  *                    simplication has already been done so that a fixed dest will
  *                    be of the Exp form:
  *                       opIntConst dest
- * PARAMETERS:        <none>
  * \returns             Fixed dest or NO_ADDRESS if there isn't one, For dynamic CTIs,
  *                     returns NO_ADDRESS.
  ******************************************************************************/
-ADDRESS GotoStatement::getFixedDest() {
+ADDRESS GotoStatement::getFixedDest() const {
     if (pDest->getOper() != opIntConst)
         return NO_ADDRESS;
     return constDest()->getAddr();
 }
 
 /***************************************************************************//**
- * FUNCTION:        GotoStatement::setDest
  * \brief        Set the destination of this jump to be a given expression.
- * PARAMETERS:        addr - the new fixed address
- * \returns             Nothing
+ * \param        addr - the new fixed address
  ******************************************************************************/
 void GotoStatement::setDest(Exp* pd) {
     pDest = pd;
 }
 
 /***************************************************************************//**
- * FUNCTION:        GotoStatement::setDest
  * \brief        Set the destination of this jump to be a given fixed address.
- * PARAMETERS:        addr - the new fixed address
- * \returns             <nothing>
+ * \param   addr - the new fixed address
  ******************************************************************************/
 void GotoStatement::setDest(ADDRESS addr) {
     // This fails in FrontSparcTest, do you really want it to Mike? -trent
@@ -1041,9 +1034,7 @@ void GotoStatement::setDest(ADDRESS addr) {
 }
 
 /***************************************************************************//**
- * FUNCTION:        GotoStatement::getDest
  * \brief        Returns the destination of this CTI.
- * PARAMETERS:        None
  * \returns             Pointer to the SS representing the dest of this jump
  ******************************************************************************/
 Exp* GotoStatement::getDest() {
@@ -1051,13 +1042,11 @@ Exp* GotoStatement::getDest() {
 }
 
 /***************************************************************************//**
- * FUNCTION:        GotoStatement::adjustFixedDest
  * \brief        Adjust the destination of this CTI by a given amount. Causes
  *                    an error is this destination is not a fixed destination
  *                    (i.e. a constant offset).
- * PARAMETERS:        delta - the amount to add to the destination (can be
+ * \param   delta - the amount to add to the destination (can be
  *                    negative)
- * \returns             <nothing>
  ******************************************************************************/
 void GotoStatement::adjustFixedDest(int delta) {
     // Ensure that the destination is fixed.
@@ -1112,7 +1101,7 @@ bool GotoStatement::searchAll(Exp* search, std::list<Exp*> &result) {
  * PARAMETERS:        os: stream to write to
  * \returns             Nothing
  ******************************************************************************/
-void GotoStatement::print(std::ostream& os, bool html) {
+void GotoStatement::print(std::ostream& os, bool html) const {
     os << std::setw(4) << std::dec << number << " ";
     if (html) {
         os << "</td><td>";
@@ -1432,7 +1421,7 @@ bool BranchStatement::searchAll(Exp* search, std::list<Exp*> &result) {
  * PARAMETERS:        os: stream
  * \returns             Nothing
  ******************************************************************************/
-void BranchStatement::print(std::ostream& os, bool html) {
+void BranchStatement::print(std::ostream& os, bool html) const {
     os << std::setw(4) << std::dec << number << " ";
     if (html) {
         os << "</td><td>";
@@ -1854,7 +1843,7 @@ bool CaseStatement::searchAll(Exp* search, std::list<Exp*> &result) {
  *                    indent: number of columns to skip
  * \returns             Nothing
  ******************************************************************************/
-void CaseStatement::print(std::ostream& os, bool html) {
+void CaseStatement::print(std::ostream& os, bool html) const {
     os << std::setw(4) << std::dec << number << " ";
     if (html) {
         os << "</td><td>";
@@ -2121,7 +2110,7 @@ bool CallStatement::searchAll(Exp* search, std::list<Exp *>& result) {
  * PARAMETERS:        os: stream to write to
  * \returns             Nothing
  ******************************************************************************/
-void CallStatement::print(std::ostream& os, bool html) {
+void CallStatement::print(std::ostream& os, bool html) const {
     os << std::setw(4) << std::dec << number << " ";
     if (html) {
         os << "</td><td>";
@@ -2131,7 +2120,7 @@ void CallStatement::print(std::ostream& os, bool html) {
     // Define(s), if any
     if (defines.size()) {
         if (defines.size() > 1) os << "{";
-        StatementList::iterator rr;
+        StatementList::const_iterator rr;
         bool first = true;
         for (rr = defines.begin(); rr != defines.end(); ++rr) {
             assert((*rr)->isAssignment());
@@ -2173,10 +2162,9 @@ void CallStatement::print(std::ostream& os, bool html) {
             os << "(<all>)";
     } else {
         os << "(\n";
-        StatementList::iterator aa;
-        for (aa = arguments.begin(); aa != arguments.end(); ++aa) {
+        for (const Statement *aa : arguments) {
             os << "                ";
-            ((Assignment*)*aa)->printCompact(os, html);
+            ((const Assignment*)aa)->printCompact(os, html);
             os << "\n";
         }
         os << "              )";
@@ -2688,11 +2676,13 @@ bool CallStatement::ellipsisProcessing(Prog* prog) {
     if (formatExp->isSubscript()) {
         // Maybe it's defined to be a Const string
         Statement* def = ((RefExp*)formatExp)->getDef();
-        if (def == nullptr) return false;        // Not all nullptr refs get converted to implicits
+        if (def == nullptr)
+            return false;        // Not all nullptr refs get converted to implicits
         if (def->isAssign()) {
             // This would be unusual; propagation would normally take care of this
             Exp* rhs = ((Assign*)def)->getRight();
-            if (rhs == nullptr || !rhs->isStrConst()) return false;
+            if (rhs == nullptr || !rhs->isStrConst())
+                return false;
             formatStr = ((Const*)rhs)->getStr();
         } else if (def->isPhi()) {
             // More likely. Example: switch_gcc. Only need ONE candidate format string
@@ -2700,18 +2690,21 @@ bool CallStatement::ellipsisProcessing(Prog* prog) {
             int n = pa->getNumDefs();
             for (int i=0; i < n; i++) {
                 def = pa->getStmtAt(i);
-                if (def == nullptr) continue;
-                if (!def->isAssign()) continue;
+                if ( (def == nullptr) or (!def->isAssign()) )
+                    continue;
                 Exp* rhs = ((Assign*)def)->getRight();
                 if (rhs == nullptr || !rhs->isStrConst()) continue;
                 formatStr = ((Const*)rhs)->getStr();
                 break;
             }
-            if (formatStr == nullptr) return false;
-        } else return false;
+            if (formatStr == nullptr)
+                return false;
+        } else
+            return false;
     } else if (formatExp->isStrConst()) {
         formatStr = ((Const*)formatExp)->getStr();
-    } else return false;
+    } else
+        return false;
     if (objcSpecificProcessing(formatStr))
         return true;
 
@@ -3027,7 +3020,7 @@ void BoolAssign::setCondExpr(Exp* pss) {
  * PARAMETERS:        os: stream
  * \returns             <Nothing>
  ******************************************************************************/
-void BoolAssign::printCompact(std::ostream& os /*= cout*/, bool html) {
+void BoolAssign::printCompact(std::ostream& os /*= cout*/, bool html) const {
     os << "BOOL ";
     lhs->print(os);
     os << " := CC(";
@@ -3319,7 +3312,7 @@ void Assign::fixSuccessor() {
     rhs = rhs->fixSuccessor();
 }
 
-void Assignment::print(std::ostream& os, bool html) {
+void Assignment::print(std::ostream& os, bool html) const {
     os << std::setw(4) << std::dec << number << " ";
     if (html) {
         os << "</td><td>";
@@ -3333,7 +3326,7 @@ void Assignment::print(std::ostream& os, bool html) {
         ranges.print(os);
     }
 }
-void Assign::printCompact(std::ostream& os, bool html) {
+void Assign::printCompact(std::ostream& os, bool html) const {
     os << "*" << type << "* ";
     if (guard)
         os << guard << " => ";
@@ -3341,7 +3334,7 @@ void Assign::printCompact(std::ostream& os, bool html) {
     os << " := ";
     if (rhs) rhs->print(os, html);
 }
-void PhiAssign::printCompact(std::ostream& os, bool html) {
+void PhiAssign::printCompact(std::ostream& os, bool html) const {
     os << "*" << type << "* ";
     if (lhs) lhs->print(os, html);
     os << " := phi";
@@ -3360,10 +3353,9 @@ void PhiAssign::printCompact(std::ostream& os, bool html) {
             }
         }
     }
-    iterator it;
     if (simple) {
         os << "{" << std::dec;
-        for (it = defVec.begin(); it != defVec.end(); /* no increment */) {
+        for (auto it = defVec.begin(); it != defVec.end(); /* no increment */) {
             if (it->def) {
                 if (html)
                     os << "<a href=\"#stmt" << std::dec << it->def->getNumber() << "\">";
@@ -3378,7 +3370,7 @@ void PhiAssign::printCompact(std::ostream& os, bool html) {
         os << "}";
     } else {
         os << "(";
-        for (it = defVec.begin(); it != defVec.end(); /* no increment */) {
+        for (auto it = defVec.begin(); it != defVec.end(); /* no increment */) {
             Exp* e = it->e;
             if (e == nullptr)
                 os << "nullptr{";
@@ -3395,7 +3387,7 @@ void PhiAssign::printCompact(std::ostream& os, bool html) {
         os << ")";
     }
 }
-void ImplicitAssign::printCompact(std::ostream& os, bool html) {
+void ImplicitAssign::printCompact(std::ostream& os, bool html) const {
     os << "*" << type << "* ";
     if (lhs) lhs->print(os, html);
     os << " := -";
@@ -3469,7 +3461,8 @@ bool PhiAssign::searchAndReplace(Exp* search, Exp* replace, bool cc) {
     lhs = lhs->searchReplaceAll(search, replace, change);
     std::vector<PhiInfo>::iterator it;
     for (it = defVec.begin(); it != defVec.end(); it++) {
-        if (it->e == nullptr) continue;
+        if (it->e == nullptr)
+            continue;
         bool ch;
         // Assume that the definitions will also be replaced
         it->e = it->e->searchReplaceAll(search, replace, ch);
@@ -3910,7 +3903,8 @@ bool ImplicitAssign::accept(StmtModifier* v) {
     bool recur;
     v->visit(this, recur);
     v->mod->clearMod();
-    if (recur) lhs = lhs->accept(v->mod);
+    if (recur)
+        lhs = lhs->accept(v->mod);
     if (VERBOSE && v->mod->isMod())
         LOG << "ImplicitAssign changed: now " << this << "\n";
     return true;
@@ -4187,7 +4181,8 @@ void PhiAssign::convertToAssign(Exp* rhs) {
 void PhiAssign::simplify() {
     lhs = lhs->simplify();
 
-    if (defVec.begin() != defVec.end()) {
+    if (defVec.empty())
+        return;
         Definitions::iterator uu;
         bool allSame = true;
         uu = defVec.begin();
@@ -4213,7 +4208,9 @@ void PhiAssign::simplify() {
                 if (notthis != (Statement*)-1) {
                     onlyOneNotThis = false;
                     break;
-                } else notthis = uu->def;
+            }
+            else
+                notthis = uu->def;
             }
         }
 
@@ -4222,7 +4219,6 @@ void PhiAssign::simplify() {
                 LOG << "all but one not this in " << this << "\n";
             convertToAssign(new RefExp(lhs, notthis));
             return;
-        }
     }
 }
 
@@ -4302,19 +4298,18 @@ void ReturnStatement::setTypeFor(Exp*e, Type* ty) {
 }
 
 #define RETSTMT_COLS 120
-void ReturnStatement::print(std::ostream& os, bool html) {
+void ReturnStatement::print(std::ostream& os, bool html) const {
     os << std::setw(4) << std::dec << number << " ";
     if (html) {
         os << "</td><td>";
         os << "<a name=\"stmt" << std::dec << number << "\">";
     }
     os << "RET";
-    iterator it;
     bool first = true;
     unsigned column = 19;
-    for (it = returns.begin(); it != returns.end(); ++it) {
+    for (auto it = returns.begin(); it != returns.end(); ++it) {
         std::ostringstream ost;
-        ((Assignment*)*it)->printCompact(ost, html);
+        ((const Assignment*)*it)->printCompact(ost, html);
         unsigned len = ost.str().length();
         if (first) {
             first = false;
@@ -4337,10 +4332,10 @@ void ReturnStatement::print(std::ostream& os, bool html) {
     os << "Modifieds: ";
     first = true;
     column = 25;
-    for (it = modifieds.begin(); it != modifieds.end(); ++it) {
+    for (auto it = modifieds.begin(); it != modifieds.end(); ++it) {
         std::ostringstream ost;
-        Assign* as = (Assign*)*it;
-        Type* ty = as->getType();
+        const Assign* as = (const Assign*)*it;
+        const Type* ty = as->getType();
         if (ty)
             ost << "*" << ty << "* ";
         ost << as->getLeft();
@@ -4905,7 +4900,7 @@ void CallStatement::removeDefine(Exp* e) {
     LOG << "WARNING: could not remove define " << e << " from call " << this << "\n";
 }
 
-bool CallStatement::isChildless() {
+bool CallStatement::isChildless() const {
     if (procDest == nullptr) return true;
     if (procDest->isLib()) return false;
     // Early in the decompile process, recursive calls are treated as childless, so they use and define all
@@ -4968,7 +4963,7 @@ TypingStatement::TypingStatement(Type* ty) : type(ty) {
 }
 
 // NOTE: ImpRefStatement not yet used
-void ImpRefStatement::print(std::ostream& os, bool html) {
+void ImpRefStatement::print(std::ostream& os, bool html) const {
     os << "     *";                // No statement number
     if (html) {
         os << "</td><td>";
@@ -5077,7 +5072,7 @@ bool JunctionStatement::accept(StmtPartModifier* visitor) {
     return true;
 }
 
-void JunctionStatement::print(std::ostream &os, bool html) {
+void JunctionStatement::print(std::ostream &os, bool html) const {
     os << std::setw(4) << std::dec << number << " ";
     if (html) {
         os << "</td><td>";

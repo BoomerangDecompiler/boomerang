@@ -135,12 +135,12 @@ class XMLProgParser
     void persistToXML(std::ostream &out, LibProc *proc);
     void persistToXML(std::ostream &out, UserProc *proc);
     void persistToXML(std::ostream &out, Signature *sig);
-    void persistToXML(std::ostream &out, Type *ty);
-    void persistToXML(std::ostream &out, Exp *e);
+    void persistToXML(std::ostream &out, const Type *ty);
+    void persistToXML(std::ostream &out, const Exp *e);
     void persistToXML(std::ostream &out, Cfg *cfg);
-    void persistToXML(std::ostream &out, BasicBlock *bb);
-    void persistToXML(std::ostream &out, RTL *rtl);
-    void persistToXML(std::ostream &out, Statement *stmt);
+    void persistToXML(std::ostream &out, const BasicBlock *bb);
+    void persistToXML(std::ostream &out, const RTL *rtl);
+    void persistToXML(std::ostream &out, const Statement *stmt);
 
     static _tag tags[];
 

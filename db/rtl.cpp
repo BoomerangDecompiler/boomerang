@@ -185,7 +185,8 @@ void RTL::print(std::ostream& os /*= cout*/, bool html /*=false*/) const {
             if (bFirst) os << " ";
             else        os << std::setw(9) << " ";
         }
-        if (stmt) stmt->print(os, html);
+        if (stmt)
+            stmt->print(os, html);
         // Note: we only put newlines where needed. So none at the end of
         // Statement::print; one here to separate from other statements
         if (html)
@@ -193,7 +194,7 @@ void RTL::print(std::ostream& os /*= cout*/, bool html /*=false*/) const {
         os << "\n";
         bFirst = false;
     }
-    if (this->empty())
+    if (empty())
         os << std::endl;       // New line for NOP
 }
 
@@ -218,7 +219,7 @@ char* RTL::prints() const {
  *        r: ptr to RTL to print to the stream
  * \returns os (for concatenation)
  ******************************************************************************/
-std::ostream& operator<<(std::ostream& os, RTL* r) {
+std::ostream& operator<<(std::ostream& os, const RTL* r) {
     if (r == nullptr) {
         os << "nullptr ";
         return os;
