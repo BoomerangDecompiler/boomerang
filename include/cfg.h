@@ -65,7 +65,7 @@ class Parameter;
 
 
         // A type for the ADDRESS to BB map
-typedef std::map<ADDRESS, PBB, std::less<ADDRESS> >      MAPBB;
+typedef std::map<ADDRESS, BasicBlock *, std::less<ADDRESS> >      MAPBB;
 
 class Cfg {
 typedef std::set<CallStatement*> sCallStatement;
@@ -74,9 +74,9 @@ typedef std::map<Exp*, Statement*, lessExpStar> mExpStatement;
         bool            bImplicitsDone;
         int             lastLabel;
         UserProc *      myProc;
-        std::list<PBB>  m_listBB;
-        std::vector<PBB> Ordering;
-        std::vector<PBB> revOrdering;
+        std::list<BasicBlock *>  m_listBB;
+        std::vector<BasicBlock *> Ordering;
+        std::vector<BasicBlock *> revOrdering;
         MAPBB           m_mapBB;
         BasicBlock *    entryBB;
         BasicBlock *    exitBB;
@@ -86,8 +86,8 @@ typedef std::map<Exp*, Statement*, lessExpStar> mExpStatement;
 public:
         class BBAlreadyExistsError : public std::exception {
         public:
-                            PBB pBB;
-                            BBAlreadyExistsError(PBB pBB) : pBB(pBB) { }
+                            BasicBlock * pBB;
+                            BBAlreadyExistsError(BasicBlock * pBB) : pBB(pBB) { }
         };
                         Cfg();
                         ~Cfg();
@@ -97,15 +97,18 @@ public:
         const Cfg&      operator=(const Cfg& other); /* Copy constructor */
 
 
-        PBB             newBB ( std::list<RTL*>* pRtls, BBTYPE bbType, int iNumOutEdges) throw(BBAlreadyExistsError);
+        BasicBlock *             newBB ( std::list<RTL*>* pRtls, BBTYPE bbType, int iNumOutEdges) throw(BBAlreadyExistsError);
         BasicBlock *    newIncompleteBB(ADDRESS addr);
         //Remove the incomplete BB at uAddr, if any. Was used when dealing with the SKIP instruction, but no longer.
         void            removeIncBB(ADDRESS uAddr);
-        void            addOutEdge(PBB pBB, ADDRESS adr, bool bSetLabel = false);
+        void            addOutEdge(BasicBlock * pBB, ADDRESS adr, bool bSetLabel = false);
         void            addOutEdge(BasicBlock * pBB, BasicBlock * pDestBB, bool bSetLabel = false);
         void            setLabel(BasicBlock * pBB);
-        PBB             getFirstBB(BB_IT& it);
+        BasicBlock *    getFirstBB(BB_IT& it);
+        const BasicBlock *getFirstBB(BBC_IT &it) const;
+
         BasicBlock *    getNextBB(BB_IT& it);
+        const BasicBlock *getNextBB(BBC_IT &it) const;
 
         /*
          * An alternative to the above is to use begin() and end():
@@ -113,9 +116,9 @@ public:
 typedef BB_IT           iterator;
         iterator        begin() { return m_listBB.begin(); }
         iterator        end()   { return m_listBB.end(); }
-        bool            label ( ADDRESS uNativeAddr, PBB& pNewBB );
-        bool            isIncomplete ( ADDRESS uNativeAddr );
-        bool            existsBB ( ADDRESS uNativeAddr );
+        bool            label ( ADDRESS uNativeAddr, BasicBlock *& pNewBB );
+        bool            isIncomplete ( ADDRESS uNativeAddr ) const;
+        bool            existsBB ( ADDRESS uNativeAddr ) const;
         void            sortByAddress ();
         void            sortByFirstDFT();
         void            sortByLastDFT();
@@ -127,13 +130,13 @@ typedef BB_IT           iterator;
         bool            establishDFTOrder();
         bool            establishRevDFTOrder();
 
-        int             pbbToIndex (PBB pBB);
+        int             pbbToIndex (BasicBlock * pBB);
         void            unTraverse ( );
         bool            isWellFormed ( );
         bool            isOrphan ( ADDRESS uAddr);
-        bool            joinBB( PBB pb1, PBB pb2);
+        bool            joinBB( BasicBlock * pb1, BasicBlock * pb2);
 
-        void            removeBB( PBB bb);
+        void            removeBB( BasicBlock * bb);
         void            addCall(CallStatement* call);
         sCallStatement& getCalls();
         void            searchAndReplace(Exp* search, Exp* replace);
@@ -142,21 +145,21 @@ typedef BB_IT           iterator;
         void            structure();
         void            addJunctionStatements();
         void            removeJunctionStatements();
-        std::vector<PBB> m_vectorBB;
+        std::vector<BasicBlock *> m_vectorBB;
         //! return a bb given an address
-        PBB             bbForAddr(ADDRESS addr) { return m_mapBB[addr]; }
+        BasicBlock *             bbForAddr(ADDRESS addr) { return m_mapBB[addr]; }
         void            simplify();
         void            undoComputedBB(Statement* stmt);
 
 private:
 
-        PBB             splitBB (PBB pBB, ADDRESS uNativeAddr, PBB pNewBB = 0, bool bDelRtls = false);
-        void            completeMerge(PBB pb1, PBB pb2, bool bDelete = false);
+        BasicBlock *             splitBB (BasicBlock * pBB, ADDRESS uNativeAddr, BasicBlock * pNewBB = 0, bool bDelRtls = false);
+        void            completeMerge(BasicBlock * pb1, BasicBlock * pb2, bool bDelete = false);
         bool            checkEntryBB();
 
 public:
 
-        PBB             splitForBranch(PBB pBB, RTL* rtl, BranchStatement* br1, BranchStatement* br2, BB_IT& it);
+        BasicBlock *             splitForBranch(BasicBlock * pBB, RTL* rtl, BranchStatement* br1, BranchStatement* br2, BB_IT& it);
 
         /////////////////////////////////////////////////////////////////////////
         // Control flow analysis stuff, lifted from Doug Simon's honours thesis.
@@ -167,9 +170,9 @@ public:
         void            structConds();
         void            structLoops();
         void            checkConds();
-        void            determineLoopType(PBB header, bool* &loopNodes);
-        void            findLoopFollow(PBB header, bool* &loopNodes);
-        void            tagNodesInLoop(PBB header, bool* &loopNodes);
+        void            determineLoopType(BasicBlock * header, bool* &loopNodes);
+        void            findLoopFollow(BasicBlock * header, bool* &loopNodes);
+        void            tagNodesInLoop(BasicBlock * header, bool* &loopNodes);
 
         void            removeUnneededLabels(HLLCode *hll);
         void            generateDotFile(std::ofstream& of);
@@ -178,17 +181,17 @@ public:
         /////////////////////////////////////////////////////////////////////////
         // Get the entry-point or exit BB
         /////////////////////////////////////////////////////////////////////////
-        PBB             getEntryBB() { return entryBB;}
-        PBB             getExitBB()     { return exitBB;}
+        BasicBlock *             getEntryBB() { return entryBB;}
+        BasicBlock *             getExitBB()     { return exitBB;}
 
         /////////////////////////////////////////////////////////////////////////
         // Set the entry-point BB (and exit BB as well)
         /////////////////////////////////////////////////////////////////////////
         void            setEntryBB(BasicBlock *bb);
-        void            setExitBB(PBB bb);
+        void            setExitBB(BasicBlock * bb);
 
-        PBB             findRetNode();
-        void            addNewOutEdge(PBB fromBB, PBB newOutEdge);
+        BasicBlock *             findRetNode();
+        void            addNewOutEdge(BasicBlock * fromBB, BasicBlock * newOutEdge);
         /////////////////////////////////////////////////////////////////////////
         // print this cfg, mainly for debugging
         /////////////////////////////////////////////////////////////////////////
@@ -208,9 +211,9 @@ public:
         bool            implicitsDone() {return bImplicitsDone;}  //!<  True if implicits have been created
         void            setImplicitsDone() { bImplicitsDone = true; } //!< Call when implicits have been created
         void            findInterferences(ConnectionGraph& ig);
-        void            appendBBs(std::list<PBB>& worklist, std::set<PBB>& workset);
+        void            appendBBs(std::list<BasicBlock *>& worklist, std::set<BasicBlock *>& workset);
         void            removeUsedGlobals(std::set<Global*> &unusedGlobals);
-        void bbSearchAll(Exp *search, std::list<Exp*> &result, bool ch);
+        void            bbSearchAll(Exp *search, std::list<Exp*> &result, bool ch);
 protected:
         void            addBB(BasicBlock * bb) { m_listBB.push_back(bb); }
         friend class XMLProgParser;

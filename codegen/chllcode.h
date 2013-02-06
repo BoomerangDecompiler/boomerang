@@ -92,10 +92,14 @@ private:
     void appendTypeIdent(std::ostringstream& str, Type *typ, const char *ident);
     /// Adds: (
     void openParen(std::ostringstream& str, PREC outer, PREC inner) {
-        if (inner < outer) str << "("; }
+        if (inner < outer)
+            str << "(";
+    }
     /// Adds: )
     void closeParen(std::ostringstream& str, PREC outer, PREC inner) {
-        if (inner < outer) str << ")"; }
+        if (inner < outer)
+            str << ")"; 
+    }
 
     void appendLine(const std::ostringstream& ostr);
     void appendLine(const std::string& s);

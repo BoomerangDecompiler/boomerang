@@ -60,7 +60,7 @@ CHLLCode::CHLLCode(UserProc *p) : HLLCode(p)
 CHLLCode::~CHLLCode()
 {}
 
-/// Output 4 * \param indLevel spaces to \a str
+/// Output 4 * \a indLevel spaces to \a str
 void CHLLCode::indent(std::ostringstream& str, int indLevel) {
     // Can probably do more efficiently
     for (int i=0; i < indLevel; i++)
@@ -1544,7 +1544,7 @@ void CHLLCode::AddProcDec(UserProc* proc, bool open) {
             // C does this by default when you pass an array, i.e. you pass &array meaning array
             // Replace all m[param] with foo, param with foo, then foo with param
             ty = ((PointerType*)ty)->getPointsTo();
-            Exp *foo = new Const(const_cast<char *>("foo123412341234"));
+            Exp *foo = new Const("foo123412341234");
             m_proc->searchAndReplace(Location::memOf(left, nullptr), foo);
             m_proc->searchAndReplace(left, foo);
             m_proc->searchAndReplace(foo, left);

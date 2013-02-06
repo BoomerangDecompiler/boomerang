@@ -34,13 +34,12 @@
 #include "types.h"
 #include "sigenum.h"   // For enums platform and cc
 #include "BinaryFile.h"
-
+#include "TargetQueue.h"
 class UserProc;
 class Proc;
 class RTL;
 class NJMCDecoder;
 class BasicBlock;
-typedef BasicBlock* PBB;
 class Exp;
 class TypedExp;
 class Cfg;
@@ -60,48 +59,6 @@ enum INSTTYPE {
     I_COMPJUMP,                 // computed jump
     I_COMPCALL                 // computed call
 };
-
-// Put the target queue logic into this small class
-class TargetQueue {
-        std::queue<ADDRESS> targets;
-
-public:
-
-/*
- * FUNCTION:    visit
- * OVERVIEW:    Visit a destination as a label, i.e. check whether we need to queue it as a new BB to create later.
- *                Note: at present, it is important to visit an address BEFORE an out edge is added to that address.
- *                This is because adding an out edge enters the address into the Cfg's BB map, and it looks like the
- *                BB has already been visited, and it gets overlooked. It would be better to have a scheme whereby
- *                the order of calling these functions (i.e. visit() and AddOutEdge()) did not matter.
- * PARAMETERS:    pCfg - the enclosing CFG
- *                uNewAddr - the address to be checked
- *                pNewBB - set to the lower part of the BB if the address already exists as a non explicit label
- *                (i.e. the BB has to be split)
- * \returns         <nothing>
- */
-    void visit(Cfg* pCfg, ADDRESS uNewAddr, PBB& pNewBB);
-/*
- * Provide an initial address (can call several times if there are several entry points)
- */
-        void        initial(ADDRESS uAddr);
-
-
-/*
- * FUNCTION:      nextAddress
- * OVERVIEW:      Return the next target from the queue of non-processed targets.
- * PARAMETERS:      cfg - the enclosing CFG
- * \returns           The next address to process, or 0 if none (queue is empty)
- */
-        ADDRESS        nextAddress(Cfg* cfg);
-
-/*
- * Print (for debugging)
- */
-        void        dump();
-
-};    // class TargetQueue
-
 
 typedef bool (*PHELPER)(ADDRESS dest, ADDRESS addr, std::list<RTL*>* lrtl);
 
@@ -221,7 +178,7 @@ static  void            closeInstance(void* dlHandle); //!<Close the library ope
          *                pRtl: pointer to the current RTL with the semantics for the return statement (including a
          *                    ReturnStatement as the last statement)
          */
-        PBB             createReturnBlock(UserProc* pProc, std::list<RTL*>* BB_rtls, RTL* pRtl);
+        BasicBlock *             createReturnBlock(UserProc* pProc, std::list<RTL*>* BB_rtls, RTL* pRtl);
 
         /*
          * Add a synthetic return instruction and basic block (or a branch to the existing return instruction).
@@ -229,7 +186,7 @@ static  void            closeInstance(void* dlHandle); //!<Close the library ope
          *                pProc: pointer to the enclosing UserProc
          *                pRtl: pointer to the current RTL with the call instruction
          */
-        void            appendSyntheticReturn(PBB pCallBB, UserProc* pProc, RTL* pRtl);
+        void            appendSyntheticReturn(BasicBlock * pCallBB, UserProc* pProc, RTL* pRtl);
 
         /*
          * Add an RTL to the map from native address to previously-decoded-RTLs. Used to restore case statements and

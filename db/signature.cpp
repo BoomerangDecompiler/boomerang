@@ -275,7 +275,10 @@ static void cloneVec(Returns& from, Returns& to) {
 }
 
 Parameter *hack;
-
+Parameter::~Parameter() {
+    delete type;
+    delete exp;
+}
 Parameter* Parameter::clone() {
     return new Parameter(type->clone(), name.c_str(), exp->clone(), boundMax.c_str());
 }
@@ -1401,18 +1404,18 @@ Signature *Signature::instantiate(platform plat, callconv cc, const char *nam) {
     return nullptr;
 }
 
-void Signature::print(std::ostream &out, bool html) {
+void Signature::print(std::ostream &out, bool html) const {
     if (isForced())
         out << "*forced* ";
     if (returns.size() > 0) {
         out << "{ ";
         unsigned n = 0;
-        for (Returns::iterator rr = returns.begin(); rr != returns.end(); rr++, n++) {
-            out << (*rr)->type->getCtype() << " " << (*rr)->exp;
+        for (const Return* rr : returns) {
+            out << rr->type->getCtype() << " " << rr->exp;
             if (n != returns.size() - 1)
-                out << ", ";
-            else
-                out << " ";
+                out << ",";
+            out << " ";
+            n++;
         }
         out << "} ";
     } else

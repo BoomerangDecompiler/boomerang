@@ -2,7 +2,7 @@
 #include <fstream>
 #include <iomanip>                  // For setfill etc
 #include <cstring>
-#include <stdlib.h>
+#include <cstdlib>
 #include "prog.h"
 #include "exp.h"
 #include "hllcode.h"
@@ -75,7 +75,7 @@ SyntaxNode *BlockSyntaxNode::getOutEdge(SyntaxNode *root, int n) {
     return statements[statements.size()-1]->getOutEdge(root, n);
 }
 
-SyntaxNode *BlockSyntaxNode::findNodeFor(PBB bb)
+SyntaxNode *BlockSyntaxNode::findNodeFor(BasicBlock * bb)
 {
     if (pbb == bb)
         return this;
@@ -113,7 +113,7 @@ void BlockSyntaxNode::printAST(SyntaxNode *root, std::ostream &os)
     os << "\"];" << std::endl;
     if (pbb) {
         for (int i = 0; i < pbb->getNumOutEdges(); i++) {
-            PBB out = pbb->getOutEdge(i);
+            BasicBlock * out = pbb->getOutEdge(i);
             os << std::setw(4) << std::dec << nodenum << " ";
             SyntaxNode *to = root->findNodeFor(out);
             assert(to);
@@ -403,8 +403,7 @@ SyntaxNode *BlockSyntaxNode::replace(SyntaxNode *from, SyntaxNode *to)
 }
 
 IfThenSyntaxNode::IfThenSyntaxNode() : pThen(nullptr), cond(nullptr)
-{
-}
+{}
 
 
 IfThenSyntaxNode::~IfThenSyntaxNode()
@@ -453,7 +452,7 @@ SyntaxNode *IfThenSyntaxNode::replace(SyntaxNode *from, SyntaxNode *to)
     return this;
 }
 
-SyntaxNode *IfThenSyntaxNode::findNodeFor(PBB bb)
+SyntaxNode *IfThenSyntaxNode::findNodeFor(BasicBlock * bb)
 {
     if (pbb == bb)
         return this;
@@ -552,7 +551,7 @@ SyntaxNode *IfThenElseSyntaxNode::replace(SyntaxNode *from, SyntaxNode *to)
     return this;
 }
 
-SyntaxNode *IfThenElseSyntaxNode::findNodeFor(PBB bb)
+SyntaxNode *IfThenElseSyntaxNode::findNodeFor(BasicBlock * bb)
 {
     if (pbb == bb)
         return this;
@@ -639,7 +638,7 @@ SyntaxNode *PretestedLoopSyntaxNode::replace(SyntaxNode *from, SyntaxNode *to)
     return this;
 }
 
-SyntaxNode *PretestedLoopSyntaxNode::findNodeFor(PBB bb)
+SyntaxNode *PretestedLoopSyntaxNode::findNodeFor(BasicBlock * bb)
 {
     if (pbb == bb)
         return this;
@@ -722,7 +721,7 @@ SyntaxNode *PostTestedLoopSyntaxNode::replace(SyntaxNode *from, SyntaxNode *to)
     return this;
 }
 
-SyntaxNode *PostTestedLoopSyntaxNode::findNodeFor(PBB bb)
+SyntaxNode *PostTestedLoopSyntaxNode::findNodeFor(BasicBlock * bb)
 {
     if (pbb == bb)
         return this;
@@ -801,7 +800,7 @@ SyntaxNode *InfiniteLoopSyntaxNode::replace(SyntaxNode *from, SyntaxNode *to)
     return this;
 }
 
-SyntaxNode *InfiniteLoopSyntaxNode::findNodeFor(PBB bb)
+SyntaxNode *InfiniteLoopSyntaxNode::findNodeFor(BasicBlock * bb)
 {
     if (pbb == bb)
         return this;

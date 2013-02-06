@@ -1,7 +1,7 @@
 /***************************************************************************//**
- * FILE:	   StatementTest.h
- * OVERVIEW:   Provides the interface for the StatementTest class, which
- *				tests the dataflow subsystems
+ * \file StatementTest.h
+ * Provides the interface for the StatementTest class, which
+ *  tests the dataflow subsystems
  *============================================================================*/
 /*
  * $Revision: 1.7 $

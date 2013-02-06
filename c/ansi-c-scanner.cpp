@@ -35,8 +35,7 @@
 #endif
 
 #ifdef __cplusplus
-#include <stdlib.h>
-#include <cstring>
+#include <cstdlib>
 #define YY_USE_CONST
 #define YY_USE_PROTOS
 #ifndef YY_USE_CLASS
@@ -48,12 +47,12 @@
 #else   /* ! __cplusplus */
 #ifdef __STDC__
 #ifdef __GNUC__
-#include <stddef.h>
+#include <cstddef>
 void *malloc( size_t );
 void free( void* );
 int read();
 #else
-#include <stdlib.h>
+#include <cstdlib>
 #endif  /* __GNUC__ */
 #define YY_USE_PROTOS
 #define YY_USE_CONST
@@ -62,7 +61,8 @@ int read();
 #ifdef __TURBOC__
 #define YY_USE_CONST
 #endif
-#include <stdio.h>
+#include <cstdio>
+#include <cstring>
 
 
 /*********************************************/
@@ -153,7 +153,7 @@ int read();
 #define YY_FATAL_ERROR(msg) \
     do \
 { \
-    (void) fputs( (char*)msg, yy___stderr  ); \
+    (void) fputs( msg, yy___stderr  ); \
     (void) putc( '\n', yy___stderr  ); \
     exit( 1 ); \
     } \
@@ -174,7 +174,7 @@ int read();
     if ( yy___input((char *)buf, result,max_size) < 0 ) \
     YY_FATAL_ERROR( "YY_INPUT() in flex scanner failed" );
 
-#define YY_FATAL_ERROR(msg) yy___fatal_error((char*)msg)
+#define YY_FATAL_ERROR(msg) yy___fatal_error(msg)
 #define yywrap() yy___wrap()
 
 #endif
@@ -268,8 +268,7 @@ int read();
 
 
 
-struct yy_buffer_state
-{
+struct yy_buffer_state {
     YY_AnsiCScanner_IFILE  *yy_input_file;
 
     YY_AnsiCScanner_CHAR *yy_ch_buf;               /* input buffer */
@@ -338,44 +337,48 @@ static void yyunput YY_PROTO(( YY_AnsiCScanner_CHAR c, YY_AnsiCScanner_CHAR *buf
 #else
 /* c++ */
 #ifndef YY_AnsiCScanner_ECHO_NOCODE
-void YY_AnsiCScanner_CLASS::yy___echo()
-{YY_AnsiCScanner_ECHO_CODE
+void YY_AnsiCScanner_CLASS::yy___echo() {
+    YY_AnsiCScanner_ECHO_CODE
 }
 #endif
 #ifndef YY_AnsiCScanner_INPUT_NOCODE
-int  YY_AnsiCScanner_CLASS::yy___input(char * buffer,int &result,int max_size)
-{YY_AnsiCScanner_INPUT_CODE
+int YY_AnsiCScanner_CLASS::yy___input(char * buffer, int &result, int max_size) {
+    YY_AnsiCScanner_INPUT_CODE
 }
 #endif
 #ifndef YY_AnsiCScanner_FATAL_ERROR_NOCODE
-void YY_AnsiCScanner_CLASS::yy___fatal_error(char *msg)
-{YY_AnsiCScanner_FATAL_ERROR_CODE
+void YY_AnsiCScanner_CLASS::yy___fatal_error(char *msg) {
+    YY_AnsiCScanner_FATAL_ERROR_CODE
 }
 #endif
 #ifndef YY_AnsiCScanner_WRAP_NOCODE
-int  YY_AnsiCScanner_CLASS::yy___wrap()
-{YY_AnsiCScanner_WRAP_CODE
+int YY_AnsiCScanner_CLASS::yy___wrap() {
+    YY_AnsiCScanner_WRAP_CODE
 }
 #endif
-void YY_AnsiCScanner_CLASS::yy_initialize()
-{
-    yy___in=0;yy___out=0;yy_init = 1;
+void YY_AnsiCScanner_CLASS::yy_initialize() {
+    yy___in = 0;
+    yy___out = 0;
+    yy_init = 1;
     yy_start=0;
-    yy___text=0;yy___leng=0;
+    yy___text = 0;
+    yy___leng = 0;
     YY_AnsiCScanner_CURRENT_BUFFER=0;
     yy_did_buffer_switch_on_eof=0;
-    yy_c_buf_p=0;yy_hold_char=0;yy_n_chars=0;
+    yy_c_buf_p = 0;
+    yy_hold_char = 0;
+    yy_n_chars = 0;
 #if YY_AnsiCScanner_DEBUG != 0
     YY_AnsiCScanner_DEBUG_FLAG=YY_AnsiCScanner_DEBUG_INIT;
 #endif
 }
 
-YY_AnsiCScanner_CLASS::YY_AnsiCScanner_CLASS(YY_AnsiCScanner_CONSTRUCTOR_PARAM) YY_AnsiCScanner_CONSTRUCTOR_INIT
-{yy_initialize();
+YY_AnsiCScanner_CLASS::YY_AnsiCScanner_CLASS(YY_AnsiCScanner_CONSTRUCTOR_PARAM) YY_AnsiCScanner_CONSTRUCTOR_INIT {
+    yy_initialize();
     YY_AnsiCScanner_CONSTRUCTOR_CODE;
 }
-YY_AnsiCScanner_CLASS::~YY_AnsiCScanner_CLASS()
-{YY_AnsiCScanner_DESTRUCTOR_CODE;
+YY_AnsiCScanner_CLASS::~YY_AnsiCScanner_CLASS() {
+    YY_AnsiCScanner_DESTRUCTOR_CODE;
     if(YY_AnsiCScanner_CURRENT_BUFFER)
         YY_AnsiCScanner_DELETE_BUFFER(YY_AnsiCScanner_CURRENT_BUFFER);
 }
@@ -394,8 +397,8 @@ YY_AnsiCScanner_CLASS::~YY_AnsiCScanner_CLASS()
 /* % data tables for the DFA go here */
 #define YY_END_OF_BUFFER 112
 typedef int yy_state_type;
-static const short int yy_accept[346] =
-{   0,
+static const short int yy_accept[346] ={
+    0,
     0,    0,  112,  110,  109,  109,   97,  110,  103,   96,
     110,   91,   92,  101,  100,   88,   99,   95,  102,   57,
     57,   89,   85,  104,   90,  105,   54,   54,   54,   54,
@@ -436,8 +439,8 @@ static const short int yy_accept[346] =
     54,   54,   33,   40,    0
 } ;
 
-static const YY_CHAR yy_ec[128] =
-{   0,
+static const YY_CHAR yy_ec[128] ={
+    0,
     1,    1,    1,    1,    1,    1,    1,    1,    2,    3,
     2,    2,    1,    1,    1,    1,    1,    1,    1,    1,
     1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
@@ -454,8 +457,8 @@ static const YY_CHAR yy_ec[128] =
     63,   64,   65,   66,   67,   68,    1
 } ;
 
-static const YY_CHAR yy_meta[69] =
-{   0,
+static const YY_CHAR yy_meta[69] ={
+    0,
     1,    1,    1,    1,    1,    1,    1,    1,    2,    1,
     1,    1,    1,    1,    1,    1,    1,    3,    3,    1,
     1,    1,    1,    1,    4,    4,    3,    3,    3,    4,
@@ -465,8 +468,8 @@ static const YY_CHAR yy_meta[69] =
     4,    4,    4,    4,    1,    1,    1,    1
 } ;
 
-static const short int yy_base[350] =
-{   0,
+static const short int yy_base[350] ={
+    0,
     0,  470,  475,  477,  477,  477,  451,   64,  450,   62,
     435,  477,  477,  448,   58,  477,   59,   57,   67,   86,
     79,  477,  477,   55,  447,   63,    0,  417,    0,   83,
@@ -507,8 +510,8 @@ static const short int yy_base[350] =
     109,  126,    0,  477,  477,  320,  324,  326,  130
 } ;
 
-static const short int yy_def[350] =
-{   0,
+static const short int yy_def[350] ={
+    0,
     345,    1,  345,  345,  345,  345,  345,  346,  345,  345,
     347,  345,  345,  345,  345,  345,  345,  345,  345,  345,
     345,  345,  345,  345,  345,  345,  348,  348,  348,  348,
@@ -549,8 +552,8 @@ static const short int yy_def[350] =
     348,  348,  348,  345,    0,  345,  345,  345,  345
 } ;
 
-static const short int yy_nxt[546] =
-{   0,
+static const short int yy_nxt[546] ={
+    0,
     4,    5,    6,    7,    8,    4,    9,   10,   11,   12,
     13,   14,   15,   16,   17,   18,   19,   20,   21,   22,
     23,   24,   25,   26,   27,   28,   29,   29,   29,   29,
@@ -613,8 +616,8 @@ static const short int yy_nxt[546] =
     345,  345,  345,  345,  345
 } ;
 
-static const short int yy_chk[546] =
-{   0,
+static const short int yy_chk[546] ={
+    0,
     1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
     1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
     1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
@@ -681,8 +684,8 @@ static yy_state_type yy_last_accepting_state;
 static YY_CHAR *yy_last_accepting_cpos;
 
 #if YY_AnsiCScanner_DEBUG != 0
-static const short int yy_rule_linenum[111] =
-{   0,
+static const short int yy_rule_linenum[111] ={
+    0,
     58,   59,   60,   61,   62,   63,   65,   66,   68,   69,
     70,   71,   72,   73,   74,   75,   76,   77,   78,   79,
     80,   81,   82,   83,   84,   85,   86,   87,   88,   89,
@@ -735,8 +738,7 @@ YY_AnsiCScanner_LEX_RETURN YY_AnsiCScanner_CLASS::YY_AnsiCScanner_LEX ( YY_AnsiC
     /* % end of prolog */
 #line 401 "//usr/local/lib/flexskel.cc"
 
-    if ( yy_init )
-    {
+    if (yy_init) {
 
         {
             YY_USER_INIT;
@@ -759,8 +761,7 @@ YY_AnsiCScanner_LEX_RETURN YY_AnsiCScanner_CLASS::YY_AnsiCScanner_LEX ( YY_AnsiC
         yy_init=0;
     }
 
-    while ( 1 )         /* loops until end-of-file is reached */
-    {
+    while (1) /* loops until end-of-file is reached */ {
         /* % yymore()-related code goes here */
 #line 429 "//usr/local/lib/flexskel.cc"
         yy_cp = yy_c_buf_p;
@@ -778,24 +779,20 @@ YY_AnsiCScanner_LEX_RETURN YY_AnsiCScanner_CLASS::YY_AnsiCScanner_LEX ( YY_AnsiC
         if ( yy_bp[-1] == '\n' )
             ++yy_current_state;
 yy_match:
-        do
-        {
+        do {
             register YY_CHAR yy_c = yy_ec[(unsigned char)*yy_cp];
-            if ( yy_accept[yy_current_state] )
-            {
+            if (yy_accept[yy_current_state]) {
                 yy_last_accepting_state = yy_current_state;
                 yy_last_accepting_cpos = yy_cp;
             }
-            while ( yy_chk[yy_base[yy_current_state] + yy_c] != yy_current_state )
-            {
+            while (yy_chk[yy_base[yy_current_state] + yy_c] != yy_current_state) {
                 yy_current_state = yy_def[yy_current_state];
                 if ( yy_current_state >= 346 )
                     yy_c = yy_meta[(unsigned char)yy_c];
             }
             yy_current_state = yy_nxt[yy_base[yy_current_state] + yy_c];
             ++yy_cp;
-        }
-        while ( yy_current_state != 345 );
+        } while (yy_current_state != 345);
         yy_cp = yy_last_accepting_cpos;
         yy_current_state = yy_last_accepting_state;
 #line 440 "//usr/local/lib/flexskel.cc"
@@ -810,8 +807,7 @@ yy_find_action:
 
 do_action:      /* this label is used only to access EOF actions */
 #if YY_AnsiCScanner_DEBUG != 0
-        if ( yy___flex_debug )
-        {
+        if (yy___flex_debug) {
             if ( yy_act == 0 )
 #ifndef YY_AnsiCScanner_IOSTREAM
                 fprintf( yy___stderr , "--scanner backtracking\n" );
@@ -851,8 +847,7 @@ do_action:      /* this label is used only to access EOF actions */
 #endif
         }
 #endif
-        switch ( yy_act )
-        {
+        switch (yy_act) {
             /* % actions go here */
             case 0: /* must backtrack */
                 /* undo the effects of YY_DO_BEFORE_ACTION */
@@ -1345,16 +1340,14 @@ do_action:      /* this label is used only to access EOF actions */
 
                     yy_bp = yy___text + YY_MORE_ADJ;
 
-                    if ( yy_next_state )
-                    {
+                    if (yy_next_state) {
                         /* consume the NUL */
                         yy_cp = ++yy_c_buf_p;
                         yy_current_state = yy_next_state;
                         goto yy_match;
                     }
 
-                    else
-                    {
+                    else {
                         /* % code to do backtracking for compressed tables and set up yy_cp goes here */
                         yy_cp = yy_last_accepting_cpos;
                         yy_current_state = yy_last_accepting_state;
@@ -1363,14 +1356,12 @@ do_action:      /* this label is used only to access EOF actions */
                     }
                 }
 
-                else switch ( yy_get_next_buffer() )
-                {
+                else switch (yy_get_next_buffer()) {
                     case EOB_ACT_END_OF_FILE:
                     {
                         yy_did_buffer_switch_on_eof = 0;
 
-                        if ( yywrap() )
-                        {
+                        if (yywrap()) {
                             /* note: because we've taken care in
                              * yy_get_next_buffer() to have set up yy___text,
                              * we can now set up yy_c_buf_p so that if some
@@ -1383,10 +1374,7 @@ do_action:      /* this label is used only to access EOF actions */
 
                             yy_act = YY_STATE_EOF((yy_start - 1) / 2);
                             goto do_action;
-                        }
-
-                        else
-                        {
+                        } else {
                             if ( ! yy_did_buffer_switch_on_eof )
                                 YY_NEW_FILE;
                         }
@@ -1470,8 +1458,7 @@ int YY_AnsiCScanner_CLASS::yy_get_next_buffer()
          */
         yy_n_chars = 0;
 
-    else
-    {
+    else {
         int num_to_read = YY_AnsiCScanner_CURRENT_BUFFER->yy_buf_size - number_to_move - 1;
 
         if ( num_to_read > YY_READ_BUF_SIZE )
@@ -1485,16 +1472,13 @@ int YY_AnsiCScanner_CLASS::yy_get_next_buffer()
                   yy_n_chars, num_to_read );
     }
 
-    if ( yy_n_chars == 0 )
-    {
-        if ( number_to_move - YY_MORE_ADJ == 1 )
-        {
+    if (yy_n_chars == 0) {
+        if (number_to_move - YY_MORE_ADJ == 1) {
             ret_val = EOB_ACT_END_OF_FILE;
             YY_AnsiCScanner_CURRENT_BUFFER->yy_eof_status = EOF_DONE;
         }
 
-        else
-        {
+        else {
             ret_val = EOB_ACT_LAST_MATCH;
             YY_AnsiCScanner_CURRENT_BUFFER->yy_eof_status = EOF_PENDING;
         }
@@ -1542,17 +1526,14 @@ long YY_AnsiCScanner_CLASS::yy_get_previous_state_()
         ++yy_current_state;
 #line 717 "//usr/local/lib/flexskel.cc"
 
-    for ( yy_cp = yy___text + YY_MORE_ADJ; yy_cp < yy_c_buf_p; ++yy_cp )
-    {
+    for (yy_cp = yy___text + YY_MORE_ADJ; yy_cp < yy_c_buf_p; ++yy_cp) {
         /* % code to find the next state goes here */
         register YY_CHAR yy_c = (*yy_cp ? yy_ec[(unsigned char)*yy_cp] : 1);
-        if ( yy_accept[yy_current_state] )
-        {
+        if (yy_accept[yy_current_state]) {
             yy_last_accepting_state = yy_current_state;
             yy_last_accepting_cpos = yy_cp;
         }
-        while ( yy_chk[yy_base[yy_current_state] + yy_c] != yy_current_state )
-        {
+        while (yy_chk[yy_base[yy_current_state] + yy_c] != yy_current_state) {
             yy_current_state = yy_def[yy_current_state];
             if ( yy_current_state >= 346 )
                 yy_c = yy_meta[(unsigned char)yy_c];
@@ -1596,13 +1577,11 @@ long YY_AnsiCScanner_CLASS::yy_try_NUL_trans_(long yy_current_state_)
     register YY_CHAR *yy_cp = yy_c_buf_p;
 
     register YY_CHAR yy_c = 1;
-    if ( yy_accept[yy_current_state] )
-    {
+    if (yy_accept[yy_current_state]) {
         yy_last_accepting_state = yy_current_state;
         yy_last_accepting_cpos = yy_cp;
     }
-    while ( yy_chk[yy_base[yy_current_state] + yy_c] != yy_current_state )
-    {
+    while (yy_chk[yy_base[yy_current_state] + yy_c] != yy_current_state) {
         yy_current_state = yy_def[yy_current_state];
         if ( yy_current_state >= 346 )
             yy_c = yy_meta[(unsigned char)yy_c];
@@ -1636,8 +1615,7 @@ void YY_AnsiCScanner_CLASS::yyunput( YY_AnsiCScanner_CHAR c, YY_AnsiCScanner_CHA
     /* undo effects of setting up yy___text */
     *yy_cp = yy_hold_char;
 
-    if ( yy_cp < YY_AnsiCScanner_CURRENT_BUFFER->yy_ch_buf + 2 )
-    { /* need to shift things up to make room */
+    if (yy_cp < YY_AnsiCScanner_CURRENT_BUFFER->yy_ch_buf + 2) { /* need to shift things up to make room */
         register int number_to_move = yy_n_chars + 2; /* +2 for EOB chars */
         register YY_AnsiCScanner_CHAR *dest =
                 &YY_AnsiCScanner_CURRENT_BUFFER->yy_ch_buf[YY_AnsiCScanner_CURRENT_BUFFER->yy_buf_size + 2];
@@ -1681,8 +1659,7 @@ int YY_AnsiCScanner_CLASS::input()
 
     *yy_cp = yy_hold_char;
 
-    if ( *yy_c_buf_p == YY_END_OF_BUFFER_CHAR )
-    {
+    if (*yy_c_buf_p == YY_END_OF_BUFFER_CHAR) {
         /* yy_c_buf_p now points to the character we want to return.
          * If this occurs *before* the EOB characters, then it's a
          * valid NUL; if not, then we've hit the end of the buffer.
@@ -1691,17 +1668,14 @@ int YY_AnsiCScanner_CLASS::input()
             /* this was really a NUL */
             *yy_c_buf_p = '\0';
 
-        else
-        { /* need more input */
+        else { /* need more input */
             yy___text = yy_c_buf_p;
             ++yy_c_buf_p;
 
-            switch ( yy_get_next_buffer() )
-            {
+            switch (yy_get_next_buffer()) {
                 case EOB_ACT_END_OF_FILE:
                 {
-                    if ( yywrap() )
-                    {
+                    if (yywrap()) {
                         yy_c_buf_p = yy___text + YY_MORE_ADJ;
                         return ( EOF );
                     }
@@ -1776,8 +1750,7 @@ void YY_AnsiCScanner_CLASS::YY_AnsiCScanner_SWITCH_TO_BUFFER( YY_BUFFER_STATE ne
     if ( YY_AnsiCScanner_CURRENT_BUFFER == new_buffer )
         return;
 
-    if ( YY_AnsiCScanner_CURRENT_BUFFER )
-    {
+    if (YY_AnsiCScanner_CURRENT_BUFFER) {
         /* flush out information for old buffer */
         *yy_c_buf_p = yy_hold_char;
         YY_AnsiCScanner_CURRENT_BUFFER->yy_buf_pos = yy_c_buf_p;
@@ -1906,16 +1879,14 @@ void YY_AnsiCScanner_CLASS::YY_AnsiCScanner_INIT_BUFFER( YY_BUFFER_STATE b, YY_A
 #line 177 "c/ansi-c.l"
 
 
-void AnsiCScanner::comment()
-{
+void AnsiCScanner::comment() {
     char c, c1;
 
 loop:
     while ((c = input()) != '*' && c != 0)
         /*putchar(c)*/;
 
-    if ((c1 = input()) != '/' && c != 0)
-    {
+    if ((c1 = input()) != '/' && c != 0) {
         /*unput(c1);*/
         goto loop;
     }
@@ -1924,15 +1895,13 @@ loop:
         /*putchar(c1)*/;
 }
 
-void AnsiCScanner::commentEOL()
-{
+void AnsiCScanner::commentEOL() {
     char c;
     while ((c = input()) != '\n')
         ;
 }
 
-void AnsiCScanner::count()
-{
+void AnsiCScanner::count() {
     int i;
 
     for (i = 0; yytext[i] != '\0'; i++)
@@ -1953,8 +1922,7 @@ void AnsiCScanner::count()
 }
 
 
-int AnsiCScanner::check_type()
-{
+int AnsiCScanner::check_type() {
     /*
 * pseudo code --- this is what it should check
 *

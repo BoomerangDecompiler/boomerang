@@ -18,7 +18,7 @@
 
 CPPUNIT_TEST_SUITE_REGISTRATION( ProgTest );
 
-#define HELLO_PENTIUM		"test/pentium/hello"
+#define HELLO_PENTIUM   "test/pentium/hello"
 
 
 /***************************************************************************//**
@@ -33,11 +33,8 @@ void ProgTest::setUp () {
 }
 
 /***************************************************************************//**
- * FUNCTION:        ProgTest::tearDown
- * OVERVIEW:        Delete expressions created in setUp
- * NOTE:            Called after all tests
- * PARAMETERS:        <none>
- * \returns             <nothing>
+ * \brief Delete expressions created in setUp
+ * \note Called after all tests
  *============================================================================*/
 void ProgTest::tearDown () {
 }

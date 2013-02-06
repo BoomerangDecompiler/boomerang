@@ -15,7 +15,7 @@
 #include <assert.h>
 #if defined(_MSC_VER) && _MSC_VER <= 1200
 #pragma warning(disable:4786)
-#endif 
+#endif
 
 #include <numeric>      // For accumulate
 #include <algorithm>    // For std::max()
@@ -33,11 +33,11 @@
 #include "generic.h"
 #include "log.h"
 
-extern char* operStrings[];
+extern const char* operStrings[];
 
 Exp *GenericExpTransformer::applyFuncs(Exp *rhs)
 {
-    Exp *call, *callw = new Binary(opFlagCall, new Const((char*)"memberAtOffset"), new Terminal(opWild));
+    Exp *call, *callw = new Binary(opFlagCall, new Const("memberAtOffset"), new Terminal(opWild));
     if (rhs->search(callw, call)) {
         assert(call->getSubExp2()->getOper() == opList);
         Exp *p1 = applyFuncs(call->getSubExp2()->getSubExp1());
@@ -61,7 +61,7 @@ Exp *GenericExpTransformer::applyFuncs(Exp *rhs)
         LOG << "replaced " << call << " with " << result << "\n";
 #endif
     }
-    callw = new Binary(opFlagCall, new Const((char*)"offsetToMember"), new Terminal(opWild));
+    callw = new Binary(opFlagCall, new Const("offsetToMember"), new Terminal(opWild));
     if (rhs->search(callw, call)) {
         assert(call->getSubExp2()->getOper() == opList);
         Exp *p1 = applyFuncs(call->getSubExp2()->getSubExp1());
@@ -74,7 +74,7 @@ Exp *GenericExpTransformer::applyFuncs(Exp *rhs)
 #else
         Type* ty = nullptr;            // Note: will cause a segfault
 #endif
-        char *member = ((Const*)p2)->getStr();
+        const char *member = ((Const*)p2)->getStr();
         int offset = ty->asCompound()->getOffsetTo(member) / 8;
         Exp *result = new Const(offset);
         bool change;
@@ -84,7 +84,7 @@ Exp *GenericExpTransformer::applyFuncs(Exp *rhs)
         LOG << "replaced " << call << " with " << result << "\n";
 #endif
     }
-    callw = new Binary(opFlagCall, new Const((char*)"plus"), new Terminal(opWild));
+    callw = new Binary(opFlagCall, new Const("plus"), new Terminal(opWild));
     if (rhs->search(callw, call)) {
         assert(call->getSubExp2()->getOper() == opList);
         Exp *p1 = applyFuncs(call->getSubExp2()->getSubExp1());
@@ -101,7 +101,7 @@ Exp *GenericExpTransformer::applyFuncs(Exp *rhs)
         LOG << "replaced " << call << " with " << result << "\n";
 #endif
     }
-    callw = new Binary(opFlagCall, new Const((char*)"neg"), new Terminal(opWild));
+    callw = new Binary(opFlagCall, new Const("neg"), new Terminal(opWild));
     if (rhs->search(callw, call)) {
         Exp *p1 = applyFuncs(call->getSubExp2());
         assert(p1->getOper() == opIntConst);
@@ -164,7 +164,7 @@ bool GenericExpTransformer::checkCond(Exp *cond, Exp *bindings)
                     lhs = new Const(operStrings[op]);
                 }
                 rhs = applyFuncs(rhs);
-               
+
 #if 0
                 LOG << "check equals in cond: " << lhs << " == " << rhs << "\n";
 #endif
@@ -194,7 +194,7 @@ bool GenericExpTransformer::checkCond(Exp *cond, Exp *bindings)
                 Exp *new_bindings = lhs->match(rhs);
                 if (new_bindings == nullptr)
                     return false;
-                
+
 #if 0
                 LOG << "matched lhs with rhs, bindings: " << new_bindings << "\n";
 #endif
@@ -208,11 +208,11 @@ bool GenericExpTransformer::checkCond(Exp *cond, Exp *bindings)
 #if 0
                 LOG << "bindings now: " << bindings << "\n";
 #endif
-                
+
                 return true;
             }
         default:
-            LOG << "don't know how to handle oper " 
+            LOG << "don't know how to handle oper "
                 << operStrings[cond->getOper()] << " in cond.\n";
     }
     return false;
@@ -232,7 +232,7 @@ Exp *GenericExpTransformer::applyTo(Exp *e, bool &bMod)
 
     if (where) {
         Exp *cond = where->clone();
-        if (checkCond(cond, bindings) == false) 
+        if (checkCond(cond, bindings) == false)
             return e;
     }
 
@@ -246,7 +246,7 @@ Exp *GenericExpTransformer::applyTo(Exp *e, bool &bMod)
     e = become->clone();
     for (Exp *l = bindings; l->getOper() != opNil; l = l->getSubExp2())
         e = e->searchReplaceAll(l->getSubExp1()->getSubExp1(),
-                                l->getSubExp1()->getSubExp2(), 
+                                l->getSubExp1()->getSubExp2(),
                                 change);
 
     LOG << "calculated result: " << e << "\n";

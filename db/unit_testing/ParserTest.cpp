@@ -15,7 +15,7 @@
 #include <sstream>
 CPPUNIT_TEST_SUITE_REGISTRATION( ParserTest );
 
-#define SPARC_SSL		Boomerang::get()->getProgPath() + "frontend/machine/sparc/sparc.ssl"
+#define SPARC_SSL   Boomerang::get()->getProgPath() + "frontend/machine/sparc/sparc.ssl"
 
 
 /***************************************************************************//**

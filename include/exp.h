@@ -59,7 +59,6 @@ class ExpModifier;
 class XMLProgParser;
 class Proc;
 class UserProc;
-typedef BasicBlock* PBB;
 
 #define DEBUG_BUFSIZE    5000        // Size of the debug print buffer
 
@@ -76,11 +75,9 @@ typedef BasicBlock* PBB;
 class Exp {
 protected:
         OPER        op;               // The operator (e.g. opPlus)
-
-        mutable unsigned    lexBegin, lexEnd;
-
+        mutable unsigned    lexBegin=0, lexEnd=0;
         // Constructor, with ID
-                    Exp(OPER op) : op(op) {}
+        constexpr   Exp(OPER op) : op(op) {}
 
 public:
         // Virtual destructor
@@ -244,19 +241,19 @@ virtual bool        search(Exp* search, Exp*& result);
 
         // Search for Exp search in this Exp. For each found, add a ptr to the matching expression in result (useful
         // with wildcards).      Does NOT clear result on entry
-        bool        searchAll(Exp* search, std::list<Exp*>& result);
+        bool        searchAll(const Exp *search, std::list<Exp*>& result);
 
         // Search this Exp for *search; if found, replace with *replace
         Exp*        searchReplace (Exp* search, Exp* replace, bool& change);
 
         // Search *pSrc for *search; for all occurrences, replace with *replace
-        Exp*        searchReplaceAll(Exp* search, Exp* replace, bool& change, bool once = false);
+        Exp*        searchReplaceAll(const Exp *search, Exp* replace, bool& change, bool once = false);
 
         // Mostly not for public use. Search for subexpression matches.
-static    void        doSearch(Exp* search, Exp*& pSrc, std::list<Exp**>& li, bool once);
+static    void        doSearch(const Exp *search, Exp*& pSrc, std::list<Exp**>& li, bool once);
 
         // As above.
-virtual void        doSearchChildren(Exp* search, std::list<Exp**>& li, bool once);
+virtual void        doSearchChildren(const Exp *search, std::list<Exp**>& li, bool once);
 
         /// Propagate all possible assignments to components of this expression.
         Exp*        propagateAll();
@@ -465,27 +462,25 @@ public:
                     Terminal(const Terminal &o);        // Copy constructor
 
         // Clone
-virtual Exp*    clone() const;
+virtual Exp *       clone() const;
 
         // Compare
 virtual bool        operator==(const Exp& o) const;
 virtual bool        operator< (const Exp& o) const;
 virtual bool        operator*=(Exp& o);
-
 virtual void        print(std::ostream& os, bool html = false) const;
 virtual void        appendDotFile(std::ofstream& of);
 virtual void        printx(int ind) const;
-
 virtual bool        isTerminal() { return true; }
 
         // Visitation
 virtual bool        accept(ExpVisitor* v);
 virtual Exp*        accept(ExpModifier* v);
 
-virtual    Type*        ascendType();
+virtual Type *      ascendType();
 virtual void        descendType(Type* parentType, bool& ch, Statement* s);
 
-virtual bool         match(const char *pattern, std::map<std::string, Exp*> &bindings);
+virtual bool        match(const char *pattern, std::map<std::string, Exp*> &bindings);
 
 protected:
         friend class XMLProgParser;
@@ -538,7 +533,7 @@ virtual Exp *       match(Exp *pattern);
 virtual bool        match(const std::string & pattern, std::map<std::string, Exp*> &bindings);
 
         // Search children
-        void             doSearchChildren(Exp* search, std::list<Exp**>& li, bool once);
+        void             doSearchChildren(const Exp *search, std::list<Exp**>& li, bool once);
 
         // Do the work of simplifying this expression
 virtual Exp*        polySimplify(bool& bMod);
@@ -610,7 +605,7 @@ virtual Exp*        match(Exp *pattern);
 virtual bool         match(const char *pattern, std::map<std::string, Exp*> &bindings);
 
         // Search children
-        void        doSearchChildren(Exp* search, std::list<Exp**>& li, bool once);
+        void        doSearchChildren(const Exp *search, std::list<Exp**>& li, bool once);
 
         // Do the work of simplifying this expression
 virtual Exp*        polySimplify(bool& bMod);
@@ -679,7 +674,7 @@ virtual void         printx(int ind) const;
         Exp*&        refSubExp3();
 
         // Search children
-        void        doSearchChildren(Exp* search, std::list<Exp**>& li, bool once);
+        void        doSearchChildren(const Exp *search, std::list<Exp**>& li, bool once);
 
 virtual Exp*        polySimplify(bool& bMod);
         Exp*        simplifyArith();

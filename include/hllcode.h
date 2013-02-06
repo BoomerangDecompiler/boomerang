@@ -29,7 +29,6 @@
 #include <statement.h>        // For CallStatement::RetLocs
 
 class BasicBlock;
-typedef BasicBlock *PBB;
 class Exp;
 class UserProc;
 class Proc;
@@ -128,7 +127,7 @@ virtual void    print(std::ostream &os) = 0;
 
 class SyntaxNode {
 protected:
-        PBB        pbb;
+        BasicBlock *        pbb;
         int        nodenum;
         int        score;
         SyntaxNode *correspond; // corresponding node in previous state
@@ -147,8 +146,8 @@ virtual void    ignoreGoto() { };
 
 virtual int        getNumber() { return nodenum; }
 
-        PBB        getBB() { return pbb; }
-        void    setBB(PBB bb) { pbb = bb; }
+        BasicBlock *        getBB() { return pbb; }
+        void    setBB(BasicBlock * bb) { pbb = bb; }
 
 virtual int        getNumOutEdges() = 0;
 virtual SyntaxNode *getOutEdge(SyntaxNode *root, int n) = 0;
@@ -167,7 +166,7 @@ virtual SyntaxNode *clone() = 0;
 virtual SyntaxNode *replace(SyntaxNode *from, SyntaxNode *to) = 0;
         SyntaxNode *getCorrespond() { return correspond; }
 
-virtual SyntaxNode *findNodeFor(PBB bb) = 0;
+virtual SyntaxNode *findNodeFor(BasicBlock * bb) = 0;
 virtual void    printAST(SyntaxNode *root, std::ostream &os) = 0;
 virtual int        evaluate(SyntaxNode *root) = 0;
 virtual void    addSuccessors(SyntaxNode *root, std::vector<SyntaxNode*> &successors) { }
@@ -236,7 +235,7 @@ virtual SyntaxNode *getEnclosingLoop(SyntaxNode *pFor, SyntaxNode *cur = nullptr
 virtual SyntaxNode *clone();
 virtual SyntaxNode *replace(SyntaxNode *from, SyntaxNode *to);
 
-virtual SyntaxNode *findNodeFor(PBB bb);
+virtual SyntaxNode *findNodeFor(BasicBlock * bb);
 virtual void    printAST(SyntaxNode *root, std::ostream &os);
 virtual int        evaluate(SyntaxNode *root);
 virtual void    addSuccessors(SyntaxNode *root, std::vector<SyntaxNode*> &successors);
@@ -272,7 +271,7 @@ virtual SyntaxNode *getEnclosingLoop(SyntaxNode *pFor, SyntaxNode *cur = nullptr
         Exp        *getCond() { return cond; }
         void    setThen(SyntaxNode *n) { pThen = n; }
 
-virtual SyntaxNode *findNodeFor(PBB bb);
+virtual SyntaxNode *findNodeFor(BasicBlock * bb);
 virtual void    printAST(SyntaxNode *root, std::ostream &os);
 virtual int        evaluate(SyntaxNode *root);
 virtual void    addSuccessors(SyntaxNode *root, std::vector<SyntaxNode*> &successors);
@@ -315,7 +314,7 @@ virtual SyntaxNode *replace(SyntaxNode *from, SyntaxNode *to);
         void    setThen(SyntaxNode *n) { pThen = n; }
         void    setElse(SyntaxNode *n) { pElse = n; }
 
-virtual SyntaxNode *findNodeFor(PBB bb);
+virtual SyntaxNode *findNodeFor(BasicBlock * bb);
 virtual void printAST(SyntaxNode *root, std::ostream &os);
 virtual int evaluate(SyntaxNode *root);
 virtual void addSuccessors(SyntaxNode *root,
@@ -349,7 +348,7 @@ virtual SyntaxNode *replace(SyntaxNode *from, SyntaxNode *to);
         void    setCond(Exp *e) { cond = e; }
         void    setBody(SyntaxNode *n) { pBody = n; }
 
-virtual SyntaxNode *findNodeFor(PBB bb);
+virtual SyntaxNode *findNodeFor(BasicBlock * bb);
 virtual void    printAST(SyntaxNode *root, std::ostream &os);
 virtual int        evaluate(SyntaxNode *root);
 virtual void    addSuccessors(SyntaxNode *root, std::vector<SyntaxNode*> &successors);
@@ -382,7 +381,7 @@ virtual SyntaxNode *replace(SyntaxNode *from, SyntaxNode *to);
         void    setCond(Exp *e) { cond = e; }
         void    setBody(SyntaxNode *n) { pBody = n; }
 
-virtual SyntaxNode *findNodeFor(PBB bb);
+virtual SyntaxNode *findNodeFor(BasicBlock * bb);
 virtual void    printAST(SyntaxNode *root, std::ostream &os);
 virtual int        evaluate(SyntaxNode *root);
 virtual void     addSuccessors(SyntaxNode *root, std::vector<SyntaxNode*> &successors);
@@ -415,7 +414,7 @@ virtual SyntaxNode *replace(SyntaxNode *from, SyntaxNode *to);
 
         void    setBody(SyntaxNode *n) { pBody = n; }
 
-virtual SyntaxNode *findNodeFor(PBB bb);
+virtual SyntaxNode *findNodeFor(BasicBlock * bb);
 virtual void    printAST(SyntaxNode *root, std::ostream &os);
 virtual int        evaluate(SyntaxNode *root);
 virtual void     addSuccessors(SyntaxNode *root, std::vector<SyntaxNode*> &successors);

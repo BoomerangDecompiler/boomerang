@@ -30,6 +30,8 @@ public: \
 
 
 %header{
+  #include <cstring>
+  #include <cstdlib>
   #include <list>
   #include <string>
   #include "exp.h"
@@ -200,8 +202,6 @@ type: POINTER type ')'
 
 %%
 #include <stdio.h>
-#include <cstring>
-#include <cstdlib>
 
 int TransformationParser::yylex()
 {

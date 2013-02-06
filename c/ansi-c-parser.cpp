@@ -672,7 +672,7 @@ enum YY_AnsiCParser_ENUM_TOKEN {
 #endif
 public:
     int YY_AnsiCParser_PARSE (YY_AnsiCParser_PARSE_PARAM);
-    virtual void YY_AnsiCParser_ERROR(char *msg) YY_AnsiCParser_ERROR_BODY;
+    virtual void YY_AnsiCParser_ERROR(const char *msg) YY_AnsiCParser_ERROR_BODY;
 #ifdef YY_AnsiCParser_PURE
 #ifdef YY_AnsiCParser_LSP_NEEDED
     virtual int  YY_AnsiCParser_LEX (YY_AnsiCParser_STYPE *YY_AnsiCParser_LVAL,YY_AnsiCParser_LTYPE *YY_AnsiCParser_LLOC) YY_AnsiCParser_LEX_BODY;
@@ -1344,7 +1344,8 @@ YY_AnsiCParser_PARSE_PARAM_DEF
                    &yystacksize);
 #endif
 
-        yyss = yyss1; yyvs = yyvs1;
+        yyss = yyss1;
+        yyvs = yyvs1;
 #ifdef YY_AnsiCParser_LSP_NEEDED
         yyls = yyls1;
 #endif
@@ -2017,8 +2018,7 @@ YY_AnsiCParser_PARSE_PARAM_DEF
 #endif
 
 #if YY_AnsiCParser_DEBUG != 0
-    if (YY_AnsiCParser_DEBUG_FLAG)
-    {
+    if (YY_AnsiCParser_DEBUG_FLAG) {
         short *ssp1 = yyss - 1;
         fprintf (stderr, "state stack now");
         while (ssp1 != yyssp)
@@ -2031,16 +2031,13 @@ YY_AnsiCParser_PARSE_PARAM_DEF
 
 #ifdef YY_AnsiCParser_LSP_NEEDED
     yylsp++;
-    if (yylen == 0)
-    {
+    if (yylen == 0) {
         yylsp->first_line = YY_AnsiCParser_LLOC.first_line;
         yylsp->first_column = YY_AnsiCParser_LLOC.first_column;
         yylsp->last_line = (yylsp-1)->last_line;
         yylsp->last_column = (yylsp-1)->last_column;
         yylsp->text = 0;
-    }
-    else
-    {
+    } else {
         yylsp->last_line = (yylsp+yylen-1)->last_line;
         yylsp->last_column = (yylsp+yylen-1)->last_column;
     }
@@ -2071,8 +2068,7 @@ YY_AnsiCParser_PARSE_PARAM_DEF
 #ifdef YY_AnsiCParser_ERROR_VERBOSE
         yyn = yypact[yystate];
 
-        if (yyn > YYFLAG && yyn < YYLAST)
-        {
+        if (yyn > YYFLAG && yyn < YYLAST) {
             int size = 0;
             char *msg;
             int x, count;
@@ -2084,17 +2080,14 @@ YY_AnsiCParser_PARSE_PARAM_DEF
                 if (yycheck[x + yyn] == x)
                     size += strlen(yytname[x]) + 15, count++;
             msg = (char *) malloc(size + 15);
-            if (msg != 0)
-            {
+            if (msg != 0) {
                 strcpy(msg, "parse error");
 
-                if (count < 5)
-                {
+                if (count < 5) {
                     count = 0;
                     for (x = (yyn < 0 ? -yyn : 0);
                          x < (sizeof(yytname) / sizeof(char *)); x++)
-                        if (yycheck[x + yyn] == x)
-                        {
+                        if (yycheck[x + yyn] == x) {
                             strcat(msg, count == 0 ? ", expecting `" : " or `");
                             strcat(msg, yytname[x]);
                             strcat(msg, "'");
@@ -2103,20 +2096,17 @@ YY_AnsiCParser_PARSE_PARAM_DEF
                 }
                 YY_AnsiCParser_ERROR(msg);
                 free(msg);
-            }
-            else
-                YY_AnsiCParser_ERROR ((char*)"parse error; also virtual memory exceeded");
-        }
-        else
+            } else
+                YY_AnsiCParser_ERROR ("parse error; also virtual memory exceeded");
+        } else
 #endif /* YY_AnsiCParser_ERROR_VERBOSE */
-            YY_AnsiCParser_ERROR((char*)"parse error");
+            YY_AnsiCParser_ERROR("parse error");
     }
 
     YYGOTO(yyerrlab1);
     YYLABEL(yyerrlab1)   /* here on error raised explicitly by an action */
 
-            if (yyerrstatus == 3)
-    {
+    if (yyerrstatus == 3) {
         /* if just tried and failed to reuse lookahead token after an error, discard it.  */
 
         /* return failure if at end of input */
@@ -2157,8 +2147,7 @@ YY_AnsiCParser_PARSE_PARAM_DEF
 #endif
 
 #if YY_AnsiCParser_DEBUG != 0
-    if (YY_AnsiCParser_DEBUG_FLAG)
-    {
+    if (YY_AnsiCParser_DEBUG_FLAG) {
         short *ssp1 = yyss - 1;
         fprintf (stderr, "Error: state stack now");
         while (ssp1 != yyssp)
@@ -2178,14 +2167,12 @@ YY_AnsiCParser_PARSE_PARAM_DEF
         YYGOTO(yyerrdefault);
 
     yyn = yytable[yyn];
-    if (yyn < 0)
-    {
+    if (yyn < 0) {
         if (yyn == YYFLAG)
             YYGOTO(yyerrpop);
         yyn = -yyn;
         YYGOTO(yyreduce);
-    }
-    else if (yyn == 0)
+    } else if (yyn == 0)
         YYGOTO(yyerrpop);
 
     if (yyn == YYFINAL)
@@ -2215,21 +2202,18 @@ YY_AnsiCParser_PARSE_PARAM_DEF
 
 #include <stdio.h>
 
-int AnsiCParser::yylex()
-{
+int AnsiCParser::yylex() {
     int token = theScanner->yylex(yylval);
     return token;
 }
 
-void AnsiCParser::yyerror(char *s)
-{
+void AnsiCParser::yyerror(const char *s) {
     fflush(stdout);
     printf("\n%s", theScanner->lineBuf);
     printf("\n%*s\n%*s on line %i\n", theScanner->column, "^", theScanner->column, s, theScanner->theLine);
 }
 
-AnsiCParser::~AnsiCParser()
-{
+AnsiCParser::~AnsiCParser() {
     // Suppress warnings from gcc about lack of virtual destructor
 }
 

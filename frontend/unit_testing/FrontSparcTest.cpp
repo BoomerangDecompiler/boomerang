@@ -24,18 +24,15 @@
 #include "log.h"
 CPPUNIT_TEST_SUITE_REGISTRATION( FrontSparcTest );
 
-#define HELLO_SPARC		"test/sparc/hello"
-#define BRANCH_SPARC	"test/sparc/branch"
+#define HELLO_SPARC     "test/sparc/hello"
+#define BRANCH_SPARC    "test/sparc/branch"
 
-/***************************************************************************//**
- * FUNCTION:		FrontSparcTest::setUp
- * OVERVIEW:		Set up anything needed before all tests
- * NOTE:			Called before any tests
- * NOTE:			Also appears to be called before all tests!
- * PARAMETERS:		<none>
- * \returns 			<nothing>
- *============================================================================*/
 static bool logset = false;
+/***************************************************************************//**
+ * \brief   Set up anything needed before all tests
+ * \note    Called before any tests
+ * \note    Also appears to be called before all tests!
+ *============================================================================*/
 void FrontSparcTest::setUp () {
     if (!logset) {
         logset = true;

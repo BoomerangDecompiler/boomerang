@@ -1,7 +1,7 @@
 /***************************************************************************//**
- * FILE:	   FrontendTest.cc
- * OVERVIEW:   Provides the implementation for the FrontendTest class, which
- *				tests the FrontEnd and related classes
+ * \file    FrontendTest.cpp
+ * Provides the implementation for the FrontendTest class, which
+ *          tests the FrontEnd and related classes
  *============================================================================*/
 /*
  * $Revision: 1.5 $
@@ -14,34 +14,27 @@
 
 CPPUNIT_TEST_SUITE_REGISTRATION( FrontendTest );
 
-#define HELLO_SPARC		"test/sparc/hello"
-#define HELLO_PENTIUM	"test/pentium/hello"
-#define HELLO_HPPA		"test/hppa/hello"
-#define STARTER_PALM	"test/mc68328/Starter.prc"
+#define HELLO_SPARC     "test/sparc/hello"
+#define HELLO_PENTIUM   "test/pentium/hello"
+#define HELLO_HPPA      "test/hppa/hello"
+#define STARTER_PALM    "test/mc68328/Starter.prc"
 
 /***************************************************************************//**
- * FUNCTION:		FrontendTest::setUp
- * OVERVIEW:		Set up anything needed before all tests
- * NOTE:			Called before any tests
- * PARAMETERS:		<none>
- * \returns 			<nothing>
+ * \brief Set up anything needed before all tests
+ * \note Called before any tests
  *============================================================================*/
 void FrontendTest::setUp () {
 }
 
 /***************************************************************************//**
- * FUNCTION:		FrontendTest::tearDown
- * OVERVIEW:		Delete objects created in setUp
- * NOTE:			Called after all tests
- * PARAMETERS:		<none>
- * \returns 			<nothing>
+ * \brief   Delete objects created in setUp
+ * \note    Called after all tests
  *============================================================================*/
 void FrontendTest::tearDown () {
 }
 
 /***************************************************************************//**
- * FUNCTION:		FrontendTest::test1
- * OVERVIEW:		Test loading the sparc hello world program
+ * \brief Test loading the sparc hello world program
  *============================================================================*/
 void FrontendTest::test1 () {
 }

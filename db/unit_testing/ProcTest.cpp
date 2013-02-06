@@ -21,7 +21,7 @@
 
 CPPUNIT_TEST_SUITE_REGISTRATION( ProcTest );
 
-#define HELLO_PENTIUM		"test/pentium/hello"
+#define HELLO_PENTIUM   "test/pentium/hello"
 
 /***************************************************************************//**
  * FUNCTION:        ProcTest::setUp

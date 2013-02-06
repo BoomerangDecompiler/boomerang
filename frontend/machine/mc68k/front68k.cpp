@@ -83,7 +83,6 @@ int condLengths[12] = {1, 2, 3, 5, 4, 7, 1, 3, 2, 5, 1, 2};
  * FUNCTION:      initFront
  * OVERVIEW:      Initialise the front end.
  * PARAMETERS:    <none>                
- * \returns        <nothing>
  *============================================================================*/
 void initFront()
 {

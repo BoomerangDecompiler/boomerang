@@ -51,12 +51,12 @@ extern char debug_buffer[];         ///< For prints functions
 
 // Derived class constructors
 
-Const::Const(uint32_t i)    : Exp(opIntConst),	conscript(0), type(new VoidType) {u.i = i;}
-Const::Const(int i)         : Exp(opIntConst),    conscript(0), type(new VoidType) {u.i = i;}
-Const::Const(QWord ll)      : Exp(opLongConst),    conscript(0), type(new VoidType) {u.ll= ll;}
-Const::Const(double d)      : Exp(opFltConst),    conscript(0), type(new VoidType) {u.d = d;}
-Const::Const(const char *p)       : Exp(opStrConst),    conscript(0), type(new VoidType) {u.p = p;}
-Const::Const(Proc* p)       : Exp(opFuncConst),    conscript(0), type(new VoidType) {u.pp = p;}
+Const::Const(uint32_t i)    : Exp(opIntConst),  conscript(0), type(new VoidType) {u.i = i;}
+Const::Const(int i)         : Exp(opIntConst),  conscript(0), type(new VoidType) {u.i = i;}
+Const::Const(QWord ll)      : Exp(opLongConst), conscript(0), type(new VoidType) {u.ll= ll;}
+Const::Const(double d)      : Exp(opFltConst),  conscript(0), type(new VoidType) {u.d = d;}
+Const::Const(const char *p) : Exp(opStrConst),  conscript(0), type(new VoidType) {u.p = p;}
+Const::Const(Proc* p)       : Exp(opFuncConst), conscript(0), type(new VoidType) {u.pp = p;}
 /// \remark This is bad. We need a way of constructing true unsigned constants
 Const::Const(ADDRESS a)    : Exp(opIntConst),    conscript(0), type(new VoidType) {u.a = a;}
 
@@ -67,14 +67,13 @@ Terminal::Terminal(OPER op) : Exp(op) {}
 Terminal::Terminal(const Terminal& o) : Exp(o.op) {}        // Copy constructor
 
 Unary::Unary(OPER op)
-    : Exp(op) {
-    subExp1 = 0;        // Initialise the pointer
-    //assert(op != opRegOf);
+    : Exp(op)/*,subExp1(nullptr)*/ {
+    // pointer uninitialized to help out finding usages of null pointers ?
+    assert(op != opRegOf);
 }
 
 Unary::Unary(OPER op, Exp* e)
-    : Exp(op) {
-    subExp1 = e;        // Initialise the pointer
+    : Exp(op),subExp1(e) {
     assert(subExp1);
 }
 Unary::Unary(const Unary& o)
@@ -85,12 +84,11 @@ Unary::Unary(const Unary& o)
 
 Binary::Binary(OPER op)
     : Unary(op) {
-    subExp2 = 0;        // Initialise the 2nd pointer. The first pointer is initialised in the Unary constructor
+    // Initialise the 2nd pointer. The first pointer is initialised in the Unary constructor
+    //subExp2 = 0;
 }
 Binary::Binary(OPER op, Exp* e1, Exp* e2)
-    : Unary(op, e1)
-{
-    subExp2 = e2;        // Initialise the 2nd pointer
+    : Unary(op, e1),subExp2(e2) {
     assert(subExp1 && subExp2);
 }
 Binary::Binary(const Binary& o)
@@ -1538,7 +1536,7 @@ bool Location::match(const char *pattern, std::map<std::string, Exp*> &bindings)
  *                      found, false for all
  * \returns            <nothing>
  ******************************************************************************/
-void Exp::doSearch(Exp* search, Exp*& pSrc, std::list<Exp**>& li, bool once) {
+void Exp::doSearch(const Exp* search, Exp*& pSrc, std::list<Exp**>& li, bool once) {
     bool compare;
     compare = (*search == *pSrc);
     if (compare) {
@@ -1562,20 +1560,20 @@ void Exp::doSearch(Exp* search, Exp*& pSrc, std::list<Exp**>& li, bool once) {
  *                    once: true if not all occurrences to be found, false for all
  * \returns            <nothing>
  ******************************************************************************/
-void Exp::doSearchChildren(Exp* search, std::list<Exp**>& li, bool once) {
+void Exp::doSearchChildren(const Exp* search, std::list<Exp**>& li, bool once) {
     return;            // Const and Terminal do not override this
 }
-void Unary::doSearchChildren(Exp* search, std::list<Exp**>& li, bool once) {
+void Unary::doSearchChildren(const Exp* search, std::list<Exp**>& li, bool once) {
     if (op != opInitValueOf)        // don't search child
         doSearch(search, subExp1, li, once);
 }
-void Binary::doSearchChildren(Exp* search, std::list<Exp**>& li, bool once) {
+void Binary::doSearchChildren(const Exp* search, std::list<Exp**>& li, bool once) {
     assert(subExp1 && subExp2);
     doSearch(search, subExp1, li, once);
     if (once && li.size()) return;
     doSearch(search, subExp2, li, once);
 }
-void Ternary::doSearchChildren(Exp* search, std::list<Exp**>& li, bool once) {
+void Ternary::doSearchChildren(const Exp* search, std::list<Exp**>& li, bool once) {
     doSearch(search, subExp1, li, once);
     if (once && li.size()) return;
     doSearch(search, subExp2, li, once);
@@ -1599,18 +1597,18 @@ Exp* Exp::searchReplace(Exp* search, Exp* replace, bool& change) {
 
 /***************************************************************************//**
  *
- * \brief        Search for the given subexpression, and replace wherever found
- * NOTE:            If the top level expression matches, something other than "this" will be returned
- * NOTE:            It is possible with wildcards that in very unusual circumstances a replacement will be made to
- *                    something that is already deleted.
- * NOTE:            Replacements are cloned. Caller to delete search and replace
- * \param        search:     ptr to ptr to Exp we are searching for
- * \param                   replace: ptr to Exp to replace it with
- * \param                   change: set true if a change made; cleared otherwise
- * NOTE:            change is ALWAYS assigned. No need to clear beforehand.
- * \returns            the result (often this, but possibly changed)
+ * \brief   Search for the given subexpression, and replace wherever found
+ * \note    If the top level expression matches, something other than "this" will be returned
+ * \note    It is possible with wildcards that in very unusual circumstances a replacement will be made to
+ *              something that is already deleted.
+ * \note    Replacements are cloned. Caller to delete search and replace
+ * \param   search:     ptr to ptr to Exp we are searching for
+ * \param   replace: ptr to Exp to replace it with
+ * \param   change: set true if a change made; cleared otherwise
+ * \note    change is ALWAYS assigned. No need to clear beforehand.
+ * \returns the result (often this, but possibly changed)
  ******************************************************************************/
-Exp* Exp::searchReplaceAll(Exp* search, Exp* replace, bool& change, bool once /* = false */ ) {
+Exp* Exp::searchReplaceAll(const Exp* search, Exp* replace, bool& change, bool once /* = false */ ) {
     std::list<Exp**> li;
     Exp* top = this;        // top may change; that's why we have to return it
     doSearch(search, top, li, false);
@@ -1659,7 +1657,7 @@ bool Exp::search(Exp* search, Exp*& result) {
  * \param   results:  ref to list of Exp that matched
  * \returns            True if a match was found
  ******************************************************************************/
-bool Exp::searchAll(Exp* search, std::list<Exp*>& result)
+bool Exp::searchAll(const Exp* search, std::list<Exp*>& result)
 {
     std::list<Exp**> li;
     //result.clear();    // No! Useful when searching for more than one thing

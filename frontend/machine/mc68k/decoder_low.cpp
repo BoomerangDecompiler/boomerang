@@ -147,7 +147,6 @@ void bumpRegister(list<RT*>* RTs, int bump, int bumpr)
  *                 size: size of the assignment, in bits
  *                 temp: this function sets this parameter to point to a copy
  *                  of a SemStr that represents "temp1"
- * \returns         Pointer to the assignment RT
  *============================================================================*/
 RT* assignTemp(SemStr* src, int size, SemStr*& temp)
 {

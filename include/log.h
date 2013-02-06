@@ -13,8 +13,7 @@ class Range;
 class RangeMap;
 class Type;
 
-class Log
-{
+class Log {
 public:
     Log() { }
     virtual Log &operator<<(const std::string& s) = 0;
@@ -47,19 +46,16 @@ public:
     }
     virtual ~FileLogger() {}
 };
-class NullLogger : public Log
-{
+class NullLogger : public Log {
 public:
-    virtual Log &operator<<(const std::string& str)
-    {
+    virtual Log &operator<<(const std::string& str) {
         // std::cerr << str;
         return *this;
     }
 };
 // For older MSVC compilers
 #if defined(_MSC_VER) && (_MSC_VER <= 1200)
-static std::ostream& operator<<(std::ostream& s, QWord val)
-{
+static std::ostream& operator<<(std::ostream& s, QWord val) {
     char szTmp[42]; // overkill, but who counts
     sprintf(szTmp, "%I64u", val);
     s << szTmp;

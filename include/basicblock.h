@@ -37,8 +37,6 @@ class Proc;
 class UserProc;
 struct SWITCH_INFO;                // Declared in include/statement.h
 
-typedef BasicBlock* PBB;
-
 /*    *    *    *    *    *    *    *    *    *    *    *    *    *    *    *\
 *                                                             *
 *    e n u m s   u s e d   i n   C f g . h   a n d   h e r e     *
@@ -121,7 +119,8 @@ enum SBBTYPE {
     CASE                     // case statement (switch)
 };
 
-typedef std::list<PBB>::iterator BB_IT;
+typedef std::list<BasicBlock *>::iterator BB_IT;
+typedef std::list<BasicBlock *>::const_iterator BBC_IT;
 
 /***************************************************************************//**
  * BasicBlock class. <more comments>
@@ -157,32 +156,33 @@ public:
         ADDRESS         getHiAddr();
 
         std::list<RTL*>* getRTLs();
+        const std::list<RTL *> *getRTLs() const;
 
         RTL *           getRTLWithStatement(Statement *stmt);
 
-        std::vector<PBB>& getInEdges();
+        std::vector<BasicBlock *>& getInEdges();
 
         int             getNumInEdges() { return m_iNumInEdges; }
 
-        std::vector<PBB>& getOutEdges();
-        void            setInEdge(int i, PBB newIn);
-        void            setOutEdge(int i, PBB newInEdge);
+        std::vector<BasicBlock *>& getOutEdges();
+        void            setInEdge(int i, BasicBlock * newIn);
+        void            setOutEdge(int i, BasicBlock * newInEdge);
 
         BasicBlock *    getOutEdge(unsigned int i);
         int             getNumOutEdges() { return m_iNumOutEdges; }
-        int             whichPred(PBB pred);
-        void            addInEdge(PBB newInEdge);
-        void            deleteEdge(PBB edge);
-        void            deleteInEdge(std::vector<PBB>::iterator& it);
-        void            deleteInEdge(PBB edge);
+        int             whichPred(BasicBlock * pred);
+        void            addInEdge(BasicBlock * newInEdge);
+        void            deleteEdge(BasicBlock * edge);
+        void            deleteInEdge(std::vector<BasicBlock *>::iterator& it);
+        void            deleteInEdge(BasicBlock * edge);
         ADDRESS         getCallDest();
         Proc *          getCallDestProc();
         unsigned        DFTOrder(int& first, int& last);
         unsigned        RevDFTOrder(int& first, int& last);
 
-static  bool            lessAddress(PBB bb1, PBB bb2);
-static  bool            lessFirstDFT(PBB bb1, PBB bb2);
-static  bool            lessLastDFT(PBB bb1, PBB bb2);
+static  bool            lessAddress(BasicBlock * bb1, BasicBlock * bb2);
+static  bool            lessFirstDFT(BasicBlock * bb1, BasicBlock * bb2);
+static  bool            lessLastDFT(BasicBlock * bb1, BasicBlock * bb2);
 
         class LastStatementNotABranchError : public std::exception {
         public:
@@ -198,7 +198,7 @@ static  bool            lessLastDFT(PBB bb1, PBB bb2);
         Exp *           getCond() throw(LastStatementNotABranchError);
         void            setCond(Exp *e) throw(LastStatementNotABranchError);
         Exp*            getDest() throw(LastStatementNotAGotoError);
-        bool            isJmpZ(PBB dest);
+        bool            isJmpZ(BasicBlock * dest);
         BasicBlock *    getLoopBody();
         void            simplify();
         BasicBlock *    getCorrectOutEdge(ADDRESS a);
@@ -254,7 +254,7 @@ protected:
 public:
 
         bool            isPostCall();
-static  void             doAvail(StatementSet& s, PBB inEdge);
+static  void             doAvail(StatementSet& s, BasicBlock * inEdge);
         Proc *          getDestProc();
 
         /**
@@ -272,7 +272,7 @@ static  void             doAvail(StatementSet& s, PBB inEdge);
         Statement *     getLastStmt();
         Statement *     getPrevStmt(rtlrit& rit, StatementList::reverse_iterator& sit);
         RTL *           getLastRtl() { return m_pRtls->back(); }
-        void            getStatements(StatementList &stmts);
+        void            getStatements(StatementList &stmts) const;
         char *          getStmtNumber();
 protected:
         /* Control flow analysis stuff, lifted from Doug Simon's honours thesis.
@@ -301,16 +301,16 @@ protected:
         loopType        lType;              //!< the loop type of a loop header
         condType        cType;              //!< the conditional type of a conditional header
 
-        void            setLoopStamps(int &time, std::vector<PBB> &order);
+        void            setLoopStamps(int &time, std::vector<BasicBlock *> &order);
         void            setRevLoopStamps(int &time);
-        void            setRevOrder(std::vector<PBB> &order);
-        void            setLoopHead(PBB head) { loopHead = head; }
-        PBB             getLoopHead() { return loopHead; }
-        void            setLatchNode(PBB latch) { latchNode = latch; }
+        void            setRevOrder(std::vector<BasicBlock *> &order);
+        void            setLoopHead(BasicBlock * head) { loopHead = head; }
+        BasicBlock *    getLoopHead() { return loopHead; }
+        void            setLatchNode(BasicBlock * latch) { latchNode = latch; }
         bool            isLatchNode() { return loopHead && loopHead->latchNode == this; }
-        PBB             getLatchNode() { return latchNode; }
-        PBB             getCaseHead() { return caseHead; }
-        void            setCaseHead(PBB head, PBB follow);
+        BasicBlock *    getLatchNode() { return latchNode; }
+        BasicBlock *    getCaseHead() { return caseHead; }
+        void            setCaseHead(BasicBlock * head, BasicBlock * follow);
         structType      getStructType() { return sType; }
         void            setStructType(structType s);
         unstructType    getUnstructType();
@@ -319,10 +319,10 @@ protected:
         void            setLoopType(loopType l);
         condType        getCondType();
         void            setCondType(condType l);
-        void            setLoopFollow(PBB other) { loopFollow = other; }
-        PBB             getLoopFollow() { return loopFollow; }
-        void            setCondFollow(PBB other) { condFollow = other; }
-        PBB             getCondFollow() { return condFollow; }
+        void            setLoopFollow(BasicBlock * other) { loopFollow = other; }
+        BasicBlock *    getLoopFollow() { return loopFollow; }
+        void            setCondFollow(BasicBlock * other) { condFollow = other; }
+        BasicBlock *    getCondFollow() { return condFollow; }
         bool            hasBackEdgeTo(BasicBlock *dest);
                         //! establish if this bb has any back edges leading FROM it
         bool            hasBackEdge() {
@@ -337,20 +337,20 @@ protected:
 
         bool            isAncestorOf(BasicBlock *other);
         bool            inLoop(BasicBlock *header, BasicBlock *latch);
-        bool            isIn(std::list<PBB> &set, PBB bb) {
-                            for (std::list<PBB>::iterator it = set.begin(); it != set.end(); it++)
+        bool            isIn(std::list<BasicBlock *> &set, BasicBlock * bb) {
+                            for (std::list<BasicBlock *>::iterator it = set.begin(); it != set.end(); it++)
                                 if (*it == bb) return true;
                             return false;
                         }
 
         char *          indent(int indLevel, int extra = 0);
         bool            allParentsGenerated();
-        void            emitGotoAndLabel(HLLCode *hll, int indLevel, PBB dest);
+        void            emitGotoAndLabel(HLLCode *hll, int indLevel, BasicBlock * dest);
         void            WriteBB(HLLCode *hll, int indLevel);
 
 public:
-        void            generateCode(HLLCode *hll, int indLevel, PBB latch, std::list<PBB> &followSet,
-                                     std::list<PBB> &gotoSet, UserProc* proc);
+        void            generateCode(HLLCode *hll, int indLevel, BasicBlock * latch, std::list<BasicBlock *> &followSet,
+                                     std::list<BasicBlock *> &gotoSet, UserProc* proc);
 
         void            prependStmt(Statement* s, UserProc* proc);
 
@@ -370,7 +370,7 @@ public:
 
 protected:
         friend class XMLProgParser;
-        void            addOutEdge(PBB bb) { m_OutEdges.push_back(bb); }
+        void            addOutEdge(BasicBlock * bb) { m_OutEdges.push_back(bb); }
         void            addRTL(RTL *rtl) {
                             if (m_pRtls == nullptr)
                                 m_pRtls = new std::list<RTL*>;

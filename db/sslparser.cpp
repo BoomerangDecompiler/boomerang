@@ -104,7 +104,7 @@ void *alloca ();
 #include "insnameelem.h"
 #include "util.h"            // E.g. str()
 #include "statement.h"
-
+#include "exp.h"
 #ifdef _WIN32
 #include <malloc.h>
 #endif
@@ -133,6 +133,7 @@ typedef union {
 //#line 87 "db/sslparser.y"
 
 #include "sslscanner.h"
+#include "operator.h"
 OPER strToTerm(char* s);        // Convert string to a Terminal (if possible)
 Exp* listExpToExp(std::list<Exp*>* le);     // Convert a STL list of Exp* to opList
 Exp* listStrToExp(std::list<std::string>* ls);// Convert a STL list of strings to opList

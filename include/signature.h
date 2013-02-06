@@ -25,7 +25,8 @@
 #endif
 
 #include <string>
-#include "exp.h"
+//#include "exp.h"
+#include "operator.h"
 #include "type.h"
 #include "sigenum.h"        // For enums platform and cc
 #include "memo.h"
@@ -35,7 +36,7 @@ class Statement;
 class StatementList;
 class BinaryFile;
 class XMLProgParser;
-
+class Exp;
 class Parameter {
 private:
         Type *type;
@@ -46,7 +47,7 @@ private:
 public:
                     Parameter(Type *type, const char *name, Exp *exp = nullptr, const char *boundMax = "") :
                     type(type), name(name), exp(exp), boundMax(boundMax)    { }
-virtual             ~Parameter() { delete type; delete exp; }
+virtual             ~Parameter();
         bool        operator==(Parameter& other);
         Parameter * clone();
 
@@ -118,10 +119,10 @@ virtual bool        operator==(Signature& other);
         // clone this signature
 virtual    Signature    *clone();
 
-        bool        isUnknown() { return unknown; }
+        bool        isUnknown() const { return unknown; }
         void        setUnknown(bool b) { unknown = b; }
-//        void        setFullSig(bool full) {bFullSig = full;}
-        bool        isForced() {return forced; }
+//      void        setFullSig(bool full) {bFullSig = full;}
+        bool        isForced() const {return forced; }
         void        setForced(bool f) {forced = f; }
 
         // get the return location
@@ -185,9 +186,9 @@ virtual bool        hasEllipsis() { return ellipsis; }
         bool        dfaTypeAnalysis(Cfg* cfg);
 
         // any signature can be promoted to a higher level signature, if available
-virtual Signature *promote(UserProc *p);
-        void        print(std::ostream &out, bool html = false);
-        char*        prints();            // For debugging
+virtual Signature * promote(UserProc *p);
+        void        print(std::ostream &out, bool html = false) const;
+        char *      prints();            // For debugging
         void        printToLog();
 
         // Special for Mike: find the location that conventionally holds the first outgoing (actual) parameter

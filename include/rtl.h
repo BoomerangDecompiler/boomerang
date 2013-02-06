@@ -36,12 +36,12 @@
 #include <map>
 #include <set>
 #include <iosfwd>
-#include "exp.h"
+#include "type.h"
+//#include "exp.h"
 #include "register.h"
 
 class BasicBlock;
 class HLLCode;
-typedef BasicBlock* PBB;
 class Exp;
 class TypedExp;
 class DefSet;
@@ -51,6 +51,7 @@ class Register;
 class Proc;
 class XMLProgParser;
 class StmtVisitor;
+class Statement;
 enum STMT_KIND : uint8_t;
 
 /***************************************************************************//**
@@ -80,7 +81,7 @@ public:
         void        deepCopyList(std::list<Statement*>& dest);
 
          // Print RTL to a stream.
-        void        print(std::ostream& os = std::cout, bool html = false) const;
+        void        print(std::ostream& os , bool html = false) const;
         void        dump();
 
         bool        isCall(); // Is this RTL a call instruction?
@@ -182,7 +183,7 @@ public:
 
         void transformPostVars(std::list<Statement*> &rts, bool optimise);
 
-        void        print(std::ostream& os = std::cout);
+        void        print(std::ostream& os);
 
         // Add a new register to the machine
         void        addRegister(const char *name, int id, int size, bool flt);

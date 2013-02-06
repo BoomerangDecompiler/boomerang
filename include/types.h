@@ -4,7 +4,7 @@
  */
 #ifndef __TYPES_H__
 #define __TYPES_H__
-#include <iostream>
+#include <iosfwd>
 #include <stdint.h>
 
 // Machine types
@@ -27,13 +27,13 @@ struct ADDRESS { /* pointer. size depends on platform */
         z.m_value =value_type(x);
         return z;
     }
-        bool isZero() const {return m_value==0;}
-        bool operator==(const ADDRESS &other) const { return m_value==other.m_value; }
-        bool operator!=(const ADDRESS &other) const { return m_value!=other.m_value; }
-    bool operator<(const ADDRESS &other) const  { return m_value < other.m_value; }
-    bool operator>(const ADDRESS &other) const  { return m_value > other.m_value; }
-    bool operator>=(const ADDRESS &other) const { return m_value >= other.m_value;}
-        bool operator<=(const ADDRESS &other) const { return m_value <= other.m_value;}
+    bool    isZero() const {return m_value==0;}
+    bool    operator==(const ADDRESS &other) const { return m_value==other.m_value; }
+    bool    operator!=(const ADDRESS &other) const { return m_value!=other.m_value; }
+    bool    operator<(const ADDRESS &other) const  { return m_value < other.m_value; }
+    bool    operator>(const ADDRESS &other) const  { return m_value > other.m_value; }
+    bool    operator>=(const ADDRESS &other) const { return m_value >= other.m_value;}
+    bool operator<=(const ADDRESS &other) const { return m_value <= other.m_value;}
 
     ADDRESS operator+(const ADDRESS &other) const {
         return ADDRESS::g(m_value + other.m_value);
@@ -81,7 +81,7 @@ bool IN_RANGE(const T &val,const U &range_start,const U &range_end) {
 #ifdef NO_ADDRESS
 #undef NO_ADDRESS
 #endif
-#define NO_ADDRESS (ADDRESS::g(-1))		// For invalid ADDRESSes
+#define NO_ADDRESS (ADDRESS::g(-1))     // For invalid ADDRESSes
 
 #ifndef _MSC_VER
 typedef long unsigned long QWord;        // 64 bits

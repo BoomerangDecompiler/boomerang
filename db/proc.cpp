@@ -155,7 +155,6 @@ void Proc::setName(const char *nam) {
 /***************************************************************************//**
  *
  * \brief        Get the native address (entry point).
- * PARAMETERS:        <none>
  * \returns            the native address of this procedure (entry point)
  ******************************************************************************/
 ADDRESS Proc::getNativeAddress() const {
@@ -205,7 +204,7 @@ bool UserProc::isNoReturn() {
     if (!this->isDecoded())
         return false;
 
-    PBB exitbb = cfg->getExitBB();
+    BasicBlock * exitbb = cfg->getExitBB();
     if (exitbb == nullptr)
         return true;
     if (exitbb->getNumInEdges() == 1) {
@@ -225,7 +224,7 @@ bool UserProc::isNoReturn() {
  ******************************************************************************/
 bool UserProc::containsAddr(ADDRESS uAddr) {
     BB_IT it;
-    for (PBB bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it))
+    for (BasicBlock * bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it))
         if (bb->getRTLs() && bb->getLowAddr() <= uAddr && bb->getHiAddr() >= uAddr)
             return true;
     return false;
@@ -307,7 +306,7 @@ void UserProc::setParamType(const char* nam, Type* ty) {
 void UserProc::setParamType(int idx, Type* ty) {
     int n = 0;
     StatementList::iterator it;
-    for (it = parameters.begin(); n != idx && it != parameters.end(); it++, n++)
+    for (it = parameters.begin(); n != idx && it != parameters.end(); it++, n++) // find n-th parameter it
         ;
     if (it != parameters.end()) {
         Assign *a = (Assign*)*it;
@@ -576,7 +575,7 @@ SyntaxNode *UserProc::getAST() {
     int numBBs = 0;
     BlockSyntaxNode *init = new BlockSyntaxNode();
     BB_IT it;
-    for (PBB bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it)) {
+    for (BasicBlock * bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it)) {
         BlockSyntaxNode *b = new BlockSyntaxNode();
         b->setBB(bb);
         init->addStatement(b);
@@ -687,12 +686,11 @@ BasicBlock * UserProc::getEntryBB() {
 /***************************************************************************//**
  *
  * \brief        Set the entry BB for this procedure (constructor has the entry address)
- * PARAMETERS:        <none>
  * \returns            <nothing>
  ******************************************************************************/
 void UserProc::setEntryBB() {
-    std::list<PBB>::iterator bbit;
-    PBB pBB = cfg->getFirstBB(bbit);        // Get an iterator to the first BB
+    std::list<BasicBlock *>::iterator bbit;
+    BasicBlock * pBB = cfg->getFirstBB(bbit);        // Get an iterator to the first BB
     // Usually, but not always, this will be the first BB, or at least in the first few
     while (pBB && address != pBB->getLowAddr()) {
         pBB = cfg->getNextBB(bbit);
@@ -727,7 +725,7 @@ void UserProc::generateCode(HLLCode *hll) {
     // RefExps, which are all gone now (transformed out of SSA form)!
 
     if (VERBOSE || Boomerang::get()->printRtl)
-        printToLog();
+        LOG << *this;
 
     hll->AddProcStart(this);
 
@@ -749,7 +747,7 @@ void UserProc::generateCode(HLLCode *hll) {
             hll->AddCallStatement(1, nullptr, "SPARCSETUP", args, &results);
     }
 
-    std::list<PBB> followSet, gotoSet;
+    std::list<BasicBlock *> followSet, gotoSet;
     getEntryBB()->generateCode(hll, 1, nullptr, followSet, gotoSet, this);
 
     hll->AddProcEnd();
@@ -761,7 +759,7 @@ void UserProc::generateCode(HLLCode *hll) {
 }
 
 /// print this proc, mainly for debugging
-void UserProc::print(std::ostream &out, bool html) {
+void UserProc::print(std::ostream &out, bool html) const {
     signature->print(out, html);
     if (html)
         out << "<br>";
@@ -793,12 +791,12 @@ void UserProc::setStatus(ProcStatus s) {
     Boomerang::get()->alert_proc_status_change(this);
 }
 
-void UserProc::printParams(std::ostream& out, bool html) {
+void UserProc::printParams( std::ostream &out, bool html /*= false*/ ) const {
     if (html)
         out << "<br>";
     out << "parameters: ";
     bool first = true;
-    for (StatementList::iterator pp = parameters.begin(); pp != parameters.end(); ++pp) {
+    for (StatementList::const_iterator pp = parameters.begin(); pp != parameters.end(); ++pp) {
         if (first)
             first = false;
         else
@@ -823,13 +821,7 @@ void UserProc::dump() {
     print(std::cerr);
 }
 
-void UserProc::printToLog() {
-    std::ostringstream ost;
-    print(ost);
-    LOG << ost.str();
-}
-
-void UserProc::printDFG() {
+void UserProc::printDFG() const {
     char fname[1024];
     sprintf(fname, "%s%s-%i-dfg.dot", Boomerang::get()->getOutputPath().c_str(), getName(), DFGcount);
     DFGcount++;
@@ -879,7 +871,7 @@ void UserProc::printDFG() {
 void UserProc::initStatements() {
     BB_IT it;
     BasicBlock::rtlit rit; StatementList::iterator sit;
-    for (PBB bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it)) {
+    for (BasicBlock * bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it)) {
         for (Statement* s = bb->getFirstStmt(rit, sit); s; s = bb->getNextStmt(rit, sit)) {
             s->setProc(this);
             s->setBB(bb);
@@ -887,7 +879,7 @@ void UserProc::initStatements() {
             if (call) {
                 call->setSigArguments();
                 if (call->getDestProc() && call->getDestProc()->isNoReturn() && bb->getNumOutEdges() == 1) {
-                    PBB out = bb->getOutEdge(0);
+                    BasicBlock * out = bb->getOutEdge(0);
                     if (out != cfg->getExitBB() || cfg->getExitBB()->getNumInEdges() != 1) {
                         out->deleteInEdge(bb);
                         bb->getOutEdges().clear();
@@ -901,7 +893,7 @@ void UserProc::initStatements() {
 void UserProc::numberStatements() {
     BB_IT it;
     BasicBlock::rtlit rit; StatementList::iterator sit;
-    for (PBB bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it)) {
+    for (BasicBlock * bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it)) {
         for (Statement* s = bb->getFirstStmt(rit, sit); s; s = bb->getNextStmt(rit, sit))
             if (!s->isImplicit() &&         // Don't renumber implicits (remain number 0)
                     s->getNumber() == 0)    // Don't renumber existing (or waste numbers)
@@ -913,17 +905,16 @@ void UserProc::numberStatements() {
 // get all statements
 // Get to a statement list, so they come out in a reasonable and consistent order
 /// get all the statements
-void UserProc::getStatements(StatementList &stmts) {
-    BB_IT it;
-    for (PBB bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it))
+void UserProc::getStatements(StatementList &stmts) const {
+    BBC_IT it;
+    for (const BasicBlock * bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it))
         bb->getStatements(stmts);
 
     for (StatementList::iterator it = stmts.begin(); it != stmts.end(); it++)
         if ((*it)->getProc() == nullptr)
-            (*it)->setProc(this);
+            (*it)->setProc(const_cast<UserProc *>(this));
 }
 
-///
 /***************************************************************************//**
  *
  * \brief Remove a statement
@@ -959,7 +950,7 @@ void UserProc::removeStatement(Statement *stmt) {
     }
 
     // remove from BB/RTL
-    PBB bb = stmt->getBB();            // Get our enclosing BB
+    BasicBlock * bb = stmt->getBB();            // Get our enclosing BB
     std::list<RTL*> *rtls = bb->getRTLs();
     for (RTL* rit : *rtls) {
         for (RTL::iterator it = rit->begin(); it != rit->end(); it++) {
@@ -976,14 +967,14 @@ void UserProc::insertAssignAfter(Statement* s, Exp* left, Exp* right) {
     std::list<Statement*>* stmts;
     if (s == nullptr) {
         // This means right is supposed to be a parameter. We can insert the assignment at the start of the entryBB
-        PBB entryBB = cfg->getEntryBB();
+        BasicBlock * entryBB = cfg->getEntryBB();
         std::list<RTL*> *rtls = entryBB->getRTLs();
         assert(rtls->size());        // Entry BB should have at least 1 RTL
         stmts = rtls->front();
         it = stmts->begin();
     } else {
         // An ordinary definition; put the assignment at the end of s's BB
-        PBB bb = s->getBB();         // Get the enclosing BB for s
+        BasicBlock * bb = s->getBB();         // Get the enclosing BB for s
         std::list<RTL*> *rtls = bb->getRTLs();
         assert(rtls->size());        // If s is defined here, there should be
         // at least 1 RTL
@@ -1108,7 +1099,7 @@ ProcSet* UserProc::decompile(ProcList* path, int& indent) {
         // Recurse to children first, to perform a depth first search
         BB_IT it;
         // Look at each call, to do the DFS
-        for (PBB bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it)) {
+        for (BasicBlock * bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it)) {
             if (bb->getType() == CALL) {
                 // The call Statement will be in the last RTL in this BB
                 CallStatement* call = (CallStatement*)bb->getRTLs()->back()->getHlStmt();
@@ -1260,9 +1251,9 @@ void UserProc::initialiseDecompile() {
     initStatements();
 
     if (VERBOSE) {
-        LOG << "--- debug print before SSA for " << getName() << " ---\n";
-        printToLog();
-        LOG << "=== end debug print before SSA for " << getName() << " ===\n\n";
+        LOG << "--- debug print before SSA for " << getName() << " ---\n"
+            << *this
+            << "=== end debug print before SSA for " << getName() << " ===\n\n";
     }
 
     // Compute dominance frontier
@@ -1281,9 +1272,9 @@ void UserProc::initialiseDecompile() {
     }
 
     if (VERBOSE) {
-        LOG << "--- debug initial print after decoding for " << getName() << " ---\n";
-        printToLog();
-        LOG << "=== end initial debug print after decoding for " << getName() << " ===\n\n";
+        LOG << "--- debug initial print after decoding for " << getName() << " ---\n"
+            << *this
+            << "=== end initial debug print after decoding for " << getName() << " ===\n\n";
     }
 
     Boomerang::get()->alert_decompile_debug_point(this, "after initialise");
@@ -1329,17 +1320,17 @@ void UserProc::earlyDecompile() {
     // Rename variables
     doRenameBlockVars(1, true);
     if (VERBOSE) {
-        LOG << "\n--- after rename (1) for " << getName() << " 1st pass\n";
-        printToLog();
-        LOG << "\n=== done after rename (1) for " << getName() << " 1st pass\n\n";
+        LOG << "\n--- after rename (1) for " << getName() << " 1st pass\n"
+            << *this
+            << "\n=== done after rename (1) for " << getName() << " 1st pass\n\n";
     }
 
     bool convert;
     propagateStatements(convert, 1);
     if (VERBOSE) {
-        LOG << "\n--- after propagation (1) for " << getName() << " 1st pass ---\n";
-        printToLog();
-        LOG << "\n=== done after propagation (1) for " << getName() << " 1st pass ===\n\n";
+        LOG << "\n--- after propagation (1) for " << getName() << " 1st pass ---\n"
+            << *this
+            << "\n=== done after propagation (1) for " << getName() << " 1st pass ===\n\n";
     }
 
     Boomerang::get()->alert_decompile_debug_point(this, "after early");
@@ -1364,9 +1355,9 @@ ProcSet* UserProc::middleDecompile(ProcList* path, int indent) {
     if (status != PROC_INCYCLE)        // FIXME: need this test?
         propagateStatements(convert, 2);
     if (VERBOSE) {
-        LOG << "\n--- after call and phi bypass (1) of " << getName() << " ---\n";
-        printToLog();
-        LOG << "\n=== done after call and phi bypass (1) of " << getName() << " ===\n\n";
+        LOG << "\n--- after call and phi bypass (1) of " << getName() << " ---\n"
+            << *this
+            << "\n=== done after call and phi bypass (1) of " << getName() << " ===\n\n";
     }
 
     // This part used to be calle middleDecompile():
@@ -1378,9 +1369,9 @@ ProcSet* UserProc::middleDecompile(ProcList* path, int indent) {
     findPreserveds();
     fixCallAndPhiRefs();     // Propagate and bypass sp
     if (VERBOSE) {
-        LOG << "--- after preservation, bypass and propagation ---\n";
-        printToLog();
-        LOG << "=== end after preservation, bypass and propagation ===\n";
+        LOG << "--- after preservation, bypass and propagation ---\n"
+            << *this
+            << "=== end after preservation, bypass and propagation ===\n";
     }
     // Oh, no, we keep doing preservations till almost the end...
     //setStatus(PROC_PRESERVEDS);        // Preservation done
@@ -1435,9 +1426,9 @@ ProcSet* UserProc::middleDecompile(ProcList* path, int indent) {
 
         // Print if requested
         if (VERBOSE) {        // was if debugPrintSSA
-            LOG << "--- debug print SSA for " << getName() << " pass " << pass << " (no propagations) ---\n";
-            printToLog();
-            LOG << "=== end debug print SSA for " << getName() << " pass " << pass << " (no propagations) ===\n\n";
+            LOG << "--- debug print SSA for " << getName() << " pass " << pass << " (no propagations) ---\n"
+                << *this
+                << "=== end debug print SSA for " << getName() << " pass " << pass << " (no propagations) ===\n\n";
         }
 
         if (Boomerang::get()->dotFile)                            // Require -gd now (though doesn't listen to file name)
@@ -1462,9 +1453,9 @@ ProcSet* UserProc::middleDecompile(ProcList* path, int indent) {
             printXML();
             if (VERBOSE) {
                 LOG << "--- debug print SSA for " << getName() << " at pass " << pass <<
-                       " (after updating returns) ---\n";
-                printToLog();
-                LOG << "=== end debug print SSA for " << getName() << " at pass " << pass << " ===\n\n";
+                       " (after updating returns) ---\n"
+                    << *this
+                    << "=== end debug print SSA for " << getName() << " at pass " << pass << " ===\n\n";
             }
         }
 #endif
@@ -1472,10 +1463,9 @@ ProcSet* UserProc::middleDecompile(ProcList* path, int indent) {
         printXML();
         // Print if requested
         if (VERBOSE) {        // was if debugPrintSSA
-            LOG << "--- debug print SSA for " << getName() << " at pass " << pass <<
-                   " (after trimming return set) ---\n";
-            printToLog();
-            LOG << "=== end debug print SSA for " << getName() << " at pass " << pass << " ===\n\n";
+            LOG << "--- debug print SSA for " << getName() << " at pass "<< pass <<" (after trimming return set) ---\n"
+                << *this
+                << "=== end debug print SSA for " << getName() << " at pass " << pass << " ===\n\n";
         }
 
         Boomerang::get()->alert_decompile_beforePropagate(this, pass);
@@ -1499,17 +1489,17 @@ ProcSet* UserProc::middleDecompile(ProcList* path, int indent) {
                            " due to conversion of indirect to direct call(s)\n\n";
                 df.setRenameLocalsParams(false);
                 change |= doRenameBlockVars(0, true);             // Initial dataflow level 0
-                LOG << "\nafter rename (2) of " << getName() << ":\n";
-                printToLog();
-                LOG << "\ndone after rename (2) of " << getName() << ":\n\n";
+                LOG << "\nafter rename (2) of " << getName() << ":\n"
+                    << *this
+                    << "\ndone after rename (2) of " << getName() << ":\n\n";
             }
         } while (convert);
 
         printXML();
         if (VERBOSE) {
-            LOG << "--- after propagate for " << getName() << " at pass " << pass << " ---\n";
-            printToLog();
-            LOG << "=== end propagate for " << getName() << " at pass " << pass << " ===\n\n";
+            LOG << "--- after propagate for " << getName() << " at pass " << pass << " ---\n"
+                << *this
+                << "=== end propagate for " << getName() << " at pass " << pass << " ===\n\n";
         }
 
         Boomerang::get()->alert_decompile_afterPropagate(this, pass);
@@ -1549,9 +1539,9 @@ ProcSet* UserProc::middleDecompile(ProcList* path, int indent) {
     if (change) numberStatements();        // Number the new statements
     doRenameBlockVars(pass, false);        // MVE: do we want this parameter false or not?
     if (VERBOSE) {
-        LOG << "--- after setting phis for memofs, renaming them for " << getName() << "\n";
-        printToLog();
-        LOG << "=== done after setting phis for memofs, renaming them for " << getName() << "\n";
+        LOG << "--- after setting phis for memofs, renaming them for " << getName() << "\n"
+            << *this
+            << "=== done after setting phis for memofs, renaming them for " << getName() << "\n";
     }
     propagateStatements(convert, pass);
     // Now that memofs are renamed, the bypassing for memofs can work
@@ -1609,9 +1599,9 @@ ProcSet* UserProc::middleDecompile(ProcList* path, int indent) {
         //fixCallBypass();    // FIXME: surely this is not necessary now?
         //trimParameters();    // FIXME: surely there aren't any parameters to trim yet?
         if (VERBOSE) {
-            LOG << "--- after replacing expressions, trimming params and returns for " << getName() << " ---\n";
-            printToLog();
-            LOG << "=== end after replacing expressions, trimming params and returns for " << getName() << " ===\n";
+            LOG << "--- after replacing expressions, trimming params and returns for " << getName() << " ---\n"
+                << *this
+                << "=== end after replacing expressions, trimming params and returns for " << getName() << " ===\n";
         }
     }
 
@@ -1634,6 +1624,8 @@ ProcSet* UserProc::middleDecompile(ProcList* path, int indent) {
 //! Remove unused statements.
 void UserProc::remUnusedStmtEtc() {
 
+    bool convert;
+    bool change;
     // NO! Removing of unused statements is an important part of the global removing unused returns analysis, which
     // happens after UserProc::decompile is complete
     //if (status >= PROC_FINAL)
@@ -1654,15 +1646,15 @@ void UserProc::remUnusedStmtEtc() {
     if (status < PROC_FINAL) {
         typeAnalysis();
         // Now that locals are identified, redo the dataflow
-        bool change = df.placePhiFunctions(this);
-        if (change) numberStatements();        // Number the new statements
+        change = df.placePhiFunctions(this);
+        if (change)
+            numberStatements();        // Number the new statements
         doRenameBlockVars(20);                // Rename the locals
-        bool convert;
         propagateStatements(convert, 20);    // Surely need propagation too
         if (VERBOSE) {
-            LOG << "--- after propagating locals for " << getName() << " ---\n";
-            printToLog();
-            LOG << "=== end after propagating locals for " << getName() << " ===\n\n";
+            LOG << "--- after propagating locals for " << getName() << " ---\n"
+                << *this
+                << "=== end after propagating locals for " << getName() << " ===\n\n";
         }
 #if 0
         // Note: processConstants is also where ellipsis processing is done
@@ -1690,9 +1682,9 @@ void UserProc::remUnusedStmtEtc() {
 
     printXML();
     if (VERBOSE && !Boomerang::get()->noRemoveNull) {
-        LOG << "--- after removing unused and null statements pass " << 1 << " for " << getName() << " ---\n";
-        printToLog();
-        LOG << "=== end after removing unused statements for " << getName() << " ===\n\n";
+        LOG << "--- after removing unused and null statements pass " << 1 << " for " << getName() << " ---\n"
+            << *this
+            << "=== end after removing unused statements for " << getName() << " ===\n\n";
     }
     Boomerang::get()->alert_decompile_afterRemoveStmts(this, 1);
 
@@ -1703,9 +1695,9 @@ void UserProc::remUnusedStmtEtc() {
         addParameterSymbols();
 
         if (VERBOSE) {
-            LOG << "--- after adding new parameters ---\n";
-            printToLog();
-            LOG << "=== end after adding new parameters ===\n";
+            LOG << "--- after adding new parameters ---\n"
+                << *this
+                << "=== end after adding new parameters ===\n";
         }
     }
 
@@ -1725,9 +1717,9 @@ void UserProc::remUnusedStmtEtc() {
     fixUglyBranches();
 
     if (VERBOSE) {
-        LOG << "--- after remove unused statements etc for " << getName() << "\n";
-        printToLog();
-        LOG << "=== after remove unused statements etc for " << getName() << "\n";
+        LOG << "--- after remove unused statements etc for " << getName() << "\n"
+            << *this
+            << "=== after remove unused statements etc for " << getName() << "\n";
     }
 
     Boomerang::get()->alert_decompile_debug_point(this, "after final");
@@ -1901,9 +1893,9 @@ void UserProc::updateCalls() {
     updateCallDefines();
     updateArguments();
     if (VERBOSE) {
-        LOG << "--- after update calls for " << getName() << "\n";
-        printToLog();
-        LOG << "=== after update calls for " << getName() << "\n";
+        LOG << "--- after update calls for " << getName() << "\n"
+            << *this
+            << "=== after update calls for " << getName() << "\n";
     }
 }
 
@@ -2016,9 +2008,9 @@ void UserProc::fixUglyBranches() {
     }
 
     if (VERBOSE) {
-        LOG << "--- after fixUglyBranches for " << getName() << "\n";
-        printToLog();
-        LOG << "=== after fixUglyBranches for " << getName() << "\n";
+        LOG << "--- after fixUglyBranches for " << getName() << "\n"
+            << *this
+            << "=== after fixUglyBranches for " << getName() << "\n";
     }
 }
 
@@ -2237,8 +2229,8 @@ void UserProc::removeMatchingAssignsIfPossible(Exp *e) {
  */
 //! find the procs the calls point to
 void UserProc::assignProcsToCalls() {
-    std::list<PBB>::iterator it;
-    PBB pBB = cfg->getFirstBB(it);
+    std::list<BasicBlock *>::iterator it;
+    BasicBlock * pBB = cfg->getFirstBB(it);
     while (pBB) {
         std::list<RTL*>* rtls = pBB->getRTLs();
         if (rtls == nullptr) {
@@ -2270,8 +2262,8 @@ void UserProc::assignProcsToCalls() {
  */
 //! perform final simplifications
 void UserProc::finalSimplify() {
-    std::list<PBB>::iterator it;
-    PBB pBB = cfg->getFirstBB(it);
+    std::list<BasicBlock *>::iterator it;
+    BasicBlock * pBB = cfg->getFirstBB(it);
     while (pBB) {
         std::list<RTL*>* pRtls = pBB->getRTLs();
         if (pRtls == nullptr) {
@@ -3054,11 +3046,11 @@ void UserProc::removeSymbolMapping(const Exp* from, Exp* to) {
 
 /// return a symbol's exp (note: the original exp, like r24, not local1)
 /// \note linear search!!
-const Exp *UserProc::expFromSymbol(const char *nam) {
-    for (SymbolMap::iterator it = symbolMap.begin(); it != symbolMap.end(); it++) {
-        Exp* e = it->second;
-        if (e->isLocal() && !strcmp(((Const*)((Location*)e)->getSubExp1())->getStr(), nam))
-            return it->first;
+const Exp *UserProc::expFromSymbol(const char *nam) const {
+    for (const std::pair<const Exp*,Exp*> & it : symbolMap) {
+        const Exp* e = it.second;
+        if (e->isLocal() && !strcmp(((const Const*)((const Location*)e)->getSubExp1())->getStr(), nam))
+            return it.first;
     }
     return nullptr;
 }
@@ -4194,15 +4186,14 @@ const char* UserProc::lookupSym(const Exp* e, Type* ty) {
     // Else there is no symbol
     return nullptr;
 }
-
-void UserProc::printSymbolMap(std::ostream &out, bool html) {
+//! Print just the symbol map
+void UserProc::printSymbolMap(std::ostream &out, bool html /*= false*/ ) const {
     if (html)
         out << "<br>";
     out << "symbols:\n";
-    SymbolMap::iterator it;
-    for (it = symbolMap.begin(); it != symbolMap.end(); it++) {
-        Type* ty = getTypeForLocation(it->second);
-        out << "  " << it->first << " maps to " << it->second << " type " << (ty ? ty->getCtype() : "nullptr") << "\n";
+    for (const std::pair<const Exp*,Exp*> &it : symbolMap) {
+        const Type* ty = getTypeForLocation(it.second);
+        out << "  " << it.first << " maps to " << it.second << " type " << (ty ? ty->getCtype() : "nullptr") << "\n";
         if (html)
             out << "<br>";
     }
@@ -4211,13 +4202,13 @@ void UserProc::printSymbolMap(std::ostream &out, bool html) {
     out << "end symbols\n";
 }
 
-void UserProc::dumpLocals(std::ostream& os, bool html) {
+void UserProc::dumpLocals(std::ostream& os, bool html) const {
     if (html)
         os << "<br>";
     os << "locals:\n";
-    for (std::map<std::string, Type*>::iterator it = locals.begin(); it != locals.end(); it++) {
-        os << it->second->getCtype() << " " << it->first.c_str() << " ";
-        const Exp *e = expFromSymbol((*it).first.c_str());
+    for (const std::pair<std::string, Type*> &it : locals) {
+        os << it.second->getCtype() << " " << it.first.c_str() << " ";
+        const Exp *e = expFromSymbol(it.first.c_str());
         // Beware: for some locals, expFromSymbol() returns nullptr (? No longer?)
         if (e)
             os << e << "\n";
@@ -4233,7 +4224,7 @@ void UserProc::dumpSymbolMap() {
     SymbolMap::iterator it;
     for (it = symbolMap.begin(); it != symbolMap.end(); it++) {
         Type* ty = getTypeForLocation(it->second);
-        std::cerr << "  " << it->first << " maps to " << it->second << " type " << (ty ? ty->getCtype() : "nullptr") <<
+        std::cerr << "  " << it->first << " maps to " << it->second << " type " << (ty ? ty->getCtype() : "NULL") <<
                      "\n";
     }
 }
@@ -4243,7 +4234,7 @@ void UserProc::dumpSymbolMapx() {
     SymbolMap::iterator it;
     for (it = symbolMap.begin(); it != symbolMap.end(); it++) {
         Type* ty = getTypeForLocation(it->second);
-        std::cerr << "  " << it->first << " maps to " << it->second << " type " << (ty ? ty->getCtype() : "nullptr") <<
+        std::cerr << "  " << it->first << " maps to " << it->second << " type " << (ty ? ty->getCtype() : "NULL") <<
                      "\n";
         it->first->printx(2);
     }
@@ -4313,6 +4304,12 @@ void UserProc::updateCallDefines() {
     }
 }
 //! Replace simple global constant references
+//! Statement level transform :
+//! PREDICATE: (statement IS_A Assign) AND (statement.rhs IS_A MemOf) AND (statement.rhs.sub(1) IS_A IntConst)
+//! ACTION:
+//!		$tmp_addr = assgn.rhs.sub(1);
+//!		$tmp_val  = prog->readNative($tmp_addr,statement.type.bitwidth/8);
+//!		statement.rhs.replace_with(Const($tmp_val))
 void UserProc::replaceSimpleGlobalConstants() {
     if (VERBOSE)
         LOG << "### replace simple global constants for " << getName() << " ###\n";
@@ -4756,7 +4753,7 @@ void UserProc::fixCallAndPhiRefs() {
 void UserProc::markAsNonChildless(ProcSet* cs) {
     BasicBlock::rtlrit rrit; StatementList::reverse_iterator srit;
     BB_IT it;
-    for (PBB bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it)) {
+    for (BasicBlock * bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it)) {
         CallStatement* c = (CallStatement*) bb->getLastStmt(rrit, srit);
         if (c && c->isCall() && c->isChildless()) {
             UserProc* dest = (UserProc*)c->getDestProc();
@@ -5281,7 +5278,7 @@ void UserProc::updateForUseChange(std::set<UserProc*>& removeRetSet) {
     std::map<CallStatement*, UseCollector> callLiveness;
     BasicBlock::rtlrit rrit; StatementList::reverse_iterator srit;
     BB_IT it;
-    for (PBB bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it)) {
+    for (BasicBlock * bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it)) {
         CallStatement* c = (CallStatement*) bb->getLastStmt(rrit, srit);
         // Note: we may have removed some statements, so there may no longer be a last statement!
         if (c == nullptr || !c->isCall()) continue;
@@ -5415,9 +5412,9 @@ void UserProc::rangeAnalysis() {
     clearRanges();
 
     if (VERBOSE) {
-        LOG << "=== Before performing range analysis for " << getName() << " ===\n";
-        printToLog();
-        LOG << "=== end before performing range analysis for " << getName() << " ===\n\n";
+        LOG << "=== Before performing range analysis for " << getName() << " ===\n"
+            << *this
+            << "=== end before performing range analysis for " << getName() << " ===\n\n";
     }
 
     std::list<Statement*> execution_paths;
@@ -5455,10 +5452,10 @@ void UserProc::rangeAnalysis() {
         if (watchdog > 10) {
             LOG << "  watchdog " << watchdog << "\n";
             if (watchdog > 45) {
-                LOG << (int)execution_paths.size() << " execution paths remaining.\n";
-                LOG << "=== After range analysis watchdog " << watchdog << " for " << getName() << " ===\n";
-                printToLog();
-                LOG << "=== end after range analysis watchdog " << watchdog << " for " << getName() << " ===\n\n";
+                LOG << (int)execution_paths.size() << " execution paths remaining.\n"
+                    << "=== After range analysis watchdog " << watchdog << " for " << getName() << " ===\n"
+                    << *this
+                    << "=== end after range analysis watchdog " << watchdog << " for " << getName() << " ===\n\n";
             }
         }
         if (watchdog > 50) {
@@ -5467,9 +5464,9 @@ void UserProc::rangeAnalysis() {
         }
     }
 
-    LOG << "=== After range analysis for " << getName() << " ===\n";
-    printToLog();
-    LOG << "=== end after range analysis for " << getName() << " ===\n\n";
+    LOG << "=== After range analysis for " << getName() << " ===\n"
+        << *this
+        << "=== end after range analysis for " << getName() << " ===\n\n";
 
     cfg->removeJunctionStatements();
 }
@@ -5519,7 +5516,7 @@ RTL* globalRtl = 0;
 void UserProc::processDecodedICTs() {
     BB_IT it;
     BasicBlock::rtlrit rrit; StatementList::reverse_iterator srit;
-    for (PBB bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it)) {
+    for (BasicBlock * bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it)) {
         Statement* last = bb->getLastStmt(rrit, srit);
         if (last == nullptr) continue;            // e.g. a BB with just a NOP in it
         if (!last->isHL_ICT()) continue;
@@ -5537,7 +5534,7 @@ void UserProc::processDecodedICTs() {
 // Meet types if necessary
 /// Find and if necessary insert an implicit reference before s whose address expression is a and type is t.
 void UserProc::setImplicitRef(Statement* s, Exp* a, Type* ty) {
-    PBB bb = s->getBB();            // Get s' enclosing BB
+    BasicBlock * bb = s->getBB();            // Get s' enclosing BB
     std::list<RTL*> *rtls = bb->getRTLs();
     for (std::list<RTL*>::iterator rit = rtls->begin(); rit != rtls->end(); rit++) {
         RTL::iterator it, itForS;
@@ -5747,18 +5744,18 @@ const char* UserProc::getRegName(Exp* r) {
     return regName;
 }
 //! Find the type of the local or parameter \a e
-Type* UserProc::getTypeForLocation(Exp* e) {
-    const char* name;
+Type* UserProc::getTypeForLocation(const Exp* e) {
+    const char* name=((const Const*)((const Unary*)e)->getSubExp1())->getStr();
     if (e->isLocal()) {
-        name = ((Const*)((Unary*)e)->getSubExp1())->getStr();
         if (locals.find(name) != locals.end())
             return locals[name];
     }
     // Sometimes parameters use opLocal, so fall through
-    name = ((Const*)((Unary*)e)->getSubExp1())->getStr();
     return getParamType(name);
 }
-
+const Type* UserProc::getTypeForLocation(const Exp* e) const {
+    return const_cast<UserProc *>(this)->getTypeForLocation(e);
+}
 /***************************************************************************//**
  *
  * \brief Add a mapping for the destinations of phi functions that have one
@@ -5977,3 +5974,86 @@ void UserProc::readMemo(Memo *mm, bool dec) {
     }
 }
 #endif        // #ifdef USING_MEMOS
+// 3) Check implicit assigns for parameter and global types.
+void UserProc::dfa_analyze_implict_assigns( Statement* s, Prog* prog )
+{
+    bool allZero;
+    Exp *lhs;
+    Exp *slhs;
+    Type *iType;
+    int i;
+
+    if (!s->isImplicit())
+        return;
+
+    lhs = ((ImplicitAssign*)s)->getLeft();
+    // Note: parameters are not explicit any more
+    //if (lhs->isParam()) {	// }
+    slhs = lhs->clone()->removeSubscripts(allZero);
+    iType = ((ImplicitAssign*)s)->getType();
+    i = signature->findParam(slhs);
+    if (i != -1)
+        setParamType(i, iType);
+    else if (lhs->isMemOf()) {
+        Exp* sub = ((Location*)lhs)->getSubExp1();
+        if (sub->isIntConst()) {
+            // We have a m[K] := -
+            ADDRESS K = ((Const*)sub)->getAddr();
+            prog->globalUsed(K, iType);
+        }
+    }
+    else if (lhs->isGlobal()) {
+        assert(dynamic_cast<Location*>(lhs)!=nullptr);
+        const char* gname = ((Const*)lhs->getSubExp1())->getStr();
+        prog->setGlobalType(gname, iType);
+    }
+}
+// m[idx*K1 + K2]; leave idx wild
+static Exp* scaledArrayPat = Location::memOf(
+    new Binary(opPlus,
+        new Binary(opMult,
+            new Terminal(opWild),
+            new Terminal(opWildIntConst)),
+        new Terminal(opWildIntConst)));
+
+void UserProc::dfa_analyze_scaled_array_ref( Statement* s, Prog* prog )
+{
+    Exp *arr;
+    std::list<Exp*> result;
+    const char* nam;
+    s->searchAll(scaledArrayPat, result);
+    // query: (memOf (opPlus (opMult ? ?:IntConst) ?:IntConst))
+    // rewrite_as (opArrayIndex (global `(getOrCreateGlobalName arg3) ) arg2 ) assert (= (typeSize (getOrCreateGlobalName arg3)) (arg1))
+    for (Exp * rr : result)
+    {
+        //Type* ty = s->getTypeFor(*rr);
+        // FIXME: should check that we use with array type...
+        // Find idx and K2
+        assert(((Unary*)rr)->getSubExp1() == rr->getSubExp1());
+        Exp* t = rr->getSubExp1();		// idx*K1 + K2
+        Exp* l = ((Binary*)t)->getSubExp1();		// idx*K1
+        Exp* r = ((Binary*)t)->getSubExp2();		// K2
+        ADDRESS K2 = ((Const*)r)->getAddr();
+        Exp* idx = ((Binary*)l)->getSubExp1();
+
+        // Replace with the array expression
+        nam = prog->getGlobalName(K2);
+        if (nam == nullptr)
+            nam = prog->newGlobalName(K2);
+        arr = new Binary(opArrayIndex,
+            Location::global(nam, this),
+            idx
+            );
+        if (s->searchAndReplace(scaledArrayPat, arr)) {
+            if (s->isImplicit())
+                // Register an array of appropriate type
+                prog->globalUsed(K2, new ArrayType(((ImplicitAssign*)s)->getType()));
+        }
+    }
+}
+Log& operator<< ( Log& out, const UserProc& c ) {
+    std::ostringstream ost;
+    c.print(ost);
+    out << ost.str().c_str();
+    return out;
+}

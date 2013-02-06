@@ -1439,17 +1439,17 @@ void Prog::fromSSAform() {
         if (proc->isLib())
             continue;
         if (VERBOSE) {
-            LOG << "===== before transformation from SSA form for " << proc->getName() << " =====\n";
-            proc->printToLog();
-            LOG << "===== end before transformation from SSA for " << proc->getName() << " =====\n\n";
+            LOG << "===== before transformation from SSA form for " << proc->getName() << " =====\n"
+                << *proc
+                << "===== end before transformation from SSA for " << proc->getName() << " =====\n\n";
             if (Boomerang::get()->dotFile)
                 proc->printDFG();
         }
         proc->fromSSAform();
         if (VERBOSE) {
-            LOG << "===== after transformation from SSA form for " << proc->getName() << " =====\n";
-            proc->printToLog();
-            LOG << "===== end after transformation from SSA for " << proc->getName() << " =====\n\n";
+            LOG << "===== after transformation from SSA form for " << proc->getName() << " =====\n"
+                << *proc
+                << "===== end after transformation from SSA for " << proc->getName() << " =====\n\n";
         }
     }
 }

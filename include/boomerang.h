@@ -51,6 +51,7 @@ class HLLCode;
 class ObjcModule;
 
 #define LOG Boomerang::get()->log()
+#define LOG_VERBOSE(x) Boomerang::get()->if_verbose_log(x)
 #define LOGTAIL Boomerang::get()->logTail()
 
 #define DEBUG_RANGE_ANALYSIS 0
@@ -90,23 +91,18 @@ virtual void        alert_decompile_debug_point(UserProc *p, const char *descrip
 class Boomerang {
 private:
 static Boomerang *boomerang;
-        /// String with the path to the boomerang executable.
-        std::string    progPath;
-        /// The path where all output files are created.
-        std::string    outputPath;
-        /// Takes care of the log messages.
-        Log            *logger;
-        /// The watchers which are interested in this decompilation.
-        std::set<Watcher*> watchers;
-
+        std::string progPath;       //!< String with the path to the boomerang executable.
+        std::string outputPath;     //!< The path where all output files are created.
+        Log *       logger;         //!< Takes care of the log messages.
+        std::set<Watcher*>  watchers;       //!< The watchers which are interested in this decompilation.
 
         /* Documentation about a function should be at one place only
          * So: Document all functions at the point of implementation (in the .c file)
          */
 
-        void        usage();
-        void        help();
-        void        helpcmd();
+        void        usage() const;
+        void        help() const;
+        void        helpcmd() const;
         int            splitLine(char *line, char ***pargv);
         int            parseCmd(int argc, const char **argv);
         int            cmdLine();
@@ -126,6 +122,7 @@ static Boomerang *get() {
 
 static const char * getVersionStr();
         Log &       log();
+        Log &       if_verbose_log(int verbosity_level);
         void        setLogger(Log *l) { logger = l; }
         bool        setOutputDirectory(const char *path);
 
@@ -263,12 +260,9 @@ virtual void        alert_decompile_debug_point(UserProc *p, const char *descrip
         bool        debugLiveness;
         bool        stopAtDebugPoints;
         bool        debugTA;
-        /// A vector which contains all know entrypoints for the Prog.
-        std::vector<ADDRESS> entrypoints;
-        /// A vector containing the names off all symbolfiles to load.
-        std::vector<std::string> symbolFiles;
-        /// A map to find a name by a given address.
-        std::map<ADDRESS, std::string> symbols;
+        std::vector<ADDRESS> entrypoints;   /// A vector which contains all know entrypoints for the Prog.
+        std::vector<std::string> symbolFiles;   /// A vector containing the names off all symbolfiles to load.
+        std::map<ADDRESS, std::string> symbols; /// A map to find a name by a given address.
         /// When true, attempt to decode main, all children, and all procs.
         /// \a decodeMain is set when there are no -e or -E switches given
         bool        decodeMain;

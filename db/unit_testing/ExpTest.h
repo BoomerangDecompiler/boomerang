@@ -48,8 +48,8 @@ class ExpTest : public CPPUNIT_NS::TestFixture
     CPPUNIT_TEST_SUITE_END();
 
 protected:
-    Const*		m_99;
-    Location*	m_rof2;
+    Const *     m_99;
+    Location *  m_rof2;
 
 public:
     void setUp ();
