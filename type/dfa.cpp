@@ -52,7 +52,7 @@ int max(int a, int b) {        // Faster to write than to find the #include for
 #define DFA_ITER_LIMIT 20
 
 // idx + K; leave idx wild
-static const Exp* unscaledArrayPat = new Binary(opPlus,
+static const Exp* const unscaledArrayPat = new Binary(opPlus,
                                           new Terminal(opWild),
                                           new Terminal(opWildIntConst));
 

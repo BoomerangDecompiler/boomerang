@@ -34,7 +34,6 @@
 #include "memo.h"
 #include "dataflow.h"            // For class UseCollector
 #include "statement.h"            // For embedded ReturnStatement pointer, etc
-#include "boomerang.h"            // For USE_DOMINANCE_NUMS etc
 
 class Prog;
 class UserProc;
