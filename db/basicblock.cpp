@@ -1263,8 +1263,7 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, BasicBlock * latch,
                     hll->AddIfCondEnd(indLevel);
                 }
             } else { // case header
-                // TODO: linearly emitting each branch of the switch does not result
-                //       in optimal fall-through.
+                // TODO: linearly emitting each branch of the switch does not result in optimal fall-through.
                 // generate code for each out branch
                 for (unsigned int i = 0; i < m_OutEdges.size(); i++) {
                     // emit a case label
@@ -1866,14 +1865,14 @@ void findSwParams(char form, Exp* e, Exp*& expr, ADDRESS& T) {
             // b will be (<expr> * 4) + T
             Binary* b = (Binary*)((Location*)e)->getSubExp1();
             Const* TT = (Const*)b->getSubExp2();
-            T = ADDRESS::g(TT->getInt()); //TODO: why not getAddr ?
+            T = TT->getAddr();
             b = (Binary*)b->getSubExp1();    // b is now <expr> * 4
             expr = b->getSubExp1();
             break;
         }
         case 'O': {        // Form O
             // Pattern: m[<expr> * 4 + T ] + T
-            T = ADDRESS::g(((Const*)((Binary*)e)->getSubExp2())->getInt()); //TODO: why not getAddr ?
+            T = ((Const*)((Binary*)e)->getSubExp2())->getAddr();
             // l = m[<expr> * 4 + T ]:
             Exp* l = ((Binary*)e)->getSubExp1();
             if (l->isSubscript()) l = l->getSubExp1();
@@ -2251,8 +2250,8 @@ bool BasicBlock::decodeIndirectJmp(UserProc* proc) {
         // Danger. For now, only do if -ic given
         bool decodeThru = Boomerang::get()->decodeThruIndCall;
         if (decodeThru && vtExp && vtExp->isIntConst()) {
-            int addr = ((Const*)vtExp)->getInt(); // TODO: user getAddr ?
-            ADDRESS pfunc = ADDRESS::g(prog->readNative4(ADDRESS::g(addr)));
+            ADDRESS addr = ((Const*)vtExp)->getAddr();
+            ADDRESS pfunc = ADDRESS::g(prog->readNative4(addr));
             if (prog->findProc(pfunc) == nullptr) {
                 // A new, undecoded procedure
                 if (Boomerang::get()->noDecodeChildren)

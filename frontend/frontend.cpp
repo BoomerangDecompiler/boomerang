@@ -599,9 +599,9 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
                 s->setProc(pProc);        // let's do this really early!
                 if (refHints.find(pRtl->getAddress()) != refHints.end()) {
                     const char *nam = refHints[pRtl->getAddress()].c_str();
-                    ADDRESS gu = prog->getGlobalAddr((char*)nam);
+                    ADDRESS gu = prog->getGlobalAddr(nam);
                     if (gu != NO_ADDRESS) {
-                        s->searchAndReplace(new Const((int)gu.m_value), new Unary(opAddrOf, Location::global(nam, pProc))); //TODO: use Const(gu) instead of casting to int ?
+                        s->searchAndReplace(new Const(gu), new Unary(opAddrOf, Location::global(nam, pProc)));
                     }
                 }
                 s->simplify();
@@ -725,8 +725,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
                             if (pDest->isMemOf() && pDest->getSubExp1()->getOper() == opPlus &&
                                     pDest->getSubExp1()->getSubExp2()->isIntConst()) {
                                 // assume subExp2 is a jump table
-                                // TODO: use getAddr ?
-                                ADDRESS jmptbl = ADDRESS::g(((Const*)pDest->getSubExp1()->getSubExp2())->getInt());
+                                ADDRESS jmptbl = ((Const*)pDest->getSubExp1()->getSubExp2())->getAddr();
                                 unsigned int i;
                                 for (i = 0; ; i++) {
                                     ADDRESS uDest = ADDRESS::g(pBF->readNative4(jmptbl + i * 4));
@@ -882,8 +881,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
                             const char* name = pBF->SymbolByAddress(uNewAddr);
                             if (name == nullptr && call->getDest()->isMemOf() &&
                                     call->getDest()->getSubExp1()->isIntConst()) {
-                                    //TODO : use getAddr
-                                    ADDRESS a = ADDRESS::g(((Const*)call->getDest()->getSubExp1())->getInt());
+                                ADDRESS a = ((Const*)call->getDest()->getSubExp1())->getAddr();
                                 if (pBF->IsDynamicLinkedProcPointer(a))
                                     name = pBF->GetDynamicProcName(a);
                             }
@@ -1038,8 +1036,8 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 /***************************************************************************//**
  *
  * \brief    Fetch the smallest (nop-sized) instruction, in an endianness independent manner
- * NOTE:        Frequently overridden
- * PARAMETERS:    addr - host address to getch from
+ * \note        Frequently overridden
+ * \param    addr - host address to getch from
  * \returns        An integer with the instruction in it
  ******************************************************************************/
 //int FrontEnd::getInst(int addr)

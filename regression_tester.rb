@@ -19,7 +19,6 @@ def perform_test(exepath,machine,test,args)
         test_file = File.join(TEST_INPUT,machine,test)
         log_name = File.join(output_path,test)
         joined_args = args.join(' ')
-        STDERR << "Errors for : #{machine}/#{args[1]}\n"
         STDOUT << "Running command '#{exepath} -P #{Dir.pwd} -o #{output_path} #{joined_args} #{test_file}'\n"
         result = `#{exepath} -P #{Dir.pwd} -o #{output_path} #{joined_args} #{test_file} >#{log_name+".stdout"} 2>#{log_name+".stderr"}`
         puts result
@@ -39,6 +38,7 @@ Dir.open(TEST_INPUT).each() {|f|
         p File::directory?(machine_dir)
         next if not File::directory?(machine_dir)
         machine = f
+        STDOUT << "Running tests for #{f}\n"
         Dir.open(machine_dir).each() {|test|
             next if test=="." or test==".."
             test_path = File.join(machine_dir,test)

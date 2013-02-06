@@ -607,7 +607,7 @@ Exp *Type::match(Type *pattern) {
         return new Binary(opList,
                           new Binary(opEquals,
                                      new Unary(opVar,
-                                               new Const((char*)pattern->asNamed()->getName())),
+                                               new Const(pattern->asNamed()->getName())),
                                      new TypeVal(this->clone())),
                           new Terminal(opNil));
     }
@@ -1355,7 +1355,7 @@ void DataIntervalMap::replaceComponents(ADDRESS addr, const char* name, Type* ty
             if (locName && ty->resolvesToCompound()) {
                 CompoundType* c = ty->asCompound();
                 // want s.m where s is the new compound object and m is the member at offset bitOffset
-                char* memName = (char*)c->getNameAtOffset(bitOffset);
+                const char* memName = c->getNameAtOffset(bitOffset);
                 Exp* s = Location::memOf(
                              new Binary(opPlus,
                                         rsp0->clone(),

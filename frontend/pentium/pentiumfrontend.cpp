@@ -1089,7 +1089,7 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, std::list<RTL*> *BB_
                 const char *name = ((Const*)found->getSubExp1()->getSubExp1())->getStr();
                 if (prog->getGlobal(name) == nullptr)
                     continue;
-                a = prog->getGlobalAddr((char*)name);
+                a = prog->getGlobalAddr(name);
             } else
                 continue;
 

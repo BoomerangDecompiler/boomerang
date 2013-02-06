@@ -127,8 +127,8 @@ void Prog::setName (const char *name) {
     m_rootCluster->setName(name);
 }
 
-char* Prog::getName() {
-    return (char*) m_name.c_str();
+const char* Prog::getName() {
+    return m_name.c_str();
 }
 
 //! Well form all the procedures/cfgs in this program
@@ -1174,10 +1174,10 @@ UserProc* Prog::getFirstUserProc(std::list<Proc*>::iterator& it) {
 /***************************************************************************//**
  *
  * \brief    Return a pointer to the next UserProc object for this program
- * NOTE:        The it parameter must be from a previous call to
+ * \note     The it parameter must be from a previous call to
  *                  getFirstUserProc or getNextUserProc
- * PARAMETERS:    it: A std::list<Proc*>::iterator
- * \returns        A pointer to the next UserProc object; could be 0 if no more
+ * \param   it: A reference to std::list<Proc*>::iterator
+ * \returns A pointer to the next UserProc object; could be 0 if no more
  ******************************************************************************/
 UserProc* Prog::getNextUserProc(std::list<Proc*>::iterator& it) {
     it++;
@@ -1672,6 +1672,7 @@ Global::~Global() {
 //! Get the initial value as an expression (or nullptr if not initialised)
 Exp* Global::getInitialValue(Prog* prog) {
     SectionInfo *si = prog->getSectionInfoByAddr(uaddr);
+    // TODO: see what happens when we skip Bss check here
     if (si && si->isAddressBss(uaddr))
         // This global is in the BSS, so it can't be initialised
         //NOTE: this is not actually correct. at least for typing, BSS data can have a type assigned
@@ -1686,7 +1687,6 @@ void Global::print(std::ostream& os, Prog* prog) {
     os << type << " " << nam << " at " << std::hex << uaddr << std::dec << " initial value " <<
           (init ? init->prints() : "<none>");
 }
-
 Exp *Prog::readNativeAs(ADDRESS uaddr, Type *type) {
     Exp *e = nullptr;
     SectionInfo *si = getSectionInfoByAddr(uaddr);
@@ -2053,12 +2053,12 @@ Exp * Prog::addReloc(Exp *e, ADDRESS lc) {
     // relocation for this lc then we should be able to replace the constant
     // with a symbol.
     std::map<ADDRESS, std::string> &symbols = pBF->getSymbols();
-    ADDRESS c_addr = ADDRESS::g(c->getInt());
+    ADDRESS c_addr = c->getAddr();
     auto found_at = symbols.find(c_addr);
-    if (found_at != symbols.end()) { //TODO: use getAddr instead of getInt
+    if (found_at != symbols.end()) {
         const char *n = found_at->second.c_str();
         unsigned int sz = pBF->GetSizeByName(n);
-        if (getGlobal((char*)n) == nullptr) {
+        if (getGlobal(n) == nullptr) {
             Global *global = new Global(new SizeType(sz*8), c_addr, n);
             globals.insert(global);
         }

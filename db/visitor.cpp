@@ -817,7 +817,7 @@ Exp* ConstGlobalConverter::preVisit(RefExp* e, bool& recur) {
         if (    (base = e->getSubExp1(), base->isMemOf()) &&
                 (addr = ((Location*)base)->getSubExp1(), addr->isIntConst())) {
             // We have a m[K]{-}
-            ADDRESS K = ADDRESS::g(((Const*)addr)->getInt()); //TODO: use getAddr
+            ADDRESS K = ((Const*)addr)->getAddr(); //TODO: use getAddr
             int value = prog->readNative4(K);
             recur = false;
             return new Const(value);

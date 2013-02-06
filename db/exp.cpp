@@ -2823,7 +2823,7 @@ Exp* Ternary::polySimplify(bool& bMod) {
     if (    op == opFsize &&
                 subExp3->getOper() == opMemOf &&
                 subExp3->getSubExp1()->getOper() == opIntConst) {
-        ADDRESS u = ADDRESS::g(((Const*)subExp3->getSubExp1())->getInt()); // TODO: why not getAdrr ?
+        ADDRESS u = ((Const*)subExp3->getSubExp1())->getAddr();
         Location *l = dynamic_cast<Location*>(subExp3);
         UserProc *p = l->getProc();
         if (p) {

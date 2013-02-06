@@ -91,10 +91,6 @@ void *alloca ();
 #define NO_GARBAGE_COLLECTOR
 #endif
 #include <cassert>
-#if defined(_MSC_VER) && _MSC_VER <= 1200
-#pragma warning(disable:4786)
-#endif
-
 #include <sstream>
 #include <cstring>
 #include <stdlib.h>
@@ -3116,7 +3112,7 @@ Exp* listStrToExp(std::list<std::string>* ls) {
     Exp** cur = &e;
     Exp *end = new Terminal(opNil);             // Terminate the chain
     for (std::list<std::string>::iterator it = ls->begin(); it != ls->end(); it++) {
-        *cur = new Binary(opList, new Location(opParam, new Const((char*)(*it).c_str()), nullptr), end);
+        *cur = new Binary(opList, new Location(opParam, new Const(strdup((*it).c_str())), nullptr), end);
         cur = &(*cur)->refSubExp2();
     }
     *cur = new Terminal(opNil);             // Terminate the chain

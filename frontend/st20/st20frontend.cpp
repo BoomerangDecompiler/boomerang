@@ -10,9 +10,9 @@
  */
 
 /***************************************************************************//**
- * \file       frontend/sparcfrontend.cpp
- * \brief   This file contains routines to manage the decoding of sparc
- *               instructions and the instantiation to RTLs, removing sparc
+ * \file       st20frontend.cpp
+ * \brief   This file contains routines to manage the decoding of st20
+ *               instructions and the instantiation to RTLs, removing st20
  *               dependent features such as delay slots in the process. These
  *               functions replace Frontend.cc for decoding sparc instructions.
  ******************************************************************************/

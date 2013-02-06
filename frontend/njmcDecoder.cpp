@@ -20,11 +20,8 @@
  */
 
 #include <cassert>
-#if defined(_MSC_VER) && _MSC_VER <= 1200
-#pragma warning(disable:4786)
-#endif
-
 #include <stdarg.h>            // For varargs
+#include <cstring>
 #include "rtl.h"
 #include "decoder.h"
 #include "exp.h"
@@ -34,10 +31,7 @@
 #include "prog.h"
 #include "BinaryFile.h"
 #include "boomerang.h"
-// For some reason, MSVC 5.00 complains about use of undefined types a lot
-#if defined(_MSC_VER) && _MSC_VER <= 1100
-#include "signature.h"        // For MSVC 5.00
-#endif
+#include "util.h"
 
 /**********************************
  * NJMCDecoder methods.
@@ -124,7 +118,7 @@ Exp* NJMCDecoder::instantiateNamedParam(char* name, ...) {
     va_list args;
     va_start(args,name);
     for( std::list<std::string>::iterator it = ent.params.begin(); it != ent.params.end(); it++ ) {
-        Exp* formal = new Location(opParam, new Const((char*)it->c_str()), nullptr);
+        Exp* formal = new Location(opParam, new Const(strdup(it->c_str())), nullptr);
         Exp* actual = va_arg(args, Exp*);
         bool change;
         result = result->searchReplaceAll(formal, actual, change);
@@ -159,7 +153,7 @@ void NJMCDecoder::substituteCallArgs(char *name, Exp*& exp, ...)
     va_list args;
     va_start(args, exp);
     for (std::list<std::string>::iterator it = ent.funcParams.begin(); it != ent.funcParams.end(); it++) {
-        Exp* formal = new Location(opParam, new Const((char*)it->c_str()), nullptr);
+        Exp* formal = new Location(opParam, new Const(strdup(it->c_str())), nullptr);
         Exp* actual = va_arg(args, Exp*);
         bool change;
         exp = exp->searchReplaceAll(formal, actual, change);
@@ -197,23 +191,23 @@ Exp* NJMCDecoder::dis_Reg(int regNum)
 }
 
 /***************************************************************************//**
- * FUNCTION:        NJMCDecoder::dis_Num
  * \brief        Converts a number to a Exp* expression.
  * PARAMETERS:        num - a number
  * \returns             the Exp* representation of the given number
  ******************************************************************************/
-Exp* NJMCDecoder::dis_Num(unsigned num)
-{
-    Exp* expr = new Const((int)num); //TODO: what about signed values ?
+Exp* NJMCDecoder::dis_Num(unsigned num) {
+    Exp* expr = new Const(num); //TODO: what about signed values ?
     return expr;
 }
 
 /***************************************************************************//**
- * FUNCTION:        NJMCDecoder::unconditionalJump
- * \brief        Process an unconditional jump instruction
- *                    Also check if the destination is a label (MVE: is this done?)
- * PARAMETERS:
- * \returns             <none>
+ * \brief   Process an unconditional jump instruction
+ *              Also check if the destination is a label (MVE: is this done?)
+ * \param   name: name of instruction (for debugging)
+ * \param   size: size of instruction in bytes
+ * \param   pc: native pc
+ * \param   stmts: list of statements (?)
+ * \param   result: ref to decoder result object
  ******************************************************************************/
 void NJMCDecoder::unconditionalJump(const char* name, int size, ADDRESS relocd, int delta, ADDRESS pc,
                                     std::list<Statement*>* stmts, DecodeResult& result) {
@@ -226,15 +220,14 @@ void NJMCDecoder::unconditionalJump(const char* name, int size, ADDRESS relocd, 
 }
 
 /***************************************************************************//**
- * FUNCTION:        NJMCDecoder::computedJump
- * \brief        Process an indirect jump instruction
- * PARAMETERS:        name: name of instruction (for debugging)
- *                    size: size of instruction in bytes
- *                    dest: destination Exp*
- *                    pc: native pc
- *                    stmts: list of statements (?)
- *                    result: ref to decoder result object
- * \returns             <none>
+ * \brief   Process an indirect jump instruction
+ * \param   name: name of instruction (for debugging)
+ * \param   size: size of instruction in bytes
+ * \param   dest: destination Exp*
+ * \param   pc: native pc
+ * \param   stmts: list of statements (?)
+ * \param   result: ref to decoder result object
+ * \returns <none>
  ******************************************************************************/
 void NJMCDecoder::computedJump(const char* name, int size, Exp* dest, ADDRESS pc, std::list<Statement*>* stmts,
                                DecodeResult& result) {

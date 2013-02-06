@@ -225,9 +225,9 @@ void Assign::rangeAnalysis(std::list<Statement*> &execution_paths) {
         if (VERBOSE && DEBUG_RANGE_ANALYSIS)
             LOG << "a_rhs is " << a_rhs << "\n";
         if (a_rhs->isMemOf() && a_rhs->getSubExp1()->isIntConst()) {
-            ADDRESS c = ADDRESS::g(((Const*)a_rhs->getSubExp1())->getInt()); //TODO: user getAddr
+            ADDRESS c = ((Const*)a_rhs->getSubExp1())->getAddr();
             if (proc->getProg()->isDynamicLinkedProcPointer(c)) {
-                char *nam = (char*)proc->getProg()->GetDynamicProcName(c);
+                const char *nam = proc->getProg()->GetDynamicProcName(c);
                 if (nam) {
                     a_rhs = new Const(nam);
                     if (VERBOSE && DEBUG_RANGE_ANALYSIS)
@@ -437,7 +437,7 @@ void CallStatement::rangeAnalysis(std::list<Statement*> &execution_paths) {
         Exp *d = output.substInto(getDest()->clone());
         if (d->isIntConst() || d->isStrConst()) {
             if (d->isIntConst()) {
-                ADDRESS dest = ADDRESS::g(((Const*)d)->getInt()); //TODO: use getAddr ?
+                ADDRESS dest = ((Const*)d)->getAddr();
                 procDest = proc->getProg()->setNewProc(dest);
             } else {
                 procDest = proc->getProg()->getLibraryProc(((Const*)d)->getStr());
@@ -2498,7 +2498,7 @@ Exp *processConstant(Exp *e, Type *t, Prog *prog, UserProc* proc, ADDRESS stmt) 
     if (e->isIntConst()) {
         if (nt && (nt->getName() == static_cast<std::string>("LPCWSTR"))) {
             ADDRESS u = ((Const*)e)->getAddr();
-            // TODO
+            // TODO: wide char string processing
             LOG << "possible wide char string at " << u << "\n";
         }
         if (t->resolvesToPointer()) {
@@ -2601,7 +2601,7 @@ bool CallStatement::objcSpecificProcessing(const char *formatStr) {
         if (formatStr) {
             int format = getNumArguments() - 1;
             int n = 1;
-            char *p = (char*)formatStr;
+            const char *p = formatStr;
             while ((p = strchr(p, ':'))) {
                 p++;    // Point past the :
                 n++;
@@ -4252,8 +4252,7 @@ bool CallStatement::definesLoc(Exp* loc) {
 // store the return type(s) for example.
 // FIXME: seems it would be cleaner to say that Return Statements don't define anything.
 bool ReturnStatement::definesLoc(Exp* loc) {
-    iterator it;
-    for (it = modifieds.begin(); it != modifieds.end(); it++) {
+    for (auto it = modifieds.begin(); it != modifieds.end(); ++it) {
         if ((*it)->definesLoc(loc))
             return true;
     }
@@ -4262,14 +4261,12 @@ bool ReturnStatement::definesLoc(Exp* loc) {
 
 // FIXME: see above
 void ReturnStatement::getDefinitions(LocationSet& ls) {
-    iterator rr;
-    for (rr = modifieds.begin(); rr != modifieds.end(); ++rr)
+    for (auto rr = modifieds.begin(); rr != modifieds.end(); ++rr)
         (*rr)->getDefinitions(ls);
 }
 
 Type* ReturnStatement::getTypeFor(Exp* e) {
-    ReturnStatement::iterator rr;
-    for (rr = modifieds.begin(); rr != modifieds.end(); rr++) {
+    for (auto rr = modifieds.begin(); rr != modifieds.end(); ++rr) {
         if (*((Assignment*)*rr)->getLeft() == *e)
             return ((Assignment*)*rr)->getType();
     }
@@ -4277,14 +4274,13 @@ Type* ReturnStatement::getTypeFor(Exp* e) {
 }
 
 void ReturnStatement::setTypeFor(Exp*e, Type* ty) {
-    ReturnStatement::iterator rr;
-    for (rr = modifieds.begin(); rr != modifieds.end(); rr++) {
+    for (auto rr = modifieds.begin(); rr != modifieds.end(); ++rr) {
         if (*((Assignment*)*rr)->getLeft() == *e) {
             ((Assignment*)*rr)->setType(ty);
             break;
         }
     }
-    for (rr = returns.begin(); rr != returns.end(); rr++) {
+    for (auto rr = returns.begin(); rr != returns.end(); rr++) {
         if (*((Assignment*)*rr)->getLeft() == *e) {
             ((Assignment*)*rr)->setType(ty);
             return;
