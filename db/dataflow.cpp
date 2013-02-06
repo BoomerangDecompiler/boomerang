@@ -246,9 +246,8 @@ bool DataFlow::placePhiFunctions(UserProc* proc) {
     bool change = false;
 
     // Set the sizes of needed vectors
-    unsigned numBB = indices.size();
-    Cfg* cfg = proc->getCFG();
-    assert(numBB == cfg->getNumBBs());
+    size_t numBB = indices.size();
+    assert(numBB == proc->getCFG()->getNumBBs());
     A_orig.resize(numBB);
 
     // We need to create A_orig[n] for all n, the array of sets of locations defined at BB n

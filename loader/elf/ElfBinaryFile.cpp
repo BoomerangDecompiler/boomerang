@@ -132,7 +132,7 @@ bool ElfBinaryFile::RealLoad(const char* sName) {
     fseek(m_fd, 0, SEEK_SET);
     size_t size = fread(m_pImage, 1, m_lImageSize, m_fd);
     if (size != (size_t)m_lImageSize)
-        fprintf(stderr, "WARNING! Only read %" PRIdMAX " of %ld bytes of binary file!\n", size, m_lImageSize);
+        fprintf(stderr, "WARNING! Only read %zd of %ld bytes of binary file!\n", size, m_lImageSize);
 
     // Basic checks
     if (strncmp(m_pImage, "\x7F""ELF", 4) != 0) {

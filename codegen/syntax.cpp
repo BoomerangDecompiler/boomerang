@@ -604,8 +604,7 @@ void PretestedLoopSyntaxNode::addSuccessors(SyntaxNode *root,
     if (pBody->getNumOutEdges() == 1 && pBody->endsWithGoto()) {
         std::cerr << "successor: ignoring goto at end of body of pretested "
                   << "loop" << std::endl;
-        SyntaxNode *out = pBody->getOutEdge(root, 0);
-        assert(out->startsWith(this));
+        assert(pBody->getOutEdge(root, 0)->startsWith(this));
         SyntaxNode *n = root->clone();
         n->setDepth(root->getDepth() + 1);
         SyntaxNode *nBody = pBody->clone();

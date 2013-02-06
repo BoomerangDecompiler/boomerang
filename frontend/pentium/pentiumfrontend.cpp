@@ -9,7 +9,7 @@
  */
 
 /***************************************************************************//**
- * \file       frontend/pentiumfrontend.cpp
+ * \file       pentiumfrontend.cpp
  * \brief   This file contains routines to manage the decoding of pentium instructions and the instantiation to RTLs.
  *               These functions replace frontend.cpp for decoding pentium instructions.
  ******************************************************************************/
