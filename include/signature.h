@@ -25,7 +25,8 @@
 #endif
 
 #include <string>
-#include "exp.h"
+//#include "exp.h"
+#include "operator.h"
 #include "type.h"
 #include "sigenum.h"        // For enums platform and cc
 #include "memo.h"
@@ -35,7 +36,7 @@ class Statement;
 class StatementList;
 class BinaryFile;
 class XMLProgParser;
-
+class Exp;
 class Parameter {
 private:
         Type *type;
@@ -46,7 +47,7 @@ private:
 public:
                     Parameter(Type *type, const char *name, Exp *exp = nullptr, const char *boundMax = "") :
                     type(type), name(name), exp(exp), boundMax(boundMax)    { }
-virtual             ~Parameter() { delete type; delete exp; }
+virtual             ~Parameter();
         bool        operator==(Parameter& other);
         Parameter * clone();
 

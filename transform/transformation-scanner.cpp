@@ -63,7 +63,7 @@ int read();
 #endif
 #include <stdio.h>
 #include <cstring>
-
+#include "util.h"
 
 /*********************************************/
 /* COMPILER DEPENDENT   MACROS               */
@@ -92,7 +92,7 @@ int read();
 #endif
 /* size of default input buffer */
 #ifndef YY_BUF_SIZE
-#define YY_BUF_SIZE (YY_READ_BUF_SIZE * 2) 
+#define YY_BUF_SIZE (YY_READ_BUF_SIZE * 2)
 #endif
 
 /***********************************/
@@ -166,8 +166,8 @@ int read();
 /* default declaration of generated scanner - a define so the user can
  * easily add parameters
  */
-#define YY_DECL int yylex YY_PROTO(( void )) 
-#else 
+#define YY_DECL int yylex YY_PROTO(( void ))
+#else
 /* c++ */
 #define ECHO yy___echo()
 #define YY_INPUT(buf,result,max_size) \
@@ -183,7 +183,7 @@ int read();
 #define YY_NULL 0
 #define YY_END_OF_BUFFER_CHAR 0
 /* special action meaning "start processing a new file" */
-#define YY_NEW_FILE yy___newfile 
+#define YY_NEW_FILE yy___newfile
 /* enter a start condition.  This macro really ought to take a parameter,
  * but we do it the disgusting crufty way forced on us by the ()-less
  * definition of BEGIN
@@ -195,7 +195,7 @@ int read();
 
 
 
-/* % section 1 definitions go here */ 
+/* % section 1 definitions go here */
 #line 1 "transformation.l"
 #define INITIAL 0
 /***************************************************************************//**
@@ -276,7 +276,7 @@ struct yy_buffer_state
     YY_TransformationScanner_CHAR *yy_buf_pos;      /* current position in input buffer */
 
     /* size of input buffer in bytes, not including room for EOB characters */
-    int yy_buf_size;    
+    int yy_buf_size;
 
     /* number of characters read into yy_ch_buf, not including EOB characters */
     int yy_n_chars;
@@ -374,7 +374,7 @@ YY_TransformationScanner_CLASS::YY_TransformationScanner_CLASS(YY_Transformation
 {yy_initialize();
  YY_TransformationScanner_CONSTRUCTOR_CODE;
 }
-YY_TransformationScanner_CLASS::~YY_TransformationScanner_CLASS() 
+YY_TransformationScanner_CLASS::~YY_TransformationScanner_CLASS()
 {YY_TransformationScanner_DESTRUCTOR_CODE;
  if(YY_TransformationScanner_CURRENT_BUFFER)
   YY_TransformationScanner_DELETE_BUFFER(YY_TransformationScanner_CURRENT_BUFFER);
@@ -391,7 +391,7 @@ YY_TransformationScanner_CLASS::~YY_TransformationScanner_CLASS()
 #define YY_USER_INIT
 #endif
 
-/* % data tables for the DFA go here */ 
+/* % data tables for the DFA go here */
 #define YY_END_OF_BUFFER 74
 typedef int yy_state_type;
 static const short int yy_accept[160] =
@@ -631,15 +631,15 @@ YY_TransformationScanner_LEX_RETURN YY_TransformationScanner_CLASS::YY_Transform
     register YY_TransformationScanner_CHAR *yy_cp, *yy_bp;
     register int yy_act;
 
-/* % user's declarations go here */ 
+/* % user's declarations go here */
 
 
-/* % end of prolog */ 
+/* % end of prolog */
 #line 401 "//usr/local/lib/flexskel.cc"
 
     if ( yy_init )
     {
-     
+
      {
      YY_USER_INIT;
      }
@@ -663,7 +663,7 @@ YY_TransformationScanner_LEX_RETURN YY_TransformationScanner_CLASS::YY_Transform
 
     while ( 1 )         /* loops until end-of-file is reached */
     {
-/* % yymore()-related code goes here */ 
+/* % yymore()-related code goes here */
 #line 429 "//usr/local/lib/flexskel.cc"
     yy_cp = yy_c_buf_p;
 
@@ -675,7 +675,7 @@ YY_TransformationScanner_LEX_RETURN YY_TransformationScanner_CLASS::YY_Transform
      */
     yy_bp = yy_cp;
 
-/* % code to set up and find next match goes here */ 
+/* % code to set up and find next match goes here */
     yy_current_state = yy_start;
 yy_match:
     do
@@ -701,7 +701,7 @@ yy_match:
 #line 440 "//usr/local/lib/flexskel.cc"
 
 yy_find_action:
-/* % code to find the action number goes here */ 
+/* % code to find the action number goes here */
     yy_act = yy_accept[yy_current_state];
 #line 443 "//usr/local/lib/flexskel.cc"
 
@@ -720,7 +720,7 @@ do_action:      /* this label is used only to access EOF actions */
 #endif
         else if ( yy_act < YY_END_OF_BUFFER -1 )
 #ifndef YY_TransformationScanner_IOSTREAM
-            fprintf( yy___stderr , 
+            fprintf( yy___stderr ,
              "--accepting rule at line %d (\"%s\")\n",
              yy_rule_linenum[yy_act], yy___text );
 #else
@@ -730,7 +730,7 @@ do_action:      /* this label is used only to access EOF actions */
 #endif
         else if ( yy_act == YY_END_OF_BUFFER -1 )
 #ifndef YY_TransformationScanner_IOSTREAM
-            fprintf( yy___stderr , 
+            fprintf( yy___stderr ,
              "--accepting default rule (\"%s\")\n",
              yy___text );
 #else
@@ -753,7 +753,7 @@ do_action:      /* this label is used only to access EOF actions */
 #endif
     switch ( yy_act )
         {
-/* % actions go here */ 
+/* % actions go here */
         case 0: /* must backtrack */
         /* undo the effects of YY_DO_BEFORE_ACTION */
         *yy_cp = yy_hold_char;
@@ -1103,7 +1103,7 @@ case YY_STATE_EOF(INITIAL):
 
             else
             {
-/* % code to do backtracking for compressed tables and set up yy_cp goes here */ 
+/* % code to do backtracking for compressed tables and set up yy_cp goes here */
                 yy_cp = yy_last_accepting_cpos;
                 yy_current_state = yy_last_accepting_state;
 #line 541 "//usr/local/lib/flexskel.cc"
@@ -1183,9 +1183,9 @@ case YY_STATE_EOF(INITIAL):
  *
  * synopsis
  *     int yy_get_next_buffer();
- *     
+ *
  * returns a code representing an action
- *     EOB_ACT_LAST_MATCH - 
+ *     EOB_ACT_LAST_MATCH -
  *     EOB_ACT_CONTINUE_SCAN - continue scanning from current position
  *     EOB_ACT_END_OF_FILE - end of file
  */
@@ -1282,13 +1282,13 @@ long YY_TransformationScanner_CLASS::yy_get_previous_state_()
     register yy_state_type yy_current_state;
     register YY_TransformationScanner_CHAR *yy_cp;
 
-/* % code to get the start state into yy_current_state goes here */ 
+/* % code to get the start state into yy_current_state goes here */
     yy_current_state = yy_start;
 #line 717 "//usr/local/lib/flexskel.cc"
 
     for ( yy_cp = yy___text + YY_MORE_ADJ; yy_cp < yy_c_buf_p; ++yy_cp )
     {
-/* % code to find the next state goes here */ 
+/* % code to find the next state goes here */
     register YY_CHAR yy_c = (*yy_cp ? yy_ec[(unsigned char)*yy_cp] : 1);
     if ( yy_accept[yy_current_state] )
         {
@@ -1336,7 +1336,7 @@ long YY_TransformationScanner_CLASS::yy_try_NUL_trans_(long yy_current_state_)
     yy_state_type yy_current_state=(yy_state_type)yy_current_state_;
 #endif
     register int yy_is_jam;
-/* % code to find the next state, and perhaps do backtracking, goes here */ 
+/* % code to find the next state, and perhaps do backtracking, goes here */
     register YY_CHAR *yy_cp = yy_c_buf_p;
 
     register YY_CHAR yy_c = 1;

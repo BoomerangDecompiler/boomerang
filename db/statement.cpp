@@ -1072,7 +1072,7 @@ bool GotoStatement::search(Exp* search, Exp*& result) {
  *                    cc - ignored
  * \returns             True if any change
  ******************************************************************************/
-bool GotoStatement::searchAndReplace(Exp* search, Exp* replace, bool cc) {
+bool GotoStatement::searchAndReplace(const Exp *search, Exp* replace, bool cc) {
     bool change = false;
     if (pDest) {
         pDest = pDest->searchReplaceAll(search, replace, change);
@@ -1088,8 +1088,9 @@ bool GotoStatement::searchAndReplace(Exp* search, Exp* replace, bool cc) {
  *                             appended to it
  * \returns             true if there were any matches
  ******************************************************************************/
-bool GotoStatement::searchAll(Exp* search, std::list<Exp*> &result) {
-    if (pDest)    return pDest->searchAll(search, result);
+bool GotoStatement::searchAll(const Exp* search, std::list<Exp*> &result) {
+    if (pDest)
+        return pDest->searchAll(search, result);
     return false;
 }
 
@@ -1393,7 +1394,7 @@ bool BranchStatement::search(Exp* search, Exp*& result) {
  *                    cc - ignored
  * \returns             True if any change
  ******************************************************************************/
-bool BranchStatement::searchAndReplace(Exp* search, Exp* replace, bool cc) {
+bool BranchStatement::searchAndReplace(const Exp *search, Exp* replace, bool cc) {
     GotoStatement::searchAndReplace(search, replace, cc);
     bool change = false;
     if (pCond)
@@ -1402,15 +1403,15 @@ bool BranchStatement::searchAndReplace(Exp* search, Exp* replace, bool cc) {
 }
 
 /***************************************************************************//**
- * FUNCTION:        BranchStatement::searchAll
- * \brief        Find all instances of the search expression
- * PARAMETERS:        search - a location to search for
- *                    result - a list which will have any matching exprs
- *                             appended to it
- * \returns             true if there were any matches
+ * \brief   Find all instances of the search expression
+ * \param   search - a location to search for
+ * \param   result - a list which will have any matching exprs
+ *          appended to it
+ * \returns true if there were any matches
  ******************************************************************************/
-bool BranchStatement::searchAll(Exp* search, std::list<Exp*> &result) {
-    if (pCond) return pCond->searchAll(search, result);
+bool BranchStatement::searchAll(const Exp* search, std::list<Exp*> &result) {
+    if (pCond)
+        return pCond->searchAll(search, result);
     return false;
 }
 
@@ -1529,14 +1530,14 @@ bool condToRelational(Exp*& pCond, BRANCH_TYPE jtCond) {
             case BRANCH_JUG:   op = opGtrUns; break;
             case BRANCH_JMI:
                 /*     pCond
-                                         /      \
-                                Const       opList
-                                "SUBFLAGS"    /    \
-                                                   P1    opList
-                                                                 /     \
-                                                                P2    opList
-                                                                         /     \
-                                                                        P3     opNil */
+                        /      \
+                    Const       opList
+     "SUBFLAGS"    /    \
+                 P1    opList
+                       /     \
+                     P2    opList
+                            /     \
+                          P3     opNil */
                 pCond = new Binary(opLess,            // P3 < 0
                                    pCond->getSubExp2()->getSubExp2()->getSubExp2()->getSubExp1()->clone(),
                                    new Const(0));
@@ -1815,7 +1816,7 @@ void CaseStatement::setSwitchInfo(SWITCH_INFO* psi) {
  *                    cc - ignored
  * \returns             True if any change
  ******************************************************************************/
-bool CaseStatement::searchAndReplace(Exp* search, Exp* replace, bool cc) {
+bool CaseStatement::searchAndReplace(const Exp *search, Exp* replace, bool cc) {
     bool ch = GotoStatement::searchAndReplace(search, replace, cc);
     bool ch2 = false;
     if (pSwitchInfo && pSwitchInfo->pSwitchVar)
@@ -1831,7 +1832,7 @@ bool CaseStatement::searchAndReplace(Exp* search, Exp* replace, bool cc) {
  * NOTES:            search can't easily be made const
  * \returns             true if there were any matches
  ******************************************************************************/
-bool CaseStatement::searchAll(Exp* search, std::list<Exp*> &result) {
+bool CaseStatement::searchAll(const Exp* search, std::list<Exp*> &result) {
     return GotoStatement::searchAll(search, result) ||
             ( pSwitchInfo && pSwitchInfo->pSwitchVar && pSwitchInfo->pSwitchVar->searchAll(search, result) );
 }
@@ -2067,7 +2068,7 @@ bool CallStatement::search(Exp* search, Exp*& result) {
  *                    cc - true to replace in collectors
  * \returns             True if any change
  ******************************************************************************/
-bool CallStatement::searchAndReplace(Exp* search, Exp* replace, bool cc) {
+bool CallStatement::searchAndReplace(const Exp *search, Exp* replace, bool cc) {
     bool change = GotoStatement::searchAndReplace(search, replace, cc);
     StatementList::iterator ss;
     // FIXME: MVE: Check if we ever want to change the LHS of arguments or defines...
@@ -2090,7 +2091,7 @@ bool CallStatement::searchAndReplace(Exp* search, Exp* replace, bool cc) {
  *                    result - a list which will have any matching exprs appended to it
  * \returns             true if there were any matches
  ******************************************************************************/
-bool CallStatement::searchAll(Exp* search, std::list<Exp *>& result) {
+bool CallStatement::searchAll(const Exp* search, std::list<Exp *>& result) {
     bool found = GotoStatement::searchAll(search, result);
     StatementList::iterator ss;
     for (ss = defines.begin(); ss != defines.end(); ++ss) {
@@ -2905,7 +2906,7 @@ bool ReturnStatement::search(Exp* search, Exp*& result) {
     return false;
 }
 
-bool ReturnStatement::searchAndReplace(Exp* search, Exp* replace, bool cc) {
+bool ReturnStatement::searchAndReplace(const Exp *search, Exp* replace, bool cc) {
     bool change = false;
     ReturnStatement::iterator rr;
     for (rr = begin(); rr != end(); ++rr)
@@ -2918,7 +2919,7 @@ bool ReturnStatement::searchAndReplace(Exp* search, Exp* replace, bool cc) {
     return change;
 }
 
-bool ReturnStatement::searchAll(Exp* search, std::list<Exp *>& result) {
+bool ReturnStatement::searchAll(const Exp* search, std::list<Exp *>& result) {
     bool found = false;
     ReturnStatement::iterator rr;
     for (rr = begin(); rr != end(); ++rr) {
@@ -3112,7 +3113,7 @@ bool BoolAssign::search(Exp *search, Exp *&result) {
     return pCond->search(search, result);
 }
 
-bool BoolAssign::searchAll(Exp* search, std::list<Exp*>& result) {
+bool BoolAssign::searchAll(const Exp* search, std::list<Exp*>& result) {
     bool ch = false;
     assert(lhs);
     if (lhs->searchAll(search, result)) ch = true;
@@ -3120,7 +3121,7 @@ bool BoolAssign::searchAll(Exp* search, std::list<Exp*>& result) {
     return pCond->searchAll(search, result) || ch;
 }
 
-bool BoolAssign::searchAndReplace(Exp *search, Exp *replace, bool cc) {
+bool BoolAssign::searchAndReplace(const Exp *search, Exp *replace, bool cc) {
     bool chl, chr;
     assert(pCond);
     assert(lhs);
@@ -3429,7 +3430,7 @@ bool ImplicitAssign::search(Exp* search, Exp*& result) {
     return lhs->search(search, result);
 }
 
-bool Assign::searchAll(Exp* search, std::list<Exp*>& result) {
+bool Assign::searchAll(const Exp* search, std::list<Exp*>& result) {
     bool res;
     std::list<Exp*> leftResult;
     std::list<Exp*>::iterator it;
@@ -3441,14 +3442,14 @@ bool Assign::searchAll(Exp* search, std::list<Exp*>& result) {
     return res;
 }
 // FIXME: is this the right semantics for searching a phi statement, disregarding the RHS?
-bool PhiAssign::searchAll(Exp* search, std::list<Exp*>& result) {
+bool PhiAssign::searchAll(const Exp* search, std::list<Exp*>& result) {
     return lhs->searchAll(search, result);
 }
-bool ImplicitAssign::searchAll(Exp* search, std::list<Exp*>& result) {
+bool ImplicitAssign::searchAll(const Exp* search, std::list<Exp*>& result) {
     return lhs->searchAll(search, result);
 }
 
-bool Assign::searchAndReplace(Exp* search, Exp* replace, bool cc) {
+bool Assign::searchAndReplace(const Exp *search, Exp* replace, bool cc) {
     bool chl, chr, chg = false;
     lhs = lhs->searchReplaceAll(search, replace, chl);
     rhs = rhs->searchReplaceAll(search, replace, chr);
@@ -3456,7 +3457,7 @@ bool Assign::searchAndReplace(Exp* search, Exp* replace, bool cc) {
         guard = guard->searchReplaceAll(search, replace, chg);
     return chl | chr | chg;
 }
-bool PhiAssign::searchAndReplace(Exp* search, Exp* replace, bool cc) {
+bool PhiAssign::searchAndReplace(const Exp *search, Exp* replace, bool cc) {
     bool change;
     lhs = lhs->searchReplaceAll(search, replace, change);
     std::vector<PhiInfo>::iterator it;
@@ -3470,7 +3471,7 @@ bool PhiAssign::searchAndReplace(Exp* search, Exp* replace, bool cc) {
     }
     return change;
 }
-bool ImplicitAssign::searchAndReplace(Exp* search, Exp* replace, bool cc) {
+bool ImplicitAssign::searchAndReplace(const Exp *search, Exp* replace, bool cc) {
     bool change;
     lhs = lhs->searchReplaceAll(search, replace, change);
     return change;
@@ -5014,10 +5015,10 @@ bool    ImpRefStatement::search(Exp* search, Exp*& result) {
     result = nullptr;
     return addressExp->search(search, result);
 }
-bool    ImpRefStatement::searchAll(Exp* search, std::list<Exp*, std::allocator<Exp*> >& result) {
+bool    ImpRefStatement::searchAll(const Exp* search, std::list<Exp*, std::allocator<Exp*> >& result) {
     return addressExp->searchAll(search, result);
 }
-bool    ImpRefStatement::searchAndReplace(Exp* search, Exp* replace, bool cc) {
+bool    ImpRefStatement::searchAndReplace(const Exp *search, Exp* replace, bool cc) {
     bool change;
     addressExp = addressExp->searchReplaceAll(search, replace, change);
     return change;

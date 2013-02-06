@@ -33,10 +33,10 @@
 #include "signature.h"
 #include "exp.h"
 #include "prog.h"
-#include "util.h"
 #include "visitor.h"
 #include "log.h"
 #include "proc.h"
+#include "util.h"
 #if defined(_MSC_VER) && _MSC_VER >= 1400
 #pragma warning(disable:4996)        // Warnings about e.g. _strdup deprecated in VS 2005
 #endif
@@ -52,7 +52,7 @@ int max(int a, int b) {        // Faster to write than to find the #include for
 #define DFA_ITER_LIMIT 20
 
 // idx + K; leave idx wild
-static Exp* unscaledArrayPat = new Binary(opPlus,
+static const Exp* unscaledArrayPat = new Binary(opPlus,
                                           new Terminal(opWild),
                                           new Terminal(opWildIntConst));
 
@@ -79,9 +79,9 @@ void UserProc::dfaTypeAnalysis() {
     getStatements(stmts);
     StatementList::iterator it;
     int iter;
-    for (iter = 1; iter <= DFA_ITER_LIMIT; iter++) {
+    for (iter = 1; iter <= DFA_ITER_LIMIT; ++iter) {
         ch = false;
-        for (it = stmts.begin(); it != stmts.end(); it++) {
+        for (it = stmts.begin(); it != stmts.end(); ++it) {
             if (++progress >= 2000) {
                 progress = 0;
                 std::cerr << "t" << std::flush;
@@ -104,7 +104,7 @@ void UserProc::dfaTypeAnalysis() {
     if (DEBUG_TA) {
         LOG << "\n ### results for data flow based type analysis for " << getName() << " ###\n";
         LOG << iter << " iterations\n";
-        for (it = stmts.begin(); it != stmts.end(); it++) {
+        for (it = stmts.begin(); it != stmts.end(); ++it) {
             Statement* s = *it;
             LOG << s << "\n";               // Print the statement; has dest type
             // Now print type for each constant in this Statement
@@ -113,22 +113,23 @@ void UserProc::dfaTypeAnalysis() {
             s->findConstants(lc);
             if (lc.size()) {
                 LOG << "       ";
-                for (cc = lc.begin(); cc != lc.end(); cc++)
+                for (cc = lc.begin(); cc != lc.end(); ++cc)
                     LOG << (*cc)->getType()->getCtype() << " " << *cc << "  ";
                 LOG << "\n";
             }
             // If s is a call, also display its return types
-            if (s->isCall()) {
-                CallStatement* call = (CallStatement*)s;
+            CallStatement* call = dynamic_cast<CallStatement*>(s);
+            if (s->isCall() && call) {
                 ReturnStatement* rs = call->getCalleeReturn();
-                if (rs == nullptr) continue;
+                if (rs == nullptr)
+                    continue;
                 UseCollector* uc = call->getUseCollector();
                 ReturnStatement::iterator rr;
                 bool first = true;
                 for (rr = rs->begin(); rr != rs->end(); ++rr) {
                     // Intersect the callee's returns with the live locations at the call, i.e. make sure that they
                     // exist in *uc
-                    Exp* lhs = ((Assignment*)*rr)->getLeft();
+                    Exp* lhs = dynamic_cast<Assignment*>(*rr)->getLeft();
                     if (!uc->exists(lhs))
                         continue;   // Intersection fails
                     if (first)
@@ -158,15 +159,15 @@ void UserProc::dfaTypeAnalysis() {
 
     Boomerang::get()->alert_decompile_debug_point(this, "before other uses of dfa type analysis");
 
-    Prog* prog = getProg();
-    for (it = stmts.begin(); it != stmts.end(); it++) {
+    Prog* _prog = getProg();
+    for (it = stmts.begin(); it != stmts.end(); ++it) {
         Statement* s = *it;
 
         // 1) constants
         std::list<Const*>lc;
         s->findConstants(lc);
         std::list<Const*>::iterator cc;
-        for (cc = lc.begin(); cc != lc.end(); cc++) {
+        for (cc = lc.begin(); cc != lc.end(); ++cc) {
             Const* con = (Const*)*cc;
             Type* t = con->getType();
             int val = con->getInt();
@@ -176,7 +177,7 @@ void UserProc::dfaTypeAnalysis() {
                 if (baseType->resolvesToChar()) {
                     // Convert to a string    MVE: check for read-only?
                     // Also, distinguish between pointer to one char, and ptr to many?
-                    const char* str = prog->getStringConstant(ADDRESS::g(val), true);
+                    const char* str = _prog->getStringConstant(ADDRESS::g(val), true);
                     if (str) {
                         // Make a string
                         con->setStr(str);
@@ -184,10 +185,10 @@ void UserProc::dfaTypeAnalysis() {
                     }
                 } else if (baseType->resolvesToInteger() || baseType->resolvesToFloat() || baseType->resolvesToSize()) {
                     ADDRESS addr = ADDRESS::g(con->getInt()); //TODO: use getAddr
-                    prog->globalUsed(addr, baseType);
-                    const char *gloName = prog->getGlobalName(addr);
+                    _prog->globalUsed(addr, baseType);
+                    const char *gloName = _prog->getGlobalName(addr);
                     if (gloName) {
-                        ADDRESS r = addr - prog->getGlobalAddr((char*)gloName);
+                        ADDRESS r = addr - _prog->getGlobalAddr((char*)gloName);
                         Exp *ne;
                         if (!r.isZero()) { //TODO: what if r is NO_ADDR ?
                             Location *g = Location::global(strdup(gloName), this);
@@ -196,11 +197,12 @@ void UserProc::dfaTypeAnalysis() {
                                                 new Unary(opAddrOf, g),
                                                 new Const(r)), this);
                         } else {
-                            Type *ty = prog->getGlobalType((char*)gloName);
-                            if (s->isAssign() && ((Assign*)s)->getType()) {
-                                int bits = ((Assign*)s)->getType()->getSize();
+                            Type *ty = _prog->getGlobalType((char*)gloName);
+                            Assign *assgn = dynamic_cast<Assign*>(s);
+                            if (s->isAssign() && assgn->getType()) {
+                                int bits = assgn->getType()->getSize();
                                 if (ty == nullptr || ty->getSize() == 0)
-                                    prog->setGlobalType((char*)gloName, new IntegerType(bits));
+                                    _prog->setGlobalType((char*)gloName, new IntegerType(bits));
                             }
                             Location *g = Location::global(strdup(gloName), this);
                             if (ty && ty->resolvesToArray())
@@ -226,7 +228,7 @@ void UserProc::dfaTypeAnalysis() {
                         Exp* idx = ((Binary*)*rr)->getSubExp1();
                         Exp* arr = new Unary(opAddrOf,
                                              new Binary(opArrayIndex,
-                                                        Location::global(prog->getGlobalName(K), this),
+                                                        Location::global(_prog->getGlobalName(K), this),
                                                         idx));
                         // Beware of changing expressions in implicit assignments... map can become invalid
                         bool isImplicit = s->isImplicit();
@@ -240,7 +242,7 @@ void UserProc::dfaTypeAnalysis() {
                             cfg->findImplicitAssign(((ImplicitAssign*)s)->getLeft());
                         // Ensure that the global is declared
                         // Ugh... I think that arrays and pointers to arrays are muddled!
-                        prog->globalUsed(K, baseType);
+                        _prog->globalUsed(K, baseType);
                     }
                 }
             } else if (t->resolvesToFloat()) {
@@ -254,15 +256,15 @@ void UserProc::dfaTypeAnalysis() {
                 }
                 // MVE: more work if double?
             } else /* if (t->resolvesToArray()) */ {
-                prog->globalUsed(ADDRESS::g(val), t);
+                _prog->globalUsed(ADDRESS::g(val), t);
             }
         }
 
         // 2) Search for the scaled array pattern and replace it with an array use m[idx*K1 + K2]
-        dfa_analyze_scaled_array_ref(s, prog);
+        dfa_analyze_scaled_array_ref(s, _prog);
 
         // 3) Check implicit assigns for parameter and global types.
-        dfa_analyze_implict_assigns(s, prog);
+        dfa_analyze_implict_assigns(s, _prog);
 
         // 4) Add the locals (soon globals as well) to the localTable, to sort out the overlaps
         if (s->isTyping()) {
@@ -289,7 +291,7 @@ void UserProc::dfaTypeAnalysis() {
                     typeExp = typeExp->asPointer()->getPointsTo();
                 }
             }
-            if (addrExp && signature->isAddrOfStackLocal(prog, addrExp)) {
+            if (addrExp && signature->isAddrOfStackLocal(_prog, addrExp)) {
                 int addr = 0;
                 if (addrExp->getArity() == 2 && signature->isOpCompatStackLocal(addrExp->getOper())) {
                     Const* K = (Const*) ((Binary*)addrExp)->getSubExp2();

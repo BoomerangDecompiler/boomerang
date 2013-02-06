@@ -683,7 +683,7 @@ void Cfg::sortByFirstDFT() {
     m_listBB.sort(BasicBlock::lessFirstDFT);
 #else
     updateVectorBB();
-    for (std::list<PBB>::iterator it = m_listBB.begin(); it != m_listBB.end(); it++)
+    for (std::list<BasicBlock *>::iterator it = m_listBB.begin(); it != m_listBB.end(); it++)
         m_vectorBB[(*it)->m_DFTfirst-1] = *it;
     m_listBB.clear();
     for (size_t i = 0; i < m_vectorBB.size(); i++)
@@ -699,7 +699,7 @@ void Cfg::sortByLastDFT() {
     m_listBB.sort(BasicBlock::lessLastDFT);
 #else
     updateVectorBB();
-    for (std::list<PBB>::iterator it = m_listBB.begin(); it != m_listBB.end(); it++)
+    for (std::list<BasicBlock *>::iterator it = m_listBB.begin(); it != m_listBB.end(); it++)
         m_vectorBB[(*it)->m_DFTlast-1] = *it;
     m_listBB.clear();
     for (size_t i = 0; i < m_vectorBB.size(); i++)
