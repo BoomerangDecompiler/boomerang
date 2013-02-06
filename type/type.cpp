@@ -298,9 +298,9 @@ void CompoundType::setTypeAtOffset(unsigned n, Type* ty) {
             if (ty->getSize() < oldsz) {
                 types.push_back(types[types.size()-1]);
                 names.push_back(names[names.size()-1]);
-                for (unsigned n = types.size() - 1; n > i; n--) {
-                    types[n] = types[n-1];
-                    names[n] = names[n-1];
+                for (unsigned _n = types.size() - 1; _n > i; _n--) {
+                    types[_n] = types[_n-1];
+                    names[_n] = names[_n-1];
                 }
                 types[i+1] = new SizeType(oldsz - ty->getSize());
                 names[i+1] = "pad";
