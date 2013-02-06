@@ -12,7 +12,7 @@
  * 02 Sep 06 - Mike: introduced USE_XML to make it easy to disable use of the expat library
 */
 #include "config.h"
-#define VERSION "alpha 0.3.1 09/Sep/2006"
+#define VERSION "alpha 0.3.2 19/Aug/2010"
 
 #if __CYGWIN__
 #define USE_XML 0           // Cygwin has a weird problem that causes libBinaryFile.dll not to load if the expat library
@@ -90,17 +90,26 @@ Boomerang::Boomerang() : logger(nullptr), vFlag(false), printRtl(false),
     loadBeforeDecompile(false), saveBeforeDecompile(false),
     noProve(false), noChangeSignatures(false), conTypeAnalysis(false), dfaTypeAnalysis(true),
     propMaxDepth(3), generateCallGraph(false), generateSymbols(false), noGlobals(false), assumeABI(false),
-    experimental(false), minsToStopAfter(0)
+    experimental(false), minsToStopAfter(0),progPath("./"),outputPath("./output/")
 {
     progPath = "./";
     outputPath = "./output/";
 }
 
 /**
- * Returns the Log object associated with the object.
+ * \returns the Log object associated with the object.
  */
 Log &Boomerang::log() {
     return *logger;
+}
+Log &Boomerang::if_verbose_log(int verbosity_level) {
+    static NullLogger null_log;
+    if(verbosity_level==2)
+        return *logger;
+    if((verbosity_level==1) && VERBOSE)
+        return *logger;
+    else
+        return null_log;
 }
 
 /**
@@ -120,7 +129,7 @@ HLLCode *Boomerang::getHLLCode(UserProc *p) {
 /**
  * Prints a short usage statement.
  */
-void Boomerang::usage() {
+void Boomerang::usage() const {
     std::cout << "Usage: boomerang [ switches ] <program>" << std::endl;
     std::cout << "boomerang -h for switch help" << std::endl;
     exit(1);
@@ -129,7 +138,7 @@ void Boomerang::usage() {
 /**
  * Prints help for the interactive mode.
  */
-void Boomerang::helpcmd() {
+void Boomerang::helpcmd() const {
     // Column 98 of this source file is column 80 of output (don't use tabs)
     //            ____.____1____.____2____.____3____.____4____.____5____.____6____.____7____.____8
     std::cout << "Available commands (for use with -k):\n";
@@ -157,7 +166,7 @@ void Boomerang::helpcmd() {
 /**
  * Prints help about the command line switches.
  */
-void Boomerang::help() {
+void Boomerang::help() const {
     std::cout << "Symbols\n";
     std::cout << "  -s <addr> <name> : Define a symbol\n";
     std::cout << "  -sf <filename>   : Read a symbol/signature file\n";
@@ -333,7 +342,7 @@ static int commandNameToID(const char *cmd) {
  * \return A value indicating what happened.
  *
  * \retval 0 Success
- * \retval 1 Faillure
+ * \retval 1 Failure
  * \retval 2 The user exited with \a quit or \a exit
  */
 int Boomerang::parseCmd(int argc, const char **argv) {
@@ -401,6 +410,7 @@ int Boomerang::parseCmd(int argc, const char **argv) {
                     return 1;
                 }
                 int indent = 0;
+                assert(dynamic_cast<UserProc*>(proc)!=0);
                 ((UserProc*)proc)->decompile(new ProcList, indent);
             } else {
                 prog->decompile();
@@ -747,7 +757,7 @@ int Boomerang::cmdLine() {
 /**
  * The main function for the command line mode. Parses switches and runs decompile(filename).
  *
- * \return Zero on success, nonzero on faillure.
+ * \returns Zero on success, nonzero on failure.
  */
 int Boomerang::commandLine(int argc, const char **argv) {
     printf("Boomerang %s\n", VERSION);        // Display a version and date (mainly for release versions)
@@ -1064,34 +1074,29 @@ bool Boomerang::setOutputDirectory(const char *path) {
  * \param prog The Prog object to add the information to.
  */
 void Boomerang::objcDecode(std::map<std::string, ObjcModule> &modules, Prog *prog) {
-    if (VERBOSE)
-        LOG << "Adding Objective-C information to Prog.\n";
+    LOG_VERBOSE(1)  << "Adding Objective-C information to Prog.\n";
     Cluster *root = prog->getRootCluster();
     for (std::map<std::string, ObjcModule>::iterator it = modules.begin(); it != modules.end(); it++) {
         ObjcModule &mod = (*it).second;
         Module *module = new Module(mod.name.c_str());
         root->addChild(module);
-        if (VERBOSE)
-            LOG << "\tModule: " << mod.name.c_str() << "\n";
+        LOG_VERBOSE(1)  << "\tModule: " << mod.name << "\n";
         for (std::map<std::string, ObjcClass>::iterator it1 = mod.classes.begin(); it1 != mod.classes.end(); it1++) {
             ObjcClass &c = (*it1).second;
             Class *cl = new Class(c.name.c_str());
             root->addChild(cl);
-            if (VERBOSE)
-                LOG << "\t\tClass: " << c.name.c_str() << "\n";
+            LOG_VERBOSE(1)  << "\t\tClass: " << c.name << "\n";
             for (std::map<std::string, ObjcMethod>::iterator it2 = c.methods.begin(); it2 != c.methods.end(); it2++) {
                 ObjcMethod &m = (*it2).second;
                 // TODO: parse :'s in names
                 Proc *p = prog->newProc(m.name.c_str(), m.addr);
                 p->setCluster(cl);
                 // TODO: decode types in m.types
-                if (VERBOSE)
-                    LOG << "\t\t\tMethod: " << m.name.c_str() << "\n";
+                LOG_VERBOSE(1)  << "\t\t\tMethod: " << m.name << "\n";
             }
         }
     }
-    if (VERBOSE)
-        LOG << "\n";
+    LOG_VERBOSE(1)  << "\n";
 }
 
 /**
@@ -1269,7 +1274,7 @@ int Boomerang::decompile(const char *fname, const char *pname) {
     time(&end);
     int hours = (int)((end-start) / 60 / 60);
     int mins = (int)((end-start) / 60 - hours * 60);
-    int secs = (int)((end-start) - hours * 60 * 60 - mins * 60);
+    int secs = (int)((end-start) - (hours * 60 * 60) - (mins * 60));
     std::cout << "completed in " << std::dec;
     if (hours)
         std::cout << hours << " hours ";
@@ -1358,5 +1363,5 @@ void Boomerang::alert_decompile_debug_point(UserProc *p, const char *description
 }
 
 const char *Boomerang::getVersionStr() {
-    return const_cast<char *>(VERSION);
+    return VERSION;
 }
