@@ -25,8 +25,7 @@
 
 #include "BinaryFile.h"
 
-class PalmBinaryFile : public BinaryFile
-{
+class PalmBinaryFile : public BinaryFile {
 public:
     PalmBinaryFile();               // Constructor
     virtual       ~PalmBinaryFile();

@@ -84,8 +84,7 @@ struct symElem {
     ADDRESS     value;
 };
 
-class HpSomBinaryFile : public BinaryFile
-{
+class HpSomBinaryFile : public BinaryFile {
 public:
     HpSomBinaryFile();          // Constructor
     virtual             ~HpSomBinaryFile();
