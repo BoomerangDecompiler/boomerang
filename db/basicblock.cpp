@@ -33,6 +33,7 @@
 #include <cassert>
 #include <algorithm>
 #include <cstring>
+#include <inttypes.h>
 #if defined(_MSC_VER) && _MSC_VER <= 1200
 #pragma warning(disable:4786)
 #endif
@@ -1562,7 +1563,7 @@ char* BasicBlock::getStmtNumber() {
     if (first)
         sprintf(ret, "%d", first->getNumber());
     else
-        sprintf(ret, "bb%x", ADDRESS::value_type(this));
+        sprintf(ret, "bb%" PRIxPTR, ADDRESS::value_type(this));
     return ret;
 }
 
@@ -2355,7 +2356,7 @@ void BasicBlock::processSwitch(UserProc* proc) {
     for (ADDRESS addr : dests) {
         char tmp[1024];
         count++;
-        sprintf(tmp, "before decoding fragment %i of %i (%x)", count, dests.size(), addr.m_value);
+        sprintf(tmp, "before decoding fragment %i of %" PRIiMAX " (%" PRIxPTR ")", count, dests.size(), addr.m_value);
         Boomerang::get()->alert_decompile_debug_point(proc, tmp);
         prog->decodeFragment(proc, addr);
     }

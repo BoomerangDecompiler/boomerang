@@ -151,7 +151,6 @@ typedef std::map<Exp*, Exp*, lessExpStar> mExpExp;
 class LibProc : public Proc {
 protected:
 friend  class XMLProgParser;
-
 public:
 
                     LibProc(Prog *prog, std::string& name, ADDRESS address);
@@ -159,10 +158,9 @@ virtual                ~LibProc();
         bool        isLib() {return true;} //!< Return true, since is a library proc
 virtual bool        isNoReturn();
 virtual Exp*        getProven(Exp* left);
-virtual Exp*        getPremised(Exp* left) {return nullptr;}   //!< Get the RHS that is premised for left
+virtual Exp*        getPremised(Exp* /*left*/) {return nullptr;}   //!< Get the RHS that is premised for left
 virtual bool        isPreserved(Exp* e);                    //!< Return whether e is preserved by this proc
         //std::ostream& put(std::ostream& os); //!< Prints this procedure to an output stream.
-
         void        getInternalStatements(StatementList &internal);
 protected:
                     LibProc() : Proc() { }

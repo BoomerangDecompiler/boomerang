@@ -75,15 +75,16 @@ int MIPSDecoder::decodeAssemblyInstruction(ADDRESS, int)
 DecodeResult& MIPSDecoder::decodeInstruction(ADDRESS pc, int delta)
 {
     static DecodeResult result;
-    ADDRESS hostPC = pc+delta;
+    //ADDRESS hostPC = pc+delta;
 
     // Clear the result structure;
     result.reset();
 
     // The actual list of instantiated statements
-    std::list<Statement*>* stmts = nullptr;
+    //std::list<Statement*>* stmts = nullptr;
+    //ADDRESS nextPC = NO_ADDRESS;
+    //Decoding goes here....
 
-    ADDRESS nextPC = NO_ADDRESS;
     return result;
 }
 

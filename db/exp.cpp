@@ -216,7 +216,8 @@ void Binary::setSubExp2(Exp* e) {
     assert(subExp1 && subExp2);
 }
 void Ternary::setSubExp3(Exp* e) {
-    if (subExp3 != 0) ;//delete subExp3;
+    if (subExp3 != 0)
+        ;//delete subExp3;
     subExp3 = e;
     assert(subExp1 && subExp2 && subExp3);
 }

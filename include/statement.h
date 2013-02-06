@@ -240,14 +240,14 @@ virtual bool        isBranch() { return kind == STMT_BRANCH; }
 
         // returns a set of locations defined by this statement
         // Classes with no definitions (e.g. GotoStatement and children) don't override this
-virtual void        getDefinitions(LocationSet &def) {}
+virtual void        getDefinitions(LocationSet &/*def*/) {}
 
         // set the left for forExp to newExp
-virtual    void        setLeftFor(Exp* forExp, Exp* newExp) {assert(0);}
-virtual bool        definesLoc(Exp* loc) {return false;}            // True if this Statement defines loc
+
+virtual bool        definesLoc(Exp* /*loc*/) {return false;}            // True if this Statement defines loc
 
     // returns true if this statement uses the given expression
-virtual bool        usesExp(Exp *e) = 0;
+virtual bool        usesExp(Exp *) = 0;
 
     // statements should be printable (for debugging)
 virtual void        print(std::ostream &os, bool html = false) const = 0;
@@ -297,10 +297,10 @@ virtual void        simplifyAddr() {}
 virtual void        fixSuccessor() {}
 
         // Generate constraints (for constraint based type analysis)
-virtual void        genConstraints(LocationSet& cons) {}
+virtual void        genConstraints(LocationSet& /*cons*/) {}
 
         // Data flow based type analysis
-virtual void        dfaTypeAnalysis(bool& ch) {}            // Use the type information in this Statement
+virtual void        dfaTypeAnalysis(bool& /*ch*/) {}            // Use the type information in this Statement
         Type *      meetWithFor(Type* ty, Exp* e, bool& ch);// Meet the type associated with e with ty
 
         // Range analysis
@@ -345,9 +345,9 @@ virtual void        rangeAnalysis(std::list<Statement*> &execution_paths);
 
         // Get the type for the definition, if any, for expression e in this statement
         // Overridden only by Assignment and CallStatement, and ReturnStatement.
-virtual    Type*        getTypeFor(Exp* e) { return nullptr;}
+virtual    Type*        getTypeFor(Exp* ) { return nullptr;}
         // Set the type for the definition of e in this Statement
-virtual    void        setTypeFor(Exp* e, Type* ty) {assert(0);}
+virtual    void        setTypeFor(Exp* , Type* ) {assert(0);}
 
 //virtual    Type*    getType() {return nullptr;}            // Assignment, ReturnStatement and
 //virtual    void    setType(Type* t) {assert(0);}        // CallStatement override
@@ -425,7 +425,7 @@ virtual bool        definesLoc(Exp* loc);                    // True if this Sta
         // get how to access this lvalue
 virtual Exp*        getLeft() { return lhs; }        // Note: now only defined for Assignments, not all Statements
 virtual const Exp * getLeft() const { return lhs; }
-virtual    void        setLeftFor(Exp* forExp, Exp* newExp) {lhs = newExp; }
+
 
         // set the lhs to something new
         void        setLeft(Exp* e)     { lhs = e; }
@@ -439,8 +439,7 @@ virtual bool        searchAll(const Exp* search, std::list<Exp*>& result) = 0;
 
         // general search and replace
 virtual bool        searchAndReplace(const Exp *search, Exp *replace, bool cc = false) = 0;
-
-        void        generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) {}
+        void        generateCode(HLLCode *, BasicBlock *, int /*indLevel*/) {}
 
         // simpify internal expressions
 virtual void        simplify() = 0;
@@ -847,19 +846,18 @@ public:
         // returns true if this statement defines anything
     bool        isDefinition() { return false; }
 
-    bool        usesExp(Exp *e) { return false; }
+    bool        usesExp(Exp *) { return false; }
 
     void        print(std::ostream &os, bool html = false) const;
 
         // general search
-    bool        search(Exp *search, Exp *&result) { return false; }
-    bool        searchAll(const Exp* search, std::list<Exp*>& result) { return false; }
+    bool        search(Exp */*search*/, Exp *&/*result*/) { return false; }
+    bool        searchAll(const Exp* /*search*/, std::list<Exp*>& /*result*/) { return false; }
 
-        // general search and replace. Set cc true to change collectors as well. Return true if any change
-    bool        searchAndReplace(const Exp *search, Exp *replace, bool cc = false) { return false; }
+                //! general search and replace. Set cc true to change collectors as well. Return true if any change
+    bool        searchAndReplace(const Exp */*search*/, Exp */*replace*/, bool /*cc*/ = false) { return false; }
 
-        // code generation
-    void        generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) { }
+    void        generateCode(HLLCode */*hll*/, BasicBlock */*pbb*/, int /*indLevel*/) { }
 
         // simpify internal expressions
     void        simplify() { }
@@ -1147,7 +1145,7 @@ virtual bool        isDefinition();
 virtual void        getDefinitions(LocationSet &defs);
 
 virtual bool        definesLoc(Exp* loc);                    // True if this Statement defines loc
-virtual void        setLeftFor(Exp* forExp, Exp* newExp);
+
         // get how to replace this statement in a use
 //virtual Exp*        getRight() { return nullptr; }
 

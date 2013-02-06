@@ -79,9 +79,7 @@ RTL::RTL(ADDRESS instNativeAddr, std::list<Statement*>* listStmt /*= nullptr*/)
  * \param        other: RTL to copy from
  ******************************************************************************/
 RTL::RTL(const RTL& other) : nativeAddr(other.nativeAddr) {
-    std::list<Statement*>::const_iterator it;
-    assert(empty());
-    for (it = other.begin(); it != other.end(); it++) {
+    for (auto it = other.begin(); it != other.end(); it++) {
         push_back((*it)->clone());
     }
 }

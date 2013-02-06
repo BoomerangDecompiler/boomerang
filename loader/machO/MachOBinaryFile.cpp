@@ -145,7 +145,8 @@ bool MachOBinaryFile::RealLoad(const char* sName) {
     sections.clear();
     std::vector<struct segment_command> segments;
     std::vector<struct nlist> symbols;
-    uint32_t startlocal, nlocal, startdef, ndef, startundef, nundef;
+    //uint32_t startundef, nundef;
+    //uint32_t  startlocal, nlocal,ndef, startdef;
     std::vector<struct section> stubs_sects;
     char *strtbl = nullptr;
     unsigned *indirectsymtbl = nullptr;
@@ -228,12 +229,13 @@ bool MachOBinaryFile::RealLoad(const char* sName) {
                         BMMH(syms.iextdefsym), BMMH(syms.nextdefsym),
                         BMMH(syms.iundefsym), BMMH(syms.nundefsym));
 #endif
-                startlocal = BMMH(syms.ilocalsym);
-                nlocal = BMMH(syms.nlocalsym);
-                startdef = BMMH(syms.iextdefsym);
-                ndef = BMMH(syms.nextdefsym);
-                startundef = BMMH(syms.iundefsym);
-                nundef = BMMH(syms.nundefsym);
+                //TODO: find uses for values below
+                // startlocal = BMMH(syms.ilocalsym);
+                // nlocal = BMMH(syms.nlocalsym);
+                // startdef = BMMH(syms.iextdefsym);
+                // ndef = BMMH(syms.nextdefsym);
+                //startundef = BMMH(syms.iundefsym);
+                //nundef = BMMH(syms.nundefsym);
 
 #ifdef DEBUG_MACHO_LOADER
                 fprintf(stdout, "dysymtab has %i indirect symbols: ", BMMH(syms.nindirectsyms));

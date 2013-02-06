@@ -60,28 +60,28 @@ class ObjcModule;
 class Watcher {
 public:
         Watcher() { }
-virtual    ~Watcher() { };                            // Prevent gcc4 warning
+virtual    ~Watcher() { }                            // Prevent gcc4 warning
 
 virtual void        alert_complete() { }
-virtual void        alert_new(Proc *p) { }
-virtual void        alert_remove(Proc *p) { }
-virtual void        alert_update_signature(Proc *p) { }
-virtual void        alert_decode(ADDRESS pc, int nBytes) { }
-virtual void        alert_baddecode(ADDRESS pc) { }
-virtual void        alert_start_decode(ADDRESS start, int nBytes) { }
+virtual void        alert_new(Proc *) { }
+virtual void        alertRemove(Proc *) { }
+virtual void        alert_update_signature(Proc *) { }
+virtual void        alert_decode(ADDRESS /*pc*/, int /*nBytes*/) { }
+virtual void        alert_baddecode(ADDRESS /*pc*/) { }
+virtual void        alert_start_decode(ADDRESS /*start*/, int /*nBytes*/) { }
 virtual void        alert_end_decode() { }
-virtual void        alert_decode(Proc *p, ADDRESS pc, ADDRESS last, int nBytes) { }
-virtual void        alert_start_decompile(UserProc *p) { }
-virtual void        alert_proc_status_change(UserProc *p) { }
-virtual void        alert_decompile_SSADepth(UserProc *p, int depth) { }
-virtual void        alert_decompile_beforePropagate(UserProc *p, int depth) { }
-virtual void        alert_decompile_afterPropagate(UserProc *p, int depth) { }
-virtual void        alert_decompile_afterRemoveStmts(UserProc *p, int depth) { }
-virtual void        alert_end_decompile(UserProc *p) { }
-virtual void        alert_load(Proc *p) { }
-virtual void        alert_considering(Proc *parent, Proc *p) { }
-virtual void        alert_decompiling(UserProc *p) { }
-virtual void        alert_decompile_debug_point(UserProc *p, const char *description) { }
+virtual void        alert_decode(Proc *, ADDRESS /*pc*/, ADDRESS /*last*/, int /*nBytes*/) { }
+virtual void        alert_start_decompile(UserProc *) { }
+virtual void        alert_proc_status_change(UserProc *) { }
+virtual void        alert_decompile_SSADepth(UserProc *, int /*depth*/) { }
+virtual void        alert_decompile_beforePropagate(UserProc *, int /*depth*/) { }
+virtual void        alert_decompile_afterPropagate(UserProc *, int /*depth*/) { }
+virtual void        alert_decompile_afterRemoveStmts(UserProc *, int /*depth*/) { }
+virtual void        alert_end_decompile(UserProc *) { }
+virtual void        alert_load(Proc *) { }
+virtual void        alert_considering(Proc */*parent*/, Proc *) { }
+virtual void        alert_decompiling(UserProc *) { }
+virtual void        alert_decompile_debug_point(UserProc *, const char */*description*/) { }
 };
 
 /**
@@ -158,9 +158,9 @@ static const char * getVersionStr();
                             (*it)->alert_new(p);
                     }
         /// Alert the watchers we have removed a %Proc.
-        void        alert_remove(Proc *p) {
+        void        alertRemove(Proc *p) {
                         for (std::set<Watcher*>::iterator it = watchers.begin(); it != watchers.end(); it++)
-                            (*it)->alert_remove(p);
+                            (*it)->alertRemove(p);
                     }
         /// Alert the watchers we have updated this Procs signature
         void        alert_update_signature(Proc *p) {
@@ -258,36 +258,36 @@ virtual void        alert_decompile_debug_point(UserProc *p, const char *descrip
         bool        debugSwitch;
         bool        noParameterNames;
         bool        debugLiveness;
-        bool        stopAtDebugPoints;
-        bool        debugTA;
+        bool        stopAtDebugPoints   = false;
+        bool        debugTA             = false;
+        /// When true, attempt to decode main, all children, and all procs.
+        /// \a decodeMain is set when there are no -e or -E switches given
+        bool        decodeMain          = true;
+        bool        printAST            = false;
+        bool        dumpXML             = false;
+        bool        noRemoveReturns     = false;
+        bool        debugDecoder        = false;
+        bool        decodeThruIndCall   = false;
+        std::ofstream* ofsIndCallReport = nullptr;
+        bool        noDecodeChildren    = false;
+        bool        debugProof          = false;
+        bool        debugUnused         = false;
+        bool        loadBeforeDecompile = false;
+        bool        saveBeforeDecompile = false;
+        bool        noProve             = false;
+        bool        noChangeSignatures  = false;
+        bool        conTypeAnalysis     = false;
+        bool        dfaTypeAnalysis     = true;
+        int         propMaxDepth        = 3;    ///< Max depth of expression that'll be propagated to more than one dest
+        bool        generateCallGraph   = false;
+        bool        generateSymbols     = false;
+        bool        noGlobals           = false;
+        bool        assumeABI           = false;///< Assume ABI compliance
+        bool        experimental        = false;///< Activate experimental code. Caution!
+        int         minsToStopAfter     = 0;
         std::vector<ADDRESS> entrypoints;   /// A vector which contains all know entrypoints for the Prog.
         std::vector<std::string> symbolFiles;   /// A vector containing the names off all symbolfiles to load.
         std::map<ADDRESS, std::string> symbols; /// A map to find a name by a given address.
-        /// When true, attempt to decode main, all children, and all procs.
-        /// \a decodeMain is set when there are no -e or -E switches given
-        bool        decodeMain;
-        bool        printAST;
-        bool        dumpXML;
-        bool        noRemoveReturns;
-        bool        debugDecoder;
-        bool        decodeThruIndCall;
-        std::ofstream* ofsIndCallReport;
-        bool        noDecodeChildren;
-        bool        debugProof;
-        bool        debugUnused;
-        bool        loadBeforeDecompile;
-        bool        saveBeforeDecompile;
-        bool        noProve;
-        bool        noChangeSignatures;
-        bool        conTypeAnalysis;
-        bool        dfaTypeAnalysis;
-        int            propMaxDepth;        ///< Max depth of expression that will be propagated to more than one dest
-        bool        generateCallGraph;
-        bool        generateSymbols;
-        bool        noGlobals;
-        bool        assumeABI;            ///< Assume ABI compliance
-        bool        experimental;        ///< Activate experimental code. Caution!
-        int            minsToStopAfter;
 };
 
 #define VERBOSE                (Boomerang::get()->vFlag)

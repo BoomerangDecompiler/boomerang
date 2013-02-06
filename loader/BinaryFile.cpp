@@ -95,39 +95,39 @@ SectionInfo * BinaryFile::GetSectionInfoByName(const char* sName) {
 // Overridden if reqd//
 ///////////////////////
 //! Lookup the address, return the name, or 0 if not found
-const char* BinaryFile::SymbolByAddress(ADDRESS uNative) {
+const char* BinaryFile::SymbolByAddress(ADDRESS /*uNative*/) {
     return 0;        // Overridden by subclasses that support syms
 }
 //! Lookup the name, return the address. If not found, return NO_ADDRESS
-ADDRESS BinaryFile::GetAddressByName(const char* pName, bool bNoTypeOK) {
+ADDRESS BinaryFile::GetAddressByName(const char* /*pName*/, bool /*bNoTypeOK*/) {
     return ADDRESS::g(0L);
 }
 //! Lookup the name, return the size
-int BinaryFile::GetSizeByName(const char* pName, bool bNoTypeOK) {
+int BinaryFile::GetSizeByName(const char* /*pName*/, bool /*bNoTypeOK*/) {
     return 0;
 }
 
-bool BinaryFile::IsDynamicLinkedProc(ADDRESS uNative) {
+bool BinaryFile::IsDynamicLinkedProc(ADDRESS /*uNative*/) {
     return false;
 }
 
-bool BinaryFile::IsStaticLinkedLibProc(ADDRESS uNative) {
+bool BinaryFile::IsStaticLinkedLibProc(ADDRESS /*uNative*/) {
     return false;
 }
 
-bool BinaryFile::IsDynamicLinkedProcPointer(ADDRESS uNative) {
+bool BinaryFile::IsDynamicLinkedProcPointer(ADDRESS /*uNative*/) {
     return false;
 }
 
-ADDRESS BinaryFile::IsJumpToAnotherAddr(ADDRESS uNative) {
+ADDRESS BinaryFile::IsJumpToAnotherAddr(ADDRESS /*uNative*/) {
     return NO_ADDRESS;
 }
 
-const char *BinaryFile::GetDynamicProcName(ADDRESS uNative) {
+const char *BinaryFile::GetDynamicProcName(ADDRESS /*uNative*/) {
     return "dynamic";
 }
 
-bool BinaryFile::DisplayDetails(const char* fileName, FILE* f /* = stdout */) {
+bool BinaryFile::DisplayDetails(const char* /*fileName*/, FILE* /*f*/ /* = stdout */) {
     return false;            // Should always be overridden
     // Should display file header, program
     // headers and section headers, as well

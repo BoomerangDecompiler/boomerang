@@ -222,9 +222,9 @@ static    Exp*        getReturnExp2(BinaryFile* pBF);
 static    StatementList& getStdRetStmt(Prog* prog);
 
         // get anything that can be proven as a result of the signature
-virtual Exp *       getProven(Exp *left) { return nullptr; }
-virtual bool        isPreserved(Exp* e) { return false; }        // Return whether e is preserved by this proc
-virtual void        setLibraryDefines(StatementList* defs) {}    // Set the locations defined by library calls
+virtual Exp *       getProven(Exp */*left*/) { return nullptr; }
+virtual bool        isPreserved(Exp* /*e*/) { return false; }        // Return whether e is preserved by this proc
+virtual void        setLibraryDefines(StatementList* /*defs*/) {}    // Set the locations defined by library calls
 static  void        setABIdefines(Prog* prog, StatementList* defs);
 
         // Return true if this is a known machine (e.g. SparcSignature as opposed to Signature)
@@ -240,25 +240,25 @@ virtual platform        getPlatform() { return PLAT_GENERIC; }
 virtual callconv        getConvention() { return CONV_NONE; }
 
         // prefered format
-        void        setPreferedReturn(Type *ty) { preferedReturn = ty; }
-        void        setPreferedName(const char *nam) { preferedName = nam; }
-        void        addPreferedParameter(int n) { preferedParams.push_back(n); }
-        Type        *getPreferedReturn() { return preferedReturn; }
-        const char    *getPreferedName() { return preferedName.c_str(); }
-        unsigned int getNumPreferedParams() { return preferedParams.size(); }
-        int            getPreferedParam(int n) { return preferedParams[n]; }
+        void            setPreferedReturn(Type *ty) { preferedReturn = ty; }
+        void            setPreferedName(const char *nam) { preferedName = nam; }
+        void            addPreferedParameter(int n) { preferedParams.push_back(n); }
+        Type *          getPreferedReturn() { return preferedReturn; }
+        const char *    getPreferedName() { return preferedName.c_str(); }
+        unsigned int    getNumPreferedParams() { return preferedParams.size(); }
+        int             getPreferedParam(int n) { return preferedParams[n]; }
 
         // A compare function for arguments and returns. Used for sorting returns in calcReturn() etc
-virtual    bool        argumentCompare(Assignment& a, Assignment& b);
-virtual    bool        returnCompare(Assignment& a, Assignment& b);
+virtual bool            argumentCompare(Assignment& a, Assignment& b);
+virtual bool            returnCompare(Assignment& a, Assignment& b);
 
 
 protected:
         friend class XMLProgParser;
-                    Signature() : name(""), rettype(nullptr), ellipsis(false), preferedReturn(nullptr), preferedName("") { }
-        void        appendParameter(Parameter *p) { params.push_back(p); }
+                        Signature() : name(""), rettype(nullptr), ellipsis(false), preferedReturn(nullptr), preferedName("") { }
+        void            appendParameter(Parameter *p) { params.push_back(p); }
         //void        appendImplicitParameter(ImplicitParameter *p) { implicitParams.push_back(p); }
-        void        appendReturn(Return *r) { returns.push_back(r); }
+        void            appendReturn(Return *r) { returns.push_back(r); }
 };    // class Signature
 
 class CustomSignature : public Signature {

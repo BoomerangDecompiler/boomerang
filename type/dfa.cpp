@@ -1199,9 +1199,10 @@ void Unary::descendType(Type* parentType, bool& ch, Statement* s) {
                         CompoundType* ct = l1Type->asPointer()->asCompound();
                         if (ct->isGeneric())
                             ct->updateGenericMember(K, parentType, ch);
-                        else
+                        else {
                             // would like to force a simplify here; I guess it will happen soon enough
                             ;
+                        }
                     } else {
                         // Need to create a generic stuct with a least one member at offset K
                         CompoundType* ct = new CompoundType(true);

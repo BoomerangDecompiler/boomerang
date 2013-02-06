@@ -127,49 +127,49 @@ virtual void    print(std::ostream &os) = 0;
 
 class SyntaxNode {
 protected:
-        BasicBlock *        pbb;
-        int        nodenum;
-        int        score;
+        BasicBlock *pbb;
+        int         nodenum;
+        int         score;
         SyntaxNode *correspond; // corresponding node in previous state
-        bool    notGoto;
-        int        depth;
+        bool        notGoto;
+        int         depth;
 
 public:
-                SyntaxNode();
-virtual         ~SyntaxNode();
+                    SyntaxNode();
+virtual             ~SyntaxNode();
 
-virtual bool    isBlock() { return false; }
-virtual bool    isGoto();
-virtual bool    isBranch();
+virtual bool        isBlock() { return false; }
+virtual bool        isGoto();
+virtual bool        isBranch();
 
-virtual void    ignoreGoto() { };
+virtual void        ignoreGoto() { }
 
-virtual int        getNumber() { return nodenum; }
+virtual int         getNumber() { return nodenum; }
 
-        BasicBlock *        getBB() { return pbb; }
-        void    setBB(BasicBlock * bb) { pbb = bb; }
+        BasicBlock *getBB() { return pbb; }
+        void        setBB(BasicBlock * bb) { pbb = bb; }
 
-virtual int        getNumOutEdges() = 0;
+virtual int         getNumOutEdges() = 0;
 virtual SyntaxNode *getOutEdge(SyntaxNode *root, int n) = 0;
-virtual bool    endsWithGoto() = 0;
-virtual bool    startsWith(SyntaxNode *node) { return this == node; }
+virtual bool        endsWithGoto() = 0;
+virtual bool        startsWith(SyntaxNode *node) { return this == node; }
 
 virtual SyntaxNode *getEnclosingLoop(SyntaxNode *pFor,
                                          SyntaxNode *cur = nullptr) = 0;
 
-        int        getScore();
-        void    addToScore(int n) { score = getScore() + n; }
-        void    setDepth(int n) { depth = n; }
-        int        getDepth() { return depth; }
+        int         getScore();
+        void        addToScore(int n) { score = getScore() + n; }
+        void        setDepth(int n) { depth = n; }
+        int         getDepth() { return depth; }
 
 virtual SyntaxNode *clone() = 0;
 virtual SyntaxNode *replace(SyntaxNode *from, SyntaxNode *to) = 0;
         SyntaxNode *getCorrespond() { return correspond; }
 
 virtual SyntaxNode *findNodeFor(BasicBlock * bb) = 0;
-virtual void    printAST(SyntaxNode *root, std::ostream &os) = 0;
-virtual int        evaluate(SyntaxNode *root) = 0;
-virtual void    addSuccessors(SyntaxNode *root, std::vector<SyntaxNode*> &successors) { }
+virtual void        printAST(SyntaxNode *root, std::ostream &os) = 0;
+virtual int         evaluate(SyntaxNode *root) = 0;
+virtual void        addSuccessors(SyntaxNode */*root*/, std::vector<SyntaxNode*> &/*successors*/) { }
 };        // class SyntaxNode
 
 class BlockSyntaxNode : public SyntaxNode {
@@ -292,7 +292,7 @@ virtual bool    isBranch() { return false; }
 virtual int        getNumOutEdges() {
             return 1;
         }
-virtual SyntaxNode *getOutEdge(SyntaxNode *root, int n) {
+virtual SyntaxNode *getOutEdge(SyntaxNode *root, int /*n*/) {
             SyntaxNode *o = pThen->getOutEdge(root, 0);
             assert(o == pElse->getOutEdge(root, 0));
             return o;
@@ -400,7 +400,7 @@ virtual bool    isBranch() { return false; }
 virtual int getNumOutEdges() {
             return 0;
         }
-virtual SyntaxNode *getOutEdge(SyntaxNode *root, int n) {
+virtual SyntaxNode *getOutEdge(SyntaxNode */*root*/, int /*n*/) {
             return nullptr;
         }
 virtual bool endsWithGoto() { return false; }

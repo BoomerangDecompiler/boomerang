@@ -272,12 +272,12 @@ virtual Exp *       getSubExp2() {return nullptr;}
 virtual const Exp * getSubExp2() const {return nullptr;}
 virtual Exp*        getSubExp3() {return nullptr;}
 virtual const Exp * getSubExp3() const {return nullptr;}
-virtual Exp*&        refSubExp1();
-virtual Exp*&        refSubExp2();
-virtual Exp*&        refSubExp3();
-virtual void        setSubExp1(Exp* e) {};
-virtual void        setSubExp2(Exp* e) {};
-virtual void        setSubExp3(Exp* e) {};
+virtual Exp *&      refSubExp1();
+virtual Exp *&      refSubExp2();
+virtual Exp *&      refSubExp3();
+virtual void        setSubExp1(Exp* /*e*/) { assert(false);}
+virtual void        setSubExp2(Exp* /*e*/) { assert(false);}
+virtual void        setSubExp3(Exp* /*e*/) { assert(false);}
 
         // Get the complexity depth. Basically, add one for each unary, binary, or ternary
         int            getComplexityDepth(UserProc* proc);
@@ -357,9 +357,9 @@ virtual Exp*        accept(ExpModifier* v) = 0;
 
         // Data flow based type analysis (implemented in type/dfa.cpp)
         // Pull type information up the expression tree
-virtual    Type*        ascendType() {assert(0); return 0;}
+virtual Type *      ascendType() {assert(0); return 0;}
         // Push type information down the expression tree
-virtual    void        descendType(Type* parentType, bool& ch, Statement* s) {assert(0);}
+virtual void        descendType(Type* /*parentType*/, bool& /*ch*/, Statement* /*s*/) {assert(0);}
 
 protected:
         friend class XMLProgParser;
@@ -831,7 +831,7 @@ virtual bool        operator< (const Exp& o) const;
 virtual bool        operator*=(Exp& o);
 virtual void        print(std::ostream& os, bool html = false) const;
 virtual void        printx(int ind) const;
-virtual Exp*        genConstraints(Exp* restrictTo) {
+virtual Exp*        genConstraints(Exp* /*restrictTo*/) {
                         assert(0); return nullptr;} // Should not be constraining constraints
 //virtual Exp        *match(Exp *pattern);
 

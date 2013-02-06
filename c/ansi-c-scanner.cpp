@@ -347,7 +347,7 @@ int YY_AnsiCScanner_CLASS::yy___input(char * buffer, int &result, int max_size) 
 }
 #endif
 #ifndef YY_AnsiCScanner_FATAL_ERROR_NOCODE
-void YY_AnsiCScanner_CLASS::yy___fatal_error(char *msg) {
+void YY_AnsiCScanner_CLASS::yy___fatal_error(const char *msg) {
     YY_AnsiCScanner_FATAL_ERROR_CODE
 }
 #endif

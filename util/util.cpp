@@ -202,7 +202,7 @@ void escapeXMLChars(std::string &s)
     std::string bad = "<>&";
     const char *replace[] = { "&lt;", "&gt;", "&amp;" };
     for (unsigned i = 0; i < s.size(); i++) {
-        unsigned n = bad.find(s[i]);
+        std::string::size_type n = bad.find(s[i]);
         if (n != std::string::npos) {
             s.replace(i, 1, replace[n]);
         }

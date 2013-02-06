@@ -83,7 +83,8 @@ ADDRESS MIPSFrontEnd::getMainEntryPoint( bool &gotMain )
 
     start = pBF->GetEntryPoint();
     gotMain = false;
-    if( start == NO_ADDRESS ) return NO_ADDRESS;
+    if( start == NO_ADDRESS )
+        return NO_ADDRESS;
 
     gotMain = true;
     return start;

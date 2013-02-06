@@ -52,6 +52,84 @@ PalmBinaryFile::~PalmBinaryFile() {
         delete [] m_pData;
     }
 }
+static int Read2(short* ps) {
+    unsigned char* p = (unsigned char*)ps;
+    // Little endian
+    int n = (int(p[0])<<8) | p[1];
+    return n;
+}
+
+int Read4(int* pi) {
+    short* p = (short*)pi;
+    int n1 = Read2(p);
+    int n2 = Read2(p+1);
+    int n = (int) ((n1<<16) | n2);
+    return n;
+}
+// Read 1 byte from given native address
+char PalmBinaryFile::readNative1(ADDRESS nat) {
+    SectionInfo *si = GetSectionInfoByAddr(nat);
+    if (si == 0)
+        si = GetSectionInfo(0);
+    char* host = (char*)(si->uHostAddr - si->uNativeAddr + nat).m_value;
+    return *host;
+}
+
+// Read 2 bytes from given native address
+int PalmBinaryFile::readNative2(ADDRESS nat) {
+    SectionInfo *si = GetSectionInfoByAddr(nat);
+    if (si == 0) return 0;
+    ADDRESS host = si->uHostAddr - si->uNativeAddr + nat;
+    int n = Read2((short*)host.m_value);
+    return n;
+}
+
+// Read 4 bytes from given native address
+int PalmBinaryFile::readNative4(ADDRESS nat) {
+    SectionInfo *si = GetSectionInfoByAddr(nat);
+    if (si == 0) return 0;
+    ADDRESS host = si->uHostAddr - si->uNativeAddr + nat;
+    int n = Read4((int*)host.m_value);
+    return n;
+}
+// Read 8 bytes from given native address
+QWord PalmBinaryFile::readNative8(ADDRESS nat) { //TODO: lifted from Win32 loader, likely wrong
+    int raw[2];
+#ifdef WORDS_BIGENDIAN        // This tests the host machine
+    // Source and host are different endianness
+    raw[1] = readNative4(nat);
+    raw[0] = readNative4(nat+4);
+#else
+    // Source and host are same endianness
+    raw[0] = readNative4(nat);
+    raw[1] = readNative4(nat+4);
+#endif
+    return *(QWord*)raw;
+}
+
+// Read 4 bytes as a float
+float PalmBinaryFile::readNativeFloat4(ADDRESS nat) {
+    int raw = readNative4(nat);
+    // Ugh! gcc says that reinterpreting from int to float is invalid!!
+    //return reinterpret_cast<float>(raw);        // Note: cast, not convert!!
+    return *(float*)&raw;                        // Note: cast, not convert
+}
+
+// Read 8 bytes as a float
+double PalmBinaryFile::readNativeFloat8(ADDRESS nat) { //TODO: lifted from Win32 loader, likely wrong
+    int raw[2];
+#ifdef WORDS_BIGENDIAN        // This tests the host machine
+    // Source and host are different endianness
+    raw[1] = readNative4(nat);
+    raw[0] = readNative4(nat+4);
+#else
+    // Source and host are same endianness
+    raw[0] = readNative4(nat);
+    raw[1] = readNative4(nat+4);
+#endif
+    //return reinterpret_cast<double>(*raw);    // Note: cast, not convert!!
+    return *(double*)raw;
+}
 
 bool PalmBinaryFile::RealLoad(const char* sName) {
     FILE    *fp;

@@ -65,7 +65,7 @@ virtual             ~SectionInfo() {}       // Quell a warning in gcc
                     // Windows's PE file sections can contain any combination of code, data and bss.
                     // As such, it can't be correctly described by SectionInfo, why we need to override
                     // the behaviour of (at least) the question "Is this address in BSS".
-virtual bool        isAddressBss(ADDRESS a) const {
+virtual bool        isAddressBss(ADDRESS /*a*/) const {
                         return bBss != 0;
                     }
 
@@ -190,29 +190,29 @@ virtual size_t          getImageSize() = 0; //!< Return the total size of the lo
                             return p && p->bReadOnly;
                         }
   // returns true if the given address is in a "strings" section
-virtual bool            isStringConstant(ADDRESS uEntry) { return false; }
-virtual bool            isCFStringConstant(ADDRESS uEntry) { return false; }
-virtual char            readNative1(ADDRESS a) {return 0;}
+virtual bool            isStringConstant(ADDRESS /*uEntry*/) { return false; }
+virtual bool            isCFStringConstant(ADDRESS /*uEntry*/) { return false; }
+virtual char            readNative1(ADDRESS a)=0;
                         // Read 2 bytes from given native address a; considers endianness
-virtual int             readNative2(ADDRESS a) {return 0;}
+virtual int             readNative2(ADDRESS a)=0;// {return 0;}
                         // Read 4 bytes from given native address a; considers endianness
-virtual int             readNative4(ADDRESS a) {return 0;}
+virtual int             readNative4(ADDRESS a)=0;// {return 0;}
                         // Read 8 bytes from given native address a; considers endianness
-virtual QWord           readNative8(ADDRESS a) {return 0;}
+virtual QWord           readNative8(ADDRESS a)=0;// {return 0;}
                         // Read 4 bytes as a float; consider endianness
-virtual float           readNativeFloat4(ADDRESS a) {return 0.;}
+virtual float           readNativeFloat4(ADDRESS a)=0;// {return 0.;}
                         // Read 8 bytes as a float; consider endianness
-virtual double          readNativeFloat8(ADDRESS a) {return 0.;}
+virtual double          readNativeFloat8(ADDRESS a)=0;// {return 0.;}
 
 // Symbol table functions
 virtual const char*     SymbolByAddress(ADDRESS uNative);
 virtual ADDRESS         GetAddressByName(const char* pName, bool bNoTypeOK = false);
-virtual void            AddSymbol(ADDRESS uNative, const char *pName) { }
+virtual void            AddSymbol(ADDRESS /*uNative*/, const char */*pName*/) { }
 
 virtual int             GetSizeByName(const char* pName, bool bTypeOK = false);
 virtual ADDRESS *       GetImportStubs(int& numImports);
-virtual const char *    getFilenameSymbolFor(const char *sym) { return nullptr; }
-virtual std::vector<ADDRESS> GetExportedAddresses(bool funcsOnly = true) { return std::vector<ADDRESS>(); }
+virtual const char *    getFilenameSymbolFor(const char */*sym*/) { return nullptr; }
+virtual std::vector<ADDRESS> GetExportedAddresses(bool /*funcsOnly*/ = true) { return std::vector<ADDRESS>(); }
 
 // Relocation table functions
 //virtual bool    IsAddressRelocatable(ADDRESS uNative);
@@ -220,7 +220,7 @@ virtual std::vector<ADDRESS> GetExportedAddresses(bool funcsOnly = true) { retur
 //virtual    ADDRESS    ApplyRelocation(ADDRESS uNative, ADDRESS uWord);
         // Get symbol associated with relocation at address, if any
 //virtual const char* GetRelocSym(ADDRESS uNative, ADDRESS *a = nullptr, unsigned int *sz = nullptr) { return nullptr; }
-virtual bool            IsRelocationAt(ADDRESS uNative) { return false; }
+virtual bool            IsRelocationAt(ADDRESS /*uNative*/) { return false; }
 
 virtual std::pair<ADDRESS,unsigned> GetGlobalPointerInfo();
 

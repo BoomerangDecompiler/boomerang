@@ -2625,10 +2625,11 @@ Exp *UserProc::getSymbolExp(Exp *le, Type *ty, bool lastPass) {
         // the default of just assigning an int type is bad..  if the locals is not an int then assigning it this
         // type early results in aliases to this local not being recognised
         if (ty) {
-            Exp* base = le;
-            if (le->isSubscript())
-                base = ((RefExp*)le)->getSubExp1();
-            e = newLocal(ty->clone(), le); //TODO: maybe this should be using 'base' instead of 'le'??
+//            Exp* base = le;
+//            if (le->isSubscript())
+//                base = ((RefExp*)le)->getSubExp1();
+            // NOTE: using base below instead of le does not enhance anything, but causes us to lose def information
+            e = newLocal(ty->clone(), le);
             mapSymbolTo(le->clone(), e);
             e = e->clone();
         }
@@ -2758,9 +2759,9 @@ void UserProc::mapExpressionsToLocals(bool lastPass) {
             Location *arr = Location::memOf(
                                 new Binary(opMinus,
                                            new RefExp(Location::regOf(sp), nullptr),
-                                           result->getSubExp1()->getSubExp2()->clone()));
+                                           result->getSubExp1()->getSubExp2()->clone()),
+                        this);
             int n = ((Const*)result->getSubExp1()->getSubExp2())->getInt();
-            arr->setProc(this);
             Type *base = new IntegerType();
             if (s->isAssign() && ((Assign*)s)->getLeft() == result) {
                 Type* at = ((Assign*)s)->getType();
@@ -2774,9 +2775,11 @@ void UserProc::mapExpressionsToLocals(bool lastPass) {
                                new Binary(opPlus,
                                           new Unary(opAddrOf, arr),
                                           result->getSubExp1()->getSubExp1()->getSubExp2()->clone()), this);
+            //TODO: the change from de8c876e9ca33e6f5aab39191204e80b81048d67 doesn't change anything, but 'looks' better
+            TypedExp *actual_replacer = new TypedExp(new ArrayType(base, n / (base->getSize() / 8)),replace);
             if (VERBOSE)
-                LOG << "replacing " << result << " with " << replace << " in " << s << "\n";
-            s->searchAndReplace(result->clone(), replace);
+                LOG << "replacing " << result << " with " << actual_replacer << " in " << s << "\n";
+            s->searchAndReplace(result, actual_replacer);
         }
     }
 

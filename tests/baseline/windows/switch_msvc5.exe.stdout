@@ -1,8 +1,8 @@
-Boomerang alpha 0.3.1 09/Sep/2006
+Boomerang alpha 0.3.2 19/Aug/2010
 loading...
 decoding entry point...
 decoding anything undecoded...
-0finishing decode...
+finishing decode...
 found 18 procs
 decompiling...
  considering main
@@ -27,7 +27,7 @@ decompiling...
    decompiling proc2
    considering proc3
    decompiling proc3
-0   reconsidering proc3
+   reconsidering proc3
     considering proc18
      considering proc23
       considering proc24
@@ -51,7 +51,7 @@ decompiling...
     considering proc22
     decompiling proc22
    decompiling proc3
-0   reconsidering proc3
+   reconsidering proc3
     considering proc25
     decompiling proc25
     considering proc26
@@ -119,4 +119,4 @@ global type analysis for proc34
 i transforming out of SSA form proc3 with 176 BBsiiiiiiiiiiiiiiiiiiii
 iiiiiiiiiiiiiiiiiiiiiiiiigenerating code...
 output written to ./tests/outputs/windows/switch_msvc5
-completed in 6 secs.
+completed in 17 secs.

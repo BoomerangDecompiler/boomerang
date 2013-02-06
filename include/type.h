@@ -59,7 +59,7 @@ class DataIntervalMap;
 
 enum eType {eVoid, eFunc, eBoolean, eChar, eInteger, eFloat, ePointer, eArray, eNamed, eCompound, eUnion, eSize,
         eUpper, eLower};      // For operator< mostly
-
+// TODO: untanel the dynamic-size types from static size types ( Int vs Boolean etc. )
 // The following two are for Type::compForAddress()
 struct ComplexTypeComp {
         bool        isArray;
@@ -167,12 +167,12 @@ virtual bool        operator< (const Type& other) const = 0;    // Considers sig
                         return id == other.id;}                     // broad type
 virtual Exp            *match(Type *pattern);
                     // Constraint-based TA: merge one type with another, e.g. size16 with integer-of-size-0 -> int16
-virtual Type*        mergeWith(Type* other) { assert(0); return 0; }
+virtual Type *      mergeWith(Type* /*other*/) { assert(false); return nullptr;}
 
                     // Acccess functions
 virtual size_t      getSize() const = 0;
         unsigned    getBytes() const {return (getSize() + 7) / 8; }
-virtual void        setSize(size_t sz) {assert(0);}
+virtual void        setSize(size_t /*sz*/) {assert(0);}
 
                     // Print and format functions
                     // Get the C type, e.g. "unsigned int". If not final, include comment for lack of sign information.
@@ -223,7 +223,7 @@ protected:
 class VoidType : public Type {
 public:
                     VoidType();
-virtual                ~VoidType();
+virtual             ~VoidType();
 virtual bool        isVoid() const { return true; }
 
 virtual Type        *clone() const;

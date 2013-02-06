@@ -259,7 +259,7 @@ void Decompiler::alert_new(Proc *p)
     }
 }
 
-void Decompiler::alert_remove(Proc *p)
+void Decompiler::alertRemove(Proc *p)
 {
     if (p->isLib()) {
         emit removeLibProc(QString(p->getName()));

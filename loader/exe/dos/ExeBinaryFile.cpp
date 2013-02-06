@@ -17,11 +17,7 @@
         MVE 08/10/97
  * 21 May 02 - Mike: Slight mod for gcc 3.1
 */
-
-#if defined(_MSC_VER) && _MSC_VER <= 1200
-#pragma warning(disable:4786)
-#endif
-
+#include <cassert>
 #include "ExeBinaryFile.h"
 
 ExeBinaryFile::ExeBinaryFile()
@@ -200,6 +196,36 @@ char* ExeBinaryFile::SymbolByAddr(ADDRESS dwAddr) {
         return const_cast<char *>("main");
 
     // No symbol table handled at present
+    return 0;
+}
+
+char ExeBinaryFile::readNative1(ADDRESS a) {
+    assert(!"not implemented");
+    return 0;
+}
+
+int ExeBinaryFile::readNative2(ADDRESS a) {
+    assert(!"not implemented");
+    return 0;
+}
+
+int ExeBinaryFile::readNative4(ADDRESS a) {
+    assert(!"not implemented");
+    return 0;
+}
+
+QWord ExeBinaryFile::readNative8(ADDRESS a) {
+    assert(!"not implemented");
+    return 0;
+}
+
+float ExeBinaryFile::readNativeFloat4(ADDRESS a) {
+    assert(!"not implemented");
+    return 0;
+}
+
+double ExeBinaryFile::readNativeFloat8(ADDRESS a) {
+    assert(!"not implemented");
     return 0;
 }
 

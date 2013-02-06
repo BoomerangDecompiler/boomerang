@@ -220,7 +220,7 @@ std::vector<ADDRESS> FrontEnd::getEntryPoints() {
                 ADDRESS a = pBF->GetAddressByName(name.c_str(), true);
                 if (a != NO_ADDRESS) {
                     ADDRESS setup, teardown;
-                    uint32_t vers = pBF->readNative4(a);
+                    /*uint32_t vers = */pBF->readNative4(a); //TODO: find use for vers ?
                     setup = ADDRESS::g(pBF->readNative4(a+4));
                     teardown = ADDRESS::g(pBF->readNative4(a+8));
                     if ( !setup.isZero() ) {

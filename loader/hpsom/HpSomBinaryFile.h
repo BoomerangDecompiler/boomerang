@@ -134,6 +134,12 @@ public:
 
     //        bool        IsDynamicLinkedProc(ADDRESS wNative);
     //        ADDRESS     NativeToHostAddress(ADDRESS uNative);
+    char readNative1(ADDRESS nat);
+    int readNative2(ADDRESS nat);
+    int readNative4(ADDRESS nat);
+    float readNativeFloat4(ADDRESS nat);
+    double readNativeFloat8(ADDRESS nat);
+    QWord readNative8(ADDRESS nat);
 protected:
     virtual bool        RealLoad(const char* sName); // Load the file; pure virtual
 

@@ -42,8 +42,9 @@ DOS4GWBinaryFile::DOS4GWBinaryFile() : m_pFileName(0) {
 
 DOS4GWBinaryFile::~DOS4GWBinaryFile() {
     for (int i=0; i < m_iNumSections; i++) {
-        if (m_pSections[i].pSectionName)
+        if (m_pSections[i].pSectionName) {
             ; //delete [] m_pSections[i].pSectionName;
+        }
     }
     // if (m_pSections) delete [] m_pSections;
 }
@@ -83,7 +84,7 @@ ADDRESS DOS4GWBinaryFile::GetMainEntryPoint() {
     unsigned lim = p + 0x300;
     unsigned char op1, op2;
         ADDRESS addr;
-        unsigned lastOrdCall = 0;
+    //unsigned lastOrdCall = 0; //TODO: identify the point of setting this variable
     bool gotSubEbp = false;            // True if see sub ebp, ebp
     bool lastWasCall = false;        // True if the last instruction was a call
 
@@ -109,7 +110,7 @@ ADDRESS DOS4GWBinaryFile::GetMainEntryPoint() {
                     // std::cerr << "__CMain at " << std::hex << addr << "\n";
                     return addr;
                 }
-                lastOrdCall = p;
+                //lastOrdCall = p;
                 lastWasCall = true;
                 break;
             }

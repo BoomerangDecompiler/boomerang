@@ -1179,7 +1179,8 @@ void XMLProgParser::addToContext_callstmt(Context *c, int e) {
         }
         return;
     }
-    Exp* returnExp = nullptr;
+    // TODO: analyze the code to understand the intended use of returnExp
+    //Exp* returnExp = nullptr;
     switch(e) {
         case e_dest:
             call->setDest(stack.front()->exp);
@@ -1189,7 +1190,7 @@ void XMLProgParser::addToContext_callstmt(Context *c, int e) {
             break;
         case e_returnexp:
             // Assume that the corresponding return type will appear next
-            returnExp = stack.front()->exp;
+            //returnExp = stack.front()->exp;
             break;
         default:
             if (e == e_unknown)
@@ -2024,7 +2025,7 @@ void XMLProgParser::parseFile(const char *filename) {
 
         if (XML_Parse(p, Buff, len, done) == XML_STATUS_ERROR) {
             if (XML_GetErrorCode(p) != XML_ERROR_NO_ELEMENTS)
-                fprintf(stderr, "Parse error at line %d of file %s:\n%s\n", XML_GetCurrentLineNumber(p), filename,
+                fprintf(stderr, "Parse error at line %ld of file %s:\n%s\n", XML_GetCurrentLineNumber(p), filename,
                         XML_ErrorString(XML_GetErrorCode(p)));
             fclose(f);
             return;

@@ -4231,12 +4231,6 @@ void PhiAssign::putAt(int i, Statement* def, Exp* e) {
     defVec[i].e = e;
 }
 
-void CallStatement::setLeftFor(Exp* forExp, Exp* newExp) {
-    std::cerr << "! Attempt to setLeftFor this call statement! forExp is " << forExp << ", newExp is " << newExp <<
-                 "\n";
-    assert(0);
-}
-
 bool Assignment::definesLoc(Exp* loc) {
     if (lhs->getOper() == opAt)                    // For foo@[x:y], match of foo==loc OR whole thing == loc
         if (*((Ternary*)lhs)->getSubExp1() == *loc) return true;

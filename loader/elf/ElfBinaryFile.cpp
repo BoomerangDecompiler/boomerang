@@ -38,6 +38,7 @@
 #include <iostream>
 #include <cassert>
 #include <cstring>
+#include <inttypes.h>
 #include "config.h"
 #include "ElfBinaryFile.h"
 #include "util.h"
@@ -131,7 +132,7 @@ bool ElfBinaryFile::RealLoad(const char* sName) {
     fseek(m_fd, 0, SEEK_SET);
     size_t size = fread(m_pImage, 1, m_lImageSize, m_fd);
     if (size != (size_t)m_lImageSize)
-        fprintf(stderr, "WARNING! Only read %ud of %ld bytes of binary file!\n", size, m_lImageSize);
+        fprintf(stderr, "WARNING! Only read %" PRIdMAX " of %ld bytes of binary file!\n", size, m_lImageSize);
 
     // Basic checks
     if (strncmp(m_pImage, "\x7F""ELF", 4) != 0) {
@@ -502,7 +503,7 @@ const char* ElfBinaryFile::SymbolByAddress(const ADDRESS dwAddr) {
 }
 
 bool ElfBinaryFile::ValueByName(const char* pName, SymValue* pVal, bool bNoTypeOK /* = false */) {
-    int     hash, numBucket, numChain, y;
+    int     hash, numBucket, y; //numChain,
     int     *pBuckets, *pChains;    // For symbol table work
     int     found;
     int* pHash;                    // Pointer to hash table
@@ -529,7 +530,7 @@ bool ElfBinaryFile::ValueByName(const char* pName, SymValue* pVal, bool bNoTypeO
 
     // First organise the hash table
     numBucket = elfRead4(&pHash[0]);
-    numChain  = elfRead4(&pHash[1]);
+    /*numChain  = */elfRead4(&pHash[1]); //NOTE: use numChain to guard y iterations ?
     pBuckets = &pHash[2];
     pChains     = &pBuckets[numBucket];
 

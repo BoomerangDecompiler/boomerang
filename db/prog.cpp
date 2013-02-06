@@ -736,7 +736,7 @@ void Prog::remProc(UserProc* uProc) {
 void Prog::removeProc(const char *name) {
     for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end(); it++)
         if (std::string(name) == (*it)->getName()) {
-            Boomerang::get()->alert_remove(*it);
+            Boomerang::get()->alertRemove(*it);
             m_procs.erase(it);
             break;
         }
@@ -1099,7 +1099,7 @@ bool Prog::isProcLabel (ADDRESS addr) {
  * \returns A string with the name
  ******************************************************************************/
 std::string Prog::getNameNoPath() const {
-    unsigned n = m_name.rfind("/");
+    std::string::size_type n = m_name.rfind("/");
     if (n == std::string::npos) {
         n = m_name.rfind("\\");
         if (n == std::string::npos)
@@ -1117,7 +1117,7 @@ std::string Prog::getNameNoPath() const {
  ******************************************************************************/
 std::string Prog::getNameNoPathNoExt() const {
     std::string nopath = getNameNoPath();
-    unsigned n = nopath.rfind(".");
+    std::string::size_type n = nopath.rfind(".");
     if (n == std::string::npos)
         return nopath;
     return nopath.substr(0, n);

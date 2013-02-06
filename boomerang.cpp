@@ -11,6 +11,7 @@
  * 28 Jan 05 - G. Krol: Separated -h output into sections and neatened
  * 02 Sep 06 - Mike: introduced USE_XML to make it easy to disable use of the expat library
 */
+#include <inttypes.h>
 #include "config.h"
 #define VERSION "alpha 0.3.2 19/Aug/2010"
 
@@ -78,19 +79,13 @@ Boomerang *Boomerang::boomerang = nullptr;
  * - The path to the executable is "./"
  * - The output directory is "./output/"
  */
-Boomerang::Boomerang() : logger(nullptr), vFlag(false), printRtl(false),
+Boomerang::Boomerang() : progPath("./"),outputPath("./output/"),
+    logger(nullptr), vFlag(false), printRtl(false),
     noBranchSimplify(false), noRemoveNull(false), noLocals(false),
     noRemoveLabels(false), noDataflow(false), noDecompile(false), stopBeforeDecompile(false),
     traceDecoder(false), dotFile(nullptr), numToPropagate(-1),
     noPromote(false), propOnlyToAll(false), debugGen(false),
-    maxMemDepth(99), debugSwitch(false), noParameterNames(false), debugLiveness(false),
-    stopAtDebugPoints(false), debugTA(false), decodeMain(true), printAST(false), dumpXML(false),
-    noRemoveReturns(false), debugDecoder(false), decodeThruIndCall(false), ofsIndCallReport(nullptr),
-    noDecodeChildren(false), debugProof(false), debugUnused(false),
-    loadBeforeDecompile(false), saveBeforeDecompile(false),
-    noProve(false), noChangeSignatures(false), conTypeAnalysis(false), dfaTypeAnalysis(true),
-    propMaxDepth(3), generateCallGraph(false), generateSymbols(false), noGlobals(false), assumeABI(false),
-    experimental(false), minsToStopAfter(0),progPath("./"),outputPath("./output/")
+    maxMemDepth(99), debugSwitch(false), noParameterNames(false), debugLiveness(false)
 {
 }
 
@@ -908,9 +903,9 @@ int Boomerang::commandLine(int argc, const char **argv) {
                     return 1;
                 }
                 if (argv[i][0] == '0' && argv[i+1][1] == 'x') {
-                    n = sscanf(argv[i], "0x%x", &addr.m_value);
+                    n = sscanf(argv[i], "0x%" SCNxPTR, &addr.m_value);
                 } else {
-                    n = sscanf(argv[i], "%i", &addr.m_value);
+                    n = sscanf(argv[i], "%" SCNiPTR, &addr.m_value);
                 }
                 if (n != 1) {
                     std::cerr << "bad address: " << argv[i] << std::endl;
@@ -932,9 +927,9 @@ int Boomerang::commandLine(int argc, const char **argv) {
                     return 1;
                 }
                 if (argv[i][0] == '0' && argv[i+1][1] == 'x') {
-                    n = sscanf(argv[i], "0x%x", &addr.m_value);
+                    n = sscanf(argv[i], "0x%" SCNxPTR, &addr.m_value);
                 } else {
-                    n = sscanf(argv[i], "%i", &addr.m_value);
+                    n = sscanf(argv[i], "%" SCNiPTR, &addr.m_value);
                 }
                 if (n != 1) {
                     std::cerr << "bad address: " << argv[i+1] << std::endl;

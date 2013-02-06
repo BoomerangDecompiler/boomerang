@@ -84,6 +84,12 @@ public:
     virtual size_t getImageSize();
 
     virtual char* SymbolByAddr(ADDRESS a);
+    virtual char readNative1(ADDRESS a);         // Read 1 bytes from native addr
+    virtual int readNative2(ADDRESS a);            // Read 2 bytes from native addr
+    virtual int readNative4(ADDRESS a);            // Read 4 bytes from native addr
+    virtual QWord readNative8(ADDRESS a);    // Read 8 bytes from native addr
+    virtual float readNativeFloat4(ADDRESS a);    // Read 4 bytes as float
+    virtual double readNativeFloat8(ADDRESS a); // Read 8 bytes as float
 
     // Analysis functions
     virtual std::list<SectionInfo*>& GetEntryPoints(const char* pEntry = "main");

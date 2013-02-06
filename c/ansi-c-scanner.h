@@ -375,26 +375,10 @@ protected:/* non virtual */
     void YY_AnsiCScanner_DELETE_BUFFER( YY_BUFFER_STATE b );
     void YY_AnsiCScanner_INIT_BUFFER( YY_BUFFER_STATE b, YY_AnsiCScanner_IFILE *file );
 protected: /* virtual */
-    virtual void YY_AnsiCScanner_ECHO()
-#ifdef YY_AnsiCScanner_ECHO_PURE
-    =0
- #endif
-     ;
-    virtual int  YY_AnsiCScanner_INPUT(char  *buf,int &result,int max_size)
-#ifdef YY_AnsiCScanner_INPUT_PURE
-    =0
- #endif
-     ;
-    virtual void  YY_AnsiCScanner_FATAL_ERROR(char *msg)
-#ifdef YY_AnsiCScanner_FATAL_ERROR_PURE
-    =0
- #endif
-     ;
-    virtual int  YY_AnsiCScanner_WRAP()
-#ifdef YY_AnsiCScanner_WRAP_PURE
-    =0
- #endif
-     ;
+    virtual void YY_AnsiCScanner_ECHO();
+    virtual int  YY_AnsiCScanner_INPUT(char  *buf,int &result,int max_size);
+    virtual void  YY_AnsiCScanner_FATAL_ERROR(const char *msg);
+    virtual int  YY_AnsiCScanner_WRAP();
 public:
     YY_AnsiCScanner_CHAR  *YY_AnsiCScanner_TEXT;
     int YY_AnsiCScanner_LENG;
