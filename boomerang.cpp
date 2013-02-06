@@ -92,8 +92,6 @@ Boomerang::Boomerang() : logger(nullptr), vFlag(false), printRtl(false),
     propMaxDepth(3), generateCallGraph(false), generateSymbols(false), noGlobals(false), assumeABI(false),
     experimental(false), minsToStopAfter(0),progPath("./"),outputPath("./output/")
 {
-    progPath = "./";
-    outputPath = "./output/";
 }
 
 /**
