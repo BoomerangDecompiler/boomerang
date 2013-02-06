@@ -156,8 +156,7 @@ typedef struct {
 #pragma pack(4)
 //#endif
 
-class Win32BinaryFile : public BinaryFile
-{
+class Win32BinaryFile : public BinaryFile {
 public:
     Win32BinaryFile();                // Default constructor
     virtual                ~Win32BinaryFile();                // Destructor

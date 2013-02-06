@@ -15,11 +15,8 @@
 
 #include "config.h"                // For HOST_OSX_10_2 etc
 #include "BinaryFile.h"
-#include "ElfBinaryFile.h"
-#include "Win32BinaryFile.h"
-#include "PalmBinaryFile.h"
-#include "HpSomBinaryFile.h"
-#include "ExeBinaryFile.h"
+#define LMMH(x) ((unsigned)((Byte *)(&x))[0] + ((unsigned)((Byte *)(&x))[1] << 8) + \
+    ((unsigned)((Byte *)(&x))[2] << 16) + ((unsigned)((Byte *)(&x))[3] << 24))
 
 using namespace std;
 string BinaryFileFactory::m_base_path = "";
@@ -92,12 +89,6 @@ BinaryFile* BinaryFileFactory::getInstanceFor( const char *sName ) {
             (buf[0] == 0xca && buf[1] == 0xfe && buf[2] == 0xba && buf[3] == 0xbe)) {
         /* Mach-O Mac OS-X binary */
         libName = "MachOBinaryFile";
-#ifdef __CYGWIN__
-        fprintf(stderr, "Sorry, Cygwin-hosted Boomerang cannot compile the MachOBinaryFile module at present"
-                "\n");
-        fclose(f);
-        return nullptr;
-#endif
     } else if( buf[0] == 0x02 && buf[2] == 0x01 &&
                (buf[1] == 0x10 || buf[1] == 0x0B) &&
                (buf[3] == 0x07 || buf[3] == 0x08 || buf[4] == 0x0B) ) {

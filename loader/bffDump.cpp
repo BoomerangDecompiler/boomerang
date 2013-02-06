@@ -30,10 +30,10 @@
 // Include all binary file headers for different binary-file formats
 // so that we can support them all.
 #include "BinaryFile.h"
-#include "ElfBinaryFile.h"
+#include "elf/ElfBinaryFile.h"
 #include "ExeBinaryFile.h"
-#include "HpSomBinaryFile.h"
-#include "PalmBinaryFile.h"
+#include "hpsom/HpSomBinaryFile.h"
+#include "palm/PalmBinaryFile.h"
 #include "Win32BinaryFile.h"
 
 

@@ -36,8 +36,8 @@
 #include <fcntl.h>
 #include <cstddef>
 #include <iostream>
-#include <cstring>
 #include <cassert>
+#include <cstring>
 #include "config.h"
 #include "ElfBinaryFile.h"
 #include "util.h"
@@ -291,7 +291,7 @@ void ElfBinaryFile::UnLoad() {
 }
 
 // Like a replacement for elf_strptr()
-char* ElfBinaryFile::GetStrPtr(int idx, int offset) {
+const char *ElfBinaryFile::GetStrPtr(int idx, int offset) {
     if (idx < 0) {
         // Most commonly, this will be an index of -1, because a call to GetSectionIndexByName() failed
         fprintf(stderr, "Error! GetStrPtr passed index of %d\n", idx);

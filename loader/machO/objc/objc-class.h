@@ -29,7 +29,7 @@
 #ifndef _OBJC_CLASS_H_
 #define _OBJC_CLASS_H_
 
-#include "objc/objc.h"
+#include "objc.h"
 /*
  *    Class Template
  */

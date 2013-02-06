@@ -26,7 +26,7 @@
  ******************************************************************************/
 
 #include "BinaryFile.h"
-#include "SymTab.h"                    // For SymTab (probably unused)
+//#include "../SymTab.h"                    // For SymTab (probably unused)
 typedef std::map<ADDRESS,std::string,std::less<ADDRESS> >  RelocMap;
 
 typedef struct
@@ -235,7 +235,7 @@ public:
     virtual std::map<ADDRESS, std::string> &getSymbols() { return m_SymTab; }
 
     // Not meant to be used externally, but sometimes you just have to have it.
-    char*       GetStrPtr(int idx, int offset); // Calc string pointer
+    const char *    GetStrPtr(int idx, int offset); // Calc string pointer
 
     // Similarly here; sometimes you just need to change a section's link and info fields
     // idx is the section index; link and info are indices to other
@@ -275,7 +275,7 @@ private:
     std::map<ADDRESS, std::string> m_SymTab;    // Map from address to symbol name; contains symbols from the
     // various elf symbol tables, and possibly some symbols with fake
     // addresses
-    SymTab      m_Reloc;                        // Object to store the reloc syms
+    //SymTab      m_Reloc;                        // Object to store the reloc syms
     Elf32_Rel*  m_pReloc;                        // Pointer to the relocation section
     Elf32_Sym*  m_pSym;                            // Pointer to loaded symbol section
     bool        m_bAddend;                        // true if reloc table has addend

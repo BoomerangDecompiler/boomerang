@@ -29,7 +29,7 @@
  ******************************************************************************/
 
 #include "BinaryFile.h"
-#include "SymTab.h"
+#include "../SymTab.h"
 #include <set>
 
 struct import_entry {
