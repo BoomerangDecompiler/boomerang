@@ -129,14 +129,15 @@ void UserProc::dfaTypeAnalysis() {
                 for (rr = rs->begin(); rr != rs->end(); ++rr) {
                     // Intersect the callee's returns with the live locations at the call, i.e. make sure that they
                     // exist in *uc
-                    Exp* lhs = dynamic_cast<Assignment*>(*rr)->getLeft();
+                    Assignment *assgn = dynamic_cast<Assignment*>(*rr);
+                    Exp* lhs = assgn->getLeft();
                     if (!uc->exists(lhs))
                         continue;   // Intersection fails
                     if (first)
                         LOG << "       returns: ";
                     else
                         LOG << ", ";
-                    LOG << ((Assignment*)*rr)->getType()->getCtype() << " " << ((Assignment*)*rr)->getLeft();
+                    LOG << assgn->getType()->getCtype() << " " << assgn->getLeft();
                 }
                 LOG << "\n";
             }
@@ -149,7 +150,7 @@ void UserProc::dfaTypeAnalysis() {
     Boomerang::get()->alert_decompile_debug_point(this, "before mapping locals from dfa type analysis");
     if (DEBUG_TA)
         LOG << " ### mapping expressions to local variables for " << getName() << " ###\n";
-    for (it = stmts.begin(); it != stmts.end(); it++) {
+    for (it = stmts.begin(); it != stmts.end(); ++it) {
         Statement* s = *it;
         s->dfaMapLocals();
     }
@@ -188,7 +189,7 @@ void UserProc::dfaTypeAnalysis() {
                     _prog->globalUsed(addr, baseType);
                     const char *gloName = _prog->getGlobalName(addr);
                     if (gloName) {
-                        ADDRESS r = addr - _prog->getGlobalAddr((char*)gloName);
+                        ADDRESS r = addr - _prog->getGlobalAddr(gloName);
                         Exp *ne;
                         if (!r.isZero()) { //TODO: what if r is NO_ADDR ?
                             Location *g = Location::global(strdup(gloName), this);
@@ -197,12 +198,12 @@ void UserProc::dfaTypeAnalysis() {
                                                 new Unary(opAddrOf, g),
                                                 new Const(r)), this);
                         } else {
-                            Type *ty = _prog->getGlobalType((char*)gloName);
+                            Type *ty = _prog->getGlobalType(gloName);
                             Assign *assgn = dynamic_cast<Assign*>(s);
-                            if (s->isAssign() && assgn->getType()) {
+                            if (s->isAssign() && assgn && assgn->getType()) {
                                 int bits = assgn->getType()->getSize();
                                 if (ty == nullptr || ty->getSize() == 0)
-                                    _prog->setGlobalType((char*)gloName, new IntegerType(bits));
+                                    _prog->setGlobalType(gloName, new IntegerType(bits));
                             }
                             Location *g = Location::global(strdup(gloName), this);
                             if (ty && ty->resolvesToArray())
@@ -211,21 +212,25 @@ void UserProc::dfaTypeAnalysis() {
                                 ne = g;
                         }
                         Exp* memof = Location::memOf(con);
-                        s->searchAndReplace(memof->clone(), ne);
+                        if(!s->searchAndReplace(memof->clone(), ne))
+                            delete ne;
                     }
                 } else if (baseType->resolvesToArray()) {
                     // We have found a constant in s which has type pointer to array of alpha. We can't get the parent
                     // of con, but we can find it with the pattern unscaledArrayPat.
                     std::list<Exp*> result;
                     s->searchAll(unscaledArrayPat, result);
-                    for (std::list<Exp*>::iterator rr = result.begin(); rr != result.end(); rr++) {
+                    for (std::list<Exp*>::iterator rr = result.begin(); rr != result.end(); ++rr) {
                         // idx + K
-                        Const* constK = (Const*)((Binary*)*rr)->getSubExp2();
+                        Binary *bin_rr  = dynamic_cast<Binary*>(*rr);
+                        assert(bin_rr);
+                        Const * constK  = (Const*)bin_rr->getSubExp2();
                         // Note: keep searching till we find the pattern with this constant, since other constants may
                         // not be used as pointer to array type.
-                        if (constK != con) continue;
+                        if (constK != con)
+                            continue;
                         ADDRESS K = ADDRESS::g(constK->getInt());
-                        Exp* idx = ((Binary*)*rr)->getSubExp1();
+                        Exp* idx = bin_rr->getSubExp1();
                         Exp* arr = new Unary(opAddrOf,
                                              new Binary(opArrayIndex,
                                                         Location::global(_prog->getGlobalName(K), this),
@@ -234,7 +239,8 @@ void UserProc::dfaTypeAnalysis() {
                         bool isImplicit = s->isImplicit();
                         if (isImplicit)
                             cfg->removeImplicitAssign(((ImplicitAssign*)s)->getLeft());
-                        s->searchAndReplace(unscaledArrayPat, arr);
+                        if(!s->searchAndReplace(unscaledArrayPat, arr))
+                            delete arr; // remove if not emplaced in s
                         // s will likely have an m[a[array]], so simplify
                         s->simplifyAddr();
                         if (isImplicit)
@@ -537,7 +543,7 @@ Type* UnionType::meetWith(Type* other, bool& ch, bool bHighestPtr) {
         UnionType* otherUnion = (UnionType*)other;
         // Always return this, never other, (even if other is larger than this) because otherwise iterators can become
         // invalid below
-        for (it = otherUnion->li.begin(); it != otherUnion->li.end(); it++) {
+        for (it = otherUnion->li.begin(); it != otherUnion->li.end(); ++it) {
             meetWith(it->type, ch, bHighestPtr);
             return this;
         }
@@ -548,7 +554,7 @@ Type* UnionType::meetWith(Type* other, bool& ch, bool bHighestPtr) {
         LOG << "WARNING! attempt to union " << getCtype() << " with pointer to self!\n";
         return this;
     }
-    for (it = li.begin(); it != li.end(); it++) {
+    for (it = li.begin(); it != li.end(); ++it) {
         Type* curr = it->type->clone();
         if (curr->isCompatibleWith(other)) {
             it->type = curr->meetWith(other, ch, bHighestPtr);
@@ -733,14 +739,14 @@ void PhiAssign::dfaTypeAnalysis(bool& ch) {
         ++it;
     assert(it != defVec.end());
     Type* meetOfArgs = it->def->getTypeFor(lhs);
-    for (++it; it != defVec.end(); it++) {
+    for (++it; it != defVec.end(); ++it) {
         if (it->e == nullptr) continue;
         assert(it->def);
         Type* typeOfDef = it->def->getTypeFor(it->e);
         meetOfArgs = meetOfArgs->meetWith(typeOfDef, ch);
     }
     type = type->meetWith(meetOfArgs, ch);
-    for (it = defVec.begin(); it != defVec.end(); it++) {
+    for (it = defVec.begin(); it != defVec.end(); ++it) {
         if (it->e == nullptr) continue;
         it->def->meetWithFor(type, it->e, ch);
     }
@@ -1154,14 +1160,15 @@ void Const::descendType(Type* parentType, bool& ch, Statement* s) {
 }
 
 void Unary::descendType(Type* parentType, bool& ch, Statement* s) {
+    Binary *as_bin = dynamic_cast<Binary *>(subExp1);
     switch (op) {
         case opMemOf:
             // Check for m[x*K1 + K2]: array with base K2 and stride K1
             if (subExp1->getOper() == opPlus &&
-                    ((Binary*)subExp1)->getSubExp1()->getOper() == opMult &&
-                    ((Binary*)subExp1)->getSubExp2()->isIntConst() &&
-                    ((Binary*)((Binary*)subExp1)->getSubExp1())->getSubExp2()->isIntConst()) {
-                Exp* leftOfPlus = ((Binary*)subExp1)->getSubExp1();
+                    as_bin->getSubExp1()->getOper() == opMult &&
+                    as_bin->getSubExp2()->isIntConst() &&
+                    ((Binary*)as_bin->getSubExp1())->getSubExp2()->isIntConst()) {
+                Exp* leftOfPlus = as_bin->getSubExp1();
                 // We would expect the stride to be the same size as the base type
                 size_t stride =  ((Const*)((Binary*)leftOfPlus)->getSubExp2())->getInt();
                 if (DEBUG_TA && stride*8 != parentType->getSize())
@@ -1178,13 +1185,13 @@ void Unary::descendType(Type* parentType, bool& ch, Statement* s) {
                 constK2->descendType(prog->makeArrayType(intK2, parentType), ch, s);
             }
             else if (subExp1->getOper() == opPlus &&
-                     ((Binary*)subExp1)->getSubExp1()->isSubscript() &&
-                     ((RefExp*)((Binary*)subExp1)->getSubExp1())->isLocation() &&
-                     ((Binary*)subExp1)->getSubExp2()->isIntConst()) {
+                     as_bin->getSubExp1()->isSubscript() &&
+                     ((RefExp*)as_bin->getSubExp1())->isLocation() &&
+                     as_bin->getSubExp2()->isIntConst()) {
                 // m[l1 + K]
                 Location* l1 = (Location*)((RefExp*)((Binary*)subExp1)->getSubExp1());
                 Type* l1Type = l1->ascendType();
-                int K = ((Const*)((Binary*)subExp1)->getSubExp2())->getInt();
+                int K = ((Const*)as_bin->getSubExp2())->getInt();
                 if (l1Type->resolvesToPointer()) {
                     // This is a struct reference m[ptr + K]; ptr points to the struct and K is an offset into it
                     // First find out if we already have struct information
@@ -1256,7 +1263,7 @@ void Terminal::descendType(Type* parentType, bool& ch, Statement* s) {
 bool Signature::dfaTypeAnalysis(Cfg* cfg) {
     bool ch = false;
     std::vector<Parameter*>::iterator it;
-    for (it = params.begin(); it != params.end(); it++) {
+    for (it = params.begin(); it != params.end(); ++it) {
         // Parameters should be defined in an implicit assignment
         Statement* def = cfg->findImplicitParamAssign(*it);
         if (def) {             // But sometimes they are not used, and hence have no implicit definition
@@ -1384,17 +1391,17 @@ bool UnionType::isCompatible(Type* other, bool all) {
         UnionType* otherUnion = (UnionType*)other;
         // Unions are compatible if one is a subset of the other
         if (li.size() < otherUnion->li.size()) {
-            for (it = li.begin(); it != li.end(); it++)
+            for (it = li.begin(); it != li.end(); ++it)
                 if (!otherUnion->isCompatible(it->type, all)) return false;
         }
         else {
-            for (it = otherUnion->li.begin(); it != otherUnion->li.end(); it++)
+            for (it = otherUnion->li.begin(); it != otherUnion->li.end(); ++it)
                 if (!isCompatible(it->type, all)) return false;
         }
         return true;
     }
     // Other is not a UnionType
-    for (it = li.begin(); it != li.end(); it++)
+    for (it = li.begin(); it != li.end(); ++it)
         if (other->isCompatibleWith(it->type, all)) return true;
     return false;
 }
@@ -1421,9 +1428,12 @@ bool UpperType::isCompatible(Type* other, bool all) {
 }
 
 bool LowerType::isCompatible(Type* other, bool all) {
-    if (other->resolvesToVoid()) return true;
-    if (other->resolvesToLower() && base_type->isCompatibleWith(other->asLower()->base_type)) return true;
-    if (other->resolvesToUnion()) return other->isCompatibleWith(this);
+    if (other->resolvesToVoid())
+        return true;
+    if (other->resolvesToLower() && base_type->isCompatibleWith(other->asLower()->base_type))
+        return true;
+    if (other->resolvesToUnion())
+        return other->isCompatibleWith(this);
     return false;
 }
 
@@ -1450,7 +1460,7 @@ Type* UnionType::dereferenceUnion() {
     UnionType* ret = new UnionType;
     char name[20];
     std::list<UnionElement>::iterator it;
-    for (it = li.begin(); it != li.end(); it++) {
+    for (it = li.begin(); it != li.end(); ++it) {
         Type* elem = it->type->dereference();
         if (elem->resolvesToVoid())
             return elem;            // Return void for the whole thing
