@@ -19,62 +19,39 @@
  *
  * 28 Apr 02 - Mike: Mods for boomerang
  */
-
-
-#if defined(_MSC_VER) && _MSC_VER <= 1200
-// For MSVC 5 or 6: warning about debug into truncated to 255 chars
-#pragma warning(disable:4786)
-#endif
 #include <cassert>
 #include <cstring>
 #include "register.h"
 #include "type.h"
 #include "util.h"
 
-#if defined(_MSC_VER) && _MSC_VER >= 1400
-#pragma warning(disable:4996)        // Warnings about e.g. _strdup deprecated in VS 2005
-#endif
-#ifndef nullptr                        // Don't always include stdio.h
-#define nullptr 0
-#endif
-
-/***************************************************************************//**
- * FUNCTION:      Register::Register
- * \brief      Constructor.
- * PARAMETERS:      <none>
- * \returns           N/A
- ******************************************************************************/
-Register::Register() : name(nullptr), address(nullptr), mappedIndex(-1),
+Register::Register() : address(nullptr), mappedIndex(-1),
     mappedOffset(-1), flt(false)
 {}
 
 /***************************************************************************//**
- * FUNCTION:      Register::Register
  * \brief      Copy constructor.
  * PARAMETERS:      Reference to another Register object to construct from
- * \returns           N/A
  ******************************************************************************/
-Register::Register(const Register& r) : name(nullptr), size(r.size),
+Register::Register(const Register& r) : size(r.size),
     address(r.address),    mappedIndex(r.mappedIndex),
     mappedOffset(r.mappedOffset), flt(r.flt)
 {
-    if (r.name != nullptr)
-        name = strdup(r.name);
+    if (!r.name.empty())
+        name = r.name;
 }
 
 /***************************************************************************//**
- * FUNCTION:      Register::operator=
  * \brief      Copy operator
- * PARAMETERS:      Reference to another Register object (to be copied)
+ * \param      Reference to another Register object (to be copied)
  * \returns           This object
  ******************************************************************************/
-Register Register::operator=(const Register& r2) {
+Register &Register::operator=(const Register& r2) {
     // copy operator
-
-    //if (name != nullptr)
-    //free(name);
-    name = r2.name;
-    size = r2.size;
+    if(this==&r2)
+        return *this;
+    name    = r2.name;
+    size    = r2.size;
     flt     = r2.flt;
     address = r2.address;
 
@@ -85,67 +62,53 @@ Register Register::operator=(const Register& r2) {
 }
 
 /***************************************************************************//**
- * FUNCTION:      Register::operator==
- * \brief      Equality operator
- * PARAMETERS:      Reference to another Register object
- * \returns           True if the same
+ * \brief   Equality operator
+ * \param   Reference to another Register object
+ * \returns True if the same
  ******************************************************************************/
 bool Register::operator==(const Register& r2) const {
     // compare on name
-    assert(name != nullptr && r2.name != nullptr);
-    if (strcmp(name, r2.name) != 0)
+    assert(!name.empty() && !r2.name.empty());
+    if (strcmp(name.c_str(), r2.name.c_str()) != 0)
         return false;
     return true;
 }
 
 /***************************************************************************//**
- * FUNCTION:      Register::operator<
- * \brief      Comparison operator (to establish an ordering)
- * PARAMETERS:      Reference to another Register object
- * \returns           true if this name is less than the given Register's name
+ * \brief   Comparison operator (to establish an ordering)
+ * \param   Reference to another Register object
+ * \returns true if this name is less than the given Register's name
  ******************************************************************************/
 bool Register::operator<(const Register& r2) const {
-    assert(name != nullptr && r2.name != nullptr);
+    assert( !name.empty() && !r2.name.empty());
 
     // compare on name
-    if (strcmp(name, r2.name) < 0)
+    if (strcmp(name.c_str(), r2.name.c_str()) < 0)
         return true;
     return false;
 }
 
 /***************************************************************************//**
- * FUNCTION:      Register::s_name
  * \brief      Set the name for this register
- * PARAMETERS:      s: name to set it to
+ * \param      s: name to set it to
  * \returns           <nothing>
  ******************************************************************************/
 void Register::s_name(const char *s) {
     assert(s != nullptr);
-
-    //if (name != nullptr)
-    //free(name);
-    name = strdup(s);
+    name = s;
 }
 
 /***************************************************************************//**
- * FUNCTION:      Register::g_name
  * \brief      Get the name for this register
- * PARAMETERS:      <none>
  * \returns           The name as a character string
  ******************************************************************************/
-const char *Register::g_name() const {
-    static char outname[100];
-
-    strncpy(outname, name, 100);
-    outname[99] = '\0';
-    return(outname);
+std::string Register::g_name() const {
+    return name;
 }
 
 /***************************************************************************//**
- * FUNCTION:      Register::g_type
- * \brief      Get the type for this register
- * PARAMETERS:      <none>
- * \returns           The type as a pointer to a Type object
+ * \brief   Get the type for this register
+ * \returns The type as a pointer to a Type object
  ******************************************************************************/
 Type* Register::g_type() const {
     if (flt)

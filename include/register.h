@@ -20,7 +20,7 @@
 
 #ifndef __REG_H__
 #define __REG_H__
-
+#include <string>
 class Type;
 
 /***************************************************************************//**
@@ -37,7 +37,7 @@ public:
 
                     Register();        // needed for use in stl classes.
                     Register(const Register&);
-    Register        operator=(const Register& r2);
+    Register &      operator=(const Register& r2);
     bool            operator==(const Register& r2) const;
     bool            operator<(const Register& r2) const;
 
@@ -51,7 +51,7 @@ public:
     void            s_address(void *p) {address = p;}
 
     /* These are only used in the interpreter */
-    const char *    g_name() const;
+    std::string     g_name() const;
     void *          g_address() const {return address;}
 
     int             g_size() const {return size;}
@@ -75,7 +75,7 @@ public:
     bool            isFloat() const {return flt;}
 
 private:
-    char *          name;
+    std::string     name;
     short           size;
     void *          address;
     int             mappedIndex;

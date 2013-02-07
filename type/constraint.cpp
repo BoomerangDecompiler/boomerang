@@ -69,6 +69,19 @@ void ConstraintMap::makeUnion(ConstraintMap& o) {
     }
 }
 
+void ConstraintMap::constrain(Exp* loc1, Exp* loc2) {
+    cmap[new Unary(opTypeOf, loc1)] = new Unary(opTypeOf, loc2);
+}
+//! Insert a constraint given a location and a Type
+void ConstraintMap::constrain(Exp* loc, Type* t) {
+    cmap[new Unary(opTypeOf, loc)] = new TypeVal(t);
+}
+//! Insert a constraint given two Types (at least one variable)
+void ConstraintMap::constrain(Type* t1, Type* t2) { // Example: alpha1 = alpha2
+    cmap[new TypeVal(t1)] = new TypeVal(t2);
+}
+
+//! Insert a constraint given two locations (i.e. Tloc1 = Tloc2)
 void ConstraintMap::insert(Exp* term) {
     assert(term->isEquality());
     Exp* lhs = ((Binary*)term)->getSubExp1();

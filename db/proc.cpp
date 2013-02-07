@@ -78,6 +78,7 @@
 #include "register.h"
 #include "rtl.h"
 #include "prog.h"
+#include "hllcode.h"
 #include "BinaryFile.h"
 #include "frontend.h"
 #include "util.h"
@@ -97,9 +98,6 @@ namespace dbghelp {
 #endif
 #undef NO_ADDRESS
 #define NO_ADDRESS ADDRESS::g(-1)
-#endif
-#if defined(_MSC_VER) && _MSC_VER >= 1400
-#pragma warning(disable:4996)        // Warnings about e.g. _strdup deprecated in VS 2005
 #endif
 
 typedef std::map<Statement*, int> RefCounter;

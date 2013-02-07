@@ -19,9 +19,10 @@
  */
 
 #include "statement.h"
-#include "exp.h"
+#include "exphelp.h"
 #include <sstream>
-
+class Exp;
+class Statement;
 // This class represents fixed constraints (e.g. Ta = <int>, Tb = <alpha2*>),
 // but also "tentative" constraints resulting from disjunctions of constraints
 class ConstraintMap {
@@ -42,20 +43,14 @@ typedef std::map<Exp*, Exp*, lessExpStar>::iterator iterator;
     // Return iterators for the begin() and end() of the map
     iterator begin() {return cmap.begin();}
     iterator end()     {return cmap.end();}
-    // Insert a constraint given two locations (i.e. Tloc1 = Tloc2)
-    void constrain(Exp* loc1, Exp* loc2) {
-        cmap[new Unary(opTypeOf, loc1)] = new Unary(opTypeOf, loc2);}
+    void constrain(Exp* loc1, Exp* loc2);
+    void constrain(Exp* loc, Type* t);
+    void constrain(Type* t1, Type* t2);
     // Insert a constraint given an equality expression
     // e.g. Tlocal1 = <char*>
     void insert(Exp* term);
     // Insert a constraint given left and right hand sides (as type Exps)
     void insert(Exp* lhs, Exp* rhs) {cmap[lhs] = rhs;}
-    // Insert a constraint given a location and a Type
-    void constrain(Exp* loc, Type* t) {
-        cmap[new Unary(opTypeOf, loc)] = new TypeVal(t);}
-    // Insert a constraint given two Types (at least one variable)
-    void constrain(Type* t1, Type* t2) { // Example: alpha1 = alpha2
-        cmap[new TypeVal(t1)] = new TypeVal(t2);}
     // Union with another constraint map
     void makeUnion(ConstraintMap& o);
     // Print to the given stream

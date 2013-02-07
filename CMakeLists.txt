@@ -9,6 +9,7 @@ SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/out)
 IF(WIN32)
 SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG ${PROJECT_SOURCE_DIR}/out)
 SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE ${PROJECT_SOURCE_DIR}/out)
+add_definitions(-D__USE_MINGW_ANSI_STDIO=1)
 ENDIF()
 ###############################################################################
 # Options section

@@ -34,22 +34,22 @@ Table::Table(TABLE_TYPE t) :
     type(t)
 {}
 
-Table::Table(std::deque<std::string>& recs, TABLE_TYPE t /* = NAMETABLE */) :
+Table::Table(const std::deque<std::string>& recs, TABLE_TYPE t /* = NAMETABLE */) :
     records(recs),type(t)
 {}
 
 TABLE_TYPE Table::getType() const { return type; }
 
-OpTable::OpTable(std::deque<std::string>& ops) :
+OpTable::OpTable(const std::deque<std::string>& ops) :
     Table(ops, OPTABLE)
 {}
 
-ExprTable::ExprTable(std::deque<Exp*>& exprs) :
+ExprTable::ExprTable(const std::deque<Exp*>& exprs) :
     Table(EXPRTABLE),expressions(exprs)
 {}
 
 ExprTable::~ExprTable(void) {
     std::deque<Exp*>::iterator loc;
-    for (loc = expressions.begin(); loc != expressions.end(); loc++)
+    for (loc = expressions.begin(); loc != expressions.end(); ++loc)
         delete (*loc);
 }

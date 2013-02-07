@@ -55,6 +55,7 @@
 #include "cluster.h"
 #include "types.h"
 #include "statement.h"
+#include "hllcode.h"
 #include "exp.h"
 #include "cfg.h"
 #include "proc.h"

@@ -36,7 +36,7 @@ public:
     void append(InsNameElem* next);
     bool increment(void);
     void reset(void);
-    int getvalue(void);
+    int getvalue(void) const;
 
 protected:
     InsNameElem* nextelem;
@@ -63,7 +63,7 @@ public:
     virtual std::string getinspattern(void);
     virtual void getrefmap(std::map<std::string, InsNameElem*> &m);
 
-    std::string getindex(void);
+    std::string getindex(void) const;
 
 protected:
     std::string indexname;

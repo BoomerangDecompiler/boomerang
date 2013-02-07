@@ -59,7 +59,7 @@ void InsNameElem::getrefmap(std::map<std::string, InsNameElem*> &m) {
     if (nextelem != nullptr)
         nextelem->getrefmap(m);
     else
-        m.erase(m.begin(), m.end());
+        m.clear();
 }
 
 int InsNameElem::ninstructions(void) {
@@ -88,7 +88,7 @@ void InsNameElem::reset(void) {
     if (nextelem != nullptr) nextelem->reset();
 }
 
-int InsNameElem::getvalue(void) {
+int InsNameElem::getvalue(void) const {
     return value;
 }
 
@@ -143,12 +143,12 @@ void InsListElem::getrefmap(std::map<std::string, InsNameElem*> &m) {
     if (nextelem != nullptr)
         nextelem->getrefmap(m);
     else
-        m.erase(m.begin(), m.end());
+        m.clear();
     m[indexname] = this;
     // of course, we're assuming that we've already checked (try in the parser)
     // that indexname hasn't been used more than once on this line ..
 }
 
-std::string InsListElem::getindex(void) {
+std::string InsListElem::getindex(void) const {
     return indexname;
 }

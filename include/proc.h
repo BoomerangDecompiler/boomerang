@@ -30,7 +30,7 @@
 #include <assert.h>
 #include "exp.h"                // For lessExpStar
 #include "cfg.h"                // For cfg->simplify()
-#include "hllcode.h"
+//#include "hllcode.h"
 #include "memo.h"
 #include "dataflow.h"            // For class UseCollector
 #include "statement.h"            // For embedded ReturnStatement pointer, etc
@@ -45,6 +45,7 @@ class lessTI;
 class Type;
 class RTL;
 class HLLCode;
+class SyntaxNode;
 class HLCall;
 class Parameter;
 class Argument;
