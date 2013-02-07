@@ -63,7 +63,7 @@ class RTL : public std::list<Statement*> {
         ADDRESS     nativeAddr;                            // RTL's source program instruction address
 public:
                     RTL();
-                    RTL(ADDRESS instNativeAddr, std::list<Statement*>* listStmt = nullptr);
+                    RTL(ADDRESS instNativeAddr, const std::list<Statement *> *listStmt = nullptr);
                     RTL(const RTL& other);                    // Makes deep copy of "other"
 
         RTL *       clone() const;
@@ -78,7 +78,7 @@ public:
         void        appendStmt(Statement *s);                // Add s to end of RTL.
         void        appendListStmt(std::list<Statement*>& le);
         // Make a deep copy of the list of Exp*
-        void        deepCopyList(std::list<Statement*>& dest);
+        void        deepCopyList(std::list<Statement*>& dest) const;
 
          // Print RTL to a stream.
         void        print(std::ostream& os , bool html = false) const;

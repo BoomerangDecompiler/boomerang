@@ -67,7 +67,7 @@ RTL::RTL()
  * \param   listExp - ptr to existing list of Exps
  * \returns N/a
  ******************************************************************************/
-RTL::RTL(ADDRESS instNativeAddr, std::list<Statement*>* listStmt /*= nullptr*/)
+RTL::RTL(ADDRESS instNativeAddr, const std::list<Statement*>* listStmt /*= nullptr*/)
     : nativeAddr(instNativeAddr) {
     if (listStmt)
         *(std::list<Statement*>*)this = *listStmt;
@@ -120,7 +120,7 @@ RTL* RTL::clone() const {
  * \brief        Make a copy of this RTLs list of Exp* to the given list
  * \param        Ref to empty list to copy to
  ******************************************************************************/
-void RTL::deepCopyList(std::list<Statement*>& dest) {
+void RTL::deepCopyList(std::list<Statement*>& dest) const {
     for (Statement * it : *this) {
         dest.push_back(it->clone());
     }
