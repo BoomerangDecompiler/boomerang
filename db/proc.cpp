@@ -5738,13 +5738,28 @@ void UserProc::findPhiUnites(ConnectionGraph& pu) {
         }
     }
 }
+// WARN: write tests for getRegName in all combinations of r[1] r[tmp+1] etc.
 /// Get a name like eax or o2 from r24 or r8
 const char* UserProc::getRegName(Exp* r) {
     assert(r->isRegOf());
-    int regNum = ((Const*)((Location*)r)->getSubExp1())->getInt();
-    const char* regName = prog->getRegName(regNum);
-    if (regName[0] == '%') regName++;        // Skip % if %eax
-    return regName;
+
+    //assert(r->getSubExp1()->isConst());
+    if(r->getSubExp1()->isConst()) {
+        int regNum = ((Const*)r->getSubExp1())->getInt();
+        const char* regName = prog->getRegName(regNum);
+        if (regName[0] == '%') regName++;        // Skip % if %eax
+        return regName;
+    }
+    LOG_VERBOSE(2) << "warning - UserProc::getRegName(Exp* r) will try to build register name from [tmp+X] !";
+    // TODO: how to handle register file lookups ?
+    // in some cases the form might be r[tmp+value]
+    // just return this expression :(
+    //WARN: this is a hack to prevent crashing when r->subExp1 is not const
+    std::ostringstream ostr;
+
+    r->getSubExp1()->print(ostr);
+
+    return strdup(ostr.str().c_str());
 }
 //! Find the type of the local or parameter \a e
 Type* UserProc::getTypeForLocation(const Exp* e) {
