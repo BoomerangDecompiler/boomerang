@@ -133,13 +133,13 @@ public:
         ParamEntry() {
             asgn = nullptr;
             kind = PARAM_SIMPLE;
-            type = nullptr;
+            m_type = nullptr;
             regType = nullptr;
             lhs = false;
             mark = 0;
         }
         ~ParamEntry() {
-            delete type;
+            delete m_type;
             delete regType;
         }
 
@@ -148,10 +148,11 @@ public:
         Statement *     asgn;                    //!< PARAM_ASGN only */
         bool            lhs;                    //!< True if this param ever appears on the LHS of an expression */
         ParamKind       kind;
-        Type *          type;
         Type *          regType;                //!< Type of r[this], if any (void otherwise)
         std::set<int>   regIdx;                //!< Values this param can take as an r[param]
         int             mark;                    //!< Traversal mark. (free temporary use, basically)
+protected:
+        Type *          m_type;
 };
 
 

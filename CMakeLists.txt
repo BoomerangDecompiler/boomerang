@@ -35,7 +35,6 @@ ENDIF()
 ###############################################################################
 SET(VERSION "0.3.1")
 SET(MAIN_INCLUDE_DIRECTORY ${PROJECT_SOURCE_DIR}/include)
-
 INCLUDE(CheckIncludeFiles)
 INCLUDE(CheckLibraryExists)
 INCLUDE(CheckTypeSize)
@@ -85,7 +84,12 @@ IF(GC_FOUND)
 ENDIF()
 # Expat
 FIND_PACKAGE(EXPAT)
+FIND_PACKAGE(Boost REQUIRED)
+find_package(Qt5Core)
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+set(CMAKE_AUTOMOC ON)
 
+INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
 #set variables to expand in config.h.cmake
 SET_01(HAVE_LIBCPPUNIT    CPPUNIT_FOUND)
 SET_01(HAVE_LIBDL         DL_FOUND)
@@ -122,8 +126,10 @@ SET_01(WORDS_BIGENDIAN BIG_ENDIAN)
 # generate config.h
 CONFIGURE_FILE(include/config.h.cmake include/config.h)
 
-INCLUDE_DIRECTORIES("${CMAKE_CURRENT_SOURCE_DIR}/include")
-INCLUDE_DIRECTORIES("${CMAKE_CURRENT_BINARY_DIR}/include")
+INCLUDE_DIRECTORIES("${CMAKE_CURRENT_SOURCE_DIR}/include"
+        "${CMAKE_CURRENT_BINARY_DIR}/include"
+        ${Qt5Core_INCLUDE_DIRS}
+)
 IF(EXPAT_FOUND)
     INCLUDE_DIRECTORIES("${EXPAT_INCLUDE_DIRS}")
 ENDIF()
@@ -161,17 +167,17 @@ SET(boomerang_SRC
         log.cpp
         loader/BinaryFileFactory.cpp
 )
-SET(LINKED_LIBRARIES ${DL_LIBS} ${GC_LIBS})
-
-IF(EXPAT_FOUND)
-    SET(LINKED_LIBRARIES ${LINKED_LIBRARIES} "${EXPAT_LIBRARIES}")
-ENDIF()
-
 IF(MSVC)
     SET(DEBUG_LIB Dbghelp.lib )
 ENDIF()
 ADD_EXECUTABLE(boomerang ${boomerang_SRC})
 
-TARGET_LINK_LIBRARIES(boomerang ${DL_LIBS} ${GC_LIBS} ${DEBUG_LIB} "${EXPAT_LIBRARIES}" frontend db type boomerang_DSLs codegen util BinaryFile)
-
+TARGET_LINK_LIBRARIES(boomerang
+${DL_LIBS}
+${GC_LIBS}
+${DEBUG_LIB}
+"${EXPAT_LIBRARIES}"
+frontend db type boomerang_DSLs codegen util BinaryFile
+)
+qt5_use_modules(boomerang Core)
 ADD_SUBDIRECTORY(loader)

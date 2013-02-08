@@ -79,15 +79,13 @@ std::string initCapital(const std::string& s)
 }
 
 /***************************************************************************//**
- * FUNCTION:      hasExt
  * \brief      Returns true if the given file name has the given extension
  *                and false otherwise.
- * PARAMETERS:    s: string representing a file name (e.g. string("foo.c"))
- *                e: the extension (e.g. ".o")
- * \returns        Boolean indicating whether the file name has the extension.
+ * \param   s string representing a file name (e.g. string("foo.c"))
+ * \param   e the extension (e.g. ".o")
+ * \returns boolean indicating whether the file name has the extension.
  ******************************************************************************/
-bool hasExt(const std::string& s, const char* ext)
-{
+bool hasExt(const std::string& s, const char* ext) {
     std::string tailStr = std::string(".") + std::string(ext);
     unsigned int i = s.rfind(tailStr);
     if (i == std::string::npos) {

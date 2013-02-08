@@ -28,7 +28,9 @@ char* escapeStr(const char *str);
 int lockFileRead(const char *fname);
 int lockFileWrite(const char *fname);
 void unlockFile(int n);
-#ifdef __MINGW32__
+#   ifdef __MINGW32__
+extern "C" {
 extern char *strdup(const char *__s);
+}
 #endif
 #endif

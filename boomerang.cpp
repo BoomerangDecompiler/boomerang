@@ -31,16 +31,10 @@
 #include <stdlib.h>
 #include <fstream>
 #include <time.h>
-#ifdef _WIN32
-#include <direct.h>            // mkdir under Windows
-#else
-#include <sys/stat.h>        // For mkdir
-#include <unistd.h>            // For unlink
-#include <signal.h>
-#endif
-#if defined(_MSC_VER) || defined(__MINGW32__)
-#include <windows.h>
-#endif
+#include <QtCore>
+#include <QCoreApplication>
+#include <QDir>
+#include <QFileInfo>
 #include "prog.h"
 #include "proc.h"
 #include "BinaryFile.h"
@@ -54,10 +48,6 @@
 #if USE_XML
 #include "xmlprogparser.h"
 #endif
-#if defined(_MSC_VER) && _MSC_VER >= 1400
-#pragma warning(disable:4996)        // Warnings about e.g. _strdup deprecated in VS 2005
-#endif
-
 
 // For the -nG switch to disable the garbage collector
 #include "config.h"
@@ -236,35 +226,9 @@ void Boomerang::help() const {
  * \retval true The directory is valid.
  * \retval false The directory is invalid.
  */
-bool createDirectory(std::string dir) {
-    std::string remainder(dir);
-    std::string path;
-    size_t i;
-    while ((i = remainder.find('/')) != std::string::npos) {
-        path += remainder.substr(0, i+1);
-        remainder = remainder.substr(i+1);
-#ifdef _WIN32
-        mkdir(path.c_str());
-#else
-        mkdir(path.c_str(), 0777);                // Doesn't matter if already exists
-#endif
-    }
-    // Now try to create a test file
-    path += remainder;
-#ifdef _WIN32
-    mkdir(path.c_str());                    // Make the last dir if needed
-#else
-    mkdir(path.c_str(), 0777);                // Make the last dir if needed
-#endif
-    path += "test.file";
-    std::ofstream test;
-    test.open(path.c_str(), std::ios::out);
-    test << "testing\n";
-    bool pathOK = !test.bad();
-    test.close();
-    if (pathOK)
-        remove(path.c_str());
-    return pathOK;
+bool createDirectory(const QString &dir) {
+    QFileInfo dir_fi(dir);
+    return QDir::root().mkpath(dir_fi.absolutePath());
 }
 
 /**
@@ -1051,7 +1015,7 @@ int Boomerang::commandLine(int argc, const char **argv) {
 bool Boomerang::setOutputDirectory(const char *path) {
     outputPath = path;
     // Create the output directory, if needed
-    if (!createDirectory(outputPath)) {
+    if (!createDirectory(QString(path))) {
         std::cerr << "Warning! Could not create path " << outputPath << "!\n";
         return false;
     }
