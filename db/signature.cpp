@@ -75,24 +75,22 @@ class Win32Signature : public Signature {
 public:
     Win32Signature(const char *nam);
     Win32Signature(Signature &old);
-    virtual                ~Win32Signature() { }
-    virtual Signature    *clone();
+    virtual             ~Win32Signature() { }
+    virtual Signature * clone();
     virtual bool        operator==(Signature& other);
-    static    bool        qualified(UserProc *p, Signature &candidate);
+    static  bool        qualified(UserProc *p, Signature &candidate);
 
     virtual void        addReturn(Type *type, Exp *e = nullptr);
     virtual void        addParameter(Type *type, const char *nam = nullptr, Exp *e = nullptr, const char *boundMax = "");
-    virtual Exp            *getArgumentExp(int n);
+    virtual Exp *       getArgumentExp(int n);
 
-    virtual Signature     *promote(UserProc *p);
-    virtual Exp            *getStackWildcard();
-    virtual int             getStackRegister() throw(StackRegisterNotDefinedException) {return 28; }
-    virtual Exp            *getProven(Exp *left);
-    virtual    bool        isPreserved(Exp* e);        // Return whether e is preserved by this proc
+    virtual Signature * promote(UserProc *p);
+    virtual Exp *       getStackWildcard();
+    virtual int         getStackRegister() throw(StackRegisterNotDefinedException) {return 28; }
+    virtual Exp *       getProven(Exp *left);
+    virtual bool        isPreserved(Exp* e);        // Return whether e is preserved by this proc
     virtual void        setLibraryDefines(StatementList* defs);    // Set list of locations def'd by library calls
-
-    virtual bool        isPromoted() {
-        return true; }
+    virtual bool        isPromoted() {  return true; }
     virtual platform    getPlatform() { return PLAT_PENTIUM; }
     virtual callconv    getConvention() { return CONV_PASCAL; }
 };    // class Win32Signature
@@ -101,11 +99,11 @@ class Win32TcSignature : public Win32Signature {
     // Win32TcSignature is for "thiscall" signatures, i.e. those that have register ecx as the first parameter
     // Only needs to override a few member functions; the rest can inherit from Win32Signature
 public:
-    Win32TcSignature(const char *nam);
-    Win32TcSignature(Signature &old);
-    virtual Exp            *getArgumentExp(int n);
-    virtual Exp            *getProven(Exp* left);
-    virtual Signature    *clone();
+                        Win32TcSignature(const char *nam);
+                        Win32TcSignature(Signature &old);
+    virtual Exp *       getArgumentExp(int n);
+    virtual Exp *       getProven(Exp* left);
+    virtual Signature * clone();
     virtual platform    getPlatform() { return PLAT_PENTIUM; }
     virtual callconv    getConvention() { return CONV_THISCALL; }
 };    // Class Win32TcSignature
@@ -114,22 +112,22 @@ public:
 namespace StdC {
 class PentiumSignature : public Signature {
 public:
-    PentiumSignature(const char *nam);
-    PentiumSignature(Signature &old);
-    virtual                ~PentiumSignature() { }
-    virtual Signature    *clone();
+                        PentiumSignature(const char *nam);
+                        PentiumSignature(Signature &old);
+    virtual             ~PentiumSignature() { }
+    virtual Signature * clone();
     virtual bool        operator==(Signature& other);
-    static    bool        qualified(UserProc *p, Signature &candidate);
+    static  bool        qualified(UserProc *p, Signature &candidate);
 
     virtual void        addReturn(Type *type, Exp *e = nullptr);
     virtual void        addParameter(Type *type, const char *nam = nullptr, Exp *e = nullptr, const char *boundMax = "");
-    virtual Exp            *getArgumentExp(int n);
+    virtual Exp *       getArgumentExp(int n);
 
-    virtual Signature    *promote(UserProc *p);
-    virtual Exp            *getStackWildcard();
-    virtual int            getStackRegister() throw(StackRegisterNotDefinedException) {return 28; }
-    virtual Exp            *getProven(Exp *left);
-    virtual    bool        isPreserved(Exp* e);        // Return whether e is preserved by this proc
+    virtual Signature * promote(UserProc *p);
+    virtual Exp *       getStackWildcard();
+    virtual int         getStackRegister() throw(StackRegisterNotDefinedException) {return 28; }
+    virtual Exp *       getProven(Exp *left);
+    virtual bool        isPreserved(Exp* e);        // Return whether e is preserved by this proc
     virtual void        setLibraryDefines(StatementList* defs);    // Set list of locations def'd by library calls
     virtual bool        isPromoted() { return true; }
     virtual platform    getPlatform() { return PLAT_PENTIUM; }
@@ -140,23 +138,23 @@ public:
 
 class SparcSignature : public Signature {
 public:
-    SparcSignature(const char *nam);
-    SparcSignature(Signature &old);
-    virtual                ~SparcSignature() { }
-    virtual Signature    *clone();
+                        SparcSignature(const char *nam);
+                        SparcSignature(Signature &old);
+    virtual             ~SparcSignature() { }
+    virtual Signature * clone();
     virtual bool        operator==(Signature& other);
-    static    bool        qualified(UserProc *p, Signature &candidate);
+    static  bool        qualified(UserProc *p, Signature &candidate);
 
     virtual void        addReturn(Type *type, Exp *e = nullptr);
     virtual void        addParameter(Type *type, const char *nam = nullptr, Exp *e = nullptr,
                                              const char *boundMax = "");
-    virtual Exp            *getArgumentExp(int n);
+    virtual Exp *       getArgumentExp(int n);
 
-    virtual Signature    *promote(UserProc *p);
-    virtual Exp            *getStackWildcard();
-    virtual int            getStackRegister() throw(StackRegisterNotDefinedException) {return 14; }
-    virtual Exp            *getProven(Exp *left);
-    virtual    bool        isPreserved(Exp* e);        // Return whether e is preserved by this proc
+    virtual Signature * promote(UserProc *p);
+    virtual Exp *       getStackWildcard();
+    virtual int         getStackRegister() throw(StackRegisterNotDefinedException) {return 14; }
+    virtual Exp *       getProven(Exp *left);
+    virtual bool        isPreserved(Exp* e);        // Return whether e is preserved by this proc
     virtual void        setLibraryDefines(StatementList* defs);    // Set list of locations def'd by library calls
     // Stack offsets can be negative (inherited) or positive:
     virtual bool        isLocalOffsetPositive() {return true;}
@@ -171,26 +169,26 @@ public:
 
 class SparcLibSignature : public SparcSignature {
 public:
-    SparcLibSignature(const char *nam) : SparcSignature(nam) {}
-    SparcLibSignature(Signature &old);
-    virtual Signature    *clone();
-    virtual Exp*        getProven(Exp* left);
+                        SparcLibSignature(const char *nam) : SparcSignature(nam) {}
+                        SparcLibSignature(Signature &old);
+    virtual Signature * clone();
+    virtual Exp *       getProven(Exp* left);
 };    // class SparcLibSignature
 
 class PPCSignature : public Signature {
 public:
-    PPCSignature(const char *name);
-    PPCSignature(Signature& old);
-    virtual                ~PPCSignature() { }
-    virtual    Signature    *clone();
-    static    bool        qualified(UserProc *p, Signature &candidate);
+                        PPCSignature(const char *name);
+                        PPCSignature(Signature& old);
+    virtual             ~PPCSignature() { }
+    virtual Signature * clone();
+    static  bool        qualified(UserProc *p, Signature &candidate);
     virtual void        addReturn(Type *type, Exp *e = nullptr);
-    virtual    Exp            *getArgumentExp(int n);
-    virtual    void        addParameter(Type *type, const char *nam /*= nullptr*/, Exp *e /*= nullptr*/, const char *boundMax /*= ""*/);
-    virtual Exp            *getStackWildcard();
-    virtual int            getStackRegister() throw(StackRegisterNotDefinedException) {return 1; }
-    virtual Exp            *getProven(Exp *left);
-    virtual    bool        isPreserved(Exp* e);        // Return whether e is preserved by this proc
+    virtual Exp *       getArgumentExp(int n);
+    virtual void        addParameter(Type *type, const char *nam /*= nullptr*/, Exp *e /*= nullptr*/, const char *boundMax /*= ""*/);
+    virtual Exp *       getStackWildcard();
+    virtual int         getStackRegister() throw(StackRegisterNotDefinedException) {return 1; }
+    virtual Exp *       getProven(Exp *left);
+    virtual bool        isPreserved(Exp* e);        // Return whether e is preserved by this proc
     virtual void        setLibraryDefines(StatementList* defs);    // Set list of locations def'd by library calls
     virtual bool        isLocalOffsetPositive() {return true;}
     virtual bool        isPromoted() { return true; }
@@ -199,18 +197,18 @@ public:
 };
 class MIPSSignature : public Signature {
 public:
-    MIPSSignature(const char *name);
-    MIPSSignature(Signature& old);
+                        MIPSSignature(const char *name);
+                        MIPSSignature(Signature& old);
     virtual            ~MIPSSignature() { }
-    virtual    Signature    *clone();
-    static    bool        qualified(UserProc *p, Signature &candidate);
+    virtual Signature * clone();
+    static  bool        qualified(UserProc *p, Signature &candidate);
     virtual void        addReturn(Type *type, Exp *e = nullptr);
-    virtual    Exp            *getArgumentExp(int n);
-    virtual    void        addParameter(Type *type, const char *nam /*= nullptr*/, Exp *e /*= nullptr*/, const char *boundMax /*= ""*/);
-    virtual Exp            *getStackWildcard();
-    virtual int            getStackRegister() throw(StackRegisterNotDefinedException) {return 1; }
-    virtual Exp            *getProven(Exp *left);
-    virtual    bool        isPreserved(Exp* e);        // Return whether e is preserved by this proc
+    virtual Exp *       getArgumentExp(int n);
+    virtual void        addParameter(Type *type, const char *nam /*= nullptr*/, Exp *e /*= nullptr*/, const char *boundMax /*= ""*/);
+    virtual Exp *       getStackWildcard();
+    virtual int         getStackRegister() throw(StackRegisterNotDefinedException) {return 1; }
+    virtual Exp *       getProven(Exp *left);
+    virtual bool        isPreserved(Exp* e);        // Return whether e is preserved by this proc
     virtual void        setLibraryDefines(StatementList* defs);    // Set list of locations def'd by library calls
     virtual bool        isLocalOffsetPositive() {return true;}
     virtual bool        isPromoted() { return true; }
@@ -219,28 +217,27 @@ public:
 };
 class ST20Signature : public Signature {
 public:
-    ST20Signature(const char *name);
-    ST20Signature(Signature &old);
-    virtual ~ST20Signature() { }
-    Signature *clone();
-    virtual bool operator==(Signature& other);
-    static bool qualified(UserProc *p, Signature &candidate);
+                        ST20Signature(const char *name);
+                        ST20Signature(Signature &old);
+    virtual             ~ST20Signature() { }
+    Signature *         clone();
+    virtual bool        operator==(Signature& other);
+    static  bool        qualified(UserProc *p, Signature &candidate);
+    virtual void        addReturn(Type *type, Exp *e = nullptr);
+            void        addParameter(Type *type, const char *nam /*= nullptr*/, Exp *e /*= nullptr*/, const char *boundMax /*= ""*/);
+            Exp *       getArgumentExp(int n);
 
-    virtual void addReturn(Type *type, Exp *e = nullptr);
-    void addParameter(Type *type, const char *nam /*= nullptr*/, Exp *e /*= nullptr*/, const char *boundMax /*= ""*/);
-    Exp *getArgumentExp(int n);
-
-    virtual Signature *promote(UserProc *p);
-    virtual Exp *getStackWildcard();
-    virtual int     getStackRegister() throw(StackRegisterNotDefinedException) {return 3; }
-    virtual Exp *getProven(Exp *left);
-    virtual bool    isPromoted() { return true; }
+    virtual Signature * promote(UserProc *p);
+    virtual Exp *       getStackWildcard();
+    virtual int         getStackRegister() throw(StackRegisterNotDefinedException) {return 3; }
+    virtual Exp *       getProven(Exp *left);
+    virtual bool        isPromoted() { return true; }
     //virtual bool isLocalOffsetPositive() {return true;}
-    virtual platform getPlatform() { return PLAT_ST20; }
-    virtual callconv getConvention() { return CONV_C; }
+    virtual platform    getPlatform() { return PLAT_ST20; }
+    virtual callconv    getConvention() { return CONV_C; }
 };
-};    // namespace StdC
-};    // namespace CallingConvention
+}    // namespace StdC
+}    // namespace CallingConvention
 
 CallingConvention::Win32Signature::Win32Signature(const char *nam) : Signature(nam) {
     Signature::addReturn(Location::regOf(28));
@@ -438,10 +435,10 @@ bool CallingConvention::Win32Signature::isPreserved(Exp* e) {
             case 27:        // ebx
             case 30:        // esi
             case 31:        // edi
-            case 3:            // bx
-            case 5:            // bp
-            case 6:            // si
-            case 7:            // di
+            case 3:         // bx
+            case 5:         // bp
+            case 6:         // si
+            case 7:         // di
             case 11:        // bl
             case 15:        // bh
                 return true;
@@ -630,10 +627,10 @@ bool CallingConvention::StdC::PentiumSignature::isPreserved(Exp* e) {
             case 27:        // ebx
             case 30:        // esi
             case 31:        // edi
-            case 3:            // bx
-            case 5:            // bp
-            case 6:            // si
-            case 7:            // di
+            case 3:         // bx
+            case 5:         // bp
+            case 6:         // si
+            case 7:         // di
             case 11:        // bl
             case 15:        // bh
                 return true;
@@ -1638,10 +1635,10 @@ int Signature::getStackRegister(Prog* prog) throw(StackRegisterNotDefinedExcepti
     }
 }
 /**
-Does expression e represent a local stack-based variable?
-Result can be ABI specific, e.g. sparc has locals in the parent's stack frame, at POSITIVE offsets from the
-stack pointer register
-Also, I believe that the PA/RISC stack grows away from 0
+    Does expression e represent a local stack-based variable?
+    Result can be ABI specific, e.g. sparc has locals in the parent's stack frame, at POSITIVE offsets from the
+    stack pointer register
+    Also, I believe that the PA/RISC stack grows away from 0
 */
 bool Signature::isStackLocal(Prog* prog, Exp *e) {
     // e must be m[...]
@@ -1663,8 +1660,10 @@ bool Signature::isAddrOfStackLocal(Prog* prog, Exp *e) {
         return (*e == *sp ||
                 (e->isSubscript() && ((RefExp*)e)->isImplicitDef() && *((RefExp*)e)->getSubExp1() == *sp));
     }
-    if (op == opMinus && !isLocalOffsetNegative()) return false;
-    if (op == opPlus  && !isLocalOffsetPositive()) return false;
+    if (op == opMinus && !isLocalOffsetNegative())
+        return false;
+    if (op == opPlus  && !isLocalOffsetPositive())
+        return false;
     Exp* sub1 = ((Binary*)e)->getSubExp1();
     Exp* sub2 = ((Binary*)e)->getSubExp2();
     // e must be <sub1> +- K
@@ -1849,29 +1848,35 @@ void ImplicitParameter::readMemo(Memo *mm, bool dec) {
 #endif            // #if USING_MEMO
 
 bool Signature::isOpCompatStackLocal(OPER op) {
-    if (op == opMinus) return isLocalOffsetNegative();
-    if (op == opPlus) return isLocalOffsetPositive();
+    if (op == opMinus)
+        return isLocalOffsetNegative();
+    if (op == opPlus)
+        return isLocalOffsetPositive();
     return false;
 }
 
 bool Signature::returnCompare(Assignment& a, Assignment& b) {
-    return *a.getLeft() < *b.getLeft();            // Default: sort by expression only, no explicit ordering
+    return *a.getLeft() < *b.getLeft(); // Default: sort by expression only, no explicit ordering
 }
 
 bool Signature::argumentCompare(Assignment& a, Assignment& b) {
-    return *a.getLeft() < *b.getLeft();            // Default: sort by expression only, no explicit ordering
+    return *a.getLeft() < *b.getLeft(); // Default: sort by expression only, no explicit ordering
 }
 
 bool CallingConvention::StdC::PentiumSignature::returnCompare(Assignment& a, Assignment& b) {
     Exp* la = a.getLeft();
     Exp* lb = b.getLeft();
     // Eax is the preferred return location
-    if (la->isRegN(24)) return true;        // r24 is less than anything
-    if (lb->isRegN(24)) return false;        // Nothing is less than r24
+    if (la->isRegN(24))
+        return true;        // r24 is less than anything
+    if (lb->isRegN(24))
+        return false;        // Nothing is less than r24
 
     // Next best is r30 (floating point %st)
-    if (la->isRegN(30)) return true;        // r30 is less than anything that's left
-    if (lb->isRegN(30)) return false;        // Nothing left is less than r30
+    if (la->isRegN(30))
+        return true;        // r30 is less than anything that's left
+    if (lb->isRegN(30))
+        return false;        // Nothing left is less than r30
 
     // Else don't care about the order
     return *la < *lb;
@@ -1885,20 +1890,28 @@ bool CallingConvention::StdC::SparcSignature::returnCompare(Assignment& a, Assig
     Exp* la = a.getLeft();
     Exp* lb = b.getLeft();
     // %o0 (r8) is the preferred return location
-    if (la->isRegN(8)) return true;            // r24 is less than anything
-    if (lb->isRegN(8)) return false;        // Nothing is less than r24
+    if (la->isRegN(8))
+        return true;            // r24 is less than anything
+    if (lb->isRegN(8))
+        return false;        // Nothing is less than r24
 
     // Next best is %f0 (r32)
-    if (la->isRegN(32)) return true;        // r32 is less than anything that's left
-    if (lb->isRegN(32)) return false;        // Nothing left is less than r32
+    if (la->isRegN(32))
+        return true;        // r32 is less than anything that's left
+    if (lb->isRegN(32))
+        return false;        // Nothing left is less than r32
 
     // Next best is %f0-1 (r64)
-    if (la->isRegN(64)) return true;        // r64 is less than anything that's left
-    if (lb->isRegN(64)) return false;        // Nothing left is less than r64
+    if (la->isRegN(64))
+        return true;        // r64 is less than anything that's left
+    if (lb->isRegN(64))
+        return false;        // Nothing left is less than r64
 
     // Next best is m[esp{-}+64]
-    if (*la == spPlus64) return true;        // m[esp{-}+64] is less than anything that's left
-    if (*lb == spPlus64) return false;        // Nothing left is less than m[esp{-}+64]
+    if (*la == spPlus64)
+        return true;        // m[esp{-}+64] is less than anything that's left
+    if (*lb == spPlus64)
+        return false;        // Nothing left is less than m[esp{-}+64]
 
     // Else don't care about the order
     return *la < *lb;
@@ -1908,21 +1921,21 @@ bool CallingConvention::StdC::SparcSignature::returnCompare(Assignment& a, Assig
 // Helper function for the below
 int stackOffset(Exp* e, int sp) {
     int ret = 0;
-    if (e->isMemOf()) {
-        Exp* sub = ((Location*)e)->getSubExp1();
-        OPER op = sub->getOper();
-        if (op == opPlus || op == opMinus) {
-            Exp* op1 = ((Binary*)sub)->getSubExp1();
-            if (op1->isSubscript())
-                op1 = ((RefExp*)op1)->getSubExp1();
-            if (op1->isRegN(sp)) {
-                Exp* op2 = ((Binary*)sub)->getSubExp2();
-                if (op2->isIntConst())
-                    ret = ((Const*)op2)->getInt();
-                if (op == opMinus)
-                    ret = -ret;
-            }
-        }
+    if (!e->isMemOf())
+        return 0;
+    Exp* sub = ((Location*)e)->getSubExp1();
+    OPER op = sub->getOper();
+    if (op != opPlus && op != opMinus)
+        return 0;
+    Exp* op1 = ((Binary*)sub)->getSubExp1();
+    if (op1->isSubscript())
+        op1 = ((RefExp*)op1)->getSubExp1();
+    if (op1->isRegN(sp)) {
+        Exp* op2 = ((Binary*)sub)->getSubExp2();
+        if (op2->isIntConst())
+            ret = ((Const*)op2)->getInt();
+        if (op == opMinus)
+            ret = -ret;
     }
     return ret;
 }
@@ -1985,8 +1998,10 @@ Return* Return::clone() {
 }
 
 bool Return::operator==(Return& other) {
-    if (!(*type == *other.type)) return false;
-    if (!(*exp == *other.exp)) return false;
+    if (!(*type == *other.type))
+        return false;
+    if (!(*exp == *other.exp))
+        return false;
     return true;
 }
 

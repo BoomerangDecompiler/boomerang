@@ -767,19 +767,17 @@ int Prog::getNumUserProcs() {
 /***************************************************************************//**
  *
  * \brief Return a pointer to the indexed Proc object
+ * If this is used often, we should use a vector instead of a list
  * \param idx - Index of the proc
  * \returns Pointer to the Proc object, or 0 if index invalid
  ******************************************************************************/
 Proc* Prog::getProc(int idx) const {
-    // Return the indexed procedure. If this is used often, we should use a vector instead of a list
-    // If index is invalid, result will be 0
     if ((idx < 0) || (idx >= (int)m_procs.size()))
         return 0;
     std::list<Proc*>::const_iterator it = m_procs.begin();
     std::advance(it,idx);
     return (*it);
 }
-
 
 /***************************************************************************//**
  *
@@ -789,8 +787,7 @@ Proc* Prog::getProc(int idx) const {
  * \returns Pointer to the Proc object, or 0 if none, or -1 if deleted
  ******************************************************************************/
 Proc* Prog::findProc(ADDRESS uAddr) const {
-    PROGMAP::const_iterator it;
-    it = m_procLabels.find(uAddr);
+    PROGMAP::const_iterator it = m_procLabels.find(uAddr);
     if (it == m_procLabels.end())
         return nullptr;
     return (*it).second;
@@ -1018,9 +1015,12 @@ void Prog::setGlobalType(const char* nam, Type* ty) {
     }
 }
 
-// get a string constant at a given address if appropriate
-// if knownString, it is already known to be a char*
-//! get a string constant at a give address if appropriate
+/***************************************************************************//**
+ * \brief    get a string constant at a give address if appropriate
+ * \param uaddr - string address
+ * \param knownString if set, it is already known to be a char*
+ * \returns Pointer to the string or nullptr if uaddr is somehow invalid
+ ******************************************************************************/
 const char *Prog::getStringConstant(ADDRESS uaddr, bool knownString /* = false */) {
     const SectionInfo* si = pBF->GetSectionInfoByAddr(uaddr);
     // Too many compilers put constants, including string constants, into read/write sections

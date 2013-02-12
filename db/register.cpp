@@ -31,7 +31,7 @@ Register::Register() : address(nullptr), mappedIndex(-1),
 
 /***************************************************************************//**
  * \brief      Copy constructor.
- * PARAMETERS:      Reference to another Register object to construct from
+ * \param      r Reference to another Register object to construct from
  ******************************************************************************/
 Register::Register(const Register& r) : size(r.size),
     address(r.address),    mappedIndex(r.mappedIndex),
