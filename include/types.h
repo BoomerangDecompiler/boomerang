@@ -47,7 +47,7 @@ struct ADDRESS { /* pointer. size depends on platform */
         m_value += other.m_value;
         return *this;
     }
-    ADDRESS operator+=(int other) {
+    ADDRESS operator+=(intptr_t other) {
         m_value += other;
         return *this;
     }
@@ -61,11 +61,11 @@ struct ADDRESS { /* pointer. size depends on platform */
     ADDRESS operator-(const ADDRESS &other) const {
         return ADDRESS::g(m_value - other.m_value);
     }
-    ADDRESS operator-=(int v) {
+    ADDRESS operator-=(intptr_t v) {
         m_value -= v;
         return *this;
     }
-    ADDRESS operator-(int other) const {
+    ADDRESS operator-(intptr_t other) const {
         return ADDRESS::g(m_value - other);
     }
         friend std::ostream& operator<< (std::ostream& stream, const ADDRESS& addr);

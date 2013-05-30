@@ -1,6 +1,6 @@
 #define sign_extend(N,SIZE) (((int)((N) << (sizeof(unsigned)*8-(SIZE)))) >> (sizeof(unsigned)*8-(SIZE)))
 
-#line 1 "frontend/machine/mips/decoder.m"
+//#line 1 "frontend/machine/mips/decoder.m"
 /****************************************************************
 *
 * FILENAME
@@ -53,7 +53,7 @@ MIPSDecoder::MIPSDecoder(Prog* prog) : NJMCDecoder(prog)
 }
 
 // For now...
-int MIPSDecoder::decodeAssemblyInstruction(ADDRESS, int)
+int MIPSDecoder::decodeAssemblyInstruction(ADDRESS, ptrdiff_t)
 { return 0; }
 
 // Stub from PPC...
@@ -72,7 +72,7 @@ int MIPSDecoder::decodeAssemblyInstruction(ADDRESS, int)
  * \returns a DecodeResult structure containing all the information
  *              gathered during decoding
  *********************************************************************************/
-DecodeResult& MIPSDecoder::decodeInstruction(ADDRESS pc, int delta)
+DecodeResult& MIPSDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 {
     static DecodeResult result;
     //ADDRESS hostPC = pc+delta;

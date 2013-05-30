@@ -60,7 +60,7 @@ void StatementTest::setUp () {
  * OVERVIEW:        Delete expressions created in setUp
  * NOTE:            Called after all tests
  * PARAMETERS:        <none>
- * \returns             <nothing>
+ *
  *============================================================================*/
 void StatementTest::tearDown () {
 }

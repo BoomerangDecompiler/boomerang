@@ -265,14 +265,13 @@ bool BasicBlock::isJumpReqd() {
     return m_bJumpReqd;
 }
 
+char debug_buffer[DEBUG_BUFSIZE];
 /***************************************************************************//**
  *
- * \brief        Print to a static string (for debugging)
- * \returns            Address of the static buffer
+ * \brief       Print to a static string (for debugging)
+ * \returns     Address of the static buffer
  *
  ******************************************************************************/
-char debug_buffer[DEBUG_BUFSIZE];
-
 char* BasicBlock::prints() {
     std::ostringstream ost;
     print(ost);
@@ -333,8 +332,8 @@ void BasicBlock::print(std::ostream& os, bool html) {
         if (html)
             os << "<br>";
         os << "Synthetic out edge(s) to ";
-        for (int i=0; i < m_iNumOutEdges; i++) {
-            BasicBlock * outEdge = m_OutEdges[i];
+        assert(m_iNumOutEdges==m_OutEdges.size());
+        for (BasicBlock * outEdge : m_OutEdges) {
             if (outEdge && outEdge->m_iLabelNum)
                 os << "L" << std::dec << outEdge->m_iLabelNum << " ";
         }
@@ -448,7 +447,7 @@ std::vector<BasicBlock *>& BasicBlock::getOutEdges() {
  * \param i - index (0 based) of in-edge to change
  * \param pNewInEdge - pointer to BasicBlock that will be a new parent
  ******************************************************************************/
-void BasicBlock::setInEdge(int i, BasicBlock * pNewInEdge) {
+void BasicBlock::setInEdge(size_t i, BasicBlock * pNewInEdge) {
     m_InEdges[i] = pNewInEdge;
 }
 
@@ -460,12 +459,12 @@ void BasicBlock::setInEdge(int i, BasicBlock * pNewInEdge) {
  * \param i - index (0 based) of out-edge to change
  * \param pNewOutEdge - pointer to BB that will be the new successor
  ******************************************************************************/
-void BasicBlock::setOutEdge(int i, BasicBlock * pNewOutEdge) {
+void BasicBlock::setOutEdge(size_t i, BasicBlock * pNewOutEdge) {
     if (m_OutEdges.size() == 0) {
         assert(i == 0);
         m_OutEdges.push_back(pNewOutEdge); // TODO: why is it allowed to set new edge in empty m_OutEdges array ?
     } else {
-        assert(i < (int)m_OutEdges.size());
+        assert(i < m_OutEdges.size());
         m_OutEdges[i] = pNewOutEdge;
     }
 }
@@ -492,7 +491,6 @@ BasicBlock *BasicBlock::getOutEdge(unsigned int i) {
  * \param        a the address
  * \returns      the outedge which corresponds to \a a or 0 if there was no such outedge
  ******************************************************************************/
-
 BasicBlock *BasicBlock::getCorrectOutEdge(ADDRESS a) {
     for (BasicBlock * it : m_OutEdges) {
         if (it->getLowAddr() == a)
@@ -506,7 +504,7 @@ BasicBlock *BasicBlock::getCorrectOutEdge(ADDRESS a) {
  *
  * \brief Add the given in-edge
  * Needed for example when duplicating BBs
- * \param pNewInEdge-  pointer to BB that will be a new parent
+ * \param pNewInEdge -  pointer to BB that will be a new parent
  *
  ******************************************************************************/
 void BasicBlock::addInEdge(BasicBlock * pNewInEdge) {
@@ -532,7 +530,7 @@ void BasicBlock::deleteInEdge(BasicBlock * edge) {
     for (auto it = m_InEdges.begin(); it != m_InEdges.end(); it++) {
         if (*it == edge) {
             deleteInEdge(it);
-            break;
+             break;
         }
     }
 }
@@ -898,33 +896,25 @@ void BasicBlock::simplify() {
             m_OutEdges[0] = m_OutEdges[1];
             m_OutEdges.resize(1);
             m_iNumOutEdges = 1;
-            if (VERBOSE)
-                LOG << "redundant edge to " << redundant->getLowAddr() << " inedges: ";
+            LOG_VERBOSE(1) << "redundant edge to " << redundant->getLowAddr() << " inedges: ";
             std::vector<BasicBlock *> rinedges = redundant->m_InEdges;
             redundant->m_InEdges.clear();
             for (BasicBlock *redundant_edge : rinedges) {
-                if (VERBOSE)
-                    LOG << redundant_edge->getLowAddr() << " ";
+                LOG_VERBOSE(1) << redundant_edge->getLowAddr() << " ";
                 if (redundant_edge != this)
                     redundant->m_InEdges.push_back(redundant_edge);
                 else {
-                    if (VERBOSE)
-                        LOG << "(ignored) ";
+                    LOG_VERBOSE(1) << "(ignored) ";
                 }
             }
-            if (VERBOSE)
-                LOG << "\n";
+            LOG_VERBOSE(1) << "\n";
             redundant->m_iNumInEdges = redundant->m_InEdges.size();
-            if (VERBOSE)
-                LOG << "   after: " << m_OutEdges[0]->getLowAddr() << "\n";
+            LOG_VERBOSE(1) << "   after: " << m_OutEdges[0]->getLowAddr() << "\n";
         }
         if (m_nodeType == ONEWAY) {
             // set out edges to be the first one
-            if (VERBOSE) {
-                LOG << "turning TWOWAY into ONEWAY: "
-                    << m_OutEdges[0]->getLowAddr() << " "
-                    << m_OutEdges[1]->getLowAddr() << "\n";
-            }
+            LOG_VERBOSE(1)  << "turning TWOWAY into ONEWAY: " << m_OutEdges[0]->getLowAddr() << " "
+                            << m_OutEdges[1]->getLowAddr() << "\n";
             BasicBlock * redundant = m_OutEdges[1];
             m_OutEdges.resize(1);
             m_iNumOutEdges = 1;
@@ -938,15 +928,12 @@ void BasicBlock::simplify() {
                 if (redundant_edge != this)
                     redundant->m_InEdges.push_back(redundant_edge);
                 else {
-                    if (VERBOSE)
-                        LOG << "(ignored) ";
+                    LOG_VERBOSE(1) << "(ignored) ";
                 }
             }
-            if (VERBOSE)
-                LOG << "\n";
+            LOG_VERBOSE(1) << "\n";
             redundant->m_iNumInEdges = redundant->m_InEdges.size();
-            if (VERBOSE)
-                LOG << "   after: " << m_OutEdges[0]->getLowAddr() << "\n";
+            LOG_VERBOSE(1) << "   after: " << m_OutEdges[0]->getLowAddr() << "\n";
         }
     }
 }
@@ -1422,7 +1409,7 @@ void BasicBlock::setLoopStamps(int &time, std::vector<BasicBlock *> &order) {
     loopStamps[1] = ++time;
 
     // add this node to the ordering structure as well as recording its position within the ordering
-    ord = order.size();
+    ord = (int)order.size();
     order.push_back(this);
 }
 
@@ -1432,7 +1419,7 @@ void BasicBlock::setRevLoopStamps(int &time) {
     revLoopStamps[0] = time;
 
     // recurse on the unvisited children in reverse order
-    for (int i = m_OutEdges.size() - 1; i >= 0; i--) {
+    for (int i = (int)m_OutEdges.size() - 1; i >= 0; i--) {
         // recurse on this child if it hasn't already been visited
         if (m_OutEdges[i]->traversed != DFS_RNUM)
             m_OutEdges[i]->setRevLoopStamps(++time);
@@ -1453,7 +1440,7 @@ void BasicBlock::setRevOrder(std::vector<BasicBlock *> &order) {
 
     // add this node to the ordering structure and record the post dom. order of this node as its index within this
     // ordering structure
-    revOrd = order.size();
+    revOrd = (int)order.size();
     order.push_back(this);
 }
 
@@ -1706,7 +1693,6 @@ void BasicBlock::getLiveOut(LocationSet &liveout, LocationSet& phiLocs) {
 /*
  * Get the index of my in-edges is BB pred
  */
-
 int BasicBlock::whichPred(BasicBlock * pred) {
     int n = m_InEdges.size();
     for (int i=0; i < n; i++) {
@@ -1829,14 +1815,14 @@ static Location* vfc_vto = Location::memOf(
                                           new Terminal(opWildIntConst)));
 
 // Pattern 3: m[ m[ <expr> + K1] ]
-Location* vfc_vfo = Location::memOf(
+static Location* vfc_vfo = Location::memOf(
                         Location::memOf(
                             new Binary(opPlus,
                                        new Terminal(opWild),
                                        new Terminal(opWildIntConst))));
 
 // Pattern 4: m[ m[ <expr> ] ]
-Location* vfc_none = Location::memOf(
+static Location* vfc_none = Location::memOf(
                          Location::memOf(
                              new Terminal(opWild)));
 
@@ -1962,13 +1948,13 @@ int BasicBlock::findNumCases() {
 }
 
 // Find all the possible constant values that the location defined by s could be assigned with
-static void findConstantValues(Statement* s, std::list<int>& dests) {
+static void findConstantValues(const Statement* s, std::list<int>& dests) {
     if (s == nullptr)
         return;
     if (s->isPhi()) {
         // For each definition, recurse
-        for (PhiInfo &it : *((PhiAssign*)s))
-            findConstantValues(it.def, dests);
+        for (const std::pair<int,PhiInfo> &it : *((PhiAssign*)s))
+            findConstantValues(it.second.def, dests);
     }
     else if (s->isAssign()) {
         Exp* rhs = ((Assign*)s)->getRight();
@@ -2063,6 +2049,7 @@ bool BasicBlock::decodeIndirectJmp(UserProc* proc) {
                 }
                 assert(swi->iNumTable > 0);
 #endif
+                //TODO: missing form = 'R' iOffset is not being set
                 swi->iUpper = swi->iNumTable-1;
                 swi->iLower = 0;
                 if (expr->getOper() == opMinus && ((Binary*)expr)->getSubExp2()->isIntConst()) {
@@ -2086,17 +2073,17 @@ bool BasicBlock::decodeIndirectJmp(UserProc* proc) {
                     std::list<int> dests;
                     findConstantValues(((RefExp*)e)->getDef(), dests);
                     // The switch info wants an array of native addresses
-                    int n = dests.size();
-                    if (n) {
-                        int* destArray = new int[n];
+                    size_t num_dests = dests.size();
+                    if (num_dests) {
+                        int* destArray = new int[num_dests];
                         std::copy(dests.begin(),dests.end(),destArray);
                         SWITCH_INFO* swi = new SWITCH_INFO;
                         swi->chForm = 'F';                    // The "Fortran" form
                         swi->pSwitchVar = e;
                         swi->uTable = ADDRESS::host_ptr(destArray); //WARN: Abuse the uTable member as a pointer
-                        swi->iNumTable = n;
+                        swi->iNumTable = num_dests;
                         swi->iLower = 1;                    // Not used, except to compute
-                        swi->iUpper = n;                    // the number of options
+                        swi->iUpper = num_dests;                    // the number of options
                         lastStmt->setDest((Exp*)nullptr);
                         lastStmt->setSwitchInfo(swi);
                         return true;
@@ -2280,7 +2267,7 @@ void BasicBlock::processSwitch(UserProc* proc) {
     RTL * last(m_pRtls->back());
     CaseStatement * lastStmt((CaseStatement*)last->getHlStmt());
     SWITCH_INFO * si(lastStmt->getSwitchInfo());
-
+    Boomerang::get()->debugSwitch = true;
     if (Boomerang::get()->debugSwitch) {
         LOG << "processing switch statement type " << si->chForm << " with table at 0x" << si->uTable << ", ";
         if (si->iNumTable)
@@ -2320,10 +2307,13 @@ void BasicBlock::processSwitch(UserProc* proc) {
             uSwitch = ADDRESS::g(((int*)si->uTable.m_value)[i]);
         else
             uSwitch = ADDRESS::g(prog->readNative4(si->uTable + i*4));
-        if ((si->chForm == 'O') || (si->chForm == 'R') || (si->chForm == 'r'))
+        if ((si->chForm == 'O') || (si->chForm == 'R') || (si->chForm == 'r')){
             // Offset: add table address to make a real pointer to code.  For type R, the table is relative to the
             // branch, so take iOffset. For others, iOffset is 0, so no harm
+            if(si->chForm!='R')
+                assert(si->iOffset==0);
             uSwitch += si->uTable - si->iOffset;
+        }
         if (uSwitch < prog->getLimitTextHigh()) {
             //tq.visit(cfg, uSwitch, this);
             cfg->addOutEdge(this, uSwitch, true);

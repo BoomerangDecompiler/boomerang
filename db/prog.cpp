@@ -1447,11 +1447,9 @@ void Prog::fromSSAform() {
                 proc->printDFG();
         }
         proc->fromSSAform();
-        if (VERBOSE) {
-            LOG << "===== after transformation from SSA form for " << proc->getName() << " =====\n"
-                << *proc
-                << "===== end after transformation from SSA for " << proc->getName() << " =====\n\n";
-        }
+        LOG_VERBOSE(1)  << "===== after transformation from SSA form for " << proc->getName() << " =====\n"
+                        << *proc
+                        << "===== end after transformation from SSA for " << proc->getName() << " =====\n\n";
     }
 }
 //! Constraint based type analysis

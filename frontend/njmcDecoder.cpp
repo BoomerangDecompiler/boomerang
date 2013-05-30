@@ -41,16 +41,16 @@
  * FUNCTION:       NJMCDecoder::NJMCDecoder
  * \brief
  * PARAMETERS:       prog: Pointer to the Prog object
- * \returns            N/A
+ *
  ******************************************************************************/
-NJMCDecoder::NJMCDecoder(Prog* prog) : prog(prog)
+NJMCDecoder::NJMCDecoder(Prog* prg) : prog(prg)
 {}
 
 /***************************************************************************//**
  * \brief   Given an instruction name and a variable list of expressions representing the actual operands of
  *              the instruction, use the RTL template dictionary to return the instantiated RTL representing the
  *              semantics of the instruction.
- * \param   pc: native PC
+ * \param   pc  native PC
  * \param   name - instruction name
  * \param   ... - Semantic String ptrs representing actual operands
  * \returns an instantiated list of Exps
@@ -203,13 +203,13 @@ Exp* NJMCDecoder::dis_Num(unsigned num) {
 /***************************************************************************//**
  * \brief   Process an unconditional jump instruction
  *              Also check if the destination is a label (MVE: is this done?)
- * \param   name: name of instruction (for debugging)
- * \param   size: size of instruction in bytes
- * \param   pc: native pc
- * \param   stmts: list of statements (?)
- * \param   result: ref to decoder result object
+ * \param   name name of instruction (for debugging)
+ * \param   size size of instruction in bytes
+ * \param   pc native pc
+ * \param   stmts list of statements (?)
+ * \param   result ref to decoder result object
  ******************************************************************************/
-void NJMCDecoder::unconditionalJump(const char* name, int size, ADDRESS relocd, int delta, ADDRESS pc,
+void NJMCDecoder::unconditionalJump(const char* name, int size, ADDRESS relocd, ptrdiff_t delta, ADDRESS pc,
                                     std::list<Statement*>* stmts, DecodeResult& result) {
     result.rtl = new RTL(pc, stmts);
     result.numBytes = size;
@@ -221,12 +221,12 @@ void NJMCDecoder::unconditionalJump(const char* name, int size, ADDRESS relocd, 
 
 /***************************************************************************//**
  * \brief   Process an indirect jump instruction
- * \param   name: name of instruction (for debugging)
- * \param   size: size of instruction in bytes
- * \param   dest: destination Exp*
- * \param   pc: native pc
- * \param   stmts: list of statements (?)
- * \param   result: ref to decoder result object
+ * \param   name name of instruction (for debugging)
+ * \param   size size of instruction in bytes
+ * \param   dest destination Exp*
+ * \param   pc native pc
+ * \param   stmts list of statements (?)
+ * \param   result ref to decoder result object
  * \returns <none>
  ******************************************************************************/
 void NJMCDecoder::computedJump(const char* name, int size, Exp* dest, ADDRESS pc, std::list<Statement*>* stmts,
@@ -241,15 +241,13 @@ void NJMCDecoder::computedJump(const char* name, int size, Exp* dest, ADDRESS pc
 }
 
 /***************************************************************************//**
- * FUNCTION:        NJMCDecoder::computedCall
- * \brief        Process an indirect call instruction
- * PARAMETERS:        name: name of instruction (for debugging)
- *                    size: size of instruction in bytes
- *                    dest: destination Exp*
- *                    pc: native pc
- *                    stmts: list of statements (?)
- *                    result: ref to decoder result object
- * \returns             <none>
+ * \brief   Process an indirect call instruction
+ * \param   name name of instruction (for debugging)
+ * \param   size size of instruction in bytes
+ * \param   dest destination Exp*
+ * \param   pc native pc
+ * \param   stmts list of statements (?)
+ * \param   result ref to decoder result object
  ******************************************************************************/
 void NJMCDecoder::computedCall(const char* name, int size, Exp* dest, ADDRESS pc, std::list<Statement*>* stmts,
                                DecodeResult& result) {

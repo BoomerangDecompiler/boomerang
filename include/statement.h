@@ -134,6 +134,7 @@ enum BRANCH_TYPE {
  */
 class Statement {
 protected:
+        typedef std::map<Exp*, int, lessExpStar> mExpInt;
         BasicBlock *    pbb;            // contains a pointer to the enclosing BB
         UserProc *      proc;            // procedure containing this statement
         int             number;            // Statement number for printing
@@ -198,26 +199,26 @@ virtual bool        isDefinition() = 0;
         // true if is a null statement
         bool        isNullStatement();
 
-virtual    bool        isTyping() {return false;}        // Return true if a TypingStatement
+virtual bool        isTyping() {return false;}        // Return true if a TypingStatement
         // true if this statement is a standard assign
-        bool        isAssign() {return kind == STMT_ASSIGN;}
+        bool        isAssign() const {return kind == STMT_ASSIGN;}
         // true if this statement is a any kind of assignment
         bool        isAssignment() {return kind == STMT_ASSIGN || kind == STMT_PHIASSIGN ||
                         kind == STMT_IMPASSIGN || kind == STMT_BOOLASSIGN;}
         // true    if this statement is a phi assignment
-        bool        isPhi() {return kind == STMT_PHIASSIGN; }
+        bool        isPhi() const {return kind == STMT_PHIASSIGN; }
         // true    if this statement is an implicit assignment
-        bool        isImplicit() {return kind == STMT_IMPASSIGN;}
+        bool        isImplicit() const {return kind == STMT_IMPASSIGN;}
         // true    if this statment is a flags assignment
         bool        isFlagAssgn();
         // true of this statement is an implicit reference
-        bool        isImpRef() {return kind == STMT_IMPREF;}
+        bool        isImpRef() const {return kind == STMT_IMPREF;}
 
 virtual bool        isGoto() { return kind == STMT_GOTO; }
 virtual bool        isBranch() { return kind == STMT_BRANCH; }
 
         // true if this statement is a junction
-        bool        isJunction() { return kind == STMT_JUNCTION; }
+        bool        isJunction() const { return kind == STMT_JUNCTION; }
 
         // true if this statement is a call
         bool        isCall() { return kind == STMT_CALL; }
@@ -266,13 +267,8 @@ virtual bool        searchAndReplace(const Exp *search, Exp *replace, bool cc = 
 
         // True if can propagate to expression e in this Statement.
 static    bool        canPropagateToExp(Exp* e);
-        // Propagate to this statement. Return true if a change
-        // destCounts is a map that indicates how may times a statement's definition is used
-        // dnp is a StatementSet with statements that should not be propagated
-        // Set convert if an indirect call is changed to direct (otherwise, no change)
-        // Set force to true to propagate even memofs (for switch analysis)
-        bool        propagateTo(bool& convert, std::map<Exp*, int, lessExpStar>* destCounts = nullptr,
-                        LocationSet* usedByDomPhi = nullptr, bool force = false);
+        bool        propagateTo(bool& convert, mExpInt* destCounts = nullptr,LocationSet* usedByDomPhi = nullptr,
+                                bool force = false);
         bool        propagateFlagsTo();
 
         // code generation
@@ -464,9 +460,9 @@ class Assign : public Assignment {
 
 public:
         // Constructor, subexpressions
-                    Assign(Exp* lhs, Exp* rhs, Exp* guard = nullptr);
+                    Assign(Exp* lhs, Exp* r, Exp* guard = nullptr);
         // Constructor, type and subexpressions
-                    Assign(Type* ty, Exp* lhs, Exp* rhs, Exp* guard = nullptr);
+                    Assign(Type* ty, Exp* lhs, Exp* r, Exp* guard = nullptr);
         // Default constructor, for XML parser
                     Assign() : Assignment(nullptr), rhs(nullptr), guard(nullptr) {}
         // Copy constructor
@@ -554,13 +550,13 @@ virtual void        genConstraints(LocationSet& cons);
 struct PhiInfo {
         // A default constructor is required because CFG changes (?) can cause access to elements of the vector that
         // are beyond the current end, creating gaps which have to be initialised to zeroes so that they can be skipped
-        PhiInfo() : def(0), e(0) {}
+        PhiInfo() {} //: def(0), e(0) not initializing to help valgrind find locations of unset vals
         Statement*    def;        // The defining statement
         Exp*        e;            // The expression for the thing being defined (never subscripted)
 };
 class PhiAssign : public Assignment {
 public:
-        typedef        std::vector<PhiInfo> Definitions;
+        typedef        std::map<int,PhiInfo> Definitions;
         typedef        Definitions::iterator iterator;
         typedef        Definitions::const_iterator const_iterator;
 private:
@@ -609,21 +605,21 @@ virtual void            genConstraints(LocationSet& cons);
 //
 
                         // Get or put the statement at index idx
-        Statement*      getStmtAt(int idx) {return defVec[idx].def;}
-        PhiInfo&        getAt(int idx) {return defVec[idx];}
-        void            putAt(int idx, Statement* d, Exp* e);
+        Statement*      getStmtAt(size_t idx) {return defVec[idx].def;}
+        PhiInfo&        getAt(size_t idx) {return defVec[idx];}
+        void            putAt(size_t idx, Statement* d, Exp* e);
         void            simplifyRefs();
-virtual int             getNumDefs() {return defVec.size();}
-        Definitions&    getDefs() {return defVec;}
+virtual size_t          getNumDefs() {return defVec.size();}
+        Definitions &   getDefs() {return defVec;}
                         // A hack. Check MVE
         bool            hasGlobalFuncParam();
 
-        PhiInfo &       front() {return defVec.front();}
-        PhiInfo &       back() {return defVec.back();}
+        PhiInfo &       front() {return defVec.begin()->second;}
+        PhiInfo &       back() {return defVec.rbegin()->second;}
         iterator        begin() {return defVec.begin();}
         iterator        end()   {return defVec.end();}
-        const_iterator  begin() const {return defVec.begin();}
-        const_iterator  end() const  {return defVec.end();}
+        const_iterator  cbegin() const {return defVec.begin();}
+        const_iterator  cend() const  {return defVec.end();}
         iterator        erase(iterator it)    {return defVec.erase(it);}
 
                         // Convert this phi assignment to an ordinary assignment
@@ -961,7 +957,7 @@ struct SWITCH_INFO {
         int            iUpper;            // Upper bound for the switch variable
         ADDRESS        uTable;            // Native address of the table, or ptr to array of values for form F
         int            iNumTable;        // Number of entries in the table (form H only)
-        int            iOffset;        // Distance from jump to table (form R only)
+        int            iOffset=0;        // Distance from jump to table (form R only)
         //int        delta;            // Host address - Native address
 };
 
@@ -1229,16 +1225,16 @@ public:
 virtual                ~ReturnStatement();
 
 typedef    StatementList::iterator iterator;
-        iterator    begin()                {return returns.begin();}
-        iterator    end()                {return returns.end();}
-        iterator    erase(iterator it)    {return returns.erase(it);}
-        StatementList& getModifieds()    {return modifieds;}
-        StatementList& getReturns()        {return returns;}
-        unsigned    getNumReturns()        {return returns.size(); }
-        void        updateModifieds();        // Update modifieds from the collector
-        void        updateReturns();        // Update returns from the modifieds
+        iterator        begin()                {return returns.begin();}
+        iterator        end()                {return returns.end();}
+        iterator        erase(iterator it)    {return returns.erase(it);}
+        StatementList & getModifieds()    {return modifieds;}
+        StatementList & getReturns()        {return returns;}
+        size_t          getNumReturns()        {return returns.size(); }
+        void            updateModifieds();        // Update modifieds from the collector
+        void            updateReturns();        // Update returns from the modifieds
 
-virtual void        print(std::ostream& os = std::cout, bool html = false) const;
+virtual void            print(std::ostream& os = std::cout, bool html = false) const;
 
         // general search
 virtual bool        search(Exp*, Exp*&);

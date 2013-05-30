@@ -64,8 +64,8 @@ RTL::RTL()
 /***************************************************************************//**
  * \brief   Constructor.
  * \param   instNativeAddr - the native address of the instruction
- * \param   listExp - ptr to existing list of Exps
- * \returns N/a
+ * \param   listStmt - ptr to existing list of Statement
+ *
  ******************************************************************************/
 RTL::RTL(ADDRESS instNativeAddr, const std::list<Statement*>* listStmt /*= nullptr*/)
     : nativeAddr(instNativeAddr) {
@@ -76,7 +76,7 @@ RTL::RTL(ADDRESS instNativeAddr, const std::list<Statement*>* listStmt /*= nullp
 /***************************************************************************//**
  * \brief        Copy constructor. A deep clone is made of the given object
  *                    so that the lists of Exps do not share memory.
- * \param        other: RTL to copy from
+ * \param        other RTL to copy from
  ******************************************************************************/
 RTL::RTL(const RTL& other) : nativeAddr(other.nativeAddr) {
     for (auto it = other.begin(); it != other.end(); it++) {
@@ -118,7 +118,7 @@ RTL* RTL::clone() const {
 
 /***************************************************************************//**
  * \brief        Make a copy of this RTLs list of Exp* to the given list
- * \param        Ref to empty list to copy to
+ * \param        dest Ref to empty list to copy to
  ******************************************************************************/
 void RTL::deepCopyList(std::list<Statement*>& dest) const {
     for (Statement * it : *this) {
@@ -131,8 +131,7 @@ void RTL::deepCopyList(std::list<Statement*>& dest) const {
  * \note            Exception: Leaves any flag call at the end (so may push exp
  *                     to second last position, instead of last)
  * \note            stmt is NOT copied. This is different to how UQBT was!
- * \param        s: pointer to Statement to append
- * \returns             Nothing
+ * \param        s pointer to Statement to append
  ******************************************************************************/
 void RTL::appendStmt(Statement* s) {
     assert(s!=nullptr);
@@ -149,7 +148,7 @@ void RTL::appendStmt(Statement* s) {
 /***************************************************************************//**
  * \brief        Append a given list of Statements to this RTL
  * \note            A copy of the Statements in le are appended
- * \param        rtl: list of Statements to insert
+ * \param        rtl list of Statements to insert
  ******************************************************************************/
 void RTL::appendListStmt(std::list<Statement*>& le) {
     for (Statement * it : le) {
@@ -160,7 +159,6 @@ void RTL::appendListStmt(std::list<Statement*>& le) {
 /***************************************************************************//**
  * \brief   Prints this object to a stream in text form.
  * \param   os - stream to output to (often cout or cerr)
- * \returns <nothing>
  ******************************************************************************/
 void RTL::print(std::ostream& os /*= cout*/, bool html /*=false*/) const {
 
@@ -211,10 +209,10 @@ char* RTL::prints() const {
 }
 
 /***************************************************************************//**
- * \brief        Output operator for RTL*
- * Just makes it easier to use e.g. std::cerr << myRTLptr
- * \param os: output stream to send to
- *        r: ptr to RTL to print to the stream
+ * \brief   Output operator for RTL*
+ *          Just makes it easier to use e.g. std::cerr << myRTLptr
+ * \param   os output stream to send to
+ * \param   r ptr to RTL to print to the stream
  * \returns os (for concatenation)
  ******************************************************************************/
 std::ostream& operator<<(std::ostream& os, const RTL* r) {

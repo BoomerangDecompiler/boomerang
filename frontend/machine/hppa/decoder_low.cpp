@@ -1,7 +1,7 @@
 #define sign_extend(N,SIZE) (((int)((N) << (sizeof(unsigned)*8-(SIZE)))) >> (sizeof(unsigned)*8-(SIZE)))
 #include <assert.h>
 
-#line 2 "machine/hppa/decoder_low.m"
+//#line 2 "machine/hppa/decoder_low.m"
 /***************************************************************************//**
  * \file        decoder_low.m
  * OVERVIEW:    Low level New Jersey Machine Code Toolkit match file for the
@@ -63,7 +63,7 @@ bool c_c_n(ADDRESS hostpc)
     bool result = true;
 
 
-#line 60 "machine/hppa/decoder_low.m"
+//#line 60 "machine/hppa/decoder_low.m"
 { 
   dword MATCH_p = 
     
@@ -202,7 +202,7 @@ bool c_c_n(ADDRESS hostpc)
   
 }
 
-#line 65 "machine/hppa/decoder_low.m"
+//#line 65 "machine/hppa/decoder_low.m"
     return result;
 }
 
@@ -217,7 +217,7 @@ SemStr* NJMCDecoder::c_c(ADDRESS hostpc, int &cond)
   static const int sep_codes[] = { 0, 1, 2, 7, 8, 9, 10, 15 };
 
 
-#line 76 "machine/hppa/decoder_low.m"
+//#line 76 "machine/hppa/decoder_low.m"
 { 
   dword MATCH_p = 
     
@@ -450,7 +450,7 @@ SemStr* NJMCDecoder::c_c(ADDRESS hostpc, int &cond)
   
 }
 
-#line 109 "machine/hppa/decoder_low.m"
+//#line 109 "machine/hppa/decoder_low.m"
   return instantiateNamedParam(c_c_names[cond]);
 }
 
@@ -460,7 +460,7 @@ unsigned long c_wcr(ADDRESS hostpc, char **garble)
   unsigned long regl;
 
 
-#line 115 "machine/hppa/decoder_low.m"
+//#line 115 "machine/hppa/decoder_low.m"
 { 
   dword MATCH_p = 
     
@@ -525,7 +525,7 @@ unsigned long c_wcr(ADDRESS hostpc, char **garble)
   
 }
 
-#line 129 "machine/hppa/decoder_low.m"
+//#line 129 "machine/hppa/decoder_low.m"
   return regl;
 #else
     return 0;
@@ -537,7 +537,7 @@ void c_null(ADDRESS hostpc, char **garble)
 #if 0
 
 
-#line 137 "machine/hppa/decoder_low.m"
+//#line 137 "machine/hppa/decoder_low.m"
 { 
   dword MATCH_p = 
     
@@ -602,7 +602,7 @@ void c_null(ADDRESS hostpc, char **garble)
   
 }
 
-#line 148 "machine/hppa/decoder_low.m"
+//#line 148 "machine/hppa/decoder_low.m"
 #endif
 }
 
@@ -628,7 +628,7 @@ list<RT*>* NJMCDecoder::decodeLowLevelInstruction (ADDRESS hostPC, ADDRESS pc,
     int condvalue;
 
 
-#line 170 "machine/hppa/decoder_low.m"
+//#line 170 "machine/hppa/decoder_low.m"
 { 
   dword MATCH_p = 
     
@@ -2354,7 +2354,7 @@ list<RT*>* NJMCDecoder::decodeLowLevelInstruction (ADDRESS hostPC, ADDRESS pc,
   
 }
 
-#line 337 "machine/hppa/decoder_low.m"
+//#line 337 "machine/hppa/decoder_low.m"
 
     result.numBytes = (nextPC - hostPC);
     return RTs;

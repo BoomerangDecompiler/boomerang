@@ -18,7 +18,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION( UtilTest );
  * OVERVIEW:        Set up anything needed before all tests
  * NOTE:            Called before any tests
  * PARAMETERS:      <none>
- * \returns          <nothing>
+ *
  *============================================================================*/
 void UtilTest::setUp () {
 }
@@ -28,30 +28,7 @@ void UtilTest::setUp () {
  * OVERVIEW:        Delete objects created in setUp
  * NOTE:            Called after all tests
  * PARAMETERS:      <none>
- * \returns          <nothing>
+ *
  *============================================================================*/
 void UtilTest::tearDown () {
-}
-/***************************************************************************//**
-* OVERVIEW:     Test hasExt utility function
-*============================================================================*/
-void UtilTest::test_hasExt()
-{
-  CPPUNIT_FAIL("Unimplemented hasExt test");
-}
-
-/***************************************************************************//**
-* OVERVIEW:     Test hasExt utility function
-*============================================================================*/
-void UtilTest::test_changeExt()
-{
-  CPPUNIT_FAIL("Unimplemented changeExt test");
-}
-
-/***************************************************************************//**
-* OVERVIEW:     Test hasExt utility function
-*============================================================================*/
-void UtilTest::test_searchAndReplace()
-{
-  CPPUNIT_FAIL("Unimplemented searchAndReplace test");
 }

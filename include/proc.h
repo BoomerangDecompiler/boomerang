@@ -501,6 +501,7 @@ public:
         bool                filterParams(Exp* e);
         void                setImplicitRef(Statement* s, Exp* a, Type* ty);
 
+        void verifyPHIs();
 protected:
                             UserProc();
         void                setCFG(Cfg *c) { cfg = c; }

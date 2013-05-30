@@ -139,7 +139,7 @@ bool PentiumFrontEnd::isAssignFromTern(Statement* s) {
  * APPLICATION:        Used to "flatten" stack floating point arithmetic (e.g. Pentium floating point code)
  *                      If registers are not replaced "all at once" like this, there can be subtle errors from
  *                      re-replacing already replaced registers
- * \returns             Nothing
+ *
  ******************************************************************************/
 void PentiumFrontEnd::bumpRegisterAll(Exp* e, int min, int max, int delta, int mask) {
     std::list<Exp**> li;
@@ -542,7 +542,7 @@ bool PentiumFrontEnd::helperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL*>* lr
  * FUNCTION:      construct
  * \brief      Construct a new instance of PentiumFrontEnd
  * PARAMETERS:      Same as the FrontEnd constructor, except decoder is **
- * \returns           <nothing>
+ *
  ******************************************************************************/
 #ifdef DYNAMIC
 extern "C" {

@@ -58,7 +58,7 @@ TableEntry::TableEntry() { flags = 0; }
  * \brief Constructor
  * \param p -
  * \param r - reference to a RTL
- * \returns             <nothing>
+ *
  ******************************************************************************/
 TableEntry::TableEntry(std::list<std::string>& p, RTL& r) : rtl(r) {
     std::copy(p.begin(),p.end(),std::back_inserter(params));
@@ -74,7 +74,7 @@ void TableEntry::setParam(std::list<std::string>& p) { params = p; }
 /***************************************************************************//**
  * \brief        Set the RTL.
  * \param        r - a RTL
- * \returns             <nothing>
+ *
  ******************************************************************************/
 void TableEntry::setRTL(RTL& r) {
     rtl = r;
@@ -94,8 +94,8 @@ const TableEntry& TableEntry::operator=(const TableEntry& other) {
 
 /***************************************************************************//**
  * \brief        Appends an RTL to an exising TableEntry
- * \param        p: reference to list of formal parameters (as strings)
- * \param        r: reference to RTL with list of Exps to append
+ * \param        p reference to list of formal parameters (as strings)
+ * \param        r reference to RTL with list of Exps to append
  * \returns             0 for success
  ******************************************************************************/
 int TableEntry::appendRTL(std::list<std::string>& p, RTL& r) {
@@ -115,9 +115,9 @@ int TableEntry::appendRTL(std::list<std::string>& p, RTL& r) {
 /***************************************************************************//**
  * \brief        Appends one RTL to the dictionary,or Adds it to idict if an
  * entry does not already exist.
- * \param n: name of the instruction to add to
- * \param p: list of formal parameters (as strings) for the RTL to add
- * \param r: reference to the RTL to add
+ * \param n name of the instruction to add to
+ * \param p list of formal parameters (as strings) for the RTL to add
+ * \param r reference to the RTL to add
  * \returns 0 for success
  ******************************************************************************/
 int RTLInstDict::appendToDict(std::string &n, std::list<std::string>& p, RTL& r) {
@@ -207,7 +207,7 @@ void RTLInstDict::addRegister( const char *name, int id, int size, bool flt ) {
 /***************************************************************************//**
  * \brief        Print a textual representation of the dictionary.
  * \param        os - stream used for printing
- * \returns             <nothing>
+ *
  ******************************************************************************/
 void RTLInstDict::print(std::ostream& os /*= std::cout*/) {
     for (std::map<std::string, TableEntry>::iterator p = idict.begin();
@@ -456,7 +456,7 @@ public:
  * parameter indicates whether the routine should attempt to optimize the resulting output, ie to minimize the
  * number of temporaries. This is recommended for fully expanded expressions (ie within uqbt), but unsafe
  * otherwise.
- * \returns the list of statements
+ * \param rts the list of statements
  ******************************************************************************/
 
 void RTLInstDict::transformPostVars(std::list<Statement *> &rts, bool optimise) {

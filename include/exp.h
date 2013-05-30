@@ -77,7 +77,7 @@ protected:
         OPER        op;               // The operator (e.g. opPlus)
         mutable unsigned    lexBegin=0, lexEnd=0;
         // Constructor, with ID
-        constexpr   Exp(OPER op) : op(op) {}
+        constexpr Exp(OPER _op) : op(_op) {}
 
 public:
         // Virtual destructor
@@ -102,7 +102,7 @@ virtual void        print(std::ostream& os, bool html = false) const = 0;
         char*        prints();        // Print to string (for debugging and logging)
         void        dump();            // Print to standard error (for debugging)
         // Recursive print: don't want parens at the top level
-virtual void printr(std::ostream& os, bool html = false) { print(os, html);}       // But most classes want standard
+virtual void        printr(std::ostream& os, bool html = false) const { print(os, html);}       // But most classes want standard
         // For debugging: print in indented hex. In gdb: "p x->printx(0)"
 virtual void        printx(int ind) const = 0;
 
@@ -440,7 +440,7 @@ virtual Exp*        genConstraints(Exp* restrictTo);
 virtual bool        accept(ExpVisitor* v);
 virtual Exp*        accept(ExpModifier* v);
 
-virtual bool         match(const char *pattern, std::map<std::string, Exp*> &bindings);
+virtual bool         match(const std::string &pattern, std::map<std::string, Exp*> &bindings);
 
         int            getConscript() {return conscript;}
         void        setConscript(int cs) {conscript = cs;}
@@ -480,7 +480,7 @@ virtual Exp*        accept(ExpModifier* v);
 virtual Type *      ascendType();
 virtual void        descendType(Type* parentType, bool& ch, Statement* s);
 
-virtual bool        match(const char *pattern, std::map<std::string, Exp*> &bindings);
+virtual bool        match(const std::string &pattern, std::map<std::string, Exp*> &bindings);
 
 protected:
         friend class XMLProgParser;
@@ -596,13 +596,11 @@ virtual void         printx(int ind) const;
         // Get second subexpression
         Exp*        getSubExp2();
         const Exp * getSubExp2() const;
-        // Commute the two operands
-        void        commute();
-        // Get a reference to subexpression 2
-        Exp*&        refSubExp2();
+        void        commute();      //!< Commute the two operands
+        Exp *&      refSubExp2();  //!< Get a reference to subexpression 2
 
-virtual Exp*        match(Exp *pattern);
-virtual bool         match(const char *pattern, std::map<std::string, Exp*> &bindings);
+virtual Exp *       match(Exp *pattern);
+virtual bool        match(const std::string &pattern, std::map<std::string, Exp*> &bindings);
 
         // Search children
         void        doSearchChildren(const Exp *search, std::list<Exp**>& li, bool once);
@@ -687,9 +685,9 @@ virtual Exp* genConstraints(Exp* restrictTo);
 virtual bool    accept(ExpVisitor* v);
 virtual Exp*    accept(ExpModifier* v);
 
-virtual bool         match(const char *pattern, std::map<std::string, Exp*> &bindings);
+virtual bool    match(const std::string &pattern, std::map<std::string, Exp*> &bindings);
 
-virtual    Type*    ascendType();
+virtual Type *  ascendType();
 virtual void    descendType(Type* parentType, bool& ch, Statement* s);
 
 protected:
@@ -777,6 +775,9 @@ class RefExp : public Unary {
 public:
         // Constructor with expression (e) and statement defining it (def)
                     RefExp(Exp* e, Statement* def);
+//virtual ~RefExp()   {
+//                        def = nullptr;
+//                    }
         //RefExp(Exp* e);
         //RefExp(RefExp& o);
 virtual Exp*         clone() const;
@@ -787,14 +788,14 @@ virtual bool        operator*=(Exp& o);
 virtual void        print(std::ostream& os, bool html = false) const;
 virtual void        printx(int ind) const;
 //virtual int        getNumRefs() {return 1;}
-        Statement*    getDef() {return def;}        // Ugh was called getRef()
-        Exp*        addSubscript(Statement* def) {this->def = def; return this;}
-        void        setDef(Statement* def) {this->def = def;}
+        Statement*  getDef() {return def;}        // Ugh was called getRef()
+        Exp*        addSubscript(Statement* _def) {def = _def; return this;}
+        void        setDef(Statement* _def) {def = _def;}
 virtual Exp*        genConstraints(Exp* restrictTo);
         bool        references(Statement* s) {return def == s;}
 virtual Exp *       polySimplify(bool& bMod);
 virtual Exp *       match(Exp *pattern);
-virtual bool        match(const char *pattern, std::map<std::string, Exp*> &bindings);
+virtual bool        match(const std::string &pattern, std::map<std::string, Exp*> &bindings);
 
         // Before type analysis, implicit definitions are nullptr.  During and after TA, they point to an implicit
         // assignment statement.  Don't implement here, since it would require #including of statement.h
@@ -804,7 +805,7 @@ virtual bool        match(const char *pattern, std::map<std::string, Exp*> &bind
 virtual bool        accept(ExpVisitor* v);
 virtual Exp*        accept(ExpModifier* v);
 
-virtual    Type*        ascendType();
+virtual Type *      ascendType();
 virtual void        descendType(Type* parentType, bool& ch, Statement* s);
 
 protected:
@@ -874,7 +875,7 @@ virtual void        getDefinitions(LocationSet& defs);
         // Visitation
 virtual bool        accept(ExpVisitor* v);
 virtual Exp*        accept(ExpModifier* v);
-virtual bool         match(const char *pattern, std::map<std::string, Exp*> &bindings);
+virtual bool         match(const std::string &pattern, std::map<std::string, Exp*> &bindings);
 
 protected:
         friend class XMLProgParser;

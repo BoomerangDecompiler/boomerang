@@ -41,12 +41,11 @@
 #include <iomanip>            // For std::setw etc
 
 extern char debug_buffer[];         ///< For prints functions
-
+static const char *tlstrchr(const char *str, char ch);
 /***************************************************************************//**
  *
  * \brief        Constructors
  * PARAMETERS:        As required
- * \returns            <nothing>
  ******************************************************************************/
 
 // Derived class constructors
@@ -58,7 +57,10 @@ Const::Const(double d)      : Exp(opFltConst),  conscript(0), type(new VoidType)
 Const::Const(const char *p) : Exp(opStrConst),  conscript(0), type(new VoidType) {u.p = p;}
 Const::Const(Proc* p)       : Exp(opFuncConst), conscript(0), type(new VoidType) {u.pp = p;}
 /// \remark This is bad. We need a way of constructing true unsigned constants
-Const::Const(ADDRESS a)    : Exp(opIntConst),    conscript(0), type(new VoidType) {u.a = a;}
+Const::Const(ADDRESS a)    : Exp(opIntConst),    conscript(0), type(new VoidType) {
+    assert((a.m_value>>32)==0);
+    u.a = a;
+}
 
 // Copy constructor
 Const::Const(const Const& o) : Exp(o.op) {u = o.u; conscript = o.conscript; type = o.type;}
@@ -140,9 +142,9 @@ TypeVal::TypeVal(Type* ty) : Terminal(opTypeVal), val(ty) { }
  * Create a new Location expression.
  * \param op Should be \opRegOf, opMemOf, opLocal, opGlobal, opParam or opTemp.
  */
-Location::Location(OPER op, Exp *exp, UserProc *proc) : Unary(op, exp), proc(proc) {
+Location::Location(OPER op, Exp *exp, UserProc *p) : Unary(op, exp), proc(p) {
     assert(op == opRegOf || op == opMemOf || op == opLocal || op == opGlobal || op == opParam || op == opTemp);
-    if (proc == nullptr) {
+    if (p == nullptr) {
         // eep.. this almost always causes problems
         Exp *e = exp;
         if (e) {
@@ -174,22 +176,19 @@ Location::Location(Location& o) : Unary(o.op, o.subExp1->clone()), proc(o.proc)
 {
 }
 
-/***************************************************************************//**
- *
- * \brief        Destructors.
- * PARAMETERS:        <none>
- * \returns            <nothing>
- ******************************************************************************/
 Unary::~Unary() {
     // Remember to ;//delete all children
-    if (subExp1 != 0) ;//delete subExp1;
+    if (subExp1 != 0)
+        ;//delete subExp1;
 }
 Binary::~Binary() {
-    if (subExp2 != 0) ;//delete subExp2;
+    if (subExp2 != 0)
+        ;//delete subExp2;
     // Note that the first pointer is destructed in the Exp1 destructor
 }
 Ternary::~Ternary() {
-    if (subExp3 != 0) ;//delete subExp3;
+    if (subExp3 != 0)
+        ;//delete subExp3;
 }
 FlagDef::~FlagDef() {
     ;//delete rtl;
@@ -200,18 +199,19 @@ TypeVal::~TypeVal() {
 
 /***************************************************************************//**
  *
- * \brief        Set requested subexpression; 1 is first
- * PARAMETERS:        Pointer to subexpression to set
- * NOTE:            If an expression already exists, it is ;//deleted
- * \returns            <nothing>
+ * \brief  Set requested subexpression; 1 is first
+ * \param  e Pointer to subexpression to set
+ * \note   If an expression already exists, it is ;//deleted
  ******************************************************************************/
 void Unary::setSubExp1(Exp* e) {
-    if (subExp1 != 0) ;//delete subExp1;
+    if (subExp1 != 0)
+        ;//delete subExp1;
     subExp1 = e;
     assert(subExp1);
 }
 void Binary::setSubExp2(Exp* e) {
-    if (subExp2 != 0) ;//delete subExp2;
+    if (subExp2 != 0)
+        ;//delete subExp2;
     subExp2 = e;
     assert(subExp1 && subExp2);
 }
@@ -274,7 +274,7 @@ Exp*& Exp::refSubExp3() {return dummy;}
  *
  * \brief        Swap the two subexpressions
  * PARAMETERS:        <none>
- * \returns            <nothing>
+ *
  ******************************************************************************/
 /// Swap the two subexpressions.
 void Binary::commute() {
@@ -580,17 +580,16 @@ bool TypeVal::operator*=(Exp& o) {
     return *this == *other;
 }
 
+
+//    //    //    //
+//    Const    //
+//    //    //    //
 /***************************************************************************//**
  *
  * \brief        "Print" in infix notation the expression to a stream.
  *                    Mainly for debugging, or maybe some low level windows
  * PARAMETERS:        Ref to an output stream
- * \returns            <nothing>
  ******************************************************************************/
-
-//    //    //    //
-//    Const    //
-//    //    //    //
 void Const::print(std::ostream& os, bool html) const {
     setLexBegin(os.tellp());
     switch (op) {
@@ -896,7 +895,7 @@ void Unary::print(std::ostream& os, bool html) const {
                 return;
             }
             // Temp: just print the string, no quotes
-        case opGlobal:
+        case opGlobal: //[[clang::fallthrough]];
         case opLocal:
         case opParam:
             // Print a more concise form than param["foo"] (just foo)
@@ -1069,7 +1068,7 @@ void Exp::dump() {
  * \brief        Create a dotty file (use dotty to display the file; search the web for "graphviz").
  *                    Mainly for debugging
  * PARAMETERS:        Name of the file to create
- * \returns            <nothing>
+ *
  ******************************************************************************/
 void Exp::createDotFile(char* name) {
     std::ofstream of;
@@ -1342,12 +1341,12 @@ Exp* TypeVal::match(Exp *pattern) {
     return Exp::match(pattern);
 }
 #endif
-
+//TODO use regexp ?
 #define ISVARIABLE(x) (strspn((x), "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789") == strlen((x)))
 #define ISVARIABLE_S(x) (strspn((x.c_str()), "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789") == (x).length())
 //#define DEBUG_MATCH
 
-const char *tlstrchr(const char *str, char ch) {
+static const char *tlstrchr(const char *str, char ch) {
     while (str && *str) {
         if (*str == ch)
             return str;
@@ -1363,7 +1362,7 @@ const char *tlstrchr(const char *str, char ch) {
         if (*str)
             str++;
     }
-    return nullptr;
+    return "";
 }
 
 /***************************************************************************//**
@@ -1400,38 +1399,40 @@ bool Unary::match(const std::string &pattern, std::map<std::string, Exp*> &bindi
     }
     return false;
 }
-bool Binary::match(const char *pattern, std::map<std::string, Exp*> &bindings) {
+bool Binary::match(const std::string &pattern, std::map<std::string, Exp*> &bindings) {
     if (Exp::match(pattern, bindings))
         return true;
 #ifdef DEBUG_MATCH
     LOG << "binary::match " << this << " to " << pattern << ".\n";
 #endif
-    if (op == opMemberAccess && tlstrchr(pattern, '.')) {
-        char *sub1 = strdup(pattern);
-        char *sub2 = (char*)tlstrchr(sub1, '.');
-        *sub2++ = 0;
+    if (op == opMemberAccess && tlstrchr(pattern.c_str(), '.')) {
+        std::string sub1 = pattern;
+        const char *sub2 = tlstrchr(sub1.c_str(), '.');
+        int split_point = sub2-sub1.c_str();
+        std::string follow = sub1.substr(split_point+1);
+        sub1.resize(split_point);
         if (subExp1->match(sub1, bindings)) {
             assert(subExp2->isStrConst());
-            if (!strcmp(sub2, ((Const*)subExp2)->getStr()))
+            if (follow ==((Const*)subExp2)->getStr())
                 return true;
-            if (ISVARIABLE(sub2)) {
-                bindings[sub2] = subExp2;
+            if (ISVARIABLE_S(follow)) {
+                bindings[follow] = subExp2;
                 return true;
             }
         }
     }
     if (op == opArrayIndex) {
-        if (pattern[strlen(pattern)-1] != ']')
+        if (pattern.back() != ']')
             return false;
-        char *sub1 = strdup(pattern);
+        char *sub1 = strdup(pattern.c_str());
         char *sub2 = strrchr(sub1, '[');
         *sub2++ = 0;
         sub2[strlen(sub2)-1] = 0;
         if (subExp1->match(sub1, bindings) && subExp2->match(sub2, bindings))
             return true;
     }
-    if (op == opPlus && tlstrchr(pattern, '+')) {
-        char *sub1 = strdup(pattern);
+    if (op == opPlus && tlstrchr(pattern.c_str(), '+')) {
+        char *sub1 = strdup(pattern.c_str());
         char *sub2 = (char*)tlstrchr(sub1, '+');
         *sub2++ = 0;
         while (*sub2 == ' ')
@@ -1441,8 +1442,8 @@ bool Binary::match(const char *pattern, std::map<std::string, Exp*> &bindings) {
         if (subExp1->match(sub1, bindings) && subExp2->match(sub2, bindings))
             return true;
     }
-    if (op == opMinus && tlstrchr(pattern, '-')) {
-        char *sub1 = strdup(pattern);
+    if (op == opMinus && tlstrchr(pattern.c_str(), '-')) {
+        char *sub1 = strdup(pattern.c_str());
         char *sub2 = (char*)tlstrchr(sub1, '-');
         *sub2++ = 0;
         while (*sub2 == ' ')
@@ -1454,7 +1455,7 @@ bool Binary::match(const char *pattern, std::map<std::string, Exp*> &bindings) {
     }
     return false;
 }
-bool Ternary::match(const char *pattern, std::map<std::string, Exp*> &bindings) {
+bool Ternary::match(const std::string &pattern, std::map<std::string, Exp*> &bindings) {
     if (Exp::match(pattern, bindings))
         return true;
 #ifdef DEBUG_MATCH
@@ -1462,32 +1463,32 @@ bool Ternary::match(const char *pattern, std::map<std::string, Exp*> &bindings) 
 #endif
     return false;
 }
-bool RefExp::match(const char *pattern, std::map<std::string, Exp*> &bindings) {
+bool RefExp::match(const std::string &pattern, std::map<std::string, Exp*> &bindings) {
     if (Exp::match(pattern, bindings))
         return true;
 #ifdef DEBUG_MATCH
     LOG << "refexp::match " << this << " to " << pattern << ".\n";
 #endif
-    const char *end = pattern + strlen(pattern) - 1;
+    const char *end = pattern.c_str() + pattern.size() - 1;
     if (end > pattern && *end == '}') {
         end--;
         if (*end == '-' && def == nullptr) {
-            char *sub = strdup(pattern);
-            *(sub + (end - 1 - pattern)) = 0;
+            char *sub = strdup(pattern.c_str());
+            *(sub + (end - 1 - pattern.c_str())) = 0;
             return subExp1->match(sub, bindings);
         }
         end = strrchr(end, '{');
         if (end) {
             if (atoi(end + 1) == def->getNumber()) {
-                char *sub = strdup(pattern);
-                *(sub + (end - pattern)) = 0;
+                char *sub = strdup(pattern.c_str());
+                *(sub + (end - pattern.c_str())) = 0;
                 return subExp1->match(sub, bindings);
             }
         }
     }
     return false;
 }
-bool Const::match(const char *pattern, std::map<std::string, Exp*> &bindings) {
+bool Const::match(const std::string &pattern, std::map<std::string, Exp*> &bindings) {
     if (Exp::match(pattern, bindings))
         return true;
 #ifdef DEBUG_MATCH
@@ -1495,7 +1496,7 @@ bool Const::match(const char *pattern, std::map<std::string, Exp*> &bindings) {
 #endif
     return false;
 }
-bool Terminal::match(const char *pattern, std::map<std::string, Exp*> &bindings) {
+bool Terminal::match(const std::string &pattern, std::map<std::string, Exp*> &bindings) {
     if (Exp::match(pattern, bindings))
         return true;
 #ifdef DEBUG_MATCH
@@ -1503,7 +1504,7 @@ bool Terminal::match(const char *pattern, std::map<std::string, Exp*> &bindings)
 #endif
     return false;
 }
-bool Location::match(const char *pattern, std::map<std::string, Exp*> &bindings) {
+bool Location::match(const std::string &pattern, std::map<std::string, Exp*> &bindings) {
     if (Exp::match(pattern, bindings))
         return true;
 #ifdef DEBUG_MATCH
@@ -1515,9 +1516,9 @@ bool Location::match(const char *pattern, std::map<std::string, Exp*> &bindings)
             ch = 'r';
         if (pattern[0] != ch || pattern[1] != '[')
             return false;
-        if (pattern[strlen(pattern)-1] != ']')
+        if (pattern.back() != ']')
             return false;
-        char *sub = strdup(pattern + 2);
+        char *sub = strdup(pattern.c_str() + 2);
         *(sub + strlen(sub) - 1) = 0;
         return subExp1->match(sub, bindings);
     }
@@ -1535,7 +1536,7 @@ bool Location::match(const char *pattern, std::map<std::string, Exp*> &bindings)
  *                    to effect a replacement. So we need to append &pSrc in the list. Can't append &this!
  *                    li: list of Exp** where pointers to the matches are found once: true if not all occurrences to be
  *                      found, false for all
- * \returns            <nothing>
+ *
  ******************************************************************************/
 void Exp::doSearch(const Exp* search, Exp*& pSrc, std::list<Exp**>& li, bool once) {
     bool compare;
@@ -1559,7 +1560,7 @@ void Exp::doSearch(const Exp* search, Exp*& pSrc, std::list<Exp**>& li, bool onc
  * PARAMETERS:        search: ptr to Exp we are searching for
  *                    li: list of Exp** where pointers to the matches are found
  *                    once: true if not all occurrences to be found, false for all
- * \returns            <nothing>
+ *
  ******************************************************************************/
 void Exp::doSearchChildren(const Exp* search, std::list<Exp**>& li, bool once) {
     return;            // Const and Terminal do not override this
@@ -1603,10 +1604,10 @@ Exp* Exp::searchReplace(Exp* search, Exp* replace, bool& change) {
  * \note    It is possible with wildcards that in very unusual circumstances a replacement will be made to
  *              something that is already deleted.
  * \note    Replacements are cloned. Caller to delete search and replace
- * \param   search:     ptr to ptr to Exp we are searching for
- * \param   replace: ptr to Exp to replace it with
- * \param   change: set true if a change made; cleared otherwise
- * \note    change is ALWAYS assigned. No need to clear beforehand.
+ * \param   search     ptr to ptr to Exp we are searching for
+ * \param   replace ptr to Exp to replace it with
+ * \param   change set true if a change made; cleared otherwise
+ * \note    \a change is ALWAYS assigned. No need to clear beforehand.
  * \returns the result (often this, but possibly changed)
  ******************************************************************************/
 Exp* Exp::searchReplaceAll(const Exp* search, Exp* replace, bool& change, bool once /* = false */ ) {
@@ -1632,8 +1633,8 @@ Exp* Exp::searchReplaceAll(const Exp* search, Exp* replace, bool& change, bool o
  * \brief        Search this expression for the given subexpression, and if found, return true and return a pointer
  *                      to the matched expression in result (useful when there are wildcards, e.g. search pattern is r[?]
  *                      result is r[2].
- * \param   search:     ptr to Exp we are searching for
- * \param   result:     ref to ptr to Exp that matched
+ * \param   search     ptr to Exp we are searching for
+ * \param   result     ref to ptr to Exp that matched
  * \returns            True if a match was found
  ******************************************************************************/
 bool Exp::search(Exp* search, Exp*& result) {
@@ -1654,8 +1655,8 @@ bool Exp::search(Exp* search, Exp*& result) {
  *
  * \brief        Search this expression for the given subexpression, and for each found, return a pointer to the
  *                      matched expression in result
- * \param   search:     ptr to Exp we are searching for
- * \param   results:  ref to list of Exp that matched
+ * \param   search     ptr to Exp we are searching for
+ * \param   result  ref to list of Exp that matched
  * \returns            True if a match was found
  ******************************************************************************/
 bool Exp::searchAll(const Exp* search, std::list<Exp*>& result)
@@ -1693,7 +1694,7 @@ bool Exp::searchAll(const Exp* search, std::list<Exp*>& result)
  *                    integers - the vector of integer terms
  *                    negate - determines whether or not to negate the whole expression, i.e. we are on the RHS of an
  *                    opMinus
- * \returns            <nothing>
+ *
  ******************************************************************************/
 void Exp::partitionTerms(std::list<Exp*>& positives, std::list<Exp*>& negatives,
                          std::vector<int>& integers, bool negate) {
@@ -1793,48 +1794,48 @@ Exp* Binary::simplifyArith() {
     }
 
     // Summarise the set of integers to a single number.
-    int sum = std::accumulate(integers.begin(),integers.end(),0);
+    ADDRESS sum = std::accumulate(integers.begin(),integers.end(),ADDRESS::g(0));
 
     // Now put all these elements back together and return the result
     if (positives.size() == 0) {
         if (negatives.size() == 0) {
-            return new Const(sum);
+            return new Const(sum.native());
         } else
             // No positives, some negatives. sum - Acc
-            return new Binary(opMinus, new Const(sum),
+            return new Binary(opMinus, new Const(sum.native()),
                               Exp::Accumulate(negatives));
     }
     if (negatives.size() == 0) {
         // Positives + sum
-        if (sum == 0) {
+        if (sum.isZero()) {
             // Just positives
             return Exp::Accumulate(positives);
         } else {
             OPER op = opPlus;
-            if (sum < 0) {
+            if (sum.m_value < 0) {
                 op = opMinus;
-                sum = -sum;
+                sum.m_value = -sum.m_value;
             }
-            return new Binary(op, Exp::Accumulate(positives), new Const(sum));
+            return new Binary(op, Exp::Accumulate(positives), new Const(sum.native()));
         }
     }
     // Some positives, some negatives
-    if (sum == 0) {
+    if (sum.isZero()) {
         // positives - negatives
         return new Binary(opMinus, Exp::Accumulate(positives),
                           Exp::Accumulate(negatives));
     }
     // General case: some positives, some negatives, a sum
     OPER op = opPlus;
-    if (sum < 0) {
+    if (sum.m_value < 0) {
         op = opMinus;        // Return (pos - negs) - sum
-        sum = -sum;
+        sum.m_value = -sum.m_value;
     }
     return new Binary(op,
                       new Binary(opMinus,
                                  Exp::Accumulate(positives),
                                  Exp::Accumulate(negatives)),
-                      new Const(sum));
+                      new Const(sum.native()));
 
 }
 
@@ -3084,16 +3085,15 @@ Exp* Exp::fixSuccessor() {
 /***************************************************************************//**
  *
  * \brief        Remove size operations such as zero fill, sign extend
- * NOTE:            Could change top level expression
- * NOTE:            Does not handle truncation at present
- * PARAMETERS:        None
+ * \note            Could change top level expression
+ * \note            Does not handle truncation at present
  * \returns            Fixed expression
  ******************************************************************************/
-static Ternary srch1(opZfill, new Terminal(opWild), new Terminal(opWild),
-                     new Terminal(opWild));
-static Ternary srch2(opSgnEx, new Terminal(opWild), new Terminal(opWild),
-                     new Terminal(opWild));
 Exp* Exp::killFill() {
+    static Ternary srch1(opZfill, new Terminal(opWild), new Terminal(opWild),
+                         new Terminal(opWild));
+    static Ternary srch2(opSgnEx, new Terminal(opWild), new Terminal(opWild),
+                         new Terminal(opWild));
     Exp* res = this;
     std::list<Exp**> result;
     doSearch(&srch1, res, result, false);
@@ -3625,7 +3625,8 @@ bool  FlagDef::accept(ExpVisitor* v) {
     return ret;
 }
 bool RefExp::accept(ExpVisitor* v) {
-    bool override, ret = v->visit(this, override);
+    bool override;
+    bool ret = v->visit(this, override);
     if (override) return ret;
     if (ret) ret = subExp1->accept(v);
     return ret;
@@ -4096,3 +4097,5 @@ void Location::readMemo(Memo *mm, bool dec) {
     // LocationMemo *m = dynamic_cast<LocationMemo*>(mm);
 }
 #endif        // #ifdef USING_MEMO
+
+

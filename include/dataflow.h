@@ -28,7 +28,6 @@
 
 #include "exphelp.h"        // For lessExpStar, etc
 #include "managed.h"        // For LocationSet
-#include "boomerang.h"        // For USE_DOMINANCE_NUMS etc
 
 class Cfg;
 class BasicBlock;
@@ -93,7 +92,7 @@ public:
         /*
           * Dominance frontier and SSA code
           */
-        void        DFS(int p, int n);
+        void        DFS(int p, size_t n);
         void        dominators(Cfg* cfg);
         int            ancestorWithLowestSemi(int v);
         void        Link(int p, int n);
@@ -110,25 +109,22 @@ public:
         // Find the locations used by a live, dominating phi-function. Also removes dead phi-funcions
         void        findLiveAtDomPhi(int n, LocationSet& usedByDomPhi, LocationSet& usedByDomPhi0,
                         std::map<Exp*, PhiAssign*, lessExpStar>& defdByPhi);
-#if        USE_DOMINANCE_NUMS
         void        setDominanceNums(int n, int& currNum);        // Set the dominance statement number
-#endif
         void        clearA_phi() {A_phi.clear();}
 
         // For testing:
-        int            pbbToNode(BasicBlock * bb) {return indices[bb];}
-        std::set<int>& getDF(int node) {return DF[node];}
-        BasicBlock *            nodeToBB(int node) {return BBs[node];}
-        int            getIdom(int node) {return idom[node];}
-        int            getSemi(int node) {return semi[node];}
-        std::set<int>& getA_phi(Exp* e) {return A_phi[e];}
+        int             pbbToNode(BasicBlock * bb) {return indices[bb];}
+        std::set<int> & getDF(size_t node) {return DF[node];}
+        BasicBlock *    nodeToBB(size_t node) {return BBs[node];}
+        int             getIdom(size_t node) {return idom[node];}
+        int             getSemi(size_t node) {return semi[node];}
+        std::set<int>&  getA_phi(Exp* e) {return A_phi[e];}
 
         // For debugging:
-        void        dumpStacks();
-        void        dumpDefsites();
-        void        dumpA_orig();
-        void        dumpA_phi();
-
+        void            dumpStacks();
+        void            dumpDefsites();
+        void            dumpA_orig();
+        void            dumpA_phi();
 };
 
 /*    *    *    *    *    *    *\

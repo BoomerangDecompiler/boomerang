@@ -28,7 +28,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TypeTest);
  * OVERVIEW:        Set up anything needed before all tests
  * NOTE:            Called before any tests
  * PARAMETERS:        <none>
- * \returns             <nothing>
+ *
  *============================================================================*/
 static bool logset = false;
 void TypeTest::setUp () {
@@ -43,7 +43,7 @@ void TypeTest::setUp () {
  * OVERVIEW:        Delete objects created in setUp
  * NOTE:            Called after all tests
  * PARAMETERS:        <none>
- * \returns             <nothing>
+ *
  *============================================================================*/
 void TypeTest::tearDown () {
 }

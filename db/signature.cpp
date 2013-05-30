@@ -1169,7 +1169,7 @@ void Signature::addParameter(Type *type, const char *nam /*= nullptr*/, Exp *e /
 
     std::string s;
     if (nam == nullptr) {
-        int n = params.size()+1;
+        size_t n = params.size()+1;
         bool ok = false;
         while (!ok) {
             std::stringstream os;
@@ -1208,14 +1208,14 @@ void Signature::removeParameter(Exp *e) {
         removeParameter(i);
 }
 
-void Signature::removeParameter(int i) {
-    for (unsigned j = i+1; j < params.size(); j++)
+void Signature::removeParameter(size_t i) {
+    for (size_t j = i+1; j < params.size(); j++)
         params[j-1] = params[j];
     params.resize(params.size()-1);
 }
 
-void Signature::setNumParams(int n) {
-    if (n < (int)params.size()) {
+void Signature::setNumParams(size_t n) {
+    if (n < params.size()) {
         // truncate
         params.erase(params.begin() + n, params.end());
     } else {
@@ -1224,7 +1224,7 @@ void Signature::setNumParams(int n) {
     }
 }
 
-const char *Signature::getParamName(int n) {
+const char *Signature::getParamName(size_t n) {
     assert(n < (int)params.size());
     return params[n]->getName();
 }
@@ -1330,7 +1330,7 @@ void Signature::removeReturn(Exp *e) {
     }
 }
 
-void Signature::setReturnType(int n, Type *ty) {
+void Signature::setReturnType(size_t n, Type *ty) {
     if (n < (int)returns.size())
         returns[n]->type = ty;
 }
@@ -1338,7 +1338,7 @@ void Signature::setReturnType(int n, Type *ty) {
 Exp *Signature::getArgumentExp(int n) {
     return getParamExp(n);
 }
-
+//! any signature can be promoted to a higher level signature, if available
 Signature *Signature::promote(UserProc *p) {
     // FIXME: the whole promotion idea needs a redesign...
     if (CallingConvention::Win32Signature::qualified(p, *this)) {
@@ -2022,8 +2022,8 @@ void Return::readMemo(Memo *mm, bool dec) {
 #endif            // #if USING_MEMO
 
 Type* Signature::getTypeFor(Exp* e) {
-    int n = returns.size();
-    for (int i=0; i < n; ++i) {
+    size_t n = returns.size();
+    for (size_t i=0; i < n; ++i) {
         if (*returns[i]->exp == *e)
             return returns[i]->type;
     }

@@ -374,28 +374,28 @@ void BranchStatement::rangeAnalysis(std::list<Statement*> &execution_paths) {
 
 void JunctionStatement::rangeAnalysis(std::list<Statement*> &execution_paths) {
     RangeMap input;
-    if (VERBOSE && DEBUG_RANGE_ANALYSIS)
-        LOG << "unioning {\n";
+    if (DEBUG_RANGE_ANALYSIS)
+        LOG_VERBOSE(1) << "unioning {\n";
     for (int i = 0; i < pbb->getNumInEdges(); i++) {
         Statement *last = pbb->getInEdges()[i]->getLastStmt();
-        if (VERBOSE && DEBUG_RANGE_ANALYSIS)
-            LOG << "  in BB: " << pbb->getInEdges()[i]->getLowAddr() << " " << last << "\n";
+        if (DEBUG_RANGE_ANALYSIS)
+            LOG_VERBOSE(1) << "  in BB: " << pbb->getInEdges()[i]->getLowAddr() << " " << last << "\n";
         if (last->isBranch()) {
             input.unionwith(((BranchStatement*)last)->getRangesForOutEdgeTo(pbb));
         } else {
             if (last->isCall()) {
                 Proc *d = ((CallStatement*)last)->getDestProc();
                 if (d && !d->isLib() && ((UserProc*)d)->getCFG()->findRetNode() == nullptr) {
-                    if (VERBOSE && DEBUG_RANGE_ANALYSIS)
-                        LOG << "ignoring ranges from call to proc with no ret node\n";
+                    if (DEBUG_RANGE_ANALYSIS)
+                        LOG_VERBOSE(1) << "ignoring ranges from call to proc with no ret node\n";
                 } else
                     input.unionwith(last->getRanges());
             } else
                 input.unionwith(last->getRanges());
         }
     }
-    if (VERBOSE && DEBUG_RANGE_ANALYSIS)
-        LOG << "}\n";
+    if (DEBUG_RANGE_ANALYSIS)
+        LOG_VERBOSE(1) << "}\n";
 
     if (!input.isSubset(ranges)) {
         RangeMap output = input;
@@ -403,8 +403,7 @@ void JunctionStatement::rangeAnalysis(std::list<Statement*> &execution_paths) {
         if (output.hasRange(Location::regOf(28))) {
             Range &r = output.getRange(Location::regOf(28));
             if (r.getLowerBound() != r.getUpperBound() && r.getLowerBound() != Range::MIN) {
-                if (VERBOSE)
-                    LOG << "stack height assumption violated " << r << " my bb: " << pbb->getLowAddr() << "\n";
+                LOG_VERBOSE(1) << "stack height assumption violated " << r << " my bb: " << pbb->getLowAddr() << "\n";
                 LOG << *proc;
                 assert(false);
             }
@@ -418,8 +417,8 @@ void JunctionStatement::rangeAnalysis(std::list<Statement*> &execution_paths) {
         updateRanges(output, execution_paths);
     }
 
-    if (VERBOSE && DEBUG_RANGE_ANALYSIS)
-        LOG << this << "\n";
+    if (DEBUG_RANGE_ANALYSIS)
+        LOG_VERBOSE(1) << this << "\n";
 }
 
 void CallStatement::rangeAnalysis(std::list<Statement*> &execution_paths) {
@@ -439,7 +438,7 @@ void CallStatement::rangeAnalysis(std::list<Statement*> &execution_paths) {
                 Signature *sig = procDest->getSignature();
                 pDest = d;
                 arguments.clear();
-                for (unsigned i = 0; i < sig->getNumParams(); i++) {
+                for (size_t i = 0; i < sig->getNumParams(); i++) {
                     Exp* a = sig->getParamExp(i);
                     Assign* as = new Assign(new VoidType(), a->clone(), a->clone());
                     as->setProc(proc);
@@ -688,10 +687,16 @@ bool Statement::canPropagateToExp(Exp*e) {
     return true;
 }
 
-// Return true if any change; set convert if an indirect call statement is converted to direct (else unchanged)
-// destCounts is a set of maps from location to number of times it is used this proc
-// usedByDomPhi is a set of subscripted locations used in phi statements
 static int progress = 0;
+/***************************************************************************//**
+ * \brief Propagate to this statement
+ * \param destCounts is a map that indicates how may times a statement's definition is used
+ * \param dnp is a StatementSet with statements that should not be propagated
+ * \param convert set true if an indirect call is changed to direct (otherwise, no change)
+ * \param force set to true to propagate even memofs (for switch analysis)
+ * \param usedByDomPhi is a set of subscripted locations used in phi statements
+ * \returns             true if a change
+ ******************************************************************************/
 bool Statement::propagateTo(bool& convert, std::map<Exp*, int, lessExpStar>* destCounts /* = nullptr */,
                             LocationSet* usedByDomPhi /* = nullptr */, bool force /* = false */) {
     if (++progress > 1000) {
@@ -958,23 +963,16 @@ bool Statement::isFpop() {
  * GotoStatement methods
  *****************************************************************************/
 
-/***************************************************************************//**
- * FUNCTION:        GotoStatement::GotoStatement
- * \brief        Constructor.
- * PARAMETERS:        listStmt: a list of Statements (not the same as an RTL)
- *                      to serve as the initial list of statements
- * \returns             N/a
- ******************************************************************************/
 GotoStatement::GotoStatement()
     : pDest(nullptr), m_isComputed(false) {
     kind = STMT_GOTO;
 }
 
 /***************************************************************************//**
- * FUNCTION:        GotoStatement::GotoStatement
+ *
  * \brief        Construct a jump to a fixed address
- * PARAMETERS:        uDest: native address of destination
- * \returns             N/a
+ * \param        uDest: native address of destination
+ *
  ******************************************************************************/
 GotoStatement::GotoStatement(ADDRESS uDest) : m_isComputed(false) {
     kind = STMT_GOTO;
@@ -985,7 +983,7 @@ GotoStatement::GotoStatement(ADDRESS uDest) : m_isComputed(false) {
  * FUNCTION:        GotoStatement::~GotoStatement
  * \brief        Destructor
  * PARAMETERS:        None
- * \returns             N/a
+ *
  ******************************************************************************/
 GotoStatement::~GotoStatement() {
     if (pDest) ;//delete pDest;
@@ -1007,7 +1005,7 @@ ADDRESS GotoStatement::getFixedDest() const {
 
 /***************************************************************************//**
  * \brief        Set the destination of this jump to be a given expression.
- * \param        addr - the new fixed address
+ * \param        pd - the new target
  ******************************************************************************/
 void GotoStatement::setDest(Exp* pd) {
     pDest = pd;
@@ -1093,7 +1091,7 @@ bool GotoStatement::searchAll(const Exp* search, std::list<Exp*> &result) {
  * NOTE:            Usually called from RTL::print, in which case the first 9
  *                      chars of the print have already been output to os
  * PARAMETERS:        os: stream to write to
- * \returns             Nothing
+ *
  ******************************************************************************/
 void GotoStatement::print(std::ostream& os, bool html) const {
     os << std::setw(4) << std::dec << number << " ";
@@ -1118,7 +1116,7 @@ void GotoStatement::print(std::ostream& os, bool html) const {
  * NOTE:          This should really be removed, once CaseStatement and
  *                    HLNwayCall are implemented properly
  * PARAMETERS:      <none>
- * \returns           <nothing>
+ *
  ******************************************************************************/
 void GotoStatement::setIsComputed(bool b) {
     m_isComputed = b;
@@ -1177,7 +1175,7 @@ void GotoStatement::simplify() {
  * FUNCTION:        BranchStatement::BranchStatement
  * \brief        Constructor.
  * PARAMETERS:        None
- * \returns             N/a
+ *
  ******************************************************************************/
 BranchStatement::BranchStatement() : jtCond((BRANCH_TYPE)0), pCond(nullptr), bFloat(false), size(0) {
     kind = STMT_BRANCH;
@@ -1187,7 +1185,7 @@ BranchStatement::BranchStatement() : jtCond((BRANCH_TYPE)0), pCond(nullptr), bFl
  * FUNCTION:        BranchStatement::~BranchStatement
  * \brief        Destructor
  * PARAMETERS:        None
- * \returns             N/a
+ *
  ******************************************************************************/
 BranchStatement::~BranchStatement() {
     if (pCond)
@@ -1272,7 +1270,7 @@ void BranchStatement::setCondType(BRANCH_TYPE cond, bool usesFloat /*= false*/) 
  * FUNCTION:        BranchStatement::makeSigned
  * \brief        Change this from an unsigned to a signed branch
  * PARAMETERS:        <none>
- * \returns             <nothing>
+ *
  ******************************************************************************/
 void BranchStatement::makeSigned() {
     // Make this into a signed branch
@@ -1301,7 +1299,7 @@ Exp* BranchStatement::getCondExpr() {
  * FUNCTION:        BranchStatement::setCondExpr
  * \brief        Set the SemStr expression containing the HL condition.
  * PARAMETERS:        Pointer to Exp to set
- * \returns             <nothing>
+ *
  ******************************************************************************/
 void BranchStatement::setCondExpr(Exp* e) {
     if (pCond) ;//delete pCond;
@@ -1413,7 +1411,7 @@ bool BranchStatement::searchAll(const Exp* search, std::list<Exp*> &result) {
  * FUNCTION:        BranchStatement::print
  * \brief        Write a text representation to the given stream
  * PARAMETERS:        os: stream
- * \returns             Nothing
+ *
  ******************************************************************************/
 void BranchStatement::print(std::ostream& os, bool html) const {
     os << std::setw(4) << std::dec << number << " ";
@@ -1762,7 +1760,7 @@ void BranchStatement::simplify() {
  * FUNCTION:        CaseStatement::CaseStatement
  * \brief        Constructor.
  * PARAMETERS:        None
- * \returns             N/a
+ *
  ******************************************************************************/
 CaseStatement::CaseStatement() :
     pSwitchInfo(nullptr) {
@@ -1774,7 +1772,7 @@ CaseStatement::CaseStatement() :
  * \brief        Destructor
  * NOTE:            Don't delete the pSwitchVar; it's always a copy of something else (so don't delete twice)
  * PARAMETERS:        None
- * \returns             N/a
+ *
  ******************************************************************************/
 CaseStatement::~CaseStatement() {
     if (pSwitchInfo)
@@ -1795,7 +1793,7 @@ SWITCH_INFO* CaseStatement::getSwitchInfo() {
  * FUNCTION:        CaseStatement::setSwitchInfo
  * \brief        Set a pointer to a SWITCH_INFO struct
  * PARAMETERS:        Pointer to SWITCH_INFO struct
- * \returns             <nothing>
+ *
  ******************************************************************************/
 void CaseStatement::setSwitchInfo(SWITCH_INFO* psi) {
     pSwitchInfo = psi;
@@ -1835,7 +1833,7 @@ bool CaseStatement::searchAll(const Exp* search, std::list<Exp*> &result) {
  * \brief        Write a text representation to the given stream
  * PARAMETERS:        os: stream
  *                    indent: number of columns to skip
- * \returns             Nothing
+ *
  ******************************************************************************/
 void CaseStatement::print(std::ostream& os, bool html) const {
     os << std::setw(4) << std::dec << number << " ";
@@ -1911,7 +1909,7 @@ void CaseStatement::simplify() {
  * FUNCTION:         CallStatement::CallStatement
  * \brief         Constructor for a call
  * PARAMETERS:         None
- * \returns              <nothing>
+ *
  ******************************************************************************/
 CallStatement::CallStatement(): returnAfterCall(false), calleeReturn(nullptr) {
     kind = STMT_CALL;
@@ -1923,7 +1921,7 @@ CallStatement::CallStatement(): returnAfterCall(false), calleeReturn(nullptr) {
  * FUNCTION:      CallStatement::~CallStatement
  * \brief      Destructor
  * PARAMETERS:      BB - the enclosing basic block of this call
- * \returns           <nothing>
+ *
  ******************************************************************************/
 CallStatement::~CallStatement() {
 }
@@ -1977,16 +1975,16 @@ Type *CallStatement::getArgumentType(int i) {
     return ((Assign*)(*aa))->getType();
 }
 void CallStatement::setArgumentType(int i, Type *ty) {
-  assert(i < (int)arguments.size());
-  StatementList::iterator aa = arguments.begin();
-  std::advance(aa, i);
-  ((Assign*)(*aa))->setType(ty);
+    assert(i < (int)arguments.size());
+    StatementList::iterator aa = arguments.begin();
+    std::advance(aa, i);
+    ((Assign*)(*aa))->setType(ty);
 }
 /***************************************************************************//**
  * FUNCTION:      CallStatement::setArguments
  * \brief      Set the arguments of this call.
  * PARAMETERS:      arguments - the list of locations to set the arguments to (for testing)
- * \returns           <nothing>
+ *
  ******************************************************************************/
 void CallStatement::setArguments(StatementList& args) {
     arguments.clear();
@@ -2003,7 +2001,7 @@ void CallStatement::setArguments(StatementList& args) {
  * \brief      Set the arguments of this call based on signature info
  * NOTE:          Should only be called for calls to library functions
  * PARAMETERS:      None
- * \returns           <nothing>
+ *
  ******************************************************************************/
 void CallStatement::setSigArguments() {
     if (signature) return;                // Already done
@@ -2102,7 +2100,7 @@ bool CallStatement::searchAll(const Exp* search, std::list<Exp *>& result) {
  * FUNCTION:        CallStatement::print
  * \brief        Write a text representation of this RTL to the given stream
  * PARAMETERS:        os: stream to write to
- * \returns             Nothing
+ *
  ******************************************************************************/
 void CallStatement::print(std::ostream& os, bool html) const {
     os << std::setw(4) << std::dec << number << " ";
@@ -2189,7 +2187,7 @@ void CallStatement::print(std::ostream& os, bool html) const {
  * \brief         Sets a bit that says that this call is effectively followed by a return. This happens e.g. on
  *                        Sparc when there is a restore in the delay slot of the call
  * PARAMETERS:         b: true if this is to be set; false to clear the bit
- * \returns              <nothing>
+ *
  ******************************************************************************/
 void CallStatement::setReturnAfterCall(bool b) {
     returnAfterCall = b;
@@ -2257,7 +2255,7 @@ void CallStatement::generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) {
     LOG << "call: " << this;
     LOG << " in proc " << proc->getName() << "\n";
     for (StatementList::iterator it = results->begin(); it != results->end(); it++)
-      LOG << "result: " << *it << "\n";
+        LOG << "result: " << *it << "\n";
 #endif
     assert(p);
     if (Boomerang::get()->noDecompile) {
@@ -2644,7 +2642,7 @@ bool CallStatement::ellipsisProcessing(Prog* prog) {
 
     // if (getDestProc() == nullptr || !getDestProc()->getSignature()->hasEllipsis())
     if (getDestProc() == nullptr || !signature->hasEllipsis())
-                                            return objcSpecificProcessing(nullptr);
+        return objcSpecificProcessing(nullptr);
     // functions like printf almost always have too many args
     std::string name(getDestProc()->getName());
     int format = -1;
@@ -2820,7 +2818,7 @@ void CallStatement::addSigParam(Type* ty, bool isScanf) {
  * FUNCTION:         ReturnStatement::ReturnStatement
  * \brief         Constructor.
  * PARAMETERS:         None
- * \returns              <nothing>
+ *
  ******************************************************************************/
 ReturnStatement::ReturnStatement() : retAddr(NO_ADDRESS) {
     kind = STMT_RET;
@@ -2830,7 +2828,7 @@ ReturnStatement::ReturnStatement() : retAddr(NO_ADDRESS) {
  * FUNCTION:         ReturnStatement::~ReturnStatement
  * \brief         Destructor.
  * PARAMETERS:         <none>
- * \returns              <nothing>
+ *
  ******************************************************************************/
 ReturnStatement::~ReturnStatement() {
 }
@@ -3001,10 +2999,11 @@ Exp* BoolAssign::getCondExpr() {
 /***************************************************************************//**
  * \brief Set the Exp expression containing the HL condition.
  * \param pss Pointer to semantic string to set
- * \returns             <nothing>
+ *
  ******************************************************************************/
 void BoolAssign::setCondExpr(Exp* pss) {
-    if (pCond) ;//delete pCond;
+    if (pCond)
+        ;//delete pCond;
     pCond = pss;
 }
 
@@ -3012,7 +3011,7 @@ void BoolAssign::setCondExpr(Exp* pss) {
  * FUNCTION:        BoolAssign::print
  * \brief        Write a text representation to the given stream
  * PARAMETERS:        os: stream
- * \returns             <Nothing>
+ *
  ******************************************************************************/
 void BoolAssign::printCompact(std::ostream& os /*= cout*/, bool html) const {
     os << "BOOL ";
@@ -3147,13 +3146,13 @@ Assignment::Assignment(Exp* lhs) : TypingStatement(new VoidType), lhs(lhs) {
 Assignment::Assignment(Type* ty, Exp* lhs) : TypingStatement(ty), lhs(lhs) {}
 Assignment::~Assignment() {}
 
-Assign::Assign(Exp* lhs, Exp* rhs, Exp* guard)
-    : Assignment(lhs), rhs(rhs), guard(guard) {
+Assign::Assign(Exp* lhs, Exp* r, Exp* guard)
+    : Assignment(lhs), rhs(r), guard(guard) {
     kind = STMT_ASSIGN;
 }
 
-Assign::Assign(Type* ty, Exp* lhs, Exp* rhs, Exp* guard)
-    : Assignment(ty, lhs), rhs(rhs), guard(guard) {
+Assign::Assign(Type* ty, Exp* lhs, Exp* r, Exp* guard)
+    : Assignment(ty, lhs), rhs(r), guard(guard) {
     kind = STMT_ASSIGN;
 }
 Assign::Assign(Assign& o) : Assignment(lhs->clone()) {
@@ -3193,9 +3192,9 @@ Statement* PhiAssign::clone() const {
     Definitions::const_iterator dd;
     for (dd = defVec.begin(); dd != defVec.end(); dd++) {
         PhiInfo pi;
-        pi.def = dd->def;            // Don't clone the Statement pointer (never moves)
-        pi.e = dd->e->clone();        // Do clone the expression pointer
-        pa->defVec.push_back(pi);
+        pi.def = dd->second.def;            // Don't clone the Statement pointer (never moves)
+        pi.e = dd->second.e->clone();        // Do clone the expression pointer
+        pa->defVec.insert(std::make_pair(dd->first,pi));
     }
     return pa;
 }
@@ -3271,9 +3270,9 @@ void Assign::simplify() {
                         rhs->getOper() != opPhi && rhs->getOper() != opItof &&
                         rhs->getOper() != opFltConst) {
                     Type *ty = proc->getProg()->getGlobalType(
-                                   ((Const*)def->rhs->getSubExp1()->
-                                    getSubExp1()->
-                                    getSubExp1())->getStr());
+                                ((Const*)def->rhs->getSubExp1()->
+                                 getSubExp1()->
+                                 getSubExp1())->getStr());
                     if (ty && ty->isArray()) {
                         Type *bty = ((ArrayType*)ty)->getBaseType();
                         if (bty->isFloat()) {
@@ -3335,25 +3334,22 @@ void PhiAssign::printCompact(std::ostream& os, bool html) const {
     // Print as lhs := phi{9 17} for the common case where the lhs is the same location as all the referenced
     // locations. When not, print as local4 := phi(r24{9} argc{17})
     bool simple = true;
-    int i, n = defVec.size();
-    if (n != 0) {
-        for (i = 0; i < n; i++) {
-            // If e is nullptr assume it is meant to match lhs
-            if (defVec[i].e == nullptr) continue;
-            if (! (*defVec[i].e == *lhs)) {
-                // One of the phi parameters has a different base expression to lhs. Use non simple print.
-                simple = false;
-                break;
-            }
+    for (const std::pair<int,PhiInfo> & v : defVec) {
+        assert(v.second.e != nullptr);
+        // If e is nullptr assume it is meant to match lhs
+        if (! (*v.second.e == *lhs)) {
+            // One of the phi parameters has a different base expression to lhs. Use non simple print.
+            simple = false;
+            break;
         }
     }
     if (simple) {
         os << "{" << std::dec;
         for (auto it = defVec.begin(); it != defVec.end(); /* no increment */) {
-            if (it->def) {
+            if (it->second.def) {
                 if (html)
-                    os << "<a href=\"#stmt" << std::dec << it->def->getNumber() << "\">";
-                os << it->def->getNumber();
+                    os << "<a href=\"#stmt" << std::dec << it->second.def->getNumber() << "\">";
+                os << it->second.def->getNumber();
                 if (html)
                     os << "</a>";
             } else
@@ -3365,13 +3361,13 @@ void PhiAssign::printCompact(std::ostream& os, bool html) const {
     } else {
         os << "(";
         for (auto it = defVec.begin(); it != defVec.end(); /* no increment */) {
-            Exp* e = it->e;
+            Exp* e = it->second.e;
             if (e == nullptr)
                 os << "nullptr{";
             else
                 os << e << "{";
-            if (it->def)
-                os << std::dec << it->def->getNumber();
+            if (it->second.def)
+                os << std::dec << it->second.def->getNumber();
             else
                 os << "-";
             os << "}";
@@ -3411,10 +3407,11 @@ bool PhiAssign::search(Exp* search, Exp*& result) {
     if (lhs->search(search, result))
         return true;
     iterator it;
-    for (it = defVec.begin(); it != defVec.end(); ++it) {
-        if (it->e == nullptr) continue;            // Note: can't match foo{-} because of this
-        RefExp* re = new RefExp(it->e, it->def);
-        if (re->search(search, result))
+    for (std::pair<const int,PhiInfo> & v : defVec) {
+        assert(v.second.e != nullptr);
+        // Note: can't match foo{-} because of this
+        RefExp re(v.second.e, v.second.def);
+        if (re.search(search, result))
             return true;
     }
     return false;
@@ -3453,13 +3450,12 @@ bool Assign::searchAndReplace(const Exp *search, Exp* replace, bool cc) {
 bool PhiAssign::searchAndReplace(const Exp *search, Exp* replace, bool cc) {
     bool change;
     lhs = lhs->searchReplaceAll(search, replace, change);
-    std::vector<PhiInfo>::iterator it;
-    for (it = defVec.begin(); it != defVec.end(); it++) {
-        if (it->e == nullptr)
-            continue;
+    iterator it;
+    for (std::pair<const int,PhiInfo> & v : defVec) {
+        assert(v.second.e != nullptr);
         bool ch;
         // Assume that the definitions will also be replaced
-        it->e = it->e->searchReplaceAll(search, replace, ch);
+        v.second.e = v.second.e->searchReplaceAll(search, replace, ch);
         change |= ch;
     }
     return change;
@@ -3557,8 +3553,8 @@ void Assignment::genConstraints(LocationSet& cons) {
 void Assign::genConstraints(LocationSet& cons) {
     Assignment::genConstraints(cons);    // Gen constraint for the LHS
     Exp* con = rhs->genConstraints(
-                   new Unary(opTypeOf,
-                             new RefExp(lhs->clone(), this)));
+                new Unary(opTypeOf,
+                          new RefExp(lhs->clone(), this)));
     if (con) cons.insert(con);
 }
 
@@ -3566,12 +3562,13 @@ void PhiAssign::genConstraints(LocationSet& cons) {
     // Generate a constraints st that all the phi's have to be the same type as
     // result
     Exp* result = new Unary(opTypeOf, new RefExp(lhs, this));
-    Definitions::iterator uu;
-    for (uu = defVec.begin(); uu != defVec.end(); uu++) {
+
+    for (std::pair<const int,PhiInfo> & v : defVec) {
+        assert(v.second.e != nullptr);
         Exp* conjunct = new Binary(opEquals,
                                    result,
                                    new Unary(opTypeOf,
-                                             new RefExp(uu->e, uu->def)));
+                                             new RefExp(v.second.e, v.second.def)));
         cons.insert(conjunct);
     }
 }
@@ -3762,17 +3759,19 @@ bool Assign::accept(StmtExpVisitor* v) {
     return ret;
 }
 
-bool PhiAssign::accept(StmtExpVisitor* v) {
+bool PhiAssign::accept(StmtExpVisitor* visitor) {
     bool override;
-    bool ret = v->visit(this, override);
+    bool ret = visitor->visit(this, override);
     if (override) return ret;
-    if (ret && lhs) ret = lhs->accept(v->ev);
-    iterator it;
-    for (it = defVec.begin(); it != defVec.end(); ++it) {
-        if (it->e == nullptr) continue;
-        RefExp* re = new RefExp(it->e, it->def);
-        ret = re->accept(v->ev);
-        if (ret == false) return false;
+    if (ret && lhs)
+        ret = lhs->accept(visitor->ev);
+
+    for (std::pair<const int,PhiInfo> & v : defVec) {
+        assert(v.second.e != nullptr);
+        RefExp *re = new RefExp(v.second.e, v.second.def);
+        ret = re->accept(visitor->ev);
+        if (ret == false)
+            return false;
     }
     return true;
 }
@@ -4177,49 +4176,48 @@ void PhiAssign::simplify() {
 
     if (defVec.empty())
         return;
-        Definitions::iterator uu;
-        bool allSame = true;
-        uu = defVec.begin();
-        Statement* first;
-        for (first = (uu++)->def; uu != defVec.end(); uu++) {
-            if (uu->def != first) {
-                allSame = false;
+    bool allSame = true;
+    Definitions::iterator uu = defVec.begin();
+    Statement* first;
+    for (first = (uu++)->second.def; uu != defVec.end(); uu++) {
+        if (uu->second.def != first) {
+            allSame = false;
+            break;
+        }
+    }
+
+    if (allSame) {
+        if (VERBOSE)
+            LOG << "all the same in " << this << "\n";
+        convertToAssign(new RefExp(lhs, first));
+        return;
+    }
+
+    bool onlyOneNotThis = true;
+    Statement *notthis = (Statement*)-1;
+    for (std::pair<const int,PhiInfo> & v : defVec) {
+        if (v.second.def == nullptr || v.second.def->isImplicit()
+                || !v.second.def->isPhi() || v.second.def != this) {
+            if (notthis != (Statement*)-1) {
+                onlyOneNotThis = false;
                 break;
             }
-        }
-
-        if (allSame) {
-            if (VERBOSE)
-                LOG << "all the same in " << this << "\n";
-            convertToAssign(new RefExp(lhs, first));
-            return;
-        }
-
-        bool onlyOneNotThis = true;
-        Statement *notthis = (Statement*)-1;
-        for (uu = defVec.begin(); uu != defVec.end(); uu++) {
-            if (uu->def == nullptr || uu->def->isImplicit() || !uu->def->isPhi() || uu->def != this) {
-                if (notthis != (Statement*)-1) {
-                    onlyOneNotThis = false;
-                    break;
-            }
             else
-                notthis = uu->def;
-            }
+                notthis = v.second.def;
         }
+    }
 
-        if (onlyOneNotThis && notthis != (Statement*)-1) {
-            if (VERBOSE)
-                LOG << "all but one not this in " << this << "\n";
-            convertToAssign(new RefExp(lhs, notthis));
-            return;
+    if (onlyOneNotThis && notthis != (Statement*)-1) {
+        if (VERBOSE)
+            LOG << "all but one not this in " << this << "\n";
+        convertToAssign(new RefExp(lhs, notthis));
+        return;
     }
 }
 
-void PhiAssign::putAt(int i, Statement* def, Exp* e) {
+void PhiAssign::putAt(size_t i, Statement* def, Exp* e) {
     assert(e); // should be something surely
-    if (i >= (int)defVec.size())
-        defVec.resize(i+1);        // Note: possible to insert uninitialised elements
+    //assert(defVec.end()==defVec.find(i));
     defVec[i].def = def;
     defVec[i].e = e;
 }
@@ -4394,8 +4392,8 @@ void ReturnStatement::updateModifieds() {
         }
         if (!found) {
             ImplicitAssign* ias = new ImplicitAssign(
-                                      as->getType()->clone(),
-                                      as->getLeft()->clone());
+                        as->getType()->clone(),
+                        as->getLeft()->clone());
             ias->setProc(proc);                            // Comes from the Collector
             ias->setBB(pbb);
             oldMods.append(ias);
@@ -4813,7 +4811,7 @@ StatementList* CallStatement::calcResults() {
             for (int i=0; i < n; i++) {                        // Ignore first (stack pointer) return
                 Exp* sigReturn = sig->getReturnExp(i);
                 if (sigReturn->isRegN(sig->getStackRegister(proc->getProg())))
-                  continue; // ignore stack reg
+                    continue; // ignore stack reg
 #if SYMS_IN_BACK_END
                 // But we have translated out of SSA form, so some registers have had to have been replaced with locals
                 // So wrap the return register in a ref to this and check the locals
@@ -5024,10 +5022,9 @@ void CallStatement::eliminateDuplicateArgs() {
 }
 
 void PhiAssign::enumerateParams(std::list<Exp*>& le) {
-    iterator it;
-    for (it = begin(); it != end(); ++it) {
-        if (it->e == nullptr) continue;
-        RefExp* r = new RefExp(it->e, it->def);
+    for (std::pair<const int,PhiInfo> & v : defVec) {
+        assert(v.second.e != nullptr);
+        RefExp *r = new RefExp(v.second.e, v.second.def);
         le.push_back(r);
     }
 }

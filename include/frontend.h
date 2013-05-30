@@ -107,7 +107,7 @@ static  bool            noReturnCallDest(const char *name);
 
 virtual DecodeResult &  decodeInstruction(ADDRESS pc);
 
-virtual void            extraProcessCall(CallStatement *call, std::list<RTL*> *BB_rtls) { }
+virtual void            extraProcessCall(CallStatement */*call*/, std::list<RTL*> */*BB_rtls*/) { }
 
                         //Accessor function to get the decoder.
         NJMCDecoder *   getDecoder() { return decoder; }
@@ -194,6 +194,7 @@ static  void            closeInstance(void* dlHandle); //!<Close the library ope
          * incomplete in these cases, and needs to be restarted from scratch
          */
         void            addDecodedRtl(ADDRESS a, RTL* rtl) { previouslyDecoded[a] = rtl; }
+        void preprocessProcGoto(std::list<Statement*>::iterator ss, ADDRESS dest, std::list<Statement*> sl, RTL* pRtl);
 };    // class FrontEnd
 
 

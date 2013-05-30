@@ -139,7 +139,7 @@ bool FrontEndSrc::processProc(ADDRESS uAddr, UserProc* pProc, ofstream &os,
  *                uUpper - the highest address of the text segment
  *                pProc - the procedure object
  *                decoder - NJMCDecoder object
- * \returns        <nothing>
+ *
  *============================================================================*/
 void processProc(ADDRESS uAddr, int delta, ADDRESS uUpper, UserProc* pProc,
     NJMCDecoder& decoder)

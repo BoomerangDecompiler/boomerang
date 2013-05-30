@@ -87,20 +87,18 @@ public:
         class BBAlreadyExistsError : public std::exception {
         public:
                             BasicBlock * pBB;
-                            BBAlreadyExistsError(BasicBlock * pBB) : pBB(pBB) { }
+                            BBAlreadyExistsError(BasicBlock * _pBB) : pBB(_pBB) { }
         };
                         Cfg();
                         ~Cfg();
         void            setProc(UserProc* proc);
         void            clear();
-        unsigned        getNumBBs() {return m_listBB.size();} //!<Get the number of BBs
-        const Cfg&      operator=(const Cfg& other); /* Copy constructor */
+        size_t          getNumBBs() {return m_listBB.size();} //!<Get the number of BBs
+        const Cfg &     operator=(const Cfg& other); /* Copy constructor */
 
 
-        BasicBlock *             newBB ( std::list<RTL*>* pRtls, BBTYPE bbType, int iNumOutEdges) throw(BBAlreadyExistsError);
+        BasicBlock *    newBB ( std::list<RTL*>* pRtls, BBTYPE bbType, int iNumOutEdges) throw(BBAlreadyExistsError);
         BasicBlock *    newIncompleteBB(ADDRESS addr);
-        //Remove the incomplete BB at uAddr, if any. Was used when dealing with the SKIP instruction, but no longer.
-        void            removeIncBB(ADDRESS uAddr);
         void            addOutEdge(BasicBlock * pBB, ADDRESS adr, bool bSetLabel = false);
         void            addOutEdge(BasicBlock * pBB, BasicBlock * pDestBB, bool bSetLabel = false);
         void            setLabel(BasicBlock * pBB);

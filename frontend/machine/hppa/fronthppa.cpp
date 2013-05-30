@@ -72,7 +72,7 @@ bool helperFunc(ADDRESS dest, ADDRESS addr, HRTLList* lrtl);
  * FUNCTION:        initFront
  * OVERVIEW:        Initialise any globals used by the front end.
  * PARAMETERS:      <none>
- * \returns          <nothing>
+ *
  *============================================================================*/
 // Initialise the front end
 void initFront()
@@ -96,7 +96,7 @@ void initFront()
  * OVERVIEW:         Emit a warning when encountering a DCTI couple.
  * PARAMETERS:       uAt - the address of the couple
  *                   uDest - the address of the first DCTI in the couple
- * \returns           <nothing>
+ *
  *============================================================================*/
 void warnDCTcouple(ADDRESS uAt, ADDRESS uDest)
 {
@@ -177,7 +177,7 @@ bool optimise_DelayCopy(ADDRESS src, ADDRESS dest, int delta, ADDRESS uUpper)
  *                  hiAddress - the last address in the current procedure
  *                  cfg - the CFG of the current procedure
  *                  targets: queue of targets still to be processed
- * \returns          <nothing>, but newBB may be changed if the destination of
+ *, but newBB may be changed if the destination of
  *                  the branch is in the middle of an existing BB. It will then
  *                  be changed to point to a new BB beginning with the dest
  *============================================================================*/
@@ -212,7 +212,7 @@ void handleBranch(ADDRESS dest, ADDRESS hiAddress, BasicBlock*& newBB, Cfg* cfg,
  *                    offset - the offset from the call instruction to which an
  *                      outedge must be added. A value of 0 means no edge is to
  *                      be added.
- * \returns            <nothing>
+ *
  *============================================================================*/
 void handleCall(ADDRESS dest, BasicBlock* callBB, Cfg* cfg, ADDRESS address,
     int offset = 0)
@@ -244,7 +244,7 @@ void handleCall(ADDRESS dest, BasicBlock* callBB, Cfg* cfg, ADDRESS address,
  *                   written analysis code for yet. It simply displays an
  *                   informative warning and returns.
  * PARAMETERS:       addr - the address of the first CTI in the couple
- * \returns           <nothing>
+ *
  *============================================================================*/
 void case_unhandled_stub(ADDRESS addr)
 {
@@ -421,7 +421,7 @@ bool case_CALL_NCT(ADDRESS& address, DecodeResult& inst,
  *                   targets: queue of targets still to be processed
  *                   os - output stream for rtls
  * SIDE EFFECTS:     address may change; BB_rtls may be appended to or set nullptr
- * \returns           <nothing>
+ *
  *============================================================================*/
 void case_SD_NCT(ADDRESS& address, int delta, ADDRESS hiAddress,
     DecodeResult& inst, DecodeResult& delay_inst, list<HRTL*>*& BB_rtls,
@@ -1357,7 +1357,7 @@ bool FrontEndSrc::processProc(ADDRESS address, UserProc* proc, ofstream &os,
  * OVERVIEW:      Emit a null RTL with the given address.
  * PARAMETERS:    pRtls - List of RTLs to append this instruction to
  *                uAddr - Native address of this instruction
- * \returns        <nothing>
+ *
  *============================================================================*/
 void emitNop(HRTLList* pRtls, ADDRESS uAddr)
 {
@@ -1379,7 +1379,7 @@ void emitNop(HRTLList* pRtls, ADDRESS uAddr)
  *                  ADD  %o7, 20, %o0
  * PARAMETERS:    pRtls - list of RTLs to append to
  *                uAddr - native address for the RTL
- * \returns        <nothing>
+ *
  *============================================================================*/
 void emitCopyPC(HRTLList* pRtls, ADDRESS uAddr)
 {
@@ -1609,7 +1609,7 @@ bool helperFuncLong(ADDRESS dest, ADDRESS addr, HRTLList* lrtl, string& name)
  * PARAMETERS:      epilogue: pointer to a CalleeEpilogue object that is to
  *                      have it's return spec set
  *                  iReg: The register that integers are returned in
- * \returns          nothing
+ *
  *============================================================================*/
 void setReturnLocations(CalleeEpilogue* epilogue, int iReg)
 {

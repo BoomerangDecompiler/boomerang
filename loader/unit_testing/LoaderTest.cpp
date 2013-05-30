@@ -40,7 +40,7 @@
  * FUNCTION:        LoaderTest::registerTests
  * OVERVIEW:        Register the test functions in the given suite
  * PARAMETERS:      Pointer to the test suite
- * \returns          <nothing>
+ *
  *============================================================================*/
 #define MYTEST(name) \
 suite->addTest(new CppUnit::TestCaller<LoaderTest> ("LoaderTest", \
@@ -67,7 +67,7 @@ int LoaderTest::countTestCases () const
  * OVERVIEW:        Set up anything needed before all tests
  * NOTE:            Called before any tests
  * PARAMETERS:      <none>
- * \returns          <nothing>
+ *
  *============================================================================*/
 void LoaderTest::setUp () {
 }
@@ -77,7 +77,7 @@ void LoaderTest::setUp () {
  * OVERVIEW:        Delete objects created in setUp
  * NOTE:            Called after all tests
  * PARAMETERS:      <none>
- * \returns          <nothing>
+ *
  *============================================================================*/
 void LoaderTest::tearDown () {
 }

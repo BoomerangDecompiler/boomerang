@@ -52,7 +52,7 @@ void ST20Decoder::unused(int x)
  * \returns            a DecodeResult structure containing all the information gathered during decoding
  ******************************************************************************/
 static    DecodeResult result;
-DecodeResult& ST20Decoder::decodeInstruction (ADDRESS pc, int delta) {
+DecodeResult& ST20Decoder::decodeInstruction (ADDRESS pc, ptrdiff_t delta) {
     result.reset();                            // Clear the result structure (numBytes = 0 etc)
     ADDRESS hostPC = pc + delta;
     std::list<Statement*>* stmts = nullptr;     // The actual list of instantiated Statements
@@ -665,7 +665,7 @@ DWord ST20Decoder::getDword (intptr_t lc)
  * FUNCTION:       ST20Decoder::ST20Decoder
  * \brief       Constructor. The code won't work without this (not sure why the default constructor won't do...)
  * PARAMETERS:       None
- * \returns            N/A
+ *
  ******************************************************************************/
 ST20Decoder::ST20Decoder() : NJMCDecoder(prog)
 {
@@ -674,7 +674,7 @@ ST20Decoder::ST20Decoder() : NJMCDecoder(prog)
 }
 
 // For now...
-int ST20Decoder::decodeAssemblyInstruction(ADDRESS, int)
+int ST20Decoder::decodeAssemblyInstruction(ADDRESS, ptrdiff_t)
 { return 0; }
 
 

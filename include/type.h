@@ -171,7 +171,7 @@ virtual Type *      mergeWith(Type* /*other*/) { assert(false); return nullptr;}
 
                     // Acccess functions
 virtual size_t      getSize() const = 0;
-        unsigned    getBytes() const {return (getSize() + 7) / 8; }
+        size_t      getBytes() const {return (getSize() + 7) / 8; }
 virtual void        setSize(size_t /*sz*/) {assert(0);}
 
                     // Print and format functions
@@ -321,7 +321,7 @@ protected:
 
 class FloatType : public Type {
 private:
-        unsigned    size;                // Size in bits, e.g. 64
+        size_t    size;                // Size in bits, e.g. 64
 
 public:
                     FloatType(int sz = 64);
@@ -521,14 +521,14 @@ virtual bool        isCompound() const { return true; }
                         types.push_back(n);
                         names.push_back(str);
                     }
-        unsigned    getNumTypes() { return types.size(); }
-        Type        *getType(unsigned n) { assert(n < getNumTypes()); return types[n]; }
-        Type        *getType(const char *nam);
-        const char    *getName(unsigned n) { assert(n < getNumTypes()); return names[n].c_str(); }
+        size_t      getNumTypes() { return types.size(); }
+        Type *      getType(unsigned n) { assert(n < getNumTypes()); return types[n]; }
+        Type *      getType(const char *nam);
+        const char *getName(unsigned n) { assert(n < getNumTypes()); return names[n].c_str(); }
         void        setTypeAtOffset(unsigned n, Type* ty);
-        Type        *getTypeAtOffset(unsigned n);
+        Type *      getTypeAtOffset(unsigned n);
         void        setNameAtOffset(unsigned n, const char *nam);
-        const char    *getNameAtOffset(unsigned n);
+        const char *getNameAtOffset(size_t n);
         bool        isGeneric() {return generic;}
         void        updateGenericMember(int off, Type* ty, bool& ch);    // Add a new generic member if necessary
         unsigned    getOffsetTo(unsigned n);
@@ -570,22 +570,22 @@ private:
 
 public:
                     UnionType();
-virtual                ~UnionType();
+virtual             ~UnionType();
 virtual bool        isUnion() const { return true; }
 
         void        addType(Type *n, const char *str);
-        int            getNumTypes() const { return li.size(); }
+        size_t      getNumTypes() const { return li.size(); }
         bool        findType(Type* ty);                // Return true if ty is already in the union
         //Type        *getType(int n) { assert(n < getNumTypes()); return types[n]; }
         //Type        *getType(const char *nam);
         //const        char *getName(int n) { assert(n < getNumTypes()); return names[n].c_str(); }
 
-virtual Type* clone() const;
+virtual Type *      clone() const;
 
 virtual bool        operator==(const Type& other) const;
 //virtual bool        operator-=(const Type& other) const;
 virtual bool        operator< (const Type& other) const;
-virtual Exp            *match(Type *pattern);
+virtual Exp *       match(Type *pattern);
 
 virtual size_t      getSize() const;
 

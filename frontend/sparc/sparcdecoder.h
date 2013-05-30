@@ -22,7 +22,7 @@
 
 #ifndef SPARCDECODER
 #define SPARCDECODER
-
+#include <cstddef>
 class Prog;
 class NJMCDecoder;
 struct DecodeResult;
@@ -39,13 +39,13 @@ public:
          * Decodes the machine instruction at pc and returns an RTL instance for
          * the instruction.
          */
-    virtual DecodeResult& decodeInstruction (ADDRESS pc, int delta);
+    virtual DecodeResult& decodeInstruction (ADDRESS pc, ptrdiff_t delta);
 
     /*
          * Disassembles the machine instruction at pc and returns the number of
          * bytes disassembled. Assembler output goes to global _assembly
          */
-    virtual int decodeAssemblyInstruction (ADDRESS pc, int delta);
+    virtual int decodeAssemblyInstruction (ADDRESS pc, ptrdiff_t delta);
 
     /*
          * Indicates whether the instruction at the given address is a restore instruction.

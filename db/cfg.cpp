@@ -138,7 +138,7 @@ void Cfg::clear() {
  *
  * \brief assignment operator for Cfg's, the BB's are shallow copied
  * \param other - rhs
- * \returns            <nothing>
+ *
  ******************************************************************************/
 const Cfg& Cfg::operator=(const Cfg& other) {
     m_listBB = other.m_listBB;
@@ -340,7 +340,7 @@ BasicBlock * Cfg::newIncompleteBB(ADDRESS addr) {
  *                      (But see BasicBlock::addNewOutEdge())
  * \param   pBB source BB (to have the out edge added to)
  * \param   pDestBB destination BB (to have the out edge point to)
- * \returns            <nothing>
+ *
  ******************************************************************************/
 void Cfg::addOutEdge(BasicBlock * pBB, BasicBlock * pDestBB, bool bSetLabel /* = false */) {
     // Add the given BB pointer to the list of out edges
@@ -363,10 +363,10 @@ void Cfg::addOutEdge(BasicBlock * pBB, BasicBlock * pDestBB, bool bSetLabel /* =
  * required. If bSetLabel is true, the destination BB will have its "label required" bit set.
  *
  * \note            Calls the above
- * \param pBB: source BB (to have the out edge added to)
- * \param addr: source address of destination
+ * \param pBB source BB (to have the out edge added to)
+ * \param addr source address of destination
  * (the out edge is to point to the BB whose lowest address is addr)
- * \param bSetLabel: if true, set a label at the destination address.  Set true on "true" branches of labels
+ * \param bSetLabel if true, set a label at the destination address.  Set true on "true" branches of labels
  *
  ******************************************************************************/
 void Cfg::addOutEdge(BasicBlock * pBB, ADDRESS addr, bool bSetLabel /* = false */) {
@@ -393,7 +393,7 @@ void Cfg::addOutEdge(BasicBlock * pBB, ADDRESS addr, bool bSetLabel /* = false *
  * \note must ignore entries with a null pBB, since these are caused by
  * calls to Label that failed, i.e. the instruction is not decoded yet.
  *
- * \param        uNativeAddr: native address to look up
+ * \param        uNativeAddr native address to look up
  * \returns      True if uNativeAddr starts a BB
  ******************************************************************************/
 bool Cfg::existsBB (ADDRESS uNativeAddr) const {
@@ -564,9 +564,9 @@ const BasicBlock * Cfg::getNextBB(BBC_IT& it) const {
  *  address of the new (lower) part of the split BB.
  *  If there is an incomplete entry in the table for this address which overlaps with a completed address,
  *  the completed BB is split and the BB for this address is completed.
- * \param         uNativeAddress - native (source) address to check
+ * \param         uNativeAddr - native (source) address to check
  * \param         pCurBB - See above
- * \returns       True if uNativeAddr is a label, i.e. (now) the start of a BB
+ * \returns       True if \a uNativeAddr is a label, i.e. (now) the start of a BB
  *                Note: pCurBB may be modified (as above)
  ******************************************************************************/
 bool Cfg::label ( ADDRESS uNativeAddr, BasicBlock *& pCurBB ) {
@@ -746,8 +746,8 @@ bool Cfg::wellFormCfg() {
             }
         } else {
             // Complete. Test the out edges
-            assert((int)current->m_OutEdges.size() == current->m_iNumOutEdges);
-            for (int i=0; i < current->m_iNumOutEdges; i++) {
+            assert(current->m_OutEdges.size() == current->m_iNumOutEdges);
+            for (size_t i=0; i < current->m_iNumOutEdges; i++) {
                 // check if address is interprocedural
                 //                if ((*it)->m_OutEdgeInterProc[i] == false)
                 {
@@ -778,7 +778,7 @@ bool Cfg::wellFormCfg() {
             }
             // Also check that each in edge has a corresponding out edge to here (could have an extra in-edge, for
             // example)
-            assert((int)(*it)->m_InEdges.size() == (*it)->m_iNumInEdges);
+            assert((*it)->m_InEdges.size() == (*it)->m_iNumInEdges);
             std::vector<BasicBlock *>::iterator ii;
             for (ii = (*it)->m_InEdges.begin(); ii != (*it)->m_InEdges.end(); ii++) {
                 std::vector<BasicBlock *>::iterator oo;
@@ -827,17 +827,18 @@ bool Cfg::mergeBBs( BasicBlock *pb1, BasicBlock *pb2) {
  *
  * \param pb1 pointers to the two BBs to merge
  * \param pb2 pointers to the two BBs to merge
- * \param bDelete: if true, pb1 is deleted as well
+ * \param bDelete if true, pb1 is deleted as well
  *
  ******************************************************************************/
 void Cfg::completeMerge(BasicBlock * pb1, BasicBlock * pb2, bool bDelete) {
     // First we replace all of pb1's predecessors' out edges that used to point to pb1 (usually only one of these) with
     // pb2
-    for (int i=0; i < pb1->m_iNumInEdges; i++)     {
-        BasicBlock * pPred = pb1->m_InEdges[i];
-        for (int j=0; j < pPred->m_iNumOutEdges; j++) {
-            if (pPred->m_OutEdges[j] == pb1)
-                pPred->m_OutEdges[j] = pb2;
+    assert(pb1->m_iNumInEdges==pb1->m_InEdges.size());
+    for (BasicBlock * pPred : pb1->m_InEdges)     {
+        assert(pPred->m_iNumOutEdges==pPred->m_OutEdges.size());
+        for (BasicBlock *& pred_out : pPred->m_OutEdges) {
+            if (pred_out == pb1)
+                pred_out = pb2;
         }
     }
 
@@ -1078,7 +1079,7 @@ bool Cfg::isWellFormed() {
  *
  * \brief Return true if there is a BB at the address given whose first RTL is an orphan,
  * i.e. GetAddress() returns 0.
- * \returns            <nothing>
+ *
  ******************************************************************************/
 bool Cfg::isOrphan(ADDRESS uAddr) {
     MAPBB::iterator mi = m_mapBB.find(uAddr);
@@ -1156,7 +1157,6 @@ bool Cfg::searchAll(Exp *search, std::list<Exp*> &result) {
  *
  * \brief    "deep" delete for a list of pointers to RTLs
  * \param pLrtl - the list
- * \returns        <none>
  ******************************************************************************/
 void delete_lrtls(std::list<RTL*>& pLrtl) {
     for (RTL *it : pLrtl)
@@ -1166,7 +1166,7 @@ void delete_lrtls(std::list<RTL*>& pLrtl) {
 /***************************************************************************//**
  *
  * \brief   "deep" erase for a list of pointers to RTLs
- * \param   pLrtls - the list
+ * \param   pLrtl - the list
  * \param   begin - iterator to first (inclusive) item to delete
  * \param   end - iterator to last (exclusive) item to delete
  *
@@ -1206,7 +1206,7 @@ void Cfg::setLabel(BasicBlock * pBB) {
  *
  * \param pFromBB pointer to the BB getting the new out edge
  * \param pNewOutEdge pointer to BB that will be the new successor
- * \returns            <nothing>
+ *
  ******************************************************************************/
 void Cfg::addNewOutEdge(BasicBlock * pFromBB, BasicBlock * pNewOutEdge) {
     pFromBB->m_OutEdges.push_back(pNewOutEdge);
@@ -1311,8 +1311,7 @@ void Cfg::findImmedPDom() {
     BasicBlock * curNode, * succNode;    // the current Node and its successor
 
     // traverse the nodes in order (i.e from the bottom up)
-    int i;
-    for (i = revOrdering.size() - 1; i >= 0; i--) {
+    for (int i = revOrdering.size() - 1; i >= 0; i--) {
         curNode = revOrdering[i];
         std::vector<BasicBlock *> &oEdges = curNode->getOutEdges();
         for (unsigned int j = 0; j < oEdges.size(); j++) {
@@ -1432,7 +1431,7 @@ void Cfg::findLoopFollow(BasicBlock * header, bool* &loopNodes) {
         BasicBlock * follow = nullptr;
 
         // traverse the ordering array between the header and latch nodes.
-        BasicBlock * latch = header->getLatchNode();
+        //BasicBlock * latch = header->getLatchNode(); initialized at function start
         for (int i = header->ord - 1; i > latch->ord; i--) {
             BasicBlock * &desc = Ordering[i];
             // the follow for an endless loop will have the following
@@ -1517,7 +1516,7 @@ void Cfg::structLoops() {
         // If no nodes meet the above criteria, then the current node is not a loop header
 
         std::vector<BasicBlock *> &iEdges = curNode->getInEdges();
-        for (unsigned int j = 0; j < iEdges.size(); j++) {
+        for (size_t j = 0; j < iEdges.size(); j++) {
             BasicBlock * pred = iEdges[j];
             if (pred->getCaseHead() == curNode->getCaseHead() &&  // ii)
                     pred->getLoopHead() == curNode->getLoopHead() &&  // iii)
@@ -1864,10 +1863,9 @@ void Cfg::appendBBs(std::list<BasicBlock *>& worklist, std::set<BasicBlock *>& w
 
 void dumpBB(BasicBlock * bb) {
     std::cerr << "For BB at " << std::hex << bb << ":\nIn edges: ";
-    int i, n;
     std::vector<BasicBlock *> ins = bb->getInEdges();
     std::vector<BasicBlock *> outs = bb->getOutEdges();
-    n = ins.size();
+    size_t i,n = ins.size();
     for (i=0; i < n; i++)
         std::cerr << ins[i] << " ";
     std::cerr << "\nOut Edges: ";
@@ -1908,8 +1906,6 @@ BasicBlock * Cfg::splitForBranch(BasicBlock * pBB, RTL* rtl, BranchStatement* br
     std::cerr << "splitForBranch before:\n";
     std::cerr << pBB->prints() << "\n";
 #endif
-
-    unsigned i, j;
     std::list<RTL*>::iterator ri;
     // First find which RTL has the split address
     for (ri = pBB->m_pRtls->begin(); ri != pBB->m_pRtls->end(); ri++) {
@@ -1935,9 +1931,9 @@ BasicBlock * Cfg::splitForBranch(BasicBlock * pBB, RTL* rtl, BranchStatement* br
         // Address addr now refers to the splitBB
         m_mapBB[addr] = skipBB;
         // Fix all predecessors of pBB to point to splitBB instead
-        for (unsigned i=0; i < pBB->m_InEdges.size(); i++) {
+        for (size_t  i=0; i < pBB->m_InEdges.size(); i++) {
             BasicBlock * pred = pBB->m_InEdges[i];
-            for (unsigned j=0; j < pred->m_OutEdges.size(); j++) {
+            for (size_t j=0; j < pred->m_OutEdges.size(); j++) {
                 BasicBlock * succ = pred->m_OutEdges[j];
                 if (succ == pBB) {
                     pred->m_OutEdges[j] = skipBB;
@@ -1960,7 +1956,7 @@ BasicBlock * Cfg::splitForBranch(BasicBlock * pBB, RTL* rtl, BranchStatement* br
 
     // Move the remaining RTLs (if any) to a new list of RTLs
     BasicBlock * newBb;
-    unsigned oldOutEdges = 0;
+    size_t oldOutEdges = 0;
     bool haveB = true;
     if (ri != pBB->m_pRtls->end()) {
         auto pRtls = new std::list<RTL*>;
@@ -1971,7 +1967,7 @@ BasicBlock * Cfg::splitForBranch(BasicBlock * pBB, RTL* rtl, BranchStatement* br
         oldOutEdges = pBB->getNumOutEdges();
         newBb = newBB(pRtls, pBB->getType(), oldOutEdges);
         // Transfer the out edges from A to B (pBB to newBb)
-        for (i=0; i < oldOutEdges; i++)
+        for (size_t i=0; i < oldOutEdges; i++)
             // Don't use addOutEdge, since it will also add in-edges back to pBB
             newBb->m_OutEdges.push_back(pBB->getOutEdge(i));
         //addOutEdge(newBb, pBB->getOutEdge(i));
@@ -1996,9 +1992,9 @@ BasicBlock * Cfg::splitForBranch(BasicBlock * pBB, RTL* rtl, BranchStatement* br
 
     // For each out edge of newBb, change any in-edges from pBB to instead come from newBb
     if (haveB) {
-        for (i=0; i < oldOutEdges; i++) {
+        for (size_t i=0; i < oldOutEdges; i++) {
             BasicBlock * succ = newBb->m_OutEdges[i];
-            for (j=0; j < succ->m_InEdges.size(); j++) {
+            for (size_t j=0; j < succ->m_InEdges.size(); j++) {
                 BasicBlock * pred = succ->m_InEdges[j];
                 if (pred == pBB) {
                     succ->m_InEdges[j] = newBb;
@@ -2008,7 +2004,7 @@ BasicBlock * Cfg::splitForBranch(BasicBlock * pBB, RTL* rtl, BranchStatement* br
         }
     } else {
         // There is no "B" bb (newBb is just the successor of pBB) Fix that one out-edge to point to rptBB
-        for (j=0; j < newBb->m_InEdges.size(); j++) {
+        for (size_t j=0; j < newBb->m_InEdges.size(); j++) {
             BasicBlock * pred = newBb->m_InEdges[j];
             if (pred == pBB) {
                 newBb->m_InEdges[j] = rptBB;
@@ -2020,7 +2016,7 @@ BasicBlock * Cfg::splitForBranch(BasicBlock * pBB, RTL* rtl, BranchStatement* br
         // There is no A any more. All A's in-edges have been copied to the skipBB. It is possible that the original BB
         // had a self edge (branch to start of self). If so, this edge, now in to skipBB, must now come from newBb (if
         // there is a B) or rptBB if none.  Both of these will already exist, so delete it.
-        for (j=0; j < skipBB->m_InEdges.size(); j++) {
+        for (size_t j=0; j < skipBB->m_InEdges.size(); j++) {
             BasicBlock * pred = skipBB->m_InEdges[j];
             if (pred == pBB) {
                 skipBB->deleteInEdge(pBB);

@@ -67,7 +67,7 @@ int BlockSyntaxNode::getNumOutEdges() {
     return statements[statements.size()-1]->getNumOutEdges();
 }
 
-SyntaxNode *BlockSyntaxNode::getOutEdge(SyntaxNode *root, int n) {
+SyntaxNode *BlockSyntaxNode::getOutEdge(SyntaxNode *root, size_t n) {
     if (pbb)
         return root->findNodeFor(pbb->getOutEdge(n));
     if (statements.size() == 0)
@@ -112,7 +112,7 @@ void BlockSyntaxNode::printAST(SyntaxNode *root, std::ostream &os)
         os << "block";
     os << "\"];" << std::endl;
     if (pbb) {
-        for (int i = 0; i < pbb->getNumOutEdges(); i++) {
+        for (size_t i = 0; i < pbb->getNumOutEdges(); i++) {
             BasicBlock * out = pbb->getOutEdge(i);
             os << std::setw(4) << std::dec << nodenum << " ";
             SyntaxNode *to = root->findNodeFor(out);
@@ -412,7 +412,7 @@ IfThenSyntaxNode::~IfThenSyntaxNode()
         delete pThen;
 }
 
-SyntaxNode *IfThenSyntaxNode::getOutEdge(SyntaxNode *root, int n) {
+SyntaxNode *IfThenSyntaxNode::getOutEdge(SyntaxNode *root, size_t n) {
     SyntaxNode *n1 = root->findNodeFor(pbb->getOutEdge(0));
     assert(n1 != pThen);
     return n1;
@@ -586,7 +586,7 @@ PretestedLoopSyntaxNode::~PretestedLoopSyntaxNode()
         delete cond;
 }
 
-SyntaxNode *PretestedLoopSyntaxNode::getOutEdge(SyntaxNode *root, int n) {
+SyntaxNode *PretestedLoopSyntaxNode::getOutEdge(SyntaxNode *root, size_t n) {
     return root->findNodeFor(pbb->getOutEdge(1));
 }
 
@@ -669,7 +669,7 @@ PostTestedLoopSyntaxNode::~PostTestedLoopSyntaxNode()
         delete cond;
 }
 
-SyntaxNode *PostTestedLoopSyntaxNode::getOutEdge(SyntaxNode *root, int n) {
+SyntaxNode *PostTestedLoopSyntaxNode::getOutEdge(SyntaxNode *root, size_t n) {
     return root->findNodeFor(pbb->getOutEdge(1));
 }
 

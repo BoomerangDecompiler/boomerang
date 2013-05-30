@@ -91,7 +91,7 @@ bool Register::operator<(const Register& r2) const {
 /***************************************************************************//**
  * \brief      Set the name for this register
  * \param      s: name to set it to
- * \returns           <nothing>
+ *
  ******************************************************************************/
 void Register::s_name(const char *s) {
     assert(s != nullptr);

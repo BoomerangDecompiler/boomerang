@@ -23,13 +23,6 @@
  */
 
 #include <cassert>
-#if defined(_MSC_VER) && _MSC_VER <= 1200
-#pragma warning(disable:4786)
-#endif
-#if defined(_MSC_VER) && _MSC_VER >= 1400
-#pragma warning(disable:4996)        // Warnings about e.g. _strdup deprecated in VS 2005
-#endif
-
 #include "cfg.h"
 #include "statement.h"
 #include "exp.h"
@@ -46,6 +39,7 @@
 #include <cstring>
 #include <cstdlib>
 
+static bool isBareMemof(Exp* e, UserProc* proc);
 //extern char *operStrings[];
 
 /// Empty constructor, calls HLLCode()
@@ -67,6 +61,7 @@ void CHLLCode::indent(std::ostringstream& str, int indLevel) {
         str << "    ";
 }
 
+static int progress = 0;
 /**
  * Append code for the given expression \a exp to stream \a str.
  *
@@ -77,7 +72,6 @@ void CHLLCode::indent(std::ostringstream& str, int indLevel) {
  *
  * \todo This function is 800+ lines, and should possibly be split up.
  */
-static int progress = 0;
 void CHLLCode::appendExp(std::ostringstream& str, const Exp *exp, PREC curPrec, bool uns /* = false */ ) {
     if (exp == nullptr) return;                // ?
 
@@ -88,7 +82,7 @@ void CHLLCode::appendExp(std::ostringstream& str, const Exp *exp, PREC curPrec, 
 
     OPER op = exp->getOper();
 
-#if SYMS_IN_BACK_END                // Should no longer be any unmapped symbols by the back end
+#ifdef SYMS_IN_BACK_END                // Should no longer be any unmapped symbols by the back end
     // Check if it's mapped to a symbol
     if (m_proc && !exp->isTypedExp()) {            // Beware: lookupSym will match (cast)r24 to local0, stripping the cast!
       const char* sym = m_proc->lookupSym(exp);
@@ -99,10 +93,10 @@ void CHLLCode::appendExp(std::ostringstream& str, const Exp *exp, PREC curPrec, 
     }
 #endif
 
-    const Const    *c = (const Const*)exp;
-    const Unary    *u = (const Unary*)exp;
-    const Binary    *b = (const Binary*)exp;
-    const Ternary *t = (const Ternary*)exp;
+    const Const *   c = (const Const*)exp;
+    const Unary *   u = (const Unary*)exp;
+    const Binary*   b = (const Binary*)exp;
+    const Ternary * t = (const Ternary*)exp;
 
     switch(op) {
         case opIntConst: {
@@ -121,33 +115,24 @@ void CHLLCode::appendExp(std::ostringstream& str, const Exp *exp, PREC curPrec, 
                 }
             } else {
                 if (c->getType() && c->getType()->isChar()) {
-                    if (c->getInt() == '\a')
-                        str << "'\\a'";
-                    else if (c->getInt() == '\b')
-                        str << "'\\b'";
-                    else if (c->getInt() == '\f')
-                        str << "'\\f'";
-                    else if (c->getInt() == '\n')
-                        str << "'\\n'";
-                    else if (c->getInt() == '\r')
-                        str << "'\\r'";
-                    else if (c->getInt() == '\t')
-                        str << "'\\t'";
-                    else if (c->getInt() == '\v')
-                        str << "'\\v'";
-                    else if (c->getInt() == '\\')
-                        str << "'\\\\'";
-                    else if (c->getInt() == '\?')
-                        str << "'\\?'";
-                    else if (c->getInt() == '\'')
-                        str << "'\\''";
-                    else if (c->getInt() == '\"')
-                        str << "'\\\"'";
-                    else
-                        str << "'" << (char)c->getInt() << "'";
+                    switch(K) {
+
+                        case '\a': str << "'\\a'"; break;
+                        case '\b': str << "'\\b'"; break;
+                        case '\f': str << "'\\f'"; break;
+                        case '\n': str << "'\\n'";break;
+                        case '\r': str << "'\\r'"; break;
+                        case '\t': str << "'\\t'"; break;
+                        case '\v': str << "'\\v'"; break;
+                        case '\\': str << "'\\\\'"; break;
+                        case '\?': str << "'\\?'"; break;
+                        case '\'': str << "'\\''"; break;
+                        case '\"': str << "'\\\"'"; break;
+                        default:
+                            str << "'" << (char)K << "'";
+                    }
                 } else {
                     // More heuristics
-                    int K = c->getInt();
                     if (-2048 < K && K < 2048)
                         str << std::dec << K;             // Just a plain vanilla int
                     else
@@ -204,7 +189,7 @@ void CHLLCode::appendExp(std::ostringstream& str, const Exp *exp, PREC curPrec, 
                     break;
                 }
             }
-#if SYMS_IN_BACK_END
+#ifdef SYMS_IN_BACK_END
             if (sub->isMemOf() && m_proc->lookupSym(sub) == nullptr) {    // }
 #else
             if (sub->isMemOf()) {
@@ -655,7 +640,6 @@ void CHLLCode::appendExp(std::ostringstream& str, const Exp *exp, PREC curPrec, 
             str << "flags"; break;
         case opPC:
             str << "pc"; break;
-            break;
         case opZfill:
             // MVE: this is a temporary hack... needs cast?
             //sprintf(s, "/* zfill %d->%d */ ",
@@ -701,7 +685,7 @@ void CHLLCode::appendExp(std::ostringstream& str, const Exp *exp, PREC curPrec, 
             break;
 
         case opTypedExp: {
-#if SYMS_IN_BACK_END
+#ifdef SYMS_IN_BACK_END
             Exp* b = u->getSubExp1();                    // Base expression
             const char* sym = m_proc->lookupSym(exp);            // Check for (cast)sym
             if (sym) {
@@ -750,7 +734,7 @@ void CHLLCode::appendExp(std::ostringstream& str, const Exp *exp, PREC curPrec, 
                 // Check for (tt)b where tt is a pointer; could be &local
                 Type* tt = ((TypedExp*)u)->getType();
                 if (dynamic_cast<PointerType*>(tt)) {
-#if SYMS_IN_BACK_END
+#ifdef SYMS_IN_BACK_END
                     const char* sym = m_proc->lookupSym(Location::memOf(b));
                     if (sym) {
                         openParen(str, curPrec, PREC_UNARY);
@@ -909,8 +893,8 @@ void CHLLCode::appendExp(std::ostringstream& str, const Exp *exp, PREC curPrec, 
             break;
         default:
             // others
-            OPER op = exp->getOper();
-            if (op >= opZF) {
+            OPER other_op = exp->getOper();
+            if (other_op >= opZF) {
                 // Machine flags; can occasionally be manipulated individually
                 // Chop off the "op" part
                 str << exp->getOperName()+2;
@@ -1138,9 +1122,9 @@ void CHLLCode::AddGoto(int indLevel, int ord) {
 
 /**
  * Removes labels from the code which are not in usedLabels.
- * \param maxOrd UNUSED
+ * maxOrd UNUSED
  */
-void CHLLCode::RemoveUnusedLabels(int maxOrd) {
+void CHLLCode::RemoveUnusedLabels(int /*maxOrd*/) {
     for (std::list<char *>::iterator it = lines.begin(); it != lines.end();) {
         if ((*it)[0] == 'L' && strchr(*it, ':')) {
             std::string sx = *it;
@@ -1172,7 +1156,7 @@ void CHLLCode::AddBreak(int indLevel) {
 }
 
 /// Adds: L \a ord :
-void CHLLCode::AddLabel(int indLevel, int ord) {
+void CHLLCode::AddLabel(int /*indLevel*/, int ord) {
     std::ostringstream s;
     s << "L" << std::dec << ord << ":";
     appendLine(s);
@@ -1193,7 +1177,7 @@ void CHLLCode::RemoveLabel(int ord) {
 
 bool isBareMemof(Exp* e, UserProc* proc) {
     if (!e->isMemOf()) return false;
-#if SYMS_IN_BACK_END
+#ifdef SYMS_IN_BACK_END
     // Check if it maps to a symbol
     const char* sym = proc->lookupSym(e);
     if (sym == nullptr)
@@ -1375,7 +1359,7 @@ void CHLLCode::AddCallStatement(int indLevel, Proc *proc, const char *name, Stat
     }
     s << ");";
     if (results->size() > 1) {
-        bool first = true;
+        first = true;
         s << " /* Warning: also results in ";
         for (ss = ++results->begin(); ss != results->end(); ++ss) {
             if (first)
@@ -1397,7 +1381,7 @@ void CHLLCode::AddCallStatement(int indLevel, Proc *proc, const char *name, Stat
  * \todo Add the use of \a results like AddCallStatement.
  */
 // Ugh - almost the same as the above, but it needs to take an expression, // not a Proc*
-void CHLLCode::AddIndCallStatement(int indLevel, Exp *exp, StatementList &args, StatementList* results) {
+void CHLLCode::AddIndCallStatement(int indLevel, Exp *exp, StatementList &args, StatementList* /*results*/) {
     //    FIXME: Need to use 'results', since we can infer some defines...
     std::ostringstream s;
     indent(s, indLevel);
@@ -1430,7 +1414,7 @@ void CHLLCode::AddReturnStatement(int indLevel, StatementList* rets) {
     std::ostringstream s;
     indent(s, indLevel);
     s << "return";
-    int n = rets->size();
+    size_t n = rets->size();
 
     if (n == 0 && Boomerang::get()->noDecompile && m_proc->getSignature()->getNumReturns() > 0)
         s << " eax";

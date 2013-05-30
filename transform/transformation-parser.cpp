@@ -6,7 +6,7 @@
   */
 
 
-#line 1 "/usr/local/lib/bison.cc"
+
 /* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
 /* Skeleton output parser for bison,
    Copyright (C) 1984, 1989, 1990 Bob Corbett and Richard Stallman
@@ -28,7 +28,7 @@
 /* HEADER SECTION */
 #include <cstring>
 #include <cstdlib>
-#if defined( _MSDOS ) || defined(MSDOS) || defined(__MSDOS__) 
+#if defined( _MSDOS ) || defined(MSDOS) || defined(__MSDOS__)
 #define __MSDOS_AND_ALIKE
 #endif
 #if defined(_WINDOWS) && defined(_MSC_VER)
@@ -82,15 +82,15 @@ void *alloca ();
 #endif
 #endif
 #include <stdio.h>
-#define YYBISON 1  
+#define YYBISON 1
 
-/* #line 73 "/usr/local/lib/bison.cc" */
-#line 85 "transformation-parser.cpp"
+
+
 #define YY_TransformationParser_DEBUG  1
-#define YY_TransformationParser_PARSE_PARAM 
+#define YY_TransformationParser_PARSE_PARAM
 #define YY_TransformationParser_CONSTRUCTOR_PARAM  \
     std::istream &in, bool trace
-#define YY_TransformationParser_CONSTRUCTOR_INIT 
+#define YY_TransformationParser_CONSTRUCTOR_INIT
 #define YY_TransformationParser_CONSTRUCTOR_CODE  \
     theScanner = new TransformationScanner(in, trace); \
     if (trace) yydebug = 1; else yydebug = 0;
@@ -99,7 +99,7 @@ private:        \
     TransformationScanner *theScanner; \
 public: \
     virtual ~TransformationParser();
-#line 32 "transformation.y"
+
 
   #include <list>
   #include <string>
@@ -117,7 +117,7 @@ public: \
 
   class TransformationScanner;
 
-#line 69 "transformation.y"
+
 typedef union {
    int ival;
    char *str;
@@ -125,11 +125,11 @@ typedef union {
    Exp *exp;
 } yy_TransformationParser_stype;
 #define YY_TransformationParser_STYPE yy_TransformationParser_stype
-#line 76 "transformation.y"
+
 
 #include "transformation-scanner.h"
 
-#line 73 "/usr/local/lib/bison.cc"
+
 /* %{ and %header{ and %union, during decl */
 #define YY_TransformationParser_BISON 1
 #ifndef YY_TransformationParser_COMPATIBILITY
@@ -148,7 +148,7 @@ typedef union {
 #endif
 #endif
 #ifdef YYSTYPE
-#ifndef YY_TransformationParser_STYPE 
+#ifndef YY_TransformationParser_STYPE
 #define YY_TransformationParser_STYPE YYSTYPE
 #endif
 #endif
@@ -175,36 +175,36 @@ typedef union {
 
 #ifndef YY_TransformationParser_PURE
 
-/* #line 117 "/usr/local/lib/bison.cc" */
-#line 176 "transformation-parser.cpp"
 
-#line 117 "/usr/local/lib/bison.cc"
+
+
+
 /*  YY_TransformationParser_PURE */
 #endif
 
 /* section apres lecture def, avant lecture grammaire S2 */
 
-/* #line 121 "/usr/local/lib/bison.cc" */
-#line 185 "transformation-parser.cpp"
 
-#line 121 "/usr/local/lib/bison.cc"
+
+
+
 /* prefix */
 #ifndef YY_TransformationParser_DEBUG
 
-/* #line 123 "/usr/local/lib/bison.cc" */
-#line 192 "transformation-parser.cpp"
 
-#line 123 "/usr/local/lib/bison.cc"
+
+
+
 /* YY_TransformationParser_DEBUG */
 #endif
 
 
 #ifndef YY_TransformationParser_LSP_NEEDED
 
-/* #line 128 "/usr/local/lib/bison.cc" */
-#line 202 "transformation-parser.cpp"
 
-#line 128 "/usr/local/lib/bison.cc"
+
+
+
  /* YY_TransformationParser_LSP_NEEDED*/
 #endif
 
@@ -297,7 +297,7 @@ typedef
 #endif
 #ifdef YY_TransformationParser_DEBUG
 #ifndef YYDEBUG
-#define YYDEBUG YY_TransformationParser_DEBUG 
+#define YYDEBUG YY_TransformationParser_DEBUG
 #endif
 #endif
 #ifndef YY_TransformationParser_ERROR_VERBOSE
@@ -314,8 +314,8 @@ typedef
 #ifndef YY_USE_CLASS
 /* TOKEN C */
 
-/* #line 236 "/usr/local/lib/bison.cc" */
-#line 315 "transformation-parser.cpp"
+
+
 #define    SIZEOF    258
 #define    KIND    259
 #define    POINTER    260
@@ -361,7 +361,7 @@ typedef
 #define    BOOL_FALSE    300
 
 
-#line 236 "/usr/local/lib/bison.cc"
+
  /* #defines tokens */
 #else
 /* CLASS */
@@ -372,13 +372,13 @@ typedef
 #define YY_TransformationParser_INHERIT
 #endif
 #ifndef YY_TransformationParser_MEMBERS
-#define YY_TransformationParser_MEMBERS 
+#define YY_TransformationParser_MEMBERS
 #endif
 #ifndef YY_TransformationParser_LEX_BODY
-#define YY_TransformationParser_LEX_BODY  
+#define YY_TransformationParser_LEX_BODY
 #endif
 #ifndef YY_TransformationParser_ERROR_BODY
-#define YY_TransformationParser_ERROR_BODY  
+#define YY_TransformationParser_ERROR_BODY
 #endif
 #ifndef YY_TransformationParser_CONSTRUCTOR_PARAM
 #define YY_TransformationParser_CONSTRUCTOR_PARAM
@@ -393,7 +393,7 @@ typedef
 #ifndef YY_TransformationParser_USE_CONST_TOKEN
 #define YY_TransformationParser_USE_CONST_TOKEN 0
 /* yes enum is more compatible with flex,  */
-/* so by default we use it */ 
+/* so by default we use it */
 #endif
 #if YY_TransformationParser_USE_CONST_TOKEN != 0
 #ifndef YY_TransformationParser_ENUM_TOKEN
@@ -403,12 +403,12 @@ typedef
 
 class YY_TransformationParser_CLASS YY_TransformationParser_INHERIT
 {
-public: 
+public:
 #if YY_TransformationParser_USE_CONST_TOKEN != 0
 /* static const int token ... */
 
-/* #line 280 "/usr/local/lib/bison.cc" */
-#line 408 "transformation-parser.cpp"
+
+
 static const int SIZEOF;
 static const int KIND;
 static const int POINTER;
@@ -454,13 +454,13 @@ static const int BOOL_TRUE;
 static const int BOOL_FALSE;
 
 
-#line 280 "/usr/local/lib/bison.cc"
+
  /* decl const */
 #else
 enum YY_TransformationParser_ENUM_TOKEN { YY_TransformationParser_NULL_TOKEN=0
 
-/* #line 283 "/usr/local/lib/bison.cc" */
-#line 460 "transformation-parser.cpp"
+
+
     ,SIZEOF=258
     ,KIND=259
     ,POINTER=260
@@ -506,7 +506,7 @@ enum YY_TransformationParser_ENUM_TOKEN { YY_TransformationParser_NULL_TOKEN=0
     ,BOOL_FALSE=300
 
 
-#line 283 "/usr/local/lib/bison.cc"
+
  /* enum token */
      }; /* end of enum declaration */
 #endif
@@ -534,13 +534,13 @@ public:
 public:
  YY_TransformationParser_CLASS(YY_TransformationParser_CONSTRUCTOR_PARAM);
 public:
- YY_TransformationParser_MEMBERS 
+ YY_TransformationParser_MEMBERS
 };
 /* other declare folow */
 #if YY_TransformationParser_USE_CONST_TOKEN != 0
 
-/* #line 314 "/usr/local/lib/bison.cc" */
-#line 540 "transformation-parser.cpp"
+
+
 const int YY_TransformationParser_CLASS::SIZEOF=258;
 const int YY_TransformationParser_CLASS::KIND=259;
 const int YY_TransformationParser_CLASS::POINTER=260;
@@ -586,7 +586,7 @@ const int YY_TransformationParser_CLASS::BOOL_TRUE=299;
 const int YY_TransformationParser_CLASS::BOOL_FALSE=300;
 
 
-#line 314 "/usr/local/lib/bison.cc"
+
  /* const YY_TransformationParser_CLASS::token */
 #endif
 /*apres const  */
@@ -599,8 +599,8 @@ YY_TransformationParser_CONSTRUCTOR_CODE;
 };
 #endif
 
-/* #line 325 "/usr/local/lib/bison.cc" */
-#line 600 "transformation-parser.cpp"
+
+
 
 
 #define    YYFINAL        72
@@ -789,7 +789,7 @@ static const short yycheck[] = {     1,
     -1,    -1,    58
 };
 
-#line 325 "/usr/local/lib/bison.cc"
+
  /* fattrs + tables */
 
 /* parser code folow  */
@@ -802,10 +802,10 @@ static const short yycheck[] = {     1,
 
 /* Note: dollar marks section change
    the next  is replaced by the list of actions, each action
-   as one case of the switch.  */ 
+   as one case of the switch.  */
 
 #if YY_TransformationParser_USE_GOTO != 0
-/* 
+/*
  SUPRESSION OF GOTO : on some C++ compiler (sun c++)
   the goto is strictly forbidden if any constructor/destructor
   is used in the whole function (very stupid isn't it ?)
@@ -816,19 +816,19 @@ static const short yycheck[] = {     1,
 #define YYBEGINGOTO  enum yy_labels yy_gotostate=yygotostart; \
                      for(;;) switch(yy_gotostate) { case yygotostart: {
 #define YYLABEL(lb) } case lb: {
-#define YYENDGOTO } } 
+#define YYENDGOTO } }
 #define YYBEGINDECLARELABEL enum yy_labels {yygotostart
 #define YYDECLARELABEL(lb) ,lb
 #define YYENDDECLARELABEL  };
 #else
 /* macro to keep goto */
 #define YYGOTO(lb) goto lb
-#define YYBEGINGOTO 
+#define YYBEGINGOTO
 #define YYLABEL(lb) lb:
 #define YYENDGOTO
-#define YYBEGINDECLARELABEL 
+#define YYBEGINDECLARELABEL
 #define YYDECLARELABEL(lb)
-#define YYENDDECLARELABEL 
+#define YYENDDECLARELABEL
 #endif
 /* LABEL DECLARATION */
 YYBEGINDECLARELABEL
@@ -841,7 +841,7 @@ YYBEGINDECLARELABEL
   YYDECLARELABEL(yyerrlab1)   /* here on error raised explicitly by an action */
   YYDECLARELABEL(yyerrdefault)  /* current state does not do anything special for the error token. */
   YYDECLARELABEL(yyerrpop)   /* pop the current state because it cannot handle the error token */
-  YYDECLARELABEL(yyerrhandle)  
+  YYDECLARELABEL(yyerrhandle)
 YYENDDECLARELABEL
 /* ALLOCA SIMULATION */
 /* __HAVE_NO_ALLOCA */
@@ -868,7 +868,7 @@ static int __alloca_free_ptr(char *ptr,char *ref)
 #else
 #define __ALLOCA_return(num) return(num)
 #define __ALLOCA_alloca(size) alloca(size)
-#define __ALLOCA_free(ptr,ref) 
+#define __ALLOCA_free(ptr,ref)
 #endif
 
 /* ENDALLOCA SIMULATION */
@@ -1277,188 +1277,188 @@ YYLABEL(yyreduce)
 #endif
 
 
-/* #line 811 "/usr/local/lib/bison.cc" */
-#line 1278 "transformation-parser.cpp"
+
+
 
   switch (yyn) {
 
 case 1:
-#line 88 "transformation.y"
+
 { ;
     break;}
 case 2:
-#line 90 "transformation.y"
+
 { ;
     break;}
 case 3:
-#line 94 "transformation.y"
+
 { new GenericExpTransformer(yyvsp[-3].exp, yyvsp[-2].exp, yyvsp[0].exp); ;
     break;}
 case 4:
-#line 98 "transformation.y"
+
 { yyval.exp = yyvsp[0].exp; ;
     break;}
 case 5:
-#line 100 "transformation.y"
+
 { yyval.exp = nullptr; ;
     break;}
 case 6:
-#line 104 "transformation.y"
+
 { yyval.exp = Location::regOf(yyvsp[-1].ival);
     ;
     break;}
 case 7:
-#line 107 "transformation.y"
+
 { yyval.exp = Location::memOf(yyvsp[-1].exp);
     ;
     break;}
 case 8:
-#line 110 "transformation.y"
+
 { yyval.exp = new Unary(opAddrOf, yyvsp[-1].exp);
     ;
     break;}
 case 9:
-#line 113 "transformation.y"
+
 { yyval.exp = new Binary(opPlus, yyvsp[-2].exp, yyvsp[0].exp);
     ;
     break;}
 case 10:
-#line 116 "transformation.y"
+
 { yyval.exp = new Binary(opMinus, yyvsp[-2].exp, yyvsp[0].exp);
     ;
     break;}
 case 11:
-#line 119 "transformation.y"
+
 { yyval.exp = new Binary(opMult, yyvsp[-2].exp, yyvsp[0].exp);
     ;
     break;}
 case 12:
-#line 122 "transformation.y"
+
 { yyval.exp = new Binary(opBitAnd, yyvsp[-2].exp, yyvsp[0].exp);
     ;
     break;}
 case 13:
-#line 125 "transformation.y"
+
 { yyval.exp = new Binary(opBitOr, yyvsp[-2].exp, yyvsp[0].exp);
     ;
     break;}
 case 14:
-#line 128 "transformation.y"
+
 { yyval.exp = new Binary(opBitXor, yyvsp[-2].exp, yyvsp[0].exp);
     ;
     break;}
 case 15:
-#line 131 "transformation.y"
+
 { yyval.exp = new Binary(opDiv, yyvsp[-2].exp, yyvsp[0].exp);
     ;
     break;}
 case 16:
-#line 134 "transformation.y"
+
 { yyval.exp = new Binary(opAnd, yyvsp[-2].exp, yyvsp[0].exp);
     ;
     break;}
 case 17:
-#line 137 "transformation.y"
+
 { yyval.exp = new Binary(opOr, yyvsp[-2].exp, yyvsp[0].exp);
     ;
     break;}
 case 18:
-#line 140 "transformation.y"
+
 { yyval.exp = new Binary(opEquals, yyvsp[-2].exp, yyvsp[0].exp);
     ;
     break;}
 case 19:
-#line 143 "transformation.y"
+
 { yyval.exp = new Binary(opNotEqual, yyvsp[-2].exp, yyvsp[0].exp);
     ;
     break;}
 case 20:
-#line 146 "transformation.y"
+
 { yyval.exp = new Binary(opMemberAccess, yyvsp[-2].exp, yyvsp[0].exp);
     ;
     break;}
 case 21:
-#line 149 "transformation.y"
+
 { yyval.exp = new Const(yyvsp[0].ival);
     ;
     break;}
 case 22:
-#line 152 "transformation.y"
+
 { yyval.exp = new Binary(opFlagCall, new Const(yyvsp[-2].str), yyvsp[-1].exp);
     ;
     break;}
 case 23:
-#line 155 "transformation.y"
-{ 
-      if (strlen(yyvsp[0].str) > 2 && yyvsp[0].str[0] == 'o' && yyvsp[0].str[1] == 'p')  
+
+{
+      if (strlen(yyvsp[0].str) > 2 && yyvsp[0].str[0] == 'o' && yyvsp[0].str[1] == 'p')
           yyval.exp = new Const(yyvsp[0].str); // treat op* as a string constant
       else
           yyval.exp = new Unary(opVar, new Const(yyvsp[0].str));
     ;
     break;}
 case 24:
-#line 162 "transformation.y"
+
 { yyval.exp = yyvsp[-1].exp;
     ;
     break;}
 case 25:
-#line 165 "transformation.y"
+
 { yyval.exp = new Unary(opKindOf, yyvsp[-1].exp);
     ;
     break;}
 case 26:
-#line 168 "transformation.y"
+
 { yyval.exp = new Unary(opTypeOf, yyvsp[-1].exp);
     ;
     break;}
 case 27:
-#line 171 "transformation.y"
+
 { yyval.exp = new Unary(opNeg, yyvsp[0].exp);
     ;
     break;}
 case 28:
-#line 174 "transformation.y"
+
 { yyval.exp = new Unary(opLNot, yyvsp[0].exp);
     ;
     break;}
 case 29:
-#line 177 "transformation.y"
+
 { yyval.exp = new TypeVal(yyvsp[0].type);
     ;
     break;}
 case 30:
-#line 180 "transformation.y"
+
 { yyval.exp = new Binary(opList, yyvsp[-2].exp, new Binary(opList, yyvsp[0].exp, new Terminal(opNil)));
     ;
     break;}
 case 31:
-#line 183 "transformation.y"
+
 { yyval.exp = new Terminal(opTrue);
     ;
     break;}
 case 32:
-#line 186 "transformation.y"
+
 { yyval.exp = new Terminal(opFalse);
     ;
     break;}
 case 33:
-#line 191 "transformation.y"
+
 { yyval.type = new PointerType(yyvsp[-1].type);
     ;
     break;}
 case 34:
-#line 194 "transformation.y"
+
 { yyval.type = new CompoundType();
     ;
     break;}
 case 35:
-#line 197 "transformation.y"
+
 { yyval.type = new NamedType(yyvsp[0].str);
     ;
     break;}
 }
 
-#line 811 "/usr/local/lib/bison.cc"
+
    /* the action file gets copied in in place of this dollarsign  */
   yyvsp -= yylen;
   yyssp -= yylen;
@@ -1659,9 +1659,9 @@ YYLABEL(yyerrhandle)
 
 /* END */
 
-/* #line 1010 "/usr/local/lib/bison.cc" */
-#line 1660 "transformation-parser.cpp"
-#line 201 "transformation.y"
+
+
+
 
 #include <stdio.h>
 

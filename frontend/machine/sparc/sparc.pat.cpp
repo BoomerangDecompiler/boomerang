@@ -1,7 +1,7 @@
 #define sign_extend(N,SIZE) (((int)((N) << (sizeof(unsigned)*8-(SIZE)))) >> (sizeof(unsigned)*8-(SIZE)))
 #include <assert.h>
 
-#line 2 "machine/sparc/sparc.pat.m"
+//#line 2 "machine/sparc/sparc.pat.m"
 /*==============================================
  * \file      sparc.pat.m
  * OVERVIEW:  Generated file; do not edit
@@ -28,7 +28,7 @@ bool InstructionPatterns::ADD$imode(ADDRESS& lc, int& a, bool a_isVAR, int& b, b
     ADDRESS nextPC;
 
 
-#line 25 "machine/sparc/sparc.pat.m"
+//#line 25 "machine/sparc/sparc.pat.m"
 { 
   dword MATCH_p = 
     
@@ -89,13 +89,13 @@ bool InstructionPatterns::ADD$imode(ADDRESS& lc, int& a, bool a_isVAR, int& b, b
   
 }
 
-#line 36 "machine/sparc/sparc.pat.m"
+//#line 36 "machine/sparc/sparc.pat.m"
 }
 bool InstructionPatterns::ADD$rmode(ADDRESS& lc, int& a, bool a_isVAR, int& b, bool b_isVAR, int& c, bool c_isVAR) {
     ADDRESS nextPC;
 
 
-#line 38 "machine/sparc/sparc.pat.m"
+//#line 38 "machine/sparc/sparc.pat.m"
 { 
   dword MATCH_p = 
     
@@ -156,13 +156,13 @@ bool InstructionPatterns::ADD$rmode(ADDRESS& lc, int& a, bool a_isVAR, int& b, b
   
 }
 
-#line 49 "machine/sparc/sparc.pat.m"
+//#line 49 "machine/sparc/sparc.pat.m"
 }
 bool InstructionPatterns::JMPL$dispA(ADDRESS& lc, int& a, bool a_isVAR, int& b, bool b_isVAR, int& c, bool c_isVAR) {
     ADDRESS nextPC;
 
 
-#line 51 "machine/sparc/sparc.pat.m"
+//#line 51 "machine/sparc/sparc.pat.m"
 { 
   dword MATCH_p = 
     
@@ -218,13 +218,13 @@ bool InstructionPatterns::JMPL$dispA(ADDRESS& lc, int& a, bool a_isVAR, int& b, 
   
 }
 
-#line 61 "machine/sparc/sparc.pat.m"
+//#line 61 "machine/sparc/sparc.pat.m"
 }
 bool InstructionPatterns::JMPL$indirectA(ADDRESS& lc, int& a, bool a_isVAR, int& b, bool b_isVAR) {
     ADDRESS nextPC;
 
 
-#line 63 "machine/sparc/sparc.pat.m"
+//#line 63 "machine/sparc/sparc.pat.m"
 { 
   dword MATCH_p = 
     
@@ -280,13 +280,13 @@ bool InstructionPatterns::JMPL$indirectA(ADDRESS& lc, int& a, bool a_isVAR, int&
   
 }
 
-#line 73 "machine/sparc/sparc.pat.m"
+//#line 73 "machine/sparc/sparc.pat.m"
 }
 bool InstructionPatterns::OR$imode(ADDRESS& lc, int& a, bool a_isVAR, int& b, bool b_isVAR, int& c, bool c_isVAR) {
     ADDRESS nextPC;
 
 
-#line 75 "machine/sparc/sparc.pat.m"
+//#line 75 "machine/sparc/sparc.pat.m"
 { 
   dword MATCH_p = 
     
@@ -345,13 +345,13 @@ bool InstructionPatterns::OR$imode(ADDRESS& lc, int& a, bool a_isVAR, int& b, bo
   
 }
 
-#line 86 "machine/sparc/sparc.pat.m"
+//#line 86 "machine/sparc/sparc.pat.m"
 }
 bool InstructionPatterns::RESTORE$imode(ADDRESS& lc, int& a, bool a_isVAR, int& b, bool b_isVAR, int& c, bool c_isVAR) {
     ADDRESS nextPC;
 
 
-#line 88 "machine/sparc/sparc.pat.m"
+//#line 88 "machine/sparc/sparc.pat.m"
 { 
   dword MATCH_p = 
     
@@ -410,13 +410,13 @@ bool InstructionPatterns::RESTORE$imode(ADDRESS& lc, int& a, bool a_isVAR, int& 
   
 }
 
-#line 99 "machine/sparc/sparc.pat.m"
+//#line 99 "machine/sparc/sparc.pat.m"
 }
 bool InstructionPatterns::RESTORE$rmode(ADDRESS& lc, int& a, bool a_isVAR, int& b, bool b_isVAR, int& c, bool c_isVAR) {
     ADDRESS nextPC;
 
 
-#line 101 "machine/sparc/sparc.pat.m"
+//#line 101 "machine/sparc/sparc.pat.m"
 { 
   dword MATCH_p = 
     
@@ -475,13 +475,13 @@ bool InstructionPatterns::RESTORE$rmode(ADDRESS& lc, int& a, bool a_isVAR, int& 
   
 }
 
-#line 112 "machine/sparc/sparc.pat.m"
+//#line 112 "machine/sparc/sparc.pat.m"
 }
 bool InstructionPatterns::SAVE$imode(ADDRESS& lc, int& a, bool a_isVAR, int& b, bool b_isVAR, int& c, bool c_isVAR) {
     ADDRESS nextPC;
 
 
-#line 114 "machine/sparc/sparc.pat.m"
+//#line 114 "machine/sparc/sparc.pat.m"
 { 
   dword MATCH_p = 
     
@@ -540,13 +540,13 @@ bool InstructionPatterns::SAVE$imode(ADDRESS& lc, int& a, bool a_isVAR, int& b, 
   
 }
 
-#line 125 "machine/sparc/sparc.pat.m"
+//#line 125 "machine/sparc/sparc.pat.m"
 }
 bool InstructionPatterns::SAVE$rmode(ADDRESS& lc, int& a, bool a_isVAR, int& b, bool b_isVAR, int& c, bool c_isVAR) {
     ADDRESS nextPC;
 
 
-#line 127 "machine/sparc/sparc.pat.m"
+//#line 127 "machine/sparc/sparc.pat.m"
 { 
   dword MATCH_p = 
     
@@ -605,13 +605,13 @@ bool InstructionPatterns::SAVE$rmode(ADDRESS& lc, int& a, bool a_isVAR, int& b, 
   
 }
 
-#line 138 "machine/sparc/sparc.pat.m"
+//#line 138 "machine/sparc/sparc.pat.m"
 }
 bool InstructionPatterns::SUB$imode(ADDRESS& lc, int& a, bool a_isVAR, int& b, bool b_isVAR, int& c, bool c_isVAR) {
     ADDRESS nextPC;
 
 
-#line 140 "machine/sparc/sparc.pat.m"
+//#line 140 "machine/sparc/sparc.pat.m"
 { 
   dword MATCH_p = 
     
@@ -670,13 +670,13 @@ bool InstructionPatterns::SUB$imode(ADDRESS& lc, int& a, bool a_isVAR, int& b, b
   
 }
 
-#line 151 "machine/sparc/sparc.pat.m"
+//#line 151 "machine/sparc/sparc.pat.m"
 }
 bool InstructionPatterns::UNIMP(ADDRESS& lc, int& a, bool a_isVAR) {
     ADDRESS nextPC;
 
 
-#line 153 "machine/sparc/sparc.pat.m"
+//#line 153 "machine/sparc/sparc.pat.m"
 { 
   dword MATCH_p = 
     
@@ -727,13 +727,13 @@ bool InstructionPatterns::UNIMP(ADDRESS& lc, int& a, bool a_isVAR) {
   
 }
 
-#line 162 "machine/sparc/sparc.pat.m"
+//#line 162 "machine/sparc/sparc.pat.m"
 }
 bool InstructionPatterns::call__(ADDRESS& lc, int& a, bool a_isVAR) {
     ADDRESS nextPC;
 
 
-#line 164 "machine/sparc/sparc.pat.m"
+//#line 164 "machine/sparc/sparc.pat.m"
 { 
   dword MATCH_p = 
     
@@ -780,12 +780,12 @@ bool InstructionPatterns::call__(ADDRESS& lc, int& a, bool a_isVAR) {
   
 }
 
-#line 172 "machine/sparc/sparc.pat.m"
+//#line 172 "machine/sparc/sparc.pat.m"
 }
 bool InstructionPatterns::dispA(ADDRESS& lc, int& a, bool a_isVAR, int& b, bool b_isVAR) {
 
 
-#line 174 "machine/sparc/sparc.pat.m"
+//#line 174 "machine/sparc/sparc.pat.m"
 { 
   dword MATCH_p = 
     
@@ -828,12 +828,12 @@ bool InstructionPatterns::dispA(ADDRESS& lc, int& a, bool a_isVAR, int& b, bool 
   
 }
 
-#line 182 "machine/sparc/sparc.pat.m"
+//#line 182 "machine/sparc/sparc.pat.m"
 }
 bool InstructionPatterns::imode(ADDRESS& lc, int& a, bool a_isVAR) {
 
 
-#line 184 "machine/sparc/sparc.pat.m"
+//#line 184 "machine/sparc/sparc.pat.m"
 { 
   dword MATCH_p = 
     
@@ -873,12 +873,12 @@ bool InstructionPatterns::imode(ADDRESS& lc, int& a, bool a_isVAR) {
   
 }
 
-#line 191 "machine/sparc/sparc.pat.m"
+//#line 191 "machine/sparc/sparc.pat.m"
 }
 bool InstructionPatterns::indirectA(ADDRESS& lc, int& a, bool a_isVAR) {
 
 
-#line 193 "machine/sparc/sparc.pat.m"
+//#line 193 "machine/sparc/sparc.pat.m"
 { 
   dword MATCH_p = 
     
@@ -924,13 +924,13 @@ bool InstructionPatterns::indirectA(ADDRESS& lc, int& a, bool a_isVAR) {
   
 }
 
-#line 201 "machine/sparc/sparc.pat.m"
+//#line 201 "machine/sparc/sparc.pat.m"
 }
 bool InstructionPatterns::mov_(ADDRESS& lc, int& a, bool a_isVAR, int& b, bool b_isVAR) {
     ADDRESS nextPC;
 
 
-#line 203 "machine/sparc/sparc.pat.m"
+//#line 203 "machine/sparc/sparc.pat.m"
 { 
   dword MATCH_p = 
     
@@ -986,13 +986,13 @@ bool InstructionPatterns::mov_(ADDRESS& lc, int& a, bool a_isVAR, int& b, bool b
   
 }
 
-#line 213 "machine/sparc/sparc.pat.m"
+//#line 213 "machine/sparc/sparc.pat.m"
 }
 bool InstructionPatterns::restore_(ADDRESS& lc) {
     ADDRESS nextPC;
 
 
-#line 215 "machine/sparc/sparc.pat.m"
+//#line 215 "machine/sparc/sparc.pat.m"
 { 
   dword MATCH_p = 
     
@@ -1067,13 +1067,13 @@ bool InstructionPatterns::restore_(ADDRESS& lc) {
   
 }
 
-#line 223 "machine/sparc/sparc.pat.m"
+//#line 223 "machine/sparc/sparc.pat.m"
 }
 bool InstructionPatterns::ret(ADDRESS& lc) {
     ADDRESS nextPC;
 
 
-#line 225 "machine/sparc/sparc.pat.m"
+//#line 225 "machine/sparc/sparc.pat.m"
 { 
   dword MATCH_p = 
     
@@ -1150,13 +1150,13 @@ bool InstructionPatterns::ret(ADDRESS& lc) {
   
 }
 
-#line 233 "machine/sparc/sparc.pat.m"
+//#line 233 "machine/sparc/sparc.pat.m"
 }
 bool InstructionPatterns::retl(ADDRESS& lc) {
     ADDRESS nextPC;
 
 
-#line 235 "machine/sparc/sparc.pat.m"
+//#line 235 "machine/sparc/sparc.pat.m"
 { 
   dword MATCH_p = 
     
@@ -1235,12 +1235,12 @@ bool InstructionPatterns::retl(ADDRESS& lc) {
   
 }
 
-#line 242 "machine/sparc/sparc.pat.m"
+//#line 242 "machine/sparc/sparc.pat.m"
 }
 bool InstructionPatterns::rmode(ADDRESS& lc, int& a, bool a_isVAR) {
 
 
-#line 244 "machine/sparc/sparc.pat.m"
+//#line 244 "machine/sparc/sparc.pat.m"
 { 
   dword MATCH_p = 
     
@@ -1279,13 +1279,13 @@ bool InstructionPatterns::rmode(ADDRESS& lc, int& a, bool a_isVAR) {
   
 }
 
-#line 252 "machine/sparc/sparc.pat.m"
+//#line 252 "machine/sparc/sparc.pat.m"
 }
 bool InstructionPatterns::sethi(ADDRESS& lc, int& a, bool a_isVAR, int& b, bool b_isVAR) {
     ADDRESS nextPC;
 
 
-#line 254 "machine/sparc/sparc.pat.m"
+//#line 254 "machine/sparc/sparc.pat.m"
 { 
   dword MATCH_p = 
     
@@ -1339,7 +1339,7 @@ bool InstructionPatterns::sethi(ADDRESS& lc, int& a, bool a_isVAR, int& b, bool 
   
 }
 
-#line 264 "machine/sparc/sparc.pat.m"
+//#line 264 "machine/sparc/sparc.pat.m"
 }
 Logue* InstructionPatterns::std_call(CSR& csr, ADDRESS& lc, int& addr)
 {

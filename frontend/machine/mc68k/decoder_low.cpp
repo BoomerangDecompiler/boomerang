@@ -1,7 +1,7 @@
 #define sign_extend(N,SIZE) (((int)((N) << (sizeof(unsigned)*8-(SIZE)))) >> (sizeof(unsigned)*8-(SIZE)))
 #include <assert.h>
 
-#line 2 "machine/mc68k/decoder_low.m"
+//#line 2 "machine/mc68k/decoder_low.m"
 /***************************************************************************//**
  * \file       decoder_low.m
  * OVERVIEW:   Implementation of the low level mc68000 specific parts of the
@@ -124,7 +124,7 @@ void chopBoth(char* name)
  * PARAMETERS:     RTs: list of RTs to add this RTAssgn to
  *                 bump: amount to add to the register
  *                 bumpr: register to bump
- * \returns         <nothing>
+ *
  *============================================================================*/
 void bumpRegister(list<RT*>* RTs, int bump, int bumpr)
 {
@@ -217,7 +217,7 @@ list<RT*>* NJMCDecoder::decodeLowLevelInstruction (ADDRESS hostPC, ADDRESS pc,
 
 
 
-#line 217 "machine/mc68k/decoder_low.m"
+//#line 217 "machine/mc68k/decoder_low.m"
 { 
   dword MATCH_p = 
     
@@ -11416,7 +11416,7 @@ list<RT*>* NJMCDecoder::decodeLowLevelInstruction (ADDRESS hostPC, ADDRESS pc,
   
 }
 
-#line 1135 "machine/mc68k/decoder_low.m"
+//#line 1135 "machine/mc68k/decoder_low.m"
 
     result.numBytes += 2;           // Count the main opcode
     return RTs;

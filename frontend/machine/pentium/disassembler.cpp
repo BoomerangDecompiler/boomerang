@@ -1,7 +1,7 @@
 #define sign_extend(N,SIZE) (((int)((N) << (sizeof(unsigned)*8-(SIZE)))) >> (sizeof(unsigned)*8-(SIZE)))
 #include <assert.h>
 
-#line 2 "machine/pentium/disassembler.m"
+//#line 2 "machine/pentium/disassembler.m"
 /*
  * Copyright (C) 2002, Sun Microsystems, Inc
  *
@@ -44,7 +44,7 @@ int NJMCDecoder::decodeAssemblyInstruction (ADDRESS pc, int delta)
 
 
 
-#line 41 "machine/pentium/disassembler.m"
+//#line 41 "machine/pentium/disassembler.m"
 { 
   dword MATCH_p = 
     
@@ -57233,7 +57233,7 @@ int NJMCDecoder::decodeAssemblyInstruction (ADDRESS pc, int delta)
   
 }
 
-#line 1796 "machine/pentium/disassembler.m"
+//#line 1796 "machine/pentium/disassembler.m"
 
     // return # of bytes parsed
     return (nextPC - hostPC);

@@ -1,3 +1,5 @@
+#ifndef __REG_H__
+#define __REG_H__
 /*
  * Copyright (C) 2000-2001, The University of Queensland
  *
@@ -17,10 +19,8 @@
  *
  * 28 Apr 02 - Mike: Mods for boomerang
  */
-
-#ifndef __REG_H__
-#define __REG_H__
 #include <string>
+#include <stdint.h>
 class Type;
 
 /***************************************************************************//**
@@ -46,7 +46,7 @@ public:
 ///////////////////////////////////////////////////////////////////////////////
 
     void            s_name(const char *);
-    void            s_size(int s) {size = s;}
+    void            s_size(uint16_t s) {size = s;}
     void            s_float(bool f) {flt = f;}
     void            s_address(void *p) {address = p;}
 
@@ -76,7 +76,7 @@ public:
 
 private:
     std::string     name;
-    short           size;
+    uint16_t        size;
     void *          address;
     int             mappedIndex;
     int             mappedOffset;

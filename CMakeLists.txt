@@ -28,13 +28,12 @@ IF(CMAKE_CXX_COMPILER MATCHES cl.exe)
 ELSE()
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++11" )
     SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall" )
-    add_definitions(-D_GLIBCXX_DEBUG -D__STDC_FORMAT_MACROS)
+    add_definitions(-D__STDC_FORMAT_MACROS) #-D_GLIBCXX_DEBUG
 ENDIF()
 ###############################################################################
 # Defines section
 ###############################################################################
-#define VERSION "alpha 0.3.2 19/Aug/2010"
-SET(VERSION "0.3.2a")
+SET(VERSION "alpha 0.3.2 19/Aug/2010")
 SET(MAIN_INCLUDE_DIRECTORY ${PROJECT_SOURCE_DIR}/include)
 INCLUDE(CheckIncludeFiles)
 INCLUDE(CheckLibraryExists)

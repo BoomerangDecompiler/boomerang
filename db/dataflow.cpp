@@ -36,9 +36,11 @@ extern char debug_buffer[];         // For prints functions
  * Dominator frontier code largely as per Appel 2002 ("Modern Compiler Implementation in Java")
  */
 
-void DataFlow::DFS(int p, int n) {
+void DataFlow::DFS(int p, size_t n) {
     if (dfnum[n] == 0) {
-        dfnum[n] = N; vertex[N] = n; parent[n] = p;
+        dfnum[n] = N;
+        vertex[N] = n;
+        parent[n] = p;
         N++;
         // For each successor w of n
         BasicBlock * bb = BBs[n];
@@ -53,7 +55,7 @@ void DataFlow::DFS(int p, int n) {
 // Essentially Algorithm 19.9 of Appel's "modern compiler implementation in Java" 2nd ed 2002
 void DataFlow::dominators(Cfg* cfg) {
     BasicBlock * r = cfg->getEntryBB();
-    unsigned numBB = cfg->getNumBBs();
+    size_t numBB = cfg->getNumBBs();
     BBs.resize(numBB, (BasicBlock *)-1);
     N = 0; BBs[0] = r;
     indices.clear();            // In case restart decompilation due to switch statements
@@ -72,7 +74,7 @@ void DataFlow::dominators(Cfg* cfg) {
     // Set up the BBs and indices vectors. Do this here because sometimes a BB can be unreachable (so relying on
     // in-edges doesn't work)
     std::list<BasicBlock *>::iterator ii;
-    int idx = 1;
+    size_t idx = 1;
     for (ii = cfg->begin(); ii != cfg->end(); ii++) {
         BasicBlock * bb = *ii;
         if (bb != r) {       // Entry BB r already done
@@ -81,7 +83,8 @@ void DataFlow::dominators(Cfg* cfg) {
         }
     }
     DFS(-1, 0);
-    int i;
+    size_t i;
+    assert((N-1)>=0);
     for (i=N-1; i >= 1; i--) {
         int n = vertex[i]; int p = parent[n]; int s = p;
         /* These lines calculate the semi-dominator of n, based on the Semidominator Theorem */
@@ -351,7 +354,8 @@ bool DataFlow::renameBlockVars(UserProc* proc, int n, bool clearStacks /* = fals
 
     // Need to clear the Stacks of old, renamed locations like m[esp-4] (these will be deleted, and will cause compare
     // failures in the Stacks, so it can't be correctly ordered and hence balanced etc, and will lead to segfaults)
-    if (clearStacks) Stacks.clear();
+    if (clearStacks)
+        Stacks.clear();
 
     // For each statement S in block n
     BasicBlock::rtlit rit; StatementList::iterator sit;
@@ -371,7 +375,7 @@ bool DataFlow::renameBlockVars(UserProc* proc, int n, bool clearStacks /* = fals
                 // needs updating
                 PhiAssign::iterator pp;
                 for (pp = pa->begin(); pp != pa->end(); ++pp) {
-                    Statement* def = pp->def;
+                    Statement* def = pp->second.def;
                     if (def && def->isCall())
                         ((CallStatement*)def)->useBeforeDefine(phiLeft->clone());
                 }
@@ -383,7 +387,8 @@ bool DataFlow::renameBlockVars(UserProc* proc, int n, bool clearStacks /* = fals
             for (xx = locs.begin(); xx != locs.end(); xx++) {
                 Exp* x = *xx;
                 // Don't rename memOfs that are not renamable according to the current policy
-                if (!canRename(x, proc)) continue;
+                if (!canRename(x, proc))
+                    continue;
                 Statement* def = nullptr;
                 if (x->isSubscript()) {                    // Already subscripted?
                     // No renaming required, but redo the usage analysis, in case this is a new return, and also because
@@ -472,49 +477,47 @@ bool DataFlow::renameBlockVars(UserProc* proc, int n, bool clearStacks /* = fals
         if (S->isCall() && ((CallStatement*)S)->isChildless() && !Boomerang::get()->assumeABI) {
             // S is a childless call (and we're not assuming ABI compliance)
             Stacks[defineAll];                                        // Ensure that there is an entry for defineAll
-            std::map<Exp*, std::stack<Statement*>, lessExpStar>::iterator dd;
-            for (dd = Stacks.begin(); dd != Stacks.end(); ++dd) {
+            for (auto iter = Stacks.begin(); iter != Stacks.end(); ++iter) {
                 // if (dd->first->isMemDepth(memDepth))
-                dd->second.push(S);                                // Add a definition for all vars
+                iter->second.push(S);                                // Add a definition for all vars
             }
         }
     }
 
     // For each successor Y of block n
     std::vector<BasicBlock *>& outEdges = bb->getOutEdges();
-    unsigned numSucc = outEdges.size();
+    size_t numSucc = outEdges.size();
     for (unsigned succ = 0; succ < numSucc; succ++) {
         BasicBlock * Ybb = outEdges[succ];
         // Suppose n is the jth predecessor of Y
         int j = Ybb->whichPred(bb);
         // For each phi-function in Y
-        Statement* S;
-        for (S = Ybb->getFirstStmt(rit, sit); S; S = Ybb->getNextStmt(rit, sit)) {
-            PhiAssign* pa = dynamic_cast<PhiAssign*>(S);
+        for (Statement * St = Ybb->getFirstStmt(rit, sit); St; St = Ybb->getNextStmt(rit, sit)) {
+            PhiAssign* pa = dynamic_cast<PhiAssign*>(St);
             // if S is not a phi function, then quit the loop (no more phi's)
             // Wrong: do not quit the loop: there's an optimisation that turns a PhiAssign into an ordinary Assign.
             // So continue, not break.
-            if (!pa) continue;
+            if (!pa)
+                continue;
             // Suppose the jth operand of the phi is a
             // For now, just get the LHS
             Exp* a = pa->getLeft();
             // Only consider variables that can be renamed
             if (!canRename(a, proc))
                 continue;
-            Statement* def;
-            if (STACKS_EMPTY(a))
-                def = nullptr;                // No reaching definition
-            else
+            Statement* def = nullptr; // assume No reaching definition
+            if (!STACKS_EMPTY(a))
                 def = Stacks[a].top();
             // "Replace jth operand with a_i"
+            assert(j>=0);
             pa->putAt(j, def, a);
         }
     }
 
     // For each child X of n
     // Note: linear search!
-    unsigned numBB = proc->getCFG()->getNumBBs();
-    for (unsigned X=0; X < numBB; X++) {
+    size_t numBB = proc->getCFG()->getNumBBs();
+    for (size_t X=0; X < numBB; X++) {
         if (idom[X] == n)
             renameBlockVars(proc, X);
     }
@@ -640,7 +643,7 @@ void DefCollector::print(std::ostream& os, bool html) const {
         (*it)->getLeft()->print(ost, html);
         ost << "=";
         (*it)->getRight()->print(ost, html);
-        unsigned len = ost.str().length();
+        size_t len = ost.str().length();
         if (first)
             first = false;
         else if (col+4+len >= DEFCOL_COLS) {        // 4 for a comma and three spaces
@@ -706,7 +709,7 @@ void DefCollector::makeCloneOf(const DefCollector& other) {
 void DefCollector::searchReplaceAll(Exp* from, Exp* to, bool& change) {
     iterator it;
     for (it=defs.begin(); it != defs.end(); ++it)
-        (*it)->searchAndReplace(from, to);
+        change |= (*it)->searchAndReplace(from, to);
 }
 
 // Called from CallStatement::fromSSAform. The UserProc is needed for the symbol map
@@ -803,8 +806,8 @@ void DataFlow::findLiveAtDomPhi(int n, LocationSet& usedByDomPhi, LocationSet& u
             PhiAssign* pa = (PhiAssign*)S;
             PhiAssign::iterator it;
             for (it = pa->begin(); it != pa->end(); ++it) {
-                if (it->e) {
-                    RefExp* re = new RefExp(it->e, it->def);
+                if (it->second.e) {
+                    RefExp* re = new RefExp(it->second.e, it->second.def);
                     usedByDomPhi0.insert(re);
                 }
             }
@@ -846,8 +849,8 @@ void DataFlow::findLiveAtDomPhi(int n, LocationSet& usedByDomPhi, LocationSet& u
     }
 }
 
-#if USE_DOMINANCE_NUMS
 void DataFlow::setDominanceNums(int n, int& currNum) {
+#if USE_DOMINANCE_NUMS
     BasicBlock::rtlit rit; StatementList::iterator sit;
     BasicBlock *bb = BBs[n];
     Statement* S;
@@ -860,6 +863,6 @@ void DataFlow::setDominanceNums(int n, int& currNum) {
         // Recurse to the child
         setDominanceNums(c, currNum);
     }
-}
 #endif
+}
 

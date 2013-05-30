@@ -41,12 +41,12 @@ typedef std::map<ADDRESS, Proc*, std::less<ADDRESS> > PROGMAP;
 
 class Global {
 private:
-    Type *type;
-    ADDRESS uaddr;
-    std::string nam;
+        Type *      type;
+        ADDRESS     uaddr;
+        std::string nam;
 
 public:
-                    Global(Type *type, ADDRESS uaddr, const std::string &nam) : type(type), uaddr(uaddr), nam(nam) { }
+                    Global(Type *_type, ADDRESS _uaddr, const std::string &_nam) : type(_type), uaddr(_uaddr), nam(_nam) { }
 virtual             ~Global();
 
         Type *      getType() { return type; }

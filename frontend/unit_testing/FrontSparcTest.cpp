@@ -45,7 +45,7 @@ void FrontSparcTest::setUp () {
  * OVERVIEW:        Delete objects created in setUp
  * NOTE:            Called after all tests
  * PARAMETERS:        <none>
- * \returns             <nothing>
+ *
  *============================================================================*/
 void FrontSparcTest::tearDown () {
 }

@@ -48,7 +48,7 @@ public:
 };
 class NullLogger : public Log {
 public:
-    virtual Log &operator<<(const std::string& str) {
+    virtual Log &operator<<(const std::string& /*str*/) {
         // std::cerr << str;
         return *this;
     }

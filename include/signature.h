@@ -45,8 +45,8 @@ private:
         std::string boundMax;
 
 public:
-                    Parameter(Type *type, const char *name, Exp *exp = nullptr, const char *boundMax = "") :
-                    type(type), name(name), exp(exp), boundMax(boundMax)    { }
+                    Parameter(Type *_type, const char *_name, Exp *_exp = nullptr, const char *_boundMax = "") :
+                    type(_type), name(_name), exp(_exp), boundMax(_boundMax)    { }
 virtual             ~Parameter();
         bool        operator==(Parameter& other);
         Parameter * clone();
@@ -72,7 +72,7 @@ public:
         Type        *type;
         Exp            *exp;
 
-                    Return(Type *type, Exp *exp) : type(type), exp(exp) { }
+                    Return(Type *_type, Exp *_exp) : type(_type), exp(_exp) { }
 virtual                ~Return() { }
         bool        operator==(Return& other);
         Return*        clone();
@@ -130,11 +130,11 @@ virtual void        addReturn(Type *type, Exp *e = nullptr);
 virtual void        addReturn(Exp *e);
 virtual void        addReturn(Return *ret) { returns.push_back(ret); }
 virtual void        removeReturn(Exp *e);
-virtual unsigned    getNumReturns() {return returns.size();}
-virtual Exp *       getReturnExp(int n) {return returns[n]->exp;}
-        void        setReturnExp(int n, Exp* e) {returns[n]->exp = e;}
-virtual Type *      getReturnType(int n) {return returns[n]->type;}
-virtual void        setReturnType(int n, Type *ty);
+virtual size_t      getNumReturns() {return returns.size();}
+virtual Exp *       getReturnExp(size_t n) {return returns[n]->exp;}
+        void        setReturnExp(size_t n, Exp* e) {returns[n]->exp = e;}
+virtual Type *      getReturnType(size_t n) {return returns[n]->type;}
+virtual void        setReturnType(size_t n, Type *ty);
         int         findReturn(Exp *e);
 //      void        fixReturnsWithParameters();            // Needs description
         void        setRetType(Type *t) { rettype = t; }
@@ -142,10 +142,10 @@ virtual void        setReturnType(int n, Type *ty);
         Type *      getTypeFor(Exp* e);
 
         // get/set the name
-virtual const char    *getName();
+virtual const char *getName();
 virtual void        setName(const std::string &nam);
         // get/set the signature file
-        const char    *getSigFile() { return sigFile.c_str(); }
+        const char *getSigFile() { return sigFile.c_str(); }
         void        setSigFile(const char *nam) { sigFile = nam; }
 
         // add a new parameter to this signature
@@ -156,13 +156,13 @@ virtual void        addParameter(Parameter *param);
         void        addEllipsis() { ellipsis = true; }
         void        killEllipsis() {ellipsis = false; }
 virtual void        removeParameter(Exp *e);
-virtual void        removeParameter(int i);
+virtual void        removeParameter(size_t i);
         // set the number of parameters using defaults
-virtual void        setNumParams(int n);
+virtual void        setNumParams(size_t n);
 
         // accessors for parameters
-virtual unsigned    getNumParams() {return params.size();}
-virtual const char *getParamName(int n);
+virtual size_t      getNumParams() {return params.size();}
+virtual const char *getParamName(size_t n);
 virtual Exp *       getParamExp(int n);
 virtual Type *      getParamType(int n);
 virtual const char *getParamBoundMax(int n);
@@ -181,11 +181,7 @@ virtual bool        hasEllipsis() { return ellipsis; }
 
         // analysis determines parameters / return type
         //virtual void analyse(UserProc *p);
-
-        // Data flow based type analysis. Meet the parameters with their current types.  Returns true if a change
         bool        dfaTypeAnalysis(Cfg* cfg);
-
-        // any signature can be promoted to a higher level signature, if available
 virtual Signature * promote(UserProc *p);
         void        print(std::ostream &out, bool html = false) const;
         char *      prints();            // For debugging
@@ -245,8 +241,8 @@ virtual callconv        getConvention() { return CONV_NONE; }
         void            addPreferedParameter(int n) { preferedParams.push_back(n); }
         Type *          getPreferedReturn() { return preferedReturn; }
         const char *    getPreferedName() { return preferedName.c_str(); }
-        unsigned int    getNumPreferedParams() { return preferedParams.size(); }
-        int             getPreferedParam(int n) { return preferedParams[n]; }
+        size_t          getNumPreferedParams() { return preferedParams.size(); }
+        int             getPreferedParam(size_t n) { return preferedParams[n]; }
 
         // A compare function for arguments and returns. Used for sorting returns in calcReturn() etc
 virtual bool            argumentCompare(Assignment& a, Assignment& b);
@@ -263,14 +259,14 @@ protected:
 
 class CustomSignature : public Signature {
 protected:
-        int            sp;
+        int         sp;
 public:
-    CustomSignature(const char *nam);
-virtual ~CustomSignature() { }
-virtual    bool        isPromoted() { return true; }
-virtual Signature    *clone();
+                    CustomSignature(const char *nam);
+virtual             ~CustomSignature() { }
+virtual bool        isPromoted() { return true; }
+virtual Signature * clone();
         void        setSP(int nsp);
-virtual int            getStackRegister() throw(StackRegisterNotDefinedException) {return sp; };
+virtual int         getStackRegister() throw(StackRegisterNotDefinedException) {return sp; }
 };
 
 #endif

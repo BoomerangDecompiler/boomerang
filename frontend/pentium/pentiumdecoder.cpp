@@ -72,7 +72,7 @@ void genBSFR(ADDRESS pc, Exp* reg, Exp* modrm, int init, int size, OPER incdec,
  * FUNCTION:       unused
  * \brief       A dummy function to suppress "unused local variable" messages
  * PARAMETERS:       x: integer variable to be "used"
- * \returns            Nothing
+ *
  ******************************************************************************/
 void PentiumDecoder::unused(int x)
 {}
@@ -90,7 +90,7 @@ static DecodeResult result;
  * \param   proc - the enclosing procedure
  * \returns a DecodeResult structure containing all the information gathered during decoding
  ******************************************************************************/
-DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
+DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, ptrdiff_t delta)
 {
     ADDRESS hostPC = pc + delta;
     // Clear the result structure;
@@ -158,7 +158,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_16 & 0x7)
                                                         /* base at 16 */ == 5 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -174,7 +174,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 1:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8)) {
                                             ADDRESS Eaddr = addressToPC(MATCH_p)+1;
@@ -189,7 +189,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 2:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))
                                             goto MATCH_label_c788;  /*opt-block+*/
@@ -212,7 +212,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_16 & 0x7)
                                                         /* base at 16 */ == 5 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -228,7 +228,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 1:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8)) {
                                             ADDRESS Eaddr = addressToPC(MATCH_p)+1;
@@ -243,7 +243,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 2:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))
                                             goto MATCH_label_c792;  /*opt-block+*/
@@ -266,7 +266,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_16 & 0x7)
                                                         /* base at 16 */ == 5 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -282,7 +282,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 1:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8)) {
                                             ADDRESS Eaddr = addressToPC(MATCH_p)+1;
@@ -297,7 +297,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 2:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))
                                             goto MATCH_label_c796;  /*opt-block+*/
@@ -320,7 +320,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_16 & 0x7)
                                                         /* base at 16 */ == 5 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -336,7 +336,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 1:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8)) {
                                             ADDRESS Eaddr = addressToPC(MATCH_p)+1;
@@ -351,7 +351,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 2:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))
                                             goto MATCH_label_c800;  /*opt-block+*/
@@ -416,7 +416,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                             if ((MATCH_w_8_24 & 0x7)
                                                                                     /* base at 24 */ == 5 &&
-                                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                                    (true
                                                                                      /* index at 24 */ &&
                                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                                      /* index at 24 */ < 8))
@@ -435,7 +435,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -451,7 +451,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8))
@@ -484,7 +484,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                             if ((MATCH_w_8_24 & 0x7)
                                                                                     /* base at 24 */ == 5 &&
-                                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                                    (true
                                                                                      /* index at 24 */ &&
                                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                                      /* index at 24 */ < 8))
@@ -503,7 +503,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -519,7 +519,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8))
@@ -549,7 +549,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                             if ((MATCH_w_8_24 & 0x7)
                                                                                     /* base at 24 */ == 5 &&
-                                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                                    (true
                                                                                      /* index at 24 */ &&
                                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                                      /* index at 24 */ < 8))
@@ -568,7 +568,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -584,7 +584,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8))
@@ -612,7 +612,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                             if ((MATCH_w_8_24 & 0x7)
                                                                                     /* base at 24 */ == 5 &&
-                                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                                    (true
                                                                                      /* index at 24 */ &&
                                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                                      /* index at 24 */ < 8))
@@ -631,7 +631,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -647,7 +647,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8))
@@ -675,7 +675,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                             if ((MATCH_w_8_24 & 0x7)
                                                                                     /* base at 24 */ == 5 &&
-                                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                                    (true
                                                                                      /* index at 24 */ &&
                                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                                      /* index at 24 */ < 8))
@@ -694,7 +694,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -710,7 +710,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8))
@@ -760,7 +760,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                             if ((MATCH_w_8_24 & 0x7)
                                                                                     /* base at 24 */ == 5 &&
-                                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                                    (true
                                                                                      /* index at 24 */ &&
                                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                                      /* index at 24 */ < 8))
@@ -779,7 +779,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -796,7 +796,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8))
@@ -829,7 +829,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                             if ((MATCH_w_8_24 & 0x7)
                                                                                     /* base at 24 */ == 5 &&
-                                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                                    (true
                                                                                      /* index at 24 */ &&
                                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                                      /* index at 24 */ < 8))
@@ -848,7 +848,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -864,7 +864,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8))
@@ -894,7 +894,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                             if ((MATCH_w_8_24 & 0x7)
                                                                                     /* base at 24 */ == 5 &&
-                                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                                    (true
                                                                                      /* index at 24 */ &&
                                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                                      /* index at 24 */ < 8))
@@ -913,7 +913,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -929,7 +929,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8))
@@ -962,7 +962,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                             if ((MATCH_w_8_24 & 0x7)
                                                                                     /* base at 24 */ == 5 &&
-                                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                                    (true
                                                                                      /* index at 24 */ &&
                                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                                      /* index at 24 */ < 8))
@@ -981,7 +981,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -997,7 +997,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8))
@@ -1034,7 +1034,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_24 & 0x7)
                                                                             /* base at 24 */ == 5 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8))
@@ -1052,7 +1052,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8)) {
@@ -1070,7 +1070,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8))
@@ -1103,7 +1103,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_24 & 0x7)
                                                                             /* base at 24 */ == 5 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8))
@@ -1121,7 +1121,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8)) {
@@ -1139,7 +1139,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8))
@@ -1373,7 +1373,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_24 & 0x7)
                                                                             /* base at 24 */ == 5 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -1397,7 +1397,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8)) {
@@ -1420,7 +1420,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8)) {
@@ -1456,7 +1456,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_24 & 0x7)
                                                                             /* base at 24 */ == 5 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -1480,7 +1480,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8)) {
@@ -1503,7 +1503,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8)) {
@@ -1541,7 +1541,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_24 & 0x7)
                                                                             /* base at 24 */ == 5 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -1565,7 +1565,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8)) {
@@ -1594,7 +1594,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8)) {
@@ -1630,7 +1630,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_24 & 0x7)
                                                                             /* base at 24 */ == 5 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -1654,7 +1654,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8)) {
@@ -1677,7 +1677,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8)) {
@@ -1713,7 +1713,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_24 & 0x7)
                                                                             /* base at 24 */ == 5 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -1737,7 +1737,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8)) {
@@ -1760,7 +1760,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8)) {
@@ -1796,7 +1796,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_24 & 0x7)
                                                                             /* base at 24 */ == 5 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -1820,7 +1820,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8)) {
@@ -1843,7 +1843,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8)) {
@@ -1885,7 +1885,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_24 & 0x7)
                                                                             /* base at 24 */ == 5 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -1909,7 +1909,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8)) {
@@ -1938,7 +1938,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8)) {
@@ -1974,7 +1974,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_24 & 0x7)
                                                                             /* base at 24 */ == 5 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -1998,7 +1998,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8)) {
@@ -2021,7 +2021,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8)) {
@@ -2057,7 +2057,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_24 & 0x7)
                                                                             /* base at 24 */ == 5 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -2081,7 +2081,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8)) {
@@ -2104,7 +2104,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8)) {
@@ -2140,7 +2140,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_24 & 0x7)
                                                                             /* base at 24 */ == 5 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -2164,7 +2164,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8)) {
@@ -2187,7 +2187,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8)) {
@@ -2223,7 +2223,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_24 & 0x7)
                                                                             /* base at 24 */ == 5 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -2247,7 +2247,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8)) {
@@ -2270,7 +2270,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8)) {
@@ -2306,7 +2306,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_24 & 0x7)
                                                                             /* base at 24 */ == 5 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -2330,7 +2330,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8)) {
@@ -2353,7 +2353,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8)) {
@@ -2433,7 +2433,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_24 & 0x7)
                                                                             /* base at 24 */ == 5 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8))
@@ -2451,7 +2451,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8)) {
@@ -2469,7 +2469,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8))
@@ -2497,7 +2497,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_24 & 0x7)
                                                                             /* base at 24 */ == 5 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8))
@@ -2515,7 +2515,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8)) {
@@ -2533,7 +2533,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8))
@@ -2566,7 +2566,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_24 & 0x7)
                                                                             /* base at 24 */ == 5 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -2590,7 +2590,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8)) {
@@ -2615,7 +2615,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8)) {
@@ -2651,7 +2651,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_24 & 0x7)
                                                                             /* base at 24 */ == 5 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -2675,7 +2675,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8)) {
@@ -2700,7 +2700,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8)) {
@@ -2737,7 +2737,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_24 & 0x7)
                                                                             /* base at 24 */ == 5 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8))
@@ -2755,7 +2755,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8)) {
@@ -2773,7 +2773,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8))
@@ -2801,7 +2801,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_24 & 0x7)
                                                                             /* base at 24 */ == 5 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8))
@@ -2819,7 +2819,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8)) {
@@ -2837,7 +2837,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8))
@@ -2870,7 +2870,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_24 & 0x7)
                                                                             /* base at 24 */ == 5 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8))
@@ -2888,7 +2888,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8)) {
@@ -2906,7 +2906,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8))
@@ -2952,7 +2952,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                             if ((MATCH_w_8_24 & 0x7)
                                                                                     /* base at 24 */ == 5 &&
-                                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                                    (true
                                                                                      /* index at 24 */ &&
                                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                                      /* index at 24 */ < 8)) {
@@ -2976,7 +2976,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -3000,7 +3000,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -3035,7 +3035,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                             if ((MATCH_w_8_24 & 0x7)
                                                                                     /* base at 24 */ == 5 &&
-                                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                                    (true
                                                                                      /* index at 24 */ &&
                                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                                      /* index at 24 */ < 8)) {
@@ -3059,7 +3059,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -3083,7 +3083,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -3118,7 +3118,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                             if ((MATCH_w_8_24 & 0x7)
                                                                                     /* base at 24 */ == 5 &&
-                                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                                    (true
                                                                                      /* index at 24 */ &&
                                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                                      /* index at 24 */ < 8)) {
@@ -3142,7 +3142,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -3166,7 +3166,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -3201,7 +3201,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                             if ((MATCH_w_8_24 & 0x7)
                                                                                     /* base at 24 */ == 5 &&
-                                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                                    (true
                                                                                      /* index at 24 */ &&
                                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                                      /* index at 24 */ < 8)) {
@@ -3225,7 +3225,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -3249,7 +3249,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -3287,7 +3287,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_24 & 0x7)
                                                                             /* base at 24 */ == 5 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8))
@@ -3305,7 +3305,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8)) {
@@ -3323,7 +3323,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8))
@@ -3351,7 +3351,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_24 & 0x7)
                                                                             /* base at 24 */ == 5 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8))
@@ -3369,7 +3369,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8)) {
@@ -3379,7 +3379,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                 nextPC = MATCH_p+5;
 //#line 1372 "frontend/machine/pentium/decoder.m"
                                                                 //stmts = instantiate(pc,  "BSFod", DIS_REG32, DIS_EADDR32);
-                                                                genBSFR(pc, DIS_REG32, DIS_EADDR32, -1, 32, opPlus, (nextPC-hostPC).m_value);
+                                                                genBSFR(pc, DIS_REG32, DIS_EADDR32, -1, 32, opPlus, int((nextPC-hostPC).m_value));
                                                                 return result;
                                                             } /*opt-block*//*opt-block+*/
                                                             else
@@ -3389,7 +3389,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8))
@@ -3417,7 +3417,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_24 & 0x7)
                                                                             /* base at 24 */ == 5 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8))
@@ -3435,7 +3435,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8)) {
@@ -3446,7 +3446,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
 //#line 1361 "frontend/machine/pentium/decoder.m"
                                                                 //stmts = instantiate(pc,  "BSRod", DIS_REG32, DIS_EADDR32);
                                                                 // Bit Scan Forward: need helper function
-                                                                genBSFR(pc, DIS_REG32, DIS_EADDR32, 32, 32, opMinus, (nextPC-hostPC).m_value);
+                                                                genBSFR(pc, DIS_REG32, DIS_EADDR32, 32, 32, opMinus, int((nextPC-hostPC).m_value));
                                                                 return result;
                                                             } /*opt-block*//*opt-block+*/
                                                             else
@@ -3456,7 +3456,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8))
@@ -3484,7 +3484,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_24 & 0x7)
                                                                             /* base at 24 */ == 5 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8))
@@ -3502,7 +3502,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8)) {
@@ -3520,7 +3520,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8))
@@ -3548,7 +3548,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_24 & 0x7)
                                                                             /* base at 24 */ == 5 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8))
@@ -3566,7 +3566,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8)) {
@@ -3584,7 +3584,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8))
@@ -3616,7 +3616,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_24 & 0x7)
                                                                             /* base at 24 */ == 5 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8))
@@ -3634,7 +3634,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8)) {
@@ -3652,7 +3652,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8))
@@ -3680,7 +3680,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_24 & 0x7)
                                                                             /* base at 24 */ == 5 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8))
@@ -3698,7 +3698,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8)) {
@@ -3716,7 +3716,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8))
@@ -3752,7 +3752,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_24 & 0x7)
                                                                             /* base at 24 */ == 5 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8))
@@ -3770,7 +3770,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8)) {
@@ -3788,7 +3788,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8))
@@ -3816,7 +3816,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_24 & 0x7)
                                                                             /* base at 24 */ == 5 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8))
@@ -3834,7 +3834,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8)) {
@@ -3852,7 +3852,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8))
@@ -3888,7 +3888,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_24 & 0x7)
                                                                             /* base at 24 */ == 5 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8))
@@ -3906,7 +3906,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8)) {
@@ -3924,7 +3924,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8))
@@ -3960,7 +3960,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_24 & 0x7)
                                                                             /* base at 24 */ == 5 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8))
@@ -3978,7 +3978,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8)) {
@@ -3996,7 +3996,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8))
@@ -4024,7 +4024,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_24 & 0x7)
                                                                             /* base at 24 */ == 5 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8))
@@ -4042,7 +4042,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8)) {
@@ -4060,7 +4060,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8))
@@ -4088,7 +4088,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_24 & 0x7)
                                                                             /* base at 24 */ == 5 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8))
@@ -4106,7 +4106,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8)) {
@@ -4124,7 +4124,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8))
@@ -4164,7 +4164,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_24 & 0x7)
                                                                             /* base at 24 */ == 5 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8))
@@ -4182,7 +4182,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8)) {
@@ -4200,7 +4200,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8))
@@ -4228,7 +4228,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_24 & 0x7)
                                                                             /* base at 24 */ == 5 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8))
@@ -4246,7 +4246,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8)) {
@@ -4264,7 +4264,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8))
@@ -4302,7 +4302,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                         MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                         if ((MATCH_w_8_24 & 0x7)
                                                                                 /* base at 24 */ == 5 &&
-                                                                                (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                                (true
                                                                                  /* index at 24 */ &&
                                                                                  (MATCH_w_8_24 >> 3 & 0x7)
                                                                                  /* index at 24 */ < 8))
@@ -4320,7 +4320,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                 MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                 if ((MATCH_w_8_16 & 0x7)
                                                                         /* r_m at 16 */ == 4 &&
-                                                                        (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                        (true
                                                                          /* index at 24 */ &&
                                                                          (MATCH_w_8_24 >> 3 & 0x7)
                                                                          /* index at 24 */ < 8)) {
@@ -4336,7 +4336,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                 MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                 if ((MATCH_w_8_16 & 0x7)
                                                                         /* r_m at 16 */ == 4 &&
-                                                                        (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                        (true
                                                                          /* index at 24 */ &&
                                                                          (MATCH_w_8_24 >> 3 & 0x7)
                                                                          /* index at 24 */ < 8))
@@ -4374,7 +4374,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_16 & 0x7)
                                                         /* base at 16 */ == 5 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -4390,7 +4390,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 1:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8)) {
                                             ADDRESS Eaddr = addressToPC(MATCH_p)+1;
@@ -4405,7 +4405,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 2:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))
                                             goto MATCH_label_c996;  /*opt-block+*/
@@ -4428,7 +4428,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_16 & 0x7)
                                                         /* base at 16 */ == 5 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -4444,7 +4444,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 1:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8)) {
                                             ADDRESS Eaddr = addressToPC(MATCH_p)+1;
@@ -4459,7 +4459,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 2:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))
                                             goto MATCH_label_c1000;  /*opt-block+*/
@@ -4482,7 +4482,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_16 & 0x7)
                                                         /* base at 16 */ == 5 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -4498,7 +4498,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 1:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8)) {
                                             ADDRESS Eaddr = addressToPC(MATCH_p)+1;
@@ -4513,7 +4513,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 2:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))
                                             goto MATCH_label_c1004;  /*opt-block+*/
@@ -4536,7 +4536,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_16 & 0x7)
                                                         /* base at 16 */ == 5 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -4552,7 +4552,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 1:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8)) {
                                             ADDRESS Eaddr = addressToPC(MATCH_p)+1;
@@ -4567,7 +4567,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 2:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))
                                             goto MATCH_label_c1008;  /*opt-block+*/
@@ -4623,7 +4623,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_16 & 0x7)
                                                         /* base at 16 */ == 5 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -4639,7 +4639,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 1:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8)) {
                                             ADDRESS Eaddr = addressToPC(MATCH_p)+1;
@@ -4654,7 +4654,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 2:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))
                                             goto MATCH_label_c1012;  /*opt-block+*/
@@ -4677,7 +4677,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_16 & 0x7)
                                                         /* base at 16 */ == 5 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -4693,7 +4693,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 1:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8)) {
                                             ADDRESS Eaddr = addressToPC(MATCH_p)+1;
@@ -4708,7 +4708,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 2:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))
                                             goto MATCH_label_c1016;  /*opt-block+*/
@@ -4731,7 +4731,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_16 & 0x7)
                                                         /* base at 16 */ == 5 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -4747,7 +4747,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 1:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8)) {
                                             ADDRESS Eaddr = addressToPC(MATCH_p)+1;
@@ -4762,7 +4762,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 2:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))
                                             goto MATCH_label_c1020;  /*opt-block+*/
@@ -4785,7 +4785,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_16 & 0x7)
                                                         /* base at 16 */ == 5 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -4801,7 +4801,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 1:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8)) {
                                             ADDRESS Eaddr = addressToPC(MATCH_p)+1;
@@ -4816,7 +4816,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 2:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))
                                             goto MATCH_label_c1024;  /*opt-block+*/
@@ -4873,7 +4873,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_16 & 0x7)
                                                         /* base at 16 */ == 5 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -4889,7 +4889,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 1:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8)) {
                                             ADDRESS Eaddr = addressToPC(MATCH_p)+1;
@@ -4904,7 +4904,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 2:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))
                                             goto MATCH_label_c1028;  /*opt-block+*/
@@ -4927,7 +4927,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_16 & 0x7)
                                                         /* base at 16 */ == 5 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -4943,7 +4943,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 1:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8)) {
                                             ADDRESS Eaddr = addressToPC(MATCH_p)+1;
@@ -4958,7 +4958,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 2:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))
                                             goto MATCH_label_c1032;  /*opt-block+*/
@@ -4981,7 +4981,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_16 & 0x7)
                                                         /* base at 16 */ == 5 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -4997,7 +4997,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 1:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8)) {
                                             ADDRESS Eaddr = addressToPC(MATCH_p)+1;
@@ -5012,7 +5012,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 2:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))
                                             goto MATCH_label_c1036;  /*opt-block+*/
@@ -5035,7 +5035,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_16 & 0x7)
                                                         /* base at 16 */ == 5 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -5051,7 +5051,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 1:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8)) {
                                             ADDRESS Eaddr = addressToPC(MATCH_p)+1;
@@ -5066,7 +5066,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 2:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))
                                             goto MATCH_label_c1040;  /*opt-block+*/
@@ -5147,7 +5147,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_16 & 0x7)
                                                         /* base at 16 */ == 5 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -5169,7 +5169,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 1:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8)) {
                                             MATCH_w_32_32 = getDword(MATCH_p+4);
@@ -5190,7 +5190,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 2:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8)) {
                                             MATCH_w_32_56 = getDword(MATCH_p+7);
@@ -5230,7 +5230,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_16 & 0x7)
                                                         /* base at 16 */ == 5 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -5252,7 +5252,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 1:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8)) {
                                             MATCH_w_8_32 = getByte(MATCH_p+4);
@@ -5274,7 +5274,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 2:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8)) {
                                             MATCH_w_8_56 = getByte(MATCH_p+7);
@@ -5387,7 +5387,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_16 & 0x7)
                                                         /* base at 16 */ == 5 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -5403,7 +5403,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 1:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8)) {
                                             ADDRESS Eaddr = addressToPC(MATCH_p)+1;
@@ -5418,7 +5418,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 2:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))
                                             goto MATCH_label_c1052;  /*opt-block+*/
@@ -5441,7 +5441,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_16 & 0x7)
                                                         /* base at 16 */ == 5 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -5457,7 +5457,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 1:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8)) {
                                             ADDRESS Eaddr = addressToPC(MATCH_p)+1;
@@ -5472,7 +5472,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 2:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))
                                             goto MATCH_label_c1056;  /*opt-block+*/
@@ -5495,7 +5495,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_16 & 0x7)
                                                         /* base at 16 */ == 5 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -5511,7 +5511,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 1:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8)) {
                                             ADDRESS Eaddr = addressToPC(MATCH_p)+1;
@@ -5526,7 +5526,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 2:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))
                                             goto MATCH_label_c1060;  /*opt-block+*/
@@ -5549,7 +5549,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_16 & 0x7)
                                                         /* base at 16 */ == 5 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -5565,7 +5565,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 1:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8)) {
                                             ADDRESS Eaddr = addressToPC(MATCH_p)+1;
@@ -5580,7 +5580,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 2:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))
                                             goto MATCH_label_c1064;  /*opt-block+*/
@@ -5613,7 +5613,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_16 & 0x7)
                                                         /* base at 16 */ == 5 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -5629,7 +5629,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 1:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8)) {
                                             ADDRESS Mem = addressToPC(MATCH_p)+1;
@@ -5644,7 +5644,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 2:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))
                                             goto MATCH_label_c1067;  /*opt-block+*/
@@ -5668,7 +5668,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                     MATCH_w_8_16 = getByte(MATCH_p+2);
                                                     if ((MATCH_w_8_16 & 0x7)
                                                             /* base at 16 */ == 5 &&
-                                                            (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                            (true
                                                              /* index at 16 */ &&
                                                              (MATCH_w_8_16 >> 3 & 0x7)
                                                              /* index at 16 */ < 8))
@@ -5684,7 +5684,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                         case 1:
                                             MATCH_w_8_16 = getByte(MATCH_p+2);
                                             if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                    (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                    (true
                                                      /* index at 16 */ &&
                                                      (MATCH_w_8_16 >> 3 & 0x7)
                                                      /* index at 16 */ < 8)) {
@@ -5699,7 +5699,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                         case 2:
                                             MATCH_w_8_16 = getByte(MATCH_p+2);
                                             if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                    (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                    (true
                                                      /* index at 16 */ &&
                                                      (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))
                                                 goto MATCH_label_c1071;  /*opt-block+*/
@@ -5918,7 +5918,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -5934,7 +5934,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -5949,7 +5949,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -5985,7 +5985,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -6001,7 +6001,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -6016,7 +6016,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -6052,7 +6052,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -6068,7 +6068,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -6083,7 +6083,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -6119,7 +6119,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -6135,7 +6135,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -6150,7 +6150,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -6186,7 +6186,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -6202,7 +6202,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -6217,7 +6217,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -6253,7 +6253,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -6269,7 +6269,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -6284,7 +6284,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -6320,7 +6320,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -6336,7 +6336,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -6351,7 +6351,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -6387,7 +6387,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -6403,7 +6403,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -6418,7 +6418,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -6460,7 +6460,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -6476,7 +6476,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -6491,7 +6491,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -6537,7 +6537,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -6553,7 +6553,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -6568,7 +6568,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -6605,7 +6605,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -6621,7 +6621,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -6636,7 +6636,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -6666,7 +6666,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -6682,7 +6682,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -6697,7 +6697,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -6752,7 +6752,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -6768,7 +6768,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -6783,7 +6783,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -6853,7 +6853,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -6869,7 +6869,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -6884,7 +6884,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -6954,7 +6954,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -6970,7 +6970,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -6985,7 +6985,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -7064,7 +7064,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -7080,7 +7080,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -7095,7 +7095,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -7125,7 +7125,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -7141,7 +7141,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -7156,7 +7156,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -7186,7 +7186,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -7202,7 +7202,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -7217,7 +7217,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -7247,7 +7247,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -7263,7 +7263,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -7278,7 +7278,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -7308,7 +7308,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -7324,7 +7324,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -7339,7 +7339,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -7369,7 +7369,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -7385,7 +7385,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -7400,7 +7400,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -7437,7 +7437,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -7453,7 +7453,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -7468,7 +7468,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -7498,7 +7498,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -7514,7 +7514,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -7529,7 +7529,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -7565,7 +7565,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -7581,7 +7581,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -7596,7 +7596,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -7628,7 +7628,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -7644,7 +7644,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -7659,7 +7659,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -7689,7 +7689,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -7705,7 +7705,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -7720,7 +7720,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -7782,7 +7782,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -7798,7 +7798,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -7818,7 +7818,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -7870,7 +7870,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -7886,7 +7886,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -7901,7 +7901,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -7937,7 +7937,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -7953,7 +7953,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -7968,7 +7968,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -8004,7 +8004,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -8020,7 +8020,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -8035,7 +8035,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -8071,7 +8071,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -8087,7 +8087,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -8102,7 +8102,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -8132,7 +8132,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -8148,7 +8148,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -8163,7 +8163,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -8193,7 +8193,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -8209,7 +8209,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -8224,7 +8224,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -8260,7 +8260,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -8276,7 +8276,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -8291,7 +8291,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -8327,7 +8327,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -8343,7 +8343,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -8358,7 +8358,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -8394,7 +8394,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -8410,7 +8410,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -8425,7 +8425,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -8467,7 +8467,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -8483,7 +8483,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -8498,7 +8498,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -8536,7 +8536,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -8552,7 +8552,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -8567,7 +8567,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -8603,7 +8603,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -8619,7 +8619,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -8634,7 +8634,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -8670,7 +8670,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -8686,7 +8686,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -8701,7 +8701,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -8747,7 +8747,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -8763,7 +8763,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -8778,7 +8778,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -8808,7 +8808,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -8824,7 +8824,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -8839,7 +8839,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -8875,7 +8875,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -8891,7 +8891,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -8906,7 +8906,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -8942,7 +8942,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -8958,7 +8958,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -8973,7 +8973,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -9009,7 +9009,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -9025,7 +9025,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -9040,7 +9040,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -9070,7 +9070,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -9086,7 +9086,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -9101,7 +9101,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -9138,7 +9138,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -9154,7 +9154,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -9169,7 +9169,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -9205,7 +9205,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -9221,7 +9221,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -9236,7 +9236,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -9272,7 +9272,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -9288,7 +9288,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -9303,7 +9303,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -9339,7 +9339,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -9355,7 +9355,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -9370,7 +9370,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -9412,7 +9412,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -9428,7 +9428,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -9443,7 +9443,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -9475,7 +9475,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -9491,7 +9491,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -9506,7 +9506,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -9536,7 +9536,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -9552,7 +9552,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -9567,7 +9567,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -9597,7 +9597,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -9613,7 +9613,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -9628,7 +9628,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -9665,7 +9665,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -9681,7 +9681,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -9696,7 +9696,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -9734,7 +9734,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -9750,7 +9750,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -9765,7 +9765,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -9803,7 +9803,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -9819,7 +9819,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -9834,7 +9834,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -9894,8 +9894,6 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                 const char *name = MATCH_name;
                     ADDRESS relocd = addressToPC(MATCH_p)+5 + MATCH_w_32_8;
                                 nextPC = MATCH_p+5;
-//#line 148 "frontend/machine/pentium/decoder.m"
-                                unused((uintptr_t) name);
                                 unconditionalJump(name, 5, relocd, delta, pc, stmts, result);
                             }
                                 break;
@@ -9908,8 +9906,6 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                 const char *name = MATCH_name;
                     ADDRESS relocd = addressToPC(MATCH_p)+ 2 + sign_extend((MATCH_w_8_8 & 0xff) ,8);
                                 nextPC = MATCH_p+2;
-//#line 154 "frontend/machine/pentium/decoder.m"
-                                unused((uintptr_t) name);
                                 unconditionalJump(name, 2, relocd, delta, pc, stmts, result);
                                 /*
                          * Conditional branches, 8 bit offset: 7X XX
@@ -9965,7 +9961,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -9981,7 +9977,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -10008,7 +10004,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -10032,7 +10028,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -10048,7 +10044,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -10063,7 +10059,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -10095,7 +10091,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -10111,7 +10107,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -10126,7 +10122,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -10150,7 +10146,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -10166,7 +10162,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -10181,7 +10177,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -10205,7 +10201,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -10221,7 +10217,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -10249,7 +10245,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -10275,7 +10271,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -10291,7 +10287,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -10320,7 +10316,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -10344,7 +10340,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -10360,7 +10356,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -10375,7 +10371,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -10411,7 +10407,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_16 & 0x7)
                                                         /* base at 16 */ == 5 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -10427,7 +10423,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 1:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8)) {
                                             ADDRESS Eaddr = addressToPC(MATCH_p)+1;
@@ -10442,7 +10438,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 2:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))
                                             goto MATCH_label_c2;  /*opt-block+*/
@@ -10465,7 +10461,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_16 & 0x7)
                                                         /* base at 16 */ == 5 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -10481,7 +10477,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 1:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8)) {
                                             ADDRESS Eaddr = addressToPC(MATCH_p)+1;
@@ -10496,7 +10492,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 2:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))
                                             goto MATCH_label_c6;  /*opt-block+*/
@@ -10519,7 +10515,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_16 & 0x7)
                                                         /* base at 16 */ == 5 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -10535,7 +10531,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 1:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8)) {
                                             ADDRESS Eaddr = addressToPC(MATCH_p)+1;
@@ -10550,7 +10546,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 2:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))
                                             goto MATCH_label_c10;  /*opt-block+*/
@@ -10573,7 +10569,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_16 & 0x7)
                                                         /* base at 16 */ == 5 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -10589,7 +10585,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 1:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8)) {
                                             ADDRESS Eaddr = addressToPC(MATCH_p)+1;
@@ -10604,7 +10600,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 2:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))
                                             goto MATCH_label_c14;  /*opt-block+*/
@@ -10660,7 +10656,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_16 & 0x7)
                                                         /* base at 16 */ == 5 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -10676,7 +10672,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 1:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8)) {
                                             ADDRESS Eaddr = addressToPC(MATCH_p)+1;
@@ -10691,7 +10687,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 2:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))
                                             goto MATCH_label_c18;  /*opt-block+*/
@@ -10714,7 +10710,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_16 & 0x7)
                                                         /* base at 16 */ == 5 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -10730,7 +10726,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 1:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8)) {
                                             ADDRESS Eaddr = addressToPC(MATCH_p)+1;
@@ -10745,7 +10741,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 2:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))
                                             goto MATCH_label_c22;  /*opt-block+*/
@@ -10768,7 +10764,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_16 & 0x7)
                                                         /* base at 16 */ == 5 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -10784,7 +10780,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 1:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8)) {
                                             ADDRESS Eaddr = addressToPC(MATCH_p)+1;
@@ -10799,7 +10795,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 2:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))
                                             goto MATCH_label_c26;  /*opt-block+*/
@@ -10822,7 +10818,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_16 & 0x7)
                                                         /* base at 16 */ == 5 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -10838,7 +10834,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 1:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8)) {
                                             ADDRESS Eaddr = addressToPC(MATCH_p)+1;
@@ -10853,7 +10849,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 2:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))
                                             goto MATCH_label_c30;  /*opt-block+*/
@@ -10909,7 +10905,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_16 & 0x7)
                                                         /* base at 16 */ == 5 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -10925,7 +10921,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 1:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8)) {
                                             ADDRESS Eaddr = addressToPC(MATCH_p)+1;
@@ -10940,7 +10936,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 2:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))
                                             goto MATCH_label_c34;  /*opt-block+*/
@@ -10963,7 +10959,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_16 & 0x7)
                                                         /* base at 16 */ == 5 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -10979,7 +10975,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 1:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8)) {
                                             ADDRESS Eaddr = addressToPC(MATCH_p)+1;
@@ -10994,7 +10990,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 2:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))
                                             goto MATCH_label_c38;  /*opt-block+*/
@@ -11017,7 +11013,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_16 & 0x7)
                                                         /* base at 16 */ == 5 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -11033,7 +11029,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 1:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8)) {
                                             ADDRESS Eaddr = addressToPC(MATCH_p)+1;
@@ -11048,7 +11044,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 2:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))
                                             goto MATCH_label_c42;  /*opt-block+*/
@@ -11071,7 +11067,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_16 & 0x7)
                                                         /* base at 16 */ == 5 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -11087,7 +11083,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 1:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8)) {
                                             ADDRESS Eaddr = addressToPC(MATCH_p)+1;
@@ -11102,7 +11098,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 2:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))
                                             goto MATCH_label_c46;  /*opt-block+*/
@@ -11159,7 +11155,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_16 & 0x7)
                                                         /* base at 16 */ == 5 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -11175,7 +11171,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 1:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8)) {
                                             ADDRESS Eaddr = addressToPC(MATCH_p)+1;
@@ -11190,7 +11186,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 2:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))
                                             goto MATCH_label_c50;  /*opt-block+*/
@@ -11213,7 +11209,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_16 & 0x7)
                                                         /* base at 16 */ == 5 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -11229,7 +11225,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 1:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8)) {
                                             ADDRESS Eaddr = addressToPC(MATCH_p)+1;
@@ -11244,7 +11240,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 2:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))
                                             goto MATCH_label_c54;  /*opt-block+*/
@@ -11267,7 +11263,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_16 & 0x7)
                                                         /* base at 16 */ == 5 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -11283,7 +11279,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 1:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8)) {
                                             ADDRESS Eaddr = addressToPC(MATCH_p)+1;
@@ -11298,7 +11294,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 2:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))
                                             goto MATCH_label_c58;  /*opt-block+*/
@@ -11321,7 +11317,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_16 & 0x7)
                                                         /* base at 16 */ == 5 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -11337,7 +11333,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 1:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8)) {
                                             ADDRESS Eaddr = addressToPC(MATCH_p)+1;
@@ -11352,7 +11348,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 2:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))
                                             goto MATCH_label_c62;  /*opt-block+*/
@@ -11448,7 +11444,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_24 & 0x7)
                                                                             /* base at 24 */ == 5 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8))
@@ -11466,7 +11462,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8)) {
@@ -11484,7 +11480,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8))
@@ -11512,7 +11508,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_24 & 0x7)
                                                                             /* base at 24 */ == 5 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8))
@@ -11530,7 +11526,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8)) {
@@ -11548,7 +11544,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8))
@@ -11579,7 +11575,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_24 & 0x7)
                                                                             /* base at 24 */ == 5 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8))
@@ -11597,7 +11593,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8)) {
@@ -11615,7 +11611,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8))
@@ -11643,7 +11639,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_24 & 0x7)
                                                                             /* base at 24 */ == 5 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8))
@@ -11661,7 +11657,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8)) {
@@ -11679,7 +11675,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8))
@@ -11749,7 +11745,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                                         MATCH_w_8_32 = getByte(MATCH_p+4);
                                                                                         if ((MATCH_w_8_32 & 0x7)
                                                                                                 /* base at 32 */ == 5 &&
-                                                                                                (0 <= (MATCH_w_8_32 >> 3 & 0x7)
+                                                                                                (true
                                                                                                  /* index at 32 */ &&
                                                                                                  (MATCH_w_8_32 >> 3 & 0x7)
                                                                                                  /* index at 32 */ < 8))
@@ -11768,7 +11764,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                                 MATCH_w_8_32 = getByte(MATCH_p+4);
                                                                                 if ((MATCH_w_8_24 & 0x7)
                                                                                         /* r_m at 24 */ == 4 &&
-                                                                                        (0 <= (MATCH_w_8_32 >> 3 & 0x7)
+                                                                                        (true
                                                                                          /* index at 32 */ &&
                                                                                          (MATCH_w_8_32 >> 3 & 0x7)
                                                                                          /* index at 32 */ < 8)) {
@@ -11786,7 +11782,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                                 MATCH_w_8_32 = getByte(MATCH_p+4);
                                                                                 if ((MATCH_w_8_24 & 0x7)
                                                                                         /* r_m at 24 */ == 4 &&
-                                                                                        (0 <= (MATCH_w_8_32 >> 3 & 0x7)
+                                                                                        (true
                                                                                          /* index at 32 */ &&
                                                                                          (MATCH_w_8_32 >> 3 & 0x7)
                                                                                          /* index at 32 */ < 8))
@@ -11822,7 +11818,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                                         MATCH_w_8_32 = getByte(MATCH_p+4);
                                                                                         if ((MATCH_w_8_32 & 0x7)
                                                                                                 /* base at 32 */ == 5 &&
-                                                                                                (0 <= (MATCH_w_8_32 >> 3 & 0x7)
+                                                                                                (true
                                                                                                  /* index at 32 */ &&
                                                                                                  (MATCH_w_8_32 >> 3 & 0x7)
                                                                                                  /* index at 32 */ < 8))
@@ -11841,7 +11837,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                                 MATCH_w_8_32 = getByte(MATCH_p+4);
                                                                                 if ((MATCH_w_8_24 & 0x7)
                                                                                         /* r_m at 24 */ == 4 &&
-                                                                                        (0 <= (MATCH_w_8_32 >> 3 & 0x7)
+                                                                                        (true
                                                                                          /* index at 32 */ &&
                                                                                          (MATCH_w_8_32 >> 3 & 0x7)
                                                                                          /* index at 32 */ < 8)) {
@@ -11859,7 +11855,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                                 MATCH_w_8_32 = getByte(MATCH_p+4);
                                                                                 if ((MATCH_w_8_24 & 0x7)
                                                                                         /* r_m at 24 */ == 4 &&
-                                                                                        (0 <= (MATCH_w_8_32 >> 3 & 0x7)
+                                                                                        (true
                                                                                          /* index at 32 */ &&
                                                                                          (MATCH_w_8_32 >> 3 & 0x7)
                                                                                          /* index at 32 */ < 8))
@@ -12068,7 +12064,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                                         MATCH_w_8_32 = getByte(MATCH_p+4);
                                                                                         if ((MATCH_w_8_32 & 0x7)
                                                                                                 /* base at 32 */ == 5 &&
-                                                                                                (0 <= (MATCH_w_8_32 >> 3 & 0x7)
+                                                                                                (true
                                                                                                  /* index at 32 */ &&
                                                                                                  (MATCH_w_8_32 >> 3 & 0x7)
                                                                                                  /* index at 32 */ < 8))
@@ -12087,7 +12083,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                                 MATCH_w_8_32 = getByte(MATCH_p+4);
                                                                                 if ((MATCH_w_8_24 & 0x7)
                                                                                         /* r_m at 24 */ == 4 &&
-                                                                                        (0 <= (MATCH_w_8_32 >> 3 & 0x7)
+                                                                                        (true
                                                                                          /* index at 32 */ &&
                                                                                          (MATCH_w_8_32 >> 3 & 0x7)
                                                                                          /* index at 32 */ < 8)) {
@@ -12105,7 +12101,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                                 MATCH_w_8_32 = getByte(MATCH_p+4);
                                                                                 if ((MATCH_w_8_24 & 0x7)
                                                                                         /* r_m at 24 */ == 4 &&
-                                                                                        (0 <= (MATCH_w_8_32 >> 3 & 0x7)
+                                                                                        (true
                                                                                          /* index at 32 */ &&
                                                                                          (MATCH_w_8_32 >> 3 & 0x7)
                                                                                          /* index at 32 */ < 8))
@@ -12136,7 +12132,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                                         MATCH_w_8_32 = getByte(MATCH_p+4);
                                                                                         if ((MATCH_w_8_32 & 0x7)
                                                                                                 /* base at 32 */ == 5 &&
-                                                                                                (0 <= (MATCH_w_8_32 >> 3 & 0x7)
+                                                                                                (true
                                                                                                  /* index at 32 */ &&
                                                                                                  (MATCH_w_8_32 >> 3 & 0x7)
                                                                                                  /* index at 32 */ < 8))
@@ -12155,7 +12151,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                                 MATCH_w_8_32 = getByte(MATCH_p+4);
                                                                                 if ((MATCH_w_8_24 & 0x7)
                                                                                         /* r_m at 24 */ == 4 &&
-                                                                                        (0 <= (MATCH_w_8_32 >> 3 & 0x7)
+                                                                                        (true
                                                                                          /* index at 32 */ &&
                                                                                          (MATCH_w_8_32 >> 3 & 0x7)
                                                                                          /* index at 32 */ < 8)) {
@@ -12173,7 +12169,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                                 MATCH_w_8_32 = getByte(MATCH_p+4);
                                                                                 if ((MATCH_w_8_24 & 0x7)
                                                                                         /* r_m at 24 */ == 4 &&
-                                                                                        (0 <= (MATCH_w_8_32 >> 3 & 0x7)
+                                                                                        (true
                                                                                          /* index at 32 */ &&
                                                                                          (MATCH_w_8_32 >> 3 & 0x7)
                                                                                          /* index at 32 */ < 8))
@@ -12208,7 +12204,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                                         MATCH_w_8_32 = getByte(MATCH_p+4);
                                                                                         if ((MATCH_w_8_32 & 0x7)
                                                                                                 /* base at 32 */ == 5 &&
-                                                                                                (0 <= (MATCH_w_8_32 >> 3 & 0x7)
+                                                                                                (true
                                                                                                  /* index at 32 */ &&
                                                                                                  (MATCH_w_8_32 >> 3 & 0x7)
                                                                                                  /* index at 32 */ < 8)) {
@@ -12232,7 +12228,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                                 MATCH_w_8_32 = getByte(MATCH_p+4);
                                                                                 if ((MATCH_w_8_24 & 0x7)
                                                                                         /* r_m at 24 */ == 4 &&
-                                                                                        (0 <= (MATCH_w_8_32 >> 3 & 0x7)
+                                                                                        (true
                                                                                          /* index at 32 */ &&
                                                                                          (MATCH_w_8_32 >> 3 & 0x7)
                                                                                          /* index at 32 */ < 8)) {
@@ -12257,7 +12253,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                                 MATCH_w_8_32 = getByte(MATCH_p+4);
                                                                                 if ((MATCH_w_8_24 & 0x7)
                                                                                         /* r_m at 24 */ == 4 &&
-                                                                                        (0 <= (MATCH_w_8_32 >> 3 & 0x7)
+                                                                                        (true
                                                                                          /* index at 32 */ &&
                                                                                          (MATCH_w_8_32 >> 3 & 0x7)
                                                                                          /* index at 32 */ < 8)) {
@@ -12294,7 +12290,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                                         MATCH_w_8_32 = getByte(MATCH_p+4);
                                                                                         if ((MATCH_w_8_32 & 0x7)
                                                                                                 /* base at 32 */ == 5 &&
-                                                                                                (0 <= (MATCH_w_8_32 >> 3 & 0x7)
+                                                                                                (true
                                                                                                  /* index at 32 */ &&
                                                                                                  (MATCH_w_8_32 >> 3 & 0x7)
                                                                                                  /* index at 32 */ < 8)) {
@@ -12318,7 +12314,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                                 MATCH_w_8_32 = getByte(MATCH_p+4);
                                                                                 if ((MATCH_w_8_24 & 0x7)
                                                                                         /* r_m at 24 */ == 4 &&
-                                                                                        (0 <= (MATCH_w_8_32 >> 3 & 0x7)
+                                                                                        (true
                                                                                          /* index at 32 */ &&
                                                                                          (MATCH_w_8_32 >> 3 & 0x7)
                                                                                          /* index at 32 */ < 8)) {
@@ -12343,7 +12339,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                                 MATCH_w_8_32 = getByte(MATCH_p+4);
                                                                                 if ((MATCH_w_8_24 & 0x7)
                                                                                         /* r_m at 24 */ == 4 &&
-                                                                                        (0 <= (MATCH_w_8_32 >> 3 & 0x7)
+                                                                                        (true
                                                                                          /* index at 32 */ &&
                                                                                          (MATCH_w_8_32 >> 3 & 0x7)
                                                                                          /* index at 32 */ < 8)) {
@@ -12382,7 +12378,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                                         MATCH_w_8_32 = getByte(MATCH_p+4);
                                                                                         if ((MATCH_w_8_32 & 0x7)
                                                                                                 /* base at 32 */ == 5 &&
-                                                                                                (0 <= (MATCH_w_8_32 >> 3 & 0x7)
+                                                                                                (true
                                                                                                  /* index at 32 */ &&
                                                                                                  (MATCH_w_8_32 >> 3 & 0x7)
                                                                                                  /* index at 32 */ < 8))
@@ -12401,7 +12397,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                                 MATCH_w_8_32 = getByte(MATCH_p+4);
                                                                                 if ((MATCH_w_8_24 & 0x7)
                                                                                         /* r_m at 24 */ == 4 &&
-                                                                                        (0 <= (MATCH_w_8_32 >> 3 & 0x7)
+                                                                                        (true
                                                                                          /* index at 32 */ &&
                                                                                          (MATCH_w_8_32 >> 3 & 0x7)
                                                                                          /* index at 32 */ < 8)) {
@@ -12419,7 +12415,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                                 MATCH_w_8_32 = getByte(MATCH_p+4);
                                                                                 if ((MATCH_w_8_24 & 0x7)
                                                                                         /* r_m at 24 */ == 4 &&
-                                                                                        (0 <= (MATCH_w_8_32 >> 3 & 0x7)
+                                                                                        (true
                                                                                          /* index at 32 */ &&
                                                                                          (MATCH_w_8_32 >> 3 & 0x7)
                                                                                          /* index at 32 */ < 8))
@@ -12450,7 +12446,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                                         MATCH_w_8_32 = getByte(MATCH_p+4);
                                                                                         if ((MATCH_w_8_32 & 0x7)
                                                                                                 /* base at 32 */ == 5 &&
-                                                                                                (0 <= (MATCH_w_8_32 >> 3 & 0x7)
+                                                                                                (true
                                                                                                  /* index at 32 */ &&
                                                                                                  (MATCH_w_8_32 >> 3 & 0x7)
                                                                                                  /* index at 32 */ < 8))
@@ -12469,7 +12465,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                                 MATCH_w_8_32 = getByte(MATCH_p+4);
                                                                                 if ((MATCH_w_8_24 & 0x7)
                                                                                         /* r_m at 24 */ == 4 &&
-                                                                                        (0 <= (MATCH_w_8_32 >> 3 & 0x7)
+                                                                                        (true
                                                                                          /* index at 32 */ &&
                                                                                          (MATCH_w_8_32 >> 3 & 0x7)
                                                                                          /* index at 32 */ < 8)) {
@@ -12487,7 +12483,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                                 MATCH_w_8_32 = getByte(MATCH_p+4);
                                                                                 if ((MATCH_w_8_24 & 0x7)
                                                                                         /* r_m at 24 */ == 4 &&
-                                                                                        (0 <= (MATCH_w_8_32 >> 3 & 0x7)
+                                                                                        (true
                                                                                          /* index at 32 */ &&
                                                                                          (MATCH_w_8_32 >> 3 & 0x7)
                                                                                          /* index at 32 */ < 8))
@@ -12521,7 +12517,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                                         MATCH_w_8_32 = getByte(MATCH_p+4);
                                                                                         if ((MATCH_w_8_32 & 0x7)
                                                                                                 /* base at 32 */ == 5 &&
-                                                                                                (0 <= (MATCH_w_8_32 >> 3 & 0x7)
+                                                                                                (true
                                                                                                  /* index at 32 */ &&
                                                                                                  (MATCH_w_8_32 >> 3 & 0x7)
                                                                                                  /* index at 32 */ < 8))
@@ -12540,7 +12536,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                                 MATCH_w_8_32 = getByte(MATCH_p+4);
                                                                                 if ((MATCH_w_8_24 & 0x7)
                                                                                         /* r_m at 24 */ == 4 &&
-                                                                                        (0 <= (MATCH_w_8_32 >> 3 & 0x7)
+                                                                                        (true
                                                                                          /* index at 32 */ &&
                                                                                          (MATCH_w_8_32 >> 3 & 0x7)
                                                                                          /* index at 32 */ < 8)) {
@@ -12558,7 +12554,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                                 MATCH_w_8_32 = getByte(MATCH_p+4);
                                                                                 if ((MATCH_w_8_24 & 0x7)
                                                                                         /* r_m at 24 */ == 4 &&
-                                                                                        (0 <= (MATCH_w_8_32 >> 3 & 0x7)
+                                                                                        (true
                                                                                          /* index at 32 */ &&
                                                                                          (MATCH_w_8_32 >> 3 & 0x7)
                                                                                          /* index at 32 */ < 8))
@@ -12605,7 +12601,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                                         MATCH_w_8_32 = getByte(MATCH_p+4);
                                                                                         if ((MATCH_w_8_32 & 0x7)
                                                                                                 /* base at 32 */ == 5 &&
-                                                                                                (0 <= (MATCH_w_8_32 >> 3 & 0x7)
+                                                                                                (true
                                                                                                  /* index at 32 */ &&
                                                                                                  (MATCH_w_8_32 >> 3 & 0x7)
                                                                                                  /* index at 32 */ < 8))
@@ -12624,7 +12620,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                                 MATCH_w_8_32 = getByte(MATCH_p+4);
                                                                                 if ((MATCH_w_8_24 & 0x7)
                                                                                         /* r_m at 24 */ == 4 &&
-                                                                                        (0 <= (MATCH_w_8_32 >> 3 & 0x7)
+                                                                                        (true
                                                                                          /* index at 32 */ &&
                                                                                          (MATCH_w_8_32 >> 3 & 0x7)
                                                                                          /* index at 32 */ < 8)) {
@@ -12642,7 +12638,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                                 MATCH_w_8_32 = getByte(MATCH_p+4);
                                                                                 if ((MATCH_w_8_24 & 0x7)
                                                                                         /* r_m at 24 */ == 4 &&
-                                                                                        (0 <= (MATCH_w_8_32 >> 3 & 0x7)
+                                                                                        (true
                                                                                          /* index at 32 */ &&
                                                                                          (MATCH_w_8_32 >> 3 & 0x7)
                                                                                          /* index at 32 */ < 8))
@@ -12684,7 +12680,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                                                 MATCH_w_8_32 = getByte(MATCH_p+4);
                                                                                                 if ((MATCH_w_8_32 & 0x7)
                                                                                                         /* base at 32 */ == 5 &&
-                                                                                                        (0 <= (MATCH_w_8_32 >> 3 & 0x7)
+                                                                                                        (true
                                                                                                          /* index at 32 */ &&
                                                                                                          (MATCH_w_8_32 >> 3 & 0x7)
                                                                                                          /* index at 32 */ < 8)) {
@@ -12708,7 +12704,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                                         MATCH_w_8_32 = getByte(MATCH_p+4);
                                                                                         if ((MATCH_w_8_24 & 0x7)
                                                                                                 /* r_m at 24 */ == 4 &&
-                                                                                                (0 <= (MATCH_w_8_32 >> 3 & 0x7)
+                                                                                                (true
                                                                                                  /* index at 32 */ &&
                                                                                                  (MATCH_w_8_32 >> 3 & 0x7)
                                                                                                  /* index at 32 */ < 8)) {
@@ -12732,7 +12728,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                                         MATCH_w_8_32 = getByte(MATCH_p+4);
                                                                                         if ((MATCH_w_8_24 & 0x7)
                                                                                                 /* r_m at 24 */ == 4 &&
-                                                                                                (0 <= (MATCH_w_8_32 >> 3 & 0x7)
+                                                                                                (true
                                                                                                  /* index at 32 */ &&
                                                                                                  (MATCH_w_8_32 >> 3 & 0x7)
                                                                                                  /* index at 32 */ < 8)) {
@@ -12768,7 +12764,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                                                 MATCH_w_8_32 = getByte(MATCH_p+4);
                                                                                                 if ((MATCH_w_8_32 & 0x7)
                                                                                                         /* base at 32 */ == 5 &&
-                                                                                                        (0 <= (MATCH_w_8_32 >> 3 & 0x7)
+                                                                                                        (true
                                                                                                          /* index at 32 */ &&
                                                                                                          (MATCH_w_8_32 >> 3 & 0x7)
                                                                                                          /* index at 32 */ < 8)) {
@@ -12792,7 +12788,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                                         MATCH_w_8_32 = getByte(MATCH_p+4);
                                                                                         if ((MATCH_w_8_24 & 0x7)
                                                                                                 /* r_m at 24 */ == 4 &&
-                                                                                                (0 <= (MATCH_w_8_32 >> 3 & 0x7)
+                                                                                                (true
                                                                                                  /* index at 32 */ &&
                                                                                                  (MATCH_w_8_32 >> 3 & 0x7)
                                                                                                  /* index at 32 */ < 8)) {
@@ -12816,7 +12812,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                                         MATCH_w_8_32 = getByte(MATCH_p+4);
                                                                                         if ((MATCH_w_8_24 & 0x7)
                                                                                                 /* r_m at 24 */ == 4 &&
-                                                                                                (0 <= (MATCH_w_8_32 >> 3 & 0x7)
+                                                                                                (true
                                                                                                  /* index at 32 */ &&
                                                                                                  (MATCH_w_8_32 >> 3 & 0x7)
                                                                                                  /* index at 32 */ < 8)) {
@@ -12852,7 +12848,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                                                 MATCH_w_8_32 = getByte(MATCH_p+4);
                                                                                                 if ((MATCH_w_8_32 & 0x7)
                                                                                                         /* base at 32 */ == 5 &&
-                                                                                                        (0 <= (MATCH_w_8_32 >> 3 & 0x7)
+                                                                                                        (true
                                                                                                          /* index at 32 */ &&
                                                                                                          (MATCH_w_8_32 >> 3 & 0x7)
                                                                                                          /* index at 32 */ < 8)) {
@@ -12876,7 +12872,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                                         MATCH_w_8_32 = getByte(MATCH_p+4);
                                                                                         if ((MATCH_w_8_24 & 0x7)
                                                                                                 /* r_m at 24 */ == 4 &&
-                                                                                                (0 <= (MATCH_w_8_32 >> 3 & 0x7)
+                                                                                                (true
                                                                                                  /* index at 32 */ &&
                                                                                                  (MATCH_w_8_32 >> 3 & 0x7)
                                                                                                  /* index at 32 */ < 8)) {
@@ -12900,7 +12896,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                                         MATCH_w_8_32 = getByte(MATCH_p+4);
                                                                                         if ((MATCH_w_8_24 & 0x7)
                                                                                                 /* r_m at 24 */ == 4 &&
-                                                                                                (0 <= (MATCH_w_8_32 >> 3 & 0x7)
+                                                                                                (true
                                                                                                  /* index at 32 */ &&
                                                                                                  (MATCH_w_8_32 >> 3 & 0x7)
                                                                                                  /* index at 32 */ < 8)) {
@@ -12936,7 +12932,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                                                 MATCH_w_8_32 = getByte(MATCH_p+4);
                                                                                                 if ((MATCH_w_8_32 & 0x7)
                                                                                                         /* base at 32 */ == 5 &&
-                                                                                                        (0 <= (MATCH_w_8_32 >> 3 & 0x7)
+                                                                                                        (true
                                                                                                          /* index at 32 */ &&
                                                                                                          (MATCH_w_8_32 >> 3 & 0x7)
                                                                                                          /* index at 32 */ < 8)) {
@@ -12960,7 +12956,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                                         MATCH_w_8_32 = getByte(MATCH_p+4);
                                                                                         if ((MATCH_w_8_24 & 0x7)
                                                                                                 /* r_m at 24 */ == 4 &&
-                                                                                                (0 <= (MATCH_w_8_32 >> 3 & 0x7)
+                                                                                                (true
                                                                                                  /* index at 32 */ &&
                                                                                                  (MATCH_w_8_32 >> 3 & 0x7)
                                                                                                  /* index at 32 */ < 8)) {
@@ -12984,7 +12980,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                                         MATCH_w_8_32 = getByte(MATCH_p+4);
                                                                                         if ((MATCH_w_8_24 & 0x7)
                                                                                                 /* r_m at 24 */ == 4 &&
-                                                                                                (0 <= (MATCH_w_8_32 >> 3 & 0x7)
+                                                                                                (true
                                                                                                  /* index at 32 */ &&
                                                                                                  (MATCH_w_8_32 >> 3 & 0x7)
                                                                                                  /* index at 32 */ < 8)) {
@@ -13029,7 +13025,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                                         MATCH_w_8_32 = getByte(MATCH_p+4);
                                                                                         if ((MATCH_w_8_32 & 0x7)
                                                                                                 /* base at 32 */ == 5 &&
-                                                                                                (0 <= (MATCH_w_8_32 >> 3 & 0x7)
+                                                                                                (true
                                                                                                  /* index at 32 */ &&
                                                                                                  (MATCH_w_8_32 >> 3 & 0x7)
                                                                                                  /* index at 32 */ < 8))
@@ -13048,7 +13044,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                                 MATCH_w_8_32 = getByte(MATCH_p+4);
                                                                                 if ((MATCH_w_8_24 & 0x7)
                                                                                         /* r_m at 24 */ == 4 &&
-                                                                                        (0 <= (MATCH_w_8_32 >> 3 & 0x7)
+                                                                                        (true
                                                                                          /* index at 32 */ &&
                                                                                          (MATCH_w_8_32 >> 3 & 0x7)
                                                                                          /* index at 32 */ < 8)) {
@@ -13066,7 +13062,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                                 MATCH_w_8_32 = getByte(MATCH_p+4);
                                                                                 if ((MATCH_w_8_24 & 0x7)
                                                                                         /* r_m at 24 */ == 4 &&
-                                                                                        (0 <= (MATCH_w_8_32 >> 3 & 0x7)
+                                                                                        (true
                                                                                          /* index at 32 */ &&
                                                                                          (MATCH_w_8_32 >> 3 & 0x7)
                                                                                          /* index at 32 */ < 8))
@@ -13097,7 +13093,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                                         MATCH_w_8_32 = getByte(MATCH_p+4);
                                                                                         if ((MATCH_w_8_32 & 0x7)
                                                                                                 /* base at 32 */ == 5 &&
-                                                                                                (0 <= (MATCH_w_8_32 >> 3 & 0x7)
+                                                                                                (true
                                                                                                  /* index at 32 */ &&
                                                                                                  (MATCH_w_8_32 >> 3 & 0x7)
                                                                                                  /* index at 32 */ < 8))
@@ -13116,7 +13112,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                                 MATCH_w_8_32 = getByte(MATCH_p+4);
                                                                                 if ((MATCH_w_8_24 & 0x7)
                                                                                         /* r_m at 24 */ == 4 &&
-                                                                                        (0 <= (MATCH_w_8_32 >> 3 & 0x7)
+                                                                                        (true
                                                                                          /* index at 32 */ &&
                                                                                          (MATCH_w_8_32 >> 3 & 0x7)
                                                                                          /* index at 32 */ < 8)) {
@@ -13134,7 +13130,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                                 MATCH_w_8_32 = getByte(MATCH_p+4);
                                                                                 if ((MATCH_w_8_24 & 0x7)
                                                                                         /* r_m at 24 */ == 4 &&
-                                                                                        (0 <= (MATCH_w_8_32 >> 3 & 0x7)
+                                                                                        (true
                                                                                          /* index at 32 */ &&
                                                                                          (MATCH_w_8_32 >> 3 & 0x7)
                                                                                          /* index at 32 */ < 8))
@@ -13168,7 +13164,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                                         MATCH_w_8_32 = getByte(MATCH_p+4);
                                                                                         if ((MATCH_w_8_32 & 0x7)
                                                                                                 /* base at 32 */ == 5 &&
-                                                                                                (0 <= (MATCH_w_8_32 >> 3 & 0x7)
+                                                                                                (true
                                                                                                  /* index at 32 */ &&
                                                                                                  (MATCH_w_8_32 >> 3 & 0x7)
                                                                                                  /* index at 32 */ < 8))
@@ -13187,7 +13183,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                                 MATCH_w_8_32 = getByte(MATCH_p+4);
                                                                                 if ((MATCH_w_8_24 & 0x7)
                                                                                         /* r_m at 24 */ == 4 &&
-                                                                                        (0 <= (MATCH_w_8_32 >> 3 & 0x7)
+                                                                                        (true
                                                                                          /* index at 32 */ &&
                                                                                          (MATCH_w_8_32 >> 3 & 0x7)
                                                                                          /* index at 32 */ < 8)) {
@@ -13197,7 +13193,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                                     nextPC = MATCH_p+6;
 //#line 1377 "frontend/machine/pentium/decoder.m"
                                                                                     //stmts = instantiate(pc,  "BSFow", DIS_REG16, DIS_EADDR16);
-                                                                                    genBSFR(pc, DIS_REG16, DIS_EADDR16, -1, 16, opPlus, (nextPC-hostPC).m_value);
+                                                                                    genBSFR(pc, DIS_REG16, DIS_EADDR16, -1, 16, opPlus, int((nextPC-hostPC).m_value));
                                                                                     return result;
                                                                                     // Not "user" instructions:
                                                                                     //    | BOUNDod(reg, Mem) =>
@@ -13223,7 +13219,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                                 MATCH_w_8_32 = getByte(MATCH_p+4);
                                                                                 if ((MATCH_w_8_24 & 0x7)
                                                                                         /* r_m at 24 */ == 4 &&
-                                                                                        (0 <= (MATCH_w_8_32 >> 3 & 0x7)
+                                                                                        (true
                                                                                          /* index at 32 */ &&
                                                                                          (MATCH_w_8_32 >> 3 & 0x7)
                                                                                          /* index at 32 */ < 8))
@@ -13259,7 +13255,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                                         MATCH_w_8_32 = getByte(MATCH_p+4);
                                                                                         if ((MATCH_w_8_32 & 0x7)
                                                                                                 /* base at 32 */ == 5 &&
-                                                                                                (0 <= (MATCH_w_8_32 >> 3 & 0x7)
+                                                                                                (true
                                                                                                  /* index at 32 */ &&
                                                                                                  (MATCH_w_8_32 >> 3 & 0x7)
                                                                                                  /* index at 32 */ < 8))
@@ -13278,7 +13274,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                                 MATCH_w_8_32 = getByte(MATCH_p+4);
                                                                                 if ((MATCH_w_8_24 & 0x7)
                                                                                         /* r_m at 24 */ == 4 &&
-                                                                                        (0 <= (MATCH_w_8_32 >> 3 & 0x7)
+                                                                                        (true
                                                                                          /* index at 32 */ &&
                                                                                          (MATCH_w_8_32 >> 3 & 0x7)
                                                                                          /* index at 32 */ < 8)) {
@@ -13286,9 +13282,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                                     unsigned reg = (MATCH_w_8_24 >> 3 & 0x7)
                                                                                             /* reg_opcode at 24 */;
                                                                                     nextPC = MATCH_p+6;
-//#line 1367 "frontend/machine/pentium/decoder.m"
                                                                                     //stmts = instantiate(pc,  "BSRow", DIS_REG16, DIS_EADDR16);
-                                                                                    genBSFR(pc, DIS_REG16, DIS_EADDR16, 16, 16, opMinus, (nextPC-hostPC).m_value);
+                                                                                    genBSFR(pc, DIS_REG16, DIS_EADDR16, 16, 16, opMinus, int((nextPC-hostPC).m_value));
                                                                                     return result;
                                                                                 } /*opt-block*//*opt-block+*/
                                                                                 else
@@ -13298,7 +13293,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                                 MATCH_w_8_32 = getByte(MATCH_p+4);
                                                                                 if ((MATCH_w_8_24 & 0x7)
                                                                                         /* r_m at 24 */ == 4 &&
-                                                                                        (0 <= (MATCH_w_8_32 >> 3 & 0x7)
+                                                                                        (true
                                                                                          /* index at 32 */ &&
                                                                                          (MATCH_w_8_32 >> 3 & 0x7)
                                                                                          /* index at 32 */ < 8))
@@ -13334,7 +13329,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                                         MATCH_w_8_32 = getByte(MATCH_p+4);
                                                                                         if ((MATCH_w_8_32 & 0x7)
                                                                                                 /* base at 32 */ == 5 &&
-                                                                                                (0 <= (MATCH_w_8_32 >> 3 & 0x7)
+                                                                                                (true
                                                                                                  /* index at 32 */ &&
                                                                                                  (MATCH_w_8_32 >> 3 & 0x7)
                                                                                                  /* index at 32 */ < 8))
@@ -13353,7 +13348,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                                 MATCH_w_8_32 = getByte(MATCH_p+4);
                                                                                 if ((MATCH_w_8_24 & 0x7)
                                                                                         /* r_m at 24 */ == 4 &&
-                                                                                        (0 <= (MATCH_w_8_32 >> 3 & 0x7)
+                                                                                        (true
                                                                                          /* index at 32 */ &&
                                                                                          (MATCH_w_8_32 >> 3 & 0x7)
                                                                                          /* index at 32 */ < 8)) {
@@ -13371,7 +13366,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                                 MATCH_w_8_32 = getByte(MATCH_p+4);
                                                                                 if ((MATCH_w_8_24 & 0x7)
                                                                                         /* r_m at 24 */ == 4 &&
-                                                                                        (0 <= (MATCH_w_8_32 >> 3 & 0x7)
+                                                                                        (true
                                                                                          /* index at 32 */ &&
                                                                                          (MATCH_w_8_32 >> 3 & 0x7)
                                                                                          /* index at 32 */ < 8))
@@ -13402,7 +13397,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                                         MATCH_w_8_32 = getByte(MATCH_p+4);
                                                                                         if ((MATCH_w_8_32 & 0x7)
                                                                                                 /* base at 32 */ == 5 &&
-                                                                                                (0 <= (MATCH_w_8_32 >> 3 & 0x7)
+                                                                                                (true
                                                                                                  /* index at 32 */ &&
                                                                                                  (MATCH_w_8_32 >> 3 & 0x7)
                                                                                                  /* index at 32 */ < 8))
@@ -13421,7 +13416,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                                 MATCH_w_8_32 = getByte(MATCH_p+4);
                                                                                 if ((MATCH_w_8_24 & 0x7)
                                                                                         /* r_m at 24 */ == 4 &&
-                                                                                        (0 <= (MATCH_w_8_32 >> 3 & 0x7)
+                                                                                        (true
                                                                                          /* index at 32 */ &&
                                                                                          (MATCH_w_8_32 >> 3 & 0x7)
                                                                                          /* index at 32 */ < 8)) {
@@ -13439,7 +13434,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                                 MATCH_w_8_32 = getByte(MATCH_p+4);
                                                                                 if ((MATCH_w_8_24 & 0x7)
                                                                                         /* r_m at 24 */ == 4 &&
-                                                                                        (0 <= (MATCH_w_8_32 >> 3 & 0x7)
+                                                                                        (true
                                                                                          /* index at 32 */ &&
                                                                                          (MATCH_w_8_32 >> 3 & 0x7)
                                                                                          /* index at 32 */ < 8))
@@ -13480,7 +13475,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                                     MATCH_w_8_32 = getByte(MATCH_p+4);
                                                                                     if ((MATCH_w_8_32 & 0x7)
                                                                                             /* base at 32 */ == 5 &&
-                                                                                            (0 <= (MATCH_w_8_32 >> 3 & 0x7)
+                                                                                            (true
                                                                                              /* index at 32 */ &&
                                                                                              (MATCH_w_8_32 >> 3 & 0x7)
                                                                                              /* index at 32 */ < 8))
@@ -13499,7 +13494,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                             MATCH_w_8_32 = getByte(MATCH_p+4);
                                                                             if ((MATCH_w_8_24 & 0x7)
                                                                                     /* r_m at 24 */ == 4 &&
-                                                                                    (0 <= (MATCH_w_8_32 >> 3 & 0x7)
+                                                                                    (true
                                                                                      /* index at 32 */ &&
                                                                                      (MATCH_w_8_32 >> 3 & 0x7)
                                                                                      /* index at 32 */ < 8)) {
@@ -13517,7 +13512,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                             MATCH_w_8_32 = getByte(MATCH_p+4);
                                                                             if ((MATCH_w_8_24 & 0x7)
                                                                                     /* r_m at 24 */ == 4 &&
-                                                                                    (0 <= (MATCH_w_8_32 >> 3 & 0x7)
+                                                                                    (true
                                                                                      /* index at 32 */ &&
                                                                                      (MATCH_w_8_32 >> 3 & 0x7)
                                                                                      /* index at 32 */ < 8))
@@ -13564,7 +13559,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_24 & 0x7)
                                                                             /* base at 24 */ == 5 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8))
@@ -13582,7 +13577,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8)) {
@@ -13600,7 +13595,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8))
@@ -13628,7 +13623,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_24 & 0x7)
                                                                             /* base at 24 */ == 5 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8))
@@ -13646,7 +13641,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8)) {
@@ -13664,7 +13659,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8))
@@ -13695,7 +13690,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_24 & 0x7)
                                                                             /* base at 24 */ == 5 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8))
@@ -13713,7 +13708,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8)) {
@@ -13731,7 +13726,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8))
@@ -13759,7 +13754,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_24 & 0x7)
                                                                             /* base at 24 */ == 5 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8))
@@ -13777,7 +13772,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8)) {
@@ -13795,7 +13790,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8))
@@ -13856,7 +13851,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_24 & 0x7)
                                                                             /* base at 24 */ == 5 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8))
@@ -13874,7 +13869,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8)) {
@@ -13892,7 +13887,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8))
@@ -13920,7 +13915,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_24 & 0x7)
                                                                             /* base at 24 */ == 5 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8))
@@ -13938,7 +13933,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8)) {
@@ -13956,7 +13951,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8))
@@ -13987,7 +13982,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_24 & 0x7)
                                                                             /* base at 24 */ == 5 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8))
@@ -14005,7 +14000,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8)) {
@@ -14023,7 +14018,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8))
@@ -14051,7 +14046,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_24 & 0x7)
                                                                             /* base at 24 */ == 5 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8))
@@ -14069,7 +14064,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8)) {
@@ -14087,7 +14082,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8))
@@ -14148,7 +14143,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_24 & 0x7)
                                                                             /* base at 24 */ == 5 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8))
@@ -14166,7 +14161,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8)) {
@@ -14184,7 +14179,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8))
@@ -14212,7 +14207,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_24 & 0x7)
                                                                             /* base at 24 */ == 5 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8))
@@ -14230,7 +14225,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8)) {
@@ -14248,7 +14243,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8))
@@ -14279,7 +14274,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_24 & 0x7)
                                                                             /* base at 24 */ == 5 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8))
@@ -14297,7 +14292,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8)) {
@@ -14315,7 +14310,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8))
@@ -14343,7 +14338,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_24 & 0x7)
                                                                             /* base at 24 */ == 5 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8))
@@ -14361,7 +14356,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8)) {
@@ -14379,7 +14374,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8))
@@ -14477,7 +14472,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_24 & 0x7)
                                                                             /* base at 24 */ == 5 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -14501,7 +14496,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8)) {
@@ -14527,7 +14522,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8)) {
@@ -14573,7 +14568,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_24 & 0x7)
                                                                             /* base at 24 */ == 5 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -14597,7 +14592,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8)) {
@@ -14623,7 +14618,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8)) {
@@ -14672,7 +14667,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_24 & 0x7)
                                                                             /* base at 24 */ == 5 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8))
@@ -14690,7 +14685,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8)) {
@@ -14708,7 +14703,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8))
@@ -14741,7 +14736,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                             if ((MATCH_w_8_24 & 0x7)
                                                                                     /* base at 24 */ == 5 &&
-                                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                                    (true
                                                                                      /* index at 24 */ &&
                                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                                      /* index at 24 */ < 8)) {
@@ -14765,7 +14760,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -14789,7 +14784,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -14824,7 +14819,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                             if ((MATCH_w_8_24 & 0x7)
                                                                                     /* base at 24 */ == 5 &&
-                                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                                    (true
                                                                                      /* index at 24 */ &&
                                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                                      /* index at 24 */ < 8)) {
@@ -14848,7 +14843,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -14872,7 +14867,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -14907,7 +14902,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                             if ((MATCH_w_8_24 & 0x7)
                                                                                     /* base at 24 */ == 5 &&
-                                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                                    (true
                                                                                      /* index at 24 */ &&
                                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                                      /* index at 24 */ < 8)) {
@@ -14931,7 +14926,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -14955,7 +14950,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -14990,7 +14985,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                             if ((MATCH_w_8_24 & 0x7)
                                                                                     /* base at 24 */ == 5 &&
-                                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                                    (true
                                                                                      /* index at 24 */ &&
                                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                                      /* index at 24 */ < 8)) {
@@ -15014,7 +15009,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -15038,7 +15033,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -15073,7 +15068,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                             if ((MATCH_w_8_24 & 0x7)
                                                                                     /* base at 24 */ == 5 &&
-                                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                                    (true
                                                                                      /* index at 24 */ &&
                                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                                      /* index at 24 */ < 8)) {
@@ -15097,7 +15092,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -15121,7 +15116,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -15156,7 +15151,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                             if ((MATCH_w_8_24 & 0x7)
                                                                                     /* base at 24 */ == 5 &&
-                                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                                    (true
                                                                                      /* index at 24 */ &&
                                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                                      /* index at 24 */ < 8)) {
@@ -15180,7 +15175,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -15204,7 +15199,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -15239,7 +15234,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                             if ((MATCH_w_8_24 & 0x7)
                                                                                     /* base at 24 */ == 5 &&
-                                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                                    (true
                                                                                      /* index at 24 */ &&
                                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                                      /* index at 24 */ < 8)) {
@@ -15263,7 +15258,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -15287,7 +15282,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -15322,7 +15317,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                             if ((MATCH_w_8_24 & 0x7)
                                                                                     /* base at 24 */ == 5 &&
-                                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                                    (true
                                                                                      /* index at 24 */ &&
                                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                                      /* index at 24 */ < 8)) {
@@ -15346,7 +15341,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -15370,7 +15365,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -15411,7 +15406,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_24 & 0x7)
                                                                             /* base at 24 */ == 5 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8))
@@ -15429,7 +15424,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8)) {
@@ -15447,7 +15442,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8))
@@ -15480,7 +15475,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                             if ((MATCH_w_8_24 & 0x7)
                                                                                     /* base at 24 */ == 5 &&
-                                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                                    (true
                                                                                      /* index at 24 */ &&
                                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                                      /* index at 24 */ < 8)) {
@@ -15504,7 +15499,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -15528,7 +15523,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -15563,7 +15558,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                             if ((MATCH_w_8_24 & 0x7)
                                                                                     /* base at 24 */ == 5 &&
-                                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                                    (true
                                                                                      /* index at 24 */ &&
                                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                                      /* index at 24 */ < 8)) {
@@ -15587,7 +15582,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -15611,7 +15606,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -15646,7 +15641,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                             if ((MATCH_w_8_24 & 0x7)
                                                                                     /* base at 24 */ == 5 &&
-                                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                                    (true
                                                                                      /* index at 24 */ &&
                                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                                      /* index at 24 */ < 8)) {
@@ -15670,7 +15665,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -15694,7 +15689,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -15729,7 +15724,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                             if ((MATCH_w_8_24 & 0x7)
                                                                                     /* base at 24 */ == 5 &&
-                                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                                    (true
                                                                                      /* index at 24 */ &&
                                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                                      /* index at 24 */ < 8)) {
@@ -15753,7 +15748,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -15777,7 +15772,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -15812,7 +15807,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                             if ((MATCH_w_8_24 & 0x7)
                                                                                     /* base at 24 */ == 5 &&
-                                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                                    (true
                                                                                      /* index at 24 */ &&
                                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                                      /* index at 24 */ < 8)) {
@@ -15836,7 +15831,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -15860,7 +15855,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -15895,7 +15890,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                             if ((MATCH_w_8_24 & 0x7)
                                                                                     /* base at 24 */ == 5 &&
-                                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                                    (true
                                                                                      /* index at 24 */ &&
                                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                                      /* index at 24 */ < 8)) {
@@ -15919,7 +15914,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -15943,7 +15938,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -15978,7 +15973,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                             if ((MATCH_w_8_24 & 0x7)
                                                                                     /* base at 24 */ == 5 &&
-                                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                                    (true
                                                                                      /* index at 24 */ &&
                                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                                      /* index at 24 */ < 8)) {
@@ -16002,7 +15997,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -16026,7 +16021,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -16061,7 +16056,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                             if ((MATCH_w_8_24 & 0x7)
                                                                                     /* base at 24 */ == 5 &&
-                                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                                    (true
                                                                                      /* index at 24 */ &&
                                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                                      /* index at 24 */ < 8)) {
@@ -16085,7 +16080,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -16109,7 +16104,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -16158,7 +16153,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_24 & 0x7)
                                                                             /* base at 24 */ == 5 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8))
@@ -16176,7 +16171,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8)) {
@@ -16194,7 +16189,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8))
@@ -16222,7 +16217,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_24 & 0x7)
                                                                             /* base at 24 */ == 5 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8))
@@ -16240,7 +16235,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8)) {
@@ -16258,7 +16253,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8))
@@ -16291,7 +16286,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                         MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                         if ((MATCH_w_8_24 & 0x7)
                                                                                 /* base at 24 */ == 5 &&
-                                                                                (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                                (true
                                                                                  /* index at 24 */ &&
                                                                                  (MATCH_w_8_24 >> 3 & 0x7)
                                                                                  /* index at 24 */ < 8))
@@ -16309,7 +16304,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                 MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                 if ((MATCH_w_8_16 & 0x7)
                                                                         /* r_m at 16 */ == 4 &&
-                                                                        (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                        (true
                                                                          /* index at 24 */ &&
                                                                          (MATCH_w_8_24 >> 3 & 0x7)
                                                                          /* index at 24 */ < 8)) {
@@ -16343,7 +16338,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                 MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                 if ((MATCH_w_8_16 & 0x7)
                                                                         /* r_m at 16 */ == 4 &&
-                                                                        (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                        (true
                                                                          /* index at 24 */ &&
                                                                          (MATCH_w_8_24 >> 3 & 0x7)
                                                                          /* index at 24 */ < 8))
@@ -16373,7 +16368,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_24 & 0x7)
                                                                             /* base at 24 */ == 5 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8))
@@ -16391,7 +16386,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8)) {
@@ -16409,7 +16404,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                             if ((MATCH_w_8_16 & 0x7)
                                                                     /* r_m at 16 */ == 4 &&
-                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    (true
                                                                      /* index at 24 */ &&
                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                      /* index at 24 */ < 8))
@@ -16566,7 +16561,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                             if ((MATCH_w_8_24 & 0x7)
                                                                                     /* base at 24 */ == 5 &&
-                                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                                    (true
                                                                                      /* index at 24 */ &&
                                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                                      /* index at 24 */ < 8)) {
@@ -16590,7 +16585,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -16614,7 +16609,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -16649,7 +16644,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                             if ((MATCH_w_8_24 & 0x7)
                                                                                     /* base at 24 */ == 5 &&
-                                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                                    (true
                                                                                      /* index at 24 */ &&
                                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                                      /* index at 24 */ < 8)) {
@@ -16673,7 +16668,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -16697,7 +16692,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -16732,7 +16727,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                             if ((MATCH_w_8_24 & 0x7)
                                                                                     /* base at 24 */ == 5 &&
-                                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                                    (true
                                                                                      /* index at 24 */ &&
                                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                                      /* index at 24 */ < 8)) {
@@ -16756,7 +16751,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -16780,7 +16775,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -16815,7 +16810,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                             if ((MATCH_w_8_24 & 0x7)
                                                                                     /* base at 24 */ == 5 &&
-                                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                                    (true
                                                                                      /* index at 24 */ &&
                                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                                      /* index at 24 */ < 8)) {
@@ -16839,7 +16834,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -16863,7 +16858,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -16898,7 +16893,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                             if ((MATCH_w_8_24 & 0x7)
                                                                                     /* base at 24 */ == 5 &&
-                                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                                    (true
                                                                                      /* index at 24 */ &&
                                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                                      /* index at 24 */ < 8)) {
@@ -16922,7 +16917,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -16946,7 +16941,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -16981,7 +16976,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                             if ((MATCH_w_8_24 & 0x7)
                                                                                     /* base at 24 */ == 5 &&
-                                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                                    (true
                                                                                      /* index at 24 */ &&
                                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                                      /* index at 24 */ < 8)) {
@@ -17005,7 +17000,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -17029,7 +17024,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -17066,7 +17061,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                             if ((MATCH_w_8_24 & 0x7)
                                                                                     /* base at 24 */ == 5 &&
-                                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                                    (true
                                                                                      /* index at 24 */ &&
                                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                                      /* index at 24 */ < 8)) {
@@ -17090,7 +17085,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -17114,7 +17109,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -17161,7 +17156,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                         MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                         if ((MATCH_w_8_24 & 0x7)
                                                                                 /* base at 24 */ == 5 &&
-                                                                                (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                                (true
                                                                                  /* index at 24 */ &&
                                                                                  (MATCH_w_8_24 >> 3 & 0x7)
                                                                                  /* index at 24 */ < 8)) {
@@ -17185,7 +17180,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                 MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                 if ((MATCH_w_8_16 & 0x7)
                                                                         /* r_m at 16 */ == 4 &&
-                                                                        (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                        (true
                                                                          /* index at 24 */ &&
                                                                          (MATCH_w_8_24 >> 3 & 0x7)
                                                                          /* index at 24 */ < 8)) {
@@ -17209,7 +17204,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                 MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                 if ((MATCH_w_8_16 & 0x7)
                                                                         /* r_m at 16 */ == 4 &&
-                                                                        (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                        (true
                                                                          /* index at 24 */ &&
                                                                          (MATCH_w_8_24 >> 3 & 0x7)
                                                                          /* index at 24 */ < 8)) {
@@ -17261,7 +17256,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                             if ((MATCH_w_8_24 & 0x7)
                                                                                     /* base at 24 */ == 5 &&
-                                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                                    (true
                                                                                      /* index at 24 */ &&
                                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                                      /* index at 24 */ < 8))
@@ -17280,7 +17275,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -17296,7 +17291,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8))
@@ -17324,7 +17319,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                             if ((MATCH_w_8_24 & 0x7)
                                                                                     /* base at 24 */ == 5 &&
-                                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                                    (true
                                                                                      /* index at 24 */ &&
                                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                                      /* index at 24 */ < 8))
@@ -17343,7 +17338,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -17359,7 +17354,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8))
@@ -17387,7 +17382,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                             if ((MATCH_w_8_24 & 0x7)
                                                                                     /* base at 24 */ == 5 &&
-                                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                                    (true
                                                                                      /* index at 24 */ &&
                                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                                      /* index at 24 */ < 8))
@@ -17406,7 +17401,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -17422,7 +17417,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8))
@@ -17450,7 +17445,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                             if ((MATCH_w_8_24 & 0x7)
                                                                                     /* base at 24 */ == 5 &&
-                                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                                    (true
                                                                                      /* index at 24 */ &&
                                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                                      /* index at 24 */ < 8))
@@ -17469,7 +17464,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -17485,7 +17480,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8))
@@ -17513,7 +17508,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                             if ((MATCH_w_8_24 & 0x7)
                                                                                     /* base at 24 */ == 5 &&
-                                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                                    (true
                                                                                      /* index at 24 */ &&
                                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                                      /* index at 24 */ < 8))
@@ -17532,7 +17527,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -17548,7 +17543,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8))
@@ -17576,7 +17571,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                             if ((MATCH_w_8_24 & 0x7)
                                                                                     /* base at 24 */ == 5 &&
-                                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                                    (true
                                                                                      /* index at 24 */ &&
                                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                                      /* index at 24 */ < 8))
@@ -17595,7 +17590,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -17609,9 +17604,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     break;
                                                                 case 2:
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
-                                                                    if ((MATCH_w_8_16 & 0x7)
-                                                                            /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                    if ((MATCH_w_8_16 & 0x7) /* r_m at 16 */ == 4 &&
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8))
@@ -17641,7 +17635,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                             if ((MATCH_w_8_24 & 0x7)
                                                                                     /* base at 24 */ == 5 &&
-                                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                                    (true
                                                                                      /* index at 24 */ &&
                                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                                      /* index at 24 */ < 8))
@@ -17660,7 +17654,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -17676,7 +17670,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8))
@@ -17717,7 +17711,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                             if ((MATCH_w_8_24 & 0x7)
                                                                                     /* base at 24 */ == 5 &&
-                                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                                    (true
                                                                                      /* index at 24 */ &&
                                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                                      /* index at 24 */ < 8))
@@ -17736,7 +17730,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -17752,7 +17746,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8))
@@ -17780,7 +17774,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                             if ((MATCH_w_8_24 & 0x7)
                                                                                     /* base at 24 */ == 5 &&
-                                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                                    (true
                                                                                      /* index at 24 */ &&
                                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                                      /* index at 24 */ < 8))
@@ -17799,7 +17793,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -17815,7 +17809,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8))
@@ -17843,7 +17837,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                             if ((MATCH_w_8_24 & 0x7)
                                                                                     /* base at 24 */ == 5 &&
-                                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                                    (true
                                                                                      /* index at 24 */ &&
                                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                                      /* index at 24 */ < 8))
@@ -17862,7 +17856,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -17878,7 +17872,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8))
@@ -17906,7 +17900,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                             if ((MATCH_w_8_24 & 0x7)
                                                                                     /* base at 24 */ == 5 &&
-                                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                                    (true
                                                                                      /* index at 24 */ &&
                                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                                      /* index at 24 */ < 8))
@@ -17925,7 +17919,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -17941,7 +17935,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8))
@@ -17969,7 +17963,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                             if ((MATCH_w_8_24 & 0x7)
                                                                                     /* base at 24 */ == 5 &&
-                                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                                    (true
                                                                                      /* index at 24 */ &&
                                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                                      /* index at 24 */ < 8))
@@ -17988,7 +17982,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -18004,7 +17998,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8))
@@ -18032,7 +18026,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                             if ((MATCH_w_8_24 & 0x7)
                                                                                     /* base at 24 */ == 5 &&
-                                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                                    (true
                                                                                      /* index at 24 */ &&
                                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                                      /* index at 24 */ < 8))
@@ -18051,7 +18045,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -18067,7 +18061,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8))
@@ -18097,7 +18091,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                             MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                             if ((MATCH_w_8_24 & 0x7)
                                                                                     /* base at 24 */ == 5 &&
-                                                                                    (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                                    (true
                                                                                      /* index at 24 */ &&
                                                                                      (MATCH_w_8_24 >> 3 & 0x7)
                                                                                      /* index at 24 */ < 8))
@@ -18116,7 +18110,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8)) {
@@ -18132,7 +18126,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                     MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                     if ((MATCH_w_8_16 & 0x7)
                                                                             /* r_m at 16 */ == 4 &&
-                                                                            (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                            (true
                                                                              /* index at 24 */ &&
                                                                              (MATCH_w_8_24 >> 3 & 0x7)
                                                                              /* index at 24 */ < 8))
@@ -18162,10 +18156,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                     /* page at 8 */];
                                             {
                                                 const char *name = MATCH_name;
-                            ADDRESS relocd = addressToPC(MATCH_p)+4 + sign_extend((MATCH_w_16_16 & 0xffff), 16);
+                                 ADDRESS relocd = addressToPC(MATCH_p)+4 + sign_extend((MATCH_w_16_16 & 0xffff), 16);
                                                 nextPC = MATCH_p+4;
-//#line 151 "frontend/machine/pentium/decoder.m"
-                                                unused((uintptr_t) name);
                                                 unconditionalJump(name, 3, relocd, delta, pc, stmts, result);
                                             }
                                         } /*opt-block*/
@@ -18192,7 +18184,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                         MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                         if ((MATCH_w_8_24 & 0x7)
                                                                                 /* base at 24 */ == 5 &&
-                                                                                (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                                (true
                                                                                  /* index at 24 */ &&
                                                                                  (MATCH_w_8_24 >> 3 & 0x7)
                                                                                  /* index at 24 */ < 8))
@@ -18210,7 +18202,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                 MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                 if ((MATCH_w_8_16 & 0x7)
                                                                         /* r_m at 16 */ == 4 &&
-                                                                        (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                        (true
                                                                          /* index at 24 */ &&
                                                                          (MATCH_w_8_24 >> 3 & 0x7)
                                                                          /* index at 24 */ < 8)) {
@@ -18226,7 +18218,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                 MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                 if ((MATCH_w_8_16 & 0x7)
                                                                         /* r_m at 16 */ == 4 &&
-                                                                        (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                        (true
                                                                          /* index at 24 */ &&
                                                                          (MATCH_w_8_24 >> 3 & 0x7)
                                                                          /* index at 24 */ < 8))
@@ -18253,7 +18245,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                         MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                         if ((MATCH_w_8_24 & 0x7)
                                                                                 /* base at 24 */ == 5 &&
-                                                                                (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                                (true
                                                                                  /* index at 24 */ &&
                                                                                  (MATCH_w_8_24 >> 3 & 0x7)
                                                                                  /* index at 24 */ < 8))
@@ -18271,7 +18263,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                 MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                 if ((MATCH_w_8_16 & 0x7)
                                                                         /* r_m at 16 */ == 4 &&
-                                                                        (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                        (true
                                                                          /* index at 24 */ &&
                                                                          (MATCH_w_8_24 >> 3 & 0x7)
                                                                          /* index at 24 */ < 8)) {
@@ -18287,7 +18279,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                 MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                 if ((MATCH_w_8_16 & 0x7)
                                                                         /* r_m at 16 */ == 4 &&
-                                                                        (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                        (true
                                                                          /* index at 24 */ &&
                                                                          (MATCH_w_8_24 >> 3 & 0x7)
                                                                          /* index at 24 */ < 8))
@@ -18316,7 +18308,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                         MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                         if ((MATCH_w_8_24 & 0x7)
                                                                                 /* base at 24 */ == 5 &&
-                                                                                (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                                (true
                                                                                  /* index at 24 */ &&
                                                                                  (MATCH_w_8_24 >> 3 & 0x7)
                                                                                  /* index at 24 */ < 8))
@@ -18334,7 +18326,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                 MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                 if ((MATCH_w_8_16 & 0x7)
                                                                         /* r_m at 16 */ == 4 &&
-                                                                        (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                        (true
                                                                          /* index at 24 */ &&
                                                                          (MATCH_w_8_24 >> 3 & 0x7)
                                                                          /* index at 24 */ < 8)) {
@@ -18358,7 +18350,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                 MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                 if ((MATCH_w_8_16 & 0x7)
                                                                         /* r_m at 16 */ == 4 &&
-                                                                        (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                        (true
                                                                          /* index at 24 */ &&
                                                                          (MATCH_w_8_24 >> 3 & 0x7)
                                                                          /* index at 24 */ < 8))
@@ -18395,7 +18387,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                         MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                         if ((MATCH_w_8_24 & 0x7)
                                                                                 /* base at 24 */ == 5 &&
-                                                                                (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                                (true
                                                                                  /* index at 24 */ &&
                                                                                  (MATCH_w_8_24 >> 3 & 0x7)
                                                                                  /* index at 24 */ < 8)) {
@@ -18419,7 +18411,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                 MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                 if ((MATCH_w_8_16 & 0x7)
                                                                         /* r_m at 16 */ == 4 &&
-                                                                        (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                        (true
                                                                          /* index at 24 */ &&
                                                                          (MATCH_w_8_24 >> 3 & 0x7)
                                                                          /* index at 24 */ < 8)) {
@@ -18442,7 +18434,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                 MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                 if ((MATCH_w_8_16 & 0x7)
                                                                         /* r_m at 16 */ == 4 &&
-                                                                        (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                        (true
                                                                          /* index at 24 */ &&
                                                                          (MATCH_w_8_24 >> 3 & 0x7)
                                                                          /* index at 24 */ < 8)) {
@@ -18477,7 +18469,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                         MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                         if ((MATCH_w_8_24 & 0x7)
                                                                                 /* base at 24 */ == 5 &&
-                                                                                (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                                (true
                                                                                  /* index at 24 */ &&
                                                                                  (MATCH_w_8_24 >> 3 & 0x7)
                                                                                  /* index at 24 */ < 8))
@@ -18495,7 +18487,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                 MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                 if ((MATCH_w_8_16 & 0x7)
                                                                         /* r_m at 16 */ == 4 &&
-                                                                        (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                        (true
                                                                          /* index at 24 */ &&
                                                                          (MATCH_w_8_24 >> 3 & 0x7)
                                                                          /* index at 24 */ < 8)) {
@@ -18511,7 +18503,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                 MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                 if ((MATCH_w_8_16 & 0x7)
                                                                         /* r_m at 16 */ == 4 &&
-                                                                        (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                        (true
                                                                          /* index at 24 */ &&
                                                                          (MATCH_w_8_24 >> 3 & 0x7)
                                                                          /* index at 24 */ < 8))
@@ -18538,7 +18530,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                         MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                         if ((MATCH_w_8_24 & 0x7)
                                                                                 /* base at 24 */ == 5 &&
-                                                                                (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                                (true
                                                                                  /* index at 24 */ &&
                                                                                  (MATCH_w_8_24 >> 3 & 0x7)
                                                                                  /* index at 24 */ < 8))
@@ -18556,7 +18548,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                 MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                 if ((MATCH_w_8_16 & 0x7)
                                                                         /* r_m at 16 */ == 4 &&
-                                                                        (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                        (true
                                                                          /* index at 24 */ &&
                                                                          (MATCH_w_8_24 >> 3 & 0x7)
                                                                          /* index at 24 */ < 8)) {
@@ -18572,7 +18564,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                 MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                 if ((MATCH_w_8_16 & 0x7)
                                                                         /* r_m at 16 */ == 4 &&
-                                                                        (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                        (true
                                                                          /* index at 24 */ &&
                                                                          (MATCH_w_8_24 >> 3 & 0x7)
                                                                          /* index at 24 */ < 8))
@@ -18599,7 +18591,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                         MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                         if ((MATCH_w_8_24 & 0x7)
                                                                                 /* base at 24 */ == 5 &&
-                                                                                (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                                (true
                                                                                  /* index at 24 */ &&
                                                                                  (MATCH_w_8_24 >> 3 & 0x7)
                                                                                  /* index at 24 */ < 8))
@@ -18617,7 +18609,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                 MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                 if ((MATCH_w_8_16 & 0x7)
                                                                         /* r_m at 16 */ == 4 &&
-                                                                        (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                        (true
                                                                          /* index at 24 */ &&
                                                                          (MATCH_w_8_24 >> 3 & 0x7)
                                                                          /* index at 24 */ < 8)) {
@@ -18633,7 +18625,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                 MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                 if ((MATCH_w_8_16 & 0x7)
                                                                         /* r_m at 16 */ == 4 &&
-                                                                        (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                        (true
                                                                          /* index at 24 */ &&
                                                                          (MATCH_w_8_24 >> 3 & 0x7)
                                                                          /* index at 24 */ < 8))
@@ -18660,7 +18652,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                         MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                         if ((MATCH_w_8_24 & 0x7)
                                                                                 /* base at 24 */ == 5 &&
-                                                                                (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                                (true
                                                                                  /* index at 24 */ &&
                                                                                  (MATCH_w_8_24 >> 3 & 0x7)
                                                                                  /* index at 24 */ < 8))
@@ -18678,7 +18670,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                 MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                 if ((MATCH_w_8_16 & 0x7)
                                                                         /* r_m at 16 */ == 4 &&
-                                                                        (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                        (true
                                                                          /* index at 24 */ &&
                                                                          (MATCH_w_8_24 >> 3 & 0x7)
                                                                          /* index at 24 */ < 8)) {
@@ -18694,7 +18686,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                 MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                 if ((MATCH_w_8_16 & 0x7)
                                                                         /* r_m at 16 */ == 4 &&
-                                                                        (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                        (true
                                                                          /* index at 24 */ &&
                                                                          (MATCH_w_8_24 >> 3 & 0x7)
                                                                          /* index at 24 */ < 8))
@@ -18721,7 +18713,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                         MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                         if ((MATCH_w_8_24 & 0x7)
                                                                                 /* base at 24 */ == 5 &&
-                                                                                (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                                (true
                                                                                  /* index at 24 */ &&
                                                                                  (MATCH_w_8_24 >> 3 & 0x7)
                                                                                  /* index at 24 */ < 8))
@@ -18739,7 +18731,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                 MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                 if ((MATCH_w_8_16 & 0x7)
                                                                         /* r_m at 16 */ == 4 &&
-                                                                        (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                        (true
                                                                          /* index at 24 */ &&
                                                                          (MATCH_w_8_24 >> 3 & 0x7)
                                                                          /* index at 24 */ < 8)) {
@@ -18755,7 +18747,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                 MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                 if ((MATCH_w_8_16 & 0x7)
                                                                         /* r_m at 16 */ == 4 &&
-                                                                        (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                        (true
                                                                          /* index at 24 */ &&
                                                                          (MATCH_w_8_24 >> 3 & 0x7)
                                                                          /* index at 24 */ < 8))
@@ -18782,7 +18774,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                         MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                         if ((MATCH_w_8_24 & 0x7)
                                                                                 /* base at 24 */ == 5 &&
-                                                                                (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                                (true
                                                                                  /* index at 24 */ &&
                                                                                  (MATCH_w_8_24 >> 3 & 0x7)
                                                                                  /* index at 24 */ < 8))
@@ -18800,7 +18792,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                 MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                 if ((MATCH_w_8_16 & 0x7)
                                                                         /* r_m at 16 */ == 4 &&
-                                                                        (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                        (true
                                                                          /* index at 24 */ &&
                                                                          (MATCH_w_8_24 >> 3 & 0x7)
                                                                          /* index at 24 */ < 8)) {
@@ -18816,7 +18808,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                 MATCH_w_8_24 = getByte(MATCH_p+3);
                                                                 if ((MATCH_w_8_16 & 0x7)
                                                                         /* r_m at 16 */ == 4 &&
-                                                                        (0 <= (MATCH_w_8_24 >> 3 & 0x7)
+                                                                        (true
                                                                          /* index at 24 */ &&
                                                                          (MATCH_w_8_24 >> 3 & 0x7)
                                                                          /* index at 24 */ < 8))
@@ -18941,7 +18933,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8)) {
@@ -18963,7 +18955,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -18985,7 +18977,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -19017,7 +19009,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8)) {
@@ -19039,7 +19031,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -19061,7 +19053,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -19093,7 +19085,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8)) {
@@ -19115,7 +19107,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -19137,7 +19129,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -19169,7 +19161,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8)) {
@@ -19191,7 +19183,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -19213,7 +19205,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -19245,7 +19237,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8)) {
@@ -19267,7 +19259,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -19289,7 +19281,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -19321,7 +19313,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8)) {
@@ -19343,7 +19335,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -19365,7 +19357,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -19397,7 +19389,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8)) {
@@ -19419,7 +19411,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -19441,7 +19433,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -19473,7 +19465,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8)) {
@@ -19495,7 +19487,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -19517,7 +19509,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -19555,7 +19547,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8)) {
@@ -19577,7 +19569,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -19598,7 +19590,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -19630,7 +19622,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8)) {
@@ -19652,7 +19644,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -19673,7 +19665,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -19705,7 +19697,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8)) {
@@ -19727,7 +19719,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -19748,7 +19740,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -19780,7 +19772,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8)) {
@@ -19802,7 +19794,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -19823,7 +19815,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -19855,7 +19847,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8)) {
@@ -19877,7 +19869,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -19898,7 +19890,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -19930,7 +19922,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8)) {
@@ -19952,7 +19944,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -19973,7 +19965,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -20005,7 +19997,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8)) {
@@ -20027,7 +20019,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -20048,7 +20040,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -20080,7 +20072,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8)) {
@@ -20102,7 +20094,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -20123,7 +20115,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -20163,7 +20155,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8)) {
@@ -20185,7 +20177,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -20207,7 +20199,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -20239,7 +20231,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8)) {
@@ -20261,7 +20253,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -20283,7 +20275,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -20315,7 +20307,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8)) {
@@ -20337,7 +20329,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -20359,7 +20351,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -20391,7 +20383,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8)) {
@@ -20413,7 +20405,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -20435,7 +20427,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -20467,7 +20459,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8)) {
@@ -20489,7 +20481,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -20514,7 +20506,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -20546,7 +20538,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8)) {
@@ -20568,7 +20560,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -20590,7 +20582,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -20622,7 +20614,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8)) {
@@ -20644,7 +20636,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -20666,7 +20658,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -20698,7 +20690,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8)) {
@@ -20720,7 +20712,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -20742,7 +20734,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -20775,7 +20767,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_16 & 0x7)
                                                         /* base at 16 */ == 5 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -20791,7 +20783,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 1:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8)) {
                                             ADDRESS Eaddr = addressToPC(MATCH_p)+1;
@@ -20806,7 +20798,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 2:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))
                                             goto MATCH_label_c534;  /*opt-block+*/
@@ -20829,7 +20821,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_16 & 0x7)
                                                         /* base at 16 */ == 5 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -20845,7 +20837,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 1:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8)) {
                                             ADDRESS Eaddr = addressToPC(MATCH_p)+1;
@@ -20860,7 +20852,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 2:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))
                                             goto MATCH_label_c538;  /*opt-block+*/
@@ -20883,7 +20875,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_16 & 0x7)
                                                         /* base at 16 */ == 5 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -20899,7 +20891,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 1:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8)) {
                                             ADDRESS Eaddr = addressToPC(MATCH_p)+1;
@@ -20914,7 +20906,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 2:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))
                                             goto MATCH_label_c542;  /*opt-block+*/
@@ -20937,7 +20929,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_16 & 0x7)
                                                         /* base at 16 */ == 5 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -20953,7 +20945,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 1:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8)) {
                                             ADDRESS Eaddr = addressToPC(MATCH_p)+1;
@@ -20968,7 +20960,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 2:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))
                                             goto MATCH_label_c546;  /*opt-block+*/
@@ -21101,7 +21093,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8)) {
@@ -21123,7 +21115,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -21145,7 +21137,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -21177,7 +21169,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8)) {
@@ -21199,7 +21191,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -21221,7 +21213,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -21253,7 +21245,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8)) {
@@ -21275,7 +21267,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -21297,7 +21289,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -21329,7 +21321,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8)) {
@@ -21351,7 +21343,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -21373,7 +21365,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -21405,7 +21397,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8)) {
@@ -21427,7 +21419,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -21449,7 +21441,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -21481,7 +21473,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8)) {
@@ -21503,7 +21495,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -21525,7 +21517,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -21559,7 +21551,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8)) {
@@ -21581,7 +21573,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -21603,7 +21595,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -21641,7 +21633,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8)) {
@@ -21663,7 +21655,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -21685,7 +21677,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -21717,7 +21709,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8)) {
@@ -21739,7 +21731,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -21761,7 +21753,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -21793,7 +21785,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8)) {
@@ -21815,7 +21807,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -21837,7 +21829,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -21869,7 +21861,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8)) {
@@ -21891,7 +21883,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -21913,7 +21905,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -21945,7 +21937,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8)) {
@@ -21967,7 +21959,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -21989,7 +21981,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -22021,7 +22013,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8)) {
@@ -22043,7 +22035,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -22065,7 +22057,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -22099,7 +22091,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8)) {
@@ -22121,7 +22113,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -22143,7 +22135,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -22207,7 +22199,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_16 & 0x7)
                                                         /* base at 16 */ == 5 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -22223,7 +22215,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 1:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8)) {
                                             ADDRESS Mem = addressToPC(MATCH_p)+1;
@@ -22238,7 +22230,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 2:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))
                                             goto MATCH_label_c605;  /*opt-block+*/
@@ -22269,7 +22261,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_16 & 0x7)
                                                         /* base at 16 */ == 5 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -22285,7 +22277,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 1:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8)) {
                                             ADDRESS Mem = addressToPC(MATCH_p)+1;
@@ -22300,7 +22292,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                     case 2:
                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                         if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                (true
                                                  /* index at 16 */ &&
                                                  (MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))
                                             goto MATCH_label_c608;  /*opt-block+*/
@@ -22326,7 +22318,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                     MATCH_w_8_16 = getByte(MATCH_p+2);
                                                     if ((MATCH_w_8_16 & 0x7)
                                                             /* base at 16 */ == 5 &&
-                                                            (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                            (true
                                                              /* index at 16 */ &&
                                                              (MATCH_w_8_16 >> 3 & 0x7)
                                                              /* index at 16 */ < 8)) {
@@ -22348,7 +22340,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                         case 1:
                                             MATCH_w_8_16 = getByte(MATCH_p+2);
                                             if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                    (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                    (true
                                                      /* index at 16 */ &&
                                                      (MATCH_w_8_16 >> 3 & 0x7)
                                                      /* index at 16 */ < 8)) {
@@ -22370,7 +22362,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                         case 2:
                                             MATCH_w_8_16 = getByte(MATCH_p+2);
                                             if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                    (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                    (true
                                                      /* index at 16 */ &&
                                                      (MATCH_w_8_16 >> 3 & 0x7)
                                                      /* index at 16 */ < 8)) {
@@ -22405,7 +22397,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                     MATCH_w_8_16 = getByte(MATCH_p+2);
                                                     if ((MATCH_w_8_16 & 0x7)
                                                             /* base at 16 */ == 5 &&
-                                                            (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                            (true
                                                              /* index at 16 */ &&
                                                              (MATCH_w_8_16 >> 3 & 0x7)
                                                              /* index at 16 */ < 8)) {
@@ -22427,7 +22419,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                         case 1:
                                             MATCH_w_8_16 = getByte(MATCH_p+2);
                                             if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                    (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                    (true
                                                      /* index at 16 */ &&
                                                      (MATCH_w_8_16 >> 3 & 0x7)
                                                      /* index at 16 */ < 8)) {
@@ -22448,7 +22440,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                         case 2:
                                             MATCH_w_8_16 = getByte(MATCH_p+2);
                                             if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                    (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                    (true
                                                      /* index at 16 */ &&
                                                      (MATCH_w_8_16 >> 3 & 0x7)
                                                      /* index at 16 */ < 8)) {
@@ -22488,7 +22480,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -22504,7 +22496,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -22529,7 +22521,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -22553,7 +22545,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -22569,7 +22561,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -22584,7 +22576,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -22608,7 +22600,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -22624,7 +22616,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -22639,7 +22631,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -22663,7 +22655,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -22679,7 +22671,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -22694,7 +22686,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -22718,7 +22710,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -22734,7 +22726,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -22749,7 +22741,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -22773,7 +22765,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -22789,7 +22781,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -22804,7 +22796,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -22830,7 +22822,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -22846,7 +22838,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -22861,7 +22853,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -22891,7 +22883,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -22907,7 +22899,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -22922,7 +22914,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -22946,7 +22938,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -22962,7 +22954,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -22977,7 +22969,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -23001,7 +22993,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -23017,7 +23009,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -23032,7 +23024,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -23056,7 +23048,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -23072,7 +23064,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -23087,7 +23079,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -23111,7 +23103,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -23127,7 +23119,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -23142,7 +23134,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -23166,7 +23158,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -23182,7 +23174,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -23197,7 +23189,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -23223,7 +23215,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -23239,7 +23231,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -23254,7 +23246,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -23284,7 +23276,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -23300,7 +23292,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -23315,7 +23307,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -23339,7 +23331,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -23355,7 +23347,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -23370,7 +23362,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -23394,7 +23386,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -23410,7 +23402,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -23425,7 +23417,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -23449,7 +23441,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -23465,7 +23457,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -23480,7 +23472,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -23504,7 +23496,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -23520,7 +23512,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -23535,7 +23527,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -23559,7 +23551,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -23575,7 +23567,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -23590,7 +23582,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -23616,7 +23608,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -23632,7 +23624,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -23647,7 +23639,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -23677,7 +23669,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -23693,7 +23685,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -23708,7 +23700,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -23732,7 +23724,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -23748,7 +23740,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -23763,7 +23755,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -23787,7 +23779,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -23803,7 +23795,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -23818,7 +23810,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -23842,7 +23834,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -23858,7 +23850,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -23873,7 +23865,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -23897,7 +23889,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -23913,7 +23905,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -23928,7 +23920,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -23952,7 +23944,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -23968,7 +23960,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -23983,7 +23975,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -24009,7 +24001,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -24025,7 +24017,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -24040,7 +24032,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -24568,7 +24560,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8)) {
@@ -24590,7 +24582,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -24611,7 +24603,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -24643,7 +24635,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -24659,7 +24651,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -24674,7 +24666,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -24698,7 +24690,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -24714,7 +24706,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -24729,7 +24721,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -24753,7 +24745,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -24769,7 +24761,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -24784,7 +24776,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -24808,7 +24800,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -24824,7 +24816,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -24839,7 +24831,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -24863,7 +24855,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -24879,7 +24871,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -24894,7 +24886,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
@@ -24918,7 +24910,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
@@ -24934,7 +24926,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -24951,14 +24943,13 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
                                                     goto MATCH_label_c756;  /*opt-block+*/
                                                 else
                                                     goto MATCH_label_c757;  /*opt-block+*/
-                                                break;
                                             case 3:
                                                 goto MATCH_label_c754; break;
                                             default: assert(0);
@@ -24978,12 +24969,11 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                     case 7:
                                                         MATCH_w_32_16 = getDword(MATCH_p+2);
                                                         goto MATCH_label_c758;
-                                                        break;
                                                     case 4:
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8)) {
@@ -24994,18 +24984,16 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             MATCH_w_32_24 = getDword(MATCH_p+3);
                                                             goto MATCH_label_c759;
                                                         } /*opt-block*/
-                                                        break;
                                                     case 5:
                                                         MATCH_w_32_48 = getDword(MATCH_p+6);
                                                         goto MATCH_label_c761;
-                                                        break;
                                                     default: assert(0);
                                                 } /* (MATCH_w_8_8 & 0x7) -- r_m at 8 --*/
                                                 break;
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -25026,7 +25014,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -25041,7 +25029,6 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 3:
                                                 MATCH_w_32_16 = getDword(MATCH_p+2);
                                                 goto MATCH_label_c758;
-                                                break;
                                             default: assert(0);
                                         } /* (MATCH_w_8_8 >> 6 & 0x3) -- mod at 8 --*/
                                         break;
@@ -25058,14 +25045,13 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
                                                             goto MATCH_label_c764;  /*opt-block+*/
                                                         else
                                                             goto MATCH_label_c763;  /*opt-block+*/
-                                                        break;
                                                     case 5:
                                                         goto MATCH_label_c765; break;
                                                     default: assert(0);
@@ -25074,7 +25060,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -25089,14 +25075,13 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
                                                     goto MATCH_label_c764;  /*opt-block+*/
                                                 else
                                                     goto MATCH_label_c765;  /*opt-block+*/
-                                                break;
                                             case 3:
                                                 goto MATCH_label_c762; break;
                                             default: assert(0);
@@ -25113,14 +25098,13 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
                                                             goto MATCH_label_c768;  /*opt-block+*/
                                                         else
                                                             goto MATCH_label_c767;  /*opt-block+*/
-                                                        break;
                                                     case 5:
                                                         goto MATCH_label_c769; break;
                                                     default: assert(0);
@@ -25129,7 +25113,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -25144,14 +25128,13 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
                                                     goto MATCH_label_c768;  /*opt-block+*/
                                                 else
                                                     goto MATCH_label_c769;  /*opt-block+*/
-                                                break;
                                             case 3:
                                                 goto MATCH_label_c766; break;
                                             default: assert(0);
@@ -25168,14 +25151,13 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
                                                             goto MATCH_label_c772;  /*opt-block+*/
                                                         else
                                                             goto MATCH_label_c771;  /*opt-block+*/
-                                                        break;
                                                     case 5:
                                                         goto MATCH_label_c773; break;
                                                     default: assert(0);
@@ -25184,7 +25166,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -25199,14 +25181,13 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
                                                     goto MATCH_label_c772;  /*opt-block+*/
                                                 else
                                                     goto MATCH_label_c773;  /*opt-block+*/
-                                                break;
                                             case 3:
                                                 goto MATCH_label_c770; break;
                                             default: assert(0);
@@ -25223,14 +25204,13 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
                                                             goto MATCH_label_c776;  /*opt-block+*/
                                                         else
                                                             goto MATCH_label_c775;  /*opt-block+*/
-                                                        break;
                                                     case 5:
                                                         goto MATCH_label_c777; break;
                                                     default: assert(0);
@@ -25239,7 +25219,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -25254,14 +25234,13 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
                                                     goto MATCH_label_c776;  /*opt-block+*/
                                                 else
                                                     goto MATCH_label_c777;  /*opt-block+*/
-                                                break;
                                             case 3:
                                                 goto MATCH_label_c774; break;
                                             default: assert(0);
@@ -25273,19 +25252,18 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 switch((MATCH_w_8_8 & 0x7) /* r_m at 8 */) {
                                                     case 0: case 1: case 2: case 3: case 6:
                                                     case 7:
-                                                        goto MATCH_label_c778; break;
+                                                        goto MATCH_label_c778;
                                                     case 4:
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
                                                             goto MATCH_label_c780;  /*opt-block+*/
                                                         else
                                                             goto MATCH_label_c779;  /*opt-block+*/
-                                                        break;
                                                     case 5:
                                                         goto MATCH_label_c781; break;
                                                     default: assert(0);
@@ -25294,7 +25272,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -25309,16 +25287,15 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
                                                     goto MATCH_label_c780;  /*opt-block+*/
                                                 else
                                                     goto MATCH_label_c781;  /*opt-block+*/
-                                                break;
                                             case 3:
-                                                goto MATCH_label_c778; break;
+                                                goto MATCH_label_c778;
                                             default: assert(0);
                                         } /* (MATCH_w_8_8 >> 6 & 0x3) -- mod at 8 --*/
                                         break;
@@ -25328,28 +25305,27 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 switch((MATCH_w_8_8 & 0x7) /* r_m at 8 */) {
                                                     case 0: case 1: case 2: case 3: case 6:
                                                     case 7:
-                                                        goto MATCH_label_c782; break;
+                                                        goto MATCH_label_c782;
                                                     case 4:
                                                         MATCH_w_8_16 = getByte(MATCH_p+2);
                                                         if ((MATCH_w_8_16 & 0x7)
                                                                 /* base at 16 */ == 5 &&
-                                                                (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                                (true
                                                                  /* index at 16 */ &&
                                                                  (MATCH_w_8_16 >> 3 & 0x7)
                                                                  /* index at 16 */ < 8))
                                                             goto MATCH_label_c784;  /*opt-block+*/
                                                         else
                                                             goto MATCH_label_c783;  /*opt-block+*/
-                                                        break;
                                                     case 5:
-                                                        goto MATCH_label_c785; break;
+                                                        goto MATCH_label_c785;
                                                     default: assert(0);
                                                 } /* (MATCH_w_8_8 & 0x7) -- r_m at 8 --*/
                                                 break;
                                             case 1:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8)) {
@@ -25364,16 +25340,15 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             case 2:
                                                 MATCH_w_8_16 = getByte(MATCH_p+2);
                                                 if ((MATCH_w_8_8 & 0x7) /* r_m at 8 */ == 4 &&
-                                                        (0 <= (MATCH_w_8_16 >> 3 & 0x7)
+                                                        (true
                                                          /* index at 16 */ &&
                                                          (MATCH_w_8_16 >> 3 & 0x7)
                                                          /* index at 16 */ < 8))
                                                     goto MATCH_label_c784;  /*opt-block+*/
                                                 else
                                                     goto MATCH_label_c785;  /*opt-block+*/
-                                                break;
                                             case 3:
-                                                goto MATCH_label_c782; break;
+                                                goto MATCH_label_c782;
                                             default: assert(0);
                                         } /* (MATCH_w_8_8 >> 6 & 0x3) -- mod at 8 --*/
                                         break;
@@ -25971,7 +25946,6 @@ MATCH_label_c64: (void)0; /*placeholder for label*/
             result.numBytes = 0;
             return result;
         }
-        goto MATCH_finished_c;
 MATCH_label_c65: (void)0; /*placeholder for label*/
         {
             ADDRESS Eaddr = addressToPC(MATCH_p)+2;
@@ -26707,7 +26681,7 @@ MATCH_label_c145: (void)0; /*placeholder for label*/
             nextPC = MATCH_p+4;
 //#line 1377 "frontend/machine/pentium/decoder.m"
             //stmts = instantiate(pc,  "BSFow", DIS_REG16, DIS_EADDR16);
-            genBSFR(pc, DIS_REG16, DIS_EADDR16, -1, 16, opPlus, (nextPC-hostPC).m_value);
+            genBSFR(pc, DIS_REG16, DIS_EADDR16, -1, 16, opPlus, int((nextPC-hostPC).m_value));
             return result;
             // Not "user" instructions:
             //    | BOUNDod(reg, Mem) =>
@@ -26726,7 +26700,6 @@ MATCH_label_c145: (void)0; /*placeholder for label*/
             //      | AAA() =>
             //          stmts = instantiate(pc,  "AAA");
         }
-        goto MATCH_finished_c;
 MATCH_label_c146: (void)0; /*placeholder for label*/
         {
             ADDRESS Eaddr = addressToPC(MATCH_p)+3;
@@ -26734,7 +26707,7 @@ MATCH_label_c146: (void)0; /*placeholder for label*/
             nextPC = MATCH_p+5;
 //#line 1377 "frontend/machine/pentium/decoder.m"
             //stmts = instantiate(pc,  "BSFow", DIS_REG16, DIS_EADDR16);
-            genBSFR(pc, DIS_REG16, DIS_EADDR16, -1, 16, opPlus, (nextPC-hostPC).m_value);
+            genBSFR(pc, DIS_REG16, DIS_EADDR16, -1, 16, opPlus, int((nextPC-hostPC).m_value));
             return result;
             // Not "user" instructions:
             //    | BOUNDod(reg, Mem) =>
@@ -26753,7 +26726,6 @@ MATCH_label_c146: (void)0; /*placeholder for label*/
             //      | AAA() =>
             //          stmts = instantiate(pc,  "AAA");
         }
-        goto MATCH_finished_c;
 MATCH_label_c147: (void)0; /*placeholder for label*/
         {
             ADDRESS Eaddr = addressToPC(MATCH_p)+3;
@@ -26761,7 +26733,7 @@ MATCH_label_c147: (void)0; /*placeholder for label*/
             nextPC = MATCH_p+9;
 //#line 1377 "frontend/machine/pentium/decoder.m"
             //stmts = instantiate(pc,  "BSFow", DIS_REG16, DIS_EADDR16);
-            genBSFR(pc, DIS_REG16, DIS_EADDR16, -1, 16, opPlus, (nextPC-hostPC).m_value);
+            genBSFR(pc, DIS_REG16, DIS_EADDR16, -1, 16, opPlus, int((nextPC-hostPC).m_value));
             return result;
             // Not "user" instructions:
             //    | BOUNDod(reg, Mem) =>
@@ -26780,7 +26752,6 @@ MATCH_label_c147: (void)0; /*placeholder for label*/
             //      | AAA() =>
             //          stmts = instantiate(pc,  "AAA");
         }
-        goto MATCH_finished_c;
 MATCH_label_c148: (void)0; /*placeholder for label*/
         {
             ADDRESS Eaddr = addressToPC(MATCH_p)+3;
@@ -26788,7 +26759,7 @@ MATCH_label_c148: (void)0; /*placeholder for label*/
             nextPC = MATCH_p+8;
 //#line 1377 "frontend/machine/pentium/decoder.m"
             //stmts = instantiate(pc,  "BSFow", DIS_REG16, DIS_EADDR16);
-            genBSFR(pc, DIS_REG16, DIS_EADDR16, -1, 16, opPlus, (nextPC-hostPC).m_value);
+            genBSFR(pc, DIS_REG16, DIS_EADDR16, -1, 16, opPlus, int((nextPC-hostPC).m_value));
             return result;
             // Not "user" instructions:
             //    | BOUNDod(reg, Mem) =>
@@ -26807,7 +26778,6 @@ MATCH_label_c148: (void)0; /*placeholder for label*/
             //      | AAA() =>
             //          stmts = instantiate(pc,  "AAA");
         }
-        goto MATCH_finished_c;
 MATCH_label_c149: (void)0; /*placeholder for label*/
         {
             ADDRESS Eaddr = addressToPC(MATCH_p)+3;
@@ -26815,10 +26785,9 @@ MATCH_label_c149: (void)0; /*placeholder for label*/
             nextPC = MATCH_p+4;
 //#line 1367 "frontend/machine/pentium/decoder.m"
             //stmts = instantiate(pc,  "BSRow", DIS_REG16, DIS_EADDR16);
-            genBSFR(pc, DIS_REG16, DIS_EADDR16, 16, 16, opMinus, (nextPC-hostPC).m_value);
+            genBSFR(pc, DIS_REG16, DIS_EADDR16, 16, 16, opMinus, int((nextPC-hostPC).m_value));
             return result;
         }
-        goto MATCH_finished_c;
 MATCH_label_c150: (void)0; /*placeholder for label*/
         {
             ADDRESS Eaddr = addressToPC(MATCH_p)+3;
@@ -26826,10 +26795,9 @@ MATCH_label_c150: (void)0; /*placeholder for label*/
             nextPC = MATCH_p+5;
 //#line 1367 "frontend/machine/pentium/decoder.m"
             //stmts = instantiate(pc,  "BSRow", DIS_REG16, DIS_EADDR16);
-            genBSFR(pc, DIS_REG16, DIS_EADDR16, 16, 16, opMinus, (nextPC-hostPC).m_value);
+            genBSFR(pc, DIS_REG16, DIS_EADDR16, 16, 16, opMinus, int((nextPC-hostPC).m_value));
             return result;
         }
-        goto MATCH_finished_c;
 MATCH_label_c151: (void)0; /*placeholder for label*/
         {
             ADDRESS Eaddr = addressToPC(MATCH_p)+3;
@@ -26837,39 +26805,32 @@ MATCH_label_c151: (void)0; /*placeholder for label*/
             nextPC = MATCH_p+9;
 //#line 1367 "frontend/machine/pentium/decoder.m"
             //stmts = instantiate(pc,  "BSRow", DIS_REG16, DIS_EADDR16);
-            genBSFR(pc, DIS_REG16, DIS_EADDR16, 16, 16, opMinus, (nextPC-hostPC).m_value);
+            genBSFR(pc, DIS_REG16, DIS_EADDR16, 16, 16, opMinus, int((nextPC-hostPC).m_value));
             return result;
         }
-        goto MATCH_finished_c;
 MATCH_label_c152: (void)0; /*placeholder for label*/
         {
             ADDRESS Eaddr = addressToPC(MATCH_p)+3;
             unsigned reg = (MATCH_w_8_24 >> 3 & 0x7) /* reg_opcode at 24 */;
             nextPC = MATCH_p+8;
-//#line 1367 "frontend/machine/pentium/decoder.m"
             //stmts = instantiate(pc,  "BSRow", DIS_REG16, DIS_EADDR16);
-            genBSFR(pc, DIS_REG16, DIS_EADDR16, 16, 16, opMinus, (nextPC-hostPC).m_value);
+            genBSFR(pc, DIS_REG16, DIS_EADDR16, 16, 16, opMinus, int((nextPC-hostPC).m_value));
             return result;
         }
-        goto MATCH_finished_c;
 MATCH_label_c153: (void)0; /*placeholder for label*/
         {
             ADDRESS Eaddr = addressToPC(MATCH_p)+3;
             unsigned r16 = (MATCH_w_8_24 >> 3 & 0x7) /* reg_opcode at 24 */;
             nextPC = MATCH_p+4;
-//#line 943 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc,     "MOVZX.Gv.Ebow", DIS_R16, DIS_EADDR8);
         }
-        goto MATCH_finished_c;
 MATCH_label_c154: (void)0; /*placeholder for label*/
         {
             ADDRESS Eaddr = addressToPC(MATCH_p)+3;
             unsigned r16 = (MATCH_w_8_24 >> 3 & 0x7) /* reg_opcode at 24 */;
             nextPC = MATCH_p+5;
-//#line 943 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc,     "MOVZX.Gv.Ebow", DIS_R16, DIS_EADDR8);
         }
-        goto MATCH_finished_c;
 MATCH_label_c155: (void)0; /*placeholder for label*/
         {
             ADDRESS Eaddr = addressToPC(MATCH_p)+3;
@@ -34343,21 +34304,18 @@ MATCH_label_c967: (void)0; /*placeholder for label*/
             nextPC = MATCH_p+3;
 //#line 1372 "frontend/machine/pentium/decoder.m"
             //stmts = instantiate(pc,  "BSFod", DIS_REG32, DIS_EADDR32);
-            genBSFR(pc, DIS_REG32, DIS_EADDR32, -1, 32, opPlus, (nextPC-hostPC).m_value);
+            genBSFR(pc, DIS_REG32, DIS_EADDR32, -1, 32, opPlus, int((nextPC-hostPC).m_value));
             return result;
         }
-        goto MATCH_finished_c;
 MATCH_label_c968: (void)0; /*placeholder for label*/
         {
             ADDRESS Eaddr = addressToPC(MATCH_p)+2;
             unsigned reg = (MATCH_w_8_16 >> 3 & 0x7) /* reg_opcode at 16 */;
             nextPC = MATCH_p+4;
-//#line 1372 "frontend/machine/pentium/decoder.m"
             //stmts = instantiate(pc,  "BSFod", DIS_REG32, DIS_EADDR32);
-            genBSFR(pc, DIS_REG32, DIS_EADDR32, -1, 32, opPlus, (nextPC-hostPC).m_value);
+            genBSFR(pc, DIS_REG32, DIS_EADDR32, -1, 32, opPlus, int((nextPC-hostPC).m_value));
             return result;
         }
-        goto MATCH_finished_c;
 MATCH_label_c969: (void)0; /*placeholder for label*/
         {
             ADDRESS Eaddr = addressToPC(MATCH_p)+2;
@@ -34365,57 +34323,48 @@ MATCH_label_c969: (void)0; /*placeholder for label*/
             nextPC = MATCH_p+8;
 //#line 1372 "frontend/machine/pentium/decoder.m"
             //stmts = instantiate(pc,  "BSFod", DIS_REG32, DIS_EADDR32);
-            genBSFR(pc, DIS_REG32, DIS_EADDR32, -1, 32, opPlus, (nextPC-hostPC).m_value);
+            genBSFR(pc, DIS_REG32, DIS_EADDR32, -1, 32, opPlus, int((nextPC-hostPC).m_value));
             return result;
         }
-        goto MATCH_finished_c;
-MATCH_label_c970: (void)0; /*placeholder for label*/
+MATCH_label_c970:
         {
             ADDRESS Eaddr = addressToPC(MATCH_p)+2;
             unsigned reg = (MATCH_w_8_16 >> 3 & 0x7) /* reg_opcode at 16 */;
             nextPC = MATCH_p+7;
-//#line 1372 "frontend/machine/pentium/decoder.m"
             //stmts = instantiate(pc,  "BSFod", DIS_REG32, DIS_EADDR32);
-            genBSFR(pc, DIS_REG32, DIS_EADDR32, -1, 32, opPlus, (nextPC-hostPC).m_value);
+            genBSFR(pc, DIS_REG32, DIS_EADDR32, -1, 32, opPlus, int((nextPC-hostPC).m_value));
             return result;
         }
-        goto MATCH_finished_c;
-MATCH_label_c971: (void)0; /*placeholder for label*/
+MATCH_label_c971:
         {
             ADDRESS Eaddr = addressToPC(MATCH_p)+2;
             unsigned reg = (MATCH_w_8_16 >> 3 & 0x7) /* reg_opcode at 16 */;
             nextPC = MATCH_p+3;
-//#line 1361 "frontend/machine/pentium/decoder.m"
             //stmts = instantiate(pc,  "BSRod", DIS_REG32, DIS_EADDR32);
             // Bit Scan Forward: need helper function
-            genBSFR(pc, DIS_REG32, DIS_EADDR32, 32, 32, opMinus, (nextPC-hostPC).m_value);
+            genBSFR(pc, DIS_REG32, DIS_EADDR32, 32, 32, opMinus, int((nextPC-hostPC).m_value));
             return result;
         }
-        goto MATCH_finished_c;
-MATCH_label_c972: (void)0; /*placeholder for label*/
+MATCH_label_c972:
         {
             ADDRESS Eaddr = addressToPC(MATCH_p)+2;
             unsigned reg = (MATCH_w_8_16 >> 3 & 0x7) /* reg_opcode at 16 */;
             nextPC = MATCH_p+4;
-//#line 1361 "frontend/machine/pentium/decoder.m"
             //stmts = instantiate(pc,  "BSRod", DIS_REG32, DIS_EADDR32);
             // Bit Scan Forward: need helper function
-            genBSFR(pc, DIS_REG32, DIS_EADDR32, 32, 32, opMinus, (nextPC-hostPC).m_value);
+            genBSFR(pc, DIS_REG32, DIS_EADDR32, 32, 32, opMinus, int((nextPC-hostPC).m_value));
             return result;
         }
-        goto MATCH_finished_c;
 MATCH_label_c973: (void)0; /*placeholder for label*/
         {
             ADDRESS Eaddr = addressToPC(MATCH_p)+2;
             unsigned reg = (MATCH_w_8_16 >> 3 & 0x7) /* reg_opcode at 16 */;
             nextPC = MATCH_p+8;
-//#line 1361 "frontend/machine/pentium/decoder.m"
             //stmts = instantiate(pc,  "BSRod", DIS_REG32, DIS_EADDR32);
             // Bit Scan Forward: need helper function
-            genBSFR(pc, DIS_REG32, DIS_EADDR32, 32, 32, opMinus, (nextPC-hostPC).m_value);
+            genBSFR(pc, DIS_REG32, DIS_EADDR32, 32, 32, opMinus, int((nextPC-hostPC).m_value));
             return result;
         }
-        goto MATCH_finished_c;
 MATCH_label_c974: (void)0; /*placeholder for label*/
         {
             ADDRESS Eaddr = addressToPC(MATCH_p)+2;
@@ -34424,10 +34373,9 @@ MATCH_label_c974: (void)0; /*placeholder for label*/
 //#line 1361 "frontend/machine/pentium/decoder.m"
             //stmts = instantiate(pc,  "BSRod", DIS_REG32, DIS_EADDR32);
             // Bit Scan Forward: need helper function
-            genBSFR(pc, DIS_REG32, DIS_EADDR32, 32, 32, opMinus, (nextPC-hostPC).m_value);
+            genBSFR(pc, DIS_REG32, DIS_EADDR32, 32, 32, opMinus, int((nextPC-hostPC).m_value));
             return result;
         }
-        goto MATCH_finished_c;
 MATCH_label_c975: (void)0; /*placeholder for label*/
         {
             ADDRESS Eaddr = addressToPC(MATCH_p)+2;
@@ -37082,7 +37030,8 @@ MATCH_finished_c: (void)0; /*placeholder for label*/
 //#line 2125 "frontend/machine/pentium/decoder.m"
     if (result.rtl == 0)
         result.rtl = new RTL(pc, stmts);
-    result.numBytes = (nextPC-hostPC).m_value;
+    assert((nextPC-hostPC).m_value>=0);
+    result.numBytes = int((nextPC-hostPC).m_value);
     return result;
 }
 /***************************************************************************//**
@@ -37395,7 +37344,7 @@ DWord PentiumDecoder::getDword (intptr_t lc)
 }
 /***************************************************************************//**
  * \brief       Constructor. The code won't work without this (not sure why the default constructor won't do...)
- * \returns            N/A
+ *
  ******************************************************************************/
 PentiumDecoder::PentiumDecoder(Prog* prog) : NJMCDecoder(prog)
 {
@@ -37408,7 +37357,7 @@ PentiumDecoder::PentiumDecoder(Prog* prog) : NJMCDecoder(prog)
  * bytes disassembled. Assembler output goes to global _assembly
  */
 
-int PentiumDecoder::decodeAssemblyInstruction(ADDRESS, int)
+int PentiumDecoder::decodeAssemblyInstruction(ADDRESS, ptrdiff_t)
 { return 0; }
 /***************************************************************************//** * FUNCTION:       genBSFR
  * \brief       Generate statements for the BSF and BSR series (Bit Scan Forward/Reverse)

@@ -1,7 +1,7 @@
 #define sign_extend(N,SIZE) (((int)((N) << (sizeof(unsigned)*8-(SIZE)))) >> (sizeof(unsigned)*8-(SIZE)))
 #include <assert.h>
 
-#line 2 "machine/hppa/hppa.pat.m"
+//#line 2 "machine/hppa/hppa.pat.m"
 /*==============================================
  * \file      hppa.pat.m
  * OVERVIEW:  Generated file; do not edit
@@ -25,7 +25,7 @@ bool InstructionPatterns::BL$c_br_nnull(ADDRESS& lc, int& a, bool a_isVAR, int& 
     ADDRESS nextPC;
 
 
-#line 22 "machine/hppa/hppa.pat.m"
+//#line 22 "machine/hppa/hppa.pat.m"
 { 
   dword MATCH_p = 
     
@@ -91,13 +91,13 @@ bool InstructionPatterns::BL$c_br_nnull(ADDRESS& lc, int& a, bool a_isVAR, int& 
   
 }
 
-#line 33 "machine/hppa/hppa.pat.m"
+//#line 33 "machine/hppa/hppa.pat.m"
 }
 bool InstructionPatterns::BL$c_br_null(ADDRESS& lc, int& a, bool a_isVAR, int& b, bool b_isVAR) {
     ADDRESS nextPC;
 
 
-#line 35 "machine/hppa/hppa.pat.m"
+//#line 35 "machine/hppa/hppa.pat.m"
 { 
   dword MATCH_p = 
     
@@ -163,13 +163,13 @@ bool InstructionPatterns::BL$c_br_null(ADDRESS& lc, int& a, bool a_isVAR, int& b
   
 }
 
-#line 46 "machine/hppa/hppa.pat.m"
+//#line 46 "machine/hppa/hppa.pat.m"
 }
 bool InstructionPatterns::BV$c_br_nnull(ADDRESS& lc, int& a, bool a_isVAR, int& b, bool b_isVAR) {
     ADDRESS nextPC;
 
 
-#line 48 "machine/hppa/hppa.pat.m"
+//#line 48 "machine/hppa/hppa.pat.m"
 { 
   dword MATCH_p = 
     
@@ -235,13 +235,13 @@ bool InstructionPatterns::BV$c_br_nnull(ADDRESS& lc, int& a, bool a_isVAR, int& 
   
 }
 
-#line 59 "machine/hppa/hppa.pat.m"
+//#line 59 "machine/hppa/hppa.pat.m"
 }
 bool InstructionPatterns::BV$c_br_null(ADDRESS& lc, int& a, bool a_isVAR, int& b, bool b_isVAR) {
     ADDRESS nextPC;
 
 
-#line 61 "machine/hppa/hppa.pat.m"
+//#line 61 "machine/hppa/hppa.pat.m"
 { 
   dword MATCH_p = 
     
@@ -307,13 +307,13 @@ bool InstructionPatterns::BV$c_br_null(ADDRESS& lc, int& a, bool a_isVAR, int& b
   
 }
 
-#line 72 "machine/hppa/hppa.pat.m"
+//#line 72 "machine/hppa/hppa.pat.m"
 }
 bool InstructionPatterns::FSTDS$s_addr_im_r$c_s_addr_ma(ADDRESS& lc, int& a, bool a_isVAR, int& b, bool b_isVAR, int& c, bool c_isVAR, int& d, bool d_isVAR) {
     ADDRESS nextPC;
 
 
-#line 74 "machine/hppa/hppa.pat.m"
+//#line 74 "machine/hppa/hppa.pat.m"
 { 
   dword MATCH_p = 
     
@@ -393,13 +393,13 @@ bool InstructionPatterns::FSTDS$s_addr_im_r$c_s_addr_ma(ADDRESS& lc, int& a, boo
   
 }
 
-#line 87 "machine/hppa/hppa.pat.m"
+//#line 87 "machine/hppa/hppa.pat.m"
 }
 bool InstructionPatterns::LDO(ADDRESS& lc, int& a, bool a_isVAR, int& b, bool b_isVAR, int& c, bool c_isVAR) {
     ADDRESS nextPC;
 
 
-#line 89 "machine/hppa/hppa.pat.m"
+//#line 89 "machine/hppa/hppa.pat.m"
 { 
   dword MATCH_p = 
     
@@ -452,13 +452,13 @@ bool InstructionPatterns::LDO(ADDRESS& lc, int& a, bool a_isVAR, int& b, bool b_
   
 }
 
-#line 100 "machine/hppa/hppa.pat.m"
+//#line 100 "machine/hppa/hppa.pat.m"
 }
 bool InstructionPatterns::LDW$l_addr_16_old$c_l_addr_none(ADDRESS& lc, int& a, bool a_isVAR, int& b, bool b_isVAR, int& c, bool c_isVAR, int& d, bool d_isVAR) {
     ADDRESS nextPC;
 
 
-#line 102 "machine/hppa/hppa.pat.m"
+//#line 102 "machine/hppa/hppa.pat.m"
 { 
   dword MATCH_p = 
     
@@ -515,13 +515,13 @@ bool InstructionPatterns::LDW$l_addr_16_old$c_l_addr_none(ADDRESS& lc, int& a, b
   
 }
 
-#line 115 "machine/hppa/hppa.pat.m"
+//#line 115 "machine/hppa/hppa.pat.m"
 }
 bool InstructionPatterns::LDWM$l_addr_16_old$c_l_addr_none(ADDRESS& lc, int& a, bool a_isVAR, int& b, bool b_isVAR, int& c, bool c_isVAR, int& d, bool d_isVAR) {
     ADDRESS nextPC;
 
 
-#line 117 "machine/hppa/hppa.pat.m"
+//#line 117 "machine/hppa/hppa.pat.m"
 { 
   dword MATCH_p = 
     
@@ -578,13 +578,13 @@ bool InstructionPatterns::LDWM$l_addr_16_old$c_l_addr_none(ADDRESS& lc, int& a, 
   
 }
 
-#line 130 "machine/hppa/hppa.pat.m"
+//#line 130 "machine/hppa/hppa.pat.m"
 }
 bool InstructionPatterns::LDWS$s_addr_im_r$c_s_addr_mb(ADDRESS& lc, int& a, bool a_isVAR, int& b, bool b_isVAR, int& c, bool c_isVAR, int& d, bool d_isVAR) {
     ADDRESS nextPC;
 
 
-#line 132 "machine/hppa/hppa.pat.m"
+//#line 132 "machine/hppa/hppa.pat.m"
 { 
   dword MATCH_p = 
     
@@ -662,13 +662,13 @@ bool InstructionPatterns::LDWS$s_addr_im_r$c_s_addr_mb(ADDRESS& lc, int& a, bool
   
 }
 
-#line 145 "machine/hppa/hppa.pat.m"
+//#line 145 "machine/hppa/hppa.pat.m"
 }
 bool InstructionPatterns::LDWS$s_addr_im_r$c_s_addr_notm(ADDRESS& lc, int& a, bool a_isVAR, int& b, bool b_isVAR, int& c, bool c_isVAR, int& d, bool d_isVAR) {
     ADDRESS nextPC;
 
 
-#line 147 "machine/hppa/hppa.pat.m"
+//#line 147 "machine/hppa/hppa.pat.m"
 { 
   dword MATCH_p = 
     
@@ -746,13 +746,13 @@ bool InstructionPatterns::LDWS$s_addr_im_r$c_s_addr_notm(ADDRESS& lc, int& a, bo
   
 }
 
-#line 160 "machine/hppa/hppa.pat.m"
+//#line 160 "machine/hppa/hppa.pat.m"
 }
 bool InstructionPatterns::OR$c_arith_w$c_c_nonneg(ADDRESS& lc, int& a, bool a_isVAR, int& b, bool b_isVAR, int& c, bool c_isVAR, int& d, bool d_isVAR) {
     ADDRESS nextPC;
 
 
-#line 162 "machine/hppa/hppa.pat.m"
+//#line 162 "machine/hppa/hppa.pat.m"
 { 
   dword MATCH_p = 
     
@@ -819,13 +819,13 @@ bool InstructionPatterns::OR$c_arith_w$c_c_nonneg(ADDRESS& lc, int& a, bool a_is
   
 }
 
-#line 174 "machine/hppa/hppa.pat.m"
+//#line 174 "machine/hppa/hppa.pat.m"
 }
 bool InstructionPatterns::STW$l_addr_16_old$c_l_addr_none(ADDRESS& lc, int& a, bool a_isVAR, int& b, bool b_isVAR, int& c, bool c_isVAR, int& d, bool d_isVAR) {
     ADDRESS nextPC;
 
 
-#line 176 "machine/hppa/hppa.pat.m"
+//#line 176 "machine/hppa/hppa.pat.m"
 { 
   dword MATCH_p = 
     
@@ -882,13 +882,13 @@ bool InstructionPatterns::STW$l_addr_16_old$c_l_addr_none(ADDRESS& lc, int& a, b
   
 }
 
-#line 189 "machine/hppa/hppa.pat.m"
+//#line 189 "machine/hppa/hppa.pat.m"
 }
 bool InstructionPatterns::STWM$l_addr_16_old$c_l_addr_none(ADDRESS& lc, int& a, bool a_isVAR, int& b, bool b_isVAR, int& c, bool c_isVAR, int& d, bool d_isVAR) {
     ADDRESS nextPC;
 
 
-#line 191 "machine/hppa/hppa.pat.m"
+//#line 191 "machine/hppa/hppa.pat.m"
 { 
   dword MATCH_p = 
     
@@ -945,12 +945,12 @@ bool InstructionPatterns::STWM$l_addr_16_old$c_l_addr_none(ADDRESS& lc, int& a, 
   
 }
 
-#line 203 "machine/hppa/hppa.pat.m"
+//#line 203 "machine/hppa/hppa.pat.m"
 }
 bool InstructionPatterns::c_arith_w$c_c_nonneg(ADDRESS& lc, int& a, bool a_isVAR) {
 
 
-#line 205 "machine/hppa/hppa.pat.m"
+//#line 205 "machine/hppa/hppa.pat.m"
 { 
   dword MATCH_p = 
     
@@ -1032,12 +1032,12 @@ bool InstructionPatterns::c_arith_w$c_c_nonneg(ADDRESS& lc, int& a, bool a_isVAR
   
 }
 
-#line 213 "machine/hppa/hppa.pat.m"
+//#line 213 "machine/hppa/hppa.pat.m"
 }
 bool InstructionPatterns::c_br_nnull(ADDRESS& lc) {
 
 
-#line 215 "machine/hppa/hppa.pat.m"
+//#line 215 "machine/hppa/hppa.pat.m"
 { 
   dword MATCH_p = 
     
@@ -1083,12 +1083,12 @@ bool InstructionPatterns::c_br_nnull(ADDRESS& lc) {
   
 }
 
-#line 221 "machine/hppa/hppa.pat.m"
+//#line 221 "machine/hppa/hppa.pat.m"
 }
 bool InstructionPatterns::c_br_null(ADDRESS& lc) {
 
 
-#line 223 "machine/hppa/hppa.pat.m"
+//#line 223 "machine/hppa/hppa.pat.m"
 { 
   dword MATCH_p = 
     
@@ -1134,12 +1134,12 @@ bool InstructionPatterns::c_br_null(ADDRESS& lc) {
   
 }
 
-#line 229 "machine/hppa/hppa.pat.m"
+//#line 229 "machine/hppa/hppa.pat.m"
 }
 bool InstructionPatterns::c_c_nonneg(ADDRESS& lc) {
 
 
-#line 231 "machine/hppa/hppa.pat.m"
+//#line 231 "machine/hppa/hppa.pat.m"
 { 
   dword MATCH_p = 
     
@@ -1235,12 +1235,12 @@ bool InstructionPatterns::c_c_nonneg(ADDRESS& lc) {
   
 }
 
-#line 237 "machine/hppa/hppa.pat.m"
+//#line 237 "machine/hppa/hppa.pat.m"
 }
 bool InstructionPatterns::c_l_addr_none(ADDRESS& lc) {
 
 
-#line 239 "machine/hppa/hppa.pat.m"
+//#line 239 "machine/hppa/hppa.pat.m"
 { 
   dword MATCH_p = 
     
@@ -1277,12 +1277,12 @@ bool InstructionPatterns::c_l_addr_none(ADDRESS& lc) {
   
 }
 
-#line 245 "machine/hppa/hppa.pat.m"
+//#line 245 "machine/hppa/hppa.pat.m"
 }
 bool InstructionPatterns::c_s_addr_ma(ADDRESS& lc) {
 
 
-#line 247 "machine/hppa/hppa.pat.m"
+//#line 247 "machine/hppa/hppa.pat.m"
 { 
   dword MATCH_p = 
     
@@ -1364,12 +1364,12 @@ bool InstructionPatterns::c_s_addr_ma(ADDRESS& lc) {
   
 }
 
-#line 253 "machine/hppa/hppa.pat.m"
+//#line 253 "machine/hppa/hppa.pat.m"
 }
 bool InstructionPatterns::c_s_addr_mb(ADDRESS& lc) {
 
 
-#line 255 "machine/hppa/hppa.pat.m"
+//#line 255 "machine/hppa/hppa.pat.m"
 { 
   dword MATCH_p = 
     
@@ -1451,12 +1451,12 @@ bool InstructionPatterns::c_s_addr_mb(ADDRESS& lc) {
   
 }
 
-#line 261 "machine/hppa/hppa.pat.m"
+//#line 261 "machine/hppa/hppa.pat.m"
 }
 bool InstructionPatterns::c_s_addr_notm(ADDRESS& lc) {
 
 
-#line 263 "machine/hppa/hppa.pat.m"
+//#line 263 "machine/hppa/hppa.pat.m"
 { 
   dword MATCH_p = 
     
@@ -1527,12 +1527,12 @@ bool InstructionPatterns::c_s_addr_notm(ADDRESS& lc) {
   
 }
 
-#line 269 "machine/hppa/hppa.pat.m"
+//#line 269 "machine/hppa/hppa.pat.m"
 }
 bool InstructionPatterns::l_addr_16_old$c_l_addr_none(ADDRESS& lc, int& a, bool a_isVAR) {
 
 
-#line 271 "machine/hppa/hppa.pat.m"
+//#line 271 "machine/hppa/hppa.pat.m"
 { 
   dword MATCH_p = 
     
@@ -1576,12 +1576,12 @@ bool InstructionPatterns::l_addr_16_old$c_l_addr_none(ADDRESS& lc, int& a, bool 
   
 }
 
-#line 278 "machine/hppa/hppa.pat.m"
+//#line 278 "machine/hppa/hppa.pat.m"
 }
 bool InstructionPatterns::s_addr_im_r$c_s_addr_ma(ADDRESS& lc, int& a, bool a_isVAR) {
 
 
-#line 280 "machine/hppa/hppa.pat.m"
+//#line 280 "machine/hppa/hppa.pat.m"
 { 
   dword MATCH_p = 
     
@@ -1651,12 +1651,12 @@ bool InstructionPatterns::s_addr_im_r$c_s_addr_ma(ADDRESS& lc, int& a, bool a_is
   
 }
 
-#line 287 "machine/hppa/hppa.pat.m"
+//#line 287 "machine/hppa/hppa.pat.m"
 }
 bool InstructionPatterns::s_addr_im_r$c_s_addr_mb(ADDRESS& lc, int& a, bool a_isVAR) {
 
 
-#line 289 "machine/hppa/hppa.pat.m"
+//#line 289 "machine/hppa/hppa.pat.m"
 { 
   dword MATCH_p = 
     
@@ -1726,12 +1726,12 @@ bool InstructionPatterns::s_addr_im_r$c_s_addr_mb(ADDRESS& lc, int& a, bool a_is
   
 }
 
-#line 296 "machine/hppa/hppa.pat.m"
+//#line 296 "machine/hppa/hppa.pat.m"
 }
 bool InstructionPatterns::s_addr_im_r$c_s_addr_notm(ADDRESS& lc, int& a, bool a_isVAR) {
 
 
-#line 298 "machine/hppa/hppa.pat.m"
+//#line 298 "machine/hppa/hppa.pat.m"
 { 
   dword MATCH_p = 
     
@@ -1801,7 +1801,7 @@ bool InstructionPatterns::s_addr_im_r$c_s_addr_notm(ADDRESS& lc, int& a, bool a_
   
 }
 
-#line 306 "machine/hppa/hppa.pat.m"
+//#line 306 "machine/hppa/hppa.pat.m"
 }
 Logue* InstructionPatterns::std_call(CSR& csr, ADDRESS& lc, int& addr)
 {

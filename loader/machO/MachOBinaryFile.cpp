@@ -301,6 +301,7 @@ bool MachOBinaryFile::RealLoad(const char* sName) {
         m_pSections[i].uNativeAddr = BMMH(segments[i].vmaddr);
         m_pSections[i].uHostAddr = ADDRESS::value_type(base) + BMMH(segments[i].vmaddr) - loaded_addr.m_value;
         m_pSections[i].uSectionSize = BMMH(segments[i].vmsize);
+        assert((m_pSections[i].uHostAddr+m_pSections[i].uSectionSize)<=ADDRESS::host_ptr(base+loaded_size));
 
         unsigned long l = BMMH(segments[i].initprot);
         m_pSections[i].bBss        = false; // TODO

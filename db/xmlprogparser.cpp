@@ -2671,8 +2671,9 @@ void XMLProgParser::persistToXML(std::ostream &out, const Statement *stmt) {
         out << "<lhs>\n";
         persistToXML(out, p->lhs);
         out << "</lhs>\n";
-        for (auto it = p->begin(); it != p->end(); p++)
-            out << "<def stmt=\"" << ADDRESS::host_ptr(it->def) << "\" exp=\"" << ADDRESS::host_ptr(it->e) << "\" />\n";
+        for (auto it = p->cbegin(); it != p->cend(); p++)
+            out << "<def stmt=\"" << ADDRESS::host_ptr(it->second.def) << "\" exp=\""
+                << ADDRESS::host_ptr(it->second.e) << "\" />\n";
         out << "</phiassign>\n";
         return;
     }

@@ -24,6 +24,7 @@
 #define _DECODER_H_
 
 #include <list>
+#include <cstddef>
 #include "types.h"
 #include "rtl.h"
 
@@ -109,18 +110,18 @@ public:
          * Constructor and destructor
          */
                     NJMCDecoder(Prog* prog);
-virtual                ~NJMCDecoder() {};
+virtual                ~NJMCDecoder() {}
 
         /*
          * Decodes the machine instruction at pc and returns an RTL instance for the instruction.
          */
-virtual DecodeResult& decodeInstruction (ADDRESS pc, int delta) = 0;
+virtual DecodeResult& decodeInstruction (ADDRESS pc, ptrdiff_t delta) = 0;
 
         /*
          * Disassembles the machine instruction at pc and returns the number of bytes disassembled.
          * Assembler output goes to global _assembly
          */
-virtual int decodeAssemblyInstruction (ADDRESS pc, int delta) = 0;
+virtual int decodeAssemblyInstruction (ADDRESS pc, ptrdiff_t delta) = 0;
 
         RTLInstDict& getRTLDict() { return RTLDict; }
 
@@ -159,7 +160,7 @@ protected:
         /*
          * This used to be the UNCOND_JUMP macro; it's extended to handle jumps to other procedures
          */
-        void        unconditionalJump(const char* name, int size, ADDRESS relocd, int delta, ADDRESS pc,
+        void        unconditionalJump(const char* name, int size, ADDRESS relocd, ptrdiff_t delta, ADDRESS pc,
                         std::list<Statement*>* stmts, DecodeResult& result);
 
         /*

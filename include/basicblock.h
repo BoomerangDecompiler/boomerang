@@ -162,14 +162,14 @@ public:
 
         std::vector<BasicBlock *>& getInEdges();
 
-        int             getNumInEdges() { return m_iNumInEdges; }
+        size_t          getNumInEdges() { return m_iNumInEdges; }
 
         std::vector<BasicBlock *>& getOutEdges();
-        void            setInEdge(int i, BasicBlock * newIn);
-        void            setOutEdge(int i, BasicBlock * newInEdge);
+        void            setInEdge(size_t i, BasicBlock * newIn);
+        void            setOutEdge(size_t i, BasicBlock * newInEdge);
 
         BasicBlock *    getOutEdge(unsigned int i);
-        int             getNumOutEdges() { return m_iNumOutEdges; }
+        size_t          getNumOutEdges() { return m_iNumOutEdges; }
         int             whichPred(BasicBlock * pred);
         void            addInEdge(BasicBlock * newInEdge);
         void            deleteEdge(BasicBlock * edge);
@@ -187,12 +187,12 @@ static  bool            lessLastDFT(BasicBlock * bb1, BasicBlock * bb2);
         class LastStatementNotABranchError : public std::exception {
         public:
             Statement *stmt;
-            LastStatementNotABranchError(Statement *stmt) : stmt(stmt) { }
+            LastStatementNotABranchError(Statement *_stmt) : stmt(_stmt) { }
         };
         class LastStatementNotAGotoError : public std::exception {
         public:
             Statement *stmt;
-            LastStatementNotAGotoError(Statement *stmt) : stmt(stmt) { }
+            LastStatementNotAGotoError(Statement *_stmt) : stmt(_stmt) { }
         };
 
         Exp *           getCond() throw(LastStatementNotABranchError);
@@ -242,8 +242,8 @@ protected:
                         /* in-edges and out-edges */
         std::vector<BasicBlock *> m_InEdges;//!< Vector of in-edges
         std::vector<BasicBlock *> m_OutEdges;//!< Vector of out-edges
-        int             m_iNumInEdges;      //!< We need these two because GCC doesn't
-        int             m_iNumOutEdges;     //!< support resize() of vectors!
+        size_t          m_iNumInEdges;      //!< We need these two because GCC doesn't
+        size_t          m_iNumOutEdges;     //!< support resize() of vectors!
 
                         /* for traversal */
         bool            m_iTraversed;       //!< traversal marker

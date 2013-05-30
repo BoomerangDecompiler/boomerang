@@ -21,6 +21,7 @@
 
 #ifndef PENTDECODER
 #define PENTDECODER
+#include <cstddef>
 
 class Prog;
 class NJMCDecoder;
@@ -30,8 +31,8 @@ class PentiumDecoder : public NJMCDecoder
 {
 public:
                     PentiumDecoder(Prog* prog);
-virtual DecodeResult& decodeInstruction (ADDRESS pc, int delta);
-virtual int         decodeAssemblyInstruction (ADDRESS pc, int delta);
+virtual DecodeResult& decodeInstruction (ADDRESS pc, ptrdiff_t delta);
+virtual int         decodeAssemblyInstruction (ADDRESS pc, ptrdiff_t delta);
 
 private:
     /*

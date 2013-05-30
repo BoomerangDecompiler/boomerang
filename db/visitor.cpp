@@ -393,16 +393,15 @@ bool UsedLocsVisitor::visit(PhiAssign* s, bool& override) {
         Exp* subExp2 = ((Binary*)lhs)->getSubExp2();
         subExp2->accept(ev);
     }
-    PhiAssign::iterator uu;
-    for (uu = s->begin(); uu != s->end(); uu++) {
+
+    for (const std::pair<int,PhiInfo> & v : *s) {
         // Note: don't make the RefExp based on lhs, since it is possible that the lhs was renamed in fromSSA()
         // Use the actual expression in the PhiAssign
         // Also note that it's possible for uu->e to be nullptr. Suppose variable a can be assigned to along in-edges
         // 0, 1, and 3; inserting the phi parameter at index 3 will cause a null entry at 2
-        if (uu->e) {
-            RefExp* temp = new RefExp(uu->e, uu->def);
-            temp->accept(ev);
-        }
+        assert(v.second.e);
+        RefExp *temp = new RefExp(v.second.e, v.second.def);
+        temp->accept(ev);
     }
 
     override = true;                // Don't do the usual accept logic
@@ -616,7 +615,7 @@ bool ConstFinder::visit(Location* e, bool& override) {
 // Otherwise, for m[r28{0} - 12]{0}, you could be adding an implicit assignment with a nullptr definition for r28.
 Exp* ImplicitConverter::postVisit(RefExp* e) {
     if (e->getDef() == nullptr)
-        e->setDef(cfg->findImplicitAssign(e->getSubExp1()));
+        e->setDef(m_cfg->findImplicitAssign(e->getSubExp1()));
     return e;
 }
 
@@ -624,11 +623,11 @@ Exp* ImplicitConverter::postVisit(RefExp* e) {
 void StmtImplicitConverter::visit(PhiAssign* s, bool& recur) {
     // The LHS could be a m[x] where x has a null subscript; must do first
     s->setLeft(s->getLeft()->accept(mod));
-    PhiAssign::iterator uu;
-    for (uu = s->begin(); uu != s->end(); uu++) {
-        if (uu->e == nullptr) continue;
-        if (uu->def == nullptr)
-            uu->def = cfg->findImplicitAssign(uu->e);
+
+    for (std::pair<const int,PhiInfo> & v : *s) {
+        assert(v.second.e != nullptr);
+        if (v.second.def == nullptr)
+            v.second.def = m_cfg->findImplicitAssign(v.second.e);
     }
     recur = false;        // Already done LHS
 }
@@ -1026,6 +1025,7 @@ void StmtSsaXformer::visit(BoolAssign *s, bool& recur) {
     Exp* pCond = s->getCondExpr();
     pCond = pCond->accept((ExpSsaXformer*)mod);
     s->setCondExpr(pCond);
+    recur=false; //TODO: verify recur setting
 }
 
 void StmtSsaXformer::visit(Assign *s, bool& recur) {
@@ -1033,23 +1033,26 @@ void StmtSsaXformer::visit(Assign *s, bool& recur) {
     Exp* rhs = s->getRight();
     rhs = rhs->accept((ExpSsaXformer*)mod);
     s->setRight(rhs);
+    recur=false; //TODO: verify recur setting
 }
 
 void StmtSsaXformer::visit(ImplicitAssign *s, bool& recur) {
     commonLhs(s);
+    recur=false; //TODO: verify recur setting
 }
 
 void StmtSsaXformer::visit(PhiAssign *s, bool& recur) {
     commonLhs(s);
-    PhiAssign::iterator it;
+
     UserProc* proc = ((ExpSsaXformer*)mod)->getProc();
-    for (it = s->begin(); it != s->end(); it++) {
-        if (it->e == nullptr) continue;
-        RefExp* r = new RefExp(it->e, it->def);
-        const char* sym = proc->lookupSymFromRefAny(r);
+    for (std::pair<const int,PhiInfo> & v : *s) {
+        assert(v.second.e != nullptr);
+        RefExp r(v.second.e, v.second.def);
+        const char* sym = proc->lookupSymFromRefAny(&r);
         if (sym != nullptr)
-            it->e = Location::local(sym, proc);        // Some may be parameters, but hopefully it won't matter
+            v.second.e = Location::local(sym, proc);        // Some may be parameters, but hopefully it won't matter
     }
+    recur=false; //TODO: verify recur setting
 }
 
 void StmtSsaXformer::visit(CallStatement* s, bool& recur) {
@@ -1090,6 +1093,7 @@ void StmtSsaXformer::visit(CallStatement* s, bool& recur) {
     // However, need modifications of the use collector; needed when say eax is renamed to local5, otherwise
     // local5 is removed from the results of the call
     s->useColFromSsaForm(s);
+    recur=false; //TODO: verify recur setting
 }
 
 // Map expressions to locals, using the (so far DFA based) type analysis information

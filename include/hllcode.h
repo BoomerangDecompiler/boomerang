@@ -150,7 +150,7 @@ virtual int         getNumber() { return nodenum; }
         void        setBB(BasicBlock * bb) { pbb = bb; }
 
 virtual int         getNumOutEdges() = 0;
-virtual SyntaxNode *getOutEdge(SyntaxNode *root, int n) = 0;
+virtual SyntaxNode *getOutEdge(SyntaxNode *root, size_t n) = 0;
 virtual bool        endsWithGoto() = 0;
 virtual bool        startsWith(SyntaxNode *node) { return this == node; }
 
@@ -188,17 +188,17 @@ public:
             statements[statements.size()-1]->ignoreGoto();
     }
 
-    int getNumStatements() {
+    size_t getNumStatements() {
         return pbb ? 0 : statements.size();
     }
-    SyntaxNode *getStatement(int n) {
+    SyntaxNode *getStatement(size_t n) {
         assert(pbb == nullptr);
         return statements[n];
     }
     void prependStatement(SyntaxNode *n) {
         assert(pbb == nullptr);
         statements.resize(statements.size()+1);
-        for (int i = statements.size()-1; i > 0;  i--)
+        for (size_t i = statements.size()-1; i > 0;  i--)
             statements[i] = statements[i-1];
         statements[0] = n;
     }
@@ -206,13 +206,13 @@ public:
         assert(pbb == nullptr);
         statements.push_back(n);
     }
-    void setStatement(int i, SyntaxNode *n) {
+    void setStatement(size_t i, SyntaxNode *n) {
         assert(pbb == nullptr);
         statements[i] = n;
     }
 
 virtual int getNumOutEdges();
-virtual SyntaxNode *getOutEdge(SyntaxNode *root, int n);
+virtual SyntaxNode *getOutEdge(SyntaxNode *root, size_t n);
 virtual bool endsWithGoto() {
             if (pbb) return isGoto();
             bool last = false;
@@ -256,7 +256,7 @@ virtual bool    isBranch() { return false; }
 virtual int        getNumOutEdges() {
         return 1;
     }
-virtual SyntaxNode *getOutEdge(SyntaxNode *root, int n);
+virtual SyntaxNode *getOutEdge(SyntaxNode *root, size_t n);
 virtual bool    endsWithGoto() { return false; }
 
 virtual SyntaxNode *clone();
@@ -292,7 +292,7 @@ virtual bool    isBranch() { return false; }
 virtual int        getNumOutEdges() {
             return 1;
         }
-virtual SyntaxNode *getOutEdge(SyntaxNode *root, int /*n*/) {
+virtual SyntaxNode *getOutEdge(SyntaxNode *root, size_t /*n*/) {
             SyntaxNode *o = pThen->getOutEdge(root, 0);
             assert(o == pElse->getOutEdge(root, 0));
             return o;
@@ -335,7 +335,7 @@ virtual bool    isBranch() { return false; }
 virtual int        getNumOutEdges() {
         return 1;
     }
-virtual SyntaxNode *getOutEdge(SyntaxNode *root, int n);
+virtual SyntaxNode *getOutEdge(SyntaxNode *root, size_t n);
 virtual bool    endsWithGoto() { return false; }
 virtual SyntaxNode *getEnclosingLoop(SyntaxNode *pFor, SyntaxNode *cur = nullptr) {
             if (this == pFor) return cur;
@@ -368,7 +368,7 @@ virtual bool    isBranch() { return false; }
 virtual int        getNumOutEdges() {
             return 1;
         }
-virtual SyntaxNode *getOutEdge(SyntaxNode *root, int n);
+virtual SyntaxNode *getOutEdge(SyntaxNode *root, size_t n);
 virtual bool    endsWithGoto() { return false; }
 virtual SyntaxNode *getEnclosingLoop(SyntaxNode *pFor, SyntaxNode *cur = nullptr) {
             if (this == pFor) return cur;
@@ -400,7 +400,7 @@ virtual bool    isBranch() { return false; }
 virtual int getNumOutEdges() {
             return 0;
         }
-virtual SyntaxNode *getOutEdge(SyntaxNode */*root*/, int /*n*/) {
+virtual SyntaxNode *getOutEdge(SyntaxNode */*root*/, size_t /*n*/) {
             return nullptr;
         }
 virtual bool endsWithGoto() { return false; }

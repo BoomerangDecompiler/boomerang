@@ -118,13 +118,13 @@ class StatementVec {
 public:
 typedef std::vector<Statement*>::iterator iterator;
 typedef std::vector<Statement*>::reverse_iterator reverse_iterator;
-        unsigned    size() {return svec.size();}             // Number of elements
+        size_t    size() {return svec.size();}             // Number of elements
         iterator    begin() { return svec.begin();}
         iterator    end()     { return svec.end();}
         reverse_iterator rbegin() { return svec.rbegin();}
         reverse_iterator rend()      { return svec.rend();}
         // Get/put at position idx (0 based)
-        Statement* operator[](int idx) {return svec[idx];}
+        Statement* operator[](size_t idx) {return svec[idx];}
         void        putAt(int idx, Statement* s);
         iterator    remove(iterator it);
         char*        prints();                                // Print to string (for debugging)
@@ -161,7 +161,7 @@ typedef std::set<Exp*, lessExpStar>::const_iterator const_iterator;
         const_iterator begin() const {return lset.begin();}
         const_iterator end() const {return lset.begin();}
         void        insert(Exp* loc) {lset.insert(loc);}    // Insert the given location
-        void        remove(Exp* loc);                        // Remove the given location
+        void        remove(Exp *loc);                        // Remove the given location
         void        remove(iterator ll) {lset.erase(ll);}    // Remove location, given iterator
         void        removeIfDefines(StatementSet& given);    // Remove locs defined in given
         size_t      size() const {return lset.size();}        // Number of elements

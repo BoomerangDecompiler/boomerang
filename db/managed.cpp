@@ -342,7 +342,7 @@ void LocationSet::print(std::ostream& os) const {
         os << *it;
     }
 }
-
+//! \param given is not modified, and could be const'd if not for std::set requirements
 void LocationSet::remove(Exp* given) {
     std::set<Exp*, lessExpStar>::iterator it = lset.find(given);
     if (it == lset.end()) return;

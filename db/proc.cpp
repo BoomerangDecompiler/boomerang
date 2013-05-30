@@ -119,12 +119,12 @@ Proc::~Proc()
  * \param        sig - the Signature for this Proc
  *
  ******************************************************************************/
-Proc::Proc(Prog *prog, ADDRESS uNative, Signature *sig)
-    : prog(prog), signature(sig), address(uNative), m_firstCaller(nullptr) {
+Proc::Proc(Prog *prg, ADDRESS uNative, Signature *sig)
+    : prog(prg), signature(sig), address(uNative), m_firstCaller(nullptr) {
     if (sig)
-        cluster = prog->getDefaultCluster(sig->getName());
+        cluster = prg->getDefaultCluster(sig->getName());
     else
-        cluster = prog->getRootCluster();
+        cluster = prg->getRootCluster();
 }
 
 /***************************************************************************//**
@@ -518,6 +518,12 @@ bool LibProc::isPreserved(Exp* e) {
  * UserProc methods.
  *********************/
 
+UserProc::UserProc() : Proc(), cfg(nullptr), status(PROC_UNDECODED),
+    // decoded(false), analysed(false),
+    nextLocal(0), nextParam(0),    // decompileSeen(false), decompiled(false), isRecursive(false)
+    cycleGrp(nullptr), theReturnStatement(nullptr) {
+    localTable.setProc(this);
+}
 /***************************************************************************//**
  *
  * \brief        Constructor with name, native address.
@@ -525,12 +531,6 @@ bool LibProc::isPreserved(Exp* e) {
  * \param uNative - Native address of entry point of procedure
  *
  ******************************************************************************/
-UserProc::UserProc() : Proc(), cfg(nullptr), status(PROC_UNDECODED),
-    // decoded(false), analysed(false),
-    nextLocal(0), nextParam(0),    // decompileSeen(false), decompiled(false), isRecursive(false)
-    cycleGrp(nullptr), theReturnStatement(nullptr) {
-    localTable.setProc(this);
-}
 UserProc::UserProc(Prog *prog, std::string& name, ADDRESS uNative) :
     // Not quite ready for the below fix:
     // Proc(prog, uNative, prog->getDefaultSignature(name.c_str())),
@@ -634,9 +634,9 @@ SyntaxNode *UserProc::getAST() {
     return best;
 }
 
-int count = 1;
 //! Print ast to a file
 void UserProc::printAST(SyntaxNode *a) {
+    static int count = 1;
     char s[1024];
     if (a == nullptr)
         a = getAST();
@@ -908,9 +908,9 @@ void UserProc::getStatements(StatementList &stmts) const {
     for (const BasicBlock * bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it))
         bb->getStatements(stmts);
 
-    for (StatementList::iterator it = stmts.begin(); it != stmts.end(); it++)
-        if ((*it)->getProc() == nullptr)
-            (*it)->setProc(const_cast<UserProc *>(this));
+    for (Statement* s: stmts)
+        if (s->getProc() == nullptr)
+            s->setProc(const_cast<UserProc *>(this));
 }
 
 /***************************************************************************//**
@@ -991,7 +991,6 @@ void UserProc::insertAssignAfter(Statement* s, Exp* left, Exp* right) {
 void UserProc::insertStatementAfter(Statement* s, Statement* a) {
     BB_IT bb;
     for (bb = cfg->begin(); bb != cfg->end(); bb++) {
-        std::list<RTL*>::iterator rr;
         std::list<RTL*>* rtls = (*bb)->getRTLs();
         if (rtls == nullptr)
             continue;            // e.g. *bb is (as yet) invalid
@@ -2019,11 +2018,9 @@ void UserProc::fixUglyBranches() {
  *
  ******************************************************************************/
 bool UserProc::doRenameBlockVars(int pass, bool clearStacks) {
-    if (VERBOSE)
-        LOG << "### rename block vars for " << getName() << " pass " << pass << ", clear = " << clearStacks << " ###\n";
+    LOG_VERBOSE(1) << "### rename block vars for " << getName() << " pass " << pass << ", clear = " << clearStacks << " ###\n";
     bool b = df.renameBlockVars(this, 0, clearStacks);
-    if (VERBOSE)
-        LOG << "df.renameBlockVars return " << (b ? "true" : "false") << "\n";
+    LOG_VERBOSE(1) << "df.renameBlockVars return " << (b ? "true" : "false") << "\n";
     return b;
 }
 
@@ -3381,7 +3378,7 @@ void UserProc::fromSSAform() {
                 PhiAssign::iterator rr;
                 PhiAssign* pi = (PhiAssign*)def1;
                 for (rr = pi->begin(); rr != pi->end(); ++rr) {
-                    RefExp* re = new RefExp(rr->e, rr->def);
+                    RefExp* re = new RefExp(rr->second.e, rr->second.def);
                     if (*re == *r2)
                         r2IsOperand = true;
                     if (firstName == nullptr)
@@ -3415,6 +3412,7 @@ void UserProc::fromSSAform() {
     // Update symbols and parameters, particularly for the stack pointer inside memofs.
     // NOTE: the ordering of the below operations is critical! Re-ordering may well prevent e.g. parameters from
     // renaming successfully.
+    verifyPHIs();
     nameParameterPhis();
     mapLocalsAndParams();
     mapParameters();
@@ -3445,9 +3443,9 @@ void UserProc::fromSSAform() {
         if (pa->getNumDefs() > 1) {
             PhiAssign::iterator uu;
             for (uu = pa->begin(); uu != pa->end(); uu++) {
-                if (uu->e == nullptr) continue;
-                if (first == nullptr) { first = uu->e; continue; }
-                if (!(*uu->e == *first)) {
+                if (uu->second.e == nullptr) continue;
+                if (first == nullptr) { first = uu->second.e; continue; }
+                if (!(*uu->second.e == *first)) {
                     phiParamsSame = false;
                     break;
                 }
@@ -3494,8 +3492,9 @@ void UserProc::fromSSAform() {
             // For each definition ref'd in the phi
             PhiAssign::iterator rr;
             for (rr = pa->begin(); rr != pa->end(); rr++) {
-                if (rr->e == nullptr) continue;
-                insertAssignAfter(rr->def, tempLoc, rr->e);
+                if (rr->second.e == nullptr)
+                    continue;
+                insertAssignAfter(rr->second.def, tempLoc, rr->second.e);
             }
             // Replace the RHS of the phi with tempLoc
             pa->convertToAssign(tempLoc);
@@ -3804,7 +3803,7 @@ bool UserProc::prover(Exp *query, std::set<PhiAssign*>& lastPhis, std::map<PhiAs
                         for (it = pa->begin(); it != pa->end(); it++) {
                             Exp *e = query->clone();
                             RefExp *r1 = (RefExp*)e->getSubExp1();
-                            r1->setDef(it->def);
+                            r1->setDef(it->second.def);
                             if (DEBUG_PROOF)
                                 LOG << "proving for " << e << "\n";
                             lastPhis.insert(lastPhi);
@@ -4366,8 +4365,8 @@ void UserProc::reverseStrengthReduction() {
                 if (r->getDef() && r->getDef()->isPhi()) {
                     PhiAssign *p = (PhiAssign*)r->getDef();
                     if (p->getNumDefs() == 2) {
-                        Statement *first = p->getDefs().front().def;
-                        Statement *second = p->getDefs().back().def;
+                        Statement *first = p->front().def;
+                        Statement *second = p->back().def;
                         if (first == as) {
                             // want the increment in second
                             Statement *tmp = first;
@@ -4625,105 +4624,109 @@ void UserProc::fixCallAndPhiRefs() {
     // So we can remove the second parameter, then reduce the phi to an assignment, then propagate it
     for (it = stmts.begin(); it != stmts.end(); it++) {
         s = *it;
-        if (s->isPhi()) {
-            PhiAssign* ps = (PhiAssign*)s;
-            RefExp* r = new RefExp(ps->getLeft(), ps);
-            for (PhiAssign::iterator p = ps->begin(); p != ps->end(); ) {
-                if (p->e == nullptr) {                        // Can happen due to PhiAssign::setAt
-                    ++p;
-                    continue;
-                }
-                Exp* current = new RefExp(p->e, p->def);
-                if (*current == *r) {                    // Will we ever see this?
-                    p = ps->erase(p);                    // Erase this phi parameter
-                    continue;
-                }
-                // Chase the definition
-                if (p->def) {
-                    if (!p->def->isAssign()) {
-                        ++p;
-                        continue;
-                    }
-                    Exp* rhs = ((Assign*)p->def)->getRight();
-                    if (*rhs == *r) {                    // Check if RHS is a single reference to ps
-                        p = ps->erase(p);                // Yes, erase this phi parameter
-                        continue;
-                    }
-                }
-                ++p;
+        if (!s->isPhi())
+            continue;
+        PhiAssign* ps = (PhiAssign*)s;
+        RefExp* r = new RefExp(ps->getLeft(), ps);
+        for (PhiAssign::iterator pi = ps->begin(); pi != ps->end(); ) {
+            const PhiInfo &p(pi->second);
+            assert(p.e);
+//                if (p.e == nullptr) {                        // Can happen due to PhiAssign::setAt
+//                    ++pi;
+//                    continue;
+//                }
+            Exp* current = new RefExp(p.e, p.def);
+            if (*current == *r) {                    // Will we ever see this?
+                pi = ps->erase(pi);                    // Erase this phi parameter
+                continue;
             }
+            // Chase the definition
+            if (p.def) {
+                if (!p.def->isAssign()) {
+                    ++pi;
+                    continue;
+                }
+                Exp* rhs = ((Assign*)p.def)->getRight();
+                if (*rhs == *r) {                    // Check if RHS is a single reference to ps
+                    pi = ps->erase(pi);                // Yes, erase this phi parameter
+                    continue;
+                }
+            }
+            ++pi;
         }
     }
 
     // Second pass
     for (it = stmts.begin(); it != stmts.end(); it++) {
         s = *it;
-        if (s->isPhi()) {
-            PhiAssign* ps = (PhiAssign*)s;
-            if (ps->getNumDefs() == 0) continue;        // Can happen e.g. for m[...] := phi {} when this proc is
-            // involved in a recursion group
-            Exp* lhs = ps->getLeft();
-            bool allSame = true;
-            // Let first be a reference built from the first parameter
-            PhiAssign::iterator p = ps->begin();
-            while (p->e == nullptr && p != ps->end())
-                ++p;                                    // Skip any null parameters
-            assert(p != ps->end());                        // Should have been deleted
-            Exp* first = new RefExp(p->e, p->def);
-            // bypass to first
-            CallBypasser cb(ps);
-            first = first->accept(&cb);
-            if (cb.isTopChanged())
-                first = first->simplify();
-            first = first->propagateAll();                // Propagate everything repeatedly
-            if (cb.isMod()) {                        // Modified?
-                // if first is of the form lhs{x}
-                if (first->isSubscript() && *((RefExp*)first)->getSubExp1() == *lhs)
-                    // replace first with x
-                    p->def = ((RefExp*)first)->getDef();
-            }
-            // For each parameter p of ps after the first
-            for (++p; p != ps->end(); ++p) {
-                if (p->e == nullptr) continue;
-                Exp* current = new RefExp(p->e, p->def);
-                CallBypasser cb2(ps);
-                current = current->accept(&cb2);
-                if (cb2.isTopChanged())
-                    current = current->simplify();
-                current = current->propagateAll();
-                if (cb2.isMod()    )                    // Modified?
-                    // if current is of the form lhs{x}
-                    if (current->isSubscript() && *((RefExp*)current)->getSubExp1() == *lhs)
-                        // replace current with x
-                        p->def = ((RefExp*)current)->getDef();
-                if (!(*first == *current))
-                    allSame = false;
-            }
-
-            if (allSame) {
-                // let best be ref built from the "best" parameter p in ps ({-} better than {assign} better than {call})
-                p = ps->begin();
-                while (p->e == nullptr && p != ps->end())
-                    ++p;                                    // Skip any null parameters
-                assert(p != ps->end());                        // Should have been deleted
-                RefExp* best = new RefExp(p->e, p->def);
-                for (++p; p != ps->end(); ++p) {
-                    if (p->e == nullptr) continue;
-                    RefExp* current = new RefExp(p->e, p->def);
-                    if (current->isImplicitDef()) {
-                        best = current;
-                        break;
-                    }
-                    if (p->def->isAssign())
-                        best = current;
-                    // If p->def is a call, this is the worst case; keep only (via first) if all parameters are calls
-                }
-                ps->convertToAssign(best);
-                if (VERBOSE)
-                    LOG << "redundant phi replaced with copy assign; now " << ps << "\n";
-            }
-        } else {    // Ordinary statement
+        if (!s->isPhi()) {   // Ordinary statement
             s->bypass();
+            continue;
+        }
+        PhiAssign* ps = (PhiAssign*)s;
+        if (ps->getNumDefs() == 0) continue;        // Can happen e.g. for m[...] := phi {} when this proc is
+        // involved in a recursion group
+        Exp* lhs = ps->getLeft();
+        bool allSame = true;
+        // Let first be a reference built from the first parameter
+        PhiAssign::iterator phi_iter = ps->begin();
+        while (phi_iter->second.e == nullptr && phi_iter != ps->end())
+            ++phi_iter;                                    // Skip any null parameters
+        assert(phi_iter != ps->end());                     // Should have been deleted
+        PhiInfo &phi_inf(phi_iter->second);
+        Exp* first = new RefExp(phi_inf.e, phi_inf.def);
+        // bypass to first
+        CallBypasser cb(ps);
+        first = first->accept(&cb);
+        if (cb.isTopChanged())
+            first = first->simplify();
+        first = first->propagateAll();                // Propagate everything repeatedly
+        if (cb.isMod()) {                        // Modified?
+            // if first is of the form lhs{x}
+            if (first->isSubscript() && *((RefExp*)first)->getSubExp1() == *lhs)
+                // replace first with x
+                phi_inf.def = ((RefExp*)first)->getDef();
+        }
+        // For each parameter p of ps after the first
+        for (++phi_iter; phi_iter != ps->end(); ++phi_iter) {
+            assert(phi_iter->second.e);
+            PhiInfo &phi_inf2(phi_iter->second);
+            Exp* current = new RefExp(phi_inf2.e, phi_inf2.def);
+            CallBypasser cb2(ps);
+            current = current->accept(&cb2);
+            if (cb2.isTopChanged())
+                current = current->simplify();
+            current = current->propagateAll();
+            if (cb2.isMod() )                    // Modified?
+                // if current is of the form lhs{x}
+                if (current->isSubscript() && *((RefExp*)current)->getSubExp1() == *lhs)
+                    // replace current with x
+                    phi_inf2.def = ((RefExp*)current)->getDef();
+            if (!(*first == *current))
+                allSame = false;
+        }
+
+        if (allSame) {
+            // let best be ref built from the "best" parameter p in ps ({-} better than {assign} better than {call})
+            phi_iter = ps->begin();
+            while (phi_iter->second.e == nullptr && phi_iter != ps->end())
+                ++phi_iter;                                    // Skip any null parameters
+            assert(phi_iter != ps->end());                        // Should have been deleted
+            RefExp* best = new RefExp(phi_iter->second.e, phi_iter->second.def);
+            for (++phi_iter; phi_iter != ps->end(); ++phi_iter) {
+                assert(phi_iter->second.e);
+                RefExp* current = new RefExp(phi_iter->second.e, phi_iter->second.def);
+                if (current->isImplicitDef()) {
+                    best = current;
+                    break;
+                }
+                if (phi_iter->second.def->isAssign())
+                    best = current;
+                // If phi_iter->second.def is a call, this is the worst case; keep only (via first)
+                // if all parameters are calls
+            }
+            ps->convertToAssign(best);
+            LOG_VERBOSE(1) << "redundant phi replaced with copy assign; now " << ps << "\n";
         }
     }
 
@@ -5700,11 +5703,10 @@ void UserProc::findLiveAtDomPhi(LocationSet& usedByDomPhi) {
     std::map<Exp*, PhiAssign*, lessExpStar>::iterator it;
     for (it = defdByPhi.begin(); it != defdByPhi.end(); ++it) {
         // For each phi parameter, remove from the final usedByDomPhi set
-        PhiAssign::iterator pp;
-        for (pp = it->second->begin(); pp != it->second->end(); ++pp) {
-            if (pp->e == nullptr) continue;
-            RefExp* wrappedParam = new RefExp(pp->e, pp->def);
-            usedByDomPhi.remove(wrappedParam);
+        for (const std::pair<int,PhiInfo> & v : *it->second) {
+            assert(v.second.e);
+            RefExp wrappedParam(v.second.e, v.second.def);
+            usedByDomPhi.remove(&wrappedParam);
         }
         // Now remove the actual phi-function (a PhiAssign Statement)
         // Ick - some problem with return statements not using their returns until more analysis is done
@@ -5729,9 +5731,9 @@ void UserProc::findPhiUnites(ConnectionGraph& pu) {
         Exp* lhs = pa->getLeft();
         RefExp* reLhs = new RefExp(lhs, pa);
         PhiAssign::iterator pp;
-        for (pp = pa->begin(); pp != pa->end(); ++pp) {
-            if (pp->e == nullptr) continue;
-            RefExp* re = new RefExp(pp->e, pp->def);
+        for (const std::pair<int,PhiInfo> & v : *pa) {
+            assert(v.second.e);
+            RefExp* re = new RefExp(v.second.e, v.second.def);
             pu.connect(reLhs, re);
         }
     }
@@ -5772,6 +5774,18 @@ Type* UserProc::getTypeForLocation(const Exp* e) {
 const Type* UserProc::getTypeForLocation(const Exp* e) const {
     return const_cast<UserProc *>(this)->getTypeForLocation(e);
 }
+void UserProc::verifyPHIs() {
+    StatementList stmts;
+    getStatements(stmts);
+    for (Statement * st : stmts ) {
+        PhiAssign* pi = (PhiAssign*)st;
+        if (!pi->isPhi())
+            continue;            // Might be able to optimise this a bit
+        for (const std::pair<int,PhiInfo> & pas : *pi) {
+            assert(pas.second.def);
+        }
+    }
+}
 /***************************************************************************//**
  *
  * \brief Add a mapping for the destinations of phi functions that have one
@@ -5801,10 +5815,10 @@ void UserProc::nameParameterPhis() {
         bool multiple = false;                // True if find more than one unique parameter
         const char* firstName = nullptr;                // The name for the first parameter found
         Type* ty = pi->getType();
-        PhiAssign::iterator pp;
-        for (pp = pi->begin(); pp != pi->end(); ++pp) {
-            if (pp->def->isImplicit()) {
-                RefExp* phiArg = new RefExp(pp->e, pp->def);
+
+        for (const std::pair<int,PhiInfo> &v : *pi) {
+            if (v.second.def->isImplicit()) {
+                RefExp* phiArg = new RefExp(v.second.e, v.second.def);
                 const char* name = lookupSym(phiArg, ty);
                 if (name != nullptr) {
                     if (firstName != nullptr && strcmp(firstName, name) != 0) {

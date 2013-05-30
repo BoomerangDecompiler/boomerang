@@ -1,7 +1,7 @@
 #define sign_extend(N,SIZE) (((int)((N) << (sizeof(unsigned)*8-(SIZE)))) >> (sizeof(unsigned)*8-(SIZE)))
 #include <assert.h>
 
-#line 2 "machine/hppa/disassembler.m"
+//#line 2 "machine/hppa/disassembler.m"
 /***************************************************************************//**
  * \file     disassembler.m
  * OVERVIEW: Matcher file for a stand alone disassembler tool
@@ -108,7 +108,7 @@ int dis_c_c_n(ADDRESS hostpc)
     int result = 0;
 
 
-#line 105 "machine/hppa/disassembler.m"
+//#line 105 "machine/hppa/disassembler.m"
 { 
   dword MATCH_p = 
     
@@ -247,7 +247,7 @@ int dis_c_c_n(ADDRESS hostpc)
   
 }
 
-#line 110 "machine/hppa/disassembler.m"
+//#line 110 "machine/hppa/disassembler.m"
     return result;
 }
 
@@ -270,7 +270,7 @@ void NJMCDecoder::dis_c_c(ADDRESS hostpc)
   
 
 
-#line 129 "machine/hppa/disassembler.m"
+//#line 129 "machine/hppa/disassembler.m"
 { 
   dword MATCH_p = 
     
@@ -497,7 +497,7 @@ void NJMCDecoder::dis_c_c(ADDRESS hostpc)
   
 }
 
-#line 165 "machine/hppa/disassembler.m"
+//#line 165 "machine/hppa/disassembler.m"
 }
 
 void NJMCDecoder::dis_c_xd(ADDRESS hostpc)
@@ -505,7 +505,7 @@ void NJMCDecoder::dis_c_xd(ADDRESS hostpc)
 
 
 
-#line 169 "machine/hppa/disassembler.m"
+//#line 169 "machine/hppa/disassembler.m"
 { 
   dword MATCH_p = 
     
@@ -797,7 +797,7 @@ void NJMCDecoder::dis_c_xd(ADDRESS hostpc)
   
 }
 
-#line 216 "machine/hppa/disassembler.m"
+//#line 216 "machine/hppa/disassembler.m"
 }
 
 void NJMCDecoder::dis_c_wcr(ADDRESS hostpc)
@@ -805,7 +805,7 @@ void NJMCDecoder::dis_c_wcr(ADDRESS hostpc)
     unsigned long regl;
 
 
-#line 220 "machine/hppa/disassembler.m"
+//#line 220 "machine/hppa/disassembler.m"
 { 
   dword MATCH_p = 
     
@@ -874,7 +874,7 @@ void NJMCDecoder::dis_c_wcr(ADDRESS hostpc)
   
 }
 
-#line 236 "machine/hppa/disassembler.m"
+//#line 236 "machine/hppa/disassembler.m"
   astr += sprintf(astr, "%s", cr_06_names[regl]);
 }
 
@@ -882,7 +882,7 @@ void NJMCDecoder::dis_c_null(ADDRESS hostpc)
 {
 
 
-#line 240 "machine/hppa/disassembler.m"
+//#line 240 "machine/hppa/disassembler.m"
 { 
   dword MATCH_p = 
     
@@ -948,14 +948,14 @@ void NJMCDecoder::dis_c_null(ADDRESS hostpc)
   
 }
 
-#line 252 "machine/hppa/disassembler.m"
+//#line 252 "machine/hppa/disassembler.m"
 }
 
 void NJMCDecoder::dis_c_bit(ADDRESS hostpc)
 {
 
 
-#line 255 "machine/hppa/disassembler.m"
+//#line 255 "machine/hppa/disassembler.m"
 { 
   dword MATCH_p = 
     
@@ -1028,14 +1028,14 @@ void NJMCDecoder::dis_c_bit(ADDRESS hostpc)
   
 }
 
-#line 268 "machine/hppa/disassembler.m"
+//#line 268 "machine/hppa/disassembler.m"
 }
 
 void NJMCDecoder::dis_c_addr(ADDRESS hostpc)
 {
 
 
-#line 271 "machine/hppa/disassembler.m"
+//#line 271 "machine/hppa/disassembler.m"
 { 
   dword MATCH_p = 
     
@@ -1286,7 +1286,7 @@ void NJMCDecoder::dis_c_addr(ADDRESS hostpc)
   
 }
 
-#line 327 "machine/hppa/disassembler.m"
+//#line 327 "machine/hppa/disassembler.m"
 }
 
 void NJMCDecoder::dis_flt_fmt(int fmt)
@@ -1335,7 +1335,7 @@ int NJMCDecoder::decodeAssemblyInstruction (ADDRESS pc, int delta)
 
 
 
-#line 372 "machine/hppa/disassembler.m"
+//#line 372 "machine/hppa/disassembler.m"
 { 
   dword MATCH_p = 
     
@@ -3631,7 +3631,7 @@ int NJMCDecoder::decodeAssemblyInstruction (ADDRESS pc, int delta)
   
 }
 
-#line 725 "machine/hppa/disassembler.m"
+//#line 725 "machine/hppa/disassembler.m"
     // Output the two pieces, and make an attempt to have the second column
     // line up (but not have too big a gap between them). 28 seems OK
     sprintf(_assembly, "%s%*s%s", aprefix, 28-strlen(aprefix), " ", adata);

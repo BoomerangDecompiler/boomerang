@@ -21,15 +21,7 @@
  * 05 Sep 00 - Mike: moved getCodeInfo here from translate2c.cc
  * 10 Apr 02 - Mike: Mods for boomerang; put expSimplify here
  */
-
 #include <cassert>
-#if defined(_MSC_VER) && _MSC_VER <= 1200
-#pragma warning(disable:4786)
-#endif
-#if defined(_MSC_VER) && _MSC_VER >= 1400
-#pragma warning(disable:4996)        // Warnings about e.g. _strdup deprecated in VS 2005
-#endif
-
 #include <string>
 #include <sstream>
 #include <iostream>
@@ -65,114 +57,22 @@ std::string operator+(const std::string& s, int i)
 }
 
 /***************************************************************************//**
- * FUNCTION:      initCapital
- * \brief      Return a string the same as the input string, but with the
- *                    first character capitalised
- * PARAMETERS:    s: the string to capitalise
- * \returns        A copy of the modified string
- ******************************************************************************/
-std::string initCapital(const std::string& s)
-{
-    std::string res(s);
-    res[0] = toupper(res[0]);
-    return res;
-}
-
-/***************************************************************************//**
- * \brief      Returns true if the given file name has the given extension
- *                and false otherwise.
- * \param   s string representing a file name (e.g. string("foo.c"))
- * \param   e the extension (e.g. ".o")
- * \returns boolean indicating whether the file name has the extension.
- ******************************************************************************/
-bool hasExt(const std::string& s, const char* ext) {
-    std::string tailStr = std::string(".") + std::string(ext);
-    unsigned int i = s.rfind(tailStr);
-    if (i == std::string::npos) {
-        return false;
-    } else {
-        unsigned int sLen = s.length();
-        unsigned int tailStrLen = tailStr.length();
-        return ((i + tailStrLen) == sLen);
-    }
-}
-
-/***************************************************************************//**
- * FUNCTION:      changeExt
- * \brief      Change the extension of the given file name
- * PARAMETERS:    s: string representing the file name to be modified
- *                  (e.g. string("foo.c"))
- *                e: the new extension (e.g. ".o")
- * \returns        The converted string (e.g. "foo.o")
- ******************************************************************************/
-std::string changeExt(const std::string& s, const char* ext)
-{
-    size_t i = s.rfind(".");
-    if (i == std::string::npos) {
-        return s + ext;
-    }
-    else {
-        return s.substr(0, i) + ext;
-    }
-}
-
-/***************************************************************************//**
- * FUNCTION:      searchAndReplace
- * \brief      returns a copy of a string will all occurances of match
- *                replaced with rep. (simple version of s/match/rep/g)
- * PARAMETERS:    in: the source string
- *                match: the search string
- *                rep: the string to replace match with.
- * \returns        The updated string.
- ******************************************************************************/
-std::string searchAndReplace( const std::string &in, const std::string &match,
-                              const std::string &rep )
-{
-    std::string result;
-    for( int n = 0; n != -1; ) {
-        int l = in.find(match,n);
-        result.append( in.substr(n,(l==-1?in.length() : l )-n) );
-        if( l != -1 ) {
-            result.append( rep );
-            l+=match.length();
-        }
-        n = l;
-    }
-    return result;
-}
-
-/***************************************************************************//**
  * \brief      Uppercase a C string
- * PARAMETERS:    s: the string (char*) to start with
- *                d: the string (char*) to write to (can be the same string)
- * \returns        Nothing; the string is modified as a side effect
+ * Returns nothing; the string is modified as a side effect
+ * \param   s the string (char*) to start with
+ * \param   d the string (char*) to write to (can be the same string)
  ******************************************************************************/
 void upperStr(const char* s, char* d)
 {
-    int len = strlen(s);
-    for (int i=0; i < len; i++)
+    size_t len = strlen(s);
+    for (size_t i=0; i < len; i++)
         d[i] = toupper(s[i]);
     d[len] = '\0';
 }
 
-int lockFileRead(const char *fname)
-{
-    int fd = open("filename", O_RDONLY);  /* get the file descriptor */
-#ifdef _FLOCK_
-    struct flock fl;
-    fl.l_type   = F_RDLCK;  /* F_RDLCK, F_WRLCK, F_UNLCK    */
-    fl.l_whence = SEEK_SET; /* SEEK_SET, SEEK_CUR, SEEK_END */
-    fl.l_start  = 0;        /* Offset from l_whence         */
-    fl.l_len    = 0;        /* length, 0 = to EOF           */
-    fl.l_pid    = getpid(); /* our PID                      */
-    fcntl(fd, F_SETLKW, &fl);  /* set the lock, waiting if necessary */
-#endif
-    return fd;
-}
-
 int lockFileWrite(const char *fname)
 {
-    int fd = open("filename", O_WRONLY);  /* get the file descriptor */
+    int fd = open(fname, O_WRONLY);  /* get the file descriptor */
 #ifdef _FLOCK_
     struct flock fl;
     fl.l_type   = F_WRLCK;  /* F_RDLCK, F_WRLCK, F_UNLCK    */

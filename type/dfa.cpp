@@ -735,20 +735,21 @@ void ReturnStatement::dfaTypeAnalysis(bool& ch) {
 // ...
 void PhiAssign::dfaTypeAnalysis(bool& ch) {
     iterator it = defVec.begin();
-    while (it->e == nullptr && it != defVec.end())
+    while (it->second.e == nullptr && it != defVec.end())
         ++it;
     assert(it != defVec.end());
-    Type* meetOfArgs = it->def->getTypeFor(lhs);
+    Type* meetOfArgs = it->second.def->getTypeFor(lhs);
     for (++it; it != defVec.end(); ++it) {
-        if (it->e == nullptr) continue;
-        assert(it->def);
-        Type* typeOfDef = it->def->getTypeFor(it->e);
+        if (it->second.e == nullptr) continue;
+        assert(it->second.def);
+        Type* typeOfDef = it->second.def->getTypeFor(it->second.e);
         meetOfArgs = meetOfArgs->meetWith(typeOfDef, ch);
     }
     type = type->meetWith(meetOfArgs, ch);
     for (it = defVec.begin(); it != defVec.end(); ++it) {
-        if (it->e == nullptr) continue;
-        it->def->meetWithFor(type, it->e, ch);
+        if (it->second.e == nullptr)
+            continue;
+        it->second.def->meetWithFor(type, it->second.e, ch);
     }
     Assignment::dfaTypeAnalysis(ch);            // Handle the LHS
 }
@@ -1260,7 +1261,7 @@ void TypedExp::descendType(Type* parentType, bool& ch, Statement* s) {
 
 void Terminal::descendType(Type* parentType, bool& ch, Statement* s) {
 }
-
+//! Data flow based type analysis. Meet the parameters with their current types.  Returns true if a change
 bool Signature::dfaTypeAnalysis(Cfg* cfg) {
     bool ch = false;
     std::vector<Parameter*>::iterator it;
@@ -1296,9 +1297,11 @@ bool VoidType::isCompatible(Type* other, bool all) {
 }
 
 bool SizeType::isCompatible(Type* other, bool all) {
-    if (other->resolvesToVoid()) return true;
-    unsigned otherSize = other->getSize();
-    if (other->resolvesToFunc()) return false;
+    if (other->resolvesToVoid())
+        return true;
+    size_t otherSize = other->getSize();
+    if (other->resolvesToFunc())
+        return false;
     // FIXME: why is there a test for size 0 here?
     if (otherSize == size || otherSize == 0) return true;
     if (other->resolvesToUnion()) return other->isCompatibleWith(this);

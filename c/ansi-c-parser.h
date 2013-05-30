@@ -93,7 +93,7 @@ public:
     ADDRESS addr;
     std::string nam;
 
-    SymbolRef(ADDRESS a, const char *nam) : addr(a), nam(nam) { }
+    SymbolRef(ADDRESS a, const char *_nam) : addr(a), nam(_nam) { }
 };
 
 class Bound {
@@ -101,7 +101,7 @@ public:
     int kind;
     std::string nam;
 
-    Bound(int kind, const char *nam) : kind(kind), nam(nam) { }
+    Bound(int _kind, const char *_nam) : kind(_kind), nam(_nam) { }
 };
 
 
@@ -238,9 +238,6 @@ yyltype;
 #ifndef YY_AnsiCParser_LLOC
 #define YY_AnsiCParser_LLOC yylloc
 #endif
-#ifndef YY_AnsiCParser_CHAR
-#define YY_AnsiCParser_CHAR yychar
-#endif
 #ifndef YY_AnsiCParser_NERRS
 #define YY_AnsiCParser_NERRS yynerrs
 #endif
@@ -269,95 +266,6 @@ yyltype;
 
 /* TOKEN C */
 #ifndef YY_USE_CLASS
-
-#ifndef YY_AnsiCParser_PURE
-extern YY_AnsiCParser_STYPE YY_AnsiCParser_LVAL;
-#endif
-
-
-/* //#line 143 "/usr/local/lib/bison.h" */
-//#line 279 "ansi-c-parser.h"
-#define    PREINCLUDE    258
-#define    PREDEFINE    259
-#define    PREIF    260
-#define    PREIFDEF    261
-#define    PREENDIF    262
-#define    PRELINE    263
-#define    IDENTIFIER    264
-#define    STRING_LITERAL    265
-#define    CONSTANT    266
-#define    SIZEOF    267
-#define    NODECODE    268
-#define    INCOMPLETE    269
-#define    SYMBOLREF    270
-#define    CDECL    271
-#define    PASCAL    272
-#define    THISCALL    273
-#define    REGOF    274
-#define    MEMOF    275
-#define    MAXBOUND    276
-#define    CUSTOM    277
-#define    PREFER    278
-#define    WITHSTACK    279
-#define    PTR_OP    280
-#define    INC_OP    281
-#define    DEC_OP    282
-#define    LEFT_OP    283
-#define    RIGHT_OP    284
-#define    LE_OP    285
-#define    GE_OP    286
-#define    EQ_OP    287
-#define    NE_OP    288
-#define    AND_OP    289
-#define    OR_OP    290
-#define    MUL_ASSIGN    291
-#define    DIV_ASSIGN    292
-#define    MOD_ASSIGN    293
-#define    ADD_ASSIGN    294
-#define    SUB_ASSIGN    295
-#define    LEFT_ASSIGN    296
-#define    RIGHT_ASSIGN    297
-#define    AND_ASSIGN    298
-#define    XOR_ASSIGN    299
-#define    OR_ASSIGN    300
-#define    TYPE_NAME    301
-#define    TYPEDEF    302
-#define    EXTERN    303
-#define    STATIC    304
-#define    AUTO    305
-#define    REGISTER    306
-#define    CHAR    307
-#define    SHORT    308
-#define    INT    309
-#define    LONG    310
-#define    SIGNED    311
-#define    UNSIGNED    312
-#define    FLOAT    313
-#define    DOUBLE    314
-#define    CONST    315
-#define    VOLATILE    316
-#define    VOID    317
-#define    STRUCT    318
-#define    UNION    319
-#define    ENUM    320
-#define    ELLIPSIS    321
-#define    CASE    322
-#define    DEFAULT    323
-#define    IF    324
-#define    ELSE    325
-#define    SWITCH    326
-#define    WHILE    327
-#define    DO    328
-#define    FOR    329
-#define    GOTO    330
-#define    CONTINUE    331
-#define    BREAK    332
-#define    RETURN    333
-
-
-//#line 143 "/usr/local/lib/bison.h"
-/* #defines token */
-/* after #define tokens, before const tokens S5*/
 #else
 #ifndef YY_AnsiCParser_CLASS
 #define YY_AnsiCParser_CLASS AnsiCParser

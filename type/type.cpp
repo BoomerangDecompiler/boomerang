@@ -105,10 +105,10 @@ bool ArrayType::isUnbounded() const {
 void ArrayType::setBaseType(Type* b) {
     // MVE: not sure if this is always the right thing to do
     if (length != NO_BOUND) {
-        unsigned baseSize = base_type->getSize()/8;    // Old base size (one element) in bytes
+        size_t baseSize = base_type->getSize()/8;    // Old base size (one element) in bytes
         if (baseSize == 0) baseSize = 1;            // Count void as size 1
         baseSize *= length;                            // Old base size (length elements) in bytes
-        unsigned newSize = b->getSize()/8;
+        size_t newSize = b->getSize()/8;
         if (newSize == 0) newSize = 1;
         length = baseSize / newSize;                // Preserve same byte size for array
     }
@@ -119,7 +119,7 @@ void ArrayType::setBaseType(Type* b) {
 NamedType::NamedType(const std::string &_name) : Type(eNamed), name(_name) {
 }
 
-CompoundType::CompoundType(bool generic /* = false */) : Type(eCompound), nextGenericMemberNum(1), generic(generic) {
+CompoundType::CompoundType(bool is_generic /* = false */) : Type(eCompound), nextGenericMemberNum(1), generic(is_generic) {
 }
 
 UnionType::UnionType() : Type(eUnion) {
@@ -298,7 +298,7 @@ void CompoundType::setTypeAtOffset(unsigned n, Type* ty) {
             if (ty->getSize() < oldsz) {
                 types.push_back(types[types.size()-1]);
                 names.push_back(names[names.size()-1]);
-                for (unsigned _n = types.size() - 1; _n > i; _n--) {
+                for (size_t _n = types.size() - 1; _n > i; _n--) {
                     types[_n] = types[_n-1];
                     names[_n] = names[_n-1];
                 }
@@ -323,7 +323,7 @@ void CompoundType::setNameAtOffset(unsigned n, const char *nam) {
 }
 
 
-const char *CompoundType::getNameAtOffset(unsigned n) {
+const char *CompoundType::getNameAtOffset(size_t n) {
     unsigned offset = 0;
     for (unsigned i = 0; i < types.size(); i++) {
         //if (offset >= n && n < offset + types[i]->getSize())
@@ -491,20 +491,20 @@ bool Type::operator!=(const Type& other) const {
  *                      Considers all float types > 64 bits to be the same
  * PARAMETERS:        other - Type being compared to
  * \returns            this == other (ignoring sign)
- *============================================================================
-bool IntegerType::operator-=(const Type& other) const {
-        if (!other.isInteger()) return false;
-        return size == ((IntegerType&)other).size;
-}
+ *============================================================================*/
+//bool IntegerType::operator-=(const Type& other) const {
+//        if (!other.isInteger()) return false;
+//        return size == ((IntegerType&)other).size;
+//}
 
-bool FloatType::operator-=(const Type& other) const {
-        if (!other.isFloat()) return false;
-        if (size > 64 && ((FloatType&)other).size > 64)
-        return true;
-        return size == ((FloatType&)other).size;
-}
+//bool FloatType::operator-=(const Type& other) const {
+//        if (!other.isFloat()) return false;
+//        if (size > 64 && ((FloatType&)other).size > 64)
+//        return true;
+//        return size == ((FloatType&)other).size;
+//}
 
-*/
+
 /***************************************************************************//**
  *
  * \brief        Defines an ordering between Type's
@@ -1126,10 +1126,11 @@ Type* LowerType::mergeWith(Type* other) {
 bool CompoundType::isSuperStructOf(Type* other) {
     if (!other->isCompound()) return false;
     CompoundType* otherCmp = other->asCompound();
-    unsigned n = otherCmp->types.size();
+    size_t n = otherCmp->types.size();
     if (n > types.size()) return false;
     for (unsigned i=0; i < n; i++)
-        if (otherCmp->types[i] != types[i]) return false;
+        if (otherCmp->types[i] != types[i])
+            return false;
     return true;
 }
 
@@ -1423,7 +1424,7 @@ ComplexTypeCompList& Type::compForAddress(ADDRESS addr, DataIntervalMap& dim) {
     ADDRESS startCurrent = pdie->first;
     Type* curType = pdie->second.type;
     while (startCurrent < addr) {
-        unsigned bitOffset = (addr - startCurrent).m_value * 8;
+        size_t bitOffset = (addr - startCurrent).m_value * 8;
         if (curType->isCompound()) {
             CompoundType* compCurType = curType->asCompound();
             unsigned rem = compCurType->getOffsetRemainder(bitOffset);

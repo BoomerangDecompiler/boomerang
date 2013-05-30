@@ -37,12 +37,12 @@ typedef std::map<Exp*, Exp*, lessExpStar>::iterator iterator;
     // Lookup a given left hand side Exp (e.g. given Tlocal1, return <char*>)
     Exp*& operator[](Exp* e) {return cmap[e];}
     // Return the number of constraints in the map
-    int      size() {return cmap.size();}
-    // Empty the map
-    void  clear() {cmap.clear();}
-    // Return iterators for the begin() and end() of the map
-    iterator begin() {return cmap.begin();}
-    iterator end()     {return cmap.end();}
+    size_t      size() {return cmap.size();}
+                // Empty the map
+    void        clear() {cmap.clear();}
+                // Return iterators for the begin() and end() of the map
+    iterator    begin() {return cmap.begin();}
+    iterator    end()     {return cmap.end();}
     void constrain(Exp* loc1, Exp* loc2);
     void constrain(Exp* loc, Type* t);
     void constrain(Type* t1, Type* t2);

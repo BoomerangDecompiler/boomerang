@@ -1,7 +1,7 @@
 #define sign_extend(N,SIZE) (((int)((N) << (sizeof(unsigned)*8-(SIZE)))) >> (sizeof(unsigned)*8-(SIZE)))
 #include <assert.h>
 
-#line 2 "machine/sparc/disassembler.m"
+//#line 2 "machine/sparc/disassembler.m"
 /***************************************************************************//**
  * \file       disassembler.m
  * OVERVIEW:   Skeleton file for a disassembler of SPARC instructions. 
@@ -55,7 +55,7 @@ char *NJMCDecoder::dis_RegImm (ADDRESS pc)
 
 
 
-#line 54 "machine/sparc/disassembler.m"
+//#line 54 "machine/sparc/disassembler.m"
 { 
   dword MATCH_p = 
     
@@ -93,7 +93,7 @@ char *NJMCDecoder::dis_RegImm (ADDRESS pc)
   
 }
 
-#line 59 "machine/sparc/disassembler.m"
+//#line 59 "machine/sparc/disassembler.m"
     return _buffer;
 }
 
@@ -111,7 +111,7 @@ char* NJMCDecoder::dis_Eaddr (ADDRESS pc)
 
 
 
-#line 73 "machine/sparc/disassembler.m"
+//#line 73 "machine/sparc/disassembler.m"
 { 
   dword MATCH_p = 
     
@@ -182,7 +182,7 @@ char* NJMCDecoder::dis_Eaddr (ADDRESS pc)
   
 }
 
-#line 84 "machine/sparc/disassembler.m"
+//#line 84 "machine/sparc/disassembler.m"
     return _buffer;
 }
 
@@ -207,7 +207,7 @@ int NJMCDecoder::decodeAssemblyInstruction (ADDRESS pc, int delta)
 
 
 
-#line 105 "machine/sparc/disassembler.m"
+//#line 105 "machine/sparc/disassembler.m"
 { 
   dword MATCH_p = 
     
@@ -2376,7 +2376,7 @@ int NJMCDecoder::decodeAssemblyInstruction (ADDRESS pc, int delta)
   
 }
 
-#line 287 "machine/sparc/disassembler.m"
+//#line 287 "machine/sparc/disassembler.m"
 
     return (nextPC - hostPC);
 }

@@ -170,7 +170,7 @@ void FrontEnd::readLibraryCatalog(const char *sPath) {
         std::cerr << "can't open `" << sPath << "'\n";
         exit(1);
     }
-
+    std::string sig_path;
     while (!inf.eof()) {
         std::string sFile;
         inf >> sFile;
@@ -180,11 +180,13 @@ void FrontEnd::readLibraryCatalog(const char *sPath) {
         if (sFile.size() > 0 && sFile[sFile.size()-1] == '\n')
             sFile = sFile.substr(0, sFile.size()-1);
         if (sFile == "") continue;
-        std::string sPath = Boomerang::get()->getProgPath() + "signatures/" + sFile;
+        sig_path = Boomerang::get()->getProgPath() + "signatures/" + sFile;
         callconv cc = CONV_C;            // Most APIs are C calling convention
-        if (sFile == "windows.h")    cc = CONV_PASCAL;        // One exception
-        if (sFile == "mfc.h")        cc = CONV_THISCALL;        // Another exception
-        readLibrarySignatures(sPath.c_str(), cc);
+        if (sFile == "windows.h")
+            cc = CONV_PASCAL;        // One exception
+        if (sFile == "mfc.h")
+            cc = CONV_THISCALL;        // Another exception
+        readLibrarySignatures(sig_path.c_str(), cc);
     }
     inf.close();
 }
@@ -226,12 +228,12 @@ std::vector<ADDRESS> FrontEnd::getEntryPoints() {
                 p++;
                 std::string name(p);
                 name = name.substr(0,name.length()-6)+"ModuleData";
-                ADDRESS a = pBF->GetAddressByName(name.c_str(), true);
-                if (a != NO_ADDRESS) {
+                ADDRESS tmpaddr = pBF->GetAddressByName(name.c_str(), true);
+                if (tmpaddr != NO_ADDRESS) {
                     ADDRESS setup, teardown;
-                    /*uint32_t vers = */pBF->readNative4(a); //TODO: find use for vers ?
-                    setup = ADDRESS::g(pBF->readNative4(a+4));
-                    teardown = ADDRESS::g(pBF->readNative4(a+8));
+                    /*uint32_t vers = */pBF->readNative4(tmpaddr); //TODO: find use for vers ?
+                    setup = ADDRESS::g(pBF->readNative4(tmpaddr+4));
+                    teardown = ADDRESS::g(pBF->readNative4(tmpaddr+8));
                     if ( !setup.isZero() ) {
                         Type *ty = NamedType::getNamedType("ModuleSetupProc");
                         assert(ty->isFunc());
@@ -274,7 +276,8 @@ std::vector<ADDRESS> FrontEnd::getEntryPoints() {
     return entrypoints;
 }
 
-void FrontEnd::decode(Prog* prog, bool decodeMain, const char *pname) {
+void FrontEnd::decode(Prog* prg, bool decodeMain, const char *pname) {
+    assert(prog==prg);
     if (pname)
         prog->setName(pname);
 
@@ -327,7 +330,8 @@ void FrontEnd::decode(Prog* prog, bool decodeMain, const char *pname) {
 }
 
 // Somehow, a == NO_ADDRESS has come to mean decode anything not already decoded
-void FrontEnd::decode(Prog *prog, ADDRESS a) {
+void FrontEnd::decode(Prog *prg, ADDRESS a) {
+    assert(prog==prg);
     if (a != NO_ADDRESS) {
         prog->setNewProc(a);
         if (VERBOSE)
@@ -374,8 +378,9 @@ void FrontEnd::decode(Prog *prog, ADDRESS a) {
     prog->wellForm();
 }
 
-// a should be the address of a UserProc
-void FrontEnd::decodeOnly(Prog *prog, ADDRESS a) {
+//! \a a should be the address of an UserProc
+void FrontEnd::decodeOnly(Prog *prg, ADDRESS a) {
+    assert(prog == prg);
     UserProc* p = (UserProc*)prog->setNewProc(a);
     assert(!p->isLib());
     std::ofstream os;
@@ -408,7 +413,6 @@ DecodeResult& FrontEnd::decodeInstruction(ADDRESS pc) {
  * \brief       Read the library signatures from a file
  * \param	   	sPath The file to read from
  * \param		cc the calling convention assumed
- * \return 		<nothing>
  */
 void FrontEnd::readLibrarySignatures(const char *sPath, callconv cc) {
     std::ifstream ifs;
@@ -465,11 +469,34 @@ Signature *FrontEnd::getLibSignature(const char *name) {
     }
     return signature;
 }
-
+void FrontEnd::preprocessProcGoto(std::list<Statement*>::iterator ss, ADDRESS  dest, std::list<Statement*> sl,RTL* pRtl)
+{
+    if (dest != NO_ADDRESS) {
+        Proc * proc = prog->findProc(dest);
+        if (proc == nullptr) {
+            if (pBF->IsDynamicLinkedProc(dest))
+                proc = prog->setNewProc(dest);
+        }
+        if (proc != nullptr && proc != (Proc*)-1) {
+            Statement*s = new CallStatement();
+            CallStatement *call = static_cast<CallStatement*>(s);
+            call->setDest(dest);
+            call->setDestProc(proc);
+            call->setReturnAfterCall(true);
+            // also need to change it in the actual RTL
+            std::list<Statement*>::iterator ss1 = ss;
+            ss1++;
+            assert(ss1 == sl.end());
+            assert(not pRtl->empty());
+            pRtl->back() = s;
+            *ss = s;
+        }
+    }
+}
 /***************************************************************************//**
  *
  * \brief      Process a procedure, given a native (source machine) address.
- * \param address - the address at which the procedure starts
+ * \param uAddr - the address at which the procedure starts
  * \param pProc - the procedure object
  * \param frag - if true, this is just a fragment of a procedure
  * \param spec - if true, this is a speculative decode
@@ -618,31 +645,9 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 
                 // Check for a call to an already existing procedure (including self recursive jumps), or to the PLT
                 // (note that a LibProc entry for the PLT function may not yet exist)
-                ADDRESS dest;
-                Proc* proc;
                 if (s->getKind() == STMT_GOTO) {
-                    dest = stmt_jump->getFixedDest();
-                    if (dest != NO_ADDRESS) {
-                        proc = prog->findProc(dest);
-                        if (proc == nullptr) {
-                            if (pBF->IsDynamicLinkedProc(dest))
-                                proc = prog->setNewProc(dest);
-                        }
-                        if (proc != nullptr && proc != (Proc*)-1) {
-                            s = new CallStatement();
-                            CallStatement *call = static_cast<CallStatement*>(s);
-                            call->setDest(dest);
-                            call->setDestProc(proc);
-                            call->setReturnAfterCall(true);
-                            // also need to change it in the actual RTL
-                            std::list<Statement*>::iterator ss1 = ss;
-                            ss1++;
-                            assert(ss1 == sl.end());
-                            assert(not pRtl->empty());
-                            pRtl->back() = s;
-                            *ss = s;
-                        }
-                    }
+                    preprocessProcGoto(ss, stmt_jump->getFixedDest(), sl, pRtl);
+                    s = *ss; // *ss can be changed within processProc
                 }
 
                 switch (s->getKind()) {
