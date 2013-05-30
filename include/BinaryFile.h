@@ -128,7 +128,7 @@ enum LOAD_FMT {
     LOADFMT_LX,
     LOADFMT_COFF
 };
-enum MACHINE {MACHINE_PENTIUM, MACHINE_SPARC, MACHINE_HPRISC, MACHINE_PALM, MACHINE_PPC, MACHINE_ST20, MACHINE_MIPS};
+enum MACHINE {MACHINE_PENTIUM, MACHINE_SPARC, MACHINE_HPRISC, MACHINE_PALM, MACHINE_PPC, MACHINE_ST20, MACHINE_MIPS, MACHINE_68K};
 
 class BinaryFileFactory {
         // The below should be of type HINSTANCE on WIN32, but #including windows.h here causes problems later compiling the objective C
@@ -138,7 +138,7 @@ class BinaryFileFactory {
 static  std::string     m_base_path; //!< path from which the executable is being ran, used to find lib/ directory
 public:
 static  void            setBasePath(const std::string &path) {m_base_path=path;} //!< sets the base directory for plugin search
-        BinaryFile *    Load( const char *sName );
+        BinaryFile *    Load(const std::string &sName );
         void            UnLoad();
 };
 

@@ -30,7 +30,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION( CfgTest );
  * OVERVIEW:        Set up some expressions for use with all the tests
  * NOTE:            Called before any tests
  * PARAMETERS:        <none>
- * \returns             <nothing>
+ *
  *============================================================================*/
 static bool logset = false;
 void CfgTest::setUp ()
@@ -47,7 +47,7 @@ void CfgTest::setUp ()
  * OVERVIEW:        Delete expressions created in setUp
  * NOTE:            Called after all tests
  * PARAMETERS:        <none>
- * \returns             <nothing>
+ *
  *============================================================================*/
 void CfgTest::tearDown () {
 }

@@ -114,7 +114,7 @@ Proc::~Proc()
 /***************************************************************************//**
  *
  * \brief        Constructor with name, native address.
- * \param        prog - the program this procedure belongs to
+ * \param        prg - the program this procedure belongs to
  * \param        uNative - Native address of entry point of procedure
  * \param        sig - the Signature for this Proc
  *
@@ -142,9 +142,9 @@ const char* Proc::getName() const {
  *
  * \brief        Sets the name of this procedure
  * PARAMETERS:        new name
- * \returns            <nothing>
+ *
  ******************************************************************************/
-void Proc::setName(const char *nam) {
+void Proc::setName(const std::string &nam) {
     assert(signature);
     signature->setName(nam);
 }
@@ -684,7 +684,7 @@ BasicBlock * UserProc::getEntryBB() {
 /***************************************************************************//**
  *
  * \brief        Set the entry BB for this procedure (constructor has the entry address)
- * \returns            <nothing>
+ *
  ******************************************************************************/
 void UserProc::setEntryBB() {
     std::list<BasicBlock *>::iterator bbit;
@@ -1429,7 +1429,7 @@ ProcSet* UserProc::middleDecompile(ProcList* path, int indent) {
                 << "=== end debug print SSA for " << getName() << " pass " << pass << " (no propagations) ===\n\n";
         }
 
-        if (Boomerang::get()->dotFile)                            // Require -gd now (though doesn't listen to file name)
+        if (!Boomerang::get()->dotFile.empty())             // Require -gd now (though doesn't listen to file name)
             printDFG();
         Boomerang::get()->alert_decompile_SSADepth(this, pass);    // FIXME: need depth -> pass in GUI code
 
@@ -1808,7 +1808,7 @@ void UserProc::remUnusedStmtEtc(RefCounter& refCounts) {
  *
  * \brief Middle decompile: All the decompilation from preservation up to
  * but not including removing unused statements.
- * \returns the cycle set from the recursive call to decompile()
+ * Returns the cycle set from the recursive call to decompile()
  *
  ******************************************************************************/
 void UserProc::recursionGroupAnalysis(ProcList* path, int indent) {

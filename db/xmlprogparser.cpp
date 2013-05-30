@@ -1972,8 +1972,8 @@ void XMLProgParser::addToContext_def(Context *c, int e) {
     //      }
 }
 
-Prog *XMLProgParser::parse(const char *filename) {
-    FILE *f = fopen(filename, "r");
+Prog *XMLProgParser::parse(const std::string &filename) {
+    FILE *f = fopen(filename.c_str(), "r");
     if (f == nullptr)
         return nullptr;
     fclose(f);
@@ -1995,8 +1995,8 @@ Prog *XMLProgParser::parse(const char *filename) {
     return prog;
 }
 
-void XMLProgParser::parseFile(const char *filename) {
-    FILE *f = fopen(filename, "r");
+void XMLProgParser::parseFile(const std::string &filename) {
+    FILE *f = fopen(filename.c_str(), "r");
     if (f == nullptr)
         return;
     XML_Parser p = XML_ParserCreate(nullptr);
@@ -2025,7 +2025,7 @@ void XMLProgParser::parseFile(const char *filename) {
 
         if (XML_Parse(p, Buff, len, done) == XML_STATUS_ERROR) {
             if (XML_GetErrorCode(p) != XML_ERROR_NO_ELEMENTS)
-                fprintf(stderr, "Parse error at line %ld of file %s:\n%s\n", XML_GetCurrentLineNumber(p), filename,
+                fprintf(stderr, "Parse error at line %ld of file %s:\n%s\n", XML_GetCurrentLineNumber(p), filename.c_str(),
                         XML_ErrorString(XML_GetErrorCode(p)));
             fclose(f);
             return;

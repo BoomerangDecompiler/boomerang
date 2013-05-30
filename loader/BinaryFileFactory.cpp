@@ -7,6 +7,7 @@
 */
 
 #include <iostream>
+#include <QDir>
 #ifndef _WIN32
 #include <dlfcn.h>
 #else
@@ -21,14 +22,14 @@
 using namespace std;
 string BinaryFileFactory::m_base_path = "";
 
-BinaryFile *BinaryFileFactory::Load(const char *sName) {
-    BinaryFile *pBF = getInstanceFor( sName );
+BinaryFile *BinaryFileFactory::Load(const std::string &sName) {
+    BinaryFile *pBF = getInstanceFor( sName.c_str() );
     if( pBF == nullptr ) {
         std::cerr << "unrecognised binary file format.\n";
         return nullptr;
     }
-    if( pBF->RealLoad( sName ) == 0 ) {
-        fprintf( stderr, "Loading '%s' failed\n", sName );
+    if( pBF->RealLoad( sName.c_str() ) == 0 ) {
+        fprintf( stderr, "Loading '%s' failed\n", sName.c_str() );
         delete pBF;
         return nullptr;
     }
@@ -114,7 +115,7 @@ BinaryFile* BinaryFileFactory::getInstanceFor( const char *sName ) {
     libName += ".so";
 #endif
 #endif
-    libName = base_plugin_path + libName;
+    libName = QDir(QString("%1/%2").arg(base_plugin_path.c_str()).arg(libName.c_str())).path().toStdString();
     dlHandle = dlopen(libName.c_str(), RTLD_LAZY);
     if (dlHandle == nullptr) {
         fprintf( stderr, "Could not open dynamic loader library %s\n", libName.c_str());

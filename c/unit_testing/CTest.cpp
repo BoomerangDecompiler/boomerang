@@ -19,7 +19,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION( CTest );
  * OVERVIEW:        Set up anything needed before all tests
  * NOTE:            Called before any tests
  * PARAMETERS:      <none>
- * \returns          <nothing>
+ *
  *============================================================================*/
 void CTest::setUp () {
 }
@@ -29,7 +29,7 @@ void CTest::setUp () {
  * OVERVIEW:        Delete objects created in setUp
  * NOTE:            Called after all tests
  * PARAMETERS:      <none>
- * \returns          <nothing>
+ *
  *============================================================================*/
 void CTest::tearDown () {
 }
@@ -38,7 +38,7 @@ void CTest::tearDown () {
  * FUNCTION:        CTest::testSignature
  * OVERVIEW:        Test
  * PARAMETERS:      <none>
- * \returns          <nothing>
+ *
  *============================================================================*/
 void CTest::testSignature () {
     std::istringstream os("int printf(char *fmt, ...);");

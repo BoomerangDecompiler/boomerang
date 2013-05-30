@@ -34,7 +34,6 @@
 
 // Defines to control experimental features
 #define USE_DOMINANCE_NUMS 1                // Set true to store a statement number that has dominance properties
-
 #include <iostream>
 #include <string>
 #include <set>
@@ -54,7 +53,7 @@ class ObjcModule;
 #define LOG_VERBOSE(x) Boomerang::get()->if_verbose_log(x)
 #define LOGTAIL Boomerang::get()->logTail()
 
-#define DEBUG_RANGE_ANALYSIS 0
+#define DEBUG_RANGE_ANALYSIS Boomerang::get()->debugRangeAnalysis
 
 /// Virtual class to monitor the decompilation.
 class Watcher {
@@ -90,83 +89,72 @@ virtual void        alert_decompile_debug_point(UserProc *, const char */*descri
  */
 class Boomerang {
 private:
-static Boomerang *boomerang;
-        std::string progPath;       //!< String with the path to the boomerang executable.
-        std::string outputPath;     //!< The path where all output files are created.
-        Log *       logger;         //!< Takes care of the log messages.
+static  Boomerang *         boomerang;
+        std::string         progPath;       //!< String with the path to the boomerang executable.
+        std::string         outputPath;     //!< The path where all output files are created.
+        Log *               logger;         //!< Takes care of the log messages.
         std::set<Watcher*>  watchers;       //!< The watchers which are interested in this decompilation.
 
         /* Documentation about a function should be at one place only
          * So: Document all functions at the point of implementation (in the .c file)
          */
-
-        void        usage() const;
-        void        help() const;
-        void        helpcmd() const;
-        int            splitLine(char *line, char ***pargv);
-        int            parseCmd(int argc, const char **argv);
-        int            cmdLine();
-
-
-                Boomerang();
-        /// The destructor is virtual to force this object to be created on the heap (with \em new).
-virtual            ~Boomerang() {}
+        void                helpcmd() const;
+                            Boomerang();
+virtual                     ~Boomerang() {}
 public:
         /**
          * \return The global boomerang object. It will be created if it didn't already exist.
          */
-static Boomerang *get() {
-                if (!boomerang) boomerang = new Boomerang();
-                return boomerang;
-            }
+static  Boomerang *         get() {
+                                if (!boomerang) boomerang = new Boomerang();
+                                return boomerang;
+                            }
 
-static const char * getVersionStr();
-        Log &       log();
-        Log &       if_verbose_log(int verbosity_level);
-        void        setLogger(Log *l) { logger = l; }
-        bool        setOutputDirectory(const char *path);
+        int                 processCommand(std::vector<std::string> &args);
+static  const char *        getVersionStr();
+        Log &               log();
+        Log &               if_verbose_log(int verbosity_level);
+        void                setLogger(Log *l) { logger = l; }
+        bool                setOutputDirectory(const std::string &path);
 
 
-        HLLCode *   getHLLCode(UserProc *p = nullptr);
-        int         commandLine(int argc, const char **argv);
-                    /// Set the path to the %Boomerang executable.
-        void        setProgPath(const char* p) { progPath = p; }
-        /// Get the path to the %Boomerang executable.
-        const std::string& getProgPath() { return progPath; }
-        /// Set the path where the output files are saved.
-        void        setOutputPath(const char* p) { outputPath = p; }
-        /// Returns the path to where the output files are saved.
-        const std::string& getOutputPath() { return outputPath; }
+        HLLCode *           getHLLCode(UserProc *p = nullptr);
+        void                setPluginPath(const std::string &p);
+        void                setProgPath(const std::string &p);
+        const std::string & getProgPath();
+                            /// Set the path where the output files are saved.
+        void                setOutputPath(const std::string & p) { outputPath = p; }
+                            /// Returns the path to where the output files are saved.
+        const std::string & getOutputPath() { return outputPath; }
 
-        Prog        *loadAndDecode(const char *fname, const char *pname = nullptr);
-        int            decompile(const char *fname, const char *pname = nullptr);
-        /// Add a Watcher to the set of Watchers for this Boomerang object.
-        void        addWatcher(Watcher *watcher) { watchers.insert(watcher); }
-        void        persistToXML(Prog *prog);
-        Prog        *loadFromXML(const char *fname);
-
-        void        objcDecode(std::map<std::string, ObjcModule> &modules, Prog *prog);
+        Prog *              loadAndDecode(const std::string &fname, const char *pname = nullptr);
+        int                 decompile(const char *fname, const char *pname = nullptr);
+                            /// Add a Watcher to the set of Watchers for this Boomerang object.
+        void                addWatcher(Watcher *watcher) { watchers.insert(watcher); }
+        void                persistToXML(Prog *prog);
+        Prog *              loadFromXML(const char *fname);
+        void                objcDecode(std::map<std::string, ObjcModule> &modules, Prog *prog);
 
         /// Alert the watchers that decompilation has completed.
-        void        alert_complete() {
-                        for (std::set<Watcher*>::iterator it = watchers.begin(); it != watchers.end(); it++)
-                            (*it)->alert_complete();
-                    }
+        void                alert_complete() {
+                                for (std::set<Watcher*>::iterator it = watchers.begin(); it != watchers.end(); it++)
+                                    (*it)->alert_complete();
+                            }
         /// Alert the watchers we have found a new %Proc.
-        void        alert_new(Proc *p) {
-                        for (std::set<Watcher*>::iterator it = watchers.begin(); it != watchers.end(); it++)
-                            (*it)->alert_new(p);
-                    }
+        void                alert_new(Proc *p) {
+                                for (std::set<Watcher*>::iterator it = watchers.begin(); it != watchers.end(); it++)
+                                    (*it)->alert_new(p);
+                            }
         /// Alert the watchers we have removed a %Proc.
-        void        alertRemove(Proc *p) {
-                        for (std::set<Watcher*>::iterator it = watchers.begin(); it != watchers.end(); it++)
-                            (*it)->alertRemove(p);
-                    }
+        void                alertRemove(Proc *p) {
+                                for (std::set<Watcher*>::iterator it = watchers.begin(); it != watchers.end(); it++)
+                                    (*it)->alertRemove(p);
+                            }
         /// Alert the watchers we have updated this Procs signature
-        void        alert_update_signature(Proc *p) {
-                        for (std::set<Watcher*>::iterator it = watchers.begin(); it != watchers.end(); it++)
-                            (*it)->alert_update_signature(p);
-                    }
+        void                alert_update_signature(Proc *p) {
+                                for (std::set<Watcher*>::iterator it = watchers.begin(); it != watchers.end(); it++)
+                                    (*it)->alert_update_signature(p);
+                            }
         /// Alert the watchers we are currently decoding \a nBytes bytes at address \a pc.
         void        alert_decode(ADDRESS pc, int nBytes) {
                         for (std::set<Watcher*>::iterator it = watchers.begin(); it != watchers.end(); it++)
@@ -238,26 +226,26 @@ virtual void        alert_decompile_debug_point(UserProc *p, const char *descrip
         void        logTail();
 
         // Command line flags
-        bool        vFlag;
-        bool        printRtl;
-        bool        noBranchSimplify;
-        bool        noRemoveNull;
-        bool        noLocals;
-        bool        noRemoveLabels;
-        bool        noDataflow;
-        bool        noDecompile;
-        bool        stopBeforeDecompile;
-        bool        traceDecoder;
+        bool        vFlag               = false;
+        bool        printRtl            = false;
+        bool        noBranchSimplify    = false;
+        bool        noRemoveNull        = false;
+        bool        noLocals            = false;
+        bool        noRemoveLabels      = false;
+        bool        noDataflow          = false;
+        bool        noDecompile         = false;
+        bool        stopBeforeDecompile = false;
+        bool        traceDecoder        = false;
         /// The file in which the dotty graph is saved
-        const char    *dotFile;
-        int            numToPropagate;
-        bool        noPromote;
-        bool        propOnlyToAll;
-        bool        debugGen;
-        int            maxMemDepth;
-        bool        debugSwitch;
-        bool        noParameterNames;
-        bool        debugLiveness;
+        std::string dotFile             = "";
+        int         numToPropagate      = -1;
+        bool        noPromote           = false;
+        bool        propOnlyToAll       = false;
+        bool        debugGen            = false;
+        int         maxMemDepth         = 99;
+        bool        debugSwitch         = false;
+        bool        noParameterNames    = false;
+        bool        debugLiveness       = false;
         bool        stopAtDebugPoints   = false;
         bool        debugTA             = false;
         /// When true, attempt to decode main, all children, and all procs.
@@ -284,7 +272,7 @@ virtual void        alert_decompile_debug_point(UserProc *p, const char *descrip
         bool        noGlobals           = false;
         bool        assumeABI           = false;///< Assume ABI compliance
         bool        experimental        = false;///< Activate experimental code. Caution!
-        int         minsToStopAfter     = 0;
+        bool        debugRangeAnalysis  = false;
         std::vector<ADDRESS> entrypoints;   /// A vector which contains all know entrypoints for the Prog.
         std::vector<std::string> symbolFiles;   /// A vector containing the names off all symbolfiles to load.
         std::map<ADDRESS, std::string> symbols; /// A map to find a name by a given address.

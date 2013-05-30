@@ -24,6 +24,7 @@ BOOMERANG_ADD_LOADER(MachO    machO/MachOBinaryFile.cpp machO/MachOBinaryFile.h 
 ADD_EXECUTABLE(bffDump bffDump.cpp BinaryFileFactory.cpp)
 TARGET_LINK_LIBRARIES(bffDump ${DL_LIBS})
 TARGET_LINK_LIBRARIES(bffDump BinaryFile)
+qt5_use_modules(bffDump Core)
 
 IF(CPPUNIT_FOUND)
     ADD_EXECUTABLE(testLoader testLoader.cpp LoaderTest.cpp BinaryFileFactory.cpp microX86dis.c SymTab.cpp)

@@ -73,17 +73,17 @@ virtual         ~ExpVisitor() { }
 
     // visitor functions return false to abandon iterating through the expression (terminate the search)
     // Set override true to not do the usual recursion into children
-virtual bool        visit(Unary *e,        bool& override) {override = false; return true;}
-virtual bool        visit(Binary *e,    bool& override) {override = false; return true;}
-virtual bool        visit(Ternary *e,    bool& override) {override = false; return true;}
-virtual bool        visit(TypedExp *e,    bool& override) {override = false; return true;}
-virtual bool        visit(FlagDef *e,    bool& override) {override = false; return true;}
-virtual bool        visit(RefExp *e,    bool& override) {override = false; return true;}
-virtual bool        visit(Location *e,    bool& override) {override = false; return true;}
+virtual bool        visit(Unary *,        bool& override) {override = false; return true;}
+virtual bool        visit(Binary *,    bool& override) {override = false; return true;}
+virtual bool        visit(Ternary *,    bool& override) {override = false; return true;}
+virtual bool        visit(TypedExp *,    bool& override) {override = false; return true;}
+virtual bool        visit(FlagDef *,    bool& override) {override = false; return true;}
+virtual bool        visit(RefExp *,    bool& override) {override = false; return true;}
+virtual bool        visit(Location *,    bool& override) {override = false; return true;}
 // These three have zero arity, so there is nothing to override
-virtual bool        visit(Const *e     ) {return true;}
-virtual bool        visit(Terminal *e) {return true;}
-virtual bool        visit(TypeVal *e ) {return true;}
+virtual bool        visit(Const *     ) {return true;}
+virtual bool        visit(Terminal *) {return true;}
+virtual bool        visit(TypeVal * ) {return true;}
 };
 
 // This class visits subexpressions, and if a location, sets the UserProc

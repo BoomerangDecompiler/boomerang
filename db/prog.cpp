@@ -160,7 +160,7 @@ void Prog::finishDecode() {
 }
 //! Generate dotty file
 void Prog::generateDotFile() {
-    assert(Boomerang::get()->dotFile);
+    assert(!Boomerang::get()->dotFile.empty());
     std::ofstream of(Boomerang::get()->dotFile);
     of << "digraph Cfg {" << std::endl;
 
@@ -345,7 +345,7 @@ void Cluster::addChild(Cluster *n) {
     n->parent = this;
 }
 
-Cluster *Cluster::find(const char *nam) {
+Cluster *Cluster::find(const std::string &nam) {
     if (name == nam)
         return this;
     for (Cluster * child : children) {
@@ -714,7 +714,7 @@ Proc* Prog::newProc (const char* name, ADDRESS uNative, bool bLib /*= false*/) {
 /***************************************************************************//**
  *
  * \brief Removes the UserProc from this Prog object's list, and deletes as much as possible of the Proc
- * \param proc - pointer to the UserProc object to be removed
+ * \param uProc - pointer to the UserProc object to be removed
  ******************************************************************************/
 void Prog::remProc(UserProc* uProc) {
     // Delete the cfg etc.
@@ -801,11 +801,11 @@ Proc* Prog::findProc(ADDRESS uAddr) const {
  * \param name - name of the searched-for procedure
  * \returns Pointer to the Proc object, or 0 if none, or -1 if deleted
  ******************************************************************************/
-Proc* Prog::findProc(const char *name) const {
+Proc* Prog::findProc(const std::string &name) const {
     std::list<Proc *>::const_iterator it;
     it = std::find_if(m_procs.begin(),m_procs.end(),
                       [name](Proc *p) -> bool {
-                        return !strcmp(p->getName(), name);
+                        return !name.compare(p->getName());
                       });
     if(it==m_procs.end())
         return nullptr;
@@ -1144,7 +1144,7 @@ Proc* Prog::getFirstProc(PROGMAP::const_iterator& it) {
  *
  * \brief    Return a pointer to the next Proc object for this program
  * \note       The \a it parameter must be from a previous call to getFirstProc or getNextProc
- * \param    it: A PROGMAP::const_iterator as above
+ * \param    it A PROGMAP::const_iterator as above
  * \returns        A pointer to the next Proc object; could be 0 if no more
  ******************************************************************************/
 Proc* Prog::getNextProc(PROGMAP::const_iterator& it) {
@@ -1177,7 +1177,7 @@ UserProc* Prog::getFirstUserProc(std::list<Proc*>::iterator& it) {
  * \brief    Return a pointer to the next UserProc object for this program
  * \note     The it parameter must be from a previous call to
  *                  getFirstUserProc or getNextUserProc
- * \param   it: A reference to std::list<Proc*>::iterator
+ * \param   it A reference to std::list<Proc*>::iterator
  * \returns A pointer to the next UserProc object; could be 0 if no more
  ******************************************************************************/
 UserProc* Prog::getNextUserProc(std::list<Proc*>::iterator& it) {
@@ -1193,9 +1193,9 @@ UserProc* Prog::getNextUserProc(std::list<Proc*>::iterator& it) {
  *
  * \brief    Lookup the given native address in the code section, returning a host pointer corresponding to the same
  *                 address
- * \param uNative: Native address of the candidate string or constant
- * \param last: will be set to one past end of the code section (host)
- * \param delta: will be set to the difference between the host and native addresses
+ * \param uAddr Native address of the candidate string or constant
+ * \param last will be set to one past end of the code section (host)
+ * \param delta will be set to the difference between the host and native addresses
  * \returns        Host pointer if in range; nullptr if not
  *                Also sets 2 reference parameters (see above)
  ******************************************************************************/
@@ -1443,7 +1443,7 @@ void Prog::fromSSAform() {
             LOG << "===== before transformation from SSA form for " << proc->getName() << " =====\n"
                 << *proc
                 << "===== end before transformation from SSA for " << proc->getName() << " =====\n\n";
-            if (Boomerang::get()->dotFile)
+            if (!Boomerang::get()->dotFile.empty())
                 proc->printDFG();
         }
         proc->fromSSAform();

@@ -2,7 +2,7 @@ PROJECT(Boomerang)
 ###############################################################################
 # Settings related to build system, and target directories
 ###############################################################################
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8.10)
 LIST(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake_scripts)
 
 SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/out)
@@ -26,14 +26,15 @@ IF(CMAKE_CXX_COMPILER MATCHES cl.exe)
     message(SEND_ERROR "This is a c++11 build of boomerang it's highly likely it will fail under VisualStudio")
     ADD_DEFINITIONS(-D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_DEPRECATE -D_SCL_SECURE_NO_WARNINGS)
 ELSE()
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++0x" )
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++11" )
     SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall" )
     add_definitions(-D_GLIBCXX_DEBUG -D__STDC_FORMAT_MACROS)
 ENDIF()
 ###############################################################################
 # Defines section
 ###############################################################################
-SET(VERSION "0.3.1")
+#define VERSION "alpha 0.3.2 19/Aug/2010"
+SET(VERSION "0.3.2a")
 SET(MAIN_INCLUDE_DIRECTORY ${PROJECT_SOURCE_DIR}/include)
 INCLUDE(CheckIncludeFiles)
 INCLUDE(CheckLibraryExists)
@@ -76,12 +77,12 @@ IF(CPPUNIT_CONFIG_EXECUTABLE)
 ENDIF(CPPUNIT_CONFIG_EXECUTABLE)
 
 # GC
-CHECK_INCLUDE_FILES(gc.h               GC_H)
-CHECK_LIBRARY_EXISTS(gc GC_malloc ""   GC_L)
-SET_01_2(GC_FOUND GC_H GC_L)
-IF(GC_FOUND)
-    SET(GC_LIBS -lgc)
-ENDIF()
+#CHECK_INCLUDE_FILES(gc.h               GC_H)
+#CHECK_LIBRARY_EXISTS(gc GC_malloc ""   GC_L)
+#SET_01_2(GC_FOUND GC_H GC_L)
+#IF(GC_FOUND)
+#    SET(GC_LIBS -lgc)
+#ENDIF()
 # Expat
 FIND_PACKAGE(EXPAT)
 FIND_PACKAGE(Boost REQUIRED)
@@ -112,6 +113,7 @@ SET(PACKAGE_NAME      "boomerang")
 SET(PACKAGE_STRING    "boomerang")
 SET(PACKAGE_TARNAME   "boomerang")
 SET(PACKAGE_VERSION   "0.3.99")
+
 CHECK_TYPE_SIZE("char"      SIZEOF_CHAR)
 CHECK_TYPE_SIZE("double"    SIZEOF_DOUBLE)
 CHECK_TYPE_SIZE("float"     SIZEOF_FLOAT)
@@ -163,7 +165,9 @@ ADD_SUBDIRECTORY(transform)
 
 SET(boomerang_SRC
         boomerang.cpp
-        driver.cpp
+        ui/console/commandlinedriver.cpp
+        ui/console/commandlinedriver.h
+        ui/console/driver.cpp
         log.cpp
         loader/BinaryFileFactory.cpp
 )

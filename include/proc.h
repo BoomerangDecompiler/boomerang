@@ -66,7 +66,7 @@ public:
 virtual                 ~Proc();
 
         const char*     getName() const;
-        void            setName(const char *nam);
+        void            setName(const std::string &nam);
         ADDRESS         getNativeAddress() const;
         void            setNativeAddress(ADDRESS a);
         Prog *          getProg() { return prog; } //!< Get the program this procedure belongs to.

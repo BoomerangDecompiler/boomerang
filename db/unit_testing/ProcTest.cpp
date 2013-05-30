@@ -28,7 +28,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION( ProcTest );
  * OVERVIEW:        Set up some expressions for use with all the tests
  * NOTE:            Called before any tests
  * PARAMETERS:        <none>
- * \returns             <nothing>
+ *
  *============================================================================*/
 void ProcTest::setUp () {
 }
@@ -38,7 +38,7 @@ void ProcTest::setUp () {
  * OVERVIEW:        Delete expressions created in setUp
  * NOTE:            Called after all tests
  * PARAMETERS:        <none>
- * \returns             <nothing>
+ *
  *============================================================================*/
 void ProcTest::tearDown () {
     delete m_proc;

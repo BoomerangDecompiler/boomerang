@@ -143,7 +143,7 @@ virtual void        setReturnType(int n, Type *ty);
 
         // get/set the name
 virtual const char    *getName();
-virtual void        setName(const char *nam);
+virtual void        setName(const std::string &nam);
         // get/set the signature file
         const char    *getSigFile() { return sigFile.c_str(); }
         void        setSigFile(const char *nam) { sigFile = nam; }

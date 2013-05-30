@@ -26,7 +26,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION( ProgTest );
  * OVERVIEW:        Set up some expressions for use with all the tests
  * NOTE:            Called before any tests
  * PARAMETERS:        <none>
- * \returns             <nothing>
+ *
  *============================================================================*/
 void ProgTest::setUp () {
     //prog.setName("default name");

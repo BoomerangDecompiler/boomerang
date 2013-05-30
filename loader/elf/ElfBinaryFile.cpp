@@ -506,7 +506,7 @@ bool ElfBinaryFile::ValueByName(const char* pName, SymValue* pVal, bool bNoTypeO
     int     hash, numBucket, y; //numChain,
     int     *pBuckets, *pChains;    // For symbol table work
     int     found;
-    int* pHash;                    // Pointer to hash table
+    int * pHash;                    // Pointer to hash table
     Elf32_Sym*    pSym;            // Pointer to the symbol table
     int     iStr;                    // Section index of the string table
     PSectionInfo pSect;

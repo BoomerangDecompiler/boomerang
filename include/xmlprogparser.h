@@ -47,14 +47,14 @@ class XMLProgParser
 {
     public:
     XMLProgParser() { }
-    Prog *parse(const char *filename);
+    Prog *parse(const std::string &filename);
     void persistToXML(Prog *prog);
     void handleElementStart(const char *el, const char **attr);
     void handleElementEnd(const char *el);
 
     protected:
 
-    void parseFile(const char *filename);
+    void parseFile(const std::string &filename);
     void parseChildren(Cluster *c);
 
 #define TAGD(x) void start_ ## x (const char **attr); \

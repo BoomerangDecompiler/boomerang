@@ -45,7 +45,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION( StatementTest );
  * OVERVIEW:        Set up some expressions for use with all the tests
  * NOTE:            Called before any tests
  * PARAMETERS:        <none>
- * \returns             <nothing>
+ *
  *============================================================================*/
 static bool logset = false;
 void StatementTest::setUp () {

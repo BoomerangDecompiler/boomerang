@@ -198,8 +198,7 @@ bool BasicBlock::isTraversed() {
 /***************************************************************************//**
  *
  * \brief        Sets the traversed flag
- * PARAMETERS:        bTraversed: true to set this BB to traversed
- * \returns            <nothing>
+ * \param        bTraversed true to set this BB to traversed
  ******************************************************************************/
 void BasicBlock::setTraversed(bool bTraversed) {
     m_iTraversed = bTraversed;
@@ -294,7 +293,7 @@ void BasicBlock::dump() {
  *  Used for "-R" option, and handy for debugging
  * \param os - stream to output to
  * \param html - print in html mode
- * \returns            <nothing>
+ *
  ******************************************************************************/
 void BasicBlock::print(std::ostream& os, bool html) {
     if (html)
@@ -490,7 +489,7 @@ BasicBlock *BasicBlock::getOutEdge(unsigned int i) {
  *
  * \brief        given an address this method returns the corresponding
  *               out edge
- * \param        a: the address
+ * \param        a the address
  * \returns      the outedge which corresponds to \a a or 0 if there was no such outedge
  ******************************************************************************/
 
@@ -2380,8 +2379,8 @@ bool BasicBlock::undoComputedBB(Statement* stmt) {
  * \brief        Searches for all instances of "search" and adds them to "result"
  * in reverse nesting order. The search is optionally type sensitive.
  * \note out of date doc, unless type senistivity is a part of \a search_for ?
- * \param search - a location to search for
- * \param result - a list which will have any matching exprs
+ * \param search_for - a location to search for
+ * \param results - a list which will have any matching exprs
  *                 appended to it
  * \returns true if there were any matches
  ******************************************************************************/

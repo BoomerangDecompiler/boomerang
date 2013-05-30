@@ -37,31 +37,31 @@ class Cluster;
 class Cluster
 {
 protected:
-        std::string    name;
+        std::string    name = "";
         std::vector<Cluster*> children;
-        Cluster        *parent;
+        Cluster        *parent = nullptr;
         std::ofstream out;
         std::string    stream_ext;
 
 public:
-                    Cluster() : name(""), parent(nullptr) { }
-                    Cluster(const char *name) : name(name), parent(nullptr) { }
+                    Cluster() { }
+                    Cluster(const std::string &_name) : name(_name){ }
 virtual                ~Cluster() {}
         const        char *getName() { return name.c_str(); }
-        void        setName(const char *nam) { name = nam; }
-        unsigned int getNumChildren() { return children.size(); }
-        Cluster        *getChild(int n) { return children[n]; }
+        void        setName(const std::string &nam) { name = nam; }
+        size_t      getNumChildren() { return children.size(); }
+        Cluster *   getChild(int n) { return children[n]; }
         void        addChild(Cluster *n);
         void        removeChild(Cluster *n);
-        Cluster        *getParent() { return parent; }
+        Cluster *   getParent() { return parent; }
         bool        hasChildren() { return children.size() > 0; }
         void        openStream(const char *ext);
         void        openStreams(const char *ext);
         void        closeStreams();
         std::ofstream &getStream() { return out; }
-        const char    *makeDirs();
-        const char    *getOutPath(const char *ext);
-        Cluster        *find(const char *nam);
+        const char *makeDirs();
+        const char *getOutPath(const char *ext);
+        Cluster *   find(const std::string &nam);
 virtual bool        isAggregate() { return false; }
 
         void        printTree(std::ostream &out);

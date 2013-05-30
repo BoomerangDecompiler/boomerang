@@ -31,7 +31,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION( RtlTest );
  * OVERVIEW:        Set up some expressions for use with all the tests
  * NOTE:            Called before any tests
  * PARAMETERS:        <none>
- * \returns             <nothing>
+ *
  *============================================================================*/
 void RtlTest::setUp () {
 }
@@ -41,7 +41,7 @@ void RtlTest::setUp () {
  * OVERVIEW:        Delete expressions created in setUp
  * NOTE:            Called after all tests
  * PARAMETERS:        <none>
- * \returns             <nothing>
+ *
  *============================================================================*/
 void RtlTest::tearDown () {
 }

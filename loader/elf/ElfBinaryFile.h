@@ -252,8 +252,8 @@ private:
     void        AddSyms(int secIndex);
     void        AddRelocsAsSyms(int secIndex);
     void        SetRelocInfo(PSectionInfo pSect);
-    bool        ValueByName(const char* pName, SymValue* pVal, bool bNoTypeOK = false);
-    bool        SearchValueByName(const char* pName, SymValue* pVal);
+    bool        ValueByName(const char* pName, SymValue &pVal, bool bNoTypeOK = false);
+    bool        SearchValueByName(const char* pName, SymValue &pVal);
     bool        SearchValueByName(const char* pName, SymValue* pVal, const char* pSectName, const char* pStrName);
     bool        PostLoad(void* handle); // Called after archive member loaded
     // Search the .rel[a].plt section for an entry with symbol table index i.

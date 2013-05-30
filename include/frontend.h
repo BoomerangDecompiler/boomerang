@@ -84,7 +84,7 @@ public:
          */
                         FrontEnd(BinaryFile *pBF, Prog* prog, BinaryFileFactory* pbff);
 static  FrontEnd *      instantiate(BinaryFile *pBF, Prog* prog, BinaryFileFactory* pbff);
-static  FrontEnd *      Load(const char *fname, Prog* prog); //!< Load a binary
+static  FrontEnd *      Load(const std::string &fname, Prog* prog); //!< Load a binary
                         //! Add a symbol to the loader
         void            AddSymbol(ADDRESS addr, const char *nam) { pBF->AddSymbol(addr, nam); }
                         // Add a "hint" that an instruction at the given address references a named global

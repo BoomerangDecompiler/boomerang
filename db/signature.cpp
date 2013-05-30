@@ -1140,7 +1140,7 @@ const char *Signature::getName() {
     return name.c_str();
 }
 
-void Signature::setName(const char *nam) {
+void Signature::setName(const std::string &nam) {
     name = nam;
 }
 

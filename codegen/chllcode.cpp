@@ -71,7 +71,7 @@ void CHLLCode::indent(std::ostringstream& str, int indLevel) {
  * Append code for the given expression \a exp to stream \a str.
  *
  * \param str        The stream to output to.
- * \param ext        The expresson to output.
+ * \param exp        The expresson to output.
  * \param curPrec     The current operator precedence. Add parens around this expression if necessary.
  * \param uns         If true, cast operands to unsigned if necessary.
  *

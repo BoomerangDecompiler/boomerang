@@ -87,7 +87,7 @@ virtual                 ~Prog();
         int             getNumUserProcs();
         Proc*           getProc(int i) const;
         Proc*           findProc(ADDRESS uAddr) const;
-        Proc*           findProc(const char *name) const;
+        Proc*           findProc(const std::string &name) const;
         Proc*           findContainingProc(ADDRESS uAddr) const;
         bool            isProcLabel (ADDRESS addr);
         std::string     getNameNoPath() const;
@@ -187,7 +187,7 @@ virtual                 ~Prog();
         void            printCallGraphXML();
 
         Cluster *       getRootCluster() { return m_rootCluster; }
-        Cluster *       findCluster(const char *name) { return m_rootCluster->find(name); }
+        Cluster *       findCluster(const std::string &name) { return m_rootCluster->find(name); }
         Cluster *       getDefaultCluster(const char *name);
         bool            clusterUsed(Cluster *c);
 

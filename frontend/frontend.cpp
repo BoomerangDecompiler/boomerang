@@ -63,20 +63,20 @@
 /***************************************************************************//**
  *
  * \brief      Construct the FrontEnd object
- * \param pBF: pointer to the BinaryFile object (loader)
- * \param prog: program being decoded
- * \param pbff: pointer to a BinaryFileFactory object (so the library can be unloaded)
+ * \param p_BF pointer to the BinaryFile object (loader)
+ * \param p program being decoded
+ * \param bff pointer to a BinaryFileFactory object (so the library can be unloaded)
  ******************************************************************************/
-FrontEnd::FrontEnd(BinaryFile *pBF, Prog* prog, BinaryFileFactory* pbff) : pBF(pBF), pbff(pbff), prog(prog)
+FrontEnd::FrontEnd(BinaryFile *p_BF, Prog* p, BinaryFileFactory* bff) : pBF(p_BF), pbff(bff), prog(p)
 {}
 
 /***************************************************************************//**
  *
  * \brief Create from a binary file
  * Static function to instantiate an appropriate concrete front end
- * \param pBF: pointer to the BinaryFile object (loader)
- * \param prog: program being decoded
- * \param pbff: pointer to a BinaryFileFactory object (so the library can be unloaded)
+ * \param pBF pointer to the BinaryFile object (loader)
+ * \param prog program being decoded
+ * \param pbff pointer to a BinaryFileFactory object (so the library can be unloaded)
  ******************************************************************************/
 FrontEnd* FrontEnd::instantiate(BinaryFile *pBF, Prog* prog, BinaryFileFactory* pbff) {
     switch(pBF->GetMachine()) {
@@ -90,6 +90,15 @@ FrontEnd* FrontEnd::instantiate(BinaryFile *pBF, Prog* prog, BinaryFileFactory* 
             return new MIPSFrontEnd(pBF, prog, pbff);
         case MACHINE_ST20:
             return new ST20FrontEnd(pBF, prog, pbff);
+        case MACHINE_HPRISC:
+            std::cerr << "No frontend for Hp Risc\n";
+            break;
+        case MACHINE_PALM:
+            std::cerr << "No frontend for PALM\n";
+            break;
+        case MACHINE_68K:
+            std::cerr << "No frontend for M68K\n";
+            break;
         default:
             std::cerr << "Machine architecture not supported!\n";
     }
@@ -99,11 +108,11 @@ FrontEnd* FrontEnd::instantiate(BinaryFile *pBF, Prog* prog, BinaryFileFactory* 
 /***************************************************************************//**
  *
  * \brief Create FrontEnd instance given \a fname and \a prog
- * \param fname: string with full path to decoded file
- * \param prog: program being decoded
+ * \param fname string with full path to decoded file
+ * \param prog program being decoded
  * \returns Binary-specific frontend.
  ******************************************************************************/
-FrontEnd* FrontEnd::Load(const char *fname, Prog* prog) {
+FrontEnd* FrontEnd::Load(const std::string &fname, Prog* prog) {
     BinaryFileFactory* pbff = new BinaryFileFactory;
     if (pbff == nullptr) return nullptr;
     BinaryFile *pBF = pbff->Load(fname);
