@@ -1,7 +1,40 @@
 INCLUDE_DIRECTORIES(../c/) # used by prog.cpp
+SET(INCLUDES
+../include/basicblock.h
+../include/boomerang.h
+../include/constraint.h
+../include/exp.h
+../include/hllcode.h
+../include/memo.h
+../include/proc.h
+../include/rtl.h
+../include/statement.h
+../include/type.h
+../include/visitor.h
+../include/BinaryFile.h
+../include/cfg.h
+../include/dataflow.h
+../include/exphelp.h
+../include/log.h
+../include/operator.h
+../include/prog.h
+../include/sigenum.h
+../include/TargetQueue.h
+../include/types.h
+../include/xmlprogparser.h
+../include/BinaryFileStub.h
+../include/cluster.h
+../include/decoder.h
+../include/frontend.h
+../include/managed.h
+../include/osfcn.h
+../include/register.h
+../include/signature.h
+../include/transformer.h
+../include/util.h
+)
 SET(SRC
         basicblock.cpp
-        ../include/basicblock.h
         cfg.cpp
         dataflow.cpp
         exp.cpp
@@ -23,4 +56,4 @@ IF(EXPAT_FOUND)
     SET(SRC ${SRC} xmlprogparser.cpp)
 ENDIF()
 
-ADD_LIBRARY(db STATIC ${SRC})
+ADD_LIBRARY(db STATIC ${SRC} ${INCLUDES})

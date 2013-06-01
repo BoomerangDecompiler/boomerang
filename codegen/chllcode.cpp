@@ -1487,7 +1487,7 @@ void CHLLCode::AddProcDec(UserProc* proc, bool open) {
         retType = firstRet->getType();
         if (retType == nullptr || retType->isVoid())
             // There is a real return; make it integer (Remove with AD HOC type analysis)
-            retType = new IntegerType();
+            retType = new IntegerType(STD_SIZE,0);
     }
     if (retType) {
         appendType(s, retType);
@@ -1515,7 +1515,7 @@ void CHLLCode::AddProcDec(UserProc* proc, bool open) {
         if (ty == nullptr) {
             if (VERBOSE)
                 LOG << "ERROR in CHLLCode::AddProcDec: no type for parameter " << left << "!\n";
-            ty = new IntegerType();
+            ty = new IntegerType(STD_SIZE,0);
         }
         const char* name;
         if (left->isParam())
