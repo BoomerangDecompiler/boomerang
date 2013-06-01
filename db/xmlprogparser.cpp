@@ -1098,8 +1098,8 @@ void XMLProgParser::start_assign(const char **attr) {
         if (p)
             stack.front()->stmt->setProc(p);
         Statement *parent = (Statement*)findId(getAttr(attr, "parent"));
-        if (parent)
-            stack.front()->stmt->parent = parent;
+//        if (parent)
+//            stack.front()->stmt->parent = parent;
         return;
     }
     stack.front()->stmt = new Assign();
@@ -1149,8 +1149,8 @@ void XMLProgParser::start_callstmt(const char **attr) {
         if (p)
             ((Statement*)stack.front()->stmt)->setProc(p);
         Statement *s = (Statement*)findId(getAttr(attr, "parent"));
-        if (s)
-            ((Statement*)stack.front()->stmt)->parent = s;
+//        if (s)
+//            ((Statement*)stack.front()->stmt)->parent = s;
         return;
     }
     CallStatement *call = new CallStatement();
@@ -1221,8 +1221,8 @@ void XMLProgParser::start_returnstmt(const char **attr) {
         if (p)
             ((Statement*)stack.front()->stmt)->setProc(p);
         Statement *s = (Statement*)findId(getAttr(attr, "parent"));
-        if (s)
-            ((Statement*)stack.front()->stmt)->parent = s;
+//        if (s)
+//            ((Statement*)stack.front()->stmt)->parent = s;
         return;
     }
     ReturnStatement *ret = new ReturnStatement();
@@ -1277,8 +1277,8 @@ void XMLProgParser::start_gotostmt(const char **attr) {
         if (p)
             ((Statement*)stack.front()->stmt)->setProc(p);
         Statement *s = (Statement*)findId(getAttr(attr, "parent"));
-        if (s)
-            ((Statement*)stack.front()->stmt)->parent = s;
+//        if (s)
+//            ((Statement*)stack.front()->stmt)->parent = s;
         return;
     }
     GotoStatement *branch = new GotoStatement();
@@ -1318,8 +1318,8 @@ void XMLProgParser::start_branchstmt(const char **attr) {
         if (p)
             ((Statement*)stack.front()->stmt)->setProc(p);
         Statement *s = (Statement*)findId(getAttr(attr, "parent"));
-        if (s)
-            ((Statement*)stack.front()->stmt)->parent = s;
+//        if (s)
+//            ((Statement*)stack.front()->stmt)->parent = s;
         return;
     }
     BranchStatement *branch = new BranchStatement();
@@ -1368,8 +1368,8 @@ void XMLProgParser::start_casestmt(const char **attr) {
         if (p)
             ((Statement*)stack.front()->stmt)->setProc(p);
         Statement *s = (Statement*)findId(getAttr(attr, "parent"));
-        if (s)
-            ((Statement*)stack.front()->stmt)->parent = s;
+//        if (s)
+//            ((Statement*)stack.front()->stmt)->parent = s;
         return;
     }
     CaseStatement *cas = new CaseStatement();
@@ -1409,8 +1409,8 @@ void XMLProgParser::start_boolasgn(const char **attr) {
         if (p)
             ((Statement*)stack.front()->stmt)->setProc(p);
         Statement *s = (Statement*)findId(getAttr(attr, "parent"));
-        if (s)
-            ((Statement*)stack.front()->stmt)->parent = s;
+//        if (s)
+//            ((Statement*)stack.front()->stmt)->parent = s;
         return;
     }
     const char *n = getAttr(attr, "size");
@@ -2526,8 +2526,8 @@ void XMLProgParser::persistToXML(std::ostream &out, const Statement *stmt) {
     const BoolAssign *b = dynamic_cast<const BoolAssign*>(stmt);
     if (b) {
         out << "<boolasgn id=\"" << ADDRESS::host_ptr(stmt) << "\" number=\"" << b->number << "\"";
-        if (b->parent)
-            out << " parent=\"" << ADDRESS::host_ptr(b->parent) << "\"";
+//        if (b->parent)
+//            out << " parent=\"" << ADDRESS::host_ptr(b->parent) << "\"";
         if (b->proc)
             out << " proc=\"" << ADDRESS::host_ptr(b->proc) << "\"";
         out << " jtcond=\"" << b->jtCond << "\"";
@@ -2545,8 +2545,8 @@ void XMLProgParser::persistToXML(std::ostream &out, const Statement *stmt) {
     const ReturnStatement *r = dynamic_cast<const ReturnStatement*>(stmt);
     if (r) {
         out << "<returnstmt id=\"" << ADDRESS::host_ptr(stmt) << "\" number=\"" << r->number << "\"";
-        if (r->parent)
-            out << " parent=\"" << ADDRESS::host_ptr(r->parent) << "\"";
+//        if (r->parent)
+//            out << " parent=\"" << ADDRESS::host_ptr(r->parent) << "\"";
         if (r->proc)
             out << " proc=\"" << ADDRESS::host_ptr(r->proc) << "\"";
         out << " retAddr=\"" << r->retAddr << "\"";
@@ -2570,8 +2570,8 @@ void XMLProgParser::persistToXML(std::ostream &out, const Statement *stmt) {
     if (c) {
         out << "<callstmt id=\"" << ADDRESS::host_ptr(stmt) << "\" number=\"" << c->number
             << "\" computed=\"" << (int)c->m_isComputed << "\"";
-        if (c->parent)
-            out << " parent=\"" << ADDRESS::host_ptr(c->parent) << "\"";
+//        if (c->parent)
+//            out << " parent=\"" << ADDRESS::host_ptr(c->parent) << "\"";
         if (c->proc)
             out << " proc=\"" << ADDRESS::host_ptr(c->proc) << "\"";
         out << " returnAfterCall=\"" << (int)c->returnAfterCall << "\"";
@@ -2605,8 +2605,8 @@ void XMLProgParser::persistToXML(std::ostream &out, const Statement *stmt) {
     if (ca) {
         out << "<casestmt id=\"" << ADDRESS::host_ptr(stmt) << "\" number=\"" << ca->number
             << "\" computed=\"" << (int)ca->m_isComputed << "\"";
-        if (ca->parent)
-            out << " parent=\"" << ADDRESS::host_ptr(ca->parent) << "\"";
+//        if (ca->parent)
+//            out << " parent=\"" << ADDRESS::host_ptr(ca->parent) << "\"";
         if (ca->proc)
             out << " proc=\"" << ADDRESS::host_ptr(ca->proc) << "\"";
         out << ">\n";
@@ -2625,8 +2625,8 @@ void XMLProgParser::persistToXML(std::ostream &out, const Statement *stmt) {
         out << "<branchstmt id=\"" << ADDRESS::host_ptr(stmt) << "\" number=\"" << br->number
             << "\" computed=\"" << (int)br->m_isComputed << "\""
             << " jtcond=\"" << br->jtCond << "\" float=\"" << (int)br->bFloat << "\"";
-        if (br->parent)
-            out << " parent=\"" << ADDRESS::host_ptr(br->parent) << "\"";
+//        if (br->parent)
+//            out << " parent=\"" << ADDRESS::host_ptr(br->parent) << "\"";
         if (br->proc)
             out << " proc=\"" << ADDRESS::host_ptr(br->proc) << "\"";
         out << ">\n";
@@ -2647,8 +2647,8 @@ void XMLProgParser::persistToXML(std::ostream &out, const Statement *stmt) {
     if (g) {
         out << "<gotostmt id=\"" << ADDRESS::host_ptr(stmt) << "\" number=\"" << g->number << "\""
             << " computed=\"" << (int) g->m_isComputed << "\"";
-        if (g->parent)
-            out << " parent=\"" << ADDRESS::host_ptr(g->parent) << "\"";
+//        if (g->parent)
+//            out << " parent=\"" << ADDRESS::host_ptr(g->parent) << "\"";
         if (g->proc)
             out << " proc=\"" << ADDRESS::host_ptr(g->proc) << "\"";
         out << ">\n";
@@ -2663,8 +2663,8 @@ void XMLProgParser::persistToXML(std::ostream &out, const Statement *stmt) {
     const PhiAssign *p = dynamic_cast<const PhiAssign*>(stmt);
     if (p) {
         out << "<phiassign id=\"" << ADDRESS::host_ptr(stmt) << "\" number=\"" << p->number << "\"";
-        if (p->parent)
-            out << " parent=\"" << ADDRESS::host_ptr(p->parent) << "\"";
+//        if (p->parent)
+//            out << " parent=\"" << ADDRESS::host_ptr(p->parent) << "\"";
         if (p->proc)
             out << " proc=\"" << ADDRESS::host_ptr(p->proc) << "\"";
         out << ">\n";
@@ -2680,8 +2680,8 @@ void XMLProgParser::persistToXML(std::ostream &out, const Statement *stmt) {
     const Assign *a = dynamic_cast<const Assign*>(stmt);
     if (a) {
         out << "<assign id=\"" << ADDRESS::host_ptr(stmt) << "\" number=\"" << a->number << "\"";
-        if (a->parent)
-            out << " parent=\"" << ADDRESS::host_ptr(a->parent) << "\"";
+//        if (a->parent)
+//            out << " parent=\"" << ADDRESS::host_ptr(a->parent) << "\"";
         if (a->proc)
             out << " proc=\"" << ADDRESS::host_ptr(a->proc) << "\"";
         out << ">\n";

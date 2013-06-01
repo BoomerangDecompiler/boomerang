@@ -135,7 +135,7 @@ enum BRANCH_TYPE {
 class Statement {
 protected:
         typedef std::map<Exp*, int, lessExpStar> mExpInt;
-        BasicBlock *    pbb;            // contains a pointer to the enclosing BB
+        BasicBlock *    Parent;          // contains a pointer to the enclosing BB
         UserProc *      proc;            // procedure containing this statement
         int             number;            // Statement number for printing
 #if        USE_DOMINANCE_NUMS
@@ -146,7 +146,7 @@ public:
 protected:
 #endif
         STMT_KIND       kind;            // Statement kind (e.g. STMT_BRANCH)
-        Statement *     parent;        // The statement that contains this one
+        //Statement *     parent;        // The statement that contains this one
         RangeMap        ranges;            // overestimation of ranges of locations
         RangeMap        savedInputRanges;  // saved overestimation of ranges of locations
 
@@ -154,12 +154,12 @@ protected:
 
 public:
 
-                    Statement() : pbb(nullptr), proc(nullptr), number(0), parent(nullptr) { }
+                    Statement() : Parent(nullptr), proc(nullptr), number(0) { } //, parent(nullptr)
 virtual                ~Statement() { }
 
         // get/set the enclosing BB, etc
-        BasicBlock *            getBB() { return pbb; }
-        void        setBB(BasicBlock * bb) {pbb = bb; }
+        BasicBlock *            getBB() { return Parent; }
+        void        setBB(BasicBlock * bb) {Parent = bb; }
 
 //        bool        operator==(Statement& o);
         // Get and set *enclosing* proc (not destination proc)
@@ -172,8 +172,8 @@ virtual    void        setNumber(int num) {number = num;}        // Overridden f
         STMT_KIND    getKind() { return kind;}
         void        setKind(STMT_KIND k) {kind = k;}
 
-        void        setParent(Statement* par) {parent = par;}
-        Statement*    getParent() {return parent;}
+//        void        setParent(Statement* par) {parent = par;}
+//        Statement*    getParent() {return parent;}
 
         RangeMap &getRanges() { return ranges; }
         void      clearRanges() { ranges.clear(); }
@@ -272,7 +272,7 @@ static    bool        canPropagateToExp(Exp* e);
         bool        propagateFlagsTo();
 
         // code generation
-virtual void        generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) = 0;
+virtual void        generateCode(HLLCode *hll, BasicBlock *Parent, int indLevel) = 0;
 virtual void        simplify() = 0; //!< simpify internal expressions
 
         // simplify internal address expressions (a[m[x]] -> x) etc
@@ -509,7 +509,7 @@ virtual bool        searchAndReplace(const Exp *search, Exp *replace, bool cc = 
         int            getMemDepth();
 
         // Generate code
-virtual void        generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel);
+virtual void        generateCode(HLLCode *hll, BasicBlock *Parent, int indLevel);
 
         // simpify internal expressions
 virtual void        simplify();
@@ -704,7 +704,7 @@ virtual bool        accept(StmtPartModifier* visitor);
         void        makeSigned();
 
 virtual void        printCompact(std::ostream& os = std::cout, bool html = false) const;
-virtual void        generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel);
+virtual void        generateCode(HLLCode *hll, BasicBlock *Parent, int indLevel);
 virtual void        simplify();
 
                     // Statement functions
@@ -815,7 +815,7 @@ virtual bool        searchAndReplace(const Exp* search, Exp* replace, bool cc = 
 virtual bool        searchAll(const Exp *search, std::list<Exp*> &result);
 
                     // code generation
-virtual void        generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel);
+virtual void        generateCode(HLLCode *hll, BasicBlock *Parent, int indLevel);
 
                     // simplify all the uses/defs in this Statement
 virtual void        simplify();
@@ -922,7 +922,7 @@ virtual bool        searchAndReplace(const Exp* search, Exp* replace, bool cc = 
 virtual bool        searchAll(const Exp *search, std::list<Exp*> &result);
 
         // code generation
-virtual void        generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel);
+virtual void        generateCode(HLLCode *hll, BasicBlock *Parent, int indLevel);
 
         // dataflow analysis
 virtual bool        usesExp(Exp *e);
@@ -990,7 +990,7 @@ virtual bool    searchAndReplace(const Exp* search, Exp* replace, bool cc = fals
 virtual bool        searchAll(const Exp *search, std::list<Exp*> &result);
 
         // code generation
-virtual void        generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel);
+virtual void        generateCode(HLLCode *hll, BasicBlock *Parent, int indLevel);
 
         // dataflow analysis
 virtual bool        usesExp(Exp *e);
@@ -1131,7 +1131,7 @@ virtual void        genConstraints(LocationSet& cons);
         void        dfaTypeAnalysis(bool& ch);
 
         // code generation
-virtual void        generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel);
+virtual void        generateCode(HLLCode *hll, BasicBlock *Parent, int indLevel);
 
         // dataflow analysis
 virtual bool        usesExp(Exp *e);
@@ -1277,7 +1277,7 @@ virtual bool        accept(StmtPartModifier* visitor);
 virtual bool        definesLoc(Exp* loc);                    // True if this Statement defines loc
 
         // code generation
-virtual void        generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel);
+virtual void        generateCode(HLLCode *hll, BasicBlock *Parent, int indLevel);
 
         //Exp        *getReturnExp(int n) { return returns[n]; }
         //void        setReturnExp(int n, Exp *e) { returns[n] = e; }

@@ -124,9 +124,9 @@ RangeMap Statement::getInputRanges() {
         return savedInputRanges;
     }
 
-    assert(pbb && pbb->getNumInEdges() <= 1);
+    assert(Parent && Parent->getNumInEdges() <= 1);
     RangeMap input;
-    if (pbb->getNumInEdges() == 0) {
+    if (Parent->getNumInEdges() == 0) {
         // setup input for start of procedure
         Range ra24(1, 0, 0, new Unary(opInitValueOf, Location::regOf(24)));
         Range ra25(1, 0, 0, new Unary(opInitValueOf, Location::regOf(25)));
@@ -147,7 +147,7 @@ RangeMap Statement::getInputRanges() {
         input.addRange(Location::regOf(31), ra31);
         input.addRange(new Terminal(opPC), rpc);
     } else {
-        BasicBlock * pred = pbb->getInEdges()[0];
+        BasicBlock * pred = Parent->getInEdges()[0];
         Statement *last = pred->getLastStmt();
         assert(last);
         if (pred->getNumOutEdges() != 2) {
@@ -155,7 +155,7 @@ RangeMap Statement::getInputRanges() {
         } else {
             assert(pred->getNumOutEdges() == 2);
             assert(last->isBranch());
-            input = ((BranchStatement*)last)->getRangesForOutEdgeTo(pbb);
+            input = ((BranchStatement*)last)->getRangesForOutEdgeTo(Parent);
         }
     }
 
@@ -171,15 +171,15 @@ void Statement::updateRanges(RangeMap &output, std::list<Statement*> &execution_
         else
             ranges = output;
         if (isLastStatementInBB()) {
-            if (pbb->getNumOutEdges()) {
+            if (Parent->getNumOutEdges()) {
                 int arc = 0;
                 if (isBranch()) {
-                    if (pbb->getOutEdge(0)->getLowAddr() != ((BranchStatement*)this)->getFixedDest())
+                    if (Parent->getOutEdge(0)->getLowAddr() != ((BranchStatement*)this)->getFixedDest())
                         arc = 1;
                     if (notTaken)
                         arc ^= 1;
                 }
-                execution_paths.push_back(pbb->getOutEdge(arc)->getFirstStmt());
+                execution_paths.push_back(Parent->getOutEdge(arc)->getFirstStmt());
             }
         } else
             execution_paths.push_back(getNextStatementInBB());
@@ -376,12 +376,12 @@ void JunctionStatement::rangeAnalysis(std::list<Statement*> &execution_paths) {
     RangeMap input;
     if (DEBUG_RANGE_ANALYSIS)
         LOG_VERBOSE(1) << "unioning {\n";
-    for (int i = 0; i < pbb->getNumInEdges(); i++) {
-        Statement *last = pbb->getInEdges()[i]->getLastStmt();
+    for (int i = 0; i < Parent->getNumInEdges(); i++) {
+        Statement *last = Parent->getInEdges()[i]->getLastStmt();
         if (DEBUG_RANGE_ANALYSIS)
-            LOG_VERBOSE(1) << "  in BB: " << pbb->getInEdges()[i]->getLowAddr() << " " << last << "\n";
+            LOG_VERBOSE(1) << "  in BB: " << Parent->getInEdges()[i]->getLowAddr() << " " << last << "\n";
         if (last->isBranch()) {
-            input.unionwith(((BranchStatement*)last)->getRangesForOutEdgeTo(pbb));
+            input.unionwith(((BranchStatement*)last)->getRangesForOutEdgeTo(Parent));
         } else {
             if (last->isCall()) {
                 Proc *d = ((CallStatement*)last)->getDestProc();
@@ -403,7 +403,7 @@ void JunctionStatement::rangeAnalysis(std::list<Statement*> &execution_paths) {
         if (output.hasRange(Location::regOf(28))) {
             Range &r = output.getRange(Location::regOf(28));
             if (r.getLowerBound() != r.getUpperBound() && r.getLowerBound() != Range::MIN) {
-                LOG_VERBOSE(1) << "stack height assumption violated " << r << " my bb: " << pbb->getLowAddr() << "\n";
+                LOG_VERBOSE(1) << "stack height assumption violated " << r << " my bb: " << Parent->getLowAddr() << "\n";
                 LOG << *proc;
                 assert(false);
             }
@@ -442,7 +442,7 @@ void CallStatement::rangeAnalysis(std::list<Statement*> &execution_paths) {
                     Exp* a = sig->getParamExp(i);
                     Assign* as = new Assign(new VoidType(), a->clone(), a->clone());
                     as->setProc(proc);
-                    as->setBB(pbb);
+                    as->setBB(Parent);
                     arguments.append(as);
                 }
                 signature = procDest->getSignature()->clone();
@@ -537,8 +537,8 @@ void CallStatement::rangeAnalysis(std::list<Statement*> &execution_paths) {
 }
 
 bool JunctionStatement::isLoopJunction() const {
-    for (int i = 0; i < pbb->getNumInEdges(); i++)
-        if (pbb->isBackEdge(i))
+    for (int i = 0; i < Parent->getNumInEdges(); i++)
+        if (Parent->isBackEdge(i))
             return true;
     return false;
 }
@@ -551,22 +551,22 @@ RangeMap &BranchStatement::getRangesForOutEdgeTo(BasicBlock * out) {
 }
 
 bool Statement::isFirstStatementInBB() {
-    assert(pbb);
-    assert(pbb->getRTLs());
-    assert(pbb->getRTLs()->size());
-    assert(pbb->getRTLs()->front());
-    assert(pbb->getRTLs()->front()->size());
-    return this == pbb->getRTLs()->front()->front();
+    assert(Parent);
+    assert(Parent->getRTLs());
+    assert(Parent->getRTLs()->size());
+    assert(Parent->getRTLs()->front());
+    assert(Parent->getRTLs()->front()->size());
+    return this == Parent->getRTLs()->front()->front();
 }
 
 bool Statement::isLastStatementInBB() {
-    assert(pbb);
-    return this == pbb->getLastStmt();
+    assert(Parent);
+    return this == Parent->getLastStmt();
 }
 
 Statement*    Statement::getPreviousStatementInBB() {
-    assert(pbb);
-    std::list<RTL*> *rtls = pbb->getRTLs();
+    assert(Parent);
+    std::list<RTL*> *rtls = Parent->getRTLs();
     assert(rtls);
     Statement *previous = nullptr;
     for (std::list<RTL*>::iterator rit = rtls->begin(); rit != rtls->end(); rit++) {
@@ -581,8 +581,8 @@ Statement*    Statement::getPreviousStatementInBB() {
 }
 
 Statement *Statement::getNextStatementInBB() {
-    assert(pbb);
-    std::list<RTL*> *rtls = pbb->getRTLs();
+    assert(Parent);
+    std::list<RTL*> *rtls = Parent->getRTLs();
     assert(rtls);
     bool wantNext = false;
     for (std::list<RTL*>::iterator rit = rtls->begin(); rit != rtls->end(); rit++) {
@@ -1145,7 +1145,7 @@ Statement* GotoStatement::clone() const {
     ret->pDest = pDest->clone();
     ret->m_isComputed = m_isComputed;
     // Statement members
-    ret->pbb = pbb;
+    ret->Parent = Parent;
     ret->proc = proc;
     ret->number = number;
     return ret;
@@ -1310,13 +1310,13 @@ BasicBlock *    BranchStatement::getFallBB() {
     ADDRESS a = getFixedDest();
     if (a == NO_ADDRESS)
         return nullptr;
-    if (pbb == nullptr)
+    if (Parent == nullptr)
         return nullptr;
-    if (pbb->getNumOutEdges() != 2)
+    if (Parent->getNumOutEdges() != 2)
         return nullptr;
-    if (pbb->getOutEdge(0)->getLowAddr() == a)
-        return pbb->getOutEdge(1);
-    return pbb->getOutEdge(0);
+    if (Parent->getOutEdge(0)->getLowAddr() == a)
+        return Parent->getOutEdge(1);
+    return Parent->getOutEdge(0);
 }
 
 // not that if you set the taken BB or fixed dest first, you will not be able to set the fall BB
@@ -1324,18 +1324,18 @@ void BranchStatement::setFallBB(BasicBlock * bb) {
     ADDRESS a = getFixedDest();
     if (a == NO_ADDRESS)
         return;
-    if (pbb == nullptr)
+    if (Parent == nullptr)
         return;
-    if (pbb->getNumOutEdges() != 2)
+    if (Parent->getNumOutEdges() != 2)
         return;
-    if (pbb->getOutEdge(0)->getLowAddr() == a) {
-        pbb->getOutEdge(1)->deleteInEdge(pbb);
-        pbb->setOutEdge(1, bb);
-        bb->addInEdge(pbb);
+    if (Parent->getOutEdge(0)->getLowAddr() == a) {
+        Parent->getOutEdge(1)->deleteInEdge(Parent);
+        Parent->setOutEdge(1, bb);
+        bb->addInEdge(Parent);
     } else {
-        pbb->getOutEdge(0)->deleteInEdge(pbb);
-        pbb->setOutEdge(0, bb);
-        bb->addInEdge(pbb);
+        Parent->getOutEdge(0)->deleteInEdge(Parent);
+        Parent->setOutEdge(0, bb);
+        bb->addInEdge(Parent);
     }
 }
 
@@ -1343,31 +1343,31 @@ BasicBlock *    BranchStatement::getTakenBB() {
     ADDRESS a = getFixedDest();
     if (a == NO_ADDRESS)
         return nullptr;
-    if (pbb == nullptr)
+    if (Parent == nullptr)
         return nullptr;
-    if (pbb->getNumOutEdges() != 2)
+    if (Parent->getNumOutEdges() != 2)
         return nullptr;
-    if (pbb->getOutEdge(0)->getLowAddr() == a)
-        return pbb->getOutEdge(0);
-    return pbb->getOutEdge(1);
+    if (Parent->getOutEdge(0)->getLowAddr() == a)
+        return Parent->getOutEdge(0);
+    return Parent->getOutEdge(1);
 }
 
 void BranchStatement::setTakenBB(BasicBlock * bb) {
     ADDRESS a = getFixedDest();
     if (a == NO_ADDRESS)
         return;
-    if (pbb == nullptr)
+    if (Parent == nullptr)
         return;
-    if (pbb->getNumOutEdges() != 2)
+    if (Parent->getNumOutEdges() != 2)
         return;
-    if (pbb->getOutEdge(0)->getLowAddr() == a) {
-        pbb->getOutEdge(0)->deleteInEdge(pbb);
-        pbb->setOutEdge(0, bb);
-        bb->addInEdge(pbb);
+    if (Parent->getOutEdge(0)->getLowAddr() == a) {
+        Parent->getOutEdge(0)->deleteInEdge(Parent);
+        Parent->setOutEdge(0, bb);
+        bb->addInEdge(Parent);
     } else {
-        pbb->getOutEdge(1)->deleteInEdge(pbb);
-        pbb->setOutEdge(1, bb);
-        bb->addInEdge(pbb);
+        Parent->getOutEdge(1)->deleteInEdge(Parent);
+        Parent->setOutEdge(1, bb);
+        bb->addInEdge(Parent);
     }
 }
 
@@ -1473,7 +1473,7 @@ Statement* BranchStatement::clone() const {
     else ret->pCond = nullptr;
     ret->bFloat = bFloat;
     // Statement members
-    ret->pbb = pbb;
+    ret->Parent = Parent;
     ret->proc = proc;
     ret->number = number;
     return ret;
@@ -1868,7 +1868,7 @@ Statement* CaseStatement::clone() const {
     *ret->pSwitchInfo = *pSwitchInfo;
     ret->pSwitchInfo->pSwitchVar = pSwitchInfo->pSwitchVar->clone();
     // Statement members
-    ret->pbb = pbb;
+    ret->Parent = Parent;
     ret->proc = proc;
     ret->number = number;
     return ret;
@@ -1992,15 +1992,15 @@ void CallStatement::setArguments(StatementList& args) {
     StatementList::iterator ll;
     for (ll = arguments.begin(); ll != arguments.end(); ++ll) {
         ((Assign*)*ll)->setProc(proc);
-        ((Assign*)*ll)->setBB(pbb);
+        ((Assign*)*ll)->setBB(Parent);
     }
 }
 
 /***************************************************************************//**
  * FUNCTION:      CallStatement::setSigArguments
  * \brief      Set the arguments of this call based on signature info
- * NOTE:          Should only be called for calls to library functions
- * PARAMETERS:      None
+ * \note Should only be called for calls to library functions
+ *
  *
  ******************************************************************************/
 void CallStatement::setSigArguments() {
@@ -2026,9 +2026,9 @@ void CallStatement::setSigArguments() {
         }
         Assign* as = new Assign(signature->getParamType(i)->clone(), e->clone(), e->clone());
         as->setProc(proc);
-        as->setBB(pbb);
+        as->setBB(Parent);
         as->setNumber(number);        // So fromSSAform will work later. But note: this call is probably not numbered yet!
-        as->setParent(this);
+        //as->setParent(this);
         arguments.append(as);
     }
 
@@ -2220,7 +2220,7 @@ Statement* CallStatement::clone() const {
     for (ss = defines.begin(); ss != defines.end(); ++ss)
         ret->defines.append((*ss)->clone());
     // Statement members
-    ret->pbb = pbb;
+    ret->Parent = Parent;
     ret->proc = proc;
     ret->number = number;
     return ret;
@@ -2260,7 +2260,9 @@ void CallStatement::generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) {
     assert(p);
     if (Boomerang::get()->noDecompile) {
         if (procDest->getSignature()->getNumReturns() > 0) {
-            Assign* as = new Assign(new IntegerType(), new Unary(opRegOf, new Const(24)), new Unary(opRegOf, new Const(24)));
+            Assign* as = new Assign(new IntegerType(STD_SIZE),
+                                    new Unary(opRegOf, new Const(24)),
+                                    new Unary(opRegOf, new Const(24)));
             as->setProc(proc);
             as->setBB(pbb);
             results->append(as);
@@ -2404,7 +2406,7 @@ bool CallStatement::convertToDirect() {
         Exp* a = sig->getParamExp(i);
         Assign* as = new Assign(new VoidType(), a->clone(), a->clone());
         as->setProc(proc);
-        as->setBB(pbb);
+        as->setBB(Parent);
         arguments.append(as);
     }
     // std::cerr << "Step 3a: arguments now: ";
@@ -2465,7 +2467,7 @@ void CallStatement::setNumArguments(int n) {
             ty = new VoidType();
         Assign* as = new Assign(ty, a->clone(), a->clone());
         as->setProc(proc);
-        as->setBB(pbb);
+        as->setBB(Parent);
         arguments.append(as);
     }
 }
@@ -2717,7 +2719,7 @@ bool CallStatement::ellipsisProcessing(Prog* prog) {
                     // Example: printf("Val: %*.*f\n", width, precision, val);
                     n++;        // There is an extra parameter for the width or precision
                     // This extra parameter is of type integer, never int* (so pass false as last argument)
-                    addSigParam(new IntegerType(), false);
+                    addSigParam(new IntegerType(STD_SIZE), false);
                     continue;
                 case '-': case '+': case '#': case ' ':
                     // Flag. Ignore
@@ -2786,7 +2788,7 @@ Assign* CallStatement::makeArgAssign(Type* ty, Exp* e) {
     Exp* rhs = localiseExp(e->clone());
     Assign* as = new Assign(ty, lhs, rhs);
     as->setProc(proc);
-    as->setBB(pbb);
+    as->setBB(Parent);
     // It may need implicit converting (e.g. sp{-} -> sp{0})
     Cfg* cfg = proc->getCFG();
     if (cfg->implicitsDone()) {
@@ -2814,22 +2816,10 @@ void CallStatement::addSigParam(Type* ty, bool isScanf) {
  * ReturnStatement methods
  **********************************/
 
-/***************************************************************************//**
- * FUNCTION:         ReturnStatement::ReturnStatement
- * \brief         Constructor.
- * PARAMETERS:         None
- *
- ******************************************************************************/
 ReturnStatement::ReturnStatement() : retAddr(NO_ADDRESS) {
     kind = STMT_RET;
 }
 
-/***************************************************************************//**
- * FUNCTION:         ReturnStatement::~ReturnStatement
- * \brief         Destructor.
- * PARAMETERS:         <none>
- *
- ******************************************************************************/
 ReturnStatement::~ReturnStatement() {
 }
 
@@ -2846,7 +2836,7 @@ Statement* ReturnStatement::clone() const {
     ret->retAddr = retAddr;
     ret->col.makeCloneOf(col);
     // Statement members
-    ret->pbb = pbb;
+    ret->Parent = Parent;
     ret->proc = proc;
     ret->number = number;
     return ret;
@@ -2873,8 +2863,7 @@ void ReturnStatement::simplify() {
 void ReturnStatement::removeReturn(Exp* loc) {
     if (loc->isSubscript())
         loc = ((Location*)loc)->getSubExp1();
-    iterator rr;
-    for (rr = returns.begin(); rr != returns.end(); ++rr) {
+    for (iterator rr = returns.begin(); rr != returns.end(); ++rr) {
         if (*((Assignment*)*rr)->getLeft() == *loc) {
             returns.erase(rr);
             return;                    // Assume only one definition
@@ -3062,7 +3051,7 @@ Statement* BoolAssign::clone() const {
     ret->bFloat = bFloat;
     ret->size = size;
     // Statement members
-    ret->pbb = pbb;
+    ret->Parent = Parent;
     ret->proc = proc;
     ret->number = number;
     return ret;
@@ -3181,7 +3170,7 @@ Statement* Assign::clone() const {
     Assign* a = new Assign(type == nullptr ? nullptr : type->clone(), lhs->clone(), rhs->clone(),
                            guard == nullptr ? nullptr : guard->clone());
     // Statement members
-    a->pbb = pbb;
+    a->Parent = Parent;
     a->proc = proc;
     a->number = number;
     return a;
@@ -4156,7 +4145,7 @@ void PhiAssign::convertToAssign(Exp* rhs) {
     // Thanks to tamlin for this cleaner way of implementing this hack
     assert(sizeof(Assign) <= sizeof(PhiAssign));
     int n = number;                                    // These items disappear with the destructor below
-    BasicBlock * bb = pbb;
+    BasicBlock * bb = Parent;
     UserProc* p = proc;
     Exp* lhs_ = lhs;
     Exp* rhs_ = rhs;
@@ -4367,8 +4356,8 @@ void ReturnStatement::updateModifieds() {
     StatementList oldMods(modifieds);                    // Copy the old modifieds
     modifieds.clear();
 
-    if (pbb->getNumInEdges() == 1 && pbb->getInEdges()[0]->getLastStmt()->isCall()) {
-        CallStatement *call = (CallStatement*)pbb->getInEdges()[0]->getLastStmt();
+    if (Parent->getNumInEdges() == 1 && Parent->getInEdges()[0]->getLastStmt()->isCall()) {
+        CallStatement *call = (CallStatement*)Parent->getInEdges()[0]->getLastStmt();
         if (call->getDestProc() && FrontEnd::noReturnCallDest(call->getDestProc()->getName()))
             return;
     }
@@ -4395,7 +4384,7 @@ void ReturnStatement::updateModifieds() {
                         as->getType()->clone(),
                         as->getLeft()->clone());
             ias->setProc(proc);                            // Comes from the Collector
-            ias->setBB(pbb);
+            ias->setBB(Parent);
             oldMods.append(ias);
         }
     }
@@ -4457,7 +4446,7 @@ void ReturnStatement::updateReturns() {
             Exp* rhs = col.findDefFor(loc);            // Find the definition that reaches the return statement's collector
             Assign* as = new Assign(loc->clone(), rhs->clone());
             as->setProc(proc);
-            as->setBB(pbb);
+            as->setBB(Parent);
             oldRets.append(as);
         }
     }
@@ -4542,7 +4531,7 @@ void CallStatement::updateDefines() {
             if (!oldDefines.existsOnLeft(loc)) {
                 ImplicitAssign* as = new ImplicitAssign(loc->clone());
                 as->setProc(proc);
-                as->setBB(pbb);
+                as->setBB(Parent);
                 oldDefines.append(as);
             }
         }
@@ -4766,9 +4755,9 @@ void CallStatement::updateArguments() {
             Type* ty = asp.curType(loc);
             Assign* as = new Assign(ty, loc->clone(), rhs);
             as->setNumber(number);            // Give the assign the same statement number as the call (for now)
-            as->setParent(this);
+            //as->setParent(this);
             as->setProc(proc);
-            as->setBB(pbb);
+            as->setBB(Parent);
             oldArguments.append(as);
         }
     }
@@ -5060,9 +5049,9 @@ void JunctionStatement::print(std::ostream &os, bool html) const {
         os << "<a name=\"stmt" << std::dec << number << "\">";
     }
     os << "JUNCTION ";
-    for (int i = 0; i < pbb->getNumInEdges(); i++) {
-        os << std::hex << pbb->getInEdges()[i]->getHiAddr() << std::dec;
-        if (pbb->isBackEdge(i))
+    for (int i = 0; i < Parent->getNumInEdges(); i++) {
+        os << std::hex << Parent->getInEdges()[i]->getHiAddr() << std::dec;
+        if (Parent->isBackEdge(i))
             os << "*";
         os << " ";
     }
