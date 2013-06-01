@@ -1,4 +1,4 @@
-#define YY_AnsiCParser_h_included
+#include "ansi-c-parser.h"
 
 /*  A Bison++ parser, made from ansi-c.y  */
 
@@ -26,9 +26,6 @@
    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* HEADER SECTION */
-#if defined( _MSDOS ) || defined(MSDOS) || defined(__MSDOS__)
-#define __MSDOS_AND_ALIKE
-#endif
 #if defined(_WINDOWS) && defined(_MSC_VER)
 #define __HAVE_NO_ALLOCA
 #define __MSDOS_AND_ALIKE
@@ -38,8 +35,6 @@
 #if defined( __GNUC__)
 #define alloca __builtin_alloca
 
-#elif (!defined (__STDC__) && defined (sparc)) || defined (__sparc__) || defined (__sparc)  || defined (__sgi)
-#include <alloca.h>
 
 #elif defined (__MSDOS_AND_ALIKE)
 #include <malloc.h>
@@ -48,58 +43,13 @@
 #define alloca _alloca
 #endif
 
-#elif defined(_AIX)
-#include <malloc.h>
-#pragma alloca
-
-#elif defined(__hpux)
-#ifdef __cplusplus
-extern "C" {
-void *alloca (unsigned int);
-};
-#else /* not __cplusplus */
-void *alloca ();
-#endif /* not __cplusplus */
 
 #endif /* not _AIX  not MSDOS, or __TURBOC__ or _AIX, not sparc.  */
 #endif /* alloca not defined.  */
-#ifdef c_plusplus
-#ifndef __cplusplus
-#define __cplusplus
-#endif
-#endif
-#ifdef __cplusplus
-#ifndef YY_USE_CLASS
-#define YY_USE_CLASS
-#endif
-#else
-#ifndef __STDC__
-#define const
-#endif
-#endif
-#include <stdio.h>
-
-#define YY_AnsiCParser_DEBUG  1
-#define YY_AnsiCParser_PARSE_PARAM  \
-    platform plat, callconv cc
-#define YY_AnsiCParser_CONSTRUCTOR_PARAM  \
-    std::istream &in, bool trace
-#define YY_AnsiCParser_CONSTRUCTOR_INIT
-#define YY_AnsiCParser_CONSTRUCTOR_CODE  \
-    theScanner = new AnsiCScanner(in, trace); \
-    if (trace) yydebug = 1; else yydebug = 0;
-#define YY_AnsiCParser_MEMBERS  \
-    private:        \
-    AnsiCScanner *theScanner; \
-    public: \
-    std::list<Signature*> signatures; \
-    std::list<Symbol*> symbols; \
-    std::list<SymbolRef*> refs;\
-    virtual ~AnsiCParser();
-
-
+#include <cstdio>
 #include <list>
 #include <string>
+
 #include "exp.h"
 #include "type.h"
 #include "cfg.h"
@@ -111,667 +61,22 @@ void *alloca ();
 #endif
 
 class AnsiCScanner;
-
-class TypeIdent {
-public:
-    Type *ty;
-    std::string nam;
-};
-
 class SymbolMods;
 
-class Symbol {
-public:
-    ADDRESS addr;
-    std::string nam;
-    Type *ty;
-    Signature *sig;
-    SymbolMods *mods;
-
-    Symbol(ADDRESS a) : addr(a), nam(""), ty(nullptr), sig(nullptr),
-        mods(nullptr) { }
-};
-
-class SymbolMods {
-public:
-    bool noDecode;
-    bool incomplete;
-
-    SymbolMods() : noDecode(false), incomplete(false) { }
-};
-
-class CustomOptions {
-public:
-    Exp *exp;
-    int sp;
-
-    CustomOptions() : exp(nullptr), sp(0) { }
-};
-
-class SymbolRef {
-public:
-    ADDRESS addr;
-    std::string nam;
-
-    SymbolRef(ADDRESS a, const char *_nam) : addr(a), nam(_nam) { }
-};
-
-class Bound {
-public:
-    int kind;
-    std::string nam;
-
-    Bound(int _kind, const char *_nam) : kind(_kind), nam(_nam) { }
-};
-
-
-
-typedef union {
-    int ival;
-    char *str;
-    Type *type;
-    std::list<Parameter*> *param_list;
-    std::list<int> *num_list;
-    Parameter *param;
-    Exp *exp;
-    Signature *sig;
-    TypeIdent *type_ident;
-    Bound *bound;
-    std::list<TypeIdent*> *type_ident_list;
-    SymbolMods *mods;
-    CustomOptions *custom_options;
-    callconv cc;
-} yy_AnsiCParser_stype;
-#define YY_AnsiCParser_STYPE yy_AnsiCParser_stype
-
-
 #include "ansi-c-scanner.h"
-
-
-/* %{ and %header{ and %union, during decl */
-#ifndef YY_AnsiCParser_COMPATIBILITY
-#ifndef YY_USE_CLASS
-#define  YY_AnsiCParser_COMPATIBILITY 1
-#else
-#define  YY_AnsiCParser_COMPATIBILITY 0
-#endif
-#endif
-
-#if YY_AnsiCParser_COMPATIBILITY != 0
-/* backward compatibility */
-#ifdef YYLTYPE
-#ifndef YY_AnsiCParser_LTYPE
-#define YY_AnsiCParser_LTYPE YYLTYPE
-#endif
-#endif
-#ifdef YYSTYPE
-#ifndef YY_AnsiCParser_STYPE
-#define YY_AnsiCParser_STYPE YYSTYPE
-#endif
-#endif
-#ifdef YYDEBUG
-#ifndef YY_AnsiCParser_DEBUG
-#define  YY_AnsiCParser_DEBUG YYDEBUG
-#endif
-#endif
-#ifdef YY_AnsiCParser_STYPE
-#ifndef yystype
-#define yystype YY_AnsiCParser_STYPE
-#endif
-#endif
-/* use goto to be compatible */
-#ifndef YY_AnsiCParser_USE_GOTO
-#define YY_AnsiCParser_USE_GOTO 1
-#endif
-#endif
-
-/* use no goto to be clean in C++ */
-#ifndef YY_AnsiCParser_USE_GOTO
-#define YY_AnsiCParser_USE_GOTO 0
-#endif
-
-#ifndef YY_AnsiCParser_PURE
-
-
-
-
-
-/*  YY_AnsiCParser_PURE */
-#endif
-
 /* section apres lecture def, avant lecture grammaire S2 */
 
-
-
-
-
 /* prefix */
-#ifndef YY_AnsiCParser_DEBUG
-
-
-
-
-
-/* YY_AnsiCParser_DEBUG */
+AnsiCParser::AnsiCParser(std::istream &in, bool trace) {
+#if YY_AnsiCParser_DEBUG != 0
+    yydebug=0;
 #endif
-
-
-#ifndef YY_AnsiCParser_LSP_NEEDED
-
-
-
-
-
-/* YY_AnsiCParser_LSP_NEEDED*/
-#endif
-
-
-
-/* DEFAULT LTYPE*/
-#ifdef YY_AnsiCParser_LSP_NEEDED
-#ifndef YY_AnsiCParser_LTYPE
-typedef
-struct yyltype
-{
-    int timestamp;
-    int first_line;
-    int first_column;
-    int last_line;
-    int last_column;
-    char *text;
+    theScanner = new AnsiCScanner(in, trace);
+    if (trace)
+        yydebug = 1;
+    else
+        yydebug = 0;
 }
-yyltype;
-
-#define YY_AnsiCParser_LTYPE yyltype
-#endif
-#endif
-/* DEFAULT STYPE*/
-/* We used to use `unsigned long' as YY_AnsiCParser_STYPE on MSDOS,
-         but it seems better to be consistent.
-         Most programs should declare their own type anyway.  */
-
-#ifndef YY_AnsiCParser_STYPE
-#define YY_AnsiCParser_STYPE int
-#endif
-/* DEFAULT MISCELANEOUS */
-#ifndef YY_AnsiCParser_PARSE
-#define YY_AnsiCParser_PARSE yyparse
-#endif
-#ifndef YY_AnsiCParser_LEX
-#define YY_AnsiCParser_LEX yylex
-#endif
-#ifndef YY_AnsiCParser_LVAL
-#define YY_AnsiCParser_LVAL yylval
-#endif
-#ifndef YY_AnsiCParser_NERRS
-#define YY_AnsiCParser_NERRS yynerrs
-#endif
-#ifndef YY_AnsiCParser_DEBUG_FLAG
-#define YY_AnsiCParser_DEBUG_FLAG yydebug
-#endif
-#ifndef YY_AnsiCParser_ERROR
-#define YY_AnsiCParser_ERROR yyerror
-#endif
-#ifndef YY_AnsiCParser_PARSE_PARAM
-#ifndef __STDC__
-#ifndef __cplusplus
-#ifndef YY_USE_CLASS
-#define YY_AnsiCParser_PARSE_PARAM
-#ifndef YY_AnsiCParser_PARSE_PARAM_DEF
-#define YY_AnsiCParser_PARSE_PARAM_DEF
-#endif
-#endif
-#endif
-#endif
-#ifndef YY_AnsiCParser_PARSE_PARAM
-#define YY_AnsiCParser_PARSE_PARAM void
-#endif
-#endif
-#if YY_AnsiCParser_COMPATIBILITY != 0
-/* backward compatibility */
-#ifdef YY_AnsiCParser_LTYPE
-#ifndef YYLTYPE
-#define YYLTYPE YY_AnsiCParser_LTYPE
-#else
-/* WARNING obsolete !!! user defined YYLTYPE not reported into generated header */
-#endif
-#endif
-#ifndef YYSTYPE
-#define YYSTYPE YY_AnsiCParser_STYPE
-#else
-/* WARNING obsolete !!! user defined YYSTYPE not reported into generated header */
-#endif
-#ifdef YY_AnsiCParser_PURE
-#ifndef YYPURE
-#define YYPURE YY_AnsiCParser_PURE
-#endif
-#endif
-#ifdef YY_AnsiCParser_DEBUG
-#ifndef YYDEBUG
-#define YYDEBUG YY_AnsiCParser_DEBUG
-#endif
-#endif
-#ifndef YY_AnsiCParser_ERROR_VERBOSE
-#ifdef YYERROR_VERBOSE
-#define YY_AnsiCParser_ERROR_VERBOSE YYERROR_VERBOSE
-#endif
-#endif
-#ifndef YY_AnsiCParser_LSP_NEEDED
-#ifdef YYLSP_NEEDED
-#define YY_AnsiCParser_LSP_NEEDED YYLSP_NEEDED
-#endif
-#endif
-#endif
-#ifndef YY_USE_CLASS
-/* TOKEN C */
-
-
-
-#define    PREINCLUDE    258
-#define    PREDEFINE    259
-#define    PREIF    260
-#define    PREIFDEF    261
-#define    PREENDIF    262
-#define    PRELINE    263
-#define    IDENTIFIER    264
-#define    STRING_LITERAL    265
-#define    CONSTANT    266
-#define    SIZEOF    267
-#define    NODECODE    268
-#define    INCOMPLETE    269
-#define    SYMBOLREF    270
-#define    CDECL    271
-#define    PASCAL    272
-#define    THISCALL    273
-#define    REGOF    274
-#define    MEMOF    275
-#define    MAXBOUND    276
-#define    CUSTOM    277
-#define    PREFER    278
-#define    WITHSTACK    279
-#define    PTR_OP    280
-#define    INC_OP    281
-#define    DEC_OP    282
-#define    LEFT_OP    283
-#define    RIGHT_OP    284
-#define    LE_OP    285
-#define    GE_OP    286
-#define    EQ_OP    287
-#define    NE_OP    288
-#define    AND_OP    289
-#define    OR_OP    290
-#define    MUL_ASSIGN    291
-#define    DIV_ASSIGN    292
-#define    MOD_ASSIGN    293
-#define    ADD_ASSIGN    294
-#define    SUB_ASSIGN    295
-#define    LEFT_ASSIGN    296
-#define    RIGHT_ASSIGN    297
-#define    AND_ASSIGN    298
-#define    XOR_ASSIGN    299
-#define    OR_ASSIGN    300
-#define    TYPE_NAME    301
-#define    TYPEDEF    302
-#define    EXTERN    303
-#define    STATIC    304
-#define    AUTO    305
-#define    REGISTER    306
-#define    CHAR    307
-#define    SHORT    308
-#define    INT    309
-#define    LONG    310
-#define    SIGNED    311
-#define    UNSIGNED    312
-#define    FLOAT    313
-#define    DOUBLE    314
-#define    CONST    315
-#define    VOLATILE    316
-#define    VOID    317
-#define    STRUCT    318
-#define    UNION    319
-#define    ENUM    320
-#define    ELLIPSIS    321
-#define    CASE    322
-#define    DEFAULT    323
-#define    IF    324
-#define    ELSE    325
-#define    SWITCH    326
-#define    WHILE    327
-#define    DO    328
-#define    FOR    329
-#define    GOTO    330
-#define    CONTINUE    331
-#define    BREAK    332
-#define    RETURN    333
-
-
-
-/* #defines tokens */
-#else
-/* CLASS */
-#ifndef YY_AnsiCParser_CLASS
-#define YY_AnsiCParser_CLASS AnsiCParser
-#endif
-#ifndef YY_AnsiCParser_INHERIT
-#define YY_AnsiCParser_INHERIT
-#endif
-#ifndef YY_AnsiCParser_MEMBERS
-#define YY_AnsiCParser_MEMBERS
-#endif
-#ifndef YY_AnsiCParser_LEX_BODY
-#define YY_AnsiCParser_LEX_BODY
-#endif
-#ifndef YY_AnsiCParser_ERROR_BODY
-#define YY_AnsiCParser_ERROR_BODY
-#endif
-#ifndef YY_AnsiCParser_CONSTRUCTOR_PARAM
-#define YY_AnsiCParser_CONSTRUCTOR_PARAM
-#endif
-#ifndef YY_AnsiCParser_CONSTRUCTOR_CODE
-#define YY_AnsiCParser_CONSTRUCTOR_CODE
-#endif
-#ifndef YY_AnsiCParser_CONSTRUCTOR_INIT
-#define YY_AnsiCParser_CONSTRUCTOR_INIT
-#endif
-/* choose between enum and const */
-#ifndef YY_AnsiCParser_USE_CONST_TOKEN
-#define YY_AnsiCParser_USE_CONST_TOKEN 0
-/* yes enum is more compatible with flex,  */
-/* so by default we use it */
-#endif
-#if YY_AnsiCParser_USE_CONST_TOKEN != 0
-#ifndef YY_AnsiCParser_ENUM_TOKEN
-#define YY_AnsiCParser_ENUM_TOKEN yy_AnsiCParser_enum_token
-#endif
-#endif
-
-class YY_AnsiCParser_CLASS YY_AnsiCParser_INHERIT {
-public:
-#if YY_AnsiCParser_USE_CONST_TOKEN != 0
-    /* static const int token ... */
-
-
-
-    static const int PREINCLUDE;
-    static const int PREDEFINE;
-    static const int PREIF;
-    static const int PREIFDEF;
-    static const int PREENDIF;
-    static const int PRELINE;
-    static const int IDENTIFIER;
-    static const int STRING_LITERAL;
-    static const int CONSTANT;
-    static const int SIZEOF;
-    static const int NODECODE;
-    static const int INCOMPLETE;
-    static const int SYMBOLREF;
-    static const int CDECL;
-    static const int PASCAL;
-    static const int THISCALL;
-    static const int REGOF;
-    static const int MEMOF;
-    static const int MAXBOUND;
-    static const int CUSTOM;
-    static const int PREFER;
-    static const int WITHSTACK;
-    static const int PTR_OP;
-    static const int INC_OP;
-    static const int DEC_OP;
-    static const int LEFT_OP;
-    static const int RIGHT_OP;
-    static const int LE_OP;
-    static const int GE_OP;
-    static const int EQ_OP;
-    static const int NE_OP;
-    static const int AND_OP;
-    static const int OR_OP;
-    static const int MUL_ASSIGN;
-    static const int DIV_ASSIGN;
-    static const int MOD_ASSIGN;
-    static const int ADD_ASSIGN;
-    static const int SUB_ASSIGN;
-    static const int LEFT_ASSIGN;
-    static const int RIGHT_ASSIGN;
-    static const int AND_ASSIGN;
-    static const int XOR_ASSIGN;
-    static const int OR_ASSIGN;
-    static const int TYPE_NAME;
-    static const int TYPEDEF;
-    static const int EXTERN;
-    static const int STATIC;
-    static const int AUTO;
-    static const int REGISTER;
-    static const int CHAR;
-    static const int SHORT;
-    static const int INT;
-    static const int LONG;
-    static const int SIGNED;
-    static const int UNSIGNED;
-    static const int FLOAT;
-    static const int DOUBLE;
-    static const int CONST;
-    static const int VOLATILE;
-    static const int VOID;
-    static const int STRUCT;
-    static const int UNION;
-    static const int ENUM;
-    static const int ELLIPSIS;
-    static const int CASE;
-    static const int DEFAULT;
-    static const int IF;
-    static const int ELSE;
-    static const int SWITCH;
-    static const int WHILE;
-    static const int DO;
-    static const int FOR;
-    static const int GOTO;
-    static const int CONTINUE;
-    static const int BREAK;
-    static const int RETURN;
-
-
-
-    /* decl const */
-#else
-enum YY_AnsiCParser_ENUM_TOKEN {
-        YY_AnsiCParser_NULL_TOKEN = 0
-
-
-                             #line 591 "c/ansi-c-parser.cpp"
-                                     ,PREINCLUDE=258
-                                     ,PREDEFINE=259
-                                     ,PREIF=260
-                                     ,PREIFDEF=261
-                                     ,PREENDIF=262
-                                     ,PRELINE=263
-                                     ,IDENTIFIER=264
-                                     ,STRING_LITERAL=265
-                                     ,CONSTANT=266
-                                     ,SIZEOF=267
-                                     ,NODECODE=268
-                                     ,INCOMPLETE=269
-                                     ,SYMBOLREF=270
-                                     ,CDECL=271
-                                     ,PASCAL=272
-                                     ,THISCALL=273
-                                     ,REGOF=274
-                                     ,MEMOF=275
-                                     ,MAXBOUND=276
-                                     ,CUSTOM=277
-                                     ,PREFER=278
-                                     ,WITHSTACK=279
-                                     ,PTR_OP=280
-                                     ,INC_OP=281
-                                     ,DEC_OP=282
-                                     ,LEFT_OP=283
-                                     ,RIGHT_OP=284
-                                     ,LE_OP=285
-                                     ,GE_OP=286
-                                     ,EQ_OP=287
-                                     ,NE_OP=288
-                                     ,AND_OP=289
-                                     ,OR_OP=290
-                                     ,MUL_ASSIGN=291
-                                     ,DIV_ASSIGN=292
-                                     ,MOD_ASSIGN=293
-                                     ,ADD_ASSIGN=294
-                                     ,SUB_ASSIGN=295
-                                     ,LEFT_ASSIGN=296
-                                     ,RIGHT_ASSIGN=297
-                                     ,AND_ASSIGN=298
-                                     ,XOR_ASSIGN=299
-                                     ,OR_ASSIGN=300
-                                     ,TYPE_NAME=301
-                                     ,TYPEDEF=302
-                                     ,EXTERN=303
-                                     ,STATIC=304
-                                     ,AUTO=305
-                                     ,REGISTER=306
-                                     ,CHAR=307
-                                     ,SHORT=308
-                                     ,INT=309
-                                     ,LONG=310
-                                     ,SIGNED=311
-                                     ,UNSIGNED=312
-                                     ,FLOAT=313
-                                     ,DOUBLE=314
-                                     ,CONST=315
-                                     ,VOLATILE=316
-                                     ,VOID=317
-                                     ,STRUCT=318
-                                     ,UNION=319
-                                     ,ENUM=320
-                                     ,ELLIPSIS=321
-                                     ,CASE=322
-                                     ,DEFAULT=323
-                                     ,IF=324
-                                     ,ELSE=325
-                                     ,SWITCH=326
-                                     ,WHILE=327
-                                     ,DO=328
-                                     ,FOR=329
-                                     ,GOTO=330
-                                     ,CONTINUE=331
-                                     ,BREAK=332
-                                     ,RETURN=333
-
-
-                                     /* enum token */
-                                   }; /* end of enum declaration */
-#endif
-public:
-    int YY_AnsiCParser_PARSE (YY_AnsiCParser_PARSE_PARAM);
-    virtual void YY_AnsiCParser_ERROR(const char *msg) YY_AnsiCParser_ERROR_BODY;
-    virtual int YY_AnsiCParser_LEX() YY_AnsiCParser_LEX_BODY;
-    YY_AnsiCParser_STYPE YY_AnsiCParser_LVAL;
-    int   YY_AnsiCParser_NERRS;
-    int    yychar;
-#if YY_AnsiCParser_DEBUG != 0
-    int YY_AnsiCParser_DEBUG_FLAG;   /*  nonzero means print parse trace     */
-#endif
-public:
-    YY_AnsiCParser_CLASS(YY_AnsiCParser_CONSTRUCTOR_PARAM);
-public:
-    YY_AnsiCParser_MEMBERS
-};
-/* other declare folow */
-#if YY_AnsiCParser_USE_CONST_TOKEN != 0
-
-
-
-const int YY_AnsiCParser_CLASS::PREINCLUDE=258;
-const int YY_AnsiCParser_CLASS::PREDEFINE=259;
-const int YY_AnsiCParser_CLASS::PREIF=260;
-const int YY_AnsiCParser_CLASS::PREIFDEF=261;
-const int YY_AnsiCParser_CLASS::PREENDIF=262;
-const int YY_AnsiCParser_CLASS::PRELINE=263;
-const int YY_AnsiCParser_CLASS::IDENTIFIER=264;
-const int YY_AnsiCParser_CLASS::STRING_LITERAL=265;
-const int YY_AnsiCParser_CLASS::CONSTANT=266;
-const int YY_AnsiCParser_CLASS::SIZEOF=267;
-const int YY_AnsiCParser_CLASS::NODECODE=268;
-const int YY_AnsiCParser_CLASS::INCOMPLETE=269;
-const int YY_AnsiCParser_CLASS::SYMBOLREF=270;
-const int YY_AnsiCParser_CLASS::CDECL=271;
-const int YY_AnsiCParser_CLASS::PASCAL=272;
-const int YY_AnsiCParser_CLASS::THISCALL=273;
-const int YY_AnsiCParser_CLASS::REGOF=274;
-const int YY_AnsiCParser_CLASS::MEMOF=275;
-const int YY_AnsiCParser_CLASS::MAXBOUND=276;
-const int YY_AnsiCParser_CLASS::CUSTOM=277;
-const int YY_AnsiCParser_CLASS::PREFER=278;
-const int YY_AnsiCParser_CLASS::WITHSTACK=279;
-const int YY_AnsiCParser_CLASS::PTR_OP=280;
-const int YY_AnsiCParser_CLASS::INC_OP=281;
-const int YY_AnsiCParser_CLASS::DEC_OP=282;
-const int YY_AnsiCParser_CLASS::LEFT_OP=283;
-const int YY_AnsiCParser_CLASS::RIGHT_OP=284;
-const int YY_AnsiCParser_CLASS::LE_OP=285;
-const int YY_AnsiCParser_CLASS::GE_OP=286;
-const int YY_AnsiCParser_CLASS::EQ_OP=287;
-const int YY_AnsiCParser_CLASS::NE_OP=288;
-const int YY_AnsiCParser_CLASS::AND_OP=289;
-const int YY_AnsiCParser_CLASS::OR_OP=290;
-const int YY_AnsiCParser_CLASS::MUL_ASSIGN=291;
-const int YY_AnsiCParser_CLASS::DIV_ASSIGN=292;
-const int YY_AnsiCParser_CLASS::MOD_ASSIGN=293;
-const int YY_AnsiCParser_CLASS::ADD_ASSIGN=294;
-const int YY_AnsiCParser_CLASS::SUB_ASSIGN=295;
-const int YY_AnsiCParser_CLASS::LEFT_ASSIGN=296;
-const int YY_AnsiCParser_CLASS::RIGHT_ASSIGN=297;
-const int YY_AnsiCParser_CLASS::AND_ASSIGN=298;
-const int YY_AnsiCParser_CLASS::XOR_ASSIGN=299;
-const int YY_AnsiCParser_CLASS::OR_ASSIGN=300;
-const int YY_AnsiCParser_CLASS::TYPE_NAME=301;
-const int YY_AnsiCParser_CLASS::TYPEDEF=302;
-const int YY_AnsiCParser_CLASS::EXTERN=303;
-const int YY_AnsiCParser_CLASS::STATIC=304;
-const int YY_AnsiCParser_CLASS::AUTO=305;
-const int YY_AnsiCParser_CLASS::REGISTER=306;
-const int YY_AnsiCParser_CLASS::CHAR=307;
-const int YY_AnsiCParser_CLASS::SHORT=308;
-const int YY_AnsiCParser_CLASS::INT=309;
-const int YY_AnsiCParser_CLASS::LONG=310;
-const int YY_AnsiCParser_CLASS::SIGNED=311;
-const int YY_AnsiCParser_CLASS::UNSIGNED=312;
-const int YY_AnsiCParser_CLASS::FLOAT=313;
-const int YY_AnsiCParser_CLASS::DOUBLE=314;
-const int YY_AnsiCParser_CLASS::CONST=315;
-const int YY_AnsiCParser_CLASS::VOLATILE=316;
-const int YY_AnsiCParser_CLASS::VOID=317;
-const int YY_AnsiCParser_CLASS::STRUCT=318;
-const int YY_AnsiCParser_CLASS::UNION=319;
-const int YY_AnsiCParser_CLASS::ENUM=320;
-const int YY_AnsiCParser_CLASS::ELLIPSIS=321;
-const int YY_AnsiCParser_CLASS::CASE=322;
-const int YY_AnsiCParser_CLASS::DEFAULT=323;
-const int YY_AnsiCParser_CLASS::IF=324;
-const int YY_AnsiCParser_CLASS::ELSE=325;
-const int YY_AnsiCParser_CLASS::SWITCH=326;
-const int YY_AnsiCParser_CLASS::WHILE=327;
-const int YY_AnsiCParser_CLASS::DO=328;
-const int YY_AnsiCParser_CLASS::FOR=329;
-const int YY_AnsiCParser_CLASS::GOTO=330;
-const int YY_AnsiCParser_CLASS::CONTINUE=331;
-const int YY_AnsiCParser_CLASS::BREAK=332;
-const int YY_AnsiCParser_CLASS::RETURN=333;
-
-
-
-/* const YY_AnsiCParser_CLASS::token */
-#endif
-/*apres const  */
-YY_AnsiCParser_CLASS::YY_AnsiCParser_CLASS(YY_AnsiCParser_CONSTRUCTOR_PARAM) YY_AnsiCParser_CONSTRUCTOR_INIT {
-#if YY_AnsiCParser_DEBUG != 0
-    YY_AnsiCParser_DEBUG_FLAG=0;
-#endif
-    YY_AnsiCParser_CONSTRUCTOR_CODE;
-};
-#endif
-
-
-
-
 
 #define    YYFINAL        154
 #define    YYFLAG        -32768
@@ -1030,45 +335,9 @@ static const short yycheck[] = {     8,
    the next  is replaced by the list of actions, each action
    as one case of the switch.  */
 
-#if YY_AnsiCParser_USE_GOTO != 0
-/*
- SUPRESSION OF GOTO : on some C++ compiler (sun c++)
-  the goto is strictly forbidden if any constructor/destructor
-  is used in the whole function (very stupid isn't it ?)
- so goto are to be replaced with a 'while/switch/case construct'
- here are the macro to keep some apparent compatibility
-*/
-#define YYGOTO(lb) {yy_gotostate=lb;continue;}
-#define YYBEGINGOTO  enum yy_labels yy_gotostate=yygotostart; \
-    for(;;) switch(yy_gotostate) { case yygotostart: {
-#define YYLABEL(lb) } case lb: {
-#define YYENDGOTO } }
-#define YYBEGINDECLARELABEL enum yy_labels {yygotostart
-#define YYDECLARELABEL(lb) ,lb
-#define YYENDDECLARELABEL  };
-#else
-/* macro to keep goto */
 #define YYGOTO(lb) goto lb
-#define YYBEGINGOTO
 #define YYLABEL(lb) lb:
-#define YYENDGOTO
-#define YYBEGINDECLARELABEL
-#define YYDECLARELABEL(lb)
-#define YYENDDECLARELABEL
-#endif
-/* LABEL DECLARATION */
-YYBEGINDECLARELABEL
-YYDECLARELABEL(yynewstate)
-YYDECLARELABEL(yybackup)
-/* YYDECLARELABEL(yyresume) */
-YYDECLARELABEL(yydefault)
-YYDECLARELABEL(yyreduce)
-YYDECLARELABEL(yyerrlab)   /* here on detecting error */
-YYDECLARELABEL(yyerrlab1)   /* here on error raised explicitly by an action */
-YYDECLARELABEL(yyerrdefault)  /* current state does not do anything special for the error token. */
-YYDECLARELABEL(yyerrpop)   /* pop the current state because it cannot handle the error token */
-YYDECLARELABEL(yyerrhandle)
-YYENDDECLARELABEL
+
 /* ALLOCA SIMULATION */
 /* __HAVE_NO_ALLOCA */
 #ifdef __HAVE_NO_ALLOCA
@@ -1080,18 +349,10 @@ int __alloca_free_ptr(char *ptr, char *ref) {
 #define __ALLOCA_alloca(size) malloc(size)
 #define __ALLOCA_free(ptr,ref) __alloca_free_ptr((char *)ptr,(char *)ref)
 
-#ifdef YY_AnsiCParser_LSP_NEEDED
-#define __ALLOCA_return(num) \
-    return( __ALLOCA_free(yyss,yyssa)+\
-    __ALLOCA_free(yyvs,yyvsa)+\
-    __ALLOCA_free(yyls,yylsa)+\
-    (num))
-#else
 #define __ALLOCA_return(num) \
     return( __ALLOCA_free(yyss,yyssa)+\
     __ALLOCA_free(yyvs,yyvsa)+\
     (num))
-#endif
 #else
 #define __ALLOCA_return(num) return(num)
 #define __ALLOCA_alloca(size) alloca(size)
@@ -1105,7 +366,7 @@ int __alloca_free_ptr(char *ptr, char *ref) {
 #define YYACCEPT        __ALLOCA_return(0)
 #define YYABORT         __ALLOCA_return(1)
 #define YYTERROR        1
-#define YYLEX           YY_AnsiCParser_LEX()
+#define YYLEX           yylex()
 
 /*  YYINITDEPTH indicates the initial size of the parser's stacks       */
 
@@ -1128,74 +389,38 @@ int __alloca_free_ptr(char *ptr, char *ref) {
 #if __GNUC__ > 1                /* GNU C and GNU C++ define this.  */
 #define __yy_bcopy(FROM,TO,COUNT)       __builtin_memcpy(TO,FROM,COUNT)
 #else                           /* not GNU C or C++ */
-
-/* This is the most reliable way to avoid incompatibilities
-   in available built-in functions on various systems.  */
-
-#ifdef __cplusplus
-static void __yy_bcopy (char *from, char *to, int count)
-#else
-#ifdef __STDC__
-static void __yy_bcopy (char *from, char *to, int count)
-#else
-static void __yy_bcopy (from, to, count)
-char *from;
-char *to;
-int count;
-#endif
-#endif
-{
-register char *f = from;
-register char *t = to;
-register int i = count;
-
-while (i-- > 0)
-*t++ = *f++;
-}
+#define __yy_bcopy(FROM,TO,COUNT)       memcpy(TO,FROM,COUNT)
 #endif
 
-int
-#ifdef YY_USE_CLASS
-YY_AnsiCParser_CLASS::
-#endif
-YY_AnsiCParser_PARSE(YY_AnsiCParser_PARSE_PARAM)
-#ifndef __STDC__
-#ifndef __cplusplus
-#ifndef YY_USE_CLASS
-/* parameter definition without protypes */
-YY_AnsiCParser_PARSE_PARAM_DEF
-#endif
-#endif
-#endif
+int AnsiCParser::yyparse(platform plat, callconv cc)
 {
     register int yystate;
     register int yyn;
     register short *yyssp;
-    register YY_AnsiCParser_STYPE *yyvsp;
+    register yy_AnsiCParser_stype *yyvsp;
     int yyerrstatus;      /*  number of tokens to shift before error messages enabled */
     int yychar1=0;          /*  lookahead token as an internal (translated) token number */
 
     short yyssa[YYINITDEPTH];     /*  the state stack                     */
-    YY_AnsiCParser_STYPE yyvsa[YYINITDEPTH];        /*  the semantic value stack            */
+    yy_AnsiCParser_stype yyvsa[YYINITDEPTH];        /*  the semantic value stack            */
 
     short *yyss = yyssa;          /*  refer to the stacks thru separate pointers */
-    YY_AnsiCParser_STYPE *yyvs = yyvsa;     /*  to allow yyoverflow to reallocate them elsewhere */
+    yy_AnsiCParser_stype *yyvs = yyvsa;     /*  to allow yyoverflow to reallocate them elsewhere */
     int yystacksize = YYINITDEPTH;
-    YY_AnsiCParser_STYPE yyval;             /*  the variable used to return         */
+    yy_AnsiCParser_stype yyval;             /*  the variable used to return         */
     /*  semantic values from the action     */
     /*  routines                            */
 
     int yylen;
     /* start loop, in which YYGOTO may be used. */
-    YYBEGINGOTO
 
-        #if YY_AnsiCParser_DEBUG != 0
-            if (YY_AnsiCParser_DEBUG_FLAG)
-            fprintf(stderr, "Starting parse\n");
+#if YY_AnsiCParser_DEBUG != 0
+    if (yydebug)
+        fprintf(stderr, "Starting parse\n");
 #endif
     yystate = 0;
     yyerrstatus = 0;
-    YY_AnsiCParser_NERRS = 0;
+    yynerrs = 0;
     yychar = YYEMPTY;          /* Cause a token to be read.  */
 
     /* Initialize stack pointers.
@@ -1205,9 +430,6 @@ YY_AnsiCParser_PARSE_PARAM_DEF
 
     yyssp = yyss - 1;
     yyvsp = yyvs;
-#ifdef YY_AnsiCParser_LSP_NEEDED
-    yylsp = yyls;
-#endif
 
     /* Push a new state, which is found in  yystate  .  */
     /* In all cases, when you get here, the value and location stacks
@@ -1219,20 +441,15 @@ YY_AnsiCParser_PARSE_PARAM_DEF
     if (yyssp >= yyss + yystacksize - 1) {
         /* Give user a chance to reallocate the stack */
         /* Use copies of these so that the &'s don't force the real ones into memory. */
-        YY_AnsiCParser_STYPE *yyvs1 = yyvs;
+        yy_AnsiCParser_stype *yyvs1 = yyvs;
         short *yyss1 = yyss;
-#ifdef YY_AnsiCParser_LSP_NEEDED
-        YY_AnsiCParser_LTYPE *yyls1 = yyls;
-#endif
 
         /* Get the current used size of the three stacks, in elements.  */
         int size = yyssp - yyss + 1;
 
-#ifdef yyoverflow
-#else /* no yyoverflow */
         /* Extend the stack our own way.  */
         if (yystacksize >= YYMAXDEPTH) {
-            YY_AnsiCParser_ERROR("parser stack overflow");
+            yyerror("parser stack overflow");
             __ALLOCA_return(2);
         }
         yystacksize *= 2;
@@ -1241,14 +458,14 @@ YY_AnsiCParser_PARSE_PARAM_DEF
         yyss = (short *) __ALLOCA_alloca (yystacksize * sizeof (*yyssp));
         __yy_bcopy ((char *)yyss1, (char *)yyss, size * sizeof (*yyssp));
         __ALLOCA_free(yyss1,yyssa);
-        yyvs = (YY_AnsiCParser_STYPE *) __ALLOCA_alloca (yystacksize * sizeof (*yyvsp));
+        yyvs = (yy_AnsiCParser_stype *) __ALLOCA_alloca (yystacksize * sizeof (*yyvsp));
         __yy_bcopy ((char *)yyvs1, (char *)yyvs, size * sizeof (*yyvsp));
         __ALLOCA_free(yyvs1,yyvsa);
-#endif /* no yyoverflow */
+
 
         yyssp = yyss + size - 1;
         yyvsp = yyvs + size - 1;
-        if (YY_AnsiCParser_DEBUG_FLAG)
+        if (yydebug)
             fprintf(stderr, "Stack size increased to %d\n", yystacksize);
 
         if (yyssp >= yyss + yystacksize - 1)
@@ -1256,7 +473,7 @@ YY_AnsiCParser_PARSE_PARAM_DEF
     }
 
 #if YY_AnsiCParser_DEBUG != 0
-    if (YY_AnsiCParser_DEBUG_FLAG)
+    if (yydebug)
         fprintf(stderr, "Entering state %d\n", yystate);
 #endif
 
@@ -1280,7 +497,7 @@ YY_AnsiCParser_PARSE_PARAM_DEF
 
     if (yychar == YYEMPTY) {
 #if YY_AnsiCParser_DEBUG != 0
-        if (YY_AnsiCParser_DEBUG_FLAG)
+        if (yydebug)
             fprintf(stderr, "Reading a token: ");
 #endif
         yychar = YYLEX;
@@ -1293,20 +510,17 @@ YY_AnsiCParser_PARSE_PARAM_DEF
         yychar = YYEOF;                /* Don't call YYLEX any more */
 
 #if YY_AnsiCParser_DEBUG != 0
-        if (YY_AnsiCParser_DEBUG_FLAG)
+        if (yydebug)
             fprintf(stderr, "Now at end of input.\n");
 #endif
     } else {
         yychar1 = YYTRANSLATE(yychar);
 
 #if YY_AnsiCParser_DEBUG != 0
-        if (YY_AnsiCParser_DEBUG_FLAG) {
+        if (yydebug) {
             fprintf (stderr, "Next token is %d (%s", yychar, yytname[yychar1]);
             /* Give the individual parser a way to print the precise meaning
              of a token, for further debugging info.  */
-#ifdef YYPRINT
-            YYPRINT (stderr, YY_AnsiCParser_CHAR, YY_AnsiCParser_LVAL);
-#endif
             fprintf (stderr, ")\n");
         }
 #endif
@@ -1339,7 +553,7 @@ YY_AnsiCParser_PARSE_PARAM_DEF
     /* Shift the lookahead token.  */
 
 #if YY_AnsiCParser_DEBUG != 0
-    if (YY_AnsiCParser_DEBUG_FLAG)
+    if (yydebug)
         fprintf(stderr, "Shifting token %d (%s), ", yychar, yytname[yychar1]);
 #endif
 
@@ -1347,7 +561,7 @@ YY_AnsiCParser_PARSE_PARAM_DEF
     if (yychar != YYEOF)
         yychar = YYEMPTY;
 
-    *++yyvsp = YY_AnsiCParser_LVAL;
+    *++yyvsp = yylval;
     /* count tokens shifted since error; after three, turn off error status.  */
     if (yyerrstatus) yyerrstatus--;
 
@@ -1368,7 +582,7 @@ YY_AnsiCParser_PARSE_PARAM_DEF
         yyval = yyvsp[1-yylen]; /* implement default value of the action */
 
 #if YY_AnsiCParser_DEBUG != 0
-    if (YY_AnsiCParser_DEBUG_FLAG)
+    if (yydebug)
     {
         int i;
 
@@ -1383,79 +597,41 @@ YY_AnsiCParser_PARSE_PARAM_DEF
 #endif
 
 
-
-
-
     switch (yyn) {
 
-        case 1:
-
-        { ;
-            break;}
-        case 2:
-
-        { ;
-            break;}
-        case 3:
-
-        { ;
-            break;}
-        case 4:
-
-        { ;
-            break;}
-        case 5:
-
-        { ;
-            break;}
-        case 6:
-
-        { ;
-            break;}
-        case 7:
-
-        { ;
-            break;}
-        case 8:
-
-        { yyval.cc = CONV_C; ;
-            break;}
-        case 9:
-
-        { yyval.cc = CONV_PASCAL; ;
-            break;}
-        case 10:
-
-        { yyval.cc = CONV_THISCALL; ;
-            break;}
-        case 11:
-
-        { yyval.num_list = yyvsp[0].num_list;
+        case 1: {break;}
+        case 2: {break;}
+        case 3: {break;}
+        case 4: {break;}
+        case 5: {break;}
+        case 6: {break;}
+        case 7: {break;}
+        case 8: { yyval.cc = CONV_C; break;}
+        case 9: { yyval.cc = CONV_PASCAL; break;}
+        case 10: { yyval.cc = CONV_THISCALL; break;}
+        case 11: {
+            yyval.num_list = yyvsp[0].num_list;
             yyval.num_list->push_front(yyvsp[-2].ival);
-            ;
             break;}
         case 12:
 
         { yyval.num_list = new std::list<int>();
             yyval.num_list->push_back(yyvsp[0].ival);
-            ;
             break;}
         case 13:
 
         { yyval.num_list = new std::list<int>();
-            ;
             break;}
         case 14:
 
         { yyval.param_list = yyvsp[0].param_list;
             yyval.param_list->push_front(yyvsp[-2].param);
-            ;
             break;}
         case 15:
 
         { yyval.param_list = new std::list<Parameter*>();
             yyval.param_list->push_back(yyvsp[0].param);
-            ;
+
             break;}
         case 16:
 
@@ -1469,52 +645,52 @@ YY_AnsiCParser_PARSE_PARAM_DEF
 
         { yyval.param = yyvsp[0].param;
             yyval.param->setExp(yyvsp[-2].exp);
-            ;
+
             break;}
         case 19:
 
         { yyval.param = yyvsp[0].param;
-            ;
+
             break;}
         case 20:
 
         { yyval.exp = Location::regOf(yyvsp[-1].ival);
-            ;
+
             break;}
         case 21:
 
         { yyval.exp = Location::memOf(yyvsp[-1].exp);
-            ;
+
             break;}
         case 22:
 
         { yyval.exp = new Binary(opPlus, yyvsp[-2].exp, yyvsp[0].exp);
-            ;
+
             break;}
         case 23:
 
         { yyval.exp = new Binary(opMinus, yyvsp[-2].exp, yyvsp[0].exp);
-            ;
+
             break;}
         case 24:
 
         { yyval.exp = new Const(yyvsp[0].ival);
-            ;
+
             break;}
         case 25:
 
-        { yyval.bound = new Bound(0, yyvsp[-1].str); ;
+        { yyval.bound = new Bound(0, yyvsp[-1].str);
             break;}
         case 26:
 
-        { ;
+        {
             break;}
         case 27:
 
         {    if (yyvsp[-1].type_ident->ty->isArray() ||
-                    (yyvsp[-1].type_ident->ty->isNamed() &&
-                     ((NamedType*)yyvsp[-1].type_ident->ty)->resolvesTo() &&
-                     ((NamedType*)yyvsp[-1].type_ident->ty)->resolvesTo()->isArray())) {
+                 (yyvsp[-1].type_ident->ty->isNamed() &&
+                  ((NamedType*)yyvsp[-1].type_ident->ty)->resolvesTo() &&
+                  ((NamedType*)yyvsp[-1].type_ident->ty)->resolvesTo()->isArray())) {
                 /* C has complex semantics for passing arrays.. seeing as
                          * we're supposedly parsing C, then we should deal with this.
                          * When you pass an array in C it is understood that you are
@@ -1530,7 +706,7 @@ YY_AnsiCParser_PARSE_PARAM_DEF
                     case 0: yyval.param->setBoundMax(yyvsp[0].bound->nam.c_str());
                 }
             }
-            ;
+
             break;}
         case 28:
 
@@ -1546,15 +722,15 @@ YY_AnsiCParser_PARSE_PARAM_DEF
                 }
             delete yyvsp[-1].param_list;
             yyval.param = new Parameter(new PointerType(new FuncType(sig)), yyvsp[-4].str);
-            ;
+
             break;}
         case 29:
 
-        { yyval.param = new Parameter(new VoidType, "..."); ;
+        { yyval.param = new Parameter(new VoidType, "...");
             break;}
         case 30:
 
-        { Type::addNamedType(yyvsp[-1].type_ident->nam.c_str(), yyvsp[-1].type_ident->ty); ;
+        { Type::addNamedType(yyvsp[-1].type_ident->nam.c_str(), yyvsp[-1].type_ident->ty);
             break;}
         case 31:
 
@@ -1570,7 +746,7 @@ YY_AnsiCParser_PARSE_PARAM_DEF
                 }
             delete yyvsp[-2].param_list;
             Type::addNamedType(yyvsp[-5].str, new PointerType(new FuncType(sig)));
-            ;
+
             break;}
         case 32:
 
@@ -1586,7 +762,7 @@ YY_AnsiCParser_PARSE_PARAM_DEF
                 }
             delete yyvsp[-2].param_list;
             Type::addNamedType(yyvsp[-4].type_ident->nam.c_str(), new FuncType(sig));
-            ;
+
             break;}
         case 33:
 
@@ -1598,13 +774,13 @@ YY_AnsiCParser_PARSE_PARAM_DEF
             char tmp[1024];
             sprintf(tmp, "struct %s", yyvsp[-4].str);
             Type::addNamedType(tmp, t);
-            ;
+
             break;}
         case 34:
 
         {
             signatures.push_back(yyvsp[-1].sig);
-            ;
+
             break;}
         case 35:
 
@@ -1616,7 +792,7 @@ YY_AnsiCParser_PARSE_PARAM_DEF
                 yyvsp[-6].sig->addPreferedParameter(*it - 1);
             delete yyvsp[-2].num_list;
             signatures.push_back(yyvsp[-6].sig);
-            ;
+
             break;}
         case 36:
 
@@ -1634,7 +810,7 @@ YY_AnsiCParser_PARSE_PARAM_DEF
                 }
             delete yyvsp[-1].param_list;
             yyval.sig = sig;
-            ;
+
             break;}
         case 37:
 
@@ -1651,7 +827,7 @@ YY_AnsiCParser_PARSE_PARAM_DEF
                 }
             delete yyvsp[-1].param_list;
             yyval.sig = sig;
-            ;
+
             break;}
         case 38:
 
@@ -1670,86 +846,84 @@ YY_AnsiCParser_PARSE_PARAM_DEF
                 }
             delete yyvsp[-1].param_list;
             yyval.sig = sig;
-            ;
+
             break;}
         case 39:
 
-{ SymbolRef *ref = new SymbolRef(ADDRESS::g(yyvsp[-2].ival), yyvsp[-1].str);
+        { SymbolRef *ref = new SymbolRef(ADDRESS::g(yyvsp[-2].ival), yyvsp[-1].str);
             refs.push_back(ref);
-            ;
+
             break;}
         case 40:
 
-{ Symbol *sym = new Symbol(ADDRESS::g(yyvsp[-2].ival));
+        { Symbol *sym = new Symbol(ADDRESS::g(yyvsp[-2].ival));
             sym->nam = yyvsp[-1].type_ident->nam;
             sym->ty = yyvsp[-1].type_ident->ty;
             symbols.push_back(sym);
-            ;
-            break;}
-        case 41:
 
-{ Symbol *sym = new Symbol(ADDRESS::g(yyvsp[-3].ival));
+            break;}
+        case 41: {
+            Symbol *sym = new Symbol(ADDRESS::g(yyvsp[-3].ival));
             sym->sig = yyvsp[-1].sig;
             sym->mods = yyvsp[-2].mods;
             symbols.push_back(sym);
-            ;
-            break;}
+            break;
+        }
         case 42:
-
         { yyval.mods = yyvsp[0].mods;
             yyval.mods->noDecode = true;
-            ;
+
             break;}
         case 43:
 
         { yyval.mods = yyvsp[0].mods;
             yyval.mods->incomplete = true;
-            ;
+
             break;}
         case 44:
 
-        { yyval.mods = new SymbolMods(); ;
+        { yyval.mods = new SymbolMods();
             break;}
         case 45:
 
         { yyval.custom_options = new CustomOptions(); yyval.custom_options->exp = yyvsp[-1].exp;
-            ;
+
             break;}
         case 46:
 
         { yyval.custom_options = new CustomOptions(); yyval.custom_options->sp = yyvsp[-1].ival;
-            ;
+
             break;}
         case 47:
 
-        { yyval.custom_options = new CustomOptions(); ;
+        { yyval.custom_options = new CustomOptions();
             break;}
         case 48:
 
         { yyval.type = new ArrayType(nullptr, yyvsp[-1].ival);
-            ;
+
             break;}
         case 49:
 
         { yyval.type = new ArrayType(nullptr);
-            ;
+
             break;}
         case 50:
 
         { yyval.type = new ArrayType(yyvsp[-3].type, yyvsp[-1].ival);
-            ;
+
             break;}
         case 51:
 
         { yyval.type = new ArrayType(yyvsp[-2].type);
-            ;
+
             break;}
         case 52:
 
         { yyval.type_ident = new TypeIdent();
             yyval.type_ident->ty = yyvsp[-1].type;
             yyval.type_ident->nam = yyvsp[0].str;
-            ;
+
             break;}
         case 53:
 
@@ -1757,102 +931,102 @@ YY_AnsiCParser_PARSE_PARAM_DEF
             ((ArrayType*)yyvsp[0].type)->fixBaseType(yyvsp[-2].type);
             yyval.type_ident->ty = yyvsp[0].type;
             yyval.type_ident->nam = yyvsp[-1].str;
-            ;
+
             break;}
         case 54:
 
         { yyval.type_ident_list = yyvsp[0].type_ident_list;
             yyval.type_ident_list->push_front(yyvsp[-2].type_ident);
-            ;
+
             break;}
         case 55:
 
         { yyval.type_ident_list = new std::list<TypeIdent*>();
             yyval.type_ident_list->push_back(yyvsp[-1].type_ident);
-            ;
+
             break;}
         case 56:
 
-        { yyval.type = new CharType(); ;
+        { yyval.type = new CharType();
             break;}
         case 57:
 
-        { yyval.type = new IntegerType(16, 1); ;
+        { yyval.type = new IntegerType(16, 1);
             break;}
         case 58:
 
-        { yyval.type = new IntegerType(32, 1); ;
+        { yyval.type = new IntegerType(32, 1);
             break;}
         case 59:
 
-        { yyval.type = new IntegerType(8, 0); ;
+        { yyval.type = new IntegerType(8, 0);
             break;}
         case 60:
 
-        { yyval.type = new IntegerType(16, 0); ;
+        { yyval.type = new IntegerType(16, 0);
             break;}
         case 61:
 
-        { yyval.type = new IntegerType(32, 0); ;
+        { yyval.type = new IntegerType(32, 0);
             break;}
         case 62:
 
-        { yyval.type = new IntegerType(32, 0); ;
+        { yyval.type = new IntegerType(32, 0);
             break;}
         case 63:
 
-        { yyval.type = new IntegerType(32, 0); ;
+        { yyval.type = new IntegerType(32, 0);
             break;}
         case 64:
 
-        { yyval.type = new IntegerType(32, 1); ;
+        { yyval.type = new IntegerType(32, 1);
             break;}
         case 65:
 
-        { yyval.type = new IntegerType(64, 1); ;
+        { yyval.type = new IntegerType(64, 1);
             break;}
         case 66:
 
-        { yyval.type = new IntegerType(64, 0); ;
+        { yyval.type = new IntegerType(64, 0);
             break;}
         case 67:
 
-        { yyval.type = new FloatType(32); ;
+        { yyval.type = new FloatType(32);
             break;}
         case 68:
 
-        { yyval.type = new FloatType(64); ;
+        { yyval.type = new FloatType(64);
             break;}
         case 69:
 
-        { yyval.type = new VoidType(); ;
+        { yyval.type = new VoidType();
             break;}
         case 70:
 
-        { yyval.type = new PointerType(yyvsp[-1].type); ;
+        { yyval.type = new PointerType(yyvsp[-1].type);
             break;}
         case 71:
 
         { // This isn't C, but it makes defining pointers to arrays easier
             yyval.type = new ArrayType(yyvsp[-3].type, yyvsp[-1].ival);
-            ;
+
             break;}
         case 72:
 
         { // This isn't C, but it makes defining pointers to arrays easier
             yyval.type = new ArrayType(yyvsp[-2].type);
-            ;
+
             break;}
         case 73:
 
         { //$$ = Type::getNamedType($1);
             //if ($$ == nullptr)
             yyval.type = new NamedType(yyvsp[0].str);
-            ;
+
             break;}
         case 74:
 
-        { yyval.type = yyvsp[0].type; ;
+        { yyval.type = yyvsp[0].type;
             break;}
         case 75:
 
@@ -1860,7 +1034,7 @@ YY_AnsiCParser_PARSE_PARAM_DEF
             char tmp[1024];
             sprintf(tmp, "struct %s", yyvsp[0].str);
             yyval.type = new NamedType(tmp);
-            ;
+
             break;}
         case 76:
 
@@ -1870,7 +1044,7 @@ YY_AnsiCParser_PARSE_PARAM_DEF
                 t->addType((*it)->ty, (*it)->nam.c_str());
             }
             yyval.type = t;
-            ;
+
             break;}
     }
 
@@ -1878,12 +1052,9 @@ YY_AnsiCParser_PARSE_PARAM_DEF
     /* the action file gets copied in in place of this dollarsign  */
     yyvsp -= yylen;
     yyssp -= yylen;
-#ifdef YY_AnsiCParser_LSP_NEEDED
-    yylsp -= yylen;
-#endif
 
 #if YY_AnsiCParser_DEBUG != 0
-    if (YY_AnsiCParser_DEBUG_FLAG) {
+    if (yydebug) {
         short *ssp1 = yyss - 1;
         fprintf (stderr, "state stack now");
         while (ssp1 != yyssp)
@@ -1914,7 +1085,7 @@ YY_AnsiCParser_PARSE_PARAM_DEF
             if (! yyerrstatus)
             /* If not already recovering from an error, report this error.  */
     {
-        ++YY_AnsiCParser_NERRS;
+        ++yynerrs;
 
 #ifdef YY_AnsiCParser_ERROR_VERBOSE
         yyn = yypact[yystate];
@@ -1945,19 +1116,19 @@ YY_AnsiCParser_PARSE_PARAM_DEF
                             count++;
                         }
                 }
-                YY_AnsiCParser_ERROR(msg);
+                yyerror(msg);
                 free(msg);
             } else
-                YY_AnsiCParser_ERROR ("parse error; also virtual memory exceeded");
+                yyerror ("parse error; also virtual memory exceeded");
         } else
 #endif /* YY_AnsiCParser_ERROR_VERBOSE */
-            YY_AnsiCParser_ERROR("parse error");
+            yyerror("parse error");
     }
 
     YYGOTO(yyerrlab1);
     YYLABEL(yyerrlab1)   /* here on error raised explicitly by an action */
 
-    if (yyerrstatus == 3) {
+            if (yyerrstatus == 3) {
         /* if just tried and failed to reuse lookahead token after an error, discard it.  */
 
         /* return failure if at end of input */
@@ -1965,7 +1136,7 @@ YY_AnsiCParser_PARSE_PARAM_DEF
             YYABORT;
 
 #if YY_AnsiCParser_DEBUG != 0
-        if (YY_AnsiCParser_DEBUG_FLAG)
+        if (yydebug)
             fprintf(stderr, "Discarding token %d (%s).\n", yychar, yytname[yychar1]);
 #endif
 
@@ -1983,7 +1154,7 @@ YY_AnsiCParser_PARSE_PARAM_DEF
 
         #if 0
             /* This is wrong; only states that explicitly want error tokens
-             should shift them.  */
+                     should shift them.  */
             yyn = yydefact[yystate];  /* If its default is to accept any token, ok.  Otherwise pop it.*/
     if (yyn) YYGOTO(yydefault);
 #endif
@@ -1993,12 +1164,9 @@ YY_AnsiCParser_PARSE_PARAM_DEF
             if (yyssp == yyss) YYABORT;
     yyvsp--;
     yystate = *--yyssp;
-#ifdef YY_AnsiCParser_LSP_NEEDED
-    yylsp--;
-#endif
 
 #if YY_AnsiCParser_DEBUG != 0
-    if (YY_AnsiCParser_DEBUG_FLAG) {
+    if (yydebug) {
         short *ssp1 = yyss - 1;
         fprintf (stderr, "Error: state stack now");
         while (ssp1 != yyssp)
@@ -2030,22 +1198,15 @@ YY_AnsiCParser_PARSE_PARAM_DEF
         YYACCEPT;
 
 #if YY_AnsiCParser_DEBUG != 0
-    if (YY_AnsiCParser_DEBUG_FLAG)
+    if (yydebug)
         fprintf(stderr, "Shifting error token, ");
 #endif
 
-    *++yyvsp = YY_AnsiCParser_LVAL;
+    *++yyvsp = yylval;
     yystate = yyn;
     YYGOTO(yynewstate);
     /* end loop, in which YYGOTO may be used. */
-    YYENDGOTO
 }
-
-/* END */
-
-
-
-
 
 #include <stdio.h>
 
@@ -2063,5 +1224,3 @@ void AnsiCParser::yyerror(const char *s) {
 AnsiCParser::~AnsiCParser() {
     // Suppress warnings from gcc about lack of virtual destructor
 }
-
-

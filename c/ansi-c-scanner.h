@@ -82,10 +82,6 @@
     void commentEOL(); \
     int check_type();
 
-#define YY_AnsiCScanner_LEX_PARAM  YY_AnsiCParser_STYPE &yylval
-
-
-
 #ifdef YY_USE_CLASS
 #ifdef YY_AnsiCScanner_IOSTREAM
 #include <iostream.h>
@@ -156,16 +152,8 @@
 #endif
 #endif
 
-#ifndef YY_AnsiCScanner_LEX_PARAM
-#ifndef YY_USE_PROTOS
-#define YY_AnsiCScanner_LEX_PARAM
-#else
-#define YY_AnsiCScanner_LEX_PARAM void
-#endif
-#else
 #ifndef YY_AnsiCScanner_LEX_DEFINED
 #define YY_AnsiCScanner_LEX_DEFINED
-#endif
 #endif
 
 #ifndef YY_AnsiCScanner_LEX_PARAM_DEF
@@ -246,11 +234,11 @@ extern int YY_AnsiCScanner_LENG;
 extern YY_AnsiCScanner_IFILE *YY_AnsiCScanner_IN;
 extern YY_AnsiCScanner_OFILE *YY_AnsiCScanner_OUT;
 #ifdef YY_AnsiCScanner_LEX_DEFINED
-extern YY_AnsiCScanner_LEX_RETURN YY_AnsiCScanner_LEX ( YY_AnsiCScanner_LEX_PARAM )
+extern YY_AnsiCScanner_LEX_RETURN YY_AnsiCScanner_LEX ( yy_AnsiCParser_stype &yylval )
 YY_AnsiCScanner_LEX_PARAM_DEF
 #else
 #ifndef YY_DECL
-extern YY_AnsiCScanner_LEX_RETURN YY_AnsiCScanner_LEX ( YY_AnsiCScanner_LEX_PARAM )
+extern YY_AnsiCScanner_LEX_RETURN YY_AnsiCScanner_LEX ( yy_AnsiCParser_stype &yylval )
 YY_AnsiCScanner_LEX_PARAM_DEF
 #else
 /* no declaration if oldstyle flex */
@@ -368,7 +356,7 @@ public:
     int YY_AnsiCScanner_LENG;
     YY_AnsiCScanner_IFILE *YY_AnsiCScanner_IN;
     YY_AnsiCScanner_OFILE *YY_AnsiCScanner_OUT;
-    YY_AnsiCScanner_LEX_RETURN YY_AnsiCScanner_LEX ( YY_AnsiCScanner_LEX_PARAM);
+    YY_AnsiCScanner_LEX_RETURN YY_AnsiCScanner_LEX ( yy_AnsiCParser_stype &yylval);
     YY_AnsiCScanner_CLASS(YY_AnsiCScanner_CONSTRUCTOR_PARAM) ;
     virtual ~YY_AnsiCScanner_CLASS() ;
 #if YY_AnsiCScanner_DEBUG != 0

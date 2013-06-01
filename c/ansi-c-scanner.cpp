@@ -546,7 +546,7 @@ static const short int yy_rule_linenum[111] ={
 #define yy_get_previous_state() ((yy_state_type)(yy_get_previous_state_()))
 #define yy_try_NUL_trans(c) ((yy_state_type)(yy_try_NUL_trans_(c)))
 
-YY_AnsiCScanner_LEX_RETURN YY_AnsiCScanner_CLASS::YY_AnsiCScanner_LEX ( YY_AnsiCScanner_LEX_PARAM)
+YY_AnsiCScanner_LEX_RETURN YY_AnsiCScanner_CLASS::YY_AnsiCScanner_LEX ( yy_AnsiCParser_stype &yylval)
 {
     register yy_state_type yy_current_state;
     register YY_AnsiCScanner_CHAR *yy_cp, *yy_bp;
