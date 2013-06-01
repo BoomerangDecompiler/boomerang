@@ -238,31 +238,27 @@ bool RTL::areFlagsAffected() {
 }
 
 void RTL::simplify() {
-    for (iterator it = this->begin(); it != this->end(); ) {
+    for (iterator it = begin(); it != end(); ) {
         Statement *s = *it;
         s->simplify();
         if (s->isBranch()) {
             Exp *cond =     ((BranchStatement*)s)->getCondExpr();
             if (cond && cond->getOper() == opIntConst) {
                 if (((Const*)cond)->getInt() == 0) {
-                    if (VERBOSE)
-                        LOG << "removing branch with false condition at " << getAddress()  << " " << *it << "\n";
+                    LOG_VERBOSE(1) << "removing branch with false condition at " << getAddress()  << " " << *it << "\n";
                     it = this->erase(it);
                     continue;
-                } else {
-                    if (VERBOSE)
-                        LOG << "replacing branch with true condition with goto at " << getAddress() << " " << *it <<
-                               "\n";
-                    *it = new GotoStatement(((BranchStatement*)s)->getFixedDest());
                 }
+                LOG_VERBOSE(1) << "replacing branch with true condition with goto at " << getAddress() << " " << *it <<
+                       "\n";
+                *it = new GotoStatement(((BranchStatement*)s)->getFixedDest());
             }
         } else if (s->isAssign()) {
             Exp* guard = ((Assign*)s)->getGuard();
             if (guard && (guard->isFalse() || (guard->isIntConst() && ((Const*)guard)->getInt() == 0))) {
                 // This assignment statement can be deleted
-                if (VERBOSE)
-                    LOG << "removing assignment with false guard at " << getAddress() << " " << *it << "\n";
-                it = this->erase(it);
+                LOG_VERBOSE(1) << "removing assignment with false guard at " << getAddress() << " " << *it << "\n";
+                it = erase(it);
                 continue;
             }
         }
@@ -272,7 +268,7 @@ void RTL::simplify() {
 // Is this RTL a compare instruction? If so, the passed register and compared value (a semantic string) are set.
 
 bool RTL::isCall() {
-    if (this->empty())
+    if (empty())
         return false;
     Statement* last = this->back();
     return last->getKind() == STMT_CALL;
@@ -288,9 +284,3 @@ Statement* RTL::getHlStmt() {
     }
     return nullptr;
 }
-
-//int RTL::setConscripts(int n, bool bClear) {
-//    StmtConscriptSetter ssc(n, bClear);
-//    accept(&ssc);
-//    return ssc.getLast();
-//}
