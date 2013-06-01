@@ -66,7 +66,7 @@
 BasicBlock::BasicBlock()
     :
       m_iNumInEdges(0),
-      m_iNumOutEdges(0),
+      //m_iNumOutEdges(0),
       m_iTraversed(false),
       // From Doug's code
       ord(-1), revOrd(-1), inEdgesVisited(0), numForwardInEdges(-1), traversed(UNTRAVERSED), hllLabel(false), indentLevel(0),
@@ -107,7 +107,7 @@ BasicBlock::BasicBlock(const BasicBlock& bb)
       m_InEdges(bb.m_InEdges),
       m_OutEdges(bb.m_OutEdges),
       m_iNumInEdges(bb.m_iNumInEdges),
-      m_iNumOutEdges(bb.m_iNumOutEdges),
+      //m_iNumOutEdges(bb.m_iNumOutEdges),
       m_iTraversed(false),
       // From Doug's code
       ord(bb.ord), revOrd(bb.revOrd), inEdgesVisited(bb.inEdgesVisited), numForwardInEdges(bb.numForwardInEdges),
@@ -132,7 +132,7 @@ BasicBlock::BasicBlock(std::list<RTL*>* pRtls, BBTYPE bbType, int iNumOutEdges)
       m_nodeType(bbType),
       m_bIncomplete(false),
       m_iNumInEdges(0),
-      m_iNumOutEdges(iNumOutEdges),
+      //m_iNumOutEdges(iNumOutEdges),
       m_iTraversed(false),
       // From Doug's code
       ord(-1), revOrd(-1), inEdgesVisited(0), numForwardInEdges(-1), traversed(UNTRAVERSED), hllLabel(false), indentLevel(0),
@@ -143,6 +143,7 @@ BasicBlock::BasicBlock(std::list<RTL*>* pRtls, BBTYPE bbType, int iNumOutEdges)
 {
     m_OutEdges.reserve(iNumOutEdges);                // Reserve the space; values added with AddOutEdge()
 
+    m_iTargetOutEdges = iNumOutEdges;
     // Set the RTLs
     setRTLs(pRtls);
 
@@ -218,7 +219,7 @@ BBTYPE BasicBlock::getType() {
  ******************************************************************************/
 void BasicBlock::updateType(BBTYPE bbType, int iNumOutEdges) {
     m_nodeType = bbType;
-    m_iNumOutEdges = iNumOutEdges;
+    m_iTargetOutEdges = iNumOutEdges;
     //m_OutEdges.resize(iNumOutEdges);
 }
 
@@ -311,7 +312,7 @@ void BasicBlock::print(std::ostream& os, bool html) {
         if (html)
             os << "<br>";
         os << "Synthetic out edge(s) to ";
-        assert(m_iNumOutEdges==m_OutEdges.size());
+        assert(m_iTargetOutEdges==m_OutEdges.size());
         for (BasicBlock * outEdge : m_OutEdges) {
             if (outEdge && outEdge->m_iLabelNum)
                 os << "L" << std::dec << outEdge->m_iLabelNum << " ";
@@ -519,7 +520,6 @@ void BasicBlock::deleteEdge(BasicBlock * edge) {
     for (auto it = m_OutEdges.begin(); it != m_OutEdges.end(); it++) {
         if (*it == edge) {
             m_OutEdges.erase(it);
-            m_iNumOutEdges--;
             break;
         }
     }
@@ -830,7 +830,7 @@ bool BasicBlock::isJmpZ(BasicBlock * dest) {
 /*! Get the loop body */
 BasicBlock *BasicBlock::getLoopBody() {
     assert(m_structType == PRETESTLOOP || m_structType == POSTTESTLOOP || m_structType == ENDLESSLOOP);
-    assert(m_iNumOutEdges == 2);
+    assert(m_OutEdges.size() == 2);
     if (m_OutEdges[0] != m_loopFollow)
         return m_OutEdges[0];
     return m_OutEdges[1];
@@ -874,7 +874,7 @@ void BasicBlock::simplify() {
             BasicBlock * redundant = m_OutEdges[0];
             m_OutEdges[0] = m_OutEdges[1];
             m_OutEdges.resize(1);
-            m_iNumOutEdges = 1;
+            m_iTargetOutEdges = 1;
             LOG_VERBOSE(1) << "redundant edge to " << redundant->getLowAddr() << " inedges: ";
             std::vector<BasicBlock *> rinedges = redundant->m_InEdges;
             redundant->m_InEdges.clear();
@@ -896,7 +896,7 @@ void BasicBlock::simplify() {
                             << m_OutEdges[1]->getLowAddr() << "\n";
             BasicBlock * redundant = m_OutEdges[1];
             m_OutEdges.resize(1);
-            m_iNumOutEdges = 1;
+            m_iTargetOutEdges = 1;
             if (VERBOSE)
                 LOG << "redundant edge to " << redundant->getLowAddr() << " inedges: ";
             std::vector<BasicBlock *> rinedges = redundant->m_InEdges;
@@ -2311,9 +2311,12 @@ void BasicBlock::processSwitch(UserProc* proc) {
             // TODO: Elevate this logic to the code calculating iNumTable, but still leave this code as a safeguard.
             // Q: Should iNumOut and m_iNumOutEdges really be adjusted (iNum - i) ?
             //            assert(iNumOut        >= (iNum - i));
-            assert(m_iNumOutEdges >= (iNum - i));
+            assert(m_OutEdges.size() >= (iNum - i));
+            size_t remove_from_this = m_OutEdges.size()-(iNum - i);
+            // remove last (iNum - i) out edges
+            m_OutEdges.erase(m_OutEdges.begin()+remove_from_this,m_OutEdges.end());
             //            iNumOut        -= (iNum - i);
-            m_iNumOutEdges -= (iNum - i);
+            m_iTargetOutEdges -= (iNum - i);
             break;
 #else
             iNumOut--;

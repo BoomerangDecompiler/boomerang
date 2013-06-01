@@ -245,7 +245,7 @@ BasicBlock * Cfg::newBB(std::list<RTL*>* pRtls, BBTYPE bbType, int iNumOutEdges)
                 // Fill in the details, and return it
                 pBB->setRTLs(pRtls);
                 pBB->m_nodeType = bbType;
-                pBB->m_iNumOutEdges = iNumOutEdges;
+                pBB->m_iTargetOutEdges = iNumOutEdges;
                 pBB->m_bIncomplete = false;
             }
             bDone = true;
@@ -492,8 +492,8 @@ BasicBlock * Cfg::splitBB (BasicBlock * pBB, ADDRESS uNativeAddr, BasicBlock * p
     }
                                             // Erase any existing out edges
     pBB->m_OutEdges.erase(pBB->m_OutEdges.begin(), pBB->m_OutEdges.end());
-    pBB->m_iNumOutEdges = 1;
     addOutEdge (pBB, uNativeAddr);
+    pBB->m_iTargetOutEdges = 1;
     return pNewBB;
 }
 
@@ -746,8 +746,8 @@ bool Cfg::wellFormCfg() {
             }
         } else {
             // Complete. Test the out edges
-            assert(current->m_OutEdges.size() == current->m_iNumOutEdges);
-            for (size_t i=0; i < current->m_iNumOutEdges; i++) {
+            //assert(current->m_OutEdges.size() == current->m_iTargetOutEdges);
+            for (size_t i=0; i < current->m_OutEdges.size(); i++) {
                 // check if address is interprocedural
                 //                if ((*it)->m_OutEdgeInterProc[i] == false)
                 {
@@ -807,7 +807,7 @@ bool Cfg::mergeBBs( BasicBlock *pb1, BasicBlock *pb2) {
     // Can only merge if pb1 has only one outedge to pb2, and pb2 has only one in-edge, from pb1. This can only be done
     // after the in-edges are done, which can only be done on a well formed CFG.
     if (!m_bWellFormed) return false;
-    if (pb1->m_iNumOutEdges != 1) return false;
+    if (pb1->m_OutEdges.size() != 1) return false;
     if (pb2->m_iNumInEdges != 1) return false;
     if (pb1->m_OutEdges[0] != pb2) return false;
     if (pb2->m_InEdges[0] != pb1) return false;
@@ -835,7 +835,7 @@ void Cfg::completeMerge(BasicBlock * pb1, BasicBlock * pb2, bool bDelete) {
     // pb2
     assert(pb1->m_iNumInEdges==pb1->m_InEdges.size());
     for (BasicBlock * pPred : pb1->m_InEdges)     {
-        assert(pPred->m_iNumOutEdges==pPred->m_OutEdges.size());
+        assert(pPred->m_iTargetOutEdges==pPred->m_OutEdges.size());
         for (BasicBlock *& pred_out : pPred->m_OutEdges) {
             if (pred_out == pb1)
                 pred_out = pb2;
@@ -1210,7 +1210,6 @@ void Cfg::setLabel(BasicBlock * pBB) {
  ******************************************************************************/
 void Cfg::addNewOutEdge(BasicBlock * pFromBB, BasicBlock * pNewOutEdge) {
     pFromBB->m_OutEdges.push_back(pNewOutEdge);
-    pFromBB->m_iNumOutEdges++;
     // Since this is a new out-edge, set the "jump required" flag
     pFromBB->m_bJumpReqd = true;
     // Make sure that there is a label there

@@ -169,7 +169,7 @@ public:
         void            setOutEdge(size_t i, BasicBlock * newInEdge);
 
         BasicBlock *    getOutEdge(unsigned int i);
-        size_t          getNumOutEdges() { return m_iNumOutEdges; }
+        size_t          getNumOutEdges() { return m_OutEdges.size(); }
         int             whichPred(BasicBlock * pred);
         void            addInEdge(BasicBlock * newInEdge);
         void            deleteEdge(BasicBlock * edge);
@@ -243,7 +243,8 @@ protected:
         std::vector<BasicBlock *> m_InEdges;//!< Vector of in-edges
         std::vector<BasicBlock *> m_OutEdges;//!< Vector of out-edges
         size_t          m_iNumInEdges;      //!< We need these two because GCC doesn't
-        size_t          m_iNumOutEdges;     //!< support resize() of vectors!
+        //size_t          m_iNumOutEdges;     //!< support resize() of vectors!
+        size_t          m_iTargetOutEdges;     //!< support resize() of vectors!
 
                         /* for traversal */
         bool            m_iTraversed;       //!< traversal marker
