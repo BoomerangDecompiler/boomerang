@@ -203,7 +203,7 @@ void UserProc::dfaTypeAnalysis() {
                             if (s->isAssign() && assgn && assgn->getType()) {
                                 int bits = assgn->getType()->getSize();
                                 if (ty == nullptr || ty->getSize() == 0)
-                                    _prog->setGlobalType(gloName, new IntegerType(bits));
+                                    _prog->setGlobalType(gloName, IntegerType::get(bits));
                             }
                             Location *g = Location::global(strdup(gloName), this);
                             if (ty && ty->resolvesToArray())
@@ -258,7 +258,7 @@ void UserProc::dfaTypeAnalysis() {
                     int tmp = con->getInt();
                     con->setFlt(*(float*)&tmp);        // Reinterpret to float, then cast to double
                     con->setOper(opFltConst);
-                    con->setType(new FloatType(64));
+                    con->setType(FloatType::get(64));
                 }
                 // MVE: more work if double?
             } else /* if (t->resolvesToArray()) */ {
@@ -833,7 +833,7 @@ Type* sigmaAddend(Type* tc, Type* to) {
     bool ch;
     if (tc->resolvesToPointer()) {
         if (to->resolvesToPointer())
-            return new IntegerType;
+            return IntegerType::get(STD_SIZE,0);
         if (to->resolvesToInteger())
             return new PointerType(new VoidType);
         return to->clone();
@@ -844,7 +844,7 @@ Type* sigmaAddend(Type* tc, Type* to) {
         return to->clone();
     }
     if (to->resolvesToPointer())
-        return new IntegerType;
+        return IntegerType::get(STD_SIZE,0);
     return tc->clone();
 }
 
@@ -879,10 +879,10 @@ Type* deltaSubtrahend(Type* tc, Type* ta) {
     bool ch;
     if (tc->resolvesToPointer()) {
         if (ta->resolvesToPointer())
-            return new IntegerType;
+            return IntegerType::get(STD_SIZE,0);
         if (ta->resolvesToInteger())
             return tc->createUnion(ta, ch);
-        return new IntegerType;
+        return IntegerType::get(STD_SIZE,0);
     }
     if (tc->resolvesToInteger())
         if (ta->resolvesToPointer())
@@ -902,7 +902,7 @@ Type* deltaDifference(Type* ta, Type* tb) {
     bool ch;
     if (ta->resolvesToPointer()) {
         if (tb->resolvesToPointer())
-            return new IntegerType;
+            return IntegerType::get(STD_SIZE,0);
         if (tb->resolvesToInteger())
             return new PointerType(new VoidType);
         return tb->clone();
@@ -910,10 +910,10 @@ Type* deltaDifference(Type* ta, Type* tb) {
     if (ta->resolvesToInteger()) {
         if (tb->resolvesToPointer())
             return ta->createUnion(tb, ch);
-        return new IntegerType;
+        return IntegerType::get(STD_SIZE,0);
     }
     if (tb->resolvesToPointer())
-        return new IntegerType;
+        return IntegerType::get(STD_SIZE,0);
     return ta->clone();
 }
 
@@ -935,11 +935,11 @@ Type* Binary::ascendType() {
         case opMinus:
             return deltaDifference(ta, tb);
         case opMult: case opDiv:
-            return new IntegerType(ta->getSize(), -1);
+            return IntegerType::get(ta->getSize(), -1);
         case opMults: case opDivs: case opShiftRA:
-            return new IntegerType(ta->getSize(), +1);
+            return IntegerType::get(ta->getSize(), +1);
         case opBitAnd: case opBitOr: case opBitXor: case opShiftR: case opShiftL:
-            return new IntegerType(ta->getSize(), 0);
+            return IntegerType::get(ta->getSize(), 0);
         case opLess:    case opGtr:        case opLessEq:        case opGtrEq:
         case opLessUns:    case opGtrUns:    case opLessEqUns:    case opGtrEqUns:
             return new BooleanType();
@@ -967,14 +967,14 @@ Type* Const::ascendType() {
                     // Assume that small nonzero integer constants are of integer type (can't be pointers)
                     // But note that you can't say anything about sign; these are bit patterns, not HLL constants
                     // (e.g. all ones could be signed -1 or unsigned 0xFFFFFFFF)
-                    type = new IntegerType(STD_SIZE, 0);
+                    type = IntegerType::get(STD_SIZE, 0);
 #endif
                 break;
             case opLongConst:
-                type = new IntegerType(STD_SIZE*2, 0);
+                type = IntegerType::get(STD_SIZE*2, 0);
                 break;
             case opFltConst:
-                type = new FloatType(64);
+                type = FloatType::get(64);
                 break;
             case opStrConst:
                 type = new PointerType(new CharType);
@@ -992,13 +992,13 @@ Type* Const::ascendType() {
 Type* Terminal::ascendType() {
     switch (op) {
         case opPC:
-            return new IntegerType(STD_SIZE, -1);
+            return IntegerType::get(STD_SIZE, -1);
         case opCF: case opZF:
             return new BooleanType;
         case opDefineAll:
             return new VoidType;
         case opFlags:
-            return new IntegerType(STD_SIZE, -1);
+            return IntegerType::get(STD_SIZE, -1);
         default:
             std::cerr << "ascendType() for terminal " << this << " not implemented!\n";
             return new VoidType;
@@ -1026,7 +1026,7 @@ Type* Unary::ascendType() {
 Type* Ternary::ascendType() {
     switch (op) {
         case opFsize:
-            return new FloatType(((Const*)subExp2)->getInt());
+            return FloatType::get(((Const*)subExp2)->getInt());
         case opZfill: case opSgnEx: {
             int toSize = ((Const*)subExp2)->getInt();
             return Type::newIntegerLikeType(toSize, op==opZfill ? -1 : 1);
@@ -1084,7 +1084,7 @@ void Binary::descendType(Type* parentType, bool& ch, Statement* s) {
             break;
         case opGtrUns:    case opLessUns:
         case opGtrEqUns:case opLessEqUns: {
-            nt = new IntegerType(ta->getSize(), -1);            // Used as unsigned
+            nt = IntegerType::get(ta->getSize(), -1);            // Used as unsigned
             ta = ta->meetWith(nt, ch);
             tb = tb->meetWith(nt, ch);
             subExp1->descendType(ta, ch, s);
@@ -1093,7 +1093,7 @@ void Binary::descendType(Type* parentType, bool& ch, Statement* s) {
         }
         case opGtr:    case opLess:
         case opGtrEq:case opLessEq: {
-            nt = new IntegerType(ta->getSize(), +1);            // Used as signed
+            nt = IntegerType::get(ta->getSize(), +1);            // Used as signed
             ta = ta->meetWith(nt, ch);
             tb = tb->meetWith(nt, ch);
             subExp1->descendType(ta, ch, s);
@@ -1116,14 +1116,14 @@ void Binary::descendType(Type* parentType, bool& ch, Statement* s) {
             }
 
             int parentSize = parentType->getSize();
-            ta = ta->meetWith(new IntegerType(parentSize, signedness), ch);
+            ta = ta->meetWith(IntegerType::get(parentSize, signedness), ch);
             subExp1->descendType(ta, ch, s);
             if (op == opShiftL || op == opShiftR || op == opShiftRA)
                 // These operators are not symmetric; doesn't force a signedness on the second operand
                 // FIXME: should there be a gentle bias twowards unsigned? Generally, you can't shift by negative
                 // amounts.
                 signedness = 0;
-            tb = tb->meetWith(new IntegerType(parentSize, signedness), ch);
+            tb = tb->meetWith(IntegerType::get(parentSize, signedness), ch);
             subExp2->descendType(tb, ch, s);
             break;
         }
@@ -1148,13 +1148,13 @@ void Const::descendType(Type* parentType, bool& ch, Statement* s) {
         if (type->resolvesToFloat()) {
             if (op == opIntConst) {
                 op = opFltConst;
-                type = new FloatType(64);
+                type = FloatType::get(64);
                 float f = *(float*)&u.i;
                 u.d = (double)f;
             }
             else if (op == opLongConst) {
                 op = opFltConst;
-                type = new FloatType(64);
+                type = FloatType::get(64);
                 double d = *(double*)&u.ll;
                 u.d = d;
             }
@@ -1181,7 +1181,7 @@ void Unary::descendType(Type* parentType, bool& ch, Statement* s) {
                            parentType->getSize() << "\n";
                 // The index is integer type
                 Exp* x = ((Binary*)leftOfPlus)->getSubExp1();
-                x->descendType(new IntegerType(parentType->getSize(), 0), ch, s);
+                x->descendType(IntegerType::get(parentType->getSize(), 0), ch, s);
                 // K2 is of type <array of parentType>
                 Const* constK2 = (Const*)((Binary*)subExp1)->getSubExp2();
                 ADDRESS intK2 = ADDRESS::g(constK2->getInt()); //TODO: use getAddr ?
@@ -1244,7 +1244,7 @@ void Unary::descendType(Type* parentType, bool& ch, Statement* s) {
 void Ternary::descendType(Type* parentType, bool& ch, Statement* s) {
     switch (op) {
         case opFsize:
-            subExp3->descendType(new FloatType(((Const*)subExp1)->getInt()), ch, s);
+            subExp3->descendType(FloatType::get(((Const*)subExp1)->getInt()), ch, s);
             break;
         case opZfill: case opSgnEx: {
             int fromSize = ((Const*)subExp1)->getInt();

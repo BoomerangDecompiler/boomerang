@@ -2260,7 +2260,7 @@ void CallStatement::generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) {
     assert(p);
     if (Boomerang::get()->noDecompile) {
         if (procDest->getSignature()->getNumReturns() > 0) {
-            Assign* as = new Assign(new IntegerType(STD_SIZE),
+            Assign* as = new Assign(IntegerType::get(STD_SIZE),
                                     new Unary(opRegOf, new Const(24)),
                                     new Unary(opRegOf, new Const(24)));
             as->setProc(proc);
@@ -2719,7 +2719,7 @@ bool CallStatement::ellipsisProcessing(Prog* prog) {
                     // Example: printf("Val: %*.*f\n", width, precision, val);
                     n++;        // There is an extra parameter for the width or precision
                     // This extra parameter is of type integer, never int* (so pass false as last argument)
-                    addSigParam(new IntegerType(STD_SIZE), false);
+                    addSigParam(IntegerType::get(STD_SIZE), false);
                     continue;
                 case '-': case '+': case '#': case ' ':
                     // Flag. Ignore
@@ -2753,15 +2753,15 @@ bool CallStatement::ellipsisProcessing(Prog* prog) {
             n++;
         switch (ch) {
             case 'd': case 'i':                            // Signed integer
-                addSigParam(new IntegerType(veryLong ? 64 : 32), isScanf);
+                addSigParam(IntegerType::get(veryLong ? 64 : 32), isScanf);
                 break;
             case 'u': case 'x': case 'X': case 'o':        // Unsigned integer
-                addSigParam(new IntegerType(32, -1), isScanf);
+                addSigParam(IntegerType::get(32, -1), isScanf);
                 break;
             case 'f': case 'g': case 'G': case 'e': case 'E':    // Various floating point formats
                 // Note that for scanf, %f means float, and %lf means double, whereas for printf, both of these mean
                 // double
-                addSigParam(new FloatType(veryLong ? 128 : (isScanf ? 32 : 64)), isScanf);// Note: may not be 64 bits
+                addSigParam(FloatType::get(veryLong ? 128 : (isScanf ? 32 : 64)), isScanf);// Note: may not be 64 bits
                 // for some archs
                 break;
             case 's':                                    // String
@@ -3620,12 +3620,12 @@ void CallStatement::genConstraints(LocationSet& cons) {
                             int size = 32;
                             // Note: the following only works for 32 bit code or where sizeof(long) == sizeof(int)
                             if (longness == 2) size = 64;
-                            t = new IntegerType(size, sign);
+                            t = IntegerType::get(size, sign);
                             break;
                         }
                         case 'f':
                         case 'g':
-                            t = new FloatType(64);
+                            t = FloatType::get(64);
                             break;
                         case 's':
                             t = new PointerType(new CharType());
@@ -3672,9 +3672,9 @@ void BranchStatement::genConstraints(LocationSet& cons) {
     }
     Type* opsType;
     if (bFloat)
-        opsType = new FloatType(0);
+        opsType = FloatType::get(0);
     else
-        opsType = new IntegerType(0);
+        opsType = IntegerType::get(0);
     if (  jtCond == BRANCH_JUGE || jtCond == BRANCH_JULE ||
           jtCond == BRANCH_JUG || jtCond == BRANCH_JUL) {
         assert(!bFloat);

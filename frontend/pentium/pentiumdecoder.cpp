@@ -37394,7 +37394,7 @@ void genBSFR(ADDRESS pc, Exp* dest, Exp* modrm, int init, int size,
     switch (BSFRstate) {
         case 0:
             s = new Assign(
-                    new IntegerType(1),
+                    IntegerType::get(1),
                     new Terminal(opZF),
                     new Const(1));
             stmts->push_back(s);
@@ -37409,19 +37409,19 @@ void genBSFR(ADDRESS pc, Exp* dest, Exp* modrm, int init, int size,
             break;
         case 1:
             s = new Assign(
-                    new IntegerType(1),
+                    IntegerType::get(1),
                     new Terminal(opZF),
                     new Const(0));
             stmts->push_back(s);
             s = new Assign(
-                    new IntegerType(size),
+                    IntegerType::get(size),
                     dest->clone(),
                     new Const(init));
             stmts->push_back(s);
             break;
         case 2:
             s = new Assign(
-                    new IntegerType(size),
+                    IntegerType::get(size),
                     dest->clone(),
                     new Binary(incdec,
                                dest->clone(),

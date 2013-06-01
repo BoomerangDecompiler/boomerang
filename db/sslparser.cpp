@@ -2571,14 +2571,14 @@ YY_SSLParser_PARSE_PARAM_DEF
                 sscanf(yyvsp[0].str+2, "%d", &size);
                 if (size == 0) size = STD_SIZE;
                 switch (c) {
-                    case 'i': yyval.typ = new IntegerType(size, 1); break;
-                    case 'j': yyval.typ = new IntegerType(size, 0); break;
-                    case 'u': yyval.typ = new IntegerType(size, -1); break;
-                    case 'f': yyval.typ = new FloatType(size); break;
+                    case 'i': yyval.typ = IntegerType::get(size, 1); break;
+                    case 'j': yyval.typ = IntegerType::get(size, 0); break;
+                    case 'u': yyval.typ = IntegerType::get(size, -1); break;
+                    case 'f': yyval.typ = FloatType::get(size); break;
                     case 'c': yyval.typ = new CharType; break;
                     default:
                         std::cerr << "Unexpected char " << c << " in assign type\n";
-                        yyval.typ = new IntegerType;
+                        yyval.typ = IntegerType::get(32);
                 }
             }
             ;

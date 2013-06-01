@@ -939,9 +939,9 @@ static Exp* checkSignedness(Exp* e, int reqSignedness) {
     if (isInt && currSignedness != reqSignedness) {
         IntegerType* newtype;
         if (!isInt)
-            newtype = new IntegerType(STD_SIZE, reqSignedness);
+            newtype = IntegerType::get(STD_SIZE, reqSignedness);
         else
-            newtype = new IntegerType(((IntegerType*)ty)->getSize(), reqSignedness);    // Transfer size
+            newtype = IntegerType::get(((IntegerType*)ty)->getSize(), reqSignedness);    // Transfer size
         newtype->setSigned(reqSignedness);
         return new TypedExp(newtype, e);
     }
@@ -982,7 +982,7 @@ Exp* ExpCastInserter::postVisit(Const *e) {
         bool naturallySigned = e->getInt() < 0;
         Type* ty = e->getType();
         if (naturallySigned && ty->isInteger() && !ty->asInteger()->isSigned()) {
-            return new TypedExp(new IntegerType(ty->asInteger()->getSize(), -1), e);
+            return new TypedExp(IntegerType::get(ty->asInteger()->getSize(), -1), e);
         }
     }
     return e;

@@ -733,7 +733,7 @@ void UserProc::generateCode(HLLCode *hll) {
     for (std::map<std::string, Type*>::iterator it = locals.begin(); it != locals.end(); it++) {
         Type* locType = it->second;
         if (locType == nullptr || locType->isVoid())
-            locType = new IntegerType();
+            locType = IntegerType::get(STD_SIZE);
         hll->AddLocal(it->first.c_str(), locType, it == last);
     }
 
@@ -2612,7 +2612,7 @@ Exp *UserProc::getSymbolExp(Exp *le, Type *ty, bool lastPass) {
     if (symbolMap.find(le) == symbolMap.end()) {
         if (ty == nullptr) {
             if (lastPass)
-                ty = new IntegerType();
+                ty = IntegerType::get(STD_SIZE);
             else
                 ty = new VoidType();            // HACK MVE
         }
@@ -2757,7 +2757,7 @@ void UserProc::mapExpressionsToLocals(bool lastPass) {
                                            result->getSubExp1()->getSubExp2()->clone()),
                         this);
             int n = ((Const*)result->getSubExp1()->getSubExp2())->getInt();
-            Type *base = new IntegerType();
+            Type *base = IntegerType::get(STD_SIZE);
             if (s->isAssign() && ((Assign*)s)->getLeft() == result) {
                 Type* at = ((Assign*)s)->getType();
                 if(at && at->getSize() != 0)
@@ -4272,12 +4272,13 @@ void UserProc::updateArguments() {
     if (VERBOSE)
         LOG << "### update arguments for " << getName() << " ###\n";
     Boomerang::get()->alert_decompile_debug_point(this, "before updating arguments");
-    BB_IT it;
-    BasicBlock::rtlrit rrit; StatementList::reverse_iterator srit;
-    for (it = cfg->begin(); it != cfg->end(); ++it) {
-        CallStatement* c = (CallStatement*) (*it)->getLastStmt(rrit, srit);
+    BasicBlock::rtlrit rrit;
+    StatementList::reverse_iterator srit;
+    for (BasicBlock *it : *cfg) {
+        CallStatement* c = (CallStatement*) it->getLastStmt(rrit, srit);
         // Note: we may have removed some statements, so there may no longer be a last statement!
-        if (c == nullptr || !c->isCall()) continue;
+        if (c == nullptr || !c->isCall()) 
+            continue;
         c->updateArguments();
         //c->bypass();
         if (VERBOSE) {
@@ -4755,9 +4756,10 @@ void UserProc::fixCallAndPhiRefs() {
  *
  ******************************************************************************/
 void UserProc::markAsNonChildless(ProcSet* cs) {
-    BasicBlock::rtlrit rrit; StatementList::reverse_iterator srit;
-    BB_IT it;
-    for (BasicBlock * bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it)) {
+    BasicBlock::rtlrit rrit;
+    StatementList::reverse_iterator srit;
+
+    for (BasicBlock * bb : *cfg) {
         CallStatement* c = (CallStatement*) bb->getLastStmt(rrit, srit);
         if (c && c->isCall() && c->isChildless()) {
             UserProc* dest = (UserProc*)c->getDestProc();
@@ -4778,13 +4780,14 @@ void UserProc::propagateToCollector() {
         }
         Exp* addr = ((Location*)*it)->getSubExp1();
         LocationSet used;
-        LocationSet::iterator uu;
         addr->addUsedLocs(used);
-        for (uu = used.begin(); uu != used.end(); uu++) {
-            RefExp* r = (RefExp*)*uu;
-            if (!r->isSubscript()) continue;
+        for (Exp *v : used) {
+            RefExp* r = (RefExp*)v;
+            if (!r->isSubscript())
+                continue;
             Assign* as = (Assign*)r->getDef();
-            if (as == nullptr || !as->isAssign()) continue;
+            if (as == nullptr || !as->isAssign())
+                continue;
             bool ch;
             Exp* res = addr->clone()->searchReplaceAll(r, as->getRight(), ch);
             if (!ch) continue;                // No change
@@ -4795,8 +4798,7 @@ void UserProc::propagateToCollector() {
                 /* it = */ col.remove(it++);        // Already exists; just remove the old one
                 continue;
             } else {
-                if (VERBOSE)
-                    LOG << "propagating " << r << " to " << as->getRight() << " in collector; result " << memOfRes <<
+                LOG_VERBOSE(1) << "propagating " << r << " to " << as->getRight() << " in collector; result " << memOfRes <<
                            "\n";
                 ((Location*)*it)->setSubExp1(res);    // Change the child of the memof
             }
@@ -4812,12 +4814,10 @@ void UserProc::propagateToCollector() {
  *
  ******************************************************************************/
 void UserProc::initialParameters() {
-    if (VERBOSE)
-        LOG << "### initial parameters for " << getName() << "\n";
+    LOG_VERBOSE(1) << "### initial parameters for " << getName() << "\n";
     parameters.clear();
-    UseCollector::iterator cc;
-    for (cc = col.begin(); cc != col.end(); ++cc)
-        parameters.append(new ImplicitAssign((*cc)->clone()));
+    for (Exp* v : col)
+        parameters.append(new ImplicitAssign(v->clone()));
     if (VERBOSE) {
         std::ostringstream ost;
         printParams(ost);
@@ -4905,10 +4905,11 @@ bool UserProc::isLocalOrParamPattern(Exp* e) {
  *
  ******************************************************************************/
 bool UserProc::doesParamChainToCall(Exp* param, UserProc* p, ProcSet* visited) {
-    BB_IT it;
-    BasicBlock::rtlrit rrit; StatementList::reverse_iterator srit;
-    for (it = cfg->begin(); it != cfg->end(); ++it) {
-        CallStatement* c = (CallStatement*) (*it)->getLastStmt(rrit, srit);
+    BasicBlock::rtlrit rrit;
+    StatementList::reverse_iterator srit;
+
+    for (BasicBlock *pb : *cfg) {
+        CallStatement* c = (CallStatement*) pb->getLastStmt(rrit, srit);
         if (c == nullptr || !c->isCall())  continue;        // Only interested in calls
         UserProc* dest = (UserProc*)c->getDestProc();
         if (dest == nullptr || dest->isLib()) continue;  // Only interested in calls to UserProcs
@@ -5201,7 +5202,10 @@ bool UserProc::removeRedundantReturns(std::set<UserProc*>& removeRetSet) {
     ReturnStatement::iterator rr;
     for (rr = theReturnStatement->begin(); rr != theReturnStatement->end(); ) {
         Assign* a = (Assign*)*rr;
-        if (!unionOfCallerLiveLocs.exists(a->getLeft())) {
+        if (unionOfCallerLiveLocs.exists(a->getLeft())) {
+            ++rr;
+            continue;
+        }
             if (DEBUG_UNUSED)
                 LOG << "%%%  removing unused return " << a << " from proc " << getName() << "\n";
             // If a component of the RHS referenced a call statement, the liveness used to be killed here.
@@ -5209,9 +5213,6 @@ bool UserProc::removeRedundantReturns(std::set<UserProc*>& removeRetSet) {
             // recurse to callee
             rr = theReturnStatement->erase(rr);
             removedRets = true;
-        }
-        else
-            rr++;
     }
 
     if (DEBUG_UNUSED) {
@@ -5869,143 +5870,6 @@ void UserProc::checkLocalFor(RefExp* r) {
 
 //    -    -    -    -    -    -    -    -    -
 
-#ifdef USING_MEMOS
-class LibProcMemo : public Memo {
-public:
-    LibProcMemo(int mId) : Memo(mId) { }
-
-    bool visited;
-    Prog *prog;
-    Signature *signature;                        // r
-    ADDRESS address;
-    Proc *m_firstCaller;
-    ADDRESS m_firstCallerAddr;
-    std::set<Exp*, lessExpStar> provenTrue;            // r
-    std::set<CallStatement*> callerSet;
-    Cluster *cluster;
-};
-
-Memo *LibProc::makeMemo(int mId) {
-    LibProcMemo *m = new LibProcMemo(mId);
-    m->visited = visited;
-    m->prog = prog;
-    m->signature = signature;
-    m->address = address;
-    m->m_firstCaller = m_firstCaller;
-    m->m_firstCallerAddr = m_firstCallerAddr;
-    m->provenTrue = provenTrue;
-    m->callerSet = callerSet;
-    m->cluster = cluster;
-
-    //    signature->takeMemo(mId);
-    //    for (std::set<Exp*, lessExpStar>::iterator it = provenTrue.begin(); it != provenTrue.end(); it++)
-    //        (*it)->takeMemo(mId);
-
-    return m;
-}
-
-void LibProc::readMemo(Memo *mm, bool dec) {
-    LibProcMemo *m = dynamic_cast<LibProcMemo*>(mm);
-    visited = m->visited;
-    prog = m->prog;
-    signature = m->signature;
-    address = m->address;
-    m_firstCaller = m->m_firstCaller;
-    m_firstCallerAddr = m->m_firstCallerAddr;
-    provenTrue = m->provenTrue;
-    callerSet = m->callerSet;
-    cluster = m->cluster;
-
-    //    signature->restoreMemo(m->mId, dec);
-    //    for (std::set<Exp*, lessExpStar>::iterator it = provenTrue.begin(); it != provenTrue.end(); it++)
-    //        (*it)->restoreMemo(m->mId, dec);
-}
-
-class UserProcMemo : public Memo {
-public:
-    UserProcMemo(int mId) : Memo(mId) { }
-
-    bool visited;
-    Prog *prog;
-    Signature *signature;                        // r
-    ADDRESS address;
-    Proc *m_firstCaller;
-    ADDRESS m_firstCallerAddr;
-    std::set<Exp*, lessExpStar> provenTrue;            // r
-    std::set<CallStatement*> callerSet;
-    Cluster *cluster;
-
-    Cfg* cfg;
-    ProcStatus status;
-    std::map<std::string, Type*> locals;        // r
-    UserProc::SymbolMap symbolMap;            // r
-    std::list<Proc*> calleeList;
-};
-
-Memo *UserProc::makeMemo(int mId) {
-    UserProcMemo *m = new UserProcMemo(mId);
-    m->visited = visited;
-    m->prog = prog;
-    m->signature = signature;
-    m->address = address;
-    m->m_firstCaller = m_firstCaller;
-    m->m_firstCallerAddr = m_firstCallerAddr;
-    m->provenTrue = provenTrue;
-    m->callerSet = callerSet;
-    m->cluster = cluster;
-
-    m->cfg = cfg;
-    m->status = status;
-    m->locals = locals;
-    m->symbolMap = symbolMap;
-    m->calleeList = calleeList;
-
-    signature->takeMemo(mId);
-    for (std::set<Exp*, lessExpStar>::iterator it = provenTrue.begin(); it != provenTrue.end(); it++)
-        (*it)->takeMemo(mId);
-
-    for (std::map<std::string, Type*>::iterator it = locals.begin(); it != locals.end(); it++)
-        (*it).second->takeMemo(mId);
-
-    for (SymbolMap::iterator it = symbolMap.begin(); it != symbolMap.end(); it++) {
-        (*it).first->takeMemo(mId);
-        (*it).second->takeMemo(mId);
-    }
-
-    return m;
-}
-
-void UserProc::readMemo(Memo *mm, bool dec) {
-    UserProcMemo *m = dynamic_cast<UserProcMemo*>(mm);
-    visited = m->visited;
-    prog = m->prog;
-    signature = m->signature;
-    address = m->address;
-    m_firstCaller = m->m_firstCaller;
-    m_firstCallerAddr = m->m_firstCallerAddr;
-    provenTrue = m->provenTrue;
-    callerSet = m->callerSet;
-    cluster = m->cluster;
-
-    cfg = m->cfg;
-    status = m->status;
-    locals = m->locals;
-    symbolMap = m->symbolMap;
-    calleeList = m->calleeList;
-
-    signature->restoreMemo(m->mId, dec);
-    for (std::set<Exp*, lessExpStar>::iterator it = provenTrue.begin(); it != provenTrue.end(); it++)
-        (*it)->restoreMemo(m->mId, dec);
-
-    for (std::map<std::string, Type*>::iterator it = locals.begin(); it != locals.end(); it++)
-        (*it).second->restoreMemo(m->mId, dec);
-
-    for (SymbolMap::iterator it = symbolMap.begin(); it != symbolMap.end(); it++) {
-        (*it).first->restoreMemo(m->mId, dec);
-        (*it).second->restoreMemo(m->mId, dec);
-    }
-}
-#endif        // #ifdef USING_MEMOS
 // 3) Check implicit assigns for parameter and global types.
 void UserProc::dfa_analyze_implict_assigns( Statement* s, Prog* prog )
 {

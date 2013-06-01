@@ -1269,7 +1269,7 @@ void SparcFrontEnd::quadOperation(ADDRESS addr, std::list<RTL*>* lrtl, OPER op)
     Exp* rhs = new Binary(op,
                           Location::memOf(Location::regOf(8)),
                           Location::memOf(Location::regOf(9)));
-    appendAssignment(lhs, rhs, new FloatType(128), addr, lrtl);
+    appendAssignment(lhs, rhs, FloatType::get(128), addr, lrtl);
 }
 
 // Determine if this is a helper function, e.g. .mul. If so, append the appropriate RTLs to lrtl, and return true
@@ -1464,7 +1464,7 @@ bool SparcFrontEnd::helperFuncLong(ADDRESS dest, ADDRESS addr, std::list<RTL*>* 
     }
     // Need to make an RTAssgn with %o0 = rhs
     lhs = Location::regOf(8);
-    appendAssignment(lhs, rhs, new IntegerType(32), addr, lrtl);
+    appendAssignment(lhs, rhs, IntegerType::get(32), addr, lrtl);
     return true;
 }
 

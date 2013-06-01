@@ -188,10 +188,10 @@ void Prog::generateCode(Cluster *cluster, UserProc *proc, bool intermixRTL) {
                     PSectionInfo info = pBF->GetSectionInfoByName(str.c_str());
                     str = "start_";
                     str    += sections[j];
-                    code->AddGlobal(str.c_str(), new IntegerType(32, -1), new Const(info ? info->uNativeAddr : NO_ADDRESS));
+                    code->AddGlobal(str.c_str(), IntegerType::get(32, -1), new Const(info ? info->uNativeAddr : NO_ADDRESS));
                     str = sections[j];
                     str += "_size";
-                    code->AddGlobal(str.c_str(), new IntegerType(32, -1), new Const(info ? info->uSectionSize : (unsigned int)-1));
+                    code->AddGlobal(str.c_str(), IntegerType::get(32, -1), new Const(info ? info->uSectionSize : (unsigned int)-1));
                     Exp *l = new Terminal(opNil);
                     for (unsigned int i = 0; info && i < info->uSectionSize; i++) {
                         int n = pBF->readNative1(info->uNativeAddr + info->uSectionSize - 1 - i);
@@ -199,9 +199,9 @@ void Prog::generateCode(Cluster *cluster, UserProc *proc, bool intermixRTL) {
                             n = 256 + n;
                         l = new Binary(opList, new Const(n), l);
                     }
-                    code->AddGlobal(sections[j], new ArrayType(new IntegerType(8, -1), info ? info->uSectionSize : 0), l);
+                    code->AddGlobal(sections[j], new ArrayType(IntegerType::get(8, -1), info ? info->uSectionSize : 0), l);
                 }
-                code->AddGlobal("source_endianness", new IntegerType(), new Const(getFrontEndId() != PLAT_PENTIUM));
+                code->AddGlobal("source_endianness", IntegerType::get(STD_SIZE), new Const(getFrontEndId() != PLAT_PENTIUM));
                 os << "#include \"boomerang.h\"\n\n";
                 global = true;
             }
@@ -572,10 +572,10 @@ Type *typeFromDebugInfo(int index, DWORD64 ModBase) {
                     return new CharType();
                 case 6: // int
                 case 13: // long
-                    return new IntegerType(sz, 1);
+                    return IntegerType::get(sz, 1);
                 case 7: // unsigned int
                 case 14: // ulong
-                    return new IntegerType(sz, -1);
+                    return IntegerType::get(sz, -1);
                 case 8:
                     return new FloatType(sz);
                 case 10:
@@ -968,7 +968,7 @@ Type *Prog::guessGlobalType(const char *nam, ADDRESS u) {
     Type *ty;
     switch(sz) {
         case 1: case 2: case 4: case 8:
-            ty = new IntegerType(sz*8);
+            ty = IntegerType::get(sz*8);
             break;
         default:
             ty = new ArrayType(new CharType(), sz);

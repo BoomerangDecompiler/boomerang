@@ -685,7 +685,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, ptrdiff_t delta) {
 
                                         Assign* as = new Assign(
 
-                                                    new IntegerType,
+                                                    IntegerType::get(STD_SIZE,0),
 
                                                     new Unary(opMachFtr, new Const("%LR")),
 

@@ -581,10 +581,11 @@ bool Win32BinaryFile::RealLoad(const char* sName) {
 void Win32BinaryFile::findJumps(ADDRESS curr) {
     int cnt = 0;            // Count of bytes with no match
     SectionInfo* sec = GetSectionInfoByName(".text");
-    if (sec == nullptr) sec = GetSectionInfoByName("CODE");
+    if (sec == nullptr)
+        sec = GetSectionInfoByName("CODE");
     assert(sec);
     // Add to native addr to get host:
-    int delta = (sec->uHostAddr - sec->uNativeAddr).m_value;
+    ptrdiff_t delta = (sec->uHostAddr - sec->uNativeAddr).m_value;
     while (cnt < 0x60) {    // Max of 0x60 bytes without a match
         curr -= 2;            // Has to be on 2-byte boundary
         cnt += 2;

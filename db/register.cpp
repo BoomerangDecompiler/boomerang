@@ -112,6 +112,6 @@ std::string Register::g_name() const {
  ******************************************************************************/
 Type* Register::g_type() const {
     if (flt)
-        return new FloatType(size);
-    return new IntegerType(size);
+        return FloatType::get(size);
+    return IntegerType::get(size);
 }

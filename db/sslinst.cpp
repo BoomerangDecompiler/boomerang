@@ -349,11 +349,11 @@ std::pair<std::string,unsigned> RTLInstDict::getSignature(const char* name) {
  ******************************************************************************/
 bool RTLInstDict::partialType(Exp* exp, Type& ty) {
     if (exp->isSizeCast()) {
-        ty = IntegerType(((Const*)((Binary*)exp)->getSubExp1())->getInt());
+        ty = *IntegerType::get(((Const*)((Binary*)exp)->getSubExp1())->getInt());
         return true;
     }
     if (exp->isFltConst()) {
-        ty = FloatType(64);
+        ty = *FloatType::get(64);
         return true;
     }
     return false;

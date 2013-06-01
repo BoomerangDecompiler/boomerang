@@ -312,19 +312,19 @@ bool DataFlow::placePhiFunctions(UserProc* proc) {
                 int y = *yy;
                 // if y not element of A_phi[a]
                 std::set<int>& s = A_phi[a];
-                if (s.find(y) == s.end()) {
-                    // Insert trivial phi function for a at top of block y: a := phi()
-                    change = true;
-                    Statement* as = new PhiAssign(a->clone());
-                    BasicBlock * Ybb = BBs[y];
-                    Ybb->prependStmt(as, proc);
-                    // A_phi[a] <- A_phi[a] U {y}
-                    s.insert(y);
-                    // if a !elementof A_orig[y]
-                    if (A_orig[y].find(a) == A_orig[y].end()) {
-                        // W <- W U {y}
-                        W.insert(y);
-                    }
+                if (s.find(y) != s.end())
+                    continue;
+                // Insert trivial phi function for a at top of block y: a := phi()
+                change = true;
+                Statement* as = new PhiAssign(a->clone());
+                BasicBlock * Ybb = BBs[y];
+                Ybb->prependStmt(as, proc);
+                // A_phi[a] <- A_phi[a] U {y}
+                s.insert(y);
+                // if a !elementof A_orig[y]
+                if (A_orig[y].find(a) == A_orig[y].end()) {
+                    // W <- W U {y}
+                    W.insert(y);
                 }
             }
         }
@@ -535,7 +535,8 @@ bool DataFlow::renameBlockVars(UserProc* proc, int n, bool clearStacks /* = fals
         S->getDefinitions(defs);
         LocationSet::iterator dd;
         for (dd = defs.begin(); dd != defs.end(); dd++) {
-            if (canRename(*dd, proc)) {
+            if (!canRename(*dd, proc))
+                continue;
                 // if ((*dd)->getMemDepth() == memDepth)
                 std::map<Exp*, std::stack<Statement*>, lessExpStar>::iterator ss = Stacks.find(*dd);
                 if (ss == Stacks.end()) {
@@ -543,7 +544,6 @@ bool DataFlow::renameBlockVars(UserProc* proc, int n, bool clearStacks /* = fals
                     assert(0);
                 }
                 ss->second.pop();
-            }
         }
         // Pop all defs due to childless calls
         if (S->isCall() && ((CallStatement*)S)->isChildless()) {

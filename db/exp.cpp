@@ -2918,7 +2918,7 @@ Exp* RefExp::polySimplify(bool& bMod) {
     if (subExp1->isRegN(0) &&                            // r0 (ax)
             def && def->isAssign() &&
             ((Assign*)def)->getLeft()->isRegN(24)) {    // r24 (eax)
-        res = new TypedExp(new IntegerType(16), new RefExp(Location::regOf(24), def));
+        res = new TypedExp(IntegerType::get(16), new RefExp(Location::regOf(24), def));
         bMod = true;
         return res;
     }
@@ -3207,7 +3207,7 @@ Exp* Const::genConstraints(Exp* result) {
     switch (op) {
         case opIntConst: {
             // We have something like local1 = 1234.  Either they are both integer, or both pointer
-            Type* intt = new IntegerType(0);
+            Type* intt = IntegerType::get(0);
             Type* alph = PointerType::newPtrAlpha();
             return new Binary(opOr,
                               new Binary(opAnd,
@@ -3230,13 +3230,13 @@ Exp* Const::genConstraints(Exp* result) {
             break;
         }
         case opLongConst:
-            t = new IntegerType(64);
+            t = IntegerType::get(64);
             break;
         case opStrConst:
             t = new PointerType(new CharType());
             break;
         case opFltConst:
-            t = new FloatType();    // size is not known. Assume double for now
+            t = FloatType::get(64);    // size is not known. Assume double for now
             break;
         default:
             return nullptr;
@@ -3281,20 +3281,20 @@ Exp* Ternary::genConstraints(Exp* result) {
             // Fall through
             switch (op) {
                 case opFsize:
-                    argHasToBe = new FloatType(fromSize);
-                    retHasToBe = new FloatType(toSize);
+                    argHasToBe = FloatType::get(fromSize);
+                    retHasToBe = FloatType::get(toSize);
                     break;
                 case opItof:
-                    argHasToBe = new IntegerType(fromSize);
-                    retHasToBe = new FloatType(toSize);
+                    argHasToBe = IntegerType::get(fromSize);
+                    retHasToBe = FloatType::get(toSize);
                     break;
                 case opFtoi:
-                    argHasToBe = new FloatType(fromSize);
-                    retHasToBe = new IntegerType(toSize);
+                    argHasToBe = FloatType::get(fromSize);
+                    retHasToBe = IntegerType::get(toSize);
                     break;
                 case opSgnEx:
-                    argHasToBe = new IntegerType(fromSize);
-                    retHasToBe = new IntegerType(toSize);
+                    argHasToBe = IntegerType::get(fromSize);
+                    retHasToBe = IntegerType::get(toSize);
                     break;
                 default:
                     break;
@@ -3363,7 +3363,7 @@ Exp* Binary::genConstraints(Exp* result) {
     if (result->isTypeVal())
         restrictTo = ((TypeVal*)result)->getType();
     Exp* res = nullptr;
-    IntegerType* intType = new IntegerType(0);    // Wild size (=0)
+    IntegerType* intType = IntegerType::get(0);    // Wild size (=0)
     TypeVal intVal(intType);
     switch (op) {
         case opFPlus:
@@ -3375,7 +3375,7 @@ Exp* Binary::genConstraints(Exp* result) {
                 return new Terminal(opFalse);
 
             // MVE: what about sizes?
-            FloatType* ft = new FloatType();
+            FloatType* ft = FloatType::get();
             TypeVal* ftv = new TypeVal(ft);
             res = constrainSub(ftv, ftv);
             if (!restrictTo)
@@ -3394,7 +3394,7 @@ Exp* Binary::genConstraints(Exp* result) {
                 return new Terminal(opFalse);
 
             // MVE: What about sizes?
-            IntegerType* it = new IntegerType();
+            IntegerType* it = IntegerType::get(STD_SIZE,0);
             TypeVal* itv = new TypeVal(it);
             res = constrainSub(itv, itv);
             if (!restrictTo)

@@ -253,31 +253,31 @@ void PentiumFrontEnd::processFloatCode(Cfg* pCfg) {
                 // Get the current Exp
                 st = *iter;
                 if (st->isFpush()) {
-                    rtl->insert(iter,new Assign(new FloatType(80),
+                    rtl->insert(iter,new Assign(FloatType::get(80),
                                                   Location::tempOf(new Const(const_cast<char *>("tmpD9"))),
                                                   Location::regOf(39)));
-                    rtl->insert(iter,new Assign(new FloatType(80),
+                    rtl->insert(iter,new Assign(FloatType::get(80),
                                                   Location::regOf(39),
                                                   Location::regOf(38)));
-                    rtl->insert(iter,new Assign(new FloatType(80),
+                    rtl->insert(iter,new Assign(FloatType::get(80),
                                                   Location::regOf(38),
                                                   Location::regOf(37)));
-                    rtl->insert(iter,new Assign(new FloatType(80),
+                    rtl->insert(iter,new Assign(FloatType::get(80),
                                                   Location::regOf(37),
                                                   Location::regOf(36)));
-                    rtl->insert(iter,new Assign(new FloatType(80),
+                    rtl->insert(iter,new Assign(FloatType::get(80),
                                                   Location::regOf(36),
                                                   Location::regOf(35)));
-                    rtl->insert(iter,new Assign(new FloatType(80),
+                    rtl->insert(iter,new Assign(FloatType::get(80),
                                                   Location::regOf(35),
                                                   Location::regOf(34)));
-                    rtl->insert(iter,new Assign(new FloatType(80),
+                    rtl->insert(iter,new Assign(FloatType::get(80),
                                                   Location::regOf(34),
                                                   Location::regOf(33)));
-                    rtl->insert(iter,new Assign(new FloatType(80),
+                    rtl->insert(iter,new Assign(FloatType::get(80),
                                                   Location::regOf(33),
                                                   Location::regOf(32)));
-                    rtl->insert(iter,new Assign(new FloatType(80),
+                    rtl->insert(iter,new Assign(FloatType::get(80),
                                                   Location::regOf(32),
                                                   Location::tempOf(new Const(const_cast<char *>("tmpD9")))));
                     // Remove the FPUSH
@@ -285,31 +285,31 @@ void PentiumFrontEnd::processFloatCode(Cfg* pCfg) {
                     continue;
                 }
                 else if (st->isFpop()) {
-                    rtl->insert(iter,new Assign(new FloatType(80),
+                    rtl->insert(iter,new Assign(FloatType::get(80),
                                                   Location::tempOf(new Const(const_cast<char *>("tmpD9"))),
                                                   Location::regOf(32)));
-                    rtl->insert(iter,new Assign(new FloatType(80),
+                    rtl->insert(iter,new Assign(FloatType::get(80),
                                                   Location::regOf(32),
                                                   Location::regOf(33)));
-                    rtl->insert(iter,new Assign(new FloatType(80),
+                    rtl->insert(iter,new Assign(FloatType::get(80),
                                                   Location::regOf(33),
                                                   Location::regOf(34)));
-                    rtl->insert(iter,new Assign(new FloatType(80),
+                    rtl->insert(iter,new Assign(FloatType::get(80),
                                                   Location::regOf(34),
                                                   Location::regOf(35)));
-                    rtl->insert(iter,new Assign(new FloatType(80),
+                    rtl->insert(iter,new Assign(FloatType::get(80),
                                                   Location::regOf(35),
                                                   Location::regOf(36)));
-                    rtl->insert(iter,new Assign(new FloatType(80),
+                    rtl->insert(iter,new Assign(FloatType::get(80),
                                                   Location::regOf(36),
                                                   Location::regOf(37)));
-                    rtl->insert(iter,new Assign(new FloatType(80),
+                    rtl->insert(iter,new Assign(FloatType::get(80),
                                                   Location::regOf(37),
                                                   Location::regOf(38)));
-                    rtl->insert(iter,new Assign(new FloatType(80),
+                    rtl->insert(iter,new Assign(FloatType::get(80),
                                                   Location::regOf(38),
                                                   Location::regOf(39)));
-                    rtl->insert(iter,new Assign(new FloatType(80),
+                    rtl->insert(iter,new Assign(FloatType::get(80),
                                                   Location::regOf(39),
                                                   Location::tempOf(new Const(const_cast<char *>("tmpD9")))));
                     // Remove the FPOP
@@ -491,7 +491,7 @@ bool PentiumFrontEnd::helperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL*>* lr
         // r[tmpl] = ftoi(80, 64, r[32])
         // r[24] = trunc(64, 32, r[tmpl])
         // r[26] = r[tmpl] >> 32
-        Statement* a = new Assign(new IntegerType(64),
+        Statement* a = new Assign(IntegerType::get(64),
                                   Location::tempOf(new Const(const_cast<char *>("tmpl"))),
                                   new Ternary(opFtoi,
                                               new Const(64),
@@ -790,7 +790,7 @@ void PentiumFrontEnd::processOverlapped(UserProc* proc) {
                 // Emit *16* r<off> := trunc(32, 16, r<24+off>)
                 if (usedRegs.find(off) != usedRegs.end()) {
                     a = new Assign(
-                            new IntegerType(16),
+                            IntegerType::get(16),
                             Location::regOf(off),
                             new Ternary(opTruncu,
                                         new Const(32),
@@ -802,7 +802,7 @@ void PentiumFrontEnd::processOverlapped(UserProc* proc) {
                 // Emit *8* r<8+off> := trunc(32, 8, r<24+off>)
                 if (usedRegs.find(8+off) != usedRegs.end()) {
                     a = new Assign(
-                            new IntegerType(8),
+                            IntegerType::get(8),
                             Location::regOf(8+off),
                             new Ternary(opTruncu,
                                         new Const(32),
@@ -814,7 +814,7 @@ void PentiumFrontEnd::processOverlapped(UserProc* proc) {
                 // Emit *8* r<12+off> := r<24+off>@[15:8]
                 if (usedRegs.find(12+off) != usedRegs.end()) {
                     a = new Assign(
-                            new IntegerType(8),
+                            IntegerType::get(8),
                             Location::regOf(12+off),
                             new Ternary(opAt,
                                         Location::regOf(24+off),
@@ -829,7 +829,7 @@ void PentiumFrontEnd::processOverlapped(UserProc* proc) {
                 // Emit *32* r<24+off> := r<24+off>@[31:16] | zfill(16, 32, r<off>)
                 if (usedRegs.find(24+off) != usedRegs.end()) {
                     a = new Assign(
-                            new IntegerType(32),
+                            IntegerType::get(32),
                             Location::regOf(24+off),
                             new Binary(opBitOr,
                                        new Ternary(opAt,
@@ -846,7 +846,7 @@ void PentiumFrontEnd::processOverlapped(UserProc* proc) {
                 // Emit *8* r<8+off> := trunc(16, 8, r<off>)
                 if (usedRegs.find(8+off) != usedRegs.end()) {
                     a = new Assign(
-                            new IntegerType(8),
+                            IntegerType::get(8),
                             Location::regOf(8+off),
                             new Ternary(opTruncu,
                                         new Const(16),
@@ -858,7 +858,7 @@ void PentiumFrontEnd::processOverlapped(UserProc* proc) {
                 // Emit *8* r<12+off> := r<off>@[15:8]
                 if (usedRegs.find(12+off) != usedRegs.end()) {
                     a = new Assign(
-                            new IntegerType(8),
+                            IntegerType::get(8),
                             Location::regOf(12+off),
                             new Ternary(opAt,
                                         Location::regOf(off),
@@ -874,7 +874,7 @@ void PentiumFrontEnd::processOverlapped(UserProc* proc) {
                 // Emit *32* r<24+off> := r<24+off>@[31:8] | zfill(8, 32, r<8+off>)
                 if (usedRegs.find(24+off) != usedRegs.end()) {
                     a = new Assign(
-                            new IntegerType(32),
+                            IntegerType::get(32),
                             Location::regOf(24+off),
                             new Binary(opBitOr,
                                        new Ternary(opAt,
@@ -891,7 +891,7 @@ void PentiumFrontEnd::processOverlapped(UserProc* proc) {
                 // Emit *16* r<off> := r<off>@[15:8] | zfill(8, 16, r<8+off>)
                 if (usedRegs.find(off) != usedRegs.end()) {
                     a = new Assign(
-                            new IntegerType(16),
+                            IntegerType::get(16),
                             Location::regOf(off),
                             new Binary(opBitOr,
                                        new Ternary(opAt,
@@ -912,7 +912,7 @@ void PentiumFrontEnd::processOverlapped(UserProc* proc) {
                 //        *32* r<24+off> := r<24+off> | r<12+off> << 8
                 if (usedRegs.find(24+off) != usedRegs.end()) {
                     a = new Assign(
-                            new IntegerType(32),
+                            IntegerType::get(32),
                             Location::regOf(24+off),
                             new Binary(opBitOr,
                                        Location::regOf(24+off),
@@ -921,7 +921,7 @@ void PentiumFrontEnd::processOverlapped(UserProc* proc) {
                                                   new Const(8))));
                     proc->insertStatementAfter(s, a);
                     a = new Assign(
-                            new IntegerType(32),
+                            IntegerType::get(32),
                             Location::regOf(24+off),
                             new Binary(opBitAnd,
                                        Location::regOf(24+off),
@@ -933,7 +933,7 @@ void PentiumFrontEnd::processOverlapped(UserProc* proc) {
                 //        *16* r<off> := r<off> | r<12+off> << 8
                 if (usedRegs.find(off) != usedRegs.end()) {
                     a = new Assign(
-                            new IntegerType(16),
+                            IntegerType::get(16),
                             Location::regOf(off),
                             new Binary(opBitOr,
                                        Location::regOf(off),
@@ -942,7 +942,7 @@ void PentiumFrontEnd::processOverlapped(UserProc* proc) {
                                                   new Const(8))));
                     proc->insertStatementAfter(s, a);
                     a = new Assign(
-                            new IntegerType(16),
+                            IntegerType::get(16),
                             Location::regOf(off),
                             new Binary(opBitAnd,
                                        Location::regOf(off),
@@ -956,7 +956,7 @@ void PentiumFrontEnd::processOverlapped(UserProc* proc) {
                 // Emit *32* r<24+off_mod8> := r<24+off_mod8>@[31:16] | zfill(16, 32, r<off_mod8>)
                 if (usedRegs.find(24+off_mod8) != usedRegs.end()) {
                     a = new Assign(
-                            new IntegerType(32),
+                            IntegerType::get(32),
                             Location::regOf(24+off_mod8),
                             new Binary(opBitOr,
                                        new Ternary(opAt,
@@ -976,7 +976,7 @@ void PentiumFrontEnd::processOverlapped(UserProc* proc) {
                 // Emit *16* r<off_mod8> := trunc(32, 16, r<24+off_mod8>)
                 if (usedRegs.find(off_mod8) != usedRegs.end()) {
                     a = new Assign(
-                            new IntegerType(16),
+                            IntegerType::get(16),
                             Location::regOf(off_mod8),
                             new Ternary(opTruncu,
                                         new Const(32),

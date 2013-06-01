@@ -281,10 +281,14 @@ class IntegerType : public Type {
 private:
         mutable size_t      size;            // Size in bits, e.g. 16
         mutable int         signedness;        // pos=signed, neg=unsigned, 0=unknown or evenly matched
-
+protected:
+  explicit          IntegerType(unsigned NumBits,int sign=0) : Type(eInteger){
+                        size = NumBits;
+                        signedness = sign;
+                        //setSubclassData(NumBits);
+                    }
 public:
-                    IntegerType(int sz = STD_SIZE, int sign = 0);
-virtual             ~IntegerType();
+static IntegerType *get(unsigned NumBits,int sign=0);
 virtual bool        isInteger() const { return true; }
 virtual bool        isComplete() {return signedness != 0 && size != 0;}
 
@@ -323,9 +327,9 @@ protected:
 class FloatType : public Type {
 private:
         mutable size_t    size;                // Size in bits, e.g. 64
-
+explicit FloatType(int sz = 64);
 public:
-                    FloatType(int sz = 64);
+static  FloatType *get(int sz=64);
 virtual             ~FloatType();
 virtual bool        isFloat() const { return true; }
 

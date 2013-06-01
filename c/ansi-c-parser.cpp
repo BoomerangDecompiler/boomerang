@@ -951,56 +951,41 @@ int AnsiCParser::yyparse(platform plat, callconv cc)
             break;}
         case 57:
 
-        { yyval.type = new IntegerType(16, 1);
+        { yyval.type = IntegerType::get(16, 1);
             break;}
         case 58:
 
-        { yyval.type = new IntegerType(32, 1);
+        { yyval.type = IntegerType::get(32, 1);
             break;}
         case 59:
 
-        { yyval.type = new IntegerType(8, 0);
+        { yyval.type = IntegerType::get(8, 0);
             break;}
         case 60:
 
-        { yyval.type = new IntegerType(16, 0);
+        { yyval.type = IntegerType::get(16, 0);
             break;}
         case 61:
 
-        { yyval.type = new IntegerType(32, 0);
+        { yyval.type = IntegerType::get(32, 0);
             break;}
         case 62:
 
-        { yyval.type = new IntegerType(32, 0);
+        { yyval.type = IntegerType::get(32, 0);
             break;}
         case 63:
 
-        { yyval.type = new IntegerType(32, 0);
+        { yyval.type = IntegerType::get(32, 0);
             break;}
         case 64:
 
-        { yyval.type = new IntegerType(32, 1);
+        { yyval.type = IntegerType::get(32, 1);
             break;}
-        case 65:
-
-        { yyval.type = new IntegerType(64, 1);
-            break;}
-        case 66:
-
-        { yyval.type = new IntegerType(64, 0);
-            break;}
-        case 67:
-
-        { yyval.type = new FloatType(32);
-            break;}
-        case 68:
-
-        { yyval.type = new FloatType(64);
-            break;}
-        case 69:
-
-        { yyval.type = new VoidType();
-            break;}
+        case 65:  { yyval.type = IntegerType::get(64, 1); break;}
+        case 66:  { yyval.type = IntegerType::get(64, 0); break;}
+        case 67:  { yyval.type = FloatType::get(32); break;}
+        case 68: { yyval.type = FloatType::get(64); break;}
+        case 69: { yyval.type = new VoidType(); break;}
         case 70:
 
         { yyval.type = new PointerType(yyvsp[-1].type);

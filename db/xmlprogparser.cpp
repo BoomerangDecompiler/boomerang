@@ -1598,7 +1598,7 @@ void XMLProgParser::start_integertype(const char **attr) {
         stack.front()->type = (Type*)findId(getAttr(attr, "id"));
         return;
     }
-    IntegerType *ty = new IntegerType();
+    IntegerType *ty = IntegerType::get(STD_SIZE);
     stack.front()->type = ty;
     addId(attr, ty);
     const char *n = getAttr(attr, "size");
