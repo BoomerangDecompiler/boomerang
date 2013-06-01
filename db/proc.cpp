@@ -4847,12 +4847,14 @@ bool UserProc::isLocal(Exp* e) {
 }
 //! True if e can be propagated
 bool UserProc::isPropagatable(Exp* e) {
-    if (addressEscapedVars.exists(e)) return false;
+    if (addressEscapedVars.exists(e))
+        return false;
     return isLocalOrParam(e);
 }
 //! True if e represents a stack local or stack param
 bool UserProc::isLocalOrParam(Exp* e) {
-    if (isLocal(e)) return true;
+    if (isLocal(e))
+        return true;
     return parameters.existsOnLeft(e);
 }
 

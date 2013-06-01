@@ -102,6 +102,20 @@ bool ArrayType::isUnbounded() const {
     return length == NO_BOUND;
 }
 
+size_t ArrayType::convertLength(Type* b) const {
+    // MVE: not sure if this is always the right thing to do
+    if (length != NO_BOUND) {
+        size_t baseSize = base_type->getSize()/8;    // Old base size (one element) in bytes
+        if (baseSize == 0)
+            baseSize = 1;            // Count void as size 1
+        baseSize *= length;                            // Old base size (length elements) in bytes
+        size_t newSize = b->getSize()/8;
+        if (newSize == 0)
+            newSize = 1;
+        return baseSize / newSize;                // Preserve same byte size for array
+    }
+    return NO_BOUND;
+}
 void ArrayType::setBaseType(Type* b) {
     // MVE: not sure if this is always the right thing to do
     if (length != NO_BOUND) {
@@ -941,16 +955,16 @@ PointerType* PointerType::newPtrAlpha() {
 }
 
 // Note: alpha is therefore a "reserved name" for types
-bool PointerType::pointsToAlpha() {
+bool PointerType::pointsToAlpha() const {
     // void* counts as alpha* (and may replace it soon)
     if (points_to->isVoid()) return true;
     if (!points_to->isNamed()) return false;
     return strncmp(((NamedType*)points_to)->getName(), "alpha", 5) == 0;
 }
 
-int PointerType::pointerDepth() {
+int PointerType::pointerDepth() const {
     int d = 1;
-    Type* pt = points_to;
+    const Type* pt = points_to;
     while (pt->isPointer()) {
         pt = pt->asPointer()->getPointsTo();
         d++;
@@ -958,7 +972,7 @@ int PointerType::pointerDepth() {
     return d;
 }
 
-Type* PointerType::getFinalPointsTo() {
+Type* PointerType::getFinalPointsTo() const {
     Type* pt = points_to;
     while (pt->isPointer()) {
         pt = pt->asPointer()->getPointsTo();
@@ -1033,9 +1047,9 @@ const NamedType *Type::asNamed() const{
 
 
 #define RESOLVES_TO_TYPE(x)        \
-    bool Type::resolvesTo##x()    \
+    bool Type::resolvesTo##x() const   \
 {                            \
-    Type *ty = this;        \
+    const Type *ty = this;        \
     if (ty->isNamed())        \
     ty = ((NamedType*)ty)->resolvesTo(); \
     return ty && ty->is##x(); \
@@ -1095,8 +1109,8 @@ std::ostream& operator<<(std::ostream& os,const  Type* t) {
 
 // FIXME: aren't mergeWith and meetWith really the same thing?
 // Merge this IntegerType with another
-Type* IntegerType::mergeWith(Type* other) {
-    if (*this == *other) return this;
+Type* IntegerType::mergeWith(Type* other) const {
+    if (*this == *other) return (Type*)this;
     if (!other->isInteger()) return nullptr;        // Can you merge with a pointer?
     IntegerType* oth = (IntegerType*)other;
     IntegerType* ret = (IntegerType*)this->clone();
@@ -1106,26 +1120,26 @@ Type* IntegerType::mergeWith(Type* other) {
 }
 
 // Merge this SizeType with another type
-Type* SizeType::mergeWith(Type* other) {
+Type* SizeType::mergeWith(Type* other) const {
     Type* ret = other->clone();
     ret->setSize(size);
     return ret;
 }
 
-Type* UpperType::mergeWith(Type* other) {
+Type* UpperType::mergeWith(Type* other) const {
     // FIXME: TBC
-    return this;
+    return (Type*)this;
 }
 
-Type* LowerType::mergeWith(Type* other) {
+Type* LowerType::mergeWith(Type* other) const {
     // FIXME: TBC
-    return this;
+    return (Type*)this;
 }
 
 // Return true if this is a superstructure of other, i.e. we have the same types at the same offsets as other
-bool CompoundType::isSuperStructOf(Type* other) {
+bool CompoundType::isSuperStructOf(const Type* other) {
     if (!other->isCompound()) return false;
-    CompoundType* otherCmp = other->asCompound();
+    const CompoundType* otherCmp = other->asCompound();
     size_t n = otherCmp->types.size();
     if (n > types.size()) return false;
     for (unsigned i=0; i < n; i++)
@@ -1135,9 +1149,9 @@ bool CompoundType::isSuperStructOf(Type* other) {
 }
 
 // Return true if this is a substructure of other, i.e. other has the same types at the same offsets as this
-bool CompoundType::isSubStructOf(Type* other) {
+bool CompoundType::isSubStructOf(Type* other) const {
     if (!other->isCompound()) return false;
-    CompoundType* otherCmp = other->asCompound();
+    const CompoundType* otherCmp = other->asCompound();
     unsigned n = types.size();
     if (n > otherCmp->types.size()) return false;
     for (unsigned i=0; i < n; i++)

@@ -19,6 +19,7 @@ int puts(char *s);
 char *fgets(char[] *s, int size @max(s), FILE *stream);
 void perror(const char *s);
 int fprintf(FILE *stream, const char *format, ...);
+int vfprintf ( FILE * stream, const char * format, va_list arg );
 int sscanf(const char *str, const char *format, ...);
 
 int atoi(const char *nptr);

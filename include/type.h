@@ -141,19 +141,19 @@ virtual bool        isComplete() {return true;}
         const LowerType *     asLower() const;
 
                     // These replace calls to isNamed() and resolvesTo()
-        bool        resolvesToVoid();
-        bool        resolvesToFunc();
-        bool        resolvesToBoolean();
-        bool        resolvesToChar();
-        bool        resolvesToInteger();
-        bool        resolvesToFloat();
-        bool        resolvesToPointer();
-        bool        resolvesToArray();
-        bool        resolvesToCompound();
-        bool        resolvesToUnion();
-        bool        resolvesToSize();
-        bool        resolvesToUpper();
-        bool        resolvesToLower();
+        bool        resolvesToVoid() const;
+        bool        resolvesToFunc() const;
+        bool        resolvesToBoolean() const;
+        bool        resolvesToChar() const;
+        bool        resolvesToInteger() const;
+        bool        resolvesToFloat() const;
+        bool        resolvesToPointer() const;
+        bool        resolvesToArray() const;
+        bool        resolvesToCompound() const;
+        bool        resolvesToUnion() const;
+        bool        resolvesToSize() const;
+        bool        resolvesToUpper() const;
+        bool        resolvesToLower() const;
 
                     // cloning
 virtual Type*        clone() const = 0;
@@ -167,7 +167,7 @@ virtual bool        operator< (const Type& other) const = 0;    // Considers sig
                         return id == other.id;}                     // broad type
 virtual Exp            *match(Type *pattern);
                     // Constraint-based TA: merge one type with another, e.g. size16 with integer-of-size-0 -> int16
-virtual Type *      mergeWith(Type* /*other*/) { assert(false); return nullptr;}
+virtual Type *      mergeWith(Type* /*other*/) const { assert(false); return nullptr;}
 
                     // Acccess functions
 virtual size_t      getSize() const = 0;
@@ -192,22 +192,23 @@ static    void        clearNamedTypes() { namedTypes.clear(); }
 
         bool        isPointerToAlpha();
 
+                    // TODO: the best possible thing would be to have both types as const
                     // For data-flow-based type analysis only: implement the meet operator. Set ch true if any change
                     // If bHighestPtr is true, then if this and other are non void* pointers, set the result to the
                     // *highest* possible type compatible with both (i.e. this JOIN other)
-virtual Type*        meetWith(Type* other, bool& ch, bool bHighestPtr = false) = 0;
+virtual Type*        meetWith(Type* other, bool& ch, bool bHighestPtr = false) const = 0;
                     // When all=false (default), return true if can use this and other interchangeably; in particular,
                     // if at most one of the types is compound and the first element is compatible with the other, then
                     // the types are considered compatible. With all set to true, if one or both types is compound, all
                     // corresponding elements must be compatible
-virtual    bool        isCompatibleWith(Type* other, bool all = false);
+virtual    bool        isCompatibleWith(const Type *other, bool all = false) const;
                     // isCompatible does most of the work; isCompatibleWith looks for complex types in other, and if so
                     // reverses the parameters (this and other) to prevent many tedious repetitions
-virtual bool        isCompatible(Type* other, bool all) = 0;
+virtual bool        isCompatible(const Type* other, bool all) const = 0;
                     // Return true if this is a subset or equal to other
         bool        isSubTypeOrEqual(Type* other);
                     // Create a union of this Type and other. Set ch true if any change
-        Type*        createUnion(Type* other, bool& ch, bool bHighestPtr = false);
+        Type*        createUnion(Type* other, bool& ch, bool bHighestPtr = false) const;
 static    Type*        newIntegerLikeType(int size, int signedness);    // Return a new Bool/Char/Int
                     // From a complex type like an array of structs with a float, return a list of components so you
                     // can construct e.g. myarray1[8].mystruct2.myfloat7
@@ -237,8 +238,8 @@ virtual size_t      getSize() const;
 
 virtual const char* getCtype(bool final = false) const;
 
-virtual Type*       meetWith(Type* other, bool& ch, bool bHighestPtr);
-virtual bool        isCompatible(Type* other, bool all);
+virtual Type*       meetWith(Type* other, bool& ch, bool bHighestPtr) const;
+virtual bool        isCompatible(const Type* other, bool all) const;
 
 protected:
     friend class XMLProgParser;
@@ -269,8 +270,8 @@ virtual const char* getCtype(bool final = false) const;
                     // Split the C type into return and parameter parts
         void        getReturnAndParam(const char*& ret, const char*& param);
 
-virtual Type*       meetWith(Type* other, bool& ch, bool bHighestPtr);
-virtual bool        isCompatible(Type* other, bool all);
+virtual Type*       meetWith(Type* other, bool& ch, bool bHighestPtr) const;
+virtual bool        isCompatible(const Type* other, bool all)const;
 
 protected:
     friend class XMLProgParser;
@@ -278,8 +279,8 @@ protected:
 
 class IntegerType : public Type {
 private:
-        size_t      size;            // Size in bits, e.g. 16
-        int         signedness;        // pos=signed, neg=unsigned, 0=unknown or evenly matched
+        mutable size_t      size;            // Size in bits, e.g. 16
+        mutable int         signedness;        // pos=signed, neg=unsigned, 0=unknown or evenly matched
 
 public:
                     IntegerType(int sz = STD_SIZE, int sign = 0);
@@ -292,7 +293,7 @@ virtual Type*       clone() const;
 virtual bool        operator==(const Type& other) const;
 //virtual bool          operator-=(const Type& other) const;
 virtual bool        operator< (const Type& other) const;
-virtual Type*       mergeWith(Type* other);
+virtual Type*       mergeWith(Type* other) const;
 virtual Exp*        match(Type *pattern);
 
 virtual size_t      getSize() const;            // Get size in bits
@@ -312,8 +313,8 @@ virtual const char* getCtype(bool final = false) const;
 
 virtual std::string getTempName() const;
 
-virtual Type*       meetWith(Type* other, bool& ch, bool bHighestPtr);
-virtual bool        isCompatible(Type* other, bool all);
+virtual Type*       meetWith(Type* other, bool& ch, bool bHighestPtr) const;
+virtual bool        isCompatible(const Type* other, bool all) const;
 
 protected:
     friend class XMLProgParser;
@@ -321,7 +322,7 @@ protected:
 
 class FloatType : public Type {
 private:
-        size_t    size;                // Size in bits, e.g. 64
+        mutable size_t    size;                // Size in bits, e.g. 64
 
 public:
                     FloatType(int sz = 64);
@@ -342,8 +343,8 @@ virtual const char    *getCtype(bool final = false) const;
 
 virtual std::string    getTempName() const;
 
-virtual Type*        meetWith(Type* other, bool& ch, bool bHighestPtr);
-virtual bool        isCompatible(Type* other, bool all);
+virtual Type*        meetWith(Type* other, bool& ch, bool bHighestPtr) const;
+virtual bool        isCompatible(const Type* other, bool all) const;
 
 protected:
     friend class XMLProgParser;
@@ -366,8 +367,8 @@ virtual size_t      getSize() const;
 
 virtual const char    *getCtype(bool final = false) const;
 
-virtual Type*        meetWith(Type* other, bool& ch, bool bHighestPtr);
-virtual bool        isCompatible(Type* other, bool all);
+virtual Type*        meetWith(Type* other, bool& ch, bool bHighestPtr) const;
+virtual bool        isCompatible(const Type* other, bool all) const;
 
 protected:
     friend class XMLProgParser;
@@ -390,8 +391,8 @@ virtual size_t      getSize() const;
 
 virtual const char    *getCtype(bool final = false) const;
 
-virtual Type*        meetWith(Type* other, bool& ch, bool bHighestPtr);
-virtual bool        isCompatible(Type* other, bool all);
+virtual Type*        meetWith(Type* other, bool& ch, bool bHighestPtr) const;
+virtual bool        isCompatible(const Type* other, bool all) const;
 
 protected:
     friend class XMLProgParser;
@@ -399,7 +400,7 @@ protected:
 
 class PointerType : public Type {
 private:
-        Type    *points_to;
+        mutable Type    *points_to;
 
 public:
                     PointerType(Type *p);
@@ -409,9 +410,9 @@ virtual bool        isPointer() const { return true; }
         Type        *getPointsTo() { return points_to; }
         const Type* getPointsTo() const { return points_to; }
 static  PointerType *newPtrAlpha();
-        bool        pointsToAlpha();
-        int         pointerDepth();        // Return 2 for **x
-        Type*       getFinalPointsTo();    // Return x for **x
+        bool        pointsToAlpha() const;
+        int         pointerDepth() const;        // Return 2 for **x
+        Type*       getFinalPointsTo() const;    // Return x for **x
 
 virtual Type*        clone() const;
 
@@ -425,8 +426,8 @@ virtual void        setSize(size_t sz) {assert(sz == STD_SIZE);}
 
 virtual const char *getCtype(bool final = false) const;
 
-virtual Type *      meetWith(Type* other, bool& ch, bool bHighestPtr);
-virtual bool        isCompatible(Type* other, bool all);
+virtual Type *      meetWith(Type* other, bool& ch, bool bHighestPtr) const;
+virtual bool        isCompatible(const Type* other, bool all) const;
 
 protected:
     friend class XMLProgParser;
@@ -434,8 +435,8 @@ protected:
 
 class ArrayType : public Type {
 private:
-        Type        *base_type;
-        unsigned    length;
+        mutable Type        *base_type;
+        mutable unsigned    length;
 
 public:
                     ArrayType(Type *p, unsigned length);
@@ -461,10 +462,11 @@ virtual size_t      getSize() const;
 
 virtual const char    *getCtype(bool final = false) const;
 
-virtual Type*        meetWith(Type* other, bool& ch, bool bHighestPtr);
-virtual bool        isCompatibleWith(Type* other, bool all = false) {return isCompatible(other, all);}
-virtual bool        isCompatible(Type* other, bool all);
+virtual Type*        meetWith(Type* other, bool& ch, bool bHighestPtr) const;
+virtual bool        isCompatibleWith(const Type* other, bool all = false) const {return isCompatible(other, all);}
+virtual bool        isCompatible(const Type* other, bool all) const;
 
+        size_t      convertLength(Type *b) const;
 protected:
     friend class XMLProgParser;
                     ArrayType() : Type(eArray), base_type(nullptr), length(0) { }
@@ -495,8 +497,8 @@ virtual size_t      getSize() const;
 
 virtual const char    *getCtype(bool final = false) const;
 
-virtual Type*        meetWith(Type* other, bool& ch, bool bHighestPtr);
-virtual bool        isCompatible(Type* other, bool all);
+virtual Type*        meetWith(Type* other, bool& ch, bool bHighestPtr) const;
+virtual bool        isCompatible(const Type* other, bool all) const;
 
 protected:
     friend class XMLProgParser;
@@ -521,7 +523,7 @@ virtual bool        isCompound() const { return true; }
                         types.push_back(n);
                         names.push_back(str);
                     }
-        size_t      getNumTypes() { return types.size(); }
+        size_t      getNumTypes() const { return types.size(); }
         Type *      getType(unsigned n) { assert(n < getNumTypes()); return types[n]; }
         Type *      getType(const char *nam);
         const char *getName(unsigned n) { assert(n < getNumTypes()); return names[n].c_str(); }
@@ -546,12 +548,12 @@ virtual size_t      getSize() const;
 
 virtual const char *getCtype(bool final = false) const;
 
-        bool        isSuperStructOf(Type* other);        // True if this is is a superstructure of other
-        bool        isSubStructOf(Type* other);            // True if this is is a substructure of other
+        bool        isSuperStructOf(const Type *other);        // True if this is is a superstructure of other
+        bool        isSubStructOf(Type* other) const;            // True if this is is a substructure of other
 
-virtual Type*        meetWith(Type* other, bool& ch, bool bHighestPtr);
-virtual bool        isCompatibleWith(Type* other, bool all = false) {return isCompatible(other, all);}
-virtual bool        isCompatible(Type* other, bool all);
+virtual Type*        meetWith(Type* other, bool& ch, bool bHighestPtr) const;
+virtual bool        isCompatibleWith(const Type* other, bool all = false) const {return isCompatible(other, all);}
+virtual bool        isCompatible(const Type* other, bool all) const;
 
 protected:
     friend class XMLProgParser;
@@ -566,7 +568,7 @@ class UnionType : public Type {
 private:
         // Note: list, not vector, as it is occasionally desirable to insert elements without affecting iterators
         // (e.g. meetWith(another Union))
-        std::list<UnionElement> li;
+        mutable std::list<UnionElement> li;
 
 public:
                     UnionType();
@@ -591,9 +593,9 @@ virtual size_t      getSize() const;
 
 virtual const char *getCtype(bool final = false) const;
 
-virtual Type*        meetWith(Type* other, bool& ch, bool bHighestPtr);
-virtual bool        isCompatibleWith(Type* other, bool all) {return isCompatible(other, all);}
-virtual bool        isCompatible(Type* other, bool all);
+virtual Type*        meetWith(Type* other, bool& ch, bool bHighestPtr) const ;
+virtual bool        isCompatibleWith(const Type* other, bool all) const {return isCompatible(other, all);}
+virtual bool        isCompatible(const Type* other, bool all) const;
                     // if this is a union of pointer types, get the union of things they point to. In dfa.cpp
         Type*        dereferenceUnion();
 
@@ -605,7 +607,7 @@ protected:
 // width of a register or memory transfer)
 class SizeType : public Type {
 private:
-    size_t        size;                // Size in bits, e.g. 16
+    mutable size_t        size;                // Size in bits, e.g. 16
 public:
                     SizeType() : Type(eSize) {}
                     SizeType(unsigned sz) : Type(eSize), size(sz) {}
@@ -614,15 +616,15 @@ virtual Type*        clone() const;
 virtual bool        operator==(const Type& other) const;
 virtual bool        operator< (const Type& other) const;
 //virtual Exp          *match(Type *pattern);
-virtual Type*        mergeWith(Type* other);
+virtual Type*        mergeWith(Type* other) const;
 
 virtual size_t      getSize() const;
 virtual void        setSize(size_t sz) {size = sz;}
 virtual bool        isSize() const { return true; }
 virtual bool        isComplete() {return false;}    // Basic type is unknown
 virtual const char* getCtype(bool final = false) const;
-virtual Type*        meetWith(Type* other, bool& ch, bool bHighestPtr);
-virtual bool        isCompatible(Type* other, bool all);
+virtual Type*        meetWith(Type* other, bool& ch, bool bHighestPtr) const;
+virtual bool        isCompatible(const Type* other, bool all) const;
 
     friend class XMLProgParser;
 };    // class SizeType
@@ -630,7 +632,7 @@ virtual bool        isCompatible(Type* other, bool all);
 // This class represents the upper half of its base type
 // Mainly needed to represent the upper and lower half for type double
 class UpperType : public Type {
-        Type*        base_type;
+        mutable Type*        base_type;
 
 public:
                     UpperType(Type* base) : Type(eUpper), base_type(base) { }
@@ -639,7 +641,7 @@ virtual    Type*        clone() const;
 virtual bool        operator==(const Type& other) const;
 virtual bool        operator< (const Type& other) const;
 //virtual Exp         *match(Type *pattern);
-virtual Type*        mergeWith(Type* other);
+virtual Type*        mergeWith(Type* other) const;
         Type *       getBaseType() { return base_type; }
         const Type * getBaseType() const { return base_type; }
         void        setBaseType(Type *b) { base_type = b; }
@@ -649,14 +651,14 @@ virtual void        setSize(size_t sz);        // Does this make sense?
 virtual bool        isUpper() const { return true; }
 virtual bool        isComplete() {return base_type->isComplete();}
 virtual const char* getCtype(bool final = false) const;
-virtual Type*        meetWith(Type* other, bool& ch, bool bHighestPtr);
-virtual bool        isCompatible(Type* other, bool all);
+virtual Type*        meetWith(Type* other, bool& ch, bool bHighestPtr) const;
+virtual bool        isCompatible(const Type* other, bool all) const;
 
 };  // class UpperType
 
 // As above, but stores the lower half
 class LowerType : public Type {
-        Type*        base_type;
+        mutable Type*        base_type;
 
 public:
                     LowerType(Type* base) : Type(eUpper), base_type(base) { }
@@ -665,7 +667,7 @@ virtual    Type*        clone() const;
 virtual bool        operator==(const Type& other) const;
 virtual bool        operator< (const Type& other) const;
 //virtual Exp         *match(Type *pattern);
-virtual Type*        mergeWith(Type* other);
+virtual Type*        mergeWith(Type* other) const;
         Type        *getBaseType() { return base_type; }
         const Type *    getBaseType() const { return base_type; }
         void        setBaseType(Type *b) { base_type = b; }
@@ -675,8 +677,8 @@ virtual void        setSize(size_t sz);        // Does this make sense?
 virtual bool        isLower() const { return true; }
 virtual bool        isComplete() {return base_type->isComplete();}
 virtual const char* getCtype(bool final = false) const;
-virtual Type*        meetWith(Type* other, bool& ch, bool bHighestPtr);
-virtual bool        isCompatible(Type* other, bool all);
+virtual Type*        meetWith(Type* other, bool& ch, bool bHighestPtr) const;
+virtual bool        isCompatible(const Type* other, bool all) const;
 
 };  // class LowerType
 

@@ -46,7 +46,6 @@ class Type;
 class RTL;
 class HLLCode;
 class SyntaxNode;
-class HLCall;
 class Parameter;
 class Argument;
 class Signature;
