@@ -65,17 +65,6 @@
 
 BasicBlock::BasicBlock()
     :
-      m_DFTfirst(0), m_DFTlast(0),
-      m_structType(NONE), m_loopCondType(NONE),
-      m_loopHead(nullptr), m_caseHead(nullptr),
-      m_condFollow(nullptr), m_loopFollow(nullptr),
-      m_latchNode(nullptr),
-      m_nodeType(INVALID),
-      m_pRtls(nullptr),
-      m_iLabelNum(0),
-      m_labelneeded(false),
-      m_bIncomplete(true),
-      m_bJumpReqd(false),
       m_iNumInEdges(0),
       m_iNumOutEdges(0),
       m_iTraversed(false),
@@ -106,15 +95,13 @@ BasicBlock::~BasicBlock() {
  * \param bb - the BB to copy from
  ******************************************************************************/
 BasicBlock::BasicBlock(const BasicBlock& bb)
-    :    m_DFTfirst(0), m_DFTlast(0),
+    :
       m_structType(bb.m_structType), m_loopCondType(bb.m_loopCondType),
       m_loopHead(bb.m_loopHead), m_caseHead(bb.m_caseHead),
       m_condFollow(bb.m_condFollow), m_loopFollow(bb.m_loopFollow),
       m_latchNode(bb.m_latchNode),
       m_nodeType(bb.m_nodeType),
-      m_pRtls(nullptr),
-      m_iLabelNum(bb.m_iLabelNum),
-      m_labelneeded(false),
+      m_iLabelNum(bb.m_iLabelNum), // m_labelneeded is initialized to false, not copied
       m_bIncomplete(bb.m_bIncomplete),
       m_bJumpReqd(bb.m_bJumpReqd),
       m_InEdges(bb.m_InEdges),
@@ -141,17 +128,9 @@ BasicBlock::BasicBlock(const BasicBlock& bb)
  * \param iNumOutEdges -
  ******************************************************************************/
 BasicBlock::BasicBlock(std::list<RTL*>* pRtls, BBTYPE bbType, int iNumOutEdges)
-    :    m_DFTfirst(0), m_DFTlast(0),
-      m_structType(NONE), m_loopCondType(NONE),
-      m_loopHead(nullptr), m_caseHead(nullptr),
-      m_condFollow(nullptr), m_loopFollow(nullptr),
-      m_latchNode(nullptr),
+    :
       m_nodeType(bbType),
-      m_pRtls(nullptr),
-      m_iLabelNum(0),
-      m_labelneeded(false),
       m_bIncomplete(false),
-      m_bJumpReqd(false),
       m_iNumInEdges(0),
       m_iNumOutEdges(iNumOutEdges),
       m_iTraversed(false),
@@ -1918,7 +1897,7 @@ void findSwParams(char form, Exp* e, Exp*& expr, ADDRESS& T) {
  code pointers.
 */
 int BasicBlock::findNumCases() {
-    std::vector<BasicBlock *>::iterator it;
+    // should actually search from the statement to i
     for (BasicBlock * in : m_InEdges ) {        // For each in-edge
         if (in->m_nodeType != TWOWAY)           // look for a two-way BB
             continue;                           // Ignore all others
@@ -2047,7 +2026,10 @@ bool BasicBlock::decodeIndirectJmp(UserProc* proc) {
                         }
                     }
                 }
-                assert(swi->iNumTable > 0);
+                if(swi->iNumTable <= 0) {
+                    LOG<< "Switch analysis failure at: "<<this->getLowAddr();
+                    return false;
+                }
 #endif
                 //TODO: missing form = 'R' iOffset is not being set
                 swi->iUpper = swi->iNumTable-1;

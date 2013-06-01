@@ -207,8 +207,8 @@ static  bool            lessLastDFT(BasicBlock * bb1, BasicBlock * bb2);
          * Depth first traversal of all bbs, numbering as we go and as we come back, forward and reverse passes.
          * Use Cfg::establishDFTOrder() and CFG::establishRevDFTOrder to create these values.
          */
-        int             m_DFTfirst;         //!< depth-first traversal first visit
-        int             m_DFTlast;          //!< depth-first traversal last visit
+        int             m_DFTfirst      = 0;        //!< depth-first traversal first visit
+        int             m_DFTlast       = 0;        //!< depth-first traversal last visit
         int             m_DFTrevfirst;      //!< reverse depth-first traversal first visit
         int             m_DFTrevlast;       //!< reverse depth-first traversal last visit
 
@@ -221,23 +221,23 @@ private:
 
 public:
                         /* high level structuring */
-        SBBTYPE         m_structType;       //!< structured type of this node
-        SBBTYPE         m_loopCondType;     //!< type of conditional to treat this loop header as (if any)
-        BasicBlock *    m_loopHead;         //!< head of the most nested enclosing loop
-        BasicBlock *    m_caseHead;         //!< head of the most nested enclosing case
-        BasicBlock *    m_condFollow;       //!< follow of a conditional header
-        BasicBlock *    m_loopFollow;       //!< follow of a loop header
-        BasicBlock *    m_latchNode;        //!< latch node of a loop header
+        SBBTYPE         m_structType    = NONE;     //!< structured type of this node
+        SBBTYPE         m_loopCondType  = NONE;     //!< type of conditional to treat this loop header as (if any)
+        BasicBlock *    m_loopHead      = nullptr;  //!< head of the most nested enclosing loop
+        BasicBlock *    m_caseHead      = nullptr;  //!< head of the most nested enclosing case
+        BasicBlock *    m_condFollow    = nullptr;  //!< follow of a conditional header
+        BasicBlock *    m_loopFollow    = nullptr;  //!< follow of a loop header
+        BasicBlock *    m_latchNode     = nullptr;  //!< latch node of a loop header
 
 protected:
                         /* general basic block information */
-        BBTYPE          m_nodeType;         //!< type of basic block
-        std::list<RTL*>* m_pRtls;           //!< Ptr to list of RTLs
-        int             m_iLabelNum;        //!< Nonzero if start of BB needs label
-        std::string     m_labelStr;         //!< string label of this bb.
-        bool            m_labelneeded;
-        bool            m_bIncomplete;      //!< True if not yet complete
-        bool            m_bJumpReqd;        //!< True if jump required for "fall through"
+        BBTYPE          m_nodeType      = INVALID;  //!< type of basic block
+        std::list<RTL*>* m_pRtls        = nullptr;  //!< Ptr to list of RTLs
+        int             m_iLabelNum     = 0;        //!< Nonzero if start of BB needs label
+        std::string     m_labelStr;                 //!< string label of this bb.
+        bool            m_labelneeded   = false;
+        bool            m_bIncomplete   = true;     //!< True if not yet complete
+        bool            m_bJumpReqd     = false;    //!< True if jump required for "fall through"
 
                         /* in-edges and out-edges */
         std::vector<BasicBlock *> m_InEdges;//!< Vector of in-edges

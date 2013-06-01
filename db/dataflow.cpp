@@ -83,10 +83,11 @@ void DataFlow::dominators(Cfg* cfg) {
         }
     }
     DFS(-1, 0);
-    size_t i;
     assert((N-1)>=0);
-    for (i=N-1; i >= 1; i--) {
-        int n = vertex[i]; int p = parent[n]; int s = p;
+    for (int i=N-1; i >= 1; i--) {
+        int n = vertex[i];
+        int p = parent[n];
+        int s = p;
         /* These lines calculate the semi-dominator of n, based on the Semidominator Theorem */
         // for each predecessor v of n
         BasicBlock * bb = BBs[n];
@@ -98,10 +99,9 @@ void DataFlow::dominators(Cfg* cfg) {
                 assert(false);
             }
             int v = indices[*it];
-            int sdash;
-            if (dfnum[v] <= dfnum[n])
-                sdash = v;
-            else sdash = semi[ancestorWithLowestSemi(v)];
+            int sdash = v;
+            if (dfnum[v] > dfnum[n])
+                sdash = semi[ancestorWithLowestSemi(v)];
             if (dfnum[sdash] < dfnum[s])
                 s = sdash;
         }
@@ -119,11 +119,12 @@ void DataFlow::dominators(Cfg* cfg) {
             int y = ancestorWithLowestSemi(v);
             if (semi[y] == semi[v])
                 idom[v] = p;                 // Success!
-            else samedom[v] = y;             // Defer
+            else
+                samedom[v] = y;             // Defer
         }
         bucket[p].clear();
     }
-    for (i=1; i < N-1; i++) {
+    for (int i=1; i < N-1; i++) {
         /* Now all the deferred dominator calculations, based on the second clause of the Dominator Theorem, are
                         performed. */
         int n = vertex[i];
@@ -177,7 +178,8 @@ void DataFlow::computeDF(int n) {
     // Note: this is a linear search!
     int sz = idom.size();                // ? Was ancestor.size()
     for (int c = 0; c < sz; ++c) {
-        if (idom[c] != n) continue;
+        if (idom[c] != n)
+            continue;
         computeDF(c);
         /* This loop computes DF_up[c] */
         // for each element w of DF[c]
@@ -585,10 +587,8 @@ void DataFlow::dumpA_orig() {
     int n = A_orig.size();
     for (int i=0; i < n; ++i) {
         std::cerr << i;
-        std::set<Exp*, lessExpStar>::iterator ee;
-        std::set<Exp*, lessExpStar>& se = A_orig[i];
-        for (ee = se.begin(); ee != se.end(); ++ee)
-            std::cerr << " " << *ee;
+        for (Exp * ee : A_orig[i])
+            std::cerr << " " << ee;
         std::cerr << "\n";
     }
 }
