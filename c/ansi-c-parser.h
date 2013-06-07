@@ -5,6 +5,7 @@
 #define YY_AnsiCParser_DEBUG  1
 
 #include <list>
+#include <memory>
 #include <string>
 #include "exp.h"
 #include "type.h"

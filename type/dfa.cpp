@@ -1277,7 +1277,7 @@ bool Signature::dfaTypeAnalysis(Cfg* cfg) {
             if (thisCh) {
                 ch = true;
                 if (DEBUG_TA)
-                    LOG << "  sig caused change: " << (*it)->getType()->getCtype() << " " << (*it)->getName() << "\n";
+                    LOG << "  sig caused change: " << (*it)->getType()->getCtype() << " " << (*it)->name() << "\n";
             }
         }
     }

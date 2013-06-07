@@ -280,7 +280,7 @@ Parameter::~Parameter() {
     delete exp;
 }
 Parameter* Parameter::clone() {
-    return new Parameter(type->clone(), name.c_str(), exp->clone(), boundMax.c_str());
+    return new Parameter(type->clone(), m_name.c_str(), exp->clone(), boundMax.c_str());
 }
 
 void Parameter::setBoundMax(const char *nam) {
@@ -1177,7 +1177,7 @@ void Signature::addParameter(Type *type, const char *nam /*= nullptr*/, Exp *e /
             s = os.str();
             ok = true;
             for (unsigned i = 0; i < params.size(); i++)
-                if (!strcmp(s.c_str(), params[i]->getName()))
+                if (!strcmp(s.c_str(), params[i]->name()))
                     ok = false;
             n++;
         }
@@ -1190,7 +1190,7 @@ void Signature::addParameter(Type *type, const char *nam /*= nullptr*/, Exp *e /
 
 void Signature::addParameter(Parameter *param) {
     Type *ty = param->getType();
-    const char *nam = param->getName();
+    const char *nam = param->name();
     Exp *e = param->getExp();
 
     if (strlen(nam) == 0)
@@ -1226,7 +1226,7 @@ void Signature::setNumParams(size_t n) {
 
 const char *Signature::getParamName(size_t n) {
     assert(n < (int)params.size());
-    return params[n]->getName();
+    return params[n]->name();
 }
 
 Exp *Signature::getParamExp(int n) {
@@ -1273,7 +1273,7 @@ void Signature::setParamType(Exp* e, Type* ty) {
 }
 
 void Signature::setParamName(int n, const char *name) {
-    params[n]->setName(name);
+    params[n]->name(name);
 }
 
 void Signature::setParamExp(int n, Exp *e) {
@@ -1290,8 +1290,8 @@ int Signature::findParam(Exp *e) {
 
 void Signature::renameParam(const char *oldName, const char *newName) {
     for (unsigned i = 0; i < getNumParams(); i++)
-        if (!strcmp(params[i]->getName(), oldName)) {
-            params[i]->setName(newName);
+        if (!strcmp(params[i]->name(), oldName)) {
+            params[i]->name(newName);
             break;
         }
 }
@@ -1423,7 +1423,7 @@ void Signature::print(std::ostream &out, bool html) const {
     out << name << "(";
     unsigned int i;
     for (i = 0; i < params.size(); i++) {
-        out << params[i]->getType()->getCtype() << " " << params[i]->getName() << " " << params[i]->getExp();
+        out << params[i]->getType()->getCtype() << " " << params[i]->name() << " " << params[i]->getExp();
         if (i != params.size()-1) out << ", ";
     }
     out << ")\n";
@@ -1707,7 +1707,7 @@ bool CallingConvention::StdC::SparcSignature::isAddrOfStackLocal(Prog* prog, Exp
 bool Parameter::operator==(Parameter& other) {
     if (!(*type == *other.type)) return false;
     // Do we really care about a parameter's name?
-    if (!(name == other.name)) return false;
+    if (!(m_name == other.m_name)) return false;
     if (!(*exp == *other.exp)) return false;
     return true;
 }

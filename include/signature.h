@@ -39,22 +39,22 @@ class XMLProgParser;
 class Exp;
 class Parameter {
 private:
-        Type *type;
-        std::string name;
-        Exp *exp;
+        Type *type          = nullptr;
+        std::string m_name="";
+        Exp *exp            = nullptr;
         std::string boundMax;
 
 public:
                     Parameter(Type *_type, const char *_name, Exp *_exp = nullptr, const char *_boundMax = "") :
-                    type(_type), name(_name), exp(_exp), boundMax(_boundMax)    { }
+                    type(_type), m_name(_name), exp(_exp), boundMax(_boundMax)    { }
 virtual             ~Parameter();
         bool        operator==(Parameter& other);
         Parameter * clone();
 
         Type *      getType() { return type; }
         void        setType(Type *ty) { type = ty; }
-        const char *getName() { return name.c_str(); }
-        void        setName(const std::string &nam) { name = nam; }
+        const char *name() { return m_name.c_str(); }
+        void        name(const std::string &nam) { m_name = nam; }
         Exp *       getExp()        { return exp; }
         void        setExp(Exp *e) { exp = e; }
 
@@ -64,7 +64,7 @@ virtual             ~Parameter();
 
 protected:
         friend        class XMLProgParser;
-                    Parameter() : type(nullptr), name(""), exp(nullptr) { }
+                    Parameter(){ }
 };        // class Parameter
 
 class Return {

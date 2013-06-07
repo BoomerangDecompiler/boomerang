@@ -662,11 +662,11 @@ void XMLProgParser::start_param(const char **attr) {
         stack.front()->param = (Parameter*)findId(getAttr(attr, "id"));
         return;
     }
-    stack.front()->param = new Parameter();
+    stack.front()->param = new Parameter;
     addId(attr, stack.front()->param);
     const char *n = getAttr(attr, "name");
     if (n)
-        stack.front()->param->setName(n);
+        stack.front()->param->name(n);
 }
 
 void XMLProgParser::addToContext_param(Context *c, int e) {
@@ -2182,7 +2182,7 @@ void XMLProgParser::persistToXML(std::ostream &out, Signature *sig) {
         out << " convention=\"" << sig->conventionName(sig->getConvention()) << "\"";
     out << ">\n";
     for (unsigned i = 0; i < sig->params.size(); i++) {
-        out << "<param id=\"" << ADDRESS::host_ptr(sig->params[i]) << "\" name=\"" << sig->params[i]->getName() << "\">\n";
+        out << "<param id=\"" << ADDRESS::host_ptr(sig->params[i]) << "\" name=\"" << sig->params[i]->name() << "\">\n";
         out << "<type>\n";
         persistToXML(out, sig->params[i]->getType());
         out << "</type>\n";

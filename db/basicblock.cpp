@@ -1239,7 +1239,7 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, BasicBlock * latch,
                     // Note that uTable has the address of an int array
                     else
                         caseVal.setInt((int)(psi->iLower+i));
-                    hll->AddCaseCondOption(indLevel, &caseVal);
+                    hll->AddCaseCondOption(indLevel, caseVal);
 
                     // generate code for the current out-edge
                     BasicBlock * succ = m_OutEdges[i];

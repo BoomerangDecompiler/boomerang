@@ -714,7 +714,7 @@ int AnsiCParser::yyparse(platform plat, callconv cc)
             sig->addReturn(yyvsp[-7].type);
             for (std::list<Parameter*>::iterator it = yyvsp[-1].param_list->begin();
                  it != yyvsp[-1].param_list->end(); it++)
-                if (std::string((*it)->getName()) != "...")
+                if (std::string((*it)->name()) != "...")
                     sig->addParameter(*it);
                 else {
                     sig->addEllipsis();
@@ -738,7 +738,7 @@ int AnsiCParser::yyparse(platform plat, callconv cc)
             sig->addReturn(yyvsp[-8].type);
             for (std::list<Parameter*>::iterator it = yyvsp[-2].param_list->begin();
                  it != yyvsp[-2].param_list->end(); it++)
-                if (std::string((*it)->getName()) != "...")
+                if (std::string((*it)->name()) != "...")
                     sig->addParameter(*it);
                 else {
                     sig->addEllipsis();
@@ -754,7 +754,7 @@ int AnsiCParser::yyparse(platform plat, callconv cc)
             sig->addReturn(yyvsp[-4].type_ident->ty);
             for (std::list<Parameter*>::iterator it = yyvsp[-2].param_list->begin();
                  it != yyvsp[-2].param_list->end(); it++)
-                if (std::string((*it)->getName()) != "...")
+                if (std::string((*it)->name()) != "...")
                     sig->addParameter(*it);
                 else {
                     sig->addEllipsis();
@@ -802,7 +802,7 @@ int AnsiCParser::yyparse(platform plat, callconv cc)
             sig->addReturn(yyvsp[-3].type_ident->ty);
             for (std::list<Parameter*>::iterator it = yyvsp[-1].param_list->begin();
                  it != yyvsp[-1].param_list->end(); it++)
-                if (std::string((*it)->getName()) != "...")
+                if (std::string((*it)->name()) != "...")
                     sig->addParameter(*it);
                 else {
                     sig->addEllipsis();
@@ -819,7 +819,7 @@ int AnsiCParser::yyparse(platform plat, callconv cc)
             sig->addReturn(yyvsp[-3].type_ident->ty);
             for (std::list<Parameter*>::iterator it = yyvsp[-1].param_list->begin();
                  it != yyvsp[-1].param_list->end(); it++)
-                if (std::string((*it)->getName()) != "...")
+                if (std::string((*it)->name()) != "...")
                     sig->addParameter(*it);
                 else {
                     sig->addEllipsis();
@@ -836,13 +836,12 @@ int AnsiCParser::yyparse(platform plat, callconv cc)
                 sig->addReturn(yyvsp[-3].type_ident->ty, yyvsp[-4].custom_options->exp);
             if (yyvsp[-4].custom_options->sp)
                 sig->setSP(yyvsp[-4].custom_options->sp);
-            for (std::list<Parameter*>::iterator it = yyvsp[-1].param_list->begin();
-                 it != yyvsp[-1].param_list->end(); it++)
-                if (std::string((*it)->getName()) != "...") {
-                    sig->addParameter(*it);
+            for (Parameter* it : *yyvsp[-1].param_list)
+                if (std::string(it->name()) != "...") {
+                    sig->addParameter(it);
                 } else {
                     sig->addEllipsis();
-                    delete *it;
+                    delete it;
                 }
             delete yyvsp[-1].param_list;
             yyval.sig = sig;
