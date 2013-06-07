@@ -22,7 +22,7 @@
 
 #ifndef _CHLLCODE_H_
 #define _CHLLCODE_H_
-
+#include "hllcode.h"
 #include <string>
 #include <sstream>
 
@@ -87,7 +87,7 @@ private:
     std::list<char *> lines;
 
     void indent(std::ostringstream& str, int indLevel);
-    void appendExp(std::ostringstream& str, const Exp *exp, PREC curPrec, bool uns = false);
+    void appendExp(std::ostringstream& str, const Exp & exp, PREC curPrec, bool uns = false);
     void appendType(std::ostringstream& str, Type *typ);
     void appendTypeIdent(std::ostringstream& str, Type *typ, const char *ident);
     /// Adds: (
@@ -139,7 +139,7 @@ public:
 
     // case conditionals "nways"
     virtual void    AddCaseCondHeader(int indLevel, Exp *cond);
-    virtual void    AddCaseCondOption(int indLevel, Exp *opt);
+    virtual void    AddCaseCondOption(int indLevel, Exp &opt);
     virtual void    AddCaseCondOptionEnd(int indLevel);
     virtual void    AddCaseCondElse(int indLevel);
     virtual void    AddCaseCondEnd(int indLevel);

@@ -548,7 +548,7 @@ virtual Exp*        genConstraints(Exp* restrictTo);
 virtual bool        accept(ExpVisitor* v);
 virtual Exp*        accept(ExpModifier* v);
 
-virtual    Type*        ascendType();
+virtual Type*       ascendType();
 virtual void        descendType(Type* parentType, bool& ch, Statement* s);
 
 protected:
@@ -726,7 +726,8 @@ virtual void        appendDotFile(std::ofstream& of);
 virtual void        printx(int ind) const;
 
         // Get and set the type
-virtual Type*        getType() {return type;}
+virtual Type*       getType() {return type;}
+virtual const Type* getType() const {return type;}
 virtual void        setType(Type* ty) {type = ty;}
 
         // polySimplify
@@ -736,7 +737,7 @@ virtual Exp*        polySimplify(bool& bMod);
 virtual bool        accept(ExpVisitor* v);
 virtual Exp*        accept(ExpModifier* v);
 
-virtual    Type*        ascendType();
+virtual Type*       ascendType();
 virtual void        descendType(Type* parentType, bool& ch, Statement* s);
 
 protected:

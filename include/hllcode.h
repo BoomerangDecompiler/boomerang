@@ -78,7 +78,7 @@ virtual void    AddPosttestedLoopEnd(int indLevel, Exp *cond) = 0;
 
         // case conditionals "nways"
 virtual void    AddCaseCondHeader(int indLevel, Exp *cond) = 0;
-virtual void    AddCaseCondOption(int indLevel, Exp *opt) = 0;
+virtual void    AddCaseCondOption(int indLevel, Exp &opt) = 0;
 virtual void    AddCaseCondOptionEnd(int indLevel) = 0;
 virtual void    AddCaseCondElse(int indLevel) = 0;
 virtual void    AddCaseCondEnd(int indLevel) = 0;
