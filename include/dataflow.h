@@ -191,7 +191,7 @@ Assign* dumpAddrOfFourth();
         /**
          * Search and replace all occurrences
          */
-        void        searchReplaceAll(Exp* from, Exp* to, bool& change);
+        void        searchReplaceAll(const Exp &from, Exp* to, bool& change);
 };        // class DefCollector
 
 /**

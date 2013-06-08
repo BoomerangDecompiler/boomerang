@@ -248,22 +248,22 @@ virtual void        getDefinitions(LocationSet &/*def*/) {}
 virtual bool        definesLoc(Exp* /*loc*/) {return false;}            // True if this Statement defines loc
 
     // returns true if this statement uses the given expression
-virtual bool        usesExp(Exp *) = 0;
+virtual bool        usesExp(const Exp &) = 0;
 
     // statements should be printable (for debugging)
 virtual void        print(std::ostream &os, bool html = false) const = 0;
         void        printAsUse(std::ostream &os)   {os << std::dec << number;}
         void        printAsUseBy(std::ostream &os) {os << std::dec << number;}
         void        printNum(std::ostream &os)       {os << std::dec << number;}
-        char*        prints();        // For logging, was also for debugging
+        char *      prints();        // For logging, was also for debugging
         void        dump();            // For debugging
 
         // general search
-virtual bool        search(Exp *search, Exp *&result) = 0;
-virtual bool        searchAll(const Exp* search, std::list<Exp*>& result) = 0;
+virtual bool        search(const Exp &search, Exp *&result) = 0;
+virtual bool        searchAll(const Exp &search, std::list<Exp*>& result) = 0;
 
         // general search and replace. Set cc true to change collectors as well. Return true if any change
-virtual bool        searchAndReplace(const Exp *search, Exp *replace, bool cc = false) = 0; //TODO: consider constness
+virtual bool        searchAndReplace(const Exp &search, Exp *replace, bool cc = false) = 0; //TODO: consider constness
 
         // True if can propagate to expression e in this Statement.
 static    bool        canPropagateToExp(Exp* e);
@@ -341,9 +341,9 @@ virtual void        rangeAnalysis(std::list<Statement*> &execution_paths);
 
         // Get the type for the definition, if any, for expression e in this statement
         // Overridden only by Assignment and CallStatement, and ReturnStatement.
-virtual    Type*        getTypeFor(Exp* ) { return nullptr;}
+virtual Type*       getTypeFor(Exp* ) { return nullptr;}
         // Set the type for the definition of e in this Statement
-virtual    void        setTypeFor(Exp* , Type* ) {assert(0);}
+virtual void        setTypeFor(Exp* , Type* ) {assert(0);}
 
 //virtual    Type*    getType() {return nullptr;}            // Assignment, ReturnStatement and
 //virtual    void    setType(Type* t) {assert(0);}        // CallStatement override
@@ -412,7 +412,7 @@ virtual void        printCompact(std::ostream& os, bool html = false) const = 0;
 virtual Type*        getTypeFor(Exp* e);                 // Get the type for this assignment. It should define e
 virtual void        setTypeFor(Exp* e, Type* ty);         // Set the type for this assignment. It should define e
 
-virtual bool        usesExp(Exp *e);       // PhiAssign and ImplicitAssign don't override
+virtual bool        usesExp(const Exp &e);       // PhiAssign and ImplicitAssign don't override
 
 virtual bool        isDefinition() { return true; }
 virtual void        getDefinitions(LocationSet &defs);
@@ -430,11 +430,11 @@ virtual const Exp * getLeft() const { return lhs; }
         int            getMemDepth();
 
         // general search
-virtual bool        search(Exp *search, Exp *&result) = 0;
-virtual bool        searchAll(const Exp* search, std::list<Exp*>& result) = 0;
+virtual bool        search(const Exp &search, Exp *&result) = 0;
+virtual bool        searchAll(const Exp & search, std::list<Exp*>& result) = 0;
 
         // general search and replace
-virtual bool        searchAndReplace(const Exp *search, Exp *replace, bool cc = false) = 0;
+virtual bool        searchAndReplace(const Exp &search, Exp *replace, bool cc = false) = 0;
         void        generateCode(HLLCode *, BasicBlock *, int /*indLevel*/) {}
 
         // simpify internal expressions
@@ -495,15 +495,15 @@ virtual void        printCompact(std::ostream& os, bool html = false) const;    
         Exp*        getGuard() {return guard;}
         bool        isGuarded() {return guard != nullptr;}
 
-virtual bool        usesExp(Exp *e);
+virtual bool        usesExp(const Exp &e);
 virtual bool        isDefinition() { return true; }
 
         // general search
-virtual bool        search(Exp* search, Exp*& result);
-virtual bool        searchAll(const Exp *search, std::list<Exp*>& result);
+virtual bool        search(const Exp & search, Exp*& result);
+virtual bool        searchAll(const Exp &search, std::list<Exp*>& result);
 
         // general search and replace
-virtual bool        searchAndReplace(const Exp *search, Exp *replace, bool cc = false);
+virtual bool        searchAndReplace(const Exp &search, Exp *replace, bool cc = false);
 
         // memory depth
         int            getMemDepth();
@@ -585,11 +585,11 @@ virtual bool            accept(StmtPartModifier* visitor);
 virtual void            printCompact(std::ostream& os, bool html = false) const;
 
                         // general search
-virtual bool            search(Exp* search, Exp*& result);
-virtual bool            searchAll(const Exp *search, std::list<Exp*>& result);
+virtual bool            search(const Exp & search, Exp*& result);
+virtual bool            searchAll(const Exp &search, std::list<Exp*>& result);
 
                         // general search and replace
-virtual bool            searchAndReplace(const Exp *search, Exp *replace, bool cc = false);
+virtual bool            searchAndReplace(const Exp &search, Exp *replace, bool cc = false);
 
                         // simplify all the uses/defs in this Statement
 virtual void            simplify();
@@ -645,11 +645,11 @@ virtual Statement * clone() const;
         void        dfaTypeAnalysis(bool& ch);
 
         // general search
-virtual bool        search(Exp* search, Exp*& result);
-virtual bool        searchAll(const Exp *search, std::list<Exp*>& result);
+virtual bool        search(const Exp &search, Exp*& result);
+virtual bool        searchAll(const Exp &search, std::list<Exp*>& result);
 
         // general search and replace
-virtual bool        searchAndReplace(const Exp *search, Exp *replace, bool cc = false);
+virtual bool        searchAndReplace(const Exp &search, Exp *replace, bool cc = false);
 
 virtual void        printCompact(std::ostream& os, bool html = false) const;
 
@@ -711,10 +711,10 @@ virtual void        simplify();
 virtual bool        isDefinition() { return true; }
 virtual void        getDefinitions(LocationSet &def);
 virtual Exp*        getRight() { return getCondExpr(); }
-virtual bool        usesExp(Exp *e);
-virtual bool        search(Exp *search, Exp *&result);
-virtual bool        searchAll(const Exp *search, std::list<Exp*>& result);
-virtual bool        searchAndReplace(const Exp *search, Exp *replace, bool cc = false);
+virtual bool        usesExp(const Exp &e);
+virtual bool        search(const Exp &search, Exp *&result);
+virtual bool        searchAll(const Exp &search, std::list<Exp*>& result);
+virtual bool        searchAndReplace(const Exp &search, Exp *replace, bool cc = false);
         // a hack for the SETS macro
         void        setLeftFromList(std::list<Statement*>* stmts);
 
@@ -744,10 +744,10 @@ virtual bool        accept(StmtExpVisitor*);
 virtual bool        accept(StmtModifier*);
 virtual bool        accept(StmtPartModifier*);
 virtual bool        isDefinition() {return false;}
-virtual bool        usesExp(Exp*) {return false;}
-virtual bool        search(Exp*, Exp*&);
-virtual bool        searchAll(const Exp *, std::list<Exp*, std::allocator<Exp*> >&);
-virtual bool        searchAndReplace(const Exp*, Exp*, bool cc = false);
+virtual bool        usesExp(const Exp &) {return false;}
+virtual bool        search(const Exp &, Exp*&);
+virtual bool        searchAll(const Exp &, std::list<Exp*, std::allocator<Exp*> >&);
+virtual bool        searchAndReplace(const Exp &, Exp*, bool cc = false);
 virtual void        generateCode(HLLCode*, BasicBlock*, int) {}
 virtual void        simplify();
 virtual void        print(std::ostream& os, bool html = false) const;
@@ -805,14 +805,14 @@ virtual Exp*        getDest();
 virtual void        print(std::ostream& os = std::cout, bool html = false) const;
 
                     // general search
-virtual bool        search(Exp*, Exp*&);
+virtual bool        search(const Exp &, Exp*&);
 
                     // Replace all instances of "search" with "replace".
-virtual bool        searchAndReplace(const Exp* search, Exp* replace, bool cc = false);
+virtual bool        searchAndReplace(const Exp& search, Exp* replace, bool cc = false);
 
                     // Searches for all instances of a given subexpression within this
                     // expression and adds them to a given list in reverse nesting order.
-virtual bool        searchAll(const Exp *search, std::list<Exp*> &result);
+virtual bool        searchAll(const Exp &search, std::list<Exp*> &result);
 
                     // code generation
 virtual void        generateCode(HLLCode *hll, BasicBlock *Parent, int indLevel);
@@ -822,7 +822,7 @@ virtual void        simplify();
 
                     // Statement virtual functions
 virtual bool        isDefinition() { return false;}
-virtual bool        usesExp(Exp*);
+virtual bool        usesExp(const Exp &);
 
         friend class XMLProgParser;
 };        // class GotoStatement
@@ -842,16 +842,16 @@ public:
         // returns true if this statement defines anything
     bool        isDefinition() { return false; }
 
-    bool        usesExp(Exp *) { return false; }
+    bool        usesExp(const Exp &) { return false; }
 
     void        print(std::ostream &os, bool html = false) const;
 
         // general search
-    bool        search(Exp */*search*/, Exp *&/*result*/) { return false; }
-    bool        searchAll(const Exp* /*search*/, std::list<Exp*>& /*result*/) { return false; }
+    bool        search(const Exp &/*search*/, Exp *&/*result*/) { return false; }
+    bool        searchAll(const Exp &/*search*/, std::list<Exp*>& /*result*/) { return false; }
 
                 //! general search and replace. Set cc true to change collectors as well. Return true if any change
-    bool        searchAndReplace(const Exp */*search*/, Exp */*replace*/, bool /*cc*/ = false) { return false; }
+    bool        searchAndReplace(const Exp &/*search*/, Exp */*replace*/, bool /*cc*/ = false) { return false; }
 
     void        generateCode(HLLCode */*hll*/, BasicBlock */*pbb*/, int /*indLevel*/) { }
 
@@ -912,20 +912,20 @@ virtual bool        accept(StmtPartModifier* visitor);
 virtual void        print(std::ostream& os = std::cout, bool html = false) const;
 
         // general search
-virtual bool        search(Exp *search, Exp *&result);
+virtual bool        search(const Exp &search, Exp *&result);
 
         // Replace all instances of "search" with "replace".
-virtual bool        searchAndReplace(const Exp* search, Exp* replace, bool cc = false);
+virtual bool        searchAndReplace(const Exp &search, Exp* replace, bool cc = false);
 
         // Searches for all instances of a given subexpression within this
         // expression and adds them to a given list in reverse nesting order.
-virtual bool        searchAll(const Exp *search, std::list<Exp*> &result);
+virtual bool        searchAll(const Exp &search, std::list<Exp*> &result);
 
         // code generation
 virtual void        generateCode(HLLCode *hll, BasicBlock *Parent, int indLevel);
 
         // dataflow analysis
-virtual bool        usesExp(Exp *e);
+virtual bool        usesExp(const Exp &e);
 
         // Range analysis
         void        rangeAnalysis(std::list<Statement*> &execution_paths);
@@ -983,17 +983,17 @@ virtual bool        accept(StmtPartModifier* visitor);
 virtual void        print(std::ostream& os = std::cout, bool html = false) const;
 
         // Replace all instances of "search" with "replace".
-virtual bool    searchAndReplace(const Exp* search, Exp* replace, bool cc = false);
+virtual bool    searchAndReplace(const Exp & search, Exp* replace, bool cc = false);
 
         // Searches for all instances of a given subexpression within this
         // expression and adds them to a given list in reverse nesting order.
-virtual bool        searchAll(const Exp *search, std::list<Exp*> &result);
+virtual bool        searchAll(const Exp &search, std::list<Exp*> &result);
 
         // code generation
 virtual void        generateCode(HLLCode *hll, BasicBlock *Parent, int indLevel);
 
         // dataflow analysis
-virtual bool        usesExp(Exp *e);
+virtual bool        usesExp(const Exp &e);
 public:
 
         // simplify all the uses/defs in this Statement
@@ -1101,14 +1101,14 @@ virtual bool        accept(StmtPartModifier* visitor);
 virtual void        print(std::ostream& os = std::cout, bool html = false) const;
 
         // general search
-virtual bool        search(Exp *search, Exp *&result);
+virtual bool        search(const Exp &search, Exp *&result);
 
         // Replace all instances of "search" with "replace".
-virtual bool        searchAndReplace(const Exp* search, Exp* replace, bool cc = false);
+virtual bool        searchAndReplace(const Exp & search, Exp* replace, bool cc = false);
 
         // Searches for all instances of a given subexpression within this
         // expression and adds them to a given list in reverse nesting order.
-virtual bool        searchAll(const Exp *search, std::list<Exp*> &result);
+virtual bool        searchAll(const Exp &search, std::list<Exp*> &result);
 
         // Set and return whether the call is effectively followed by a return.
         // E.g. on Sparc, whether there is a restore in the delay slot.
@@ -1134,7 +1134,7 @@ virtual void        genConstraints(LocationSet& cons);
 virtual void        generateCode(HLLCode *hll, BasicBlock *Parent, int indLevel);
 
         // dataflow analysis
-virtual bool        usesExp(Exp *e);
+virtual bool        usesExp(const Exp &e);
 
         // dataflow related functions
 virtual bool        isDefinition();
@@ -1237,16 +1237,16 @@ typedef    StatementList::iterator iterator;
 virtual void            print(std::ostream& os = std::cout, bool html = false) const;
 
         // general search
-virtual bool        search(Exp*, Exp*&);
+virtual bool        search(const Exp &, Exp*&);
 
         // Replace all instances of "search" with "replace".
-virtual bool        searchAndReplace(const Exp* search, Exp* replace, bool cc = false);
+virtual bool        searchAndReplace(const Exp & search, Exp* replace, bool cc = false);
 
         // Searches for all instances of a given subexpression within this statement and adds them to a given list
-virtual bool        searchAll(const Exp *search, std::list<Exp*> &result);
+virtual bool        searchAll(const Exp &search, std::list<Exp*> &result);
 
         // returns true if this statement uses the given expression
-virtual bool        usesExp(Exp *e);
+virtual bool        usesExp(const Exp &e);
 
 virtual void        getDefinitions(LocationSet &defs);
 

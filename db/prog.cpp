@@ -1329,6 +1329,7 @@ void Prog::decompile() {
 }
 //! As the name suggests, removes globals unused in the decompiled code.
 void Prog::removeUnusedGlobals() {
+
     if (VERBOSE)
         LOG << "removing unused globals\n";
 
@@ -1338,7 +1339,7 @@ void Prog::removeUnusedGlobals() {
         if (pp->isLib())
             continue;
         UserProc *u = (UserProc*)pp;
-        Exp* search = new Location(opGlobal, new Terminal(opWild), u);
+        Location search(opGlobal, Terminal::get(opWild), u);
         // Search each statement in u, excepting implicit assignments (their uses don't count, since they don't really
         // exist in the program representation)
         StatementList stmts;

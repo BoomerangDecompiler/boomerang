@@ -322,10 +322,10 @@ void UserProc::renameLocal(const char *oldName, const char *newName) {
     Exp *newLoc = Location::local(strdup(newName), this);
     mapSymbolToRepl(oldExp, oldLoc, newLoc);
     locals[newName] = ty;
-    cfg->searchAndReplace(oldLoc, newLoc);
+    cfg->searchAndReplace(*oldLoc, newLoc);
 }
 
-bool UserProc::searchAll(Exp* search, std::list<Exp*> &result) {
+bool UserProc::searchAll(const Exp & search, std::list<Exp*> &result) {
     return cfg->searchAll(search, result);
 }
 
@@ -2525,10 +2525,10 @@ void UserProc::processFloatConstants() {
     StatementList stmts;
     getStatements(stmts);
 
-    Exp *match = new Ternary(opFsize,
-                             new Terminal(opWild),
-                             new Terminal(opWild),
-                             Location::memOf(new Terminal(opWild)));
+    static Ternary match(opFsize,
+                             Terminal::get(opWild),
+                             Terminal::get(opWild),
+                             Location::memOf(Terminal::get(opWild)));
 
     StatementList::iterator it;
     for (it = stmts.begin(); it != stmts.end(); it++) {
@@ -2663,6 +2663,9 @@ Exp *UserProc::getSymbolExp(Exp *le, Type *ty, bool lastPass) {
 
 // Not used with DFA Type Analysis; the equivalent thing happens in mapLocalsAndParams() now
 void UserProc::mapExpressionsToLocals(bool lastPass) {
+    static Exp *sp_location = Location::regOf(0);
+    // parse("[*] + sp{0}")
+    static Binary nn(opPlus, Terminal::get(opWild), RefExp::get(sp_location, nullptr));
     StatementList stmts;
     getStatements(stmts);
 
@@ -2725,7 +2728,7 @@ void UserProc::mapExpressionsToLocals(bool lastPass) {
     Boomerang::get()->alert_decompile_debug_point(this, "after processing locals in calls");
 
     // normalise sp usage (turn WILD + sp{0} into sp{0} + WILD)
-    Exp *nn = Binary::get(opPlus, new Terminal(opWild), new RefExp(Location::regOf(sp), nullptr));
+    static_cast<Const *>(sp_location->getSubExp1())->setInt(sp); // set to search sp value
     for (it = stmts.begin(); it != stmts.end(); it++) {
         Statement* s = *it;
         std::list<Exp*> results;
@@ -2740,15 +2743,19 @@ void UserProc::mapExpressionsToLocals(bool lastPass) {
     // FIXME: this is probably part of the ADHOC TA
     // look for array locals
     // l = m[(sp{0} + WILD1) - K2]
-    Exp *l = Location::memOf(Binary::get(opMinus,
+    static Const sp_const(0);
+    static Location sp_loc(opRegOf, &sp_const, nullptr);
+    static Location query_f(opMemOf,
+                            Binary::get(opMinus,
                                         Binary::get(opPlus,
-                                                   new RefExp(Location::regOf(sp), nullptr),
-                                                   new Terminal(opWild)),
-                                        new Terminal(opWildIntConst)));
+                                                   new RefExp(&sp_loc, nullptr),
+                                                   Terminal::get(opWild)),
+                                        Terminal::get(opWildIntConst)),nullptr);
     for (it = stmts.begin(); it != stmts.end(); it++) {
         Statement* s = *it;
         std::list<Exp*> results;
-        s->searchAll(l, results);
+        sp_const.setInt(sp);
+        s->searchAll(query_f, results);
         for (Exp *result : results) {
             // arr = m[sp{0} - K2]
             Exp *arr = Location::memOf(
@@ -2764,8 +2771,7 @@ void UserProc::mapExpressionsToLocals(bool lastPass) {
                     base = ((Assign*)s)->getType()->clone();
             }
             //arr->setType(new ArrayType(base, n / (base->getSize() / 8))); //TODO: why is this commented out ?
-            if (VERBOSE)
-                LOG << "found a local array using " << n << " bytes\n";
+            LOG_VERBOSE(1) << "found a local array using " << n << " bytes\n";
             Exp *replace = Location::memOf(
                                Binary::get(opPlus,
                                           new Unary(opAddrOf, arr),
@@ -2774,7 +2780,7 @@ void UserProc::mapExpressionsToLocals(bool lastPass) {
             TypedExp *actual_replacer = new TypedExp(new ArrayType(base, n / (base->getSize() / 8)),replace);
             if (VERBOSE)
                 LOG << "replacing " << result << " with " << actual_replacer << " in " << s << "\n";
-            s->searchAndReplace(result, actual_replacer);
+            s->searchAndReplace(*result, actual_replacer);
         }
     }
 
@@ -2809,7 +2815,7 @@ void UserProc::searchRegularLocals(OPER minusOrPlus, bool lastPass, int sp, Stat
     for (it = stmts.begin(); it != stmts.end(); it++) {
         Statement* s = *it;
         std::list<Exp*> results;
-        s->searchAll(l, results);
+        s->searchAll(*l, results);
         for (std::list<Exp*>::iterator it1 = results.begin(); it1 != results.end(); it1++) {
             Exp *result = *it1;
             Type* ty = s->getTypeFor(result);
@@ -4033,7 +4039,7 @@ void UserProc::conTypeAnalysis() {
 
 
 
-bool UserProc::searchAndReplace(Exp *search, Exp *replace) {
+bool UserProc::searchAndReplace(const Exp &search, Exp *replace) {
     bool ch = false;
     StatementList stmts;
     getStatements(stmts);
@@ -4385,7 +4391,7 @@ void UserProc::reverseStrengthReduction() {
                             StatementList::iterator it2;
                             for (it2 = stmts2.begin(); it2 != stmts2.end(); it2++)
                                 if (*it2 != as)
-                                    (*it2)->searchAndReplace(r, Binary::get(opMult, r->clone(), new Const(c)));
+                                    (*it2)->searchAndReplace(*r, Binary::get(opMult, r->clone(), new Const(c)));
                             // that done we can replace c with 1 in as
                             ((Const*)as->getRight()->getSubExp2())->setInt(1);
                         }
@@ -4789,7 +4795,7 @@ void UserProc::propagateToCollector() {
             if (as == nullptr || !as->isAssign())
                 continue;
             bool ch;
-            Exp* res = addr->clone()->searchReplaceAll(r, as->getRight(), ch);
+            Exp* res = addr->clone()->searchReplaceAll(*r, as->getRight(), ch);
             if (!ch) continue;                // No change
             Exp* memOfRes = Location::memOf(res)->simplify();
             // First check to see if memOfRes is already in the set
@@ -5905,12 +5911,12 @@ void UserProc::dfa_analyze_implict_assigns( Statement* s, Prog* prog )
     }
 }
 // m[idx*K1 + K2]; leave idx wild
-static Exp* scaledArrayPat = Location::memOf(
+static Location scaledArrayPat(opMemOf,
     Binary::get(opPlus,
         Binary::get(opMult,
-            new Terminal(opWild),
-            new Terminal(opWildIntConst)),
-        new Terminal(opWildIntConst)));
+            Terminal::get(opWild),
+            Terminal::get(opWildIntConst)),
+        Terminal::get(opWildIntConst)),nullptr);
 
 void UserProc::dfa_analyze_scaled_array_ref( Statement* s, Prog* prog )
 {

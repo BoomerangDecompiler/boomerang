@@ -1453,7 +1453,7 @@ bool Signature::usesNewParam(UserProc *p, Statement *stmt, bool checkreach, int 
     StatementSet reachin;
     //stmt->getReachIn(reachin, 2);
     for (int i = getNumParams(); i < 10; i++)
-        if (stmt->usesExp(getParamExp(i))) {
+        if (stmt->usesExp(*getParamExp(i))) {
             bool ok = true;
             if (checkreach) {
                 bool hasDef = false;

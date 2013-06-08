@@ -1185,7 +1185,7 @@ void CHLLCode::AddAssignmentStatement(int indLevel, Assign *asgn) {
     if (asgn->getLeft()->getOper() == opPC)
         return;                        // Never want to see assignments to %PC
     Exp *result;
-    if (asgn->getRight()->search(new Terminal(opPC), result)) // Gerard: what's this?
+    if (asgn->getRight()->search(Terminal(opPC), result)) // Gerard: what's this?
         return;
     // ok I want this now
     //if (asgn->getLeft()->isFlags())
@@ -1517,9 +1517,9 @@ void CHLLCode::AddProcDec(UserProc* proc, bool open) {
             // Replace all m[param] with foo, param with foo, then foo with param
             ty = ((PointerType*)ty)->getPointsTo();
             Exp *foo = new Const("foo123412341234");
-            m_proc->searchAndReplace(Location::memOf(left, nullptr), foo);
-            m_proc->searchAndReplace(left, foo);
-            m_proc->searchAndReplace(foo, left);
+            m_proc->searchAndReplace(*Location::memOf(left, nullptr), foo);
+            m_proc->searchAndReplace(*left, foo);
+            m_proc->searchAndReplace(*foo, left);
         }
         appendTypeIdent(s, ty, name);
     }

@@ -118,11 +118,10 @@ Exp* NJMCDecoder::instantiateNamedParam(char* name, ...) {
     va_list args;
     va_start(args,name);
     for( std::list<std::string>::iterator it = ent.params.begin(); it != ent.params.end(); it++ ) {
-        Exp* formal = new Location(opParam, new Const(strdup(it->c_str())), nullptr);
+        Location formal(opParam, new Const(strdup(it->c_str())), nullptr);
         Exp* actual = va_arg(args, Exp*);
         bool change;
         result = result->searchReplaceAll(formal, actual, change);
-        delete formal;
     }
     return result;
 }
@@ -153,11 +152,10 @@ void NJMCDecoder::substituteCallArgs(char *name, Exp*& exp, ...)
     va_list args;
     va_start(args, exp);
     for (std::list<std::string>::iterator it = ent.funcParams.begin(); it != ent.funcParams.end(); it++) {
-        Exp* formal = new Location(opParam, new Const(strdup(it->c_str())), nullptr);
+        Location formal(opParam, new Const(strdup(it->c_str())), nullptr);
         Exp* actual = va_arg(args, Exp*);
         bool change;
         exp = exp->searchReplaceAll(formal, actual, change);
-        delete formal;
     }
 }
 

@@ -38,7 +38,7 @@ extern const char* operStrings[];
 Exp *GenericExpTransformer::applyFuncs(Exp *rhs)
 {
     Exp *call, *callw = Binary::get(opFlagCall, Const::get("memberAtOffset"), Terminal::get(opWild));
-    if (rhs->search(callw, call)) {
+    if (rhs->search(*callw, call)) {
         assert(call->getSubExp2()->getOper() == opList);
         Exp *p1 = applyFuncs(call->getSubExp2()->getSubExp1());
         Exp *p2 = applyFuncs(call->getSubExp2()->getSubExp2()->getSubExp1());
@@ -55,14 +55,14 @@ Exp *GenericExpTransformer::applyFuncs(Exp *rhs)
         const char *member = ty->asCompound()->getNameAtOffset(offset);
         Exp *result = Const::get((char*)member);
         bool change;
-        rhs = rhs->searchReplace(callw->clone(), result->clone(), change);
+        rhs = rhs->searchReplace(*callw, result->clone(), change);
         assert(change);
 #if 0
         LOG << "replaced " << call << " with " << result << "\n";
 #endif
     }
     callw = Binary::get(opFlagCall, Const::get("offsetToMember"), Terminal::get(opWild));
-    if (rhs->search(callw, call)) {
+    if (rhs->search(*callw, call)) {
         assert(call->getSubExp2()->getOper() == opList);
         Exp *p1 = applyFuncs(call->getSubExp2()->getSubExp1());
         Exp *p2 = applyFuncs(call->getSubExp2()->getSubExp2()->getSubExp1());
@@ -78,14 +78,14 @@ Exp *GenericExpTransformer::applyFuncs(Exp *rhs)
         int offset = ty->asCompound()->getOffsetTo(member) / 8;
         Exp *result = new Const(offset);
         bool change;
-        rhs = rhs->searchReplace(callw->clone(), result->clone(), change);
+        rhs = rhs->searchReplace(*callw, result->clone(), change);
         assert(change);
 #if 0
         LOG << "replaced " << call << " with " << result << "\n";
 #endif
     }
     callw = Binary::get(opFlagCall, new Const("plus"), new Terminal(opWild));
-    if (rhs->search(callw, call)) {
+    if (rhs->search(*callw, call)) {
         assert(call->getSubExp2()->getOper() == opList);
         Exp *p1 = applyFuncs(call->getSubExp2()->getSubExp1());
         Exp *p2 = applyFuncs(call->getSubExp2()->getSubExp2()->getSubExp1());
@@ -95,20 +95,20 @@ Exp *GenericExpTransformer::applyFuncs(Exp *rhs)
         int b = ((Const*)p2)->getInt();
         Exp *result = new Const(a + b);
         bool change;
-        rhs = rhs->searchReplace(callw->clone(), result->clone(), change);
+        rhs = rhs->searchReplace(*callw, result->clone(), change);
         assert(change);
 #if 0
         LOG << "replaced " << call << " with " << result << "\n";
 #endif
     }
     callw = Binary::get(opFlagCall, new Const("neg"), new Terminal(opWild));
-    if (rhs->search(callw, call)) {
+    if (rhs->search(*callw, call)) {
         Exp *p1 = applyFuncs(call->getSubExp2());
         assert(p1->getOper() == opIntConst);
         int a = ((Const*)p1)->getInt();
         Exp *result = new Const(-a);
         bool change;
-        rhs = rhs->searchReplace(callw->clone(), result->clone(), change);
+        rhs = rhs->searchReplace(*callw, result->clone(), change);
         assert(change);
 #if 0
         LOG << "replaced " << call << " with " << result << "\n";
@@ -129,13 +129,13 @@ bool GenericExpTransformer::checkCond(Exp *cond, Exp *bindings)
                 for (Exp *l = bindings; l->getOper() != opNil; l = l->getSubExp2()) {
                     Exp *e = l->getSubExp1();
                     bool change = false;
-                    lhs = lhs->searchReplaceAll(e->getSubExp1()->clone(), e->getSubExp2()->clone(), change);
+                    lhs = lhs->searchReplaceAll(*e->getSubExp1(), e->getSubExp2()->clone(), change);
 #if 0
                     if (change)
                         LOG << "replaced " << e->getSubExp1() << " with " << e->getSubExp2() << "\n";
 #endif
                     change = false;
-                    rhs = rhs->searchReplaceAll(e->getSubExp1()->clone(), e->getSubExp2()->clone(), change);
+                    rhs = rhs->searchReplaceAll(*e->getSubExp1(), e->getSubExp2()->clone(), change);
 #if 0
                     if (change)
                         LOG << "replaced " << e->getSubExp1() << " with " << e->getSubExp2() << "\n";
@@ -245,7 +245,7 @@ Exp *GenericExpTransformer::applyTo(Exp *e, bool &bMod)
 
     e = become->clone();
     for (Exp *l = bindings; l->getOper() != opNil; l = l->getSubExp2())
-        e = e->searchReplaceAll(l->getSubExp1()->getSubExp1(),
+        e = e->searchReplaceAll(*l->getSubExp1()->getSubExp1(),
                                 l->getSubExp1()->getSubExp2(),
                                 change);
 
@@ -253,7 +253,7 @@ Exp *GenericExpTransformer::applyTo(Exp *e, bool &bMod)
     bMod = true;
 
     Exp *r;
-    if (e->search(new Unary(opVar, new Terminal(opWild)), r)) {
+    if (e->search(Unary(opVar, Terminal::get(opWild)), r)) {
         LOG << "error: variable " << r << " in result!\n";
         assert(false);
     }

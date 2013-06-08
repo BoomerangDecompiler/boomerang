@@ -706,7 +706,7 @@ void DefCollector::makeCloneOf(const DefCollector& other) {
         defs.insert((Assign*)(*it)->clone());
 }
 
-void DefCollector::searchReplaceAll(Exp* from, Exp* to, bool& change) {
+void DefCollector::searchReplaceAll(const Exp & from, Exp* to, bool& change) {
     iterator it;
     for (it=defs.begin(); it != defs.end(); ++it)
         change |= (*it)->searchAndReplace(from, to);

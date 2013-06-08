@@ -112,7 +112,7 @@ void ConstraintMap::substitute(ConstraintMap& other) {
     for (oo = other.cmap.begin(); oo != other.cmap.end(); oo++) {
         bool ch;
         for (cc = cmap.begin(); cc != cmap.end(); cc++) {
-            Exp* newVal = cc->second->searchReplaceAll(oo->first, oo->second, ch);
+            Exp* newVal = cc->second->searchReplaceAll(*oo->first, oo->second, ch);
             if (ch) {
                 if (*cc->first == *newVal)
                     // e.g. was <char*> = <alpha6> now <char*> = <char*>
@@ -122,7 +122,7 @@ void ConstraintMap::substitute(ConstraintMap& other) {
             } else
                 // The existing value
                 newVal = cc->second;
-            Exp* newKey = cc->first-> searchReplaceAll(oo->first, oo->second, ch);
+            Exp* newKey = cc->first->searchReplaceAll(*oo->first, oo->second, ch);
             if (ch) {
                 cmap.erase(cc->first);
                 // Often end up with <char*> = <char*>
@@ -181,7 +181,7 @@ void Constraints::substIntoDisjuncts(ConstraintMap& in) {
         bool ch;
         std::list<Exp*>::iterator dd;
         for (dd = disjunctions.begin(); dd != disjunctions.end(); dd++) {
-            (*dd)->searchReplaceAll(from, to, ch);
+            (*dd)->searchReplaceAll(*from, to, ch);
             *dd = (*dd)->simplifyConstraint();
         }
     }
@@ -561,9 +561,10 @@ void Constraints::alphaSubst() {
             val = trm1;
             alpha = trm2;
         }
+        assert(alpha);
         // Now substitute
         bool change;
-        *it = (*it)->searchReplaceAll(alpha, val, change);
+        *it = (*it)->searchReplaceAll(*alpha, val, change);
         *it = (*it)->simplifyConstraint();
     }
 }

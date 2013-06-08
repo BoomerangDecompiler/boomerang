@@ -52,9 +52,9 @@ int max(int a, int b) {        // Faster to write than to find the #include for
 #define DFA_ITER_LIMIT 20
 
 // idx + K; leave idx wild
-static const Exp* const unscaledArrayPat = Binary::get(opPlus,
-                                          new Terminal(opWild),
-                                          new Terminal(opWildIntConst));
+static const Binary unscaledArrayPat(opPlus,
+                                          Terminal::get(opWild),
+                                          Terminal::get(opWildIntConst));
 
 // The purpose of this funciton and others like it is to establish safe static roots for garbage collection purposes
 // This is particularly important for OS X where it is known that the collector can't see global variables, but it is
@@ -212,7 +212,7 @@ void UserProc::dfaTypeAnalysis() {
                                 ne = g;
                         }
                         Exp* memof = Location::memOf(con);
-                        if(!s->searchAndReplace(memof->clone(), ne))
+                        if(!s->searchAndReplace(*memof, ne))
                             delete ne;
                     }
                 } else if (baseType->resolvesToArray()) {

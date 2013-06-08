@@ -236,23 +236,23 @@ virtual bool        match(const std::string & pattern, std::map<std::string, Exp
 
         // Search for Exp *search in this Exp. If found, return true and return a ptr to the matching expression in
         // result (useful with wildcards).
-virtual bool        search(Exp* search, Exp*& result);
+virtual bool        search(const Exp &search, Exp*& result);
 
         // Search for Exp search in this Exp. For each found, add a ptr to the matching expression in result (useful
         // with wildcards).      Does NOT clear result on entry
-        bool        searchAll(const Exp *search, std::list<Exp*>& result);
+        bool        searchAll(const Exp &search, std::list<Exp*>& result);
 
         // Search this Exp for *search; if found, replace with *replace
-        Exp*        searchReplace (Exp* search, Exp* replace, bool& change);
+        Exp*        searchReplace (const Exp &search, Exp* replace, bool& change);
 
         // Search *pSrc for *search; for all occurrences, replace with *replace
-        Exp*        searchReplaceAll(const Exp *search, Exp* replace, bool& change, bool once = false);
+        Exp*        searchReplaceAll(const Exp &search, Exp* replace, bool& change, bool once = false);
 
         // Mostly not for public use. Search for subexpression matches.
-static    void        doSearch(const Exp *search, Exp*& pSrc, std::list<Exp**>& li, bool once);
+static  void        doSearch(const Exp &search, Exp*& pSrc, std::list<Exp**>& li, bool once);
 
         // As above.
-virtual void        doSearchChildren(const Exp *search, std::list<Exp**>& li, bool once);
+virtual void        doSearchChildren(const Exp &search, std::list<Exp**>& li, bool once);
 
         /// Propagate all possible assignments to components of this expression.
         Exp*        propagateAll();
@@ -536,7 +536,7 @@ virtual Exp *       match(Exp *pattern);
 virtual bool        match(const std::string & pattern, std::map<std::string, Exp*> &bindings);
 
         // Search children
-        void        doSearchChildren(const Exp *search, std::list<Exp**>& li, bool once);
+        void        doSearchChildren(const Exp &search, std::list<Exp**>& li, bool once);
 
         // Do the work of simplifying this expression
 virtual Exp*        polySimplify(bool& bMod);
@@ -607,7 +607,7 @@ virtual Exp *       match(Exp *pattern);
 virtual bool        match(const std::string &pattern, std::map<std::string, Exp*> &bindings);
 
         // Search children
-        void        doSearchChildren(const Exp *search, std::list<Exp**>& li, bool once);
+        void        doSearchChildren(const Exp &search, std::list<Exp**>& li, bool once);
 
         // Do the work of simplifying this expression
 virtual Exp*        polySimplify(bool& bMod);
@@ -676,7 +676,7 @@ virtual void         printx(int ind) const;
         Exp*&        refSubExp3();
 
         // Search children
-        void        doSearchChildren(const Exp *search, std::list<Exp**>& li, bool once);
+        void        doSearchChildren(const Exp &search, std::list<Exp**>& li, bool once);
 
 virtual Exp*        polySimplify(bool& bMod);
         Exp*        simplifyArith();

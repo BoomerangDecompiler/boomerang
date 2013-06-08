@@ -300,9 +300,9 @@ void RTLInstDict::fixupParamsSub( std::string s, std::list<std::string>& funcPar
             /* Rename so all the parameter names match */
             std::list<std::string>::iterator i,j;
             for( i = funcParams.begin(), j = sub.funcParams.begin(); i != funcParams.end(); i++, j++ ) {
-                Exp* match = Location::param(j->c_str());
+                Location param(opParam,Const::get(j->c_str()),nullptr); // Location::param(j->c_str())
                 Exp* replace = Location::param(i->c_str());
-                sub.asgn->searchAndReplace( match, replace );
+                sub.asgn->searchAndReplace(param, replace );
             }
             sub.funcParams = funcParams;
         }
@@ -410,7 +410,7 @@ std::list<Statement*>* RTLInstDict::instantiateRTL(RTL& rtl, ADDRESS natPC, std:
         std::vector<Exp*>::const_iterator actual = actuals.begin();
         for (; param != params.end(); param++, actual++) {
             /* Simple parameter - just construct the formal to search for */
-            Exp* formal = Location::param(param->c_str());
+            Location formal(opParam, Const::get(param->c_str()),nullptr); //Location::param(param->c_str());
             ss->searchAndReplace(formal, *actual);
             //delete formal;
         }
@@ -550,8 +550,8 @@ void RTLInstDict::transformPostVars(std::list<Statement *> &rts, bool optimise) 
                     break;
                 }
                 std::list<Exp*> res1, res2;
-                s->searchAll( sr->second.base, res1 );
-                s->searchAll( sr->second.post, res2 );
+                s->searchAll( *sr->second.base, res1 );
+                s->searchAll( *sr->second.post, res2 );
                 // Each match of a post will also match the base.
                 // But if there is a bare (non-post) use of the base, there will be a result in res1 that is not in res2
                 if (res1.size() > res2.size())
@@ -564,9 +564,9 @@ void RTLInstDict::transformPostVars(std::list<Statement *> &rts, bool optimise) 
     for ( Statement * rt : rts) {
         for (std::map<Exp*,transPost,lessExpStar>::iterator sr = vars.begin(); sr != vars.end(); sr++ ) {
             if( sr->second.used ) {
-                rt->searchAndReplace(sr->first, sr->second.tmp);
+                rt->searchAndReplace(*sr->first, sr->second.tmp);
             } else {
-                rt->searchAndReplace(sr->first, sr->second.base);
+                rt->searchAndReplace(*sr->first, sr->second.base);
             }
         }
     }

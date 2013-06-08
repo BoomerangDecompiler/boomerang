@@ -469,7 +469,8 @@ void LocationSet::addSubscript(Statement* d /* , Cfg* cfg */) {
 // Substitute s into all members of the set
 void LocationSet::substitute(Assign& a) {
     Exp* lhs = a.getLeft();
-    if (lhs == nullptr) return;
+    if (lhs == nullptr)
+        return;
     Exp* rhs = a.getRight();
     if (rhs == nullptr) return;        // ? Will this ever happen?
     std::set<Exp*, lessExpStar>::iterator it;
@@ -483,13 +484,13 @@ void LocationSet::substitute(Assign& a) {
     for (it = lset.begin(); it != lset.end(); it++) {
         Exp* loc = *it;
         Exp* replace;
-        if (loc->search(lhs, replace)) {
+        if (loc->search(*lhs, replace)) {
             if (rhs->isTerminal()) {
                 // This is no longer a location of interest (e.g. %pc)
                 removeSet.insert(loc);
                 continue;
             }
-            loc = loc->clone()->searchReplaceAll(lhs, rhs, change);
+            loc = loc->clone()->searchReplaceAll(*lhs, rhs, change);
             if (change) {
                 loc = loc->simplifyArith();
                 loc = loc->simplify();
@@ -858,7 +859,7 @@ Exp *RangeMap::substInto(Exp *e, std::set<Exp*, lessExpStar> *only) {
             if(DEBUG_RANGE_ANALYSIS)
                 eold=e->clone();
             if ((*it).second.getLowerBound() == (*it).second.getUpperBound()) {
-                e = e->searchReplaceAll((*it).first, (Binary::get(opPlus, (*it).second.getBase(), new Const((*it).second.getLowerBound())))->simplify(), change);
+                e = e->searchReplaceAll(*(*it).first, (Binary::get(opPlus, (*it).second.getBase(), new Const((*it).second.getLowerBound())))->simplify(), change);
             }
             if (change) {
                 e = e->simplify()->simplifyArith();

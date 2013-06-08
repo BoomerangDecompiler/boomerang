@@ -2352,7 +2352,7 @@ bool BasicBlock::undoComputedBB(Statement* stmt) {
  *                 appended to it
  * \returns true if there were any matches
  ******************************************************************************/
-bool BasicBlock::searchAll(Exp *search_for, std::list<Exp *> &results) {
+bool BasicBlock::searchAll(const Exp &search_for, std::list<Exp *> &results) {
     bool ch=false;
     for (RTL * rtl_it : *m_pRtls) {
         for (Statement * e : *rtl_it) {
@@ -2372,7 +2372,7 @@ bool BasicBlock::searchAll(Exp *search_for, std::list<Exp *> &results) {
  * \param replace the expression with which to replace it
  * \returns true if replacement took place
  ******************************************************************************/
-bool BasicBlock::searchAndReplace(Exp* search, Exp* replace) {
+bool BasicBlock::searchAndReplace(const Exp & search, Exp* replace) {
     bool ch = false;
 
     for (RTL * rtl_it : *m_pRtls) {

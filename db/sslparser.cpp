@@ -3086,13 +3086,11 @@ Exp* listStrToExp(std::list<std::string>* ls) {
     return e;
 }
 
-static Exp* srchExpr = Binary::get(opExpTable,
-                                  new Terminal(opWild),
-                                  new Terminal(opWild));
-static Exp* srchOp = new Ternary(opOpTable,
-                                 new Terminal(opWild),
-                                 new Terminal(opWild),
-                                 new Terminal(opWild));
+static Binary srchExpr(opExpTable, Terminal::get(opWild), Terminal::get(opWild));
+static Ternary srchOp(opOpTable,
+                                 Terminal::get(opWild),
+                                 Terminal::get(opWild),
+                                 Terminal::get(opWild));
 void init_sslparser() {
 #ifndef NO_GARBAGE_COLLECTOR
     static Exp** gc_pointers = (Exp**) GC_MALLOC_UNCOLLECTABLE(2 * sizeof(Exp*));
@@ -3130,7 +3128,7 @@ void SSLParser::expandTables(InsNameElem* iname, std::list<std::string>* params,
                     const char* tbl = ((Const*)((Binary*)*it)->getSubExp1())->getStr();
                     const char* idx = ((Const*)((Binary*)*it)->getSubExp2())->getStr();
                     Exp* repl =((ExprTable*)(TableDict[tbl]))->expressions[indexrefmap[idx]->getvalue()];
-                    s->searchAndReplace(*it, repl);
+                    s->searchAndReplace(**it, repl);
                 }
             }
             // Operator tables
@@ -3154,9 +3152,8 @@ void SSLParser::expandTables(InsNameElem* iname, std::list<std::string>* params,
                 assert(b->getOper() == opList);
                 e2 = ((Binary*)e2)->getSubExp1();
                 const char* ops = ((OpTable*)(TableDict[tbl]))->records[indexrefmap[idx]->getvalue()].c_str();
-                Exp* repl = Binary::get(strToOper(ops), e1->clone(),
-                                       e2->clone());                    // FIXME!
-                s->searchAndReplace(res, repl);
+                Exp* repl = Binary::get(strToOper(ops), e1->clone(), e2->clone());                    // FIXME!
+                s->searchAndReplace(*res, repl);
             }
         }
 

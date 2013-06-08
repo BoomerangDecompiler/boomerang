@@ -1139,13 +1139,13 @@ Cfg::sCallStatement & Cfg::getCalls() {
  * \param search a location to search for
  * \param replace the expression with which to replace it
  ******************************************************************************/
-void Cfg::searchAndReplace(Exp* search, Exp* replace) {
+void Cfg::searchAndReplace(const Exp & search, Exp* replace) {
     for (BasicBlock *bb : m_listBB) {
         bb->searchAndReplace(search,replace);
     }
 }
 
-bool Cfg::searchAll(Exp *search, std::list<Exp*> &result) {
+bool Cfg::searchAll(const Exp &search, std::list<Exp*> &result) {
     bool ch = false;
     for (BasicBlock *bb : m_listBB) {
         ch |= bb->searchAll(search,result);

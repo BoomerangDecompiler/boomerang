@@ -1528,19 +1528,19 @@ bool Location::match(const std::string &pattern, std::map<std::string, Exp*> &bi
 /***************************************************************************//**
  *
  * \brief        Search for the given subexpression
- * NOTE:            Caller must free the list li after use, but not the Exp objects that they point to
- * NOTE:            If the top level expression matches, li will contain search
- * NOTE:            Now a static function. Searches pSrc, not this
- * PARAMETERS:        search: ptr to Exp we are searching for
+ * \note            Caller must free the list li after use, but not the Exp objects that they point to
+ * \note            If the top level expression matches, li will contain search
+ * \note            Now a static function. Searches pSrc, not this
+ * \PARAMETERS:        search: ptr to Exp we are searching for
  *                    pSrc: ref to ptr to Exp to search. Reason is that we can then overwrite that pointer
  *                    to effect a replacement. So we need to append &pSrc in the list. Can't append &this!
  *                    li: list of Exp** where pointers to the matches are found once: true if not all occurrences to be
  *                      found, false for all
  *
  ******************************************************************************/
-void Exp::doSearch(const Exp* search, Exp*& pSrc, std::list<Exp**>& li, bool once) {
+void Exp::doSearch(const Exp& search, Exp*& pSrc, std::list<Exp**>& li, bool once) {
     bool compare;
-    compare = (*search == *pSrc);
+    compare = (search == *pSrc);
     if (compare) {
         li.push_back(&pSrc);                // Success
         if (once)
@@ -1562,20 +1562,20 @@ void Exp::doSearch(const Exp* search, Exp*& pSrc, std::list<Exp**>& li, bool onc
  *                    once: true if not all occurrences to be found, false for all
  *
  ******************************************************************************/
-void Exp::doSearchChildren(const Exp* search, std::list<Exp**>& li, bool once) {
+void Exp::doSearchChildren(const Exp& search, std::list<Exp**>& li, bool once) {
     return;            // Const and Terminal do not override this
 }
-void Unary::doSearchChildren(const Exp* search, std::list<Exp**>& li, bool once) {
+void Unary::doSearchChildren(const Exp& search, std::list<Exp**>& li, bool once) {
     if (op != opInitValueOf)        // don't search child
         doSearch(search, subExp1, li, once);
 }
-void Binary::doSearchChildren(const Exp* search, std::list<Exp**>& li, bool once) {
+void Binary::doSearchChildren(const Exp& search, std::list<Exp**>& li, bool once) {
     assert(subExp1 && subExp2);
     doSearch(search, subExp1, li, once);
     if (once && li.size()) return;
     doSearch(search, subExp2, li, once);
 }
-void Ternary::doSearchChildren(const Exp* search, std::list<Exp**>& li, bool once) {
+void Ternary::doSearchChildren(const Exp& search, std::list<Exp**>& li, bool once) {
     doSearch(search, subExp1, li, once);
     if (once && li.size()) return;
     doSearch(search, subExp2, li, once);
@@ -1588,12 +1588,13 @@ void Ternary::doSearchChildren(const Exp* search, std::list<Exp**>& li, bool onc
  *
  * \brief   Search for the given subexpression, and replace if found
  * \note    If the top level expression matches, return val != this
- * \param       search - ptr to Exp we are searching for
+ * \param       search - reference to Exp we are searching for
  * \param       replace - ptr to Exp to replace it with
  * \param       change - ref to boolean, set true if a change made (else cleared)
  * \returns            True if a change made
  ******************************************************************************/
-Exp* Exp::searchReplace(Exp* search, Exp* replace, bool& change) {
+Exp* Exp::searchReplace(const Exp& search, Exp* replace, bool& change) {
+
     return searchReplaceAll(search, replace, change, true);
 }
 
@@ -1604,13 +1605,18 @@ Exp* Exp::searchReplace(Exp* search, Exp* replace, bool& change) {
  * \note    It is possible with wildcards that in very unusual circumstances a replacement will be made to
  *              something that is already deleted.
  * \note    Replacements are cloned. Caller to delete search and replace
- * \param   search     ptr to ptr to Exp we are searching for
+ * \param   search     reference to Exp we are searching for
  * \param   replace ptr to Exp to replace it with
  * \param   change set true if a change made; cleared otherwise
  * \note    \a change is ALWAYS assigned. No need to clear beforehand.
  * \returns the result (often this, but possibly changed)
  ******************************************************************************/
-Exp* Exp::searchReplaceAll(const Exp* search, Exp* replace, bool& change, bool once /* = false */ ) {
+Exp* Exp::searchReplaceAll(const Exp& search, Exp* replace, bool& change, bool once /* = false */ ) {
+    // TODO: consider working on base object, and only in case when we find the search, use clone call to return the
+    // new object ?
+    if(this==&search) // WAT ?
+        return replace->clone();
+    assert(this!=&search);
     std::list<Exp**> li;
     Exp* top = this;        // top may change; that's why we have to return it
     doSearch(search, top, li, false);
@@ -1637,7 +1643,7 @@ Exp* Exp::searchReplaceAll(const Exp* search, Exp* replace, bool& change, bool o
  * \param   result     ref to ptr to Exp that matched
  * \returns            True if a match was found
  ******************************************************************************/
-bool Exp::search(Exp* search, Exp*& result) {
+bool Exp::search(const Exp& search, Exp*& result) {
     std::list<Exp**> li;
     result = 0;                // In case it fails; don't leave it unassigned
     // The search requires a reference to a pointer to this object.
@@ -1659,7 +1665,7 @@ bool Exp::search(Exp* search, Exp*& result) {
  * \param   result  ref to list of Exp that matched
  * \returns            True if a match was found
  ******************************************************************************/
-bool Exp::searchAll(const Exp* search, std::list<Exp*>& result)
+bool Exp::searchAll(const Exp& search, std::list<Exp*>& result)
 {
     std::list<Exp**> li;
     //result.clear();    // No! Useful when searching for more than one thing
@@ -3061,9 +3067,9 @@ std::ostream& operator<<(std::ostream& os, const Exp* p) {
 Exp* Exp::fixSuccessor() {
     bool change;
     Exp* result;
+    UniqExp search_expression( Unary::get(opSuccessor,Location::regOf(Terminal::get(opWild))));
     // Assume only one successor function in any 1 expression
-    if (search(new Unary(opSuccessor,
-                         Location::regOf(new Terminal(opWild))), result)) {
+    if (search(*search_expression, result)) {
         // Result has the matching expression, i.e. succ(r[K])
         Exp* sub1 = ((Unary*)result)->getSubExp1();
         assert(sub1->getOper() == opRegOf);
@@ -3076,7 +3082,7 @@ Exp* Exp::fixSuccessor() {
         Unary* replace = (Unary*)sub1->clone();
         Const* c = (Const*)replace->getSubExp1();
         c->setInt(c->getInt()+1);        // Do the increment
-        Exp* res = searchReplace(result, replace, change);
+        Exp* res = searchReplace(*result, replace, change);
         return res;
     }
     return this;
@@ -3096,8 +3102,8 @@ Exp* Exp::killFill() {
                          new Terminal(opWild));
     Exp* res = this;
     std::list<Exp**> result;
-    doSearch(&srch1, res, result, false);
-    doSearch(&srch2, res, result, false);
+    doSearch(srch1, res, result, false);
+    doSearch(srch2, res, result, false);
     std::list<Exp**>::iterator it;
     for (it = result.begin(); it != result.end(); it++) {
         // Kill the sign extend bits
@@ -3129,7 +3135,7 @@ Exp *Exp::removeSubscripts(bool& allZero) {
                 allZero = false;
             }
             bool change;
-            e = e->searchReplaceAll(*xx, r1->getSubExp1()/*->clone()*/, change);
+            e = e->searchReplaceAll(**xx, r1->getSubExp1()/*->clone()*/, change); //TODO: what happens when clone is restored here ?
         }
     }
     return e;

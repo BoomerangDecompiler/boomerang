@@ -410,7 +410,7 @@ typedef std::map<Statement*, int> RefCounter;
         void                getStatements(StatementList &stmts) const;
 virtual void                removeReturn(Exp *e);
         void                removeStatement(Statement *stmt);
-        bool                searchAll(Exp* search, std::list<Exp*> &result);
+        bool                searchAll(const Exp &search, std::list<Exp*> &result);
 
         void                getDefinitions(LocationSet &defs);
         void                addImplicitAssigns();
@@ -475,7 +475,7 @@ virtual void                printCallGraphXML(std::ostream &os, int depth, bool 
         void                printXML();
         void                printUseGraph();
 
-        bool                searchAndReplace(Exp *search, Exp *replace);
+        bool                searchAndReplace(const Exp &search, Exp *replace);
         void                castConst(int num, Type* ty);
                             /// Add a location to the UseCollector; this means this location is used before defined,
                             /// and hence is an *initial* parameter.

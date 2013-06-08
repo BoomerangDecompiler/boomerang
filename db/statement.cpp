@@ -192,6 +192,8 @@ void Statement::rangeAnalysis(std::list<Statement*> &execution_paths) {
 }
 
 void Assign::rangeAnalysis(std::list<Statement*> &execution_paths) {
+    static Unary search_term(opTemp, Terminal::get(opWild));
+    static Unary search_regof(opRegOf,Terminal::get(opWild));
     RangeMap output = getInputRanges();
     Exp *a_lhs = lhs->clone();
     if (a_lhs->isFlags()) {
@@ -262,8 +264,7 @@ void Assign::rangeAnalysis(std::list<Statement*> &execution_paths) {
                 output.addRange(a_lhs, output.getRange(a_rhs));
             } else {
                 Exp *result;
-                if (a_rhs->getMemDepth() == 0 && !a_rhs->search(new Unary(opRegOf, new Terminal(opWild)), result) &&
-                        !a_rhs->search(new Unary(opTemp, new Terminal(opWild)), result)) {
+                if (a_rhs->getMemDepth() == 0 && !a_rhs->search(search_regof, result) && !a_rhs->search(search_term, result)) {
                     if (a_rhs->isIntConst()) {
                         Range ra(1, ((Const*)a_rhs)->getInt(), ((Const*)a_rhs)->getInt(), new Const(0));
                         output.addRange(a_lhs, ra);
@@ -279,11 +280,11 @@ void Assign::rangeAnalysis(std::list<Statement*> &execution_paths) {
             }
         }
     }
-    if (VERBOSE && DEBUG_RANGE_ANALYSIS)
-        LOG << "added " << a_lhs << " -> " << output.getRange(a_lhs) << "\n";
+    if (DEBUG_RANGE_ANALYSIS)
+        LOG_VERBOSE(1) << "added " << a_lhs << " -> " << output.getRange(a_lhs) << "\n";
     updateRanges(output, execution_paths);
-    if (VERBOSE && DEBUG_RANGE_ANALYSIS)
-        LOG << this << "\n";
+    if (DEBUG_RANGE_ANALYSIS)
+        LOG_VERBOSE(1) << this << "\n";
 }
 
 void BranchStatement::limitOutputWithCondition(RangeMap &output, Exp *e) {
@@ -896,7 +897,7 @@ bool Statement::replaceRef(Exp* e, Assign *def, bool& convert) {
             Exp* relExp = Binary::get(opLessUns,
                                      ((Binary*)rhs)->getSubExp2()->getSubExp1(),
                                      ((Binary*)rhs)->getSubExp2()->getSubExp2()->getSubExp1());
-            searchAndReplace(new RefExp(new Terminal(opCF), def), relExp, true);
+            searchAndReplace(RefExp(Terminal::get(opCF), def), relExp, true);
             return true;
         }
     }
@@ -910,7 +911,7 @@ bool Statement::replaceRef(Exp* e, Assign *def, bool& convert) {
             Exp* relExp = Binary::get(opEquals,
                                      ((Binary*)rhs)->getSubExp2()->getSubExp2()->getSubExp2()->getSubExp1(),
                                      new Const(0));
-            searchAndReplace(new RefExp(new Terminal(opZF), def), relExp, true);
+            searchAndReplace(RefExp(Terminal::get(opZF), def), relExp, true);
             return true;
         }
     }
@@ -918,7 +919,7 @@ bool Statement::replaceRef(Exp* e, Assign *def, bool& convert) {
 
     // do the replacement
     //bool convert = doReplaceRef(re, rhs);
-    bool ret = searchAndReplace(e, rhs, true);        // Last parameter true to change collectors
+    bool ret = searchAndReplace(*e, rhs, true);        // Last parameter true to change collectors
     // assert(ret);
 
     if (ret && isCall()) {
@@ -1048,7 +1049,7 @@ void GotoStatement::adjustFixedDest(int delta) {
     constDest()->setAddr(dest + delta);
 }
 
-bool GotoStatement::search(Exp* search, Exp*& result) {
+bool GotoStatement::search(const Exp& search, Exp*& result) {
     result = nullptr;
     if (pDest)
         return pDest->search(search, result);
@@ -1063,7 +1064,7 @@ bool GotoStatement::search(Exp* search, Exp*& result) {
  *                    cc - ignored
  * \returns             True if any change
  ******************************************************************************/
-bool GotoStatement::searchAndReplace(const Exp *search, Exp* replace, bool cc) {
+bool GotoStatement::searchAndReplace(const Exp &search, Exp* replace, bool cc) {
     bool change = false;
     if (pDest) {
         pDest = pDest->searchReplaceAll(search, replace, change);
@@ -1079,7 +1080,7 @@ bool GotoStatement::searchAndReplace(const Exp *search, Exp* replace, bool cc) {
  *                             appended to it
  * \returns             true if there were any matches
  ******************************************************************************/
-bool GotoStatement::searchAll(const Exp* search, std::list<Exp*> &result) {
+bool GotoStatement::searchAll(const Exp &search, std::list<Exp*> &result) {
     if (pDest)
         return pDest->searchAll(search, result);
     return false;
@@ -1370,8 +1371,9 @@ void BranchStatement::setTakenBB(BasicBlock * bb) {
     }
 }
 
-bool BranchStatement::search(Exp* search, Exp*& result) {
-    if (pCond) return pCond->search(search, result);
+bool BranchStatement::search(const Exp &search, Exp*& result) {
+    if (pCond)
+        return pCond->search(search, result);
     result = nullptr;
     return false;
 }
@@ -1384,7 +1386,7 @@ bool BranchStatement::search(Exp* search, Exp*& result) {
  *                    cc - ignored
  * \returns             True if any change
  ******************************************************************************/
-bool BranchStatement::searchAndReplace(const Exp *search, Exp* replace, bool cc) {
+bool BranchStatement::searchAndReplace(const Exp &search, Exp* replace, bool cc) {
     GotoStatement::searchAndReplace(search, replace, cc);
     bool change = false;
     if (pCond)
@@ -1399,7 +1401,7 @@ bool BranchStatement::searchAndReplace(const Exp *search, Exp* replace, bool cc)
  *          appended to it
  * \returns true if there were any matches
  ******************************************************************************/
-bool BranchStatement::searchAll(const Exp* search, std::list<Exp*> &result) {
+bool BranchStatement::searchAll(const Exp &search, std::list<Exp*> &result) {
     if (pCond)
         return pCond->searchAll(search, result);
     return false;
@@ -1487,7 +1489,7 @@ void BranchStatement::generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) 
     // dont generate any code for jconds, they will be handled by the bb
 }
 
-bool BranchStatement::usesExp(Exp *e) {
+bool BranchStatement::usesExp(const Exp &e) {
     Exp *tmp;
     return pCond && pCond->search(e, tmp);
 }
@@ -1806,7 +1808,7 @@ void CaseStatement::setSwitchInfo(SWITCH_INFO* psi) {
  *                    cc - ignored
  * \returns             True if any change
  ******************************************************************************/
-bool CaseStatement::searchAndReplace(const Exp *search, Exp* replace, bool cc) {
+bool CaseStatement::searchAndReplace(const Exp &search, Exp* replace, bool cc) {
     bool ch = GotoStatement::searchAndReplace(search, replace, cc);
     bool ch2 = false;
     if (pSwitchInfo && pSwitchInfo->pSwitchVar)
@@ -1822,7 +1824,7 @@ bool CaseStatement::searchAndReplace(const Exp *search, Exp* replace, bool cc) {
  * NOTES:            search can't easily be made const
  * \returns             true if there were any matches
  ******************************************************************************/
-bool CaseStatement::searchAll(const Exp* search, std::list<Exp*> &result) {
+bool CaseStatement::searchAll(const Exp &search, std::list<Exp*> &result) {
     return GotoStatement::searchAll(search, result) ||
             ( pSwitchInfo && pSwitchInfo->pSwitchVar && pSwitchInfo->pSwitchVar->searchAll(search, result) );
 }
@@ -1882,13 +1884,13 @@ void CaseStatement::generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) {
     // dont generate any code for switches, they will be handled by the bb
 }
 
-bool CaseStatement::usesExp(Exp *e) {
+bool CaseStatement::usesExp(const Exp &e) {
     // Before a switch statement is recognised, pDest is non null
     if (pDest)
-        return *pDest == *e;
+        return *pDest == e;
     // After a switch statement is recognised, pDest is null, and pSwitchInfo->pSwitchVar takes over
     if (pSwitchInfo->pSwitchVar)
-        return *pSwitchInfo->pSwitchVar == *e;
+        return *pSwitchInfo->pSwitchVar == e;
     return false;
 }
 
@@ -2035,9 +2037,10 @@ void CallStatement::setSigArguments() {
     // FIXME: anything needed here?
 }
 
-bool CallStatement::search(Exp* search, Exp*& result) {
+bool CallStatement::search(const Exp &search, Exp*& result) {
     bool found = GotoStatement::search(search, result);
-    if (found) return true;
+    if (found)
+        return true;
     StatementList::iterator ss;
     for (ss = defines.begin(); ss != defines.end(); ++ss) {
         if ((*ss)->search(search, result))
@@ -2058,7 +2061,7 @@ bool CallStatement::search(Exp* search, Exp*& result) {
  *                    cc - true to replace in collectors
  * \returns             True if any change
  ******************************************************************************/
-bool CallStatement::searchAndReplace(const Exp *search, Exp* replace, bool cc) {
+bool CallStatement::searchAndReplace(const Exp &search, Exp* replace, bool cc) {
     bool change = GotoStatement::searchAndReplace(search, replace, cc);
     StatementList::iterator ss;
     // FIXME: MVE: Check if we ever want to change the LHS of arguments or defines...
@@ -2081,7 +2084,7 @@ bool CallStatement::searchAndReplace(const Exp *search, Exp* replace, bool cc) {
  *                    result - a list which will have any matching exprs appended to it
  * \returns             true if there were any matches
  ******************************************************************************/
-bool CallStatement::searchAll(const Exp* search, std::list<Exp *>& result) {
+bool CallStatement::searchAll(const Exp &search, std::list<Exp *>& result) {
     bool found = GotoStatement::searchAll(search, result);
     StatementList::iterator ss;
     for (ss = defines.begin(); ss != defines.end(); ++ss) {
@@ -2300,12 +2303,12 @@ void CallStatement::simplify() {
         (*ss)->simplify();
 }
 
-bool GotoStatement::usesExp(Exp* e) {
+bool GotoStatement::usesExp(const Exp& e) {
     Exp* where;
     return (pDest->search(e, where));
 }
 
-bool CallStatement::usesExp(Exp *e) {
+bool CallStatement::usesExp(const Exp &e) {
     if (GotoStatement::usesExp(e)) return true;
     StatementList::iterator ss;
     for (ss = arguments.begin(); ss != arguments.end(); ++ss)
@@ -2875,7 +2878,7 @@ void ReturnStatement::addReturn(Assignment* a) {
 }
 
 
-bool ReturnStatement::search(Exp* search, Exp*& result) {
+bool ReturnStatement::search(const Exp &search, Exp*& result) {
     result = nullptr;
     ReturnStatement::iterator rr;
     for (rr = begin(); rr != end(); ++rr) {
@@ -2885,7 +2888,7 @@ bool ReturnStatement::search(Exp* search, Exp*& result) {
     return false;
 }
 
-bool ReturnStatement::searchAndReplace(const Exp *search, Exp* replace, bool cc) {
+bool ReturnStatement::searchAndReplace(const Exp &search, Exp* replace, bool cc) {
     bool change = false;
     ReturnStatement::iterator rr;
     for (rr = begin(); rr != end(); ++rr)
@@ -2898,7 +2901,7 @@ bool ReturnStatement::searchAndReplace(const Exp *search, Exp* replace, bool cc)
     return change;
 }
 
-bool ReturnStatement::searchAll(const Exp* search, std::list<Exp *>& result) {
+bool ReturnStatement::searchAll(const Exp &search, std::list<Exp *>& result) {
     bool found = false;
     ReturnStatement::iterator rr;
     for (rr = begin(); rr != end(); ++rr) {
@@ -2914,7 +2917,7 @@ bool CallStatement::isDefinition() {
     return defs.size() != 0;
 }
 
-bool ReturnStatement::usesExp(Exp *e) {
+bool ReturnStatement::usesExp(const Exp &e) {
     Exp *where;
     ReturnStatement::iterator rr;
     for (rr = begin(); rr != end(); ++rr) {
@@ -3079,21 +3082,21 @@ void BoolAssign::getDefinitions(LocationSet &defs) {
     defs.insert(getLeft());
 }
 
-bool BoolAssign::usesExp(Exp *e) {
+bool BoolAssign::usesExp(const Exp &e) {
     assert(lhs && pCond);
     Exp *where = 0;
     return (pCond->search(e, where) || (lhs->isMemOf() &&
-                                        ((Unary*)lhs)->getSubExp1()->search(e, where)));
+                                        lhs->getSubExp1()->search(e, where)));
 }
 
-bool BoolAssign::search(Exp *search, Exp *&result) {
+bool BoolAssign::search(const Exp &search, Exp *&result) {
     assert(lhs);
     if (lhs->search(search, result)) return true;
     assert(pCond);
     return pCond->search(search, result);
 }
 
-bool BoolAssign::searchAll(const Exp* search, std::list<Exp*>& result) {
+bool BoolAssign::searchAll(const Exp &search, std::list<Exp*>& result) {
     bool ch = false;
     assert(lhs);
     if (lhs->searchAll(search, result)) ch = true;
@@ -3101,7 +3104,7 @@ bool BoolAssign::searchAll(const Exp* search, std::list<Exp*>& result) {
     return pCond->searchAll(search, result) || ch;
 }
 
-bool BoolAssign::searchAndReplace(const Exp *search, Exp *replace, bool cc) {
+bool BoolAssign::searchAndReplace(const Exp &search, Exp *replace, bool cc) {
     bool chl, chr;
     assert(pCond);
     assert(lhs);
@@ -3386,12 +3389,12 @@ void Assignment::getDefinitions(LocationSet &defs) {
     }
 }
 
-bool Assign::search(Exp* search, Exp*& result) {
+bool Assign::search(const Exp &search, Exp*& result) {
     if (lhs->search(search, result))
         return true;
     return rhs->search(search, result);
 }
-bool PhiAssign::search(Exp* search, Exp*& result) {
+bool PhiAssign::search(const Exp &search, Exp*& result) {
     if (lhs->search(search, result))
         return true;
     iterator it;
@@ -3404,11 +3407,11 @@ bool PhiAssign::search(Exp* search, Exp*& result) {
     }
     return false;
 }
-bool ImplicitAssign::search(Exp* search, Exp*& result) {
+bool ImplicitAssign::search(const Exp &search, Exp*& result) {
     return lhs->search(search, result);
 }
 
-bool Assign::searchAll(const Exp* search, std::list<Exp*>& result) {
+bool Assign::searchAll(const Exp &search, std::list<Exp*>& result) {
     bool res;
     std::list<Exp*> leftResult;
     std::list<Exp*>::iterator it;
@@ -3420,14 +3423,14 @@ bool Assign::searchAll(const Exp* search, std::list<Exp*>& result) {
     return res;
 }
 // FIXME: is this the right semantics for searching a phi statement, disregarding the RHS?
-bool PhiAssign::searchAll(const Exp* search, std::list<Exp*>& result) {
+bool PhiAssign::searchAll(const Exp &search, std::list<Exp*>& result) {
     return lhs->searchAll(search, result);
 }
-bool ImplicitAssign::searchAll(const Exp* search, std::list<Exp*>& result) {
+bool ImplicitAssign::searchAll(const Exp &search, std::list<Exp*>& result) {
     return lhs->searchAll(search, result);
 }
 
-bool Assign::searchAndReplace(const Exp *search, Exp* replace, bool cc) {
+bool Assign::searchAndReplace(const Exp &search, Exp* replace, bool cc) {
     bool chl, chr, chg = false;
     lhs = lhs->searchReplaceAll(search, replace, chl);
     rhs = rhs->searchReplaceAll(search, replace, chr);
@@ -3435,7 +3438,7 @@ bool Assign::searchAndReplace(const Exp *search, Exp* replace, bool cc) {
         guard = guard->searchReplaceAll(search, replace, chg);
     return chl | chr | chg;
 }
-bool PhiAssign::searchAndReplace(const Exp *search, Exp* replace, bool cc) {
+bool PhiAssign::searchAndReplace(const Exp &search, Exp* replace, bool cc) {
     bool change;
     lhs = lhs->searchReplaceAll(search, replace, change);
     iterator it;
@@ -3448,7 +3451,7 @@ bool PhiAssign::searchAndReplace(const Exp *search, Exp* replace, bool cc) {
     }
     return change;
 }
-bool ImplicitAssign::searchAndReplace(const Exp *search, Exp* replace, bool cc) {
+bool ImplicitAssign::searchAndReplace(const Exp &search, Exp* replace, bool cc) {
     bool change;
     lhs = lhs->searchReplaceAll(search, replace, change);
     return change;
@@ -3467,12 +3470,12 @@ int Assign::getMemDepth() {
 }
 
 // PhiExp and ImplicitExp:
-bool Assignment::usesExp(Exp* e) {
+bool Assignment::usesExp(const Exp &e) {
     Exp *where = 0;
     return (lhs->isMemOf() || lhs->isRegOf()) && ((Unary*)lhs)->getSubExp1()->search(e, where);
 }
 
-bool Assign::usesExp(Exp *e) {
+bool Assign::usesExp(const Exp &e) {
     Exp *where = 0;
     return (rhs->search(e, where) || ((lhs->isMemOf() || lhs->isRegOf()) &&
                                       ((Unary*)lhs)->getSubExp1()->search(e, where)));
@@ -4914,9 +4917,9 @@ Exp* CallStatement::bypassRef(RefExp* r, bool& ch) {
     Exp* to = localiseExp(base);                        // e.g. r28{17}
     assert(to);
     proven = proven->clone();                            // Don't modify the expressions in destProc->proven!
-    proven = proven->searchReplaceAll(base, to, ch);    // e.g. r28{17} + 4
-    if (ch && VERBOSE)
-        LOG << "bypassRef() replacing " << r << " with " << proven << "\n";
+    proven = proven->searchReplaceAll(*base, to, ch);    // e.g. r28{17} + 4
+    if (ch)
+        LOG_VERBOSE(1) << "bypassRef() replacing " << r << " with " << proven << "\n";
     return proven;
 }
 
@@ -4980,14 +4983,14 @@ bool    ImpRefStatement::accept(StmtPartModifier* v) {
         LOG << "ImplicitRef changed: now " << this << "\n";
     return true;
 }
-bool    ImpRefStatement::search(Exp* search, Exp*& result) {
+bool    ImpRefStatement::search(const Exp &search, Exp*& result) {
     result = nullptr;
     return addressExp->search(search, result);
 }
-bool    ImpRefStatement::searchAll(const Exp* search, std::list<Exp*, std::allocator<Exp*> >& result) {
+bool    ImpRefStatement::searchAll(const Exp &search, std::list<Exp*, std::allocator<Exp*> >& result) {
     return addressExp->searchAll(search, result);
 }
-bool    ImpRefStatement::searchAndReplace(const Exp *search, Exp* replace, bool cc) {
+bool    ImpRefStatement::searchAndReplace(const Exp &search, Exp* replace, bool cc) {
     bool change;
     addressExp = addressExp->searchReplaceAll(search, replace, change);
     return change;

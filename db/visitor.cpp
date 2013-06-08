@@ -716,7 +716,7 @@ Exp* ExpPropagator::postVisit(RefExp* e) {
         Exp* lhs = ((Assign*)def)->getLeft();
         Exp* rhs = ((Assign*)def)->getRight();
         bool ch;
-        res = e->searchReplaceAll(new RefExp(lhs, def), rhs->clone(), ch);
+        res = e->searchReplaceAll(RefExp(lhs, def), rhs->clone(), ch);
         if (ch) {
             change = true;                        // Record this change
             unchanged &= ~mask;                    // Been changed now (so simplify parent)
