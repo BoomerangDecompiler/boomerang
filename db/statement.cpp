@@ -1288,7 +1288,6 @@ void BranchStatement::makeSigned() {
 /***************************************************************************//**
  * FUNCTION:        BranchStatement::getCondExpr
  * \brief        Return the SemStr expression containing the HL condition.
- * PARAMETERS:        <none>
  * \returns             ptr to an expression
  ******************************************************************************/
 Exp* BranchStatement::getCondExpr() {

@@ -35,6 +35,7 @@
 #include <vector>
 #include <map>
 #include <set>
+#include <memory>
 #include <iosfwd>
 #include "type.h"
 //#include "exp.h"
@@ -52,6 +53,7 @@ class Proc;
 class XMLProgParser;
 class StmtVisitor;
 class Statement;
+
 enum STMT_KIND : uint8_t;
 
 /***************************************************************************//**
@@ -177,10 +179,10 @@ public:
 
         // Given an instruction name and list of actual parameters, return an instantiated RTL for the corresponding
         // instruction entry.
-        std::list<Statement*>* instantiateRTL(std::string& name, ADDRESS natPC, std::vector<Exp*>& actuals);
+        std::list<Statement*>* instantiateRTL(std::string& name, ADDRESS natPC, const std::vector<Exp*> &actuals);
         // As above, but takes an RTL & param list directly rather than doing a table lookup by name.
         std::list<Statement*>* instantiateRTL(RTL& rtls, ADDRESS natPC, std::list<std::string> &params,
-            std::vector<Exp*>& actuals);
+            const std::vector<Exp*> &actuals);
 
         void transformPostVars(std::list<Statement*> &rts, bool optimise);
 

@@ -366,7 +366,7 @@ bool RTLInstDict::partialType(Exp* exp, Type& ty) {
  * \param actuals - the actual values
  * \returns   the instantiated list of Exps
  ******************************************************************************/
-std::list<Statement*>* RTLInstDict::instantiateRTL(std::string& name, ADDRESS natPC, std::vector<Exp*>& actuals) {
+std::list<Statement*>* RTLInstDict::instantiateRTL(std::string& name, ADDRESS natPC, const std::vector<Exp*>& actuals) {
     // If -f is in force, use the fast (but not as precise) name instead
     const std::string* lname = &name;
     // FIXME: settings
@@ -395,7 +395,7 @@ std::list<Statement*>* RTLInstDict::instantiateRTL(std::string& name, ADDRESS na
  * \returns the instantiated list of Exps
  ******************************************************************************/
 std::list<Statement*>* RTLInstDict::instantiateRTL(RTL& rtl, ADDRESS natPC, std::list<std::string>& params,
-                                                   std::vector<Exp*>& actuals) {
+                                                   const std::vector<Exp*>& actuals) {
     assert(params.size() == actuals.size());
 
     // Get a deep copy of the template RTL

@@ -19,8 +19,7 @@
  * 05 Aug 04 - Mike: Removed the withUses/withDF parameter from print() funcs
  */
 
-#ifndef __EXP_H_
-#define __EXP_H_
+#pragma once
 
 /* Main class hierarchy:    Exp (abstract)
                       _____/ | \
@@ -38,13 +37,14 @@
 #include <list>
 #include <vector>
 #include <set>
-#include <assert.h>
+#include <cassert>
+#include <memory>
 #include "operator.h"    // Declares the OPER enum
 #include "types.h"        // For ADDRESS, etc
 #include "type.h"        // The Type class for typed expressions
 //#include "statement.h"    // For StmtSet etc
 #include "exphelp.h"
-#include "memo.h"
+//#include "memo.h"
 
 class UseSet;
 class DefSet;
@@ -59,7 +59,7 @@ class ExpModifier;
 class XMLProgParser;
 class Proc;
 class UserProc;
-
+class Exp;
 #define DEBUG_BUFSIZE    5000        // Size of the debug print buffer
 
 
@@ -96,7 +96,6 @@ virtual                ~Exp() {}
 
         // Print the expression to the given stream
 virtual void        print(std::ostream& os, bool html = false) const = 0;
-        // Print with <type>
         void        printt(std::ostream& os = std::cout) const;
         void        printAsHL(std::ostream& os = std::cout); // Print with v[5] as v5
         char*        prints();        // Print to string (for debugging and logging)
@@ -126,7 +125,7 @@ virtual bool        operator*=(Exp& o) = 0;
 
 // Return the number of subexpressions. This is only needed in rare cases.
 // Could use polymorphism for all those cases, but this is easier
-virtual int getArity() {return 0;}        // Overridden for Unary, Binary, etc
+virtual int getArity() const {return 0;}        // Overridden for Unary, Binary, etc
 
         //    //    //    //    //    //    //
         //     Enquiry functions    //
@@ -513,7 +512,7 @@ virtual bool        operator*=(Exp& o);
 virtual                ~Unary();
 
         // Arity
-virtual int            getArity() {return 1;}
+virtual int         getArity() const {return 1;}
 
         // Print
 virtual void        print(std::ostream& os, bool html = false) const;
@@ -583,7 +582,7 @@ virtual bool        operator*=(Exp& o);
 virtual                ~Binary();
 
         // Arity
-        int                getArity() {return 2;}
+        int         getArity() const {return 2;}
 
         // Print
 virtual void         print(std::ostream& os, bool html = false) const;
@@ -655,7 +654,7 @@ virtual bool         operator*=(Exp& o);
 virtual                ~Ternary();
 
         // Arity
-        int                getArity() {return 3;}
+        int                getArity() const {return 3;}
 
         // Print
 virtual void         print(std::ostream& os, bool html = false) const;
@@ -882,5 +881,3 @@ protected:
         friend class XMLProgParser;
                     Location(OPER op) : Unary(op), proc(nullptr) { }
 };    // class Location
-
-#endif // __EXP_H__
