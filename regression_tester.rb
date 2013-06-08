@@ -19,10 +19,9 @@ def perform_test(exepath,machine,test,args)
         test_file = File.join(TEST_INPUT,machine,test)
         log_name = File.join(output_path,test)
         joined_args = args.join(' ')
-        STDOUT << "Running command '#{exepath} -P #{Dir.pwd} -o #{output_path} #{joined_args} #{test_file}'\n"
         result = `#{exepath} -P #{Dir.pwd} -o #{output_path} #{joined_args} #{test_file} >#{log_name+".stdout"} 2>#{log_name+".stderr"}`
-        puts result
-        p $?
+	STDOUT << ($?.success?() ? '.' : '!')
+        return $?.success?
 end
 if(File.exists?(File.join(TESTS_DIR,"outputs_prev")))
     FileUtils.rm_r(File.join(TESTS_DIR,"outputs_prev"),{:force=>true,:secure=>true})
@@ -39,13 +38,20 @@ Dir.open(TEST_INPUT).each() {|f|
         next if not File::directory?(machine_dir)
         machine = f
         STDOUT << "Running tests for #{f}\n"
+        crashes = []
         Dir.open(machine_dir).each() {|test|
             next if test=="." or test==".."
             test_path = File.join(machine_dir,test)
             FileUtils.mkdir_p(File.join(TESTS_DIR,"outputs",machine,test))
-            perform_test(ARGV[0],machine,test,ARGV[1..-1])
+            if( not perform_test(ARGV[0],machine,test,ARGV[1..-1]))
+                crashes << test
+            end
             FileUtils.mv(File.join(TESTS_DIR,"outputs",machine,"log"),File.join(TESTS_DIR,"outputs",machine,test+".log"))
         }
+        puts "\nEncountered #{crashes.size} program failures for #{machine}\n"        
+	crashes.each {|test|
+		puts("Decompiler failed on #{machine}/#{test}\n")
+	}
 }
 #Dir.open(TESTS_DIR+"/inputs").each() {|f|
 #        next if f=="." or f==".."
