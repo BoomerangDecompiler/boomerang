@@ -59,7 +59,7 @@
 #include "boomerang.h"
 #include "log.h"
 #include "ansi-c-parser.h"
-
+using namespace std;
 /***************************************************************************//**
  *
  * \brief      Construct the FrontEnd object

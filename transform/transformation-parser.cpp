@@ -1319,62 +1319,62 @@ case 8:
     break;}
 case 9:
 
-{ yyval.exp = new Binary(opPlus, yyvsp[-2].exp, yyvsp[0].exp);
+{ yyval.exp = Binary::get(opPlus, yyvsp[-2].exp, yyvsp[0].exp);
     ;
     break;}
 case 10:
 
-{ yyval.exp = new Binary(opMinus, yyvsp[-2].exp, yyvsp[0].exp);
+{ yyval.exp = Binary::get(opMinus, yyvsp[-2].exp, yyvsp[0].exp);
     ;
     break;}
 case 11:
 
-{ yyval.exp = new Binary(opMult, yyvsp[-2].exp, yyvsp[0].exp);
+{ yyval.exp = Binary::get(opMult, yyvsp[-2].exp, yyvsp[0].exp);
     ;
     break;}
 case 12:
 
-{ yyval.exp = new Binary(opBitAnd, yyvsp[-2].exp, yyvsp[0].exp);
+{ yyval.exp = Binary::get(opBitAnd, yyvsp[-2].exp, yyvsp[0].exp);
     ;
     break;}
 case 13:
 
-{ yyval.exp = new Binary(opBitOr, yyvsp[-2].exp, yyvsp[0].exp);
+{ yyval.exp = Binary::get(opBitOr, yyvsp[-2].exp, yyvsp[0].exp);
     ;
     break;}
 case 14:
 
-{ yyval.exp = new Binary(opBitXor, yyvsp[-2].exp, yyvsp[0].exp);
+{ yyval.exp = Binary::get(opBitXor, yyvsp[-2].exp, yyvsp[0].exp);
     ;
     break;}
 case 15:
 
-{ yyval.exp = new Binary(opDiv, yyvsp[-2].exp, yyvsp[0].exp);
+{ yyval.exp = Binary::get(opDiv, yyvsp[-2].exp, yyvsp[0].exp);
     ;
     break;}
 case 16:
 
-{ yyval.exp = new Binary(opAnd, yyvsp[-2].exp, yyvsp[0].exp);
+{ yyval.exp = Binary::get(opAnd, yyvsp[-2].exp, yyvsp[0].exp);
     ;
     break;}
 case 17:
 
-{ yyval.exp = new Binary(opOr, yyvsp[-2].exp, yyvsp[0].exp);
+{ yyval.exp = Binary::get(opOr, yyvsp[-2].exp, yyvsp[0].exp);
     ;
     break;}
 case 18:
 
-{ yyval.exp = new Binary(opEquals, yyvsp[-2].exp, yyvsp[0].exp);
+{ yyval.exp = Binary::get(opEquals, yyvsp[-2].exp, yyvsp[0].exp);
     ;
     break;}
 case 19:
 
-{ yyval.exp = new Binary(opNotEqual, yyvsp[-2].exp, yyvsp[0].exp);
+{ yyval.exp = Binary::get(opNotEqual, yyvsp[-2].exp, yyvsp[0].exp);
     ;
     break;}
 case 20:
 
-{ yyval.exp = new Binary(opMemberAccess, yyvsp[-2].exp, yyvsp[0].exp);
+{ yyval.exp = Binary::get(opMemberAccess, yyvsp[-2].exp, yyvsp[0].exp);
     ;
     break;}
 case 21:
@@ -1384,7 +1384,7 @@ case 21:
     break;}
 case 22:
 
-{ yyval.exp = new Binary(opFlagCall, new Const(yyvsp[-2].str), yyvsp[-1].exp);
+{ yyval.exp = Binary::get(opFlagCall, new Const(yyvsp[-2].str), yyvsp[-1].exp);
     ;
     break;}
 case 23:
@@ -1428,7 +1428,7 @@ case 29:
     break;}
 case 30:
 
-{ yyval.exp = new Binary(opList, yyvsp[-2].exp, new Binary(opList, yyvsp[0].exp, new Terminal(opNil)));
+{ yyval.exp = Binary::get(opList, yyvsp[-2].exp, Binary::get(opList, yyvsp[0].exp, new Terminal(opNil)));
     ;
     break;}
 case 31:

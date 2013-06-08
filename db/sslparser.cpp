@@ -2088,7 +2088,7 @@ YY_SSLParser_PARSE_PARAM_DEF
                 OPER op = bFloat ? opFflags : opFlags;
                 yyval.regtransfer = new Assign(
                                         new Terminal(op),
-                                        new Binary(opFlagCall,
+                                        Binary::get(opFlagCall,
                                                    new Const(yyvsp[-2].str),
                                         listExpToExp(yyvsp[-1].explist)));
             } else {
@@ -2310,7 +2310,7 @@ YY_SSLParser_PARSE_PARAM_DEF
                 yyyerror(STR(o));
             }
             // $1 is a map from string to Table*; $2 is a map from string to InsNameElem*
-            yyval.exp = new Binary(opExpTable, new Const(yyvsp[-2].str), new Const(yyvsp[-1].str));
+            yyval.exp = Binary::get(opExpTable, new Const(yyvsp[-2].str), new Const(yyvsp[-1].str));
             ;
             break;}
         case 109:
@@ -2327,7 +2327,7 @@ YY_SSLParser_PARSE_PARAM_DEF
                     } else {
                         // Everything checks out. *phew*
                         // Note: the below may not be right! (MVE)
-                        yyval.exp = new Binary(opFlagDef,
+                        yyval.exp = Binary::get(opFlagDef,
                                                new Const(yyvsp[-2].str),
                                 listExpToExp(yyvsp[-1].explist));
                         //delete $2;            // Delete the list of char*s
@@ -2361,7 +2361,7 @@ YY_SSLParser_PARSE_PARAM_DEF
             if (yyvsp[0].num == STD_SIZE)
                 yyval.exp = yyvsp[-1].exp;
             else
-                yyval.exp = new Binary(opSize, new Const(yyvsp[0].num), yyvsp[-1].exp);
+                yyval.exp = Binary::get(opSize, new Const(yyvsp[0].num), yyvsp[-1].exp);
             ;
             break;}
         case 113:
@@ -2385,31 +2385,31 @@ YY_SSLParser_PARSE_PARAM_DEF
         case 116:
 
         {
-            yyval.exp = new Binary(strToOper(yyvsp[-1].str), yyvsp[-2].exp, yyvsp[0].exp);
+            yyval.exp = Binary::get(strToOper(yyvsp[-1].str), yyvsp[-2].exp, yyvsp[0].exp);
             ;
             break;}
         case 117:
 
         {
-            yyval.exp = new Binary(strToOper(yyvsp[-1].str), yyvsp[-2].exp, yyvsp[0].exp);
+            yyval.exp = Binary::get(strToOper(yyvsp[-1].str), yyvsp[-2].exp, yyvsp[0].exp);
             ;
             break;}
         case 118:
 
         {
-            yyval.exp = new Binary(strToOper(yyvsp[-1].str), yyvsp[-2].exp, yyvsp[0].exp);
+            yyval.exp = Binary::get(strToOper(yyvsp[-1].str), yyvsp[-2].exp, yyvsp[0].exp);
             ;
             break;}
         case 119:
 
         {
-            yyval.exp = new Binary(strToOper(yyvsp[-1].str), yyvsp[-2].exp, yyvsp[0].exp);
+            yyval.exp = Binary::get(strToOper(yyvsp[-1].str), yyvsp[-2].exp, yyvsp[0].exp);
             ;
             break;}
         case 120:
 
         {
-            yyval.exp = new Binary(strToOper(yyvsp[-1].str), yyvsp[-2].exp, yyvsp[0].exp);
+            yyval.exp = Binary::get(strToOper(yyvsp[-1].str), yyvsp[-2].exp, yyvsp[0].exp);
             ;
             break;}
         case 121:
@@ -2430,9 +2430,9 @@ YY_SSLParser_PARSE_PARAM_DEF
                 yyyerror(STR(o));
             }
             yyval.exp = new Ternary(opOpTable, new Const(yyvsp[-3].str), new Const(yyvsp[-2].str),
-                    new Binary(opList,
+                    Binary::get(opList,
                                yyvsp[-4].exp,
-                    new Binary(opList,
+                    Binary::get(opList,
                                yyvsp[0].exp,
                     new Terminal(opNil))));
             ;
@@ -3058,7 +3058,7 @@ Exp* listExpToExp(std::list<Exp*>* le) {
     Exp** cur = &e;
     Exp *end = new Terminal(opNil);            // Terminate the chain
     for (std::list<Exp*>::iterator it = le->begin(); it != le->end(); it++) {
-        *cur = new Binary(opList, *it, end);
+        *cur = Binary::get(opList, *it, end);
         // cur becomes the address of the address of the second subexpression
         // In other words, cur becomes a reference to the second subexp ptr
         // Note that declaring cur as a reference doesn't work (remains a reference to e)
@@ -3079,14 +3079,14 @@ Exp* listStrToExp(std::list<std::string>* ls) {
     Exp** cur = &e;
     Exp *end = new Terminal(opNil);             // Terminate the chain
     for (std::list<std::string>::iterator it = ls->begin(); it != ls->end(); it++) {
-        *cur = new Binary(opList, new Location(opParam, new Const(strdup((*it).c_str())), nullptr), end);
+        *cur = Binary::get(opList, new Location(opParam, new Const(strdup((*it).c_str())), nullptr), end);
         cur = &(*cur)->refSubExp2();
     }
     *cur = new Terminal(opNil);             // Terminate the chain
     return e;
 }
 
-static Exp* srchExpr = new Binary(opExpTable,
+static Exp* srchExpr = Binary::get(opExpTable,
                                   new Terminal(opWild),
                                   new Terminal(opWild));
 static Exp* srchOp = new Ternary(opOpTable,
@@ -3154,7 +3154,7 @@ void SSLParser::expandTables(InsNameElem* iname, std::list<std::string>* params,
                 assert(b->getOper() == opList);
                 e2 = ((Binary*)e2)->getSubExp1();
                 const char* ops = ((OpTable*)(TableDict[tbl]))->records[indexrefmap[idx]->getvalue()].c_str();
-                Exp* repl = new Binary(strToOper(ops), e1->clone(),
+                Exp* repl = Binary::get(strToOper(ops), e1->clone(),
                                        e2->clone());                    // FIXME!
                 s->searchAndReplace(res, repl);
             }

@@ -353,7 +353,7 @@ void BranchStatement::rangeAnalysis(std::list<Statement*> &execution_paths) {
             if (r.getBase()->isFlagCall() &&
                     r.getBase()->getSubExp2()->getOper() == opList &&
                     r.getBase()->getSubExp2()->getSubExp2()->getOper() == opList) {
-                e = new Binary(op, r.getBase()->getSubExp2()->getSubExp1()->clone(), r.getBase()->getSubExp2()->getSubExp2()->getSubExp1()->clone());
+                e = Binary::get(op, r.getBase()->getSubExp2()->getSubExp1()->clone(), r.getBase()->getSubExp2()->getSubExp2()->getSubExp1()->clone());
                 if (VERBOSE && DEBUG_RANGE_ANALYSIS)
                     LOG << "calculated condition " << e << "\n";
             }
@@ -893,7 +893,7 @@ bool Statement::replaceRef(Exp* e, Assign *def, bool& convert) {
                                                                  /     \
                                                                 P3     opNil
                         */
-            Exp* relExp = new Binary(opLessUns,
+            Exp* relExp = Binary::get(opLessUns,
                                      ((Binary*)rhs)->getSubExp2()->getSubExp1(),
                                      ((Binary*)rhs)->getSubExp2()->getSubExp2()->getSubExp1());
             searchAndReplace(new RefExp(new Terminal(opCF), def), relExp, true);
@@ -907,7 +907,7 @@ bool Statement::replaceRef(Exp* e, Assign *def, bool& convert) {
         const char* str = ((Const*)((Binary*)rhs)->getSubExp1())->getStr();
         if (strncmp("SUBFLAGS", str, 8) == 0) {
             // for zf we're only interested in if the result part of the subflags is equal to zero
-            Exp* relExp = new Binary(opEquals,
+            Exp* relExp = Binary::get(opEquals,
                                      ((Binary*)rhs)->getSubExp2()->getSubExp2()->getSubExp2()->getSubExp1(),
                                      new Const(0));
             searchAndReplace(new RefExp(new Terminal(opZF), def), relExp, true);
@@ -1210,52 +1210,52 @@ void BranchStatement::setCondType(BRANCH_TYPE cond, bool usesFloat /*= false*/) 
     Exp* p = nullptr;
     switch(cond) {
         case BRANCH_JE:
-            p = new Binary(opEquals, new Terminal(opFlags), new Const(0));
+            p = Binary::get(opEquals, new Terminal(opFlags), new Const(0));
             break;
         case BRANCH_JNE:
-            p = new Binary(opNotEqual, new Terminal(opFlags), new Const(0));
+            p = Binary::get(opNotEqual, new Terminal(opFlags), new Const(0));
             break;
         case BRANCH_JSL:
-            p = new Binary(opLess, new Terminal(opFlags), new Const(0));
+            p = Binary::get(opLess, new Terminal(opFlags), new Const(0));
             break;
         case BRANCH_JSLE:
-            p = new Binary(opLessEq, new Terminal(opFlags), new Const(0));
+            p = Binary::get(opLessEq, new Terminal(opFlags), new Const(0));
             break;
         case BRANCH_JSGE:
-            p = new Binary(opGtrEq, new Terminal(opFlags), new Const(0));
+            p = Binary::get(opGtrEq, new Terminal(opFlags), new Const(0));
             break;
         case BRANCH_JSG:
-            p = new Binary(opGtr, new Terminal(opFlags), new Const(0));
+            p = Binary::get(opGtr, new Terminal(opFlags), new Const(0));
             break;
         case BRANCH_JUL:
-            p = new Binary(opLessUns, new Terminal(opFlags), new Const(0));
+            p = Binary::get(opLessUns, new Terminal(opFlags), new Const(0));
             break;
         case BRANCH_JULE:
-            p = new Binary(opLessEqUns, new Terminal(opFlags), new Const(0));
+            p = Binary::get(opLessEqUns, new Terminal(opFlags), new Const(0));
             break;
         case BRANCH_JUGE:
-            p = new Binary(opGtrEqUns, new Terminal(opFlags), new Const(0));
+            p = Binary::get(opGtrEqUns, new Terminal(opFlags), new Const(0));
             break;
         case BRANCH_JUG:
-            p = new Binary(opGtrUns, new Terminal(opFlags), new Const(0));
+            p = Binary::get(opGtrUns, new Terminal(opFlags), new Const(0));
             break;
         case BRANCH_JMI:
-            p = new Binary(opLess, new Terminal(opFlags), new Const(0));
+            p = Binary::get(opLess, new Terminal(opFlags), new Const(0));
             break;
         case BRANCH_JPOS:
-            p = new Binary(opGtr, new Terminal(opFlags), new Const(0));
+            p = Binary::get(opGtr, new Terminal(opFlags), new Const(0));
             break;
         case BRANCH_JOF:
-            p = new Binary(opLessUns, new Terminal(opFlags), new Const(0));
+            p = Binary::get(opLessUns, new Terminal(opFlags), new Const(0));
             break;
         case BRANCH_JNOF:
-            p = new Binary(opGtrUns, new Terminal(opFlags), new Const(0));
+            p = Binary::get(opGtrUns, new Terminal(opFlags), new Const(0));
             break;
         case BRANCH_JPAR:
             // Can't handle this properly here; leave an impossible expression involving %flags so propagation will
             // still happen, and we can recognise this later in condToRelational()
             // Update: these expressions seem to get ignored ???
-            p = new Binary(opEquals, new Terminal(opFlags), new Const(999));
+            p = Binary::get(opEquals, new Terminal(opFlags), new Const(999));
             break;
     }
     // this is such a hack.. preferably we should actually recognise SUBFLAGS32(..,..,..) > 0 instead of just
@@ -1528,12 +1528,12 @@ bool condToRelational(Exp*& pCond, BRANCH_TYPE jtCond) {
                      P2    opList
                             /     \
                           P3     opNil */
-                pCond = new Binary(opLess,            // P3 < 0
+                pCond = Binary::get(opLess,            // P3 < 0
                                    pCond->getSubExp2()->getSubExp2()->getSubExp2()->getSubExp1()->clone(),
                                    new Const(0));
                 break;
             case BRANCH_JPOS:
-                pCond = new Binary(opGtrEq,            // P3 >= 0
+                pCond = Binary::get(opGtrEq,            // P3 >= 0
                                    pCond->getSubExp2()->getSubExp2()->getSubExp2()->getSubExp1()->clone(),
                                    new Const(0));
                 break;
@@ -1543,7 +1543,7 @@ bool condToRelational(Exp*& pCond, BRANCH_TYPE jtCond) {
                 break;
         }
         if (op != opWild) {
-            pCond = new Binary(op,
+            pCond = Binary::get(op,
                                pCond->getSubExp2()->getSubExp1()->clone(),                    // P1
                                pCond->getSubExp2()->getSubExp2()->getSubExp1()->clone());    // P2
         }
@@ -1620,7 +1620,7 @@ bool condToRelational(Exp*& pCond, BRANCH_TYPE jtCond) {
                         op = opWild;        // Not possible, but avoid a compiler warning
                         break;
                 }
-                pCond = new Binary(op,
+                pCond = Binary::get(op,
                                    flagsParam->getSubExp1()->getSubExp2()->getSubExp1()->clone(),
                                    flagsParam->getSubExp1()->getSubExp2()->getSubExp2()->getSubExp1() ->clone());
                 return true;            // This is a floating point comparison
@@ -1629,7 +1629,7 @@ bool condToRelational(Exp*& pCond, BRANCH_TYPE jtCond) {
                 break;
         }
         if (op != opWild) {
-            pCond = new Binary(op,
+            pCond = Binary::get(op,
                                pCond->getSubExp2()->getSubExp1()->clone(),
                                new Const(0));
         }
@@ -1650,7 +1650,7 @@ bool condToRelational(Exp*& pCond, BRANCH_TYPE jtCond) {
                 break;
         }
         if (op != opWild) {
-            pCond = new Binary(op,
+            pCond = Binary::get(op,
                                pCond->getSubExp2()->getSubExp1()->clone(),
                                pCond->getSubExp2()->getSubExp2()->getSubExp1() ->clone());
         }
@@ -1733,7 +1733,7 @@ bool condToRelational(Exp*& pCond, BRANCH_TYPE jtCond) {
                     }
                 }
                 if (op != opWild) {
-                    pCond = new Binary(op,
+                    pCond = Binary::get(op,
                                        left1->getSubExp2()->getSubExp1(),
                                        left1->getSubExp2()->getSubExp2()->getSubExp1());
                     return true;      // This is now a float comparison
@@ -3531,7 +3531,7 @@ void Assignment::genConstraints(LocationSet& cons) {
     // Almost every assignment has at least a size from decoding
     // MVE: do/will PhiAssign's have a valid type? Why not?
     if (type)
-        cons.insert(new Binary(opEquals,
+        cons.insert(Binary::get(opEquals,
                                new Unary(opTypeOf,
                                          new RefExp(lhs, this)),
                                new TypeVal(type)));
@@ -3553,7 +3553,7 @@ void PhiAssign::genConstraints(LocationSet& cons) {
 
     for (std::pair<const int,PhiInfo> & v : defVec) {
         assert(v.second.e != nullptr);
-        Exp* conjunct = new Binary(opEquals,
+        Exp* conjunct = Binary::get(opEquals,
                                    result,
                                    new Unary(opTypeOf,
                                              new RefExp(v.second.e, v.second.def)));
@@ -3580,7 +3580,7 @@ void CallStatement::genConstraints(LocationSet& cons) {
                 arg = ((Location*)sub)->getSubExp1();
         }
         if (arg->isRegOf() || arg->isMemOf() || arg->isSubscript() || arg->isLocal() || arg->isGlobal()) {
-            Exp* con = new Binary(opEquals,
+            Exp* con = Binary::get(opEquals,
                                   new Unary(opTypeOf, arg->clone()),
                                   new TypeVal(destSig->getParamType(p)->clone()));
             cons.insert(con);
@@ -3702,9 +3702,9 @@ void BranchStatement::genConstraints(LocationSet& cons) {
     } else
         Tb = new Unary(opTypeOf, b);
     // Constrain that Ta == opsType and Tb == opsType
-    Exp* con = new Binary(opEquals, Ta, new TypeVal(opsType));
+    Exp* con = Binary::get(opEquals, Ta, new TypeVal(opsType));
     cons.insert(con);
-    con = new Binary(opEquals, Tb, new TypeVal(opsType));
+    con = Binary::get(opEquals, Tb, new TypeVal(opsType));
     cons.insert(con);
 }
 //! Set or clear the constant subscripts (using a visitor)

@@ -37091,8 +37091,8 @@ Exp* PentiumDecoder::dis_Mem(ADDRESS pc)
                                         unsigned ss = (MATCH_w_8_8 >> 6 & 0x3) /* ss at 8 */;
 //#line 2206 "frontend/machine/pentium/decoder.m"
                                         // m[ r[index] * ss + d ]
-                                        expr = Location::memOf(new Binary(opPlus,
-                                                                          new Binary(opMult,
+                                        expr = Location::memOf(Binary::get(opPlus,
+                                                                          Binary::get(opMult,
                                                                                      dis_Reg(24+index),
                                                                                      new Const(1<<ss)),
                                                                           addReloc(new Const(d))));
@@ -37111,9 +37111,9 @@ Exp* PentiumDecoder::dis_Mem(ADDRESS pc)
                                     unsigned ss = (MATCH_w_8_8 >> 6 & 0x3) /* ss at 8 */;
 //#line 2163 "frontend/machine/pentium/decoder.m"
                                     // m[ r[base] + r[index] * ss]
-                                    expr = Location::memOf(new Binary(opPlus,
+                                    expr = Location::memOf(Binary::get(opPlus,
                                                                       dis_Reg(24+base),
-                                                                      new Binary(opMult,
+                                                                      Binary::get(opMult,
                                                                                  dis_Reg(24+index),
                                                                                  new Const(1<<ss))));
                                 } /*opt-block*//*opt-block+*/ /*opt-block+*/
@@ -37140,7 +37140,7 @@ Exp* PentiumDecoder::dis_Mem(ADDRESS pc)
                                 // m[ r[ base] + d ]
                                 // Note: d should be sign extended; we do it here manually
                                 signed char ds8 = d;
-                                expr = Location::memOf(new Binary(opPlus,
+                                expr = Location::memOf(Binary::get(opPlus,
                                                                   dis_Reg(24+base),
                                                                   new Const(ds8)));
                             }
@@ -37155,10 +37155,10 @@ Exp* PentiumDecoder::dis_Mem(ADDRESS pc)
                                 unsigned ss = (MATCH_w_8_8 >> 6 & 0x3) /* ss at 8 */;
 //#line 2187 "frontend/machine/pentium/decoder.m"
                                 // m[ r[ base ] + r[ index ] * ss + d ]
-                                expr = Location::memOf(new Binary(opPlus,
+                                expr = Location::memOf(Binary::get(opPlus,
                                                                   dis_Reg(24+base),
-                                                                  new Binary(opPlus,
-                                                                             new Binary(opMult,
+                                                                  Binary::get(opPlus,
+                                                                             Binary::get(opMult,
                                                                                         dis_Reg(24+index),
                                                                                         new Const(1<<ss)),
                                                                              addReloc(new Const(d)))));
@@ -37173,7 +37173,7 @@ Exp* PentiumDecoder::dis_Mem(ADDRESS pc)
                             unsigned r32 = (MATCH_w_8_0 & 0x7) /* r_m at 0 */;
 //#line 2158 "frontend/machine/pentium/decoder.m"
                             // m[ r[ r32] + d]
-                            expr = Location::memOf(new Binary(opPlus,
+                            expr = Location::memOf(Binary::get(opPlus,
                                                               dis_Reg(24+r32),
                                                               addReloc(new Const(d))));
                         }
@@ -37189,7 +37189,7 @@ Exp* PentiumDecoder::dis_Mem(ADDRESS pc)
                                 unsigned d = MATCH_w_32_16 /* i32 at 16 */;
 //#line 2182 "frontend/machine/pentium/decoder.m"
                                 // m[ r[ base] + d ]
-                                expr = Location::memOf(new Binary(opPlus,
+                                expr = Location::memOf(Binary::get(opPlus,
                                                                   dis_Reg(24+base),
                                                                   addReloc(new Const(d))));
                             }
@@ -37203,10 +37203,10 @@ Exp* PentiumDecoder::dis_Mem(ADDRESS pc)
                                 unsigned ss = (MATCH_w_8_8 >> 6 & 0x3) /* ss at 8 */;
 //#line 2173 "frontend/machine/pentium/decoder.m"
                                 // m[ r[ base ] + r[ index ] * ss + d ]
-                                expr = Location::memOf(new Binary(opPlus,
+                                expr = Location::memOf(Binary::get(opPlus,
                                                                   dis_Reg(24+base),
-                                                                  new Binary(opPlus,
-                                                                             new Binary(opMult,
+                                                                  Binary::get(opPlus,
+                                                                             Binary::get(opMult,
                                                                                         dis_Reg(24+index),
                                                                                         new Const(1<<ss)),
                                                                              addReloc(new Const(d)))));
@@ -37220,7 +37220,7 @@ Exp* PentiumDecoder::dis_Mem(ADDRESS pc)
                             unsigned d = MATCH_w_32_8 /* i32 at 8 */;
 //#line 2153 "frontend/machine/pentium/decoder.m"
                             // m[ r[ base] + d]
-                            expr = Location::memOf(new Binary(opPlus,
+                            expr = Location::memOf(Binary::get(opPlus,
                                                               dis_Reg(24+base),
                                                               addReloc(new Const(d))));
                         }
@@ -37402,7 +37402,7 @@ void genBSFR(ADDRESS pc, Exp* dest, Exp* modrm, int init, int size,
             b->setDest(pc+numBytes);
             b->setCondType(BRANCH_JE);
             b->setCondExpr(
-                        new Binary(opEquals,
+                        Binary::get(opEquals,
                                    modrm->clone(),
                                    new Const(0)));
             stmts->push_back(b);
@@ -37423,7 +37423,7 @@ void genBSFR(ADDRESS pc, Exp* dest, Exp* modrm, int init, int size,
             s = new Assign(
                     IntegerType::get(size),
                     dest->clone(),
-                    new Binary(incdec,
+                    Binary::get(incdec,
                                dest->clone(),
                                new Const(1)));
             stmts->push_back(s);
@@ -37431,7 +37431,7 @@ void genBSFR(ADDRESS pc, Exp* dest, Exp* modrm, int init, int size,
             b->setDest(pc+2);
             b->setCondType(BRANCH_JE);
             b->setCondExpr(
-                        new Binary(opEquals,
+                        Binary::get(opEquals,
                                    new Ternary(opAt,
                                                modrm->clone(),
                                                dest->clone(),

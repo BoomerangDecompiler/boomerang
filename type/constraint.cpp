@@ -224,7 +224,7 @@ void Constraints::substIntoEquates(ConstraintMap& in) {
                     // Remove the equate, and generate more fixed
                     // e.g. Ta = Tb,Tc and Ta = K => Tb=K, Tc=K
                     for (ll = ls.begin(); ll != ls.end(); ll++) {
-                        Exp* newFixed = new Binary(opEquals,
+                        Exp* newFixed = Binary::get(opEquals,
                                                    *ll,        // e.g. Tb
                                                    val);        // e.g. K
                         extra.insert(newFixed);

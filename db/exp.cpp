@@ -1273,8 +1273,8 @@ Exp* Exp::match(Exp *pattern) {
     if (*this == *pattern)
         return new Terminal(opNil);
     if (pattern->getOper() == opVar) {
-        return new Binary(opList,
-                          new Binary(opEquals, pattern->clone(), this->clone()),
+        return Binary::get(opList,
+                          Binary::get(opEquals, pattern->clone(), this->clone()),
                           new Terminal(opNil));
     }
     return nullptr;
@@ -1314,9 +1314,9 @@ Exp* Binary::match(Exp *pattern) {
 #endif
                     return nullptr;        // must be agreement between LHS and RHS
                 } else
-                    result = new Binary(opList, l->getSubExp1()->clone(), result);
+                    result = Binary::get(opList, l->getSubExp1()->clone(), result);
         for (Exp *r = b_rhs; r->getOper() != opNil; r = r->getSubExp2())
-            result = new Binary(opList, r->getSubExp1()->clone(), result);
+            result = Binary::get(opList, r->getSubExp1()->clone(), result);
         return result;
     }
     return Exp::match(pattern);
@@ -1802,7 +1802,7 @@ Exp* Binary::simplifyArith() {
             return new Const(sum.native());
         } else
             // No positives, some negatives. sum - Acc
-            return new Binary(opMinus, new Const(sum.native()),
+            return Binary::get(opMinus, new Const(sum.native()),
                               Exp::Accumulate(negatives));
     }
     if (negatives.size() == 0) {
@@ -1816,13 +1816,13 @@ Exp* Binary::simplifyArith() {
                 op = opMinus;
                 sum.m_value = -sum.m_value;
             }
-            return new Binary(op, Exp::Accumulate(positives), new Const(sum.native()));
+            return Binary::get(op, Exp::Accumulate(positives), new Const(sum.native()));
         }
     }
     // Some positives, some negatives
     if (sum.isZero()) {
         // positives - negatives
-        return new Binary(opMinus, Exp::Accumulate(positives),
+        return Binary::get(opMinus, Exp::Accumulate(positives),
                           Exp::Accumulate(negatives));
     }
     // General case: some positives, some negatives, a sum
@@ -1831,8 +1831,8 @@ Exp* Binary::simplifyArith() {
         op = opMinus;        // Return (pos - negs) - sum
         sum.m_value = -sum.m_value;
     }
-    return new Binary(op,
-                      new Binary(opMinus,
+    return Binary::get(op,
+                      Binary::get(opMinus,
                                  Exp::Accumulate(positives),
                                  Exp::Accumulate(negatives)),
                       new Const(sum.native()));
@@ -1858,7 +1858,7 @@ Exp* Exp::Accumulate(std::list<Exp*> exprs)
 
     Exp *first = exprs.front()->clone();
     exprs.pop_front();
-    Binary *res = new Binary(opPlus, first, Accumulate(exprs));
+    auto res = Binary::get(opPlus, first, Accumulate(exprs));
     exprs.push_front(first);
     return res;
 }
@@ -2168,7 +2168,7 @@ Exp* Binary::polySimplify(bool& bMod) {
                 (opSub1 == opMults || opSub1 == opMult) &&
                 *subExp2 == *subExp1->getSubExp1()) {
         res = ((Binary*)res)->getSubExp1();
-        res->setSubExp2(new Binary(op, res->getSubExp2(), new Const(1)));
+        res->setSubExp2(Binary::get(op, res->getSubExp2(), new Const(1)));
         bMod = true;
         return res;
     }
@@ -2178,7 +2178,7 @@ Exp* Binary::polySimplify(bool& bMod) {
                 (opSub2 == opMults || opSub2 == opMult) &&
                 *subExp1 == *subExp2->getSubExp1()) {
         res = ((Binary*)res)->getSubExp2();
-        res->setSubExp2(new Binary(opPlus, res->getSubExp2(), new Const(1)));
+        res->setSubExp2(Binary::get(opPlus, res->getSubExp2(), new Const(1)));
         bMod = true;
         return res;
     }
@@ -2422,7 +2422,7 @@ Exp* Binary::polySimplify(bool& bMod) {
                 ((Const*)subExp2)->getInt() == 0 && opSub1 == opMinus &&
                 subExp1->getSubExp1()->isIntConst() &&
                 ((Const*)subExp1->getSubExp1())->getInt() == 0) {
-        res = new Binary(opNotEqual, subExp1->getSubExp2()->clone(), subExp2->clone());
+        res = Binary::get(opNotEqual, subExp1->getSubExp2()->clone(), subExp2->clone());
         bMod = true;
         return res;
     }
@@ -2535,8 +2535,8 @@ Exp* Binary::polySimplify(bool& bMod) {
         Type *ty = subExp1->getSubExp1()->getType();
         if (ty->resolvesToPointer() &&
                 ty->asPointer()->getPointsTo()->resolvesToCompound()) {
-            res = new Binary(opPlus, subExp1->getSubExp1(), subExp2);
-            res = new Binary(opPlus, res, subExp1->getSubExp2());
+            res = Binary::get(opPlus, subExp1->getSubExp1(), subExp2);
+            res = Binary::get(opPlus, res, subExp1->getSubExp2());
             bMod = true;
             return res;
         }
@@ -2562,11 +2562,11 @@ Exp* Binary::polySimplify(bool& bMod) {
             assert((r % 8) == 0);
             const char *nam = c->getNameAtOffset(n*8);
             if (nam != nullptr && std::string("pad") != nam) {
-                Location *l = Location::memOf(subExp1);
+                Exp *l = Location::memOf(subExp1);
                 //l->setType(c);
-                res = new Binary(opPlus,
+                res = Binary::get(opPlus,
                                  new Unary(opAddrOf,
-                                           new Binary(opMemberAccess,
+                                           Binary::get(opMemberAccess,
                                                       l,
                                                       new Const(strdup(nam)))),
                                  new Const((int) r / 8));
@@ -2593,12 +2593,12 @@ Exp* Binary::polySimplify(bool& bMod) {
             int br = a->getBaseType()->getSize() % 8;
             assert(br == 0);
             if (x->getOper() != opIntConst || ((Const*)x)->getInt() >= b || a->getBaseType()->isArray()) {
-                res = new Binary(opPlus,
+                res = Binary::get(opPlus,
                                  new Unary(opAddrOf,
-                                           new Binary(opArrayIndex,
+                                           Binary::get(opArrayIndex,
                                                       Location::memOf(l->clone()),
-                                                      new Binary(opDiv, x->clone(), new Const(b)))),
-                                 new Binary(opMod, x->clone(), new Const(b)));
+                                                      Binary::get(opDiv, x->clone(), new Const(b)))),
+                                 Binary::get(opMod, x->clone(), new Const(b)));
                 if (VERBOSE)
                     LOG << "replacing " << this << " with " << res << "\n";
                 if (l->getOper() == opSubscript) {
@@ -2630,8 +2630,8 @@ Exp* Binary::polySimplify(bool& bMod) {
         int n1 = ((Const*)subExp2)->getInt();
         int n2 = ((Const*)subExp1->getSubExp2())->getInt();
         if (n1 == n2) {
-            res = new Binary(subExp1->getOper(),
-                             new Binary(op,
+            res = Binary::get(subExp1->getOper(),
+                             Binary::get(op,
                                         subExp1->getSubExp1()->clone(),
                                         new Const(1)),
                              new Const(n1));
@@ -2648,10 +2648,10 @@ Exp* Binary::polySimplify(bool& bMod) {
         int n1 = ((Const*)subExp2)->getInt();
         int n2 = ((Const*)subExp1->getSubExp2()->getSubExp2())->getInt();
         if (n1 == n2) {
-            res = new Binary(opPlus,
+            res = Binary::get(opPlus,
                              subExp1->getSubExp1(),
-                             new Binary(subExp1->getSubExp2()->getOper(),
-                                        new Binary(op,
+                             Binary::get(subExp1->getSubExp2()->getOper(),
+                                        Binary::get(op,
                                                    subExp1->getSubExp2()->getSubExp1()->clone(),
                                                    new Const(1)),
                                         new Const(n1)));
@@ -2673,9 +2673,9 @@ Exp* Binary::polySimplify(bool& bMod) {
         int b = ((Const*)subExp1->getSubExp2()->getSubExp2())->getInt();
         int c = ((Const*)subExp2)->getInt();
         if ((a%c) == 0 && (b%c) == 0) {
-            res = new Binary(opPlus,
-                             new Binary(opMult, subExp1->getSubExp1()->getSubExp1(), new Const(a/c)),
-                             new Binary(opMult, subExp1->getSubExp2()->getSubExp1(), new Const(b/c)));
+            res = Binary::get(opPlus,
+                             Binary::get(opMult, subExp1->getSubExp1()->getSubExp1(), new Const(a/c)),
+                             Binary::get(opMult, subExp1->getSubExp2()->getSubExp1(), new Const(b/c)));
             bMod = true;
             return res;
         }
@@ -2700,12 +2700,12 @@ Exp* Binary::polySimplify(bool& bMod) {
             return res;
         }
         if ((a%c) == 0) {
-            res = new Binary(opMod, subExp1->getSubExp2()->clone(), new Const(c));
+            res = Binary::get(opMod, subExp1->getSubExp2()->clone(), new Const(c));
             bMod = true;
             return res;
         }
         if ((b%c) == 0) {
-            res = new Binary(opMod, subExp1->getSubExp1()->clone(), new Const(c));
+            res = Binary::get(opMod, subExp1->getSubExp1()->clone(), new Const(c));
             bMod = true;
             return res;
         }
@@ -3195,7 +3195,7 @@ Exp* Const::genConstraints(Exp* result) {
         if (match) {
             // This constant may require a cast or a change of format. So we generate a constraint.
             // Don't clone 'this', so it can be co-erced after type analysis
-            return new Binary(opEquals,
+            return Binary::get(opEquals,
                               new Unary(opTypeOf, this),
                               result->clone());
         } else
@@ -3209,21 +3209,21 @@ Exp* Const::genConstraints(Exp* result) {
             // We have something like local1 = 1234.  Either they are both integer, or both pointer
             Type* intt = IntegerType::get(0);
             Type* alph = PointerType::newPtrAlpha();
-            return new Binary(opOr,
-                              new Binary(opAnd,
-                                         new Binary(opEquals,
+            return Binary::get(opOr,
+                              Binary::get(opAnd,
+                                         Binary::get(opEquals,
                                                     result->clone(),
                                                     new TypeVal(intt)),
-                                         new Binary(opEquals,
+                                         Binary::get(opEquals,
                                                     new Unary(opTypeOf,
                                                               // Note: don't clone 'this', so we can change the Const after type analysis!
                                                               this),
                                                     new TypeVal(intt))),
-                              new Binary(opAnd,
-                                         new Binary(opEquals,
+                              Binary::get(opAnd,
+                                         Binary::get(opEquals,
                                                     result->clone(),
                                                     new TypeVal(alph)),
-                                         new Binary(opEquals,
+                                         Binary::get(opEquals,
                                                     new Unary(opTypeOf,
                                                               this),
                                                     new TypeVal(alph))));
@@ -3242,7 +3242,7 @@ Exp* Const::genConstraints(Exp* result) {
             return nullptr;
     }
     TypeVal* tv = new TypeVal(t);
-    Exp* e = new Binary(opEquals, result->clone(), tv);
+    Exp* e = Binary::get(opEquals, result->clone(), tv);
     return e;
 }
 
@@ -3257,7 +3257,7 @@ Exp* Unary::genConstraints(Exp* result) {
         case opParam:        // Should be no params at constraint time
         case opGlobal:
         case opLocal:
-            return new Binary(opEquals,
+            return Binary::get(opEquals,
                               new Unary(opTypeOf, this->clone()),
                               result->clone());
         default:
@@ -3315,7 +3315,7 @@ Exp* Ternary::genConstraints(Exp* result) {
             // else just constrain the arg
         } else {
             // result is a type variable, constrained by this Ternary
-            res = new Binary(opEquals,
+            res = Binary::get(opEquals,
                              result,
                              new TypeVal(retHasToBe));
         }
@@ -3323,7 +3323,7 @@ Exp* Ternary::genConstraints(Exp* result) {
     if (argHasToBe) {
         // Constrain the argument
         Exp* con = subExp3->genConstraints(new TypeVal(argHasToBe));
-        if (res) res = new Binary(opAnd, res, con);
+        if (res) res = Binary::get(opAnd, res, con);
         else res = con;
     }
     if (res == nullptr)
@@ -3338,7 +3338,7 @@ Exp* RefExp::genConstraints(Exp* result) {
         case opParam:
         case opGlobal:
         case opLocal:
-            return new Binary(opEquals,
+            return Binary::get(opEquals,
                               new Unary(opTypeOf, this->clone()),
                               result->clone());
         default:
@@ -3353,7 +3353,7 @@ Exp* Binary::constrainSub(TypeVal* typeVal1, TypeVal* typeVal2) {
 
     Exp* con1 = subExp1->genConstraints(typeVal1);
     Exp* con2 = subExp2->genConstraints(typeVal2);
-    return new Binary(opAnd, con1, con2);
+    return Binary::get(opAnd, con1, con2);
 }
 
 Exp* Binary::genConstraints(Exp* result) {
@@ -3380,8 +3380,8 @@ Exp* Binary::genConstraints(Exp* result) {
             res = constrainSub(ftv, ftv);
             if (!restrictTo)
                 // Also constrain the result
-                res = new Binary(opAnd, res,
-                                 new Binary(opEquals, result->clone(), ftv));
+                res = Binary::get(opAnd, res,
+                                 Binary::get(opEquals, result->clone(), ftv));
             return res;
             break;
         }
@@ -3399,8 +3399,8 @@ Exp* Binary::genConstraints(Exp* result) {
             res = constrainSub(itv, itv);
             if (!restrictTo)
                 // Also constrain the result
-                res = new Binary(opAnd, res,
-                                 new Binary(opEquals, result->clone(), itv));
+                res = Binary::get(opAnd, res,
+                                 Binary::get(opEquals, result->clone(), itv));
             return res;
             break;
         }
@@ -3413,8 +3413,8 @@ Exp* Binary::genConstraints(Exp* result) {
                 // int + int -> int
                 res = constrainSub(&intVal, &intVal);
                 if (!restrictTo)
-                    res = new Binary(opAnd, res,
-                                     new Binary(opEquals, result->clone(),
+                    res = Binary::get(opAnd, res,
+                                     Binary::get(opEquals, result->clone(),
                                                 intVal.clone()));
             }
 
@@ -3422,19 +3422,19 @@ Exp* Binary::genConstraints(Exp* result) {
                 // ptr + int -> ptr
                 Exp* res2 = constrainSub(&ptrVal, &intVal);
                 if (!restrictTo)
-                    res2 = new Binary(opAnd, res2,
-                                      new Binary(opEquals, result->clone(),
+                    res2 = Binary::get(opAnd, res2,
+                                      Binary::get(opEquals, result->clone(),
                                                  ptrVal.clone()));
-                if (res) res = new Binary(opOr, res, res2);
+                if (res) res = Binary::get(opOr, res, res2);
                 else     res = res2;
 
                 // int + ptr -> ptr
                 res2 = constrainSub(&intVal, &ptrVal);
                 if (!restrictTo)
-                    res2 = new Binary(opAnd, res2,
-                                      new Binary(opEquals, result->clone(),
+                    res2 = Binary::get(opAnd, res2,
+                                      Binary::get(opEquals, result->clone(),
                                                  ptrVal.clone()));
-                if (res) res = new Binary(opOr, res, res2);
+                if (res) res = Binary::get(opOr, res, res2);
                 else     res = res2;
             }
 
@@ -3449,17 +3449,17 @@ Exp* Binary::genConstraints(Exp* result) {
                 // int - int -> int
                 res = constrainSub(&intVal, &intVal);
                 if (!restrictTo)
-                    res = new Binary(opAnd, res,
-                                     new Binary(opEquals, result->clone(),
+                    res = Binary::get(opAnd, res,
+                                     Binary::get(opEquals, result->clone(),
                                                 intVal.clone()));
 
                 // ptr - ptr -> int
                 Exp* res2 = constrainSub(&ptrVal, &ptrVal);
                 if (!restrictTo)
-                    res2 = new Binary(opAnd, res2,
-                                      new Binary(opEquals, result->clone(),
+                    res2 = Binary::get(opAnd, res2,
+                                      Binary::get(opEquals, result->clone(),
                                                  intVal.clone()));
-                if (res) res = new Binary(opOr, res, res2);
+                if (res) res = Binary::get(opOr, res, res2);
                 else     res = res2;
             }
 
@@ -3467,10 +3467,10 @@ Exp* Binary::genConstraints(Exp* result) {
                 // ptr - int -> ptr
                 Exp* res2 = constrainSub(&ptrVal, &intVal);
                 if (!restrictTo)
-                    res2 = new Binary(opAnd, res2,
-                                      new Binary(opEquals, result->clone(),
+                    res2 = Binary::get(opAnd, res2,
+                                      Binary::get(opEquals, result->clone(),
                                                  ptrVal.clone()));
-                if (res) res = new Binary(opOr, res, res2);
+                if (res) res = Binary::get(opOr, res, res2);
                 else     res = res2;
             }
 
@@ -3490,7 +3490,7 @@ Exp* Binary::genConstraints(Exp* result) {
                     // with a known size
                     Type* it = restrictTo->clone();
                     it->setSize(sz);
-                    return new Binary(opEquals,
+                    return Binary::get(opEquals,
                                       new Unary(opTypeOf, subExp2),
                                       new TypeVal(it));
                 }
@@ -3498,7 +3498,7 @@ Exp* Binary::genConstraints(Exp* result) {
                             (rsz == sz) ? opTrue : opFalse);
             }
             // We constrain the size but not the basic type
-            return new Binary(opEquals, result->clone(), new TypeVal(new SizeType(sz)));
+            return Binary::get(opEquals, result->clone(), new TypeVal(new SizeType(sz)));
         }
 
         default:
@@ -3998,7 +3998,7 @@ public:
 };
 
 Memo *Binary::makeMemo(int mId) {
-    BinaryMemo *m = new BinaryMemo(mId);
+    BinaryMemo *m = Binary::getMemo(mId);
     return m;
 }
 

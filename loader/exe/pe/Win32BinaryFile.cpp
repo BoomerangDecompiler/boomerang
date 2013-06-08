@@ -1136,7 +1136,7 @@ DWord Win32BinaryFile::getDelta() {
     return DWord(intptr_t(base)) - (DWord) m_pPEHeader->Imagebase;
 }
 
-// This function is called via dlopen/dlsym; it returns a new BinaryFile derived concrete object. After this object is
+// This function is called via dlopen/dlsym; it returns a Binary::getFile derived concrete object. After this object is
 // returned, the virtual function call mechanism will call the rest of the code in this library.  It needs to be C
 // linkage so that it its name is not mangled
 extern "C" {

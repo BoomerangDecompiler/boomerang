@@ -1927,7 +1927,7 @@ void UserProc::branchAnalysis() {
                         branch->setFallBB(fallto->getFallBB());
                         branch->setTakenBB(fallto->getTakenBB());
                         branch->setDest(fallto->getFixedDest());
-                        Exp* cond = new Binary(opAnd,
+                        Exp* cond = Binary::get(opAnd,
                                                new Unary(opNot, branch->getCondExpr()),
                                                fallto->getCondExpr()->clone());
                         branch->setCondExpr(cond->simplify());
@@ -1947,7 +1947,7 @@ void UserProc::branchAnalysis() {
                     // B:
                     if (fallto->getTakenBB() == branch->getTakenBB() && fallto->getBB()->getNumInEdges() == 1) {
                         branch->setFallBB(fallto->getFallBB());
-                        branch->setCondExpr(new Binary(opOr,
+                        branch->setCondExpr(Binary::get(opOr,
                                                        branch->getCondExpr(),
                                                        fallto->getCondExpr()->clone()));
                         assert(fallto->getBB()->getNumInEdges() == 0);
@@ -2045,9 +2045,9 @@ void UserProc::findSpPreservation() {
         for (int p = 0; !stdsp && p < 8; p++) {
             if (DEBUG_PROOF)
                 LOG << "attempting to prove sp = sp + " << p*4 << " for " << getName() << "\n";
-            stdsp = prove(new Binary(opEquals,
+            stdsp = prove(Binary::get(opEquals,
                                      Location::regOf(sp),
-                                     new Binary(opPlus,
+                                     Binary::get(opPlus,
                                                 Location::regOf(sp),
                                                 new Const(p * 4))));
         }
@@ -2086,7 +2086,7 @@ void UserProc::findPreserveds() {
     StatementList& modifieds = theReturnStatement->getModifieds();
     for (mm = modifieds.begin(); mm != modifieds.end(); ++mm) {
         Exp* lhs = ((Assignment*)*mm)->getLeft();
-        Exp* equation = new Binary(opEquals, lhs, lhs);
+        Exp* equation = Binary::get(opEquals, lhs, lhs);
         if (DEBUG_PROOF)
             LOG << "attempting to prove " << equation << " is preserved by " << getName() << "\n";
         if (prove(equation)) {
@@ -2563,7 +2563,7 @@ void UserProc::addParameterSymbols() {
         Exp* lhs = ((Assignment*)*it)->getLeft();
         lhs = lhs->expSubscriptAllNull();
         lhs = lhs->accept(&ic);
-        Location* to = Location::param(strdup(signature->getParamName(i)), this);
+        Exp* to = Location::param(strdup(signature->getParamName(i)), this);
         mapSymbolTo(lhs, to);
     }
 }
@@ -2596,7 +2596,7 @@ Exp *UserProc::getSymbolExp(Exp *le, Type *ty, bool lastPass) {
                         int m = -((Const*)le->getSubExp1()->getSubExp2())->getInt();
                         if (m > n && m < n + (int)(lty->getSize() / 8)) {
                             e = Location::memOf(
-                                    new Binary(opPlus,
+                                    Binary::get(opPlus,
                                                new Unary(opAddrOf, (*it).second->clone()),
                                                new Const(m - n)));
                             if (VERBOSE)
@@ -2651,7 +2651,7 @@ Exp *UserProc::getSymbolExp(Exp *le, Type *ty, bool lastPass) {
                     LOG << "found reference to first member of compound " << name.c_str() << ": " << le << "\n";
                 char* nam = (char*)compound->getName(0);
                 if (nam == nullptr) nam = "??";
-                return new TypedExp(ty, new Binary(opMemberAccess, e, new Const(nam)));
+                return new TypedExp(ty, Binary::get(opMemberAccess, e, new Const(nam)));
             }
         }
 #else
@@ -2725,7 +2725,7 @@ void UserProc::mapExpressionsToLocals(bool lastPass) {
     Boomerang::get()->alert_decompile_debug_point(this, "after processing locals in calls");
 
     // normalise sp usage (turn WILD + sp{0} into sp{0} + WILD)
-    Exp *nn = new Binary(opPlus, new Terminal(opWild), new RefExp(Location::regOf(sp), nullptr));
+    Exp *nn = Binary::get(opPlus, new Terminal(opWild), new RefExp(Location::regOf(sp), nullptr));
     for (it = stmts.begin(); it != stmts.end(); it++) {
         Statement* s = *it;
         std::list<Exp*> results;
@@ -2740,8 +2740,8 @@ void UserProc::mapExpressionsToLocals(bool lastPass) {
     // FIXME: this is probably part of the ADHOC TA
     // look for array locals
     // l = m[(sp{0} + WILD1) - K2]
-    Exp *l = Location::memOf(new Binary(opMinus,
-                                        new Binary(opPlus,
+    Exp *l = Location::memOf(Binary::get(opMinus,
+                                        Binary::get(opPlus,
                                                    new RefExp(Location::regOf(sp), nullptr),
                                                    new Terminal(opWild)),
                                         new Terminal(opWildIntConst)));
@@ -2751,8 +2751,8 @@ void UserProc::mapExpressionsToLocals(bool lastPass) {
         s->searchAll(l, results);
         for (Exp *result : results) {
             // arr = m[sp{0} - K2]
-            Location *arr = Location::memOf(
-                                new Binary(opMinus,
+            Exp *arr = Location::memOf(
+                                Binary::get(opMinus,
                                            new RefExp(Location::regOf(sp), nullptr),
                                            result->getSubExp1()->getSubExp2()->clone()),
                         this);
@@ -2767,7 +2767,7 @@ void UserProc::mapExpressionsToLocals(bool lastPass) {
             if (VERBOSE)
                 LOG << "found a local array using " << n << " bytes\n";
             Exp *replace = Location::memOf(
-                               new Binary(opPlus,
+                               Binary::get(opPlus,
                                           new Unary(opAddrOf, arr),
                                           result->getSubExp1()->getSubExp1()->getSubExp2()->clone()), this);
             //TODO: the change from de8c876e9ca33e6f5aab39191204e80b81048d67 doesn't change anything, but 'looks' better
@@ -2794,7 +2794,7 @@ void UserProc::mapExpressionsToLocals(bool lastPass) {
 
 void UserProc::searchRegularLocals(OPER minusOrPlus, bool lastPass, int sp, StatementList& stmts) {
     // replace expressions in regular statements with locals
-    Location* l;
+    Exp * l;
     if (minusOrPlus == opWild)
         // l = m[sp{0}]
         l = Location::memOf(
@@ -2802,9 +2802,9 @@ void UserProc::searchRegularLocals(OPER minusOrPlus, bool lastPass, int sp, Stat
     else
         // l = m[sp{0} +/- K]
         l = Location::memOf(
-                new Binary(minusOrPlus,
-                           new RefExp(Location::regOf(sp), nullptr),
-                           new Terminal(opWildIntConst)));
+                Binary::get(minusOrPlus,
+                           RefExp::get(Location::regOf(sp), nullptr),
+                           Terminal::get(opWildIntConst)));
     StatementList::iterator it;
     for (it = stmts.begin(); it != stmts.end(); it++) {
         Statement* s = *it;
@@ -3686,14 +3686,14 @@ bool UserProc::prover(Exp *query, std::set<PhiAssign*>& lastPhis, std::map<PhiAs
                 Exp *s1s2 = plus ? plus->getSubExp2() : nullptr;
                 if(plus && s1s2) {
                     if (plus->getOper() == opPlus && s1s2->isIntConst()) {
-                        query->setSubExp2(new Binary(opPlus,
+                        query->setSubExp2(Binary::get(opPlus,
                                                      query->getSubExp2(),
                                                      new Unary(opNeg, s1s2->clone())));
                         query->setSubExp1(((Binary*)plus)->getSubExp1());
                         change = true;
                     }
                     if (plus->getOper() == opMinus && s1s2->isIntConst()) {
-                        query->setSubExp2(new Binary(opPlus, query->getSubExp2(), s1s2->clone()));
+                        query->setSubExp2(Binary::get(opPlus, query->getSubExp2(), s1s2->clone()));
                         query->setSubExp1(((Binary*)plus)->getSubExp1());
                         change = true;
                     }
@@ -3737,7 +3737,7 @@ bool UserProc::prover(Exp *query, std::set<PhiAssign*>& lastPhis, std::map<PhiAs
                                 // another premise! Example: try to prove esp, depends on whether ebp is preserved, so
                                 // recurse to check ebp's preservation. Won't infinitely loop because of the premise map
                                 // FIXME: what if it needs a rx = rx + K preservation?
-                                Exp* newQuery = new Binary(opEquals,
+                                Exp* newQuery = Binary::get(opEquals,
                                                            base->clone(),
                                                            base->clone());
                                 destProc->setPremise(base);
@@ -4385,7 +4385,7 @@ void UserProc::reverseStrengthReduction() {
                             StatementList::iterator it2;
                             for (it2 = stmts2.begin(); it2 != stmts2.end(); it2++)
                                 if (*it2 != as)
-                                    (*it2)->searchAndReplace(r, new Binary(opMult, r->clone(), new Const(c)));
+                                    (*it2)->searchAndReplace(r, Binary::get(opMult, r->clone(), new Const(c)));
                             // that done we can replace c with 1 in as
                             ((Const*)as->getRight()->getSubExp2())->setInt(1);
                         }
@@ -5906,8 +5906,8 @@ void UserProc::dfa_analyze_implict_assigns( Statement* s, Prog* prog )
 }
 // m[idx*K1 + K2]; leave idx wild
 static Exp* scaledArrayPat = Location::memOf(
-    new Binary(opPlus,
-        new Binary(opMult,
+    Binary::get(opPlus,
+        Binary::get(opMult,
             new Terminal(opWild),
             new Terminal(opWildIntConst)),
         new Terminal(opWildIntConst)));
@@ -5936,7 +5936,7 @@ void UserProc::dfa_analyze_scaled_array_ref( Statement* s, Prog* prog )
         nam = prog->getGlobalName(K2);
         if (nam == nullptr)
             nam = prog->newGlobalName(K2);
-        arr = new Binary(opArrayIndex,
+        arr = Binary::get(opArrayIndex,
             Location::global(nam, this),
             idx
             );

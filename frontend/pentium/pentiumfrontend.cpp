@@ -88,7 +88,7 @@ bool PentiumFrontEnd::isDecAh(RTL* r) {
     Assign* asgn = (Assign*)mid;
     Exp* rhs = asgn->getRight();
     Binary ahm1(opMinus,
-                new Binary(opSize,
+                Binary::get(opSize,
                            new Const(8),
                            Location::regOf(12)),
                 new Const(1));
@@ -508,7 +508,7 @@ bool PentiumFrontEnd::helperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL*>* lr
         pRtl->appendStmt(a);
         a = new Assign(
                 Location::regOf(26),
-                new Binary(opShiftR,
+                Binary::get(opShiftR,
                            Location::tempOf(new Const(const_cast<char *>("tmpl"))),
                            new Const(32)));
         pRtl->appendStmt(a);
@@ -521,7 +521,7 @@ bool PentiumFrontEnd::helperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL*>* lr
         RTL* pRtl = new RTL(addr);
         Statement* a = new Assign(
                            Location::regOf(28),
-                           new Binary(opMinus,
+                           Binary::get(opMinus,
                                       Location::regOf(28),
                                       Location::regOf(24)));
         pRtl->appendStmt(a);
@@ -831,7 +831,7 @@ void PentiumFrontEnd::processOverlapped(UserProc* proc) {
                     a = new Assign(
                             IntegerType::get(32),
                             Location::regOf(24+off),
-                            new Binary(opBitOr,
+                            Binary::get(opBitOr,
                                        new Ternary(opAt,
                                                    Location::regOf(24+off),
                                                    new Const(31),
@@ -876,7 +876,7 @@ void PentiumFrontEnd::processOverlapped(UserProc* proc) {
                     a = new Assign(
                             IntegerType::get(32),
                             Location::regOf(24+off),
-                            new Binary(opBitOr,
+                            Binary::get(opBitOr,
                                        new Ternary(opAt,
                                                    Location::regOf(24+off),
                                                    new Const(31),
@@ -893,7 +893,7 @@ void PentiumFrontEnd::processOverlapped(UserProc* proc) {
                     a = new Assign(
                             IntegerType::get(16),
                             Location::regOf(off),
-                            new Binary(opBitOr,
+                            Binary::get(opBitOr,
                                        new Ternary(opAt,
                                                    Location::regOf(off),
                                                    new Const(15),
@@ -914,16 +914,16 @@ void PentiumFrontEnd::processOverlapped(UserProc* proc) {
                     a = new Assign(
                             IntegerType::get(32),
                             Location::regOf(24+off),
-                            new Binary(opBitOr,
+                            Binary::get(opBitOr,
                                        Location::regOf(24+off),
-                                       new Binary(opShiftL,
+                                       Binary::get(opShiftL,
                                                   Location::regOf(12+off),
                                                   new Const(8))));
                     proc->insertStatementAfter(s, a);
                     a = new Assign(
                             IntegerType::get(32),
                             Location::regOf(24+off),
-                            new Binary(opBitAnd,
+                            Binary::get(opBitAnd,
                                        Location::regOf(24+off),
                                        new Const(0xFFFF00FF)));
                     proc->insertStatementAfter(s, a);
@@ -935,16 +935,16 @@ void PentiumFrontEnd::processOverlapped(UserProc* proc) {
                     a = new Assign(
                             IntegerType::get(16),
                             Location::regOf(off),
-                            new Binary(opBitOr,
+                            Binary::get(opBitOr,
                                        Location::regOf(off),
-                                       new Binary(opShiftL,
+                                       Binary::get(opShiftL,
                                                   Location::regOf(12+off),
                                                   new Const(8))));
                     proc->insertStatementAfter(s, a);
                     a = new Assign(
                             IntegerType::get(16),
                             Location::regOf(off),
-                            new Binary(opBitAnd,
+                            Binary::get(opBitAnd,
                                        Location::regOf(off),
                                        new Const(0x00FF)));
                     proc->insertStatementAfter(s, a);
@@ -958,7 +958,7 @@ void PentiumFrontEnd::processOverlapped(UserProc* proc) {
                     a = new Assign(
                             IntegerType::get(32),
                             Location::regOf(24+off_mod8),
-                            new Binary(opBitOr,
+                            Binary::get(opBitOr,
                                        new Ternary(opAt,
                                                    Location::regOf(24+off_mod8),
                                                    new Const(31),

@@ -79,7 +79,7 @@ Exp *ExpTransformer::applyAllTo(Exp *p, bool &bMod)
         }
     //} while (mod);
 
-    cache.push_back(new Binary(opEquals, p->clone(), e->clone()));
+    cache.push_back(Binary::get(opEquals, p->clone(), e->clone()));
     return e;
 }
 

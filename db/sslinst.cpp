@@ -480,7 +480,7 @@ void RTLInstDict::transformPostVars(std::list<Statement *> &rts, bool optimise) 
     for( Statement *rt : rts) {
         // ss appears to be a list of expressions to be searched
         // It is either the LHS and RHS of an assignment, or it's the parameters of a flag call
-        Binary* ss;
+        Exp* ss;
         if( rt->isAssign()) {
             Assign *rt_asgn((Assign*)rt);
             Exp* lhs = rt_asgn->getLeft();
@@ -515,9 +515,9 @@ void RTLInstDict::transformPostVars(std::list<Statement *> &rts, bool optimise) 
             }
             // For an assignment, the two expressions to search are the left and right hand sides (could just put the
             // whole assignment on, I suppose)
-            ss = new Binary(opList,
+            ss = Binary::get(opList,
                             lhs->clone(),
-                            new Binary(opList,
+                            Binary::get(opList,
                                        rhs->clone(),
                                        new Terminal(opNil)));
         } else if( rt->isFlagAssgn()) {
@@ -540,8 +540,7 @@ void RTLInstDict::transformPostVars(std::list<Statement *> &rts, bool optimise) 
                 sr->second.isNew = false;
                 continue;
             }
-            Binary* cur;
-            for (cur = ss; !cur->isNil(); cur = (Binary*)cur->getSubExp2()) {
+            for (auto cur = ss; !cur->isNil(); cur = cur->getSubExp2()) {
                 if( sr->second.used )
                     break;        // Don't bother; already know it's used
                 Exp* s = cur->getSubExp1();

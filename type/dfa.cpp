@@ -52,7 +52,7 @@ int max(int a, int b) {        // Faster to write than to find the #include for
 #define DFA_ITER_LIMIT 20
 
 // idx + K; leave idx wild
-static const Exp* const unscaledArrayPat = new Binary(opPlus,
+static const Exp* const unscaledArrayPat = Binary::get(opPlus,
                                           new Terminal(opWild),
                                           new Terminal(opWildIntConst));
 
@@ -192,9 +192,9 @@ void UserProc::dfaTypeAnalysis() {
                         ADDRESS r = addr - _prog->getGlobalAddr(gloName);
                         Exp *ne;
                         if (!r.isZero()) { //TODO: what if r is NO_ADDR ?
-                            Location *g = Location::global(strdup(gloName), this);
+                            Exp *g = Location::global(strdup(gloName), this);
                             ne = Location::memOf(
-                                     new Binary(opPlus,
+                                     Binary::get(opPlus,
                                                 new Unary(opAddrOf, g),
                                                 new Const(r)), this);
                         } else {
@@ -205,9 +205,9 @@ void UserProc::dfaTypeAnalysis() {
                                 if (ty == nullptr || ty->getSize() == 0)
                                     _prog->setGlobalType(gloName, IntegerType::get(bits));
                             }
-                            Location *g = Location::global(strdup(gloName), this);
+                            Exp *g = Location::global(strdup(gloName), this);
                             if (ty && ty->resolvesToArray())
-                                ne = new Binary(opArrayIndex, g, new Const(0));
+                                ne = Binary::get(opArrayIndex, g, new Const(0));
                             else
                                 ne = g;
                         }
@@ -232,7 +232,7 @@ void UserProc::dfaTypeAnalysis() {
                         ADDRESS K = ADDRESS::g(constK->getInt());
                         Exp* idx = bin_rr->getSubExp1();
                         Exp* arr = new Unary(opAddrOf,
-                                             new Binary(opArrayIndex,
+                                             Binary::get(opArrayIndex,
                                                         Location::global(_prog->getGlobalName(K), this),
                                                         idx));
                         // Beware of changing expressions in implicit assignments... map can become invalid

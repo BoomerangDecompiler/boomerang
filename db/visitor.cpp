@@ -69,7 +69,7 @@ bool SetConscripts::visit(Binary* b, bool& override) {
 }
 
 
-bool StmtVisitor::visit(RTL* rtl) {
+bool StmtVisitor::visit(RTL* /*rtl*/) {
     // Mostly, don't do anything at the RTL level
     return true;
 }
@@ -324,7 +324,7 @@ bool UsedLocalFinder::visit(TypedExp* e, bool& override) {
     // Assumption: (cast)exp where cast is of pointer type means that exp is the address of a local
     if (ty->resolvesToPointer()) {
         Exp* sub = e->getSubExp1();
-        Location* mof = Location::memOf(sub);
+        auto mof = Location::memOf(sub);
         if (proc->findLocal(mof, ty)) {
             used->insert(mof);
             override = true;

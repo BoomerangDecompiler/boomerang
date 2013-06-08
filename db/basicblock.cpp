@@ -34,9 +34,6 @@
 #include <algorithm>
 #include <cstring>
 #include <inttypes.h>
-#if defined(_MSC_VER) && _MSC_VER <= 1200
-#pragma warning(disable:4786)
-#endif
 #include "config.h"
 #ifdef HAVE_LIBGC
 #include "gc.h"
@@ -58,7 +55,7 @@
 #include "log.h"
 #include "visitor.h"
 
-
+using namespace std;
 /**********************************
  * BasicBlock methods
  **********************************/
@@ -754,8 +751,7 @@ Exp *BasicBlock::getCond() throw(LastStatementNotABranchError) {
     BranchStatement* bs = (BranchStatement*)last->getHlStmt();
     if (bs && bs->getKind() == STMT_BRANCH)
         return bs->getCondExpr();
-    if (VERBOSE)
-        LOG << "throwing LastStatementNotABranchError\n";
+    LOG_VERBOSE(1) << "throwing LastStatementNotABranchError\n";
     throw LastStatementNotABranchError(last->getHlStmt());
 }
 
@@ -788,11 +784,6 @@ void BasicBlock::setCond(Exp *e) throw(LastStatementNotABranchError) {
     RTL *last = m_pRtls->back();
     // it should contain a BranchStatement
     assert(not last->empty());
-//    std::find_if(last->rbegin(),last->rend(),
-//                [](Statement*s) -> bool
-//                {
-//                    return s->getKind()==STMT_BRANCH;
-//                });
     for (auto it = last->rbegin(); it != last->rend(); it++) {
         if ((*it)->getKind() == STMT_BRANCH) {
             ((BranchStatement*)(*it))->setCondExpr(e);
@@ -1033,7 +1024,7 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, BasicBlock * latch,
                 // write the 'while' predicate
                 Exp *cond = getCond();
                 if (m_OutEdges[BTHEN] == loopFollow) {
-                    cond = new Unary(opNot, cond);
+                    cond = Unary::get(opNot, cond);
                     cond = cond->simplify();
                 }
                 hll->AddPretestedLoopHeader(indLevel, cond);
@@ -1184,10 +1175,10 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, BasicBlock * latch,
                 hll->AddCaseCondHeader(indLevel, psi->pSwitchVar);
             } else {
                 Exp *cond = getCond();
-                if (cond == nullptr)
-                    cond = new Const(ADDRESS::g(0xfeedface));  // hack, but better than a crash
+                if (!cond)
+                    cond = Const::get(ADDRESS::g(0xfeedface));  // hack, but better than a crash
                 if (cType == IfElse) {
-                    cond = new Unary(opNot, cond->clone());
+                    cond = Unary::get(opNot, cond->clone());
                     cond = cond->simplify();
                 }
                 if (cType == IfThenElse)
@@ -1310,8 +1301,8 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, BasicBlock * latch,
             if (m_OutEdges.size() != 1) {
                 BasicBlock * other = m_OutEdges[1];
                 LOG << "found seq with more than one outedge!\n";
-                if (getDest()->isIntConst() &&
-                        ((Const*)getDest())->getAddr() == child->getLowAddr()) {
+                auto const_dest = static_cast<Const *>(getDest());
+                if (const_dest->isIntConst() && const_dest->getAddr() == child->getLowAddr()) {
                     other = child;
                     child = m_OutEdges[1];
                     LOG << "taken branch is first out edge\n";
@@ -1657,7 +1648,7 @@ void BasicBlock::getLiveOut(LocationSet &liveout, LocationSet& phiLocs) {
             PhiAssign* pa = (PhiAssign*)st;
             // Get the jth operand to the phi function; it has a use from BB *this
             Statement* def = pa->getStmtAt(j);
-            RefExp* r = new RefExp(pa->getLeft()->clone(), def);
+            Exp * r = RefExp::get(pa->getLeft()->clone(), def);
             liveout.insert(r);
             phiLocs.insert(r);
             if (DEBUG_LIVENESS)
@@ -1693,66 +1684,66 @@ int BasicBlock::whichPred(BasicBlock * pred) {
 // With array processing, we get a new form, call it form 'a' (don't confuse with form 'A'):
 // Pattern: <base>{}[<index>]{} where <index> could be <var> - <Kmin>
 // TODO: use initializer lists
-static Exp* forma = new RefExp(
-                        new Binary(opArrayIndex,
-                                   new RefExp(
-                                       new Terminal(opWild),
+static Exp * forma = RefExp::get(
+                        Binary::get(opArrayIndex,
+                                   RefExp::get(
+                                       Terminal::get(opWild),
                                        (Statement*)-1),
-                                   new Terminal(opWild)),
+                                   Terminal::get(opWild)),
                         (Statement*)-1);
 
 // Pattern: m[<expr> * 4 + T ]
 static Exp* formA    = Location::memOf(
-                              new Binary(opPlus,
-                                         new Binary(opMult,
-                                                    new Terminal(opWild),
-                                                    new Const(4)),
-                                         new Terminal(opWildIntConst)));
+                              Binary::get(opPlus,
+                                         Binary::get(opMult,
+                                                    Terminal::get(opWild),
+                                                    Const::get(4)),
+                                         Terminal::get(opWildIntConst)));
 
 // With array processing, we get a new form, call it form 'o' (don't confuse with form 'O'):
 // Pattern: <base>{}[<index>]{} where <index> could be <var> - <Kmin>
 // NOT COMPLETED YET!
-static Exp* formo = new RefExp(
-                        new Binary(opArrayIndex,
-                                   new RefExp(
-                                       new Terminal(opWild),
+static Exp * formo = RefExp::get(
+                        Binary::get(opArrayIndex,
+                                   RefExp::get(
+                                       Terminal::get(opWild),
                                        (Statement*)-1),
-                                   new Terminal(opWild)),
+                                   Terminal::get(opWild)),
                         (Statement*)-1);
 
 // Pattern: m[<expr> * 4 + T ] + T
-static Exp* formO = new Binary(opPlus,
+static Exp * formO = Binary::get(opPlus,
                                Location::memOf(
-                                   new Binary(opPlus,
-                                              new Binary(opMult,
-                                                         new Terminal(opWild),
-                                                         new Const(4)),
-                                              new Terminal(opWildIntConst))),
-                               new Terminal(opWildIntConst));
+                                   Binary::get(opPlus,
+                                              Binary::get(opMult,
+                                                         Terminal::get(opWild),
+                                                         Const::get(4)),
+                                              Terminal::get(opWildIntConst))),
+                               Terminal::get(opWildIntConst));
 
 // Pattern: %pc + m[%pc     + (<expr> * 4) + k]
 // where k is a small constant, typically 28 or 20
-static Exp* formR = new Binary(opPlus,
-                               new Terminal(opPC),
-                               Location::memOf(new Binary(opPlus,
-                                                          new Terminal(opPC),
-                                                          new Binary(opPlus,
-                                                                     new Binary(opMult,
-                                                                                new Terminal(opWild),
-                                                                                new Const(4)),
-                                                                     new Const(opWildIntConst)))));
+static Exp * formR = Binary::get(opPlus,
+                               Terminal::get(opPC),
+                               Location::memOf(Binary::get(opPlus,
+                                                          Terminal::get(opPC),
+                                                          Binary::get(opPlus,
+                                                                     Binary::get(opMult,
+                                                                                Terminal::get(opWild),
+                                                                                Const::get(4)),
+                                                                     Const::get(opWildIntConst)))));
 
 // Pattern: %pc + m[%pc + ((<expr> * 4) - k)] - k
 // where k is a smallish constant, e.g. 288 (/usr/bin/vi 2.6, 0c4233c).
-static Exp* formr = new Binary(opPlus,
-                               new Terminal(opPC),
-                               Location::memOf(new Binary(opPlus,
-                                                          new Terminal(opPC),
-                                                          new Binary(opMinus,
-                                                                     new Binary(opMult,
-                                                                                new Terminal(opWild),
-                                                                                new Const(4)),
-                                                                     new Terminal(opWildIntConst)))));
+static Exp * formr = Binary::get(opPlus,
+                               Terminal::get(opPC),
+                               Location::memOf(Binary::get(opPlus,
+                                                          Terminal::get(opPC),
+                                                          Binary::get(opMinus,
+                                                                     Binary::get(opMult,
+                                                                                Terminal::get(opWild),
+                                                                                Const::get(4)),
+                                                                     Terminal::get(opWildIntConst)))));
 
 static Exp* hlForms[] = {forma, formA, formo, formO, formR, formr};
 static char chForms[] = {  'a',   'A',   'o',   'O',   'R',   'r'};
@@ -1771,79 +1762,79 @@ void init_basicblock() {
 
 // Vcall high level patterns
 // Pattern 0: global<wild>[0]
-static Binary* vfc_funcptr = new Binary(opArrayIndex,
-                                        new Location(opGlobal,
-                                                     new Terminal(opWildStrConst), nullptr),
-                                        new Const(0));
+static Exp * vfc_funcptr = Binary::get(opArrayIndex,
+                                        Location::get(opGlobal,
+                                                     Terminal::get(opWildStrConst), nullptr),
+                                        Const::get(0));
 
 // Pattern 1: m[ m[ <expr> + K1 ] + K2 ]
 // K1 is vtable offset, K2 is virtual function offset (could come from m[A2], if A2 is in read-only memory
-static Location* vfc_both = Location::memOf(
-                                new Binary(opPlus,
+static Exp * vfc_both = Location::memOf(
+                                Binary::get(opPlus,
                                            Location::memOf(
-                                               new Binary(opPlus,
-                                                          new Terminal(opWild),
-                                                          new Terminal(opWildIntConst))),
-                                           new Terminal(opWildIntConst)));
+                                               Binary::get(opPlus,
+                                                          Terminal::get(opWild),
+                                                          Terminal::get(opWildIntConst))),
+                                           Terminal::get(opWildIntConst)));
 
 // Pattern 2: m[ m[ <expr> ] + K2]
-static Location* vfc_vto = Location::memOf(
-                               new Binary(opPlus,
+static Exp * vfc_vto = Location::memOf(
+                               Binary::get(opPlus,
                                           Location::memOf(
-                                              new Terminal(opWild)),
-                                          new Terminal(opWildIntConst)));
+                                              Terminal::get(opWild)),
+                                          Terminal::get(opWildIntConst)));
 
 // Pattern 3: m[ m[ <expr> + K1] ]
-static Location* vfc_vfo = Location::memOf(
+static Exp * vfc_vfo = Location::memOf(
                         Location::memOf(
-                            new Binary(opPlus,
-                                       new Terminal(opWild),
-                                       new Terminal(opWildIntConst))));
+                            Binary::get(opPlus,
+                                       Terminal::get(opWild),
+                                       Terminal::get(opWildIntConst))));
 
 // Pattern 4: m[ m[ <expr> ] ]
-static Location* vfc_none = Location::memOf(
+static Exp * vfc_none = Location::memOf(
                          Location::memOf(
-                             new Terminal(opWild)));
+                             Terminal::get(opWild)));
 
 static Exp* hlVfc[] = {vfc_funcptr, vfc_both, vfc_vto, vfc_vfo, vfc_none};
 
-void findSwParams(char form, Exp* e, Exp*& expr, ADDRESS& T) {
+void findSwParams(char form, Exp * e, Exp *& expr, ADDRESS& T) {
     switch (form) {
         case 'a': {
             // Pattern: <base>{}[<index>]{}
-            e = ((RefExp*)e)->getSubExp1();
-            Exp* base = ((Binary*)e)->getSubExp1();
+            e = e->getSubExp1();
+            Exp * base = e->getSubExp1();
             if (base->isSubscript())
-                base = ((RefExp*)base)->getSubExp1();
-            Exp* con = ((Location*)base)->getSubExp1();
-            const char* gloName = ((Const*)con)->getStr();
-            UserProc* p = ((Location*)base)->getProc();
+                base = base->getSubExp1();
+            auto con = static_cast<Const *>(base->getSubExp1());
+            const char* gloName = con->getStr();
+            UserProc* p = static_cast<Location *>(base)->getProc();
             Prog* prog = p->getProg();
             T = (ADDRESS)prog->getGlobalAddr(gloName);
-            expr = ((Binary*)e)->getSubExp2();
+            expr = e->getSubExp2();
             break;
         }
         case 'A': {
             // Pattern: m[<expr> * 4 + T ]
             if (e->isSubscript()) e = e->getSubExp1();
             // b will be (<expr> * 4) + T
-            Binary* b = (Binary*)((Location*)e)->getSubExp1();
-            Const* TT = (Const*)b->getSubExp2();
-            T = TT->getAddr();
-            b = (Binary*)b->getSubExp1();    // b is now <expr> * 4
+            Exp * b = e->getSubExp1();
+            T = static_cast<Const *>(b->getSubExp2())->getAddr();
+            b = b->getSubExp1();    // b is now <expr> * 4
             expr = b->getSubExp1();
             break;
         }
         case 'O': {        // Form O
             // Pattern: m[<expr> * 4 + T ] + T
-            T = ((Const*)((Binary*)e)->getSubExp2())->getAddr();
+            T = static_cast<Const *>(e->getSubExp2())->getAddr();
             // l = m[<expr> * 4 + T ]:
-            Exp* l = ((Binary*)e)->getSubExp1();
-            if (l->isSubscript()) l = l->getSubExp1();
+            Exp* l = e->getSubExp1();
+            if (l->isSubscript())
+               l = l->getSubExp1();
             // b = <expr> * 4 + T:
-            Binary* b = (Binary*)((Location*)l)->getSubExp1();
+            Exp * b = l->getSubExp1();
             // b = <expr> * 4:
-            b = (Binary*)b->getSubExp1();
+            b = b->getSubExp1();
             // expr = <expr>:
             expr = b->getSubExp1();
             break;
@@ -1852,14 +1843,15 @@ void findSwParams(char form, Exp* e, Exp*& expr, ADDRESS& T) {
             // Pattern: %pc + m[%pc     + (<expr> * 4) + k]
             T = ADDRESS::g(0L); // ?
             // l = m[%pc  + (<expr> * 4) + k]:
-            Exp* l = ((Binary*)e)->getSubExp2();
-            if (l->isSubscript()) l = l->getSubExp1();
+            Exp* l = e->getSubExp2();
+            if (l->isSubscript()) 
+                l = l->getSubExp1();
             // b = %pc    + (<expr> * 4) + k:
-            Binary* b = (Binary*)((Location*)l)->getSubExp1();
+            Exp * b = l->getSubExp1();
             // b = (<expr> * 4) + k:
-            b = (Binary*)b->getSubExp2();
+            b = b->getSubExp2();
             // b = <expr> * 4:
-            b = (Binary*)b->getSubExp1();
+            b = b->getSubExp1();
             // expr = <expr>:
             expr = b->getSubExp1();
             break;
@@ -1868,16 +1860,17 @@ void findSwParams(char form, Exp* e, Exp*& expr, ADDRESS& T) {
             // Pattern: %pc + m[%pc + ((<expr> * 4) - k)] - k
             T = ADDRESS::g(0L);     // ?
             // b = %pc + m[%pc + ((<expr> * 4) - k)]:
-            Binary* b = (Binary*)((Binary*)e)->getSubExp1();
+            Exp * b = e->getSubExp1();
             // l = m[%pc + ((<expr> * 4) - k)]:
             Exp* l = b->getSubExp2();
-            if (l->isSubscript()) l = l->getSubExp1();
+            if (l->isSubscript())
+                l = l->getSubExp1();
             // b = %pc + ((<expr> * 4) - k)
-            b = (Binary*)((Location*)l)->getSubExp1();
+            b = l->getSubExp1();
             // b = ((<expr> * 4) - k):
-            b = (Binary*)b->getSubExp2();
+            b = b->getSubExp2();
             // b = <expr> * 4:
-            b = (Binary*)b->getSubExp1();
+            b = b->getSubExp1();
             // expr = <expr>
             expr = b->getSubExp1();
             break;
@@ -1908,10 +1901,10 @@ int BasicBlock::findNumCases() {
         Exp* pCond = lastStmt->getCondExpr();
         if (pCond->getArity() != 2)
             continue;
-        Exp* rhs = ((Binary*)pCond)->getSubExp2();
+        Exp * rhs = pCond->getSubExp2();
         if (!rhs->isIntConst())
             continue;
-        int k = ((Const*)rhs)->getInt();
+        int k = static_cast<Const *>(rhs)->getInt();
         OPER op = pCond->getOper();
         if (op == opGtr || op == opGtrUns)
             return k+1;
@@ -2034,10 +2027,10 @@ bool BasicBlock::decodeIndirectJmp(UserProc* proc) {
                 //TODO: missing form = 'R' iOffset is not being set
                 swi->iUpper = swi->iNumTable-1;
                 swi->iLower = 0;
-                if (expr->getOper() == opMinus && ((Binary*)expr)->getSubExp2()->isIntConst()) {
-                    swi->iLower = ((Const*)((Binary*)expr)->getSubExp2())->getInt();
+                if (expr->getOper() == opMinus && expr->getSubExp2()->isIntConst()) {
+                    swi->iLower = static_cast<Const*>(expr->getSubExp2())->getInt();
                     swi->iUpper += swi->iLower;
-                    expr = ((Binary*)expr)->getSubExp1();
+                    expr = expr->getSubExp1();
                 }
                 swi->pSwitchVar = expr;
                 lastStmt->setDest((Exp*)nullptr);
@@ -2048,7 +2041,7 @@ bool BasicBlock::decodeIndirectJmp(UserProc* proc) {
             // Did not match a switch pattern. Perhaps it is a Fortran style goto with constants at the leaves of the
             // phi tree. Basically, a location with a reference, e.g. m[r28{-} - 16]{87}
             if (e->isSubscript()) {
-                Exp* sub = ((RefExp*)e)->getSubExp1();
+                Exp* sub = e->getSubExp1();
                 if (sub->isLocation()) {
                     // Yes, we have <location>{ref}. Follow the tree and store the constant values that <location>
                     // could be assigned to in dests
@@ -2121,13 +2114,14 @@ bool BasicBlock::decodeIndirectJmp(UserProc* proc) {
                 // Pattern 0: global<name>{0}[0]{0}
                 K2 = 0;
                 if (e->isSubscript()) e = e->getSubExp1();
-                e = ((Binary*)e)->getSubExp1();                // e is global<name>{0}[0]
-                if (e->isArrayIndex() &&
-                        (t1 = ((Binary*)e)->getSubExp2(), t1->isIntConst()) &&
-                        ((Const*)t1)->getInt() == 0)
-                    e = ((Binary*)e)->getSubExp1();             // e is global<name>{0}
-                if (e->isSubscript()) e = e->getSubExp1();    // e is global<name>
-                Const* con = (Const*)((Location*)e)->getSubExp1(); // e is <name>
+                e = e->getSubExp1();                // e is global<name>{0}[0]
+                t1 = e->getSubExp2();
+                auto t1_const = static_cast<Const *>(t1);
+                if (e->isArrayIndex() && (t1->isIntConst()) && t1_const->getInt() == 0)
+                    e = e->getSubExp1();             // e is global<name>{0}
+                if (e->isSubscript())
+                    e = e->getSubExp1();    // e is global<name>
+                Const* con = static_cast<Const*>(e->getSubExp1()); // e is <name>
                 Global* glo = prog->getGlobal(con->getStr());
                 assert(glo);
                 // Set the type to pointer to function, if not already
@@ -2139,36 +2133,35 @@ bool BasicBlock::decodeIndirectJmp(UserProc* proc) {
                 // map that overlaps with addr
                 // For now, let K1 = 0:
                 K1 = 0;
-                vtExp = new Const(addr);
+                vtExp = Const::get(addr);
                 break;
             }
             case 1: {
                 // Example pattern: e = m[m[r27{25} + 8]{-} + 8]{-}
                 if (e->isSubscript())
-                    e = ((RefExp*)e)->getSubExp1();
-                e = ((Location*)e)->getSubExp1();        // e = m[r27{25} + 8]{-} + 8
-                Exp* rhs = ((Binary*)e)->getSubExp2();    // rhs = 8
+                    e = e->getSubExp1();
+                e = e->getSubExp1();        // e = m[r27{25} + 8]{-} + 8
+                Exp* rhs = e->getSubExp2();    // rhs = 8
                 K2 = ((Const*)rhs)->getInt();
-                Exp* lhs = ((Binary*)e)->getSubExp1();    // lhs = m[r27{25} + 8]{-}
+                Exp* lhs = e->getSubExp1();    // lhs = m[r27{25} + 8]{-}
                 if (lhs->isSubscript())
-                    lhs = ((RefExp*)lhs)->getSubExp1();    // lhs = m[r27{25} + 8]
+                    lhs = lhs->getSubExp1();    // lhs = m[r27{25} + 8]
                 vtExp = lhs;
-                lhs = ((Unary*)lhs)->getSubExp1();        // lhs =   r27{25} + 8
-                //Exp* object = ((Binary*)lhs)->getSubExp1();
-                Exp* CK1 = ((Binary*)lhs)->getSubExp2();
+                lhs = lhs->getSubExp1();        // lhs =   r27{25} + 8
+                Exp* CK1 = lhs->getSubExp2();
                 K1 = ((Const*)CK1)->getInt();
                 break;
             }
             case 2: {
                 // Example pattern: e = m[m[r27{25}]{-} + 8]{-}
                 if (e->isSubscript())
-                    e = ((RefExp*)e)->getSubExp1();
-                e = ((Location*)e)->getSubExp1();        // e = m[r27{25}]{-} + 8
-                Exp* rhs = ((Binary*)e)->getSubExp2();    // rhs = 8
+                    e = e->getSubExp1();
+                e = e->getSubExp1();        // e = m[r27{25}]{-} + 8
+                Exp* rhs = e->getSubExp2();    // rhs = 8
                 K2 = ((Const*)rhs)->getInt();
-                Exp* lhs = ((Binary*)e)->getSubExp1();    // lhs = m[r27{25}]{-}
+                Exp* lhs = e->getSubExp1();    // lhs = m[r27{25}]{-}
                 if (lhs->isSubscript())
-                    lhs = ((RefExp*)lhs)->getSubExp1();    // lhs = m[r27{25}]
+                    lhs = lhs->getSubExp1();    // lhs = m[r27{25}]
                 vtExp = lhs;
                 K1 = 0;
                 break;
@@ -2176,26 +2169,26 @@ bool BasicBlock::decodeIndirectJmp(UserProc* proc) {
             case 3: {
                 // Example pattern: e = m[m[r27{25} + 8]{-}]{-}
                 if (e->isSubscript())
-                    e = ((RefExp*)e)->getSubExp1();
-                e = ((Location*)e)->getSubExp1();        // e = m[r27{25} + 8]{-}
+                    e = e->getSubExp1();
+                e = e->getSubExp1();        // e = m[r27{25} + 8]{-}
                 K2 = 0;
                 if (e->isSubscript())
-                    e = ((RefExp*)e)->getSubExp1();        // e = m[r27{25} + 8]
+                    e = e->getSubExp1();        // e = m[r27{25} + 8]
                 vtExp = e;
-                Exp* lhs = ((Unary*)e)->getSubExp1();        // lhs =   r27{25} + 8
+                Exp* lhs = e->getSubExp1();        // lhs =   r27{25} + 8
                 // Exp* object = ((Binary*)lhs)->getSubExp1();
-                Exp* CK1 = ((Binary*)lhs)->getSubExp2();
+                Exp* CK1 = lhs->getSubExp2();
                 K1 = ((Const*)CK1)->getInt();
                 break;
             }
             case 4: {
                 // Example pattern: e = m[m[r27{25}]{-}]{-}
                 if (e->isSubscript())
-                    e = ((RefExp*)e)->getSubExp1();
-                e = ((Location*)e)->getSubExp1();        // e = m[r27{25}]{-}
+                    e = e->getSubExp1();
+                e = e->getSubExp1();        // e = m[r27{25}]{-}
                 K2 = 0;
                 if (e->isSubscript())
-                    e = ((RefExp*)e)->getSubExp1();        // e = m[r27{25}]
+                    e = e->getSubExp1();        // e = m[r27{25}]
                 vtExp = e;
                 K1 = 0;
                 // Exp* object = ((Unary*)e)->getSubExp1();

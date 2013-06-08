@@ -622,8 +622,8 @@ bool LowerType::operator<(const Type& other) const {
 Exp *Type::match(Type *pattern) {
     if (pattern->isNamed()) {
         LOG << "type match: " << this->getCtype() << " to " << pattern->getCtype() << "\n";
-        return new Binary(opList,
-                          new Binary(opEquals,
+        return Binary::get(opList,
+                          Binary::get(opEquals,
                                      new Unary(opVar,
                                                new Const(pattern->asNamed()->getName())),
                                      new TypeVal(this->clone())),
@@ -1360,7 +1360,7 @@ void DataIntervalMap::replaceComponents(ADDRESS addr, const char* name, Type* ty
         for (it = it1; it != it2; ++it) {
             // Check if there is an existing local here
             Exp* locl = Location::memOf(
-                            new Binary(opPlus,
+                            Binary::get(opPlus,
                                        rsp0->clone(),
                                        new Const(it->first)));
             locl->simplifyArith();                        // Convert m[sp{0} + -4] to m[sp{0} - 4]
@@ -1376,11 +1376,11 @@ void DataIntervalMap::replaceComponents(ADDRESS addr, const char* name, Type* ty
                 // want s.m where s is the new compound object and m is the member at offset bitOffset
                 const char* memName = c->getNameAtOffset(bitOffset);
                 Exp* s = Location::memOf(
-                             new Binary(opPlus,
+                             Binary::get(opPlus,
                                         rsp0->clone(),
                                         new Const(addr)));
                 s->simplifyArith();
-                Exp* memberExp = new Binary(opMemberAccess,
+                Exp* memberExp = Binary::get(opMemberAccess,
                                             s,
                                             new Const(memName));
                 proc->mapSymbolTo(locl, memberExp);

@@ -11,6 +11,8 @@ SET(SRC
     sparc/sparcdecoder.h
     sparc/sparcfrontend.cpp
     sparc/sparcfrontend.h
+#    mc68k/m68kfrontend.cpp
+#    mc68k/m68kdecoder.cpp
     mips/mipsdecoder.cpp
     mips/mipsdecoder.h
     mips/mipsfrontend.cpp

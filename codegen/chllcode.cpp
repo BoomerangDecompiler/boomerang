@@ -1256,11 +1256,11 @@ void CHLLCode::AddAssignmentStatement(int indLevel, Assign *asgn) {
         appendExp(s, *exp1, PREC_ASSIGN);
         s << " = ";
         int mask = ~(((1 << (m-n+1))-1) << m);            // MSVC winges without most of these parentheses
-        rhs = new Binary(opBitAnd,
+        rhs = Binary::get(opBitAnd,
                          exp1,
-                         new Binary(opBitOr,
+                         Binary::get(opBitOr,
                                     new Const(mask),
-                                    new Binary(opShiftL,
+                                    Binary::get(opShiftL,
                                                rhs,
                                                new Const(m))));
         rhs = rhs->simplify();

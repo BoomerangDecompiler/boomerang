@@ -37,7 +37,7 @@ extern const char* operStrings[];
 
 Exp *GenericExpTransformer::applyFuncs(Exp *rhs)
 {
-    Exp *call, *callw = new Binary(opFlagCall, new Const("memberAtOffset"), new Terminal(opWild));
+    Exp *call, *callw = Binary::get(opFlagCall, Const::get("memberAtOffset"), Terminal::get(opWild));
     if (rhs->search(callw, call)) {
         assert(call->getSubExp2()->getOper() == opList);
         Exp *p1 = applyFuncs(call->getSubExp2()->getSubExp1());
@@ -53,7 +53,7 @@ Exp *GenericExpTransformer::applyFuncs(Exp *rhs)
         // probably need to make this func take bits in future
         int offset = ((Const*)p2)->getInt() * 8;
         const char *member = ty->asCompound()->getNameAtOffset(offset);
-        Exp *result = new Const((char*)member);
+        Exp *result = Const::get((char*)member);
         bool change;
         rhs = rhs->searchReplace(callw->clone(), result->clone(), change);
         assert(change);
@@ -61,7 +61,7 @@ Exp *GenericExpTransformer::applyFuncs(Exp *rhs)
         LOG << "replaced " << call << " with " << result << "\n";
 #endif
     }
-    callw = new Binary(opFlagCall, new Const("offsetToMember"), new Terminal(opWild));
+    callw = Binary::get(opFlagCall, Const::get("offsetToMember"), Terminal::get(opWild));
     if (rhs->search(callw, call)) {
         assert(call->getSubExp2()->getOper() == opList);
         Exp *p1 = applyFuncs(call->getSubExp2()->getSubExp1());
@@ -84,7 +84,7 @@ Exp *GenericExpTransformer::applyFuncs(Exp *rhs)
         LOG << "replaced " << call << " with " << result << "\n";
 #endif
     }
-    callw = new Binary(opFlagCall, new Const("plus"), new Terminal(opWild));
+    callw = Binary::get(opFlagCall, new Const("plus"), new Terminal(opWild));
     if (rhs->search(callw, call)) {
         assert(call->getSubExp2()->getOper() == opList);
         Exp *p1 = applyFuncs(call->getSubExp2()->getSubExp1());
@@ -101,7 +101,7 @@ Exp *GenericExpTransformer::applyFuncs(Exp *rhs)
         LOG << "replaced " << call << " with " << result << "\n";
 #endif
     }
-    callw = new Binary(opFlagCall, new Const("neg"), new Terminal(opWild));
+    callw = Binary::get(opFlagCall, new Const("neg"), new Terminal(opWild));
     if (rhs->search(callw, call)) {
         Exp *p1 = applyFuncs(call->getSubExp2());
         assert(p1->getOper() == opIntConst);
@@ -174,7 +174,7 @@ bool GenericExpTransformer::checkCond(Exp *cond, Exp *bindings)
                     for (le = bindings; le->getOper() != opNil && le->getSubExp2()->getOper() != opNil; le = le->getSubExp2())
                         ;
                     assert(le->getOper() != opNil);
-                    le->setSubExp2(new Binary(opList, new Binary(opEquals, lhs->clone(), rhs->clone()), new Terminal(opNil)));
+                    le->setSubExp2(Binary::get(opList, Binary::get(opEquals, lhs->clone(), rhs->clone()), new Terminal(opNil)));
 #if 0
                     LOG << "bindings now: " << bindings << "\n";
 #endif

@@ -232,14 +232,14 @@ bool AssignSet::exists(Assign* a) {
 
 // Find a definition for loc in this Assign set. Return true if found
 bool AssignSet::definesLoc(Exp* loc) {
-    Assign* as = new Assign(loc, new Terminal(opWild));
+    Assign* as = new Assign(loc, Terminal::get(opWild));
     iterator ff = find(as);
     return ff != end();
 }
 
 // Find a definition for loc on the LHS in this Assign set. If found, return pointer to the Assign with that LHS
 Assign* AssignSet::lookupLoc(Exp* loc) {
-    Assign* as = new Assign(loc, new Terminal(opWild));
+    Assign* as = new Assign(loc, Terminal::get(opWild));
     iterator ff = find(as);
     if (ff == end()) return nullptr;
     return *ff;
@@ -689,7 +689,7 @@ void LocationSet::diff(LocationSet* o) {
         std::cerr << "\n";
 }
 Range::Range() : stride(1), lowerBound(MIN), upperBound(MAX) {
-    base = new Const(0);
+    base = Const::get(0);
 }
 
 Range::Range(int stride, int lowerBound, int upperBound, Exp *base) :
@@ -775,7 +775,7 @@ void Range::unionWith(Range &r) {
         }
     }
     if (!(*base == *r.base)) {
-        stride = 1; lowerBound = MIN; upperBound = MAX; base = new Const(0);
+        stride = 1; lowerBound = MIN; upperBound = MAX; base = Const::get(0);
         if (VERBOSE && DEBUG_RANGE_ANALYSIS)
             LOG << this << "\n";
         return;
@@ -794,7 +794,7 @@ void Range::widenWith(Range &r) {
     if (VERBOSE && DEBUG_RANGE_ANALYSIS)
         LOG << "widening " << this << " with " << r << " got ";
     if (!(*base == *r.base)) {
-        stride = 1; lowerBound = MIN; upperBound = MAX; base = new Const(0);
+        stride = 1; lowerBound = MIN; upperBound = MAX; base = Const::get(0);
         if (VERBOSE && DEBUG_RANGE_ANALYSIS)
             LOG << this << "\n";
         return;
@@ -809,7 +809,7 @@ void Range::widenWith(Range &r) {
 }
 Range &RangeMap::getRange(Exp *loc) {
     if (ranges.find(loc) == ranges.end()) {
-        return *(new Range(1, Range::MIN, Range::MAX, new Const(0)));
+        return *(new Range(1, Range::MIN, Range::MAX, Const::get(0)));
     }
     return ranges[loc];
 }
@@ -858,7 +858,7 @@ Exp *RangeMap::substInto(Exp *e, std::set<Exp*, lessExpStar> *only) {
             if(DEBUG_RANGE_ANALYSIS)
                 eold=e->clone();
             if ((*it).second.getLowerBound() == (*it).second.getUpperBound()) {
-                e = e->searchReplaceAll((*it).first, (new Binary(opPlus, (*it).second.getBase(), new Const((*it).second.getLowerBound())))->simplify(), change);
+                e = e->searchReplaceAll((*it).first, (Binary::get(opPlus, (*it).second.getBase(), new Const((*it).second.getLowerBound())))->simplify(), change);
             }
             if (change) {
                 e = e->simplify()->simplifyArith();

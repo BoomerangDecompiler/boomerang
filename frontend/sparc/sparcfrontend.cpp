@@ -935,10 +935,10 @@ bool SparcFrontEnd::processProc(ADDRESS address, UserProc* proc, std::ofstream &
                                 //     add %o7, K, %o7
                                 // is equivalent to call foo / ba .+K
                                 Exp* rhs = ((Assign*)a)->getRight();
-                                Location *o7 = Location::regOf(15);
+                                auto o7 ( Location::regOf(15) );
                                 if (rhs->getOper() == opPlus &&
-                                        (((Binary*)rhs)->getSubExp2()->getOper() == opIntConst) &&
-                                        (*((Binary*)rhs)->getSubExp1() == *o7)) {
+                                        (rhs->getSubExp2()->getOper() == opIntConst) &&
+                                        (*rhs->getSubExp1() == *o7)) {
                                     // Get the constant
                                     int K = ((Const*)((Binary*)rhs)->getSubExp2()) ->getInt();
                                     case_CALL(address, inst, delay_inst, BB_rtls, proc, callList, os, true);
@@ -1263,10 +1263,10 @@ void SparcFrontEnd::appendAssignment(Exp* lhs, Exp* rhs, Type* type, ADDRESS add
  * *128* m[m[r[14]+64]] = m[r[8]] OP m[r[9]] */
 void SparcFrontEnd::quadOperation(ADDRESS addr, std::list<RTL*>* lrtl, OPER op)
 {
-    Exp* lhs = Location::memOf(Location::memOf(new Binary(opPlus,
+    Exp* lhs = Location::memOf(Location::memOf(Binary::get(opPlus,
                                                           Location::regOf(14),
                                                           new Const(64))));
-    Exp* rhs = new Binary(op,
+    Exp* rhs = Binary::get(op,
                           Location::memOf(Location::regOf(8)),
                           Location::memOf(Location::regOf(9)));
     appendAssignment(lhs, rhs, FloatType::get(128), addr, lrtl);
@@ -1287,32 +1287,32 @@ bool SparcFrontEnd::helperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL*>* lrtl
     Exp* rhs;
     if (name == ".umul") {
         // %o0 * %o1
-        rhs = new Binary(opMult,
+        rhs = Binary::get(opMult,
                          Location::regOf(8),
                          Location::regOf(9));
     } else if (name == ".mul") {
         // %o0 *! %o1
-        rhs = new Binary(opMults,
+        rhs = Binary::get(opMults,
                          Location::regOf(8),
                          Location::regOf(9));
     } else if (name == ".udiv") {
         // %o0 / %o1
-        rhs = new Binary(opDiv,
+        rhs = Binary::get(opDiv,
                          Location::regOf(8),
                          Location::regOf(9));
     } else if (name == ".div") {
         // %o0 /! %o1
-        rhs = new Binary(opDivs,
+        rhs = Binary::get(opDivs,
                          Location::regOf(8),
                          Location::regOf(9));
     } else if (name == ".urem") {
         // %o0 % %o1
-        rhs = new Binary(opMod,
+        rhs = Binary::get(opMod,
                          Location::regOf(8),
                          Location::regOf(9));
     } else if (name == ".rem") {
         // %o0 %! %o1
-        rhs = new Binary(opMods,
+        rhs = Binary::get(opMods,
                          Location::regOf(8),
                          Location::regOf(9));
         //    } else if (name.substr(0, 6) == ".stret") {
@@ -1363,7 +1363,7 @@ void SparcFrontEnd::gen32op32gives64(OPER op, std::list<RTL*>* lrtl, ADDRESS add
     // tmp[tmpl] = sgnex(32, 64, r8) op sgnex(32, 64, r9)
     Statement* a = new Assign(64,
                               Location::tempOf(new Const("tmpl")),
-                              new Binary(op,            // opMult or opMults
+                              Binary::get(op,            // opMult or opMults
                                          new Ternary(opSgnEx, Const(32), Const(64),
                                                      Location::regOf(8)),
                                          new Ternary(opSgnEx, Const(32), Const(64),
@@ -1391,7 +1391,7 @@ void SparcFrontEnd::gen32op32gives64(OPER op, std::list<RTL*>* lrtl, ADDRESS add
     // r[tmp] = r8 op r9
     Assign* a = new Assign(
                     Location::tempOf(new Const(const_cast<char *>("tmp"))),
-                    new Binary(op,            // opMult or opMults
+                    Binary::get(op,            // opMult or opMults
                                Location::regOf(8),
                                Location::regOf(9)));
     ls->push_back(a);
@@ -1423,22 +1423,22 @@ bool SparcFrontEnd::helperFuncLong(ADDRESS dest, ADDRESS addr, std::list<RTL*>* 
         return true;
     } else if (name == ".udiv") {
         // %o0 / %o1
-        rhs = new Binary(opDiv,
+        rhs = Binary::get(opDiv,
                          Location::regOf(8),
                          Location::regOf(9));
     } else if (name == ".div") {
         // %o0 /! %o1
-        rhs = new Binary(opDivs,
+        rhs = Binary::get(opDivs,
                          Location::regOf(8),
                          Location::regOf(9));
     } else if (name == ".urem") {
         // %o0 % %o1
-        rhs = new Binary(opMod,
+        rhs = Binary::get(opMod,
                          Location::regOf(8),
                          Location::regOf(9));
     } else if (name == ".rem") {
         // %o0 %! %o1
-        rhs = new Binary(opMods,
+        rhs = Binary::get(opMods,
                          Location::regOf(8),
                          Location::regOf(9));
         //    } else if (name.substr(0, 6) == ".stret") {

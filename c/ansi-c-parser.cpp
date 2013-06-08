@@ -664,12 +664,12 @@ int AnsiCParser::yyparse(platform plat, callconv cc)
             break;}
         case 22:
 
-        { yyval.exp = new Binary(opPlus, yyvsp[-2].exp, yyvsp[0].exp);
+        { yyval.exp = Binary::get(opPlus, yyvsp[-2].exp, yyvsp[0].exp);
 
             break;}
         case 23:
 
-        { yyval.exp = new Binary(opMinus, yyvsp[-2].exp, yyvsp[0].exp);
+        { yyval.exp = Binary::get(opMinus, yyvsp[-2].exp, yyvsp[0].exp);
 
             break;}
         case 24:

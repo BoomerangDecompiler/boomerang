@@ -62,7 +62,7 @@ class UserProc;
 class Exp;
 #define DEBUG_BUFSIZE    5000        // Size of the debug print buffer
 
-
+typedef std::unique_ptr<Exp> UniqExp ;
 /***************************************************************************//**
  * Exp is an expression class, though it will probably be used to hold many other things (e.g. perhaps transformations).
  * It is a standard tree representation. Exp itself is abstract. A special class Const is used for constants. Unary,
@@ -98,7 +98,7 @@ virtual                ~Exp() {}
 virtual void        print(std::ostream& os, bool html = false) const = 0;
         void        printt(std::ostream& os = std::cout) const;
         void        printAsHL(std::ostream& os = std::cout); // Print with v[5] as v5
-        char*        prints();        // Print to string (for debugging and logging)
+        char*       prints();        // Print to string (for debugging and logging)
         void        dump();            // Print to standard error (for debugging)
         // Recursive print: don't want parens at the top level
 virtual void        printr(std::ostream& os, bool html = false) const { print(os, html);}       // But most classes want standard
@@ -225,10 +225,10 @@ virtual bool        isTerminal() { return false; }
         // FIXME: are these used?
         // Matches this expression to the pattern, if successful returns a list of variable bindings, otherwise returns
         // nullptr
-virtual Exp            *match(Exp *pattern);
+virtual Exp *       match(Exp *pattern);
 
         // match a string pattern
-virtual bool         match(const std::string & pattern, std::map<std::string, Exp*> &bindings);
+virtual bool        match(const std::string & pattern, std::map<std::string, Exp*> &bindings);
 
             //    //    //    //    //    //    //
             //    Search and Replace    //
@@ -295,7 +295,7 @@ virtual void        setSubExp3(Exp* /*e*/) { assert(false);}
         void        partitionTerms(std::list<Exp*>& positives, std::list<Exp*>& negatives, std::vector<int>& integers,
                         bool negate);
 virtual Exp*        simplifyArith() {return this;}
-static    Exp*        Accumulate(std::list<Exp*> exprs);
+static  Exp*        Accumulate(std::list<Exp*> exprs);
         // Simplify the expression
         Exp*        simplify();
 virtual Exp*        polySimplify(bool& bMod) {bMod = false; return this;}
@@ -309,7 +309,7 @@ virtual Exp*        simplifyConstraint() {return this;}
         // Do the work of finding used locations. If memOnly set, only look inside m[...]
         void        addUsedLocs(LocationSet& used, bool memOnly = false);
 
-        Exp         *removeSubscripts(bool& allZero);
+        Exp *       removeSubscripts(bool& allZero);
 
         // Get number of definitions (statements this expression depends on)
 virtual int            getNumRefs() {return 0;}
@@ -395,6 +395,8 @@ public:
                     Const(Proc* p);
         // Copy constructor
                     Const(const Const &o);
+                    template<class T>
+static  Const *     get(T i) { return new Const(i); }
 
         // Nothing to destruct: Don't deallocate the string passed to constructor
 
@@ -439,12 +441,12 @@ virtual Exp*        genConstraints(Exp* restrictTo);
 virtual bool        accept(ExpVisitor* v);
 virtual Exp*        accept(ExpModifier* v);
 
-virtual bool         match(const std::string &pattern, std::map<std::string, Exp*> &bindings);
+virtual bool        match(const std::string &pattern, std::map<std::string, Exp*> &bindings);
 
-        int            getConscript() {return conscript;}
+        int         getConscript() {return conscript;}
         void        setConscript(int cs) {conscript = cs;}
 
-virtual    Type*        ascendType();
+virtual Type*       ascendType();
 virtual void        descendType(Type* parentType, bool& ch, Statement* s);
 
 protected:
@@ -459,6 +461,7 @@ public:
         // Constructors
                     Terminal(OPER op);
                     Terminal(const Terminal &o);        // Copy constructor
+static Exp *        get(OPER op) {return new Terminal(op); }
 
         // Clone
 virtual Exp *       clone() const;
@@ -499,6 +502,7 @@ public:
                     Unary(OPER op, Exp* e);
         // Copy constructor
                     Unary(const Unary &o);
+static  Exp *       get(OPER op, Exp *e1) { return new Unary(op,e1); }
 
         // Clone
 virtual Exp*        clone() const;
@@ -509,7 +513,7 @@ virtual bool        operator< (const Exp& o) const;
 virtual bool        operator*=(Exp& o);
 
         // Destructor
-virtual                ~Unary();
+virtual             ~Unary();
 
         // Arity
 virtual int         getArity() const {return 1;}
@@ -526,13 +530,13 @@ virtual void        printx(int ind) const;
         Exp*        getSubExp1();
         const Exp*  getSubExp1() const;
         // Get a reference to subexpression 1
-        Exp*&        refSubExp1();
+        Exp*&       refSubExp1();
 
 virtual Exp *       match(Exp *pattern);
 virtual bool        match(const std::string & pattern, std::map<std::string, Exp*> &bindings);
 
         // Search children
-        void             doSearchChildren(const Exp *search, std::list<Exp**>& li, bool once);
+        void        doSearchChildren(const Exp *search, std::list<Exp**>& li, bool once);
 
         // Do the work of simplifying this expression
 virtual Exp*        polySimplify(bool& bMod);
@@ -569,6 +573,7 @@ public:
                     Binary(OPER op, Exp* e1, Exp* e2);
         // Copy constructor
                     Binary(const Binary &o);
+static  Exp *       get(OPER op, Exp *e1,Exp * e2) { return new Binary(op,e1,e2); }
 
         // Clone
 virtual Exp *       clone() const;
@@ -778,8 +783,7 @@ public:
 //virtual ~RefExp()   {
 //                        def = nullptr;
 //                    }
-        //RefExp(Exp* e);
-        //RefExp(RefExp& o);
+static  Exp *       get(Exp *e, Statement* def) { return new RefExp(e,def);}
 virtual Exp*         clone() const;
 virtual bool         operator==(const Exp& o) const;
 virtual bool         operator< (const Exp& o) const;
@@ -854,20 +858,19 @@ public:
         // Copy constructor
                     Location(Location& o);
         // Custom constructor
-static Location*    regOf(int r) {return new Location(opRegOf, new Const(r), nullptr);}
-static Location*    regOf(Exp *e) {return new Location(opRegOf, e, nullptr);}
-static Location*    memOf(Exp *e, UserProc* p = nullptr) {return new Location(opMemOf, e, p);}
+static Exp *        get(OPER op, Exp *e, UserProc *proc) { return new Location(op,e,proc); }
+static Exp *    regOf(int r) {return get(opRegOf, Const::get(r), nullptr);}
+static Exp *    regOf(Exp *e) {return get(opRegOf, e, nullptr);}
+static Exp *    memOf(Exp *e, UserProc* p = nullptr) {return get(opMemOf, e, p);}
 static Location*    tempOf(Exp* e) {return new Location(opTemp, e, nullptr);}
-static Location*    global(const char *nam, UserProc *p) {
-                        return new Location(opGlobal, new Const(nam), p);}
+static Exp *    global(const char *nam, UserProc *p) { return get(opGlobal, Const::get(nam), p);}
 static Location*    local(const char *nam, UserProc *p);
-static Location*    param(const char *nam, UserProc *p = nullptr) {
-                        return new Location(opParam, new Const(nam), p);}
+static Exp *   param(const char *nam, UserProc *p = nullptr) { return get(opParam, Const::get(nam), p);}
         // Clone
 virtual Exp*        clone() const;
 
         void        setProc(UserProc *p) { proc = p; }
-        UserProc    *getProc() { return proc; }
+        UserProc *  getProc() { return proc; }
 
 virtual Exp*        polySimplify(bool& bMod);
 virtual void        getDefinitions(LocationSet& defs);
@@ -875,9 +878,11 @@ virtual void        getDefinitions(LocationSet& defs);
         // Visitation
 virtual bool        accept(ExpVisitor* v);
 virtual Exp*        accept(ExpModifier* v);
-virtual bool         match(const std::string &pattern, std::map<std::string, Exp*> &bindings);
+virtual bool        match(const std::string &pattern, std::map<std::string, Exp*> &bindings);
 
 protected:
         friend class XMLProgParser;
                     Location(OPER op) : Unary(op), proc(nullptr) { }
 };    // class Location
+
+typedef std::set<Exp *, lessExpStar> sExp;

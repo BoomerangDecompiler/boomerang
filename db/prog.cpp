@@ -197,7 +197,7 @@ void Prog::generateCode(Cluster *cluster, UserProc *proc, bool intermixRTL) {
                         int n = pBF->readNative1(info->uNativeAddr + info->uSectionSize - 1 - i);
                         if (n < 0)
                             n = 256 + n;
-                        l = new Binary(opList, new Const(n), l);
+                        l = Binary::get(opList, new Const(n), l);
                     }
                     code->AddGlobal(sections[j], new ArrayType(IntegerType::get(8, -1), info ? info->uSectionSize : 0), l);
                 }
@@ -616,7 +616,7 @@ BOOL CALLBACK addSymbol(
         Type *ty = typeFromDebugInfo(pSymInfo->TypeIndex, pSymInfo->ModBase);
         if (pSymInfo->Flags & SYMFLAG_REGREL) {
             assert(pSymInfo->Register == 8);  // ebp
-            proc->getSignature()->addParameter(ty, pSymInfo->Name, Location::memOf(new Binary(opPlus, Location::regOf(28), new Const((int)pSymInfo->Address - 4))));
+            proc->getSignature()->addParameter(ty, pSymInfo->Name, Location::memOf(Binary::get(opPlus, Location::regOf(28), new Const((int)pSymInfo->Address - 4))));
         } else if (pSymInfo->Flags & SYMFLAG_REGISTER) {
             proc->getSignature()->addParameter(ty, pSymInfo->Name, Location::regOf(debugRegister(pSymInfo->Register)));
         }
@@ -624,7 +624,7 @@ BOOL CALLBACK addSymbol(
         UserProc *u = (UserProc*)proc;
         assert(pSymInfo->Flags & SYMFLAG_REGREL);
         assert(pSymInfo->Register == 8);
-        Exp *memref = Location::memOf(new Binary(opMinus, Location::regOf(28), new Const(-((int)pSymInfo->Address - 4))));
+        Exp *memref = Location::memOf(Binary::get(opMinus, Location::regOf(28), new Const(-((int)pSymInfo->Address - 4))));
         Type *ty = typeFromDebugInfo(pSymInfo->TypeIndex, pSymInfo->ModBase);
         u->addLocal(ty, pSymInfo->Name, memref);
     }
@@ -1704,11 +1704,11 @@ Exp *Prog::readNativeAs(ADDRESS uaddr, Type *type) {
                 v = new Const(-1);
             }
             if (n->isNil()) {
-                n = new Binary(opList, v, n);
+                n = Binary::get(opList, v, n);
                 e = n;
             } else {
                 assert(n->getSubExp2()->getOper() == opNil);
-                n->setSubExp2(new Binary(opList, v, n->getSubExp2()));
+                n->setSubExp2(Binary::get(opList, v, n->getSubExp2()));
                 n = n->getSubExp2();
             }
         }
@@ -1733,11 +1733,11 @@ Exp *Prog::readNativeAs(ADDRESS uaddr, Type *type) {
             if (v == nullptr)
                 break;
             if (n->isNil()) {
-                n = new Binary(opList, v, n);
+                n = Binary::get(opList, v, n);
                 e = n;
             } else {
                 assert(n->getSubExp2()->getOper() == opNil);
-                n->setSubExp2(new Binary(opList, v, n->getSubExp2()));
+                n->setSubExp2(Binary::get(opList, v, n->getSubExp2()));
                 n = n->getSubExp2();
             }
             // "null" terminated
@@ -1844,7 +1844,7 @@ Exp * Prog::addReloc(Exp *e, ADDRESS lc) {
             for (auto it : symbols) {
                 if (it.first < c_addr && it.first + pBF->GetSizeByName(it.second.c_str()) > c_addr) {
                     int off = (c->getAddr() - it.first).m_value;
-                    e = new Binary(opPlus,
+                    e = Binary::get(opPlus,
                                    new Unary(opAddrOf, Location::global(it.second.c_str(), nullptr)),
                                    new Const(off));
                     break;

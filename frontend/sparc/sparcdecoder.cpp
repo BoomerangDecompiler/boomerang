@@ -2616,7 +2616,7 @@ Exp* SparcDecoder::dis_Eaddr(ADDRESS pc, int ignore /* = 0 */)
 //#line 725 "frontend/machine/sparc/decoder.m"
 
 
-                    expr = new Binary(opPlus,
+                    expr = Binary::get(opPlus,
 
                                       Location::regOf(rs1),
 
@@ -2646,7 +2646,7 @@ Exp* SparcDecoder::dis_Eaddr(ADDRESS pc, int ignore /* = 0 */)
 //#line 719 "frontend/machine/sparc/decoder.m"
 
 
-                    expr = new Binary(opPlus,
+                    expr = Binary::get(opPlus,
 
                                       Location::regOf(rs1),
 
