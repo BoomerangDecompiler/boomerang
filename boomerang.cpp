@@ -76,6 +76,11 @@ Boomerang::Boomerang() : progPath("./"),outputPath("./output/"),
 Log &Boomerang::log() {
     return *logger;
 }
+
+SeparateLogger Boomerang::separate_log(const char *v)
+{
+    return SeparateLogger(v);
+}
 Log &Boomerang::if_verbose_log(int verbosity_level) {
     static NullLogger null_log;
     if(verbosity_level==2)
@@ -90,6 +95,15 @@ Log &Boomerang::if_verbose_log(int verbosity_level) {
  * Sets the outputfile to be the file "log" in the default output directory.
  */
 FileLogger::FileLogger() : out((Boomerang::get()->getOutputPath() + "log").c_str()) {
+}
+
+SeparateLogger::SeparateLogger(const char *v) {
+    static std::map<const char *,int> versions;
+    if(versions.find(v)==versions.end())
+        versions[v] = 0;
+
+    QString full_path=QString("%1/%2_%3.log").arg(Boomerang::get()->getOutputPath().c_str()).arg(v).arg(versions[v]++,2,10,QChar('0'));
+    out = new std::ofstream(full_path.toStdString());
 }
 
 /**
@@ -147,8 +161,8 @@ bool createDirectory(const QString &dir) {
  */
 void Cluster::printTree(std::ostream &ostr) {
     ostr << "\t\t" << name << "\n";
-    for (unsigned i = 0; i < children.size(); i++)
-        children[i]->printTree(ostr);
+    for (auto & elem : children)
+        elem->printTree(ostr);
 }
 
 typedef char *crazy_vc_bug;
@@ -228,7 +242,7 @@ int Boomerang::processCommand(std::vector<std::string> &args) {
             Prog *pr = p->parse(fname);
             if (pr == nullptr) {
                 // try guessing
-                pr = p->parse((outputPath + fname + "/" + fname + ".xml").c_str());
+                pr = p->parse(outputPath + fname + "/" + fname + ".xml");
                 if (pr == nullptr) {
                     std::cerr << "failed to read xml " << fname << "\n";
                     return 1;
@@ -264,7 +278,7 @@ int Boomerang::processCommand(std::vector<std::string> &args) {
                     return 1;
                 }
                 int indent = 0;
-                assert(dynamic_cast<UserProc*>(proc)!=0);
+                assert(dynamic_cast<UserProc*>(proc)!=nullptr);
                 ((UserProc*)proc)->decompile(new ProcList, indent);
             } else {
                 prog->decompile();
@@ -605,7 +619,7 @@ const std::string &Boomerang::getProgPath() {
  *
  */
 void Boomerang::setPluginPath(const std::string &p) {
-    BinaryFileFactory::setBasePath(p.c_str());
+    BinaryFileFactory::setBasePath(p);
 }
 
 /**
@@ -637,18 +651,18 @@ bool Boomerang::setOutputDirectory(const std::string &path) {
 void Boomerang::objcDecode(std::map<std::string, ObjcModule> &modules, Prog *prog) {
     LOG_VERBOSE(1)  << "Adding Objective-C information to Prog.\n";
     Cluster *root = prog->getRootCluster();
-    for (std::map<std::string, ObjcModule>::iterator it = modules.begin(); it != modules.end(); it++) {
-        ObjcModule &mod = (*it).second;
+    for (auto & modules_it : modules) {
+        ObjcModule &mod = (modules_it).second;
         Module *module = new Module(mod.name.c_str());
         root->addChild(module);
         LOG_VERBOSE(1)  << "\tModule: " << mod.name << "\n";
-        for (std::map<std::string, ObjcClass>::iterator it1 = mod.classes.begin(); it1 != mod.classes.end(); it1++) {
-            ObjcClass &c = (*it1).second;
+        for (auto & elem : mod.classes) {
+            ObjcClass &c = (elem).second;
             Class *cl = new Class(c.name.c_str());
             root->addChild(cl);
             LOG_VERBOSE(1)  << "\t\tClass: " << c.name << "\n";
-            for (std::map<std::string, ObjcMethod>::iterator it2 = c.methods.begin(); it2 != c.methods.end(); it2++) {
-                ObjcMethod &m = (*it2).second;
+            for (auto & _it2 : c.methods) {
+                ObjcMethod &m = (_it2).second;
                 // TODO: parse :'s in names
                 Proc *p = prog->newProc(m.name.c_str(), m.addr);
                 p->setCluster(cl);
@@ -679,15 +693,14 @@ Prog *Boomerang::loadAndDecode(const std::string &fname, const char *pname) {
     prog->setFrontEnd(fe);
 
     // Add symbols from -s switch(es)
-    for (std::map<ADDRESS, std::string>::iterator it = symbols.begin();
-         it != symbols.end(); it++) {
-        fe->AddSymbol((*it).first, (*it).second.c_str());
+    for (auto & elem : symbols) {
+        fe->AddSymbol((elem).first, (elem).second.c_str());
     }
     fe->readLibraryCatalog();        // Needed before readSymbolFile()
 
-    for (unsigned i = 0; i < symbolFiles.size(); i++) {
-        std::cout << "reading symbol file " << symbolFiles[i].c_str() << "\n";
-        prog->readSymbolFile(symbolFiles[i].c_str());
+    for (auto & elem : symbolFiles) {
+        std::cout << "reading symbol file " << elem.c_str() << "\n";
+        prog->readSymbolFile(elem.c_str());
     }
 
     std::map<std::string, ObjcModule> &objcmodules = fe->getBinaryFile()->getObjcModules();
@@ -695,9 +708,9 @@ Prog *Boomerang::loadAndDecode(const std::string &fname, const char *pname) {
         objcDecode(objcmodules, prog);
 
     // Entry points from -e (and -E) switch(es)
-    for (unsigned i = 0; i < entrypoints.size(); i++) {
-        std::cout<< "decoding specified entrypoint " << entrypoints[i] << "\n";
-        prog->decodeEntryPoint(entrypoints[i]);
+    for (auto & elem : entrypoints) {
+        std::cout<< "decoding specified entrypoint " << elem << "\n";
+        prog->decodeEntryPoint(elem);
     }
 
     if (entrypoints.size() == 0) {        // no -e or -E given
@@ -747,6 +760,8 @@ int Boomerang::decompile(const char *fname, const char *pname) {
     Prog *prog;
     time_t start;
     time(&start);
+    if (logger == nullptr)
+        setLogger(new FileLogger());
 
     //    std::cout << "setting up transformers...\n";
     //    ExpTransformer::loadAll();
@@ -851,8 +866,8 @@ void Boomerang::alert_decompile_debug_point(UserProc *p, const char *description
         static std::set<Statement*> watches;
         if (stopAt == nullptr || !strcmp(p->getName(), stopAt)) {
             // This is a mini command line debugger.  Feel free to expand it.
-            for (std::set<Statement*>::iterator it = watches.begin(); it != watches.end(); it++) {
-                (*it)->print(std::cout);
+            for (auto const & watche : watches) {
+                (watche)->print(std::cout);
                 std::cout << "\n";
             }
             std::cout << " <press enter to continue> \n";
@@ -888,8 +903,8 @@ void Boomerang::alert_decompile_debug_point(UserProc *p, const char *description
             }
         }
     }
-    for (std::set<Watcher*>::iterator it = watchers.begin(); it != watchers.end(); it++)
-        (*it)->alert_decompile_debug_point(p, description);
+    for (auto const & elem : watchers)
+        (elem)->alert_decompile_debug_point(p, description);
 }
 
 const char *Boomerang::getVersionStr() {

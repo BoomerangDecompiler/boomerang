@@ -46,6 +46,18 @@ public:
     }
     virtual ~FileLogger() {}
 };
+class SeparateLogger : public Log {
+protected:
+    std::ofstream *out;
+public:
+            SeparateLogger(const char *);        // Implemented in boomerang.cpp
+    void    tail();
+    virtual Log &operator<<(const std::string& str) {
+        (*out) << str << std::flush;
+        return *this;
+    }
+    virtual ~SeparateLogger() { out->close(); out = nullptr;}
+};
 class NullLogger : public Log {
 public:
     virtual Log &operator<<(const std::string& /*str*/) {

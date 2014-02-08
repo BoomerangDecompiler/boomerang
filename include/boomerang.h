@@ -41,7 +41,7 @@
 #include <map>
 
 #include "types.h"
-
+class SeparateLogger;
 class Log;
 class Prog;
 class Proc;
@@ -50,6 +50,7 @@ class HLLCode;
 class ObjcModule;
 
 #define LOG Boomerang::get()->log()
+#define LOG_SEPARATE(x) Boomerang::get()->separate_log(x)
 #define LOG_VERBOSE(x) Boomerang::get()->if_verbose_log(x)
 #define LOGTAIL Boomerang::get()->logTail()
 
@@ -113,6 +114,7 @@ static  Boomerang *         get() {
         int                 processCommand(std::vector<std::string> &args);
 static  const char *        getVersionStr();
         Log &               log();
+        SeparateLogger      separate_log(const char *);
         Log &               if_verbose_log(int verbosity_level);
         void                setLogger(Log *l) { logger = l; }
         bool                setOutputDirectory(const std::string &path);
