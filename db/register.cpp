@@ -69,9 +69,7 @@ Register &Register::operator=(const Register& r2) {
 bool Register::operator==(const Register& r2) const {
     // compare on name
     assert(!name.empty() && !r2.name.empty());
-    if (strcmp(name.c_str(), r2.name.c_str()) != 0)
-        return false;
-    return true;
+    return strcmp(name.c_str(), r2.name.c_str()) == 0;
 }
 
 /***************************************************************************//**
