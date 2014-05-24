@@ -180,11 +180,6 @@ ADD_SUBDIRECTORY(transform)
 IF(BUILD_TESTING)
 ADD_SUBDIRECTORY(unit_testing)
 ENDIF()
-SET(boomerang_SRC
-        ui/console/commandlinedriver.cpp
-        ui/console/commandlinedriver.h
-        ui/console/driver.cpp
-)
 SET(boom_base_SRC
         loader/BinaryFileFactory.cpp
         boomerang.cpp
@@ -194,16 +189,7 @@ IF(MSVC)
     SET(DEBUG_LIB Dbghelp.lib )
 ENDIF()
 ADD_LIBRARY(boom_base ${boom_base_SRC} )
-ADD_EXECUTABLE(boomerang ${boomerang_SRC})
-
-TARGET_LINK_LIBRARIES(boomerang
-${DL_LIBS}
-${GC_LIBS}
-${DEBUG_LIB}
-${EXPAT_LIBRARIES}
-boom_base frontend db type boomerang_DSLs codegen util BinaryFile boom_base
-pthread
-)
-qt5_use_modules(boomerang Core Xml)
 qt5_use_modules(boom_base Core Xml)
+
 ADD_SUBDIRECTORY(loader)
+ADD_SUBDIRECTORY(ui)

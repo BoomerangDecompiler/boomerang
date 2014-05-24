@@ -16,7 +16,7 @@
 
 #include <QtCore>
 #include <cstdio>
-#include "ui/console/commandlinedriver.h"
+#include "commandlinedriver.h"
 #include "boomerang.h"
 #include "config.h"
 #ifdef HAVE_LIBGC
