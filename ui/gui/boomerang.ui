@@ -1,10 +1,8 @@
-<ui version="4.0" >
- <author></author>
- <comment></comment>
- <exportmacro></exportmacro>
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
  <class>MainWindow</class>
- <widget class="QMainWindow" name="MainWindow" >
-  <property name="geometry" >
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
@@ -12,86 +10,122 @@
     <height>638</height>
    </rect>
   </property>
-  <property name="windowTitle" >
+  <property name="windowTitle">
    <string>MainWindow</string>
   </property>
-  <widget class="QWidget" name="centralwidget" >
-   <layout class="QHBoxLayout" >
-    <property name="margin" >
-     <number>9</number>
-    </property>
-    <property name="spacing" >
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QHBoxLayout">
+    <property name="spacing">
      <number>6</number>
     </property>
+    <property name="leftMargin">
+     <number>9</number>
+    </property>
+    <property name="topMargin">
+     <number>9</number>
+    </property>
+    <property name="rightMargin">
+     <number>9</number>
+    </property>
+    <property name="bottomMargin">
+     <number>9</number>
+    </property>
     <item>
-     <widget class="QTabWidget" name="tabWidget" >
-      <property name="sizePolicy" >
-       <sizepolicy>
-        <hsizetype>7</hsizetype>
-        <vsizetype>7</vsizetype>
+     <widget class="QTabWidget" name="tabWidget">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
         <horstretch>0</horstretch>
         <verstretch>0</verstretch>
        </sizepolicy>
       </property>
-      <widget class="QWidget" name="tab" >
-       <attribute name="title" >
+      <property name="currentIndex">
+       <number>0</number>
+      </property>
+      <widget class="QWidget" name="tab">
+       <attribute name="title">
         <string>Workflow</string>
        </attribute>
-       <layout class="QVBoxLayout" >
-        <property name="margin" >
-         <number>9</number>
-        </property>
-        <property name="spacing" >
+       <layout class="QVBoxLayout">
+        <property name="spacing">
          <number>6</number>
         </property>
+        <property name="leftMargin">
+         <number>9</number>
+        </property>
+        <property name="topMargin">
+         <number>9</number>
+        </property>
+        <property name="rightMargin">
+         <number>9</number>
+        </property>
+        <property name="bottomMargin">
+         <number>9</number>
+        </property>
         <item>
-         <layout class="QVBoxLayout" >
-          <property name="margin" >
-           <number>0</number>
-          </property>
-          <property name="spacing" >
+         <layout class="QVBoxLayout">
+          <property name="spacing">
            <number>6</number>
           </property>
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
           <item>
-           <layout class="QHBoxLayout" >
-            <property name="margin" >
-             <number>0</number>
-            </property>
-            <property name="spacing" >
+           <layout class="QHBoxLayout">
+            <property name="spacing">
              <number>6</number>
             </property>
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
             <item>
-             <widget class="QPushButton" name="toLoadButton" >
-              <property name="sizePolicy" >
-               <sizepolicy>
-                <hsizetype>0</hsizetype>
-                <vsizetype>0</vsizetype>
+             <widget class="QPushButton" name="toLoadButton">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
               </property>
-              <property name="minimumSize" >
+              <property name="minimumSize">
                <size>
                 <width>38</width>
                 <height>38</height>
                </size>
               </property>
-              <property name="maximumSize" >
+              <property name="maximumSize">
                <size>
                 <width>38</width>
                 <height>38</height>
                </size>
               </property>
-              <property name="toolTip" >
-               <string>&lt;html>&lt;head>&lt;meta name="qrichtext" content="1" />&lt;/head>&lt;body style=" white-space: pre-wrap; font-family:MS Shell Dlg; font-size:8.25pt; font-weight:400; font-style:normal; text-decoration:none;">&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">Load&lt;/p>&lt;/body>&lt;/html></string>
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;/head&gt;&lt;body style=&quot; white-space: pre-wrap; font-family:MS Shell Dlg; font-size:8.25pt; font-weight:400; font-style:normal; text-decoration:none;&quot;&gt;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Load&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
-              <property name="text" >
+              <property name="text">
                <string/>
               </property>
-              <property name="icon" >
-               <iconset>rarrow.bmp</iconset>
+              <property name="icon">
+               <iconset resource="boomerang.qrc">
+                <normaloff>:/icons/resources/rarrow.png</normaloff>:/icons/resources/rarrow.png</iconset>
               </property>
-              <property name="iconSize" >
+              <property name="iconSize">
                <size>
                 <width>32</width>
                 <height>32</height>
@@ -100,45 +134,53 @@
              </widget>
             </item>
             <item>
-             <layout class="QVBoxLayout" >
-              <property name="margin" >
+             <layout class="QVBoxLayout">
+              <property name="spacing">
                <number>0</number>
               </property>
-              <property name="spacing" >
+              <property name="leftMargin">
+               <number>0</number>
+              </property>
+              <property name="topMargin">
+               <number>0</number>
+              </property>
+              <property name="rightMargin">
+               <number>0</number>
+              </property>
+              <property name="bottomMargin">
                <number>0</number>
               </property>
               <item>
-               <widget class="QPushButton" name="loadButton" >
-                <property name="enabled" >
+               <widget class="QPushButton" name="loadButton">
+                <property name="enabled">
                  <bool>true</bool>
                 </property>
-                <property name="sizePolicy" >
-                 <sizepolicy>
-                  <hsizetype>0</hsizetype>
-                  <vsizetype>0</vsizetype>
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                   <horstretch>0</horstretch>
                   <verstretch>0</verstretch>
                  </sizepolicy>
                 </property>
-                <property name="minimumSize" >
+                <property name="minimumSize">
                  <size>
                   <width>70</width>
                   <height>70</height>
                  </size>
                 </property>
-                <property name="maximumSize" >
+                <property name="maximumSize">
                  <size>
                   <width>70</width>
                   <height>70</height>
                  </size>
                 </property>
-                <property name="text" >
+                <property name="text">
                  <string/>
                 </property>
-                <property name="icon" >
-                 <iconset>load1.bmp</iconset>
+                <property name="icon">
+                 <iconset resource="boomerang.qrc">
+                  <normaloff>:/icons/resources/load1.png</normaloff>:/icons/resources/load1.png</iconset>
                 </property>
-                <property name="iconSize" >
+                <property name="iconSize">
                  <size>
                   <width>64</width>
                   <height>64</height>
@@ -147,11 +189,11 @@
                </widget>
               </item>
               <item>
-               <widget class="QLabel" name="label" >
-                <property name="text" >
+               <widget class="QLabel" name="label">
+                <property name="text">
                  <string>Load</string>
                 </property>
-                <property name="alignment" >
+                <property name="alignment">
                  <set>Qt::AlignCenter</set>
                 </property>
                </widget>
@@ -159,40 +201,39 @@
              </layout>
             </item>
             <item>
-             <widget class="QPushButton" name="toDecodeButton" >
-              <property name="enabled" >
+             <widget class="QPushButton" name="toDecodeButton">
+              <property name="enabled">
                <bool>false</bool>
               </property>
-              <property name="sizePolicy" >
-               <sizepolicy>
-                <hsizetype>0</hsizetype>
-                <vsizetype>0</vsizetype>
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
               </property>
-              <property name="minimumSize" >
+              <property name="minimumSize">
                <size>
                 <width>38</width>
                 <height>38</height>
                </size>
               </property>
-              <property name="maximumSize" >
+              <property name="maximumSize">
                <size>
                 <width>38</width>
                 <height>38</height>
                </size>
               </property>
-              <property name="toolTip" >
-               <string>&lt;html>&lt;head>&lt;meta name="qrichtext" content="1" />&lt;/head>&lt;body style=" white-space: pre-wrap; font-family:MS Shell Dlg; font-size:8.25pt; font-weight:400; font-style:normal; text-decoration:none;">&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">Decode&lt;/p>&lt;/body>&lt;/html></string>
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;/head&gt;&lt;body style=&quot; white-space: pre-wrap; font-family:MS Shell Dlg; font-size:8.25pt; font-weight:400; font-style:normal; text-decoration:none;&quot;&gt;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Decode&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
-              <property name="text" >
+              <property name="text">
                <string/>
               </property>
-              <property name="icon" >
-               <iconset>rarrow.bmp</iconset>
+              <property name="icon">
+               <iconset resource="boomerang.qrc">
+                <normaloff>:/icons/resources/rarrow.png</normaloff>:/icons/resources/rarrow.png</iconset>
               </property>
-              <property name="iconSize" >
+              <property name="iconSize">
                <size>
                 <width>32</width>
                 <height>32</height>
@@ -201,45 +242,53 @@
              </widget>
             </item>
             <item>
-             <layout class="QVBoxLayout" >
-              <property name="margin" >
+             <layout class="QVBoxLayout">
+              <property name="spacing">
                <number>0</number>
               </property>
-              <property name="spacing" >
+              <property name="leftMargin">
+               <number>0</number>
+              </property>
+              <property name="topMargin">
+               <number>0</number>
+              </property>
+              <property name="rightMargin">
+               <number>0</number>
+              </property>
+              <property name="bottomMargin">
                <number>0</number>
               </property>
               <item>
-               <widget class="QPushButton" name="decodeButton" >
-                <property name="enabled" >
+               <widget class="QPushButton" name="decodeButton">
+                <property name="enabled">
                  <bool>false</bool>
                 </property>
-                <property name="sizePolicy" >
-                 <sizepolicy>
-                  <hsizetype>0</hsizetype>
-                  <vsizetype>0</vsizetype>
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                   <horstretch>0</horstretch>
                   <verstretch>0</verstretch>
                  </sizepolicy>
                 </property>
-                <property name="minimumSize" >
+                <property name="minimumSize">
                  <size>
                   <width>70</width>
                   <height>70</height>
                  </size>
                 </property>
-                <property name="maximumSize" >
+                <property name="maximumSize">
                  <size>
                   <width>70</width>
                   <height>70</height>
                  </size>
                 </property>
-                <property name="text" >
+                <property name="text">
                  <string/>
                 </property>
-                <property name="icon" >
-                 <iconset>decode.bmp</iconset>
+                <property name="icon">
+                 <iconset resource="boomerang.qrc">
+                  <normaloff>:/icons/resources/decode.png</normaloff>:/icons/resources/decode.png</iconset>
                 </property>
-                <property name="iconSize" >
+                <property name="iconSize">
                  <size>
                   <width>64</width>
                   <height>64</height>
@@ -248,11 +297,11 @@
                </widget>
               </item>
               <item>
-               <widget class="QLabel" name="label_2" >
-                <property name="text" >
+               <widget class="QLabel" name="label_2">
+                <property name="text">
                  <string>Decode</string>
                 </property>
-                <property name="alignment" >
+                <property name="alignment">
                  <set>Qt::AlignCenter</set>
                 </property>
                </widget>
@@ -260,34 +309,33 @@
              </layout>
             </item>
             <item>
-             <widget class="QPushButton" name="toDecompileButton" >
-              <property name="enabled" >
+             <widget class="QPushButton" name="toDecompileButton">
+              <property name="enabled">
                <bool>false</bool>
               </property>
-              <property name="sizePolicy" >
-               <sizepolicy>
-                <hsizetype>0</hsizetype>
-                <vsizetype>0</vsizetype>
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
               </property>
-              <property name="maximumSize" >
+              <property name="maximumSize">
                <size>
                 <width>38</width>
                 <height>38</height>
                </size>
               </property>
-              <property name="toolTip" >
-               <string>&lt;html>&lt;head>&lt;meta name="qrichtext" content="1" />&lt;/head>&lt;body style=" white-space: pre-wrap; font-family:MS Shell Dlg; font-size:8.25pt; font-weight:400; font-style:normal; text-decoration:none;">&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">Decompile&lt;/p>&lt;/body>&lt;/html></string>
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;/head&gt;&lt;body style=&quot; white-space: pre-wrap; font-family:MS Shell Dlg; font-size:8.25pt; font-weight:400; font-style:normal; text-decoration:none;&quot;&gt;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Decompile&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
-              <property name="text" >
+              <property name="text">
                <string/>
               </property>
-              <property name="icon" >
-               <iconset>rarrow.bmp</iconset>
+              <property name="icon">
+               <iconset resource="boomerang.qrc">
+                <normaloff>:/icons/resources/rarrow.png</normaloff>:/icons/resources/rarrow.png</iconset>
               </property>
-              <property name="iconSize" >
+              <property name="iconSize">
                <size>
                 <width>32</width>
                 <height>32</height>
@@ -296,45 +344,53 @@
              </widget>
             </item>
             <item>
-             <layout class="QVBoxLayout" >
-              <property name="margin" >
+             <layout class="QVBoxLayout">
+              <property name="spacing">
                <number>0</number>
               </property>
-              <property name="spacing" >
+              <property name="leftMargin">
+               <number>0</number>
+              </property>
+              <property name="topMargin">
+               <number>0</number>
+              </property>
+              <property name="rightMargin">
+               <number>0</number>
+              </property>
+              <property name="bottomMargin">
                <number>0</number>
               </property>
               <item>
-               <widget class="QPushButton" name="decompileButton" >
-                <property name="enabled" >
+               <widget class="QPushButton" name="decompileButton">
+                <property name="enabled">
                  <bool>false</bool>
                 </property>
-                <property name="sizePolicy" >
-                 <sizepolicy>
-                  <hsizetype>0</hsizetype>
-                  <vsizetype>0</vsizetype>
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                   <horstretch>0</horstretch>
                   <verstretch>0</verstretch>
                  </sizepolicy>
                 </property>
-                <property name="minimumSize" >
+                <property name="minimumSize">
                  <size>
                   <width>70</width>
                   <height>70</height>
                  </size>
                 </property>
-                <property name="maximumSize" >
+                <property name="maximumSize">
                  <size>
                   <width>70</width>
                   <height>70</height>
                  </size>
                 </property>
-                <property name="text" >
+                <property name="text">
                  <string/>
                 </property>
-                <property name="icon" >
-                 <iconset>decompile.bmp</iconset>
+                <property name="icon">
+                 <iconset resource="boomerang.qrc">
+                  <normaloff>:/icons/resources/decompile.png</normaloff>:/icons/resources/decompile.png</iconset>
                 </property>
-                <property name="iconSize" >
+                <property name="iconSize">
                  <size>
                   <width>64</width>
                   <height>64</height>
@@ -343,11 +399,11 @@
                </widget>
               </item>
               <item>
-               <widget class="QLabel" name="label_3" >
-                <property name="text" >
+               <widget class="QLabel" name="label_3">
+                <property name="text">
                  <string>Decompile</string>
                 </property>
-                <property name="alignment" >
+                <property name="alignment">
                  <set>Qt::AlignCenter</set>
                 </property>
                </widget>
@@ -355,40 +411,39 @@
              </layout>
             </item>
             <item>
-             <widget class="QPushButton" name="toGenerateCodeButton" >
-              <property name="enabled" >
+             <widget class="QPushButton" name="toGenerateCodeButton">
+              <property name="enabled">
                <bool>false</bool>
               </property>
-              <property name="sizePolicy" >
-               <sizepolicy>
-                <hsizetype>0</hsizetype>
-                <vsizetype>0</vsizetype>
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
               </property>
-              <property name="minimumSize" >
+              <property name="minimumSize">
                <size>
                 <width>38</width>
                 <height>38</height>
                </size>
               </property>
-              <property name="maximumSize" >
+              <property name="maximumSize">
                <size>
                 <width>38</width>
                 <height>38</height>
                </size>
               </property>
-              <property name="toolTip" >
-               <string>&lt;html>&lt;head>&lt;meta name="qrichtext" content="1" />&lt;/head>&lt;body style=" white-space: pre-wrap; font-family:MS Shell Dlg; font-size:8.25pt; font-weight:400; font-style:normal; text-decoration:none;">&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">Generate&lt;/p>&lt;/body>&lt;/html></string>
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;/head&gt;&lt;body style=&quot; white-space: pre-wrap; font-family:MS Shell Dlg; font-size:8.25pt; font-weight:400; font-style:normal; text-decoration:none;&quot;&gt;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Generate&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
-              <property name="text" >
+              <property name="text">
                <string/>
               </property>
-              <property name="icon" >
-               <iconset>rarrow.bmp</iconset>
+              <property name="icon">
+               <iconset resource="boomerang.qrc">
+                <normaloff>:/icons/resources/rarrow.png</normaloff>:/icons/resources/rarrow.png</iconset>
               </property>
-              <property name="iconSize" >
+              <property name="iconSize">
                <size>
                 <width>32</width>
                 <height>32</height>
@@ -397,45 +452,53 @@
              </widget>
             </item>
             <item>
-             <layout class="QVBoxLayout" >
-              <property name="margin" >
+             <layout class="QVBoxLayout">
+              <property name="spacing">
                <number>0</number>
               </property>
-              <property name="spacing" >
+              <property name="leftMargin">
+               <number>0</number>
+              </property>
+              <property name="topMargin">
+               <number>0</number>
+              </property>
+              <property name="rightMargin">
+               <number>0</number>
+              </property>
+              <property name="bottomMargin">
                <number>0</number>
               </property>
               <item>
-               <widget class="QPushButton" name="generateCodeButton" >
-                <property name="enabled" >
+               <widget class="QPushButton" name="generateCodeButton">
+                <property name="enabled">
                  <bool>false</bool>
                 </property>
-                <property name="sizePolicy" >
-                 <sizepolicy>
-                  <hsizetype>0</hsizetype>
-                  <vsizetype>0</vsizetype>
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                   <horstretch>0</horstretch>
                   <verstretch>0</verstretch>
                  </sizepolicy>
                 </property>
-                <property name="minimumSize" >
+                <property name="minimumSize">
                  <size>
                   <width>70</width>
                   <height>70</height>
                  </size>
                 </property>
-                <property name="maximumSize" >
+                <property name="maximumSize">
                  <size>
                   <width>70</width>
                   <height>70</height>
                  </size>
                 </property>
-                <property name="text" >
+                <property name="text">
                  <string/>
                 </property>
-                <property name="icon" >
-                 <iconset>gencode.bmp</iconset>
+                <property name="icon">
+                 <iconset resource="boomerang.qrc">
+                  <normaloff>:/icons/resources/gencode.png</normaloff>:/icons/resources/gencode.png</iconset>
                 </property>
-                <property name="iconSize" >
+                <property name="iconSize">
                  <size>
                   <width>64</width>
                   <height>64</height>
@@ -444,14 +507,14 @@
                </widget>
               </item>
               <item>
-               <widget class="QLabel" name="label_4" >
-                <property name="text" >
+               <widget class="QLabel" name="label_4">
+                <property name="text">
                  <string>Generate Code</string>
                 </property>
-                <property name="alignment" >
+                <property name="alignment">
                  <set>Qt::AlignCenter</set>
                 </property>
-                <property name="wordWrap" >
+                <property name="wordWrap">
                  <bool>true</bool>
                 </property>
                </widget>
@@ -463,63 +526,79 @@
          </layout>
         </item>
         <item>
-         <widget class="QStackedWidget" name="stackedWidget" >
-          <property name="currentIndex" >
+         <widget class="QStackedWidget" name="stackedWidget">
+          <property name="currentIndex">
            <number>0</number>
           </property>
-          <widget class="QWidget" name="start" >
-           <layout class="QVBoxLayout" >
-            <property name="margin" >
-             <number>9</number>
-            </property>
-            <property name="spacing" >
+          <widget class="QWidget" name="start">
+           <layout class="QVBoxLayout">
+            <property name="spacing">
              <number>6</number>
             </property>
+            <property name="leftMargin">
+             <number>9</number>
+            </property>
+            <property name="topMargin">
+             <number>9</number>
+            </property>
+            <property name="rightMargin">
+             <number>9</number>
+            </property>
+            <property name="bottomMargin">
+             <number>9</number>
+            </property>
             <item>
-             <layout class="QHBoxLayout" >
-              <property name="margin" >
-               <number>0</number>
-              </property>
-              <property name="spacing" >
+             <layout class="QHBoxLayout">
+              <property name="spacing">
                <number>6</number>
               </property>
+              <property name="leftMargin">
+               <number>0</number>
+              </property>
+              <property name="topMargin">
+               <number>0</number>
+              </property>
+              <property name="rightMargin">
+               <number>0</number>
+              </property>
+              <property name="bottomMargin">
+               <number>0</number>
+              </property>
               <item>
-               <widget class="QLabel" name="label_5" >
-                <property name="text" >
+               <widget class="QLabel" name="label_5">
+                <property name="text">
                  <string>Input file:</string>
                 </property>
                </widget>
               </item>
               <item>
-               <widget class="QComboBox" name="inputFileComboBox" >
-                <property name="sizePolicy" >
-                 <sizepolicy>
-                  <hsizetype>7</hsizetype>
-                  <vsizetype>0</vsizetype>
+               <widget class="QComboBox" name="inputFileComboBox">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                   <horstretch>0</horstretch>
                   <verstretch>0</verstretch>
                  </sizepolicy>
                 </property>
-                <property name="editable" >
+                <property name="editable">
                  <bool>true</bool>
                 </property>
                </widget>
               </item>
               <item>
-               <widget class="QPushButton" name="inputFileBrowseButton" >
-                <property name="minimumSize" >
+               <widget class="QPushButton" name="inputFileBrowseButton">
+                <property name="minimumSize">
                  <size>
                   <width>75</width>
                   <height>23</height>
                  </size>
                 </property>
-                <property name="maximumSize" >
+                <property name="maximumSize">
                  <size>
                   <width>75</width>
                   <height>23</height>
                  </size>
                 </property>
-                <property name="text" >
+                <property name="text">
                  <string>Browse</string>
                 </property>
                </widget>
@@ -527,55 +606,62 @@
              </layout>
             </item>
             <item>
-             <layout class="QHBoxLayout" >
-              <property name="margin" >
-               <number>0</number>
-              </property>
-              <property name="spacing" >
+             <layout class="QHBoxLayout">
+              <property name="spacing">
                <number>6</number>
               </property>
+              <property name="leftMargin">
+               <number>0</number>
+              </property>
+              <property name="topMargin">
+               <number>0</number>
+              </property>
+              <property name="rightMargin">
+               <number>0</number>
+              </property>
+              <property name="bottomMargin">
+               <number>0</number>
+              </property>
               <item>
-               <widget class="QLabel" name="label_8" >
-                <property name="text" >
+               <widget class="QLabel" name="label_8">
+                <property name="text">
                  <string>Output path:</string>
                 </property>
                </widget>
               </item>
               <item>
-               <widget class="QComboBox" name="outputPathComboBox" >
-                <property name="sizePolicy" >
-                 <sizepolicy>
-                  <hsizetype>7</hsizetype>
-                  <vsizetype>0</vsizetype>
+               <widget class="QComboBox" name="outputPathComboBox">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                   <horstretch>0</horstretch>
                   <verstretch>0</verstretch>
                  </sizepolicy>
                 </property>
-                <property name="editable" >
+                <property name="editable">
                  <bool>true</bool>
                 </property>
                 <item>
-                 <property name="text" >
+                 <property name="text">
                   <string>./output</string>
                  </property>
                 </item>
                </widget>
               </item>
               <item>
-               <widget class="QPushButton" name="outputPathBrowseButton" >
-                <property name="minimumSize" >
+               <widget class="QPushButton" name="outputPathBrowseButton">
+                <property name="minimumSize">
                  <size>
                   <width>75</width>
                   <height>23</height>
                  </size>
                 </property>
-                <property name="maximumSize" >
+                <property name="maximumSize">
                  <size>
                   <width>75</width>
                   <height>23</height>
                  </size>
                 </property>
-                <property name="text" >
+                <property name="text">
                  <string>Browse</string>
                 </property>
                </widget>
@@ -583,32 +669,32 @@
              </layout>
             </item>
             <item>
-             <widget class="QCheckBox" name="enableDebugCheckBox" >
-              <property name="text" >
+             <widget class="QCheckBox" name="enableDebugCheckBox">
+              <property name="text">
                <string>Enable Debugging</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QCheckBox" name="enableDFTAcheckBox" >
-              <property name="text" >
+             <widget class="QCheckBox" name="enableDFTAcheckBox">
+              <property name="text">
                <string>Enable Dataflow Based Type Analysis</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QCheckBox" name="enableNoDecodeChildren" >
-              <property name="text" >
+             <widget class="QCheckBox" name="enableNoDecodeChildren">
+              <property name="text">
                <string>don't decode child procedures</string>
               </property>
              </widget>
             </item>
             <item>
              <spacer>
-              <property name="orientation" >
+              <property name="orientation">
                <enum>Qt::Vertical</enum>
               </property>
-              <property name="sizeHint" >
+              <property name="sizeHint" stdset="0">
                <size>
                 <width>20</width>
                 <height>40</height>
@@ -618,42 +704,60 @@
             </item>
            </layout>
           </widget>
-          <widget class="QWidget" name="load" >
-           <layout class="QVBoxLayout" >
-            <property name="margin" >
-             <number>9</number>
-            </property>
-            <property name="spacing" >
+          <widget class="QWidget" name="load">
+           <layout class="QVBoxLayout">
+            <property name="spacing">
              <number>6</number>
             </property>
+            <property name="leftMargin">
+             <number>9</number>
+            </property>
+            <property name="topMargin">
+             <number>9</number>
+            </property>
+            <property name="rightMargin">
+             <number>9</number>
+            </property>
+            <property name="bottomMargin">
+             <number>9</number>
+            </property>
             <item>
-             <layout class="QHBoxLayout" >
-              <property name="margin" >
-               <number>0</number>
-              </property>
-              <property name="spacing" >
+             <layout class="QHBoxLayout">
+              <property name="spacing">
                <number>6</number>
               </property>
+              <property name="leftMargin">
+               <number>0</number>
+              </property>
+              <property name="topMargin">
+               <number>0</number>
+              </property>
+              <property name="rightMargin">
+               <number>0</number>
+              </property>
+              <property name="bottomMargin">
+               <number>0</number>
+              </property>
               <item>
-               <widget class="QLabel" name="label_10" >
-                <property name="text" >
+               <widget class="QLabel" name="label_10">
+                <property name="text">
                  <string>Source architecture is</string>
                 </property>
                </widget>
               </item>
               <item>
-               <widget class="QLabel" name="machineTypeLabel" >
-                <property name="text" >
-                 <string>&lt;machine type></string>
+               <widget class="QLabel" name="machineTypeLabel">
+                <property name="text">
+                 <string>&lt;machine type&gt;</string>
                 </property>
                </widget>
               </item>
               <item>
                <spacer>
-                <property name="orientation" >
+                <property name="orientation">
                  <enum>Qt::Horizontal</enum>
                 </property>
-                <property name="sizeHint" >
+                <property name="sizeHint" stdset="0">
                  <size>
                   <width>40</width>
                   <height>20</height>
@@ -664,42 +768,69 @@
              </layout>
             </item>
             <item>
-             <layout class="QHBoxLayout" >
-              <property name="margin" >
-               <number>0</number>
-              </property>
-              <property name="spacing" >
+             <layout class="QHBoxLayout">
+              <property name="spacing">
                <number>6</number>
               </property>
+              <property name="leftMargin">
+               <number>0</number>
+              </property>
+              <property name="topMargin">
+               <number>0</number>
+              </property>
+              <property name="rightMargin">
+               <number>0</number>
+              </property>
+              <property name="bottomMargin">
+               <number>0</number>
+              </property>
               <item>
-               <layout class="QVBoxLayout" >
-                <property name="margin" >
-                 <number>0</number>
-                </property>
-                <property name="spacing" >
+               <layout class="QVBoxLayout">
+                <property name="spacing">
                  <number>6</number>
                 </property>
+                <property name="leftMargin">
+                 <number>0</number>
+                </property>
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="rightMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
                 <item>
-                 <layout class="QHBoxLayout" >
-                  <property name="margin" >
-                   <number>0</number>
-                  </property>
-                  <property name="spacing" >
+                 <layout class="QHBoxLayout">
+                  <property name="spacing">
                    <number>6</number>
                   </property>
+                  <property name="leftMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="topMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="rightMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="bottomMargin">
+                   <number>0</number>
+                  </property>
                   <item>
-                   <widget class="QLabel" name="label_12" >
-                    <property name="text" >
+                   <widget class="QLabel" name="label_12">
+                    <property name="text">
                      <string>Found entrypoints:</string>
                     </property>
                    </widget>
                   </item>
                   <item>
                    <spacer>
-                    <property name="orientation" >
+                    <property name="orientation">
                      <enum>Qt::Horizontal</enum>
                     </property>
-                    <property name="sizeHint" >
+                    <property name="sizeHint" stdset="0">
                      <size>
                       <width>40</width>
                       <height>20</height>
@@ -710,36 +841,43 @@
                  </layout>
                 </item>
                 <item>
-                 <widget class="QTableWidget" name="entrypoints" >
-                  <property name="showGrid" >
+                 <widget class="QTableWidget" name="entrypoints">
+                  <property name="showGrid">
                    <bool>false</bool>
                   </property>
                   <column>
-                   <property name="text" >
+                   <property name="text">
                     <string>Address</string>
                    </property>
                   </column>
                   <column>
-                   <property name="text" >
+                   <property name="text">
                     <string>Name</string>
                    </property>
                   </column>
                  </widget>
                 </item>
                 <item>
-                 <layout class="QHBoxLayout" >
-                  <property name="margin" >
-                   <number>0</number>
-                  </property>
-                  <property name="spacing" >
+                 <layout class="QHBoxLayout">
+                  <property name="spacing">
                    <number>6</number>
                   </property>
+                  <property name="leftMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="topMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="rightMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="bottomMargin">
+                   <number>0</number>
+                  </property>
                   <item>
-                   <widget class="QLineEdit" name="addressEdit" >
-                    <property name="sizePolicy" >
-                     <sizepolicy>
-                      <hsizetype>0</hsizetype>
-                      <vsizetype>0</vsizetype>
+                   <widget class="QLineEdit" name="addressEdit">
+                    <property name="sizePolicy">
+                     <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                       <horstretch>0</horstretch>
                       <verstretch>0</verstretch>
                      </sizepolicy>
@@ -747,36 +885,36 @@
                    </widget>
                   </item>
                   <item>
-                   <widget class="QLineEdit" name="nameEdit" />
+                   <widget class="QLineEdit" name="nameEdit"/>
                   </item>
                   <item>
-                   <widget class="QPushButton" name="addButton" >
-                    <property name="enabled" >
+                   <widget class="QPushButton" name="addButton">
+                    <property name="enabled">
                      <bool>true</bool>
                     </property>
-                    <property name="maximumSize" >
+                    <property name="maximumSize">
                      <size>
                       <width>51</width>
                       <height>16777215</height>
                      </size>
                     </property>
-                    <property name="text" >
+                    <property name="text">
                      <string>Add</string>
                     </property>
                    </widget>
                   </item>
                   <item>
-                   <widget class="QPushButton" name="removeButton" >
-                    <property name="enabled" >
+                   <widget class="QPushButton" name="removeButton">
+                    <property name="enabled">
                      <bool>false</bool>
                     </property>
-                    <property name="maximumSize" >
+                    <property name="maximumSize">
                      <size>
                       <width>71</width>
                       <height>16777215</height>
                      </size>
                     </property>
-                    <property name="text" >
+                    <property name="text">
                      <string>Remove</string>
                     </property>
                    </widget>
@@ -786,34 +924,52 @@
                </layout>
               </item>
               <item>
-               <layout class="QVBoxLayout" >
-                <property name="margin" >
-                 <number>0</number>
-                </property>
-                <property name="spacing" >
+               <layout class="QVBoxLayout">
+                <property name="spacing">
                  <number>6</number>
                 </property>
+                <property name="leftMargin">
+                 <number>0</number>
+                </property>
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="rightMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
                 <item>
-                 <layout class="QHBoxLayout" >
-                  <property name="margin" >
-                   <number>0</number>
-                  </property>
-                  <property name="spacing" >
+                 <layout class="QHBoxLayout">
+                  <property name="spacing">
                    <number>6</number>
                   </property>
+                  <property name="leftMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="topMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="rightMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="bottomMargin">
+                   <number>0</number>
+                  </property>
                   <item>
-                   <widget class="QLabel" name="label_11" >
-                    <property name="text" >
+                   <widget class="QLabel" name="label_11">
+                    <property name="text">
                      <string>Sections:</string>
                     </property>
                    </widget>
                   </item>
                   <item>
                    <spacer>
-                    <property name="orientation" >
+                    <property name="orientation">
                      <enum>Qt::Horizontal</enum>
                     </property>
-                    <property name="sizeHint" >
+                    <property name="sizeHint" stdset="0">
                      <size>
                       <width>40</width>
                       <height>20</height>
@@ -824,22 +980,22 @@
                  </layout>
                 </item>
                 <item>
-                 <widget class="QTableWidget" name="sections" >
-                  <property name="showGrid" >
+                 <widget class="QTableWidget" name="sections">
+                  <property name="showGrid">
                    <bool>false</bool>
                   </property>
                   <column>
-                   <property name="text" >
+                   <property name="text">
                     <string>Name</string>
                    </property>
                   </column>
                   <column>
-                   <property name="text" >
+                   <property name="text">
                     <string>Start</string>
                    </property>
                   </column>
                   <column>
-                   <property name="text" >
+                   <property name="text">
                     <string>End</string>
                    </property>
                   </column>
@@ -851,61 +1007,88 @@
             </item>
            </layout>
           </widget>
-          <widget class="QWidget" name="decode" >
-           <layout class="QVBoxLayout" >
-            <property name="margin" >
-             <number>9</number>
-            </property>
-            <property name="spacing" >
+          <widget class="QWidget" name="decode">
+           <layout class="QVBoxLayout">
+            <property name="spacing">
              <number>6</number>
             </property>
+            <property name="leftMargin">
+             <number>9</number>
+            </property>
+            <property name="topMargin">
+             <number>9</number>
+            </property>
+            <property name="rightMargin">
+             <number>9</number>
+            </property>
+            <property name="bottomMargin">
+             <number>9</number>
+            </property>
             <item>
-             <layout class="QHBoxLayout" >
-              <property name="margin" >
-               <number>0</number>
-              </property>
-              <property name="spacing" >
+             <layout class="QHBoxLayout">
+              <property name="spacing">
                <number>6</number>
               </property>
+              <property name="leftMargin">
+               <number>0</number>
+              </property>
+              <property name="topMargin">
+               <number>0</number>
+              </property>
+              <property name="rightMargin">
+               <number>0</number>
+              </property>
+              <property name="bottomMargin">
+               <number>0</number>
+              </property>
               <item>
-               <layout class="QVBoxLayout" >
-                <property name="margin" >
-                 <number>0</number>
-                </property>
-                <property name="spacing" >
+               <layout class="QVBoxLayout">
+                <property name="spacing">
                  <number>6</number>
                 </property>
+                <property name="leftMargin">
+                 <number>0</number>
+                </property>
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="rightMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
                 <item>
-                 <widget class="QLabel" name="label_7" >
-                  <property name="text" >
+                 <widget class="QLabel" name="label_7">
+                  <property name="text">
                    <string>Library Procedures:</string>
                   </property>
                  </widget>
                 </item>
                 <item>
-                 <widget class="QTableWidget" name="libProcs" >
-                  <property name="editTriggers" >
+                 <widget class="QTableWidget" name="libProcs">
+                  <property name="editTriggers">
                    <set>QAbstractItemView::NoEditTriggers</set>
                   </property>
-                  <property name="selectionMode" >
+                  <property name="selectionMode">
                    <enum>QAbstractItemView::SingleSelection</enum>
                   </property>
-                  <property name="selectionBehavior" >
+                  <property name="selectionBehavior">
                    <enum>QAbstractItemView::SelectRows</enum>
                   </property>
-                  <property name="showGrid" >
+                  <property name="showGrid">
                    <bool>false</bool>
                   </property>
-                  <property name="sortingEnabled" >
+                  <property name="sortingEnabled">
                    <bool>true</bool>
                   </property>
                   <column>
-                   <property name="text" >
+                   <property name="text">
                     <string>Name</string>
                    </property>
                   </column>
                   <column>
-                   <property name="text" >
+                   <property name="text">
                     <string>Parameters</string>
                    </property>
                   </column>
@@ -914,46 +1097,55 @@
                </layout>
               </item>
               <item>
-               <layout class="QVBoxLayout" >
-                <property name="margin" >
-                 <number>0</number>
-                </property>
-                <property name="spacing" >
+               <layout class="QVBoxLayout">
+                <property name="spacing">
                  <number>6</number>
                 </property>
+                <property name="leftMargin">
+                 <number>0</number>
+                </property>
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="rightMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
                 <item>
-                 <widget class="QLabel" name="label_6" >
-                  <property name="text" >
+                 <widget class="QLabel" name="label_6">
+                  <property name="text">
                    <string>User Procedures:</string>
                   </property>
                  </widget>
                 </item>
                 <item>
-                 <widget class="QTableWidget" name="userProcs" >
-                  <property name="editTriggers" >
-                   <set>QAbstractItemView::AnyKeyPressed|QAbstractItemView::DoubleClicked|QAbstractItemView::EditKeyPressed|QAbstractItemView::NoEditTriggers</set>
+                 <widget class="QTableWidget" name="userProcs">
+                  <property name="editTriggers">
+                   <set>QAbstractItemView::AnyKeyPressed|QAbstractItemView::DoubleClicked|QAbstractItemView::EditKeyPressed</set>
                   </property>
-                  <property name="showGrid" >
+                  <property name="showGrid">
                    <bool>false</bool>
                   </property>
-                  <property name="columnCount" >
-                   <number>3</number>
-                  </property>
-                  <property name="sortingEnabled" >
+                  <property name="sortingEnabled">
                    <bool>true</bool>
                   </property>
+                  <property name="columnCount">
+                   <number>3</number>
+                  </property>
                   <column>
-                   <property name="text" >
+                   <property name="text">
                     <string>Address</string>
                    </property>
                   </column>
                   <column>
-                   <property name="text" >
+                   <property name="text">
                     <string>Name</string>
                    </property>
                   </column>
                   <column>
-                   <property name="text" >
+                   <property name="text">
                     <string>Debug</string>
                    </property>
                   </column>
@@ -965,35 +1157,53 @@
             </item>
            </layout>
           </widget>
-          <widget class="QWidget" name="Decompile" >
-           <layout class="QVBoxLayout" >
-            <property name="margin" >
-             <number>9</number>
-            </property>
-            <property name="spacing" >
+          <widget class="QWidget" name="Decompile">
+           <layout class="QVBoxLayout">
+            <property name="spacing">
              <number>6</number>
             </property>
+            <property name="leftMargin">
+             <number>9</number>
+            </property>
+            <property name="topMargin">
+             <number>9</number>
+            </property>
+            <property name="rightMargin">
+             <number>9</number>
+            </property>
+            <property name="bottomMargin">
+             <number>9</number>
+            </property>
             <item>
-             <layout class="QHBoxLayout" >
-              <property name="margin" >
-               <number>0</number>
-              </property>
-              <property name="spacing" >
+             <layout class="QHBoxLayout">
+              <property name="spacing">
                <number>6</number>
               </property>
+              <property name="leftMargin">
+               <number>0</number>
+              </property>
+              <property name="topMargin">
+               <number>0</number>
+              </property>
+              <property name="rightMargin">
+               <number>0</number>
+              </property>
+              <property name="bottomMargin">
+               <number>0</number>
+              </property>
               <item>
-               <widget class="QLabel" name="label_9" >
-                <property name="text" >
+               <widget class="QLabel" name="label_9">
+                <property name="text">
                  <string>Decompiling... </string>
                 </property>
                </widget>
               </item>
               <item>
-               <widget class="QProgressBar" name="progressDecompile" >
-                <property name="value" >
+               <widget class="QProgressBar" name="progressDecompile">
+                <property name="value">
                  <number>24</number>
                 </property>
-                <property name="orientation" >
+                <property name="orientation">
                  <enum>Qt::Horizontal</enum>
                 </property>
                </widget>
@@ -1001,15 +1211,15 @@
              </layout>
             </item>
             <item>
-             <widget class="QTreeWidget" name="decompileProcsTreeWidget" >
-              <property name="editTriggers" >
-               <set>QAbstractItemView::AnyKeyPressed|QAbstractItemView::DoubleClicked|QAbstractItemView::EditKeyPressed|QAbstractItemView::NoEditTriggers</set>
+             <widget class="QTreeWidget" name="decompileProcsTreeWidget">
+              <property name="editTriggers">
+               <set>QAbstractItemView::AnyKeyPressed|QAbstractItemView::DoubleClicked|QAbstractItemView::EditKeyPressed</set>
               </property>
-              <property name="itemsExpandable" >
+              <property name="itemsExpandable">
                <bool>true</bool>
               </property>
               <column>
-               <property name="text" >
+               <property name="text">
                 <string>Name</string>
                </property>
               </column>
@@ -1017,35 +1227,53 @@
             </item>
            </layout>
           </widget>
-          <widget class="QWidget" name="Generate Code" >
-           <layout class="QVBoxLayout" >
-            <property name="margin" >
-             <number>9</number>
-            </property>
-            <property name="spacing" >
+          <widget class="QWidget" name="Generate Code">
+           <layout class="QVBoxLayout">
+            <property name="spacing">
              <number>6</number>
             </property>
+            <property name="leftMargin">
+             <number>9</number>
+            </property>
+            <property name="topMargin">
+             <number>9</number>
+            </property>
+            <property name="rightMargin">
+             <number>9</number>
+            </property>
+            <property name="bottomMargin">
+             <number>9</number>
+            </property>
             <item>
-             <layout class="QHBoxLayout" >
-              <property name="margin" >
-               <number>0</number>
-              </property>
-              <property name="spacing" >
+             <layout class="QHBoxLayout">
+              <property name="spacing">
                <number>6</number>
               </property>
+              <property name="leftMargin">
+               <number>0</number>
+              </property>
+              <property name="topMargin">
+               <number>0</number>
+              </property>
+              <property name="rightMargin">
+               <number>0</number>
+              </property>
+              <property name="bottomMargin">
+               <number>0</number>
+              </property>
               <item>
-               <widget class="QLabel" name="label_13" >
-                <property name="text" >
+               <widget class="QLabel" name="label_13">
+                <property name="text">
                  <string>Generating code...</string>
                 </property>
                </widget>
               </item>
               <item>
-               <widget class="QProgressBar" name="progressGenerateCode" >
-                <property name="value" >
+               <widget class="QProgressBar" name="progressGenerateCode">
+                <property name="value">
                  <number>24</number>
                 </property>
-                <property name="orientation" >
+                <property name="orientation">
                  <enum>Qt::Horizontal</enum>
                 </property>
                </widget>
@@ -1053,31 +1281,40 @@
              </layout>
             </item>
             <item>
-             <widget class="QTreeWidget" name="clusters" >
+             <widget class="QTreeWidget" name="clusters">
               <column>
-               <property name="text" >
+               <property name="text">
                 <string/>
                </property>
               </column>
              </widget>
             </item>
             <item>
-             <layout class="QHBoxLayout" >
-              <property name="margin" >
-               <number>0</number>
-              </property>
-              <property name="spacing" >
+             <layout class="QHBoxLayout">
+              <property name="spacing">
                <number>6</number>
               </property>
+              <property name="leftMargin">
+               <number>0</number>
+              </property>
+              <property name="topMargin">
+               <number>0</number>
+              </property>
+              <property name="rightMargin">
+               <number>0</number>
+              </property>
+              <property name="bottomMargin">
+               <number>0</number>
+              </property>
               <item>
-               <widget class="QLineEdit" name="newFileEdit" />
+               <widget class="QLineEdit" name="newFileEdit"/>
               </item>
               <item>
-               <widget class="QPushButton" name="newFileButton" >
-                <property name="enabled" >
+               <widget class="QPushButton" name="newFileButton">
+                <property name="enabled">
                  <bool>false</bool>
                 </property>
-                <property name="text" >
+                <property name="text">
                  <string>Add File</string>
                 </property>
                </widget>
@@ -1090,59 +1327,77 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="tab_2" >
-       <attribute name="title" >
+      <widget class="QWidget" name="tab_2">
+       <attribute name="title">
         <string>Structs</string>
        </attribute>
-       <layout class="QVBoxLayout" >
-        <property name="margin" >
-         <number>9</number>
-        </property>
-        <property name="spacing" >
+       <layout class="QVBoxLayout">
+        <property name="spacing">
          <number>6</number>
         </property>
+        <property name="leftMargin">
+         <number>9</number>
+        </property>
+        <property name="topMargin">
+         <number>9</number>
+        </property>
+        <property name="rightMargin">
+         <number>9</number>
+        </property>
+        <property name="bottomMargin">
+         <number>9</number>
+        </property>
         <item>
-         <layout class="QHBoxLayout" >
-          <property name="margin" >
-           <number>0</number>
-          </property>
-          <property name="spacing" >
+         <layout class="QHBoxLayout">
+          <property name="spacing">
            <number>6</number>
           </property>
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
           <item>
-           <widget class="QLabel" name="label_14" >
-            <property name="text" >
+           <widget class="QLabel" name="label_14">
+            <property name="text">
              <string>Name:</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QLineEdit" name="structName" />
+           <widget class="QLineEdit" name="structName"/>
           </item>
          </layout>
         </item>
         <item>
-         <widget class="QTableWidget" name="structMembers" >
-          <property name="showGrid" >
+         <widget class="QTableWidget" name="structMembers">
+          <property name="showGrid">
            <bool>false</bool>
           </property>
           <column>
-           <property name="text" >
+           <property name="text">
             <string>Offset</string>
            </property>
           </column>
           <column>
-           <property name="text" >
+           <property name="text">
             <string>Offset (bytes)</string>
            </property>
           </column>
           <column>
-           <property name="text" >
+           <property name="text">
             <string>Name</string>
            </property>
           </column>
           <column>
-           <property name="text" >
+           <property name="text">
             <string>Size</string>
            </property>
           </column>
@@ -1154,270 +1409,262 @@
     </item>
    </layout>
   </widget>
-  <widget class="QMenuBar" name="menubar" >
-   <property name="geometry" >
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
      <width>895</width>
-     <height>25</height>
+     <height>19</height>
     </rect>
    </property>
-   <widget class="QMenu" name="menuFile" >
-    <property name="title" >
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
      <string>File</string>
     </property>
-    <addaction name="actionOpen" />
-    <addaction name="actionSave" />
-    <addaction name="actionClose" />
-    <addaction name="separator" />
-    <addaction name="actionExit" />
+    <addaction name="actionOpen"/>
+    <addaction name="actionSave"/>
+    <addaction name="actionClose"/>
+    <addaction name="separator"/>
+    <addaction name="actionExit"/>
    </widget>
-   <widget class="QMenu" name="menuWindow" >
-    <property name="title" >
+   <widget class="QMenu" name="menuWindow">
+    <property name="title">
      <string>Edit</string>
     </property>
-    <addaction name="actionCut" />
-    <addaction name="actionCopy" />
-    <addaction name="actionPaste" />
-    <addaction name="actionDelete" />
-    <addaction name="separator" />
-    <addaction name="actionFind" />
-    <addaction name="actionFind_Next" />
-    <addaction name="actionGo_To" />
-    <addaction name="separator" />
-    <addaction name="actionSelect_All" />
+    <addaction name="actionCut"/>
+    <addaction name="actionCopy"/>
+    <addaction name="actionPaste"/>
+    <addaction name="actionDelete"/>
+    <addaction name="separator"/>
+    <addaction name="actionFind"/>
+    <addaction name="actionFind_Next"/>
+    <addaction name="actionGo_To"/>
+    <addaction name="separator"/>
+    <addaction name="actionSelect_All"/>
    </widget>
-   <widget class="QMenu" name="menuSettings" >
-    <property name="title" >
+   <widget class="QMenu" name="menuSettings">
+    <property name="title">
      <string>Settings</string>
     </property>
-    <addaction name="actionLoggingOptions" />
-    <addaction name="actionDecodeOptions" />
-    <addaction name="actionDecompileOptions" />
+    <addaction name="actionLoggingOptions"/>
+    <addaction name="actionDecodeOptions"/>
+    <addaction name="actionDecompileOptions"/>
    </widget>
-   <widget class="QMenu" name="menuDebug_2" >
-    <property name="title" >
+   <widget class="QMenu" name="menuDebug_2">
+    <property name="title">
      <string>Debug</string>
     </property>
-    <addaction name="actionEnable" />
-    <addaction name="actionStep" />
+    <addaction name="actionEnable"/>
+    <addaction name="actionStep"/>
    </widget>
-   <widget class="QMenu" name="menuView" >
-    <property name="title" >
+   <widget class="QMenu" name="menuView">
+    <property name="title">
      <string>View</string>
     </property>
-    <addaction name="actionLoad" />
-    <addaction name="actionDecode" />
-    <addaction name="actionDecompile" />
-    <addaction name="actionGenerate_Code" />
-    <addaction name="actionStructs" />
+    <addaction name="actionLoad"/>
+    <addaction name="actionDecode"/>
+    <addaction name="actionDecompile"/>
+    <addaction name="actionGenerate_Code"/>
+    <addaction name="actionStructs"/>
    </widget>
-   <widget class="QMenu" name="menuHelp" >
-    <property name="title" >
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
      <string>Help</string>
     </property>
-    <addaction name="actionAbout" />
-    <addaction name="actionAboutQt" />
-    <addaction name="actionBoomerang_Website" />
+    <addaction name="actionAbout"/>
+    <addaction name="actionAboutQt"/>
+    <addaction name="actionBoomerang_Website"/>
    </widget>
-   <addaction name="menuFile" />
-   <addaction name="menuWindow" />
-   <addaction name="menuView" />
-   <addaction name="menuSettings" />
-   <addaction name="menuDebug_2" />
-   <addaction name="menuHelp" />
+   <addaction name="menuFile"/>
+   <addaction name="menuWindow"/>
+   <addaction name="menuView"/>
+   <addaction name="menuSettings"/>
+   <addaction name="menuDebug_2"/>
+   <addaction name="menuHelp"/>
   </widget>
-  <widget class="QStatusBar" name="statusbar" >
-   <property name="geometry" >
-    <rect>
-     <x>0</x>
-     <y>616</y>
-     <width>895</width>
-     <height>22</height>
-    </rect>
-   </property>
-  </widget>
-  <action name="actionNew" >
-   <property name="text" >
+  <widget class="QStatusBar" name="statusbar"/>
+  <action name="actionNew">
+   <property name="text">
     <string>New</string>
    </property>
   </action>
-  <action name="actionExit" >
-   <property name="text" >
+  <action name="actionExit">
+   <property name="text">
     <string>Exit</string>
    </property>
   </action>
-  <action name="actionOpen" >
-   <property name="enabled" >
+  <action name="actionOpen">
+   <property name="enabled">
     <bool>true</bool>
    </property>
-   <property name="text" >
+   <property name="text">
     <string>Open</string>
    </property>
   </action>
-  <action name="actionClose" >
-   <property name="enabled" >
+  <action name="actionClose">
+   <property name="enabled">
     <bool>false</bool>
    </property>
-   <property name="text" >
+   <property name="text">
     <string>Close</string>
    </property>
   </action>
-  <action name="actionStep" >
-   <property name="enabled" >
+  <action name="actionStep">
+   <property name="enabled">
     <bool>false</bool>
    </property>
-   <property name="text" >
+   <property name="text">
     <string>Step</string>
    </property>
   </action>
-  <action name="actionEnable" >
-   <property name="checkable" >
+  <action name="actionEnable">
+   <property name="checkable">
     <bool>true</bool>
    </property>
-   <property name="text" >
+   <property name="text">
     <string>Enable</string>
    </property>
   </action>
-  <action name="actionSave" >
-   <property name="enabled" >
+  <action name="actionSave">
+   <property name="enabled">
     <bool>false</bool>
    </property>
-   <property name="text" >
+   <property name="text">
     <string>Save</string>
    </property>
-   <property name="shortcut" >
+   <property name="shortcut">
     <string>Ctrl+S</string>
    </property>
   </action>
-  <action name="actionCut" >
-   <property name="text" >
+  <action name="actionCut">
+   <property name="text">
     <string>Cut</string>
    </property>
-   <property name="shortcut" >
+   <property name="shortcut">
     <string>Ctrl+X</string>
    </property>
   </action>
-  <action name="actionCopy" >
-   <property name="text" >
+  <action name="actionCopy">
+   <property name="text">
     <string>Copy</string>
    </property>
-   <property name="shortcut" >
+   <property name="shortcut">
     <string>Ctrl+C</string>
    </property>
   </action>
-  <action name="actionPaste" >
-   <property name="text" >
+  <action name="actionPaste">
+   <property name="text">
     <string>Paste</string>
    </property>
-   <property name="shortcut" >
+   <property name="shortcut">
     <string>Ctrl+V</string>
    </property>
   </action>
-  <action name="actionDelete" >
-   <property name="text" >
+  <action name="actionDelete">
+   <property name="text">
     <string>Delete</string>
    </property>
-   <property name="shortcut" >
+   <property name="shortcut">
     <string>Del</string>
    </property>
   </action>
-  <action name="actionSelect_All" >
-   <property name="text" >
+  <action name="actionSelect_All">
+   <property name="text">
     <string>Select All</string>
    </property>
-   <property name="shortcut" >
+   <property name="shortcut">
     <string>Ctrl+A</string>
    </property>
   </action>
-  <action name="actionFind" >
-   <property name="text" >
+  <action name="actionFind">
+   <property name="text">
     <string>Find...</string>
    </property>
-   <property name="shortcut" >
+   <property name="shortcut">
     <string>Ctrl+F</string>
    </property>
   </action>
-  <action name="actionFind_Next" >
-   <property name="text" >
+  <action name="actionFind_Next">
+   <property name="text">
     <string>Find Next</string>
    </property>
-   <property name="shortcut" >
+   <property name="shortcut">
     <string>F3</string>
    </property>
   </action>
-  <action name="actionGo_To" >
-   <property name="text" >
+  <action name="actionGo_To">
+   <property name="text">
     <string>Go To...</string>
    </property>
-   <property name="shortcut" >
+   <property name="shortcut">
     <string>Ctrl+G</string>
    </property>
   </action>
-  <action name="actionSelect_All" >
-   <property name="text" >
+  <action name="actionSelect_All">
+   <property name="text">
     <string>Select All</string>
    </property>
   </action>
-  <action name="actionStructs" >
-   <property name="text" >
+  <action name="actionStructs">
+   <property name="text">
     <string>Structs</string>
    </property>
   </action>
-  <action name="actionLoad" >
-   <property name="text" >
+  <action name="actionLoad">
+   <property name="text">
     <string>Load</string>
    </property>
   </action>
-  <action name="actionDecode" >
-   <property name="text" >
+  <action name="actionDecode">
+   <property name="text">
     <string>Decode</string>
    </property>
   </action>
-  <action name="actionDecompile" >
-   <property name="text" >
+  <action name="actionDecompile">
+   <property name="text">
     <string>Decompile</string>
    </property>
   </action>
-  <action name="actionGenerate_Code" >
-   <property name="text" >
+  <action name="actionGenerate_Code">
+   <property name="text">
     <string>Generate Code</string>
    </property>
   </action>
-  <action name="actionBoomerang_Website" >
-   <property name="text" >
+  <action name="actionBoomerang_Website">
+   <property name="text">
     <string>Boomerang Website</string>
    </property>
   </action>
-  <action name="actionLoggingOptions" >
-   <property name="text" >
+  <action name="actionLoggingOptions">
+   <property name="text">
     <string>Logging</string>
    </property>
   </action>
-  <action name="actionDecodeOptions" >
-   <property name="text" >
+  <action name="actionDecodeOptions">
+   <property name="text">
     <string>Decode</string>
    </property>
   </action>
-  <action name="actionDecompileOptions" >
-   <property name="text" >
+  <action name="actionDecompileOptions">
+   <property name="text">
     <string>Decompile</string>
    </property>
   </action>
-  <action name="actionAbout" >
-   <property name="text" >
+  <action name="actionAbout">
+   <property name="text">
     <string>About Boomerang</string>
    </property>
   </action>
-  <action name="actionAboutQt" >
-   <property name="text" >
+  <action name="actionAboutQt">
+   <property name="text">
     <string>About Qt</string>
    </property>
   </action>
  </widget>
- <pixmapfunction></pixmapfunction>
- <resources/>
+ <resources>
+  <include location="boomerang.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>actionExit</sender>
@@ -1425,11 +1672,11 @@
    <receiver>MainWindow</receiver>
    <slot>close()</slot>
    <hints>
-    <hint type="sourcelabel" >
+    <hint type="sourcelabel">
      <x>-1</x>
      <y>-1</y>
     </hint>
-    <hint type="destinationlabel" >
+    <hint type="destinationlabel">
      <x>450</x>
      <y>354</y>
     </hint>
@@ -1441,11 +1688,11 @@
    <receiver>actionEnable</receiver>
    <slot>setChecked(bool)</slot>
    <hints>
-    <hint type="sourcelabel" >
+    <hint type="sourcelabel">
      <x>111</x>
      <y>195</y>
     </hint>
-    <hint type="destinationlabel" >
+    <hint type="destinationlabel">
      <x>-1</x>
      <y>-1</y>
     </hint>

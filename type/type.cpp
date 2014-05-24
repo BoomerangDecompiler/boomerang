@@ -862,7 +862,7 @@ void Type::addNamedType(const char *name, Type *type) {
     }
 }
 
-Type *Type::getNamedType(const char *name) {
+Type *Type::getNamedType(const std::string &name) {
     if (namedTypes.find(name) != namedTypes.end())
         return namedTypes[name];
     return nullptr;
@@ -972,7 +972,7 @@ Type* PointerType::getFinalPointsTo() const {
 }
 
 Type *NamedType::resolvesTo() const {
-    Type *ty = getNamedType(name.c_str());
+    Type *ty = getNamedType(name);
     if (ty && ty->isNamed())
         return ((NamedType*)ty)->resolvesTo();
     return ty;

@@ -73,7 +73,7 @@ virtual                ~Type();
         eType        getId() const {return id;}
 
 static void            addNamedType(const char *name, Type *type);
-static Type            *getNamedType(const char *name);
+static Type            *getNamedType(const std::string &name);
 
                     // Return type for given temporary variable name
 static Type*        getTempType(const std::string &name);

@@ -1,0 +1,19 @@
+<RCC>
+    <qresource prefix="/icons">
+        <file>resources/closetab.png</file>
+        <file>resources/decode.png</file>
+        <file>resources/decompile.png</file>
+        <file>resources/gencode.png</file>
+        <file>resources/ico00001.png</file>
+        <file>resources/ico00002.png</file>
+        <file>resources/icon1.png</file>
+        <file>resources/id_lproc.png</file>
+        <file>resources/load1.png</file>
+        <file>resources/proc1.png</file>
+        <file>resources/rarrow.png</file>
+        <file>resources/resume.png</file>
+        <file>resources/resume1.png</file>
+        <file>resources/suspend.png</file>
+        <file>resources/boomerang_icon.png</file>
+    </qresource>
+</RCC>

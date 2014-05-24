@@ -1,14 +1,10 @@
-
-#include <QtGui>
-#include <QtCore>
-#include <Qt/QtCore>
-#include <QThread>
-#include <QString>
-#include <QTableWidget>
-
 #include "DecompilerThread.h"
 
+#ifdef HAVE_LIBGC
 #include "gc.h"
+#else
+#define NO_GARBAGE_COLLECTOR
+#endif
 
 #include "boomerang.h"
 #include "log.h"
@@ -17,26 +13,32 @@
 #include "proc.h"
 #include "signature.h"
 #include "cluster.h"
+
+#include <QtWidgets>
+#include <QtCore>
+#include <QThread>
+#include <QString>
+#include <QTableWidget>
 #include <sstream>
 
 #undef NO_ADDRESS
-#define NO_ADDRESS ((ADDRESS)-1)
+#define NO_ADDRESS ADDRESS::g(-1)
 
 Qt::HANDLE threadToCollect = 0;
 
-void* operator new(size_t n) {
-    Qt::HANDLE curThreadId = QThread::currentThreadId();
-    if (curThreadId == threadToCollect)
-        return GC_malloc(n);
-    else
-        return GC_malloc_uncollectable(n);    // Don't collect, but mark
-}
+//void* operator new(size_t n) {
+//    Qt::HANDLE curThreadId = QThread::currentThreadId();
+//    if (curThreadId == threadToCollect)
+//        return GC_malloc(n);
+//    else
+//        return GC_malloc_uncollectable(n);    // Don't collect, but mark
+//}
 
-void operator delete(void* p) {
-    Qt::HANDLE curThreadId = QThread::currentThreadId();
-    if (curThreadId != threadToCollect)
-        GC_free(p); // Important to call this if you call GC_malloc_uncollectable
-}
+//void operator delete(void* p) {
+//    Qt::HANDLE curThreadId = QThread::currentThreadId();
+//    if (curThreadId != threadToCollect)
+//        GC_free(p); // Important to call this if you call GC_malloc_uncollectable
+//}
 
 void DecompilerThread::run()
 {
@@ -84,14 +86,14 @@ void Decompiler::removeEntryPoint(ADDRESS a) {
         }
 }
 
-void Decompiler::changeInputFile(const QString &f) 
+void Decompiler::changeInputFile(const QString &f)
 {
     filename = f;
 }
 
 void Decompiler::changeOutputPath(const QString &path)
 {
-    Boomerang::get()->setOutputDirectory((const char *)path.toAscii());
+    Boomerang::get()->setOutputDirectory(qPrintable(path));
 }
 
 void Decompiler::load()
@@ -99,7 +101,7 @@ void Decompiler::load()
     emit loading();
 
     prog = new Prog();
-    fe = FrontEnd::Load(strdup(filename.toAscii()), prog);
+    fe = FrontEnd::Load(filename.toStdString(), prog);
     if (fe == NULL) {
         emit machineType(QString("unavailable: Load Failed!"));
         return;
@@ -149,7 +151,7 @@ void Decompiler::decode()
 
     bool gotMain;
     ADDRESS a = fe->getMainEntryPoint(gotMain);
-    for (unsigned int i = 0; i < user_entrypoints.size(); i++) 
+    for (unsigned int i = 0; i < user_entrypoints.size(); i++)
         if (user_entrypoints[i] == a) {
             fe->decode(prog, true, NULL);
             break;
@@ -276,7 +278,7 @@ void Decompiler::alert_update_signature(Proc *p)
 
 bool Decompiler::getRtlForProc(const QString &name, QString &rtl)
 {
-    Proc *p = prog->findProc((const char *)name.toAscii());
+    Proc *p = prog->findProc(name.toStdString());
     if (p->isLib())
         return false;
     UserProc *up = (UserProc*)p;
@@ -294,7 +296,7 @@ void Decompiler::alert_decompile_debug_point(UserProc *p, const char *descriptio
         emit debuggingPoint(QString(p->getName()), QString(description));
         while (waiting) {
             thread()->wait(10);
-        }        
+        }
     }
 }
 
@@ -305,7 +307,7 @@ void Decompiler::stopWaiting()
 
 const char *Decompiler::getSigFile(const QString &name)
 {
-    Proc *p = prog->findProc((const char *)name.toAscii());
+    Proc *p = prog->findProc(name.toStdString());
     if (p == NULL || !p->isLib() || p->getSignature() == NULL)
         return NULL;
     return p->getSignature()->getSigFile();
@@ -313,7 +315,7 @@ const char *Decompiler::getSigFile(const QString &name)
 
 const char *Decompiler::getClusterFile(const QString &name)
 {
-    Cluster *c = prog->findCluster((const char *)name.toAscii());
+    Cluster *c = prog->findCluster(name.toStdString());
     if (c == NULL)
         return NULL;
     return c->getOutPath("c");
@@ -326,14 +328,14 @@ void Decompiler::rereadLibSignatures()
 
 void Decompiler::renameProc(const QString &oldName, const QString &newName)
 {
-    Proc *p = prog->findProc((const char *)oldName.toAscii());
+    Proc *p = prog->findProc(oldName.toStdString());
     if (p)
-        p->setName((const char *)newName.toAscii());
+        p->setName(newName.toStdString());
 }
 
 void Decompiler::getCompoundMembers(const QString &name, QTableWidget *tbl)
 {
-    Type *ty = NamedType::getNamedType((const char *)name.toAscii());
+    Type *ty = NamedType::getNamedType(name.toStdString());
     tbl->setRowCount(0);
     if (ty == NULL || !ty->resolvesToCompound())
         return;

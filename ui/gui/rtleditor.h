@@ -3,7 +3,7 @@
 #define RTLEDITOR_H
 
 #include <QtCore/QString>
-#include <QtGui/QTextEdit>
+#include <QtWidgets/QTextEdit>
 
 #include "types.h"
 #include <vector>

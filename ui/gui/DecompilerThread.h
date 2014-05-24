@@ -22,12 +22,12 @@ class Decompiler : public QObject, public Watcher
 public:
     Decompiler() : QObject(), debugging(false), waiting(false) { }
 
-    virtual void alert_decompile_debug_point(UserProc *p, const char *description);
-    virtual void alert_considering(Proc *parent, Proc *p);
-    virtual void alert_decompiling(UserProc *p);
-    virtual void alert_new(Proc *p);
-    virtual void alert_remove(Proc *p);
-    virtual void alert_update_signature(Proc *p);
+    virtual void alert_decompile_debug_point(UserProc *p, const char *description) override;
+    virtual void alert_considering(Proc *parent, Proc *p) override;
+    virtual void alert_decompiling(UserProc *p) override;
+    virtual void alert_new(Proc *p) override;
+    virtual void alertRemove(Proc *p) override;
+    virtual void alert_update_signature(Proc *p) override;
 
     bool getRtlForProc(const QString &name, QString &rtl);
     const char *getSigFile(const QString &name);
@@ -64,14 +64,14 @@ signals:
 
     void consideringProc(const QString &parent, const QString &name);
     void decompilingProc(const QString &name);
-    void newUserProc(const QString &name, unsigned int addr);
+    void newUserProc(const QString &name, ADDRESS addr);
     void newLibProc(const QString &name, const QString &params);
-    void removeUserProc(const QString &name, unsigned int addr);
+    void removeUserProc(const QString &name, ADDRESS addr);
     void removeLibProc(const QString &name);
     void newCluster(const QString &name);
     void newProcInCluster(const QString &name, const QString &cluster);
-    void newEntrypoint(unsigned int addr, const QString &name);
-    void newSection(const QString &name, unsigned int start, unsigned int end);
+    void newEntrypoint(ADDRESS addr, const QString &name);
+    void newSection(const QString &name, ADDRESS start, ADDRESS end);
 
     void machineType(const QString &machine);
 
