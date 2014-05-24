@@ -5,14 +5,6 @@
  * \file    xmlprogparser.cpp
  * \brief   Implementation of the XMLProgParser and related classes.
  ******************************************************************************/
-/*
- * $Revision$    // 1.17.2.8
- *
- * June 2004 - Trent: created
- * NOTE: As of early 2006, this file has likely fallen behind changes to class members, and so probably needs some major
- *    work - MVE
- */
-
 #include <stdio.h>
 #include <cstring>
 extern "C" {
@@ -121,7 +113,7 @@ _tag XMLProgParser::tags[] = {
     { "subexp1", TAG(subexp1) },
     { "subexp2", TAG(subexp2) },
     { "subexp3", TAG(subexp3) },
-    { 0, 0, 0}
+    { nullptr, nullptr, nullptr}
 };
 
 class Context {
@@ -153,13 +145,11 @@ start(void *data, const char *el, const char **attr) {
     ((XMLProgParser*)data)->handleElementStart(el, attr);
 }
 
-static void XMLCALL
-end(void *data, const char *el) {
+static void XMLCALL end(void *data, const char *el) {
     ((XMLProgParser*)data)->handleElementEnd(el);
 }
 
-static void XMLCALL
-text(void *data, const char *s, int len) {
+static void XMLCALL text(void */*data*/, const char *s, int len) {
     int mylen;
     char buf[1024];
     if (len == 1 && *s == '\n')
@@ -189,7 +179,7 @@ void XMLProgParser::handleElementStart(const char *el, const char **attr) {
     stack.push_front(new Context(e_unknown));
 }
 
-void XMLProgParser::handleElementEnd(const char *el) {
+void XMLProgParser::handleElementEnd(const char */*el*/) {
     //std::cerr << "end tag: " << el << " tos: " << stack.front()->tag << "\n";
     std::list<Context*>::iterator it = stack.begin();
     if (it != stack.end()) {
@@ -265,10 +255,10 @@ void XMLProgParser::addToContext_prog(Context *c, int e) {
             c->prog->m_procLabels[stack.front()->proc->getNativeAddress()] = stack.front()->proc;
             break;
         case e_procs:
-            for (std::list<Proc*>::iterator it = stack.front()->procs.begin(); it != stack.front()->procs.end(); it++) {
-                c->prog->m_procs.push_back(*it);
-                c->prog->m_procLabels[(*it)->getNativeAddress()] = *it;
-                Boomerang::get()->alert_load(*it);
+            for (auto & elem : stack.front()->procs) {
+                c->prog->m_procs.push_back(elem);
+                c->prog->m_procLabels[(elem)->getNativeAddress()] = elem;
+                Boomerang::get()->alert_load(elem);
             }
             break;
         case e_cluster:
@@ -286,7 +276,7 @@ void XMLProgParser::addToContext_prog(Context *c, int e) {
     }
 }
 
-void XMLProgParser::start_procs(const char **attr) {
+void XMLProgParser::start_procs(const char **/*attr*/) {
     if (phase == 1) {
         return;
     }
@@ -524,7 +514,7 @@ void XMLProgParser::addToContext_local(Context *c, int e) {
     }
 }
 
-void XMLProgParser::start_symbol(const char **attr) {
+void XMLProgParser::start_symbol(const char **/*attr*/) {
     if (phase == 1) {
         return;
     }
@@ -550,10 +540,10 @@ void XMLProgParser::addToContext_symbol(Context *c, int e) {
     }
 }
 
-void XMLProgParser::start_proven_true(const char **attr) {
+void XMLProgParser::start_proven_true(const char **/*attr*/) {
 }
 
-void XMLProgParser::addToContext_proven_true(Context *c, int e) {
+void XMLProgParser::addToContext_proven_true(Context *c, int /*e*/) {
     c->exp = stack.front()->exp;
 }
 
@@ -563,7 +553,7 @@ void XMLProgParser::start_callee(const char **attr) {
     }
 }
 
-void XMLProgParser::addToContext_callee(Context *c, int e) {
+void XMLProgParser::addToContext_callee(Context */*c*/, int /*e*/) {
 }
 
 void XMLProgParser::start_caller(const char **attr) {
@@ -572,7 +562,7 @@ void XMLProgParser::start_caller(const char **attr) {
     }
 }
 
-void XMLProgParser::addToContext_caller(Context *c, int e) {
+void XMLProgParser::addToContext_caller(Context */*c*/, int /*e*/) {
 }
 
 void XMLProgParser::start_signature(const char **attr) {
@@ -689,13 +679,13 @@ void XMLProgParser::addToContext_param(Context *c, int e) {
     }
 }
 
-void XMLProgParser::start_prefreturn(const char **attr) {
+void XMLProgParser::start_prefreturn(const char **/*attr*/) {
     if (phase == 1) {
         return;
     }
 }
 
-void XMLProgParser::addToContext_prefreturn(Context *c, int e) {
+void XMLProgParser::addToContext_prefreturn(Context *c, int /*e*/) {
     if (phase == 1) {
         return;
     }
@@ -711,7 +701,7 @@ void XMLProgParser::start_prefparam(const char **attr) {
     stack.front()->n = atoi(n);
 }
 
-void XMLProgParser::addToContext_prefparam(Context *c, int e) {
+void XMLProgParser::addToContext_prefparam(Context */*c*/, int e) {
     if (phase == 1) {
         return;
     }
@@ -754,9 +744,9 @@ void XMLProgParser::addToContext_return(Context *c, int e) {
     }
 }
 
-void XMLProgParser::start_rettype(const char **attr) { }
+void XMLProgParser::start_rettype(const char **/*attr*/) { }
 
-void XMLProgParser::addToContext_rettype(Context *c, int e) {
+void XMLProgParser::addToContext_rettype(Context *c, int /*e*/) {
     c->type = stack.front()->type;
 }
 
@@ -984,7 +974,7 @@ void XMLProgParser::start_inedge(const char **attr) {
         stack.front()->bb = nullptr;
 }
 
-void XMLProgParser::addToContext_inedge(Context *c, int e) {
+void XMLProgParser::addToContext_inedge(Context */*c*/, int e) {
     //      switch(e) {
     //    default:
     if (e == e_unknown)
@@ -1002,7 +992,7 @@ void XMLProgParser::start_outedge(const char **attr) {
         stack.front()->bb = nullptr;
 }
 
-void XMLProgParser::addToContext_outedge(Context *c, int e) {
+void XMLProgParser::addToContext_outedge(Context */*c*/, int e) {
     //      switch(e) {
     //    default:
     if (e == e_unknown)
@@ -1013,9 +1003,9 @@ void XMLProgParser::addToContext_outedge(Context *c, int e) {
     //      }
 }
 
-void XMLProgParser::start_livein(const char **attr) { }
+void XMLProgParser::start_livein(const char **/*attr*/) { }
 
-void XMLProgParser::addToContext_livein(Context *c, int e) {
+void XMLProgParser::addToContext_livein(Context *c, int /*e*/) {
     c->exp = stack.front()->exp;
 }
 
@@ -1026,7 +1016,7 @@ void XMLProgParser::start_order(const char **attr) {
         stack.front()->bb = nullptr;
 }
 
-void XMLProgParser::addToContext_order(Context *c, int e) {
+void XMLProgParser::addToContext_order(Context */*c*/, int e) {
     //      switch(e) {
     //    default:
     if (e == e_unknown)
@@ -1044,7 +1034,7 @@ void XMLProgParser::start_revorder(const char **attr) {
         stack.front()->bb = nullptr;
 }
 
-void XMLProgParser::addToContext_revorder(Context *c, int e) {
+void XMLProgParser::addToContext_revorder(Context */*c*/, int e) {
     //      switch(e) {
     //    default:
     if (e == e_unknown)
@@ -1084,10 +1074,10 @@ void XMLProgParser::addToContext_rtl(Context *c, int e) {
     }
 }
 
-void XMLProgParser::start_stmt(const char **attr) {
+void XMLProgParser::start_stmt(const char **/*attr*/) {
 }
 
-void XMLProgParser::addToContext_stmt(Context *c, int e) {
+void XMLProgParser::addToContext_stmt(Context *c, int /*e*/) {
     c->stmt = stack.front()->stmt;
 }
 
@@ -1097,7 +1087,7 @@ void XMLProgParser::start_assign(const char **attr) {
         UserProc *p = (UserProc*)findId(getAttr(attr, "proc"));
         if (p)
             stack.front()->stmt->setProc(p);
-        Statement *parent = (Statement*)findId(getAttr(attr, "parent"));
+//        Statement *parent = (Statement*)findId(getAttr(attr, "parent"));
 //        if (parent)
 //            stack.front()->stmt->parent = parent;
         return;
@@ -1109,10 +1099,10 @@ void XMLProgParser::start_assign(const char **attr) {
         stack.front()->stmt->number = atoi(n);
 }
 
-void XMLProgParser::start_assignment(const char **attr) {
+void XMLProgParser::start_assignment(const char **/*attr*/) {
 }
 
-void XMLProgParser::start_phiassign(const char **attr) {
+void XMLProgParser::start_phiassign(const char **/*attr*/) {
     // FIXME: TBC
 }
 
@@ -1148,7 +1138,7 @@ void XMLProgParser::start_callstmt(const char **attr) {
         UserProc *p = (UserProc*)findId(getAttr(attr, "proc"));
         if (p)
             ((Statement*)stack.front()->stmt)->setProc(p);
-        Statement *s = (Statement*)findId(getAttr(attr, "parent"));
+//        Statement *s = (Statement*)findId(getAttr(attr, "parent"));
 //        if (s)
 //            ((Statement*)stack.front()->stmt)->parent = s;
         return;
@@ -1210,7 +1200,7 @@ void XMLProgParser::start_dest(const char **attr) {
     }
 }
 
-void XMLProgParser::addToContext_dest(Context *c, int e) {
+void XMLProgParser::addToContext_dest(Context *c, int /*e*/) {
     c->exp = stack.front()->exp;
 }
 
@@ -1220,7 +1210,7 @@ void XMLProgParser::start_returnstmt(const char **attr) {
         UserProc *p = (UserProc*)findId(getAttr(attr, "proc"));
         if (p)
             ((Statement*)stack.front()->stmt)->setProc(p);
-        Statement *s = (Statement*)findId(getAttr(attr, "parent"));
+//      Statement *s = (Statement*)findId(getAttr(attr, "parent"));
 //        if (s)
 //            ((Statement*)stack.front()->stmt)->parent = s;
         return;
@@ -1258,16 +1248,16 @@ void XMLProgParser::addToContext_returnstmt(Context *c, int e) {
     }
 }
 
-void XMLProgParser::start_returns(const char **attr) {
+void XMLProgParser::start_returns(const char **/*attr*/) {
 }
 
-void XMLProgParser::addToContext_returns(Context *c, int e) {
+void XMLProgParser::addToContext_returns(Context */*c*/, int /*e*/) {
 }
 
-void XMLProgParser::start_modifieds(const char **attr) {
+void XMLProgParser::start_modifieds(const char **/*attr*/) {
 }
 
-void XMLProgParser::addToContext_modifieds(Context *c, int e) {
+void XMLProgParser::addToContext_modifieds(Context */*c*/, int /*e*/) {
 }
 
 void XMLProgParser::start_gotostmt(const char **attr) {
@@ -1276,7 +1266,7 @@ void XMLProgParser::start_gotostmt(const char **attr) {
         UserProc *p = (UserProc*)findId(getAttr(attr, "proc"));
         if (p)
             ((Statement*)stack.front()->stmt)->setProc(p);
-        Statement *s = (Statement*)findId(getAttr(attr, "parent"));
+//        Statement *s = (Statement*)findId(getAttr(attr, "parent"));
 //        if (s)
 //            ((Statement*)stack.front()->stmt)->parent = s;
         return;
@@ -1317,9 +1307,6 @@ void XMLProgParser::start_branchstmt(const char **attr) {
         UserProc *p = (UserProc*)findId(getAttr(attr, "proc"));
         if (p)
             ((Statement*)stack.front()->stmt)->setProc(p);
-        Statement *s = (Statement*)findId(getAttr(attr, "parent"));
-//        if (s)
-//            ((Statement*)stack.front()->stmt)->parent = s;
         return;
     }
     BranchStatement *branch = new BranchStatement();
@@ -1367,9 +1354,6 @@ void XMLProgParser::start_casestmt(const char **attr) {
         UserProc *p = (UserProc*)findId(getAttr(attr, "proc"));
         if (p)
             ((Statement*)stack.front()->stmt)->setProc(p);
-        Statement *s = (Statement*)findId(getAttr(attr, "parent"));
-//        if (s)
-//            ((Statement*)stack.front()->stmt)->parent = s;
         return;
     }
     CaseStatement *cas = new CaseStatement();
@@ -1408,9 +1392,6 @@ void XMLProgParser::start_boolasgn(const char **attr) {
         UserProc *p = (UserProc*)findId(getAttr(attr, "proc"));
         if (p)
             ((Statement*)stack.front()->stmt)->setProc(p);
-        Statement *s = (Statement*)findId(getAttr(attr, "parent"));
-//        if (s)
-//            ((Statement*)stack.front()->stmt)->parent = s;
         return;
     }
     const char *n = getAttr(attr, "size");
@@ -1451,17 +1432,17 @@ void XMLProgParser::addToContext_boolasgn(Context *c, int e) {
     }
 }
 
-void XMLProgParser::start_type(const char **attr) {
+void XMLProgParser::start_type(const char **/*attr*/) {
 }
 
-void XMLProgParser::addToContext_type(Context *c, int e) {
+void XMLProgParser::addToContext_type(Context *c, int /*e*/) {
     c->type = stack.front()->type;
 }
 
-void XMLProgParser::start_basetype(const char **attr) {
+void XMLProgParser::start_basetype(const char **/*attr*/) {
 }
 
-void XMLProgParser::addToContext_basetype(Context *c, int e) {
+void XMLProgParser::addToContext_basetype(Context *c, int /*e*/) {
     c->type = stack.front()->type;
 }
 
@@ -1478,7 +1459,7 @@ void XMLProgParser::start_sizetype(const char **attr) {
         ty->size = atoi(n);
 }
 
-void XMLProgParser::addToContext_sizetype(Context *c, int e) {
+void XMLProgParser::addToContext_sizetype(Context */*c*/, int e) {
     //      switch(e) {
     //    default:
     if (e == e_unknown)
@@ -1489,87 +1470,87 @@ void XMLProgParser::addToContext_sizetype(Context *c, int e) {
     //      }
 }
 
-void XMLProgParser::start_exp(const char **attr) {
+void XMLProgParser::start_exp(const char **/*attr*/) {
 }
 
-void XMLProgParser::addToContext_exp(Context *c, int e) {
+void XMLProgParser::addToContext_exp(Context *c, int /*e*/) {
     c->exp = stack.front()->exp;
 }
 
-void XMLProgParser::start_secondexp(const char **attr) {
+void XMLProgParser::start_secondexp(const char **/*attr*/) {
 }
 
-void XMLProgParser::addToContext_secondexp(Context *c, int e) {
+void XMLProgParser::addToContext_secondexp(Context *c, int /*e*/) {
     c->exp = stack.front()->exp;
 }
 
-void XMLProgParser::start_defines(const char **attr) {
+void XMLProgParser::start_defines(const char **/*attr*/) {
 }
 
-void XMLProgParser::addToContext_defines(Context *c, int e) {
+void XMLProgParser::addToContext_defines(Context *c, int /*e*/) {
     c->exp = stack.front()->exp;
 }
 
-void XMLProgParser::start_lhs(const char **attr) {
+void XMLProgParser::start_lhs(const char **/*attr*/) {
 }
 
-void XMLProgParser::addToContext_lhs(Context *c, int e) {
+void XMLProgParser::addToContext_lhs(Context *c, int /*e*/) {
     c->exp = stack.front()->exp;
 }
 
-void XMLProgParser::start_rhs(const char **attr) {
+void XMLProgParser::start_rhs(const char **/*attr*/) {
 }
 
-void XMLProgParser::addToContext_rhs(Context *c, int e) {
+void XMLProgParser::addToContext_rhs(Context *c, int /*e*/) {
     c->exp = stack.front()->exp;
 }
 
-void XMLProgParser::start_argument(const char **attr) {
+void XMLProgParser::start_argument(const char **/*attr*/) {
 }
 
-void XMLProgParser::addToContext_argument(Context *c, int e) {
+void XMLProgParser::addToContext_argument(Context *c, int /*e*/) {
     c->exp = stack.front()->exp;
 }
 
-void XMLProgParser::start_returnexp(const char **attr) {
+void XMLProgParser::start_returnexp(const char **/*attr*/) {
 }
 
-void XMLProgParser::start_returntype(const char **attr) {
+void XMLProgParser::start_returntype(const char **/*attr*/) {
 }
 
-void XMLProgParser::addToContext_returnexp(Context *c, int e) {
+void XMLProgParser::addToContext_returnexp(Context *c, int /*e*/) {
     c->exp = stack.front()->exp;
 }
 
-void XMLProgParser::addToContext_returntype(Context *c, int e) {
+void XMLProgParser::addToContext_returntype(Context *c, int /*e*/) {
     c->type = stack.front()->type;
 }
 
-void XMLProgParser::start_cond(const char **attr) {
+void XMLProgParser::start_cond(const char **/*attr*/) {
 }
 
-void XMLProgParser::addToContext_cond(Context *c, int e) {
+void XMLProgParser::addToContext_cond(Context *c, int /*e*/) {
     c->exp = stack.front()->exp;
 }
 
-void XMLProgParser::start_subexp1(const char **attr) {
+void XMLProgParser::start_subexp1(const char **/*attr*/) {
 }
 
-void XMLProgParser::addToContext_subexp1(Context *c, int e) {
+void XMLProgParser::addToContext_subexp1(Context *c, int /*e*/) {
     c->exp = stack.front()->exp;
 }
 
-void XMLProgParser::start_subexp2(const char **attr) {
+void XMLProgParser::start_subexp2(const char **/*attr*/) {
 }
 
-void XMLProgParser::addToContext_subexp2(Context *c, int e) {
+void XMLProgParser::addToContext_subexp2(Context *c, int /*e*/) {
     c->exp = stack.front()->exp;
 }
 
-void XMLProgParser::start_subexp3(const char **attr) {
+void XMLProgParser::start_subexp3(const char **/*attr*/) {
 }
 
-void XMLProgParser::addToContext_subexp3(Context *c, int e) {
+void XMLProgParser::addToContext_subexp3(Context *c, int /*e*/) {
     c->exp = stack.front()->exp;
 }
 
@@ -1582,7 +1563,7 @@ void XMLProgParser::start_voidtype(const char **attr) {
     addId(attr, stack.front()->type);
 }
 
-void XMLProgParser::addToContext_voidtype(Context *c, int e) {
+void XMLProgParser::addToContext_voidtype(Context */*c*/, int e) {
     //      switch(e) {
     //    default:
     if (e == e_unknown)
@@ -1609,7 +1590,7 @@ void XMLProgParser::start_integertype(const char **attr) {
         ty->signedness = atoi(n);
 }
 
-void XMLProgParser::addToContext_integertype(Context *c, int e) {
+void XMLProgParser::addToContext_integertype(Context */*c*/, int e) {
     //      switch(e) {
     //    default:
     if (e == e_unknown)
@@ -1629,7 +1610,7 @@ void XMLProgParser::start_pointertype(const char **attr) {
     addId(attr, stack.front()->type);
 }
 
-void XMLProgParser::addToContext_pointertype(Context *c, int e) {
+void XMLProgParser::addToContext_pointertype(Context *c, int /*e*/) {
     PointerType *p = dynamic_cast<PointerType*>(c->type);
     assert(p);
     if (phase == 1) {
@@ -1647,7 +1628,7 @@ void XMLProgParser::start_chartype(const char **attr) {
     addId(attr, stack.front()->type);
 }
 
-void XMLProgParser::addToContext_chartype(Context *c, int e) {
+void XMLProgParser::addToContext_chartype(Context */*c*/, int e) {
     //      switch(e) {
     //    default:
     if (e == e_unknown)
@@ -1667,7 +1648,7 @@ void XMLProgParser::start_namedtype(const char **attr) {
     addId(attr, stack.front()->type);
 }
 
-void XMLProgParser::addToContext_namedtype(Context *c, int e) {
+void XMLProgParser::addToContext_namedtype(Context */*c*/, int e) {
     //      switch(e) {
     //    default:
     if (e == e_unknown)
@@ -1867,7 +1848,7 @@ void XMLProgParser::start_const(const char **attr) {
     //std::cerr << "end of start const\n";
 }
 
-void XMLProgParser::addToContext_const(Context *c, int e) {
+void XMLProgParser::addToContext_const(Context */*c*/, int e) {
     //      switch(e) {
     //    default:
     if (e == e_unknown)
@@ -1889,7 +1870,7 @@ void XMLProgParser::start_terminal(const char **attr) {
     addId(attr, stack.front()->exp);
 }
 
-void XMLProgParser::addToContext_terminal(Context *c, int e) {
+void XMLProgParser::addToContext_terminal(Context */*c*/, int e) {
     //      switch(e) {
     //    default:
     if (e == e_unknown)
@@ -1961,7 +1942,7 @@ void XMLProgParser::start_def(const char **attr) {
     }
 }
 
-void XMLProgParser::addToContext_def(Context *c, int e) {
+void XMLProgParser::addToContext_def(Context */*c*/, int e) {
     //      switch(e) {
     //    default:
     if (e == e_unknown)
@@ -2039,10 +2020,10 @@ void XMLProgParser::parseFile(const std::string &filename) {
 
 void XMLProgParser::parseChildren(Cluster *c) {
     std::string path = c->makeDirs();
-    for (unsigned i = 0; i < c->children.size(); i++) {
-        std::string d = path + "/" + c->children[i]->getName() + ".xml";
+    for (auto & elem : c->children) {
+        std::string d = path + "/" + elem->getName() + ".xml";
         parseFile(d.c_str());
-        parseChildren(c->children[i]);
+        parseChildren(elem);
     }
 }
 
@@ -2059,8 +2040,8 @@ int XMLProgParser::operFromString(const char *s) {
 void XMLProgParser::persistToXML(std::ostream &out, Cluster *c) {
     out << "<cluster id=\"" << ADDRESS::host_ptr(c) << "\" name=\"" << c->name << "\"";
     out << ">\n";
-    for (unsigned i = 0; i < c->children.size(); i++) {
-        persistToXML(out, c->children[i]);
+    for (auto & elem : c->children) {
+        persistToXML(out, elem);
     }
     out << "</cluster>\n";
 }
@@ -2078,11 +2059,11 @@ void XMLProgParser::persistToXML(Prog *prog) {
     std::ofstream &os = prog->m_rootCluster->getStream();
     os << "<prog path=\"" << prog->getPath() << "\" name=\"" << prog->getName() << "\" iNumberedProc=\"" <<
           prog->m_iNumberedProc << "\">\n";
-    for (std::set<Global*>::iterator it1 = prog->globals.begin(); it1 != prog->globals.end(); it1++)
-        persistToXML(os, *it1);
+    for (auto const & elem : prog->globals)
+        persistToXML(os, elem);
     persistToXML(os, prog->m_rootCluster);
-    for (std::list<Proc*>::iterator it = prog->m_procs.begin(); it != prog->m_procs.end(); it++) {
-        Proc *p = *it;
+    for (auto p : prog->m_procs) {
+
         persistToXML(p->getCluster()->getStream(), p);
     }
     os << "</prog>\n";
@@ -2101,12 +2082,12 @@ void XMLProgParser::persistToXML(std::ostream &out, LibProc *proc) {
 
     persistToXML(out, proc->signature);
 
-    for (std::set<CallStatement*>::iterator it = proc->callerSet.begin(); it != proc->callerSet.end(); it++)
-        out << "<caller call=\"" << ADDRESS::host_ptr(*it) << "\"/>\n";
-    for (std::map<Exp*, Exp*, lessExpStar>::iterator it = proc->provenTrue.begin(); it != proc->provenTrue.end(); it++) {
+    for (auto const & elem : proc->callerSet)
+        out << "<caller call=\"" << ADDRESS::host_ptr(elem) << "\"/>\n";
+    for (auto & elem : proc->provenTrue) {
         out << "<proven_true>\n";
-        persistToXML(out, it->first);
-        persistToXML(out, it->second);
+        persistToXML(out, elem.first);
+        persistToXML(out, elem.second);
         out << "</proven_true>\n";
     }
     out << "</libproc>\n";
@@ -2127,37 +2108,37 @@ void XMLProgParser::persistToXML(std::ostream &out, UserProc *proc) {
 
     persistToXML(out, proc->signature);
 
-    for (auto  it = proc->callerSet.begin(); it != proc->callerSet.end(); it++)
-        out << "<caller call=\"" << ADDRESS::host_ptr(*it) << "\"/>\n";
-    for (auto  it = proc->provenTrue.begin(); it != proc->provenTrue.end(); it++) {
+    for (auto const & elem : proc->callerSet)
+        out << "<caller call=\"" << ADDRESS::host_ptr(elem) << "\"/>\n";
+    for (auto & elem : proc->provenTrue) {
         out << "<proven_true>\n";
-        persistToXML(out, it->first);
-        persistToXML(out, it->second);
+        persistToXML(out, elem.first);
+        persistToXML(out, elem.second);
         out << "</proven_true>\n";
     }
 
-    for (auto it1 = proc->locals.begin(); it1 != proc->locals.end(); it1++) {
-        out << "<local name=\"" << (*it1).first << "\">\n";
+    for (auto & elem : proc->locals) {
+        out << "<local name=\"" << (elem).first << "\">\n";
         out << "<type>\n";
-        persistToXML(out, (*it1).second);
+        persistToXML(out, (elem).second);
         out << "</type>\n";
         out << "</local>\n";
     }
 
-    for (auto it2 = proc->symbolMap.begin(); it2 != proc->symbolMap.end(); it2++) {
+    for (auto & elem : proc->symbolMap) {
         out << "<symbol>\n";
         out << "<exp>\n";
-        persistToXML(out, (*it2).first);
+        persistToXML(out, (elem).first);
         out << "</exp>\n";
         out << "<secondexp>\n";
-        persistToXML(out, (*it2).second);
+        persistToXML(out, (elem).second);
         out << "</secondexp>\n";
         out << "</symbol>\n";
     }
 
 
-    for (auto  it = proc->calleeList.begin(); it != proc->calleeList.end(); it++)
-        out << "<callee proc=\"" << ADDRESS::host_ptr(*it) << "\"/>\n";
+    for (auto & elem : proc->calleeList)
+        out << "<callee proc=\"" << ADDRESS::host_ptr(elem) << "\"/>\n";
 
     persistToXML(out, proc->cfg);
 
@@ -2181,23 +2162,23 @@ void XMLProgParser::persistToXML(std::ostream &out, Signature *sig) {
     if (sig->getConvention() != CONV_NONE)
         out << " convention=\"" << sig->conventionName(sig->getConvention()) << "\"";
     out << ">\n";
-    for (unsigned i = 0; i < sig->params.size(); i++) {
-        out << "<param id=\"" << ADDRESS::host_ptr(sig->params[i]) << "\" name=\"" << sig->params[i]->name() << "\">\n";
+    for (auto & elem : sig->params) {
+        out << "<param id=\"" << ADDRESS::host_ptr(elem) << "\" name=\"" << elem->name() << "\">\n";
         out << "<type>\n";
-        persistToXML(out, sig->params[i]->getType());
+        persistToXML(out, elem->getType());
         out << "</type>\n";
         out << "<exp>\n";
-        persistToXML(out, sig->params[i]->getExp());
+        persistToXML(out, elem->getExp());
         out << "</exp>\n";
         out << "</param>\n";
     }
-    for (Returns::iterator rr = sig->returns.begin(); rr != sig->returns.end(); ++rr) {
+    for (auto & elem : sig->returns) {
         out << "<return>\n";
         out << "<type>\n";
-        persistToXML(out, (*rr)->type);
+        persistToXML(out, (elem)->type);
         out << "</type>\n";
         out << "<exp>\n";
-        persistToXML(out, (*rr)->exp);
+        persistToXML(out, (elem)->exp);
         out << "</exp>\n";
         out << "</return>\n";
     }
@@ -2211,8 +2192,8 @@ void XMLProgParser::persistToXML(std::ostream &out, Signature *sig) {
         persistToXML(out, sig->preferedReturn);
         out << "</prefreturn>\n";
     }
-    for (unsigned i = 0; i < sig->preferedParams.size(); i++)
-        out << "<prefparam index=\"" << sig->preferedParams[i] << "\"/>\n";
+    for (auto & elem : sig->preferedParams)
+        out << "<prefparam index=\"" << elem << "\"/>\n";
     out << "</signature>\n";
 }
 
@@ -2424,14 +2405,14 @@ void XMLProgParser::persistToXML(std::ostream &out, Cfg *cfg) {
     out << " exitBB=\"" << ADDRESS::host_ptr(cfg->exitBB) << "\"";
     out << ">\n";
 
-    for (std::list<BasicBlock *>::iterator it = cfg->m_listBB.begin(); it != cfg->m_listBB.end(); it++)
-        persistToXML(out, *it);
+    for (auto & elem : cfg->m_listBB)
+        persistToXML(out, elem);
 
-    for (unsigned i = 0; i < cfg->Ordering.size(); i++)
-        out << "<order bb=\"" << ADDRESS::host_ptr(cfg->Ordering[i]) << "\"/>\n";
+    for (auto & elem : cfg->Ordering)
+        out << "<order bb=\"" << ADDRESS::host_ptr(elem) << "\"/>\n";
 
-    for (unsigned i = 0; i < cfg->revOrdering.size(); i++)
-        out << "<revorder bb=\"" << ADDRESS::host_ptr(cfg->revOrdering[i]) << "\"/>\n";
+    for (auto & elem : cfg->revOrdering)
+        out << "<revorder bb=\"" << ADDRESS::host_ptr(elem) << "\"/>\n";
 
     // TODO
     // MAPBB m_mapBB;
@@ -2493,10 +2474,10 @@ void XMLProgParser::persistToXML(std::ostream &out, const BasicBlock *bb) {
     out << " cType=\"" << (int)bb->cType << "\"";
     out << ">\n";
 
-    for (unsigned i = 0; i < bb->m_InEdges.size(); i++)
-        out << "<inedge bb=\"" << ADDRESS::host_ptr(bb->m_InEdges[i]) << "\"/>\n";
-    for (unsigned i = 0; i < bb->m_OutEdges.size(); i++)
-        out << "<outedge bb=\"" << ADDRESS::host_ptr(bb->m_OutEdges[i]) << "\"/>\n";
+    for (auto & elem : bb->m_InEdges)
+        out << "<inedge bb=\"" << ADDRESS::host_ptr(elem) << "\"/>\n";
+    for (auto & elem : bb->m_OutEdges)
+        out << "<outedge bb=\"" << ADDRESS::host_ptr(elem) << "\"/>\n";
 
     LocationSet::iterator it;
     for (it = bb->liveIn.begin(); it != bb->liveIn.end(); it++) {
@@ -2506,17 +2487,17 @@ void XMLProgParser::persistToXML(std::ostream &out, const BasicBlock *bb) {
     }
 
     if (bb->m_pRtls) {
-        for (std::list<RTL*>::iterator it = bb->m_pRtls->begin(); it != bb->m_pRtls->end(); it++)
-            persistToXML(out, *it);
+        for (auto & elem : *bb->m_pRtls)
+            persistToXML(out, elem);
     }
     out << "</bb>\n";
 }
 
 void XMLProgParser::persistToXML(std::ostream &out, const RTL *rtl) {
     out << "<rtl id=\"" << ADDRESS::host_ptr(rtl) << "\" addr=\"" << rtl->nativeAddr << "\">\n";
-    for (auto it = rtl->begin(); it != rtl-> end(); it++) {
+    for (auto const & elem : *rtl) {
         out << "<stmt>\n";
-        persistToXML(out, *it);
+        persistToXML(out, elem);
         out << "</stmt>\n";
     }
     out << "</rtl>\n";
@@ -2552,14 +2533,14 @@ void XMLProgParser::persistToXML(std::ostream &out, const Statement *stmt) {
         out << " retAddr=\"" << r->retAddr << "\"";
         out << ">\n";
 
-        for (auto rr = r->modifieds.begin(); rr != r->modifieds.end(); ++rr) {
+        for (auto const & elem : r->modifieds) {
             out << "<modifieds>\n";
-            persistToXML(out, *rr);
+            persistToXML(out, elem);
             out << "</modifieds>\n";
         }
-        for (auto rr = r->returns.begin(); rr != r->returns.end(); ++rr) {
+        for (auto const & elem : r->returns) {
             out << "<returns>\n";
-            persistToXML(out, *rr);
+            persistToXML(out, elem);
             out << "</returns>\n";
         }
 
@@ -2586,15 +2567,15 @@ void XMLProgParser::persistToXML(std::ostream &out, const Statement *stmt) {
             out << "</dest>\n";
         }
 
-        for (auto ss = c->arguments.begin(); ss != c->arguments.end(); ++ss) {
+        for (auto const & elem : c->arguments) {
             out << "<argument>\n";
-            persistToXML(out, *ss);
+            persistToXML(out, elem);
             out << "</argument>\n";
         }
 
-        for (auto ss = c->defines.begin(); ss != c->defines.end(); ++ss) {
+        for (auto const & elem : c->defines) {
             out << "<defines>\n";
-            persistToXML(out, *ss);
+            persistToXML(out, elem);
             out << "</defines>\n";
         }
 
@@ -2672,7 +2653,7 @@ void XMLProgParser::persistToXML(std::ostream &out, const Statement *stmt) {
         persistToXML(out, p->lhs);
         out << "</lhs>\n";
         for (auto it = p->cbegin(); it != p->cend(); p++)
-            out << "<def stmt=\"" << ADDRESS::host_ptr(it->second.def) << "\" exp=\""
+            out << "<def stmt=\"" << ADDRESS::host_ptr(it->second.def()) << "\" exp=\""
                 << ADDRESS::host_ptr(it->second.e) << "\" />\n";
         out << "</phiassign>\n";
         return;
@@ -2708,7 +2689,7 @@ void XMLProgParser::persistToXML(std::ostream &out, const Statement *stmt) {
     assert(false);
 }
 
-void XMLProgParser::addToContext_assignment(Context *c, int e) {
+void XMLProgParser::addToContext_assignment(Context *c, int /*e*/) {
     c->stmt = stack.front()->stmt;
 }
 

@@ -5,19 +5,6 @@
  * \file       exp.h
  * OVERVIEW:   Provides the definition for the Exp class and its subclasses.
  *============================================================================*/
-/*
- * $Revision$    // 1.119.2.11
- *
- * 05 Apr 02 - Mike: Created
- * 05 Apr 02 - Mike: Added clone(), copy constructors
- * 08 Apr 02 - Mike: Added isFlagCall(), Terminal subclass
- * 10 Apr 02 - Mike: Search and replace
- * 29 Apr 02 - Mike: TypedExp takes Type& and Exp* in opposite order; consistent
- * 10 May 02 - Mike: Added refSubExp1 etc
- * 21 May 02 - Mike: Mods for gcc 3.1
- * 02 Aug 04 - Mike: Removed PhiExp (PhiAssign replaces it)
- * 05 Aug 04 - Mike: Removed the withUses/withDF parameter from print() funcs
- */
 
 #pragma once
 
@@ -252,7 +239,7 @@ virtual bool        search(const Exp &search, Exp*& result);
 static  void        doSearch(const Exp &search, Exp*& pSrc, std::list<Exp**>& li, bool once);
 
         // As above.
-virtual void        doSearchChildren(const Exp &search, std::list<Exp**>& li, bool once);
+virtual void        doSearchChildren(const Exp &, std::list<Exp**>&, bool);
 
         /// Propagate all possible assignments to components of this expression.
         Exp*        propagateAll();
@@ -329,7 +316,7 @@ virtual int            getNumRefs() {return 0;}
         //     sub1 = <int> and sub2 = <int> and Tr = <int> or
         //     sub1 = <ptr> and sub2 = <ptr> and Tr = <int> or
         //     sub1 = <ptr> and sub2 = <int> and Tr = <ptr>
-virtual Exp*        genConstraints(Exp* result);
+virtual Exp*        genConstraints(Exp*);
 
         // Visitation
         // Note: best to have accept() as pure virtual, so you don't forget to implement it for new subclasses of Exp
@@ -428,7 +415,7 @@ virtual bool        operator*=(Exp& o);
         const Type* getType() const { return type; }
         void        setType(Type* ty) { type = ty; }
 
-virtual void        print(std::ostream& os, bool html = false) const;
+virtual void        print(std::ostream& os, bool = false) const;
         // Print "recursive" (extra parens not wanted at outer levels)
         void        printNoQuotes(std::ostream& os);
 virtual void        printx(int ind) const;
@@ -470,7 +457,7 @@ virtual Exp *       clone() const;
 virtual bool        operator==(const Exp& o) const;
 virtual bool        operator< (const Exp& o) const;
 virtual bool        operator*=(Exp& o);
-virtual void        print(std::ostream& os, bool html = false) const;
+virtual void        print(std::ostream& os, bool = false) const;
 virtual void        appendDotFile(std::ofstream& of);
 virtual void        printx(int ind) const;
 virtual bool        isTerminal() { return true; }
@@ -663,7 +650,7 @@ virtual                ~Ternary();
 
         // Print
 virtual void         print(std::ostream& os, bool html = false) const;
-virtual void         printr(std::ostream& os, bool html = false) const;
+virtual void         printr(std::ostream& os, bool = false) const;
 virtual void         appendDotFile(std::ofstream& of);
 virtual void         printx(int ind) const;
 
@@ -783,10 +770,10 @@ public:
 //virtual ~RefExp()   {
 //                        def = nullptr;
 //                    }
-static  Exp *       get(Exp *e, Statement* def) { return new RefExp(e,def);}
-virtual Exp*         clone() const;
-virtual bool         operator==(const Exp& o) const;
-virtual bool         operator< (const Exp& o) const;
+static  RefExp *    get(Exp *e, Statement* def) { return new RefExp(e,def);}
+virtual Exp*        clone() const;
+virtual bool        operator==(const Exp& o) const;
+virtual bool        operator< (const Exp& o) const;
 virtual bool        operator*=(Exp& o);
 
 virtual void        print(std::ostream& os, bool html = false) const;
@@ -794,7 +781,7 @@ virtual void        printx(int ind) const;
 //virtual int        getNumRefs() {return 1;}
         Statement*  getDef() {return def;}        // Ugh was called getRef()
         Exp*        addSubscript(Statement* _def) {def = _def; return this;}
-        void        setDef(Statement* _def) {def = _def;}
+        void        setDef(Statement* _def) { /*assert(_def);*/ def = _def;}
 virtual Exp*        genConstraints(Exp* restrictTo);
         bool        references(Statement* s) {return def == s;}
 virtual Exp *       polySimplify(bool& bMod);
@@ -834,7 +821,7 @@ virtual Exp*        clone() const;
 virtual bool        operator==(const Exp& o) const;
 virtual bool        operator< (const Exp& o) const;
 virtual bool        operator*=(Exp& o);
-virtual void        print(std::ostream& os, bool html = false) const;
+virtual void        print(std::ostream& os, bool = false) const;
 virtual void        printx(int ind) const;
 virtual Exp*        genConstraints(Exp* /*restrictTo*/) {
                         assert(0); return nullptr;} // Should not be constraining constraints

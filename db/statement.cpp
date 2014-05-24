@@ -13,12 +13,6 @@
  *               (Was dataflow.cpp a long time ago)
  ******************************************************************************/
 
-/*
- * $Revision$    // 1.148.2.38
- * 03 Jul 02 - Trent: Created
- * 25 Jul 03 - Mike: dataflow.cpp, hrtl.cpp -> statement.cpp
- */
-
 /***************************************************************************//**
  * Dependencies.
  ******************************************************************************/
@@ -64,7 +58,7 @@ void Statement::setProc(UserProc *p) {
     }
 }
 
-Exp *Statement::getExpAtLex(unsigned int begin, unsigned int end) {
+Exp *Statement::getExpAtLex(unsigned int /*begin*/, unsigned int /*end*/) {
     return nullptr;
 }
 
@@ -136,7 +130,7 @@ RangeMap Statement::getInputRanges() {
         Range ra29(1, 0, 0, new Unary(opInitValueOf, Location::regOf(29)));
         Range ra30(1, 0, 0, new Unary(opInitValueOf, Location::regOf(30)));
         Range ra31(1, 0, 0, new Unary(opInitValueOf, Location::regOf(31)));
-        Range rpc(1, 0, 0, new Unary(opInitValueOf,  new Terminal(opPC)));
+        Range rpc(1, 0, 0, new Unary(opInitValueOf,  Terminal::get(opPC)));
         input.addRange(Location::regOf(24), ra24);
         input.addRange(Location::regOf(25), ra25);
         input.addRange(Location::regOf(26), ra26);
@@ -145,7 +139,7 @@ RangeMap Statement::getInputRanges() {
         input.addRange(Location::regOf(29), ra29);
         input.addRange(Location::regOf(30), ra30);
         input.addRange(Location::regOf(31), ra31);
-        input.addRange(new Terminal(opPC), rpc);
+        input.addRange(Terminal::get(opPC), rpc);
     } else {
         BasicBlock * pred = Parent->getInEdges()[0];
         Statement *last = pred->getLastStmt();
@@ -165,24 +159,36 @@ RangeMap Statement::getInputRanges() {
 }
 
 void Statement::updateRanges(RangeMap &output, std::list<Statement*> &execution_paths, bool notTaken) {
-    if (!output.isSubset(notTaken ? ((BranchStatement*)this)->getRanges2Ref() : ranges)) {
-        if (notTaken)
-            ((BranchStatement*)this)->setRanges2(output);
-        else
-            ranges = output;
-        if (isLastStatementInBB()) {
-            if (Parent->getNumOutEdges()) {
-                int arc = 0;
-                if (isBranch()) {
-                    if (Parent->getOutEdge(0)->getLowAddr() != ((BranchStatement*)this)->getFixedDest())
+    if(isBranch()) {
+        BranchStatement* self_branch = (BranchStatement*)this;
+        if (!output.isSubset(notTaken ? self_branch->getRanges2Ref() : ranges)) {
+            if (notTaken)
+                self_branch->setRanges2(output);
+            else
+                ranges = output;
+            if (isLastStatementInBB()) {
+                if (Parent->getNumOutEdges()) {
+                    uint32_t arc = 0;
+                    if (Parent->getOutEdge(0)->getLowAddr() != self_branch->getFixedDest())
                         arc = 1;
                     if (notTaken)
                         arc ^= 1;
+                    execution_paths.push_back(Parent->getOutEdge(arc)->getFirstStmt());
                 }
-                execution_paths.push_back(Parent->getOutEdge(arc)->getFirstStmt());
-            }
-        } else
-            execution_paths.push_back(getNextStatementInBB());
+            } else
+                execution_paths.push_back(getNextStatementInBB());
+        }
+    }
+    else if ( !notTaken) {
+        if (!output.isSubset(ranges)) {
+            ranges = output;
+            if (isLastStatementInBB()) {
+                if (Parent->getNumOutEdges()) {
+                    execution_paths.push_back(Parent->getOutEdge(0)->getFirstStmt());
+                }
+            } else
+                execution_paths.push_back(getNextStatementInBB());
+        }
     }
 }
 
@@ -216,7 +222,7 @@ void Assign::rangeAnalysis(std::list<Statement*> &execution_paths) {
         if (a_rhs->isMemOf() && a_rhs->getSubExp1()->getOper() == opInitValueOf &&
                 a_rhs->getSubExp1()->getSubExp1()->isRegOfK() &&
                 ((Const*)a_rhs->getSubExp1()->getSubExp1()->getSubExp1())->getInt() == 28)
-            a_rhs = new Unary(opInitValueOf, new Terminal(opPC));   // nice hack
+            a_rhs = new Unary(opInitValueOf, Terminal::get(opPC));   // nice hack
         if (VERBOSE && DEBUG_RANGE_ANALYSIS)
             LOG << "a_rhs is " << a_rhs << "\n";
         if (a_rhs->isMemOf() && a_rhs->getSubExp1()->isIntConst()) {
@@ -224,20 +230,20 @@ void Assign::rangeAnalysis(std::list<Statement*> &execution_paths) {
             if (proc->getProg()->isDynamicLinkedProcPointer(c)) {
                 const char *nam = proc->getProg()->GetDynamicProcName(c);
                 if (nam) {
-                    a_rhs = new Const(nam);
+                    a_rhs = Const::get(nam);
                     if (VERBOSE && DEBUG_RANGE_ANALYSIS)
                         LOG << "a_rhs is a dynamic proc pointer to " << nam << "\n";
                 }
             } else if (proc->getProg()->isReadOnly(c)) {
                 switch(type->getSize()) {
                     case 8:
-                        a_rhs = new Const(proc->getProg()->readNative1(c));
+                        a_rhs = Const::get(proc->getProg()->readNative1(c));
                         break;
                     case 16:
-                        a_rhs = new Const(proc->getProg()->readNative2(c));
+                        a_rhs = Const::get(proc->getProg()->readNative2(c));
                         break;
                     case 32:
-                        a_rhs = new Const(proc->getProg()->readNative4(c));
+                        a_rhs = Const::get(proc->getProg()->readNative4(c));
                         break;
                     default:
                         LOG << "error: unhandled type size " << (int) type->getSize() << " for reading native address\n";
@@ -266,7 +272,7 @@ void Assign::rangeAnalysis(std::list<Statement*> &execution_paths) {
                 Exp *result;
                 if (a_rhs->getMemDepth() == 0 && !a_rhs->search(search_regof, result) && !a_rhs->search(search_term, result)) {
                     if (a_rhs->isIntConst()) {
-                        Range ra(1, ((Const*)a_rhs)->getInt(), ((Const*)a_rhs)->getInt(), new Const(0));
+                        Range ra(1, ((Const*)a_rhs)->getInt(), ((Const*)a_rhs)->getInt(), Const::get(0));
                         output.addRange(a_lhs, ra);
                     }
                     else {
@@ -377,7 +383,7 @@ void JunctionStatement::rangeAnalysis(std::list<Statement*> &execution_paths) {
     RangeMap input;
     if (DEBUG_RANGE_ANALYSIS)
         LOG_VERBOSE(1) << "unioning {\n";
-    for (int i = 0; i < Parent->getNumInEdges(); i++) {
+    for (size_t i = 0; i < Parent->getNumInEdges(); i++) {
         Statement *last = Parent->getInEdges()[i]->getLastStmt();
         if (DEBUG_RANGE_ANALYSIS)
             LOG_VERBOSE(1) << "  in BB: " << Parent->getInEdges()[i]->getLowAddr() << " " << last << "\n";
@@ -505,7 +511,7 @@ void CallStatement::rangeAnalysis(std::list<Statement*> &execution_paths) {
                 }
                 if (last == nullptr) {
                     // call followed by a ret, sigh
-                    for (int i = 0; i < retbb->getNumInEdges(); i++) {
+                    for (size_t i = 0; i < retbb->getNumInEdges(); i++) {
                         last = retbb->getInEdges()[i]->getLastStmt();
                         if (last->isCall())
                             break;
@@ -538,7 +544,7 @@ void CallStatement::rangeAnalysis(std::list<Statement*> &execution_paths) {
 }
 
 bool JunctionStatement::isLoopJunction() const {
-    for (int i = 0; i < Parent->getNumInEdges(); i++)
+    for (size_t i = 0; i < Parent->getNumInEdges(); i++)
         if (Parent->isBackEdge(i))
             return true;
     return false;
@@ -570,8 +576,8 @@ Statement*    Statement::getPreviousStatementInBB() {
     std::list<RTL*> *rtls = Parent->getRTLs();
     assert(rtls);
     Statement *previous = nullptr;
-    for (std::list<RTL*>::iterator rit = rtls->begin(); rit != rtls->end(); rit++) {
-        RTL *rtl = *rit;
+    for (auto rtl : *rtls) {
+
         for (Statement * it : *rtl) {
             if (it == this)
                 return previous;
@@ -586,8 +592,8 @@ Statement *Statement::getNextStatementInBB() {
     std::list<RTL*> *rtls = Parent->getRTLs();
     assert(rtls);
     bool wantNext = false;
-    for (std::list<RTL*>::iterator rit = rtls->begin(); rit != rtls->end(); rit++) {
-        RTL *rtl = *rit;
+    for (auto rtl : *rtls) {
+
         for (Statement * it : *rtl) {
             if (wantNext)
                 return it;
@@ -895,8 +901,8 @@ bool Statement::replaceRef(Exp* e, Assign *def, bool& convert) {
                                                                 P3     opNil
                         */
             Exp* relExp = Binary::get(opLessUns,
-                                     ((Binary*)rhs)->getSubExp2()->getSubExp1(),
-                                     ((Binary*)rhs)->getSubExp2()->getSubExp2()->getSubExp1());
+                                      ((Binary*)rhs)->getSubExp2()->getSubExp1(),
+                                      ((Binary*)rhs)->getSubExp2()->getSubExp2()->getSubExp1());
             searchAndReplace(RefExp(Terminal::get(opCF), def), relExp, true);
             return true;
         }
@@ -909,8 +915,8 @@ bool Statement::replaceRef(Exp* e, Assign *def, bool& convert) {
         if (strncmp("SUBFLAGS", str, 8) == 0) {
             // for zf we're only interested in if the result part of the subflags is equal to zero
             Exp* relExp = Binary::get(opEquals,
-                                     ((Binary*)rhs)->getSubExp2()->getSubExp2()->getSubExp2()->getSubExp1(),
-                                     new Const(0));
+                                      ((Binary*)rhs)->getSubExp2()->getSubExp2()->getSubExp2()->getSubExp1(),
+                                      Const::get(0));
             searchAndReplace(RefExp(Terminal::get(opZF), def), relExp, true);
             return true;
         }
@@ -955,11 +961,6 @@ bool Statement::isFpop() {
  * Classes derived from Statement
  */
 
-
-#if defined(_MSC_VER) && _MSC_VER <= 1200
-#pragma warning(disable:4786)
-#endif
-
 /******************************************************************************
  * GotoStatement methods
  *****************************************************************************/
@@ -972,22 +973,23 @@ GotoStatement::GotoStatement()
 /***************************************************************************//**
  *
  * \brief        Construct a jump to a fixed address
- * \param        uDest: native address of destination
+ * \param        uDest native address of destination
  *
  ******************************************************************************/
 GotoStatement::GotoStatement(ADDRESS uDest) : m_isComputed(false) {
     kind = STMT_GOTO;
-    pDest = new Const(uDest);
+    pDest = Const::get(uDest);
 }
 
 /***************************************************************************//**
  * FUNCTION:        GotoStatement::~GotoStatement
  * \brief        Destructor
- * PARAMETERS:        None
  *
  ******************************************************************************/
 GotoStatement::~GotoStatement() {
-    if (pDest) ;//delete pDest;
+    if (pDest) {
+        ;//delete pDest;
+    }
 }
 //!< Return the fixed destination of this CTI.
 /***************************************************************************//**
@@ -1020,9 +1022,10 @@ void GotoStatement::setDest(ADDRESS addr) {
     // This fails in FrontSparcTest, do you really want it to Mike? -trent
     //    assert(addr >= prog.limitTextLow && addr < prog.limitTextHigh);
     // Delete the old destination if there is one
-    if (pDest != nullptr)
+    if (pDest != nullptr) {
         ;//delete pDest;
-    pDest = new Const(addr);
+    }
+    pDest = Const::get(addr);
 }
 
 /***************************************************************************//**
@@ -1042,7 +1045,7 @@ Exp* GotoStatement::getDest() {
  ******************************************************************************/
 void GotoStatement::adjustFixedDest(int delta) {
     // Ensure that the destination is fixed.
-    if (pDest == 0 || pDest->getOper() != opIntConst)
+    if (pDest == nullptr || pDest->getOper() != opIntConst)
         LOG << "Can't adjust destination of non-static CTI\n";
 
     ADDRESS dest = constDest()->getAddr();
@@ -1059,12 +1062,12 @@ bool GotoStatement::search(const Exp& search, Exp*& result) {
 /***************************************************************************//**
  * FUNCTION:        GotoStatement::searchAndReplace
  * \brief        Replace all instances of search with replace.
- * PARAMETERS:        search - a location to search for
- *                    replace - the expression with which to replace it
- *                    cc - ignored
- * \returns             True if any change
+ * \param search - a location to search for
+ * \param replace - the expression with which to replace it
+ * \param cc - ignored
+ * \returns True if any change
  ******************************************************************************/
-bool GotoStatement::searchAndReplace(const Exp &search, Exp* replace, bool cc) {
+bool GotoStatement::searchAndReplace(const Exp &search, Exp* replace, bool /*cc*/) {
     bool change = false;
     if (pDest) {
         pDest = pDest->searchReplaceAll(search, replace, change);
@@ -1075,10 +1078,10 @@ bool GotoStatement::searchAndReplace(const Exp &search, Exp* replace, bool cc) {
 /***************************************************************************//**
  * FUNCTION:        GotoStatement::searchAll
  * \brief        Find all instances of the search expression
- * PARAMETERS:        search - a location to search for
- *                    result - a list which will have any matching exprs
- *                             appended to it
- * \returns             true if there were any matches
+ * \param search - a location to search for
+ * \param result - a list which will have any matching exprs
+ *                  appended to it
+ * \returns true if there were any matches
  ******************************************************************************/
 bool GotoStatement::searchAll(const Exp &search, std::list<Exp*> &result) {
     if (pDest)
@@ -1114,9 +1117,8 @@ void GotoStatement::print(std::ostream& os, bool html) const {
 /***************************************************************************//**
  * FUNCTION:      GotoStatement::setIsComputed
  * \brief      Sets the fact that this call is computed.
- * NOTE:          This should really be removed, once CaseStatement and
+ * \note This should really be removed, once CaseStatement and
  *                    HLNwayCall are implemented properly
- * PARAMETERS:      <none>
  *
  ******************************************************************************/
 void GotoStatement::setIsComputed(bool b) {
@@ -1157,7 +1159,7 @@ bool GotoStatement::accept(StmtVisitor* visitor) {
     return visitor->visit(this);
 }
 
-void GotoStatement::generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) {
+void GotoStatement::generateCode(HLLCode */*hll*/, BasicBlock */*pbb*/, int /*indLevel*/) {
     // dont generate any code for jumps, they will be handled by the BB
 }
 
@@ -1211,58 +1213,58 @@ void BranchStatement::setCondType(BRANCH_TYPE cond, bool usesFloat /*= false*/) 
     Exp* p = nullptr;
     switch(cond) {
         case BRANCH_JE:
-            p = Binary::get(opEquals, new Terminal(opFlags), new Const(0));
+            p = Binary::get(opEquals, Terminal::get(opFlags), Const::get(0));
             break;
         case BRANCH_JNE:
-            p = Binary::get(opNotEqual, new Terminal(opFlags), new Const(0));
+            p = Binary::get(opNotEqual, Terminal::get(opFlags), Const::get(0));
             break;
         case BRANCH_JSL:
-            p = Binary::get(opLess, new Terminal(opFlags), new Const(0));
+            p = Binary::get(opLess, Terminal::get(opFlags), Const::get(0));
             break;
         case BRANCH_JSLE:
-            p = Binary::get(opLessEq, new Terminal(opFlags), new Const(0));
+            p = Binary::get(opLessEq, Terminal::get(opFlags), Const::get(0));
             break;
         case BRANCH_JSGE:
-            p = Binary::get(opGtrEq, new Terminal(opFlags), new Const(0));
+            p = Binary::get(opGtrEq, Terminal::get(opFlags), Const::get(0));
             break;
         case BRANCH_JSG:
-            p = Binary::get(opGtr, new Terminal(opFlags), new Const(0));
+            p = Binary::get(opGtr, Terminal::get(opFlags), Const::get(0));
             break;
         case BRANCH_JUL:
-            p = Binary::get(opLessUns, new Terminal(opFlags), new Const(0));
+            p = Binary::get(opLessUns, Terminal::get(opFlags), Const::get(0));
             break;
         case BRANCH_JULE:
-            p = Binary::get(opLessEqUns, new Terminal(opFlags), new Const(0));
+            p = Binary::get(opLessEqUns, Terminal::get(opFlags), Const::get(0));
             break;
         case BRANCH_JUGE:
-            p = Binary::get(opGtrEqUns, new Terminal(opFlags), new Const(0));
+            p = Binary::get(opGtrEqUns, Terminal::get(opFlags), Const::get(0));
             break;
         case BRANCH_JUG:
-            p = Binary::get(opGtrUns, new Terminal(opFlags), new Const(0));
+            p = Binary::get(opGtrUns, Terminal::get(opFlags), Const::get(0));
             break;
         case BRANCH_JMI:
-            p = Binary::get(opLess, new Terminal(opFlags), new Const(0));
+            p = Binary::get(opLess, Terminal::get(opFlags), Const::get(0));
             break;
         case BRANCH_JPOS:
-            p = Binary::get(opGtr, new Terminal(opFlags), new Const(0));
+            p = Binary::get(opGtr, Terminal::get(opFlags), Const::get(0));
             break;
         case BRANCH_JOF:
-            p = Binary::get(opLessUns, new Terminal(opFlags), new Const(0));
+            p = Binary::get(opLessUns, Terminal::get(opFlags), Const::get(0));
             break;
         case BRANCH_JNOF:
-            p = Binary::get(opGtrUns, new Terminal(opFlags), new Const(0));
+            p = Binary::get(opGtrUns, Terminal::get(opFlags), Const::get(0));
             break;
         case BRANCH_JPAR:
             // Can't handle this properly here; leave an impossible expression involving %flags so propagation will
             // still happen, and we can recognise this later in condToRelational()
             // Update: these expressions seem to get ignored ???
-            p = Binary::get(opEquals, new Terminal(opFlags), new Const(999));
+            p = Binary::get(opEquals, Terminal::get(opFlags), Const::get(999));
             break;
     }
     // this is such a hack.. preferably we should actually recognise SUBFLAGS32(..,..,..) > 0 instead of just
     // SUBFLAGS32(..,..,..) but I'll leave this in here for the moment as it actually works.
     if (!Boomerang::get()->noDecompile)
-        p = new Terminal(usesFloat ? opFflags : opFlags);
+        p = Terminal::get(usesFloat ? opFflags : opFlags);
     assert(p);
     setCondExpr(p);
 }
@@ -1296,13 +1298,15 @@ Exp* BranchStatement::getCondExpr() {
 }
 
 /***************************************************************************//**
- * FUNCTION:        BranchStatement::setCondExpr
- * \brief        Set the SemStr expression containing the HL condition.
- * PARAMETERS:        Pointer to Exp to set
+ * \fn          BranchStatement::setCondExpr
+ * \brief       Set the SemStr expression containing the HL condition.
+ * \param       e - Pointer to Exp to set
  *
  ******************************************************************************/
 void BranchStatement::setCondExpr(Exp* e) {
-    if (pCond) ;//delete pCond;
+    if (pCond) {
+        ;//delete pCond;
+    }
     pCond = e;
 }
 
@@ -1485,7 +1489,7 @@ bool BranchStatement::accept(StmtVisitor* visitor) {
     return visitor->visit(this);
 }
 
-void BranchStatement::generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) {
+void BranchStatement::generateCode(HLLCode */*hll*/, BasicBlock */*pbb*/, int /*indLevel*/) {
     // dont generate any code for jconds, they will be handled by the bb
 }
 
@@ -1531,13 +1535,13 @@ bool condToRelational(Exp*& pCond, BRANCH_TYPE jtCond) {
                             /     \
                           P3     opNil */
                 pCond = Binary::get(opLess,            // P3 < 0
-                                   pCond->getSubExp2()->getSubExp2()->getSubExp2()->getSubExp1()->clone(),
-                                   new Const(0));
+                                    pCond->getSubExp2()->getSubExp2()->getSubExp2()->getSubExp1()->clone(),
+                                    Const::get(0));
                 break;
             case BRANCH_JPOS:
                 pCond = Binary::get(opGtrEq,            // P3 >= 0
-                                   pCond->getSubExp2()->getSubExp2()->getSubExp2()->getSubExp1()->clone(),
-                                   new Const(0));
+                                    pCond->getSubExp2()->getSubExp2()->getSubExp2()->getSubExp1()->clone(),
+                                    Const::get(0));
                 break;
             case BRANCH_JOF:
             case BRANCH_JNOF:
@@ -1546,8 +1550,8 @@ bool condToRelational(Exp*& pCond, BRANCH_TYPE jtCond) {
         }
         if (op != opWild) {
             pCond = Binary::get(op,
-                               pCond->getSubExp2()->getSubExp1()->clone(),                    // P1
-                               pCond->getSubExp2()->getSubExp2()->getSubExp1()->clone());    // P2
+                                pCond->getSubExp2()->getSubExp1()->clone(),                    // P1
+                                pCond->getSubExp2()->getSubExp2()->getSubExp1()->clone());    // P2
         }
     }
     else if (condOp == opFlagCall && strncmp(((Const*)pCond->getSubExp1())->getStr(), "LOGICALFLAGS", 12) == 0) {
@@ -1574,32 +1578,34 @@ bool condToRelational(Exp*& pCond, BRANCH_TYPE jtCond) {
             case BRANCH_JUG:  op = opGtrUns; break;
             case BRANCH_JPAR: {
                 // This is pentium specific too; see below for more notes.
-                /*                    pCond
-                                                                        /    \
-                                                          Const        opList
+                /*
+                                                        pCond
+                                                        /    \
+                                                  Const        opList
                                         "LOGICALFLAGS8"        /    \
-                                                                opBitAnd    opNil
-                                                                /        \
-                                                opFlagCall        opIntConst
-                                                /        \            mask
-                                        Const        opList
-                                "SETFFLAGS"        /    \
-                                                           P1    opList
-                                                                        /    \
-                                                                        P2    opNil
+                                                        opBitAnd    opNil
+                                                             /        \
+                                                   opFlagCall        opIntConst
+                                                    /        \            mask
+                                                Const        opList
+                                            "SETFFLAGS"      /    \
+                                                            P1    opList
+                                                          /    \
+                                                        P2    opNil
                                 */
-                Exp* flagsParam = ((Binary*)((Binary*)pCond)->getSubExp2())->getSubExp1();
+                Exp* flagsParam = pCond->getSubExp2()->getSubExp1();
                 Exp* test = flagsParam;
                 if (test->isSubscript())
-                    test = ((RefExp*)test)->getSubExp1();
+                    test = test->getSubExp1();
                 if (test->isTemp())
                     return false;            // Just not propagated yet
                 int mask = 0;
                 if (flagsParam->getOper() == opBitAnd) {
-                    Exp* setFlagsParam = ((Binary*)flagsParam)->getSubExp2();
+                    Exp* setFlagsParam = flagsParam->getSubExp2();
                     if (setFlagsParam->isIntConst())
                         mask = ((Const*)setFlagsParam)->getInt();
                 }
+                Exp* at_opFlagsCall_List = flagsParam->getSubExp1();
                 // Sometimes the mask includes the 0x4 bit, but we expect that to be off all the time. So effectively
                 // the branch is for any one of the (one or two) bits being on. For example, if the mask is 0x41, we
                 // are branching of less (0x1) or equal (0x41).
@@ -1623,8 +1629,8 @@ bool condToRelational(Exp*& pCond, BRANCH_TYPE jtCond) {
                         break;
                 }
                 pCond = Binary::get(op,
-                                   flagsParam->getSubExp1()->getSubExp2()->getSubExp1()->clone(),
-                                   flagsParam->getSubExp1()->getSubExp2()->getSubExp2()->getSubExp1() ->clone());
+                                    at_opFlagsCall_List->getSubExp1()->clone(),
+                                    at_opFlagsCall_List->getSubExp2()->getSubExp1() ->clone());
                 return true;            // This is a floating point comparison
             }
             default:
@@ -1632,8 +1638,8 @@ bool condToRelational(Exp*& pCond, BRANCH_TYPE jtCond) {
         }
         if (op != opWild) {
             pCond = Binary::get(op,
-                               pCond->getSubExp2()->getSubExp1()->clone(),
-                               new Const(0));
+                                pCond->getSubExp2()->getSubExp1()->clone(),
+                                Const::get(0));
         }
     }
     else if (condOp == opFlagCall && strncmp(((Const*)pCond->getSubExp1())->getStr(), "SETFFLAGS", 9) == 0) {
@@ -1653,8 +1659,8 @@ bool condToRelational(Exp*& pCond, BRANCH_TYPE jtCond) {
         }
         if (op != opWild) {
             pCond = Binary::get(op,
-                               pCond->getSubExp2()->getSubExp1()->clone(),
-                               pCond->getSubExp2()->getSubExp2()->getSubExp1() ->clone());
+                                pCond->getSubExp2()->getSubExp1()->clone(),
+                                pCond->getSubExp2()->getSubExp2()->getSubExp1() ->clone());
         }
     }
     // ICK! This is all PENTIUM SPECIFIC... needs to go somewhere else.
@@ -1736,8 +1742,8 @@ bool condToRelational(Exp*& pCond, BRANCH_TYPE jtCond) {
                 }
                 if (op != opWild) {
                     pCond = Binary::get(op,
-                                       left1->getSubExp2()->getSubExp1(),
-                                       left1->getSubExp2()->getSubExp2()->getSubExp1());
+                                        left1->getSubExp2()->getSubExp1(),
+                                        left1->getSubExp2()->getSubExp2()->getSubExp1());
                     return true;      // This is now a float comparison
                 }
             }
@@ -1880,7 +1886,7 @@ bool CaseStatement::accept(StmtVisitor* visitor) {
     return visitor->visit(this);
 }
 
-void CaseStatement::generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) {
+void CaseStatement::generateCode(HLLCode */*hll*/, BasicBlock */*pbb*/, int /*indLevel*/) {
     // dont generate any code for switches, they will be handled by the bb
 }
 
@@ -2263,8 +2269,8 @@ void CallStatement::generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) {
     if (Boomerang::get()->noDecompile) {
         if (procDest->getSignature()->getNumReturns() > 0) {
             Assign* as = new Assign(IntegerType::get(STD_SIZE),
-                                    new Unary(opRegOf, new Const(24)),
-                                    new Unary(opRegOf, new Const(24)));
+                                    new Unary(opRegOf, Const::get(24)),
+                                    new Unary(opRegOf, Const::get(24)));
             as->setProc(proc);
             as->setBB(pbb);
             results->append(as);
@@ -2325,7 +2331,7 @@ void CallStatement::getDefinitions(LocationSet &defs) {
     // Childless calls are supposed to define everything. In practice they don't really define things like %pc, so we
     // need some extra logic in getTypeFor()
     if (isChildless() && !Boomerang::get()->assumeABI)
-        defs.insert(new Terminal(opDefineAll));
+        defs.insert(Terminal::get(opDefineAll));
 }
 
 // Attempt to convert this call, if indirect, to a direct call.
@@ -2395,7 +2401,7 @@ bool CallStatement::convertToDirect() {
     Signature *sig = p->getSignature();
     // pDest is currently still global5{-}, but we may as well make it a constant now, since that's how it will be
     // treated now
-    pDest = new Const(dest);
+    pDest = Const::get(dest);
 
     // 1
     // 2
@@ -2504,7 +2510,7 @@ Exp *processConstant(Exp *e, Type *t, Prog *prog, UserProc* proc, ADDRESS stmt) 
                 if ( !u.isZero() ) {   // can't do anything with nullptr
                     const char *str = prog->getStringConstant(u, true);
                     if (str) {
-                        e = new Const(str);
+                        e = Const::get(str);
                         // Check if we may have guessed this global incorrectly (usually as an array of char)
                         const char* nam = prog->getGlobalName(u);
                         if (nam) prog->setGlobalType(nam,
@@ -2543,7 +2549,7 @@ Exp *processConstant(Exp *e, Type *t, Prog *prog, UserProc* proc, ADDRESS stmt) 
                 }
             }
         } else if (t->resolvesToFloat()) {
-            e = new Ternary(opItof, new Const(32), new Const((int) t->getSize()), e);
+            e = new Ternary(opItof, Const::get(32), Const::get((int) t->getSize()), e);
         }
     }
 
@@ -2627,7 +2633,7 @@ bool CallStatement::objcSpecificProcessing(const char *formatStr) {
                         LOG << "arg " << i << " of call is a cfstring\n";
                         setArgumentType(i, new PointerType(new CharType()));
                         // TODO: we'd really like to change this to CFSTR(addr)
-                        setArgumentExp(i, new Const(addr2));
+                        setArgumentExp(i, Const::get(addr2));
                         change = true;
                     }
                 }
@@ -2831,10 +2837,10 @@ ReturnStatement::~ReturnStatement() {
  ******************************************************************************/
 Statement* ReturnStatement::clone() const {
     ReturnStatement* ret = new ReturnStatement();
-    for (auto rr = modifieds.begin(); rr != modifieds.end(); ++rr)
-        ret->modifieds.append((ImplicitAssign*)(*rr)->clone());
-    for (auto rr = returns.begin(); rr != returns.end(); ++rr)
-        ret->returns.append((Assignment*)(*rr)->clone());
+    for (auto const & elem : modifieds)
+        ret->modifieds.append((ImplicitAssign*)(elem)->clone());
+    for (auto const & elem : returns)
+        ret->returns.append((Assignment*)(elem)->clone());
     ret->retAddr = retAddr;
     ret->col.makeCloneOf(col);
     // Statement members
@@ -2959,7 +2965,7 @@ BoolAssign::~BoolAssign() {
 void BoolAssign::setCondType(BRANCH_TYPE cond, bool usesFloat /*= false*/) {
     jtCond = cond;
     bFloat = usesFloat;
-    setCondExpr(new Terminal(opFlags));
+    setCondExpr(Terminal::get(opFlags));
 }
 
 /***************************************************************************//**
@@ -3064,12 +3070,11 @@ bool BoolAssign::accept(StmtVisitor* visitor) {
     return visitor->visit(this);
 }
 //! code generation
-void BoolAssign::generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) {
+void BoolAssign::generateCode(HLLCode *hll, BasicBlock */*pbb*/, int indLevel) {
     assert(lhs);
     assert(pCond);
     // lhs := (pCond) ? 1 : 0
-    Assign as(lhs->clone(), new Ternary(opTern, pCond->clone(),
-                                        new Const(1), new Const(0)));
+    Assign as(lhs->clone(), new Ternary(opTern, pCond->clone(), Const::get(1), Const::get(0)));
     hll->AddAssignmentStatement(indLevel, &as);
 }
 //! simplify all the uses/defs in this Statement
@@ -3084,7 +3089,7 @@ void BoolAssign::getDefinitions(LocationSet &defs) {
 
 bool BoolAssign::usesExp(const Exp &e) {
     assert(lhs && pCond);
-    Exp *where = 0;
+    Exp *where = nullptr;
     return (pCond->search(e, where) || (lhs->isMemOf() &&
                                         lhs->getSubExp1()->search(e, where)));
 }
@@ -3183,7 +3188,7 @@ Statement* PhiAssign::clone() const {
     Definitions::const_iterator dd;
     for (dd = defVec.begin(); dd != defVec.end(); dd++) {
         PhiInfo pi;
-        pi.def = dd->second.def;            // Don't clone the Statement pointer (never moves)
+        pi.def((Statement *)dd->second.def());            // Don't clone the Statement pointer (never moves)
         pi.e = dd->second.e->clone();        // Do clone the expression pointer
         pa->defVec.insert(std::make_pair(dd->first,pi));
     }
@@ -3269,7 +3274,7 @@ void Assign::simplify() {
                         if (bty->isFloat()) {
                             if (VERBOSE)
                                 LOG << "replacing " << rhs << " with ";
-                            rhs = new Ternary(opItof, new Const(32), new Const(bty->getSize()), rhs);
+                            rhs = new Ternary(opItof, Const::get(32), Const::get(bty->getSize()), rhs);
                             if (VERBOSE)
                                 LOG << rhs << " (assign indicates float type)\n";
                         }
@@ -3337,10 +3342,10 @@ void PhiAssign::printCompact(std::ostream& os, bool html) const {
     if (simple) {
         os << "{" << std::dec;
         for (auto it = defVec.begin(); it != defVec.end(); /* no increment */) {
-            if (it->second.def) {
+            if (it->second.def()) {
                 if (html)
-                    os << "<a href=\"#stmt" << std::dec << it->second.def->getNumber() << "\">";
-                os << it->second.def->getNumber();
+                    os << "<a href=\"#stmt" << std::dec << it->second.def()->getNumber() << "\">";
+                os << it->second.def()->getNumber();
                 if (html)
                     os << "</a>";
             } else
@@ -3357,8 +3362,8 @@ void PhiAssign::printCompact(std::ostream& os, bool html) const {
                 os << "nullptr{";
             else
                 os << e << "{";
-            if (it->second.def)
-                os << std::dec << it->second.def->getNumber();
+            if (it->second.def())
+                os << std::dec << it->second.def()->getNumber();
             else
                 os << "-";
             os << "}";
@@ -3384,8 +3389,8 @@ void Assignment::getDefinitions(LocationSet &defs) {
         defs.insert(lhs);
     // Special case: flag calls define %CF (and others)
     if (lhs->isFlags()) {
-        defs.insert(new Terminal(opCF));
-        defs.insert(new Terminal(opZF));
+        defs.insert(Terminal::get(opCF));
+        defs.insert(Terminal::get(opZF));
     }
 }
 
@@ -3397,11 +3402,11 @@ bool Assign::search(const Exp &search, Exp*& result) {
 bool PhiAssign::search(const Exp &search, Exp*& result) {
     if (lhs->search(search, result))
         return true;
-    iterator it;
-    for (std::pair<const int,PhiInfo> & v : defVec) {
+
+    for (std::pair<const uint32_t,PhiInfo> & v : defVec) {
         assert(v.second.e != nullptr);
         // Note: can't match foo{-} because of this
-        RefExp re(v.second.e, v.second.def);
+        RefExp re(v.second.e, v.second.def());
         if (re.search(search, result))
             return true;
     }
@@ -3430,7 +3435,7 @@ bool ImplicitAssign::searchAll(const Exp &search, std::list<Exp*>& result) {
     return lhs->searchAll(search, result);
 }
 
-bool Assign::searchAndReplace(const Exp &search, Exp* replace, bool cc) {
+bool Assign::searchAndReplace(const Exp &search, Exp* replace, bool /*cc*/) {
     bool chl, chr, chg = false;
     lhs = lhs->searchReplaceAll(search, replace, chl);
     rhs = rhs->searchReplaceAll(search, replace, chr);
@@ -3438,11 +3443,11 @@ bool Assign::searchAndReplace(const Exp &search, Exp* replace, bool cc) {
         guard = guard->searchReplaceAll(search, replace, chg);
     return chl | chr | chg;
 }
-bool PhiAssign::searchAndReplace(const Exp &search, Exp* replace, bool cc) {
+bool PhiAssign::searchAndReplace(const Exp &search, Exp* replace, bool /*cc*/) {
     bool change;
     lhs = lhs->searchReplaceAll(search, replace, change);
-    iterator it;
-    for (std::pair<const int,PhiInfo> & v : defVec) {
+
+    for (std::pair<const uint32_t,PhiInfo> & v : defVec) {
         assert(v.second.e != nullptr);
         bool ch;
         // Assume that the definitions will also be replaced
@@ -3471,12 +3476,12 @@ int Assign::getMemDepth() {
 
 // PhiExp and ImplicitExp:
 bool Assignment::usesExp(const Exp &e) {
-    Exp *where = 0;
+    Exp *where = nullptr;
     return (lhs->isMemOf() || lhs->isRegOf()) && ((Unary*)lhs)->getSubExp1()->search(e, where);
 }
 
 bool Assign::usesExp(const Exp &e) {
-    Exp *where = 0;
+    Exp *where = nullptr;
     return (rhs->search(e, where) || ((lhs->isMemOf() || lhs->isRegOf()) &&
                                       ((Unary*)lhs)->getSubExp1()->search(e, where)));
 }
@@ -3535,9 +3540,9 @@ void Assignment::genConstraints(LocationSet& cons) {
     // MVE: do/will PhiAssign's have a valid type? Why not?
     if (type)
         cons.insert(Binary::get(opEquals,
-                               new Unary(opTypeOf,
-                                         new RefExp(lhs, this)),
-                               new TypeVal(type)));
+                                new Unary(opTypeOf,
+                                          new RefExp(lhs, this)),
+                                new TypeVal(type)));
 }
 
 // generate constraints
@@ -3554,12 +3559,12 @@ void PhiAssign::genConstraints(LocationSet& cons) {
     // result
     Exp* result = new Unary(opTypeOf, new RefExp(lhs, this));
 
-    for (std::pair<const int,PhiInfo> & v : defVec) {
+    for (std::pair<const uint32_t,PhiInfo> & v : defVec) {
         assert(v.second.e != nullptr);
         Exp* conjunct = Binary::get(opEquals,
-                                   result,
-                                   new Unary(opTypeOf,
-                                             new RefExp(v.second.e, v.second.def)));
+                                    result,
+                                    new Unary(opTypeOf,
+                                              new RefExp(v.second.e, v.second.def())));
         cons.insert(conjunct);
     }
 }
@@ -3584,8 +3589,8 @@ void CallStatement::genConstraints(LocationSet& cons) {
         }
         if (arg->isRegOf() || arg->isMemOf() || arg->isSubscript() || arg->isLocal() || arg->isGlobal()) {
             Exp* con = Binary::get(opEquals,
-                                  new Unary(opTypeOf, arg->clone()),
-                                  new TypeVal(destSig->getParamType(p)->clone()));
+                                   new Unary(opTypeOf, arg->clone()),
+                                   new TypeVal(destSig->getParamType(p)->clone()));
             cons.insert(con);
         }
     }
@@ -3757,9 +3762,9 @@ bool PhiAssign::accept(StmtExpVisitor* visitor) {
     if (ret && lhs)
         ret = lhs->accept(visitor->ev);
 
-    for (std::pair<const int,PhiInfo> & v : defVec) {
+    for (std::pair<const uint32_t,PhiInfo> & v : defVec) {
         assert(v.second.e != nullptr);
-        RefExp *re = new RefExp(v.second.e, v.second.def);
+        RefExp *re = new RefExp(v.second.e, v.second.def());
         ret = re->accept(visitor->ev);
         if (ret == false)
             return false;
@@ -4169,32 +4174,32 @@ void PhiAssign::simplify() {
         return;
     bool allSame = true;
     Definitions::iterator uu = defVec.begin();
-    Statement* first;
-    for (first = (uu++)->second.def; uu != defVec.end(); uu++) {
-        if (uu->second.def != first) {
+    Statement* first = defVec.begin()->second.def();
+    ++uu;
+    for ( ; uu != defVec.end(); uu++) {
+        if (uu->second.def() != first) {
             allSame = false;
             break;
         }
     }
 
     if (allSame) {
-        if (VERBOSE)
-            LOG << "all the same in " << this << "\n";
+        LOG_VERBOSE(1) << "all the same in " << this << "\n";
         convertToAssign(new RefExp(lhs, first));
         return;
     }
 
     bool onlyOneNotThis = true;
     Statement *notthis = (Statement*)-1;
-    for (std::pair<const int,PhiInfo> & v : defVec) {
-        if (v.second.def == nullptr || v.second.def->isImplicit()
-                || !v.second.def->isPhi() || v.second.def != this) {
+    for (std::pair<const uint32_t,PhiInfo> & v : defVec) {
+        if (v.second.def() == nullptr || v.second.def()->isImplicit()
+                || !v.second.def()->isPhi() || v.second.def() != this) {
             if (notthis != (Statement*)-1) {
                 onlyOneNotThis = false;
                 break;
             }
             else
-                notthis = v.second.def;
+                notthis = v.second.def();
         }
     }
 
@@ -4206,10 +4211,10 @@ void PhiAssign::simplify() {
     }
 }
 
-void PhiAssign::putAt(size_t i, Statement* def, Exp* e) {
+void PhiAssign::putAt(uint32_t i, Statement* def, Exp* e) {
     assert(e); // should be something surely
     //assert(defVec.end()==defVec.find(i));
-    defVec[i].def = def;
+    defVec[i].def(def);
     defVec[i].e = e;
 }
 
@@ -4234,8 +4239,8 @@ bool CallStatement::definesLoc(Exp* loc) {
 // store the return type(s) for example.
 // FIXME: seems it would be cleaner to say that Return Statements don't define anything.
 bool ReturnStatement::definesLoc(Exp* loc) {
-    for (auto it = modifieds.begin(); it != modifieds.end(); ++it) {
-        if ((*it)->definesLoc(loc))
+    for (auto & elem : modifieds) {
+        if ((elem)->definesLoc(loc))
             return true;
     }
     return false;
@@ -4243,28 +4248,28 @@ bool ReturnStatement::definesLoc(Exp* loc) {
 
 // FIXME: see above
 void ReturnStatement::getDefinitions(LocationSet& ls) {
-    for (auto rr = modifieds.begin(); rr != modifieds.end(); ++rr)
-        (*rr)->getDefinitions(ls);
+    for (auto & elem : modifieds)
+        (elem)->getDefinitions(ls);
 }
 
 Type* ReturnStatement::getTypeFor(Exp* e) {
-    for (auto rr = modifieds.begin(); rr != modifieds.end(); ++rr) {
-        if (*((Assignment*)*rr)->getLeft() == *e)
-            return ((Assignment*)*rr)->getType();
+    for (auto & elem : modifieds) {
+        if (*((Assignment*)elem)->getLeft() == *e)
+            return ((Assignment*)elem)->getType();
     }
     return nullptr;
 }
 
 void ReturnStatement::setTypeFor(Exp*e, Type* ty) {
-    for (auto rr = modifieds.begin(); rr != modifieds.end(); ++rr) {
-        if (*((Assignment*)*rr)->getLeft() == *e) {
-            ((Assignment*)*rr)->setType(ty);
+    for (auto & elem : modifieds) {
+        if (*((Assignment*)elem)->getLeft() == *e) {
+            ((Assignment*)elem)->setType(ty);
             break;
         }
     }
-    for (auto rr = returns.begin(); rr != returns.end(); rr++) {
-        if (*((Assignment*)*rr)->getLeft() == *e) {
-            ((Assignment*)*rr)->setType(ty);
+    for (auto & elem : returns) {
+        if (*((Assignment*)elem)->getLeft() == *e) {
+            ((Assignment*)elem)->setType(ty);
             return;
         }
     }
@@ -4280,9 +4285,9 @@ void ReturnStatement::print(std::ostream& os, bool html) const {
     os << "RET";
     bool first = true;
     unsigned column = 19;
-    for (auto it = returns.begin(); it != returns.end(); ++it) {
+    for (auto const & elem : returns) {
         std::ostringstream ost;
-        ((const Assignment*)*it)->printCompact(ost, html);
+        ((const Assignment*)elem)->printCompact(ost, html);
         unsigned len = ost.str().length();
         if (first) {
             first = false;
@@ -4305,9 +4310,9 @@ void ReturnStatement::print(std::ostream& os, bool html) const {
     os << "Modifieds: ";
     first = true;
     column = 25;
-    for (auto it = modifieds.begin(); it != modifieds.end(); ++it) {
+    for (auto const & elem : modifieds) {
         std::ostringstream ost;
-        const Assign* as = (const Assign*)*it;
+        const Assign* as = (const Assign*)elem;
         const Type* ty = as->getType();
         if (ty)
             ost << "*" << ty << "* ";
@@ -5013,9 +5018,9 @@ void CallStatement::eliminateDuplicateArgs() {
 }
 
 void PhiAssign::enumerateParams(std::list<Exp*>& le) {
-    for (std::pair<const int,PhiInfo> & v : defVec) {
+    for (std::pair<const uint32_t,PhiInfo> & v : defVec) {
         assert(v.second.e != nullptr);
-        RefExp *r = new RefExp(v.second.e, v.second.def);
+        RefExp *r = new RefExp(v.second.e, v.second.def());
         le.push_back(r);
     }
 }
@@ -5028,19 +5033,19 @@ void dumpDestCounts(std::map<Exp*, int, lessExpStar>* destCounts) {
     }
 }
 
-bool JunctionStatement::accept(StmtVisitor* visitor) {
+bool JunctionStatement::accept(StmtVisitor* /*visitor*/) {
     return true;
 }
 
-bool JunctionStatement::accept(StmtExpVisitor* visitor) {
+bool JunctionStatement::accept(StmtExpVisitor* /*visitor*/) {
     return true;
 }
 
-bool JunctionStatement::accept(StmtModifier* visitor) {
+bool JunctionStatement::accept(StmtModifier* /*visitor*/) {
     return true;
 }
 
-bool JunctionStatement::accept(StmtPartModifier* visitor) {
+bool JunctionStatement::accept(StmtPartModifier* /*visitor*/) {
     return true;
 }
 
@@ -5051,7 +5056,7 @@ void JunctionStatement::print(std::ostream &os, bool html) const {
         os << "<a name=\"stmt" << std::dec << number << "\">";
     }
     os << "JUNCTION ";
-    for (int i = 0; i < Parent->getNumInEdges(); i++) {
+    for (size_t i = 0; i < Parent->getNumInEdges(); i++) {
         os << std::hex << Parent->getInEdges()[i]->getHiAddr() << std::dec;
         if (Parent->isBackEdge(i))
             os << "*";

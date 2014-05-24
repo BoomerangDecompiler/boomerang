@@ -12,13 +12,6 @@
  * \file       ppcdecoder.h
  * \brief   The implementation of the instruction decoder for PPC.
  ******************************************************************************/
-
-/*
- * $Revision$    // 1.3.2.1
- *
- * 23 Nov 04 - Jay Sweeney and Alejandro Dubrovsky: Created.
- */
-
 #ifndef PPCDECODER
 #define PPCDECODER
 #include <cstdlib>
@@ -55,9 +48,9 @@ private:
     Exp*            dis_Reg(unsigned r);
     Exp*            dis_RAmbz(unsigned r);        // Special for rA of certain instructions
 
-    void            unused(int x);
+    void            unused(int);
     RTL*            createBranchRtl(ADDRESS pc, std::list<Statement*>* stmts, const char* name);
-    bool            isFuncPrologue(ADDRESS hostPC);
+    bool            isFuncPrologue(ADDRESS);
     DWord           getDword(ADDRESS lc);
 };
 

@@ -11,13 +11,6 @@
  * Desc: This file contains the definition of the class ElfBinaryFile.
 */
 
-/* $Revision$
- * 12 Sep 01 - Mike: Replaced SymTab object with map from ADDRESS to string
- * 09 Mar 02 - Mike: Changes for stand alone compilation
- * 01 Oct 02 - Mike: Removed elf library (and include file) dependencies
- * 02 Oct 02 - Mike: elfRead2 and elfRead4 are const now
-*/
-
 #ifndef __ELFBINARYFILE_H__
 #define __ELFBINARYFILE_H__
 

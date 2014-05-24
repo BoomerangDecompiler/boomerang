@@ -15,16 +15,6 @@
  *                interest to the whole program.
  ******************************************************************************/
 
-/*
- * $Revision$    // 1.126.2.14
- *
- * 18 Apr 02 - Mike: Mods for boomerang
- * 26 Apr 02 - Mike: common.hs read relative to BOOMDIR
- * 20 Jul 04 - Mike: Got rid of BOOMDIR
- * 03 Mar 06 - tamlin: prevent arrays from crossing section boundaries
- * 20 Mar 11 - Mike: Added missing braces in Prog::getFloatConstant()
- */
-
 /***************************************************************************//**
  * Dependencies.
  ******************************************************************************/
@@ -168,8 +158,8 @@ void Prog::generateDotFile() {
 
 }
 
-void Prog::generateCode(Cluster *cluster, UserProc *proc, bool intermixRTL) {
-    std::string basedir = m_rootCluster->makeDirs();
+void Prog::generateCode(Cluster *cluster, UserProc *proc, bool /*intermixRTL*/) {
+    //std::string basedir = m_rootCluster->makeDirs();
     std::ofstream os;
     if (cluster) {
         cluster->openStream("c");
@@ -181,7 +171,7 @@ void Prog::generateCode(Cluster *cluster, UserProc *proc, bool intermixRTL) {
             HLLCode *code = Boomerang::get()->getHLLCode();
             bool global = false;
             if (Boomerang::get()->noDecompile) {
-                const char *sections[] = { "rodata", "data", "data1", 0 };
+                const char *sections[] = { "rodata", "data", "data1", nullptr };
                 for (int j = 0; sections[j]; j++) {
                     std::string str = ".";
                     str += sections[j];
@@ -205,11 +195,11 @@ void Prog::generateCode(Cluster *cluster, UserProc *proc, bool intermixRTL) {
                 os << "#include \"boomerang.h\"\n\n";
                 global = true;
             }
-            for (std::set<Global*>::iterator it1 = globals.begin(); it1 != globals.end(); it1++) {
+            for (auto const & elem : globals) {
                 // Check for an initial value
-                Exp *e = (*it1)->getInitialValue(this);
+                Exp *e = (elem)->getInitialValue(this);
                 //                if (e) {
-                code->AddGlobal((*it1)->getName(), (*it1)->getType(), e);
+                code->AddGlobal((elem)->getName(), (elem)->getType(), e);
                 global = true;
                 //                }
             }
@@ -219,7 +209,7 @@ void Prog::generateCode(Cluster *cluster, UserProc *proc, bool intermixRTL) {
     }
 
     // First declare prototypes for all but the first proc
-    std::list<Proc*>::iterator it = m_procs.begin();
+    //std::list<Proc*>::iterator it = m_procs.begin();
     bool first = true, proto = false;
     for (Proc* pProc : m_procs) {
         if (pProc->isLib()) continue;
@@ -471,7 +461,7 @@ Proc* Prog::setNewProc(ADDRESS uAddr) {
     // Check if we already have this proc
     Proc* pProc = findProc(uAddr);
     if (pProc == (Proc*)-1)            // Already decoded and deleted?
-        return 0;                    // Yes, exit with 0
+        return nullptr;                    // Yes, exit with 0
     if (pProc)
         // Yes, we are done
         return pProc;
@@ -761,7 +751,7 @@ Proc* Prog::getProc(int idx) const {
     // Return the indexed procedure. If this is used often, we should use a vector instead of a list
     // If index is invalid, result will be 0
     if ((idx < 0) || (idx >= (int)m_procs.size()))
-        return 0;
+        return nullptr;
     std::list<Proc*>::const_iterator it = m_procs.begin();
     std::advance(it,idx);
     return (*it);
@@ -1078,7 +1068,7 @@ Proc* Prog::findContainingProc(ADDRESS uAddr) const {
  * \returns        True if a real (non deleted) proc
  ******************************************************************************/
 bool Prog::isProcLabel (ADDRESS addr) {
-    return m_procLabels[addr] != 0;
+    return m_procLabels[addr] != nullptr;
 }
 
 /***************************************************************************//**
@@ -1123,7 +1113,7 @@ Proc* Prog::getFirstProc(PROGMAP::const_iterator& it) {
     while (it != m_procLabels.end() && (it->second == (Proc*) -1))
         it++;
     if (it == m_procLabels.end())
-        return 0;
+        return nullptr;
     return it->second;
 }
 
@@ -1139,7 +1129,7 @@ Proc* Prog::getNextProc(PROGMAP::const_iterator& it) {
     while (it != m_procLabels.end() && (it->second == (Proc*) -1))
         it++;
     if (it == m_procLabels.end())
-        return 0;
+        return nullptr;
     return it->second;
 }
 
@@ -1155,7 +1145,7 @@ UserProc* Prog::getFirstUserProc(std::list<Proc*>::iterator& it) {
     while (it != m_procs.end() && (*it)->isLib())
         it++;
     if (it == m_procs.end())
-        return 0;
+        return nullptr;
     return (UserProc*)*it;
 }
 
@@ -1172,7 +1162,7 @@ UserProc* Prog::getNextUserProc(std::list<Proc*>::iterator& it) {
     while (it != m_procs.end() && (*it)->isLib())
         it++;
     if (it == m_procs.end())
-        return 0;
+        return nullptr;
     return (UserProc*)*it;
 }
 
@@ -1188,7 +1178,7 @@ UserProc* Prog::getNextUserProc(std::list<Proc*>::iterator& it) {
  ******************************************************************************/
 const void* Prog::getCodeInfo(ADDRESS uAddr, const char*& last, int& delta) {
     delta=0;
-    last=0;
+    last=nullptr;
 #ifdef _WIN32
     // this is broken obviously
     return nullptr;

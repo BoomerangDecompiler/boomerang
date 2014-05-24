@@ -11,6 +11,7 @@
  * 04 Dec 02 - Mike: Changed all r[0] to 0
  */
 
+#include <QProcessEnvironment>
 #include "types.h"
 #include "FrontSparcTest.h"
 #include "proc.h"
@@ -22,20 +23,24 @@
 #include "BinaryFileStub.h"
 #include "boomerang.h"
 #include "log.h"
-CPPUNIT_TEST_SUITE_REGISTRATION( FrontSparcTest );
 
 #define HELLO_SPARC     "test/sparc/hello"
 #define BRANCH_SPARC    "test/sparc/branch"
-
+static std::string TEST_BASE;
 static bool logset = false;
 /***************************************************************************//**
  * \brief   Set up anything needed before all tests
  * \note    Called before any tests
  * \note    Also appears to be called before all tests!
  *============================================================================*/
-void FrontSparcTest::setUp () {
+void FrontSparcTest::SetUp () {
     if (!logset) {
         logset = true;
+        TEST_BASE = QProcessEnvironment::systemEnvironment().value("BOOMERANG_TEST_BASE","").toStdString();
+        Boomerang::get()->setProgPath(TEST_BASE);
+        Boomerang::get()->setPluginPath(TEST_BASE+"/out");
+        if(TEST_BASE.empty())
+            fprintf(stderr,"BOOMERANG_TEST_BASE environment variable net set, many test will fail\n");
         Boomerang::get()->setLogger(new NullLogger());
     }
 }
@@ -47,33 +52,33 @@ void FrontSparcTest::setUp () {
  * PARAMETERS:        <none>
  *
  *============================================================================*/
-void FrontSparcTest::tearDown () {
+void FrontSparcTest::TearDown () {
 }
 
 /***************************************************************************//**
  * FUNCTION:        FrontSparcTest::test1
  * OVERVIEW:        Test decoding some sparc instructions
  *============================================================================*/
-void FrontSparcTest::test1 () {
+TEST_F(FrontSparcTest,test1) {
     std::ostringstream ost;
 
     BinaryFileFactory bff;
     BinaryFile *pBF = bff.Load(HELLO_SPARC);
     if (pBF == nullptr)
         pBF = new BinaryFileStub();       // fallback on stub
-    CPPUNIT_ASSERT(pBF != 0);
-    CPPUNIT_ASSERT(pBF->GetMachine() == MACHINE_SPARC);
+    ASSERT_TRUE(pBF != 0);
+    ASSERT_TRUE(pBF->GetMachine() == MACHINE_SPARC);
     Prog* prog = new Prog;
     FrontEnd *pFE = new SparcFrontEnd(pBF, prog, &bff);
     prog->setFrontEnd(pFE);
 
     bool gotMain;
     ADDRESS addr = pFE->getMainEntryPoint(gotMain);
-    CPPUNIT_ASSERT (addr != NO_ADDRESS);
+    ASSERT_TRUE (addr != NO_ADDRESS);
 
     // Decode first instruction
     DecodeResult inst = pFE->decodeInstruction(addr);
-    CPPUNIT_ASSERT(inst.rtl != nullptr);
+    ASSERT_TRUE(inst.rtl != nullptr);
     inst.rtl->print(ost);
 
     std::string expected(
@@ -103,27 +108,27 @@ void FrontSparcTest::test1 () {
         "            0 *32* r30 := r14\n"
         "            0 *32* r31 := r15\n"
         "            0 *32* r14 := tmp\n");
-    CPPUNIT_ASSERT_EQUAL(expected, std::string(ost.str()));
+    ASSERT_EQ(expected, std::string(ost.str()));
 
     std::ostringstream o2;
     addr += inst.numBytes;
     inst = pFE->decodeInstruction(addr);
     inst.rtl->print(o2);
     expected = std::string("00010688    0 *32* r8 := 0x10400\n");
-    CPPUNIT_ASSERT_EQUAL(expected, std::string(o2.str()));
+    ASSERT_EQ(expected, std::string(o2.str()));
 
     std::ostringstream o3;
     addr += inst.numBytes;
     inst = pFE->decodeInstruction(addr);
     inst.rtl->print(o3);
     expected = std::string("0001068c    0 *32* r8 := r8 | 848\n");
-    CPPUNIT_ASSERT_EQUAL(expected, std::string(o3.str()));
+    ASSERT_EQ(expected, std::string(o3.str()));
 
     delete pFE;
     //delete pBF;
 }
 
-void FrontSparcTest::test2() {
+TEST_F(FrontSparcTest,test2) {
     DecodeResult inst;
     std::string expected;
 
@@ -131,14 +136,14 @@ void FrontSparcTest::test2() {
     BinaryFile *pBF = bff.Load(HELLO_SPARC);
     if (pBF == nullptr)
         pBF = new BinaryFileStub();       // fallback on stub
-    CPPUNIT_ASSERT(pBF != 0);
-    CPPUNIT_ASSERT(pBF->GetMachine() == MACHINE_SPARC);
+    ASSERT_TRUE(pBF != 0);
+    ASSERT_TRUE(pBF->GetMachine() == MACHINE_SPARC);
     Prog* prog = new Prog;
     FrontEnd *pFE = new SparcFrontEnd(pBF, prog, &bff);
     prog->setFrontEnd(pFE);
 
     std::ostringstream o1;
-    inst = pFE->decodeInstruction(0x10690);
+    inst = pFE->decodeInstruction(ADDRESS::g(0x10690));
     inst.rtl->print(o1);
     // This call is to out of range of the program's text limits (to the Program Linkage Table (PLT), calling printf)
     // This is quite normal.
@@ -146,31 +151,31 @@ void FrontSparcTest::test2() {
         "              )\n"
         "              Reaching definitions: \n"
         "              Live variables: \n");
-    CPPUNIT_ASSERT_EQUAL(expected, std::string(o1.str()));
+    ASSERT_EQ(expected, std::string(o1.str()));
 
     std::ostringstream o2;
-    inst = pFE->decodeInstruction(0x10694);
+    inst = pFE->decodeInstruction(ADDRESS::g(0x10694));
     inst.rtl->print(o2);
     expected = std::string("00010694\n");
-    CPPUNIT_ASSERT_EQUAL(expected, std::string(o2.str()));
+    ASSERT_EQ(expected, std::string(o2.str()));
 
     std::ostringstream o3;
-    inst = pFE->decodeInstruction(0x10698);
+    inst = pFE->decodeInstruction(ADDRESS::g(0x10698));
     inst.rtl->print(o3);
     expected = std::string("00010698    0 *32* r8 := 0\n");
-    CPPUNIT_ASSERT_EQUAL(expected, std::string(o3.str()));
+    ASSERT_EQ(expected, std::string(o3.str()));
 
     std::ostringstream o4;
-    inst = pFE->decodeInstruction(0x1069c);
+    inst = pFE->decodeInstruction(ADDRESS::g(0x1069c));
     inst.rtl->print(o4);
     expected = std::string("0001069c    0 *32* r24 := r8\n");
-    CPPUNIT_ASSERT_EQUAL(expected, std::string(o4.str()));
+    ASSERT_EQ(expected, std::string(o4.str()));
 
     delete pFE;
     // delete pBF;
 }
 
-void FrontSparcTest::test3() {
+TEST_F(FrontSparcTest,test3) {
     DecodeResult inst;
     std::string expected;
 
@@ -178,28 +183,28 @@ void FrontSparcTest::test3() {
     BinaryFile *pBF = bff.Load(HELLO_SPARC);
     if (pBF == nullptr)
         pBF = new BinaryFileStub();       // fallback on stub
-    CPPUNIT_ASSERT(pBF != 0);
-    CPPUNIT_ASSERT(pBF->GetMachine() == MACHINE_SPARC);
+    ASSERT_TRUE(pBF != 0);
+    ASSERT_TRUE(pBF->GetMachine() == MACHINE_SPARC);
     Prog* prog = new Prog;
     FrontEnd *pFE = new SparcFrontEnd(pBF, prog, &bff);
     prog->setFrontEnd(pFE);
 
     std::ostringstream o1;
-    inst = pFE->decodeInstruction(0x106a0);
+    inst = pFE->decodeInstruction(ADDRESS::g(0x106a0));
     inst.rtl->print(o1);
     expected = std::string("000106a0\n");
-    CPPUNIT_ASSERT_EQUAL(expected, std::string(o1.str()));
+    ASSERT_EQ(expected, std::string(o1.str()));
 
     std::ostringstream o2;
-    inst = pFE->decodeInstruction(0x106a4);
+    inst = pFE->decodeInstruction(ADDRESS::g(0x106a4));
     inst.rtl->print(o2);
     expected = std::string("000106a4    0 RET\n"
         "              Modifieds: \n"
         "              Reaching definitions: \n");
-    CPPUNIT_ASSERT_EQUAL(expected, std::string(o2.str()));
+    ASSERT_EQ(expected, std::string(o2.str()));
 
     std::ostringstream o3;
-    inst = pFE->decodeInstruction(0x106a8);
+    inst = pFE->decodeInstruction(ADDRESS::g(0x106a8));
     inst.rtl->print(o3);
     expected = std::string(
         "000106a8    0 *32* tmp := 0\n"
@@ -229,13 +234,13 @@ void FrontSparcTest::test3() {
         "            0 *32* r30 := m[r14 + 56]\n"
         "            0 *32* r31 := m[r14 + 60]\n"
         "            0 *32* r0 := tmp\n");
-    CPPUNIT_ASSERT_EQUAL(expected, std::string(o3.str()));
+    ASSERT_EQ(expected, std::string(o3.str()));
 
     delete pFE;
     // delete pBF;
 }
 
-void FrontSparcTest::testBranch() {
+TEST_F(FrontSparcTest,testBranch) {
     DecodeResult inst;
     std::string expected;
 
@@ -243,51 +248,51 @@ void FrontSparcTest::testBranch() {
     BinaryFile *pBF = bff.Load(BRANCH_SPARC);
     if (pBF == nullptr)
         pBF = new BinaryFileStub();       // fallback on stub
-    CPPUNIT_ASSERT(pBF != 0);
-    CPPUNIT_ASSERT(pBF->GetMachine() == MACHINE_SPARC);
+    ASSERT_TRUE(pBF != 0);
+    ASSERT_TRUE(pBF->GetMachine() == MACHINE_SPARC);
     Prog* prog = new Prog;
     FrontEnd *pFE = new SparcFrontEnd(pBF, prog, &bff);
     prog->setFrontEnd(pFE);
 
     // bne
     std::ostringstream o1;
-    inst = pFE->decodeInstruction(0x10ab0);
+    inst = pFE->decodeInstruction(ADDRESS::g(0x10ab0));
     inst.rtl->print(o1);
     expected = std::string(
       "00010ab0    0 BRANCH 0x10ac8, condition not equals\n"
       "High level: %flags\n");
-    CPPUNIT_ASSERT_EQUAL(expected, std::string(o1.str()));
+    ASSERT_EQ(expected, std::string(o1.str()));
 
     // bg
     std::ostringstream o2;
-    inst = pFE->decodeInstruction(0x10af8);
+    inst = pFE->decodeInstruction(ADDRESS::g(0x10af8));
     inst.rtl->print(o2);
     expected = std::string("00010af8    0 BRANCH 0x10b10, condition "
       "signed greater\n"
       "High level: %flags\n");
-    CPPUNIT_ASSERT_EQUAL(expected, std::string(o2.str()));
+    ASSERT_EQ(expected, std::string(o2.str()));
 
     // bleu
     std::ostringstream o3;
-    inst = pFE->decodeInstruction(0x10b44);
+    inst = pFE->decodeInstruction(ADDRESS::g(0x10b44));
     inst.rtl->print(o3);
     expected = std::string(
         "00010b44    0 BRANCH 0x10b54, condition unsigned less or equals\n"
         "High level: %flags\n");
-    CPPUNIT_ASSERT_EQUAL(expected, std::string(o3.str()));
+    ASSERT_EQ(expected, std::string(o3.str()));
 
     delete pFE;
     // delete pBF;
 }
 
-void FrontSparcTest::testDelaySlot() {
+TEST_F(FrontSparcTest,testDelaySlot) {
 
     BinaryFileFactory bff;
     BinaryFile *pBF = bff.Load(BRANCH_SPARC);
     if (pBF == nullptr)
         pBF = new BinaryFileStub();       // fallback on stub
-    CPPUNIT_ASSERT(pBF != 0);
-    CPPUNIT_ASSERT(pBF->GetMachine() == MACHINE_SPARC);
+    ASSERT_TRUE(pBF != 0);
+    ASSERT_TRUE(pBF->GetMachine() == MACHINE_SPARC);
     Prog* prog = new Prog;
     FrontEnd *pFE = new SparcFrontEnd(pBF, prog, &bff);
     prog->setFrontEnd(pFE);
@@ -297,17 +302,17 @@ void FrontSparcTest::testDelaySlot() {
 
     bool gotMain;
     ADDRESS addr = pFE->getMainEntryPoint(gotMain);
-    CPPUNIT_ASSERT (addr != NO_ADDRESS);
+    ASSERT_TRUE (addr != NO_ADDRESS);
 
     std::string name("testDelaySlot");
     UserProc* pProc = new UserProc(prog, name, addr);
     std::ofstream dummy;
     bool res = pFE->processProc(addr, pProc, dummy, false);
 
-    CPPUNIT_ASSERT(res == 1);
+    ASSERT_TRUE(res == 1);
     Cfg* cfg = pProc->getCFG();
     BB_IT it;
-    PBB bb = cfg->getFirstBB(it);
+    BasicBlock * bb = cfg->getFirstBB(it);
     std::ostringstream o1;
     bb->print(o1);
     std::string expected("Call BB:\n"
@@ -350,10 +355,10 @@ void FrontSparcTest::testDelaySlot() {
         "              Live variables: \n");
 
     std::string actual(o1.str());
-    CPPUNIT_ASSERT_EQUAL(expected, actual);
+    ASSERT_EQ(expected, actual);
 
     bb = cfg->getNextBB(it);
-    CPPUNIT_ASSERT(bb);
+    ASSERT_TRUE(bb);
     std::ostringstream o2;
     bb->print(o2);
     expected = std::string("Call BB:\n"
@@ -368,10 +373,10 @@ void FrontSparcTest::testDelaySlot() {
         "              Live variables: \n");
 
     actual = std::string(o2.str());
-    CPPUNIT_ASSERT_EQUAL(expected, actual);
+    ASSERT_EQ(expected, actual);
 
     bb = cfg->getNextBB(it);
-    CPPUNIT_ASSERT(bb);
+    ASSERT_TRUE(bb);
     std::ostringstream o3;
     bb->print(o3);
     expected = std::string("Twoway BB:\n"
@@ -386,10 +391,10 @@ void FrontSparcTest::testDelaySlot() {
     "00010ab0    0 BRANCH 0x10ac8, condition not equals\n"
     "High level: %flags\n");
     actual = std::string(o3.str());
-    CPPUNIT_ASSERT_EQUAL(expected, actual);
+    ASSERT_EQ(expected, actual);
 
     bb = cfg->getNextBB(it);
-    CPPUNIT_ASSERT(bb);
+    ASSERT_TRUE(bb);
     std::ostringstream o4;
     bb->print(o4);
     expected = std::string("L1: Twoway BB:\n"
@@ -399,10 +404,10 @@ void FrontSparcTest::testDelaySlot() {
         "00010ac8    0 BRANCH 0x10ad8, condition equals\n"
         "High level: %flags\n");
     actual = std::string(o4.str());
-    CPPUNIT_ASSERT_EQUAL(expected, actual);
+    ASSERT_EQ(expected, actual);
 
     bb = cfg->getNextBB(it);
-    CPPUNIT_ASSERT(bb);
+    ASSERT_TRUE(bb);
     std::ostringstream o5;
     bb->print(o5);
     expected = std::string("Call BB:\n"
@@ -415,7 +420,7 @@ void FrontSparcTest::testDelaySlot() {
         "              Live variables: \n");
 
     actual = std::string(o5.str());
-    CPPUNIT_ASSERT_EQUAL(expected, actual);
+    ASSERT_EQ(expected, actual);
 
     delete prog;
 }

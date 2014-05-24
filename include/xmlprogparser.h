@@ -11,11 +11,6 @@
  * \file        XMLProgParser.h
  * OVERVIEW:    parses persisted XML output and creates a new prog.
  *============================================================================*/
-/*
- * $Revision$
- * 13 Jun 04 - Trent: Created.
- */
-
 #ifndef _XMLPROGPARSER_H_
 #define _XMLPROGPARSER_H_
 

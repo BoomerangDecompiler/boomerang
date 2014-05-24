@@ -55,8 +55,8 @@ BlockSyntaxNode::BlockSyntaxNode()
 
 BlockSyntaxNode::~BlockSyntaxNode()
 {
-    for (unsigned i = 0; i < statements.size(); i++)
-        delete statements[i];
+    for (auto & elem : statements)
+        delete elem;
 }
 
 int BlockSyntaxNode::getNumOutEdges() {
@@ -80,8 +80,8 @@ SyntaxNode *BlockSyntaxNode::findNodeFor(BasicBlock * bb)
     if (pbb == bb)
         return this;
     SyntaxNode *n = nullptr;
-    for (unsigned i = 0; i < statements.size(); i++) {
-        n = statements[i]->findNodeFor(bb);
+    for (auto & elem : statements) {
+        n = elem->findNodeFor(bb);
         if (n != nullptr)
             break;
     }
@@ -123,8 +123,8 @@ void BlockSyntaxNode::printAST(SyntaxNode *root, std::ostream &os)
             os << "];" << std::endl;
         }
     } else {
-        for (unsigned i = 0; i < statements.size(); i++)
-            statements[i]->printAST(root, os);
+        for (auto & elem : statements)
+            elem->printAST(root, os);
         for (unsigned i = 0; i < statements.size(); i++) {
             os << std::setw(4) << std::dec << nodenum << " ";
             os << " -> " << statements[i]->getNumber()
@@ -374,8 +374,8 @@ SyntaxNode *BlockSyntaxNode::clone()
     if (pbb)
         b->pbb = pbb;
     else
-        for (unsigned i = 0; i < statements.size(); i++)
-            b->addStatement(statements[i]->clone());
+        for (auto & elem : statements)
+            b->addStatement(elem->clone());
     return b;
 }
 
@@ -386,12 +386,12 @@ SyntaxNode *BlockSyntaxNode::replace(SyntaxNode *from, SyntaxNode *to)
 
     if (pbb == nullptr) {
         std::vector<SyntaxNode*> news;
-        for (unsigned i = 0; i < statements.size(); i++) {
-            SyntaxNode *n = statements[i];
-            if (statements[i]->getCorrespond() == from)
+        for (auto & elem : statements) {
+            SyntaxNode *n = elem;
+            if (elem->getCorrespond() == from)
                 n = to;
             else
-                n = statements[i]->replace(from, to);
+                n = elem->replace(from, to);
             if (n)
                 news.push_back(n);
         }
@@ -408,11 +408,10 @@ IfThenSyntaxNode::IfThenSyntaxNode() : pThen(nullptr), cond(nullptr)
 
 IfThenSyntaxNode::~IfThenSyntaxNode()
 {
-    if (pThen)
-        delete pThen;
+    delete pThen;
 }
 
-SyntaxNode *IfThenSyntaxNode::getOutEdge(SyntaxNode *root, size_t n) {
+SyntaxNode *IfThenSyntaxNode::getOutEdge(SyntaxNode *root, size_t /*n*/) {
     SyntaxNode *n1 = root->findNodeFor(pbb->getOutEdge(0));
     assert(n1 != pThen);
     return n1;
@@ -586,7 +585,7 @@ PretestedLoopSyntaxNode::~PretestedLoopSyntaxNode()
         delete cond;
 }
 
-SyntaxNode *PretestedLoopSyntaxNode::getOutEdge(SyntaxNode *root, size_t n) {
+SyntaxNode *PretestedLoopSyntaxNode::getOutEdge(SyntaxNode *root, size_t /*n*/) {
     return root->findNodeFor(pbb->getOutEdge(1));
 }
 
@@ -669,7 +668,7 @@ PostTestedLoopSyntaxNode::~PostTestedLoopSyntaxNode()
         delete cond;
 }
 
-SyntaxNode *PostTestedLoopSyntaxNode::getOutEdge(SyntaxNode *root, size_t n) {
+SyntaxNode *PostTestedLoopSyntaxNode::getOutEdge(SyntaxNode *root, size_t /*n*/) {
     return root->findNodeFor(pbb->getOutEdge(1));
 }
 

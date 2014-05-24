@@ -1,4 +1,5 @@
 PROJECT(Boomerang)
+include(ExternalProject)
 ###############################################################################
 # Settings related to build system, and target directories
 ###############################################################################
@@ -7,16 +8,29 @@ LIST(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake_scripts)
 
 SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/out)
 IF(WIN32)
-SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG ${PROJECT_SOURCE_DIR}/out)
-SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE ${PROJECT_SOURCE_DIR}/out)
-add_definitions(-D__USE_MINGW_ANSI_STDIO=1)
+    SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG ${PROJECT_SOURCE_DIR}/out)
+    SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE ${PROJECT_SOURCE_DIR}/out)
+    add_definitions(-D__USE_MINGW_ANSI_STDIO=1)
 ENDIF()
 ###############################################################################
 # Options section
 ###############################################################################
 OPTION(BUILD_TESTING "Build the testing tree." OFF)
 IF(BUILD_TESTING)
-    ENABLE_TESTING()
+    enable_testing()
+    ExternalProject_Add(
+        GMOCK_BUILD
+        DOWNLOAD_DIR ${PROJECT_SOURCE_DIR}/3rd_party/gmock
+        URL http://googlemock.googlecode.com/files/gmock-1.6.0.zip
+        UPDATE_COMMAND ""
+        PATCH_COMMAND ${CMAKE_COMMAND} -E copy_directory ../gmock_cmake ../gmock/
+        SOURCE_DIR ${PROJECT_SOURCE_DIR}/3rd_party/gmock
+        INSTALL_DIR ${PROJECT_SOURCE_DIR}/3rd_party/
+        CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+    )
+    set(GTest_LIBRARIES gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
+    find_package(Protobuf REQUIRED)
+    INCLUDE_DIRECTORIES(${PROTOBUF_INCLUDE_DIRS})
 ENDIF(BUILD_TESTING)
 ###############################################################################
 # Compiler specific flags section
@@ -26,8 +40,13 @@ IF(CMAKE_CXX_COMPILER MATCHES cl.exe)
     message(SEND_ERROR "This is a c++11 build of boomerang it's highly likely it will fail under VisualStudio")
     ADD_DEFINITIONS(-D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_DEPRECATE -D_SCL_SECURE_NO_WARNINGS)
 ELSE()
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++11" )
-    SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall" )
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -std=c++11 -pedantic" )
+    IF(CMAKE_CXX_COMPILER MATCHES clang)
+        #SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Weverything  -Wno-padded -Wno-c++98-compat -Wno-weak-vtables -Wno-global-constructors -Wno-c++98-compat-pedantic -Wno-exit-time-destructors" )
+    else()
+        #add_definitions(-D_GLIBCXX_DEBUG) #-D_GLIBCXX_DEBUG
+    endif()
+    SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra" )
     add_definitions(-D__STDC_FORMAT_MACROS) #-D_GLIBCXX_DEBUG
 ENDIF()
 ###############################################################################
@@ -67,14 +86,6 @@ ELSE(NOT "${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
         SET(DL_LIBS)
 ENDIF(NOT "${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
 
-# CppUnit
-FIND_PROGRAM(CPPUNIT_CONFIG_EXECUTABLE NAMES cppunit-config PATHS /usr/local/bin)
-IF(CPPUNIT_CONFIG_EXECUTABLE)
-        EXEC_PROGRAM(${CPPUNIT_CONFIG_EXECUTABLE} ARGS --cflags OUTPUT_VARIABLE CPPUNIT_CFLAGS)
-        EXEC_PROGRAM(${CPPUNIT_CONFIG_EXECUTABLE} ARGS --libs OUTPUT_VARIABLE CPPUNIT_LIBS)
-        SET(CPPUNIT_FOUND 1)
-ENDIF(CPPUNIT_CONFIG_EXECUTABLE)
-
 # GC
 #CHECK_INCLUDE_FILES(gc.h               GC_H)
 #CHECK_LIBRARY_EXISTS(gc GC_malloc ""   GC_L)
@@ -86,10 +97,14 @@ ENDIF(CPPUNIT_CONFIG_EXECUTABLE)
 FIND_PACKAGE(EXPAT)
 FIND_PACKAGE(Boost REQUIRED)
 find_package(Qt5Core)
+
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
 
-INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
+INCLUDE_DIRECTORIES(
+    ${Boost_INCLUDE_DIR}
+    ${PROJECT_SOURCE_DIR}/3rd_party/include
+)
 #set variables to expand in config.h.cmake
 SET_01(HAVE_LIBCPPUNIT    CPPUNIT_FOUND)
 SET_01(HAVE_LIBDL         DL_FOUND)
@@ -134,10 +149,10 @@ INCLUDE_DIRECTORIES("${CMAKE_CURRENT_SOURCE_DIR}/include"
 IF(EXPAT_FOUND)
     INCLUDE_DIRECTORIES("${EXPAT_INCLUDE_DIRS}")
 ENDIF()
-IF(WIN32)
-    LINK_DIRECTORIES("3rd_party/lib")
-ENDIF()
-LINK_DIRECTORIES("${CMAKE_CURRENT_BINARY_DIR}/loader")
+link_directories(
+    ${PROJECT_SOURCE_DIR}/3rd_party/lib
+    "${CMAKE_CURRENT_BINARY_DIR}/loader"
+)
 
 MACRO(ADDCFLAG SRCFILE FLAG)
         GET_SOURCE_FILE_PROPERTY(loc_flags "${SRCFILE}" COMPILE_FLAGS)
@@ -161,26 +176,33 @@ ADD_SUBDIRECTORY(db)
 ADD_SUBDIRECTORY(frontend)
 ADD_SUBDIRECTORY(type)
 ADD_SUBDIRECTORY(transform)
-
+IF(BUILD_TESTING)
+ADD_SUBDIRECTORY(unit_testing)
+ENDIF()
 SET(boomerang_SRC
-        boomerang.cpp
         ui/console/commandlinedriver.cpp
         ui/console/commandlinedriver.h
         ui/console/driver.cpp
-        log.cpp
+)
+SET(boom_base_SRC
         loader/BinaryFileFactory.cpp
+        boomerang.cpp
+        log.cpp
 )
 IF(MSVC)
     SET(DEBUG_LIB Dbghelp.lib )
 ENDIF()
+ADD_LIBRARY(boom_base ${boom_base_SRC} )
 ADD_EXECUTABLE(boomerang ${boomerang_SRC})
 
 TARGET_LINK_LIBRARIES(boomerang
 ${DL_LIBS}
 ${GC_LIBS}
 ${DEBUG_LIB}
-"${EXPAT_LIBRARIES}"
-frontend db type boomerang_DSLs codegen util BinaryFile
+${EXPAT_LIBRARIES}
+boom_base frontend db type boomerang_DSLs codegen util BinaryFile boom_base
+pthread
 )
 qt5_use_modules(boomerang Core)
+qt5_use_modules(boom_base Core)
 ADD_SUBDIRECTORY(loader)

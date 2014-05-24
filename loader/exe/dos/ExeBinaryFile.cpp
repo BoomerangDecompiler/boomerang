@@ -34,13 +34,13 @@ bool ExeBinaryFile::RealLoad(const char* sName) {
 
     // Always just 3 sections
     m_pSections = new SectionInfo[3];
-    if (m_pSections == 0) {
+    if (m_pSections == nullptr) {
         fprintf(stderr, "Could not allocate section information\n");
         return 0;
     }
     m_iNumSections = 3;
     m_pHeader = new exeHeader;
-    if (m_pHeader == 0) {
+    if (m_pHeader == nullptr) {
         fprintf(stderr, "Could not allocate header memory\n");
         return 0;
     }
@@ -96,7 +96,7 @@ bool ExeBinaryFile::RealLoad(const char* sName) {
         /* Allocate the relocation table */
         if (m_cReloc) {
             m_pRelocTable = new DWord[m_cReloc];
-            if (m_pRelocTable == 0) {
+            if (m_pRelocTable == nullptr) {
                 fprintf(stderr, "Could not allocate relocation table "
                         "(%d entries)\n", m_cReloc);
                 return 0;
@@ -196,7 +196,7 @@ char* ExeBinaryFile::SymbolByAddr(ADDRESS dwAddr) {
         return const_cast<char *>("main");
 
     // No symbol table handled at present
-    return 0;
+    return nullptr;
 }
 
 char ExeBinaryFile::readNative1(ADDRESS a) {

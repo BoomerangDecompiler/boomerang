@@ -7,15 +7,9 @@
  *
  */
 
-/* File: PalmBinaryFile.h
- * Desc: This file contains the definition of the class PalmBinaryFile.
+/** \file PalmBinaryFile.h
+ * \brief This file contains the definition of the class PalmBinaryFile.
 */
-
-/* $Revision$
- * 02 Feb 2000 - Mike: Initial revision
- * 01 Aug 01 - Mike: GetGlobalPointerInfo() returns unsigned ints now
-*/
-
 #ifndef __PALMBINARYFILE_H__
 #define __PALMBINARYFILE_H__
 

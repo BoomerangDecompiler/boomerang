@@ -12,12 +12,6 @@
  * OVERVIEW:   Element comparison functions for expressions and statements
  *============================================================================*/
 
-/*
- * $Revision$
- *
- * 01 Jul 05 - Mike: added header
- */
-
 #ifndef __EXPHELP_H__
 #define __EXPHELP_H__
 

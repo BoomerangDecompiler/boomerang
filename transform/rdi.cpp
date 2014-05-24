@@ -2,18 +2,14 @@
  * Copyright (C) 2004, Mike Van Emmerik and Trent Waddington
  */
 /***************************************************************************//**
- * \file       generic.cpp
- * OVERVIEW:   Implementation of the RDIExpTransformer and related classes.
+ * \file    generic.cpp
+ * \brief   Implementation of the RDIExpTransformer and related classes.
  *============================================================================*/
-/*
- * $Revision$
- * 17 Apr 04 - Trent: Created
- */
 
 #include <assert.h>
 #if defined(_MSC_VER) && _MSC_VER <= 1200
 #pragma warning(disable:4786)
-#endif 
+#endif
 
 #include <numeric>      // For accumulate
 #include <algorithm>    // For std::max()

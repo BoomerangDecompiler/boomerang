@@ -14,16 +14,6 @@
  *                recording high level types
  *============================================================================*/
 
-/*
- * $Revision$
- *
- * 20 Mar 01 - Mike: Added operator*= (compare, ignore sign, and consider all floats > 64 bits to be the same
- * 26 Apr 01 - Mike: Added class typeLessSI
- * 08 Apr 02 - Mike: Changes for boomerang
- * 25 Sep 04 - Mike: Added UnionType; beginnings of data-flow based type analysis
- * 26 Oct 04 - Mike: Added UpperType and LowerType; isCompatible()
- */
-
 #ifndef __TYPE_H__
 #define __TYPE_H__
 
@@ -628,7 +618,7 @@ virtual bool        isSize() const { return true; }
 virtual bool        isComplete() {return false;}    // Basic type is unknown
 virtual const char* getCtype(bool final = false) const;
 virtual Type*        meetWith(Type* other, bool& ch, bool bHighestPtr) const;
-virtual bool        isCompatible(const Type* other, bool all) const;
+virtual bool        isCompatible(const Type* other, bool) const;
 
     friend class XMLProgParser;
 };    // class SizeType
@@ -722,9 +712,9 @@ typedef    std::map<ADDRESS, DataInterval>::iterator iterator;
         void        dump();                            // For debug
 
 private:
-        void        enterComponent(DataIntervalEntry* pdie, ADDRESS addr, const char *name, Type* ty, bool forced);
-        void        replaceComponents(ADDRESS addr, const char *name, Type* ty, bool forced);
-        void        checkMatching(DataIntervalEntry* pdie, ADDRESS addr, const char* name, Type* ty, bool forced);
+        void        enterComponent(DataIntervalEntry* pdie, ADDRESS addr, const char *, Type* ty, bool);
+        void        replaceComponents(ADDRESS addr, const char *name, Type* ty, bool);
+        void        checkMatching(DataIntervalEntry* pdie, ADDRESS addr, const char*, Type* ty, bool);
 };
 
 // Not part of the Type class, but logically belongs with it:

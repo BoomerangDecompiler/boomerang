@@ -13,19 +13,8 @@
  * \file       basicblock.h
  * \brief   Interface for the basic block class, which form nodes of the control flow graph
  ******************************************************************************/
+#pragma once
 
-/*
- * $Revision$    // 1.1.2.2
- *
- * 28 Jun 05 - Mike: Split off from cfg.h
- */
-
-#ifndef __BASIC_BLOCK_H__
-#define __BASIC_BLOCK_H__
-
-#if defined(_MSC_VER)
-#pragma warning(disable:4290)
-#endif
 #include "types.h"
 #include "managed.h"            // For LocationSet etc
 
@@ -131,6 +120,7 @@ class BasicBlock {
          */
         friend class Cfg;
 public:
+        typedef std::vector<BasicBlock *>::iterator iEdgeIterator;
                         BasicBlock();
                         ~BasicBlock();
                         BasicBlock(const BasicBlock& bb);
@@ -148,7 +138,7 @@ public:
         void            printToLog();
         char *          prints();                        // For debugging
         void            dump();
-        void            updateType(BBTYPE bbType, int iNumOutEdges);
+        void            updateType(BBTYPE bbType, uint32_t iNumOutEdges);
         void            setJumpReqd();
         bool            isJumpReqd();
 
@@ -162,12 +152,11 @@ public:
 
         std::vector<BasicBlock *>& getInEdges();
 
-        size_t          getNumInEdges() { return m_iNumInEdges; }
+        size_t          getNumInEdges() const { return m_InEdges.size(); }
 
         std::vector<BasicBlock *>& getOutEdges();
         void            setInEdge(size_t i, BasicBlock * newIn);
         void            setOutEdge(size_t i, BasicBlock * newInEdge);
-
         BasicBlock *    getOutEdge(unsigned int i);
         size_t          getNumOutEdges() { return m_OutEdges.size(); }
         int             whichPred(BasicBlock * pred);
@@ -216,7 +205,7 @@ private:
         /*
          * Constructor. Called by Cfg::NewBB.
          */
-                        BasicBlock(std::list<RTL*>* pRtls, BBTYPE bbType, int iNumOutEdges);
+                        BasicBlock(std::list<RTL*>* pRtls, BBTYPE bbType, uint32_t iNumOutEdges);
         void            setRTLs(std::list<RTL*>* rtls);
 
 public:
@@ -242,12 +231,12 @@ protected:
                         /* in-edges and out-edges */
         std::vector<BasicBlock *> m_InEdges;//!< Vector of in-edges
         std::vector<BasicBlock *> m_OutEdges;//!< Vector of out-edges
-        size_t          m_iNumInEdges;      //!< We need these two because GCC doesn't
+        //size_t          m_iNumInEdges;      //!< We need these two because GCC doesn't
         //size_t          m_iNumOutEdges;     //!< support resize() of vectors!
         size_t          m_iTargetOutEdges;     //!< support resize() of vectors!
 
                         /* for traversal */
-        bool            m_iTraversed;       //!< traversal marker
+        bool            m_iTraversed = false;       //!< traversal marker
 
                         /* Liveness */
         LocationSet     liveIn;             //!< Set of locations live at BB start
@@ -333,7 +322,7 @@ protected:
                             return false;
                         }
 public:
-        bool            isBackEdge(int inEdge) const;
+        bool            isBackEdge(size_t inEdge) const;
 protected:
 
         bool            isAncestorOf(BasicBlock *other);
@@ -369,6 +358,7 @@ public:
                         // has been completed.
         bool            overlappedRegProcessingDone;
 
+        void generateCode_Loop(HLLCode *hll, std::list<BasicBlock *> &gotoSet, int indLevel, UserProc* proc, BasicBlock* latch, std::list<BasicBlock *> &followSet);
 protected:
         friend class XMLProgParser;
         void            addOutEdge(BasicBlock * bb) { m_OutEdges.push_back(bb); }
@@ -380,5 +370,3 @@ protected:
         void            addLiveIn(Exp *e) { liveIn.insert(e); }
 
 };        // class BasicBlock
-
-#endif        // #define __BASIC_BLOCK_H__

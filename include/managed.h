@@ -19,12 +19,6 @@
  *                ConnectionGraph
  *==============================================================================================*/
 
-/*
- * $Revision$    // 1.11.2.15
- *
- * 26/Aug/03 - Mike: Split off from statement.h
- */
-
 #ifndef __MANAGED_H__
 #define __MANAGED_H__
 

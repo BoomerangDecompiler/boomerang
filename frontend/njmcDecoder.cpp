@@ -13,12 +13,6 @@
  * \file       njmcDecoder.cpp
  * \brief   This file contains the machine independent decoding functionality.
  ******************************************************************************/
-/*
- * $Revision$    // 1.19.2.3
- *
- * 27 Apr 02 - Mike: Mods for boomerang
- */
-
 #include <cassert>
 #include <stdarg.h>            // For varargs
 #include <cstring>
@@ -103,13 +97,13 @@ std::list<Statement*>* NJMCDecoder::instantiate(ADDRESS pc, const char* name, ..
 Exp* NJMCDecoder::instantiateNamedParam(char* name, ...) {
     if (RTLDict.ParamSet.find(name) == RTLDict.ParamSet.end()) {
         std::cerr << "No entry for named parameter '" << name << "'\n";
-        return 0;
+        return nullptr;
     }
     assert(RTLDict.DetParamMap.find(name) != RTLDict.DetParamMap.end());
     ParamEntry &ent = RTLDict.DetParamMap[name];
     if (ent.kind != PARAM_ASGN && ent.kind != PARAM_LAMBDA ) {
         std::cerr << "Attempt to instantiate expressionless parameter '" << name << "'\n";
-        return 0;
+        return nullptr;
     }
     // Start with the RHS
     assert(ent.asgn->getKind() == STMT_ASSIGN);
@@ -117,8 +111,8 @@ Exp* NJMCDecoder::instantiateNamedParam(char* name, ...) {
 
     va_list args;
     va_start(args,name);
-    for( std::list<std::string>::iterator it = ent.params.begin(); it != ent.params.end(); it++ ) {
-        Location formal(opParam, new Const(strdup(it->c_str())), nullptr);
+    for(auto & elem : ent.params) {
+        Location formal(opParam, new Const(strdup(elem.c_str())), nullptr);
         Exp* actual = va_arg(args, Exp*);
         bool change;
         result = result->searchReplaceAll(formal, actual, change);
@@ -151,8 +145,8 @@ void NJMCDecoder::substituteCallArgs(char *name, Exp*& exp, ...)
 
     va_list args;
     va_start(args, exp);
-    for (std::list<std::string>::iterator it = ent.funcParams.begin(); it != ent.funcParams.end(); it++) {
-        Location formal(opParam, new Const(strdup(it->c_str())), nullptr);
+    for (auto & elem : ent.funcParams) {
+        Location formal(opParam, new Const(strdup(elem.c_str())), nullptr);
         Exp* actual = va_arg(args, Exp*);
         bool change;
         exp = exp->searchReplaceAll(formal, actual, change);

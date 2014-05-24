@@ -70,14 +70,6 @@
 #define YY_TransformationScanner_CONSTRUCTOR_INIT  : theLine(1), traceLines(trace), in(ins), column(0)
 //#line 33 "transformation.l"
 #define YY_TransformationScanner_CONSTRUCTOR_CODE  { *lineBuf = 0; }
-//#line 34 "transformation.l"
-#define YY_TransformationScanner_INPUT_CODE  if (in.eof()) {  \
-    result = 0; \
-} else { \
-    in.read(buffer, max_size); \
-    result=in.gcount(); \
-} \
-return result;
 //#line 41 "transformation.l"
 #define YY_TransformationScanner_MEMBERS  \
 public: \
@@ -137,9 +129,6 @@ private: \
 
 #ifndef YY_TransformationScanner_TEXT
 #define YY_TransformationScanner_TEXT yytext
-#endif
-#ifndef YY_TransformationScanner_LENG
-#define YY_TransformationScanner_LENG yyleng
 #endif
 #ifndef YY_TransformationScanner_IN
 #define YY_TransformationScanner_IN yyin
@@ -250,7 +239,7 @@ extern void YY_TransformationScanner_INIT_BUFFER YY_PROTO(( YY_BUFFER_STATE b, Y
 extern int YY_TransformationScanner_DEBUG_FLAG ;
 #endif
 extern YY_TransformationScanner_CHAR  *YY_TransformationScanner_TEXT;
-extern int YY_TransformationScanner_LENG;
+extern int yyleng;
 extern YY_TransformationScanner_IFILE *YY_TransformationScanner_IN;
 extern YY_TransformationScanner_OFILE *YY_TransformationScanner_OUT;
 #ifdef YY_TransformationScanner_LEX_DEFINED
@@ -269,9 +258,6 @@ YY_TransformationScanner_LEX_PARAM_DEF
 #ifndef YY_TransformationScanner_CURRENT_BUFFER
 #define YY_TransformationScanner_CURRENT_BUFFER YY_CURRENT_BUFFER
 #endif
-#ifndef YY_TransformationScanner_CLASS
-#define YY_TransformationScanner_CLASS TransformationScanner
-#endif
 #ifndef YY_TransformationScanner_ECHO
 #define YY_TransformationScanner_ECHO yy_echo
 #endif
@@ -281,25 +267,14 @@ YY_TransformationScanner_LEX_PARAM_DEF
 
 #ifndef YY_TransformationScanner_ECHO_CODE
 #ifndef YY_TransformationScanner_IOSTREAM
-#define YY_TransformationScanner_ECHO_CODE fwrite( (char *) YY_TransformationScanner_TEXT, YY_TransformationScanner_LENG, 1, YY_TransformationScanner_OUT );
+#define YY_TransformationScanner_ECHO_CODE fwrite( (char *) YY_TransformationScanner_TEXT, yyleng, 1, YY_TransformationScanner_OUT );
 #else
-#define YY_TransformationScanner_ECHO_CODE (YY_TransformationScanner_OUT->write( (char *) YY_TransformationScanner_TEXT, YY_TransformationScanner_LENG));
+#define YY_TransformationScanner_ECHO_CODE (YY_TransformationScanner_OUT->write( (char *) YY_TransformationScanner_TEXT, yyleng));
 #endif
 #endif
 
-#ifndef YY_TransformationScanner_INPUT
-#define YY_TransformationScanner_INPUT yy_input
-#endif
 #ifdef YY_TransformationScanner_INPUT_PURE
 #define YY_TransformationScanner_INPUT_NOCODE
-#endif
-
-#ifndef YY_TransformationScanner_INPUT_CODE
-#ifndef YY_TransformationScanner_IOSTREAM
-#define YY_TransformationScanner_INPUT_CODE return result= fread(  buffer, 1,max_size,YY_TransformationScanner_IN );
-#else
-#define YY_TransformationScanner_INPUT_CODE if(YY_TransformationScanner_IN->eof())  result=0;else {YY_TransformationScanner_IN->read(buffer,max_size);result=YY_TransformationScanner_IN->gcount();YY_TransformationScanner_IN->clear(YY_TransformationScanner_IN->rdstate()&(~ios::failbit));if(YY_TransformationScanner_IN->bad()) result= -1;} return result;
-#endif
 #endif
 
 #ifdef YY_TransformationScanner_FATAL_ERROR_PURE
@@ -348,7 +323,7 @@ YY_TransformationScanner_LEX_PARAM_DEF
 #endif
 typedef struct yy_buffer_state *YY_BUFFER_STATE;
 
-class YY_TransformationScanner_CLASS YY_TransformationScanner_INHERIT
+class TransformationScanner YY_TransformationScanner_INHERIT
 {
  private:/* data */
  YY_TransformationScanner_CHAR  *yy_c_buf_p;
@@ -360,7 +335,7 @@ class YY_TransformationScanner_CLASS YY_TransformationScanner_INHERIT
  private: /* functions */
  void yy_initialize();
  int input();
- int yyinput() {return input();};
+ int yyinput() {return input();}
  int yy_get_next_buffer();
  void yyunput( YY_TransformationScanner_CHAR  c, YY_TransformationScanner_CHAR  *buf_ptr );
  /* use long instead of yy_state_type because it is undef */
@@ -380,7 +355,7 @@ class YY_TransformationScanner_CLASS YY_TransformationScanner_INHERIT
   =0
 #endif
   ;
- virtual int  YY_TransformationScanner_INPUT(char  *buf,int &result,int max_size)
+ virtual int  yy_input(char  *buf,int &result,int max_size)
 #ifdef YY_TransformationScanner_INPUT_PURE
   =0
 #endif
@@ -397,12 +372,12 @@ class YY_TransformationScanner_CLASS YY_TransformationScanner_INHERIT
   ;
  public:
  YY_TransformationScanner_CHAR  *YY_TransformationScanner_TEXT;
- int YY_TransformationScanner_LENG;
+ int yyleng;
  YY_TransformationScanner_IFILE *YY_TransformationScanner_IN;
  YY_TransformationScanner_OFILE *YY_TransformationScanner_OUT;
  YY_TransformationScanner_LEX_RETURN YY_TransformationScanner_LEX ( YY_TransformationScanner_LEX_PARAM);
- YY_TransformationScanner_CLASS(YY_TransformationScanner_CONSTRUCTOR_PARAM) ;
- virtual ~YY_TransformationScanner_CLASS() ;
+ TransformationScanner(YY_TransformationScanner_CONSTRUCTOR_PARAM) ;
+ virtual ~TransformationScanner() ;
 #if YY_TransformationScanner_DEBUG != 0
  int YY_TransformationScanner_DEBUG_FLAG;
 #endif

@@ -12,8 +12,8 @@
  *              the order of calling these functions (i.e. visit() and AddOutEdge()) did not matter.
  * \param   pCfg - the enclosing CFG
  * \param   uNewAddr - the address to be checked
- * \param   pNewBB - set to the lower part of the BB if the address
- * \param   already exists as a non explicit label (BB has to be split)
+ * \param   pNewBB - set to the lower part of the BB if the address already exists
+ *          as a non explicit label (BB has to be split)
  ******************************************************************************/
 void TargetQueue::visit(Cfg* pCfg, ADDRESS uNewAddr, BasicBlock *& pNewBB) {
     // Find out if we've already parsed the destination
@@ -31,7 +31,7 @@ void TargetQueue::visit(Cfg* pCfg, ADDRESS uNewAddr, BasicBlock *& pNewBB) {
  *
  * \brief    Seed the queue with an initial address
  * \note        Can be some targets already in the queue now
- * \param    uAddr: Native address to seed the queue with
+ * \param    uAddr Native address to seed the queue with
  ******************************************************************************/
 void TargetQueue::initial(ADDRESS uAddr) {
     targets.push(uAddr);

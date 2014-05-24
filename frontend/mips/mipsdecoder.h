@@ -55,7 +55,7 @@ private:
     Exp*        dis_Reg(unsigned r);
     Exp*        dis_RAmbz(unsigned r);        // Special for rA of certain instructions
 #endif
-    void        unused(int x);
+    void        unused(int);
 #if 0
     RTL*        createBranchRtl(ADDRESS pc, std::list<Statement*>* stmts, const char* name);
     bool        isFuncPrologue(ADDRESS hostPC);

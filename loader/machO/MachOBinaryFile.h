@@ -8,8 +8,8 @@
  *
  */
 
-/* File: MachOBinaryFile.h
- * Desc: This file contains the definition of the class MachOBinaryFile.
+/** \file MachOBinaryFile.h
+ * \brief This file contains the definition of the class MachOBinaryFile.
 */
 
 #ifndef __MACHOBINARYFILE_H__
@@ -19,12 +19,10 @@
 #include <string>
 #include <vector>
 
-/* $Revision$
+/**
  * This file contains the definition of the MachOBinaryFile class, and some
  * other definitions specific to the Mac OS-X version of the BinaryFile object
-*/
-/* This is my bare bones implementation of a Mac OS-X binary loader.
- * 13 Jan 05 - Trent: Created
+ * This is my bare bones implementation of a Mac OS-X binary loader.
  */
 
 // Given a little endian value x, load its value assuming big endian order

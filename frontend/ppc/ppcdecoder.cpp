@@ -16,12 +16,6 @@
  * \brief   Implementation of the PPC specific parts of the PPCDecoder class.
  ******************************************************************************/
 
-/* $Revision$    // 1.24.2.1
- *
- * 23/Nov/04 - Jay Sweeney and Alajandro Dubrovsky: Created
- * 26/Sep/05 - Mike: Added Xsab_, Xsax_; DIS_INDEX uses RAZ not RA now; A2c_ -> Ac_ (does single as well as double prec)
- **/
-
 /***************************************************************************//**
  * Dependencies.
  ******************************************************************************/
@@ -90,7 +84,7 @@ Exp*    crBit(int bitNum);    // Get an expression for a CR bit access
  * PARAMETERS:       x: integer variable to be "used"
  *
  ******************************************************************************/
-void PPCDecoder::unused(int x)
+void PPCDecoder::unused(int /*x*/)
 {}
 void unused(const char* x) {}
 
@@ -3834,7 +3828,6 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, ptrdiff_t delta) {
                                                 else
                                                     goto MATCH_label_a0;  /*opt-block+*/
 
-                                                break;
                                             default: assert(0);
                                         } /* (MATCH_w_32_0 >> 1 & 0x1f) -- Xo5 at 0 --*/
                                         break;
@@ -3845,7 +3838,6 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, ptrdiff_t delta) {
                                                 ];
                                         goto MATCH_label_a19;
 
-                                        break;
                                     case 32:
                                         if ((MATCH_w_32_0 >> 6 & 0x1f)  == 0)
                                             if ((MATCH_w_32_0 >> 21 & 0x1)  == 1)
@@ -4504,7 +4496,7 @@ Exp* PPCDecoder::dis_RAmbz(unsigned r)
  * PARAMETERS:      hostPC - pointer to the code in question (host address)
  * \returns           True if a match found
  ******************************************************************************/
-bool PPCDecoder::isFuncPrologue(ADDRESS hostPC)
+bool PPCDecoder::isFuncPrologue(ADDRESS /*hostPC*/)
 {
 
     return false;

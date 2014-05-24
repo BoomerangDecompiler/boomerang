@@ -20,14 +20,6 @@
  *       switch statements).
  *============================================================================*/
 
-/*
- * $Revision$    // 1.51.2.1
- *
- * 08 Apr 02 - Mike: Mods for boomerang
- * 13 May 02 - Mike: expList is no longer a pointer
- * 25 Jul 03 - Mike: RTL now a list of Statements
- */
-
 #ifndef __RTL_H__
 #define __RTL_H__
 
@@ -181,7 +173,7 @@ public:
         // instruction entry.
         std::list<Statement*>* instantiateRTL(std::string& name, ADDRESS natPC, const std::vector<Exp*> &actuals);
         // As above, but takes an RTL & param list directly rather than doing a table lookup by name.
-        std::list<Statement*>* instantiateRTL(RTL& rtls, ADDRESS natPC, std::list<std::string> &params,
+        std::list<Statement*>* instantiateRTL(RTL& rtls, ADDRESS, std::list<std::string> &params,
             const std::vector<Exp*> &actuals);
 
         void transformPostVars(std::list<Statement*> &rts, bool optimise);

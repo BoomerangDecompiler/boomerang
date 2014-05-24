@@ -13,13 +13,6 @@
  * \brief   The implementation of the instruction decoder for Sparc.
  ******************************************************************************/
 
-/*
- * $Revision$    // 1.6.6.2
- *
- * 06 Jun 02 - Trent: Created.
- * 04 Dec 02 - Mike: Added dis_RegLhs() and dis_RegRhs()
- */
-
 #ifndef SPARCDECODER
 #define SPARCDECODER
 #include <cstddef>

@@ -14,18 +14,6 @@
  *               These functions replace frontend.cpp for decoding pentium instructions.
  ******************************************************************************/
 
-/*
- * $Revision$    // 1.51.2.3
- *
- * 21 Oct 98 - Mike: converted from frontsparc.cc
- * 21 May 02 - Mike: Mods for boomerang
- * 27 Nov 02 - Mike: Fixed a bug in the floating point fixup code, which was screwing up registers in flag calls
- * 30 Sep 03 - Mike: processFloatCode ORs mask with 0x04 for compilers that ignore the C1 status bit (e.g. MSVC).
- *                Also more JE cases
- * 04 Aug 04 - Mike: Quick and dirty hack for overlapped registers (X86 only)
- * 31 Jul 06 - Tamlin: Fixed overlapped register processing for esi/edi/ebp plus a bug in ah/bh/ch/dh processing
-*/
-
 #include <cassert>
 #include <cstring>
 #if defined(_MSC_VER) && _MSC_VER <= 1200
@@ -89,15 +77,15 @@ bool PentiumFrontEnd::isDecAh(RTL* r) {
     Exp* rhs = asgn->getRight();
     Binary ahm1(opMinus,
                 Binary::get(opSize,
-                           new Const(8),
-                           Location::regOf(12)),
-                new Const(1));
+                            Const::get(8),
+                            Location::regOf(12)),
+                Const::get(1));
     return *rhs == ahm1;
 }
 /***************************************************************************//**
  * FUNCTION:      isSetX
  * \brief      Return true if the given Statement is a setX instruction
- * PARAMETERS:      s - Ptr to the given Statement
+ * \param      s - Ptr to the given Statement
  * \returns           True if it is
  ******************************************************************************/
 bool PentiumFrontEnd::isSetX(Statement* s) {
@@ -118,7 +106,7 @@ bool PentiumFrontEnd::isSetX(Statement* s) {
 /***************************************************************************//**
  * FUNCTION:      isAssignFromTern
  * \brief      Return true if the given Statement is an expression whose RHS is a ?: ternary
- * PARAMETERS:      e - Ptr to the given Statement
+ * \param      e - Ptr to the given Statement
  * \returns           True if it is
  ******************************************************************************/
 bool PentiumFrontEnd::isAssignFromTern(Statement* s) {
@@ -161,11 +149,11 @@ void PentiumFrontEnd::bumpRegisterAll(Exp* e, int min, int max, int delta, int m
 /***************************************************************************//**
  * FUNCTION:      PentiumFrontEnd::processProc
  * \brief      Process a procedure, given a native (source machine) address.
- * PARAMETERS:      address - the address at which the procedure starts
- *                  pProc - the procedure object
- *                  os - output stream for rtl output
- *                  frag - true if decoding only a fragment of the proc
- *                  spec - true if a speculative decode
+ * \param  address - the address at which the procedure starts
+ * \param  pProc - the procedure object
+ * \param  os - output stream for rtl output
+ * \param  frag - true if decoding only a fragment of the proc
+ * \param  spec - true if a speculative decode
  * \returns           True if successful decode
  ******************************************************************************/
 bool PentiumFrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bool frag /* = false */,
@@ -183,10 +171,10 @@ bool PentiumFrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream 
     // This will get done twice; no harm
     pProc->setEntryBB();
 
-    processFloatCode(pCfg);
 
     int tos = 0;
     processFloatCode(pProc->getEntryBB(), tos, pCfg);
+    processFloatCode(pCfg);
 
     // Process away %rpt and %skip
     processStringInst(pProc);
@@ -236,7 +224,10 @@ std::vector<Exp*> &PentiumFrontEnd::getDefaultReturns() {
     }
     return returns;
 }
-
+/**
+ * Little simpler, just replaces FPUSH and FPOP with more complex
+ * semantics.
+ */
 void PentiumFrontEnd::processFloatCode(Cfg* pCfg) {
     BB_IT it;
     for (BasicBlock * pBB = pCfg->getFirstBB(it); pBB; pBB = pCfg->getNextBB(it)) {
@@ -254,64 +245,64 @@ void PentiumFrontEnd::processFloatCode(Cfg* pCfg) {
                 st = *iter;
                 if (st->isFpush()) {
                     rtl->insert(iter,new Assign(FloatType::get(80),
-                                                  Location::tempOf(new Const(const_cast<char *>("tmpD9"))),
-                                                  Location::regOf(39)));
+                                                Location::tempOf(Const::get(const_cast<char *>("tmpD9"))),
+                                                Location::regOf(39)));
                     rtl->insert(iter,new Assign(FloatType::get(80),
-                                                  Location::regOf(39),
-                                                  Location::regOf(38)));
+                                                Location::regOf(39),
+                                                Location::regOf(38)));
                     rtl->insert(iter,new Assign(FloatType::get(80),
-                                                  Location::regOf(38),
-                                                  Location::regOf(37)));
+                                                Location::regOf(38),
+                                                Location::regOf(37)));
                     rtl->insert(iter,new Assign(FloatType::get(80),
-                                                  Location::regOf(37),
-                                                  Location::regOf(36)));
+                                                Location::regOf(37),
+                                                Location::regOf(36)));
                     rtl->insert(iter,new Assign(FloatType::get(80),
-                                                  Location::regOf(36),
-                                                  Location::regOf(35)));
+                                                Location::regOf(36),
+                                                Location::regOf(35)));
                     rtl->insert(iter,new Assign(FloatType::get(80),
-                                                  Location::regOf(35),
-                                                  Location::regOf(34)));
+                                                Location::regOf(35),
+                                                Location::regOf(34)));
                     rtl->insert(iter,new Assign(FloatType::get(80),
-                                                  Location::regOf(34),
-                                                  Location::regOf(33)));
+                                                Location::regOf(34),
+                                                Location::regOf(33)));
                     rtl->insert(iter,new Assign(FloatType::get(80),
-                                                  Location::regOf(33),
-                                                  Location::regOf(32)));
+                                                Location::regOf(33),
+                                                Location::regOf(32)));
                     rtl->insert(iter,new Assign(FloatType::get(80),
-                                                  Location::regOf(32),
-                                                  Location::tempOf(new Const(const_cast<char *>("tmpD9")))));
+                                                Location::regOf(32),
+                                                Location::tempOf(Const::get(const_cast<char *>("tmpD9")))));
                     // Remove the FPUSH
                     iter=rtl->erase(iter);
                     continue;
                 }
                 else if (st->isFpop()) {
                     rtl->insert(iter,new Assign(FloatType::get(80),
-                                                  Location::tempOf(new Const(const_cast<char *>("tmpD9"))),
-                                                  Location::regOf(32)));
+                                                Location::tempOf(Const::get(const_cast<char *>("tmpD9"))),
+                                                Location::regOf(32)));
                     rtl->insert(iter,new Assign(FloatType::get(80),
-                                                  Location::regOf(32),
-                                                  Location::regOf(33)));
+                                                Location::regOf(32),
+                                                Location::regOf(33)));
                     rtl->insert(iter,new Assign(FloatType::get(80),
-                                                  Location::regOf(33),
-                                                  Location::regOf(34)));
+                                                Location::regOf(33),
+                                                Location::regOf(34)));
                     rtl->insert(iter,new Assign(FloatType::get(80),
-                                                  Location::regOf(34),
-                                                  Location::regOf(35)));
+                                                Location::regOf(34),
+                                                Location::regOf(35)));
                     rtl->insert(iter,new Assign(FloatType::get(80),
-                                                  Location::regOf(35),
-                                                  Location::regOf(36)));
+                                                Location::regOf(35),
+                                                Location::regOf(36)));
                     rtl->insert(iter,new Assign(FloatType::get(80),
-                                                  Location::regOf(36),
-                                                  Location::regOf(37)));
+                                                Location::regOf(36),
+                                                Location::regOf(37)));
                     rtl->insert(iter,new Assign(FloatType::get(80),
-                                                  Location::regOf(37),
-                                                  Location::regOf(38)));
+                                                Location::regOf(37),
+                                                Location::regOf(38)));
                     rtl->insert(iter,new Assign(FloatType::get(80),
-                                                  Location::regOf(38),
-                                                  Location::regOf(39)));
+                                                Location::regOf(38),
+                                                Location::regOf(39)));
                     rtl->insert(iter,new Assign(FloatType::get(80),
-                                                  Location::regOf(39),
-                                                  Location::tempOf(new Const(const_cast<char *>("tmpD9")))));
+                                                Location::regOf(39),
+                                                Location::tempOf(Const::get(const_cast<char *>("tmpD9")))));
                     // Remove the FPOP
                     iter=rtl->erase(iter);
                     continue;
@@ -328,7 +319,7 @@ void PentiumFrontEnd::processFloatCode(Cfg* pCfg) {
  *  here down. Note: tos has to be a parameter, not a global, to get the right value at any point in
  *  the call tree
  * \param pBB: pointer to the current BB
- * \param tos: reference to the value of the "top of stack" pointer currently. Starts at zero, and is
+ * \param tos reference to the value of the "top of stack" pointer currently. Starts at zero, and is
  *        decremented to 7 with the first load, so r[39] should be used first, then r[38] etc. However, it is
  *        reset to 0 for calls, so that if a function returns a float, then it will always appear in r[32]
  *
@@ -344,37 +335,16 @@ void PentiumFrontEnd::processFloatCode(BasicBlock * pBB, int& tos, Cfg* pCfg) {
         return;
     }
     rit = BB_rtls->begin();
-    while (rit != BB_rtls->end()) {
+    for(RTL *rtl : *BB_rtls) {
         // Check for call.
-        if ((*rit)->isCall()) {
+        if (rtl->isCall()) {
             // Reset the "top of stack" index. If this is not done, then after a sequence of calls to functions
             // returning floats, the value will appear to be returned in registers r[32], then r[33], etc.
             tos = 0;
         }
-        if ((*rit)->empty()) {
-            rit++;
+        if (rtl->empty()) {
             continue;
         }
-        RTL *rtl=*rit;
-#if PROCESS_FNSTSW
-        // Check for f(n)stsw
-        if (isStoreFsw((*rit)->elementAt(0))) {
-            // Check the register - at present we only handle AX
-            Exp* lhs = ((Assign*)(*rit)->elementAt(0))->getLeft();
-            Exp* ax = Location::regOf(0);
-            assert(*lhs == *ax);
-            delete ax;
-
-            // Process it
-            if (processStsw(rit, BB_rtls, pBB, pCfg)) {
-                // If returned true, must abandon this BB.
-                break;
-            }
-            // Else we have already skiped past the stsw, and/or any instructions that replace it, so process rest of
-            // this BB
-            continue;
-        }
-#endif
         for (auto iter=rtl->begin(); iter != rtl->end(); /*iter incremented inside loop*/) {
             // Get the current Exp
             st = *iter;
@@ -421,14 +391,13 @@ void PentiumFrontEnd::processFloatCode(BasicBlock * pBB, int& tos, Cfg* pCfg) {
                         int K = c->getInt();        // Old register number
                         // Change to new register number, if in range
                         if ((K >= 32) && (K <= 39))
-                            s->setSubExp1(new Const(32 + ((K - 32 + tos) & 7)));
+                            s->setSubExp1(Const::get(32 + ((K - 32 + tos) & 7)));
                     }
                 }
 
             }
             ++iter;
         }
-        rit++;
     }
     pBB->setTraversed(true);
 
@@ -458,11 +427,11 @@ void PentiumFrontEnd::emitSet(std::list<RTL*>* BB_rtls, std::list<RTL*>::iterato
                               Exp* cond) {
 
     Statement* asgn = new Assign(
-                          lhs,
-                          new Ternary(opTern,
-                                      cond,
-                                      new Const(1),
-                                      new Const(0)));
+                lhs,
+                new Ternary(opTern,
+                            cond,
+                            Const::get(1),
+                            Const::get(0)));
     RTL* pRtl = new RTL(uAddr);
     pRtl->appendStmt(asgn);
     //    std::cout << "Emit "; pRtl->print(); std::cout << std::endl;
@@ -492,25 +461,25 @@ bool PentiumFrontEnd::helperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL*>* lr
         // r[24] = trunc(64, 32, r[tmpl])
         // r[26] = r[tmpl] >> 32
         Statement* a = new Assign(IntegerType::get(64),
-                                  Location::tempOf(new Const(const_cast<char *>("tmpl"))),
+                                  Location::tempOf(Const::get(const_cast<char *>("tmpl"))),
                                   new Ternary(opFtoi,
-                                              new Const(64),
-                                              new Const(32),
+                                              Const::get(64),
+                                              Const::get(32),
                                               Location::regOf(32)));
         RTL* pRtl = new RTL(addr);
         pRtl->appendStmt(a);
         a = new Assign(
-                Location::regOf(24),
-                new Ternary(opTruncs,
-                            new Const(64),
-                            new Const(32),
-                            Location::tempOf(new Const(const_cast<char *>("tmpl")))));
+                    Location::regOf(24),
+                    new Ternary(opTruncs,
+                                Const::get(64),
+                                Const::get(32),
+                                Location::tempOf(Const::get(const_cast<char *>("tmpl")))));
         pRtl->appendStmt(a);
         a = new Assign(
-                Location::regOf(26),
-                Binary::get(opShiftR,
-                           Location::tempOf(new Const(const_cast<char *>("tmpl"))),
-                           new Const(32)));
+                    Location::regOf(26),
+                    Binary::get(opShiftR,
+                                Location::tempOf(Const::get(const_cast<char *>("tmpl"))),
+                                Const::get(32)));
         pRtl->appendStmt(a);
         // Append this RTL to the list of RTLs for this BB
         lrtl->push_back(pRtl);
@@ -520,10 +489,10 @@ bool PentiumFrontEnd::helperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL*>* lr
     } else if (name == "__mingw_allocstack") {
         RTL* pRtl = new RTL(addr);
         Statement* a = new Assign(
-                           Location::regOf(28),
-                           Binary::get(opMinus,
-                                      Location::regOf(28),
-                                      Location::regOf(24)));
+                    Location::regOf(28),
+                    Binary::get(opMinus,
+                                Location::regOf(28),
+                                Location::regOf(24)));
         pRtl->appendStmt(a);
         lrtl->push_back(pRtl);
         prog->removeProc(name.c_str());
@@ -574,9 +543,11 @@ PentiumFrontEnd::~PentiumFrontEnd() { }
  * \returns         Native pointer if found; NO_ADDRESS if not
  ******************************************************************************/
 ADDRESS PentiumFrontEnd::getMainEntryPoint(bool& gotMain) {
-    gotMain = true;
     ADDRESS start = pBF->GetMainEntryPoint();
-    if( start != NO_ADDRESS ) return start;
+    if( start != NO_ADDRESS ) {
+        gotMain = true;
+        return start;
+    }
 
     gotMain = false;
     start = pBF->GetEntryPoint();
@@ -673,7 +644,7 @@ ADDRESS PentiumFrontEnd::getMainEntryPoint(bool& gotMain) {
     return start;
 }
 
-void toBranches(ADDRESS a, bool lastRtl, Cfg* cfg, RTL* rtl, BasicBlock * bb, BB_IT& it) {
+void toBranches(ADDRESS a, bool /*lastRtl*/, Cfg* cfg, RTL* rtl, BasicBlock * bb, BB_IT& it) {
     BranchStatement* br1 = new BranchStatement;
     assert(rtl->size() >= 4);        // They vary; at least 5 or 6
     Statement* s1 = *rtl->begin();
@@ -691,7 +662,9 @@ void toBranches(ADDRESS a, bool lastRtl, Cfg* cfg, RTL* rtl, BasicBlock * bb, BB
     br2->setDest(a);
     cfg->splitForBranch(bb, rtl, br1, br2, it);
 }
-
+/**
+ * Process away %rpt and %skip in string instructions
+ */
 void PentiumFrontEnd::processStringInst(UserProc* proc) {
     Cfg::iterator it;
     Cfg* cfg = proc->getCFG();
@@ -733,7 +706,9 @@ void PentiumFrontEnd::processStringInst(UserProc* proc) {
         if (!noinc) it++;
     }
 }
-
+/**
+ * Process for overlapped registers
+ */
 void PentiumFrontEnd::processOverlapped(UserProc* proc) {
 
     // first, lets look for any uses of the registers
@@ -790,36 +765,36 @@ void PentiumFrontEnd::processOverlapped(UserProc* proc) {
                 // Emit *16* r<off> := trunc(32, 16, r<24+off>)
                 if (usedRegs.find(off) != usedRegs.end()) {
                     a = new Assign(
-                            IntegerType::get(16),
-                            Location::regOf(off),
-                            new Ternary(opTruncu,
-                                        new Const(32),
-                                        new Const(16),
-                                        Location::regOf(24+off)));
+                                IntegerType::get(16),
+                                Location::regOf(off),
+                                new Ternary(opTruncu,
+                                            Const::get(32),
+                                            Const::get(16),
+                                            Location::regOf(24+off)));
                     proc->insertStatementAfter(s, a);
                 }
 
                 // Emit *8* r<8+off> := trunc(32, 8, r<24+off>)
                 if (usedRegs.find(8+off) != usedRegs.end()) {
                     a = new Assign(
-                            IntegerType::get(8),
-                            Location::regOf(8+off),
-                            new Ternary(opTruncu,
-                                        new Const(32),
-                                        new Const(8),
-                                        Location::regOf(24+off)));
+                                IntegerType::get(8),
+                                Location::regOf(8+off),
+                                new Ternary(opTruncu,
+                                            Const::get(32),
+                                            Const::get(8),
+                                            Location::regOf(24+off)));
                     proc->insertStatementAfter(s, a);
                 }
 
                 // Emit *8* r<12+off> := r<24+off>@[15:8]
                 if (usedRegs.find(12+off) != usedRegs.end()) {
                     a = new Assign(
-                            IntegerType::get(8),
-                            Location::regOf(12+off),
-                            new Ternary(opAt,
-                                        Location::regOf(24+off),
-                                        new Const(15),
-                                        new Const(8)));
+                                IntegerType::get(8),
+                                Location::regOf(12+off),
+                                new Ternary(opAt,
+                                            Location::regOf(24+off),
+                                            Const::get(15),
+                                            Const::get(8)));
                     proc->insertStatementAfter(s, a);
                 }
                 break;
@@ -829,41 +804,41 @@ void PentiumFrontEnd::processOverlapped(UserProc* proc) {
                 // Emit *32* r<24+off> := r<24+off>@[31:16] | zfill(16, 32, r<off>)
                 if (usedRegs.find(24+off) != usedRegs.end()) {
                     a = new Assign(
-                            IntegerType::get(32),
-                            Location::regOf(24+off),
-                            Binary::get(opBitOr,
-                                       new Ternary(opAt,
-                                                   Location::regOf(24+off),
-                                                   new Const(31),
-                                                   new Const(16)),
-                                       new Ternary(opZfill,
-                                                   new Const(16),
-                                                   new Const(32),
-                                                   Location::regOf(off))));
+                                IntegerType::get(32),
+                                Location::regOf(24+off),
+                                Binary::get(opBitOr,
+                                            new Ternary(opAt,
+                                                        Location::regOf(24+off),
+                                                        Const::get(31),
+                                                        Const::get(16)),
+                                            new Ternary(opZfill,
+                                                        Const::get(16),
+                                                        Const::get(32),
+                                                        Location::regOf(off))));
                     proc->insertStatementAfter(s, a);
                 }
 
                 // Emit *8* r<8+off> := trunc(16, 8, r<off>)
                 if (usedRegs.find(8+off) != usedRegs.end()) {
                     a = new Assign(
-                            IntegerType::get(8),
-                            Location::regOf(8+off),
-                            new Ternary(opTruncu,
-                                        new Const(16),
-                                        new Const(8),
-                                        Location::regOf(24+off)));
+                                IntegerType::get(8),
+                                Location::regOf(8+off),
+                                new Ternary(opTruncu,
+                                            Const::get(16),
+                                            Const::get(8),
+                                            Location::regOf(24+off)));
                     proc->insertStatementAfter(s, a);
                 }
 
                 // Emit *8* r<12+off> := r<off>@[15:8]
                 if (usedRegs.find(12+off) != usedRegs.end()) {
                     a = new Assign(
-                            IntegerType::get(8),
-                            Location::regOf(12+off),
-                            new Ternary(opAt,
-                                        Location::regOf(off),
-                                        new Const(15),
-                                        new Const(8)));
+                                IntegerType::get(8),
+                                Location::regOf(12+off),
+                                new Ternary(opAt,
+                                            Location::regOf(off),
+                                            Const::get(15),
+                                            Const::get(8)));
                     proc->insertStatementAfter(s, a);
                 }
                 break;
@@ -874,34 +849,34 @@ void PentiumFrontEnd::processOverlapped(UserProc* proc) {
                 // Emit *32* r<24+off> := r<24+off>@[31:8] | zfill(8, 32, r<8+off>)
                 if (usedRegs.find(24+off) != usedRegs.end()) {
                     a = new Assign(
-                            IntegerType::get(32),
-                            Location::regOf(24+off),
-                            Binary::get(opBitOr,
-                                       new Ternary(opAt,
-                                                   Location::regOf(24+off),
-                                                   new Const(31),
-                                                   new Const(8)),
-                                       new Ternary(opZfill,
-                                                   new Const(8),
-                                                   new Const(32),
-                                                   Location::regOf(8+off))));
+                                IntegerType::get(32),
+                                Location::regOf(24+off),
+                                Binary::get(opBitOr,
+                                            new Ternary(opAt,
+                                                        Location::regOf(24+off),
+                                                        Const::get(31),
+                                                        Const::get(8)),
+                                            new Ternary(opZfill,
+                                                        Const::get(8),
+                                                        Const::get(32),
+                                                        Location::regOf(8+off))));
                     proc->insertStatementAfter(s, a);
                 }
 
                 // Emit *16* r<off> := r<off>@[15:8] | zfill(8, 16, r<8+off>)
                 if (usedRegs.find(off) != usedRegs.end()) {
                     a = new Assign(
-                            IntegerType::get(16),
-                            Location::regOf(off),
-                            Binary::get(opBitOr,
-                                       new Ternary(opAt,
-                                                   Location::regOf(off),
-                                                   new Const(15),
-                                                   new Const(8)),
-                                       new Ternary(opZfill,
-                                                   new Const(8),
-                                                   new Const(16),
-                                                   Location::regOf(8+off))));
+                                IntegerType::get(16),
+                                Location::regOf(off),
+                                Binary::get(opBitOr,
+                                            new Ternary(opAt,
+                                                        Location::regOf(off),
+                                                        Const::get(15),
+                                                        Const::get(8)),
+                                            new Ternary(opZfill,
+                                                        Const::get(8),
+                                                        Const::get(16),
+                                                        Location::regOf(8+off))));
                     proc->insertStatementAfter(s, a);
                 }
                 break;
@@ -912,20 +887,20 @@ void PentiumFrontEnd::processOverlapped(UserProc* proc) {
                 //        *32* r<24+off> := r<24+off> | r<12+off> << 8
                 if (usedRegs.find(24+off) != usedRegs.end()) {
                     a = new Assign(
-                            IntegerType::get(32),
-                            Location::regOf(24+off),
-                            Binary::get(opBitOr,
-                                       Location::regOf(24+off),
-                                       Binary::get(opShiftL,
-                                                  Location::regOf(12+off),
-                                                  new Const(8))));
+                                IntegerType::get(32),
+                                Location::regOf(24+off),
+                                Binary::get(opBitOr,
+                                            Location::regOf(24+off),
+                                            Binary::get(opShiftL,
+                                                        Location::regOf(12+off),
+                                                        Const::get(8))));
                     proc->insertStatementAfter(s, a);
                     a = new Assign(
-                            IntegerType::get(32),
-                            Location::regOf(24+off),
-                            Binary::get(opBitAnd,
-                                       Location::regOf(24+off),
-                                       new Const(0xFFFF00FF)));
+                                IntegerType::get(32),
+                                Location::regOf(24+off),
+                                Binary::get(opBitAnd,
+                                            Location::regOf(24+off),
+                                            Const::get(0xFFFF00FF)));
                     proc->insertStatementAfter(s, a);
                 }
 
@@ -933,20 +908,20 @@ void PentiumFrontEnd::processOverlapped(UserProc* proc) {
                 //        *16* r<off> := r<off> | r<12+off> << 8
                 if (usedRegs.find(off) != usedRegs.end()) {
                     a = new Assign(
-                            IntegerType::get(16),
-                            Location::regOf(off),
-                            Binary::get(opBitOr,
-                                       Location::regOf(off),
-                                       Binary::get(opShiftL,
-                                                  Location::regOf(12+off),
-                                                  new Const(8))));
+                                IntegerType::get(16),
+                                Location::regOf(off),
+                                Binary::get(opBitOr,
+                                            Location::regOf(off),
+                                            Binary::get(opShiftL,
+                                                        Location::regOf(12+off),
+                                                        Const::get(8))));
                     proc->insertStatementAfter(s, a);
                     a = new Assign(
-                            IntegerType::get(16),
-                            Location::regOf(off),
-                            Binary::get(opBitAnd,
-                                       Location::regOf(off),
-                                       new Const(0x00FF)));
+                                IntegerType::get(16),
+                                Location::regOf(off),
+                                Binary::get(opBitAnd,
+                                            Location::regOf(off),
+                                            Const::get(0x00FF)));
                     proc->insertStatementAfter(s, a);
                 }
                 break;
@@ -956,17 +931,17 @@ void PentiumFrontEnd::processOverlapped(UserProc* proc) {
                 // Emit *32* r<24+off_mod8> := r<24+off_mod8>@[31:16] | zfill(16, 32, r<off_mod8>)
                 if (usedRegs.find(24+off_mod8) != usedRegs.end()) {
                     a = new Assign(
-                            IntegerType::get(32),
-                            Location::regOf(24+off_mod8),
-                            Binary::get(opBitOr,
-                                       new Ternary(opAt,
-                                                   Location::regOf(24+off_mod8),
-                                                   new Const(31),
-                                                   new Const(16)),
-                                       new Ternary(opZfill,
-                                                   new Const(16),
-                                                   new Const(32),
-                                                   Location::regOf(off_mod8))));
+                                IntegerType::get(32),
+                                Location::regOf(24+off_mod8),
+                                Binary::get(opBitOr,
+                                            new Ternary(opAt,
+                                                        Location::regOf(24+off_mod8),
+                                                        Const::get(31),
+                                                        Const::get(16)),
+                                            new Ternary(opZfill,
+                                                        Const::get(16),
+                                                        Const::get(32),
+                                                        Location::regOf(off_mod8))));
                     proc->insertStatementAfter(s, a);
                 }
                 break;
@@ -976,12 +951,12 @@ void PentiumFrontEnd::processOverlapped(UserProc* proc) {
                 // Emit *16* r<off_mod8> := trunc(32, 16, r<24+off_mod8>)
                 if (usedRegs.find(off_mod8) != usedRegs.end()) {
                     a = new Assign(
-                            IntegerType::get(16),
-                            Location::regOf(off_mod8),
-                            new Ternary(opTruncu,
-                                        new Const(32),
-                                        new Const(16),
-                                        Location::regOf(24+off_mod8)));
+                                IntegerType::get(16),
+                                Location::regOf(off_mod8),
+                                new Ternary(opTruncu,
+                                            Const::get(32),
+                                            Const::get(16),
+                                            Location::regOf(24+off_mod8)));
                     proc->insertStatementAfter(s, a);
                 }
                 break;
@@ -992,176 +967,191 @@ void PentiumFrontEnd::processOverlapped(UserProc* proc) {
     for (std::set<BasicBlock *>::iterator bit = bbs.begin(); bit != bbs.end(); bit++)
         (*bit)->overlappedRegProcessingDone = true;
 }
-
-DecodeResult& PentiumFrontEnd::decodeInstruction(ADDRESS pc) {
+bool PentiumFrontEnd::decodeSpecial_out(ADDRESS pc, DecodeResult &r)
+{
+    // out dx, al
+    r.reset();
+    r.numBytes = 1;
+    r.valid = true;
+    r.type = NCT;
+    r.reDecode = false;
+    r.rtl = new RTL(pc);
+    Exp *dx = Location::regOf(decoder->getRTLDict().RegMap["%dx"]);
+    Exp *al = Location::regOf(decoder->getRTLDict().RegMap["%al"]);
+    CallStatement *call = new CallStatement();
+    call->setDestProc(prog->getLibraryProc("outp"));
+    call->setArgumentExp(0, dx);
+    call->setArgumentExp(1, al);
+    r.rtl->appendStmt(call);
+    return true;
+}
+bool PentiumFrontEnd::decodeSpecial_invalid(ADDRESS pc, DecodeResult &r)
+{
+    int n = pBF->readNative1(pc+1);
+    if (n != (int)(char)0x0b)
+        return false;
+    r.reset();
+    r.numBytes = 2;
+    r.valid = true;
+    r.type = NCT;
+    r.reDecode = false;
+    r.rtl = new RTL(pc);
+    CallStatement *call = new CallStatement();
+    call->setDestProc(prog->getLibraryProc("invalid_opcode"));
+    r.rtl->appendStmt(call);
+    return true;
+}
+bool PentiumFrontEnd::decodeSpecial(ADDRESS pc,DecodeResult &r) {
     int n = pBF->readNative1(pc);
-    if (n == (int)(char)0xee) {
-        // out dx, al
-        static DecodeResult r;
-        r.reset();
-        r.numBytes = 1;
-        r.valid = true;
-        r.type = NCT;
-        r.reDecode = false;
-        r.rtl = new RTL(pc);
-        Exp *dx = Location::regOf(decoder->getRTLDict().RegMap["%dx"]);
-        Exp *al = Location::regOf(decoder->getRTLDict().RegMap["%al"]);
-        CallStatement *call = new CallStatement();
-        call->setDestProc(prog->getLibraryProc("outp"));
-        call->setArgumentExp(0, dx);
-        call->setArgumentExp(1, al);
-        r.rtl->appendStmt(call);
-        return r;
+    switch((int)(char)n) {
+        case 0xee:
+            return decodeSpecial_out(pc, r);
+        case 0x0f:
+            return decodeSpecial_invalid(pc,r);
     }
-    if (n == (int)(char)0x0f && pBF->readNative1(pc+1) == (int)(char)0x0b) {
-        static DecodeResult r;
-        r.reset();
-        r.numBytes = 2;
-        r.valid = true;
-        r.type = NCT;
-        r.reDecode = false;
-        r.rtl = new RTL(pc);
-        CallStatement *call = new CallStatement();
-        call->setDestProc(prog->getLibraryProc("invalid_opcode"));
-        r.rtl->appendStmt(call);
+    return false;
+
+}
+DecodeResult& PentiumFrontEnd::decodeInstruction(ADDRESS pc) {
+    static DecodeResult r;
+    if (decodeSpecial(pc,r))
         return r;
-    }
     return FrontEnd::decodeInstruction(pc);
 }
 
 // EXPERIMENTAL: can we find function pointers in arguments to calls this early?
 void PentiumFrontEnd::extraProcessCall(CallStatement *call, std::list<RTL*> *BB_rtls) {
-    if (call->getDestProc()) {
+    if ( not call->getDestProc())
+        return;
 
-        // looking for function pointers
-        Signature *calledSig = call->getDestProc()->getSignature();
-        for (unsigned int i = 0; i < calledSig->getNumParams(); i++) {
-            // check param type
-            Type *paramType = calledSig->getParamType(i);
-            Type *points_to;
-            CompoundType *compound = nullptr;
-            bool paramIsFuncPointer = false, paramIsCompoundWithFuncPointers = false;
-            if (paramType->resolvesToPointer()) {
-                points_to = paramType->asPointer()->getPointsTo();
-                if (points_to->resolvesToFunc())
-                    paramIsFuncPointer = true;
-                else if (points_to->resolvesToCompound()) {
-                    compound = points_to->asCompound();
-                    for (unsigned int n = 0; n < compound->getNumTypes(); n++) {
-                        if (    compound->getType(n)->resolvesToPointer() &&
-                                compound->getType(n)->asPointer()->getPointsTo()->resolvesToFunc())
-                            paramIsCompoundWithFuncPointers = true;
+    // looking for function pointers
+    Signature *calledSig = call->getDestProc()->getSignature();
+    for (unsigned int i = 0; i < calledSig->getNumParams(); i++) {
+        // check param type
+        Type *paramType = calledSig->getParamType(i);
+        Type *points_to;
+        CompoundType *compound = nullptr;
+        bool paramIsFuncPointer = false, paramIsCompoundWithFuncPointers = false;
+        if (paramType->resolvesToPointer()) {
+            points_to = paramType->asPointer()->getPointsTo();
+            if (points_to->resolvesToFunc())
+                paramIsFuncPointer = true;
+            else if (points_to->resolvesToCompound()) {
+                compound = points_to->asCompound();
+                for (unsigned int n = 0; n < compound->getNumTypes(); n++) {
+                    if (    compound->getType(n)->resolvesToPointer() &&
+                            compound->getType(n)->asPointer()->getPointsTo()->resolvesToFunc())
+                        paramIsCompoundWithFuncPointers = true;
+                }
+            }
+        }
+        if (paramIsFuncPointer == false && paramIsCompoundWithFuncPointers == false)
+            continue;
+
+        // count pushes backwards to find arg
+        Exp *found = nullptr;
+        std::list<RTL*>::reverse_iterator itr;
+        unsigned int pushcount = 0;
+        for (itr = BB_rtls->rbegin(); itr != BB_rtls->rend() && !found; itr++) {
+            RTL *rtl = *itr;
+            for (auto rtl_iter = rtl->rbegin(); rtl_iter!=rtl->rend(); ++rtl_iter) {
+                Statement *stmt = *rtl_iter;
+                if (stmt->isAssign()) {
+                    Assign *asgn = (Assign*)stmt;
+                    if (asgn->getLeft()->isRegN(28) && asgn->getRight()->getOper() == opMinus)
+                        pushcount++;
+                    else if (pushcount == i + 2 && asgn->getLeft()->isMemOf() &&
+                             asgn->getLeft()->getSubExp1()->getOper() == opMinus &&
+                             asgn->getLeft()->getSubExp1()->getSubExp1()->isRegN(28) &&
+                             asgn->getLeft()->getSubExp1()->getSubExp2()->isIntConst()) {
+                        found = asgn->getRight();
+                        break;
                     }
                 }
             }
-            if (paramIsFuncPointer == false && paramIsCompoundWithFuncPointers == false)
-                continue;
+        }
+        if (found == nullptr)
+            continue;
 
-            // count pushes backwards to find arg
-            Exp *found = nullptr;
-            std::list<RTL*>::reverse_iterator itr;
-            unsigned int pushcount = 0;
-            for (itr = BB_rtls->rbegin(); itr != BB_rtls->rend() && !found; itr++) {
-                RTL *rtl = *itr;
-                for (auto rtl_iter = rtl->rbegin(); rtl_iter!=rtl->rend(); ++rtl_iter) {
-                    Statement *stmt = *rtl_iter;
-                    if (stmt->isAssign()) {
-                        Assign *asgn = (Assign*)stmt;
-                        if (asgn->getLeft()->isRegN(28) && asgn->getRight()->getOper() == opMinus)
-                            pushcount++;
-                        else if (pushcount == i + 2 && asgn->getLeft()->isMemOf() &&
-                                 asgn->getLeft()->getSubExp1()->getOper() == opMinus &&
-                                 asgn->getLeft()->getSubExp1()->getSubExp1()->isRegN(28) &&
-                                 asgn->getLeft()->getSubExp1()->getSubExp2()->isIntConst()) {
-                            found = asgn->getRight();
-                            break;
-                        }
-                    }
-                }
-            }
-            if (found == nullptr)
+        ADDRESS a;
+        if (found->isIntConst())
+            a = ((Const*)found)->getInt();
+        else if (found->isAddrOf() && found->getSubExp1()->isGlobal()) {
+            const char *name = ((Const*)found->getSubExp1()->getSubExp1())->getStr();
+            if (prog->getGlobal(name) == nullptr)
                 continue;
+            a = prog->getGlobalAddr(name);
+        } else
+            continue;
 
-            ADDRESS a;
-            if (found->isIntConst())
-                a = ((Const*)found)->getInt();
-            else if (found->isAddrOf() && found->getSubExp1()->isGlobal()) {
-                const char *name = ((Const*)found->getSubExp1()->getSubExp1())->getStr();
-                if (prog->getGlobal(name) == nullptr)
-                    continue;
-                a = prog->getGlobalAddr(name);
-            } else
-                continue;
+        // found one.
+        if (paramIsFuncPointer) {
+            LOG_VERBOSE(1) << "found a new procedure at address " << a
+                           << " from inspecting parameters of call to "
+                           << call->getDestProc()->getName() << ".\n";
+            Proc *proc = prog->setNewProc(a);
+            Signature *sig = paramType->asPointer()->getPointsTo()->asFunc()->getSignature()->clone();
+            sig->setName(proc->getName());
+            sig->setForced(true);
+            proc->setSignature(sig);
+            continue;
+        }
 
-            // found one.
-            if (paramIsFuncPointer) {
+        // linkers putting rodata in data sections is a continual annoyance
+        // we just have to assume the pointers don't change before we pass them at least once.
+        //if (!prog->isReadOnly(a))
+        //    continue;
+
+        for (unsigned int n = 0; n < compound->getNumTypes(); n++) {
+            if (compound->getType(n)->resolvesToPointer() &&
+                    compound->getType(n)->asPointer()->getPointsTo()->resolvesToFunc()) {
+                ADDRESS d = ADDRESS::g(pBF->readNative4(a));
                 if (VERBOSE)
-                    LOG << "found a new procedure at address " << a << " from inspecting parameters of call to " <<
+                    LOG << "found a new procedure at address " << d << " from inspecting parameters of call to " <<
                            call->getDestProc()->getName() << ".\n";
-                Proc *proc = prog->setNewProc(a);
-                Signature *sig = paramType->asPointer()->getPointsTo()->asFunc()->getSignature()->clone();
+                Proc *proc = prog->setNewProc(d);
+                Signature *sig = compound->getType(n)->asPointer()->getPointsTo()->asFunc()->getSignature()->
+                        clone();
                 sig->setName(proc->getName());
                 sig->setForced(true);
                 proc->setSignature(sig);
-                continue;
             }
-
-            // linkers putting rodata in data sections is a continual annoyance
-            // we just have to assume the pointers don't change before we pass them at least once.
-            //if (!prog->isReadOnly(a))
-            //    continue;
-
-            for (unsigned int n = 0; n < compound->getNumTypes(); n++) {
-                if (compound->getType(n)->resolvesToPointer() &&
-                        compound->getType(n)->asPointer()->getPointsTo()->resolvesToFunc()) {
-                    ADDRESS d = ADDRESS::g(pBF->readNative4(a));
-                    if (VERBOSE)
-                        LOG << "found a new procedure at address " << d << " from inspecting parameters of call to " <<
-                               call->getDestProc()->getName() << ".\n";
-                    Proc *proc = prog->setNewProc(d);
-                    Signature *sig = compound->getType(n)->asPointer()->getPointsTo()->asFunc()->getSignature()->
-                                     clone();
-                    sig->setName(proc->getName());
-                    sig->setForced(true);
-                    proc->setSignature(sig);
-                }
-                a += compound->getType(n)->getSize() / 8;
-            }
+            a += compound->getType(n)->getSize() / 8;
         }
+    }
 
-        // some pentium specific ellipsis processing
-        if (calledSig->hasEllipsis()) {
-            // count pushes backwards to find a push of 0
-            bool found = false;
-            std::list<RTL*>::reverse_iterator itr;
-            int pushcount = 0;
-            for (itr = BB_rtls->rbegin(); itr != BB_rtls->rend() && !found; itr++) {
-                RTL *rtl = *itr;
-                for (auto rtl_iter = rtl->rbegin(); rtl_iter!=rtl->rend(); ++rtl_iter) {
-                    Statement *stmt = *rtl_iter;
-                    if (stmt->isAssign()) {
-                        Assign *asgn = (Assign*)stmt;
-                        if (asgn->getLeft()->isRegN(28) && asgn->getRight()->getOper() == opMinus)
-                            pushcount++;
-                        else if (asgn->getLeft()->isMemOf() &&
-                                 asgn->getLeft()->getSubExp1()->getOper() == opMinus &&
-                                 asgn->getLeft()->getSubExp1()->getSubExp1()->isRegN(28) &&
-                                 asgn->getLeft()->getSubExp1()->getSubExp2()->isIntConst()) {
-                            if (asgn->getRight()->isIntConst()) {
-                                int n = ((Const*)asgn->getRight())->getInt();
-                                if (n == 0) {
-                                    found = true;
-                                    break;
-                                }
+    // some pentium specific ellipsis processing
+    if (calledSig->hasEllipsis()) {
+        // count pushes backwards to find a push of 0
+        bool found = false;
+        std::list<RTL*>::reverse_iterator itr;
+        int pushcount = 0;
+        for (itr = BB_rtls->rbegin(); itr != BB_rtls->rend() && !found; itr++) {
+            RTL *rtl = *itr;
+            for (auto rtl_iter = rtl->rbegin(); rtl_iter!=rtl->rend(); ++rtl_iter) {
+                Statement *stmt = *rtl_iter;
+                if (stmt->isAssign()) {
+                    Assign *asgn = (Assign*)stmt;
+                    if (asgn->getLeft()->isRegN(28) && asgn->getRight()->getOper() == opMinus)
+                        pushcount++;
+                    else if (asgn->getLeft()->isMemOf() &&
+                             asgn->getLeft()->getSubExp1()->getOper() == opMinus &&
+                             asgn->getLeft()->getSubExp1()->getSubExp1()->isRegN(28) &&
+                             asgn->getLeft()->getSubExp1()->getSubExp2()->isIntConst()) {
+                        if (asgn->getRight()->isIntConst()) {
+                            int n = ((Const*)asgn->getRight())->getInt();
+                            if (n == 0) {
+                                found = true;
+                                break;
                             }
                         }
                     }
                 }
             }
-            if (found && pushcount > 1) {
-                call->setSigArguments();
-                call->setNumArguments(pushcount - 1);
-            }
+        }
+        if (found && pushcount > 1) {
+            call->setSigArguments();
+            call->setNumArguments(pushcount - 1);
         }
     }
 }

@@ -12,14 +12,6 @@
  *                manner
  ******************************************************************************/
 
-/*
- * $Revision$    // 1.30.2.11
- *
- * 24 Sep 04 - Mike: Created
- * 25 Aug 05 - Mike: Switch from Mycroft style "pointer to alpha plus integer equals pointer to another alpha" to
- *                        Van Emmerik style "result is void*" for sigma and delta functions
- */
-
 #include <sstream>
 #include <cstring>
 #include "config.h"
@@ -220,9 +212,9 @@ void UserProc::dfaTypeAnalysis() {
                     // of con, but we can find it with the pattern unscaledArrayPat.
                     std::list<Exp*> result;
                     s->searchAll(unscaledArrayPat, result);
-                    for (std::list<Exp*>::iterator rr = result.begin(); rr != result.end(); ++rr) {
+                    for (auto & elem : result) {
                         // idx + K
-                        Binary *bin_rr  = dynamic_cast<Binary*>(*rr);
+                        Binary *bin_rr  = dynamic_cast<Binary*>(elem);
                         assert(bin_rr);
                         Const * constK  = (Const*)bin_rr->getSubExp2();
                         // Note: keep searching till we find the pattern with this constant, since other constants may
@@ -314,10 +306,8 @@ void UserProc::dfaTypeAnalysis() {
         }
     }
 
+    debugPrintAll("after application of dfa type analysis");
 
-    LOG_VERBOSE(1) << "### after application of dfa type analysis for " << getName() << " ###\n"
-            << *this
-            << "### end application of dfa type analysis for " << getName() << " ###\n";
     Boomerang::get()->alert_decompile_debug_point(this, "after dfa type analysis");
 }
 
@@ -741,18 +731,19 @@ void PhiAssign::dfaTypeAnalysis(bool& ch) {
     while (it->second.e == nullptr && it != defVec.end())
         ++it;
     assert(it != defVec.end());
-    Type* meetOfArgs = it->second.def->getTypeFor(lhs);
+    Type* meetOfArgs = it->second.def()->getTypeFor(lhs);
     for (++it; it != defVec.end(); ++it) {
-        if (it->second.e == nullptr) continue;
-        assert(it->second.def);
-        Type* typeOfDef = it->second.def->getTypeFor(it->second.e);
+        PhiInfo &phinf(it->second);
+        if (phinf.e == nullptr) continue;
+        assert(phinf.def());
+        Type* typeOfDef = phinf.def()->getTypeFor(phinf.e);
         meetOfArgs = meetOfArgs->meetWith(typeOfDef, ch);
     }
     type = type->meetWith(meetOfArgs, ch);
     for (it = defVec.begin(); it != defVec.end(); ++it) {
         if (it->second.e == nullptr)
             continue;
-        it->second.def->meetWithFor(type, it->second.e, ch);
+        it->second.def()->meetWithFor(type, it->second.e, ch);
     }
     Assignment::dfaTypeAnalysis(ch);            // Handle the LHS
 }
@@ -1295,11 +1286,11 @@ bool Type::isCompatibleWith(const Type* other, bool all /* = false */) const {
     return isCompatible(other, all);
 }
 
-bool VoidType::isCompatible(const Type *other, bool all) const {
+bool VoidType::isCompatible(const Type *other, bool /*all*/) const {
     return true;        // Void is compatible with any type
 }
 
-bool SizeType::isCompatible(const Type *other, bool all) const {
+bool SizeType::isCompatible(const Type *other, bool /*all*/) const {
     if (other->resolvesToVoid())
         return true;
     size_t otherSize = other->getSize();
@@ -1314,7 +1305,7 @@ bool SizeType::isCompatible(const Type *other, bool all) const {
     return true;
 }
 
-bool IntegerType::isCompatible(const Type *other, bool all) const {
+bool IntegerType::isCompatible(const Type *other, bool /*all*/) const {
     if (other->resolvesToVoid()) return true;
     if (other->resolvesToInteger()) return true;
     if (other->resolvesToChar()) return true;
@@ -1323,7 +1314,7 @@ bool IntegerType::isCompatible(const Type *other, bool all) const {
     return false;
 }
 
-bool FloatType::isCompatible(const Type *other, bool all) const {
+bool FloatType::isCompatible(const Type *other, bool /*all*/) const {
     if (other->resolvesToVoid()) return true;
     if (other->resolvesToFloat()) return true;
     if (other->resolvesToUnion()) return other->isCompatibleWith(this);
@@ -1332,7 +1323,7 @@ bool FloatType::isCompatible(const Type *other, bool all) const {
     return false;
 }
 
-bool CharType::isCompatible(const Type *other, bool all) const {
+bool CharType::isCompatible(const Type *other, bool /*all*/) const {
     if (other->resolvesToVoid()) return true;
     if (other->resolvesToChar()) return true;
     if (other->resolvesToInteger()) return true;
@@ -1342,7 +1333,7 @@ bool CharType::isCompatible(const Type *other, bool all) const {
     return false;
 }
 
-bool BooleanType::isCompatible(const Type *other, bool all) const {
+bool BooleanType::isCompatible(const Type *other, bool /*all*/) const {
     if (other->resolvesToVoid()) return true;
     if (other->resolvesToBoolean()) return true;
     if (other->resolvesToUnion()) return other->isCompatibleWith(this);
@@ -1350,7 +1341,7 @@ bool BooleanType::isCompatible(const Type *other, bool all) const {
     return false;
 }
 
-bool FuncType::isCompatible(const Type *other, bool all) const {
+bool FuncType::isCompatible(const Type *other, bool /*all*/) const {
     assert(signature);
     if (other->resolvesToVoid()) return true;
     if (*this == *other) return true;        // MVE: should not compare names!
@@ -1363,7 +1354,7 @@ bool FuncType::isCompatible(const Type *other, bool all) const {
     return false;
 }
 
-bool PointerType::isCompatible(const Type *other, bool all) const {
+bool PointerType::isCompatible(const Type *other, bool /*all*/) const {
     if (other->resolvesToVoid()) return true;
     if (other->resolvesToUnion()) return other->isCompatibleWith(this);
     if (other->resolvesToSize() && ((SizeType*)other)->getSize() == STD_SIZE) return true;
@@ -1371,7 +1362,7 @@ bool PointerType::isCompatible(const Type *other, bool all) const {
     return points_to->isCompatibleWith(other->asPointer()->points_to);
 }
 
-bool NamedType::isCompatible(const Type *other, bool all) const {
+bool NamedType::isCompatible(const Type *other, bool /*all*/) const {
     if (other->isNamed() && name == ((NamedType*)other)->getName())
         return true;
     Type* resTo = resolvesTo();
@@ -1428,14 +1419,17 @@ bool CompoundType::isCompatible(const Type *other, bool all) const {
     return true;
 }
 
-bool UpperType::isCompatible(const Type *other, bool all) const {
-    if (other->resolvesToVoid()) return true;
-    if (other->resolvesToUpper() && base_type->isCompatibleWith(other->asUpper()->base_type)) return true;
-    if (other->resolvesToUnion()) return other->isCompatibleWith(this);
+bool UpperType::isCompatible(const Type *other, bool /*all*/) const {
+    if (other->resolvesToVoid())
+        return true;
+    if (other->resolvesToUpper() && base_type->isCompatibleWith(other->asUpper()->base_type))
+        return true;
+    if (other->resolvesToUnion())
+        return other->isCompatibleWith(this);
     return false;
 }
 
-bool LowerType::isCompatible(const Type *other, bool all) const {
+bool LowerType::isCompatible(const Type *other, bool /*all*/) const {
     if (other->resolvesToVoid())
         return true;
     if (other->resolvesToLower() && base_type->isCompatibleWith(other->asLower()->base_type))

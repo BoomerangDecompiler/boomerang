@@ -14,12 +14,6 @@
  * OVERVIEW:   Interface for a control flow graph, based on basic block nodes.
  *============================================================================*/
 
-/*
- * $Revision$    // 1.69.2.7
- * 18 Apr 02 - Mike: Mods for boomerang
- * 04 Dec 02 - Mike: Added isJmpZ
- */
-
 #ifndef _CFG_H_
 #define _CFG_H_
 
@@ -97,7 +91,7 @@ public:
         const Cfg &     operator=(const Cfg& other); /* Copy constructor */
 
 
-        BasicBlock *    newBB ( std::list<RTL*>* pRtls, BBTYPE bbType, int iNumOutEdges) throw(BBAlreadyExistsError);
+        BasicBlock *    newBB (std::list<RTL*>* pRtls, BBTYPE bbType, uint32_t iNumOutEdges) throw(BBAlreadyExistsError);
         BasicBlock *    newIncompleteBB(ADDRESS addr);
         void            addOutEdge(BasicBlock * pBB, ADDRESS adr, bool bSetLabel = false);
         void            addOutEdge(BasicBlock * pBB, BasicBlock * pDestBB, bool bSetLabel = false);

@@ -394,10 +394,10 @@ int __alloca_free_ptr(char *ptr, char *ref) {
 
 int AnsiCParser::yyparse(platform plat, callconv cc)
 {
-    register int yystate;
-    register int yyn;
-    register short *yyssp;
-    register yy_AnsiCParser_stype *yyvsp;
+    int yystate;
+    int yyn;
+    short *yyssp;
+    yy_AnsiCParser_stype *yyvsp;
     int yyerrstatus;      /*  number of tokens to shift before error messages enabled */
     int yychar1=0;          /*  lookahead token as an internal (translated) token number */
 
@@ -712,13 +712,12 @@ int AnsiCParser::yyparse(platform plat, callconv cc)
 
         { Signature *sig = Signature::instantiate(plat, cc, nullptr);
             sig->addReturn(yyvsp[-7].type);
-            for (std::list<Parameter*>::iterator it = yyvsp[-1].param_list->begin();
-                 it != yyvsp[-1].param_list->end(); it++)
-                if (std::string((*it)->name()) != "...")
-                    sig->addParameter(*it);
+            for (auto & elem : *yyvsp[-1].param_list)
+                if (std::string((elem)->name()) != "...")
+                    sig->addParameter(elem);
                 else {
                     sig->addEllipsis();
-                    delete *it;
+                    delete elem;
                 }
             delete yyvsp[-1].param_list;
             yyval.param = new Parameter(new PointerType(new FuncType(sig)), yyvsp[-4].str);
@@ -736,13 +735,12 @@ int AnsiCParser::yyparse(platform plat, callconv cc)
 
         { Signature *sig = Signature::instantiate(plat, cc, nullptr);
             sig->addReturn(yyvsp[-8].type);
-            for (std::list<Parameter*>::iterator it = yyvsp[-2].param_list->begin();
-                 it != yyvsp[-2].param_list->end(); it++)
-                if (std::string((*it)->name()) != "...")
-                    sig->addParameter(*it);
+            for (auto & elem : *yyvsp[-2].param_list)
+                if (std::string((elem)->name()) != "...")
+                    sig->addParameter(elem);
                 else {
                     sig->addEllipsis();
-                    delete *it;
+                    delete elem;
                 }
             delete yyvsp[-2].param_list;
             Type::addNamedType(yyvsp[-5].str, new PointerType(new FuncType(sig)));
@@ -752,13 +750,12 @@ int AnsiCParser::yyparse(platform plat, callconv cc)
 
         { Signature *sig = Signature::instantiate(plat, cc, yyvsp[-4].type_ident->nam.c_str());
             sig->addReturn(yyvsp[-4].type_ident->ty);
-            for (std::list<Parameter*>::iterator it = yyvsp[-2].param_list->begin();
-                 it != yyvsp[-2].param_list->end(); it++)
-                if (std::string((*it)->name()) != "...")
-                    sig->addParameter(*it);
+            for (auto & elem : *yyvsp[-2].param_list)
+                if (std::string((elem)->name()) != "...")
+                    sig->addParameter(elem);
                 else {
                     sig->addEllipsis();
-                    delete *it;
+                    delete elem;
                 }
             delete yyvsp[-2].param_list;
             Type::addNamedType(yyvsp[-4].type_ident->nam.c_str(), new FuncType(sig));
@@ -767,9 +764,8 @@ int AnsiCParser::yyparse(platform plat, callconv cc)
         case 33:
 
         { CompoundType *t = new CompoundType();
-            for (std::list<TypeIdent*>::iterator it = yyvsp[-2].type_ident_list->begin();
-                 it != yyvsp[-2].type_ident_list->end(); it++) {
-                t->addType((*it)->ty, (*it)->nam.c_str());
+            for (auto & elem : *yyvsp[-2].type_ident_list) {
+                t->addType((elem)->ty, (elem)->nam.c_str());
             }
             char tmp[1024];
             sprintf(tmp, "struct %s", yyvsp[-4].str);
@@ -800,13 +796,12 @@ int AnsiCParser::yyparse(platform plat, callconv cc)
             /* Use the passed calling convention (cc) */
             Signature *sig = Signature::instantiate(plat, cc, yyvsp[-3].type_ident->nam.c_str());
             sig->addReturn(yyvsp[-3].type_ident->ty);
-            for (std::list<Parameter*>::iterator it = yyvsp[-1].param_list->begin();
-                 it != yyvsp[-1].param_list->end(); it++)
-                if (std::string((*it)->name()) != "...")
-                    sig->addParameter(*it);
+            for (auto & elem : *yyvsp[-1].param_list)
+                if (std::string((elem)->name()) != "...")
+                    sig->addParameter(elem);
                 else {
                     sig->addEllipsis();
-                    delete *it;
+                    delete elem;
                 }
             delete yyvsp[-1].param_list;
             yyval.sig = sig;
@@ -817,13 +812,12 @@ int AnsiCParser::yyparse(platform plat, callconv cc)
         { Signature *sig = Signature::instantiate(plat, yyvsp[-4].cc,
                     yyvsp[-3].type_ident->nam.c_str());
             sig->addReturn(yyvsp[-3].type_ident->ty);
-            for (std::list<Parameter*>::iterator it = yyvsp[-1].param_list->begin();
-                 it != yyvsp[-1].param_list->end(); it++)
-                if (std::string((*it)->name()) != "...")
-                    sig->addParameter(*it);
+            for (auto & elem : *yyvsp[-1].param_list)
+                if (std::string((elem)->name()) != "...")
+                    sig->addParameter(elem);
                 else {
                     sig->addEllipsis();
-                    delete *it;
+                    delete elem;
                 }
             delete yyvsp[-1].param_list;
             yyval.sig = sig;
@@ -1023,9 +1017,8 @@ int AnsiCParser::yyparse(platform plat, callconv cc)
         case 76:
 
         { CompoundType *t = new CompoundType();
-            for (std::list<TypeIdent*>::iterator it = yyvsp[-1].type_ident_list->begin();
-                 it != yyvsp[-1].type_ident_list->end(); it++) {
-                t->addType((*it)->ty, (*it)->nam.c_str());
+            for (auto & elem : *yyvsp[-1].type_ident_list) {
+                t->addType((elem)->ty, (elem)->nam.c_str());
             }
             yyval.type = t;
 

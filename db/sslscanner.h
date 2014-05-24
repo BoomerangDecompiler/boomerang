@@ -78,7 +78,7 @@
     bool traceLines;    /* echo each lines as it is scanned */ \
     std::istream &in;
 //#line 60 "sslscanner.l"
-#define YY_SSLScanner_LEX_PARAM  YY_SSLParser_STYPE &yylval
+#define YY_SSLScanner_LEX_PARAM  yy_SSLParser_stype &yylval
 //#line 62 "sslscanner.l"
 //#line 52 "//usr/local/lib/flexskel.h"
 

@@ -32,25 +32,26 @@ if(File.exists?(File.join(TESTS_DIR,"outputs")))
 end
 #exit(1)
 #sh -c "./boomerang -o functest $4 test/$1/$2 2>/dev/null >/dev/null"
+crashes = {}
 Dir.open(TEST_INPUT).each() {|f|
         next if f=="." or f==".."
         machine_dir = File.join(TEST_INPUT,f)
-        p File::directory?(machine_dir)
         next if not File::directory?(machine_dir)
         machine = f
-        STDOUT << "Running tests for #{f}\n"
-        crashes = []
         Dir.open(machine_dir).each() {|test|
             next if test=="." or test==".."
             test_path = File.join(machine_dir,test)
             FileUtils.mkdir_p(File.join(TESTS_DIR,"outputs",machine,test))
             if( not perform_test(ARGV[0],machine,test,ARGV[1..-1]))
-                crashes << test
+		crashes[machine] ||= []
+                crashes[machine] << test
             end
             FileUtils.mv(File.join(TESTS_DIR,"outputs",machine,"log"),File.join(TESTS_DIR,"outputs",machine,test+".log"))
         }
-        puts "\nEncountered #{crashes.size} program failures for #{machine}\n"        
-	crashes.each {|test|
+}
+crashes.each {|machine,crash_list|
+        puts "\nEncountered #{crash_list.size} program failures for #{machine}\n"        
+	crash_list.each {|test|
 		puts("Decompiler failed on #{machine}/#{test}\n")
 	}
 }

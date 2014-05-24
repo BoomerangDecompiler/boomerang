@@ -12,12 +12,6 @@
  * OVERVIEW:   Definition of objects related to type constraints
  *============================================================================*/
 
-/*
- * $Revision$
- *
- * 22 Aug 03 - Mike: Created
- */
-
 #include "statement.h"
 #include "exphelp.h"
 #include <sstream>
@@ -77,7 +71,7 @@ typedef std::map<Exp*, LocationSet, lessExpStar>::iterator iterator;
     iterator begin() {return emap.begin();}
     iterator end()     {return emap.end();}
     void erase(iterator it) {emap.erase(it);}
-    int     size() {return emap.size();}
+    size_t size() {return emap.size();}
     // Add an equate (both ways)
     void addEquate(Exp* a, Exp* b) {
         emap[a].insert(b); emap[b].insert(a);}
@@ -108,9 +102,6 @@ public:
     void    substIntoDisjuncts(ConstraintMap& in);
     // Substitute the given constraintMap into the equates
     void    substIntoEquates(ConstraintMap& in);
-    // Perform "alpha substitution". Example:
-    //     <fixedtype*> = alphaX* and T[Y] = alphaX*    ->
-    //     T[Y] = <fixedtype*>
     void    alphaSubst();
 
     // Solve the constraints. If they can be solved, return true and put

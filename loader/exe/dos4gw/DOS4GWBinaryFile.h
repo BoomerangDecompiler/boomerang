@@ -8,26 +8,23 @@
  *
  */
 
-/* File: DOS4GWBinaryFile.h
- * Desc: This file contains the definition of the class DOS4GWBinaryFile.
+/** \file DOS4GWBinaryFile.h
+ * \brief This file contains the definition of the class DOS4GWBinaryFile.
 */
 
-#ifndef __DOS4GWBINARYFILE_H__
-#define __DOS4GWBINARYFILE_H_
+#pragma once
 
 #include "BinaryFile.h"
 #include <string>
 
-/* $Revision$
+/**
  * This file contains the definition of the DOS4GWBinaryFile class, and some
  * other definitions specific to the exe version of the BinaryFile object
-*/
-/* At present, this loader supports the OS2 file format (also known as
+ * At present, this loader supports the OS2 file format (also known as
  * the Linear eXecutable format) as much as I've found necessary to
  * inspect old DOS4GW apps.  This loader could also be used for decompiling
  * Win9x VxD files or, of course, OS2 binaries, but you're probably better off
  * making a specific loader for each of these.
- * 24 Jan 05 - Trent: created.
  */
 
 // Given a little endian value x, load its value assuming little endian order
@@ -205,4 +202,3 @@ private:
 //#ifdef WIN32
 #pragma pack()
 //#endif
-#endif            // ifndef __DOS4GWBINARYFILE_H__

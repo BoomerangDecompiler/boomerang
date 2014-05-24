@@ -12,12 +12,6 @@
  * OVERVIEW:   Interface for SSA based data flow analysis
  *============================================================================*/
 
-/*
- * $Revision$    // 1.39.2.19
- *
- * 15 Mar 05 - Mike: Separated from cfg.h
- */
-
 #ifndef _DATAFLOW_H_
 #define _DATAFLOW_H_
 
@@ -118,7 +112,9 @@ public:
         BasicBlock *    nodeToBB(size_t node) {return BBs[node];}
         int             getIdom(size_t node) {return idom[node];}
         int             getSemi(size_t node) {return semi[node];}
-        std::set<int>&  getA_phi(Exp* e) {return A_phi[e];}
+        std::set<int>&  getA_phi(Exp* e) {
+            return A_phi[e];
+        }
 
         // For debugging:
         void            dumpStacks();

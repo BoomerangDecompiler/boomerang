@@ -106,10 +106,6 @@
  * \file       ansi-c.l
  * \brief   Scanner for ANSI C.
  ******************************************************************************/
-/*
- * $Revision$
- * 10 Apr 02 - Trent: Created
- */
 
 /* ALlow ? and @ in identifiers, so we can use mangled names */
 #include "ansi-c-scanner.h"
@@ -548,9 +544,9 @@ static const short int yy_rule_linenum[111] ={
 
 YY_AnsiCScanner_LEX_RETURN YY_AnsiCScanner_CLASS::YY_AnsiCScanner_LEX ( yy_AnsiCParser_stype &yylval)
 {
-    register yy_state_type yy_current_state;
-    register YY_AnsiCScanner_CHAR *yy_cp, *yy_bp;
-    register int yy_act;
+    yy_state_type yy_current_state;
+    YY_AnsiCScanner_CHAR *yy_cp, *yy_bp;
+    int yy_act;
 
     /* % user's declarations go here */
 
@@ -1339,11 +1335,11 @@ long YY_AnsiCScanner_CLASS::yy_get_previous_state_()
 long YY_AnsiCScanner_CLASS::yy_try_NUL_trans_(long yy_current_state_)
 {
     yy_state_type yy_current_state=(yy_state_type)yy_current_state_;
-    register int yy_is_jam;
+    int yy_is_jam;
     /* % code to find the next state, and perhaps do backtracking, goes here */
-    register YY_CHAR *yy_cp = yy_c_buf_p;
+    YY_CHAR *yy_cp = yy_c_buf_p;
 
-    register YY_CHAR yy_c = 1;
+    YY_CHAR yy_c = 1;
     if (yy_accept[yy_current_state]) {
         yy_last_accepting_state = yy_current_state;
         yy_last_accepting_cpos = yy_cp;
@@ -1554,8 +1550,9 @@ loop:
         goto loop;
     }
 
-    if (c != 0)
+    if (c != 0) {
         /*putchar(c1)*/;
+    }
 }
 
 void AnsiCScanner::commentEOL() {

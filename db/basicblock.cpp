@@ -14,18 +14,6 @@
  * \brief Implementation of the BasicBlock class.
  ******************************************************************************/
 
-/*
- * $Revision$    // 1.93.2.8
- * Dec 97 - created by Mike
- * 18 Apr 02 - Mike: Changes for boomerang
- * 04 Dec 02 - Mike: Added isJmpZ
- * 09 Jan 02 - Mike: Untabbed, reformatted
- * 17 Jun 03 - Mike: Fixed an apparent error in generateCode (getCond)
- * 14 Jun 05 - Mike: Don't add redundant out edges to an N-way BB if some jump table entries repeat
- * 20 Mar 11 - Mike: Fixed braces near isLatchNode() in generateCode()
-*/
-
-
 /***************************************************************************//**
  * Dependencies.
  ******************************************************************************/
@@ -62,7 +50,7 @@ using namespace std;
 
 BasicBlock::BasicBlock()
     :
-      m_iNumInEdges(0),
+      //m_iNumInEdges(0),
       //m_iNumOutEdges(0),
       m_iTraversed(false),
       // From Doug's code
@@ -103,7 +91,7 @@ BasicBlock::BasicBlock(const BasicBlock& bb)
       m_bJumpReqd(bb.m_bJumpReqd),
       m_InEdges(bb.m_InEdges),
       m_OutEdges(bb.m_OutEdges),
-      m_iNumInEdges(bb.m_iNumInEdges),
+      //m_iNumInEdges(bb.m_iNumInEdges),
       //m_iNumOutEdges(bb.m_iNumOutEdges),
       m_iTraversed(false),
       // From Doug's code
@@ -124,13 +112,10 @@ BasicBlock::BasicBlock(const BasicBlock& bb)
  * \param bbType -
  * \param iNumOutEdges -
  ******************************************************************************/
-BasicBlock::BasicBlock(std::list<RTL*>* pRtls, BBTYPE bbType, int iNumOutEdges)
+BasicBlock::BasicBlock(std::list<RTL*>* pRtls, BBTYPE bbType, uint32_t iNumOutEdges)
     :
       m_nodeType(bbType),
       m_bIncomplete(false),
-      m_iNumInEdges(0),
-      //m_iNumOutEdges(iNumOutEdges),
-      m_iTraversed(false),
       // From Doug's code
       ord(-1), revOrd(-1), inEdgesVisited(0), numForwardInEdges(-1), traversed(UNTRAVERSED), hllLabel(false), indentLevel(0),
       immPDom(nullptr), loopHead(nullptr), caseHead(nullptr), condFollow(nullptr), loopFollow(nullptr), latchNode(nullptr), sType(Seq),
@@ -214,7 +199,7 @@ BBTYPE BasicBlock::getType() {
  * \param iNumOutEdges - new number of inedges
  *
  ******************************************************************************/
-void BasicBlock::updateType(BBTYPE bbType, int iNumOutEdges) {
+void BasicBlock::updateType(BBTYPE bbType, uint32_t iNumOutEdges) {
     m_nodeType = bbType;
     m_iTargetOutEdges = iNumOutEdges;
     //m_OutEdges.resize(iNumOutEdges);
@@ -321,19 +306,19 @@ void BasicBlock::print(std::ostream& os, bool html) {
 void BasicBlock::printToLog() {
     std::ostringstream ost;
     print(ost);
-    LOG << ost.str().c_str();
+    LOG << ost.str();
 }
 
-bool BasicBlock::isBackEdge(int inEdge) const {
+bool BasicBlock::isBackEdge(size_t inEdge) const {
     const BasicBlock * in = m_InEdges[inEdge];
     return this == in || (m_DFTfirst < in->m_DFTfirst && m_DFTlast > in->m_DFTlast);
 }
 
 
 // Another attempt at printing BBs that gdb doesn't like to print
-void printBB(BasicBlock * bb) {
-    bb->print(std::cerr);
-}
+//void printBB(BasicBlock * bb) {
+//    bb->print(std::cerr);
+//}
 
 /***************************************************************************//**
  *
@@ -455,7 +440,7 @@ void BasicBlock::setOutEdge(size_t i, BasicBlock * pNewOutEdge) {
 BasicBlock *BasicBlock::getOutEdge(unsigned int i) {
     if (i < m_OutEdges.size())
         return m_OutEdges[i];
-    else return 0;
+    else return nullptr;
 }
 /*
  *    given an address, returns
@@ -486,7 +471,7 @@ BasicBlock *BasicBlock::getCorrectOutEdge(ADDRESS a) {
  ******************************************************************************/
 void BasicBlock::addInEdge(BasicBlock * pNewInEdge) {
     m_InEdges.push_back(pNewInEdge);
-    m_iNumInEdges++;
+    //m_iNumInEdges++;
 }
 
 /***************************************************************************//**
@@ -500,7 +485,7 @@ void BasicBlock::addInEdge(BasicBlock * pNewInEdge) {
  ******************************************************************************/
 void BasicBlock::deleteInEdge(std::vector<BasicBlock *>::iterator& it) {
     it = m_InEdges.erase(it);
-    m_iNumInEdges--;
+    //m_iNumInEdges--;
 }
 
 void BasicBlock::deleteInEdge(BasicBlock * edge) {
@@ -647,7 +632,7 @@ Proc *BasicBlock::getCallDestProc() {
 // Get First/Next Statement in a BB
 //
 Statement* BasicBlock::getFirstStmt(rtlit& rit, StatementList::iterator& sit) {
-    if (m_pRtls == nullptr)
+    if (m_pRtls == nullptr || m_pRtls->empty())
         return nullptr;
     rit = m_pRtls->begin();
     while (rit != m_pRtls->end()) {
@@ -840,8 +825,8 @@ bool BasicBlock::isAncestorOf(BasicBlock *other) {
  */
 void BasicBlock::simplify() {
     if (m_pRtls)
-        for (std::list<RTL*>::iterator it = m_pRtls->begin(); it != m_pRtls->end(); it++)
-            (*it)->simplify();
+        for (auto & elem : *m_pRtls)
+            (elem)->simplify();
     if (m_nodeType == TWOWAY) {
         if (m_pRtls == nullptr || m_pRtls->empty() ) {
             m_nodeType = FALL;
@@ -878,7 +863,7 @@ void BasicBlock::simplify() {
                 }
             }
             LOG_VERBOSE(1) << "\n";
-            redundant->m_iNumInEdges = redundant->m_InEdges.size();
+            //redundant->m_iNumInEdges = redundant->m_InEdges.size();
             LOG_VERBOSE(1) << "   after: " << m_OutEdges[0]->getLowAddr() << "\n";
         }
         if (m_nodeType == ONEWAY) {
@@ -902,7 +887,7 @@ void BasicBlock::simplify() {
                 }
             }
             LOG_VERBOSE(1) << "\n";
-            redundant->m_iNumInEdges = redundant->m_InEdges.size();
+            //redundant->m_iNumInEdges = redundant->m_InEdges.size();
             LOG_VERBOSE(1) << "   after: " << m_OutEdges[0]->getLowAddr() << "\n";
         }
     }
@@ -963,6 +948,102 @@ void BasicBlock::WriteBB(HLLCode *hll, int indLevel) {
     indentLevel = indLevel;
 }
 
+void BasicBlock::generateCode_Loop(HLLCode *hll, std::list<BasicBlock *> &gotoSet, int indLevel, UserProc* proc, BasicBlock* latch, std::list<BasicBlock *> &followSet)
+{
+    // add the follow of the loop (if it exists) to the follow set
+
+    if (loopFollow)
+        followSet.push_back(loopFollow);
+
+    if (lType == PreTested) {
+        assert(latchNode->m_OutEdges.size() == 1);
+
+        // write the body of the block (excluding the predicate)
+        WriteBB(hll, indLevel);
+
+        // write the 'while' predicate
+        Exp *cond = getCond();
+        if (m_OutEdges[BTHEN] == loopFollow) {
+            cond = Unary::get(opNot, cond);
+            cond = cond->simplify();
+        }
+        hll->AddPretestedLoopHeader(indLevel, cond);
+
+        // write the code for the body of the loop
+        BasicBlock * loopBody = (m_OutEdges[BELSE] == loopFollow) ? m_OutEdges[BTHEN] : m_OutEdges[BELSE];
+        loopBody->generateCode(hll, indLevel + 1, latchNode, followSet, gotoSet, proc);
+
+        // if code has not been generated for the latch node, generate it now
+        if (latchNode->traversed != DFS_CODEGEN) {
+            latchNode->traversed = DFS_CODEGEN;
+            latchNode->WriteBB(hll, indLevel+1);
+        }
+
+        // rewrite the body of the block (excluding the predicate) at the next nesting level after making sure
+        // another label won't be generated
+        hllLabel = false;
+        WriteBB(hll, indLevel+1);
+
+        // write the loop tail
+        hll->AddPretestedLoopEnd(indLevel);
+    } else {
+        // write the loop header
+        if (lType == Endless)
+            hll->AddEndlessLoopHeader(indLevel);
+        else
+            hll->AddPosttestedLoopHeader(indLevel);
+
+        // if this is also a conditional header, then generate code for the conditional. Otherwise generate code
+        // for the loop body.
+        if (sType == LoopCond) {
+            // set the necessary flags so that generateCode can successfully be called again on this node
+            sType = Cond;
+            traversed = UNTRAVERSED;
+            generateCode(hll, indLevel + 1, latchNode, followSet, gotoSet, proc);
+        } else {
+            WriteBB(hll, indLevel+1);
+
+            // write the code for the body of the loop
+            m_OutEdges[0]->generateCode(hll, indLevel + 1, latchNode, followSet, gotoSet, proc);
+        }
+
+        if (lType == PostTested) {
+            // if code has not been generated for the latch node, generate it now
+            if (latchNode->traversed != DFS_CODEGEN) {
+                latchNode->traversed = DFS_CODEGEN;
+                latchNode->WriteBB(hll, indLevel+1);
+            }
+
+            //hll->AddPosttestedLoopEnd(indLevel, getCond());
+            // MVE: the above seems to fail when there is a call in the middle of the loop (so loop is 2 BBs)
+            // Just a wild stab:
+            hll->AddPosttestedLoopEnd(indLevel, latchNode->getCond());
+        } else {
+            assert(lType == Endless);
+
+            // if code has not been generated for the latch node, generate it now
+            if (latchNode->traversed != DFS_CODEGEN) {
+                latchNode->traversed = DFS_CODEGEN;
+                latchNode->WriteBB(hll, indLevel+1);
+            }
+
+            // write the closing bracket for an endless loop
+            hll->AddEndlessLoopEnd(indLevel);
+        }
+    }
+
+    // write the code for the follow of the loop (if it exists)
+    if (loopFollow) {
+        // remove the follow from the follow set
+        followSet.resize(followSet.size()-1);
+
+        if (loopFollow->traversed != DFS_CODEGEN)
+            loopFollow->generateCode(hll, indLevel, latch, followSet, gotoSet, proc);
+        else
+            emitGotoAndLabel(hll, indLevel, loopFollow);
+    }
+}
+
 void BasicBlock::generateCode(HLLCode *hll, int indLevel, BasicBlock * latch,
                               std::list<BasicBlock *> &followSet, std::list<BasicBlock *> &gotoSet, UserProc* proc) {
     // If this is the follow for the most nested enclosing conditional, then don't generate anything. Otherwise if it is
@@ -1011,97 +1092,7 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, BasicBlock * latch,
     switch(sType) {
         case Loop:
         case LoopCond:
-            // add the follow of the loop (if it exists) to the follow set
-            if (loopFollow)
-                followSet.push_back(loopFollow);
-
-            if (lType == PreTested) {
-                assert(latchNode->m_OutEdges.size() == 1);
-
-                // write the body of the block (excluding the predicate)
-                WriteBB(hll, indLevel);
-
-                // write the 'while' predicate
-                Exp *cond = getCond();
-                if (m_OutEdges[BTHEN] == loopFollow) {
-                    cond = Unary::get(opNot, cond);
-                    cond = cond->simplify();
-                }
-                hll->AddPretestedLoopHeader(indLevel, cond);
-
-                // write the code for the body of the loop
-                BasicBlock * loopBody = (m_OutEdges[BELSE] == loopFollow) ? m_OutEdges[BTHEN] : m_OutEdges[BELSE];
-                loopBody->generateCode(hll, indLevel + 1, latchNode, followSet, gotoSet, proc);
-
-                // if code has not been generated for the latch node, generate it now
-                if (latchNode->traversed != DFS_CODEGEN) {
-                    latchNode->traversed = DFS_CODEGEN;
-                    latchNode->WriteBB(hll, indLevel+1);
-                }
-
-                // rewrite the body of the block (excluding the predicate) at the next nesting level after making sure
-                // another label won't be generated
-                hllLabel = false;
-                WriteBB(hll, indLevel+1);
-
-                // write the loop tail
-                hll->AddPretestedLoopEnd(indLevel);
-            } else {
-                // write the loop header
-                if (lType == Endless)
-                    hll->AddEndlessLoopHeader(indLevel);
-                else
-                    hll->AddPosttestedLoopHeader(indLevel);
-
-                // if this is also a conditional header, then generate code for the conditional. Otherwise generate code
-                // for the loop body.
-                if (sType == LoopCond) {
-                    // set the necessary flags so that generateCode can successfully be called again on this node
-                    sType = Cond;
-                    traversed = UNTRAVERSED;
-                    generateCode(hll, indLevel + 1, latchNode, followSet, gotoSet, proc);
-                } else {
-                    WriteBB(hll, indLevel+1);
-
-                    // write the code for the body of the loop
-                    m_OutEdges[0]->generateCode(hll, indLevel + 1, latchNode, followSet, gotoSet, proc);
-                }
-
-                if (lType == PostTested) {
-                    // if code has not been generated for the latch node, generate it now
-                    if (latchNode->traversed != DFS_CODEGEN) {
-                        latchNode->traversed = DFS_CODEGEN;
-                        latchNode->WriteBB(hll, indLevel+1);
-                    }
-
-                    //hll->AddPosttestedLoopEnd(indLevel, getCond());
-                    // MVE: the above seems to fail when there is a call in the middle of the loop (so loop is 2 BBs)
-                    // Just a wild stab:
-                    hll->AddPosttestedLoopEnd(indLevel, latchNode->getCond());
-                } else {
-                    assert(lType == Endless);
-
-                    // if code has not been generated for the latch node, generate it now
-                    if (latchNode->traversed != DFS_CODEGEN) {
-                        latchNode->traversed = DFS_CODEGEN;
-                        latchNode->WriteBB(hll, indLevel+1);
-                    }
-
-                    // write the closing bracket for an endless loop
-                    hll->AddEndlessLoopEnd(indLevel);
-                }
-            }
-
-            // write the code for the follow of the loop (if it exists)
-            if (loopFollow) {
-                // remove the follow from the follow set
-                followSet.resize(followSet.size()-1);
-
-                if (loopFollow->traversed != DFS_CODEGEN)
-                    loopFollow->generateCode(hll, indLevel, latch, followSet, gotoSet, proc);
-                else
-                    emitGotoAndLabel(hll, indLevel, loopFollow);
-            }
+            generateCode_Loop(hll, gotoSet, indLevel, proc, latch, followSet);
             break;
 
         case Cond: {
@@ -1548,7 +1539,7 @@ void BasicBlock::prependStmt(Statement* s, UserProc* proc) {
 // Check for overlap of liveness between the currently live locations (liveLocs) and the set of locations in ls
 // Also check for type conflicts if DFA_TYPE_ANALYSIS
 // This is a helper function that is not directly declated in the BasicBlock class
-void checkForOverlap(LocationSet& liveLocs, LocationSet& ls, ConnectionGraph& ig, UserProc* proc) {
+void checkForOverlap(LocationSet& liveLocs, LocationSet& ls, ConnectionGraph& ig, UserProc* /*proc*/) {
     // For each location to be considered
     for (Exp * u : ls) {
         if (!u->isSubscript())
@@ -1647,7 +1638,8 @@ void BasicBlock::getLiveOut(LocationSet &liveout, LocationSet& phiLocs) {
                 continue;
             PhiAssign* pa = (PhiAssign*)st;
             // Get the jth operand to the phi function; it has a use from BB *this
-            Statement* def = pa->getStmtAt(j);
+            assert(j>=0);
+            Statement* def = pa->getStmtAt(uint32_t(j));
             Exp * r = RefExp::get(pa->getLeft()->clone(), def);
             liveout.insert(r);
             phiLocs.insert(r);
@@ -1844,7 +1836,7 @@ void findSwParams(char form, Exp * e, Exp *& expr, ADDRESS& T) {
             T = ADDRESS::g(0L); // ?
             // l = m[%pc  + (<expr> * 4) + k]:
             Exp* l = e->getSubExp2();
-            if (l->isSubscript()) 
+            if (l->isSubscript())
                 l = l->getSubExp1();
             // b = %pc    + (<expr> * 4) + k:
             Exp * b = l->getSubExp1();
@@ -1926,7 +1918,7 @@ static void findConstantValues(const Statement* s, std::list<int>& dests) {
     if (s->isPhi()) {
         // For each definition, recurse
         for (const std::pair<int,PhiInfo> &it : *((PhiAssign*)s))
-            findConstantValues(it.second.def, dests);
+            findConstantValues(it.second.def(), dests);
     }
     else if (s->isAssign()) {
         Exp* rhs = ((Assign*)s)->getRight();
@@ -2304,7 +2296,7 @@ void BasicBlock::processSwitch(UserProc* proc) {
             // TODO: Elevate this logic to the code calculating iNumTable, but still leave this code as a safeguard.
             // Q: Should iNumOut and m_iNumOutEdges really be adjusted (iNum - i) ?
             //            assert(iNumOut        >= (iNum - i));
-            assert(m_OutEdges.size() >= (iNum - i));
+            assert(int(m_OutEdges.size()) >= (iNum - i));
             size_t remove_from_this = m_OutEdges.size()-(iNum - i);
             // remove last (iNum - i) out edges
             m_OutEdges.erase(m_OutEdges.begin()+remove_from_this,m_OutEdges.end());
@@ -2376,8 +2368,8 @@ bool BasicBlock::searchAndReplace(const Exp & search, Exp* replace) {
     bool ch = false;
 
     for (RTL * rtl_it : *m_pRtls) {
-        for (auto it = rtl_it->begin(); it != rtl_it->end(); it++)
-                ch |= (*it)->searchAndReplace(search, replace);
+        for (auto & elem : *rtl_it)
+                ch |= (elem)->searchAndReplace(search, replace);
     }
     return ch;
 }

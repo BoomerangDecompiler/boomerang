@@ -47,6 +47,7 @@ SET(SRC
         signature.cpp
         sslinst.cpp
         sslparser.cpp
+        sslparser_support.cpp
         sslscanner.cpp
         statement.cpp
         table.cpp
@@ -55,5 +56,7 @@ SET(SRC
 IF(EXPAT_FOUND)
     SET(SRC ${SRC} xmlprogparser.cpp)
 ENDIF()
-
+IF(BUILD_TESTING)
+ADD_SUBDIRECTORY(unit_testing)
+ENDIF()
 ADD_LIBRARY(db STATIC ${SRC} ${INCLUDES})

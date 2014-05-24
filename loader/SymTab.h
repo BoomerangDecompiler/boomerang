@@ -9,19 +9,14 @@
 
 /***************************************************************************//**
  * \file        SymTab.h
- * \brief    This file contains the definition of the class SymTab, a simple class to implement a symbol table
- *                than can be looked up by address or my name.
- *                NOTE: Can't readily use operator[] overloaded for address and string parameters. The main problem is
- *                that when you do symtab[0x100] = "main", the string map doesn't see the string.
- *                If you have one of the maps be a pointer to the other string and use a special comparison operator, then
- *                if the strings are ever changed, then the map's internal rb-tree becomes invalid.
+ * \brief    This file contains the definition of the class SymTab
+ * A simple class to implement a symbol table
+ * than can be looked up by address or my name.
+ * \note Can't readily use operator[] overloaded for address and string parameters. The main problem is
+ * that when you do symtab[0x100] = "main", the string map doesn't see the string.
+ * If you have one of the maps be a pointer to the other string and use a special comparison operator, then
+ * if the strings are ever changed, then the map's internal rb-tree becomes invalid.
  ******************************************************************************/
-
-/*
- * $Revision$
- *
- * 12 Jul 05 - Mike: New implementation with two maps
-*/
 
 #ifndef __SYMTAB_H__
 #define __SYMTAB_H__

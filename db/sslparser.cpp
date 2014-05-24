@@ -1,11 +1,7 @@
-#define YY_SSLParser_h_included
-
+#include "sslparser.h"
 /*  A Bison++ parser, made from sslparser.y  */
-
 /* with Bison++ version bison++ Version 1.21-8, adapted from GNU bison by coetmeur@icdc.fr
   */
-
-
 
 /* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
 /* Skeleton output parser for bison,
@@ -26,9 +22,6 @@
    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* HEADER SECTION */
-#if defined( _MSDOS ) || defined(MSDOS) || defined(__MSDOS__)
-#define __MSDOS_AND_ALIKE
-#endif
 #if defined(_WINDOWS) && defined(_MSC_VER)
 #define __HAVE_NO_ALLOCA
 #define __MSDOS_AND_ALIKE
@@ -63,20 +56,6 @@ void *alloca ();
 
 #endif /* not _AIX  not MSDOS, or __TURBOC__ or _AIX, not sparc.  */
 #endif /* alloca not defined.  */
-#ifdef c_plusplus
-#ifndef __cplusplus
-#define __cplusplus
-#endif
-#endif
-#ifdef __cplusplus
-#ifndef YY_USE_CLASS
-#define YY_USE_CLASS
-#endif
-#else
-#ifndef __STDC__
-#define const
-#endif
-#endif
 #include <stdio.h>
 #define YYBISON 1
 
@@ -101,510 +80,12 @@ void *alloca ();
 #include <malloc.h>
 #endif
 
-class SSLScanner;
-
-
-typedef union {
-    Exp*            exp;
-    char*            str;
-    int                num;
-    double            dbl;
-    Statement*        regtransfer;
-    Type*            typ;
-
-    Table*            tab;
-    InsNameElem*    insel;
-    std::list<std::string>*      parmlist;
-    std::list<std::string>*      strlist;
-    std::deque<Exp*>*     exprlist;
-    std::deque<std::string>*  namelist;
-    std::list<Exp*>*     explist;
-    RTL*            rtlist;
-} yy_SSLParser_stype;
-#define YY_SSLParser_STYPE yy_SSLParser_stype
-
-
 #include "sslscanner.h"
 #include "operator.h"
 OPER strToTerm(char* s);        // Convert string to a Terminal (if possible)
 Exp* listExpToExp(std::list<Exp*>* le);     // Convert a STL list of Exp* to opList
 Exp* listStrToExp(std::list<std::string>* ls);// Convert a STL list of strings to opList
-#define YY_SSLParser_DEBUG  1
-#define YY_SSLParser_PARSE_PARAM  \
-    RTLInstDict& Dict
-#define YY_SSLParser_CONSTRUCTOR_PARAM  \
-    const std::string& sslFile, \
-    bool trace
-#define YY_SSLParser_CONSTRUCTOR_INIT  : \
-    sslFile(sslFile), bFloat(false)
-#define YY_SSLParser_CONSTRUCTOR_CODE  \
-    std::fstream *fin = new std::fstream(sslFile.c_str(), std::ios::in); \
-    theScanner = nullptr; \
-    if (!*fin) { \
-    std::cerr << "can't open `" << sslFile << "' for reading\n"; \
-    return; \
-    } \
-    theScanner = new SSLScanner(*fin, trace); \
-    if (trace) yydebug = 1;
-#define YY_SSLParser_MEMBERS  \
-    public: \
-    SSLParser(std::istream &in, bool trace); \
-    virtual ~SSLParser(); \
-    OPER    strToOper(const char*s); /* Convert string to an operator */ \
-    static    Statement* parseExp(const char *str); /* Parse an expression or assignment from a string */ \
-    /* The code for expanding tables and saving to the dictionary */ \
-    void    expandTables(InsNameElem* iname, std::list<std::string>* params, RTL* o_rtlist, RTLInstDict& Dict); \
-    Exp*    makeSuccessor(Exp* e);    /* Get successor (of register expression) */ \
-    \
-    /* \
-    * The scanner. \
-    */ \
-    SSLScanner* theScanner; \
-    protected: \
-    \
-    /* \
-    * The file from which the SSL spec is read. \
-    */ \
-    std::string sslFile; \
-    \
-    /* \
-    * Result for parsing an assignment. \
-    */ \
-    Statement *the_asgn; \
-    \
-    /* \
-    * Maps SSL constants to their values. \
-    */ \
-    std::map<std::string,int> ConstTable; \
-    \
-    /* \
-    * maps index names to instruction name-elements \
-    */ \
-    std::map<std::string, InsNameElem*> indexrefmap; \
-    \
-    /* \
-    * Maps table names to Table's.\
-    */ \
-    std::map<std::string, Table*> TableDict; \
-    \
-    /* \
-    * True when FLOAT keyword seen; false when INTEGER keyword seen \
-    * (in @REGISTER section) \
-    */ \
-    bool bFloat;
 
-
-/* %{ and %header{ and %union, during decl */
-#define YY_SSLParser_BISON 1
-#ifndef YY_SSLParser_COMPATIBILITY
-#ifndef YY_USE_CLASS
-#define  YY_SSLParser_COMPATIBILITY 1
-#else
-#define  YY_SSLParser_COMPATIBILITY 0
-#endif
-#endif
-
-#if YY_SSLParser_COMPATIBILITY != 0
-/* backward compatibility */
-#ifdef YYLTYPE
-#ifndef YY_SSLParser_LTYPE
-#define YY_SSLParser_LTYPE YYLTYPE
-#endif
-#endif
-#ifdef YYSTYPE
-#ifndef YY_SSLParser_STYPE
-#define YY_SSLParser_STYPE YYSTYPE
-#endif
-#endif
-#ifdef YYDEBUG
-#ifndef YY_SSLParser_DEBUG
-#define  YY_SSLParser_DEBUG YYDEBUG
-#endif
-#endif
-#ifdef YY_SSLParser_STYPE
-#ifndef yystype
-#define yystype YY_SSLParser_STYPE
-#endif
-#endif
-/* use goto to be compatible */
-#ifndef YY_SSLParser_USE_GOTO
-#define YY_SSLParser_USE_GOTO 1
-#endif
-#endif
-
-/* use no goto to be clean in C++ */
-#ifndef YY_SSLParser_USE_GOTO
-#define YY_SSLParser_USE_GOTO 0
-#endif
-
-#ifndef YY_SSLParser_PURE
-
-/*  YY_SSLParser_PURE */
-#endif
-
-/* section apres lecture def, avant lecture grammaire S2 */
-
-/* prefix */
-#ifndef YY_SSLParser_DEBUG
-
-/* YY_SSLParser_DEBUG */
-#endif
-
-
-#ifndef YY_SSLParser_LSP_NEEDED
-
-/* YY_SSLParser_LSP_NEEDED*/
-#endif
-
-
-
-/* DEFAULT LTYPE*/
-#ifdef YY_SSLParser_LSP_NEEDED
-#ifndef YY_SSLParser_LTYPE
-typedef
-struct yyltype
-{
-    int timestamp;
-    int first_line;
-    int first_column;
-    int last_line;
-    int last_column;
-    char *text;
-}
-yyltype;
-
-#define YY_SSLParser_LTYPE yyltype
-#endif
-#endif
-/* DEFAULT STYPE*/
-/* We used to use `unsigned long' as YY_SSLParser_STYPE on MSDOS,
-         but it seems better to be consistent.
-         Most programs should declare their own type anyway.  */
-
-#ifndef YY_SSLParser_STYPE
-#define YY_SSLParser_STYPE int
-#endif
-/* DEFAULT MISCELANEOUS */
-#ifndef YY_SSLParser_PARSE
-#define YY_SSLParser_PARSE yyparse
-#endif
-#ifndef YY_SSLParser_LEX
-#define YY_SSLParser_LEX yylex
-#endif
-#ifndef YY_SSLParser_LVAL
-#define YY_SSLParser_LVAL yylval
-#endif
-#ifndef YY_SSLParser_LLOC
-#define YY_SSLParser_LLOC yylloc
-#endif
-#ifndef YY_SSLParser_CHAR
-#define YY_SSLParser_CHAR yychar
-#endif
-#ifndef YY_SSLParser_NERRS
-#define YY_SSLParser_NERRS yynerrs
-#endif
-#ifndef YY_SSLParser_DEBUG_FLAG
-#define YY_SSLParser_DEBUG_FLAG yydebug
-#endif
-#ifndef YY_SSLParser_ERROR
-#define YY_SSLParser_ERROR yyerror
-#endif
-#ifndef YY_SSLParser_PARSE_PARAM
-#ifndef __STDC__
-#ifndef __cplusplus
-#ifndef YY_USE_CLASS
-#define YY_SSLParser_PARSE_PARAM
-#ifndef YY_SSLParser_PARSE_PARAM_DEF
-#define YY_SSLParser_PARSE_PARAM_DEF
-#endif
-#endif
-#endif
-#endif
-#ifndef YY_SSLParser_PARSE_PARAM
-#define YY_SSLParser_PARSE_PARAM void
-#endif
-#endif
-#if YY_SSLParser_COMPATIBILITY != 0
-/* backward compatibility */
-#ifdef YY_SSLParser_LTYPE
-#ifndef YYLTYPE
-#define YYLTYPE YY_SSLParser_LTYPE
-#else
-/* WARNING obsolete !!! user defined YYLTYPE not reported into generated header */
-#endif
-#endif
-#ifndef YYSTYPE
-#define YYSTYPE YY_SSLParser_STYPE
-#else
-/* WARNING obsolete !!! user defined YYSTYPE not reported into generated header */
-#endif
-#ifdef YY_SSLParser_PURE
-#ifndef YYPURE
-#define YYPURE YY_SSLParser_PURE
-#endif
-#endif
-#ifdef YY_SSLParser_DEBUG
-#ifndef YYDEBUG
-#define YYDEBUG YY_SSLParser_DEBUG
-#endif
-#endif
-#ifndef YY_SSLParser_ERROR_VERBOSE
-#ifdef YYERROR_VERBOSE
-#define YY_SSLParser_ERROR_VERBOSE YYERROR_VERBOSE
-#endif
-#endif
-#ifndef YY_SSLParser_LSP_NEEDED
-#ifdef YYLSP_NEEDED
-#define YY_SSLParser_LSP_NEEDED YYLSP_NEEDED
-#endif
-#endif
-#endif
-#define yyyerror(msg) yyerror((char*)msg)        // MVE Fix deprecated string constant to char* conversion
-
-#ifndef YY_USE_CLASS
-/* TOKEN C */
-#define    COND_OP    258
-#define    BIT_OP    259
-#define    ARITH_OP    260
-#define    LOG_OP    261
-#define    NAME    262
-#define    ASSIGNTYPE    263
-#define    REG_ID    264
-#define    REG_NUM    265
-#define    COND_TNAME    266
-#define    DECOR    267
-#define    FARITH_OP    268
-#define    FPUSH    269
-#define    FPOP    270
-#define    TEMP    271
-#define    SHARES    272
-#define    CONV_FUNC    273
-#define    TRUNC_FUNC    274
-#define    TRANSCEND    275
-#define    FABS_FUNC    276
-#define    BIG    277
-#define    LITTLE    278
-#define    NAME_CALL    279
-#define    NAME_LOOKUP    280
-#define    ENDIANNESS    281
-#define    COVERS    282
-#define    INDEX    283
-#define    NOT    284
-#define    LNOT    285
-#define    FNEG    286
-#define    THEN    287
-#define    LOOKUP_RDC    288
-#define    BOGUS    289
-#define    ASSIGN    290
-#define    TO    291
-#define    COLON    292
-#define    S_E    293
-#define    AT    294
-#define    ADDR    295
-#define    REG_IDX    296
-#define    EQUATE    297
-#define    MEM_IDX    298
-#define    TOK_INTEGER    299
-#define    TOK_FLOAT    300
-#define    FAST    301
-#define    OPERAND    302
-#define    FETCHEXEC    303
-#define    CAST_OP    304
-#define    FLAGMACRO    305
-#define    SUCCESSOR    306
-#define    NUM    307
-#define    FLOATNUM    308
-#define    FCHS    309
-
-
-
-/* #defines tokens */
-#else
-/* CLASS */
-#ifndef YY_SSLParser_CLASS
-#define YY_SSLParser_CLASS SSLParser
-#endif
-#ifndef YY_SSLParser_INHERIT
-#define YY_SSLParser_INHERIT
-#endif
-#ifndef YY_SSLParser_MEMBERS
-#define YY_SSLParser_MEMBERS
-#endif
-#ifndef YY_SSLParser_LEX_BODY
-#define YY_SSLParser_LEX_BODY
-#endif
-#ifndef YY_SSLParser_ERROR_BODY
-#define YY_SSLParser_ERROR_BODY
-#endif
-#ifndef YY_SSLParser_CONSTRUCTOR_PARAM
-#define YY_SSLParser_CONSTRUCTOR_PARAM
-#endif
-#ifndef YY_SSLParser_CONSTRUCTOR_CODE
-#define YY_SSLParser_CONSTRUCTOR_CODE
-#endif
-#ifndef YY_SSLParser_CONSTRUCTOR_INIT
-#define YY_SSLParser_CONSTRUCTOR_INIT
-#endif
-/* choose between enum and const */
-#ifndef YY_SSLParser_USE_CONST_TOKEN
-#define YY_SSLParser_USE_CONST_TOKEN 0
-/* yes enum is more compatible with flex,  */
-/* so by default we use it */
-#endif
-#if YY_SSLParser_USE_CONST_TOKEN != 0
-#ifndef YY_SSLParser_ENUM_TOKEN
-#define YY_SSLParser_ENUM_TOKEN yy_SSLParser_enum_token
-#endif
-#endif
-
-class YY_SSLParser_CLASS YY_SSLParser_INHERIT
-{
-public:
-    enum YY_SSLParser_ENUM_TOKEN {
-        YY_SSLParser_NULL_TOKEN=0
-
-        ,COND_OP=258
-        ,BIT_OP=259
-        ,ARITH_OP=260
-        ,LOG_OP=261
-        ,NAME=262
-        ,ASSIGNTYPE=263
-        ,REG_ID=264
-        ,REG_NUM=265
-        ,COND_TNAME=266
-        ,DECOR=267
-        ,FARITH_OP=268
-        ,FPUSH=269
-        ,FPOP=270
-        ,TEMP=271
-        ,SHARES=272
-        ,CONV_FUNC=273
-        ,TRUNC_FUNC=274
-        ,TRANSCEND=275
-        ,FABS_FUNC=276
-        ,BIG=277
-        ,LITTLE=278
-        ,NAME_CALL=279
-        ,NAME_LOOKUP=280
-        ,ENDIANNESS=281
-        ,COVERS=282
-        ,INDEX=283
-        ,NOT=284
-        ,LNOT=285
-        ,FNEG=286
-        ,THEN=287
-        ,LOOKUP_RDC=288
-        ,BOGUS=289
-        ,ASSIGN=290
-        ,TO=291
-        ,COLON=292
-        ,S_E=293
-        ,AT=294
-        ,ADDR=295
-        ,REG_IDX=296
-        ,EQUATE=297
-        ,MEM_IDX=298
-        ,TOK_INTEGER=299
-        ,TOK_FLOAT=300
-        ,FAST=301
-        ,OPERAND=302
-        ,FETCHEXEC=303
-        ,CAST_OP=304
-        ,FLAGMACRO=305
-        ,SUCCESSOR=306
-        ,NUM=307
-        ,FLOATNUM=308
-        ,FCHS=309
-
-
-
-        /* enum token */
-    }; /* end of enum declaration */
-public:
-    int YY_SSLParser_PARSE (YY_SSLParser_PARSE_PARAM);
-    virtual void YY_SSLParser_ERROR(char *msg) YY_SSLParser_ERROR_BODY;
-#ifdef YY_SSLParser_PURE
-#ifdef YY_SSLParser_LSP_NEEDED
-    virtual int  YY_SSLParser_LEX (YY_SSLParser_STYPE *YY_SSLParser_LVAL,YY_SSLParser_LTYPE *YY_SSLParser_LLOC) YY_SSLParser_LEX_BODY;
-#else
-    virtual int  YY_SSLParser_LEX (YY_SSLParser_STYPE *YY_SSLParser_LVAL) YY_SSLParser_LEX_BODY;
-#endif
-#else
-    virtual int YY_SSLParser_LEX() YY_SSLParser_LEX_BODY;
-    YY_SSLParser_STYPE YY_SSLParser_LVAL;
-#ifdef YY_SSLParser_LSP_NEEDED
-    YY_SSLParser_LTYPE YY_SSLParser_LLOC;
-#endif
-    int   YY_SSLParser_NERRS;
-    int    YY_SSLParser_CHAR;
-#endif
-#if YY_SSLParser_DEBUG != 0
-    int YY_SSLParser_DEBUG_FLAG;   /*  nonzero means print parse trace     */
-#endif
-public:
-    YY_SSLParser_CLASS(YY_SSLParser_CONSTRUCTOR_PARAM);
-public:
-    YY_SSLParser_MEMBERS
-};
-/* other declare folow */
-#if YY_SSLParser_USE_CONST_TOKEN != 0
-const int YY_SSLParser_CLASS::COND_OP=258;
-const int YY_SSLParser_CLASS::BIT_OP=259;
-const int YY_SSLParser_CLASS::ARITH_OP=260;
-const int YY_SSLParser_CLASS::LOG_OP=261;
-const int YY_SSLParser_CLASS::NAME=262;
-const int YY_SSLParser_CLASS::ASSIGNTYPE=263;
-const int YY_SSLParser_CLASS::REG_ID=264;
-const int YY_SSLParser_CLASS::REG_NUM=265;
-const int YY_SSLParser_CLASS::COND_TNAME=266;
-const int YY_SSLParser_CLASS::DECOR=267;
-const int YY_SSLParser_CLASS::FARITH_OP=268;
-const int YY_SSLParser_CLASS::FPUSH=269;
-const int YY_SSLParser_CLASS::FPOP=270;
-const int YY_SSLParser_CLASS::TEMP=271;
-const int YY_SSLParser_CLASS::SHARES=272;
-const int YY_SSLParser_CLASS::CONV_FUNC=273;
-const int YY_SSLParser_CLASS::TRUNC_FUNC=274;
-const int YY_SSLParser_CLASS::TRANSCEND=275;
-const int YY_SSLParser_CLASS::FABS_FUNC=276;
-const int YY_SSLParser_CLASS::BIG=277;
-const int YY_SSLParser_CLASS::LITTLE=278;
-const int YY_SSLParser_CLASS::NAME_CALL=279;
-const int YY_SSLParser_CLASS::NAME_LOOKUP=280;
-const int YY_SSLParser_CLASS::ENDIANNESS=281;
-const int YY_SSLParser_CLASS::COVERS=282;
-const int YY_SSLParser_CLASS::INDEX=283;
-const int YY_SSLParser_CLASS::NOT=284;
-const int YY_SSLParser_CLASS::LNOT=285;
-const int YY_SSLParser_CLASS::FNEG=286;
-const int YY_SSLParser_CLASS::THEN=287;
-const int YY_SSLParser_CLASS::LOOKUP_RDC=288;
-const int YY_SSLParser_CLASS::BOGUS=289;
-const int YY_SSLParser_CLASS::ASSIGN=290;
-const int YY_SSLParser_CLASS::TO=291;
-const int YY_SSLParser_CLASS::COLON=292;
-const int YY_SSLParser_CLASS::S_E=293;
-const int YY_SSLParser_CLASS::AT=294;
-const int YY_SSLParser_CLASS::ADDR=295;
-const int YY_SSLParser_CLASS::REG_IDX=296;
-const int YY_SSLParser_CLASS::EQUATE=297;
-const int YY_SSLParser_CLASS::MEM_IDX=298;
-const int YY_SSLParser_CLASS::TOK_INTEGER=299;
-const int YY_SSLParser_CLASS::TOK_FLOAT=300;
-const int YY_SSLParser_CLASS::FAST=301;
-const int YY_SSLParser_CLASS::OPERAND=302;
-const int YY_SSLParser_CLASS::FETCHEXEC=303;
-const int YY_SSLParser_CLASS::CAST_OP=304;
-const int YY_SSLParser_CLASS::FLAGMACRO=305;
-const int YY_SSLParser_CLASS::SUCCESSOR=306;
-const int YY_SSLParser_CLASS::NUM=307;
-const int YY_SSLParser_CLASS::FLOATNUM=308;
-const int YY_SSLParser_CLASS::FCHS=309;
-
-
-
-/* const YY_SSLParser_CLASS::token */
-#endif
 /*apres const  */
 SSLParser::SSLParser(const std::string& sslFile,bool trace) : sslFile(sslFile), bFloat(false)
 {
@@ -620,7 +101,6 @@ SSLParser::SSLParser(const std::string& sslFile,bool trace) : sslFile(sslFile), 
     theScanner = new SSLScanner(*fin, trace);
     if (trace) yydebug = 1;
 }
-#endif
 
 #define    YYFINAL        300
 #define    YYFLAG        -32768
@@ -1046,45 +526,12 @@ static const short yycheck[] = {     0,
    the next  is replaced by the list of actions, each action
    as one case of the switch.  */
 
-#if YY_SSLParser_USE_GOTO != 0
-/*
- SUPRESSION OF GOTO : on some C++ compiler (sun c++)
-  the goto is strictly forbidden if any constructor/destructor
-  is used in the whole function (very stupid isn't it ?)
- so goto are to be replaced with a 'while/switch/case construct'
- here are the macro to keep some apparent compatibility
-*/
-#define YYGOTO(lb) {yy_gotostate=lb;continue;}
-#define YYBEGINGOTO  enum yy_labels yy_gotostate=yygotostart; \
-    for(;;) switch(yy_gotostate) { case yygotostart: {
-#define YYLABEL(lb) } case lb: {
-#define YYENDGOTO } }
-#define YYBEGINDECLARELABEL enum yy_labels {yygotostart
-#define YYDECLARELABEL(lb) ,lb
-#define YYENDDECLARELABEL  };
-#else
 /* macro to keep goto */
-#define YYGOTO(lb) goto lb
+
 #define YYBEGINGOTO
 #define YYLABEL(lb) lb:
-#define YYENDGOTO
-#define YYBEGINDECLARELABEL
 #define YYDECLARELABEL(lb)
-#define YYENDDECLARELABEL
-#endif
-/* LABEL DECLARATION */
-YYBEGINDECLARELABEL
-YYDECLARELABEL(yynewstate)
-YYDECLARELABEL(yybackup)
-/* YYDECLARELABEL(yyresume) */
-YYDECLARELABEL(yydefault)
-YYDECLARELABEL(yyreduce)
-YYDECLARELABEL(yyerrlab)   /* here on detecting error */
-YYDECLARELABEL(yyerrlab1)   /* here on error raised explicitly by an action */
-YYDECLARELABEL(yyerrdefault)  /* current state does not do anything special for the error token. */
-YYDECLARELABEL(yyerrpop)   /* pop the current state because it cannot handle the error token */
-YYDECLARELABEL(yyerrhandle)
-YYENDDECLARELABEL
+
 /* ALLOCA SIMULATION */
 /* __HAVE_NO_ALLOCA */
 #ifdef __HAVE_NO_ALLOCA
@@ -1095,18 +542,10 @@ static int __alloca_free_ptr(char *ptr,char *ref)
 #define __ALLOCA_alloca(size) malloc(size)
 #define __ALLOCA_free(ptr,ref) __alloca_free_ptr((char *)ptr,(char *)ref)
 
-#ifdef YY_SSLParser_LSP_NEEDED
-#define __ALLOCA_return(num) \
-    return( __ALLOCA_free(yyss,yyssa)+\
-    __ALLOCA_free(yyvs,yyvsa)+\
-    __ALLOCA_free(yyls,yylsa)+\
-    (num))
-#else
 #define __ALLOCA_return(num) \
     return( __ALLOCA_free(yyss,yyssa)+\
     __ALLOCA_free(yyvs,yyvsa)+\
     (num))
-#endif
 #else
 #define __ALLOCA_return(num) return(num)
 #define __ALLOCA_alloca(size) alloca(size)
@@ -1116,28 +555,27 @@ static int __alloca_free_ptr(char *ptr,char *ref)
 /* ENDALLOCA SIMULATION */
 
 #define yyerrok         (yyerrstatus = 0)
-#define yyclearin       (YY_SSLParser_CHAR = YYEMPTY)
+#define yyclearin       (yychar = YYEMPTY)
 #define YYEMPTY         -2
 #define YYEOF           0
 #define YYACCEPT        __ALLOCA_return(0)
 #define YYABORT         __ALLOCA_return(1)
-#define YYERROR         YYGOTO(yyerrlab1)
 /* Like YYERROR except do call yyerror.
    This remains here temporarily to ease the
    transition to the new meaning of YYERROR, for GCC.
    Once GCC version 2 has supplanted version 1, this can go.  */
-#define YYFAIL          YYGOTO(yyerrlab)
+#define YYFAIL          goto yyerrlab
 #define YYRECOVERING()  (!!yyerrstatus)
 #define YYBACKUP(token, value) \
     do                                                              \
-    if (YY_SSLParser_CHAR == YYEMPTY && yylen == 1)                               \
-{ YY_SSLParser_CHAR = (token), YY_SSLParser_LVAL = (value);                 \
-    yychar1 = YYTRANSLATE (YY_SSLParser_CHAR);                                \
+    if (yychar == YYEMPTY && yylen == 1)                               \
+{ yychar = (token), yylval = (value);                 \
+    yychar1 = YYTRANSLATE (yychar);                                \
     YYPOPSTACK;                                               \
-    YYGOTO(yybackup);                                            \
+    goto yybackup;                                            \
     }                                                           \
     else                                                          \
-{ YY_SSLParser_ERROR ((char*)"syntax error: cannot back up"); YYERROR; }   \
+{ yyerror ((char*)"syntax error: cannot back up"); goto yyerrlab1; }   \
     while (0)
 
 #define YYTERROR        1
@@ -1145,37 +583,9 @@ static int __alloca_free_ptr(char *ptr,char *ref)
 
 #ifndef YY_SSLParser_PURE
 /* UNPURE */
-#define YYLEX           YY_SSLParser_LEX()
-#ifndef YY_USE_CLASS
-/* If nonreentrant, and not class , generate the variables here */
-int     YY_SSLParser_CHAR;                      /*  the lookahead symbol        */
-YY_SSLParser_STYPE      YY_SSLParser_LVAL;              /*  the semantic value of the */
-/*  lookahead symbol    */
-int YY_SSLParser_NERRS;                 /*  number of parse errors so far */
-#ifdef YY_SSLParser_LSP_NEEDED
-YY_SSLParser_LTYPE YY_SSLParser_LLOC;   /*  location data for the lookahead     */
-/*  symbol                              */
-#endif
-#endif
-
-
+#define YYLEX           yylex()
 #else
-/* PURE */
-#ifdef YY_SSLParser_LSP_NEEDED
-#define YYLEX           YY_SSLParser_LEX(&YY_SSLParser_LVAL, &YY_SSLParser_LLOC)
-#else
-#define YYLEX           YY_SSLParser_LEX(&YY_SSLParser_LVAL)
 #endif
-#endif
-#ifndef YY_USE_CLASS
-#if YY_SSLParser_DEBUG != 0
-int YY_SSLParser_DEBUG_FLAG;                    /*  nonzero means print parse trace     */
-/* Since this is uninitialized, it does not stop multiple parsers
-   from coexisting.  */
-#endif
-#endif
-
-
 
 /*  YYINITDEPTH indicates the initial size of the parser's stacks       */
 
@@ -1226,9 +636,9 @@ while (i-- > 0)
 
 int
 #ifdef YY_USE_CLASS
-YY_SSLParser_CLASS::
+SSLParser::
 #endif
-YY_SSLParser_PARSE(YY_SSLParser_PARSE_PARAM)
+yyparse(RTLInstDict& Dict)
 #ifndef __STDC__
 #ifndef __cplusplus
 #ifndef YY_USE_CLASS
@@ -1238,18 +648,18 @@ YY_SSLParser_PARSE_PARAM_DEF
 #endif
 #endif
 {
-    register int yystate;
-    register int yyn;
-    register short *yyssp;
-    register YY_SSLParser_STYPE *yyvsp;
+    int yystate;
+    int yyn;
+    short *yyssp;
+    yy_SSLParser_stype *yyvsp;
     int yyerrstatus;      /*  number of tokens to shift before error messages enabled */
     int yychar1=0;          /*  lookahead token as an internal (translated) token number */
 
     short yyssa[YYINITDEPTH];     /*  the state stack                     */
-    YY_SSLParser_STYPE yyvsa[YYINITDEPTH];        /*  the semantic value stack            */
+    yy_SSLParser_stype yyvsa[YYINITDEPTH];        /*  the semantic value stack            */
 
     short *yyss = yyssa;          /*  refer to the stacks thru separate pointers */
-    YY_SSLParser_STYPE *yyvs = yyvsa;     /*  to allow yyoverflow to reallocate them elsewhere */
+    yy_SSLParser_stype *yyvs = yyvsa;     /*  to allow yyoverflow to reallocate them elsewhere */
 
 #ifdef YY_SSLParser_LSP_NEEDED
     YY_SSLParser_LTYPE yylsa[YYINITDEPTH];        /*  the location stack                  */
@@ -1264,15 +674,15 @@ YY_SSLParser_PARSE_PARAM_DEF
     int yystacksize = YYINITDEPTH;
 
 #ifdef YY_SSLParser_PURE
-    int YY_SSLParser_CHAR;
-    YY_SSLParser_STYPE YY_SSLParser_LVAL;
-    int YY_SSLParser_NERRS;
+    int yychar;
+    yy_SSLParser_stype yylval;
+    int yynerrs;
 #ifdef YY_SSLParser_LSP_NEEDED
-    YY_SSLParser_LTYPE YY_SSLParser_LLOC;
+    YY_SSLParser_LTYPE yylloc;
 #endif
 #endif
 
-    YY_SSLParser_STYPE yyval;             /*  the variable used to return         */
+    yy_SSLParser_stype yyval;             /*  the variable used to return         */
     /*  semantic values from the action     */
     /*  routines                            */
 
@@ -1286,8 +696,8 @@ YY_SSLParser_PARSE_PARAM_DEF
 #endif
     yystate = 0;
     yyerrstatus = 0;
-    YY_SSLParser_NERRS = 0;
-    YY_SSLParser_CHAR = YYEMPTY;          /* Cause a token to be read.  */
+    yynerrs = 0;
+    yychar = YYEMPTY;          /* Cause a token to be read.  */
 
     /* Initialize stack pointers.
      Waste one element of value and location stack
@@ -1311,7 +721,7 @@ YY_SSLParser_PARSE_PARAM_DEF
     {
         /* Give user a chance to reallocate the stack */
         /* Use copies of these so that the &'s don't force the real ones into memory. */
-        YY_SSLParser_STYPE *yyvs1 = yyvs;
+        yy_SSLParser_stype *yyvs1 = yyvs;
         short *yyss1 = yyss;
 #ifdef YY_SSLParser_LSP_NEEDED
         YY_SSLParser_LTYPE *yyls1 = yyls;
@@ -1346,7 +756,7 @@ YY_SSLParser_PARSE_PARAM_DEF
         /* Extend the stack our own way.  */
         if (yystacksize >= YYMAXDEPTH)
         {
-            YY_SSLParser_ERROR((char*)"parser stack overflow");
+            yyerror((char*)"parser stack overflow");
             __ALLOCA_return(2);
         }
         yystacksize *= 2;
@@ -1355,7 +765,7 @@ YY_SSLParser_PARSE_PARAM_DEF
         yyss = (short *) __ALLOCA_alloca (yystacksize * sizeof (*yyssp));
         __yy_bcopy ((char *)yyss1, (char *)yyss, size * sizeof (*yyssp));
         __ALLOCA_free(yyss1,yyssa);
-        yyvs = (YY_SSLParser_STYPE *) __ALLOCA_alloca (yystacksize * sizeof (*yyvsp));
+        yyvs = (yy_SSLParser_stype *) __ALLOCA_alloca (yystacksize * sizeof (*yyvsp));
         __yy_bcopy ((char *)yyvs1, (char *)yyvs, size * sizeof (*yyvsp));
         __ALLOCA_free(yyvs1,yyvsa);
 #ifdef YY_SSLParser_LSP_NEEDED
@@ -1385,7 +795,7 @@ YY_SSLParser_PARSE_PARAM_DEF
         fprintf(stderr, "Entering state %d\n", yystate);
 #endif
 
-    YYGOTO(yybackup);
+    goto yybackup;
     YYLABEL(yybackup)
 
             /* Do appropriate processing given the current state.  */
@@ -1396,28 +806,28 @@ YY_SSLParser_PARSE_PARAM_DEF
 
             yyn = yypact[yystate];
     if (yyn == YYFLAG)
-        YYGOTO(yydefault);
+        goto yydefault;
 
     /* Not known => get a lookahead token if don't already have one.  */
 
     /* yychar is either YYEMPTY or YYEOF
      or a valid token in external form.  */
 
-    if (YY_SSLParser_CHAR == YYEMPTY)
+    if (yychar == YYEMPTY)
     {
 #if YY_SSLParser_DEBUG != 0
         if (YY_SSLParser_DEBUG_FLAG)
             fprintf(stderr, "Reading a token: ");
 #endif
-        YY_SSLParser_CHAR = YYLEX;
+        yychar = YYLEX;
     }
 
     /* Convert token to internal form (in yychar1) for indexing tables with */
 
-    if (YY_SSLParser_CHAR <= 0)           /* This means end of input. */
+    if (yychar <= 0)           /* This means end of input. */
     {
         yychar1 = 0;
-        YY_SSLParser_CHAR = YYEOF;                /* Don't call YYLEX any more */
+        yychar = YYEOF;                /* Don't call YYLEX any more */
 
 #if YY_SSLParser_DEBUG != 0
         if (YY_SSLParser_DEBUG_FLAG)
@@ -1426,16 +836,16 @@ YY_SSLParser_PARSE_PARAM_DEF
     }
     else
     {
-        yychar1 = YYTRANSLATE(YY_SSLParser_CHAR);
+        yychar1 = YYTRANSLATE(yychar);
 
 #if YY_SSLParser_DEBUG != 0
         if (YY_SSLParser_DEBUG_FLAG)
         {
-            fprintf (stderr, "Next token is %d (%s", YY_SSLParser_CHAR, yytname[yychar1]);
+            fprintf (stderr, "Next token is %d (%s", yychar, yytname[yychar1]);
             /* Give the individual parser a way to print the precise meaning
              of a token, for further debugging info.  */
 #ifdef YYPRINT
-            YYPRINT (stderr, YY_SSLParser_CHAR, YY_SSLParser_LVAL);
+            YYPRINT (stderr, yychar, yylval);
 #endif
             fprintf (stderr, ")\n");
         }
@@ -1444,7 +854,7 @@ YY_SSLParser_PARSE_PARAM_DEF
 
     yyn += yychar1;
     if (yyn < 0 || yyn > YYLAST || yycheck[yyn] != yychar1)
-        YYGOTO(yydefault);
+        goto yydefault;
 
     yyn = yytable[yyn];
 
@@ -1458,12 +868,12 @@ YY_SSLParser_PARSE_PARAM_DEF
     if (yyn < 0)
     {
         if (yyn == YYFLAG)
-            YYGOTO(yyerrlab);
+            goto yyerrlab;
         yyn = -yyn;
-        YYGOTO(yyreduce);
+        goto yyreduce;
     }
     else if (yyn == 0)
-        YYGOTO(yyerrlab);
+        goto yyerrlab;
 
     if (yyn == YYFINAL)
         YYACCEPT;
@@ -1472,30 +882,30 @@ YY_SSLParser_PARSE_PARAM_DEF
 
 #if YY_SSLParser_DEBUG != 0
     if (YY_SSLParser_DEBUG_FLAG)
-        fprintf(stderr, "Shifting token %d (%s), ", YY_SSLParser_CHAR, yytname[yychar1]);
+        fprintf(stderr, "Shifting token %d (%s), ", yychar, yytname[yychar1]);
 #endif
 
     /* Discard the token being shifted unless it is eof.  */
-    if (YY_SSLParser_CHAR != YYEOF)
-        YY_SSLParser_CHAR = YYEMPTY;
+    if (yychar != YYEOF)
+        yychar = YYEMPTY;
 
-    *++yyvsp = YY_SSLParser_LVAL;
+    *++yyvsp = yylval;
 #ifdef YY_SSLParser_LSP_NEEDED
-    *++yylsp = YY_SSLParser_LLOC;
+    *++yylsp = yylloc;
 #endif
 
     /* count tokens shifted since error; after three, turn off error status.  */
     if (yyerrstatus) yyerrstatus--;
 
     yystate = yyn;
-    YYGOTO(yynewstate);
+    goto yynewstate;
 
     /* Do the default action for the current state.  */
     YYLABEL(yydefault)
 
             yyn = yydefact[yystate];
     if (yyn == 0)
-        YYGOTO(yyerrlab);
+        goto yyerrlab;
 
     /* Do a reduction.  yyn is the number of a rule to reduce with.  */
     YYLABEL(yyreduce)
@@ -1596,7 +1006,7 @@ YY_SSLParser_PARSE_PARAM_DEF
 
         {
             if (Dict.RegMap.find(yyvsp[-2].str) != Dict.RegMap.end())
-                yyyerror("Name reglist decared twice\n");
+                yyerror("Name reglist decared twice\n");
             Dict.RegMap[yyvsp[-2].str] = yyvsp[0].num;
             ;
             break;}
@@ -1604,7 +1014,7 @@ YY_SSLParser_PARSE_PARAM_DEF
 
         {
             if (Dict.RegMap.find(yyvsp[-5].str) != Dict.RegMap.end())
-                yyyerror("Name reglist declared twice\n");
+                yyerror("Name reglist declared twice\n");
             Dict.addRegister( yyvsp[-5].str, yyvsp[0].num, yyvsp[-3].num, bFloat);
             ;
             break;}
@@ -1612,32 +1022,32 @@ YY_SSLParser_PARSE_PARAM_DEF
 
         {
             if (Dict.RegMap.find(yyvsp[-9].str) != Dict.RegMap.end())
-                yyyerror("Name reglist declared twice\n");
+                yyerror("Name reglist declared twice\n");
             Dict.RegMap[yyvsp[-9].str] = yyvsp[-4].num;
             // Now for detailed Reg information
             if (Dict.DetRegMap.find(yyvsp[-4].num) != Dict.DetRegMap.end())
-                yyyerror("Index used for more than one register\n");
+                yyerror("Index used for more than one register\n");
             Dict.DetRegMap[yyvsp[-4].num].s_name(yyvsp[-9].str);
             Dict.DetRegMap[yyvsp[-4].num].s_size(yyvsp[-7].num);
             Dict.DetRegMap[yyvsp[-4].num].s_address(nullptr);
             // check range is legitimate for size. 8,10
             if ((Dict.RegMap.find(yyvsp[-2].str) == Dict.RegMap.end()) || (Dict.RegMap.find(yyvsp[0].str) == Dict.RegMap.end()))
-                yyyerror("Undefined range\n");
+                yyerror("Undefined range\n");
             else {
                 int bitsize = Dict.DetRegMap[Dict.RegMap[yyvsp[0].str]].g_size();
                 for (int i = Dict.RegMap[yyvsp[-2].str]; i != Dict.RegMap[yyvsp[0].str]; i++) {
                     if (Dict.DetRegMap.find(i) == Dict.DetRegMap.end()) {
-                        yyyerror("Not all registers in range defined\n");
+                        yyerror("Not all registers in range defined\n");
                         break;
                     }
                     bitsize += Dict.DetRegMap[i].g_size();
                     if (bitsize > yyvsp[-7].num) {
-                        yyyerror("Range exceeds size of register\n");
+                        yyerror("Range exceeds size of register\n");
                         break;
                     }
                 }
                 if (bitsize < yyvsp[-7].num)
-                    yyyerror("Register size is exceeds registers in range\n");
+                    yyerror("Register size is exceeds registers in range\n");
                 // copy information
             }
             Dict.DetRegMap[yyvsp[-4].num].s_mappedIndex(Dict.RegMap[yyvsp[-2].str]);
@@ -1649,22 +1059,22 @@ YY_SSLParser_PARSE_PARAM_DEF
 
         {
             if (Dict.RegMap.find(yyvsp[-13].str) != Dict.RegMap.end())
-                yyyerror("Name reglist declared twice\n");
+                yyerror("Name reglist declared twice\n");
             Dict.RegMap[yyvsp[-13].str] = yyvsp[-8].num;
             // Now for detailed Reg information
             if (Dict.DetRegMap.find(yyvsp[-8].num) != Dict.DetRegMap.end())
-                yyyerror("Index used for more than one register\n");
+                yyerror("Index used for more than one register\n");
             Dict.DetRegMap[yyvsp[-8].num].s_name(yyvsp[-13].str);
             Dict.DetRegMap[yyvsp[-8].num].s_size(yyvsp[-11].num);
             Dict.DetRegMap[yyvsp[-8].num].s_address(nullptr);
             // Do checks
             if (yyvsp[-11].num != (yyvsp[-1].num - yyvsp[-3].num) + 1)
-                yyyerror("Size does not equal range\n");
+                yyerror("Size does not equal range\n");
             if (Dict.RegMap.find(yyvsp[-6].str) != Dict.RegMap.end()) {
                 if (yyvsp[-1].num >= Dict.DetRegMap[Dict.RegMap[yyvsp[-6].str]].g_size())
-                    yyyerror("Range extends over target register\n");
+                    yyerror("Range extends over target register\n");
             } else
-                yyyerror("Shared index not yet defined\n");
+                yyerror("Shared index not yet defined\n");
             Dict.DetRegMap[yyvsp[-8].num].s_mappedIndex(Dict.RegMap[yyvsp[-6].str]);
             Dict.DetRegMap[yyvsp[-8].num].s_mappedOffset(yyvsp[-3].num);
             Dict.DetRegMap[yyvsp[-8].num].s_float(bFloat);
@@ -1680,7 +1090,7 @@ YY_SSLParser_PARSE_PARAM_DEF
                 std::list<std::string>::iterator loc = yyvsp[-8].strlist->begin();
                 for (int x = yyvsp[-2].num; x <= yyvsp[0].num; x++, loc++) {
                     if (Dict.RegMap.find(*loc) != Dict.RegMap.end())
-                        yyyerror("Name reglist declared twice\n");
+                        yyerror("Name reglist declared twice\n");
                     Dict.addRegister( loc->c_str(), x, yyvsp[-5].num, bFloat);
                 }
                 //delete $2;
@@ -1693,7 +1103,7 @@ YY_SSLParser_PARSE_PARAM_DEF
             std::list<std::string>::iterator loc = yyvsp[-6].strlist->begin();
             for (; loc != yyvsp[-6].strlist->end(); loc++) {
                 if (Dict.RegMap.find(*loc) != Dict.RegMap.end())
-                    yyyerror("Name reglist declared twice\n");
+                    yyerror("Name reglist declared twice\n");
                 Dict.addRegister(loc->c_str(), yyvsp[0].num, yyvsp[-3].num, bFloat);
             }
             //delete $2;
@@ -1723,7 +1133,7 @@ YY_SSLParser_PARSE_PARAM_DEF
 
         {
             if (ConstTable.find(yyvsp[-2].str) != ConstTable.end())
-                yyyerror("Constant declared twice");
+                yyerror("Constant declared twice");
             ConstTable[std::string(yyvsp[-2].str)] = yyvsp[0].num;
             ;
             break;}
@@ -1731,13 +1141,13 @@ YY_SSLParser_PARSE_PARAM_DEF
 
         {
             if (ConstTable.find(yyvsp[-4].str) != ConstTable.end())
-                yyyerror("Constant declared twice");
+                yyerror("Constant declared twice");
             else if (yyvsp[-1].str == std::string("-"))
                 ConstTable[std::string(yyvsp[-4].str)] = yyvsp[-2].num - yyvsp[0].num;
             else if (yyvsp[-1].str == std::string("+"))
                 ConstTable[std::string(yyvsp[-4].str)] = yyvsp[-2].num + yyvsp[0].num;
             else
-                yyyerror("Constant expression must be NUM + NUM or NUM - NUM");
+                yyerror("Constant expression must be NUM + NUM or NUM - NUM");
             ;
             break;}
         case 38:
@@ -1844,11 +1254,11 @@ YY_SSLParser_PARSE_PARAM_DEF
                     yyval.namelist = new std::deque<std::string>(TableDict[yyvsp[0].str]->records);
                 else {
                     o << "name " << yyvsp[0].str << " is not a NAMETABLE.\n";
-                    yyyerror(STR(o));
+                    yyerror(STR(o));
                 }
             else {
                 o << "could not dereference name " << yyvsp[0].str << "\n";
-                yyyerror(STR(o));
+                yyerror(STR(o));
             }
             ;
             break;}
@@ -1862,7 +1272,7 @@ YY_SSLParser_PARSE_PARAM_DEF
                 else {
                     std::ostringstream o;
                     o << "name " << yyvsp[0].str << " is not a NAMETABLE.\n";
-                    yyyerror(STR(o));
+                    yyerror(STR(o));
                 }
             else {
                 yyval.namelist = new std::deque<std::string>;
@@ -2003,10 +1413,10 @@ YY_SSLParser_PARSE_PARAM_DEF
             std::ostringstream o;
             if (TableDict.find(yyvsp[-2].str) == TableDict.end()) {
                 o << "Table " << yyvsp[-2].str << " has not been declared.\n";
-                yyyerror(STR(o));
+                yyerror(STR(o));
             } else if ((yyvsp[-1].num < 0) || (yyvsp[-1].num >= (int)TableDict[yyvsp[-2].str]->records.size())) {
                 o << "Can't get element " << yyvsp[-1].num << " of table " << yyvsp[-2].str << ".\n";
-                yyyerror(STR(o));
+                yyerror(STR(o));
             } else
                 yyval.insel = new InsNameElem(TableDict[yyvsp[-2].str]->records[yyvsp[-1].num].c_str());
             ;
@@ -2017,7 +1427,7 @@ YY_SSLParser_PARSE_PARAM_DEF
             std::ostringstream o;
             if (TableDict.find(yyvsp[-2].str) == TableDict.end()) {
                 o << "Table " << yyvsp[-2].str << " has not been declared.\n";
-                yyyerror(STR(o));
+                yyerror(STR(o));
             } else
                 yyval.insel = new InsListElem(yyvsp[-2].str, TableDict[yyvsp[-2].str], yyvsp[-1].str);
             ;
@@ -2028,10 +1438,10 @@ YY_SSLParser_PARSE_PARAM_DEF
             std::ostringstream o;
             if (TableDict.find(yyvsp[-2].str) == TableDict.end()) {
                 o << "Table " << yyvsp[-2].str << " has not been declared.\n";
-                yyyerror(STR(o));
+                yyerror(STR(o));
             } else if ((yyvsp[-1].num < 0) || (yyvsp[-1].num >= (int)TableDict[yyvsp[-2].str]->records.size())) {
                 o << "Can't get element " << yyvsp[-1].num << " of table " << yyvsp[-2].str << ".\n";
-                yyyerror(STR(o));
+                yyerror(STR(o));
             } else
                 yyval.insel = new InsNameElem(TableDict[yyvsp[-2].str]->records[yyvsp[-1].num].c_str());
             ;
@@ -2042,7 +1452,7 @@ YY_SSLParser_PARSE_PARAM_DEF
             std::ostringstream o;
             if (TableDict.find(yyvsp[-2].str) == TableDict.end()) {
                 o << "Table " << yyvsp[-2].str << " has not been declared.\n";
-                yyyerror(STR(o));
+                yyerror(STR(o));
             } else
                 yyval.insel = new InsListElem(yyvsp[-2].str, TableDict[yyvsp[-2].str], yyvsp[-1].str);
             ;
@@ -2093,7 +1503,7 @@ YY_SSLParser_PARSE_PARAM_DEF
                                         listExpToExp(yyvsp[-1].explist)));
             } else {
                 o << yyvsp[-2].str << " is not declared as a flag function.\n";
-                yyyerror(STR(o));
+                yyerror(STR(o));
             }
             ;
             break;}
@@ -2297,17 +1707,17 @@ YY_SSLParser_PARSE_PARAM_DEF
             std::ostringstream o;
             if (indexrefmap.find(yyvsp[-1].str) == indexrefmap.end()) {
                 o << "index " << yyvsp[-1].str << " not declared for use.\n";
-                yyyerror(STR(o));
+                yyerror(STR(o));
             } else if (TableDict.find(yyvsp[-2].str) == TableDict.end()) {
                 o << "table " << yyvsp[-2].str << " not declared for use.\n";
-                yyyerror(STR(o));
+                yyerror(STR(o));
             } else if (TableDict[yyvsp[-2].str]->getType() != EXPRTABLE) {
                 o << "table " << yyvsp[-2].str << " is not an expression table but appears to be used as one.\n";
-                yyyerror(STR(o));
+                yyerror(STR(o));
             } else if ((int)((ExprTable*)TableDict[yyvsp[-2].str])->expressions.size() < indexrefmap[yyvsp[-1].str]->ntokens()) {
                 o << "table " << yyvsp[-2].str << " (" << ((ExprTable*)TableDict[yyvsp[-2].str])->expressions.size() <<
                                                                                                                         ") is too small to use " << yyvsp[-1].str << " (" << indexrefmap[yyvsp[-1].str]->ntokens() << ") as an index.\n";
-                yyyerror(STR(o));
+                yyerror(STR(o));
             }
             // $1 is a map from string to Table*; $2 is a map from string to InsNameElem*
             yyval.exp = Binary::get(opExpTable, new Const(yyvsp[-2].str), new Const(yyvsp[-1].str));
@@ -2323,7 +1733,7 @@ YY_SSLParser_PARSE_PARAM_DEF
                     if (yyvsp[-1].explist->size() != param.funcParams.size() ) {
                         o << yyvsp[-2].str << " requires " << param.funcParams.size() << " parameters, but received " << yyvsp[-1].explist->size()
                                            << ".\n";
-                        yyyerror(STR(o));
+                        yyerror(STR(o));
                     } else {
                         // Everything checks out. *phew*
                         // Note: the below may not be right! (MVE)
@@ -2334,7 +1744,7 @@ YY_SSLParser_PARSE_PARAM_DEF
                     }
                 } else {
                     o << yyvsp[-2].str << " is not defined as a OPERAND function.\n";
-                    yyyerror(STR(o));
+                    yyerror(STR(o));
                 }
             } else {
                 o << "Unrecognized name " << yyvsp[-2].str << " in lambda call.\n";
@@ -2418,16 +1828,16 @@ YY_SSLParser_PARSE_PARAM_DEF
             std::ostringstream o;
             if (indexrefmap.find(yyvsp[-2].str) == indexrefmap.end()) {
                 o << "index " << yyvsp[-2].str << " not declared for use.\n";
-                yyyerror(STR(o));
+                yyerror(STR(o));
             } else if (TableDict.find(yyvsp[-3].str) == TableDict.end()) {
                 o << "table " << yyvsp[-3].str << " not declared for use.\n";
-                yyyerror(STR(o));
+                yyerror(STR(o));
             } else if (TableDict[yyvsp[-3].str]->getType() != OPTABLE) {
                 o << "table " << yyvsp[-3].str << " is not an operator table but appears to be used as one.\n";
-                yyyerror(STR(o));
+                yyerror(STR(o));
             } else if ((int)TableDict[yyvsp[-3].str]->records.size() < indexrefmap[yyvsp[-2].str]->ntokens()) {
                 o << "table " << yyvsp[-3].str << " is too small to use with " << yyvsp[-2].str << " as an index.\n";
-                yyyerror(STR(o));
+                yyerror(STR(o));
             }
             yyval.exp = new Ternary(opOpTable, new Const(yyvsp[-3].str), new Const(yyvsp[-2].str),
                     Binary::get(opList,
@@ -2451,7 +1861,7 @@ YY_SSLParser_PARSE_PARAM_DEF
             if (it == Dict.RegMap.end() && !isFlag) {
                 std::ostringstream ost;
                 ost << "register `" << yyvsp[0].str << "' is undefined";
-                yyyerror(STR(ost));
+                yyerror(STR(ost));
             } else if (isFlag || it->second == -1) {
                 // A special register, e.g. %npc or %CF. Return a Terminal for it
                 OPER op = strToTerm(yyvsp[0].str);
@@ -2501,7 +1911,7 @@ YY_SSLParser_PARSE_PARAM_DEF
             } else {
                 std::ostringstream ost;
                 ost << "`" << yyvsp[0].str << "' is not a constant, definition or a parameter of this instruction\n";
-                yyyerror(STR(ost));
+                yyerror(STR(ost));
                 s = new Const(0);
             }
             yyval.exp = s;
@@ -2595,9 +2005,6 @@ YY_SSLParser_PARSE_PARAM_DEF
     /* the action file gets copied in in place of this dollarsign  */
     yyvsp -= yylen;
     yyssp -= yylen;
-#ifdef YY_SSLParser_LSP_NEEDED
-    yylsp -= yylen;
-#endif
 
 #if YY_SSLParser_DEBUG != 0
     if (YY_SSLParser_DEBUG_FLAG)
@@ -2612,23 +2019,6 @@ YY_SSLParser_PARSE_PARAM_DEF
 
     *++yyvsp = yyval;
 
-#ifdef YY_SSLParser_LSP_NEEDED
-    yylsp++;
-    if (yylen == 0)
-    {
-        yylsp->first_line = YY_SSLParser_LLOC.first_line;
-        yylsp->first_column = YY_SSLParser_LLOC.first_column;
-        yylsp->last_line = (yylsp-1)->last_line;
-        yylsp->last_column = (yylsp-1)->last_column;
-        yylsp->text = 0;
-    }
-    else
-    {
-        yylsp->last_line = (yylsp+yylen-1)->last_line;
-        yylsp->last_column = (yylsp+yylen-1)->last_column;
-    }
-#endif
-
     /* Now "shift" the result of the reduction.
      Determine what state that goes to,
      based on the state we popped back to
@@ -2642,14 +2032,14 @@ YY_SSLParser_PARSE_PARAM_DEF
     else
         yystate = yydefgoto[yyn - YYNTBASE];
 
-    YYGOTO(yynewstate);
+    goto yynewstate;
 
     YYLABEL(yyerrlab)   /* here on detecting error */
 
             if (! yyerrstatus)
             /* If not already recovering from an error, report this error.  */
     {
-        ++YY_SSLParser_NERRS;
+        ++yynerrs;
 
 #ifdef YY_SSLParser_ERROR_VERBOSE
         yyn = yypact[yystate];
@@ -2684,18 +2074,18 @@ YY_SSLParser_PARSE_PARAM_DEF
                             count++;
                         }
                 }
-                YY_SSLParser_ERROR(msg);
+                yyerror(msg);
                 free(msg);
             }
             else
-                YY_SSLParser_ERROR ((char*)"parse error; also virtual memory exceeded");
+                yyerror ((char*)"parse error; also virtual memory exceeded");
         }
         else
 #endif /* YY_SSLParser_ERROR_VERBOSE */
-            YY_SSLParser_ERROR((char*)"parse error");
+            yyerror((char*)"parse error");
     }
 
-    YYGOTO(yyerrlab1);
+    goto yyerrlab1;
     YYLABEL(yyerrlab1)   /* here on error raised explicitly by an action */
 
             if (yyerrstatus == 3)
@@ -2703,15 +2093,15 @@ YY_SSLParser_PARSE_PARAM_DEF
         /* if just tried and failed to reuse lookahead token after an error, discard it.  */
 
         /* return failure if at end of input */
-        if (YY_SSLParser_CHAR == YYEOF)
+        if (yychar == YYEOF)
             YYABORT;
 
 #if YY_SSLParser_DEBUG != 0
         if (YY_SSLParser_DEBUG_FLAG)
-            fprintf(stderr, "Discarding token %d (%s).\n", YY_SSLParser_CHAR, yytname[yychar1]);
+            fprintf(stderr, "Discarding token %d (%s).\n", yychar, yytname[yychar1]);
 #endif
 
-        YY_SSLParser_CHAR = YYEMPTY;
+        yychar = YYEMPTY;
     }
 
     /* Else will try to reuse lookahead token
@@ -2719,7 +2109,7 @@ YY_SSLParser_PARSE_PARAM_DEF
 
     yyerrstatus = 3;              /* Each real token shifted decrements this */
 
-    YYGOTO(yyerrhandle);
+    goto yyerrhandle;
 
     YYLABEL(yyerrdefault)  /* current state does not do anything special for the error token. */
 
@@ -2727,7 +2117,7 @@ YY_SSLParser_PARSE_PARAM_DEF
             /* This is wrong; only states that explicitly want error tokens
                              should shift them.  */
             yyn = yydefact[yystate];  /* If its default is to accept any token, ok.  Otherwise pop it.*/
-    if (yyn) YYGOTO(yydefault);
+    if (yyn) goto yydefault;
 #endif
 
     YYLABEL(yyerrpop)   /* pop the current state because it cannot handle the error token */
@@ -2754,22 +2144,22 @@ YY_SSLParser_PARSE_PARAM_DEF
 
             yyn = yypact[yystate];
     if (yyn == YYFLAG)
-        YYGOTO(yyerrdefault);
+        goto yyerrdefault;
 
     yyn += YYTERROR;
     if (yyn < 0 || yyn > YYLAST || yycheck[yyn] != YYTERROR)
-        YYGOTO(yyerrdefault);
+        goto yyerrdefault;
 
     yyn = yytable[yyn];
     if (yyn < 0)
     {
         if (yyn == YYFLAG)
-            YYGOTO(yyerrpop);
+            goto yyerrpop;
         yyn = -yyn;
-        YYGOTO(yyreduce);
+        goto yyreduce;
     }
     else if (yyn == 0)
-        YYGOTO(yyerrpop);
+        goto yyerrpop;
 
     if (yyn == YYFINAL)
         YYACCEPT;
@@ -2779,402 +2169,14 @@ YY_SSLParser_PARSE_PARAM_DEF
         fprintf(stderr, "Shifting error token, ");
 #endif
 
-    *++yyvsp = YY_SSLParser_LVAL;
+    *++yyvsp = yylval;
 #ifdef YY_SSLParser_LSP_NEEDED
-    *++yylsp = YY_SSLParser_LLOC;
+    *++yylsp = yylloc;
 #endif
 
     yystate = yyn;
-    YYGOTO(yynewstate);
+    goto yynewstate;
     /* end loop, in which YYGOTO may be used. */
-    YYENDGOTO
 }
 
 /* END */
-
-/***************************************************************************//**
- * FUNCTION:        SSLParser::SSLParser
- * \brief        Constructor for an existing stream.
- * PARAMETERS:        The stream, whether or not to debug
- *
- ******************************************************************************/
-SSLParser::SSLParser(std::istream &in, bool trace) : sslFile("input"), bFloat(false)
-{
-    theScanner = new SSLScanner(in, trace);
-    if (trace) yydebug = 1; else yydebug=0;
-}
-
-/***************************************************************************//**
- * FUNCTION:        SSLParser::parseExp
- * \brief        Parses an assignment from a string.
- * PARAMETERS:        the string
- * \returns             an Assignment or nullptr.
- ******************************************************************************/
-Statement* SSLParser::parseExp(const char *str) {
-    std::istringstream ss(str);
-    SSLParser p(ss, false);        // Second arg true for debugging
-    RTLInstDict d;
-    p.yyparse(d);
-    return p.the_asgn;
-}
-
-/***************************************************************************//**
- * FUNCTION:        SSLParser::~SSLParser
- * \brief        Destructor.
- * PARAMETERS:        <none>
- *
- ******************************************************************************/
-SSLParser::~SSLParser()
-{
-    std::map<std::string, Table*>::iterator loc;
-    if (theScanner != nullptr)
-        delete theScanner;
-    for(loc = TableDict.begin(); loc != TableDict.end(); loc++)
-        delete loc->second;
-}
-
-/***************************************************************************//**
- * FUNCTION:        SSLParser::yyyerror
- * \brief        Display an error message and exit.
- * PARAMETERS:        msg - an error message
- *
- ******************************************************************************/
-void SSLParser::yyerror(char* msg)
-{
-    std::cerr << sslFile << ":" << theScanner->theLine << ": " << msg << std::endl;
-}
-
-/***************************************************************************//**
- * FUNCTION:        SSLParser::yylex
- * \brief        The scanner driver than returns the next token.
- * PARAMETERS:        <none>
- * \returns             the next token
- ******************************************************************************/
-int SSLParser::yylex()
-{
-    int token = theScanner->yylex(yylval);
-    return token;
-}
-
-/***************************************************************************//**
- * FUNCTION:        SSLParser::strToOper
- * \brief        Convert a string operator (e.g. "+f") to an OPER (opFPlus)
- * NOTE:            An attempt is made to make this moderately efficient, else we might have a skip chain of string
- *                    comparisons
- * NOTE:            This is a member of SSLParser so we can call yyyerror and have line number etc printed out
- * PARAMETERS:        s: pointer to the operator C string
- * \returns             An OPER, or -1 if not found (enum opWild)
- ******************************************************************************/
-OPER SSLParser::strToOper(const char* s) {
-    switch (s[0]) {
-        case '*':
-            // Could be *, *!, *f, *fsd, *fdq, *f[sdq]
-            switch (s[1]) {
-                case '\0': return opMult;
-                case '!' : return opMults;
-                case 'f' :
-                    if ((s[2] == 's') && (s[3] == 'd')) return opFMultsd;
-                    if ((s[2] == 'd') && (s[3] == 'q')) return opFMultdq;
-                    return opFMult;
-                default: break;
-            }
-            break;
-        case '/':
-            // Could be /, /!, /f, /f[sdq]
-            switch (s[1]) {
-                case '\0': return opDiv;
-                case '!' : return opDivs;
-                case 'f' : return opFDiv;
-                default: break;
-            }
-            break;
-        case '%':
-            // Could be %, %!
-            switch (s[1]) {
-                case '\0': return opMod;
-                case '!' : return opMods;
-                default: break;
-            }
-            break;
-        case '+':
-            // Could be +, +f, +f[sdq]
-            switch (s[1]) {
-                case '\0': return opPlus;
-                case 'f' : return opFPlus;
-                default: break;
-            }
-            break;
-        case '-':
-            // Could be -, -f, -f[sdq]
-            switch (s[1]) {
-                case '\0': return opMinus;
-                case 'f' : return opFMinus;
-                default: break;
-            }
-            break;
-        case 'a':
-            // and, arctan, addr
-            if (s[1] == 'n') return opAnd;
-            if (s[1] == 'r') return opArcTan;
-            if (s[1] == 'd') return opAddrOf;
-            break;
-        case 'c':
-            // cos
-            return opCos;
-        case 'e':
-            // execute
-            return opExecute;
-        case 'f':
-            // fsize, ftoi, fround NOTE: ftrunc handled separately because it is a unary
-            if (s[1] == 's') return opFsize;
-            if (s[1] == 't') return opFtoi;
-            if (s[1] == 'r') return opFround;
-            break;
-        case 'i':
-            // itof
-            return opItof;
-        case 'l':
-            // log2, log10, loge
-            if (s[3] == '2') return opLog2;
-            if (s[3] == '1') return opLog10;
-            if (s[3] == 'e') return opLoge;
-            break;
-        case 'o':
-            // or
-            return opOr;
-        case 'p':
-            // pow
-            return opPow;
-        case 'r':
-            // rlc, rrc, rl, rr
-            if (s[1] == 'l') {
-                if (s[2] == 'c') return opRotateLC;
-                return opRotateL;
-            } else if (s[1] == 'r') {
-                if (s[2] == 'c') return opRotateRC;
-                return opRotateR;
-            }
-            break;
-        case 's':
-            // sgnex, sin, sqrt
-            if (s[1] == 'g') return opSgnEx;
-            if (s[1] == 'i') return opSin;
-            if (s[1] == 'q') return opSqrt;
-            break;
-        case 't':
-            // truncu, truncs, tan
-            // 012345
-            if (s[1] == 'a') return opTan;
-            if (s[5] == 'u') return opTruncu;
-            if (s[5] == 's') return opTruncs;
-            break;
-        case 'z':
-            // zfill
-            return opZfill;
-
-        case '>':
-            // >, >u, >=, >=u, >>, >>A
-            switch (s[1]) {
-                case '\0': return opGtr;
-                case 'u': return opGtrUns;
-                case '=':
-                    if (s[2] == '\0') return opGtrEq;
-                    return opGtrEqUns;
-                case '>':
-                    if (s[2] == '\0') return opShiftR;
-                    return opShiftRA;
-                default: break;
-            }
-            break;
-        case '<':
-            // <, <u, <=, <=u, <<
-            switch (s[1]) {
-                case '\0': return opLess;
-                case 'u': return opLessUns;
-                case '=':
-                    if (s[2] == '\0') return opLessEq;
-                    return opLessEqUns;
-                case '<':
-                    return opShiftL;
-                default: break;
-            }
-            break;
-        case '=':
-            // =
-            return opEquals;
-        case '!':
-            // !
-            return opSgnEx;
-            break;
-        case '~':
-            // ~=, ~
-            if (s[1] == '=') return opNotEqual;
-            return opNot;        // Bit inversion
-        case '@': return opAt;
-        case '&': return opBitAnd;
-        case '|': return opBitOr;
-        case '^': return opBitXor;
-
-        default: break;
-    }
-    std::ostringstream ost;
-    ost << "Unknown operator " << s << std::endl;
-    yyyerror(STR(ost));
-    return opWild;
-}
-
-OPER strToTerm(char* s) {
-    // s could be %pc, %afp, %agp, %CF, %ZF, %OF, %NF, %DF, %flags, %fflags
-    if (s[2] == 'F') {
-        if (s[1] <= 'N') {
-            if (s[1] == 'C') return opCF;
-            if (s[1] == 'N') return opNF;
-            return opDF;
-        } else {
-            if (s[1] == 'O') return opOF;
-            return opZF;
-        }
-    }
-    if (s[1] == 'p') return opPC;
-    if (s[1] == 'a') {
-        if (s[2] == 'f') return opAFP;
-        if (s[2] == 'g') return opAGP;
-    } else if (s[1] == 'f') {
-        if (s[2] == 'l') return opFlags;
-        if (s[2] == 'f') return opFflags;
-    }
-    return (OPER) 0;
-}
-
-/***************************************************************************//**
- * \brief        Convert a list of actual parameters in the form of a STL list of Exps into one expression
- *                      (using opList)
- * \note The expressions in the list are not cloned; they are simply copied to the new opList
- * \param le  the list of expressions
- * \returns The opList Expression
- ******************************************************************************/
-Exp* listExpToExp(std::list<Exp*>* le) {
-    Exp* e;
-    Exp** cur = &e;
-    Exp *end = new Terminal(opNil);            // Terminate the chain
-    for (std::list<Exp*>::iterator it = le->begin(); it != le->end(); it++) {
-        *cur = Binary::get(opList, *it, end);
-        // cur becomes the address of the address of the second subexpression
-        // In other words, cur becomes a reference to the second subexp ptr
-        // Note that declaring cur as a reference doesn't work (remains a reference to e)
-        cur = &(*cur)->refSubExp2();
-    }
-    return e;
-}
-
-/***************************************************************************//**
- *
- * \brief        Convert a list of formal parameters in the form of a STL list of strings into one expression
- *                      (using opList)
- * \param        ls - the list of strings
- * \returns             The opList expression
- ******************************************************************************/
-Exp* listStrToExp(std::list<std::string>* ls) {
-    Exp* e;
-    Exp** cur = &e;
-    Exp *end = new Terminal(opNil);             // Terminate the chain
-    for (std::list<std::string>::iterator it = ls->begin(); it != ls->end(); it++) {
-        *cur = Binary::get(opList, new Location(opParam, new Const(strdup((*it).c_str())), nullptr), end);
-        cur = &(*cur)->refSubExp2();
-    }
-    *cur = new Terminal(opNil);             // Terminate the chain
-    return e;
-}
-
-static Binary srchExpr(opExpTable, Terminal::get(opWild), Terminal::get(opWild));
-static Ternary srchOp(opOpTable,
-                                 Terminal::get(opWild),
-                                 Terminal::get(opWild),
-                                 Terminal::get(opWild));
-void init_sslparser() {
-#ifndef NO_GARBAGE_COLLECTOR
-    static Exp** gc_pointers = (Exp**) GC_MALLOC_UNCOLLECTABLE(2 * sizeof(Exp*));
-    gc_pointers[0] = srchExpr;
-    gc_pointers[1] = srchOp;
-#endif
-}
-
-/***************************************************************************//**
- *
- * \brief   Expand tables in an RTL and save to dictionary
- * \note    This may generate many entries
- * \param   iname Parser object representing the instruction name
- * \param   params Parser object representing the instruction params
- * \param   o_rtlist Original rtlist object (before expanding)
- * \param   Dict Ref to the dictionary that will contain the results of the parse
- ******************************************************************************/
-void SSLParser::expandTables(InsNameElem* iname, std::list<std::string>* params, RTL* o_rtlist, RTLInstDict& Dict) {
-    int i, m;
-    std::string nam;
-    std::ostringstream o;
-    m = iname->ninstructions();
-    // Expand the tables (if any) in this instruction
-    for (i = 0, iname->reset(); i < m; i++, iname->increment()) {
-        nam = iname->getinstruction();
-        // Need to make substitutions to a copy of the RTL
-        RTL rtl = *o_rtlist; // deep copy of contents
-        for (Statement *s : rtl) {
-            std::list<Exp*> le;
-            // Expression tables
-            assert(s->getKind() == STMT_ASSIGN);
-            if (((Assign*)s)->searchAll(srchExpr, le)) {
-                std::list<Exp*>::iterator it;
-                for (it = le.begin(); it != le.end(); it++) {
-                    const char* tbl = ((Const*)((Binary*)*it)->getSubExp1())->getStr();
-                    const char* idx = ((Const*)((Binary*)*it)->getSubExp2())->getStr();
-                    Exp* repl =((ExprTable*)(TableDict[tbl]))->expressions[indexrefmap[idx]->getvalue()];
-                    s->searchAndReplace(**it, repl);
-                }
-            }
-            // Operator tables
-            Exp* res;
-            while (s->search(srchOp, res)) {
-                Ternary* t;
-                if (res->getOper() == opTypedExp)
-                    t = (Ternary *)res->getSubExp1();
-                else
-                    t = (Ternary *)res;
-                assert(t->getOper() == opOpTable);
-                // The ternary opOpTable has a table and index name as strings, then a list of 2 expressions
-                // (and we want to replace it with e1 OP e2)
-                const char* tbl = ((Const*)t->getSubExp1()) ->getStr();
-                const char* idx = ((Const*)t->getSubExp2()) ->getStr();
-                // The expressions to operate on are in the list
-                Binary* b = (Binary*)t->getSubExp3();
-                assert(b->getOper() == opList);
-                Exp* e1 = b->getSubExp1();
-                Exp* e2 = b->getSubExp2();        // This should be an opList too
-                assert(b->getOper() == opList);
-                e2 = ((Binary*)e2)->getSubExp1();
-                const char* ops = ((OpTable*)(TableDict[tbl]))->records[indexrefmap[idx]->getvalue()].c_str();
-                Exp* repl = Binary::get(strToOper(ops), e1->clone(), e2->clone());                    // FIXME!
-                s->searchAndReplace(*res, repl);
-            }
-        }
-
-        if (Dict.appendToDict(nam, *params, rtl) != 0) {
-            o << "Pattern " << iname->getinspattern() << " conflicts with an earlier declaration of " << nam << ".\n";
-            yyyerror(STR(o));
-        }
-    }
-    indexrefmap.erase(indexrefmap.begin(), indexrefmap.end());
-}
-
-/***************************************************************************//**
- * \brief        Make the successor of the given expression, e.g. given r[2], return succ( r[2] )
- *              (using opSuccessor)
- *          We can't do the successor operation here, because the parameters are not yet instantiated
- *          (still of the form param(rd)). Actual successor done in Exp::fixSuccessor()
- * \note            The given expression should be of the form    r[const]
- * \note            The parameter expresion is copied (not cloned) in the result
- * \param      e  The expression to find the successor of
- * \returns             The modified expression
- ******************************************************************************/
-Exp* SSLParser::makeSuccessor(Exp* e) {
-    return new Unary(opSuccessor, e);
-}

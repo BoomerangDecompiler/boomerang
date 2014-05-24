@@ -5,19 +5,8 @@
  * \file       exp.cpp
  * \brief   Implementation of the Exp and related classes.
  ******************************************************************************/
-/*
- * $Revision$    // 1.172.2.20
- * 05 Apr 02 - Mike: Created
- */
 
 #include <cassert>
-#if defined(_MSC_VER) && _MSC_VER <= 1200
-#pragma warning(disable:4786)
-#endif
-#if defined(_MSC_VER) && _MSC_VER >= 1400
-#pragma warning(disable:4996)        // Warnings about e.g. _strdup deprecated in VS 2005
-#endif
-
 #include <numeric>        // For accumulate
 #include <algorithm>    // For std::max()
 #include <map>            // In decideType()
@@ -104,7 +93,7 @@ Binary::Binary(const Binary& o)
 Ternary::Ternary(OPER op)
     : Binary(op)
 {
-    subExp3 = 0;
+    subExp3 = nullptr;
 }
 Ternary::Ternary(OPER op, Exp* e1, Exp* e2, Exp* e3)
     : Binary(op, e1, e2)
@@ -178,17 +167,20 @@ Location::Location(Location& o) : Unary(o.op, o.subExp1->clone()), proc(o.proc)
 
 Unary::~Unary() {
     // Remember to ;//delete all children
-    if (subExp1 != 0)
+    if (subExp1 != nullptr) {
         ;//delete subExp1;
+    }
 }
 Binary::~Binary() {
-    if (subExp2 != 0)
+    if (subExp2 != nullptr) {
         ;//delete subExp2;
+    }
     // Note that the first pointer is destructed in the Exp1 destructor
 }
 Ternary::~Ternary() {
-    if (subExp3 != 0)
+    if (subExp3 != nullptr) {
         ;//delete subExp3;
+    }
 }
 FlagDef::~FlagDef() {
     ;//delete rtl;
@@ -204,20 +196,23 @@ TypeVal::~TypeVal() {
  * \note   If an expression already exists, it is ;//deleted
  ******************************************************************************/
 void Unary::setSubExp1(Exp* e) {
-    if (subExp1 != 0)
+    if (subExp1 != nullptr) {
         ;//delete subExp1;
+    }
     subExp1 = e;
     assert(subExp1);
 }
 void Binary::setSubExp2(Exp* e) {
-    if (subExp2 != 0)
+    if (subExp2 != nullptr) {
         ;//delete subExp2;
+    }
     subExp2 = e;
     assert(subExp1 && subExp2);
 }
 void Ternary::setSubExp3(Exp* e) {
-    if (subExp3 != 0)
+    if (subExp3 != nullptr) {
         ;//delete subExp3;
+    }
     subExp3 = e;
     assert(subExp1 && subExp2 && subExp3);
 }
@@ -586,11 +581,11 @@ bool TypeVal::operator*=(Exp& o) {
 //    //    //    //
 /***************************************************************************//**
  *
- * \brief        "Print" in infix notation the expression to a stream.
- *                    Mainly for debugging, or maybe some low level windows
- * PARAMETERS:        Ref to an output stream
+ * \brief       "Print" in infix notation the expression to a stream.
+ *                  Mainly for debugging, or maybe some low level windows
+ * \param       os  - Ref to an output stream
  ******************************************************************************/
-void Const::print(std::ostream& os, bool html) const {
+void Const::print(std::ostream& os, bool /*html*/) const {
     setLexBegin(os.tellp());
     switch (op) {
         case opIntConst:
@@ -765,7 +760,7 @@ void Binary::print(std::ostream& os, bool html) const {
 //    //    //    //    //
 //     Terminal    //
 //    //    //    //    //
-void Terminal::print(std::ostream& os, bool html) const {
+void Terminal::print(std::ostream& os, bool /*html*/) const {
     switch (op) {
         case opPC:        os << "%pc";   break;
         case opFlags:    os << "%flags"; break;
@@ -930,7 +925,7 @@ void Unary::print(std::ostream& os, bool html) const {
 //    //    //    //
 //    Ternary //
 //    //    //    //
-void Ternary::printr(std::ostream& os, bool html) const {
+void Ternary::printr(std::ostream& os, bool /*html*/) const {
     // The function-like operators don't need parentheses
     switch (op) {
         // The "function-like" ternaries
@@ -958,15 +953,15 @@ void Ternary::print(std::ostream& os, bool html) const {
         case opFtoi:    case opFround:    case opFtrunc:
         case opOpTable:
             switch (op) {
-                case opTruncu:    os << "truncu("; break;
-                case opTruncs:    os << "truncs("; break;
-                case opZfill:    os << "zfill("; break;
-                case opSgnEx:    os << "sgnex("; break;
-                case opFsize:    os << "fsize("; break;
+                case opTruncu:  os << "truncu("; break;
+                case opTruncs:  os << "truncs("; break;
+                case opZfill:   os << "zfill("; break;
+                case opSgnEx:   os << "sgnex("; break;
+                case opFsize:   os << "fsize("; break;
                 case opItof:    os << "itof(";    break;
                 case opFtoi:    os << "ftoi(";    break;
-                case opFround:    os << "fround("; break;
-                case opFtrunc:    os << "ftrunc("; break;
+                case opFround:  os << "fround("; break;
+                case opFtrunc:  os << "ftrunc("; break;
                 case opOpTable: os << "optable("; break;
                 default: break;            // For warning
             }
@@ -1037,7 +1032,7 @@ void RefExp::print(std::ostream& os, bool html) const {
 //    //    //    //
 // TypeVal    //
 //    //    //    //
-void TypeVal::print(std::ostream& os, bool html) const {
+void TypeVal::print(std::ostream& os, bool /*html*/) const {
     if (val)
         os << "<" << val->getCtype() << ">";
     else
@@ -1554,15 +1549,15 @@ void Exp::doSearch(const Exp& search, Exp*& pSrc, std::list<Exp**>& li, bool onc
 
 /***************************************************************************//**
  *
- * \brief        Search for the given subexpression in all children
- * NOTE:            Virtual function; different implementation for each subclass of Exp
- * NOTE:            Will recurse via doSearch
- * PARAMETERS:        search: ptr to Exp we are searching for
- *                    li: list of Exp** where pointers to the matches are found
- *                    once: true if not all occurrences to be found, false for all
+ * \brief       Search for the given subexpression in all children
+ * \note        Virtual function; different implementation for each subclass of Exp
+ * \note            Will recurse via doSearch
+ * \param       search - ptr to Exp we are searching for
+ * \param       li - list of Exp** where pointers to the matches are found
+ * \param       once - true if not all occurrences to be found, false for all
  *
  ******************************************************************************/
-void Exp::doSearchChildren(const Exp& search, std::list<Exp**>& li, bool once) {
+void Exp::doSearchChildren(const Exp& /*search*/, std::list<Exp**>& /*li*/, bool /*once*/) {
     return;            // Const and Terminal do not override this
 }
 void Unary::doSearchChildren(const Exp& search, std::list<Exp**>& li, bool once) {
@@ -1572,14 +1567,17 @@ void Unary::doSearchChildren(const Exp& search, std::list<Exp**>& li, bool once)
 void Binary::doSearchChildren(const Exp& search, std::list<Exp**>& li, bool once) {
     assert(subExp1 && subExp2);
     doSearch(search, subExp1, li, once);
-    if (once && li.size()) return;
+    if (once && li.size())
+        return;
     doSearch(search, subExp2, li, once);
 }
 void Ternary::doSearchChildren(const Exp& search, std::list<Exp**>& li, bool once) {
     doSearch(search, subExp1, li, once);
-    if (once && li.size()) return;
+    if (once && li.size())
+        return;
     doSearch(search, subExp2, li, once);
-    if (once && li.size()) return;
+    if (once && li.size())
+        return;
     doSearch(search, subExp3, li, once);
 }
 
@@ -1614,8 +1612,10 @@ Exp* Exp::searchReplace(const Exp& search, Exp* replace, bool& change) {
 Exp* Exp::searchReplaceAll(const Exp& search, Exp* replace, bool& change, bool once /* = false */ ) {
     // TODO: consider working on base object, and only in case when we find the search, use clone call to return the
     // new object ?
-    if(this==&search) // WAT ?
+    if(this==&search) { // WAT ?
+        change = true;
         return replace->clone();
+    }
     assert(this!=&search);
     std::list<Exp**> li;
     Exp* top = this;        // top may change; that's why we have to return it
@@ -1645,7 +1645,7 @@ Exp* Exp::searchReplaceAll(const Exp& search, Exp* replace, bool& change, bool o
  ******************************************************************************/
 bool Exp::search(const Exp& search, Exp*& result) {
     std::list<Exp**> li;
-    result = 0;                // In case it fails; don't leave it unassigned
+    result = nullptr;                // In case it fails; don't leave it unassigned
     // The search requires a reference to a pointer to this object.
     // This isn't needed for searches, only for replacements, but we want to re-use the same search routine
     Exp* top = this;
@@ -2355,9 +2355,9 @@ Exp* Binary::polySimplify(bool& bMod) {
         ;//delete subExp2;
         Binary *b = (Binary*)subExp1;
         subExp2 = b->subExp2;
-        b->subExp2 = 0;
+        b->subExp2 = nullptr;
         subExp1 = b->subExp1;
-        b->subExp1 = 0;
+        b->subExp1 = nullptr;
         ;//delete b;
         bMod = true;
         return res;
@@ -2373,9 +2373,9 @@ Exp* Binary::polySimplify(bool& bMod) {
             ;//delete subExp2;
             subExp2 = b->subExp2;
             ((Const*)subExp2)->setInt(-((Const*)subExp2)->getInt());
-            b->subExp2 = 0;
+            b->subExp2 = nullptr;
             subExp1 = b->subExp1;
-            b->subExp1 = 0;
+            b->subExp1 = nullptr;
             ;//delete b;
             bMod = true;
             return res;
@@ -2389,9 +2389,9 @@ Exp* Binary::polySimplify(bool& bMod) {
         ;//delete subExp2;
         Binary *b = (Binary*)subExp1;
         subExp2 = b->subExp2;
-        b->subExp2 = 0;
+        b->subExp2 = nullptr;
         subExp1 = b->subExp1;
-        b->subExp1 = 0;
+        b->subExp1 = nullptr;
         ;//delete b;
         bMod = true;
         res->setOper(opNotEqual);
@@ -2404,9 +2404,9 @@ Exp* Binary::polySimplify(bool& bMod) {
         ;//delete subExp2;
         Binary *b = (Binary*)subExp1;
         subExp2 = b->subExp2;
-        b->subExp2 = 0;
+        b->subExp2 = nullptr;
         subExp1 = b->subExp1;
-        b->subExp1 = 0;
+        b->subExp1 = nullptr;
         ;//delete b;
         bMod = true;
         res->setOper(opNotEqual);
@@ -2439,9 +2439,9 @@ Exp* Binary::polySimplify(bool& bMod) {
         ;//delete subExp2;
         Binary *b = (Binary*)subExp1;
         subExp2 = b->subExp2;
-        b->subExp2 = 0;
+        b->subExp2 = nullptr;
         subExp1 = b->subExp1;
-        b->subExp1 = 0;
+        b->subExp1 = nullptr;
         ;//delete b;
         bMod = true;
         res->setOper(opLessEq);
@@ -2454,9 +2454,9 @@ Exp* Binary::polySimplify(bool& bMod) {
         ;//delete subExp2;
         Binary *b = (Binary*)subExp1;
         subExp2 = b->subExp2;
-        b->subExp2 = 0;
+        b->subExp2 = nullptr;
         subExp1 = b->subExp1;
-        b->subExp1 = 0;
+        b->subExp1 = nullptr;
         ;//delete b;
         bMod = true;
         res->setOper(opLessEqUns);
@@ -3163,7 +3163,7 @@ bool lessTI::operator()(const Exp* x, const Exp* y) const {
 //    genConstraints    //
 //    //    //    //    //    //
 
-Exp* Exp::genConstraints(Exp* result) {
+Exp* Exp::genConstraints(Exp* /*result*/) {
     // Default case, no constraints -> return true
     return new Terminal(opTrue);
 }
@@ -3821,7 +3821,7 @@ void Terminal::printx(int ind) const {
 void RefExp::printx(int ind) const {
     std::cerr << std::setw(ind) << " " << operStrings[op] << " ";
     std::cerr << "{";
-    if (def == 0) std::cerr << "nullptr";
+    if (def == nullptr) std::cerr << "nullptr";
         else std::cerr << ADDRESS::host_ptr(def) << "=" << def->getNumber();
     std::cerr << "}\n" << std::flush;
     child(subExp1, ind);

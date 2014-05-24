@@ -5,13 +5,6 @@
  * \file       visitor.cpp
  * \brief   Provides the implementation for the various visitor and modifier classes.
  ******************************************************************************/
-/*
- * $Revision$
- *
- * 18 Aug 06 - Mike: Moved DfaLocalMapper here from type/dfa.cpp
- * 14 Jun 04 - Mike: Created, from work started by Trent in 2003
- */
-
 #include "visitor.h"
 #include "exp.h"
 #include "statement.h"
@@ -145,7 +138,7 @@ bool StmtConscriptSetter::visit(ImpRefStatement* stmt) {
     return true;
 }
 
-void PhiStripper::visit(PhiAssign* s, bool& recur) {
+void PhiStripper::visit(PhiAssign* /*s*/, bool& recur) {
     del = true;
     recur = true;
 }
@@ -400,7 +393,7 @@ bool UsedLocsVisitor::visit(PhiAssign* s, bool& override) {
         // Also note that it's possible for uu->e to be nullptr. Suppose variable a can be assigned to along in-edges
         // 0, 1, and 3; inserting the phi parameter at index 3 will cause a null entry at 2
         assert(v.second.e);
-        RefExp *temp = new RefExp(v.second.e, v.second.def);
+        Exp *temp = RefExp::get(v.second.e, (Statement *)v.second.def());
         temp->accept(ev);
     }
 
@@ -624,10 +617,10 @@ void StmtImplicitConverter::visit(PhiAssign* s, bool& recur) {
     // The LHS could be a m[x] where x has a null subscript; must do first
     s->setLeft(s->getLeft()->accept(mod));
 
-    for (std::pair<const int,PhiInfo> & v : *s) {
+    for (std::pair<const uint32_t,PhiInfo> & v : *s) {
         assert(v.second.e != nullptr);
-        if (v.second.def == nullptr)
-            v.second.def = m_cfg->findImplicitAssign(v.second.e);
+        if (v.second.def() == nullptr)
+            v.second.def(m_cfg->findImplicitAssign(v.second.e));
     }
     recur = false;        // Already done LHS
 }
@@ -693,9 +686,9 @@ bool ComplexityFinder::visit(Location* e, bool& override) {
     override = false;
     return true;
 }
-bool ComplexityFinder::visit(Unary* e,        bool& override) {count++; override = false; return true;}
-bool ComplexityFinder::visit(Binary* e,        bool& override) {count++; override = false; return true;}
-bool ComplexityFinder::visit(Ternary* e,    bool& override) {count++; override = false; return true;}
+bool ComplexityFinder::visit(Unary* /*e*/,        bool& override) {count++; override = false; return true;}
+bool ComplexityFinder::visit(Binary* /*e*/,        bool& override) {count++; override = false; return true;}
+bool ComplexityFinder::visit(Ternary* /*e*/,    bool& override) {count++; override = false; return true;}
 
 bool MemDepthFinder::visit(Location* e, bool& override) {
     if (e->isMemOf())
@@ -734,7 +727,7 @@ Exp* ExpPropagator::postVisit(RefExp* e) {
 //   References to the results of calls are considered primitive... but only if bypassed?
 //   Other references considered non primitive
 // Start with result=true, must find primitivity in all components
-bool PrimitiveTester::visit(Location* e, bool& override) {
+bool PrimitiveTester::visit(Location* /*e*/, bool& override) {
     // We reached a bare (unsubscripted) location. This is certainly not primitive
     override = true;
     result = false;
@@ -853,7 +846,7 @@ bool ExpDestCounter::visit(RefExp *e, bool& override) {
     return true;            // Continue visiting the rest of Exp* e
 }
 
-bool StmtDestCounter::visit(PhiAssign *stmt, bool& override) {
+bool StmtDestCounter::visit(PhiAssign */*stmt*/, bool& override) {
     override = false;
     return true;
 }
@@ -1045,9 +1038,9 @@ void StmtSsaXformer::visit(PhiAssign *s, bool& recur) {
     commonLhs(s);
 
     UserProc* proc = ((ExpSsaXformer*)mod)->getProc();
-    for (std::pair<const int,PhiInfo> & v : *s) {
+    for (std::pair<const uint32_t,PhiInfo> & v : *s) {
         assert(v.second.e != nullptr);
-        RefExp r(v.second.e, v.second.def);
+        RefExp r(v.second.e, v.second.def());
         const char* sym = proc->lookupSymFromRefAny(&r);
         if (sym != nullptr)
             v.second.e = Location::local(sym, proc);        // Some may be parameters, but hopefully it won't matter

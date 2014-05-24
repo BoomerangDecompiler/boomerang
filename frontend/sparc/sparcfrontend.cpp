@@ -16,14 +16,6 @@
  *                frontend.cpp for decoding sparc instructions.
  ******************************************************************************/
 
-/*
- * $Revision$    // 1.35.2.5
- *
- * 17 May 02 - Mike: Mods for boomerang
- * 22 Nov 02 - Mike: Added check for invalid instructions; prints opcode
- * 12 Dec 02 - Mike: Fixed various bugs in move/call/move (etc) pattern handling
- */
-
 /***************************************************************************//**
  * Dependencies.
  ******************************************************************************/
@@ -1282,7 +1274,7 @@ bool SparcFrontEnd::helperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL*>* lrtl
     }
     std::string name(p);
     //if (progOptions.fastInstr == false)
-    if (0)    // SETTINGS!
+    if (0)    // TODO: SETTINGS!, also this has no influence on tests ?
         return helperFuncLong(dest, addr, lrtl, name);
     Exp* rhs;
     if (name == ".umul") {

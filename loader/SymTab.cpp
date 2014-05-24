@@ -12,12 +12,6 @@
  * \brief    This file contains the implementation of the class SymTab, a simple class to maintain a pair of maps
  *                so that symbols can be accessed by symbol or by name
  ******************************************************************************/
-/*
- * $Revision$
- *
- * 12 Jul 05 - Mike: threw out the bsearch() code and implemented dual maps instead
-*/
-
 #include "SymTab.h"
 
 SymTab::SymTab() {

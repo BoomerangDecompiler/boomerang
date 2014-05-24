@@ -329,6 +329,8 @@ ADDRESS Win32BinaryFile::GetMainEntryPoint() {
     ADDRESS lastcall = ADDRESS::g(0L), lastlastcall = ADDRESS::g(0L);
     while(1) {
         op1 = *(unsigned char*)(p + base);
+        if(in_mingw_CRTStartup && op1==0xC3)
+            break;
         if (op1 == 0xE8) {            // CALL opcode
             unsigned int dest = p + 5 + LMMH(*(p + base + 1));
             if (in_mingw_CRTStartup) {
@@ -870,8 +872,7 @@ void Win32BinaryFile::AddSymbol(ADDRESS uNative, const char *pName) {
     dlprocptrs[uNative] = pName;
 }
 
-bool Win32BinaryFile::DisplayDetails(const char* fileName, FILE* f
-                                     /* = stdout */) {
+bool Win32BinaryFile::DisplayDetails(const char* fileName, FILE* f/* = stdout */) {
     return false;
 }
 

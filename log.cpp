@@ -1,6 +1,3 @@
-/*
- *$Revision$    // 1.6.6.1
- */
 #include "log.h"
 #include <sstream>
 #include "statement.h"
@@ -104,5 +101,9 @@ void Log::tail() {
 
 void FileLogger::tail() {
     out.seekp(-200, std::ios::end);
+    std::cerr << out;
+}
+void SeparateLogger::tail() {
+    out->seekp(-200, std::ios::end);
     std::cerr << out;
 }

@@ -5,15 +5,11 @@
  * \file        transformer.cpp
  * OVERVIEW:    Implementation of the Transformer and related classes.
  *============================================================================*/
-/*
- * $Revision$
- * 17 Apr 04 - Trent: Created
- */
 
 #include <assert.h>
 #if defined(_MSC_VER) && _MSC_VER <= 1200
 #pragma warning(disable:4786)
-#endif 
+#endif
 
 #include <numeric>            // For accumulate
 #include <algorithm>        // For std::max()
@@ -43,9 +39,9 @@ std::list<Exp*> cache;
 
 Exp *ExpTransformer::applyAllTo(Exp *p, bool &bMod)
 {
-    for (std::list<Exp*>::iterator it = cache.begin(); it != cache.end(); it++)
-        if (*(*it)->getSubExp1() == *p)
-            return (*it)->getSubExp2()->clone();
+    for (auto & elem : cache)
+        if (*(elem)->getSubExp1() == *p)
+            return (elem)->getSubExp2()->clone();
 
     Exp *e = p->clone();
     Exp *subs[3];
@@ -73,8 +69,8 @@ Exp *ExpTransformer::applyAllTo(Exp *p, bool &bMod)
     bool mod;
     //do {
         mod = false;
-        for (std::list<ExpTransformer *>::iterator it = transformers.begin(); it != transformers.end(); it++) {
-            e = (*it)->applyTo(e, mod);
+        for (auto & transformer : transformers) {
+            e = (transformer)->applyTo(e, mod);
             bMod |= mod;
         }
     //} while (mod);

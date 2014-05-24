@@ -23,3 +23,6 @@ SET(SRC
     st20/st20frontend.h
 )
 ADD_LIBRARY(frontend STATIC ${SRC})
+IF(BUILD_TESTING)
+#ADD_SUBDIRECTORY(unit_testing)
+ENDIF()

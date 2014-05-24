@@ -5,12 +5,6 @@
  * \file       generic.cpp
  * OVERVIEW:   Implementation of the GenericExpTransformer and related classes.
  *============================================================================*/
-/*
- * $Revision$
- * 01 Sep 06 - Mike: this was written a while ago, and is now broken because it assumes Exp::getType(), which no longer
- *    exists since ADHOC TA has been removed
- * 17 Apr 04 - Trent: Created
- */
 
 #include <assert.h>
 #if defined(_MSC_VER) && _MSC_VER <= 1200

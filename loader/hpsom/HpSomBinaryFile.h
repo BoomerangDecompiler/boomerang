@@ -6,21 +6,9 @@
  *
  */
 
-/* File: HpSomBinaryFile.h
- * Desc: This file contains the definition of the class HpSomBinaryFile.
-*/
-
-/* $Revision$
- *
- * 22 Jun 00 - Mike: Initial revision
- * 09 May 01 - Mike: Read the imports table so can identify library functions
- * 14 May 01 - Mike: Added GetAddressByName()
- * 01 Aug 01 - Mike: GetGlobalPointerInfo() returns unsigned ints now
- * 03 Aug 01 - Mike: Added a few useful structs
- * 10 Aug 01 - Mike: Added GetDynamicGlobalMap()
- * 12 Jul 05 - Mike: Use new double map SymTab class
-*/
-
+/** \file HpSomBinaryFile.h
+ * \brief This file contains the definition of the class HpSomBinaryFile.
+ */
 #ifndef __HPSOMBINARYFILE_H__
 #define __HPSOMBINARYFILE_H__
 

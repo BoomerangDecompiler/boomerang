@@ -14,11 +14,6 @@
  * \file       st20decoder.cpp
  * \brief   This file contains the high level decoding functionality, for matching ST-20 instructions.
  ******************************************************************************/
-/*
- * $Revision$    // 1.2.2.2
- *
- * 10 Mar 05 - Mike: Created.
-*/
 
 #include <cassert>
 
@@ -38,9 +33,10 @@
  * \brief   A dummy function to suppress "unused local variable" messages
  * \param   x: integer variable to be "used"
  ******************************************************************************/
-void ST20Decoder::unused(int x)
+void ST20Decoder::unused(int /*x*/)
 {}
 
+static    DecodeResult result;
 /***************************************************************************//**
  * FUNCTION:       ST20Decoder::decodeInstruction
  * \brief       Decodes a machine instruction and returns an RTL instance. In all cases a single instruction is decoded.
@@ -51,7 +47,6 @@ void ST20Decoder::unused(int x)
  *                   proc - the enclosing procedure
  * \returns            a DecodeResult structure containing all the information gathered during decoding
  ******************************************************************************/
-static    DecodeResult result;
 DecodeResult& ST20Decoder::decodeInstruction (ADDRESS pc, ptrdiff_t delta) {
     result.reset();                            // Clear the result structure (numBytes = 0 etc)
     ADDRESS hostPC = pc + delta;

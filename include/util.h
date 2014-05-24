@@ -3,12 +3,6 @@
  * OVERVIEW:   Provides the definition for the miscellaneous bits and pieces
  *                 implemented in the util.so library
  *============================================================================*/
-/*
- * $Revision$
- *
- * 10 Apr 02 - Mike: Created
- */
-
 #ifndef __UTIL_H__
 #define __UTIL_H__
 

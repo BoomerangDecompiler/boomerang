@@ -38,12 +38,12 @@
     UC((p).m_value)[3])
 
 PalmBinaryFile::PalmBinaryFile()
-    : m_pImage(0), m_pData(0) {
+    : m_pImage(nullptr), m_pData(nullptr) {
 }
 
 PalmBinaryFile::~PalmBinaryFile() {
     for (int i=0; i < m_iNumSections; i++)
-        if (m_pSections[i].pSectionName != 0)
+        if (m_pSections[i].pSectionName != nullptr)
             delete [] m_pSections[i].pSectionName;
     if (m_pImage) {
         delete [] m_pImage;
@@ -69,7 +69,7 @@ int Read4(int* pi) {
 // Read 1 byte from given native address
 char PalmBinaryFile::readNative1(ADDRESS nat) {
     SectionInfo *si = GetSectionInfoByAddr(nat);
-    if (si == 0)
+    if (si == nullptr)
         si = GetSectionInfo(0);
     char* host = (char*)(si->uHostAddr - si->uNativeAddr + nat).m_value;
     return *host;
@@ -78,7 +78,7 @@ char PalmBinaryFile::readNative1(ADDRESS nat) {
 // Read 2 bytes from given native address
 int PalmBinaryFile::readNative2(ADDRESS nat) {
     SectionInfo *si = GetSectionInfoByAddr(nat);
-    if (si == 0) return 0;
+    if (si == nullptr) return 0;
     ADDRESS host = si->uHostAddr - si->uNativeAddr + nat;
     int n = Read2((short*)host.m_value);
     return n;
@@ -87,7 +87,7 @@ int PalmBinaryFile::readNative2(ADDRESS nat) {
 // Read 4 bytes from given native address
 int PalmBinaryFile::readNative4(ADDRESS nat) {
     SectionInfo *si = GetSectionInfoByAddr(nat);
-    if (si == 0) return 0;
+    if (si == nullptr) return 0;
     ADDRESS host = si->uHostAddr - si->uNativeAddr + nat;
     int n = Read4((int*)host.m_value);
     return n;
@@ -147,7 +147,7 @@ bool PalmBinaryFile::RealLoad(const char* sName) {
 
     // Allocate a buffer for the image
     m_pImage = new unsigned char[size];
-    if (m_pImage == 0) {
+    if (m_pImage == nullptr) {
         fprintf(stderr, "Could not allocate %ld bytes for image\n", size);
         return false;
     }
@@ -172,12 +172,12 @@ bool PalmBinaryFile::RealLoad(const char* sName) {
 
     // Allocate the section information
     m_pSections = new SectionInfo[m_iNumSections];
-    if (m_pSections == 0) {
+    if (m_pSections == nullptr) {
         fprintf(stderr, "Could not allocate section info array of %d items\n",
                 m_iNumSections);
         if (m_pImage) {
             delete m_pImage;
-            m_pImage = 0;
+            m_pImage = nullptr;
         }
     }
 
@@ -220,13 +220,13 @@ bool PalmBinaryFile::RealLoad(const char* sName) {
 
     // Create a separate, uncompressed, initialised data section
     SectionInfo* pData = GetSectionInfoByName("data0");
-    if (pData == 0) {
+    if (pData == nullptr) {
         fprintf(stderr, "No data section!\n");
         return false;
     }
 
     SectionInfo* pCode0 = GetSectionInfoByName("code0");
-    if (pCode0 == 0) {
+    if (pCode0 == nullptr) {
         fprintf(stderr, "No code 0 section!\n");
         return false;
     }
@@ -240,7 +240,7 @@ bool PalmBinaryFile::RealLoad(const char* sName) {
 
     // Allocate a new data section
     m_pData = new unsigned char[sizeData];
-    if (m_pData == 0) {
+    if (m_pData == nullptr) {
         fprintf(stderr, "Could not allocate %u bytes for data section\n",
                 sizeData);
     }
@@ -327,7 +327,7 @@ bool PalmBinaryFile::RealLoad(const char* sName) {
 void PalmBinaryFile::UnLoad() {
     if (m_pImage) {
         delete [] m_pImage;
-        m_pImage = 0;
+        m_pImage = nullptr;
     }
 }
 
@@ -336,7 +336,7 @@ std::list<SectionInfo*>& PalmBinaryFile::GetEntryPoints(const char* pEntry
                                                         /* = "main" */) {
     std::list<SectionInfo*>* ret = new std::list<SectionInfo*>;
     SectionInfo* pSect = GetSectionInfoByName("code1");
-    if (pSect == 0)
+    if (pSect == nullptr)
         return *ret;               // Failed
     ret->push_back(pSect);
     return *ret;
@@ -391,11 +391,11 @@ const char* PalmBinaryFile::SymbolByAddress(ADDRESS dwAddr) {
         if (offset < numTrapStrings)
             return trapNames[offset];
         else
-            return 0;
+            return nullptr;
     }
     if (dwAddr == GetMainEntryPoint())
         return "PilotMain";
-    else return 0;
+    else return nullptr;
 }
 
 // Not really dynamically linked, but the closest thing
@@ -422,7 +422,7 @@ std::pair<ADDRESS,unsigned> PalmBinaryFile::GetGlobalPointerInfo() {
 
 int PalmBinaryFile::GetAppID() const {
     // The answer is in the header. Return 0 if file not loaded
-    if (m_pImage == 0)
+    if (m_pImage == nullptr)
         return 0;
     // Beware the endianness (large)
 #define OFFSET_ID 0x40
@@ -475,14 +475,14 @@ SWord* findPattern(SWord* start, const SWord* patt, int pattSize, int max) {
             return start;
     }
     // Each start position failed
-    return 0;
+    return nullptr;
 }
 
 // Find the native address for the start of the main entry function.
 // For Palm binaries, this is PilotMain.
 ADDRESS PalmBinaryFile::GetMainEntryPoint() {
     SectionInfo* pSect = GetSectionInfoByName("code1");
-    if (pSect == 0)
+    if (pSect == nullptr)
         return ADDRESS::g(0L);               // Failed
     // Return the start of the code1 section
     SWord* startCode = (SWord*) pSect->uHostAddr.m_value;

@@ -12,11 +12,6 @@
  * \brief   The definition of the instruction decoder for ST20.
  ******************************************************************************/
 
-/*
- * $Revision$
- * 10/Mar/05 MVE and Dr Aus: Created.
- */
-
 #ifndef ST20DECODER
 #define ST20DECODER
 #include <cstddef>
@@ -54,7 +49,7 @@ private:
     //Exp*    dis_Reg(unsigned r);
     //Exp*    dis_RAmbz(unsigned r);        // Special for rA of certain instructions
 
-    void    unused(int x);
+    void    unused(int);
     RTL*    createBranchRtl(ADDRESS pc, std::list<Statement*>* stmts,
                             const char* name);
     bool    isFuncPrologue(ADDRESS hostPC);

@@ -8,23 +8,13 @@
  *
  */
 
-/* File: bffDump_skel.cc
- * Desc: Skeleton driver for a binary-file dumper program.
+/** \file bffDump.cpp
+ * \brief Skeleton driver for a binary-file dumper program.
  *
  * This file is a generic skeleton for a binary-file dumper,
  * it dumps all the information it finds about sections in the
  * file, and it displays any code sections in raw hexadecimal
  * notation.
- */
-
-/*
- * $Revision$
- *
- *    Apr 01 - Cristina: Created
- * 11 May 01 - Nathan: Print text section name (suppresses warning)
- * 11 May 01 - Mike: use bCode (prints text section of hppa binaries)
- * 11 May 01 - Cristina: minor cleanup for generality
- * 02 Aug 01 - Brian: Fixed arg mismatch in printf.
  */
 
 // Include all binary file headers for different binary-file formats

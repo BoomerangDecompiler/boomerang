@@ -4,13 +4,9 @@
 /***************************************************************************//**
  * \file       signature.h
  * OVERVIEW:   Provides the definition for the signature classes.
- *============================================================================*/
-/*
- * $Revision$    // 1.53.2.11
  *
- * 12 Jul 02 - Trent: Created
  *
- * Trent had the idea of "promoting" to signatures with known behaviour (e.g. conforms to ABI). However, it seems more
+ * \note Trent had the idea of "promoting" to signatures with known behaviour (e.g. conforms to ABI). However, it seems more
  *    general to only assume ABI behaviour for library functions, and derive the signature information from child
  *    procedures in all user procedures. At present, this promotion is basically disabled (promotion always succeeds,
  *    but not much is assumed by the process of promotion). The role of the Signature classes is still being considered.
@@ -102,7 +98,7 @@ protected:
         std::vector<int> preferedParams;
 
 //        void        updateParams(UserProc *p, Statement *stmt, bool checkreach = true);
-        bool        usesNewParam(UserProc *p, Statement *stmt, bool checkreach, int &n);
+        bool        usesNewParam(UserProc *, Statement *stmt, bool checkreach, int &n);
 
         //void        addImplicitParametersFor(Parameter *p);
         //void        addImplicitParameter(Type *type, const char *name, Exp *e, Parameter *parent);
@@ -183,7 +179,7 @@ virtual bool        hasEllipsis() { return ellipsis; }
         //virtual void analyse(UserProc *p);
         bool        dfaTypeAnalysis(Cfg* cfg);
 virtual Signature * promote(UserProc *p);
-        void        print(std::ostream &out, bool html = false) const;
+        void        print(std::ostream &out, bool = false) const;
         char *      prints();            // For debugging
         void        printToLog();
 

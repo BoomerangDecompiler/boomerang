@@ -12,21 +12,6 @@
  * Desc: This file contains the implementation of the class ElfBinaryFile.
  ******************************************************************************/
 
-/*
- * $Revision$
- *
- * ELF binary file format.
- *    This file implements the class ElfBinaryFile, derived from class BinaryFile.
- * See ElfBinaryFile.h and BinaryFile.h for details
- *    MVE 30/9/97
- * 10 Mar 02 - Mike: Mods for stand alone operation; constuct function
- * 21 May 02 - Mike: Slight mod for gcc 3.1
- * 01 Oct 02 - Mike: Removed elf library (and include file) dependencies
- * 02 Oct 02 - Mike: Fixed some more endianness issues
- * 24 Mar 03 - Mike: GetAddressByName returns NO_ADDRESS on failure now
- * 12 Jul 05 - Mike: fixed an endless loop in findRelPltOffset for pre-3.3.3 gcc compiled input files
-*/
-
 /***************************************************************************//**
  * Dependencies.
  ******************************************************************************/
@@ -52,8 +37,8 @@ ElfBinaryFile::ElfBinaryFile(bool bArchive /* = false */)
     : BinaryFile(bArchive),    // Initialise base class
       next_extern(ADDRESS::g(0L))
 {
-    m_fd = 0;
-    m_pFileName = 0;
+    m_fd = nullptr;
+    m_pFileName = nullptr;
     Init();                    // Initialise all the common stuff
 }
 
@@ -66,16 +51,16 @@ ElfBinaryFile::~ElfBinaryFile() {
 // Reset internal state, except for those that keep track of which member
 // we're up to
 void ElfBinaryFile::Init() {
-    m_pImage = 0;
-    m_pPhdrs = 0;            // No program headers
-    m_pShdrs = 0;            // No section headers
-    m_pStrings = 0;            // No strings
-    m_pReloc = 0;
-    m_pSym = 0;
+    m_pImage = nullptr;
+    m_pPhdrs = nullptr;            // No program headers
+    m_pShdrs = nullptr;            // No section headers
+    m_pStrings = nullptr;            // No strings
+    m_pReloc = nullptr;
+    m_pSym = nullptr;
     m_uPltMin = 0;            // No PLT limits
     m_uPltMax = 0;
     m_iLastSize = 0;
-    m_pImportStubs = 0;
+    m_pImportStubs = nullptr;
 }
 
 // Hand decompiled from sparc library function
@@ -122,7 +107,7 @@ bool ElfBinaryFile::RealLoad(const char* sName) {
 
     // Allocate memory to hold the file
     m_pImage = new char[m_lImageSize];
-    if (m_pImage == 0) {
+    if (m_pImage == nullptr) {
         fprintf(stderr, "Could not allocate %ld bytes for program image\n", m_lImageSize);
         return false;
     }
@@ -170,7 +155,7 @@ bool ElfBinaryFile::RealLoad(const char* sName) {
 
     // Allocate room for all the Elf sections (including the silly first one)
     m_pSections = new SectionInfo[m_iNumSections];
-    if (m_pSections == 0) return false;     // Failed!
+    if (m_pSections == nullptr) return false;     // Failed!
 
     // Set up the m_sh_link and m_sh_info arrays
     m_sh_link = new int[m_iNumSections];
@@ -449,7 +434,7 @@ std::vector<ADDRESS> ElfBinaryFile::GetExportedAddresses(bool funcsOnly) {
 // So currently not called
 void ElfBinaryFile::AddRelocsAsSyms(int relSecIdx) {
     PSectionInfo pSect = &m_pSections[relSecIdx];
-    if (pSect == 0) return;
+    if (pSect == nullptr) return;
     // Calc number of relocations
     int nRelocs = pSect->uSectionSize / pSect->uSectionEntrySize;
     m_pReloc = (Elf32_Rel*) pSect->uHostAddr.m_value;   // Pointer to symbols
@@ -498,7 +483,7 @@ void ElfBinaryFile::AddRelocsAsSyms(int relSecIdx) {
 const char* ElfBinaryFile::SymbolByAddress(const ADDRESS dwAddr) {
     std::map<ADDRESS, std::string>::iterator aa = m_SymTab.find(dwAddr);
     if (aa == m_SymTab.end())
-        return 0;
+        return nullptr;
     return (char*)aa->second.c_str();
 }
 
@@ -512,7 +497,7 @@ bool ElfBinaryFile::ValueByName(const char* pName, SymValue* pVal, bool bNoTypeO
     PSectionInfo pSect;
 
     pSect = GetSectionInfoByName(".dynsym");
-    if (pSect == 0) {
+    if (pSect == nullptr) {
         // We have a file with no .dynsym section, and hence no .hash section (from my understanding - MVE).
         // It seems that the only alternative is to linearly search the symbol tables.
         // This must be one of the big reasons that linking is so slow! (at least, for statically linked files)
@@ -520,10 +505,10 @@ bool ElfBinaryFile::ValueByName(const char* pName, SymValue* pVal, bool bNoTypeO
         return SearchValueByName(pName, pVal);
     }
     pSym = (Elf32_Sym*)pSect->uHostAddr.m_value;
-    if (pSym == 0)
+    if (pSym == nullptr)
         return false;
     pSect = GetSectionInfoByName(".hash");
-    if (pSect == 0)
+    if (pSect == nullptr)
         return false;
     pHash = (int*) pSect->uHostAddr.m_value;
     iStr = GetSectionIndexByName(".dynstr");
@@ -575,9 +560,9 @@ bool ElfBinaryFile::SearchValueByName(const char* pName, SymValue* pVal, const c
     PSectionInfo pSect, pStrSect;
 
     pSect = GetSectionInfoByName(pSectName);
-    if (pSect == 0) return false;
+    if (pSect == nullptr) return false;
     pStrSect = GetSectionInfoByName(pStrName);
-    if (pStrSect == 0) return false;
+    if (pStrSect == nullptr) return false;
     const char* pStr = (const char*) pStrSect->uHostAddr.m_value;
     // Find number of symbols
     int n = pSect->uSectionSize / pSect->uSectionEntrySize;
@@ -647,7 +632,7 @@ int ElfBinaryFile::GetDistanceByName(const char* sName, const char* pSectName) {
 
     PSectionInfo pSect;
     pSect = GetSectionInfoByName(pSectName);
-    if (pSect == 0) return 0;
+    if (pSect == nullptr) return 0;
     // Find number of symbols
     int n = pSect->uSectionSize / pSect->uSectionEntrySize;
     Elf32_Sym* pSym = (Elf32_Sym*)pSect->uHostAddr.m_value;
@@ -881,16 +866,16 @@ ADDRESS* ElfBinaryFile::GetImportStubs(int& numImports) {
 std::map<ADDRESS, const char*>* ElfBinaryFile::GetDynamicGlobalMap() {
     std::map<ADDRESS, const char*>* ret = new std::map<ADDRESS, const char*>;
     SectionInfo* pSect = GetSectionInfoByName(".rel.bss");
-    if (pSect == 0)
+    if (pSect == nullptr)
         pSect = GetSectionInfoByName(".rela.bss");
-    if (pSect == 0) {
+    if (pSect == nullptr) {
         // This could easily mean that this file has no dynamic globals, and
         // that is fine.
         return ret;
     }
     int numEnt = pSect->uSectionSize / pSect->uSectionEntrySize;
     SectionInfo* sym = GetSectionInfoByName(".dynsym");
-    if (sym == 0) {
+    if (sym == nullptr) {
         fprintf(stderr, "Could not find section .dynsym in source binary file");
         return ret;
     }
@@ -958,7 +943,7 @@ void ElfBinaryFile::elfWrite4(int* pi, int val) {
 
 char ElfBinaryFile::readNative1(ADDRESS nat) {
     PSectionInfo si = GetSectionInfoByAddr(nat);
-    if (si == 0) {
+    if (si == nullptr) {
         si = GetSectionInfo(0);
     }
     ADDRESS host = si->uHostAddr - si->uNativeAddr + nat;
@@ -968,7 +953,7 @@ char ElfBinaryFile::readNative1(ADDRESS nat) {
 // Read 2 bytes from given native address
 int ElfBinaryFile::readNative2(ADDRESS nat) {
     PSectionInfo si = GetSectionInfoByAddr(nat);
-    if (si == 0) return 0;
+    if (si == nullptr) return 0;
     ADDRESS host = si->uHostAddr - si->uNativeAddr + nat;
     return elfRead2((short*)host.m_value);
 }
@@ -976,14 +961,14 @@ int ElfBinaryFile::readNative2(ADDRESS nat) {
 // Read 4 bytes from given native address
 int ElfBinaryFile::readNative4(ADDRESS nat) {
     PSectionInfo si = GetSectionInfoByAddr(nat);
-    if (si == 0) return 0;
+    if (si == nullptr) return 0;
     ADDRESS host = si->uHostAddr - si->uNativeAddr + nat;
     return elfRead4((int*)host.m_value);
 }
 
 void ElfBinaryFile::writeNative4(ADDRESS nat, uint32_t n) {
     PSectionInfo si = GetSectionInfoByAddr(nat);
-    if (si == 0) return;
+    if (si == nullptr) return;
     ADDRESS host = si->uHostAddr - si->uNativeAddr + nat;
     uint8_t *host_ptr  = (unsigned char*)host.m_value;
     if (m_elfEndianness) {
@@ -1061,7 +1046,7 @@ BinaryFile* construct() {
 
 void ElfBinaryFile::applyRelocations() {
     int nextFakeLibAddr = -2;            // See R_386_PC32 below; -1 sometimes used for main
-    if (m_pImage == 0) return;            // No file loaded
+    if (m_pImage == nullptr) return;            // No file loaded
     int machine = elfRead2(&((Elf32_Ehdr*)m_pImage)->e_machine);
     int e_type = elfRead2(&((Elf32_Ehdr*)m_pImage)->e_type);
     switch (machine) {
@@ -1169,7 +1154,7 @@ void ElfBinaryFile::applyRelocations() {
 
 bool ElfBinaryFile::IsRelocationAt(ADDRESS uNative) {
     //int nextFakeLibAddr = -2;            // See R_386_PC32 below; -1 sometimes used for main
-    if (m_pImage == 0) return false;            // No file loaded
+    if (m_pImage == nullptr) return false;            // No file loaded
     int machine = elfRead2(&((Elf32_Ehdr*)m_pImage)->e_machine);
     int e_type = elfRead2(&((Elf32_Ehdr*)m_pImage)->e_type);
     switch (machine) {

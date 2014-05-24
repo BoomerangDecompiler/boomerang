@@ -12,12 +12,6 @@
  * \brief   Implementation of objects related to type constraints
  ******************************************************************************/
 
-/*
- * $Revision$    // 1.16.6.1
- *
- * 22 Aug 03 - Mike: Created
- */
-
 #include "constraint.h"
 #include "managed.h"
 #include "exp.h"
@@ -326,7 +320,7 @@ bool Constraints::solve(std::list<ConstraintMap>& solns) {
         Exp* c = *cc;
         if (c->isTrue()) continue;
         if (c->isFalse()) {
-			LOG_VERBOSE(DEBUG_TA) << "Constraint failure: always false constraint\n";
+            LOG_VERBOSE(DEBUG_TA) << "Constraint failure: always false constraint\n";
             return false;
         }
         if (c->isDisjunction()) {
@@ -422,7 +416,7 @@ bool Constraints::doSolve(std::list<Exp*>::iterator it, ConstraintMap& soln, std
     bool anyUnified = false;
     Exp* d;
     while ((d = nextDisjunct(rem1)) != nullptr) {
-        LOG << " $$ d is " << d << ", rem1 is " << ((rem1==0)?"NULL":rem1->prints()) << " $$\n";
+        LOG << " $$ d is " << d << ", rem1 is " << ((rem1==nullptr)?"NULL":rem1->prints()) << " $$\n";
         // Match disjunct d against the fixed types; it could be compatible,
         // compatible and generate an additional constraint, or be
         // incompatible
@@ -431,7 +425,7 @@ bool Constraints::doSolve(std::list<Exp*>::iterator it, ConstraintMap& soln, std
         Exp* rem2 = d;
         bool unified = true;
         while ((c = nextConjunct(rem2)) != nullptr) {
-            LOG << "   $$ c is " << c << ", rem2 is " << ((rem2==0)?"NULL":rem2->prints()) << " $$\n";
+            LOG << "   $$ c is " << c << ", rem2 is " << ((rem2==nullptr)?"NULL":rem2->prints()) << " $$\n";
             if (c->isFalse()) {
                 unified = false;
                 break;
@@ -517,7 +511,11 @@ bool Constraints::unify(Exp* x, Exp* y, ConstraintMap& extra) {
     LOG << (*xtype == *ytype) << "\n";
     return *xtype == *ytype;
 }
-
+/**
+ Perform "alpha substitution". Example:
+     <fixedtype*> = alphaX* and T[Y] = alphaX*    ->
+     T[Y] = <fixedtype*>
+*/
 void Constraints::alphaSubst() {
     std::list<Exp*>::iterator it;
     for (it = disjunctions.begin(); it != disjunctions.end(); it++) {

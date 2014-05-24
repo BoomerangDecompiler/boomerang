@@ -15,10 +15,6 @@
  *                procedure such as parameters and locals.
  *============================================================================*/
 
-/*
- *    $Revision$    // 1.115.2.27
- */
-
 #ifndef _PROC_H_
 #define _PROC_H_
 
@@ -80,9 +76,9 @@ virtual void            renameParam(const char *oldName, const char *newName);
 
 //virtual std::ostream& put(std::ostream& os) = 0;
 
-        void            matchParams(std::list<Exp*>& actuals, UserProc& caller);
+        void            matchParams(std::list<Exp*>&, UserProc&);
 
-        std::list<Type>* getParamTypeList(const std::list<Exp*>& actuals);
+        std::list<Type>* getParamTypeList(const std::list<Exp*>&);
 virtual bool            isLib() {return false;} //!< Return true if this is a library proc
 virtual bool            isNoReturn() = 0; //!< Return true if this procedure doesn't return
 
@@ -111,7 +107,7 @@ virtual void            removeReturn(Exp *e);
 //virtual void        addReturn(Exp *e);
 //        void        sortParameters();
 
-virtual void            printCallGraphXML(std::ostream &os, int depth, bool recurse = true);
+virtual void            printCallGraphXML(std::ostream &os, int depth, bool = true);
         void            printDetailsXML();
         void            clearVisited() { visited = false; }
         bool            isVisited() { return visited; }
@@ -207,8 +203,8 @@ friend  class XMLProgParser;
          */
         std::map<std::string, Type*> locals;
 
-        int            nextLocal;        //!< Number of the next local. Can't use locals.size() because some get deleted
-        int            nextParam;        //!< Number for param1, param2, etc
+        int            nextLocal=0;     //!< Number of the next local. Can't use locals.size() because some get deleted
+        int            nextParam=0;     //!< Number for param1, param2, etc
 
 public:
         /**
@@ -221,7 +217,7 @@ public:
          */
         typedef std::multimap<const Exp*,Exp*,lessExpStar> SymbolMap;
 private:
-        SymbolMap    symbolMap;
+        SymbolMap       symbolMap;
         /**
          * The local "symbol table", which is aware of overlaps
          */
@@ -301,7 +297,7 @@ virtual bool                isNoReturn();
         // Split the set of cycle-associated procs into individual subcycles.
         //void        findSubCycles(CycleList& path, CycleSet& cs, CycleSetSet& sset);
 
-        bool                inductivePreservation(UserProc* topOfCycle);
+        bool                inductivePreservation(UserProc*);
         void                markAsNonChildless(ProcSet* cs);
 
         void                updateCalls();
@@ -455,7 +451,7 @@ virtual void                renameParam(const char *oldName, const char *newName
                             //! Get the callees.
         std::list<Proc*>&   getCallees() { return calleeList; }
         void                addCallee(Proc* callee);
-        void                addCallees(std::list<UserProc*>& callees);
+        //void                addCallees(std::list<UserProc*>& callees);
         bool                containsAddr(ADDRESS uAddr);
                             //! Change BB containing this statement from a COMPCALL to a CALL.
         void                undoComputedBB(Statement* stmt) {
@@ -500,7 +496,8 @@ public:
         bool                filterParams(Exp* e);
         void                setImplicitRef(Statement* s, Exp* a, Type* ty);
 
-        void verifyPHIs();
+        void                verifyPHIs();
+        void                debugPrintAll(const char *c);
 protected:
                             UserProc();
         void                setCFG(Cfg *c) { cfg = c; }

@@ -5,12 +5,7 @@
  * \file       boomerang.cpp
  * \brief   Command line processing for the Boomerang decompiler
  ******************************************************************************/
-/*
- * $Revision$    // 1.115.2.5
- *
- * 28 Jan 05 - G. Krol: Separated -h output into sections and neatened
- * 02 Sep 06 - Mike: introduced USE_XML to make it easy to disable use of the expat library
-*/
+
 #include <inttypes.h>
 #include "config.h"
 

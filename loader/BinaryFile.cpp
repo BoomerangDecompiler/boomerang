@@ -41,7 +41,7 @@
 BinaryFile::BinaryFile(bool bArch /*= false*/) {
     m_bArchive      = bArch;        // Remember whether an archive member
     m_iNumSections  = 0;            // No sections yet
-    m_pSections     = 0;            // No section data yet
+    m_pSections     = nullptr;            // No section data yet
 }
 
 // This struct used to be initialised with a memset, but now that overwrites the virtual table (if compiled under gcc
@@ -85,7 +85,7 @@ SectionInfo *BinaryFile::GetSectionInfoByAddr(ADDRESS uEntry) const {
 SectionInfo * BinaryFile::GetSectionInfoByName(const char* sName) {
     int i = GetSectionIndexByName(sName);
     if (i == -1)
-        return 0;
+        return nullptr;
     return &m_pSections[i];
 }
 
@@ -96,7 +96,7 @@ SectionInfo * BinaryFile::GetSectionInfoByName(const char* sName) {
 ///////////////////////
 //! Lookup the address, return the name, or 0 if not found
 const char* BinaryFile::SymbolByAddress(ADDRESS /*uNative*/) {
-    return 0;        // Overridden by subclasses that support syms
+    return nullptr;        // Overridden by subclasses that support syms
 }
 //! Lookup the name, return the address. If not found, return NO_ADDRESS
 ADDRESS BinaryFile::GetAddressByName(const char* /*pName*/, bool /*bNoTypeOK*/) {

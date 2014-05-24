@@ -1572,8 +1572,12 @@ FNCLEX
             *1* %fsw@[15:15] := 0;
 
 FCOM.r32    modrm 
+            *f80* tmpD1 := %st
+            *f80* tmpD2 := fsize(64, 80, modrm)
             *f80* tmpD := %st -f fsize(32,80,modrm)
-            SETFFLAGS(%st, fsize(32,80,modrm));
+            SETFFLAGS(tmpD1, tmpD2);
+            #*f80* tmpD := %st -f fsize(32,80,modrm)
+            #SETFFLAGS(%st, fsize(32,80,modrm));
 
 FCOM.r64    modrm 
             *f80* tmpD := %st -f fsize(64,80,modrm)

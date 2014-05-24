@@ -43,7 +43,7 @@
  * \brief       A dummy function to suppress "unused local variable" messages
  * PARAMETERS:       x: integer variable to be "used"
  ********************************************************************************/
-void MIPSDecoder::unused(int x)
+void MIPSDecoder::unused(int /*x*/)
 {}
 
 MIPSDecoder::MIPSDecoder(Prog* prog) : NJMCDecoder(prog)

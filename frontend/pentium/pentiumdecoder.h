@@ -13,12 +13,6 @@
  * \brief   The implementation of the instruction decoder for Pentium.
  ******************************************************************************/
 
-/*
- * $Revision$
- * 06 Jun 02 - Trent: Created.
- *
- */
-
 #ifndef PENTDECODER
 #define PENTDECODER
 #include <cstddef>

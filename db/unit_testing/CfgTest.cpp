@@ -3,12 +3,6 @@
  * OVERVIEW:   Provides the implementation for the CfgTest class, which
  *                tests the Exp and derived classes
  *============================================================================*/
-/*
- * $Revision$    // 1.14.2.1
- *
- * 17 Jul 03 - Mike: Created
- */
-
 
 #include "CfgTest.h"
 #include "BinaryFile.h"
@@ -18,38 +12,30 @@
 #include "dataflow.h"
 #include "pentiumfrontend.h"
 #include "log.h"
+#include <QProcessEnvironment>
 
-CPPUNIT_TEST_SUITE_REGISTRATION( CfgTest );
-
-#define FRONTIER_PENTIUM    "test/pentium/frontier"
-#define SEMI_PENTIUM        "test/pentium/semi"
-#define IFTHEN_PENTIUM      "test/pentium/ifthen"
-
-/***************************************************************************//**
- * FUNCTION:        CfgTest::setUp
- * OVERVIEW:        Set up some expressions for use with all the tests
- * NOTE:            Called before any tests
- * PARAMETERS:        <none>
- *
- *============================================================================*/
+#define FRONTIER_PENTIUM    "tests/inputs/pentium/frontier"
+#define SEMI_PENTIUM        "tests/inputs/pentium/semi"
+#define IFTHEN_PENTIUM      "tests/inputs/pentium/ifthen"
 static bool logset = false;
-void CfgTest::setUp ()
+std::string TEST_BASE;
+CfgTest::CfgTest()
 {
-  if (!logset)
-    {
-      logset = true;
-      Boomerang::get()->setLogger(new NullLogger());
+    if(!logset) {
+        TEST_BASE = QProcessEnvironment::systemEnvironment().value("BOOMERANG_TEST_BASE","").toStdString();
+        Boomerang::get()->setProgPath(TEST_BASE);
+        Boomerang::get()->setPluginPath(TEST_BASE+"/out");
+        if(TEST_BASE.empty())
+            fprintf(stderr,"BOOMERANG_TEST_BASE environment variable net set, many test will fail\n");
+        logset=true;
+        Boomerang::get()->setLogger(new NullLogger());
     }
 }
 
-/***************************************************************************//**
- * FUNCTION:        CfgTest::tearDown
- * OVERVIEW:        Delete expressions created in setUp
- * NOTE:            Called after all tests
- * PARAMETERS:        <none>
- *
- *============================================================================*/
-void CfgTest::tearDown () {
+void CfgTest::SetUp ()
+{
+}
+void CfgTest::TearDown () {
 }
 
 /***************************************************************************//**
@@ -57,14 +43,14 @@ void CfgTest::tearDown () {
  * OVERVIEW:        Test the dominator frontier code
  *============================================================================*/
 #define FRONTIER_FOUR    0x08048347
-#define FRONTIER_FIVE    0x08048351
+#define FRONTIER_FIVE    ADDRESS::g(0x08048351)
 #define FRONTIER_TWELVE 0x080483b2
 #define FRONTIER_THIRTEEN 0x080483b9
 
-void CfgTest::testDominators () {
+TEST_F(CfgTest,testDominators) {
     BinaryFileFactory bff;
-    BinaryFile *pBF = bff.Load(FRONTIER_PENTIUM);
-    CPPUNIT_ASSERT(pBF != 0);
+    BinaryFile *pBF = bff.Load(TEST_BASE+"/"+FRONTIER_PENTIUM);
+    ASSERT_TRUE(pBF != 0);
     Prog* prog = new Prog;
     FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
     Type::clearNamedTypes();
@@ -73,7 +59,7 @@ void CfgTest::testDominators () {
 
     bool gotMain;
     ADDRESS addr = pFE->getMainEntryPoint(gotMain);
-    CPPUNIT_ASSERT (addr != NO_ADDRESS);
+    ASSERT_TRUE (addr != NO_ADDRESS);
 
     UserProc* pProc = (UserProc*) prog->getProc(0);
     Cfg* cfg = pProc->getCFG();
@@ -82,11 +68,11 @@ void CfgTest::testDominators () {
 
     // Find BB "5" (as per Appel, Figure 19.5).
     BB_IT it;
-    PBB bb = cfg->getFirstBB(it);
+    BasicBlock *bb = cfg->getFirstBB(it);
     while (bb && bb->getLowAddr() != FRONTIER_FIVE) {
         bb = cfg->getNextBB(it);
     }
-    CPPUNIT_ASSERT(bb);
+    ASSERT_TRUE(bb);
 
     std::ostringstream expected, actual;
   //expected << std::hex << FRONTIER_FIVE << " " << FRONTIER_THIRTEEN << " " << FRONTIER_TWELVE << " " <<
@@ -97,8 +83,8 @@ void CfgTest::testDominators () {
     std::set<int>::iterator ii;
     std::set<int>& DFset = df->getDF(n5);
     for (ii=DFset.begin(); ii != DFset.end(); ii++)
-        actual << std::hex << (unsigned)df->nodeToBB(*ii)->getLowAddr() << " ";
-    CPPUNIT_ASSERT_EQUAL(expected.str(), actual.str());
+        actual << std::hex << df->nodeToBB(*ii)->getLowAddr() << " ";
+    ASSERT_EQ(expected.str(), actual.str());
 
     pBF->UnLoad();
     delete pFE;
@@ -109,16 +95,16 @@ void CfgTest::testDominators () {
  * FUNCTION:        CfgTest::testSemiDominators
  * OVERVIEW:        Test a case where semi dominators are different to dominators
  *============================================================================*/
-#define SEMI_L    0x80483b0
-#define SEMI_M    0x80483e2
-#define SEMI_B    0x8048345
-#define SEMI_D    0x8048354
-#define SEMI_M    0x80483e2
+#define SEMI_L    ADDRESS::g(0x80483b0)
+#define SEMI_M    ADDRESS::g(0x80483e2)
+#define SEMI_B    ADDRESS::g(0x8048345)
+#define SEMI_D    ADDRESS::g(0x8048354)
+#define SEMI_M    ADDRESS::g(0x80483e2)
 
-void CfgTest::testSemiDominators () {
+TEST_F(CfgTest,testSemiDominators) {
     BinaryFileFactory bff;
-    BinaryFile* pBF = bff.Load(SEMI_PENTIUM);
-    CPPUNIT_ASSERT(pBF != 0);
+    BinaryFile* pBF = bff.Load(TEST_BASE+"/"+SEMI_PENTIUM);
+    ASSERT_TRUE(pBF != 0);
     Prog* prog = new Prog;
     FrontEnd* pFE = new PentiumFrontEnd(pBF, prog, &bff);
     Type::clearNamedTypes();
@@ -127,7 +113,7 @@ void CfgTest::testSemiDominators () {
 
     bool gotMain;
     ADDRESS addr = pFE->getMainEntryPoint(gotMain);
-    CPPUNIT_ASSERT (addr != NO_ADDRESS);
+    ASSERT_TRUE (addr != NO_ADDRESS);
 
     UserProc* pProc = (UserProc*) prog->getProc(0);
     Cfg* cfg = pProc->getCFG();
@@ -137,19 +123,19 @@ void CfgTest::testSemiDominators () {
 
     // Find BB "L (6)" (as per Appel, Figure 19.8).
     BB_IT it;
-    PBB bb = cfg->getFirstBB(it);
+    BasicBlock * bb = cfg->getFirstBB(it);
     while (bb && bb->getLowAddr() != SEMI_L) {
         bb = cfg->getNextBB(it);
     }
-    CPPUNIT_ASSERT(bb);
+    ASSERT_TRUE(bb);
     int nL = df->pbbToNode(bb);
 
     // The dominator for L should be B, where the semi dominator is D
     // (book says F)
-    unsigned actual_dom     = (unsigned)df->nodeToBB(df->getIdom(nL))->getLowAddr();
-    unsigned actual_semi = (unsigned)df->nodeToBB(df->getSemi(nL))->getLowAddr();
-    CPPUNIT_ASSERT_EQUAL((unsigned)SEMI_B, actual_dom);
-    CPPUNIT_ASSERT_EQUAL((unsigned)SEMI_D, actual_semi);
+    ADDRESS actual_dom  = df->nodeToBB(df->getIdom(nL))->getLowAddr();
+    ADDRESS actual_semi = df->nodeToBB(df->getSemi(nL))->getLowAddr();
+    ASSERT_EQ(SEMI_B, actual_dom);
+    ASSERT_EQ(SEMI_D, actual_semi);
     // Check the final dominator frontier as well; should be M and B
     std::ostringstream expected, actual;
   //expected << std::hex << SEMI_M << " " << SEMI_B << " ";
@@ -157,8 +143,8 @@ void CfgTest::testSemiDominators () {
     std::set<int>::iterator ii;
     std::set<int>& DFset = df->getDF(nL);
     for (ii=DFset.begin(); ii != DFset.end(); ii++)
-        actual << std::hex << (unsigned)df->nodeToBB(*ii)->getLowAddr() << " ";
-    CPPUNIT_ASSERT_EQUAL(expected.str(), actual.str());
+        actual << std::hex << df->nodeToBB(*ii)->getLowAddr() << " ";
+    ASSERT_EQ(expected.str(), actual.str());
     delete pFE;
 }
 
@@ -166,10 +152,10 @@ void CfgTest::testSemiDominators () {
  * FUNCTION:        CfgTest::testPlacePhi
  * OVERVIEW:        Test the placing of phi functions
  *============================================================================*/
-void CfgTest::testPlacePhi () {
+TEST_F(CfgTest,testPlacePhi ) {
     BinaryFileFactory bff;
-    BinaryFile* pBF = bff.Load(FRONTIER_PENTIUM);
-    CPPUNIT_ASSERT(pBF != 0);
+    BinaryFile* pBF = bff.Load(TEST_BASE+"/"+FRONTIER_PENTIUM);
+    ASSERT_TRUE(pBF != 0);
     Prog* prog = new Prog;
     FrontEnd* pFE = new PentiumFrontEnd(pBF, prog, &bff);
     Type::clearNamedTypes();
@@ -181,7 +167,6 @@ void CfgTest::testPlacePhi () {
 
     // Simplify expressions (e.g. m[ebp + -8] -> m[ebp - 8]
     prog->finishDecode();
-
     DataFlow* df = pProc->getDataFlow();
     df->dominators(cfg);
     df->placePhiFunctions(pProc);
@@ -191,7 +176,11 @@ void CfgTest::testPlacePhi () {
         new Binary(opMinus,
             Location::regOf(29),
             new Const(4)));
-
+    //pProc->dump();
+    cfg->dump();
+    df->dumpA_phi();
+    df->dumpA_orig();
+    df->dumpDefsites();
     // A_phi[x] should be the set {7 8 10 15 20 21} (all the join points)
     std::ostringstream ost;
     std::set<int>::iterator ii;
@@ -199,7 +188,7 @@ void CfgTest::testPlacePhi () {
     for (ii = A_phi.begin(); ii != A_phi.end(); ++ii)
         ost << *ii << " ";
     std::string expected("7 8 10 15 20 21 ");
-    CPPUNIT_ASSERT_EQUAL(expected, ost.str());
+    EXPECT_EQ(expected, ost.str());
     delete pFE;
 }
 
@@ -207,10 +196,10 @@ void CfgTest::testPlacePhi () {
  * FUNCTION:        CfgTest::testPlacePhi2
  * OVERVIEW:        Test a case where a phi function is not needed
  *============================================================================*/
-void CfgTest::testPlacePhi2 () {
+TEST_F(CfgTest,testPlacePhi2) {
     BinaryFileFactory bff;
-    BinaryFile* pBF = bff.Load(IFTHEN_PENTIUM);
-    CPPUNIT_ASSERT(pBF != 0);
+    BinaryFile* pBF = bff.Load(TEST_BASE+"/"+IFTHEN_PENTIUM);
+    ASSERT_TRUE(pBF != 0);
     Prog* prog = new Prog;
     FrontEnd* pFE = new PentiumFrontEnd(pBF, prog, &bff);
     Type::clearNamedTypes();
@@ -244,7 +233,7 @@ void CfgTest::testPlacePhi2 () {
     std::set<int>::iterator pp;
     for (pp = s.begin(); pp != s.end(); pp++)
         actual << *pp << " ";
-    CPPUNIT_ASSERT_EQUAL(expected, actual.str());
+    ASSERT_EQ(expected, actual.str());
     delete e;
 
     expected = "";
@@ -258,7 +247,7 @@ void CfgTest::testPlacePhi2 () {
     std::set<int>& s2 = df->getA_phi(e);
     for (pp = s2.begin(); pp != s2.end(); pp++)
         actual2 << *pp << " ";
-    CPPUNIT_ASSERT_EQUAL(expected, actual2.str());
+    ASSERT_EQ(expected, actual2.str());
     delete e;
     delete pFE;
 }
@@ -267,10 +256,10 @@ void CfgTest::testPlacePhi2 () {
  * FUNCTION:        CfgTest::testRenameVars
  * OVERVIEW:        Test the renaming of variables
  *============================================================================*/
-void CfgTest::testRenameVars () {
+TEST_F(CfgTest,testRenameVars) {
     BinaryFileFactory bff;
     BinaryFile* pBF = bff.Load(FRONTIER_PENTIUM);
-    CPPUNIT_ASSERT(pBF != 0);
+    ASSERT_TRUE(pBF != 0);
     Prog* prog = new Prog;
     FrontEnd* pFE = new PentiumFrontEnd(pBF, prog, &bff);
     Type::clearNamedTypes();

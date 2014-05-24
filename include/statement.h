@@ -12,23 +12,6 @@
  * OVERVIEW:   The Statement and related classes (was dataflow.h)
  *============================================================================*/
 
-/*
- * $Revision$    // 1.76.2.30
- * 25 Nov 02 - Trent: appropriated for use by new dataflow.
- * 3 July 02 - Trent: created.
- * 03 Feb 03 - Mike: cached dataflow (uses and usedBy)
- * 03 Apr 03 - Mike: Added StatementSet
- * 25 Jul 03 - Mike: Changed dataflow.h to statement.h
- * 15 Jul 04 - Mike: New Assignment hierarchy
- * 11 Aug 04 - Mike: BoolStatement -> BoolAssign
- * 17 Sep 04 - Mike: PhiExp in ordinary assignment replaced by PhiAssign statement
- * 27 Oct 04 - Mike: PhiAssign has vector of PhiInfo now; needed because a statement pointer alone does not uniquely
- *                        define what is defined. It is now possible for all parameters of a phi to have different exps
- * 15 Mar 05 - Mike: Removed implicit arguments; replaced with DefCollector
- * 11 Apr 05 - Mike: Added RetStatement, DefineAll
- * 26 Apr 05 - Mike: Moved class Return here from signature.h
- * 12 Aug 05 - Mike: Added ImpRefStatement
- */
 
 #ifndef _STATEMENT_H_
 #define _STATEMENT_H_
@@ -164,10 +147,10 @@ virtual                ~Statement() { }
 //        bool        operator==(Statement& o);
         // Get and set *enclosing* proc (not destination proc)
         void        setProc(UserProc *p);
-        UserProc*    getProc() {return proc;}
+        UserProc*   getProc() {return proc;}
 
-        int            getNumber() {return number;}
-virtual    void        setNumber(int num) {number = num;}        // Overridden for calls (and maybe later returns)
+        int         getNumber() const {return number;}
+virtual void        setNumber(int num) {number = num;}        // Overridden for calls (and maybe later returns)
 
         STMT_KIND    getKind() { return kind;}
         void        setKind(STMT_KIND k) {kind = k;}
@@ -190,7 +173,7 @@ virtual bool        accept(StmtPartModifier* visitor) = 0;
         void        setLexEnd(unsigned int n) { lexEnd = n; }
         unsigned    int getLexBegin() { return lexBegin; }
         unsigned    int getLexEnd() { return lexEnd; }
-        Exp            *getExpAtLex(unsigned int begin, unsigned int end);
+        Exp            *getExpAtLex(unsigned int, unsigned int);
 
 
         // returns true if this statement defines anything
@@ -506,7 +489,7 @@ virtual bool        searchAll(const Exp &search, std::list<Exp*>& result);
 virtual bool        searchAndReplace(const Exp &search, Exp *replace, bool cc = false);
 
         // memory depth
-        int            getMemDepth();
+        int         getMemDepth();
 
         // Generate code
 virtual void        generateCode(HLLCode *hll, BasicBlock *Parent, int indLevel);
@@ -551,12 +534,17 @@ struct PhiInfo {
         // A default constructor is required because CFG changes (?) can cause access to elements of the vector that
         // are beyond the current end, creating gaps which have to be initialised to zeroes so that they can be skipped
         PhiInfo() {} //: def(0), e(0) not initializing to help valgrind find locations of unset vals
-        Statement*    def;        // The defining statement
         Exp*        e;            // The expression for the thing being defined (never subscripted)
+        void def(Statement* def) { m_def=def; /*assert(def);*/ }
+        Statement *def() { return m_def;}
+        const Statement *def() const { return m_def;}
+protected:
+        Statement*    m_def;        // The defining statement
+
 };
 class PhiAssign : public Assignment {
 public:
-        typedef        std::map<int,PhiInfo> Definitions;
+        typedef        std::map<uint32_t,PhiInfo> Definitions;
         typedef        Definitions::iterator iterator;
         typedef        Definitions::const_iterator const_iterator;
 private:
@@ -605,9 +593,9 @@ virtual void            genConstraints(LocationSet& cons);
 //
 
                         // Get or put the statement at index idx
-        Statement*      getStmtAt(size_t idx) {return defVec[idx].def;}
-        PhiInfo&        getAt(size_t idx) {return defVec[idx];}
-        void            putAt(size_t idx, Statement* d, Exp* e);
+        Statement*      getStmtAt(uint32_t idx) {return defVec[idx].def();}
+        PhiInfo&        getAt(uint32_t idx) {return defVec[idx];}
+        void            putAt(uint32_t idx, Statement* d, Exp* e);
         void            simplifyRefs();
 virtual size_t          getNumDefs() {return defVec.size();}
         Definitions &   getDefs() {return defVec;}
@@ -704,7 +692,7 @@ virtual bool        accept(StmtPartModifier* visitor);
         void        makeSigned();
 
 virtual void        printCompact(std::ostream& os = std::cout, bool html = false) const;
-virtual void        generateCode(HLLCode *hll, BasicBlock *Parent, int indLevel);
+virtual void        generateCode(HLLCode *hll, BasicBlock *, int indLevel);
 virtual void        simplify();
 
                     // Statement functions
@@ -815,7 +803,7 @@ virtual bool        searchAndReplace(const Exp& search, Exp* replace, bool cc = 
 virtual bool        searchAll(const Exp &search, std::list<Exp*> &result);
 
                     // code generation
-virtual void        generateCode(HLLCode *hll, BasicBlock *Parent, int indLevel);
+virtual void        generateCode(HLLCode *, BasicBlock *, int);
 
                     // simplify all the uses/defs in this Statement
 virtual void        simplify();
@@ -922,7 +910,7 @@ virtual bool        searchAndReplace(const Exp &search, Exp* replace, bool cc = 
 virtual bool        searchAll(const Exp &search, std::list<Exp*> &result);
 
         // code generation
-virtual void        generateCode(HLLCode *hll, BasicBlock *Parent, int indLevel);
+virtual void        generateCode(HLLCode *, BasicBlock *, int);
 
         // dataflow analysis
 virtual bool        usesExp(const Exp &e);
@@ -990,7 +978,7 @@ virtual bool    searchAndReplace(const Exp & search, Exp* replace, bool cc = fal
 virtual bool        searchAll(const Exp &search, std::list<Exp*> &result);
 
         // code generation
-virtual void        generateCode(HLLCode *hll, BasicBlock *Parent, int indLevel);
+virtual void        generateCode(HLLCode *, BasicBlock *, int);
 
         // dataflow analysis
 virtual bool        usesExp(const Exp &e);
@@ -1039,30 +1027,30 @@ class CallStatement: public GotoStatement {
         ReturnStatement* calleeReturn;
 
 public:
-                    CallStatement();
-virtual                ~CallStatement();
+                        CallStatement();
+virtual                 ~CallStatement();
 
-virtual    void        setNumber(int num);
+virtual    void         setNumber(int num);
         // Make a deep copy, and make the copy a derived object if needed.
-virtual Statement*    clone() const;
+virtual Statement *     clone() const;
 
         // Accept a visitor to this stmt
-virtual bool        accept(StmtVisitor* visitor);
-virtual bool        accept(StmtExpVisitor* visitor);
-virtual bool        accept(StmtModifier* visitor);
-virtual bool        accept(StmtPartModifier* visitor);
+virtual bool            accept(StmtVisitor* visitor);
+virtual bool            accept(StmtExpVisitor* visitor);
+virtual bool            accept(StmtModifier* visitor);
+virtual bool            accept(StmtPartModifier* visitor);
 
-        void        setArguments(StatementList& args);
+        void            setArguments(StatementList& args);
         // Set implicit arguments: so far, for testing only:
         //void        setImpArguments(std::vector<Exp*>& arguments);
 //        void        setReturns(std::vector<Exp*>& returns);// Set call's return locs
-        void        setSigArguments();                // Set arguments based on signature
-        StatementList& getArguments() {return arguments;}    // Return call's arguments
-        void        updateArguments();                // Update the arguments based on a callee change
+        void            setSigArguments();                // Set arguments based on signature
+        StatementList & getArguments() {return arguments;}    // Return call's arguments
+        void            updateArguments();                // Update the arguments based on a callee change
         //Exp        *getDefineExp(int i);
-        int            findDefine(Exp *e);                // Still needed temporarily for ad hoc type analysis
-        void        removeDefine(Exp *e);
-        void        addDefine(ImplicitAssign* as);    // For testing
+        int             findDefine(Exp *e);                // Still needed temporarily for ad hoc type analysis
+        void            removeDefine(Exp *e);
+        void            addDefine(ImplicitAssign* as);    // For testing
         //void        ignoreReturn(Exp *e);
         //void        ignoreReturn(int n);
         //void        addReturn(Exp *e, Type* ty = nullptr);

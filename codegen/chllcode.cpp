@@ -13,15 +13,6 @@
  *               I guess this will be the most popular output language unless we do C++.
  ******************************************************************************/
 
-/*
- * $Revision$    // 1.90.2.16
- * 20 Jun 02 - Trent: Quick and dirty implementation for debugging
- * 28 Jun 02 - Trent: Starting to look better
- * 22 May 03 - Mike: delete -> free() to keep valgrind happy
- * 16 Apr 04 - Mike: char[] replaced by ostringstreams
- * 18 Jan 06 - Gerard: several changes for prettier output, better logging of warnings and errors
- */
-
 #include <cassert>
 #include <sstream>
 #include <cstring>
@@ -306,18 +297,20 @@ void CHLLCode::appendExp(std::ostringstream& str, const Exp &exp, PREC curPrec, 
             break;
         case opNot:
             openParen(str, curPrec, PREC_UNARY);
-            str << " !";
+            str << " ~";
             appendExp(str, *u.getSubExp1(), PREC_UNARY);
             closeParen(str, curPrec, PREC_UNARY);
             break;
         case opLNot:
             openParen(str, curPrec, PREC_UNARY);
+            str << " !";
             appendExp(str, *u.getSubExp1(), PREC_UNARY);
             closeParen(str, curPrec, PREC_UNARY);
             break;
         case opNeg:
         case opFNeg:
             openParen(str, curPrec, PREC_UNARY);
+            str << " -";
             appendExp(str, *u.getSubExp1(), PREC_UNARY);
             closeParen(str, curPrec, PREC_UNARY);
             break;
@@ -578,7 +571,6 @@ void CHLLCode::appendExp(std::ostringstream& str, const Exp &exp, PREC curPrec, 
         case opFpush:
         case opFpop:
         case opLoge:
-        case opSqrt:
         case opExecute:
         case opAFP:
         case opAGP:
@@ -807,6 +799,11 @@ void CHLLCode::appendExp(std::ostringstream& str, const Exp &exp, PREC curPrec, 
             break;
         case opCos:
             str << "cos(";
+            appendExp(str, *u.getSubExp1(), PREC_NONE);
+            str << ")";
+            break;
+        case opSqrt:
+            str << "sqrt(";
             appendExp(str, *u.getSubExp1(), PREC_NONE);
             str << ")";
             break;
@@ -1606,8 +1603,8 @@ void CHLLCode::AddGlobal(const char *name, Type *type, Exp *init) {
 
 /// Dump all generated code to \a os.
 void CHLLCode::print(std::ostream &os) {
-    for (std::list<char*>::iterator it = lines.begin(); it != lines.end(); it++)
-        os << *it << std::endl;
+    for (auto & elem : lines)
+        os << elem << std::endl;
     if (m_proc == nullptr)
         os << std::endl;
 }

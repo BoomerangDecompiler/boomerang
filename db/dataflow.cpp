@@ -12,11 +12,6 @@
  * \brief   Implementation of the DataFlow class
  ******************************************************************************/
 
-/*
- * $Revision$    // 1.43.2.24
- * 15 Mar 05 - Mike: Separated from cfg.cpp
- */
-
 #include <sstream>
 #include <cstring>
 
@@ -377,7 +372,7 @@ bool DataFlow::renameBlockVars(UserProc* proc, int n, bool clearStacks /* = fals
                 // needs updating
                 PhiAssign::iterator pp;
                 for (pp = pa->begin(); pp != pa->end(); ++pp) {
-                    Statement* def = pp->second.def;
+                    Statement* def = pp->second.def();
                     if (def && def->isCall())
                         ((CallStatement*)def)->useBeforeDefine(phiLeft->clone());
                 }
@@ -479,9 +474,9 @@ bool DataFlow::renameBlockVars(UserProc* proc, int n, bool clearStacks /* = fals
         if (S->isCall() && ((CallStatement*)S)->isChildless() && !Boomerang::get()->assumeABI) {
             // S is a childless call (and we're not assuming ABI compliance)
             Stacks[defineAll];                                        // Ensure that there is an entry for defineAll
-            for (auto iter = Stacks.begin(); iter != Stacks.end(); ++iter) {
+            for (auto & elem : Stacks) {
                 // if (dd->first->isMemDepth(memDepth))
-                iter->second.push(S);                                // Add a definition for all vars
+                elem.second.push(S);                                // Add a definition for all vars
             }
         }
     }
@@ -504,6 +499,7 @@ bool DataFlow::renameBlockVars(UserProc* proc, int n, bool clearStacks /* = fals
             // Suppose the jth operand of the phi is a
             // For now, just get the LHS
             Exp* a = pa->getLeft();
+
             // Only consider variables that can be renamed
             if (!canRename(a, proc))
                 continue;
@@ -623,12 +619,12 @@ Exp* DefCollector::findDefFor(Exp* e) {
  */
 void UseCollector::print(std::ostream& os, bool html) const {
     bool first = true;
-    for (auto it=locs.begin(); it != locs.end(); ++it) {
+    for (auto const & elem : locs) {
         if (first)
             first = false;
         else
             os << ",  ";
-        (*it)->print(os, html);
+        (elem)->print(os, html);
     }
 }
 
@@ -693,8 +689,8 @@ void DefCollector::dump() {
 void UseCollector::makeCloneOf(UseCollector& other) {
     initialised = other.initialised;
     locs.clear();
-    for (iterator it = other.begin(); it != other.end(); ++it)
-        locs.insert((*it)->clone());
+    for (auto const & elem : other)
+        locs.insert((elem)->clone());
 }
 /**
  * makeCloneOf(): clone the given Collector into this one
@@ -702,8 +698,8 @@ void UseCollector::makeCloneOf(UseCollector& other) {
 void DefCollector::makeCloneOf(const DefCollector& other) {
     initialised = other.initialised;
     defs.clear();
-    for (auto it = other.begin(); it != other.end(); ++it)
-        defs.insert((Assign*)(*it)->clone());
+    for (auto const & elem : other)
+        defs.insert((Assign*)(elem)->clone());
 }
 
 void DefCollector::searchReplaceAll(const Exp & from, Exp* to, bool& change) {
@@ -807,7 +803,7 @@ void DataFlow::findLiveAtDomPhi(int n, LocationSet& usedByDomPhi, LocationSet& u
             PhiAssign::iterator it;
             for (it = pa->begin(); it != pa->end(); ++it) {
                 if (it->second.e) {
-                    RefExp* re = new RefExp(it->second.e, it->second.def);
+                    RefExp* re = new RefExp(it->second.e, it->second.def());
                     usedByDomPhi0.insert(re);
                 }
             }

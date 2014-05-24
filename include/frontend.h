@@ -11,19 +11,11 @@
  */
 
 /***************************************************************************//**
- * \file        frontend.h
- * OVERVIEW:    This file contains the definition for the FrontEnd class, which implements the source indendent parts of
- *                the front end: decoding machine instructions into a control flow graph populated with low and high level
- *                RTLs.
+ * \file     frontend.h
+ * \brief    This file contains the definition for the FrontEnd class, which implements the source indendent parts of
+ *           the front end: decoding machine instructions into a control flow graph populated with low and high level
+ *           RTLs.
  *============================================================================*/
-
-/* $Revision$    // 1.29.2.2
- *
- * 17 Apr 02 - Mike: Mods to adapt UQBT code to boomerang
- * 28 Jun 05 - Mike: Added a map of previously decoded indirect jumps and calls needed when restarting the cfg
- */
-
-
 #ifndef __FRONTEND_H__
 #define __FRONTEND_H__
 
@@ -194,7 +186,7 @@ static  void            closeInstance(void* dlHandle); //!<Close the library ope
          * incomplete in these cases, and needs to be restarted from scratch
          */
         void            addDecodedRtl(ADDRESS a, RTL* rtl) { previouslyDecoded[a] = rtl; }
-        void preprocessProcGoto(std::list<Statement*>::iterator ss, ADDRESS dest, std::list<Statement*> sl, RTL* pRtl);
+        void preprocessProcGoto(std::list<Statement*>::iterator ss, ADDRESS dest, const std::list<Statement *> &sl, RTL* pRtl);
 };    // class FrontEnd
 
 

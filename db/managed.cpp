@@ -12,13 +12,6 @@
  * \brief   Implementation of "managed" classes such as StatementSet, which feature makeUnion etc
  ******************************************************************************/
 
-/*
- * $Revision$    // 1.15.2.13
- *
- * 26 Aug 03 - Mike: Split off from statement.cpp
- * 21 Jun 05 - Mike: Added AssignSet
- */
-
 #include <sstream>
 #include <cstring>
 
@@ -111,8 +104,8 @@ bool StatementSet::exists(Statement* s) {
 
 // Find a definition for loc in this Statement set. Return true if found
 bool StatementSet::definesLoc(Exp* loc) {
-    for (iterator it = begin(); it != end(); it++) {
-        if ((*it)->definesLoc(loc))
+    for (auto const & elem : *this) {
+        if ((elem)->definesLoc(loc))
             return true;
     }
     return false;
@@ -548,8 +541,8 @@ void StatementList::append(StatementSet& ss) {
 
 char* StatementList::prints() {
     std::ostringstream ost;
-    for (iterator it = begin(); it != end(); it++) {
-        ost << *it << ",\t";
+    for (auto & elem : *this) {
+        ost << elem << ",\t";
     }
     strncpy(debug_buffer, ost.str().c_str(), DEBUG_BUFSIZE-1);
     debug_buffer[DEBUG_BUFSIZE-1] = '\0';
@@ -607,8 +600,8 @@ void StatementVec::printNums(std::ostream& os) {
 // Special intersection method: this := a intersect b
 void StatementList::makeIsect(StatementList& a, LocationSet& b) {
     clear();
-    for (iterator it = a.begin(); it != a.end(); ++it) {
-        Assignment* as = (Assignment*)*it;
+    for (auto & elem : a) {
+        Assignment* as = (Assignment*)elem;
         if (b.exists(as->getLeft()))
             push_back(as);
     }
@@ -616,15 +609,15 @@ void StatementList::makeIsect(StatementList& a, LocationSet& b) {
 
 void StatementList::makeCloneOf(StatementList& o) {
     clear();
-    for (iterator it = o.begin(); it != o.end(); it++)
-        push_back((*it)->clone());
+    for (auto & elem : o)
+        push_back((elem)->clone());
 }
 
 // Return true if loc appears on the left of any statements in this list
 // Note: statements in this list are assumed to be assignments
 bool StatementList::existsOnLeft(Exp* loc) {
-    for (iterator it = begin(); it != end(); it++) {
-        if (*((Assignment*)*it)->getLeft() == *loc)
+    for (auto & elem : *this) {
+        if (*((Assignment*)elem)->getLeft() == *loc)
             return true;
     }
     return false;
@@ -645,15 +638,15 @@ void StatementList::removeDefOf(Exp* loc) {
 Assignment* StatementList::findOnLeft(Exp* loc) {
     if (empty())
         return nullptr;
-    for (iterator it = begin(); it != end(); it++) {
-        Exp *left = ((Assignment*)*it)->getLeft();
+    for (auto & elem : *this) {
+        Exp *left = ((Assignment*)elem)->getLeft();
         if (*left == *loc)
-            return (Assignment*)*it;
+            return (Assignment*)elem;
         if (left->isLocal()) {
             Location *l = (Location*)left;
             const Exp *e = l->getProc()->expFromSymbol(((Const*)l->getSubExp1())->getStr());
             if (e && ((*e == *loc) || (e->isSubscript() && *e->getSubExp1() == *loc))) {
-                return (Assignment*)*it;
+                return (Assignment*)elem;
             }
         }
     }
@@ -816,21 +809,21 @@ Range &RangeMap::getRange(Exp *loc) {
 }
 
 void RangeMap::unionwith(RangeMap &other) {
-    for (std::map<Exp*, Range, lessExpStar>::iterator it = other.ranges.begin(); it != other.ranges.end(); it++) {
-        if (ranges.find((*it).first) == ranges.end()) {
-            ranges[(*it).first] = (*it).second;
+    for (auto & elem : other.ranges) {
+        if (ranges.find((elem).first) == ranges.end()) {
+            ranges[(elem).first] = (elem).second;
         } else {
-            ranges[(*it).first].unionWith((*it).second);
+            ranges[(elem).first].unionWith((elem).second);
         }
     }
 }
 
 void RangeMap::widenwith(RangeMap &other) {
-    for (auto it = other.ranges.begin(); it != other.ranges.end(); it++) {
-        if (ranges.find((*it).first) == ranges.end()) {
-            ranges[(*it).first] = (*it).second;
+    for (auto & elem : other.ranges) {
+        if (ranges.find((elem).first) == ranges.end()) {
+            ranges[(elem).first] = (elem).second;
         } else {
-            ranges[(*it).first].widenWith((*it).second);
+            ranges[(elem).first].widenWith((elem).second);
         }
     }
 }
@@ -851,20 +844,20 @@ Exp *RangeMap::substInto(Exp *e, std::set<Exp*, lessExpStar> *only) {
     int count = 0;
     do {
         changes = false;
-        for (std::map<Exp*, Range, lessExpStar>::iterator it = ranges.begin(); it != ranges.end(); it++) {
-            if (only && only->find((*it).first) == only->end())
+        for (auto & elem : ranges) {
+            if (only && only->find((elem).first) == only->end())
                 continue;
             bool change = false;
             Exp *eold = nullptr;
             if(DEBUG_RANGE_ANALYSIS)
                 eold=e->clone();
-            if ((*it).second.getLowerBound() == (*it).second.getUpperBound()) {
-                e = e->searchReplaceAll(*(*it).first, (Binary::get(opPlus, (*it).second.getBase(), new Const((*it).second.getLowerBound())))->simplify(), change);
+            if ((elem).second.getLowerBound() == (elem).second.getUpperBound()) {
+                e = e->searchReplaceAll(*(elem).first, (Binary::get(opPlus, (elem).second.getBase(), new Const((elem).second.getLowerBound())))->simplify(), change);
             }
             if (change) {
                 e = e->simplify()->simplifyArith();
                 if (VERBOSE && DEBUG_RANGE_ANALYSIS)
-                    LOG << "applied " << (*it).first << " to " << eold << " to get " << e << "\n";
+                    LOG << "applied " << (elem).first << " to " << eold << " to get " << e << "\n";
                 changes = true;
             }
         }
@@ -875,10 +868,10 @@ Exp *RangeMap::substInto(Exp *e, std::set<Exp*, lessExpStar> *only) {
 }
 
 void RangeMap::killAllMemOfs() {
-    for (std::map<Exp*, Range, lessExpStar>::iterator it = ranges.begin(); it != ranges.end(); it++) {
-        if ((*it).first->isMemOf()) {
+    for (auto & elem : ranges) {
+        if ((elem).first->isMemOf()) {
             Range empty;
-            (*it).second.unionWith(empty);
+            (elem).second.unionWith(empty);
         }
     }
 }

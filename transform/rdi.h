@@ -3,14 +3,9 @@
  */
 /***************************************************************************//**
  * \file       removedoubleindirection.h
- * OVERVIEW:   Provides the definition for the remove double indirection exp 
+ * OVERVIEW:   Provides the definition for the remove double indirection exp
                tranformer.
  *============================================================================*/
-/*
- * $Revision$
- *
- * 17 Apr 04 - Trent: Created
- */
 
 #ifndef REMOVE_DOUBLE_INDIRECTION_H
 #define REMOVE_DOUBLE_INDIRECTION_H

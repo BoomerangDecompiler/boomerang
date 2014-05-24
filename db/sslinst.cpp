@@ -17,16 +17,6 @@
  *               definitions of instructions and given in a .ssl file.
  ******************************************************************************/
 
-/*
- * $Revision$    // 1.27.2.2
- *
- * 27 Apr 02 - Mike: Mods for boomerang
- * 17 Jul 02 - Mike: readSSLFile resets internal state as well
- * 04 Feb 03 - Mike: Fixed a bug with instantiating NOP (could cause bus error?)
- * 22 May 03 - Mike: Fixed a small memory leak (char* opcode)
- * 16 Jul 04 - Mike: Simplify decoded semantics
- */
-
 /***************************************************************************//**
  * Dependencies.
  ******************************************************************************/
@@ -210,20 +200,19 @@ void RTLInstDict::addRegister( const char *name, int id, int size, bool flt ) {
  *
  ******************************************************************************/
 void RTLInstDict::print(std::ostream& os /*= std::cout*/) {
-    for (std::map<std::string, TableEntry>::iterator p = idict.begin();
-         p != idict.end(); p++) {
+    for (auto & elem : idict) {
         // print the instruction name
-        os << (*p).first << "  ";
+        os << (elem).first << "  ";
 
         // print the parameters
-        const std::list<std::string>& params((*p).second.params);
+        const std::list<std::string>& params((elem).second.params);
         int i = params.size();
         for (auto s = params.begin(); s != params.end(); s++,i--)
             os << *s << (i != 1 ? "," : "");
         os << "\n";
 
         // print the RTL
-        RTL& rtlist = (*p).second.rtl;
+        RTL& rtlist = (elem).second.rtl;
         rtlist.print(os);
         os << "\n";
     }
@@ -394,7 +383,7 @@ std::list<Statement*>* RTLInstDict::instantiateRTL(std::string& name, ADDRESS na
  * \param   actuals - the actual parameter values
  * \returns the instantiated list of Exps
  ******************************************************************************/
-std::list<Statement*>* RTLInstDict::instantiateRTL(RTL& rtl, ADDRESS natPC, std::list<std::string>& params,
+std::list<Statement*>* RTLInstDict::instantiateRTL(RTL& rtl, ADDRESS /*natPC*/, std::list<std::string>& params,
                                                    const std::vector<Exp*>& actuals) {
     assert(params.size() == actuals.size());
 
@@ -534,39 +523,39 @@ void RTLInstDict::transformPostVars(std::list<Statement *> &rts, bool optimise) 
          * Can't really use this with Exps, so we search twice; once for the base, and once for the post, and if we
          * get more with the former, then we have a use of the base (consider r[0] + r[0]')
          */
-        for (auto sr = vars.begin(); sr != vars.end(); sr++ ) {
-            if( sr->second.isNew ) {
+        for (auto & var : vars) {
+            if( var.second.isNew ) {
                 // Make sure we don't match a var in its defining statement
-                sr->second.isNew = false;
+                var.second.isNew = false;
                 continue;
             }
             for (auto cur = ss; !cur->isNil(); cur = cur->getSubExp2()) {
-                if( sr->second.used )
+                if( var.second.used )
                     break;        // Don't bother; already know it's used
                 Exp* s = cur->getSubExp1();
                 if( !s ) continue;
-                if( *s == *sr->second.base ) {
-                    sr->second.used = true;
+                if( *s == *var.second.base ) {
+                    var.second.used = true;
                     break;
                 }
                 std::list<Exp*> res1, res2;
-                s->searchAll( *sr->second.base, res1 );
-                s->searchAll( *sr->second.post, res2 );
+                s->searchAll( *var.second.base, res1 );
+                s->searchAll( *var.second.post, res2 );
                 // Each match of a post will also match the base.
                 // But if there is a bare (non-post) use of the base, there will be a result in res1 that is not in res2
                 if (res1.size() > res2.size())
-                    sr->second.used = true;
+                    var.second.used = true;
             }
         }
     }
 
     // Second pass: Replace post-variables with temporaries where needed
     for ( Statement * rt : rts) {
-        for (std::map<Exp*,transPost,lessExpStar>::iterator sr = vars.begin(); sr != vars.end(); sr++ ) {
-            if( sr->second.used ) {
-                rt->searchAndReplace(*sr->first, sr->second.tmp);
+        for (auto & var : vars) {
+            if( var.second.used ) {
+                rt->searchAndReplace(*var.first, var.second.tmp);
             } else {
-                rt->searchAndReplace(*sr->first, sr->second.base);
+                rt->searchAndReplace(*var.first, var.second.base);
             }
         }
     }
@@ -574,11 +563,11 @@ void RTLInstDict::transformPostVars(std::list<Statement *> &rts, bool optimise) 
     // Finally: Append assignments where needed from temps to base vars
     // Example: esp' = esp-4; m[esp'] = modrm; FLAG(esp)
     // all the esp' are replaced with say tmp1, you need a "esp = tmp1" at the end to actually make the change
-    for( std::map<Exp*,transPost,lessExpStar>::iterator sr = vars.begin(); sr != vars.end(); sr++ ) {
-        if( sr->second.used ) {
-            Assign* te = new Assign(sr->second.type,
-                                    sr->second.base->clone(),
-                                    sr->second.tmp);
+    for(auto & var : vars) {
+        if( var.second.used ) {
+            Assign* te = new Assign(var.second.type,
+                                    var.second.base->clone(),
+                                    var.second.tmp);
             rts.push_back( te );
         } else {
             // The temp is either used (uncloned) in the assignment, or is deleted here
@@ -614,5 +603,5 @@ void RTLInstDict::reset() {
     AliasMap.clear();
     fastMap.clear();
     idict.clear();
-    fetchExecCycle = 0;
+    fetchExecCycle = nullptr;
 }

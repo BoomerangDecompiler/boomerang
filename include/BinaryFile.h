@@ -9,16 +9,10 @@
  *
  */
 
-/* File: BinaryFile.h
- * Desc: This file contains the definition of the abstract class BinaryFile
+/**
+ * \file: BinaryFile.h
+ * @brief: This file contains the definition of the abstract class BinaryFile
 */
-
-/* $Revision$
- * This class attempts to provide a relatively machine independent interface for programs that read binary files.
- * Created by Mike, 97
- * 01 Aug 01 - Mike: Changed the definition of GetGlobalPointerInfo()
- * 10 Aug 01 - Mike: Added GetDynamicGlobalMap()
- */
 
 #ifndef __BINARYFILE_H__
 #define __BINARYFILE_H__
@@ -141,9 +135,23 @@ static  void            setBasePath(const std::string &path) {m_base_path=path;}
         BinaryFile *    Load(const std::string &sName );
         void            UnLoad();
 };
+class BinaryData {
+public:
+    virtual char            readNative1(ADDRESS a)=0;
+                            // Read 2 bytes from given native address a; considers endianness
+    virtual int             readNative2(ADDRESS a)=0;// {return 0;}
+                            // Read 4 bytes from given native address a; considers endianness
+    virtual int             readNative4(ADDRESS a)=0;// {return 0;}
+                            // Read 8 bytes from given native address a; considers endianness
+    virtual QWord           readNative8(ADDRESS a)=0;// {return 0;}
+                            // Read 4 bytes as a float; consider endianness
+    virtual float           readNativeFloat4(ADDRESS a)=0;// {return 0.;}
+                            // Read 8 bytes as a float; consider endianness
+    virtual double          readNativeFloat8(ADDRESS a)=0;// {return 0.;}
 
+};
 
-class IMPORT_BINARYFILE BinaryFile {
+class IMPORT_BINARYFILE BinaryFile : public BinaryData {
 
   friend class ArchiveFile;            // So can use the protected Load()
   friend class BinaryFileFactory;    // So can use getTextLimits
@@ -192,18 +200,6 @@ virtual size_t          getImageSize() = 0; //!< Return the total size of the lo
   // returns true if the given address is in a "strings" section
 virtual bool            isStringConstant(ADDRESS /*uEntry*/) { return false; }
 virtual bool            isCFStringConstant(ADDRESS /*uEntry*/) { return false; }
-virtual char            readNative1(ADDRESS a)=0;
-                        // Read 2 bytes from given native address a; considers endianness
-virtual int             readNative2(ADDRESS a)=0;// {return 0;}
-                        // Read 4 bytes from given native address a; considers endianness
-virtual int             readNative4(ADDRESS a)=0;// {return 0;}
-                        // Read 8 bytes from given native address a; considers endianness
-virtual QWord           readNative8(ADDRESS a)=0;// {return 0;}
-                        // Read 4 bytes as a float; consider endianness
-virtual float           readNativeFloat4(ADDRESS a)=0;// {return 0.;}
-                        // Read 8 bytes as a float; consider endianness
-virtual double          readNativeFloat8(ADDRESS a)=0;// {return 0.;}
-
 // Symbol table functions
 virtual const char*     SymbolByAddress(ADDRESS uNative);
 virtual ADDRESS         GetAddressByName(const char* pName, bool bNoTypeOK = false);

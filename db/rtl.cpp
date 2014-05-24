@@ -15,16 +15,6 @@
  *               register transfer list)
  ******************************************************************************/
 
-/*
- * $Revision$    // 1.33.2.3
- *
- * 08 Apr 02 - Mike: Changes for boomerang
- * 13 May 02 - Mike: expList is no longer a pointer
- * 15 May 02 - Mike: Fixed a nasty bug in updateExp (when update with same
- *                expression as existing)
- * 25 Jul 02 - Mike: RTL is now list of Statements
- */
-
 #include <cassert>
 #if defined(_MSC_VER) && _MSC_VER <= 1200
 #pragma warning(disable:4786)
@@ -78,9 +68,9 @@ RTL::RTL(ADDRESS instNativeAddr, const std::list<Statement*>* listStmt /*= nullp
  *                    so that the lists of Exps do not share memory.
  * \param        other RTL to copy from
  ******************************************************************************/
-RTL::RTL(const RTL& other) : nativeAddr(other.nativeAddr) {
-    for (auto it = other.begin(); it != other.end(); it++) {
-        push_back((*it)->clone());
+RTL::RTL(const RTL& other) : std::list<Statement*>(),nativeAddr(other.nativeAddr) {
+    for (auto const & elem : other) {
+        push_back((elem)->clone());
     }
 }
 
@@ -110,8 +100,8 @@ RTL& RTL::operator=(const RTL& other) {
  ******************************************************************************/
 RTL* RTL::clone() const {
     std::list<Statement*> le;
-    for (const_iterator it = begin(); it != end(); it++) {
-        le.push_back((*it)->clone());
+    for (auto const & elem : *this) {
+        le.push_back((elem)->clone());
     }
     return new RTL(nativeAddr, &le);
 }

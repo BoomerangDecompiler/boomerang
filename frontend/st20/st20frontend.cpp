@@ -16,9 +16,6 @@
  *               dependent features such as delay slots in the process. These
  *               functions replace Frontend.cc for decoding sparc instructions.
  ******************************************************************************/
-/*
- * $Revision$    // 1.2.2.2
- */
 /***************************************************************************//**
  * Dependencies.
  ******************************************************************************/

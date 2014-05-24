@@ -1,29 +1,24 @@
-#include <cppunit/extensions/HelperMacros.h>
-
 #include "cfg.h"
-
-class CfgTest : public CPPUNIT_NS::TestFixture
-  {
-    CPPUNIT_TEST_SUITE( CfgTest );
-    CPPUNIT_TEST( testDominators );
-    CPPUNIT_TEST( testSemiDominators );
-    CPPUNIT_TEST( testPlacePhi );
-    CPPUNIT_TEST( testPlacePhi2 );
-    CPPUNIT_TEST( testRenameVars );
-    CPPUNIT_TEST_SUITE_END();
-  protected:
+#include "gtest/gtest.h"
+class CfgTest : public ::testing::Test {
+protected:
     Cfg*  m_prog;
-
-  public:
-
-    void setUp ();
-    void tearDown ();
-
-  protected:
-    void testDominators ();
-    void testSemiDominators ();
-    void testPlacePhi ();
-    void testPlacePhi2();
-    void testRenameVars();
+public:
+    CfgTest();
+    /***************************************************************************//**
+     * FUNCTION:        RtlTest::setUp
+     * OVERVIEW:        Set up some expressions for use with all the tests
+     * NOTE:            Called before any tests
+     * PARAMETERS:        <none>
+     *
+     *============================================================================*/
+    virtual void SetUp();
+    /***************************************************************************//**
+     * FUNCTION:        RtlTest::tearDown
+     * OVERVIEW:        Delete expressions created in setUp
+     * NOTE:            Called after all tests
+     * PARAMETERS:        <none>
+     *
+     *============================================================================*/
+    virtual void TearDown();
 };
-

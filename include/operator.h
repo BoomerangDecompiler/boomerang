@@ -3,12 +3,6 @@
  * OVERVIEW:   Declares the enum OPER, which is used within class Exp to
  *                denote what the top level operator is
  *============================================================================*/
-/*
- * $Revision$    // 1.25.6.3
- *
- * 05 Apr 02 - Mike: Created
- * 12 Apr 02 - Mike: INDEX -> OPER
- */
 #pragma once
 
 // The OPER (and integer representation) of expressions (they can be a fair

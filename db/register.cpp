@@ -15,10 +15,6 @@
  *         a single register.
  ******************************************************************************/
 
-/* $Revision$
- *
- * 28 Apr 02 - Mike: Mods for boomerang
- */
 #include <cassert>
 #include <cstring>
 #include "register.h"

@@ -1,0 +1,22 @@
+SET(target_CPP
+    basic_tests.cpp
+    testloader.cpp
+)
+SET(target_INCLUDE
+    testloader.h
+)
+
+SET(target_SOURCES
+    ${target_CPP}
+    ${target_INCLUDE}
+)
+SET(target_INCLUDE_DIR
+    ..
+)
+INCLUDE_DIRECTORIES(${target_INCLUDE_DIR})
+
+PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS codeblock.proto)
+
+ADD_EXECUTABLE(g_tests ${target_SOURCES} ${PROTO_SRCS} ${PROTO_HDRS})
+ADD_DEPENDENCIES(g_tests GMOCK_BUILD)
+TARGET_LINK_LIBRARIES(g_tests ${GTest_LIBRARIES} ${PROTOBUF_LIBRARIES} pthread)

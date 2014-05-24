@@ -8,28 +8,23 @@
  *
  */
 
-/* File: Win32BinaryFile.h
- * Desc: This file contains the definition of the class Win32BinaryFile.
+/** \file Win32BinaryFile.h
+ * \brief This file contains the definition of the class Win32BinaryFile.
 */
 
-#ifndef __WIN32BINARYFILE_H__
-#define __WIN32BINARYFILE_H_
+#pragma once
 
 #include "BinaryFile.h"
 #include <string>
 
-/* $Revision$
+/*
  * This file contains the definition of the Win32BinaryFile class, and some
  * other definitions specific to the exe version of the BinaryFile object
-*/
-/* At present, there is no support for a symbol table. Win32 files do
+ * At present, there is no support for a symbol table. Win32 files do
                 not use dynamic linking, but it is possible that some files may
                 have debug symbols (in Microsoft Codeview or Borland formats),
                 and these may be implemented in the future. The debug info may
                 even be exposed as another pseudo section
- * 02 Jun 00 - Mike: Added LMMH for 32 bit endianness conversions
- * 16 Apr 01 - Brian: Removed redefinition of the LH macro. LH is now
- *               defined in BinaryFile.h.
  */
 
 // Given a little endian value x, load its value assuming little endian order
@@ -226,12 +221,12 @@ private:
     bool        PostLoad(void* handle); // Called after archive member loaded
     void        findJumps(ADDRESS curr);// Find names for jumps to IATs
 
-    Header*     m_pHeader;                // Pointer to header
-    PEHeader*     m_pPEHeader;            // Pointer to pe header
-    int            m_cbImage;                // Size of image
-    int            m_cReloc;                // Number of relocation entries
-    DWord*        m_pRelocTable;            // The relocation table
-    char *        base;                    // Beginning of the loaded image
+    Header *    m_pHeader;                // Pointer to header
+    PEHeader *  m_pPEHeader;            // Pointer to pe header
+    int         m_cbImage;                // Size of image
+    int         m_cReloc;                // Number of relocation entries
+    DWord *     m_pRelocTable;            // The relocation table
+    char *      base;                    // Beginning of the loaded image
     // Map from address of dynamic pointers to library procedure names:
     std::map<ADDRESS, std::string> dlprocptrs;
     const char    *m_pFileName;
@@ -243,4 +238,3 @@ private:
 //#ifdef WIN32
 #pragma pack()
 //#endif
-#endif            // ifndef __WIN32BINARYFILE_H__

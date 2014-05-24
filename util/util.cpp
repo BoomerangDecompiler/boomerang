@@ -15,12 +15,6 @@
  *             any particular subsystem of UQBT.
  ******************************************************************************/
 
-/*
- * $Revision$
- *
- * 05 Sep 00 - Mike: moved getCodeInfo here from translate2c.cc
- * 10 Apr 02 - Mike: Mods for boomerang; put expSimplify here
- */
 #include <cassert>
 #include <string>
 #include <sstream>

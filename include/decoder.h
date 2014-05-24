@@ -14,12 +14,6 @@
  * OVERVIEW:   The interface to the instruction decoder.
  *============================================================================*/
 
-/*
- * $Revision$    // 1.16.2.2
- *
- * 08 Apr 02 - Mike: Mods for boomerang
- */
-
 #ifndef _DECODER_H_
 #define _DECODER_H_
 

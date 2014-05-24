@@ -1,18 +1,10 @@
-#include <cppunit/extensions/HelperMacros.h>
+#include "gtest/gtest.h"
 
-class ParserTest : public CPPUNIT_NS::TestFixture
-{
-    CPPUNIT_TEST_SUITE( ParserTest );
-    CPPUNIT_TEST( testRead );
-    CPPUNIT_TEST( testExp );
-    CPPUNIT_TEST_SUITE_END();
-
+class ParserTest : public ::testing::Test {
 public:
-    void setUp ();
-    void tearDown ();
-
-protected:
-    void testRead ();
-    void testExp ();
+    virtual void SetUp() {
+    }
+    virtual void TearDown() {
+    }
 };
 

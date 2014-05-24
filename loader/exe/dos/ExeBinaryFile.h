@@ -8,22 +8,16 @@
  *
  */
 
-/* File: ExeBinaryFile.h
- * Desc: This file contains the definition of the class ExeBinaryFile.
-*/
-
-/* $Revision$
+/** \file ExeBinaryFile.h
+ * \brief This file contains the definition of the class ExeBinaryFile.
  * This file contains the definition of the ExeBinaryFile class, and some other
-    definitions specific to the exe version of the BinaryFile object/
-   At present, there is no support for a symbol table. Exe files do
-    not use dynamic linking, but it is possible that some files may
-    have debug symbols (in Microsoft Codeview or Borland formats),
-    and these may be implemented in the future. The debug info may
-    even be exposed as another pseudo section
- * 16 Mar 01 - Mike: Added the needed definitions of new virtual functions
- * 17 Mar 01 - Mike: Removed EXE_RELOCATION (no longer fake a PSP)
- * 16 Apr 01 - Brian: Moved definition of the LH macro to BinaryFile.h.
-*/
+ * definitions specific to the exe version of the BinaryFile object/
+ *   At present, there is no support for a symbol table. Exe files do
+ * not use dynamic linking, but it is possible that some files may
+ * have debug symbols (in Microsoft Codeview or Borland formats),
+ * and these may be implemented in the future. The debug info may
+ * even be exposed as another pseudo section
+ */
 
 #ifndef __EXEBINARYFILE_H__
 #define __EXEBINARYFILE_H_

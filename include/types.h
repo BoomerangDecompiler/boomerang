@@ -1,6 +1,6 @@
-/*
- * types.h: some often used basic type definitions
- * $Revision$
+/**
+ * \file types.h
+ * \brief Contains some often used basic type definitions
  */
 #ifndef __TYPES_H__
 #define __TYPES_H__
@@ -21,7 +21,7 @@ struct ADDRESS { /* pointer. size depends on platform */
         z.m_value =x;
         return z;
     }
-    ADDRESS native() { return ADDRESS::g(m_value&0xFFFFFFFF); }
+    ADDRESS native() const { return ADDRESS::g(m_value&0xFFFFFFFF); }
     static ADDRESS host_ptr(const void *x) {
         ADDRESS z;
         z.m_value =value_type(x);

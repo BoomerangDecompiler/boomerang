@@ -3,13 +3,8 @@
  */
 /***************************************************************************//**
  * \file       generic.h
- * OVERVIEW:   Provides the definition for the generic exp tranformer.
+ * \brief   Provides the definition for the generic exp tranformer.
  *============================================================================*/
-/*
- * $Revision$
- *
- * 17 Apr 04 - Trent: Created
- */
 
 #ifndef GENERIC_EXP_TRANSFORMER_H
 #define GENERIC_EXP_TRANSFORMER_H
@@ -22,7 +17,7 @@ protected:
     bool checkCond(Exp *cond, Exp *bindings);
     Exp *applyFuncs(Exp *rhs);
 public:
-    GenericExpTransformer(Exp *match, Exp *where, Exp *become) : match(match), where(where), become(become) { }
+    GenericExpTransformer(Exp *_match, Exp *_where, Exp *_become) : match(_match), where(_where), become(_become) { }
     virtual Exp *applyTo(Exp *e, bool &bMod);
 };
 

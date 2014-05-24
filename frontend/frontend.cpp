@@ -15,17 +15,6 @@
  *                of frontend logic remains in the source dependent files such as
  *                frontsparc.cpp
  ******************************************************************************/
-
-/*
- * $Revision$    // 1.89.2.7
- * 08 Apr 02 - Mike: Mods to adapt UQBT code to boomerang
- * 16 May 02 - Mike: Moved getMainEntry point here from prog
- * 09 Jul 02 - Mike: Fixed machine check for elf files (was checking endianness rather than machine type)
- * 22 Nov 02 - Mike: Quelched warnings
- * 16 Apr 03 - Mike: trace (-t) to cerr not cout now
- * 02 Feb 05 - Gerard: Check for thunks to library functions and don't create procs for these
- */
-
 #include <cassert>
 #include <cstring>
 #include <stdlib.h>
@@ -292,8 +281,8 @@ void FrontEnd::decode(Prog* prg, bool decodeMain, const char *pname) {
         LOG << "start: " << a << " gotmain: " << (gotMain ? "true" : "false") << "\n";
     if (a == NO_ADDRESS) {
         std::vector<ADDRESS> entrypoints = getEntryPoints();
-        for (std::vector<ADDRESS>::iterator it = entrypoints.begin(); it != entrypoints.end(); it++)
-            decode(prog, *it);
+        for (auto & entrypoint : entrypoints)
+            decode(prog, entrypoint);
         return;
     }
 
@@ -306,8 +295,8 @@ void FrontEnd::decode(Prog* prg, bool decodeMain, const char *pname) {
     const char *name = pBF->SymbolByAddress(a);
     if (name == nullptr)
         name = mainName[0];
-    for (size_t i = 0; i < sizeof(mainName)/sizeof(char*); i++) {
-        if (!strcmp(name, mainName[i])) {
+    for (auto & elem : mainName) {
+        if (!strcmp(name, elem)) {
             Proc *proc = prog->findProc(a);
         if (proc == nullptr) {
                 if (VERBOSE)
@@ -429,12 +418,12 @@ void FrontEnd::readLibrarySignatures(const char *sPath, callconv cc) {
     platform plat = getFrontEndId();
     p->yyparse(plat, cc);
 
-    for (std::list<Signature*>::iterator it = p->signatures.begin(); it != p->signatures.end(); it++) {
+    for (auto & elem : p->signatures) {
 #if 0
         std::cerr << "readLibrarySignatures from " << sPath << ": " << (*it)->getName() << "\n";
 #endif
-        librarySignatures[(*it)->getName()] = *it;
-        (*it)->setSigFile(sPath);
+        librarySignatures[(elem)->getName()] = elem;
+        (elem)->setSigFile(sPath);
     }
 
     delete p;
@@ -469,28 +458,28 @@ Signature *FrontEnd::getLibSignature(const char *name) {
     }
     return signature;
 }
-void FrontEnd::preprocessProcGoto(std::list<Statement*>::iterator ss, ADDRESS  dest, std::list<Statement*> sl,RTL* pRtl)
+void FrontEnd::preprocessProcGoto(std::list<Statement*>::iterator ss, ADDRESS  dest, const std::list<Statement*> &sl,RTL* pRtl)
 {
-    if (dest != NO_ADDRESS) {
-        Proc * proc = prog->findProc(dest);
-        if (proc == nullptr) {
-            if (pBF->IsDynamicLinkedProc(dest))
-                proc = prog->setNewProc(dest);
-        }
-        if (proc != nullptr && proc != (Proc*)-1) {
-            Statement*s = new CallStatement();
-            CallStatement *call = static_cast<CallStatement*>(s);
-            call->setDest(dest);
-            call->setDestProc(proc);
-            call->setReturnAfterCall(true);
-            // also need to change it in the actual RTL
-            std::list<Statement*>::iterator ss1 = ss;
-            ss1++;
-            assert(ss1 == sl.end());
-            assert(not pRtl->empty());
-            pRtl->back() = s;
-            *ss = s;
-        }
+    assert(sl.back()==*ss);
+    if (dest == NO_ADDRESS)
+        return;
+    Proc * proc = prog->findProc(dest);
+    if (proc == nullptr) {
+        if (pBF->IsDynamicLinkedProc(dest))
+            proc = prog->setNewProc(dest);
+    }
+    if (proc != nullptr && proc != (Proc*)-1) {
+        CallStatement *call = new CallStatement();
+        call->setDest(dest);
+        call->setDestProc(proc);
+        call->setReturnAfterCall(true);
+        // also need to change it in the actual RTL
+        std::list<Statement*>::iterator ss1 = ss;
+        ss1++;
+        assert(ss1 == sl.end());
+        assert(not pRtl->empty());
+        pRtl->back() = call;
+        *ss = call;
     }
 }
 /***************************************************************************//**
@@ -524,7 +513,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
     Cfg* pCfg = pProc->getCFG();
 
     // If this is a speculative decode, the second time we decode the same address, we get no cfg. Else an error.
-    if (spec && (pCfg == 0))
+    if (spec && (pCfg == nullptr))
         return false;
     assert(pCfg);
 
@@ -665,7 +654,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
                             BB_rtls = nullptr;        // Clear when make new BB
 
                             // Exit the switch now if the basic block already existed
-                            if (pBB == 0) {
+                            if (pBB == nullptr) {
                                 break;
                             }
 
@@ -765,7 +754,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
                         pBB = pCfg->newBB(BB_rtls, TWOWAY, 2);
 
                         // Stop decoding sequentially if the basic block already existed otherwise complete the basic block
-                        if (pBB == 0)
+                        if (pBB == nullptr)
                             sequentialDecode = false;
                         else {
 
@@ -851,7 +840,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 
                             // Stop decoding sequentially if the basic block already
                             // existed otherwise complete the basic block
-                            if (pBB == 0)
+                            if (pBB == nullptr)
                                 sequentialDecode = false;
                             else
                                 pCfg->addOutEdge(pBB, uAddr + inst.numBytes);

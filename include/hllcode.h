@@ -9,16 +9,13 @@
 
 /***************************************************************************//**
  * \file       hllcode.h
- * OVERVIEW:   Interface for a high level language code base class.
- *               This class is provides methods which are generic of procedural
- *               languages like C, Pascal, Fortran, etc.    Included in the base class
- *               is the follow and goto sets which are used during code generation.
- *               Concrete implementations of this class provide specific language
- *               bindings for a single procedure in the program.
+ *   Interface for a high level language code base class.
+ * This class is provides methods which are generic of procedural
+ * languages like C, Pascal, Fortran, etc.    Included in the base class
+ * is the follow and goto sets which are used during code generation.
+ * Concrete implementations of this class provide specific language
+ * bindings for a single procedure in the program.
  *============================================================================*/
-/*
- *    $Revision$    // 1.23.2.8
- */
 
 #ifndef _HLLCODE_H_
 #define _HLLCODE_H_
@@ -26,7 +23,7 @@
 #include <iostream>
 #include <vector>
 #include <assert.h>
-#include <statement.h>        // For CallStatement::RetLocs
+#include "statement.h"        // For CallStatement::RetLocs
 
 class BasicBlock;
 class Exp;
@@ -177,39 +174,37 @@ private:
     std::vector<SyntaxNode*> statements;
 
 public:
-    BlockSyntaxNode();
-    virtual ~BlockSyntaxNode();
+                BlockSyntaxNode();
+virtual         ~BlockSyntaxNode();
 
-    virtual bool isBlock() { return pbb == nullptr; }
+virtual bool    isBlock() { return pbb == nullptr; }
 
-    virtual void ignoreGoto() {
-        if (pbb) notGoto = true;
-        else if (statements.size() > 0)
-            statements[statements.size()-1]->ignoreGoto();
-    }
+virtual void    ignoreGoto() {
+                    if (pbb) notGoto = true;
+                    else if (statements.size() > 0)
+                        statements[statements.size()-1]->ignoreGoto();
+                }
 
-    size_t getNumStatements() {
-        return pbb ? 0 : statements.size();
-    }
-    SyntaxNode *getStatement(size_t n) {
-        assert(pbb == nullptr);
-        return statements[n];
-    }
-    void prependStatement(SyntaxNode *n) {
-        assert(pbb == nullptr);
-        statements.resize(statements.size()+1);
-        for (size_t i = statements.size()-1; i > 0;  i--)
-            statements[i] = statements[i-1];
-        statements[0] = n;
-    }
-    void addStatement(SyntaxNode *n) {
-        assert(pbb == nullptr);
-        statements.push_back(n);
-    }
-    void setStatement(size_t i, SyntaxNode *n) {
-        assert(pbb == nullptr);
-        statements[i] = n;
-    }
+        size_t getNumStatements() { return pbb ? 0 : statements.size(); }
+        SyntaxNode *getStatement(size_t n) {
+                    assert(pbb == nullptr);
+                    return statements[n];
+                }
+        void prependStatement(SyntaxNode *n) {
+            assert(pbb == nullptr);
+            statements.resize(statements.size()+1);
+            for (size_t i = statements.size()-1; i > 0;  i--)
+                statements[i] = statements[i-1];
+            statements[0] = n;
+        }
+        void addStatement(SyntaxNode *n) {
+            assert(pbb == nullptr);
+            statements.push_back(n);
+        }
+        void setStatement(size_t i, SyntaxNode *n) {
+            assert(pbb == nullptr);
+            statements[i] = n;
+        }
 
 virtual int getNumOutEdges();
 virtual SyntaxNode *getOutEdge(SyntaxNode *root, size_t n);
@@ -256,7 +251,7 @@ virtual bool    isBranch() { return false; }
 virtual int        getNumOutEdges() {
         return 1;
     }
-virtual SyntaxNode *getOutEdge(SyntaxNode *root, size_t n);
+virtual SyntaxNode *getOutEdge(SyntaxNode *root, size_t);
 virtual bool    endsWithGoto() { return false; }
 
 virtual SyntaxNode *clone();
@@ -267,14 +262,14 @@ virtual SyntaxNode *getEnclosingLoop(SyntaxNode *pFor, SyntaxNode *cur = nullptr
             return pThen->getEnclosingLoop(pFor, cur);
         }
 
-        void    setCond(Exp *e) { cond = e; }
-        Exp        *getCond() { return cond; }
-        void    setThen(SyntaxNode *n) { pThen = n; }
+        void        setCond(Exp *e) { cond = e; }
+        Exp *       getCond() { return cond; }
+        void        setThen(SyntaxNode *n) { pThen = n; }
 
 virtual SyntaxNode *findNodeFor(BasicBlock * bb);
-virtual void    printAST(SyntaxNode *root, std::ostream &os);
-virtual int        evaluate(SyntaxNode *root);
-virtual void    addSuccessors(SyntaxNode *root, std::vector<SyntaxNode*> &successors);
+virtual void        printAST(SyntaxNode *root, std::ostream &os);
+virtual int         evaluate(SyntaxNode *root);
+virtual void        addSuccessors(SyntaxNode *root, std::vector<SyntaxNode*> &successors);
 };        // class IfThenSyntaxNode
 
 class IfThenElseSyntaxNode : public SyntaxNode {
@@ -368,7 +363,7 @@ virtual bool    isBranch() { return false; }
 virtual int        getNumOutEdges() {
             return 1;
         }
-virtual SyntaxNode *getOutEdge(SyntaxNode *root, size_t n);
+virtual SyntaxNode *getOutEdge(SyntaxNode *root, size_t);
 virtual bool    endsWithGoto() { return false; }
 virtual SyntaxNode *getEnclosingLoop(SyntaxNode *pFor, SyntaxNode *cur = nullptr) {
             if (this == pFor) return cur;

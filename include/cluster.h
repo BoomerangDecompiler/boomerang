@@ -15,11 +15,6 @@
  *           Clusters can contain other Clusters to form a tree.
  *============================================================================*/
 
-/*
- * $Revision$
- * 03 May 04 - Trent: Created
- */
-
 #ifndef __CLUSTER_H__
 #define __CLUSTER_H__
 

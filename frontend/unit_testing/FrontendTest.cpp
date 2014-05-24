@@ -12,8 +12,6 @@
 #include "FrontendTest.h"
 #include "prog.h"
 
-CPPUNIT_TEST_SUITE_REGISTRATION( FrontendTest );
-
 #define HELLO_SPARC     "test/sparc/hello"
 #define HELLO_PENTIUM   "test/pentium/hello"
 #define HELLO_HPPA      "test/hppa/hello"
@@ -23,19 +21,19 @@ CPPUNIT_TEST_SUITE_REGISTRATION( FrontendTest );
  * \brief Set up anything needed before all tests
  * \note Called before any tests
  *============================================================================*/
-void FrontendTest::setUp () {
+void FrontendTest::SetUp () {
 }
 
 /***************************************************************************//**
  * \brief   Delete objects created in setUp
  * \note    Called after all tests
  *============================================================================*/
-void FrontendTest::tearDown () {
+void FrontendTest::TearDown () {
 }
 
 /***************************************************************************//**
  * \brief Test loading the sparc hello world program
  *============================================================================*/
-void FrontendTest::test1 () {
+TEST_F(FrontendTest,test1) {
 }
 

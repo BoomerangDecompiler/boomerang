@@ -14,16 +14,6 @@
  * \brief   Implementation of the Type class: low level type information
  ******************************************************************************/
 
-/*
- * $Revision$    // 1.44.2.1
- *
- * 28 Apr 02 - Mike: getTempType() returns a Type* now
- * 26 Aug 03 - Mike: Fixed operator< (had to re-introduce an enum... ugh)
- * 17 Jul 04 - Mike: Fixed some functions that were returning the buffers
- *               of std::strings allocated on the stack (affected Windows)
- * 23 Jul 04 - Mike: Implement SizeType
- */
-
 #include <cassert>
 #include <cstring>
 
@@ -206,7 +196,7 @@ Type *ArrayType::clone() const {
 }
 
 Type *NamedType::clone() const {
-    NamedType *t = new NamedType(name.c_str());
+    NamedType *t = new NamedType(name);
     return t;
 }
 
@@ -265,14 +255,14 @@ size_t NamedType::getSize() const {
     if (ty)
         return ty->getSize();
     if (VERBOSE)
-        LOG << "WARNING: Unknown size for named type " << name.c_str() << "\n";
+        LOG << "WARNING: Unknown size for named type " << name << "\n";
     return 0; // don't know
 }
 size_t CompoundType::getSize() const {
     int n = 0;
-    for (unsigned i = 0; i < types.size(); i++)
+    for (auto & elem : types)
         // NOTE: this assumes no padding... perhaps explicit padding will be needed
-        n += types[i]->getSize();
+        n += elem->getSize();
     return n;
 }
 size_t UnionType::getSize() const {
@@ -298,10 +288,10 @@ Type *CompoundType::getType(const char *nam) {
 // Note: n is a BIT offset
 Type *CompoundType::getTypeAtOffset(unsigned n) {
     unsigned offset = 0;
-    for (unsigned i = 0; i < types.size(); i++) {
-        if (offset <= n && n < offset + types[i]->getSize())
-            return types[i];
-        offset += types[i]->getSize();
+    for (auto & elem : types) {
+        if (offset <= n && n < offset + elem->getSize())
+            return elem;
+        offset += elem->getSize();
     }
     return nullptr;
 }
@@ -374,11 +364,11 @@ unsigned CompoundType::getOffsetTo(const char *member) {
 unsigned CompoundType::getOffsetRemainder(unsigned n) {
     unsigned r = n;
     unsigned offset = 0;
-    for (unsigned i = 0; i < types.size(); i++) {
-        offset += types[i]->getSize();
+    for (auto & elem : types) {
+        offset += elem->getSize();
         if (offset > n)
             break;
-        r -= types[i]->getSize();
+        r -= elem->getSize();
     }
     return r;
 }
@@ -689,7 +679,7 @@ Exp *UnionType::match(Type *pattern) {
  * PARAMETERS:        final: if true, this is final output
  * \returns            Pointer to a constant string of char
  ******************************************************************************/
-const char *VoidType::getCtype(bool final) const { return "void"; }
+const char *VoidType::getCtype(bool /*final*/) const { return "void"; }
 
 const char *FuncType::getCtype(bool final) const {
     if (signature == nullptr)
@@ -758,7 +748,7 @@ const char *IntegerType::getCtype(bool final) const {
     }
 }
 
-const char *FloatType::getCtype(bool final) const {
+const char *FloatType::getCtype(bool /*final*/) const {
     switch (size) {
         case 32: return "float"; break;
         case 64: return "double"; break;
@@ -766,9 +756,9 @@ const char *FloatType::getCtype(bool final) const {
     }
 }
 
-const char *BooleanType::getCtype(bool final) const { return "bool"; }
+const char *BooleanType::getCtype(bool /*final*/) const { return "bool"; }
 
-const char *CharType::getCtype(bool final) const { return "char"; }
+const char *CharType::getCtype(bool /*final*/) const { return "char"; }
 
 const char *PointerType::getCtype(bool final) const {
     std::string s = points_to->getCtype(final);
@@ -790,7 +780,7 @@ const char *ArrayType::getCtype(bool final) const {
     return strdup(s.c_str()); // memory..
 }
 
-const char *NamedType::getCtype(bool final) const { return name.c_str(); }
+const char *NamedType::getCtype(bool /*final*/) const { return name.c_str(); }
 
 const char *CompoundType::getCtype(bool final) const {
     std::string &tmp = *(new std::string("struct { "));
@@ -821,19 +811,19 @@ const char *UnionType::getCtype(bool final) const {
     return strdup(tmp.c_str());
 }
 
-const char* SizeType::getCtype(bool final) const {
+const char* SizeType::getCtype(bool /*final*/) const {
     // Emit a comment and the size
     std::ostringstream ost;
     ost << "__size" << std::dec << size;
     return strdup(ost.str().c_str());
 }
 
-const char* UpperType::getCtype(bool final) const {
+const char* UpperType::getCtype(bool /*final*/) const {
     std::ostringstream ost;
     ost << "/*upper*/(" << base_type << ")";
     return strdup(ost.str().c_str());
 }
-const char* LowerType::getCtype(bool final) const {
+const char* LowerType::getCtype(bool /*final*/) const {
     std::ostringstream ost;
     ost << "/*lower*/(" << base_type << ")";
     return strdup(ost.str().c_str());
@@ -1277,7 +1267,7 @@ void DataIntervalMap::addItem(ADDRESS addr, const char* name, Type* ty, bool for
 }
 
 // We are entering an item that already exists in a larger type. Check for compatibility, meet if necessary.
-void DataIntervalMap::enterComponent(DataIntervalEntry* pdie, ADDRESS addr, const char* name, Type* ty, bool forced) {
+void DataIntervalMap::enterComponent(DataIntervalEntry* pdie, ADDRESS addr, const char* /*name*/, Type* ty, bool /*forced*/) {
     if (pdie->second.type->resolvesToCompound()) {
         unsigned bitOffset = (addr - pdie->first).m_value*8;
         Type* memberType = pdie->second.type->asCompound()->getTypeAtOffset(bitOffset);
@@ -1304,7 +1294,7 @@ void DataIntervalMap::enterComponent(DataIntervalEntry* pdie, ADDRESS addr, cons
 
 // We are entering a struct or array that overlaps existing components. Check for compatibility, and move the
 // components out of the way, meeting if necessary
-void DataIntervalMap::replaceComponents(ADDRESS addr, const char* name, Type* ty, bool forced) {
+void DataIntervalMap::replaceComponents(ADDRESS addr, const char* name, Type* ty, bool /*forced*/) {
     iterator it;
     ADDRESS pastLast = addr + ty->getSize()/8;        // This is the byte address just past the type to be inserted
     // First check that the new entry will be compatible with everything it will overlap
@@ -1362,7 +1352,7 @@ void DataIntervalMap::replaceComponents(ADDRESS addr, const char* name, Type* ty
             Exp* locl = Location::memOf(
                             Binary::get(opPlus,
                                        rsp0->clone(),
-                                       new Const(it->first)));
+                                        new Const(it->first.native())));
             locl->simplifyArith();                        // Convert m[sp{0} + -4] to m[sp{0} - 4]
             Type* elemTy;
             int bitOffset = (it->first - addr).m_value / 8;
@@ -1402,7 +1392,7 @@ void DataIntervalMap::replaceComponents(ADDRESS addr, const char* name, Type* ty
     pdi->type = ty;
 }
 
-void DataIntervalMap::checkMatching(DataIntervalEntry* pdie, ADDRESS addr, const char* name, Type* ty, bool forced) {
+void DataIntervalMap::checkMatching(DataIntervalEntry* pdie, ADDRESS addr, const char* /*name*/, Type* ty, bool /*forced*/) {
     if (pdie->second.type->isCompatibleWith(ty)) {
         // Just merge the types and exit
         bool ch;

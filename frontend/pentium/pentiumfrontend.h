@@ -1,6 +1,3 @@
-/*
- *    $Revision$ // 1.12.6.1
- */
 #ifndef PENTFRONTEND_H
 #define PENTFRONTEND_H
 
@@ -60,25 +57,10 @@ private:
 
     int idPF;               // Parity flag
 
-    /*
-         * Little simpler, just replaces FPUSH and FPOP with more complex
-         * semantics.
-         */
     void    processFloatCode(Cfg* pCfg);
 
-    /*
-         * Process a BB and its successors for floating point code
-         */
     void    processFloatCode(BasicBlock * pBB, int& tos, Cfg* pCfg);
-
-    /*
-         * Process away %rpt and %skip in string instructions
-         */
     void    processStringInst(UserProc* proc);
-
-    /*
-         * Process for overlapped registers
-         */
     void    processOverlapped(UserProc* proc);
 
     /*
@@ -93,6 +75,9 @@ private:
     bool    isAssignFromTern(Statement* s);
     void    bumpRegisterAll(Exp* e, int min, int max, int delta, int mask);
     unsigned fetch4(unsigned char* ptr);
+    bool decodeSpecial(ADDRESS pc, DecodeResult &r);
+    bool decodeSpecial_out(ADDRESS pc, DecodeResult &r);
+    bool decodeSpecial_invalid(ADDRESS pc, DecodeResult &r);
 protected:
 
     virtual DecodeResult& decodeInstruction(ADDRESS pc);

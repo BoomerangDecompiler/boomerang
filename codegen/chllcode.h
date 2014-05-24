@@ -7,12 +7,6 @@
  *
  */
 
-/*
- * $Revision$    // 1.24.2.8
- *
- * 22 Nov 02 - Mike: Re-ordered initialisations to keep gcc quiet
- */
-
 /***************************************************************************//**
  * \file       chllcode.h
  * \brief   Concrete class for the "C" high level language
@@ -98,7 +92,7 @@ private:
     /// Adds: )
     void closeParen(std::ostringstream& str, PREC outer, PREC inner) {
         if (inner < outer)
-            str << ")"; 
+            str << ")";
     }
 
     void appendLine(const std::ostringstream& ostr);
