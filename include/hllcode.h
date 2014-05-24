@@ -22,7 +22,7 @@
 
 #include <iostream>
 #include <vector>
-#include <assert.h>
+#include <cassert>
 #include "statement.h"        // For CallStatement::RetLocs
 
 class BasicBlock;

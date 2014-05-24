@@ -13,11 +13,8 @@
  * \file       njmcDecoder.cpp
  * \brief   This file contains the machine independent decoding functionality.
  ******************************************************************************/
-#include <cassert>
-#include <stdarg.h>            // For varargs
-#include <cstring>
-#include "rtl.h"
 #include "decoder.h"
+#include "rtl.h"
 #include "exp.h"
 #include "register.h"
 #include "cfg.h"
@@ -27,6 +24,9 @@
 #include "boomerang.h"
 #include "util.h"
 
+#include <cassert>
+#include <cstdarg>            // For varargs
+#include <cstring>
 /**********************************
  * NJMCDecoder methods.
  **********************************/

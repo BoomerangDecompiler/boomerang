@@ -20,7 +20,7 @@
 #include "log.h"
 #include "transformation-parser.h"
 
-#include <assert.h>
+#include <cassert>
 #include <numeric>            // For accumulate
 #include <algorithm>        // For std::max()
 #include <map>                // In decideType()

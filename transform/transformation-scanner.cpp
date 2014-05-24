@@ -17,7 +17,7 @@
 /* cfront 1.2 defines "c_plusplus" instead of "__cplusplus" */
 /* Old MSC, before c7 */
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <cstddef>
 #define YY_USE_CONST
 #define YY_USE_PROTOS
@@ -25,7 +25,7 @@
 #define YY_USE_CLASS
 #endif
 #include <osfcn.h>
-#include <stdio.h>
+#include <cstdio>
 #include <cstring>
 #include "util.h"
 

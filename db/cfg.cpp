@@ -667,43 +667,15 @@ void Cfg::sortByAddress() {
  * \brief        Sorts the BBs in a cfg by their first DFT numbers.
  ******************************************************************************/
 void Cfg::sortByFirstDFT() {
-#ifndef _WIN32
     m_listBB.sort(BasicBlock::lessFirstDFT);
-#else
-    updateVectorBB();
-    for (std::list<BasicBlock *>::iterator it = m_listBB.begin(); it != m_listBB.end(); it++)
-        m_vectorBB[(*it)->m_DFTfirst-1] = *it;
-    m_listBB.clear();
-    for (size_t i = 0; i < m_vectorBB.size(); i++)
-        m_listBB.push_back(m_vectorBB[i]);
-#endif
 }
 
 /***************************************************************************//**
  * \brief        Sorts the BBs in a cfg by their last DFT numbers.
  ******************************************************************************/
 void Cfg::sortByLastDFT() {
-#ifndef _WIN32
     m_listBB.sort(BasicBlock::lessLastDFT);
-#else
-    updateVectorBB();
-    for (std::list<BasicBlock *>::iterator it = m_listBB.begin(); it != m_listBB.end(); it++)
-        m_vectorBB[(*it)->m_DFTlast-1] = *it;
-    m_listBB.clear();
-    for (size_t i = 0; i < m_vectorBB.size(); i++)
-        m_listBB.push_back(m_vectorBB[i]);
-#endif
 }
-
-/***************************************************************************//**
- * \brief        Updates m_vectorBB to m_listBB
- ******************************************************************************/
-void Cfg::updateVectorBB() {
-    m_vectorBB.clear();
-    for (auto & elem : m_listBB)
-        m_vectorBB.push_back(elem);
-}
-
 
 /***************************************************************************//**
  *

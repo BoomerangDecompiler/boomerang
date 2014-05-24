@@ -2,7 +2,7 @@
 #include "exp.h"
 /* before anything */
 #define YY_USE_CLASS
-#include <stdio.h>
+#include <cstdio>
 
 #include "config.h"
 #ifdef HAVE_LIBGC
@@ -18,10 +18,6 @@
 #include "insnameelem.h"
 #include "util.h"            // E.g. str()
 #include "statement.h"
-
-#ifdef WIN32
-#include <malloc.h>
-#endif
 
 class SSLScanner;
 

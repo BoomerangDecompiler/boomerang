@@ -422,7 +422,7 @@ ADDRESS MachOBinaryFile::GetAddressByName(const char* pName,
     std::map<ADDRESS, std::string>::iterator it = m_SymA.begin();
     while (it != m_SymA.end()) {
         // std::cerr << "Symbol: " << it->second.c_str() << " at 0x" << std::hex << it->first << "\n";
-        if (strcmp(it->second.c_str(), pName) == 0)
+        if (it->second==pName)
             return it->first;
         it++;
     }

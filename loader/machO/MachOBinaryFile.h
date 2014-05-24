@@ -36,19 +36,11 @@
 
 #define _BMMHW(x) (((unsigned)((Byte *)(&x))[1]) + ((unsigned)((Byte *)(&x))[0] << 8))
 
-//#ifdef WIN32
-#pragma pack(1)
-//#endif
-
 #ifndef _MACH_MACHINE_H_                // On OS X, this is already defined
 typedef uint32_t cpu_type_t;        // I guessed
 typedef uint32_t cpu_subtype_t;    // I guessed
 typedef uint32_t vm_prot_t;        // I guessed
 #endif
-
-//#ifdef WIN32
-#pragma pack(4)
-//#endif
 
 struct mach_header;
 
@@ -133,8 +125,4 @@ private:
     std::map<std::string, ObjcModule> modules;
     std::vector<struct section> sections;
 };
-
-//#ifdef WIN32
-#pragma pack()
-//#endif
 #endif            // ifndef __WIN32BINARYFILE_H__

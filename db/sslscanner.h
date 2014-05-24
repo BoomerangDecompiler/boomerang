@@ -47,7 +47,7 @@
 #define YY_PROTO(proto) ()
 #endif
 #endif
-#include <stdio.h>
+#include <cstdio>
 
 
 

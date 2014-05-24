@@ -56,7 +56,7 @@ void *alloca ();
 
 #endif /* not _AIX  not MSDOS, or __TURBOC__ or _AIX, not sparc.  */
 #endif /* alloca not defined.  */
-#include <stdio.h>
+#include <cstdio>
 #define YYBISON 1
 
 #include "config.h"
@@ -68,7 +68,7 @@ void *alloca ();
 #include <cassert>
 #include <sstream>
 #include <cstring>
-#include <stdlib.h>
+#include <cstdlib>
 #include "types.h"
 #include "rtl.h"
 #include "table.h"
@@ -76,9 +76,6 @@ void *alloca ();
 #include "util.h"            // E.g. str()
 #include "statement.h"
 #include "exp.h"
-#ifdef _WIN32
-#include <malloc.h>
-#endif
 
 #include "sslscanner.h"
 #include "operator.h"

@@ -41,11 +41,9 @@ typedef struct {                /* exe file header, just the signature really */
     Byte    sigHi;
 } Header;
 
-//#ifdef WIN32
-#pragma pack(1)
-//#endif
+#define PACKED __attribute__((packed))
 
-typedef struct {
+typedef struct PACKED {
     Byte sigLo;
     Byte sigHi;
     SWord sigver;
@@ -108,7 +106,7 @@ typedef struct {
     DWord TotalTLSSize;
 } PEHeader;
 
-typedef struct {    // The real Win32 name of this struct is IMAGE_SECTION_HEADER
+typedef struct PACKED {    // The real Win32 name of this struct is IMAGE_SECTION_HEADER
     char ObjectName[8];    // Name
     DWord VirtualSize;
     DWord RVA;            // VirtualAddress
@@ -120,7 +118,7 @@ typedef struct {    // The real Win32 name of this struct is IMAGE_SECTION_HEADE
     DWord Flags;            // Characteristics
 } PEObject;
 
-typedef struct {
+typedef struct PACKED {
     DWord originalFirstThunk; // 0 for end of array; also ptr to hintNameArray
     DWord preSnapDate;        // Time and date the import data was pre-snapped
     // or zero if not pre-snapped
@@ -130,7 +128,7 @@ typedef struct {
     DWord firstThunk;        // RVA of start of import address table (IAT)
 } PEImportDtor;
 
-typedef struct {
+typedef struct PACKED {
     DWord    flags;            // Reserved; 0
     DWord    stamp;            // Time/date stamp export data was created
     SWord    verMajor;        // Version number can be ...
@@ -146,10 +144,6 @@ typedef struct {
     DWord    nptRVA;            // RVA of the NPT
     DWord    otRVA;            // RVA of the OT
 } PEExportDtor;
-
-//#ifdef WIN32
-#pragma pack(4)
-//#endif
 
 class Win32BinaryFile : public BinaryFile {
 public:
@@ -234,7 +228,3 @@ private:
     bool        mingw_main;
 
 };
-
-//#ifdef WIN32
-#pragma pack()
-//#endif

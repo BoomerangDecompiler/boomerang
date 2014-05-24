@@ -20,7 +20,7 @@
 
 #include <iostream>
 #include <fstream>        // For ostream, cout etc
-#include <stdio.h>        // For sprintf
+#include <cstdio>        // For sprintf
 #include <list>
 #include <vector>
 #include <set>

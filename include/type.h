@@ -21,7 +21,7 @@
 #include <map>
 #include <functional>        // For binary_function
 #include <vector>
-#include <assert.h>
+#include <cassert>
 #include <list>
 #include <fstream>
 #include "memo.h"

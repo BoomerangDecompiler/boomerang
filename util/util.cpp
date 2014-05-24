@@ -15,6 +15,8 @@
  *             any particular subsystem of UQBT.
  ******************************************************************************/
 
+#include "util.h"
+
 #include <cassert>
 #include <string>
 #include <sstream>
@@ -22,23 +24,15 @@
 #include <fstream>
 #include <cstdio>
 #include <cstring>
-#include "util.h"
-
-#ifndef _WIN32
 #include <unistd.h>
-#define _FLOCK_
-#else
-#include <io.h>
-#endif
-
 #include <fcntl.h>
 #include <iomanip>          // For setw
 
 /***************************************************************************//**
- * FUNCTION:      string::operator+(string, int)
+ * \name string::operator+(string, int)
  * \brief      Append an int to a string
- * PARAMETERS:    s: the string to append to
- *                  i: the integer whose ascii representation is to be appended
+ * \param s: the string to append to
+ * \param i: the integer whose ascii representation is to be appended
  * \returns        A copy of the modified string
  ******************************************************************************/
 std::string operator+(const std::string& s, int i)
@@ -67,25 +61,11 @@ void upperStr(const char* s, char* d)
 int lockFileWrite(const char *fname)
 {
     int fd = open(fname, O_WRONLY);  /* get the file descriptor */
-#ifdef _FLOCK_
-    struct flock fl;
-    fl.l_type   = F_WRLCK;  /* F_RDLCK, F_WRLCK, F_UNLCK    */
-    fl.l_whence = SEEK_SET; /* SEEK_SET, SEEK_CUR, SEEK_END */
-    fl.l_start  = 0;        /* Offset from l_whence         */
-    fl.l_len    = 0;        /* length, 0 = to EOF           */
-    fl.l_pid    = getpid(); /* our PID                      */
-    fcntl(fd, F_SETLKW, &fl);  /* set the lock, waiting if necessary */
-#endif
     return fd;
 }
 
 void unlockFile(int fd)
 {
-#ifdef _FLOCK_
-    struct flock fl;
-    fl.l_type   = F_UNLCK;  /* tell it to unlock the region */
-    fcntl(fd, F_SETLK, &fl); /* set the region to unlocked */
-#endif
     close(fd);
 }
 

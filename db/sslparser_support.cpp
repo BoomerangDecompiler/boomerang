@@ -14,7 +14,7 @@
 #include "statement.h"
 #include "exp.h"
 
-#include <assert.h>
+#include <cassert>
 #include <sstream>
 #include <cstring>
 

@@ -97,6 +97,7 @@ ENDIF(NOT "${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
 FIND_PACKAGE(EXPAT)
 FIND_PACKAGE(Boost REQUIRED)
 find_package(Qt5Core REQUIRED)
+find_package(Qt5Xml REQUIRED)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
@@ -203,6 +204,6 @@ ${EXPAT_LIBRARIES}
 boom_base frontend db type boomerang_DSLs codegen util BinaryFile boom_base
 pthread
 )
-qt5_use_modules(boomerang Core)
-qt5_use_modules(boom_base Core)
+qt5_use_modules(boomerang Core Xml)
+qt5_use_modules(boom_base Core Xml)
 ADD_SUBDIRECTORY(loader)

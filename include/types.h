@@ -8,9 +8,9 @@
 #include <stdint.h>
 
 // Machine types
-typedef unsigned char       Byte;        /* 8 bits */
-typedef unsigned short      SWord;       /* 16 bits */
-typedef unsigned int        DWord;       /* 32 bits */
+typedef uint8_t       Byte;        /* 8 bits */
+typedef uint16_t      SWord;       /* 16 bits */
+typedef uint32_t      DWord;       /* 32 bits */
 struct ADDRESS { /* pointer. size depends on platform */
 //    ADDRESS() {}
 //    ADDRESS(uint32_t v) : m_value(v) {}

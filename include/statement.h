@@ -32,7 +32,7 @@
 #include <map>
 #include <ostream>
 #include <iostream>        // For std::cerr
-#include <assert.h>
+#include <cassert>
 //#include "exp.h"        // No! This is (almost) the bottom of the #include hierarchy
 #include "memo.h"
 #include "exphelp.h"    // For lessExpStar, lessAssignment etc

@@ -1,7 +1,7 @@
 #pragma once
 
 #define YY_USE_CLASS
-#include <stdio.h>
+#include <cstdio>
 #define YY_AnsiCParser_DEBUG  1
 
 #include <list>

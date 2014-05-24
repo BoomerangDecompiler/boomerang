@@ -23,7 +23,7 @@
 #include "basicblock.h"    // For the BB nodes
 #include "dataflow.h"    // For embedded class DataFlow
 
-#include <stdio.h>        // For FILE
+#include <cstdio>        // For FILE
 #include <list>
 #include <vector>
 #include <set>
@@ -110,7 +110,6 @@ typedef BB_IT           iterator;
         void            sortByAddress ();
         void            sortByFirstDFT();
         void            sortByLastDFT();
-        void            updateVectorBB();
 
         bool            wellFormCfg ( );
         bool            mergeBBs (BasicBlock *pb1, BasicBlock *pb2 );
@@ -133,7 +132,7 @@ typedef BB_IT           iterator;
         void            structure();
         void            addJunctionStatements();
         void            removeJunctionStatements();
-        std::vector<BasicBlock *> m_vectorBB;
+
         //! return a bb given an address
         BasicBlock *             bbForAddr(ADDRESS addr) { return m_mapBB[addr]; }
         void            simplify();

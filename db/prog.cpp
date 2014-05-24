@@ -1169,10 +1169,6 @@ UserProc* Prog::getNextUserProc(std::list<Proc*>::iterator& it) {
 const void* Prog::getCodeInfo(ADDRESS uAddr, const char*& last, int& delta) {
     delta=0;
     last=nullptr;
-#ifdef _WIN32
-    // this is broken obviously
-    return nullptr;
-#else
     int n = pBF->GetNumSections();
     int i;
     // Search all code and read-only sections
@@ -1188,7 +1184,6 @@ const void* Prog::getCodeInfo(ADDRESS uAddr, const char*& last, int& delta) {
         return p;
     }
     return nullptr;
-#endif
 }
 
 /***************************************************************************//**

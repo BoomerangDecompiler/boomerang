@@ -47,14 +47,14 @@
 #define YY_PROTO(proto) ()
 #endif
 #endif
-#include <stdio.h>
+#include <cstdio>
 
 
 
 
 /* % here is the declaration from section1 %header{  */
 
-#include <stdio.h>
+#include <cstdio>
 #include "ansi-c-parser.h"
 
 #define MAX_LINE 1024      // the longest line

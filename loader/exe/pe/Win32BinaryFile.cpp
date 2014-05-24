@@ -40,7 +40,7 @@ namespace dbghelp {
 #include <iostream>
 #include <sstream>
 #include <cstring>
-#include <stdlib.h>
+#include <cstdlib>
 #include <cassert>
 
 extern "C" {
@@ -854,7 +854,7 @@ ADDRESS Win32BinaryFile::GetAddressByName(const char* pName,
     std::map<ADDRESS, std::string>::iterator it = dlprocptrs.begin();
     while (it != dlprocptrs.end()) {
         // std::cerr << "Symbol: " << it->second.c_str() << " at 0x" << std::hex << it->first << "\n";
-        if (strcmp(it->second.c_str(), pName) == 0)
+        if (it->second==pName)
             return it->first;
         it++;
     }

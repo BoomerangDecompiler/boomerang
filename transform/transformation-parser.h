@@ -14,7 +14,7 @@
 #endif
 #else
 #endif
-#include <stdio.h>
+#include <cstdio>
 
 /* #line 14 "/usr/local/lib/bison.h" */
 //#line 21 "transformation-parser.h"

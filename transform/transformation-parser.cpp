@@ -81,7 +81,7 @@ void *alloca ();
 #define const
 #endif
 #endif
-#include <stdio.h>
+#include <cstdio>
 #define YYBISON 1
 
 
@@ -1501,7 +1501,7 @@ YY_TransformationParser_PARSE_PARAM_DEF
 
 
 
-#include <stdio.h>
+#include <cstdio>
 
 int TransformationParser::yylex()
 {

@@ -25,7 +25,7 @@
 
 #include <cassert>
 #include <cstring>
-#include <stdlib.h>
+#include <cstdlib>
 
 // Macro to convert a pointer to a Big Endian integer into a host integer
 #define UC(ad) ((unsigned char*)ad)

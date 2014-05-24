@@ -37,17 +37,14 @@
     ((unsigned)((Byte *)(x))[2] << 16) + ((unsigned)((Byte *)(x))[3] << 24))
 #define LMMHw(x) ((unsigned)((Byte *)(&x))[0] + ((unsigned)((Byte *)(&x))[1] << 8))
 
+#define PACKED __attribute__((packed))
 
 typedef struct {                /* exe file header, just the signature really */
     Byte    sigLo;            /* .EXE signature: 0x4D 0x5A     */
     Byte    sigHi;
 } Header;
 
-//#ifdef WIN32
-#pragma pack(1)
-//#endif
-
-typedef struct {
+typedef struct PACKED{
     Byte sigLo;
     Byte sigHi;
     Byte byteord;
@@ -97,7 +94,7 @@ typedef struct {
     DWord heapsize;
 } LXHeader;
 
-typedef struct {
+typedef struct PACKED {
     DWord VirtualSize;
     DWord RelocBaseAddr;
     DWord ObjectFlags;
@@ -106,14 +103,14 @@ typedef struct {
     DWord Reserved1;
 } LXObject;
 
-typedef struct {
+typedef struct PACKED {
     DWord pagedataoffset;
     SWord datasize;
     SWord flags;
 } LXPage;
 
 // this is correct for internal fixups only
-typedef struct {
+typedef struct PACKED {
     unsigned char src;
     unsigned char flags;
     short srcoff;
@@ -198,7 +195,3 @@ private:
     const char *m_pFileName;
 
 };
-
-//#ifdef WIN32
-#pragma pack()
-//#endif

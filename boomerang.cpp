@@ -15,12 +15,6 @@
 #       define USE_XML 0    // Set to 0 to not use the expat library for XML loading and saving
 #   endif
 
-#include <iostream>
-#include <cstring>
-#include <stdlib.h>
-#include <fstream>
-#include <time.h>
-#include <QtCore>
 #include "prog.h"
 #include "proc.h"
 #include "BinaryFile.h"
@@ -43,6 +37,12 @@
 #define NO_GARBAGE_COLLECTOR
 #endif
 
+#include <iostream>
+#include <cstring>
+#include <cstdlib>
+#include <fstream>
+#include <ctime>
+#include <QtCore>
 
 Boomerang *Boomerang::boomerang = nullptr;
 

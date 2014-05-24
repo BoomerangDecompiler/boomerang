@@ -1181,7 +1181,7 @@ int AnsiCParser::yyparse(platform plat, callconv cc)
     /* end loop, in which YYGOTO may be used. */
 }
 
-#include <stdio.h>
+#include <cstdio>
 
 int AnsiCParser::yylex() {
     int token = theScanner->yylex(yylval);

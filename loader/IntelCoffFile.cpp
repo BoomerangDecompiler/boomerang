@@ -8,7 +8,7 @@
 #include <assert.h>
 #include "config.h"
 
-struct struc_coff_sect          // segment information
+struct PACKED struc_coff_sect          // segment information, 40 bytes
 {
         char  sch_sectname[8];
         uint32_t sch_physaddr;
@@ -20,9 +20,9 @@ struct struc_coff_sect          // segment information
         uint16_t sch_nreloc;
         uint16_t sch_nlineno;
         uint32_t sch_flags;
-} PACKED;       // 40 bytes
+};
 
-struct coff_symbol      // symbol information
+struct PACKED coff_symbol      // symbol information, 18 bytes
 {
         union {
                 struct {
@@ -44,16 +44,16 @@ struct coff_symbol      // symbol information
 
         unsigned char csym_loadclass;
         unsigned char csym_numaux;
-} PACKED;       // 18 bytes
+};
 
-struct struct_coff_rel
+struct PACKED struct_coff_rel
 {
         uint32_t   r_vaddr;
         uint32_t   r_symndx;
         uint16_t  r_type;
 #define RELOC_ADDR32    6
 #define RELOC_REL32     20
-} PACKED;
+};
 
 
 PSectionInfo IntelCoffFile::AddSection(PSectionInfo psi) {
@@ -155,7 +155,7 @@ bool IntelCoffFile::RealLoad(const char *sName) {
         }
     }
     printf("Allocated %d segments. a=%08x", m_iNumSections, a);
-    
+
     for ( int iSection = 0; iSection < m_Header.coff_sections; iSection++ ) {
         printf("Loading section %d of %hd\n", iSection+1, m_Header.coff_sections);
 
@@ -184,11 +184,11 @@ bool IntelCoffFile::RealLoad(const char *sName) {
     // TODO: Groesse des Abschnittes vorher bestimmen
     char *pStrings = (char*)malloc(0x8000);
     read(m_fd, pStrings, 0x8000);
-    
+
 
     // Run the symbol table
     ADDRESS fakeForImport = (ADDRESS)0xfffe0000;
-     
+
 printf("Size of one symbol: %u\n", sizeof pSymbols[0]);
     for (unsigned int iSym = 0; iSym < m_Header.coff_num_syment; iSym += pSymbols[iSym].csym_numaux+1) {
         char tmp_name[9]; tmp_name[8] = 0;
@@ -235,7 +235,7 @@ printf("Size of one symbol: %u\n", sizeof pSymbols[0]);
             }
 
         }
-        printf("Symbol %d: %s %08lx\n", iSym, name, (long)pSymbols[iSym].csym_value); 
+        printf("Symbol %d: %s %08lx\n", iSym, name, (long)pSymbols[iSym].csym_value);
     }
 
     for ( int iSection = 0; iSection < m_Header.coff_sections; iSection++ ) {

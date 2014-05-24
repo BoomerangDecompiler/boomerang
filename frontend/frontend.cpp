@@ -38,13 +38,11 @@
 
 #include <cassert>
 #include <cstring>
-#include <stdlib.h>
+#include <cstdlib>
 #include <queue>
 #include <cstdarg>			// For varargs
 #include <sstream>
-#ifndef _WIN32
-#include <dlfcn.h>            // dlopen, dlsym
-#endif
+
 using namespace std;
 /***************************************************************************//**
  *

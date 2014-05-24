@@ -38,7 +38,7 @@
 #endif
 
 #ifdef __cplusplus
-#include <stdlib.h>
+#include <cstdlib>
 #define YY_USE_CONST
 #define YY_USE_PROTOS
 #ifndef YY_USE_CLASS
@@ -55,7 +55,7 @@ void *malloc( size_t );
 void free( void* );
 int read();
 #else
-#include <stdlib.h>
+#include <cstdlib>
 #endif  /* __GNUC__ */
 #define YY_USE_PROTOS
 #define YY_USE_CONST
@@ -64,7 +64,7 @@ int read();
 #ifdef __TURBOC__
 #define YY_USE_CONST
 #endif
-#include <stdio.h>
+#include <cstdio>
 #include "operator.h"
 
 /*********************************************/

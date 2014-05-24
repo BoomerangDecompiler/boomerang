@@ -17,7 +17,7 @@
 #include "proc.h"
 #include "transformer.h"
 
-#include <assert.h>
+#include <cassert>
 #include <numeric>      // For accumulate
 #include <algorithm>    // For std::max()
 #include <map>          // In decideType()

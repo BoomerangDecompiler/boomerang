@@ -23,7 +23,7 @@
 #include <map>
 #include <set>
 #include <string>
-#include <assert.h>
+#include <cassert>
 #include "exp.h"                // For lessExpStar
 #include "cfg.h"                // For cfg->simplify()
 //#include "hllcode.h"
