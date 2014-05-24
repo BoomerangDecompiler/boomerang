@@ -14,13 +14,10 @@
  *              Derived from class BinaryFile
  ******************************************************************************/
 
+#include "HpSomBinaryFile.h"
+
 #include <cstddef>
 #include <cassert>
-#if defined(_MSC_VER) && _MSC_VER <= 1200
-#include "exp.h"        // For MSVC 5.00
-#endif
-
-#include "HpSomBinaryFile.h"
 #include <cstring>
 
 // Macro to convert a pointer to a Big Endian integer into a host integer

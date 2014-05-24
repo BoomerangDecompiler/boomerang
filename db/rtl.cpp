@@ -15,14 +15,7 @@
  *               register transfer list)
  ******************************************************************************/
 
-#include <cassert>
-#if defined(_MSC_VER) && _MSC_VER <= 1200
-#pragma warning(disable:4786)
-#endif
-
-#include <iomanip>            // For setfill
-#include <sstream>
-#include <cstring>
+#include "rtl.h"
 #include "types.h"
 #include "statement.h"
 #include "exp.h"
@@ -30,17 +23,17 @@
 #include "register.h"
 #include "cfg.h"
 #include "proc.h"            // For printing proc names
-#include "rtl.h"
 #include "prog.h"
 #include "hllcode.h"
 #include "util.h"
 #include "boomerang.h"
 #include "visitor.h"
 #include "log.h"
-// For some reason, MSVC 5.00 complains about use of undefined types a lot
-#if defined(_MSC_VER) && _MSC_VER <= 1100
-#include "signature.h"        // For MSVC 5.00
-#endif
+
+#include <cassert>
+#include <iomanip>            // For setfill
+#include <sstream>
+#include <cstring>
 
 /******************************************************************************
  * RTL methods.

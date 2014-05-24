@@ -19,18 +19,12 @@
  * 01 May 02 - Mike: Mods for boomerang
  */
 
-#include <cassert>
-#if defined(_MSC_VER) && _MSC_VER <= 1200
-#pragma warning(disable:4786)
-#endif
-
-#include <string>
-#include <map>
 #include "types.h"
 #include "insnameelem.h"
-#if defined(_MSC_VER) && _MSC_VER <= 1100
-#include "exp.h"
-#endif
+
+#include <cassert>
+#include <string>
+#include <map>
 
 
 InsNameElem::InsNameElem(const char *name) {

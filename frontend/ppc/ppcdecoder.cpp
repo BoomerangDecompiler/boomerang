@@ -20,22 +20,19 @@
  * Dependencies.
  ******************************************************************************/
 
-#include <cassert>
-#include <cstring>
-#if defined(_MSC_VER) && _MSC_VER <= 1100
-#include "signature.h"
-#endif
+#include "ppcdecoder.h"
 
 #include "exp.h"
 #include "prog.h"
 #include "proc.h"
 #include "decoder.h"
-#include "ppcdecoder.h"
 #include "rtl.h"
 #include "BinaryFile.h"        // For SymbolByAddress()
 #include "boomerang.h"
-#include <iostream>
 
+#include <cassert>
+#include <cstring>
+#include <iostream>
 
 Exp*    crBit(int bitNum);    // Get an expression for a CR bit access
 

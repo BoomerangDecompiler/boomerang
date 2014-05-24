@@ -28,15 +28,12 @@
  * Dependencies.
  ******************************************************************************/
 
-#if defined(_MSC_VER) && _MSC_VER <= 1200
-#pragma warning(disable:4786)
-#endif
+#include "BinaryFile.h"
 
 #include <iostream>
 #include <cstring>
 #include <cstdio>
 #include <cstddef>
-#include "BinaryFile.h"
 
 BinaryFile::BinaryFile(bool bArch /*= false*/) {
     m_bArchive      = bArch;        // Remember whether an archive member

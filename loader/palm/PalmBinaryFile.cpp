@@ -20,15 +20,12 @@
  * 01 Aug 01 - Mike: Changed GetGlobalPointerInfo to the new definition
  */
 
+#include "PalmBinaryFile.h"
+#include "palmsystraps.h"
+
 #include <cassert>
 #include <cstring>
 #include <stdlib.h>
-#if defined(_MSC_VER) && _MSC_VER <= 1200
-#pragma warning(disable:4786)
-#endif
-
-#include "PalmBinaryFile.h"
-#include "palmsystraps.h"
 
 // Macro to convert a pointer to a Big Endian integer into a host integer
 #define UC(ad) ((unsigned char*)ad)

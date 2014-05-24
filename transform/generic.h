@@ -9,6 +9,8 @@
 #ifndef GENERIC_EXP_TRANSFORMER_H
 #define GENERIC_EXP_TRANSFORMER_H
 
+#include "transformer.h"
+
 class GenericExpTransformer : public ExpTransformer
 {
 protected:

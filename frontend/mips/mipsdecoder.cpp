@@ -21,22 +21,19 @@
 *
 *****************************************************************/
 
-#include <cassert>
-#if defined(_MSC_VER) && _MSC_VER <= 1100
-#include "signature.h"
-#endif
+#include "mipsdecoder.h"
 
 #include "exp.h"
 #include "prog.h"
 #include "proc.h"
 #include "decoder.h"
-#include "mipsdecoder.h"
 #include "rtl.h"
 #include "BinaryFile.h"        // For SymbolByAddress()
 #include "boomerang.h"
 #include "statement.h"
-#include <iostream>
 
+#include <cassert>
+#include <iostream>
 
 /********************************************************************************
  * FUNCTION:       unused

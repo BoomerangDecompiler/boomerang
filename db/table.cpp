@@ -20,15 +20,12 @@
  */
 
 
-#include <cassert>
-#if defined(_MSC_VER) && _MSC_VER <= 1200
-#pragma warning(disable:4786)
-#endif
-
-#include "types.h"
 #include "table.h"
+#include "types.h"
 #include "statement.h"
 #include "exp.h"
+
+#include <cassert>
 
 Table::Table(TABLE_TYPE t) :
     type(t)

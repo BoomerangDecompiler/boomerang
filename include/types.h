@@ -83,19 +83,6 @@ bool IN_RANGE(const T &val,const U &range_start,const U &range_end) {
 #endif
 #define NO_ADDRESS (ADDRESS::g(-1))     // For invalid ADDRESSes
 
-#ifndef _MSC_VER
-typedef long unsigned long QWord;        // 64 bits
-#else
-typedef unsigned __int64   QWord;
-#endif
-
-#if defined(_MSC_VER)
-#pragma warning(disable:4390)
-#endif
-
-#if defined(_MSC_VER) && _MSC_VER <= 1200
-// For MSVC 5 or 6: warning about debug into truncated to 255 chars
-#pragma warning(disable:4786)
-#endif
+typedef uint64_t QWord;        // 64 bits
 
 #endif    // #ifndef __TYPES_H__

@@ -1,5 +1,4 @@
 #define sign_extend(N,SIZE) (((int)((N) << (sizeof(unsigned)*8-(SIZE)))) >> (sizeof(unsigned)*8-(SIZE)))
-#include <cassert>
 //#line 1 "frontend/machine/pentium/decoder.m"
 /*
  * Copyright (C) 1998-2001, The University of Queensland
@@ -14,19 +13,18 @@
  * \brief   This file contains the high level decoding functionality, for example matching logues, calls, branches,
  *                etc. Ordinary instructions are processed in decoder_low.m
  ******************************************************************************/
-#include <cassert>
-#include <cstring>
-#if defined(_MSC_VER) && _MSC_VER <= 1100
-#include "signature.h"
-#endif
+#include "pentiumdecoder.h"
 #include "rtl.h"
 #include "decoder.h"
-#include "pentiumdecoder.h"
 #include "prog.h"
 #include "exp.h"
 #include "proc.h"
 #include "boomerang.h"
 #include "statement.h"
+
+#include <cassert>
+#include <cstring>
+
 #define DIS_R8    (dis_Reg(r8+8))
 #define DIS_R16   (dis_Reg(r16+0))
 #define DIS_R32   (dis_Reg(r32+24))

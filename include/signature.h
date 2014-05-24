@@ -16,17 +16,13 @@
 #ifndef __SIGNATURE_H_
 #define __SIGNATURE_H_
 
-#if defined(_MSC_VER)
-#pragma warning(disable:4290)
-#endif
-
-#include <string>
-//#include "exp.h"
 #include "operator.h"
 #include "type.h"
 #include "sigenum.h"        // For enums platform and cc
 #include "memo.h"
 #include "statement.h"        // For class Return
+
+#include <string>
 
 class Statement;
 class StatementList;

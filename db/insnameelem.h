@@ -22,6 +22,8 @@
 
 #include "table.h"
 
+#include <map>
+
 class InsNameElem {
 
 public:

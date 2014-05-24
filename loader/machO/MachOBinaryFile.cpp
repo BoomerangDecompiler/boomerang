@@ -16,25 +16,21 @@
  *    BinaryFile. See MachOBinaryFile.h and BinaryFile.h for details.
  */
 
-#if defined(_MSC_VER) && _MSC_VER <= 1200
-#pragma warning(disable:4786)
-#endif
-
-#include "BinaryFile.h"
 #include "MachOBinaryFile.h"
+#include "BinaryFile.h"
 #include "config.h"
-#include <iostream>
-#include <sstream>
-#include <cassert>
-#include <cstring>
-#include <cstdlib>
-
 #include "nlist.h"
 #include "macho-apple.h"
 
 #include "objc/objc-class.h"
 #include <stdarg.h>                    // For va_list for MinGW at least
 #include "objc/objc-runtime.h"
+
+#include <iostream>
+#include <sstream>
+#include <cassert>
+#include <cstring>
+#include <cstdlib>
 
 //#define DEBUG_MACHO_LOADER
 //#define DEBUG_MACHO_LOADER_OBJC

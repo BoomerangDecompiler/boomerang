@@ -21,20 +21,18 @@
  * Dependencies.
  ******************************************************************************/
 
-#include <cassert>
-#include <cstring>
-#if defined(_MSC_VER) && _MSC_VER <= 1100
-#include "signature.h"
-#endif
+#include "sparcdecoder.h"
 
 #include "decoder.h"
 #include "exp.h"
 #include "prog.h"
 #include "proc.h"
-#include "sparcdecoder.h"
 #include "rtl.h"
 #include "BinaryFile.h"        // For SymbolByAddress()
 #include "boomerang.h"
+
+#include <cassert>
+#include <cstring>
 
 #define DIS_ROI        (dis_RegImm(roi))
 #define DIS_ADDR    (dis_Eaddr(addr))

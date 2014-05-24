@@ -26,9 +26,6 @@
 #include "signature.h"
 #include "boomerang.h"
 #include "log.h"
-#if defined(_MSC_VER) && _MSC_VER >= 1400
-#pragma warning(disable:4996)        // Warnings about e.g. _strdup deprecated in VS 2005
-#endif
 
 extern char debug_buffer[];         // For prints functions
 

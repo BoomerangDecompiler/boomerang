@@ -52,17 +52,13 @@
 
 
 
-/* % here is the declaration from section1 %header{  */ 
+/* % here is the declaration from section1 %header{  */
 //#line 21 "transformation.l"
 #include <cstring>
 #include <cstdlib>
 #include <cstdio>
 #include "transformation-parser.h"
-// For some reason, MSVC 5.00 complains about use of undefined type RTL a lot
-#if defined(_MSC_VER) && _MSC_VER <= 1100
-#include "signature.h"        // For MSVC 5.00
-#include "rtl.h"
-#endif
+
 #define MAX_LINE 1024      // the longest line
 //#line 31 "transformation.l"
 #define YY_TransformationScanner_CONSTRUCTOR_PARAM  std::istream &ins, bool trace
@@ -90,7 +86,7 @@ private: \
 #ifdef YY_TransformationScanner_IOSTREAM
 #include <iostream.h>
 #define YY_TransformationScanner_IFILE  istream
-#define YY_TransformationScanner_OFILE ostream 
+#define YY_TransformationScanner_OFILE ostream
 #define YY_TransformationScanner_ERRFILE cerr
 
 #ifndef YY_TransformationScanner_IFILE_DEFAULT
@@ -105,11 +101,11 @@ private: \
 #endif
 
 #ifndef YY_TransformationScanner_IFILE
-#define YY_TransformationScanner_IFILE FILE 
+#define YY_TransformationScanner_IFILE FILE
 #endif
 
 #ifndef YY_TransformationScanner_OFILE
-#define YY_TransformationScanner_OFILE FILE 
+#define YY_TransformationScanner_OFILE FILE
 #endif
 
 #ifndef YY_TransformationScanner_ERRFILE
@@ -141,7 +137,7 @@ private: \
 #define YY_TransformationScanner_LEX_RETURN int
 #else
 #ifndef YY_TransformationScanner_LEX_DEFINED
-#define YY_TransformationScanner_LEX_DEFINED 
+#define YY_TransformationScanner_LEX_DEFINED
 #endif
 #endif
 
@@ -149,19 +145,19 @@ private: \
 #define YY_TransformationScanner_LEX yylex
 #else
 #ifndef YY_TransformationScanner_LEX_DEFINED
-#define YY_TransformationScanner_LEX_DEFINED 
+#define YY_TransformationScanner_LEX_DEFINED
 #endif
 #endif
 
 #ifndef YY_TransformationScanner_LEX_PARAM
 #ifndef YY_USE_PROTOS
-#define YY_TransformationScanner_LEX_PARAM 
+#define YY_TransformationScanner_LEX_PARAM
 #else
 #define YY_TransformationScanner_LEX_PARAM void
 #endif
 #else
 #ifndef YY_TransformationScanner_LEX_DEFINED
-#define YY_TransformationScanner_LEX_DEFINED 
+#define YY_TransformationScanner_LEX_DEFINED
 #endif
 #endif
 
@@ -169,7 +165,7 @@ private: \
 #define YY_TransformationScanner_LEX_PARAM_DEF
 #else
 #ifndef YY_TransformationScanner_LEX_DEFINED
-#define YY_TransformationScanner_LEX_DEFINED 
+#define YY_TransformationScanner_LEX_DEFINED
 #endif
 #endif
 
@@ -307,7 +303,7 @@ YY_TransformationScanner_LEX_PARAM_DEF
 #define YY_TransformationScanner_INHERIT
 #endif
 #ifndef YY_TransformationScanner_MEMBERS
-#define YY_TransformationScanner_MEMBERS 
+#define YY_TransformationScanner_MEMBERS
 #endif
 #ifndef YY_TransformationScanner_CONSTRUCTOR_PARAM
 #define YY_TransformationScanner_CONSTRUCTOR_PARAM
@@ -382,7 +378,7 @@ class TransformationScanner YY_TransformationScanner_INHERIT
  int YY_TransformationScanner_DEBUG_FLAG;
 #endif
  public: /* added members */
- YY_TransformationScanner_MEMBERS 
+ YY_TransformationScanner_MEMBERS
 };
 #endif
 
@@ -390,7 +386,7 @@ class TransformationScanner YY_TransformationScanner_INHERIT
 
 /* declaration of externs for public use of yylex scanner */
 
-/* % here is the declaration from section2 %header{ */ 
+/* % here is the declaration from section2 %header{ */
 //#line 136 "transformation.l"
 #endif
 //#line 375 "//usr/local/lib/flexskel.h"

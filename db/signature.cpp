@@ -12,21 +12,14 @@
  * \brief   Implementation of the classes that describe a procedure signature
  ******************************************************************************/
 
-#include <cassert>
-#if defined(_MSC_VER) && _MSC_VER <= 1200
-#pragma warning(disable:4786)
-#endif
+#include "signature.h"
 
-#include <string>
-#include <cstring>
-#include <sstream>
 #include "type.h"
 #include "signature.h"
 #include "exp.h"
 #include "prog.h"
 #include "BinaryFile.h"
 #include "frontend.h"
-#include "signature.h"
 #include "util.h"
 #include "cfg.h"
 #include "proc.h"
@@ -34,6 +27,10 @@
 #include "log.h"
 #include "managed.h"
 
+#include <cassert>
+#include <string>
+#include <cstring>
+#include <sstream>
 extern char debug_buffer[];                // For prints()
 
 const char* Signature::platformName(platform plat) {

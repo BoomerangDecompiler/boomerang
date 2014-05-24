@@ -16,8 +16,10 @@
 #ifndef SPARCDECODER
 #define SPARCDECODER
 #include <cstddef>
+
+#include "decoder.h"
+
 class Prog;
-class NJMCDecoder;
 struct DecodeResult;
 
 class SparcDecoder : public NJMCDecoder

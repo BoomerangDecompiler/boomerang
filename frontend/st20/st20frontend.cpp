@@ -20,12 +20,7 @@
  * Dependencies.
  ******************************************************************************/
 
-#include <cassert>
-#include <iomanip>            // For setfill etc
-#include <sstream>
-#if defined(_MSC_VER) && _MSC_VER <= 1200
-#pragma warning(disable:4786)
-#endif
+#include "st20frontend.h"
 
 #include "exp.h"
 #include "register.h"
@@ -37,10 +32,13 @@
 #include "st20decoder.h"
 #include "BinaryFile.h"
 #include "frontend.h"
-#include "st20frontend.h"
 #include "BinaryFile.h"        // E.g. IsDynamicallyLinkedProc
 #include "boomerang.h"
 #include "signature.h"
+
+#include <cassert>
+#include <iomanip>            // For setfill etc
+#include <sstream>
 
 ST20FrontEnd::ST20FrontEnd(BinaryFile *pBF, Prog* prog, BinaryFileFactory* pbff) : FrontEnd(pBF, prog, pbff) {
     decoder = new ST20Decoder();

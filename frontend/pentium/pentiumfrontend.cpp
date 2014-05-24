@@ -14,17 +14,10 @@
  *               These functions replace frontend.cpp for decoding pentium instructions.
  ******************************************************************************/
 
-#include <cassert>
-#include <cstring>
-#if defined(_MSC_VER) && _MSC_VER <= 1200
-#pragma warning(disable:4786)
-#endif
-
-#include <sstream>
+#include "pentiumfrontend.h"
 #include "types.h"
 #include "BinaryFile.h"
 #include "frontend.h"
-#include "pentiumfrontend.h"
 #include "rtl.h"
 #include "decoder.h"        // prototype for decodeInstruction()
 #include "pentiumdecoder.h"
@@ -39,6 +32,9 @@
 #include "boomerang.h"
 #include "log.h"
 
+#include <cassert>
+#include <cstring>
+#include <sstream>
 /***************************************************************************//**
  * Forward declarations.
  ******************************************************************************/

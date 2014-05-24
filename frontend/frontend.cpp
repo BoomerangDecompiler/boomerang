@@ -15,20 +15,7 @@
  *                of frontend logic remains in the source dependent files such as
  *                frontsparc.cpp
  ******************************************************************************/
-#include <cassert>
-#include <cstring>
-#include <stdlib.h>
-#if defined(_MSC_VER) && _MSC_VER <= 1200
-#pragma warning(disable:4786)
-#endif
-
 #include "frontend.h"
-#include <queue>
-#include <cstdarg>			// For varargs
-#include <sstream>
-#ifndef _WIN32
-#include <dlfcn.h>            // dlopen, dlsym
-#endif
 
 #include "types.h"
 #include "exp.h"
@@ -48,6 +35,16 @@
 #include "boomerang.h"
 #include "log.h"
 #include "ansi-c-parser.h"
+
+#include <cassert>
+#include <cstring>
+#include <stdlib.h>
+#include <queue>
+#include <cstdarg>			// For varargs
+#include <sstream>
+#ifndef _WIN32
+#include <dlfcn.h>            // dlopen, dlsym
+#endif
 using namespace std;
 /***************************************************************************//**
  *

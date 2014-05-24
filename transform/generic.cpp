@@ -6,15 +6,8 @@
  * OVERVIEW:   Implementation of the GenericExpTransformer and related classes.
  *============================================================================*/
 
-#include <assert.h>
-#if defined(_MSC_VER) && _MSC_VER <= 1200
-#pragma warning(disable:4786)
-#endif
+#include "generic.h"
 
-#include <numeric>      // For accumulate
-#include <algorithm>    // For std::max()
-#include <map>          // In decideType()
-#include <sstream>      // Need gcc 3.0 or better
 #include "types.h"
 #include "statement.h"
 #include "cfg.h"
@@ -24,9 +17,13 @@
 #include "proc.h"
 #include "boomerang.h"
 #include "transformer.h"
-#include "generic.h"
 #include "log.h"
 
+#include <assert.h>
+#include <numeric>      // For accumulate
+#include <algorithm>    // For std::max()
+#include <map>          // In decideType()
+#include <sstream>      // Need gcc 3.0 or better
 extern const char* operStrings[];
 
 Exp *GenericExpTransformer::applyFuncs(Exp *rhs)

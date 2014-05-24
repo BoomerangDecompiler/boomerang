@@ -6,12 +6,6 @@
 #else
 #define NO_GARBAGE_COLLECTOR
 #endif
-#include <assert.h>
-#if defined(_MSC_VER) && _MSC_VER <= 1200
-#pragma warning(disable:4786)
-#endif
-
-#include <sstream>
 #include "types.h"
 #include "rtl.h"
 #include "table.h"
@@ -19,10 +13,10 @@
 #include "util.h"			// E.g. str()
 #include "statement.h"
 #include "exp.h"
+
+#include <assert.h>
+#include <sstream>
 #include <cstring>
-#ifdef _WIN32
-#include <malloc.h>
-#endif
 
 class SSLScanner;
 

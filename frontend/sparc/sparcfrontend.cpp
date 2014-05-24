@@ -20,13 +20,7 @@
  * Dependencies.
  ******************************************************************************/
 
-#include <cassert>
-#include <cstring>
-#include <iomanip>            // For setfill etc
-#include <sstream>
-#if defined(_MSC_VER) && _MSC_VER <= 1200
-#pragma warning(disable:4786)
-#endif
+#include "sparcfrontend.h"
 
 #include "exp.h"
 #include "register.h"
@@ -38,11 +32,15 @@
 #include "sparcdecoder.h"
 #include "BinaryFile.h"
 #include "frontend.h"
-#include "sparcfrontend.h"
 #include "BinaryFile.h"        // E.g. IsDynamicallyLinkedProc
 #include "boomerang.h"
 #include "signature.h"
 #include "log.h"
+
+#include <cassert>
+#include <cstring>
+#include <iomanip>            // For setfill etc
+#include <sstream>
 
 /***************************************************************************//**
  * FUNCTION:         warnDCTcouple

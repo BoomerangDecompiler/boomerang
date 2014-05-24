@@ -18,12 +18,7 @@
 *
 *****************************************************************/
 
-#include <cassert>
-#include <iomanip>            // For setfill etc
-#include <sstream>
-#if defined(_MSC_VER) && _MSC_VER <= 1200
-#pragma warning(disable:4786)
-#endif
+#include "mipsfrontend.h"
 
 #include "exp.h"
 #include "register.h"
@@ -35,11 +30,13 @@
 #include "mipsdecoder.h"
 #include "BinaryFile.h"
 #include "frontend.h"
-#include "mipsfrontend.h"
 #include "BinaryFile.h"        // E.g. IsDynamicallyLinkedProc
 #include "boomerang.h"
 #include "signature.h"
 
+#include <cassert>
+#include <iomanip>            // For setfill etc
+#include <sstream>
 MIPSFrontEnd::MIPSFrontEnd(BinaryFile *pBF, Prog* prog, BinaryFileFactory* pbff) : FrontEnd(pBF, prog, pbff)
 {
     decoder = new MIPSDecoder(prog);

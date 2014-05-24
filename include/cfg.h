@@ -17,6 +17,12 @@
 #ifndef _CFG_H_
 #define _CFG_H_
 
+
+#include "types.h"
+#include "exphelp.h"    // For lessExpStar
+#include "basicblock.h"    // For the BB nodes
+#include "dataflow.h"    // For embedded class DataFlow
+
 #include <stdio.h>        // For FILE
 #include <list>
 #include <vector>
@@ -24,16 +30,6 @@
 #include <map>
 #include <iostream>
 #include <string>
-
-#if defined(_MSC_VER)
-#pragma warning(disable:4290)
-#endif
-
-#include "types.h"
-#include "exphelp.h"    // For lessExpStar
-#include "basicblock.h"    // For the BB nodes
-#include "dataflow.h"    // For embedded class DataFlow
-
 #define DEBUG_LIVENESS    (Boomerang::get()->debugLiveness)
 
 class Proc;

@@ -108,10 +108,6 @@ void *alloca ();
 #include "cfg.h"
 #include "proc.h"
 #include "signature.h"
-// For some reason, MSVC 5.00 complains about use of undefined type RTL a lot
-#if defined(_MSC_VER) && _MSC_VER <= 1100
-#include "rtl.h"
-#endif
 #include "transformer.h"
 #include "generic.h"
 
@@ -480,7 +476,7 @@ TransformationParser::TransformationParser(YY_TransformationParser_CONSTRUCTOR_P
     YY_TransformationParser_DEBUG_FLAG=0;
 #endif
     YY_TransformationParser_CONSTRUCTOR_CODE;
-};
+}
 #endif
 
 

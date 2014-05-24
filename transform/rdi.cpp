@@ -6,15 +6,8 @@
  * \brief   Implementation of the RDIExpTransformer and related classes.
  *============================================================================*/
 
-#include <assert.h>
-#if defined(_MSC_VER) && _MSC_VER <= 1200
-#pragma warning(disable:4786)
-#endif
+#include "rdi.h"
 
-#include <numeric>      // For accumulate
-#include <algorithm>    // For std::max()
-#include <map>          // In decideType()
-#include <sstream>      // Need gcc 3.0 or better
 #include "types.h"
 #include "statement.h"
 #include "cfg.h"
@@ -23,7 +16,12 @@
 #include "rtl.h"
 #include "proc.h"
 #include "transformer.h"
-#include "rdi.h"
+
+#include <assert.h>
+#include <numeric>      // For accumulate
+#include <algorithm>    // For std::max()
+#include <map>          // In decideType()
+#include <sstream>      // Need gcc 3.0 or better
 
 Exp *RDIExpTransformer::applyTo(Exp *e, bool &bMod)
 {
