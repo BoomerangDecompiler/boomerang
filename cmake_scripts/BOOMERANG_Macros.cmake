@@ -5,7 +5,7 @@
 MACRO(BOOMERANG_ADD_LOADER loader_name)
 	IF(NOT ${loader_name}_LOADER_VISITED)
 		# add the loader as a dll
-		ADD_LIBRARY(${loader_name} SHARED 
+		ADD_LIBRARY(${loader_name} MODULE 
 					${loader_name}.cpp 
 					${loader_name}.h
 					${PROJECT_SOURCE_DIR}/loader/SymTab.cpp 

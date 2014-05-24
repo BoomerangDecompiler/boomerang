@@ -27,6 +27,7 @@
 #include <vector>
 #include <algorithm>
 #include <cmath>
+#include <QFileInfo>
 
 #include "type.h"
 #include "cluster.h"
@@ -1077,14 +1078,7 @@ bool Prog::isProcLabel (ADDRESS addr) {
  * \returns A string with the name
  ******************************************************************************/
 std::string Prog::getNameNoPath() const {
-    std::string::size_type n = m_name.rfind("/");
-    if (n == std::string::npos) {
-        n = m_name.rfind("\\");
-        if (n == std::string::npos)
-            return m_name;
-    }
-
-    return m_name.substr(n+1);
+    return QFileInfo(m_name.c_str()).fileName().toStdString();
 }
 
 /***************************************************************************//**
@@ -1094,11 +1088,7 @@ std::string Prog::getNameNoPath() const {
  * \returns A string with the name
  ******************************************************************************/
 std::string Prog::getNameNoPathNoExt() const {
-    std::string nopath = getNameNoPath();
-    std::string::size_type n = nopath.rfind(".");
-    if (n == std::string::npos)
-        return nopath;
-    return nopath.substr(0, n);
+    return QFileInfo(m_name.c_str()).baseName().toStdString();
 }
 
 /***************************************************************************//**

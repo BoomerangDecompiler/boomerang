@@ -36,22 +36,11 @@
 // starting at p.
 #define LH(p)  ((int)((Byte *)(p))[0] + ((int)((Byte *)(p))[1] << 8))
 
-// Some Windows voodoo; Windows doesn't seem to export everything unless you tell it to
-#ifdef _WIN32
-#if defined BinaryFile_EXPORTS            // If don't use dllexport, get Vtable undefined!
-#define IMPORT_BINARYFILE __declspec(dllexport)
-#else
-#define IMPORT_BINARYFILE __declspec(dllimport)
-#endif
-#else
-#define IMPORT_BINARYFILE
-#endif
-
 // SectionInfo structure. GetSectionInfo returns a pointer to an array of
 // these structs. All information about the sections is contained in these
 // structures.
 
-struct IMPORT_BINARYFILE SectionInfo
+struct SectionInfo
 {
                     SectionInfo();          // Constructor
 virtual             ~SectionInfo() {}       // Quell a warning in gcc
@@ -125,12 +114,12 @@ enum LOAD_FMT {
 enum MACHINE {MACHINE_PENTIUM, MACHINE_SPARC, MACHINE_HPRISC, MACHINE_PALM, MACHINE_PPC, MACHINE_ST20, MACHINE_MIPS, MACHINE_68K};
 
 class BinaryFileFactory {
-        // The below should be of type HINSTANCE on WIN32, but #including windows.h here causes problems later compiling the objective C
-        // code. So just cast as needed.
         void *          dlHandle;        // Needed for UnLoading the library
         BinaryFile *    getInstanceFor(const char *sName);
 static  std::string     m_base_path; //!< path from which the executable is being ran, used to find lib/ directory
+
 public:
+
 static  void            setBasePath(const std::string &path) {m_base_path=path;} //!< sets the base directory for plugin search
         BinaryFile *    Load(const std::string &sName );
         void            UnLoad();
@@ -151,7 +140,7 @@ public:
 
 };
 
-class IMPORT_BINARYFILE BinaryFile : public BinaryData {
+class BinaryFile : public BinaryData {
 
   friend class ArchiveFile;            // So can use the protected Load()
   friend class BinaryFileFactory;    // So can use getTextLimits
