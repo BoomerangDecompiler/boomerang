@@ -15,8 +15,8 @@ class TargetQueue {
 public:
 
     void        visit(Cfg* pCfg, ADDRESS uNewAddr, BasicBlock *& pNewBB);
-    void		initial(ADDRESS uAddr);
-    ADDRESS		nextAddress(const Cfg &cfg);
-    void		dump();
+    void        initial(ADDRESS uAddr);
+    ADDRESS     nextAddress(const Cfg &cfg);
+    void        dump();
 
-};	// class TargetQueue
+};  // class TargetQueue
