@@ -29,7 +29,7 @@
 #include <string>
 #include <vector>
 #include <cstdio>       // For FILE
-
+#include <QtCore/QStringList>
 // Note: #including windows.h causes problems later in the objective C code.
 
 // Given a pointer p, returns the 16 bits (halfword) in the two bytes
@@ -167,7 +167,7 @@ virtual bool            isLibrary() const = 0;
                         /// must be loaded at the address given by getImageBase()
 virtual bool            isRelocatable() const { return isLibrary(); }
                         //! Return a list of library names which the binary file depends on
-virtual std::list<const char *> getDependencyList() = 0;
+virtual QStringList     getDependencyList() = 0;
                         /// Return the virtual address at which the binary expects to be loaded.
                         /// For position independent / relocatable code this should be NO_ADDDRESS
 virtual ADDRESS         getImageBase() = 0;

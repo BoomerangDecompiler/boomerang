@@ -368,8 +368,8 @@ MACHINE PalmBinaryFile::GetMachine() const {
 bool PalmBinaryFile::isLibrary() const {
     return (strncmp((char*)(m_pImage+0x3C), "libr", 4) == 0);
 }
-std::list<const char *> PalmBinaryFile::getDependencyList() {
-    return std::list<const char *>(); /* doesn't really exist on palm */
+QStringList PalmBinaryFile::getDependencyList() {
+    return QStringList(); /* doesn't really exist on palm */
 }
 
 ADDRESS PalmBinaryFile::getImageBase() {

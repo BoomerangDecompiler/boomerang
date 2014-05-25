@@ -508,8 +508,8 @@ bool HpSomBinaryFile::isLibrary() const {
              type == 0x010E || type == 0x0619 );
 }
 
-std::list<const char *> HpSomBinaryFile::getDependencyList() {
-    return std::list<const char *>(); /* FIXME */
+QStringList HpSomBinaryFile::getDependencyList() {
+    return QStringList(); /* FIXME */
 }
 
 ADDRESS HpSomBinaryFile::getImageBase() {

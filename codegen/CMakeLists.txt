@@ -4,3 +4,4 @@ SET(boomerang_c_codegen_sources
 chllcode.h
 )
 ADD_LIBRARY(codegen STATIC ${boomerang_c_codegen_sources})
+qt5_use_modules(codegen Core)

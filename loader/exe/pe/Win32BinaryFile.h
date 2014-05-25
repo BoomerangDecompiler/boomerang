@@ -147,18 +147,16 @@ typedef struct PACKED {
 
 class Win32BinaryFile : public BinaryFile {
 public:
-    Win32BinaryFile();                // Default constructor
-    virtual                ~Win32BinaryFile();                // Destructor
+                        Win32BinaryFile();              // Default constructor
+    virtual             ~Win32BinaryFile();             // Destructor
     virtual bool        Open(const char* sName);        // Open the file for r/w; ???
     virtual void        Close();                        // Close file opened with Open()
-    virtual void        UnLoad();                        // Unload the image
-    virtual LOAD_FMT    GetFormat() const;            // Get format (i.e.
-    // LOADFMT_Win32)
-    virtual MACHINE        GetMachine() const;            // Get machine (i.e.
-    // MACHINE_Pentium)
-    virtual const char*    getFilename() const { return m_pFileName; }
+    virtual void        UnLoad();                       // Unload the image
+    virtual LOAD_FMT    GetFormat() const;              // Get format (i.e.LOADFMT_Win32)
+    virtual MACHINE     GetMachine() const;            // Get machine (i.e. MACHINE_Pentium)
+    virtual const char* getFilename() const { return m_pFileName; }
     virtual bool        isLibrary() const;
-    virtual std::list<const char *> getDependencyList();
+    virtual QStringList getDependencyList();
     virtual ADDRESS        getImageBase();
     virtual size_t        getImageSize();
 
@@ -197,11 +195,11 @@ public:
     virtual ADDRESS        IsJumpToAnotherAddr(ADDRESS uNative);
     virtual const char *GetDynamicProcName(ADDRESS uNative);
 
-    bool        IsMinGWsAllocStack(ADDRESS uNative);
-    bool        IsMinGWsFrameInit(ADDRESS uNative);
-    bool        IsMinGWsFrameEnd(ADDRESS uNative);
-    bool        IsMinGWsCleanupSetup(ADDRESS uNative);
-    bool        IsMinGWsMalloc(ADDRESS uNative);
+            bool        IsMinGWsAllocStack(ADDRESS uNative);
+            bool        IsMinGWsFrameInit(ADDRESS uNative);
+            bool        IsMinGWsFrameEnd(ADDRESS uNative);
+            bool        IsMinGWsCleanupSetup(ADDRESS uNative);
+            bool        IsMinGWsMalloc(ADDRESS uNative);
 
     virtual std::map<ADDRESS, std::string> &getSymbols() { return dlprocptrs; }
 

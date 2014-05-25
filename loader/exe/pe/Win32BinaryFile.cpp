@@ -1119,8 +1119,8 @@ size_t Win32BinaryFile::getImageSize() {
     return m_pPEHeader->ImageSize;
 }
 
-std::list<const char *> Win32BinaryFile::getDependencyList() {
-    return std::list<const char *>(); /* FIXME */
+QStringList Win32BinaryFile::getDependencyList() {
+    return QStringList(); /* FIXME */
 }
 
 DWord Win32BinaryFile::getDelta() {

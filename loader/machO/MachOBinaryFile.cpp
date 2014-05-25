@@ -600,8 +600,8 @@ size_t MachOBinaryFile::getImageSize() {
     return loaded_size;
 }
 
-std::list<const char *> MachOBinaryFile::getDependencyList() {
-    return std::list<const char *>(); /* FIXME */
+QStringList MachOBinaryFile::getDependencyList() {
+    return QStringList(); /* FIXME */
 }
 
 DWord MachOBinaryFile::getDelta() {

@@ -259,8 +259,8 @@ bool ExeBinaryFile::isLibrary() const {
     return false;
 }
 
-std::list<const char *> ExeBinaryFile::getDependencyList() {
-    return std::list<const char *>(); /* for now */
+QStringList ExeBinaryFile::getDependencyList() {
+    return QStringList(); /* for now */
 }
 
 ADDRESS ExeBinaryFile::getImageBase() {

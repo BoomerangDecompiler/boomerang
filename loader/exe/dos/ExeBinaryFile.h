@@ -73,7 +73,7 @@ public:
     virtual const char *getFilename() const { return m_pFileName; }
 
     virtual bool isLibrary() const;
-    virtual std::list<const char *> getDependencyList();
+    virtual QStringList getDependencyList();
     virtual ADDRESS getImageBase();
     virtual size_t getImageSize();
 

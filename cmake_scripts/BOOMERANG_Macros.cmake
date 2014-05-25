@@ -14,6 +14,7 @@ MACRO(BOOMERANG_ADD_LOADER loader_name)
 		# all loaders depend on BinaryFile
 		TARGET_LINK_LIBRARIES(${loader_name} BinaryFile)
 		ADD_DEPENDENCIES(${loader_name} BinaryFile)
+		qt5_use_modules(${loader_name} Core)
 		# add this loader to project's global loader list
 		LIST(APPEND _BOOMERANG_LOADERS ${loader_name})		
 		SET(${loader_name}_LOADER_VISITED true)
@@ -32,6 +33,7 @@ MACRO(BOOMERANG_ADD_FRONTEND frontend_name)
 		${frontend_name}frontend.h
 		 ${ARGN}
 		 )
+		qt5_use_modules(${frontend_name} Core)
 		# add this generator to project's global loader list
 		LIST(APPEND _BOOMERANG_FRONTENDS Frontend_${frontend_name})		
 		SET(${frontend_name}_FRONTEND_VISITED true)
@@ -42,6 +44,7 @@ MACRO(BOOMERANG_ADD_CODEGEN gen_name)
 	IF(NOT ${gen_name}_CODEGEN_VISITED)
 		# add the loader as a static
 		ADD_LIBRARY(Codegen_${gen_name} STATIC ${ARGN})
+		qt5_use_modules(Codegen_${gen_name} Core)
 		# add this generator to project's global loader list
 		LIST(APPEND _BOOMERANG_CODE_GENERATORS Codegen_${gen_name})		
 		SET(${gen_name}_CODEGEN_VISITED true)
@@ -52,6 +55,7 @@ MACRO(ADD_UNIT_TEST name)
 	IF(NOT ${name}_TEST_VISITED)
 		# add the loader as a dll
 		ADD_EXECUTABLE(${name} ${ARGN})
+		qt5_use_modules(${name} Core)
 		MESSAGE(WARNING "Adding test " ${name} " " ${ARGN})
 		TARGET_LINK_LIBRARIES(${name} ${UNIT_TEST_LIBS})
 		ADD_TEST(NAME ${name} COMMAND ${name})

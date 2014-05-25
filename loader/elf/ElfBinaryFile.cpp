@@ -769,8 +769,8 @@ bool ElfBinaryFile::isLibrary() const {
     return (type == ET_DYN);
 }
 
-std::list<const char *> ElfBinaryFile::getDependencyList() {
-    std::list<const char *> result;
+QStringList ElfBinaryFile::getDependencyList() {
+    QStringList result;
     ADDRESS stringtab = NO_ADDRESS;
     PSectionInfo dynsect = GetSectionInfoByName(".dynamic");
     if( dynsect == nullptr )
@@ -792,7 +792,7 @@ std::list<const char *> ElfBinaryFile::getDependencyList() {
         if( dyn->d_tag == DT_NEEDED ) {
             const char *need = (char *)(stringtab + dyn->d_un.d_val).m_value;
             if( need != nullptr )
-                result.push_back( need );
+                result << need;
         }
     }
     return result;

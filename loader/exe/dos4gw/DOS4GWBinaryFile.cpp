@@ -508,8 +508,8 @@ size_t DOS4GWBinaryFile::getImageSize() {
     return 0; // TODO
 }
 
-std::list<const char *> DOS4GWBinaryFile::getDependencyList() {
-    return std::list<const char *>(); /* FIXME */
+QStringList DOS4GWBinaryFile::getDependencyList() {
+    return QStringList(); /* FIXME */
 }
 
 DWord DOS4GWBinaryFile::getDelta() {
