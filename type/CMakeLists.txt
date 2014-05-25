@@ -4,3 +4,4 @@ SET(SRC
     type.cpp
 )
 ADD_LIBRARY(type STATIC ${SRC})
+qt5_use_modules(type Core)
