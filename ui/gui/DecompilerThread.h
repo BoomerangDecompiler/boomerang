@@ -84,7 +84,7 @@ protected:
     FrontEnd *fe;
     Prog *prog;
 
-    QString filename;
+    std::string filename;
 
     const char *procStatus(UserProc *p);
     void emitClusterAndChildren(Cluster *root);
