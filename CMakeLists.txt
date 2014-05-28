@@ -4,6 +4,9 @@ include(ExternalProject)
 # Settings related to build system, and target directories
 ###############################################################################
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.10)
+CMAKE_POLICY(SET CMP0020 OLD)
+CMAKE_POLICY(SET CMP0043 OLD)
+
 LIST(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake_scripts)
 
 SET(CMAKE_INCLUDE_CURRENT_DIR ON)
