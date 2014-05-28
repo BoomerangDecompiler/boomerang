@@ -867,7 +867,7 @@ do_action:      /* this label is used only to access EOF actions */
                 YY_BREAK
                     case 55:
 
-                { count(); sscanf(yytext, "0x%x", &yylval.ival); return AnsiCParser::CONSTANT; }
+                { count(); sscanf(yytext, "0x%p", &yylval.ival); return AnsiCParser::CONSTANT; }
                 YY_BREAK
                     case 56:
 
