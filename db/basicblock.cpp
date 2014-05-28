@@ -52,6 +52,7 @@ BasicBlock::BasicBlock()
     :
       //m_iNumInEdges(0),
       //m_iNumOutEdges(0),
+      m_iTargetOutEdges(0),
       m_iTraversed(false),
       // From Doug's code
       ord(-1), revOrd(-1), inEdgesVisited(0), numForwardInEdges(-1), traversed(UNTRAVERSED), hllLabel(false), indentLevel(0),
@@ -93,6 +94,7 @@ BasicBlock::BasicBlock(const BasicBlock& bb)
       m_OutEdges(bb.m_OutEdges),
       //m_iNumInEdges(bb.m_iNumInEdges),
       //m_iNumOutEdges(bb.m_iNumOutEdges),
+      m_iTargetOutEdges(bb.m_iTargetOutEdges),
       m_iTraversed(false),
       // From Doug's code
       ord(bb.ord), revOrd(bb.revOrd), inEdgesVisited(bb.inEdgesVisited), numForwardInEdges(bb.numForwardInEdges),
