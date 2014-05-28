@@ -47,7 +47,8 @@ Const::Const(const char *p) : Exp(opStrConst),  conscript(0), type(new VoidType)
 Const::Const(Proc* p)       : Exp(opFuncConst), conscript(0), type(new VoidType) {u.pp = p;}
 /// \remark This is bad. We need a way of constructing true unsigned constants
 Const::Const(ADDRESS a)    : Exp(opIntConst),    conscript(0), type(new VoidType) {
-    assert((a.m_value>>32)==0);
+    // TODO: Why was this assert here?
+    //assert((a.m_value>>32)==0);
     u.a = a;
 }
 
