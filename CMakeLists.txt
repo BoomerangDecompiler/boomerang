@@ -5,7 +5,9 @@ include(ExternalProject)
 ###############################################################################
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.10)
 CMAKE_POLICY(SET CMP0020 OLD)
+IF(POLICY CMP0043)
 CMAKE_POLICY(SET CMP0043 OLD)
+ENDIF()
 
 LIST(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake_scripts)
 
