@@ -433,6 +433,25 @@ void MachOBinaryFile::AddSymbol(ADDRESS uNative, const char *pName) {
     m_SymA[uNative] = pName;
 }
 
+int MachOBinaryFile::GetSizeByName(const char *pName, bool bTypeOK)
+{
+    if(GetAddressByName(pName,bTypeOK)!=NO_ADDRESS) {
+        return 4; //TODO: HACK
+    }
+    return 0;
+}
+
+ADDRESS *MachOBinaryFile::GetImportStubs(int &numImports)
+{
+    numImports = 0;
+    return nullptr;
+}
+
+const char *MachOBinaryFile::getFilenameSymbolFor(const char *)
+{
+    return nullptr;
+}
+
 bool MachOBinaryFile::DisplayDetails(const char* fileName, FILE* f
                                      /* = stdout */) {
     return false;

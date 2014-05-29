@@ -47,6 +47,7 @@ struct mach_header;
 class MachOBinaryFile : public QObject,
         public BinaryData,
         public LoaderInterface,
+        public SymbolTableInterface,
         public ObjcAccessInterface,
         public LoaderCommon
 {
@@ -55,6 +56,7 @@ class MachOBinaryFile : public QObject,
     Q_INTERFACES(LoaderInterface)
     Q_INTERFACES(BinaryData)
     Q_INTERFACES(SectionInterface)
+    Q_INTERFACES(SymbolTableInterface)
 
 public:
     MachOBinaryFile();                // Default constructor
@@ -74,10 +76,14 @@ public:
     virtual ADDRESS        GetMainEntryPoint();
     virtual ADDRESS        GetEntryPoint();
     DWord        getDelta();
-    virtual const char*    SymbolByAddress(ADDRESS dwAddr); // Get sym from addr
-    virtual ADDRESS        GetAddressByName(const char* name,
-                                            bool        bNoTypeOK = false);                    // Find addr given name
-    virtual void        AddSymbol(ADDRESS uNative, const char *pName);
+    const char*    SymbolByAddress(ADDRESS dwAddr) override; // Get sym from addr
+    ADDRESS        GetAddressByName(const char* name, bool bNoTypeOK = false) override; // Find addr given name
+    void        AddSymbol(ADDRESS uNative, const char *pName) override;
+    //! Lookup the name, return the size
+    int GetSizeByName(const char *pName, bool bTypeOK = false) override;
+    ADDRESS *GetImportStubs(int &numImports) override;
+    const char *getFilenameSymbolFor(const char *) override;
+
 
     //
     //        --        --        --        --        --        --        --        --        --
