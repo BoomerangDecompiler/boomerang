@@ -88,7 +88,7 @@ void Decompiler::removeEntryPoint(ADDRESS a) {
 
 void Decompiler::changeInputFile(const QString &f)
 {
-    filename = f;
+    filename = f.toStdString();
 }
 
 void Decompiler::changeOutputPath(const QString &path)
@@ -101,7 +101,7 @@ void Decompiler::load()
     emit loading();
 
     prog = new Prog();
-    fe = FrontEnd::Load(filename.toStdString(), prog);
+    fe = FrontEnd::Load(filename, prog);
     if (fe == NULL) {
         emit machineType(QString("unavailable: Load Failed!"));
         return;

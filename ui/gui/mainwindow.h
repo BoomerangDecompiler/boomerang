@@ -2,8 +2,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include "ui_boomerang.h"
-#include "ui_about.h"
+#include <QMainWindow>
 #include "types.h"
 #include <vector>
 #include <map>
@@ -11,6 +10,13 @@
 
 class DecompilerThread;
 class QToolButton;
+class QTreeWidgetItem;
+class QTableWidgetItem;
+
+namespace Ui
+{
+class MainWindow;
+}
 
 class MainWindow : public QMainWindow
 {
@@ -18,6 +24,7 @@ class MainWindow : public QMainWindow
 
 public:
     MainWindow(QWidget *parent = 0);
+    ~MainWindow();
 
     void errorLoadingFile();
 
@@ -34,7 +41,7 @@ public slots:
     void on_outputPathBrowseButton_clicked();
     void on_inputFileComboBox_editTextChanged(const QString &text);
     void on_inputFileComboBox_currentIndexChanged(const QString &text);
-    void on_outputPathComboBox_editTextChanged(QString &text);
+    void on_outputPathComboBox_editTextChanged(const QString &text);
     void showConsideringProc(const QString &parent, const QString &name);
     void showDecompilingProc(const QString &name);
     void showNewUserProc(const QString &name, ADDRESS addr);
@@ -52,35 +59,35 @@ public slots:
     void on_clusters_itemDoubleClicked(QTreeWidgetItem *item, int column);
     void on_decompileProcsTreeWidget_itemDoubleClicked(QTreeWidgetItem *item, int column);
     void on_actionEnable_toggled(bool b);
-    void on_actionStep_activated();
+    void on_actionStep_triggered();
     void on_userProcs_horizontalHeader_sectionClicked(int logicalIndex);
     void on_userProcs_cellDoubleClicked(int row, int column);
     void on_userProcs_cellChanged(int row, int column);
     void on_libProcs_cellDoubleClicked(int row, int column);
-    void on_actionOpen_activated();
-    void on_actionSave_activated();
-    void on_actionClose_activated();
-    void on_actionAbout_activated();
-    void on_actionAboutQt_activated();
+    void on_actionOpen_triggered();
+    void on_actionSave_triggered();
+    void on_actionClose_triggered();
+    void on_actionAbout_triggered();
+    void on_actionAboutQt_triggered();
     void on_tabWidget_currentChanged(int index);
 
-    void on_actionCut_activated();
-    void on_actionCopy_activated();
-    void on_actionPaste_activated();
-    void on_actionDelete_activated();
-    void on_actionFind_activated();
-    void on_actionFind_Next_activated();
-    void on_actionGo_To_activated();
-    void on_actionSelect_All_activated();
+    void on_actionCut_triggered();
+    void on_actionCopy_triggered();
+    void on_actionPaste_triggered();
+    void on_actionDelete_triggered();
+    void on_actionFind_triggered();
+    void on_actionFind_Next_triggered();
+    void on_actionGo_To_triggered();
+    void on_actionSelect_All_triggered();
 
-    void on_actionLoad_activated();
-    void on_actionDecode_activated();
-    void on_actionDecompile_activated();
-    void on_actionGenerate_Code_activated();
-    void on_actionStructs_activated();
+    void on_actionLoad_triggered();
+    void on_actionDecode_triggered();
+    void on_actionDecompile_triggered();
+    void on_actionGenerate_Code_triggered();
+    void on_actionStructs_triggered();
     void on_structName_returnPressed();
 
-    void on_actionBoomerang_Website_activated();
+    void on_actionBoomerang_Website_triggered();
 
     void on_enableDFTAcheckBox_toggled(bool b);
     void on_enableNoDecodeChildren_toggled(bool b);
@@ -97,7 +104,7 @@ protected:
     void saveSettings();
 
 private:
-    Ui::MainWindow ui;
+    Ui::MainWindow * ui;
     DecompilerThread *decompilerThread;
 
     QToolButton *step;

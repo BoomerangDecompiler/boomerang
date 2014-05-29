@@ -2365,7 +2365,7 @@ bool CallStatement::convertToDirect() {
             // m[K]: convert it to a global right here
             ADDRESS u = ADDRESS::g(((Const*)sub)->getInt());
             proc->getProg()->globalUsed(u);
-            const char *nam = proc->getProg()->getGlobalName(u);
+            const char *nam = proc->getProg()->newGlobalName(u);
             e = Location::global(nam, proc);
             pDest = new RefExp(e, nullptr);
         }
