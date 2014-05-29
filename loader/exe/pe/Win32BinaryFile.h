@@ -155,6 +155,7 @@ class Win32BinaryFile : public QObject,
     Q_INTERFACES(LoaderInterface)
     Q_INTERFACES(BinaryData)
     Q_INTERFACES(SectionInterface)
+    Q_INTERFACES(SymbolTableInterface)
 public:
                         Win32BinaryFile();              // Default constructor
     virtual             ~Win32BinaryFile();             // Destructor
