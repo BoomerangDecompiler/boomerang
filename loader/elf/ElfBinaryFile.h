@@ -143,8 +143,14 @@ typedef struct {
 
 #define E_REL        1        // Relocatable file type
 
-class ElfBinaryFile : public BinaryFile
+class ElfBinaryFile : public QObject, public LoaderInterface, public BinaryData,public SymbolTableInterface, public LoaderCommon
 {
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID LoaderInterface_iid)
+    Q_INTERFACES(LoaderInterface)
+    Q_INTERFACES(BinaryData)
+    Q_INTERFACES(SymbolTableInterface)
+    Q_INTERFACES(SectionInterface)
 public:
     ElfBinaryFile(bool bArchive = false);    // Constructor
     virtual void        UnLoad();                        // Unload the image
@@ -165,21 +171,21 @@ public:
     //virtual ADDRESS    GetFirstHeaderAddress();        // Get ADDRESS of main header
     //        ADDRESS        GetNextHeaderAddress();            // Get any other headers
 
-    char            readNative1(ADDRESS a);             // Read 1 bytes from native addr
-    int             readNative2(ADDRESS a);             // Read 2 bytes from native addr
-    int             readNative4(ADDRESS a);             // Read 4 bytes from native addr
-    QWord        readNative8(ADDRESS a);                // Read 8 bytes from native addr
-    float        readNativeFloat4(ADDRESS a);    // Read 4 bytes as float
-    double        readNativeFloat8(ADDRESS a);    // Read 8 bytes as float
+    char        readNative1(ADDRESS a) override;        // Read 1 bytes from native addr
+    int         readNative2(ADDRESS a) override;        // Read 2 bytes from native addr
+    int         readNative4(ADDRESS a) override;        // Read 4 bytes from native addr
+    QWord       readNative8(ADDRESS a) override;        // Read 8 bytes from native addr
+    float       readNativeFloat4(ADDRESS a) override;   // Read 4 bytes as float
+    double      readNativeFloat8(ADDRESS a) override;   // Read 8 bytes as float
 
     void        writeNative4(ADDRESS nat, uint32_t n);
 
     // Symbol functions
-    const char* SymbolByAddress(ADDRESS uAddr); // Get name of symbol
+    const char* SymbolByAddress(ADDRESS uAddr) override; // Get name of symbol
     // Get value of symbol, if any
-    ADDRESS        GetAddressByName(const char* pName, bool bNoTypeOK = false);
+    ADDRESS        GetAddressByName(const char* pName, bool bNoTypeOK = false) override;
     // Get the size associated with the symbol
-    int            GetSizeByName(const char* pName, bool bNoTypeOK = false);
+    int            GetSizeByName(const char* pName, bool bNoTypeOK = false) override;
     // Get the size associated with the symbol; guess if necessary
     int            GetDistanceByName(const char* pName);
     int            GetDistanceByName(const char* pName, const char* pSectName);
@@ -204,14 +210,6 @@ public:
     void        writeObjectFile(std::string &path, const char* name, void *ptxt, int txtsz, RelocMap& reloc);
     // Apply relocations; important when compiled without -fPIC
     void        applyRelocations();
-
-    //
-    //    --    --    --    --    --    --    --    --    --    --    --
-    //
-    // Internal information
-    // Dump headers, etc
-    //virtual bool    DisplayDetails(const char* fileName, FILE* f = stdout);
-
 
     // Analysis functions
     virtual std::list<SectionInfo*>& GetEntryPoints(const char* pEntry = "main");

@@ -110,7 +110,7 @@ int CommandlineDriver::applyCommandline() {
     }
     Boomerang &boom(*Boomerang::get());
     boom.setProgPath(QFileInfo(args[0]).absolutePath().toStdString());
-    boom.setPluginPath(QFileInfo(args[0]).absolutePath().toStdString());
+    boom.setPluginPath(QFileInfo(args[0]).absolutePath());
     for(int i=1; i<args.size(); ++i) {
         QString arg=args[i];
         if (arg[0] != '-') {

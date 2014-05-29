@@ -44,8 +44,18 @@ typedef uint32_t vm_prot_t;        // I guessed
 
 struct mach_header;
 
-class MachOBinaryFile : public BinaryFile
+class MachOBinaryFile : public QObject,
+        public BinaryData,
+        public LoaderInterface,
+        public ObjcAccessInterface,
+        public LoaderCommon
 {
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID LoaderInterface_iid)
+    Q_INTERFACES(LoaderInterface)
+    Q_INTERFACES(BinaryData)
+    Q_INTERFACES(SectionInterface)
+
 public:
     MachOBinaryFile();                // Default constructor
     virtual             ~MachOBinaryFile();                // Destructor

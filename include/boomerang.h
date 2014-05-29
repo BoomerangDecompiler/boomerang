@@ -30,13 +30,15 @@
 
 // Defines to control experimental features
 #define USE_DOMINANCE_NUMS 1 // Set true to store a statement number that has dominance properties
+#include "types.h"
+
 #include <iostream>
 #include <string>
 #include <set>
 #include <vector>
 #include <map>
 
-#include "types.h"
+class QString;
 class SeparateLogger;
 class Log;
 class Prog;
@@ -112,13 +114,13 @@ class Boomerang {
     int processCommand(std::vector<std::string> &args);
     static const char *getVersionStr();
     Log &log();
-    SeparateLogger separate_log(const char *);
+    SeparateLogger separate_log(const QString &);
     Log &if_verbose_log(int verbosity_level);
     void setLogger(Log *l) { logger = l; }
     bool setOutputDirectory(const std::string &path);
 
     HLLCode *getHLLCode(UserProc *p = nullptr);
-    void setPluginPath(const std::string &p);
+    void setPluginPath(const QString &p);
     void setProgPath(const std::string &p);
     const std::string &getProgPath();
     /// Set the path where the output files are saved.

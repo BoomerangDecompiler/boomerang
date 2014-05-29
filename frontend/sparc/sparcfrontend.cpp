@@ -251,7 +251,7 @@ bool SparcFrontEnd::case_CALL(ADDRESS& address, DecodeResult& inst, DecodeResult
         // First check for helper functions
         ADDRESS dest = call_stmt->getFixedDest();
         // Special check for calls to weird PLT entries which don't have symbols
-        if ((pBF->IsDynamicLinkedProc(dest)) && (pBF->SymbolByAddress(dest) == nullptr)) {
+        if ((ldrIface->IsDynamicLinkedProc(dest)) && (prog->symbolByAddress(dest) == nullptr)) {
             // This is one of those. Flag this as an invalid instruction
             inst.valid = false;
         }
@@ -300,7 +300,7 @@ bool SparcFrontEnd::case_CALL(ADDRESS& address, DecodeResult& inst, DecodeResult
 
             bool ret = true;
             // Check for _exit; probably should check for other "never return" functions
-            const char* name = pBF->SymbolByAddress(dest);
+            const char* name =prog->symbolByAddress(dest);
             if (name && strcmp(name, "_exit") == 0) {
                 // Don't keep decoding after this call
                 ret = false;
@@ -716,6 +716,7 @@ std::vector<Exp*> &SparcFrontEnd::getDefaultReturns()
  ******************************************************************************/
 bool SparcFrontEnd::processProc(ADDRESS address, UserProc* proc, std::ofstream &os, bool fragment /* = false */,
                                 bool spec /* = false */) {
+    SectionInterface *sec_iface = qobject_cast<SectionInterface *>(pLoader);
 
     // Declare an object to manage the queue of targets not yet processed yet.
     // This has to be individual to the procedure! (so not a global)
@@ -780,7 +781,7 @@ bool SparcFrontEnd::processProc(ADDRESS address, UserProc* proc, std::ofstream &
             if (!inst.valid) {
                 std::cerr << "Invalid instruction at " << std::hex << address << ": ";
                 std::cerr << std::setfill('0') << std::setw(2);
-                ptrdiff_t delta = pBF->getTextDelta();
+                ptrdiff_t delta = sec_iface->getTextDelta();
                 for (int j=0; j<inst.numBytes; j++)
                     std::cerr << std::setfill('0') << std::setw(2) << (unsigned)*(unsigned char*)(address+delta + j).m_value <<
                                  " " << std::setfill(' ') << std::setw(0);
@@ -864,7 +865,7 @@ bool SparcFrontEnd::processProc(ADDRESS address, UserProc* proc, std::ofstream &
                     // Construct the new basic block and save its destination
                     // address if it hasn't been visited already
                     BasicBlock * pBB = cfg->newBB(BB_rtls, ONEWAY, 1);
-                    handleBranch(address+8, pBF->getLimitTextHigh(), pBB, cfg, targetQueue);
+                    handleBranch(address+8, sec_iface->getLimitTextHigh(), pBB, cfg, targetQueue);
 
                     // There is no fall through branch.
                     sequentialDecode = false;
@@ -877,7 +878,7 @@ bool SparcFrontEnd::processProc(ADDRESS address, UserProc* proc, std::ofstream &
                     BB_rtls->push_back(inst.rtl);
 
                     BasicBlock * pBB = cfg->newBB(BB_rtls, ONEWAY, 1);
-                    handleBranch(stmt_jump->getFixedDest(), pBF->getLimitTextHigh(), pBB,
+                    handleBranch(stmt_jump->getFixedDest(), sec_iface->getLimitTextHigh(), pBB,
                                  cfg, targetQueue);
 
                     // There is no fall through branch.
@@ -896,7 +897,7 @@ bool SparcFrontEnd::processProc(ADDRESS address, UserProc* proc, std::ofstream &
                         // e.g.
                         // 142c8:  40 00 5b 91          call           exit
                         // 142cc:  91 e8 3f ff          restore       %g0, -1, %o0
-                        if (((SparcDecoder*)decoder)->isRestore(address+4+pBF->getTextDelta())) {
+                        if (((SparcDecoder*)decoder)->isRestore(address+4+sec_iface->getTextDelta())) {
                             // Give the address of the call; I think that this is actually important, if faintly annoying
                             delay_inst.rtl->setAddress(address);
                             BB_rtls->push_back(delay_inst.rtl);
@@ -961,7 +962,7 @@ bool SparcFrontEnd::processProc(ADDRESS address, UserProc* proc, std::ofstream &
                             }
                             else {
                                 // This is a non-call followed by an NCT/NOP
-                                case_SD(address, pBF->getTextDelta(), pBF->getLimitTextHigh(), inst, delay_inst, BB_rtls, cfg,
+                                case_SD(address, sec_iface->getTextDelta(), sec_iface->getLimitTextHigh(), inst, delay_inst, BB_rtls, cfg,
                                         targetQueue, os);
 
                                 // There is no fall through branch.
@@ -1008,7 +1009,7 @@ bool SparcFrontEnd::processProc(ADDRESS address, UserProc* proc, std::ofstream &
                             }
                             else {
                                 BasicBlock * pBB = cfg->newBB(BB_rtls,ONEWAY, 1);
-                                handleBranch(dest, pBF->getLimitTextHigh(), pBB, cfg, targetQueue);
+                                handleBranch(dest, sec_iface->getLimitTextHigh(), pBB, cfg, targetQueue);
 
                                 // There is no fall through branch.
                                 sequentialDecode = false;
@@ -1044,7 +1045,7 @@ bool SparcFrontEnd::processProc(ADDRESS address, UserProc* proc, std::ofstream &
                     switch(delay_inst.type) {
                         case NOP:
                         case NCT: {
-                            sequentialDecode = case_DD(address, pBF->getTextDelta(), inst, delay_inst, BB_rtls, targetQueue,
+                            sequentialDecode = case_DD(address, sec_iface->getTextDelta(), inst, delay_inst, BB_rtls, targetQueue,
                                                        proc, callList);
                             break;
                         }
@@ -1074,15 +1075,15 @@ bool SparcFrontEnd::processProc(ADDRESS address, UserProc* proc, std::ofstream &
                     switch(delay_inst.type) {
                         case NOP:
                         case NCT: {
-                            sequentialDecode = case_SCD(address, pBF->getTextDelta(),
-                                                        pBF->getLimitTextHigh(), inst, delay_inst, BB_rtls, cfg,
+                            sequentialDecode = case_SCD(address, sec_iface->getTextDelta(),
+                                                        sec_iface->getLimitTextHigh(), inst, delay_inst, BB_rtls, cfg,
                                                         targetQueue);
                             break;
                         }
                         default:
                             if (delay_inst.rtl->back()->getKind() == STMT_CALL) {
                                 // Assume it's the move/call/move pattern
-                                sequentialDecode = case_SCD(address, pBF->getTextDelta(), pBF->getLimitTextHigh(), inst,
+                                sequentialDecode = case_SCD(address, sec_iface->getTextDelta(), sec_iface->getLimitTextHigh(), inst,
                                                             delay_inst, BB_rtls, cfg, targetQueue);
                                 break;
                             }
@@ -1115,7 +1116,7 @@ bool SparcFrontEnd::processProc(ADDRESS address, UserProc* proc, std::ofstream &
                             }
                             // Visit the destination of the branch; add "true" leg
                             ADDRESS uDest = stmt_jump->getFixedDest();
-                            handleBranch(uDest, pBF->getLimitTextHigh(), pBB, cfg, targetQueue);
+                            handleBranch(uDest, sec_iface->getLimitTextHigh(), pBB, cfg, targetQueue);
                             // Add the "false" leg: point past the delay inst
                             cfg->addOutEdge(pBB, address+8);
                             address += 8;            // Skip branch and delay
@@ -1125,7 +1126,7 @@ bool SparcFrontEnd::processProc(ADDRESS address, UserProc* proc, std::ofstream &
 
                         case NCT:
                         {
-                            sequentialDecode = case_SCDAN(address, pBF->getTextDelta(), pBF->getLimitTextHigh(), inst,
+                            sequentialDecode = case_SCDAN(address, sec_iface->getTextDelta(), sec_iface->getLimitTextHigh(), inst,
                                                           delay_inst, BB_rtls, cfg, targetQueue);
                             break;
                         }
@@ -1176,7 +1177,7 @@ bool SparcFrontEnd::processProc(ADDRESS address, UserProc* proc, std::ofstream &
         ADDRESS dest = (*it)->getFixedDest();
         // Don't speculatively decode procs that are outside of the main text section, apart from dynamically linked
         // ones (in the .plt)
-        if (pBF->IsDynamicLinkedProc(dest) || !spec || (dest < pBF->getLimitTextHigh())) {
+        if (ldrIface->IsDynamicLinkedProc(dest) || !spec || (dest < sec_iface->getLimitTextHigh())) {
             cfg->addCall(*it);
             // Don't visit the destination of a register call
             //if (dest != NO_ADDRESS) newProc(proc->getProg(), dest);
@@ -1264,8 +1265,8 @@ void SparcFrontEnd::quadOperation(ADDRESS addr, std::list<RTL*>* lrtl, OPER op)
 
 // Determine if this is a helper function, e.g. .mul. If so, append the appropriate RTLs to lrtl, and return true
 bool SparcFrontEnd::helperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL*>* lrtl) {
-    if (!pBF->IsDynamicLinkedProc(dest)) return false;
-    const char* p = pBF->SymbolByAddress(dest);
+    if (!ldrIface->IsDynamicLinkedProc(dest)) return false;
+    const char* p = prog->symbolByAddress(dest);
     if (p == nullptr) {
         std::cerr << "Error: Can't find symbol for PLT address " << std::hex << dest << std::endl;
         return false;
@@ -1481,7 +1482,7 @@ SparcFrontEnd* construct(Prog *prog, NJMCDecoder** decoder) {
  * PARAMETERS:      Same as the FrontEnd constructor
  * \returns           <N/A>
  ******************************************************************************/
-SparcFrontEnd::SparcFrontEnd(BinaryFile *pBF, Prog* prog, BinaryFileFactory* pbff) : FrontEnd(pBF, prog, pbff) {
+SparcFrontEnd::SparcFrontEnd(QObject *pBF, Prog* prog, BinaryFileFactory* pbff) : FrontEnd(pBF, prog, pbff) {
     decoder = new SparcDecoder(prog);
     nop_inst.numBytes = 0;            // So won't disturb coverage
     nop_inst.type = NOP;
@@ -1503,10 +1504,10 @@ SparcFrontEnd::~SparcFrontEnd()
 ADDRESS SparcFrontEnd::getMainEntryPoint( bool &gotMain )
 {
     gotMain = true;
-    ADDRESS start = pBF->GetMainEntryPoint();
+    ADDRESS start = ldrIface->GetMainEntryPoint();
     if( start != NO_ADDRESS ) return start;
 
-    start = pBF->GetEntryPoint();
+    start = ldrIface->GetEntryPoint();
     gotMain = false;
     if( start == NO_ADDRESS ) return NO_ADDRESS;
 

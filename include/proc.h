@@ -60,8 +60,8 @@ public:
                         Proc(Prog *prog, ADDRESS uNative, Signature *sig);
 virtual                 ~Proc();
 
-        const char*     getName() const;
-        void            setName(const std::string &nam);
+        QString getName() const;
+        void            setName(const QString &nam);
         ADDRESS         getNativeAddress() const;
         void            setNativeAddress(ADDRESS a);
         Prog *          getProg() { return prog; } //!< Get the program this procedure belongs to.

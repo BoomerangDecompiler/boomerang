@@ -59,7 +59,15 @@ protected:
 //      const int NOP_SIZE;            // Size of a no-op instruction (in bytes)
 //      const int NOP_INST;            // No-op pattern
         NJMCDecoder    *decoder;        // The decoder
-        BinaryFile    *pBF;            // The binary file
+        /***************************************/
+        // Loader interfaces
+        /***************************************/
+        LoaderInterface *ldrIface;
+        SymbolTableInterface *symIface;
+        SectionInterface *sectIface;
+        QObject    *pLoader;            // The binary file
+        /***************************************/
+
         BinaryFileFactory* pbff;    // The binary file factory (for closing properly)
         Prog*        prog;            // The Prog object
         // The queue of addresses still to be processed
@@ -74,11 +82,11 @@ public:
         /*
          * Constructor. Takes some parameters to save passing these around a lot
          */
-                        FrontEnd(BinaryFile *pBF, Prog* prog, BinaryFileFactory* pbff);
-static  FrontEnd *      instantiate(BinaryFile *pBF, Prog* prog, BinaryFileFactory* pbff);
+                        FrontEnd(QObject *pLoader, Prog* prog, BinaryFileFactory* pbff);
+static  FrontEnd *      instantiate(QObject *pLoader, Prog* prog, BinaryFileFactory* pbff);
 static  FrontEnd *      Load(const std::string &fname, Prog* prog); //!< Load a binary
                         //! Add a symbol to the loader
-        void            AddSymbol(ADDRESS addr, const char *nam) { pBF->AddSymbol(addr, nam); }
+        void            AddSymbol(ADDRESS addr, const char *nam) { symIface->AddSymbol(addr, nam); }
                         // Add a "hint" that an instruction at the given address references a named global
         void            addRefHint(ADDRESS addr, const char *nam) { refHints[addr] = nam; }
 virtual                 ~FrontEnd(); //!<Destructor. Virtual to mute a warning
@@ -91,8 +99,10 @@ virtual platform        getFrontEndId() = 0;
                         // returns a frontend given a string (unused?)
 static FrontEnd *       createById(std::string &str, BinaryFile *pBFi, Prog* prog);
         bool            isWin32();                    // Is this a win32 frontend?
-static  bool            noReturnCallDest(const char *name);
-        BinaryFile *    getBinaryFile() { return pBF; }
+static  bool            noReturnCallDest(const QString &name);
+        QObject *       getBinaryFile() { return pLoader; }
+        LoaderInterface *getLoaderIface() { return ldrIface; }
+        SectionInterface *getSectionIface() { return sectIface; }
 
         //Function to fetch the smallest machine instruction
         //virtual    int            getInst(int addr);
@@ -109,10 +119,10 @@ virtual void            extraProcessCall(CallStatement */*call*/, std::list<RTL*
         void            readLibraryCatalog(); //!< read from default catalog
 
         // lookup a library signature by name
-        Signature *      getLibSignature(const char *name);
+        Signature *      getLibSignature(const std::string &name);
 
         // return a signature that matches the architecture best
-        Signature *     getDefaultSignature(const char *name);
+        Signature *     getDefaultSignature(const std::string &name);
 
 virtual std::vector<Exp*> &getDefaultParams() = 0;
 virtual std::vector<Exp*> &getDefaultReturns() = 0;
@@ -159,7 +169,7 @@ virtual ADDRESS         getMainEntryPoint( bool &gotMain ) = 0;
          * appropriate library using dlopen/dlsym, running the "construct" function in that library, and returning
          * the result.
          */
-static  FrontEnd *      getInstanceFor( const char* sName, void*& dlHandle, BinaryFile *pBF, NJMCDecoder*& decoder);
+static  FrontEnd *      getInstanceFor( const char* sName, void*& dlHandle, BinaryFile *pLoader, NJMCDecoder*& decoder);
 static  void            closeInstance(void* dlHandle); //!<Close the library opened by getInstanceFor
         Prog*           getProg(); //! Get a Prog object (for testing and not decoding)
 
@@ -187,6 +197,7 @@ static  void            closeInstance(void* dlHandle); //!<Close the library ope
          */
         void            addDecodedRtl(ADDRESS a, RTL* rtl) { previouslyDecoded[a] = rtl; }
         void preprocessProcGoto(std::list<Statement*>::iterator ss, ADDRESS dest, const std::list<Statement *> &sl, RTL* pRtl);
+        void checkEntryPoint(std::vector<ADDRESS> &entrypoints, ADDRESS addr, const char *type);
 };    // class FrontEnd
 
 

@@ -51,18 +51,12 @@
 /***************************************************************************//**
  * Dependencies.
  ******************************************************************************/
+#include "cfg.h"
 
-#include <cassert>
-
-#include <algorithm>        // For find()
-#include <fstream>
-#include <sstream>
-#include <cstring>
 #include "types.h"
 #include "statement.h"
 #include "signature.h"
 #include "exp.h"
-#include "cfg.h"
 #include "register.h"
 #include "rtl.h"
 #include "proc.h"            // For Proc::setTailCaller()
@@ -71,6 +65,13 @@
 #include "hllcode.h"
 #include "boomerang.h"
 #include "log.h"
+
+#include <QtCore/QDebug>
+#include <cassert>
+#include <algorithm>        // For find()
+#include <fstream>
+#include <sstream>
+#include <cstring>
 
 void delete_lrtls(std::list<RTL *> &pLrtl);
 void erase_lrtls(std::list<RTL *> &pLrtl, std::list<RTL*>::iterator begin,
@@ -168,11 +169,10 @@ void Cfg::setExitBB(BasicBlock * bb) {
 bool Cfg::checkEntryBB() {
     if (entryBB != nullptr)
         return false;
-    std::cerr << "No entry BB for ";
     if (myProc)
-        std::cerr << myProc->getName() << std::endl;
+        qWarning() << "No entry BB for " << myProc->getName();
     else
-        std::cerr << "unknown proc\n";
+        qWarning() << "No entry BB for " <<  "unknown proc";
     return true;
 }
 
@@ -983,7 +983,7 @@ BasicBlock * Cfg::findRetNode() {
             return bb;
         } else if (bb->getType() == CALL) {
             Proc *p = bb->getCallDestProc();
-            if (p && !strcmp(p->getName(), "exit")) // TODO: move this into check Proc::noReturn();
+            if (p && !p->getName().compare("exit")) // TODO: move this into check Proc::noReturn();
                 retNode = bb;
         }
     }
@@ -1204,7 +1204,7 @@ void Cfg::dumpImplicitMap() {
 void Cfg::printToLog() {
     std::ostringstream ost;
     print(ost);
-    LOG << ost.str();
+    LOG << ost.str().c_str();
 }
 
 void Cfg::setTimeStamps() {
@@ -1698,7 +1698,7 @@ void Cfg::generateDotFile(std::ofstream& of) {
             case CALL: {
                 of << "call";
                 Proc* dest = pbb->getDestProc();
-                if (dest) of << "\\n" << dest->getName();
+                if (dest) of << "\\n" << dest->getName().toStdString();
                 break;
             }
             case RET: {

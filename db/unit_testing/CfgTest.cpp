@@ -12,20 +12,23 @@
 #include "dataflow.h"
 #include "pentiumfrontend.h"
 #include "log.h"
+#include <QDir>
 #include <QProcessEnvironment>
 
 #define FRONTIER_PENTIUM    "tests/inputs/pentium/frontier"
 #define SEMI_PENTIUM        "tests/inputs/pentium/semi"
 #define IFTHEN_PENTIUM      "tests/inputs/pentium/ifthen"
 static bool logset = false;
-std::string TEST_BASE;
+QString TEST_BASE;
+QDir baseDir;
 CfgTest::CfgTest()
 {
     if(!logset) {
-        TEST_BASE = QProcessEnvironment::systemEnvironment().value("BOOMERANG_TEST_BASE","").toStdString();
-        Boomerang::get()->setProgPath(TEST_BASE);
+        TEST_BASE = QProcessEnvironment::systemEnvironment().value("BOOMERANG_TEST_BASE","");
+        baseDir = QDir(TEST_BASE);
+        Boomerang::get()->setProgPath(TEST_BASE.toStdString());
         Boomerang::get()->setPluginPath(TEST_BASE+"/out");
-        if(TEST_BASE.empty())
+        if(TEST_BASE.isEmpty())
             fprintf(stderr,"BOOMERANG_TEST_BASE environment variable net set, many test will fail\n");
         logset=true;
         Boomerang::get()->setLogger(new NullLogger());
@@ -49,7 +52,7 @@ void CfgTest::TearDown () {
 
 TEST_F(CfgTest,testDominators) {
     BinaryFileFactory bff;
-    BinaryFile *pBF = bff.Load(TEST_BASE+"/"+FRONTIER_PENTIUM);
+    QObject *pBF = bff.Load(baseDir.absoluteFilePath(FRONTIER_PENTIUM).toStdString());
     ASSERT_TRUE(pBF != 0);
     Prog* prog = new Prog;
     FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
@@ -86,7 +89,7 @@ TEST_F(CfgTest,testDominators) {
         actual << std::hex << df->nodeToBB(*ii)->getLowAddr() << " ";
     ASSERT_EQ(expected.str(), actual.str());
 
-    pBF->UnLoad();
+    pBF->deleteLater();
     delete pFE;
 }
 
@@ -103,7 +106,7 @@ TEST_F(CfgTest,testDominators) {
 
 TEST_F(CfgTest,testSemiDominators) {
     BinaryFileFactory bff;
-    BinaryFile* pBF = bff.Load(TEST_BASE+"/"+SEMI_PENTIUM);
+    QObject* pBF = bff.Load(baseDir.absoluteFilePath(SEMI_PENTIUM).toStdString());
     ASSERT_TRUE(pBF != 0);
     Prog* prog = new Prog;
     FrontEnd* pFE = new PentiumFrontEnd(pBF, prog, &bff);
@@ -154,7 +157,7 @@ TEST_F(CfgTest,testSemiDominators) {
  *============================================================================*/
 TEST_F(CfgTest,testPlacePhi ) {
     BinaryFileFactory bff;
-    BinaryFile* pBF = bff.Load(TEST_BASE+"/"+FRONTIER_PENTIUM);
+    QObject* pBF = bff.Load(baseDir.absoluteFilePath(FRONTIER_PENTIUM).toStdString());
     ASSERT_TRUE(pBF != 0);
     Prog* prog = new Prog;
     FrontEnd* pFE = new PentiumFrontEnd(pBF, prog, &bff);
@@ -198,7 +201,7 @@ TEST_F(CfgTest,testPlacePhi ) {
  *============================================================================*/
 TEST_F(CfgTest,testPlacePhi2) {
     BinaryFileFactory bff;
-    BinaryFile* pBF = bff.Load(TEST_BASE+"/"+IFTHEN_PENTIUM);
+    QObject* pBF = bff.Load(baseDir.absoluteFilePath(IFTHEN_PENTIUM).toStdString());
     ASSERT_TRUE(pBF != 0);
     Prog* prog = new Prog;
     FrontEnd* pFE = new PentiumFrontEnd(pBF, prog, &bff);
@@ -258,7 +261,7 @@ TEST_F(CfgTest,testPlacePhi2) {
  *============================================================================*/
 TEST_F(CfgTest,testRenameVars) {
     BinaryFileFactory bff;
-    BinaryFile* pBF = bff.Load(FRONTIER_PENTIUM);
+    QObject* pBF = bff.Load(baseDir.absoluteFilePath(FRONTIER_PENTIUM).toStdString());
     ASSERT_TRUE(pBF != 0);
     Prog* prog = new Prog;
     FrontEnd* pFE = new PentiumFrontEnd(pBF, prog, &bff);

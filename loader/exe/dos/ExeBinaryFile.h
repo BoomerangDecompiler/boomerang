@@ -61,44 +61,54 @@ typedef struct {            /*      EXE file header          */
     SWord  overlayNum;     /* Overlay number                */
 } exeHeader;
 
-class ExeBinaryFile : public BinaryFile {
+class ExeBinaryFile : public QObject,
+        public LoaderInterface,
+        public BinaryData,
+        public LoaderCommon {
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID LoaderInterface_iid)
+    Q_INTERFACES(LoaderInterface)
+    Q_INTERFACES(BinaryData)
+    Q_INTERFACES(SectionInterface)
 public:
     ExeBinaryFile();                // Default constructor
-    virtual void  UnLoad();                       // Unload the image
-    virtual bool  Open(const char* sName);        // Open the file for r/w; pv
-    virtual void  Close();                        // Close file opened with Open()
-    virtual bool  PostLoad(void* handle);         // For archive files only
-    virtual LOAD_FMT GetFormat() const;           // Get format (i.e. LOADFMT_EXE)
-    virtual MACHINE GetMachine() const;           // Get machine (i.e. MACHINE_PENTIUM)
-    virtual const char *getFilename() const { return m_pFileName; }
+    void  UnLoad() override;                       // Unload the image
+    bool  Open(const char* sName) override;        // Open the file for r/w; pv
+    void  Close() override;                        // Close file opened with Open()
+    bool  PostLoad(void* handle) override;         // For archive files only
+    LOAD_FMT GetFormat() const override;           // Get format (i.e. LOADFMT_EXE)
+    MACHINE GetMachine() const override;           // Get machine (i.e. MACHINE_PENTIUM)
+    const char *getFilename() const  override { return m_pFileName; }
 
-    virtual bool isLibrary() const;
-    virtual QStringList getDependencyList();
-    virtual ADDRESS getImageBase();
-    virtual size_t getImageSize();
+    bool isLibrary() const  override;
+    QStringList getDependencyList() override;
+    ADDRESS getImageBase() override;
+    size_t getImageSize() override;
 
-    virtual char* SymbolByAddr(ADDRESS a);
-    virtual char readNative1(ADDRESS a);         // Read 1 bytes from native addr
-    virtual int readNative2(ADDRESS a);            // Read 2 bytes from native addr
-    virtual int readNative4(ADDRESS a);            // Read 4 bytes from native addr
-    virtual QWord readNative8(ADDRESS a);    // Read 8 bytes from native addr
-    virtual float readNativeFloat4(ADDRESS a);    // Read 4 bytes as float
-    virtual double readNativeFloat8(ADDRESS a); // Read 8 bytes as float
+    //const char* SymbolByAddress(ADDRESS a) override;
+    char readNative1(ADDRESS a) override;         // Read 1 bytes from native addr
+    int readNative2(ADDRESS a) override;            // Read 2 bytes from native addr
+    int readNative4(ADDRESS a) override;            // Read 4 bytes from native addr
+    QWord readNative8(ADDRESS a) override;    // Read 8 bytes from native addr
+    float readNativeFloat4(ADDRESS a) override;    // Read 4 bytes as float
+    double readNativeFloat8(ADDRESS a) override; // Read 8 bytes as float
 
     // Analysis functions
-    virtual std::list<SectionInfo*>& GetEntryPoints(const char* pEntry = "main");
-    virtual ADDRESS GetMainEntryPoint();
-    virtual ADDRESS GetEntryPoint();
+    std::list<SectionInfo*>& GetEntryPoints(const char* pEntry = "main")  override;
+    ADDRESS GetMainEntryPoint()  override;
+    ADDRESS GetEntryPoint()  override;
+
+    tMapAddrToString &getSymbols() override;
 
     //
     //  --  --  --  --  --  --  --  --  --  --  --
     //
     // Internal information
     // Dump headers, etc
-    virtual bool    DisplayDetails(const char* fileName, FILE* f = stdout);
+    bool    DisplayDetails(const char* fileName, FILE* f = stdout)  override;
 
 protected:
-    virtual bool  RealLoad(const char* sName); // Load the file; pure virtual
+    bool  RealLoad(const char* sName)  override; // Load the file; pure virtual
 private:
 
 

@@ -66,7 +66,7 @@ namespace dbghelp {
 #include <sys/types.h>
 
 Prog::Prog() :
-    pBF(nullptr),
+    pLoaderPlugin(nullptr),
     pFE(nullptr),
     m_iNumberedProc(1),
     m_rootCluster(new Cluster("prog")) {
@@ -74,16 +74,20 @@ Prog::Prog() :
 }
 
 void Prog::setFrontEnd(FrontEnd *pFE) {
-    pBF = pFE->getBinaryFile();
+    pLoaderPlugin = pFE->getBinaryFile();
+    pBinaryData = qobject_cast<BinaryData *>(pLoaderPlugin);
+    pLoaderIface = qobject_cast<LoaderInterface *>(pLoaderPlugin);
+    pSections = qobject_cast<SectionInterface *>(pLoaderPlugin);
+    pSymbols = qobject_cast<SymbolTableInterface *>(pLoaderPlugin);
     this->pFE = pFE;
-    if (pBF && pBF->getFilename()) {
-        m_name = pBF->getFilename();
+    if (pLoaderIface && pLoaderIface->getFilename()) {
+        m_name = pLoaderIface->getFilename();
         m_rootCluster = new Cluster(getNameNoPathNoExt().c_str());
     }
 }
 
 Prog::Prog(const char* name) :
-    pBF(nullptr),
+    pLoaderPlugin(nullptr),
     pFE(nullptr),
     m_name(name),
     m_iNumberedProc(1),
@@ -93,7 +97,7 @@ Prog::Prog(const char* name) :
 }
 
 Prog::~Prog() {
-    delete pBF;
+    pLoaderPlugin->deleteLater();
     delete pFE;
     for (Proc* proc : m_procs) {
         delete proc;
@@ -149,7 +153,7 @@ void Prog::generateDotFile() {
         if (!p->isDecoded())
             continue;
         // Subgraph for the proc name
-        of << "\nsubgraph cluster_" << p->getName() << " {\n" << "       color=gray;\n    label=" << p->getName() <<
+        of << "\nsubgraph cluster_" << p->getName().toStdString() << " {\n" << "       color=gray;\n    label=" << p->getName() .toStdString()<<
               ";\n";
         // Generate dotty CFG for this proc
         p->getCFG()->generateDotFile(of);
@@ -176,7 +180,7 @@ void Prog::generateCode(Cluster *cluster, UserProc *proc, bool /*intermixRTL*/) 
                 for (int j = 0; sections[j]; j++) {
                     std::string str = ".";
                     str += sections[j];
-                    PSectionInfo info = pBF->GetSectionInfoByName(str.c_str());
+                    PSectionInfo info = pSections->GetSectionInfoByName(str.c_str());
                     str = "start_";
                     str    += sections[j];
                     code->AddGlobal(str.c_str(), IntegerType::get(32, -1), new Const(info ? info->uNativeAddr : NO_ADDRESS));
@@ -185,7 +189,7 @@ void Prog::generateCode(Cluster *cluster, UserProc *proc, bool /*intermixRTL*/) 
                     code->AddGlobal(str.c_str(), IntegerType::get(32, -1), new Const(info ? info->uSectionSize : (unsigned int)-1));
                     Exp *l = new Terminal(opNil);
                     for (unsigned int i = 0; info && i < info->uSectionSize; i++) {
-                        int n = pBF->readNative1(info->uNativeAddr + info->uSectionSize - 1 - i);
+                        int n = pBinaryData->readNative1(info->uNativeAddr + info->uSectionSize - 1 - i);
                         if (n < 0)
                             n = 256 + n;
                         l = Binary::get(opList, new Const(n), l);
@@ -373,10 +377,10 @@ bool Prog::clusterUsed(Cluster *c) {
     return false;
 }
 
-Cluster    *Prog::getDefaultCluster(const char *name) {
+Cluster    *Prog::getDefaultCluster(const QString &name) {
     const char *cfname = nullptr;
-    if (pBF)
-        cfname = pBF->getFilenameSymbolFor(name);
+    if (pSymbols)
+        cfname = pSymbols->getFilenameSymbolFor(qPrintable(name));
     if (cfname == nullptr)
         return m_rootCluster;
     if (strcmp(cfname + strlen(cfname) - 2, ".c"))
@@ -438,8 +442,8 @@ void Prog::clear() {
         delete pProc;
     m_procs.clear();
     m_procLabels.clear();
-    delete pBF;
-    pBF = nullptr;
+    pLoaderPlugin->deleteLater();
+    pLoaderPlugin = nullptr;
     delete pFE;
     pFE = nullptr;
 }
@@ -466,11 +470,12 @@ Proc* Prog::setNewProc(ADDRESS uAddr) {
     if (pProc)
         // Yes, we are done
         return pProc;
-    ADDRESS other = pBF->IsJumpToAnotherAddr(uAddr);
+    ADDRESS other = pLoaderIface->IsJumpToAnotherAddr(uAddr);
     if (other != NO_ADDRESS)
         uAddr = other;
-    const char* pName = pBF->SymbolByAddress(uAddr);
-    bool bLib = pBF->IsDynamicLinkedProc(uAddr) | pBF->IsStaticLinkedLibProc(uAddr);
+    SymbolTableInterface *sym_iface = getBinarySymbolTable();
+    const char* pName = sym_iface ? sym_iface->SymbolByAddress(uAddr) : nullptr;
+    bool bLib = pLoaderIface->IsDynamicLinkedProc(uAddr) | pLoaderIface->IsStaticLinkedLibProc(uAddr);
     if (pName == nullptr) {
         // No name. Give it a numbered name
         std::ostringstream ost;
@@ -712,9 +717,9 @@ void Prog::remProc(UserProc* uProc) {
     delete uProc;
 }
 
-void Prog::removeProc(const char *name) {
+void Prog::removeProc(const QString &name) {
     for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end(); it++)
-        if (std::string(name) == (*it)->getName()) {
+        if (name == (*it)->getName()) {
             Boomerang::get()->alertRemove(*it);
             m_procs.erase(it);
             break;
@@ -779,7 +784,7 @@ Proc* Prog::findProc(ADDRESS uAddr) const {
  * \param name - name of the searched-for procedure
  * \returns Pointer to the Proc object, or 0 if none, or -1 if deleted
  ******************************************************************************/
-Proc* Prog::findProc(const std::string &name) const {
+Proc* Prog::findProc(const QString &name) const {
     std::list<Proc *>::const_iterator it;
     it = std::find_if(m_procs.begin(),m_procs.end(),
                       [name](Proc *p) -> bool {
@@ -798,7 +803,7 @@ LibProc *Prog::getLibraryProc(const char *nam) {
     return (LibProc*)newProc(nam, NO_ADDRESS, true);
 }
 //! Get a library signature for a given name (used when creating a new library proc).
-Signature* Prog::getLibSignature(const char *nam) {
+Signature* Prog::getLibSignature(const std::string &nam) {
     return pFE->getLibSignature(nam);
 }
 
@@ -806,7 +811,7 @@ void Prog::rereadLibSignatures() {
     pFE->readLibraryCatalog();
     for (Proc* pProc : m_procs) {
         if (pProc->isLib()) {
-            pProc->setSignature(getLibSignature(pProc->getName()));
+            pProc->setSignature(getLibSignature(pProc->getName().toStdString()));
             for (CallStatement * call_stmt : pProc->getCallers())
                 call_stmt->setSigArguments();
             Boomerang::get()->alert_update_signature(pProc);
@@ -845,8 +850,9 @@ const char *Prog::getGlobalName(ADDRESS uaddr) {
                  glob->getAddress() + glob->getType()->getSize() / 8 > uaddr) //TODO: use glob->getBytes() ?
             return glob->getName();
     }
-    if (pBF)
-        return pBF->SymbolByAddress(uaddr);
+    SymbolTableInterface *sym_iface = getBinarySymbolTable();
+    if (sym_iface)
+        return sym_iface->SymbolByAddress(uaddr);
     return nullptr;
 }
 //! Dump the globals to stderr for debugging
@@ -861,7 +867,8 @@ ADDRESS Prog::getGlobalAddr(const char *nam) {
     Global *glob=getGlobal(nam);
     if(glob)
         return glob->getAddress();
-    return pBF->GetAddressByName(nam);
+    SymbolTableInterface *iface = getBinarySymbolTable();
+    return iface ? iface->GetAddressByName(nam) : NO_ADDRESS;
 }
 
 Global* Prog::getGlobal(const char *nam) {
@@ -882,7 +889,7 @@ bool Prog::globalUsed(ADDRESS uaddr, Type* knownType) {
         }
     }
 
-    if (pBF->GetSectionInfoByAddr(uaddr) == nullptr) {
+    if (pSections->GetSectionInfoByAddr(uaddr) == nullptr) {
         if (VERBOSE)
             LOG << "refusing to create a global at address that is in no known section of the binary: " << uaddr << "\n";
         return false;
@@ -897,7 +904,8 @@ bool Prog::globalUsed(ADDRESS uaddr, Type* knownType) {
             int baseSize = 0;
             if (baseType)
                 baseSize = baseType->getSize() / 8;        // TODO: use baseType->getBytes()
-            int sz = pBF->GetSizeByName(nam);
+            SymbolTableInterface *iface = getBinarySymbolTable();
+            int sz = iface ? iface->GetSizeByName(nam) : 0; //TODO: fix the case of missing symbol table interface
             if (sz && baseSize)
                 // Note: since ty is a pointer and has not been cloned, this will also set the type for knownType
                 ty->asArray()->setLength(sz / baseSize);
@@ -920,13 +928,13 @@ bool Prog::globalUsed(ADDRESS uaddr, Type* knownType) {
 }
 
 Prog::mAddressString &Prog::getSymbols() {
-    return pBF->getSymbols();
+    return pLoaderIface->getSymbols();
 }
 //! Make an array type for the global array at u. Mainly, set the length sensibly
 ArrayType* Prog::makeArrayType(ADDRESS u, Type* t) {
     const char* nam = newGlobalName(u);
-    assert(pBF);
-    int sz = pBF->GetSizeByName(nam);
+    assert(pLoaderIface);
+    unsigned int sz = pSymbols ? pSymbols->GetSizeByName(nam) : 0; //TODO: fix the case of missing symbol table interface
     if (sz == 0)
         return new ArrayType(t);        // An "unbounded" array
     int n = t->getSize()/8;             // TODO: use baseType->getBytes()
@@ -948,7 +956,8 @@ Type *Prog::guessGlobalType(const char *nam, ADDRESS u) {
         return typeFromDebugInfo(sym->TypeIndex, sym->ModBase);
     }
 #endif
-    int sz = pBF->GetSizeByName(nam);
+    SymbolTableInterface *iface = getBinarySymbolTable();
+    int sz = iface ? iface->GetSizeByName(nam) : 0; //TODO: fix the case of missing symbol table interface
     if (sz == 0) {
         // Check if it might be a string
         const char* str = getStringConstant(u);
@@ -1000,7 +1009,7 @@ void Prog::setGlobalType(const char* nam, Type* ty) {
 // if knownString, it is already known to be a char*
 //! get a string constant at a give address if appropriate
 const char *Prog::getStringConstant(ADDRESS uaddr, bool knownString /* = false */) {
-    const SectionInfo* si = pBF->GetSectionInfoByAddr(uaddr);
+    const SectionInfo* si = pSections->GetSectionInfoByAddr(uaddr);
     // Too many compilers put constants, including string constants, into read/write sections
     //if (si && si->bReadOnly)
     if (si && !si->isAddressBss(uaddr)) {
@@ -1029,13 +1038,13 @@ const char *Prog::getStringConstant(ADDRESS uaddr, bool knownString /* = false *
 
 double Prog::getFloatConstant(ADDRESS uaddr, bool &ok, int bits) {
     ok = true;
-    SectionInfo* si = pBF->GetSectionInfoByAddr(uaddr);
+    SectionInfo* si = pSections->GetSectionInfoByAddr(uaddr);
     if (si && si->bReadOnly) {
         if (bits == 64) { // TODO: handle 80bit floats ?
-            return pBF->readNativeFloat8(uaddr);
+            return pBinaryData->readNativeFloat8(uaddr);
         } else {
             assert(bits == 32);
-            return pBF->readNativeFloat4(uaddr);
+            return pBinaryData->readNativeFloat4(uaddr);
         }
     }
     ok = false;
@@ -1169,11 +1178,11 @@ UserProc* Prog::getNextUserProc(std::list<Proc*>::iterator& it) {
 const void* Prog::getCodeInfo(ADDRESS uAddr, const char*& last, int& delta) {
     delta=0;
     last=nullptr;
-    int n = pBF->GetNumSections();
+    int n = pSections->GetNumSections();
     int i;
     // Search all code and read-only sections
     for (i=0; i < n; i++) {
-        SectionInfo* pSect = pBF->GetSectionInfo(i);
+        SectionInfo* pSect = pSections->GetSectionInfo(i);
         if ((!pSect->bCode) && (!pSect->bReadOnly))
             continue;
         if ((uAddr < pSect->uNativeAddr) || (uAddr >= pSect->uNativeAddr + pSect->uSectionSize))
@@ -1195,7 +1204,7 @@ const void* Prog::getCodeInfo(ADDRESS uAddr, const char*& last, int& delta) {
 void Prog::decodeEntryPoint(ADDRESS a) {
     Proc* p = (UserProc*)findProc(a);
     if (p == nullptr || (!p->isLib() && !((UserProc*)p)->isDecoded())) {
-        if (a < pBF->getLimitTextLow() || a >= pBF->getLimitTextHigh()) {
+        if (a < pSections->getLimitTextLow() || a >= pSections->getLimitTextHigh()) {
             std::cerr << "attempt to decode entrypoint at address outside text area, addr=" << a << "\n";
             if (VERBOSE)
                 LOG << "attempt to decode entrypoint at address outside text area, addr=" << a << "\n";
@@ -1237,14 +1246,11 @@ void Prog::decodeEverythingUndecoded() {
 void Prog::decompile() {
     assert(m_procs.size());
 
-    if (VERBOSE)
-        LOG << (int)m_procs.size() << " procedures\n";
+    LOG_VERBOSE(1) << (int)m_procs.size() << " procedures\n";
 
     // Start decompiling each entry point
     for (UserProc *up : entryProcs) {
-        std::cerr << "decompiling entry point " << up->getName() << "\n";
-        if (VERBOSE)
-            LOG << "decompiling entry point " << up->getName() << "\n";
+        LOG_VERBOSE(1) << "decompiling entry point " << up->getName() << "\n";
         int indent = 0;
         up->decompile(new ProcList, indent);
     }
@@ -1292,9 +1298,7 @@ void Prog::decompile() {
             proc->printXML();
         }
     }
-
-    if (VERBOSE)
-        LOG << "transforming from SSA\n";
+    LOG_VERBOSE(1) << "transforming from SSA\n";
 
     // Now it is OK to transform out of SSA form
     fromSSAform();
@@ -1305,8 +1309,7 @@ void Prog::decompile() {
 //! As the name suggests, removes globals unused in the decompiled code.
 void Prog::removeUnusedGlobals() {
 
-    if (VERBOSE)
-        LOG << "removing unused globals\n";
+    LOG_VERBOSE(1) << "removing unused globals\n";
 
     // seach for used globals
     std::list<Exp*> usedGlobals;
@@ -1440,7 +1443,7 @@ void Prog::globalTypeAnalysis() {
             continue;
         // FIXME: this just does local TA again. Need to meet types for all parameter/arguments, and return/results!
         // This will require a repeat until no change loop
-        std::cout << "global type analysis for " << proc->getName() << "\n";
+        std::cout << "global type analysis for " << proc->getName().toStdString() << "\n";
         proc->typeAnalysis();
     }
     if (VERBOSE || DEBUG_TA)
@@ -1483,9 +1486,9 @@ void Prog::printCallGraph() {
         int n = spaces[p];
         for (int i = 0; i < n; i++)
             f1 << "     ";
-        f1 << p->getName() << " @ " << std::hex << p->getNativeAddress();
+        f1 << p->getName().toStdString() << " @ " << std::hex << p->getNativeAddress();
         if (parent.find(p) != parent.end())
-            f1 << " [parent=" << parent[p]->getName() << "]";
+            f1 << " [parent=" << parent[p]->getName().toStdString() << "]";
         f1 << std::endl;
         if (!p->isLib()) {
             n++;
@@ -1495,7 +1498,7 @@ void Prog::printCallGraph() {
                 procList.push_front(*it1);
                 spaces[*it1] = n;
                 parent[*it1] = p;
-                f2 << p->getName() << " -> " << (*it1)->getName() << ";\n";
+                f2 << p->getName().toStdString() << " -> " << (*it1)->getName().toStdString() << ";\n";
             }
         }
     }
@@ -1517,7 +1520,7 @@ void printProcsRecursive(Proc* proc, int indent, std::ofstream &f,std::set<Proc*
 
     if(!proc->isLib() && fisttime) { // seen lib proc
         f << proc->getNativeAddress();
-        f << " __nodecode __incomplete void " << proc->getName() << "();\n";
+        f << " __nodecode __incomplete void " << proc->getName().toStdString() << "();\n";
 
         UserProc *u = (UserProc*)proc;
         for (Proc* callee : u->getCallees()) {
@@ -1525,9 +1528,9 @@ void printProcsRecursive(Proc* proc, int indent, std::ofstream &f,std::set<Proc*
         }
         for (int i = 0; i < indent; i++)
             f << "     ";
-        f << "// End of " << proc->getName() << "\n";
+        f << "// End of " << proc->getName().toStdString() << "\n";
     } else {
-        f << "// " << proc->getName() << "();\n";
+        f << "// " << proc->getName().toStdString() << "();\n";
     }
 }
 
@@ -1599,7 +1602,7 @@ void Prog::readSymbolFile(const char *fname) {
 
     for (Symbol* sym : par->symbols) {
         if (sym->sig) {
-            Proc* p = newProc(sym->sig->getName(), sym->addr, pBF->IsDynamicLinkedProcPointer(sym->addr) ||
+            Proc* p = newProc(sym->sig->getName(), sym->addr, pLoaderIface->IsDynamicLinkedProcPointer(sym->addr) ||
                               // NODECODE isn't really the right modifier; perhaps we should have a LIB modifier,
                               // to specifically specify that this function obeys library calling conventions
                               sym->mods->noDecode);
@@ -1701,8 +1704,11 @@ Exp *Prog::readNativeAs(ADDRESS uaddr, Type *type) {
         int nelems = -1;
         const char *nam = getGlobalName(uaddr);
         int base_sz = type->asArray()->getBaseType()->getSize() / 8;
-        if (nam != nullptr)
-            nelems = pBF->GetSizeByName(nam) / base_sz;
+        if (nam != nullptr) {
+            SymbolTableInterface *iface = getBinarySymbolTable();
+            nelems = iface ? iface->GetSizeByName(nam) : 0; //TODO: fix the case of missing symbol table interface
+            nelems /= base_sz;
+        }
         Exp *n = e = new Terminal(opNil);
         for (int i = 0; nelems == -1 || i < nelems; i++) {
             Exp *v = readNativeAs(uaddr + i * base_sz, type->asArray()->getBaseType());
@@ -1771,7 +1777,7 @@ void Prog::reDecode(UserProc* proc) {
 
 
 void Prog::decodeFragment(UserProc* proc, ADDRESS a) {
-    if (a >= pBF->getLimitTextLow() && a < pBF->getLimitTextHigh())
+    if (a >= pSections->getLimitTextLow() && a < pSections->getLimitTextHigh())
         pFE->decodeFragment(proc, a);
     else {
         std::cerr << "attempt to decode fragment outside text area, addr=" << a << "\n";
@@ -1793,19 +1799,20 @@ void Prog::decodeFragment(UserProc* proc, ADDRESS a) {
 Exp * Prog::addReloc(Exp *e, ADDRESS lc) {
     assert(e->isConst());
 
-    if (!pBF->IsRelocationAt(lc))
+    if (!pLoaderIface->IsRelocationAt(lc))
         return e;
 
     Const *c = (Const*)e;
     // relocations have been applied to the constant, so if there is a
     // relocation for this lc then we should be able to replace the constant
     // with a symbol.
-    std::map<ADDRESS, std::string> &symbols = pBF->getSymbols();
+    std::map<ADDRESS, std::string> &symbols = pLoaderIface->getSymbols();
     ADDRESS c_addr = c->getAddr();
     auto found_at = symbols.find(c_addr);
     if (found_at != symbols.end()) {
         const char *n = found_at->second.c_str();
-        unsigned int sz = pBF->GetSizeByName(n);
+        SymbolTableInterface *iface = getBinarySymbolTable();
+        unsigned int sz = iface ? iface->GetSizeByName(n) : 0; //TODO: fix the case of missing symbol table interface
         if (getGlobal(n) == nullptr) {
             Global *global = new Global(new SizeType(sz*8), c_addr, n);
             globals.insert(global);
@@ -1818,7 +1825,10 @@ Exp * Prog::addReloc(Exp *e, ADDRESS lc) {
         else {
             // check for accesses into the middle of symbols
             for (auto it : symbols) {
-                if (it.first < c_addr && it.first + pBF->GetSizeByName(it.second.c_str()) > c_addr) {
+                SymbolTableInterface *iface = getBinarySymbolTable();
+                unsigned int sz = iface ? iface->GetSizeByName(it.second.c_str()) : 0; //TODO: fix the case of missing symbol table interface
+
+                if (it.first < c_addr && (it.first + sz) > c_addr) {
                     int off = (c->getAddr() - it.first).m_value;
                     e = Binary::get(opPlus,
                                    new Unary(opAddrOf, Location::global(it.second.c_str(), nullptr)),

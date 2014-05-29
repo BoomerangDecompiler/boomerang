@@ -3,8 +3,8 @@
 #include "log.h"
 class ErrLogger : public Log {
 public:
-    virtual Log &operator<<(const std::string& s) {
-     std::cerr << s;
+    virtual Log &operator<<(const QString& s) {
+        std::cerr << s.toStdString();
         return *this;
     }
     virtual ~ErrLogger() {}

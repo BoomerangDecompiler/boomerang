@@ -72,14 +72,22 @@ struct symElem {
     ADDRESS     value;
 };
 
-class HpSomBinaryFile : public BinaryFile {
+class HpSomBinaryFile : public QObject,
+        public BinaryData,
+        public LoaderInterface,
+        public LoaderCommon {
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID LoaderInterface_iid)
+    Q_INTERFACES(LoaderInterface)
+    Q_INTERFACES(BinaryData)
+    Q_INTERFACES(SectionInterface)
 public:
     HpSomBinaryFile();          // Constructor
     virtual             ~HpSomBinaryFile();
-    virtual void        UnLoad();                   // Unload the image
-    virtual bool        Open(const char* sName);    // Open the file for r/w; pv
-    virtual void        Close();                    // Close file opened with Open()
-    virtual bool        PostLoad(void* handle);     // For archive files only
+    void        UnLoad() override;                   // Unload the image
+    bool        Open(const char* sName) override;    // Open the file for r/w; pv
+    void        Close() override;                    // Close file opened with Open()
+    bool        PostLoad(void* handle) override;     // For archive files only
     virtual LOAD_FMT    GetFormat() const;       // Get format i.e. LOADFMT_PALM
     virtual MACHINE     GetMachine() const;       // Get format i.e. MACHINE_HPRISC
     virtual const char *getFilename() const { return m_pFileName; }
@@ -141,6 +149,10 @@ private:
     //        ADDRESS        mainExport;                    // Export entry for "main"
     std::set<ADDRESS> imports;                // Set of imported proc addr's
     const char *m_pFileName;
+
+    // LoaderInterface interface
+public:
+    tMapAddrToString &getSymbols();
 };
 
 #endif      // #ifndef __HPSOMBINARYFILE_H__

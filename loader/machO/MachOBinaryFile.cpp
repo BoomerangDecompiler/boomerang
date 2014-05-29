@@ -482,7 +482,7 @@ bool MachOBinaryFile::isReadOnly(ADDRESS uEntry) {
             return (BMMH(sections[i].flags) & VM_PROT_WRITE) ? 0 : 1;
         }
     }
-    return BinaryFile::isReadOnly(uEntry);
+    return LoaderCommon::isReadOnly(uEntry);
 }
 
 // constant.. hmm, seems __cstring is writable, what's with that?
@@ -495,7 +495,7 @@ bool MachOBinaryFile::isStringConstant(ADDRESS uEntry) {
                 return true;
         }
     }
-    return BinaryFile::isStringConstant(uEntry);
+    return false; //BinaryFile::isStringConstant(uEntry)
 }
 
 bool MachOBinaryFile::isCFStringConstant(ADDRESS uEntry) {
@@ -507,7 +507,7 @@ bool MachOBinaryFile::isCFStringConstant(ADDRESS uEntry) {
                 return true;
         }
     }
-    return BinaryFile::isCFStringConstant(uEntry);
+    return false; //BinaryFile::isCFStringConstant(uEntry)
 }
 
 // Read 2 bytes from given native address
@@ -619,7 +619,7 @@ extern "C" {
 #ifdef _WIN32
 __declspec(dllexport)
 #endif
-BinaryFile* construct() {
+QObject* construct() {
     return new MachOBinaryFile;
 }
 }

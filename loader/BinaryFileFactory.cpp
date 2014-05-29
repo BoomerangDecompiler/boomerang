@@ -6,34 +6,36 @@
  * loader class dynamically.
 */
 
+#include "BinaryFile.h"
+#include "config.h"                // For HOST_OSX_10_2 etc
+
 #include <iostream>
 #include <QDir>
-#ifndef _WIN32
-#include <dlfcn.h>
-#else
-#include <windows.h>            // include before types.h: name collision of NO_ADDRESS and WinSock.h
-#endif
+#include <QtCore/QPluginLoader>
+#include <QtCore/QCoreApplication>
+#include <QtCore/QString>
+#include <QtCore/QDebug>
 
-#include "config.h"                // For HOST_OSX_10_2 etc
-#include "BinaryFile.h"
 #define LMMH(x) ((unsigned)((Byte *)(&x))[0] + ((unsigned)((Byte *)(&x))[1] << 8) + \
     ((unsigned)((Byte *)(&x))[2] << 16) + ((unsigned)((Byte *)(&x))[3] << 24))
 
 using namespace std;
-string BinaryFileFactory::m_base_path = "";
+QString BinaryFileFactory::m_base_path = "";
 
-BinaryFile *BinaryFileFactory::Load(const std::string &sName) {
-    BinaryFile *pBF = getInstanceFor( sName.c_str() );
-    if( pBF == nullptr ) {
+QObject *BinaryFileFactory::Load(const std::string &sName) {
+    QObject *pBF = getInstanceFor( sName.c_str() );
+    LoaderInterface *ldr_iface = qobject_cast<LoaderInterface *>(pBF);
+    if( ldr_iface == nullptr ) {
         std::cerr << "unrecognised binary file format.\n";
         return nullptr;
     }
-    if( pBF->RealLoad( sName.c_str() ) == 0 ) {
+    if( ldr_iface->RealLoad( sName.c_str() ) == 0 ) {
         fprintf( stderr, "Loading '%s' failed\n", sName.c_str() );
         delete pBF;
         return nullptr;
     }
-    pBF->getTextLimits();
+    auto sect_iface = qobject_cast<SectionInterface *>(pBF);
+    sect_iface->getTextLimits();
     return pBF;
 }
 
@@ -41,19 +43,10 @@ BinaryFile *BinaryFileFactory::Load(const std::string &sName) {
 #define TESTMAGIC4(buf,off,a,b,c,d) (buf[off] == a && buf[off+1] == b && \
     buf[off+2] == c && buf[off+3] == d)
 
-// Declare a pointer to a constructor function; returns a BinaryFile*
-typedef BinaryFile* (*constructFcn)();
-/**
- * Perform simple magic on the file by the given name in order to determine the appropriate type, and then return an
- * instance of the appropriate subclass.
- */
-BinaryFile* BinaryFileFactory::getInstanceFor( const char *sName ) {
-    FILE *f;
+static QString selectPluginForFile(const char *sName) {
+    QString libName;
     unsigned char buf[64];
-    string libName,base_plugin_path=m_base_path;
-    BinaryFile *res = nullptr;
-
-    f = fopen (sName, "rb");
+    FILE *f = fopen (sName, "rb");
     if( f == nullptr ) {
         fprintf(stderr, "Unable to open binary file: %s\n", sName );
         return nullptr;
@@ -100,70 +93,30 @@ BinaryFile* BinaryFileFactory::getInstanceFor( const char *sName ) {
     } else {
         fprintf( stderr, "Unrecognised binary file\n" );
         fclose(f);
+        return "";
+    }
+    return libName;
+}
+/**
+ * Perform simple magic on the file by the given name in order to determine the appropriate type, and then return an
+ * instance of the appropriate subclass.
+ */
+QObject* BinaryFileFactory::getInstanceFor( const char *sName ) {
+    QDir pluginsDir(qApp->applicationDirPath());
+    pluginsDir.cd("lib");
+    if(!qApp->libraryPaths().contains(pluginsDir.absolutePath())) {
+        qApp->addLibraryPath(pluginsDir.absolutePath());
+    }
+    QString libName = selectPluginForFile(sName);
+    if(libName.isEmpty())
+        return nullptr;
+    QPluginLoader plugin_loader(libName);
+    if(!plugin_loader.load()) {
+        qDebug()<<plugin_loader.errorString();
         return nullptr;
     }
-
-    // Load the specific loader library
-#ifndef _WIN32        // Cygwin, Unix/Linux
-    libName = std::string("lib/lib") + libName;
-#ifdef    __CYGWIN__
-    libName += ".dll";        // Cygwin wants .dll, but is otherwise like Unix
-#else
-#if HOST_OSX
-    libName += ".dylib";
-#else
-    libName += ".so";
-#endif
-#endif
-    libName = QDir(QString("%1/%2").arg(base_plugin_path.c_str()).arg(libName.c_str())).path().toStdString();
-    dlHandle = dlopen(libName.c_str(), RTLD_LAZY);
-    if (dlHandle == nullptr) {
-        fprintf( stderr, "Could not open dynamic loader library %s\n", libName.c_str());
-        fprintf( stderr, "%s\n", dlerror());
-        fclose(f);
-        return nullptr;
-    }
-    // Use the handle to find the "construct" function
-#if 0    // HOST_OSX_10_2    // Not sure when the underscore is really needed
-#define UNDERSCORE "_"        // Only OSX 10.2 seems to need this underscore
-#else
-#define UNDERSCORE
-#endif
-    constructFcn pFcn = (constructFcn) dlsym(dlHandle, UNDERSCORE "construct");
-#else                        // Else MSVC, MinGW
-    libName += ".dll";        // Example: ElfBinaryFile.dll (same dir as boomerang.exe)
-#ifdef __MINGW32__
-    libName = "lib/lib" + libName;
-#endif
-    dlHandle = LoadLibraryA(libName.c_str());
-    if(dlHandle == nullptr) {
-        int err = GetLastError();
-        fprintf( stderr, "Could not open dynamic loader library %s (error #%d)\n", libName.c_str(), err);
-        fclose(f);
-        return nullptr;
-    }
-    // Use the handle to find the "construct" function
-    constructFcn pFcn = (constructFcn) GetProcAddress((HINSTANCE)dlHandle, "construct");
-#endif
-
-    if (pFcn == nullptr) {
-        fprintf( stderr, "Loader library %s does not have a construct function\n", libName.c_str());
-#ifndef _WIN32
-        fprintf( stderr, "dlerror returns %s\n", dlerror());
-#endif
-        fclose(f);
-        return nullptr;
-    }
-    // Call the construct function
-    res = (*pFcn)();
-    fclose(f);
-    return res;
+    return plugin_loader.instance();
 }
 
 void BinaryFileFactory::UnLoad() {
-#ifdef _WIN32
-    FreeLibrary((HINSTANCE)dlHandle);
-#else
-    dlclose(dlHandle);                    // Especially important for Mac OS X
-#endif
 }

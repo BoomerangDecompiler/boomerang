@@ -40,7 +40,7 @@
 #include <iomanip>            // For setfill etc
 #include <sstream>
 
-ST20FrontEnd::ST20FrontEnd(BinaryFile *pBF, Prog* prog, BinaryFileFactory* pbff) : FrontEnd(pBF, prog, pbff) {
+ST20FrontEnd::ST20FrontEnd(QObject *pBF, Prog* prog, BinaryFileFactory* pbff) : FrontEnd(pBF, prog, pbff) {
     decoder = new ST20Decoder();
 }
 
@@ -79,10 +79,10 @@ std::vector<Exp*> &ST20FrontEnd::getDefaultReturns()
 ADDRESS ST20FrontEnd::getMainEntryPoint( bool &gotMain )
 {
     gotMain = true;
-    ADDRESS start = pBF->GetMainEntryPoint();
+    ADDRESS start = ldrIface->GetMainEntryPoint();
     if( start != NO_ADDRESS ) return start;
 
-    start = pBF->GetEntryPoint();
+    start = ldrIface->GetEntryPoint();
     gotMain = false;
     if( start == NO_ADDRESS ) return NO_ADDRESS;
 

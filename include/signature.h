@@ -23,6 +23,7 @@
 #include "statement.h"        // For class Return
 
 #include <string>
+#include <QString>
 
 class Statement;
 class StatementList;
@@ -78,7 +79,7 @@ typedef std::vector<Return*> Returns;
 
 class Signature {
 protected:
-        std::string     name;        // name of procedure
+        QString     name;        // name of procedure
         std::string     sigFile;    // signature file this signature was read from (for libprocs)
         std::vector<Parameter*> params;
         // std::vector<ImplicitParameter*> implicitParams;
@@ -100,7 +101,7 @@ protected:
         //void        addImplicitParameter(Type *type, const char *name, Exp *e, Parameter *parent);
 
 public:
-                    Signature(const char *nam);
+                    Signature(const QString &nam);
         // Platform plat, calling convention cc (both enums)
         // nam is name of the procedure (no longer stored in the Proc)
 static    Signature    *instantiate(platform plat, callconv cc, const char *nam);
@@ -134,8 +135,8 @@ virtual void        setReturnType(size_t n, Type *ty);
         Type *      getTypeFor(Exp* e);
 
         // get/set the name
-virtual const char *getName();
-virtual void        setName(const std::string &nam);
+virtual QString getName();
+virtual void        setName(const QString &nam);
         // get/set the signature file
         const char *getSigFile() { return sigFile.c_str(); }
         void        setSigFile(const char *nam) { sigFile = nam; }
@@ -253,7 +254,7 @@ class CustomSignature : public Signature {
 protected:
         int         sp;
 public:
-                    CustomSignature(const char *nam);
+                    CustomSignature(const QString &nam);
 virtual             ~CustomSignature() { }
 virtual bool        isPromoted() { return true; }
 virtual Signature * clone();

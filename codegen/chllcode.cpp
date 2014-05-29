@@ -154,7 +154,7 @@ void CHLLCode::appendExp(std::ostringstream& str, const Exp &exp, PREC curPrec, 
             str << "\"" << escapeStr(c.getStr()) << "\"";
             break;
         case opFuncConst:
-            str << c.getFuncName();
+            str << c.getFuncName().toStdString();
             break;
         case opAddrOf: {
             const Exp *sub = u.getSubExp1();
@@ -1326,7 +1326,7 @@ void CHLLCode::AddCallStatement(int indLevel, Proc *proc, const char *name, Stat
         if (t && t->isPointer() && ((PointerType*)t)->getPointsTo()->isFunc() && const_arg->isIntConst()) {
             Proc *p = proc->getProg()->findProc((const_arg)->getAddr());
             if (p) {
-                s << p->getName();
+                s << p->getName().toStdString();
                 ok = false;
             }
         }
@@ -1479,7 +1479,7 @@ void CHLLCode::AddProcDec(UserProc* proc, bool open) {
         if (!retType->isPointer())    // NOTE: assumes type *proc( style
             s << " ";
     }
-    s << proc->getName() << "(";
+    s << proc->getName().toStdString() << "(";
     StatementList& parameters = proc->getParameters();
     StatementList::iterator pp;
 

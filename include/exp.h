@@ -17,7 +17,14 @@
        RefExp__/    |
                  Ternary
 */
+#include "operator.h"    // Declares the OPER enum
+#include "types.h"        // For ADDRESS, etc
+#include "type.h"        // The Type class for typed expressions
+//#include "statement.h"    // For StmtSet etc
+#include "exphelp.h"
+//#include "memo.h"
 
+#include <QtCore/QString>
 #include <iostream>
 #include <fstream>        // For ostream, cout etc
 #include <cstdio>        // For sprintf
@@ -26,12 +33,6 @@
 #include <set>
 #include <cassert>
 #include <memory>
-#include "operator.h"    // Declares the OPER enum
-#include "types.h"        // For ADDRESS, etc
-#include "type.h"        // The Type class for typed expressions
-//#include "statement.h"    // For StmtSet etc
-#include "exphelp.h"
-//#include "memo.h"
 
 class UseSet;
 class DefSet;
@@ -401,7 +402,7 @@ virtual bool        operator*=(Exp& o);
         double      getFlt() const {return u.d;}
         const char* getStr() const {return u.p;}
         ADDRESS     getAddr() const {return u.a;}
-        const char* getFuncName() const;
+        QString getFuncName() const;
 
         // Set the constant
         void        setInt(int i)        {u.i = i;}

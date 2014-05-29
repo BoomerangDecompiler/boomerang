@@ -18,32 +18,51 @@
  ******************************************************************************/
 
 #include "BinaryFile.h"
+#include <QtCore/QObject>
 
-class PalmBinaryFile : public BinaryFile {
+class PalmBinaryFile : public QObject,
+        public LoaderInterface,
+        public BinaryData,
+        public LoaderCommon,
+        public SymbolTableInterface
+{
+    Q_OBJECT
+    Q_INTERFACES(LoaderInterface)
+    Q_INTERFACES(SectionInterface)
+    Q_INTERFACES(SymbolTableInterface)
+
 public:
     PalmBinaryFile();               // Constructor
     virtual       ~PalmBinaryFile();
-    virtual void  UnLoad();                       // Unload the image
-    virtual bool  Open(const char* sName);        // Open the file for r/w; pv
-    virtual void  Close();                        // Close file opened with Open()
-    virtual bool  PostLoad(void* handle);         // For archive files only
-    virtual LOAD_FMT GetFormat() const;           // Get format i.e. LOADFMT_PALM
-    virtual MACHINE GetMachine() const;           // Get machine i.e. MACHINE_PALM
-    virtual const char *getFilename() const { return m_pFileName; }
+    void  UnLoad() override;                       // Unload the image
+    bool  Open(const char* sName) override;        // Open the file for r/w; pv
+    void  Close() override;                        // Close file opened with Open()
+    bool  PostLoad(void* handle) override;         // For archive files only
+    LOAD_FMT GetFormat() const override;           // Get format i.e. LOADFMT_PALM
+    MACHINE GetMachine() const override;           // Get machine i.e. MACHINE_PALM
+    const char *getFilename() const  override { return m_pFileName; }
 
-    virtual bool isLibrary() const;
-    virtual QStringList getDependencyList();
-    virtual ADDRESS getImageBase();
-    virtual size_t getImageSize();
+    bool isLibrary() const  override;
+    QStringList getDependencyList() override;
+    ADDRESS getImageBase() override;
+    size_t getImageSize() override;
 
     // Get a symbol given an address
-    const char*    SymbolByAddress(ADDRESS dwAddr);
+    const char*    SymbolByAddress(ADDRESS dwAddr) override;
+    ADDRESS GetAddressByName(const char *pName, bool bNoTypeOK = false) override;
+    void AddSymbol(ADDRESS /*uNative*/, const char * /*pName*/) override;
+    int GetSizeByName(const char *pName, bool bTypeOK = false) override;
+    ADDRESS *GetImportStubs(int &numImports) override;
+    const char *getFilenameSymbolFor(const char * /*sym*/) override;
+    tMapAddrToString &getSymbols() override;
+
+
     // Return true if the address matches the convention for A-line system calls
-    bool        IsDynamicLinkedProc(ADDRESS uNative);
+    bool        IsDynamicLinkedProc(ADDRESS uNative) override;
 
     // Specific to BinaryFile objects that implement a "global pointer"
     // Gets a pair of unsigned integers representing the address of %agp (first) and the value for GLOBALOFFSET (second)
-    virtual std::pair<ADDRESS,unsigned> GetGlobalPointerInfo();
+    Q_INVOKABLE std::pair<ADDRESS,unsigned> GetGlobalPointerInfo();
 
     // Palm specific calls
 
@@ -63,26 +82,27 @@ public:
 
 
     // Analysis functions
-    virtual std::list<SectionInfo*>& GetEntryPoints(const char* pEntry = "main");
-    virtual ADDRESS GetMainEntryPoint();
-    virtual ADDRESS GetEntryPoint();
+    virtual std::list<SectionInfo*>& GetEntryPoints(const char* pEntry = "main") override;
+    virtual ADDRESS GetMainEntryPoint() override;
+    virtual ADDRESS GetEntryPoint() override;
 
     //    bool        IsDynamicLinkedProc(ADDRESS wNative);
     //    ADDRESS     NativeToHostAddress(ADDRESS uNative);
 
-            char    readNative1(ADDRESS nat);
-            int     readNative2(ADDRESS nat);
-            int     readNative4(ADDRESS nat);
-            QWord   readNative8(ADDRESS nat);
-            float   readNativeFloat4(ADDRESS nat);
-            double  readNativeFloat8(ADDRESS nat);
+    char    readNative1(ADDRESS nat) override;
+    int     readNative2(ADDRESS nat) override;
+    int     readNative4(ADDRESS nat) override;
+    QWord   readNative8(ADDRESS nat) override;
+    float   readNativeFloat4(ADDRESS nat) override;
+    double  readNativeFloat8(ADDRESS nat) override;
 protected:
-    virtual bool  RealLoad(const char* sName); // Load the file; pure virtual
+    virtual bool  RealLoad(const char* sName) override; // Load the file; pure virtual
 
 private:
-    unsigned char* m_pImage;                       // Points to loaded image
-    unsigned char* m_pData;                        // Points to data
-    // Offset from start of data to where a5 should be initialised to
+    std::map<ADDRESS, std::string> m_symTable;
+    unsigned char* m_pImage;                       //!< Points to loaded image
+    unsigned char* m_pData;                        //!< Points to data
+    // Offset from start of data to where register a5 should be initialised to
     unsigned int   m_SizeBelowA5;
     const char *   m_pFileName;
 };

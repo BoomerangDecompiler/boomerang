@@ -17,7 +17,7 @@ public:
     /*
          * Constructor. Takes some parameters to save passing these around a lot
          */
-    PentiumFrontEnd(BinaryFile *pBF, Prog* prog, BinaryFileFactory* pbff);
+    PentiumFrontEnd(QObject *pLoader, Prog* prog, BinaryFileFactory* pbff);
 
     virtual             ~PentiumFrontEnd();
 

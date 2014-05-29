@@ -252,7 +252,7 @@ size_t NamedType::getSize() const {
     if (ty)
         return ty->getSize();
     if (VERBOSE)
-        LOG << "WARNING: Unknown size for named type " << name << "\n";
+        LOG << "WARNING: Unknown size for named type " << name.c_str() << "\n";
     return 0; // don't know
 }
 size_t CompoundType::getSize() const {
@@ -1236,7 +1236,7 @@ void DataIntervalMap::addItem(ADDRESS addr, const char* name, Type* ty, bool for
         // The existing entry comes first. Make sure it ends last (possibly equal last)
         if (pdie->first + pdie->second.size < addr+ty->getSize()/8) {
             LOG << "TYPE ERROR: attempt to insert item " << name << " at " << addr << " of type " <<
-                   ty->getCtype() << " which weaves after " << pdie->second.name << " at " << pdie->first <<
+                   ty->getCtype() << " which weaves after " << pdie->second.name.c_str() << " at " << pdie->first <<
                    " of type " << pdie->second.type->getCtype() << "\n";
             return;
         }
@@ -1255,7 +1255,7 @@ void DataIntervalMap::addItem(ADDRESS addr, const char* name, Type* ty, bool for
         // Old starts after new; check it also ends first
         if (pdie->first + pdie->second.size > addr+ty->getSize()/8) {
             LOG << "TYPE ERROR: attempt to insert item " << name << " at " << addr << " of type " <<
-                   ty->getCtype() << " which weaves before " << pdie->second.name << " at " << pdie->first <<
+                   ty->getCtype() << " which weaves before " << pdie->second.name.c_str() << " at " << pdie->first <<
                    " of type " << pdie->second.type->getCtype() << "\n";
             return;
         }

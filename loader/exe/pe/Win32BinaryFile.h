@@ -145,7 +145,16 @@ typedef struct PACKED {
     DWord    otRVA;            // RVA of the OT
 } PEExportDtor;
 
-class Win32BinaryFile : public BinaryFile {
+class Win32BinaryFile : public QObject,
+        public LoaderInterface,
+        public BinaryData,
+        public SymbolTableInterface,
+        public LoaderCommon {
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID LoaderInterface_iid)
+    Q_INTERFACES(LoaderInterface)
+    Q_INTERFACES(BinaryData)
+    Q_INTERFACES(SectionInterface)
 public:
                         Win32BinaryFile();              // Default constructor
     virtual             ~Win32BinaryFile();             // Destructor
@@ -164,10 +173,6 @@ public:
     virtual ADDRESS        GetMainEntryPoint();
     virtual ADDRESS        GetEntryPoint();
     DWord        getDelta();
-    virtual const char* SymbolByAddress(ADDRESS dwAddr); // Get sym from addr
-    virtual ADDRESS        GetAddressByName(const char* name, bool bNoTypeOK = false);        // Find addr given name
-    virtual void        AddSymbol(ADDRESS uNative, const char *pName);
-    void        dumpSymbols();                    // For debugging
 
     //
     //        --        --        --        --        --        --        --        --        --
@@ -183,17 +188,17 @@ protected:
 
 public:
 
-    virtual char         readNative1(ADDRESS a);         // Read 1 bytes from native addr
-    virtual int          readNative2(ADDRESS a);            // Read 2 bytes from native addr
-    virtual int          readNative4(ADDRESS a);            // Read 4 bytes from native addr
-    virtual QWord        readNative8(ADDRESS a);        // Read 8 bytes from native addr
-    virtual float        readNativeFloat4(ADDRESS a);    // Read 4 bytes as float
-    virtual double       readNativeFloat8(ADDRESS a); // Read 8 bytes as float
+    char         readNative1(ADDRESS a) override;         // Read 1 bytes from native addr
+    int          readNative2(ADDRESS a) override;            // Read 2 bytes from native addr
+    int          readNative4(ADDRESS a) override;            // Read 4 bytes from native addr
+    QWord        readNative8(ADDRESS a) override;        // Read 8 bytes from native addr
+    float        readNativeFloat4(ADDRESS a) override;    // Read 4 bytes as float
+    double       readNativeFloat8(ADDRESS a) override; // Read 8 bytes as float
 
-    virtual bool        IsDynamicLinkedProcPointer(ADDRESS uNative);
-    virtual bool        IsStaticLinkedLibProc(ADDRESS uNative);
-    virtual ADDRESS        IsJumpToAnotherAddr(ADDRESS uNative);
-    virtual const char *GetDynamicProcName(ADDRESS uNative);
+    bool        IsDynamicLinkedProcPointer(ADDRESS uNative);
+    bool        IsStaticLinkedLibProc(ADDRESS uNative);
+    ADDRESS        IsJumpToAnotherAddr(ADDRESS uNative);
+    const char *GetDynamicProcName(ADDRESS uNative);
 
             bool        IsMinGWsAllocStack(ADDRESS uNative);
             bool        IsMinGWsFrameInit(ADDRESS uNative);
@@ -224,5 +229,26 @@ private:
     const char    *m_pFileName;
     bool        haveDebugInfo;
     bool        mingw_main;
+
+
+    // SymbolTableInterface interface
+public:
+    int GetSizeByName(const char *pName, bool bTypeOK)
+    {
+        return 4; // TODO: Fake!
+    }
+    ADDRESS *GetImportStubs(int &numImports)
+    {
+        numImports = 0;
+        return nullptr;
+    }
+    const char *getFilenameSymbolFor(const char *)
+    {
+        return nullptr;
+    }
+    const char* SymbolByAddress(ADDRESS dwAddr) override; // Get sym from addr
+    ADDRESS     GetAddressByName(const char* name, bool bNoTypeOK = false) override;        // Find addr given name
+    void        AddSymbol(ADDRESS uNative, const char *pName) override;
+    void        dumpSymbols();                    // For debugging
 
 };

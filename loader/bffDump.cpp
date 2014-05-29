@@ -32,20 +32,21 @@ int main(int argc, char* argv[]) {
 
     // Load the file
 
-    BinaryFile *pbf = nullptr;
     BinaryFileFactory bff;
-    pbf = bff.Load(argv[1]);
+    QObject *plug = bff.Load(argv[1]);
 
-    if (pbf == nullptr) {
+    if (plug == nullptr) {
         return 2;
     }
+    LoaderInterface *ldr_iface = qobject_cast<LoaderInterface *>(plug);
+    SectionInterface *sect_iface = qobject_cast<SectionInterface *>(plug);
 
     // Display program and section information
     // If the DisplayDetails() function has not been implemented
     // in the derived class (ElfBinaryFile in this case), then
     // uncomment the commented code below to display section information.
 
-    pbf->DisplayDetails (argv[0]);
+    ldr_iface->DisplayDetails(argv[0],stdout);
 
     // This is an alternative way of displaying binary-file information
     // by using individual sections.  The above approach is more general.
@@ -63,8 +64,8 @@ int main(int argc, char* argv[]) {
     // Note: this is traditionally the ".text" section in Elf binaries.
     // In the case of Prc files (Palm), the code section is named "code0".
 
-    for (int i=0; i < pbf->GetNumSections(); i++) {
-        SectionInfo* pSect = pbf->GetSectionInfo(i);
+    for (int i=0; i < sect_iface->GetNumSections(); i++) {
+        SectionInfo* pSect = sect_iface->GetSectionInfo(i);
         if (pSect->bCode) {
             printf("  Code section:\n");
             ADDRESS a = pSect->uNativeAddr;
@@ -84,8 +85,8 @@ int main(int argc, char* argv[]) {
 
     // Display the data section(s) in raw hexadecimal notation
 
-    for (int i=0; i < pbf->GetNumSections(); i++) {
-        SectionInfo* pSect = pbf->GetSectionInfo(i);
+    for (int i=0; i < sect_iface->GetNumSections(); i++) {
+        SectionInfo* pSect = sect_iface->GetSectionInfo(i);
         if (pSect->bData) {
             printf("  Data section: %s\n", pSect->pSectionName);
             ADDRESS a = pSect->uNativeAddr;
@@ -102,8 +103,7 @@ int main(int argc, char* argv[]) {
             printf("\n");
         }
     }
-
-    pbf->UnLoad();
+    delete plug;
     return 0;
 }
 

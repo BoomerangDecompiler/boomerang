@@ -191,13 +191,13 @@ void ExeBinaryFile::UnLoad() {
     delete [] m_pRelocTable;
 }
 
-char* ExeBinaryFile::SymbolByAddr(ADDRESS dwAddr) {
-    if (dwAddr == GetMainEntryPoint())
-        return const_cast<char *>("main");
+//const char *ExeBinaryFile::SymbolByAddress(ADDRESS dwAddr) {
+//    if (dwAddr == GetMainEntryPoint())
+//        return const_cast<char *>("main");
 
-    // No symbol table handled at present
-    return nullptr;
-}
+//    // No symbol table handled at present
+//    return nullptr;
+//}
 
 char ExeBinaryFile::readNative1(ADDRESS a) {
     assert(!"not implemented");
@@ -281,6 +281,12 @@ ADDRESS ExeBinaryFile::GetEntryPoint() {
     return ADDRESS::g((LH(&m_pHeader->initCS) << 4) + LH(&m_pHeader->initIP));
 }
 
+LoaderInterface::tMapAddrToString &ExeBinaryFile::getSymbols()
+{
+    tMapAddrToString empty;
+    return empty;
+}
+
 // This is provided for completeness only...
 std::list<SectionInfo*>& ExeBinaryFile::GetEntryPoints(const char* pEntry
                                                        /* = "main"*/) {
@@ -302,7 +308,7 @@ extern "C" {
 #ifdef _WIN32
 __declspec(dllexport)
 #endif
-BinaryFile* construct() {
+QObject* construct() {
     return new ExeBinaryFile;
 }
 }

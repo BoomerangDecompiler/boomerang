@@ -4,6 +4,7 @@
 
 #include "types.h"
 #include <fstream>
+#include <QtCore/QString>
 
 class Statement;
 class Exp;
@@ -16,7 +17,7 @@ class Type;
 class Log {
 public:
     Log() { }
-    virtual Log &operator<<(const std::string& s) = 0;
+    virtual Log &operator<<(const QString &s) = 0;
     virtual Log &operator<<(const Statement *s);
     virtual Log &operator<<(const Exp *e);
     virtual Log &operator<<(const Type *ty);
@@ -40,8 +41,8 @@ protected:
 public:
             FileLogger();        // Implemented in boomerang.cpp
     void    tail();
-    virtual Log &operator<<(const std::string& str) {
-        out << str << std::flush;
+    virtual Log &operator<<(const QString& str) {
+        out << str.toStdString() << std::flush;
         return *this;
     }
     virtual ~FileLogger() {}
@@ -50,17 +51,17 @@ class SeparateLogger : public Log {
 protected:
     std::ofstream *out;
 public:
-            SeparateLogger(const char *);        // Implemented in boomerang.cpp
+            SeparateLogger(const QString &);        // Implemented in boomerang.cpp
     void    tail();
-    virtual Log &operator<<(const std::string& str) {
-        (*out) << str << std::flush;
+    virtual Log &operator<<(const QString& str) {
+        (*out) << str.toStdString() << std::flush;
         return *this;
     }
     virtual ~SeparateLogger() { out->close(); out = nullptr;}
 };
 class NullLogger : public Log {
 public:
-    virtual Log &operator<<(const std::string& /*str*/) {
+    virtual Log &operator<<(const QString& /*str*/) {
         // std::cerr << str;
         return *this;
     }

@@ -10,7 +10,7 @@
 #include "rtl.h"
 #include "table.h"
 #include "insnameelem.h"
-#include "util.h"			// E.g. str()
+#include "util.h"       // E.g. str()
 #include "statement.h"
 #include "exp.h"
 

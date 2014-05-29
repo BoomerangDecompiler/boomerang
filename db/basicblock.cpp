@@ -18,10 +18,6 @@
  * Dependencies.
  ******************************************************************************/
 
-#include <cassert>
-#include <algorithm>
-#include <cstring>
-#include <inttypes.h>
 #include "config.h"
 #ifdef HAVE_LIBGC
 #include "gc.h"
@@ -43,6 +39,11 @@
 #include "log.h"
 #include "visitor.h"
 
+#include <QtCore/QDebug>
+#include <cassert>
+#include <algorithm>
+#include <cstring>
+#include <inttypes.h>
 using namespace std;
 /**********************************
  * BasicBlock methods
@@ -306,7 +307,7 @@ void BasicBlock::print(std::ostream& os, bool html) {
 void BasicBlock::printToLog() {
     std::ostringstream ost;
     print(ost);
-    LOG << ost.str();
+    LOG << ost.str().c_str();
 }
 
 bool BasicBlock::isBackEdge(size_t inEdge) const {
@@ -1273,7 +1274,7 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, BasicBlock * latch,
 
             // return if this doesn't have any out edges (emit a warning)
             if (m_OutEdges.size() == 0) {
-                std::cerr << "WARNING: no out edge for this BB in " << proc->getName() << ":\n";
+                qWarning() << "WARNING: no out edge for this BB in " << proc->getName() << ":\n";
                 this->print(std::cerr);
                 std::cerr << std::endl;
                 if (m_nodeType == COMPJUMP) {

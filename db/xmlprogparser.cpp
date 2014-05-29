@@ -2150,7 +2150,7 @@ void XMLProgParser::persistToXML(std::ostream &out, Proc *proc) {
 
 void XMLProgParser::persistToXML(std::ostream &out, Signature *sig) {
     out << "<signature id=\"" << ADDRESS::host_ptr(sig) << "\"";
-    out << " name=\"" << sig->name << "\"";
+    out << " name=\"" << sig->name.toStdString() << "\"";
     out << " ellipsis=\"" << (int)sig->ellipsis << "\"";
     out << " preferedName=\"" << sig->preferedName << "\"";
     if (sig->getPlatform() != PLAT_GENERIC)

@@ -123,7 +123,7 @@ Proc::Proc(Prog *prg, ADDRESS uNative, Signature *sig)
  * PARAMETERS:        <none>
  * \returns            the name of this procedure
  ******************************************************************************/
-const char* Proc::getName() const {
+QString Proc::getName() const {
     assert(signature);
     return signature->getName();
 }
@@ -134,7 +134,7 @@ const char* Proc::getName() const {
  * PARAMETERS:        new name
  *
  ******************************************************************************/
-void Proc::setName(const std::string &nam) {
+void Proc::setName(const QString &nam) {
     assert(signature);
     signature->setName(nam);
 }
@@ -325,7 +325,7 @@ void Proc::printCallGraphXML(std::ostream &os, int depth, bool /*recurse*/) {
     visited = true;
     for (int i = 0; i < depth; i++)
         os << "      ";
-    os << "<proc name=\"" << getName() << "\"/>\n";
+    os << "<proc name=\"" << getName().toStdString() << "\"/>\n";
 }
 
 void UserProc::printCallGraphXML(std::ostream &os, int depth, bool recurse) {
@@ -336,7 +336,7 @@ void UserProc::printCallGraphXML(std::ostream &os, int depth, bool recurse) {
     int i;
     for (i = 0; i < depth; i++)
         os << "      ";
-    os << "<proc name=\"" << getName() << "\">\n";
+    os << "<proc name=\"" << getName().toStdString() << "\">\n";
     if (recurse) {
         for (auto & elem : calleeList)
             (elem)->printCallGraphXML(os, depth+1, !wasVisited && !(elem)->isVisited());
@@ -349,8 +349,8 @@ void UserProc::printCallGraphXML(std::ostream &os, int depth, bool recurse) {
 void Proc::printDetailsXML() {
     if (!DUMP_XML)
         return;
-    std::ofstream out((Boomerang::get()->getOutputPath() + getName() + "-details.xml").c_str());
-    out << "<proc name=\"" << getName() << "\">\n";
+    std::ofstream out((Boomerang::get()->getOutputPath() + getName().toStdString() + "-details.xml").c_str());
+    out << "<proc name=\"" << getName().toStdString() << "\">\n";
     unsigned i;
     for (i = 0; i < signature->getNumParams(); i++)
         out << "   <param name=\"" << signature->getParamName(i) << "\" " << "exp=\"" << signature->getParamExp(i)
@@ -365,8 +365,8 @@ void Proc::printDetailsXML() {
 void UserProc::printDecodedXML() {
     if (!DUMP_XML)
         return;
-    std::ofstream out((Boomerang::get()->getOutputPath() + getName() + "-decoded.xml").c_str());
-    out << "<proc name=\"" << getName() << "\">\n";
+    std::ofstream out((Boomerang::get()->getOutputPath() + getName().toStdString() + "-decoded.xml").c_str());
+    out << "<proc name=\"" << getName().toStdString() << "\">\n";
     out << "    <decoded>\n";
     std::ostringstream os;
     print(os);
@@ -381,8 +381,8 @@ void UserProc::printDecodedXML() {
 void UserProc::printAnalysedXML() {
     if (!DUMP_XML)
         return;
-    std::ofstream out((Boomerang::get()->getOutputPath() + getName() + "-analysed.xml").c_str());
-    out << "<proc name=\"" << getName() << "\">\n";
+    std::ofstream out((Boomerang::get()->getOutputPath() + getName().toStdString() + "-analysed.xml").c_str());
+    out << "<proc name=\"" << getName().toStdString() << "\">\n";
     out << "    <analysed>\n";
     std::ostringstream os;
     print(os);
@@ -397,8 +397,8 @@ void UserProc::printAnalysedXML() {
 void UserProc::printSSAXML() {
     if (!DUMP_XML)
         return;
-    std::ofstream out((Boomerang::get()->getOutputPath() + getName() + "-ssa.xml").c_str());
-    out << "<proc name=\"" << getName() << "\">\n";
+    std::ofstream out((Boomerang::get()->getOutputPath() + getName().toStdString() + "-ssa.xml").c_str());
+    out << "<proc name=\"" << getName().toStdString() << "\">\n";
     out << "    <ssa>\n";
     std::ostringstream os;
     print(os);
@@ -421,8 +421,8 @@ void UserProc::printXML() {
 }
 
 void UserProc::printUseGraph() {
-    std::ofstream out((Boomerang::get()->getOutputPath() + getName() + "-usegraph.dot").c_str());
-    out << "digraph " << getName() << " {\n";
+    std::ofstream out((Boomerang::get()->getOutputPath() + getName().toStdString() + "-usegraph.dot").c_str());
+    out << "digraph " << getName().toStdString() << " {\n";
     StatementList stmts;
     getStatements(stmts);
     StatementList::iterator it;
@@ -628,9 +628,9 @@ void UserProc::printAST(SyntaxNode *a) {
     char s[1024];
     if (a == nullptr)
         a = getAST();
-    sprintf(s, "ast%i-%s.dot", count++, getName());
+    sprintf(s, "ast%i-%s.dot", count++, qPrintable(getName()));
     std::ofstream of(s);
-    of << "digraph " << getName() << " {" << std::endl;
+    of << "digraph " << getName().toStdString() << " {" << std::endl;
     of << "     label=\"score: " << a->evaluate(a) << "\";" << std::endl;
     a->printAST(a, of);
     of << "}" << std::endl;
@@ -725,7 +725,7 @@ void UserProc::generateCode(HLLCode *hll) {
         hll->AddLocal(it->first.c_str(), locType, it == last);
     }
 
-    if (Boomerang::get()->noDecompile && std::string(getName()) == "main") {
+    if (Boomerang::get()->noDecompile && getName() == "main") {
         StatementList args, results;
         if (prog->getFrontEndId() == PLAT_PENTIUM)
             hll->AddCallStatement(1, nullptr, "PENTIUMSETUP", args, &results);
@@ -808,13 +808,14 @@ void UserProc::dump() {
 }
 
 void UserProc::printDFG() const {
-    char fname[1024];
-    sprintf(fname, "%s%s-%i-dfg.dot", Boomerang::get()->getOutputPath().c_str(), getName(), DFGcount);
+    QString fname = QString("%1%2-%3-dfg.dot")
+            .arg(Boomerang::get()->getOutputPath().c_str())
+            .arg(getName()).arg(DFGcount);
     DFGcount++;
     if (VERBOSE)
         LOG << "outputing DFG to " << fname << "\n";
-    std::ofstream out(fname);
-    out << "digraph " << getName() << " {\n";
+    std::ofstream out(fname.toStdString());
+    out << "digraph " << getName().toStdString() << " {\n";
     StatementList stmts;
     getStatements(stmts);
     StatementList::iterator it;
@@ -1055,14 +1056,14 @@ void UserProc::insertStatementAfter(Statement* s, Statement* a) {
  ******************************************************************************/
 ProcSet* UserProc::decompile(ProcList* path, int& indent) {
     Boomerang::get()->alert_considering(path->empty() ? nullptr : path->back(), this);
-    std::cout << std::setw(++indent) << " " << (status >= PROC_VISITED ? "re" : "") << "considering " << getName() <<
+    std::cout << std::setw(++indent) << " " << (status >= PROC_VISITED ? "re" : "") << "considering " << getName().toStdString() <<
                  "\n";
     if (VERBOSE)
         LOG << "begin decompile(" << getName() << ")\n";
 
     // Prevent infinite loops when there are cycles in the call graph (should never happen now)
     if (status >= PROC_FINAL) {
-        std::cerr << "Error: " << getName() << " already has status PROC_FINAL\n";
+        std::cerr << "Error: " << getName().toStdString() << " already has status PROC_FINAL\n";
         return nullptr;                            // Already decompiled
     }
     if (status < PROC_DECODED)
@@ -1148,6 +1149,7 @@ ProcSet* UserProc::decompile(ProcList* path, int& indent) {
                 } else {
                     // No new cycle
                     LOG_VERBOSE(1) << "visiting on the way down child " << c->getName() << " from " << getName() << "\n";
+                    c->promoteSignature();
                     ProcSet* tmp = c->decompile(path, indent);
                     child->insert(tmp->begin(), tmp->end());
                     // Child has at least done middleDecompile(), possibly more
@@ -1164,7 +1166,7 @@ ProcSet* UserProc::decompile(ProcList* path, int& indent) {
     // if child is empty, i.e. no child involved in recursion
     if (child->size() == 0) {
         Boomerang::get()->alert_decompiling(this);
-        std::cout << std::setw(indent) << " " << "decompiling " << getName() << "\n";
+        std::cout << std::setw(indent) << " " << "decompiling " << getName().toStdString() << "\n";
         initialiseDecompile();                    // Sort the CFG, number statements, etc
         earlyDecompile();
         child = middleDecompile(path, indent);
@@ -2156,7 +2158,7 @@ void UserProc::removeMatchingAssignsIfPossible(Exp *e) {
     str.str("");
     str << "after removing matching assigns (" << e << ").";
     Boomerang::get()->alert_decompile_debug_point(this, str.str().c_str());
-    LOG << str.str() << "\n";
+    LOG << str.str().c_str() << "\n";
 
 }
 
@@ -3087,7 +3089,7 @@ void UserProc::removeUnusedLocals() {
                 std::string name(((Const*)((Location*)u)->getSubExp1())->getStr());
                 usedLocals.insert(name);
                 if (DEBUG_UNUSED)
-                    LOG << "counted local " << name << " in " << s << "\n";
+                    LOG << "counted local " << name.c_str() << " in " << s << "\n";
             }
         }
         if (s->isAssignment() && !s->isImplicit() && ((Assignment*)s)->getLeft()->isLocal()) {
@@ -3170,7 +3172,7 @@ void UserProc::fromSSAform() {
     if (cfg->getNumBBs() >= 100)        // Only for the larger procs
         // Note: emit newline at end of this proc, so we can distinguish getting stuck in this proc with doing a lot of
         // little procs that don't get messages. Also, looks better with progress dots
-        std::cout << " transforming out of SSA form " << getName() << " with " << cfg->getNumBBs() << " BBs";
+        std::cout << " transforming out of SSA form " << getName().toStdString() << " with " << cfg->getNumBBs() << " BBs";
 
     StatementList stmts;
     getStatements(stmts);
@@ -4216,8 +4218,7 @@ void UserProc::dumpLocals() {
 //! Update the arguments in calls
 void UserProc::updateArguments() {
     Boomerang::get()->alert_decompiling(this);
-    if (VERBOSE)
-        LOG << "### update arguments for " << getName() << " ###\n";
+    LOG_VERBOSE(1) << "### update arguments for " << getName() << " ###\n";
     Boomerang::get()->alert_decompile_debug_point(this, "before updating arguments");
     BasicBlock::rtlrit rrit;
     StatementList::reverse_iterator srit;
@@ -4231,11 +4232,10 @@ void UserProc::updateArguments() {
         if (VERBOSE) {
             std::ostringstream ost;
             c->print(ost);
-            LOG << ost.str() << "\n";
+            LOG << ost.str().c_str() << "\n";
         }
     }
-    if (VERBOSE)
-        LOG << "=== end update arguments for " << getName() << "\n";
+    LOG_VERBOSE(1) << "=== end update arguments for " << getName() << "\n";
     Boomerang::get()->alert_decompile_debug_point(this, "after updating arguments");
 }
 //! Update the defines in calls
@@ -4255,9 +4255,9 @@ void UserProc::updateCallDefines() {
 //! Statement level transform :
 //! PREDICATE: (statement IS_A Assign) AND (statement.rhs IS_A MemOf) AND (statement.rhs.sub(1) IS_A IntConst)
 //! ACTION:
-//!		$tmp_addr = assgn.rhs.sub(1);
-//!		$tmp_val  = prog->readNative($tmp_addr,statement.type.bitwidth/8);
-//!		statement.rhs.replace_with(Const($tmp_val))
+//!     $tmp_addr = assgn.rhs.sub(1);
+//!     $tmp_val  = prog->readNative($tmp_addr,statement.type.bitwidth/8);
+//!     statement.rhs.replace_with(Const($tmp_val))
 void UserProc::replaceSimpleGlobalConstants() {
     if (VERBOSE)
         LOG << "### replace simple global constants for " << getName() << " ###\n";
@@ -4543,7 +4543,7 @@ void UserProc::fixCallAndPhiRefs() {
 
     // a[m[]] hack, aint nothing better.
     bool found = true;
-    for (it = stmts.begin(); it != stmts.end(); it++)
+    for (it = stmts.begin(); it != stmts.end(); it++) {
         if ((*it)->isCall()) {
             CallStatement *call = (CallStatement*)*it;
             for (auto & elem : call->getArguments()) {
@@ -4562,6 +4562,7 @@ void UserProc::fixCallAndPhiRefs() {
                 }
             }
         }
+    }
     if (found)
         doRenameBlockVars(2);
 
@@ -4769,7 +4770,7 @@ void UserProc::initialParameters() {
     if (VERBOSE) {
         std::ostringstream ost;
         printParams(ost);
-        LOG << ost.str();
+        LOG << ost.str().c_str();
     }
 }
 
@@ -5132,7 +5133,7 @@ bool UserProc::removeRedundantReturns(std::set<UserProc*>& removeRetSet) {
     // FIXME: this needs to be more sensible when we don't decompile down from main! Probably should assume just the
     // first return is valid, for example (presently assume none are valid)
     LocationSet unionOfCallerLiveLocs;
-    if (strcmp(getName(), "main") == 0)        // Probably not needed: main is forced so handled above
+    if (getName()=="main")        // Probably not needed: main is forced so handled above
         // Just insert one return for main. Note: at present, the first parameter is still the stack pointer
         unionOfCallerLiveLocs.insert(signature->getReturnExp(1));
     else {
@@ -5166,7 +5167,7 @@ bool UserProc::removeRedundantReturns(std::set<UserProc*>& removeRetSet) {
     if (DEBUG_UNUSED) {
         std::ostringstream ost;
         unionOfCallerLiveLocs.print(ost);
-        LOG << "%%%  union of caller live locations for " << getName() << ": " << ost.str() << "\n";
+        LOG << "%%%  union of caller live locations for " << getName() << ": " << ost.str().c_str() << "\n";
         LOG << "%%%  final returns for " << getName() << ": " << theReturnStatement->getReturns().prints() << "\n";
     }
 
@@ -5356,7 +5357,7 @@ void UserProc::clearRanges() {
  *
  ******************************************************************************/
 void UserProc::rangeAnalysis() {
-    std::cout << "performing range analysis on " << getName() << "\n";
+    std::cout << "performing range analysis on " << getName().toStdString() << "\n";
 
     // this helps
     cfg->sortByAddress();
@@ -5584,14 +5585,14 @@ void UserProc::mapTempsToLocals() {
 void dumpProcList(ProcList* pc) {
     ProcList::iterator pi;
     for (pi = pc->begin(); pi != pc->end(); ++pi)
-        std::cerr << (*pi)->getName() << ", ";
+        std::cerr << (*pi)->getName().toStdString() << ", ";
     std::cerr << "\n";
 }
 
 void dumpProcSet(ProcSet* pc) {
     ProcSet::iterator pi;
     for (pi = pc->begin(); pi != pc->end(); ++pi)
-        std::cerr << (*pi)->getName() << ", ";
+        std::cerr << (*pi)->getName().toStdString() << ", ";
     std::cerr << "\n";
 }
 /// Set an equation as proven. Useful for some sorts of testing
@@ -5825,7 +5826,7 @@ void UserProc::dfa_analyze_implict_assigns( Statement* s, Prog* prog )
 
     lhs = ((ImplicitAssign*)s)->getLeft();
     // Note: parameters are not explicit any more
-    //if (lhs->isParam()) {	// }
+    //if (lhs->isParam()) { // }
     slhs = lhs->clone()->removeSubscripts(allZero);
     iType = ((ImplicitAssign*)s)->getType();
     i = signature->findParam(slhs);
@@ -5867,9 +5868,9 @@ void UserProc::dfa_analyze_scaled_array_ref( Statement* s, Prog* prog )
         // FIXME: should check that we use with array type...
         // Find idx and K2
         assert(((Unary*)rr)->getSubExp1() == rr->getSubExp1());
-        Exp* t = rr->getSubExp1();		// idx*K1 + K2
-        Exp* l = ((Binary*)t)->getSubExp1();		// idx*K1
-        Exp* r = ((Binary*)t)->getSubExp2();		// K2
+        Exp* t = rr->getSubExp1();      // idx*K1 + K2
+        Exp* l = ((Binary*)t)->getSubExp1();        // idx*K1
+        Exp* r = ((Binary*)t)->getSubExp2();        // K2
         ADDRESS K2 = ((Const*)r)->getAddr();
         Exp* idx = ((Binary*)l)->getSubExp1();
 

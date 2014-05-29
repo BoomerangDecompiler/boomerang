@@ -446,9 +446,9 @@ void PentiumFrontEnd::emitSet(std::list<RTL*>* BB_rtls, std::list<RTL*>::iterato
 bool PentiumFrontEnd::helperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL*>* lrtl) {
     if (dest == NO_ADDRESS) return false;
 
-    const char* p = pBF->SymbolByAddress(dest);
+    const char* p = prog->symbolByAddress(dest);
     if (p == nullptr) return false;
-    std::string name(p);
+    QString name(p);
     // I believe that __xtol is for gcc, _ftol for earlier MSVC compilers, _ftol2 for MSVC V7
     if (name == "__xtol" || name == "_ftol" || name == "_ftol2") {
         // This appears to pop the top of stack, and converts the result to a 64 bit integer in edx:eax.
@@ -491,11 +491,11 @@ bool PentiumFrontEnd::helperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL*>* lr
                                 Location::regOf(24)));
         pRtl->appendStmt(a);
         lrtl->push_back(pRtl);
-        prog->removeProc(name.c_str());
+        prog->removeProc(name);
         return true;
     } else if (name == "__mingw_frame_init" || name == "__mingw_cleanup_setup" || name == "__mingw_frame_end") {
         LOG << "found removable call to static lib proc " << name << " at " << addr << "\n";
-        prog->removeProc(name.c_str());
+        prog->removeProc(name);
         return true;
     } else {
         // Will be other cases in future
@@ -526,7 +526,7 @@ PentiumFrontEnd* construct(Prog *prog, NJMCDecoder** decoder) {
  * PARAMETERS:      Same as the FrontEnd constructor
  * \returns           <N/A>
  ******************************************************************************/
-PentiumFrontEnd::PentiumFrontEnd(BinaryFile *pBF, Prog* prog, BinaryFileFactory* pbff) : FrontEnd(pBF, prog, pbff),
+PentiumFrontEnd::PentiumFrontEnd(QObject *pBF, Prog* prog, BinaryFileFactory* pbff) : FrontEnd(pBF, prog, pbff),
     idPF(-1) {
     decoder = new PentiumDecoder(prog);
 }
@@ -539,14 +539,14 @@ PentiumFrontEnd::~PentiumFrontEnd() { }
  * \returns         Native pointer if found; NO_ADDRESS if not
  ******************************************************************************/
 ADDRESS PentiumFrontEnd::getMainEntryPoint(bool& gotMain) {
-    ADDRESS start = pBF->GetMainEntryPoint();
+    ADDRESS start = ldrIface->GetMainEntryPoint();
     if( start != NO_ADDRESS ) {
         gotMain = true;
         return start;
     }
 
     gotMain = false;
-    start = pBF->GetEntryPoint();
+    start = ldrIface->GetEntryPoint();
     if ( start.isZero() || start == NO_ADDRESS)
         return NO_ADDRESS;
 
@@ -569,8 +569,8 @@ ADDRESS PentiumFrontEnd::getMainEntryPoint(bool& gotMain) {
         if (cs && cs->getKind() == STMT_CALL &&
                 cs->getDest()->getOper() == opMemOf &&
                 cs->getDest()->getSubExp1()->getOper() == opIntConst &&
-                pBF->IsDynamicLinkedProcPointer(((Const*)cs->getDest() ->getSubExp1())->getAddr()) &&
-                !strcmp(pBF->GetDynamicProcName(((Const*)cs->getDest()->getSubExp1())->getAddr()), "GetModuleHandleA"))
+                ldrIface->IsDynamicLinkedProcPointer(((Const*)cs->getDest() ->getSubExp1())->getAddr()) &&
+                !strcmp(ldrIface->GetDynamicProcName(((Const*)cs->getDest()->getSubExp1())->getAddr()), "GetModuleHandleA"))
         {
 #if 0
             std::cerr << "consider " << std::hex << addr << " " <<
@@ -588,7 +588,7 @@ ADDRESS PentiumFrontEnd::getMainEntryPoint(bool& gotMain) {
                     if (not inst.rtl->empty()) {
                         CallStatement *toMain = dynamic_cast<CallStatement*>(inst.rtl->back());
                         if (toMain && toMain->getFixedDest() != NO_ADDRESS) {
-                            pBF->AddSymbol(toMain->getFixedDest(), "WinMain");
+                            symIface->AddSymbol(toMain->getFixedDest(), "WinMain");
                             gotMain = true;
                             return toMain->getFixedDest();
                         }
@@ -602,8 +602,7 @@ ADDRESS PentiumFrontEnd::getMainEntryPoint(bool& gotMain) {
                 gotMain = true;
                 return cs->getFixedDest();
             }
-            if (pBF->SymbolByAddress(dest) &&
-                    strcmp(pBF->SymbolByAddress(dest), "__libc_start_main") == 0) {
+            if (prog->symbolByAddress(dest) && strcmp(prog->symbolByAddress(dest), "__libc_start_main") == 0) {
                 // This is a gcc 3 pattern. The first parameter will be a pointer to main.
                 // Assume it's the 5 byte push immediately preceeding this instruction
                 // Note: the RTL changed recently from esp = esp-4; m[esp] = K tp m[esp-4] = K; esp = esp-4
@@ -629,7 +628,7 @@ ADDRESS PentiumFrontEnd::getMainEntryPoint(bool& gotMain) {
     } while (--instCount);
 
     // Last chance check: look for _main (e.g. Borland programs)
-    ADDRESS umain = pBF->GetAddressByName("_main");
+    ADDRESS umain = symIface ? symIface->GetAddressByName("_main") : NO_ADDRESS;
     if (umain != NO_ADDRESS) return umain;
 
     // Not ideal; we must return start
@@ -983,7 +982,9 @@ bool PentiumFrontEnd::decodeSpecial_out(ADDRESS pc, DecodeResult &r)
 }
 bool PentiumFrontEnd::decodeSpecial_invalid(ADDRESS pc, DecodeResult &r)
 {
-    int n = pBF->readNative1(pc+1);
+    BinaryData *bin_data = qobject_cast<BinaryData *>(pLoader);
+
+    int n = bin_data->readNative1(pc+1);
     if (n != (int)(char)0x0b)
         return false;
     r.reset();
@@ -998,7 +999,8 @@ bool PentiumFrontEnd::decodeSpecial_invalid(ADDRESS pc, DecodeResult &r)
     return true;
 }
 bool PentiumFrontEnd::decodeSpecial(ADDRESS pc,DecodeResult &r) {
-    int n = pBF->readNative1(pc);
+    BinaryData *bin_data = qobject_cast<BinaryData *>(pLoader);
+    int n = bin_data->readNative1(pc);
     switch((int)(char)n) {
         case 0xee:
             return decodeSpecial_out(pc, r);
@@ -1019,6 +1021,7 @@ DecodeResult& PentiumFrontEnd::decodeInstruction(ADDRESS pc) {
 void PentiumFrontEnd::extraProcessCall(CallStatement *call, std::list<RTL*> *BB_rtls) {
     if ( not call->getDestProc())
         return;
+    BinaryData *bin_data = qobject_cast<BinaryData *>(pLoader);
 
     // looking for function pointers
     Signature *calledSig = call->getDestProc()->getSignature();
@@ -1101,7 +1104,7 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, std::list<RTL*> *BB_
         for (unsigned int n = 0; n < compound->getNumTypes(); n++) {
             if (compound->getType(n)->resolvesToPointer() &&
                     compound->getType(n)->asPointer()->getPointsTo()->resolvesToFunc()) {
-                ADDRESS d = ADDRESS::g(pBF->readNative4(a));
+                ADDRESS d = ADDRESS::g(bin_data->readNative4(a));
                 if (VERBOSE)
                     LOG << "found a new procedure at address " << d << " from inspecting parameters of call to " <<
                            call->getDestProc()->getName() << ".\n";

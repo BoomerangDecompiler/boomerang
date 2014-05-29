@@ -39,7 +39,7 @@
 #include <cassert>
 #include <iomanip>            // For setfill etc
 #include <sstream>
-PPCFrontEnd::PPCFrontEnd(BinaryFile *pBF, Prog* prog, BinaryFileFactory* pbff) : FrontEnd(pBF, prog, pbff)
+PPCFrontEnd::PPCFrontEnd(QObject *pBF, Prog* prog, BinaryFileFactory* pbff) : FrontEnd(pBF, prog, pbff)
 {
     decoder = new PPCDecoder(prog);
 }
@@ -77,10 +77,10 @@ std::vector<Exp*> &PPCFrontEnd::getDefaultReturns()
 ADDRESS PPCFrontEnd::getMainEntryPoint( bool &gotMain )
 {
     gotMain = true;
-    ADDRESS start = pBF->GetMainEntryPoint();
+    ADDRESS start = ldrIface->GetMainEntryPoint();
     if( start != NO_ADDRESS ) return start;
 
-    start = pBF->GetEntryPoint();
+    start = ldrIface->GetEntryPoint();
     gotMain = false;
     if( start == NO_ADDRESS ) return NO_ADDRESS;
 

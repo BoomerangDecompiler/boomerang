@@ -35,12 +35,6 @@
 #include <cstdio>
 #include <cstddef>
 
-BinaryFile::BinaryFile(bool bArch /*= false*/) {
-    m_bArchive      = bArch;        // Remember whether an archive member
-    m_iNumSections  = 0;            // No sections yet
-    m_pSections     = nullptr;            // No section data yet
-}
-
 // This struct used to be initialised with a memset, but now that overwrites the virtual table (if compiled under gcc
 // and possibly others)
 SectionInfo::SectionInfo() :
@@ -49,87 +43,10 @@ SectionInfo::SectionInfo() :
 
 }
 
-int BinaryFile::GetNumSections() const {
-    return m_iNumSections;
-}
-
-SectionInfo *BinaryFile::GetSectionInfo(int idx) const {
-    return m_pSections + idx;
-}
-//! Find section index given name, or -1 if not found
-int BinaryFile::GetSectionIndexByName(const char* sName) {
-    for (int i=0; i < m_iNumSections; i++) {
-        if (strcmp(m_pSections[i].pSectionName, sName) == 0) {
-            return i;
-        }
-    }
-    return -1;
-}
-
-SectionInfo *BinaryFile::GetSectionInfoByAddr(ADDRESS uEntry) const {
-    PSectionInfo pSect;
-    for (int i=0; i < m_iNumSections; i++) {
-        pSect = &m_pSections[i];
-        if ((uEntry >= pSect->uNativeAddr) && (uEntry < pSect->uNativeAddr + pSect->uSectionSize)) {
-            // We have the right section
-            return pSect;
-        }
-    }
-    // Failed to find the address
-    return nullptr;
-}
-
-SectionInfo * BinaryFile::GetSectionInfoByName(const char* sName) {
-    int i = GetSectionIndexByName(sName);
-    if (i == -1)
-        return nullptr;
-    return &m_pSections[i];
-}
-
-
 ///////////////////////
 // Trivial functions //
 // Overridden if reqd//
 ///////////////////////
-//! Lookup the address, return the name, or 0 if not found
-const char* BinaryFile::SymbolByAddress(ADDRESS /*uNative*/) {
-    return nullptr;        // Overridden by subclasses that support syms
-}
-//! Lookup the name, return the address. If not found, return NO_ADDRESS
-ADDRESS BinaryFile::GetAddressByName(const char* /*pName*/, bool /*bNoTypeOK*/) {
-    return ADDRESS::g(0L);
-}
-//! Lookup the name, return the size
-int BinaryFile::GetSizeByName(const char* /*pName*/, bool /*bNoTypeOK*/) {
-    return 0;
-}
-
-bool BinaryFile::IsDynamicLinkedProc(ADDRESS /*uNative*/) {
-    return false;
-}
-
-bool BinaryFile::IsStaticLinkedLibProc(ADDRESS /*uNative*/) {
-    return false;
-}
-
-bool BinaryFile::IsDynamicLinkedProcPointer(ADDRESS /*uNative*/) {
-    return false;
-}
-
-ADDRESS BinaryFile::IsJumpToAnotherAddr(ADDRESS /*uNative*/) {
-    return NO_ADDRESS;
-}
-
-const char *BinaryFile::GetDynamicProcName(ADDRESS /*uNative*/) {
-    return "dynamic";
-}
-
-bool BinaryFile::DisplayDetails(const char* /*fileName*/, FILE* /*f*/ /* = stdout */) {
-    return false;            // Should always be overridden
-    // Should display file header, program
-    // headers and section headers, as well
-    // as contents of each of the sections.
-}
 
 /***************************************************************************//**
  *
@@ -176,7 +93,7 @@ ADDRESS* BinaryFile::GetImportStubs(int& numExports) {
     return nullptr;
 }
 //! Get the lower and upper limits of the text segment
-void BinaryFile::getTextLimits() {
+void LoaderCommon::getTextLimits() {
     int n = GetNumSections();
     limitTextLow = ADDRESS::g(0xFFFFFFFF);
     limitTextHigh = ADDRESS::g(0L);

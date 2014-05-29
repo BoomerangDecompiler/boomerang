@@ -134,11 +134,11 @@ void Decompiler::load()
     std::vector<ADDRESS> entrypoints = fe->getEntryPoints();
     for (unsigned int i = 0; i < entrypoints.size(); i++) {
         user_entrypoints.push_back(entrypoints[i]);
-        emit newEntrypoint(entrypoints[i], fe->getBinaryFile()->SymbolByAddress(entrypoints[i]));
+        emit newEntrypoint(entrypoints[i], prog->symbolByAddress(entrypoints[i]));
     }
 
-    for (int i = 1; i < fe->getBinaryFile()->GetNumSections(); i++) {
-        PSectionInfo section = fe->getBinaryFile()->GetSectionInfo(i);
+    for (int i = 1; i < fe->getSectionIface()->GetNumSections(); i++) {
+        PSectionInfo section = fe->getSectionIface()->GetSectionInfo(i);
         emit newSection(section->pSectionName, section->uNativeAddr, section->uNativeAddr + section->uSectionSize);
     }
 
@@ -278,7 +278,7 @@ void Decompiler::alert_update_signature(Proc *p)
 
 bool Decompiler::getRtlForProc(const QString &name, QString &rtl)
 {
-    Proc *p = prog->findProc(name.toStdString());
+    Proc *p = prog->findProc(name);
     if (p->isLib())
         return false;
     UserProc *up = (UserProc*)p;
@@ -307,7 +307,7 @@ void Decompiler::stopWaiting()
 
 const char *Decompiler::getSigFile(const QString &name)
 {
-    Proc *p = prog->findProc(name.toStdString());
+    Proc *p = prog->findProc(name);
     if (p == NULL || !p->isLib() || p->getSignature() == NULL)
         return NULL;
     return p->getSignature()->getSigFile();
@@ -328,9 +328,9 @@ void Decompiler::rereadLibSignatures()
 
 void Decompiler::renameProc(const QString &oldName, const QString &newName)
 {
-    Proc *p = prog->findProc(oldName.toStdString());
+    Proc *p = prog->findProc(oldName);
     if (p)
-        p->setName(newName.toStdString());
+        p->setName(newName);
 }
 
 void Decompiler::getCompoundMembers(const QString &name, QTableWidget *tbl)

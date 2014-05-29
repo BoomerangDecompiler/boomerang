@@ -37,7 +37,7 @@ class CallStatement;
 class MIPSFrontEnd : public FrontEnd
 {
 public:
-    MIPSFrontEnd(BinaryFile *pBF, Prog* prog, BinaryFileFactory* pbff);
+    MIPSFrontEnd(QObject *pLoader, Prog* prog, BinaryFileFactory* pbff);
     virtual ~MIPSFrontEnd();
 
     virtual platform getFrontEndId() { return PLAT_MIPS; }

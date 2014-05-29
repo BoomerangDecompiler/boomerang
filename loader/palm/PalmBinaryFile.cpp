@@ -390,9 +390,61 @@ const char* PalmBinaryFile::SymbolByAddress(ADDRESS dwAddr) {
         else
             return nullptr;
     }
+    auto iter = m_symTable.find(dwAddr);
+    if(iter!=m_symTable.end())
+        return iter->second.c_str();
     if (dwAddr == GetMainEntryPoint())
         return "PilotMain";
     else return nullptr;
+}
+
+ADDRESS PalmBinaryFile::GetAddressByName(const char *pName, bool bNoTypeOK)
+{
+    if(bNoTypeOK==false) {
+        //TODO: report an error ?
+        return NO_ADDRESS;
+    }
+    if(strcmp(pName,"PilotMain")==0)
+        return GetMainEntryPoint();
+    // scan user-provided symbol names
+    for(auto kv : m_symTable) {
+        if(kv.second=="PilotMain")
+            return kv.first;
+    }
+    for(int i=0; i<numTrapStrings; ++i) {
+        if(strcmp(trapNames[i],pName)==0) {
+            return ADDRESS::g(0xAAAAA000|i);
+        }
+    }
+    return NO_ADDRESS;
+}
+
+void PalmBinaryFile::AddSymbol(ADDRESS addr, const char *name)
+{
+    m_symTable[addr] = name;
+}
+
+int PalmBinaryFile::GetSizeByName(const char *pName, bool bTypeOK)
+{
+    //TODO: not implemented
+    return 0;
+}
+
+ADDRESS *PalmBinaryFile::GetImportStubs(int &numImports)
+{
+    numImports=0;
+    return nullptr;
+}
+
+const char *PalmBinaryFile::getFilenameSymbolFor(const char *)
+{
+
+    return nullptr;
+}
+
+LoaderInterface::tMapAddrToString &PalmBinaryFile::getSymbols()
+{
+    return m_symTable;
 }
 
 // Not really dynamically linked, but the closest thing
@@ -552,7 +604,7 @@ extern "C" {
 #ifdef _WIN32
 __declspec(dllexport)
 #endif
-BinaryFile* construct() {
+QObject* construct() {
     return new PalmBinaryFile;
 }
 }

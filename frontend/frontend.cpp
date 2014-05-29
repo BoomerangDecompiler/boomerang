@@ -40,7 +40,7 @@
 #include <cstring>
 #include <cstdlib>
 #include <queue>
-#include <cstdarg>			// For varargs
+#include <cstdarg>  // For varargs
 #include <sstream>
 
 using namespace std;
@@ -51,8 +51,12 @@ using namespace std;
  * \param p program being decoded
  * \param bff pointer to a BinaryFileFactory object (so the library can be unloaded)
  ******************************************************************************/
-FrontEnd::FrontEnd(BinaryFile *p_BF, Prog* p, BinaryFileFactory* bff) : pBF(p_BF), pbff(bff), prog(p)
-{}
+FrontEnd::FrontEnd(QObject *p_BF, Prog* p, BinaryFileFactory* bff) : pLoader(p_BF), pbff(bff), prog(p)
+{
+    ldrIface = qobject_cast<LoaderInterface *>(pLoader);
+    symIface = qobject_cast<SymbolTableInterface *>(pLoader);
+    sectIface = qobject_cast<SectionInterface *>(pLoader);
+}
 
 /***************************************************************************//**
  *
@@ -62,8 +66,9 @@ FrontEnd::FrontEnd(BinaryFile *p_BF, Prog* p, BinaryFileFactory* bff) : pBF(p_BF
  * \param prog program being decoded
  * \param pbff pointer to a BinaryFileFactory object (so the library can be unloaded)
  ******************************************************************************/
-FrontEnd* FrontEnd::instantiate(BinaryFile *pBF, Prog* prog, BinaryFileFactory* pbff) {
-    switch(pBF->GetMachine()) {
+FrontEnd* FrontEnd::instantiate(QObject *pBF, Prog* prog, BinaryFileFactory* pbff) {
+    LoaderInterface *ldr = qobject_cast<LoaderInterface *>(pBF);
+    switch(ldr->GetMachine()) {
         case MACHINE_PENTIUM:
             return new PentiumFrontEnd(pBF, prog, pbff);
         case MACHINE_SPARC:
@@ -99,9 +104,9 @@ FrontEnd* FrontEnd::instantiate(BinaryFile *pBF, Prog* prog, BinaryFileFactory* 
 FrontEnd* FrontEnd::Load(const std::string &fname, Prog* prog) {
     BinaryFileFactory* pbff = new BinaryFileFactory;
     if (pbff == nullptr) return nullptr;
-    BinaryFile *pBF = pbff->Load(fname);
+    QObject *pBF = pbff->Load(fname);
     if (pBF == nullptr) return nullptr;
-    return instantiate(pBF, prog, pbff);
+    FrontEnd *fe = instantiate(pBF, prog, pbff);
 }
 
 // destructor
@@ -125,11 +130,17 @@ int FrontEnd::getRegSize(int idx) {
 }
 
 bool FrontEnd::isWin32() {
-    return pBF->GetFormat() == LOADFMT_PE;
+    return ldrIface->GetFormat() == LOADFMT_PE;
 }
 
-bool FrontEnd::noReturnCallDest(const char *name) {
-    return ((strcmp(name, "_exit") == 0) || (strcmp(name,    "exit") == 0) || (strcmp(name, "ExitProcess") == 0) || (strcmp(name, "abort") == 0) || (strcmp(name, "_assert") == 0));
+bool FrontEnd::noReturnCallDest(const QString &name) {
+    return (
+            (name=="_exit") ||
+            (name=="exit") ||
+            (name=="ExitProcess") ||
+            (name=="abort") ||
+            (name=="_assert")
+            );
 }
 
 // FIXME: Is this ever used? Need to pass a real pbff?
@@ -188,10 +199,25 @@ void FrontEnd::readLibraryCatalog() {
         readLibraryCatalog(sList.c_str());
     }
     //TODO: change this to BinaryLayer query ("FILE_FORMAT","MACHO")
-    if (pBF->GetFormat() == LOADFMT_MACHO) {
+    if (ldrIface->GetFormat() == LOADFMT_MACHO) {
         sList = Boomerang::get()->getProgPath() + "signatures/objc.hs";
         readLibraryCatalog(sList.c_str());
     }
+}
+
+void FrontEnd::checkEntryPoint(std::vector<ADDRESS> &entrypoints, ADDRESS addr, const char *type)
+{
+    Type *ty = NamedType::getNamedType(type);
+    assert(ty->isFunc());
+    UserProc *proc = (UserProc*)prog->setNewProc(addr);
+    assert(proc);
+    Signature *sig = ty->asFunc()->getSignature()->clone();
+    const char *sym = symIface ? symIface->SymbolByAddress(addr) : nullptr;
+    if (sym)
+        sig->setName(sym);
+    sig->setForced(true);
+    proc->setSignature(sig);
+    entrypoints.push_back(addr);
 }
 
 std::vector<ADDRESS> FrontEnd::getEntryPoints() {
@@ -199,10 +225,12 @@ std::vector<ADDRESS> FrontEnd::getEntryPoints() {
     bool gotMain = false;
     // AssemblyLayer
     ADDRESS a = getMainEntryPoint(gotMain);
+    BinaryData *bin_iface = qobject_cast<BinaryData *>(pLoader);
+    // TODO: find exported functions and add them too ?
     if (a != NO_ADDRESS)
         entrypoints.push_back(a);
     else {  // try some other tricks
-        const char *fname = pBF->getFilename();
+        const char *fname = ldrIface->getFilename();
         // X11 Module
         if (!strcmp(fname + strlen(fname) - 6, "_drv.o")) {
             const char *p = fname + strlen(fname) - 6;
@@ -212,47 +240,27 @@ std::vector<ADDRESS> FrontEnd::getEntryPoints() {
                 p++;
                 std::string name(p);
                 name = name.substr(0,name.length()-6)+"ModuleData";
-                ADDRESS tmpaddr = pBF->GetAddressByName(name.c_str(), true);
+                ADDRESS tmpaddr = symIface ? symIface->GetAddressByName(name.c_str(), true) : NO_ADDRESS;
                 if (tmpaddr != NO_ADDRESS) {
                     ADDRESS setup, teardown;
-                    /*uint32_t vers = */pBF->readNative4(tmpaddr); //TODO: find use for vers ?
-                    setup = ADDRESS::g(pBF->readNative4(tmpaddr+4));
-                    teardown = ADDRESS::g(pBF->readNative4(tmpaddr+8));
+                    /*uint32_t vers = */bin_iface->readNative4(tmpaddr); //TODO: find use for vers ?
+                    setup = ADDRESS::g(bin_iface->readNative4(tmpaddr+4));
+                    teardown = ADDRESS::g(bin_iface->readNative4(tmpaddr+8));
                     if ( !setup.isZero() ) {
-                        Type *ty = NamedType::getNamedType("ModuleSetupProc");
-                        assert(ty->isFunc());
-                        UserProc *proc = (UserProc*)prog->setNewProc(setup);
-                        assert(proc);
-                        Signature *sig = ty->asFunc()->getSignature()->clone();
-                        const char *sym = pBF->SymbolByAddress(setup);
-                        if (sym)
-                            sig->setName(sym);
-                        sig->setForced(true);
-                        proc->setSignature(sig);
-                        entrypoints.push_back(setup);
+                        checkEntryPoint(entrypoints, setup,"ModuleSetupProc");
                     }
                     if ( !teardown.isZero() ) {
-                        Type *ty = NamedType::getNamedType("ModuleTearDownProc");
-                        assert(ty->isFunc());
-                        UserProc *proc = (UserProc*)prog->setNewProc(teardown);
-                        assert(proc);
-                        Signature *sig = ty->asFunc()->getSignature()->clone();
-                        const char *sym = pBF->SymbolByAddress(teardown);
-                        if (sym)
-                            sig->setName(sym);
-                        sig->setForced(true);
-                        proc->setSignature(sig);
-                        entrypoints.push_back(teardown);
+                        checkEntryPoint(entrypoints, teardown,"ModuleTearDownProc");
                     }
                 }
             }
         }
         // Linux kernel module
-        if (!strcmp(fname + strlen(fname) - 3, ".ko")) {
-            a = pBF->GetAddressByName("init_module");
+        if (symIface && !strcmp(fname + strlen(fname) - 3, ".ko")) {
+            a = symIface->GetAddressByName("init_module");
             if (a != NO_ADDRESS)
                 entrypoints.push_back(a);
-            a = pBF->GetAddressByName("cleanup_module");
+            a = symIface->GetAddressByName("cleanup_module");
             if (a != NO_ADDRESS)
                 entrypoints.push_back(a);
         }
@@ -267,8 +275,9 @@ void FrontEnd::decode(Prog* prg, bool decodeMain, const char *pname) {
 
     if (!decodeMain)
         return;
+    SectionInterface *sym_iface = qobject_cast<SectionInterface *>(pLoader);
 
-    Boomerang::get()->alert_start_decode(pBF->getLimitTextLow(), (pBF->getLimitTextHigh() - pBF->getLimitTextLow()).m_value);
+    Boomerang::get()->alert_start_decode(sym_iface->getLimitTextLow(), (sym_iface->getLimitTextHigh() - sym_iface->getLimitTextLow()).m_value);
 
     bool gotMain;
     ADDRESS a = getMainEntryPoint(gotMain);
@@ -287,7 +296,7 @@ void FrontEnd::decode(Prog* prg, bool decodeMain, const char *pname) {
     if (not gotMain)
         return;
     static const char *mainName[] = { "main", "WinMain", "DriverEntry" };
-    const char *name = pBF->SymbolByAddress(a);
+    const char *name = prog->symbolByAddress(a);
     if (name == nullptr)
         name = mainName[0];
     for (auto & elem : mainName) {
@@ -382,21 +391,22 @@ void FrontEnd::decodeFragment(UserProc* proc, ADDRESS a) {
 }
 
 DecodeResult& FrontEnd::decodeInstruction(ADDRESS pc) {
-    if (pBF->GetSectionInfoByAddr(pc) == nullptr) {
+    SectionInterface *sect_iface = qobject_cast<SectionInterface *>(pLoader);
+    if (!sect_iface || sect_iface->GetSectionInfoByAddr(pc) == nullptr) {
         LOG << "ERROR: attempted to decode outside any known segment " << pc << "\n";
         static DecodeResult invalid;
         invalid.reset();
         invalid.valid = false;
         return invalid;
     }
-    return decoder->decodeInstruction(pc, pBF->getTextDelta());
+    return decoder->decodeInstruction(pc, sect_iface->getTextDelta());
 }
 
 /***************************************************************************//**
  *
  * \brief       Read the library signatures from a file
- * \param	   	sPath The file to read from
- * \param		cc the calling convention assumed
+ * \param       sPath The file to read from
+ * \param       cc the calling convention assumed
  */
 void FrontEnd::readLibrarySignatures(const char *sPath, callconv cc) {
     std::ifstream ifs;
@@ -417,7 +427,7 @@ void FrontEnd::readLibrarySignatures(const char *sPath, callconv cc) {
 #if 0
         std::cerr << "readLibrarySignatures from " << sPath << ": " << (*it)->getName() << "\n";
 #endif
-        librarySignatures[(elem)->getName()] = elem;
+        librarySignatures[(elem)->getName().toStdString()] = elem;
         (elem)->setSigFile(sPath);
     }
 
@@ -425,25 +435,25 @@ void FrontEnd::readLibrarySignatures(const char *sPath, callconv cc) {
     ifs.close();
 }
 
-Signature *FrontEnd::getDefaultSignature(const char *name) {
+Signature *FrontEnd::getDefaultSignature(const std::string &name) {
     Signature *signature = nullptr;
     // Get a default library signature
     if (isWin32())
-        signature = Signature::instantiate(PLAT_PENTIUM, CONV_PASCAL, name);
+        signature = Signature::instantiate(PLAT_PENTIUM, CONV_PASCAL, name.c_str());
     else {
-        signature = Signature::instantiate(getFrontEndId(), CONV_C, name);
+        signature = Signature::instantiate(getFrontEndId(), CONV_C, name.c_str());
     }
     return signature;
 }
 
 // get a library signature by name
-Signature *FrontEnd::getLibSignature(const char *name) {
+Signature *FrontEnd::getLibSignature(const std::string &name) {
     Signature *signature;
     // Look up the name in the librarySignatures map
     std::map<std::string, Signature*>::iterator it;
     it = librarySignatures.find(name);
     if (it == librarySignatures.end()) {
-        LOG << "Unknown library function " << name << "\n";
+        LOG << "Unknown library function " << name.c_str() << "\n";
         signature = getDefaultSignature(name);
     }
     else {
@@ -460,7 +470,7 @@ void FrontEnd::preprocessProcGoto(std::list<Statement*>::iterator ss, ADDRESS  d
         return;
     Proc * proc = prog->findProc(dest);
     if (proc == nullptr) {
-        if (pBF->IsDynamicLinkedProc(dest))
+        if (ldrIface->IsDynamicLinkedProc(dest))
             proc = prog->setNewProc(dest);
     }
     if (proc != nullptr && proc != (Proc*)-1) {
@@ -485,8 +495,8 @@ void FrontEnd::preprocessProcGoto(std::list<Statement*>::iterator ss, ADDRESS  d
  * \param frag - if true, this is just a fragment of a procedure
  * \param spec - if true, this is a speculative decode
  * \param os - the output stream for .rtl output
- * \note		  This is a sort of generic front end. For many processors, this will be overridden
-                    in the FrontEnd derived class, sometimes calling this function to do most of the work
+ * \note This is a sort of generic front end. For many processors, this will be overridden
+ *  in the FrontEnd derived class, sometimes calling this function to do most of the work.
  * \returns          true for a good decode (no illegal instructions)
  ******************************************************************************/
 bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bool frag /* = false */,
@@ -522,7 +532,8 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
     int nTotalBytes = 0;
     ADDRESS startAddr = uAddr;
     ADDRESS lastAddr = uAddr;
-
+    BinaryData *bin_data = qobject_cast<BinaryData *>(pLoader);
+    SectionInterface *sec_iface = qobject_cast<SectionInterface *>(pLoader);
     while ((uAddr = targetQueue.nextAddress(*pCfg)) != NO_ADDRESS) {
         // The list of RTLs for the current basic block
         std::list<RTL*>* BB_rtls = new std::list<RTL*>();
@@ -559,7 +570,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
                     LOG << "Warning: invalid instruction at " << uAddr << ": ";
                     // Emit the next 4 bytes for debugging
                     for (int ii=0; ii < 4; ii++)
-                        LOG << ADDRESS::g(pBF->readNative1(uAddr + ii) & 0xFF) << " ";
+                        LOG << ADDRESS::g(bin_data->readNative1(uAddr + ii) & 0xFF) << " ";
                     LOG << "\n";
                 }
                 // Emit the RTL anyway, so we have the address and maybe some other clues
@@ -591,7 +602,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
             if (Boomerang::get()->printRtl) {
                 std::ostringstream st;
                 pRtl->print(st);
-                LOG << st.str();
+                LOG << st.str().c_str();
             }
 
             ADDRESS uDest;
@@ -655,7 +666,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 
                             // Add the out edge if it is to a destination within the
                             // procedure
-                            if (uDest < pBF->getLimitTextHigh()) {
+                            if (uDest < sec_iface->getLimitTextHigh()) {
                                 targetQueue.visit(pCfg, uDest, pBB);
                                 pCfg->addOutEdge(pBB, uDest, true);
                             }
@@ -681,12 +692,12 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
                         // Check for indirect calls to library functions, especially in Win32 programs
                         if (pDest && pDest->getOper() == opMemOf &&
                                 pDest->getSubExp1()->getOper() == opIntConst &&
-                                pBF->IsDynamicLinkedProcPointer(((Const*)pDest->getSubExp1())->getAddr())) {
+                                ldrIface->IsDynamicLinkedProcPointer(((Const*)pDest->getSubExp1())->getAddr())) {
                             if (VERBOSE)
                                 LOG << "jump to a library function: " << stmt_jump << ", replacing with a call/ret.\n";
                             // jump to a library function
                             // replace with a call ret
-                            std::string func = pBF->GetDynamicProcName(
+                            std::string func = ldrIface->GetDynamicProcName(
                                                    ((Const*)stmt_jump->getDest()->getSubExp1())->getAddr());
                             CallStatement *call = new CallStatement;
                             call->setDest(stmt_jump->getDest()->clone());
@@ -726,8 +737,8 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
                                 ADDRESS jmptbl = ((Const*)pDest->getSubExp1()->getSubExp2())->getAddr();
                                 unsigned int i;
                                 for (i = 0; ; i++) {
-                                    ADDRESS uDest = ADDRESS::g(pBF->readNative4(jmptbl + i * 4));
-                                    if (pBF->getLimitTextLow() <= uDest && uDest < pBF->getLimitTextHigh()) {
+                                    ADDRESS uDest = ADDRESS::g(bin_data->readNative4(jmptbl + i * 4));
+                                    if (sec_iface->getLimitTextLow() <= uDest && uDest < sec_iface->getLimitTextHigh()) {
                                         LOG << "  guessed uDest " << uDest << "\n";
                                         targetQueue.visit(pCfg, uDest, pBB);
                                         pCfg->addOutEdge(pBB, uDest, true);
@@ -754,7 +765,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
                         else {
 
                             // Add the out edge if it is to a destination within the procedure
-                            if (uDest < pBF->getLimitTextHigh()) {
+                            if (uDest < sec_iface->getLimitTextHigh()) {
                                 targetQueue.visit(pCfg, uDest, pBB);
                                 pCfg->addOutEdge(pBB, uDest, true);
                             }
@@ -778,9 +789,9 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
                         // Check for a dynamic linked library function
                         if (call->getDest()->getOper() == opMemOf &&
                                 call->getDest()->getSubExp1()->getOper() == opIntConst &&
-                                pBF->IsDynamicLinkedProcPointer(((Const*)call->getDest()->getSubExp1())->getAddr())) {
+                                ldrIface->IsDynamicLinkedProcPointer(((Const*)call->getDest()->getSubExp1())->getAddr())) {
                             // Dynamic linked proc pointers are treated as static.
-                            const char *nam = pBF->GetDynamicProcName( ((Const*)call->getDest()->getSubExp1())->getAddr());
+                            const char *nam = ldrIface->GetDynamicProcName( ((Const*)call->getDest()->getSubExp1())->getAddr());
                             Proc *p = pProc->getProg()->getLibraryProc(nam);
                             call->setDestProc(p);
                             call->setIsComputed(false);
@@ -792,7 +803,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
                             // Get the address of the called function.
                             ADDRESS callAddr=call->getFixedDest();
                             // It should not be in the PLT either, but getLimitTextHigh() takes this into account
-                            if (callAddr < pBF->getLimitTextHigh()) {
+                            if (callAddr < sec_iface->getLimitTextHigh()) {
                                 // Decode it.
                                 DecodeResult decoded=decodeInstruction(callAddr);
                                 if (decoded.valid) { // is the instruction decoded succesfully?
@@ -808,11 +819,11 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
                                         if ( first_statement->getKind() == STMT_CASE &&
                                              stmt_jump->getDest()->getOper() == opMemOf &&
                                              stmt_jump->getDest()->getSubExp1()->getOper() == opIntConst &&
-                                             pBF->IsDynamicLinkedProcPointer(((Const*)stmt_jump->getDest()->getSubExp1())->
+                                             ldrIface->IsDynamicLinkedProcPointer(((Const*)stmt_jump->getDest()->getSubExp1())->
                                                                              getAddr())) { // Is it an "DynamicLinkedProcPointer"?
                                             // Yes, it's a library function. Look up it's name.
                                             ADDRESS a = ((Const*)stmt_jump->getDest()->getSubExp1())->getAddr();
-                                            const char *nam = pBF->GetDynamicProcName(a);
+                                            const char *nam = ldrIface->GetDynamicProcName(a);
                                             // Assign the proc to the call
                                             Proc *p = pProc->getProg()->getLibraryProc(nam);
                                             if (call->getDestProc()) {
@@ -876,12 +887,12 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 
                             // Check if this is the _exit or exit function. May prevent us from attempting to decode
                             // invalid instructions, and getting invalid stack height errors
-                            const char* name = pBF->SymbolByAddress(uNewAddr);
+                            const char* name = prog->symbolByAddress(uNewAddr);
                             if (name == nullptr && call->getDest()->isMemOf() &&
                                     call->getDest()->getSubExp1()->isIntConst()) {
                                 ADDRESS a = ((Const*)call->getDest()->getSubExp1())->getAddr();
-                                if (pBF->IsDynamicLinkedProcPointer(a))
-                                    name = pBF->GetDynamicProcName(a);
+                                if (ldrIface->IsDynamicLinkedProcPointer(a))
+                                    name = ldrIface->GetDynamicProcName(a);
                             }
                             if (name && noReturnCallDest(name)) {
                                 // Make sure it has a return appended (so there is only one exit from the function)
@@ -1008,7 +1019,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
         ADDRESS dest = (*it)->getFixedDest();
         // Don't speculatively decode procs that are outside of the main text section, apart from dynamically
         // linked ones (in the .plt)
-        if (pBF->IsDynamicLinkedProc(dest) || !spec || (dest < pBF->getLimitTextHigh())) {
+        if (ldrIface->IsDynamicLinkedProc(dest) || !spec || (dest < sec_iface->getLimitTextHigh())) {
             pCfg->addCall(*it);
             // Don't visit the destination of a register call
             Proc *np = (*it)->getDestProc();

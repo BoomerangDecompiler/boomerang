@@ -5,3 +5,4 @@ ansi-c-parser.h
 ansi-c-scanner.h
 )
 ADD_LIBRARY(boomerang_DSLs STATIC ${boomerang_DSLs_sources} )
+qt5_use_modules(boomerang_DSLs Core)

@@ -478,7 +478,7 @@ void CallStatement::rangeAnalysis(std::list<Statement*> &execution_paths) {
             }
         } else if (procDest->getSignature()->getConvention() == CONV_PASCAL)
             c += procDest->getSignature()->getNumParams() * 4;
-        else if (!strncmp(procDest->getName(), "__imp_", 6)) {
+        else if (!strncmp(qPrintable(procDest->getName()), "__imp_", 6)) {
             Statement *first = ((UserProc*)procDest)->getCFG()->getEntryBB()->getFirstStmt();
             assert(first && first->isCall());
             Proc *d = ((CallStatement*)first)->getDestProc();
@@ -2144,7 +2144,7 @@ void CallStatement::print(std::ostream& os, bool html) const {
 
     os << "CALL ";
     if (procDest)
-        os << procDest->getName();
+        os << procDest->getName().toStdString();
     else if (pDest == nullptr)
         os << "*no dest*";
     else {
@@ -2277,8 +2277,7 @@ void CallStatement::generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) {
         }
 
         // some hacks
-        if (std::string(p->getName()) == "printf" ||
-                std::string(p->getName()) == "scanf") {
+        if (p->getName() == "printf" || p->getName() == "scanf") {
             for (int i = 1; i < 3; i++) {
                 Exp *e = signature->getArgumentExp(i);
                 assert(e);
@@ -2297,7 +2296,7 @@ void CallStatement::generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) {
     if (p->isLib() && *p->getSignature()->getPreferedName()) {
         hll->AddCallStatement(indLevel, p,    p->getSignature()->getPreferedName(), arguments, results);
     } else
-        hll->AddCallStatement(indLevel, p, p->getName(), arguments, results);
+        hll->AddCallStatement(indLevel, p, qPrintable(p->getName()), arguments, results);
 }
 
 void CallStatement::simplify() {
@@ -2536,15 +2535,15 @@ Exp *processConstant(Exp *e, Type *t, Prog *prog, UserProc* proc, ADDRESS stmt) 
                     if (p) {
                         Signature *sig = points_to->asFunc()->getSignature()->clone();
                         if (sig->getName() == nullptr ||
-                                strlen(sig->getName()) == 0 ||
-                                !strcmp(sig->getName(), "<ANON>") ||
+                                sig->getName().isEmpty() ||
+                                sig->getName()=="<ANON>" ||
                                 prog->findProc(sig->getName()) != nullptr)
                             sig->setName(p->getName());
                         else
                             p->setName(sig->getName());
                         sig->setForced(true);
                         p->setSignature(sig);
-                        e = Location::global(p->getName(), proc);
+                        e = Location::global(qPrintable(p->getName()), proc);
                     }
                 }
             }
@@ -2597,7 +2596,7 @@ bool CallStatement::objcSpecificProcessing(const char *formatStr) {
     Proc* proc = getDestProc();
     if(!proc) return false;
 
-    std::string name(proc->getName());
+    QString name(proc->getName());
     if (name == "objc_msgSend")     {
         if (formatStr) {
             int format = getNumArguments() - 1;
@@ -2654,7 +2653,7 @@ bool CallStatement::ellipsisProcessing(Prog* prog) {
     if (getDestProc() == nullptr || !signature->hasEllipsis())
         return objcSpecificProcessing(nullptr);
     // functions like printf almost always have too many args
-    std::string name(getDestProc()->getName());
+    QString name(getDestProc()->getName());
     int format = -1;
     if ((name == "printf" || name == "scanf"))
         format = 0;
@@ -2715,7 +2714,7 @@ bool CallStatement::ellipsisProcessing(Prog* prog) {
     int n = 1;        // Count the format string itself (may also be "format" more arguments)
     char ch;
     // Set a flag if the name of the function is scanf/sscanf/fscanf
-    bool isScanf = name == "scanf" || name.substr(1, 5) == "scanf";
+    bool isScanf = name.contains("scanf");
     const char *p = formatStr;
     while ((p = strchr(p, '%'))) {
         p++;                // Point past the %
@@ -3597,7 +3596,7 @@ void CallStatement::genConstraints(LocationSet& cons) {
 
     if (dest->isLib()) {
         // A library procedure... check for two special cases
-        std::string name = dest->getName();
+        QString name = dest->getName();
         // Note: might have to chase back via a phi statement to get a sample
         // string
         const char* str;

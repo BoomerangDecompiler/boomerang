@@ -43,7 +43,8 @@ NJMCDecoder::NJMCDecoder(Prog* prg) : prog(prg)
 /***************************************************************************//**
  * \brief   Given an instruction name and a variable list of expressions representing the actual operands of
  *              the instruction, use the RTL template dictionary to return the instantiated RTL representing the
- *              semantics of the instruction.
+ *              semantics of the instruction. This method also displays a disassembly of the instruction if the
+ *              relevant compilation flag has been set.
  * \param   pc  native PC
  * \param   name - instruction name
  * \param   ... - Semantic String ptrs representing actual operands

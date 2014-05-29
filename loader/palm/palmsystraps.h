@@ -14,12 +14,6 @@
  *             Based on code from the Metrowerks Compiler, PalmOS 2.0 support
  *============================================================================*/
 
-/* $Revision$
- *    Mar 00 - Cristina: Created
- * 31 Mar 00 - Mike: Removed "sysTrap" from function names
- */
-
-
 #ifndef _SYSTRAPS_H_
 #define _SYSTRAPS_H_
 
@@ -27,7 +21,7 @@
 #define    sysTrapBase            0xA000
 #define numTrapStrings      (sizeof(trapNames) / sizeof(char*))
 
-//    "sysTrapMemInit",        // = sysTrapBase 
+//    "sysTrapMemInit",        // = sysTrapBase
 
 
 const char *trapNames[] = {
@@ -95,8 +89,8 @@ const char *trapNames[] = {
     "MemSemaphoreRelease",
     "MemHeapDynamic",
     "MemNVParams",
-    
-    
+
+
     "DmInit",
     "DmCreateDatabase",
     "DmDeleteDatabase",
@@ -162,18 +156,18 @@ const char *trapNames[] = {
     "DmSet",
     "DmCreateDatabaseFromImage",
 
-    
+
     "DbgSrcMessage",
     "DbgMessage",
     "DbgGetMessage",
     "DbgCommSettings",
-    
+
     "ErrDisplayFileLineMsg",
     "ErrSetJump",
     "ErrLongJump",
     "ErrThrow",
     "ErrExceptionList",
-    
+
     "SysBroadcastActionCode",
     "SysUnimplemented",
     "SysColdBoot",
@@ -232,7 +226,7 @@ const char *trapNames[] = {
     "SysSetAutoOffTime",
     "SysFormPointerArrayToStrings",
     "SysRandom",
-    "SysTaskSwitching", 
+    "SysTaskSwitching",
     "SysTimerRead",
 
 
@@ -249,7 +243,7 @@ const char *trapNames[] = {
     "StrToLower",
 
     "SerReceiveISP",
-    
+
     "SlkOpen",
     "SlkClose",
     "SlkOpenSocket",
@@ -263,10 +257,10 @@ const char *trapNames[] = {
     "SlkSysPktDefaultResponse",
     "SlkProcessRPC",
 
-    
+
     "ConPutS",
     "ConGetS",
-    
+
     "FplInit",
     "FplFree",
     "FplFToA",
@@ -279,7 +273,7 @@ const char *trapNames[] = {
     "FplAdd",
     "FplSub",
     "FplDiv",
-    
+
     "ScrInit",
     "ScrCopyRectangle",
     "ScrDrawChars",
@@ -290,8 +284,8 @@ const char *trapNames[] = {
     "ScrSendUpdateArea",
     "ScrCompressScanLine",
     "ScrDeCompressScanLine",
-    
-    
+
+
     "TimGetSeconds",
     "TimSetSeconds",
     "TimGetTicks",
@@ -304,7 +298,7 @@ const char *trapNames[] = {
     "TimAdjust",
     "TimSleep",
     "TimWake",
-    
+
     "CategoryCreateListV10",
     "CategoryFreeListV10",
     "CategoryFind",
@@ -314,11 +308,11 @@ const char *trapNames[] = {
     "CategoryGetNext",
     "CategorySetTriggerLabel",
     "CategoryTruncateName",
-    
+
     "ClipboardAddItem",
     "ClipboardCheckIfItemExist",
     "ClipboardGetItem",
-    
+
     "CtlDrawControl",
     "CtlEraseControl",
     "CtlHideControl",
@@ -333,7 +327,7 @@ const char *trapNames[] = {
     "CtlSetUsable",
     "CtlEnabled",
 
-    
+
     "EvtInitialize",
     "EvtAddEventToQueue",
     "EvtCopyEvent",
@@ -360,7 +354,7 @@ const char *trapNames[] = {
     "EvtKeyQueueEmpty",
     "EvtEnableGraffiti",
 
-    
+
     "FldCopy",
     "FldCut",
     "FldDrawField",
@@ -409,8 +403,8 @@ const char *trapNames[] = {
     "FldSetDirty",
     "FldSendHeightChangeNotification",
     "FldMakeFullyVisible",
-    
-    
+
+
     "FntGetFont",
     "FntSetFont",
     "FntGetFontPtr",
@@ -425,7 +419,7 @@ const char *trapNames[] = {
     "FntLineWidth",
 
 
-    
+
     "FrmInitForm",
     "FrmDeleteForm",
     "FrmDrawForm",
@@ -480,9 +474,9 @@ const char *trapNames[] = {
     "FrmSaveAllForms",
     "FrmGetGadgetData",
     "FrmSetGadgetData",
-    "FrmSetCategoryTrigger", 
+    "FrmSetCategoryTrigger",
 
-    
+
     "UIInitialize",
     "UIReset",
 
@@ -494,7 +488,7 @@ const char *trapNames[] = {
     "InsPtSetHeight",
     "InsPtGetHeight",
     "InsPtCheckBlink",
-    
+
     "LstSetDrawFunction",
     "LstDrawList",
     "LstEraseList",
@@ -508,7 +502,7 @@ const char *trapNames[] = {
     "LstGetNumberOfItems",
     "LstPopupList",
     "LstSetPosition",
-    
+
     "MenuInit",
     "MenuDispose",
     "MenuHandleEvent",
@@ -517,7 +511,7 @@ const char *trapNames[] = {
     "MenuGetActiveMenu",
     "MenuSetActiveMenu",
 
-    
+
     "RctSetRectangle",
     "RctCopyRectangle",
     "RctInsetRectangle",
@@ -525,7 +519,7 @@ const char *trapNames[] = {
     "RctPtInRectangle",
     "RctGetIntersection",
 
-    
+
     "TblDrawTable",
     "TblEraseTable",
     "TblHandleEvent",
@@ -572,7 +566,7 @@ const char *trapNames[] = {
     "TblSetColumnSpacing",
 
 
-    
+
     "WinCreateWindow",
     "WinCreateOffscreenWindow",
     "WinDeleteWindow",
@@ -626,23 +620,23 @@ const char *trapNames[] = {
     "WinGetWindowBounds",
     "WinFillRectangle",
     "WinDrawInvertedChars",
-    
-    
-    
+
+
+
     "PrefOpenPreferenceDBV10",
     "PrefGetPreferences",
     "PrefSetPreferences",
     "PrefGetAppPreferencesV10",
     "PrefSetAppPreferencesV10",
 
-    
+
     "SndInit",
     "SndSetDefaultVolume",
     "SndGetDefaultVolume",
     "SndDoCmd",
     "SndPlaySystemSound",
-    
-    
+
+
     "AlmInit",
     "AlmCancelAll",
     "AlmAlarmCallback",
@@ -650,8 +644,8 @@ const char *trapNames[] = {
     "AlmGetAlarm",
     "AlmDisplayAlarm",
     "AlmEnableNotification",
-    
-    
+
+
     "HwrGetRAMMapping",
     "HwrMemWritable",
     "HwrMemReadable",
@@ -682,20 +676,20 @@ const char *trapNames[] = {
     "HwrDockSignals",
     "HwrPluggedIn",
 
-    
+
     "Crc16CalcBlock",
-    
-    
+
+
     "SelectDayV10",
     "SelectTime",
-    
+
     "DayDrawDaySelector",
     "DayHandleEvent",
     "DayDrawDays",
     "DayOfWeek",
     "DaysInMonth",
     "DayOfMonth",
-    
+
     "DateDaysToDate",
     "DateToDays",
     "DateAdjust",
@@ -703,14 +697,14 @@ const char *trapNames[] = {
     "DateToAscii",
     "DateToDOWDMFormat",
     "TimeToAscii",
-        
-    
+
+
     "Find",
     "FindStrInStr",
     "FindSaveMatch",
     "FindGetLineBounds",
     "FindDrawHeader",
-    
+
     "PenOpen",
     "PenClose",
     "PenGetRawPen",
@@ -720,19 +714,19 @@ const char *trapNames[] = {
     "PenResetCalibration",
     "PenSleep",
     "PenWake",
-    
-    
+
+
     "ResLoadForm",
     "ResLoadMenu",
-    
+
     "FtrInit",
     "FtrUnregister",
     "FtrGet",
     "FtrSet",
     "FtrGetByIndex",
-    
-    
-    
+
+
+
     "GrfInit",
     "GrfFree",
     "GrfGetState",
@@ -755,24 +749,24 @@ const char *trapNames[] = {
     "GrfGetAndExpandMacro",
     "GrfProcessStroke",
     "GrfFieldChange",
-    
-    
+
+
     "GetCharSortValue",
     "GetCharAttr",
     "GetCharCaselessValue",
-    
-    
+
+
     "PwdExists",
     "PwdVerify",
     "PwdSet",
     "PwdRemove",
-    
+
     "GsiInitialize",
     "GsiSetLocation",
     "GsiEnable",
     "GsiEnabled",
     "GsiSetShiftState",
-    
+
     "KeyInit",
     "KeyHandleInterrupt",
     "KeyCurrentState",
@@ -780,10 +774,10 @@ const char *trapNames[] = {
     "KeyRates",
     "KeySleep",
     "KeyWake",
-    
-    
+
+
     "DlkControl",                // was sysTrapCmBroadcast
-    
+
     "DlkStartServer",
     "DlkGetSyncInfo",
     "DlkSetLogEntry",
@@ -792,148 +786,148 @@ const char *trapNames[] = {
     "SysLibLoad",            // was sysTrapPsrClose",
     "Unused4",                // was sysTrapPsrGetCommand,
     "Unused5",                // was sysTrapPsrSendReply,
-    
+
     "AbtShowAbout",
-    
+
     "MdmDial",
     "MdmHangUp",
-    
+
     "DmSearchRecord",
 
     "SysInsertionSort",
     "DmInsertionSort",
-    
+
     "LstSetTopItem",
 
     "SclSetScrollBar",
     "SclDrawScrollBar",
     "SclHandleEvent",
-    
+
     "SysMailboxCreate",
     "SysMailboxDelete",
     "SysMailboxFlush",
     "SysMailboxSend",
     "SysMailboxWait",
-    
+
     "SysTaskWait",
     "SysTaskWake",
     "SysTaskWaitClr",
     "SysTaskSuspend",
     "SysTaskResume",
-    
+
     "CategoryCreateList",
     "CategoryFreeList",
     "CategoryEdit",
     "CategorySelect",
-    
+
     "DmDeleteCategory",
-    
+
     "SysEvGroupCreate",
     "SysEvGroupSignal",
     "SysEvGroupRead",
     "SysEvGroupWait",
-    
+
     "EvtEventAvail",
     "EvtSysEventAvail",
     "StrNCopy",
-    
+
     "KeySetMask",
-    
+
     "SelectDay",
-    
+
     "PrefGetPreference",
     "PrefSetPreference",
     "PrefGetAppPreferences",
     "PrefSetAppPreferences",
-    
+
     "FrmPointInTitle",
-    
+
     "StrNCat",
-    
+
     "MemCmp",
-    
+
     "TblSetColumnEditIndicator",
 
     "FntWordWrap",
-    
+
     "FldGetScrollValues",
-    
+
     "SysCreateDataBaseList",
     "SysCreatePanelList",
-    
+
     "DlkDispatchRequest",
-    
+
     "StrPrintF",
     "StrVPrintF",
-    
+
     "PrefOpenPreferenceDB",
 
     "SysGraffitiReferenceDialog",
-    
+
     "SysKeyboardDialog",
-    
+
     "FntWordWrapReverseNLines",
     "FntGetScrollValues",
-    
+
     "TblSetRowStaticHeight",
     "TblHasScrollBar",
-    
+
     "SclGetScrollBar",
-    
+
     "FldGetNumberOfBlankLines",
-    
+
     "SysTicksPerSecond",
     "HwrBacklight",
     "DmDatabaseProtect",
-    
+
     "TblSetBounds",
-    
+
     "StrNCompare",
-    "StrNCaselessCompare",    
-    
+    "StrNCaselessCompare",
+
     "PhoneNumberLookup",
-    
+
     "FrmSetMenu",
-    
+
     "EncDigestMD5",
-    
+
     "DmFindSortPosition",
-    
+
     "SysBinarySearch",
     "SysErrString",
     "SysStringByIndex",
-    
+
     "EvtAddUniqueEventToQueue",
-    
+
     "StrLocalizeNumber",
     "StrDelocalizeNumber",
     "LocGetNumberSeparators",
-    
+
     "MenuSetActiveMenuRscID",
-    
+
     "LstScrollList",
-    
+
     "CategoryInitialize",
-    
+
     "EncDigestMD4",
     "EncDES",
-    
+
     "LstGetVisibleItems",
-    
+
     "WinSetWindowBounds",
-    
+
     "CategorySetName",
-    
+
     "FldSetInsertionPoint",
-    
+
     "FrmSetObjectBounds",
-    
+
     "WinSetColors",
-    
+
     "FlpDispatch",
-    "FlpEmDispatch"  
+    "FlpEmDispatch"
 };
 
-    
-#endif    
+
+#endif
 

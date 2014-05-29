@@ -27,6 +27,7 @@
 #include "log.h"
 #include "managed.h"
 
+#include <QtCore/QDebug>
 #include <cassert>
 #include <string>
 #include <cstring>
@@ -60,7 +61,7 @@ namespace CallingConvention {
 class Win32Signature : public Signature {
     // Win32Signature is for non-thiscall signatures: all parameters pushed
 public:
-    Win32Signature(const char *nam);
+    Win32Signature(const QString &nam);
     Win32Signature(Signature &old);
     virtual                ~Win32Signature() { }
     virtual Signature    *clone() override;
@@ -88,7 +89,7 @@ class Win32TcSignature : public Win32Signature {
     // Win32TcSignature is for "thiscall" signatures, i.e. those that have register ecx as the first parameter
     // Only needs to override a few member functions; the rest can inherit from Win32Signature
 public:
-    Win32TcSignature(const char *nam);
+    Win32TcSignature(const QString &nam);
     Win32TcSignature(Signature &old);
     virtual Exp            *getArgumentExp(int n) override;
     virtual Exp            *getProven(Exp* left) override;
@@ -101,7 +102,7 @@ public:
 namespace StdC {
 class PentiumSignature : public Signature {
 public:
-    PentiumSignature(const char *nam);
+    PentiumSignature(const QString &nam);
     PentiumSignature(Signature &old);
     virtual                ~PentiumSignature() { }
     virtual Signature    *clone() override;
@@ -127,7 +128,7 @@ public:
 
 class SparcSignature : public Signature {
 public:
-    SparcSignature(const char *nam);
+    SparcSignature(const QString &nam);
     SparcSignature(Signature &old);
     virtual                ~SparcSignature() { }
     virtual Signature    *clone() override;
@@ -158,7 +159,7 @@ public:
 
 class SparcLibSignature : public SparcSignature {
 public:
-    SparcLibSignature(const char *nam) : SparcSignature(nam) {}
+    SparcLibSignature(const QString &nam) : SparcSignature(nam) {}
     SparcLibSignature(Signature &old);
     virtual Signature    *clone() override;
     virtual Exp*        getProven(Exp* left) override;
@@ -166,7 +167,7 @@ public:
 
 class PPCSignature : public Signature {
 public:
-    PPCSignature(const char *name);
+    PPCSignature(const QString &name);
     PPCSignature(Signature& old);
     virtual                ~PPCSignature() { }
     virtual    Signature    *clone() override;
@@ -183,6 +184,11 @@ public:
     virtual bool        isPromoted() override { return true; }
     virtual platform    getPlatform() override { return PLAT_PPC; }
     virtual callconv    getConvention() override { return CONV_C; }
+    Signature * promote(UserProc */*p*/) override {
+        // No promotions from here up, obvious idea would be c++ name mangling
+        return this;
+    }
+
 };
 class MIPSSignature : public Signature {
 public:
@@ -206,7 +212,7 @@ public:
 };
 class ST20Signature : public Signature {
 public:
-    ST20Signature(const char *name);
+    ST20Signature(const QString &name);
     ST20Signature(Signature &old);
     virtual ~ST20Signature() { }
     Signature *clone() override;
@@ -229,7 +235,7 @@ public:
 }    // namespace StdC
 }    // namespace CallingConvention
 
-CallingConvention::Win32Signature::Win32Signature(const char *nam) : Signature(nam) {
+CallingConvention::Win32Signature::Win32Signature(const QString &nam) : Signature(nam) {
     Signature::addReturn(Location::regOf(28));
     // Signature::addImplicitParameter(new PointerType(new IntegerType()), "esp",
     //                                Location::regOf(28), nullptr);
@@ -238,7 +244,7 @@ CallingConvention::Win32Signature::Win32Signature(const char *nam) : Signature(n
 CallingConvention::Win32Signature::Win32Signature(Signature &old) : Signature(old) {
 }
 
-CallingConvention::Win32TcSignature::Win32TcSignature(const char *nam) : Win32Signature(nam) {
+CallingConvention::Win32TcSignature::Win32TcSignature(const QString &nam) : Win32Signature(nam) {
     Signature::addReturn(Location::regOf(28));
     // Signature::addImplicitParameter(new PointerType(new IntegerType()), "esp",
     //                                Location::regOf(28), nullptr);
@@ -276,7 +282,7 @@ void Parameter::setBoundMax(const char *nam) {
 }
 
 Signature *CallingConvention::Win32Signature::clone() {
-    Win32Signature *n = new Win32Signature(name.c_str());
+    Win32Signature *n = new Win32Signature(name);
     cloneVec(params, n->params);
     // cloneVec(implicitParams, n->implicitParams);
     cloneVec(returns, n->returns);
@@ -290,7 +296,7 @@ Signature *CallingConvention::Win32Signature::clone() {
 }
 
 Signature *CallingConvention::Win32TcSignature::clone() {
-    Win32TcSignature *n = new Win32TcSignature(name.c_str());
+    Win32TcSignature *n = new Win32TcSignature(name);
     cloneVec(params, n->params);
     // cloneVec(implicitParams, n->implicitParams);
     cloneVec(returns, n->returns);
@@ -478,7 +484,7 @@ Exp *CallingConvention::Win32TcSignature::getProven(Exp *left) {
 }
 
 
-CallingConvention::StdC::PentiumSignature::PentiumSignature(const char *nam) : Signature(nam) {
+CallingConvention::StdC::PentiumSignature::PentiumSignature(const QString &nam) : Signature(nam) {
     Signature::addReturn(Location::regOf(28));
     // Signature::addImplicitParameter(new PointerType(new IntegerType()), "esp",
     //                                 Location::regOf(28), nullptr);
@@ -489,7 +495,7 @@ CallingConvention::StdC::PentiumSignature::PentiumSignature(Signature &old) : Si
 }
 
 Signature *CallingConvention::StdC::PentiumSignature::clone() {
-    PentiumSignature *n = new PentiumSignature(name.c_str());
+    PentiumSignature *n = new PentiumSignature(name);
     cloneVec(params, n->params);
     // cloneVec(implicitParams, n->implicitParams);
     cloneVec(returns, n->returns);
@@ -652,7 +658,7 @@ void CallingConvention::StdC::PentiumSignature::setLibraryDefines(StatementList*
     defs->append(new ImplicitAssign(Location::regOf(28)));        // esp
 }
 
-CallingConvention::StdC::PPCSignature::PPCSignature(const char *nam) : Signature(nam) {
+CallingConvention::StdC::PPCSignature::PPCSignature(const QString &nam) : Signature(nam) {
     Signature::addReturn(Location::regOf(1));
     // Signature::addImplicitParameter(new PointerType(new IntegerType()), "r1",
     //                                 Location::regOf(1), nullptr);
@@ -663,7 +669,7 @@ CallingConvention::StdC::PPCSignature::PPCSignature(Signature& old) : Signature(
 }
 
 Signature *CallingConvention::StdC::PPCSignature::clone() {
-    PPCSignature *n = new PPCSignature(name.c_str());
+    PPCSignature *n = new PPCSignature(name);
     cloneVec(params, n->params);
     // n->implicitParams = implicitParams;
     cloneVec(returns, n->returns);
@@ -746,7 +752,7 @@ void CallingConvention::StdC::PPCSignature::setLibraryDefines(StatementList* def
 
 /// ST20 signatures
 
-CallingConvention::StdC::ST20Signature::ST20Signature(const char *nam) : Signature(nam) {
+CallingConvention::StdC::ST20Signature::ST20Signature(const QString &nam) : Signature(nam) {
     Signature::addReturn(Location::regOf(3));
     // Signature::addImplicitParameter(new PointerType(new IntegerType()), "sp", Location::regOf(3), nullptr);
     // FIXME: Should also add m[sp+0] as an implicit parameter? Holds return address
@@ -757,7 +763,7 @@ CallingConvention::StdC::ST20Signature::ST20Signature(Signature &old) : Signatur
 }
 
 Signature *CallingConvention::StdC::ST20Signature::clone() {
-    ST20Signature *n = new ST20Signature(name.c_str());
+    ST20Signature *n = new ST20Signature(name);
     n->params = params;
     n->returns = returns;
     n->ellipsis = ellipsis;
@@ -865,7 +871,7 @@ bool CallingConvention::StdC::PPCSignature::isAddrOfStackLocal(Prog* prog, Exp* 
 }
 */
 
-CallingConvention::StdC::SparcSignature::SparcSignature(const char *nam) : Signature(nam) {
+CallingConvention::StdC::SparcSignature::SparcSignature(const QString &nam) : Signature(nam) {
     Signature::addReturn(Location::regOf(14));
     // Signature::addImplicitParameter(new PointerType(new IntegerType()), "sp",
     //                                Location::regOf(14), nullptr);
@@ -875,7 +881,7 @@ CallingConvention::StdC::SparcSignature::SparcSignature(Signature &old) : Signat
 }
 
 Signature *CallingConvention::StdC::SparcSignature::clone() {
-    SparcSignature *n = new SparcSignature(name.c_str());
+    SparcSignature *n = new SparcSignature(name);
     cloneVec(params, n->params);
     // cloneVec(implicitParams, n->implicitParams);
     cloneVec(returns, n->returns);
@@ -890,7 +896,7 @@ Signature *CallingConvention::StdC::SparcSignature::clone() {
 }
 
 Signature *CallingConvention::StdC::SparcLibSignature::clone() {
-    SparcLibSignature *n = new SparcLibSignature(name.c_str());
+    SparcLibSignature *n = new SparcLibSignature(name);
     cloneVec(params, n->params);
     // cloneVec(implicitParams, n->implicitParams);
     cloneVec(returns, n->returns);
@@ -1053,15 +1059,19 @@ Exp *CallingConvention::StdC::SparcLibSignature::getProven(Exp* left) {
 
 
 
-Signature::Signature(const char *nam) : rettype(new VoidType()), ellipsis(false), unknown(true), forced(false),
+Signature::Signature(const QString &nam) : rettype(new VoidType()), ellipsis(false), unknown(true), forced(false),
     preferedReturn(nullptr) {
     if (nam == nullptr)
         name = "<ANON>";
-    else
+    else {
         name = nam;
+        if(name=="__glutWarning") {
+            qDebug()<<name;
+        }
+    }
 }
 
-CustomSignature::CustomSignature(const char *nam) : Signature(nam), sp(0) {
+CustomSignature::CustomSignature(const QString &nam) : Signature(nam), sp(0) {
 }
 
 void CustomSignature::setSP(int nsp) {
@@ -1074,7 +1084,7 @@ void CustomSignature::setSP(int nsp) {
 }
 
 Signature *Signature::clone() {
-    Signature *n = new Signature(name.c_str());
+    Signature *n = new Signature(name);
     cloneVec(params, n->params);
     // cloneVec(implicitParams, n->implicitParams);
     cloneVec(returns, n->returns);
@@ -1090,7 +1100,7 @@ Signature *Signature::clone() {
 }
 
 Signature *CustomSignature::clone() {
-    CustomSignature *n = new CustomSignature(name.c_str());
+    CustomSignature *n = new CustomSignature(name);
     cloneVec(params, n->params);
     // cloneVec(implicitParams, n->implicitParams);
     cloneVec(returns, n->returns);
@@ -1123,11 +1133,11 @@ bool Signature::operator==(Signature& other) {
     return true;
 }
 
-const char *Signature::getName() {
-    return name.c_str();
+QString Signature::getName() {
+    return name;
 }
 
-void Signature::setName(const std::string &nam) {
+void Signature::setName(const QString &nam) {
     name = nam;
 }
 
@@ -1408,7 +1418,7 @@ void Signature::print(std::ostream &out, bool /*html*/) const {
         out << "} ";
     } else
         out << "void ";
-    out << name << "(";
+    out << name.toStdString() << "(";
     unsigned int i;
     for (i = 0; i < params.size(); i++) {
         out << params[i]->getType()->getCtype() << " " << params[i]->name() << " " << params[i]->getExp();
@@ -1428,7 +1438,7 @@ char* Signature::prints() {
 void Signature::printToLog() {
     std::ostringstream os;
     print(os);
-    LOG << os.str();
+    LOG << os.str().c_str();
 }
 
 bool Signature::usesNewParam(UserProc */*p*/, Statement *stmt, bool checkreach, int &n) {

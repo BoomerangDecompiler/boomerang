@@ -122,7 +122,15 @@ typedef struct PACKED {
 #pragma pack(4)
 //#endif
 
-class DOS4GWBinaryFile : public BinaryFile {
+class DOS4GWBinaryFile : public QObject,
+        public LoaderInterface,
+        public BinaryData,
+        public LoaderCommon {
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID LoaderInterface_iid)
+    Q_INTERFACES(LoaderInterface)
+    Q_INTERFACES(BinaryData)
+    Q_INTERFACES(SectionInterface)
 public:
     DOS4GWBinaryFile();                // Default constructor
     virtual        ~DOS4GWBinaryFile();                // Destructor
@@ -162,12 +170,12 @@ protected:
 
 public:
 
-    virtual char readNative1(ADDRESS a);         // Read 1 bytes from native addr
-    virtual int readNative2(ADDRESS a);            // Read 2 bytes from native addr
-    virtual int readNative4(ADDRESS a);            // Read 4 bytes from native addr
-    virtual QWord readNative8(ADDRESS a);    // Read 8 bytes from native addr
-    virtual float readNativeFloat4(ADDRESS a);    // Read 4 bytes as float
-    virtual double readNativeFloat8(ADDRESS a); // Read 8 bytes as float
+    char readNative1(ADDRESS a) override;         // Read 1 bytes from native addr
+    int readNative2(ADDRESS a) override;            // Read 2 bytes from native addr
+    int readNative4(ADDRESS a) override;            // Read 4 bytes from native addr
+    QWord readNative8(ADDRESS a) override;    // Read 8 bytes from native addr
+    float readNativeFloat4(ADDRESS a) override;    // Read 4 bytes as float
+    double readNativeFloat8(ADDRESS a) override; // Read 8 bytes as float
 
     virtual bool    IsDynamicLinkedProcPointer(ADDRESS uNative);
     virtual bool    IsDynamicLinkedProc(ADDRESS uNative);

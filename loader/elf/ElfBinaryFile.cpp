@@ -31,7 +31,7 @@
 typedef std::map<std::string, int, std::less<std::string> >        StrIntMap;
 
 ElfBinaryFile::ElfBinaryFile(bool bArchive /* = false */)
-    : BinaryFile(bArchive),    // Initialise base class
+    : LoaderCommon(bArchive),    // Initialise base class
       next_extern(ADDRESS::g(0L))
 {
     m_fd = nullptr;
@@ -811,7 +811,7 @@ size_t ElfBinaryFile::getImageSize() {
  * \brief      Get an array of addresses of imported function stubs
  *                    This function relies on the fact that the symbols are sorted by address, and that Elf PLT
  *                    entries have successive addresses beginning soon after m_PltMin
- * PARAMETERS:      numImports - reference to integer set to the number of these
+ * \arg      numImports - reference to integer set to the number of these
  * \returns          An array of native ADDRESSes
  ******************************************************************************/
 ADDRESS* ElfBinaryFile::GetImportStubs(int& numImports) {
@@ -1036,8 +1036,10 @@ extern "C" {
 #ifdef _WIN32
 __declspec(dllexport)
 #endif
-BinaryFile* construct() {
-    return new ElfBinaryFile;
+QObject* construct() {
+    ElfBinaryFile * res = new ElfBinaryFile;
+    assert(qobject_cast<BinaryData *>(res)!=nullptr);
+    return res;
 }
 }
 

@@ -72,9 +72,13 @@ virtual                 ~Prog();
         void            setFrontEnd(FrontEnd* fe);
         void            setName(const char *name);
         Proc *          setNewProc(ADDRESS uNative);
-        Proc *          newProc(const char* name, ADDRESS uNative, bool bLib = false);
+        Proc *          newProc(const char *name, ADDRESS uNative, bool bLib = false);
+        Proc *          newProc (const QString & name, ADDRESS uNative, bool bLib = false) {
+                            return newProc(qPrintable(name),uNative,bLib);
+                        }
+
         void            remProc(UserProc* proc);
-        void            removeProc(const char *name);
+        void            removeProc(const QString &name);
         const char *    getName();                        // Get the name of this program
         const char *    getPath() { return m_path.c_str(); }
         const char *    getPathAndName() {return (m_path+m_name).c_str(); }
@@ -82,7 +86,7 @@ virtual                 ~Prog();
         int             getNumUserProcs();
         Proc*           getProc(int i) const;
         Proc*           findProc(ADDRESS uAddr) const;
-        Proc*           findProc(const std::string &name) const;
+        Proc*           findProc(const QString &name) const;
         Proc*           findContainingProc(ADDRESS uAddr) const;
         bool            isProcLabel (ADDRESS addr);
         std::string     getNameNoPath() const;
@@ -119,7 +123,7 @@ virtual                 ~Prog();
         void            generateRTL(Cluster *cluster = nullptr, UserProc *proc = nullptr);
         void            print(std::ostream &out);
         LibProc *       getLibraryProc(const char *nam);
-        Signature *     getLibSignature(const char *name);
+        Signature *     getLibSignature(const std::string &name);
         void            rereadLibSignatures();
         Statement *     getStmtAtLex(Cluster *cluster, unsigned int begin, unsigned int end);
         platform        getFrontEndId();
@@ -146,44 +150,47 @@ virtual                 ~Prog();
 
         // Hacks for Mike
                         //! Get a code for the machine e.g. MACHINE_SPARC
-        MACHINE         getMachine() { return pBF->GetMachine();}
+        MACHINE         getMachine() { return pLoaderIface->GetMachine();}
+        SymbolTableInterface *getBinarySymbolTable() {
+            return pLoaderPlugin ? qobject_cast<SymbolTableInterface *>(pLoaderPlugin) : nullptr;
+        }
                         //! Get a symbol from an address
-        const char*     symbolByAddress(ADDRESS dest) { return pBF->SymbolByAddress(dest);}
+        const char*     symbolByAddress(ADDRESS dest) { return getBinarySymbolTable() ? getBinarySymbolTable()->SymbolByAddress(dest) : nullptr;}
 
-        SectionInfo *   getSectionInfoByAddr(ADDRESS a) { return pBF->GetSectionInfoByAddr(a);}
-        ADDRESS         getLimitTextLow() {return pBF->getLimitTextLow();}
-        ADDRESS         getLimitTextHigh() {return pBF->getLimitTextHigh();}
-        bool            isReadOnly(ADDRESS a) { return pBF->isReadOnly(a); }
-        bool            isStringConstant(ADDRESS a) { return pBF->isStringConstant(a); }
-        bool            isCFStringConstant(ADDRESS a) { return pBF->isCFStringConstant(a); }
+        SectionInfo *   getSectionInfoByAddr(ADDRESS a) { return pSections->GetSectionInfoByAddr(a);}
+        ADDRESS         getLimitTextLow() {return pSections->getLimitTextLow();}
+        ADDRESS         getLimitTextHigh() {return pSections->getLimitTextHigh();}
+        bool            isReadOnly(ADDRESS a) { return pSections->isReadOnly(a); }
+        bool            isStringConstant(ADDRESS a) { return pSections->isStringConstant(a); }
+        bool            isCFStringConstant(ADDRESS a) { return pSections->isCFStringConstant(a); }
 
         // Read 1, 2, 4, or 8 bytes given a native address
-        int             readNative1(ADDRESS a) {return pBF->readNative1(a);}
-        int             readNative2(ADDRESS a) {return pBF->readNative2(a);}
-        int             readNative4(ADDRESS a) {return pBF->readNative4(a);}
-        float           readNativeFloat4(ADDRESS a) {return pBF->readNativeFloat4(a);}
-        double          readNativeFloat8(ADDRESS a) {return pBF->readNativeFloat8(a);}
-        QWord           readNative8(ADDRESS a) {return pBF->readNative8(a);}
+        int             readNative1(ADDRESS a) {return pBinaryData->readNative1(a);}
+        int             readNative2(ADDRESS a) {return pBinaryData->readNative2(a);}
+        int             readNative4(ADDRESS a) {return pBinaryData->readNative4(a);}
+        float           readNativeFloat4(ADDRESS a) {return pBinaryData->readNativeFloat4(a);}
+        double          readNativeFloat8(ADDRESS a) {return pBinaryData->readNativeFloat8(a);}
+        QWord           readNative8(ADDRESS a) {return pBinaryData->readNative8(a);}
         Exp *           readNativeAs(ADDRESS uaddr, Type *type);
-        ptrdiff_t       getTextDelta() { return pBF->getTextDelta(); }
+        ptrdiff_t       getTextDelta() { return pSections->getTextDelta(); }
 
-        bool            isDynamicLinkedProcPointer(ADDRESS dest) { return pBF->IsDynamicLinkedProcPointer(dest); }
-        const char *    GetDynamicProcName(ADDRESS uNative) { return pBF->GetDynamicProcName(uNative); }
+        bool            isDynamicLinkedProcPointer(ADDRESS dest) { return pLoaderIface->IsDynamicLinkedProcPointer(dest); }
+        const char *    GetDynamicProcName(ADDRESS uNative) { return pLoaderIface->GetDynamicProcName(uNative); }
 
         bool            processProc(ADDRESS addr, UserProc* proc) {   // Decode a proc
                             std::ofstream os;
                             return pFE->processProc(addr, proc, os);
                         }
         void            readSymbolFile(const char *fname);
-        size_t          getImageSize() { return pBF->getImageSize(); }
-        ADDRESS         getImageBase() { return pBF->getImageBase(); }
+        size_t          getImageSize() { return pLoaderIface->getImageSize(); }
+        ADDRESS         getImageBase() { return pLoaderIface->getImageBase(); }
         void            printSymbolsToFile();
         void            printCallGraph();
         void            printCallGraphXML();
 
         Cluster *       getRootCluster() { return m_rootCluster; }
         Cluster *       findCluster(const std::string &name) { return m_rootCluster->find(name); }
-        Cluster *       getDefaultCluster(const char *name);
+        Cluster *       getDefaultCluster(const QString &name);
         bool            clusterUsed(Cluster *c);
 
                         //! Add the given RTL to the front end's map from address to aldready-decoded-RTL
@@ -200,8 +207,12 @@ virtual                 ~Prog();
                         // list of UserProcs for entry point(s)
         std::list<UserProc*> entryProcs;
 protected:
-        BinaryFile *    pBF;                    //!< Pointer to the BinaryFile object for the program
-        FrontEnd *      pFE;                    //!< Pointer to the FrontEnd object for the project
+        QObject *           pLoaderPlugin;          //!< Pointer to the instance returned by loader plugin
+        LoaderInterface *   pLoaderIface=nullptr;
+        BinaryData *        pBinaryData=nullptr;    //!< Stored BinaryData interface for faster access.
+        SectionInterface *  pSections=nullptr;
+        SymbolTableInterface *pSymbols=nullptr;
+        FrontEnd *          pFE;                    //!< Pointer to the FrontEnd object for the project
 
         /* Persistent state */
         std::string    m_name, m_path;          // name of the program and its full path

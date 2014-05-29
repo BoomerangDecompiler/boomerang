@@ -67,7 +67,7 @@ Log &Boomerang::log() {
     return *logger;
 }
 
-SeparateLogger Boomerang::separate_log(const char *v)
+SeparateLogger Boomerang::separate_log(const QString &v)
 {
     return SeparateLogger(v);
 }
@@ -87,9 +87,9 @@ Log &Boomerang::if_verbose_log(int verbosity_level) {
 FileLogger::FileLogger() : out((Boomerang::get()->getOutputPath() + "log").c_str()) {
 }
 
-SeparateLogger::SeparateLogger(const char *v) {
-    static std::map<const char *,int> versions;
-    if(versions.find(v)==versions.end())
+SeparateLogger::SeparateLogger(const QString &v) {
+    static QMap<QString,int> versions;
+    if(!versions.contains(v))
         versions[v] = 0;
 
     QString full_path=QString("%1/%2_%3.log").arg(Boomerang::get()->getOutputPath().c_str()).arg(v).arg(versions[v]++,2,10,QChar('0'));
@@ -258,7 +258,7 @@ int Boomerang::processCommand(std::vector<std::string> &args) {
             }
 
             if (args.size() > 1) {
-                Proc *proc = prog->findProc(args[1]);
+                Proc *proc = prog->findProc(args[1].c_str());
                 if (proc == nullptr) {
                     std::cerr << "cannot find proc " << args[1] << "\n";
                     return 1;
@@ -305,7 +305,7 @@ int Boomerang::processCommand(std::vector<std::string> &args) {
                     return 1;
                 }
 
-                Proc *proc = prog->findProc(args[2]);
+                Proc *proc = prog->findProc(args[2].c_str());
                 if (proc == nullptr) {
                     std::cerr << "cannot find proc " << args[2] << "\n";
                     return 1;
@@ -431,19 +431,19 @@ int Boomerang::processCommand(std::vector<std::string> &args) {
                     return 1;
                 }
 
-                Proc *proc = prog->findProc(args[2]);
+                Proc *proc = prog->findProc(args[2].c_str());
                 if (proc == nullptr) {
                     std::cerr << "cannot find proc " << args[2] << "\n";
                     return 1;
                 }
 
-                Proc *nproc = prog->findProc(args[3]);
+                Proc *nproc = prog->findProc(args[3].c_str());
                 if (nproc != nullptr) {
                     std::cerr << "proc " << args[3] << " already exists\n";
                     return 1;
                 }
 
-                proc->setName(args[3]);
+                proc->setName(args[3].c_str());
             } else if (args[1]=="cluster") {
                 if (args.size() <= 3) {
                     std::cerr << "not enough arguments for cmd\n";
@@ -486,11 +486,11 @@ int Boomerang::processCommand(std::vector<std::string> &args) {
                 PROGMAP::const_iterator it;
                 for (Proc *p = prog->getFirstProc(it); p; p = prog->getNextProc(it))
                     if (p->isLib())
-                    std::cout << "\t\t" << p->getName() << "\n";
+                    std::cout << "\t\t" << p->getName().toStdString() << "\n";
                 std::cout << "\n\tuserprocs:\n";
                 for (Proc *p = prog->getFirstProc(it); p; p = prog->getNextProc(it))
                     if (!p->isLib())
-                    std::cout << "\t\t" << p->getName() << "\n";
+                    std::cout << "\t\t" << p->getName().toStdString() << "\n";
                 std::cout << "\n";
 
                 return 0;
@@ -515,7 +515,7 @@ int Boomerang::processCommand(std::vector<std::string> &args) {
                 PROGMAP::const_iterator it;
                 for (Proc *p = prog->getFirstProc(it); p; p = prog->getNextProc(it))
                     if (p->getCluster() == cluster)
-                        std::cout << "\t\t" << p->getName() << "\n";
+                        std::cout << "\t\t" << p->getName().toStdString() << "\n";
                 std::cout << "\n";
 
                 return 0;
@@ -525,13 +525,13 @@ int Boomerang::processCommand(std::vector<std::string> &args) {
                     return 1;
                 }
 
-                Proc *proc = prog->findProc(args[2]);
+                Proc *proc = prog->findProc(args[2].c_str());
                 if (proc == nullptr) {
                     std::cerr << "cannot find proc " << args[2] << "\n";
                     return 1;
                 }
 
-                std::cout << "proc " << proc->getName() << ":\n";
+                std::cout << "proc " << proc->getName().toStdString() << ":\n";
                 std::cout << "\tbelongs to cluster " << proc->getCluster()->getName() << "\n";
                 std::cout << "\tnative address " << proc->getNativeAddress()<< "\n";
                 if (proc->isLib())
@@ -562,7 +562,7 @@ int Boomerang::processCommand(std::vector<std::string> &args) {
                 return 1;
             }
 
-            Proc *proc = prog->findProc(args[1]);
+            Proc *proc = prog->findProc(args[1].c_str());
             if (proc == nullptr) {
                 std::cerr << "cannot find proc " << args[1] << "\n";
                 return 1;
@@ -608,7 +608,7 @@ const std::string &Boomerang::getProgPath() {
  * Set the path where the %Boomerang executable will search for plugins.
  *
  */
-void Boomerang::setPluginPath(const std::string &p) {
+void Boomerang::setPluginPath(const QString &p) {
     BinaryFileFactory::setBasePath(p);
 }
 
@@ -645,19 +645,19 @@ void Boomerang::objcDecode(std::map<std::string, ObjcModule> &modules, Prog *pro
         ObjcModule &mod = (modules_it).second;
         Module *module = new Module(mod.name.c_str());
         root->addChild(module);
-        LOG_VERBOSE(1)  << "\tModule: " << mod.name << "\n";
+        LOG_VERBOSE(1)  << "\tModule: " << mod.name.c_str() << "\n";
         for (auto & elem : mod.classes) {
             ObjcClass &c = (elem).second;
             Class *cl = new Class(c.name.c_str());
             root->addChild(cl);
-            LOG_VERBOSE(1)  << "\t\tClass: " << c.name << "\n";
+            LOG_VERBOSE(1)  << "\t\tClass: " << c.name.c_str() << "\n";
             for (auto & _it2 : c.methods) {
                 ObjcMethod &m = (_it2).second;
                 // TODO: parse :'s in names
                 Proc *p = prog->newProc(m.name.c_str(), m.addr);
                 p->setCluster(cl);
                 // TODO: decode types in m.types
-                LOG_VERBOSE(1)  << "\t\t\tMethod: " << m.name << "\n";
+                LOG_VERBOSE(1)  << "\t\t\tMethod: " << m.name.c_str() << "\n";
             }
         }
     }
@@ -692,11 +692,12 @@ Prog *Boomerang::loadAndDecode(const std::string &fname, const char *pname) {
         std::cout << "reading symbol file " << elem.c_str() << "\n";
         prog->readSymbolFile(elem.c_str());
     }
-
-    std::map<std::string, ObjcModule> &objcmodules = fe->getBinaryFile()->getObjcModules();
-    if (objcmodules.size())
-        objcDecode(objcmodules, prog);
-
+    ObjcAccessInterface *objc = qobject_cast<ObjcAccessInterface *>(fe->getBinaryFile());
+    if(objc) {
+        std::map<std::string, ObjcModule> &objcmodules = objc->getObjcModules();
+        if (objcmodules.size())
+            objcDecode(objcmodules, prog);
+    }
     // Entry points from -e (and -E) switch(es)
     for (auto & elem : entrypoints) {
         std::cout<< "decoding specified entrypoint " << elem << "\n";
@@ -851,10 +852,10 @@ void Boomerang::logTail() {
 
 void Boomerang::alert_decompile_debug_point(UserProc *p, const char *description) {
     if (stopAtDebugPoints) {
-        std::cout << "decompiling " << p->getName() << ": " << description << "\n";
+        std::cout << "decompiling " << p->getName().toStdString() << ": " << description << "\n";
         static char *stopAt = nullptr;
         static std::set<Statement*> watches;
-        if (stopAt == nullptr || !strcmp(p->getName(), stopAt)) {
+        if (stopAt == nullptr || !p->getName().compare(stopAt)) {
             // This is a mini command line debugger.  Feel free to expand it.
             for (auto const & watche : watches) {
                 (watche)->print(std::cout);
