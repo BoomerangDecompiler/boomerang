@@ -22,5 +22,10 @@ Note that on a debian system you can usually get away with:
   cmake ..
   make
 
+After building boomerang You can run the test suite, to do that you will need ruby interpeter and a bash compatible shell.
+  ./full_regression.sh
+After runnign full_regression, the tool will report tests on which boomerang crashed. 
+You can also check if Your changes to boomerang, produced any changes in the quality of decompiled code by running
+  YOUR_FAVOURITE_DIFF_GUI ./tests/outputs ./tests/baseline
 Thanks.
 
