@@ -1640,6 +1640,16 @@ void BasicBlock::getLiveOut(LocationSet &liveout, LocationSet& phiLocs) {
             if (!st->isPhi())
                 continue;
             PhiAssign* pa = (PhiAssign*)st;
+            bool found_in=false;
+            for(const std::pair<uint32_t,PhiInfo> &v : *pa) {
+                if(v.second.def()->getBB()==this) {
+                    found_in=true;
+                }
+            }
+            if(!found_in) {
+                qWarning() << " BasicBlock out edge not reflecteed in inEdge's PhiAssign";
+                continue;
+            }
             // Get the jth operand to the phi function; it has a use from BB *this
             assert(j>=0);
             Statement* def = pa->getStmtAt(uint32_t(j));

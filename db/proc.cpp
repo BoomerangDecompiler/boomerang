@@ -1942,14 +1942,24 @@ void UserProc::fixUglyBranches() {
             Statement *n = ((RefExp*)hl->getSubExp1()->getSubExp1())->getDef();
             if (n && n->isPhi()) {
                 PhiAssign *p = (PhiAssign*)n;
-                for (size_t i = 0; i < p->getNumDefs(); i++)
-                    if (p->getStmtAt(i)->isAssign()) {
-                        Assign *a = (Assign*)p->getStmtAt(i);
-                        if (*a->getRight() == *hl->getSubExp1()) {
-                            hl->setSubExp1(RefExp::get(a->getLeft(), a));
-                            break;
-                        }
+//                for (size_t i = 0; i < p->getNumDefs(); i++) {
+//                    if (p->getStmtAt(i)->isAssign()) {
+//                        Assign *a = (Assign*)p->getStmtAt(i);
+//                        if (*a->getRight() == *hl->getSubExp1()) {
+//                            hl->setSubExp1(RefExp::get(a->getLeft(), a));
+//                            break;
+//                        }
+//                    }
+//                }
+                for(const std::pair<uint32_t,PhiInfo> &phi : *p) {
+                    if(!phi.second.def()->isAssign())
+                        continue;
+                    Assign *a = (Assign*)phi.second.def();
+                    if (*a->getRight() == *hl->getSubExp1()) {
+                        hl->setSubExp1(RefExp::get(a->getLeft(), a));
+                        break;
                     }
+                }
             }
         }
     }
@@ -4581,10 +4591,6 @@ void UserProc::fixCallAndPhiRefs() {
             const PhiInfo &p(pi->second);
             assert(p.e);
             Statement *def = (Statement *)p.def();
-//                if (p.e == nullptr) {                        // Can happen due to PhiAssign::setAt
-//                    ++pi;
-//                    continue;
-//                }
             Exp* current = RefExp::get(p.e, def);
             if (*current == *r) {                    // Will we ever see this?
                 pi = ps->erase(pi);                    // Erase this phi parameter
