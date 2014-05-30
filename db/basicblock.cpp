@@ -1661,9 +1661,8 @@ void BasicBlock::getLiveOut(LocationSet &liveout, LocationSet& phiLocs) {
                     tried.insert(pbb);
                     to_visit.pop_back();
                     for(BasicBlock *bb: pbb->m_InEdges) {
-                        if(tried.find(bb)!=tried.end())
+                        if(tried.find(bb)!=tried.end()) //already tried
                             continue;
-                        if(bb->p)
                         to_visit.push_back(bb);
                     }
                 }
