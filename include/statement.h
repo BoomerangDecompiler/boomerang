@@ -141,7 +141,8 @@ public:
 virtual                ~Statement() { }
 
         // get/set the enclosing BB, etc
-        BasicBlock *            getBB() const { return Parent; }
+        BasicBlock *            getBB() { return Parent; }
+        const BasicBlock *      getBB() const { return Parent; }
         void        setBB(BasicBlock * bb) {Parent = bb; }
 
 //        bool        operator==(Statement& o);
@@ -544,7 +545,7 @@ protected:
 };
 class PhiAssign : public Assignment {
 public:
-        typedef        std::map<uint32_t,PhiInfo> Definitions;
+        typedef        std::map<BasicBlock *,PhiInfo> Definitions;
         typedef        Definitions::iterator iterator;
         typedef        Definitions::const_iterator const_iterator;
 private:
@@ -593,9 +594,14 @@ virtual void            genConstraints(LocationSet& cons);
 //
 
                         // Get or put the statement at index idx
-        Statement*      getStmtAt(uint32_t idx) {return defVec[idx].def();}
-        PhiInfo&        getAt(uint32_t idx) {return defVec[idx];}
-        void            putAt(uint32_t idx, Statement* d, Exp* e);
+        Statement*      getStmtAt(BasicBlock * idx) {
+            if(defVec.find(idx)==defVec.end()) {
+                return nullptr;
+            }
+            return defVec[idx].def();
+        }
+        PhiInfo&        getAt(BasicBlock * idx);
+        void            putAt(BasicBlock * idx, Statement* d, Exp* e);
         void            simplifyRefs();
 virtual size_t          getNumDefs() {return defVec.size();}
         Definitions &   getDefs() {return defVec;}

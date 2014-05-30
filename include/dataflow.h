@@ -74,7 +74,7 @@ class DataFlow {
      */
     // The stack which remembers the last definition of an expression.
     // A map from expression (Exp*) to a stack of (pointers to) Statements
-    std::map<Exp *, std::stack<Statement *>, lessExpStar> Stacks;
+    std::map<Exp *, std::deque<Statement *>, lessExpStar> Stacks;
 
     // Initially false, meaning that locals and parameters are not renamed and hence not propagated.
     // When true, locals and parameters can be renamed if their address does not escape the local procedure.
@@ -178,7 +178,7 @@ class DefCollector {
      * Update the definitions with the current set of reaching definitions
      * proc is the enclosing procedure
      */
-    void updateDefs(std::map<Exp *, std::stack<Statement *>, lessExpStar> &Stacks, UserProc *proc);
+    void updateDefs(std::map<Exp *, std::deque<Statement *>, lessExpStar> &Stacks, UserProc *proc);
 
     /**
      * Find the definition for a location. If not found, return nullptr

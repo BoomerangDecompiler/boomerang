@@ -1091,8 +1091,7 @@ Signature *Signature::clone() {
     n->ellipsis = ellipsis;
     n->rettype = rettype->clone();
     n->preferedName = preferedName;
-    if (preferedReturn) n->preferedReturn = preferedReturn->clone();
-    else n->preferedReturn = nullptr;
+    n->preferedReturn = preferedReturn ? preferedReturn->clone() : nullptr;
     n->preferedParams = preferedParams;
     n->unknown = unknown;
     n->sigFile = sigFile;
@@ -1108,9 +1107,10 @@ Signature *CustomSignature::clone() {
     n->rettype = rettype->clone();
     n->sp = sp;
     n->preferedName = preferedName;
-    if (preferedReturn) n->preferedReturn = preferedReturn->clone();
-    else n->preferedReturn = nullptr;
+    n->preferedReturn = preferedReturn ? preferedReturn->clone() : nullptr;
     n->preferedParams = preferedParams;
+    n->unknown = unknown;
+    n->sigFile = sigFile;
     return n;
 }
 

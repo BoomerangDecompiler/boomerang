@@ -1942,16 +1942,7 @@ void UserProc::fixUglyBranches() {
             Statement *n = ((RefExp*)hl->getSubExp1()->getSubExp1())->getDef();
             if (n && n->isPhi()) {
                 PhiAssign *p = (PhiAssign*)n;
-//                for (size_t i = 0; i < p->getNumDefs(); i++) {
-//                    if (p->getStmtAt(i)->isAssign()) {
-//                        Assign *a = (Assign*)p->getStmtAt(i);
-//                        if (*a->getRight() == *hl->getSubExp1()) {
-//                            hl->setSubExp1(RefExp::get(a->getLeft(), a));
-//                            break;
-//                        }
-//                    }
-//                }
-                for(const std::pair<uint32_t,PhiInfo> &phi : *p) {
+                for(const auto &phi : *p) {
                     if(!phi.second.def()->isAssign())
                         continue;
                     Assign *a = (Assign*)phi.second.def();
@@ -4597,11 +4588,7 @@ void UserProc::fixCallAndPhiRefs() {
                 continue;
             }
             // Chase the definition
-            if (def) {
-                if (!def->isAssign()) {
-                    ++pi;
-                    continue;
-                }
+            if (def && def->isAssign()) {
                 Exp* rhs = ((Assign*)def)->getRight();
                 if (*rhs == *r) {                    // Check if RHS is a single reference to ps
                     pi = ps->erase(pi);                // Yes, erase this phi parameter
@@ -5654,7 +5641,7 @@ void UserProc::findLiveAtDomPhi(LocationSet& usedByDomPhi) {
     std::map<Exp*, PhiAssign*, lessExpStar>::iterator it;
     for (it = defdByPhi.begin(); it != defdByPhi.end(); ++it) {
         // For each phi parameter, remove from the final usedByDomPhi set
-        for (const std::pair<int,PhiInfo> & v : *it->second) {
+        for (const auto & v : *it->second) {
             assert(v.second.e);
             RefExp wrappedParam(v.second.e, (Statement *)v.second.def());
             usedByDomPhi.remove(&wrappedParam);
@@ -5682,7 +5669,7 @@ void UserProc::findPhiUnites(ConnectionGraph& pu) {
         Exp* lhs = pa->getLeft();
         RefExp* reLhs = RefExp::get(lhs, pa);
         PhiAssign::iterator pp;
-        for (const std::pair<int,PhiInfo> & v : *pa) {
+        for (const auto & v : *pa) {
             assert(v.second.e);
             RefExp* re = RefExp::get(v.second.e, (Statement *)v.second.def());
             pu.connect(reLhs, re);
@@ -5732,7 +5719,7 @@ void UserProc::verifyPHIs() {
         PhiAssign* pi = (PhiAssign*)st;
         if (!pi->isPhi())
             continue;            // Might be able to optimise this a bit
-        for (const std::pair<int,PhiInfo> & pas : *pi) {
+        for (const auto & pas : *pi) {
             assert(pas.second.def());
         }
     }
@@ -5753,6 +5740,7 @@ void UserProc::verifyPHIs() {
 void UserProc::nameParameterPhis() {
     StatementList stmts;
     getStatements(stmts);
+
     StatementList::iterator it;
     for (it = stmts.begin(); it != stmts.end(); it++) {
         PhiAssign* pi = (PhiAssign*)*it;
@@ -5767,7 +5755,7 @@ void UserProc::nameParameterPhis() {
         const char* firstName = nullptr;                // The name for the first parameter found
         Type* ty = pi->getType();
 
-        for (const std::pair<int,PhiInfo> &v : *pi) {
+        for (const auto &v : *pi) {
             if (v.second.def()->isImplicit()) {
                 RefExp* phiArg = RefExp::get(v.second.e, (Statement *)v.second.def());
                 const char* name = lookupSym(phiArg, ty);

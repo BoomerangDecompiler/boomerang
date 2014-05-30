@@ -387,7 +387,7 @@ bool UsedLocsVisitor::visit(PhiAssign* s, bool& override) {
         subExp2->accept(ev);
     }
 
-    for (const std::pair<int,PhiInfo> & v : *s) {
+    for (const auto & v : *s) {
         // Note: don't make the RefExp based on lhs, since it is possible that the lhs was renamed in fromSSA()
         // Use the actual expression in the PhiAssign
         // Also note that it's possible for uu->e to be nullptr. Suppose variable a can be assigned to along in-edges
@@ -617,7 +617,7 @@ void StmtImplicitConverter::visit(PhiAssign* s, bool& recur) {
     // The LHS could be a m[x] where x has a null subscript; must do first
     s->setLeft(s->getLeft()->accept(mod));
 
-    for (std::pair<const uint32_t,PhiInfo> & v : *s) {
+    for (auto & v : *s) {
         assert(v.second.e != nullptr);
         if (v.second.def() == nullptr)
             v.second.def(m_cfg->findImplicitAssign(v.second.e));
@@ -1038,7 +1038,7 @@ void StmtSsaXformer::visit(PhiAssign *s, bool& recur) {
     commonLhs(s);
 
     UserProc* proc = ((ExpSsaXformer*)mod)->getProc();
-    for (std::pair<const uint32_t,PhiInfo> & v : *s) {
+    for (auto & v : *s) {
         assert(v.second.e != nullptr);
         RefExp r(v.second.e, v.second.def());
         const char* sym = proc->lookupSymFromRefAny(&r);
