@@ -55,12 +55,8 @@
  * Dependencies.
  ******************************************************************************/
 
-#include <sstream>
-#include <algorithm>        // For find()
-#include <iomanip>            // For std::setw etc
-#include <sstream>
-#include <cstring>
 #include "proc.h"
+
 #include "types.h"
 #include "type.h"
 #include "cluster.h"
@@ -77,6 +73,13 @@
 #include "constraint.h"
 #include "visitor.h"
 #include "log.h"
+
+#include <QtCore/QDebug>
+#include <sstream>
+#include <algorithm>        // For find()
+#include <iomanip>            // For std::setw etc
+#include <sstream>
+#include <cstring>
 
 #ifdef _WIN32
 #undef NO_ADDRESS
@@ -1291,17 +1294,14 @@ void UserProc::earlyDecompile() {
     // TODO: Check if this makes sense. It seems to me that we only want to do one pass of propagation here, since
     // the status == check had been knobbled below. Hopefully, one call to placing phi functions etc will be
     // equivalent to depth 0 in the old scheme
-    if (VERBOSE)
-        LOG << "placing phi functions 1st pass\n";
+    LOG_VERBOSE(1) << "placing phi functions 1st pass\n";
     // Place the phi functions
     df.placePhiFunctions(this);
 
-    if (VERBOSE)
-        LOG << "numbering phi statements 1st pass\n";
+    LOG_VERBOSE(1) << "numbering phi statements 1st pass\n";
     numberStatements();                // Number them
 
-    if (VERBOSE)
-        LOG << "renaming block variables 1st pass\n";
+    LOG_VERBOSE(1) << "renaming block variables 1st pass\n";
     // Rename variables
     doRenameBlockVars(1, true);
     debugPrintAll("after rename (1)");
@@ -4097,6 +4097,10 @@ const char* UserProc::lookupParam(Exp* e) {
 //! Lookup a specific symbol for the given ref
 const char* UserProc::lookupSymFromRef(RefExp* r) {
     Statement* def = r->getDef();
+    if(!def) {
+        qDebug() << "UserProc::lookupSymFromRefAny null def";
+        return nullptr;
+    }
     Exp* base = r->getSubExp1();
     Type* ty = def->getTypeFor(base);
     return lookupSym(r, ty);
@@ -4104,6 +4108,10 @@ const char* UserProc::lookupSymFromRef(RefExp* r) {
 //! Lookup a specific symbol if any, else the general one if any
 const char* UserProc::lookupSymFromRefAny(RefExp* r) {
     Statement* def = r->getDef();
+    if(!def) {
+        qDebug() << "UserProc::lookupSymFromRefAny null def";
+        return nullptr;
+    }
     Exp* base = r->getSubExp1();
     Type* ty = def->getTypeFor(base);
     const char* ret = lookupSym(r, ty);

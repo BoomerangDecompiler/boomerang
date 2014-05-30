@@ -6,6 +6,7 @@
  * \brief   Provides the implementation for the various visitor and modifier classes.
  ******************************************************************************/
 #include "visitor.h"
+
 #include "exp.h"
 #include "statement.h"
 #include "log.h"
@@ -13,6 +14,8 @@
 #include "proc.h"
 #include "signature.h"
 #include "prog.h"
+
+#include <QtCore/QDebug>
 #include <sstream>
 
 
@@ -913,6 +916,10 @@ Exp* ExpCastInserter::postVisit(RefExp* e) {
     if (base->isMemOf()) {
         // Check to see if the address expression needs type annotation
         Statement* def = e->getDef();
+        if(!def) {
+            qDebug() << "ExpCastInserter::postVisit RefExp def is null";
+            return e;
+        }
         Type* memofType = def->getTypeFor(base);
         checkMemofType(base, memofType);
     }
