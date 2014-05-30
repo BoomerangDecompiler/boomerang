@@ -141,7 +141,7 @@ public:
 virtual                ~Statement() { }
 
         // get/set the enclosing BB, etc
-        BasicBlock *            getBB() { return Parent; }
+        BasicBlock *            getBB() const { return Parent; }
         void        setBB(BasicBlock * bb) {Parent = bb; }
 
 //        bool        operator==(Statement& o);
