@@ -238,6 +238,7 @@ void RTLInstDict::print(std::ostream& os /*= std::cout*/) {
 /***************************************************************************//**
  * \brief         Runs after the ssl file is parsed to fix up variant params
  *                     where the arms are lambdas.
+ * Go through the params and fixup any lambda functions
  ******************************************************************************/
 void RTLInstDict::fixupParams( ) {
     for (auto param : DetParamMap) {
