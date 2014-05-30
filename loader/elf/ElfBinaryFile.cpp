@@ -16,6 +16,12 @@
  * Dependencies.
  ******************************************************************************/
 
+#include "ElfBinaryFile.h"
+
+#include "config.h"
+#include "util.h"
+
+#include <QtCore/QDebug>
 #include <sys/types.h>        // Next three for open()
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -24,9 +30,6 @@
 #include <cassert>
 #include <cstring>
 #include <inttypes.h>
-#include "config.h"
-#include "ElfBinaryFile.h"
-#include "util.h"
 
 typedef std::map<std::string, int, std::less<std::string> >        StrIntMap;
 
@@ -157,7 +160,6 @@ bool ElfBinaryFile::RealLoad(const char* sName) {
     // Set up the m_sh_link and m_sh_info arrays
     m_sh_link = new int[m_iNumSections];
     m_sh_info = new int[m_iNumSections];
-
     // Number of elf sections
     bool bGotCode = false;                  // True when have seen a code sect
     ADDRESS arbitaryLoadAddr = ADDRESS::g(0x08000000);
@@ -941,6 +943,8 @@ void ElfBinaryFile::elfWrite4(int* pi, int val) {
 char ElfBinaryFile::readNative1(ADDRESS nat) {
     PSectionInfo si = GetSectionInfoByAddr(nat);
     if (si == nullptr) {
+        qDebug()<< "Target Memory access in unmapped Section " << nat.m_value;
+        return 0xFF;
         si = GetSectionInfo(0);
     }
     ADDRESS host = si->uHostAddr - si->uNativeAddr + nat;

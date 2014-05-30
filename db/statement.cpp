@@ -2689,8 +2689,8 @@ bool CallStatement::ellipsisProcessing(Prog* prog) {
             // More likely. Example: switch_gcc. Only need ONE candidate format string
             PhiAssign* pa = (PhiAssign*)def;
             int n = pa->getNumDefs();
-            for (int i=0; i < n; i++) {
-                def = pa->getStmtAt(i);
+            for (auto &v : *pa) {
+                def = v.second.def();
                 if ( (def == nullptr) or (!def->isAssign()) )
                     continue;
                 Exp* rhs = ((Assign*)def)->getRight();
@@ -3189,6 +3189,7 @@ Statement* PhiAssign::clone() const {
         PhiInfo pi;
         pi.def((Statement *)dd->second.def());            // Don't clone the Statement pointer (never moves)
         pi.e = dd->second.e->clone();        // Do clone the expression pointer
+        assert(pi.e);
         pa->defVec.insert(std::make_pair(dd->first,pi));
     }
     return pa;
@@ -3329,7 +3330,7 @@ void PhiAssign::printCompact(std::ostream& os, bool html) const {
     // Print as lhs := phi{9 17} for the common case where the lhs is the same location as all the referenced
     // locations. When not, print as local4 := phi(r24{9} argc{17})
     bool simple = true;
-    for (const std::pair<int,PhiInfo> & v : defVec) {
+    for (const auto & v : defVec) {
         assert(v.second.e != nullptr);
         // If e is nullptr assume it is meant to match lhs
         if (! (*v.second.e == *lhs)) {
@@ -3402,7 +3403,7 @@ bool PhiAssign::search(const Exp &search, Exp*& result) {
     if (lhs->search(search, result))
         return true;
 
-    for (std::pair<const uint32_t,PhiInfo> & v : defVec) {
+    for (auto & v : defVec) {
         assert(v.second.e != nullptr);
         // Note: can't match foo{-} because of this
         RefExp re(v.second.e, v.second.def());
@@ -3446,11 +3447,12 @@ bool PhiAssign::searchAndReplace(const Exp &search, Exp* replace, bool /*cc*/) {
     bool change;
     lhs = lhs->searchReplaceAll(search, replace, change);
 
-    for (std::pair<const uint32_t,PhiInfo> & v : defVec) {
+    for (auto & v : defVec) {
         assert(v.second.e != nullptr);
         bool ch;
         // Assume that the definitions will also be replaced
         v.second.e = v.second.e->searchReplaceAll(search, replace, ch);
+        assert(v.second.e);
         change |= ch;
     }
     return change;
@@ -3558,7 +3560,7 @@ void PhiAssign::genConstraints(LocationSet& cons) {
     // result
     Exp* result = new Unary(opTypeOf, new RefExp(lhs, this));
 
-    for (std::pair<const uint32_t,PhiInfo> & v : defVec) {
+    for (auto & v : defVec) {
         assert(v.second.e != nullptr);
         Exp* conjunct = Binary::get(opEquals,
                                     result,
@@ -3566,6 +3568,10 @@ void PhiAssign::genConstraints(LocationSet& cons) {
                                               new RefExp(v.second.e, v.second.def())));
         cons.insert(conjunct);
     }
+}
+
+PhiInfo &PhiAssign::getAt(BasicBlock *idx) {
+    return defVec[idx];
 }
 
 void CallStatement::genConstraints(LocationSet& cons) {
@@ -3761,7 +3767,7 @@ bool PhiAssign::accept(StmtExpVisitor* visitor) {
     if (ret && lhs)
         ret = lhs->accept(visitor->ev);
 
-    for (std::pair<const uint32_t,PhiInfo> & v : defVec) {
+    for (auto & v : defVec) {
         assert(v.second.e != nullptr);
         RefExp *re = new RefExp(v.second.e, v.second.def());
         ret = re->accept(visitor->ev);
@@ -4190,7 +4196,7 @@ void PhiAssign::simplify() {
 
     bool onlyOneNotThis = true;
     Statement *notthis = (Statement*)-1;
-    for (std::pair<const uint32_t,PhiInfo> & v : defVec) {
+    for (auto & v : defVec) {
         if (v.second.def() == nullptr || v.second.def()->isImplicit()
                 || !v.second.def()->isPhi() || v.second.def() != this) {
             if (notthis != (Statement*)-1) {
@@ -4210,7 +4216,7 @@ void PhiAssign::simplify() {
     }
 }
 
-void PhiAssign::putAt(uint32_t i, Statement* def, Exp* e) {
+void PhiAssign::putAt(BasicBlock *i, Statement* def, Exp* e) {
     assert(e); // should be something surely
     //assert(defVec.end()==defVec.find(i));
     defVec[i].def(def);
@@ -5017,7 +5023,7 @@ void CallStatement::eliminateDuplicateArgs() {
 }
 
 void PhiAssign::enumerateParams(std::list<Exp*>& le) {
-    for (std::pair<const uint32_t,PhiInfo> & v : defVec) {
+    for (auto & v : defVec) {
         assert(v.second.e != nullptr);
         RefExp *r = new RefExp(v.second.e, v.second.def());
         le.push_back(r);

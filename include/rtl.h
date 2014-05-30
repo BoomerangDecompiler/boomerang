@@ -9,16 +9,16 @@
  *
  */
 
-/***************************************************************************//**
- * \file       rtl.h
- * Definition of the classes that describe an RTL, a low-level
- *       register transfer list. Higher-level RTLs (instance
- *       of class HLJump, HLCall, etc.) represent information about
- *       a control transfer instruction (CTI) in the source program.
- *       analysis code adds information to existing higher-level
- *       RTLs and sometimes creates new higher-level RTLs (e.g., for
- *       switch statements).
- *============================================================================*/
+/***************************************************************************/ /**
+  * \file       rtl.h
+  * Definition of the classes that describe an RTL, a low-level
+  *       register transfer list. Higher-level RTLs (instance
+  *       of class HLJump, HLCall, etc.) represent information about
+  *       a control transfer instruction (CTI) in the source program.
+  *       analysis code adds information to existing higher-level
+  *       RTLs and sometimes creates new higher-level RTLs (e.g., for
+  *       switch statements).
+  *============================================================================*/
 
 #ifndef __RTL_H__
 #define __RTL_H__
@@ -48,182 +48,167 @@ class Statement;
 
 enum STMT_KIND : uint8_t;
 
-/***************************************************************************//**
- * Class RTL: describes low level register transfer lists (actually lists of statements).
- * NOTE: when time permits, this class could be removed, replaced with new Statements that mark the current native
- * address
- *============================================================================*/
-class RTL : public std::list<Statement*> {
-        ADDRESS     nativeAddr;                            // RTL's source program instruction address
-public:
-                    RTL();
-                    RTL(ADDRESS instNativeAddr, const std::list<Statement *> *listStmt = nullptr);
-                    RTL(const RTL& other);                    // Makes deep copy of "other"
+/***************************************************************************/ /**
+  * Class RTL: describes low level register transfer lists (actually lists of statements).
+  * NOTE: when time permits, this class could be removed, replaced with new Statements that mark the current native
+  * address
+  *============================================================================*/
+class RTL : public std::list<Statement *> {
+    ADDRESS nativeAddr; // RTL's source program instruction address
+  public:
+    RTL();
+    RTL(ADDRESS instNativeAddr, const std::list<Statement *> *listStmt = nullptr);
+    RTL(const RTL &other); // Makes deep copy of "other"
 
-        RTL *       clone() const;
-        RTL &       operator=(const RTL &other);
+    RTL *clone() const;
+    RTL &operator=(const RTL &other);
 
-        // Common enquiry methods
-        ADDRESS     getAddress() {return nativeAddr;}       //!< Return RTL's native address
-        void        setAddress(ADDRESS a) {nativeAddr=a;}   //!< Set the address
-        bool        areFlagsAffected();                     //!< True if flags are affected
+    // Common enquiry methods
+    ADDRESS getAddress() { return nativeAddr; }    //!< Return RTL's native address
+    void setAddress(ADDRESS a) { nativeAddr = a; } //!< Set the address
+    bool areFlagsAffected();                       //!< True if flags are affected
 
-        // Statement list editing methods
-        void        appendStmt(Statement *s);                // Add s to end of RTL.
-        void        appendListStmt(std::list<Statement*>& le);
-        // Make a deep copy of the list of Exp*
-        void        deepCopyList(std::list<Statement*>& dest) const;
+    // Statement list editing methods
+    void appendStmt(Statement *s); // Add s to end of RTL.
+    void appendListStmt(std::list<Statement *> &le);
+    // Make a deep copy of the list of Exp*
+    void deepCopyList(std::list<Statement *> &dest) const;
 
-         // Print RTL to a stream.
-        void        print(std::ostream& os , bool html = false) const;
-        void        dump();
+    // Print RTL to a stream.
+    void print(std::ostream &os, bool html = false) const;
+    void dump();
 
-        bool        isCall(); // Is this RTL a call instruction?
-        Statement * getHlStmt();
-        char *      prints() const; // Print to a string (mainly for debugging)
-protected:
-        void        simplify();
-        friend class XMLProgParser;
-        friend class BasicBlock;
+    bool isCall(); // Is this RTL a call instruction?
+    Statement *getHlStmt();
+    char *prints() const; // Print to a string (mainly for debugging)
+  protected:
+    void simplify();
+    friend class XMLProgParser;
+    friend class BasicBlock;
 };
 
-
-
-/***************************************************************************//**
- * The TableEntry class represents a single instruction - a string/RTL pair.
- *
- * This class plus ParamEntry and RTLInstDict should be moved to a separate
- * header file...
- *============================================================================*/
+/***************************************************************************/ /**
+  * The TableEntry class represents a single instruction - a string/RTL pair.
+  *
+  * This class plus ParamEntry and RTLInstDict should be moved to a separate
+  * header file...
+  *============================================================================*/
 class TableEntry {
-public:
+  public:
     TableEntry();
-    TableEntry(std::list<std::string>& p, RTL& rtl);
+    TableEntry(std::list<std::string> &p, RTL &rtl);
 
-    const TableEntry& operator=(const TableEntry& other);
+    const TableEntry &operator=(const TableEntry &other);
 
-    void setParam(std::list<std::string>& p);
-    void setRTL(RTL& rtl);
+    void setParam(std::list<std::string> &p);
+    void setRTL(RTL &rtl);
 
     // non-zero return indicates failure
-    int appendRTL(std::list<std::string>& p, RTL& rtl);
+    int appendRTL(std::list<std::string> &p, RTL &rtl);
 
-public:
+  public:
     std::list<std::string> params;
     RTL rtl;
 
 #define TEF_NEXTPC 1
-    int flags;                    // aka required capabilities. Init. to 0
+    int flags; // aka required capabilities. Init. to 0
 };
 
-
-/***************************************************************************//**
- * The ParamEntry class represents the details of a single parameter.
- *============================================================================*/
-typedef enum {PARAM_SIMPLE, PARAM_ASGN, PARAM_LAMBDA, PARAM_VARIANT} ParamKind;
+/***************************************************************************/ /**
+  * The ParamEntry class represents the details of a single parameter.
+  *============================================================================*/
+typedef enum { PARAM_SIMPLE, PARAM_ASGN, PARAM_LAMBDA, PARAM_VARIANT } ParamKind;
 
 class ParamEntry {
-public:
-        ParamEntry() {
-            asgn = nullptr;
-            kind = PARAM_SIMPLE;
-            m_type = nullptr;
-            regType = nullptr;
-            lhs = false;
-            mark = 0;
-        }
-        ~ParamEntry() {
-            delete m_type;
-            delete regType;
-        }
+  public:
+    ParamEntry() {
+        asgn = nullptr;
+        kind = PARAM_SIMPLE;
+        m_type = nullptr;
+        regType = nullptr;
+        lhs = false;
+        mark = 0;
+    }
+    ~ParamEntry() {
+        delete m_type;
+        delete regType;
+    }
 
-        std::list<std::string> params;        //!< PARAM_VARIANT & PARAM_ASGN only */
-        std::list<std::string> funcParams;    //!< PARAM_LAMBDA - late bound params */
-        Statement *     asgn;                    //!< PARAM_ASGN only */
-        bool            lhs;                    //!< True if this param ever appears on the LHS of an expression */
-        ParamKind       kind;
-        Type *          regType;                //!< Type of r[this], if any (void otherwise)
-        std::set<int>   regIdx;                //!< Values this param can take as an r[param]
-        int             mark;                    //!< Traversal mark. (free temporary use, basically)
-protected:
-        Type *          m_type;
+    std::list<std::string> params;     //!< PARAM_VARIANT & PARAM_ASGN only */
+    std::list<std::string> funcParams; //!< PARAM_LAMBDA - late bound params */
+    Statement *asgn;                   //!< PARAM_ASGN only */
+    bool lhs;                          //!< True if this param ever appears on the LHS of an expression */
+    ParamKind kind;
+    Type *regType;        //!< Type of r[this], if any (void otherwise)
+    std::set<int> regIdx; //!< Values this param can take as an r[param]
+    int mark;             //!< Traversal mark. (free temporary use, basically)
+  protected:
+    Type *m_type;
 };
 
-
-/***************************************************************************//**
- * The RTLInstDict represents a dictionary that maps instruction names to the
- * parameters they take and a template for the Exp list describing their
- * semantics. It handles both the parsing of the SSL file that fills in
- * the dictionary entries as well as instantiation of an Exp list for a given
- * instruction name and list of actual parameters.
- *============================================================================*/
+/***************************************************************************/ /**
+  * The RTLInstDict represents a dictionary that maps instruction names to the
+  * parameters they take and a template for the Exp list describing their
+  * semantics. It handles both the parsing of the SSL file that fills in
+  * the dictionary entries as well as instantiation of an Exp list for a given
+  * instruction name and list of actual parameters.
+  *============================================================================*/
 
 class RTLInstDict {
-public:
-        RTLInstDict();
-        ~RTLInstDict();
+  public:
+    RTLInstDict();
+    ~RTLInstDict();
 
-        bool    readSSLFile(const std::string& SSLFileName);
-        void    reset();
-        std::pair<std::string,unsigned> getSignature(const char* name);
+    bool readSSLFile(const std::string &SSLFileName);
+    void reset();
+    std::pair<std::string, unsigned> getSignature(const char *name);
 
-        int appendToDict(std::string &n, std::list<std::string>& p, RTL& rtl);
+    int appendToDict(std::string &n, std::list<std::string> &p, RTL &rtl);
 
-        // Given an instruction name and list of actual parameters, return an instantiated RTL for the corresponding
-        // instruction entry.
-        std::list<Statement*>* instantiateRTL(std::string& name, ADDRESS natPC, const std::vector<Exp*> &actuals);
-        // As above, but takes an RTL & param list directly rather than doing a table lookup by name.
-        std::list<Statement*>* instantiateRTL(RTL& rtls, ADDRESS, std::list<std::string> &params,
-            const std::vector<Exp*> &actuals);
+    std::list<Statement *> *instantiateRTL(std::string &name, ADDRESS natPC, const std::vector<Exp *> &actuals);
+    std::list<Statement *> *instantiateRTL(RTL &rtls, ADDRESS, std::list<std::string> &params,
+                                           const std::vector<Exp *> &actuals);
 
-        void transformPostVars(std::list<Statement*> &rts, bool optimise);
+    void transformPostVars(std::list<Statement *> &rts, bool optimise);
+    void print(std::ostream &os);
+    void addRegister(const char *name, int id, int size, bool flt);
+    bool partialType(Exp *exp, Type &ty);
+    void fixupParams();
 
-        void        print(std::ostream& os);
+  public:
+    //! A map from the symbolic representation of a register (e.g. "%g0") to its index within an array of registers.
+    std::map<std::string, int, std::less<std::string>> RegMap;
 
-        // Add a new register to the machine
-        void        addRegister(const char *name, int id, int size, bool flt);
+    //! Similar to r_map but stores more info about a register such as its size, its addresss etc (see register.h).
+    std::map<int, Register, std::less<int>> DetRegMap;
 
-        // If the top level operator of the given expression indicates any kind of type, update ty to match.
-        bool        partialType(Exp* exp, Type& ty);
+    //! A map from symbolic representation of a special (non-addressable) register to a Register object
+    std::map<std::string, Register, std::less<std::string>> SpecialRegMap;
 
-    // Go through the params and fixup any lambda functions
-    void            fixupParams();
-
-public:
-    // A map from the symbolic representation of a register (e.g. "%g0") to its index within an array of registers.
-    std::map<std::string, int, std::less<std::string> > RegMap;
-
-    // Similar to r_map but stores more info about a register such as its size, its addresss etc (see register.h).
-    std::map<int, Register, std::less<int> > DetRegMap;
-
-    // A map from symbolic representation of a special (non-addressable) register to a Register object
-    std::map<std::string, Register, std::less<std::string> > SpecialRegMap;
-
-    // A set of parameter names, to make sure they are declared (?).
-    // Was map from string to SemTable index
+    //! A set of parameter names, to make sure they are declared (?).
+    //! Was map from string to SemTable index
     std::set<std::string> ParamSet;
 
-    // Parameter (instruction operand, more like addressing mode) details (where given)
+    //! Parameter (instruction operand, more like addressing mode) details (where given)
     std::map<std::string, ParamEntry> DetParamMap;
 
-    // The maps which summarise the semantics (.ssl) file
-    std::map<std::string, Exp*> FlagFuncs;
-    std::map<std::string, std::pair<int, void*>*> DefMap;
-    std::map<int, Exp*> AliasMap;
+    //! The maps which summarise the semantics (.ssl) file
+    std::map<std::string, Exp *> FlagFuncs;
+    std::map<std::string, std::pair<int, void *> *> DefMap;
+    std::map<int, Exp *> AliasMap;
 
-    // Map from ordinary instruction to fast pseudo instruction, for use with -f (fast but not as exact) switch
+    //! Map from ordinary instruction to fast pseudo instruction, for use with -f (fast but not as exact) switch
     std::map<std::string, std::string> fastMap;
 
-    bool bigEndian;                   // True if this source is big endian
+    bool bigEndian; // True if this source is big endian
 
-    // The actual dictionary.
-    std::map<std::string, TableEntry, std::less<std::string> > idict;
+    //! The actual dictionary.
+    std::map<std::string, TableEntry, std::less<std::string>> idict;
 
-    // An RTL describing the machine's basic fetch-execute cycle
-    std::list<Statement*>*fetchExecCycle;
+    //! An RTL describing the machine's basic fetch-execute cycle
+    std::list<Statement *> *fetchExecCycle;
 
-    void fixupParamsSub(std::string s, std::list<std::string>& funcParams, bool& haveCount, int mark);
+    void fixupParamsSub(std::string s, std::list<std::string> &funcParams, bool &haveCount, int mark);
 };
 
 #endif /*__RTL_H__*/
-

@@ -37,6 +37,7 @@
 #include <set>
 #include <vector>
 #include <map>
+#include <QObject>
 
 class QString;
 class SeparateLogger;
@@ -86,7 +87,8 @@ class Watcher {
  * Controls the loading, decoding, decompilation and code generation for a program.
  * This is the main class of the decompiler.
  */
-class Boomerang {
+class Boomerang : public QObject {
+    Q_OBJECT
   private:
     static Boomerang *boomerang;
     std::string progPath;         //!< String with the path to the boomerang executable.
@@ -100,7 +102,6 @@ class Boomerang {
     void helpcmd() const;
     Boomerang();
     virtual ~Boomerang() {}
-
   public:
     /**
      * \return The global boomerang object. It will be created if it didn't already exist.

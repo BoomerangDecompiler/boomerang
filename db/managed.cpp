@@ -623,8 +623,8 @@ bool StatementList::existsOnLeft(Exp* loc) {
     return false;
 }
 
-// Remove the first definition where loc appears on the left
-// Note: statements in this list are assumed to be assignments
+//! Remove the first definition where loc appears on the left
+//! \note statements in this list are assumed to be assignments
 void StatementList::removeDefOf(Exp* loc) {
     for (iterator it = begin(); it != end(); it++) {
         if (*((Assignment*)*it)->getLeft() == *loc) {

@@ -34,26 +34,25 @@ class RTL;
 
 typedef struct {
     const char *tag;
-    void (XMLProgParser::*start_proc)(const char**);
+    void (XMLProgParser::*start_proc)(const char **);
     void (XMLProgParser::*end_proc)(Context *c, int e);
 } _tag;
 
-class XMLProgParser
-{
-    public:
-    XMLProgParser() { }
+class XMLProgParser {
+  public:
+    XMLProgParser() {}
     Prog *parse(const std::string &filename);
     void persistToXML(Prog *prog);
     void handleElementStart(const char *el, const char **attr);
     void handleElementEnd(const char *el);
 
-    protected:
-
+  protected:
     void parseFile(const std::string &filename);
     void parseChildren(Cluster *c);
 
-#define TAGD(x) void start_ ## x (const char **attr); \
-    void addToContext_ ## x (Context *c, int e);
+#define TAGD(x)                                                                                                        \
+    void start_##x(const char **attr);                                                                                 \
+    void addToContext_##x(Context *c, int e);
 
     TAGD(prog)
     TAGD(procs)
@@ -142,8 +141,8 @@ class XMLProgParser
     int operFromString(const char *s);
     const char *getAttr(const char **attr, const char *name);
 
-    std::list<Context*> stack;
-    std::map<int, void*> idToX;
+    std::list<Context *> stack;
+    std::map<int, void *> idToX;
     int phase;
 
     void addId(const char **attr, void *x);

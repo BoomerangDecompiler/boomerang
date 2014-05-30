@@ -15,8 +15,8 @@ class RangeMap;
 class Type;
 
 class Log {
-public:
-    Log() { }
+  public:
+    Log() {}
     virtual Log &operator<<(const QString &s) = 0;
     virtual Log &operator<<(const Statement *s);
     virtual Log &operator<<(const Exp *e);
@@ -36,44 +36,40 @@ public:
 };
 
 class FileLogger : public Log {
-protected:
+  protected:
     std::ofstream out;
-public:
-            FileLogger();        // Implemented in boomerang.cpp
-    void    tail();
-    virtual Log &operator<<(const QString& str) {
+
+  public:
+    FileLogger(); // Implemented in boomerang.cpp
+    void tail();
+    virtual Log &operator<<(const QString &str) {
         out << str.toStdString() << std::flush;
         return *this;
     }
     virtual ~FileLogger() {}
 };
 class SeparateLogger : public Log {
-protected:
+  protected:
     std::ofstream *out;
-public:
-            SeparateLogger(const QString &);        // Implemented in boomerang.cpp
-    void    tail();
-    virtual Log &operator<<(const QString& str) {
+
+  public:
+    SeparateLogger(const QString &); // Implemented in boomerang.cpp
+    void tail();
+    virtual Log &operator<<(const QString &str) {
         (*out) << str.toStdString() << std::flush;
         return *this;
     }
-    virtual ~SeparateLogger() { out->close(); out = nullptr;}
+    virtual ~SeparateLogger() {
+        out->close();
+        out = nullptr;
+    }
 };
 class NullLogger : public Log {
-public:
-    virtual Log &operator<<(const QString& /*str*/) {
+  public:
+    virtual Log &operator<<(const QString & /*str*/) {
         // std::cerr << str;
         return *this;
     }
 };
-// For older MSVC compilers
-#if defined(_MSC_VER) && (_MSC_VER <= 1200)
-static std::ostream& operator<<(std::ostream& s, QWord val) {
-    char szTmp[42]; // overkill, but who counts
-    sprintf(szTmp, "%I64u", val);
-    s << szTmp;
-    return s;
-}
-#endif
 
 #endif

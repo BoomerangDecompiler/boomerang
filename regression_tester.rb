@@ -13,16 +13,16 @@ TESTS_DIR="./tests"
 TEST_INPUT=File.join(TESTS_DIR,"inputs")
 
 print("Regression tester 0.0.1\n")
-
+FAILED_COMMANDLINES=""
 def perform_test(exepath,machine,test,args)
         output_path=File.join(TESTS_DIR,"outputs",machine)
         test_file = File.join(TEST_INPUT,machine,test)
         log_name = File.join(output_path,test)
         joined_args = args.join(' ')
         result = `#{exepath} -P #{Dir.pwd} -o #{output_path} #{joined_args} #{test_file} >#{log_name+".stdout"} 2>#{log_name+".stderr"}`
-	#p "-P #{Dir.pwd} -o #{output_path} #{joined_args} #{test_file} >#{log_name+'.stdout'} 2>#{log_name+'.stderr'}"
+	cmdline = "-P #{Dir.pwd} -o #{output_path} #{joined_args} #{test_file} >#{log_name+'.stdout'} 2>#{log_name+'.stderr'}"
 	STDOUT << ($?.success?() ? '.' : '!')
-        return $?.success?
+        return [$?.success?,cmdline]
 end
 if(File.exists?(File.join(TESTS_DIR,"outputs_prev")))
     FileUtils.rm_r(File.join(TESTS_DIR,"outputs_prev"),{:force=>true,:secure=>true})
@@ -42,9 +42,10 @@ Dir.open(TEST_INPUT).each() {|f|
             next if test=="." or test==".."
             test_path = File.join(machine_dir,test)
             FileUtils.mkdir_p(File.join(TESTS_DIR,"outputs",machine,test))
-            if( not perform_test(ARGV[0],machine,test,ARGV[1..-1]))
+	    test_res = perform_test(ARGV[0],machine,test,ARGV[1..-1])
+            if( not test_res[0])
 		crashes[machine] ||= []
-                crashes[machine] << test
+                crashes[machine] << [test,test_res[1]]
             end
             FileUtils.mv(File.join(TESTS_DIR,"outputs",machine,"log"),File.join(TESTS_DIR,"outputs",machine,test+".log"))
         }
@@ -52,7 +53,7 @@ Dir.open(TEST_INPUT).each() {|f|
 crashes.each {|machine,crash_list|
         puts "\nEncountered #{crash_list.size} program failures for #{machine}\n"        
 	crash_list.each {|test|
-		puts("Decompiler failed on #{machine}/#{test}\n")
+		puts("Decompiler failed on #{machine}/#{test[0]} - #{test[1]}\n")
 	}
 }
 #Dir.open(TESTS_DIR+"/inputs").each() {|f|

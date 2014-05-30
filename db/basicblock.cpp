@@ -277,7 +277,7 @@ void BasicBlock::print(std::ostream& os, bool html) {
     os << ":\n";
     os << "in edges: ";
     for (BasicBlock *bb : m_InEdges)
-        os << bb->getHiAddr() << " ";
+        os << bb->getHiAddr() << "("<<bb->getLowAddr()<<") ";
     os << std::dec << "\n";
     os << "out edges: ";
     for (BasicBlock *bb : m_OutEdges)
@@ -1628,8 +1628,7 @@ void BasicBlock::getLiveOut(LocationSet &liveout, LocationSet& phiLocs) {
     liveout.clear();
     for (BasicBlock * currBB : m_OutEdges ) {
         // First add the non-phi liveness
-        liveout.makeUnion(currBB->liveIn);
-        int j = currBB->whichPred(this);
+        liveout.makeUnion(currBB->liveIn); // add successor liveIn to this liveout set.
         // The first RTL will have the phi functions, if any
         if (currBB->m_pRtls == nullptr || currBB->m_pRtls->size() == 0)
             continue;
@@ -1640,19 +1639,34 @@ void BasicBlock::getLiveOut(LocationSet &liveout, LocationSet& phiLocs) {
             if (!st->isPhi())
                 continue;
             PhiAssign* pa = (PhiAssign*)st;
-            bool found_in=false;
-            for(const std::pair<uint32_t,PhiInfo> &v : *pa) {
-                if(v.second.def()->getBB()==this) {
-                    found_in=true;
+            // Get the jth operand to the phi function; it has a use from BB *this
+            //assert(j>=0);
+            Statement* def = pa->getStmtAt(this);
+            if(!def) {
+                std::deque<BasicBlock *> to_visit(m_InEdges.begin(),m_InEdges.end());
+                std::set<BasicBlock *> tried {this};
+                // TODO: this looks like a hack ?  but sometimes PhiAssign has value which is defined in parent of 'this'
+                //  BB1 1  - defines r20
+                //  BB2 33 - transfers control to BB3
+                //  BB3 40 - r10 = phi { 1 }
+                while(!to_visit.empty()) {
+                    BasicBlock *pbb = to_visit.back();
+                    if(tried.find(pbb)!=tried.end()) {
+                        to_visit.pop_back();
+                        continue;
+                    }
+                    def = pa->getStmtAt(pbb);
+                    if(def)
+                        break;
+                    tried.insert(pbb);
+                    to_visit.pop_back();
+                    for(BasicBlock *bb: pbb->m_InEdges) {
+                        if(tried.find(bb)!=tried.end()) //already tried
+                            continue;
+                        to_visit.push_back(bb);
+                    }
                 }
             }
-            if(!found_in) {
-                qWarning() << " BasicBlock out edge not reflecteed in inEdge's PhiAssign";
-                continue;
-            }
-            // Get the jth operand to the phi function; it has a use from BB *this
-            assert(j>=0);
-            Statement* def = pa->getStmtAt(uint32_t(j));
             Exp * r = RefExp::get(pa->getLeft()->clone(), def);
             liveout.insert(r);
             phiLocs.insert(r);
@@ -1930,7 +1944,7 @@ static void findConstantValues(const Statement* s, std::list<int>& dests) {
         return;
     if (s->isPhi()) {
         // For each definition, recurse
-        for (const std::pair<int,PhiInfo> &it : *((PhiAssign*)s))
+        for (const auto &it : *((PhiAssign*)s))
             findConstantValues(it.second.def(), dests);
     }
     else if (s->isAssign()) {

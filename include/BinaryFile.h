@@ -214,7 +214,7 @@ class LoaderInterface {
     virtual ADDRESS IsJumpToAnotherAddr(ADDRESS /*uNative*/) { return NO_ADDRESS; }
     virtual tMapAddrToString &getSymbols() = 0;
     virtual bool hasDebugInfo() { return false; }
-    virtual const char *GetDynamicProcName(ADDRESS uNative) {
+    virtual const char *GetDynamicProcName(ADDRESS /*uNative*/) {
         return "dynamic";
     }
 

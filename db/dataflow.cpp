@@ -12,10 +12,9 @@
  * \brief   Implementation of the DataFlow class
  ******************************************************************************/
 
-#include <sstream>
-#include <cstring>
 
 #include "dataflow.h"
+
 #include "cfg.h"
 #include "proc.h"
 #include "exp.h"
@@ -23,6 +22,10 @@
 #include "visitor.h"
 #include "log.h"
 #include "frontend.h"
+
+#include <QtCore/QDebug>
+#include <sstream>
+#include <cstring>
 
 extern char debug_buffer[];         // For prints functions
 
@@ -370,9 +373,8 @@ bool DataFlow::renameBlockVars(UserProc* proc, int n, bool clearStacks /* = fals
                     phiLeft->getSubExp1()->addUsedLocs(locs);
                 // A phi statement may use a location defined in a childless call, in which case its use collector
                 // needs updating
-                PhiAssign::iterator pp;
-                for (pp = pa->begin(); pp != pa->end(); ++pp) {
-                    Statement* def = pp->second.def();
+                for (auto &pp : *pa) {
+                    Statement* def = pp.second.def();
                     if (def && def->isCall())
                         ((CallStatement*)def)->useBeforeDefine(phiLeft->clone());
                 }
@@ -406,7 +408,7 @@ bool DataFlow::renameBlockVars(UserProc* proc, int n, bool clearStacks /* = fals
                 // Else x is not subscripted yet
                 if (STACKS_EMPTY(x)) {
                     if (!Stacks[defineAll].empty())
-                        def = Stacks[defineAll].top();
+                        def = Stacks[defineAll].back();
                     else {
                         // If the both stacks are empty, use a nullptr definition. This will be changed into a pointer
                         // to an implicit definition at the start of type analysis, but not until all the m[...]
@@ -417,7 +419,7 @@ bool DataFlow::renameBlockVars(UserProc* proc, int n, bool clearStacks /* = fals
                     }
                 }
                 else
-                    def = Stacks[x].top();
+                    def = Stacks[x].back();
                 if (def && def->isCall())
                     // Calls have UseCollectors for locations that are used before definition at the call
                     ((CallStatement*)def)->useBeforeDefine(x->clone());
@@ -456,8 +458,8 @@ bool DataFlow::renameBlockVars(UserProc* proc, int n, bool clearStacks /* = fals
                 // Note: we clone a because otherwise it could be an expression that gets deleted through various
                 // modifications. This is necessary because we do several passes of this algorithm to sort out the
                 // memory expressions
-                Stacks[a->clone()].push(S);
-                // Replace definition of a with definition of a_i in S (we don't do this)
+                Stacks[a->clone()].push_back(S);
+                // Replace definition of 'a' with definition of a_i in S (we don't do this)
             }
             // FIXME: MVE: do we need this awful hack?
             if (a->getOper() == opLocal) {
@@ -465,7 +467,7 @@ bool DataFlow::renameBlockVars(UserProc* proc, int n, bool clearStacks /* = fals
                 assert(a1);
                 // Stacks already has a definition for a (as just the bare local)
                 if (suitable) {
-                    Stacks[a1->clone()].push(S);
+                    Stacks[a1->clone()].push_back(S);
                 }
             }
         }
@@ -476,7 +478,7 @@ bool DataFlow::renameBlockVars(UserProc* proc, int n, bool clearStacks /* = fals
             Stacks[defineAll];                                        // Ensure that there is an entry for defineAll
             for (auto & elem : Stacks) {
                 // if (dd->first->isMemDepth(memDepth))
-                elem.second.push(S);                                // Add a definition for all vars
+                elem.second.push_back(S);                                // Add a definition for all vars
             }
         }
     }
@@ -486,8 +488,6 @@ bool DataFlow::renameBlockVars(UserProc* proc, int n, bool clearStacks /* = fals
     size_t numSucc = outEdges.size();
     for (unsigned succ = 0; succ < numSucc; succ++) {
         BasicBlock * Ybb = outEdges[succ];
-        // Suppose n is the jth predecessor of Y
-        int j = Ybb->whichPred(bb);
         // For each phi-function in Y
         for (Statement * St = Ybb->getFirstStmt(rit, sit); St; St = Ybb->getNextStmt(rit, sit)) {
             PhiAssign* pa = dynamic_cast<PhiAssign*>(St);
@@ -496,7 +496,7 @@ bool DataFlow::renameBlockVars(UserProc* proc, int n, bool clearStacks /* = fals
             // So continue, not break.
             if (!pa)
                 continue;
-            // Suppose the jth operand of the phi is a
+            // Suppose the jth operand of the phi is 'a'
             // For now, just get the LHS
             Exp* a = pa->getLeft();
 
@@ -505,10 +505,10 @@ bool DataFlow::renameBlockVars(UserProc* proc, int n, bool clearStacks /* = fals
                 continue;
             Statement* def = nullptr; // assume No reaching definition
             if (!STACKS_EMPTY(a))
-                def = Stacks[a].top();
+                def = Stacks[a].back();
+
             // "Replace jth operand with a_i"
-            assert(j>=0);
-            pa->putAt(j, def, a);
+            pa->putAt(bb, def, a);
         }
     }
 
@@ -534,19 +534,18 @@ bool DataFlow::renameBlockVars(UserProc* proc, int n, bool clearStacks /* = fals
             if (!canRename(*dd, proc))
                 continue;
                 // if ((*dd)->getMemDepth() == memDepth)
-                std::map<Exp*, std::stack<Statement*>, lessExpStar>::iterator ss = Stacks.find(*dd);
+                auto ss = Stacks.find(*dd);
                 if (ss == Stacks.end()) {
                     std::cerr << "Tried to pop " << *dd << " from Stacks; does not exist\n";
                     assert(0);
                 }
-                ss->second.pop();
+                ss->second.pop_back();
         }
         // Pop all defs due to childless calls
         if (S->isCall() && ((CallStatement*)S)->isChildless()) {
-            std::map<Exp*, std::stack<Statement*>, lessExpStar>::iterator sss;
-            for (sss = Stacks.begin(); sss != Stacks.end(); ++sss) {
-                if (!sss->second.empty() && sss->second.top() == S) {
-                    sss->second.pop();
+            for (auto sss = Stacks.begin(); sss != Stacks.end(); ++sss) {
+                if (!sss->second.empty() && sss->second.back() == S) {
+                    sss->second.pop_back();
                 }
             }
         }
@@ -556,12 +555,12 @@ bool DataFlow::renameBlockVars(UserProc* proc, int n, bool clearStacks /* = fals
 
 void DataFlow::dumpStacks() {
     std::cerr << "Stacks: " << Stacks.size() << " entries\n";
-    std::map<Exp*, std::stack<Statement*>, lessExpStar>::iterator zz;
-    for (zz = Stacks.begin(); zz != Stacks.end(); zz++) {
+    for (auto zz = Stacks.begin(); zz != Stacks.end(); zz++) {
         std::cerr << "Var " << zz->first << " [ ";
-        std::stack<Statement*>tt = zz->second;               // Copy the stack!
+        std::deque<Statement*> tt = zz->second;               // Copy the stack!
         while (!tt.empty()) {
-            std::cerr << tt.top()->getNumber() << " "; tt.pop();
+            std::cerr << tt.back()->getNumber() << " ";
+            tt.pop_back();
         }
         std::cerr << "]\n";
     }
@@ -589,13 +588,12 @@ void DataFlow::dumpA_orig() {
     }
 }
 
-void DefCollector::updateDefs(std::map<Exp*, std::stack<Statement*>, lessExpStar>& Stacks, UserProc* proc) {
-    std::map<Exp*, std::stack<Statement*>, lessExpStar>::iterator it;
-    for (it = Stacks.begin(); it != Stacks.end(); it++) {
-        if (it->second.size() == 0)
+void DefCollector::updateDefs(std::map<Exp*, std::deque<Statement*>, lessExpStar>& Stacks, UserProc* proc) {
+    for (auto it = Stacks.begin(); it != Stacks.end(); it++) {
+        if (it->second.empty())
             continue;                    // This variable's definition doesn't reach here
         // Create an assignment of the form loc := loc{def}
-        RefExp* re = new RefExp(it->first->clone(), it->second.top());
+        RefExp* re = new RefExp(it->first->clone(), it->second.back());
         Assign* as = new Assign(it->first->clone(), re);
         as->setProc(proc);                // Simplify sometimes needs this
         insert(as);
