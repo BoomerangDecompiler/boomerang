@@ -120,7 +120,7 @@ enum MACHINE {
 };
 
 class BinaryFileFactory {
-    void *dlHandle; // Needed for UnLoading the library
+    //void *dlHandle; // TODO: consider replacing this with QPluginLoader instances to allow unloading ?
     QObject *getInstanceFor(const QString &sName);
     static QString m_base_path; //!< path from which the executable is being ran, used to find lib/ directory
 

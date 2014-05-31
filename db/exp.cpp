@@ -1863,8 +1863,7 @@ bool Location::match(const std::string &pattern, std::map<std::string, Exp *> &b
             return false;
         if (pattern.back() != ']')
             return false;
-        char *sub = strdup(pattern.c_str() + 2);
-        *(sub + strlen(sub) - 1) = 0;
+        std::string sub = pattern.substr(2);
         return subExp1->match(sub, bindings);
     }
     return false;

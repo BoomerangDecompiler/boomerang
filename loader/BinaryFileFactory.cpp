@@ -121,4 +121,6 @@ QObject *BinaryFileFactory::getInstanceFor(const QString &sName) {
     return plugin_loader.instance();
 }
 
-void BinaryFileFactory::UnLoad() {}
+void BinaryFileFactory::UnLoad() {
+
+}

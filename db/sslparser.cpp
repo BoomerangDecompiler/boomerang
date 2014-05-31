@@ -429,9 +429,9 @@ int count;
 #endif
 #endif
 {
-    register char *f = from;
-    register char *t = to;
-    register int i = count;
+    char *f = from;
+    char *t = to;
+    int i = count;
 
     while (i-- > 0)
         *t++ = *f++;

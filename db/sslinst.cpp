@@ -501,6 +501,8 @@ void RTLInstDict::transformPostVars(std::list<Statement *> &rts, bool optimise) 
             }
             // For an assignment, the two expressions to search are the left and right hand sides (could just put the
             // whole assignment on, I suppose)
+            assert(lhs!=nullptr);
+            assert(rhs!=nullptr);
             ss = Binary::get(opList, lhs->clone(), Binary::get(opList, rhs->clone(), new Terminal(opNil)));
         } else if (rt->isFlagAssgn()) {
             // An opFlagCall is assumed to be a Binary with a string and an opList of parameters
