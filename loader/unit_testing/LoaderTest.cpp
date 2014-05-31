@@ -35,48 +35,9 @@
 #ifndef _WIN32
 #include <dlfcn.h> // dlopen, dlsym
 #endif
-
-/***************************************************************************/ /**
-  * FUNCTION:        LoaderTest::registerTests
-  * OVERVIEW:        Register the test functions in the given suite
-  * PARAMETERS:      Pointer to the test suite
-  *
-  *============================================================================*/
-#define MYTEST(name) suite->addTest(new CppUnit::TestCaller<LoaderTest>("LoaderTest", &LoaderTest::name, *this))
-
-void LoaderTest::registerTests(CppUnit::TestSuite *suite) {
-    MYTEST(testSparcLoad);
-    MYTEST(testPentiumLoad);
-    MYTEST(testHppaLoad);
-    MYTEST(testPalmLoad);
-    MYTEST(testWinLoad);
-
-    MYTEST(testMicroDis1);
-    MYTEST(testMicroDis2);
-
-    MYTEST(testElfHash);
-}
-
-int LoaderTest::countTestCases() const { return 7; } // ? What's this for?
-
-/***************************************************************************/ /**
-  * FUNCTION:        LoaderTest::setUp
-  * OVERVIEW:        Set up anything needed before all tests
-  * NOTE:            Called before any tests
-  * PARAMETERS:      <none>
-  *
-  *============================================================================*/
-void LoaderTest::setUp() {}
-
-/***************************************************************************/ /**
-  * FUNCTION:        LoaderTest::tearDown
-  * OVERVIEW:        Delete objects created in setUp
-  * NOTE:            Called after all tests
-  * PARAMETERS:      <none>
-  *
-  *============================================================================*/
-void LoaderTest::tearDown() {}
-
+#include <QLibrary>
+#include <sstream>
+#include "../microX86dis.c"
 /***************************************************************************/ /**
   * FUNCTION:        LoaderTest::testSparcLoad
   * OVERVIEW:        Test loading the sparc hello world program
@@ -86,22 +47,24 @@ void LoaderTest::testSparcLoad() {
 
     // Load SPARC hello world
     BinaryFileFactory bff;
-    BinaryFile *pBF = bff.Load(HELLO_SPARC);
-    CPPUNIT_ASSERT(pBF != nullptr);
+    QObject *pBF = bff.Load(HELLO_SPARC);
+    QVERIFY(pBF != nullptr);
     int n;
     SectionInfo *si;
-    n = pBF->GetNumSections();
+    SectionInterface *sect_iface = qobject_cast<SectionInterface *>(pBF);
+    QVERIFY(sect_iface!=nullptr);
+
+    n = sect_iface->GetNumSections();
     ost << "Number of sections = " << std::dec << n << "\r\n\t";
     // Just use the first (real one) and last sections
-    si = pBF->GetSectionInfo(1);
+    si = sect_iface->GetSectionInfo(1);
     ost << si->pSectionName << "\t";
-    si = pBF->GetSectionInfo(n - 1);
+    si = sect_iface->GetSectionInfo(n - 1);
     ost << si->pSectionName;
-    pBF->UnLoad();
     // Note: the string below needs to have embedded tabs. Edit with caution!
     std::string expected("Number of sections = 29\r\n\t"
                          ".interp    .stab.indexstr");
-    CPPUNIT_ASSERT_EQUAL(expected, ost.str());
+    QCOMPARE(expected, ost.str());
     bff.UnLoad();
 }
 
@@ -114,23 +77,24 @@ void LoaderTest::testPentiumLoad() {
 
     // Load Pentium hello world
     BinaryFileFactory bff;
-    BinaryFile *pBF = bff.Load(HELLO_PENTIUM);
-    CPPUNIT_ASSERT(pBF != nullptr);
+    QObject *pBF = bff.Load(HELLO_PENTIUM);
+    QVERIFY(pBF != nullptr);
+    SectionInterface *sect_iface = qobject_cast<SectionInterface *>(pBF);
+    QVERIFY(sect_iface!=nullptr);
     int n;
     SectionInfo *si;
-    n = pBF->GetNumSections();
+    n = sect_iface->GetNumSections();
     ost << "Number of sections = " << std::dec << n << "\r\n\t";
-    si = pBF->GetSectionInfo(1);
+    si = sect_iface->GetSectionInfo(1);
     ost << si->pSectionName << "\t";
-    si = pBF->GetSectionInfo(n - 1);
+    si = sect_iface->GetSectionInfo(n - 1);
     ost << si->pSectionName;
-    pBF->UnLoad();
     // Note: the string below needs to have embedded tabs. Edit with caution!
     // (And slightly different string to the sparc test, e.g. rel vs rela)
     std::string expected("Number of sections = 34\r\n\t"
                          ".interp    .strtab");
 
-    CPPUNIT_ASSERT_EQUAL(expected, ost.str());
+    QCOMPARE(expected, ost.str());
     bff.UnLoad();
 }
 
@@ -143,21 +107,22 @@ void LoaderTest::testHppaLoad() {
 
     // Load HPPA hello world
     BinaryFileFactory bff;
-    BinaryFile *pBF = bff.Load(HELLO_HPPA);
-    CPPUNIT_ASSERT(pBF != nullptr);
+    QObject *pBF = bff.Load(HELLO_HPPA);
+    QVERIFY(pBF != nullptr);
+    SectionInterface *sect_iface = qobject_cast<SectionInterface *>(pBF);
+    QVERIFY(sect_iface!=nullptr);
     int n;
     SectionInfo *si;
-    n = pBF->GetNumSections();
+    n = sect_iface->GetNumSections();
     ost << "Number of sections = " << std::dec << n << "\r\n";
     for (int i = 0; i < n; i++) {
-        si = pBF->GetSectionInfo(i);
+        si = sect_iface->GetSectionInfo(i);
         ost << si->pSectionName << "\t";
     }
-    pBF->UnLoad();
     // Note: the string below needs to have embedded tabs. Edit with caution!
     std::string expected("Number of sections = 4\r\n"
                          "$HEADER$    $TEXT$    $DATA$    $BSS$    ");
-    CPPUNIT_ASSERT_EQUAL(expected, ost.str());
+    QCOMPARE(expected, ost.str());
     bff.UnLoad();
 }
 
@@ -170,22 +135,24 @@ void LoaderTest::testPalmLoad() {
 
     // Load Palm Starter.prc
     BinaryFileFactory bff;
-    BinaryFile *pBF = bff.Load(STARTER_PALM);
-    CPPUNIT_ASSERT(pBF != nullptr);
+    QObject *pBF = bff.Load(STARTER_PALM);
+    QVERIFY(pBF != nullptr);
+    SectionInterface *sect_iface = qobject_cast<SectionInterface *>(pBF);
+    QVERIFY(sect_iface!=nullptr);
     int n;
     SectionInfo *si;
-    n = pBF->GetNumSections();
+    n = sect_iface->GetNumSections();
     ost << "Number of sections = " << std::dec << n << "\r\n";
     for (int i = 0; i < n; i++) {
-        si = pBF->GetSectionInfo(i);
+        si = sect_iface->GetSectionInfo(i);
         ost << si->pSectionName << "\t";
     }
-    pBF->UnLoad();
+
     // Note: the string below needs to have embedded tabs. Edit with caution!
     std::string expected("Number of sections = 8\r\n"
                          "code1    MBAR1000    tFRM1000    Talt1001    "
                          "data0    code0    tAIN1000    tver1000    ");
-    CPPUNIT_ASSERT_EQUAL(expected, ost.str());
+    QCOMPARE(expected, ost.str());
     bff.UnLoad();
 }
 
@@ -200,7 +167,7 @@ void LoaderTest::testWinLoad() {
     // Load Windows program calc.exe
     BinaryFileFactory bff;
     BinaryFile* pBF = bff.Load(CALC_WINDOWS);
-    CPPUNIT_ASSERT(pBF != nullptr);
+    QVERIFY(pBF != nullptr);
     int n;
     SectionInfo* si;
     n = pBF->GetNumSections();
@@ -214,10 +181,10 @@ void LoaderTest::testWinLoad() {
     std::string expected("Number of sections = 5\r\n"
         ".text    .rdata    .data    .rsrc    .reloc    ");
     std::string actual(ost.str());
-    CPPUNIT_ASSERT_EQUAL(expected, actual);
+    QCOMPARE(expected, actual);
 
     ADDRESS addr = pBF->GetMainEntryPoint();
-    CPPUNIT_ASSERT(addr != NO_ADDRESS);
+    QVERIFY(addr != NO_ADDRESS);
 
     // Test symbol table (imports)
     const char* s = pBF->SymbolByAddress(0x1292060U);
@@ -226,62 +193,63 @@ void LoaderTest::testWinLoad() {
     else
         actual = std::string(s);
     expected = std::string("SetEvent");
-    CPPUNIT_ASSERT_EQUAL(expected, actual);
+    QCOMPARE(expected, actual);
 
     ADDRESS a = pBF->GetAddressByName("SetEvent");
     ADDRESS expectedAddr = 0x1292060;
-    CPPUNIT_ASSERT_EQUAL(expectedAddr, a);
+    QCOMPARE(expectedAddr, a);
     pBF->UnLoad();
     bff.UnLoad();
 
     // Test loading the "new style" exes, as found in winXP etc
     pBF = bff.Load(CALC_WINXP);
-    CPPUNIT_ASSERT(pBF != nullptr);
+    QVERIFY(pBF != nullptr);
     addr = pBF->GetMainEntryPoint();
     std::ostringstream ost1;
     ost1 << std::hex << addr;
     actual = ost1.str();
     expected = "1001f51";
-    CPPUNIT_ASSERT_EQUAL(expected, actual);
+    QCOMPARE(expected, actual);
     pBF->UnLoad();
     bff.UnLoad();
 
     // Test loading the calc.exe found in Windows 2000 (more NT based)
     pBF = bff.Load(CALC_WIN2000);
-    CPPUNIT_ASSERT(pBF != nullptr);
+    QVERIFY(pBF != nullptr);
     expected = "1001680";
     addr = pBF->GetMainEntryPoint();
     std::ostringstream ost2;
     ost2 << std::hex << addr;
     actual = ost2.str();
-    CPPUNIT_ASSERT_EQUAL(expected, actual);
+    QCOMPARE(expected, actual);
     pBF->UnLoad();
     bff.UnLoad();
 
     // Test loading the lpq.exe program - console mode PE file
     pBF = bff.Load(LPQ_WINDOWS);
-    CPPUNIT_ASSERT(pBF != nullptr);
+    QVERIFY(pBF != nullptr);
     addr = pBF->GetMainEntryPoint();
     std::ostringstream ost3;
     ost3 << std::hex << addr;
     actual = ost3.str();
     expected = "18c1000";
-    CPPUNIT_ASSERT_EQUAL(expected, actual);
+    QCOMPARE(expected, actual);
     pBF->UnLoad();
     bff.UnLoad();
 #endif
 
     // Borland
     BinaryFileFactory bff;
-    BinaryFile *pBF = bff.Load(SWITCH_BORLAND);
-    CPPUNIT_ASSERT(pBF != nullptr);
-    ADDRESS addr = pBF->GetMainEntryPoint();
+    QObject *pBF = bff.Load(SWITCH_BORLAND);
+    QVERIFY(pBF != nullptr);
+    LoaderInterface *ldr_iface = qobject_cast<LoaderInterface *>(pBF);
+    QVERIFY(ldr_iface!=nullptr);
+    ADDRESS addr = ldr_iface->GetMainEntryPoint();
     std::ostringstream ost4;
     ost4 << std::hex << addr;
     std::string actual(ost4.str());
     std::string expected("401150");
-    CPPUNIT_ASSERT_EQUAL(expected, actual);
-    pBF->UnLoad();
+    QCOMPARE(expected, actual);
     bff.UnLoad();
 }
 
@@ -289,7 +257,7 @@ void LoaderTest::testWinLoad() {
   * FUNCTION:        LoaderTest::testMicroDis
   * OVERVIEW:        Test the micro disassembler
   *============================================================================*/
-extern "C" { int microX86Dis(void *p); }
+
 
 // The below lengths were derived from a quick and dirty program (called
 // quick.c) which used the output from a disassembly to find the lengths.
@@ -340,7 +308,7 @@ static char lengths[] = {
     2, 2, 3, 3, 2, 3, 1, 1, 1, 1, 1, 1, 2, 1,            5,             1, 6, 3, 1, 1};
 
 // text segment of hello pentium
-static char pent_hello_text[] = {
+static unsigned char pent_hello_text[] = {
     0x6a, 0x00,  0x6a, 0x00,  0x8b, 0xec,  0x52, 0xb8,  0x80, 0x87,  0x04, 0x08,  0x85, 0xc0,  0x74, 0x0d,  0x68, 0x80,
     0x87, 0x04,  0x08, 0xe8,  0x66, 0xff,  0xff, 0xff,  0x83, 0xc4,  0x04, 0xb8,  0x44, 0xa4,  0x04, 0x08,  0x85, 0xc0,
     0x74, 0x05,  0xe8, 0x55,  0xff, 0xff,  0xff, 0x68,  0xe0, 0x93,  0x04, 0x08,  0xe8, 0x4b,  0xff, 0xff,  0xff, 0x8b,
@@ -517,25 +485,25 @@ void LoaderTest::testMicroDis1() {
     void *p = pent_hello_text;
     i = 0;
     while (totalSize < (int)n) {
-        int size = microX86Dis(p);
+        int size = microX86Dis(pent_hello_text);
         if (size >= 0x40) {
-            std::cout << "Not handled instruction at offset 0x" << std::hex << (ADDRESS)p - (ADDRESS)pent_hello_text
+            std::cout << "Not handled instruction at offset 0x" << std::hex << ADDRESS::host_ptr(p) - ADDRESS::host_ptr(pent_hello_text)
                       << std::endl;
-            CPPUNIT_ASSERT(size != 0x40);
+            QVERIFY(size != 0x40);
             return;
         }
         int expected = lengths[i++];
         if (expected != size) {
-            std::cout << "At offset 0x" << std::hex << (ADDRESS)p - (ADDRESS)pent_hello_text << " ("
+            std::cout << "At offset 0x" << std::hex << ADDRESS::host_ptr(p) - ADDRESS::host_ptr(pent_hello_text) << " ("
                       << (int)*((unsigned char *)p) << " " << (int)*((unsigned char *)p + 1) << " "
                       << (int)*((unsigned char *)p + 2) << " " << (int)*((unsigned char *)p + 3) << " "
                       << ") expected " << std::dec << expected << ", actual " << size << std::endl;
-            CPPUNIT_ASSERT_EQUAL(expected, size);
+            QCOMPARE(expected, size);
         }
         p = (void *)((char *)p + size);
         totalSize += size;
     }
-    CPPUNIT_ASSERT_EQUAL((int)n, totalSize);
+    QCOMPARE((int)n, totalSize);
 }
 
 void LoaderTest::testMicroDis2() {
@@ -547,22 +515,23 @@ void LoaderTest::testMicroDis2() {
     unsigned char movsbl[3] = {0x0f, 0xbe, 0x00};
     unsigned char movswl[3] = {0x0f, 0xbf, 0x00};
     int size = microX86Dis(movsbl);
-    CPPUNIT_ASSERT_EQUAL(3, size);
+    QCOMPARE(3, size);
     size = microX86Dis(movswl);
-    CPPUNIT_ASSERT_EQUAL(3, size);
+    QCOMPARE(3, size);
 }
 
 typedef unsigned (*elfHashFcn)(const char *);
 void LoaderTest::testElfHash() {
-#ifndef _WIN32
-    void *dlHandle = dlopen(ELFBINFILE, RTLD_LAZY);
-    CPPUNIT_ASSERT(dlHandle);
+    QLibrary z;
+    z.setFileName(ELFBINFILE);
+    bool opened = z.load();
+    QVERIFY(opened);
     // Use the handle to find the "elf_hash" function
-    elfHashFcn pFcn = (elfHashFcn)dlsym(dlHandle, "elf_hash");
-    CPPUNIT_ASSERT(pFcn);
+    elfHashFcn pFcn = (elfHashFcn)z.resolve("elf_hash");
+    QVERIFY(pFcn);
     // Call the function with the string "main
     unsigned act = (*pFcn)("main");
     unsigned exp = 0x737fe;
-    CPPUNIT_ASSERT_EQUAL(exp, act);
-#endif
+    QCOMPARE(exp, act);
 }
+QTEST_MAIN(LoaderTest)

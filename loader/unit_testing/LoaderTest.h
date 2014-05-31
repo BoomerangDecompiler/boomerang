@@ -1,20 +1,9 @@
-#include <cppunit/TestCaller.h>
-#include <cppunit/TestCase.h>
-#include <cppunit/TestSuite.h>
 #include "BinaryFile.h"
-
-class LoaderTest : public CppUnit::TestCase {
+#include <QtTest/QTest>
+class LoaderTest : public QObject {
+    Q_OBJECT
   protected:
-  public:
-    LoaderTest(std::string name) : CppUnit::TestCase(name) {}
-
-    virtual void registerTests(CppUnit::TestSuite *suite);
-
-    int countTestCases() const;
-
-    void setUp();
-    void tearDown();
-
+  private slots:
     void testSparcLoad();
     void testPentiumLoad();
     void testHppaLoad();

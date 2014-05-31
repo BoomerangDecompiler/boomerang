@@ -29,10 +29,6 @@ ADD_EXECUTABLE(bffDump bffDump.cpp BinaryFileFactory.cpp)
 TARGET_LINK_LIBRARIES(bffDump BinaryFile)
 qt5_use_modules(bffDump Core)
 
-
-IF(CPPUNIT_FOUND)
-    ADD_EXECUTABLE(testLoader testLoader.cpp LoaderTest.cpp BinaryFileFactory.cpp microX86dis.c SymTab.cpp)
-    TARGET_LINK_LIBRARIES(testLoader ${CPPUNIT_LIBS})
-    TARGET_LINK_LIBRARIES(testLoader ${DL_LIBS})
-    TARGET_LINK_LIBRARIES(testLoader BinaryFile)
+IF(BUILD_TESTING)
+  ADD_SUBDIRECTORY(unit_testing)
 ENDIF()
