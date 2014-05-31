@@ -11,12 +11,11 @@
 #define NO_GARBAGE_COLLECTOR
 #endif
 
-void init_dfa();            // Prototypes for
-void init_sslparser();        // various initialisation functions
-void init_basicblock();        // for garbage collection safety
+void init_dfa();        // Prototypes for
+void init_sslparser();  // various initialisation functions
+void init_basicblock(); // for garbage collection safety
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
     init_dfa();
     init_sslparser();
     init_basicblock();
@@ -26,4 +25,3 @@ int main(int argc, char *argv[])
     mainWindow.show();
     return app.exec();
 }
-

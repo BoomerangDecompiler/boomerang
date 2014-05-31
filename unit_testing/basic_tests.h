@@ -1,10 +1,9 @@
 #ifndef BASIC_TESTS_H
 #define BASIC_TESTS_H
 #include <QtTest/QtTest>
-class CodeBlockLoader: public QObject
-{
+class CodeBlockLoader : public QObject {
     Q_OBJECT
-private slots:
+  private slots:
     void load_basic_data();
 };
 

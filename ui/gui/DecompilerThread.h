@@ -15,12 +15,11 @@ class Cluster;
 class QTableWidget;
 class QObject;
 
-class Decompiler : public QObject, public Watcher
-{
+class Decompiler : public QObject, public Watcher {
     Q_OBJECT
 
-public:
-    Decompiler() : QObject(), debugging(false), waiting(false) { }
+  public:
+    Decompiler() : QObject(), debugging(false), waiting(false) {}
 
     virtual void alert_decompile_debug_point(UserProc *p, const char *description) override;
     virtual void alert_considering(Proc *parent, Proc *p) override;
@@ -43,7 +42,7 @@ public:
     void addEntryPoint(ADDRESS a, const char *nam);
     void removeEntryPoint(ADDRESS a);
 
-public slots:
+  public slots:
     void changeInputFile(const QString &f);
     void changeOutputPath(const QString &path);
     void load();
@@ -77,8 +76,7 @@ signals:
 
     void debuggingPoint(const QString &name, const QString &description);
 
-protected:
-
+  protected:
     bool debugging, waiting;
 
     FrontEnd *fe;
@@ -92,16 +90,15 @@ protected:
     std::vector<ADDRESS> user_entrypoints;
 };
 
-class DecompilerThread : public QThread
-{
+class DecompilerThread : public QThread {
     Q_OBJECT
 
-public:
-    DecompilerThread() : QThread(), decompiler(NULL) { }
+  public:
+    DecompilerThread() : QThread(), decompiler(NULL) {}
 
     Decompiler *getDecompiler();
 
-protected:
+  protected:
     void run();
 
     Decompiler *decompiler;

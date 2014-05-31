@@ -7,7 +7,6 @@
  *
  */
 
-
 /*
  * This file contains a truely diabolical hack to make Qt4 threads work
  * nicely with the Boehm garbage collector.  It works by exporting a
@@ -29,16 +28,16 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-//extern "C" void *GC_start_routine(void * arg);
+// extern "C" void *GC_start_routine(void * arg);
 
-//typedef void *pthread_create_type(void *a, void *b, void *c, void *d);
+// typedef void *pthread_create_type(void *a, void *b, void *c, void *d);
 
-//extern "C" void *GC_pthread_create(void *, void *, void *, void *);
+// extern "C" void *GC_pthread_create(void *, void *, void *, void *);
 
-//void *pthread_lib = NULL;
-//pthread_create_type *orig = NULL;
+// void *pthread_lib = NULL;
+// pthread_create_type *orig = NULL;
 
-//extern "C" void *pthread_create(void *a, void *b, void *c, void *d)
+// extern "C" void *pthread_create(void *a, void *b, void *c, void *d)
 //{
 //    if (c != (void*)GC_start_routine)
 //        return GC_pthread_create(a, b, c, d);
@@ -58,5 +57,3 @@
 //        return (*orig)(a, b, c, d);
 //    }
 //}
-
-

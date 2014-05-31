@@ -13,10 +13,10 @@
 #define NO_GARBAGE_COLLECTOR
 #endif
 
-CommandlineDriver::CommandlineDriver(QObject *parent) :
-    QObject(parent),m_kill_timer(this) {
-    this->connect(&m_kill_timer,&QTimer::timeout,this,&CommandlineDriver::onCompilationTimeout);
-    QCoreApplication::instance()->connect(&m_thread,&DecompilationThread::finished,[]() {QCoreApplication::instance()->quit();});
+CommandlineDriver::CommandlineDriver(QObject *parent) : QObject(parent), m_kill_timer(this) {
+    this->connect(&m_kill_timer, &QTimer::timeout, this, &CommandlineDriver::onCompilationTimeout);
+    QCoreApplication::instance()->connect(&m_thread, &DecompilationThread::finished,
+                                          []() { QCoreApplication::instance()->quit(); });
 }
 /**
  * Prints help about the command line switches.
@@ -34,10 +34,8 @@ static void help() {
     std::cout << "  -t               : Trace (print address of) every instruction decoded\n";
     std::cout << "  -Tc              : Use old constraint-based type analysis\n";
     std::cout << "  -Td              : Use data-flow-based type analysis\n";
-#if USE_XML
     std::cout << "  -LD              : Load before decompile (<program> becomes xml input file)\n";
     std::cout << "  -SD              : Save before decompile\n";
-#endif
     std::cout << "  -a               : Assume ABI compliance\n";
     std::cout << "  -W               : Windows specific decompilation mode (requires pdb information)\n";
     //    std::cout << "  -pa              : only propagate if can propagate to all\n";
@@ -96,11 +94,11 @@ static void usage() {
     std::cout << "boomerang -h for switch help" << std::endl;
 }
 int CommandlineDriver::applyCommandline() {
-    printf("Boomerang %s\n", VERSION);        // Display a version and date (mainly for release versions)
+    printf("Boomerang %s\n", VERSION); // Display a version and date (mainly for release versions)
     QCoreApplication *app = QCoreApplication::instance();
     QStringList args(app->arguments());
-    int kmd=0;
-    if(args.size()<2) {
+    int kmd = 0;
+    if (args.size() < 2) {
         usage();
         return 1;
     }
@@ -111,8 +109,8 @@ int CommandlineDriver::applyCommandline() {
     Boomerang &boom(*Boomerang::get());
     boom.setProgPath(QFileInfo(args[0]).absolutePath().toStdString());
     boom.setPluginPath(QFileInfo(args[0]).absolutePath());
-    for(int i=1; i<args.size(); ++i) {
-        QString arg=args[i];
+    for (int i = 1; i < args.size(); ++i) {
+        QString arg = args[i];
         if (arg[0] != '-') {
             if (i == args.size() - 1)
                 break;
@@ -121,228 +119,227 @@ int CommandlineDriver::applyCommandline() {
             return 1;
         }
         switch (arg[1].toLatin1()) {
-            case 'E':
+        case 'E':
+            boom.noDecodeChildren = true;
+        // Fall through
+        case 'e': {
+            ADDRESS addr;
+            boom.decodeMain = false;
+            if (++i == args.size()) {
+                usage();
+                return 1;
+            }
+            bool converted = false;
+            addr.m_value = args[i].toLongLong(&converted, 0);
+            if (not converted) {
+                std::cerr << "bad address: " << args[i].toStdString() << std::endl;
+                exit(1);
+            }
+            boom.entrypoints.push_back(addr);
+        } break;
+        case 'h':
+            help();
+            break;
+        case 'v':
+            boom.vFlag = true;
+            break;
+        case 'x':
+            boom.dumpXML = true;
+            break;
+        case 'X':
+            boom.experimental = true;
+            std::cout << "Warning: experimental code active!\n";
+            break;
+        case 'r':
+            boom.printRtl = true;
+            break;
+        case 't':
+            boom.traceDecoder = true;
+            break;
+        case 'T':
+            if (arg[2] == 'c') {
+                boom.conTypeAnalysis = true; // -Tc: use old constraint-based type analysis
+                boom.dfaTypeAnalysis = false;
+            } else if (arg[2] == 'd')
+                boom.dfaTypeAnalysis = true; // -Td: use data-flow-based type analysis (now default)
+            break;
+        case 'g':
+            if (arg[2] == 'd')
+                boom.dotFile = args[++i].toStdString();
+            else if (arg[2] == 'c')
+                boom.generateCallGraph = true;
+            else if (arg[2] == 's') {
+                boom.generateSymbols = true;
+                boom.stopBeforeDecompile = true;
+            }
+            break;
+        case 'o': {
+            std::string o_path = args[++i].toStdString();
+            char lastCh = o_path.back();
+            if (lastCh != '/' && lastCh != '\\')
+                o_path += '/'; // Maintain the convention of a trailing slash
+            boom.setOutputDirectory(o_path);
+            break;
+        }
+        case 'i':
+            if (arg[2] == 'c')
+                boom.decodeThruIndCall = true; // -ic;
+            if (arg[2] == 'w')                 // -iw
+                if (boom.ofsIndCallReport) {
+                    std::string fname = boom.getOutputPath() + "indirect.txt";
+                    boom.ofsIndCallReport = new std::ofstream(fname.c_str());
+                }
+            break;
+        case '-':
+            break; // No effect: ignored
+        case 'L':
+            if (arg[2] == 'D')
+                boom.loadBeforeDecompile = true;
+            break;
+        case 'k':
+            kmd = 1;
+            break;
+        case 'P': {
+            QString qstr(args[++i] + "/");
+            QFileInfo qfi(qstr);
+            boom.setProgPath(qfi.path().toStdString());
+        } break;
+
+        case 'n':
+            switch (arg[2].toLatin1()) {
+            case 'b':
+                boom.noBranchSimplify = true;
+                break;
+            case 'c':
                 boom.noDecodeChildren = true;
-                // Fall through
-            case 'e': {
-                ADDRESS addr;
-                boom.decodeMain = false;
-                if (++i == args.size()) {
-                    usage();
-                    return 1;
-                }
-                bool converted=false;
-                addr.m_value = args[i].toLongLong(&converted,0);
-                if (not converted) {
-                    std::cerr << "bad address: " << args[i].toStdString() << std::endl;
-                    exit(1);
-                }
-                boom.entrypoints.push_back(addr);
-            }
-                break;
-            case 'h': help(); break;
-            case 'v': boom.vFlag = true; break;
-            case 'x': boom.dumpXML = true; break;
-            case 'X': boom.experimental = true;
-                std::cout << "Warning: experimental code active!\n"; break;
-            case 'r': boom.printRtl = true; break;
-            case 't': boom.traceDecoder = true; break;
-            case 'T':
-                if (arg[2] == 'c') {
-                    boom.conTypeAnalysis = true;        // -Tc: use old constraint-based type analysis
-                    boom.dfaTypeAnalysis = false;
-                }
-                else if (arg[2] == 'd')
-                    boom.dfaTypeAnalysis = true;        // -Td: use data-flow-based type analysis (now default)
-                break;
-            case 'g':
-                if(arg[2]=='d')
-                    boom.dotFile = args[++i].toStdString();
-                else if(arg[2]=='c')
-                    boom.generateCallGraph=true;
-                else if(arg[2]=='s') {
-                    boom.generateSymbols=true;
-                    boom.stopBeforeDecompile=true;
-                }
-                break;
-            case 'o': {
-                std::string o_path = args[++i].toStdString();
-                char lastCh = o_path.back();
-                if (lastCh != '/' && lastCh != '\\')
-                    o_path += '/';        // Maintain the convention of a trailing slash
-                boom.setOutputDirectory(o_path);
-                break;
-            }
-            case 'i':
-                if (arg[2] == 'c')
-                    boom.decodeThruIndCall = true;        // -ic;
-                if (arg[2] == 'w')                // -iw
-                    if (boom.ofsIndCallReport) {
-                        std::string fname = boom.getOutputPath() + "indirect.txt";
-                        boom.ofsIndCallReport = new std::ofstream(fname.c_str());
-                    }
-                break;
-            case '-': break;        // No effect: ignored
-            case 'L':
-                if (arg[2] == 'D')
-#if USE_XML
-                    boom.loadBeforeDecompile = true;
-#else
-                    std::cerr << "LD command not enabled since compiled without USE_XML\n";
-#endif
-                break;
-            case 'k':
-                kmd = 1;
-                break;
-            case 'P':
-            {
-                QString qstr(args[++i]+"/");
-                QFileInfo qfi(qstr);
-                boom.setProgPath(qfi.path().toStdString());
-            }
-                break;
-
-            case 'n':
-                switch(arg[2].toLatin1()) {
-                    case 'b':
-                        boom.noBranchSimplify = true;
-                        break;
-                    case 'c':
-                        boom.noDecodeChildren = true;
-                        break;
-                    case 'd':
-                        boom.noDataflow = true;
-                        break;
-                    case 'D':
-                        boom.noDecompile = true;
-                        break;
-                    case 'l':
-                        boom.noLocals = true;
-                        break;
-                    case 'n':
-                        boom.noRemoveNull = true;
-                        break;
-                    case 'P':
-                        boom.noPromote = true;
-                        break;
-                    case 'p':
-                        boom.noParameterNames = true;
-                        break;
-                    case 'r':
-                        boom.noRemoveLabels = true;
-                        break;
-                    case 'R':
-                        boom.noRemoveReturns = true;
-                        break;
-                    case 'g':
-                        boom.noGlobals = true;
-                        break;
-                    case 'G':
-#ifndef NO_GARBAGE_COLLECTOR
-                        GC_disable();
-#endif
-                        break;
-                    default:
-                        help();
-                }
-                break;
-
-            case 'p':
-                if (arg[2] == 'a') {
-                    boom.propOnlyToAll = true;
-                    std::cerr << " * * Warning! -pa is not implemented yet!\n";
-                }
-                else {
-                    if (++i == args.size()) {
-                        usage();
-                        return 1;
-                    }
-                    boom.numToPropagate = args[i].toInt();
-                }
-                break;
-            case 's': {
-                if (arg[2] == 'f') {
-                    boom.symbolFiles.push_back(args[i+1].toStdString());
-                    i++;
-                    break;
-                }
-                ADDRESS addr;
-                if (++i == args.size()) {
-                    usage();
-                    return 1;
-                }
-                bool converted=false;
-                addr.m_value = args[i].toLongLong(&converted,0);
-                if (not converted) {
-                    std::cerr << "bad address: " << args[i+1].toStdString() << std::endl;
-                    exit(1);
-                }
-                boom.symbols[addr] = args[++i].toStdString();
-            }
                 break;
             case 'd':
-                switch(arg[2].toLatin1()) {
-                    case 'a':
-                        boom.printAST = true;
-                        break;
-                    case 'c':
-                        boom.debugSwitch = true;
-                        break;
-                    case 'd':
-                        boom.debugDecoder = true;
-                        break;
-                    case 'g':
-                        boom.debugGen = true;
-                        break;
-                    case 'l':
-                        boom.debugLiveness = true;
-                        break;
-                    case 'p':
-                        boom.debugProof = true;
-                        break;
-                    case 's':
-                        boom.stopAtDebugPoints = true;
-                        break;
-                    case 't':        // debug type analysis
-                        boom.debugTA = true;
-                        break;
-                    case 'u':        // debug unused locations (including returns and parameters now)
-                        boom.debugUnused = true;
-                        break;
-                    default:
-                        help();
-                }
+                boom.noDataflow = true;
                 break;
-            case 'm':
-                if (++i == args.size()) {
-                    usage();
-                    return 1;
-                }
-                boom.maxMemDepth = args[i].toInt();
-                break;
-            case 'a':
-                boom.assumeABI = true;
+            case 'D':
+                boom.noDecompile = true;
                 break;
             case 'l':
-                if (++i == args.size()) {
-                    usage();
-                    return 1;
-                }
-                boom.propMaxDepth = args[i].toInt();
+                boom.noLocals = true;
                 break;
-            case 'S':
-                if (arg[2] == 'D')
-#if USE_XML
-                    saveBeforeDecompile = true;
-#else
-                    std::cerr << "SD command not enabled since compiled without USE_XML\n";
+            case 'n':
+                boom.noRemoveNull = true;
+                break;
+            case 'P':
+                boom.noPromote = true;
+                break;
+            case 'p':
+                boom.noParameterNames = true;
+                break;
+            case 'r':
+                boom.noRemoveLabels = true;
+                break;
+            case 'R':
+                boom.noRemoveReturns = true;
+                break;
+            case 'g':
+                boom.noGlobals = true;
+                break;
+            case 'G':
+#ifndef NO_GARBAGE_COLLECTOR
+                GC_disable();
 #endif
-                else {
-                    minsToStopAfter = args[++i].toInt();
-                }
                 break;
             default:
                 help();
+            }
+            break;
+
+        case 'p':
+            if (arg[2] == 'a') {
+                boom.propOnlyToAll = true;
+                std::cerr << " * * Warning! -pa is not implemented yet!\n";
+            } else {
+                if (++i == args.size()) {
+                    usage();
+                    return 1;
+                }
+                boom.numToPropagate = args[i].toInt();
+            }
+            break;
+        case 's': {
+            if (arg[2] == 'f') {
+                boom.symbolFiles.push_back(args[i + 1].toStdString());
+                i++;
+                break;
+            }
+            ADDRESS addr;
+            if (++i == args.size()) {
+                usage();
+                return 1;
+            }
+            bool converted = false;
+            addr.m_value = args[i].toLongLong(&converted, 0);
+            if (not converted) {
+                std::cerr << "bad address: " << args[i + 1].toStdString() << std::endl;
+                exit(1);
+            }
+            boom.symbols[addr] = args[++i].toStdString();
+        } break;
+        case 'd':
+            switch (arg[2].toLatin1()) {
+            case 'a':
+                boom.printAST = true;
+                break;
+            case 'c':
+                boom.debugSwitch = true;
+                break;
+            case 'd':
+                boom.debugDecoder = true;
+                break;
+            case 'g':
+                boom.debugGen = true;
+                break;
+            case 'l':
+                boom.debugLiveness = true;
+                break;
+            case 'p':
+                boom.debugProof = true;
+                break;
+            case 's':
+                boom.stopAtDebugPoints = true;
+                break;
+            case 't': // debug type analysis
+                boom.debugTA = true;
+                break;
+            case 'u': // debug unused locations (including returns and parameters now)
+                boom.debugUnused = true;
+                break;
+            default:
+                help();
+            }
+            break;
+        case 'm':
+            if (++i == args.size()) {
+                usage();
+                return 1;
+            }
+            boom.maxMemDepth = args[i].toInt();
+            break;
+        case 'a':
+            boom.assumeABI = true;
+            break;
+        case 'l':
+            if (++i == args.size()) {
+                usage();
+                return 1;
+            }
+            boom.propMaxDepth = args[i].toInt();
+            break;
+        case 'S':
+            if (arg[2] == 'D')
+                boom.saveBeforeDecompile = true;
+            else {
+                minsToStopAfter = args[++i].toInt();
+            }
+            break;
+        default:
+            help();
         }
     }
     if (kmd)
@@ -351,7 +348,7 @@ int CommandlineDriver::applyCommandline() {
     if (minsToStopAfter) {
         std::cout << "stopping decompile after " << minsToStopAfter << " minutes.\n";
         m_kill_timer.setSingleShot(true);
-        m_kill_timer.start(1000*60*minsToStopAfter);
+        m_kill_timer.start(1000 * 60 * minsToStopAfter);
     }
     m_thread.setDecompiled(args.last());
     return 0;
@@ -370,12 +367,12 @@ int CommandlineDriver::console() {
     QString line;
     do {
         line = strm.readLine();
-        if(line.isNull())
+        if (line.isNull())
             break;
         QStringList sl = line.split(" \r\n");
         std::vector<std::string> args;
         args.resize(sl.size());
-        std::transform(sl.begin(),sl.end(),args.begin(),[](QString v)->std::string {return v.toStdString();});
+        std::transform(sl.begin(), sl.end(), args.begin(), [](QString v) -> std::string { return v.toStdString(); });
         if (boom.processCommand(args) == 2)
             return 2;
         printf("boomerang: ");
@@ -383,7 +380,7 @@ int CommandlineDriver::console() {
     } while (!line.isNull());
     return 0;
 }
-int CommandlineDriver::decompile(){
+int CommandlineDriver::decompile() {
     m_thread.start();
     return 0;
 }
@@ -392,9 +389,7 @@ void CommandlineDriver::onCompilationTimeout() {
     exit(1);
 }
 
-
-void DecompilationThread::run()
-{
+void DecompilationThread::run() {
     Boomerang &boom(*Boomerang::get());
     boom.decompile(m_decompiled.toStdString().c_str());
     QCoreApplication::instance()->quit();
