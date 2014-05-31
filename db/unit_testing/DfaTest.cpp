@@ -81,7 +81,7 @@ void DfaTest::testMeetInt() {
     u32->meetWith(&s32, ch, false);
     QVERIFY(ch == false);
     std::ostringstream ost4;
-    ost4<< &u32;
+    ost4<< u32;
     actual = ost4.str();
     expected = "u32";
     QCOMPARE(expected, actual);
@@ -89,7 +89,7 @@ void DfaTest::testMeetInt() {
     u32->meetWith(&s64, ch, false);
     QVERIFY(ch == true);
     std::ostringstream ost5;
-    ost5<< &u32;
+    ost5<< u32;
     actual = ost5.str();
     expected = "u64";
     QCOMPARE(expected, actual);
