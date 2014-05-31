@@ -63,3 +63,10 @@ MACRO(ADD_UNIT_TEST name)
 	ENDIF()
 ENDMACRO()
 
+function(ADD_QTEST NAME)
+  add_executable(${NAME} ${NAME}.cpp ${NAME}.h) #${PROTO_SRCS} ${PROTO_HDRS}
+  target_link_libraries(${NAME} ${test_LIBRARIES})
+  qt5_use_modules(${NAME} Core Test)
+
+  add_test( NAME ${NAME} COMMAND $<TARGET_FILE:${NAME}> )
+endfunction()

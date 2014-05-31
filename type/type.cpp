@@ -9,10 +9,10 @@
  *
  */
 
-/***************************************************************************//**
- * \file       type.cpp
- * \brief   Implementation of the Type class: low level type information
- ******************************************************************************/
+/***************************************************************************/ /**
+  * \file       type.cpp
+  * \brief   Implementation of the Type class: low level type information
+  ******************************************************************************/
 
 #include <cassert>
 #include <cstring>
@@ -27,7 +27,7 @@
 #include "boomerang.h"
 #include "log.h"
 
-extern char debug_buffer[];         // For prints functions
+extern char debug_buffer[]; // For prints functions
 
 bool Type::isCString() {
     if (!resolvesToPointer())
@@ -41,126 +41,102 @@ bool Type::isCString() {
     return p->resolvesToChar();
 }
 
-Type::Type(eType _id) : id(_id) {
-}
+Type::Type(eType _id) : id(_id) {}
 
-VoidType::VoidType() : Type(eVoid) {
-}
+VoidType::VoidType() : Type(eVoid) {}
 
-FuncType::FuncType(Signature *sig) : Type(eFunc), signature(sig) {
-}
+FuncType::FuncType(Signature *sig) : Type(eFunc), signature(sig) {}
 
+FloatType::FloatType(int sz) : Type(eFloat), size(sz) {}
+FloatType *FloatType::get(int sz) { return new FloatType(sz); }
 
-FloatType::FloatType(int sz) : Type(eFloat), size(sz) {
-}
-FloatType *FloatType::get(int sz)
-{
-    return new FloatType(sz);
-}
+BooleanType::BooleanType() : Type(eBoolean) {}
 
-BooleanType::BooleanType() : Type(eBoolean) {
-}
+CharType::CharType() : Type(eChar) {}
 
-CharType::CharType() : Type(eChar) {
-}
-
-void PointerType::setPointsTo(Type* p) {
-    if (p == this) {                    // Note: comparing pointers
-        points_to = new VoidType();        // Can't point to self; impossible to compare, print, etc
+void PointerType::setPointsTo(Type *p) {
+    if (p == this) {                // Note: comparing pointers
+        points_to = new VoidType(); // Can't point to self; impossible to compare, print, etc
         if (VERBOSE)
             LOG << "Warning: attempted to create pointer to self: " << ADDRESS::host_ptr(this) << "\n";
     } else
         points_to = p;
 }
 
-PointerType::PointerType(Type *p) : Type(ePointer) {
-    setPointsTo(p);
-}
-ArrayType::ArrayType(Type *p, unsigned length) : Type(eArray), base_type(p), length(length) {
-}
+PointerType::PointerType(Type *p) : Type(ePointer) { setPointsTo(p); }
+ArrayType::ArrayType(Type *p, unsigned length) : Type(eArray), base_type(p), length(length) {}
 
 // we actually want unbounded arrays to still work correctly when
 // computing aliases.. as such, we give them a very large bound
 // and hope that no-one tries to alias beyond them
 #define NO_BOUND 9999999
 
-ArrayType::ArrayType(Type *p) : Type(eArray), base_type(p), length(NO_BOUND) {
-}
+ArrayType::ArrayType(Type *p) : Type(eArray), base_type(p), length(NO_BOUND) {}
 
-bool ArrayType::isUnbounded() const {
-    return length == NO_BOUND;
-}
+bool ArrayType::isUnbounded() const { return length == NO_BOUND; }
 
-size_t ArrayType::convertLength(Type* b) const {
+size_t ArrayType::convertLength(Type *b) const {
     // MVE: not sure if this is always the right thing to do
     if (length != NO_BOUND) {
-        size_t baseSize = base_type->getSize()/8;    // Old base size (one element) in bytes
+        size_t baseSize = base_type->getSize() / 8; // Old base size (one element) in bytes
         if (baseSize == 0)
-            baseSize = 1;            // Count void as size 1
-        baseSize *= length;                            // Old base size (length elements) in bytes
-        size_t newSize = b->getSize()/8;
+            baseSize = 1;   // Count void as size 1
+        baseSize *= length; // Old base size (length elements) in bytes
+        size_t newSize = b->getSize() / 8;
         if (newSize == 0)
             newSize = 1;
-        return baseSize / newSize;                // Preserve same byte size for array
+        return baseSize / newSize; // Preserve same byte size for array
     }
     return NO_BOUND;
 }
-void ArrayType::setBaseType(Type* b) {
+void ArrayType::setBaseType(Type *b) {
     // MVE: not sure if this is always the right thing to do
     if (length != NO_BOUND) {
-        size_t baseSize = base_type->getSize()/8;    // Old base size (one element) in bytes
-        if (baseSize == 0) baseSize = 1;            // Count void as size 1
-        baseSize *= length;                            // Old base size (length elements) in bytes
-        size_t newSize = b->getSize()/8;
-        if (newSize == 0) newSize = 1;
-        length = baseSize / newSize;                // Preserve same byte size for array
+        size_t baseSize = base_type->getSize() / 8; // Old base size (one element) in bytes
+        if (baseSize == 0)
+            baseSize = 1;   // Count void as size 1
+        baseSize *= length; // Old base size (length elements) in bytes
+        size_t newSize = b->getSize() / 8;
+        if (newSize == 0)
+            newSize = 1;
+        length = baseSize / newSize; // Preserve same byte size for array
     }
     base_type = b;
 }
 
+NamedType::NamedType(const std::string &_name) : Type(eNamed), name(_name) {}
 
-NamedType::NamedType(const std::string &_name) : Type(eNamed), name(_name) {
-}
+CompoundType::CompoundType(bool is_generic /* = false */)
+    : Type(eCompound), nextGenericMemberNum(1), generic(is_generic) {}
 
-CompoundType::CompoundType(bool is_generic /* = false */) : Type(eCompound), nextGenericMemberNum(1), generic(is_generic) {
-}
+UnionType::UnionType() : Type(eUnion) {}
 
-UnionType::UnionType() : Type(eUnion) {
-}
-
-Type::~Type() { }
-VoidType::~VoidType() { }
-FuncType::~FuncType() { }
-//IntegerType::~IntegerType() { }
-FloatType::~FloatType() { }
-BooleanType::~BooleanType() { }
-CharType::~CharType() { }
+Type::~Type() {}
+VoidType::~VoidType() {}
+FuncType::~FuncType() {}
+// IntegerType::~IntegerType() { }
+FloatType::~FloatType() {}
+BooleanType::~BooleanType() {}
+CharType::~CharType() {}
 PointerType::~PointerType() {
     // delete points_to;        // Easier for test code (which doesn't use garbage collection)
 }
 ArrayType::~ArrayType() {
     // delete base_type;
 }
-NamedType::~NamedType() { }
-CompoundType::~CompoundType() { }
-UnionType::~UnionType() { }
+NamedType::~NamedType() {}
+CompoundType::~CompoundType() {}
+UnionType::~UnionType() {}
 
-IntegerType *IntegerType::get(unsigned NumBits, int sign)
-{
-    return new IntegerType(NumBits,sign);
-}
-/***************************************************************************//**
- *
- * \brief        Deep copy of this type
- * \returns            Copy of the type
- ******************************************************************************/
-Type *IntegerType::clone() const {
-    return IntegerType::get(size, signedness);
-}
+IntegerType *IntegerType::get(unsigned NumBits, int sign) { return new IntegerType(NumBits, sign); }
+/***************************************************************************/ /**
+  *
+  * \brief        Deep copy of this type
+  * \returns            Copy of the type
+  ******************************************************************************/
+Type *IntegerType::clone() const { return IntegerType::get(size, signedness); }
 
-Type *FloatType::clone() const {
-    return new FloatType(size);
-}
+Type *FloatType::clone() const { return new FloatType(size); }
 
 Type *BooleanType::clone() const {
     BooleanType *t = new BooleanType();
@@ -217,23 +193,22 @@ Type *SizeType::clone() const {
     return t;
 }
 
-Type* UpperType::clone() const {
-    UpperType* t = new UpperType(base_type->clone());
+Type *UpperType::clone() const {
+    UpperType *t = new UpperType(base_type->clone());
     return t;
 }
 
-Type* LowerType::clone() const {
-    LowerType* t = new LowerType(base_type->clone());
+Type *LowerType::clone() const {
+    LowerType *t = new LowerType(base_type->clone());
     return t;
 }
 
-
-/***************************************************************************//**
- *
- * \brief        Get the size of this type
- * PARAMETERS:        <none>
- * \returns            Size of the type (in bits)
- ******************************************************************************/
+/***************************************************************************/ /**
+  *
+  * \brief        Get the size of this type
+  * PARAMETERS:        <none>
+  * \returns            Size of the type (in bits)
+  ******************************************************************************/
 size_t IntegerType::getSize() const { return size; }
 size_t FloatType::getSize() const { return size; }
 size_t BooleanType::getSize() const { return 1; }
@@ -241,12 +216,10 @@ size_t CharType::getSize() const { return 8; }
 size_t VoidType::getSize() const { return 0; }
 size_t FuncType::getSize() const { return 0; /* always nagged me */ }
 size_t PointerType::getSize() const {
-    //points_to->getSize(); // yes, it was a good idea at the time
+    // points_to->getSize(); // yes, it was a good idea at the time
     return STD_SIZE;
 }
-size_t ArrayType::getSize() const {
-    return base_type->getSize() * length;
-}
+size_t ArrayType::getSize() const { return base_type->getSize() * length; }
 size_t NamedType::getSize() const {
     Type *ty = resolvesTo();
     if (ty)
@@ -257,7 +230,7 @@ size_t NamedType::getSize() const {
 }
 size_t CompoundType::getSize() const {
     int n = 0;
-    for (auto & elem : types)
+    for (auto &elem : types)
         // NOTE: this assumes no padding... perhaps explicit padding will be needed
         n += elem->getSize();
     return n;
@@ -267,13 +240,12 @@ size_t UnionType::getSize() const {
     std::list<UnionElement>::const_iterator it;
     for (it = li.begin(); it != li.end(); it++) {
         int sz = it->type->getSize();
-        if (sz > max) max = sz;
+        if (sz > max)
+            max = sz;
     }
     return max;
 }
 size_t SizeType::getSize() const { return size; }
-
-
 
 Type *CompoundType::getType(const char *nam) {
     for (unsigned i = 0; i < types.size(); i++)
@@ -285,7 +257,7 @@ Type *CompoundType::getType(const char *nam) {
 // Note: n is a BIT offset
 Type *CompoundType::getTypeAtOffset(unsigned n) {
     unsigned offset = 0;
-    for (auto & elem : types) {
+    for (auto &elem : types) {
         if (offset <= n && n < offset + elem->getSize())
             return elem;
         offset += elem->getSize();
@@ -294,21 +266,21 @@ Type *CompoundType::getTypeAtOffset(unsigned n) {
 }
 
 // Note: n is a BIT offset
-void CompoundType::setTypeAtOffset(unsigned n, Type* ty) {
+void CompoundType::setTypeAtOffset(unsigned n, Type *ty) {
     unsigned offset = 0;
     for (unsigned i = 0; i < types.size(); i++) {
         if (offset <= n && n < offset + types[i]->getSize()) {
             unsigned oldsz = types[i]->getSize();
             types[i] = ty;
             if (ty->getSize() < oldsz) {
-                types.push_back(types[types.size()-1]);
-                names.push_back(names[names.size()-1]);
+                types.push_back(types[types.size() - 1]);
+                names.push_back(names[names.size() - 1]);
                 for (size_t _n = types.size() - 1; _n > i; _n--) {
-                    types[_n] = types[_n-1];
-                    names[_n] = names[_n-1];
+                    types[_n] = types[_n - 1];
+                    names[_n] = names[_n - 1];
                 }
-                types[i+1] = new SizeType(oldsz - ty->getSize());
-                names[i+1] = "pad";
+                types[i + 1] = new SizeType(oldsz - ty->getSize());
+                names[i + 1] = "pad";
             }
             return;
         }
@@ -327,13 +299,12 @@ void CompoundType::setNameAtOffset(unsigned n, const char *nam) {
     }
 }
 
-
 const char *CompoundType::getNameAtOffset(size_t n) {
     unsigned offset = 0;
     for (unsigned i = 0; i < types.size(); i++) {
-        //if (offset >= n && n < offset + types[i]->getSize())
+        // if (offset >= n && n < offset + types[i]->getSize())
         if (offset <= n && n < offset + types[i]->getSize())
-            //return getName(offset == n ? i : i - 1);
+            // return getName(offset == n ? i : i - 1);
             return names[i].c_str();
         offset += types[i]->getSize();
     }
@@ -361,7 +332,7 @@ unsigned CompoundType::getOffsetTo(const char *member) {
 unsigned CompoundType::getOffsetRemainder(unsigned n) {
     unsigned r = n;
     unsigned offset = 0;
-    for (auto & elem : types) {
+    for (auto &elem : types) {
         offset += elem->getSize();
         if (offset > n)
             break;
@@ -370,82 +341,71 @@ unsigned CompoundType::getOffsetRemainder(unsigned n) {
     return r;
 }
 
-/***************************************************************************//**
- *
- * \brief        static Constructor from string
- * PARAMETERS:        str: string to parse
- * \returns       constructed type.
- ******************************************************************************/
-Type *Type::parseType(const char *str) {
-    return nullptr;
-}
+/***************************************************************************/ /**
+  *
+  * \brief        static Constructor from string
+  * PARAMETERS:        str: string to parse
+  * \returns       constructed type.
+  ******************************************************************************/
+Type *Type::parseType(const char *str) { return nullptr; }
 
-/***************************************************************************//**
- *
- * \brief        Equality comparsion.
- * PARAMETERS:        other - Type being compared to
- * \returns            this == other
- ******************************************************************************/
-bool IntegerType::operator==(const Type& other) const {
-    IntegerType& otherInt = (IntegerType&) other;
+/***************************************************************************/ /**
+  *
+  * \brief        Equality comparsion.
+  * PARAMETERS:        other - Type being compared to
+  * \returns            this == other
+  ******************************************************************************/
+bool IntegerType::operator==(const Type &other) const {
+    IntegerType &otherInt = (IntegerType &)other;
     return other.isInteger() &&
-            // Note: zero size matches any other size (wild, or unknown, size)
-            (size == 0 || otherInt.size == 0 || size == otherInt.size) &&
-            // Note: actual value of signedness is disregarded, just whether less than, equal to, or greater than 0
-            ( (signedness < 0    && otherInt.signedness < 0) ||
-              (signedness == 0    && otherInt.signedness == 0) ||
-              (signedness > 0    && otherInt.signedness > 0));
+           // Note: zero size matches any other size (wild, or unknown, size)
+           (size == 0 || otherInt.size == 0 || size == otherInt.size) &&
+           // Note: actual value of signedness is disregarded, just whether less than, equal to, or greater than 0
+           ((signedness < 0 && otherInt.signedness < 0) || (signedness == 0 && otherInt.signedness == 0) ||
+            (signedness > 0 && otherInt.signedness > 0));
 }
 
-bool FloatType::operator==(const Type& other) const {
-    return other.isFloat() &&
-            (size == 0 || ((FloatType&)other).size == 0 ||
-             (size == ((FloatType&)other).size));
+bool FloatType::operator==(const Type &other) const {
+    return other.isFloat() && (size == 0 || ((FloatType &)other).size == 0 || (size == ((FloatType &)other).size));
 }
 
-bool BooleanType::operator==(const Type& other) const {
-    return other.isBoolean();
-}
+bool BooleanType::operator==(const Type &other) const { return other.isBoolean(); }
 
-bool CharType::operator==(const Type& other) const {
-    return other.isChar();
-}
+bool CharType::operator==(const Type &other) const { return other.isChar(); }
 
-bool VoidType::operator==(const Type& other) const {
-    return other.isVoid();
-}
+bool VoidType::operator==(const Type &other) const { return other.isVoid(); }
 
-bool FuncType::operator==(const Type& other) const {
-    if (!other.isFunc()) return false;
+bool FuncType::operator==(const Type &other) const {
+    if (!other.isFunc())
+        return false;
     // Note: some functions don't have a signature (e.g. indirect calls that have not yet been successfully analysed)
-    if (signature == nullptr) return ((FuncType&)other).signature == nullptr;
-    return *signature == *((FuncType&)other).signature;
+    if (signature == nullptr)
+        return ((FuncType &)other).signature == nullptr;
+    return *signature == *((FuncType &)other).signature;
 }
 
 static int pointerCompareNest = 0;
-bool PointerType::operator==(const Type& other) const {
+bool PointerType::operator==(const Type &other) const {
     //    return other.isPointer() && (*points_to == *((PointerType&)other).points_to);
-    if (!other.isPointer()) return false;
+    if (!other.isPointer())
+        return false;
     if (++pointerCompareNest >= 20) {
         std::cerr << "PointerType operator== nesting depth exceeded!\n";
         return true;
     }
-    bool ret = (*points_to == *((PointerType&)other).points_to);
+    bool ret = (*points_to == *((PointerType &)other).points_to);
     pointerCompareNest--;
     return ret;
 }
 
-bool ArrayType::operator==(const Type& other) const {
-    return other.isArray() && *base_type == *((ArrayType&)other).base_type &&
-            ((ArrayType&)other).length == length;
+bool ArrayType::operator==(const Type &other) const {
+    return other.isArray() && *base_type == *((ArrayType &)other).base_type && ((ArrayType &)other).length == length;
 }
 
-bool NamedType::operator==(const Type& other) const {
-    return other.isNamed() && (name == ((NamedType&)other).name);
-}
+bool NamedType::operator==(const Type &other) const { return other.isNamed() && (name == ((NamedType &)other).name); }
 
-bool CompoundType::operator==(const Type& other) const {
-    const CompoundType &cother = (CompoundType&)other;
+bool CompoundType::operator==(const Type &other) const {
+    const CompoundType &cother = (CompoundType &)other;
     if (other.isCompound() && cother.types.size() == types.size()) {
         for (unsigned i = 0; i < types.size(); i++)
             if (!(*types[i] == *cother.types[i]))
@@ -455,8 +415,8 @@ bool CompoundType::operator==(const Type& other) const {
     return false;
 }
 
-bool UnionType::operator==(const Type& other) const {
-    const UnionType &uother = (UnionType&)other;
+bool UnionType::operator==(const Type &other) const {
+    const UnionType &uother = (UnionType &)other;
     std::list<UnionElement>::const_iterator it1, it2;
     if (other.isUnion() && uother.li.size() == li.size()) {
         for (it1 = li.begin(), it2 = uother.li.begin(); it1 != li.end(); it1++, it2++)
@@ -467,181 +427,182 @@ bool UnionType::operator==(const Type& other) const {
     return false;
 }
 
-bool SizeType::operator==(const Type& other) const {
-    return other.isSize() && (size == ((SizeType&)other).size);
-}
-bool UpperType::operator==(const Type& other) const {
-    return other.isUpper() && *base_type == *((UpperType&)other).base_type;
+bool SizeType::operator==(const Type &other) const { return other.isSize() && (size == ((SizeType &)other).size); }
+bool UpperType::operator==(const Type &other) const {
+    return other.isUpper() && *base_type == *((UpperType &)other).base_type;
 }
 
-bool LowerType::operator==(const Type& other) const {
-    return other.isLower() && *base_type == *((LowerType&)other).base_type;
+bool LowerType::operator==(const Type &other) const {
+    return other.isLower() && *base_type == *((LowerType &)other).base_type;
 }
 
+/***************************************************************************/ /**
+  *
+  * \brief        Inequality comparsion.
+  * PARAMETERS:        other - Type being compared to
+  * \returns            this == other
+  ******************************************************************************/
+bool Type::operator!=(const Type &other) const { return !(*this == other); }
 
-/***************************************************************************//**
- *
- * \brief        Inequality comparsion.
- * PARAMETERS:        other - Type being compared to
- * \returns            this == other
- ******************************************************************************/
-bool Type::operator!=(const Type& other) const {
-    return !(*this == other);
-}
-
-/***************************************************************************//**
- *
- * \brief        Equality operator, ignoring sign. True if equal in broad
- *                      type and size, but not necessarily sign
- *                      Considers all float types > 64 bits to be the same
- * PARAMETERS:        other - Type being compared to
- * \returns            this == other (ignoring sign)
- *============================================================================*/
-//bool IntegerType::operator-=(const Type& other) const {
+/***************************************************************************/ /**
+  *
+  * \brief        Equality operator, ignoring sign. True if equal in broad
+  *                      type and size, but not necessarily sign
+  *                      Considers all float types > 64 bits to be the same
+  * PARAMETERS:        other - Type being compared to
+  * \returns            this == other (ignoring sign)
+  *============================================================================*/
+// bool IntegerType::operator-=(const Type& other) const {
 //        if (!other.isInteger()) return false;
 //        return size == ((IntegerType&)other).size;
 //}
 
-//bool FloatType::operator-=(const Type& other) const {
+// bool FloatType::operator-=(const Type& other) const {
 //        if (!other.isFloat()) return false;
 //        if (size > 64 && ((FloatType&)other).size > 64)
 //        return true;
 //        return size == ((FloatType&)other).size;
 //}
 
-
-/***************************************************************************//**
- *
- * \brief        Defines an ordering between Type's
- *                      (and hence sets etc of Exp* using lessExpStar).
- * PARAMETERS:        other - Type being compared to
- * \returns            this is less than other
- ******************************************************************************/
-bool IntegerType::operator<(const Type& other) const {
-    if (id < other.getId()) return true;
-    if (id > other.getId()) return false;
-    if (size < ((IntegerType&)other).size) return true;
-    if (size > ((IntegerType&)other).size) return false;
-    return (signedness < ((IntegerType&)other).signedness);
+/***************************************************************************/ /**
+  *
+  * \brief        Defines an ordering between Type's
+  *                      (and hence sets etc of Exp* using lessExpStar).
+  * PARAMETERS:        other - Type being compared to
+  * \returns            this is less than other
+  ******************************************************************************/
+bool IntegerType::operator<(const Type &other) const {
+    if (id < other.getId())
+        return true;
+    if (id > other.getId())
+        return false;
+    if (size < ((IntegerType &)other).size)
+        return true;
+    if (size > ((IntegerType &)other).size)
+        return false;
+    return (signedness < ((IntegerType &)other).signedness);
 }
 
-bool FloatType::operator<(const Type& other) const {
-    if (id < other.getId()) return true;
-    if (id > other.getId()) return false;
-    return (size < ((FloatType&)other).size);
+bool FloatType::operator<(const Type &other) const {
+    if (id < other.getId())
+        return true;
+    if (id > other.getId())
+        return false;
+    return (size < ((FloatType &)other).size);
 }
 
-bool VoidType::operator<(const Type& other) const {
-    return id < other.getId();
-}
+bool VoidType::operator<(const Type &other) const { return id < other.getId(); }
 
-bool FuncType::operator<(const Type& other) const {
-    if (id < other.getId()) return true;
-    if (id > other.getId()) return false;
+bool FuncType::operator<(const Type &other) const {
+    if (id < other.getId())
+        return true;
+    if (id > other.getId())
+        return false;
     // FIXME: Need to compare signatures
     return true;
 }
 
-bool BooleanType::operator<(const Type& other) const {
-    if (id < other.getId()) return true;
-    if (id > other.getId()) return false;
+bool BooleanType::operator<(const Type &other) const {
+    if (id < other.getId())
+        return true;
+    if (id > other.getId())
+        return false;
     return true;
 }
 
-bool CharType::operator<(const Type& other) const {
-    return id < other.getId();
+bool CharType::operator<(const Type &other) const { return id < other.getId(); }
+
+bool PointerType::operator<(const Type &other) const {
+    if (id < other.getId())
+        return true;
+    if (id > other.getId())
+        return false;
+    return (*points_to < *((PointerType &)other).points_to);
 }
 
-bool PointerType::operator<(const Type& other) const {
-    if (id < other.getId()) return true;
-    if (id > other.getId()) return false;
-    return (*points_to < *((PointerType&)other).points_to);
+bool ArrayType::operator<(const Type &other) const {
+    if (id < other.getId())
+        return true;
+    if (id > other.getId())
+        return false;
+    return (*base_type < *((ArrayType &)other).base_type);
 }
 
-bool ArrayType::operator<(const Type& other) const {
-    if (id < other.getId()) return true;
-    if (id > other.getId()) return false;
-    return (*base_type < *((ArrayType&)other).base_type);
+bool NamedType::operator<(const Type &other) const {
+    if (id < other.getId())
+        return true;
+    if (id > other.getId())
+        return false;
+    return (name < ((NamedType &)other).name);
 }
 
-bool NamedType::operator<(const Type& other) const {
-    if (id < other.getId()) return true;
-    if (id > other.getId()) return false;
-    return (name < ((NamedType&)other).name);
+bool CompoundType::operator<(const Type &other) const {
+    if (id < other.getId())
+        return true;
+    if (id > other.getId())
+        return false;
+    return getSize() < other.getSize(); // This won't separate structs of the same size!! MVE
 }
 
-bool CompoundType::operator<(const Type& other) const {
-    if (id < other.getId()) return true;
-    if (id > other.getId()) return false;
-    return getSize() < other.getSize();        // This won't separate structs of the same size!! MVE
+bool UnionType::operator<(const Type &other) const {
+    if (id < other.getId())
+        return true;
+    if (id > other.getId())
+        return false;
+    return getNumTypes() < ((const UnionType &)other).getNumTypes();
 }
 
-bool UnionType::operator<(const Type& other) const {
-    if (id < other.getId()) return true;
-    if (id > other.getId()) return false;
-    return getNumTypes() < ((const UnionType&)other).getNumTypes();
+bool SizeType::operator<(const Type &other) const {
+    if (id < other.getId())
+        return true;
+    if (id > other.getId())
+        return false;
+    return (size < ((SizeType &)other).size);
 }
 
-bool SizeType::operator<(const Type& other) const {
-    if (id < other.getId()) return true;
-    if (id > other.getId()) return false;
-    return (size < ((SizeType&)other).size);
+bool UpperType::operator<(const Type &other) const {
+    if (id < other.getId())
+        return true;
+    if (id > other.getId())
+        return false;
+    return (*base_type < *((UpperType &)other).base_type);
 }
 
-bool UpperType::operator<(const Type& other) const {
-    if (id < other.getId()) return true;
-    if (id > other.getId()) return false;
-    return (*base_type < *((UpperType&)other).base_type);
+bool LowerType::operator<(const Type &other) const {
+    if (id < other.getId())
+        return true;
+    if (id > other.getId())
+        return false;
+    return (*base_type < *((LowerType &)other).base_type);
 }
 
-bool LowerType::operator<(const Type& other) const {
-    if (id < other.getId()) return true;
-    if (id > other.getId()) return false;
-    return (*base_type < *((LowerType&)other).base_type);
-}
-
-/***************************************************************************//**
- *
- * \brief        Match operation.
- * PARAMETERS:        pattern - Type to match
- * \returns            Exp list of bindings if match or nullptr
- ******************************************************************************/
+/***************************************************************************/ /**
+  *
+  * \brief        Match operation.
+  * PARAMETERS:        pattern - Type to match
+  * \returns            Exp list of bindings if match or nullptr
+  ******************************************************************************/
 Exp *Type::match(Type *pattern) {
     if (pattern->isNamed()) {
         LOG << "type match: " << this->getCtype() << " to " << pattern->getCtype() << "\n";
-        return Binary::get(opList,
-                          Binary::get(opEquals,
-                                     new Unary(opVar,
-                                               new Const(pattern->asNamed()->getName())),
-                                     new TypeVal(this->clone())),
-                          new Terminal(opNil));
+        return Binary::get(opList, Binary::get(opEquals, new Unary(opVar, new Const(pattern->asNamed()->getName())),
+                                               new TypeVal(this->clone())),
+                           new Terminal(opNil));
     }
     return nullptr;
 }
 
-Exp *IntegerType::match(Type *pattern) {
-    return Type::match(pattern);
-}
+Exp *IntegerType::match(Type *pattern) { return Type::match(pattern); }
 
-Exp *FloatType::match(Type *pattern) {
-    return Type::match(pattern);
-}
+Exp *FloatType::match(Type *pattern) { return Type::match(pattern); }
 
-Exp *BooleanType::match(Type *pattern) {
-    return Type::match(pattern);
-}
+Exp *BooleanType::match(Type *pattern) { return Type::match(pattern); }
 
-Exp *CharType::match(Type *pattern) {
-    return Type::match(pattern);
-}
+Exp *CharType::match(Type *pattern) { return Type::match(pattern); }
 
-Exp *VoidType::match(Type *pattern) {
-    return Type::match(pattern);
-}
+Exp *VoidType::match(Type *pattern) { return Type::match(pattern); }
 
-Exp *FuncType::match(Type *pattern) {
-    return Type::match(pattern);
-}
+Exp *FuncType::match(Type *pattern) { return Type::match(pattern); }
 
 Exp *PointerType::match(Type *pattern) {
     if (pattern->isPointer()) {
@@ -657,25 +618,18 @@ Exp *ArrayType::match(Type *pattern) {
     return Type::match(pattern);
 }
 
-Exp *NamedType::match(Type *pattern) {
-    return Type::match(pattern);
-}
+Exp *NamedType::match(Type *pattern) { return Type::match(pattern); }
 
-Exp *CompoundType::match(Type *pattern) {
-    return Type::match(pattern);
-}
+Exp *CompoundType::match(Type *pattern) { return Type::match(pattern); }
 
-Exp *UnionType::match(Type *pattern) {
-    return Type::match(pattern);
-}
+Exp *UnionType::match(Type *pattern) { return Type::match(pattern); }
 
-
-/***************************************************************************//**
- *
- * \brief        Return a string representing this type
- * PARAMETERS:        final: if true, this is final output
- * \returns            Pointer to a constant string of char
- ******************************************************************************/
+/***************************************************************************/ /**
+  *
+  * \brief        Return a string representing this type
+  * PARAMETERS:        final: if true, this is final output
+  * \returns            Pointer to a constant string of char
+  ******************************************************************************/
 const char *VoidType::getCtype(bool /*final*/) const { return "void"; }
 
 const char *FuncType::getCtype(bool final) const {
@@ -688,7 +642,8 @@ const char *FuncType::getCtype(bool final) const {
         s += signature->getReturnType(0)->getCtype(final);
     s += " (";
     for (unsigned i = 0; i < signature->getNumParams(); i++) {
-        if (i != 0) s += ", ";
+        if (i != 0)
+            s += ", ";
         s += signature->getParamType(i)->getCtype(final);
     }
     s += ")";
@@ -696,7 +651,7 @@ const char *FuncType::getCtype(bool final) const {
 }
 
 // As above, but split into the return and parameter parts
-void FuncType::getReturnAndParam(const char*& ret, const char*& param) {
+void FuncType::getReturnAndParam(const char *&ret, const char *&param) {
     if (signature == nullptr) {
         ret = "void";
         param = "(void)";
@@ -709,7 +664,8 @@ void FuncType::getReturnAndParam(const char*& ret, const char*& param) {
     std::string s;
     s += " (";
     for (unsigned i = 0; i < signature->getNumParams(); i++) {
-        if (i != 0) s += ", ";
+        if (i != 0)
+            s += ", ";
         s += signature->getParamType(i)->getCtype();
     }
     s += ")";
@@ -721,35 +677,65 @@ const char *IntegerType::getCtype(bool final) const {
         std::string s;
         if (!final && signedness == 0)
             s = "/*signed?*/";
-        switch(size) {
-            case 32: s += "int"; break;
-            case 16: s += "short"; break;
-            case  8: s += "char"; break;
-            case  1: s += "bool"; break;
-            case 64: s += "long long"; break;
-            default:
-                if (!final) s += "?";    // To indicate invalid/unknown size
-                s += "int";
+        switch (size) {
+        case 32:
+            s += "int";
+            break;
+        case 16:
+            s += "short";
+            break;
+        case 8:
+            s += "char";
+            break;
+        case 1:
+            s += "bool";
+            break;
+        case 64:
+            s += "long long";
+            break;
+        default:
+            if (!final)
+                s += "?"; // To indicate invalid/unknown size
+            s += "int";
         }
         return strdup(s.c_str());
     } else {
         switch (size) {
-            case 32: return "unsigned int"; break;
-            case 16: return "unsigned short"; break;
-            case  8: return "unsigned char"; break;
-            case  1: return "bool"; break;
-            case 64: return "unsigned long long"; break;
-            default: if (final) return "unsigned int";
-                else return "?unsigned int";
+        case 32:
+            return "unsigned int";
+            break;
+        case 16:
+            return "unsigned short";
+            break;
+        case 8:
+            return "unsigned char";
+            break;
+        case 1:
+            return "bool";
+            break;
+        case 64:
+            return "unsigned long long";
+            break;
+        default:
+            if (final)
+                return "unsigned int";
+            else
+                return "?unsigned int";
         }
     }
 }
 
 const char *FloatType::getCtype(bool /*final*/) const {
     switch (size) {
-        case 32: return "float"; break;
-        case 64: return "double"; break;
-        default: return "double"; break;
+    case 32:
+        return "float";
+        break;
+    case 64:
+        return "double";
+        break;
+    default:
+        return "double";
+        break;
     }
 }
 
@@ -808,45 +794,45 @@ const char *UnionType::getCtype(bool final) const {
     return strdup(tmp.c_str());
 }
 
-const char* SizeType::getCtype(bool /*final*/) const {
+const char *SizeType::getCtype(bool /*final*/) const {
     // Emit a comment and the size
     std::ostringstream ost;
     ost << "__size" << std::dec << size;
     return strdup(ost.str().c_str());
 }
 
-const char* UpperType::getCtype(bool /*final*/) const {
+const char *UpperType::getCtype(bool /*final*/) const {
     std::ostringstream ost;
     ost << "/*upper*/(" << base_type << ")";
     return strdup(ost.str().c_str());
 }
-const char* LowerType::getCtype(bool /*final*/) const {
+const char *LowerType::getCtype(bool /*final*/) const {
     std::ostringstream ost;
     ost << "/*lower*/(" << base_type << ")";
     return strdup(ost.str().c_str());
 }
 
-const char* Type::prints() {
-    return getCtype(false);            // For debugging
+const char *Type::prints() {
+    return getCtype(false); // For debugging
 }
 
 void Type::dump() {
-    std::cerr << getCtype(false);    // For debugging
+    std::cerr << getCtype(false); // For debugging
 }
 
-std::map<std::string, Type*> Type::namedTypes;
+std::map<std::string, Type *> Type::namedTypes;
 
 // named type accessors
 void Type::addNamedType(const char *name, Type *type) {
     if (namedTypes.find(name) != namedTypes.end()) {
         if (!(*type == *namedTypes[name])) {
-            //LOG << "addNamedType: name " << name << " type " << type->getCtype() << " != " <<
+            // LOG << "addNamedType: name " << name << " type " << type->getCtype() << " != " <<
             //    namedTypes[name]->getCtype() << "\n";// << std::flush;
-            //LOGTAIL;
+            // LOGTAIL;
             std::cerr << "Warning: Type::addNamedType: Redefinition of type " << name << "\n";
             std::cerr << " type     = " << type->prints() << "\n";
             std::cerr << " previous = " << namedTypes[name]->prints() << "\n";
-            *type = *namedTypes[name]; //WARN: was *type==*namedTypes[name], verify !
+            *type = *namedTypes[name]; // WARN: was *type==*namedTypes[name], verify !
         }
     } else {
         // check if it is:
@@ -869,63 +855,87 @@ Type *Type::getNamedType(const std::string &name) {
 }
 
 void Type::dumpNames() {
-    std::map<std::string, Type*>::iterator it;
+    std::map<std::string, Type *>::iterator it;
     for (it = namedTypes.begin(); it != namedTypes.end(); ++it)
         std::cerr << it->first << " -> " << it->second->getCtype() << "\n";
 }
 
-/***************************************************************************//**
- *
- * \brief    Given the name of a temporary variable, return its Type
- * NOTE:        Caller must delete result
- * PARAMETERS:    name: reference to a string (e.g. "tmp", "tmpd")
- * \returns        Ptr to a new Type object
- ******************************************************************************/
-Type* Type::getTempType(const std::string& name) {
-    Type* ty;
+/***************************************************************************/ /**
+  *
+  * \brief    Given the name of a temporary variable, return its Type
+  * NOTE:        Caller must delete result
+  * PARAMETERS:    name: reference to a string (e.g. "tmp", "tmpd")
+  * \returns        Ptr to a new Type object
+  ******************************************************************************/
+Type *Type::getTempType(const std::string &name) {
+    Type *ty;
     char ctype = ' ';
-    if (name.size() > 3) ctype = name[3];
+    if (name.size() > 3)
+        ctype = name[3];
     switch (ctype) {
-        // They are all int32, except for a few specials
-        case 'f': ty = FloatType::get(32); break;
-        case 'd': ty = FloatType::get(64); break;
-        case 'F': ty = FloatType::get(80); break;
-        case 'D': ty = FloatType::get(128); break;
-        case 'l': ty = IntegerType::get(64); break;
-        case 'h': ty = IntegerType::get(16); break;
-        case 'b': ty = IntegerType::get(8); break;
-        default:  ty = IntegerType::get(32); break;
+    // They are all int32, except for a few specials
+    case 'f':
+        ty = FloatType::get(32);
+        break;
+    case 'd':
+        ty = FloatType::get(64);
+        break;
+    case 'F':
+        ty = FloatType::get(80);
+        break;
+    case 'D':
+        ty = FloatType::get(128);
+        break;
+    case 'l':
+        ty = IntegerType::get(64);
+        break;
+    case 'h':
+        ty = IntegerType::get(16);
+        break;
+    case 'b':
+        ty = IntegerType::get(8);
+        break;
+    default:
+        ty = IntegerType::get(32);
+        break;
     }
     return ty;
 }
 
-
-/***************************************************************************//**
- *
- * \brief    Return a minimal temporary name for this type. It'd be even
- *                nicer to return a unique name, but we don't know scope at
- *                this point, and even so we could still clash with a user-defined
- *                name later on :(
- * PARAMETERS:
- * \returns        a string
- ******************************************************************************/
+/***************************************************************************/ /**
+  *
+  * \brief    Return a minimal temporary name for this type. It'd be even
+  *                nicer to return a unique name, but we don't know scope at
+  *                this point, and even so we could still clash with a user-defined
+  *                name later on :(
+  * PARAMETERS:
+  * \returns        a string
+  ******************************************************************************/
 std::string IntegerType::getTempName() const {
-    switch( size ) {
-        case 1:     /* Treat as a tmpb */
-        case 8:     return std::string("tmpb");
-        case 16: return std::string("tmph");
-        case 32: return std::string("tmpi");
-        case 64: return std::string("tmpl");
+    switch (size) {
+    case 1: /* Treat as a tmpb */
+    case 8:
+        return std::string("tmpb");
+    case 16:
+        return std::string("tmph");
+    case 32:
+        return std::string("tmpi");
+    case 64:
+        return std::string("tmpl");
     }
     return std::string("tmp");
 }
 
 std::string FloatType::getTempName() const {
-    switch( size ) {
-        case 32: return std::string("tmpf");
-        case 64: return std::string("tmpd");
-        case 80: return std::string("tmpF");
-        case 128:return std::string("tmpD");
+    switch (size) {
+    case 32:
+        return std::string("tmpf");
+    case 64:
+        return std::string("tmpd");
+    case 80:
+        return std::string("tmpF");
+    case 128:
+        return std::string("tmpD");
     }
     return std::string("tmp");
 }
@@ -935,27 +945,27 @@ std::string Type::getTempName() const {
 }
 
 int NamedType::nextAlpha = 0;
-NamedType* NamedType::getAlpha() {
+NamedType *NamedType::getAlpha() {
     std::ostringstream ost;
     ost << "alpha" << nextAlpha++;
     return new NamedType(ost.str());
 }
 
-PointerType* PointerType::newPtrAlpha() {
-    return new PointerType(NamedType::getAlpha());
-}
+PointerType *PointerType::newPtrAlpha() { return new PointerType(NamedType::getAlpha()); }
 
 // Note: alpha is therefore a "reserved name" for types
 bool PointerType::pointsToAlpha() const {
     // void* counts as alpha* (and may replace it soon)
-    if (points_to->isVoid()) return true;
-    if (!points_to->isNamed()) return false;
-    return strncmp(((NamedType*)points_to)->getName(), "alpha", 5) == 0;
+    if (points_to->isVoid())
+        return true;
+    if (!points_to->isNamed())
+        return false;
+    return strncmp(((NamedType *)points_to)->getName(), "alpha", 5) == 0;
 }
 
 int PointerType::pointerDepth() const {
     int d = 1;
-    const Type* pt = points_to;
+    const Type *pt = points_to;
     while (pt->isPointer()) {
         pt = pt->asPointer()->getPointsTo();
         d++;
@@ -963,8 +973,8 @@ int PointerType::pointerDepth() const {
     return d;
 }
 
-Type* PointerType::getFinalPointsTo() const {
-    Type* pt = points_to;
+Type *PointerType::getFinalPointsTo() const {
+    Type *pt = points_to;
     while (pt->isPointer()) {
         pt = pt->asPointer()->getPointsTo();
     }
@@ -974,7 +984,7 @@ Type* PointerType::getFinalPointsTo() const {
 Type *NamedType::resolvesTo() const {
     Type *ty = getNamedType(name);
     if (ty && ty->isNamed())
-        return ((NamedType*)ty)->resolvesTo();
+        return ((NamedType *)ty)->resolvesTo();
     return ty;
 }
 
@@ -987,24 +997,22 @@ void ArrayType::fixBaseType(Type *b) {
     }
 }
 
-#define AS_TYPE(x) \
-    x##Type *Type::as##x() \
-{                        \
-    Type *ty = this;    \
-    if (isNamed())        \
-    ty = ((NamedType*)ty)->resolvesTo();    \
-    x##Type *res = dynamic_cast<x##Type*>(ty);    \
-    assert(res);        \
-    return res;            \
-}\
-const x##Type *Type::as##x() const\
-{                        \
-    const Type *ty = this;    \
-    if (isNamed())        \
-    ty = ((const NamedType*)ty)->resolvesTo();    \
-    const x##Type *res = dynamic_cast<const x##Type*>(ty);    \
-    assert(res);        \
-    return res;            \
+#define AS_TYPE(x)                                                                                                     \
+    x##Type *Type::as##x() {                                                                                           \
+        Type *ty = this;                                                                                               \
+        if (isNamed())                                                                                                 \
+            ty = ((NamedType *)ty)->resolvesTo();                                                                      \
+        x##Type *res = dynamic_cast<x##Type *>(ty);                                                                    \
+        assert(res);                                                                                                   \
+        return res;                                                                                                    \
+    }                                                                                                                  \
+    const x##Type *Type::as##x() const {                                                                               \
+        const Type *ty = this;                                                                                         \
+        if (isNamed())                                                                                                 \
+            ty = ((const NamedType *)ty)->resolvesTo();                                                                \
+        const x##Type *res = dynamic_cast<const x##Type *>(ty);                                                        \
+        assert(res);                                                                                                   \
+        return res;                                                                                                    \
     }
 
 AS_TYPE(Void)
@@ -1024,26 +1032,23 @@ AS_TYPE(Lower)
 // assert will fail
 NamedType *Type::asNamed() {
     Type *ty = this;
-    NamedType *res = dynamic_cast<NamedType*>(ty);
+    NamedType *res = dynamic_cast<NamedType *>(ty);
     assert(res);
     return res;
 }
-const NamedType *Type::asNamed() const{
+const NamedType *Type::asNamed() const {
     const Type *ty = this;
-    const NamedType *res = dynamic_cast<const NamedType*>(ty);
+    const NamedType *res = dynamic_cast<const NamedType *>(ty);
     assert(res);
     return res;
 }
 
-
-
-#define RESOLVES_TO_TYPE(x)        \
-    bool Type::resolvesTo##x() const   \
-{                            \
-    const Type *ty = this;        \
-    if (ty->isNamed())        \
-    ty = ((NamedType*)ty)->resolvesTo(); \
-    return ty && ty->is##x(); \
+#define RESOLVES_TO_TYPE(x)                                                                                            \
+    bool Type::resolvesTo##x() const {                                                                                 \
+        const Type *ty = this;                                                                                         \
+        if (ty->isNamed())                                                                                             \
+            ty = ((NamedType *)ty)->resolvesTo();                                                                      \
+        return ty && ty->is##x();                                                                                      \
     }
 
 RESOLVES_TO_TYPE(Void)
@@ -1060,98 +1065,133 @@ RESOLVES_TO_TYPE(Size)
 RESOLVES_TO_TYPE(Upper)
 RESOLVES_TO_TYPE(Lower)
 
-bool Type::isPointerToAlpha() {
-    return isPointer() && asPointer()->pointsToAlpha();
-}
+bool Type::isPointerToAlpha() { return isPointer() && asPointer()->pointsToAlpha(); }
 //! Print in *i32* format
-void Type::starPrint(std::ostream& os) {
-    os << "*" << this << "*";
-}
+void Type::starPrint(std::ostream &os) { os << "*" << this << "*"; }
 
 // A crude shortcut representation of a type
-std::ostream& operator<<(std::ostream& os,const  Type* t) {
+std::ostream &operator<<(std::ostream &os, const Type *t) {
     if (t == nullptr)
         return os << '0';
     switch (t->getId()) {
-        case eInteger: {
-            int sg = ((IntegerType*)t)->getSignedness();
-            // 'j' for either i or u, don't know which
-            os << (sg == 0 ? 'j' : sg>0 ? 'i' : 'u');
-            os << std::dec << t->asInteger()->getSize();
-            break;
-        }
-        case eFloat:    os << 'f'; os << std::dec << t->asFloat()->getSize(); break;
-        case ePointer:    os << t->asPointer()->getPointsTo() << '*'; break;
-        case eSize:        os << std::dec << t->getSize(); break;
-        case eChar:        os << 'c'; break;
-        case eVoid:        os << 'v'; break;
-        case eBoolean:    os << 'b'; break;
-        case eCompound:    os << "struct"; break;
-        case eUnion:    os << "union"; break;
-            //case eUnion:    os << t->getCtype(); break;
-        case eFunc:        os << "func"; break;
-        case eArray:    os << '[' << t->asArray()->getBaseType(); if (!t->asArray()->isUnbounded()) os << ", " << t->asArray()->getLength(); os << ']'; break;
-        case eNamed:    os << t->asNamed()->getName(); break;
-        case eUpper:    os << "U(" << t->asUpper()->getBaseType() << ')'; break;
-        case eLower:    os << "L(" << t->asLower()->getBaseType() << ')'; break;
+    case eInteger: {
+        int sg = ((IntegerType *)t)->getSignedness();
+        // 'j' for either i or u, don't know which
+        os << (sg == 0 ? 'j' : sg > 0 ? 'i' : 'u');
+        os << std::dec << t->asInteger()->getSize();
+        break;
+    }
+    case eFloat:
+        os << 'f';
+        os << std::dec << t->asFloat()->getSize();
+        break;
+    case ePointer:
+        os << t->asPointer()->getPointsTo() << '*';
+        break;
+    case eSize:
+        os << std::dec << t->getSize();
+        break;
+    case eChar:
+        os << 'c';
+        break;
+    case eVoid:
+        os << 'v';
+        break;
+    case eBoolean:
+        os << 'b';
+        break;
+    case eCompound:
+        os << "struct";
+        break;
+    case eUnion:
+        os << "union";
+        break;
+    // case eUnion:    os << t->getCtype(); break;
+    case eFunc:
+        os << "func";
+        break;
+    case eArray:
+        os << '[' << t->asArray()->getBaseType();
+        if (!t->asArray()->isUnbounded())
+            os << ", " << t->asArray()->getLength();
+        os << ']';
+        break;
+    case eNamed:
+        os << t->asNamed()->getName();
+        break;
+    case eUpper:
+        os << "U(" << t->asUpper()->getBaseType() << ')';
+        break;
+    case eLower:
+        os << "L(" << t->asLower()->getBaseType() << ')';
+        break;
     }
     return os;
 }
 
 // FIXME: aren't mergeWith and meetWith really the same thing?
 // Merge this IntegerType with another
-Type* IntegerType::mergeWith(Type* other) const {
-    if (*this == *other) return (Type*)this;
-    if (!other->isInteger()) return nullptr;        // Can you merge with a pointer?
-    IntegerType* oth = (IntegerType*)other;
-    IntegerType* ret = (IntegerType*)this->clone();
-    if (size == 0) ret->setSize(oth->getSize());
-    if (signedness == 0) ret->setSigned(oth->getSignedness());
+Type *IntegerType::mergeWith(Type *other) const {
+    if (*this == *other)
+        return (Type *)this;
+    if (!other->isInteger())
+        return nullptr; // Can you merge with a pointer?
+    IntegerType *oth = (IntegerType *)other;
+    IntegerType *ret = (IntegerType *)this->clone();
+    if (size == 0)
+        ret->setSize(oth->getSize());
+    if (signedness == 0)
+        ret->setSigned(oth->getSignedness());
     return ret;
 }
 
 // Merge this SizeType with another type
-Type* SizeType::mergeWith(Type* other) const {
-    Type* ret = other->clone();
+Type *SizeType::mergeWith(Type *other) const {
+    Type *ret = other->clone();
     ret->setSize(size);
     return ret;
 }
 
-Type* UpperType::mergeWith(Type* other) const {
+Type *UpperType::mergeWith(Type *other) const {
     // FIXME: TBC
-    return (Type*)this;
+    return (Type *)this;
 }
 
-Type* LowerType::mergeWith(Type* other) const {
+Type *LowerType::mergeWith(Type *other) const {
     // FIXME: TBC
-    return (Type*)this;
+    return (Type *)this;
 }
 
 // Return true if this is a superstructure of other, i.e. we have the same types at the same offsets as other
-bool CompoundType::isSuperStructOf(const Type* other) {
-    if (!other->isCompound()) return false;
-    const CompoundType* otherCmp = other->asCompound();
+bool CompoundType::isSuperStructOf(const Type *other) {
+    if (!other->isCompound())
+        return false;
+    const CompoundType *otherCmp = other->asCompound();
     size_t n = otherCmp->types.size();
-    if (n > types.size()) return false;
-    for (unsigned i=0; i < n; i++)
+    if (n > types.size())
+        return false;
+    for (unsigned i = 0; i < n; i++)
         if (otherCmp->types[i] != types[i])
             return false;
     return true;
 }
 
 // Return true if this is a substructure of other, i.e. other has the same types at the same offsets as this
-bool CompoundType::isSubStructOf(Type* other) const {
-    if (!other->isCompound()) return false;
-    const CompoundType* otherCmp = other->asCompound();
+bool CompoundType::isSubStructOf(Type *other) const {
+    if (!other->isCompound())
+        return false;
+    const CompoundType *otherCmp = other->asCompound();
     unsigned n = types.size();
-    if (n > otherCmp->types.size()) return false;
-    for (unsigned i=0; i < n; i++)
-        if (otherCmp->types[i] != types[i]) return false;
+    if (n > otherCmp->types.size())
+        return false;
+    for (unsigned i = 0; i < n; i++)
+        if (otherCmp->types[i] != types[i])
+            return false;
     return true;
 }
 
 // Return true if this type is already in the union. Note: linear search, but number of types is usually small
-bool UnionType::findType(Type* ty) {
+bool UnionType::findType(Type *ty) {
     std::list<UnionElement>::iterator it;
     for (it = li.begin(); it != li.end(); it++) {
         if (*it->type == *ty)
@@ -1170,7 +1210,7 @@ void LowerType::setSize(size_t size) {
     assert(0);
 }
 
-Type* Type::newIntegerLikeType(int size, int signedness) {
+Type *Type::newIntegerLikeType(int size, int signedness) {
     if (size == 1)
         return new BooleanType();
     if (size == 8 && signedness >= 0)
@@ -1181,17 +1221,17 @@ Type* Type::newIntegerLikeType(int size, int signedness) {
 // Find the entry that overlaps with addr. If none, return end(). We have to use upper_bound and decrement the iterator,
 // because we might want an entry that starts earlier than addr yet still overlaps it
 DataIntervalMap::iterator DataIntervalMap::find_it(ADDRESS addr) {
-    iterator it = dimap.upper_bound(addr);    // Find the first item strictly greater than addr
+    iterator it = dimap.upper_bound(addr); // Find the first item strictly greater than addr
     if (it == dimap.begin())
-        return dimap.end();                    // None <= this address, so no overlap possible
-    it--;                                    // If any item overlaps, it is this one
-    if (it->first <= addr && it->first+it->second.size > addr)
+        return dimap.end(); // None <= this address, so no overlap possible
+    it--;                   // If any item overlaps, it is this one
+    if (it->first <= addr && it->first + it->second.size > addr)
         // This is the one that overlaps with addr
         return it;
     return dimap.end();
 }
 
-DataIntervalEntry* DataIntervalMap::find(ADDRESS addr) {
+DataIntervalEntry *DataIntervalMap::find(ADDRESS addr) {
     iterator it = find_it(addr);
     if (it == dimap.end())
         return nullptr;
@@ -1199,15 +1239,15 @@ DataIntervalEntry* DataIntervalMap::find(ADDRESS addr) {
 }
 
 bool DataIntervalMap::isClear(ADDRESS addr, unsigned size) {
-    iterator it = dimap.upper_bound(addr+size-1);    // Find the first item strictly greater than address of last byte
+    iterator it = dimap.upper_bound(addr + size - 1); // Find the first item strictly greater than address of last byte
     if (it == dimap.begin())
-        return true;                        // None <= this address, so no overlap possible
-    it--;                                    // If any item overlaps, it is this one
+        return true; // None <= this address, so no overlap possible
+    it--;            // If any item overlaps, it is this one
     // Make sure the previous item ends before this one will start
     ADDRESS end;
     if (it->first + it->second.size < it->first)
         // overflow
-        end = 0xFFFFFFFF;        // Overflow
+        end = 0xFFFFFFFF; // Overflow
     else
         end = it->first + it->second.size;
     if (end <= addr)
@@ -1222,10 +1262,10 @@ bool DataIntervalMap::isClear(ADDRESS addr, unsigned size) {
 
 // With the forced parameter: are we forcing the name, the type, or always both?
 //! Add a new data item
-void DataIntervalMap::addItem(ADDRESS addr, const char* name, Type* ty, bool forced /* = false */) {
+void DataIntervalMap::addItem(ADDRESS addr, const char *name, Type *ty, bool forced /* = false */) {
     if (name == nullptr)
         name = "<noname>";
-    DataIntervalEntry* pdie = find(addr);
+    DataIntervalEntry *pdie = find(addr);
     if (pdie == nullptr) {
         // Check that this new item is compatible with any items it overlaps with, and insert it
         replaceComponents(addr, name, ty, forced);
@@ -1234,29 +1274,29 @@ void DataIntervalMap::addItem(ADDRESS addr, const char* name, Type* ty, bool for
     // There are two basic cases, and an error if the two data types weave
     if (pdie->first < addr) {
         // The existing entry comes first. Make sure it ends last (possibly equal last)
-        if (pdie->first + pdie->second.size < addr+ty->getSize()/8) {
-            LOG << "TYPE ERROR: attempt to insert item " << name << " at " << addr << " of type " <<
-                   ty->getCtype() << " which weaves after " << pdie->second.name.c_str() << " at " << pdie->first <<
-                   " of type " << pdie->second.type->getCtype() << "\n";
+        if (pdie->first + pdie->second.size < addr + ty->getSize() / 8) {
+            LOG << "TYPE ERROR: attempt to insert item " << name << " at " << addr << " of type " << ty->getCtype()
+                << " which weaves after " << pdie->second.name.c_str() << " at " << pdie->first << " of type "
+                << pdie->second.type->getCtype() << "\n";
             return;
         }
         enterComponent(pdie, addr, name, ty, forced);
     } else if (pdie->first == addr) {
         // Could go either way, depending on where the data items end
         ADDRESS endOfCurrent = pdie->first + pdie->second.size;
-        ADDRESS endOfNew = addr+ty->getSize()/8;
+        ADDRESS endOfNew = addr + ty->getSize() / 8;
         if (endOfCurrent < endOfNew)
             replaceComponents(addr, name, ty, forced);
         else if (endOfCurrent == endOfNew)
-            checkMatching(pdie, addr, name, ty, forced);        // Size match; check that new type matches old
+            checkMatching(pdie, addr, name, ty, forced); // Size match; check that new type matches old
         else
             enterComponent(pdie, addr, name, ty, forced);
     } else {
         // Old starts after new; check it also ends first
-        if (pdie->first + pdie->second.size > addr+ty->getSize()/8) {
-            LOG << "TYPE ERROR: attempt to insert item " << name << " at " << addr << " of type " <<
-                   ty->getCtype() << " which weaves before " << pdie->second.name.c_str() << " at " << pdie->first <<
-                   " of type " << pdie->second.type->getCtype() << "\n";
+        if (pdie->first + pdie->second.size > addr + ty->getSize() / 8) {
+            LOG << "TYPE ERROR: attempt to insert item " << name << " at " << addr << " of type " << ty->getCtype()
+                << " which weaves before " << pdie->second.name.c_str() << " at " << pdie->first << " of type "
+                << pdie->second.type->getCtype() << "\n";
             return;
         }
         replaceComponents(addr, name, ty, forced);
@@ -1264,58 +1304,61 @@ void DataIntervalMap::addItem(ADDRESS addr, const char* name, Type* ty, bool for
 }
 
 // We are entering an item that already exists in a larger type. Check for compatibility, meet if necessary.
-void DataIntervalMap::enterComponent(DataIntervalEntry* pdie, ADDRESS addr, const char* /*name*/, Type* ty, bool /*forced*/) {
+void DataIntervalMap::enterComponent(DataIntervalEntry *pdie, ADDRESS addr, const char * /*name*/, Type *ty,
+                                     bool /*forced*/) {
     if (pdie->second.type->resolvesToCompound()) {
-        unsigned bitOffset = (addr - pdie->first).m_value*8;
-        Type* memberType = pdie->second.type->asCompound()->getTypeAtOffset(bitOffset);
+        unsigned bitOffset = (addr - pdie->first).m_value * 8;
+        Type *memberType = pdie->second.type->asCompound()->getTypeAtOffset(bitOffset);
         if (memberType->isCompatibleWith(ty)) {
             bool ch;
             memberType = memberType->meetWith(ty, ch);
             pdie->second.type->asCompound()->setTypeAtOffset(bitOffset, memberType);
         } else
             LOG << "TYPE ERROR: At address " << addr << " type " << ty->getCtype() << " is not compatible with "
-                   "existing structure member type " << memberType->getCtype() << "\n";
-    }
-    else if (pdie->second.type->resolvesToArray()) {
-        Type* memberType = pdie->second.type->asArray()->getBaseType();
+                                                                                      "existing structure member type "
+                << memberType->getCtype() << "\n";
+    } else if (pdie->second.type->resolvesToArray()) {
+        Type *memberType = pdie->second.type->asArray()->getBaseType();
         if (memberType->isCompatibleWith(ty)) {
             bool ch;
             memberType = memberType->meetWith(ty, ch);
             pdie->second.type->asArray()->setBaseType(memberType);
         } else
             LOG << "TYPE ERROR: At address " << addr << " type " << ty->getCtype() << " is not compatible with "
-                   "existing array member type " << memberType->getCtype() << "\n";
+                                                                                      "existing array member type "
+                << memberType->getCtype() << "\n";
     } else
         LOG << "TYPE ERROR: Existing type at address " << pdie->first << " is not structure or array type\n";
 }
 
 // We are entering a struct or array that overlaps existing components. Check for compatibility, and move the
 // components out of the way, meeting if necessary
-void DataIntervalMap::replaceComponents(ADDRESS addr, const char* name, Type* ty, bool /*forced*/) {
+void DataIntervalMap::replaceComponents(ADDRESS addr, const char *name, Type *ty, bool /*forced*/) {
     iterator it;
-    ADDRESS pastLast = addr + ty->getSize()/8;        // This is the byte address just past the type to be inserted
+    ADDRESS pastLast = addr + ty->getSize() / 8; // This is the byte address just past the type to be inserted
     // First check that the new entry will be compatible with everything it will overlap
     if (ty->resolvesToCompound()) {
-        iterator it1 = dimap.lower_bound(addr);            // Iterator to the first overlapping item (could be end(), but
+        iterator it1 = dimap.lower_bound(addr); // Iterator to the first overlapping item (could be end(), but
         // if so, it2 will also be end())
-        iterator it2 = dimap.upper_bound(pastLast-1);    // Iterator to the first item that starts too late
+        iterator it2 = dimap.upper_bound(pastLast - 1); // Iterator to the first item that starts too late
         for (it = it1; it != it2; ++it) {
             unsigned bitOffset = (it->first - addr).m_value * 8;
-            Type* memberType = ty->asCompound()->getTypeAtOffset(bitOffset);
+            Type *memberType = ty->asCompound()->getTypeAtOffset(bitOffset);
             if (memberType->isCompatibleWith(it->second.type, true)) {
                 bool ch;
                 memberType = it->second.type->meetWith(memberType, ch);
                 ty->asCompound()->setTypeAtOffset(bitOffset, memberType);
             } else {
                 LOG << "TYPE ERROR: At address " << addr << " struct type " << ty->getCtype() << " is not compatible "
-                       "with existing type " << it->second.type->getCtype() << "\n";
+                                                                                                 "with existing type "
+                    << it->second.type->getCtype() << "\n";
                 return;
             }
         }
     } else if (ty->resolvesToArray()) {
-        Type* memberType = ty->asArray()->getBaseType();
+        Type *memberType = ty->asArray()->getBaseType();
         iterator it1 = dimap.lower_bound(addr);
-        iterator it2 = dimap.upper_bound(pastLast-1);
+        iterator it2 = dimap.upper_bound(pastLast - 1);
         for (it = it1; it != it2; ++it) {
             if (memberType->isCompatibleWith(it->second.type, true)) {
                 bool ch;
@@ -1323,14 +1366,16 @@ void DataIntervalMap::replaceComponents(ADDRESS addr, const char* name, Type* ty
                 ty->asArray()->setBaseType(memberType);
             } else {
                 LOG << "TYPE ERROR: At address " << addr << " array type " << ty->getCtype() << " is not compatible "
-                       "with existing type " << it->second.type->getCtype() << "\n";
+                                                                                                "with existing type "
+                    << it->second.type->getCtype() << "\n";
                 return;
             }
         }
     } else {
         // Just make sure it doesn't overlap anything
-        if (!isClear(addr, (ty->getSize()+7)/8)) {
-            LOG << "TYPE ERROR: at address " << addr << ", overlapping type " << ty->getCtype() << " does not resolve "
+        if (!isClear(addr, (ty->getSize() + 7) / 8)) {
+            LOG << "TYPE ERROR: at address " << addr << ", overlapping type " << ty->getCtype()
+                << " does not resolve "
                    "to compound or array\n";
             return;
         }
@@ -1338,38 +1383,30 @@ void DataIntervalMap::replaceComponents(ADDRESS addr, const char* name, Type* ty
 
     // The compound or array type is compatible. Remove the items that it will overlap with
     iterator it1 = dimap.lower_bound(addr);
-    iterator it2 = dimap.upper_bound(pastLast-1);
+    iterator it2 = dimap.upper_bound(pastLast - 1);
 
     // Check for existing locals that need to be updated
     if (ty->resolvesToCompound() || ty->resolvesToArray()) {
-        Exp* rsp = Location::regOf(proc->getSignature()->getStackRegister());
-        RefExp* rsp0 = new RefExp(rsp, proc->getCFG()->findTheImplicitAssign(rsp));    // sp{0}
+        Exp *rsp = Location::regOf(proc->getSignature()->getStackRegister());
+        RefExp *rsp0 = new RefExp(rsp, proc->getCFG()->findTheImplicitAssign(rsp)); // sp{0}
         for (it = it1; it != it2; ++it) {
             // Check if there is an existing local here
-            Exp* locl = Location::memOf(
-                            Binary::get(opPlus,
-                                       rsp0->clone(),
-                                        new Const(it->first.native())));
-            locl->simplifyArith();                        // Convert m[sp{0} + -4] to m[sp{0} - 4]
-            Type* elemTy;
+            Exp *locl = Location::memOf(Binary::get(opPlus, rsp0->clone(), new Const(it->first.native())));
+            locl->simplifyArith(); // Convert m[sp{0} + -4] to m[sp{0} - 4]
+            Type *elemTy;
             int bitOffset = (it->first - addr).m_value / 8;
             if (ty->resolvesToCompound())
                 elemTy = ty->asCompound()->getTypeAtOffset(bitOffset);
             else
                 elemTy = ty->asArray()->getBaseType();
-            const char* locName = proc->findLocal(locl, elemTy);
+            const char *locName = proc->findLocal(locl, elemTy);
             if (locName && ty->resolvesToCompound()) {
-                CompoundType* c = ty->asCompound();
+                CompoundType *c = ty->asCompound();
                 // want s.m where s is the new compound object and m is the member at offset bitOffset
-                const char* memName = c->getNameAtOffset(bitOffset);
-                Exp* s = Location::memOf(
-                             Binary::get(opPlus,
-                                        rsp0->clone(),
-                                        new Const(addr)));
+                const char *memName = c->getNameAtOffset(bitOffset);
+                Exp *s = Location::memOf(Binary::get(opPlus, rsp0->clone(), new Const(addr)));
                 s->simplifyArith();
-                Exp* memberExp = Binary::get(opMemberAccess,
-                                            s,
-                                            new Const(memName));
+                Exp *memberExp = Binary::get(opMemberAccess, s, new Const(memName));
                 proc->mapSymbolTo(locl, memberExp);
             } else {
                 // FIXME: to be completed
@@ -1377,27 +1414,28 @@ void DataIntervalMap::replaceComponents(ADDRESS addr, const char* name, Type* ty
         }
     }
 
-    for (it = it1; it != it2 && it != dimap.end();  )
+    for (it = it1; it != it2 && it != dimap.end();)
         // I believe that it is a conforming extension for map::erase() to return the iterator, but it is not portable
         // to use it. In particular, gcc considers using the return value as an error
         // The postincrement operator seems to be the definitive way to do this
         dimap.erase(it++);
 
-    DataInterval* pdi = &dimap[addr];                // Finally add the new entry
+    DataInterval *pdi = &dimap[addr]; // Finally add the new entry
     pdi->size = ty->getBytes();
     pdi->name = name;
     pdi->type = ty;
 }
 
-void DataIntervalMap::checkMatching(DataIntervalEntry* pdie, ADDRESS addr, const char* /*name*/, Type* ty, bool /*forced*/) {
+void DataIntervalMap::checkMatching(DataIntervalEntry *pdie, ADDRESS addr, const char * /*name*/, Type *ty,
+                                    bool /*forced*/) {
     if (pdie->second.type->isCompatibleWith(ty)) {
         // Just merge the types and exit
         bool ch;
         pdie->second.type = pdie->second.type->meetWith(ty, ch);
         return;
     }
-    LOG << "TYPE DIFFERENCE (could be OK): At address " << addr << " existing type " << pdie->second.type->getCtype() <<
-           " but added type " << ty->getCtype() << "\n";
+    LOG << "TYPE DIFFERENCE (could be OK): At address " << addr << " existing type " << pdie->second.type->getCtype()
+        << " but added type " << ty->getCtype() << "\n";
 }
 
 void DataIntervalMap::deleteItem(ADDRESS addr) {
@@ -1407,33 +1445,32 @@ void DataIntervalMap::deleteItem(ADDRESS addr) {
     dimap.erase(it);
 }
 
-void DataIntervalMap::dump() {
-    std::cerr << prints();
-}
+void DataIntervalMap::dump() { std::cerr << prints(); }
 
-char* DataIntervalMap::prints() {
+char *DataIntervalMap::prints() {
     iterator it;
     std::ostringstream ost;
     for (it = dimap.begin(); it != dimap.end(); ++it)
         ost << std::hex << "0x" << it->first << std::dec << " " << it->second.name << " " << it->second.type->getCtype()
             << "\n";
-    strncpy(debug_buffer, ost.str().c_str(), DEBUG_BUFSIZE-1);
-    debug_buffer[DEBUG_BUFSIZE-1] = '\0';
+    strncpy(debug_buffer, ost.str().c_str(), DEBUG_BUFSIZE - 1);
+    debug_buffer[DEBUG_BUFSIZE - 1] = '\0';
     return debug_buffer;
 }
 
-ComplexTypeCompList& Type::compForAddress(ADDRESS addr, DataIntervalMap& dim) {
-    DataIntervalEntry* pdie = dim.find(addr);
-    ComplexTypeCompList* res = new ComplexTypeCompList;
-    if (pdie == nullptr) return *res;
+ComplexTypeCompList &Type::compForAddress(ADDRESS addr, DataIntervalMap &dim) {
+    DataIntervalEntry *pdie = dim.find(addr);
+    ComplexTypeCompList *res = new ComplexTypeCompList;
+    if (pdie == nullptr)
+        return *res;
     ADDRESS startCurrent = pdie->first;
-    Type* curType = pdie->second.type;
+    Type *curType = pdie->second.type;
     while (startCurrent < addr) {
         size_t bitOffset = (addr - startCurrent).m_value * 8;
         if (curType->isCompound()) {
-            CompoundType* compCurType = curType->asCompound();
+            CompoundType *compCurType = curType->asCompound();
             unsigned rem = compCurType->getOffsetRemainder(bitOffset);
-            startCurrent = addr - (rem/8);
+            startCurrent = addr - (rem / 8);
             ComplexTypeComp ctc;
             ctc.isArray = false;
             ctc.u.memberName = strdup(compCurType->getNameAtOffset(bitOffset));
@@ -1443,7 +1480,7 @@ ComplexTypeCompList& Type::compForAddress(ADDRESS addr, DataIntervalMap& dim) {
             curType = curType->asArray()->getBaseType();
             unsigned baseSize = curType->getSize();
             unsigned index = bitOffset / baseSize;
-            startCurrent += index * baseSize/8;
+            startCurrent += index * baseSize / 8;
             ComplexTypeComp ctc;
             ctc.isArray = true;
             ctc.u.index = index;
@@ -1458,11 +1495,11 @@ ComplexTypeCompList& Type::compForAddress(ADDRESS addr, DataIntervalMap& dim) {
 
 void UnionType::addType(Type *n, const char *str) {
     if (n->isUnion()) {
-        UnionType* utp = (UnionType*)n;
+        UnionType *utp = (UnionType *)n;
         // Note: need to check for name clashes eventually
         li.insert(li.end(), utp->li.begin(), utp->li.end());
     } else {
-        if (n->isPointer() && n->asPointer()->getPointsTo() == this) {        // Note: pointer comparison
+        if (n->isPointer() && n->asPointer()->getPointsTo() == this) { // Note: pointer comparison
             n = new PointerType(new VoidType);
             if (VERBOSE)
                 LOG << "Warning: attempt to union with pointer to self!\n";
@@ -1475,10 +1512,10 @@ void UnionType::addType(Type *n, const char *str) {
 }
 
 // Update this compound to use the fact that offset off has type ty
-void CompoundType::updateGenericMember(int off, Type* ty, bool& ch) {
+void CompoundType::updateGenericMember(int off, Type *ty, bool &ch) {
     assert(generic);
     int bit_offset = off * 8;
-    Type* existingType = getTypeAtOffset(bit_offset);
+    Type *existingType = getTypeAtOffset(bit_offset);
     if (existingType) {
         existingType = existingType->meetWith(ty, ch);
         setTypeAtOffset(bit_offset, existingType);
