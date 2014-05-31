@@ -9,11 +9,11 @@
  *
  */
 
-/***************************************************************************//**
- * \file       rtl.cpp
- * \brief   Implementation of the classes that describe a low level RTL (
- *               register transfer list)
- ******************************************************************************/
+/***************************************************************************/ /**
+  * \file       rtl.cpp
+  * \brief   Implementation of the classes that describe a low level RTL (
+  *               register transfer list)
+  ******************************************************************************/
 
 #include "rtl.h"
 #include "types.h"
@@ -22,7 +22,7 @@
 #include "type.h"
 #include "register.h"
 #include "cfg.h"
-#include "proc.h"            // For printing proc names
+#include "proc.h" // For printing proc names
 #include "prog.h"
 #include "hllcode.h"
 #include "util.h"
@@ -31,7 +31,7 @@
 #include "log.h"
 
 #include <cassert>
-#include <iomanip>            // For setfill
+#include <iomanip> // For setfill
 #include <sstream>
 #include <cstring>
 
@@ -40,39 +40,36 @@
  * Class RTL represents low-level register transfer lists.
  *****************************************************************************/
 
-RTL::RTL()
-  : nativeAddr(ADDRESS::g(0L))
-{ }
+RTL::RTL() : nativeAddr(ADDRESS::g(0L)) {}
 
-/***************************************************************************//**
- * \brief   Constructor.
- * \param   instNativeAddr - the native address of the instruction
- * \param   listStmt - ptr to existing list of Statement
- *
- ******************************************************************************/
-RTL::RTL(ADDRESS instNativeAddr, const std::list<Statement*>* listStmt /*= nullptr*/)
-    : nativeAddr(instNativeAddr) {
+/***************************************************************************/ /**
+  * \brief   Constructor.
+  * \param   instNativeAddr - the native address of the instruction
+  * \param   listStmt - ptr to existing list of Statement
+  *
+  ******************************************************************************/
+RTL::RTL(ADDRESS instNativeAddr, const std::list<Statement *> *listStmt /*= nullptr*/) : nativeAddr(instNativeAddr) {
     if (listStmt)
-        *(std::list<Statement*>*)this = *listStmt;
+        *(std::list<Statement *> *)this = *listStmt;
 }
 
-/***************************************************************************//**
- * \brief        Copy constructor. A deep clone is made of the given object
- *                    so that the lists of Exps do not share memory.
- * \param        other RTL to copy from
- ******************************************************************************/
-RTL::RTL(const RTL& other) : std::list<Statement*>(),nativeAddr(other.nativeAddr) {
-    for (auto const & elem : other) {
+/***************************************************************************/ /**
+  * \brief        Copy constructor. A deep clone is made of the given object
+  *                    so that the lists of Exps do not share memory.
+  * \param        other RTL to copy from
+  ******************************************************************************/
+RTL::RTL(const RTL &other) : std::list<Statement *>(), nativeAddr(other.nativeAddr) {
+    for (auto const &elem : other) {
         push_back((elem)->clone());
     }
 }
 
-/***************************************************************************//**
- * \brief        Assignment copy (deep).
- * \param        other - RTL to copy
- * \returns             a reference to this object
- ******************************************************************************/
-RTL& RTL::operator=(const RTL& other) {
+/***************************************************************************/ /**
+  * \brief        Assignment copy (deep).
+  * \param        other - RTL to copy
+  * \returns             a reference to this object
+  ******************************************************************************/
+RTL &RTL::operator=(const RTL &other) {
     if (this != &other) {
         // Do a deep copy always
         clear();
@@ -86,38 +83,38 @@ RTL& RTL::operator=(const RTL& other) {
 }
 
 // Return a deep copy, including a deep copy of the list of Statements
-/***************************************************************************//**
- * \brief        Deep copy clone; deleting the clone will not affect this
- *                     RTL object
- * \returns             Pointer to a new RTL that is a clone of this one
- ******************************************************************************/
-RTL* RTL::clone() const {
-    std::list<Statement*> le;
-    for (auto const & elem : *this) {
+/***************************************************************************/ /**
+  * \brief        Deep copy clone; deleting the clone will not affect this
+  *                     RTL object
+  * \returns             Pointer to a new RTL that is a clone of this one
+  ******************************************************************************/
+RTL *RTL::clone() const {
+    std::list<Statement *> le;
+    for (auto const &elem : *this) {
         le.push_back((elem)->clone());
     }
     return new RTL(nativeAddr, &le);
 }
 
-/***************************************************************************//**
- * \brief        Make a copy of this RTLs list of Exp* to the given list
- * \param        dest Ref to empty list to copy to
- ******************************************************************************/
-void RTL::deepCopyList(std::list<Statement*>& dest) const {
-    for (Statement * it : *this) {
+/***************************************************************************/ /**
+  * \brief        Make a copy of this RTLs list of Exp* to the given list
+  * \param        dest Ref to empty list to copy to
+  ******************************************************************************/
+void RTL::deepCopyList(std::list<Statement *> &dest) const {
+    for (Statement *it : *this) {
         dest.push_back(it->clone());
     }
 }
 
-/***************************************************************************//**
- * \brief        Append the given Statement at the end of this RTL
- * \note            Exception: Leaves any flag call at the end (so may push exp
- *                     to second last position, instead of last)
- * \note            stmt is NOT copied. This is different to how UQBT was!
- * \param        s pointer to Statement to append
- ******************************************************************************/
-void RTL::appendStmt(Statement* s) {
-    assert(s!=nullptr);
+/***************************************************************************/ /**
+  * \brief        Append the given Statement at the end of this RTL
+  * \note            Exception: Leaves any flag call at the end (so may push exp
+  *                     to second last position, instead of last)
+  * \note            stmt is NOT copied. This is different to how UQBT was!
+  * \param        s pointer to Statement to append
+  ******************************************************************************/
+void RTL::appendStmt(Statement *s) {
+    assert(s != nullptr);
     if (not empty()) {
         if (back()->isFlagAssgn()) {
             iterator it = end();
@@ -128,41 +125,44 @@ void RTL::appendStmt(Statement* s) {
     push_back(s);
 }
 
-/***************************************************************************//**
- * \brief        Append a given list of Statements to this RTL
- * \note            A copy of the Statements in le are appended
- * \param        rtl list of Statements to insert
- ******************************************************************************/
-void RTL::appendListStmt(std::list<Statement*>& le) {
-    for (Statement * it : le) {
+/***************************************************************************/ /**
+  * \brief        Append a given list of Statements to this RTL
+  * \note            A copy of the Statements in le are appended
+  * \param        rtl list of Statements to insert
+  ******************************************************************************/
+void RTL::appendListStmt(std::list<Statement *> &le) {
+    for (Statement *it : le) {
         push_back(it->clone());
     }
 }
 
-/***************************************************************************//**
- * \brief   Prints this object to a stream in text form.
- * \param   os - stream to output to (often cout or cerr)
- ******************************************************************************/
-void RTL::print(std::ostream& os /*= cout*/, bool html /*=false*/) const {
+/***************************************************************************/ /**
+  * \brief   Prints this object to a stream in text form.
+  * \param   os - stream to output to (often cout or cerr)
+  ******************************************************************************/
+void RTL::print(std::ostream &os /*= cout*/, bool html /*=false*/) const {
 
     if (html)
         os << "<tr><td>";
     // print out the instruction address of this RTL
     os << std::hex << std::setfill('0') << std::setw(8) << nativeAddr;
-    os << std::dec << std::setfill(' ');      // Ugh - why is this needed?
+    os << std::dec << std::setfill(' '); // Ugh - why is this needed?
     if (html)
         os << "</td>";
 
     // Print the statements
     // First line has 8 extra chars as above
     bool bFirst = true;
-    for (Statement * stmt : *this) {
+    for (Statement *stmt : *this) {
         if (html) {
-            if (!bFirst) os << "<tr><td></td>";
+            if (!bFirst)
+                os << "<tr><td></td>";
             os << "<td width=\"50\" align=\"center\">";
         } else {
-            if (bFirst) os << " ";
-            else        os << std::setw(9) << " ";
+            if (bFirst)
+                os << " ";
+            else
+                os << std::setw(9) << " ";
         }
         if (stmt)
             stmt->print(os, html);
@@ -174,31 +174,29 @@ void RTL::print(std::ostream& os /*= cout*/, bool html /*=false*/) const {
         bFirst = false;
     }
     if (empty())
-        os << std::endl;       // New line for NOP
+        os << std::endl; // New line for NOP
 }
 
-void RTL::dump() {
-    print(std::cerr);
-}
+void RTL::dump() { print(std::cerr); }
 
 extern char debug_buffer[];
 
-char* RTL::prints() const {
+char *RTL::prints() const {
     std::ostringstream ost;
     print(ost);
-    strncpy(debug_buffer, ost.str().c_str(), DEBUG_BUFSIZE-1);
-    debug_buffer[DEBUG_BUFSIZE-1] = '\0';
+    strncpy(debug_buffer, ost.str().c_str(), DEBUG_BUFSIZE - 1);
+    debug_buffer[DEBUG_BUFSIZE - 1] = '\0';
     return debug_buffer;
 }
 
-/***************************************************************************//**
- * \brief   Output operator for RTL*
- *          Just makes it easier to use e.g. std::cerr << myRTLptr
- * \param   os output stream to send to
- * \param   r ptr to RTL to print to the stream
- * \returns os (for concatenation)
- ******************************************************************************/
-std::ostream& operator<<(std::ostream& os, const RTL* r) {
+/***************************************************************************/ /**
+  * \brief   Output operator for RTL*
+  *          Just makes it easier to use e.g. std::cerr << myRTLptr
+  * \param   os output stream to send to
+  * \param   r ptr to RTL to print to the stream
+  * \returns os (for concatenation)
+  ******************************************************************************/
+std::ostream &operator<<(std::ostream &os, const RTL *r) {
     if (r == nullptr) {
         os << "nullptr ";
         return os;
@@ -207,11 +205,11 @@ std::ostream& operator<<(std::ostream& os, const RTL* r) {
     return os;
 }
 
-/***************************************************************************//**
- * \brief      Return true if this RTL affects the condition codes
- * \note          Assumes that if there is a flag call Exp, then it is the last
- * \returns           Boolean as above
- ******************************************************************************/
+/***************************************************************************/ /**
+  * \brief      Return true if this RTL affects the condition codes
+  * \note          Assumes that if there is a flag call Exp, then it is the last
+  * \returns           Boolean as above
+  ******************************************************************************/
 bool RTL::areFlagsAffected() {
     if (this->empty())
         return false;
@@ -221,24 +219,24 @@ bool RTL::areFlagsAffected() {
 }
 
 void RTL::simplify() {
-    for (iterator it = begin(); it != end(); ) {
+    for (iterator it = begin(); it != end();) {
         Statement *s = *it;
         s->simplify();
         if (s->isBranch()) {
-            Exp *cond =     ((BranchStatement*)s)->getCondExpr();
+            Exp *cond = ((BranchStatement *)s)->getCondExpr();
             if (cond && cond->getOper() == opIntConst) {
-                if (((Const*)cond)->getInt() == 0) {
-                    LOG_VERBOSE(1) << "removing branch with false condition at " << getAddress()  << " " << *it << "\n";
+                if (((Const *)cond)->getInt() == 0) {
+                    LOG_VERBOSE(1) << "removing branch with false condition at " << getAddress() << " " << *it << "\n";
                     it = this->erase(it);
                     continue;
                 }
-                LOG_VERBOSE(1) << "replacing branch with true condition with goto at " << getAddress() << " " << *it <<
-                       "\n";
-                *it = new GotoStatement(((BranchStatement*)s)->getFixedDest());
+                LOG_VERBOSE(1) << "replacing branch with true condition with goto at " << getAddress() << " " << *it
+                               << "\n";
+                *it = new GotoStatement(((BranchStatement *)s)->getFixedDest());
             }
         } else if (s->isAssign()) {
-            Exp* guard = ((Assign*)s)->getGuard();
-            if (guard && (guard->isFalse() || (guard->isIntConst() && ((Const*)guard)->getInt() == 0))) {
+            Exp *guard = ((Assign *)s)->getGuard();
+            if (guard && (guard->isFalse() || (guard->isIntConst() && ((Const *)guard)->getInt() == 0))) {
                 // This assignment statement can be deleted
                 LOG_VERBOSE(1) << "removing assignment with false guard at " << getAddress() << " " << *it << "\n";
                 it = erase(it);
@@ -253,13 +251,13 @@ void RTL::simplify() {
 bool RTL::isCall() {
     if (empty())
         return false;
-    Statement* last = this->back();
+    Statement *last = this->back();
     return last->getKind() == STMT_CALL;
 }
 
 // Use this slow function when you can't be sure that the HL Statement is last
 // Get the "special" (High Level) Statement this RTL (else nullptr)
-Statement* RTL::getHlStmt() {
+Statement *RTL::getHlStmt() {
     reverse_iterator rit;
     for (rit = this->rbegin(); rit != this->rend(); rit++) {
         if ((*rit)->getKind() != STMT_ASSIGN)

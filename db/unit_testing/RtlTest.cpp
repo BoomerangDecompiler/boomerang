@@ -1,8 +1,8 @@
-/***************************************************************************//**
- * \file       RtlTest.cc
- * OVERVIEW:   Provides the implementation for the RtlTest class, which
- *                tests the RTL and derived classes
- *============================================================================*/
+/***************************************************************************/ /**
+  * \file       RtlTest.cc
+  * OVERVIEW:   Provides the implementation for the RtlTest class, which
+  *                tests the RTL and derived classes
+  *============================================================================*/
 #include "RtlTest.h"
 #include "statement.h"
 #include "exp.h"
@@ -17,19 +17,15 @@
 
 #include <sstream>
 
-#define SWITCH_SPARC    "test/sparc/switch_cc"
-#define SWITCH_PENT     "test/pentium/switch_cc"
+#define SWITCH_SPARC "test/sparc/switch_cc"
+#define SWITCH_PENT "test/pentium/switch_cc"
 
-/***************************************************************************//**
- * FUNCTION:        RtlTest::testAppend
- * OVERVIEW:        Test appendExp and printing of RTLs
- *============================================================================*/
+/***************************************************************************/ /**
+  * FUNCTION:        RtlTest::testAppend
+  * OVERVIEW:        Test appendExp and printing of RTLs
+  *============================================================================*/
 void RtlTest::testAppend() {
-    Assign* a = new Assign(
-            Location::regOf(8),
-            new Binary(opPlus,
-                Location::regOf(9),
-                new Const(99)));
+    Assign *a = new Assign(Location::regOf(8), new Binary(opPlus, Location::regOf(9), new Const(99)));
     RTL r;
     r.appendStmt(a);
     std::ostringstream ost;
@@ -43,27 +39,22 @@ void RtlTest::testAppend() {
     // delete a;
 }
 
-/***************************************************************************//**
- * FUNCTION:        RtlTest::testClone
- * OVERVIEW:        Test constructor from list of expressions; cloning of RTLs
- *============================================================================*/
+/***************************************************************************/ /**
+  * FUNCTION:        RtlTest::testClone
+  * OVERVIEW:        Test constructor from list of expressions; cloning of RTLs
+  *============================================================================*/
 void RtlTest::testClone() {
-    Assign* a1 = new Assign(
-            Location::regOf(8),
-            new Binary(opPlus,
-                Location::regOf(9),
-                new Const(99)));
-    Assign* a2 = new Assign(IntegerType::get(16),
-            new Location(opParam, new Const("x"), nullptr),
-            new Location(opParam, new Const("y"), nullptr));
-    std::list<Statement*> ls;
+    Assign *a1 = new Assign(Location::regOf(8), new Binary(opPlus, Location::regOf(9), new Const(99)));
+    Assign *a2 = new Assign(IntegerType::get(16), new Location(opParam, new Const("x"), nullptr),
+                            new Location(opParam, new Const("y"), nullptr));
+    std::list<Statement *> ls;
     ls.push_back(a1);
     ls.push_back(a2);
-    RTL* r = new RTL(ADDRESS::g(0x1234), &ls);
-    RTL* r2 = r->clone();
+    RTL *r = new RTL(ADDRESS::g(0x1234), &ls);
+    RTL *r2 = r->clone();
     std::ostringstream o1, o2;
     r->print(o1);
-    delete r;            // And r2 should still stand!
+    delete r; // And r2 should still stand!
     r2->print(o2);
     delete r2;
     std::string expected("00001234    0 *v* r8 := r9 + 99\n"
@@ -75,38 +66,61 @@ void RtlTest::testClone() {
     QCOMPARE(expected, act2);
 }
 
-/***************************************************************************//**
- * FUNCTION:        RtlTest::testVisitor
- * OVERVIEW:        Test the accept function for correct visiting behaviour.
- * NOTES:            Stub class to test.
- *============================================================================*/
+/***************************************************************************/ /**
+  * FUNCTION:        RtlTest::testVisitor
+  * OVERVIEW:        Test the accept function for correct visiting behaviour.
+  * NOTES:            Stub class to test.
+  *============================================================================*/
 
 class StmtVisitorStub : public StmtVisitor {
-public:
+  public:
     bool a, b, c, d, e, f, g, h;
 
     void clear() { a = b = c = d = e = f = g = h = false; }
     StmtVisitorStub() { clear(); }
-    virtual ~StmtVisitorStub() { }
-    virtual bool visit(               RTL *s) { a = true; return false; }
-    virtual bool visit(     GotoStatement *s) { b = true; return false; }
-    virtual bool visit(BranchStatement *s) { c = true; return false; }
-    virtual bool visit(     CaseStatement *s) { d = true; return false; }
-    virtual bool visit(     CallStatement *s) { e = true; return false; }
-    virtual bool visit(ReturnStatement *s) { f = true; return false; }
-    virtual bool visit(      BoolAssign *s) { g = true; return false; }
-    virtual bool visit(            Assign *s) { h = true; return false; }
+    virtual ~StmtVisitorStub() {}
+    virtual bool visit(RTL *s) {
+        a = true;
+        return false;
+    }
+    virtual bool visit(GotoStatement *s) {
+        b = true;
+        return false;
+    }
+    virtual bool visit(BranchStatement *s) {
+        c = true;
+        return false;
+    }
+    virtual bool visit(CaseStatement *s) {
+        d = true;
+        return false;
+    }
+    virtual bool visit(CallStatement *s) {
+        e = true;
+        return false;
+    }
+    virtual bool visit(ReturnStatement *s) {
+        f = true;
+        return false;
+    }
+    virtual bool visit(BoolAssign *s) {
+        g = true;
+        return false;
+    }
+    virtual bool visit(Assign *s) {
+        h = true;
+        return false;
+    }
 };
 
-void RtlTest::testVisitor()
-{
-    StmtVisitorStub* visitor = new StmtVisitorStub();
+void RtlTest::testVisitor() {
+    StmtVisitorStub *visitor = new StmtVisitorStub();
 
-//    /* rtl */
-//    RTL *rtl = new RTL();
-//    rtl->accept(visitor);
-//    QVERIFY(visitor->a);
-//    delete rtl;
+    //    /* rtl */
+    //    RTL *rtl = new RTL();
+    //    rtl->accept(visitor);
+    //    QVERIFY(visitor->a);
+    //    delete rtl;
 
     /* jump stmt */
     GotoStatement *jump = new GotoStatement;
@@ -151,7 +165,7 @@ void RtlTest::testVisitor()
     delete as;
 
     /* polymorphic */
-    Statement* s = new CallStatement;
+    Statement *s = new CallStatement;
     s->accept(visitor);
     QVERIFY(visitor->e);
     delete s;
@@ -160,11 +174,11 @@ void RtlTest::testVisitor()
     delete visitor;
 }
 
-/***************************************************************************//**
- * FUNCTION:        RtlTest::testIsCompare
- * OVERVIEW:        Test the isCompare function
- *============================================================================*/
-//void RtlTest::testIsCompare() {
+/***************************************************************************/ /**
+  * FUNCTION:        RtlTest::testIsCompare
+  * OVERVIEW:        Test the isCompare function
+  *============================================================================*/
+// void RtlTest::testIsCompare() {
 //    BinaryFileFactory bff;
 //    BinaryFile *pBF = bff.Load(SWITCH_SPARC);
 //    QVERIFY(pBF != 0);
@@ -220,48 +234,38 @@ void RtlTest::testVisitor()
 
 void RtlTest::testSetConscripts() {
     // m[1000] = m[1000] + 1000
-    Statement* s1 = new Assign(
-        Location::memOf(
-            new Const(1000), 0),
-        new Binary(opPlus,
-        Location::memOf(
-            new Const(1000), nullptr),
-        new Const(1000)));
+    Statement *s1 = new Assign(Location::memOf(new Const(1000), 0),
+                               new Binary(opPlus, Location::memOf(new Const(1000), nullptr), new Const(1000)));
 
     // "printf("max is %d", (local0 > 0) ? local0 : global1)
-    CallStatement* s2 = new CallStatement();
+    CallStatement *s2 = new CallStatement();
     std::string name("printf");
-    Proc* proc = new UserProc(new Prog(), name, ADDRESS::g(0x2000));    // Making a true LibProc is problematic
+    Proc *proc = new UserProc(new Prog(), name, ADDRESS::g(0x2000)); // Making a true LibProc is problematic
     s2->setDestProc(proc);
-    s2->setCalleeReturn(new ReturnStatement);        // So it's not a childless call
-    Exp* e1 = new Const("max is %d");
-    Exp* e2 = new Ternary(opTern,
-        new Binary(opGtr,
-            Location::local("local0", nullptr),
-            new Const(0)),
-        Location::local("local0", nullptr),
-        Location::global("global1", nullptr));
+    s2->setCalleeReturn(new ReturnStatement); // So it's not a childless call
+    Exp *e1 = new Const("max is %d");
+    Exp *e2 = new Ternary(opTern, new Binary(opGtr, Location::local("local0", nullptr), new Const(0)),
+                          Location::local("local0", nullptr), Location::global("global1", nullptr));
     StatementList args;
     args.append(new Assign(Location::regOf(8), e1));
     args.append(new Assign(Location::regOf(9), e2));
     s2->setArguments(args);
 
-    std::list<Statement*> list;
+    std::list<Statement *> list;
     list.push_back(s1);
     list.push_back(s2);
-    RTL* rtl = new RTL(ADDRESS::g(0x1000), &list);
+    RTL *rtl = new RTL(ADDRESS::g(0x1000), &list);
     StmtConscriptSetter sc(0, false);
-    for(Statement* s : *rtl) {
+    for (Statement *s : *rtl) {
         s->accept(&sc);
     }
-    std::string expected(
-        "00001000    0 *v* m[1000\\1\\] := m[1000\\2\\] + 1000\\3\\\n"
-        "            0 CALL printf(\n"
-        "                *v* r8 := \"max is %d\"\\4\\\n"
-        "                *v* r9 := (local0 > 0\\5\\) ? local0 : global1\n"
-        "              )\n"
-        "              Reaching definitions: \n"
-        "              Live variables: \n");
+    std::string expected("00001000    0 *v* m[1000\\1\\] := m[1000\\2\\] + 1000\\3\\\n"
+                         "            0 CALL printf(\n"
+                         "                *v* r8 := \"max is %d\"\\4\\\n"
+                         "                *v* r9 := (local0 > 0\\5\\) ? local0 : global1\n"
+                         "              )\n"
+                         "              Reaching definitions: \n"
+                         "              Live variables: \n");
 
     std::ostringstream ost;
     rtl->print(ost);
@@ -270,4 +274,3 @@ void RtlTest::testSetConscripts() {
 }
 
 QTEST_MAIN(RtlTest)
-

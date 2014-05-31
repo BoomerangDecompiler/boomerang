@@ -9,16 +9,16 @@
  *
  */
 
-/***************************************************************************//**
- * \file       st20frontend.cpp
- * \brief   This file contains routines to manage the decoding of st20
- *               instructions and the instantiation to RTLs, removing st20
- *               dependent features such as delay slots in the process. These
- *               functions replace Frontend.cc for decoding sparc instructions.
- ******************************************************************************/
-/***************************************************************************//**
- * Dependencies.
- ******************************************************************************/
+/***************************************************************************/ /**
+  * \file       st20frontend.cpp
+  * \brief   This file contains routines to manage the decoding of st20
+  *               instructions and the instantiation to RTLs, removing st20
+  *               dependent features such as delay slots in the process. These
+  *               functions replace Frontend.cc for decoding sparc instructions.
+  ******************************************************************************/
+/***************************************************************************/ /**
+  * Dependencies.
+  ******************************************************************************/
 
 #include "st20frontend.h"
 
@@ -32,28 +32,23 @@
 #include "st20decoder.h"
 #include "BinaryFile.h"
 #include "frontend.h"
-#include "BinaryFile.h"        // E.g. IsDynamicallyLinkedProc
+#include "BinaryFile.h" // E.g. IsDynamicallyLinkedProc
 #include "boomerang.h"
 #include "signature.h"
 
 #include <cassert>
-#include <iomanip>            // For setfill etc
+#include <iomanip> // For setfill etc
 #include <sstream>
 
-ST20FrontEnd::ST20FrontEnd(QObject *pBF, Prog* prog, BinaryFileFactory* pbff) : FrontEnd(pBF, prog, pbff) {
+ST20FrontEnd::ST20FrontEnd(QObject *pBF, Prog *prog, BinaryFileFactory *pbff) : FrontEnd(pBF, prog, pbff) {
     decoder = new ST20Decoder();
 }
 
-
 // destructor
-ST20FrontEnd::~ST20FrontEnd()
-{
-}
+ST20FrontEnd::~ST20FrontEnd() {}
 
-
-std::vector<Exp*> &ST20FrontEnd::getDefaultParams()
-{
-    static std::vector<Exp*> params;
+std::vector<Exp *> &ST20FrontEnd::getDefaultParams() {
+    static std::vector<Exp *> params;
     if (params.size() == 0) {
 #if 0
         for (int r=0; r<=2; r++) {
@@ -65,9 +60,8 @@ std::vector<Exp*> &ST20FrontEnd::getDefaultParams()
     return params;
 }
 
-std::vector<Exp*> &ST20FrontEnd::getDefaultReturns()
-{
-    static std::vector<Exp*> returns;
+std::vector<Exp *> &ST20FrontEnd::getDefaultReturns() {
+    static std::vector<Exp *> returns;
     if (returns.size() == 0) {
         returns.push_back(Location::regOf(0));
         returns.push_back(Location::regOf(3));
@@ -76,22 +70,22 @@ std::vector<Exp*> &ST20FrontEnd::getDefaultReturns()
     return returns;
 }
 
-ADDRESS ST20FrontEnd::getMainEntryPoint( bool &gotMain )
-{
+ADDRESS ST20FrontEnd::getMainEntryPoint(bool &gotMain) {
     gotMain = true;
     ADDRESS start = ldrIface->GetMainEntryPoint();
-    if( start != NO_ADDRESS ) return start;
+    if (start != NO_ADDRESS)
+        return start;
 
     start = ldrIface->GetEntryPoint();
     gotMain = false;
-    if( start == NO_ADDRESS ) return NO_ADDRESS;
+    if (start == NO_ADDRESS)
+        return NO_ADDRESS;
 
     gotMain = true;
     return start;
 }
 
-
-bool ST20FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bool frag /* = false */,
+bool ST20FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, std::ofstream &os, bool frag /* = false */,
                                bool spec /* = false */) {
 
     // Call the base class to do most of the work

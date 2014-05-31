@@ -1,8 +1,8 @@
-/***************************************************************************//**
- * \file       ProgTest.cc
- * OVERVIEW:   Provides the implementation for the ProgTest class, which
- *                tests the Exp and derived classes
- *============================================================================*/
+/***************************************************************************/ /**
+  * \file       ProgTest.cc
+  * OVERVIEW:   Provides the implementation for the ProgTest class, which
+  *                tests the Exp and derived classes
+  *============================================================================*/
 /*
  * $Revision$
  *
@@ -16,37 +16,35 @@
 #include "pentiumfrontend.h"
 #include "BinaryFile.h"
 
-CPPUNIT_TEST_SUITE_REGISTRATION( ProgTest );
+CPPUNIT_TEST_SUITE_REGISTRATION(ProgTest);
 
-#define HELLO_PENTIUM   "test/pentium/hello"
+#define HELLO_PENTIUM "test/pentium/hello"
 
-
-/***************************************************************************//**
- * FUNCTION:        ProgTest::setUp
- * OVERVIEW:        Set up some expressions for use with all the tests
- * NOTE:            Called before any tests
- * PARAMETERS:        <none>
- *
- *============================================================================*/
-void ProgTest::setUp () {
-    //prog.setName("default name");
+/***************************************************************************/ /**
+  * FUNCTION:        ProgTest::setUp
+  * OVERVIEW:        Set up some expressions for use with all the tests
+  * NOTE:            Called before any tests
+  * PARAMETERS:        <none>
+  *
+  *============================================================================*/
+void ProgTest::setUp() {
+    // prog.setName("default name");
 }
 
-/***************************************************************************//**
- * \brief Delete expressions created in setUp
- * \note Called after all tests
- *============================================================================*/
-void ProgTest::tearDown () {
-}
+/***************************************************************************/ /**
+  * \brief Delete expressions created in setUp
+  * \note Called after all tests
+  *============================================================================*/
+void ProgTest::tearDown() {}
 
-/***************************************************************************//**
- * FUNCTION:        ProgTest::testName
- * OVERVIEW:        Test setting and reading name
- *============================================================================*/
-void ProgTest::testName () {
+/***************************************************************************/ /**
+  * FUNCTION:        ProgTest::testName
+  * OVERVIEW:        Test setting and reading name
+  *============================================================================*/
+void ProgTest::testName() {
     BinaryFileFactory bff;
-    BinaryFile *pBF = bff.Load(HELLO_PENTIUM);    // Don't actually use it
-    Prog* prog = new Prog();
+    BinaryFile *pBF = bff.Load(HELLO_PENTIUM); // Don't actually use it
+    Prog *prog = new Prog();
     FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
     // We need a Prog object with a pBF (for getEarlyParamExp())
     prog->setFrontEnd(pFE);
@@ -55,7 +53,7 @@ void ProgTest::testName () {
     CPPUNIT_ASSERT_EQUAL(expected, actual);
     std::string name("Happy prog");
     prog->setName(name.c_str());
-    actual =  prog->getName();
+    actual = prog->getName();
     CPPUNIT_ASSERT_EQUAL(name, actual);
     delete pFE;
 }

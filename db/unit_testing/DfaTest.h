@@ -1,11 +1,11 @@
 #include "log.h"
 
-#include <iostream>        // For std::cerr
+#include <iostream> // For std::cerr
 #include <QtTest/QTest>
 
 class ErrLogger : public Log {
-public:
-    virtual Log &operator<<(const QString& s) {
+  public:
+    virtual Log &operator<<(const QString &s) {
         std::cerr << s.toStdString();
         return *this;
     }
@@ -13,11 +13,11 @@ public:
 };
 class DfaTest : public QObject {
     Q_OBJECT
-public:
+  public:
     DfaTest();
     virtual void SetUp();
     virtual void TearDown();
-private slots:
+  private slots:
     void testMeetInt();
     void testMeetSize();
     void testMeetPointer();

@@ -7,11 +7,11 @@
  *
  */
 
-/***************************************************************************//**
- * \file       table.h
- * \brief   Provides the definition of class Table and children used by
- *               the SSL parser
- ******************************************************************************/
+/***************************************************************************/ /**
+  * \file       table.h
+  * \brief   Provides the definition of class Table and children used by
+  *               the SSL parser
+  ******************************************************************************/
 
 /*
  * 25 Feb 01 - Simon: updated post creation
@@ -25,36 +25,34 @@
 #include <deque>
 
 // Kinds of SSL specification tables
-enum TABLE_TYPE {
-    NAMETABLE,
-    OPTABLE,
-    EXPRTABLE
-};
+enum TABLE_TYPE { NAMETABLE, OPTABLE, EXPRTABLE };
 
 class Table {
     typedef std::deque<std::string> tRecords;
-public:
-                        Table(const std::deque<std::string> &recs, TABLE_TYPE t = NAMETABLE);
-                        Table(TABLE_TYPE t);
-virtual                 ~Table() {}
-        TABLE_TYPE      getType() const;
-        tRecords        records;
-private:
+
+  public:
+    Table(const std::deque<std::string> &recs, TABLE_TYPE t = NAMETABLE);
+    Table(TABLE_TYPE t);
+    virtual ~Table() {}
+    TABLE_TYPE getType() const;
+    tRecords records;
+
+  private:
     TABLE_TYPE type;
 };
 
 class OpTable : public Table {
-public:
+  public:
     OpTable(const std::deque<std::string> &ops);
 };
 
 class Exp;
 
 class ExprTable : public Table {
-public:
+  public:
     ExprTable(const std::deque<Exp *> &exprs);
     ~ExprTable(void);
-    std::deque<Exp*> expressions;
+    std::deque<Exp *> expressions;
 };
 
 #endif

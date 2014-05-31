@@ -8,12 +8,12 @@
  *
  */
 
-/***************************************************************************//**
- * \file       front68k.cc
- * OVERVIEW:   This file contains routines to manage the decoding of mc68k
- *             instructions and the instantiation to RTLs. These functions
- *             replace Frontend.cc for decoding mc68k instructions.
- *============================================================================*/
+/***************************************************************************/ /**
+  * \file       front68k.cc
+  * OVERVIEW:   This file contains routines to manage the decoding of mc68k
+  *             instructions and the instantiation to RTLs. These functions
+  *             replace Frontend.cc for decoding mc68k instructions.
+  *============================================================================*/
 
 /*
  * $Revision$
@@ -26,68 +26,65 @@
 
 #include "global.h"
 #include "frontend.h"
-#include "decoder.h"        // prototype for decodeInstruction()
+#include "decoder.h" // prototype for decodeInstruction()
 #include "rtl.h"
 #include "cfg.h"
 #include "ss.h"
-#include "prog.h"           // For findProc()
+#include "prog.h" // For findProc()
 #include "proc.h"
 #include "options.h"
-#include "BinaryFile.h"     // For SymbolByAddress()
-#include "csr.h"            // For class CalleeEpilogue
+#include "BinaryFile.h" // For SymbolByAddress()
+#include "csr.h"        // For class CalleeEpilogue
 
-/***************************************************************************//**
- * Forward declarations.
- *============================================================================*/
+/***************************************************************************/ /**
+  * Forward declarations.
+  *============================================================================*/
 
-/***************************************************************************//**
- * File globals.
- *============================================================================*/
+/***************************************************************************/ /**
+  * File globals.
+  *============================================================================*/
 
 // Queues used by various functions
-queue < ADDRESS> qLabels;       // Queue of labels this procedure
+queue<ADDRESS> qLabels; // Queue of labels this procedure
 
-/***************************************************************************//**
- * Forward declarations.
- *============================================================================*/
-void initCti();             // Imp in cti68k.cc
+/***************************************************************************/ /**
+  * Forward declarations.
+  *============================================================================*/
+void initCti();                                                               // Imp in cti68k.cc
 
-struct SemCmp
-{ bool operator() (const SemStr& ss1, const SemStr& ss2) const; };
-bool SemCmp::operator() (const SemStr& ss1, const SemStr& ss2) const
-{ return ss1 < ss2; }
-    
+struct SemCmp {
+    bool operator()(const SemStr &ss1, const SemStr &ss2) const;
+};
+bool SemCmp::operator()(const SemStr &ss1, const SemStr &ss2) const { return ss1 < ss2; }
+
 // A map from semantic string to integer (for identifying branch statements)
 static map<SemStr, int, SemCmp> condMap;
 
 int arrConds[12][7] = {
-{ idZF},                                        // HLJCOND_JE: Z
-{ idNot, idZF},                                 // HLJCOND_JNE: ~Z
-{ idBitXor, idNF, idOF},                        // HLJCOND_JSL: N ^ O
-{ idBitOr, idBitXor, idNF, idOF, idZF},         // HLJCOND_JSLE: (N ^ O) | Z
-{ idNot, idBitXor, idNF, idOF },                // HLJCOND_JGES: ~(N ^ O)
-{ idBitAnd, idNot, idBitXor, idNF, idOF,
-    idNot, idZF},                               // HLJCOND_JSG: ~(N ^ O) & ~Z
-{ idCF},                                        // HLJCOND_JUL: C
-{ idBitOr, idCF, idZF},                         // HLJCOND_JULE: C | Z
-{ idNot, idCF},                                 // HLJCOND_JUGE: ~C
-{ idBitAnd, idNot, idCF, idNot, idZF},          // HLJCOND_JUG: ~C & ~Z
-{ idNF},                                        // HLJCOND_JMI: N
-{ idNot, idNF},                                 // HLJCOND_JPOS: ~N
+    {idZF},                                               // HLJCOND_JE: Z
+    {idNot, idZF},                                        // HLJCOND_JNE: ~Z
+    {idBitXor, idNF, idOF},                               // HLJCOND_JSL: N ^ O
+    {idBitOr, idBitXor, idNF, idOF, idZF},                // HLJCOND_JSLE: (N ^ O) | Z
+    {idNot, idBitXor, idNF, idOF},                        // HLJCOND_JGES: ~(N ^ O)
+    {idBitAnd, idNot, idBitXor, idNF, idOF, idNot, idZF}, // HLJCOND_JSG: ~(N ^ O) & ~Z
+    {idCF},                                               // HLJCOND_JUL: C
+    {idBitOr, idCF, idZF},                                // HLJCOND_JULE: C | Z
+    {idNot, idCF},                                        // HLJCOND_JUGE: ~C
+    {idBitAnd, idNot, idCF, idNot, idZF},                 // HLJCOND_JUG: ~C & ~Z
+    {idNF},                                               // HLJCOND_JMI: N
+    {idNot, idNF},                                        // HLJCOND_JPOS: ~N
 };
 
 // Ugly. The lengths of the above arrays.
 int condLengths[12] = {1, 2, 3, 5, 4, 7, 1, 3, 2, 5, 1, 2};
 
-/***************************************************************************//**
- * FUNCTION:      initFront
- * OVERVIEW:      Initialise the front end.
- * PARAMETERS:    <none>                
- *============================================================================*/
-void initFront()
-{
-    for (int i=0; i < 12; i++)
-    {
+/***************************************************************************/ /**
+  * FUNCTION:      initFront
+  * OVERVIEW:      Initialise the front end.
+  * PARAMETERS:    <none>
+  *============================================================================*/
+void initFront() {
+    for (int i = 0; i < 12; i++) {
         SemStr ss;
         ss.pushArr(condLengths[i], arrConds[i]);
         condMap[ss] = i;
@@ -95,35 +92,31 @@ void initFront()
 }
 
 // Get the condition, given that it's something like %NF ^ %OF
-JCOND_TYPE getCond(const SemStr* pCond)
-{
+JCOND_TYPE getCond(const SemStr *pCond) {
     map<SemStr, int, SemCmp>::const_iterator mit;
 
     mit = condMap.find(*pCond);
-    if (mit == condMap.end())
-    {
+    if (mit == condMap.end()) {
         ostrstream os;
         os << "Condition ";
         pCond->print(os);
         os << " not known";
         error(os.str());
-        return (JCOND_TYPE) 0;
+        return (JCOND_TYPE)0;
     }
-    return (JCOND_TYPE) (*mit).second;
+    return (JCOND_TYPE)(*mit).second;
 }
 
-/***************************************************************************//**
- * FUNCTION:      FrontEndSrc::processProc
- * OVERVIEW:      Process a procedure, given a native (source machine) address.
- * PARAMETERS:    address - the address at which the procedure starts
- *                pProc - the procedure object
- *                spec - true if a speculative decode
- *                os - output stream for rtl output
- * \returns        True if successful decode
- *============================================================================*/
-bool FrontEndSrc::processProc(ADDRESS uAddr, UserProc* pProc, ofstream &os,
-    bool spec /* = false */)
-{
+/***************************************************************************/ /**
+  * FUNCTION:      FrontEndSrc::processProc
+  * OVERVIEW:      Process a procedure, given a native (source machine) address.
+  * PARAMETERS:    address - the address at which the procedure starts
+  *                pProc - the procedure object
+  *                spec - true if a speculative decode
+  *                os - output stream for rtl output
+  * \returns        True if successful decode
+  *============================================================================*/
+bool FrontEndSrc::processProc(ADDRESS uAddr, UserProc *pProc, ofstream &os, bool spec /* = false */) {
     // Call the base class to do all of the work
     return FrontEnd::processProc(uAddr, pProc, os, spec);
 }
@@ -494,5 +487,3 @@ void processProc(ADDRESS uAddr, int delta, ADDRESS uUpper, UserProc* pProc,
 
 }
 #endif
-
-

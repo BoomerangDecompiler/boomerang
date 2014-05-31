@@ -1,4 +1,4 @@
-#define sign_extend(N,SIZE) (((int)((N) << (sizeof(unsigned)*8-(SIZE)))) >> (sizeof(unsigned)*8-(SIZE)))
+#define sign_extend(N, SIZE) (((int)((N) << (sizeof(unsigned) * 8 - (SIZE)))) >> (sizeof(unsigned) * 8 - (SIZE)))
 #include <assert.h>
 
 //#line 2 "machine/mips/disassembler.m"
@@ -9,15 +9,15 @@
 *
 *   \file disassembler.cpp
 *
-* PURPOSE 
+* PURPOSE
 *
 *   Skeleton for MIPS disassembly
 *
-* AUTHOR 
+* AUTHOR
 *
 *   \author Markus Gothe, nietzsche@lysator.liu.se
 *
-* REVISION 
+* REVISION
 *
 *   $Id$
 *

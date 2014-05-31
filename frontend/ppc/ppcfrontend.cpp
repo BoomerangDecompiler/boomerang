@@ -9,16 +9,16 @@
  *
  */
 
-/***************************************************************************//**
- * \file       ppcfrontend.cpp
- * \brief   This file contains routines to manage the decoding of ppc
- *               instructions and the instantiation to RTLs, removing sparc
- *               dependent features such as delay slots in the process. These
- *               functions replace Frontend.cc for decoding sparc instructions.
- ******************************************************************************/
-/***************************************************************************//**
- * Dependencies.
- ******************************************************************************/
+/***************************************************************************/ /**
+  * \file       ppcfrontend.cpp
+  * \brief   This file contains routines to manage the decoding of ppc
+  *               instructions and the instantiation to RTLs, removing sparc
+  *               dependent features such as delay slots in the process. These
+  *               functions replace Frontend.cc for decoding sparc instructions.
+  ******************************************************************************/
+/***************************************************************************/ /**
+  * Dependencies.
+  ******************************************************************************/
 
 #include "ppcfrontend.h"
 
@@ -32,64 +32,56 @@
 #include "ppcdecoder.h"
 #include "BinaryFile.h"
 #include "frontend.h"
-#include "BinaryFile.h"        // E.g. IsDynamicallyLinkedProc
+#include "BinaryFile.h" // E.g. IsDynamicallyLinkedProc
 #include "boomerang.h"
 #include "signature.h"
 
 #include <cassert>
-#include <iomanip>            // For setfill etc
+#include <iomanip> // For setfill etc
 #include <sstream>
-PPCFrontEnd::PPCFrontEnd(QObject *pBF, Prog* prog, BinaryFileFactory* pbff) : FrontEnd(pBF, prog, pbff)
-{
+PPCFrontEnd::PPCFrontEnd(QObject *pBF, Prog *prog, BinaryFileFactory *pbff) : FrontEnd(pBF, prog, pbff) {
     decoder = new PPCDecoder(prog);
 }
 
-
 // destructor
-PPCFrontEnd::~PPCFrontEnd()
-{
-}
+PPCFrontEnd::~PPCFrontEnd() {}
 
-
-std::vector<Exp*> &PPCFrontEnd::getDefaultParams()
-{
-    static std::vector<Exp*> params;
+std::vector<Exp *> &PPCFrontEnd::getDefaultParams() {
+    static std::vector<Exp *> params;
     if (params.size() == 0) {
-        for (int r=31; r>=0; r--) {
+        for (int r = 31; r >= 0; r--) {
             params.push_back(Location::regOf(r));
         }
     }
     return params;
 }
 
-std::vector<Exp*> &PPCFrontEnd::getDefaultReturns()
-{
-    static std::vector<Exp*> returns;
+std::vector<Exp *> &PPCFrontEnd::getDefaultReturns() {
+    static std::vector<Exp *> returns;
     if (returns.size() == 0) {
-        for (int r=31; r>=0; r--) {
+        for (int r = 31; r >= 0; r--) {
             returns.push_back(Location::regOf(r));
         }
-
     }
     return returns;
 }
 
-ADDRESS PPCFrontEnd::getMainEntryPoint( bool &gotMain )
-{
+ADDRESS PPCFrontEnd::getMainEntryPoint(bool &gotMain) {
     gotMain = true;
     ADDRESS start = ldrIface->GetMainEntryPoint();
-    if( start != NO_ADDRESS ) return start;
+    if (start != NO_ADDRESS)
+        return start;
 
     start = ldrIface->GetEntryPoint();
     gotMain = false;
-    if( start == NO_ADDRESS ) return NO_ADDRESS;
+    if (start == NO_ADDRESS)
+        return NO_ADDRESS;
 
     gotMain = true;
     return start;
 }
 
-
-bool PPCFrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bool frag /* = false */,
+bool PPCFrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, std::ofstream &os, bool frag /* = false */,
                               bool spec /* = false */) {
 
     // Call the base class to do most of the work

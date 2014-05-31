@@ -1,10 +1,10 @@
 /*
  * Copyright (C) 2004, Trent Waddington
  */
-/***************************************************************************//**
- * \file    xmlprogparser.cpp
- * \brief   Implementation of the XMLProgParser and related classes.
- ******************************************************************************/
+/***************************************************************************/ /**
+  * \file    xmlprogparser.cpp
+  * \brief   Implementation of the XMLProgParser and related classes.
+  ******************************************************************************/
 #include "xmlprogparser.h"
 #include "type.h"
 #include "cluster.h"
@@ -24,97 +24,152 @@
 #include <cstdio>
 #include <cstring>
 
-typedef enum { e_prog, e_procs, e_global, e_cluster, e_libproc, e_userproc, e_local, e_symbol, e_secondexp,
-               e_proven_true, e_callee, e_caller, e_defines,
-               e_signature, e_param, e_return, e_rettype, e_prefreturn, e_prefparam,
-               e_cfg, e_bb, e_inedge, e_outedge, e_livein, e_order, e_revorder,
-               e_rtl, e_stmt, e_assign, e_assignment, e_phiassign, e_lhs, e_rhs,
-               e_callstmt, e_dest, e_argument, e_returnexp, e_returntype,
-               e_returnstmt, e_returns, e_modifieds,
-               e_gotostmt, e_branchstmt, e_cond,
-               e_casestmt,
-               e_boolasgn,
-               e_type, e_exp,
-               e_voidtype, e_integertype, e_pointertype, e_chartype, e_namedtype, e_arraytype, e_basetype, e_sizetype,
-               e_location, e_unary, e_binary, e_ternary, e_const, e_terminal, e_typedexp, e_refexp, e_def,
-               e_subexp1, e_subexp2, e_subexp3, e_unknown = -1 } xmlElement;
+typedef enum {
+    e_prog,
+    e_procs,
+    e_global,
+    e_cluster,
+    e_libproc,
+    e_userproc,
+    e_local,
+    e_symbol,
+    e_secondexp,
+    e_proven_true,
+    e_callee,
+    e_caller,
+    e_defines,
+    e_signature,
+    e_param,
+    e_return,
+    e_rettype,
+    e_prefreturn,
+    e_prefparam,
+    e_cfg,
+    e_bb,
+    e_inedge,
+    e_outedge,
+    e_livein,
+    e_order,
+    e_revorder,
+    e_rtl,
+    e_stmt,
+    e_assign,
+    e_assignment,
+    e_phiassign,
+    e_lhs,
+    e_rhs,
+    e_callstmt,
+    e_dest,
+    e_argument,
+    e_returnexp,
+    e_returntype,
+    e_returnstmt,
+    e_returns,
+    e_modifieds,
+    e_gotostmt,
+    e_branchstmt,
+    e_cond,
+    e_casestmt,
+    e_boolasgn,
+    e_type,
+    e_exp,
+    e_voidtype,
+    e_integertype,
+    e_pointertype,
+    e_chartype,
+    e_namedtype,
+    e_arraytype,
+    e_basetype,
+    e_sizetype,
+    e_location,
+    e_unary,
+    e_binary,
+    e_ternary,
+    e_const,
+    e_terminal,
+    e_typedexp,
+    e_refexp,
+    e_def,
+    e_subexp1,
+    e_subexp2,
+    e_subexp3,
+    e_unknown = -1
+} xmlElement;
 
-#define TAG(x) &XMLProgParser::start_ ## x, &XMLProgParser::addToContext_ ## x
+#define TAG(x) &XMLProgParser::start_##x, &XMLProgParser::addToContext_##x
 
-_tag XMLProgParser::tags[] = {
-    { "prog", TAG(prog) },
-    { "procs", TAG(procs) },
-    { "global", TAG(global) },
-    { "cluster", TAG(cluster) },
-    { "libproc", TAG(libproc) },
-    { "userproc", TAG(userproc) },
-    { "local", TAG(local) },
-    { "symbol", TAG(symbol) },
-    { "secondexp", TAG(secondexp) },
-    { "proven_true", TAG(proven_true) },
-    { "callee", TAG(callee) },
-    { "caller", TAG(caller) },
-    { "defines", TAG(defines) },
-    { "signature", TAG(signature) },
-    { "param",    TAG(param) },
-    { "return", TAG(return) },
-    { "rettype", TAG(rettype) },
-    { "prefreturn", TAG(prefreturn) },
-    { "prefparam", TAG(prefparam) },
-    { "cfg", TAG(cfg) },
-    { "bb", TAG(bb) },
-    { "inedge", TAG(inedge) },
-    { "outedge", TAG(outedge) },
-    { "livein", TAG(livein) },
-    { "order", TAG(order) },
-    { "revorder", TAG(revorder) },
-    { "rtl", TAG(rtl) },
-    { "stmt", TAG(stmt) },
-    { "assign", TAG(assign) },
-    { "assignment", TAG(assignment) },
-    { "phiassign", TAG(phiassign) },
-    { "lhs", TAG(lhs) },
-    { "rhs", TAG(rhs) },
-    { "callstmt", TAG(callstmt) },
-    { "dest", TAG(dest) },
-    { "argument", TAG(argument) },
-    { "returnexp", TAG(returnexp) },
-    { "returntype", TAG(returntype) },
-    { "returnstmt", TAG(returnstmt) },
-    { "returns", TAG(returns) },
-    { "modifieds", TAG(modifieds) },
-    { "gotostmt", TAG(gotostmt) },
-    { "branchstmt", TAG(branchstmt) },
-    { "cond", TAG(cond) },
-    { "casestmt", TAG(casestmt) },
-    { "boolasgn", TAG(boolasgn) },
-    { "type", TAG(type) },
-    { "exp", TAG(exp) },
-    { "voidtype", TAG(voidtype) },
-    { "integertype", TAG(integertype) },
-    { "pointertype", TAG(pointertype) },
-    { "chartype", TAG(chartype) },
-    { "namedtype", TAG(namedtype) },
-    { "arraytype", TAG(arraytype) },
-    { "basetype", TAG(basetype) },
-    { "sizetype", TAG(sizetype) },
-    { "location", TAG(location) },
-    { "unary", TAG(unary) },
-    { "binary", TAG(binary) },
-    { "ternary", TAG(ternary) },
-    { "const", TAG(const) },
-    { "terminal", TAG(terminal) },
-    { "typedexp", TAG(typedexp) },
-    { "refexp", TAG(refexp) },
-    { "def", TAG(def) },
-    { "subexp1", TAG(subexp1) },
-    { "subexp2", TAG(subexp2) },
-    { "subexp3", TAG(subexp3) },
-    { nullptr, nullptr, nullptr}
-};
+_tag XMLProgParser::tags[] = {{"prog", TAG(prog)},
+                              {"procs", TAG(procs)},
+                              {"global", TAG(global)},
+                              {"cluster", TAG(cluster)},
+                              {"libproc", TAG(libproc)},
+                              {"userproc", TAG(userproc)},
+                              {"local", TAG(local)},
+                              {"symbol", TAG(symbol)},
+                              {"secondexp", TAG(secondexp)},
+                              {"proven_true", TAG(proven_true)},
+                              {"callee", TAG(callee)},
+                              {"caller", TAG(caller)},
+                              {"defines", TAG(defines)},
+                              {"signature", TAG(signature)},
+                              {"param", TAG(param)},
+                              {"return", TAG(return )},
+                              {"rettype", TAG(rettype)},
+                              {"prefreturn", TAG(prefreturn)},
+                              {"prefparam", TAG(prefparam)},
+                              {"cfg", TAG(cfg)},
+                              {"bb", TAG(bb)},
+                              {"inedge", TAG(inedge)},
+                              {"outedge", TAG(outedge)},
+                              {"livein", TAG(livein)},
+                              {"order", TAG(order)},
+                              {"revorder", TAG(revorder)},
+                              {"rtl", TAG(rtl)},
+                              {"stmt", TAG(stmt)},
+                              {"assign", TAG(assign)},
+                              {"assignment", TAG(assignment)},
+                              {"phiassign", TAG(phiassign)},
+                              {"lhs", TAG(lhs)},
+                              {"rhs", TAG(rhs)},
+                              {"callstmt", TAG(callstmt)},
+                              {"dest", TAG(dest)},
+                              {"argument", TAG(argument)},
+                              {"returnexp", TAG(returnexp)},
+                              {"returntype", TAG(returntype)},
+                              {"returnstmt", TAG(returnstmt)},
+                              {"returns", TAG(returns)},
+                              {"modifieds", TAG(modifieds)},
+                              {"gotostmt", TAG(gotostmt)},
+                              {"branchstmt", TAG(branchstmt)},
+                              {"cond", TAG(cond)},
+                              {"casestmt", TAG(casestmt)},
+                              {"boolasgn", TAG(boolasgn)},
+                              {"type", TAG(type)},
+                              {"exp", TAG(exp)},
+                              {"voidtype", TAG(voidtype)},
+                              {"integertype", TAG(integertype)},
+                              {"pointertype", TAG(pointertype)},
+                              {"chartype", TAG(chartype)},
+                              {"namedtype", TAG(namedtype)},
+                              {"arraytype", TAG(arraytype)},
+                              {"basetype", TAG(basetype)},
+                              {"sizetype", TAG(sizetype)},
+                              {"location", TAG(location)},
+                              {"unary", TAG(unary)},
+                              {"binary", TAG(binary)},
+                              {"ternary", TAG(ternary)},
+                              {"const", TAG(const)},
+                              {"terminal", TAG(terminal)},
+                              {"typedexp", TAG(typedexp)},
+                              {"refexp", TAG(refexp)},
+                              {"def", TAG(def)},
+                              {"subexp1", TAG(subexp1)},
+                              {"subexp2", TAG(subexp2)},
+                              {"subexp3", TAG(subexp3)},
+                              {nullptr, nullptr, nullptr}};
 
 class Context {
-public:
+  public:
     int tag;
     int n;
     QString str;
@@ -132,17 +187,19 @@ public:
     Return *ret;
     Type *type;
     Exp *exp, *symbol;
-    std::list<Proc*> procs;
+    std::list<Proc *> procs;
 
-    Context(int tag) : tag(tag), prog(nullptr), proc(nullptr), signature(nullptr), cfg(nullptr), bb(nullptr), rtl(nullptr), stmt(nullptr), param(nullptr), /*implicitParam(nullptr),*/ ret(nullptr), type(nullptr), exp(nullptr) { }
+    Context(int tag)
+        : tag(tag), prog(nullptr), proc(nullptr), signature(nullptr), cfg(nullptr), bb(nullptr), rtl(nullptr),
+          stmt(nullptr), param(nullptr), /*implicitParam(nullptr),*/ ret(nullptr), type(nullptr), exp(nullptr) {}
 };
 
 void XMLProgParser::handleElementStart(QXmlStreamReader &strm) {
     QStringRef name = strm.name();
-    QXmlStreamAttributes attrs=strm.attributes();
+    QXmlStreamAttributes attrs = strm.attributes();
     for (int i = 0; tags[i].tag; i++)
-        if (name==tags[i].tag) {
-            //std::cerr << "got tag: " << tags[i].tag << "\n";
+        if (name == tags[i].tag) {
+            // std::cerr << "got tag: " << tags[i].tag << "\n";
             stack.push_front(new Context(i));
             (this->*tags[i].start_proc)(attrs);
             return;
@@ -151,14 +208,14 @@ void XMLProgParser::handleElementStart(QXmlStreamReader &strm) {
     stack.push_front(new Context(e_unknown));
 }
 
-void XMLProgParser::handleElementEnd(const QXmlStreamReader &/*el*/) {
-    //std::cerr << "end tag: " << el << " tos: " << stack.front()->tag << "\n";
-    std::list<Context*>::iterator it = stack.begin();
+void XMLProgParser::handleElementEnd(const QXmlStreamReader & /*el*/) {
+    // std::cerr << "end tag: " << el << " tos: " << stack.front()->tag << "\n";
+    std::list<Context *>::iterator it = stack.begin();
     if (it != stack.end()) {
         it++;
         if (it != stack.end()) {
             if ((*it)->tag != e_unknown) {
-                //std::cerr << " second: " << (*it)->tag << "\n";
+                // std::cerr << " second: " << (*it)->tag << "\n";
                 (this->*tags[(*it)->tag].end_proc)(*it, stack.front()->tag);
             }
             stack.erase(stack.begin());
@@ -169,7 +226,7 @@ void XMLProgParser::handleElementEnd(const QXmlStreamReader &/*el*/) {
 void XMLProgParser::addId(const QXmlStreamAttributes &attr, void *x) {
     QStringRef val = attr.value(QLatin1Literal("id"));
     if (!val.isEmpty()) {
-        //std::cerr << "map id " << val << " to " << std::hex << (int)x << std::dec << "\n";
+        // std::cerr << "map id " << val << " to " << std::hex << (int)x << std::dec << "\n";
         idToX[val.toInt()] = x;
     }
 }
@@ -208,48 +265,48 @@ void XMLProgParser::start_prog(const QXmlStreamAttributes &attr) {
 void XMLProgParser::addToContext_prog(Context *c, int e) {
     Context *ctx = stack.front();
     if (phase == 1) {
-        switch(e) {
-            case e_libproc:
-            case e_userproc:
-                Boomerang::get()->alert_load(ctx->proc);
-                break;
+        switch (e) {
+        case e_libproc:
+        case e_userproc:
+            Boomerang::get()->alert_load(ctx->proc);
+            break;
         }
         return;
     }
-    switch(e) {
-        case e_libproc:
-            ctx->proc->setProg(c->prog);
-            c->prog->m_procs.push_back(ctx->proc);
-            c->prog->m_procLabels[ctx->proc->getNativeAddress()] = ctx->proc;
-            break;
-        case e_userproc:
-            ctx->proc->setProg(c->prog);
-            c->prog->m_procs.push_back(ctx->proc);
-            c->prog->m_procLabels[ctx->proc->getNativeAddress()] = stack.front()->proc;
-            break;
-        case e_procs:
-            for (auto & elem : ctx->procs) {
-                c->prog->m_procs.push_back(elem);
-                c->prog->m_procLabels[(elem)->getNativeAddress()] = elem;
-                Boomerang::get()->alert_load(elem);
-            }
-            break;
-        case e_cluster:
-            c->prog->m_rootCluster = ctx->cluster;
-            break;
-        case e_global:
-            c->prog->globals.insert(ctx->global);
-            break;
-        default:
-            if (e == e_unknown)
-                std::cerr << "unknown tag " << e << " in context prog\n";
-            else
-                std::cerr << "need to handle tag " << tags[e].tag << " in context prog\n";
-            break;
+    switch (e) {
+    case e_libproc:
+        ctx->proc->setProg(c->prog);
+        c->prog->m_procs.push_back(ctx->proc);
+        c->prog->m_procLabels[ctx->proc->getNativeAddress()] = ctx->proc;
+        break;
+    case e_userproc:
+        ctx->proc->setProg(c->prog);
+        c->prog->m_procs.push_back(ctx->proc);
+        c->prog->m_procLabels[ctx->proc->getNativeAddress()] = stack.front()->proc;
+        break;
+    case e_procs:
+        for (auto &elem : ctx->procs) {
+            c->prog->m_procs.push_back(elem);
+            c->prog->m_procLabels[(elem)->getNativeAddress()] = elem;
+            Boomerang::get()->alert_load(elem);
+        }
+        break;
+    case e_cluster:
+        c->prog->m_rootCluster = ctx->cluster;
+        break;
+    case e_global:
+        c->prog->globals.insert(ctx->global);
+        break;
+    default:
+        if (e == e_unknown)
+            std::cerr << "unknown tag " << e << " in context prog\n";
+        else
+            std::cerr << "need to handle tag " << tags[e].tag << " in context prog\n";
+        break;
     }
 }
 
-void XMLProgParser::start_procs(const QXmlStreamAttributes &/*attr*/) {
+void XMLProgParser::start_procs(const QXmlStreamAttributes & /*attr*/) {
     if (phase == 1) {
         return;
     }
@@ -260,19 +317,19 @@ void XMLProgParser::addToContext_procs(Context *c, int e) {
     if (phase == 1) {
         return;
     }
-    switch(e) {
-        case e_libproc:
-            c->procs.push_back(stack.front()->proc);
-            break;
-        case e_userproc:
-            c->procs.push_back(stack.front()->proc);
-            break;
-        default:
-            if (e == e_unknown)
-                std::cerr << "unknown tag " << e << " in context procs\n";
-            else
-                std::cerr << "need to handle tag " << tags[e].tag << " in context procs\n";
-            break;
+    switch (e) {
+    case e_libproc:
+        c->procs.push_back(stack.front()->proc);
+        break;
+    case e_userproc:
+        c->procs.push_back(stack.front()->proc);
+        break;
+    default:
+        if (e == e_unknown)
+            std::cerr << "unknown tag " << e << " in context procs\n";
+        else
+            std::cerr << "need to handle tag " << tags[e].tag << " in context procs\n";
+        break;
     }
 }
 
@@ -288,30 +345,30 @@ void XMLProgParser::start_global(const QXmlStreamAttributes &attr) {
         ctx->global->nam = name.toString().toStdString();
     QStringRef uaddr = attr.value(QLatin1Literal("uaddr"));
     if (!uaddr.isEmpty())
-        ctx->global->uaddr = ADDRESS::g(uaddr.toInt(nullptr,16));
+        ctx->global->uaddr = ADDRESS::g(uaddr.toInt(nullptr, 16));
 }
 
 void XMLProgParser::addToContext_global(Context *c, int e) {
     if (phase == 1) {
         return;
     }
-    switch(e) {
-        case e_type:
-            c->global->type = stack.front()->type;
-            break;
-        default:
-            if (e == e_unknown)
-                std::cerr << "unknown tag " << e << " in context global\n";
-            else
-                std::cerr << "need to handle tag " << tags[e].tag << " in context global\n";
-            break;
+    switch (e) {
+    case e_type:
+        c->global->type = stack.front()->type;
+        break;
+    default:
+        if (e == e_unknown)
+            std::cerr << "unknown tag " << e << " in context global\n";
+        else
+            std::cerr << "need to handle tag " << tags[e].tag << " in context global\n";
+        break;
     }
 }
 
 void XMLProgParser::start_cluster(const QXmlStreamAttributes &attr) {
     Context *ctx = stack.front();
     if (phase == 1) {
-        ctx->cluster = (Cluster*)findId(attr.value(QLatin1Literal("id")));
+        ctx->cluster = (Cluster *)findId(attr.value(QLatin1Literal("id")));
         return;
     }
     ctx->cluster = new Cluster();
@@ -325,26 +382,26 @@ void XMLProgParser::addToContext_cluster(Context *c, int e) {
     if (phase == 1) {
         return;
     }
-    switch(e) {
-        case e_cluster:
-            c->cluster->addChild(stack.front()->cluster);
-            break;
-        default:
-            if (e == e_unknown)
-                std::cerr << "unknown tag " << e << " in context cluster\n";
-            else
-                std::cerr << "need to handle tag " << tags[e].tag << " in context cluster\n";
-            break;
+    switch (e) {
+    case e_cluster:
+        c->cluster->addChild(stack.front()->cluster);
+        break;
+    default:
+        if (e == e_unknown)
+            std::cerr << "unknown tag " << e << " in context cluster\n";
+        else
+            std::cerr << "need to handle tag " << tags[e].tag << " in context cluster\n";
+        break;
     }
 }
 
 void XMLProgParser::start_libproc(const QXmlStreamAttributes &attr) {
     if (phase == 1) {
-        stack.front()->proc = (Proc*)findId(attr.value(QLatin1Literal("id")));
-        Proc *p = (Proc*)findId(attr.value(QLatin1Literal("firstCaller")));
+        stack.front()->proc = (Proc *)findId(attr.value(QLatin1Literal("id")));
+        Proc *p = (Proc *)findId(attr.value(QLatin1Literal("firstCaller")));
         if (p)
             stack.front()->proc->m_firstCaller = p;
-        Cluster *c = (Cluster*)findId(attr.value(QLatin1Literal("cluster")));
+        Cluster *c = (Cluster *)findId(attr.value(QLatin1Literal("cluster")));
         if (c)
             stack.front()->proc->cluster = c;
         return;
@@ -361,45 +418,45 @@ void XMLProgParser::start_libproc(const QXmlStreamAttributes &attr) {
 
 void XMLProgParser::addToContext_libproc(Context *c, int e) {
     if (phase == 1) {
-        switch(e) {
-            case e_caller:
-                CallStatement *call = dynamic_cast<CallStatement*>(stack.front()->stmt);
-                assert(call);
-                c->proc->addCaller(call);
-                break;
+        switch (e) {
+        case e_caller:
+            CallStatement *call = dynamic_cast<CallStatement *>(stack.front()->stmt);
+            assert(call);
+            c->proc->addCaller(call);
+            break;
         }
         return;
     }
-    switch(e) {
-        case e_signature:
-            c->proc->setSignature(stack.front()->signature);
-            break;
-        case e_proven_true:
-            c->proc->setProvenTrue(stack.front()->exp);
-            break;
-        case e_caller:
-            break;
-        default:
-            if (e == e_unknown)
-                std::cerr << "unknown tag " << e << " in context libproc\n";
-            else
-                std::cerr << "need to handle tag " << tags[e].tag << " in context libproc\n";
-            break;
+    switch (e) {
+    case e_signature:
+        c->proc->setSignature(stack.front()->signature);
+        break;
+    case e_proven_true:
+        c->proc->setProvenTrue(stack.front()->exp);
+        break;
+    case e_caller:
+        break;
+    default:
+        if (e == e_unknown)
+            std::cerr << "unknown tag " << e << " in context libproc\n";
+        else
+            std::cerr << "need to handle tag " << tags[e].tag << " in context libproc\n";
+        break;
     }
 }
 
 void XMLProgParser::start_userproc(const QXmlStreamAttributes &attr) {
     if (phase == 1) {
-        stack.front()->proc = (Proc*)findId(attr.value(QLatin1Literal("id")));
-        UserProc *u = dynamic_cast<UserProc*>(stack.front()->proc);
+        stack.front()->proc = (Proc *)findId(attr.value(QLatin1Literal("id")));
+        UserProc *u = dynamic_cast<UserProc *>(stack.front()->proc);
         assert(u);
-        Proc *p = (Proc*)findId(attr.value(QLatin1Literal("firstCaller")));
+        Proc *p = (Proc *)findId(attr.value(QLatin1Literal("firstCaller")));
         if (p)
             u->m_firstCaller = p;
-        Cluster *c = (Cluster*)findId(attr.value(QLatin1Literal("cluster")));
+        Cluster *c = (Cluster *)findId(attr.value(QLatin1Literal("cluster")));
         if (c)
             u->cluster = c;
-        ReturnStatement *r = (ReturnStatement*)findId(attr.value(QLatin1Literal("retstmt")));
+        ReturnStatement *r = (ReturnStatement *)findId(attr.value(QLatin1Literal("retstmt")));
         if (r)
             u->theReturnStatement = r;
         return;
@@ -409,59 +466,59 @@ void XMLProgParser::start_userproc(const QXmlStreamAttributes &attr) {
     addId(attr, proc);
 
     QStringRef address = attr.value(QLatin1Literal("address"));
-    if(!address.isEmpty())
+    if (!address.isEmpty())
         proc->address = ADDRESS::g(address.toInt());
     address = attr.value(QLatin1Literal("status"));
-    if(!address.isEmpty())
+    if (!address.isEmpty())
         proc->status = (ProcStatus)address.toInt();
     address = attr.value(QLatin1Literal("firstCallerAddress"));
-    if(!address.isEmpty())
+    if (!address.isEmpty())
         proc->m_firstCallerAddr = ADDRESS::g(address.toInt());
 }
 
 void XMLProgParser::addToContext_userproc(Context *c, int e) {
-    UserProc *userproc = dynamic_cast<UserProc*>(c->proc);
+    UserProc *userproc = dynamic_cast<UserProc *>(c->proc);
     assert(userproc);
     if (phase == 1) {
-        switch(e) {
-            case e_caller: {
-                CallStatement *call = dynamic_cast<CallStatement*>(stack.front()->stmt);
-                assert(call);
-                c->proc->addCaller(call);
-                break;
-            }
-            case e_callee:
-                userproc->addCallee(stack.front()->proc);
-                break;
+        switch (e) {
+        case e_caller: {
+            CallStatement *call = dynamic_cast<CallStatement *>(stack.front()->stmt);
+            assert(call);
+            c->proc->addCaller(call);
+            break;
+        }
+        case e_callee:
+            userproc->addCallee(stack.front()->proc);
+            break;
         }
         return;
     }
-    switch(e) {
-        case e_signature:
-            c->proc->setSignature(stack.front()->signature);
-            break;
-        case e_proven_true:
-            c->proc->setProvenTrue(stack.front()->exp);
-            break;
-        case e_caller:
-            break;
-        case e_callee:
-            break;
-        case e_cfg:
-            userproc->setCFG(stack.front()->cfg);
-            break;
-        case e_local:
-            userproc->locals[stack.front()->str.toStdString()] = stack.front()->type;
-            break;
-        case e_symbol:
-            userproc->mapSymbolTo(stack.front()->exp, stack.front()->symbol);
-            break;
-        default:
-            if (e == e_unknown)
-                std::cerr << "unknown tag " << e << " in context userproc\n";
-            else
-                std::cerr << "need to handle tag " << tags[e].tag << " in context userproc\n";
-            break;
+    switch (e) {
+    case e_signature:
+        c->proc->setSignature(stack.front()->signature);
+        break;
+    case e_proven_true:
+        c->proc->setProvenTrue(stack.front()->exp);
+        break;
+    case e_caller:
+        break;
+    case e_callee:
+        break;
+    case e_cfg:
+        userproc->setCFG(stack.front()->cfg);
+        break;
+    case e_local:
+        userproc->locals[stack.front()->str.toStdString()] = stack.front()->type;
+        break;
+    case e_symbol:
+        userproc->mapSymbolTo(stack.front()->exp, stack.front()->symbol);
+        break;
+    default:
+        if (e == e_unknown)
+            std::cerr << "unknown tag " << e << " in context userproc\n";
+        else
+            std::cerr << "need to handle tag " << tags[e].tag << " in context userproc\n";
+        break;
     }
 }
 
@@ -476,20 +533,20 @@ void XMLProgParser::addToContext_local(Context *c, int e) {
     if (phase == 1) {
         return;
     }
-    switch(e) {
-        case e_type:
-            c->type = stack.front()->type;
-            break;
-        default:
-            if (e == e_unknown)
-                std::cerr << "unknown tag " << e << " in context local\n";
-            else
-                std::cerr << "need to handle tag " << tags[e].tag << " in context local\n";
-            break;
+    switch (e) {
+    case e_type:
+        c->type = stack.front()->type;
+        break;
+    default:
+        if (e == e_unknown)
+            std::cerr << "unknown tag " << e << " in context local\n";
+        else
+            std::cerr << "need to handle tag " << tags[e].tag << " in context local\n";
+        break;
     }
 }
 
-void XMLProgParser::start_symbol(const QXmlStreamAttributes &/*attr*/) {
+void XMLProgParser::start_symbol(const QXmlStreamAttributes & /*attr*/) {
     if (phase == 1) {
         return;
     }
@@ -499,50 +556,45 @@ void XMLProgParser::addToContext_symbol(Context *c, int e) {
     if (phase == 1) {
         return;
     }
-    switch(e) {
-        case e_exp:
-            c->exp = stack.front()->exp;
-            break;
-        case e_secondexp:
-            c->symbol = stack.front()->exp;
-            break;
-        default:
-            if (e == e_unknown)
-                std::cerr << "unknown tag " << e << " in context local\n";
-            else
-                std::cerr << "need to handle tag " << tags[e].tag << " in context local\n";
-            break;
+    switch (e) {
+    case e_exp:
+        c->exp = stack.front()->exp;
+        break;
+    case e_secondexp:
+        c->symbol = stack.front()->exp;
+        break;
+    default:
+        if (e == e_unknown)
+            std::cerr << "unknown tag " << e << " in context local\n";
+        else
+            std::cerr << "need to handle tag " << tags[e].tag << " in context local\n";
+        break;
     }
 }
 
-void XMLProgParser::start_proven_true(const QXmlStreamAttributes &/*attr*/) {
-}
+void XMLProgParser::start_proven_true(const QXmlStreamAttributes & /*attr*/) {}
 
-void XMLProgParser::addToContext_proven_true(Context *c, int /*e*/) {
-    c->exp = stack.front()->exp;
-}
+void XMLProgParser::addToContext_proven_true(Context *c, int /*e*/) { c->exp = stack.front()->exp; }
 
 void XMLProgParser::start_callee(const QXmlStreamAttributes &attr) {
     if (phase == 1) {
-        stack.front()->proc = (Proc*)findId(attr.value(QLatin1Literal("proc")));
+        stack.front()->proc = (Proc *)findId(attr.value(QLatin1Literal("proc")));
     }
 }
 
-void XMLProgParser::addToContext_callee(Context */*c*/, int /*e*/) {
-}
+void XMLProgParser::addToContext_callee(Context * /*c*/, int /*e*/) {}
 
 void XMLProgParser::start_caller(const QXmlStreamAttributes &attr) {
     if (phase == 1) {
-        stack.front()->stmt = (Statement*)findId(attr.value(QLatin1Literal("call")));
+        stack.front()->stmt = (Statement *)findId(attr.value(QLatin1Literal("call")));
     }
 }
 
-void XMLProgParser::addToContext_caller(Context */*c*/, int /*e*/) {
-}
+void XMLProgParser::addToContext_caller(Context * /*c*/, int /*e*/) {}
 
 void XMLProgParser::start_signature(const QXmlStreamAttributes &attr) {
     if (phase == 1) {
-        stack.front()->signature = (Signature*)findId(attr.value(QLatin1Literal("id")));
+        stack.front()->signature = (Signature *)findId(attr.value(QLatin1Literal("id")));
         return;
     }
     QStringRef plat = attr.value(QLatin1Literal("platform"));
@@ -550,24 +602,24 @@ void XMLProgParser::start_signature(const QXmlStreamAttributes &attr) {
     QStringRef name = attr.value(QLatin1Literal("name"));
 
     Signature *sig;
-    //TODO: use platforms loaded from plugins
+    // TODO: use platforms loaded from plugins
     if (!plat.isEmpty() && !convention.isEmpty()) {
         platform p;
         callconv c;
-        if (plat =="pentium")
+        if (plat == "pentium")
             p = PLAT_PENTIUM;
-        else if (plat=="sparc")
+        else if (plat == "sparc")
             p = PLAT_SPARC;
-        else if (plat=="ppc")
+        else if (plat == "ppc")
             p = PLAT_PPC;
-        else if (plat=="st20")
+        else if (plat == "st20")
             p = PLAT_ST20;
         else {
             qCritical() << "unknown platform: " << plat << "\n";
             assert(false);
             p = PLAT_PENTIUM;
         }
-        if (convention=="stdc")
+        if (convention == "stdc")
             c = CONV_C;
         else if (convention == "pascal")
             c = CONV_PASCAL;
@@ -598,35 +650,35 @@ void XMLProgParser::addToContext_signature(Context *c, int e) {
     if (phase == 1) {
         return;
     }
-    switch(e) {
-        case e_param:
-            c->signature->appendParameter(stack.front()->param);
-            break;
-        case e_return:
-            c->signature->appendReturn(stack.front()->ret);
-            break;
-        case e_rettype:
-            c->signature->setRetType(stack.front()->type);
-            break;
-        case e_prefparam:
-            c->signature->preferedParams.push_back(stack.front()->n);
-            break;
-        case e_prefreturn:
-            c->signature->preferedReturn = stack.front()->type;
-            break;
-        default:
-            if (e == e_unknown)
-                std::cerr << "unknown tag " << e << " in context signature\n";
-            else
-                std::cerr << "need to handle tag " << tags[e].tag << " in context signature\n";
-            break;
+    switch (e) {
+    case e_param:
+        c->signature->appendParameter(stack.front()->param);
+        break;
+    case e_return:
+        c->signature->appendReturn(stack.front()->ret);
+        break;
+    case e_rettype:
+        c->signature->setRetType(stack.front()->type);
+        break;
+    case e_prefparam:
+        c->signature->preferedParams.push_back(stack.front()->n);
+        break;
+    case e_prefreturn:
+        c->signature->preferedReturn = stack.front()->type;
+        break;
+    default:
+        if (e == e_unknown)
+            std::cerr << "unknown tag " << e << " in context signature\n";
+        else
+            std::cerr << "need to handle tag " << tags[e].tag << " in context signature\n";
+        break;
     }
 }
 
 void XMLProgParser::start_param(const QXmlStreamAttributes &attr) {
-    Context *ctx=stack.front();
+    Context *ctx = stack.front();
     if (phase == 1) {
-        ctx->param = (Parameter*)findId(attr.value(QLatin1Literal("id")));
+        ctx->param = (Parameter *)findId(attr.value(QLatin1Literal("id")));
         return;
     }
     ctx->param = new Parameter;
@@ -640,19 +692,19 @@ void XMLProgParser::addToContext_param(Context *c, int e) {
     if (phase == 1) {
         return;
     }
-    switch(e) {
-        case e_type:
-            c->param->setType(stack.front()->type);
-            break;
-        case e_exp:
-            c->param->setExp(stack.front()->exp);
-            break;
-        default:
-            if (e == e_unknown)
-                std::cerr << "unknown tag " << e << " in context param\n";
-            else
-                std::cerr << "need to handle tag " << tags[e].tag << " in context param\n";
-            break;
+    switch (e) {
+    case e_type:
+        c->param->setType(stack.front()->type);
+        break;
+    case e_exp:
+        c->param->setExp(stack.front()->exp);
+        break;
+    default:
+        if (e == e_unknown)
+            std::cerr << "unknown tag " << e << " in context param\n";
+        else
+            std::cerr << "need to handle tag " << tags[e].tag << " in context param\n";
+        break;
     }
 }
 
@@ -678,7 +730,7 @@ void XMLProgParser::start_prefparam(const QXmlStreamAttributes &attr) {
     stack.front()->n = n.toInt();
 }
 
-void XMLProgParser::addToContext_prefparam(Context */*c*/, int e) {
+void XMLProgParser::addToContext_prefparam(Context * /*c*/, int e) {
     if (phase == 1) {
         return;
     }
@@ -694,7 +746,7 @@ void XMLProgParser::addToContext_prefparam(Context */*c*/, int e) {
 
 void XMLProgParser::start_return(const QXmlStreamAttributes &attr) {
     if (phase == 1) {
-        stack.front()->ret = (Return*)findId(attr.value(QLatin1Literal("id")));
+        stack.front()->ret = (Return *)findId(attr.value(QLatin1Literal("id")));
         return;
     }
     stack.front()->ret = new Return();
@@ -705,35 +757,33 @@ void XMLProgParser::addToContext_return(Context *c, int e) {
     if (phase == 1) {
         return;
     }
-    switch(e) {
-        case e_type:
-            c->ret->type = stack.front()->type;
-            break;
-        case e_exp:
-            c->ret->exp = stack.front()->exp;
-            break;
-        default:
-            if (e == e_unknown)
-                std::cerr << "unknown tag " << e << " in context return\n";
-            else
-                std::cerr << "need to handle tag " << tags[e].tag << " in context return\n";
-            break;
+    switch (e) {
+    case e_type:
+        c->ret->type = stack.front()->type;
+        break;
+    case e_exp:
+        c->ret->exp = stack.front()->exp;
+        break;
+    default:
+        if (e == e_unknown)
+            std::cerr << "unknown tag " << e << " in context return\n";
+        else
+            std::cerr << "need to handle tag " << tags[e].tag << " in context return\n";
+        break;
     }
 }
 
-void XMLProgParser::start_rettype(const QXmlStreamAttributes &) { }
+void XMLProgParser::start_rettype(const QXmlStreamAttributes &) {}
 
-void XMLProgParser::addToContext_rettype(Context *c, int /*e*/) {
-    c->type = stack.front()->type;
-}
+void XMLProgParser::addToContext_rettype(Context *c, int /*e*/) { c->type = stack.front()->type; }
 
 void XMLProgParser::start_cfg(const QXmlStreamAttributes &attr) {
     if (phase == 1) {
-        stack.front()->cfg = (Cfg*)findId(attr.value(QLatin1Literal("id")));
-        BasicBlock * entryBB = (BasicBlock *)findId(attr.value(QLatin1Literal("entryBB")));
+        stack.front()->cfg = (Cfg *)findId(attr.value(QLatin1Literal("id")));
+        BasicBlock *entryBB = (BasicBlock *)findId(attr.value(QLatin1Literal("entryBB")));
         if (entryBB)
             stack.front()->cfg->setEntryBB(entryBB);
-        BasicBlock * exitBB = (BasicBlock *)findId(attr.value(QLatin1Literal("exitBB")));
+        BasicBlock *exitBB = (BasicBlock *)findId(attr.value(QLatin1Literal("exitBB")));
         if (exitBB)
             stack.front()->cfg->setExitBB(exitBB);
         return;
@@ -743,47 +793,47 @@ void XMLProgParser::start_cfg(const QXmlStreamAttributes &attr) {
     addId(attr, cfg);
 
     QStringRef str = attr.value(QLatin1Literal("wellformed"));
-    if(!str.isEmpty())
+    if (!str.isEmpty())
         cfg->m_bWellFormed = str.toInt() > 0;
     str = attr.value(QLatin1Literal("lastLabel"));
-    if(!str.isEmpty())
+    if (!str.isEmpty())
         cfg->lastLabel = str.toInt();
 }
 
 void XMLProgParser::addToContext_cfg(Context *c, int e) {
     if (phase == 1) {
-        switch(e) {
-            case e_order:
-                c->cfg->Ordering.push_back(stack.front()->bb);
-                break;
-            case e_revorder:
-                c->cfg->revOrdering.push_back(stack.front()->bb);
-                break;
+        switch (e) {
+        case e_order:
+            c->cfg->Ordering.push_back(stack.front()->bb);
+            break;
+        case e_revorder:
+            c->cfg->revOrdering.push_back(stack.front()->bb);
+            break;
         }
         return;
     }
-    switch(e) {
-        case e_bb:
-            c->cfg->addBB(stack.front()->bb);
-            break;
-        case e_order:
-            break;
-        case e_revorder:
-            break;
-        default:
-            if (e == e_unknown)
-                std::cerr << "unknown tag " << e << " in context cfg\n";
-            else
-                std::cerr << "need to handle tag " << tags[e].tag << " in context cfg\n";
-            break;
+    switch (e) {
+    case e_bb:
+        c->cfg->addBB(stack.front()->bb);
+        break;
+    case e_order:
+        break;
+    case e_revorder:
+        break;
+    default:
+        if (e == e_unknown)
+            std::cerr << "unknown tag " << e << " in context cfg\n";
+        else
+            std::cerr << "need to handle tag " << tags[e].tag << " in context cfg\n";
+        break;
     }
 }
 
 void XMLProgParser::start_bb(const QXmlStreamAttributes &attr) {
-    BasicBlock * bb;
+    BasicBlock *bb;
     if (phase == 1) {
-        bb = stack.front()->bb = (BasicBlock*)findId(attr.value(QLatin1Literal("id")));
-        BasicBlock * h = (BasicBlock *)findId(attr.value(QLatin1Literal("m_loopHead")));
+        bb = stack.front()->bb = (BasicBlock *)findId(attr.value(QLatin1Literal("id")));
+        BasicBlock *h = (BasicBlock *)findId(attr.value(QLatin1Literal("m_loopHead")));
         if (h)
             bb->m_loopHead = h;
         h = (BasicBlock *)findId(attr.value(QLatin1Literal("m_caseHead")));
@@ -824,134 +874,134 @@ void XMLProgParser::start_bb(const QXmlStreamAttributes &attr) {
     addId(attr, bb);
 
     QStringRef str = attr.value(QLatin1Literal("nodeType"));
-    if(!str.isEmpty())
+    if (!str.isEmpty())
         bb->m_nodeType = (BBTYPE)str.toInt();
     str = attr.value(QLatin1Literal("labelNum"));
-    if(!str.isEmpty())
+    if (!str.isEmpty())
         bb->m_iLabelNum = str.toInt();
     str = attr.value(QLatin1Literal("label"));
-    if(!str.isEmpty())
+    if (!str.isEmpty())
         bb->m_labelStr = str.toString().toStdString();
     str = attr.value(QLatin1Literal("labelneeded"));
-    if(!str.isEmpty())
+    if (!str.isEmpty())
         bb->m_labelneeded = str.toInt() > 0;
     str = attr.value(QLatin1Literal("incomplete"));
-    if(!str.isEmpty())
+    if (!str.isEmpty())
         bb->m_bIncomplete = str.toInt() > 0;
     str = attr.value(QLatin1Literal("jumpreqd"));
-    if(!str.isEmpty())
+    if (!str.isEmpty())
         bb->m_bJumpReqd = str.toInt() > 0;
     str = attr.value(QLatin1Literal("m_traversed"));
-    if(!str.isEmpty())
+    if (!str.isEmpty())
         bb->m_iTraversed = str.toInt() > 0;
     str = attr.value(QLatin1Literal("DFTfirst"));
-    if(!str.isEmpty())
+    if (!str.isEmpty())
         bb->m_DFTfirst = str.toInt();
     str = attr.value(QLatin1Literal("DFTlast"));
-    if(!str.isEmpty())
+    if (!str.isEmpty())
         bb->m_DFTlast = str.toInt();
     str = attr.value(QLatin1Literal("DFTrevfirst"));
-    if(!str.isEmpty())
+    if (!str.isEmpty())
         bb->m_DFTrevfirst = str.toInt();
     str = attr.value(QLatin1Literal("DFTrevlast"));
-    if(!str.isEmpty())
+    if (!str.isEmpty())
         bb->m_DFTrevlast = str.toInt();
     str = attr.value(QLatin1Literal("structType"));
-    if(!str.isEmpty())
+    if (!str.isEmpty())
         bb->m_structType = (SBBTYPE)str.toInt();
     str = attr.value(QLatin1Literal("loopCondType"));
-    if(!str.isEmpty())
+    if (!str.isEmpty())
         bb->m_loopCondType = (SBBTYPE)str.toInt();
     str = attr.value(QLatin1Literal("ord"));
-    if(!str.isEmpty())
+    if (!str.isEmpty())
         bb->ord = str.toInt();
     str = attr.value(QLatin1Literal("revOrd"));
-    if(!str.isEmpty())
+    if (!str.isEmpty())
         bb->revOrd = str.toInt();
     str = attr.value(QLatin1Literal("inEdgesVisited"));
-    if(!str.isEmpty())
+    if (!str.isEmpty())
         bb->inEdgesVisited = str.toInt();
     str = attr.value(QLatin1Literal("numForwardInEdges"));
-    if(!str.isEmpty())
+    if (!str.isEmpty())
         bb->numForwardInEdges = str.toInt();
     str = attr.value(QLatin1Literal("loopStamp1"));
-    if(!str.isEmpty())
+    if (!str.isEmpty())
         bb->loopStamps[0] = str.toInt();
     str = attr.value(QLatin1Literal("loopStamp2"));
-    if(!str.isEmpty())
+    if (!str.isEmpty())
         bb->loopStamps[1] = str.toInt();
     str = attr.value(QLatin1Literal("revLoopStamp1"));
-    if(!str.isEmpty())
+    if (!str.isEmpty())
         bb->revLoopStamps[0] = str.toInt();
     str = attr.value(QLatin1Literal("revLoopStamp2"));
-    if(!str.isEmpty())
+    if (!str.isEmpty())
         bb->revLoopStamps[1] = str.toInt();
     str = attr.value(QLatin1Literal("traversed"));
-    if(!str.isEmpty())
+    if (!str.isEmpty())
         bb->traversed = (travType)str.toInt();
     str = attr.value(QLatin1Literal("hllLabel"));
-    if(!str.isEmpty())
+    if (!str.isEmpty())
         bb->hllLabel = str.toInt() > 0;
     str = attr.value(QLatin1Literal("labelStr"));
-    if(!str.isEmpty())
+    if (!str.isEmpty())
         bb->labelStr = str.toString();
     str = attr.value(QLatin1Literal("indentLevel"));
-    if(!str.isEmpty())
+    if (!str.isEmpty())
         bb->indentLevel = str.toInt();
     str = attr.value(QLatin1Literal("sType"));
-    if(!str.isEmpty())
+    if (!str.isEmpty())
         bb->sType = (structType)str.toInt();
     str = attr.value(QLatin1Literal("usType"));
-    if(!str.isEmpty())
+    if (!str.isEmpty())
         bb->usType = (unstructType)str.toInt();
     str = attr.value(QLatin1Literal("lType"));
-    if(!str.isEmpty())
+    if (!str.isEmpty())
         bb->lType = (loopType)str.toInt();
     str = attr.value(QLatin1Literal("cType"));
-    if(!str.isEmpty())
+    if (!str.isEmpty())
         bb->cType = (condType)str.toInt();
 }
 
 void XMLProgParser::addToContext_bb(Context *c, int e) {
     if (phase == 1) {
-        switch(e) {
-            case e_inedge:
-                c->bb->addInEdge(stack.front()->bb);
-                break;
-            case e_outedge:
-                c->bb->addOutEdge(stack.front()->bb);
-                break;
+        switch (e) {
+        case e_inedge:
+            c->bb->addInEdge(stack.front()->bb);
+            break;
+        case e_outedge:
+            c->bb->addOutEdge(stack.front()->bb);
+            break;
         }
         return;
     }
-    switch(e) {
-        case e_inedge:
-            break;
-        case e_outedge:
-            break;
-        case e_livein:
-            c->bb->addLiveIn((Location*)stack.front()->exp);
-            break;
-        case e_rtl:
-            c->bb->addRTL(stack.front()->rtl);
-            break;
-        default:
-            if (e == e_unknown)
-                std::cerr << "unknown tag " << e << " in context bb\n";
-            else
-                std::cerr << "need to handle tag " << tags[e].tag << " in context bb\n";
-            break;
+    switch (e) {
+    case e_inedge:
+        break;
+    case e_outedge:
+        break;
+    case e_livein:
+        c->bb->addLiveIn((Location *)stack.front()->exp);
+        break;
+    case e_rtl:
+        c->bb->addRTL(stack.front()->rtl);
+        break;
+    default:
+        if (e == e_unknown)
+            std::cerr << "unknown tag " << e << " in context bb\n";
+        else
+            std::cerr << "need to handle tag " << tags[e].tag << " in context bb\n";
+        break;
     }
 }
 
 void XMLProgParser::start_inedge(const QXmlStreamAttributes &attr) {
     if (phase == 1)
-        stack.front()->bb = (BasicBlock*)findId(attr.value(QLatin1Literal("bb")));
+        stack.front()->bb = (BasicBlock *)findId(attr.value(QLatin1Literal("bb")));
     else
         stack.front()->bb = nullptr;
 }
 
-void XMLProgParser::addToContext_inedge(Context */*c*/, int e) {
+void XMLProgParser::addToContext_inedge(Context * /*c*/, int e) {
     //      switch(e) {
     //    default:
     if (e == e_unknown)
@@ -964,12 +1014,12 @@ void XMLProgParser::addToContext_inedge(Context */*c*/, int e) {
 
 void XMLProgParser::start_outedge(const QXmlStreamAttributes &attr) {
     if (phase == 1)
-        stack.front()->bb = (BasicBlock*)findId(attr.value(QLatin1Literal("bb")));
+        stack.front()->bb = (BasicBlock *)findId(attr.value(QLatin1Literal("bb")));
     else
         stack.front()->bb = nullptr;
 }
 
-void XMLProgParser::addToContext_outedge(Context */*c*/, int e) {
+void XMLProgParser::addToContext_outedge(Context * /*c*/, int e) {
     //      switch(e) {
     //    default:
     if (e == e_unknown)
@@ -980,11 +1030,9 @@ void XMLProgParser::addToContext_outedge(Context */*c*/, int e) {
     //      }
 }
 
-void XMLProgParser::start_livein(const QXmlStreamAttributes &) { }
+void XMLProgParser::start_livein(const QXmlStreamAttributes &) {}
 
-void XMLProgParser::addToContext_livein(Context *c, int /*e*/) {
-    c->exp = stack.front()->exp;
-}
+void XMLProgParser::addToContext_livein(Context *c, int /*e*/) { c->exp = stack.front()->exp; }
 
 void XMLProgParser::start_order(const QXmlStreamAttributes &attr) {
     if (phase == 1)
@@ -993,7 +1041,7 @@ void XMLProgParser::start_order(const QXmlStreamAttributes &attr) {
         stack.front()->bb = nullptr;
 }
 
-void XMLProgParser::addToContext_order(Context */*c*/, int e) {
+void XMLProgParser::addToContext_order(Context * /*c*/, int e) {
     //      switch(e) {
     //    default:
     if (e == e_unknown)
@@ -1011,7 +1059,7 @@ void XMLProgParser::start_revorder(const QXmlStreamAttributes &attr) {
         stack.front()->bb = nullptr;
 }
 
-void XMLProgParser::addToContext_revorder(Context */*c*/, int e) {
+void XMLProgParser::addToContext_revorder(Context * /*c*/, int e) {
     //      switch(e) {
     //    default:
     if (e == e_unknown)
@@ -1024,13 +1072,13 @@ void XMLProgParser::addToContext_revorder(Context */*c*/, int e) {
 
 void XMLProgParser::start_rtl(const QXmlStreamAttributes &attr) {
     if (phase == 1) {
-        stack.front()->rtl = (RTL*)findId(attr.value(QLatin1Literal("id")));
+        stack.front()->rtl = (RTL *)findId(attr.value(QLatin1Literal("id")));
         return;
     }
     stack.front()->rtl = new RTL();
     addId(attr, stack.front()->rtl);
     QStringRef a = attr.value(QLatin1Literal("addr"));
-    if(!a.isEmpty())
+    if (!a.isEmpty())
         stack.front()->rtl->nativeAddr = ADDRESS::g(a.toInt());
 }
 
@@ -1038,30 +1086,27 @@ void XMLProgParser::addToContext_rtl(Context *c, int e) {
     if (phase == 1) {
         return;
     }
-    switch(e) {
-        case e_stmt:
-            c->rtl->appendStmt(stack.front()->stmt);
-            break;
-        default:
-            if (e == e_unknown)
-                std::cerr << "unknown tag " << e << " in context rtl\n";
-            else
-                std::cerr << "need to handle tag " << tags[e].tag << " in context rtl\n";
-            break;
+    switch (e) {
+    case e_stmt:
+        c->rtl->appendStmt(stack.front()->stmt);
+        break;
+    default:
+        if (e == e_unknown)
+            std::cerr << "unknown tag " << e << " in context rtl\n";
+        else
+            std::cerr << "need to handle tag " << tags[e].tag << " in context rtl\n";
+        break;
     }
 }
 
-void XMLProgParser::start_stmt(const QXmlStreamAttributes &) {
-}
+void XMLProgParser::start_stmt(const QXmlStreamAttributes &) {}
 
-void XMLProgParser::addToContext_stmt(Context *c, int /*e*/) {
-    c->stmt = stack.front()->stmt;
-}
+void XMLProgParser::addToContext_stmt(Context *c, int /*e*/) { c->stmt = stack.front()->stmt; }
 
 void XMLProgParser::start_assign(const QXmlStreamAttributes &attr) {
     if (phase == 1) {
-        stack.front()->stmt = (Statement*)findId(attr.value(QLatin1Literal("id")));
-        UserProc *p = (UserProc*)findId(attr.value(QLatin1Literal("proc")));
+        stack.front()->stmt = (Statement *)findId(attr.value(QLatin1Literal("id")));
+        UserProc *p = (UserProc *)findId(attr.value(QLatin1Literal("proc")));
         if (p)
             stack.front()->stmt->setProc(p);
         //        Statement *parent = (Statement*)findId(attr.value(QLatin1Literal("parent")));
@@ -1072,12 +1117,11 @@ void XMLProgParser::start_assign(const QXmlStreamAttributes &attr) {
     stack.front()->stmt = new Assign();
     addId(attr, stack.front()->stmt);
     QStringRef n = attr.value(QLatin1Literal("number"));
-    if(!n.isEmpty())
+    if (!n.isEmpty())
         stack.front()->stmt->number = n.toInt();
 }
 
-void XMLProgParser::start_assignment(const QXmlStreamAttributes &) {
-}
+void XMLProgParser::start_assignment(const QXmlStreamAttributes &) {}
 
 void XMLProgParser::start_phiassign(const QXmlStreamAttributes &) {
     // FIXME: TBC
@@ -1087,34 +1131,34 @@ void XMLProgParser::addToContext_assign(Context *c, int e) {
     if (phase == 1) {
         return;
     }
-    Assign *assign = dynamic_cast<Assign*>(c->stmt);
+    Assign *assign = dynamic_cast<Assign *>(c->stmt);
     assert(assign);
-    switch(e) {
-        case e_lhs:
-            assign->setLeft(stack.front()->exp);
-            break;
-        case e_rhs:
-            assign->setRight(stack.front()->exp);
-            break;
-        case e_type:
-            assert(stack.front()->type);
-            assign->setType(stack.front()->type);
-            break;
-        default:
-            if (e == e_unknown)
-                std::cerr << "unknown tag " << e << " in context assign\n";
-            else
-                std::cerr << "need to handle tag " << tags[e].tag << " in context assign\n";
-            break;
+    switch (e) {
+    case e_lhs:
+        assign->setLeft(stack.front()->exp);
+        break;
+    case e_rhs:
+        assign->setRight(stack.front()->exp);
+        break;
+    case e_type:
+        assert(stack.front()->type);
+        assign->setType(stack.front()->type);
+        break;
+    default:
+        if (e == e_unknown)
+            std::cerr << "unknown tag " << e << " in context assign\n";
+        else
+            std::cerr << "need to handle tag " << tags[e].tag << " in context assign\n";
+        break;
     }
 }
 
 void XMLProgParser::start_callstmt(const QXmlStreamAttributes &attr) {
     if (phase == 1) {
-        stack.front()->stmt = (Statement*)findId(attr.value(QLatin1Literal("id")));
-        UserProc *p = (UserProc*)findId(attr.value(QLatin1Literal("proc")));
+        stack.front()->stmt = (Statement *)findId(attr.value(QLatin1Literal("id")));
+        UserProc *p = (UserProc *)findId(attr.value(QLatin1Literal("proc")));
         if (p)
-            ((Statement*)stack.front()->stmt)->setProc(p);
+            ((Statement *)stack.front()->stmt)->setProc(p);
         //        Statement *s = (Statement*)findId(attr.value(QLatin1Literal("parent")));
         //        if (s)
         //            ((Statement*)stack.front()->stmt)->parent = s;
@@ -1124,69 +1168,67 @@ void XMLProgParser::start_callstmt(const QXmlStreamAttributes &attr) {
     stack.front()->stmt = call;
     addId(attr, call);
     QStringRef n = attr.value(QLatin1Literal("number"));
-    if(!n.isEmpty())
+    if (!n.isEmpty())
         call->number = n.toInt();
     n = attr.value(QLatin1Literal("computed"));
-    if(!n.isEmpty())
+    if (!n.isEmpty())
         call->m_isComputed = n.toInt() > 0;
     n = attr.value(QLatin1Literal("returnAftercall"));
-    if(!n.isEmpty())
+    if (!n.isEmpty())
         call->returnAfterCall = n.toInt() > 0;
 }
 
 void XMLProgParser::addToContext_callstmt(Context *c, int e) {
-    CallStatement *call = dynamic_cast<CallStatement*>(c->stmt);
+    CallStatement *call = dynamic_cast<CallStatement *>(c->stmt);
     assert(call);
     if (phase == 1) {
-        switch(e) {
-            case e_dest:
-                if (stack.front()->proc)
-                    call->setDestProc(stack.front()->proc);
-                break;
+        switch (e) {
+        case e_dest:
+            if (stack.front()->proc)
+                call->setDestProc(stack.front()->proc);
+            break;
         }
         return;
     }
     // TODO: analyze the code to understand the intended use of returnExp
-    //Exp* returnExp = nullptr;
-    switch(e) {
-        case e_dest:
-            call->setDest(stack.front()->exp);
-            break;
-        case e_argument:
-            call->appendArgument((Assignment*)stack.front()->stmt);
-            break;
-        case e_returnexp:
-            // Assume that the corresponding return type will appear next
-            //returnExp = stack.front()->exp;
-            break;
-        default:
-            if (e == e_unknown)
-                std::cerr << "unknown tag " << e << " in context callstmt\n";
-            else
-                std::cerr << "need to handle tag " << tags[e].tag << " in context callstmt\n";
-            break;
+    // Exp* returnExp = nullptr;
+    switch (e) {
+    case e_dest:
+        call->setDest(stack.front()->exp);
+        break;
+    case e_argument:
+        call->appendArgument((Assignment *)stack.front()->stmt);
+        break;
+    case e_returnexp:
+        // Assume that the corresponding return type will appear next
+        // returnExp = stack.front()->exp;
+        break;
+    default:
+        if (e == e_unknown)
+            std::cerr << "unknown tag " << e << " in context callstmt\n";
+        else
+            std::cerr << "need to handle tag " << tags[e].tag << " in context callstmt\n";
+        break;
     }
 }
 
 void XMLProgParser::start_dest(const QXmlStreamAttributes &attr) {
     if (phase == 1) {
-        Proc *p = (Proc*)findId(attr.value(QLatin1Literal("proc")));
+        Proc *p = (Proc *)findId(attr.value(QLatin1Literal("proc")));
         if (p)
             stack.front()->proc = p;
         return;
     }
 }
 
-void XMLProgParser::addToContext_dest(Context *c, int /*e*/) {
-    c->exp = stack.front()->exp;
-}
+void XMLProgParser::addToContext_dest(Context *c, int /*e*/) { c->exp = stack.front()->exp; }
 
 void XMLProgParser::start_returnstmt(const QXmlStreamAttributes &attr) {
     if (phase == 1) {
-        stack.front()->stmt = (Statement*)findId(attr.value(QLatin1Literal("id")));
-        UserProc *p = (UserProc*)findId(attr.value(QLatin1Literal("proc")));
+        stack.front()->stmt = (Statement *)findId(attr.value(QLatin1Literal("id")));
+        UserProc *p = (UserProc *)findId(attr.value(QLatin1Literal("proc")));
         if (p)
-            ((Statement*)stack.front()->stmt)->setProc(p);
+            ((Statement *)stack.front()->stmt)->setProc(p);
         //      Statement *s = (Statement*)findId(attr.value(QLatin1Literal("parent")));
         //        if (s)
         //            ((Statement*)stack.front()->stmt)->parent = s;
@@ -1196,53 +1238,49 @@ void XMLProgParser::start_returnstmt(const QXmlStreamAttributes &attr) {
     stack.front()->stmt = ret;
     addId(attr, ret);
     QStringRef n = attr.value(QLatin1Literal("number"));
-    if(!n.isEmpty())
+    if (!n.isEmpty())
         ret->number = n.toInt();
     n = attr.value(QLatin1Literal("retAddr"));
-    if(!n.isEmpty())
+    if (!n.isEmpty())
         ret->retAddr = ADDRESS::g(n.toInt());
 }
 
 void XMLProgParser::addToContext_returnstmt(Context *c, int e) {
-    ReturnStatement *ret = dynamic_cast<ReturnStatement*>(c->stmt);
+    ReturnStatement *ret = dynamic_cast<ReturnStatement *>(c->stmt);
     assert(ret);
     if (phase == 1) {
         return;
     }
-    switch(e) {
-        case e_modifieds:
-            ret->modifieds.append((Assignment*)stack.front()->stmt);
-            break;
-        case e_returns:
-            ret->returns.append((Assignment*)stack.front()->stmt);
-            break;
-        default:
-            if (e == e_unknown)
-                std::cerr << "unknown tag " << e << " in context returnstmt\n";
-            else
-                std::cerr << "need to handle tag " << tags[e].tag << " in context returnstmt\n";
-            break;
+    switch (e) {
+    case e_modifieds:
+        ret->modifieds.append((Assignment *)stack.front()->stmt);
+        break;
+    case e_returns:
+        ret->returns.append((Assignment *)stack.front()->stmt);
+        break;
+    default:
+        if (e == e_unknown)
+            std::cerr << "unknown tag " << e << " in context returnstmt\n";
+        else
+            std::cerr << "need to handle tag " << tags[e].tag << " in context returnstmt\n";
+        break;
     }
 }
 
-void XMLProgParser::start_returns(const QXmlStreamAttributes &) {
-}
+void XMLProgParser::start_returns(const QXmlStreamAttributes &) {}
 
-void XMLProgParser::addToContext_returns(Context */*c*/, int /*e*/) {
-}
+void XMLProgParser::addToContext_returns(Context * /*c*/, int /*e*/) {}
 
-void XMLProgParser::start_modifieds(const QXmlStreamAttributes &) {
-}
+void XMLProgParser::start_modifieds(const QXmlStreamAttributes &) {}
 
-void XMLProgParser::addToContext_modifieds(Context */*c*/, int /*e*/) {
-}
+void XMLProgParser::addToContext_modifieds(Context * /*c*/, int /*e*/) {}
 
 void XMLProgParser::start_gotostmt(const QXmlStreamAttributes &attr) {
     if (phase == 1) {
-        stack.front()->stmt = (Statement*)findId(attr.value(QLatin1Literal("id")));
-        UserProc *p = (UserProc*)findId(attr.value(QLatin1Literal("proc")));
+        stack.front()->stmt = (Statement *)findId(attr.value(QLatin1Literal("id")));
+        UserProc *p = (UserProc *)findId(attr.value(QLatin1Literal("proc")));
         if (p)
-            ((Statement*)stack.front()->stmt)->setProc(p);
+            ((Statement *)stack.front()->stmt)->setProc(p);
         //        Statement *s = (Statement*)findId(attr.value(QLatin1Literal("parent")));
         //        if (s)
         //            ((Statement*)stack.front()->stmt)->parent = s;
@@ -1252,123 +1290,123 @@ void XMLProgParser::start_gotostmt(const QXmlStreamAttributes &attr) {
     stack.front()->stmt = branch;
     addId(attr, branch);
     QStringRef n = attr.value(QLatin1Literal("number"));
-    if(!n.isEmpty())
+    if (!n.isEmpty())
         branch->number = n.toInt();
     n = attr.value(QLatin1Literal("computed"));
-    if(!n.isEmpty())
+    if (!n.isEmpty())
         branch->m_isComputed = n.toInt() > 0;
 }
 
 void XMLProgParser::addToContext_gotostmt(Context *c, int e) {
-    GotoStatement *branch = dynamic_cast<GotoStatement*>(c->stmt);
+    GotoStatement *branch = dynamic_cast<GotoStatement *>(c->stmt);
     assert(branch);
     if (phase == 1) {
         return;
     }
-    switch(e) {
-        case e_dest:
-            branch->setDest(stack.front()->exp);
-            break;
-        default:
-            if (e == e_unknown)
-                std::cerr << "unknown tag " << e << " in context gotostmt\n";
-            else
-                std::cerr << "need to handle tag " << tags[e].tag << " in context gotostmt\n";
-            break;
+    switch (e) {
+    case e_dest:
+        branch->setDest(stack.front()->exp);
+        break;
+    default:
+        if (e == e_unknown)
+            std::cerr << "unknown tag " << e << " in context gotostmt\n";
+        else
+            std::cerr << "need to handle tag " << tags[e].tag << " in context gotostmt\n";
+        break;
     }
 }
 
 void XMLProgParser::start_branchstmt(const QXmlStreamAttributes &attr) {
     if (phase == 1) {
-        stack.front()->stmt = (Statement*)findId(attr.value(QLatin1Literal("id")));
-        UserProc *p = (UserProc*)findId(attr.value(QLatin1Literal("proc")));
+        stack.front()->stmt = (Statement *)findId(attr.value(QLatin1Literal("id")));
+        UserProc *p = (UserProc *)findId(attr.value(QLatin1Literal("proc")));
         if (p)
-            ((Statement*)stack.front()->stmt)->setProc(p);
+            ((Statement *)stack.front()->stmt)->setProc(p);
         return;
     }
     BranchStatement *branch = new BranchStatement();
     stack.front()->stmt = branch;
     addId(attr, branch);
     QStringRef n = attr.value(QLatin1Literal("number"));
-    if(!n.isEmpty())
+    if (!n.isEmpty())
         branch->number = n.toInt();
     n = attr.value(QLatin1Literal("computed"));
-    if(!n.isEmpty())
+    if (!n.isEmpty())
         branch->m_isComputed = n.toInt() > 0;
     n = attr.value(QLatin1Literal("jtcond"));
-    if(!n.isEmpty())
+    if (!n.isEmpty())
         branch->jtCond = (BRANCH_TYPE)n.toInt();
     n = attr.value(QLatin1Literal("float"));
-    if(!n.isEmpty())
+    if (!n.isEmpty())
         branch->bFloat = n.toInt() > 0;
 }
 
 void XMLProgParser::addToContext_branchstmt(Context *c, int e) {
-    BranchStatement *branch = dynamic_cast<BranchStatement*>(c->stmt);
+    BranchStatement *branch = dynamic_cast<BranchStatement *>(c->stmt);
     assert(branch);
     if (phase == 1) {
         return;
     }
-    switch(e) {
-        case e_cond:
-            branch->setCondExpr(stack.front()->exp);
-            break;
-        case e_dest:
-            branch->setDest(stack.front()->exp);
-            break;
-        default:
-            if (e == e_unknown)
-                std::cerr << "unknown tag " << e << " in context branchstmt\n";
-            else
-                std::cerr << "need to handle tag " << tags[e].tag << " in context branchstmt\n";
-            break;
+    switch (e) {
+    case e_cond:
+        branch->setCondExpr(stack.front()->exp);
+        break;
+    case e_dest:
+        branch->setDest(stack.front()->exp);
+        break;
+    default:
+        if (e == e_unknown)
+            std::cerr << "unknown tag " << e << " in context branchstmt\n";
+        else
+            std::cerr << "need to handle tag " << tags[e].tag << " in context branchstmt\n";
+        break;
     }
 }
 
 void XMLProgParser::start_casestmt(const QXmlStreamAttributes &attr) {
     if (phase == 1) {
-        stack.front()->stmt = (Statement*)findId(attr.value(QLatin1Literal("id")));
-        UserProc *p = (UserProc*)findId(attr.value(QLatin1Literal("proc")));
+        stack.front()->stmt = (Statement *)findId(attr.value(QLatin1Literal("id")));
+        UserProc *p = (UserProc *)findId(attr.value(QLatin1Literal("proc")));
         if (p)
-            ((Statement*)stack.front()->stmt)->setProc(p);
+            ((Statement *)stack.front()->stmt)->setProc(p);
         return;
     }
     CaseStatement *cas = new CaseStatement();
     stack.front()->stmt = cas;
     addId(attr, cas);
     QStringRef n = attr.value(QLatin1Literal("number"));
-    if(!n.isEmpty())
+    if (!n.isEmpty())
         cas->number = n.toInt();
     n = attr.value(QLatin1Literal("computed"));
-    if(!n.isEmpty())
+    if (!n.isEmpty())
         cas->m_isComputed = n.toInt() > 0;
 }
 
 void XMLProgParser::addToContext_casestmt(Context *c, int e) {
-    CaseStatement *cas = dynamic_cast<CaseStatement*>(c->stmt);
+    CaseStatement *cas = dynamic_cast<CaseStatement *>(c->stmt);
     assert(cas);
     if (phase == 1) {
         return;
     }
-    switch(e) {
-        case e_dest:
-            cas->setDest(stack.front()->exp);
-            break;
-        default:
-            if (e == e_unknown)
-                std::cerr << "unknown tag " << e << " in context casestmt\n";
-            else
-                std::cerr << "need to handle tag " << tags[e].tag << " in context casestmt\n";
-            break;
+    switch (e) {
+    case e_dest:
+        cas->setDest(stack.front()->exp);
+        break;
+    default:
+        if (e == e_unknown)
+            std::cerr << "unknown tag " << e << " in context casestmt\n";
+        else
+            std::cerr << "need to handle tag " << tags[e].tag << " in context casestmt\n";
+        break;
     }
 }
 
 void XMLProgParser::start_boolasgn(const QXmlStreamAttributes &attr) {
     if (phase == 1) {
-        stack.front()->stmt = (Statement*)findId(attr.value(QLatin1Literal("id")));
-        UserProc *p = (UserProc*)findId(attr.value(QLatin1Literal("proc")));
+        stack.front()->stmt = (Statement *)findId(attr.value(QLatin1Literal("id")));
+        UserProc *p = (UserProc *)findId(attr.value(QLatin1Literal("proc")));
         if (p)
-            ((Statement*)stack.front()->stmt)->setProc(p);
+            ((Statement *)stack.front()->stmt)->setProc(p);
         return;
     }
     QStringRef n = attr.value(QLatin1Literal("size"));
@@ -1377,66 +1415,60 @@ void XMLProgParser::start_boolasgn(const QXmlStreamAttributes &attr) {
     stack.front()->stmt = boo;
     addId(attr, boo);
     n = attr.value(QLatin1Literal("number"));
-    if(!n.isEmpty())
+    if (!n.isEmpty())
         boo->number = n.toInt();
     n = attr.value(QLatin1Literal("jtcond"));
-    if(!n.isEmpty())
+    if (!n.isEmpty())
         boo->jtCond = (BRANCH_TYPE)n.toInt();
     n = attr.value(QLatin1Literal("float"));
-    if(!n.isEmpty())
+    if (!n.isEmpty())
         boo->bFloat = n.toInt() > 0;
 }
 
 void XMLProgParser::addToContext_boolasgn(Context *c, int e) {
-    BoolAssign *boo = dynamic_cast<BoolAssign*>(c->stmt);
+    BoolAssign *boo = dynamic_cast<BoolAssign *>(c->stmt);
     assert(boo);
     if (phase == 1) {
         return;
     }
-    switch(e) {
-        case e_cond:
-            boo->pCond = stack.front()->exp;
-            break;
-        case e_lhs:
-            boo->lhs = stack.front()->exp;
-            break;
-        default:
-            if (e == e_unknown)
-                std::cerr << "unknown tag " << e << " in context boolasgn\n";
-            else
-                std::cerr << "need to handle tag " << tags[e].tag << " in context boolasgn\n";
-            break;
+    switch (e) {
+    case e_cond:
+        boo->pCond = stack.front()->exp;
+        break;
+    case e_lhs:
+        boo->lhs = stack.front()->exp;
+        break;
+    default:
+        if (e == e_unknown)
+            std::cerr << "unknown tag " << e << " in context boolasgn\n";
+        else
+            std::cerr << "need to handle tag " << tags[e].tag << " in context boolasgn\n";
+        break;
     }
 }
 
-void XMLProgParser::start_type(const QXmlStreamAttributes &) {
-}
+void XMLProgParser::start_type(const QXmlStreamAttributes &) {}
 
-void XMLProgParser::addToContext_type(Context *c, int /*e*/) {
-    c->type = stack.front()->type;
-}
+void XMLProgParser::addToContext_type(Context *c, int /*e*/) { c->type = stack.front()->type; }
 
-void XMLProgParser::start_basetype(const QXmlStreamAttributes &) {
-}
+void XMLProgParser::start_basetype(const QXmlStreamAttributes &) {}
 
-void XMLProgParser::addToContext_basetype(Context *c, int /*e*/) {
-    c->type = stack.front()->type;
-}
+void XMLProgParser::addToContext_basetype(Context *c, int /*e*/) { c->type = stack.front()->type; }
 
 void XMLProgParser::start_sizetype(const QXmlStreamAttributes &attr) {
     if (phase == 1) {
-        stack.front()->type = (Type*)findId(attr.value(QLatin1Literal("id")));
+        stack.front()->type = (Type *)findId(attr.value(QLatin1Literal("id")));
         return;
     }
     SizeType *ty = new SizeType();
     stack.front()->type = ty;
     addId(attr, ty);
     QStringRef n = attr.value(QLatin1Literal("size"));
-    if(!n.isEmpty())
+    if (!n.isEmpty())
         ty->size = n.toInt();
 }
 
-void XMLProgParser::addToContext_sizetype(Context */*c*/, int e) {
+void XMLProgParser::addToContext_sizetype(Context * /*c*/, int e) {
     //      switch(e) {
     //    default:
     if (e == e_unknown)
@@ -1447,100 +1479,64 @@ void XMLProgParser::addToContext_sizetype(Context */*c*/, int e) {
     //      }
 }
 
-void XMLProgParser::start_exp(const QXmlStreamAttributes &) {
-}
+void XMLProgParser::start_exp(const QXmlStreamAttributes &) {}
 
-void XMLProgParser::addToContext_exp(Context *c, int /*e*/) {
-    c->exp = stack.front()->exp;
-}
+void XMLProgParser::addToContext_exp(Context *c, int /*e*/) { c->exp = stack.front()->exp; }
 
-void XMLProgParser::start_secondexp(const QXmlStreamAttributes &) {
-}
+void XMLProgParser::start_secondexp(const QXmlStreamAttributes &) {}
 
-void XMLProgParser::addToContext_secondexp(Context *c, int /*e*/) {
-    c->exp = stack.front()->exp;
-}
+void XMLProgParser::addToContext_secondexp(Context *c, int /*e*/) { c->exp = stack.front()->exp; }
 
-void XMLProgParser::start_defines(const QXmlStreamAttributes &) {
-}
+void XMLProgParser::start_defines(const QXmlStreamAttributes &) {}
 
-void XMLProgParser::addToContext_defines(Context *c, int /*e*/) {
-    c->exp = stack.front()->exp;
-}
+void XMLProgParser::addToContext_defines(Context *c, int /*e*/) { c->exp = stack.front()->exp; }
 
-void XMLProgParser::start_lhs(const QXmlStreamAttributes &) {
-}
+void XMLProgParser::start_lhs(const QXmlStreamAttributes &) {}
 
-void XMLProgParser::addToContext_lhs(Context *c, int /*e*/) {
-    c->exp = stack.front()->exp;
-}
+void XMLProgParser::addToContext_lhs(Context *c, int /*e*/) { c->exp = stack.front()->exp; }
 
-void XMLProgParser::start_rhs(const QXmlStreamAttributes &) {
-}
+void XMLProgParser::start_rhs(const QXmlStreamAttributes &) {}
 
-void XMLProgParser::addToContext_rhs(Context *c, int /*e*/) {
-    c->exp = stack.front()->exp;
-}
+void XMLProgParser::addToContext_rhs(Context *c, int /*e*/) { c->exp = stack.front()->exp; }
 
-void XMLProgParser::start_argument(const QXmlStreamAttributes &) {
-}
+void XMLProgParser::start_argument(const QXmlStreamAttributes &) {}
 
-void XMLProgParser::addToContext_argument(Context *c, int /*e*/) {
-    c->exp = stack.front()->exp;
-}
+void XMLProgParser::addToContext_argument(Context *c, int /*e*/) { c->exp = stack.front()->exp; }
 
-void XMLProgParser::start_returnexp(const QXmlStreamAttributes &) {
-}
+void XMLProgParser::start_returnexp(const QXmlStreamAttributes &) {}
 
-void XMLProgParser::start_returntype(const QXmlStreamAttributes &) {
-}
+void XMLProgParser::start_returntype(const QXmlStreamAttributes &) {}
 
-void XMLProgParser::addToContext_returnexp(Context *c, int /*e*/) {
-    c->exp = stack.front()->exp;
-}
+void XMLProgParser::addToContext_returnexp(Context *c, int /*e*/) { c->exp = stack.front()->exp; }
 
-void XMLProgParser::addToContext_returntype(Context *c, int /*e*/) {
-    c->type = stack.front()->type;
-}
+void XMLProgParser::addToContext_returntype(Context *c, int /*e*/) { c->type = stack.front()->type; }
 
-void XMLProgParser::start_cond(const QXmlStreamAttributes &) {
-}
+void XMLProgParser::start_cond(const QXmlStreamAttributes &) {}
 
-void XMLProgParser::addToContext_cond(Context *c, int /*e*/) {
-    c->exp = stack.front()->exp;
-}
+void XMLProgParser::addToContext_cond(Context *c, int /*e*/) { c->exp = stack.front()->exp; }
 
-void XMLProgParser::start_subexp1(const QXmlStreamAttributes &) {
-}
+void XMLProgParser::start_subexp1(const QXmlStreamAttributes &) {}
 
-void XMLProgParser::addToContext_subexp1(Context *c, int /*e*/) {
-    c->exp = stack.front()->exp;
-}
+void XMLProgParser::addToContext_subexp1(Context *c, int /*e*/) { c->exp = stack.front()->exp; }
 
-void XMLProgParser::start_subexp2(const QXmlStreamAttributes &) {
-}
+void XMLProgParser::start_subexp2(const QXmlStreamAttributes &) {}
 
-void XMLProgParser::addToContext_subexp2(Context *c, int /*e*/) {
-    c->exp = stack.front()->exp;
-}
+void XMLProgParser::addToContext_subexp2(Context *c, int /*e*/) { c->exp = stack.front()->exp; }
 
-void XMLProgParser::start_subexp3(const QXmlStreamAttributes &) {
-}
+void XMLProgParser::start_subexp3(const QXmlStreamAttributes &) {}
 
-void XMLProgParser::addToContext_subexp3(Context *c, int /*e*/) {
-    c->exp = stack.front()->exp;
-}
+void XMLProgParser::addToContext_subexp3(Context *c, int /*e*/) { c->exp = stack.front()->exp; }
 
 void XMLProgParser::start_voidtype(const QXmlStreamAttributes &attr) {
     if (phase == 1) {
-        stack.front()->type = (Type*)findId(attr.value(QLatin1Literal("id")));
+        stack.front()->type = (Type *)findId(attr.value(QLatin1Literal("id")));
         return;
     }
     stack.front()->type = new VoidType();
     addId(attr, stack.front()->type);
 }
 
-void XMLProgParser::addToContext_voidtype(Context */*c*/, int e) {
+void XMLProgParser::addToContext_voidtype(Context * /*c*/, int e) {
     //      switch(e) {
     //    default:
     if (e == e_unknown)
@@ -1553,21 +1549,21 @@ void XMLProgParser::addToContext_voidtype(Context */*c*/, int e) {
 
 void XMLProgParser::start_integertype(const QXmlStreamAttributes &attr) {
     if (phase == 1) {
-        stack.front()->type = (Type*)findId(attr.value(QLatin1Literal("id")));
+        stack.front()->type = (Type *)findId(attr.value(QLatin1Literal("id")));
         return;
     }
     IntegerType *ty = IntegerType::get(STD_SIZE);
     stack.front()->type = ty;
     addId(attr, ty);
     QStringRef n = attr.value(QLatin1Literal("size"));
-    if(!n.isEmpty())
+    if (!n.isEmpty())
         ty->size = n.toInt();
     n = attr.value(QLatin1Literal("signedness"));
-    if(!n.isEmpty())
+    if (!n.isEmpty())
         ty->signedness = n.toInt();
 }
 
-void XMLProgParser::addToContext_integertype(Context */*c*/, int e) {
+void XMLProgParser::addToContext_integertype(Context * /*c*/, int e) {
     //      switch(e) {
     //    default:
     if (e == e_unknown)
@@ -1580,7 +1576,7 @@ void XMLProgParser::addToContext_integertype(Context */*c*/, int e) {
 
 void XMLProgParser::start_pointertype(const QXmlStreamAttributes &attr) {
     if (phase == 1) {
-        stack.front()->type = (Type*)findId(attr.value(QLatin1Literal("id")));
+        stack.front()->type = (Type *)findId(attr.value(QLatin1Literal("id")));
         return;
     }
     stack.front()->type = new PointerType(nullptr);
@@ -1588,7 +1584,7 @@ void XMLProgParser::start_pointertype(const QXmlStreamAttributes &attr) {
 }
 
 void XMLProgParser::addToContext_pointertype(Context *c, int /*e*/) {
-    PointerType *p = dynamic_cast<PointerType*>(c->type);
+    PointerType *p = dynamic_cast<PointerType *>(c->type);
     assert(p);
     if (phase == 1) {
         return;
@@ -1598,14 +1594,14 @@ void XMLProgParser::addToContext_pointertype(Context *c, int /*e*/) {
 
 void XMLProgParser::start_chartype(const QXmlStreamAttributes &attr) {
     if (phase == 1) {
-        stack.front()->type = (Type*)findId(attr.value(QLatin1Literal("id")));
+        stack.front()->type = (Type *)findId(attr.value(QLatin1Literal("id")));
         return;
     }
     stack.front()->type = new CharType();
     addId(attr, stack.front()->type);
 }
 
-void XMLProgParser::addToContext_chartype(Context */*c*/, int e) {
+void XMLProgParser::addToContext_chartype(Context * /*c*/, int e) {
     //      switch(e) {
     //    default:
     if (e == e_unknown)
@@ -1618,14 +1614,14 @@ void XMLProgParser::addToContext_chartype(Context */*c*/, int e) {
 
 void XMLProgParser::start_namedtype(const QXmlStreamAttributes &attr) {
     if (phase == 1) {
-        stack.front()->type = (Type*)findId(attr.value(QLatin1Literal("id")));
+        stack.front()->type = (Type *)findId(attr.value(QLatin1Literal("id")));
         return;
     }
     stack.front()->type = new NamedType(attr.value(QLatin1Literal("name")).toString().toStdString());
     addId(attr, stack.front()->type);
 }
 
-void XMLProgParser::addToContext_namedtype(Context */*c*/, int e) {
+void XMLProgParser::addToContext_namedtype(Context * /*c*/, int e) {
     //      switch(e) {
     //    default:
     if (e == e_unknown)
@@ -1638,39 +1634,39 @@ void XMLProgParser::addToContext_namedtype(Context */*c*/, int e) {
 
 void XMLProgParser::start_arraytype(const QXmlStreamAttributes &attr) {
     if (phase == 1) {
-        stack.front()->type = (Type*)findId(attr.value(QLatin1Literal("id")));
+        stack.front()->type = (Type *)findId(attr.value(QLatin1Literal("id")));
         return;
     }
     ArrayType *a = new ArrayType();
     stack.front()->type = a;
     addId(attr, a);
     QStringRef len = attr.value(QLatin1Literal("length"));
-    if(!len.isEmpty())
+    if (!len.isEmpty())
         a->length = len.toInt();
 }
 
 void XMLProgParser::addToContext_arraytype(Context *c, int e) {
-    ArrayType *a = dynamic_cast<ArrayType*>(c->type);
+    ArrayType *a = dynamic_cast<ArrayType *>(c->type);
     assert(a);
-    switch(e) {
-        case e_basetype:
-            a->base_type = stack.front()->type;
-            break;
-        default:
-            if (e == e_unknown)
-                std::cerr << "unknown tag " << e << " in context arrayType\n";
-            else
-                std::cerr << "need to handle tag " << tags[e].tag << " in context arrayType\n";
-            break;
+    switch (e) {
+    case e_basetype:
+        a->base_type = stack.front()->type;
+        break;
+    default:
+        if (e == e_unknown)
+            std::cerr << "unknown tag " << e << " in context arrayType\n";
+        else
+            std::cerr << "need to handle tag " << tags[e].tag << " in context arrayType\n";
+        break;
     }
 }
 
 void XMLProgParser::start_location(const QXmlStreamAttributes &attr) {
     if (phase == 1) {
-        stack.front()->exp = (Exp*)findId(attr.value(QLatin1Literal("id")));
-        UserProc *p = (UserProc*)findId(attr.value(QLatin1Literal("proc")));
+        stack.front()->exp = (Exp *)findId(attr.value(QLatin1Literal("id")));
+        UserProc *p = (UserProc *)findId(attr.value(QLatin1Literal("proc")));
         if (p)
-            ((Location*)stack.front()->exp)->setProc(p);
+            ((Location *)stack.front()->exp)->setProc(p);
         return;
     }
     OPER op = (OPER)operFromString(attr.value(QLatin1Literal("op")));
@@ -1683,24 +1679,24 @@ void XMLProgParser::addToContext_location(Context *c, int e) {
     if (phase == 1) {
         return;
     }
-    Location *l = dynamic_cast<Location*>(c->exp);
+    Location *l = dynamic_cast<Location *>(c->exp);
     assert(l);
-    switch(e) {
-        case e_subexp1:
-            c->exp->setSubExp1(stack.front()->exp);
-            break;
-        default:
-            if (e == e_unknown)
-                std::cerr << "unknown tag " << e << " in context unary\n";
-            else
-                std::cerr << "need to handle tag " << tags[e].tag << " in context location\n";
-            break;
+    switch (e) {
+    case e_subexp1:
+        c->exp->setSubExp1(stack.front()->exp);
+        break;
+    default:
+        if (e == e_unknown)
+            std::cerr << "unknown tag " << e << " in context unary\n";
+        else
+            std::cerr << "need to handle tag " << tags[e].tag << " in context location\n";
+        break;
     }
 }
 
 void XMLProgParser::start_unary(const QXmlStreamAttributes &attr) {
     if (phase == 1) {
-        stack.front()->exp = (Exp*)findId(attr.value(QLatin1Literal("id")));
+        stack.front()->exp = (Exp *)findId(attr.value(QLatin1Literal("id")));
         return;
     }
     OPER op = (OPER)operFromString(attr.value(QLatin1Literal("op")));
@@ -1713,22 +1709,22 @@ void XMLProgParser::addToContext_unary(Context *c, int e) {
     if (phase == 1) {
         return;
     }
-    switch(e) {
-        case e_subexp1:
-            c->exp->setSubExp1(stack.front()->exp);
-            break;
-        default:
-            if (e == e_unknown)
-                std::cerr << "unknown tag " << e << " in context unary\n";
-            else
-                std::cerr << "need to handle tag " << tags[e].tag << " in context unary\n";
-            break;
+    switch (e) {
+    case e_subexp1:
+        c->exp->setSubExp1(stack.front()->exp);
+        break;
+    default:
+        if (e == e_unknown)
+            std::cerr << "unknown tag " << e << " in context unary\n";
+        else
+            std::cerr << "need to handle tag " << tags[e].tag << " in context unary\n";
+        break;
     }
 }
 
 void XMLProgParser::start_binary(const QXmlStreamAttributes &attr) {
     if (phase == 1) {
-        stack.front()->exp = (Exp*)findId(attr.value(QLatin1Literal("id")));
+        stack.front()->exp = (Exp *)findId(attr.value(QLatin1Literal("id")));
         return;
     }
     OPER op = (OPER)operFromString(attr.value(QLatin1Literal("op")));
@@ -1741,25 +1737,25 @@ void XMLProgParser::addToContext_binary(Context *c, int e) {
     if (phase == 1) {
         return;
     }
-    switch(e) {
-        case e_subexp1:
-            c->exp->setSubExp1(stack.front()->exp);
-            break;
-        case e_subexp2:
-            c->exp->setSubExp2(stack.front()->exp);
-            break;
-        default:
-            if (e == e_unknown)
-                std::cerr << "unknown tag " << e << " in context binary\n";
-            else
-                std::cerr << "need to handle tag " << tags[e].tag << " in context binary\n";
-            break;
+    switch (e) {
+    case e_subexp1:
+        c->exp->setSubExp1(stack.front()->exp);
+        break;
+    case e_subexp2:
+        c->exp->setSubExp2(stack.front()->exp);
+        break;
+    default:
+        if (e == e_unknown)
+            std::cerr << "unknown tag " << e << " in context binary\n";
+        else
+            std::cerr << "need to handle tag " << tags[e].tag << " in context binary\n";
+        break;
     }
 }
 
 void XMLProgParser::start_ternary(const QXmlStreamAttributes &attr) {
     if (phase == 1) {
-        stack.front()->exp = (Exp*)findId(attr.value(QLatin1Literal("id")));
+        stack.front()->exp = (Exp *)findId(attr.value(QLatin1Literal("id")));
         return;
     }
     OPER op = (OPER)operFromString(attr.value(QLatin1Literal("op")));
@@ -1772,29 +1768,29 @@ void XMLProgParser::addToContext_ternary(Context *c, int e) {
     if (phase == 1) {
         return;
     }
-    switch(e) {
-        case e_subexp1:
-            c->exp->setSubExp1(stack.front()->exp);
-            break;
-        case e_subexp2:
-            c->exp->setSubExp2(stack.front()->exp);
-            break;
-        case e_subexp3:
-            c->exp->setSubExp3(stack.front()->exp);
-            break;
-        default:
-            if (e == e_unknown)
-                std::cerr << "unknown tag " << e << " in context ternary\n";
-            else
-                std::cerr << "need to handle tag " << tags[e].tag << " in context ternary\n";
-            break;
+    switch (e) {
+    case e_subexp1:
+        c->exp->setSubExp1(stack.front()->exp);
+        break;
+    case e_subexp2:
+        c->exp->setSubExp2(stack.front()->exp);
+        break;
+    case e_subexp3:
+        c->exp->setSubExp3(stack.front()->exp);
+        break;
+    default:
+        if (e == e_unknown)
+            std::cerr << "unknown tag " << e << " in context ternary\n";
+        else
+            std::cerr << "need to handle tag " << tags[e].tag << " in context ternary\n";
+        break;
     }
 }
 
 void XMLProgParser::start_const(const QXmlStreamAttributes &attr) {
     Context *ctx = stack.front();
     if (phase == 1) {
-        ctx->exp = (Exp*)findId(attr.value(QLatin1Literal("id")));
+        ctx->exp = (Exp *)findId(attr.value(QLatin1Literal("id")));
         return;
     }
     double d;
@@ -1802,30 +1798,30 @@ void XMLProgParser::start_const(const QXmlStreamAttributes &attr) {
     QStringRef opstring = attr.value(QLatin1Literal("op"));
     assert(!value.isEmpty());
     assert(!opstring.isEmpty());
-    //std::cerr << "got value=" << value << " opstring=" << opstring << "\n";
+    // std::cerr << "got value=" << value << " opstring=" << opstring << "\n";
     OPER op = (OPER)operFromString(opstring);
     assert(op != -1);
-    switch(op) {
-        case opIntConst:
-            ctx->exp = new Const(value.toInt());
-            addId(attr, stack.front()->exp);
-            break;
-        case opStrConst:
-            ctx->exp = new Const(strdup(value.toString().toLocal8Bit().data()));
-            addId(attr, stack.front()->exp);
-            break;
-        case opFltConst:
-            stack.front()->exp = new Const(value.toFloat());
-            addId(attr, stack.front()->exp);
-            break;
-        default:
-            LOG << "unknown Const op " << op << "\n";
-            assert(false);
+    switch (op) {
+    case opIntConst:
+        ctx->exp = new Const(value.toInt());
+        addId(attr, stack.front()->exp);
+        break;
+    case opStrConst:
+        ctx->exp = new Const(strdup(value.toString().toLocal8Bit().data()));
+        addId(attr, stack.front()->exp);
+        break;
+    case opFltConst:
+        stack.front()->exp = new Const(value.toFloat());
+        addId(attr, stack.front()->exp);
+        break;
+    default:
+        LOG << "unknown Const op " << op << "\n";
+        assert(false);
     }
-    //std::cerr << "end of start const\n";
+    // std::cerr << "end of start const\n";
 }
 
-void XMLProgParser::addToContext_const(Context */*c*/, int e) {
+void XMLProgParser::addToContext_const(Context * /*c*/, int e) {
     //      switch(e) {
     //    default:
     if (e == e_unknown)
@@ -1838,7 +1834,7 @@ void XMLProgParser::addToContext_const(Context */*c*/, int e) {
 
 void XMLProgParser::start_terminal(const QXmlStreamAttributes &attr) {
     if (phase == 1) {
-        stack.front()->exp = (Exp*)findId(attr.value(QLatin1Literal("id")));
+        stack.front()->exp = (Exp *)findId(attr.value(QLatin1Literal("id")));
         return;
     }
     OPER op = (OPER)operFromString(attr.value(QLatin1Literal("op")));
@@ -1847,7 +1843,7 @@ void XMLProgParser::start_terminal(const QXmlStreamAttributes &attr) {
     addId(attr, stack.front()->exp);
 }
 
-void XMLProgParser::addToContext_terminal(Context */*c*/, int e) {
+void XMLProgParser::addToContext_terminal(Context * /*c*/, int e) {
     //      switch(e) {
     //    default:
     if (e == e_unknown)
@@ -1860,7 +1856,7 @@ void XMLProgParser::addToContext_terminal(Context */*c*/, int e) {
 
 void XMLProgParser::start_typedexp(const QXmlStreamAttributes &attr) {
     if (phase == 1) {
-        stack.front()->exp = (Exp*)findId(attr.value(QLatin1Literal("id")));
+        stack.front()->exp = (Exp *)findId(attr.value(QLatin1Literal("id")));
         return;
     }
     stack.front()->exp = new TypedExp();
@@ -1868,30 +1864,30 @@ void XMLProgParser::start_typedexp(const QXmlStreamAttributes &attr) {
 }
 
 void XMLProgParser::addToContext_typedexp(Context *c, int e) {
-    TypedExp *t = dynamic_cast<TypedExp*>(c->exp);
+    TypedExp *t = dynamic_cast<TypedExp *>(c->exp);
     assert(t);
-    switch(e) {
-        case e_type:
-            t->type = stack.front()->type;
-            break;
-        case e_subexp1:
-            c->exp->setSubExp1(stack.front()->exp);
-            break;
-        default:
-            if (e == e_unknown)
-                std::cerr << "unknown tag " << e << " in context typedexp\n";
-            else
-                std::cerr << "need to handle tag " << tags[e].tag << " in context typedexp\n";
-            break;
+    switch (e) {
+    case e_type:
+        t->type = stack.front()->type;
+        break;
+    case e_subexp1:
+        c->exp->setSubExp1(stack.front()->exp);
+        break;
+    default:
+        if (e == e_unknown)
+            std::cerr << "unknown tag " << e << " in context typedexp\n";
+        else
+            std::cerr << "need to handle tag " << tags[e].tag << " in context typedexp\n";
+        break;
     }
 }
 
 void XMLProgParser::start_refexp(const QXmlStreamAttributes &attr) {
     if (phase == 1) {
-        stack.front()->exp = (Exp*)findId(attr.value(QLatin1Literal("id")));
-        RefExp *r = dynamic_cast<RefExp*>(stack.front()->exp);
+        stack.front()->exp = (Exp *)findId(attr.value(QLatin1Literal("id")));
+        RefExp *r = dynamic_cast<RefExp *>(stack.front()->exp);
         assert(r);
-        r->def = (Statement*)findId(attr.value(QLatin1Literal("def")));
+        r->def = (Statement *)findId(attr.value(QLatin1Literal("def")));
         return;
     }
     stack.front()->exp = new RefExp();
@@ -1899,27 +1895,27 @@ void XMLProgParser::start_refexp(const QXmlStreamAttributes &attr) {
 }
 
 void XMLProgParser::addToContext_refexp(Context *c, int e) {
-    switch(e) {
-        case e_subexp1:
-            c->exp->setSubExp1(stack.front()->exp);
-            break;
-        default:
-            if (e == e_unknown)
-                std::cerr << "unknown tag " << e << " in context refexp\n";
-            else
-                std::cerr << "need to handle tag " << tags[e].tag << " in context refexp\n";
-            break;
+    switch (e) {
+    case e_subexp1:
+        c->exp->setSubExp1(stack.front()->exp);
+        break;
+    default:
+        if (e == e_unknown)
+            std::cerr << "unknown tag " << e << " in context refexp\n";
+        else
+            std::cerr << "need to handle tag " << tags[e].tag << " in context refexp\n";
+        break;
     }
 }
 
 void XMLProgParser::start_def(const QXmlStreamAttributes &attr) {
     if (phase == 1) {
-        stack.front()->stmt = (Statement*)findId(attr.value(QLatin1Literal("stmt")));
+        stack.front()->stmt = (Statement *)findId(attr.value(QLatin1Literal("stmt")));
         return;
     }
 }
 
-void XMLProgParser::addToContext_def(Context */*c*/, int e) {
+void XMLProgParser::addToContext_def(Context * /*c*/, int e) {
     //      switch(e) {
     //    default:
     if (e == e_unknown)
@@ -1946,64 +1942,64 @@ Prog *XMLProgParser::parse(const QString &filename) {
     }
     if (prog == nullptr)
         return nullptr;
-    //FrontEnd *pFE = FrontEnd::Load(prog->getPath(), prog);        // Path is usually empty!?
+    // FrontEnd *pFE = FrontEnd::Load(prog->getPath(), prog);        // Path is usually empty!?
     FrontEnd *pFE = FrontEnd::Load(prog->getPathAndName(), prog);
     prog->setFrontEnd(pFE);
     return prog;
 }
 void XMLProgParser::parseFile(const QString &filename) {
     QFile src(filename);
-    if(!src.exists() || !src.open(QFile::ReadOnly|QFile::Text)) {
+    if (!src.exists() || !src.open(QFile::ReadOnly | QFile::Text)) {
         qWarning() << " File " << filename << " cannot be opened";
         return;
     }
     QXmlStreamReader xml_stream(&src);
-    while(!xml_stream.atEnd() && !xml_stream.hasError()) {
+    while (!xml_stream.atEnd() && !xml_stream.hasError()) {
         /* Read next element.*/
         QXmlStreamReader::TokenType token = xml_stream.readNext();
-        switch(token) {
-            case QXmlStreamReader::StartDocument:
-                break;
-            case QXmlStreamReader::StartElement:
-                handleElementStart(xml_stream);
-                break;
-            case QXmlStreamReader::EndElement:
-                handleElementEnd(xml_stream);
-                break;
+        switch (token) {
+        case QXmlStreamReader::StartDocument:
+            break;
+        case QXmlStreamReader::StartElement:
+            handleElementStart(xml_stream);
+            break;
+        case QXmlStreamReader::EndElement:
+            handleElementEnd(xml_stream);
+            break;
         }
     }
     /* Error handling. */
-    if(xml_stream.hasError()) {
+    if (xml_stream.hasError()) {
         qWarning() << "Xml parse failed: " << xml_stream.errorString();
     }
 }
 
 void XMLProgParser::parseChildren(Cluster *c) {
     QString path = c->makeDirs();
-    for (auto & elem : c->children) {
+    for (auto &elem : c->children) {
         QString d = path + "/" + elem->getName() + ".xml";
         parseFile(d);
         parseChildren(elem);
     }
 }
 
-extern char* operStrings[];
+extern char *operStrings[];
 
 int XMLProgParser::operFromString(const QStringRef &s) {
     for (int i = 0; i < opNumOf; i++)
-        if (s==operStrings[i])
+        if (s == operStrings[i])
             return i;
     return -1;
 }
 
-//out << \" *(\w+) *= *\\"" *<< *(.*) *<< *"\\"";
-//out.writeAttribute("\1",\2);
+// out << \" *(\w+) *= *\\"" *<< *(.*) *<< *"\\"";
+// out.writeAttribute("\1",\2);
 
 void XMLProgParser::persistToXML(QXmlStreamWriter &out, Cluster *c) {
     out.writeStartElement("cluster");
-    out.writeAttribute("id", QString::number(ADDRESS::host_ptr(c).m_value) );
-    out.writeAttribute("name", c->name.c_str() );
-    for (auto & elem : c->children) {
+    out.writeAttribute("id", QString::number(ADDRESS::host_ptr(c).m_value));
+    out.writeAttribute("name", c->name.c_str());
+    for (auto &elem : c->children) {
         persistToXML(out, elem);
     }
     out.writeEndElement();
@@ -2011,8 +2007,8 @@ void XMLProgParser::persistToXML(QXmlStreamWriter &out, Cluster *c) {
 
 void XMLProgParser::persistToXML(QXmlStreamWriter &out, Global *g) {
     out.writeStartElement("global");
-    out.writeAttribute("name",g->nam.c_str());
-    out.writeAttribute("uaddr",QString::number(g->uaddr.m_value,16));
+    out.writeAttribute("name", g->nam.c_str());
+    out.writeAttribute("uaddr", QString::number(g->uaddr.m_value, 16));
     out.writeStartElement("type");
     persistToXML(out, g->type);
     out.writeEndElement();
@@ -2024,29 +2020,29 @@ void XMLProgParser::persistToXML(Prog *prog) {
     QTextStream &os = prog->m_rootCluster->getStream();
     QXmlStreamWriter wrt(os.device());
     wrt.writeStartDocument();
-    if(prog->m_rootCluster->getParent())
+    if (prog->m_rootCluster->getParent())
         wrt.writeStartElement("procs");
 
     wrt.writeStartElement("prog");
-    wrt.writeAttribute("path",prog->getPath());
-    wrt.writeAttribute("name",prog->getName());
-    wrt.writeAttribute("iNumberedProc",QString::number(prog->m_iNumberedProc));
+    wrt.writeAttribute("path", prog->getPath());
+    wrt.writeAttribute("name", prog->getName());
+    wrt.writeAttribute("iNumberedProc", QString::number(prog->m_iNumberedProc));
     wrt.writeEndElement();
-    for (auto const & elem : prog->globals)
+    for (auto const &elem : prog->globals)
         persistToXML(wrt, elem);
     persistToXML(wrt, prog->m_rootCluster);
     for (auto p : prog->m_procs) {
         QXmlStreamWriter wrt(p->getCluster()->getStream().device());
         wrt.writeStartDocument();
-        bool has_parent = p->getCluster()->getParent()!=nullptr;
-        if(has_parent)
+        bool has_parent = p->getCluster()->getParent() != nullptr;
+        if (has_parent)
             wrt.writeStartElement("procs");
         persistToXML(wrt, p);
-        if(has_parent)
+        if (has_parent)
             wrt.writeEndElement();
         wrt.writeEndElement();
     }
-    if(prog->m_rootCluster->getParent())
+    if (prog->m_rootCluster->getParent())
         wrt.writeEndElement();
     wrt.writeEndElement();
     prog->m_rootCluster->closeStreams();
@@ -2054,22 +2050,22 @@ void XMLProgParser::persistToXML(Prog *prog) {
 
 void XMLProgParser::persistToXML(QXmlStreamWriter &out, LibProc *proc) {
     out.writeStartElement("libproc");
-    out.writeAttribute("id", QString::number(ADDRESS::host_ptr(proc).m_value) );
-    out.writeAttribute("address", QString::number(proc->address.m_value) );
-    out.writeAttribute("firstCallerAddress", QString::number(proc->m_firstCallerAddr.m_value) );
+    out.writeAttribute("id", QString::number(ADDRESS::host_ptr(proc).m_value));
+    out.writeAttribute("address", QString::number(proc->address.m_value));
+    out.writeAttribute("firstCallerAddress", QString::number(proc->m_firstCallerAddr.m_value));
     if (proc->m_firstCaller)
-        out.writeAttribute("firstCaller", QString::number(ADDRESS::host_ptr(proc->m_firstCaller).m_value) );
+        out.writeAttribute("firstCaller", QString::number(ADDRESS::host_ptr(proc->m_firstCaller).m_value));
     if (proc->cluster)
-        out.writeAttribute("cluster", QString::number(ADDRESS::host_ptr(proc->cluster).m_value) );
+        out.writeAttribute("cluster", QString::number(ADDRESS::host_ptr(proc->cluster).m_value));
 
     persistToXML(out, proc->signature);
 
-    for (auto const & elem : proc->callerSet) {
+    for (auto const &elem : proc->callerSet) {
         out.writeStartElement("caller");
-        out.writeAttribute("call", QString::number(ADDRESS::host_ptr(elem).m_value) );
+        out.writeAttribute("call", QString::number(ADDRESS::host_ptr(elem).m_value));
         out.writeEndElement();
     }
-    for (auto & elem : proc->provenTrue) {
+    for (auto &elem : proc->provenTrue) {
         out.writeStartElement("proven_true");
         persistToXML(out, elem.first);
         persistToXML(out, elem.second);
@@ -2080,41 +2076,41 @@ void XMLProgParser::persistToXML(QXmlStreamWriter &out, LibProc *proc) {
 
 void XMLProgParser::persistToXML(QXmlStreamWriter &out, UserProc *proc) {
     out.writeStartElement("userproc");
-    out.writeAttribute("id", QString::number(ADDRESS::host_ptr(proc).m_value) );
-    out.writeAttribute("address", QString::number(proc->address.m_value) );
-    out.writeAttribute("status", QString::number((int)proc->status) );
-    out.writeAttribute("firstCallerAddress", QString::number(proc->m_firstCallerAddr.m_value) );
+    out.writeAttribute("id", QString::number(ADDRESS::host_ptr(proc).m_value));
+    out.writeAttribute("address", QString::number(proc->address.m_value));
+    out.writeAttribute("status", QString::number((int)proc->status));
+    out.writeAttribute("firstCallerAddress", QString::number(proc->m_firstCallerAddr.m_value));
     if (proc->m_firstCaller)
-        out.writeAttribute("firstCaller", QString::number(ADDRESS::host_ptr(proc->m_firstCaller).m_value ));
+        out.writeAttribute("firstCaller", QString::number(ADDRESS::host_ptr(proc->m_firstCaller).m_value));
     if (proc->cluster)
-        out.writeAttribute("cluster", QString::number(ADDRESS::host_ptr(proc->cluster).m_value ));
+        out.writeAttribute("cluster", QString::number(ADDRESS::host_ptr(proc->cluster).m_value));
     if (proc->theReturnStatement)
         out.writeAttribute("retstmt", QString::number(ADDRESS::host_ptr(proc->theReturnStatement).m_value));
 
     persistToXML(out, proc->signature);
 
-    for (auto const & elem : proc->callerSet) {
+    for (auto const &elem : proc->callerSet) {
         out.writeStartElement("caller");
         out.writeAttribute("call", QString::number(ADDRESS::host_ptr(elem).m_value));
         out.writeEndElement();
     }
-    for (auto & elem : proc->provenTrue) {
+    for (auto &elem : proc->provenTrue) {
         out.writeStartElement("proven_true");
         persistToXML(out, elem.first);
         persistToXML(out, elem.second);
         out.writeEndElement();
     }
 
-    for (auto & elem : proc->locals) {
+    for (auto &elem : proc->locals) {
         out.writeStartElement("local");
-        out.writeAttribute("name", (elem).first.c_str() );
+        out.writeAttribute("name", (elem).first.c_str());
         out.writeStartElement("type");
         persistToXML(out, (elem).second);
         out.writeEndElement();
         out.writeEndElement();
     }
 
-    for (auto & elem : proc->symbolMap) {
+    for (auto &elem : proc->symbolMap) {
         out.writeStartElement("symbol");
         out.writeStartElement("exp");
         persistToXML(out, (elem).first);
@@ -2125,10 +2121,9 @@ void XMLProgParser::persistToXML(QXmlStreamWriter &out, UserProc *proc) {
         out.writeEndElement();
     }
 
-
-    for (auto & elem : proc->calleeList) {
+    for (auto &elem : proc->calleeList) {
         out.writeStartElement("callee");
-        out.writeAttribute("proc",QString::number(ADDRESS::host_ptr(elem).m_value));
+        out.writeAttribute("proc", QString::number(ADDRESS::host_ptr(elem).m_value));
         out.writeEndElement();
     }
 
@@ -2139,26 +2134,26 @@ void XMLProgParser::persistToXML(QXmlStreamWriter &out, UserProc *proc) {
 
 void XMLProgParser::persistToXML(QXmlStreamWriter &out, Proc *proc) {
     if (proc->isLib())
-        persistToXML(out, (LibProc*)proc);
+        persistToXML(out, (LibProc *)proc);
     else
-        persistToXML(out, (UserProc*)proc);
+        persistToXML(out, (UserProc *)proc);
 }
 
 void XMLProgParser::persistToXML(QXmlStreamWriter &out, Signature *sig) {
     out.writeStartElement("signature");
-    out.writeAttribute("id",QString::number(ADDRESS::host_ptr(sig).m_value));
-    out.writeAttribute("name", sig->name );
-    out.writeAttribute("ellipsis", QString::number((int)sig->ellipsis) );
-    out.writeAttribute("preferedName", sig->preferedName.c_str() );
+    out.writeAttribute("id", QString::number(ADDRESS::host_ptr(sig).m_value));
+    out.writeAttribute("name", sig->name);
+    out.writeAttribute("ellipsis", QString::number((int)sig->ellipsis));
+    out.writeAttribute("preferedName", sig->preferedName.c_str());
     if (sig->getPlatform() != PLAT_GENERIC)
-        out.writeAttribute("platform", sig->platformName(sig->getPlatform()) );
+        out.writeAttribute("platform", sig->platformName(sig->getPlatform()));
     if (sig->getConvention() != CONV_NONE)
-        out.writeAttribute("convention", sig->conventionName(sig->getConvention()) );
+        out.writeAttribute("convention", sig->conventionName(sig->getConvention()));
 
-    for (auto & elem : sig->params) {
+    for (auto &elem : sig->params) {
         out.writeStartElement("param");
-        out.writeAttribute("id",QString::number(ADDRESS::host_ptr(elem).m_value));
-        out.writeAttribute("name", elem->name() );
+        out.writeAttribute("id", QString::number(ADDRESS::host_ptr(elem).m_value));
+        out.writeAttribute("name", elem->name());
         out.writeStartElement("type");
         persistToXML(out, elem->getType());
         out.writeEndElement();
@@ -2167,7 +2162,7 @@ void XMLProgParser::persistToXML(QXmlStreamWriter &out, Signature *sig) {
         out.writeEndElement();
         out.writeEndElement();
     }
-    for (auto & elem : sig->returns) {
+    for (auto &elem : sig->returns) {
         out.writeStartElement("return");
         out.writeStartElement("type");
         persistToXML(out, (elem)->type);
@@ -2187,107 +2182,106 @@ void XMLProgParser::persistToXML(QXmlStreamWriter &out, Signature *sig) {
         persistToXML(out, sig->preferedReturn);
         out.writeEndElement();
     }
-    for (auto & elem : sig->preferedParams){
+    for (auto &elem : sig->preferedParams) {
         out.writeStartElement("prefparam");
-        out.writeAttribute("index",QString::number(elem));
+        out.writeAttribute("index", QString::number(elem));
         out.writeEndElement();
     }
     out.writeEndElement();
 }
 
-
 void XMLProgParser::persistToXML(QXmlStreamWriter &out, const Type *ty) {
-    const VoidType *v = dynamic_cast<const VoidType*>(ty);
+    const VoidType *v = dynamic_cast<const VoidType *>(ty);
     if (v) {
         out.writeStartElement("voidtype");
-        out.writeAttribute("index",QString::number(ADDRESS::host_ptr(ty).m_value));
+        out.writeAttribute("index", QString::number(ADDRESS::host_ptr(ty).m_value));
         out.writeEndElement();
         return;
     }
-    const FuncType *f = dynamic_cast<const FuncType*>(ty);
+    const FuncType *f = dynamic_cast<const FuncType *>(ty);
     if (f) {
         out.writeStartElement("functype");
-        out.writeAttribute("id",QString::number(ADDRESS::host_ptr(ty).m_value));
+        out.writeAttribute("id", QString::number(ADDRESS::host_ptr(ty).m_value));
         persistToXML(out, f->signature);
         out.writeEndElement();
         return;
     }
-    const IntegerType *i = dynamic_cast<const IntegerType*>(ty);
+    const IntegerType *i = dynamic_cast<const IntegerType *>(ty);
     if (i) {
         out.writeStartElement("integertype");
-        out.writeAttribute("id",QString::number(ADDRESS::host_ptr(ty).m_value));
-        out.writeAttribute("size",QString::number(i->size));
-        out.writeAttribute("signedness",QString::number(i->signedness));
+        out.writeAttribute("id", QString::number(ADDRESS::host_ptr(ty).m_value));
+        out.writeAttribute("size", QString::number(i->size));
+        out.writeAttribute("signedness", QString::number(i->signedness));
         out.writeEndElement();
         return;
     }
-    const FloatType *fl = dynamic_cast<const FloatType*>(ty);
+    const FloatType *fl = dynamic_cast<const FloatType *>(ty);
     if (fl) {
         out.writeStartElement("floattype");
-        out.writeAttribute("id",QString::number(ADDRESS::host_ptr(ty).m_value));
-        out.writeAttribute("size",QString::number(fl->size));
+        out.writeAttribute("id", QString::number(ADDRESS::host_ptr(ty).m_value));
+        out.writeAttribute("size", QString::number(fl->size));
         out.writeEndElement();
         return;
     }
-    const BooleanType *b = dynamic_cast<const BooleanType*>(ty);
+    const BooleanType *b = dynamic_cast<const BooleanType *>(ty);
     if (b) {
         out.writeStartElement("booleantype");
-        out.writeAttribute("id",QString::number(ADDRESS::host_ptr(ty).m_value));
+        out.writeAttribute("id", QString::number(ADDRESS::host_ptr(ty).m_value));
         out.writeEndElement();
         return;
     }
-    const CharType *c = dynamic_cast<const CharType*>(ty);
+    const CharType *c = dynamic_cast<const CharType *>(ty);
     if (c) {
         out.writeStartElement("chartype");
-        out.writeAttribute("id",QString::number(ADDRESS::host_ptr(ty).m_value));
+        out.writeAttribute("id", QString::number(ADDRESS::host_ptr(ty).m_value));
         out.writeEndElement();
         return;
     }
-    const PointerType *p = dynamic_cast<const PointerType*>(ty);
+    const PointerType *p = dynamic_cast<const PointerType *>(ty);
     if (p) {
         out.writeStartElement("pointertype");
-        out.writeAttribute("id",QString::number(ADDRESS::host_ptr(ty).m_value));
+        out.writeAttribute("id", QString::number(ADDRESS::host_ptr(ty).m_value));
         persistToXML(out, p->points_to);
         out.writeEndElement();
         return;
     }
-    const ArrayType *a = dynamic_cast<const ArrayType*>(ty);
+    const ArrayType *a = dynamic_cast<const ArrayType *>(ty);
     if (a) {
         out.writeStartElement("arraytype");
-        out.writeAttribute("id",QString::number(ADDRESS::host_ptr(ty).m_value));
-        out.writeAttribute("length", QString::number((int)a->length) );
+        out.writeAttribute("id", QString::number(ADDRESS::host_ptr(ty).m_value));
+        out.writeAttribute("length", QString::number((int)a->length));
         out.writeStartElement("basetype");
         persistToXML(out, a->base_type);
         out.writeEndElement();
         out.writeEndElement();
         return;
     }
-    const NamedType *n = dynamic_cast<const NamedType*>(ty);
+    const NamedType *n = dynamic_cast<const NamedType *>(ty);
     if (n) {
         out.writeStartElement("namedtype");
-        out.writeAttribute("id",QString::number(ADDRESS::host_ptr(ty).m_value));
-        out.writeAttribute("name",n->name.c_str());
+        out.writeAttribute("id", QString::number(ADDRESS::host_ptr(ty).m_value));
+        out.writeAttribute("name", n->name.c_str());
         out.writeEndElement();
         return;
     }
-    const CompoundType *co = dynamic_cast<const CompoundType*>(ty);
+    const CompoundType *co = dynamic_cast<const CompoundType *>(ty);
     if (co) {
         out.writeStartElement("compoundtype");
-        out.writeAttribute("id",QString::number(ADDRESS::host_ptr(ty).m_value));
+        out.writeAttribute("id", QString::number(ADDRESS::host_ptr(ty).m_value));
         for (unsigned i = 0; i < co->names.size(); i++) {
             out.writeStartElement("member");
-            out.writeAttribute("name", co->names[i].c_str() );
+            out.writeAttribute("name", co->names[i].c_str());
             persistToXML(out, co->types[i]);
             out.writeEndElement();
         }
         out.writeEndElement();
         return;
     }
-    const SizeType *sz = dynamic_cast<const SizeType*>(ty);
+    const SizeType *sz = dynamic_cast<const SizeType *>(ty);
     if (sz) {
         out.writeStartElement("sizetype");
-        out.writeAttribute("id",QString::number(ADDRESS::host_ptr(ty).m_value));
-        out.writeAttribute("size",QString::number(sz->getSize()));
+        out.writeAttribute("id", QString::number(ADDRESS::host_ptr(ty).m_value));
+        out.writeAttribute("size", QString::number(sz->getSize()));
         out.writeEndElement();
         return;
     }
@@ -2296,40 +2290,40 @@ void XMLProgParser::persistToXML(QXmlStreamWriter &out, const Type *ty) {
 }
 
 void XMLProgParser::persistToXML(QXmlStreamWriter &out, const Exp *e) {
-    const TypeVal *t = dynamic_cast<const TypeVal*>(e);
-    const char *op_name=e->getOperName();
+    const TypeVal *t = dynamic_cast<const TypeVal *>(e);
+    const char *op_name = e->getOperName();
     if (t) {
         out.writeStartElement("typeval");
-        out.writeAttribute("id",QString::number(ADDRESS::host_ptr(e).m_value));
-        out.writeAttribute("op", op_name );
+        out.writeAttribute("id", QString::number(ADDRESS::host_ptr(e).m_value));
+        out.writeAttribute("op", op_name);
         out.writeStartElement("type");
         persistToXML(out, t->val);
         out.writeEndElement();
         out.writeEndElement();
         return;
     }
-    const Terminal *te = dynamic_cast<const Terminal*>(e);
+    const Terminal *te = dynamic_cast<const Terminal *>(e);
     if (te) {
         out.writeStartElement("terminal");
-        out.writeAttribute("id",QString::number(ADDRESS::host_ptr(e).m_value));
-        out.writeAttribute("op",op_name);
+        out.writeAttribute("id", QString::number(ADDRESS::host_ptr(e).m_value));
+        out.writeAttribute("op", op_name);
         out.writeEndElement();
         return;
     }
-    const Const *c = dynamic_cast<const Const*>(e);
+    const Const *c = dynamic_cast<const Const *>(e);
     if (c) {
         out.writeStartElement("const");
-        out.writeAttribute("id",QString::number(ADDRESS::host_ptr(e).m_value));
-        out.writeAttribute("op",op_name);
-        out.writeAttribute("conscript", QString::number(c->conscript) );
+        out.writeAttribute("id", QString::number(ADDRESS::host_ptr(e).m_value));
+        out.writeAttribute("op", op_name);
+        out.writeAttribute("conscript", QString::number(c->conscript));
         if (c->op == opIntConst)
-            out.writeAttribute("value", QString::number(c->u.i) );
+            out.writeAttribute("value", QString::number(c->u.i));
         else if (c->op == opFuncConst)
-            out.writeAttribute("value", QString::number(c->u.a.m_value) );
+            out.writeAttribute("value", QString::number(c->u.a.m_value));
         else if (c->op == opFltConst)
-            out.writeAttribute("value", QString::number(c->u.d) );
+            out.writeAttribute("value", QString::number(c->u.d));
         else if (c->op == opStrConst)
-            out.writeAttribute("value", c->u.p );
+            out.writeAttribute("value", c->u.p);
         else {
             // TODO
             // QWord ll;
@@ -2339,50 +2333,50 @@ void XMLProgParser::persistToXML(QXmlStreamWriter &out, const Exp *e) {
         out.writeEndElement();
         return;
     }
-    const Location *l = dynamic_cast<const Location*>(e);
+    const Location *l = dynamic_cast<const Location *>(e);
     if (l) {
         out.writeStartElement("location");
-        out.writeAttribute("id",QString::number(ADDRESS::host_ptr(e).m_value));
+        out.writeAttribute("id", QString::number(ADDRESS::host_ptr(e).m_value));
         if (l->proc)
-            out.writeAttribute("proc",QString::number(ADDRESS::host_ptr(l->proc).m_value));
-        out.writeAttribute("op", op_name );
+            out.writeAttribute("proc", QString::number(ADDRESS::host_ptr(l->proc).m_value));
+        out.writeAttribute("op", op_name);
         out.writeStartElement("subexp1");
         persistToXML(out, l->subExp1);
         out.writeEndElement();
         out.writeEndElement();
         return;
     }
-    const RefExp *r = dynamic_cast<const RefExp*>(e);
+    const RefExp *r = dynamic_cast<const RefExp *>(e);
     if (r) {
         out.writeStartElement("refexp");
-        out.writeAttribute("id",QString::number(ADDRESS::host_ptr(e).m_value));
+        out.writeAttribute("id", QString::number(ADDRESS::host_ptr(e).m_value));
         if (r->def)
-            out.writeAttribute("def",QString::number(ADDRESS::host_ptr(r->def).m_value));
-        out.writeAttribute("op", op_name );
+            out.writeAttribute("def", QString::number(ADDRESS::host_ptr(r->def).m_value));
+        out.writeAttribute("op", op_name);
         out.writeStartElement("subexp1");
         persistToXML(out, r->subExp1);
         out.writeEndElement();
         out.writeEndElement();
         return;
     }
-    const FlagDef *f = dynamic_cast<const FlagDef*>(e);
+    const FlagDef *f = dynamic_cast<const FlagDef *>(e);
     if (f) {
         out.writeStartElement("flagdef");
-        out.writeAttribute("id",QString::number(ADDRESS::host_ptr(e).m_value));
+        out.writeAttribute("id", QString::number(ADDRESS::host_ptr(e).m_value));
         if (f->rtl)
-            out.writeAttribute("rtl",QString::number(ADDRESS::host_ptr(f->rtl).m_value));
-        out.writeAttribute("op", op_name );
+            out.writeAttribute("rtl", QString::number(ADDRESS::host_ptr(f->rtl).m_value));
+        out.writeAttribute("op", op_name);
         out.writeStartElement("subexp1");
         persistToXML(out, f->subExp1);
         out.writeEndElement();
         out.writeEndElement();
         return;
     }
-    const TypedExp *ty = dynamic_cast<const TypedExp*>(e);
+    const TypedExp *ty = dynamic_cast<const TypedExp *>(e);
     if (ty) {
         out.writeStartElement("typedexp");
-        out.writeAttribute("id",QString::number(ADDRESS::host_ptr(e).m_value));
-        out.writeAttribute("op", op_name );
+        out.writeAttribute("id", QString::number(ADDRESS::host_ptr(e).m_value));
+        out.writeAttribute("op", op_name);
         out.writeStartElement("subexp1");
         persistToXML(out, ty->subExp1);
         out.writeEndElement();
@@ -2392,11 +2386,11 @@ void XMLProgParser::persistToXML(QXmlStreamWriter &out, const Exp *e) {
         out.writeEndElement();
         return;
     }
-    const Ternary *tn = dynamic_cast<const Ternary*>(e);
+    const Ternary *tn = dynamic_cast<const Ternary *>(e);
     if (tn) {
         out.writeStartElement("ternary");
-        out.writeAttribute("id",QString::number(ADDRESS::host_ptr(e).m_value));
-        out.writeAttribute("op", op_name );
+        out.writeAttribute("id", QString::number(ADDRESS::host_ptr(e).m_value));
+        out.writeAttribute("op", op_name);
         out.writeStartElement("subexp1");
         persistToXML(out, tn->subExp1);
         out.writeEndElement();
@@ -2409,11 +2403,11 @@ void XMLProgParser::persistToXML(QXmlStreamWriter &out, const Exp *e) {
         out.writeEndElement();
         return;
     }
-    const Binary *b = dynamic_cast<const Binary*>(e);
+    const Binary *b = dynamic_cast<const Binary *>(e);
     if (b) {
         out.writeStartElement("binary");
-        out.writeAttribute("id",QString::number(ADDRESS::host_ptr(e).m_value));
-        out.writeAttribute("op", op_name );
+        out.writeAttribute("id", QString::number(ADDRESS::host_ptr(e).m_value));
+        out.writeAttribute("op", op_name);
         out.writeStartElement("subexp1");
         persistToXML(out, b->subExp1);
         out.writeEndElement();
@@ -2423,11 +2417,11 @@ void XMLProgParser::persistToXML(QXmlStreamWriter &out, const Exp *e) {
         out.writeEndElement();
         return;
     }
-    const Unary *u = dynamic_cast<const Unary*>(e);
+    const Unary *u = dynamic_cast<const Unary *>(e);
     if (u) {
         out.writeStartElement("unary");
-        out.writeAttribute("id",QString::number(ADDRESS::host_ptr(e).m_value));
-        out.writeAttribute("op", op_name );
+        out.writeAttribute("id", QString::number(ADDRESS::host_ptr(e).m_value));
+        out.writeAttribute("op", op_name);
         out.writeStartElement("subexp1");
         persistToXML(out, u->subExp1);
         out.writeEndElement();
@@ -2440,24 +2434,24 @@ void XMLProgParser::persistToXML(QXmlStreamWriter &out, const Exp *e) {
 
 void XMLProgParser::persistToXML(QXmlStreamWriter &out, Cfg *cfg) {
     out.writeStartElement("cfg");
-    out.writeAttribute("id",QString::number(ADDRESS::host_ptr(cfg).m_value));
-    out.writeAttribute("wellformed",QString::number(cfg->m_bWellFormed));
-    out.writeAttribute("lastLabel",QString::number(cfg->lastLabel));
-    out.writeAttribute("entryBB",QString::number(ADDRESS::host_ptr(cfg->entryBB).m_value));
-    out.writeAttribute("exitBB",QString::number(ADDRESS::host_ptr(cfg->exitBB).m_value));
+    out.writeAttribute("id", QString::number(ADDRESS::host_ptr(cfg).m_value));
+    out.writeAttribute("wellformed", QString::number(cfg->m_bWellFormed));
+    out.writeAttribute("lastLabel", QString::number(cfg->lastLabel));
+    out.writeAttribute("entryBB", QString::number(ADDRESS::host_ptr(cfg->entryBB).m_value));
+    out.writeAttribute("exitBB", QString::number(ADDRESS::host_ptr(cfg->exitBB).m_value));
 
-    for (auto & elem : cfg->m_listBB)
+    for (auto &elem : cfg->m_listBB)
         persistToXML(out, elem);
 
-    for (auto & elem : cfg->Ordering) {
+    for (auto &elem : cfg->Ordering) {
         out.writeStartElement("order");
-        out.writeAttribute("bb",QString::number(ADDRESS::host_ptr(elem).m_value));
+        out.writeAttribute("bb", QString::number(ADDRESS::host_ptr(elem).m_value));
         out.writeEndElement();
     }
 
-    for (auto & elem : cfg->revOrdering) {
+    for (auto &elem : cfg->revOrdering) {
         out.writeStartElement("revorder");
-        out.writeAttribute("bb",QString::number(ADDRESS::host_ptr(elem).m_value));
+        out.writeAttribute("bb", QString::number(ADDRESS::host_ptr(elem).m_value));
         out.writeEndElement();
     }
 
@@ -2472,71 +2466,70 @@ void XMLProgParser::persistToXML(QXmlStreamWriter &out, Cfg *cfg) {
 
 void XMLProgParser::persistToXML(QXmlStreamWriter &out, const BasicBlock *bb) {
     out.writeStartElement("order");
-    out.writeAttribute("id",QString::number(ADDRESS::host_ptr(bb).m_value));
-    out.writeAttribute("nodeType",QString::number(bb->m_nodeType));
-    out.writeAttribute("labelNum",QString::number(bb->m_iLabelNum));
-    out.writeAttribute("label",bb->m_labelStr.c_str());
-    out.writeAttribute("labelneeded",QString::number(bb->m_labelneeded));
-    out.writeAttribute("incomplete",QString::number(bb->m_bIncomplete));
-    out.writeAttribute("jumpreqd",QString::number(bb->m_bJumpReqd));
-    out.writeAttribute("m_traversed",QString::number(bb->m_iTraversed));
-    out.writeAttribute("jumpreqd",QString::number(bb->m_bJumpReqd));
-    out.writeAttribute("DFTfirst",QString::number(bb->m_DFTfirst));
-    out.writeAttribute("DFTlast",QString::number(bb->m_DFTlast));
-    out.writeAttribute("DFTrevfirst",QString::number(bb->m_DFTrevfirst));
-    out.writeAttribute("DFTrevlast",QString::number(bb->m_DFTrevlast));
-    out.writeAttribute("structType",QString::number(bb->m_structType));
-    out.writeAttribute("loopCondType",QString::number(bb->m_loopCondType));
+    out.writeAttribute("id", QString::number(ADDRESS::host_ptr(bb).m_value));
+    out.writeAttribute("nodeType", QString::number(bb->m_nodeType));
+    out.writeAttribute("labelNum", QString::number(bb->m_iLabelNum));
+    out.writeAttribute("label", bb->m_labelStr.c_str());
+    out.writeAttribute("labelneeded", QString::number(bb->m_labelneeded));
+    out.writeAttribute("incomplete", QString::number(bb->m_bIncomplete));
+    out.writeAttribute("jumpreqd", QString::number(bb->m_bJumpReqd));
+    out.writeAttribute("m_traversed", QString::number(bb->m_iTraversed));
+    out.writeAttribute("jumpreqd", QString::number(bb->m_bJumpReqd));
+    out.writeAttribute("DFTfirst", QString::number(bb->m_DFTfirst));
+    out.writeAttribute("DFTlast", QString::number(bb->m_DFTlast));
+    out.writeAttribute("DFTrevfirst", QString::number(bb->m_DFTrevfirst));
+    out.writeAttribute("DFTrevlast", QString::number(bb->m_DFTrevlast));
+    out.writeAttribute("structType", QString::number(bb->m_structType));
+    out.writeAttribute("loopCondType", QString::number(bb->m_loopCondType));
     if (bb->m_loopHead)
-        out.writeAttribute("m_loopHead",QString::number(ADDRESS::host_ptr(bb->m_loopHead).m_value));
+        out.writeAttribute("m_loopHead", QString::number(ADDRESS::host_ptr(bb->m_loopHead).m_value));
     if (bb->m_caseHead)
-        out.writeAttribute("m_caseHead",QString::number(ADDRESS::host_ptr(bb->m_caseHead).m_value));
+        out.writeAttribute("m_caseHead", QString::number(ADDRESS::host_ptr(bb->m_caseHead).m_value));
     if (bb->m_condFollow)
-        out.writeAttribute("m_condFollow",QString::number(ADDRESS::host_ptr(bb->m_condFollow).m_value));
+        out.writeAttribute("m_condFollow", QString::number(ADDRESS::host_ptr(bb->m_condFollow).m_value));
     if (bb->m_loopFollow)
-        out.writeAttribute("m_loopFollow",QString::number(ADDRESS::host_ptr(bb->m_loopFollow).m_value));
+        out.writeAttribute("m_loopFollow", QString::number(ADDRESS::host_ptr(bb->m_loopFollow).m_value));
     if (bb->m_latchNode)
-        out.writeAttribute("m_latchNode",QString::number(ADDRESS::host_ptr(bb->m_latchNode).m_value));
-    out.writeAttribute("ord", QString::number(bb->ord) );
-    out.writeAttribute("revOrd", QString::number(bb->revOrd) );
-    out.writeAttribute("inEdgesVisited", QString::number(bb->inEdgesVisited) );
-    out.writeAttribute("numForwardInEdges", QString::number(bb->numForwardInEdges ));
-    out.writeAttribute("loopStamp1", QString::number(bb->loopStamps[0] ));
-    out.writeAttribute("loopStamp2", QString::number(bb->loopStamps[1] ));
-    out.writeAttribute("revLoopStamp1", QString::number(bb->revLoopStamps[0] ));
-    out.writeAttribute("revLoopStamp2", QString::number(bb->revLoopStamps[1] ));
-    out.writeAttribute("traversed", QString::number((int)bb->traversed ));
-    out.writeAttribute("hllLabel", QString::number((int)bb->hllLabel ));
+        out.writeAttribute("m_latchNode", QString::number(ADDRESS::host_ptr(bb->m_latchNode).m_value));
+    out.writeAttribute("ord", QString::number(bb->ord));
+    out.writeAttribute("revOrd", QString::number(bb->revOrd));
+    out.writeAttribute("inEdgesVisited", QString::number(bb->inEdgesVisited));
+    out.writeAttribute("numForwardInEdges", QString::number(bb->numForwardInEdges));
+    out.writeAttribute("loopStamp1", QString::number(bb->loopStamps[0]));
+    out.writeAttribute("loopStamp2", QString::number(bb->loopStamps[1]));
+    out.writeAttribute("revLoopStamp1", QString::number(bb->revLoopStamps[0]));
+    out.writeAttribute("revLoopStamp2", QString::number(bb->revLoopStamps[1]));
+    out.writeAttribute("traversed", QString::number((int)bb->traversed));
+    out.writeAttribute("hllLabel", QString::number((int)bb->hllLabel));
     if (!bb->labelStr.isEmpty())
-        out.writeAttribute("labelStr", bb->labelStr );
-    out.writeAttribute("indentLevel", QString::number(bb->indentLevel) );
+        out.writeAttribute("labelStr", bb->labelStr);
+    out.writeAttribute("indentLevel", QString::number(bb->indentLevel));
     // note the rediculous duplication here
     if (bb->immPDom)
-        out.writeAttribute("immPDom",QString::number(ADDRESS::host_ptr(bb->immPDom).m_value));
+        out.writeAttribute("immPDom", QString::number(ADDRESS::host_ptr(bb->immPDom).m_value));
     if (bb->loopHead)
-        out.writeAttribute("loopHead",QString::number(ADDRESS::host_ptr(bb->loopHead).m_value));
+        out.writeAttribute("loopHead", QString::number(ADDRESS::host_ptr(bb->loopHead).m_value));
     if (bb->caseHead)
-        out.writeAttribute("caseHead",QString::number(ADDRESS::host_ptr(bb->caseHead).m_value));
+        out.writeAttribute("caseHead", QString::number(ADDRESS::host_ptr(bb->caseHead).m_value));
     if (bb->condFollow)
-        out.writeAttribute("condFollow",QString::number(ADDRESS::host_ptr(bb->condFollow).m_value));
+        out.writeAttribute("condFollow", QString::number(ADDRESS::host_ptr(bb->condFollow).m_value));
     if (bb->loopFollow)
-        out.writeAttribute("loopFollow",QString::number(ADDRESS::host_ptr(bb->loopFollow).m_value));
+        out.writeAttribute("loopFollow", QString::number(ADDRESS::host_ptr(bb->loopFollow).m_value));
     if (bb->latchNode)
-        out.writeAttribute("latchNode",QString::number(ADDRESS::host_ptr(bb->latchNode).m_value));
-    out.writeAttribute("sType", QString::number((int)bb->sType) );
-    out.writeAttribute("usType", QString::number((int)bb->usType) );
-    out.writeAttribute("lType", QString::number((int)bb->lType) );
-    out.writeAttribute("cType", QString::number((int)bb->cType) );
+        out.writeAttribute("latchNode", QString::number(ADDRESS::host_ptr(bb->latchNode).m_value));
+    out.writeAttribute("sType", QString::number((int)bb->sType));
+    out.writeAttribute("usType", QString::number((int)bb->usType));
+    out.writeAttribute("lType", QString::number((int)bb->lType));
+    out.writeAttribute("cType", QString::number((int)bb->cType));
 
-
-    for (auto & elem : bb->m_InEdges) {
+    for (auto &elem : bb->m_InEdges) {
         out.writeStartElement("inedge");
-        out.writeAttribute("bb",QString::number(ADDRESS::host_ptr(elem).m_value));
+        out.writeAttribute("bb", QString::number(ADDRESS::host_ptr(elem).m_value));
         out.writeEndElement();
     }
-    for (auto & elem : bb->m_OutEdges) {
+    for (auto &elem : bb->m_OutEdges) {
         out.writeStartElement("outedge");
-        out.writeAttribute("bb",QString::number(ADDRESS::host_ptr(elem).m_value));
+        out.writeAttribute("bb", QString::number(ADDRESS::host_ptr(elem).m_value));
         out.writeEndElement();
     }
 
@@ -2548,7 +2541,7 @@ void XMLProgParser::persistToXML(QXmlStreamWriter &out, const BasicBlock *bb) {
     }
 
     if (bb->m_pRtls) {
-        for (auto & elem : *bb->m_pRtls)
+        for (auto &elem : *bb->m_pRtls)
             persistToXML(out, elem);
     }
     out.writeEndElement();
@@ -2556,9 +2549,9 @@ void XMLProgParser::persistToXML(QXmlStreamWriter &out, const BasicBlock *bb) {
 
 void XMLProgParser::persistToXML(QXmlStreamWriter &out, const RTL *rtl) {
     out.writeStartElement("rtl");
-    out.writeAttribute("id",QString::number(ADDRESS::host_ptr(rtl).m_value));
-    out.writeAttribute("addr",QString::number(rtl->nativeAddr.m_value));
-    for (auto const & elem : *rtl) {
+    out.writeAttribute("id", QString::number(ADDRESS::host_ptr(rtl).m_value));
+    out.writeAttribute("addr", QString::number(rtl->nativeAddr.m_value));
+    for (auto const &elem : *rtl) {
         out.writeStartElement("stmt");
         persistToXML(out, elem);
         out.writeEndElement();
@@ -2567,19 +2560,19 @@ void XMLProgParser::persistToXML(QXmlStreamWriter &out, const RTL *rtl) {
 }
 
 void XMLProgParser::persistToXML(QXmlStreamWriter &out, const Statement *stmt) {
-    const BoolAssign *b = dynamic_cast<const BoolAssign*>(stmt);
+    const BoolAssign *b = dynamic_cast<const BoolAssign *>(stmt);
     if (b) {
         out.writeStartElement("boolasgn");
-        out.writeAttribute("id",QString::number(ADDRESS::host_ptr(stmt).m_value));
-        out.writeAttribute("number",QString::number(b->number));
+        out.writeAttribute("id", QString::number(ADDRESS::host_ptr(stmt).m_value));
+        out.writeAttribute("number", QString::number(b->number));
         //        if (b->parent)
         //            out.writeAttribute("parent",QString::number(ADDRESS::host_ptr(b->parent).m_value));
         if (b->proc)
-            out.writeAttribute("proc",QString::number(ADDRESS::host_ptr(b->proc).m_value));
+            out.writeAttribute("proc", QString::number(ADDRESS::host_ptr(b->proc).m_value));
 
-        out.writeAttribute("jtcond", QString::number(b->jtCond) );
-        out.writeAttribute("float", QString::number((int)b->bFloat) );
-        out.writeAttribute("size", QString::number(b->size) );
+        out.writeAttribute("jtcond", QString::number(b->jtCond));
+        out.writeAttribute("float", QString::number((int)b->bFloat));
+        out.writeAttribute("size", QString::number(b->size));
 
         if (b->pCond) {
             out.writeStartElement("cond");
@@ -2589,23 +2582,23 @@ void XMLProgParser::persistToXML(QXmlStreamWriter &out, const Statement *stmt) {
         out.writeEndElement();
         return;
     }
-    const ReturnStatement *r = dynamic_cast<const ReturnStatement*>(stmt);
+    const ReturnStatement *r = dynamic_cast<const ReturnStatement *>(stmt);
     if (r) {
         out.writeStartElement("returnstmt");
-        out.writeAttribute("id",QString::number(ADDRESS::host_ptr(stmt).m_value));
-        out.writeAttribute("number", QString::number(r->number) );
+        out.writeAttribute("id", QString::number(ADDRESS::host_ptr(stmt).m_value));
+        out.writeAttribute("number", QString::number(r->number));
         //        if (r->parent)
         //            out.writeAttribute("parent",QString::number(ADDRESS::host_ptr(r->parent).m_value));
         if (r->proc)
-            out.writeAttribute("proc",QString::number(ADDRESS::host_ptr(r->proc).m_value));
-        out.writeAttribute("retAddr", QString::number(r->retAddr.m_value) );
+            out.writeAttribute("proc", QString::number(ADDRESS::host_ptr(r->proc).m_value));
+        out.writeAttribute("retAddr", QString::number(r->retAddr.m_value));
 
-        for (auto const & elem : r->modifieds) {
+        for (auto const &elem : r->modifieds) {
             out.writeStartElement("modifieds");
             persistToXML(out, elem);
             out.writeEndElement();
         }
-        for (auto const & elem : r->returns) {
+        for (auto const &elem : r->returns) {
             out.writeStartElement("returns");
             persistToXML(out, elem);
             out.writeEndElement();
@@ -2614,33 +2607,33 @@ void XMLProgParser::persistToXML(QXmlStreamWriter &out, const Statement *stmt) {
         out.writeEndElement();
         return;
     }
-    const CallStatement *c = dynamic_cast<const CallStatement*>(stmt);
+    const CallStatement *c = dynamic_cast<const CallStatement *>(stmt);
     if (c) {
         out.writeStartElement("callstmt");
-        out.writeAttribute("id",QString::number(ADDRESS::host_ptr(stmt).m_value));
-        out.writeAttribute("number",QString::number(c->number));
-        out.writeAttribute("computed",QString::number(c->m_isComputed));
+        out.writeAttribute("id", QString::number(ADDRESS::host_ptr(stmt).m_value));
+        out.writeAttribute("number", QString::number(c->number));
+        out.writeAttribute("computed", QString::number(c->m_isComputed));
         //        if (c->parent)
         //            out.writeAttribute("parent",QString::number(ADDRESS::host_ptr(c->parent).m_value));
         if (c->proc)
-            out.writeAttribute("proc",QString::number(ADDRESS::host_ptr(c->proc).m_value));
-        out.writeAttribute("returnAfterCall", QString::number((int)c->returnAfterCall) );
+            out.writeAttribute("proc", QString::number(ADDRESS::host_ptr(c->proc).m_value));
+        out.writeAttribute("returnAfterCall", QString::number((int)c->returnAfterCall));
 
         if (c->pDest) {
             out.writeStartElement("dest");
             if (c->procDest)
-                out.writeAttribute("proc",QString::number(ADDRESS::host_ptr(c->procDest).m_value));
+                out.writeAttribute("proc", QString::number(ADDRESS::host_ptr(c->procDest).m_value));
             persistToXML(out, c->pDest);
             out.writeEndElement();
         }
 
-        for (auto const & elem : c->arguments) {
+        for (auto const &elem : c->arguments) {
             out.writeStartElement("argument");
             persistToXML(out, elem);
             out.writeEndElement();
         }
 
-        for (auto const & elem : c->defines) {
+        for (auto const &elem : c->defines) {
             out.writeStartElement("defines");
             persistToXML(out, elem);
             out.writeEndElement();
@@ -2649,17 +2642,17 @@ void XMLProgParser::persistToXML(QXmlStreamWriter &out, const Statement *stmt) {
         out.writeEndElement();
         return;
     }
-    const CaseStatement *ca = dynamic_cast<const CaseStatement*>(stmt);
+    const CaseStatement *ca = dynamic_cast<const CaseStatement *>(stmt);
     if (ca) {
         out.writeStartElement("casestmt");
-        out.writeAttribute("id",QString::number(ADDRESS::host_ptr(stmt).m_value));
-        out.writeAttribute("number",QString::number(ca->number));
-        out.writeAttribute("computed",QString::number(ca->m_isComputed));
+        out.writeAttribute("id", QString::number(ADDRESS::host_ptr(stmt).m_value));
+        out.writeAttribute("number", QString::number(ca->number));
+        out.writeAttribute("computed", QString::number(ca->m_isComputed));
 
         //        if (ca->parent)
         //            out.writeAttribute("parent",QString::number(ADDRESS::host_ptr(ca->parent).m_value));
         if (ca->proc)
-            out.writeAttribute("proc",QString::number(ADDRESS::host_ptr(ca->proc).m_value));
+            out.writeAttribute("proc", QString::number(ADDRESS::host_ptr(ca->proc).m_value));
 
         if (ca->pDest) {
             out.writeStartElement("dest");
@@ -2671,18 +2664,18 @@ void XMLProgParser::persistToXML(QXmlStreamWriter &out, const Statement *stmt) {
         out.writeEndElement();
         return;
     }
-    const BranchStatement *br = dynamic_cast<const BranchStatement*>(stmt);
+    const BranchStatement *br = dynamic_cast<const BranchStatement *>(stmt);
     if (br) {
         out.writeStartElement("branchstmt");
-        out.writeAttribute("id",QString::number(ADDRESS::host_ptr(stmt).m_value));
-        out.writeAttribute("number",QString::number(br->number));
-        out.writeAttribute("computed",QString::number(br->m_isComputed));
-        out.writeAttribute("jtcond",QString::number(br->jtCond));
-        out.writeAttribute("float",QString::number(br->bFloat));
+        out.writeAttribute("id", QString::number(ADDRESS::host_ptr(stmt).m_value));
+        out.writeAttribute("number", QString::number(br->number));
+        out.writeAttribute("computed", QString::number(br->m_isComputed));
+        out.writeAttribute("jtcond", QString::number(br->jtCond));
+        out.writeAttribute("float", QString::number(br->bFloat));
         //        if (br->parent)
         //            out.writeAttribute("parent",QString::number(ADDRESS::host_ptr(br->parent).m_value));
         if (br->proc)
-            out.writeAttribute("proc",QString::number(ADDRESS::host_ptr(br->proc).m_value));
+            out.writeAttribute("proc", QString::number(ADDRESS::host_ptr(br->proc).m_value));
 
         if (br->pDest) {
             out.writeStartElement("dest");
@@ -2697,16 +2690,16 @@ void XMLProgParser::persistToXML(QXmlStreamWriter &out, const Statement *stmt) {
         out.writeEndElement();
         return;
     }
-    const GotoStatement *g = dynamic_cast<const GotoStatement*>(stmt);
+    const GotoStatement *g = dynamic_cast<const GotoStatement *>(stmt);
     if (g) {
         out.writeStartElement("gotostmt");
-        out.writeAttribute("id",QString::number(ADDRESS::host_ptr(stmt).m_value));
-        out.writeAttribute("number",QString::number(g->number));
-        out.writeAttribute("computed",QString::number(g->m_isComputed));
+        out.writeAttribute("id", QString::number(ADDRESS::host_ptr(stmt).m_value));
+        out.writeAttribute("number", QString::number(g->number));
+        out.writeAttribute("computed", QString::number(g->m_isComputed));
         //        if (g->parent)
         //            out.writeAttribute("parent",QString::number(ADDRESS::host_ptr(g->parent).m_value));
         if (g->proc)
-            out.writeAttribute("proc",QString::number(ADDRESS::host_ptr(g->proc).m_value));
+            out.writeAttribute("proc", QString::number(ADDRESS::host_ptr(g->proc).m_value));
         if (g->pDest) {
             out.writeStartElement("dest");
             persistToXML(out, g->pDest);
@@ -2715,37 +2708,37 @@ void XMLProgParser::persistToXML(QXmlStreamWriter &out, const Statement *stmt) {
         out.writeEndElement();
         return;
     }
-    const PhiAssign *p = dynamic_cast<const PhiAssign*>(stmt);
+    const PhiAssign *p = dynamic_cast<const PhiAssign *>(stmt);
     if (p) {
         out.writeStartElement("phiassign");
-        out.writeAttribute("id",QString::number(ADDRESS::host_ptr(stmt).m_value));
-        out.writeAttribute("number", QString::number(p->number) );
+        out.writeAttribute("id", QString::number(ADDRESS::host_ptr(stmt).m_value));
+        out.writeAttribute("number", QString::number(p->number));
         //        if (p->parent)
         //            out.writeAttribute("parent",QString::number(ADDRESS::host_ptr(p->parent).m_value));
         if (p->proc)
-            out.writeAttribute("proc",QString::number(ADDRESS::host_ptr(p->proc).m_value));
+            out.writeAttribute("proc", QString::number(ADDRESS::host_ptr(p->proc).m_value));
 
         out.writeStartElement("lhs");
         persistToXML(out, p->lhs);
         out.writeEndElement();
         for (auto it = p->cbegin(); it != p->cend(); p++) {
             out.writeStartElement("def");
-            out.writeAttribute("stmt",QString::number(ADDRESS::host_ptr(it->second.def()).m_value));
-            out.writeAttribute("exp",QString::number(ADDRESS::host_ptr(it->second.e).m_value));
+            out.writeAttribute("stmt", QString::number(ADDRESS::host_ptr(it->second.def()).m_value));
+            out.writeAttribute("exp", QString::number(ADDRESS::host_ptr(it->second.e).m_value));
             out.writeEndElement();
         }
         out.writeEndElement();
         return;
     }
-    const Assign *a = dynamic_cast<const Assign*>(stmt);
+    const Assign *a = dynamic_cast<const Assign *>(stmt);
     if (a) {
         out.writeStartElement("assign");
-        out.writeAttribute("id",QString::number(ADDRESS::host_ptr(stmt).m_value));
-        out.writeAttribute("number", QString::number(a->number) );
+        out.writeAttribute("id", QString::number(ADDRESS::host_ptr(stmt).m_value));
+        out.writeAttribute("number", QString::number(a->number));
         //        if (a->parent)
         //            out.writeAttribute("parent",QString::number(ADDRESS::host_ptr(a->parent).m_value));
         if (a->proc)
-            out.writeAttribute("proc",QString::number(ADDRESS::host_ptr(a->proc).m_value));
+            out.writeAttribute("proc", QString::number(ADDRESS::host_ptr(a->proc).m_value));
 
         out.writeStartElement("lhs");
         persistToXML(out, a->lhs);
@@ -2770,27 +2763,24 @@ void XMLProgParser::persistToXML(QXmlStreamWriter &out, const Statement *stmt) {
     assert(false);
 }
 
-void XMLProgParser::addToContext_assignment(Context *c, int /*e*/) {
-    c->stmt = stack.front()->stmt;
-}
+void XMLProgParser::addToContext_assignment(Context *c, int /*e*/) { c->stmt = stack.front()->stmt; }
 
 void XMLProgParser::addToContext_phiassign(Context *c, int e) {
     if (phase == 1) {
         return;
     }
-    PhiAssign *pa = dynamic_cast<PhiAssign*>(c->stmt);
+    PhiAssign *pa = dynamic_cast<PhiAssign *>(c->stmt);
     assert(pa);
-    switch(e) {
-        case e_lhs:
-            pa->setLeft(stack.front()->exp);
-            break;
-            // FIXME: More required
-        default:
-            if (e == e_unknown)
-                std::cerr << "unknown tag " << e << " in context assign\n";
-            else
-                std::cerr << "need to handle tag " << tags[e].tag << " in context assign\n";
-            break;
+    switch (e) {
+    case e_lhs:
+        pa->setLeft(stack.front()->exp);
+        break;
+    // FIXME: More required
+    default:
+        if (e == e_unknown)
+            std::cerr << "unknown tag " << e << " in context assign\n";
+        else
+            std::cerr << "need to handle tag " << tags[e].tag << " in context assign\n";
+        break;
     }
 }
-

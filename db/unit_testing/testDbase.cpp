@@ -1,7 +1,7 @@
-/***************************************************************************//**
- * \file       testDbase.cc
- * OVERVIEW:   Command line test of the Exp and related classes.
- *============================================================================*/
+/***************************************************************************/ /**
+  * \file       testDbase.cc
+  * OVERVIEW:   Command line test of the Exp and related classes.
+  *============================================================================*/
 /*
  * $Revision$
  *      Apr 02 - Mike: Created
@@ -10,7 +10,6 @@
  * 13 May 02 - Mike: Added RtlTest and ParserTest
  * 04 Jul 02 - Mike: Move UtilTest here as TypeTest
 */
-
 
 #include "cppunit/TextTestResult.h"
 #include "cppunit/TestSuite.h"
@@ -27,11 +26,10 @@
 #include <sstream>
 #include <iostream>
 
-int main(int argc, char** argv)
-{
+int main(int argc, char **argv) {
     CppUnit::TestSuite suite;
 
-    ExpTest     expt("ExpTest");
+    ExpTest expt("ExpTest");
     ProgTest progt("ProgTest");
     ProcTest proct("ProcTest");
     RtlTest rtlt("RtlTest");
@@ -47,7 +45,7 @@ int main(int argc, char** argv)
 
     CppUnit::TextTestResult res;
 
-    suite.run( &res );
+    suite.run(&res);
     std::cout << res << std::endl;
 
     return 0;

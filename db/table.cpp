@@ -8,17 +8,16 @@
  *
  */
 
-/***************************************************************************//**
- * \file       table.cpp
- * \brief   Provides the implementation of classes Table, OpTable, and
- *               ExprTable
- ******************************************************************************/
+/***************************************************************************/ /**
+  * \file       table.cpp
+  * \brief   Provides the implementation of classes Table, OpTable, and
+  *               ExprTable
+  ******************************************************************************/
 
 /*
  * 25 Feb 01 - Simon: sorted out dependancies
  * 01 May 02 - Mike: mods for boomerang
  */
-
 
 #include "table.h"
 #include "types.h"
@@ -27,26 +26,18 @@
 
 #include <cassert>
 
-Table::Table(TABLE_TYPE t) :
-    type(t)
-{}
+Table::Table(TABLE_TYPE t) : type(t) {}
 
-Table::Table(const std::deque<std::string>& recs, TABLE_TYPE t /* = NAMETABLE */) :
-    records(recs),type(t)
-{}
+Table::Table(const std::deque<std::string> &recs, TABLE_TYPE t /* = NAMETABLE */) : records(recs), type(t) {}
 
 TABLE_TYPE Table::getType() const { return type; }
 
-OpTable::OpTable(const std::deque<std::string>& ops) :
-    Table(ops, OPTABLE)
-{}
+OpTable::OpTable(const std::deque<std::string> &ops) : Table(ops, OPTABLE) {}
 
-ExprTable::ExprTable(const std::deque<Exp*>& exprs) :
-    Table(EXPRTABLE),expressions(exprs)
-{}
+ExprTable::ExprTable(const std::deque<Exp *> &exprs) : Table(EXPRTABLE), expressions(exprs) {}
 
 ExprTable::~ExprTable(void) {
-    std::deque<Exp*>::iterator loc;
+    std::deque<Exp *>::iterator loc;
     for (loc = expressions.begin(); loc != expressions.end(); ++loc)
         delete (*loc);
 }

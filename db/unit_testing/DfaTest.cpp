@@ -1,8 +1,8 @@
-/***************************************************************************//**
- * \file       DfaTest.cc
- * OVERVIEW:   Provides the implementation for the DfaTest class, which
- *                tests the data flow based type analysis code
- *============================================================================*/
+/***************************************************************************/ /**
+  * \file       DfaTest.cc
+  * OVERVIEW:   Provides the implementation for the DfaTest class, which
+  *                tests the data flow based type analysis code
+  *============================================================================*/
 #include "DfaTest.h"
 
 #include "boomerang.h"
@@ -12,30 +12,29 @@
 
 static bool logset = false;
 
-DfaTest::DfaTest()
-{
-    if(!logset) {
-        logset=true;
+DfaTest::DfaTest() {
+    if (!logset) {
+        logset = true;
         Boomerang::get()->setLogger(new NullLogger());
     }
 }
 
-void DfaTest::SetUp () { }
-void DfaTest::TearDown () { }
+void DfaTest::SetUp() {}
+void DfaTest::TearDown() {}
 
-/***************************************************************************//**
- * FUNCTION:        DfaTest::testMeetInt
- * OVERVIEW:        Test meeting IntegerTypes with various other types
- *============================================================================*/
+/***************************************************************************/ /**
+  * FUNCTION:        DfaTest::testMeetInt
+  * OVERVIEW:        Test meeting IntegerTypes with various other types
+  *============================================================================*/
 void DfaTest::testMeetInt() {
-    IntegerType *i32=IntegerType::get(32, 1);
-    IntegerType *j32=IntegerType::get(32, 0);
-    IntegerType *u32=IntegerType::get(32, -1);
-    IntegerType *xint=IntegerType::get(0);
-    IntegerType *j16=IntegerType::get(16, 0);
+    IntegerType *i32 = IntegerType::get(32, 1);
+    IntegerType *j32 = IntegerType::get(32, 0);
+    IntegerType *u32 = IntegerType::get(32, -1);
+    IntegerType *xint = IntegerType::get(0);
+    IntegerType *j16 = IntegerType::get(16, 0);
     SizeType s32(32);
     SizeType s64(64);
-    FloatType *flt=FloatType::get(32);
+    FloatType *flt = FloatType::get(32);
     PointerType pt(flt);
     VoidType v;
 
@@ -43,7 +42,7 @@ void DfaTest::testMeetInt() {
     i32->meetWith(i32, ch, false);
     QVERIFY(ch == false);
     std::ostringstream ost1;
-    ost1<< i32;
+    ost1 << i32;
     std::string actual(ost1.str());
     std::string expected("i32");
     QCOMPARE(expected, actual);
@@ -53,7 +52,7 @@ void DfaTest::testMeetInt() {
     j32->meetWith(i32, ch, false);
     QVERIFY(ch == true);
     std::ostringstream ost2;
-    ost2<< i32;
+    ost2 << i32;
     actual = ost2.str();
     expected = "i32";
     QCOMPARE(expected, actual);
@@ -63,7 +62,7 @@ void DfaTest::testMeetInt() {
     j32->meetWith(&v, ch, false);
     QVERIFY(ch == false);
     std::ostringstream ost2a;
-    ost2a<< j32;
+    ost2a << j32;
     actual = ost2a.str();
     expected = "j32";
     QCOMPARE(expected, actual);
@@ -72,7 +71,7 @@ void DfaTest::testMeetInt() {
     j32->meetWith(u32, ch, false);
     QVERIFY(ch == true);
     std::ostringstream ost3;
-    ost3<< j32;
+    ost3 << j32;
     actual = ost3.str();
     expected = "u32";
     QCOMPARE(expected, actual);
@@ -81,7 +80,7 @@ void DfaTest::testMeetInt() {
     u32->meetWith(&s32, ch, false);
     QVERIFY(ch == false);
     std::ostringstream ost4;
-    ost4<< u32;
+    ost4 << u32;
     actual = ost4.str();
     expected = "u32";
     QCOMPARE(expected, actual);
@@ -89,16 +88,16 @@ void DfaTest::testMeetInt() {
     u32->meetWith(&s64, ch, false);
     QVERIFY(ch == true);
     std::ostringstream ost5;
-    ost5<< u32;
+    ost5 << u32;
     actual = ost5.str();
     expected = "u64";
     QCOMPARE(expected, actual);
 
     ch = false;
-    Type* res = i32->meetWith(flt, ch, false);
+    Type *res = i32->meetWith(flt, ch, false);
     QVERIFY(ch == true);
     std::ostringstream ost6;
-    ost6<< res;
+    ost6 << res;
     actual = ost6.str();
     expected = "union";
     QCOMPARE(expected, actual);
@@ -107,25 +106,25 @@ void DfaTest::testMeetInt() {
     res = i32->meetWith(&pt, ch, false);
     QVERIFY(ch == true);
     std::ostringstream ost7;
-    ost7<< res;
+    ost7 << res;
     actual = ost7.str();
     expected = "union";
     QCOMPARE(expected, actual);
 }
 
-/***************************************************************************//**
- * FUNCTION:        DfaTest::testMeetSize
- * OVERVIEW:        Test meeting IntegerTypes with various other types
- *============================================================================*/
+/***************************************************************************/ /**
+  * FUNCTION:        DfaTest::testMeetSize
+  * OVERVIEW:        Test meeting IntegerTypes with various other types
+  *============================================================================*/
 void DfaTest::testMeetSize() {
-    IntegerType *i32=IntegerType::get(32, 1);
+    IntegerType *i32 = IntegerType::get(32, 1);
     SizeType s32(32);
     SizeType s16(16);
-    FloatType *flt=FloatType::get(32);
+    FloatType *flt = FloatType::get(32);
     VoidType v;
 
     bool ch = false;
-    Type* res = s32.meetWith(i32, ch, false);
+    Type *res = s32.meetWith(i32, ch, false);
     QVERIFY(ch == true);
     std::ostringstream ost1;
     ost1 << res;
@@ -156,16 +155,15 @@ void DfaTest::testMeetSize() {
     actual = ost3.str();
     expected = "16";
     QCOMPARE(expected, actual);
-
 }
 
-/***************************************************************************//**
- * FUNCTION:        DfaTest::testMeetPointer
- * OVERVIEW:        Test meeting IntegerTypes with various other types
- *============================================================================*/
+/***************************************************************************/ /**
+  * FUNCTION:        DfaTest::testMeetPointer
+  * OVERVIEW:        Test meeting IntegerTypes with various other types
+  *============================================================================*/
 void DfaTest::testMeetPointer() {
-    IntegerType *i32=IntegerType::get(32, 1);
-    IntegerType *u32=IntegerType::get(32, -1);
+    IntegerType *i32 = IntegerType::get(32, 1);
+    IntegerType *u32 = IntegerType::get(32, -1);
     PointerType pi32(i32);
     PointerType pu32(u32);
     VoidType v;
@@ -177,7 +175,7 @@ void DfaTest::testMeetPointer() {
     QCOMPARE(expected, actual);
 
     bool ch = false;
-    Type* res = pi32.meetWith(&pu32, ch, false);
+    Type *res = pi32.meetWith(&pu32, ch, false);
     QVERIFY(ch == true);
     std::ostringstream ost2;
     ost2 << res->getCtype();
@@ -195,19 +193,18 @@ void DfaTest::testMeetPointer() {
     actual = ost3.str();
     expected = "union";
     QCOMPARE(expected, actual);
-
 }
 
-/***************************************************************************//**
- * FUNCTION:        DfaTest::testMeetUnion
- * OVERVIEW:        Test meeting IntegerTypes with various other types
- *============================================================================*/
+/***************************************************************************/ /**
+  * FUNCTION:        DfaTest::testMeetUnion
+  * OVERVIEW:        Test meeting IntegerTypes with various other types
+  *============================================================================*/
 void DfaTest::testMeetUnion() {
     UnionType u1;
-    IntegerType *i32=IntegerType::get(32, 1);
-    IntegerType *j32=IntegerType::get(32, 0);
-    IntegerType *u32=IntegerType::get(32, -1);
-    FloatType *flt=FloatType::get(32);
+    IntegerType *i32 = IntegerType::get(32, 1);
+    IntegerType *j32 = IntegerType::get(32, 0);
+    IntegerType *u32 = IntegerType::get(32, -1);
+    FloatType *flt = FloatType::get(32);
     u1.addType(i32, "bow");
     u1.addType(flt, "wow");
 
@@ -218,7 +215,7 @@ void DfaTest::testMeetUnion() {
     QCOMPARE(expected, actual);
 
     bool ch = false;
-    Type* res = u1.meetWith(j32, ch, false);
+    Type *res = u1.meetWith(j32, ch, false);
     QVERIFY(ch == false);
     std::ostringstream ost2;
     ost2 << res->getCtype();
@@ -244,4 +241,3 @@ void DfaTest::testMeetUnion() {
     QCOMPARE(expected, actual);
 }
 QTEST_MAIN(DfaTest)
-

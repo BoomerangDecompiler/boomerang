@@ -9,12 +9,12 @@
  *
  */
 
-/***************************************************************************//**
- * \file       frontend.cpp
- * \brief   This file contains common code for all front ends. The majority
- *                of frontend logic remains in the source dependent files such as
- *                frontsparc.cpp
- ******************************************************************************/
+/***************************************************************************/ /**
+  * \file       frontend.cpp
+  * \brief   This file contains common code for all front ends. The majority
+  *                of frontend logic remains in the source dependent files such as
+  *                frontsparc.cpp
+  ******************************************************************************/
 #include "frontend.h"
 
 #include "types.h"
@@ -40,85 +40,86 @@
 #include <cstring>
 #include <cstdlib>
 #include <queue>
-#include <cstdarg>  // For varargs
+#include <cstdarg> // For varargs
 #include <sstream>
 #include <QDir>
 
 using namespace std;
-/***************************************************************************//**
- *
- * \brief      Construct the FrontEnd object
- * \param p_BF pointer to the BinaryFile object (loader)
- * \param p program being decoded
- * \param bff pointer to a BinaryFileFactory object (so the library can be unloaded)
- ******************************************************************************/
-FrontEnd::FrontEnd(QObject *p_BF, Prog* p, BinaryFileFactory* bff) : pLoader(p_BF), pbff(bff), prog(p)
-{
+/***************************************************************************/ /**
+  *
+  * \brief      Construct the FrontEnd object
+  * \param p_BF pointer to the BinaryFile object (loader)
+  * \param p program being decoded
+  * \param bff pointer to a BinaryFileFactory object (so the library can be unloaded)
+  ******************************************************************************/
+FrontEnd::FrontEnd(QObject *p_BF, Prog *p, BinaryFileFactory *bff) : pLoader(p_BF), pbff(bff), prog(p) {
     ldrIface = qobject_cast<LoaderInterface *>(pLoader);
     symIface = qobject_cast<SymbolTableInterface *>(pLoader);
     sectIface = qobject_cast<SectionInterface *>(pLoader);
 }
 
-/***************************************************************************//**
- *
- * \brief Create from a binary file
- * Static function to instantiate an appropriate concrete front end
- * \param pBF pointer to the BinaryFile object (loader)
- * \param prog program being decoded
- * \param pbff pointer to a BinaryFileFactory object (so the library can be unloaded)
- ******************************************************************************/
-FrontEnd* FrontEnd::instantiate(QObject *pBF, Prog* prog, BinaryFileFactory* pbff) {
+/***************************************************************************/ /**
+  *
+  * \brief Create from a binary file
+  * Static function to instantiate an appropriate concrete front end
+  * \param pBF pointer to the BinaryFile object (loader)
+  * \param prog program being decoded
+  * \param pbff pointer to a BinaryFileFactory object (so the library can be unloaded)
+  ******************************************************************************/
+FrontEnd *FrontEnd::instantiate(QObject *pBF, Prog *prog, BinaryFileFactory *pbff) {
     LoaderInterface *ldr = qobject_cast<LoaderInterface *>(pBF);
-    switch(ldr->GetMachine()) {
-        case MACHINE_PENTIUM:
-            return new PentiumFrontEnd(pBF, prog, pbff);
-        case MACHINE_SPARC:
-            return new SparcFrontEnd(pBF, prog, pbff);
-        case MACHINE_PPC:
-            return new PPCFrontEnd(pBF, prog, pbff);
-        case MACHINE_MIPS:
-            return new MIPSFrontEnd(pBF, prog, pbff);
-        case MACHINE_ST20:
-            return new ST20FrontEnd(pBF, prog, pbff);
-        case MACHINE_HPRISC:
-            std::cerr << "No frontend for Hp Risc\n";
-            break;
-        case MACHINE_PALM:
-            std::cerr << "No frontend for PALM\n";
-            break;
-        case MACHINE_68K:
-            std::cerr << "No frontend for M68K\n";
-            break;
-        default:
-            std::cerr << "Machine architecture not supported!\n";
+    switch (ldr->GetMachine()) {
+    case MACHINE_PENTIUM:
+        return new PentiumFrontEnd(pBF, prog, pbff);
+    case MACHINE_SPARC:
+        return new SparcFrontEnd(pBF, prog, pbff);
+    case MACHINE_PPC:
+        return new PPCFrontEnd(pBF, prog, pbff);
+    case MACHINE_MIPS:
+        return new MIPSFrontEnd(pBF, prog, pbff);
+    case MACHINE_ST20:
+        return new ST20FrontEnd(pBF, prog, pbff);
+    case MACHINE_HPRISC:
+        std::cerr << "No frontend for Hp Risc\n";
+        break;
+    case MACHINE_PALM:
+        std::cerr << "No frontend for PALM\n";
+        break;
+    case MACHINE_68K:
+        std::cerr << "No frontend for M68K\n";
+        break;
+    default:
+        std::cerr << "Machine architecture not supported!\n";
     }
     return nullptr;
 }
 
-/***************************************************************************//**
- *
- * \brief Create FrontEnd instance given \a fname and \a prog
- * \param fname string with full path to decoded file
- * \param prog program being decoded
- * \returns Binary-specific frontend.
- ******************************************************************************/
-FrontEnd* FrontEnd::Load(const QString &fname, Prog* prog) {
-    BinaryFileFactory* pbff = new BinaryFileFactory;
-    if (pbff == nullptr) return nullptr;
+/***************************************************************************/ /**
+  *
+  * \brief Create FrontEnd instance given \a fname and \a prog
+  * \param fname string with full path to decoded file
+  * \param prog program being decoded
+  * \returns Binary-specific frontend.
+  ******************************************************************************/
+FrontEnd *FrontEnd::Load(const QString &fname, Prog *prog) {
+    BinaryFileFactory *pbff = new BinaryFileFactory;
+    if (pbff == nullptr)
+        return nullptr;
     QObject *pBF = pbff->Load(fname);
-    if (pBF == nullptr) return nullptr;
+    if (pBF == nullptr)
+        return nullptr;
     FrontEnd *fe = instantiate(pBF, prog, pbff);
 }
 
 // destructor
 FrontEnd::~FrontEnd() {
     if (pbff)
-        pbff->UnLoad();            // Unload the BinaryFile library with dlclose() or FreeLibrary()
+        pbff->UnLoad(); // Unload the BinaryFile library with dlclose() or FreeLibrary()
 }
 
 const char *FrontEnd::getRegName(int idx) {
-    std::map<std::string, int, std::less<std::string> >::iterator it;
-    for (it = decoder->getRTLDict().RegMap.begin();     it != decoder->getRTLDict().RegMap.end(); it++)
+    std::map<std::string, int, std::less<std::string>>::iterator it;
+    for (it = decoder->getRTLDict().RegMap.begin(); it != decoder->getRTLDict().RegMap.end(); it++)
         if ((*it).second == idx)
             return (*it).first.c_str();
     return nullptr;
@@ -130,22 +131,15 @@ int FrontEnd::getRegSize(int idx) {
     return decoder->getRTLDict().DetRegMap[idx].g_size();
 }
 
-bool FrontEnd::isWin32() {
-    return ldrIface->GetFormat() == LOADFMT_PE;
-}
+bool FrontEnd::isWin32() { return ldrIface->GetFormat() == LOADFMT_PE; }
 
 bool FrontEnd::noReturnCallDest(const QString &name) {
-    return (
-            (name=="_exit") ||
-            (name=="exit") ||
-            (name=="ExitProcess") ||
-            (name=="abort") ||
-            (name=="_assert")
-            );
+    return ((name == "_exit") || (name == "exit") || (name == "ExitProcess") || (name == "abort") ||
+            (name == "_assert"));
 }
 
 // FIXME: Is this ever used? Need to pass a real pbff?
-FrontEnd *FrontEnd::createById(std::string &str, QObject *pBF, Prog* prog) {
+FrontEnd *FrontEnd::createById(std::string &str, QObject *pBF, Prog *prog) {
     if (str == "pentium")
         return new PentiumFrontEnd(pBF, prog, nullptr);
     if (str == "sparc")
@@ -160,7 +154,7 @@ FrontEnd *FrontEnd::createById(std::string &str, QObject *pBF, Prog* prog) {
 }
 
 void FrontEnd::readLibraryCatalog(const char *sPath) {
-    //TODO: this is a work for generic semantics provider plugin : HeaderReader
+    // TODO: this is a work for generic semantics provider plugin : HeaderReader
     std::ifstream inf(sPath);
     if (!inf.good()) {
         std::cerr << "can't open `" << sPath << "'\n";
@@ -173,22 +167,23 @@ void FrontEnd::readLibraryCatalog(const char *sPath) {
         size_t j = sFile.find('#');
         if (j != (size_t)-1)
             sFile = sFile.substr(0, j);
-        if (sFile.size() > 0 && sFile[sFile.size()-1] == '\n')
-            sFile = sFile.substr(0, sFile.size()-1);
-        if (sFile == "") continue;
+        if (sFile.size() > 0 && sFile[sFile.size() - 1] == '\n')
+            sFile = sFile.substr(0, sFile.size() - 1);
+        if (sFile == "")
+            continue;
         sig_path = Boomerang::get()->getProgPath() + "signatures/" + sFile;
-        callconv cc = CONV_C;            // Most APIs are C calling convention
+        callconv cc = CONV_C; // Most APIs are C calling convention
         if (sFile == "windows.h")
-            cc = CONV_PASCAL;        // One exception
+            cc = CONV_PASCAL; // One exception
         if (sFile == "mfc.h")
-            cc = CONV_THISCALL;        // Another exception
+            cc = CONV_THISCALL; // Another exception
         readLibrarySignatures(sig_path.c_str(), cc);
     }
     inf.close();
 }
 
 void FrontEnd::readLibraryCatalog() {
-    //TODO: this is a work for generic semantics provider plugin : HeaderReader
+    // TODO: this is a work for generic semantics provider plugin : HeaderReader
     librarySignatures.clear();
     std::string sList = Boomerang::get()->getProgPath() + "signatures/common.hs";
 
@@ -199,18 +194,17 @@ void FrontEnd::readLibraryCatalog() {
         sList = Boomerang::get()->getProgPath() + "signatures/win32.hs";
         readLibraryCatalog(sList.c_str());
     }
-    //TODO: change this to BinaryLayer query ("FILE_FORMAT","MACHO")
+    // TODO: change this to BinaryLayer query ("FILE_FORMAT","MACHO")
     if (ldrIface->GetFormat() == LOADFMT_MACHO) {
         sList = Boomerang::get()->getProgPath() + "signatures/objc.hs";
         readLibraryCatalog(sList.c_str());
     }
 }
 
-void FrontEnd::checkEntryPoint(std::vector<ADDRESS> &entrypoints, ADDRESS addr, const char *type)
-{
+void FrontEnd::checkEntryPoint(std::vector<ADDRESS> &entrypoints, ADDRESS addr, const char *type) {
     Type *ty = NamedType::getNamedType(type);
     assert(ty->isFunc());
-    UserProc *proc = (UserProc*)prog->setNewProc(addr);
+    UserProc *proc = (UserProc *)prog->setNewProc(addr);
     assert(proc);
     Signature *sig = ty->asFunc()->getSignature()->clone();
     const char *sym = symIface ? symIface->SymbolByAddress(addr) : nullptr;
@@ -230,26 +224,26 @@ std::vector<ADDRESS> FrontEnd::getEntryPoints() {
     // TODO: find exported functions and add them too ?
     if (a != NO_ADDRESS)
         entrypoints.push_back(a);
-    else {  // try some other tricks
+    else { // try some other tricks
         QString fname = ldrIface->getFilename();
         // X11 Module
         if (fname.endsWith("_drv.o")) {
             int seploc = fname.lastIndexOf(QDir::separator());
-            QString p = fname.mid(seploc+1); // part after the last path separator
+            QString p = fname.mid(seploc + 1); // part after the last path separator
             if (p != fname) {
 
-                QString name = p.mid(0,p.length()-6)+"ModuleData";
+                QString name = p.mid(0, p.length() - 6) + "ModuleData";
                 ADDRESS tmpaddr = symIface ? symIface->GetAddressByName(qPrintable(name), true) : NO_ADDRESS;
                 if (tmpaddr != NO_ADDRESS) {
                     ADDRESS setup, teardown;
-                    /*uint32_t vers = */bin_iface->readNative4(tmpaddr); //TODO: find use for vers ?
-                    setup = ADDRESS::g(bin_iface->readNative4(tmpaddr+4));
-                    teardown = ADDRESS::g(bin_iface->readNative4(tmpaddr+8));
-                    if ( !setup.isZero() ) {
-                        checkEntryPoint(entrypoints, setup,"ModuleSetupProc");
+                    /*uint32_t vers = */ bin_iface->readNative4(tmpaddr); // TODO: find use for vers ?
+                    setup = ADDRESS::g(bin_iface->readNative4(tmpaddr + 4));
+                    teardown = ADDRESS::g(bin_iface->readNative4(tmpaddr + 8));
+                    if (!setup.isZero()) {
+                        checkEntryPoint(entrypoints, setup, "ModuleSetupProc");
                     }
-                    if ( !teardown.isZero() ) {
-                        checkEntryPoint(entrypoints, teardown,"ModuleTearDownProc");
+                    if (!teardown.isZero()) {
+                        checkEntryPoint(entrypoints, teardown, "ModuleTearDownProc");
                     }
                 }
             }
@@ -267,8 +261,8 @@ std::vector<ADDRESS> FrontEnd::getEntryPoints() {
     return entrypoints;
 }
 
-void FrontEnd::decode(Prog* prg, bool decodeMain, const char *pname) {
-    assert(prog==prg);
+void FrontEnd::decode(Prog *prg, bool decodeMain, const char *pname) {
+    assert(prog == prg);
     if (pname)
         prog->setName(pname);
 
@@ -276,7 +270,8 @@ void FrontEnd::decode(Prog* prg, bool decodeMain, const char *pname) {
         return;
     SectionInterface *sym_iface = qobject_cast<SectionInterface *>(pLoader);
 
-    Boomerang::get()->alert_start_decode(sym_iface->getLimitTextLow(), (sym_iface->getLimitTextHigh() - sym_iface->getLimitTextLow()).m_value);
+    Boomerang::get()->alert_start_decode(sym_iface->getLimitTextLow(),
+                                         (sym_iface->getLimitTextHigh() - sym_iface->getLimitTextLow()).m_value);
 
     bool gotMain;
     ADDRESS a = getMainEntryPoint(gotMain);
@@ -284,7 +279,7 @@ void FrontEnd::decode(Prog* prg, bool decodeMain, const char *pname) {
         LOG << "start: " << a << " gotmain: " << (gotMain ? "true" : "false") << "\n";
     if (a == NO_ADDRESS) {
         std::vector<ADDRESS> entrypoints = getEntryPoints();
-        for (auto & entrypoint : entrypoints)
+        for (auto &entrypoint : entrypoints)
             decode(prog, entrypoint);
         return;
     }
@@ -294,26 +289,26 @@ void FrontEnd::decode(Prog* prg, bool decodeMain, const char *pname) {
 
     if (not gotMain)
         return;
-    static const char *mainName[] = { "main", "WinMain", "DriverEntry" };
+    static const char *mainName[] = {"main", "WinMain", "DriverEntry"};
     const char *name = prog->symbolByAddress(a);
     if (name == nullptr)
         name = mainName[0];
-    for (auto & elem : mainName) {
+    for (auto &elem : mainName) {
         if (!strcmp(name, elem)) {
             Proc *proc = prog->findProc(a);
-        if (proc == nullptr) {
+            if (proc == nullptr) {
                 if (VERBOSE)
                     LOG << "no proc found for address " << a << "\n";
                 return;
             }
-            FuncType *fty = dynamic_cast<FuncType*>(Type::getNamedType(name));
+            FuncType *fty = dynamic_cast<FuncType *>(Type::getNamedType(name));
             if (fty == nullptr)
                 LOG << "unable to find signature for known entrypoint " << name << "\n";
             else {
                 proc->setSignature(fty->getSignature()->clone());
                 proc->getSignature()->setName(name);
-                //proc->getSignature()->setFullSig(true);        // Don't add or remove parameters
-                proc->getSignature()->setForced(true);            // Don't add or remove parameters
+                // proc->getSignature()->setFullSig(true);        // Don't add or remove parameters
+                proc->getSignature()->setForced(true); // Don't add or remove parameters
             }
             break;
         }
@@ -323,12 +318,12 @@ void FrontEnd::decode(Prog* prg, bool decodeMain, const char *pname) {
 
 // Somehow, a == NO_ADDRESS has come to mean decode anything not already decoded
 void FrontEnd::decode(Prog *prg, ADDRESS a) {
-    assert(prog==prg);
+    assert(prog == prg);
     if (a != NO_ADDRESS) {
         prog->setNewProc(a);
         if (VERBOSE)
             LOG << "starting decode at address " << a << "\n";
-        UserProc* p = (UserProc*)prog->findProc(a);
+        UserProc *p = (UserProc *)prog->findProc(a);
         if (p == nullptr) {
             if (VERBOSE)
                 LOG << "no proc found at address " << a << "\n";
@@ -342,15 +337,17 @@ void FrontEnd::decode(Prog *prg, ADDRESS a) {
         processProc(a, p, os);
         p->setDecoded();
 
-    } else {                        // a == NO_ADDRESS
+    } else { // a == NO_ADDRESS
         bool change = true;
         while (change) {
             change = false;
             PROGMAP::const_iterator it;
             for (Proc *pProc = prog->getFirstProc(it); pProc != nullptr; pProc = prog->getNextProc(it)) {
-                if (pProc->isLib()) continue;
-                UserProc *p = (UserProc*)pProc;
-                if (p->isDecoded()) continue;
+                if (pProc->isLib())
+                    continue;
+                UserProc *p = (UserProc *)pProc;
+                if (p->isDecoded())
+                    continue;
 
                 // undecoded userproc.. decode it
                 change = true;
@@ -373,7 +370,7 @@ void FrontEnd::decode(Prog *prg, ADDRESS a) {
 //! \a a should be the address of an UserProc
 void FrontEnd::decodeOnly(Prog *prg, ADDRESS a) {
     assert(prog == prg);
-    UserProc* p = (UserProc*)prog->setNewProc(a);
+    UserProc *p = (UserProc *)prog->setNewProc(a);
     assert(!p->isLib());
     std::ofstream os;
     if (processProc(p->getNativeAddress(), p, os))
@@ -381,15 +378,14 @@ void FrontEnd::decodeOnly(Prog *prg, ADDRESS a) {
     prog->wellForm();
 }
 
-
-void FrontEnd::decodeFragment(UserProc* proc, ADDRESS a) {
+void FrontEnd::decodeFragment(UserProc *proc, ADDRESS a) {
     if (Boomerang::get()->traceDecoder)
         LOG << "decoding fragment at 0x" << a << "\n";
     std::ofstream os;
     processProc(a, proc, os, true);
 }
 
-DecodeResult& FrontEnd::decodeInstruction(ADDRESS pc) {
+DecodeResult &FrontEnd::decodeInstruction(ADDRESS pc) {
     SectionInterface *sect_iface = qobject_cast<SectionInterface *>(pLoader);
     if (!sect_iface || sect_iface->GetSectionInfoByAddr(pc) == nullptr) {
         LOG << "ERROR: attempted to decode outside any known segment " << pc << "\n";
@@ -401,12 +397,12 @@ DecodeResult& FrontEnd::decodeInstruction(ADDRESS pc) {
     return decoder->decodeInstruction(pc, sect_iface->getTextDelta());
 }
 
-/***************************************************************************//**
- *
- * \brief       Read the library signatures from a file
- * \param       sPath The file to read from
- * \param       cc the calling convention assumed
- */
+/***************************************************************************/ /**
+  *
+  * \brief       Read the library signatures from a file
+  * \param       sPath The file to read from
+  * \param       cc the calling convention assumed
+  */
 void FrontEnd::readLibrarySignatures(const char *sPath, callconv cc) {
     std::ifstream ifs;
 
@@ -422,7 +418,7 @@ void FrontEnd::readLibrarySignatures(const char *sPath, callconv cc) {
     platform plat = getFrontEndId();
     p->yyparse(plat, cc);
 
-    for (auto & elem : p->signatures) {
+    for (auto &elem : p->signatures) {
 #if 0
         std::cerr << "readLibrarySignatures from " << sPath << ": " << (*it)->getName() << "\n";
 #endif
@@ -449,36 +445,35 @@ Signature *FrontEnd::getDefaultSignature(const std::string &name) {
 Signature *FrontEnd::getLibSignature(const std::string &name) {
     Signature *signature;
     // Look up the name in the librarySignatures map
-    std::map<std::string, Signature*>::iterator it;
+    std::map<std::string, Signature *>::iterator it;
     it = librarySignatures.find(name);
     if (it == librarySignatures.end()) {
         LOG << "Unknown library function " << name.c_str() << "\n";
         signature = getDefaultSignature(name);
-    }
-    else {
+    } else {
         // Don't clone here; cloned in CallStatement::setSigArguments
         signature = (*it).second;
         signature->setUnknown(false);
     }
     return signature;
 }
-void FrontEnd::preprocessProcGoto(std::list<Statement*>::iterator ss, ADDRESS  dest, const std::list<Statement*> &sl,RTL* pRtl)
-{
-    assert(sl.back()==*ss);
+void FrontEnd::preprocessProcGoto(std::list<Statement *>::iterator ss, ADDRESS dest, const std::list<Statement *> &sl,
+                                  RTL *pRtl) {
+    assert(sl.back() == *ss);
     if (dest == NO_ADDRESS)
         return;
-    Proc * proc = prog->findProc(dest);
+    Proc *proc = prog->findProc(dest);
     if (proc == nullptr) {
         if (ldrIface->IsDynamicLinkedProc(dest))
             proc = prog->setNewProc(dest);
     }
-    if (proc != nullptr && proc != (Proc*)-1) {
+    if (proc != nullptr && proc != (Proc *)-1) {
         CallStatement *call = new CallStatement();
         call->setDest(dest);
         call->setDestProc(proc);
         call->setReturnAfterCall(true);
         // also need to change it in the actual RTL
-        std::list<Statement*>::iterator ss1 = ss;
+        std::list<Statement *>::iterator ss1 = ss;
         ss1++;
         assert(ss1 == sl.end());
         assert(not pRtl->empty());
@@ -486,21 +481,21 @@ void FrontEnd::preprocessProcGoto(std::list<Statement*>::iterator ss, ADDRESS  d
         *ss = call;
     }
 }
-/***************************************************************************//**
- *
- * \brief      Process a procedure, given a native (source machine) address.
- * \param uAddr - the address at which the procedure starts
- * \param pProc - the procedure object
- * \param frag - if true, this is just a fragment of a procedure
- * \param spec - if true, this is a speculative decode
- * \param os - the output stream for .rtl output
- * \note This is a sort of generic front end. For many processors, this will be overridden
- *  in the FrontEnd derived class, sometimes calling this function to do most of the work.
- * \returns          true for a good decode (no illegal instructions)
- ******************************************************************************/
-bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bool frag /* = false */,
+/***************************************************************************/ /**
+  *
+  * \brief      Process a procedure, given a native (source machine) address.
+  * \param uAddr - the address at which the procedure starts
+  * \param pProc - the procedure object
+  * \param frag - if true, this is just a fragment of a procedure
+  * \param spec - if true, this is a speculative decode
+  * \param os - the output stream for .rtl output
+  * \note This is a sort of generic front end. For many processors, this will be overridden
+  *  in the FrontEnd derived class, sometimes calling this function to do most of the work.
+  * \returns          true for a good decode (no illegal instructions)
+  ******************************************************************************/
+bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, std::ofstream &os, bool frag /* = false */,
                            bool spec /* = false */) {
-    BasicBlock * pBB;                    // Pointer to the current basic block
+    BasicBlock *pBB; // Pointer to the current basic block
 
     // just in case you missed it
     Boomerang::get()->alert_new(pProc);
@@ -508,13 +503,13 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
     // We have a set of CallStatement pointers. These may be disregarded if this is a speculative decode
     // that fails (i.e. an illegal instruction is found). If not, this set will be used to add to the set of calls
     // to be analysed in the cfg, and also to call newProc()
-    std::list<CallStatement*> callList;
+    std::list<CallStatement *> callList;
 
     // Indicates whether or not the next instruction to be decoded is the lexical successor of the current one.
     // Will be true for all NCTs and for CTIs with a fall through branch.
     bool sequentialDecode = true;
 
-    Cfg* pCfg = pProc->getCFG();
+    Cfg *pCfg = pProc->getCFG();
 
     // If this is a speculative decode, the second time we decode the same address, we get no cfg. Else an error.
     if (spec && (pCfg == nullptr))
@@ -525,7 +520,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
     targetQueue.initial(uAddr);
 
     // Clear the pointer used by the caller prologue code to access the last call rtl of this procedure
-    //decoder.resetLastCall();
+    // decoder.resetLastCall();
 
     // ADDRESS initAddr = uAddr;
     int nTotalBytes = 0;
@@ -535,10 +530,10 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
     SectionInterface *sec_iface = qobject_cast<SectionInterface *>(pLoader);
     while ((uAddr = targetQueue.nextAddress(*pCfg)) != NO_ADDRESS) {
         // The list of RTLs for the current basic block
-        std::list<RTL*>* BB_rtls = new std::list<RTL*>();
+        std::list<RTL *> *BB_rtls = new std::list<RTL *>();
 
         // Keep decoding sequentially until a CTI without a fall through branch is decoded
-        //ADDRESS start = uAddr;
+        // ADDRESS start = uAddr;
         DecodeResult inst;
         while (sequentialDecode) {
 
@@ -556,9 +551,9 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
             // Need to construct a new list of RTLs if a basic block has just been finished but decoding is
             // continuing from its lexical successor
             if (BB_rtls == nullptr)
-                BB_rtls = new std::list<RTL*>();
+                BB_rtls = new std::list<RTL *>();
 
-            RTL* pRtl = inst.rtl;
+            RTL *pRtl = inst.rtl;
             if (inst.valid == false) {
                 // Alert the watchers to the problem
                 Boomerang::get()->alert_baddecode(uAddr);
@@ -568,14 +563,16 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
                 if (VERBOSE) {
                     LOG << "Warning: invalid instruction at " << uAddr << ": ";
                     // Emit the next 4 bytes for debugging
-                    for (int ii=0; ii < 4; ii++)
+                    for (int ii = 0; ii < 4; ii++)
                         LOG << ADDRESS::g(bin_data->readNative1(uAddr + ii) & 0xFF) << " ";
                     LOG << "\n";
                 }
                 // Emit the RTL anyway, so we have the address and maybe some other clues
                 BB_rtls->push_back(new RTL(uAddr));
                 pBB = pCfg->newBB(BB_rtls, INVALID, 0);
-                sequentialDecode = false; BB_rtls = nullptr; continue;
+                sequentialDecode = false;
+                BB_rtls = nullptr;
+                continue;
             }
 
             // alert the watchers that we have decoded an instruction
@@ -585,7 +582,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
             // Check if this is an already decoded jump instruction (from a previous pass with propagation etc)
             // If so, we throw away the just decoded RTL (but we still may have needed to calculate the number
             // of bytes.. ick.)
-            std::map<ADDRESS, RTL*>::iterator ff = previouslyDecoded.find(uAddr);
+            std::map<ADDRESS, RTL *>::iterator ff = previouslyDecoded.find(uAddr);
             if (ff != previouslyDecoded.end())
                 pRtl = ff->second;
 
@@ -607,7 +604,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
             ADDRESS uDest;
 
             // For each Statement in the RTL
-            std::list<Statement*> sl = *(std::list<Statement*> *)pRtl;
+            std::list<Statement *> sl = *(std::list<Statement *> *)pRtl;
             // Make a copy (!) of the list. This is needed temporarily to work around the following problem.
             // We are currently iterating an RTL, which could be a return instruction. The RTL is passed to
             // createReturnBlock; if this is not the first return statement, it will get cleared, and this will
@@ -616,7 +613,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
             // Statements to mark the start of instructions (and their native address).
             // FIXME: However, this workaround breaks logic below where a GOTO is changed to a CALL followed by a return
             // if it points to the start of a known procedure
-            std::list<Statement*>::iterator ss;
+            std::list<Statement *>::iterator ss;
 #if 1
             for (ss = sl.begin(); ss != sl.end(); ss++) { // }
 #else
@@ -625,8 +622,8 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
             int counter = sl.size();
             for (ss = sl.begin(); counter > 0; ss++, counter--) {
 #endif
-                Statement* s = *ss;
-                s->setProc(pProc);        // let's do this really early!
+                Statement *s = *ss;
+                s->setProc(pProc); // let's do this really early!
                 if (refHints.find(pRtl->getAddress()) != refHints.end()) {
                     const char *nam = refHints[pRtl->getAddress()].c_str();
                     ADDRESS gu = prog->getGlobalAddr(nam);
@@ -635,7 +632,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
                     }
                 }
                 s->simplify();
-                GotoStatement* stmt_jump = static_cast<GotoStatement*>(s);
+                GotoStatement *stmt_jump = static_cast<GotoStatement *>(s);
 
                 // Check for a call to an already existing procedure (including self recursive jumps), or to the PLT
                 // (note that a LibProc entry for the PLT function may not yet exist)
@@ -646,324 +643,320 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 
                 switch (s->getKind()) {
 
-                    case STMT_GOTO: {
-                        uDest = stmt_jump->getFixedDest();
+                case STMT_GOTO: {
+                    uDest = stmt_jump->getFixedDest();
 
-                        // Handle one way jumps and computed jumps separately
-                        if (uDest != NO_ADDRESS) {
+                    // Handle one way jumps and computed jumps separately
+                    if (uDest != NO_ADDRESS) {
 
-                            BB_rtls->push_back(pRtl);
-                            sequentialDecode = false;
+                        BB_rtls->push_back(pRtl);
+                        sequentialDecode = false;
 
-                            pBB = pCfg->newBB(BB_rtls,ONEWAY,1);
-                            BB_rtls = nullptr;        // Clear when make new BB
+                        pBB = pCfg->newBB(BB_rtls, ONEWAY, 1);
+                        BB_rtls = nullptr; // Clear when make new BB
 
-                            // Exit the switch now if the basic block already existed
-                            if (pBB == nullptr) {
-                                break;
-                            }
-
-                            // Add the out edge if it is to a destination within the
-                            // procedure
-                            if (uDest < sec_iface->getLimitTextHigh()) {
-                                targetQueue.visit(pCfg, uDest, pBB);
-                                pCfg->addOutEdge(pBB, uDest, true);
-                            }
-                            else {
-                                LOG << "Error: Instruction at " << uAddr << " branches beyond end of section, to "
-                                    << uDest << "\n";
-                            }
-                        }
-                        break;
-                    }
-
-                    case STMT_CASE: {
-                        Exp* pDest = stmt_jump->getDest();
-                        if (pDest == nullptr) {                // Happens if already analysed (now redecoding)
-                            // SWITCH_INFO* psi = ((CaseStatement*)stmt_jump)->getSwitchInfo();
-                            BB_rtls->push_back(pRtl);
-                            pBB = pCfg->newBB(BB_rtls, NWAY, 0);    // processSwitch will update num outedges
-                            pBB->processSwitch(pProc);        // decode arms, set out edges, etc
-                            sequentialDecode = false;        // Don't decode after the jump
-                            BB_rtls = nullptr;                    // New RTLList for next BB
-                            break;                            // Just leave it alone
-                        }
-                        // Check for indirect calls to library functions, especially in Win32 programs
-                        if (pDest && pDest->getOper() == opMemOf &&
-                                pDest->getSubExp1()->getOper() == opIntConst &&
-                                ldrIface->IsDynamicLinkedProcPointer(((Const*)pDest->getSubExp1())->getAddr())) {
-                            if (VERBOSE)
-                                LOG << "jump to a library function: " << stmt_jump << ", replacing with a call/ret.\n";
-                            // jump to a library function
-                            // replace with a call ret
-                            std::string func = ldrIface->GetDynamicProcName(
-                                                   ((Const*)stmt_jump->getDest()->getSubExp1())->getAddr());
-                            CallStatement *call = new CallStatement;
-                            call->setDest(stmt_jump->getDest()->clone());
-                            LibProc *lp = pProc->getProg()->getLibraryProc(func.c_str());
-                            if (lp == nullptr)
-                                LOG << "getLibraryProc returned nullptr, aborting\n";
-                            assert(lp);
-                            call->setDestProc(lp);
-                            std::list<Statement*>* stmt_list = new std::list<Statement*>;
-                            stmt_list->push_back(call);
-                            BB_rtls->push_back(new RTL(pRtl->getAddress(), stmt_list));
-                            pBB = pCfg->newBB(BB_rtls, CALL, 1);
-                            appendSyntheticReturn(pBB, pProc, pRtl);
-                            sequentialDecode = false;
-                            BB_rtls = nullptr;
-                            if (pRtl->getAddress() == pProc->getNativeAddress()) {
-                                // it's a thunk
-                                // Proc *lp = prog->findProc(func.c_str());
-                                func = std::string("__imp_") + func;
-                                pProc->setName(func.c_str());
-                                //lp->setName(func.c_str());
-                                Boomerang::get()->alert_update_signature(pProc);
-                            }
-                            callList.push_back(call);
-                            ss = sl.end(); ss--;    // get out of the loop
+                        // Exit the switch now if the basic block already existed
+                        if (pBB == nullptr) {
                             break;
                         }
-                        BB_rtls->push_back(pRtl);
-                        // We create the BB as a COMPJUMP type, then change to an NWAY if it turns out to be a switch stmt
-                        pBB = pCfg->newBB(BB_rtls, COMPJUMP, 0);
-                        LOG << "COMPUTED JUMP at " << uAddr << ", pDest = " << pDest << "\n";
-                        if (Boomerang::get()->noDecompile) {
-                            // try some hacks
-                            if (pDest->isMemOf() && pDest->getSubExp1()->getOper() == opPlus &&
-                                    pDest->getSubExp1()->getSubExp2()->isIntConst()) {
-                                // assume subExp2 is a jump table
-                                ADDRESS jmptbl = ((Const*)pDest->getSubExp1()->getSubExp2())->getAddr();
-                                unsigned int i;
-                                for (i = 0; ; i++) {
-                                    ADDRESS uDest = ADDRESS::g(bin_data->readNative4(jmptbl + i * 4));
-                                    if (sec_iface->getLimitTextLow() <= uDest && uDest < sec_iface->getLimitTextHigh()) {
-                                        LOG << "  guessed uDest " << uDest << "\n";
-                                        targetQueue.visit(pCfg, uDest, pBB);
-                                        pCfg->addOutEdge(pBB, uDest, true);
-                                    } else
-                                        break;
-                                }
-                                pBB->updateType(NWAY, i);
-                            }
+
+                        // Add the out edge if it is to a destination within the
+                        // procedure
+                        if (uDest < sec_iface->getLimitTextHigh()) {
+                            targetQueue.visit(pCfg, uDest, pBB);
+                            pCfg->addOutEdge(pBB, uDest, true);
+                        } else {
+                            LOG << "Error: Instruction at " << uAddr << " branches beyond end of section, to " << uDest
+                                << "\n";
                         }
+                    }
+                    break;
+                }
+
+                case STMT_CASE: {
+                    Exp *pDest = stmt_jump->getDest();
+                    if (pDest == nullptr) { // Happens if already analysed (now redecoding)
+                        // SWITCH_INFO* psi = ((CaseStatement*)stmt_jump)->getSwitchInfo();
+                        BB_rtls->push_back(pRtl);
+                        pBB = pCfg->newBB(BB_rtls, NWAY, 0); // processSwitch will update num outedges
+                        pBB->processSwitch(pProc);           // decode arms, set out edges, etc
+                        sequentialDecode = false;            // Don't decode after the jump
+                        BB_rtls = nullptr;                   // New RTLList for next BB
+                        break;                               // Just leave it alone
+                    }
+                    // Check for indirect calls to library functions, especially in Win32 programs
+                    if (pDest && pDest->getOper() == opMemOf && pDest->getSubExp1()->getOper() == opIntConst &&
+                        ldrIface->IsDynamicLinkedProcPointer(((Const *)pDest->getSubExp1())->getAddr())) {
+                        if (VERBOSE)
+                            LOG << "jump to a library function: " << stmt_jump << ", replacing with a call/ret.\n";
+                        // jump to a library function
+                        // replace with a call ret
+                        std::string func =
+                            ldrIface->GetDynamicProcName(((Const *)stmt_jump->getDest()->getSubExp1())->getAddr());
+                        CallStatement *call = new CallStatement;
+                        call->setDest(stmt_jump->getDest()->clone());
+                        LibProc *lp = pProc->getProg()->getLibraryProc(func.c_str());
+                        if (lp == nullptr)
+                            LOG << "getLibraryProc returned nullptr, aborting\n";
+                        assert(lp);
+                        call->setDestProc(lp);
+                        std::list<Statement *> *stmt_list = new std::list<Statement *>;
+                        stmt_list->push_back(call);
+                        BB_rtls->push_back(new RTL(pRtl->getAddress(), stmt_list));
+                        pBB = pCfg->newBB(BB_rtls, CALL, 1);
+                        appendSyntheticReturn(pBB, pProc, pRtl);
                         sequentialDecode = false;
-                        BB_rtls = nullptr;        // New RTLList for next BB
-                        break;
-                    }
-
-
-                    case STMT_BRANCH: {
-                        uDest = stmt_jump->getFixedDest();
-                        BB_rtls->push_back(pRtl);
-                        pBB = pCfg->newBB(BB_rtls, TWOWAY, 2);
-
-                        // Stop decoding sequentially if the basic block already existed otherwise complete the basic block
-                        if (pBB == nullptr)
-                            sequentialDecode = false;
-                        else {
-
-                            // Add the out edge if it is to a destination within the procedure
-                            if (uDest < sec_iface->getLimitTextHigh()) {
-                                targetQueue.visit(pCfg, uDest, pBB);
-                                pCfg->addOutEdge(pBB, uDest, true);
-                            }
-                            else {
-                                LOG << "Error: Instruction at " << uAddr << " branches beyond end of section, to "
-                                    << uDest << "\n";
-                            }
-
-                            // Add the fall-through outedge
-                            pCfg->addOutEdge(pBB, uAddr + inst.numBytes);
-                        }
-
-                        // Create the list of RTLs for the next basic block and continue with the next instruction.
                         BB_rtls = nullptr;
+                        if (pRtl->getAddress() == pProc->getNativeAddress()) {
+                            // it's a thunk
+                            // Proc *lp = prog->findProc(func.c_str());
+                            func = std::string("__imp_") + func;
+                            pProc->setName(func.c_str());
+                            // lp->setName(func.c_str());
+                            Boomerang::get()->alert_update_signature(pProc);
+                        }
+                        callList.push_back(call);
+                        ss = sl.end();
+                        ss--; // get out of the loop
                         break;
                     }
+                    BB_rtls->push_back(pRtl);
+                    // We create the BB as a COMPJUMP type, then change to an NWAY if it turns out to be a switch stmt
+                    pBB = pCfg->newBB(BB_rtls, COMPJUMP, 0);
+                    LOG << "COMPUTED JUMP at " << uAddr << ", pDest = " << pDest << "\n";
+                    if (Boomerang::get()->noDecompile) {
+                        // try some hacks
+                        if (pDest->isMemOf() && pDest->getSubExp1()->getOper() == opPlus &&
+                            pDest->getSubExp1()->getSubExp2()->isIntConst()) {
+                            // assume subExp2 is a jump table
+                            ADDRESS jmptbl = ((Const *)pDest->getSubExp1()->getSubExp2())->getAddr();
+                            unsigned int i;
+                            for (i = 0;; i++) {
+                                ADDRESS uDest = ADDRESS::g(bin_data->readNative4(jmptbl + i * 4));
+                                if (sec_iface->getLimitTextLow() <= uDest && uDest < sec_iface->getLimitTextHigh()) {
+                                    LOG << "  guessed uDest " << uDest << "\n";
+                                    targetQueue.visit(pCfg, uDest, pBB);
+                                    pCfg->addOutEdge(pBB, uDest, true);
+                                } else
+                                    break;
+                            }
+                            pBB->updateType(NWAY, i);
+                        }
+                    }
+                    sequentialDecode = false;
+                    BB_rtls = nullptr; // New RTLList for next BB
+                    break;
+                }
 
-                    case STMT_CALL: {
-                        CallStatement* call = static_cast<CallStatement*>(s);
+                case STMT_BRANCH: {
+                    uDest = stmt_jump->getFixedDest();
+                    BB_rtls->push_back(pRtl);
+                    pBB = pCfg->newBB(BB_rtls, TWOWAY, 2);
 
-                        // Check for a dynamic linked library function
-                        if (call->getDest()->getOper() == opMemOf &&
-                                call->getDest()->getSubExp1()->getOper() == opIntConst &&
-                                ldrIface->IsDynamicLinkedProcPointer(((Const*)call->getDest()->getSubExp1())->getAddr())) {
-                            // Dynamic linked proc pointers are treated as static.
-                            const char *nam = ldrIface->GetDynamicProcName( ((Const*)call->getDest()->getSubExp1())->getAddr());
-                            Proc *p = pProc->getProg()->getLibraryProc(nam);
-                            call->setDestProc(p);
-                            call->setIsComputed(false);
+                    // Stop decoding sequentially if the basic block already existed otherwise complete the basic block
+                    if (pBB == nullptr)
+                        sequentialDecode = false;
+                    else {
+
+                        // Add the out edge if it is to a destination within the procedure
+                        if (uDest < sec_iface->getLimitTextHigh()) {
+                            targetQueue.visit(pCfg, uDest, pBB);
+                            pCfg->addOutEdge(pBB, uDest, true);
+                        } else {
+                            LOG << "Error: Instruction at " << uAddr << " branches beyond end of section, to " << uDest
+                                << "\n";
                         }
 
-                        // Is the called function a thunk calling a library function?
-                        // A "thunk" is a function which only consists of: "GOTO library_function"
-                        if ( call && call->getFixedDest() != NO_ADDRESS ) {
-                            // Get the address of the called function.
-                            ADDRESS callAddr=call->getFixedDest();
-                            // It should not be in the PLT either, but getLimitTextHigh() takes this into account
-                            if (callAddr < sec_iface->getLimitTextHigh()) {
-                                // Decode it.
-                                DecodeResult decoded=decodeInstruction(callAddr);
-                                if (decoded.valid) { // is the instruction decoded succesfully?
-                                    // Yes, it is. Create a Statement from it.
-                                    RTL *rtl = decoded.rtl;
-                                    Statement* first_statement = rtl->front();
-                                    if (first_statement) {
-                                        first_statement->setProc(pProc);
-                                        first_statement->simplify();
-                                        GotoStatement* stmt_jump = static_cast<GotoStatement*>(first_statement);
-                                        // In fact it's a computed (looked up) jump, so the jump seems to be a case
-                                        // statement.
-                                        if ( first_statement->getKind() == STMT_CASE &&
-                                             stmt_jump->getDest()->getOper() == opMemOf &&
-                                             stmt_jump->getDest()->getSubExp1()->getOper() == opIntConst &&
-                                             ldrIface->IsDynamicLinkedProcPointer(((Const*)stmt_jump->getDest()->getSubExp1())->
-                                                                             getAddr())) { // Is it an "DynamicLinkedProcPointer"?
-                                            // Yes, it's a library function. Look up it's name.
-                                            ADDRESS a = ((Const*)stmt_jump->getDest()->getSubExp1())->getAddr();
-                                            const char *nam = ldrIface->GetDynamicProcName(a);
-                                            // Assign the proc to the call
-                                            Proc *p = pProc->getProg()->getLibraryProc(nam);
-                                            if (call->getDestProc()) {
-                                                // prevent unnecessary __imp procs
-                                                prog->removeProc(call->getDestProc()->getName());
-                                            }
-                                            call->setDestProc(p);
-                                            call->setIsComputed(false);
-                                            call->setDest(Location::memOf(new Const(a)));
+                        // Add the fall-through outedge
+                        pCfg->addOutEdge(pBB, uAddr + inst.numBytes);
+                    }
+
+                    // Create the list of RTLs for the next basic block and continue with the next instruction.
+                    BB_rtls = nullptr;
+                    break;
+                }
+
+                case STMT_CALL: {
+                    CallStatement *call = static_cast<CallStatement *>(s);
+
+                    // Check for a dynamic linked library function
+                    if (call->getDest()->getOper() == opMemOf &&
+                        call->getDest()->getSubExp1()->getOper() == opIntConst &&
+                        ldrIface->IsDynamicLinkedProcPointer(((Const *)call->getDest()->getSubExp1())->getAddr())) {
+                        // Dynamic linked proc pointers are treated as static.
+                        const char *nam =
+                            ldrIface->GetDynamicProcName(((Const *)call->getDest()->getSubExp1())->getAddr());
+                        Proc *p = pProc->getProg()->getLibraryProc(nam);
+                        call->setDestProc(p);
+                        call->setIsComputed(false);
+                    }
+
+                    // Is the called function a thunk calling a library function?
+                    // A "thunk" is a function which only consists of: "GOTO library_function"
+                    if (call && call->getFixedDest() != NO_ADDRESS) {
+                        // Get the address of the called function.
+                        ADDRESS callAddr = call->getFixedDest();
+                        // It should not be in the PLT either, but getLimitTextHigh() takes this into account
+                        if (callAddr < sec_iface->getLimitTextHigh()) {
+                            // Decode it.
+                            DecodeResult decoded = decodeInstruction(callAddr);
+                            if (decoded.valid) { // is the instruction decoded succesfully?
+                                // Yes, it is. Create a Statement from it.
+                                RTL *rtl = decoded.rtl;
+                                Statement *first_statement = rtl->front();
+                                if (first_statement) {
+                                    first_statement->setProc(pProc);
+                                    first_statement->simplify();
+                                    GotoStatement *stmt_jump = static_cast<GotoStatement *>(first_statement);
+                                    // In fact it's a computed (looked up) jump, so the jump seems to be a case
+                                    // statement.
+                                    if (first_statement->getKind() == STMT_CASE &&
+                                        stmt_jump->getDest()->getOper() == opMemOf &&
+                                        stmt_jump->getDest()->getSubExp1()->getOper() == opIntConst &&
+                                        ldrIface->IsDynamicLinkedProcPointer(
+                                            ((Const *)stmt_jump->getDest()->getSubExp1())
+                                                ->getAddr())) { // Is it an "DynamicLinkedProcPointer"?
+                                        // Yes, it's a library function. Look up it's name.
+                                        ADDRESS a = ((Const *)stmt_jump->getDest()->getSubExp1())->getAddr();
+                                        const char *nam = ldrIface->GetDynamicProcName(a);
+                                        // Assign the proc to the call
+                                        Proc *p = pProc->getProg()->getLibraryProc(nam);
+                                        if (call->getDestProc()) {
+                                            // prevent unnecessary __imp procs
+                                            prog->removeProc(call->getDestProc()->getName());
                                         }
+                                        call->setDestProc(p);
+                                        call->setIsComputed(false);
+                                        call->setDest(Location::memOf(new Const(a)));
                                     }
                                 }
                             }
                         }
+                    }
 
-                        // Treat computed and static calls separately
-                        if (call->isComputed()) {
-                            BB_rtls->push_back(pRtl);
-                            pBB = pCfg->newBB(BB_rtls, COMPCALL, 1);
+                    // Treat computed and static calls separately
+                    if (call->isComputed()) {
+                        BB_rtls->push_back(pRtl);
+                        pBB = pCfg->newBB(BB_rtls, COMPCALL, 1);
 
-                            // Stop decoding sequentially if the basic block already
-                            // existed otherwise complete the basic block
-                            if (pBB == nullptr)
-                                sequentialDecode = false;
-                            else
-                                pCfg->addOutEdge(pBB, uAddr + inst.numBytes);
-                            // Add this call to the list of calls to analyse. We won't
-                            // be able to analyse it's callee(s), of course.
-                            callList.push_back(call);
+                        // Stop decoding sequentially if the basic block already
+                        // existed otherwise complete the basic block
+                        if (pBB == nullptr)
+                            sequentialDecode = false;
+                        else
+                            pCfg->addOutEdge(pBB, uAddr + inst.numBytes);
+                        // Add this call to the list of calls to analyse. We won't
+                        // be able to analyse it's callee(s), of course.
+                        callList.push_back(call);
+                    } else { // Static call
+                        // Find the address of the callee.
+                        ADDRESS uNewAddr = call->getFixedDest();
+
+                        // Calls with 0 offset (i.e. call the next instruction) are simply pushing the PC to the
+                        // stack. Treat these as non-control flow instructions and continue.
+                        if (uNewAddr == uAddr + inst.numBytes)
+                            break;
+
+                        // Call the virtual helper function. If implemented, will check for machine specific funcion
+                        // calls
+                        if (helperFunc(uNewAddr, uAddr, BB_rtls)) {
+                            // We have already added to BB_rtls
+                            pRtl = nullptr; // Discard the call semantics
+                            break;
                         }
-                        else {        // Static call
-                            // Find the address of the callee.
-                            ADDRESS uNewAddr = call->getFixedDest();
 
-                            // Calls with 0 offset (i.e. call the next instruction) are simply pushing the PC to the
-                            // stack. Treat these as non-control flow instructions and continue.
-                            if (uNewAddr == uAddr + inst.numBytes)
-                                break;
+                        BB_rtls->push_back(pRtl);
 
-                            // Call the virtual helper function. If implemented, will check for machine specific funcion
-                            // calls
-                            if (helperFunc(uNewAddr, uAddr, BB_rtls)) {
-                                // We have already added to BB_rtls
-                                pRtl = nullptr;        // Discard the call semantics
-                                break;
-                            }
+                        // Add this non computed call site to the set of call sites which need to be analysed later.
+                        // pCfg->addCall(call);
+                        callList.push_back(call);
 
-                            BB_rtls->push_back(pRtl);
-
-                            // Add this non computed call site to the set of call sites which need to be analysed later.
-                            //pCfg->addCall(call);
+                        // Record the called address as the start of a new procedure if it didn't already exist.
+                        if (!uNewAddr.isZero() && uNewAddr != NO_ADDRESS &&
+                            pProc->getProg()->findProc(uNewAddr) == nullptr) {
                             callList.push_back(call);
-
-                            // Record the called address as the start of a new procedure if it didn't already exist.
-                            if ( !uNewAddr.isZero() && uNewAddr != NO_ADDRESS && pProc->getProg()->findProc(uNewAddr) == nullptr) {
-                                callList.push_back(call);
-                                //newProc(pProc->getProg(), uNewAddr);
-                                if (Boomerang::get()->traceDecoder)
+                            // newProc(pProc->getProg(), uNewAddr);
+                            if (Boomerang::get()->traceDecoder)
                                 LOG << "p" << uNewAddr << "\t";
-                            }
-
-                            // Check if this is the _exit or exit function. May prevent us from attempting to decode
-                            // invalid instructions, and getting invalid stack height errors
-                            const char* name = prog->symbolByAddress(uNewAddr);
-                            if (name == nullptr && call->getDest()->isMemOf() &&
-                                    call->getDest()->getSubExp1()->isIntConst()) {
-                                ADDRESS a = ((Const*)call->getDest()->getSubExp1())->getAddr();
-                                if (ldrIface->IsDynamicLinkedProcPointer(a))
-                                    name = ldrIface->GetDynamicProcName(a);
-                            }
-                            if (name && noReturnCallDest(name)) {
-                                // Make sure it has a return appended (so there is only one exit from the function)
-                                //call->setReturnAfterCall(true);        // I think only the Sparc frontend cares
-                                // Create the new basic block
-                                pBB = pCfg->newBB(BB_rtls, CALL, 1);
-                                appendSyntheticReturn(pBB, pProc, pRtl);
-
-                                // Stop decoding sequentially
-                                sequentialDecode = false;
-                            }
-                            else {
-                                // Create the new basic block
-                                pBB = pCfg->newBB(BB_rtls, CALL, 1);
-
-                                if (call->isReturnAfterCall()) {
-                                    // Constuct the RTLs for the new basic block
-                                    std::list<RTL*>* rtls = new std::list<RTL*>();
-                                    // The only RTL in the basic block is one with a ReturnStatement
-                                    std::list<Statement*>* sl = new std::list<Statement*>;
-                                    sl->push_back(new ReturnStatement());
-                                    rtls->push_back(new RTL(pRtl->getAddress()+1, sl));
-
-                                    BasicBlock* returnBB = pCfg->newBB(rtls, RET, 0);
-                                    // Add out edge from call to return
-                                    pCfg->addOutEdge(pBB, returnBB);
-                                    // Put a label on the return BB (since it's an orphan); a jump will be reqd
-                                    pCfg->setLabel(returnBB);
-                                    pBB->setJumpReqd();
-                                    // Mike: do we need to set return locations?
-                                    // This ends the function
-                                    sequentialDecode = false;
-                                }
-                                else {
-                                    // Add the fall through edge if the block didn't
-                                    // already exist
-                                    if (pBB != nullptr)
-                                        pCfg->addOutEdge(pBB, uAddr+inst.numBytes);
-                                }
-                            }
                         }
 
-                        extraProcessCall(call, BB_rtls);
+                        // Check if this is the _exit or exit function. May prevent us from attempting to decode
+                        // invalid instructions, and getting invalid stack height errors
+                        const char *name = prog->symbolByAddress(uNewAddr);
+                        if (name == nullptr && call->getDest()->isMemOf() &&
+                            call->getDest()->getSubExp1()->isIntConst()) {
+                            ADDRESS a = ((Const *)call->getDest()->getSubExp1())->getAddr();
+                            if (ldrIface->IsDynamicLinkedProcPointer(a))
+                                name = ldrIface->GetDynamicProcName(a);
+                        }
+                        if (name && noReturnCallDest(name)) {
+                            // Make sure it has a return appended (so there is only one exit from the function)
+                            // call->setReturnAfterCall(true);        // I think only the Sparc frontend cares
+                            // Create the new basic block
+                            pBB = pCfg->newBB(BB_rtls, CALL, 1);
+                            appendSyntheticReturn(pBB, pProc, pRtl);
 
-                        // Create the list of RTLs for the next basic block and continue with the next instruction.
-                        BB_rtls = nullptr;
-                        break;
+                            // Stop decoding sequentially
+                            sequentialDecode = false;
+                        } else {
+                            // Create the new basic block
+                            pBB = pCfg->newBB(BB_rtls, CALL, 1);
+
+                            if (call->isReturnAfterCall()) {
+                                // Constuct the RTLs for the new basic block
+                                std::list<RTL *> *rtls = new std::list<RTL *>();
+                                // The only RTL in the basic block is one with a ReturnStatement
+                                std::list<Statement *> *sl = new std::list<Statement *>;
+                                sl->push_back(new ReturnStatement());
+                                rtls->push_back(new RTL(pRtl->getAddress() + 1, sl));
+
+                                BasicBlock *returnBB = pCfg->newBB(rtls, RET, 0);
+                                // Add out edge from call to return
+                                pCfg->addOutEdge(pBB, returnBB);
+                                // Put a label on the return BB (since it's an orphan); a jump will be reqd
+                                pCfg->setLabel(returnBB);
+                                pBB->setJumpReqd();
+                                // Mike: do we need to set return locations?
+                                // This ends the function
+                                sequentialDecode = false;
+                            } else {
+                                // Add the fall through edge if the block didn't
+                                // already exist
+                                if (pBB != nullptr)
+                                    pCfg->addOutEdge(pBB, uAddr + inst.numBytes);
+                            }
+                        }
                     }
 
-                    case STMT_RET: {
-                        // Stop decoding sequentially
-                        sequentialDecode = false;
+                    extraProcessCall(call, BB_rtls);
 
-                        pBB = createReturnBlock(pProc, BB_rtls, pRtl);
+                    // Create the list of RTLs for the next basic block and continue with the next instruction.
+                    BB_rtls = nullptr;
+                    break;
+                }
 
-                        // Create the list of RTLs for the next basic block and
-                        // continue with the next instruction.
-                        BB_rtls = nullptr;        // New RTLList for next BB
-                    }
-                        break;
+                case STMT_RET: {
+                    // Stop decoding sequentially
+                    sequentialDecode = false;
 
-                    case STMT_BOOLASSIGN:
-                        // This is just an ordinary instruction; no control transfer
-                        // Fall through
-                    case STMT_JUNCTION:
-                        // FIXME: Do we need to do anything here?
-                    case STMT_ASSIGN:
-                    case STMT_PHIASSIGN:
-                    case STMT_IMPASSIGN:
-                    case STMT_IMPREF:
-                        // Do nothing
-                        break;
+                    pBB = createReturnBlock(pProc, BB_rtls, pRtl);
+
+                    // Create the list of RTLs for the next basic block and
+                    // continue with the next instruction.
+                    BB_rtls = nullptr; // New RTLList for next BB
+                } break;
+
+                case STMT_BOOLASSIGN:
+                // This is just an ordinary instruction; no control transfer
+                // Fall through
+                case STMT_JUNCTION:
+                // FIXME: Do we need to do anything here?
+                case STMT_ASSIGN:
+                case STMT_PHIASSIGN:
+                case STMT_IMPASSIGN:
+                case STMT_IMPREF:
+                    // Do nothing
+                    break;
 
                 } // switch (s->getKind())
             }
@@ -987,18 +980,18 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
             if (sequentialDecode && pCfg->existsBB(uAddr)) {
                 // Create the fallthrough BB, if there are any RTLs at all
                 if (BB_rtls) {
-                    BasicBlock * pBB = pCfg->newBB(BB_rtls, FALL, 1);
+                    BasicBlock *pBB = pCfg->newBB(BB_rtls, FALL, 1);
                     // Add an out edge to this address
                     if (pBB) {
                         pCfg->addOutEdge(pBB, uAddr);
-                        BB_rtls = nullptr;            // Need new list of RTLs
+                        BB_rtls = nullptr; // Need new list of RTLs
                     }
                 }
                 // Pick a new address to decode from, if the BB is complete
                 if (!pCfg->isIncomplete(uAddr))
                     sequentialDecode = false;
             }
-        }    // while sequentialDecode
+        } // while sequentialDecode
 
         // Add this range to the coverage
         //          pProc->addRange(start, uAddr);
@@ -1006,14 +999,14 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
         // Must set sequentialDecode back to true
         sequentialDecode = true;
 
-    }    // while nextAddress() != NO_ADDRESS
+    } // while nextAddress() != NO_ADDRESS
 
-    //ProgWatcher *w = prog->getWatcher();
-    //if (w)
+    // ProgWatcher *w = prog->getWatcher();
+    // if (w)
     //      w->alert_done(pProc, initAddr, lastAddr, nTotalBytes);
 
     // Add the callees to the set of CallStatements, and also to the Prog object
-    std::list<CallStatement*>::iterator it;
+    std::list<CallStatement *>::iterator it;
     for (it = callList.begin(); it != callList.end(); it++) {
         ADDRESS dest = (*it)->getFixedDest();
         // Don't speculatively decode procs that are outside of the main text section, apart from dynamically
@@ -1023,7 +1016,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
             // Don't visit the destination of a register call
             Proc *np = (*it)->getDestProc();
             if (np == nullptr && dest != NO_ADDRESS) {
-                //np = newProc(pProc->getProg(), dest);
+                // np = newProc(pProc->getProg(), dest);
                 np = pProc->getProg()->setNewProc(dest);
             }
             if (np != nullptr) {
@@ -1041,67 +1034,65 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
     return true;
 }
 
-/***************************************************************************//**
- *
- * \brief    Fetch the smallest (nop-sized) instruction, in an endianness independent manner
- * \note        Frequently overridden
- * \param    addr - host address to getch from
- * \returns        An integer with the instruction in it
- ******************************************************************************/
-//int FrontEnd::getInst(int addr)
+/***************************************************************************/ /**
+  *
+  * \brief    Fetch the smallest (nop-sized) instruction, in an endianness independent manner
+  * \note        Frequently overridden
+  * \param    addr - host address to getch from
+  * \returns        An integer with the instruction in it
+  ******************************************************************************/
+// int FrontEnd::getInst(int addr)
 //{
 //    return (int)(*(unsigned char*)addr);
 //}
 
-
-/***************************************************************************//**
- *
- * \brief      Decode the RTL at the given address
- * PARAMETERS:      address - native address of the instruction
- *                  delta - difference between host and native addresses
- *                  decoder - decoder object
- * NOTE:          Only called from findCoverage()
- * \returns          a pointer to the decoded RTL
- ******************************************************************************/
-RTL* decodeRtl(ADDRESS address, int delta, NJMCDecoder* decoder) {
+/***************************************************************************/ /**
+  *
+  * \brief      Decode the RTL at the given address
+  * PARAMETERS:      address - native address of the instruction
+  *                  delta - difference between host and native addresses
+  *                  decoder - decoder object
+  * NOTE:          Only called from findCoverage()
+  * \returns          a pointer to the decoded RTL
+  ******************************************************************************/
+RTL *decodeRtl(ADDRESS address, int delta, NJMCDecoder *decoder) {
     DecodeResult inst = decoder->decodeInstruction(address, delta);
-    RTL*    rtl    = inst.rtl;
+    RTL *rtl = inst.rtl;
     return rtl;
 }
 
-/***************************************************************************//**
- *
- * \brief    Get a Prog object (mainly for testing and not decoding)
- * PARAMETERS:    None
- * \returns        Pointer to a Prog object (with pFE and pBF filled in)
- ******************************************************************************/
-Prog* FrontEnd::getProg() {
-    return prog;
-}
+/***************************************************************************/ /**
+  *
+  * \brief    Get a Prog object (mainly for testing and not decoding)
+  * PARAMETERS:    None
+  * \returns        Pointer to a Prog object (with pFE and pBF filled in)
+  ******************************************************************************/
+Prog *FrontEnd::getProg() { return prog; }
 
-/***************************************************************************//**
- *
- * \brief    Create a Return or a Oneway BB if a return statement already exists
- * PARAMETERS:    pProc: pointer to enclosing UserProc
- *                BB_rtls: list of RTLs for the current BB (not including pRtl)
- *                pRtl: pointer to the current RTL with the semantics for the return statement (including a
- *                    ReturnStatement as the last statement)
- * \returns        Pointer to the newly created BB
- ******************************************************************************/
-BasicBlock * FrontEnd::createReturnBlock(UserProc* pProc, std::list<RTL*>* BB_rtls, RTL* pRtl) {
-    Cfg* pCfg = pProc->getCFG();
-    BasicBlock * pBB;
+/***************************************************************************/ /**
+  *
+  * \brief    Create a Return or a Oneway BB if a return statement already exists
+  * PARAMETERS:    pProc: pointer to enclosing UserProc
+  *                BB_rtls: list of RTLs for the current BB (not including pRtl)
+  *                pRtl: pointer to the current RTL with the semantics for the return statement (including a
+  *                    ReturnStatement as the last statement)
+  * \returns        Pointer to the newly created BB
+  ******************************************************************************/
+BasicBlock *FrontEnd::createReturnBlock(UserProc *pProc, std::list<RTL *> *BB_rtls, RTL *pRtl) {
+    Cfg *pCfg = pProc->getCFG();
+    BasicBlock *pBB;
     // Add the RTL to the list; this has the semantics for the return instruction as well as the ReturnStatement
     // The last Statement may get replaced with a GotoStatement
-    if (BB_rtls == nullptr) BB_rtls = new std::list<RTL*>;        // In case no other semantics
+    if (BB_rtls == nullptr)
+        BB_rtls = new std::list<RTL *>; // In case no other semantics
     BB_rtls->push_back(pRtl);
     ADDRESS retAddr = pProc->getTheReturnAddr();
     // LOG << "retAddr = " << retAddr << " rtl = " << pRtl->getAddress() << "\n";
     if (retAddr == NO_ADDRESS) {
         // Create the basic block
         pBB = pCfg->newBB(BB_rtls, RET, 0);
-        Statement* s = pRtl->back();        // The last statement should be the ReturnStatement
-        pProc->setTheReturnAddr((ReturnStatement*)s, pRtl->getAddress());
+        Statement *s = pRtl->back(); // The last statement should be the ReturnStatement
+        pProc->setTheReturnAddr((ReturnStatement *)s, pRtl->getAddress());
     } else {
         // We want to replace the *whole* RTL with a branch to THE first return's RTL. There can sometimes be extra
         // semantics associated with a return (e.g. Pentium return adds to the stack pointer before setting %pc and
@@ -1109,7 +1100,7 @@ BasicBlock * FrontEnd::createReturnBlock(UserProc* pProc, std::list<RTL*>* BB_rt
         // appear in a previous RTL. It is assumed that THE return statement will have the same semantics (NOTE: may
         // not always be valid). To avoid this assumption, we need branches to statements, not just to native addresses
         // (RTLs).
-        BasicBlock * retBB = pProc->getCFG()->findRetNode();
+        BasicBlock *retBB = pProc->getCFG()->findRetNode();
         assert(retBB);
         if (retBB->getFirstStmt()->isReturn()) {
             // ret node has no semantics, clearly we need to keep ours
@@ -1125,7 +1116,7 @@ BasicBlock * FrontEnd::createReturnBlock(UserProc* pProc, std::list<RTL*>* BB_rt
             // Visit the return instruction. This will be needed in most cases to split the return BB (if it has other
             // instructions before the return instruction).
             targetQueue.visit(pCfg, retAddr, pBB);
-        } catch(Cfg::BBAlreadyExistsError &) {
+        } catch (Cfg::BBAlreadyExistsError &) {
             if (VERBOSE)
                 LOG << "not visiting " << retAddr << " due to exception\n";
         }
@@ -1135,12 +1126,12 @@ BasicBlock * FrontEnd::createReturnBlock(UserProc* pProc, std::list<RTL*>* BB_rt
 
 // Add a synthetic return instruction (or branch to the existing return instruction).
 // NOTE: the call BB should be created with one out edge (the return or branch BB)
-void FrontEnd::appendSyntheticReturn(BasicBlock * pCallBB, UserProc* pProc, RTL* pRtl) {
+void FrontEnd::appendSyntheticReturn(BasicBlock *pCallBB, UserProc *pProc, RTL *pRtl) {
     ReturnStatement *ret = new ReturnStatement();
-    std::list<RTL*> *ret_rtls = new std::list<RTL*>();
-    std::list<Statement*>* stmt_list = new std::list<Statement*>;
+    std::list<RTL *> *ret_rtls = new std::list<RTL *>();
+    std::list<Statement *> *stmt_list = new std::list<Statement *>;
     stmt_list->push_back(ret);
-    BasicBlock * pret = createReturnBlock(pProc, ret_rtls, new RTL(pRtl->getAddress()+1, stmt_list));
+    BasicBlock *pret = createReturnBlock(pProc, ret_rtls, new RTL(pRtl->getAddress() + 1, stmt_list));
     pret->addInEdge(pCallBB);
     pCallBB->setOutEdge(0, pret);
 }
