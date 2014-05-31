@@ -4,3 +4,4 @@ out
 tests/outputs/*
 *.user
 output/log
+3rd_party/gmock
