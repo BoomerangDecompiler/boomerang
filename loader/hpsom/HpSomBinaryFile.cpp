@@ -7,12 +7,12 @@
  *
  */
 
-/***************************************************************************//**
- * \file        HpSomBinaryFile.cpp
- * \brief    This file contains the implementation of the class
- *              HpSomBinaryFile, for decoding PA/RISC SOM executable files.
- *              Derived from class BinaryFile
- ******************************************************************************/
+/***************************************************************************/ /**
+  * \file        HpSomBinaryFile.cpp
+  * \brief    This file contains the implementation of the class
+  *              HpSomBinaryFile, for decoding PA/RISC SOM executable files.
+  *              Derived from class BinaryFile
+  ******************************************************************************/
 
 #include "HpSomBinaryFile.h"
 
@@ -21,33 +21,29 @@
 #include <cstring>
 
 // Macro to convert a pointer to a Big Endian integer into a host integer
-#define UC(p) ((unsigned char*)p)
-#define UINT4(p) ((UC(p)[0] << 24) + (UC(p)[1] << 16) + (UC(p)[2] << 8) + \
-    UC(p)[3])
-#define UINT4ADDR(p) (ADDRESS::g((UC(p)[0] << 24) + (UC(p)[1] << 16) + (UC(p)[2] << 8) + \
-    UC(p)[3]))
+#define UC(p) ((unsigned char *)p)
+#define UINT4(p) ((UC(p)[0] << 24) + (UC(p)[1] << 16) + (UC(p)[2] << 8) + UC(p)[3])
+#define UINT4ADDR(p) (ADDRESS::g((UC(p)[0] << 24) + (UC(p)[1] << 16) + (UC(p)[2] << 8) + UC(p)[3]))
 
-HpSomBinaryFile::HpSomBinaryFile()
-    : m_pImage(0) {
-}
+HpSomBinaryFile::HpSomBinaryFile() : m_pImage(0) {}
 
 HpSomBinaryFile::~HpSomBinaryFile() {
     if (m_pImage) {
         delete m_pImage;
     }
 }
-static int Read2(short* ps) {
-    unsigned char* p = (unsigned char*)ps;
+static int Read2(short *ps) {
+    unsigned char *p = (unsigned char *)ps;
     // Little endian
-    int n = (int(p[0])<<8) | p[1];
+    int n = (int(p[0]) << 8) | p[1];
     return n;
 }
 
-int Read4(int* pi) {
-    short* p = (short*)pi;
+int Read4(int *pi) {
+    short *p = (short *)pi;
     int n1 = Read2(p);
-    int n2 = Read2(p+1);
-    int n = (int) ((n1<<16) | n2);
+    int n2 = Read2(p + 1);
+    int n = (int)((n1 << 16) | n2);
     return n;
 }
 // Read 1 byte from given native address
@@ -55,64 +51,66 @@ char HpSomBinaryFile::readNative1(ADDRESS nat) {
     SectionInfo *si = GetSectionInfoByAddr(nat);
     if (si == 0)
         si = GetSectionInfo(0);
-    char* host = (char*)(si->uHostAddr - si->uNativeAddr + nat).m_value;
+    char *host = (char *)(si->uHostAddr - si->uNativeAddr + nat).m_value;
     return *host;
 }
 
 // Read 2 bytes from given native address
 int HpSomBinaryFile::readNative2(ADDRESS nat) {
     SectionInfo *si = GetSectionInfoByAddr(nat);
-    if (si == 0) return 0;
+    if (si == 0)
+        return 0;
     ADDRESS host = si->uHostAddr - si->uNativeAddr + nat;
-    int n = Read2((short*)host.m_value);
+    int n = Read2((short *)host.m_value);
     return n;
 }
 
 // Read 4 bytes from given native address
 int HpSomBinaryFile::readNative4(ADDRESS nat) {
     SectionInfo *si = GetSectionInfoByAddr(nat);
-    if (si == 0) return 0;
+    if (si == 0)
+        return 0;
     ADDRESS host = si->uHostAddr - si->uNativeAddr + nat;
-    int n = Read4((int*)host.m_value);
+    int n = Read4((int *)host.m_value);
     return n;
 }
 // Read 8 bytes from given native address
-QWord HpSomBinaryFile::readNative8(ADDRESS nat) { //TODO: lifted from Win32 loader, likely wrong
+QWord HpSomBinaryFile::readNative8(ADDRESS nat) { // TODO: lifted from Win32 loader, likely wrong
     int raw[2];
-#ifdef WORDS_BIGENDIAN        // This tests the host machine
+#ifdef WORDS_BIGENDIAN // This tests the host machine
     // Source and host are different endianness
     raw[1] = readNative4(nat);
-    raw[0] = readNative4(nat+4);
+    raw[0] = readNative4(nat + 4);
 #else
     // Source and host are same endianness
     raw[0] = readNative4(nat);
-    raw[1] = readNative4(nat+4);
+    raw[1] = readNative4(nat + 4);
 #endif
-    return *(QWord*)raw;
+    return *(QWord *)raw;
 }
 
 // Read 4 bytes as a float
 float HpSomBinaryFile::readNativeFloat4(ADDRESS nat) {
     int raw = readNative4(nat);
     // Ugh! gcc says that reinterpreting from int to float is invalid!!
-    //return reinterpret_cast<float>(raw);        // Note: cast, not convert!!
-    return *(float*)&raw;                        // Note: cast, not convert
+    // return reinterpret_cast<float>(raw);        // Note: cast, not convert!!
+    return *(float *)&raw; // Note: cast, not convert
 }
 
 // Read 8 bytes as a float
-double HpSomBinaryFile::readNativeFloat8(ADDRESS nat) { //TODO: lifted from Win32 loader, likely wrong
+double HpSomBinaryFile::readNativeFloat8(ADDRESS nat) { // TODO: lifted from Win32 loader, likely wrong
     int raw[2];
-#ifdef WORDS_BIGENDIAN        // This tests the host machine
+#ifdef WORDS_BIGENDIAN // This tests the host machine
     // Source and host are different endianness
     raw[1] = readNative4(nat);
-    raw[0] = readNative4(nat+4);
+    raw[0] = readNative4(nat + 4);
 #else
     // Source and host are same endianness
     raw[0] = readNative4(nat);
-    raw[1] = readNative4(nat+4);
+    raw[1] = readNative4(nat + 4);
 #endif
-    //return reinterpret_cast<double>(*raw);    // Note: cast, not convert!!
-    return *(double*)raw;
+    // return reinterpret_cast<double>(*raw);    // Note: cast, not convert!!
+    return *(double *)raw;
 }
 // Functions to recognise various instruction patterns
 // Note: these are not presently used. May be needed again if it turns out
@@ -181,9 +179,8 @@ bool isStub(ADDRESS hostAddr, int& offset) {
 }
 #endif
 
-
-bool HpSomBinaryFile::RealLoad(const QString & sName) {
-    FILE    *fp;
+bool HpSomBinaryFile::RealLoad(const QString &sName) {
+    FILE *fp;
 
     m_pFileName = sName;
 
@@ -215,14 +212,15 @@ bool HpSomBinaryFile::RealLoad(const QString & sName) {
     unsigned system_id = magic >> 16;
     unsigned a_magic = magic & 0xFFFF;
     if (((system_id != 0x210) && (system_id != 0x20B)) ||
-            ((a_magic != 0x107) && (a_magic != 0x108) && (a_magic != 0x10B))) {
+        ((a_magic != 0x107) && (a_magic != 0x108) && (a_magic != 0x10B))) {
         fprintf(stderr, "%s is not a standard PA/RISC executable file, with "
-                "system ID %X and magic number %X\n", qPrintable(sName), system_id, a_magic);
+                        "system ID %X and magic number %X\n",
+                qPrintable(sName), system_id, a_magic);
         return false;
     }
 
     // Find the array of aux headers
-    unsigned* auxHeaders = (unsigned*)intptr_t(UINT4(m_pImage + 0x1c));
+    unsigned *auxHeaders = (unsigned *)intptr_t(UINT4(m_pImage + 0x1c));
     if (auxHeaders == 0) {
         fprintf(stderr, "Error: auxilliary header array is not present\n");
         return false;
@@ -232,7 +230,7 @@ bool HpSomBinaryFile::RealLoad(const QString & sName) {
     // Search through the auxillary headers. There should be one of type 4
     // ("Exec Auxilliary Header")
     bool found = false;
-    unsigned* maxAux = auxHeaders + sizeAux;
+    unsigned *maxAux = auxHeaders + sizeAux;
     while (auxHeaders < maxAux) {
         if ((UINT4(m_pImage + ADDRESS::value_type(auxHeaders)) & 0xFFFF) == 0x0004) {
             found = true;
@@ -240,7 +238,7 @@ bool HpSomBinaryFile::RealLoad(const QString & sName) {
         }
         // Skip this one; length is at the second word. Rightshift by 2 for
         // sizeof(unsigned).
-        auxHeaders += (UINT4((UC(auxHeaders+1)))) >> 2;
+        auxHeaders += (UINT4((UC(auxHeaders + 1)))) >> 2;
     }
     if (!found) {
         fprintf(stderr, "Error: Exec auxilliary header not found\n");
@@ -268,31 +266,29 @@ bool HpSomBinaryFile::RealLoad(const QString & sName) {
     // The DL table (Dynamic Link info?) is supposed to be at the start of
     // the $TEXT$ space, but the only way I can presently find that is to
     // assume that the first subspace entry points to it
-    char* subspace_location = (char*)m_pImage + UINT4(m_pImage + 0x34);
+    char *subspace_location = (char *)m_pImage + UINT4(m_pImage + 0x34);
     ADDRESS first_subspace_fileloc = ADDRESS::g(UINT4(subspace_location + 8));
-    char* DLTable = (char*)m_pImage + first_subspace_fileloc.m_value;
-    char* pDlStrings = DLTable + UINT4(DLTable + 0x28);
-    unsigned numImports = UINT4(DLTable + 0x14);    // Number of import strings
-    import_entry* import_list = (import_entry*)(DLTable +
-                                                UINT4(DLTable + 0x10));
-    unsigned numExports = UINT4(DLTable + 0x24);    // Number of export strings
-    export_entry* export_list = (export_entry*)(DLTable +
-                                                UINT4(DLTable + 0x20));
+    char *DLTable = (char *)m_pImage + first_subspace_fileloc.m_value;
+    char *pDlStrings = DLTable + UINT4(DLTable + 0x28);
+    unsigned numImports = UINT4(DLTable + 0x14); // Number of import strings
+    import_entry *import_list = (import_entry *)(DLTable + UINT4(DLTable + 0x10));
+    unsigned numExports = UINT4(DLTable + 0x24); // Number of export strings
+    export_entry *export_list = (export_entry *)(DLTable + UINT4(DLTable + 0x20));
 
-    // A convenient macro for accessing the fields (0-11) of the auxilliary header
-    // Fields 0, 1 are the header (flags, aux header type, and size)
-#define AUXHDR(idx) (UINT4(m_pImage + ADDRESS::value_type(auxHeaders+idx)))
+// A convenient macro for accessing the fields (0-11) of the auxilliary header
+// Fields 0, 1 are the header (flags, aux header type, and size)
+#define AUXHDR(idx) (UINT4(m_pImage + ADDRESS::value_type(auxHeaders + idx)))
 
     // Section 0: header
     m_pSections[0].pSectionName = const_cast<char *>("$HEADER$");
-    m_pSections[0].uNativeAddr = 0;         // Not applicable
+    m_pSections[0].uNativeAddr = 0; // Not applicable
     m_pSections[0].uHostAddr = ADDRESS::host_ptr(m_pImage);
     //  m_pSections[0].uSectionSize = AUXHDR(4);
     // There is nothing that appears in memory space here; to give this a size
     // is to invite GetSectionInfoByAddr to return this section!
     m_pSections[0].uSectionSize = 0;
 
-    m_pSections[0].uSectionEntrySize = 1;   // Not applicable
+    m_pSections[0].uSectionEntrySize = 1; // Not applicable
     m_pSections[0].bCode = 0;
     m_pSections[0].bData = 0;
     m_pSections[0].bBss = 0;
@@ -303,7 +299,7 @@ bool HpSomBinaryFile::RealLoad(const QString & sName) {
     m_pSections[1].uNativeAddr = AUXHDR(3);
     m_pSections[1].uHostAddr = ADDRESS::host_ptr(m_pImage) + AUXHDR(4);
     m_pSections[1].uSectionSize = AUXHDR(2);
-    m_pSections[1].uSectionEntrySize = 1;   // Not applicable
+    m_pSections[1].uSectionEntrySize = 1; // Not applicable
     m_pSections[1].bCode = 1;
     m_pSections[1].bData = 0;
     m_pSections[1].bBss = 0;
@@ -314,7 +310,7 @@ bool HpSomBinaryFile::RealLoad(const QString & sName) {
     m_pSections[2].uNativeAddr = AUXHDR(6);
     m_pSections[2].uHostAddr = ADDRESS::host_ptr(m_pImage) + AUXHDR(7);
     m_pSections[2].uSectionSize = AUXHDR(5);
-    m_pSections[2].uSectionEntrySize = 1;   // Not applicable
+    m_pSections[2].uSectionEntrySize = 1; // Not applicable
     m_pSections[2].bCode = 0;
     m_pSections[2].bData = 1;
     m_pSections[2].bBss = 0;
@@ -324,9 +320,9 @@ bool HpSomBinaryFile::RealLoad(const QString & sName) {
     m_pSections[3].pSectionName = const_cast<char *>("$BSS$");
     // For now, assume that BSS starts at the end of the initialised data
     m_pSections[3].uNativeAddr = AUXHDR(6) + AUXHDR(5);
-    m_pSections[3].uHostAddr = 0;           // Not applicable
+    m_pSections[3].uHostAddr = 0; // Not applicable
     m_pSections[3].uSectionSize = AUXHDR(8);
-    m_pSections[3].uSectionEntrySize = 1;   // Not applicable
+    m_pSections[3].uSectionEntrySize = 1; // Not applicable
     m_pSections[3].bCode = 0;
     m_pSections[3].bData = 0;
     m_pSections[3].bBss = 1;
@@ -344,14 +340,14 @@ bool HpSomBinaryFile::RealLoad(const QString & sName) {
     //  int minPLT = pr.first - endData;
     //  int maxPLT = minPLT + pr.second;
     ADDRESS pltStart = pr.first;
-    //cout << "Offset limits are " << dec << minPLT << " and " << maxPLT << endl;
+    // cout << "Offset limits are " << dec << minPLT << " and " << maxPLT << endl;
     // Note: DLT entries come before PLT entries in the import array, but
     // the $DLT$ subsection is not necessarilly just before the $PLT$
     // subsection in memory.
     int numDLT = UINT4(DLTable + 0x40);
 
-    // This code was for pattern patching the BOR (Bind On Reference, or library call stub) routines. It appears to be
-    // unnecessary, since as they appear in the file, the PLT entries point to the BORs
+// This code was for pattern patching the BOR (Bind On Reference, or library call stub) routines. It appears to be
+// unnecessary, since as they appear in the file, the PLT entries point to the BORs
 #if 0
     ADDRESS startText = m_pSections[1].uHostAddr;
     ADDRESS endText = startText + m_pSections[1].uSectionSize - 0x10;
@@ -378,19 +374,21 @@ bool HpSomBinaryFile::RealLoad(const QString & sName) {
     // There should be a one to one correspondance between (DLT + PLT) entries and import table entries.
     // The DLT entries always come first in the import table
     unsigned u = (unsigned)numDLT, v = 0;
-    plt_record* PLTs = (plt_record*)(pltStart + deltaData).m_value;
+    plt_record *PLTs = (plt_record *)(pltStart + deltaData).m_value;
     for (; u < numImports; u++, v++) {
-        //cout << "Importing " << (pDlStrings+import_list[u].name) << endl;
+        // cout << "Importing " << (pDlStrings+import_list[u].name) << endl;
         symbols.Add(PLTs[v].value, pDlStrings + UINT4(&import_list[u].name));
         // Add it to the set of imports; needed by IsDynamicLinkedProc()
         imports.insert(PLTs[v].value);
-        //cout << "Added import sym " << (import_list[u].name + pDlStrings) << ", value " << hex << PLTs[v].value << endl;
+        // cout << "Added import sym " << (import_list[u].name + pDlStrings) << ", value " << hex << PLTs[v].value <<
+        // endl;
     }
     // Work through the exports, and find main. This isn't main itself,
     // but in fact a call to main.
-    for (u=0; u < numExports; u++) {
-        //cout << "Exporting " << (pDlStrings+UINT4(&export_list[u].name)) << " value " << hex << UINT4(&export_list[u].value) << endl;
-        if (strncmp(pDlStrings+UINT4(&export_list[u].name), "main", 4) == 0) {
+    for (u = 0; u < numExports; u++) {
+        // cout << "Exporting " << (pDlStrings+UINT4(&export_list[u].name)) << " value " << hex <<
+        // UINT4(&export_list[u].value) << endl;
+        if (strncmp(pDlStrings + UINT4(&export_list[u].name), "main", 4) == 0) {
             // Enter the symbol "_callmain" for this address
             symbols.Add(UINT4ADDR(&export_list[u].value), const_cast<char *>("_callmain"));
             // Found call to main. Extract the offset. See assemble_17
@@ -404,11 +402,11 @@ bool HpSomBinaryFile::RealLoad(const QString & sName) {
             // +----------------------+--------+-----+----------+
             //  31                  16|15    11| 10  |9        0
 
-            unsigned bincall = *(unsigned*) (UINT4(&export_list[u].value) + deltaText);
-            int offset = ((((bincall & 1) << 31) >> 15) |     // w
-                          ((bincall & 0x1f0000) >> 5) |      // w1
-                          ((bincall &        4) << 8) |      // w2@10
-                          ((bincall &   0x1ff8) >> 3));      // w2@0..9
+            unsigned bincall = *(unsigned *)(UINT4(&export_list[u].value) + deltaText);
+            int offset = ((((bincall & 1) << 31) >> 15) | // w
+                          ((bincall & 0x1f0000) >> 5) |   // w1
+                          ((bincall & 4) << 8) |          // w2@10
+                          ((bincall & 0x1ff8) >> 3));     // w2@0..9
             // Address of main is st + 8 + offset << 2
             symbols.Add(UINT4ADDR(&export_list[u].value) + 8 + (offset << 2), const_cast<char *>("main"));
             break;
@@ -417,14 +415,15 @@ bool HpSomBinaryFile::RealLoad(const QString & sName) {
 
     // Read the main symbol table, if any
     if (numSym) {
-        char* pNames = (char*) (m_pImage+(int)UINT4(m_pImage+0x6C));
-#define SYMSIZE 20              // 5 4-byte words per symbol entry
-#define SYMBOLNM(idx)  (UINT4((symPtr + idx*SYMSIZE + 4).m_value))
-#define SYMBOLAUX(idx) (UINT4((symPtr + idx*SYMSIZE + 8).m_value))
-#define SYMBOLVAL(idx) (UINT4((symPtr + idx*SYMSIZE + 16).m_value))
-#define SYMBOLTY(idx)  ((UINT4((symPtr + idx*SYMSIZE).m_value) >> 24) & 0x3f)
-        for (u=0; u < numSym; u++) {
-            // cout << "Symbol " << pNames+SYMBOLNM(u) << ", type " << SYMBOLTY(u) << ", value " << hex << SYMBOLVAL(u) << ", aux " << SYMBOLAUX(u) << endl;
+        char *pNames = (char *)(m_pImage + (int)UINT4(m_pImage + 0x6C));
+#define SYMSIZE 20 // 5 4-byte words per symbol entry
+#define SYMBOLNM(idx) (UINT4((symPtr + idx * SYMSIZE + 4).m_value))
+#define SYMBOLAUX(idx) (UINT4((symPtr + idx * SYMSIZE + 8).m_value))
+#define SYMBOLVAL(idx) (UINT4((symPtr + idx * SYMSIZE + 16).m_value))
+#define SYMBOLTY(idx) ((UINT4((symPtr + idx * SYMSIZE).m_value) >> 24) & 0x3f)
+        for (u = 0; u < numSym; u++) {
+            // cout << "Symbol " << pNames+SYMBOLNM(u) << ", type " << SYMBOLTY(u) << ", value " << hex << SYMBOLVAL(u)
+            // << ", aux " << SYMBOLAUX(u) << endl;
             unsigned symbol_type = SYMBOLTY(u);
             // Only interested in type 3 (code), 8 (stub), and 12 (millicode)
             if ((symbol_type != 3) && (symbol_type != 8) && (symbol_type != 12))
@@ -432,10 +431,11 @@ bool HpSomBinaryFile::RealLoad(const QString & sName) {
             //          if ((symbol_type == 10) || (symbol_type == 11))
             // These are extension entries; not interested
             //              continue;
-            char* pSymName = pNames + SYMBOLNM(u);
+            char *pSymName = pNames + SYMBOLNM(u);
             // Ignore symbols starting with one $; for example, there are many
             // $CODE$ (but we want to see helper functions like $$remU)
-            if ((pSymName[0] == '$') && (pSymName[1] != '$')) continue;
+            if ((pSymName[0] == '$') && (pSymName[1] != '$'))
+                continue;
             //          if ((symbol_type == 6) && (strcmp("main", pSymName) == 0))
             // Entry point for main. Make sure to ignore this entry, else it
             // ends up being the main entry point
@@ -443,23 +443,24 @@ bool HpSomBinaryFile::RealLoad(const QString & sName) {
             ADDRESS value = ADDRESS::g(SYMBOLVAL(u));
             //          if ((symbol_type >= 3) && (symbol_type <= 8))
             // Addresses of code; remove the privilege bits
-                value.m_value &= ~3;
-            //if (strcmp("main", pNames+SYMBOLNM(u)) == 0) {    // HACK!
+            value.m_value &= ~3;
+            // if (strcmp("main", pNames+SYMBOLNM(u)) == 0) {    // HACK!
             //  cout << "main at " << hex << value << " has type " << SYMBOLTY(u) << endl;}
             // HP's symbol table is crazy. It seems that imports like printf have entries of type 3 with the wrong
             // value. So we have to check whether the symbol has already been entered (assume first one is correct).
             if (symbols.find(pSymName) == NO_ADDRESS)
                 symbols.Add(value, pSymName);
-            //cout << "Symbol " << pNames+SYMBOLNM(u) << ", type " << SYMBOLTY(u) << ", value " << hex << value << ", aux " << SYMBOLAUX(u) << endl;  // HACK!
+            // cout << "Symbol " << pNames+SYMBOLNM(u) << ", type " << SYMBOLTY(u) << ", value " << hex << value << ",
+            // aux " << SYMBOLAUX(u) << endl;  // HACK!
         }
-    }       // if (numSym)
+    } // if (numSym)
 
     return true;
 }
 
 void HpSomBinaryFile::UnLoad() {
     if (m_pImage) {
-        delete [] m_pImage;
+        delete[] m_pImage;
         m_pImage = 0;
     }
 }
@@ -470,18 +471,17 @@ ADDRESS HpSomBinaryFile::GetEntryPoint() {
 }
 
 // This is provided for completeness only...
-std::list<SectionInfo*>& HpSomBinaryFile::GetEntryPoints(const char* pEntry
-                                                         /* = "main" */) {
-    std::list<SectionInfo*>* ret = new std::list<SectionInfo*>;
-    SectionInfo* pSect = GetSectionInfoByName("code1");
+std::list<SectionInfo *> &HpSomBinaryFile::GetEntryPoints(const char *pEntry
+                                                          /* = "main" */) {
+    std::list<SectionInfo *> *ret = new std::list<SectionInfo *>;
+    SectionInfo *pSect = GetSectionInfoByName("code1");
     if (pSect == 0)
-        return *ret;               // Failed
+        return *ret; // Failed
     ret->push_back(pSect);
     return *ret;
 }
 
-
-bool HpSomBinaryFile::Open(const char* sName) {
+bool HpSomBinaryFile::Open(const char *sName) {
     // Not implemented yet
     return false;
 }
@@ -489,48 +489,35 @@ void HpSomBinaryFile::Close() {
     // Not implemented yet
     return;
 }
-bool HpSomBinaryFile::PostLoad(void* handle) {
+bool HpSomBinaryFile::PostLoad(void *handle) {
     // Not needed: for archives only
     return false;
 }
 
-LOAD_FMT HpSomBinaryFile::GetFormat() const {
-    return LOADFMT_PAR;
-}
+LOAD_FMT HpSomBinaryFile::GetFormat() const { return LOADFMT_PAR; }
 
-MACHINE HpSomBinaryFile::GetMachine() const {
-    return MACHINE_HPRISC;
-}
+MACHINE HpSomBinaryFile::GetMachine() const { return MACHINE_HPRISC; }
 
 bool HpSomBinaryFile::isLibrary() const {
-    int type =  UINT4(m_pImage)&0xFFFF;
-    return ( type == 0x0104 || type == 0x010D ||
-             type == 0x010E || type == 0x0619 );
+    int type = UINT4(m_pImage) & 0xFFFF;
+    return (type == 0x0104 || type == 0x010D || type == 0x010E || type == 0x0619);
 }
 
-QStringList HpSomBinaryFile::getDependencyList() {
-    return QStringList(); /* FIXME */
-}
+QStringList HpSomBinaryFile::getDependencyList() { return QStringList(); /* FIXME */ }
 
-ADDRESS HpSomBinaryFile::getImageBase() {
-    return ADDRESS::g(0L); /* FIXME */
-}
+ADDRESS HpSomBinaryFile::getImageBase() { return ADDRESS::g(0L); /* FIXME */ }
 
-size_t HpSomBinaryFile::getImageSize() {
-    return UINT4(m_pImage + 0x24);
-}
+size_t HpSomBinaryFile::getImageSize() { return UINT4(m_pImage + 0x24); }
 
 // We at least need to be able to name the main function and system calls
-const char* HpSomBinaryFile::SymbolByAddress(ADDRESS a) {
-    return symbols.find(a);
-}
+const char *HpSomBinaryFile::SymbolByAddress(ADDRESS a) { return symbols.find(a); }
 
-ADDRESS HpSomBinaryFile::GetAddressByName(const char * pName, bool bNoTypeOK /* = false */) {
+ADDRESS HpSomBinaryFile::GetAddressByName(const char *pName, bool bNoTypeOK /* = false */) {
     // For now, we ignore the symbol table and do a linear search of our
     // SymTab table
     ADDRESS res = symbols.find(pName);
     if (res == NO_ADDRESS)
-        return ADDRESS::g(0L);           // Till the failure return value is fixed
+        return ADDRESS::g(0L); // Till the failure return value is fixed
     return res;
 }
 
@@ -539,27 +526,26 @@ bool HpSomBinaryFile::IsDynamicLinkedProc(ADDRESS uNative) {
     return imports.find(uNative) != imports.end();
 }
 
-std::pair<ADDRESS, int> HpSomBinaryFile::getSubspaceInfo(const char* ssname) {
+std::pair<ADDRESS, int> HpSomBinaryFile::getSubspaceInfo(const char *ssname) {
     std::pair<ADDRESS, int> ret(ADDRESS::g(0L), 0);
     // Get the start and length of the subspace with the given name
-    struct subspace_dictionary_record* subSpaces =
-            (struct subspace_dictionary_record*)(m_pImage + UINT4(m_pImage + 0x34));
-            unsigned numSubSpaces = UINT4(m_pImage + 0x38);
-            const char* spaceStrings = (const char*)
-                                       (m_pImage + UINT4(m_pImage + 0x44));
-            for (unsigned u=0; u < numSubSpaces; u++) {
-                char* thisName = (char*)(spaceStrings + UINT4(&subSpaces[u].name));
-                unsigned thisNameSize = UINT4(spaceStrings + UINT4(&subSpaces[u].name) - 4);
-                //cout << "Subspace " << thisName << " starts " << hex << subSpaces[u].subspace_start << " length " << subSpaces[u].subspace_length << endl;
-                if ((thisNameSize == strlen(ssname)) &&
-                        ((strcmp(thisName, ssname) == 0))) {
-                    ret.first = UINT4(&subSpaces[u].subspace_start);
-                    ret.second = UINT4(&subSpaces[u].subspace_length);
-                    return ret;
-                }
-            }
-            // Failed. Return the zeroes
+    struct subspace_dictionary_record *subSpaces =
+        (struct subspace_dictionary_record *)(m_pImage + UINT4(m_pImage + 0x34));
+    unsigned numSubSpaces = UINT4(m_pImage + 0x38);
+    const char *spaceStrings = (const char *)(m_pImage + UINT4(m_pImage + 0x44));
+    for (unsigned u = 0; u < numSubSpaces; u++) {
+        char *thisName = (char *)(spaceStrings + UINT4(&subSpaces[u].name));
+        unsigned thisNameSize = UINT4(spaceStrings + UINT4(&subSpaces[u].name) - 4);
+        // cout << "Subspace " << thisName << " starts " << hex << subSpaces[u].subspace_start << " length " <<
+        // subSpaces[u].subspace_length << endl;
+        if ((thisNameSize == strlen(ssname)) && ((strcmp(thisName, ssname) == 0))) {
+            ret.first = UINT4(&subSpaces[u].subspace_start);
+            ret.second = UINT4(&subSpaces[u].subspace_length);
             return ret;
+        }
+    }
+    // Failed. Return the zeroes
+    return ret;
 }
 
 // Specific to BinaryFile objects that implement a "global pointer"
@@ -567,7 +553,7 @@ std::pair<ADDRESS, int> HpSomBinaryFile::getSubspaceInfo(const char* ssname) {
 // (first) and the value for GLOBALOFFSET (unused for ra-risc)
 // The understanding at present is that the global data pointer (%r27 for
 // pa-risc) points just past the end of the $GLOBAL$ subspace.
-std::pair<ADDRESS,unsigned> HpSomBinaryFile::GetGlobalPointerInfo() {
+std::pair<ADDRESS, unsigned> HpSomBinaryFile::GetGlobalPointerInfo() {
     std::pair<ADDRESS, unsigned> ret(ADDRESS::g(0L), 0);
     // Search the subspace names for "$GLOBAL$
     std::pair<ADDRESS, int> info = getSubspaceInfo("$GLOBAL$");
@@ -577,43 +563,42 @@ std::pair<ADDRESS,unsigned> HpSomBinaryFile::GetGlobalPointerInfo() {
     return ret;
 }
 
-/***************************************************************************//**
- *
- * \brief    Get a map from ADDRESS to const char*. This map contains the
- *                native addresses and symbolic names of global data items
- *                (if any) which are shared with dynamically linked libraries.
- *                Example: __iob (basis for stdout). The ADDRESS is the native
- *                address of a pointer to the real dynamic data object.
- * NOTE:        The caller should delete the returned map.
- * PARAMETERS:  None
- * \returns     Pointer to a new map with the info
- ******************************************************************************/
-std::map<ADDRESS, const char*>* HpSomBinaryFile::GetDynamicGlobalMap() {
+/***************************************************************************/ /**
+  *
+  * \brief    Get a map from ADDRESS to const char*. This map contains the
+  *                native addresses and symbolic names of global data items
+  *                (if any) which are shared with dynamically linked libraries.
+  *                Example: __iob (basis for stdout). The ADDRESS is the native
+  *                address of a pointer to the real dynamic data object.
+  * NOTE:        The caller should delete the returned map.
+  * PARAMETERS:  None
+  * \returns     Pointer to a new map with the info
+  ******************************************************************************/
+std::map<ADDRESS, const char *> *HpSomBinaryFile::GetDynamicGlobalMap() {
     // Find the DL Table, if it exists
     // The DL table (Dynamic Link info) is supposed to be at the start of
     // the $TEXT$ space, but the only way I can presently find that is to
     // assume that the first subspace entry points to it
-    const char* subspace_location = (char*)m_pImage + UINT4(m_pImage + 0x34);
+    const char *subspace_location = (char *)m_pImage + UINT4(m_pImage + 0x34);
     ADDRESS first_subspace_fileloc = ADDRESS::g(UINT4(subspace_location + 8));
-    const char* DLTable = (char*)m_pImage + first_subspace_fileloc.m_value;
+    const char *DLTable = (char *)m_pImage + first_subspace_fileloc.m_value;
 
     unsigned numDLT = UINT4(DLTable + 0x40);
     // Offset 0x38 in the DL table has the offset relative to $DATA$ (section 2)
-    unsigned* p = (unsigned*)(UINT4(DLTable + 0x38) + m_pSections[2].uHostAddr.m_value);
+    unsigned *p = (unsigned *)(UINT4(DLTable + 0x38) + m_pSections[2].uHostAddr.m_value);
 
     // The DLT is paralelled by the first <numDLT> entries in the import table;
     // the import table has the symbolic names
-    const import_entry* import_list = (import_entry*)(DLTable +
-                                                      UINT4(DLTable + 0x10));
+    const import_entry *import_list = (import_entry *)(DLTable + UINT4(DLTable + 0x10));
     // Those names are in the DLT string table
-    const char* pDlStrings = DLTable + UINT4(DLTable + 0x28);
+    const char *pDlStrings = DLTable + UINT4(DLTable + 0x28);
 
-    std::map<ADDRESS, const char*>* ret = new std::map<ADDRESS, const char*>;
-    for (unsigned u=0; u < numDLT; u++) {
+    std::map<ADDRESS, const char *> *ret = new std::map<ADDRESS, const char *>;
+    for (unsigned u = 0; u < numDLT; u++) {
         // ? Sometimes the names are just -1
         if (import_list[u].name == -1)
             continue;
-        const char* str = pDlStrings + import_list[u].name;
+        const char *str = pDlStrings + import_list[u].name;
         (*ret)[ADDRESS::g(*p++)] = str;
     }
     return ret;
@@ -663,8 +648,4 @@ ADDRESS HpSomBinaryFile::GetMainEntryPoint() {
 #endif
 }
 
-
-LoaderInterface::tMapAddrToString &HpSomBinaryFile::getSymbols()
-{
-    return symbols.getAll();
-}
+LoaderInterface::tMapAddrToString &HpSomBinaryFile::getSymbols() { return symbols.getAll(); }

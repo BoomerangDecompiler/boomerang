@@ -20,15 +20,13 @@
 #include <cassert>
 #include "ExeBinaryFile.h"
 
-ExeBinaryFile::ExeBinaryFile()
-{
-}
+ExeBinaryFile::ExeBinaryFile() {}
 
-bool ExeBinaryFile::RealLoad(const QString & sName) {
-    FILE   *fp;
-    int        i, cb;
-    Byte    buf[4];
-    int        fCOM;
+bool ExeBinaryFile::RealLoad(const QString &sName) {
+    FILE *fp;
+    int i, cb;
+    Byte buf[4];
+    int fCOM;
 
     m_pFileName = sName;
 
@@ -58,7 +56,7 @@ bool ExeBinaryFile::RealLoad(const QString & sName) {
     }
 
     // Check for the "MZ" exe header
-    if (! (fCOM = (m_pHeader->sigLo != 0x4D || m_pHeader->sigHi != 0x5A))) {
+    if (!(fCOM = (m_pHeader->sigLo != 0x4D || m_pHeader->sigHi != 0x5A))) {
         /* Read rest of m_pHeader */
         fseek(fp, 0, SEEK_SET);
         if (fread(m_pHeader, sizeof(exeHeader), 1, fp) != 1) {
@@ -77,8 +75,7 @@ bool ExeBinaryFile::RealLoad(const QString & sName) {
                  * less the length of the m_pHeader and reloc table
                  * less the number of bytes unused on last page
                 */
-        cb = (DWord)LH(&m_pHeader->numPages) * 512 -
-             (DWord)LH(&m_pHeader->numParaHeader) * 16;
+        cb = (DWord)LH(&m_pHeader->numPages) * 512 - (DWord)LH(&m_pHeader->numParaHeader) * 16;
         if (m_pHeader->lastPageSize) {
             cb -= 512 - LH(&m_pHeader->lastPageSize);
         }
@@ -98,7 +95,8 @@ bool ExeBinaryFile::RealLoad(const QString & sName) {
             m_pRelocTable = new DWord[m_cReloc];
             if (m_pRelocTable == nullptr) {
                 fprintf(stderr, "Could not allocate relocation table "
-                        "(%d entries)\n", m_cReloc);
+                                "(%d entries)\n",
+                        m_cReloc);
                 return 0;
             }
             fseek(fp, LH(&m_pHeader->relocTabOffset), SEEK_SET);
@@ -106,8 +104,7 @@ bool ExeBinaryFile::RealLoad(const QString & sName) {
             /* Read in seg:offset pairs and convert to Image ptrs */
             for (i = 0; i < m_cReloc; i++) {
                 fread(buf, 1, 4, fp);
-                m_pRelocTable[i] = LH(buf) +
-                                   (((int)LH(buf+2))<<4);
+                m_pRelocTable[i] = LH(buf) + (((int)LH(buf + 2)) << 4);
             }
         }
 
@@ -118,8 +115,7 @@ bool ExeBinaryFile::RealLoad(const QString & sName) {
         // the segment in the top half, and offset int he bottom
         m_uInitPC = ((LH(&m_pHeader->initCS)) << 16) + LH(&m_pHeader->initIP);
         m_uInitSP = ((LH(&m_pHeader->initSS)) << 16) + LH(&m_pHeader->initSP);
-    }
-    else {
+    } else {
         /* COM file
          * In this case the load module size is just the file length
          */
@@ -138,8 +134,8 @@ bool ExeBinaryFile::RealLoad(const QString & sName) {
     }
 
     /* Allocate a block of memory for the image. */
-    m_cbImage  = cb;
-    m_pImage    = new Byte[m_cbImage];
+    m_cbImage = cb;
+    m_pImage = new Byte[m_cbImage];
 
     if (cb != (int)fread(m_pImage, 1, (size_t)cb, fp)) {
         fprintf(stderr, "Cannot read file %s\n", qPrintable(sName));
@@ -150,48 +146,47 @@ bool ExeBinaryFile::RealLoad(const QString & sName) {
     if (m_cReloc) {
         for (i = 0; i < m_cReloc; i++) {
             Byte *p = &m_pImage[m_pRelocTable[i]];
-            SWord  w = (SWord)LH(p);
-            *p++    = (Byte)(w & 0x00FF);
-            *p      = (Byte)((w & 0xFF00) >> 8);
+            SWord w = (SWord)LH(p);
+            *p++ = (Byte)(w & 0x00FF);
+            *p = (Byte)((w & 0xFF00) >> 8);
         }
     }
 
     fclose(fp);
 
-    m_pSections[0].pSectionName = const_cast<char *>("$HEADER");    // Special header section
+    m_pSections[0].pSectionName = const_cast<char *>("$HEADER"); // Special header section
     //    m_pSections[0].fSectionFlags = ST_HEADER;
-    m_pSections[0].uNativeAddr = 0;                // Not applicable
+    m_pSections[0].uNativeAddr = 0; // Not applicable
     m_pSections[0].uHostAddr = ADDRESS::host_ptr(m_pHeader);
     m_pSections[0].uSectionSize = sizeof(exeHeader);
-    m_pSections[0].uSectionEntrySize = 1;        // Not applicable
+    m_pSections[0].uSectionEntrySize = 1; // Not applicable
 
-    m_pSections[1].pSectionName = const_cast<char *>(".text");        // The text and data section
+    m_pSections[1].pSectionName = const_cast<char *>(".text"); // The text and data section
     m_pSections[1].bCode = true;
     m_pSections[1].bData = true;
     m_pSections[1].uNativeAddr = 0;
     m_pSections[1].uHostAddr = ADDRESS::host_ptr(m_pImage);
     m_pSections[1].uSectionSize = m_cbImage;
-    m_pSections[1].uSectionEntrySize = 1;        // Not applicable
+    m_pSections[1].uSectionEntrySize = 1; // Not applicable
 
-    m_pSections[2].pSectionName = const_cast<char *>("$RELOC");        // Special relocation section
+    m_pSections[2].pSectionName = const_cast<char *>("$RELOC"); // Special relocation section
     //    m_pSections[2].fSectionFlags = ST_RELOC;    // Give it a special flag
-    m_pSections[2].uNativeAddr = 0;                // Not applicable
+    m_pSections[2].uNativeAddr = 0; // Not applicable
     m_pSections[2].uHostAddr = ADDRESS::host_ptr(m_pRelocTable);
     m_pSections[2].uSectionSize = sizeof(DWord) * m_cReloc;
     m_pSections[2].uSectionEntrySize = sizeof(DWord);
 
     return 1;
-
 }
 
 // Clean up and unload the binary image
 void ExeBinaryFile::UnLoad() {
     delete m_pHeader;
-    delete [] m_pImage;
-    delete [] m_pRelocTable;
+    delete[] m_pImage;
+    delete[] m_pRelocTable;
 }
 
-//const char *ExeBinaryFile::SymbolByAddress(ADDRESS dwAddr) {
+// const char *ExeBinaryFile::SymbolByAddress(ADDRESS dwAddr) {
 //    if (dwAddr == GetMainEntryPoint())
 //        return const_cast<char *>("main");
 
@@ -229,20 +224,16 @@ double ExeBinaryFile::readNativeFloat8(ADDRESS a) {
     return 0;
 }
 
-bool ExeBinaryFile::DisplayDetails(const char* fileName, FILE* f
+bool ExeBinaryFile::DisplayDetails(const char *fileName, FILE *f
                                    /* = stdout */) {
     return false;
 }
 
-LOAD_FMT ExeBinaryFile::GetFormat() const {
-    return LOADFMT_EXE;
-}
+LOAD_FMT ExeBinaryFile::GetFormat() const { return LOADFMT_EXE; }
 
-MACHINE ExeBinaryFile::GetMachine() const {
-    return MACHINE_PENTIUM;
-}
+MACHINE ExeBinaryFile::GetMachine() const { return MACHINE_PENTIUM; }
 
-bool ExeBinaryFile::Open(const char* sName) {
+bool ExeBinaryFile::Open(const char *sName) {
     // Not implemented yet
     return false;
 }
@@ -250,48 +241,37 @@ void ExeBinaryFile::Close() {
     // Not implemented yet
     return;
 }
-bool ExeBinaryFile::PostLoad(void* handle) {
+bool ExeBinaryFile::PostLoad(void *handle) {
     // Not needed: for archives only
     return false;
 }
 
-bool ExeBinaryFile::isLibrary() const {
-    return false;
-}
+bool ExeBinaryFile::isLibrary() const { return false; }
 
-QStringList ExeBinaryFile::getDependencyList() {
-    return QStringList(); /* for now */
-}
+QStringList ExeBinaryFile::getDependencyList() { return QStringList(); /* for now */ }
 
-ADDRESS ExeBinaryFile::getImageBase() {
-    return ADDRESS::g(0L); /* FIXME */
-}
+ADDRESS ExeBinaryFile::getImageBase() { return ADDRESS::g(0L); /* FIXME */ }
 
-size_t ExeBinaryFile::getImageSize() {
-    return 0; /* FIXME */
-}
+size_t ExeBinaryFile::getImageSize() { return 0; /* FIXME */ }
 
 // Should be doing a search for this
-ADDRESS ExeBinaryFile::GetMainEntryPoint() {
-    return NO_ADDRESS;
-}
+ADDRESS ExeBinaryFile::GetMainEntryPoint() { return NO_ADDRESS; }
 
 ADDRESS ExeBinaryFile::GetEntryPoint() {
     // Check this...
     return ADDRESS::g((LH(&m_pHeader->initCS) << 4) + LH(&m_pHeader->initIP));
 }
 
-LoaderInterface::tMapAddrToString &ExeBinaryFile::getSymbols()
-{
+LoaderInterface::tMapAddrToString &ExeBinaryFile::getSymbols() {
     tMapAddrToString empty;
     return empty;
 }
 
 // This is provided for completeness only...
-std::list<SectionInfo*>& ExeBinaryFile::GetEntryPoints(const char* pEntry
-                                                       /* = "main"*/) {
-    std::list<SectionInfo*>* ret = new std::list<SectionInfo*>;
-#if 0           // Copied from PalmBinaryFile.cc
+std::list<SectionInfo *> &ExeBinaryFile::GetEntryPoints(const char *pEntry
+                                                        /* = "main"*/) {
+    std::list<SectionInfo *> *ret = new std::list<SectionInfo *>;
+#if 0 // Copied from PalmBinaryFile.cc
     SectionInfo* pSect = GetSectionInfoByName("code1");
     if (pSect == 0)
         return *ret;               // Failed
@@ -308,8 +288,7 @@ extern "C" {
 #ifdef _WIN32
 __declspec(dllexport)
 #endif
-QObject* construct() {
+    QObject *construct() {
     return new ExeBinaryFile;
 }
 }
-

@@ -23,7 +23,7 @@
 #include "macho-apple.h"
 
 #include "objc/objc-class.h"
-#include <stdarg.h>                    // For va_list for MinGW at least
+#include <stdarg.h> // For va_list for MinGW at least
 #include "objc/objc-runtime.h"
 
 #include <iostream>
@@ -41,39 +41,35 @@ MachOBinaryFile::MachOBinaryFile() {
 }
 
 MachOBinaryFile::~MachOBinaryFile() {
-    for (int i=0; i < m_iNumSections; i++) {
+    for (int i = 0; i < m_iNumSections; i++) {
         if (m_pSections[i].pSectionName)
-            delete [] m_pSections[i].pSectionName;
+            delete[] m_pSections[i].pSectionName;
     }
-    if (m_pSections) delete [] m_pSections;
+    if (m_pSections)
+        delete[] m_pSections;
 }
 
-bool MachOBinaryFile::Open(const char* sName) {
-    //return Load(sName) != 0;
+bool MachOBinaryFile::Open(const char *sName) {
+    // return Load(sName) != 0;
     return false;
 }
 
-void MachOBinaryFile::Close() {
-    UnLoad();
-}
+void MachOBinaryFile::Close() { UnLoad(); }
 
-std::list<SectionInfo*>& MachOBinaryFile::GetEntryPoints(
-        const char* pEntry) {
-    fprintf(stderr,"really don't know how to implement GetEntryPoints\n");
+std::list<SectionInfo *> &MachOBinaryFile::GetEntryPoints(const char *pEntry) {
+    fprintf(stderr, "really don't know how to implement GetEntryPoints\n");
     exit(0);
-    static std::list<SectionInfo*> l;
+    static std::list<SectionInfo *> l;
     return l;
 }
 
-ADDRESS MachOBinaryFile::GetEntryPoint() {
-    return entrypoint;
-}
+ADDRESS MachOBinaryFile::GetEntryPoint() { return entrypoint; }
 
 ADDRESS MachOBinaryFile::GetMainEntryPoint() {
-    ADDRESS aMain = GetAddressByName ("main", true);
+    ADDRESS aMain = GetAddressByName("main", true);
     if (aMain != NO_ADDRESS)
         return aMain;
-    aMain = GetAddressByName ("_main", true);
+    aMain = GetAddressByName("_main", true);
     if (aMain != NO_ADDRESS)
         return aMain;
 
@@ -84,36 +80,36 @@ ADDRESS MachOBinaryFile::GetMainEntryPoint() {
 
 bool MachOBinaryFile::RealLoad(const QString &sName) {
     m_pFileName = sName;
-    FILE *fp = fopen(qPrintable(sName),"rb");
+    FILE *fp = fopen(qPrintable(sName), "rb");
     unsigned int imgoffs = 0;
 
-    unsigned char magic[12*4];
+    unsigned char magic[12 * 4];
     fread(magic, sizeof(magic), 1, fp);
 
     if (magic[0] == 0xca && magic[1] == 0xfe && magic[2] == 0xba && magic[3] == 0xbe) {
-            int nimages = BE4(4);
+        int nimages = BE4(4);
 #ifdef DEBUG_MACHO_LOADER
-            printf("binary is universal with %d images\n", nimages);
+        printf("binary is universal with %d images\n", nimages);
 #endif
-            for (int i = 0; i < nimages; i++) {
-                    int fbh = 8 + i * 5*4;
-                    unsigned int cputype = BE4(fbh);
-                    unsigned int offset = BE4(fbh+8);
+        for (int i = 0; i < nimages; i++) {
+            int fbh = 8 + i * 5 * 4;
+            unsigned int cputype = BE4(fbh);
+            unsigned int offset = BE4(fbh + 8);
 #ifdef DEBUG_MACHO_LOADER
-                    unsigned int cpusubtype = BE4(fbh+4);
-                    unsigned int size = BE4(fbh+12);
-                    unsigned int pad = BE4(fbh+16);
-                    printf("cputype: %08x\n", cputype);
-                    printf("cpusubtype: %08x\n", cpusubtype);
-                    printf("offset: %08x\n", offset);
-                    printf("size: %08x\n", size);
-                    printf("pad: %08x\n", pad);
+            unsigned int cpusubtype = BE4(fbh + 4);
+            unsigned int size = BE4(fbh + 12);
+            unsigned int pad = BE4(fbh + 16);
+            printf("cputype: %08x\n", cputype);
+            printf("cpusubtype: %08x\n", cpusubtype);
+            printf("offset: %08x\n", offset);
+            printf("size: %08x\n", size);
+            printf("pad: %08x\n", pad);
 #endif
 
-                    if (cputype == 0x7) // i386
-                        imgoffs = offset;
-                }
+            if (cputype == 0x7) // i386
+                imgoffs = offset;
         }
+    }
 
     fseek(fp, imgoffs, SEEK_SET);
     header = new struct mach_header;
@@ -121,7 +117,7 @@ bool MachOBinaryFile::RealLoad(const QString &sName) {
 
     if ((header->magic != MH_MAGIC) && (_BMMH(header->magic) != MH_MAGIC)) {
         fclose(fp);
-        fprintf(stderr,"error loading file %s, bad Mach-O magic\n", qPrintable(sName));
+        fprintf(stderr, "error loading file %s, bad Mach-O magic\n", qPrintable(sName));
         return false;
     }
 
@@ -137,8 +133,8 @@ bool MachOBinaryFile::RealLoad(const QString &sName) {
     sections.clear();
     std::vector<struct segment_command> segments;
     std::vector<struct nlist> symbols;
-    //uint32_t startundef, nundef;
-    //uint32_t  startlocal, nlocal,ndef, startdef;
+    // uint32_t startundef, nundef;
+    // uint32_t  startlocal, nlocal,ndef, startdef;
     std::vector<struct section> stubs_sects;
     char *strtbl = nullptr;
     unsigned *indirectsymtbl = nullptr;
@@ -151,104 +147,103 @@ bool MachOBinaryFile::RealLoad(const QString &sName) {
         long pos = ftell(fp);
         fread(&cmd, 1, sizeof(struct load_command), fp);
         fseek(fp, pos, SEEK_SET);
-        switch(BMMH(cmd.cmd)) {
-            case LC_SEGMENT: {
-                struct segment_command seg;
-                fread(&seg, 1, sizeof(seg), fp);
-                segments.push_back(seg);
+        switch (BMMH(cmd.cmd)) {
+        case LC_SEGMENT: {
+            struct segment_command seg;
+            fread(&seg, 1, sizeof(seg), fp);
+            segments.push_back(seg);
 #ifdef DEBUG_MACHO_LOADER
-                fprintf(stdout, "seg addr %x size %i fileoff %x filesize %i flags %x\n", BMMH(seg.vmaddr), BMMH(seg.vmsize), BMMH(seg.fileoff), BMMH(seg.filesize), BMMH(seg.flags));
+            fprintf(stdout, "seg addr %x size %i fileoff %x filesize %i flags %x\n", BMMH(seg.vmaddr), BMMH(seg.vmsize),
+                    BMMH(seg.fileoff), BMMH(seg.filesize), BMMH(seg.flags));
 #endif
-                for (unsigned n = 0; n < BMMH(seg.nsects); n++) {
-                    struct section sect;
-                    fread(&sect, 1, sizeof(sect), fp);
-                    sections.push_back(sect);
+            for (unsigned n = 0; n < BMMH(seg.nsects); n++) {
+                struct section sect;
+                fread(&sect, 1, sizeof(sect), fp);
+                sections.push_back(sect);
 #ifdef DEBUG_MACHO_LOADER
-                    fprintf(stdout, "    sectname %s segname %s addr %x size %i flags %x\n", sect.sectname, sect.segname, BMMH(sect.addr), BMMH(sect.size), BMMH(sect.flags));
+                fprintf(stdout, "    sectname %s segname %s addr %x size %i flags %x\n", sect.sectname, sect.segname,
+                        BMMH(sect.addr), BMMH(sect.size), BMMH(sect.flags));
 #endif
-                    if ((BMMH(sect.flags) & SECTION_TYPE) == S_SYMBOL_STUBS) {
-                        stubs_sects.push_back(sect);
+                if ((BMMH(sect.flags) & SECTION_TYPE) == S_SYMBOL_STUBS) {
+                    stubs_sects.push_back(sect);
 #ifdef DEBUG_MACHO_LOADER
-                        fprintf(stdout, "        symbol stubs section, start index %i, stub size %i\n", BMMH(sect.reserved1), BMMH(sect.reserved2));
-#endif
-                    }
-                    if (!strcmp(sect.sectname, SECT_OBJC_SYMBOLS)) {
-                        assert(objc_symbols == NO_ADDRESS);
-                        objc_symbols = BMMH(sect.addr);
-                    }
-                    if (!strcmp(sect.sectname, SECT_OBJC_MODULES)) {
-                        assert(objc_modules == NO_ADDRESS);
-                        objc_modules = BMMH(sect.addr);
-                        objc_modules_size = BMMH(sect.size);
-                    }
-                    if (!strcmp(sect.sectname, SECT_OBJC_STRINGS)) {
-                        assert(objc_strings == NO_ADDRESS);
-                        objc_strings = BMMH(sect.addr);
-                    }
-                    if (!strcmp(sect.sectname, SECT_OBJC_REFS)) {
-                        assert(objc_refs == NO_ADDRESS);
-                        objc_refs = BMMH(sect.addr);
-                    }
-                }
-            }
-                break;
-            case LC_SYMTAB: {
-                struct symtab_command syms;
-                fread(&syms, 1, sizeof(syms), fp);
-                fseek(fp,  imgoffs + BMMH(syms.stroff), SEEK_SET);
-                strtbl = new char[BMMH(syms.strsize)];
-                fread(strtbl, 1, BMMH(syms.strsize), fp);
-                fseek(fp,  imgoffs + BMMH(syms.symoff), SEEK_SET);
-                for (unsigned n = 0; n < BMMH(syms.nsyms); n++) {
-                    struct nlist sym;
-                    fread(&sym, 1, sizeof(sym), fp);
-                    symbols.push_back(sym);
-#ifdef DEBUG_MACHO_LOADER
-                    //fprintf(stdout, "got sym %s flags %x value %x\n", strtbl + BMMH(sym.n_un.n_strx), sym.n_type, BMMH(sym.n_value));
+                    fprintf(stdout, "        symbol stubs section, start index %i, stub size %i\n",
+                            BMMH(sect.reserved1), BMMH(sect.reserved2));
 #endif
                 }
+                if (!strcmp(sect.sectname, SECT_OBJC_SYMBOLS)) {
+                    assert(objc_symbols == NO_ADDRESS);
+                    objc_symbols = BMMH(sect.addr);
+                }
+                if (!strcmp(sect.sectname, SECT_OBJC_MODULES)) {
+                    assert(objc_modules == NO_ADDRESS);
+                    objc_modules = BMMH(sect.addr);
+                    objc_modules_size = BMMH(sect.size);
+                }
+                if (!strcmp(sect.sectname, SECT_OBJC_STRINGS)) {
+                    assert(objc_strings == NO_ADDRESS);
+                    objc_strings = BMMH(sect.addr);
+                }
+                if (!strcmp(sect.sectname, SECT_OBJC_REFS)) {
+                    assert(objc_refs == NO_ADDRESS);
+                    objc_refs = BMMH(sect.addr);
+                }
+            }
+        } break;
+        case LC_SYMTAB: {
+            struct symtab_command syms;
+            fread(&syms, 1, sizeof(syms), fp);
+            fseek(fp, imgoffs + BMMH(syms.stroff), SEEK_SET);
+            strtbl = new char[BMMH(syms.strsize)];
+            fread(strtbl, 1, BMMH(syms.strsize), fp);
+            fseek(fp, imgoffs + BMMH(syms.symoff), SEEK_SET);
+            for (unsigned n = 0; n < BMMH(syms.nsyms); n++) {
+                struct nlist sym;
+                fread(&sym, 1, sizeof(sym), fp);
+                symbols.push_back(sym);
 #ifdef DEBUG_MACHO_LOADER
-                fprintf(stdout, "symtab contains %i symbols\n", BMMH(syms.nsyms));
+// fprintf(stdout, "got sym %s flags %x value %x\n", strtbl + BMMH(sym.n_un.n_strx), sym.n_type, BMMH(sym.n_value));
 #endif
             }
-                break;
-            case LC_DYSYMTAB: {
-                struct dysymtab_command syms;
-                fread(&syms, 1, sizeof(syms), fp);
 #ifdef DEBUG_MACHO_LOADER
-                fprintf(stdout, "dysymtab local %i %i defext %i %i undef %i %i\n",
-                        BMMH(syms.ilocalsym), BMMH(syms.nlocalsym),
-                        BMMH(syms.iextdefsym), BMMH(syms.nextdefsym),
-                        BMMH(syms.iundefsym), BMMH(syms.nundefsym));
+            fprintf(stdout, "symtab contains %i symbols\n", BMMH(syms.nsyms));
 #endif
-                //TODO: find uses for values below
-                // startlocal = BMMH(syms.ilocalsym);
-                // nlocal = BMMH(syms.nlocalsym);
-                // startdef = BMMH(syms.iextdefsym);
-                // ndef = BMMH(syms.nextdefsym);
-                //startundef = BMMH(syms.iundefsym);
-                //nundef = BMMH(syms.nundefsym);
+        } break;
+        case LC_DYSYMTAB: {
+            struct dysymtab_command syms;
+            fread(&syms, 1, sizeof(syms), fp);
+#ifdef DEBUG_MACHO_LOADER
+            fprintf(stdout, "dysymtab local %i %i defext %i %i undef %i %i\n", BMMH(syms.ilocalsym),
+                    BMMH(syms.nlocalsym), BMMH(syms.iextdefsym), BMMH(syms.nextdefsym), BMMH(syms.iundefsym),
+                    BMMH(syms.nundefsym));
+#endif
+// TODO: find uses for values below
+// startlocal = BMMH(syms.ilocalsym);
+// nlocal = BMMH(syms.nlocalsym);
+// startdef = BMMH(syms.iextdefsym);
+// ndef = BMMH(syms.nextdefsym);
+// startundef = BMMH(syms.iundefsym);
+// nundef = BMMH(syms.nundefsym);
 
 #ifdef DEBUG_MACHO_LOADER
-                fprintf(stdout, "dysymtab has %i indirect symbols: ", BMMH(syms.nindirectsyms));
+            fprintf(stdout, "dysymtab has %i indirect symbols: ", BMMH(syms.nindirectsyms));
 #endif
-                indirectsymtbl = new unsigned[BMMH(syms.nindirectsyms)];
-                fseek(fp,  imgoffs +  BMMH(syms.indirectsymoff), SEEK_SET);
-                fread(indirectsymtbl, 1, BMMH(syms.nindirectsyms)*sizeof(unsigned), fp);
+            indirectsymtbl = new unsigned[BMMH(syms.nindirectsyms)];
+            fseek(fp, imgoffs + BMMH(syms.indirectsymoff), SEEK_SET);
+            fread(indirectsymtbl, 1, BMMH(syms.nindirectsyms) * sizeof(unsigned), fp);
 #ifdef DEBUG_MACHO_LOADER
-                for (unsigned j = 0; j < BMMH(syms.nindirectsyms); j++) {
-                    fprintf(stdout, "%i ", BMMH(indirectsymtbl[j]));
-                }
-                fprintf(stdout, "\n");
-#endif
+            for (unsigned j = 0; j < BMMH(syms.nindirectsyms); j++) {
+                fprintf(stdout, "%i ", BMMH(indirectsymtbl[j]));
             }
-                break;
-            default:
-#ifdef DEBUG_MACHO_LOADER
-                fprintf(stderr, "not handled load command %x\n", BMMH(cmd.cmd));
+            fprintf(stdout, "\n");
 #endif
-                // yep, there's lots of em
-                break;
+        } break;
+        default:
+#ifdef DEBUG_MACHO_LOADER
+            fprintf(stderr, "not handled load command %x\n", BMMH(cmd.cmd));
+#endif
+            // yep, there's lots of em
+            break;
         }
 
         fseek(fp, pos + BMMH(cmd.cmdsize), SEEK_SET);
@@ -269,7 +264,7 @@ bool MachOBinaryFile::RealLoad(const QString &sName) {
 
     if (!base) {
         fclose(fp);
-        fprintf(stderr,"Cannot allocate memory for copy of image\n");
+        fprintf(stderr, "Cannot allocate memory for copy of image\n");
         return false;
     }
 
@@ -277,7 +272,7 @@ bool MachOBinaryFile::RealLoad(const QString &sName) {
     m_pSections = new SectionInfo[m_iNumSections];
 
     for (unsigned i = 0; i < segments.size(); i++) {
-        fseek(fp,  imgoffs + BMMH(segments[i].fileoff), SEEK_SET);
+        fseek(fp, imgoffs + BMMH(segments[i].fileoff), SEEK_SET);
         ADDRESS a = ADDRESS::g(BMMH(segments[i].vmaddr));
         unsigned sz = BMMH(segments[i].vmsize);
         unsigned fsz = BMMH(segments[i].filesize);
@@ -293,15 +288,16 @@ bool MachOBinaryFile::RealLoad(const QString &sName) {
         m_pSections[i].uNativeAddr = BMMH(segments[i].vmaddr);
         m_pSections[i].uHostAddr = ADDRESS::value_type(base) + BMMH(segments[i].vmaddr) - loaded_addr.m_value;
         m_pSections[i].uSectionSize = BMMH(segments[i].vmsize);
-        assert((m_pSections[i].uHostAddr+m_pSections[i].uSectionSize)<=ADDRESS::host_ptr(base+loaded_size));
+        assert((m_pSections[i].uHostAddr + m_pSections[i].uSectionSize) <= ADDRESS::host_ptr(base + loaded_size));
 
         unsigned long l = BMMH(segments[i].initprot);
-        m_pSections[i].bBss        = false; // TODO
-        m_pSections[i].bCode        = l&VM_PROT_EXECUTE?1:0;
-        m_pSections[i].bData        = l&VM_PROT_READ?1:0;
-        m_pSections[i].bReadOnly    = ~(l&VM_PROT_WRITE)?0:1;
+        m_pSections[i].bBss = false; // TODO
+        m_pSections[i].bCode = l & VM_PROT_EXECUTE ? 1 : 0;
+        m_pSections[i].bData = l & VM_PROT_READ ? 1 : 0;
+        m_pSections[i].bReadOnly = ~(l & VM_PROT_WRITE) ? 0 : 1;
 #ifdef DEBUG_MACHO_LOADER
-        fprintf(stderr, "loaded segment %x %i in mem %i in file code=%i data=%i readonly=%i\n", a, sz, fsz, m_pSections[i].bCode, m_pSections[i].bData, m_pSections[i].bReadOnly);
+        fprintf(stderr, "loaded segment %x %i in mem %i in file code=%i data=%i readonly=%i\n", a, sz, fsz,
+                m_pSections[i].bCode, m_pSections[i].bData, m_pSections[i].bReadOnly);
 #endif
     }
 
@@ -315,7 +311,7 @@ bool MachOBinaryFile::RealLoad(const QString &sName) {
             fprintf(stdout, "stub for %s at %x\n", strtbl + BMMH(symbols[symbol].n_un.n_strx), addr);
 #endif
             char *name = strtbl + BMMH(symbols[symbol].n_un.n_strx);
-            if (*name == '_')  // we want printf not _printf
+            if (*name == '_') // we want printf not _printf
                 name++;
             m_SymA[addr] = name;
             dlprocs[addr] = name;
@@ -328,11 +324,10 @@ bool MachOBinaryFile::RealLoad(const QString &sName) {
         if (BMMH(symbols[i].n_un.n_strx) != 0 && BMMH(symbols[i].n_value) != 0 && *name != 0) {
 
 #ifdef DEBUG_MACHO_LOADER
-            fprintf(stdout, "symbol %s at %x type %x\n", name,
-                    BMMH(symbols[i].n_value),
+            fprintf(stdout, "symbol %s at %x type %x\n", name, BMMH(symbols[i].n_value),
                     BMMH(symbols[i].n_type) & N_TYPE);
 #endif
-            if (*name == '_')  // we want main not _main
+            if (*name == '_') // we want main not _main
                 name++;
             m_SymA[ADDRESS::g(BMMH(symbols[i].n_value))] = name;
         }
@@ -343,8 +338,9 @@ bool MachOBinaryFile::RealLoad(const QString &sName) {
 #ifdef DEBUG_MACHO_LOADER_OBJC
         fprintf(stdout, "processing objective-c section\n");
 #endif
-        for (unsigned i = 0; i < objc_modules_size; ) {
-            struct objc_module *module = (struct objc_module *)(ADDRESS::host_ptr(base) + objc_modules - loaded_addr + i).m_value;
+        for (unsigned i = 0; i < objc_modules_size;) {
+            struct objc_module *module =
+                (struct objc_module *)(ADDRESS::host_ptr(base) + objc_modules - loaded_addr + i).m_value;
             char *name = (char *)(intptr_t(base) + BMMH(module->name) - loaded_addr.m_value);
             Symtab symtab = (Symtab)(ADDRESS::host_ptr(base) + BMMH(module->symtab) - loaded_addr).m_value;
 #ifdef DEBUG_MACHO_LOADER_OBJC
@@ -363,8 +359,8 @@ bool MachOBinaryFile::RealLoad(const QString &sName) {
                 struct objc_ivar_list *ivars = (struct objc_ivar_list *)(base + BMMH(def->ivars) - loaded_addr.m_value);
                 for (unsigned k = 0; k < static_cast<unsigned int>(BMMH(ivars->ivar_count)); k++) {
                     struct objc_ivar *ivar = &ivars->ivar_list[k];
-                    char *name = (char*)(ADDRESS::value_type(base) + BMMH(ivar->ivar_name) - loaded_addr.m_value);
-                    char *types = (char*)(ADDRESS::value_type(base) + BMMH(ivar->ivar_type) - loaded_addr.m_value);
+                    char *name = (char *)(ADDRESS::value_type(base) + BMMH(ivar->ivar_name) - loaded_addr.m_value);
+                    char *types = (char *)(ADDRESS::value_type(base) + BMMH(ivar->ivar_type) - loaded_addr.m_value);
 #ifdef DEBUG_MACHO_LOADER_OBJC
                     fprintf(stdout, "    ivar %s %s %x\n", name, types, BMMH(ivar->ivar_offset));
 #endif
@@ -374,13 +370,14 @@ bool MachOBinaryFile::RealLoad(const QString &sName) {
                     iv->offset = BMMH(ivar->ivar_offset);
                 }
                 // this is weird, why is it defined as a ** in the struct but used as a * in otool?
-                struct objc_method_list *methods = (struct objc_method_list *)(intptr_t(base) + BMMH(def->methodLists) - loaded_addr.m_value);
+                struct objc_method_list *methods =
+                    (struct objc_method_list *)(intptr_t(base) + BMMH(def->methodLists) - loaded_addr.m_value);
                 for (unsigned k = 0; k < static_cast<unsigned int>(BMMH(methods->method_count)); k++) {
                     struct objc_method *method = &methods->method_list[k];
-                    char *name = (char*)(intptr_t(base) + BMMH(method->method_name) - loaded_addr.m_value);
-                    char *types = (char*)(intptr_t(base) + BMMH(method->method_types) - loaded_addr.m_value);
+                    char *name = (char *)(intptr_t(base) + BMMH(method->method_name) - loaded_addr.m_value);
+                    char *types = (char *)(intptr_t(base) + BMMH(method->method_types) - loaded_addr.m_value);
 #ifdef DEBUG_MACHO_LOADER_OBJC
-                    fprintf(stdout, "    method %s %s %x\n", name, types, BMMH((void*)method->method_imp));
+                    fprintf(stdout, "    method %s %s %x\n", name, types, BMMH((void *)method->method_imp));
 #endif
                     ObjcMethod *me = &cl->methods[name];
                     me->name = name;
@@ -401,64 +398,53 @@ bool MachOBinaryFile::RealLoad(const QString &sName) {
 }
 
 // Clean up and unload the binary image
-void MachOBinaryFile::UnLoad() {
-}
+void MachOBinaryFile::UnLoad() {}
 
-bool MachOBinaryFile::PostLoad(void* handle) {
-    return false;
-}
+bool MachOBinaryFile::PostLoad(void *handle) { return false; }
 
-const char* MachOBinaryFile::SymbolByAddress(ADDRESS dwAddr) {
+const char *MachOBinaryFile::SymbolByAddress(ADDRESS dwAddr) {
     std::map<ADDRESS, std::string>::iterator it = m_SymA.find(dwAddr);
     if (it == m_SymA.end())
         return 0;
-    return (char*) it->second.c_str();
+    return (char *)it->second.c_str();
 }
 
-ADDRESS MachOBinaryFile::GetAddressByName(const char* pName,
-                                          bool bNoTypeOK /* = false */) {
+ADDRESS MachOBinaryFile::GetAddressByName(const char *pName, bool bNoTypeOK /* = false */) {
     // This is "looking up the wrong way" and hopefully is uncommon
     // Use linear search
     std::map<ADDRESS, std::string>::iterator it = m_SymA.begin();
     while (it != m_SymA.end()) {
         // std::cerr << "Symbol: " << it->second.c_str() << " at 0x" << std::hex << it->first << "\n";
-        if (it->second==pName)
+        if (it->second == pName)
             return it->first;
         it++;
     }
     return NO_ADDRESS;
 }
 
-void MachOBinaryFile::AddSymbol(ADDRESS uNative, const char *pName) {
-    m_SymA[uNative] = pName;
-}
+void MachOBinaryFile::AddSymbol(ADDRESS uNative, const char *pName) { m_SymA[uNative] = pName; }
 
-int MachOBinaryFile::GetSizeByName(const char *pName, bool bTypeOK)
-{
-    if(GetAddressByName(pName,bTypeOK)!=NO_ADDRESS) {
-        return 4; //TODO: HACK
+int MachOBinaryFile::GetSizeByName(const char *pName, bool bTypeOK) {
+    if (GetAddressByName(pName, bTypeOK) != NO_ADDRESS) {
+        return 4; // TODO: HACK
     }
     return 0;
 }
 
-ADDRESS *MachOBinaryFile::GetImportStubs(int &numImports)
-{
+ADDRESS *MachOBinaryFile::GetImportStubs(int &numImports) {
     numImports = 0;
     return nullptr;
 }
 
-const char *MachOBinaryFile::getFilenameSymbolFor(const char *)
-{
-    return nullptr;
-}
+const char *MachOBinaryFile::getFilenameSymbolFor(const char *) { return nullptr; }
 
-bool MachOBinaryFile::DisplayDetails(const char* fileName, FILE* f
+bool MachOBinaryFile::DisplayDetails(const char *fileName, FILE *f
                                      /* = stdout */) {
     return false;
 }
 
-int MachOBinaryFile::machORead2(short* ps) const {
-    unsigned char* p = (unsigned char*)ps;
+int MachOBinaryFile::machORead2(short *ps) const {
+    unsigned char *p = (unsigned char *)ps;
     int n;
     if (machine == MACHINE_PPC)
         n = (int)(p[1] + (p[0] << 8));
@@ -467,37 +453,46 @@ int MachOBinaryFile::machORead2(short* ps) const {
     return n;
 }
 
-int MachOBinaryFile::machORead4(int* pi) const{
-    short* p = (short*)pi;
+int MachOBinaryFile::machORead4(int *pi) const {
+    short *p = (short *)pi;
     int n1 = machORead2(p);
-    int n2 = machORead2(p+1);
+    int n2 = machORead2(p + 1);
     int n;
     if (machine == MACHINE_PPC)
-        n = (int) (n2 | (n1 << 16));
+        n = (int)(n2 | (n1 << 16));
     else
-        n = (int) (n1 | (n2 << 16));
+        n = (int)(n1 | (n2 << 16));
     return n;
 }
 
-//unsigned int MachOBinaryFile::BMMH(long int & x) {
+// unsigned int MachOBinaryFile::BMMH(long int & x) {
 //    if (swap_bytes) return _BMMH(x); else return x;
 //}
 
 int32_t MachOBinaryFile::BMMH(int32_t x) {
-    if (swap_bytes) return _BMMH(x); else return x;
+    if (swap_bytes)
+        return _BMMH(x);
+    else
+        return x;
 }
 
 unsigned int MachOBinaryFile::BMMH(unsigned int x) {
-    if (swap_bytes) return _BMMH(x); else return x;
+    if (swap_bytes)
+        return _BMMH(x);
+    else
+        return x;
 }
 
 unsigned short MachOBinaryFile::BMMHW(unsigned short x) {
-    if (swap_bytes) return _BMMHW(x); else return x;
+    if (swap_bytes)
+        return _BMMHW(x);
+    else
+        return x;
 }
 bool MachOBinaryFile::isReadOnly(ADDRESS uEntry) {
     uint32_t entry_val(uEntry.m_value);
     for (size_t i = 0; i < sections.size(); i++) {
-        if (entry_val >= BMMH(sections[i].addr) &&  entry_val < BMMH(sections[i].addr) + BMMH(sections[i].size)) {
+        if (entry_val >= BMMH(sections[i].addr) && entry_val < BMMH(sections[i].addr) + BMMH(sections[i].size)) {
             return (BMMH(sections[i].flags) & VM_PROT_WRITE) ? 0 : 1;
         }
     }
@@ -508,25 +503,25 @@ bool MachOBinaryFile::isReadOnly(ADDRESS uEntry) {
 bool MachOBinaryFile::isStringConstant(ADDRESS uEntry) {
     uint32_t entry_val(uEntry.m_value);
     for (size_t i = 0; i < sections.size(); i++) {
-        if (entry_val >= BMMH(sections[i].addr) &&  entry_val < BMMH(sections[i].addr) + BMMH(sections[i].size)) {
-            //printf("%08x is in %s\n", uEntry, sections[i].sectname);
+        if (entry_val >= BMMH(sections[i].addr) && entry_val < BMMH(sections[i].addr) + BMMH(sections[i].size)) {
+            // printf("%08x is in %s\n", uEntry, sections[i].sectname);
             if (!strcmp(sections[i].sectname, "__cstring"))
                 return true;
         }
     }
-    return false; //BinaryFile::isStringConstant(uEntry)
+    return false; // BinaryFile::isStringConstant(uEntry)
 }
 
 bool MachOBinaryFile::isCFStringConstant(ADDRESS uEntry) {
     uint32_t entry_val(uEntry.m_value);
     for (size_t i = 0; i < sections.size(); i++) {
-        if (entry_val >= BMMH(sections[i].addr) &&  entry_val < BMMH(sections[i].addr) + BMMH(sections[i].size)) {
-            //printf("%08x is in %s\n", uEntry, sections[i].sectname);
+        if (entry_val >= BMMH(sections[i].addr) && entry_val < BMMH(sections[i].addr) + BMMH(sections[i].size)) {
+            // printf("%08x is in %s\n", uEntry, sections[i].sectname);
             if (!strcmp(sections[i].sectname, "__cfstring"))
                 return true;
         }
     }
-    return false; //BinaryFile::isCFStringConstant(uEntry)
+    return false; // BinaryFile::isCFStringConstant(uEntry)
 }
 
 // Read 2 bytes from given native address
@@ -535,93 +530,81 @@ char MachOBinaryFile::readNative1(ADDRESS nat) {
     if (si == 0)
         si = GetSectionInfo(0);
     ADDRESS host = si->uHostAddr - si->uNativeAddr + nat;
-    return *(char*)host.m_value;
+    return *(char *)host.m_value;
 }
 
 // Read 2 bytes from given native address
 int MachOBinaryFile::readNative2(ADDRESS nat) {
     PSectionInfo si = GetSectionInfoByAddr(nat);
-    if (si == 0) return 0;
+    if (si == 0)
+        return 0;
     ADDRESS host = si->uHostAddr - si->uNativeAddr + nat;
-    int n = machORead2((short*)host.m_value);
+    int n = machORead2((short *)host.m_value);
     return n;
 }
 
 // Read 4 bytes from given native address
 int MachOBinaryFile::readNative4(ADDRESS nat) {
     PSectionInfo si = GetSectionInfoByAddr(nat);
-    if (si == 0) return 0;
+    if (si == 0)
+        return 0;
     ADDRESS host = si->uHostAddr - si->uNativeAddr + nat;
-    int n = machORead4((int*)host.m_value);
+    int n = machORead4((int *)host.m_value);
     return n;
 }
 
 // Read 8 bytes from given native address
 QWord MachOBinaryFile::readNative8(ADDRESS nat) {
     int raw[2];
-#ifdef WORDS_BIGENDIAN        // This tests the host machine
+#ifdef WORDS_BIGENDIAN // This tests the host machine
     // Source and host are different endianness
     raw[1] = readNative4(nat);
-    raw[0] = readNative4(nat+4);
+    raw[0] = readNative4(nat + 4);
 #else
     // Source and host are same endianness
     raw[0] = readNative4(nat);
-    raw[1] = readNative4(nat+4);
+    raw[1] = readNative4(nat + 4);
 #endif
-    return *(QWord*)raw;
+    return *(QWord *)raw;
 }
 
 // Read 4 bytes as a float
 float MachOBinaryFile::readNativeFloat4(ADDRESS nat) {
     int raw = readNative4(nat);
     // Ugh! gcc says that reinterpreting from int to float is invalid!!
-    //return reinterpret_cast<float>(raw);        // Note: cast, not convert!!
-    return *(float*)&raw;                        // Note: cast, not convert
+    // return reinterpret_cast<float>(raw);        // Note: cast, not convert!!
+    return *(float *)&raw; // Note: cast, not convert
 }
 
 // Read 8 bytes as a float
 double MachOBinaryFile::readNativeFloat8(ADDRESS nat) {
     int raw[2];
-#ifdef WORDS_BIGENDIAN        // This tests the host machine
+#ifdef WORDS_BIGENDIAN // This tests the host machine
     // Source and host are different endianness
     raw[1] = readNative4(nat);
-    raw[0] = readNative4(nat+4);
+    raw[0] = readNative4(nat + 4);
 #else
     // Source and host are same endianness
     raw[0] = readNative4(nat);
-    raw[1] = readNative4(nat+4);
+    raw[1] = readNative4(nat + 4);
 #endif
-    //return reinterpret_cast<double>(*raw);    // Note: cast, not convert!!
-    return *(double*)raw;
+    // return reinterpret_cast<double>(*raw);    // Note: cast, not convert!!
+    return *(double *)raw;
 }
 
-const char *MachOBinaryFile::GetDynamicProcName(ADDRESS uNative) {
-    return dlprocs[uNative].c_str();
-}
+const char *MachOBinaryFile::GetDynamicProcName(ADDRESS uNative) { return dlprocs[uNative].c_str(); }
 
-LOAD_FMT MachOBinaryFile::GetFormat() const {
-    return LOADFMT_MACHO;
-}
+LOAD_FMT MachOBinaryFile::GetFormat() const { return LOADFMT_MACHO; }
 
-MACHINE MachOBinaryFile::GetMachine() const {
-    return machine;
-}
+MACHINE MachOBinaryFile::GetMachine() const { return machine; }
 
-bool MachOBinaryFile::isLibrary() const {
-    return false;
-}
+bool MachOBinaryFile::isLibrary() const { return false; }
 
-ADDRESS MachOBinaryFile::getImageBase() {
-    return loaded_addr;
-}
+ADDRESS MachOBinaryFile::getImageBase() { return loaded_addr; }
 
-size_t MachOBinaryFile::getImageSize() {
-    return loaded_size;
-}
+size_t MachOBinaryFile::getImageSize() { return loaded_size; }
 
-QStringList MachOBinaryFile::getDependencyList() {
-    return QStringList(); /* FIXME */
-}
+QStringList MachOBinaryFile::getDependencyList() { return QStringList(); /* FIXME */ }
 
 DWord MachOBinaryFile::getDelta() {
     // Stupid function anyway: delta depends on section
@@ -638,7 +621,7 @@ extern "C" {
 #ifdef _WIN32
 __declspec(dllexport)
 #endif
-QObject* construct() {
+    QObject *construct() {
     return new MachOBinaryFile;
 }
 }

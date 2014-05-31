@@ -31,32 +31,29 @@
 #include <cstdlib>
 
 extern "C" {
-int microX86Dis(void* p);            // From microX86dis.c
+int microX86Dis(void *p); // From microX86dis.c
 }
 
 DOS4GWBinaryFile::~DOS4GWBinaryFile() {
-    for (int i=0; i < m_iNumSections; i++) {
+    for (int i = 0; i < m_iNumSections; i++) {
         if (m_pSections[i].pSectionName) {
-            ; //delete [] m_pSections[i].pSectionName;
+            ; // delete [] m_pSections[i].pSectionName;
         }
     }
     // if (m_pSections) delete [] m_pSections;
 }
 
-bool DOS4GWBinaryFile::Open(const char* sName) {
-    //return Load(sName) != 0;
+bool DOS4GWBinaryFile::Open(const char *sName) {
+    // return Load(sName) != 0;
     return false;
 }
 
-void DOS4GWBinaryFile::Close() {
-    UnLoad();
-}
+void DOS4GWBinaryFile::Close() { UnLoad(); }
 
-std::list<SectionInfo*>& DOS4GWBinaryFile::GetEntryPoints(
-        const char* pEntry) {
-    fprintf(stderr,"really don't know how to implement GetEntryPoints\n");
+std::list<SectionInfo *> &DOS4GWBinaryFile::GetEntryPoints(const char *pEntry) {
+    fprintf(stderr, "really don't know how to implement GetEntryPoints\n");
     exit(0);
-    static std::list<SectionInfo*> l;
+    static std::list<SectionInfo *> l;
     return l;
 }
 
@@ -65,10 +62,10 @@ ADDRESS DOS4GWBinaryFile::GetEntryPoint() {
 }
 
 ADDRESS DOS4GWBinaryFile::GetMainEntryPoint() {
-    ADDRESS aMain = GetAddressByName ("main", true);
+    ADDRESS aMain = GetAddressByName("main", true);
     if (aMain != NO_ADDRESS)
         return aMain;
-    aMain = GetAddressByName ("__CMain", true);
+    aMain = GetAddressByName("__CMain", true);
     if (aMain != NO_ADDRESS)
         return aMain;
 
@@ -77,14 +74,16 @@ ADDRESS DOS4GWBinaryFile::GetMainEntryPoint() {
     unsigned p = LMMH(m_pLXHeader->eip);
     unsigned lim = p + 0x300;
     unsigned char op1, op2;
-        ADDRESS addr;
-    //unsigned lastOrdCall = 0; //TODO: identify the point of setting this variable
-    bool gotSubEbp = false;            // True if see sub ebp, ebp
-    bool lastWasCall = false;        // True if the last instruction was a call
+    ADDRESS addr;
+    // unsigned lastOrdCall = 0; //TODO: identify the point of setting this variable
+    bool gotSubEbp = false;   // True if see sub ebp, ebp
+    bool lastWasCall = false; // True if the last instruction was a call
 
-    SectionInfo* si = GetSectionInfoByName("seg0");        // Assume the first section is text
-    if (si == nullptr) si = GetSectionInfoByName(".text");
-    if (si == nullptr) si = GetSectionInfoByName("CODE");
+    SectionInfo *si = GetSectionInfoByName("seg0"); // Assume the first section is text
+    if (si == nullptr)
+        si = GetSectionInfoByName(".text");
+    if (si == nullptr)
+        si = GetSectionInfoByName("CODE");
     assert(si);
     ADDRESS nativeOrigin = si->uNativeAddr;
     unsigned textSize = si->uSectionSize;
@@ -92,37 +91,38 @@ ADDRESS DOS4GWBinaryFile::GetMainEntryPoint() {
         lim = p + textSize;
 
     while (p < lim) {
-        op1 = *(unsigned char*)(p + base);
-        op2 = *(unsigned char*)(p + base + 1);
-        //std::cerr << std::hex << "At " << p << ", ops " << (unsigned)op1 << ", " << (unsigned)op2 << std::dec << "\n";
+        op1 = *(unsigned char *)(p + base);
+        op2 = *(unsigned char *)(p + base + 1);
+        // std::cerr << std::hex << "At " << p << ", ops " << (unsigned)op1 << ", " << (unsigned)op2 << std::dec <<
+        // "\n";
         switch (op1) {
-            case 0xE8: {
-                // An ordinary call
-                if (gotSubEbp) {
-                    // This is the call we want. Get the offset from the call instruction
-                    addr = nativeOrigin + p + 5 + LMMH(*(p + base + 1));
-                    // std::cerr << "__CMain at " << std::hex << addr << "\n";
-                    return addr;
-                }
-                //lastOrdCall = p;
-                lastWasCall = true;
-                break;
+        case 0xE8: {
+            // An ordinary call
+            if (gotSubEbp) {
+                // This is the call we want. Get the offset from the call instruction
+                addr = nativeOrigin + p + 5 + LMMH(*(p + base + 1));
+                // std::cerr << "__CMain at " << std::hex << addr << "\n";
+                return addr;
             }
-            case 0x2B:            // 0x2B 0xED is sub ebp,ebp
-                if (op2 == 0xED && lastWasCall)
-                    gotSubEbp = true;
-                lastWasCall = false;
-                break;
-            default:
-                gotSubEbp = false;
-                lastWasCall = false;
-                break;
-            case 0xEB:                     // Short relative jump
-                if (op2 >= 0x80)        // Branch backwards?
-                    break;                // Yes, just ignore it
-                // Otherwise, actually follow the branch. May have to modify this some time...
-                p += op2+2;                // +2 for the instruction itself, and op2 for the displacement
-                continue;                // Don't break, we have the new "pc" set already
+            // lastOrdCall = p;
+            lastWasCall = true;
+            break;
+        }
+        case 0x2B: // 0x2B 0xED is sub ebp,ebp
+            if (op2 == 0xED && lastWasCall)
+                gotSubEbp = true;
+            lastWasCall = false;
+            break;
+        default:
+            gotSubEbp = false;
+            lastWasCall = false;
+            break;
+        case 0xEB:           // Short relative jump
+            if (op2 >= 0x80) // Branch backwards?
+                break;       // Yes, just ignore it
+            // Otherwise, actually follow the branch. May have to modify this some time...
+            p += op2 + 2; // +2 for the instruction itself, and op2 for the displacement
+            continue;     // Don't break, we have the new "pc" set already
         }
         int size = microX86Dis(p + base);
         if (size == 0x40) {
@@ -134,14 +134,13 @@ ADDRESS DOS4GWBinaryFile::GetMainEntryPoint() {
     return NO_ADDRESS;
 }
 
-
-bool DOS4GWBinaryFile::RealLoad(const QString & sName) {
+bool DOS4GWBinaryFile::RealLoad(const QString &sName) {
     m_pFileName = sName;
-    FILE *fp = fopen(qPrintable(sName),"rb");
+    FILE *fp = fopen(qPrintable(sName), "rb");
 
     DWord lxoffLE, lxoff;
     fseek(fp, 0x3c, SEEK_SET);
-    fread(&lxoffLE, 4, 1, fp);        // Note: peoffLE will be in Little Endian
+    fread(&lxoffLE, 4, 1, fp); // Note: peoffLE will be in Little Endian
     lxoff = LMMH(lxoffLE);
 
     fseek(fp, lxoff, SEEK_SET);
@@ -150,7 +149,7 @@ bool DOS4GWBinaryFile::RealLoad(const QString & sName) {
     fread(m_pLXHeader, sizeof(LXHeader), 1, fp);
 
     if (m_pLXHeader->sigLo != 'L' || (m_pLXHeader->sigHi != 'X' && m_pLXHeader->sigHi != 'E')) {
-        fprintf(stderr,"error loading file %s, bad LE/LX magic\n", qPrintable(sName));
+        fprintf(stderr, "error loading file %s, bad LE/LX magic\n", qPrintable(sName));
         return false;
     }
 
@@ -158,8 +157,8 @@ bool DOS4GWBinaryFile::RealLoad(const QString & sName) {
     m_pLXObjects = new LXObject[LMMH(m_pLXHeader->numobjsinmodule)];
     fread(m_pLXObjects, sizeof(LXObject), LMMH(m_pLXHeader->numobjsinmodule), fp);
 
-    // at this point we're supposed to read in the page table and fuss around with it
-    // but I'm just going to assume the file is flat.
+// at this point we're supposed to read in the page table and fuss around with it
+// but I'm just going to assume the file is flat.
 #if 0
     unsigned npagetblentries = 0;
     m_cbImage = 0;
@@ -193,30 +192,31 @@ bool DOS4GWBinaryFile::RealLoad(const QString & sName) {
     m_iNumSections = LMMH(m_pLXHeader->numobjsinmodule);
     m_pSections = new SectionInfo[m_iNumSections];
     for (unsigned n = 0; n < LMMH(m_pLXHeader->numobjsinmodule); n++)
-        if (LMMH(m_pLXObjects[n].ObjectFlags) & 0x40){
-            printf("vsize %x reloc %x flags %x page %i npage %i\n",
-                   LMMH(m_pLXObjects[n].VirtualSize), LMMH(m_pLXObjects[n].RelocBaseAddr),
-                   LMMH(m_pLXObjects[n].ObjectFlags), LMMH(m_pLXObjects[n].PageTblIdx),
-                   LMMH(m_pLXObjects[n].NumPageTblEntries));
+        if (LMMH(m_pLXObjects[n].ObjectFlags) & 0x40) {
+            printf("vsize %x reloc %x flags %x page %i npage %i\n", LMMH(m_pLXObjects[n].VirtualSize),
+                   LMMH(m_pLXObjects[n].RelocBaseAddr), LMMH(m_pLXObjects[n].ObjectFlags),
+                   LMMH(m_pLXObjects[n].PageTblIdx), LMMH(m_pLXObjects[n].NumPageTblEntries));
 
             m_pSections[n].pSectionName = new char[9];
-            sprintf(m_pSections[n].pSectionName, "seg%i", n);   // no section names in LX
+            sprintf(m_pSections[n].pSectionName, "seg%i", n); // no section names in LX
             m_pSections[n].uNativeAddr = LMMH(m_pLXObjects[n].RelocBaseAddr);
-            m_pSections[n].uHostAddr = ADDRESS::host_ptr(base + (m_pSections[n].uNativeAddr - m_pSections[0].uNativeAddr).m_value);
-            m_pSections[n].uSectionSize=LMMH(m_pLXObjects[n].VirtualSize);
+            m_pSections[n].uHostAddr =
+                ADDRESS::host_ptr(base + (m_pSections[n].uNativeAddr - m_pSections[0].uNativeAddr).m_value);
+            m_pSections[n].uSectionSize = LMMH(m_pLXObjects[n].VirtualSize);
             DWord Flags = LMMH(m_pLXObjects[n].ObjectFlags);
-            m_pSections[n].bBss        = 0; // TODO
-            m_pSections[n].bCode        = Flags&0x4?1:0;
-            m_pSections[n].bData        = Flags&0x4?0:1;
-            m_pSections[n].bReadOnly    = Flags&0x1?0:1;
+            m_pSections[n].bBss = 0; // TODO
+            m_pSections[n].bCode = Flags & 0x4 ? 1 : 0;
+            m_pSections[n].bData = Flags & 0x4 ? 0 : 1;
+            m_pSections[n].bReadOnly = Flags & 0x1 ? 0 : 1;
 
-            fseek(fp, m_pLXHeader->datapagesoffset + (LMMH(m_pLXObjects[n].PageTblIdx) - 1) * LMMH(m_pLXHeader->pagesize), SEEK_SET);
+            fseek(fp,
+                  m_pLXHeader->datapagesoffset + (LMMH(m_pLXObjects[n].PageTblIdx) - 1) * LMMH(m_pLXHeader->pagesize),
+                  SEEK_SET);
             char *p = base + LMMH(m_pLXObjects[n].RelocBaseAddr) - LMMH(m_pLXObjects[0].RelocBaseAddr);
             fread(p, LMMH(m_pLXObjects[n].NumPageTblEntries), LMMH(m_pLXHeader->pagesize), fp);
         }
 
-    // TODO: decode entry tables
-
+// TODO: decode entry tables
 
 #if 0
     // you probably don't want this, it's a bunch of symbols I pulled out of a disassmbly of a binary I'm working on.
@@ -309,12 +309,12 @@ bool DOS4GWBinaryFile::RealLoad(const QString & sName) {
 
     // fixups
     fseek(fp, LMMH(m_pLXHeader->fixuppagetbloffset) + lxoff, SEEK_SET);
-    unsigned int *fixuppagetbl = new unsigned int[npages+1];
-    fread(fixuppagetbl, sizeof(unsigned int), npages+1, fp);
+    unsigned int *fixuppagetbl = new unsigned int[npages + 1];
+    fread(fixuppagetbl, sizeof(unsigned int), npages + 1, fp);
 
-    //for (unsigned n = 0; n < npages; n++)
+    // for (unsigned n = 0; n < npages; n++)
     //    printf("offset for page %i: %x\n", n + 1, fixuppagetbl[n]);
-    //printf("offset to end of fixup rec: %x\n", fixuppagetbl[npages]);
+    // printf("offset to end of fixup rec: %x\n", fixuppagetbl[npages]);
 
     fseek(fp, LMMH(m_pLXHeader->fixuprecordtbloffset) + lxoff, SEEK_SET);
     LXFixup fixup;
@@ -325,7 +325,8 @@ bool DOS4GWBinaryFile::RealLoad(const QString & sName) {
             fprintf(stderr, "unknown fixup type %02x %02x\n", fixup.src, fixup.flags);
             return false;
         }
-        //printf("srcpage = %i srcoff = %x object = %02x trgoff = %x\n", srcpage + 1, fixup.srcoff, fixup.object, fixup.trgoff);
+        // printf("srcpage = %i srcoff = %x object = %02x trgoff = %x\n", srcpage + 1, fixup.srcoff, fixup.object,
+        // fixup.trgoff);
         unsigned long src = srcpage * LMMH(m_pLXHeader->pagesize) + (short)LMMHw(fixup.srcoff);
         unsigned short object = 0;
         if (fixup.flags & 0x40)
@@ -341,7 +342,7 @@ bool DOS4GWBinaryFile::RealLoad(const QString & sName) {
         //        printf("relocate dword at %x to point to %x\n", src, target);
         *(unsigned int *)(base + src) = target;
 
-        while (ftell(fp) - (LMMH(m_pLXHeader->fixuprecordtbloffset) + lxoff) >= LMMH(fixuppagetbl[srcpage+1]))
+        while (ftell(fp) - (LMMH(m_pLXHeader->fixuprecordtbloffset) + lxoff) >= LMMH(fixuppagetbl[srcpage + 1]))
             srcpage++;
     } while (srcpage < npages);
 
@@ -350,62 +351,56 @@ bool DOS4GWBinaryFile::RealLoad(const QString & sName) {
 }
 
 bool DOS4GWBinaryFile::IsDynamicLinkedProc(ADDRESS uNative) {
-    if (dlprocptrs.find(uNative) != dlprocptrs.end() &&
-            dlprocptrs[uNative] != "main" && dlprocptrs[uNative] != "_start")
+    if (dlprocptrs.find(uNative) != dlprocptrs.end() && dlprocptrs[uNative] != "main" &&
+        dlprocptrs[uNative] != "_start")
         return true;
     return false;
 }
 
 // Clean up and unload the binary image
-void DOS4GWBinaryFile::UnLoad() {
-}
+void DOS4GWBinaryFile::UnLoad() {}
 
-bool DOS4GWBinaryFile::PostLoad(void* handle) {
-    return false;
-}
+bool DOS4GWBinaryFile::PostLoad(void *handle) { return false; }
 
-const char* DOS4GWBinaryFile::SymbolByAddress(ADDRESS dwAddr) {
+const char *DOS4GWBinaryFile::SymbolByAddress(ADDRESS dwAddr) {
     std::map<ADDRESS, std::string>::iterator it = dlprocptrs.find(dwAddr);
     if (it == dlprocptrs.end())
         return 0;
-    return (char*) it->second.c_str();
+    return (char *)it->second.c_str();
 }
 
-ADDRESS DOS4GWBinaryFile::GetAddressByName(const char* pName,
-                                           bool bNoTypeOK /* = false */) {
+ADDRESS DOS4GWBinaryFile::GetAddressByName(const char *pName, bool bNoTypeOK /* = false */) {
     // This is "looking up the wrong way" and hopefully is uncommon
     // Use linear search
     std::map<ADDRESS, std::string>::iterator it = dlprocptrs.begin();
     while (it != dlprocptrs.end()) {
         // std::cerr << "Symbol: " << it->second.c_str() << " at 0x" << std::hex << it->first << "\n";
-        if (it->second==pName)
+        if (it->second == pName)
             return it->first;
         it++;
     }
     return NO_ADDRESS;
 }
 
-void DOS4GWBinaryFile::AddSymbol(ADDRESS uNative, const char *pName) {
-    dlprocptrs[uNative] = pName;
-}
+void DOS4GWBinaryFile::AddSymbol(ADDRESS uNative, const char *pName) { dlprocptrs[uNative] = pName; }
 
-bool DOS4GWBinaryFile::DisplayDetails(const char* fileName, FILE* f
-        /* = stdout */) {
+bool DOS4GWBinaryFile::DisplayDetails(const char *fileName, FILE *f
+                                      /* = stdout */) {
     return false;
 }
 
-int DOS4GWBinaryFile::dos4gwRead2(short* ps) const {
-    unsigned char* p = (unsigned char*)ps;
+int DOS4GWBinaryFile::dos4gwRead2(short *ps) const {
+    unsigned char *p = (unsigned char *)ps;
     // Little endian
     int n = (int)(p[0] + (p[1] << 8));
     return n;
 }
 
-int DOS4GWBinaryFile::dos4gwRead4(int* pi) const{
-    short* p = (short*)pi;
+int DOS4GWBinaryFile::dos4gwRead4(int *pi) const {
+    short *p = (short *)pi;
     int n1 = dos4gwRead2(p);
-    int n2 = dos4gwRead2(p+1);
-    int n = (int) (n1 | (n2 << 16));
+    int n2 = dos4gwRead2(p + 1);
+    int n = (int)(n1 | (n2 << 16));
     return n;
 }
 
@@ -414,65 +409,67 @@ char DOS4GWBinaryFile::readNative1(ADDRESS nat) {
     PSectionInfo si = GetSectionInfoByAddr(nat);
     if (si == 0)
         si = GetSectionInfo(0);
-    char* host = (char*)(si->uHostAddr - si->uNativeAddr + nat).m_value;
+    char *host = (char *)(si->uHostAddr - si->uNativeAddr + nat).m_value;
     return *host;
 }
 
 // Read 2 bytes from given native address
 int DOS4GWBinaryFile::readNative2(ADDRESS nat) {
     PSectionInfo si = GetSectionInfoByAddr(nat);
-    if (si == 0) return 0;
+    if (si == 0)
+        return 0;
     ADDRESS host = si->uHostAddr - si->uNativeAddr + nat;
-    int n = dos4gwRead2((short*)host.m_value);
+    int n = dos4gwRead2((short *)host.m_value);
     return n;
 }
 
 // Read 4 bytes from given native address
 int DOS4GWBinaryFile::readNative4(ADDRESS nat) {
     PSectionInfo si = GetSectionInfoByAddr(nat);
-    if (si == 0) return 0;
+    if (si == 0)
+        return 0;
     ADDRESS host = si->uHostAddr - si->uNativeAddr + nat;
-    int n = dos4gwRead4((int*)host.m_value);
+    int n = dos4gwRead4((int *)host.m_value);
     return n;
 }
 
 // Read 8 bytes from given native address
 QWord DOS4GWBinaryFile::readNative8(ADDRESS nat) {
     int raw[2];
-#ifdef WORDS_BIGENDIAN        // This tests the host machine
+#ifdef WORDS_BIGENDIAN // This tests the host machine
     // Source and host are different endianness
     raw[1] = readNative4(nat);
-    raw[0] = readNative4(nat+4);
+    raw[0] = readNative4(nat + 4);
 #else
     // Source and host are same endianness
     raw[0] = readNative4(nat);
-    raw[1] = readNative4(nat+4);
+    raw[1] = readNative4(nat + 4);
 #endif
-    return *(QWord*)raw;
+    return *(QWord *)raw;
 }
 
 // Read 4 bytes as a float
 float DOS4GWBinaryFile::readNativeFloat4(ADDRESS nat) {
     int raw = readNative4(nat);
     // Ugh! gcc says that reinterpreting from int to float is invalid!!
-    //return reinterpret_cast<float>(raw);        // Note: cast, not convert!!
-    return *(float*)&raw;                        // Note: cast, not convert
+    // return reinterpret_cast<float>(raw);        // Note: cast, not convert!!
+    return *(float *)&raw; // Note: cast, not convert
 }
 
 // Read 8 bytes as a float
 double DOS4GWBinaryFile::readNativeFloat8(ADDRESS nat) {
     int raw[2];
-#ifdef WORDS_BIGENDIAN        // This tests the host machine
+#ifdef WORDS_BIGENDIAN // This tests the host machine
     // Source and host are different endianness
     raw[1] = readNative4(nat);
-    raw[0] = readNative4(nat+4);
+    raw[0] = readNative4(nat + 4);
 #else
     // Source and host are same endianness
     raw[0] = readNative4(nat);
-    raw[1] = readNative4(nat+4);
+    raw[1] = readNative4(nat + 4);
 #endif
-    //return reinterpret_cast<double>(*raw);    // Note: cast, not convert!!
-    return *(double*)raw;
+    // return reinterpret_cast<double>(*raw);    // Note: cast, not convert!!
+    return *(double *)raw;
 }
 
 bool DOS4GWBinaryFile::IsDynamicLinkedProcPointer(ADDRESS uNative) {
@@ -481,33 +478,23 @@ bool DOS4GWBinaryFile::IsDynamicLinkedProcPointer(ADDRESS uNative) {
     return false;
 }
 
-const char *DOS4GWBinaryFile::GetDynamicProcName(ADDRESS uNative) {
-    return dlprocptrs[uNative].c_str();
-}
+const char *DOS4GWBinaryFile::GetDynamicProcName(ADDRESS uNative) { return dlprocptrs[uNative].c_str(); }
 
-LOAD_FMT DOS4GWBinaryFile::GetFormat() const {
-    return LOADFMT_LX;
-}
+LOAD_FMT DOS4GWBinaryFile::GetFormat() const { return LOADFMT_LX; }
 
-MACHINE DOS4GWBinaryFile::GetMachine() const {
-    return MACHINE_PENTIUM;
-}
+MACHINE DOS4GWBinaryFile::GetMachine() const { return MACHINE_PENTIUM; }
 
 bool DOS4GWBinaryFile::isLibrary() const {
     return false; // TODO
 }
 
-ADDRESS DOS4GWBinaryFile::getImageBase() {
-    return ADDRESS::g(m_pLXObjects[0].RelocBaseAddr);
-}
+ADDRESS DOS4GWBinaryFile::getImageBase() { return ADDRESS::g(m_pLXObjects[0].RelocBaseAddr); }
 
 size_t DOS4GWBinaryFile::getImageSize() {
     return 0; // TODO
 }
 
-QStringList DOS4GWBinaryFile::getDependencyList() {
-    return QStringList(); /* FIXME */
-}
+QStringList DOS4GWBinaryFile::getDependencyList() { return QStringList(); /* FIXME */ }
 
 DWord DOS4GWBinaryFile::getDelta() {
     // Stupid function anyway: delta depends on section
@@ -524,7 +511,7 @@ extern "C" {
 #ifdef _WIN32
 __declspec(dllexport)
 #endif
-    QObject* construct() {
+    QObject *construct() {
     return new DOS4GWBinaryFile;
 }
 }

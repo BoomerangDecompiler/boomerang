@@ -1,7 +1,7 @@
-/***************************************************************************//**
- * \file       testLoader.cc
- * OVERVIEW:   Command line test of the BinaryFile and related classes.
- *============================================================================*/
+/***************************************************************************/ /**
+  * \file       testLoader.cc
+  * OVERVIEW:   Command line test of the BinaryFile and related classes.
+  *============================================================================*/
 /*
  * $Revision$
  *    Apr 02 - Mike: Created
@@ -15,8 +15,7 @@
 #include <iostream>
 #include "LoaderTest.h"
 
-int main(int argc, char** argv)
-{
+int main(int argc, char **argv) {
     CppUnit::TestSuite suite;
 
     LoaderTest lt("ExpTest");
@@ -25,9 +24,8 @@ int main(int argc, char** argv)
 
     CppUnit::TextTestResult res;
 
-    suite.run( &res );
+    suite.run(&res);
     std::cout << res << std::endl;
 
     return 0;
 }
-

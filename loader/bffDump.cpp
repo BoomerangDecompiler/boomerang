@@ -21,12 +21,12 @@
 // so that we can support them all.
 #include "BinaryFile.h"
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
     // Usage
 
     if (argc != 2) {
-        printf ("Usage: %s <filename>\n", argv[0]);
-        printf ("%s dumps the contents of the given executable file\n", argv[0]);
+        printf("Usage: %s <filename>\n", argv[0]);
+        printf("%s dumps the contents of the given executable file\n", argv[0]);
         return 1;
     }
 
@@ -46,7 +46,7 @@ int main(int argc, char* argv[]) {
     // in the derived class (ElfBinaryFile in this case), then
     // uncomment the commented code below to display section information.
 
-    ldr_iface->DisplayDetails(argv[0],stdout);
+    ldr_iface->DisplayDetails(argv[0], stdout);
 
     // This is an alternative way of displaying binary-file information
     // by using individual sections.  The above approach is more general.
@@ -64,15 +64,15 @@ int main(int argc, char* argv[]) {
     // Note: this is traditionally the ".text" section in Elf binaries.
     // In the case of Prc files (Palm), the code section is named "code0".
 
-    for (int i=0; i < sect_iface->GetNumSections(); i++) {
-        SectionInfo* pSect = sect_iface->GetSectionInfo(i);
+    for (int i = 0; i < sect_iface->GetNumSections(); i++) {
+        SectionInfo *pSect = sect_iface->GetSectionInfo(i);
         if (pSect->bCode) {
             printf("  Code section:\n");
             ADDRESS a = pSect->uNativeAddr;
-            unsigned char* p = (unsigned char*) pSect->uHostAddr.m_value;
-            for (unsigned off = 0; off < pSect->uSectionSize; ) {
+            unsigned char *p = (unsigned char *)pSect->uHostAddr.m_value;
+            for (unsigned off = 0; off < pSect->uSectionSize;) {
                 printf("%04X: ", uint32_t(a.m_value));
-                for (int j=0; (j < 16) && (off < pSect->uSectionSize); j++) {
+                for (int j = 0; (j < 16) && (off < pSect->uSectionSize); j++) {
                     printf("%02X ", *p++);
                     a++;
                     off++;
@@ -85,15 +85,15 @@ int main(int argc, char* argv[]) {
 
     // Display the data section(s) in raw hexadecimal notation
 
-    for (int i=0; i < sect_iface->GetNumSections(); i++) {
-        SectionInfo* pSect = sect_iface->GetSectionInfo(i);
+    for (int i = 0; i < sect_iface->GetNumSections(); i++) {
+        SectionInfo *pSect = sect_iface->GetSectionInfo(i);
         if (pSect->bData) {
             printf("  Data section: %s\n", pSect->pSectionName);
             ADDRESS a = pSect->uNativeAddr;
-            unsigned char* p = (unsigned char*) pSect->uHostAddr.m_value;
-            for (unsigned off = 0; off < pSect->uSectionSize; ) {
+            unsigned char *p = (unsigned char *)pSect->uHostAddr.m_value;
+            for (unsigned off = 0; off < pSect->uSectionSize;) {
                 printf("%04X: ", uint32_t(a.m_value));
-                for (int j=0; (j < 16) && (off < pSect->uSectionSize); j++) {
+                for (int j = 0; (j < 16) && (off < pSect->uSectionSize); j++) {
                     printf("%02X ", *p++);
                     a++;
                     off++;
@@ -106,4 +106,3 @@ int main(int argc, char* argv[]) {
     delete plug;
     return 0;
 }
-

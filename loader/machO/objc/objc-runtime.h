@@ -36,25 +36,25 @@
 typedef struct objc_symtab *Symtab;
 
 struct objc_symtab {
-    uint32_t     sel_ref_cnt;
-    SEL         *refs;
-    unsigned short     cls_def_cnt;
-    unsigned short     cat_def_cnt;
-    uint32_t    defs[1];    /* variable size */
+    uint32_t sel_ref_cnt;
+    SEL *refs;
+    unsigned short cls_def_cnt;
+    unsigned short cat_def_cnt;
+    uint32_t defs[1]; /* variable size */
 };
 
 typedef struct objc_module *Module;
 
 struct objc_module {
-    uint32_t    version;
-    uint32_t    size;
-    uint32_t    name;
-    uint32_t    symtab;
+    uint32_t version;
+    uint32_t size;
+    uint32_t name;
+    uint32_t symtab;
 };
 
 struct objc_super {
     id receiver;
-    //Class class;
+    // Class class;
     Class pclass;
 };
 
@@ -68,7 +68,7 @@ OBJC_EXPORT id objc_msgSend(id self, SEL op, ...);
 // Help out the compiler group by tweaking the prototype.
 OBJC_EXPORT id objc_msgSend_stret(id self, SEL op, ...);
 #else
-OBJC_EXPORT void objc_msgSend_stret(void * stretAddr, id self, SEL op, ...);
+OBJC_EXPORT void objc_msgSend_stret(void *stretAddr, id self, SEL op, ...);
 #endif
 OBJC_EXPORT id objc_msgSendSuper(struct objc_super *super, SEL op, ...);
 #if defined(WINNT) || defined(__cplusplus)
@@ -76,13 +76,13 @@ OBJC_EXPORT id objc_msgSendSuper(struct objc_super *super, SEL op, ...);
 // Help out the compiler group by tweaking the prototype.
 OBJC_EXPORT id objc_msgSendSuper_stret(struct objc_super *super, SEL op, ...);
 #else
-OBJC_EXPORT void objc_msgSendSuper_stret(void * stretAddr, struct objc_super *super, SEL op, ...);
+OBJC_EXPORT void objc_msgSendSuper_stret(void *stretAddr, struct objc_super *super, SEL op, ...);
 #endif
 
 /* forwarding operations */
 
 OBJC_EXPORT id objc_msgSendv(id self, SEL op, unsigned arg_size, marg_list arg_frame);
-OBJC_EXPORT void objc_msgSendv_stret(void * stretAddr, id self, SEL op, unsigned arg_size, marg_list arg_frame);
+OBJC_EXPORT void objc_msgSendv_stret(void *stretAddr, id self, SEL op, unsigned arg_size, marg_list arg_frame);
 
 /*
     getting all the classes in the application...
@@ -128,19 +128,18 @@ OBJC_EXPORT void objc_addClass(Class myClass);
 OBJC_EXPORT void objc_setClassHandler(int (*)(const char *));
 
 /* Making the Objective-C runtime thread safe. */
-OBJC_EXPORT void objc_setMultithreaded (BOOL flag);
+OBJC_EXPORT void objc_setMultithreaded(BOOL flag);
 
 /* overriding the default object allocation and error handling routines */
 
-OBJC_EXPORT id    (*_alloc)(Class, unsigned int);
-OBJC_EXPORT id    (*_copy)(id, unsigned int);
-OBJC_EXPORT id    (*_realloc)(id, unsigned int);
-OBJC_EXPORT id    (*_dealloc)(id);
-OBJC_EXPORT id    (*_zoneAlloc)(Class, unsigned int, void *);
-OBJC_EXPORT id    (*_zoneRealloc)(id, unsigned int, void *);
-OBJC_EXPORT id    (*_zoneCopy)(id, unsigned int, void *);
+OBJC_EXPORT id (*_alloc)(Class, unsigned int);
+OBJC_EXPORT id (*_copy)(id, unsigned int);
+OBJC_EXPORT id (*_realloc)(id, unsigned int);
+OBJC_EXPORT id (*_dealloc)(id);
+OBJC_EXPORT id (*_zoneAlloc)(Class, unsigned int, void *);
+OBJC_EXPORT id (*_zoneRealloc)(id, unsigned int, void *);
+OBJC_EXPORT id (*_zoneCopy)(id, unsigned int, void *);
 
-OBJC_EXPORT void    (*_error)(id, const char *, va_list);
-
+OBJC_EXPORT void (*_error)(id, const char *, va_list);
 
 #endif /* _OBJC_RUNTIME_H_ */

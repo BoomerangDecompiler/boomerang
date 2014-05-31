@@ -30,21 +30,23 @@
 // Given a little endian value x, load its value assuming little endian order
 // Note: must be able to take address of x
 // Note: Unlike the LH macro in BinaryFile.h, the paraeter is not a pointer
-#define LMMH(x) ((unsigned)((Byte *)(&x))[0] + ((unsigned)((Byte *)(&x))[1] << 8) + \
-    ((unsigned)((Byte *)(&x))[2] << 16) + ((unsigned)((Byte *)(&x))[3] << 24))
+#define LMMH(x)                                                                                                        \
+    ((unsigned)((Byte *)(&x))[0] + ((unsigned)((Byte *)(&x))[1] << 8) + ((unsigned)((Byte *)(&x))[2] << 16) +          \
+     ((unsigned)((Byte *)(&x))[3] << 24))
 // With this one, x IS a pounsigneder
-#define LMMH2(x) ((unsigned)((Byte *)(x))[0] + ((unsigned)((Byte *)(x))[1] << 8) + \
-    ((unsigned)((Byte *)(x))[2] << 16) + ((unsigned)((Byte *)(x))[3] << 24))
+#define LMMH2(x)                                                                                                       \
+    ((unsigned)((Byte *)(x))[0] + ((unsigned)((Byte *)(x))[1] << 8) + ((unsigned)((Byte *)(x))[2] << 16) +             \
+     ((unsigned)((Byte *)(x))[3] << 24))
 #define LMMHw(x) ((unsigned)((Byte *)(&x))[0] + ((unsigned)((Byte *)(&x))[1] << 8))
 
 #define PACKED __attribute__((packed))
 
-typedef struct {                /* exe file header, just the signature really */
-    Byte    sigLo;            /* .EXE signature: 0x4D 0x5A     */
-    Byte    sigHi;
+typedef struct {/* exe file header, just the signature really */
+    Byte sigLo; /* .EXE signature: 0x4D 0x5A     */
+    Byte sigHi;
 } Header;
 
-typedef struct PACKED{
+typedef struct PACKED {
     Byte sigLo;
     Byte sigHi;
     Byte byteord;
@@ -122,23 +124,20 @@ typedef struct PACKED {
 #pragma pack(4)
 //#endif
 
-class DOS4GWBinaryFile : public QObject,
-        public LoaderInterface,
-        public BinaryData,
-        public LoaderCommon {
+class DOS4GWBinaryFile : public QObject, public LoaderInterface, public BinaryData, public LoaderCommon {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID LoaderInterface_iid)
     Q_INTERFACES(LoaderInterface)
     Q_INTERFACES(BinaryData)
     Q_INTERFACES(SectionInterface)
-public:
-    virtual        ~DOS4GWBinaryFile();                // Destructor
-    virtual bool    Open(const char* sName);        // Open the file for r/w; ???
-    virtual void    Close();                        // Close file opened with Open()
-    virtual void    UnLoad();                        // Unload the image
-    virtual LOAD_FMT GetFormat() const;            // Get format (i.e.
+  public:
+    virtual ~DOS4GWBinaryFile();          // Destructor
+    virtual bool Open(const char *sName); // Open the file for r/w; ???
+    virtual void Close();                 // Close file opened with Open()
+    virtual void UnLoad();                // Unload the image
+    virtual LOAD_FMT GetFormat() const;   // Get format (i.e.
     // LOADFMT_DOS4GW)
-    virtual MACHINE GetMachine() const;            // Get machine (i.e.
+    virtual MACHINE GetMachine() const; // Get machine (i.e.
     // MACHINE_Pentium)
     QString getFilename() const override { return m_pFileName; }
     virtual bool isLibrary() const;
@@ -146,13 +145,12 @@ public:
     virtual ADDRESS getImageBase();
     virtual size_t getImageSize();
 
-    virtual std::list<SectionInfo*>& GetEntryPoints(const char* pEntry = "main");
+    virtual std::list<SectionInfo *> &GetEntryPoints(const char *pEntry = "main");
     virtual ADDRESS GetMainEntryPoint();
     virtual ADDRESS GetEntryPoint();
     DWord getDelta();
-    virtual const char* SymbolByAddress(ADDRESS dwAddr); // Get sym from addr
-    virtual ADDRESS GetAddressByName(const char* name,
-                                     bool bNoTypeOK = false);                    // Find addr given name
+    virtual const char *SymbolByAddress(ADDRESS dwAddr);                        // Get sym from addr
+    virtual ADDRESS GetAddressByName(const char *name, bool bNoTypeOK = false); // Find addr given name
     virtual void AddSymbol(ADDRESS uNative, const char *pName);
 
     //
@@ -160,45 +158,41 @@ public:
     //
     // Internal information
     // Dump headers, etc
-    virtual bool    DisplayDetails(const char* fileName, FILE* f = stdout);
+    virtual bool DisplayDetails(const char *fileName, FILE *f = stdout);
 
-protected:
-
+  protected:
     int dos4gwRead2(short *ps) const; // Read 2 bytes from native addr
-    int dos4gwRead4(int *pi) const;     // Read 4 bytes from native addr
+    int dos4gwRead4(int *pi) const;   // Read 4 bytes from native addr
 
-public:
-
-    char readNative1(ADDRESS a) override;         // Read 1 bytes from native addr
-    int readNative2(ADDRESS a) override;            // Read 2 bytes from native addr
-    int readNative4(ADDRESS a) override;            // Read 4 bytes from native addr
-    QWord readNative8(ADDRESS a) override;    // Read 8 bytes from native addr
-    float readNativeFloat4(ADDRESS a) override;    // Read 4 bytes as float
+  public:
+    char readNative1(ADDRESS a) override;        // Read 1 bytes from native addr
+    int readNative2(ADDRESS a) override;         // Read 2 bytes from native addr
+    int readNative4(ADDRESS a) override;         // Read 4 bytes from native addr
+    QWord readNative8(ADDRESS a) override;       // Read 8 bytes from native addr
+    float readNativeFloat4(ADDRESS a) override;  // Read 4 bytes as float
     double readNativeFloat8(ADDRESS a) override; // Read 8 bytes as float
 
-    virtual bool    IsDynamicLinkedProcPointer(ADDRESS uNative);
-    virtual bool    IsDynamicLinkedProc(ADDRESS uNative);
+    virtual bool IsDynamicLinkedProcPointer(ADDRESS uNative);
+    virtual bool IsDynamicLinkedProc(ADDRESS uNative);
     virtual const char *GetDynamicProcName(ADDRESS uNative);
 
     virtual std::map<ADDRESS, std::string> &getSymbols() { return dlprocptrs; }
 
-protected:
-    bool  RealLoad(const QString &sName) override; // Load the file; pure virtual
+  protected:
+    bool RealLoad(const QString &sName) override; // Load the file; pure virtual
 
-private:
+  private:
+    bool PostLoad(void *handle); // Called after archive member loaded
 
-    bool    PostLoad(void* handle); // Called after archive member loaded
-
-    Header* m_pHeader;                // Pointer to header
-    LXHeader* m_pLXHeader;            // Pointer to lx header
-    LXObject* m_pLXObjects;         // Pointer to lx objects
-    LXPage*   m_pLXPages;           // Pointer to lx pages
-    int        m_cbImage;                // Size of image
-    //int        m_cReloc;                // Number of relocation entries
-    //DWord*    m_pRelocTable;            // The relocation table
-    char *    base;                    // Beginning of the loaded image
+    Header *m_pHeader;      // Pointer to header
+    LXHeader *m_pLXHeader;  // Pointer to lx header
+    LXObject *m_pLXObjects; // Pointer to lx objects
+    LXPage *m_pLXPages;     // Pointer to lx pages
+    int m_cbImage;          // Size of image
+    // int        m_cReloc;                // Number of relocation entries
+    // DWord*    m_pRelocTable;            // The relocation table
+    char *base; // Beginning of the loaded image
     // Map from address of dynamic pointers to library procedure names:
     std::map<ADDRESS, std::string> dlprocptrs;
     QString m_pFileName;
-
 };

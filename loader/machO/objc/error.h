@@ -2,7 +2,7 @@
  * Copyright (c) 1999 Apple Computer, Inc. All rights reserved.
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
+ *
  * Portions Copyright (c) 1999 Apple Computer, Inc.  All Rights
  * Reserved.  This file contains Original Code and/or Modifications of
  * Original Code as defined in and that are subject to the Apple Public
@@ -10,7 +10,7 @@
  * except in compliance with the License.  Please obtain a copy of the
  * License at http://www.apple.com/publicsource and read it before using
  * this file.
- * 
+ *
  * The Original Code and all software distributed under the License are
  * distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, EITHER
  * EXPRESS OR IMPLIED, AND APPLE HEREBY DISCLAIMS ALL SUCH WARRANTIES,
@@ -18,7 +18,7 @@
  * FITNESS FOR A PARTICULAR PURPOSE OR NON- INFRINGEMENT.  Please see the
  * License for the specific language governing rights and limitations
  * under the License.
- * 
+ *
  * @APPLE_LICENSE_HEADER_END@
  */
 
@@ -39,22 +39,18 @@
 #include <setjmp.h>
 #import <objc/objc-api.h>
 
-
 typedef struct _NXHandler {    /* a node in the handler chain */
-    jmp_buf jumpState;            /* place to longjmp to */
-    struct _NXHandler *next;        /* ptr to next handler */
-    int code;                /* error code of exception */
-    const void *data1, *data2;        /* blind data for describing error */
+    jmp_buf jumpState;         /* place to longjmp to */
+    struct _NXHandler *next;   /* ptr to next handler */
+    int code;                  /* error code of exception */
+    const void *data1, *data2; /* blind data for describing error */
 } NXHandler;
 
-
 /* Handles RAISE's with nowhere to longjmp to */
-typedef void NXUncaughtExceptionHandler(int code, const void *data1,
-                        const void *data2);
+typedef void NXUncaughtExceptionHandler(int code, const void *data1, const void *data2);
 OBJC_EXPORT NXUncaughtExceptionHandler *_NXUncaughtExceptionHandler;
 #define NXGetUncaughtExceptionHandler() _NXUncaughtExceptionHandler
-#define NXSetUncaughtExceptionHandler(proc) \
-            (_NXUncaughtExceptionHandler = (proc))
+#define NXSetUncaughtExceptionHandler(proc) (_NXUncaughtExceptionHandler = (proc))
 
 /* NX_DURING, NX_HANDLER and NX_ENDHANDLER are always used like:
 
@@ -77,23 +73,36 @@ OBJC_EXPORT NXUncaughtExceptionHandler *_NXUncaughtExceptionHandler;
  */
 
 /* private support routines.  Do not call directly. */
-OBJC_EXPORT void _NXAddHandler( NXHandler *handler );
-OBJC_EXPORT void _NXRemoveHandler( NXHandler *handler );
+OBJC_EXPORT void _NXAddHandler(NXHandler *handler);
+OBJC_EXPORT void _NXRemoveHandler(NXHandler *handler);
 
-#define NX_DURING { NXHandler NXLocalHandler;            \
-            _NXAddHandler(&NXLocalHandler);        \
-            if( !_setjmp(NXLocalHandler.jumpState) ) {
+#define NX_DURING                                                                                                      \
+    {                                                                                                                  \
+        NXHandler NXLocalHandler;                                                                                      \
+        _NXAddHandler(&NXLocalHandler);                                                                                \
+        if (!_setjmp(NXLocalHandler.jumpState)) {
 
-#define NX_HANDLER _NXRemoveHandler(&NXLocalHandler); } else {
+#define NX_HANDLER                                                                                                     \
+    _NXRemoveHandler(&NXLocalHandler);                                                                                 \
+    }                                                                                                                  \
+    else {
 
-#define NX_ENDHANDLER }}
+#define NX_ENDHANDLER                                                                                                  \
+    }                                                                                                                  \
+    }
 
-#define NX_VALRETURN(val)  do { typeof(val) temp = (val);    \
-            _NXRemoveHandler(&NXLocalHandler);    \
-            return(temp); } while (0)
+#define NX_VALRETURN(val)                                                                                              \
+    do {                                                                                                               \
+        typeof(val) temp = (val);                                                                                      \
+        _NXRemoveHandler(&NXLocalHandler);                                                                             \
+        return (temp);                                                                                                 \
+    } while (0)
 
-#define NX_VOIDRETURN    do { _NXRemoveHandler(&NXLocalHandler);    \
-            return; } while (0)
+#define NX_VOIDRETURN                                                                                                  \
+    do {                                                                                                               \
+        _NXRemoveHandler(&NXLocalHandler);                                                                             \
+        return;                                                                                                        \
+    } while (0)
 
 /* RAISE and RERAISE are called to indicate an error condition.  They
    initiate the process of jumping up the chain of handlers.
@@ -101,19 +110,18 @@ OBJC_EXPORT void _NXRemoveHandler( NXHandler *handler );
 
 OBJC_EXPORT
 #if defined(__GNUC__) && !defined(__STRICT_ANSI__)
-    volatile    /* never returns */
-#endif 
-void _NXRaiseError(int code, const void *data1, const void *data2)
-#if defined(__GNUC__)
-  __attribute__ ((noreturn))
+volatile /* never returns */
 #endif
-;
+    void
+    _NXRaiseError(int code, const void *data1, const void *data2)
+#if defined(__GNUC__)
+    __attribute__((noreturn))
+#endif
+    ;
 
-#define NX_RAISE( code, data1, data2 )    \
-        _NXRaiseError( (code), (data1), (data2) )
+#define NX_RAISE(code, data1, data2) _NXRaiseError((code), (data1), (data2))
 
-#define NX_RERAISE()     _NXRaiseError( NXLocalHandler.code,    \
-                NXLocalHandler.data1, NXLocalHandler.data2 )
+#define NX_RERAISE() _NXRaiseError(NXLocalHandler.code, NXLocalHandler.data1, NXLocalHandler.data2)
 
 /* These routines set and return the procedure which is called when
    exceptions are raised.  This procedure must NEVER return.  It will
@@ -124,7 +132,6 @@ typedef volatile void NXExceptionRaiser(int code, const void *data1, const void 
 OBJC_EXPORT void NXSetExceptionRaiser(NXExceptionRaiser *proc);
 OBJC_EXPORT NXExceptionRaiser *NXGetExceptionRaiser(void);
 OBJC_EXPORT NXExceptionRaiser NXDefaultExceptionRaiser;
-
 
 /* The error buffer is used to allocate data which is passed up to other
    handlers.  Clients should clear the error buffer in their top level
