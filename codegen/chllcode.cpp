@@ -6,13 +6,12 @@
  *
  */
 
-/***************************************************************************//**
- * \file       chllcode.cpp
- * \brief   Concrete backend class for the "C" high level language
- *               This class is provides methods which are specific for the C language binding.
- *               I guess this will be the most popular output language unless we do C++.
- ******************************************************************************/
-
+/***************************************************************************/ /**
+  * \file       chllcode.cpp
+  * \brief   Concrete backend class for the "C" high level language
+  *               This class is provides methods which are specific for the C language binding.
+  *               I guess this will be the most popular output language unless we do C++.
+  ******************************************************************************/
 
 #include "cfg.h"
 #include "statement.h"
@@ -40,25 +39,22 @@ void HLLCode::print(QTextStream &qf) {
     print(ostr);
     qf << ostr.str().c_str();
 }
-static bool isBareMemof(const Exp &e, UserProc* proc);
-//extern char *operStrings[];
+static bool isBareMemof(const Exp &e, UserProc *proc);
+// extern char *operStrings[];
 
 /// Empty constructor, calls HLLCode()
-CHLLCode::CHLLCode() : HLLCode()
-{}
+CHLLCode::CHLLCode() : HLLCode() {}
 
 /// Empty constructor, calls HLLCode(p)
-CHLLCode::CHLLCode(UserProc *p) : HLLCode(p)
-{}
+CHLLCode::CHLLCode(UserProc *p) : HLLCode(p) {}
 
 /// Empty destructor
-CHLLCode::~CHLLCode()
-{}
+CHLLCode::~CHLLCode() {}
 
 /// Output 4 * \a indLevel spaces to \a str
-void CHLLCode::indent(std::ostringstream& str, int indLevel) {
+void CHLLCode::indent(std::ostringstream &str, int indLevel) {
     // Can probably do more efficiently
-    for (int i=0; i < indLevel; i++)
+    for (int i = 0; i < indLevel; i++)
         str << "    ";
 }
 
@@ -73,7 +69,7 @@ static int progress = 0;
  *
  * \todo This function is 800+ lines, and should possibly be split up.
  */
-void CHLLCode::appendExp(std::ostringstream& str, const Exp &exp, PREC curPrec, bool uns /* = false */ ) {
+void CHLLCode::appendExp(std::ostringstream &str, const Exp &exp, PREC curPrec, bool uns /* = false */) {
     if (++progress > 500) {
         std::cerr << 'g' << std::flush;
         progress = 0;
@@ -81,10 +77,10 @@ void CHLLCode::appendExp(std::ostringstream& str, const Exp &exp, PREC curPrec, 
 
     OPER op = exp.getOper();
 
-#ifdef SYMS_IN_BACK_END                // Should no longer be any unmapped symbols by the back end
+#ifdef SYMS_IN_BACK_END // Should no longer be any unmapped symbols by the back end
     // Check if it's mapped to a symbol
-    if (m_proc && !exp->isTypedExp()) {            // Beware: lookupSym will match (cast)r24 to local0, stripping the cast!
-        const char* sym = m_proc->lookupSym(exp);
+    if (m_proc && !exp->isTypedExp()) { // Beware: lookupSym will match (cast)r24 to local0, stripping the cast!
+        const char *sym = m_proc->lookupSym(exp);
         if (sym) {
             str << sym;
             return;
@@ -92,825 +88,841 @@ void CHLLCode::appendExp(std::ostringstream& str, const Exp &exp, PREC curPrec, 
     }
 #endif
 
-    const Const &   c(static_cast<const Const&>(exp));
-    const Unary &   u(static_cast<const Unary&>(exp));
-    const Binary&   b(static_cast<const Binary&>(exp));
-    const Ternary & t(static_cast<const Ternary&>(exp));
+    const Const &c(static_cast<const Const &>(exp));
+    const Unary &u(static_cast<const Unary &>(exp));
+    const Binary &b(static_cast<const Binary &>(exp));
+    const Ternary &t(static_cast<const Ternary &>(exp));
 
-    switch(op) {
-        case opIntConst: {
-            int K = c.getInt();
-            if (uns && K < 0) {
-                // An unsigned constant. Use some heuristics
-                unsigned rem = (unsigned)K % 100;
-                if (rem == 0 || rem == 99 || K > -128) {
-                    // A multiple of 100, or one less; use 4000000000U style
-                    char num[16];
-                    sprintf(num, "%u", K);
-                    str << num << "U";
-                } else {
-                    // Output it in 0xF0000000 style
-                    str << "0x" << std::hex << K;
-                }
+    switch (op) {
+    case opIntConst: {
+        int K = c.getInt();
+        if (uns && K < 0) {
+            // An unsigned constant. Use some heuristics
+            unsigned rem = (unsigned)K % 100;
+            if (rem == 0 || rem == 99 || K > -128) {
+                // A multiple of 100, or one less; use 4000000000U style
+                char num[16];
+                sprintf(num, "%u", K);
+                str << num << "U";
             } else {
-                if (c.getType() && c.getType()->isChar()) {
-                    switch(K) {
-
-                        case '\a': str << "'\\a'"; break;
-                        case '\b': str << "'\\b'"; break;
-                        case '\f': str << "'\\f'"; break;
-                        case '\n': str << "'\\n'";break;
-                        case '\r': str << "'\\r'"; break;
-                        case '\t': str << "'\\t'"; break;
-                        case '\v': str << "'\\v'"; break;
-                        case '\\': str << "'\\\\'"; break;
-                        case '\?': str << "'\\?'"; break;
-                        case '\'': str << "'\\''"; break;
-                        case '\"': str << "'\\\"'"; break;
-                        default:
-                            str << "'" << (char)K << "'";
-                    }
-                } else {
-                    // More heuristics
-                    if (-2048 < K && K < 2048)
-                        str << std::dec << K;             // Just a plain vanilla int
-                    else
-                        str << "0x" << std::hex << K;    // 0x2000 style
-                }
+                // Output it in 0xF0000000 style
+                str << "0x" << std::hex << K;
             }
-            break;
-        }
-        case opLongConst:
-            //str << std::dec << c->getLong() << "LL"; break;
-            if ((long long)c.getLong() < -1000LL || (long long)c.getLong() > 1000LL)
-                str << "0x" << std::hex << c.getLong() << std::dec << "LL";
-            else
-                str << std::dec << c.getLong() << "LL";
-            break;
-        case opFltConst: {
-            //str.precision(4);     // What to do with precision here? Would be nice to avoid 1.00000 or 0.99999
-            std::ostringstream ost;
-            ost << c.getFlt();
-            std::string s = ost.str();
-            str << s;
-            if (s.find('.') == std::string::npos)
-                str << ".";            // Show that it is a float
-            break;
-        }
-        case opStrConst:
-            // escape string:
-            str << "\"" << escapeStr(c.getStr()) << "\"";
-            break;
-        case opFuncConst:
-            str << c.getFuncName().toStdString();
-            break;
-        case opAddrOf: {
-            const Exp *sub = u.getSubExp1();
-            if (sub->isGlobal()) {
-                Prog* prog = m_proc->getProg();
+        } else {
+            if (c.getType() && c.getType()->isChar()) {
+                switch (K) {
 
-                auto con = static_cast<const Const *>(sub->getSubExp1());
-                Type* gt = prog->getGlobalType(con->getStr());
-                if (gt && (gt->isArray() || (gt->isPointer() && gt->asPointer()->getPointsTo()->isChar()))) {
-                    // Special C requirement: don't emit "&" for address of an array or char*
-                    appendExp(str, *sub, curPrec);
+                case '\a':
+                    str << "'\\a'";
                     break;
+                case '\b':
+                    str << "'\\b'";
+                    break;
+                case '\f':
+                    str << "'\\f'";
+                    break;
+                case '\n':
+                    str << "'\\n'";
+                    break;
+                case '\r':
+                    str << "'\\r'";
+                    break;
+                case '\t':
+                    str << "'\\t'";
+                    break;
+                case '\v':
+                    str << "'\\v'";
+                    break;
+                case '\\':
+                    str << "'\\\\'";
+                    break;
+                case '\?':
+                    str << "'\\?'";
+                    break;
+                case '\'':
+                    str << "'\\''";
+                    break;
+                case '\"':
+                    str << "'\\\"'";
+                    break;
+                default:
+                    str << "'" << (char)K << "'";
                 }
+            } else {
+                // More heuristics
+                if (-2048 < K && K < 2048)
+                    str << std::dec << K; // Just a plain vanilla int
+                else
+                    str << "0x" << std::hex << K; // 0x2000 style
             }
+        }
+        break;
+    }
+    case opLongConst:
+        // str << std::dec << c->getLong() << "LL"; break;
+        if ((long long)c.getLong() < -1000LL || (long long)c.getLong() > 1000LL)
+            str << "0x" << std::hex << c.getLong() << std::dec << "LL";
+        else
+            str << std::dec << c.getLong() << "LL";
+        break;
+    case opFltConst: {
+        // str.precision(4);     // What to do with precision here? Would be nice to avoid 1.00000 or 0.99999
+        std::ostringstream ost;
+        ost << c.getFlt();
+        std::string s = ost.str();
+        str << s;
+        if (s.find('.') == std::string::npos)
+            str << "."; // Show that it is a float
+        break;
+    }
+    case opStrConst:
+        // escape string:
+        str << "\"" << escapeStr(c.getStr()) << "\"";
+        break;
+    case opFuncConst:
+        str << c.getFuncName().toStdString();
+        break;
+    case opAddrOf: {
+        const Exp *sub = u.getSubExp1();
+        if (sub->isGlobal()) {
+            Prog *prog = m_proc->getProg();
+
+            auto con = static_cast<const Const *>(sub->getSubExp1());
+            Type *gt = prog->getGlobalType(con->getStr());
+            if (gt && (gt->isArray() || (gt->isPointer() && gt->asPointer()->getPointsTo()->isChar()))) {
+                // Special C requirement: don't emit "&" for address of an array or char*
+                appendExp(str, *sub, curPrec);
+                break;
+            }
+        }
 #ifdef SYMS_IN_BACK_END
-            if (sub->isMemOf() && m_proc->lookupSym(sub) == nullptr) {    // }
+        if (sub->isMemOf() && m_proc->lookupSym(sub) == nullptr) { // }
 #else
-            if (sub->isMemOf()) {
+        if (sub->isMemOf()) {
 #endif
 
-                // Avoid &*(type*)sub, just emit sub
-                appendExp(str, *sub->getSubExp1(), PREC_UNARY);
-            } else {
-                openParen(str, curPrec, PREC_UNARY);
-                str << "&";
-                appendExp(str, *sub, PREC_UNARY);
-                closeParen(str, curPrec, PREC_UNARY);
-            }
-            break;
+            // Avoid &*(type*)sub, just emit sub
+            appendExp(str, *sub->getSubExp1(), PREC_UNARY);
+        } else {
+            openParen(str, curPrec, PREC_UNARY);
+            str << "&";
+            appendExp(str, *sub, PREC_UNARY);
+            closeParen(str, curPrec, PREC_UNARY);
         }
-        case opParam:
-        case opGlobal:
-        case opLocal: {
-            auto c1 = dynamic_cast<const Const *>(u.getSubExp1());
-            assert(c1 && c1->getOper() == opStrConst);
-            str << c1->getStr();
-        }
-            break;
-        case opEquals:
-        {
-            openParen(str, curPrec, PREC_EQUAL);
-            appendExp(str, *b.getSubExp1(), PREC_EQUAL);
-            str << " == ";
-#if 0            // Suspect only for ADHOC TA
+        break;
+    }
+    case opParam:
+    case opGlobal:
+    case opLocal: {
+        auto c1 = dynamic_cast<const Const *>(u.getSubExp1());
+        assert(c1 && c1->getOper() == opStrConst);
+        str << c1->getStr();
+    } break;
+    case opEquals: {
+        openParen(str, curPrec, PREC_EQUAL);
+        appendExp(str, *b.getSubExp1(), PREC_EQUAL);
+        str << " == ";
+#if 0 // Suspect only for ADHOC TA
             Type *ty = b.getSubExp1()->getType();
             if (ty && ty->isPointer() && b.getSubExp2()->isIntConst() && ((Const*)b.getSubExp2())->getInt() == 0)
                 str << "nullptr";
             else
 #endif
-                appendExp(str, *b.getSubExp2(), PREC_EQUAL);
-            closeParen(str, curPrec, PREC_EQUAL);
-        }
-            break;
-        case opNotEqual:
-        {
-            openParen(str, curPrec, PREC_EQUAL);
-            appendExp(str, *b.getSubExp1(), PREC_EQUAL);
-            str << " != ";
-#if 0            // Suspect only for ADHOC_TA
+        appendExp(str, *b.getSubExp2(), PREC_EQUAL);
+        closeParen(str, curPrec, PREC_EQUAL);
+    } break;
+    case opNotEqual: {
+        openParen(str, curPrec, PREC_EQUAL);
+        appendExp(str, *b.getSubExp1(), PREC_EQUAL);
+        str << " != ";
+#if 0 // Suspect only for ADHOC_TA
             Type *ty = b.getSubExp1()->getType();
             if (ty && ty->isPointer() && b.getSubExp2()->isIntConst() && ((Const*)b.getSubExp2())->getInt() == 0)
                 str << "nullptr";
             else
 #endif
-                appendExp(str, *b.getSubExp2(), PREC_EQUAL);
-            closeParen(str, curPrec, PREC_EQUAL);
+        appendExp(str, *b.getSubExp2(), PREC_EQUAL);
+        closeParen(str, curPrec, PREC_EQUAL);
+    } break;
+    case opLess:
+    case opLessUns:
+        openParen(str, curPrec, PREC_REL);
+        appendExp(str, *b.getSubExp1(), PREC_REL, op == opLessUns);
+        str << " < ";
+        appendExp(str, *b.getSubExp2(), PREC_REL, op == opLessUns);
+        closeParen(str, curPrec, PREC_REL);
+        break;
+    case opGtr:
+    case opGtrUns:
+        openParen(str, curPrec, PREC_REL);
+        appendExp(str, *b.getSubExp1(), PREC_REL, op == opGtrUns);
+        str << " > ";
+        appendExp(str, *b.getSubExp2(), PREC_REL, op == opGtrUns);
+        closeParen(str, curPrec, PREC_REL);
+        break;
+    case opLessEq:
+    case opLessEqUns:
+        openParen(str, curPrec, PREC_REL);
+        appendExp(str, *b.getSubExp1(), PREC_REL, op == opLessEqUns);
+        str << " <= ";
+        appendExp(str, *b.getSubExp2(), PREC_REL, op == opLessEqUns);
+        closeParen(str, curPrec, PREC_REL);
+        break;
+    case opGtrEq:
+    case opGtrEqUns:
+        openParen(str, curPrec, PREC_REL);
+        appendExp(str, *b.getSubExp1(), PREC_REL, op == opGtrEqUns);
+        str << " >= ";
+        appendExp(str, *b.getSubExp2(), PREC_REL, op == opGtrEqUns);
+        closeParen(str, curPrec, PREC_REL);
+        break;
+    case opAnd:
+        openParen(str, curPrec, PREC_LOG_AND);
+        appendExp(str, *b.getSubExp1(), PREC_LOG_AND);
+        str << " && ";
+        appendExp(str, *b.getSubExp2(), PREC_LOG_AND);
+        closeParen(str, curPrec, PREC_LOG_AND);
+        break;
+    case opOr:
+        openParen(str, curPrec, PREC_LOG_OR);
+        appendExp(str, *b.getSubExp1(), PREC_LOG_OR);
+        str << " || ";
+        appendExp(str, *b.getSubExp2(), PREC_LOG_OR);
+        closeParen(str, curPrec, PREC_LOG_OR);
+        break;
+    case opBitAnd:
+        openParen(str, curPrec, PREC_BIT_AND);
+        appendExp(str, *b.getSubExp1(), PREC_BIT_AND);
+        str << " & ";
+        if (b.getSubExp2()->getOper() == opIntConst) {
+            // print it 0x2000 style
+            str << "0x" << std::hex << ((Const *)b.getSubExp2())->getInt();
+        } else {
+            appendExp(str, *b.getSubExp2(), PREC_BIT_AND);
         }
-            break;
-        case opLess:
-        case opLessUns:
-            openParen(str, curPrec, PREC_REL);
-            appendExp(str, *b.getSubExp1(), PREC_REL, op == opLessUns);
-            str << " < ";
-            appendExp(str, *b.getSubExp2(), PREC_REL, op == opLessUns);
-            closeParen(str, curPrec, PREC_REL);
-            break;
-        case opGtr:
-        case opGtrUns:
-            openParen(str, curPrec, PREC_REL);
-            appendExp(str, *b.getSubExp1(), PREC_REL, op == opGtrUns);
-            str << " > ";
-            appendExp(str, *b.getSubExp2(), PREC_REL, op == opGtrUns);
-            closeParen(str, curPrec, PREC_REL);
-            break;
-        case opLessEq:
-        case opLessEqUns:
-            openParen(str, curPrec, PREC_REL);
-            appendExp(str, *b.getSubExp1(), PREC_REL, op == opLessEqUns);
-            str << " <= ";
-            appendExp(str, *b.getSubExp2(), PREC_REL, op == opLessEqUns);
-            closeParen(str, curPrec, PREC_REL);
-            break;
-        case opGtrEq:
-        case opGtrEqUns:
-            openParen(str, curPrec, PREC_REL);
-            appendExp(str, *b.getSubExp1(), PREC_REL, op == opGtrEqUns);
-            str << " >= ";
-            appendExp(str, *b.getSubExp2(), PREC_REL, op == opGtrEqUns);
-            closeParen(str, curPrec, PREC_REL);
-            break;
-        case opAnd:
-            openParen(str, curPrec, PREC_LOG_AND);
-            appendExp(str, *b.getSubExp1(), PREC_LOG_AND);
-            str << " && ";
-            appendExp(str, *b.getSubExp2(), PREC_LOG_AND);
-            closeParen(str, curPrec, PREC_LOG_AND);
-            break;
-        case opOr:
-            openParen(str, curPrec, PREC_LOG_OR);
-            appendExp(str, *b.getSubExp1(), PREC_LOG_OR);
-            str << " || ";
-            appendExp(str, *b.getSubExp2(), PREC_LOG_OR);
-            closeParen(str, curPrec, PREC_LOG_OR);
-            break;
-        case opBitAnd:
-            openParen(str, curPrec, PREC_BIT_AND);
-            appendExp(str, *b.getSubExp1(), PREC_BIT_AND);
-            str << " & ";
-            if (b.getSubExp2()->getOper() == opIntConst) {
-                // print it 0x2000 style
-                str << "0x" << std::hex << ((Const*)b.getSubExp2())->getInt();
-            } else {
-                appendExp(str, *b.getSubExp2(), PREC_BIT_AND);
-            }
-            closeParen(str, curPrec, PREC_BIT_AND);
-            break;
-        case opBitOr:
-            openParen(str, curPrec, PREC_BIT_IOR);
-            appendExp(str, *b.getSubExp1(), PREC_BIT_IOR);
-            str << " | ";
-            appendExp(str, *b.getSubExp2(), PREC_BIT_IOR);
-            closeParen(str, curPrec, PREC_BIT_IOR);
-            break;
-        case opBitXor:
-            openParen(str, curPrec, PREC_BIT_XOR);
-            appendExp(str, *b.getSubExp1(), PREC_BIT_XOR);
-            str << " ^ ";
-            appendExp(str, *b.getSubExp2(), PREC_BIT_XOR);
-            closeParen(str, curPrec, PREC_BIT_XOR);
-            break;
-        case opNot:
-            openParen(str, curPrec, PREC_UNARY);
-            str << " ~";
-            appendExp(str, *u.getSubExp1(), PREC_UNARY);
-            closeParen(str, curPrec, PREC_UNARY);
-            break;
-        case opLNot:
-            openParen(str, curPrec, PREC_UNARY);
-            str << " !";
-            appendExp(str, *u.getSubExp1(), PREC_UNARY);
-            closeParen(str, curPrec, PREC_UNARY);
-            break;
-        case opNeg:
-        case opFNeg:
-            openParen(str, curPrec, PREC_UNARY);
-            str << " -";
-            appendExp(str, *u.getSubExp1(), PREC_UNARY);
-            closeParen(str, curPrec, PREC_UNARY);
-            break;
-        case opAt:
-        {
-            // I guess that most people will find this easier to read
-            // s1 >> last & 0xMASK
-            openParen(str, curPrec, PREC_BIT_AND);
-            appendExp(str, *t.getSubExp1(), PREC_BIT_SHIFT);
-            auto first = static_cast<const Const *>(t.getSubExp2());
-            auto last = static_cast<const Const *>(t.getSubExp3());
-            str << " >> ";
-            appendExp(str, *last, PREC_BIT_SHIFT);
-            str << " & ";
+        closeParen(str, curPrec, PREC_BIT_AND);
+        break;
+    case opBitOr:
+        openParen(str, curPrec, PREC_BIT_IOR);
+        appendExp(str, *b.getSubExp1(), PREC_BIT_IOR);
+        str << " | ";
+        appendExp(str, *b.getSubExp2(), PREC_BIT_IOR);
+        closeParen(str, curPrec, PREC_BIT_IOR);
+        break;
+    case opBitXor:
+        openParen(str, curPrec, PREC_BIT_XOR);
+        appendExp(str, *b.getSubExp1(), PREC_BIT_XOR);
+        str << " ^ ";
+        appendExp(str, *b.getSubExp2(), PREC_BIT_XOR);
+        closeParen(str, curPrec, PREC_BIT_XOR);
+        break;
+    case opNot:
+        openParen(str, curPrec, PREC_UNARY);
+        str << " ~";
+        appendExp(str, *u.getSubExp1(), PREC_UNARY);
+        closeParen(str, curPrec, PREC_UNARY);
+        break;
+    case opLNot:
+        openParen(str, curPrec, PREC_UNARY);
+        str << " !";
+        appendExp(str, *u.getSubExp1(), PREC_UNARY);
+        closeParen(str, curPrec, PREC_UNARY);
+        break;
+    case opNeg:
+    case opFNeg:
+        openParen(str, curPrec, PREC_UNARY);
+        str << " -";
+        appendExp(str, *u.getSubExp1(), PREC_UNARY);
+        closeParen(str, curPrec, PREC_UNARY);
+        break;
+    case opAt: {
+        // I guess that most people will find this easier to read
+        // s1 >> last & 0xMASK
+        openParen(str, curPrec, PREC_BIT_AND);
+        appendExp(str, *t.getSubExp1(), PREC_BIT_SHIFT);
+        auto first = static_cast<const Const *>(t.getSubExp2());
+        auto last = static_cast<const Const *>(t.getSubExp3());
+        str << " >> ";
+        appendExp(str, *last, PREC_BIT_SHIFT);
+        str << " & ";
 
-            unsigned int mask = (1 << (first->getInt() - last->getInt() + 1)) - 1;
-            // print 0x3 as 3
-            if ( mask < 10)
-                str << mask;
-            else {
-                str << "0x" << std::hex << mask;
-            }
-            closeParen(str, curPrec, PREC_BIT_AND);
-            break;
+        unsigned int mask = (1 << (first->getInt() - last->getInt() + 1)) - 1;
+        // print 0x3 as 3
+        if (mask < 10)
+            str << mask;
+        else {
+            str << "0x" << std::hex << mask;
         }
-        case opPlus:
-            openParen(str, curPrec, PREC_ADD);
-            appendExp(str, *b.getSubExp1(), PREC_ADD);
-            str << " + ";
-            appendExp(str, *b.getSubExp2(), PREC_ADD);
-            closeParen(str, curPrec, PREC_ADD);
-            break;
-        case opMinus:
-            openParen(str, curPrec, PREC_ADD);
-            appendExp(str, *b.getSubExp1(), PREC_ADD);
-            str << " - ";
-            appendExp(str, *b.getSubExp2(), PREC_ADD);
-            closeParen(str, curPrec, PREC_ADD);
-            break;
-        case opMemOf:
-            if (Boomerang::get()->noDecompile) {
-                str << "MEMOF(";
-                appendExp(str, *u.getSubExp1(), PREC_NONE);
-                str << ")";
-                break;
-            }
-            openParen(str, curPrec, PREC_UNARY);
-            // annotateMemofs should have added a cast if it was needed
-            str << "*";
-            appendExp(str, *u.getSubExp1(), PREC_UNARY);
-            closeParen(str, curPrec, PREC_UNARY);
-            break;
-        case opRegOf:
-        {
-            // MVE: this can likely go
-            if (VERBOSE)
-                LOG << "WARNING: CHLLCode::appendExp: case opRegOf is deprecated\n";
-            if (u.getSubExp1()->getOper() == opTemp) {
-                // The great debate: r[tmpb] vs tmpb
-                str << "tmp";
-                break;
-            }
-            assert(u.getSubExp1()->getOper() == opIntConst);
-            const char *n = m_proc->getProg()->getRegName(
-                        ((Const*)u.getSubExp1())->getInt());
-            if (n) {
-                if (n[0] == '%')
-                    str << n+1;
-                else
-                    str << n;
-            } else {
-                // What is this doing in the back end???
-                str << "r[";
-                appendExp(str, *u.getSubExp1(), PREC_NONE);
-                str << "]";
-            }
-        }
-            break;
-        case opTemp:
-            // Should never see this; temps should be mapped to locals now so that they get declared
-            if (VERBOSE)
-                LOG << "WARNING: CHLLCode::appendExp: case opTemp is deprecated\n";
-            // Emit the temp name, e.g. "tmp1"
-            str << ((Const*)u.getSubExp1())->getStr();
-            break;
-        case opItof:
-            // MVE: needs work: float/double/long double.
-            str << "(float)";
-            openParen(str, curPrec, PREC_UNARY);
-            appendExp(str, *t.getSubExp3(), PREC_UNARY);
-            closeParen(str, curPrec, PREC_UNARY);
-            break;
-        case opFsize:
-            // MVE: needs work!
-            if (Boomerang::get()->noDecompile && t.getSubExp3()->isMemOf()) {
-                assert(t.getSubExp1()->isIntConst());
-                if (((Const*)t.getSubExp1())->getInt() == 32)
-                    str << "FLOAT_MEMOF(";
-                else
-                    str << "DOUBLE_MEMOF(";
-                appendExp(str, *t.getSubExp3()->getSubExp1(), PREC_NONE);
-                str << ")";
-                break;
-            }
-            appendExp(str, *t.getSubExp3(), curPrec);
-            break;
-        case opMult:
-        case opMults:        // FIXME: check types
-            openParen(str, curPrec, PREC_MULT);
-            appendExp(str, *b.getSubExp1(), PREC_MULT);
-            str << " * ";
-            appendExp(str, *b.getSubExp2(), PREC_MULT);
-            closeParen(str, curPrec, PREC_MULT);
-            break;
-        case opDiv:
-        case opDivs:        // FIXME: check types
-            openParen(str, curPrec, PREC_MULT);
-            appendExp(str, *b.getSubExp1(), PREC_MULT);
-            str << " / ";
-            appendExp(str, *b.getSubExp2(), PREC_MULT);
-            closeParen(str, curPrec, PREC_MULT);
-            break;
-        case opMod:
-        case opMods:        // Fixme: check types
-            openParen(str, curPrec, PREC_MULT);
-            appendExp(str, *b.getSubExp1(), PREC_MULT);
-            str << " % ";
-            appendExp(str, *b.getSubExp2(), PREC_MULT);
-            closeParen(str, curPrec, PREC_MULT);
-            break;
-        case opShiftL:
-            openParen(str, curPrec, PREC_BIT_SHIFT);
-            appendExp(str, *b.getSubExp1(), PREC_BIT_SHIFT);
-            str << " << ";
-            appendExp(str, *b.getSubExp2(), PREC_BIT_SHIFT);
-            closeParen(str, curPrec, PREC_BIT_SHIFT);
-            break;
-        case opShiftR:
-        case opShiftRA:
-            openParen(str, curPrec, PREC_BIT_SHIFT);
-            appendExp(str, *b.getSubExp1(), PREC_BIT_SHIFT);
-            str << " >> ";
-            appendExp(str, *b.getSubExp2(), PREC_BIT_SHIFT);
-            closeParen(str, curPrec, PREC_BIT_SHIFT);
-            break;
-        case opTern:
-            openParen(str, curPrec, PREC_COND);
-            str << " (";
-            appendExp(str, *t.getSubExp1(), PREC_NONE);
-            str << ") ? ";
-            appendExp(str, *t.getSubExp2(), PREC_COND);
-            str << " : ";
-            appendExp(str, *t.getSubExp3(), PREC_COND);
-            closeParen(str, curPrec, PREC_COND);
-            break;
-        case opFPlus:
-        case opFPlusd:
-        case opFPlusq:
-            openParen(str, curPrec, PREC_ADD);
-            appendExp(str, *b.getSubExp1(), PREC_ADD);
-            str << " + ";
-            appendExp(str, *b.getSubExp2(), PREC_ADD);
-            closeParen(str, curPrec, PREC_ADD);
-            break;
-        case opFMinus:
-        case opFMinusd:
-        case opFMinusq:
-            openParen(str, curPrec, PREC_ADD);
-            appendExp(str, *b.getSubExp1(), PREC_ADD);
-            str << " - ";
-            appendExp(str, *b.getSubExp2(), PREC_ADD);
-            closeParen(str, curPrec, PREC_ADD);
-            break;
-        case opFMult:
-        case opFMultd:
-        case opFMultq:
-            openParen(str, curPrec, PREC_MULT);
-            appendExp(str, *b.getSubExp1(), PREC_MULT);
-            str << " * ";
-            appendExp(str, *b.getSubExp2(), PREC_MULT);
-            closeParen(str, curPrec, PREC_MULT);
-            break;
-        case opFDiv:
-        case opFDivd:
-        case opFDivq:
-            openParen(str, curPrec, PREC_MULT);
-            appendExp(str, *b.getSubExp1(), PREC_MULT);
-            str << " / ";
-            appendExp(str, *b.getSubExp2(), PREC_MULT);
-            closeParen(str, curPrec, PREC_MULT);
-            break;
-        case opFround:
-            // Note: we need roundf or roundl depending on size of operands
-            str << "round(";        // Note: math.h required
+        closeParen(str, curPrec, PREC_BIT_AND);
+        break;
+    }
+    case opPlus:
+        openParen(str, curPrec, PREC_ADD);
+        appendExp(str, *b.getSubExp1(), PREC_ADD);
+        str << " + ";
+        appendExp(str, *b.getSubExp2(), PREC_ADD);
+        closeParen(str, curPrec, PREC_ADD);
+        break;
+    case opMinus:
+        openParen(str, curPrec, PREC_ADD);
+        appendExp(str, *b.getSubExp1(), PREC_ADD);
+        str << " - ";
+        appendExp(str, *b.getSubExp2(), PREC_ADD);
+        closeParen(str, curPrec, PREC_ADD);
+        break;
+    case opMemOf:
+        if (Boomerang::get()->noDecompile) {
+            str << "MEMOF(";
             appendExp(str, *u.getSubExp1(), PREC_NONE);
             str << ")";
             break;
-        case opFtrunc:
-            // Note: we need truncf or truncl depending on size of operands
-            str << "trunc(";        // Note: math.h required
-            appendExp(str, *u.getSubExp1(), PREC_NONE);
-            str << ")";
-            break;
-        case opFabs:
-            str << "fabs(";
-            appendExp(str, *u.getSubExp1(), PREC_NONE);
-            str << ")";
-            break;
-        case opFtoi:
-            // Should check size!
-            str << "(int)";
-            appendExp(str, *u.getSubExp3(), PREC_UNARY);
-            break;
-        case opRotateL:
-            str << "ROTL(";
-            appendExp(str, *u.getSubExp1(), PREC_UNARY);
-            str << ")";
-            break;
-        case opRotateR:
-            str << "ROTR(";
-            appendExp(str, *u.getSubExp1(), PREC_UNARY);
-            str << ")";
-            break;
-        case opRotateLC:
-            str << "ROTLC(";
-            appendExp(str, *u.getSubExp1(), PREC_UNARY);
-            str << ")";
-            break;
-        case opRotateRC:
-            str << "ROTRC(";
-            appendExp(str, *u.getSubExp1(), PREC_UNARY);
-            str << ")";
-            break;
-        case opSize:
-        {
-            /*Type *ty = new IntegerType(((Const*)b.getSubExp1())->getInt(), 1);
-                                str << "*(" << ty->getCtype(true) << " *)";
-                                appendExp(str, new Unary(opAddrOf, b.getSubExp2()), PREC_UNARY);*/
-            appendExp(str, *b.getSubExp2(), PREC_UNARY);
         }
+        openParen(str, curPrec, PREC_UNARY);
+        // annotateMemofs should have added a cast if it was needed
+        str << "*";
+        appendExp(str, *u.getSubExp1(), PREC_UNARY);
+        closeParen(str, curPrec, PREC_UNARY);
+        break;
+    case opRegOf: {
+        // MVE: this can likely go
+        if (VERBOSE)
+            LOG << "WARNING: CHLLCode::appendExp: case opRegOf is deprecated\n";
+        if (u.getSubExp1()->getOper() == opTemp) {
+            // The great debate: r[tmpb] vs tmpb
+            str << "tmp";
             break;
-        case opFMultsd:
-        case opFMultdq:
-        case opSQRTs:
-        case opSQRTd:
-        case opSQRTq:
-        case opSignExt:
-        case opTargetInst:
-        case opNamedExp:
-        case opGuard:
-        case opVar:
-        case opArg:
-        case opExpand:
-        case opCastIntStar:
-        case opPostVar:
-        case opForceInt:
-        case opForceFlt:
-        case opFpush:
-        case opFpop:
-        case opLoge:
-        case opExecute:
-        case opAFP:
-        case opAGP:
-            // not implemented
-            LOG << "WARNING: CHLLCode::appendExp: case " << exp.getOperName() << " not implemented\n";
-            //assert(false);
-            break;
-        case opFlagCall:
-        {
-            assert(b.getSubExp1()->getOper() == opStrConst);
-            str << ((Const*)b.getSubExp1())->getStr();
-            str << "(";
-            auto l = b.getSubExp2();
-            for (; l && l->getOper() == opList; l=l->getSubExp2()) {
-                appendExp(str, *l->getSubExp1(), PREC_NONE);
-                if (l->getSubExp2()->getOper() == opList)
-                    str << ", ";
-            }
-            str << ")";
         }
+        assert(u.getSubExp1()->getOper() == opIntConst);
+        const char *n = m_proc->getProg()->getRegName(((Const *)u.getSubExp1())->getInt());
+        if (n) {
+            if (n[0] == '%')
+                str << n + 1;
+            else
+                str << n;
+        } else {
+            // What is this doing in the back end???
+            str << "r[";
+            appendExp(str, *u.getSubExp1(), PREC_NONE);
+            str << "]";
+        }
+    } break;
+    case opTemp:
+        // Should never see this; temps should be mapped to locals now so that they get declared
+        if (VERBOSE)
+            LOG << "WARNING: CHLLCode::appendExp: case opTemp is deprecated\n";
+        // Emit the temp name, e.g. "tmp1"
+        str << ((Const *)u.getSubExp1())->getStr();
+        break;
+    case opItof:
+        // MVE: needs work: float/double/long double.
+        str << "(float)";
+        openParen(str, curPrec, PREC_UNARY);
+        appendExp(str, *t.getSubExp3(), PREC_UNARY);
+        closeParen(str, curPrec, PREC_UNARY);
+        break;
+    case opFsize:
+        // MVE: needs work!
+        if (Boomerang::get()->noDecompile && t.getSubExp3()->isMemOf()) {
+            assert(t.getSubExp1()->isIntConst());
+            if (((Const *)t.getSubExp1())->getInt() == 32)
+                str << "FLOAT_MEMOF(";
+            else
+                str << "DOUBLE_MEMOF(";
+            appendExp(str, *t.getSubExp3()->getSubExp1(), PREC_NONE);
+            str << ")";
             break;
-        case opList:
-        {
-            int elems_on_line = 0; // try to limit line lengths
-            const Exp* b2 = &b;
-            const Exp* e2 = b.getSubExp2();
-            str << "{ ";
-            if (b.getSubExp1()->getOper() == opList)
-                str << "\n ";
-            while (e2->getOper() == opList)
-            {
-                appendExp(str, *b2->getSubExp1(), PREC_NONE, uns);
-                ++elems_on_line;
-                if (b2->getSubExp1()->getOper() == opList || elems_on_line >= 16 /* completely arbitrary, but better than nothing*/)
-                {
-                    str << ",\n ";
-                    elems_on_line = 0;
-                } else {
-                    str << ", ";
-                }
-                b2 = e2;
-                e2 = b2->getSubExp2();
-            }
+        }
+        appendExp(str, *t.getSubExp3(), curPrec);
+        break;
+    case opMult:
+    case opMults: // FIXME: check types
+        openParen(str, curPrec, PREC_MULT);
+        appendExp(str, *b.getSubExp1(), PREC_MULT);
+        str << " * ";
+        appendExp(str, *b.getSubExp2(), PREC_MULT);
+        closeParen(str, curPrec, PREC_MULT);
+        break;
+    case opDiv:
+    case opDivs: // FIXME: check types
+        openParen(str, curPrec, PREC_MULT);
+        appendExp(str, *b.getSubExp1(), PREC_MULT);
+        str << " / ";
+        appendExp(str, *b.getSubExp2(), PREC_MULT);
+        closeParen(str, curPrec, PREC_MULT);
+        break;
+    case opMod:
+    case opMods: // Fixme: check types
+        openParen(str, curPrec, PREC_MULT);
+        appendExp(str, *b.getSubExp1(), PREC_MULT);
+        str << " % ";
+        appendExp(str, *b.getSubExp2(), PREC_MULT);
+        closeParen(str, curPrec, PREC_MULT);
+        break;
+    case opShiftL:
+        openParen(str, curPrec, PREC_BIT_SHIFT);
+        appendExp(str, *b.getSubExp1(), PREC_BIT_SHIFT);
+        str << " << ";
+        appendExp(str, *b.getSubExp2(), PREC_BIT_SHIFT);
+        closeParen(str, curPrec, PREC_BIT_SHIFT);
+        break;
+    case opShiftR:
+    case opShiftRA:
+        openParen(str, curPrec, PREC_BIT_SHIFT);
+        appendExp(str, *b.getSubExp1(), PREC_BIT_SHIFT);
+        str << " >> ";
+        appendExp(str, *b.getSubExp2(), PREC_BIT_SHIFT);
+        closeParen(str, curPrec, PREC_BIT_SHIFT);
+        break;
+    case opTern:
+        openParen(str, curPrec, PREC_COND);
+        str << " (";
+        appendExp(str, *t.getSubExp1(), PREC_NONE);
+        str << ") ? ";
+        appendExp(str, *t.getSubExp2(), PREC_COND);
+        str << " : ";
+        appendExp(str, *t.getSubExp3(), PREC_COND);
+        closeParen(str, curPrec, PREC_COND);
+        break;
+    case opFPlus:
+    case opFPlusd:
+    case opFPlusq:
+        openParen(str, curPrec, PREC_ADD);
+        appendExp(str, *b.getSubExp1(), PREC_ADD);
+        str << " + ";
+        appendExp(str, *b.getSubExp2(), PREC_ADD);
+        closeParen(str, curPrec, PREC_ADD);
+        break;
+    case opFMinus:
+    case opFMinusd:
+    case opFMinusq:
+        openParen(str, curPrec, PREC_ADD);
+        appendExp(str, *b.getSubExp1(), PREC_ADD);
+        str << " - ";
+        appendExp(str, *b.getSubExp2(), PREC_ADD);
+        closeParen(str, curPrec, PREC_ADD);
+        break;
+    case opFMult:
+    case opFMultd:
+    case opFMultq:
+        openParen(str, curPrec, PREC_MULT);
+        appendExp(str, *b.getSubExp1(), PREC_MULT);
+        str << " * ";
+        appendExp(str, *b.getSubExp2(), PREC_MULT);
+        closeParen(str, curPrec, PREC_MULT);
+        break;
+    case opFDiv:
+    case opFDivd:
+    case opFDivq:
+        openParen(str, curPrec, PREC_MULT);
+        appendExp(str, *b.getSubExp1(), PREC_MULT);
+        str << " / ";
+        appendExp(str, *b.getSubExp2(), PREC_MULT);
+        closeParen(str, curPrec, PREC_MULT);
+        break;
+    case opFround:
+        // Note: we need roundf or roundl depending on size of operands
+        str << "round("; // Note: math.h required
+        appendExp(str, *u.getSubExp1(), PREC_NONE);
+        str << ")";
+        break;
+    case opFtrunc:
+        // Note: we need truncf or truncl depending on size of operands
+        str << "trunc("; // Note: math.h required
+        appendExp(str, *u.getSubExp1(), PREC_NONE);
+        str << ")";
+        break;
+    case opFabs:
+        str << "fabs(";
+        appendExp(str, *u.getSubExp1(), PREC_NONE);
+        str << ")";
+        break;
+    case opFtoi:
+        // Should check size!
+        str << "(int)";
+        appendExp(str, *u.getSubExp3(), PREC_UNARY);
+        break;
+    case opRotateL:
+        str << "ROTL(";
+        appendExp(str, *u.getSubExp1(), PREC_UNARY);
+        str << ")";
+        break;
+    case opRotateR:
+        str << "ROTR(";
+        appendExp(str, *u.getSubExp1(), PREC_UNARY);
+        str << ")";
+        break;
+    case opRotateLC:
+        str << "ROTLC(";
+        appendExp(str, *u.getSubExp1(), PREC_UNARY);
+        str << ")";
+        break;
+    case opRotateRC:
+        str << "ROTRC(";
+        appendExp(str, *u.getSubExp1(), PREC_UNARY);
+        str << ")";
+        break;
+    case opSize: {
+        /*Type *ty = new IntegerType(((Const*)b.getSubExp1())->getInt(), 1);
+                            str << "*(" << ty->getCtype(true) << " *)";
+                            appendExp(str, new Unary(opAddrOf, b.getSubExp2()), PREC_UNARY);*/
+        appendExp(str, *b.getSubExp2(), PREC_UNARY);
+    } break;
+    case opFMultsd:
+    case opFMultdq:
+    case opSQRTs:
+    case opSQRTd:
+    case opSQRTq:
+    case opSignExt:
+    case opTargetInst:
+    case opNamedExp:
+    case opGuard:
+    case opVar:
+    case opArg:
+    case opExpand:
+    case opCastIntStar:
+    case opPostVar:
+    case opForceInt:
+    case opForceFlt:
+    case opFpush:
+    case opFpop:
+    case opLoge:
+    case opExecute:
+    case opAFP:
+    case opAGP:
+        // not implemented
+        LOG << "WARNING: CHLLCode::appendExp: case " << exp.getOperName() << " not implemented\n";
+        // assert(false);
+        break;
+    case opFlagCall: {
+        assert(b.getSubExp1()->getOper() == opStrConst);
+        str << ((Const *)b.getSubExp1())->getStr();
+        str << "(";
+        auto l = b.getSubExp2();
+        for (; l && l->getOper() == opList; l = l->getSubExp2()) {
+            appendExp(str, *l->getSubExp1(), PREC_NONE);
+            if (l->getSubExp2()->getOper() == opList)
+                str << ", ";
+        }
+        str << ")";
+    } break;
+    case opList: {
+        int elems_on_line = 0; // try to limit line lengths
+        const Exp *b2 = &b;
+        const Exp *e2 = b.getSubExp2();
+        str << "{ ";
+        if (b.getSubExp1()->getOper() == opList)
+            str << "\n ";
+        while (e2->getOper() == opList) {
             appendExp(str, *b2->getSubExp1(), PREC_NONE, uns);
-            str << " }";
+            ++elems_on_line;
+            if (b2->getSubExp1()->getOper() == opList ||
+                elems_on_line >= 16 /* completely arbitrary, but better than nothing*/) {
+                str << ",\n ";
+                elems_on_line = 0;
+            } else {
+                str << ", ";
+            }
+            b2 = e2;
+            e2 = b2->getSubExp2();
         }
-            break;
-        case opFlags:
-            str << "flags"; break;
-        case opPC:
-            str << "pc"; break;
-        case opZfill:
-            // MVE: this is a temporary hack... needs cast?
-            //sprintf(s, "/* zfill %d->%d */ ",
-            //    ((Const*)t.getSubExp1())->getInt(),
-            //    ((Const*)t.getSubExp2())->getInt());
-            //strcat(str, s); */
-            if (t.getSubExp3()->isMemOf() &&
-                    t.getSubExp1()->isIntConst() &&
-                    t.getSubExp2()->isIntConst() &&
-                    ((Const*)t.getSubExp2())->getInt() == 32) {
-                unsigned sz = (unsigned)((Const*)t.getSubExp1())->getInt();
-                if (sz == 8 || sz == 16) {
-                    bool close = false;
-                    str << "*";
-#if 0                // Suspect ADHOC TA only
+        appendExp(str, *b2->getSubExp1(), PREC_NONE, uns);
+        str << " }";
+    } break;
+    case opFlags:
+        str << "flags";
+        break;
+    case opPC:
+        str << "pc";
+        break;
+    case opZfill:
+        // MVE: this is a temporary hack... needs cast?
+        // sprintf(s, "/* zfill %d->%d */ ",
+        //    ((Const*)t.getSubExp1())->getInt(),
+        //    ((Const*)t.getSubExp2())->getInt());
+        // strcat(str, s); */
+        if (t.getSubExp3()->isMemOf() && t.getSubExp1()->isIntConst() && t.getSubExp2()->isIntConst() &&
+            ((Const *)t.getSubExp2())->getInt() == 32) {
+            unsigned sz = (unsigned)((Const *)t.getSubExp1())->getInt();
+            if (sz == 8 || sz == 16) {
+                bool close = false;
+                str << "*";
+#if 0 // Suspect ADHOC TA only
                     Type *ty = t.getSubExp3()->getSubExp1()->getType();
                     if (ty == nullptr || !ty->isPointer() ||
                             !ty->asPointer()->getPointsTo()->isInteger() ||
                             ty->asPointer()->getPointsTo()->asInteger()->getSize() != sz) {
 #endif
-                        str << "(unsigned ";
-                        if (sz == 8)
-                            str << "char";
-                        else
-                            str << "short";
-                        str << "*)";
-                        openParen(str, curPrec, PREC_UNARY);
-                        close = true;
-#if 0        // ADHOC TA as above
+                str << "(unsigned ";
+                if (sz == 8)
+                    str << "char";
+                else
+                    str << "short";
+                str << "*)";
+                openParen(str, curPrec, PREC_UNARY);
+                close = true;
+#if 0 // ADHOC TA as above
                     }
 #endif
-                    appendExp(str, *t.getSubExp3()->getSubExp1(), PREC_UNARY);
-                    if (close)
-                        closeParen(str, curPrec, PREC_UNARY);
-                    break;
-                }
-            }
-            if (VERBOSE)
-                LOG << "WARNING: CHLLCode::appendExp: case opZfill is deprecated\n";
-            str << "(";
-            appendExp(str, *t.getSubExp3(), PREC_NONE);
-            str << ")";
-            break;
-
-        case opTypedExp: {
-#ifdef SYMS_IN_BACK_END
-            Exp* b = u.getSubExp1();                    // Base expression
-            const char* sym = m_proc->lookupSym(exp);            // Check for (cast)sym
-            if (sym) {
-                str << "(";
-                appendType(str, ((TypedExp*)u)->getType());
-                str << ")" << sym;
+                appendExp(str, *t.getSubExp3()->getSubExp1(), PREC_UNARY);
+                if (close)
+                    closeParen(str, curPrec, PREC_UNARY);
                 break;
             }
+        }
+        if (VERBOSE)
+            LOG << "WARNING: CHLLCode::appendExp: case opZfill is deprecated\n";
+        str << "(";
+        appendExp(str, *t.getSubExp3(), PREC_NONE);
+        str << ")";
+        break;
+
+    case opTypedExp: {
+#ifdef SYMS_IN_BACK_END
+        Exp *b = u.getSubExp1();                  // Base expression
+        const char *sym = m_proc->lookupSym(exp); // Check for (cast)sym
+        if (sym) {
+            str << "(";
+            appendType(str, ((TypedExp *)u)->getType());
+            str << ")" << sym;
+            break;
+        }
 #endif
-            if (u.getSubExp1()->getOper() == opTypedExp &&
-                    *((const TypedExp&)u).getType() == *((const TypedExp*)u.getSubExp1())->getType()) {
-                // We have (type)(type)x: recurse with type(x)
-                appendExp(str, *u.getSubExp1(), curPrec);
-            } else if (u.getSubExp1()->getOper() == opMemOf) {
-                // We have (tt)m[x]
-#if 0            // ADHOC TA
+        if (u.getSubExp1()->getOper() == opTypedExp &&
+            *((const TypedExp &)u).getType() == *((const TypedExp *)u.getSubExp1())->getType()) {
+            // We have (type)(type)x: recurse with type(x)
+            appendExp(str, *u.getSubExp1(), curPrec);
+        } else if (u.getSubExp1()->getOper() == opMemOf) {
+// We have (tt)m[x]
+#if 0 // ADHOC TA
                 PointerType *pty = dynamic_cast<PointerType*>(u.getSubExp1()->getSubExp1()->getType());
 #else
-                PointerType* pty = nullptr;
+            PointerType *pty = nullptr;
 #endif
-                // pty = T(x)
-                Type *tt = ((TypedExp&)u).getType();
-                if (pty != nullptr && (*pty->getPointsTo() == *tt ||
-                                       (tt->isSize() && pty->getPointsTo()->getSize() == tt->getSize())))
-                    str << "*";
-                else {
-                    if (Boomerang::get()->noDecompile) {
-                        if (tt && tt->isFloat()) {
-                            if (tt->asFloat()->getSize() == 32)
-                                str << "FLOAT_MEMOF";
-                            else
-                                str << "DOUBLE_MEMOF";
-                        } else
-                            str << "MEMOF";
-                    } else {
-                        str << "*(";
-                        appendType(str, tt);
-                        str << "*)";
-                    }
+            // pty = T(x)
+            Type *tt = ((TypedExp &)u).getType();
+            if (pty != nullptr &&
+                (*pty->getPointsTo() == *tt || (tt->isSize() && pty->getPointsTo()->getSize() == tt->getSize())))
+                str << "*";
+            else {
+                if (Boomerang::get()->noDecompile) {
+                    if (tt && tt->isFloat()) {
+                        if (tt->asFloat()->getSize() == 32)
+                            str << "FLOAT_MEMOF";
+                        else
+                            str << "DOUBLE_MEMOF";
+                    } else
+                        str << "MEMOF";
+                } else {
+                    str << "*(";
+                    appendType(str, tt);
+                    str << "*)";
                 }
-                openParen(str, curPrec, PREC_UNARY);
-                // Emit x
-                // was : ((Location*)((TypedExp&)u).getSubExp1())->getSubExp1()
-                appendExp(str, *u.getSubExp1()->getSubExp1(), PREC_UNARY);
-                closeParen(str, curPrec, PREC_UNARY);
-            } else {
-                // Check for (tt)b where tt is a pointer; could be &local
-                Type* tt = ((TypedExp&)u).getType();
-                if (dynamic_cast<PointerType*>(tt)) {
+            }
+            openParen(str, curPrec, PREC_UNARY);
+            // Emit x
+            // was : ((Location*)((TypedExp&)u).getSubExp1())->getSubExp1()
+            appendExp(str, *u.getSubExp1()->getSubExp1(), PREC_UNARY);
+            closeParen(str, curPrec, PREC_UNARY);
+        } else {
+            // Check for (tt)b where tt is a pointer; could be &local
+            Type *tt = ((TypedExp &)u).getType();
+            if (dynamic_cast<PointerType *>(tt)) {
 #ifdef SYMS_IN_BACK_END
-                    const char* sym = m_proc->lookupSym(Location::memOf(b));
-                    if (sym) {
-                        openParen(str, curPrec, PREC_UNARY);
-                        str << "&" << sym;
-                        closeParen(str, curPrec, PREC_UNARY);
-                        break;
-                    }
-#endif
+                const char *sym = m_proc->lookupSym(Location::memOf(b));
+                if (sym) {
+                    openParen(str, curPrec, PREC_UNARY);
+                    str << "&" << sym;
+                    closeParen(str, curPrec, PREC_UNARY);
+                    break;
                 }
-                // Otherwise, fall back to (tt)b
-                str << "(";
-                appendType(str, tt);
-                str << ")";
-                openParen(str, curPrec, PREC_UNARY);
-                appendExp(str, *u.getSubExp1(), PREC_UNARY);
-                closeParen(str, curPrec, PREC_UNARY);
-            }
-            break;
-        }
-        case opSgnEx:
-        case opTruncs: {
-            const Exp* s = t.getSubExp3();
-            int toSize = static_cast<const Const*>(t.getSubExp2())->getInt();
-            switch (toSize) {
-                case 8:        str << "(char) "; break;
-                case 16:    str << "(short) "; break;
-                case 64:    str << "(long long) "; break;
-                default:    str << "(int) "; break;
-            }
-            appendExp(str, *s, curPrec);
-            break;
-        }
-        case opTruncu: {
-            const Exp* s = t.getSubExp3();
-            int toSize = ((const Const*)t.getSubExp2())->getInt();
-            switch (toSize) {
-                case 8:        str << "(unsigned char) "; break;
-                case 16:    str << "(unsigned short) "; break;
-                case 64:    str << "(unsigned long long) "; break;
-                default:    str << "(unsigned int) "; break;
-            }
-            appendExp(str, *s, curPrec);
-            break;
-        }
-        case opMachFtr: {
-            str << "/* machine specific */ (int) ";
-            const Exp* sub = u.getSubExp1();
-            assert(sub->isStrConst());
-            const char* s = ((const Const*)sub)->getStr();
-            if (s[0] == '%')        // e.g. %Y
-                str << s+1;            // Just use Y
-            else
-                str << s;
-            break;
-        }
-        case opFflags:
-            str << "/* Fflags() */ "; break;
-        case opPow:
-            str << "pow(";
-            appendExp(str, *b.getSubExp1(), PREC_COMMA);
-            str << ", ";
-            appendExp(str, *b.getSubExp2(), PREC_COMMA);
-            str << ")";
-            break;
-        case opLog2:
-            str << "log2(";
-            appendExp(str, *u.getSubExp1(), PREC_NONE);
-            str << ")";
-            break;
-        case opLog10:
-            str << "log10(";
-            appendExp(str, *u.getSubExp1(), PREC_NONE);
-            str << ")";
-            break;
-        case opSin:
-            str << "sin(";
-            appendExp(str, *u.getSubExp1(), PREC_NONE);
-            str << ")";
-            break;
-        case opCos:
-            str << "cos(";
-            appendExp(str, *u.getSubExp1(), PREC_NONE);
-            str << ")";
-            break;
-        case opSqrt:
-            str << "sqrt(";
-            appendExp(str, *u.getSubExp1(), PREC_NONE);
-            str << ")";
-            break;
-        case opTan:
-            str << "tan(";
-            appendExp(str, *u.getSubExp1(), PREC_NONE);
-            str << ")";
-            break;
-        case opArcTan:
-            str << "atan(";
-            appendExp(str, *u.getSubExp1(), PREC_NONE);
-            str << ")";
-            break;
-        case opSubscript:
-            appendExp(str, *u.getSubExp1(), curPrec);
-            if (VERBOSE)
-                LOG << "ERROR: CHLLCode::appendExp: subscript in code generation of proc " <<
-                       m_proc->getName() << " exp (without subscript): " << str.str().c_str()
-                    << "\n";
-            //assert(false);
-            break;
-        case opMemberAccess:
-        {
-#if 0            // ADHOC TA
-            Type *ty = b.getSubExp1()->getType();
-#else
-            Type* ty = nullptr;
 #endif
-            if (ty == nullptr) {
-                LOG << "type failure: no type for subexp1 of " << &b << "\n";
-                //ty = b.getSubExp1()->getType();
-                // No idea why this is hitting! - trentw
-                // str << "/* type failure */ ";
-                // break;
             }
-            // Trent: what were you thinking here? Fails for things like
-            // local11.lhHeight (where local11 is a register)
-            // Mike: it shouldn't!  local11 should have a compound type
-            //assert(ty->resolvesToCompound());
-            if (b.getSubExp1()->getOper() == opMemOf) {
-                appendExp(str, *b.getSubExp1()->getSubExp1(), PREC_PRIM);
-                str << "->";
-            } else {
-                appendExp(str, *b.getSubExp1(), PREC_PRIM);
-                str << ".";
-            }
-            str << ((const Const*)b.getSubExp2())->getStr();
+            // Otherwise, fall back to (tt)b
+            str << "(";
+            appendType(str, tt);
+            str << ")";
+            openParen(str, curPrec, PREC_UNARY);
+            appendExp(str, *u.getSubExp1(), PREC_UNARY);
+            closeParen(str, curPrec, PREC_UNARY);
         }
+        break;
+    }
+    case opSgnEx:
+    case opTruncs: {
+        const Exp *s = t.getSubExp3();
+        int toSize = static_cast<const Const *>(t.getSubExp2())->getInt();
+        switch (toSize) {
+        case 8:
+            str << "(char) ";
             break;
-        case opArrayIndex:
-            openParen(str, curPrec, PREC_PRIM);
-            if (b.getSubExp1()->isMemOf()) {
-#if 0            // ADHOC TA
-                Type *ty = b.getSubExp1()->getSubExp1()->getType();
-#else
-                Type* ty = nullptr;
-#endif
-                if (ty && ty->resolvesToPointer() &&
-                        ty->asPointer()->getPointsTo()->resolvesToArray()) {
-                    // a pointer to an array is automatically dereferenced in C
-                    appendExp(str, *b.getSubExp1()->getSubExp1(), PREC_PRIM);
-                } else
-                    appendExp(str, *b.getSubExp1(), PREC_PRIM);
-            } else
-                appendExp(str, *b.getSubExp1(), PREC_PRIM);
-            closeParen(str, curPrec, PREC_PRIM);
-            str << "[";
-            appendExp(str, *b.getSubExp2(), PREC_PRIM);
-            str << "]";
+        case 16:
+            str << "(short) ";
             break;
-        case opDefineAll:
-            str << "<all>";
-            if (VERBOSE)
-                LOG << "ERROR: should not see opDefineAll in codegen\n";
+        case 64:
+            str << "(long long) ";
             break;
         default:
-            // others
-            OPER other_op = exp.getOper();
-            if (other_op >= opZF) {
-                // Machine flags; can occasionally be manipulated individually
-                // Chop off the "op" part
-                str << exp.getOperName()+2;
-                break;
-            }
-            LOG << "ERROR: CHLLCode::appendExp: case " << exp.getOperName() << " not implemented\n";
-            //assert(false);
+            str << "(int) ";
+            break;
+        }
+        appendExp(str, *s, curPrec);
+        break;
     }
-
+    case opTruncu: {
+        const Exp *s = t.getSubExp3();
+        int toSize = ((const Const *)t.getSubExp2())->getInt();
+        switch (toSize) {
+        case 8:
+            str << "(unsigned char) ";
+            break;
+        case 16:
+            str << "(unsigned short) ";
+            break;
+        case 64:
+            str << "(unsigned long long) ";
+            break;
+        default:
+            str << "(unsigned int) ";
+            break;
+        }
+        appendExp(str, *s, curPrec);
+        break;
+    }
+    case opMachFtr: {
+        str << "/* machine specific */ (int) ";
+        const Exp *sub = u.getSubExp1();
+        assert(sub->isStrConst());
+        const char *s = ((const Const *)sub)->getStr();
+        if (s[0] == '%')  // e.g. %Y
+            str << s + 1; // Just use Y
+        else
+            str << s;
+        break;
+    }
+    case opFflags:
+        str << "/* Fflags() */ ";
+        break;
+    case opPow:
+        str << "pow(";
+        appendExp(str, *b.getSubExp1(), PREC_COMMA);
+        str << ", ";
+        appendExp(str, *b.getSubExp2(), PREC_COMMA);
+        str << ")";
+        break;
+    case opLog2:
+        str << "log2(";
+        appendExp(str, *u.getSubExp1(), PREC_NONE);
+        str << ")";
+        break;
+    case opLog10:
+        str << "log10(";
+        appendExp(str, *u.getSubExp1(), PREC_NONE);
+        str << ")";
+        break;
+    case opSin:
+        str << "sin(";
+        appendExp(str, *u.getSubExp1(), PREC_NONE);
+        str << ")";
+        break;
+    case opCos:
+        str << "cos(";
+        appendExp(str, *u.getSubExp1(), PREC_NONE);
+        str << ")";
+        break;
+    case opSqrt:
+        str << "sqrt(";
+        appendExp(str, *u.getSubExp1(), PREC_NONE);
+        str << ")";
+        break;
+    case opTan:
+        str << "tan(";
+        appendExp(str, *u.getSubExp1(), PREC_NONE);
+        str << ")";
+        break;
+    case opArcTan:
+        str << "atan(";
+        appendExp(str, *u.getSubExp1(), PREC_NONE);
+        str << ")";
+        break;
+    case opSubscript:
+        appendExp(str, *u.getSubExp1(), curPrec);
+        if (VERBOSE)
+            LOG << "ERROR: CHLLCode::appendExp: subscript in code generation of proc " << m_proc->getName()
+                << " exp (without subscript): " << str.str().c_str() << "\n";
+        // assert(false);
+        break;
+    case opMemberAccess: {
+#if 0 // ADHOC TA
+            Type *ty = b.getSubExp1()->getType();
+#else
+        Type *ty = nullptr;
+#endif
+        if (ty == nullptr) {
+            LOG << "type failure: no type for subexp1 of " << &b << "\n";
+            // ty = b.getSubExp1()->getType();
+            // No idea why this is hitting! - trentw
+            // str << "/* type failure */ ";
+            // break;
+        }
+        // Trent: what were you thinking here? Fails for things like
+        // local11.lhHeight (where local11 is a register)
+        // Mike: it shouldn't!  local11 should have a compound type
+        // assert(ty->resolvesToCompound());
+        if (b.getSubExp1()->getOper() == opMemOf) {
+            appendExp(str, *b.getSubExp1()->getSubExp1(), PREC_PRIM);
+            str << "->";
+        } else {
+            appendExp(str, *b.getSubExp1(), PREC_PRIM);
+            str << ".";
+        }
+        str << ((const Const *)b.getSubExp2())->getStr();
+    } break;
+    case opArrayIndex:
+        openParen(str, curPrec, PREC_PRIM);
+        if (b.getSubExp1()->isMemOf()) {
+#if 0 // ADHOC TA
+                Type *ty = b.getSubExp1()->getSubExp1()->getType();
+#else
+            Type *ty = nullptr;
+#endif
+            if (ty && ty->resolvesToPointer() && ty->asPointer()->getPointsTo()->resolvesToArray()) {
+                // a pointer to an array is automatically dereferenced in C
+                appendExp(str, *b.getSubExp1()->getSubExp1(), PREC_PRIM);
+            } else
+                appendExp(str, *b.getSubExp1(), PREC_PRIM);
+        } else
+            appendExp(str, *b.getSubExp1(), PREC_PRIM);
+        closeParen(str, curPrec, PREC_PRIM);
+        str << "[";
+        appendExp(str, *b.getSubExp2(), PREC_PRIM);
+        str << "]";
+        break;
+    case opDefineAll:
+        str << "<all>";
+        if (VERBOSE)
+            LOG << "ERROR: should not see opDefineAll in codegen\n";
+        break;
+    default:
+        // others
+        OPER other_op = exp.getOper();
+        if (other_op >= opZF) {
+            // Machine flags; can occasionally be manipulated individually
+            // Chop off the "op" part
+            str << exp.getOperName() + 2;
+            break;
+        }
+        LOG << "ERROR: CHLLCode::appendExp: case " << exp.getOperName() << " not implemented\n";
+        // assert(false);
+    }
 }
 
 /// Print the type represented by \a typ to \a str.
-void CHLLCode::appendType(std::ostringstream& str, Type *typ)
-{
+void CHLLCode::appendType(std::ostringstream &str, Type *typ) {
     if (typ == nullptr) {
-        str << "int";            // Default type for C
+        str << "int"; // Default type for C
         return;
     }
-    if (typ->resolvesToPointer() &&
-            typ->asPointer()->getPointsTo()->resolvesToArray()) {
+    if (typ->resolvesToPointer() && typ->asPointer()->getPointsTo()->resolvesToArray()) {
         // C programmers prefer to see pointers to arrays as pointers
         // to the first element of the array.  They then use syntactic
         // sugar to access a pointer as if it were an array.
@@ -922,8 +934,9 @@ void CHLLCode::appendType(std::ostringstream& str, Type *typ)
 /**
  * Print the indented type to \a str.
  */
-void CHLLCode::appendTypeIdent(std::ostringstream& str, Type *typ, const char *ident) {
-    if (typ == nullptr) return;
+void CHLLCode::appendTypeIdent(std::ostringstream &str, Type *typ, const char *ident) {
+    if (typ == nullptr)
+        return;
     if (typ->isPointer() && typ->asPointer()->getPointsTo()->isArray()) {
         appendType(str, typ->asPointer()->getPointsTo()->asArray()->getBaseType());
         str << " *" << ident;
@@ -938,7 +951,7 @@ void CHLLCode::appendTypeIdent(std::ostringstream& str, Type *typ, const char *i
             str << a->getLength();
         str << "]";
     } else if (typ->isVoid()) {
-        // Can happen in e.g. twoproc, where really need global parameter and return analysis
+// Can happen in e.g. twoproc, where really need global parameter and return analysis
 #if 1 // TMN: Stop crashes by this workaround
         if (ident == nullptr) {
             static const char szFoo[] = "unknownVoidType";
@@ -954,9 +967,7 @@ void CHLLCode::appendTypeIdent(std::ostringstream& str, Type *typ, const char *i
 }
 
 /// Remove all generated code.
-void CHLLCode::reset() {
-    lines.clear();
-}
+void CHLLCode::reset() { lines.clear(); }
 
 /// Adds: while( \a cond) {
 void CHLLCode::AddPretestedLoopHeader(int indLevel, Exp *cond) {
@@ -1004,8 +1015,7 @@ void CHLLCode::AddPosttestedLoopHeader(int indLevel) {
 }
 
 /// Adds: } while (\a cond);
-void CHLLCode::AddPosttestedLoopEnd(int indLevel, Exp *cond)
-{
+void CHLLCode::AddPosttestedLoopEnd(int indLevel, Exp *cond) {
     std::ostringstream s;
     indent(s, indLevel);
     s << "} while (";
@@ -1015,8 +1025,7 @@ void CHLLCode::AddPosttestedLoopEnd(int indLevel, Exp *cond)
 }
 
 /// Adds: switch(\a cond) {
-void CHLLCode::AddCaseCondHeader(int indLevel, Exp *cond)
-{
+void CHLLCode::AddCaseCondHeader(int indLevel, Exp *cond) {
     std::ostringstream s;
     indent(s, indLevel);
     s << "switch(";
@@ -1026,8 +1035,7 @@ void CHLLCode::AddCaseCondHeader(int indLevel, Exp *cond)
 }
 
 /// Adds: case \a opt :
-void CHLLCode::AddCaseCondOption(int indLevel, Exp &opt)
-{
+void CHLLCode::AddCaseCondOption(int indLevel, Exp &opt) {
     std::ostringstream s;
     indent(s, indLevel);
     s << "case ";
@@ -1037,8 +1045,7 @@ void CHLLCode::AddCaseCondOption(int indLevel, Exp &opt)
 }
 
 /// Adds: break;
-void CHLLCode::AddCaseCondOptionEnd(int indLevel)
-{
+void CHLLCode::AddCaseCondOptionEnd(int indLevel) {
     std::ostringstream s;
     indent(s, indLevel);
     s << "break;";
@@ -1046,8 +1053,7 @@ void CHLLCode::AddCaseCondOptionEnd(int indLevel)
 }
 
 /// Adds: default:
-void CHLLCode::AddCaseCondElse(int indLevel)
-{
+void CHLLCode::AddCaseCondElse(int indLevel) {
     std::ostringstream s;
     indent(s, indLevel);
     s << "default:";
@@ -1055,8 +1061,7 @@ void CHLLCode::AddCaseCondElse(int indLevel)
 }
 
 /// Adds: }
-void CHLLCode::AddCaseCondEnd(int indLevel)
-{
+void CHLLCode::AddCaseCondEnd(int indLevel) {
     std::ostringstream s;
     indent(s, indLevel);
     s << "}";
@@ -1125,7 +1130,7 @@ void CHLLCode::RemoveUnusedLabels(int /*maxOrd*/) {
         if ((*it)[0] == 'L' && strchr(*it, ':')) {
             std::string sx = *it;
             sx.resize(sx.find_first_of(':'));
-            int n = atoi(sx.c_str()+1);
+            int n = atoi(sx.c_str() + 1);
             if (usedLabels.find(n) == usedLabels.end()) {
                 it = lines.erase(it);
                 continue;
@@ -1162,7 +1167,7 @@ void CHLLCode::AddLabel(int /*indLevel*/, int ord) {
 void CHLLCode::RemoveLabel(int ord) {
     std::ostringstream s;
     s << "L" << std::dec << ord << ":";
-    for (std::list<char*>::iterator it = lines.begin(); it != lines.end(); it++) {
+    for (std::list<char *>::iterator it = lines.begin(); it != lines.end(); it++) {
         if (!strcmp(*it, s.str().c_str())) {
             lines.erase(it);
             break;
@@ -1170,15 +1175,15 @@ void CHLLCode::RemoveLabel(int ord) {
     }
 }
 
-
-bool isBareMemof(const Exp& e, UserProc* /*proc*/) {
-    if (!e.isMemOf()) return false;
+bool isBareMemof(const Exp &e, UserProc * /*proc*/) {
+    if (!e.isMemOf())
+        return false;
 #ifdef SYMS_IN_BACK_END
     // Check if it maps to a symbol
-    const char* sym = proc->lookupSym(e);
+    const char *sym = proc->lookupSym(e);
     if (sym == nullptr)
         sym = proc->lookupSym(e->getSubExp1());
-    return sym == nullptr;            // Only a bare memof if it is not a symbol
+    return sym == nullptr; // Only a bare memof if it is not a symbol
 #else
     return true;
 #endif
@@ -1188,30 +1193,30 @@ bool isBareMemof(const Exp& e, UserProc* /*proc*/) {
 void CHLLCode::AddAssignmentStatement(int indLevel, Assign *asgn) {
     // Gerard: shouldn't these  3 types of statements be removed earlier?
     if (asgn->getLeft()->getOper() == opPC)
-        return;                        // Never want to see assignments to %PC
+        return; // Never want to see assignments to %PC
     Exp *result;
     if (asgn->getRight()->search(Terminal(opPC), result)) // Gerard: what's this?
         return;
     // ok I want this now
-    //if (asgn->getLeft()->isFlags())
+    // if (asgn->getLeft()->isFlags())
     //    return;
 
     std::ostringstream s;
     indent(s, indLevel);
-    Type* asgnType = asgn->getType();
-    Exp* lhs = asgn->getLeft();
-    Exp* rhs = asgn->getRight();
-    UserProc* proc = asgn->getProc();
+    Type *asgnType = asgn->getType();
+    Exp *lhs = asgn->getLeft();
+    Exp *rhs = asgn->getRight();
+    UserProc *proc = asgn->getProc();
 
     if (*lhs == *rhs)
-        return;    // never want to see a = a;
+        return; // never want to see a = a;
 
     if (Boomerang::get()->noDecompile && isBareMemof(*rhs, proc) && lhs->getOper() == opRegOf &&
-            m_proc->getProg()->getFrontEndId() == PLAT_SPARC) {
+        m_proc->getProg()->getFrontEndId() == PLAT_SPARC) {
         // add some fsize hints to rhs
-        if (((Const*)lhs->getSubExp1())->getInt() >= 32 && ((Const*)lhs->getSubExp1())->getInt() <= 63)
+        if (((Const *)lhs->getSubExp1())->getInt() >= 32 && ((Const *)lhs->getSubExp1())->getInt() <= 63)
             rhs = new Ternary(opFsize, new Const(32), new Const(32), rhs);
-        else if (((Const*)lhs->getSubExp1())->getInt() >= 64 && ((Const*)lhs->getSubExp1())->getInt() <= 87)
+        else if (((Const *)lhs->getSubExp1())->getInt() >= 64 && ((Const *)lhs->getSubExp1())->getInt() <= 87)
             rhs = new Ternary(opFsize, new Const(64), new Const(64), rhs);
     }
 
@@ -1222,17 +1227,15 @@ void CHLLCode::AddAssignmentStatement(int indLevel, Assign *asgn) {
             else
                 s << "DOUBLE_";
         } else if (rhs->getOper() == opFsize) {
-            if (((Const*)rhs->getSubExp2())->getInt() == 32)
+            if (((Const *)rhs->getSubExp2())->getInt() == 32)
                 s << "FLOAT_";
             else
                 s << "DOUBLE_";
         } else if (rhs->getOper() == opRegOf && m_proc->getProg()->getFrontEndId() == PLAT_SPARC) {
             // yes, this is a hack
-            if (((Const*)rhs->getSubExp1())->getInt() >= 32 &&
-                    ((Const*)rhs->getSubExp1())->getInt() <= 63)
+            if (((Const *)rhs->getSubExp1())->getInt() >= 32 && ((Const *)rhs->getSubExp1())->getInt() <= 63)
                 s << "FLOAT_";
-            else if (((Const*)rhs->getSubExp1())->getInt() >= 64 &&
-                     ((Const*)rhs->getSubExp1())->getInt() <= 87)
+            else if (((Const *)rhs->getSubExp1())->getInt() >= 64 && ((Const *)rhs->getSubExp1())->getInt() <= 87)
                 s << "DOUBLE_";
         }
 
@@ -1248,42 +1251,32 @@ void CHLLCode::AddAssignmentStatement(int indLevel, Assign *asgn) {
     if (isBareMemof(*lhs, proc) && asgnType && !asgnType->isVoid())
         appendExp(s, TypedExp(asgnType, lhs), PREC_ASSIGN);
     else if (lhs->getOper() == opGlobal && asgn->getType()->isArray())
-        appendExp(s, Binary(opArrayIndex,
-                            lhs,
-                            new Const(0)), PREC_ASSIGN);
-    else if (lhs->getOper() == opAt &&
-             ((Ternary*)lhs)->getSubExp2()->isIntConst() &&
-             ((Ternary*)lhs)->getSubExp3()->isIntConst()) {
+        appendExp(s, Binary(opArrayIndex, lhs, new Const(0)), PREC_ASSIGN);
+    else if (lhs->getOper() == opAt && ((Ternary *)lhs)->getSubExp2()->isIntConst() &&
+             ((Ternary *)lhs)->getSubExp3()->isIntConst()) {
         // exp1@[n:m] := rhs -> exp1 = exp1 & mask | rhs << m  where mask = ~((1 << m-n+1)-1)
-        Exp* exp1 = ((Ternary*)lhs)->getSubExp1();
-        int n = ((Const*)((Ternary*)lhs)->getSubExp2())->getInt();
-        int m = ((Const*)((Ternary*)lhs)->getSubExp3())->getInt();
+        Exp *exp1 = ((Ternary *)lhs)->getSubExp1();
+        int n = ((Const *)((Ternary *)lhs)->getSubExp2())->getInt();
+        int m = ((Const *)((Ternary *)lhs)->getSubExp3())->getInt();
         appendExp(s, *exp1, PREC_ASSIGN);
         s << " = ";
-        int mask = ~(((1 << (m-n+1))-1) << m);            // MSVC winges without most of these parentheses
-        rhs = Binary::get(opBitAnd,
-                         exp1,
-                         Binary::get(opBitOr,
-                                    new Const(mask),
-                                    Binary::get(opShiftL,
-                                               rhs,
-                                               new Const(m))));
+        int mask = ~(((1 << (m - n + 1)) - 1) << m); // MSVC winges without most of these parentheses
+        rhs = Binary::get(opBitAnd, exp1,
+                          Binary::get(opBitOr, new Const(mask), Binary::get(opShiftL, rhs, new Const(m))));
         rhs = rhs->simplify();
         appendExp(s, *rhs, PREC_ASSIGN);
         s << ";";
         appendLine(s);
         return;
     } else
-        appendExp(s, *lhs, PREC_ASSIGN);            // Ordinary LHS
-    if (rhs->getOper() == opPlus &&
-            *rhs->getSubExp1() == *lhs) {
+        appendExp(s, *lhs, PREC_ASSIGN); // Ordinary LHS
+    if (rhs->getOper() == opPlus && *rhs->getSubExp1() == *lhs) {
         // C has special syntax for this, eg += and ++
         // however it's not always acceptable for assigns to m[] (?)
         if (rhs->getSubExp2()->isIntConst() &&
-                (((Const*)rhs->getSubExp2())->getInt() == 1 ||
-                 (asgn->getType()->isPointer() &&
-                  asgn->getType()->asPointer()->getPointsTo()->getSize()==
-                  (unsigned) ((Const*)rhs->getSubExp2())->getInt() * 8)))
+            (((Const *)rhs->getSubExp2())->getInt() == 1 || (asgn->getType()->isPointer() &&
+                                                             asgn->getType()->asPointer()->getPointsTo()->getSize() ==
+                                                                 (unsigned)((Const *)rhs->getSubExp2())->getInt() * 8)))
             s << "++";
         else {
             s << " += ";
@@ -1309,13 +1302,13 @@ void CHLLCode::AddAssignmentStatement(int indLevel, Assign *asgn) {
  * \todo                Remove the \a name parameter and use Proc::getName()
  * \todo                Add assingment for when the function returns a struct.
  */
-void CHLLCode::AddCallStatement(int indLevel, Proc *proc, const char *name, StatementList &args, StatementList* results)
-{
+void CHLLCode::AddCallStatement(int indLevel, Proc *proc, const char *name, StatementList &args,
+                                StatementList *results) {
     std::ostringstream s;
     indent(s, indLevel);
     if (not results->empty()) {
         // FIXME: Needs changing if more than one real result (return a struct)
-        Exp* firstRet = ((Assignment*)*results->begin())->getLeft();
+        Exp *firstRet = ((Assignment *)*results->begin())->getLeft();
         appendExp(s, *firstRet, PREC_ASSIGN);
         s << " = ";
     }
@@ -1328,10 +1321,10 @@ void CHLLCode::AddCallStatement(int indLevel, Proc *proc, const char *name, Stat
             first = false;
         else
             s << ", ";
-        Type *t = ((Assign*)*ss)->getType();
-        auto const_arg = static_cast<const Const *>(((Assign*)*ss)->getRight());
+        Type *t = ((Assign *)*ss)->getType();
+        auto const_arg = static_cast<const Const *>(((Assign *)*ss)->getRight());
         bool ok = true;
-        if (t && t->isPointer() && ((PointerType*)t)->getPointsTo()->isFunc() && const_arg->isIntConst()) {
+        if (t && t->isPointer() && ((PointerType *)t)->getPointsTo()->isFunc() && const_arg->isIntConst()) {
             Proc *p = proc->getProg()->findProc((const_arg)->getAddr());
             if (p) {
                 s << p->getName().toStdString();
@@ -1341,7 +1334,7 @@ void CHLLCode::AddCallStatement(int indLevel, Proc *proc, const char *name, Stat
         if (ok) {
             bool needclose = false;
             if (Boomerang::get()->noDecompile && proc->getSignature()->getParamType(n) &&
-                    proc->getSignature()->getParamType(n)->isPointer()) {
+                proc->getSignature()->getParamType(n)->isPointer()) {
                 s << "ADDR(";
                 needclose = true;
             }
@@ -1359,7 +1352,7 @@ void CHLLCode::AddCallStatement(int indLevel, Proc *proc, const char *name, Stat
                 first = false;
             else
                 s << ", ";
-            appendExp(s, *((Assignment*)*ss)->getLeft(), PREC_COMMA);
+            appendExp(s, *((Assignment *)*ss)->getLeft(), PREC_COMMA);
         }
         s << " */";
     }
@@ -1374,7 +1367,7 @@ void CHLLCode::AddCallStatement(int indLevel, Proc *proc, const char *name, Stat
  * \todo Add the use of \a results like AddCallStatement.
  */
 // Ugh - almost the same as the above, but it needs to take an expression, // not a Proc*
-void CHLLCode::AddIndCallStatement(int indLevel, Exp *exp, StatementList &args, StatementList* /*results*/) {
+void CHLLCode::AddIndCallStatement(int indLevel, Exp *exp, StatementList &args, StatementList * /*results*/) {
     //    FIXME: Need to use 'results', since we can infer some defines...
     std::ostringstream s;
     indent(s, indLevel);
@@ -1388,19 +1381,18 @@ void CHLLCode::AddIndCallStatement(int indLevel, Exp *exp, StatementList &args, 
             first = false;
         else
             s << ", ";
-        Exp* arg = ((Assign*)*ss)->getRight();
+        Exp *arg = ((Assign *)*ss)->getRight();
         appendExp(s, *arg, PREC_COMMA);
     }
     s << ");";
     appendLine(s);
 }
 
-
 /**
  * Adds a return statement and returns the first expression in \a rets.
  * \todo This should be returning a struct if more than one real return value.
  */
-void CHLLCode::AddReturnStatement(int indLevel, StatementList* rets) {
+void CHLLCode::AddReturnStatement(int indLevel, StatementList *rets) {
     // FIXME: should be returning a struct of more than one real return */
     // The stack pointer is wanted as a define in calls, and so appears in returns, but needs to be removed here
     StatementList::iterator rr;
@@ -1414,7 +1406,7 @@ void CHLLCode::AddReturnStatement(int indLevel, StatementList* rets) {
 
     if (n >= 1) {
         s << " ";
-        appendExp(s, *((Assign*)*rets->begin())->getRight(), PREC_NONE);
+        appendExp(s, *((Assign *)*rets->begin())->getRight(), PREC_NONE);
     }
     s << ";";
 
@@ -1427,9 +1419,9 @@ void CHLLCode::AddReturnStatement(int indLevel, StatementList* rets) {
                 first = false;
             else
                 s << ", ";
-            appendExp(s, *((Assign*)*rr)->getLeft(), PREC_NONE);
+            appendExp(s, *((Assign *)*rr)->getLeft(), PREC_NONE);
             s << " := ";
-            appendExp(s, *((Assign*)*rr)->getRight(), PREC_NONE);
+            appendExp(s, *((Assign *)*rr)->getRight(), PREC_NONE);
         }
         if (n > 1)
             s << " */";
@@ -1440,25 +1432,23 @@ void CHLLCode::AddReturnStatement(int indLevel, StatementList* rets) {
 /**
  * Print the start of a function, and also as a comment its address.
  */
-void CHLLCode::AddProcStart(UserProc* proc) {
+void CHLLCode::AddProcStart(UserProc *proc) {
     std::ostringstream s;
-    s << "// address: "<<proc->getNativeAddress();
+    s << "// address: " << proc->getNativeAddress();
     appendLine(s);
     AddProcDec(proc, true);
 }
 
 /// Add a prototype (for forward declaration)
-void CHLLCode::AddPrototype(UserProc* proc) {
-    AddProcDec(proc, false);
-}
+void CHLLCode::AddPrototype(UserProc *proc) { AddProcDec(proc, false); }
 
 /**
  * Print the declaration of a function.
  * \param open    False if this is just a prototype and ";" should be printed instead of "{"
  */
-void CHLLCode::AddProcDec(UserProc* proc, bool open) {
+void CHLLCode::AddProcDec(UserProc *proc, bool open) {
     std::ostringstream s;
-    ReturnStatement* returns = proc->getTheReturnStatement();
+    ReturnStatement *returns = proc->getTheReturnStatement();
     Type *retType = nullptr;
     if (proc->getSignature()->isForced()) {
         if (proc->getSignature()->getNumReturns() == 0)
@@ -1476,24 +1466,24 @@ void CHLLCode::AddProcDec(UserProc* proc, bool open) {
     } else if (returns == nullptr || returns->getNumReturns() == 0) {
         s << "void ";
     } else {
-        Assign* firstRet = (Assign*)*returns->begin();
+        Assign *firstRet = (Assign *)*returns->begin();
         retType = firstRet->getType();
         if (retType == nullptr || retType->isVoid())
             // There is a real return; make it integer (Remove with AD HOC type analysis)
-            retType = IntegerType::get(STD_SIZE,0);
+            retType = IntegerType::get(STD_SIZE, 0);
     }
     if (retType) {
         appendType(s, retType);
-        if (!retType->isPointer())    // NOTE: assumes type *proc( style
+        if (!retType->isPointer()) // NOTE: assumes type *proc( style
             s << " ";
     }
     s << proc->getName().toStdString() << "(";
-    StatementList& parameters = proc->getParameters();
+    StatementList &parameters = proc->getParameters();
     StatementList::iterator pp;
 
     if (parameters.size() > 10 && open) {
-        LOG << "Warning: CHLLCode::AddProcDec: Proc " << proc->getName() << " has " << (int)parameters.size() <<
-               " parameters\n";
+        LOG << "Warning: CHLLCode::AddProcDec: Proc " << proc->getName() << " has " << (int)parameters.size()
+            << " parameters\n";
     }
 
     bool first = true;
@@ -1502,25 +1492,25 @@ void CHLLCode::AddProcDec(UserProc* proc, bool open) {
             first = false;
         else
             s << ", ";
-        Assign* as = (Assign*)*pp;
-        Exp* left = as->getLeft();
+        Assign *as = (Assign *)*pp;
+        Exp *left = as->getLeft();
         Type *ty = as->getType();
         if (ty == nullptr) {
             if (VERBOSE)
                 LOG << "ERROR in CHLLCode::AddProcDec: no type for parameter " << left << "!\n";
-            ty = IntegerType::get(STD_SIZE,0);
+            ty = IntegerType::get(STD_SIZE, 0);
         }
-        const char* name;
+        const char *name;
         if (left->isParam())
-            name = ((Const*)((Location*)left)->getSubExp1())->getStr();
+            name = ((Const *)((Location *)left)->getSubExp1())->getStr();
         else {
             LOG << "ERROR: parameter " << left << " is not opParam!\n";
             name = "??";
         }
-        if (ty->isPointer() && ((PointerType*)ty)->getPointsTo()->isArray()) {
+        if (ty->isPointer() && ((PointerType *)ty)->getPointsTo()->isArray()) {
             // C does this by default when you pass an array, i.e. you pass &array meaning array
             // Replace all m[param] with foo, param with foo, then foo with param
-            ty = ((PointerType*)ty)->getPointsTo();
+            ty = ((PointerType *)ty)->getPointsTo();
             Exp *foo = new Const("foo123412341234");
             m_proc->searchAndReplace(*Location::memOf(left, nullptr), foo);
             m_proc->searchAndReplace(*left, foo);
@@ -1553,9 +1543,8 @@ void CHLLCode::AddLocal(const char *name, Type *type, bool last) {
     const Exp *e = m_proc->expFromSymbol(name);
     if (e) {
         // ? Should never see subscripts in the back end!
-        if (e->getOper() == opSubscript && ((RefExp*)e)->isImplicitDef() &&
-                (e->getSubExp1()->getOper() == opParam ||
-                 e->getSubExp1()->getOper() == opGlobal)) {
+        if (e->getOper() == opSubscript && ((RefExp *)e)->isImplicitDef() &&
+            (e->getSubExp1()->getOper() == opParam || e->getSubExp1()->getOper() == opGlobal)) {
             s << " = ";
             appendExp(s, *e->getSubExp1(), PREC_NONE);
             s << ";";
@@ -1581,16 +1570,15 @@ void CHLLCode::AddGlobal(const char *name, Type *type, Exp *init) {
     // they are printed
     if (type->isArray()) {
         // Get the component type
-        Type* base = ((ArrayType*)type)->getBaseType();
+        Type *base = ((ArrayType *)type)->getBaseType();
         appendType(s, base);
-        s << " " << name << "[" << std::dec << ((ArrayType*)type)->getLength() << "]";
-    } else if (type->isPointer() &&
-               ((PointerType*)type)->getPointsTo()->resolvesToFunc()) {
+        s << " " << name << "[" << std::dec << ((ArrayType *)type)->getLength() << "]";
+    } else if (type->isPointer() && ((PointerType *)type)->getPointsTo()->resolvesToFunc()) {
         // These are even more different to declare than to print. Example:
         // void (void)* global0 = foo__1B;     ->
         // void (*global0)(void) = foo__1B;
-        PointerType* pt = (PointerType*)type;
-        FuncType* ft = (FuncType*)pt->getPointsTo();
+        PointerType *pt = (PointerType *)type;
+        FuncType *ft = (FuncType *)pt->getPointsTo();
         const char *ret, *param;
         ft->getReturnAndParam(ret, param);
         s << ret << "(*" << name << ")" << param;
@@ -1611,14 +1599,14 @@ void CHLLCode::AddGlobal(const char *name, Type *type, Exp *init) {
 
 /// Dump all generated code to \a os.
 void CHLLCode::print(std::ostream &os) {
-    for (auto & elem : lines)
+    for (auto &elem : lines)
         os << elem << std::endl;
     if (m_proc == nullptr)
         os << std::endl;
 }
 
 /// Adds one line of comment to the code.
-void CHLLCode::AddLineComment(const std::string & cmt) {
+void CHLLCode::AddLineComment(const std::string &cmt) {
     std::ostringstream s;
     s << "/* " << cmt << "*/";
     appendLine(s);
@@ -1626,11 +1614,6 @@ void CHLLCode::AddLineComment(const std::string & cmt) {
 
 // Private helper functions, to reduce redundant code, and
 // have a single place to put a breakpoint on.
-void CHLLCode::appendLine(const std::ostringstream& ostr) {
-    appendLine(ostr.str());
-}
+void CHLLCode::appendLine(const std::ostringstream &ostr) { appendLine(ostr.str()); }
 
-void CHLLCode::appendLine(const std::string& s) {
-    lines.push_back(strdup(s.c_str()));
-}
-
+void CHLLCode::appendLine(const std::string &s) { lines.push_back(strdup(s.c_str())); }
