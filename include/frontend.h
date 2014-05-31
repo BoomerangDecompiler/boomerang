@@ -116,7 +116,7 @@ class FrontEnd {
     NJMCDecoder *getDecoder() { return decoder; }
 
     void readLibrarySignatures(const char *sPath, callconv cc); //!< Read library signatures from a file.
-    void readLibraryCatalog(const char *sPath);                 //!< read from a catalog
+    void readLibraryCatalog(const QString &sPath);                 //!< read from a catalog
     void readLibraryCatalog();                                  //!< read from default catalog
 
     // lookup a library signature by name

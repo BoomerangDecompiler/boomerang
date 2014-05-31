@@ -925,8 +925,8 @@ DWord ST20Decoder::getDword(intptr_t lc)
   *
   ******************************************************************************/
 ST20Decoder::ST20Decoder() : NJMCDecoder(prog) {
-    std::string file = Boomerang::get()->getProgPath() + "frontend/machine/st20/st20.ssl";
-    RTLDict.readSSLFile(file.c_str());
+    QDir base_dir=Boomerang::get()->getProgDir();
+    RTLDict.readSSLFile(base_dir.absoluteFilePath("frontend/machine/st20/st20.ssl"));
 }
 
 // For now...

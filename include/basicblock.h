@@ -141,6 +141,7 @@ class BasicBlock {
     BasicBlock *m_loopFollow = nullptr; //!< follow of a loop header
     BasicBlock *m_latchNode = nullptr;  //!< latch node of a loop header
   protected:
+    Function *Parent;
     /* general basic block information */
     BBTYPE m_nodeType = INVALID;         //!< type of basic block
     std::list<RTL *> *m_pRtls = nullptr; //!< Ptr to list of RTLs
@@ -190,6 +191,9 @@ class BasicBlock {
     BasicBlock();
     ~BasicBlock();
     BasicBlock(const BasicBlock &bb);
+    /// \brief return enclosing function, null if none
+    const Function *getParent() const { return Parent; }
+          Function *getParent()       { return Parent; }
     BBTYPE getType();
 
     int getLabel();

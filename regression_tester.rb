@@ -19,9 +19,9 @@ def perform_test(exepath,machine,test,args)
         test_file = File.join(TEST_INPUT,machine,test)
         log_name = File.join(output_path,test)
         joined_args = args.join(' ')
+        cmdline = "-P #{Dir.pwd} -o #{output_path} #{joined_args} #{test_file} >#{log_name+'.stdout'} 2>#{log_name+'.stderr'}"
         result = `#{exepath} -P #{Dir.pwd} -o #{output_path} #{joined_args} #{test_file} >#{log_name+".stdout"} 2>#{log_name+".stderr"}`
-	cmdline = "-P #{Dir.pwd} -o #{output_path} #{joined_args} #{test_file} >#{log_name+'.stdout'} 2>#{log_name+'.stderr'}"
-	STDOUT << ($?.success?() ? '.' : '!')
+        STDOUT << ($?.success?() ? '.' : '!')
         return [$?.success?,cmdline]
 end
 if(File.exists?(File.join(TESTS_DIR,"outputs_prev")))
@@ -42,12 +42,18 @@ Dir.open(TEST_INPUT).each() {|f|
             next if test=="." or test==".."
             test_path = File.join(machine_dir,test)
             FileUtils.mkdir_p(File.join(TESTS_DIR,"outputs",machine,test))
-	    test_res = perform_test(ARGV[0],machine,test,ARGV[1..-1])
+            test_res = nil
+            if(!test.index("hello.exe").nil?)
+              p "skipping hello.exe - it causes memory exhaustion"
+              test_res = [false,"skipped windows/hello.exe"]
+            else
+              test_res = perform_test(ARGV[0],machine,test,ARGV[1..-1])
+              FileUtils.mv(File.join(TESTS_DIR,"outputs",machine,"log"),File.join(TESTS_DIR,"outputs",machine,test+".log"))
+            end
             if( not test_res[0])
-		crashes[machine] ||= []
+                crashes[machine] ||= []
                 crashes[machine] << [test,test_res[1]]
             end
-            FileUtils.mv(File.join(TESTS_DIR,"outputs",machine,"log"),File.join(TESTS_DIR,"outputs",machine,test+".log"))
         }
 }
 crashes.each {|machine,crash_list|

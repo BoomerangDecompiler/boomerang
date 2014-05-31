@@ -339,8 +339,13 @@ void UserProc::printCallGraphXML(std::ostream &os, int depth, bool recurse) {
 void Function::printDetailsXML() {
     if (!DUMP_XML)
         return;
-    std::ofstream out((Boomerang::get()->getOutputPath() + getName().toStdString() + "-details.xml").c_str());
-    out << "<proc name=\"" << getName().toStdString() << "\">\n";
+    QFile file(Boomerang::get()->getOutputPath() + getName() + "-details.xml");
+    if(!file.open(QFile::WriteOnly)) {
+        qDebug() << "Can't write to file:" << file.fileName();
+        return;
+    }
+    QTextStream out(&file);
+    out << "<proc name=\"" << getName() << "\">\n";
     unsigned i;
     for (i = 0; i < signature->getNumParams(); i++)
         out << "   <param name=\"" << signature->getParamName(i) << "\" "
@@ -350,55 +355,66 @@ void Function::printDetailsXML() {
         out << "   <return exp=\"" << signature->getReturnExp(i) << "\" "
             << "type=\"" << signature->getReturnType(i)->getCtype() << "\"/>\n";
     out << "</proc>\n";
-    out.close();
 }
 
 void UserProc::printDecodedXML() {
     if (!DUMP_XML)
         return;
-    std::ofstream out((Boomerang::get()->getOutputPath() + getName().toStdString() + "-decoded.xml").c_str());
-    out << "<proc name=\"" << getName().toStdString() << "\">\n";
+    QFile file(Boomerang::get()->getOutputPath() + getName() + "-decoded.xml");
+    if(!file.open(QFile::WriteOnly)) {
+        qDebug() << "Can't write to file:" << file.fileName();
+        return;
+    }
+    QTextStream out(&file);
+    out << "<proc name=\"" << getName() << "\">\n";
     out << "    <decoded>\n";
     std::ostringstream os;
     print(os);
     std::string s = os.str();
     escapeXMLChars(s);
-    out << s;
+    out << s.c_str();
     out << "    </decoded>\n";
     out << "</proc>\n";
-    out.close();
 }
 
 void UserProc::printAnalysedXML() {
     if (!DUMP_XML)
         return;
-    std::ofstream out((Boomerang::get()->getOutputPath() + getName().toStdString() + "-analysed.xml").c_str());
-    out << "<proc name=\"" << getName().toStdString() << "\">\n";
+    QFile file(Boomerang::get()->getOutputPath() + getName() + "-analysed.xml");
+    if(!file.open(QFile::WriteOnly)) {
+        qDebug() << "Can't write to file:" << file.fileName();
+        return;
+    }
+    QTextStream out(&file);
+    out << "<proc name=\"" << getName() << "\">\n";
     out << "    <analysed>\n";
     std::ostringstream os;
     print(os);
     std::string s = os.str();
     escapeXMLChars(s);
-    out << s;
+    out << s.c_str();
     out << "    </analysed>\n";
     out << "</proc>\n";
-    out.close();
 }
 
 void UserProc::printSSAXML() {
     if (!DUMP_XML)
         return;
-    std::ofstream out((Boomerang::get()->getOutputPath() + getName().toStdString() + "-ssa.xml").c_str());
-    out << "<proc name=\"" << getName().toStdString() << "\">\n";
+    QFile file(Boomerang::get()->getOutputPath() + getName() + "-ssa.xml");
+    if(!file.open(QFile::WriteOnly)) {
+        qDebug() << "Can't write to file:" << file.fileName();
+        return;
+    }
+    QTextStream out(&file);
+    out << "<proc name=\"" << getName() << "\">\n";
     out << "    <ssa>\n";
     std::ostringstream os;
     print(os);
     std::string s = os.str();
     escapeXMLChars(s);
-    out << s;
+    out << s.c_str();
     out << "    </ssa>\n";
     out << "</proc>\n";
-    out.close();
 }
 
 void UserProc::printXML() {
@@ -411,8 +427,13 @@ void UserProc::printXML() {
 }
 
 void UserProc::printUseGraph() {
-    std::ofstream out((Boomerang::get()->getOutputPath() + getName().toStdString() + "-usegraph.dot").c_str());
-    out << "digraph " << getName().toStdString() << " {\n";
+    QFile file(Boomerang::get()->getOutputPath() + getName() + "-usegraph.dot");
+    if(!file.open(QFile::WriteOnly)) {
+        qDebug() << "Can't write to file:" << file.fileName();
+        return;
+    }
+    QTextStream out(&file);
+    out << "digraph " << getName() << " {\n";
     StatementList stmts;
     getStatements(stmts);
     StatementList::iterator it;
@@ -432,7 +453,6 @@ void UserProc::printUseGraph() {
         }
     }
     out << "}\n";
-    out.close();
 }
 
 /***************************************************************************/ /**
@@ -796,17 +816,19 @@ void UserProc::dump() { print(std::cerr); }
 
 void UserProc::printDFG() const {
     QString fname =
-        QString("%1%2-%3-dfg.dot").arg(Boomerang::get()->getOutputPath().c_str()).arg(getName()).arg(DFGcount);
+        QString("%1%2-%3-dfg.dot").arg(Boomerang::get()->getOutputPath()).arg(getName()).arg(DFGcount);
     DFGcount++;
-    if (VERBOSE)
-        LOG << "outputing DFG to " << fname << "\n";
-    std::ofstream out(fname.toStdString());
-    out << "digraph " << getName().toStdString() << " {\n";
+    LOG_VERBOSE(1) << "outputing DFG to " << fname << "\n";
+    QFile file(fname);
+    if (!file.open(QFile::WriteOnly)) {
+        qWarning() << "can't open `" << fname << "'";
+        return;
+    }
+    QTextStream out(&file);
+    out << "digraph " << getName() << " {\n";
     StatementList stmts;
     getStatements(stmts);
-    StatementList::iterator it;
-    for (it = stmts.begin(); it != stmts.end(); it++) {
-        Statement *s = *it;
+    for (Statement *s : stmts) {
         if (s->isPhi())
             out << s->getNumber() << " [shape=\"triangle\"];\n";
         if (s->isCall())
@@ -833,7 +855,6 @@ void UserProc::printDFG() const {
         }
     }
     out << "}\n";
-    out.close();
 }
 
 /***************************************************************************/ /**

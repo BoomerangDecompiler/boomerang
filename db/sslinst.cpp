@@ -132,14 +132,14 @@ RTLInstDict::~RTLInstDict() {}
   * \param SSLFileName - the name of the file containing the SSL specification.
   * \returns        true if the file was successfully read
   ******************************************************************************/
-bool RTLInstDict::readSSLFile(const std::string &SSLFileName) {
+bool RTLInstDict::readSSLFile(const QString &SSLFileName) {
     // emptying the rtl dictionary
     idict.erase(idict.begin(), idict.end());
     // Clear all state
     reset();
 
     // Attempt to Parse the SSL file
-    SSLParser theParser(SSLFileName,
+    SSLParser theParser(qPrintable(SSLFileName),
 #ifdef DEBUG_SSLPARSER
                         true
 #else

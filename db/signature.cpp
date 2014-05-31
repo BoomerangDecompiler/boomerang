@@ -34,7 +34,7 @@
 #include <sstream>
 extern char debug_buffer[]; // For prints()
 
-const char *Signature::platformName(platform plat) {
+QString Signature::platformName(platform plat) {
     switch (plat) {
     case PLAT_PENTIUM:
         return "pentium";
@@ -55,7 +55,7 @@ const char *Signature::platformName(platform plat) {
     }
 }
 
-const char *Signature::conventionName(callconv cc) {
+QString Signature::conventionName(callconv cc) {
     switch (cc) {
     case CONV_C:
         return "stdc";
@@ -1393,7 +1393,7 @@ Signature *Signature::instantiate(platform plat, callconv cc, const char *nam) {
         return new CallingConvention::StdC::ST20Signature(nam);
     // insert other conventions here
     default:
-        std::cerr << "unknown signature: " << conventionName(cc) << " " << platformName(plat) << "\n";
+        qCritical() << "unknown signature: " << conventionName(cc) << " " << platformName(plat) << "\n";
         assert(false);
     }
     return nullptr;

@@ -35,7 +35,7 @@ void CfgTest::initTestCase() {
             baseDir = QDir("..");
         }
         logset = true;
-        Boomerang::get()->setProgPath(TEST_BASE.toStdString());
+        Boomerang::get()->setProgPath(TEST_BASE);
         Boomerang::get()->setPluginPath(TEST_BASE + "/out");
         Boomerang::get()->setLogger(new NullLogger());
     }

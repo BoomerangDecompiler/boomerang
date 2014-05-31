@@ -107,7 +107,7 @@ int CommandlineDriver::applyCommandline() {
         return 1;
     }
     Boomerang &boom(*Boomerang::get());
-    boom.setProgPath(QFileInfo(args[0]).absolutePath().toStdString());
+    boom.setProgPath(QFileInfo(args[0]).absolutePath());
     boom.setPluginPath(QFileInfo(args[0]).absolutePath());
     for (int i = 1; i < args.size(); ++i) {
         QString arg = args[i];
@@ -174,9 +174,8 @@ int CommandlineDriver::applyCommandline() {
             }
             break;
         case 'o': {
-            std::string o_path = args[++i].toStdString();
-            char lastCh = o_path.back();
-            if (lastCh != '/' && lastCh != '\\')
+            QString o_path = args[++i];
+            if(!o_path.endsWith('/') && !o_path.endsWith('\\'))
                 o_path += '/'; // Maintain the convention of a trailing slash
             boom.setOutputDirectory(o_path);
             break;
@@ -186,8 +185,8 @@ int CommandlineDriver::applyCommandline() {
                 boom.decodeThruIndCall = true; // -ic;
             if (arg[2] == 'w')                 // -iw
                 if (boom.ofsIndCallReport) {
-                    std::string fname = boom.getOutputPath() + "indirect.txt";
-                    boom.ofsIndCallReport = new std::ofstream(fname.c_str());
+                    QString fname = boom.getOutputPath() + "indirect.txt";
+                    boom.ofsIndCallReport = new std::ofstream(fname.toStdString());
                 }
             break;
         case '-':
@@ -202,7 +201,7 @@ int CommandlineDriver::applyCommandline() {
         case 'P': {
             QString qstr(args[++i] + "/");
             QFileInfo qfi(qstr);
-            boom.setProgPath(qfi.path().toStdString());
+            boom.setProgPath(qfi.path());
         } break;
 
         case 'n':

@@ -37,7 +37,8 @@
 #include <set>
 #include <vector>
 #include <map>
-#include <QObject>
+#include <QtCore/QObject>
+#include <QtCore/QDir>
 
 class QString;
 class SeparateLogger;
@@ -91,8 +92,8 @@ class Boomerang : public QObject {
     Q_OBJECT
   private:
     static Boomerang *boomerang;
-    std::string progPath;         //!< String with the path to the boomerang executable.
-    std::string outputPath;       //!< The path where all output files are created.
+    QString progPath;         //!< String with the path to the boomerang executable.
+    QString outputPath;       //!< The path where all output files are created.
     Log *logger;                  //!< Takes care of the log messages.
     std::set<Watcher *> watchers; //!< The watchers which are interested in this decompilation.
 
@@ -119,16 +120,19 @@ class Boomerang : public QObject {
     SeparateLogger separate_log(const QString &);
     Log &if_verbose_log(int verbosity_level);
     void setLogger(Log *l) { logger = l; }
-    bool setOutputDirectory(const std::string &path);
+    bool setOutputDirectory(const QString &path);
 
     HLLCode *getHLLCode(UserProc *p = nullptr);
     void setPluginPath(const QString &p);
-    void setProgPath(const std::string &p);
-    const std::string &getProgPath();
+    void setProgPath(const QString &p);
+    /// Get the path to the %Boomerang executable.
+    const QString &getProgPath() { return progPath; }
+    /// Get the path to the %Boomerang executable.
+    QDir getProgDir() { return QDir(progPath); }
     /// Set the path where the output files are saved.
-    void setOutputPath(const std::string &p) { outputPath = p; }
+    void setOutputPath(const QString &p) { outputPath = p; }
     /// Returns the path to where the output files are saved.
-    const std::string &getOutputPath() { return outputPath; }
+    const QString &getOutputPath() { return outputPath; }
 
     Prog *loadAndDecode(const QString &fname, const char *pname = nullptr);
     int decompile(const char *fname, const char *pname = nullptr);

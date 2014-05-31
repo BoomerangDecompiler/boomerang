@@ -8996,8 +8996,8 @@ DWord PPCDecoder::getDword(ADDRESS lc) {
   *
   ******************************************************************************/
 PPCDecoder::PPCDecoder(Prog *prog) : NJMCDecoder(prog) {
-    std::string file = Boomerang::get()->getProgPath() + "frontend/machine/ppc/ppc.ssl";
-    RTLDict.readSSLFile(file.c_str());
+    QDir base_dir=Boomerang::get()->getProgDir();
+    RTLDict.readSSLFile(base_dir.absoluteFilePath("frontend/machine/ppc/ppc.ssl"));
 }
 
 // For now...

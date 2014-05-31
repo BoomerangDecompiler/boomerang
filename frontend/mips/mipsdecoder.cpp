@@ -43,8 +43,8 @@
 void MIPSDecoder::unused(int /*x*/) {}
 
 MIPSDecoder::MIPSDecoder(Prog *prog) : NJMCDecoder(prog) {
-    std::string file = Boomerang::get()->getProgPath() + "frontend/machine/mips/mips.ssl";
-    RTLDict.readSSLFile(file.c_str());
+    QDir base_dir=Boomerang::get()->getProgDir();
+    RTLDict.readSSLFile(base_dir.absoluteFilePath("frontend/machine/mips/mips.ssl"));
 }
 
 // For now...

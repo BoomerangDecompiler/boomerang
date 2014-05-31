@@ -40769,8 +40769,8 @@ DWord PentiumDecoder::getDword(intptr_t lc)
   *
   ******************************************************************************/
 PentiumDecoder::PentiumDecoder(Prog *prog) : NJMCDecoder(prog) {
-    std::string file = Boomerang::get()->getProgPath() + "frontend/machine/pentium/pentium.ssl";
-    RTLDict.readSSLFile(file.c_str());
+    QDir base_dir=Boomerang::get()->getProgDir();
+    RTLDict.readSSLFile(base_dir.absoluteFilePath("frontend/machine/pentium/pentium.ssl"));
 }
 // For now...
 /**

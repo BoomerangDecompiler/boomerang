@@ -113,7 +113,7 @@ BasicBlock::BasicBlock(Function *parent, std::list<RTL *> *pRtls, BBTYPE bbType,
       // Others
       overlappedRegProcessingDone(false) {
     m_OutEdges.reserve(iNumOutEdges); // Reserve the space; values added with AddOutEdge()
-
+    Parent = parent;
     m_iTargetOutEdges = iNumOutEdges;
     // Set the RTLs
     setRTLs(pRtls);

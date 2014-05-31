@@ -45,6 +45,7 @@ class Function;
 class XMLProgParser;
 class StmtVisitor;
 class Statement;
+class QString;
 
 enum STMT_KIND : uint8_t;
 
@@ -159,7 +160,7 @@ class RTLInstDict {
     RTLInstDict();
     ~RTLInstDict();
 
-    bool readSSLFile(const std::string &SSLFileName);
+    bool readSSLFile(const QString &SSLFileName);
     void reset();
     std::pair<std::string, unsigned> getSignature(const char *name);
 

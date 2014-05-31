@@ -68,15 +68,14 @@ Log &Boomerang::if_verbose_log(int verbosity_level) {
 /**
  * Sets the outputfile to be the file "log" in the default output directory.
  */
-FileLogger::FileLogger() : out((Boomerang::get()->getOutputPath() + "log").c_str()) {}
+FileLogger::FileLogger() : out((Boomerang::get()->getOutputPath() + "log").toStdString()) {}
 
 SeparateLogger::SeparateLogger(const QString &v) {
     static QMap<QString, int> versions;
     if (!versions.contains(v))
         versions[v] = 0;
-
-    QString full_path = QString("%1/%2_%3.log").arg(Boomerang::get()->getOutputPath().c_str()).arg(v).arg(
-        versions[v]++, 2, 10, QChar('0'));
+    QDir outDir(Boomerang::get()->getOutputPath());
+    QString full_path = outDir.absoluteFilePath(QString("%1_%2.log").arg(v).arg(versions[v]++, 2, 10, QChar('0')));
     out = new std::ofstream(full_path.toStdString());
 }
 
@@ -210,7 +209,7 @@ int Boomerang::processCommand(std::vector<std::string> &args) {
         Prog *pr = p->parse(fname);
         if (pr == nullptr) {
             // try guessing
-            pr = p->parse(QString(outputPath.c_str()) + fname + "/" + fname + ".xml");
+            pr = p->parse(outputPath + fname + "/" + fname + ".xml");
             if (pr == nullptr) {
                 qCritical() << "failed to read xml " << fname << "\n";
                 return 1;
@@ -571,12 +570,11 @@ int Boomerang::processCommand(std::vector<std::string> &args) {
  * Set the path to the %Boomerang executable.
  *
  */
-void Boomerang::setProgPath(const std::string &p) {
+void Boomerang::setProgPath(const QString &p) {
     progPath = p + "/";
     outputPath = progPath + "/output/"; // Default output path (can be overridden with -o below)
 }
-/// Get the path to the %Boomerang executable.
-const std::string &Boomerang::getProgPath() { return progPath; }
+
 /**
  * Set the path where the %Boomerang executable will search for plugins.
  *
@@ -591,11 +589,11 @@ void Boomerang::setPluginPath(const QString &p) { BinaryFileFactory::setBasePath
  * \retval true Success.
  * \retval false The directory could not be created.
  */
-bool Boomerang::setOutputDirectory(const std::string &path) {
+bool Boomerang::setOutputDirectory(const QString &path) {
     outputPath = path;
     // Create the output directory, if needed
-    if (!createDirectory(QString(path.c_str()))) {
-        std::cerr << "Warning! Could not create path " << outputPath << "!\n";
+    if (!createDirectory(path)) {
+        qWarning() << "Warning! Could not create path " << outputPath << "!\n";
         return false;
     }
     if (logger == nullptr)
@@ -765,10 +763,10 @@ int Boomerang::decompile(const char *fname, const char *pname) {
             }
     }
 
-    std::cout << "generating code...\n";
+    qDebug() << "generating code...\n";
     prog->generateCode();
 
-    std::cout << "output written to " << outputPath << prog->getRootCluster()->getName() << "\n";
+    qDebug() << "output written to " << outputPath << prog->getRootCluster()->getName() << "\n";
 
     if (Boomerang::get()->ofsIndCallReport)
         ofsIndCallReport->close();

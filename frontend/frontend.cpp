@@ -36,13 +36,14 @@
 #include "log.h"
 #include "ansi-c-parser.h"
 
+#include <QtCore/QDir>
+#include <QtCore/QDebug>
 #include <cassert>
 #include <cstring>
 #include <cstdlib>
 #include <queue>
 #include <cstdarg> // For varargs
 #include <sstream>
-#include <QDir>
 
 using namespace std;
 /***************************************************************************/ /**
@@ -154,23 +155,22 @@ FrontEnd *FrontEnd::createById(std::string &str, QObject *pBF, Prog *prog) {
     return nullptr;
 }
 
-void FrontEnd::readLibraryCatalog(const char *sPath) {
+void FrontEnd::readLibraryCatalog(const QString &sPath) {
     // TODO: this is a work for generic semantics provider plugin : HeaderReader
-    std::ifstream inf(sPath);
-    if (!inf.good()) {
-        std::cerr << "can't open `" << sPath << "'\n";
-        exit(1);
+    QFile file(sPath);
+    if (!file.open(QFile::ReadOnly|QFile::Text)) {
+        qCritical() << "can't open `" << sPath << "'\n";
+        exit(1); //TODO: this should not exit, just inform the caller about the problem
     }
-    std::string sig_path;
-    while (!inf.eof()) {
-        std::string sFile;
+    QTextStream inf(&file);
+    QString sig_path;
+    while (!inf.atEnd()) {
+        QString sFile;
         inf >> sFile;
-        size_t j = sFile.find('#');
-        if (j != (size_t)-1)
-            sFile = sFile.substr(0, j);
-        if (sFile.size() > 0 && sFile[sFile.size() - 1] == '\n')
-            sFile = sFile.substr(0, sFile.size() - 1);
-        if (sFile == "")
+        sFile = sFile.mid(0, sFile.indexOf('#')); // cut the line to first '#'
+        if (sFile.size() > 0 && sFile.endsWith('\n'))
+            sFile = sFile.mid(0, sFile.size() - 1);
+        if (sFile.isEmpty())
             continue;
         sig_path = Boomerang::get()->getProgPath() + "signatures/" + sFile;
         callconv cc = CONV_C; // Most APIs are C calling convention
@@ -178,27 +178,31 @@ void FrontEnd::readLibraryCatalog(const char *sPath) {
             cc = CONV_PASCAL; // One exception
         if (sFile == "mfc.h")
             cc = CONV_THISCALL; // Another exception
-        readLibrarySignatures(sig_path.c_str(), cc);
+        readLibrarySignatures(qPrintable(sig_path), cc);
     }
-    inf.close();
 }
 
 void FrontEnd::readLibraryCatalog() {
     // TODO: this is a work for generic semantics provider plugin : HeaderReader
     librarySignatures.clear();
-    std::string sList = Boomerang::get()->getProgPath() + "signatures/common.hs";
+    QDir sig_dir(Boomerang::get()->getProgPath());
+    if(!sig_dir.cd("signatures")) {
+        qWarning("Signatures directory does not exist.");
+        return;
+    }
+    QString sList = sig_dir.absoluteFilePath("common.hs");
 
-    readLibraryCatalog(sList.c_str());
-    sList = Boomerang::get()->getProgPath() + "signatures/" + Signature::platformName(getFrontEndId()) + ".hs";
-    readLibraryCatalog(sList.c_str());
+    readLibraryCatalog(sList);
+    sList = sig_dir.absoluteFilePath(Signature::platformName(getFrontEndId()) + ".hs");
+    readLibraryCatalog(sList);
     if (isWin32()) {
-        sList = Boomerang::get()->getProgPath() + "signatures/win32.hs";
-        readLibraryCatalog(sList.c_str());
+        sList = sig_dir.absoluteFilePath("win32.hs");
+        readLibraryCatalog(sList);
     }
     // TODO: change this to BinaryLayer query ("FILE_FORMAT","MACHO")
     if (ldrIface->GetFormat() == LOADFMT_MACHO) {
-        sList = Boomerang::get()->getProgPath() + "signatures/objc.hs";
-        readLibraryCatalog(sList.c_str());
+        sList = sig_dir.absoluteFilePath("objc.hs");
+        readLibraryCatalog(sList);
     }
 }
 

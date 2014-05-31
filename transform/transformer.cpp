@@ -20,6 +20,9 @@
 #include "log.h"
 #include "transformation-parser.h"
 
+#include <QtCore/QFile>
+#include <QtCore/QTextStream>
+#include <QtCore/QDebug>
 #include <cassert>
 #include <numeric>   // For accumulate
 #include <algorithm> // For std::max()
@@ -74,36 +77,37 @@ Exp *ExpTransformer::applyAllTo(Exp *p, bool &bMod) {
 }
 
 void ExpTransformer::loadAll() {
-    std::string sPath = Boomerang::get()->getProgPath() + "transformations/exp.ts";
-
-    std::ifstream ifs;
-    ifs.open(sPath.c_str());
-
-    if (!ifs.good()) {
-        std::cerr << "can't open `" << sPath.c_str() << "'\n";
-        exit(1);
+    QDir transformations_dir = Boomerang::get()->getProgDir();
+    if(!transformations_dir.cd("transformations")) {
+        qDebug() << "Transformations directory does not exist";
     }
+    QString sPath = transformations_dir.absoluteFilePath("exp.ts");
 
-    while (!ifs.eof()) {
-        std::string sFile;
+    QFile file(sPath);
+    if (!file.open(QFile::ReadOnly)) {
+        qCritical() << "can't open `" << sPath << "'";
+        exit(1); // TODO: this should inform the caller about problem instead of exiting
+        return;
+    }
+    QTextStream ifs(&file);
+
+    while (!ifs.atEnd()) {
+        QString sFile;
         ifs >> sFile;
-        size_t j = sFile.find('#');
-        if (j != (size_t)-1)
-            sFile = sFile.substr(0, j);
-        if (sFile.size() > 0 && sFile[sFile.size() - 1] == '\n')
-            sFile = sFile.substr(0, sFile.size() - 1);
-        if (sFile == "")
+        sFile = sFile.mid(0,sFile.indexOf('#')).trimmed(); // remove comment and leading/trailing whitespaces
+        if (sFile.isEmpty())
             continue;
         std::ifstream ifs1;
-        std::string sPath1 = Boomerang::get()->getProgPath() + "transformations/" + sFile;
-        ifs1.open(sPath1.c_str());
+        QString sPath1 = transformations_dir.absoluteFilePath(sFile);
+
+        ifs1.open(sPath1.toStdString());
         if (!ifs1.good()) {
-            LOG << "can't open `" << sPath1.c_str() << "'\n";
-            exit(1);
+            LOG << "can't open `" << sPath1 << "'\n";
+            exit(1); // TODO: this should inform the caller about problem instead of exiting
+            return;
         }
         TransformationParser *p = new TransformationParser(ifs1, false);
         p->yyparse();
         ifs1.close();
     }
-    ifs.close();
 }

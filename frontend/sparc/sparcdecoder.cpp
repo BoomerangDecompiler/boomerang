@@ -2454,8 +2454,8 @@ DWord SparcDecoder::getDword(ADDRESS lc) {
   *
   ******************************************************************************/
 SparcDecoder::SparcDecoder(Prog *prog) : NJMCDecoder(prog) {
-    std::string file = Boomerang::get()->getProgPath() + "frontend/machine/sparc/sparc.ssl";
-    RTLDict.readSSLFile(file.c_str());
+    QString file = Boomerang::get()->getProgPath() + "frontend/machine/sparc/sparc.ssl";
+    RTLDict.readSSLFile(file);
 }
 
 // For now...

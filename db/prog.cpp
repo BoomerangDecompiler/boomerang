@@ -43,6 +43,7 @@
 #include <QtCore/QFileInfo>
 #include <QtCore/QXmlStreamWriter>
 #include <QtCore/QDir>
+#include <QtCore/QString>
 #include <cassert>
 #include <cstdlib>
 #include <cstring>
@@ -294,7 +295,7 @@ QString Cluster::makeDirs() {
     if (parent)
         path = parent->makeDirs();
     else
-        path = Boomerang::get()->getOutputPath().c_str();
+        path = Boomerang::get()->getOutputPath();
     QDir dr(path);
     dr.cd(name.c_str());
     if (getNumChildren() > 0 || parent == nullptr) {
@@ -1431,12 +1432,12 @@ void Prog::rangeAnalysis() {
 }
 
 void Prog::printCallGraph() {
-    std::string fname1 = Boomerang::get()->getOutputPath() + "callgraph.out";
-    std::string fname2 = Boomerang::get()->getOutputPath() + "callgraph.dot";
-    int fd1 = lockFileWrite(fname1.c_str());
-    int fd2 = lockFileWrite(fname2.c_str());
-    std::ofstream f1(fname1.c_str());
-    std::ofstream f2(fname2.c_str());
+    QString fname1 = Boomerang::get()->getOutputPath() + "callgraph.out";
+    QString fname2 = Boomerang::get()->getOutputPath() + "callgraph.dot";
+    int fd1 = lockFileWrite(qPrintable(fname1));
+    int fd2 = lockFileWrite(qPrintable(fname2));
+    std::ofstream f1(fname1.toStdString());
+    std::ofstream f2(fname2.toStdString());
     std::set<Function *> seen;
     std::map<Function *, int> spaces;
     std::map<Function *, Function *> parent;
@@ -1506,9 +1507,9 @@ void printProcsRecursive(Function *proc, int indent, std::ofstream &f, std::set<
 
 void Prog::printSymbolsToFile() {
     std::cerr << "entering Prog::printSymbolsToFile\n";
-    std::string fname = Boomerang::get()->getOutputPath() + "symbols.h";
-    int fd = lockFileWrite(fname.c_str());
-    std::ofstream f(fname.c_str());
+    QString fname = Boomerang::get()->getOutputPath() + "symbols.h";
+    int fd = lockFileWrite(qPrintable(fname));
+    std::ofstream f(fname.toStdString());
 
     /* Print procs */
     f << "/* Functions: */\n";
@@ -1535,9 +1536,9 @@ void Prog::printCallGraphXML() {
     std::list<Function *>::iterator it;
     for (it = m_procs.begin(); it != m_procs.end(); it++)
         (*it)->clearVisited();
-    std::string fname = Boomerang::get()->getOutputPath() + "callgraph.xml";
-    int fd = lockFileWrite(fname.c_str());
-    std::ofstream f(fname.c_str());
+    QString fname = Boomerang::get()->getOutputPath() + "callgraph.xml";
+    int fd = lockFileWrite(qPrintable(fname));
+    std::ofstream f(fname.toStdString());
     f << "<prog name=\"" << getName().toStdString() << "\">\n";
     f << "     <callgraph>\n";
     std::list<UserProc *>::iterator pp;
