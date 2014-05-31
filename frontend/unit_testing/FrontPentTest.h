@@ -1,6 +1,6 @@
 #include "gtest/gtest.h"
 class FrontPentTest : public ::testing::Test {
-public:
+  public:
     virtual void SetUp();
     virtual void TearDown();
 };

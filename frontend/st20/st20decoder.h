@@ -7,10 +7,10 @@
  *
  */
 
-/***************************************************************************//**
- * \file       st20decoder.h
- * \brief   The definition of the instruction decoder for ST20.
- ******************************************************************************/
+/***************************************************************************/ /**
+  * \file       st20decoder.h
+  * \brief   The definition of the instruction decoder for ST20.
+  ******************************************************************************/
 
 #ifndef ST20DECODER
 #define ST20DECODER
@@ -19,9 +19,8 @@ class Prog;
 class NJMCDecoder;
 struct DecodeResult;
 
-class ST20Decoder : public NJMCDecoder
-{
-public:
+class ST20Decoder : public NJMCDecoder {
+  public:
     /* Default constructor
          */
     ST20Decoder();
@@ -30,33 +29,30 @@ public:
          * Decodes the machine instruction at pc and returns an RTL instance for
          * the instruction.
          */
-    virtual DecodeResult& decodeInstruction (ADDRESS pc, ptrdiff_t delta);
+    virtual DecodeResult &decodeInstruction(ADDRESS pc, ptrdiff_t delta);
 
     /*
          * Disassembles the machine instruction at pc and returns the number of
          * bytes disassembled. Assembler output goes to global _assembly
          */
-    virtual int decodeAssemblyInstruction (ADDRESS pc, ptrdiff_t delta);
+    virtual int decodeAssemblyInstruction(ADDRESS pc, ptrdiff_t delta);
 
-
-private:
+  private:
     /*
          * Various functions to decode the operands of an instruction into
          * a SemStr representation.
          */
-    //Exp*    dis_Eaddr(ADDRESS pc, int size = 0);
-    //Exp*    dis_RegImm(ADDRESS pc);
-    //Exp*    dis_Reg(unsigned r);
-    //Exp*    dis_RAmbz(unsigned r);        // Special for rA of certain instructions
+    // Exp*    dis_Eaddr(ADDRESS pc, int size = 0);
+    // Exp*    dis_RegImm(ADDRESS pc);
+    // Exp*    dis_Reg(unsigned r);
+    // Exp*    dis_RAmbz(unsigned r);        // Special for rA of certain instructions
 
-    void    unused(int);
-    RTL*    createBranchRtl(ADDRESS pc, std::list<Statement*>* stmts,
-                            const char* name);
-    bool    isFuncPrologue(ADDRESS hostPC);
-    DWord   getDword(intptr_t lc); // TODO: switch back to using ADDRESS objects
-    SWord   getWord(intptr_t lc);
-    Byte    getByte(intptr_t lc);
-
+    void unused(int);
+    RTL *createBranchRtl(ADDRESS pc, std::list<Statement *> *stmts, const char *name);
+    bool isFuncPrologue(ADDRESS hostPC);
+    DWord getDword(intptr_t lc); // TODO: switch back to using ADDRESS objects
+    SWord getWord(intptr_t lc);
+    Byte getByte(intptr_t lc);
 };
 
 #endif
