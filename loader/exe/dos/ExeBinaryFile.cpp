@@ -263,7 +263,7 @@ ADDRESS ExeBinaryFile::GetEntryPoint() {
 }
 
 LoaderInterface::tMapAddrToString &ExeBinaryFile::getSymbols() {
-    tMapAddrToString empty;
+    static tMapAddrToString empty;
     return empty;
 }
 

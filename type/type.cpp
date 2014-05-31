@@ -347,7 +347,10 @@ unsigned CompoundType::getOffsetRemainder(unsigned n) {
   * PARAMETERS:        str: string to parse
   * \returns       constructed type.
   ******************************************************************************/
-Type *Type::parseType(const char *str) { return nullptr; }
+Type *Type::parseType(const char */*str*/) {
+    assert(!"Not implemented");
+    return nullptr;
+}
 
 /***************************************************************************/ /**
   *
@@ -1152,12 +1155,12 @@ Type *SizeType::mergeWith(Type *other) const {
     return ret;
 }
 
-Type *UpperType::mergeWith(Type *other) const {
+Type *UpperType::mergeWith(Type */*other*/) const {
     // FIXME: TBC
     return (Type *)this;
 }
 
-Type *LowerType::mergeWith(Type *other) const {
+Type *LowerType::mergeWith(Type */*other*/) const {
     // FIXME: TBC
     return (Type *)this;
 }
@@ -1200,12 +1203,12 @@ bool UnionType::findType(Type *ty) {
     return false;
 }
 
-void UpperType::setSize(size_t size) {
+void UpperType::setSize(size_t /*size*/) {
     // Does this make sense?
     assert(0);
 }
 
-void LowerType::setSize(size_t size) {
+void LowerType::setSize(size_t /*size*/) {
     // Does this make sense?
     assert(0);
 }

@@ -943,7 +943,7 @@ char ElfBinaryFile::readNative1(ADDRESS nat) {
     PSectionInfo si = GetSectionInfoByAddr(nat);
     if (si == nullptr) {
         qDebug() << "Target Memory access in unmapped Section " << nat.m_value;
-        return 0xFF;
+        return -1;
         si = GetSectionInfo(0);
     }
     ADDRESS host = si->uHostAddr - si->uNativeAddr + nat;

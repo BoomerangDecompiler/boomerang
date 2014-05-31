@@ -1185,14 +1185,15 @@ bool Statement::propagateTo(bool &convert, std::map<Exp *, int, lessExpStar> *de
     }
 
     /***************************************************************************/ /**
-      * FUNCTION:        BranchStatement::~BranchStatement
+      * \function        BranchStatement::~BranchStatement
       * \brief        Destructor
       * PARAMETERS:        None
       *
       ******************************************************************************/
     BranchStatement::~BranchStatement() {
-        if (pCond)
+        if (pCond) {
             ; // delete pCond;
+        }
     }
 
     /***************************************************************************/ /**
@@ -1885,8 +1886,9 @@ bool Statement::propagateTo(bool &convert, std::map<Exp *, int, lessExpStar> *de
       *
       ******************************************************************************/
     CaseStatement::~CaseStatement() {
-        if (pSwitchInfo)
+        if (pSwitchInfo){
             ; // delete pSwitchInfo;
+        }
     }
 
     /***************************************************************************/ /**
@@ -2780,7 +2782,6 @@ bool Statement::propagateTo(bool &convert, std::map<Exp *, int, lessExpStar> *de
             } else if (def->isPhi()) {
                 // More likely. Example: switch_gcc. Only need ONE candidate format string
                 PhiAssign *pa = (PhiAssign *)def;
-                int n = pa->getNumDefs();
                 for (auto &v : *pa) {
                     def = v.second.def();
                     if ((def == nullptr) or (!def->isAssign()))
@@ -3049,8 +3050,9 @@ bool Statement::propagateTo(bool &convert, std::map<Exp *, int, lessExpStar> *de
     }
 
     BoolAssign::~BoolAssign() {
-        if (pCond)
+        if (pCond) {
             ; // delete pCond;
+        }
     }
 
     /***************************************************************************/ /**
@@ -3103,8 +3105,9 @@ bool Statement::propagateTo(bool &convert, std::map<Exp *, int, lessExpStar> *de
       *
       ******************************************************************************/
     void BoolAssign::setCondExpr(Exp * pss) {
-        if (pCond)
+        if (pCond) {
             ; // delete pCond;
+        }
         pCond = pss;
     }
 

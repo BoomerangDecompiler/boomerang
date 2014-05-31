@@ -312,7 +312,7 @@ void UserProc::dfaTypeAnalysis() {
 
 // ch set true if any change
 
-Type *VoidType::meetWith(Type *other, bool &ch, bool bHighestPtr) const {
+Type *VoidType::meetWith(Type *other, bool &ch, bool /*bHighestPtr*/) const {
     // void meet x = x
     ch |= !other->resolvesToVoid();
     return other->clone();
@@ -1174,7 +1174,7 @@ void RefExp::descendType(Type *parentType, bool &ch, Statement *s) {
     subExp1->descendType(newType, ch, s);
 }
 
-void Const::descendType(Type *parentType, bool &ch, Statement *s) {
+void Const::descendType(Type *parentType, bool &ch, Statement */*s*/) {
     bool thisCh = false;
     type = type->meetWith(parentType, thisCh);
     ch |= thisCh;

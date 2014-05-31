@@ -407,7 +407,7 @@ ADDRESS PalmBinaryFile::GetAddressByName(const char *pName, bool bNoTypeOK) {
         if (kv.second == "PilotMain")
             return kv.first;
     }
-    for (int i = 0; i < numTrapStrings; ++i) {
+    for (size_t i = 0; i < numTrapStrings; ++i) {
         if (strcmp(trapNames[i], pName) == 0) {
             return ADDRESS::g(0xAAAAA000 | i);
         }

@@ -109,6 +109,7 @@ FrontEnd *FrontEnd::Load(const QString &fname, Prog *prog) {
     if (pBF == nullptr)
         return nullptr;
     FrontEnd *fe = instantiate(pBF, prog, pbff);
+    return fe;
 }
 
 // destructor

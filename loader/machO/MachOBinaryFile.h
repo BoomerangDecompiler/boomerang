@@ -56,6 +56,7 @@ class MachOBinaryFile : public QObject,
     Q_PLUGIN_METADATA(IID LoaderInterface_iid)
     Q_INTERFACES(LoaderInterface)
     Q_INTERFACES(BinaryData)
+    Q_INTERFACES(ObjcAccessInterface)
     Q_INTERFACES(SectionInterface)
     Q_INTERFACES(SymbolTableInterface)
 
