@@ -1,0 +1,32 @@
+diff -rupN gmock-1.6.0/CMakeLists.txt gmock/CMakeLists.txt
+--- gmock-1.6.0/CMakeLists.txt	2011-04-15 21:51:15.000000000 +0200
++++ gmock/CMakeLists.txt	2013-03-27 14:15:30.535151846 +0100
+@@ -81,6 +81,12 @@ target_link_libraries(gmock gtest)
+ 
+ cxx_library(gmock_main "${cxx_strict}" src/gmock_main.cc)
+ target_link_libraries(gmock_main gmock)
++install(TARGETS gmock_main gmock
++        RUNTIME DESTINATION lib
++        ARCHIVE DESTINATION lib
++        LIBRARY DESTINATION lib
++)
++install(DIRECTORY include/gmock DESTINATION include)
+ 
+ ########################################################################
+ #
+diff -rupN gmock-1.6.0/gtest/CMakeLists.txt gmock/gtest/CMakeLists.txt
+--- gmock-1.6.0/gtest/CMakeLists.txt	2010-12-03 00:29:20.000000000 +0100
++++ gmock/gtest/CMakeLists.txt	2013-03-27 14:15:49.165053512 +0100
+@@ -70,6 +70,12 @@ link_directories(${gtest_BINARY_DIR}/src
+ cxx_library(gtest "${cxx_strict}" src/gtest-all.cc)
+ cxx_library(gtest_main "${cxx_strict}" src/gtest_main.cc)
+ target_link_libraries(gtest_main gtest)
++install(TARGETS gtest_main gtest
++        RUNTIME DESTINATION lib
++        ARCHIVE DESTINATION lib
++        LIBRARY DESTINATION lib
++)
++install(DIRECTORY include/gtest DESTINATION include/)
+ 
+ ########################################################################
+ #
