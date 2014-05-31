@@ -20,7 +20,7 @@
  */
 
 #ifndef __EXEBINARYFILE_H__
-#define __EXEBINARYFILE_H_
+#define __EXEBINARYFILE_H__
 
 #include "BinaryFile.h"
 

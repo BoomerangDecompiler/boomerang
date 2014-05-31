@@ -13,7 +13,7 @@
 */
 
 #ifndef __MACHOBINARYFILE_H__
-#define __MACHOBINARYFILE_H_
+#define __MACHOBINARYFILE_H__
 
 #include "BinaryFile.h"
 #include <string>
@@ -140,4 +140,4 @@ class MachOBinaryFile : public QObject,
     std::map<std::string, ObjcModule> modules;
     std::vector<struct section> sections;
 };
-#endif // ifndef __WIN32BINARYFILE_H__
+#endif // ifndef __MACHOBINARYFILE_H__

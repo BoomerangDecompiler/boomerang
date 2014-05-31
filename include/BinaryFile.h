@@ -163,6 +163,13 @@ class SymbolTableInterface {
     virtual void AddSymbol(ADDRESS /*uNative*/, const char * /*pName*/) = 0;
     //! Lookup the name, return the size
     virtual int GetSizeByName(const char *pName, bool bTypeOK = false) = 0;
+    /***************************************************************************/ /**
+      *
+      * \brief Get an array of addresses of imported function stubs
+      * Set number of these to numImports
+      * \param numExports size of returned array
+      * \returns  array of stubs
+      ******************************************************************************/
     virtual ADDRESS *GetImportStubs(int &numImports) = 0;
     //! \return a filename for given symbol
     virtual const char *getFilenameSymbolFor(const char * /*sym*/) = 0;
@@ -230,6 +237,33 @@ class LoaderInterface {
         // headers and section headers, as well
         // as contents of each of the sections.
     }
+    /***************************************************************************/ /**
+      *
+      * Specific to BinaryFile objects that implement a "global pointer"
+      * Gets a pair of unsigned integers representing the address of the
+      * abstract global pointer (%agp) (in first) and a constant that will
+      * be available in the csrparser as GLOBALOFFSET (second). At present,
+      * the latter is only used by the Palm machine, to represent the space
+      * allocated below the %a5 register (i.e. the difference between %a5 and
+      * %agp). This value could possibly be used for other purposes.
+      *
+      ******************************************************************************/
+    virtual std::pair<ADDRESS, unsigned> GetGlobalPointerInfo() {return {NO_ADDRESS,0};}
+
+    /***************************************************************************/ /**
+      *
+      * \brief Get a map from native addresses to symbolic names of global data items
+      * (if any).
+      *
+      * Those are shared with dynamically linked libraries.
+      * Example: __iob (basis for stdout).
+      * The ADDRESS is the native address of a pointer to the real dynamic data object.
+      * If the derived class doesn't implement this function, return an empty map
+      *
+      * \note Caller should delete the returned map
+      * \returns  map of globals
+      ******************************************************************************/
+    virtual std::map<ADDRESS, const char *> *GetDynamicGlobalMap() { return nullptr; }
 
 
     // Special load function for archive members
@@ -259,6 +293,7 @@ struct LoaderPluginWrapper {
     QObject *plugin;
     template <class T> T *iface() { return plugin ? qobject_cast<T *>(plugin) : nullptr; }
 };
+#if 0
 class BinaryFile : public QObject, public LoaderInterface {
 
     Q_OBJECT
@@ -309,6 +344,7 @@ class BinaryFile : public QObject, public LoaderInterface {
 
     ///////////////////////////////////////////////////////////////////////////////
 };
+#endif
 class LoaderCommon : public SectionInterface {
 public:
     LoaderCommon(bool bArch = false) {

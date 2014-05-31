@@ -37,7 +37,6 @@ class UserProc;
 class UseSet;
 class LocationSet;
 class SSACounts;
-class BinaryFile;
 class BasicBlock;
 class HLLCode;
 class CallStatement;

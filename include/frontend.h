@@ -169,7 +169,7 @@ class FrontEnd {
      * appropriate library using dlopen/dlsym, running the "construct" function in that library, and returning
      * the result.
      */
-    static FrontEnd *getInstanceFor(const char *sName, void *&dlHandle, BinaryFile *pLoader, NJMCDecoder *&decoder);
+    static FrontEnd *getInstanceFor(const char *sName, void *&dlHandle, QObject *pLoader, NJMCDecoder *&decoder);
     static void closeInstance(void *dlHandle); //!<Close the library opened by getInstanceFor
     Prog *getProg();                           //! Get a Prog object (for testing and not decoding)
 

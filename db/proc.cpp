@@ -277,7 +277,6 @@ std::list<Type> *Proc::getParamTypeList(const std::list<Exp *> & /*actuals*/) {
 }
 
 void UserProc::renameParam(const char *oldName, const char *newName) {
-    oldName = strdup(oldName);
     Proc::renameParam(oldName, newName);
     // cfg->searchAndReplace(Location::param(strdup(oldName), this), Location::param(strdup(newName), this));
 }
@@ -1184,6 +1183,7 @@ ProcSet *UserProc::decompile(ProcList *path, int &indent) {
             recursionGroupAnalysis(path, indent); // Includes remUnusedStmtEtc on all procs in cycleGrp
             setStatus(PROC_FINAL);
             Boomerang::get()->alert_end_decompile(this);
+            delete child;
             child = new ProcSet;
         }
     }
@@ -1196,8 +1196,7 @@ ProcSet *UserProc::decompile(ProcList *path, int &indent) {
         LOG << "WARNING: UserProc::decompile: empty path when trying to remove last proc\n";
 
     --indent;
-    if (VERBOSE)
-        LOG << "end decompile(" << getName() << ")\n";
+    LOG_VERBOSE(1) << "end decompile(" << getName() << ")\n";
     return child;
 }
 

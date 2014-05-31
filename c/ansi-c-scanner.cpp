@@ -400,7 +400,7 @@ YY_AnsiCScanner_LEX_RETURN YY_AnsiCScanner_CLASS::YY_AnsiCScanner_LEX(yy_AnsiCPa
             ++yy_current_state;
     yy_match:
         do {
-            register YY_CHAR yy_c = yy_ec[(unsigned char)*yy_cp];
+            YY_CHAR yy_c = yy_ec[(unsigned char)*yy_cp];
             if (yy_accept[yy_current_state]) {
                 yy_last_accepting_state = yy_current_state;
                 yy_last_accepting_cpos = yy_cp;
@@ -1124,9 +1124,9 @@ YY_AnsiCScanner_LEX_RETURN YY_AnsiCScanner_CLASS::YY_AnsiCScanner_LEX(yy_AnsiCPa
  *     EOB_ACT_END_OF_FILE - end of file
  */
 int YY_AnsiCScanner_CLASS::yy_get_next_buffer() {
-    register YY_AnsiCScanner_CHAR *dest = YY_AnsiCScanner_CURRENT_BUFFER->yy_ch_buf;
-    register YY_AnsiCScanner_CHAR *source = yy___text - 1; /* copy prev. char, too */
-    register int number_to_move, i;
+    YY_AnsiCScanner_CHAR *dest = YY_AnsiCScanner_CURRENT_BUFFER->yy_ch_buf;
+    YY_AnsiCScanner_CHAR *source = yy___text - 1; /* copy prev. char, too */
+    int number_to_move, i;
     int ret_val;
 
     if (yy_c_buf_p > &YY_AnsiCScanner_CURRENT_BUFFER->yy_ch_buf[yy_n_chars + 1])
@@ -1192,11 +1192,11 @@ int YY_AnsiCScanner_CLASS::yy_get_next_buffer() {
  */
 
 long YY_AnsiCScanner_CLASS::yy_get_previous_state_() {
-    register yy_state_type yy_current_state;
-    register YY_AnsiCScanner_CHAR *yy_cp;
+    yy_state_type yy_current_state;
+    YY_AnsiCScanner_CHAR *yy_cp;
 
     /* % code to get the start state into yy_current_state goes here */
-    register YY_CHAR *yy_bp = yy___text;
+    YY_CHAR *yy_bp = yy___text;
 
     yy_current_state = yy_start;
     if (yy_bp[-1] == '\n')
@@ -1247,16 +1247,16 @@ long YY_AnsiCScanner_CLASS::yy_try_NUL_trans_(long yy_current_state_) {
 }
 
 void YY_AnsiCScanner_CLASS::yyunput(YY_AnsiCScanner_CHAR c, YY_AnsiCScanner_CHAR *yy_bp) {
-    register YY_AnsiCScanner_CHAR *yy_cp = yy_c_buf_p;
+    YY_AnsiCScanner_CHAR *yy_cp = yy_c_buf_p;
 
     /* undo effects of setting up yy___text */
     *yy_cp = yy_hold_char;
 
     if (yy_cp < YY_AnsiCScanner_CURRENT_BUFFER->yy_ch_buf + 2) { /* need to shift things up to make room */
-        register int number_to_move = yy_n_chars + 2;            /* +2 for EOB chars */
-        register YY_AnsiCScanner_CHAR *dest =
+        int number_to_move = yy_n_chars + 2;            /* +2 for EOB chars */
+        YY_AnsiCScanner_CHAR *dest =
             &YY_AnsiCScanner_CURRENT_BUFFER->yy_ch_buf[YY_AnsiCScanner_CURRENT_BUFFER->yy_buf_size + 2];
-        register YY_AnsiCScanner_CHAR *source = &YY_AnsiCScanner_CURRENT_BUFFER->yy_ch_buf[number_to_move];
+        YY_AnsiCScanner_CHAR *source = &YY_AnsiCScanner_CURRENT_BUFFER->yy_ch_buf[number_to_move];
 
         while (source > YY_AnsiCScanner_CURRENT_BUFFER->yy_ch_buf)
             *--dest = *--source;

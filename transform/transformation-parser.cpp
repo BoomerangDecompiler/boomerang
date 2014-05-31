@@ -835,9 +835,9 @@ int count;
 #endif
 #endif
 {
-register char *f = from;
-register char *t = to;
-register int i = count;
+char *f = from;
+char *t = to;
+int i = count;
 
 while (i-- > 0)
 *t++ = *f++;
@@ -858,10 +858,10 @@ YY_TransformationParser_PARSE_PARAM_DEF
 #endif
 #endif
 {
-    register int yystate;
-    register int yyn;
-    register short *yyssp;
-    register YY_TransformationParser_STYPE *yyvsp;
+    int yystate;
+    int yyn;
+    short *yyssp;
+    YY_TransformationParser_STYPE *yyvsp;
     int yyerrstatus;      /*  number of tokens to shift before error messages enabled */
     int yychar1=0;          /*  lookahead token as an internal (translated) token number */
 

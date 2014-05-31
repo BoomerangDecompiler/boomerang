@@ -24,7 +24,6 @@
 
 class Exp;
 class RTL;
-class BinaryFile;
 class Prog;
 
 // These are the instruction classes defined in "A Transformational Approach to
