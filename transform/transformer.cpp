@@ -1,10 +1,10 @@
 /*
  * Copyright (C) 2004, Mike Van Emmerik and Trent Waddington
  */
-/***************************************************************************//**
- * \file        transformer.cpp
- * OVERVIEW:    Implementation of the Transformer and related classes.
- *============================================================================*/
+/***************************************************************************/ /**
+  * \file        transformer.cpp
+  * OVERVIEW:    Implementation of the Transformer and related classes.
+  *============================================================================*/
 
 #include "transformer.h"
 
@@ -21,23 +21,19 @@
 #include "transformation-parser.h"
 
 #include <cassert>
-#include <numeric>            // For accumulate
-#include <algorithm>        // For std::max()
-#include <map>                // In decideType()
-#include <sstream>            // Need gcc 3.0 or better
+#include <numeric>   // For accumulate
+#include <algorithm> // For std::max()
+#include <map>       // In decideType()
+#include <sstream>   // Need gcc 3.0 or better
 
-std::list<ExpTransformer*> ExpTransformer::transformers;
+std::list<ExpTransformer *> ExpTransformer::transformers;
 
-ExpTransformer::ExpTransformer()
-{
-    transformers.push_back(this);
-}
+ExpTransformer::ExpTransformer() { transformers.push_back(this); }
 
-std::list<Exp*> cache;
+std::list<Exp *> cache;
 
-Exp *ExpTransformer::applyAllTo(Exp *p, bool &bMod)
-{
-    for (auto & elem : cache)
+Exp *ExpTransformer::applyAllTo(Exp *p, bool &bMod) {
+    for (auto &elem : cache)
         if (*(elem)->getSubExp1() == *p)
             return (elem)->getSubExp2()->clone();
 
@@ -58,27 +54,26 @@ Exp *ExpTransformer::applyAllTo(Exp *p, bool &bMod)
             if (mod && i == 2)
                 e->setSubExp3(subs[i]);
             bMod |= mod;
-//            if (mod) i--;
+            //            if (mod) i--;
         }
 
 #if 0
     LOG << "applyAllTo called on " << e << "\n";
 #endif
     bool mod;
-    //do {
-        mod = false;
-        for (auto & transformer : transformers) {
-            e = (transformer)->applyTo(e, mod);
-            bMod |= mod;
-        }
+    // do {
+    mod = false;
+    for (auto &transformer : transformers) {
+        e = (transformer)->applyTo(e, mod);
+        bMod |= mod;
+    }
     //} while (mod);
 
     cache.push_back(Binary::get(opEquals, p->clone(), e->clone()));
     return e;
 }
 
-void ExpTransformer::loadAll()
-{
+void ExpTransformer::loadAll() {
     std::string sPath = Boomerang::get()->getProgPath() + "transformations/exp.ts";
 
     std::ifstream ifs;
@@ -95,9 +90,10 @@ void ExpTransformer::loadAll()
         size_t j = sFile.find('#');
         if (j != (size_t)-1)
             sFile = sFile.substr(0, j);
-        if (sFile.size() > 0 && sFile[sFile.size()-1] == '\n')
-            sFile = sFile.substr(0, sFile.size()-1);
-        if (sFile == "") continue;
+        if (sFile.size() > 0 && sFile[sFile.size() - 1] == '\n')
+            sFile = sFile.substr(0, sFile.size() - 1);
+        if (sFile == "")
+            continue;
         std::ifstream ifs1;
         std::string sPath1 = Boomerang::get()->getProgPath() + "transformations/" + sFile;
         ifs1.open(sPath1.c_str());
@@ -111,5 +107,3 @@ void ExpTransformer::loadAll()
     }
     ifs.close();
 }
-
-

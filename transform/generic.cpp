@@ -1,10 +1,10 @@
 /*
  * Copyright (C) 2004, Mike Van Emmerik and Trent Waddington
  */
-/***************************************************************************//**
- * \file       generic.cpp
- * OVERVIEW:   Implementation of the GenericExpTransformer and related classes.
- *============================================================================*/
+/***************************************************************************/ /**
+  * \file       generic.cpp
+  * OVERVIEW:   Implementation of the GenericExpTransformer and related classes.
+  *============================================================================*/
 
 #include "generic.h"
 
@@ -20,14 +20,13 @@
 #include "log.h"
 
 #include <cassert>
-#include <numeric>      // For accumulate
-#include <algorithm>    // For std::max()
-#include <map>          // In decideType()
-#include <sstream>      // Need gcc 3.0 or better
-extern const char* operStrings[];
+#include <numeric>   // For accumulate
+#include <algorithm> // For std::max()
+#include <map>       // In decideType()
+#include <sstream>   // Need gcc 3.0 or better
+extern const char *operStrings[];
 
-Exp *GenericExpTransformer::applyFuncs(Exp *rhs)
-{
+Exp *GenericExpTransformer::applyFuncs(Exp *rhs) {
     Exp *call, *callw = Binary::get(opFlagCall, Const::get("memberAtOffset"), Terminal::get(opWild));
     if (rhs->search(*callw, call)) {
         assert(call->getSubExp2()->getOper() == opList);
@@ -39,12 +38,12 @@ Exp *GenericExpTransformer::applyFuncs(Exp *rhs)
         Type *ty = p1->getType();
         assert(ty && ty->resolvesToCompound());
 #else
-        Type* ty = nullptr;        // Note: will cause a segfault
+        Type *ty = nullptr; // Note: will cause a segfault
 #endif
         // probably need to make this func take bits in future
-        int offset = ((Const*)p2)->getInt() * 8;
+        int offset = ((Const *)p2)->getInt() * 8;
         const char *member = ty->asCompound()->getNameAtOffset(offset);
-        Exp *result = Const::get((char*)member);
+        Exp *result = Const::get((char *)member);
         bool change;
         rhs = rhs->searchReplace(*callw, result->clone(), change);
         assert(change);
@@ -59,13 +58,13 @@ Exp *GenericExpTransformer::applyFuncs(Exp *rhs)
         Exp *p2 = applyFuncs(call->getSubExp2()->getSubExp2()->getSubExp1());
         assert(p1->getOper() == opTypeVal);
         assert(p2->getOper() == opStrConst);
-#if 0    // ADHOC TA
+#if 0 // ADHOC TA
         Type *ty = p1->getType();
         assert(ty && ty->resolvesToCompound());
 #else
-        Type* ty = nullptr;            // Note: will cause a segfault
+        Type *ty = nullptr; // Note: will cause a segfault
 #endif
-        const char *member = ((Const*)p2)->getStr();
+        const char *member = ((Const *)p2)->getStr();
         int offset = ty->asCompound()->getOffsetTo(member) / 8;
         Exp *result = new Const(offset);
         bool change;
@@ -82,8 +81,8 @@ Exp *GenericExpTransformer::applyFuncs(Exp *rhs)
         Exp *p2 = applyFuncs(call->getSubExp2()->getSubExp2()->getSubExp1());
         assert(p1->getOper() == opIntConst);
         assert(p2->getOper() == opIntConst);
-        int a = ((Const*)p1)->getInt();
-        int b = ((Const*)p2)->getInt();
+        int a = ((Const *)p1)->getInt();
+        int b = ((Const *)p2)->getInt();
         Exp *result = new Const(a + b);
         bool change;
         rhs = rhs->searchReplace(*callw, result->clone(), change);
@@ -96,7 +95,7 @@ Exp *GenericExpTransformer::applyFuncs(Exp *rhs)
     if (rhs->search(*callw, call)) {
         Exp *p1 = applyFuncs(call->getSubExp2());
         assert(p1->getOper() == opIntConst);
-        int a = ((Const*)p1)->getInt();
+        int a = ((Const *)p1)->getInt();
         Exp *result = new Const(-a);
         bool change;
         rhs = rhs->searchReplace(*callw, result->clone(), change);
@@ -108,109 +107,104 @@ Exp *GenericExpTransformer::applyFuncs(Exp *rhs)
     return rhs;
 }
 
-bool GenericExpTransformer::checkCond(Exp *cond, Exp *bindings)
-{
-    switch(cond->getOper()) {
-        case opAnd:
-            return checkCond(cond->getSubExp1(), bindings) &&
-                   checkCond(cond->getSubExp2(), bindings);
-        case opEquals:
-            {
-                Exp *lhs = cond->getSubExp1(), *rhs = cond->getSubExp2();
-                for (Exp *l = bindings; l->getOper() != opNil; l = l->getSubExp2()) {
-                    Exp *e = l->getSubExp1();
-                    bool change = false;
-                    lhs = lhs->searchReplaceAll(*e->getSubExp1(), e->getSubExp2()->clone(), change);
+bool GenericExpTransformer::checkCond(Exp *cond, Exp *bindings) {
+    switch (cond->getOper()) {
+    case opAnd:
+        return checkCond(cond->getSubExp1(), bindings) && checkCond(cond->getSubExp2(), bindings);
+    case opEquals: {
+        Exp *lhs = cond->getSubExp1(), *rhs = cond->getSubExp2();
+        for (Exp *l = bindings; l->getOper() != opNil; l = l->getSubExp2()) {
+            Exp *e = l->getSubExp1();
+            bool change = false;
+            lhs = lhs->searchReplaceAll(*e->getSubExp1(), e->getSubExp2()->clone(), change);
 #if 0
                     if (change)
                         LOG << "replaced " << e->getSubExp1() << " with " << e->getSubExp2() << "\n";
 #endif
-                    change = false;
-                    rhs = rhs->searchReplaceAll(*e->getSubExp1(), e->getSubExp2()->clone(), change);
+            change = false;
+            rhs = rhs->searchReplaceAll(*e->getSubExp1(), e->getSubExp2()->clone(), change);
 #if 0
                     if (change)
                         LOG << "replaced " << e->getSubExp1() << " with " << e->getSubExp2() << "\n";
 #endif
-                }
-                if (lhs->getOper() == opTypeOf) {
-#if 0                // ADHOC TA
+        }
+        if (lhs->getOper() == opTypeOf) {
+#if 0 // ADHOC TA
                     Type *ty = lhs->getSubExp1()->getType();
 #else
-                    Type* ty = nullptr;
+            Type *ty = nullptr;
 #endif
-                    if (ty == nullptr) {
+            if (ty == nullptr) {
 #if 0
                         if (VERBOSE)
                             LOG << "no type for typeof " << lhs << "\n";
 #endif
-                        return false;
-                    }
-                    lhs = new TypeVal(ty);
+                return false;
+            }
+            lhs = new TypeVal(ty);
 #if 0
                     LOG << "got typeval: " << lhs << "\n";
 #endif
-                }
-                if (lhs->getOper() == opKindOf) {
-                    OPER op = lhs->getSubExp1()->getOper();
-                    lhs = new Const(operStrings[op]);
-                }
-                rhs = applyFuncs(rhs);
+        }
+        if (lhs->getOper() == opKindOf) {
+            OPER op = lhs->getSubExp1()->getOper();
+            lhs = new Const(operStrings[op]);
+        }
+        rhs = applyFuncs(rhs);
 
 #if 0
                 LOG << "check equals in cond: " << lhs << " == " << rhs << "\n";
 #endif
 
-                if (lhs->getOper() == opVar) {
-                    Exp *le;
-                    for (le = bindings; le->getOper() != opNil && le->getSubExp2()->getOper() != opNil; le = le->getSubExp2())
-                        ;
-                    assert(le->getOper() != opNil);
-                    le->setSubExp2(Binary::get(opList, Binary::get(opEquals, lhs->clone(), rhs->clone()), new Terminal(opNil)));
+        if (lhs->getOper() == opVar) {
+            Exp *le;
+            for (le = bindings; le->getOper() != opNil && le->getSubExp2()->getOper() != opNil; le = le->getSubExp2())
+                ;
+            assert(le->getOper() != opNil);
+            le->setSubExp2(Binary::get(opList, Binary::get(opEquals, lhs->clone(), rhs->clone()), new Terminal(opNil)));
 #if 0
                     LOG << "bindings now: " << bindings << "\n";
 #endif
-                    return true;
-                }
+            return true;
+        }
 
-                if (*lhs == *rhs)
-                    return true;
+        if (*lhs == *rhs)
+            return true;
 
-#if 0            // ADHOC TA
+#if 0 // ADHOC TA
                 if (lhs->getOper() == opTypeVal && rhs->getOper() == opTypeVal &&
                     lhs->getType()->resolvesToCompound() &&
                     rhs->getType()->isCompound())
                     return true;
 #endif
 
-                Exp *new_bindings = lhs->match(rhs);
-                if (new_bindings == nullptr)
-                    return false;
+        Exp *new_bindings = lhs->match(rhs);
+        if (new_bindings == nullptr)
+            return false;
 
 #if 0
                 LOG << "matched lhs with rhs, bindings: " << new_bindings << "\n";
 #endif
 
-                Exp *le;
-                for (le = bindings; le->getOper() != opNil && le->getSubExp2()->getOper() != opNil; le = le->getSubExp2())
-                    ;
-                assert(le->getOper() != opNil);
-                le->setSubExp2(new_bindings);
+        Exp *le;
+        for (le = bindings; le->getOper() != opNil && le->getSubExp2()->getOper() != opNil; le = le->getSubExp2())
+            ;
+        assert(le->getOper() != opNil);
+        le->setSubExp2(new_bindings);
 
 #if 0
                 LOG << "bindings now: " << bindings << "\n";
 #endif
 
-                return true;
-            }
-        default:
-            LOG << "don't know how to handle oper "
-                << operStrings[cond->getOper()] << " in cond.\n";
+        return true;
+    }
+    default:
+        LOG << "don't know how to handle oper " << operStrings[cond->getOper()] << " in cond.\n";
     }
     return false;
 }
 
-Exp *GenericExpTransformer::applyTo(Exp *e, bool &bMod)
-{
+Exp *GenericExpTransformer::applyTo(Exp *e, bool &bMod) {
     bool change;
     Exp *bindings = e->match(match);
     if (bindings == nullptr) {
@@ -236,9 +230,7 @@ Exp *GenericExpTransformer::applyTo(Exp *e, bool &bMod)
 
     e = become->clone();
     for (Exp *l = bindings; l->getOper() != opNil; l = l->getSubExp2())
-        e = e->searchReplaceAll(*l->getSubExp1()->getSubExp1(),
-                                l->getSubExp1()->getSubExp2(),
-                                change);
+        e = e->searchReplaceAll(*l->getSubExp1()->getSubExp1(), l->getSubExp1()->getSubExp2(), change);
 
     LOG << "calculated result: " << e << "\n";
     bMod = true;
@@ -251,4 +243,3 @@ Exp *GenericExpTransformer::applyTo(Exp *e, bool &bMod)
 
     return e;
 }
-
