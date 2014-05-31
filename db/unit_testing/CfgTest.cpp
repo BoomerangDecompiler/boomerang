@@ -12,8 +12,10 @@
 #include "dataflow.h"
 #include "pentiumfrontend.h"
 #include "log.h"
-#include <QDir>
-#include <QProcessEnvironment>
+
+#include <QtCore/QDir>
+#include <QtCore/QProcessEnvironment>
+#include <QtCore/QDebug>
 #include <sstream>
 
 #define FRONTIER_PENTIUM    "tests/inputs/pentium/frontier"
@@ -24,18 +26,23 @@ QString TEST_BASE;
 QDir baseDir;
 CfgTest::CfgTest()
 {
+}
+void CfgTest::initTestCase()
+{
     if(!logset) {
         TEST_BASE = QProcessEnvironment::systemEnvironment().value("BOOMERANG_TEST_BASE","");
         baseDir = QDir(TEST_BASE);
+        if(TEST_BASE.isEmpty()) {
+            qWarning() << "BOOMERANG_TEST_BASE environment variable not set, will assume '..', many test may fail";
+            TEST_BASE = "..";
+            baseDir= QDir("..");
+        }
+        logset=true;
         Boomerang::get()->setProgPath(TEST_BASE.toStdString());
         Boomerang::get()->setPluginPath(TEST_BASE+"/out");
-        if(TEST_BASE.isEmpty())
-            fprintf(stderr,"BOOMERANG_TEST_BASE environment variable net set, many test will fail\n");
-        logset=true;
         Boomerang::get()->setLogger(new NullLogger());
     }
 }
-
 void CfgTest::SetUp ()
 {
 }

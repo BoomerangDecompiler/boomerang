@@ -23,6 +23,7 @@ public:
      *============================================================================*/
     virtual void TearDown();
 private slots:
+    void initTestCase();
     void testDominators();
     void testSemiDominators();
     void testPlacePhi();
