@@ -1,6 +1,6 @@
 #include "BinaryFile.h"
 
-class BinaryFileStub : public BinaryFile {
+class BinaryFileStub : public LoaderInterface {
   public:
     BinaryFileStub(); // Constructor
     virtual ~BinaryFileStub() {}

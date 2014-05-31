@@ -1,5 +1,5 @@
-#include "gtest/gtest.h"
 #include "testloader.h"
+#include "basic_tests.h"
 
 const char *test_data = {""
 "machine: {"
@@ -14,18 +14,12 @@ const char *test_data = {""
 "data: '111\01'"
 };
 
-class CodeBlockLoaderFixture : public ::testing::Test {
-public:
-    TestLoader loader;
-    virtual void SetUp() {
-    }
-    virtual void TearDown() {
-    }
-};
-TEST_F(CodeBlockLoaderFixture, load_basic_data) {
+void CodeBlockLoader::load_basic_data() {
     /*CodeBlock b;
-    ASSERT_TRUE(loader.readFromString(test_data,b));
-    ASSERT_TRUE(b.has_machine());
-    ASSERT_TRUE(b.has_loader());
-    ASSERT_TRUE(b.has_data());*/
+    QVERIFY(loader.readFromString(test_data,b)==true);
+    QVERIFY(b.has_machine());
+    QVERIFY(b.has_loader());
+    QVERIFY(b.has_data());*/
 }
+QTEST_MAIN(CodeBlockLoader)
+

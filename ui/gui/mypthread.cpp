@@ -28,9 +28,6 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#ifdef HAVE_LIBDL
-#include <dlfcn.h>
-#endif // HAVE_LIBDL
 
 //extern "C" void *GC_start_routine(void * arg);
 

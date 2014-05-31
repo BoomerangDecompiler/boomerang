@@ -1,6 +1,6 @@
-#include "gtest/gtest.h"
-class RtlTest : public ::testing::Test {
-public:
+#include <QtTest/QtTest>
+class RtlTest : public QObject {
+  public:
     /***************************************************************************//**
      * FUNCTION:        RtlTest::setUp
      * OVERVIEW:        Set up some expressions for use with all the tests
@@ -19,4 +19,9 @@ public:
      *============================================================================*/
     virtual void TearDown() {
     }
+  private slots:
+    void testAppend();
+    void testClone();
+    void testVisitor();
+    void testSetConscripts();
 };

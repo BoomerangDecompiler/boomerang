@@ -15,6 +15,8 @@
 #include "prog.h"
 #include "visitor.h"
 
+#include <sstream>
+
 #define SWITCH_SPARC    "test/sparc/switch_cc"
 #define SWITCH_PENT     "test/pentium/switch_cc"
 
@@ -22,7 +24,7 @@
  * FUNCTION:        RtlTest::testAppend
  * OVERVIEW:        Test appendExp and printing of RTLs
  *============================================================================*/
-TEST_F(RtlTest,testAppend) {
+void RtlTest::testAppend() {
     Assign* a = new Assign(
             Location::regOf(8),
             new Binary(opPlus,
@@ -34,7 +36,7 @@ TEST_F(RtlTest,testAppend) {
     r.print(ost);
     std::string actual(ost.str());
     std::string expected("00000000    0 *v* r8 := r9 + 99\n");
-    EXPECT_EQ(expected, actual);
+    QCOMPARE(expected, actual);
     // No! appendExp does not copy the expression, so deleting the RTL will
     // delete the expression(s) in it.
     // Not sure if that's what we want...
@@ -45,7 +47,7 @@ TEST_F(RtlTest,testAppend) {
  * FUNCTION:        RtlTest::testClone
  * OVERVIEW:        Test constructor from list of expressions; cloning of RTLs
  *============================================================================*/
-TEST_F(RtlTest,testClone) {
+void RtlTest::testClone() {
     Assign* a1 = new Assign(
             Location::regOf(8),
             new Binary(opPlus,
@@ -69,8 +71,8 @@ TEST_F(RtlTest,testClone) {
 
     std::string act1(o1.str());
     std::string act2(o2.str());
-    EXPECT_EQ(expected, act1);
-    EXPECT_EQ(expected, act2);
+    QCOMPARE(expected, act1);
+    QCOMPARE(expected, act2);
 }
 
 /***************************************************************************//**
@@ -96,62 +98,62 @@ public:
     virtual bool visit(            Assign *s) { h = true; return false; }
 };
 
-TEST_F(RtlTest,testVisitor)
+void RtlTest::testVisitor()
 {
     StmtVisitorStub* visitor = new StmtVisitorStub();
 
 //    /* rtl */
 //    RTL *rtl = new RTL();
 //    rtl->accept(visitor);
-//    ASSERT_TRUE(visitor->a);
+//    QVERIFY(visitor->a);
 //    delete rtl;
 
     /* jump stmt */
     GotoStatement *jump = new GotoStatement;
     jump->accept(visitor);
-    ASSERT_TRUE(visitor->b);
+    QVERIFY(visitor->b);
     delete jump;
 
     /* branch stmt */
     BranchStatement *jcond = new BranchStatement;
     jcond->accept(visitor);
-    ASSERT_TRUE(visitor->c);
+    QVERIFY(visitor->c);
     delete jcond;
 
     /* nway jump stmt */
     CaseStatement *nwayjump = new CaseStatement;
     nwayjump->accept(visitor);
-    ASSERT_TRUE(visitor->d);
+    QVERIFY(visitor->d);
     delete nwayjump;
 
     /* call stmt */
     CallStatement *call = new CallStatement;
     call->accept(visitor);
-    ASSERT_TRUE(visitor->e);
+    QVERIFY(visitor->e);
     delete call;
 
     /* return stmt */
     ReturnStatement *ret = new ReturnStatement;
     ret->accept(visitor);
-    ASSERT_TRUE(visitor->f);
+    QVERIFY(visitor->f);
     delete ret;
 
     /* "bool" assgn */
     BoolAssign *scond = new BoolAssign(0);
     scond->accept(visitor);
-    ASSERT_TRUE(visitor->g);
+    QVERIFY(visitor->g);
     delete scond;
 
     /* assignment stmt */
     Assign *as = new Assign;
     as->accept(visitor);
-    ASSERT_TRUE(visitor->h);
+    QVERIFY(visitor->h);
     delete as;
 
     /* polymorphic */
     Statement* s = new CallStatement;
     s->accept(visitor);
-    ASSERT_TRUE(visitor->e);
+    QVERIFY(visitor->e);
     delete s;
 
     /* cleanup */
@@ -162,11 +164,11 @@ TEST_F(RtlTest,testVisitor)
  * FUNCTION:        RtlTest::testIsCompare
  * OVERVIEW:        Test the isCompare function
  *============================================================================*/
-//TEST_F(RtlTest,testIsCompare) {
+//void RtlTest::testIsCompare() {
 //    BinaryFileFactory bff;
 //    BinaryFile *pBF = bff.Load(SWITCH_SPARC);
-//    ASSERT_TRUE(pBF != 0);
-//    ASSERT_TRUE(pBF->GetMachine() == MACHINE_SPARC);
+//    QVERIFY(pBF != 0);
+//    QVERIFY(pBF->GetMachine() == MACHINE_SPARC);
 //    Prog* prog = new Prog;
 //    FrontEnd *pFE = new SparcFrontEnd(pBF, prog, &bff);
 //    prog->setFrontEnd(pFE);
@@ -175,48 +177,48 @@ TEST_F(RtlTest,testVisitor)
 //    int iReg;
 //    Exp* eOperand = nullptr;
 //    DecodeResult inst = pFE->decodeInstruction(ADDRESS::g(0x10910));
-//    ASSERT_TRUE(inst.rtl != nullptr);
-//    ASSERT_TRUE(inst.rtl->isCompare(iReg, eOperand) == false);
+//    QVERIFY(inst.rtl != nullptr);
+//    QVERIFY(inst.rtl->isCompare(iReg, eOperand) == false);
 
 //    // Decode fifth instruction: "cmp        %o1, 5"
 //    inst = pFE->decodeInstruction(0x1091c);
-//    ASSERT_TRUE(inst.rtl != nullptr);
-//    ASSERT_TRUE(inst.rtl->isCompare(iReg, eOperand) == true);
-//    EXPECT_EQ(9, iReg);
+//    QVERIFY(inst.rtl != nullptr);
+//    QVERIFY(inst.rtl->isCompare(iReg, eOperand) == true);
+//    QCOMPARE(9, iReg);
 //    std::string expected("5");
 //    std::ostringstream ost1;
 //    eOperand->print(ost1);
 //    std::string actual(ost1.str());
-//    EXPECT_EQ(expected, actual);
+//    QCOMPARE(expected, actual);
 
 //    pBF->UnLoad();
 //    delete pBF;
 //    delete pFE;
 //    pBF = bff.Load(SWITCH_PENT);
-//    ASSERT_TRUE(pBF != 0);
-//    ASSERT_TRUE(pBF->GetMachine() == MACHINE_PENTIUM);
+//    QVERIFY(pBF != 0);
+//    QVERIFY(pBF->GetMachine() == MACHINE_PENTIUM);
 //    pFE = new PentiumFrontEnd(pBF, prog, &bff);
 //    prog->setFrontEnd(pFE);
 
 //    // Decode fifth instruction: "cmp    $0x5,%eax"
 //    inst = pFE->decodeInstruction(0x80488fb);
-//    ASSERT_TRUE(inst.rtl != nullptr);
-//    ASSERT_TRUE(inst.rtl->isCompare(iReg, eOperand) == true);
-//    EXPECT_EQ(24, iReg);
+//    QVERIFY(inst.rtl != nullptr);
+//    QVERIFY(inst.rtl->isCompare(iReg, eOperand) == true);
+//    QCOMPARE(24, iReg);
 //    std::ostringstream ost2;
 //    eOperand->print(ost2);
 //    actual = ost2.str();
-//    EXPECT_EQ(expected, actual);
+//    QCOMPARE(expected, actual);
 
 //    // Decode instruction: "add        $0x4,%esp"
 //    inst = pFE->decodeInstruction(0x804890c);
-//    ASSERT_TRUE(inst.rtl != nullptr);
-//    ASSERT_TRUE(inst.rtl->isCompare(iReg, eOperand) == false);
+//    QVERIFY(inst.rtl != nullptr);
+//    QVERIFY(inst.rtl->isCompare(iReg, eOperand) == false);
 //    pBF->UnLoad();
 //    delete pFE;
 //}
 
-TEST_F(RtlTest,testSetConscripts) {
+void RtlTest::testSetConscripts() {
     // m[1000] = m[1000] + 1000
     Statement* s1 = new Assign(
         Location::memOf(
@@ -264,5 +266,8 @@ TEST_F(RtlTest,testSetConscripts) {
     std::ostringstream ost;
     rtl->print(ost);
     std::string actual = ost.str();
-    EXPECT_EQ(expected, actual);
+    QCOMPARE(expected, actual);
 }
+
+QTEST_MAIN(RtlTest)
+

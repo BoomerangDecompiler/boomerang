@@ -1503,7 +1503,7 @@ Exp* Signature::getFirstArgLoc(Prog* prog) {
 // A bit of a cludge. Problem is that we can't call the polymorphic getReturnExp() until signature promotion has
 // happened. For the switch logic, that happens way too late. So for now, we have this cludge.
 // This is very very hacky! (trent)
-/*static*/ Exp* Signature::getReturnExp2(BinaryFile* pBF) {
+/*static*/ Exp* Signature::getReturnExp2(LoaderInterface * pBF) {
     switch (pBF->GetMachine()) {
         case MACHINE_SPARC:
             return Location::regOf(8);

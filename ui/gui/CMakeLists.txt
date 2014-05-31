@@ -18,7 +18,6 @@ SET(boomerang_gui_SRC
 qt5_add_resources(resources_SRC boomerang.qrc)
 ADD_EXECUTABLE(boomerang_gui ${boomerang_gui_SRC} ${gui_UI_H} ${resources_SRC})
 TARGET_LINK_LIBRARIES(boomerang_gui
-${DL_LIBS}
 ${GC_LIBS}
 ${DEBUG_LIB}
 boom_base frontend db type boomerang_DSLs codegen util BinaryFile boom_base

@@ -26,7 +26,6 @@ BOOMERANG_ADD_LOADER(DOS4GW   exe/dos4gw/DOS4GWBinaryFile.cpp exe/dos4gw/DOS4GWB
 BOOMERANG_ADD_LOADER(MachO    machO/MachOBinaryFile.cpp machO/MachOBinaryFile.h machO/MachOBinaryFile.cpp machO/macho-apple.h)
 
 ADD_EXECUTABLE(bffDump bffDump.cpp BinaryFileFactory.cpp)
-TARGET_LINK_LIBRARIES(bffDump ${DL_LIBS})
 TARGET_LINK_LIBRARIES(bffDump BinaryFile)
 qt5_use_modules(bffDump Core)
 

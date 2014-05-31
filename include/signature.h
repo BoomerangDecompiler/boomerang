@@ -29,9 +29,10 @@
 
 class Statement;
 class StatementList;
-class BinaryFile;
+class LoaderInterface;
 class XMLProgParser;
 class Exp;
+
 class Parameter {
   private:
     Type *type = nullptr;
@@ -208,7 +209,7 @@ class Signature {
     bool isOpCompatStackLocal(OPER op);
 
     // Quick and dirty hack
-    static Exp *getReturnExp2(BinaryFile *pBF);
+    static Exp *getReturnExp2(LoaderInterface *pBF);
     static StatementList &getStdRetStmt(Prog *prog);
 
     // get anything that can be proven as a result of the signature

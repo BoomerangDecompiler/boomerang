@@ -3,10 +3,13 @@
  * OVERVIEW:   Provides the implementation for the DfaTest class, which
  *                tests the data flow based type analysis code
  *============================================================================*/
+#include "DfaTest.h"
 
 #include "boomerang.h"
-#include "DfaTest.h"
 #include "type.h"
+
+#include <sstream>
+
 static bool logset = false;
 
 DfaTest::DfaTest()
@@ -24,7 +27,7 @@ void DfaTest::TearDown () { }
  * FUNCTION:        DfaTest::testMeetInt
  * OVERVIEW:        Test meeting IntegerTypes with various other types
  *============================================================================*/
-TEST_F(DfaTest,testMeetInt) {
+void DfaTest::testMeetInt() {
     IntegerType *i32=IntegerType::get(32, 1);
     IntegerType *j32=IntegerType::get(32, 0);
     IntegerType *u32=IntegerType::get(32, -1);
@@ -38,83 +41,83 @@ TEST_F(DfaTest,testMeetInt) {
 
     bool ch = false;
     i32->meetWith(i32, ch, false);
-    ASSERT_TRUE(ch == false);
+    QVERIFY(ch == false);
     std::ostringstream ost1;
     ost1<< i32;
     std::string actual(ost1.str());
     std::string expected("i32");
-    ASSERT_EQ(expected, actual);
+    QCOMPARE(expected, actual);
 
     i32->meetWith(j32, ch, false);
-    ASSERT_TRUE(ch == false);
+    QVERIFY(ch == false);
     j32->meetWith(i32, ch, false);
-    ASSERT_TRUE(ch == true);
+    QVERIFY(ch == true);
     std::ostringstream ost2;
     ost2<< i32;
     actual = ost2.str();
     expected = "i32";
-    ASSERT_EQ(expected, actual);
+    QCOMPARE(expected, actual);
 
     ch = false;
     j32->setSigned(0);
     j32->meetWith(&v, ch, false);
-    ASSERT_TRUE(ch == false);
+    QVERIFY(ch == false);
     std::ostringstream ost2a;
     ost2a<< j32;
     actual = ost2a.str();
     expected = "j32";
-    ASSERT_EQ(expected, actual);
+    QCOMPARE(expected, actual);
 
     ch = false;
     j32->meetWith(u32, ch, false);
-    ASSERT_TRUE(ch == true);
+    QVERIFY(ch == true);
     std::ostringstream ost3;
     ost3<< j32;
     actual = ost3.str();
     expected = "u32";
-    ASSERT_EQ(expected, actual);
+    QCOMPARE(expected, actual);
 
     ch = false;
     u32->meetWith(&s32, ch, false);
-    ASSERT_TRUE(ch == false);
+    QVERIFY(ch == false);
     std::ostringstream ost4;
     ost4<< &u32;
     actual = ost4.str();
     expected = "u32";
-    ASSERT_EQ(expected, actual);
+    QCOMPARE(expected, actual);
 
     u32->meetWith(&s64, ch, false);
-    ASSERT_TRUE(ch == true);
+    QVERIFY(ch == true);
     std::ostringstream ost5;
     ost5<< &u32;
     actual = ost5.str();
     expected = "u64";
-    ASSERT_EQ(expected, actual);
+    QCOMPARE(expected, actual);
 
     ch = false;
     Type* res = i32->meetWith(flt, ch, false);
-    ASSERT_TRUE(ch == true);
+    QVERIFY(ch == true);
     std::ostringstream ost6;
     ost6<< res;
     actual = ost6.str();
     expected = "union";
-    ASSERT_EQ(expected, actual);
+    QCOMPARE(expected, actual);
 
     ch = false;
     res = i32->meetWith(&pt, ch, false);
-    ASSERT_TRUE(ch == true);
+    QVERIFY(ch == true);
     std::ostringstream ost7;
     ost7<< res;
     actual = ost7.str();
     expected = "union";
-    ASSERT_EQ(expected, actual);
+    QCOMPARE(expected, actual);
 }
 
 /***************************************************************************//**
  * FUNCTION:        DfaTest::testMeetSize
  * OVERVIEW:        Test meeting IntegerTypes with various other types
  *============================================================================*/
-TEST_F(DfaTest,testMeetSize) {
+void DfaTest::testMeetSize() {
     IntegerType *i32=IntegerType::get(32, 1);
     SizeType s32(32);
     SizeType s16(16);
@@ -123,36 +126,36 @@ TEST_F(DfaTest,testMeetSize) {
 
     bool ch = false;
     Type* res = s32.meetWith(i32, ch, false);
-    ASSERT_TRUE(ch == true);
+    QVERIFY(ch == true);
     std::ostringstream ost1;
     ost1 << res;
     std::string actual(ost1.str());
     std::string expected("i32");
-    ASSERT_EQ(expected, actual);
+    QCOMPARE(expected, actual);
 
     ch = false;
     res = s32.meetWith(&s16, ch, false);
-    ASSERT_TRUE(ch == false);
+    QVERIFY(ch == false);
 
     // There is a known failure here; to show the warning, use ErrLogger
     Boomerang::get()->setLogger(new ErrLogger);
 
     res = s16.meetWith(flt, ch, false);
-    ASSERT_TRUE(ch == true);
+    QVERIFY(ch == true);
     std::ostringstream ost2;
     ost2 << res;
     actual = ost2.str();
     expected = "union";
-    ASSERT_EQ(expected, actual);
+    QCOMPARE(expected, actual);
 
     ch = false;
     res = s16.meetWith(&v, ch, false);
-    ASSERT_TRUE(ch == false);
+    QVERIFY(ch == false);
     std::ostringstream ost3;
     ost3 << res;
     actual = ost3.str();
     expected = "16";
-    ASSERT_EQ(expected, actual);
+    QCOMPARE(expected, actual);
 
 }
 
@@ -160,7 +163,7 @@ TEST_F(DfaTest,testMeetSize) {
  * FUNCTION:        DfaTest::testMeetPointer
  * OVERVIEW:        Test meeting IntegerTypes with various other types
  *============================================================================*/
-TEST_F(DfaTest,testMeetPointer) {
+void DfaTest::testMeetPointer() {
     IntegerType *i32=IntegerType::get(32, 1);
     IntegerType *u32=IntegerType::get(32, -1);
     PointerType pi32(i32);
@@ -171,27 +174,27 @@ TEST_F(DfaTest,testMeetPointer) {
     ost1 << pu32.getCtype();
     std::string actual(ost1.str());
     std::string expected("unsigned int *");
-    ASSERT_EQ(expected, actual);
+    QCOMPARE(expected, actual);
 
     bool ch = false;
     Type* res = pi32.meetWith(&pu32, ch, false);
-    ASSERT_TRUE(ch == true);
+    QVERIFY(ch == true);
     std::ostringstream ost2;
     ost2 << res->getCtype();
     actual = ost2.str();
     expected = "/*signed?*/int *";
-    ASSERT_EQ(expected, actual);
+    QCOMPARE(expected, actual);
 
     ch = false;
     res = pi32.meetWith(&v, ch, false);
-    ASSERT_TRUE(ch == false);
+    QVERIFY(ch == false);
 
     res = pi32.meetWith(i32, ch, false);
     std::ostringstream ost3;
     ost3 << res;
     actual = ost3.str();
     expected = "union";
-    ASSERT_EQ(expected, actual);
+    QCOMPARE(expected, actual);
 
 }
 
@@ -199,7 +202,7 @@ TEST_F(DfaTest,testMeetPointer) {
  * FUNCTION:        DfaTest::testMeetUnion
  * OVERVIEW:        Test meeting IntegerTypes with various other types
  *============================================================================*/
-TEST_F(DfaTest,testMeetUnion) {
+void DfaTest::testMeetUnion() {
     UnionType u1;
     IntegerType *i32=IntegerType::get(32, 1);
     IntegerType *j32=IntegerType::get(32, 0);
@@ -212,31 +215,33 @@ TEST_F(DfaTest,testMeetUnion) {
     ost1 << u1.getCtype();
     std::string actual(ost1.str());
     std::string expected("union { int bow; float wow; }");
-    ASSERT_EQ(expected, actual);
+    QCOMPARE(expected, actual);
 
     bool ch = false;
     Type* res = u1.meetWith(j32, ch, false);
-    ASSERT_TRUE(ch == false);
+    QVERIFY(ch == false);
     std::ostringstream ost2;
     ost2 << res->getCtype();
     actual = ost2.str();
     expected = "union { int bow; float wow; }";
-    ASSERT_EQ(expected, actual);
+    QCOMPARE(expected, actual);
 
     res = u1.meetWith(j32, ch, false);
-    ASSERT_TRUE(ch == false);
+    QVERIFY(ch == false);
     std::ostringstream ost3;
     ost3 << u1.getCtype();
     actual = ost3.str();
     expected = "union { int bow; float wow; }";
-    ASSERT_EQ(expected, actual);
+    QCOMPARE(expected, actual);
 
     // Note: this test relies on the int in the union having signedness 1
     res = u1.meetWith(u32, ch, false);
-    ASSERT_TRUE(ch == true);
+    QVERIFY(ch == true);
     std::ostringstream ost4;
     ost4 << u1.getCtype();
     actual = ost4.str();
     expected = "union { /*signed?*/int bow; float wow; }";
-    ASSERT_EQ(expected, actual);
+    QCOMPARE(expected, actual);
 }
+QTEST_MAIN(DfaTest)
+

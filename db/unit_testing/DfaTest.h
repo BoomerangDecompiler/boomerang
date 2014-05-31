@@ -1,6 +1,8 @@
-#include <iostream>        // For std::cerr
-#include "gtest/gtest.h"
 #include "log.h"
+
+#include <iostream>        // For std::cerr
+#include <QtTest/QTest>
+
 class ErrLogger : public Log {
 public:
     virtual Log &operator<<(const QString& s) {
@@ -9,9 +11,15 @@ public:
     }
     virtual ~ErrLogger() {}
 };
-class DfaTest : public ::testing::Test {
+class DfaTest : public QObject {
+    Q_OBJECT
 public:
     DfaTest();
     virtual void SetUp();
     virtual void TearDown();
+private slots:
+    void testMeetInt();
+    void testMeetSize();
+    void testMeetPointer();
+    void testMeetUnion();
 };

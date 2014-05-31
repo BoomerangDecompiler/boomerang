@@ -1,6 +1,7 @@
 #include "cfg.h"
-#include "gtest/gtest.h"
-class CfgTest : public ::testing::Test {
+#include <QtTest/QTest>
+class CfgTest : public QObject {
+    Q_OBJECT
 protected:
     Cfg*  m_prog;
 public:
@@ -21,4 +22,10 @@ public:
      *
      *============================================================================*/
     virtual void TearDown();
+private slots:
+    void testDominators();
+    void testSemiDominators();
+    void testPlacePhi();
+    void testPlacePhi2();
+    void testRenameVars();
 };

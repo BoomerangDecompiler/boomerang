@@ -98,7 +98,7 @@ class FrontEnd {
     // returns an enum identifer for this frontend's platform
     virtual platform getFrontEndId() = 0;
     // returns a frontend given a string (unused?)
-    static FrontEnd *createById(std::string &str, BinaryFile *pBFi, Prog *prog);
+    static FrontEnd *createById(std::string &str, QObject *pBFi, Prog *prog);
     bool isWin32(); // Is this a win32 frontend?
     static bool noReturnCallDest(const QString &name);
     QObject *getBinaryFile() { return pLoader; }

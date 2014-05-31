@@ -14,6 +14,7 @@
 #include "log.h"
 #include <QDir>
 #include <QProcessEnvironment>
+#include <sstream>
 
 #define FRONTIER_PENTIUM    "tests/inputs/pentium/frontier"
 #define SEMI_PENTIUM        "tests/inputs/pentium/semi"
@@ -50,10 +51,10 @@ void CfgTest::TearDown () {
 #define FRONTIER_TWELVE 0x080483b2
 #define FRONTIER_THIRTEEN 0x080483b9
 
-TEST_F(CfgTest,testDominators) {
+void CfgTest::testDominators() {
     BinaryFileFactory bff;
     QObject *pBF = bff.Load(baseDir.absoluteFilePath(FRONTIER_PENTIUM));
-    ASSERT_TRUE(pBF != 0);
+    QVERIFY(pBF != 0);
     Prog* prog = new Prog;
     FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
     Type::clearNamedTypes();
@@ -62,7 +63,7 @@ TEST_F(CfgTest,testDominators) {
 
     bool gotMain;
     ADDRESS addr = pFE->getMainEntryPoint(gotMain);
-    ASSERT_TRUE (addr != NO_ADDRESS);
+    QVERIFY (addr != NO_ADDRESS);
 
     UserProc* pProc = (UserProc*) prog->getProc(0);
     Cfg* cfg = pProc->getCFG();
@@ -75,7 +76,7 @@ TEST_F(CfgTest,testDominators) {
     while (bb && bb->getLowAddr() != FRONTIER_FIVE) {
         bb = cfg->getNextBB(it);
     }
-    ASSERT_TRUE(bb);
+    QVERIFY(bb);
 
     std::ostringstream expected, actual;
   //expected << std::hex << FRONTIER_FIVE << " " << FRONTIER_THIRTEEN << " " << FRONTIER_TWELVE << " " <<
@@ -87,7 +88,7 @@ TEST_F(CfgTest,testDominators) {
     std::set<int>& DFset = df->getDF(n5);
     for (ii=DFset.begin(); ii != DFset.end(); ii++)
         actual << std::hex << df->nodeToBB(*ii)->getLowAddr() << " ";
-    ASSERT_EQ(expected.str(), actual.str());
+    QCOMPARE(expected.str(), actual.str());
 
     pBF->deleteLater();
     delete pFE;
@@ -104,10 +105,10 @@ TEST_F(CfgTest,testDominators) {
 #define SEMI_D    ADDRESS::g(0x8048354)
 #define SEMI_M    ADDRESS::g(0x80483e2)
 
-TEST_F(CfgTest,testSemiDominators) {
+void CfgTest::testSemiDominators() {
     BinaryFileFactory bff;
     QObject* pBF = bff.Load(baseDir.absoluteFilePath(SEMI_PENTIUM));
-    ASSERT_TRUE(pBF != 0);
+    QVERIFY(pBF != 0);
     Prog* prog = new Prog;
     FrontEnd* pFE = new PentiumFrontEnd(pBF, prog, &bff);
     Type::clearNamedTypes();
@@ -116,7 +117,7 @@ TEST_F(CfgTest,testSemiDominators) {
 
     bool gotMain;
     ADDRESS addr = pFE->getMainEntryPoint(gotMain);
-    ASSERT_TRUE (addr != NO_ADDRESS);
+    QVERIFY (addr != NO_ADDRESS);
 
     UserProc* pProc = (UserProc*) prog->getProc(0);
     Cfg* cfg = pProc->getCFG();
@@ -130,15 +131,15 @@ TEST_F(CfgTest,testSemiDominators) {
     while (bb && bb->getLowAddr() != SEMI_L) {
         bb = cfg->getNextBB(it);
     }
-    ASSERT_TRUE(bb);
+    QVERIFY(bb);
     int nL = df->pbbToNode(bb);
 
     // The dominator for L should be B, where the semi dominator is D
     // (book says F)
     ADDRESS actual_dom  = df->nodeToBB(df->getIdom(nL))->getLowAddr();
     ADDRESS actual_semi = df->nodeToBB(df->getSemi(nL))->getLowAddr();
-    ASSERT_EQ(SEMI_B, actual_dom);
-    ASSERT_EQ(SEMI_D, actual_semi);
+    QCOMPARE(SEMI_B, actual_dom);
+    QCOMPARE(SEMI_D, actual_semi);
     // Check the final dominator frontier as well; should be M and B
     std::ostringstream expected, actual;
   //expected << std::hex << SEMI_M << " " << SEMI_B << " ";
@@ -147,7 +148,7 @@ TEST_F(CfgTest,testSemiDominators) {
     std::set<int>& DFset = df->getDF(nL);
     for (ii=DFset.begin(); ii != DFset.end(); ii++)
         actual << std::hex << df->nodeToBB(*ii)->getLowAddr() << " ";
-    ASSERT_EQ(expected.str(), actual.str());
+    QCOMPARE(expected.str(), actual.str());
     delete pFE;
 }
 
@@ -155,10 +156,10 @@ TEST_F(CfgTest,testSemiDominators) {
  * FUNCTION:        CfgTest::testPlacePhi
  * OVERVIEW:        Test the placing of phi functions
  *============================================================================*/
-TEST_F(CfgTest,testPlacePhi ) {
+void CfgTest::testPlacePhi() {
     BinaryFileFactory bff;
     QObject* pBF = bff.Load(baseDir.absoluteFilePath(FRONTIER_PENTIUM));
-    ASSERT_TRUE(pBF != 0);
+    QVERIFY(pBF != 0);
     Prog* prog = new Prog;
     FrontEnd* pFE = new PentiumFrontEnd(pBF, prog, &bff);
     Type::clearNamedTypes();
@@ -191,7 +192,7 @@ TEST_F(CfgTest,testPlacePhi ) {
     for (ii = A_phi.begin(); ii != A_phi.end(); ++ii)
         ost << *ii << " ";
     std::string expected("7 8 10 15 20 21 ");
-    EXPECT_EQ(expected, ost.str());
+    QCOMPARE(expected, ost.str());
     delete pFE;
 }
 
@@ -199,10 +200,10 @@ TEST_F(CfgTest,testPlacePhi ) {
  * FUNCTION:        CfgTest::testPlacePhi2
  * OVERVIEW:        Test a case where a phi function is not needed
  *============================================================================*/
-TEST_F(CfgTest,testPlacePhi2) {
+void CfgTest::testPlacePhi2() {
     BinaryFileFactory bff;
     QObject* pBF = bff.Load(baseDir.absoluteFilePath(IFTHEN_PENTIUM));
-    ASSERT_TRUE(pBF != 0);
+    QVERIFY(pBF != 0);
     Prog* prog = new Prog;
     FrontEnd* pFE = new PentiumFrontEnd(pBF, prog, &bff);
     Type::clearNamedTypes();
@@ -236,7 +237,7 @@ TEST_F(CfgTest,testPlacePhi2) {
     std::set<int>::iterator pp;
     for (pp = s.begin(); pp != s.end(); pp++)
         actual << *pp << " ";
-    ASSERT_EQ(expected, actual.str());
+    QCOMPARE(expected, actual.str());
     delete e;
 
     expected = "";
@@ -250,7 +251,7 @@ TEST_F(CfgTest,testPlacePhi2) {
     std::set<int>& s2 = df->getA_phi(e);
     for (pp = s2.begin(); pp != s2.end(); pp++)
         actual2 << *pp << " ";
-    ASSERT_EQ(expected, actual2.str());
+    QCOMPARE(expected, actual2.str());
     delete e;
     delete pFE;
 }
@@ -259,10 +260,10 @@ TEST_F(CfgTest,testPlacePhi2) {
  * FUNCTION:        CfgTest::testRenameVars
  * OVERVIEW:        Test the renaming of variables
  *============================================================================*/
-TEST_F(CfgTest,testRenameVars) {
+void CfgTest::testRenameVars() {
     BinaryFileFactory bff;
     QObject* pBF = bff.Load(baseDir.absoluteFilePath(FRONTIER_PENTIUM));
-    ASSERT_TRUE(pBF != 0);
+    QVERIFY(pBF != 0);
     Prog* prog = new Prog;
     FrontEnd* pFE = new PentiumFrontEnd(pBF, prog, &bff);
     Type::clearNamedTypes();
@@ -285,3 +286,5 @@ TEST_F(CfgTest,testRenameVars) {
 
     delete pFE;
 }
+QTEST_MAIN(CfgTest)
+

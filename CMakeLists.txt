@@ -28,23 +28,9 @@ set(CMAKE_PREFIX_PATH  "${CMAKE_PREFIX_PATH};${PROJECT_SOURCE_DIR}/3rd_party")
 
 IF(BUILD_TESTING)
     enable_testing()
-
-    ExternalProject_Add(
-        GMOCK_BUILD
-        DOWNLOAD_DIR ${PROJECT_SOURCE_DIR}/3rd_party/gmock
-        URL http://googlemock.googlecode.com/files/gmock-1.6.0.zip
-        UPDATE_COMMAND ""
-        PATCH_COMMAND patch -N -t -p1 < ../gmock.patch
-        SOURCE_DIR ${PROJECT_SOURCE_DIR}/3rd_party/gmock
-        INSTALL_DIR ${PROJECT_SOURCE_DIR}/3rd_party/
-        CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-    )
-    set(GTest_LIBRARIES gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
+    find_package(Qt5Test)
     #find_package(Protobuf REQUIRED)
 ENDIF(BUILD_TESTING)
-link_directories(${PROJECT_SOURCE_DIR}/3rd_party/lib)
-include_directories(${PROJECT_SOURCE_DIR}/3rd_party/include)
-include_directories(${PROJECT_SOURCE_DIR}/include)
 
 ###############################################################################
 # Compiler specific flags section
@@ -66,7 +52,7 @@ ENDIF()
 ###############################################################################
 # Defines section
 ###############################################################################
-SET(VERSION "alpha 0.3.2 19/Aug/2010")
+SET(VERSION "alpha 0.3.99 xx/xxx/2014")
 SET(MAIN_INCLUDE_DIRECTORY ${PROJECT_SOURCE_DIR}/include)
 INCLUDE(CheckIncludeFiles)
 INCLUDE(CheckLibraryExists)
@@ -89,17 +75,6 @@ MACRO(SET_01_2 A B C)
     ENDIF(${B} AND ${C})
 ENDMACRO(SET_01_2 A B C)
 
-# -ldl (dlopen)
-CHECK_INCLUDE_FILES(dlfcn.h            DL_H)
-CHECK_LIBRARY_EXISTS(dl dlopen ""      DL_L)
-SET_01_2(DL_FOUND DL_H DL_L)
-
-IF(NOT "${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
-        SET(DL_LIBS -ldl)
-ELSE(NOT "${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
-        SET(DL_LIBS)
-ENDIF(NOT "${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
-
 # GC
 #CHECK_INCLUDE_FILES(gc.h               GC_H)
 #CHECK_LIBRARY_EXISTS(gc GC_malloc ""   GC_L)
@@ -120,7 +95,6 @@ INCLUDE_DIRECTORIES(
 )
 #set variables to expand in config.h.cmake
 SET_01(HAVE_LIBCPPUNIT    CPPUNIT_FOUND)
-SET_01(HAVE_LIBDL         DL_FOUND)
 SET_01(HAVE_LIBGC         GC_FOUND)
 CHECK_INCLUDE_FILES(inttypes.h    HAVE_INTTYPES_H)
 CHECK_INCLUDE_FILES(memory.h      HAVE_MEMORY_H)
@@ -132,9 +106,9 @@ CHECK_INCLUDE_FILES(sys/stat.h    HAVE_SYS_STAT_H)
 CHECK_INCLUDE_FILES(sys/types.h   HAVE_SYS_TYPES_H)
 CHECK_INCLUDE_FILES(unistd.h      HAVE_UNISTD_H)
 IF("${CMAKE_SYSTEM_NAME}" STREQUAL "MacOS")
-        SET(HOST_OSX 1)
+  SET(HOST_OSX 1)
 ENDIF("${CMAKE_SYSTEM_NAME}" STREQUAL "MacOS")
-SET(PACKAGE_BUGREPORT "http://boomerang.sourceforge.net")
+SET(PACKAGE_BUGREPORT "http://github.com/nemerle/boomerang")
 SET(PACKAGE_NAME      "boomerang")
 SET(PACKAGE_STRING    "boomerang")
 SET(PACKAGE_TARNAME   "boomerang")

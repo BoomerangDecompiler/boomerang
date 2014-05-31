@@ -145,7 +145,7 @@ bool FrontEnd::noReturnCallDest(const QString &name) {
 }
 
 // FIXME: Is this ever used? Need to pass a real pbff?
-FrontEnd *FrontEnd::createById(std::string &str, BinaryFile *pBF, Prog* prog) {
+FrontEnd *FrontEnd::createById(std::string &str, QObject *pBF, Prog* prog) {
     if (str == "pentium")
         return new PentiumFrontEnd(pBF, prog, nullptr);
     if (str == "sparc")
