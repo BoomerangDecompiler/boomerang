@@ -10,6 +10,7 @@ TestLoader::TestLoader()
 {
 }
 bool TestLoader::readFromString(const char *data,CodeBlock &tgt) {
-    io::ArrayInputStream iarr(data,strlen(data));
-    return TextFormat::Parse(&iarr,&tgt);
+    /*io::ArrayInputStream iarr(data,strlen(data));
+    return TextFormat::Parse(&iarr,&tgt);*/
+    return false; // Disabled due to missing codeblock.proto
 }

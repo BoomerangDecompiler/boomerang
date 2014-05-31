@@ -25,19 +25,23 @@ ENDIF()
 OPTION(BUILD_TESTING "Build the testing tree." OFF)
 IF(BUILD_TESTING)
     enable_testing()
+
+    find_package(GTest REQUIRED)
+    set(GTest_LIBRARIES ${GTEST_MAIN_LIBRARIES} ${GTEST_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+
     ExternalProject_Add(
         GMOCK_BUILD
         DOWNLOAD_DIR ${PROJECT_SOURCE_DIR}/3rd_party/gmock
-        URL http://googlemock.googlecode.com/files/gmock-1.6.0.zip
+        URL http://googlemock.googlecode.com/files/gmock-1.7.0.zip
         UPDATE_COMMAND ""
         PATCH_COMMAND ${CMAKE_COMMAND} -E copy_directory ../gmock_cmake ../gmock/
         SOURCE_DIR ${PROJECT_SOURCE_DIR}/3rd_party/gmock
         INSTALL_DIR ${PROJECT_SOURCE_DIR}/3rd_party/
+        INSTALL_COMMAND ""
         CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
     )
-    set(GTest_LIBRARIES gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
     find_package(Protobuf REQUIRED)
-    INCLUDE_DIRECTORIES(${PROTOBUF_INCLUDE_DIRS})
+    INCLUDE_DIRECTORIES(${PROTOBUF_INCLUDE_DIRS} ${GTEST_INCLUDE_DIRS})
 ENDIF(BUILD_TESTING)
 ###############################################################################
 # Compiler specific flags section

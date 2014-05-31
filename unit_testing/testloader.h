@@ -1,6 +1,6 @@
 #pragma once
 
-#include "codeblock.pb.h"
+class CodeBlock;
 
 class TestLoader
 {

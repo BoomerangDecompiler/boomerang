@@ -844,10 +844,7 @@ bool Prog::isWin32() {
 const char *Prog::getGlobalName(ADDRESS uaddr) {
     // FIXME: inefficient
     for (Global* glob : globals) {
-        if (glob->getAddress() == uaddr)
-            return glob->getName();
-        else if (glob->getAddress() < uaddr &&
-                 glob->getAddress() + glob->getType()->getSize() / 8 > uaddr) //TODO: use glob->getBytes() ?
+        if (glob->addressWithinGlobal(uaddr))
             return glob->getName();
     }
     SymbolTableInterface *sym_iface = getBinarySymbolTable();
