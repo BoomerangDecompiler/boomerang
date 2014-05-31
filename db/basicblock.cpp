@@ -104,7 +104,7 @@ BasicBlock::BasicBlock(const BasicBlock &bb)
   * \param bbType -
   * \param iNumOutEdges -
   ******************************************************************************/
-BasicBlock::BasicBlock(std::list<RTL *> *pRtls, BBTYPE bbType, uint32_t iNumOutEdges)
+BasicBlock::BasicBlock(Function *parent, std::list<RTL *> *pRtls, BBTYPE bbType, uint32_t iNumOutEdges)
     : m_nodeType(bbType), m_bIncomplete(false),
       // From Doug's code
       ord(-1), revOrd(-1), inEdgesVisited(0), numForwardInEdges(-1), traversed(UNTRAVERSED), hllLabel(false),

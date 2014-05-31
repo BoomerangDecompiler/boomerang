@@ -358,7 +358,7 @@ class BasicBlock {
     /*
      * Constructor. Called by Cfg::NewBB.
      */
-    BasicBlock(std::list<RTL *> *pRtls, BBTYPE bbType, uint32_t iNumOutEdges);
+    BasicBlock(Function *parent,std::list<RTL *> *pRtls, BBTYPE bbType, uint32_t iNumOutEdges);
     void setRTLs(std::list<RTL *> *rtls);
 
 }; // class BasicBlock

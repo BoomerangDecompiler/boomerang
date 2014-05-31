@@ -237,7 +237,7 @@ BasicBlock *Cfg::newBB(std::list<RTL *> *pRtls, BBTYPE bbType, uint32_t iNumOutE
     }
     if (!bDone) {
         // Else add a new BB to the back of the current list.
-        pBB = new BasicBlock(pRtls, bbType, iNumOutEdges);
+        pBB = new BasicBlock(myProc, pRtls, bbType, iNumOutEdges);
         m_listBB.push_back(pBB);
 
         // Also add the address to the map from native (source) address to
