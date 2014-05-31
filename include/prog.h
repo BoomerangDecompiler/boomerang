@@ -23,7 +23,7 @@
 #include "cluster.h"
 // TODO: refactor Prog Global handling into separate class
 class RTLInstDict;
-class Proc;
+class Function;
 class UserProc;
 class LibProc;
 class Signature;
@@ -32,7 +32,7 @@ class StatementSet;
 class Cluster;
 class XMLProgParser;
 
-typedef std::map<ADDRESS, Proc *, std::less<ADDRESS>> PROGMAP;
+typedef std::map<ADDRESS, Function *, std::less<ADDRESS>> PROGMAP;
 
 class Global {
   private:
@@ -71,9 +71,9 @@ class Prog {
     Prog(const char *name);
     void setFrontEnd(FrontEnd *fe);
     void setName(const char *name);
-    Proc *setNewProc(ADDRESS uNative);
-    Proc *newProc(const char *name, ADDRESS uNative, bool bLib = false);
-    Proc *newProc(const QString &name, ADDRESS uNative, bool bLib = false) {
+    Function *setNewProc(ADDRESS uNative);
+    Function *newProc(const char *name, ADDRESS uNative, bool bLib = false);
+    Function *newProc(const QString &name, ADDRESS uNative, bool bLib = false) {
         return newProc(qPrintable(name), uNative, bLib);
     }
 
@@ -84,17 +84,17 @@ class Prog {
     QString getPathAndName() { return (m_path + m_name); }
     int getNumProcs();
     int getNumUserProcs();
-    Proc *getProc(int i) const;
-    Proc *findProc(ADDRESS uAddr) const;
-    Proc *findProc(const QString &name) const;
-    Proc *findContainingProc(ADDRESS uAddr) const;
+    Function *getProc(int i) const;
+    Function *findProc(ADDRESS uAddr) const;
+    Function *findProc(const QString &name) const;
+    Function *findContainingProc(ADDRESS uAddr) const;
     bool isProcLabel(ADDRESS addr);
     std::string getNameNoPath() const;
     std::string getNameNoPathNoExt() const;
-    Proc *getFirstProc(PROGMAP::const_iterator &it);
-    Proc *getNextProc(PROGMAP::const_iterator &it);
-    UserProc *getFirstUserProc(std::list<Proc *>::iterator &it);
-    UserProc *getNextUserProc(std::list<Proc *>::iterator &it);
+    Function *getFirstProc(PROGMAP::const_iterator &it);
+    Function *getNextProc(PROGMAP::const_iterator &it);
+    UserProc *getFirstUserProc(std::list<Function *>::iterator &it);
+    UserProc *getNextUserProc(std::list<Function *>::iterator &it);
 
     void clear();
     const void *getCodeInfo(ADDRESS uAddr, const char *&last, int &delta);
@@ -216,10 +216,10 @@ class Prog {
     FrontEnd *pFE; //!< Pointer to the FrontEnd object for the project
 
     /* Persistent state */
-    QString m_name;         //name of the program
-    QString m_path;             // its full path
-    std::list<Proc *> m_procs;  //!< list of procedures
-    PROGMAP m_procLabels;       //!< map from address to Proc*
+    QString m_name;            // name of the program
+    QString m_path;            // its full path
+    std::list<Function *> m_procs; //!< list of procedures
+    PROGMAP m_procLabels;      //!< map from address to Proc*
     // FIXME: is a set of Globals the most appropriate data structure? Surely not.
     std::set<Global *> globals; //!< globals to print at code generation time
     DataIntervalMap globalMap;  //!< Map from address to DataInterval (has size, name, type)

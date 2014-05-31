@@ -45,7 +45,7 @@ class TypeVal;
 class ExpVisitor;
 class ExpModifier;
 class XMLProgParser;
-class Proc;
+class Function;
 class UserProc;
 class Exp;
 #define DEBUG_BUFSIZE 5000 // Size of the debug print buffer
@@ -90,9 +90,7 @@ class Exp {
     char *prints();                               // Print to string (for debugging and logging)
     void dump();                                  // Print to standard error (for debugging)
                                                   // Recursive print: don't want parens at the top level
-    virtual void printr(std::ostream &os, bool html = false) const {
-        print(os, html);
-    }
+    virtual void printr(std::ostream &os, bool html = false) const { print(os, html); }
     // But most classes want standard
     // For debugging: print in indented hex. In gdb: "p x->printx(0)"
     virtual void printx(int ind) const = 0;
@@ -373,7 +371,7 @@ class Const : public Exp {
         double d;      // Double precision float
         const char *p; // Pointer to string
                        // Don't store string: function could be renamed
-        Proc *pp;      // Pointer to function
+        Function *pp;      // Pointer to function
     } u;
     int conscript; // like a subscript for constants
     Type *type;    // Constants need types during type analysis
@@ -385,7 +383,7 @@ class Const : public Exp {
     Const(ADDRESS a);
     Const(double d);
     Const(const char *p);
-    Const(Proc *p);
+    Const(Function *p);
     // Copy constructor
     Const(const Const &o);
     template <class T> static Const *get(T i) { return new Const(i); }

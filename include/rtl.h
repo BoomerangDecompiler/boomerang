@@ -41,7 +41,7 @@ class DefSet;
 class UseSet;
 class Type;
 class Register;
-class Proc;
+class Function;
 class XMLProgParser;
 class StmtVisitor;
 class Statement;

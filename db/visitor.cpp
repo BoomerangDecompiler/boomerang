@@ -1088,7 +1088,7 @@ void StmtSsaXformer::visit(CallStatement *s, bool &recur) {
         // FIXME: use of fromSSAleft is deprecated
         Exp *e = as->getLeft()->fromSSAleft(((ExpSsaXformer *)mod)->getProc(), s);
         // FIXME: this looks like a HACK that can go:
-        Proc *procDest = s->getDestProc();
+        Function *procDest = s->getDestProc();
         if (procDest && procDest->isLib() && e->isLocal()) {
             UserProc *proc = s->getProc(); // Enclosing proc
             Type *lty = proc->getLocalType(((Const *)e->getSubExp1())->getStr());

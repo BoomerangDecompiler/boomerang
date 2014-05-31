@@ -120,14 +120,12 @@ enum MACHINE {
 };
 
 class BinaryFileFactory {
-    //void *dlHandle; // TODO: consider replacing this with QPluginLoader instances to allow unloading ?
+    // void *dlHandle; // TODO: consider replacing this with QPluginLoader instances to allow unloading ?
     QObject *getInstanceFor(const QString &sName);
     static QString m_base_path; //!< path from which the executable is being ran, used to find lib/ directory
 
   public:
-    static void setBasePath(const QString &path) {
-        m_base_path = path;
-    } //!< sets the base directory for plugin search
+    static void setBasePath(const QString &path) { m_base_path = path; } //!< sets the base directory for plugin search
     QObject *Load(const QString &sName);
     void UnLoad();
 };
@@ -137,7 +135,7 @@ class BinaryFileFactory {
 #define ObjcInterface_iid "org.boomerang.LoaderInterface.ObjC"
 #define BinaryInterface_iid "org.boomerang.LoaderInterface.Data"
 #define SectionsInterface_iid "org.boomerang.LoaderInterface.Sections"
-//TODO: create a default implmentation for this interface that will notify the user about the missing functionality ?
+// TODO: create a default implmentation for this interface that will notify the user about the missing functionality ?
 class BinaryData {
   public:
     virtual char readNative1(ADDRESS a) = 0;
@@ -221,9 +219,7 @@ class LoaderInterface {
     virtual ADDRESS IsJumpToAnotherAddr(ADDRESS /*uNative*/) { return NO_ADDRESS; }
     virtual tMapAddrToString &getSymbols() = 0;
     virtual bool hasDebugInfo() { return false; }
-    virtual const char *GetDynamicProcName(ADDRESS /*uNative*/) {
-        return "dynamic";
-    }
+    virtual const char *GetDynamicProcName(ADDRESS /*uNative*/) { return "dynamic"; }
 
     virtual std::list<SectionInfo *> &GetEntryPoints(const char *pEntry = "main") = 0;
     virtual ADDRESS GetMainEntryPoint() = 0;
@@ -231,11 +227,11 @@ class LoaderInterface {
     ///////////////////////////////////////////////////////////////////////////////
     // Internal information
     // Dump headers, etc
-    virtual bool DisplayDetails(const char* /*fileName*/, FILE* /*f*/ /* = stdout */) {
-        return false;            // Should always be overridden
-        // Should display file header, program
-        // headers and section headers, as well
-        // as contents of each of the sections.
+    virtual bool DisplayDetails(const char * /*fileName*/, FILE * /*f*/ /* = stdout */) {
+        return false; // Should always be overridden
+                      // Should display file header, program
+                      // headers and section headers, as well
+                      // as contents of each of the sections.
     }
     /***************************************************************************/ /**
       *
@@ -248,7 +244,7 @@ class LoaderInterface {
       * %agp). This value could possibly be used for other purposes.
       *
       ******************************************************************************/
-    virtual std::pair<ADDRESS, unsigned> GetGlobalPointerInfo() {return {NO_ADDRESS,0};}
+    virtual std::pair<ADDRESS, unsigned> GetGlobalPointerInfo() { return {NO_ADDRESS, 0}; }
 
     /***************************************************************************/ /**
       *
@@ -265,20 +261,19 @@ class LoaderInterface {
       ******************************************************************************/
     virtual std::map<ADDRESS, const char *> *GetDynamicGlobalMap() { return nullptr; }
 
-
     // Special load function for archive members
   protected:
     virtual bool PostLoad(void *handle) = 0; //!< Called after loading archive member
 };
 Q_DECLARE_INTERFACE(LoaderInterface, LoaderInterface_iid)
 class SectionInterface {
-public:
-    virtual int GetNumSections() const =0;                 // Return number of sections
-    virtual SectionInfo *GetSectionInfo(int idx) const=0; // Return section struct
-    virtual SectionInfo *GetSectionInfoByName(const char *sName)=0;
-    virtual SectionInfo *GetSectionInfoByAddr(ADDRESS uEntry) const=0;
-    virtual bool isReadOnly(ADDRESS uEntry)=0; //!< returns true if the given address is in a read only section
-    virtual int GetSectionIndexByName(const char *sName)=0;
+  public:
+    virtual int GetNumSections() const = 0;                 // Return number of sections
+    virtual SectionInfo *GetSectionInfo(int idx) const = 0; // Return section struct
+    virtual SectionInfo *GetSectionInfoByName(const char *sName) = 0;
+    virtual SectionInfo *GetSectionInfoByAddr(ADDRESS uEntry) const = 0;
+    virtual bool isReadOnly(ADDRESS uEntry) = 0; //!< returns true if the given address is in a read only section
+    virtual int GetSectionIndexByName(const char *sName) = 0;
     virtual bool isStringConstant(ADDRESS /*uEntry*/) { return false; }
     //! returns true if the given address is in a "strings" section
     virtual bool isCFStringConstant(ADDRESS /*uEntry*/) { return false; }
@@ -286,7 +281,6 @@ public:
     virtual ADDRESS getLimitTextHigh() = 0;
     virtual ptrdiff_t getTextDelta() = 0;
     virtual void getTextLimits() = 0;
-
 };
 Q_DECLARE_INTERFACE(SectionInterface, SectionsInterface_iid)
 struct LoaderPluginWrapper {
@@ -346,19 +340,17 @@ class BinaryFile : public QObject, public LoaderInterface {
 };
 #endif
 class LoaderCommon : public SectionInterface {
-public:
+  public:
     LoaderCommon(bool bArch = false) {
-        m_bArchive      = bArch;        // Remember whether an archive member
-        m_iNumSections  = 0;            // No sections yet
-        m_pSections     = nullptr;            // No section data yet
+        m_bArchive = bArch;    // Remember whether an archive member
+        m_iNumSections = 0;    // No sections yet
+        m_pSections = nullptr; // No section data yet
     }
-    int GetNumSections() const override {return m_iNumSections;} // Return number of sections
-    SectionInfo *GetSectionInfo(int idx) const override {
-        return m_pSections + idx;
-    }
+    int GetNumSections() const override { return m_iNumSections; } // Return number of sections
+    SectionInfo *GetSectionInfo(int idx) const override { return m_pSections + idx; }
     //! Find section index given name, or -1 if not found
-    int GetSectionIndexByName(const char* sName) override {
-        for (int i=0; i < m_iNumSections; i++) {
+    int GetSectionIndexByName(const char *sName) override {
+        for (int i = 0; i < m_iNumSections; i++) {
             if (strcmp(m_pSections[i].pSectionName, sName) == 0) {
                 return i;
             }
@@ -368,7 +360,7 @@ public:
     //! Find the end of a section, given an address in the section
     SectionInfo *GetSectionInfoByAddr(ADDRESS uEntry) const override {
         PSectionInfo pSect;
-        for (int i=0; i < m_iNumSections; i++) {
+        for (int i = 0; i < m_iNumSections; i++) {
             pSect = &m_pSections[i];
             if ((uEntry >= pSect->uNativeAddr) && (uEntry < pSect->uNativeAddr + pSect->uSectionSize)) {
                 // We have the right section
@@ -384,7 +376,7 @@ public:
         return p && p->bReadOnly;
     }
     //! Find section info given name, or 0 if not found
-    SectionInfo * GetSectionInfoByName(const char* sName) override {
+    SectionInfo *GetSectionInfoByName(const char *sName) override {
         int i = GetSectionIndexByName(sName);
         if (i == -1)
             return nullptr;
@@ -394,18 +386,19 @@ public:
     ADDRESS getLimitTextHigh() override { return limitTextHigh; }
     ptrdiff_t getTextDelta() override { return textDelta; }
     void getTextLimits() override;
-protected:
-  // Data
-  bool m_bArchive;          //!< True if archive member
-  int m_iNumSections;       //!< Number of sections
-  SectionInfo *m_pSections; //!< The section info
-  ADDRESS m_uInitPC;        //!< Initial program counter
-  ADDRESS m_uInitSP;        //!< Initial stack pointer
-  ADDRESS limitTextLow;     //!< Public addresses being the lowest used native address (inclusive)
-  ADDRESS limitTextHigh;    //!< the highest used address (not inclusive) in the text segment
-  // Also the difference between the host and native addresses (host - native)
-  // At this stage, we are assuming that the difference is the same for all
-  // text sections of the BinaryFile image
-  ptrdiff_t textDelta;
+
+  protected:
+    // Data
+    bool m_bArchive;          //!< True if archive member
+    int m_iNumSections;       //!< Number of sections
+    SectionInfo *m_pSections; //!< The section info
+    ADDRESS m_uInitPC;        //!< Initial program counter
+    ADDRESS m_uInitSP;        //!< Initial stack pointer
+    ADDRESS limitTextLow;     //!< Public addresses being the lowest used native address (inclusive)
+    ADDRESS limitTextHigh;    //!< the highest used address (not inclusive) in the text segment
+    // Also the difference between the host and native addresses (host - native)
+    // At this stage, we are assuming that the difference is the same for all
+    // text sections of the BinaryFile image
+    ptrdiff_t textDelta;
 };
 #endif // #ifndef __BINARYFILE_H__

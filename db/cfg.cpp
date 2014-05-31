@@ -970,7 +970,7 @@ BasicBlock *Cfg::findRetNode() {
         if (bb->getType() == RET) {
             return bb;
         } else if (bb->getType() == CALL) {
-            Proc *p = bb->getCallDestProc();
+            Function *p = bb->getCallDestProc();
             if (p && !p->getName().compare("exit")) // TODO: move this into check Proc::noReturn();
                 retNode = bb;
         }
@@ -1672,7 +1672,7 @@ void Cfg::generateDotFile(std::ofstream &of) {
         }
         case CALL: {
             of << "call";
-            Proc *dest = pbb->getDestProc();
+            Function *dest = pbb->getDestProc();
             if (dest)
                 of << "\\n" << dest->getName().toStdString();
             break;

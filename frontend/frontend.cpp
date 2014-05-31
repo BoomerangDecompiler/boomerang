@@ -296,7 +296,7 @@ void FrontEnd::decode(Prog *prg, bool decodeMain, const char *pname) {
         name = mainName[0];
     for (auto &elem : mainName) {
         if (!strcmp(name, elem)) {
-            Proc *proc = prog->findProc(a);
+            Function *proc = prog->findProc(a);
             if (proc == nullptr) {
                 if (VERBOSE)
                     LOG << "no proc found for address " << a << "\n";
@@ -343,7 +343,7 @@ void FrontEnd::decode(Prog *prg, ADDRESS a) {
         while (change) {
             change = false;
             PROGMAP::const_iterator it;
-            for (Proc *pProc = prog->getFirstProc(it); pProc != nullptr; pProc = prog->getNextProc(it)) {
+            for (Function *pProc = prog->getFirstProc(it); pProc != nullptr; pProc = prog->getNextProc(it)) {
                 if (pProc->isLib())
                     continue;
                 UserProc *p = (UserProc *)pProc;
@@ -463,12 +463,12 @@ void FrontEnd::preprocessProcGoto(std::list<Statement *>::iterator ss, ADDRESS d
     assert(sl.back() == *ss);
     if (dest == NO_ADDRESS)
         return;
-    Proc *proc = prog->findProc(dest);
+    Function *proc = prog->findProc(dest);
     if (proc == nullptr) {
         if (ldrIface->IsDynamicLinkedProc(dest))
             proc = prog->setNewProc(dest);
     }
-    if (proc != nullptr && proc != (Proc *)-1) {
+    if (proc != nullptr && proc != (Function *)-1) {
         CallStatement *call = new CallStatement();
         call->setDest(dest);
         call->setDestProc(proc);
@@ -787,7 +787,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, std::ofstream &os, bo
                         // Dynamic linked proc pointers are treated as static.
                         const char *nam =
                             ldrIface->GetDynamicProcName(((Const *)call->getDest()->getSubExp1())->getAddr());
-                        Proc *p = pProc->getProg()->getLibraryProc(nam);
+                        Function *p = pProc->getProg()->getLibraryProc(nam);
                         call->setDestProc(p);
                         call->setIsComputed(false);
                     }
@@ -821,7 +821,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, std::ofstream &os, bo
                                         ADDRESS a = ((Const *)stmt_jump->getDest()->getSubExp1())->getAddr();
                                         const char *nam = ldrIface->GetDynamicProcName(a);
                                         // Assign the proc to the call
-                                        Proc *p = pProc->getProg()->getLibraryProc(nam);
+                                        Function *p = pProc->getProg()->getLibraryProc(nam);
                                         if (call->getDestProc()) {
                                             // prevent unnecessary __imp procs
                                             prog->removeProc(call->getDestProc()->getName());
@@ -1015,7 +1015,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, std::ofstream &os, bo
         if (ldrIface->IsDynamicLinkedProc(dest) || !spec || (dest < sec_iface->getLimitTextHigh())) {
             pCfg->addCall(*it);
             // Don't visit the destination of a register call
-            Proc *np = (*it)->getDestProc();
+            Function *np = (*it)->getDestProc();
             if (np == nullptr && dest != NO_ADDRESS) {
                 // np = newProc(pProc->getProg(), dest);
                 np = pProc->getProg()->setNewProc(dest);

@@ -235,7 +235,7 @@ int Boomerang::processCommand(std::vector<std::string> &args) {
         }
 
         if (args.size() > 1) {
-            Proc *proc = prog->findProc(args[1].c_str());
+            Function *proc = prog->findProc(args[1].c_str());
             if (proc == nullptr) {
                 std::cerr << "cannot find proc " << args[1] << "\n";
                 return 1;
@@ -282,7 +282,7 @@ int Boomerang::processCommand(std::vector<std::string> &args) {
                 return 1;
             }
 
-            Proc *proc = prog->findProc(args[2].c_str());
+            Function *proc = prog->findProc(args[2].c_str());
             if (proc == nullptr) {
                 std::cerr << "cannot find proc " << args[2] << "\n";
                 return 1;
@@ -408,13 +408,13 @@ int Boomerang::processCommand(std::vector<std::string> &args) {
                 return 1;
             }
 
-            Proc *proc = prog->findProc(args[2].c_str());
+            Function *proc = prog->findProc(args[2].c_str());
             if (proc == nullptr) {
                 std::cerr << "cannot find proc " << args[2] << "\n";
                 return 1;
             }
 
-            Proc *nproc = prog->findProc(args[3].c_str());
+            Function *nproc = prog->findProc(args[3].c_str());
             if (nproc != nullptr) {
                 std::cerr << "proc " << args[3] << " already exists\n";
                 return 1;
@@ -461,11 +461,11 @@ int Boomerang::processCommand(std::vector<std::string> &args) {
             prog->getRootCluster()->printTree(std::cout);
             std::cout << "\n\tlibprocs:\n";
             PROGMAP::const_iterator it;
-            for (Proc *p = prog->getFirstProc(it); p; p = prog->getNextProc(it))
+            for (Function *p = prog->getFirstProc(it); p; p = prog->getNextProc(it))
                 if (p->isLib())
                     std::cout << "\t\t" << p->getName().toStdString() << "\n";
             std::cout << "\n\tuserprocs:\n";
-            for (Proc *p = prog->getFirstProc(it); p; p = prog->getNextProc(it))
+            for (Function *p = prog->getFirstProc(it); p; p = prog->getNextProc(it))
                 if (!p->isLib())
                     std::cout << "\t\t" << p->getName().toStdString() << "\n";
             std::cout << "\n";
@@ -490,7 +490,7 @@ int Boomerang::processCommand(std::vector<std::string> &args) {
                 std::cout << "\troot cluster.\n";
             std::cout << "\tprocs:\n";
             PROGMAP::const_iterator it;
-            for (Proc *p = prog->getFirstProc(it); p; p = prog->getNextProc(it))
+            for (Function *p = prog->getFirstProc(it); p; p = prog->getNextProc(it))
                 if (p->getCluster() == cluster)
                     std::cout << "\t\t" << p->getName().toStdString() << "\n";
             std::cout << "\n";
@@ -502,7 +502,7 @@ int Boomerang::processCommand(std::vector<std::string> &args) {
                 return 1;
             }
 
-            Proc *proc = prog->findProc(args[2].c_str());
+            Function *proc = prog->findProc(args[2].c_str());
             if (proc == nullptr) {
                 std::cerr << "cannot find proc " << args[2] << "\n";
                 return 1;
@@ -539,7 +539,7 @@ int Boomerang::processCommand(std::vector<std::string> &args) {
             return 1;
         }
 
-        Proc *proc = prog->findProc(args[1].c_str());
+        Function *proc = prog->findProc(args[1].c_str());
         if (proc == nullptr) {
             std::cerr << "cannot find proc " << args[1] << "\n";
             return 1;
@@ -625,7 +625,7 @@ void Boomerang::objcDecode(std::map<std::string, ObjcModule> &modules, Prog *pro
             for (auto &_it2 : c.methods) {
                 ObjcMethod &m = (_it2).second;
                 // TODO: parse :'s in names
-                Proc *p = prog->newProc(m.name.c_str(), m.addr);
+                Function *p = prog->newProc(m.name.c_str(), m.addr);
                 p->setCluster(cl);
                 // TODO: decode types in m.types
                 LOG_VERBOSE(1) << "\t\t\tMethod: " << m.name.c_str() << "\n";
@@ -757,7 +757,7 @@ int Boomerang::decompile(const char *fname, const char *pname) {
     if (printAST) {
         std::cout << "printing AST...\n";
         PROGMAP::const_iterator it;
-        for (Proc *p = prog->getFirstProc(it); p; p = prog->getNextProc(it))
+        for (Function *p = prog->getFirstProc(it); p; p = prog->getNextProc(it))
             if (!p->isLib()) {
                 UserProc *u = (UserProc *)p;
                 u->getCFG()->compressCfg();

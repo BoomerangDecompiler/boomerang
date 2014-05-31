@@ -42,7 +42,7 @@
 
 class BasicBlock;
 class Prog;
-class Proc;
+class Function;
 class UserProc;
 class Exp;
 class Const;
@@ -940,7 +940,7 @@ struct SWITCH_INFO {
     ADDRESS uTable;  // Native address of the table, or ptr to array of values for form F
     int iNumTable;   // Number of entries in the table (form H only)
     int iOffset = 0; // Distance from jump to table (form R only)
-    // int        delta;            // Host address - Native address
+                     // int        delta;            // Host address - Native address
 };
 
 class CaseStatement : public GotoStatement {
@@ -1001,7 +1001,7 @@ class CallStatement : public GotoStatement {
     // Destination of call. In the case of an analysed indirect call, this will be ONE target's return statement.
     // For an unanalysed indirect call, or a call whose callee is not yet sufficiently decompiled due to recursion,
     // this will be nullptr
-    Proc *procDest;
+    Function *procDest;
 
     // The signature for this call. NOTE: this used to be stored in the Proc, but this does not make sense when
     // the proc happens to have varargs
@@ -1103,8 +1103,8 @@ class CallStatement : public GotoStatement {
     std::list<Exp *> *getPostCallExpList();
 
     // Set and return the destination proc.
-    void setDestProc(Proc *dest);
-    Proc *getDestProc();
+    void setDestProc(Function *dest);
+    Function *getDestProc();
 
     // Generate constraints
     virtual void genConstraints(LocationSet &cons);

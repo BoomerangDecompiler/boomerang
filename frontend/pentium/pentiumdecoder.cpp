@@ -10711,8 +10711,8 @@ DecodeResult &PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta) {
                                 // Set the destination
                                 call->setDest(nativeDest);
                                 stmts->push_back(call);
-                                Proc *destProc = prog->setNewProc(nativeDest);
-                                if (destProc == (Proc *)-1)
+                                Function *destProc = prog->setNewProc(nativeDest);
+                                if (destProc == (Function *)-1)
                                     destProc = nullptr; // In case a deleted Proc
                                 call->setDestProc(destProc);
                             }

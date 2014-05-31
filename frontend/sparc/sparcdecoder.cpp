@@ -564,9 +564,9 @@ DecodeResult &SparcDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta) {
 
                 newCall->setDest(nativeDest);
 
-                Proc *destProc = prog->setNewProc(nativeDest);
+                Function *destProc = prog->setNewProc(nativeDest);
 
-                if (destProc == (Proc *)-1)
+                if (destProc == (Function *)-1)
                     destProc = nullptr;
 
                 newCall->setDestProc(destProc);

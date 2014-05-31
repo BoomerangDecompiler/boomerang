@@ -1302,7 +1302,7 @@ void CHLLCode::AddAssignmentStatement(int indLevel, Assign *asgn) {
  * \todo                Remove the \a name parameter and use Proc::getName()
  * \todo                Add assingment for when the function returns a struct.
  */
-void CHLLCode::AddCallStatement(int indLevel, Proc *proc, const char *name, StatementList &args,
+void CHLLCode::AddCallStatement(int indLevel, Function *proc, const char *name, StatementList &args,
                                 StatementList *results) {
     std::ostringstream s;
     indent(s, indLevel);
@@ -1325,7 +1325,7 @@ void CHLLCode::AddCallStatement(int indLevel, Proc *proc, const char *name, Stat
         auto const_arg = static_cast<const Const *>(((Assign *)*ss)->getRight());
         bool ok = true;
         if (t && t->isPointer() && ((PointerType *)t)->getPointsTo()->isFunc() && const_arg->isIntConst()) {
-            Proc *p = proc->getProg()->findProc((const_arg)->getAddr());
+            Function *p = proc->getProg()->findProc((const_arg)->getAddr());
             if (p) {
                 s << p->getName().toStdString();
                 ok = false;

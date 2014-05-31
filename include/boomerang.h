@@ -43,7 +43,7 @@ class QString;
 class SeparateLogger;
 class Log;
 class Prog;
-class Proc;
+class Function;
 class UserProc;
 class HLLCode;
 class ObjcModule;
@@ -62,14 +62,14 @@ class Watcher {
     virtual ~Watcher() {} // Prevent gcc4 warning
 
     virtual void alert_complete() {}
-    virtual void alert_new(Proc *) {}
-    virtual void alertRemove(Proc *) {}
-    virtual void alert_update_signature(Proc *) {}
+    virtual void alert_new(Function *) {}
+    virtual void alertRemove(Function *) {}
+    virtual void alert_update_signature(Function *) {}
     virtual void alert_decode(ADDRESS /*pc*/, int /*nBytes*/) {}
     virtual void alert_baddecode(ADDRESS /*pc*/) {}
     virtual void alert_start_decode(ADDRESS /*start*/, int /*nBytes*/) {}
     virtual void alert_end_decode() {}
-    virtual void alert_decode(Proc *, ADDRESS /*pc*/, ADDRESS /*last*/, int /*nBytes*/) {}
+    virtual void alert_decode(Function *, ADDRESS /*pc*/, ADDRESS /*last*/, int /*nBytes*/) {}
     virtual void alert_start_decompile(UserProc *) {}
     virtual void alert_proc_status_change(UserProc *) {}
     virtual void alert_decompile_SSADepth(UserProc *, int /*depth*/) {}
@@ -77,8 +77,8 @@ class Watcher {
     virtual void alert_decompile_afterPropagate(UserProc *, int /*depth*/) {}
     virtual void alert_decompile_afterRemoveStmts(UserProc *, int /*depth*/) {}
     virtual void alert_end_decompile(UserProc *) {}
-    virtual void alert_load(Proc *) {}
-    virtual void alert_considering(Proc * /*parent*/, Proc *) {}
+    virtual void alert_load(Function *) {}
+    virtual void alert_considering(Function * /*parent*/, Function *) {}
     virtual void alert_decompiling(UserProc *) {}
     virtual void alert_decompile_debug_point(UserProc *, const char * /*description*/) {}
 };
@@ -102,6 +102,7 @@ class Boomerang : public QObject {
     void helpcmd() const;
     Boomerang();
     virtual ~Boomerang() {}
+
   public:
     /**
      * \return The global boomerang object. It will be created if it didn't already exist.
@@ -143,17 +144,17 @@ class Boomerang : public QObject {
             (*it)->alert_complete();
     }
     /// Alert the watchers we have found a new %Proc.
-    void alert_new(Proc *p) {
+    void alert_new(Function *p) {
         for (std::set<Watcher *>::iterator it = watchers.begin(); it != watchers.end(); it++)
             (*it)->alert_new(p);
     }
     /// Alert the watchers we have removed a %Proc.
-    void alertRemove(Proc *p) {
+    void alertRemove(Function *p) {
         for (std::set<Watcher *>::iterator it = watchers.begin(); it != watchers.end(); it++)
             (*it)->alertRemove(p);
     }
     /// Alert the watchers we have updated this Procs signature
-    void alert_update_signature(Proc *p) {
+    void alert_update_signature(Function *p) {
         for (std::set<Watcher *>::iterator it = watchers.begin(); it != watchers.end(); it++)
             (*it)->alert_update_signature(p);
     }
@@ -168,12 +169,12 @@ class Boomerang : public QObject {
             (*it)->alert_baddecode(pc);
     }
     /// Alert the watchers we have succesfully decoded this function
-    void alert_decode(Proc *p, ADDRESS pc, ADDRESS last, int nBytes) {
+    void alert_decode(Function *p, ADDRESS pc, ADDRESS last, int nBytes) {
         for (std::set<Watcher *>::iterator it = watchers.begin(); it != watchers.end(); it++)
             (*it)->alert_decode(p, pc, last, nBytes);
     }
     /// Alert the watchers we have loaded the Proc.
-    void alert_load(Proc *p) {
+    void alert_load(Function *p) {
         for (std::set<Watcher *>::iterator it = watchers.begin(); it != watchers.end(); it++)
             (*it)->alert_load(p);
     }
@@ -215,7 +216,7 @@ class Boomerang : public QObject {
         for (std::set<Watcher *>::iterator it = watchers.begin(); it != watchers.end(); it++)
             (*it)->alert_end_decompile(p);
     }
-    virtual void alert_considering(Proc *parent, Proc *p) {
+    virtual void alert_considering(Function *parent, Function *p) {
         for (std::set<Watcher *>::iterator it = watchers.begin(); it != watchers.end(); it++)
             (*it)->alert_considering(parent, p);
     }

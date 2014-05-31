@@ -19,7 +19,8 @@
   *
   * \note There are separate Visitor and Modifier classes. Visitors are more suited for searching: they have the
   * capability of stopping the recursion, but can't change the class of a top level expression. Visitors can also
-  * override (prevent) the usual recursing to child objects. Modifiers always recurse to the end, and the ExpModifiers' visit
+  * override (prevent) the usual recursing to child objects. Modifiers always recurse to the end, and the ExpModifiers'
+  *visit
   * function returns an Exp* so that the top level expression can change class (e.g. RefExp to Binary).
   * The accept() functions (in the target classes) are always the same for all visitors; they encapsulate where the
   * visitable parts of a Statement or expression are.

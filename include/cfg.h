@@ -31,7 +31,7 @@
 #include <string>
 #define DEBUG_LIVENESS (Boomerang::get()->debugLiveness)
 
-class Proc;
+class Function;
 class Prog;
 class UserProc;
 class UseSet;

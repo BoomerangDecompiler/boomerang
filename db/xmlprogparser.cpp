@@ -176,7 +176,7 @@ class Context {
     Prog *prog;
     Global *global;
     Cluster *cluster;
-    Proc *proc;
+    Function *proc;
     Signature *signature;
     Cfg *cfg;
     BasicBlock *bb;
@@ -187,7 +187,7 @@ class Context {
     Return *ret;
     Type *type;
     Exp *exp, *symbol;
-    std::list<Proc *> procs;
+    std::list<Function *> procs;
 
     Context(int tag)
         : tag(tag), prog(nullptr), proc(nullptr), signature(nullptr), cfg(nullptr), bb(nullptr), rtl(nullptr),
@@ -397,8 +397,8 @@ void XMLProgParser::addToContext_cluster(Context *c, int e) {
 
 void XMLProgParser::start_libproc(const QXmlStreamAttributes &attr) {
     if (phase == 1) {
-        stack.front()->proc = (Proc *)findId(attr.value(QLatin1Literal("id")));
-        Proc *p = (Proc *)findId(attr.value(QLatin1Literal("firstCaller")));
+        stack.front()->proc = (Function *)findId(attr.value(QLatin1Literal("id")));
+        Function *p = (Function *)findId(attr.value(QLatin1Literal("firstCaller")));
         if (p)
             stack.front()->proc->m_firstCaller = p;
         Cluster *c = (Cluster *)findId(attr.value(QLatin1Literal("cluster")));
@@ -447,10 +447,10 @@ void XMLProgParser::addToContext_libproc(Context *c, int e) {
 
 void XMLProgParser::start_userproc(const QXmlStreamAttributes &attr) {
     if (phase == 1) {
-        stack.front()->proc = (Proc *)findId(attr.value(QLatin1Literal("id")));
+        stack.front()->proc = (Function *)findId(attr.value(QLatin1Literal("id")));
         UserProc *u = dynamic_cast<UserProc *>(stack.front()->proc);
         assert(u);
-        Proc *p = (Proc *)findId(attr.value(QLatin1Literal("firstCaller")));
+        Function *p = (Function *)findId(attr.value(QLatin1Literal("firstCaller")));
         if (p)
             u->m_firstCaller = p;
         Cluster *c = (Cluster *)findId(attr.value(QLatin1Literal("cluster")));
@@ -578,7 +578,7 @@ void XMLProgParser::addToContext_proven_true(Context *c, int /*e*/) { c->exp = s
 
 void XMLProgParser::start_callee(const QXmlStreamAttributes &attr) {
     if (phase == 1) {
-        stack.front()->proc = (Proc *)findId(attr.value(QLatin1Literal("proc")));
+        stack.front()->proc = (Function *)findId(attr.value(QLatin1Literal("proc")));
     }
 }
 
@@ -1214,7 +1214,7 @@ void XMLProgParser::addToContext_callstmt(Context *c, int e) {
 
 void XMLProgParser::start_dest(const QXmlStreamAttributes &attr) {
     if (phase == 1) {
-        Proc *p = (Proc *)findId(attr.value(QLatin1Literal("proc")));
+        Function *p = (Function *)findId(attr.value(QLatin1Literal("proc")));
         if (p)
             stack.front()->proc = p;
         return;
@@ -2132,7 +2132,7 @@ void XMLProgParser::persistToXML(QXmlStreamWriter &out, UserProc *proc) {
     out.writeEndElement();
 }
 
-void XMLProgParser::persistToXML(QXmlStreamWriter &out, Proc *proc) {
+void XMLProgParser::persistToXML(QXmlStreamWriter &out, Function *proc) {
     if (proc->isLib())
         persistToXML(out, (LibProc *)proc);
     else

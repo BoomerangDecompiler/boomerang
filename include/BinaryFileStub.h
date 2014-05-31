@@ -53,7 +53,7 @@ class BinaryFileStub : public LoaderInterface {
     const char *m_pFileName; // Pointer to input file name
   protected:
     virtual bool RealLoad(const QString &sName); // Load the file; pure virtual
-    virtual bool PostLoad(void *handle);      // Called after loading archive member
+    virtual bool PostLoad(void *handle);         // Called after loading archive member
 
   private:
 };

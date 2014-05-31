@@ -185,7 +185,7 @@ void Decompiler::generateCode() {
     Cluster *root = prog->getRootCluster();
     if (root)
         emitClusterAndChildren(root);
-    std::list<Proc *>::iterator it;
+    std::list<Function *>::iterator it;
     for (UserProc *p = prog->getFirstUserProc(it); p; p = prog->getNextUserProc(it)) {
         emit newProcInCluster(QString(p->getName()), QString(p->getCluster()->getName()));
     }
@@ -217,13 +217,13 @@ const char *Decompiler::procStatus(UserProc *p) {
     return "unknown";
 }
 
-void Decompiler::alert_considering(Proc *parent, Proc *p) {
+void Decompiler::alert_considering(Function *parent, Function *p) {
     emit consideringProc(QString(parent ? parent->getName() : ""), QString(p->getName()));
 }
 
 void Decompiler::alert_decompiling(UserProc *p) { emit decompilingProc(QString(p->getName())); }
 
-void Decompiler::alert_new(Proc *p) {
+void Decompiler::alert_new(Function *p) {
     if (p->isLib()) {
         QString params;
         if (p->getSignature() == NULL || p->getSignature()->isUnknown())
@@ -244,7 +244,7 @@ void Decompiler::alert_new(Proc *p) {
     }
 }
 
-void Decompiler::alertRemove(Proc *p) {
+void Decompiler::alertRemove(Function *p) {
     if (p->isLib()) {
         emit removeLibProc(QString(p->getName()));
     } else {
@@ -252,10 +252,10 @@ void Decompiler::alertRemove(Proc *p) {
     }
 }
 
-void Decompiler::alert_update_signature(Proc *p) { alert_new(p); }
+void Decompiler::alert_update_signature(Function *p) { alert_new(p); }
 
 bool Decompiler::getRtlForProc(const QString &name, QString &rtl) {
-    Proc *p = prog->findProc(name);
+    Function *p = prog->findProc(name);
     if (p->isLib())
         return false;
     UserProc *up = (UserProc *)p;
@@ -279,7 +279,7 @@ void Decompiler::alert_decompile_debug_point(UserProc *p, const char *descriptio
 void Decompiler::stopWaiting() { waiting = false; }
 
 const char *Decompiler::getSigFile(const QString &name) {
-    Proc *p = prog->findProc(name);
+    Function *p = prog->findProc(name);
     if (p == NULL || !p->isLib() || p->getSignature() == NULL)
         return NULL;
     return p->getSignature()->getSigFile();
@@ -295,7 +295,7 @@ QString Decompiler::getClusterFile(const QString &name) {
 void Decompiler::rereadLibSignatures() { prog->rereadLibSignatures(); }
 
 void Decompiler::renameProc(const QString &oldName, const QString &newName) {
-    Proc *p = prog->findProc(oldName);
+    Function *p = prog->findProc(oldName);
     if (p)
         p->setName(newName);
 }

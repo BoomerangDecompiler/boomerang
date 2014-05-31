@@ -8,7 +8,7 @@
 
 class MainWindow;
 class FrontEnd;
-class Proc;
+class Function;
 class UserProc;
 class Prog;
 class Cluster;
@@ -22,11 +22,11 @@ class Decompiler : public QObject, public Watcher {
     Decompiler() : QObject(), debugging(false), waiting(false) {}
 
     virtual void alert_decompile_debug_point(UserProc *p, const char *description) override;
-    virtual void alert_considering(Proc *parent, Proc *p) override;
+    virtual void alert_considering(Function *parent, Function *p) override;
     virtual void alert_decompiling(UserProc *p) override;
-    virtual void alert_new(Proc *p) override;
-    virtual void alertRemove(Proc *p) override;
-    virtual void alert_update_signature(Proc *p) override;
+    virtual void alert_new(Function *p) override;
+    virtual void alertRemove(Function *p) override;
+    virtual void alert_update_signature(Function *p) override;
 
     bool getRtlForProc(const QString &name, QString &rtl);
     const char *getSigFile(const QString &name);

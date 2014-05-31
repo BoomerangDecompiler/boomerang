@@ -389,7 +389,7 @@ void JunctionStatement::rangeAnalysis(std::list<Statement *> &execution_paths) {
             input.unionwith(((BranchStatement *)last)->getRangesForOutEdgeTo(Parent));
         } else {
             if (last->isCall()) {
-                Proc *d = ((CallStatement *)last)->getDestProc();
+                Function *d = ((CallStatement *)last)->getDestProc();
                 if (d && !d->isLib() && ((UserProc *)d)->getCFG()->findRetNode() == nullptr) {
                     if (DEBUG_RANGE_ANALYSIS)
                         LOG_VERBOSE(1) << "ignoring ranges from call to proc with no ret node\n";
@@ -480,7 +480,7 @@ void CallStatement::rangeAnalysis(std::list<Statement *> &execution_paths) {
         else if (!strncmp(qPrintable(procDest->getName()), "__imp_", 6)) {
             Statement *first = ((UserProc *)procDest)->getCFG()->getEntryBB()->getFirstStmt();
             assert(first && first->isCall());
-            Proc *d = ((CallStatement *)first)->getDestProc();
+            Function *d = ((CallStatement *)first)->getDestProc();
             if (d->getSignature()->getConvention() == CONV_PASCAL)
                 c += d->getSignature()->getNumParams() * 4;
         } else if (!procDest->isLib()) {
@@ -514,7 +514,7 @@ void CallStatement::rangeAnalysis(std::list<Statement *> &execution_paths) {
                             break;
                     }
                     if (last->isCall()) {
-                        Proc *d = ((CallStatement *)last)->getDestProc();
+                        Function *d = ((CallStatement *)last)->getDestProc();
                         if (d && d->getSignature()->getConvention() == CONV_PASCAL)
                             c += d->getSignature()->getNumParams() * 4;
                     }
@@ -2332,9 +2332,9 @@ bool Statement::propagateTo(bool &convert, std::map<Exp *, int, lessExpStar> *de
     // visit this stmt
     bool CallStatement::accept(StmtVisitor * visitor) { return visitor->visit(this); }
 
-    Proc *CallStatement::getDestProc() { return procDest; }
+    Function *CallStatement::getDestProc() { return procDest; }
 
-    void CallStatement::setDestProc(Proc * dest) {
+    void CallStatement::setDestProc(Function * dest) {
         assert(dest);
         // assert(procDest == nullptr);        // No: not convenient for unit testing
         procDest = dest;
@@ -2342,7 +2342,7 @@ bool Statement::propagateTo(bool &convert, std::map<Exp *, int, lessExpStar> *de
 
     void CallStatement::generateCode(HLLCode * hll, BasicBlock * pbb, int indLevel) {
 
-        Proc *p = getDestProc();
+        Function *p = getDestProc();
 
         if (p == nullptr && isComputed()) {
             hll->AddIndCallStatement(indLevel, pDest, arguments, calcResults());
@@ -2475,7 +2475,7 @@ bool Statement::propagateTo(bool &convert, std::map<Exp *, int, lessExpStar> *de
         // may help
         if (dest < prog->getLimitTextLow() || dest > prog->getLimitTextHigh())
             return false; // Not a valid proc pointer
-        Proc *p = prog->findProc(nam);
+        Function *p = prog->findProc(nam);
         bool bNewProc = p == nullptr;
         if (bNewProc)
             p = prog->setNewProc(dest);
@@ -2626,7 +2626,7 @@ bool Statement::propagateTo(bool &convert, std::map<Exp *, int, lessExpStar> *de
                     if (!a.isZero()) {
                         if (!Boomerang::get()->noDecodeChildren)
                             prog->decodeEntryPoint(a);
-                        Proc *p = prog->findProc(a);
+                        Function *p = prog->findProc(a);
                         if (p) {
                             Signature *sig = points_to->asFunc()->getSignature()->clone();
                             if (sig->getName() == nullptr || sig->getName().isEmpty() || sig->getName() == "<ANON>" ||
@@ -2688,7 +2688,7 @@ bool Statement::propagateTo(bool &convert, std::map<Exp *, int, lessExpStar> *de
     }
 
     bool CallStatement::objcSpecificProcessing(const char *formatStr) {
-        Proc *proc = getDestProc();
+        Function *proc = getDestProc();
         if (!proc)
             return false;
 
@@ -3692,7 +3692,7 @@ void addPhiReferences(StatementSet &stmts, Statement *def) {
     PhiInfo &PhiAssign::getAt(BasicBlock * idx) { return defVec[idx]; }
 
     void CallStatement::genConstraints(LocationSet & cons) {
-        Proc *dest = getDestProc();
+        Function *dest = getDestProc();
         if (dest == nullptr)
             return;
         Signature *destSig = dest->getSignature();
@@ -4740,7 +4740,7 @@ void addPhiReferences(StatementSet &stmts, Statement *def) {
     };
 
     ArgSourceProvider::ArgSourceProvider(CallStatement * call) : call(call) {
-        Proc *procDest = call->getDestProc();
+        Function *procDest = call->getDestProc();
         if (procDest && procDest->isLib()) {
             src = SRC_LIB;
             callSig = call->getSignature();

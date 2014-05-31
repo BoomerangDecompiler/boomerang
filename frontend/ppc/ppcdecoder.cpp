@@ -1005,9 +1005,9 @@ DecodeResult &PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta) {
 
                         result.rtl->appendStmt(newCall);
 
-                        Proc *destProc = prog->setNewProc(reladdr - delta);
+                        Function *destProc = prog->setNewProc(reladdr - delta);
 
-                        if (destProc == (Proc *)-1)
+                        if (destProc == (Function *)-1)
                             destProc = nullptr;
 
                         newCall->setDestProc(destProc);

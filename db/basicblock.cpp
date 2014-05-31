@@ -590,7 +590,7 @@ ADDRESS BasicBlock::getCallDest() {
     return NO_ADDRESS;
 }
 
-Proc *BasicBlock::getCallDestProc() {
+Function *BasicBlock::getCallDestProc() {
     if (m_nodeType != CALL)
         return nullptr;
     if (m_pRtls->size() == 0)
@@ -1309,11 +1309,11 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, BasicBlock *latch, std
     Get the destination proc
     \note this must be a call BB!
 */
-Proc *BasicBlock::getDestProc() {
+Function *BasicBlock::getDestProc() {
     // The last Statement of the last RTL should be a CallStatement
     CallStatement *call = (CallStatement *)(m_pRtls->back()->getHlStmt());
     assert(call->getKind() == STMT_CALL);
-    Proc *proc = call->getDestProc();
+    Function *proc = call->getDestProc();
     if (proc == nullptr) {
         std::cerr << "Indirect calls not handled yet\n";
         assert(0);

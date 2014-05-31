@@ -53,13 +53,13 @@ class QTextStream;
   *============================================================================*/
 /// Interface for the procedure classes, which are used to store information about variables in the
 /// procedure such as parameters and locals.
-class Proc {
+class Function {
   protected:
     friend class XMLProgParser;
 
   public:
-    Proc(Prog *prog, ADDRESS uNative, Signature *sig);
-    virtual ~Proc();
+    Function(Prog *prog, ADDRESS uNative, Signature *sig);
+    virtual ~Function();
 
     QString getName() const;
     void setName(const QString &nam);
@@ -67,9 +67,9 @@ class Proc {
     void setNativeAddress(ADDRESS a);
     Prog *getProg() { return prog; } //!< Get the program this procedure belongs to.
     void setProg(Prog *p) { prog = p; }
-    Proc *getFirstCaller();
+    Function *getFirstCaller();
     //! Set the first procedure that calls this procedure (or null for main/start).
-    void setFirstCaller(Proc *p) {
+    void setFirstCaller(Function *p) {
         if (m_firstCaller == nullptr)
             m_firstCaller = p;
     }
@@ -89,7 +89,7 @@ class Proc {
     /**
      * OutPut operator for a Proc object.
      */
-    friend std::ostream &operator<<(std::ostream &os, const Proc &proc);
+    friend std::ostream &operator<<(std::ostream &os, const Function &proc);
 
     virtual Exp *getProven(Exp *left) = 0;   //!< Get the RHS, if any, that is proven for left
     virtual Exp *getPremised(Exp *left) = 0; //!< Get the RHS, if any, that is premised for left
@@ -128,7 +128,7 @@ class Proc {
     // Persistent state
     ///////////////////////////////////////////////////
     ADDRESS address;
-    Proc *m_firstCaller;
+    Function *m_firstCaller;
     ADDRESS m_firstCallerAddr;
     // FIXME: shouldn't provenTrue be in UserProc, with logic associated with the signature doing the equivalent thing
     // for LibProcs?
@@ -139,7 +139,7 @@ class Proc {
     std::set<CallStatement *> callerSet;
     Cluster *cluster;
 
-    Proc()
+    Function()
         : visited(false), prog(nullptr), signature(nullptr), address(ADDRESS::g(0L)), m_firstCaller(nullptr),
           m_firstCallerAddr(ADDRESS::g(0L)), cluster(nullptr) {}
 }; // class Proc
@@ -147,7 +147,7 @@ class Proc {
 /***************************************************************************/ /**
   * LibProc class.
   *============================================================================*/
-class LibProc : public Proc {
+class LibProc : public Function {
   protected:
     friend class XMLProgParser;
 
@@ -163,7 +163,7 @@ class LibProc : public Proc {
     void getInternalStatements(StatementList &internal);
 
   protected:
-    LibProc() : Proc() {}
+    LibProc() : Function() {}
 };
 
 enum ProcStatus {
@@ -186,7 +186,7 @@ typedef std::list<UserProc *> ProcList;
   * UserProc class.
   *============================================================================*/
 
-class UserProc : public Proc {
+class UserProc : public Function {
   protected:
     friend class XMLProgParser;
     Cfg *cfg; //!< The control flow graph.
@@ -231,7 +231,7 @@ class UserProc : public Proc {
     /**
      * Set of callees (Procedures that this procedure calls). Used for call graph, among other things
      */
-    std::list<Proc *> calleeList;
+    std::list<Function *> calleeList;
     UseCollector col;
     StatementList parameters;
 
@@ -457,8 +457,8 @@ class UserProc : public Proc {
     BasicBlock *getEntryBB();
     void setEntryBB();
     //! Get the callees.
-    std::list<Proc *> &getCallees() { return calleeList; }
-    void addCallee(Proc *callee);
+    std::list<Function *> &getCallees() { return calleeList; }
+    void addCallee(Function *callee);
     // void                addCallees(std::list<UserProc*>& callees);
     bool containsAddr(ADDRESS uAddr);
     //! Change BB containing this statement from a COMPCALL to a CALL.

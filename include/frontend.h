@@ -28,7 +28,7 @@
 #include "BinaryFile.h"
 #include "TargetQueue.h"
 class UserProc;
-class Proc;
+class Function;
 class RTL;
 class NJMCDecoder;
 class BasicBlock;
@@ -86,7 +86,7 @@ class FrontEnd {
     FrontEnd(QObject *pLoader, Prog *prog, BinaryFileFactory *pbff);
     static FrontEnd *instantiate(QObject *pLoader, Prog *prog, BinaryFileFactory *pbff);
     static FrontEnd *Load(const QString &fname, Prog *prog); //!< Load a binary
-                                                                 //! Add a symbol to the loader
+                                                             //! Add a symbol to the loader
     void AddSymbol(ADDRESS addr, const char *nam) { symIface->AddSymbol(addr, nam); }
     // Add a "hint" that an instruction at the given address references a named global
     void addRefHint(ADDRESS addr, const char *nam) { refHints[addr] = nam; }

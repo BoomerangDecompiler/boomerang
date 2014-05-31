@@ -103,7 +103,7 @@ extern char debug_buffer[]; // Defined in basicblock.cpp, size DEBUG_BUFSIZE
  * Proc methods.
  ***********************/
 
-Proc::~Proc() {}
+Function::~Function() {}
 
 /***************************************************************************/ /**
   *
@@ -113,7 +113,7 @@ Proc::~Proc() {}
   * \param        sig - the Signature for this Proc
   *
   ******************************************************************************/
-Proc::Proc(Prog *prg, ADDRESS uNative, Signature *sig)
+Function::Function(Prog *prg, ADDRESS uNative, Signature *sig)
     : prog(prg), signature(sig), address(uNative), m_firstCaller(nullptr) {
     if (sig)
         cluster = prg->getDefaultCluster(sig->getName());
@@ -127,7 +127,7 @@ Proc::Proc(Prog *prg, ADDRESS uNative, Signature *sig)
   * PARAMETERS:        <none>
   * \returns            the name of this procedure
   ******************************************************************************/
-QString Proc::getName() const {
+QString Function::getName() const {
     assert(signature);
     return signature->getName();
 }
@@ -138,7 +138,7 @@ QString Proc::getName() const {
   * PARAMETERS:        new name
   *
   ******************************************************************************/
-void Proc::setName(const QString &nam) {
+void Function::setName(const QString &nam) {
     assert(signature);
     signature->setName(nam);
 }
@@ -148,7 +148,7 @@ void Proc::setName(const QString &nam) {
   * \brief        Get the native address (entry point).
   * \returns            the native address of this procedure (entry point)
   ******************************************************************************/
-ADDRESS Proc::getNativeAddress() const { return address; }
+ADDRESS Function::getNativeAddress() const { return address; }
 
 /***************************************************************************/ /**
   *
@@ -156,7 +156,7 @@ ADDRESS Proc::getNativeAddress() const { return address; }
   * \param a native address of the procedure
   *
   ******************************************************************************/
-void Proc::setNativeAddress(ADDRESS a) { address = a; }
+void Function::setNativeAddress(ADDRESS a) { address = a; }
 
 bool LibProc::isNoReturn() { return FrontEnd::noReturnCallDest(getName()); }
 
@@ -215,7 +215,7 @@ bool UserProc::containsAddr(ADDRESS uAddr) {
     return false;
 }
 
-void Proc::renameParam(const char *oldName, const char *newName) { signature->renameParam(oldName, newName); }
+void Function::renameParam(const char *oldName, const char *newName) { signature->renameParam(oldName, newName); }
 
 /**
  * Modify actuals so that it is now the list of locations that must
@@ -264,20 +264,20 @@ void Proc::renameParam(const char *oldName, const char *newName) { signature->re
  * is set (from common.hs in the case of LibProc objects, or from analysis
  * in the case of UserProcs).
  */
-void Proc::matchParams(std::list<Exp *> & /*actuals*/, UserProc & /*caller*/) {
+void Function::matchParams(std::list<Exp *> & /*actuals*/, UserProc & /*caller*/) {
     // TODO: not implemented, not used, but large amount of docs :)
 }
 
 /**
  * Get a list of types to cast a given list of actual parameters to
  */
-std::list<Type> *Proc::getParamTypeList(const std::list<Exp *> & /*actuals*/) {
+std::list<Type> *Function::getParamTypeList(const std::list<Exp *> & /*actuals*/) {
     // TODO: not implemented, not used
     return nullptr;
 }
 
 void UserProc::renameParam(const char *oldName, const char *newName) {
-    Proc::renameParam(oldName, newName);
+    Function::renameParam(oldName, newName);
     // cfg->searchAndReplace(Location::param(strdup(oldName), this), Location::param(strdup(newName), this));
 }
 
@@ -309,7 +309,7 @@ void UserProc::renameLocal(const char *oldName, const char *newName) {
 
 bool UserProc::searchAll(const Exp &search, std::list<Exp *> &result) { return cfg->searchAll(search, result); }
 
-void Proc::printCallGraphXML(std::ostream &os, int depth, bool /*recurse*/) {
+void Function::printCallGraphXML(std::ostream &os, int depth, bool /*recurse*/) {
     if (!DUMP_XML)
         return;
     visited = true;
@@ -336,7 +336,7 @@ void UserProc::printCallGraphXML(std::ostream &os, int depth, bool recurse) {
     os << "</proc>\n";
 }
 
-void Proc::printDetailsXML() {
+void Function::printDetailsXML() {
     if (!DUMP_XML)
         return;
     std::ofstream out((Boomerang::get()->getOutputPath() + getName().toStdString() + "-details.xml").c_str());
@@ -447,7 +447,7 @@ void UserProc::printUseGraph() {
 //}
 
 //! Get the first procedure that calls this procedure (or null for main/start).
-Proc *Proc::getFirstCaller() {
+Function *Function::getFirstCaller() {
     if (m_firstCaller == nullptr && m_firstCallerAddr != NO_ADDRESS) {
         m_firstCaller = prog->findProc(m_firstCallerAddr);
         m_firstCallerAddr = NO_ADDRESS;
@@ -465,7 +465,7 @@ Proc *Proc::getFirstCaller() {
   * \param        name - Name of procedure
   * \param        uNative - Native address of entry point of procedure
   ******************************************************************************/
-LibProc::LibProc(Prog *prog, std::string &name, ADDRESS uNative) : Proc(prog, uNative, nullptr) {
+LibProc::LibProc(Prog *prog, std::string &name, ADDRESS uNative) : Function(prog, uNative, nullptr) {
     Signature *sig = prog->getLibSignature(name.c_str());
     signature = sig;
 }
@@ -496,7 +496,7 @@ bool LibProc::isPreserved(Exp *e) { return signature->isPreserved(e); }
  *********************/
 
 UserProc::UserProc()
-    : Proc(), cfg(nullptr), status(PROC_UNDECODED),
+    : Function(), cfg(nullptr), status(PROC_UNDECODED),
       // decoded(false), analysed(false),
       nextLocal(0), nextParam(0), // decompileSeen(false), decompiled(false), isRecursive(false)
       cycleGrp(nullptr), theReturnStatement(nullptr) {
@@ -512,7 +512,7 @@ UserProc::UserProc()
 UserProc::UserProc(Prog *prog, std::string &name, ADDRESS uNative)
     : // Not quite ready for the below fix:
       // Proc(prog, uNative, prog->getDefaultSignature(name.c_str())),
-      Proc(prog, uNative, new Signature(name.c_str())),
+      Function(prog, uNative, new Signature(name.c_str())),
       cfg(new Cfg()), status(PROC_UNDECODED), cycleGrp(nullptr), theReturnStatement(nullptr), DFGcount(0) {
     cfg->setProc(this); // Initialise cfg.myProc
     localTable.setProc(this);
@@ -672,9 +672,9 @@ void UserProc::setEntryBB() {
   * \param  callee - A pointer to the Proc object for the callee
   *
   ******************************************************************************/
-void UserProc::addCallee(Proc *callee) {
+void UserProc::addCallee(Function *callee) {
     // is it already in? (this is much slower than using a set)
-    std::list<Proc *>::iterator cc;
+    std::list<Function *>::iterator cc;
     for (cc = calleeList.begin(); cc != calleeList.end(); cc++)
         if (*cc == callee)
             return; // it's already in
@@ -1112,7 +1112,7 @@ ProcSet *UserProc::decompile(ProcList *path, int &indent) {
                         child = c->cycleGrp;
                         // Find first element f of path that is in c->cycleGrp
                         ProcList::iterator pi;
-                        Proc *f = nullptr;
+                        Function *f = nullptr;
                         for (pi = path->begin(); pi != path->end(); ++pi) {
                             if (c->cycleGrp->find(*pi) != c->cycleGrp->end()) {
                                 f = *pi;
@@ -2158,7 +2158,7 @@ void UserProc::assignProcsToCalls() {
                 continue;
             CallStatement *call = (CallStatement *)(rtl)->back();
             if (call->getDestProc() == nullptr && !call->isComputed()) {
-                Proc *p = prog->findProc(call->getFixedDest());
+                Function *p = prog->findProc(call->getFixedDest());
                 if (p == nullptr) {
                     std::cerr << "Cannot find proc for dest " << call->getFixedDest() << " in call at "
                               << (rtl)->getAddress() << "\n";
@@ -2414,7 +2414,7 @@ void UserProc::removeReturn(Exp *e) {
         theReturnStatement->removeReturn(e);
 }
 
-void Proc::removeParameter(Exp *e) {
+void Function::removeParameter(Exp *e) {
     int n = signature->findParam(e);
     if (n != -1) {
         signature->removeParameter(n);
@@ -2426,7 +2426,7 @@ void Proc::removeParameter(Exp *e) {
     }
 }
 
-void Proc::removeReturn(Exp *e) { signature->removeReturn(e); }
+void Function::removeReturn(Exp *e) { signature->removeReturn(e); }
 
 //! Add the parameter to the signature
 void UserProc::addParameter(Exp *e, Type *ty) {
@@ -3809,7 +3809,7 @@ void UserProc::getDefinitions(LocationSet &ls) {
     }
 }
 
-void Proc::addCallers(std::set<UserProc *> &callers) {
+void Function::addCallers(std::set<UserProc *> &callers) {
     std::set<CallStatement *>::iterator it;
     for (it = callerSet.begin(); it != callerSet.end(); it++) {
         UserProc *callerProc = (*it)->getProc();
@@ -5570,7 +5570,7 @@ void dumpProcSet(ProcSet *pc) {
     std::cerr << "\n";
 }
 /// Set an equation as proven. Useful for some sorts of testing
-void Proc::setProvenTrue(Exp *fact) {
+void Function::setProvenTrue(Exp *fact) {
     assert(fact->isEquality());
     Exp *lhs = ((Binary *)fact)->getSubExp1();
     Exp *rhs = ((Binary *)fact)->getSubExp2();

@@ -21,7 +21,7 @@
 class Global;
 class Cluster;
 class Prog;
-class Proc;
+class Function;
 class UserProc;
 class LibProc;
 class Signature;
@@ -57,12 +57,12 @@ class XMLProgParser {
     void handleElementStart(QXmlStreamReader &strm);
     void handleElementEnd(const QXmlStreamReader &el);
 
-protected:
+  protected:
     void parseFile(const QString &filename);
     void parseChildren(Cluster *c);
 
 #define TAGD(x)                                                                                                        \
-    void start_##x(const QXmlStreamAttributes &attr);                                                                                 \
+    void start_##x(const QXmlStreamAttributes &attr);                                                                  \
     void addToContext_##x(Context *c, int e);
 
     TAGD(prog)
@@ -80,7 +80,7 @@ protected:
     TAGD(defines)
     TAGD(signature)
     TAGD(param)
-    TAGD(return)
+    TAGD(return )
     TAGD(rettype)
     TAGD(prefparam)
     TAGD(prefreturn)
@@ -136,7 +136,7 @@ protected:
 
     void persistToXML(QXmlStreamWriter &out, Global *g);
     void persistToXML(QXmlStreamWriter &out, Cluster *c);
-    void persistToXML(QXmlStreamWriter &out, Proc *proc);
+    void persistToXML(QXmlStreamWriter &out, Function *proc);
     void persistToXML(QXmlStreamWriter &out, LibProc *proc);
     void persistToXML(QXmlStreamWriter &out, UserProc *proc);
     void persistToXML(QXmlStreamWriter &out, Signature *sig);
