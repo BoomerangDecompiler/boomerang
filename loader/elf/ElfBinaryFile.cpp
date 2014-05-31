@@ -86,7 +86,7 @@ unsigned elf_hash(const char* o0) {
 }    // extern "C"
 
 // Return true for a good load
-bool ElfBinaryFile::RealLoad(const char* sName) {
+bool ElfBinaryFile::RealLoad(const QString & sName) {
     int i;
 
     if (m_bArchive) {
@@ -95,7 +95,7 @@ bool ElfBinaryFile::RealLoad(const char* sName) {
     }
 
     m_pFileName = sName;
-    m_fd = fopen (sName, "rb");
+    m_fd = fopen (qPrintable(sName), "rb");
     if (m_fd == nullptr) return 0;
 
     // Determine file size

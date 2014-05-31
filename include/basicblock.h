@@ -18,6 +18,8 @@
 #include "types.h"
 #include "managed.h"            // For LocationSet etc
 
+#include <QtCore/QString>
+
 class Location;
 class HLLCode;
 class BasicBlock;
@@ -274,7 +276,7 @@ protected:
         int             loopStamps[2], revLoopStamps[2]; //!< used for structuring analysis
         travType        traversed;          //!< traversal flag for the numerous DFS's
         bool            hllLabel;           //!< emit a label for this node when generating HL code?
-        char *          labelStr;           //!< the high level label for this node (if needed)
+        QString         labelStr;           //!< the high level label for this node (if needed)
         int             indentLevel;        //!< the indentation level of this node in the final code
 
         // analysis information

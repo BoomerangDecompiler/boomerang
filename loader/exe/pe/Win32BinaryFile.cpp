@@ -107,7 +107,7 @@ typedef char ct_failure[sizeof(SectionInfo) == sizeof(PESectionInfo)];
 }
 
 
-Win32BinaryFile::Win32BinaryFile() : m_pFileName(0), mingw_main(false)
+Win32BinaryFile::Win32BinaryFile() : mingw_main(false)
 { }
 
 Win32BinaryFile::~Win32BinaryFile() {
@@ -398,9 +398,9 @@ BOOL CALLBACK lookforsource(
 }
 #endif
 
-bool Win32BinaryFile::RealLoad(const char* sName) {
+bool Win32BinaryFile::RealLoad(const QString & sName) {
     m_pFileName = sName;
-    FILE *fp = fopen(sName,"rb");
+    FILE *fp = fopen(qPrintable(sName),"rb");
 
     DWord peoffLE, peoff;
     fseek(fp, 0x3c, SEEK_SET);
@@ -426,13 +426,13 @@ bool Win32BinaryFile::RealLoad(const char* sName) {
 
     m_pHeader = (Header *)base;
     if (m_pHeader->sigLo!='M' || m_pHeader->sigHi!='Z') {
-        fprintf(stderr,"error loading file %s, bad magic\n", sName);
+        fprintf(stderr,"error loading file %s, bad magic\n", qPrintable(sName));
         return false;
     }
 
     m_pPEHeader = (PEHeader *)(base+peoff);
     if (m_pPEHeader->sigLo!='P' || m_pPEHeader->sigHi!='E') {
-        fprintf(stderr,"error loading file %s, bad PE magic\n", sName);
+        fprintf(stderr,"error loading file %s, bad PE magic\n", qPrintable(sName));
         return false;
     }
 

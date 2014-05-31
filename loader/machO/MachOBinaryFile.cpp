@@ -35,7 +35,7 @@
 //#define DEBUG_MACHO_LOADER
 //#define DEBUG_MACHO_LOADER_OBJC
 
-MachOBinaryFile::MachOBinaryFile() : m_pFileName(0) {
+MachOBinaryFile::MachOBinaryFile() {
     machine = MACHINE_PPC;
     swap_bytes = false;
 }
@@ -82,9 +82,9 @@ ADDRESS MachOBinaryFile::GetMainEntryPoint() {
 
 #define BE4(x) ((magic[(x)] << 24) | (magic[(x)+1] << 16) | (magic[(x)+2] << 8) | (magic[(x)+3]))
 
-bool MachOBinaryFile::RealLoad(const char* sName) {
+bool MachOBinaryFile::RealLoad(const QString &sName) {
     m_pFileName = sName;
-    FILE *fp = fopen(sName,"rb");
+    FILE *fp = fopen(qPrintable(sName),"rb");
     unsigned int imgoffs = 0;
 
     unsigned char magic[12*4];
@@ -121,7 +121,7 @@ bool MachOBinaryFile::RealLoad(const char* sName) {
 
     if ((header->magic != MH_MAGIC) && (_BMMH(header->magic) != MH_MAGIC)) {
         fclose(fp);
-        fprintf(stderr,"error loading file %s, bad Mach-O magic\n", sName);
+        fprintf(stderr,"error loading file %s, bad Mach-O magic\n", qPrintable(sName));
         return false;
     }
 

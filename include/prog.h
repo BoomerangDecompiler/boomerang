@@ -79,9 +79,9 @@ class Prog {
 
     void remProc(UserProc *proc);
     void removeProc(const QString &name);
-    const char *getName(); // Get the name of this program
-    const char *getPath() { return m_path.c_str(); }
-    const char *getPathAndName() { return (m_path + m_name).c_str(); }
+    QString getName(); // Get the name of this program
+    QString getPath() { return m_path; }
+    QString getPathAndName() { return (m_path + m_name); }
     int getNumProcs();
     int getNumUserProcs();
     Proc *getProc(int i) const;
@@ -216,7 +216,8 @@ class Prog {
     FrontEnd *pFE; //!< Pointer to the FrontEnd object for the project
 
     /* Persistent state */
-    std::string m_name, m_path; // name of the program and its full path
+    QString m_name;         //name of the program
+    QString m_path;             // its full path
     std::list<Proc *> m_procs;  //!< list of procedures
     PROGMAP m_procLabels;       //!< map from address to Proc*
     // FIXME: is a set of Globals the most appropriate data structure? Surely not.

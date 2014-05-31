@@ -23,26 +23,29 @@ ENDIF()
 # Options section
 ###############################################################################
 OPTION(BUILD_TESTING "Build the testing tree." OFF)
+# help the cmake find 3rd_party compiled/installed packages
+set(CMAKE_PREFIX_PATH  "${CMAKE_PREFIX_PATH};${PROJECT_SOURCE_DIR}/3rd_party")
+
 IF(BUILD_TESTING)
     enable_testing()
-
-    find_package(GTest REQUIRED)
-    set(GTest_LIBRARIES ${GTEST_MAIN_LIBRARIES} ${GTEST_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
 
     ExternalProject_Add(
         GMOCK_BUILD
         DOWNLOAD_DIR ${PROJECT_SOURCE_DIR}/3rd_party/gmock
-        URL http://googlemock.googlecode.com/files/gmock-1.7.0.zip
+        URL http://googlemock.googlecode.com/files/gmock-1.6.0.zip
         UPDATE_COMMAND ""
-        PATCH_COMMAND ${CMAKE_COMMAND} -E copy_directory ../gmock_cmake ../gmock/
+        PATCH_COMMAND patch -N -t -p1 < ../gmock.patch
         SOURCE_DIR ${PROJECT_SOURCE_DIR}/3rd_party/gmock
         INSTALL_DIR ${PROJECT_SOURCE_DIR}/3rd_party/
-        INSTALL_COMMAND ""
         CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
     )
-    find_package(Protobuf REQUIRED)
-    INCLUDE_DIRECTORIES(${PROTOBUF_INCLUDE_DIRS} ${GTEST_INCLUDE_DIRS})
+    set(GTest_LIBRARIES gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
+    #find_package(Protobuf REQUIRED)
 ENDIF(BUILD_TESTING)
+link_directories(${PROJECT_SOURCE_DIR}/3rd_party/lib)
+include_directories(${PROJECT_SOURCE_DIR}/3rd_party/include)
+include_directories(${PROJECT_SOURCE_DIR}/include)
+
 ###############################################################################
 # Compiler specific flags section
 ###############################################################################
@@ -104,8 +107,6 @@ ENDIF(NOT "${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
 #IF(GC_FOUND)
 #    SET(GC_LIBS -lgc)
 #ENDIF()
-# Expat
-FIND_PACKAGE(EXPAT)
 FIND_PACKAGE(Boost REQUIRED)
 find_package(Qt5Core REQUIRED)
 find_package(Qt5Xml REQUIRED)
@@ -120,7 +121,6 @@ INCLUDE_DIRECTORIES(
 #set variables to expand in config.h.cmake
 SET_01(HAVE_LIBCPPUNIT    CPPUNIT_FOUND)
 SET_01(HAVE_LIBDL         DL_FOUND)
-SET_01(HAVE_LIBEXPAT      EXPAT_FOUND)
 SET_01(HAVE_LIBGC         GC_FOUND)
 CHECK_INCLUDE_FILES(inttypes.h    HAVE_INTTYPES_H)
 CHECK_INCLUDE_FILES(memory.h      HAVE_MEMORY_H)
@@ -158,9 +158,6 @@ INCLUDE_DIRECTORIES("${CMAKE_CURRENT_SOURCE_DIR}/include"
         "${CMAKE_CURRENT_BINARY_DIR}/include"
         ${Qt5Core_INCLUDE_DIRS}
 )
-IF(EXPAT_FOUND)
-    INCLUDE_DIRECTORIES("${EXPAT_INCLUDE_DIRS}")
-ENDIF()
 link_directories(
     ${PROJECT_SOURCE_DIR}/3rd_party/lib
     "${CMAKE_CURRENT_BINARY_DIR}/loader"

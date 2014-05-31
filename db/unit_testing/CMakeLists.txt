@@ -28,7 +28,6 @@ TARGET_LINK_LIBRARIES(db_tests ${GTest_LIBRARIES} ${PROTOBUF_LIBRARIES}
 ${DL_LIBS}
 ${GC_LIBS}
 ${DEBUG_LIB}
-"${EXPAT_LIBRARIES}"
 boom_base frontend db type boomerang_DSLs codegen util BinaryFile
 boom_base frontend db codegen
 pthread

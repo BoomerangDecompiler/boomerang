@@ -182,13 +182,13 @@ bool isStub(ADDRESS hostAddr, int& offset) {
 #endif
 
 
-bool HpSomBinaryFile::RealLoad(const char* sName) {
+bool HpSomBinaryFile::RealLoad(const QString & sName) {
     FILE    *fp;
 
     m_pFileName = sName;
 
-    if ((fp = fopen(sName, "rb")) == nullptr) {
-        fprintf(stderr, "Could not open binary file %s\n", sName);
+    if ((fp = fopen(qPrintable(sName), "rb")) == nullptr) {
+        fprintf(stderr, "Could not open binary file %s\n", qPrintable(sName));
         return false;
     }
 
@@ -205,7 +205,7 @@ bool HpSomBinaryFile::RealLoad(const char* sName) {
 
     fseek(fp, 0, SEEK_SET);
     if (fread(m_pImage, 1, size, fp) != (unsigned)size) {
-        fprintf(stderr, "Error reading binary file %s\n", sName);
+        fprintf(stderr, "Error reading binary file %s\n", qPrintable(sName));
         return false;
     }
 
@@ -217,7 +217,7 @@ bool HpSomBinaryFile::RealLoad(const char* sName) {
     if (((system_id != 0x210) && (system_id != 0x20B)) ||
             ((a_magic != 0x107) && (a_magic != 0x108) && (a_magic != 0x10B))) {
         fprintf(stderr, "%s is not a standard PA/RISC executable file, with "
-                "system ID %X and magic number %X\n", sName, system_id, a_magic);
+                "system ID %X and magic number %X\n", qPrintable(sName), system_id, a_magic);
         return false;
     }
 

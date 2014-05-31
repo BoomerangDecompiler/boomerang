@@ -22,15 +22,15 @@
 using namespace std;
 QString BinaryFileFactory::m_base_path = "";
 
-QObject *BinaryFileFactory::Load(const std::string &sName) {
-    QObject *pBF = getInstanceFor( sName.c_str() );
+QObject *BinaryFileFactory::Load(const QString &sName) {
+    QObject *pBF = getInstanceFor( sName );
     LoaderInterface *ldr_iface = qobject_cast<LoaderInterface *>(pBF);
     if( ldr_iface == nullptr ) {
         std::cerr << "unrecognised binary file format.\n";
         return nullptr;
     }
-    if( ldr_iface->RealLoad( sName.c_str() ) == 0 ) {
-        fprintf( stderr, "Loading '%s' failed\n", sName.c_str() );
+    if( ldr_iface->RealLoad( sName ) == 0 ) {
+        fprintf( stderr, "Loading '%s' failed\n", qPrintable(sName) );
         delete pBF;
         return nullptr;
     }
@@ -43,12 +43,12 @@ QObject *BinaryFileFactory::Load(const std::string &sName) {
 #define TESTMAGIC4(buf,off,a,b,c,d) (buf[off] == a && buf[off+1] == b && \
     buf[off+2] == c && buf[off+3] == d)
 
-static QString selectPluginForFile(const char *sName) {
+static QString selectPluginForFile(const QString &sName) {
     QString libName;
     unsigned char buf[64];
-    FILE *f = fopen (sName, "rb");
+    FILE *f = fopen (qPrintable(sName), "rb");
     if( f == nullptr ) {
-        fprintf(stderr, "Unable to open binary file: %s\n", sName );
+        fprintf(stderr, "Unable to open binary file: %s\n", qPrintable(sName) );
         return nullptr;
     }
     fread (buf, sizeof(buf), 1, f);
@@ -101,7 +101,7 @@ static QString selectPluginForFile(const char *sName) {
  * Perform simple magic on the file by the given name in order to determine the appropriate type, and then return an
  * instance of the appropriate subclass.
  */
-QObject* BinaryFileFactory::getInstanceFor( const char *sName ) {
+QObject* BinaryFileFactory::getInstanceFor( const QString &sName ) {
     QDir pluginsDir(qApp->applicationDirPath());
     pluginsDir.cd("lib");
     if(!qApp->libraryPaths().contains(pluginsDir.absolutePath())) {

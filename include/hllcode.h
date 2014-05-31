@@ -34,6 +34,7 @@ class Signature;
 class Assign;
 class LocationSet;
 class CallStatement;
+class QTextStream;
 // class CallStatement::RetLocs;
 class ReturnStatement;
 
@@ -119,6 +120,7 @@ class HLLCode {
      * output functions, pure virtual.
      */
     virtual void print(std::ostream &os) = 0;
+    void print(QTextStream &qf);
 }; // class HLLCode
 
 class SyntaxNode {

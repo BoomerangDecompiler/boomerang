@@ -47,7 +47,7 @@ class Argument;
 class Signature;
 class Cluster;
 class XMLProgParser;
-
+class QTextStream;
 /***************************************************************************/ /**
   * Procedure class.
   *============================================================================*/
@@ -278,6 +278,7 @@ class UserProc : public Proc {
     void generateCode(HLLCode *hll);
 
     void print(std::ostream &out, bool html = false) const;
+    void print(QTextStream &out, bool html = false) const;
     void printParams(std::ostream &out, bool html = false) const;
     char *prints();
     void dump();

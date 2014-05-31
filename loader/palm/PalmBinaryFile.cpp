@@ -128,14 +128,14 @@ double PalmBinaryFile::readNativeFloat8(ADDRESS nat) { //TODO: lifted from Win32
     return *(double*)raw;
 }
 
-bool PalmBinaryFile::RealLoad(const char* sName) {
+bool PalmBinaryFile::RealLoad(const QString & sName) {
     FILE    *fp;
     char    buf[32];
 
     m_pFileName = sName;
 
-    if ((fp = fopen(sName, "rb")) == nullptr) {
-        fprintf(stderr, "Could not open binary file %s\n", sName);
+    if ((fp = fopen(qPrintable(sName), "rb")) == nullptr) {
+        fprintf(stderr, "Could not open binary file %s\n", qPrintable(sName));
         return false;
     }
 
@@ -152,7 +152,7 @@ bool PalmBinaryFile::RealLoad(const char* sName) {
 
     fseek(fp, 0, SEEK_SET);
     if (fread(m_pImage, 1, size, fp) != (unsigned)size) {
-        fprintf(stderr, "Error reading binary file %s\n", sName);
+        fprintf(stderr, "Error reading binary file %s\n", qPrintable(sName));
         return false;
     }
 
@@ -160,7 +160,7 @@ bool PalmBinaryFile::RealLoad(const char* sName) {
     if ((strncmp((char*)(m_pImage+0x3C), "appl", 4) != 0) &&
             (strncmp((char*)(m_pImage+0x3C), "panl", 4) != 0) &&
             (strncmp((char*)(m_pImage+0x3C), "libr", 4) != 0)) {
-        fprintf(stderr, "%s is not a standard .prc file\n", sName);
+        fprintf(stderr, "%s is not a standard .prc file\n", qPrintable(sName));
         return false;
     }
 

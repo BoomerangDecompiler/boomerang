@@ -41,7 +41,7 @@ public:
     bool  PostLoad(void* handle) override;         // For archive files only
     LOAD_FMT GetFormat() const override;           // Get format i.e. LOADFMT_PALM
     MACHINE GetMachine() const override;           // Get machine i.e. MACHINE_PALM
-    const char *getFilename() const  override { return m_pFileName; }
+    QString getFilename() const override { return m_pFileName; }
 
     bool isLibrary() const  override;
     QStringList getDependencyList() override;
@@ -97,7 +97,7 @@ public:
     float   readNativeFloat4(ADDRESS nat) override;
     double  readNativeFloat8(ADDRESS nat) override;
 protected:
-    virtual bool  RealLoad(const char* sName) override; // Load the file; pure virtual
+    bool  RealLoad(const QString &sName) override; // Load the file; pure virtual
 
 private:
     std::map<ADDRESS, std::string> m_symTable;
@@ -105,7 +105,7 @@ private:
     unsigned char* m_pData;                        //!< Points to data
     // Offset from start of data to where register a5 should be initialised to
     unsigned int   m_SizeBelowA5;
-    const char *   m_pFileName;
+    QString        m_pFileName;
 };
 
 #endif      // #ifndef __PALMBINARYFILE_H__

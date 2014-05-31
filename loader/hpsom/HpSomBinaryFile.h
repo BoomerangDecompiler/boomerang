@@ -90,7 +90,7 @@ public:
     bool        PostLoad(void* handle) override;     // For archive files only
     virtual LOAD_FMT    GetFormat() const;       // Get format i.e. LOADFMT_PALM
     virtual MACHINE     GetMachine() const;       // Get format i.e. MACHINE_HPRISC
-    virtual const char *getFilename() const { return m_pFileName; }
+    QString getFilename() const override { return m_pFileName; }
 
     virtual bool        isLibrary() const;
     virtual QStringList getDependencyList();
@@ -137,7 +137,7 @@ public:
     double readNativeFloat8(ADDRESS nat);
     QWord readNative8(ADDRESS nat);
 protected:
-    virtual bool        RealLoad(const char* sName); // Load the file; pure virtual
+    bool RealLoad(const QString &sName) override; // Load the file; pure virtual
 
 
 private:
@@ -148,7 +148,7 @@ private:
     SymTab        symbols;                    // Symbol table object
     //        ADDRESS        mainExport;                    // Export entry for "main"
     std::set<ADDRESS> imports;                // Set of imported proc addr's
-    const char *m_pFileName;
+    QString m_pFileName;
 
     // LoaderInterface interface
 public:

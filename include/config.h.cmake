@@ -10,9 +10,6 @@
 /* Define to 1 if you have the `dl' library (-ldl). */
 #cmakedefine HAVE_LIBDL @HAVE_LIBDL@
 
-/* Define to 1 if you have the `expat' library (-lexpat). */
-#cmakedefine HAVE_LIBEXPAT @HAVE_LIBEXPAT@
-
 /* Define to 1 if you have the `gc' library (-lgc). */
 #cmakedefine HAVE_LIBGC @HAVE_LIBGC@
 

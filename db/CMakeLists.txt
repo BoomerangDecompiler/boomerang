@@ -52,10 +52,8 @@ SET(SRC
         statement.cpp
         table.cpp
         visitor.cpp
+        xmlprogparser.cpp
 )
-IF(EXPAT_FOUND)
-    SET(SRC ${SRC} xmlprogparser.cpp)
-ENDIF()
 IF(BUILD_TESTING)
 ADD_SUBDIRECTORY(unit_testing)
 ENDIF()

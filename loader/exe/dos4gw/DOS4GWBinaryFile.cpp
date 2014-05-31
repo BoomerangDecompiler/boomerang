@@ -34,9 +34,6 @@ extern "C" {
 int microX86Dis(void* p);            // From microX86dis.c
 }
 
-DOS4GWBinaryFile::DOS4GWBinaryFile() : m_pFileName(0) {
-}
-
 DOS4GWBinaryFile::~DOS4GWBinaryFile() {
     for (int i=0; i < m_iNumSections; i++) {
         if (m_pSections[i].pSectionName) {
@@ -138,9 +135,9 @@ ADDRESS DOS4GWBinaryFile::GetMainEntryPoint() {
 }
 
 
-bool DOS4GWBinaryFile::RealLoad(const char* sName) {
+bool DOS4GWBinaryFile::RealLoad(const QString & sName) {
     m_pFileName = sName;
-    FILE *fp = fopen(sName,"rb");
+    FILE *fp = fopen(qPrintable(sName),"rb");
 
     DWord lxoffLE, lxoff;
     fseek(fp, 0x3c, SEEK_SET);
@@ -153,7 +150,7 @@ bool DOS4GWBinaryFile::RealLoad(const char* sName) {
     fread(m_pLXHeader, sizeof(LXHeader), 1, fp);
 
     if (m_pLXHeader->sigLo != 'L' || (m_pLXHeader->sigHi != 'X' && m_pLXHeader->sigHi != 'E')) {
-        fprintf(stderr,"error loading file %s, bad LE/LX magic\n", sName);
+        fprintf(stderr,"error loading file %s, bad LE/LX magic\n", qPrintable(sName));
         return false;
     }
 

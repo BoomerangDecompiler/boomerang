@@ -42,6 +42,7 @@
 #include <queue>
 #include <cstdarg>  // For varargs
 #include <sstream>
+#include <QDir>
 
 using namespace std;
 /***************************************************************************//**
@@ -101,7 +102,7 @@ FrontEnd* FrontEnd::instantiate(QObject *pBF, Prog* prog, BinaryFileFactory* pbf
  * \param prog program being decoded
  * \returns Binary-specific frontend.
  ******************************************************************************/
-FrontEnd* FrontEnd::Load(const std::string &fname, Prog* prog) {
+FrontEnd* FrontEnd::Load(const QString &fname, Prog* prog) {
     BinaryFileFactory* pbff = new BinaryFileFactory;
     if (pbff == nullptr) return nullptr;
     QObject *pBF = pbff->Load(fname);
@@ -230,17 +231,15 @@ std::vector<ADDRESS> FrontEnd::getEntryPoints() {
     if (a != NO_ADDRESS)
         entrypoints.push_back(a);
     else {  // try some other tricks
-        const char *fname = ldrIface->getFilename();
+        QString fname = ldrIface->getFilename();
         // X11 Module
-        if (!strcmp(fname + strlen(fname) - 6, "_drv.o")) {
-            const char *p = fname + strlen(fname) - 6;
-            while (*p != '/' && *p != '\\' && p != fname)
-                p--;
+        if (fname.endsWith("_drv.o")) {
+            int seploc = fname.lastIndexOf(QDir::separator());
+            QString p = fname.mid(seploc+1); // part after the last path separator
             if (p != fname) {
-                p++;
-                std::string name(p);
-                name = name.substr(0,name.length()-6)+"ModuleData";
-                ADDRESS tmpaddr = symIface ? symIface->GetAddressByName(name.c_str(), true) : NO_ADDRESS;
+
+                QString name = p.mid(0,p.length()-6)+"ModuleData";
+                ADDRESS tmpaddr = symIface ? symIface->GetAddressByName(qPrintable(name), true) : NO_ADDRESS;
                 if (tmpaddr != NO_ADDRESS) {
                     ADDRESS setup, teardown;
                     /*uint32_t vers = */bin_iface->readNative4(tmpaddr); //TODO: find use for vers ?
@@ -256,7 +255,7 @@ std::vector<ADDRESS> FrontEnd::getEntryPoints() {
             }
         }
         // Linux kernel module
-        if (symIface && !strcmp(fname + strlen(fname) - 3, ".ko")) {
+        if (symIface && fname.endsWith(".ko")) {
             a = symIface->GetAddressByName("init_module");
             if (a != NO_ADDRESS)
                 entrypoints.push_back(a);

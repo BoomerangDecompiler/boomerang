@@ -24,7 +24,7 @@ ExeBinaryFile::ExeBinaryFile()
 {
 }
 
-bool ExeBinaryFile::RealLoad(const char* sName) {
+bool ExeBinaryFile::RealLoad(const QString & sName) {
     FILE   *fp;
     int        i, cb;
     Byte    buf[4];
@@ -46,14 +46,14 @@ bool ExeBinaryFile::RealLoad(const char* sName) {
     }
 
     /* Open the input file */
-    if ((fp = fopen(sName, "rb")) == nullptr) {
-        fprintf(stderr, "Could not open file %s\n", sName);
+    if ((fp = fopen(qPrintable(sName), "rb")) == nullptr) {
+        fprintf(stderr, "Could not open file %s\n", qPrintable(sName));
         return 0;
     }
 
     /* Read in first 2 bytes to check EXE signature */
     if (fread(m_pHeader, 1, 2, fp) != 2) {
-        fprintf(stderr, "Cannot read file %s\n", sName);
+        fprintf(stderr, "Cannot read file %s\n", qPrintable(sName));
         return 0;
     }
 
@@ -62,7 +62,7 @@ bool ExeBinaryFile::RealLoad(const char* sName) {
         /* Read rest of m_pHeader */
         fseek(fp, 0, SEEK_SET);
         if (fread(m_pHeader, sizeof(exeHeader), 1, fp) != 1) {
-            fprintf(stderr, "Cannot read file %s\n", sName);
+            fprintf(stderr, "Cannot read file %s\n", qPrintable(sName));
             return 0;
         }
 
@@ -142,7 +142,7 @@ bool ExeBinaryFile::RealLoad(const char* sName) {
     m_pImage    = new Byte[m_cbImage];
 
     if (cb != (int)fread(m_pImage, 1, (size_t)cb, fp)) {
-        fprintf(stderr, "Cannot read file %s\n", sName);
+        fprintf(stderr, "Cannot read file %s\n", qPrintable(sName));
         return 0;
     }
 

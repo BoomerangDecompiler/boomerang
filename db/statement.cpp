@@ -58,10 +58,6 @@ void Statement::setProc(UserProc *p) {
     }
 }
 
-Exp *Statement::getExpAtLex(unsigned int /*begin*/, unsigned int /*end*/) {
-    return nullptr;
-}
-
 bool Statement::mayAlias(Exp *e1, Exp *e2, int size) {
     if (*e1 == *e2) return true;
     // Pass the expressions both ways. Saves checking things like m[exp] vs m[exp+K] and m[exp+K] vs m[exp] explicitly

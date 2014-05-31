@@ -78,7 +78,7 @@ public:
     bool  PostLoad(void* handle) override;         // For archive files only
     LOAD_FMT GetFormat() const override;           // Get format (i.e. LOADFMT_EXE)
     MACHINE GetMachine() const override;           // Get machine (i.e. MACHINE_PENTIUM)
-    const char *getFilename() const  override { return m_pFileName; }
+    QString getFilename() const override { return m_pFileName; }
 
     bool isLibrary() const  override;
     QStringList getDependencyList() override;
@@ -108,7 +108,7 @@ public:
     bool    DisplayDetails(const char* fileName, FILE* f = stdout)  override;
 
 protected:
-    bool  RealLoad(const char* sName)  override; // Load the file; pure virtual
+    bool  RealLoad(const QString &sName)  override; // Load the file; pure virtual
 private:
 
 
@@ -117,7 +117,7 @@ private:
     int     m_cbImage;                  // Size of image
     int     m_cReloc;                   // Number of relocation entries
     DWord*  m_pRelocTable;              // The relocation table
-    const char *m_pFileName;
+    QString m_pFileName;
 };
 
 #endif      // ifndef __EXEBINARYFILE_H__

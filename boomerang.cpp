@@ -6,15 +6,9 @@
  * \brief   Command line processing for the Boomerang decompiler
  ******************************************************************************/
 
-#include <inttypes.h>
+#include "boomerang.h"
+
 #include "config.h"
-
-#   ifdef HAVE_LIBEXPAT
-#       define USE_XML 1    // Set to 0 to not use the expat library for XML loading and saving
-#   else
-#       define USE_XML 0    // Set to 0 to not use the expat library for XML loading and saving
-#   endif
-
 #include "prog.h"
 #include "proc.h"
 #include "BinaryFile.h"
@@ -22,12 +16,9 @@
 #include "hllcode.h"
 #include "codegen/chllcode.h"
 //#include "transformer.h"
-#include "boomerang.h"
 #include "util.h"
 #include "log.h"
-#if USE_XML
 #include "xmlprogparser.h"
-#endif
 
 // For the -nG switch to disable the garbage collector
 #include "config.h"
@@ -37,6 +28,7 @@
 #define NO_GARBAGE_COLLECTOR
 #endif
 
+#include <inttypes.h>
 #include <iostream>
 #include <cstring>
 #include <cstdlib>
@@ -213,7 +205,7 @@ int Boomerang::processCommand(std::vector<std::string> &args) {
                 std::cerr << "not enough arguments for cmd\n";
                 return 1;
             }
-            Prog *p = loadAndDecode(args[1]);
+            Prog *p = loadAndDecode(args[1].c_str());
             if (p == nullptr) {
                 std::cerr << "failed to load " << args[1] << "\n";
                 return 1;
@@ -221,20 +213,19 @@ int Boomerang::processCommand(std::vector<std::string> &args) {
             prog = p;
             break;
         }
-#if USE_XML
         case 2: {
             if (args.size() < 2) {
                 std::cerr << "not enough arguments for cmd\n";
                 return 1;
             }
-            auto fname = args[1];
+            QString fname = args[1].c_str();
             XMLProgParser *p = new XMLProgParser();
             Prog *pr = p->parse(fname);
             if (pr == nullptr) {
                 // try guessing
-                pr = p->parse(outputPath + fname + "/" + fname + ".xml");
+                pr = p->parse(QString(outputPath.c_str()) + fname + "/" + fname + ".xml");
                 if (pr == nullptr) {
-                    std::cerr << "failed to read xml " << fname << "\n";
+                    qCritical() << "failed to read xml " << fname << "\n";
                     return 1;
                 }
             }
@@ -250,7 +241,6 @@ int Boomerang::processCommand(std::vector<std::string> &args) {
             p->persistToXML(prog);
             break;
         }
-#endif
         case 4: {
             if (prog == nullptr) {
                 std::cerr << "no valid Prog object !\n";
@@ -407,8 +397,8 @@ int Boomerang::processCommand(std::vector<std::string> &args) {
                     std::cerr << "cluster " << args[2] << " is not empty\n";
                     return 1;
                 }
-                QFile::remove(QString(cluster->getOutPath("xml")));
-                QFile::remove(QString(cluster->getOutPath("c")));
+                QFile::remove(cluster->getOutPath("xml"));
+                QFile::remove(cluster->getOutPath("c"));
                 assert(cluster->getParent());
                 cluster->getParent()->removeChild(cluster);
             } else {
@@ -479,7 +469,7 @@ int Boomerang::processCommand(std::vector<std::string> &args) {
             }
             if (args[1]=="prog") {
 
-                std::cout << "prog " << prog->getName() << ":\n";
+                std::cout << "prog " << prog->getName().toStdString() << ":\n";
                 std::cout << "\tclusters:\n";
                 prog->getRootCluster()->printTree(std::cout);
                 std::cout << "\n\tlibprocs:\n";
@@ -672,7 +662,7 @@ void Boomerang::objcDecode(std::map<std::string, ObjcModule> &modules, Prog *pro
  *
  * \returns A Prog object.
  */
-Prog *Boomerang::loadAndDecode(const std::string &fname, const char *pname) {
+Prog *Boomerang::loadAndDecode(const QString &fname, const char *pname) {
     std::cout << "loading...\n";
     Prog *prog = new Prog();
     FrontEnd *fe = FrontEnd::Load(fname, prog);

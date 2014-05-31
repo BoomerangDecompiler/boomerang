@@ -52,7 +52,7 @@ void CfgTest::TearDown () {
 
 TEST_F(CfgTest,testDominators) {
     BinaryFileFactory bff;
-    QObject *pBF = bff.Load(baseDir.absoluteFilePath(FRONTIER_PENTIUM).toStdString());
+    QObject *pBF = bff.Load(baseDir.absoluteFilePath(FRONTIER_PENTIUM));
     ASSERT_TRUE(pBF != 0);
     Prog* prog = new Prog;
     FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
@@ -106,7 +106,7 @@ TEST_F(CfgTest,testDominators) {
 
 TEST_F(CfgTest,testSemiDominators) {
     BinaryFileFactory bff;
-    QObject* pBF = bff.Load(baseDir.absoluteFilePath(SEMI_PENTIUM).toStdString());
+    QObject* pBF = bff.Load(baseDir.absoluteFilePath(SEMI_PENTIUM));
     ASSERT_TRUE(pBF != 0);
     Prog* prog = new Prog;
     FrontEnd* pFE = new PentiumFrontEnd(pBF, prog, &bff);
@@ -157,7 +157,7 @@ TEST_F(CfgTest,testSemiDominators) {
  *============================================================================*/
 TEST_F(CfgTest,testPlacePhi ) {
     BinaryFileFactory bff;
-    QObject* pBF = bff.Load(baseDir.absoluteFilePath(FRONTIER_PENTIUM).toStdString());
+    QObject* pBF = bff.Load(baseDir.absoluteFilePath(FRONTIER_PENTIUM));
     ASSERT_TRUE(pBF != 0);
     Prog* prog = new Prog;
     FrontEnd* pFE = new PentiumFrontEnd(pBF, prog, &bff);
@@ -201,7 +201,7 @@ TEST_F(CfgTest,testPlacePhi ) {
  *============================================================================*/
 TEST_F(CfgTest,testPlacePhi2) {
     BinaryFileFactory bff;
-    QObject* pBF = bff.Load(baseDir.absoluteFilePath(IFTHEN_PENTIUM).toStdString());
+    QObject* pBF = bff.Load(baseDir.absoluteFilePath(IFTHEN_PENTIUM));
     ASSERT_TRUE(pBF != 0);
     Prog* prog = new Prog;
     FrontEnd* pFE = new PentiumFrontEnd(pBF, prog, &bff);
@@ -261,7 +261,7 @@ TEST_F(CfgTest,testPlacePhi2) {
  *============================================================================*/
 TEST_F(CfgTest,testRenameVars) {
     BinaryFileFactory bff;
-    QObject* pBF = bff.Load(baseDir.absoluteFilePath(FRONTIER_PENTIUM).toStdString());
+    QObject* pBF = bff.Load(baseDir.absoluteFilePath(FRONTIER_PENTIUM));
     ASSERT_TRUE(pBF != 0);
     Prog* prog = new Prog;
     FrontEnd* pFE = new PentiumFrontEnd(pBF, prog, &bff);

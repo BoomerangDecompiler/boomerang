@@ -21,7 +21,6 @@ TARGET_LINK_LIBRARIES(boomerang_gui
 ${DL_LIBS}
 ${GC_LIBS}
 ${DEBUG_LIB}
-${EXPAT_LIBRARIES}
 boom_base frontend db type boomerang_DSLs codegen util BinaryFile boom_base
 pthread
 )

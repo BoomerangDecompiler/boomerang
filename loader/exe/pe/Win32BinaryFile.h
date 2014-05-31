@@ -164,7 +164,7 @@ public:
     virtual void        UnLoad();                       // Unload the image
     virtual LOAD_FMT    GetFormat() const;              // Get format (i.e.LOADFMT_Win32)
     virtual MACHINE     GetMachine() const;            // Get machine (i.e. MACHINE_Pentium)
-    virtual const char* getFilename() const { return m_pFileName; }
+    QString getFilename() const override { return m_pFileName; }
     virtual bool        isLibrary() const;
     virtual QStringList getDependencyList();
     virtual ADDRESS        getImageBase();
@@ -212,7 +212,7 @@ public:
     bool        hasDebugInfo() { return haveDebugInfo; }
 
 protected:
-    virtual bool          RealLoad(const char* sName); // Load the file; pure virtual
+    bool RealLoad(const QString &sName) override; // Load the file; pure virtual
 
 private:
 
@@ -227,7 +227,7 @@ private:
     char *      base;                    // Beginning of the loaded image
     // Map from address of dynamic pointers to library procedure names:
     std::map<ADDRESS, std::string> dlprocptrs;
-    const char    *m_pFileName;
+    QString     m_pFileName;
     bool        haveDebugInfo;
     bool        mingw_main;
 

@@ -14,6 +14,10 @@
 #ifndef _XMLPROGPARSER_H_
 #define _XMLPROGPARSER_H_
 
+#include <string>
+#include <list>
+#include <map>
+
 class Global;
 class Cluster;
 class Prog;
@@ -29,29 +33,36 @@ class Exp;
 class Cfg;
 class BasicBlock;
 class RTL;
-
+class Statement;
+class XMLProgParser;
+class QString;
+class QStringList;
+class QXmlStreamAttributes;
+class QXmlStreamReader;
+class QXmlStreamWriter;
+class QStringRef;
 #define MAX_STACK 1024
 
 typedef struct {
     const char *tag;
-    void (XMLProgParser::*start_proc)(const char **);
+    void (XMLProgParser::*start_proc)(const QXmlStreamAttributes &);
     void (XMLProgParser::*end_proc)(Context *c, int e);
 } _tag;
 
 class XMLProgParser {
   public:
     XMLProgParser() {}
-    Prog *parse(const std::string &filename);
+    Prog *parse(const QString &filename);
     void persistToXML(Prog *prog);
-    void handleElementStart(const char *el, const char **attr);
-    void handleElementEnd(const char *el);
+    void handleElementStart(QXmlStreamReader &strm);
+    void handleElementEnd(const QXmlStreamReader &el);
 
-  protected:
-    void parseFile(const std::string &filename);
+protected:
+    void parseFile(const QString &filename);
     void parseChildren(Cluster *c);
 
 #define TAGD(x)                                                                                                        \
-    void start_##x(const char **attr);                                                                                 \
+    void start_##x(const QXmlStreamAttributes &attr);                                                                                 \
     void addToContext_##x(Context *c, int e);
 
     TAGD(prog)
@@ -123,29 +134,30 @@ class XMLProgParser {
     TAGD(subexp2)
     TAGD(subexp3)
 
-    void persistToXML(std::ostream &out, Global *g);
-    void persistToXML(std::ostream &out, Cluster *c);
-    void persistToXML(std::ostream &out, Proc *proc);
-    void persistToXML(std::ostream &out, LibProc *proc);
-    void persistToXML(std::ostream &out, UserProc *proc);
-    void persistToXML(std::ostream &out, Signature *sig);
-    void persistToXML(std::ostream &out, const Type *ty);
-    void persistToXML(std::ostream &out, const Exp *e);
-    void persistToXML(std::ostream &out, Cfg *cfg);
-    void persistToXML(std::ostream &out, const BasicBlock *bb);
-    void persistToXML(std::ostream &out, const RTL *rtl);
-    void persistToXML(std::ostream &out, const Statement *stmt);
+    void persistToXML(QXmlStreamWriter &out, Global *g);
+    void persistToXML(QXmlStreamWriter &out, Cluster *c);
+    void persistToXML(QXmlStreamWriter &out, Proc *proc);
+    void persistToXML(QXmlStreamWriter &out, LibProc *proc);
+    void persistToXML(QXmlStreamWriter &out, UserProc *proc);
+    void persistToXML(QXmlStreamWriter &out, Signature *sig);
+    void persistToXML(QXmlStreamWriter &out, const Type *ty);
+    void persistToXML(QXmlStreamWriter &out, const Exp *e);
+    void persistToXML(QXmlStreamWriter &out, Cfg *cfg);
+    void persistToXML(QXmlStreamWriter &out, const BasicBlock *bb);
+    void persistToXML(QXmlStreamWriter &out, const RTL *rtl);
+    void persistToXML(QXmlStreamWriter &out, const Statement *stmt);
 
     static _tag tags[];
 
-    int operFromString(const char *s);
-    const char *getAttr(const char **attr, const char *name);
+    int operFromString(const QStringRef &s);
+    const char *getAttr(const QXmlStreamAttributes &attr, const char *name);
 
     std::list<Context *> stack;
     std::map<int, void *> idToX;
     int phase;
 
-    void addId(const char **attr, void *x);
+    void addId(const QXmlStreamAttributes &attr, void *x);
+    void *findId(const QStringRef &id);
     void *findId(const char *id);
 };
 

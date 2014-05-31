@@ -172,7 +172,6 @@ class Statement {
     void setLexEnd(unsigned int n) { lexEnd = n; }
     unsigned int getLexBegin() { return lexBegin; }
     unsigned int getLexEnd() { return lexEnd; }
-    Exp *getExpAtLex(unsigned int, unsigned int);
 
     // returns true if this statement defines anything
     virtual bool isDefinition() = 0;

@@ -66,7 +66,7 @@ public:
     virtual void        UnLoad();                        // Unload the image
     virtual LOAD_FMT    GetFormat() const;            // Get format (i.e. LOADFMT_MACHO)
     virtual MACHINE     GetMachine() const;            // Get machine (i.e. MACHINE_PPC)
-    virtual const char *getFilename() const { return m_pFileName; }
+    QString getFilename() const override { return m_pFileName; }
     virtual bool        isLibrary() const;
     virtual QStringList getDependencyList();
     virtual ADDRESS        getImageBase();
@@ -123,7 +123,7 @@ public:
     virtual std::map<std::string, ObjcModule> &getObjcModules() { return modules; }
 
 protected:
-    virtual bool        RealLoad(const char* sName); // Load the file; pure virtual
+    bool        RealLoad(const QString &sName) override; // Load the file; pure virtual
 
 private:
 
@@ -132,7 +132,7 @@ private:
 
     struct mach_header *header;      // The Mach-O header
     char *        base;                    // Beginning of the loaded image
-    const char    *m_pFileName;
+    QString m_pFileName;
     ADDRESS        entrypoint, loaded_addr;
     unsigned    loaded_size;
     MACHINE         machine;

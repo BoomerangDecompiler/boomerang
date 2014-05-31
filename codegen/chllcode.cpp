@@ -13,11 +13,6 @@
  *               I guess this will be the most popular output language unless we do C++.
  ******************************************************************************/
 
-#include <cassert>
-#include <sstream>
-#include <cstring>
-#include <cstdlib>
-#include <memory>
 
 #include "cfg.h"
 #include "statement.h"
@@ -31,7 +26,20 @@
 #include "type.h"
 #include "util.h"
 #include "log.h"
+
+#include <QtCore/QFile>
+#include <QtCore/QTextStream>
+#include <cassert>
+#include <sstream>
+#include <cstring>
+#include <cstdlib>
+#include <memory>
 using namespace std;
+void HLLCode::print(QTextStream &qf) {
+    std::ostringstream ostr;
+    print(ostr);
+    qf << ostr.str().c_str();
+}
 static bool isBareMemof(const Exp &e, UserProc* proc);
 //extern char *operStrings[];
 

@@ -18,16 +18,7 @@
 /***************************************************************************//**
  * Dependencies.
  ******************************************************************************/
-
-#include <cassert>
-#include <cstdlib>
-#include <cstring>
-#include <fstream>
-#include <sstream>
-#include <vector>
-#include <algorithm>
-#include <cmath>
-#include <QFileInfo>
+#include "prog.h"
 
 #include "type.h"
 #include "cluster.h"
@@ -42,7 +33,6 @@
 #include "rtl.h"
 #include "BinaryFile.h"
 #include "frontend.h"
-#include "prog.h"
 #include "signature.h"
 #include "boomerang.h"
 #include "ansi-c-parser.h"
@@ -50,6 +40,17 @@
 #include "managed.h"
 #include "log.h"
 
+#include <QtCore/QFileInfo>
+#include <QtCore/QXmlStreamWriter>
+#include <QtCore/QDir>
+#include <cassert>
+#include <cstdlib>
+#include <cstring>
+#include <fstream>
+#include <sstream>
+#include <vector>
+#include <algorithm>
+#include <cmath>
 #ifdef _WIN32
 #undef NO_ADDRESS
 #include <windows.h>
@@ -80,7 +81,7 @@ void Prog::setFrontEnd(FrontEnd *pFE) {
     pSections = qobject_cast<SectionInterface *>(pLoaderPlugin);
     pSymbols = qobject_cast<SymbolTableInterface *>(pLoaderPlugin);
     this->pFE = pFE;
-    if (pLoaderIface && pLoaderIface->getFilename()) {
+    if (pLoaderIface && !pLoaderIface->getFilename().isEmpty()) {
         m_name = pLoaderIface->getFilename();
         m_rootCluster = new Cluster(getNameNoPathNoExt().c_str());
     }
@@ -110,8 +111,8 @@ void Prog::setName (const char *name) {
     m_rootCluster->setName(name);
 }
 
-const char* Prog::getName() {
-    return m_name.c_str();
+QString Prog::getName() {
+    return m_name;
 }
 
 //! Well form all the procedures/cfgs in this program
@@ -171,7 +172,7 @@ void Prog::generateCode(Cluster *cluster, UserProc *proc, bool /*intermixRTL*/) 
         cluster->closeStreams();
     }
     if (cluster == nullptr || cluster == m_rootCluster) {
-        os.open(m_rootCluster->getOutPath("c"));
+        os.open(m_rootCluster->getOutPath("c").toStdString());
         if (proc == nullptr) {
             HLLCode *code = Boomerang::get()->getHLLCode();
             bool global = false;
@@ -294,21 +295,18 @@ Statement *Prog::getStmtAtLex(Cluster *cluster, unsigned int begin, unsigned int
 }
 
 
-const char *Cluster::makeDirs() {
-    std::string path;
+QString Cluster::makeDirs() {
+    QString path;
     if (parent)
         path = parent->makeDirs();
     else
-        path = Boomerang::get()->getOutputPath();
+        path = Boomerang::get()->getOutputPath().c_str();
+    QDir dr(path);
+    dr.cd(name.c_str());
     if (getNumChildren() > 0 || parent == nullptr) {
-        path = path + "/" + name;
-#ifdef _WIN32
-        mkdir(path.c_str());
-#else
-        mkdir(path.c_str(), 0777);
-#endif
+        dr.mkpath(".");
     }
-    return strdup(path.c_str());
+    return dr.absolutePath();
 }
 
 void Cluster::removeChild(Cluster *n) {
@@ -318,6 +316,14 @@ void Cluster::removeChild(Cluster *n) {
             break;
     assert(it != children.end());
     children.erase(it);
+}
+
+Cluster::Cluster()
+{
+    strm.setDevice(&out);
+}
+Cluster::Cluster(const std::string &_name) : name(_name) {
+    strm.setDevice(&out);
 }
 
 void Cluster::addChild(Cluster *n) {
@@ -338,22 +344,18 @@ Cluster *Cluster::find(const std::string &nam) {
     return nullptr;
 }
 
-const char *Cluster::getOutPath(const char *ext) {
-    std::string basedir = makeDirs();
-    // Ugh - should probably return a whole std::string
-    return strdup((basedir + "/" + name + "." + ext).c_str());
+QString Cluster::getOutPath(const char *ext) {
+    QString basedir = makeDirs();
+    QDir dr(basedir);
+    return dr.absoluteFilePath(QString(name.c_str())+"."+ext);
 }
 
 void Cluster::openStream(const char *ext) {
-    if (out.is_open())
+    if (out.isOpen())
         return;
-    out.open(getOutPath(ext));
+    out.setFileName(getOutPath(ext));
+    out.open(QFile::WriteOnly|QFile::Text);
     stream_ext = ext;
-    if (!strcmp(ext, "xml")) {
-        out << "<?xml version=\"1.0\"?>\n";
-        if (parent != nullptr)
-            out << "<procs>\n";
-    }
 }
 
 void Cluster::openStreams(const char *ext) {
@@ -363,7 +365,7 @@ void Cluster::openStreams(const char *ext) {
 }
 
 void Cluster::closeStreams() {
-    if (out.is_open()) {
+    if (out.isOpen()) {
         out.close();
     }
     for (Cluster * child : children)
@@ -437,7 +439,7 @@ void Prog::print(std::ostream &out) {
 
 //! clear the prog object \note deletes everything!
 void Prog::clear() {
-    m_name = std::string("");
+    m_name = "";
     for (Proc* pProc : m_procs)
         delete pProc;
     m_procs.clear();
@@ -1084,7 +1086,7 @@ bool Prog::isProcLabel (ADDRESS addr) {
  * \returns A string with the name
  ******************************************************************************/
 std::string Prog::getNameNoPath() const {
-    return QFileInfo(m_name.c_str()).fileName().toStdString();
+    return QFileInfo(m_name).fileName().toStdString();
 }
 
 /***************************************************************************//**
@@ -1094,7 +1096,7 @@ std::string Prog::getNameNoPath() const {
  * \returns A string with the name
  ******************************************************************************/
 std::string Prog::getNameNoPathNoExt() const {
-    return QFileInfo(m_name.c_str()).baseName().toStdString();
+    return QFileInfo(m_name).baseName().toStdString();
 }
 
 /***************************************************************************//**
@@ -1565,7 +1567,7 @@ void Prog::printCallGraphXML() {
     std::string fname = Boomerang::get()->getOutputPath() + "callgraph.xml";
     int fd = lockFileWrite(fname.c_str());
     std::ofstream f(fname.c_str());
-    f << "<prog name=\"" << getName() << "\">\n";
+    f << "<prog name=\"" << getName().toStdString() << "\">\n";
     f << "     <callgraph>\n";
     std::list<UserProc*>::iterator pp;
     for ( UserProc * up : entryProcs )

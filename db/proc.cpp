@@ -75,6 +75,8 @@
 #include "log.h"
 
 #include <QtCore/QDebug>
+#include <QtCore/QFile>
+#include <QtCore/QTextStream>
 #include <sstream>
 #include <algorithm>        // For find()
 #include <iomanip>            // For std::setw etc
@@ -773,6 +775,14 @@ void UserProc::print(std::ostream &out, bool html) const {
     cfg->print(ost3, html);
     out << ost3.str().c_str();
     out << "\n";
+}
+
+void UserProc::print(QTextStream &out, bool html) const
+{
+    std::ostringstream ostr;
+    print(ostr,html);
+    out << ostr.str().c_str();
+
 }
 
 void UserProc::setStatus(ProcStatus s) {

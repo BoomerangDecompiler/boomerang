@@ -121,14 +121,14 @@ enum MACHINE {
 
 class BinaryFileFactory {
     void *dlHandle; // Needed for UnLoading the library
-    QObject *getInstanceFor(const char *sName);
+    QObject *getInstanceFor(const QString &sName);
     static QString m_base_path; //!< path from which the executable is being ran, used to find lib/ directory
 
   public:
     static void setBasePath(const QString &path) {
         m_base_path = path;
     } //!< sets the base directory for plugin search
-    QObject *Load(const std::string &sName);
+    QObject *Load(const QString &sName);
     void UnLoad();
 };
 
@@ -189,8 +189,8 @@ class LoaderInterface {
     virtual void Close() = 0;                 //!< Close file opened with Open()
     virtual LOAD_FMT GetFormat() const = 0;   //!< Get the format (e.g. LOADFMT_ELF)
     virtual MACHINE GetMachine() const = 0;   //!< Get the expected machine (e.g. MACHINE_PENTIUM)
-    virtual const char *getFilename() const = 0;
-    virtual bool RealLoad(const char *sName) = 0;
+    virtual QString getFilename() const = 0;
+    virtual bool RealLoad(const QString &sName) = 0;
 
     //! Return whether or not the object is a library file.
     virtual bool isLibrary() const = 0;

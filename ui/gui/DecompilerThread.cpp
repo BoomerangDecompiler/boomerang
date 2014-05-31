@@ -88,7 +88,7 @@ void Decompiler::removeEntryPoint(ADDRESS a) {
 
 void Decompiler::changeInputFile(const QString &f)
 {
-    filename = f.toStdString();
+    filename = f;
 }
 
 void Decompiler::changeOutputPath(const QString &path)
@@ -313,11 +313,11 @@ const char *Decompiler::getSigFile(const QString &name)
     return p->getSignature()->getSigFile();
 }
 
-const char *Decompiler::getClusterFile(const QString &name)
+QString Decompiler::getClusterFile(const QString &name)
 {
     Cluster *c = prog->findCluster(name.toStdString());
     if (c == NULL)
-        return NULL;
+        return "";
     return c->getOutPath("c");
 }
 

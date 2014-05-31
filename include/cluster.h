@@ -9,14 +9,16 @@
 
 /***************************************************************************/ /**
   * \file       cluster.h
-  * OVERVIEW:   Definition of the classes that describe a Cluster, a grouping
-  *           of functions irrespective of relationship.  For example, the
-  *           Object Oriented Programming concept of a Class is a Cluster.
-  *           Clusters can contain other Clusters to form a tree.
+  *    Definition of the classes that describe a Cluster, a grouping
+  * of functions irrespective of relationship.  For example, the
+  * Object Oriented Programming concept of a Class is a Cluster.
+  * Clusters can contain other Clusters to form a tree.
   *============================================================================*/
 
 #ifndef __CLUSTER_H__
 #define __CLUSTER_H__
+
+#include "memo.h"
 
 #include <list>
 #include <vector>
@@ -24,7 +26,8 @@
 #include <set>
 #include <string>
 #include <fstream>
-#include "memo.h"
+#include <QtCore/QTextStream>
+#include <QtCore/QFile>
 
 class XMLProgParser;
 class Cluster;
@@ -34,12 +37,13 @@ class Cluster {
     std::string name = "";
     std::vector<Cluster *> children;
     Cluster *parent = nullptr;
-    std::ofstream out;
+    QFile out;
+    QTextStream strm;
     std::string stream_ext;
 
   public:
-    Cluster() {}
-    Cluster(const std::string &_name) : name(_name) {}
+    Cluster();
+    Cluster(const std::string &_name);
     virtual ~Cluster() {}
     const char *getName() { return name.c_str(); }
     void setName(const std::string &nam) { name = nam; }
@@ -52,9 +56,9 @@ class Cluster {
     void openStream(const char *ext);
     void openStreams(const char *ext);
     void closeStreams();
-    std::ofstream &getStream() { return out; }
-    const char *makeDirs();
-    const char *getOutPath(const char *ext);
+    QTextStream &getStream() { return strm; }
+    QString makeDirs();
+    QString getOutPath(const char *ext);
     Cluster *find(const std::string &nam);
     virtual bool isAggregate() { return false; }
     void printTree(std::ostream &out);
