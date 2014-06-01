@@ -1159,7 +1159,7 @@ void Signature::addParameter(Type *type, const char *nam /*= nullptr*/, Exp *e /
         if (type == nullptr)
             std::cerr << "<notype> ";
         else
-            std::cerr << type->getCtype() << " ";
+            std::cerr << type->getCtype().toStdString() << " ";
         if (nam == nullptr)
             std::cerr << "<noname>";
         else
@@ -1406,7 +1406,7 @@ void Signature::print(std::ostream &out, bool /*html*/) const {
         out << "{ ";
         unsigned n = 0;
         for (const Return *rr : returns) {
-            out << rr->type->getCtype() << " " << rr->exp;
+            out << rr->type->getCtype().toStdString() << " " << rr->exp;
             if (n != returns.size() - 1)
                 out << ",";
             out << " ";
@@ -1418,7 +1418,7 @@ void Signature::print(std::ostream &out, bool /*html*/) const {
     out << name.toStdString() << "(";
     unsigned int i;
     for (i = 0; i < params.size(); i++) {
-        out << params[i]->getType()->getCtype() << " " << params[i]->name() << " " << params[i]->getExp();
+        out << params[i]->getType()->getCtype().toStdString() << " " << params[i]->name() << " " << params[i]->getExp();
         if (i != params.size() - 1)
             out << ", ";
     }

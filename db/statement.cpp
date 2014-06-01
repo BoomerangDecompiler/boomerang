@@ -2590,7 +2590,7 @@ bool Statement::propagateTo(bool &convert, std::map<Exp *, int, lessExpStar> *de
             return e;
         // char* and a constant
         if (e->isIntConst()) {
-            if (nt && (nt->getName() == static_cast<std::string>("LPCWSTR"))) {
+            if (nt && (nt->getName() == "LPCWSTR")) {
                 ADDRESS u = ((Const *)e)->getAddr();
                 // TODO: wide char string processing
                 LOG << "possible wide char string at " << u << "\n";

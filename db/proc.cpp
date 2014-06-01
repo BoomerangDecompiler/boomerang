@@ -4119,7 +4119,7 @@ void UserProc::printSymbolMap(std::ostream &out, bool html /*= false*/) const {
     out << "symbols:\n";
     for (const std::pair<const Exp *, Exp *> &it : symbolMap) {
         const Type *ty = getTypeForLocation(it.second);
-        out << "  " << it.first << " maps to " << it.second << " type " << (ty ? ty->getCtype() : "nullptr") << "\n";
+        out << "  " << it.first << " maps to " << it.second << " type " << (ty ? qPrintable(ty->getCtype()) : "nullptr") << "\n";
         if (html)
             out << "<br>";
     }
@@ -4133,7 +4133,7 @@ void UserProc::dumpLocals(std::ostream &os, bool html) const {
         os << "<br>";
     os << "locals:\n";
     for (const std::pair<std::string, Type *> &it : locals) {
-        os << it.second->getCtype() << " " << it.first.c_str() << " ";
+        os << it.second->getCtype().toStdString() << " " << it.first.c_str() << " ";
         const Exp *e = expFromSymbol(it.first.c_str());
         // Beware: for some locals, expFromSymbol() returns nullptr (? No longer?)
         if (e)
@@ -4150,7 +4150,7 @@ void UserProc::dumpSymbolMap() {
     SymbolMap::iterator it;
     for (it = symbolMap.begin(); it != symbolMap.end(); it++) {
         Type *ty = getTypeForLocation(it->second);
-        std::cerr << "  " << it->first << " maps to " << it->second << " type " << (ty ? ty->getCtype() : "NULL")
+        std::cerr << "  " << it->first << " maps to " << it->second << " type " << (ty ? qPrintable(ty->getCtype()) : "NULL")
                   << "\n";
     }
 }
@@ -4160,7 +4160,7 @@ void UserProc::dumpSymbolMapx() {
     SymbolMap::iterator it;
     for (it = symbolMap.begin(); it != symbolMap.end(); it++) {
         Type *ty = getTypeForLocation(it->second);
-        std::cerr << "  " << it->first << " maps to " << it->second << " type " << (ty ? ty->getCtype() : "NULL")
+        std::cerr << "  " << it->first << " maps to " << it->second << " type " << (ty ? qPrintable(ty->getCtype()) : "NULL")
                   << "\n";
         it->first->printx(2);
     }

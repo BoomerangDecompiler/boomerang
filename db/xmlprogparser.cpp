@@ -1599,7 +1599,7 @@ void XMLProgParser::start_namedtype(const QXmlStreamAttributes &attr) {
         stack.front()->type = (Type *)findId(attr.value(QLatin1Literal("id")));
         return;
     }
-    stack.front()->type = new NamedType(attr.value(QLatin1Literal("name")).toString().toStdString());
+    stack.front()->type = new NamedType(attr.value(QLatin1Literal("name")).toString());
     addId(attr, stack.front()->type);
 }
 
@@ -2242,7 +2242,7 @@ void XMLProgParser::persistToXML(QXmlStreamWriter &out, const Type *ty) {
     if (n) {
         out.writeStartElement("namedtype");
         out.writeAttribute("id", QString::number(ADDRESS::host_ptr(ty).m_value));
-        out.writeAttribute("name", n->name.c_str());
+        out.writeAttribute("name", n->name);
         out.writeEndElement();
         return;
     }

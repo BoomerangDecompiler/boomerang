@@ -928,7 +928,7 @@ void CHLLCode::appendType(std::ostringstream &str, Type *typ) {
         // sugar to access a pointer as if it were an array.
         typ = new PointerType(typ->asPointer()->getPointsTo()->asArray()->getBaseType());
     }
-    str << typ->getCtype(true);
+    str << typ->getCtype(true).toStdString();
 }
 
 /**
@@ -1579,9 +1579,9 @@ void CHLLCode::AddGlobal(const char *name, Type *type, Exp *init) {
         // void (*global0)(void) = foo__1B;
         PointerType *pt = (PointerType *)type;
         FuncType *ft = (FuncType *)pt->getPointsTo();
-        const char *ret, *param;
+        QString ret, param;
         ft->getReturnAndParam(ret, param);
-        s << ret << "(*" << name << ")" << param;
+        s << ret.toStdString() << "(*" << name << ")" << param.toStdString();
     } else {
         appendType(s, type);
         s << " " << name;

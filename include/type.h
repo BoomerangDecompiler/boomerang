@@ -24,6 +24,7 @@
 #include <cassert>
 #include <list>
 #include <fstream>
+#include <QString>
 #include "memo.h"
 #include "types.h" // For STD_SIZE
 
@@ -79,7 +80,7 @@ class Type {
     eType id;
 
   private:
-    static std::map<std::string, Type *> namedTypes;
+    static std::map<QString, Type *> namedTypes;
 
   public:
     // Constructors
@@ -88,7 +89,7 @@ class Type {
     eType getId() const { return id; }
 
     static void addNamedType(const char *name, Type *type);
-    static Type *getNamedType(const std::string &name);
+    static Type *getNamedType(const QString &name);
 
     // Return type for given temporary variable name
     static Type *getTempType(const std::string &name);
@@ -186,10 +187,10 @@ class Type {
     // Print and format functions
     // Get the C type, e.g. "unsigned int". If not final, include comment for lack of sign information.
     // When final, choose a signedness etc
-    virtual const char *getCtype(bool final = false) const = 0;
+    virtual QString getCtype(bool final = false) const = 0;
 
     void starPrint(std::ostream &os);
-    const char *prints();    // For debugging
+    QString prints();    // For debugging
     void dump();             // For debugging
     static void dumpNames(); // For debugging
 
@@ -245,7 +246,7 @@ class VoidType : public Type {
 
     virtual size_t getSize() const;
 
-    virtual const char *getCtype(bool final = false) const;
+    virtual QString getCtype(bool final = false) const;
 
     virtual Type *meetWith(Type *other, bool &ch, bool bHighestPtr) const;
     virtual bool isCompatible(const Type *other, bool all) const;
@@ -275,10 +276,10 @@ class FuncType : public Type {
 
     virtual size_t getSize() const;
 
-    virtual const char *getCtype(bool final = false) const;
+    virtual QString getCtype(bool final = false) const;
 
     // Split the C type into return and parameter parts
-    void getReturnAndParam(const char *&ret, const char *&param);
+    void getReturnAndParam(QString &ret, QString &param);
 
     virtual Type *meetWith(Type *other, bool &ch, bool bHighestPtr) const;
     virtual bool isCompatible(const Type *other, bool all) const;
@@ -324,7 +325,7 @@ class IntegerType : public Type {
     int getSignedness() { return signedness; }
 
     // Get the C type as a string. If full, output comments re the lack of sign information (in IntegerTypes).
-    virtual const char *getCtype(bool final = false) const;
+    virtual QString getCtype(bool final = false) const;
 
     virtual std::string getTempName() const;
 
@@ -355,7 +356,7 @@ class FloatType : public Type {
     virtual size_t getSize() const;
     virtual void setSize(size_t sz) { size = sz; }
 
-    virtual const char *getCtype(bool final = false) const;
+    virtual QString getCtype(bool final = false) const;
 
     virtual std::string getTempName() const;
 
@@ -381,7 +382,7 @@ class BooleanType : public Type {
 
     virtual size_t getSize() const;
 
-    virtual const char *getCtype(bool final = false) const;
+    virtual QString getCtype(bool final = false) const;
 
     virtual Type *meetWith(Type *other, bool &ch, bool bHighestPtr) const;
     virtual bool isCompatible(const Type *other, bool all) const;
@@ -405,7 +406,7 @@ class CharType : public Type {
 
     virtual size_t getSize() const;
 
-    virtual const char *getCtype(bool final = false) const;
+    virtual QString getCtype(bool final = false) const;
 
     virtual Type *meetWith(Type *other, bool &ch, bool bHighestPtr) const;
     virtual bool isCompatible(const Type *other, bool all) const;
@@ -440,7 +441,7 @@ class PointerType : public Type {
     virtual size_t getSize() const;
     virtual void setSize(size_t sz) { assert(sz == STD_SIZE); }
 
-    virtual const char *getCtype(bool final = false) const;
+    virtual QString getCtype(bool final = false) const;
 
     virtual Type *meetWith(Type *other, bool &ch, bool bHighestPtr) const;
     virtual bool isCompatible(const Type *other, bool all) const;
@@ -476,7 +477,7 @@ class ArrayType : public Type {
 
     virtual size_t getSize() const;
 
-    virtual const char *getCtype(bool final = false) const;
+    virtual QString getCtype(bool final = false) const;
 
     virtual Type *meetWith(Type *other, bool &ch, bool bHighestPtr) const;
     virtual bool isCompatibleWith(const Type *other, bool all = false) const { return isCompatible(other, all); }
@@ -491,14 +492,14 @@ class ArrayType : public Type {
 
 class NamedType : public Type {
   private:
-    std::string name;
+    QString name;
     static int nextAlpha;
 
   public:
-    NamedType(const std::string &_name);
+    NamedType(const QString &_name);
     virtual ~NamedType();
     virtual bool isNamed() const { return true; }
-    const char *getName() const { return name.c_str(); }
+    QString getName() const { return name; }
     Type *resolvesTo() const;
     // Get a new type variable, e.g. alpha0, alpha55
     static NamedType *getAlpha();
@@ -512,7 +513,7 @@ class NamedType : public Type {
 
     virtual size_t getSize() const;
 
-    virtual const char *getCtype(bool final = false) const;
+    virtual QString getCtype(bool final = false) const;
 
     virtual Type *meetWith(Type *other, bool &ch, bool bHighestPtr) const;
     virtual bool isCompatible(const Type *other, bool all) const;
@@ -571,7 +572,7 @@ class CompoundType : public Type {
 
     virtual size_t getSize() const;
 
-    virtual const char *getCtype(bool final = false) const;
+    virtual QString getCtype(bool final = false) const;
 
     bool isSuperStructOf(const Type *other); // True if this is is a superstructure of other
     bool isSubStructOf(Type *other) const;   // True if this is is a substructure of other
@@ -616,7 +617,7 @@ class UnionType : public Type {
 
     virtual size_t getSize() const;
 
-    virtual const char *getCtype(bool final = false) const;
+    virtual QString getCtype(bool final = false) const;
 
     virtual Type *meetWith(Type *other, bool &ch, bool bHighestPtr) const;
     virtual bool isCompatibleWith(const Type *other, bool all) const { return isCompatible(other, all); }
@@ -647,7 +648,7 @@ class SizeType : public Type {
     virtual void setSize(size_t sz) { size = sz; }
     virtual bool isSize() const { return true; }
     virtual bool isComplete() { return false; } // Basic type is unknown
-    virtual const char *getCtype(bool final = false) const;
+    virtual QString getCtype(bool final = false) const;
     virtual Type *meetWith(Type *other, bool &ch, bool bHighestPtr) const;
     virtual bool isCompatible(const Type *other, bool) const;
 
@@ -675,7 +676,7 @@ class UpperType : public Type {
     virtual void setSize(size_t sz); // Does this make sense?
     virtual bool isUpper() const { return true; }
     virtual bool isComplete() { return base_type->isComplete(); }
-    virtual const char *getCtype(bool final = false) const;
+    virtual QString getCtype(bool final = false) const;
     virtual Type *meetWith(Type *other, bool &ch, bool bHighestPtr) const;
     virtual bool isCompatible(const Type *other, bool all) const;
 
@@ -701,7 +702,7 @@ class LowerType : public Type {
     virtual void setSize(size_t sz); // Does this make sense?
     virtual bool isLower() const { return true; }
     virtual bool isComplete() { return base_type->isComplete(); }
-    virtual const char *getCtype(bool final = false) const;
+    virtual QString getCtype(bool final = false) const;
     virtual Type *meetWith(Type *other, bool &ch, bool bHighestPtr) const;
     virtual bool isCompatible(const Type *other, bool all) const;
 
@@ -721,7 +722,7 @@ class LowerType : public Type {
 
 struct DataInterval {
     size_t size;      //!< The size of this type in bytes
-    std::string name; //!< The name of the variable
+    QString name; //!< The name of the variable
     Type *type;       //!< The type of the variable
 };
 

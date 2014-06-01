@@ -169,7 +169,7 @@ void DfaTest::testMeetPointer() {
     VoidType v;
 
     std::ostringstream ost1;
-    ost1 << pu32.getCtype();
+    ost1 << pu32.getCtype().toStdString();
     std::string actual(ost1.str());
     std::string expected("unsigned int *");
     QCOMPARE(expected, actual);
@@ -178,7 +178,7 @@ void DfaTest::testMeetPointer() {
     Type *res = pi32.meetWith(&pu32, ch, false);
     QVERIFY(ch == true);
     std::ostringstream ost2;
-    ost2 << res->getCtype();
+    ost2 << res->getCtype().toStdString();
     actual = ost2.str();
     expected = "/*signed?*/int *";
     QCOMPARE(expected, actual);
@@ -209,7 +209,7 @@ void DfaTest::testMeetUnion() {
     u1.addType(flt, "wow");
 
     std::ostringstream ost1;
-    ost1 << u1.getCtype();
+    ost1 << u1.getCtype().toStdString();
     std::string actual(ost1.str());
     std::string expected("union { int bow; float wow; }");
     QCOMPARE(expected, actual);
@@ -218,7 +218,7 @@ void DfaTest::testMeetUnion() {
     Type *res = u1.meetWith(j32, ch, false);
     QVERIFY(ch == false);
     std::ostringstream ost2;
-    ost2 << res->getCtype();
+    ost2 << res->getCtype().toStdString();
     actual = ost2.str();
     expected = "union { int bow; float wow; }";
     QCOMPARE(expected, actual);
@@ -226,7 +226,7 @@ void DfaTest::testMeetUnion() {
     res = u1.meetWith(j32, ch, false);
     QVERIFY(ch == false);
     std::ostringstream ost3;
-    ost3 << u1.getCtype();
+    ost3 << u1.getCtype().toStdString();
     actual = ost3.str();
     expected = "union { int bow; float wow; }";
     QCOMPARE(expected, actual);
@@ -235,7 +235,7 @@ void DfaTest::testMeetUnion() {
     res = u1.meetWith(u32, ch, false);
     QVERIFY(ch == true);
     std::ostringstream ost4;
-    ost4 << u1.getCtype();
+    ost4 << u1.getCtype().toStdString();
     actual = ost4.str();
     expected = "union { /*signed?*/int bow; float wow; }";
     QCOMPARE(expected, actual);

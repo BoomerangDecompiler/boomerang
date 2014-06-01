@@ -54,9 +54,9 @@ void TypeTest::tearDown() {}
   *============================================================================*/
 void TypeTest::testTypeLong() {
 
-    std::string expected("unsigned long long");
+    QString expected("unsigned long long");
     IntegerType *t = IntegerType::get(64, -1);
-    std::string actual(t->getCtype());
+    QString actual(t->getCtype());
     QCOMPARE(expected, actual);
 
 }
@@ -87,9 +87,9 @@ void TypeTest::testCompound() {
     Signature *paintSig = pFE->getLibSignature("BeginPaint");
     // Second argument should be an LPPAINTSTRUCT
     Type *ty = paintSig->getParamType(1);
-    const char *p = ty->getCtype();
-    std::string expected("LPPAINTSTRUCT");
-    std::string actual(p);
+    QString p = ty->getCtype();
+    QString expected("LPPAINTSTRUCT");
+    QString actual(p);
     QCOMPARE(expected, actual);
 
     // Get the type pointed to
@@ -151,8 +151,8 @@ void TypeTest::testDataInterval() {
 
     dim.addItem(ADDRESS::g(0x1000), "first", IntegerType::get(32, 1));
     dim.addItem(ADDRESS::g(0x1004), "second", FloatType::get(64));
-    std::string actual(dim.prints());
-    std::string expected("0x1000 first int\n"
+    QString actual(dim.prints());
+    QString expected("0x1000 first int\n"
                          "0x1004 second double\n");
     QCOMPARE(expected, actual);
 
@@ -250,8 +250,8 @@ void TypeTest::testDataIntervalOverlaps() {
     dim.addItem(ADDRESS::g(0x1008), "replacementStruct", &ctu);
 
     DataIntervalEntry *pdie = dim.find(ADDRESS::g(0x1008));
-    std::string expected = "struct { int newInt; float newFloat; }";
-    std::string actual = pdie->second.type->getCtype();
+    QString expected = "struct { int newInt; float newFloat; }";
+    QString actual = pdie->second.type->getCtype();
     QCOMPARE(expected, actual);
 
     // Attempt a weave; should fail

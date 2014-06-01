@@ -383,6 +383,7 @@ class Const : public Exp {
     Const(ADDRESS a);
     Const(double d);
     Const(const char *p);
+    Const(const QString &p);
     Const(Function *p);
     // Copy constructor
     Const(const Const &o);

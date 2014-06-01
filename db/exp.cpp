@@ -44,6 +44,9 @@ Const::Const(int i) : Exp(opIntConst), conscript(0), type(new VoidType) { u.i = 
 Const::Const(QWord ll) : Exp(opLongConst), conscript(0), type(new VoidType) { u.ll = ll; }
 Const::Const(double d) : Exp(opFltConst), conscript(0), type(new VoidType) { u.d = d; }
 Const::Const(const char *p) : Exp(opStrConst), conscript(0), type(new VoidType) { u.p = p; }
+Const::Const(const QString &p) : Exp(opStrConst), conscript(0), type(new VoidType) {
+    u.p = strdup(qPrintable(p));
+}
 Const::Const(Function *p) : Exp(opFuncConst), conscript(0), type(new VoidType) { u.pp = p; }
 /// \remark This is bad. We need a way of constructing true unsigned constants
 Const::Const(ADDRESS a) : Exp(opIntConst), conscript(0), type(new VoidType) {
@@ -1377,7 +1380,7 @@ void RefExp::print(std::ostream &os, bool html) const {
 //    //    //    //
 void TypeVal::print(std::ostream &os, bool /*html*/) const {
     if (val)
-        os << "<" << val->getCtype() << ">";
+        os << "<" << val->getCtype().toStdString() << ">";
     else
         os << "<nullptr>";
 }
@@ -1517,7 +1520,7 @@ void TypedExp::appendDotFile(std::ofstream &of) {
     of << "e" << ADDRESS::host_ptr(this) << " [shape=record,label=\"{";
     of << "opTypedExp\\n" << ADDRESS::host_ptr(this) << " | ";
     // Just display the C type for now
-    of << type->getCtype() << " | <p1>";
+    of << type->getCtype().toStdString() << " | <p1>";
     of << " }\"];\n";
     subExp1->appendDotFile(of);
     of << "e" << ADDRESS::host_ptr(this) << ":p1->e" << ADDRESS::host_ptr(subExp1) << ";\n";
@@ -4118,12 +4121,12 @@ void Const::printx(int ind) const {
 
 void TypeVal::printx(int ind) const {
     std::cerr << std::setw(ind) << " " << operStrings[op] << " ";
-    std::cerr << val->getCtype() << std::flush << "\n";
+    std::cerr << val->getCtype().toStdString() << std::flush << "\n";
 }
 
 void TypedExp::printx(int ind) const {
     std::cerr << std::setw(ind) << " " << operStrings[op] << " ";
-    std::cerr << type->getCtype() << std::flush << "\n";
+    std::cerr << type->getCtype().toStdString() << std::flush << "\n";
     child(subExp1, ind);
 }
 

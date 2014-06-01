@@ -13,12 +13,9 @@
   * \file       type.cpp
   * \brief   Implementation of the Type class: low level type information
   ******************************************************************************/
-
-#include <cassert>
-#include <cstring>
+#include "type.h"
 
 #include "types.h"
-#include "type.h"
 #include "util.h"
 #include "exp.h"
 #include "cfg.h"
@@ -26,6 +23,10 @@
 #include "signature.h"
 #include "boomerang.h"
 #include "log.h"
+
+#include <QtCore/QDebug>
+#include <cassert>
+#include <cstring>
 
 extern char debug_buffer[]; // For prints functions
 
@@ -104,7 +105,7 @@ void ArrayType::setBaseType(Type *b) {
     base_type = b;
 }
 
-NamedType::NamedType(const std::string &_name) : Type(eNamed), name(_name) {}
+NamedType::NamedType(const QString &_name) : Type(eNamed), name(_name) {}
 
 CompoundType::CompoundType(bool is_generic /* = false */)
     : Type(eCompound), nextGenericMemberNum(1), generic(is_generic) {}
@@ -224,8 +225,7 @@ size_t NamedType::getSize() const {
     Type *ty = resolvesTo();
     if (ty)
         return ty->getSize();
-    if (VERBOSE)
-        LOG << "WARNING: Unknown size for named type " << name.c_str() << "\n";
+    LOG_VERBOSE(1) << "WARNING: Unknown size for named type " << name << "\n";
     return 0; // don't know
 }
 size_t CompoundType::getSize() const {
@@ -633,12 +633,12 @@ Exp *UnionType::match(Type *pattern) { return Type::match(pattern); }
   * PARAMETERS:        final: if true, this is final output
   * \returns            Pointer to a constant string of char
   ******************************************************************************/
-const char *VoidType::getCtype(bool /*final*/) const { return "void"; }
+QString VoidType::getCtype(bool /*final*/) const { return "void"; }
 
-const char *FuncType::getCtype(bool final) const {
+QString FuncType::getCtype(bool final) const {
     if (signature == nullptr)
         return "void (void)";
-    std::string s;
+    QString s;
     if (signature->getNumReturns() == 0)
         s += "void";
     else
@@ -650,11 +650,11 @@ const char *FuncType::getCtype(bool final) const {
         s += signature->getParamType(i)->getCtype(final);
     }
     s += ")";
-    return strdup(s.c_str());
+    return s;
 }
 
 // As above, but split into the return and parameter parts
-void FuncType::getReturnAndParam(const char *&ret, const char *&param) {
+void FuncType::getReturnAndParam(QString &ret, QString &param) {
     if (signature == nullptr) {
         ret = "void";
         param = "(void)";
@@ -664,7 +664,7 @@ void FuncType::getReturnAndParam(const char *&ret, const char *&param) {
         ret = "void";
     else
         ret = signature->getReturnType(0)->getCtype();
-    std::string s;
+    QString s;
     s += " (";
     for (unsigned i = 0; i < signature->getNumParams(); i++) {
         if (i != 0)
@@ -672,10 +672,10 @@ void FuncType::getReturnAndParam(const char *&ret, const char *&param) {
         s += signature->getParamType(i)->getCtype();
     }
     s += ")";
-    param = strdup(s.c_str());
+    param = s;
 }
 
-const char *IntegerType::getCtype(bool final) const {
+QString IntegerType::getCtype(bool final) const {
     if (signedness >= 0) {
         std::string s;
         if (!final && signedness == 0)
@@ -728,7 +728,7 @@ const char *IntegerType::getCtype(bool final) const {
     }
 }
 
-const char *FloatType::getCtype(bool /*final*/) const {
+QString FloatType::getCtype(bool /*final*/) const {
     switch (size) {
     case 32:
         return "float";
@@ -742,88 +742,84 @@ const char *FloatType::getCtype(bool /*final*/) const {
     }
 }
 
-const char *BooleanType::getCtype(bool /*final*/) const { return "bool"; }
+QString BooleanType::getCtype(bool /*final*/) const { return "bool"; }
 
-const char *CharType::getCtype(bool /*final*/) const { return "char"; }
+QString CharType::getCtype(bool /*final*/) const { return "char"; }
 
-const char *PointerType::getCtype(bool final) const {
-    std::string s = points_to->getCtype(final);
+QString PointerType::getCtype(bool final) const {
+    QString s = points_to->getCtype(final);
     if (points_to->isPointer())
         s += "*";
     else
         s += " *";
-    return strdup(s.c_str()); // memory..
+    return s; // memory..
 }
 
-const char *ArrayType::getCtype(bool final) const {
-    std::string s = base_type->getCtype(final);
-    std::ostringstream ost;
+QString ArrayType::getCtype(bool final) const {
+    QString s = base_type->getCtype(final);
     if (isUnbounded())
-        ost << "[]";
-    else
-        ost << "[" << length << "]";
-    s += ost.str().c_str();
-    return strdup(s.c_str()); // memory..
+        return s + "[]";
+    return s + "[" + QString::number(length) + "]";
 }
 
-const char *NamedType::getCtype(bool /*final*/) const { return name.c_str(); }
+QString NamedType::getCtype(bool /*final*/) const { return name; }
 
-const char *CompoundType::getCtype(bool final) const {
-    std::string &tmp = *(new std::string("struct { "));
+QString CompoundType::getCtype(bool final) const {
+    QString tmp("struct { ");
     for (unsigned i = 0; i < types.size(); i++) {
         tmp += types[i]->getCtype(final);
         if (names[i] != "") {
             tmp += " ";
-            tmp += names[i];
+            tmp += names[i].c_str();
         }
         tmp += "; ";
     }
     tmp += "}";
-    return strdup(tmp.c_str());
+    return tmp;
 }
 
-const char *UnionType::getCtype(bool final) const {
-    std::string &tmp = *(new std::string("union { "));
+QString UnionType::getCtype(bool final) const {
+    QString tmp("union { ");
     std::list<UnionElement>::const_iterator it;
-    for (it = li.begin(); it != li.end(); it++) {
-        tmp += it->type->getCtype(final);
-        if (it->name != "") {
+    for (const UnionElement &el : li) {
+        tmp += el.type->getCtype(final);
+        if (el.name != "") {
             tmp += " ";
-            tmp += it->name;
+            tmp += el.name.c_str();
         }
         tmp += "; ";
     }
     tmp += "}";
-    return strdup(tmp.c_str());
+    return tmp;
 }
 
-const char *SizeType::getCtype(bool /*final*/) const {
+QString SizeType::getCtype(bool /*final*/) const {
     // Emit a comment and the size
     std::ostringstream ost;
     ost << "__size" << std::dec << size;
     return strdup(ost.str().c_str());
 }
 
-const char *UpperType::getCtype(bool /*final*/) const {
+QString UpperType::getCtype(bool /*final*/) const {
     std::ostringstream ost;
     ost << "/*upper*/(" << base_type << ")";
     return strdup(ost.str().c_str());
 }
-const char *LowerType::getCtype(bool /*final*/) const {
+QString LowerType::getCtype(bool /*final*/) const {
     std::ostringstream ost;
     ost << "/*lower*/(" << base_type << ")";
     return strdup(ost.str().c_str());
 }
 
-const char *Type::prints() {
+QString Type::prints() {
     return getCtype(false); // For debugging
 }
 
 void Type::dump() {
-    std::cerr << getCtype(false); // For debugging
+    std::cerr << getCtype(false).toStdString(); // For debugging
 }
 
-std::map<std::string, Type *> Type::namedTypes;
+std::map<QString, Type *> Type::namedTypes;
 
 // named type accessors
 void Type::addNamedType(const char *name, Type *type) {
@@ -832,9 +828,9 @@ void Type::addNamedType(const char *name, Type *type) {
             // LOG << "addNamedType: name " << name << " type " << type->getCtype() << " != " <<
             //    namedTypes[name]->getCtype() << "\n";// << std::flush;
             // LOGTAIL;
-            std::cerr << "Warning: Type::addNamedType: Redefinition of type " << name << "\n";
-            std::cerr << " type     = " << type->prints() << "\n";
-            std::cerr << " previous = " << namedTypes[name]->prints() << "\n";
+            qWarning() << "Warning: Type::addNamedType: Redefinition of type " << name << "\n";
+            qWarning() << " type     = " << type->prints() << "\n";
+            qWarning() << " previous = " << namedTypes[name]->prints() << "\n";
             *type = *namedTypes[name]; // WARN: was *type==*namedTypes[name], verify !
         }
     } else {
@@ -851,16 +847,16 @@ void Type::addNamedType(const char *name, Type *type) {
     }
 }
 
-Type *Type::getNamedType(const std::string &name) {
+Type *Type::getNamedType(const QString &name) {
     if (namedTypes.find(name) != namedTypes.end())
         return namedTypes[name];
     return nullptr;
 }
 
 void Type::dumpNames() {
-    std::map<std::string, Type *>::iterator it;
+    std::map<QString, Type *>::iterator it;
     for (it = namedTypes.begin(); it != namedTypes.end(); ++it)
-        std::cerr << it->first << " -> " << it->second->getCtype() << "\n";
+        qDebug() << it->first << " -> " << it->second->getCtype() << "\n";
 }
 
 /***************************************************************************/ /**
@@ -949,9 +945,7 @@ std::string Type::getTempName() const {
 
 int NamedType::nextAlpha = 0;
 NamedType *NamedType::getAlpha() {
-    std::ostringstream ost;
-    ost << "alpha" << nextAlpha++;
-    return new NamedType(ost.str());
+    return new NamedType(QString("alpha%1").arg(nextAlpha++));
 }
 
 PointerType *PointerType::newPtrAlpha() { return new PointerType(NamedType::getAlpha()); }
@@ -963,7 +957,7 @@ bool PointerType::pointsToAlpha() const {
         return true;
     if (!points_to->isNamed())
         return false;
-    return strncmp(((NamedType *)points_to)->getName(), "alpha", 5) == 0;
+    return ((NamedType *)points_to)->getName().startsWith("alpha");
 }
 
 int PointerType::pointerDepth() const {
@@ -1120,7 +1114,7 @@ std::ostream &operator<<(std::ostream &os, const Type *t) {
         os << ']';
         break;
     case eNamed:
-        os << t->asNamed()->getName();
+        os << t->asNamed()->getName().toStdString();
         break;
     case eUpper:
         os << "U(" << t->asUpper()->getBaseType() << ')';
@@ -1279,7 +1273,7 @@ void DataIntervalMap::addItem(ADDRESS addr, const char *name, Type *ty, bool for
         // The existing entry comes first. Make sure it ends last (possibly equal last)
         if (pdie->first + pdie->second.size < addr + ty->getSize() / 8) {
             LOG << "TYPE ERROR: attempt to insert item " << name << " at " << addr << " of type " << ty->getCtype()
-                << " which weaves after " << pdie->second.name.c_str() << " at " << pdie->first << " of type "
+                << " which weaves after " << pdie->second.name << " at " << pdie->first << " of type "
                 << pdie->second.type->getCtype() << "\n";
             return;
         }
@@ -1298,7 +1292,7 @@ void DataIntervalMap::addItem(ADDRESS addr, const char *name, Type *ty, bool for
         // Old starts after new; check it also ends first
         if (pdie->first + pdie->second.size > addr + ty->getSize() / 8) {
             LOG << "TYPE ERROR: attempt to insert item " << name << " at " << addr << " of type " << ty->getCtype()
-                << " which weaves before " << pdie->second.name.c_str() << " at " << pdie->first << " of type "
+                << " which weaves before " << pdie->second.name << " at " << pdie->first << " of type "
                 << pdie->second.type->getCtype() << "\n";
             return;
         }
@@ -1454,7 +1448,7 @@ char *DataIntervalMap::prints() {
     iterator it;
     std::ostringstream ost;
     for (it = dimap.begin(); it != dimap.end(); ++it)
-        ost << std::hex << "0x" << it->first << std::dec << " " << it->second.name << " " << it->second.type->getCtype()
+        ost << std::hex << "0x" << it->first << std::dec << " " << it->second.name.toStdString() << " " << it->second.type->getCtype().toStdString()
             << "\n";
     strncpy(debug_buffer, ost.str().c_str(), DEBUG_BUFSIZE - 1);
     debug_buffer[DEBUG_BUFSIZE - 1] = '\0';
