@@ -836,7 +836,7 @@ void XMLProgParser::start_bb(const QXmlStreamAttributes &attr) {
         // note the rediculous duplication here
         BasicBlock *h = (BasicBlock *)findId(attr.value(QLatin1Literal("immPDom")));
         if (h)
-            bb->immPDom = h;
+            bb->ImmPDom = h;
         h = (BasicBlock *)findId(attr.value(QLatin1Literal("loopHead")));
         if (h)
             bb->LoopHead = h;
@@ -860,13 +860,10 @@ void XMLProgParser::start_bb(const QXmlStreamAttributes &attr) {
 
     QStringRef str = attr.value(QLatin1Literal("nodeType"));
     if (!str.isEmpty())
-        bb->m_nodeType = (BBTYPE)str.toInt();
+        bb->NodeType = (BBTYPE)str.toInt();
     str = attr.value(QLatin1Literal("labelNum"));
     if (!str.isEmpty())
-        bb->m_iLabelNum = str.toInt();
-    str = attr.value(QLatin1Literal("label"));
-    if (!str.isEmpty())
-        bb->m_labelStr = str.toString().toStdString();
+        bb->LabelNum = str.toInt();
     str = attr.value(QLatin1Literal("labelneeded"));
     if (!str.isEmpty())
         bb->LabelNeeded = str.toInt() > 0;
@@ -881,22 +878,22 @@ void XMLProgParser::start_bb(const QXmlStreamAttributes &attr) {
         bb->TraversedMarker = str.toInt() > 0;
     str = attr.value(QLatin1Literal("DFTfirst"));
     if (!str.isEmpty())
-        bb->m_DFTfirst = str.toInt();
+        bb->DFTfirst = str.toInt();
     str = attr.value(QLatin1Literal("DFTlast"));
     if (!str.isEmpty())
-        bb->m_DFTlast = str.toInt();
+        bb->DFTlast = str.toInt();
     str = attr.value(QLatin1Literal("DFTrevfirst"));
     if (!str.isEmpty())
-        bb->m_DFTrevfirst = str.toInt();
+        bb->DFTrevfirst = str.toInt();
     str = attr.value(QLatin1Literal("DFTrevlast"));
     if (!str.isEmpty())
-        bb->m_DFTrevlast = str.toInt();
+        bb->DFTrevlast = str.toInt();
     str = attr.value(QLatin1Literal("structType"));
     if (!str.isEmpty())
-        bb->m_structType = (SBBTYPE)str.toInt();
+        bb->StructType = (SBBTYPE)str.toInt();
     str = attr.value(QLatin1Literal("loopCondType"));
     if (!str.isEmpty())
-        bb->m_loopCondType = (SBBTYPE)str.toInt();
+        bb->LoopCondType = (SBBTYPE)str.toInt();
     str = attr.value(QLatin1Literal("ord"));
     if (!str.isEmpty())
         bb->Ord = str.toInt();
@@ -938,7 +935,7 @@ void XMLProgParser::start_bb(const QXmlStreamAttributes &attr) {
         bb->StructuringType = (structType)str.toInt();
     str = attr.value(QLatin1Literal("usType"));
     if (!str.isEmpty())
-        bb->usType = (unstructType)str.toInt();
+        bb->UnstructuredType = (unstructType)str.toInt();
     str = attr.value(QLatin1Literal("lType"));
     if (!str.isEmpty())
         bb->LoopHeaderType = (LoopType)str.toInt();
@@ -2452,20 +2449,19 @@ void XMLProgParser::persistToXML(QXmlStreamWriter &out, Cfg *cfg) {
 void XMLProgParser::persistToXML(QXmlStreamWriter &out, const BasicBlock *bb) {
     out.writeStartElement("order");
     out.writeAttribute("id", QString::number(ADDRESS::host_ptr(bb).m_value));
-    out.writeAttribute("nodeType", QString::number(bb->m_nodeType));
-    out.writeAttribute("labelNum", QString::number(bb->m_iLabelNum));
-    out.writeAttribute("label", bb->m_labelStr.c_str());
+    out.writeAttribute("nodeType", QString::number(bb->NodeType));
+    out.writeAttribute("labelNum", QString::number(bb->LabelNum));
     out.writeAttribute("labelneeded", QString::number(bb->LabelNeeded));
     out.writeAttribute("incomplete", QString::number(bb->Incomplete));
     out.writeAttribute("jumpreqd", QString::number(bb->JumpReqd));
     out.writeAttribute("m_traversed", QString::number(bb->TraversedMarker));
     out.writeAttribute("jumpreqd", QString::number(bb->JumpReqd));
-    out.writeAttribute("DFTfirst", QString::number(bb->m_DFTfirst));
-    out.writeAttribute("DFTlast", QString::number(bb->m_DFTlast));
-    out.writeAttribute("DFTrevfirst", QString::number(bb->m_DFTrevfirst));
-    out.writeAttribute("DFTrevlast", QString::number(bb->m_DFTrevlast));
-    out.writeAttribute("structType", QString::number(bb->m_structType));
-    out.writeAttribute("loopCondType", QString::number(bb->m_loopCondType));
+    out.writeAttribute("DFTfirst", QString::number(bb->DFTfirst));
+    out.writeAttribute("DFTlast", QString::number(bb->DFTlast));
+    out.writeAttribute("DFTrevfirst", QString::number(bb->DFTrevfirst));
+    out.writeAttribute("DFTrevlast", QString::number(bb->DFTrevlast));
+    out.writeAttribute("structType", QString::number(bb->StructType));
+    out.writeAttribute("loopCondType", QString::number(bb->LoopCondType));
     out.writeAttribute("ord", QString::number(bb->Ord));
     out.writeAttribute("revOrd", QString::number(bb->RevOrd));
     out.writeAttribute("inEdgesVisited", QString::number(bb->InEdgesVisited));
@@ -2480,8 +2476,8 @@ void XMLProgParser::persistToXML(QXmlStreamWriter &out, const BasicBlock *bb) {
         out.writeAttribute("labelStr", bb->LabelStr);
     out.writeAttribute("indentLevel", QString::number(bb->IndentLevel));
     // note the rediculous duplication here
-    if (bb->immPDom)
-        out.writeAttribute("immPDom", QString::number(ADDRESS::host_ptr(bb->immPDom).m_value));
+    if (bb->ImmPDom)
+        out.writeAttribute("immPDom", QString::number(ADDRESS::host_ptr(bb->ImmPDom).m_value));
     if (bb->LoopHead)
         out.writeAttribute("loopHead", QString::number(ADDRESS::host_ptr(bb->LoopHead).m_value));
     if (bb->CaseHead)
@@ -2493,7 +2489,7 @@ void XMLProgParser::persistToXML(QXmlStreamWriter &out, const BasicBlock *bb) {
     if (bb->LatchNode)
         out.writeAttribute("latchNode", QString::number(ADDRESS::host_ptr(bb->LatchNode).m_value));
     out.writeAttribute("sType", QString::number((int)bb->StructuringType));
-    out.writeAttribute("usType", QString::number((int)bb->usType));
+    out.writeAttribute("usType", QString::number((int)bb->UnstructuredType));
     out.writeAttribute("lType", QString::number((int)bb->LoopHeaderType));
     out.writeAttribute("cType", QString::number((int)bb->ConditionHeaderType));
 
@@ -2509,14 +2505,14 @@ void XMLProgParser::persistToXML(QXmlStreamWriter &out, const BasicBlock *bb) {
     }
 
     LocationSet::iterator it;
-    for (it = bb->liveIn.begin(); it != bb->liveIn.end(); it++) {
+    for (it = bb->LiveIn.begin(); it != bb->LiveIn.end(); it++) {
         out.writeStartElement("livein");
         persistToXML(out, *it);
         out.writeEndElement();
     }
 
-    if (bb->m_pRtls) {
-        for (auto &elem : *bb->m_pRtls)
+    if (bb->ListOfRTLs) {
+        for (auto &elem : *bb->ListOfRTLs)
             persistToXML(out, elem);
     }
     out.writeEndElement();

@@ -228,7 +228,7 @@ BasicBlock *Cfg::newBB(std::list<RTL *> *pRtls, BBTYPE bbType, uint32_t iNumOutE
             } else {
                 // Fill in the details, and return it
                 pBB->setRTLs(pRtls);
-                pBB->m_nodeType = bbType;
+                pBB->NodeType = bbType;
                 pBB->TargetOutEdges = iNumOutEdges;
                 pBB->Incomplete = false;
             }
@@ -404,11 +404,11 @@ BasicBlock *Cfg::splitBB(BasicBlock *pBB, ADDRESS uNativeAddr, BasicBlock *pNewB
 
     // First find which RTL has the split address; note that this could fail (e.g. label in the middle of an
     // instruction, or some weird delay slot effects)
-    for (ri = pBB->m_pRtls->begin(); ri != pBB->m_pRtls->end(); ri++) {
+    for (ri = pBB->ListOfRTLs->begin(); ri != pBB->ListOfRTLs->end(); ri++) {
         if ((*ri)->getAddress() == uNativeAddr)
             break;
     }
-    if (ri == pBB->m_pRtls->end()) {
+    if (ri == pBB->ListOfRTLs->end()) {
         std::cerr << "could not split BB at " << std::hex << pBB->getLowAddr() << " at split address " << uNativeAddr
                   << std::endl;
         return pBB;
@@ -423,30 +423,30 @@ BasicBlock *Cfg::splitBB(BasicBlock *pBB, ADDRESS uNativeAddr, BasicBlock *pNewB
         // that starts at ri. We need a new list, since it is different from the
         // original BB's list. We don't have to "deep copy" the RTLs themselves,
         // since they will never overlap
-        pNewBB->setRTLs(new std::list<RTL *>(ri, pBB->m_pRtls->end()));
+        pNewBB->setRTLs(new std::list<RTL *>(ri, pBB->ListOfRTLs->end()));
         m_listBB.push_back(pNewBB); // Put it in the graph
         m_mapBB[uNativeAddr] =
             pNewBB; // Put the implicit label into the map. Need to do this before the addOutEdge() below
-        pNewBB->m_iLabelNum =
+        pNewBB->LabelNum =
             ++lastLabel; // There must be a label here; else would not be splitting. Give it a new label
     } else if (pNewBB->Incomplete) {
         // We have an existing BB and a map entry, but no details except for
         // in-edges and m_bHasLabel.
         // First save the in-edges and m_iLabelNum
         std::vector<BasicBlock *> ins(pNewBB->InEdges);
-        int label = pNewBB->m_iLabelNum;
+        int label = pNewBB->LabelNum;
         // Copy over the details now, completing the bottom BB
         *pNewBB = *pBB; // Assign the BB, copying fields. This will set m_bIncomplete false
                         // Replace the in edges (likely only one)
         pNewBB->InEdges = ins;
-        pNewBB->m_iLabelNum = label; // Replace the label (must be one, since we are splitting this BB!)
+        pNewBB->LabelNum = label; // Replace the label (must be one, since we are splitting this BB!)
                                      // The "bottom" BB now starts at the implicit label
                                      // We need to create a new list of RTLs, as per above
-        pNewBB->setRTLs(new std::list<RTL *>(ri, pBB->m_pRtls->end()));
+        pNewBB->setRTLs(new std::list<RTL *>(ri, pBB->ListOfRTLs->end()));
     }
     // else pNewBB exists and is complete. We don't want to change the complete
     // BB in any way, except to later add one in-edge
-    pBB->m_nodeType = FALL; // Update original ("top") basic block's info and make it a fall-through
+    pBB->NodeType = FALL; // Update original ("top") basic block's info and make it a fall-through
                             // Fix the in-edges of pBB's descendants. They are now pNewBB
                             // Note: you can't believe m_iNumOutEdges at the time that this function may
                             // get called
@@ -467,10 +467,10 @@ BasicBlock *Cfg::splitBB(BasicBlock *pBB, ADDRESS uNativeAddr, BasicBlock *pNewB
     // instructions overlap
     if (bDelRtls) {
         // Delete the list of pointers, and also the RTLs they point to
-        erase_lrtls(*pBB->m_pRtls, ri, pBB->m_pRtls->end());
+        erase_lrtls(*pBB->ListOfRTLs, ri, pBB->ListOfRTLs->end());
     } else {
         // Delete the list of pointers, but not the RTLs they point to
-        pBB->m_pRtls->erase(ri, pBB->m_pRtls->end());
+        pBB->ListOfRTLs->erase(ri, pBB->ListOfRTLs->end());
     }
     // Erase any existing out edges
     pBB->OutEdges.erase(pBB->OutEdges.begin(), pBB->OutEdges.end());
@@ -827,8 +827,8 @@ bool Cfg::joinBB(BasicBlock *pb1, BasicBlock *pb2) {
     // Prepend the RTLs for pb1 to those of pb2. Since they will be pushed to the front of pb2, push them in reverse
     // order
     std::list<RTL *>::reverse_iterator it;
-    for (it = pb1->m_pRtls->rbegin(); it != pb1->m_pRtls->rend(); it++) {
-        pb2->m_pRtls->push_front(*it);
+    for (it = pb1->ListOfRTLs->rbegin(); it != pb1->ListOfRTLs->rend(); it++) {
+        pb2->ListOfRTLs->push_front(*it);
     }
     completeMerge(pb1, pb2); // Mash them together
     // pb1 no longer needed. Remove it from the list of BBs.  This will also delete *pb1. It will be a shallow delete,
@@ -875,8 +875,8 @@ bool Cfg::compressCfg() {
         for (auto it1 = (*it)->OutEdges.begin(); it1 != (*it)->OutEdges.end(); it1++) {
             BasicBlock *pSucc = (*it1); // Pointer to J
             BasicBlock *bb = (*it);     // Pointer to A
-            if (pSucc->InEdges.size() == 1 && pSucc->OutEdges.size() == 1 && pSucc->m_pRtls->size() == 1 &&
-                pSucc->m_pRtls->front()->size() == 1 && pSucc->m_pRtls->front()->front()->isGoto()) {
+            if (pSucc->InEdges.size() == 1 && pSucc->OutEdges.size() == 1 && pSucc->ListOfRTLs->size() == 1 &&
+                pSucc->ListOfRTLs->front()->size() == 1 && pSucc->ListOfRTLs->front()->front()->isGoto()) {
                 // Found an out-edge to an only-jump BB
                 /* std::cout << "outedge to jump detected at " << std::hex << bb->getLowAddr() << " to ";
                                         std::cout << pSucc->getLowAddr() << " to " <<
@@ -1032,7 +1032,7 @@ bool Cfg::isOrphan(ADDRESS uAddr) {
     // If it's incomplete, it can't be an orphan
     if (pBB->Incomplete)
         return false;
-    return pBB->m_pRtls->front()->getAddress().isZero();
+    return pBB->ListOfRTLs->front()->getAddress().isZero();
 }
 
 /***************************************************************************/ /**
@@ -1127,8 +1127,8 @@ void erase_lrtls(std::list<RTL *> &pLrtl, std::list<RTL *>::iterator begin, std:
   * \param        pBB Pointer to the BB whose label will be set
   ******************************************************************************/
 void Cfg::setLabel(BasicBlock *pBB) {
-    if (pBB->m_iLabelNum == 0)
-        pBB->m_iLabelNum = ++lastLabel;
+    if (pBB->LabelNum == 0)
+        pBB->LabelNum = ++lastLabel;
 }
 
 /***************************************************************************/ /**
@@ -1223,9 +1223,9 @@ BasicBlock *Cfg::commonPDom(BasicBlock *curImmPDom, BasicBlock *succImmPDom) {
 #define GIVEUP 10000
     while (giveup < GIVEUP && curImmPDom && succImmPDom && (curImmPDom != succImmPDom)) {
         if (curImmPDom->RevOrd > succImmPDom->RevOrd)
-            succImmPDom = succImmPDom->immPDom;
+            succImmPDom = succImmPDom->ImmPDom;
         else
-            curImmPDom = curImmPDom->immPDom;
+            curImmPDom = curImmPDom->ImmPDom;
         giveup++;
     }
 
@@ -1252,7 +1252,7 @@ void Cfg::findImmedPDom() {
         for (auto &oEdge : oEdges) {
             succNode = oEdge;
             if (succNode->RevOrd > curNode->RevOrd)
-                curNode->immPDom = commonPDom(curNode->immPDom, succNode);
+                curNode->ImmPDom = commonPDom(curNode->ImmPDom, succNode);
         }
     }
 
@@ -1264,7 +1264,7 @@ void Cfg::findImmedPDom() {
         if (oEdges.size() > 1)
             for (auto &oEdge : oEdges) {
                 succNode = oEdge;
-                curNode->immPDom = commonPDom(curNode->immPDom, succNode);
+                curNode->ImmPDom = commonPDom(curNode->ImmPDom, succNode);
             }
     }
 
@@ -1275,11 +1275,11 @@ void Cfg::findImmedPDom() {
         if (oEdges.size() > 1)
             for (auto &oEdge : oEdges) {
                 succNode = oEdge;
-                if (curNode->hasBackEdgeTo(succNode) && curNode->getOutEdges().size() > 1 && succNode->immPDom &&
-                    succNode->immPDom->Ord < curNode->immPDom->Ord)
-                    curNode->immPDom = commonPDom(succNode->immPDom, curNode->immPDom);
+                if (curNode->hasBackEdgeTo(succNode) && curNode->getOutEdges().size() > 1 && succNode->ImmPDom &&
+                    succNode->ImmPDom->Ord < curNode->ImmPDom->Ord)
+                    curNode->ImmPDom = commonPDom(succNode->ImmPDom, curNode->ImmPDom);
                 else
-                    curNode->immPDom = commonPDom(curNode->immPDom, succNode);
+                    curNode->ImmPDom = commonPDom(curNode->ImmPDom, succNode);
             }
     }
 }
@@ -1298,7 +1298,7 @@ void Cfg::structConds() {
             }
 
             // set the follow of a node to be its immediate post dominator
-            curNode->setCondFollow(curNode->immPDom);
+            curNode->setCondFollow(curNode->ImmPDom);
 
             // set the structured type of this node
             curNode->setStructType(Cond);
@@ -1778,8 +1778,8 @@ void Cfg::findInterferences(ConnectionGraph &cg) {
         if (DEBUG_LIVENESS) {
             LOG << "Revisiting BB ending with stmt ";
             Statement *last = nullptr;
-            if (currBB->m_pRtls->size()) {
-                RTL *lastRtl = currBB->m_pRtls->back();
+            if (currBB->ListOfRTLs->size()) {
+                RTL *lastRtl = currBB->ListOfRTLs->back();
                 if (lastRtl->size())
                     last = lastRtl->back();
             }
@@ -1847,13 +1847,13 @@ BasicBlock *Cfg::splitForBranch(BasicBlock *pBB, RTL *rtl, BranchStatement *br1,
 #endif
     std::list<RTL *>::iterator ri;
     // First find which RTL has the split address
-    for (ri = pBB->m_pRtls->begin(); ri != pBB->m_pRtls->end(); ri++) {
+    for (ri = pBB->ListOfRTLs->begin(); ri != pBB->ListOfRTLs->end(); ri++) {
         if ((*ri) == rtl)
             break;
     }
-    assert(ri != pBB->m_pRtls->end());
+    assert(ri != pBB->ListOfRTLs->end());
 
-    bool haveA = (ri != pBB->m_pRtls->begin());
+    bool haveA = (ri != pBB->ListOfRTLs->begin());
 
     ADDRESS addr = rtl->getAddress();
 
@@ -1891,17 +1891,17 @@ BasicBlock *Cfg::splitForBranch(BasicBlock *pBB, RTL *rtl, BranchStatement *br1,
 
     // Move the remainder of the string RTL into a new BB
     BasicBlock *rptBB = newBB(new std::list<RTL *>{*ri}, TWOWAY, 2);
-    ri = pBB->m_pRtls->erase(ri);
+    ri = pBB->ListOfRTLs->erase(ri);
 
     // Move the remaining RTLs (if any) to a new list of RTLs
     BasicBlock *newBb;
     size_t oldOutEdges = 0;
     bool haveB = true;
-    if (ri != pBB->m_pRtls->end()) {
+    if (ri != pBB->ListOfRTLs->end()) {
         auto pRtls = new std::list<RTL *>;
-        while (ri != pBB->m_pRtls->end()) {
+        while (ri != pBB->ListOfRTLs->end()) {
             pRtls->push_back(*ri);
-            ri = pBB->m_pRtls->erase(ri);
+            ri = pBB->ListOfRTLs->erase(ri);
         }
         oldOutEdges = pBB->getNumOutEdges();
         newBb = newBB(pRtls, pBB->getType(), oldOutEdges);

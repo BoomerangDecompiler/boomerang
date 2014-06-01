@@ -56,20 +56,20 @@ BasicBlock::BasicBlock()
       TraversedMarker(false),
       // From Doug's code
       Ord(-1), RevOrd(-1), InEdgesVisited(0), NumForwardInEdges(-1), Traversed(UNTRAVERSED), HllLabel(false),
-      IndentLevel(0), immPDom(nullptr), LoopHead(nullptr), CaseHead(nullptr), CondFollow(nullptr), LoopFollow(nullptr),
-      LatchNode(nullptr), StructuringType(Seq), usType(Structured),
+      IndentLevel(0), ImmPDom(nullptr), LoopHead(nullptr), CaseHead(nullptr), CondFollow(nullptr), LoopFollow(nullptr),
+      LatchNode(nullptr), StructuringType(Seq), UnstructuredType(Structured),
       // Others
       overlappedRegProcessingDone(false) {}
 
 BasicBlock::~BasicBlock() {
-    if (m_pRtls) {
+    if (ListOfRTLs) {
         // Delete the RTLs
-        for (RTL *it : *m_pRtls) {
+        for (RTL *it : *ListOfRTLs) {
             delete it;
         }
         // and delete the list
-        delete m_pRtls;
-        m_pRtls = nullptr;
+        delete ListOfRTLs;
+        ListOfRTLs = nullptr;
     }
 }
 
@@ -79,21 +79,21 @@ BasicBlock::~BasicBlock() {
   * \param bb - the BB to copy from
   ******************************************************************************/
 BasicBlock::BasicBlock(const BasicBlock &bb)
-    : m_structType(bb.m_structType), m_loopCondType(bb.m_loopCondType),
-      m_nodeType(bb.m_nodeType),
-      m_iLabelNum(bb.m_iLabelNum), // m_labelneeded is initialized to false, not copied
+    : StructType(bb.StructType), LoopCondType(bb.LoopCondType),
+      NodeType(bb.NodeType),
+      LabelNum(bb.LabelNum), // m_labelneeded is initialized to false, not copied
       Incomplete(bb.Incomplete), JumpReqd(bb.JumpReqd), InEdges(bb.InEdges), OutEdges(bb.OutEdges),
       // m_iNumInEdges(bb.m_iNumInEdges),
       // m_iNumOutEdges(bb.m_iNumOutEdges),
       TargetOutEdges(bb.TargetOutEdges), TraversedMarker(false),
       // From Doug's code
       Ord(bb.Ord), RevOrd(bb.RevOrd), InEdgesVisited(bb.InEdgesVisited), NumForwardInEdges(bb.NumForwardInEdges),
-      Traversed(bb.Traversed), HllLabel(bb.HllLabel), IndentLevel(bb.IndentLevel), immPDom(bb.immPDom),
+      Traversed(bb.Traversed), HllLabel(bb.HllLabel), IndentLevel(bb.IndentLevel), ImmPDom(bb.ImmPDom),
       LoopHead(bb.LoopHead), CaseHead(bb.CaseHead), CondFollow(bb.CondFollow), LoopFollow(bb.LoopFollow),
-      LatchNode(bb.LatchNode), StructuringType(bb.StructuringType), usType(bb.usType),
+      LatchNode(bb.LatchNode), StructuringType(bb.StructuringType), UnstructuredType(bb.UnstructuredType),
       // Others
       overlappedRegProcessingDone(false) {
-    setRTLs(bb.m_pRtls);
+    setRTLs(bb.ListOfRTLs);
 }
 
 /***************************************************************************/ /**
@@ -104,11 +104,11 @@ BasicBlock::BasicBlock(const BasicBlock &bb)
   * \param iNumOutEdges -
   ******************************************************************************/
 BasicBlock::BasicBlock(Function *parent, std::list<RTL *> *pRtls, BBTYPE bbType, uint32_t iNumOutEdges)
-    : m_nodeType(bbType), Incomplete(false),
+    : NodeType(bbType), Incomplete(false),
       // From Doug's code
       Ord(-1), RevOrd(-1), InEdgesVisited(0), NumForwardInEdges(-1), Traversed(UNTRAVERSED), HllLabel(false),
-      IndentLevel(0), immPDom(nullptr), LoopHead(nullptr), CaseHead(nullptr), CondFollow(nullptr), LoopFollow(nullptr),
-      LatchNode(nullptr), StructuringType(Seq), usType(Structured),
+      IndentLevel(0), ImmPDom(nullptr), LoopHead(nullptr), CaseHead(nullptr), CondFollow(nullptr), LoopFollow(nullptr),
+      LatchNode(nullptr), StructuringType(Seq), UnstructuredType(Structured),
       // Others
       overlappedRegProcessingDone(false) {
     OutEdges.reserve(iNumOutEdges); // Reserve the space; values added with AddOutEdge()
@@ -123,7 +123,7 @@ BasicBlock::BasicBlock(Function *parent, std::list<RTL *> *pRtls, BBTYPE bbType,
   *  source code. \sa Cfg::setLabel()
   * \returns     An integer unique to this BB, or zero
   ******************************************************************************/
-int BasicBlock::getLabel() { return m_iLabelNum; }
+int BasicBlock::getLabel() { return LabelNum; }
 
 bool BasicBlock::isCaseOption() {
     if (CaseHead)
@@ -157,7 +157,7 @@ void BasicBlock::setTraversed(bool bTraversed) { TraversedMarker = bTraversed; }
   ******************************************************************************/
 void BasicBlock::setRTLs(std::list<RTL *> *rtls) {
     // should we delete old ones here? breaks some things - trent
-    m_pRtls = rtls;
+    ListOfRTLs = rtls;
 
     // Used to set the link between the last instruction (a call) and this BB if this is a call BB
 }
@@ -168,7 +168,7 @@ void BasicBlock::setRTLs(std::list<RTL *> *rtls) {
   * \returns            the type of the basic block
   *
   ******************************************************************************/
-BBTYPE BasicBlock::getType() { return m_nodeType; }
+BBTYPE BasicBlock::getType() { return NodeType; }
 
 /***************************************************************************/ /**
   *
@@ -179,7 +179,7 @@ BBTYPE BasicBlock::getType() { return m_nodeType; }
   *
   ******************************************************************************/
 void BasicBlock::updateType(BBTYPE bbType, uint32_t iNumOutEdges) {
-    m_nodeType = bbType;
+    NodeType = bbType;
     TargetOutEdges = iNumOutEdges;
     // m_OutEdges.resize(iNumOutEdges);
 }
@@ -232,9 +232,9 @@ void BasicBlock::dump() { print(std::cerr); }
 void BasicBlock::print(std::ostream &os, bool html) {
     if (html)
         os << "<br>";
-    if (m_iLabelNum)
-        os << "L" << std::dec << m_iLabelNum << ": ";
-    switch (m_nodeType) {
+    if (LabelNum)
+        os << "L" << std::dec << LabelNum << ": ";
+    switch (NodeType) {
     case ONEWAY:
         os << "Oneway BB";
         break;
@@ -272,11 +272,11 @@ void BasicBlock::print(std::ostream &os, bool html) {
     for (BasicBlock *bb : OutEdges)
         os << bb->getLowAddr() << " ";
     os << std::dec << "\n";
-    if (m_pRtls) { // Can be zero if e.g. INVALID
+    if (ListOfRTLs) { // Can be zero if e.g. INVALID
         if (html)
             os << "<table>\n";
         std::list<RTL *>::iterator rit;
-        for (rit = m_pRtls->begin(); rit != m_pRtls->end(); rit++) {
+        for (rit = ListOfRTLs->begin(); rit != ListOfRTLs->end(); rit++) {
             (*rit)->print(os, html);
         }
         if (html)
@@ -288,8 +288,8 @@ void BasicBlock::print(std::ostream &os, bool html) {
         os << "Synthetic out edge(s) to ";
         assert(TargetOutEdges == OutEdges.size());
         for (BasicBlock *outEdge : OutEdges) {
-            if (outEdge && outEdge->m_iLabelNum)
-                os << "L" << std::dec << outEdge->m_iLabelNum << " ";
+            if (outEdge && outEdge->LabelNum)
+                os << "L" << std::dec << outEdge->LabelNum << " ";
         }
         os << std::endl;
     }
@@ -303,7 +303,7 @@ void BasicBlock::printToLog() {
 
 bool BasicBlock::isBackEdge(size_t inEdge) const {
     const BasicBlock *in = InEdges[inEdge];
-    return this == in || (m_DFTfirst < in->m_DFTfirst && m_DFTlast > in->m_DFTlast);
+    return this == in || (DFTfirst < in->DFTfirst && DFTlast > in->DFTlast);
 }
 
 // Another attempt at printing BBs that gdb doesn't like to print
@@ -324,12 +324,12 @@ bool BasicBlock::isBackEdge(size_t inEdge) const {
   * \returns            the lowest real address associated with this BB
   ******************************************************************************/
 ADDRESS BasicBlock::getLowAddr() {
-    if (m_pRtls == nullptr || m_pRtls->size() == 0)
+    if (ListOfRTLs == nullptr || ListOfRTLs->size() == 0)
         return ADDRESS::g(0L);
-    ADDRESS a = m_pRtls->front()->getAddress();
+    ADDRESS a = ListOfRTLs->front()->getAddress();
 
-    if (a.isZero() && (m_pRtls->size() > 1)) {
-        std::list<RTL *>::iterator it = m_pRtls->begin();
+    if (a.isZero() && (ListOfRTLs->size() > 1)) {
+        std::list<RTL *>::iterator it = ListOfRTLs->begin();
         ADDRESS add2 = (*++it)->getAddress();
         // This is a bit of a hack for 286 programs, whose main actually starts at offset 0. A better solution would be
         // to change orphan BBs' addresses to NO_ADDRESS, but I suspect that this will cause many problems. MVE
@@ -348,8 +348,8 @@ ADDRESS BasicBlock::getLowAddr() {
   * \returns     the address
   ******************************************************************************/
 ADDRESS BasicBlock::getHiAddr() {
-    assert(m_pRtls != nullptr);
-    return m_pRtls->back()->getAddress();
+    assert(ListOfRTLs != nullptr);
+    return ListOfRTLs->back()->getAddress();
 }
 
 /***************************************************************************/ /**
@@ -357,13 +357,13 @@ ADDRESS BasicBlock::getHiAddr() {
   * \brief        Get pointer to the list of RTL*.
   * \returns     the pointer
   ******************************************************************************/
-std::list<RTL *> *BasicBlock::getRTLs() { return m_pRtls; }
-const std::list<RTL *> *BasicBlock::getRTLs() const { return m_pRtls; }
+std::list<RTL *> *BasicBlock::getRTLs() { return ListOfRTLs; }
+const std::list<RTL *> *BasicBlock::getRTLs() const { return ListOfRTLs; }
 
 RTL *BasicBlock::getRTLWithStatement(Statement *stmt) {
-    if (m_pRtls == nullptr)
+    if (ListOfRTLs == nullptr)
         return nullptr;
-    for (RTL *rtl : *m_pRtls) {
+    for (RTL *rtl : *ListOfRTLs) {
         for (Statement *it1 : *rtl)
             if (it1 == stmt)
                 return rtl;
@@ -498,7 +498,7 @@ void BasicBlock::deleteEdge(BasicBlock *edge) {
   ******************************************************************************/
 unsigned BasicBlock::DFTOrder(int &first, int &last) {
     first++;
-    m_DFTfirst = first;
+    DFTfirst = first;
 
     unsigned numTraversed = 1;
     TraversedMarker = true;
@@ -509,7 +509,7 @@ unsigned BasicBlock::DFTOrder(int &first, int &last) {
     }
 
     last++;
-    m_DFTlast = last;
+    DFTlast = last;
 
     return numTraversed;
 }
@@ -524,7 +524,7 @@ unsigned BasicBlock::DFTOrder(int &first, int &last) {
   ******************************************************************************/
 unsigned BasicBlock::RevDFTOrder(int &first, int &last) {
     first++;
-    m_DFTrevfirst = first;
+    DFTrevfirst = first;
 
     unsigned numTraversed = 1;
     TraversedMarker = true;
@@ -535,7 +535,7 @@ unsigned BasicBlock::RevDFTOrder(int &first, int &last) {
     }
 
     last++;
-    m_DFTrevlast = last;
+    DFTrevlast = last;
 
     return numTraversed;
 }
@@ -558,7 +558,7 @@ bool BasicBlock::lessAddress(BasicBlock *bb1, BasicBlock *bb2) { return bb1->get
   * \param bb2 - last BB
   * \returns bb1.first_DFS < bb2.first_DFS
   ******************************************************************************/
-bool BasicBlock::lessFirstDFT(BasicBlock *bb1, BasicBlock *bb2) { return bb1->m_DFTfirst < bb2->m_DFTfirst; }
+bool BasicBlock::lessFirstDFT(BasicBlock *bb1, BasicBlock *bb2) { return bb1->DFTfirst < bb2->DFTfirst; }
 
 /***************************************************************************/ /**
   *
@@ -568,7 +568,7 @@ bool BasicBlock::lessFirstDFT(BasicBlock *bb1, BasicBlock *bb2) { return bb1->m_
   * \param bb2 - last BB
   * \returns bb1.last_DFS < bb2.last_DFS
   ******************************************************************************/
-bool BasicBlock::lessLastDFT(BasicBlock *bb1, BasicBlock *bb2) { return bb1->m_DFTlast < bb2->m_DFTlast; }
+bool BasicBlock::lessLastDFT(BasicBlock *bb1, BasicBlock *bb2) { return bb1->DFTlast < bb2->DFTlast; }
 
 /***************************************************************************/ /**
   *
@@ -577,11 +577,11 @@ bool BasicBlock::lessLastDFT(BasicBlock *bb1, BasicBlock *bb2) { return bb1->m_D
   * \returns     Native destination of the call, or -1
   ******************************************************************************/
 ADDRESS BasicBlock::getCallDest() {
-    if (m_nodeType != CALL)
+    if (NodeType != CALL)
         return NO_ADDRESS;
-    if (m_pRtls->size() == 0)
+    if (ListOfRTLs->size() == 0)
         return NO_ADDRESS;
-    RTL *lastRtl = m_pRtls->back();
+    RTL *lastRtl = ListOfRTLs->back();
     for (auto rit = lastRtl->rbegin(); rit != lastRtl->rend(); rit++) {
         if ((*rit)->getKind() == STMT_CALL)
             return ((CallStatement *)(*rit))->getFixedDest();
@@ -590,11 +590,11 @@ ADDRESS BasicBlock::getCallDest() {
 }
 
 Function *BasicBlock::getCallDestProc() {
-    if (m_nodeType != CALL)
+    if (NodeType != CALL)
         return nullptr;
-    if (m_pRtls->size() == 0)
+    if (ListOfRTLs->size() == 0)
         return nullptr;
-    RTL *lastRtl = m_pRtls->back();
+    RTL *lastRtl = ListOfRTLs->back();
     for (auto it = lastRtl->rbegin(); it != lastRtl->rend(); it++) {
         if ((*it)->getKind() == STMT_CALL)
             return ((CallStatement *)(*it))->getDestProc();
@@ -606,10 +606,10 @@ Function *BasicBlock::getCallDestProc() {
 // Get First/Next Statement in a BB
 //
 Statement *BasicBlock::getFirstStmt(rtlit &rit, StatementList::iterator &sit) {
-    if (m_pRtls == nullptr || m_pRtls->empty())
+    if (ListOfRTLs == nullptr || ListOfRTLs->empty())
         return nullptr;
-    rit = m_pRtls->begin();
-    while (rit != m_pRtls->end()) {
+    rit = ListOfRTLs->begin();
+    while (rit != ListOfRTLs->end()) {
         RTL *rtl = *rit;
         sit = rtl->begin();
         if (sit != rtl->end())
@@ -624,7 +624,7 @@ Statement *BasicBlock::getNextStmt(rtlit &rit, StatementList::iterator &sit) {
         return *sit; // End of current RTL not reached, so return next
                      // Else, find next non-empty RTL & return its first statement
     do {
-        if (++rit == m_pRtls->end())
+        if (++rit == ListOfRTLs->end())
             return nullptr;    // End of all RTLs reached, return null Statement
     } while ((*rit)->empty()); // Ignore all RTLs with no statements
     sit = (*rit)->begin();     // Point to 1st statement at start of next RTL
@@ -636,7 +636,7 @@ Statement *BasicBlock::getPrevStmt(rtlrit &rit, StatementList::reverse_iterator 
         return *sit; // Beginning of current RTL not reached, so return next
                      // Else, find prev non-empty RTL & return its last statement
     do {
-        if (++rit == m_pRtls->rend())
+        if (++rit == ListOfRTLs->rend())
             return nullptr;    // End of all RTLs reached, return null Statement
     } while ((*rit)->empty()); // Ignore all RTLs with no statements
     sit = (*rit)->rbegin();    // Point to last statement at end of prev RTL
@@ -644,10 +644,10 @@ Statement *BasicBlock::getPrevStmt(rtlrit &rit, StatementList::reverse_iterator 
 }
 
 Statement *BasicBlock::getLastStmt(rtlrit &rit, StatementList::reverse_iterator &sit) {
-    if (m_pRtls == nullptr)
+    if (ListOfRTLs == nullptr)
         return nullptr;
-    rit = m_pRtls->rbegin();
-    while (rit != m_pRtls->rend()) {
+    rit = ListOfRTLs->rbegin();
+    while (rit != ListOfRTLs->rend()) {
         RTL *rtl = *rit;
         sit = rtl->rbegin();
         if (sit != rtl->rend())
@@ -658,19 +658,19 @@ Statement *BasicBlock::getLastStmt(rtlrit &rit, StatementList::reverse_iterator 
 }
 
 Statement *BasicBlock::getFirstStmt() {
-    if (m_pRtls == nullptr)
+    if (ListOfRTLs == nullptr)
         return nullptr;
-    for (RTL *rtl : *m_pRtls) {
+    for (RTL *rtl : *ListOfRTLs) {
         if (!rtl->empty())
             return rtl->front();
     }
     return nullptr;
 }
 Statement *BasicBlock::getLastStmt() {
-    if (m_pRtls == nullptr)
+    if (ListOfRTLs == nullptr)
         return nullptr;
-    rtlrit rit = m_pRtls->rbegin();
-    while (rit != m_pRtls->rend()) {
+    rtlrit rit = ListOfRTLs->rbegin();
+    while (rit != ListOfRTLs->rend()) {
         RTL *rtl = *rit;
         if (!rtl->empty())
             return rtl->back();
@@ -705,8 +705,8 @@ void BasicBlock::getStatements(StatementList &stmts) const {
 /*! Get the condition */
 Exp *BasicBlock::getCond() throw(LastStatementNotABranchError) {
     // the condition will be in the last rtl
-    assert(m_pRtls);
-    RTL *last = m_pRtls->back();
+    assert(ListOfRTLs);
+    RTL *last = ListOfRTLs->back();
     // it should contain a BranchStatement
     BranchStatement *bs = (BranchStatement *)last->getHlStmt();
     if (bs && bs->getKind() == STMT_BRANCH)
@@ -718,8 +718,8 @@ Exp *BasicBlock::getCond() throw(LastStatementNotABranchError) {
 /*! Get the destiantion, if any */
 Exp *BasicBlock::getDest() throw(LastStatementNotAGotoError) {
     // The destianation will be in the last rtl
-    assert(m_pRtls);
-    RTL *lastRtl = m_pRtls->back();
+    assert(ListOfRTLs);
+    RTL *lastRtl = ListOfRTLs->back();
     // It should contain a GotoStatement or derived class
     Statement *lastStmt = lastRtl->getHlStmt();
     CaseStatement *cs = dynamic_cast<CaseStatement *>(lastStmt);
@@ -740,8 +740,8 @@ Exp *BasicBlock::getDest() throw(LastStatementNotAGotoError) {
 /*! set the condition */
 void BasicBlock::setCond(Exp *e) throw(LastStatementNotABranchError) {
     // the condition will be in the last rtl
-    assert(m_pRtls);
-    RTL *last = m_pRtls->back();
+    assert(ListOfRTLs);
+    RTL *last = ListOfRTLs->back();
     // it should contain a BranchStatement
     assert(not last->empty());
     for (auto it = last->rbegin(); it != last->rend(); it++) {
@@ -756,8 +756,8 @@ void BasicBlock::setCond(Exp *e) throw(LastStatementNotABranchError) {
 /*! Check for branch if equal relation */
 bool BasicBlock::isJmpZ(BasicBlock *dest) {
     // The condition will be in the last rtl
-    assert(m_pRtls);
-    RTL *last = m_pRtls->back();
+    assert(ListOfRTLs);
+    RTL *last = ListOfRTLs->back();
     // it should contain a BranchStatement
     assert(not last->empty());
     for (auto it = last->rbegin(); it != last->rend(); it++) {
@@ -780,7 +780,7 @@ bool BasicBlock::isJmpZ(BasicBlock *dest) {
 
 /*! Get the loop body */
 BasicBlock *BasicBlock::getLoopBody() {
-    assert(m_structType == PRETESTLOOP || m_structType == POSTTESTLOOP || m_structType == ENDLESSLOOP);
+    assert(StructType == PRETESTLOOP || StructType == POSTTESTLOOP || StructType == ENDLESSLOOP);
     assert(OutEdges.size() == 2);
     if (OutEdges[0] != LoopFollow)
         return OutEdges[0];
@@ -797,23 +797,23 @@ bool BasicBlock::isAncestorOf(BasicBlock *other) {
 /*! Simplify all the expressions in this BB
  */
 void BasicBlock::simplify() {
-    if (m_pRtls)
-        for (auto &elem : *m_pRtls)
+    if (ListOfRTLs)
+        for (auto &elem : *ListOfRTLs)
             (elem)->simplify();
-    if (m_nodeType == TWOWAY) {
-        if (m_pRtls == nullptr || m_pRtls->empty()) {
-            m_nodeType = FALL;
+    if (NodeType == TWOWAY) {
+        if (ListOfRTLs == nullptr || ListOfRTLs->empty()) {
+            NodeType = FALL;
         } else {
-            RTL *last = m_pRtls->back();
+            RTL *last = ListOfRTLs->back();
             if (last->size() == 0) {
-                m_nodeType = FALL;
+                NodeType = FALL;
             } else if (last->back()->isGoto()) {
-                m_nodeType = ONEWAY;
+                NodeType = ONEWAY;
             } else if (!last->back()->isBranch()) {
-                m_nodeType = FALL;
+                NodeType = FALL;
             }
         }
-        if (m_nodeType == FALL) {
+        if (NodeType == FALL) {
             // set out edges to be the second one
             if (VERBOSE) {
                 LOG << "turning TWOWAY into FALL: " << OutEdges[0]->getLowAddr() << " " << OutEdges[1]->getLowAddr()
@@ -838,7 +838,7 @@ void BasicBlock::simplify() {
             // redundant->m_iNumInEdges = redundant->m_InEdges.size();
             LOG_VERBOSE(1) << "   after: " << OutEdges[0]->getLowAddr() << "\n";
         }
-        if (m_nodeType == ONEWAY) {
+        if (NodeType == ONEWAY) {
             // set out edges to be the first one
             LOG_VERBOSE(1) << "turning TWOWAY into ONEWAY: " << OutEdges[0]->getLowAddr() << " "
                            << OutEdges[1]->getLowAddr() << "\n";
@@ -906,8 +906,8 @@ void BasicBlock::WriteBB(HLLCode *hll, int indLevel) {
     // then be generated now or back patched later
     hll->AddLabel(indLevel, Ord);
 
-    if (m_pRtls) {
-        for (RTL *rtl : *m_pRtls) {
+    if (ListOfRTLs) {
+        for (RTL *rtl : *ListOfRTLs) {
             if (DEBUG_GEN)
                 LOG << rtl->getAddress() << "\t";
             for (Statement *st : *rtl) {
@@ -1090,14 +1090,14 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, BasicBlock *latch, std
             // added to the follow set
             // myLoopHead = (sType == LoopCond ? this : loopHead);
 
-            if (usType == Structured)
+            if (UnstructuredType == Structured)
                 followSet.push_back(CondFollow);
 
             // Otherwise, for a jump into/outof a loop body, the follow is added to the goto set.
             // The temporary follow is set for any unstructured conditional header branch that is within the
             // same loop and case.
             else {
-                if (usType == JumpInOutLoop) {
+                if (UnstructuredType == JumpInOutLoop) {
                     // define the loop header to be compared against
                     BasicBlock *myLoopHead = (StructuringType == LoopCond ? this : LoopHead);
                     gotoSet.push_back(CondFollow);
@@ -1121,7 +1121,7 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, BasicBlock *latch, std
                     tmpCondFollow = OutEdges[BTHEN];
 
                 // for a jump into a case, the temp follow is added to the follow set
-                if (usType == JumpIntoCase)
+                if (UnstructuredType == JumpIntoCase)
                     followSet.push_back(tmpCondFollow);
             }
         }
@@ -1133,7 +1133,7 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, BasicBlock *latch, std
         SWITCH_INFO *psi = nullptr; // Init to nullptr to suppress a warning
         if (ConditionHeaderType == Case) {
             // The CaseStatement will be in the last RTL this BB
-            RTL *last = m_pRtls->back();
+            RTL *last = ListOfRTLs->back();
             CaseStatement *cs = (CaseStatement *)last->getHlStmt();
             psi = cs->getSwitchInfo();
             // Write the switch header (i.e. "switch(var) {")
@@ -1214,7 +1214,7 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, BasicBlock *latch, std
         if (CondFollow) {
             // remove the original follow from the follow set if it was
             // added by this header
-            if (usType == Structured || usType == JumpIntoCase) {
+            if (UnstructuredType == Structured || UnstructuredType == JumpIntoCase) {
                 assert(gotoTotal == 0);
                 followSet.resize(followSet.size() - 1);
             } else // remove all the nodes added to the goto set
@@ -1249,10 +1249,10 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, BasicBlock *latch, std
             qWarning() << "WARNING: no out edge for this BB in " << proc->getName() << ":\n";
             this->print(std::cerr);
             std::cerr << std::endl;
-            if (m_nodeType == COMPJUMP) {
+            if (NodeType == COMPJUMP) {
                 std::ostringstream ost;
-                assert(m_pRtls->size());
-                RTL *lastRTL = m_pRtls->back();
+                assert(ListOfRTLs->size());
+                RTL *lastRTL = ListOfRTLs->back();
                 assert(!lastRTL->empty());
                 GotoStatement *gs = (GotoStatement *)lastRTL->back();
                 ost << "goto " << gs->getDest();
@@ -1310,7 +1310,7 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, BasicBlock *latch, std
 */
 Function *BasicBlock::getDestProc() {
     // The last Statement of the last RTL should be a CallStatement
-    CallStatement *call = (CallStatement *)(m_pRtls->back()->getHlStmt());
+    CallStatement *call = (CallStatement *)(ListOfRTLs->back()->getHlStmt());
     assert(call->getKind() == STMT_CALL);
     Function *proc = call->getDestProc();
     if (proc == nullptr) {
@@ -1419,12 +1419,12 @@ void BasicBlock::setStructType(structType s) {
 
 void BasicBlock::setUnstructType(unstructType us) {
     assert((StructuringType == Cond || StructuringType == LoopCond) && ConditionHeaderType != Case);
-    usType = us;
+    UnstructuredType = us;
 }
 
 unstructType BasicBlock::getUnstructType() {
     assert((StructuringType == Cond || StructuringType == LoopCond) && ConditionHeaderType != Case);
-    return usType;
+    return UnstructuredType;
 }
 
 void BasicBlock::setLoopType(LoopType l) {
@@ -1487,11 +1487,11 @@ char *BasicBlock::getStmtNumber() {
 //! \a proc is the enclosing Proc
 void BasicBlock::prependStmt(Statement *s, UserProc *proc) {
     // Check the first RTL (if any)
-    assert(m_pRtls);
+    assert(ListOfRTLs);
     s->setBB(this);
     s->setProc(proc);
-    if (m_pRtls->size()) {
-        RTL *rtl = m_pRtls->front();
+    if (ListOfRTLs->size()) {
+        RTL *rtl = ListOfRTLs->front();
         if (rtl->getAddress().isZero()) {
             // Append to this RTL
             rtl->appendStmt(s);
@@ -1501,7 +1501,7 @@ void BasicBlock::prependStmt(Statement *s, UserProc *proc) {
     // Otherwise, prepend a new RTL
     std::list<Statement *> listStmt = {s};
     RTL *rtl = new RTL(ADDRESS::g(0L), &listStmt);
-    m_pRtls->push_front(rtl);
+    ListOfRTLs->push_front(rtl);
 }
 
 ////////////////////////////////////////////////////
@@ -1538,8 +1538,8 @@ bool BasicBlock::calcLiveness(ConnectionGraph &ig, UserProc *myProc) {
     checkForOverlap(liveLocs, phiLocs, ig, myProc);
     // For each RTL in this BB
     std::list<RTL *>::reverse_iterator rit;
-    if (m_pRtls) // this can be nullptr
-        for (rit = m_pRtls->rbegin(); rit != m_pRtls->rend(); rit++) {
+    if (ListOfRTLs) // this can be nullptr
+        for (rit = ListOfRTLs->rbegin(); rit != ListOfRTLs->rend(); rit++) {
             std::list<Statement *>::reverse_iterator sit;
             // For each statement this RTL
             for (sit = (*rit)->rbegin(); sit != (*rit)->rend(); sit++) {
@@ -1579,8 +1579,8 @@ bool BasicBlock::calcLiveness(ConnectionGraph &ig, UserProc *myProc) {
             }
         }
     // liveIn is what we calculated last time
-    if (!(liveLocs == liveIn)) {
-        liveIn = liveLocs;
+    if (!(liveLocs == LiveIn)) {
+        LiveIn = liveLocs;
         return true; // A change
     }
     // No change
@@ -1595,11 +1595,11 @@ void BasicBlock::getLiveOut(LocationSet &liveout, LocationSet &phiLocs) {
     liveout.clear();
     for (BasicBlock *currBB : OutEdges) {
         // First add the non-phi liveness
-        liveout.makeUnion(currBB->liveIn); // add successor liveIn to this liveout set.
+        liveout.makeUnion(currBB->LiveIn); // add successor liveIn to this liveout set.
         // The first RTL will have the phi functions, if any
-        if (currBB->m_pRtls == nullptr || currBB->m_pRtls->size() == 0)
+        if (currBB->ListOfRTLs == nullptr || currBB->ListOfRTLs->size() == 0)
             continue;
-        RTL *phiRtl = currBB->m_pRtls->front();
+        RTL *phiRtl = currBB->ListOfRTLs->front();
         for (Statement *st : *phiRtl) {
             // Only interested in phi assignments. Note that it is possible that some phi assignments have been
             // converted to ordinary assignments. So the below is a continue, not a break.
@@ -1842,10 +1842,10 @@ void findSwParams(char form, Exp *e, Exp *&expr, ADDRESS &T) {
 int BasicBlock::findNumCases() {
     // should actually search from the statement to i
     for (BasicBlock *in : InEdges) { // For each in-edge
-        if (in->m_nodeType != TWOWAY)  // look for a two-way BB
+        if (in->NodeType != TWOWAY)  // look for a two-way BB
             continue;                  // Ignore all others
-        assert(in->m_pRtls && in->m_pRtls->size());
-        RTL *lastRtl = in->m_pRtls->back();
+        assert(in->ListOfRTLs && in->ListOfRTLs->size());
+        RTL *lastRtl = in->ListOfRTLs->back();
         assert(not lastRtl->empty());
         BranchStatement *lastStmt = (BranchStatement *)lastRtl->back();
         Exp *pCond = lastStmt->getCondExpr();
@@ -1920,9 +1920,9 @@ bool BasicBlock::decodeIndirectJmp(UserProc *proc) {
     }
 #endif
 
-    if (m_nodeType == COMPJUMP) {
-        assert(m_pRtls->size());
-        RTL *lastRtl = m_pRtls->back();
+    if (NodeType == COMPJUMP) {
+        assert(ListOfRTLs->size());
+        RTL *lastRtl = ListOfRTLs->back();
         if (DEBUG_SWITCH)
             LOG << "decodeIndirectJmp: " << lastRtl->prints();
         assert(not lastRtl->empty());
@@ -2020,9 +2020,9 @@ bool BasicBlock::decodeIndirectJmp(UserProc *proc) {
             }
         }
         return false;
-    } else if (m_nodeType == COMPCALL) {
-        assert(m_pRtls->size());
-        RTL *lastRtl = m_pRtls->back();
+    } else if (NodeType == COMPCALL) {
+        assert(ListOfRTLs->size());
+        RTL *lastRtl = ListOfRTLs->back();
         if (DEBUG_SWITCH)
             LOG << "decodeIndirectJmp: COMPCALL:\n" << lastRtl->prints() << "\n";
         assert(not lastRtl->empty());
@@ -2193,7 +2193,7 @@ bool BasicBlock::decodeIndirectJmp(UserProc *proc) {
   ******************************************************************************/
 void BasicBlock::processSwitch(UserProc *proc) {
 
-    RTL *last(m_pRtls->back());
+    RTL *last(ListOfRTLs->back());
     CaseStatement *lastStmt((CaseStatement *)last->getHlStmt());
     SWITCH_INFO *si(lastStmt->getSwitchInfo());
     Boomerang::get()->debugSwitch = true;
@@ -2285,10 +2285,10 @@ void BasicBlock::processSwitch(UserProc *proc) {
  * Change the BB enclosing stmt to be CALL, not COMPCALL
  */
 bool BasicBlock::undoComputedBB(Statement *stmt) {
-    RTL *last = m_pRtls->back();
+    RTL *last = ListOfRTLs->back();
     for (auto rr = last->rbegin(); rr != last->rend(); rr++) {
         if (*rr == stmt) {
-            m_nodeType = CALL;
+            NodeType = CALL;
             LOG << "undoComputedBB for statement " << stmt << "\n";
             return true;
         }
@@ -2307,7 +2307,7 @@ bool BasicBlock::undoComputedBB(Statement *stmt) {
   ******************************************************************************/
 bool BasicBlock::searchAll(const Exp &search_for, std::list<Exp *> &results) {
     bool ch = false;
-    for (RTL *rtl_it : *m_pRtls) {
+    for (RTL *rtl_it : *ListOfRTLs) {
         for (Statement *e : *rtl_it) {
             Exp *res; // searchAll can be used here too, would it change anything ?
             if (e->search(search_for, res)) {
@@ -2328,7 +2328,7 @@ bool BasicBlock::searchAll(const Exp &search_for, std::list<Exp *> &results) {
 bool BasicBlock::searchAndReplace(const Exp &search, Exp *replace) {
     bool ch = false;
 
-    for (RTL *rtl_it : *m_pRtls) {
+    for (RTL *rtl_it : *ListOfRTLs) {
         for (auto &elem : *rtl_it)
             ch |= (elem)->searchAndReplace(search, replace);
     }

@@ -128,13 +128,13 @@ class BasicBlock {
      * Depth first traversal of all bbs, numbering as we go and as we come back, forward and reverse passes.
      * Use Cfg::establishDFTOrder() and CFG::establishRevDFTOrder to create these values.
      */
-    int m_DFTfirst = 0; //!< depth-first traversal first visit
-    int m_DFTlast = 0;  //!< depth-first traversal last visit
-    int m_DFTrevfirst;  //!< reverse depth-first traversal first visit
-    int m_DFTrevlast;   //!< reverse depth-first traversal last visit
+    int DFTfirst = 0; //!< depth-first traversal first visit
+    int DFTlast = 0;  //!< depth-first traversal last visit
+    int DFTrevfirst;  //!< reverse depth-first traversal first visit
+    int DFTrevlast;   //!< reverse depth-first traversal last visit
     /* high level structuring */
-    SBBTYPE m_structType = NONE;        //!< structured type of this node
-    SBBTYPE m_loopCondType = NONE;      //!< type of conditional to treat this loop header as (if any)
+    SBBTYPE StructType = NONE;        //!< structured type of this node
+    SBBTYPE LoopCondType = NONE;      //!< type of conditional to treat this loop header as (if any)
 //    BasicBlock *m_loopHead = nullptr;   //!< head of the most nested enclosing loop
 //    BasicBlock *m_caseHead = nullptr;   //!< head of the most nested enclosing case
 //    BasicBlock *m_condFollow = nullptr; //!< follow of a conditional header
@@ -142,10 +142,9 @@ class BasicBlock {
   protected:
     Function *Parent;
     /* general basic block information */
-    BBTYPE m_nodeType = INVALID;         //!< type of basic block
-    std::list<RTL *> *m_pRtls = nullptr; //!< Ptr to list of RTLs
-    int m_iLabelNum = 0;                 //!< Nonzero if start of BB needs label
-    std::string m_labelStr;              //!< string label of this bb.
+    BBTYPE NodeType = INVALID;         //!< type of basic block
+    std::list<RTL *> *ListOfRTLs = nullptr; //!< Ptr to list of RTLs
+    int LabelNum = 0;                 //!< Nonzero if start of BB needs label
     bool LabelNeeded = false;
     bool Incomplete = true; //!< True if not yet complete
     bool JumpReqd = false;  //!< True if jump required for "fall through"
@@ -159,7 +158,7 @@ class BasicBlock {
     bool TraversedMarker = false; //!< traversal marker
 
     /* Liveness */
-    LocationSet liveIn;                  //!< Set of locations live at BB start
+    LocationSet LiveIn;                  //!< Set of locations live at BB start
                                          /* Control flow analysis stuff, lifted from Doug Simon's honours thesis.
                                           */
     int Ord;                             //!< node's position within the ordering structure
@@ -173,7 +172,7 @@ class BasicBlock {
     int IndentLevel;                     //!< the indentation level of this node in the final code
 
     // analysis information
-    BasicBlock *immPDom;    //!< immediate post dominator
+    BasicBlock *ImmPDom;    //!< immediate post dominator
     BasicBlock *LoopHead;   //!< head of the most nested enclosing loop
     BasicBlock *CaseHead;   //!< head of the most nested enclosing case
     BasicBlock *CondFollow; //!< follow of a conditional header
@@ -182,7 +181,7 @@ class BasicBlock {
 
     // Structured type of the node
     structType StructuringType;    //!< the structuring class (Loop, Cond , etc)
-    unstructType usType; //!< the restructured type of a conditional header
+    unstructType UnstructuredType; //!< the restructured type of a conditional header
     LoopType LoopHeaderType;      //!< the loop type of a loop header
     CondType ConditionHeaderType;      //!< the conditional type of a conditional header
 
@@ -196,8 +195,8 @@ class BasicBlock {
     BBTYPE getType();
 
     int getLabel();
-    std::string &getLabelStr() { return m_labelStr; }
-    void setLabelStr(std::string &s) { m_labelStr = s; }
+    QString &getLabelStr() { return LabelStr; }
+    void setLabelStr(const QString &s) { LabelStr = s; }
     bool isLabelNeeded() { return LabelNeeded; }
     void setLabelNeeded(bool b) { LabelNeeded = b; }
     bool isCaseOption();
@@ -275,7 +274,7 @@ class BasicBlock {
     Statement *getFirstStmt();
     Statement *getLastStmt();
     Statement *getPrevStmt(rtlrit &rit, StatementList::reverse_iterator &sit);
-    RTL *getLastRtl() { return m_pRtls->back(); }
+    RTL *getLastRtl() { return ListOfRTLs->back(); }
     void getStatements(StatementList &stmts) const;
     char *getStmtNumber();
 
@@ -351,11 +350,11 @@ class BasicBlock {
     void WriteBB(HLLCode *hll, int indLevel);
     void addOutEdge(BasicBlock *bb) { OutEdges.push_back(bb); }
     void addRTL(RTL *rtl) {
-        if (m_pRtls == nullptr)
-            m_pRtls = new std::list<RTL *>;
-        m_pRtls->push_back(rtl);
+        if (ListOfRTLs == nullptr)
+            ListOfRTLs = new std::list<RTL *>;
+        ListOfRTLs->push_back(rtl);
     }
-    void addLiveIn(Exp *e) { liveIn.insert(e); }
+    void addLiveIn(Exp *e) { LiveIn.insert(e); }
 
   private:
     /*
