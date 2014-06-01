@@ -1829,6 +1829,8 @@ void findSwParams(char form, Exp *e, Exp *&expr, ADDRESS &T) {
         expr = nullptr;
         T = NO_ADDRESS;
     }
+    // normalize address to native
+    T=T.native();
 }
 /**
  Find the number of cases for this switch statement. Assumes that there is a compare and branch around the indirect
