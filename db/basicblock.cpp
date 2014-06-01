@@ -49,7 +49,7 @@ using namespace std;
  * BasicBlock methods
  **********************************/
 
-BasicBlock::BasicBlock()
+BasicBlock::BasicBlock(Function *parent)
     : // m_iNumInEdges(0),
       // m_iNumOutEdges(0),
       TargetOutEdges(0),
@@ -59,7 +59,9 @@ BasicBlock::BasicBlock()
       IndentLevel(0), ImmPDom(nullptr), LoopHead(nullptr), CaseHead(nullptr), CondFollow(nullptr), LoopFollow(nullptr),
       LatchNode(nullptr), StructuringType(Seq), UnstructuredType(Structured),
       // Others
-      overlappedRegProcessingDone(false) {}
+      overlappedRegProcessingDone(false) {
+    Parent = parent;
+}
 
 BasicBlock::~BasicBlock() {
     if (ListOfRTLs) {
@@ -94,6 +96,7 @@ BasicBlock::BasicBlock(const BasicBlock &bb)
       // Others
       overlappedRegProcessingDone(false) {
     setRTLs(bb.ListOfRTLs);
+    Parent = bb.Parent;
 }
 
 /***************************************************************************/ /**
@@ -1486,11 +1489,12 @@ char *BasicBlock::getStmtNumber() {
 //! Prepend an assignment (usually a PhiAssign or ImplicitAssign)
 //! \a proc is the enclosing Proc
 void BasicBlock::prependStmt(Statement *s, UserProc *proc) {
+    assert(Parent==proc);
     // Check the first RTL (if any)
     assert(ListOfRTLs);
     s->setBB(this);
     s->setProc(proc);
-    if (ListOfRTLs->size()) {
+    if (!ListOfRTLs->empty()) {
         RTL *rtl = ListOfRTLs->front();
         if (rtl->getAddress().isZero()) {
             // Append to this RTL

@@ -182,7 +182,7 @@ class BasicBlock {
     CondType ConditionHeaderType;      //!< the conditional type of a conditional header
 
   public:
-    BasicBlock();
+    BasicBlock(Function *parent);
     ~BasicBlock();
     BasicBlock(const BasicBlock &bb);
     /// \brief return enclosing function, null if none

@@ -304,7 +304,7 @@ BasicBlock *Cfg::newBB(std::list<RTL *> *pRtls, BBTYPE bbType, uint32_t iNumOutE
   ******************************************************************************/
 BasicBlock *Cfg::newIncompleteBB(ADDRESS addr) {
     // Create a new (basically empty) BB
-    BasicBlock *pBB = new BasicBlock();
+    BasicBlock *pBB = new BasicBlock(myProc);
     // Add it to the list
     m_listBB.push_back(pBB);
     m_mapBB[addr] = pBB; // Insert the mapping
@@ -1778,7 +1778,7 @@ void Cfg::findInterferences(ConnectionGraph &cg) {
         if (DEBUG_LIVENESS) {
             LOG << "Revisiting BB ending with stmt ";
             Statement *last = nullptr;
-            if (currBB->ListOfRTLs->size()) {
+            if (!currBB->ListOfRTLs->empty()) {
                 RTL *lastRtl = currBB->ListOfRTLs->back();
                 if (lastRtl->size())
                     last = lastRtl->back();

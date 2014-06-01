@@ -77,7 +77,7 @@ bool SparcFrontEnd::optimise_DelayCopy(ADDRESS src, ADDRESS dest, ptrdiff_t delt
 }
 
 /***************************************************************************/ /**
-  * FUNCTION:        optimise_CallReturn
+  * \function     SparcFrontEnd::optimise_CallReturn
   * \brief        Determines if the given call and delay instruction consitute a call where callee returns to
   *                    the caller's caller. That is:
   *                        ProcA:                 ProcB:                   ProcC:

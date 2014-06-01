@@ -854,7 +854,7 @@ void XMLProgParser::start_bb(const QXmlStreamAttributes &attr) {
             bb->LatchNode = h;
         return;
     }
-    bb = new BasicBlock();
+    bb = new BasicBlock(stack.front()->proc); //TODO: verify that this is a valid proc for this bb
     stack.front()->bb = bb;
     addId(attr, bb);
 

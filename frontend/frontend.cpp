@@ -548,6 +548,9 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, std::ofstream &os, bo
 
             // Decode the inst at uAddr.
             inst = decodeInstruction(uAddr);
+            if(!inst.valid || inst.rtl->empty()) {
+                qDebug() << "Valid but undecoded instruction at " << QString::number(uAddr.m_value,16);
+            }
 
             // If invalid and we are speculating, just exit
             if (spec && !inst.valid)
