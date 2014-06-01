@@ -297,9 +297,9 @@ QString Cluster::makeDirs() {
     else
         path = Boomerang::get()->getOutputPath();
     QDir dr(path);
-    dr.cd(name.c_str());
     if (getNumChildren() > 0 || parent == nullptr) {
-        dr.mkpath(".");
+        dr.mkpath(name.c_str());
+        dr.cd(name.c_str());
     }
     return dr.absolutePath();
 }
