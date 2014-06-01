@@ -117,7 +117,7 @@ std::ostream &operator<<(std::ostream &stream, const ADDRESS &addr) {
 #ifdef __MINGW32__
 #include <cstdlib>
 char *strdup(const char *s) {
-    char *res = (char *)malloc(strlen(s));
+    char *res = (char *)malloc(strlen(s)+1);
     strcpy(res, s);
     return res;
 }
