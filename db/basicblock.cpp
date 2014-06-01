@@ -50,10 +50,7 @@ using namespace std;
  **********************************/
 
 BasicBlock::BasicBlock(Function *parent)
-    : // m_iNumInEdges(0),
-      // m_iNumOutEdges(0),
-      TargetOutEdges(0),
-      TraversedMarker(false),
+    : TargetOutEdges(0),
       // From Doug's code
       Ord(-1), RevOrd(-1), InEdgesVisited(0), NumForwardInEdges(-1), Traversed(UNTRAVERSED), HllLabel(false),
       IndentLevel(0), ImmPDom(nullptr), LoopHead(nullptr), CaseHead(nullptr), CondFollow(nullptr), LoopFollow(nullptr),
@@ -85,16 +82,12 @@ BasicBlock::BasicBlock(const BasicBlock &bb)
       NodeType(bb.NodeType),
       LabelNum(bb.LabelNum), // m_labelneeded is initialized to false, not copied
       Incomplete(bb.Incomplete), JumpReqd(bb.JumpReqd), InEdges(bb.InEdges), OutEdges(bb.OutEdges),
-      // m_iNumInEdges(bb.m_iNumInEdges),
-      // m_iNumOutEdges(bb.m_iNumOutEdges),
-      TargetOutEdges(bb.TargetOutEdges), TraversedMarker(false),
+      TargetOutEdges(bb.TargetOutEdges),
       // From Doug's code
       Ord(bb.Ord), RevOrd(bb.RevOrd), InEdgesVisited(bb.InEdgesVisited), NumForwardInEdges(bb.NumForwardInEdges),
       Traversed(bb.Traversed), HllLabel(bb.HllLabel), IndentLevel(bb.IndentLevel), ImmPDom(bb.ImmPDom),
       LoopHead(bb.LoopHead), CaseHead(bb.CaseHead), CondFollow(bb.CondFollow), LoopFollow(bb.LoopFollow),
-      LatchNode(bb.LatchNode), StructuringType(bb.StructuringType), UnstructuredType(bb.UnstructuredType),
-      // Others
-      overlappedRegProcessingDone(false) {
+      LatchNode(bb.LatchNode), StructuringType(bb.StructuringType), UnstructuredType(bb.UnstructuredType) {
     setRTLs(bb.ListOfRTLs);
     Parent = bb.Parent;
 }
@@ -114,6 +107,8 @@ BasicBlock::BasicBlock(Function *parent, std::list<RTL *> *pRtls, BBTYPE bbType,
       LatchNode(nullptr), StructuringType(Seq), UnstructuredType(Structured),
       // Others
       overlappedRegProcessingDone(false) {
+    if(bbType==TWOWAY)
+        assert(iNumOutEdges>=2);
     OutEdges.reserve(iNumOutEdges); // Reserve the space; values added with AddOutEdge()
     Parent = parent;
     TargetOutEdges = iNumOutEdges;
@@ -130,7 +125,7 @@ int BasicBlock::getLabel() { return LabelNum; }
 
 bool BasicBlock::isCaseOption() {
     if (CaseHead)
-        for (unsigned int i = 0; i < CaseHead->getOutEdges().size() - 1; i++)
+        for (unsigned int i = 0; i < CaseHead->getNumOutEdges() - 1; i++)
             if (CaseHead->getOutEdge(i) == this)
                 return true;
     return false;
@@ -289,7 +284,7 @@ void BasicBlock::print(std::ostream &os, bool html) {
         if (html)
             os << "<br>";
         os << "Synthetic out edge(s) to ";
-        assert(TargetOutEdges == OutEdges.size());
+        //assert(TargetOutEdges == OutEdges.size());
         for (BasicBlock *outEdge : OutEdges) {
             if (outEdge && outEdge->LabelNum)
                 os << "L" << std::dec << outEdge->LabelNum << " ";
@@ -363,11 +358,11 @@ ADDRESS BasicBlock::getHiAddr() {
 std::list<RTL *> *BasicBlock::getRTLs() { return ListOfRTLs; }
 const std::list<RTL *> *BasicBlock::getRTLs() const { return ListOfRTLs; }
 
-RTL *BasicBlock::getRTLWithStatement(Statement *stmt) {
+RTL *BasicBlock::getRTLWithStatement(Instruction *stmt) {
     if (ListOfRTLs == nullptr)
         return nullptr;
     for (RTL *rtl : *ListOfRTLs) {
-        for (Statement *it1 : *rtl)
+        for (Instruction *it1 : *rtl)
             if (it1 == stmt)
                 return rtl;
     }
@@ -386,7 +381,7 @@ std::vector<BasicBlock *> &BasicBlock::getInEdges() { return InEdges; }
   * \brief        Get a constant reference to the vector of out edges.
   * \returns            a constant reference to the vector of out edges
   ******************************************************************************/
-std::vector<BasicBlock *> &BasicBlock::getOutEdges() { return OutEdges; }
+const std::vector<BasicBlock *> &BasicBlock::getOutEdges() { return OutEdges; }
 
 /***************************************************************************/ /**
   *
@@ -406,7 +401,7 @@ void BasicBlock::setInEdge(size_t i, BasicBlock *pNewInEdge) { InEdges[i] = pNew
   * \param pNewOutEdge - pointer to BB that will be the new successor
   ******************************************************************************/
 void BasicBlock::setOutEdge(size_t i, BasicBlock *pNewOutEdge) {
-    if (OutEdges.size() == 0) {
+    if (OutEdges.empty()) {
         assert(i == 0);
         OutEdges.push_back(pNewOutEdge); // TODO: why is it allowed to set new edge in empty m_OutEdges array ?
     } else {
@@ -608,7 +603,7 @@ Function *BasicBlock::getCallDestProc() {
 //
 // Get First/Next Statement in a BB
 //
-Statement *BasicBlock::getFirstStmt(rtlit &rit, StatementList::iterator &sit) {
+Instruction *BasicBlock::getFirstStmt(rtlit &rit, StatementList::iterator &sit) {
     if (ListOfRTLs == nullptr || ListOfRTLs->empty())
         return nullptr;
     rit = ListOfRTLs->begin();
@@ -622,7 +617,7 @@ Statement *BasicBlock::getFirstStmt(rtlit &rit, StatementList::iterator &sit) {
     return nullptr;
 }
 
-Statement *BasicBlock::getNextStmt(rtlit &rit, StatementList::iterator &sit) {
+Instruction *BasicBlock::getNextStmt(rtlit &rit, StatementList::iterator &sit) {
     if (++sit != (*rit)->end())
         return *sit; // End of current RTL not reached, so return next
                      // Else, find next non-empty RTL & return its first statement
@@ -634,7 +629,7 @@ Statement *BasicBlock::getNextStmt(rtlit &rit, StatementList::iterator &sit) {
     return *sit;               // Return first statement
 }
 
-Statement *BasicBlock::getPrevStmt(rtlrit &rit, StatementList::reverse_iterator &sit) {
+Instruction *BasicBlock::getPrevStmt(rtlrit &rit, StatementList::reverse_iterator &sit) {
     if (++sit != (*rit)->rend())
         return *sit; // Beginning of current RTL not reached, so return next
                      // Else, find prev non-empty RTL & return its last statement
@@ -646,7 +641,7 @@ Statement *BasicBlock::getPrevStmt(rtlrit &rit, StatementList::reverse_iterator 
     return *sit;               // Return last statement
 }
 
-Statement *BasicBlock::getLastStmt(rtlrit &rit, StatementList::reverse_iterator &sit) {
+Instruction *BasicBlock::getLastStmt(rtlrit &rit, StatementList::reverse_iterator &sit) {
     if (ListOfRTLs == nullptr)
         return nullptr;
     rit = ListOfRTLs->rbegin();
@@ -660,7 +655,7 @@ Statement *BasicBlock::getLastStmt(rtlrit &rit, StatementList::reverse_iterator 
     return nullptr;
 }
 
-Statement *BasicBlock::getFirstStmt() {
+Instruction *BasicBlock::getFirstStmt() {
     if (ListOfRTLs == nullptr)
         return nullptr;
     for (RTL *rtl : *ListOfRTLs) {
@@ -669,7 +664,7 @@ Statement *BasicBlock::getFirstStmt() {
     }
     return nullptr;
 }
-Statement *BasicBlock::getLastStmt() {
+Instruction *BasicBlock::getLastStmt() {
     if (ListOfRTLs == nullptr)
         return nullptr;
     rtlrit rit = ListOfRTLs->rbegin();
@@ -687,7 +682,7 @@ void BasicBlock::getStatements(StatementList &stmts) const {
     if (!rtls)
         return;
     for (const RTL *rtl : *rtls) {
-        for (Statement *st : *rtl) {
+        for (Instruction *st : *rtl) {
             if (st->getBB() == nullptr) // TODO: why statement would have nullptr BB here ?
                 st->setBB(const_cast<BasicBlock *>(this));
             stmts.append(st);
@@ -724,7 +719,7 @@ Exp *BasicBlock::getDest() throw(LastStatementNotAGotoError) {
     assert(ListOfRTLs);
     RTL *lastRtl = ListOfRTLs->back();
     // It should contain a GotoStatement or derived class
-    Statement *lastStmt = lastRtl->getHlStmt();
+    Instruction *lastStmt = lastRtl->getHlStmt();
     CaseStatement *cs = dynamic_cast<CaseStatement *>(lastStmt);
     if (cs) {
         // Get the expression from the switch info
@@ -804,6 +799,7 @@ void BasicBlock::simplify() {
         for (auto &elem : *ListOfRTLs)
             (elem)->simplify();
     if (NodeType == TWOWAY) {
+        assert(OutEdges.size()>1);
         if (ListOfRTLs == nullptr || ListOfRTLs->empty()) {
             NodeType = FALL;
         } else {
@@ -848,8 +844,7 @@ void BasicBlock::simplify() {
             BasicBlock *redundant = OutEdges[1];
             OutEdges.resize(1);
             TargetOutEdges = 1;
-            if (VERBOSE)
-                LOG << "redundant edge to " << redundant->getLowAddr() << " inedges: ";
+            LOG_VERBOSE(1) << "redundant edge to " << redundant->getLowAddr() << " inedges: ";
             std::vector<BasicBlock *> rinedges = redundant->InEdges;
             redundant->InEdges.clear();
             for (BasicBlock *redundant_edge : rinedges) {
@@ -913,7 +908,7 @@ void BasicBlock::WriteBB(HLLCode *hll, int indLevel) {
         for (RTL *rtl : *ListOfRTLs) {
             if (DEBUG_GEN)
                 LOG << rtl->getAddress() << "\t";
-            for (Statement *st : *rtl) {
+            for (Instruction *st : *rtl) {
                 st->generateCode(hll, this, indLevel);
             }
         }
@@ -1248,7 +1243,7 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, BasicBlock *latch, std
         }
 
         // return if this doesn't have any out edges (emit a warning)
-        if (OutEdges.size() == 0) {
+        if (OutEdges.empty()) {
             qWarning() << "WARNING: no out edge for this BB in " << proc->getName() << ":\n";
             this->print(std::cerr);
             std::cerr << std::endl;
@@ -1478,7 +1473,7 @@ bool BasicBlock::inLoop(BasicBlock *header, BasicBlock *latch) {
  */
 char *BasicBlock::getStmtNumber() {
     static char ret[12];
-    Statement *first = getFirstStmt();
+    Instruction *first = getFirstStmt();
     if (first)
         sprintf(ret, "%d", first->getNumber());
     else
@@ -1488,7 +1483,7 @@ char *BasicBlock::getStmtNumber() {
 
 //! Prepend an assignment (usually a PhiAssign or ImplicitAssign)
 //! \a proc is the enclosing Proc
-void BasicBlock::prependStmt(Statement *s, UserProc *proc) {
+void BasicBlock::prependStmt(Instruction *s, UserProc *proc) {
     assert(Parent==proc);
     // Check the first RTL (if any)
     assert(ListOfRTLs);
@@ -1503,7 +1498,7 @@ void BasicBlock::prependStmt(Statement *s, UserProc *proc) {
         }
     }
     // Otherwise, prepend a new RTL
-    std::list<Statement *> listStmt = {s};
+    std::list<Instruction *> listStmt = {s};
     RTL *rtl = new RTL(ADDRESS::g(0L), &listStmt);
     ListOfRTLs->push_front(rtl);
 }
@@ -1544,10 +1539,10 @@ bool BasicBlock::calcLiveness(ConnectionGraph &ig, UserProc *myProc) {
     std::list<RTL *>::reverse_iterator rit;
     if (ListOfRTLs) // this can be nullptr
         for (rit = ListOfRTLs->rbegin(); rit != ListOfRTLs->rend(); rit++) {
-            std::list<Statement *>::reverse_iterator sit;
+            std::list<Instruction *>::reverse_iterator sit;
             // For each statement this RTL
             for (sit = (*rit)->rbegin(); sit != (*rit)->rend(); sit++) {
-                Statement *s = *sit;
+                Instruction *s = *sit;
                 LocationSet defs;
                 s->getDefinitions(defs);
                 // The definitions don't have refs yet
@@ -1604,7 +1599,7 @@ void BasicBlock::getLiveOut(LocationSet &liveout, LocationSet &phiLocs) {
         if (currBB->ListOfRTLs == nullptr || currBB->ListOfRTLs->size() == 0)
             continue;
         RTL *phiRtl = currBB->ListOfRTLs->front();
-        for (Statement *st : *phiRtl) {
+        for (Instruction *st : *phiRtl) {
             // Only interested in phi assignments. Note that it is possible that some phi assignments have been
             // converted to ordinary assignments. So the below is a continue, not a break.
             if (!st->isPhi())
@@ -1612,7 +1607,7 @@ void BasicBlock::getLiveOut(LocationSet &liveout, LocationSet &phiLocs) {
             PhiAssign *pa = (PhiAssign *)st;
             // Get the jth operand to the phi function; it has a use from BB *this
             // assert(j>=0);
-            Statement *def = pa->getStmtAt(this);
+            Instruction *def = pa->getStmtAt(this);
             if (!def) {
                 std::deque<BasicBlock *> to_visit(InEdges.begin(), InEdges.end());
                 std::set<BasicBlock *> tried{this};
@@ -1676,8 +1671,8 @@ int BasicBlock::whichPred(BasicBlock *pred) {
 // Pattern: <base>{}[<index>]{} where <index> could be <var> - <Kmin>
 // TODO: use initializer lists
 static Exp *forma =
-    RefExp::get(Binary::get(opArrayIndex, RefExp::get(Terminal::get(opWild), (Statement *)-1), Terminal::get(opWild)),
-                (Statement *)-1);
+    RefExp::get(Binary::get(opArrayIndex, RefExp::get(Terminal::get(opWild), (Instruction *)-1), Terminal::get(opWild)),
+                (Instruction *)-1);
 
 // Pattern: m[<expr> * 4 + T ]
 static Exp *formA = Location::memOf(
@@ -1687,8 +1682,8 @@ static Exp *formA = Location::memOf(
 // Pattern: <base>{}[<index>]{} where <index> could be <var> - <Kmin>
 // NOT COMPLETED YET!
 static Exp *formo =
-    RefExp::get(Binary::get(opArrayIndex, RefExp::get(Terminal::get(opWild), (Statement *)-1), Terminal::get(opWild)),
-                (Statement *)-1);
+    RefExp::get(Binary::get(opArrayIndex, RefExp::get(Terminal::get(opWild), (Instruction *)-1), Terminal::get(opWild)),
+                (Instruction *)-1);
 
 // Pattern: m[<expr> * 4 + T ] + T
 static Exp *formO =
@@ -1876,7 +1871,7 @@ int BasicBlock::findNumCases() {
 }
 
 // Find all the possible constant values that the location defined by s could be assigned with
-static void findConstantValues(const Statement *s, std::list<int> &dests) {
+static void findConstantValues(const Instruction *s, std::list<int> &dests) {
     if (s == nullptr)
         return;
     if (s->isPhi()) {
@@ -2290,7 +2285,7 @@ void BasicBlock::processSwitch(UserProc *proc) {
 /*!
  * Change the BB enclosing stmt to be CALL, not COMPCALL
  */
-bool BasicBlock::undoComputedBB(Statement *stmt) {
+bool BasicBlock::undoComputedBB(Instruction *stmt) {
     RTL *last = ListOfRTLs->back();
     for (auto rr = last->rbegin(); rr != last->rend(); rr++) {
         if (*rr == stmt) {
@@ -2314,7 +2309,7 @@ bool BasicBlock::undoComputedBB(Statement *stmt) {
 bool BasicBlock::searchAll(const Exp &search_for, std::list<Exp *> &results) {
     bool ch = false;
     for (RTL *rtl_it : *ListOfRTLs) {
-        for (Statement *e : *rtl_it) {
+        for (Instruction *e : *rtl_it) {
             Exp *res; // searchAll can be used here too, would it change anything ?
             if (e->search(search_for, res)) {
                 ch = true;

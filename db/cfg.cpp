@@ -821,7 +821,7 @@ void Cfg::completeMerge(BasicBlock *pb1, BasicBlock *pb2, bool bDelete) {
   ******************************************************************************/
 bool Cfg::joinBB(BasicBlock *pb1, BasicBlock *pb2) {
     // Ensure that the fallthrough case for pb1 is pb2
-    std::vector<BasicBlock *> &v = pb1->getOutEdges();
+    const std::vector<BasicBlock *> &v = pb1->getOutEdges();
     if (v.size() != 2 || v[1] != pb2)
         return false;
     // Prepend the RTLs for pb1 to those of pb2. Since they will be pushed to the front of pb2, push them in reverse
@@ -1160,8 +1160,7 @@ void Cfg::addNewOutEdge(BasicBlock *pFromBB, BasicBlock *pNewOutEdge) {
   *
   ******************************************************************************/
 void Cfg::simplify() {
-    if (VERBOSE)
-        LOG << "simplifying...\n";
+    LOG_VERBOSE(1) << "simplifying...\n";
     for (BasicBlock *it : m_listBB)
         it->simplify();
 }
@@ -1248,7 +1247,7 @@ void Cfg::findImmedPDom() {
     // traverse the nodes in order (i.e from the bottom up)
     for (int i = revOrdering.size() - 1; i >= 0; i--) {
         curNode = revOrdering[i];
-        std::vector<BasicBlock *> &oEdges = curNode->getOutEdges();
+        const std::vector<BasicBlock *> &oEdges = curNode->getOutEdges();
         for (auto &oEdge : oEdges) {
             succNode = oEdge;
             if (succNode->RevOrd > curNode->RevOrd)
@@ -1260,18 +1259,19 @@ void Cfg::findImmedPDom() {
     unsigned u;
     for (u = 0; u < Ordering.size(); u++) {
         curNode = Ordering[u];
-        std::vector<BasicBlock *> &oEdges = curNode->getOutEdges();
-        if (oEdges.size() > 1)
-            for (auto &oEdge : oEdges) {
-                succNode = oEdge;
-                curNode->ImmPDom = commonPDom(curNode->ImmPDom, succNode);
-            }
+        const std::vector<BasicBlock *> &oEdges = curNode->getOutEdges();
+        if (oEdges.size() <= 1)
+            continue;
+        for (auto &oEdge : oEdges) {
+            succNode = oEdge;
+            curNode->ImmPDom = commonPDom(curNode->ImmPDom, succNode);
+        }
     }
 
     // one final pass to fix up nodes involved in a loop
     for (u = 0; u < Ordering.size(); u++) {
         curNode = Ordering[u];
-        std::vector<BasicBlock *> &oEdges = curNode->getOutEdges();
+        const std::vector<BasicBlock *> &oEdges = curNode->getOutEdges();
         if (oEdges.size() > 1)
             for (auto &oEdge : oEdges) {
                 succNode = oEdge;
@@ -1499,7 +1499,7 @@ void Cfg::structLoops() {
 void Cfg::checkConds() {
     for (auto &elem : Ordering) {
         BasicBlock *curNode = elem;
-        std::vector<BasicBlock *> &oEdges = curNode->getOutEdges();
+        const std::vector<BasicBlock *> &oEdges = curNode->getOutEdges();
 
         // consider only conditional headers that have a follow and aren't case headers
         if ((curNode->getStructType() == Cond || curNode->getStructType() == LoopCond) && curNode->getCondFollow() &&
@@ -1709,7 +1709,7 @@ void Cfg::generateDotFile(std::ofstream &of) {
 
     // Now the edges
     for (BasicBlock *pbb : m_listBB) {
-        std::vector<BasicBlock *> &outEdges = pbb->getOutEdges();
+        const std::vector<BasicBlock *> &outEdges = pbb->getOutEdges();
         for (unsigned int j = 0; j < outEdges.size(); j++) {
             of << "       "
                << "bb" << std::hex << pbb->getLowAddr() << " -> ";
@@ -1777,7 +1777,7 @@ void Cfg::findInterferences(ConnectionGraph &cg) {
             continue;
         if (DEBUG_LIVENESS) {
             LOG << "Revisiting BB ending with stmt ";
-            Statement *last = nullptr;
+            Instruction *last = nullptr;
             if (!currBB->ListOfRTLs->empty()) {
                 RTL *lastRtl = currBB->ListOfRTLs->back();
                 if (lastRtl->size())
@@ -1862,7 +1862,7 @@ BasicBlock *Cfg::splitForBranch(BasicBlock *pBB, RTL *rtl, BranchStatement *br1,
     // Don't give this "instruction" the same address as the rest of the string instruction (causes problems when
     // creating the rptBB). Or if there is no A, temporarily use 0
     ADDRESS a = (haveA) ? addr : ADDRESS::g(0L);
-    RTL *skipRtl = new RTL(a, new std::list<Statement *>{br1}); // list initializer in braces
+    RTL *skipRtl = new RTL(a, new std::list<Instruction *>{br1}); // list initializer in braces
     BasicBlock *skipBB = newBB(new std::list<RTL *>{skipRtl}, TWOWAY, 2);
     rtl->setAddress(addr + 1);
     if (!haveA) {
@@ -2000,16 +2000,16 @@ bool Cfg::decodeIndirectJmp(UserProc *proc) {
 /**
  * \brief Change the BB enclosing stmt to be CALL, not COMPCALL
  */
-void Cfg::undoComputedBB(Statement *stmt) {
+void Cfg::undoComputedBB(Instruction *stmt) {
     for (BasicBlock *bb : m_listBB) {
         if (bb->undoComputedBB(stmt))
             break;
     }
 }
 //! Find or create an implicit assign for x
-Statement *Cfg::findImplicitAssign(Exp *x) {
-    Statement *def;
-    std::map<Exp *, Statement *, lessExpStar>::iterator it = implicitMap.find(x);
+Instruction *Cfg::findImplicitAssign(Exp *x) {
+    Instruction *def;
+    std::map<Exp *, Instruction *, lessExpStar>::iterator it = implicitMap.find(x);
     if (it == implicitMap.end()) {
         // A use with no explicit definition. Create a new implicit assignment
         x = x->clone(); // In case the original gets changed
@@ -2026,7 +2026,7 @@ Statement *Cfg::findImplicitAssign(Exp *x) {
     return def;
 }
 //! Find the existing implicit assign for x (if any)
-Statement *Cfg::findTheImplicitAssign(Exp *x) {
+Instruction *Cfg::findTheImplicitAssign(Exp *x) {
     // As per the above, but don't create an implicit if it doesn't already exist
     auto it = implicitMap.find(x);
     if (it == implicitMap.end())
@@ -2034,7 +2034,7 @@ Statement *Cfg::findTheImplicitAssign(Exp *x) {
     return it->second;
 }
 //! Find exiting implicit assign for parameter p
-Statement *Cfg::findImplicitParamAssign(Parameter *param) {
+Instruction *Cfg::findImplicitParamAssign(Parameter *param) {
     // As per the above, but for parameters (signatures don't get updated with opParams)
     auto it = implicitMap.find(param->getExp());
     if (it == implicitMap.end()) {
@@ -2049,7 +2049,7 @@ Statement *Cfg::findImplicitParamAssign(Parameter *param) {
 void Cfg::removeImplicitAssign(Exp *x) {
     auto it = implicitMap.find(x);
     assert(it != implicitMap.end());
-    Statement *ia = it->second;
+    Instruction *ia = it->second;
     implicitMap.erase(it);       // Delete the mapping
     myProc->removeStatement(ia); // Remove the actual implicit assignment statement as well
 }

@@ -109,7 +109,7 @@ DecodeResult &PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta) {
     result.reset();
 
     // The actual list of instantiated statements
-    std::list<Statement *> *stmts = nullptr;
+    std::list<Instruction *> *stmts = nullptr;
 
     ADDRESS nextPC = NO_ADDRESS;
 
@@ -696,7 +696,7 @@ DecodeResult &PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta) {
                                 Assign *as = new Assign(IntegerType::get(STD_SIZE, 0),
                                                         new Unary(opMachFtr, new Const("%LR")), new Const(pc + 4));
 
-                                stmts = new std::list<Statement *>;
+                                stmts = new std::list<Instruction *>;
 
                                 stmts->push_back(as);
 
@@ -816,7 +816,8 @@ DecodeResult &PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta) {
                             {
                                 const char *name = MATCH_name;
                                 unsigned BIcr = (MATCH_w_32_0 >> 18 & 0x7);
-                                ADDRESS reladdr = addressToPC(MATCH_p) + 4 * (MATCH_w_32_0 >> 2 & 0x3fff);
+                                int16_t off = (MATCH_w_32_0 >> 2 & 0x3fff)<<2;
+                                ADDRESS reladdr = addressToPC(MATCH_p) + off;
                                 nextPC = MATCH_p + 4;
 
                                 //#line 271 "frontend/machine/ppc/decoder.m"
@@ -830,7 +831,8 @@ DecodeResult &PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta) {
                             {
                                 const char *name = MATCH_name;
                                 unsigned BIcr = (MATCH_w_32_0 >> 18 & 0x7);
-                                ADDRESS reladdr = addressToPC(MATCH_p) + 4 * (MATCH_w_32_0 >> 2 & 0x3fff);
+                                int16_t off = (MATCH_w_32_0 >> 2 & 0x3fff)<<2;
+                                ADDRESS reladdr = addressToPC(MATCH_p) + off;
                                 nextPC = MATCH_p + 4;
 
                                 //#line 278 "frontend/machine/ppc/decoder.m"
@@ -875,7 +877,9 @@ DecodeResult &PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta) {
                             {
                                 const char *name = MATCH_name;
                                 unsigned BIcr = (MATCH_w_32_0 >> 18 & 0x7);
-                                ADDRESS reladdr = addressToPC(MATCH_p) + 4 * (MATCH_w_32_0 >> 2 & 0x3fff);
+                                int16_t off = (MATCH_w_32_0 >> 2 & 0x3fff)<<2;
+
+                                ADDRESS reladdr = addressToPC(MATCH_p) + off;
                                 nextPC = MATCH_p + 4;
 
                                 //#line 282 "frontend/machine/ppc/decoder.m"

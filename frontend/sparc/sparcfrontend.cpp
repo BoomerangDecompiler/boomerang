@@ -110,7 +110,7 @@ BasicBlock *SparcFrontEnd::optimise_CallReturn(CallStatement *call, RTL *rtl, RT
         std::list<RTL *> *rtls = new std::list<RTL *>();
 
         // The only RTL in the basic block is a ReturnStatement
-        std::list<Statement *> *ls = new std::list<Statement *>;
+        std::list<Instruction *> *ls = new std::list<Instruction *>;
         // If the delay slot is a single assignment to %o7, we want to see the semantics for it, so that preservation
         // or otherwise of %o7 is correct
         if (delay->size() == 1 && delay->front()->isAssign() && ((Assign *)delay->front())->getLeft()->isRegN(15))
@@ -414,7 +414,7 @@ bool SparcFrontEnd::case_DD(ADDRESS &address, ptrdiff_t delta, DecodeResult &ins
 
     BasicBlock *newBB;
     bool bRet = true;
-    Statement *lastStmt = inst.rtl->back();
+    Instruction *lastStmt = inst.rtl->back();
     switch (lastStmt->getKind()) {
     case STMT_CALL:
         // Will be a computed call
@@ -446,7 +446,7 @@ bool SparcFrontEnd::case_DD(ADDRESS &address, ptrdiff_t delta, DecodeResult &ins
     if (newBB == nullptr)
         return false;
 
-    Statement *last = inst.rtl->back();
+    Instruction *last = inst.rtl->back();
     // Do extra processing for for special types of DD
     if (last->getKind() == STMT_CALL) {
 
@@ -579,7 +579,7 @@ bool SparcFrontEnd::case_SCD(ADDRESS &address, ptrdiff_t delta, ADDRESS hiAddres
         delay_inst.rtl->setAddress(ADDRESS::g(0L));
         // Add a branch from the orphan instruction to the dest of the branch. Again, we can't even give the jumps
         // a special address like 1, since then the BB would have this getLowAddr.
-        std::list<Statement *> *gl = new std::list<Statement *>;
+        std::list<Instruction *> *gl = new std::list<Instruction *>;
         gl->push_back(new GotoStatement(uDest));
         pOrphan->push_back(new RTL(ADDRESS::g(0L), gl));
         BasicBlock *pOrBB = cfg->newBB(pOrphan, ONEWAY, 1);
@@ -647,7 +647,7 @@ bool SparcFrontEnd::case_SCDAN(ADDRESS &address, ptrdiff_t delta, ADDRESS hiAddr
         // branch to the real BB with this instruction).
         delay_inst.rtl->setAddress(ADDRESS::g(0L));
         // Add a branch from the orphan instruction to the dest of the branch
-        std::list<Statement *> *gl = new std::list<Statement *>;
+        std::list<Instruction *> *gl = new std::list<Instruction *>;
         gl->push_back(new GotoStatement(uDest));
         pOrphan->push_back(new RTL(ADDRESS::g(0L), gl));
         BasicBlock *pOrBB = cfg->newBB(pOrphan, ONEWAY, 1);
@@ -798,7 +798,7 @@ bool SparcFrontEnd::processProc(ADDRESS address, UserProc *proc, std::ofstream &
             // Define aliases to the RTLs so that they can be treated as a high level types where appropriate.
             RTL *rtl = inst.rtl;
             GotoStatement *stmt_jump = nullptr;
-            Statement *last = nullptr;
+            Instruction *last = nullptr;
             if (rtl->size()) {
                 last = rtl->back();
                 stmt_jump = static_cast<GotoStatement *>(last);
@@ -910,7 +910,7 @@ bool SparcFrontEnd::processProc(ADDRESS address, UserProc *proc, std::ofstream &
                     // (to be likely removed by dataflow analysis) and merely insert a return BB after the call
                     // Note that if an add, there may be an assignment to a temp register first. So look at last RT
                     // TODO: why would delay_inst.rtl->empty() be empty here ?
-                    Statement *a = delay_inst.rtl->empty() ? nullptr : delay_inst.rtl->back(); // Look at last
+                    Instruction *a = delay_inst.rtl->empty() ? nullptr : delay_inst.rtl->back(); // Look at last
                     if (a && a->isAssign()) {
                         Exp *lhs = ((Assign *)a)->getLeft();
                         if (lhs->isRegN(15)) { // %o7 is r[15]
@@ -1226,7 +1226,7 @@ void SparcFrontEnd::emitCopyPC(std::list<RTL *> *pRtls, ADDRESS uAddr) {
 void SparcFrontEnd::appendAssignment(Exp *lhs, Exp *rhs, Type *type, ADDRESS addr, std::list<RTL *> *lrtl) {
     Assign *a = new Assign(type, lhs, rhs);
     // Create an RTL with this one Statement
-    std::list<Statement *> *lrt = new std::list<Statement *>;
+    std::list<Instruction *> *lrt = new std::list<Instruction *>;
     lrt->push_back(a);
     RTL *rtl = new RTL(addr, lrt);
     // Append this RTL to the list of RTLs for this BB
@@ -1298,7 +1298,7 @@ bool SparcFrontEnd::helperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL *> *lrt
     Exp *lhs = Location::regOf(8);
     Assign *a = new Assign(lhs, rhs);
     // Create an RTL with this one Exp
-    std::list<Statement *> *lrt = new std::list<Statement *>;
+    std::list<Instruction *> *lrt = new std::list<Instruction *>;
     lrt->push_back(a);
     RTL *rtl = new RTL(addr, lrt);
     // Append this RTL to the list of RTLs for this BB
@@ -1316,7 +1316,7 @@ bool SparcFrontEnd::helperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL *> *lrt
         *32* r9 = %Y
 */
 void SparcFrontEnd::gen32op32gives64(OPER op, std::list<RTL *> *lrtl, ADDRESS addr) {
-    std::list<Statement *> *ls = new std::list<Statement *>;
+    std::list<Instruction *> *ls = new std::list<Instruction *>;
 #ifdef V9_ONLY
     // tmp[tmpl] = sgnex(32, 64, r8) op sgnex(32, 64, r9)
     Statement *a = new Assign(64, Location::tempOf(new Const("tmpl")),

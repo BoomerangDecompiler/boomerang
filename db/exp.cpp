@@ -108,7 +108,7 @@ TypedExp::TypedExp(TypedExp &o) : Unary(opTypedExp) {
 
 FlagDef::FlagDef(Exp *params, RTL *rtl) : Unary(opFlagDef, params), rtl(rtl) {}
 
-RefExp::RefExp(Exp *e, Statement *d) : Unary(opSubscript, e), def(d) { assert(e); }
+RefExp::RefExp(Exp *e, Instruction *d) : Unary(opSubscript, e), def(d) { assert(e); }
 
 TypeVal::TypeVal(Type *ty) : Terminal(opTypeVal), val(ty) {}
 
@@ -538,9 +538,9 @@ bool RefExp::operator<(const Exp &o) const {
     if (*((Unary &)o).getSubExp1() < *subExp1)
         return false;
     // Allow a wildcard def to match any
-    if (def == (Statement *)-1)
+    if (def == (Instruction *)-1)
         return false; // Not less (equal)
-    if (((RefExp &)o).def == (Statement *)-1)
+    if (((RefExp &)o).def == (Instruction *)-1)
         return false;
     return def < ((RefExp &)o).def;
 }
@@ -1359,7 +1359,7 @@ void RefExp::print(std::ostream &os, bool html) const {
         os << "<sub>";
     else
         os << "{";
-    if (def == (Statement *)-1)
+    if (def == (Instruction *)-1)
         os << "WILD";
     else if (def) {
         if (html)
@@ -2153,43 +2153,43 @@ Exp *Binary::simplifyArith() {
     }
 
     // Summarise the set of integers to a single number.
-    ADDRESS sum = std::accumulate(integers.begin(), integers.end(), ADDRESS::g(0));
+    int sum = std::accumulate(integers.begin(), integers.end(), 0);
 
     // Now put all these elements back together and return the result
     if (positives.size() == 0) {
         if (negatives.size() == 0) {
-            return new Const(sum.native());
+            return new Const(sum);
         } else
             // No positives, some negatives. sum - Acc
-            return Binary::get(opMinus, new Const(sum.native()), Exp::Accumulate(negatives));
+            return Binary::get(opMinus, new Const(sum), Exp::Accumulate(negatives));
     }
     if (negatives.size() == 0) {
         // Positives + sum
-        if (sum.isZero()) {
+        if (sum==0) {
             // Just positives
             return Exp::Accumulate(positives);
         } else {
             OPER op = opPlus;
-            if (sum.m_value < 0) {
+            if (sum < 0) {
                 op = opMinus;
-                sum.m_value = -sum.m_value;
+                sum = -sum;
             }
-            return Binary::get(op, Exp::Accumulate(positives), new Const(sum.native()));
+            return Binary::get(op, Exp::Accumulate(positives), new Const(sum));
         }
     }
     // Some positives, some negatives
-    if (sum.isZero()) {
+    if (sum==0) {
         // positives - negatives
         return Binary::get(opMinus, Exp::Accumulate(positives), Exp::Accumulate(negatives));
     }
     // General case: some positives, some negatives, a sum
     OPER op = opPlus;
-    if (sum.m_value < 0) {
+    if (sum < 0) {
         op = opMinus; // Return (pos - negs) - sum
-        sum.m_value = -sum.m_value;
+        sum = -sum;
     }
     return Binary::get(op, Binary::get(opMinus, Exp::Accumulate(positives), Exp::Accumulate(negatives)),
-                       new Const(sum.native()));
+                       new Const(sum));
 }
 
 /***************************************************************************/ /**
@@ -2910,7 +2910,7 @@ Exp *Binary::polySimplify(bool &bMod) {
     // becomes &m[exp].m + r where m is the member at offset n and r is n - the offset to member m
     Type *ty = nullptr; // Type of subExp1
     if (subExp1->isSubscript()) {
-        Statement *def = ((RefExp *)subExp1)->getDef();
+        Instruction *def = ((RefExp *)subExp1)->getDef();
         if (def)
             ty = def->getTypeFor(((RefExp *)subExp1)->getSubExp1());
     }
@@ -3444,7 +3444,7 @@ Exp *Exp::removeSubscripts(bool &allZero) {
     for (xx = locs.begin(); xx != locs.end(); xx++) {
         if ((*xx)->getOper() == opSubscript) {
             RefExp *r1 = (RefExp *)*xx;
-            Statement *def = r1->getDef();
+            Instruction *def = r1->getDef();
             if (!(def == nullptr || def->getNumber() == 0)) {
                 allZero = false;
             }
@@ -3458,7 +3458,7 @@ Exp *Exp::removeSubscripts(bool &allZero) {
 
 // FIXME: if the wrapped expression does not convert to a location, the result is subscripted, which is probably not
 // what is wanted!
-Exp *Exp::fromSSAleft(UserProc *proc, Statement *d) {
+Exp *Exp::fromSSAleft(UserProc *proc, Instruction *d) {
     RefExp *r = new RefExp(this, d); // "Wrap" in a ref
     return r->accept(new ExpSsaXformer(proc));
 }
@@ -4165,7 +4165,7 @@ void Exp::addUsedLocs(LocationSet &used, bool memOnly) {
 }
 
 // Subscript any occurrences of e with e{def} in this expression
-Exp *Exp::expSubscriptVar(Exp *e, Statement *def) {
+Exp *Exp::expSubscriptVar(Exp *e, Instruction *def) {
     ExpSubscripter es(e, def);
     return accept(&es);
 }

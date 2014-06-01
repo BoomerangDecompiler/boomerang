@@ -462,7 +462,7 @@ Signature *FrontEnd::getLibSignature(const std::string &name) {
     }
     return signature;
 }
-void FrontEnd::preprocessProcGoto(std::list<Statement *>::iterator ss, ADDRESS dest, const std::list<Statement *> &sl,
+void FrontEnd::preprocessProcGoto(std::list<Instruction *>::iterator ss, ADDRESS dest, const std::list<Instruction *> &sl,
                                   RTL *pRtl) {
     assert(sl.back() == *ss);
     if (dest == NO_ADDRESS)
@@ -478,7 +478,7 @@ void FrontEnd::preprocessProcGoto(std::list<Statement *>::iterator ss, ADDRESS d
         call->setDestProc(proc);
         call->setReturnAfterCall(true);
         // also need to change it in the actual RTL
-        std::list<Statement *>::iterator ss1 = ss;
+        std::list<Instruction *>::iterator ss1 = ss;
         ss1++;
         assert(ss1 == sl.end());
         assert(not pRtl->empty());
@@ -612,7 +612,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, std::ofstream &os, bo
             ADDRESS uDest;
 
             // For each Statement in the RTL
-            std::list<Statement *> sl = *(std::list<Statement *> *)pRtl;
+            std::list<Instruction *> sl = *(std::list<Instruction *> *)pRtl;
             // Make a copy (!) of the list. This is needed temporarily to work around the following problem.
             // We are currently iterating an RTL, which could be a return instruction. The RTL is passed to
             // createReturnBlock; if this is not the first return statement, it will get cleared, and this will
@@ -621,7 +621,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, std::ofstream &os, bo
             // Statements to mark the start of instructions (and their native address).
             // FIXME: However, this workaround breaks logic below where a GOTO is changed to a CALL followed by a return
             // if it points to the start of a known procedure
-            std::list<Statement *>::iterator ss;
+            std::list<Instruction *>::iterator ss;
 #if 1
             for (ss = sl.begin(); ss != sl.end(); ss++) { // }
 #else
@@ -630,7 +630,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, std::ofstream &os, bo
             int counter = sl.size();
             for (ss = sl.begin(); counter > 0; ss++, counter--) {
 #endif
-                Statement *s = *ss;
+                Instruction *s = *ss;
                 s->setProc(pProc); // let's do this really early!
                 if (refHints.find(pRtl->getAddress()) != refHints.end()) {
                     const char *nam = refHints[pRtl->getAddress()].c_str();
@@ -708,7 +708,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, std::ofstream &os, bo
                             LOG << "getLibraryProc returned nullptr, aborting\n";
                         assert(lp);
                         call->setDestProc(lp);
-                        std::list<Statement *> *stmt_list = new std::list<Statement *>;
+                        std::list<Instruction *> *stmt_list = new std::list<Instruction *>;
                         stmt_list->push_back(call);
                         BB_rtls->push_back(new RTL(pRtl->getAddress(), stmt_list));
                         pBB = pCfg->newBB(BB_rtls, CALL, 1);
@@ -811,7 +811,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, std::ofstream &os, bo
                             if (decoded.valid) { // is the instruction decoded succesfully?
                                 // Yes, it is. Create a Statement from it.
                                 RTL *rtl = decoded.rtl;
-                                Statement *first_statement = rtl->front();
+                                Instruction *first_statement = rtl->front();
                                 if (first_statement) {
                                     first_statement->setProc(pProc);
                                     first_statement->simplify();
@@ -914,7 +914,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, std::ofstream &os, bo
                                 // Constuct the RTLs for the new basic block
                                 std::list<RTL *> *rtls = new std::list<RTL *>();
                                 // The only RTL in the basic block is one with a ReturnStatement
-                                std::list<Statement *> *sl = new std::list<Statement *>;
+                                std::list<Instruction *> *sl = new std::list<Instruction *>;
                                 sl->push_back(new ReturnStatement());
                                 rtls->push_back(new RTL(pRtl->getAddress() + 1, sl));
 
@@ -1099,7 +1099,7 @@ BasicBlock *FrontEnd::createReturnBlock(UserProc *pProc, std::list<RTL *> *BB_rt
     if (retAddr == NO_ADDRESS) {
         // Create the basic block
         pBB = pCfg->newBB(BB_rtls, RET, 0);
-        Statement *s = pRtl->back(); // The last statement should be the ReturnStatement
+        Instruction *s = pRtl->back(); // The last statement should be the ReturnStatement
         pProc->setTheReturnAddr((ReturnStatement *)s, pRtl->getAddress());
     } else {
         // We want to replace the *whole* RTL with a branch to THE first return's RTL. There can sometimes be extra
@@ -1137,7 +1137,7 @@ BasicBlock *FrontEnd::createReturnBlock(UserProc *pProc, std::list<RTL *> *BB_rt
 void FrontEnd::appendSyntheticReturn(BasicBlock *pCallBB, UserProc *pProc, RTL *pRtl) {
     ReturnStatement *ret = new ReturnStatement();
     std::list<RTL *> *ret_rtls = new std::list<RTL *>();
-    std::list<Statement *> *stmt_list = new std::list<Statement *>;
+    std::list<Instruction *> *stmt_list = new std::list<Instruction *>;
     stmt_list->push_back(ret);
     BasicBlock *pret = createReturnBlock(pProc, ret_rtls, new RTL(pRtl->getAddress() + 1, stmt_list));
     pret->addInEdge(pCallBB);

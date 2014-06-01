@@ -49,7 +49,7 @@ NJMCDecoder::NJMCDecoder(Prog *prg) : prog(prg) {}
   * \param   ... - Semantic String ptrs representing actual operands
   * \returns an instantiated list of Exps
   ******************************************************************************/
-std::list<Statement *> *NJMCDecoder::instantiate(ADDRESS pc, const char *name, ...) {
+std::list<Instruction *> *NJMCDecoder::instantiate(ADDRESS pc, const char *name, ...) {
     // Get the signature of the instruction and extract its parts
     std::pair<std::string, unsigned> sig = RTLDict.getSignature(name);
     std::string opcode = sig.first;
@@ -81,7 +81,7 @@ std::list<Statement *> *NJMCDecoder::instantiate(ADDRESS pc, const char *name, .
         std::cout << std::endl;
     }
 
-    std::list<Statement *> *instance = RTLDict.instantiateRTL(opcode, pc, actuals);
+    std::list<Instruction *> *instance = RTLDict.instantiateRTL(opcode, pc, actuals);
 
     return instance;
 }
@@ -199,7 +199,7 @@ Exp *NJMCDecoder::dis_Num(unsigned num) {
   * \param   result ref to decoder result object
   ******************************************************************************/
 void NJMCDecoder::unconditionalJump(const char *name, int size, ADDRESS relocd, ptrdiff_t delta, ADDRESS pc,
-                                    std::list<Statement *> *stmts, DecodeResult &result) {
+                                    std::list<Instruction *> *stmts, DecodeResult &result) {
     result.rtl = new RTL(pc, stmts);
     result.numBytes = size;
     GotoStatement *jump = new GotoStatement();
@@ -218,7 +218,7 @@ void NJMCDecoder::unconditionalJump(const char *name, int size, ADDRESS relocd, 
   * \param   result ref to decoder result object
   * \returns <none>
   ******************************************************************************/
-void NJMCDecoder::computedJump(const char *name, int size, Exp *dest, ADDRESS pc, std::list<Statement *> *stmts,
+void NJMCDecoder::computedJump(const char *name, int size, Exp *dest, ADDRESS pc, std::list<Instruction *> *stmts,
                                DecodeResult &result) {
     result.rtl = new RTL(pc, stmts);
     result.numBytes = size;
@@ -238,7 +238,7 @@ void NJMCDecoder::computedJump(const char *name, int size, Exp *dest, ADDRESS pc
   * \param   stmts list of statements (?)
   * \param   result ref to decoder result object
   ******************************************************************************/
-void NJMCDecoder::computedCall(const char *name, int size, Exp *dest, ADDRESS pc, std::list<Statement *> *stmts,
+void NJMCDecoder::computedCall(const char *name, int size, Exp *dest, ADDRESS pc, std::list<Instruction *> *stmts,
                                DecodeResult &result) {
     result.rtl = new RTL(pc, stmts);
     result.numBytes = size;

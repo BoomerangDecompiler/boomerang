@@ -118,16 +118,16 @@ class NJMCDecoder {
 
     RTLInstDict &getRTLDict() { return RTLDict; }
 
-    void computedJump(const char *name, int size, Exp *dest, ADDRESS pc, std::list<Statement *> *stmts,
+    void computedJump(const char *name, int size, Exp *dest, ADDRESS pc, std::list<Instruction *> *stmts,
                       DecodeResult &result);
 
-    void computedCall(const char *name, int size, Exp *dest, ADDRESS pc, std::list<Statement *> *stmts,
+    void computedCall(const char *name, int size, Exp *dest, ADDRESS pc, std::list<Instruction *> *stmts,
                       DecodeResult &result);
 
     Prog *getProg() { return prog; }
 
   protected:
-    std::list<Statement *> *instantiate(ADDRESS pc, const char *name, ...);
+    std::list<Instruction *> *instantiate(ADDRESS pc, const char *name, ...);
 
     /*
      * Similarly, given a parameter name and a list of Exp*'s
@@ -147,7 +147,7 @@ class NJMCDecoder {
      * This used to be the UNCOND_JUMP macro; it's extended to handle jumps to other procedures
      */
     void unconditionalJump(const char *name, int size, ADDRESS relocd, ptrdiff_t delta, ADDRESS pc,
-                           std::list<Statement *> *stmts, DecodeResult &result);
+                           std::list<Instruction *> *stmts, DecodeResult &result);
 
     /*
      * String for the constructor names (displayed with use "-c")
@@ -181,7 +181,7 @@ bool isFuncPrologue(ADDRESS hostPC);
         std::cout << std::hex << pc << std::dec << ": " << output << std::endl;
 #define DEBUG_STMTS                                                                                                    \
     if (DEBUG_DECODER) {                                                                                               \
-        std::list<Statement *>::iterator ii;                                                                           \
+        std::list<Instruction *>::iterator ii;                                                                           \
         for (ii = result.rtl->begin(); ii != result.rtl->end(); ii++)                                                  \
             std::cout << "            " << *ii << "\n";                                                                \
     }

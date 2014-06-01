@@ -95,7 +95,7 @@ namespace dbghelp {
 #define NO_ADDRESS ADDRESS::g(-1)
 #endif
 
-typedef std::map<Statement *, int> RefCounter;
+typedef std::map<Instruction *, int> RefCounter;
 
 extern char debug_buffer[]; // Defined in basicblock.cpp, size DEBUG_BUFSIZE
 
@@ -193,7 +193,7 @@ bool UserProc::isNoReturn() {
     if (exitbb == nullptr)
         return true;
     if (exitbb->getNumInEdges() == 1) {
-        Statement *s = exitbb->getInEdges()[0]->getLastStmt();
+        Instruction *s = exitbb->getInEdges()[0]->getLastStmt();
         CallStatement *call = (CallStatement *)s;
         if (s->isCall() && call->getDestProc() && call->getDestProc()->isNoReturn())
             return true;
@@ -438,7 +438,7 @@ void UserProc::printUseGraph() {
     getStatements(stmts);
     StatementList::iterator it;
     for (it = stmts.begin(); it != stmts.end(); it++) {
-        Statement *s = *it;
+        Instruction *s = *it;
         if (s->isPhi())
             out << s->getNumber() << " [shape=diamond];\n";
         LocationSet refs;
@@ -828,7 +828,7 @@ void UserProc::printDFG() const {
     out << "digraph " << getName() << " {\n";
     StatementList stmts;
     getStatements(stmts);
-    for (Statement *s : stmts) {
+    for (Instruction *s : stmts) {
         if (s->isPhi())
             out << s->getNumber() << " [shape=\"triangle\"];\n";
         if (s->isCall())
@@ -867,7 +867,7 @@ void UserProc::initStatements() {
     BasicBlock::rtlit rit;
     StatementList::iterator sit;
     for (BasicBlock *bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it)) {
-        for (Statement *s = bb->getFirstStmt(rit, sit); s; s = bb->getNextStmt(rit, sit)) {
+        for (Instruction *s = bb->getFirstStmt(rit, sit); s; s = bb->getNextStmt(rit, sit)) {
             s->setProc(this);
             s->setBB(bb);
             CallStatement *call = dynamic_cast<CallStatement *>(s);
@@ -877,7 +877,7 @@ void UserProc::initStatements() {
                     BasicBlock *out = bb->getOutEdge(0);
                     if (out != cfg->getExitBB() || cfg->getExitBB()->getNumInEdges() != 1) {
                         out->deleteInEdge(bb);
-                        bb->getOutEdges().clear();
+                        bb->clearOutEdges();
                     }
                 }
             }
@@ -890,7 +890,7 @@ void UserProc::numberStatements() {
     BasicBlock::rtlit rit;
     StatementList::iterator sit;
     for (BasicBlock *bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it)) {
-        for (Statement *s = bb->getFirstStmt(rit, sit); s; s = bb->getNextStmt(rit, sit))
+        for (Instruction *s = bb->getFirstStmt(rit, sit); s; s = bb->getNextStmt(rit, sit))
             if (!s->isImplicit() &&  // Don't renumber implicits (remain number 0)
                 s->getNumber() == 0) // Don't renumber existing (or waste numbers)
                 s->setNumber(++stmtNumber);
@@ -905,7 +905,7 @@ void UserProc::getStatements(StatementList &stmts) const {
     for (const BasicBlock *bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it))
         bb->getStatements(stmts);
 
-    for (Statement *s : stmts)
+    for (Instruction *s : stmts)
         if (s->getProc() == nullptr)
             s->setProc(const_cast<UserProc *>(this));
 }
@@ -918,7 +918,7 @@ void UserProc::getStatements(StatementList &stmts) const {
   * Should use iterators or other context to find out how to erase "in place" (without having to linearly search)
   *
   ******************************************************************************/
-void UserProc::removeStatement(Statement *stmt) {
+void UserProc::removeStatement(Instruction *stmt) {
     // remove anything proven about this statement
     for (std::map<Exp *, Exp *, lessExpStar>::iterator it = provenTrue.begin(); it != provenTrue.end();) {
         LocationSet refs;
@@ -957,9 +957,9 @@ void UserProc::removeStatement(Statement *stmt) {
     }
 }
 
-void UserProc::insertAssignAfter(Statement *s, Exp *left, Exp *right) {
-    std::list<Statement *>::iterator it;
-    std::list<Statement *> *stmts;
+void UserProc::insertAssignAfter(Instruction *s, Exp *left, Exp *right) {
+    std::list<Instruction *>::iterator it;
+    std::list<Instruction *> *stmts;
     if (s == nullptr) {
         // This means right is supposed to be a parameter. We can insert the assignment at the start of the entryBB
         BasicBlock *entryBB = cfg->getEntryBB();
@@ -985,14 +985,14 @@ void UserProc::insertAssignAfter(Statement *s, Exp *left, Exp *right) {
 /// Insert statement \a a after statement \a s.
 /// \note this procedure is designed for the front end, where enclosing BBs are not set up yet.
 /// So this is an inefficient linear search!
-void UserProc::insertStatementAfter(Statement *s, Statement *a) {
+void UserProc::insertStatementAfter(Instruction *s, Instruction *a) {
     BB_IT bb;
     for (bb = cfg->begin(); bb != cfg->end(); bb++) {
         std::list<RTL *> *rtls = (*bb)->getRTLs();
         if (rtls == nullptr)
             continue; // e.g. *bb is (as yet) invalid
         for (RTL *rr : *rtls) {
-            std::list<Statement *>::iterator ss;
+            std::list<Instruction *>::iterator ss;
             for (ss = rr->begin(); ss != rr->end(); ss++) {
                 if (*ss == s) {
                     ss++; // This is the point to insert before
@@ -1694,7 +1694,7 @@ void UserProc::remUnusedStmtEtc(RefCounter &refCounts) {
         change = false;
         StatementList::iterator ll = stmts.begin();
         while (ll != stmts.end()) {
-            Statement *s = *ll;
+            Instruction *s = *ll;
             if (!s->isAssignment()) {
                 // Never delete a statement other than an assignment (e.g. nothing "uses" a Jcond)
                 ll++;
@@ -1938,7 +1938,7 @@ void UserProc::fixUglyBranches() {
             ((Const *)hl->getSubExp2())->getInt() == 0 && hl->getSubExp1()->getOper() == opMinus &&
             hl->getSubExp1()->getSubExp2()->isIntConst() && ((Const *)hl->getSubExp1()->getSubExp2())->getInt() == 1 &&
             hl->getSubExp1()->getSubExp1()->isSubscript()) {
-            Statement *n = ((RefExp *)hl->getSubExp1()->getSubExp1())->getDef();
+            Instruction *n = ((RefExp *)hl->getSubExp1()->getSubExp1())->getDef();
             if (n && n->isPhi()) {
                 PhiAssign *p = (PhiAssign *)n;
                 for (const auto &phi : *p) {
@@ -2082,7 +2082,7 @@ void UserProc::removeSpAssignsIfPossible() {
         LocationSet::iterator rr;
         for (rr = refs.begin(); rr != refs.end(); rr++)
             if ((*rr)->isSubscript() && *(*rr)->getSubExp1() == *sp) {
-                Statement *def = ((RefExp *)(*rr))->getDef();
+                Instruction *def = ((RefExp *)(*rr))->getDef();
                 if (def && def->getProc() == this)
                     return;
             }
@@ -2127,7 +2127,7 @@ void UserProc::removeMatchingAssignsIfPossible(Exp *e) {
         LocationSet::iterator rr;
         for (rr = refs.begin(); rr != refs.end(); rr++)
             if ((*rr)->isSubscript() && *(*rr)->getSubExp1() == *e) {
-                Statement *def = ((RefExp *)(*rr))->getDef();
+                Instruction *def = ((RefExp *)(*rr))->getDef();
                 if (def && def->getProc() == this)
                     return;
             }
@@ -2209,7 +2209,7 @@ void UserProc::finalSimplify() {
             continue;
         }
         for (RTL *rit : *pRtls) {
-            for (Statement *rt : *rit) {
+            for (Instruction *rt : *rit) {
                 rt->simplifyAddr();
                 // Also simplify everything; in particular, stack offsets are
                 // often negative, so we at least canonicalise [esp + -8] to [esp-8]
@@ -2270,7 +2270,7 @@ void UserProc::findFinalParameters() {
 
     StatementList::iterator it;
     for (it = stmts.begin(); it != stmts.end(); ++it) {
-        Statement *s = *it;
+        Instruction *s = *it;
         // Assume that all parameters will be m[]{0} or r[]{0}, and in the implicit definitions at the start of the
         // program
         if (!s->isImplicit())
@@ -2465,7 +2465,7 @@ void UserProc::processFloatConstants() {
 
     StatementList::iterator it;
     for (it = stmts.begin(); it != stmts.end(); it++) {
-        Statement *s = *it;
+        Instruction *s = *it;
 
         std::list<Exp *> results;
         s->searchAll(match, results);
@@ -2656,7 +2656,7 @@ void UserProc::mapExpressionsToLocals(bool lastPass) {
     // normalise sp usage (turn WILD + sp{0} into sp{0} + WILD)
     static_cast<Const *>(sp_location->getSubExp1())->setInt(sp); // set to search sp value
     for (it = stmts.begin(); it != stmts.end(); it++) {
-        Statement *s = *it;
+        Instruction *s = *it;
         std::list<Exp *> results;
         s->searchAll(nn, results);
         for (auto &result : results) {
@@ -2676,7 +2676,7 @@ void UserProc::mapExpressionsToLocals(bool lastPass) {
                              Terminal::get(opWildIntConst)),
         nullptr);
     for (it = stmts.begin(); it != stmts.end(); it++) {
-        Statement *s = *it;
+        Instruction *s = *it;
         std::list<Exp *> results;
         sp_const.setInt(sp);
         s->searchAll(query_f, results);
@@ -2732,7 +2732,7 @@ void UserProc::searchRegularLocals(OPER minusOrPlus, bool lastPass, int sp, Stat
             Binary::get(minusOrPlus, RefExp::get(Location::regOf(sp), nullptr), Terminal::get(opWildIntConst)));
     StatementList::iterator it;
     for (it = stmts.begin(); it != stmts.end(); it++) {
-        Statement *s = *it;
+        Instruction *s = *it;
         std::list<Exp *> results;
         s->searchAll(*l, results);
         for (auto result : results) {
@@ -2757,7 +2757,7 @@ bool UserProc::removeNullStatements() {
     // remove null code
     StatementList::iterator it;
     for (it = stmts.begin(); it != stmts.end(); it++) {
-        Statement *s = *it;
+        Instruction *s = *it;
         if (s->isNullStatement()) {
             // A statement of the form x := x
             if (VERBOSE) {
@@ -2788,7 +2788,7 @@ bool UserProc::propagateStatements(bool &convert, int pass) {
     std::map<Exp *, int, lessExpStar> destCounts;
     // Also maintain a set of locations which are used by phi statements
     for (it = stmts.begin(); it != stmts.end(); it++) {
-        Statement *s = *it;
+        Instruction *s = *it;
         ExpDestCounter edc(destCounts);
         StmtDestCounter sdc(&edc);
         s->accept(&sdc);
@@ -2800,7 +2800,7 @@ bool UserProc::propagateStatements(bool &convert, int pass) {
     // A fourth pass to propagate only the flags (these must be propagated even if it results in extra locals)
     bool change = false;
     for (it = stmts.begin(); it != stmts.end(); it++) {
-        Statement *s = *it;
+        Instruction *s = *it;
         if (s->isPhi())
             continue;
         change |= s->propagateFlagsTo();
@@ -2808,7 +2808,7 @@ bool UserProc::propagateStatements(bool &convert, int pass) {
     // Finally the actual propagation
     convert = false;
     for (it = stmts.begin(); it != stmts.end(); it++) {
-        Statement *s = *it;
+        Instruction *s = *it;
         if (s->isPhi())
             continue;
         change |= s->propagateTo(convert, &destCounts, &usedByDomPhi);
@@ -2826,12 +2826,12 @@ bool UserProc::propagateStatements(bool &convert, int pass) {
   * \returns the cycle set from the recursive call to decompile()
   *
   ******************************************************************************/
-Statement *UserProc::getStmtAtLex(unsigned int begin, unsigned int end) {
+Instruction *UserProc::getStmtAtLex(unsigned int begin, unsigned int end) {
     StatementList stmts;
     getStatements(stmts);
 
     unsigned int lowest = begin;
-    Statement *loweststmt = nullptr;
+    Instruction *loweststmt = nullptr;
     for (auto &stmt : stmts)
         if (begin >= (stmt)->getLexBegin() && begin <= lowest && begin <= (stmt)->getLexEnd() &&
             (end == (unsigned)-1 || end < (stmt)->getLexEnd())) {
@@ -3000,7 +3000,7 @@ void UserProc::countRefs(RefCounter &refCounts) {
     getStatements(stmts);
     StatementList::iterator it;
     for (it = stmts.begin(); it != stmts.end(); it++) {
-        Statement *s = *it;
+        Instruction *s = *it;
         // Don't count uses in implicit statements. There is no RHS of course, but you can still have x from m[x] on the
         // LHS and so on, and these are not real uses
         if (s->isImplicit())
@@ -3012,7 +3012,7 @@ void UserProc::countRefs(RefCounter &refCounts) {
         LocationSet::iterator rr;
         for (rr = refs.begin(); rr != refs.end(); rr++) {
             if (((Exp *)*rr)->isSubscript()) {
-                Statement *def = ((RefExp *)*rr)->getDef();
+                Instruction *def = ((RefExp *)*rr)->getDef();
                 // Used to not count implicit refs here (def->getNumber() == 0), meaning that implicit definitions get
                 // removed as dead code! But these are the ideal place to read off final parameters, and it is
                 // guaranteed now that implicit statements are sorted out for us by now (for dfa type analysis)
@@ -3047,7 +3047,7 @@ void UserProc::removeUnusedLocals() {
     StatementList::iterator ss;
     bool all = false;
     for (ss = stmts.begin(); ss != stmts.end(); ss++) {
-        Statement *s = *ss;
+        Instruction *s = *ss;
         LocationSet locs;
         all |= s->addUsedLocals(locs);
         LocationSet::iterator uu;
@@ -3093,7 +3093,7 @@ void UserProc::removeUnusedLocals() {
     }
     // Remove any definitions of the removed locals
     for (ss = stmts.begin(); ss != stmts.end(); ++ss) {
-        Statement *s = *ss;
+        Instruction *s = *ss;
         LocationSet ls;
         LocationSet::iterator ll;
         s->getDefinitions(ls);
@@ -3190,7 +3190,7 @@ void UserProc::fromSSAform() {
             std::cout << "." << std::flush;
             progress = 0;
         }
-        Statement *s = *it;
+        Instruction *s = *it;
         LocationSet defs;
         s->getDefinitions(defs);
         LocationSet::iterator dd;
@@ -3264,7 +3264,7 @@ void UserProc::fromSSAform() {
             int n2 = pu.count(r2);
             if (n2 <= n1)
 #else
-            Statement *def2 = r2->getDef();
+            Instruction *def2 = r2->getDef();
             if (def2->isPhi()) // Prefer the destinations of phis
 #endif
             rename = r2;
@@ -3294,7 +3294,7 @@ void UserProc::fromSSAform() {
             // replacing the phi with one copy doesn't work. The result is an extra copy.
             // So check of r1 is a phi and r2 one of its operands, and all other operands for the phi have the same
             // name. If so, don't rename.
-            Statement *def1 = r1->getDef();
+            Instruction *def1 = r1->getDef();
             if (def1->isPhi()) {
                 bool allSame = true;
                 bool r2IsOperand = false;
@@ -3342,13 +3342,13 @@ void UserProc::fromSSAform() {
     removeSubscriptsFromSymbols();
     removeSubscriptsFromParameters();
     for (it = stmts.begin(); it != stmts.end(); it++) {
-        Statement *s = *it;
+        Instruction *s = *it;
         s->replaceSubscriptsWithLocals();
     }
 
     // Now remove the phis
     for (it = stmts.begin(); it != stmts.end(); it++) {
-        Statement *s = *it;
+        Instruction *s = *it;
         if (!s->isPhi())
             continue;
         // Check if the base variables are all the same
@@ -3587,7 +3587,7 @@ bool UserProc::prover(Exp *query, std::set<PhiAssign *> &lastPhis, std::map<PhiA
         return true;
     }
 
-    std::set<Statement *> refsTo;
+    std::set<Instruction *> refsTo;
 
     query = query->clone();
     bool change = true;
@@ -3627,7 +3627,7 @@ bool UserProc::prover(Exp *query, std::set<PhiAssign *> &lastPhis, std::map<PhiA
             // substitute using a statement that has the same left as the query
             if (!change && query->getSubExp1()->getOper() == opSubscript) {
                 RefExp *r = (RefExp *)query->getSubExp1();
-                Statement *s = r->getDef();
+                Instruction *s = r->getDef();
                 CallStatement *call = dynamic_cast<CallStatement *>(s);
                 if (call) {
                     // See if we can prove something about this register.
@@ -3748,7 +3748,7 @@ bool UserProc::prover(Exp *query, std::set<PhiAssign *> &lastPhis, std::map<PhiA
                     if (s && refsTo.find(s) != refsTo.end()) {
                         LOG << "detected ref loop " << s << "\n";
                         LOG << "refsTo: ";
-                        std::set<Statement *>::iterator ll;
+                        std::set<Instruction *>::iterator ll;
                         for (ll = refsTo.begin(); ll != refsTo.end(); ++ll)
                             LOG << (*ll)->getNumber() << ", ";
                         LOG << "\n";
@@ -3956,7 +3956,7 @@ bool UserProc::searchAndReplace(const Exp &search, Exp *replace) {
     getStatements(stmts);
     StatementList::iterator it;
     for (it = stmts.begin(); it != stmts.end(); it++) {
-        Statement *s = *it;
+        Instruction *s = *it;
         ch |= s->searchAndReplace(search, replace);
     }
     return ch;
@@ -4052,7 +4052,7 @@ void UserProc::addImplicitAssigns() {
 //! Find the implicit definition for \a e and lookup a symbol
 const char *UserProc::lookupParam(Exp *e) {
     // Originally e.g. m[esp+K]
-    Statement *def = cfg->findTheImplicitAssign(e);
+    Instruction *def = cfg->findTheImplicitAssign(e);
     if (def == nullptr) {
         LOG << "ERROR: no implicit definition for parameter " << e << " !\n";
         return nullptr;
@@ -4063,7 +4063,7 @@ const char *UserProc::lookupParam(Exp *e) {
 }
 //! Lookup a specific symbol for the given ref
 const char *UserProc::lookupSymFromRef(RefExp *r) {
-    Statement *def = r->getDef();
+    Instruction *def = r->getDef();
     if (!def) {
         qDebug() << "UserProc::lookupSymFromRefAny null def";
         return nullptr;
@@ -4074,7 +4074,7 @@ const char *UserProc::lookupSymFromRef(RefExp *r) {
 }
 //! Lookup a specific symbol if any, else the general one if any
 const char *UserProc::lookupSymFromRefAny(RefExp *r) {
-    Statement *def = r->getDef();
+    Instruction *def = r->getDef();
     if (!def) {
         qDebug() << "UserProc::lookupSymFromRefAny null def";
         return nullptr;
@@ -4242,7 +4242,7 @@ void UserProc::replaceSimpleGlobalConstants() {
     StatementList stmts;
     getStatements(stmts);
     StatementList::iterator it;
-    for (Statement *st : stmts) {
+    for (Instruction *st : stmts) {
         Assign *assgn = dynamic_cast<Assign *>(st);
         if (assgn == nullptr)
             continue;
@@ -4290,11 +4290,11 @@ void UserProc::reverseStrengthReduction() {
                 if (r->getDef() && r->getDef()->isPhi()) {
                     PhiAssign *p = (PhiAssign *)r->getDef();
                     if (p->getNumDefs() == 2) {
-                        Statement *first = p->front().def();
-                        Statement *second = p->back().def();
+                        Instruction *first = p->front().def();
+                        Instruction *second = p->back().def();
                         if (first == as) {
                             // want the increment in second
-                            Statement *tmp = first;
+                            Instruction *tmp = first;
                             first = second;
                             second = tmp;
                         }
@@ -4460,7 +4460,7 @@ const char *UserProc::findLocal(Exp *e, Type *ty) {
 }
 
 const char *UserProc::findLocalFromRef(RefExp *r) {
-    Statement *def = r->getDef();
+    Instruction *def = r->getDef();
     Exp *base = r->getSubExp1();
     Type *ty = def->getTypeFor(base);
     const char *name = lookupSym(r, ty);
@@ -4522,7 +4522,7 @@ void UserProc::fixCallAndPhiRefs() {
 
     std::map<Exp *, int, lessExpStar> destCounts;
     StatementList::iterator it;
-    Statement *s;
+    Instruction *s;
     StatementList stmts;
     getStatements(stmts);
 
@@ -4565,7 +4565,7 @@ void UserProc::fixCallAndPhiRefs() {
         for (PhiAssign::iterator pi = ps->begin(); pi != ps->end();) {
             const PhiInfo &p(pi->second);
             assert(p.e);
-            Statement *def = (Statement *)p.def();
+            Instruction *def = (Instruction *)p.def();
             Exp *current = RefExp::get(p.e, def);
             if (*current == *r) {   // Will we ever see this?
                 pi = ps->erase(pi); // Erase this phi parameter
@@ -4882,7 +4882,7 @@ bool UserProc::isRetNonFakeUsed(CallStatement *c, Exp *retLoc, UserProc *p, Proc
     getStatements(stmts);
     StatementList::iterator it;
     for (it = stmts.begin(); it != stmts.end(); it++) {
-        Statement *s = *it;
+        Instruction *s = *it;
         LocationSet ls;
         LocationSet::iterator ll;
         s->addUsedLocs(ls);
@@ -4890,7 +4890,7 @@ bool UserProc::isRetNonFakeUsed(CallStatement *c, Exp *retLoc, UserProc *p, Proc
         for (ll = ls.begin(); ll != ls.end(); ++ll) {
             if (!(*ll)->isSubscript())
                 continue;
-            Statement *def = ((RefExp *)*ll)->getDef();
+            Instruction *def = ((RefExp *)*ll)->getDef();
             if (def != c)
                 continue; // Not defined at c, ignore
             Exp *base = ((RefExp *)*ll)->getSubExp1();
@@ -4940,7 +4940,7 @@ bool UserProc::checkForGainfulUse(Exp *bparam, ProcSet &visited) {
     getStatements(stmts);
     StatementList::iterator it;
     for (it = stmts.begin(); it != stmts.end(); it++) {
-        Statement *s = *it;
+        Instruction *s = *it;
         // Special checking for recursive calls
         if (s->isCall()) {
             CallStatement *c = (CallStatement *)s;
@@ -5357,8 +5357,8 @@ void UserProc::rangeAnalysis() {
 
     debugPrintAll("Before performing range analysis");
 
-    std::list<Statement *> execution_paths;
-    std::list<Statement *> junctions;
+    std::list<Instruction *> execution_paths;
+    std::list<Instruction *> junctions;
 
     assert(cfg->getEntryBB());
     assert(cfg->getEntryBB()->getFirstStmt());
@@ -5368,7 +5368,7 @@ void UserProc::rangeAnalysis() {
 
     while (execution_paths.size()) {
         while (execution_paths.size()) {
-            Statement *stmt = execution_paths.front();
+            Instruction *stmt = execution_paths.front();
             execution_paths.pop_front();
             if (stmt == nullptr)
                 continue; // ??
@@ -5380,7 +5380,7 @@ void UserProc::rangeAnalysis() {
         if (watchdog > 45)
             LOG << "processing execution paths resulted in " << (int)junctions.size() << " junctions to process\n";
         while (junctions.size()) {
-            Statement *junction = junctions.front();
+            Instruction *junction = junctions.front();
             junctions.pop_front();
             if (watchdog > 45)
                 LOG << "processing junction " << junction << "\n";
@@ -5416,7 +5416,7 @@ void UserProc::rangeAnalysis() {
 void UserProc::logSuspectMemoryDefs() {
     StatementList stmts;
     getStatements(stmts);
-    for (Statement *st : stmts) {
+    for (Instruction *st : stmts) {
         if (!st->isAssign())
             continue;
         Assign *a = (Assign *)st;
@@ -5454,7 +5454,7 @@ void UserProc::processDecodedICTs() {
     BasicBlock::rtlrit rrit;
     StatementList::reverse_iterator srit;
     for (BasicBlock *bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it)) {
-        Statement *last = bb->getLastStmt(rrit, srit);
+        Instruction *last = bb->getLastStmt(rrit, srit);
         if (last == nullptr)
             continue; // e.g. a BB with just a NOP in it
         if (!last->isHL_ICT())
@@ -5472,7 +5472,7 @@ void UserProc::processDecodedICTs() {
 // Find or insert a new implicit reference just before statement s, for address expression a with type t.
 // Meet types if necessary
 /// Find and if necessary insert an implicit reference before s whose address expression is a and type is t.
-void UserProc::setImplicitRef(Statement *s, Exp *a, Type *ty) {
+void UserProc::setImplicitRef(Instruction *s, Exp *a, Type *ty) {
     BasicBlock *bb = s->getBB(); // Get s' enclosing BB
     std::list<RTL *> *rtls = bb->getRTLs();
     for (std::list<RTL *>::iterator rit = rtls->begin(); rit != rtls->end(); rit++) {
@@ -5571,7 +5571,7 @@ void UserProc::mapTempsToLocals() {
     TempToLocalMapper ttlm(this);
     StmtExpVisitor sv(&ttlm);
     for (it = stmts.begin(); it != stmts.end(); it++) {
-        Statement *s = *it;
+        Instruction *s = *it;
         s->accept(&sv);
     }
 }
@@ -5607,7 +5607,7 @@ void UserProc::mapLocalsAndParams() {
     getStatements(stmts);
     StatementList::iterator it;
     for (it = stmts.begin(); it != stmts.end(); it++) {
-        Statement *s = *it;
+        Instruction *s = *it;
         s->dfaMapLocals();
     }
     if (DEBUG_TA)
@@ -5645,7 +5645,7 @@ void UserProc::findLiveAtDomPhi(LocationSet &usedByDomPhi) {
         // For each phi parameter, remove from the final usedByDomPhi set
         for (const auto &v : *it->second) {
             assert(v.second.e);
-            RefExp wrappedParam(v.second.e, (Statement *)v.second.def());
+            RefExp wrappedParam(v.second.e, (Instruction *)v.second.def());
             usedByDomPhi.remove(&wrappedParam);
         }
         // Now remove the actual phi-function (a PhiAssign Statement)
@@ -5674,7 +5674,7 @@ void UserProc::findPhiUnites(ConnectionGraph &pu) {
         PhiAssign::iterator pp;
         for (const auto &v : *pa) {
             assert(v.second.e);
-            RefExp *re = RefExp::get(v.second.e, (Statement *)v.second.def());
+            RefExp *re = RefExp::get(v.second.e, (Instruction *)v.second.def());
             pu.connect(reLhs, re);
         }
     }
@@ -5719,7 +5719,7 @@ const Type *UserProc::getTypeForLocation(const Exp *e) const {
 void UserProc::verifyPHIs() {
     StatementList stmts;
     getStatements(stmts);
-    for (Statement *st : stmts) {
+    for (Instruction *st : stmts) {
         PhiAssign *pi = (PhiAssign *)st;
         if (!pi->isPhi())
             continue; // Might be able to optimise this a bit
@@ -5762,7 +5762,7 @@ void UserProc::nameParameterPhis() {
 
         for (const auto &v : *pi) {
             if (v.second.def()->isImplicit()) {
-                RefExp *phiArg = RefExp::get(v.second.e, (Statement *)v.second.def());
+                RefExp *phiArg = RefExp::get(v.second.e, (Instruction *)v.second.def());
                 const char *name = lookupSym(phiArg, ty);
                 if (name != nullptr) {
                     if (firstName != nullptr && strcmp(firstName, name) != 0) {
@@ -5787,7 +5787,7 @@ bool UserProc::existsLocal(const char *name) {
 void UserProc::checkLocalFor(RefExp *r) {
     if (lookupSymFromRefAny(r))
         return; // Already have a symbol for r
-    Statement *def = r->getDef();
+    Instruction *def = r->getDef();
     if (!def)
         return; // TODO: should this be logged ?
     Exp *base = r->getSubExp1();
@@ -5810,7 +5810,7 @@ void UserProc::checkLocalFor(RefExp *r) {
 //    -    -    -    -    -    -    -    -    -
 
 // 3) Check implicit assigns for parameter and global types.
-void UserProc::dfa_analyze_implict_assigns(Statement *s, Prog *prog) {
+void UserProc::dfa_analyze_implict_assigns(Instruction *s, Prog *prog) {
     bool allZero;
     Exp *lhs;
     Exp *slhs;
@@ -5847,7 +5847,7 @@ scaledArrayPat(opMemOf, Binary::get(opPlus, Binary::get(opMult, Terminal::get(op
                                     Terminal::get(opWildIntConst)),
                nullptr);
 
-void UserProc::dfa_analyze_scaled_array_ref(Statement *s, Prog *prog) {
+void UserProc::dfa_analyze_scaled_array_ref(Instruction *s, Prog *prog) {
     Exp *arr;
     std::list<Exp *> result;
     const char *nam;

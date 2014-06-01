@@ -14,11 +14,14 @@
 
 #ifndef ST20DECODER
 #define ST20DECODER
+#include "rtl.h"
+
 #include <cstddef>
+#include <list>
 class Prog;
 class NJMCDecoder;
 struct DecodeResult;
-
+class Instruction;
 class ST20Decoder : public NJMCDecoder {
   public:
     /* Default constructor
@@ -48,7 +51,7 @@ class ST20Decoder : public NJMCDecoder {
     // Exp*    dis_RAmbz(unsigned r);        // Special for rA of certain instructions
 
     void unused(int);
-    RTL *createBranchRtl(ADDRESS pc, std::list<Statement *> *stmts, const char *name);
+    RTL *createBranchRtl(ADDRESS pc, std::list<Instruction *> *stmts, const char *name);
     bool isFuncPrologue(ADDRESS hostPC);
     DWord getDword(intptr_t lc); // TODO: switch back to using ADDRESS objects
     SWord getWord(intptr_t lc);

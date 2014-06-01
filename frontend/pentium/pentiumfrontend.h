@@ -3,7 +3,7 @@
 
 #include "frontend.h" // In case included bare, e.g. ProcTest.cpp
 
-class Statement;
+class Instruction;
 
 // Class PentiumFrontEnd: derived from FrontEnd, with source machine specific
 // behaviour
@@ -66,10 +66,10 @@ class PentiumFrontEnd : public FrontEnd {
          */
     bool helperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL *> *lrtl);
 
-    bool isStoreFsw(Statement *s);
+    bool isStoreFsw(Instruction *s);
     bool isDecAh(RTL *r);
-    bool isSetX(Statement *e);
-    bool isAssignFromTern(Statement *s);
+    bool isSetX(Instruction *e);
+    bool isAssignFromTern(Instruction *s);
     void bumpRegisterAll(Exp *e, int min, int max, int delta, int mask);
     unsigned fetch4(unsigned char *ptr);
     bool decodeSpecial(ADDRESS pc, DecodeResult &r);

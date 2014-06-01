@@ -40,7 +40,7 @@
 
 extern char debug_buffer[]; // For prints functions
 
-void Statement::setProc(UserProc *p) {
+void Instruction::setProc(UserProc *p) {
     proc = p;
     LocationSet exps;
     addUsedLocs(exps);
@@ -56,7 +56,7 @@ void Statement::setProc(UserProc *p) {
     }
 }
 
-bool Statement::mayAlias(Exp *e1, Exp *e2, int size) {
+bool Instruction::mayAlias(Exp *e1, Exp *e2, int size) {
     if (*e1 == *e2)
         return true;
     // Pass the expressions both ways. Saves checking things like m[exp] vs m[exp+K] and m[exp+K] vs m[exp] explicitly
@@ -69,7 +69,7 @@ bool Statement::mayAlias(Exp *e1, Exp *e2, int size) {
 }
 
 // returns true if e1 may alias e2
-bool Statement::calcMayAlias(Exp *e1, Exp *e2, int size) {
+bool Instruction::calcMayAlias(Exp *e1, Exp *e2, int size) {
     // currently only considers memory aliasing..
     if (!e1->isMemOf() || !e2->isMemOf()) {
         return false;
@@ -113,7 +113,7 @@ bool Statement::calcMayAlias(Exp *e1, Exp *e2, int size) {
     return true;
 }
 
-RangeMap Statement::getInputRanges() {
+RangeMap Instruction::getInputRanges() {
     if (!isFirstStatementInBB()) {
         savedInputRanges = getPreviousStatementInBB()->getRanges();
         return savedInputRanges;
@@ -143,7 +143,7 @@ RangeMap Statement::getInputRanges() {
         input.addRange(Terminal::get(opPC), rpc);
     } else {
         BasicBlock *pred = Parent->getInEdges()[0];
-        Statement *last = pred->getLastStmt();
+        Instruction *last = pred->getLastStmt();
         assert(last);
         if (pred->getNumOutEdges() != 2) {
             input = last->getRanges();
@@ -159,7 +159,7 @@ RangeMap Statement::getInputRanges() {
     return input;
 }
 
-void Statement::updateRanges(RangeMap &output, std::list<Statement *> &execution_paths, bool notTaken) {
+void Instruction::updateRanges(RangeMap &output, std::list<Instruction *> &execution_paths, bool notTaken) {
     if (isBranch()) {
         BranchStatement *self_branch = (BranchStatement *)this;
         if (!output.isSubset(notTaken ? self_branch->getRanges2Ref() : ranges)) {
@@ -192,12 +192,12 @@ void Statement::updateRanges(RangeMap &output, std::list<Statement *> &execution
     }
 }
 
-void Statement::rangeAnalysis(std::list<Statement *> &execution_paths) {
+void Instruction::rangeAnalysis(std::list<Instruction *> &execution_paths) {
     RangeMap output = getInputRanges();
     updateRanges(output, execution_paths);
 }
 
-void Assign::rangeAnalysis(std::list<Statement *> &execution_paths) {
+void Assign::rangeAnalysis(std::list<Instruction *> &execution_paths) {
     static Unary search_term(opTemp, Terminal::get(opWild));
     static Unary search_regof(opRegOf, Terminal::get(opWild));
     RangeMap output = getInputRanges();
@@ -345,7 +345,7 @@ void BranchStatement::limitOutputWithCondition(RangeMap &output, Exp *e) {
     }
 }
 
-void BranchStatement::rangeAnalysis(std::list<Statement *> &execution_paths) {
+void BranchStatement::rangeAnalysis(std::list<Instruction *> &execution_paths) {
     RangeMap output = getInputRanges();
 
     Exp *e = nullptr;
@@ -377,12 +377,12 @@ void BranchStatement::rangeAnalysis(std::list<Statement *> &execution_paths) {
         LOG << this << "\n";
 }
 
-void JunctionStatement::rangeAnalysis(std::list<Statement *> &execution_paths) {
+void JunctionStatement::rangeAnalysis(std::list<Instruction *> &execution_paths) {
     RangeMap input;
     if (DEBUG_RANGE_ANALYSIS)
         LOG_VERBOSE(1) << "unioning {\n";
     for (size_t i = 0; i < Parent->getNumInEdges(); i++) {
-        Statement *last = Parent->getInEdges()[i]->getLastStmt();
+        Instruction *last = Parent->getInEdges()[i]->getLastStmt();
         if (DEBUG_RANGE_ANALYSIS)
             LOG_VERBOSE(1) << "  in BB: " << Parent->getInEdges()[i]->getLowAddr() << " " << last << "\n";
         if (last->isBranch()) {
@@ -427,7 +427,7 @@ void JunctionStatement::rangeAnalysis(std::list<Statement *> &execution_paths) {
         LOG_VERBOSE(1) << this << "\n";
 }
 
-void CallStatement::rangeAnalysis(std::list<Statement *> &execution_paths) {
+void CallStatement::rangeAnalysis(std::list<Instruction *> &execution_paths) {
     RangeMap output = getInputRanges();
 
     if (this->procDest == nullptr) {
@@ -465,7 +465,7 @@ void CallStatement::rangeAnalysis(std::list<Statement *> &execution_paths) {
         int c = 4;
         if (procDest == nullptr) {
             LOG << "using push count hack to guess number of params\n";
-            Statement *prev = this->getPreviousStatementInBB();
+            Instruction *prev = this->getPreviousStatementInBB();
             while (prev) {
                 if (prev->isAssign() && ((Assign *)prev)->getLeft()->isMemOf() &&
                     ((Assign *)prev)->getLeft()->getSubExp1()->isRegOfK() &&
@@ -478,7 +478,7 @@ void CallStatement::rangeAnalysis(std::list<Statement *> &execution_paths) {
         } else if (procDest->getSignature()->getConvention() == CONV_PASCAL)
             c += procDest->getSignature()->getNumParams() * 4;
         else if (!strncmp(qPrintable(procDest->getName()), "__imp_", 6)) {
-            Statement *first = ((UserProc *)procDest)->getCFG()->getEntryBB()->getFirstStmt();
+            Instruction *first = ((UserProc *)procDest)->getCFG()->getEntryBB()->getFirstStmt();
             assert(first && first->isCall());
             Function *d = ((CallStatement *)first)->getDestProc();
             if (d->getSignature()->getConvention() == CONV_PASCAL)
@@ -500,7 +500,7 @@ void CallStatement::rangeAnalysis(std::list<Statement *> &execution_paths) {
             }
             BasicBlock *retbb = p->getCFG()->findRetNode();
             if (retbb && eq == nullptr) {
-                Statement *last = retbb->getLastStmt();
+                Instruction *last = retbb->getLastStmt();
                 assert(last);
                 if (last->isReturn()) {
                     last->setBB(retbb);
@@ -553,7 +553,7 @@ RangeMap &BranchStatement::getRangesForOutEdgeTo(BasicBlock *out) {
     return ranges2;
 }
 
-bool Statement::isFirstStatementInBB() {
+bool Instruction::isFirstStatementInBB() {
     assert(Parent);
     assert(Parent->getRTLs());
     assert(Parent->getRTLs()->size());
@@ -562,19 +562,19 @@ bool Statement::isFirstStatementInBB() {
     return this == Parent->getRTLs()->front()->front();
 }
 
-bool Statement::isLastStatementInBB() {
+bool Instruction::isLastStatementInBB() {
     assert(Parent);
     return this == Parent->getLastStmt();
 }
 
-Statement *Statement::getPreviousStatementInBB() {
+Instruction *Instruction::getPreviousStatementInBB() {
     assert(Parent);
     std::list<RTL *> *rtls = Parent->getRTLs();
     assert(rtls);
-    Statement *previous = nullptr;
+    Instruction *previous = nullptr;
     for (auto rtl : *rtls) {
 
-        for (Statement *it : *rtl) {
+        for (Instruction *it : *rtl) {
             if (it == this)
                 return previous;
             previous = it;
@@ -583,14 +583,14 @@ Statement *Statement::getPreviousStatementInBB() {
     return nullptr;
 }
 
-Statement *Statement::getNextStatementInBB() {
+Instruction *Instruction::getNextStatementInBB() {
     assert(Parent);
     std::list<RTL *> *rtls = Parent->getRTLs();
     assert(rtls);
     bool wantNext = false;
     for (auto rtl : *rtls) {
 
-        for (Statement *it : *rtl) {
+        for (Instruction *it : *rtl) {
             if (wantNext)
                 return it;
             if (it == this)
@@ -607,7 +607,7 @@ Statement *Statement::getNextStatementInBB() {
   *                    p: ptr to Statement to print to the stream
   * \returns             copy of os (for concatenation)
   ******************************************************************************/
-std::ostream &operator<<(std::ostream &os, const Statement *s) {
+std::ostream &operator<<(std::ostream &os, const Instruction *s) {
     if (s == nullptr) {
         os << "nullptr ";
         return os;
@@ -616,14 +616,14 @@ std::ostream &operator<<(std::ostream &os, const Statement *s) {
     return os;
 }
 
-bool Statement::isFlagAssgn() {
+bool Instruction::isFlagAssgn() {
     if (kind != STMT_ASSIGN)
         return false;
     OPER op = ((Assign *)this)->getRight()->getOper();
     return (op == opFlagCall);
 }
 
-char *Statement::prints() {
+char *Instruction::prints() {
     std::ostringstream ost;
     print(ost);
     strncpy(debug_buffer, ost.str().c_str(), DEBUG_BUFSIZE - 1);
@@ -632,7 +632,7 @@ char *Statement::prints() {
 }
 
 // This version prints much better in gdb
-void Statement::dump() {
+void Instruction::dump() {
     print(std::cerr);
     std::cerr << "\n";
 }
@@ -675,13 +675,13 @@ bool hasSetFlags(Exp *e) {
 // Note: does not consider whether e is able to be renamed (from a memory Primitive point of view), only if the
 // definition can be propagated TO this stmt
 // Note: static member function
-bool Statement::canPropagateToExp(Exp *e) {
+bool Instruction::canPropagateToExp(Exp *e) {
     if (!e->isSubscript())
         return false;
     if (((RefExp *)e)->isImplicitDef())
         // Can't propagate statement "-" or "0" (implicit assignments)
         return false;
-    Statement *def = ((RefExp *)e)->getDef();
+    Instruction *def = ((RefExp *)e)->getDef();
     //    if (def == this)
     // Don't propagate to self! Can happen with %pc's (?!)
     //        return false;
@@ -709,7 +709,7 @@ static int progress = 0;
   * \param usedByDomPhi is a set of subscripted locations used in phi statements
   * \returns             true if a change
   ******************************************************************************/
-bool Statement::propagateTo(bool &convert, std::map<Exp *, int, lessExpStar> *destCounts /* = nullptr */,
+bool Instruction::propagateTo(bool &convert, std::map<Exp *, int, lessExpStar> *destCounts /* = nullptr */,
                             LocationSet *usedByDomPhi /* = nullptr */, bool force /* = false */) {
     if (++progress > 1000) {
         std::cerr << 'p' << std::flush;
@@ -776,7 +776,7 @@ bool Statement::propagateTo(bool &convert, std::map<Exp *, int, lessExpStar> *de
                         // so we use findNS()
                         Exp *OW = usedByDomPhi->findNS(rhsBase);
                         if (OW) {
-                            Statement *OWdef = ((RefExp *)OW)->getDef();
+                            Instruction *OWdef = ((RefExp *)OW)->getDef();
                             if (!OWdef->isAssign())
                                 continue;
                             Exp *lhsOWdef = ((Assign *)OWdef)->getLeft();
@@ -836,7 +836,7 @@ bool Statement::propagateTo(bool &convert, std::map<Exp *, int, lessExpStar> *de
 
     // Experimental: may want to propagate flags first, without tests about complexity or the propagation limiting
     // heuristic
-    bool Statement::propagateFlagsTo() {
+    bool Instruction::propagateFlagsTo() {
         // FIXME: convert is uninitialized ?
         bool change = false, convert;
         int changes = 0;
@@ -866,7 +866,7 @@ bool Statement::propagateTo(bool &convert, std::map<Exp *, int, lessExpStar> *de
     // Note: this procedure does not control what part of this statement is propagated to
     // Propagate to e from definition statement def.
     // Set convert to true if convert a call from indirect to direct.
-    bool Statement::doPropagateTo(Exp * e, Assign * def, bool &convert) {
+    bool Instruction::doPropagateTo(Exp * e, Assign * def, bool &convert) {
         // Respect the -p N switch
         if (Boomerang::get()->numToPropagate >= 0) {
             if (Boomerang::get()->numToPropagate == 0)
@@ -890,7 +890,7 @@ bool Statement::propagateTo(bool &convert, std::map<Exp *, int, lessExpStar> *de
     //! replaces a use in this statement with an expression from an ordinary assignment
     //! \returns true if change
     //! \note Internal use only
-    bool Statement::replaceRef(Exp * e, Assign * def, bool &convert) {
+    bool Instruction::replaceRef(Exp * e, Assign * def, bool &convert) {
         Exp *rhs = def->getRight();
         assert(rhs);
 
@@ -946,7 +946,7 @@ bool Statement::propagateTo(bool &convert, std::map<Exp *, int, lessExpStar> *de
         return ret;
     }
 
-    bool Statement::isNullStatement() {
+    bool Instruction::isNullStatement() {
         if (kind != STMT_ASSIGN)
             return false;
         Exp *right = ((Assign *)this)->getRight();
@@ -958,12 +958,12 @@ bool Statement::propagateTo(bool &convert, std::map<Exp *, int, lessExpStar> *de
             return *((Assign *)this)->getLeft() == *right;
     }
 
-    bool Statement::isFpush() {
+    bool Instruction::isFpush() {
         if (kind != STMT_ASSIGN)
             return false;
         return ((Assign *)this)->getRight()->getOper() == opFpush;
     }
-    bool Statement::isFpop() {
+    bool Instruction::isFpop() {
         if (kind != STMT_ASSIGN)
             return false;
         return ((Assign *)this)->getRight()->getOper() == opFpop;
@@ -1145,7 +1145,7 @@ bool Statement::propagateTo(bool &convert, std::map<Exp *, int, lessExpStar> *de
       * PARAMETERS:        <none>
       * \returns             Pointer to a new Statement, a clone of this GotoStatement
       ******************************************************************************/
-    Statement *GotoStatement::clone() const {
+    Instruction *GotoStatement::clone() const {
         GotoStatement *ret = new GotoStatement();
         ret->pDest = pDest->clone();
         ret->m_isComputed = m_isComputed;
@@ -1506,7 +1506,7 @@ bool Statement::propagateTo(bool &convert, std::map<Exp *, int, lessExpStar> *de
       * PARAMETERS:        <none>
       * \returns             Pointer to a new Statement, a clone of this BranchStatement
       ******************************************************************************/
-    Statement *BranchStatement::clone() const {
+    Instruction *BranchStatement::clone() const {
         BranchStatement *ret = new BranchStatement();
         ret->pDest = pDest->clone();
         ret->m_isComputed = m_isComputed;
@@ -1968,7 +1968,7 @@ bool Statement::propagateTo(bool &convert, std::map<Exp *, int, lessExpStar> *de
       * PARAMETERS:        <none>
       * \returns             Pointer to a new Statement that is a clone of this one
       ******************************************************************************/
-    Statement *CaseStatement::clone() const {
+    Instruction *CaseStatement::clone() const {
         CaseStatement *ret = new CaseStatement();
         ret->pDest = pDest->clone();
         ret->m_isComputed = m_isComputed;
@@ -2261,7 +2261,7 @@ bool Statement::propagateTo(bool &convert, std::map<Exp *, int, lessExpStar> *de
                 os << "(<all>)";
         } else {
             os << "(\n";
-            for (const Statement *aa : arguments) {
+            for (const Instruction *aa : arguments) {
                 os << "                ";
                 ((const Assignment *)aa)->printCompact(os, html);
                 os << "\n";
@@ -2313,7 +2313,7 @@ bool Statement::propagateTo(bool &convert, std::map<Exp *, int, lessExpStar> *de
       * PARAMETERS:        <none>
       * \returns             Pointer to a new Statement, a clone of this CallStatement
       ******************************************************************************/
-    Statement *CallStatement::clone() const {
+    Instruction *CallStatement::clone() const {
         CallStatement *ret = new CallStatement();
         ret->pDest = pDest->clone();
         ret->m_isComputed = m_isComputed;
@@ -2436,7 +2436,7 @@ bool Statement::propagateTo(bool &convert, std::map<Exp *, int, lessExpStar> *de
         bool convertIndirect = false;
         Exp *e = pDest;
         if (pDest->isSubscript()) {
-            Statement *def = ((RefExp *)e)->getDef();
+            Instruction *def = ((RefExp *)e)->getDef();
             if (def && !def->isImplicit())
                 return false; // If an already defined global, don't convert
             e = ((RefExp *)e)->getSubExp1();
@@ -2681,7 +2681,7 @@ bool Statement::propagateTo(bool &convert, std::map<Exp *, int, lessExpStar> *de
         Exp *ref = defCol.findDefFor(e);
         if (ref == nullptr || !ref->isSubscript())
             return;
-        Statement *def = ((RefExp *)ref)->getDef();
+        Instruction *def = ((RefExp *)ref)->getDef();
         if (def == nullptr)
             return;
         def->setTypeFor(e, ty);
@@ -2770,7 +2770,7 @@ bool Statement::propagateTo(bool &convert, std::map<Exp *, int, lessExpStar> *de
         }
         if (formatExp->isSubscript()) {
             // Maybe it's defined to be a Const string
-            Statement *def = ((RefExp *)formatExp)->getDef();
+            Instruction *def = ((RefExp *)formatExp)->getDef();
             if (def == nullptr)
                 return false; // Not all nullptr refs get converted to implicits
             if (def->isAssign()) {
@@ -2939,7 +2939,7 @@ bool Statement::propagateTo(bool &convert, std::map<Exp *, int, lessExpStar> *de
       * \brief        Deep copy clone
       * \returns             Pointer to a new Statement, a clone of this ReturnStatement
       ******************************************************************************/
-    Statement *ReturnStatement::clone() const {
+    Instruction *ReturnStatement::clone() const {
         ReturnStatement *ret = new ReturnStatement();
         for (auto const &elem : modifieds)
             ret->modifieds.append((ImplicitAssign *)(elem)->clone());
@@ -3189,7 +3189,7 @@ bool Statement::propagateTo(bool &convert, std::map<Exp *, int, lessExpStar> *de
       * PARAMETERS:        <none>
       * \returns             Pointer to a new Statement, a clone of this BoolAssign
       ******************************************************************************/
-    Statement *BoolAssign::clone() const {
+    Instruction *BoolAssign::clone() const {
         BoolAssign *ret = new BoolAssign(size);
         ret->jtCond = jtCond;
         if (pCond)
@@ -3256,7 +3256,7 @@ bool Statement::propagateTo(bool &convert, std::map<Exp *, int, lessExpStar> *de
     }
 
     // This is for setting up SETcc instructions; see include/decoder.h macro SETS
-    void BoolAssign::setLeftFromList(std::list<Statement *> * stmts) {
+    void BoolAssign::setLeftFromList(std::list<Instruction *> * stmts) {
         assert(stmts->size() == 1);
         Assign *first = (Assign *)stmts->front();
         assert(first->getKind() == STMT_ASSIGN);
@@ -3307,7 +3307,7 @@ bool Statement::propagateTo(bool &convert, std::map<Exp *, int, lessExpStar> *de
     // The first virtual function (here the destructor) can't be in statement.h file for gcc
     ImplicitAssign::~ImplicitAssign() {}
 
-    Statement *Assign::clone() const {
+    Instruction *Assign::clone() const {
         Assign *a = new Assign(type == nullptr ? nullptr : type->clone(), lhs->clone(), rhs->clone(),
                                guard == nullptr ? nullptr : guard->clone());
         // Statement members
@@ -3317,12 +3317,12 @@ bool Statement::propagateTo(bool &convert, std::map<Exp *, int, lessExpStar> *de
         return a;
     }
 
-    Statement *PhiAssign::clone() const {
+    Instruction *PhiAssign::clone() const {
         PhiAssign *pa = new PhiAssign(type, lhs);
         Definitions::const_iterator dd;
         for (dd = defVec.begin(); dd != defVec.end(); dd++) {
             PhiInfo pi;
-            pi.def((Statement *)dd->second.def()); // Don't clone the Statement pointer (never moves)
+            pi.def((Instruction *)dd->second.def()); // Don't clone the Statement pointer (never moves)
             pi.e = dd->second.e->clone();          // Do clone the expression pointer
             assert(pi.e);
             pa->defVec.insert(std::make_pair(dd->first, pi));
@@ -3330,7 +3330,7 @@ bool Statement::propagateTo(bool &convert, std::map<Exp *, int, lessExpStar> *de
         return pa;
     }
 
-    Statement *ImplicitAssign::clone() const {
+    Instruction *ImplicitAssign::clone() const {
         ImplicitAssign *ia = new ImplicitAssign(type, lhs);
         return ia;
     }
@@ -3838,26 +3838,26 @@ void addPhiReferences(StatementSet &stmts, Statement *def) {
         cons.insert(con);
     }
     //! Set or clear the constant subscripts (using a visitor)
-    int Statement::setConscripts(int n) {
+    int Instruction::setConscripts(int n) {
         StmtConscriptSetter scs(n, false);
         accept(&scs);
         return scs.getLast();
     }
 
-    void Statement::clearConscripts() {
+    void Instruction::clearConscripts() {
         StmtConscriptSetter scs(0, true);
         accept(&scs);
     }
 
     // Cast the constant num to be of type ty. Return true if a change made
-    bool Statement::castConst(int num, Type *ty) {
+    bool Instruction::castConst(int num, Type *ty) {
         ExpConstCaster ecc(num, ty);
         StmtModifier scc(&ecc);
         accept(&scc);
         return ecc.isChanged();
     }
     //! Strip all size casts
-    void Statement::stripSizes() {
+    void Instruction::stripSizes() {
         SizeStripper ss;
         StmtModifier sm(&ss);
         accept(&sm);
@@ -4241,7 +4241,7 @@ void addPhiReferences(StatementSet &stmts, Statement *def) {
 
     //! Fix references to the returns of call statements
     //! Bypass calls for references in this statement
-    void Statement::bypass() {
+    void Instruction::bypass() {
         CallBypasser cb(this);
         StmtPartModifier sm(&cb); // Use the Part modifier so we don't change the top level of LHS of assigns etc
         accept(&sm);
@@ -4254,13 +4254,13 @@ void addPhiReferences(StatementSet &stmts, Statement *def) {
     //! \param cc count collectors
     //! Adds (inserts) all locations (registers or memory etc) used by this statement
     //! Set \a cc to true to count the uses in collectors
-    void Statement::addUsedLocs(LocationSet & used, bool cc /* = false */, bool memOnly /*= false */) {
+    void Instruction::addUsedLocs(LocationSet & used, bool cc /* = false */, bool memOnly /*= false */) {
         UsedLocsFinder ulf(used, memOnly);
         UsedLocsVisitor ulv(&ulf, cc);
         accept(&ulv);
     }
     //! Special version of Statement::addUsedLocs for finding used locations. Returns true if defineAll was found
-    bool Statement::addUsedLocals(LocationSet & used) {
+    bool Instruction::addUsedLocals(LocationSet & used) {
         UsedLocalFinder ulf(used, proc);
         UsedLocsVisitor ulv(&ulf, false);
         accept(&ulv);
@@ -4268,14 +4268,14 @@ void addPhiReferences(StatementSet &stmts, Statement *def) {
     }
 
     //! For all expressions in this Statement, replace any e with e{def}
-    void Statement::subscriptVar(Exp * e, Statement * def /*, Cfg* cfg */) {
+    void Instruction::subscriptVar(Exp * e, Instruction * def /*, Cfg* cfg */) {
         ExpSubscripter es(e, def /*, cfg*/);
         StmtSubscripter ss(&es);
         accept(&ss);
     }
 
     //! Find all constants in this statement
-    void Statement::findConstants(std::list<Const *> & lc) {
+    void Instruction::findConstants(std::list<Const *> & lc) {
         ConstFinder cf(lc);
         StmtConstFinder scf(&cf);
         accept(&scf);
@@ -4313,7 +4313,7 @@ void addPhiReferences(StatementSet &stmts, Statement *def) {
             return;
         bool allSame = true;
         Definitions::iterator uu = defVec.begin();
-        Statement *first = defVec.begin()->second.def();
+        Instruction *first = defVec.begin()->second.def();
         ++uu;
         for (; uu != defVec.end(); uu++) {
             if (uu->second.def() != first) {
@@ -4329,11 +4329,11 @@ void addPhiReferences(StatementSet &stmts, Statement *def) {
         }
 
         bool onlyOneNotThis = true;
-        Statement *notthis = (Statement *)-1;
+        Instruction *notthis = (Instruction *)-1;
         for (auto &v : defVec) {
             if (v.second.def() == nullptr || v.second.def()->isImplicit() || !v.second.def()->isPhi() ||
                 v.second.def() != this) {
-                if (notthis != (Statement *)-1) {
+                if (notthis != (Instruction *)-1) {
                     onlyOneNotThis = false;
                     break;
                 } else
@@ -4341,7 +4341,7 @@ void addPhiReferences(StatementSet &stmts, Statement *def) {
             }
         }
 
-        if (onlyOneNotThis && notthis != (Statement *)-1) {
+        if (onlyOneNotThis && notthis != (Instruction *)-1) {
             if (VERBOSE)
                 LOG << "all but one not this in " << this << "\n";
             convertToAssign(new RefExp(lhs, notthis));
@@ -4349,7 +4349,7 @@ void addPhiReferences(StatementSet &stmts, Statement *def) {
         }
     }
 
-    void PhiAssign::putAt(BasicBlock * i, Statement * def, Exp * e) {
+    void PhiAssign::putAt(BasicBlock * i, Instruction * def, Exp * e) {
         assert(e); // should be something surely
         // assert(defVec.end()==defVec.find(i));
         defVec[i].def(def);
@@ -5109,7 +5109,7 @@ void TypingStatement::setType(Type* ty) {
 
     void ImpRefStatement::meetWith(Type * ty, bool &ch) { type = type->meetWith(ty, ch); }
 
-    Statement *ImpRefStatement::clone() const { return new ImpRefStatement(type->clone(), addressExp->clone()); }
+    Instruction *ImpRefStatement::clone() const { return new ImpRefStatement(type->clone(), addressExp->clone()); }
     bool ImpRefStatement::accept(StmtVisitor * visitor) { return visitor->visit(this); }
     bool ImpRefStatement::accept(StmtExpVisitor * v) {
         bool override;
@@ -5215,13 +5215,13 @@ void TypingStatement::setType(Type* ty) {
     }
 
     // Map registers and temporaries to locals
-    void Statement::mapRegistersToLocals() {
+    void Instruction::mapRegistersToLocals() {
         ExpRegMapper erm(proc);
         StmtRegMapper srm(&erm);
         accept(&srm);
     }
 
-    void Statement::insertCasts() {
+    void Instruction::insertCasts() {
         // First we postvisit expressions using a StmtModifier and an ExpCastInserter
         ExpCastInserter eci(proc);
         StmtModifier sm(&eci, true); // True to ignore collectors
@@ -5231,13 +5231,13 @@ void TypingStatement::setType(Type* ty) {
         accept(&sci);
     }
 
-    void Statement::replaceSubscriptsWithLocals() {
+    void Instruction::replaceSubscriptsWithLocals() {
         ExpSsaXformer esx(proc);
         StmtSsaXformer ssx(&esx, proc);
         accept(&ssx);
     }
 
-    void Statement::dfaMapLocals() {
+    void Instruction::dfaMapLocals() {
         DfaLocalMapper dlm(proc);
         StmtModifier sm(&dlm, true); // True to ignore def collector in return statement
         accept(&sm);

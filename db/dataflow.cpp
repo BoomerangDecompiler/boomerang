@@ -40,10 +40,9 @@ void DataFlow::DFS(int p, size_t n) {
         N++;
         // For each successor w of n
         BasicBlock *bb = BBs[n];
-        std::vector<BasicBlock *> &outEdges = bb->getOutEdges();
-        std::vector<BasicBlock *>::iterator oo;
-        for (oo = outEdges.begin(); oo != outEdges.end(); oo++) {
-            DFS(n, indices[*oo]);
+        const std::vector<BasicBlock *> &outEdges = bb->getOutEdges();
+        for (BasicBlock * bb : outEdges) {
+            DFS(n, indices[bb]);
         }
     }
 }
@@ -167,10 +166,10 @@ void DataFlow::computeDF(int n) {
     /* THis loop computes DF_local[n] */
     // for each node y in succ(n)
     BasicBlock *bb = BBs[n];
-    std::vector<BasicBlock *> &outEdges = bb->getOutEdges();
+    const std::vector<BasicBlock *> &outEdges = bb->getOutEdges();
     std::vector<BasicBlock *>::iterator it;
-    for (it = outEdges.begin(); it != outEdges.end(); it++) {
-        int y = indices[*it];
+    for (BasicBlock *b : outEdges) {
+        int y = indices[b];
         if (idom[y] != n)
             S.insert(y);
     }
@@ -268,7 +267,7 @@ bool DataFlow::placePhiFunctions(UserProc *proc) {
         BasicBlock::rtlit rit;
         StatementList::iterator sit;
         BasicBlock *bb = BBs[n];
-        for (Statement *s = bb->getFirstStmt(rit, sit); s; s = bb->getNextStmt(rit, sit)) {
+        for (Instruction *s = bb->getFirstStmt(rit, sit); s; s = bb->getNextStmt(rit, sit)) {
             LocationSet ls;
             LocationSet::iterator it;
             s->getDefinitions(ls);
@@ -323,7 +322,7 @@ bool DataFlow::placePhiFunctions(UserProc *proc) {
                     continue;
                 // Insert trivial phi function for a at top of block y: a := phi()
                 change = true;
-                Statement *as = new PhiAssign(a->clone());
+                Instruction *as = new PhiAssign(a->clone());
                 BasicBlock *Ybb = BBs[y];
                 Ybb->prependStmt(as, proc);
                 // A_phi[a] <- A_phi[a] U {y}
@@ -368,7 +367,7 @@ bool DataFlow::renameBlockVars(UserProc *proc, int n, bool clearStacks /* = fals
     BasicBlock::rtlit rit;
     StatementList::iterator sit;
     BasicBlock *bb = BBs[n];
-    Statement *S;
+    Instruction *S;
     for (S = bb->getFirstStmt(rit, sit); S; S = bb->getNextStmt(rit, sit)) {
         // if S is not a phi function (per Appel)
         /* if (!S->isPhi()) */ {
@@ -382,7 +381,7 @@ bool DataFlow::renameBlockVars(UserProc *proc, int n, bool clearStacks /* = fals
                 // A phi statement may use a location defined in a childless call, in which case its use collector
                 // needs updating
                 for (auto &pp : *pa) {
-                    Statement *def = pp.second.def();
+                    Instruction *def = pp.second.def();
                     if (def && def->isCall())
                         ((CallStatement *)def)->useBeforeDefine(phiLeft->clone());
                 }
@@ -395,7 +394,7 @@ bool DataFlow::renameBlockVars(UserProc *proc, int n, bool clearStacks /* = fals
                 // Don't rename memOfs that are not renamable according to the current policy
                 if (!canRename(x, proc))
                     continue;
-                Statement *def = nullptr;
+                Instruction *def = nullptr;
                 if (x->isSubscript()) { // Already subscripted?
                     // No renaming required, but redo the usage analysis, in case this is a new return, and also because
                     // we may have just removed all call livenesses
@@ -490,12 +489,12 @@ bool DataFlow::renameBlockVars(UserProc *proc, int n, bool clearStacks /* = fals
     }
 
     // For each successor Y of block n
-    std::vector<BasicBlock *> &outEdges = bb->getOutEdges();
+    const std::vector<BasicBlock *> &outEdges = bb->getOutEdges();
     size_t numSucc = outEdges.size();
     for (unsigned succ = 0; succ < numSucc; succ++) {
         BasicBlock *Ybb = outEdges[succ];
         // For each phi-function in Y
-        for (Statement *St = Ybb->getFirstStmt(rit, sit); St; St = Ybb->getNextStmt(rit, sit)) {
+        for (Instruction *St = Ybb->getFirstStmt(rit, sit); St; St = Ybb->getNextStmt(rit, sit)) {
             PhiAssign *pa = dynamic_cast<PhiAssign *>(St);
             // if S is not a phi function, then quit the loop (no more phi's)
             // Wrong: do not quit the loop: there's an optimisation that turns a PhiAssign into an ordinary Assign.
@@ -509,7 +508,7 @@ bool DataFlow::renameBlockVars(UserProc *proc, int n, bool clearStacks /* = fals
             // Only consider variables that can be renamed
             if (!canRename(a, proc))
                 continue;
-            Statement *def = nullptr; // assume No reaching definition
+            Instruction *def = nullptr; // assume No reaching definition
             if (!STACKS_EMPTY(a))
                 def = Stacks[a].back();
 
@@ -564,7 +563,7 @@ void DataFlow::dumpStacks() {
     std::cerr << "Stacks: " << Stacks.size() << " entries\n";
     for (auto zz = Stacks.begin(); zz != Stacks.end(); zz++) {
         std::cerr << "Var " << zz->first << " [ ";
-        std::deque<Statement *> tt = zz->second; // Copy the stack!
+        std::deque<Instruction *> tt = zz->second; // Copy the stack!
         while (!tt.empty()) {
             std::cerr << tt.back()->getNumber() << " ";
             tt.pop_back();
@@ -595,7 +594,7 @@ void DataFlow::dumpA_orig() {
     }
 }
 
-void DefCollector::updateDefs(std::map<Exp *, std::deque<Statement *>, lessExpStar> &Stacks, UserProc *proc) {
+void DefCollector::updateDefs(std::map<Exp *, std::deque<Instruction *>, lessExpStar> &Stacks, UserProc *proc) {
     for (auto it = Stacks.begin(); it != Stacks.end(); it++) {
         if (it->second.empty())
             continue; // This variable's definition doesn't reach here
@@ -715,7 +714,7 @@ void DefCollector::searchReplaceAll(const Exp &from, Exp *to, bool &change) {
 }
 
 // Called from CallStatement::fromSSAform. The UserProc is needed for the symbol map
-void UseCollector::fromSSAform(UserProc *proc, Statement *def) {
+void UseCollector::fromSSAform(UserProc *proc, Instruction *def) {
     LocationSet removes, inserts;
     iterator it;
     ExpSsaXformer esx(proc);
@@ -805,7 +804,7 @@ void DataFlow::findLiveAtDomPhi(int n, LocationSet &usedByDomPhi, LocationSet &u
     BasicBlock::rtlit rit;
     StatementList::iterator sit;
     BasicBlock *bb = BBs[n];
-    Statement *S;
+    Instruction *S;
     for (S = bb->getFirstStmt(rit, sit); S; S = bb->getNextStmt(rit, sit)) {
         if (S->isPhi()) {
             // For each phi parameter, insert an entry into usedByDomPhi0
@@ -861,7 +860,7 @@ void DataFlow::setDominanceNums(int n, int &currNum) {
     BasicBlock::rtlit rit;
     StatementList::iterator sit;
     BasicBlock *bb = BBs[n];
-    Statement *S;
+    Instruction *S;
     for (S = bb->getFirstStmt(rit, sit); S; S = bb->getNextStmt(rit, sit))
         S->setDomNumber(currNum++);
     int sz = idom.size();

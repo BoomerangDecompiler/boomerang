@@ -52,7 +52,7 @@ static DecodeResult result;
 DecodeResult &ST20Decoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta) {
     result.reset(); // Clear the result structure (numBytes = 0 etc)
     ADDRESS hostPC = pc + delta;
-    std::list<Statement *> *stmts = nullptr; // The actual list of instantiated Statements
+    std::list<Instruction *> *stmts = nullptr; // The actual list of instantiated Statements
     int total = 0;                           // Total value from all prefixes
 
     while (1) {

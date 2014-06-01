@@ -26,7 +26,7 @@ union yy_SSLParser_stype {
     char *str;
     int num;
     double dbl;
-    Statement *regtransfer;
+    Instruction *regtransfer;
     Type *typ;
 
     Table *tab;
@@ -141,7 +141,7 @@ class SSLParser {
     SSLParser(std::istream &in, bool trace);
     virtual ~SSLParser();
     OPER strToOper(const char *s);               /* Convert string to an operator */
-    static Statement *parseExp(const char *str); /* Parse an expression or assignment from a string */
+    static Instruction *parseExp(const char *str); /* Parse an expression or assignment from a string */
     /* The code for expanding tables and saving to the dictionary */
     void expandTables(InsNameElem *iname, std::list<std::string> *params, RTL *o_rtlist, RTLInstDict &Dict);
     Exp *makeSuccessor(Exp *e); /* Get successor (of register expression) */
@@ -160,7 +160,7 @@ class SSLParser {
     /*
     * Result for parsing an assignment.
     */
-    Statement *the_asgn;
+    Instruction *the_asgn;
 
     /*
     * Maps SSL constants to their values.

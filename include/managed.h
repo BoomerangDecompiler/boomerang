@@ -28,7 +28,7 @@
 
 #include "exphelp.h" // For lessExpStar
 
-class Statement;
+class Instruction;
 class Assign;
 class Exp;
 class RefExp;
@@ -36,7 +36,7 @@ class Cfg;
 class LocationSet;
 
 // A class to implement sets of statements
-class StatementSet : public std::set<Statement *> {
+class StatementSet : public std::set<Instruction *> {
 
   public:
     ~StatementSet() {}
@@ -45,10 +45,10 @@ class StatementSet : public std::set<Statement *> {
     void makeIsect(StatementSet &other);  // Set intersection
     bool isSubSetOf(StatementSet &other); // Subset relation
 
-    bool remove(Statement *s);                   // Removal; rets false if not found
+    bool remove(Instruction *s);                   // Removal; rets false if not found
     bool removeIfDefines(Exp *given);            // Remove if given exp is defined
     bool removeIfDefines(StatementSet &given);   // Remove if any given is def'd
-    bool exists(Statement *s);                   // Search; returns false if !found
+    bool exists(Instruction *s);                   // Search; returns false if !found
     bool definesLoc(Exp *loc);                   // Search; returns true if any
                                                  // statement defines loc
     bool operator<(const StatementSet &o) const; // Compare if less
@@ -80,7 +80,7 @@ class AssignSet : public std::set<Assign *, lessAssign> {
     void dump();                              // Print to standard error for debugging
 };                                            // class AssignSet
 
-class StatementList : public std::list<Statement *> {
+class StatementList : public std::list<Instruction *> {
 
   public:
     ~StatementList() {}
@@ -90,14 +90,14 @@ class StatementList : public std::list<Statement *> {
     // Used for calculating returns for a CallStatement
     void makeIsect(StatementList &a, LocationSet &b);
 
-    void append(Statement *s) { push_back(s); } // Insert at end
+    void append(Instruction *s) { push_back(s); } // Insert at end
     void append(StatementList &sl);             // Append whole StatementList
     void append(StatementSet &sl);              // Append whole StatementSet
-    bool remove(Statement *s);                  // Removal; rets false if not found
+    bool remove(Instruction *s);                  // Removal; rets false if not found
     void removeDefOf(Exp *loc);                 // Remove definitions of loc
     // This one is needed where you remove in the middle of a loop
     // Use like this: it = mystatementlist.erase(it);
-    bool exists(Statement *s);          //!< Search; returns false if not found
+    bool exists(Instruction *s);          //!< Search; returns false if not found
     char *prints();                     //!< Print to string (for debugging)
     void dump();                        //!< Print to standard error for debugging
     void makeCloneOf(StatementList &o); //!< Make this a clone of o
@@ -106,19 +106,19 @@ class StatementList : public std::list<Statement *> {
 };                                      // class StatementList
 
 class StatementVec {
-    std::vector<Statement *> svec; // For now, use use standard vector
+    std::vector<Instruction *> svec; // For now, use use standard vector
 
   public:
-    typedef std::vector<Statement *>::iterator iterator;
-    typedef std::vector<Statement *>::reverse_iterator reverse_iterator;
+    typedef std::vector<Instruction *>::iterator iterator;
+    typedef std::vector<Instruction *>::reverse_iterator reverse_iterator;
     size_t size() { return svec.size(); } // Number of elements
     iterator begin() { return svec.begin(); }
     iterator end() { return svec.end(); }
     reverse_iterator rbegin() { return svec.rbegin(); }
     reverse_iterator rend() { return svec.rend(); }
     // Get/put at position idx (0 based)
-    Statement *operator[](size_t idx) { return svec[idx]; }
-    void putAt(int idx, Statement *s);
+    Instruction *operator[](size_t idx) { return svec[idx]; }
+    void putAt(int idx, Instruction *s);
     iterator remove(iterator it);
     char *prints(); // Print to string (for debugging)
     void dump();    // Print to standard error for debugging
@@ -132,7 +132,7 @@ class StatementVec {
     {
         return svec < o.svec;
     }
-    void append(Statement *s) { svec.push_back(s); }
+    void append(Instruction *s) { svec.push_back(s); }
     void erase(iterator it) { svec.erase(it); }
 }; // class StatementVec
 
@@ -177,7 +177,7 @@ class LocationSet {
     // Find a location with a different def, but same expression. For example, pass r28{10},
     // return true if r28{20} in the set. If return true, dr points to the first different ref
     bool findDifferentRef(RefExp *e, Exp *&dr);
-    void addSubscript(Statement *def /* , Cfg* cfg */); // Add a subscript to all elements
+    void addSubscript(Instruction *def /* , Cfg* cfg */); // Add a subscript to all elements
 };                                                      // class LocationSet
 
 class Range {

@@ -180,6 +180,9 @@ class BasicBlock {
     unstructType UnstructuredType; //!< the restructured type of a conditional header
     LoopType LoopHeaderType;      //!< the loop type of a loop header
     CondType ConditionHeaderType;      //!< the conditional type of a conditional header
+    // true if processing for overlapped registers on statements in this BB
+    // has been completed.
+    bool overlappedRegProcessingDone=false;
 
   public:
     BasicBlock(Function *parent);
@@ -212,13 +215,14 @@ class BasicBlock {
     std::list<RTL *> *getRTLs();
     const std::list<RTL *> *getRTLs() const;
 
-    RTL *getRTLWithStatement(Statement *stmt);
+    RTL *getRTLWithStatement(Instruction *stmt);
 
     std::vector<BasicBlock *> &getInEdges();
 
     size_t getNumInEdges() const { return InEdges.size(); }
 
-    std::vector<BasicBlock *> &getOutEdges();
+    const std::vector<BasicBlock *> &getOutEdges();
+    void clearOutEdges() { OutEdges.clear(); } //!<called when noreturn call is found
     void setInEdge(size_t i, BasicBlock *newIn);
     void setOutEdge(size_t i, BasicBlock *newInEdge);
     BasicBlock *getOutEdge(unsigned int i);
@@ -237,15 +241,17 @@ class BasicBlock {
     static bool lessFirstDFT(BasicBlock *bb1, BasicBlock *bb2);
     static bool lessLastDFT(BasicBlock *bb1, BasicBlock *bb2);
 
+    bool isOverlappedRegProcessingDone() const { return overlappedRegProcessingDone; }
+    void setOverlappedRegProcessingDone() { overlappedRegProcessingDone=true; }
     class LastStatementNotABranchError : public std::exception {
       public:
-        Statement *stmt;
-        LastStatementNotABranchError(Statement *_stmt) : stmt(_stmt) {}
+        Instruction *stmt;
+        LastStatementNotABranchError(Instruction *_stmt) : stmt(_stmt) {}
     };
     class LastStatementNotAGotoError : public std::exception {
       public:
-        Statement *stmt;
-        LastStatementNotAGotoError(Statement *_stmt) : stmt(_stmt) {}
+        Instruction *stmt;
+        LastStatementNotAGotoError(Instruction *_stmt) : stmt(_stmt) {}
     };
 
     Exp *getCond() throw(LastStatementNotABranchError);
@@ -264,12 +270,12 @@ class BasicBlock {
      * Somewhat intricate because of the post call semantics; these funcs save a lot of duplicated, easily-bugged
      * code
      */
-    Statement *getFirstStmt(rtlit &rit, StatementList::iterator &sit);
-    Statement *getNextStmt(rtlit &rit, StatementList::iterator &sit);
-    Statement *getLastStmt(rtlrit &rit, StatementList::reverse_iterator &sit);
-    Statement *getFirstStmt();
-    Statement *getLastStmt();
-    Statement *getPrevStmt(rtlrit &rit, StatementList::reverse_iterator &sit);
+    Instruction *getFirstStmt(rtlit &rit, StatementList::iterator &sit);
+    Instruction *getNextStmt(rtlit &rit, StatementList::iterator &sit);
+    Instruction *getLastStmt(rtlrit &rit, StatementList::reverse_iterator &sit);
+    Instruction *getFirstStmt();
+    Instruction *getLastStmt();
+    Instruction *getPrevStmt(rtlrit &rit, StatementList::reverse_iterator &sit);
     RTL *getLastRtl() { return ListOfRTLs->back(); }
     void getStatements(StatementList &stmts) const;
     char *getStmtNumber();
@@ -280,7 +286,7 @@ class BasicBlock {
     void generateCode(HLLCode *hll, int indLevel, BasicBlock *latch, std::list<BasicBlock *> &followSet,
                       std::list<BasicBlock *> &gotoSet, UserProc *proc);
 
-    void prependStmt(Statement *s, UserProc *proc);
+    void prependStmt(Instruction *s, UserProc *proc);
 
     // Liveness
     bool calcLiveness(ConnectionGraph &ig, UserProc *proc);
@@ -289,12 +295,9 @@ class BasicBlock {
     bool decodeIndirectJmp(UserProc *proc);
     void processSwitch(UserProc *proc);
     int findNumCases();
-    bool undoComputedBB(Statement *stmt);
+    bool undoComputedBB(Instruction *stmt);
     bool searchAll(const Exp &search_for, std::list<Exp *> &results);
     bool searchAndReplace(const Exp &search, Exp *replace);
-    // true if processing for overlapped registers on statements in this BB
-    // has been completed.
-    bool overlappedRegProcessingDone;
 
     void generateCode_Loop(HLLCode *hll, std::list<BasicBlock *> &gotoSet, int indLevel, UserProc *proc,
                            BasicBlock *latch, std::list<BasicBlock *> &followSet);

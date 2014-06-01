@@ -27,7 +27,7 @@
 #include <string>
 #include <QString>
 
-class Statement;
+class Instruction;
 class StatementList;
 class LoaderInterface;
 class XMLProgParser;
@@ -97,7 +97,7 @@ class Signature {
     std::vector<int> preferedParams;
 
     //        void        updateParams(UserProc *p, Statement *stmt, bool checkreach = true);
-    bool usesNewParam(UserProc *, Statement *stmt, bool checkreach, int &n);
+    bool usesNewParam(UserProc *, Instruction *stmt, bool checkreach, int &n);
 
     // void        addImplicitParametersFor(Parameter *p);
     // void        addImplicitParameter(Type *type, const char *name, Exp *e, Parameter *parent);

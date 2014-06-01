@@ -27,7 +27,7 @@ class Function;
 class UserProc;
 class LibProc;
 class Signature;
-class Statement;
+class Instruction;
 class StatementSet;
 class Cluster;
 class XMLProgParser;
@@ -125,7 +125,7 @@ class Prog {
     LibProc *getLibraryProc(const char *nam);
     Signature *getLibSignature(const std::string &name);
     void rereadLibSignatures();
-    Statement *getStmtAtLex(Cluster *cluster, unsigned int begin, unsigned int end);
+    Instruction *getStmtAtLex(Cluster *cluster, unsigned int begin, unsigned int end);
     platform getFrontEndId();
 
     mAddressString &getSymbols();

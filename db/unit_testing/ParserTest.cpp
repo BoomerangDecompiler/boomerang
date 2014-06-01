@@ -25,7 +25,7 @@ void ParserTest::testRead() {
   *============================================================================*/
 void ParserTest::testExp() {
     std::string s("*i32* r0 := 5 + 6");
-    Statement *a = SSLParser::parseExp(s.c_str());
+    Instruction *a = SSLParser::parseExp(s.c_str());
     QVERIFY(a);
     std::ostringstream ost;
     a->print(ost);

@@ -38,7 +38,7 @@ class Cfg;
 class Prog;
 struct DecodeResult;
 class Signature;
-class Statement;
+class Instruction;
 class CallStatement;
 
 // Control flow types
@@ -196,7 +196,7 @@ class FrontEnd {
      * incomplete in these cases, and needs to be restarted from scratch
      */
     void addDecodedRtl(ADDRESS a, RTL *rtl) { previouslyDecoded[a] = rtl; }
-    void preprocessProcGoto(std::list<Statement *>::iterator ss, ADDRESS dest, const std::list<Statement *> &sl,
+    void preprocessProcGoto(std::list<Instruction *>::iterator ss, ADDRESS dest, const std::list<Instruction *> &sl,
                             RTL *pRtl);
     void checkEntryPoint(std::vector<ADDRESS> &entrypoints, ADDRESS addr, const char *type);
 }; // class FrontEnd

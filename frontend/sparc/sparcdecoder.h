@@ -56,7 +56,7 @@ class SparcDecoder : public NJMCDecoder {
     Exp *dis_RegRhs(unsigned r);
 
     void unused(int x);
-    RTL *createBranchRtl(ADDRESS pc, std::list<Statement *> *stmts, const char *name);
+    RTL *createBranchRtl(ADDRESS pc, std::list<Instruction *> *stmts, const char *name);
     bool isFuncPrologue(ADDRESS hostPC);
     DWord getDword(ADDRESS lc);
 };

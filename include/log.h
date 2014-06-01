@@ -6,7 +6,7 @@
 #include <fstream>
 #include <QtCore/QString>
 
-class Statement;
+class Instruction;
 class Exp;
 class LocationSet;
 class RTL;
@@ -18,7 +18,7 @@ class Log {
   public:
     Log() {}
     virtual Log &operator<<(const QString &s) = 0;
-    virtual Log &operator<<(const Statement *s);
+    virtual Log &operator<<(const Instruction *s);
     virtual Log &operator<<(const Exp *e);
     virtual Log &operator<<(const Type *ty);
     virtual Log &operator<<(const RTL *r);

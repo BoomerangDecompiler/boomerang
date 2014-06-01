@@ -49,7 +49,7 @@ class Const;
 class RefExp;
 class Cfg;
 class Type;
-class Statement;
+class Instruction;
 class Signature;
 class StmtVisitor;
 class StmtExpVisitor;
@@ -113,7 +113,7 @@ enum BRANCH_TYPE {
 /* Statements define values that are used in expressions.
  * They are akin to "definition" in the Dragon Book.
  */
-class Statement {
+class Instruction {
   protected:
     typedef std::map<Exp *, int, lessExpStar> mExpInt;
     BasicBlock *Parent; // contains a pointer to the enclosing BB
@@ -135,8 +135,8 @@ class Statement {
     unsigned int lexBegin, lexEnd;
 
   public:
-    Statement() : Parent(nullptr), proc(nullptr), number(0) {} //, parent(nullptr)
-    virtual ~Statement() {}
+    Instruction() : Parent(nullptr), proc(nullptr), number(0) {} //, parent(nullptr)
+    virtual ~Instruction() {}
 
     // get/set the enclosing BB, etc
     BasicBlock *getBB() { return Parent; }
@@ -160,7 +160,7 @@ class Statement {
     RangeMap &getRanges() { return ranges; }
     void clearRanges() { ranges.clear(); }
 
-    virtual Statement *clone() const = 0; // Make copy of self
+    virtual Instruction *clone() const = 0; // Make copy of self
 
     // Accept a visitor (of various kinds) to this Statement. Return true to continue visiting
     virtual bool accept(StmtVisitor *visitor) = 0;
@@ -282,18 +282,18 @@ class Statement {
 
     // Range analysis
   protected:
-    void updateRanges(RangeMap &output, std::list<Statement *> &execution_paths, bool notTaken = false);
+    void updateRanges(RangeMap &output, std::list<Instruction *> &execution_paths, bool notTaken = false);
 
   public:
     RangeMap &getSavedInputRanges() { return savedInputRanges; }
     RangeMap getInputRanges();
-    virtual void rangeAnalysis(std::list<Statement *> &execution_paths);
+    virtual void rangeAnalysis(std::list<Instruction *> &execution_paths);
 
     // helper functions
     bool isFirstStatementInBB();
     bool isLastStatementInBB();
-    Statement *getNextStatementInBB();
-    Statement *getPreviousStatementInBB();
+    Instruction *getNextStatementInBB();
+    Instruction *getPreviousStatementInBB();
 
     //    //    //    //    //    //    //    //    //    //
     //                                    //
@@ -309,7 +309,7 @@ class Statement {
     int setConscripts(int n);
     void clearConscripts();
     void stripSizes();
-    void subscriptVar(Exp *e, Statement *def /*, Cfg* cfg */);
+    void subscriptVar(Exp *e, Instruction *def /*, Cfg* cfg */);
 
     // Cast the constant num to type ty. If a change was made, return true
     bool castConst(int num, Type *ty);
@@ -336,7 +336,7 @@ class Statement {
 }; // class Statement
 
 // Print the Statement (etc) poited to by p
-std::ostream &operator<<(std::ostream &os, const Statement *p);
+std::ostream &operator<<(std::ostream &os, const Instruction *p);
 std::ostream &operator<<(std::ostream &os, const StatementSet *p);
 std::ostream &operator<<(std::ostream &os, const LocationSet *p);
 
@@ -344,7 +344,7 @@ std::ostream &operator<<(std::ostream &os, const LocationSet *p);
   * TypingStatement is an abstract subclass of Statement. It has a type, representing the type of a reference or an
   * assignment
   *============================================================================*/
-class TypingStatement : public Statement {
+class TypingStatement : public Instruction {
   protected:
     Type *type; // The type for this assignment or reference
   public:
@@ -373,7 +373,7 @@ class Assignment : public TypingStatement {
     virtual ~Assignment();
 
     // Clone
-    virtual Statement *clone() const = 0;
+    virtual Instruction *clone() const = 0;
 
     // We also want operator< for assignments. For example, we want ReturnStatement to contain a set of (pointers
     // to) Assignments, so we can automatically make sure that existing assignments are not duplicated
@@ -449,7 +449,7 @@ class Assign : public Assignment {
     ~Assign() {}
 
     // Clone
-    virtual Statement *clone() const;
+    virtual Instruction *clone() const;
 
     // get how to replace this statement in a use
     virtual Exp *getRight() { return rhs; }
@@ -503,7 +503,7 @@ class Assign : public Assignment {
     void dfaTypeAnalysis(bool &ch);
 
     // Range analysis
-    void rangeAnalysis(std::list<Statement *> &execution_paths);
+    void rangeAnalysis(std::list<Instruction *> &execution_paths);
 
     // FIXME: I suspect that this was only used by adhoc TA, and can be deleted
     bool match(const char *pattern, std::map<std::string, Exp *> &bindings);
@@ -518,12 +518,12 @@ struct PhiInfo {
     // are beyond the current end, creating gaps which have to be initialised to zeroes so that they can be skipped
     PhiInfo() {} //: def(0), e(0) not initializing to help valgrind find locations of unset vals
     Exp *e;      // The expression for the thing being defined (never subscripted)
-    void def(Statement *def) { m_def = def; /*assert(def);*/ }
-    Statement *def() { return m_def; }
-    const Statement *def() const { return m_def; }
+    void def(Instruction *def) { m_def = def; /*assert(def);*/ }
+    Instruction *def() { return m_def; }
+    const Instruction *def() const { return m_def; }
 
   protected:
-    Statement *m_def; // The defining statement
+    Instruction *m_def; // The defining statement
 };
 /***************************************************************************/ /**
   * \class PhiAssign is a subclass of Assignment, having a left hand side, and a StatementVec with the references.
@@ -552,7 +552,7 @@ class PhiAssign : public Assignment {
     virtual ~PhiAssign() {}
 
     // Clone
-    virtual Statement *clone() const;
+    virtual Instruction *clone() const;
 
     // get how to replace this statement in a use
     virtual Exp *getRight() { return nullptr; }
@@ -586,14 +586,14 @@ class PhiAssign : public Assignment {
     //
 
     // Get or put the statement at index idx
-    Statement *getStmtAt(BasicBlock *idx) {
+    Instruction *getStmtAt(BasicBlock *idx) {
         if (defVec.find(idx) == defVec.end()) {
             return nullptr;
         }
         return defVec[idx].def();
     }
     PhiInfo &getAt(BasicBlock *idx);
-    void putAt(BasicBlock *idx, Statement *d, Exp *e);
+    void putAt(BasicBlock *idx, Instruction *d, Exp *e);
     void simplifyRefs();
     virtual size_t getNumDefs() { return defVec.size(); }
     Definitions &getDefs() { return defVec; }
@@ -627,7 +627,7 @@ class ImplicitAssign : public Assignment {
     ImplicitAssign(ImplicitAssign &o);
     virtual ~ImplicitAssign();
 
-    virtual Statement *clone() const;
+    virtual Instruction *clone() const;
     void dfaTypeAnalysis(bool &ch);
 
     // general search
@@ -666,7 +666,7 @@ class BoolAssign : public Assignment {
     virtual ~BoolAssign();
 
     // Make a deep copy, and make the copy a derived object if needed.
-    virtual Statement *clone() const;
+    virtual Instruction *clone() const;
 
     // Accept a visitor to this Statement
     virtual bool accept(StmtVisitor *visitor);
@@ -702,7 +702,7 @@ class BoolAssign : public Assignment {
     virtual bool searchAll(const Exp &search, std::list<Exp *> &result);
     virtual bool searchAndReplace(const Exp &search, Exp *replace, bool cc = false);
     // a hack for the SETS macro
-    void setLeftFromList(std::list<Statement *> *stmts);
+    void setLeftFromList(std::list<Instruction *> *stmts);
 
     virtual void dfaTypeAnalysis(bool &ch);
 
@@ -722,7 +722,7 @@ class ImpRefStatement : public TypingStatement {
     void meetWith(Type *ty, bool &ch); // Meet the internal type with ty. Set ch if a change
 
     // Virtuals
-    virtual Statement *clone() const;
+    virtual Instruction *clone() const;
     virtual bool accept(StmtVisitor *);
     virtual bool accept(StmtExpVisitor *);
     virtual bool accept(StmtModifier *);
@@ -747,7 +747,7 @@ class ImpRefStatement : public TypingStatement {
  * This class also represents unconditional jumps with a fixed offset
  * (e.g BN, Ba on SPARC).
  *===========================================================================*/
-class GotoStatement : public Statement {
+class GotoStatement : public Instruction {
   protected:
     Exp *pDest;        // Destination of a jump or call. This is the absolute destination for both
                        // static and dynamic CTIs.
@@ -762,7 +762,7 @@ class GotoStatement : public Statement {
     GotoStatement(ADDRESS jumpDest);
     virtual ~GotoStatement();
 
-    virtual Statement *clone() const; //!< Make a deep copy, and make the copy a derived object if needed.
+    virtual Instruction *clone() const; //!< Make a deep copy, and make the copy a derived object if needed.
 
     // Accept a visitor to this Statement
     virtual bool accept(StmtVisitor *visitor);
@@ -809,11 +809,11 @@ class GotoStatement : public Statement {
     friend class XMLProgParser;
 }; // class GotoStatement
 
-class JunctionStatement : public Statement {
+class JunctionStatement : public Instruction {
   public:
     JunctionStatement() { kind = STMT_JUNCTION; }
 
-    Statement *clone() const { return new JunctionStatement(); }
+    Instruction *clone() const { return new JunctionStatement(); }
 
     // Accept a visitor (of various kinds) to this Statement. Return true to continue visiting
     bool accept(StmtVisitor *visitor);
@@ -840,7 +840,7 @@ class JunctionStatement : public Statement {
     // simpify internal expressions
     void simplify() {}
 
-    void rangeAnalysis(std::list<Statement *> &execution_paths);
+    void rangeAnalysis(std::list<Instruction *> &execution_paths);
     bool isLoopJunction() const;
 };
 
@@ -861,7 +861,7 @@ class BranchStatement : public GotoStatement {
     virtual ~BranchStatement();
 
     // Make a deep copy, and make the copy a derived object if needed.
-    virtual Statement *clone() const;
+    virtual Instruction *clone() const;
 
     // Accept a visitor to this Statement
     virtual bool accept(StmtVisitor *visitor);
@@ -910,7 +910,7 @@ class BranchStatement : public GotoStatement {
     virtual bool usesExp(const Exp &e);
 
     // Range analysis
-    void rangeAnalysis(std::list<Statement *> &execution_paths);
+    void rangeAnalysis(std::list<Instruction *> &execution_paths);
     RangeMap &getRangesForOutEdgeTo(BasicBlock *out);
     RangeMap &getRanges2Ref() { return ranges2; }
     void setRanges2(RangeMap &r) { ranges2 = r; }
@@ -950,7 +950,7 @@ class CaseStatement : public GotoStatement {
     virtual ~CaseStatement();
 
     // Make a deep copy, and make the copy a derived object if needed.
-    virtual Statement *clone() const;
+    virtual Instruction *clone() const;
 
     // Accept a visitor to this Statememt
     virtual bool accept(StmtVisitor *visitor);
@@ -1026,7 +1026,7 @@ class CallStatement : public GotoStatement {
 
     virtual void setNumber(int num);
     // Make a deep copy, and make the copy a derived object if needed.
-    virtual Statement *clone() const;
+    virtual Instruction *clone() const;
 
     // Accept a visitor to this stmt
     virtual bool accept(StmtVisitor *visitor);
@@ -1078,7 +1078,7 @@ class CallStatement : public GotoStatement {
     void eliminateDuplicateArgs();
 
     // Range analysis
-    void rangeAnalysis(std::list<Statement *> &execution_paths);
+    void rangeAnalysis(std::list<Instruction *> &execution_paths);
 
     virtual void print(std::ostream &os = std::cout, bool html = false) const;
 
@@ -1151,7 +1151,7 @@ class CallStatement : public GotoStatement {
     bool ellipsisProcessing(Prog *prog);
     bool convertToDirect(); // Internal function: attempt to convert an indirect to a
                             // direct call
-    void useColFromSsaForm(Statement *s) { useCol.fromSSAform(proc, s); }
+    void useColFromSsaForm(Instruction *s) { useCol.fromSSAform(proc, s); }
 
   private:
     // Private helper functions for the above
@@ -1168,7 +1168,7 @@ class CallStatement : public GotoStatement {
 /*===========================================================
  * ReturnStatement: represents an ordinary high level return.
  *==========================================================*/
-class ReturnStatement : public Statement {
+class ReturnStatement : public Instruction {
   protected:
     // Native address of the (only) return instruction. Needed for branching to this only return statement
     ADDRESS retAddr;
@@ -1245,7 +1245,7 @@ class ReturnStatement : public Statement {
     Exp *subscriptWithDef(Exp *e);
 
     // Make a deep copy, and make the copy a derived object if needed.
-    virtual Statement *clone() const;
+    virtual Instruction *clone() const;
 
     // Accept a visitor to this Statement
     virtual bool accept(StmtVisitor *visitor);

@@ -5,7 +5,7 @@
 #include "exp.h"
 #include "managed.h"
 
-Log &Log::operator<<(const Statement *s) {
+Log &Log::operator<<(const Instruction *s) {
     std::ostringstream st;
     s->print(st);
     *this << st.str().c_str();

@@ -35,7 +35,7 @@
 #include "exp.h" // Needs to know class hierarchy, e.g. so that can convert Unary* to Exp* in return of
                  // ExpModifier::preVisit()
 
-class Statement;
+class Instruction;
 class Assignment;
 class Assign;
 class ImplicitAssign;
@@ -440,9 +440,9 @@ class SimpExpModifier : public ExpModifier {
 // but simplifying only the parent doesn't simplify the K1+K2.
 // Used to also propagate, but this became unwieldy with -l propagation limiting
 class CallBypasser : public SimpExpModifier {
-    Statement *enclosingStmt; // Statement that is being modified at present, for debugging only
+    Instruction *enclosingStmt; // Statement that is being modified at present, for debugging only
   public:
-    CallBypasser(Statement *enclosing) : enclosingStmt(enclosing) {}
+    CallBypasser(Instruction *enclosing) : enclosingStmt(enclosing) {}
     virtual Exp *postVisit(RefExp *e);
     virtual Exp *postVisit(Location *e);
 };
@@ -505,10 +505,10 @@ class UsedLocsVisitor : public StmtExpVisitor {
 
 class ExpSubscripter : public ExpModifier {
     Exp *search;
-    Statement *def;
+    Instruction *def;
 
   public:
-    ExpSubscripter(Exp *s, Statement *d) : search(s), def(d) {}
+    ExpSubscripter(Exp *s, Instruction *d) : search(s), def(d) {}
     virtual Exp *preVisit(Location *e, bool &recur);
     virtual Exp *preVisit(Binary *e, bool &recur);
     virtual Exp *preVisit(Terminal *e);

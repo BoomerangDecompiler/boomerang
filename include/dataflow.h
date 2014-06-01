@@ -27,7 +27,7 @@ class Cfg;
 class BasicBlock;
 class Exp;
 class RefExp;
-class Statement;
+class Instruction;
 class UserProc;
 class PhiAssign;
 class Type;
@@ -67,14 +67,14 @@ class DataFlow {
     // Array of sets of BBs needing phis
     std::map<Exp *, std::set<int>, lessExpStar> A_phi;
     // A Boomerang requirement: Statements defining particular subscripted locations
-    std::map<Exp *, Statement *, lessExpStar> defStmts;
+    std::map<Exp *, Instruction *, lessExpStar> defStmts;
 
     /*
      * Renaming variables
      */
     // The stack which remembers the last definition of an expression.
     // A map from expression (Exp*) to a stack of (pointers to) Statements
-    std::map<Exp *, std::deque<Statement *>, lessExpStar> Stacks;
+    std::map<Exp *, std::deque<Instruction *>, lessExpStar> Stacks;
 
     // Initially false, meaning that locals and parameters are not renamed and hence not propagated.
     // When true, locals and parameters can be renamed if their address does not escape the local procedure.
@@ -178,7 +178,7 @@ class DefCollector {
      * Update the definitions with the current set of reaching definitions
      * proc is the enclosing procedure
      */
-    void updateDefs(std::map<Exp *, std::deque<Statement *>, lessExpStar> &Stacks, UserProc *proc);
+    void updateDefs(std::map<Exp *, std::deque<Instruction *>, lessExpStar> &Stacks, UserProc *proc);
 
     /**
      * Find the definition for a location. If not found, return nullptr
@@ -252,14 +252,14 @@ class UseCollector {
     /*
      * Add a new use from Statement u
      */
-    void updateLocs(Statement *u);
+    void updateLocs(Instruction *u);
     void remove(Exp *loc) { // Remove the given location
         locs.remove(loc);
     }
     void remove(iterator it) { // Remove the current location
         locs.remove(it);
     }
-    void fromSSAform(UserProc *proc, Statement *def); // Translate out of SSA form
+    void fromSSAform(UserProc *proc, Instruction *def); // Translate out of SSA form
     bool operator==(UseCollector &other);
 }; // class UseCollector
 

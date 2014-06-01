@@ -46,7 +46,7 @@ std::ostream &operator<<(std::ostream &os, const LocationSet *ls) {
 
 // Make this set the union of itself and other
 void StatementSet::makeUnion(StatementSet &other) {
-    std::set<Statement *>::iterator it;
+    std::set<Instruction *>::iterator it;
     for (it = other.begin(); it != other.end(); it++) {
         insert(*it);
     }
@@ -54,7 +54,7 @@ void StatementSet::makeUnion(StatementSet &other) {
 
 // Make this set the difference of itself and other
 void StatementSet::makeDiff(StatementSet &other) {
-    std::set<Statement *>::iterator it;
+    std::set<Instruction *>::iterator it;
     for (it = other.begin(); it != other.end(); it++) {
         erase(*it);
     }
@@ -62,7 +62,7 @@ void StatementSet::makeDiff(StatementSet &other) {
 
 // Make this set the intersection of itself and other
 void StatementSet::makeIsect(StatementSet &other) {
-    std::set<Statement *>::iterator it, ff;
+    std::set<Instruction *>::iterator it, ff;
     for (it = begin(); it != end(); it++) {
         ff = other.find(*it);
         if (ff == other.end())
@@ -74,7 +74,7 @@ void StatementSet::makeIsect(StatementSet &other) {
 // Check for the subset relation, i.e. are all my elements also in the set
 // other. Effectively (this intersect other) == this
 bool StatementSet::isSubSetOf(StatementSet &other) {
-    std::set<Statement *>::iterator it, ff;
+    std::set<Instruction *>::iterator it, ff;
     for (it = begin(); it != end(); it++) {
         ff = other.find(*it);
         if (ff == other.end())
@@ -84,7 +84,7 @@ bool StatementSet::isSubSetOf(StatementSet &other) {
 }
 
 // Remove this Statement. Return false if it was not found
-bool StatementSet::remove(Statement *s) {
+bool StatementSet::remove(Instruction *s) {
     if (find(s) != end()) {
         erase(s);
         return true;
@@ -93,7 +93,7 @@ bool StatementSet::remove(Statement *s) {
 }
 
 // Search for s in this Statement set. Return true if found
-bool StatementSet::exists(Statement *s) {
+bool StatementSet::exists(Instruction *s) {
     iterator it = find(s);
     return (it != end());
 }
@@ -110,7 +110,7 @@ bool StatementSet::definesLoc(Exp *loc) {
 // Print to a string, for debugging
 char *StatementSet::prints() {
     std::ostringstream ost;
-    std::set<Statement *>::iterator it;
+    std::set<Instruction *>::iterator it;
     for (it = begin(); it != end(); it++) {
         if (it != begin())
             ost << ",\t";
@@ -125,7 +125,7 @@ char *StatementSet::prints() {
 void StatementSet::dump() { print(std::cerr); }
 
 void StatementSet::print(std::ostream &os) const {
-    std::set<Statement *>::iterator it;
+    std::set<Instruction *>::iterator it;
     for (it = begin(); it != end(); it++) {
         if (it != begin())
             os << ",\t";
@@ -354,7 +354,7 @@ void LocationSet::remove(Exp *given) {
 void LocationSet::removeIfDefines(StatementSet &given) {
     StatementSet::iterator it;
     for (it = given.begin(); it != given.end(); ++it) {
-        Statement *s = (Statement *)*it;
+        Instruction *s = (Instruction *)*it;
         LocationSet defs;
         s->getDefinitions(defs);
         LocationSet::iterator dd;
@@ -429,7 +429,7 @@ bool LocationSet::existsImplicit(Exp *e) {
 // return true if r28{20} in the set. If return true, dr points to the first different ref
 bool LocationSet::findDifferentRef(RefExp *e, Exp *&dr) {
     assert(e);
-    RefExp search(e->getSubExp1()->clone(), (Statement *)-1);
+    RefExp search(e->getSubExp1()->clone(), (Instruction *)-1);
     std::set<Exp *, lessExpStar>::iterator pos = lset.find(&search);
     if (pos == lset.end())
         return false;
@@ -452,7 +452,7 @@ bool LocationSet::findDifferentRef(RefExp *e, Exp *&dr) {
 }
 
 // Add a subscript (to definition d) to each element
-void LocationSet::addSubscript(Statement *d /* , Cfg* cfg */) {
+void LocationSet::addSubscript(Instruction *d /* , Cfg* cfg */) {
     std::set<Exp *, lessExpStar>::iterator it;
     std::set<Exp *, lessExpStar> newSet;
     for (it = lset.begin(); it != lset.end(); it++)
@@ -522,7 +522,7 @@ void LocationSet::substitute(Assign &a) {
 // StatementList methods
 //
 
-bool StatementList::remove(Statement *s) {
+bool StatementList::remove(Instruction *s) {
     iterator it;
     for (it = begin(); it != end(); it++) {
         if (*it == s) {
@@ -551,7 +551,7 @@ char *StatementList::prints() {
 // StatementVec methods
 //
 
-void StatementVec::putAt(int idx, Statement *s) {
+void StatementVec::putAt(int idx, Instruction *s) {
     if (idx >= (int)svec.size())
         svec.resize(idx + 1, nullptr);
     svec[idx] = s;

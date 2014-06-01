@@ -353,7 +353,7 @@ bool RTLInstDict::partialType(Exp *exp, Type &ty) {
   * \param actuals - the actual values
   * \returns   the instantiated list of Exps
   ******************************************************************************/
-std::list<Statement *> *RTLInstDict::instantiateRTL(std::string &name, ADDRESS natPC,
+std::list<Instruction *> *RTLInstDict::instantiateRTL(std::string &name, ADDRESS natPC,
                                                     const std::vector<Exp *> &actuals) {
     // If -f is in force, use the fast (but not as precise) name instead
     const std::string *lname = &name;
@@ -382,17 +382,17 @@ std::list<Statement *> *RTLInstDict::instantiateRTL(std::string &name, ADDRESS n
   * \param   actuals - the actual parameter values
   * \returns the instantiated list of Exps
   ******************************************************************************/
-std::list<Statement *> *RTLInstDict::instantiateRTL(RTL &rtl, ADDRESS /*natPC*/, std::list<std::string> &params,
+std::list<Instruction *> *RTLInstDict::instantiateRTL(RTL &rtl, ADDRESS /*natPC*/, std::list<std::string> &params,
                                                     const std::vector<Exp *> &actuals) {
     assert(params.size() == actuals.size());
 
     // Get a deep copy of the template RTL
-    std::list<Statement *> *newList = new std::list<Statement *>();
+    std::list<Instruction *> *newList = new std::list<Instruction *>();
     rtl.deepCopyList(*newList);
 
     // Iterate through each Statement of the new list of stmts
-    std::list<Statement *>::iterator ss;
-    for (Statement *ss : *newList) {
+    std::list<Instruction *>::iterator ss;
+    for (Instruction *ss : *newList) {
         // Search for the formals and replace them with the actuals
         auto param = params.begin();
         std::vector<Exp *>::const_iterator actual = actuals.begin();
@@ -446,8 +446,8 @@ class transPost {
   * \param rts the list of statements
   ******************************************************************************/
 
-void RTLInstDict::transformPostVars(std::list<Statement *> &rts, bool optimise) {
-    std::list<Statement *>::iterator rt;
+void RTLInstDict::transformPostVars(std::list<Instruction *> &rts, bool optimise) {
+    std::list<Instruction *>::iterator rt;
 
     // Map from var (could be any expression really) to details
     std::map<Exp *, transPost, lessExpStar> vars;
@@ -464,7 +464,7 @@ void RTLInstDict::transformPostVars(std::list<Statement *> &rts, bool optimise) 
 #endif
 
     // First pass: Scan for post-variables and usages of their referents
-    for (Statement *rt : rts) {
+    for (Instruction *rt : rts) {
         // ss appears to be a list of expressions to be searched
         // It is either the LHS and RHS of an assignment, or it's the parameters of a flag call
         Exp *ss;
@@ -546,7 +546,7 @@ void RTLInstDict::transformPostVars(std::list<Statement *> &rts, bool optimise) 
     }
 
     // Second pass: Replace post-variables with temporaries where needed
-    for (Statement *rt : rts) {
+    for (Instruction *rt : rts) {
         for (auto &var : vars) {
             if (var.second.used) {
                 rt->searchAndReplace(*var.first, var.second.tmp);

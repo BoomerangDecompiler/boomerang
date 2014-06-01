@@ -44,7 +44,7 @@ class Register;
 class Function;
 class XMLProgParser;
 class StmtVisitor;
-class Statement;
+class Instruction;
 class QString;
 
 enum STMT_KIND : uint8_t;
@@ -54,11 +54,11 @@ enum STMT_KIND : uint8_t;
   * NOTE: when time permits, this class could be removed, replaced with new Statements that mark the current native
   * address
   *============================================================================*/
-class RTL : public std::list<Statement *> {
+class RTL : public std::list<Instruction *> {
     ADDRESS nativeAddr; // RTL's source program instruction address
   public:
     RTL();
-    RTL(ADDRESS instNativeAddr, const std::list<Statement *> *listStmt = nullptr);
+    RTL(ADDRESS instNativeAddr, const std::list<Instruction *> *listStmt = nullptr);
     RTL(const RTL &other); // Makes deep copy of "other"
 
     RTL *clone() const;
@@ -70,17 +70,17 @@ class RTL : public std::list<Statement *> {
     bool areFlagsAffected();                       //!< True if flags are affected
 
     // Statement list editing methods
-    void appendStmt(Statement *s); // Add s to end of RTL.
-    void appendListStmt(std::list<Statement *> &le);
+    void appendStmt(Instruction *s); // Add s to end of RTL.
+    void appendListStmt(std::list<Instruction *> &le);
     // Make a deep copy of the list of Exp*
-    void deepCopyList(std::list<Statement *> &dest) const;
+    void deepCopyList(std::list<Instruction *> &dest) const;
 
     // Print RTL to a stream.
     void print(std::ostream &os, bool html = false) const;
     void dump();
 
     bool isCall(); // Is this RTL a call instruction?
-    Statement *getHlStmt();
+    Instruction *getHlStmt();
     char *prints() const; // Print to a string (mainly for debugging)
   protected:
     void simplify();
@@ -137,7 +137,7 @@ class ParamEntry {
 
     std::list<std::string> params;     //!< PARAM_VARIANT & PARAM_ASGN only */
     std::list<std::string> funcParams; //!< PARAM_LAMBDA - late bound params */
-    Statement *asgn;                   //!< PARAM_ASGN only */
+    Instruction *asgn;                   //!< PARAM_ASGN only */
     bool lhs;                          //!< True if this param ever appears on the LHS of an expression */
     ParamKind kind;
     Type *regType;        //!< Type of r[this], if any (void otherwise)
@@ -166,11 +166,11 @@ class RTLInstDict {
 
     int appendToDict(std::string &n, std::list<std::string> &p, RTL &rtl);
 
-    std::list<Statement *> *instantiateRTL(std::string &name, ADDRESS natPC, const std::vector<Exp *> &actuals);
-    std::list<Statement *> *instantiateRTL(RTL &rtls, ADDRESS, std::list<std::string> &params,
+    std::list<Instruction *> *instantiateRTL(std::string &name, ADDRESS natPC, const std::vector<Exp *> &actuals);
+    std::list<Instruction *> *instantiateRTL(RTL &rtls, ADDRESS, std::list<std::string> &params,
                                            const std::vector<Exp *> &actuals);
 
-    void transformPostVars(std::list<Statement *> &rts, bool optimise);
+    void transformPostVars(std::list<Instruction *> &rts, bool optimise);
     void print(std::ostream &os);
     void addRegister(const char *name, int id, int size, bool flt);
     bool partialType(Exp *exp, Type &ty);
@@ -207,7 +207,7 @@ class RTLInstDict {
     std::map<std::string, TableEntry, std::less<std::string>> idict;
 
     //! An RTL describing the machine's basic fetch-execute cycle
-    std::list<Statement *> *fetchExecCycle;
+    std::list<Instruction *> *fetchExecCycle;
 
     void fixupParamsSub(std::string s, std::list<std::string> &funcParams, bool &haveCount, int mark);
 };

@@ -40,7 +40,7 @@ SSLParser::SSLParser(std::istream &in, bool trace) : sslFile("input"), bFloat(fa
   * PARAMETERS:        the string
   * \returns             an Assignment or nullptr.
   ******************************************************************************/
-Statement *SSLParser::parseExp(const char *str) {
+Instruction *SSLParser::parseExp(const char *str) {
     std::istringstream ss(str);
     SSLParser p(ss, false); // Second arg true for debugging
     RTLInstDict d;
@@ -400,7 +400,7 @@ void SSLParser::expandTables(InsNameElem *iname, std::list<std::string> *params,
         nam = iname->getinstruction();
         // Need to make substitutions to a copy of the RTL
         RTL rtl = *o_rtlist; // deep copy of contents
-        for (Statement *s : rtl) {
+        for (Instruction *s : rtl) {
             std::list<Exp *> le;
             // Expression tables
             assert(s->getKind() == STMT_ASSIGN);

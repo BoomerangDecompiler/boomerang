@@ -762,11 +762,11 @@ int Boomerang::decompile(const char *fname, const char *pname) {
                 u->printAST();
             }
     }
-
-    qDebug() << "generating code...\n";
+    QTextStream cout(stdout);
+    cout << "generating code...\n";
     prog->generateCode();
 
-    qDebug() << "output written to " << outputPath << prog->getRootCluster()->getName() << "\n";
+    cout << "output written to " << outputPath << prog->getRootCluster()->getName() << "\n";
 
     if (Boomerang::get()->ofsIndCallReport)
         ofsIndCallReport->close();
@@ -815,7 +815,7 @@ void Boomerang::alert_decompile_debug_point(UserProc *p, const char *description
     if (stopAtDebugPoints) {
         std::cout << "decompiling " << p->getName().toStdString() << ": " << description << "\n";
         static char *stopAt = nullptr;
-        static std::set<Statement *> watches;
+        static std::set<Instruction *> watches;
         if (stopAt == nullptr || !p->getName().compare(stopAt)) {
             // This is a mini command line debugger.  Feel free to expand it.
             for (auto const &watche : watches) {

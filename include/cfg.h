@@ -55,7 +55,7 @@ typedef std::map<ADDRESS, BasicBlock *, std::less<ADDRESS>> MAPBB;
 
 class Cfg {
     typedef std::set<CallStatement *> sCallStatement;
-    typedef std::map<Exp *, Statement *, lessExpStar> mExpStatement;
+    typedef std::map<Exp *, Instruction *, lessExpStar> mExpStatement;
     bool m_bWellFormed, structured;
     bool bImplicitsDone;
     int lastLabel;
@@ -131,7 +131,7 @@ class Cfg {
     //! return a bb given an address
     BasicBlock *bbForAddr(ADDRESS addr) { return m_mapBB[addr]; }
     void simplify();
-    void undoComputedBB(Statement *stmt);
+    void undoComputedBB(Instruction *stmt);
 
   private:
     BasicBlock *splitBB(BasicBlock *pBB, ADDRESS uNativeAddr, BasicBlock *pNewBB = 0, bool bDelRtls = false);
@@ -183,9 +183,9 @@ class Cfg {
     /////////////////////////////////////////////////////////////////////////
     // Implicit assignments
     /////////////////////////////////////////////////////////////////////////
-    Statement *findImplicitAssign(Exp *x);
-    Statement *findTheImplicitAssign(Exp *x);
-    Statement *findImplicitParamAssign(Parameter *p);
+    Instruction *findImplicitAssign(Exp *x);
+    Instruction *findTheImplicitAssign(Exp *x);
+    Instruction *findImplicitParamAssign(Parameter *p);
     void removeImplicitAssign(Exp *x);
     bool implicitsDone() { return bImplicitsDone; }    //!<  True if implicits have been created
     void setImplicitsDone() { bImplicitsDone = true; } //!< Call when implicits have been created

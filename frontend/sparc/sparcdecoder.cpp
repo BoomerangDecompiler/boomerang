@@ -67,7 +67,7 @@ void SparcDecoder::unused(int x) {}
   *                   name - instruction name (e.g. "BNE,a", or "BPNE")
   * \returns            Pointer to newly created RTL, or nullptr if invalid
   ******************************************************************************/
-RTL *SparcDecoder::createBranchRtl(ADDRESS pc, std::list<Statement *> *stmts, const char *name) {
+RTL *SparcDecoder::createBranchRtl(ADDRESS pc, std::list<Instruction *> *stmts, const char *name) {
     RTL *res = new RTL(pc, stmts);
     BranchStatement *br = new BranchStatement();
     res->appendStmt(br);
@@ -198,7 +198,7 @@ DecodeResult &SparcDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta) {
     result.reset();
 
     // The actual list of instantiated statements
-    std::list<Statement *> *stmts = nullptr;
+    std::list<Instruction *> *stmts = nullptr;
 
     ADDRESS nextPC = NO_ADDRESS;
 

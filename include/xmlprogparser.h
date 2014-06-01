@@ -33,7 +33,7 @@ class Exp;
 class Cfg;
 class BasicBlock;
 class RTL;
-class Statement;
+class Instruction;
 class XMLProgParser;
 class QString;
 class QStringList;
@@ -145,7 +145,7 @@ class XMLProgParser {
     void persistToXML(QXmlStreamWriter &out, Cfg *cfg);
     void persistToXML(QXmlStreamWriter &out, const BasicBlock *bb);
     void persistToXML(QXmlStreamWriter &out, const RTL *rtl);
-    void persistToXML(QXmlStreamWriter &out, const Statement *stmt);
+    void persistToXML(QXmlStreamWriter &out, const Instruction *stmt);
 
     static _tag tags[];
 

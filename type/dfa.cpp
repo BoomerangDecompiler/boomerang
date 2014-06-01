@@ -91,7 +91,7 @@ void UserProc::dfaTypeAnalysis() {
         LOG << "\n ### results for data flow based type analysis for " << getName() << " ###\n";
         LOG << iter << " iterations\n";
         for (it = stmts.begin(); it != stmts.end(); ++it) {
-            Statement *s = *it;
+            Instruction *s = *it;
             LOG << s << "\n"; // Print the statement; has dest type
             // Now print type for each constant in this Statement
             std::list<Const *> lc;
@@ -148,7 +148,7 @@ void UserProc::dfaTypeAnalysis() {
 
     Prog *_prog = getProg();
     for (it = stmts.begin(); it != stmts.end(); ++it) {
-        Statement *s = *it;
+        Instruction *s = *it;
 
         // 1) constants
         std::list<Const *> lc;
@@ -636,7 +636,7 @@ Type *LowerType::meetWith(Type *other, bool &ch, bool bHighestPtr) const {
     return createUnion(other, ch, bHighestPtr);
 }
 
-Type *Statement::meetWithFor(Type *ty, Exp *e, bool &ch) {
+Type *Instruction::meetWithFor(Type *ty, Exp *e, bool &ch) {
     bool thisCh = false;
     Type *typeFor = getTypeFor(e);
     assert(typeFor);
@@ -1062,7 +1062,7 @@ Type *TypedExp::ascendType() { return type; }
 //                                        //
 //    //    //    //    //    //    //    //    //    //    //
 
-void Binary::descendType(Type *parentType, bool &ch, Statement *s) {
+void Binary::descendType(Type *parentType, bool &ch, Instruction *s) {
     if (op == opFlagCall)
         return;
     Type *ta = subExp1->ascendType();
@@ -1168,13 +1168,13 @@ void Binary::descendType(Type *parentType, bool &ch, Statement *s) {
     }
 }
 
-void RefExp::descendType(Type *parentType, bool &ch, Statement *s) {
+void RefExp::descendType(Type *parentType, bool &ch, Instruction *s) {
     Type *newType = def->meetWithFor(parentType, subExp1, ch);
     // In case subExp1 is a m[...]
     subExp1->descendType(newType, ch, s);
 }
 
-void Const::descendType(Type *parentType, bool &ch, Statement */*s*/) {
+void Const::descendType(Type *parentType, bool &ch, Instruction */*s*/) {
     bool thisCh = false;
     type = type->meetWith(parentType, thisCh);
     ch |= thisCh;
@@ -1197,7 +1197,7 @@ void Const::descendType(Type *parentType, bool &ch, Statement */*s*/) {
     }
 }
 
-void Unary::descendType(Type *parentType, bool &ch, Statement *s) {
+void Unary::descendType(Type *parentType, bool &ch, Instruction *s) {
     Binary *as_bin = dynamic_cast<Binary *>(subExp1);
     switch (op) {
     case opMemOf:
@@ -1268,7 +1268,7 @@ void Unary::descendType(Type *parentType, bool &ch, Statement *s) {
     }
 }
 
-void Ternary::descendType(Type *parentType, bool &ch, Statement *s) {
+void Ternary::descendType(Type *parentType, bool &ch, Instruction *s) {
     switch (op) {
     case opFsize:
         subExp3->descendType(FloatType::get(((Const *)subExp1)->getInt()), ch, s);
@@ -1287,16 +1287,16 @@ void Ternary::descendType(Type *parentType, bool &ch, Statement *s) {
     }
 }
 
-void TypedExp::descendType(Type *parentType, bool &ch, Statement *s) {}
+void TypedExp::descendType(Type *parentType, bool &ch, Instruction *s) {}
 
-void Terminal::descendType(Type *parentType, bool &ch, Statement *s) {}
+void Terminal::descendType(Type *parentType, bool &ch, Instruction *s) {}
 //! Data flow based type analysis. Meet the parameters with their current types.  Returns true if a change
 bool Signature::dfaTypeAnalysis(Cfg *cfg) {
     bool ch = false;
     std::vector<Parameter *>::iterator it;
     for (it = params.begin(); it != params.end(); ++it) {
         // Parameters should be defined in an implicit assignment
-        Statement *def = cfg->findImplicitParamAssign(*it);
+        Instruction *def = cfg->findImplicitParamAssign(*it);
         if (def) { // But sometimes they are not used, and hence have no implicit definition
             bool thisCh = false;
             def->meetWithFor((*it)->getType(), (*it)->getExp(), thisCh);

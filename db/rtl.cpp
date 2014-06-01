@@ -48,9 +48,9 @@ RTL::RTL() : nativeAddr(ADDRESS::g(0L)) {}
   * \param   listStmt - ptr to existing list of Statement
   *
   ******************************************************************************/
-RTL::RTL(ADDRESS instNativeAddr, const std::list<Statement *> *listStmt /*= nullptr*/) : nativeAddr(instNativeAddr) {
+RTL::RTL(ADDRESS instNativeAddr, const std::list<Instruction *> *listStmt /*= nullptr*/) : nativeAddr(instNativeAddr) {
     if (listStmt)
-        *(std::list<Statement *> *)this = *listStmt;
+        *(std::list<Instruction *> *)this = *listStmt;
 }
 
 /***************************************************************************/ /**
@@ -58,7 +58,7 @@ RTL::RTL(ADDRESS instNativeAddr, const std::list<Statement *> *listStmt /*= null
   *                    so that the lists of Exps do not share memory.
   * \param        other RTL to copy from
   ******************************************************************************/
-RTL::RTL(const RTL &other) : std::list<Statement *>(), nativeAddr(other.nativeAddr) {
+RTL::RTL(const RTL &other) : std::list<Instruction *>(), nativeAddr(other.nativeAddr) {
     for (auto const &elem : other) {
         push_back((elem)->clone());
     }
@@ -89,7 +89,7 @@ RTL &RTL::operator=(const RTL &other) {
   * \returns             Pointer to a new RTL that is a clone of this one
   ******************************************************************************/
 RTL *RTL::clone() const {
-    std::list<Statement *> le;
+    std::list<Instruction *> le;
     for (auto const &elem : *this) {
         le.push_back((elem)->clone());
     }
@@ -100,8 +100,8 @@ RTL *RTL::clone() const {
   * \brief        Make a copy of this RTLs list of Exp* to the given list
   * \param        dest Ref to empty list to copy to
   ******************************************************************************/
-void RTL::deepCopyList(std::list<Statement *> &dest) const {
-    for (Statement *it : *this) {
+void RTL::deepCopyList(std::list<Instruction *> &dest) const {
+    for (Instruction *it : *this) {
         dest.push_back(it->clone());
     }
 }
@@ -113,7 +113,7 @@ void RTL::deepCopyList(std::list<Statement *> &dest) const {
   * \note            stmt is NOT copied. This is different to how UQBT was!
   * \param        s pointer to Statement to append
   ******************************************************************************/
-void RTL::appendStmt(Statement *s) {
+void RTL::appendStmt(Instruction *s) {
     assert(s != nullptr);
     if (not empty()) {
         if (back()->isFlagAssgn()) {
@@ -130,8 +130,8 @@ void RTL::appendStmt(Statement *s) {
   * \note            A copy of the Statements in le are appended
   * \param        rtl list of Statements to insert
   ******************************************************************************/
-void RTL::appendListStmt(std::list<Statement *> &le) {
-    for (Statement *it : le) {
+void RTL::appendListStmt(std::list<Instruction *> &le) {
+    for (Instruction *it : le) {
         push_back(it->clone());
     }
 }
@@ -153,7 +153,7 @@ void RTL::print(std::ostream &os /*= cout*/, bool html /*=false*/) const {
     // Print the statements
     // First line has 8 extra chars as above
     bool bFirst = true;
-    for (Statement *stmt : *this) {
+    for (Instruction *stmt : *this) {
         if (html) {
             if (!bFirst)
                 os << "<tr><td></td>";
@@ -213,14 +213,14 @@ std::ostream &operator<<(std::ostream &os, const RTL *r) {
 bool RTL::areFlagsAffected() {
     if (this->empty())
         return false;
-    Statement *e = this->back();
+    Instruction *e = this->back();
     // If it is a flag call, then the CCs are affected
     return e->isFlagAssgn();
 }
 
 void RTL::simplify() {
     for (iterator it = begin(); it != end();) {
-        Statement *s = *it;
+        Instruction *s = *it;
         s->simplify();
         if (s->isBranch()) {
             Exp *cond = ((BranchStatement *)s)->getCondExpr();
@@ -251,13 +251,13 @@ void RTL::simplify() {
 bool RTL::isCall() {
     if (empty())
         return false;
-    Statement *last = this->back();
+    Instruction *last = this->back();
     return last->getKind() == STMT_CALL;
 }
 
 // Use this slow function when you can't be sure that the HL Statement is last
 // Get the "special" (High Level) Statement this RTL (else nullptr)
-Statement *RTL::getHlStmt() {
+Instruction *RTL::getHlStmt() {
     reverse_iterator rit;
     for (rit = this->rbegin(); rit != this->rend(); rit++) {
         if ((*rit)->getKind() != STMT_ASSIGN)

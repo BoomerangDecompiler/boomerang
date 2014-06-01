@@ -1439,7 +1439,7 @@ void Signature::printToLog() {
     LOG << os.str().c_str();
 }
 
-bool Signature::usesNewParam(UserProc * /*p*/, Statement *stmt, bool checkreach, int &n) {
+bool Signature::usesNewParam(UserProc * /*p*/, Instruction *stmt, bool checkreach, int &n) {
     n = getNumParams() - 1;
     if (VERBOSE) {
         std::cerr << "searching ";
@@ -1586,14 +1586,14 @@ StatementList &Signature::getStdRetStmt(Prog *prog) {
         break; // No adjustment to stack pointer required
     case MACHINE_PENTIUM: {
         StatementList *sl = new StatementList;
-        sl->append((Statement *)&pent1ret);
-        sl->append((Statement *)&pent2ret);
+        sl->append((Instruction *)&pent1ret);
+        sl->append((Instruction *)&pent2ret);
         return *sl;
     }
     case MACHINE_ST20: {
         StatementList *sl = new StatementList;
-        sl->append((Statement *)&st20_1ret);
-        sl->append((Statement *)&st20_2ret);
+        sl->append((Instruction *)&st20_1ret);
+        sl->append((Instruction *)&st20_2ret);
         return *sl;
     }
     default:

@@ -181,7 +181,7 @@ class Context {
     Cfg *cfg;
     BasicBlock *bb;
     RTL *rtl;
-    Statement *stmt;
+    Instruction *stmt;
     Parameter *param;
     // ImplicitParameter *implicitParam;
     Return *ret;
@@ -586,7 +586,7 @@ void XMLProgParser::addToContext_callee(Context * /*c*/, int /*e*/) {}
 
 void XMLProgParser::start_caller(const QXmlStreamAttributes &attr) {
     if (phase == 1) {
-        stack.front()->stmt = (Statement *)findId(attr.value(QLatin1Literal("call")));
+        stack.front()->stmt = (Instruction *)findId(attr.value(QLatin1Literal("call")));
     }
 }
 
@@ -1087,7 +1087,7 @@ void XMLProgParser::addToContext_stmt(Context *c, int /*e*/) { c->stmt = stack.f
 
 void XMLProgParser::start_assign(const QXmlStreamAttributes &attr) {
     if (phase == 1) {
-        stack.front()->stmt = (Statement *)findId(attr.value(QLatin1Literal("id")));
+        stack.front()->stmt = (Instruction *)findId(attr.value(QLatin1Literal("id")));
         UserProc *p = (UserProc *)findId(attr.value(QLatin1Literal("proc")));
         if (p)
             stack.front()->stmt->setProc(p);
@@ -1137,10 +1137,10 @@ void XMLProgParser::addToContext_assign(Context *c, int e) {
 
 void XMLProgParser::start_callstmt(const QXmlStreamAttributes &attr) {
     if (phase == 1) {
-        stack.front()->stmt = (Statement *)findId(attr.value(QLatin1Literal("id")));
+        stack.front()->stmt = (Instruction *)findId(attr.value(QLatin1Literal("id")));
         UserProc *p = (UserProc *)findId(attr.value(QLatin1Literal("proc")));
         if (p)
-            ((Statement *)stack.front()->stmt)->setProc(p);
+            ((Instruction *)stack.front()->stmt)->setProc(p);
         //        Statement *s = (Statement*)findId(attr.value(QLatin1Literal("parent")));
         //        if (s)
         //            ((Statement*)stack.front()->stmt)->parent = s;
@@ -1207,10 +1207,10 @@ void XMLProgParser::addToContext_dest(Context *c, int /*e*/) { c->exp = stack.fr
 
 void XMLProgParser::start_returnstmt(const QXmlStreamAttributes &attr) {
     if (phase == 1) {
-        stack.front()->stmt = (Statement *)findId(attr.value(QLatin1Literal("id")));
+        stack.front()->stmt = (Instruction *)findId(attr.value(QLatin1Literal("id")));
         UserProc *p = (UserProc *)findId(attr.value(QLatin1Literal("proc")));
         if (p)
-            ((Statement *)stack.front()->stmt)->setProc(p);
+            ((Instruction *)stack.front()->stmt)->setProc(p);
         //      Statement *s = (Statement*)findId(attr.value(QLatin1Literal("parent")));
         //        if (s)
         //            ((Statement*)stack.front()->stmt)->parent = s;
@@ -1259,10 +1259,10 @@ void XMLProgParser::addToContext_modifieds(Context * /*c*/, int /*e*/) {}
 
 void XMLProgParser::start_gotostmt(const QXmlStreamAttributes &attr) {
     if (phase == 1) {
-        stack.front()->stmt = (Statement *)findId(attr.value(QLatin1Literal("id")));
+        stack.front()->stmt = (Instruction *)findId(attr.value(QLatin1Literal("id")));
         UserProc *p = (UserProc *)findId(attr.value(QLatin1Literal("proc")));
         if (p)
-            ((Statement *)stack.front()->stmt)->setProc(p);
+            ((Instruction *)stack.front()->stmt)->setProc(p);
         //        Statement *s = (Statement*)findId(attr.value(QLatin1Literal("parent")));
         //        if (s)
         //            ((Statement*)stack.front()->stmt)->parent = s;
@@ -1300,10 +1300,10 @@ void XMLProgParser::addToContext_gotostmt(Context *c, int e) {
 
 void XMLProgParser::start_branchstmt(const QXmlStreamAttributes &attr) {
     if (phase == 1) {
-        stack.front()->stmt = (Statement *)findId(attr.value(QLatin1Literal("id")));
+        stack.front()->stmt = (Instruction *)findId(attr.value(QLatin1Literal("id")));
         UserProc *p = (UserProc *)findId(attr.value(QLatin1Literal("proc")));
         if (p)
-            ((Statement *)stack.front()->stmt)->setProc(p);
+            ((Instruction *)stack.front()->stmt)->setProc(p);
         return;
     }
     BranchStatement *branch = new BranchStatement();
@@ -1347,10 +1347,10 @@ void XMLProgParser::addToContext_branchstmt(Context *c, int e) {
 
 void XMLProgParser::start_casestmt(const QXmlStreamAttributes &attr) {
     if (phase == 1) {
-        stack.front()->stmt = (Statement *)findId(attr.value(QLatin1Literal("id")));
+        stack.front()->stmt = (Instruction *)findId(attr.value(QLatin1Literal("id")));
         UserProc *p = (UserProc *)findId(attr.value(QLatin1Literal("proc")));
         if (p)
-            ((Statement *)stack.front()->stmt)->setProc(p);
+            ((Instruction *)stack.front()->stmt)->setProc(p);
         return;
     }
     CaseStatement *cas = new CaseStatement();
@@ -1385,10 +1385,10 @@ void XMLProgParser::addToContext_casestmt(Context *c, int e) {
 
 void XMLProgParser::start_boolasgn(const QXmlStreamAttributes &attr) {
     if (phase == 1) {
-        stack.front()->stmt = (Statement *)findId(attr.value(QLatin1Literal("id")));
+        stack.front()->stmt = (Instruction *)findId(attr.value(QLatin1Literal("id")));
         UserProc *p = (UserProc *)findId(attr.value(QLatin1Literal("proc")));
         if (p)
-            ((Statement *)stack.front()->stmt)->setProc(p);
+            ((Instruction *)stack.front()->stmt)->setProc(p);
         return;
     }
     QStringRef n = attr.value(QLatin1Literal("size"));
@@ -1869,7 +1869,7 @@ void XMLProgParser::start_refexp(const QXmlStreamAttributes &attr) {
         stack.front()->exp = (Exp *)findId(attr.value(QLatin1Literal("id")));
         RefExp *r = dynamic_cast<RefExp *>(stack.front()->exp);
         assert(r);
-        r->def = (Statement *)findId(attr.value(QLatin1Literal("def")));
+        r->def = (Instruction *)findId(attr.value(QLatin1Literal("def")));
         return;
     }
     stack.front()->exp = new RefExp();
@@ -1892,7 +1892,7 @@ void XMLProgParser::addToContext_refexp(Context *c, int e) {
 
 void XMLProgParser::start_def(const QXmlStreamAttributes &attr) {
     if (phase == 1) {
-        stack.front()->stmt = (Statement *)findId(attr.value(QLatin1Literal("stmt")));
+        stack.front()->stmt = (Instruction *)findId(attr.value(QLatin1Literal("stmt")));
         return;
     }
 }
@@ -2530,7 +2530,7 @@ void XMLProgParser::persistToXML(QXmlStreamWriter &out, const RTL *rtl) {
     out.writeEndElement();
 }
 
-void XMLProgParser::persistToXML(QXmlStreamWriter &out, const Statement *stmt) {
+void XMLProgParser::persistToXML(QXmlStreamWriter &out, const Instruction *stmt) {
     const BoolAssign *b = dynamic_cast<const BoolAssign *>(stmt);
     if (b) {
         out.writeStartElement("boolasgn");

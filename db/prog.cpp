@@ -271,7 +271,7 @@ void Prog::generateRTL(Cluster *cluster, UserProc *proc) {
     m_rootCluster->closeStreams();
 }
 
-Statement *Prog::getStmtAtLex(Cluster *cluster, unsigned int begin, unsigned int end) {
+Instruction *Prog::getStmtAtLex(Cluster *cluster, unsigned int begin, unsigned int end) {
     for (Function *pProc : m_procs) {
         if (pProc->isLib())
             continue;
@@ -282,7 +282,7 @@ Statement *Prog::getStmtAtLex(Cluster *cluster, unsigned int begin, unsigned int
             continue;
 
         if (p->getCluster() == cluster) {
-            Statement *s = p->getStmtAtLex(begin, end);
+            Instruction *s = p->getStmtAtLex(begin, end);
             if (s)
                 return s;
         }
@@ -1296,7 +1296,7 @@ void Prog::removeUnusedGlobals() {
         StatementList stmts;
         StatementList::iterator ss;
         u->getStatements(stmts);
-        for (Statement *s : stmts) {
+        for (Instruction *s : stmts) {
             if (s->isImplicit())
                 continue; // Ignore the uses in ImplicitAssigns
             bool found = s->searchAll(search, usedGlobals);

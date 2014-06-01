@@ -751,7 +751,7 @@ SSLParser::
     case 18: {
         std::map<std::string, InsNameElem *> m;
         ParamEntry &param = Dict.DetParamMap[yyvsp[-4].str];
-        Statement *asgn = new Assign(yyvsp[-1].typ, new Terminal(opNil), yyvsp[0].exp);
+        Instruction *asgn = new Assign(yyvsp[-1].typ, new Terminal(opNil), yyvsp[0].exp);
         // Note: The below 2 copy lists of strings (to be deleted below!)
         param.params = *yyvsp[-3].parmlist;
         param.funcParams = *yyvsp[-2].parmlist;

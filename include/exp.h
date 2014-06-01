@@ -37,7 +37,7 @@
 class UseSet;
 class DefSet;
 class RTL; // For class FlagDef
-class Statement;
+class Instruction;
 class BasicBlock;
 class LocationSet;
 class StatementSet;
@@ -304,7 +304,7 @@ class Exp {
 
     // Convert from SSA form, where this is not subscripted (but defined at statement d)
     // Needs the UserProc for the symbol map
-    Exp *fromSSAleft(UserProc *proc, Statement *d);
+    Exp *fromSSAleft(UserProc *proc, Instruction *d);
 
     // Generate constraints for this Exp. NOTE: The behaviour is a bit different depending on whether or not
     // parameter result is a type constant or a type variable.
@@ -329,7 +329,7 @@ class Exp {
     void setConscripts(int n, bool bClear);
     Exp *stripSizes(); // Strip all size casts
     // Subscript all e in this Exp with statement def:
-    Exp *expSubscriptVar(Exp *e, Statement *def /*, Cfg* cfg */);
+    Exp *expSubscriptVar(Exp *e, Instruction *def /*, Cfg* cfg */);
     // Subscript all e in this Exp with 0 (implicit assignments)
     Exp *expSubscriptValNull(Exp *e /*, Cfg* cfg */);
     // Subscript all locations in this expression with their implicit assignments
@@ -349,7 +349,7 @@ class Exp {
         return 0;
     }
     //! Push type information down the expression tree
-    virtual void descendType(Type * /*parentType*/, bool & /*ch*/, Statement * /*s*/) { assert(0); }
+    virtual void descendType(Type * /*parentType*/, bool & /*ch*/, Instruction * /*s*/) { assert(0); }
 
   protected:
     friend class XMLProgParser;
@@ -437,7 +437,7 @@ class Const : public Exp {
     void setConscript(int cs) { conscript = cs; }
 
     virtual Type *ascendType();
-    virtual void descendType(Type *parentType, bool &ch, Statement *s);
+    virtual void descendType(Type *parentType, bool &ch, Instruction *s);
 
   protected:
     friend class XMLProgParser;
@@ -470,7 +470,7 @@ class Terminal : public Exp {
     virtual Exp *accept(ExpModifier *v);
 
     virtual Type *ascendType();
-    virtual void descendType(Type *parentType, bool &ch, Statement *s);
+    virtual void descendType(Type *parentType, bool &ch, Instruction *s);
 
     virtual bool match(const std::string &pattern, std::map<std::string, Exp *> &bindings);
 
@@ -543,7 +543,7 @@ class Unary : public Exp {
     virtual Exp *accept(ExpModifier *v);
 
     virtual Type *ascendType();
-    virtual void descendType(Type *parentType, bool &ch, Statement *s);
+    virtual void descendType(Type *parentType, bool &ch, Instruction *s);
 
   protected:
     friend class XMLProgParser;
@@ -614,7 +614,7 @@ class Binary : public Unary {
     virtual Exp *accept(ExpModifier *v);
 
     virtual Type *ascendType();
-    virtual void descendType(Type *parentType, bool &ch, Statement *s);
+    virtual void descendType(Type *parentType, bool &ch, Instruction *s);
 
   private:
     Exp *constrainSub(TypeVal *typeVal1, TypeVal *typeVal2);
@@ -683,7 +683,7 @@ class Ternary : public Binary {
     virtual bool match(const std::string &pattern, std::map<std::string, Exp *> &bindings);
 
     virtual Type *ascendType();
-    virtual void descendType(Type *parentType, bool &ch, Statement *s);
+    virtual void descendType(Type *parentType, bool &ch, Instruction *s);
 
   protected:
     friend class XMLProgParser;
@@ -733,7 +733,7 @@ class TypedExp : public Unary {
     virtual Exp *accept(ExpModifier *v);
 
     virtual Type *ascendType();
-    virtual void descendType(Type *parentType, bool &ch, Statement *s);
+    virtual void descendType(Type *parentType, bool &ch, Instruction *s);
 
   protected:
     friend class XMLProgParser;
@@ -767,15 +767,15 @@ class FlagDef : public Unary {
   * The integer is really a pointer to the definig statement, printed as the statement number for compactness.
   *============================================================================*/
 class RefExp : public Unary {
-    Statement *def; // The defining statement
+    Instruction *def; // The defining statement
 
   public:
     // Constructor with expression (e) and statement defining it (def)
-    RefExp(Exp *e, Statement *def);
+    RefExp(Exp *e, Instruction *def);
     // virtual ~RefExp()   {
     //                        def = nullptr;
     //                    }
-    static RefExp *get(Exp *e, Statement *def) { return new RefExp(e, def); }
+    static RefExp *get(Exp *e, Instruction *def) { return new RefExp(e, def); }
     virtual Exp *clone() const;
     virtual bool operator==(const Exp &o) const;
     virtual bool operator<(const Exp &o) const;
@@ -784,16 +784,16 @@ class RefExp : public Unary {
     virtual void print(std::ostream &os, bool html = false) const;
     virtual void printx(int ind) const;
     // virtual int        getNumRefs() {return 1;}
-    Statement *getDef() { return def; } // Ugh was called getRef()
-    Exp *addSubscript(Statement *_def) {
+    Instruction *getDef() { return def; } // Ugh was called getRef()
+    Exp *addSubscript(Instruction *_def) {
         def = _def;
         return this;
     }
-    void setDef(Statement *_def) { /*assert(_def);*/
+    void setDef(Instruction *_def) { /*assert(_def);*/
         def = _def;
     }
     virtual Exp *genConstraints(Exp *restrictTo);
-    bool references(Statement *s) { return def == s; }
+    bool references(Instruction *s) { return def == s; }
     virtual Exp *polySimplify(bool &bMod);
     virtual Exp *match(Exp *pattern);
     virtual bool match(const std::string &pattern, std::map<std::string, Exp *> &bindings);
@@ -807,7 +807,7 @@ class RefExp : public Unary {
     virtual Exp *accept(ExpModifier *v);
 
     virtual Type *ascendType();
-    virtual void descendType(Type *parentType, bool &ch, Statement *s);
+    virtual void descendType(Type *parentType, bool &ch, Instruction *s);
 
   protected:
     RefExp() : Unary(opSubscript), def(nullptr) {}

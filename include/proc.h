@@ -314,7 +314,7 @@ class UserProc : public Function {
     bool doRenameBlockVars(int pass, bool clearStacks = false);
     bool canRename(Exp *e) { return df.canRename(e, this); }
 
-    Statement *getStmtAtLex(unsigned int begin, unsigned int end);
+    Instruction *getStmtAtLex(unsigned int begin, unsigned int end);
 
     void initStatements();
     void numberStatements();
@@ -360,7 +360,7 @@ class UserProc : public Function {
   public:
     bool removeNullStatements();
     bool removeDeadStatements();
-    typedef std::map<Statement *, int> RefCounter;
+    typedef std::map<Instruction *, int> RefCounter;
     void countRefs(RefCounter &refCounts);
 
     void remUnusedStmtEtc();
@@ -381,19 +381,19 @@ class UserProc : public Function {
 
     void fromSSAform();
     void findPhiUnites(ConnectionGraph &pu);
-    void insertAssignAfter(Statement *s, Exp *left, Exp *right);
+    void insertAssignAfter(Instruction *s, Exp *left, Exp *right);
     void removeSubscriptsFromSymbols();
     void removeSubscriptsFromParameters();
 
-    void insertStatementAfter(Statement *s, Statement *a);
+    void insertStatementAfter(Instruction *s, Instruction *a);
     void nameParameterPhis();
     void mapParameters();
 
     void conTypeAnalysis();
     void dfaTypeAnalysis();
-    void dfa_analyze_scaled_array_ref(Statement *s, Prog *prog);
+    void dfa_analyze_scaled_array_ref(Instruction *s, Prog *prog);
 
-    void dfa_analyze_implict_assigns(Statement *s, Prog *prog);
+    void dfa_analyze_implict_assigns(Instruction *s, Prog *prog);
     bool ellipsisProcessing();
 
     // For the final pass of removing returns that are never used
@@ -412,7 +412,7 @@ class UserProc : public Function {
     void promoteSignature();
     void getStatements(StatementList &stmts) const;
     virtual void removeReturn(Exp *e);
-    void removeStatement(Statement *stmt);
+    void removeStatement(Instruction *stmt);
     bool searchAll(const Exp &search, std::list<Exp *> &result);
 
     void getDefinitions(LocationSet &defs);
@@ -462,7 +462,7 @@ class UserProc : public Function {
     // void                addCallees(std::list<UserProc*>& callees);
     bool containsAddr(ADDRESS uAddr);
     //! Change BB containing this statement from a COMPCALL to a CALL.
-    void undoComputedBB(Statement *stmt) { cfg->undoComputedBB(stmt); }
+    void undoComputedBB(Instruction *stmt) { cfg->undoComputedBB(stmt); }
     virtual Exp *getProven(Exp *left);
     virtual Exp *getPremised(Exp *left);
     //! Set a location as a new premise, i.e. assume e=e
@@ -501,7 +501,7 @@ class UserProc : public Function {
     ReturnStatement *getTheReturnStatement() { return theReturnStatement; }
     bool filterReturns(Exp *e);
     bool filterParams(Exp *e);
-    void setImplicitRef(Statement *s, Exp *a, Type *ty);
+    void setImplicitRef(Instruction *s, Exp *a, Type *ty);
 
     void verifyPHIs();
     void debugPrintAll(const char *c);

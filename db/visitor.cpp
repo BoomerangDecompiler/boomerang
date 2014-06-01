@@ -151,7 +151,7 @@ Exp *CallBypasser::postVisit(RefExp *r) {
         ret = r->simplify();
     mask >>= 1;
     // Note: r (the pointer) will always == ret (also the pointer) here, so the below is safe and avoids a cast
-    Statement *def = r->getDef();
+    Instruction *def = r->getDef();
     CallStatement *call = (CallStatement *)def;
     if (call && call->isCall()) {
         bool ch;
@@ -404,7 +404,7 @@ bool UsedLocsVisitor::visit(PhiAssign *s, bool &override) {
         // Also note that it's possible for uu->e to be nullptr. Suppose variable a can be assigned to along in-edges
         // 0, 1, and 3; inserting the phi parameter at index 3 will cause a null entry at 2
         assert(v.second.e);
-        Exp *temp = RefExp::get(v.second.e, (Statement *)v.second.def());
+        Exp *temp = RefExp::get(v.second.e, (Instruction *)v.second.def());
         temp->accept(ev);
     }
 
@@ -722,9 +722,9 @@ bool MemDepthFinder::visit(Location *e, bool &override) {
 Exp *ExpPropagator::postVisit(RefExp *e) {
     // No need to call e->canRename() here, because if e's base expression is not suitable for renaming, it will never
     // have been renamed, and we never would get here
-    if (!Statement::canPropagateToExp(e)) // Check of the definition statement is suitable for propagating
+    if (!Instruction::canPropagateToExp(e)) // Check of the definition statement is suitable for propagating
         return e;
-    Statement *def = e->getDef();
+    Instruction *def = e->getDef();
     Exp *res = e;
     if (def && def->isAssign()) {
         Exp *lhs = ((Assign *)def)->getLeft();
@@ -756,7 +756,7 @@ bool PrimitiveTester::visit(Location * /*e*/, bool &override) {
 }
 
 bool PrimitiveTester::visit(RefExp *e, bool &override) {
-    Statement *def = e->getDef();
+    Instruction *def = e->getDef();
     // If defined by a call, e had better not be a memory location (crude approximation for now)
     if (def == nullptr || def->getNumber() == 0 || (def->isCall() && !e->getSubExp1()->isMemOf())) {
         // Implicit definitions are always primitive
@@ -822,7 +822,7 @@ bool StmtRegMapper::visit(BoolAssign *stmt, bool &override) { return common(stmt
 // Constant global converter. Example: m[m[r24{16} + m[0x8048d60]{-}]{-}]{-} -> m[m[r24{16} + 32]{-}]{-}
 // Allows some complex variations to be matched to standard indirect call forms
 Exp *ConstGlobalConverter::preVisit(RefExp *e, bool &recur) {
-    Statement *def = e->getDef();
+    Instruction *def = e->getDef();
     Exp *base, *addr, *idx, *glo;
     if (def == nullptr || def->isImplicit()) {
         if ((base = e->getSubExp1(), base->isMemOf()) &&
@@ -858,7 +858,7 @@ Exp *ConstGlobalConverter::preVisit(RefExp *e, bool &recur) {
 }
 
 bool ExpDestCounter::visit(RefExp *e, bool &override) {
-    if (Statement::canPropagateToExp(e))
+    if (Instruction::canPropagateToExp(e))
         destCounts[e]++;
     override = false; // Continue searching my children
     return true;      // Continue visiting the rest of Exp* e
@@ -929,7 +929,7 @@ Exp *ExpCastInserter::postVisit(RefExp *e) {
     Exp *base = e->getSubExp1();
     if (base->isMemOf()) {
         // Check to see if the address expression needs type annotation
-        Statement *def = e->getDef();
+        Instruction *def = e->getDef();
         if (!def) {
             qDebug() << "ExpCastInserter::postVisit RefExp def is null";
             return e;
