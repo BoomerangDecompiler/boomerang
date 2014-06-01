@@ -123,22 +123,6 @@ class BasicBlock {
     typedef std::list<RTL *>::reverse_iterator rtlrit;
     typedef std::list<Exp *>::iterator elit;
 
-  public:
-    /*
-     * Depth first traversal of all bbs, numbering as we go and as we come back, forward and reverse passes.
-     * Use Cfg::establishDFTOrder() and CFG::establishRevDFTOrder to create these values.
-     */
-    int DFTfirst = 0; //!< depth-first traversal first visit
-    int DFTlast = 0;  //!< depth-first traversal last visit
-    int DFTrevfirst;  //!< reverse depth-first traversal first visit
-    int DFTrevlast;   //!< reverse depth-first traversal last visit
-    /* high level structuring */
-    SBBTYPE StructType = NONE;        //!< structured type of this node
-    SBBTYPE LoopCondType = NONE;      //!< type of conditional to treat this loop header as (if any)
-//    BasicBlock *m_loopHead = nullptr;   //!< head of the most nested enclosing loop
-//    BasicBlock *m_caseHead = nullptr;   //!< head of the most nested enclosing case
-//    BasicBlock *m_condFollow = nullptr; //!< follow of a conditional header
-//    BasicBlock *m_loopFollow = nullptr; //!< follow of a loop header
   protected:
     Function *Parent;
     /* general basic block information */
@@ -159,6 +143,15 @@ class BasicBlock {
 
     /* Liveness */
     LocationSet LiveIn;                  //!< Set of locations live at BB start
+    /*
+     * Depth first traversal of all bbs, numbering as we go and as we come back, forward and reverse passes.
+     * Use Cfg::establishDFTOrder() and CFG::establishRevDFTOrder to create these values.
+     */
+    int DFTfirst = 0; //!< depth-first traversal first visit
+    int DFTlast = 0;  //!< depth-first traversal last visit
+    int DFTrevfirst;  //!< reverse depth-first traversal first visit
+    int DFTrevlast;   //!< reverse depth-first traversal last visit
+
                                          /* Control flow analysis stuff, lifted from Doug Simon's honours thesis.
                                           */
     int Ord;                             //!< node's position within the ordering structure
@@ -171,6 +164,9 @@ class BasicBlock {
     QString LabelStr;                    //!< the high level label for this node (if needed)
     int IndentLevel;                     //!< the indentation level of this node in the final code
 
+    /* high level structuring */
+    SBBTYPE LoopCondType = NONE;        //!< type of conditional to treat this loop header as (if any)
+    SBBTYPE StructType = NONE;          //!< structured type of this node
     // analysis information
     BasicBlock *ImmPDom;    //!< immediate post dominator
     BasicBlock *LoopHead;   //!< head of the most nested enclosing loop
