@@ -57,7 +57,7 @@ enum structType {
 enum unstructType { Structured, JumpInOutLoop, JumpIntoCase };
 
 // an enumerated type for the type of conditional headers
-enum condType {
+enum CondType {
     IfThen,     // conditional with only a then clause
     IfThenElse, // conditional with a then and an else clause
     IfElse,     // conditional with only an else clause
@@ -65,7 +65,7 @@ enum condType {
 };
 
 // an enumerated type for the type of loop headers
-enum loopType {
+enum LoopType {
     PreTested,  // Header of a while loop
     PostTested, // Header of a repeat loop
     Endless     // Header of an endless loop
@@ -147,45 +147,45 @@ class BasicBlock {
     std::list<RTL *> *m_pRtls = nullptr; //!< Ptr to list of RTLs
     int m_iLabelNum = 0;                 //!< Nonzero if start of BB needs label
     std::string m_labelStr;              //!< string label of this bb.
-    bool m_labelneeded = false;
-    bool m_bIncomplete = true; //!< True if not yet complete
-    bool m_bJumpReqd = false;  //!< True if jump required for "fall through"
+    bool LabelNeeded = false;
+    bool Incomplete = true; //!< True if not yet complete
+    bool JumpReqd = false;  //!< True if jump required for "fall through"
 
     /* in-edges and out-edges */
-    std::vector<BasicBlock *> m_InEdges;  //!< Vector of in-edges
-    std::vector<BasicBlock *> m_OutEdges; //!< Vector of out-edges
-    size_t m_iTargetOutEdges;             //!< support resize() of vectors!
+    std::vector<BasicBlock *> InEdges;  //!< Vector of in-edges
+    std::vector<BasicBlock *> OutEdges; //!< Vector of out-edges
+    size_t TargetOutEdges;             //!< support resize() of vectors!
 
     /* for traversal */
-    bool m_iTraversed = false; //!< traversal marker
+    bool TraversedMarker = false; //!< traversal marker
 
     /* Liveness */
     LocationSet liveIn;                  //!< Set of locations live at BB start
                                          /* Control flow analysis stuff, lifted from Doug Simon's honours thesis.
                                           */
-    int ord;                             //!< node's position within the ordering structure
-    int revOrd;                          //!< position within ordering structure for the reverse graph
-    int inEdgesVisited;                  //!< counts the number of in edges visited during a DFS
-    int numForwardInEdges;               //!< inedges to this node that aren't back edges
-    int loopStamps[2], revLoopStamps[2]; //!< used for structuring analysis
-    travType traversed;                  //!< traversal flag for the numerous DFS's
-    bool hllLabel;                       //!< emit a label for this node when generating HL code?
-    QString labelStr;                    //!< the high level label for this node (if needed)
-    int indentLevel;                     //!< the indentation level of this node in the final code
+    int Ord;                             //!< node's position within the ordering structure
+    int RevOrd;                          //!< position within ordering structure for the reverse graph
+    int InEdgesVisited;                  //!< counts the number of in edges visited during a DFS
+    int NumForwardInEdges;               //!< inedges to this node that aren't back edges
+    int LoopStamps[2], RevLoopStamps[2]; //!< used for structuring analysis
+    travType Traversed;                  //!< traversal flag for the numerous DFS's
+    bool HllLabel;                       //!< emit a label for this node when generating HL code?
+    QString LabelStr;                    //!< the high level label for this node (if needed)
+    int IndentLevel;                     //!< the indentation level of this node in the final code
 
     // analysis information
     BasicBlock *immPDom;    //!< immediate post dominator
-    BasicBlock *loopHead;   //!< head of the most nested enclosing loop
-    BasicBlock *caseHead;   //!< head of the most nested enclosing case
-    BasicBlock *condFollow; //!< follow of a conditional header
-    BasicBlock *loopFollow; //!< follow of a loop header
-    BasicBlock *latchNode;  //!< latching node of a loop header
+    BasicBlock *LoopHead;   //!< head of the most nested enclosing loop
+    BasicBlock *CaseHead;   //!< head of the most nested enclosing case
+    BasicBlock *CondFollow; //!< follow of a conditional header
+    BasicBlock *LoopFollow; //!< follow of a loop header
+    BasicBlock *LatchNode;  //!< latching node of a loop header
 
     // Structured type of the node
-    structType sType;    //!< the structuring class (Loop, Cond , etc)
+    structType StructuringType;    //!< the structuring class (Loop, Cond , etc)
     unstructType usType; //!< the restructured type of a conditional header
-    loopType lType;      //!< the loop type of a loop header
-    condType cType;      //!< the conditional type of a conditional header
+    LoopType LoopHeaderType;      //!< the loop type of a loop header
+    CondType ConditionHeaderType;      //!< the conditional type of a conditional header
 
   public:
     BasicBlock();
@@ -199,8 +199,8 @@ class BasicBlock {
     int getLabel();
     std::string &getLabelStr() { return m_labelStr; }
     void setLabelStr(std::string &s) { m_labelStr = s; }
-    bool isLabelNeeded() { return m_labelneeded; }
-    void setLabelNeeded(bool b) { m_labelneeded = b; }
+    bool isLabelNeeded() { return LabelNeeded; }
+    void setLabelNeeded(bool b) { LabelNeeded = b; }
     bool isCaseOption();
     bool isTraversed();
     void setTraversed(bool bTraversed);
@@ -222,13 +222,13 @@ class BasicBlock {
 
     std::vector<BasicBlock *> &getInEdges();
 
-    size_t getNumInEdges() const { return m_InEdges.size(); }
+    size_t getNumInEdges() const { return InEdges.size(); }
 
     std::vector<BasicBlock *> &getOutEdges();
     void setInEdge(size_t i, BasicBlock *newIn);
     void setOutEdge(size_t i, BasicBlock *newInEdge);
     BasicBlock *getOutEdge(unsigned int i);
-    size_t getNumOutEdges() { return m_OutEdges.size(); }
+    size_t getNumOutEdges() { return OutEdges.size(); }
     int whichPred(BasicBlock *pred);
     void addInEdge(BasicBlock *newInEdge);
     void deleteEdge(BasicBlock *edge);
@@ -309,29 +309,29 @@ class BasicBlock {
     void setLoopStamps(int &time, std::vector<BasicBlock *> &order);
     void setRevLoopStamps(int &time);
     void setRevOrder(std::vector<BasicBlock *> &order);
-    void setLoopHead(BasicBlock *head) { loopHead = head; }
-    BasicBlock *getLoopHead() { return loopHead; }
-    void setLatchNode(BasicBlock *latch) { latchNode = latch; }
-    bool isLatchNode() { return loopHead && loopHead->latchNode == this; }
-    BasicBlock *getLatchNode() { return latchNode; }
-    BasicBlock *getCaseHead() { return caseHead; }
+    void setLoopHead(BasicBlock *head) { LoopHead = head; }
+    BasicBlock *getLoopHead() { return LoopHead; }
+    void setLatchNode(BasicBlock *latch) { LatchNode = latch; }
+    bool isLatchNode() { return LoopHead && LoopHead->LatchNode == this; }
+    BasicBlock *getLatchNode() { return LatchNode; }
+    BasicBlock *getCaseHead() { return CaseHead; }
     void setCaseHead(BasicBlock *head, BasicBlock *follow);
-    structType getStructType() { return sType; }
+    structType getStructType() { return StructuringType; }
     void setStructType(structType s);
     unstructType getUnstructType();
     void setUnstructType(unstructType us);
-    loopType getLoopType();
-    void setLoopType(loopType l);
-    condType getCondType();
-    void setCondType(condType l);
-    void setLoopFollow(BasicBlock *other) { loopFollow = other; }
-    BasicBlock *getLoopFollow() { return loopFollow; }
-    void setCondFollow(BasicBlock *other) { condFollow = other; }
-    BasicBlock *getCondFollow() { return condFollow; }
+    LoopType getLoopType();
+    void setLoopType(LoopType l);
+    CondType getCondType();
+    void setCondType(CondType l);
+    void setLoopFollow(BasicBlock *other) { LoopFollow = other; }
+    BasicBlock *getLoopFollow() { return LoopFollow; }
+    void setCondFollow(BasicBlock *other) { CondFollow = other; }
+    BasicBlock *getCondFollow() { return CondFollow; }
     bool hasBackEdgeTo(BasicBlock *dest);
     //! establish if this bb has any back edges leading FROM it
     bool hasBackEdge() {
-        for (auto bb : m_OutEdges)
+        for (auto bb : OutEdges)
             if (hasBackEdgeTo(bb))
                 return true;
         return false;
@@ -350,7 +350,7 @@ class BasicBlock {
     bool allParentsGenerated();
     void emitGotoAndLabel(HLLCode *hll, int indLevel, BasicBlock *dest);
     void WriteBB(HLLCode *hll, int indLevel);
-    void addOutEdge(BasicBlock *bb) { m_OutEdges.push_back(bb); }
+    void addOutEdge(BasicBlock *bb) { OutEdges.push_back(bb); }
     void addRTL(RTL *rtl) {
         if (m_pRtls == nullptr)
             m_pRtls = new std::list<RTL *>;

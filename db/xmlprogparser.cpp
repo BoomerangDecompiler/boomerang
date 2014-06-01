@@ -854,19 +854,19 @@ void XMLProgParser::start_bb(const QXmlStreamAttributes &attr) {
             bb->immPDom = h;
         h = (BasicBlock *)findId(attr.value(QLatin1Literal("loopHead")));
         if (h)
-            bb->loopHead = h;
+            bb->LoopHead = h;
         h = (BasicBlock *)findId(attr.value(QLatin1Literal("caseHead")));
         if (h)
-            bb->caseHead = h;
+            bb->CaseHead = h;
         h = (BasicBlock *)findId(attr.value(QLatin1Literal("condFollow")));
         if (h)
-            bb->condFollow = h;
+            bb->CondFollow = h;
         h = (BasicBlock *)findId(attr.value(QLatin1Literal("loopFollow")));
         if (h)
-            bb->loopFollow = h;
+            bb->LoopFollow = h;
         h = (BasicBlock *)findId(attr.value(QLatin1Literal("latchNode")));
         if (h)
-            bb->latchNode = h;
+            bb->LatchNode = h;
         return;
     }
     bb = new BasicBlock();
@@ -884,16 +884,16 @@ void XMLProgParser::start_bb(const QXmlStreamAttributes &attr) {
         bb->m_labelStr = str.toString().toStdString();
     str = attr.value(QLatin1Literal("labelneeded"));
     if (!str.isEmpty())
-        bb->m_labelneeded = str.toInt() > 0;
+        bb->LabelNeeded = str.toInt() > 0;
     str = attr.value(QLatin1Literal("incomplete"));
     if (!str.isEmpty())
-        bb->m_bIncomplete = str.toInt() > 0;
+        bb->Incomplete = str.toInt() > 0;
     str = attr.value(QLatin1Literal("jumpreqd"));
     if (!str.isEmpty())
-        bb->m_bJumpReqd = str.toInt() > 0;
+        bb->JumpReqd = str.toInt() > 0;
     str = attr.value(QLatin1Literal("m_traversed"));
     if (!str.isEmpty())
-        bb->m_iTraversed = str.toInt() > 0;
+        bb->TraversedMarker = str.toInt() > 0;
     str = attr.value(QLatin1Literal("DFTfirst"));
     if (!str.isEmpty())
         bb->m_DFTfirst = str.toInt();
@@ -914,52 +914,52 @@ void XMLProgParser::start_bb(const QXmlStreamAttributes &attr) {
         bb->m_loopCondType = (SBBTYPE)str.toInt();
     str = attr.value(QLatin1Literal("ord"));
     if (!str.isEmpty())
-        bb->ord = str.toInt();
+        bb->Ord = str.toInt();
     str = attr.value(QLatin1Literal("revOrd"));
     if (!str.isEmpty())
-        bb->revOrd = str.toInt();
+        bb->RevOrd = str.toInt();
     str = attr.value(QLatin1Literal("inEdgesVisited"));
     if (!str.isEmpty())
-        bb->inEdgesVisited = str.toInt();
+        bb->InEdgesVisited = str.toInt();
     str = attr.value(QLatin1Literal("numForwardInEdges"));
     if (!str.isEmpty())
-        bb->numForwardInEdges = str.toInt();
+        bb->NumForwardInEdges = str.toInt();
     str = attr.value(QLatin1Literal("loopStamp1"));
     if (!str.isEmpty())
-        bb->loopStamps[0] = str.toInt();
+        bb->LoopStamps[0] = str.toInt();
     str = attr.value(QLatin1Literal("loopStamp2"));
     if (!str.isEmpty())
-        bb->loopStamps[1] = str.toInt();
+        bb->LoopStamps[1] = str.toInt();
     str = attr.value(QLatin1Literal("revLoopStamp1"));
     if (!str.isEmpty())
-        bb->revLoopStamps[0] = str.toInt();
+        bb->RevLoopStamps[0] = str.toInt();
     str = attr.value(QLatin1Literal("revLoopStamp2"));
     if (!str.isEmpty())
-        bb->revLoopStamps[1] = str.toInt();
+        bb->RevLoopStamps[1] = str.toInt();
     str = attr.value(QLatin1Literal("traversed"));
     if (!str.isEmpty())
-        bb->traversed = (travType)str.toInt();
+        bb->Traversed = (travType)str.toInt();
     str = attr.value(QLatin1Literal("hllLabel"));
     if (!str.isEmpty())
-        bb->hllLabel = str.toInt() > 0;
+        bb->HllLabel = str.toInt() > 0;
     str = attr.value(QLatin1Literal("labelStr"));
     if (!str.isEmpty())
-        bb->labelStr = str.toString();
+        bb->LabelStr = str.toString();
     str = attr.value(QLatin1Literal("indentLevel"));
     if (!str.isEmpty())
-        bb->indentLevel = str.toInt();
+        bb->IndentLevel = str.toInt();
     str = attr.value(QLatin1Literal("sType"));
     if (!str.isEmpty())
-        bb->sType = (structType)str.toInt();
+        bb->StructuringType = (structType)str.toInt();
     str = attr.value(QLatin1Literal("usType"));
     if (!str.isEmpty())
         bb->usType = (unstructType)str.toInt();
     str = attr.value(QLatin1Literal("lType"));
     if (!str.isEmpty())
-        bb->lType = (loopType)str.toInt();
+        bb->LoopHeaderType = (LoopType)str.toInt();
     str = attr.value(QLatin1Literal("cType"));
     if (!str.isEmpty())
-        bb->cType = (condType)str.toInt();
+        bb->ConditionHeaderType = (CondType)str.toInt();
 }
 
 void XMLProgParser::addToContext_bb(Context *c, int e) {
@@ -2470,11 +2470,11 @@ void XMLProgParser::persistToXML(QXmlStreamWriter &out, const BasicBlock *bb) {
     out.writeAttribute("nodeType", QString::number(bb->m_nodeType));
     out.writeAttribute("labelNum", QString::number(bb->m_iLabelNum));
     out.writeAttribute("label", bb->m_labelStr.c_str());
-    out.writeAttribute("labelneeded", QString::number(bb->m_labelneeded));
-    out.writeAttribute("incomplete", QString::number(bb->m_bIncomplete));
-    out.writeAttribute("jumpreqd", QString::number(bb->m_bJumpReqd));
-    out.writeAttribute("m_traversed", QString::number(bb->m_iTraversed));
-    out.writeAttribute("jumpreqd", QString::number(bb->m_bJumpReqd));
+    out.writeAttribute("labelneeded", QString::number(bb->LabelNeeded));
+    out.writeAttribute("incomplete", QString::number(bb->Incomplete));
+    out.writeAttribute("jumpreqd", QString::number(bb->JumpReqd));
+    out.writeAttribute("m_traversed", QString::number(bb->TraversedMarker));
+    out.writeAttribute("jumpreqd", QString::number(bb->JumpReqd));
     out.writeAttribute("DFTfirst", QString::number(bb->m_DFTfirst));
     out.writeAttribute("DFTlast", QString::number(bb->m_DFTlast));
     out.writeAttribute("DFTrevfirst", QString::number(bb->m_DFTrevfirst));
@@ -2491,43 +2491,43 @@ void XMLProgParser::persistToXML(QXmlStreamWriter &out, const BasicBlock *bb) {
         out.writeAttribute("m_loopFollow", QString::number(ADDRESS::host_ptr(bb->m_loopFollow).m_value));
     if (bb->m_latchNode)
         out.writeAttribute("m_latchNode", QString::number(ADDRESS::host_ptr(bb->m_latchNode).m_value));
-    out.writeAttribute("ord", QString::number(bb->ord));
-    out.writeAttribute("revOrd", QString::number(bb->revOrd));
-    out.writeAttribute("inEdgesVisited", QString::number(bb->inEdgesVisited));
-    out.writeAttribute("numForwardInEdges", QString::number(bb->numForwardInEdges));
-    out.writeAttribute("loopStamp1", QString::number(bb->loopStamps[0]));
-    out.writeAttribute("loopStamp2", QString::number(bb->loopStamps[1]));
-    out.writeAttribute("revLoopStamp1", QString::number(bb->revLoopStamps[0]));
-    out.writeAttribute("revLoopStamp2", QString::number(bb->revLoopStamps[1]));
-    out.writeAttribute("traversed", QString::number((int)bb->traversed));
-    out.writeAttribute("hllLabel", QString::number((int)bb->hllLabel));
-    if (!bb->labelStr.isEmpty())
-        out.writeAttribute("labelStr", bb->labelStr);
-    out.writeAttribute("indentLevel", QString::number(bb->indentLevel));
+    out.writeAttribute("ord", QString::number(bb->Ord));
+    out.writeAttribute("revOrd", QString::number(bb->RevOrd));
+    out.writeAttribute("inEdgesVisited", QString::number(bb->InEdgesVisited));
+    out.writeAttribute("numForwardInEdges", QString::number(bb->NumForwardInEdges));
+    out.writeAttribute("loopStamp1", QString::number(bb->LoopStamps[0]));
+    out.writeAttribute("loopStamp2", QString::number(bb->LoopStamps[1]));
+    out.writeAttribute("revLoopStamp1", QString::number(bb->RevLoopStamps[0]));
+    out.writeAttribute("revLoopStamp2", QString::number(bb->RevLoopStamps[1]));
+    out.writeAttribute("traversed", QString::number((int)bb->Traversed));
+    out.writeAttribute("hllLabel", QString::number((int)bb->HllLabel));
+    if (!bb->LabelStr.isEmpty())
+        out.writeAttribute("labelStr", bb->LabelStr);
+    out.writeAttribute("indentLevel", QString::number(bb->IndentLevel));
     // note the rediculous duplication here
     if (bb->immPDom)
         out.writeAttribute("immPDom", QString::number(ADDRESS::host_ptr(bb->immPDom).m_value));
-    if (bb->loopHead)
-        out.writeAttribute("loopHead", QString::number(ADDRESS::host_ptr(bb->loopHead).m_value));
-    if (bb->caseHead)
-        out.writeAttribute("caseHead", QString::number(ADDRESS::host_ptr(bb->caseHead).m_value));
-    if (bb->condFollow)
-        out.writeAttribute("condFollow", QString::number(ADDRESS::host_ptr(bb->condFollow).m_value));
-    if (bb->loopFollow)
-        out.writeAttribute("loopFollow", QString::number(ADDRESS::host_ptr(bb->loopFollow).m_value));
-    if (bb->latchNode)
-        out.writeAttribute("latchNode", QString::number(ADDRESS::host_ptr(bb->latchNode).m_value));
-    out.writeAttribute("sType", QString::number((int)bb->sType));
+    if (bb->LoopHead)
+        out.writeAttribute("loopHead", QString::number(ADDRESS::host_ptr(bb->LoopHead).m_value));
+    if (bb->CaseHead)
+        out.writeAttribute("caseHead", QString::number(ADDRESS::host_ptr(bb->CaseHead).m_value));
+    if (bb->CondFollow)
+        out.writeAttribute("condFollow", QString::number(ADDRESS::host_ptr(bb->CondFollow).m_value));
+    if (bb->LoopFollow)
+        out.writeAttribute("loopFollow", QString::number(ADDRESS::host_ptr(bb->LoopFollow).m_value));
+    if (bb->LatchNode)
+        out.writeAttribute("latchNode", QString::number(ADDRESS::host_ptr(bb->LatchNode).m_value));
+    out.writeAttribute("sType", QString::number((int)bb->StructuringType));
     out.writeAttribute("usType", QString::number((int)bb->usType));
-    out.writeAttribute("lType", QString::number((int)bb->lType));
-    out.writeAttribute("cType", QString::number((int)bb->cType));
+    out.writeAttribute("lType", QString::number((int)bb->LoopHeaderType));
+    out.writeAttribute("cType", QString::number((int)bb->ConditionHeaderType));
 
-    for (auto &elem : bb->m_InEdges) {
+    for (auto &elem : bb->InEdges) {
         out.writeStartElement("inedge");
         out.writeAttribute("bb", QString::number(ADDRESS::host_ptr(elem).m_value));
         out.writeEndElement();
     }
-    for (auto &elem : bb->m_OutEdges) {
+    for (auto &elem : bb->OutEdges) {
         out.writeStartElement("outedge");
         out.writeAttribute("bb", QString::number(ADDRESS::host_ptr(elem).m_value));
         out.writeEndElement();
