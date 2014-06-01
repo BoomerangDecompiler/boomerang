@@ -79,9 +79,8 @@ BasicBlock::~BasicBlock() {
   * \param bb - the BB to copy from
   ******************************************************************************/
 BasicBlock::BasicBlock(const BasicBlock &bb)
-    : m_structType(bb.m_structType), m_loopCondType(bb.m_loopCondType), m_loopHead(bb.m_loopHead),
-      m_caseHead(bb.m_caseHead), m_condFollow(bb.m_condFollow), m_loopFollow(bb.m_loopFollow),
-      m_latchNode(bb.m_latchNode), m_nodeType(bb.m_nodeType),
+    : m_structType(bb.m_structType), m_loopCondType(bb.m_loopCondType),
+      m_nodeType(bb.m_nodeType),
       m_iLabelNum(bb.m_iLabelNum), // m_labelneeded is initialized to false, not copied
       Incomplete(bb.Incomplete), JumpReqd(bb.JumpReqd), InEdges(bb.InEdges), OutEdges(bb.OutEdges),
       // m_iNumInEdges(bb.m_iNumInEdges),
@@ -783,7 +782,7 @@ bool BasicBlock::isJmpZ(BasicBlock *dest) {
 BasicBlock *BasicBlock::getLoopBody() {
     assert(m_structType == PRETESTLOOP || m_structType == POSTTESTLOOP || m_structType == ENDLESSLOOP);
     assert(OutEdges.size() == 2);
-    if (OutEdges[0] != m_loopFollow)
+    if (OutEdges[0] != LoopFollow)
         return OutEdges[0];
     return OutEdges[1];
 }

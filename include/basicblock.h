@@ -135,11 +135,10 @@ class BasicBlock {
     /* high level structuring */
     SBBTYPE m_structType = NONE;        //!< structured type of this node
     SBBTYPE m_loopCondType = NONE;      //!< type of conditional to treat this loop header as (if any)
-    BasicBlock *m_loopHead = nullptr;   //!< head of the most nested enclosing loop
-    BasicBlock *m_caseHead = nullptr;   //!< head of the most nested enclosing case
-    BasicBlock *m_condFollow = nullptr; //!< follow of a conditional header
-    BasicBlock *m_loopFollow = nullptr; //!< follow of a loop header
-    BasicBlock *m_latchNode = nullptr;  //!< latch node of a loop header
+//    BasicBlock *m_loopHead = nullptr;   //!< head of the most nested enclosing loop
+//    BasicBlock *m_caseHead = nullptr;   //!< head of the most nested enclosing case
+//    BasicBlock *m_condFollow = nullptr; //!< follow of a conditional header
+//    BasicBlock *m_loopFollow = nullptr; //!< follow of a loop header
   protected:
     Function *Parent;
     /* general basic block information */

@@ -833,23 +833,8 @@ void XMLProgParser::start_bb(const QXmlStreamAttributes &attr) {
     BasicBlock *bb;
     if (phase == 1) {
         bb = stack.front()->bb = (BasicBlock *)findId(attr.value(QLatin1Literal("id")));
-        BasicBlock *h = (BasicBlock *)findId(attr.value(QLatin1Literal("m_loopHead")));
-        if (h)
-            bb->m_loopHead = h;
-        h = (BasicBlock *)findId(attr.value(QLatin1Literal("m_caseHead")));
-        if (h)
-            bb->m_caseHead = h;
-        h = (BasicBlock *)findId(attr.value(QLatin1Literal("m_condFollow")));
-        if (h)
-            bb->m_condFollow = h;
-        h = (BasicBlock *)findId(attr.value(QLatin1Literal("m_loopFollow")));
-        if (h)
-            bb->m_loopFollow = h;
-        h = (BasicBlock *)findId(attr.value(QLatin1Literal("m_latchNode")));
-        if (h)
-            bb->m_latchNode = h;
         // note the rediculous duplication here
-        h = (BasicBlock *)findId(attr.value(QLatin1Literal("immPDom")));
+        BasicBlock *h = (BasicBlock *)findId(attr.value(QLatin1Literal("immPDom")));
         if (h)
             bb->immPDom = h;
         h = (BasicBlock *)findId(attr.value(QLatin1Literal("loopHead")));
@@ -2481,16 +2466,6 @@ void XMLProgParser::persistToXML(QXmlStreamWriter &out, const BasicBlock *bb) {
     out.writeAttribute("DFTrevlast", QString::number(bb->m_DFTrevlast));
     out.writeAttribute("structType", QString::number(bb->m_structType));
     out.writeAttribute("loopCondType", QString::number(bb->m_loopCondType));
-    if (bb->m_loopHead)
-        out.writeAttribute("m_loopHead", QString::number(ADDRESS::host_ptr(bb->m_loopHead).m_value));
-    if (bb->m_caseHead)
-        out.writeAttribute("m_caseHead", QString::number(ADDRESS::host_ptr(bb->m_caseHead).m_value));
-    if (bb->m_condFollow)
-        out.writeAttribute("m_condFollow", QString::number(ADDRESS::host_ptr(bb->m_condFollow).m_value));
-    if (bb->m_loopFollow)
-        out.writeAttribute("m_loopFollow", QString::number(ADDRESS::host_ptr(bb->m_loopFollow).m_value));
-    if (bb->m_latchNode)
-        out.writeAttribute("m_latchNode", QString::number(ADDRESS::host_ptr(bb->m_latchNode).m_value));
     out.writeAttribute("ord", QString::number(bb->Ord));
     out.writeAttribute("revOrd", QString::number(bb->RevOrd));
     out.writeAttribute("inEdgesVisited", QString::number(bb->InEdgesVisited));
