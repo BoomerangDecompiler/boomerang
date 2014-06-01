@@ -23,6 +23,7 @@
 
 #include "types.h"
 //#include "SymTab.h"    // Was used for relocaton stuff
+#include <cassert>
 #include <list>
 #include <cstddef>
 #include <map>
