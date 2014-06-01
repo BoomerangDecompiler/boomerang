@@ -14,12 +14,17 @@ typedef uint32_t DWord; /* 32 bits */
 struct ADDRESS {        /* pointer. size depends on platform */
                         //    ADDRESS() {}
                         //    ADDRESS(uint32_t v) : m_value(v) {}
-    typedef intptr_t value_type;
+    typedef uintptr_t value_type;
     value_type m_value;
     static ADDRESS g(value_type x) { // construct host/native oblivious address
         ADDRESS z;
         z.m_value = x;
         return z;
+    }
+    static ADDRESS n(value_type x) { // construct native address
+        ADDRESS z;
+        z.m_value = x;
+        return z.native();
     }
     ADDRESS native() const { return ADDRESS::g(m_value & 0xFFFFFFFF); }
     static ADDRESS host_ptr(const void *x) {

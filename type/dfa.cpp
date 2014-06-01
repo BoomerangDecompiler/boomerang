@@ -164,7 +164,7 @@ void UserProc::dfaTypeAnalysis() {
                 if (baseType->resolvesToChar()) {
                     // Convert to a string    MVE: check for read-only?
                     // Also, distinguish between pointer to one char, and ptr to many?
-                    const char *str = _prog->getStringConstant(ADDRESS::g(val), true);
+                    const char *str = _prog->getStringConstant(ADDRESS::n(val), true);
                     if (str) {
                         // Make a string
                         con->setStr(str);
@@ -243,7 +243,7 @@ void UserProc::dfaTypeAnalysis() {
                 }
                 // MVE: more work if double?
             } else /* if (t->resolvesToArray()) */ {
-                _prog->globalUsed(ADDRESS::g(val), t);
+                _prog->globalUsed(ADDRESS::n(val), t);
             }
         }
 
