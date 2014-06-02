@@ -118,7 +118,7 @@ class Instruction {
     typedef std::map<Exp *, int, lessExpStar> mExpInt;
     BasicBlock *Parent; // contains a pointer to the enclosing BB
     UserProc *proc;     // procedure containing this statement
-    int number;         // Statement number for printing
+    int Number;         // Statement number for printing
 #if USE_DOMINANCE_NUMS
     int dominanceNum; // Like a statement number, but has dominance properties
   public:
@@ -127,15 +127,15 @@ class Instruction {
 
   protected:
 #endif
-    STMT_KIND kind; // Statement kind (e.g. STMT_BRANCH)
+    STMT_KIND Kind; // Statement kind (e.g. STMT_BRANCH)
     // Statement *     parent;        // The statement that contains this one
     RangeMap ranges;           // overestimation of ranges of locations
     RangeMap savedInputRanges; // saved overestimation of ranges of locations
 
-    unsigned int lexBegin, lexEnd;
+    unsigned int LexBegin, LexEnd;
 
   public:
-    Instruction() : Parent(nullptr), proc(nullptr), number(0) {} //, parent(nullptr)
+    Instruction() : Parent(nullptr), proc(nullptr), Number(0) {} //, parent(nullptr)
     virtual ~Instruction() {}
 
     // get/set the enclosing BB, etc
@@ -148,11 +148,11 @@ class Instruction {
     void setProc(UserProc *p);
     UserProc *getProc() { return proc; }
 
-    int getNumber() const { return number; }
-    virtual void setNumber(int num) { number = num; } // Overridden for calls (and maybe later returns)
+    int getNumber() const { return Number; }
+    virtual void setNumber(int num) { Number = num; } // Overridden for calls (and maybe later returns)
 
-    STMT_KIND getKind() { return kind; }
-    void setKind(STMT_KIND k) { kind = k; }
+    STMT_KIND getKind() { return Kind; }
+    void setKind(STMT_KIND k) { Kind = k; }
 
     //        void        setParent(Statement* par) {parent = par;}
     //        Statement*    getParent() {return parent;}
@@ -168,10 +168,10 @@ class Instruction {
     virtual bool accept(StmtModifier *visitor) = 0;
     virtual bool accept(StmtPartModifier *visitor) = 0;
 
-    void setLexBegin(unsigned int n) { lexBegin = n; }
-    void setLexEnd(unsigned int n) { lexEnd = n; }
-    unsigned int getLexBegin() { return lexBegin; }
-    unsigned int getLexEnd() { return lexEnd; }
+    void setLexBegin(unsigned int n) { LexBegin = n; }
+    void setLexEnd(unsigned int n) { LexEnd = n; }
+    unsigned int getLexBegin() { return LexBegin; }
+    unsigned int getLexEnd() { return LexEnd; }
 
     // returns true if this statement defines anything
     virtual bool isDefinition() = 0;
@@ -181,40 +181,40 @@ class Instruction {
 
     virtual bool isTyping() { return false; } // Return true if a TypingStatement
     // true if this statement is a standard assign
-    bool isAssign() const { return kind == STMT_ASSIGN; }
+    bool isAssign() const { return Kind == STMT_ASSIGN; }
     // true if this statement is a any kind of assignment
     bool isAssignment() {
-        return kind == STMT_ASSIGN || kind == STMT_PHIASSIGN || kind == STMT_IMPASSIGN || kind == STMT_BOOLASSIGN;
+        return Kind == STMT_ASSIGN || Kind == STMT_PHIASSIGN || Kind == STMT_IMPASSIGN || Kind == STMT_BOOLASSIGN;
     }
     // true    if this statement is a phi assignment
-    bool isPhi() const { return kind == STMT_PHIASSIGN; }
+    bool isPhi() const { return Kind == STMT_PHIASSIGN; }
     // true    if this statement is an implicit assignment
-    bool isImplicit() const { return kind == STMT_IMPASSIGN; }
+    bool isImplicit() const { return Kind == STMT_IMPASSIGN; }
     // true    if this statment is a flags assignment
     bool isFlagAssgn();
     // true of this statement is an implicit reference
-    bool isImpRef() const { return kind == STMT_IMPREF; }
+    bool isImpRef() const { return Kind == STMT_IMPREF; }
 
-    virtual bool isGoto() { return kind == STMT_GOTO; }
-    virtual bool isBranch() { return kind == STMT_BRANCH; }
+    virtual bool isGoto() { return Kind == STMT_GOTO; }
+    virtual bool isBranch() { return Kind == STMT_BRANCH; }
 
     // true if this statement is a junction
-    bool isJunction() const { return kind == STMT_JUNCTION; }
+    bool isJunction() const { return Kind == STMT_JUNCTION; }
 
     //! true if this statement is a call
-    bool isCall() { return kind == STMT_CALL; }
+    bool isCall() { return Kind == STMT_CALL; }
 
     //! true if this statement is a BoolAssign
-    bool isBool() { return kind == STMT_BOOLASSIGN; }
+    bool isBool() { return Kind == STMT_BOOLASSIGN; }
 
     //! true if this statement is a ReturnStatement
-    bool isReturn() { return kind == STMT_RET; }
+    bool isReturn() { return Kind == STMT_RET; }
 
     //! true if this statement is a decoded ICT.
     //! \note for now, it only represents decoded indirect jump instructions
-    bool isHL_ICT() { return kind == STMT_CASE; }
+    bool isHL_ICT() { return Kind == STMT_CASE; }
 
-    bool isCase() { return kind == STMT_CASE; }
+    bool isCase() { return Kind == STMT_CASE; }
 
     //! true if this is a fpush/fpop
     bool isFpush();
@@ -233,9 +233,9 @@ class Instruction {
 
     // statements should be printable (for debugging)
     virtual void print(std::ostream &os, bool html = false) const = 0;
-    void printAsUse(std::ostream &os) { os << std::dec << number; }
-    void printAsUseBy(std::ostream &os) { os << std::dec << number; }
-    void printNum(std::ostream &os) { os << std::dec << number; }
+    void printAsUse(std::ostream &os) { os << std::dec << Number; }
+    void printAsUseBy(std::ostream &os) { os << std::dec << Number; }
+    void printNum(std::ostream &os) { os << std::dec << Number; }
     char *prints(); // For logging, was also for debugging
     void dump();    // For debugging
 
@@ -545,8 +545,8 @@ class PhiAssign : public Assignment {
   private:
     Definitions defVec; // A vector of information about definitions
   public:
-    PhiAssign(Exp *lhs) : Assignment(lhs) { kind = STMT_PHIASSIGN; }
-    PhiAssign(Type *ty, Exp *lhs) : Assignment(ty, lhs) { kind = STMT_PHIASSIGN; }
+    PhiAssign(Exp *lhs) : Assignment(lhs) { Kind = STMT_PHIASSIGN; }
+    PhiAssign(Type *ty, Exp *lhs) : Assignment(ty, lhs) { Kind = STMT_PHIASSIGN; }
     // Copy constructor (not currently used or implemented)
     PhiAssign(Assign &o);
     virtual ~PhiAssign() {}
@@ -716,7 +716,7 @@ class ImpRefStatement : public TypingStatement {
     Exp *addressExp; // The expression representing the address of the location referenced
   public:
     // Constructor, subexpression
-    ImpRefStatement(Type *ty, Exp *a) : TypingStatement(ty), addressExp(a) { kind = STMT_IMPREF; }
+    ImpRefStatement(Type *ty, Exp *a) : TypingStatement(ty), addressExp(a) { Kind = STMT_IMPREF; }
     Exp *getAddressExp() { return addressExp; }
     Type *getType() { return type; }
     void meetWith(Type *ty, bool &ch); // Meet the internal type with ty. Set ch if a change
@@ -811,7 +811,7 @@ class GotoStatement : public Instruction {
 
 class JunctionStatement : public Instruction {
   public:
-    JunctionStatement() { kind = STMT_JUNCTION; }
+    JunctionStatement() { Kind = STMT_JUNCTION; }
 
     Instruction *clone() const { return new JunctionStatement(); }
 
