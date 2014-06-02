@@ -115,8 +115,8 @@ bool Instruction::calcMayAlias(Exp *e1, Exp *e2, int size) {
 
 RangeMap Instruction::getInputRanges() {
     if (!isFirstStatementInBB()) {
-        savedInputRanges = getPreviousStatementInBB()->getRanges();
-        return savedInputRanges;
+        SavedInputRanges = getPreviousStatementInBB()->getRanges();
+        return SavedInputRanges;
     }
 
     assert(Parent && Parent->getNumInEdges() <= 1);
@@ -154,7 +154,7 @@ RangeMap Instruction::getInputRanges() {
         }
     }
 
-    savedInputRanges = input;
+    SavedInputRanges = input;
 
     return input;
 }
@@ -162,11 +162,11 @@ RangeMap Instruction::getInputRanges() {
 void Instruction::updateRanges(RangeMap &output, std::list<Instruction *> &execution_paths, bool notTaken) {
     if (isBranch()) {
         BranchStatement *self_branch = (BranchStatement *)this;
-        if (!output.isSubset(notTaken ? self_branch->getRanges2Ref() : ranges)) {
+        if (!output.isSubset(notTaken ? self_branch->getRanges2Ref() : Ranges)) {
             if (notTaken)
                 self_branch->setRanges2(output);
             else
-                ranges = output;
+                Ranges = output;
             if (isLastStatementInBB()) {
                 if (Parent->getNumOutEdges()) {
                     uint32_t arc = 0;
@@ -180,8 +180,8 @@ void Instruction::updateRanges(RangeMap &output, std::list<Instruction *> &execu
                 execution_paths.push_back(getNextStatementInBB());
         }
     } else if (!notTaken) {
-        if (!output.isSubset(ranges)) {
-            ranges = output;
+        if (!output.isSubset(Ranges)) {
+            Ranges = output;
             if (isLastStatementInBB()) {
                 if (Parent->getNumOutEdges()) {
                     execution_paths.push_back(Parent->getOutEdge(0)->getFirstStmt());
@@ -402,7 +402,7 @@ void JunctionStatement::rangeAnalysis(std::list<Instruction *> &execution_paths)
     if (DEBUG_RANGE_ANALYSIS)
         LOG_VERBOSE(1) << "}\n";
 
-    if (!input.isSubset(ranges)) {
+    if (!input.isSubset(Ranges)) {
         RangeMap output = input;
 
         if (output.hasRange(Location::regOf(28))) {
@@ -416,7 +416,7 @@ void JunctionStatement::rangeAnalysis(std::list<Instruction *> &execution_paths)
         }
 
         if (isLoopJunction()) {
-            output = ranges;
+            output = Ranges;
             output.widenwith(input);
         }
 
@@ -549,7 +549,7 @@ bool JunctionStatement::isLoopJunction() const {
 RangeMap &BranchStatement::getRangesForOutEdgeTo(BasicBlock *out) {
     assert(this->getFixedDest() != NO_ADDRESS);
     if (out->getLowAddr() == this->getFixedDest())
-        return ranges;
+        return Ranges;
     return ranges2;
 }
 
@@ -793,7 +793,7 @@ bool Instruction::propagateTo(bool &convert, std::map<Exp *, int, lessExpStar> *
                             if (isOverwrite) {
                                 // Now check for propagating a component past OWdef
                                 if (def->getDomNumber() <= OWdef->getDomNumber() &&
-                                    OWdef->getDomNumber() < dominanceNum)
+                                    OWdef->getDomNumber() < DominanceNum)
                                     // The heuristic kicks in
                                     doNotPropagate = true;
                                 break;
@@ -3318,12 +3318,12 @@ Instruction *Assign::clone() const {
 Instruction *PhiAssign::clone() const {
     PhiAssign *pa = new PhiAssign(type, lhs);
     Definitions::const_iterator dd;
-    for (dd = defVec.begin(); dd != defVec.end(); dd++) {
+    for (dd = DefVec.begin(); dd != DefVec.end(); dd++) {
         PhiInfo pi;
         pi.def((Instruction *)dd->second.def()); // Don't clone the Statement pointer (never moves)
         pi.e = dd->second.e->clone();          // Do clone the expression pointer
         assert(pi.e);
-        pa->defVec.insert(std::make_pair(dd->first, pi));
+        pa->DefVec.insert(std::make_pair(dd->first, pi));
     }
     return pa;
 }
@@ -3436,9 +3436,9 @@ void Assignment::print(std::ostream & os, bool html) const {
     printCompact(os, html);
     if (html)
         os << "</a>";
-    if (!ranges.empty()) {
+    if (!Ranges.empty()) {
         os << "\n\t\t\tranges: ";
-        ranges.print(os);
+        Ranges.print(os);
     }
 }
 void Assign::printCompact(std::ostream & os, bool html) const {
@@ -3459,7 +3459,7 @@ void PhiAssign::printCompact(std::ostream & os, bool html) const {
     // Print as lhs := phi{9 17} for the common case where the lhs is the same location as all the referenced
     // locations. When not, print as local4 := phi(r24{9} argc{17})
     bool simple = true;
-    for (const auto &v : defVec) {
+    for (const auto &v : DefVec) {
         assert(v.second.e != nullptr);
         // If e is nullptr assume it is meant to match lhs
         if (!(*v.second.e == *lhs)) {
@@ -3470,7 +3470,7 @@ void PhiAssign::printCompact(std::ostream & os, bool html) const {
     }
     if (simple) {
         os << "{" << std::dec;
-        for (auto it = defVec.begin(); it != defVec.end(); /* no increment */) {
+        for (auto it = DefVec.begin(); it != DefVec.end(); /* no increment */) {
             if (it->second.def()) {
                 if (html)
                     os << "<a href=\"#stmt" << std::dec << it->second.def()->getNumber() << "\">";
@@ -3479,13 +3479,13 @@ void PhiAssign::printCompact(std::ostream & os, bool html) const {
                     os << "</a>";
             } else
                 os << "-";
-            if (++it != defVec.end())
+            if (++it != DefVec.end())
                 os << " ";
         }
         os << "}";
     } else {
         os << "(";
-        for (auto it = defVec.begin(); it != defVec.end(); /* no increment */) {
+        for (auto it = DefVec.begin(); it != DefVec.end(); /* no increment */) {
             Exp *e = it->second.e;
             if (e == nullptr)
                 os << "nullptr{";
@@ -3496,7 +3496,7 @@ void PhiAssign::printCompact(std::ostream & os, bool html) const {
             else
                 os << "-";
             os << "}";
-            if (++it != defVec.end())
+            if (++it != DefVec.end())
                 os << " ";
         }
         os << ")";
@@ -3531,7 +3531,7 @@ bool PhiAssign::search(const Exp &search, Exp *&result) {
     if (lhs->search(search, result))
         return true;
 
-    for (auto &v : defVec) {
+    for (auto &v : DefVec) {
         assert(v.second.e != nullptr);
         // Note: can't match foo{-} because of this
         RefExp re(v.second.e, v.second.def());
@@ -3571,7 +3571,7 @@ bool PhiAssign::searchAndReplace(const Exp &search, Exp *replace, bool /*cc*/) {
     bool change;
     lhs = lhs->searchReplaceAll(search, replace, change);
 
-    for (auto &v : defVec) {
+    for (auto &v : DefVec) {
         assert(v.second.e != nullptr);
         bool ch;
         // Assume that the definitions will also be replaced
@@ -3680,14 +3680,14 @@ void PhiAssign::genConstraints(LocationSet & cons) {
     // result
     Exp *result = new Unary(opTypeOf, new RefExp(lhs, this));
 
-    for (auto &v : defVec) {
+    for (auto &v : DefVec) {
         assert(v.second.e != nullptr);
         Exp *conjunct = Binary::get(opEquals, result, new Unary(opTypeOf, new RefExp(v.second.e, v.second.def())));
         cons.insert(conjunct);
     }
 }
 
-PhiInfo &PhiAssign::getAt(BasicBlock * idx) { return defVec[idx]; }
+PhiInfo &PhiAssign::getAt(BasicBlock * idx) { return DefVec[idx]; }
 
 void CallStatement::genConstraints(LocationSet & cons) {
     Function *dest = getDestProc();
@@ -3886,7 +3886,7 @@ bool PhiAssign::accept(StmtExpVisitor * visitor) {
     if (ret && lhs)
         ret = lhs->accept(visitor->ev);
 
-    for (auto &v : defVec) {
+    for (auto &v : DefVec) {
         assert(v.second.e != nullptr);
         RefExp *re = new RefExp(v.second.e, v.second.def());
         ret = re->accept(visitor->ev);
@@ -4307,13 +4307,13 @@ void PhiAssign::convertToAssign(Exp * rhs) {
 void PhiAssign::simplify() {
     lhs = lhs->simplify();
 
-    if (defVec.empty())
+    if (DefVec.empty())
         return;
     bool allSame = true;
-    Definitions::iterator uu = defVec.begin();
-    Instruction *first = defVec.begin()->second.def();
+    Definitions::iterator uu = DefVec.begin();
+    Instruction *first = DefVec.begin()->second.def();
     ++uu;
-    for (; uu != defVec.end(); uu++) {
+    for (; uu != DefVec.end(); uu++) {
         if (uu->second.def() != first) {
             allSame = false;
             break;
@@ -4328,7 +4328,7 @@ void PhiAssign::simplify() {
 
     bool onlyOneNotThis = true;
     Instruction *notthis = (Instruction *)-1;
-    for (auto &v : defVec) {
+    for (auto &v : DefVec) {
         if (v.second.def() == nullptr || v.second.def()->isImplicit() || !v.second.def()->isPhi() ||
             v.second.def() != this) {
             if (notthis != (Instruction *)-1) {
@@ -4350,8 +4350,8 @@ void PhiAssign::simplify() {
 void PhiAssign::putAt(BasicBlock * i, Instruction * def, Exp * e) {
     assert(e); // should be something surely
     // assert(defVec.end()==defVec.find(i));
-    defVec[i].def(def);
-    defVec[i].e = e;
+    DefVec[i].def(def);
+    DefVec[i].e = e;
 }
 
 bool Assignment::definesLoc(Exp * loc) {
@@ -5168,7 +5168,7 @@ void CallStatement::eliminateDuplicateArgs() {
 }
 
 void PhiAssign::enumerateParams(std::list<Exp *> & le) {
-    for (auto &v : defVec) {
+    for (auto &v : DefVec) {
         assert(v.second.e != nullptr);
         RefExp *r = new RefExp(v.second.e, v.second.def());
         le.push_back(r);
@@ -5207,7 +5207,7 @@ void JunctionStatement::print(std::ostream & os, bool html) const {
     if (isLoopJunction())
         os << "LOOP";
     os << "\n\t\t\tranges: ";
-    ranges.print(os);
+    Ranges.print(os);
     if (html)
         os << "</a></td>";
 }

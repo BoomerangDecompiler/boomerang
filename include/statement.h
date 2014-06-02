@@ -120,17 +120,17 @@ class Instruction {
     UserProc *proc;     // procedure containing this statement
     int Number;         // Statement number for printing
 #if USE_DOMINANCE_NUMS
-    int dominanceNum; // Like a statement number, but has dominance properties
+    int DominanceNum; // Like a statement number, but has dominance properties
   public:
-    int getDomNumber() { return dominanceNum; }
-    void setDomNumber(int dn) { dominanceNum = dn; }
+    int getDomNumber() { return DominanceNum; }
+    void setDomNumber(int dn) { DominanceNum = dn; }
 
   protected:
 #endif
     STMT_KIND Kind; // Statement kind (e.g. STMT_BRANCH)
     // Statement *     parent;        // The statement that contains this one
-    RangeMap ranges;           // overestimation of ranges of locations
-    RangeMap savedInputRanges; // saved overestimation of ranges of locations
+    RangeMap Ranges;           // overestimation of ranges of locations
+    RangeMap SavedInputRanges; // saved overestimation of ranges of locations
 
     unsigned int LexBegin, LexEnd;
 
@@ -154,11 +154,8 @@ class Instruction {
     STMT_KIND getKind() { return Kind; }
     void setKind(STMT_KIND k) { Kind = k; }
 
-    //        void        setParent(Statement* par) {parent = par;}
-    //        Statement*    getParent() {return parent;}
-
-    RangeMap &getRanges() { return ranges; }
-    void clearRanges() { ranges.clear(); }
+    RangeMap &getRanges() { return Ranges; }
+    void clearRanges() { Ranges.clear(); }
 
     virtual Instruction *clone() const = 0; // Make copy of self
 
@@ -173,27 +170,21 @@ class Instruction {
     unsigned int getLexBegin() { return LexBegin; }
     unsigned int getLexEnd() { return LexEnd; }
 
-    // returns true if this statement defines anything
+    //! returns true if this statement defines anything
     virtual bool isDefinition() = 0;
-
-    // true if is a null statement
-    bool isNullStatement();
-
+    bool isNullStatement(); //!< true if is a null statement
     virtual bool isTyping() { return false; } // Return true if a TypingStatement
-    // true if this statement is a standard assign
+    //! true if this statement is a standard assign
     bool isAssign() const { return Kind == STMT_ASSIGN; }
-    // true if this statement is a any kind of assignment
+    //! true if this statement is a any kind of assignment
     bool isAssignment() {
         return Kind == STMT_ASSIGN || Kind == STMT_PHIASSIGN || Kind == STMT_IMPASSIGN || Kind == STMT_BOOLASSIGN;
     }
-    // true    if this statement is a phi assignment
-    bool isPhi() const { return Kind == STMT_PHIASSIGN; }
-    // true    if this statement is an implicit assignment
-    bool isImplicit() const { return Kind == STMT_IMPASSIGN; }
-    // true    if this statment is a flags assignment
-    bool isFlagAssgn();
-    // true of this statement is an implicit reference
-    bool isImpRef() const { return Kind == STMT_IMPREF; }
+
+    bool isPhi() const { return Kind == STMT_PHIASSIGN; }   //!< true    if this statement is a phi assignment
+    bool isImplicit() const { return Kind == STMT_IMPASSIGN; }  //!< true if this statement is an implicit assignment
+    bool isFlagAssgn(); //!< true if this statment is a flags assignment
+    bool isImpRef() const { return Kind == STMT_IMPREF; } //!< true of this statement is an implicit reference
 
     virtual bool isGoto() { return Kind == STMT_GOTO; }
     virtual bool isBranch() { return Kind == STMT_BRANCH; }
@@ -285,7 +276,7 @@ class Instruction {
     void updateRanges(RangeMap &output, std::list<Instruction *> &execution_paths, bool notTaken = false);
 
   public:
-    RangeMap &getSavedInputRanges() { return savedInputRanges; }
+    RangeMap &getSavedInputRanges() { return SavedInputRanges; }
     RangeMap getInputRanges();
     virtual void rangeAnalysis(std::list<Instruction *> &execution_paths);
 
@@ -296,9 +287,9 @@ class Instruction {
     Instruction *getPreviousStatementInBB();
 
     //    //    //    //    //    //    //    //    //    //
-    //                                    //
-    //    Statement visitation functions    //
-    //                                    //
+    //                                                    //
+    //    Statement visitation functions                  //
+    //                                                    //
     //    //    //    //    //    //    //    //    //    //
 
     void addUsedLocs(LocationSet &used, bool cc = false, bool memOnly = false);
@@ -319,10 +310,10 @@ class Instruction {
 
     // End Statement visitation functions
 
-    // Get the type for the definition, if any, for expression e in this statement
-    // Overridden only by Assignment and CallStatement, and ReturnStatement.
+    //! Get the type for the definition, if any, for expression e in this statement
+    //! Overridden only by Assignment and CallStatement, and ReturnStatement.
     virtual Type *getTypeFor(Exp *) { return nullptr; }
-    // Set the type for the definition of e in this Statement
+    //! Set the type for the definition of e in this Statement
     virtual void setTypeFor(Exp *, Type *) { assert(0); }
 
     // virtual    Type*    getType() {return nullptr;}            // Assignment, ReturnStatement and
@@ -341,9 +332,9 @@ std::ostream &operator<<(std::ostream &os, const StatementSet *p);
 std::ostream &operator<<(std::ostream &os, const LocationSet *p);
 
 /***************************************************************************/ /**
-  * TypingStatement is an abstract subclass of Statement. It has a type, representing the type of a reference or an
-  * assignment
-  *============================================================================*/
+ * TypingStatement is an abstract subclass of Statement. It has a type, representing the type of a reference or an
+ * assignment
+ ****************************************************************************/
 class TypingStatement : public Instruction {
   protected:
     Type *type; // The type for this assignment or reference
@@ -358,9 +349,9 @@ class TypingStatement : public Instruction {
     virtual bool isTyping() { return true; }
 };
 
-/*==========================================================================
+/***************************************************************************/ /**
  * Assignment is an abstract subclass of TypingStatement, holding a location
- *==========================================================================*/
+ ****************************************************************************/
 class Assignment : public TypingStatement {
   protected:
     Exp *lhs; // The left hand side
@@ -431,7 +422,9 @@ class Assignment : public TypingStatement {
     friend class XMLProgParser;
 }; // class Assignment
 
-// Assign: an ordinary assignment with left and right sides
+/***************************************************************************/ /**
+ * Assign an ordinary assignment with left and right sides
+ ***************************************************************************/
 class Assign : public Assignment {
     Exp *rhs;
     Exp *guard;
@@ -543,7 +536,7 @@ class PhiAssign : public Assignment {
     typedef Definitions::const_iterator const_iterator;
 
   private:
-    Definitions defVec; // A vector of information about definitions
+    Definitions DefVec; // A vector of information about definitions
   public:
     PhiAssign(Exp *lhs) : Assignment(lhs) { Kind = STMT_PHIASSIGN; }
     PhiAssign(Type *ty, Exp *lhs) : Assignment(ty, lhs) { Kind = STMT_PHIASSIGN; }
@@ -587,26 +580,26 @@ class PhiAssign : public Assignment {
 
     // Get or put the statement at index idx
     Instruction *getStmtAt(BasicBlock *idx) {
-        if (defVec.find(idx) == defVec.end()) {
+        if (DefVec.find(idx) == DefVec.end()) {
             return nullptr;
         }
-        return defVec[idx].def();
+        return DefVec[idx].def();
     }
     PhiInfo &getAt(BasicBlock *idx);
     void putAt(BasicBlock *idx, Instruction *d, Exp *e);
     void simplifyRefs();
-    virtual size_t getNumDefs() { return defVec.size(); }
-    Definitions &getDefs() { return defVec; }
+    virtual size_t getNumDefs() { return DefVec.size(); }
+    Definitions &getDefs() { return DefVec; }
     // A hack. Check MVE
     bool hasGlobalFuncParam();
 
-    PhiInfo &front() { return defVec.begin()->second; }
-    PhiInfo &back() { return defVec.rbegin()->second; }
-    iterator begin() { return defVec.begin(); }
-    iterator end() { return defVec.end(); }
-    const_iterator cbegin() const { return defVec.begin(); }
-    const_iterator cend() const { return defVec.end(); }
-    iterator erase(iterator it) { return defVec.erase(it); }
+    PhiInfo &front() { return DefVec.begin()->second; }
+    PhiInfo &back() { return DefVec.rbegin()->second; }
+    iterator begin() { return DefVec.begin(); }
+    iterator end() { return DefVec.end(); }
+    const_iterator cbegin() const { return DefVec.begin(); }
+    const_iterator cend() const { return DefVec.end(); }
+    iterator erase(iterator it) { return DefVec.erase(it); }
 
     // Convert this phi assignment to an ordinary assignment
     void convertToAssign(Exp *rhs);

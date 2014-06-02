@@ -737,12 +737,12 @@ void ReturnStatement::dfaTypeAnalysis(bool &ch) {
 // Tx2 := Tx2 meet Tx0
 // ...
 void PhiAssign::dfaTypeAnalysis(bool &ch) {
-    iterator it = defVec.begin();
-    while (it->second.e == nullptr && it != defVec.end())
+    iterator it = DefVec.begin();
+    while (it->second.e == nullptr && it != DefVec.end())
         ++it;
-    assert(it != defVec.end());
+    assert(it != DefVec.end());
     Type *meetOfArgs = it->second.def()->getTypeFor(lhs);
-    for (++it; it != defVec.end(); ++it) {
+    for (++it; it != DefVec.end(); ++it) {
         PhiInfo &phinf(it->second);
         if (phinf.e == nullptr)
             continue;
@@ -751,7 +751,7 @@ void PhiAssign::dfaTypeAnalysis(bool &ch) {
         meetOfArgs = meetOfArgs->meetWith(typeOfDef, ch);
     }
     type = type->meetWith(meetOfArgs, ch);
-    for (it = defVec.begin(); it != defVec.end(); ++it) {
+    for (it = DefVec.begin(); it != DefVec.end(); ++it) {
         if (it->second.e == nullptr)
             continue;
         it->second.def()->meetWithFor(type, it->second.e, ch);
