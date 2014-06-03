@@ -118,6 +118,7 @@ std::ostream &operator<<(std::ostream &stream, const ADDRESS &addr) {
 QTextStream& operator<<(QTextStream& os, const ADDRESS& mdv) {
     //TODO: properly format ADDRESS : 0-fill to max width.
     os << "0x" << QString::number(mdv.m_value,16);
+    return os;
 }
 
 #ifdef __MINGW32__

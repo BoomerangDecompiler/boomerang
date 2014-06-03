@@ -794,7 +794,7 @@ void XMLProgParser::start_cfg(const QXmlStreamAttributes &attr) {
 
     QStringRef str = attr.value(QLatin1Literal("wellformed"));
     if (!str.isEmpty())
-        cfg->m_bWellFormed = str.toInt() > 0;
+        cfg->WellFormed = str.toInt() > 0;
     str = attr.value(QLatin1Literal("lastLabel"));
     if (!str.isEmpty())
         cfg->lastLabel = str.toInt();
@@ -2417,7 +2417,7 @@ void XMLProgParser::persistToXML(QXmlStreamWriter &out, const Exp *e) {
 void XMLProgParser::persistToXML(QXmlStreamWriter &out, Cfg *cfg) {
     out.writeStartElement("cfg");
     out.writeAttribute("id", QString::number(ADDRESS::host_ptr(cfg).m_value));
-    out.writeAttribute("wellformed", QString::number(cfg->m_bWellFormed));
+    out.writeAttribute("wellformed", QString::number(cfg->WellFormed));
     out.writeAttribute("lastLabel", QString::number(cfg->lastLabel));
     out.writeAttribute("entryBB", QString::number(ADDRESS::host_ptr(cfg->entryBB).m_value));
     out.writeAttribute("exitBB", QString::number(ADDRESS::host_ptr(cfg->exitBB).m_value));

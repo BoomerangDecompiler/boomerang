@@ -95,8 +95,7 @@ static void usage() {
 }
 int CommandlineDriver::applyCommandline() {
     printf("Boomerang %s\n", VERSION); // Display a version and date (mainly for release versions)
-    QCoreApplication *app = QCoreApplication::instance();
-    QStringList args(app->arguments());
+    QStringList args(qApp->arguments());
     int kmd = 0;
     if (args.size() < 2) {
         usage();
