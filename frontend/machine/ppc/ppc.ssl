@@ -14,7 +14,7 @@
 # --------------------------------------------------------------------------
 # PPC RTL
 # --------------------------------------------------------------------------
- 
+
 
 MAX_BYTE    := 2**8  - 1;    # a byte of all 1's
 MAX32BIT    := 2**32 - 1;    # a word of all 1's
@@ -48,58 +48,58 @@ INTEGER
 
 
 SETXER(value) {
-	*32* %XER := value
-	*1* %XERCA := %XER@[29:29]
-	*1* %XEROV := %XER@[30:30]
-	*1* %XERSO := %XER@[31:31]
+    *32* %XER := value
+    *1* %XERCA := %XER@[29:29]
+    *1* %XEROV := %XER@[30:30]
+    *1* %XERSO := %XER@[31:31]
 };
 
 ADDFLAGSX(result, op1, op2) {
-	*1*  %XERCA := ((op1@[31:31]) & (op2@[31:31])) | (~(result@[31:31]) & ((op1@[31:31]) | (op2@[31:31])))
-	*1*  %XER@[29:29] := %XERCA
+    *1*  %XERCA := ((op1@[31:31]) & (op2@[31:31])) | (~(result@[31:31]) & ((op1@[31:31]) | (op2@[31:31])))
+    *1*  %XER@[29:29] := %XERCA
 };
 
 ADDFLAGSX0(result, op1, op2) {
-	*1*  %XERCA := ((op1@[31:31]) & (op2@[31:31])) | (~(result@[31:31]) & ((op1@[31:31]) | (op2@[31:31])))
-	*1*  %XER@[29:29] := %XERCA
-	*1* %CR0@[0:0] := %XERSO
-	*1* %CR0@[1:1] := [result = 0?1:0]	
-	*1* %CR0@[2:2] := [result > 0?1:0]
-	*1* %CR0@[3:3] := [result < 0?1:0]
+    *1*  %XERCA := ((op1@[31:31]) & (op2@[31:31])) | (~(result@[31:31]) & ((op1@[31:31]) | (op2@[31:31])))
+    *1*  %XER@[29:29] := %XERCA
+    *1* %CR0@[0:0] := %XERSO
+    *1* %CR0@[1:1] := [result = 0?1:0]
+    *1* %CR0@[2:2] := [result > 0?1:0]
+    *1* %CR0@[3:3] := [result < 0?1:0]
 };
 
 SUBFLAGSX(result, op1, op2) {
-	*1*  %XERCA := (~(op1@[31:31]) & (op2@[31:31])) | ((result@[31:31]) & (~(op1@[31:31]) | (op2@[31:31])))
-	*1*  %XER@[29:29] := %XERCA
+    *1*  %XERCA := (~(op1@[31:31]) & (op2@[31:31])) | ((result@[31:31]) & (~(op1@[31:31]) | (op2@[31:31])))
+    *1*  %XER@[29:29] := %XERCA
 };
 
 SUBFLAGS0(result) {
-	*1* %CR0@[0:0] := %XERSO
-	*1* %CR0@[1:1] := [result = 0?1:0]	
-	*1* %CR0@[2:2] := [result > 0?1:0]
-	*1* %CR0@[3:3] := [result < 0?1:0]
+    *1* %CR0@[0:0] := %XERSO
+    *1* %CR0@[1:1] := [result = 0?1:0]
+    *1* %CR0@[2:2] := [result > 0?1:0]
+    *1* %CR0@[3:3] := [result < 0?1:0]
 };
 
 SUBFLAGSX0(result, op1, op2) {
-	*1*  %XERCA := (~(op1@[31:31]) & (op2@[31:31])) | ((result@[31:31]) & (~(op1@[31:31]) | (op2@[31:31])))
-	*1*  %XER@[29:29] := %XERCA
-	*1* %CR0@[0:0] := %XERSO
-	*1* %CR0@[1:1] := [result = 0?1:0]	
-	*1* %CR0@[2:2] := [result > 0?1:0]
-	*1* %CR0@[3:3] := [result < 0?1:0]
+    *1*  %XERCA := (~(op1@[31:31]) & (op2@[31:31])) | ((result@[31:31]) & (~(op1@[31:31]) | (op2@[31:31])))
+    *1*  %XER@[29:29] := %XERCA
+    *1* %CR0@[0:0] := %XERSO
+    *1* %CR0@[1:1] := [result = 0?1:0]
+    *1* %CR0@[2:2] := [result > 0?1:0]
+    *1* %CR0@[3:3] := [result < 0?1:0]
 };
 
 SETFLAGS0(rd) {
-	*1* %CR0@[0:0] := %XERSO			# Note: these are non IBM bit numbers; LT is most significant bit (PPC bit 0)
-	*1* %CR0@[1:1] := [rd = 0?1:0]	
-	*1* %CR0@[2:2] := [rd > 0?1:0]
-	*1* %CR0@[3:3] := [rd < 0?1:0]
+    *1* %CR0@[0:0] := %XERSO			# Note: these are non IBM bit numbers; LT is most significant bit (PPC bit 0)
+    *1* %CR0@[1:1] := [rd = 0?1:0]
+    *1* %CR0@[2:2] := [rd > 0?1:0]
+    *1* %CR0@[3:3] := [rd < 0?1:0]
 };
 
 
 
 SUBFLAGSNL(op1, op2, crfd) {
-	# Set flags in Logical (unsigned) fashion
+    # Set flags in Logical (unsigned) fashion
    *32* crfd = 0 => %CR0@[3:3] := op1 <u op2
    *32* crfd = 0 => %CR0@[2:2] := op1 >u op2
    *32* crfd = 0 => %CR0@[1:1] := op1 = op2
@@ -127,7 +127,7 @@ SUBFLAGSNL(op1, op2, crfd) {
 };
 
 SUBFLAGSNS(op1, op2, crfd) {
-	# Set flags in signed fashion
+    # Set flags in signed fashion
    *32* crfd = 0 => %CR0@[3:3] := op1 < op2
    *32* crfd = 0 => %CR0@[2:2] := op1 > op2
    *32* crfd = 0 => %CR0@[1:1] := op1 = op2
@@ -155,7 +155,7 @@ SUBFLAGSNS(op1, op2, crfd) {
 };
 
 SETFFLAGSN(op1, op2, crfd) {
-	# Set flags according to floating point compare
+    # Set flags according to floating point compare
    *32* crfd = 0 => %CR0@[3:3] := op1 < op2
    *32* crfd = 0 => %CR0@[2:2] := op1 > op2
    *32* crfd = 0 => %CR0@[1:1] := op1 = op2
@@ -188,73 +188,73 @@ SETFFLAGSN(op1, op2, crfd) {
 ADD			 rd, ra, rb						*32* rd := ra + rb;
 
 ADDq		 rd, ra, rb						*32* rd := ra + rb
-			 	 	 						SETFLAGS0(rd);
+                                            SETFLAGS0(rd);
 
 ADDE		 rd, ra, rb						*32* rd := ra + rb + %XERCA;
 
 ADDEq		 rd, ra, rb						*32* rd := ra + rb + %XERCA
-			 	 	 						SETFLAGS0(rd);
+                                            SETFLAGS0(rd);
 
 ADDI		 rd, rs, simm					*32* rd := rs + simm;
 
 ADDIC		 rd, rs, simm					*32* rd := rs + simm
-											ADDFLAGSX(rd, rs, simm);	# Set carry
+                                            ADDFLAGSX(rd, rs, simm);	# Set carry
 
 ADDICq		 rd, rs, simm					*32* rd := rs + simm
-											ADDFLAGSX0(rd, rs, simm);	# Set carry and CR0
+                                            ADDFLAGSX0(rd, rs, simm);	# Set carry and CR0
 
 ADDIS		 rd, rs, simm					*32* rd := rs + (simm << 16);
 
 ADDME		 rd, ra	 						*32* rd := ra + %XERCA - 1;
-			 	 							
+
 ADDMEq		 rd, ra	 						*32* rd := ra + %XERCA - 1
-			 	 							SETFLAGS0(rd);
+                                            SETFLAGS0(rd);
 
 ADDZE		 rd, ra							*32* rd:= ra + %XERCA;
 
 ADDZEq		 rd, ra							*32* rd:= ra + %XERCA
-			 	 							SETFLAGS0(rd);
+                                            SETFLAGS0(rd);
 
 DIVW	 	 rd, ra, rb						*32* rd := ra / rb;
 
 DIVWq	 	 rd, ra, rb						*32* rd := ra / rb
-			 	 	 						SETFLAGS0(rd);
+                                            SETFLAGS0(rd);
 
 DIVWU	 	 rd, ra, rb						*32* rd := ra / rb;
 
 DIVWUq	 	 rd, ra, rb						*32* rd := ra / rb
-			 	 	 						SETFLAGS0(rd);
+                                            SETFLAGS0(rd);
 
 EXTSB		rd, ra							*32* rd := sgnex(8, 32, ra);
 
 EXTSBq		rd, ra							*32* rd := sgnex(8, 32, ra)
-											SETFLAGS0(rd);
+                                            SETFLAGS0(rd);
 
 MULLI		rd, ra, simm					*32* rd := rs * sgnex(16,32,simm);
 
 MULLW	 	rd, ra, rb						*32* rd := ra * rb;
 
 MULLWq	 	rd, ra, rb						*32* rd := ra * rb
-			 	 	 						SETFLAGS0(rd);
+                                            SETFLAGS0(rd);
 
 SUBF	 	rd, ra, rb						*32* rd := rb - ra;
 
 SUBFE	 	rd, ra, rb						*32* rd := rb + %XERCA - ra;
 
 SUBFIC		rd, ra, simm					*32* rd := simm - ra
-											SUBFLAGSX(rd, simm, ra);
+                                            SUBFLAGSX(rd, simm, ra);
 
 SUBFC		rd, ra, rb						*32* rd := rb - ra
-											SUBFLAGSX(rd, rb, ra);
+                                            SUBFLAGSX(rd, rb, ra);
 
 SUBFCQ		rd, ra, rb						*32* rd := rb - ra
-											SUBFLAGSX0(rd);
+                                            SUBFLAGSX0(rd);
 
 SUBFCO		rd, ra, rb						*32* rd := rb - ra
-											SUBFLAGSX(rd, rb, ra);		# Also supposed to set overflow bits
+                                            SUBFLAGSX(rd, rb, ra);		# Also supposed to set overflow bits
 
 SUBFCOQ		rd, ra, rb						*32* rd := rb - ra
-											SUBFLAGSX0(rd, rb, ra);		# Also supposed to set overflow bits
+                                            SUBFLAGSX0(rd, rb, ra);		# Also supposed to set overflow bits
 
 NOP											_;
 
@@ -264,14 +264,14 @@ NOP											_;
 NEG			 rd, ra							*32* rd := 0 - ra;
 
 NEGq		 rd, ra							*32* rd := 0 - ra
-			 	 							SETFLAGS0(rd);
+                                            SETFLAGS0(rd);
 
 LOGDOT	:= {"ANDq",		"ORq",		"XORq"};			# Logicals that set flags as well
 LOG		:= {"AND",		"OR",		"XOR",	LOGDOT};	# All logicals with uncomplemented operands
 LOGI	:= {			"ORI",		"XORI"};			# Immediate, NO dot (Note: ANDIq, but ORI, XORI)
 LOGIS	:= {			"ORIS",		"XORIS"};			# Immediate with operand B shifted left 16 bits, NO dot
 NLOGDOT	:= {"NANDq",	"NORq",		"EQVq"};			# Negated logicals that set flags
-														# Note: NXOR is called EQV
+                                                        # Note: NXOR is called EQV
 NLOG	:= {"NAND",		"NOR",		"EQV", NLOGDOT};	# All negated logicals
 LOGOP	:= {  "&","|", "^",	"&", "|", "^"};
 LOGC	:= {"ANDC",	"ORC", "ANDCq","ORCq"};				# Note: no XORCR
@@ -286,12 +286,12 @@ LOGDOT[IDX]		rd, ra, rb				SETFLAGS0(rd);
 LOGI[IDX]		rd, rs, uimm			*32* rd := rs LOGIDOTOP[IDX] uimm;
 
 ANDIq			rd, rs, uimm			*32* rd := rs & uimm
-										SETFLAGS0(rd);				# Only ANDIq sets flags
+                                        SETFLAGS0(rd);				# Only ANDIq sets flags
 
 LOGIS[IDX]		rd, rs, uimm			*32* rd := rs LOGIDOTOP[IDX] (uimm << 16);
 
 ANDISq			rd, rs, uimm			*32* rd := rs & (uimm << 16)
-										SETFLAGS0(rd);				# Only ANDISq sets flags
+                                        SETFLAGS0(rd);				# Only ANDISq sets flags
 
 NLOG[IDX]		rd, ra, rb				*32* rd := ~(ra LOGOP[IDX] rb);
 NLOGDOT[IDX]	rd, ra, rb				SETFLAGS0(rd);
@@ -304,10 +304,10 @@ LOGCDOT[IDX]	rd, ra, rb				SETFLAGS0(rd);
 SHIFTS_DOT	:= {"SLWq", "SRWq", "SRAWq",	"SRAWIq"};
 SHIFTS		:= {"SLW",	"SRW",	"SRAW",		"SRAWI",	SHIFTS_DOT};
 SHIFT_OP	:= {"<<",   ">>",   ">>A",		">>A",
-				"<<",	">>",	">>A",		">>A"};
+                "<<",	">>",	">>A",		">>A"};
 
 SHIFTS[IDX]		Rd, Rs, op2			*32* Rd := Rs SHIFT_OP[IDX] op2;
-				# Note: SRAW/SRAWI also set the carry flag (%XERCA) in some weird way
+                # Note: SRAW/SRAWI also set the carry flag (%XERCA) in some weird way
 
 SHIFTS_DOT[IDX]	Rd, Rs, op2			SETFLAGS0(Rd);
 
@@ -321,10 +321,12 @@ LWZX	rd, eaddr, ra					*32* rd := m[eaddr];
 
 LBZ		rd, eaddr, ra					*32* rd := zfill(8, 32, m[eaddr]);
 
+LHZ		rd, eaddr, ra                   *32* rd := zfill(16, 32, m[eaddr]);
+
 LBZX	rd, eaddr, ra					*32* rd := zfill(8, 32, m[eaddr]);
 
 STWU	rs, eaddr, ra					*32* m[eaddr] := rs
-										*32* ra := eaddr;
+                                        *32* ra := eaddr;
 
 STW		rs, eaddr, ra					*32* m[eaddr] := rs;
 
@@ -475,50 +477,50 @@ STMW	rs, eaddr, s					*32* tmp := 0
 LFD		fd, eaddr, ra					*64* fd := m[eaddr];
 
 LFDU	fd, eaddr, ra					*64* fd := m[eaddr]
-										*32* ra := eaddr;
+                                        *32* ra := eaddr;
 
 LFDX	fd, eaddr, ra					*64* fd := m[eaddr];
 
 LFDUX	fd, eaddr, ra					*64* fd := m[eaddr]
-										*32* ra := eaddr;
+                                        *32* ra := eaddr;
 
 LFS		fd, eaddr, ra					*32* fd := fsize(32, 64, m[eaddr]);
 
 LFSU	fd, eaddr, ra					*32* fd := fsize(32, 64, m[eaddr])
-										*32* ra := eaddr;
+                                        *32* ra := eaddr;
 
 LFSX	fd, eaddr, ra					*64* fd := fsize(32, 64, m[eaddr]);
 
 LFSUX	fd, eaddr, ra					*32* fd := fsize(32, 64, m[eaddr])
-										*32* ra := eaddr;
+                                        *32* ra := eaddr;
 
 # Floating point stores
 STFD	fd, eaddr, ra					*64* m[eaddr] := fd;
 
 STFDU	fd, eaddr, ra					*64* m[eaddr] := fd
-										*32* ra := eaddr;
+                                        *32* ra := eaddr;
 
 STFDX	fd, eaddr, ra					*64* m[eaddr] := fd;
 
 STFDUX	fd, eaddr, ra					*64* m[eaddr] := fd
-										*32* ra := eaddr;
+                                        *32* ra := eaddr;
 
 STFS	fd, eaddr, ra					*32* m[eaddr] := fsize(64, 32, fd);
 
 STFSU	fd, eaddr, ra					*32* m[eaddr] := fsize(64, 32, fd)
-										*32* ra := eaddr;
+                                        *32* ra := eaddr;
 
 STFSX	fd, eaddr, ra					*32* m[eaddr] := fsize(64, 32, fd);
 
 STFSUX	fd, eaddr, ra					*32* m[eaddr] := fsize(64, 32, fd)
-										*32* ra := eaddr;
+                                        *32* ra := eaddr;
 
 
 
 BALLR  	   								*32* %pc := %LR;
 
 MFCR	rd								*32* rd :=	(%CR0 << 28) + (%CR1 << 24) + (%CR2 << 20) + (%CR3 << 16) +
-													(%CR4 << 12) + (%CR5 <<  8) + (%CR6 <<  4) + (%CR7);
+                                                    (%CR4 << 12) + (%CR5 <<  8) + (%CR6 <<  4) + (%CR7);
 
 MFSPR	rd, spr							*32* rd := [spr & 1 ? [spr >> 3 & 1 ? %CTR : %XER] : %LR];
 
@@ -538,12 +540,12 @@ ROT_AND_ALL[IDX] ra, rs, uimm, beg, end	*32* tmp_mask := (1 << (32 - beg)) - (1 
 ROT_ANDS[IDX]	 ra, rs, uimm, beg, end	*32* ra := rs rl uimm & tmp_mask;	# rl = rotate left
 
 ROT_AND_ORS[IDX] ra, rs, uimm, beg, end	*32* tmp_r := rs rl uimm & tmp_mask
-										*32* ra := rs | (ra & ~tmp_mask);
+                                        *32* ra := rs | (ra & ~tmp_mask);
 
 ROT_AND_DOTS[IDX] ra, rs, uimm, beg, end	SETFLAGS0(ra);
 
-BL		reloc 							*32* %LR := %pc + 4 
-										*32* %pc := reloc;
+BL		reloc 							*32* %LR := %pc + 4
+                                        *32* %pc := reloc;
 
 # Comparisons. Ignore XER[SO] for now.
 CMPI		crfd, ra, simm				SUBFLAGSNS(ra, simm, crfd);
@@ -577,9 +579,9 @@ FNEG		fd, fb			*64* fd := 0.0 -f fb;
 FNEGq		fd, fb			*64* fd := 0.0 -f fb;
 
 FRSP		fd, fb			*32* tmpf := fsize(64, 32, fb)
-							*64* fd := fsize(32, 64, tmpf);
+                            *64* fd := fsize(32, 64, tmpf);
 FRSPq		fd, fb			*32* tmpf := fsize(64, 32, fb)
-							*64* fd := fsize(32, 64, tmpf);
+                            *64* fd := fsize(32, 64, tmpf);
 
 FCTIW		fd, fb			*64* fd := zfill(32, 64, ftoi(64, 32, fb));
 FCTIWq		fd, fb			*64* fd := zfill(32, 64, ftoi(64, 32, fb));
@@ -608,21 +610,21 @@ FDIVSq		fd, fa, fb		*64* fd := fa /f fb;		# Yet result is in 64-bit format
 # conditional branch
 # MVE: Not sure if I have the bit numbers round the right way (is LT 3 or 0?)
 CONDBR := { "%CR0@[3:3]",	"~%CR0@[2:2]",	"%CR0@[1:1]",	"~%CR0@[3:3]",
-			"%CR0@[2:2]",	"~%CR0@[3:3]",	"~%CR0@[1:1]",	"~%CR0@[2:2]",
-			"%CR0@[0:0]",	"~%CR0@[0:0]",	"%CR0@[0:0]",	"~%CR0@[0:0]"};
+            "%CR0@[2:2]",	"~%CR0@[3:3]",	"~%CR0@[1:1]",	"~%CR0@[2:2]",
+            "%CR0@[0:0]",	"~%CR0@[0:0]",	"%CR0@[0:0]",	"~%CR0@[0:0]"};
 BRCONDS := {"blt",		"ble",		"beq",		"bge",		"bgt",		"bnl",
-			"bne",		"bng",		"bso",		"bns",		"bun",		"bnu"};
-BRCONDSCTR:={"bltctr",	"blectr",	"beqctr",	"bgectr",	"bgtctr",	"bnlctr",	
-			"bnectr",	"bngctr",	"bsoctr",	"bnsctr",	"bunctr",	"bnuctr"};
-BRCONDSLR:= {"bltlr",	"blelr",	"beqlr",	"bgelr",	"bgtlr",	"bnllr",	
-			"bnelr",	"bnglr",	"bsolr",	"bnslr",	"bunlr",	"bnulr"};
+            "bne",		"bng",		"bso",		"bns",		"bun",		"bnu"};
+BRCONDSCTR:={"bltctr",	"blectr",	"beqctr",	"bgectr",	"bgtctr",	"bnlctr",
+            "bnectr",	"bngctr",	"bsoctr",	"bnsctr",	"bunctr",	"bnuctr"};
+BRCONDSLR:= {"bltlr",	"blelr",	"beqlr",	"bgelr",	"bgtlr",	"bnllr",
+            "bnelr",	"bnglr",	"bsolr",	"bnslr",	"bunlr",	"bnulr"};
 
-BRCONDS[IDX]   	BIcr, reloc 
-            	*32* %pc := [(CONDBR[IDX] = 1) ? %pc+reloc : %pc];
+BRCONDS[IDX]   	BIcr, reloc
+                *32* %pc := [(CONDBR[IDX] = 1) ? %pc+reloc : %pc];
 
-BRCONDSCTR[IDX]   BIcr 
-            	*32* %pc := [(CONDBR[IDX] = 1) ? %CTR : %pc];
+BRCONDSCTR[IDX]   BIcr
+                *32* %pc := [(CONDBR[IDX] = 1) ? %CTR : %pc];
 
-BRCONDSLR[IDX]   BIcr 
-            	*32* %pc := [(CONDBR[IDX] = 1) ? %LR : %pc];
+BRCONDSLR[IDX]   BIcr
+                *32* %pc := [(CONDBR[IDX] = 1) ? %LR : %pc];
 
