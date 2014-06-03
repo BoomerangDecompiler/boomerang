@@ -21,9 +21,14 @@
 
 class Prog;
 struct DecodeResult;
+class SparcMachine {
+public:
+    Exp *dis_RegRhs(uint8_t reg_no);
+};
 
 class SparcDecoder : public NJMCDecoder {
-  public:
+    SparcMachine *machine;
+public:
     /* Constructor
          */
     SparcDecoder(Prog *prog);
@@ -53,9 +58,9 @@ class SparcDecoder : public NJMCDecoder {
     Exp *dis_Eaddr(ADDRESS pc, int size = 0);
     Exp *dis_RegImm(ADDRESS pc);
     Exp *dis_RegLhs(unsigned r);
-    Exp *dis_RegRhs(unsigned r);
 
-    void unused(int x);
+
+    void unused(int);
     RTL *createBranchRtl(ADDRESS pc, std::list<Instruction *> *stmts, const char *name);
     bool isFuncPrologue(ADDRESS hostPC);
     DWord getDword(ADDRESS lc);

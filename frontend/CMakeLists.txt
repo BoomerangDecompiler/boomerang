@@ -1,7 +1,8 @@
 INCLUDE_DIRECTORIES(../c/) # used by FrontEnd::readLibrarySignatures
 SET(SRC
-    frontend.cpp #-Ic
-    TargetQueue.cpp #-Ic
+    frontend.cpp
+    TargetQueue.cpp
+    MachineInstruction
     njmcDecoder.cpp
     pentium/pentiumdecoder.cpp #-fno-exceptions
     pentium/pentiumfrontend.cpp

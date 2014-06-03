@@ -19,7 +19,7 @@ def perform_test(exepath,machine,test,args)
         test_file = File.join(TEST_INPUT,machine,test)
         log_name = File.join(output_path,test)
         joined_args = args.join(' ')
-        cmdline = "-P #{Dir.pwd} -o #{output_path} #{joined_args} #{test_file} >#{log_name+'.stdout'} 2>#{log_name+'.stderr'}"
+        cmdline = "-P #{Dir.pwd} -o #{output_path} #{joined_args} #{test_file}\n"
         result = `#{exepath} -P #{Dir.pwd} -o #{output_path} #{joined_args} #{test_file} >#{log_name+".stdout"} 2>#{log_name+".stderr"}`
         STDOUT << ($?.success?() ? '.' : '!')
         return [$?.success?,cmdline]

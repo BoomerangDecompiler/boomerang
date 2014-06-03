@@ -81,7 +81,7 @@ std::list<Instruction *> *NJMCDecoder::instantiate(ADDRESS pc, const char *name,
         std::cout << std::endl;
     }
 
-    std::list<Instruction *> *instance = RTLDict.instantiateRTL(opcode, pc, actuals);
+    std::list<Instruction *> *instance = RTLDict.instantiateRTL(opcode.c_str(), pc, actuals);
 
     return instance;
 }

@@ -166,7 +166,7 @@ class RTLInstDict {
 
     int appendToDict(std::string &n, std::list<std::string> &p, RTL &rtl);
 
-    std::list<Instruction *> *instantiateRTL(std::string &name, ADDRESS natPC, const std::vector<Exp *> &actuals);
+    std::list<Instruction *> *instantiateRTL(const QString &name, ADDRESS natPC, const std::vector<Exp *> &actuals);
     std::list<Instruction *> *instantiateRTL(RTL &rtls, ADDRESS, std::list<std::string> &params,
                                            const std::vector<Exp *> &actuals);
 
