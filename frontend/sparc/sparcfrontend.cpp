@@ -246,7 +246,7 @@ bool SparcFrontEnd::case_CALL(ADDRESS &address, DecodeResult &inst, DecodeResult
         // First check for helper functions
         ADDRESS dest = call_stmt->getFixedDest();
         // Special check for calls to weird PLT entries which don't have symbols
-        if ((ldrIface->IsDynamicLinkedProc(dest)) && (prog->symbolByAddress(dest) == nullptr)) {
+        if ((ldrIface->IsDynamicLinkedProc(dest)) && (Program->symbolByAddress(dest) == nullptr)) {
             // This is one of those. Flag this as an invalid instruction
             inst.valid = false;
         }
@@ -294,7 +294,7 @@ bool SparcFrontEnd::case_CALL(ADDRESS &address, DecodeResult &inst, DecodeResult
 
             bool ret = true;
             // Check for _exit; probably should check for other "never return" functions
-            const char *name = prog->symbolByAddress(dest);
+            const char *name = Program->symbolByAddress(dest);
             if (name && strcmp(name, "_exit") == 0) {
                 // Don't keep decoding after this call
                 ret = false;
@@ -1245,7 +1245,7 @@ void SparcFrontEnd::quadOperation(ADDRESS addr, std::list<RTL *> *lrtl, OPER op)
 bool SparcFrontEnd::helperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL *> *lrtl) {
     if (!ldrIface->IsDynamicLinkedProc(dest))
         return false;
-    const char *p = prog->symbolByAddress(dest);
+    const char *p = Program->symbolByAddress(dest);
     if (p == nullptr) {
         std::cerr << "Error: Can't find symbol for PLT address " << std::hex << dest << std::endl;
         return false;

@@ -409,7 +409,7 @@ bool PentiumFrontEnd::helperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL *> *l
     if (dest == NO_ADDRESS)
         return false;
 
-    const char *p = prog->symbolByAddress(dest);
+    const char *p = Program->symbolByAddress(dest);
     if (p == nullptr)
         return false;
     QString name(p);
@@ -440,11 +440,11 @@ bool PentiumFrontEnd::helperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL *> *l
         Instruction *a = new Assign(Location::regOf(28), Binary::get(opMinus, Location::regOf(28), Location::regOf(24)));
         pRtl->appendStmt(a);
         lrtl->push_back(pRtl);
-        prog->removeProc(name);
+        Program->removeProc(name);
         return true;
     } else if (name == "__mingw_frame_init" || name == "__mingw_cleanup_setup" || name == "__mingw_frame_end") {
         LOG << "found removable call to static lib proc " << name << " at " << addr << "\n";
-        prog->removeProc(name);
+        Program->removeProc(name);
         return true;
     } else {
         // Will be other cases in future
@@ -550,7 +550,7 @@ ADDRESS PentiumFrontEnd::getMainEntryPoint(bool &gotMain) {
                 gotMain = true;
                 return cs->getFixedDest();
             }
-            if (prog->symbolByAddress(dest) && strcmp(prog->symbolByAddress(dest), "__libc_start_main") == 0) {
+            if (Program->symbolByAddress(dest) && strcmp(Program->symbolByAddress(dest), "__libc_start_main") == 0) {
                 // This is a gcc 3 pattern. The first parameter will be a pointer to main.
                 // Assume it's the 5 byte push immediately preceeding this instruction
                 // Note: the RTL changed recently from esp = esp-4; m[esp] = K tp m[esp-4] = K; esp = esp-4
@@ -859,7 +859,7 @@ bool PentiumFrontEnd::decodeSpecial_out(ADDRESS pc, DecodeResult &r) {
     Exp *dx = Location::regOf(decoder->getRTLDict().RegMap["%dx"]);
     Exp *al = Location::regOf(decoder->getRTLDict().RegMap["%al"]);
     CallStatement *call = new CallStatement();
-    call->setDestProc(prog->getLibraryProc("outp"));
+    call->setDestProc(Program->getLibraryProc("outp"));
     call->setArgumentExp(0, dx);
     call->setArgumentExp(1, al);
     r.rtl->appendStmt(call);
@@ -878,7 +878,7 @@ bool PentiumFrontEnd::decodeSpecial_invalid(ADDRESS pc, DecodeResult &r) {
     r.reDecode = false;
     r.rtl = new RTL(pc);
     CallStatement *call = new CallStatement();
-    call->setDestProc(prog->getLibraryProc("invalid_opcode"));
+    call->setDestProc(Program->getLibraryProc("invalid_opcode"));
     r.rtl->appendStmt(call);
     return true;
 }
@@ -960,9 +960,9 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, std::list<RTL *> *BB
             a = ((Const *)found)->getInt();
         else if (found->isAddrOf() && found->getSubExp1()->isGlobal()) {
             const char *name = ((Const *)found->getSubExp1()->getSubExp1())->getStr();
-            if (prog->getGlobal(name) == nullptr)
+            if (Program->getGlobal(name) == nullptr)
                 continue;
-            a = prog->getGlobalAddr(name);
+            a = Program->getGlobalAddr(name);
         } else
             continue;
 
@@ -970,7 +970,7 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, std::list<RTL *> *BB
         if (paramIsFuncPointer) {
             LOG_VERBOSE(1) << "found a new procedure at address " << a << " from inspecting parameters of call to "
                            << call->getDestProc()->getName() << ".\n";
-            Function *proc = prog->setNewProc(a);
+            Function *proc = Program->setNewProc(a);
             Signature *sig = paramType->asPointer()->getPointsTo()->asFunc()->getSignature()->clone();
             sig->setName(proc->getName());
             sig->setForced(true);
@@ -990,7 +990,7 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, std::list<RTL *> *BB
                 if (VERBOSE)
                     LOG << "found a new procedure at address " << d << " from inspecting parameters of call to "
                         << call->getDestProc()->getName() << ".\n";
-                Function *proc = prog->setNewProc(d);
+                Function *proc = Program->setNewProc(d);
                 Signature *sig = compound->getType(n)->asPointer()->getPointsTo()->asFunc()->getSignature()->clone();
                 sig->setName(proc->getName());
                 sig->setForced(true);

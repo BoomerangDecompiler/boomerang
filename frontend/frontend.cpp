@@ -53,7 +53,7 @@ using namespace std;
   * \param p program being decoded
   * \param bff pointer to a BinaryFileFactory object (so the library can be unloaded)
   ******************************************************************************/
-FrontEnd::FrontEnd(QObject *p_BF, Prog *p, BinaryFileFactory *bff) : pLoader(p_BF), pbff(bff), prog(p) {
+FrontEnd::FrontEnd(QObject *p_BF, Prog *p, BinaryFileFactory *bff) : pLoader(p_BF), pbff(bff), Program(p) {
     ldrIface = qobject_cast<LoaderInterface *>(pLoader);
     symIface = qobject_cast<SymbolTableInterface *>(pLoader);
     sectIface = qobject_cast<SectionInterface *>(pLoader);
@@ -184,7 +184,7 @@ void FrontEnd::readLibraryCatalog(const QString &sPath) {
 
 void FrontEnd::readLibraryCatalog() {
     // TODO: this is a work for generic semantics provider plugin : HeaderReader
-    librarySignatures.clear();
+    LibrarySignatures.clear();
     QDir sig_dir(Boomerang::get()->getProgPath());
     if(!sig_dir.cd("signatures")) {
         qWarning("Signatures directory does not exist.");
@@ -209,7 +209,7 @@ void FrontEnd::readLibraryCatalog() {
 void FrontEnd::checkEntryPoint(std::vector<ADDRESS> &entrypoints, ADDRESS addr, const char *type) {
     Type *ty = NamedType::getNamedType(type);
     assert(ty->isFunc());
-    UserProc *proc = (UserProc *)prog->setNewProc(addr);
+    UserProc *proc = (UserProc *)Program->setNewProc(addr);
     assert(proc);
     Signature *sig = ty->asFunc()->getSignature()->clone();
     const char *sym = symIface ? symIface->SymbolByAddress(addr) : nullptr;
@@ -267,9 +267,9 @@ std::vector<ADDRESS> FrontEnd::getEntryPoints() {
 }
 
 void FrontEnd::decode(Prog *prg, bool decodeMain, const char *pname) {
-    assert(prog == prg);
+    assert(Program == prg);
     if (pname)
-        prog->setName(pname);
+        Program->setName(pname);
 
     if (!decodeMain)
         return;
@@ -285,22 +285,22 @@ void FrontEnd::decode(Prog *prg, bool decodeMain, const char *pname) {
     if (a == NO_ADDRESS) {
         std::vector<ADDRESS> entrypoints = getEntryPoints();
         for (auto &entrypoint : entrypoints)
-            decode(prog, entrypoint);
+            decode(Program, entrypoint);
         return;
     }
 
-    decode(prog, a);
-    prog->setEntryPoint(a);
+    decode(Program, a);
+    Program->setEntryPoint(a);
 
     if (not gotMain)
         return;
     static const char *mainName[] = {"main", "WinMain", "DriverEntry"};
-    const char *name = prog->symbolByAddress(a);
+    const char *name = Program->symbolByAddress(a);
     if (name == nullptr)
         name = mainName[0];
     for (auto &elem : mainName) {
         if (!strcmp(name, elem)) {
-            Function *proc = prog->findProc(a);
+            Function *proc = Program->findProc(a);
             if (proc == nullptr) {
                 if (VERBOSE)
                     LOG << "no proc found for address " << a << "\n";
@@ -323,12 +323,12 @@ void FrontEnd::decode(Prog *prg, bool decodeMain, const char *pname) {
 
 // Somehow, a == NO_ADDRESS has come to mean decode anything not already decoded
 void FrontEnd::decode(Prog *prg, ADDRESS a) {
-    assert(prog == prg);
+    assert(Program == prg);
     if (a != NO_ADDRESS) {
-        prog->setNewProc(a);
+        Program->setNewProc(a);
         if (VERBOSE)
             LOG << "starting decode at address " << a << "\n";
-        UserProc *p = (UserProc *)prog->findProc(a);
+        UserProc *p = (UserProc *)Program->findProc(a);
         if (p == nullptr) {
             if (VERBOSE)
                 LOG << "no proc found at address " << a << "\n";
@@ -347,7 +347,7 @@ void FrontEnd::decode(Prog *prg, ADDRESS a) {
         while (change) {
             change = false;
             PROGMAP::const_iterator it;
-            for (Function *pProc = prog->getFirstProc(it); pProc != nullptr; pProc = prog->getNextProc(it)) {
+            for (Function *pProc = Program->getFirstProc(it); pProc != nullptr; pProc = Program->getNextProc(it)) {
                 if (pProc->isLib())
                     continue;
                 UserProc *p = (UserProc *)pProc;
@@ -369,18 +369,18 @@ void FrontEnd::decode(Prog *prg, ADDRESS a) {
                 break;
         }
     }
-    prog->wellForm();
+    Program->wellForm();
 }
 
 //! \a a should be the address of an UserProc
 void FrontEnd::decodeOnly(Prog *prg, ADDRESS a) {
-    assert(prog == prg);
-    UserProc *p = (UserProc *)prog->setNewProc(a);
+    assert(Program == prg);
+    UserProc *p = (UserProc *)Program->setNewProc(a);
     assert(!p->isLib());
     std::ofstream os;
     if (processProc(p->getNativeAddress(), p, os))
         p->setDecoded();
-    prog->wellForm();
+    Program->wellForm();
 }
 
 void FrontEnd::decodeFragment(UserProc *proc, ADDRESS a) {
@@ -427,7 +427,7 @@ void FrontEnd::readLibrarySignatures(const char *sPath, callconv cc) {
 #if 0
         std::cerr << "readLibrarySignatures from " << sPath << ": " << (*it)->getName() << "\n";
 #endif
-        librarySignatures[(elem)->getName().toStdString()] = elem;
+        LibrarySignatures[(elem)->getName().toStdString()] = elem;
         (elem)->setSigFile(sPath);
     }
 
@@ -451,8 +451,8 @@ Signature *FrontEnd::getLibSignature(const std::string &name) {
     Signature *signature;
     // Look up the name in the librarySignatures map
     std::map<std::string, Signature *>::iterator it;
-    it = librarySignatures.find(name);
-    if (it == librarySignatures.end()) {
+    it = LibrarySignatures.find(name);
+    if (it == LibrarySignatures.end()) {
         LOG << "Unknown library function " << name.c_str() << "\n";
         signature = getDefaultSignature(name);
     } else {
@@ -467,10 +467,10 @@ void FrontEnd::preprocessProcGoto(std::list<Instruction *>::iterator ss, ADDRESS
     assert(sl.back() == *ss);
     if (dest == NO_ADDRESS)
         return;
-    Function *proc = prog->findProc(dest);
+    Function *proc = Program->findProc(dest);
     if (proc == nullptr) {
         if (ldrIface->IsDynamicLinkedProc(dest))
-            proc = prog->setNewProc(dest);
+            proc = Program->setNewProc(dest);
     }
     if (proc != nullptr && proc != (Function *)-1) {
         CallStatement *call = new CallStatement();
@@ -634,7 +634,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, std::ofstream &os, bo
                 s->setProc(pProc); // let's do this really early!
                 if (refHints.find(pRtl->getAddress()) != refHints.end()) {
                     const char *nam = refHints[pRtl->getAddress()].c_str();
-                    ADDRESS gu = prog->getGlobalAddr(nam);
+                    ADDRESS gu = Program->getGlobalAddr(nam);
                     if (gu != NO_ADDRESS) {
                         s->searchAndReplace(Const(gu), new Unary(opAddrOf, Location::global(nam, pProc)));
                     }
@@ -831,7 +831,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, std::ofstream &os, bo
                                         Function *p = pProc->getProg()->getLibraryProc(nam);
                                         if (call->getDestProc()) {
                                             // prevent unnecessary __imp procs
-                                            prog->removeProc(call->getDestProc()->getName());
+                                            Program->removeProc(call->getDestProc()->getName());
                                         }
                                         call->setDestProc(p);
                                         call->setIsComputed(false);
@@ -890,7 +890,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, std::ofstream &os, bo
 
                         // Check if this is the _exit or exit function. May prevent us from attempting to decode
                         // invalid instructions, and getting invalid stack height errors
-                        const char *name = prog->symbolByAddress(uNewAddr);
+                        const char *name = Program->symbolByAddress(uNewAddr);
                         if (name == nullptr && call->getDest()->isMemOf() &&
                             call->getDest()->getSubExp1()->isIntConst()) {
                             ADDRESS a = ((Const *)call->getDest()->getSubExp1())->getAddr();
@@ -1075,7 +1075,7 @@ RTL *decodeRtl(ADDRESS address, int delta, NJMCDecoder *decoder) {
   * PARAMETERS:    None
   * \returns        Pointer to a Prog object (with pFE and pBF filled in)
   ******************************************************************************/
-Prog *FrontEnd::getProg() { return prog; }
+Prog *FrontEnd::getProg() { return Program; }
 
 /***************************************************************************/ /**
   *

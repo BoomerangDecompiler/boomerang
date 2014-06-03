@@ -69,11 +69,11 @@ class FrontEnd {
     /***************************************/
 
     BinaryFileFactory *pbff; // The binary file factory (for closing properly)
-    Prog *prog;              // The Prog object
+    Prog *Program;           // The Prog object
     // The queue of addresses still to be processed
     TargetQueue targetQueue;
     // Public map from function name (string) to signature.
-    std::map<std::string, Signature *> librarySignatures;
+    std::map<std::string, Signature *> LibrarySignatures;
     // Map from address to meaningful name
     std::map<ADDRESS, std::string> refHints;
     // Map from address to previously decoded RTLs for decoded indirect control transfer instructions
@@ -98,7 +98,7 @@ class FrontEnd {
     // returns an enum identifer for this frontend's platform
     virtual platform getFrontEndId() = 0;
     // returns a frontend given a string (unused?)
-    static FrontEnd *createById(std::string &str, QObject *pBFi, Prog *prog);
+    static FrontEnd *createById(std::string &str, QObject *pBFi, Prog *Program);
     bool isWin32(); // Is this a win32 frontend?
     static bool noReturnCallDest(const QString &name);
     QObject *getBinaryFile() { return pLoader; }
@@ -131,11 +131,11 @@ class FrontEnd {
     /*
      * Decode all undecoded procedures and return a new program containing them.
      */
-    void decode(Prog *prog, bool decodeMain = true, const char *pname = nullptr);
+    void decode(Prog *Program, bool decodeMain = true, const char *pname = nullptr);
     // Decode all procs starting at a given address in a given program.
-    void decode(Prog *prog, ADDRESS a);
+    void decode(Prog *Program, ADDRESS a);
     // Decode one proc starting at a given address in a given program.
-    void decodeOnly(Prog *prog, ADDRESS a);
+    void decodeOnly(Prog *Program, ADDRESS a);
     // Decode a fragment of a procedure, e.g. for each destination of a switch statement
     void decodeFragment(UserProc *proc, ADDRESS a);
 
