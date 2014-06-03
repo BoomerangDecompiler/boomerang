@@ -387,6 +387,6 @@ void CommandlineDriver::onCompilationTimeout() {
 
 void DecompilationThread::run() {
     Boomerang &boom(*Boomerang::get());
-    boom.decompile(m_decompiled.toStdString().c_str());
-    QCoreApplication::instance()->quit();
+    int res = boom.decompile(m_decompiled);
+    QCoreApplication::exit(res == 0 ? 0 : -1);
 }

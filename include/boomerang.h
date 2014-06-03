@@ -135,7 +135,7 @@ class Boomerang : public QObject {
     const QString &getOutputPath() { return outputPath; }
 
     Prog *loadAndDecode(const QString &fname, const char *pname = nullptr);
-    int decompile(const char *fname, const char *pname = nullptr);
+    int decompile(const QString &fname, const char *pname = nullptr);
     /// Add a Watcher to the set of Watchers for this Boomerang object.
     void addWatcher(Watcher *watcher) { watchers.insert(watcher); }
     void persistToXML(Prog *prog);

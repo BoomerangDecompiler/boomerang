@@ -732,7 +732,7 @@ Prog *Boomerang::loadAndDecode(const QString &fname, const char *pname) {
  *
  * \return Zero on success, nonzero on faillure.
  */
-int Boomerang::decompile(const char *fname, const char *pname) {
+int Boomerang::decompile(const QString &fname, const char *pname) {
     Prog *prog;
     time_t start;
     time(&start);
