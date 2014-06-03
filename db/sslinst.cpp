@@ -310,7 +310,7 @@ void RTLInstDict::fixupParamsSub(std::string s, std::list<std::string> &funcPara
 std::pair<std::string, unsigned> RTLInstDict::getSignature(const char *name) {
     // Take the argument, convert it to upper case and remove any _'s and .'s
     QString hlpr(name);
-    hlpr = hlpr.left(hlpr.indexOf('.')).toUpper();
+    hlpr = hlpr.replace(".","").toUpper();
     // Look up the dictionary
     std::map<std::string, TableEntry>::iterator it = idict.find(hlpr.toStdString());
     if (it == idict.end()) {
