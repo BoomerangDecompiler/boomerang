@@ -24,7 +24,7 @@ class SSLScanner;
 union yy_SSLParser_stype {
     Exp *exp;
     char *str;
-    int num;
+    int32_t num;
     double dbl;
     Instruction *regtransfer;
     Type *typ;

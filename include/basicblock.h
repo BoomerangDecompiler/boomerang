@@ -209,7 +209,7 @@ class BasicBlock {
     void setJumpReqd();
     bool isJumpReqd();
 
-    ADDRESS getLowAddr();
+    ADDRESS getLowAddr() const;
     ADDRESS getHiAddr();
 
     std::list<RTL *> *getRTLs();

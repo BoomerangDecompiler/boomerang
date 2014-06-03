@@ -237,6 +237,8 @@ void Prog::generateCode(Cluster *cluster, UserProc *proc, bool /*intermixRTL*/) 
         if (proc != nullptr && up != proc)
             continue;
         up->getCFG()->compressCfg();
+        up->getCFG()->removeOrphanBBs();
+
         HLLCode *code = Boomerang::get()->getHLLCode(up);
         up->generateCode(code);
         if (up->getCluster() == m_rootCluster) {
@@ -1736,7 +1738,7 @@ Exp *Prog::readNativeAs(ADDRESS uaddr, Type *type) {
 }
 
 void Global::meetType(Type *ty) {
-    bool ch;
+    bool ch=false;
     type = type->meetWith(ty, ch);
 }
 //! Re-decode this proc from scratch

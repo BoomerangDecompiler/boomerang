@@ -1255,7 +1255,7 @@ YY_SSLScanner_LEX_RETURN YY_SSLScanner_CLASS::YY_SSLScanner_LEX(YY_SSLScanner_LE
 
             // David - changed to << for more efficient and
             // not depend on the <cmath> anymore.
-            yylval.num = 1 << (strtol(start, 0, 10) * sign);
+            yylval.num = sign * (1 << (strtol(start, 0, 10)));
             // yylval.num = (int)pow(2,strtol(start,0,10)) * sign;
             return SSLParser::NUM;
         }

@@ -52,7 +52,7 @@ using namespace std;
 BasicBlock::BasicBlock(Function *parent)
     : TargetOutEdges(0),
       // From Doug's code
-      Ord(-1), RevOrd(-1), InEdgesVisited(0), NumForwardInEdges(-1), Traversed(UNTRAVERSED), HllLabel(false),
+      InEdgesVisited(0), NumForwardInEdges(-1), Traversed(UNTRAVERSED), HllLabel(false),
       IndentLevel(0), ImmPDom(nullptr), LoopHead(nullptr), CaseHead(nullptr), CondFollow(nullptr), LoopFollow(nullptr),
       LatchNode(nullptr), StructuringType(Seq), UnstructuredType(Structured),
       // Others
@@ -102,7 +102,7 @@ BasicBlock::BasicBlock(const BasicBlock &bb)
 BasicBlock::BasicBlock(Function *parent, std::list<RTL *> *pRtls, BBTYPE bbType, uint32_t iNumOutEdges)
     : NodeType(bbType), Incomplete(false),
       // From Doug's code
-      Ord(-1), RevOrd(-1), InEdgesVisited(0), NumForwardInEdges(-1), Traversed(UNTRAVERSED), HllLabel(false),
+      InEdgesVisited(0), NumForwardInEdges(-1), Traversed(UNTRAVERSED), HllLabel(false),
       IndentLevel(0), ImmPDom(nullptr), LoopHead(nullptr), CaseHead(nullptr), CondFollow(nullptr), LoopFollow(nullptr),
       LatchNode(nullptr), StructuringType(Seq), UnstructuredType(Structured),
       // Others
@@ -321,7 +321,7 @@ bool BasicBlock::isBackEdge(size_t inEdge) const {
   * for this BB will be the address of the branch.
   * \returns            the lowest real address associated with this BB
   ******************************************************************************/
-ADDRESS BasicBlock::getLowAddr() {
+ADDRESS BasicBlock::getLowAddr() const {
     if (ListOfRTLs == nullptr || ListOfRTLs->size() == 0)
         return ADDRESS::g(0L);
     ADDRESS a = ListOfRTLs->front()->getAddress();

@@ -56,7 +56,8 @@ typedef std::map<ADDRESS, BasicBlock *, std::less<ADDRESS>> MAPBB;
 class Cfg {
     typedef std::set<CallStatement *> sCallStatement;
     typedef std::map<Exp *, Instruction *, lessExpStar> mExpStatement;
-    bool m_bWellFormed, structured;
+    mutable bool WellFormed;
+    bool structured;
     bool bImplicitsDone;
     int lastLabel;
     UserProc *myProc;
@@ -106,7 +107,7 @@ class Cfg {
     void sortByFirstDFT();
     void sortByLastDFT();
 
-    bool wellFormCfg();
+    bool wellFormCfg() const;
     bool mergeBBs(BasicBlock *pb1, BasicBlock *pb2);
     bool compressCfg();
     bool establishDFTOrder();
@@ -194,7 +195,8 @@ class Cfg {
     void removeUsedGlobals(std::set<Global *> &unusedGlobals);
     void bbSearchAll(Exp *search, std::list<Exp *> &result, bool ch);
 
-  protected:
+    bool removeOrphanBBs();
+protected:
     void addBB(BasicBlock *bb) { m_listBB.push_back(bb); }
     friend class XMLProgParser;
 }; /* Cfg */

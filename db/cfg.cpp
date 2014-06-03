@@ -81,7 +81,7 @@ void erase_lrtls(std::list<RTL *> &pLrtl, std::list<RTL *>::iterator begin, std:
  **********************************/
 
 Cfg::Cfg()
-    : m_bWellFormed(false), structured(false), bImplicitsDone(false), lastLabel(0), entryBB(nullptr), exitBB(nullptr) {}
+    : WellFormed(false), structured(false), bImplicitsDone(false), lastLabel(0), entryBB(nullptr), exitBB(nullptr) {}
 
 /***************************************************************************/ /**
   *
@@ -116,7 +116,7 @@ void Cfg::clear() {
     implicitMap.clear();
     entryBB = nullptr;
     exitBB = nullptr;
-    m_bWellFormed = false;
+    WellFormed = false;
     callSites.clear();
     lastLabel = 0;
 }
@@ -130,7 +130,7 @@ void Cfg::clear() {
 const Cfg &Cfg::operator=(const Cfg &other) {
     m_listBB = other.m_listBB;
     m_mapBB = other.m_mapBB;
-    m_bWellFormed = other.m_bWellFormed;
+    WellFormed = other.WellFormed;
     return *this;
 }
 
@@ -283,10 +283,10 @@ BasicBlock *Cfg::newBB(std::list<RTL *> *pRtls, BBTYPE bbType, uint32_t iNumOutE
 
         // Existing New            +---+ Top of existing
         //    +---+                +---+
-        //    |    |    +---+        +---+ Fall through
-        //    |    |    |    | =>    |    |
-        //    |    |    |    |        |    | New; rest of existing discarded
-        //    +---+    +---+        +---+
+        //    |   |    +---+       +---+ Fall through
+        //    |   |    |   | =>    |   |
+        //    |   |    |   |       |   | New; rest of existing discarded
+        //    +---+    +---+       +---+
         // Note: no need to check the other way around, because in this case, we will have called Cfg::Label(), and it
         // will have split the existing BB already.
     }
@@ -425,10 +425,10 @@ BasicBlock *Cfg::splitBB(BasicBlock *pBB, ADDRESS uNativeAddr, BasicBlock *pNewB
         // since they will never overlap
         pNewBB->setRTLs(new std::list<RTL *>(ri, pBB->ListOfRTLs->end()));
         m_listBB.push_back(pNewBB); // Put it in the graph
-        m_mapBB[uNativeAddr] =
-            pNewBB; // Put the implicit label into the map. Need to do this before the addOutEdge() below
-        pNewBB->LabelNum =
-            ++lastLabel; // There must be a label here; else would not be splitting. Give it a new label
+        // Put the implicit label into the map. Need to do this before the addOutEdge() below
+        m_mapBB[uNativeAddr] = pNewBB;
+        // There must be a label here; else would not be splitting. Give it a new label
+        pNewBB->LabelNum = ++lastLabel;
     } else if (pNewBB->Incomplete) {
         // We have an existing BB and a map entry, but no details except for
         // in-edges and m_bHasLabel.
@@ -670,15 +670,15 @@ void Cfg::sortByLastDFT() { m_listBB.sort(BasicBlock::lessLastDFT); }
   *
   * \returns True if transformation was successful
   ******************************************************************************/
-bool Cfg::wellFormCfg() {
-    m_bWellFormed = true;
-    for (auto &elem : m_listBB) {
+bool Cfg::wellFormCfg() const {
+    WellFormed = true;
+    for (const BasicBlock *elem : m_listBB) {
         // it iterates through all BBs in the list
         // Check that it's complete
-        BasicBlock *current = elem;
+        const BasicBlock *current = elem;
         if (current->Incomplete) {
-            m_bWellFormed = false;
-            MAPBB::iterator itm;
+            WellFormed = false;
+            MAPBB::const_iterator itm;
             for (itm = m_mapBB.begin(); itm != m_mapBB.end(); itm++)
                 if ((*itm).second == elem)
                     break;
@@ -700,21 +700,17 @@ bool Cfg::wellFormCfg() {
 
                     // Check that the out edge has been written (i.e. nonzero)
                     if (pBB == nullptr) {
-                        m_bWellFormed = false; // At least one problem
+                        WellFormed = false; // At least one problem
                         ADDRESS addr = current->getLowAddr();
                         std::cerr << "WellFormCfg: BB with native address " << std::hex << addr
                                   << " is missing outedge " << i << std::endl;
                     } else {
-                        // Check that there is a corresponding in edge from the
-                        // child to here
-                        std::vector<BasicBlock *>::iterator ii;
-                        for (ii = pBB->InEdges.begin(); ii != pBB->InEdges.end(); ii++)
-                            if (*ii == elem)
-                                break;
+                        // Check that there is a corresponding in edge from the child to here
+                        auto ii = std::find(pBB->InEdges.begin(),pBB->InEdges.end(),elem);
                         if (ii == pBB->InEdges.end()) {
                             std::cerr << "WellFormCfg: No in edge to BB at " << std::hex << (elem)->getLowAddr()
                                       << " from successor BB at " << pBB->getLowAddr() << std::endl;
-                            m_bWellFormed = false; // At least one problem
+                            WellFormed = false; // At least one problem
                         }
                     }
                 }
@@ -722,20 +718,17 @@ bool Cfg::wellFormCfg() {
             // Also check that each in edge has a corresponding out edge to here (could have an extra in-edge, for
             // example)
             std::vector<BasicBlock *>::iterator ii;
-            for (ii = (elem)->InEdges.begin(); ii != (elem)->InEdges.end(); ii++) {
-                std::vector<BasicBlock *>::iterator oo;
-                for (oo = (*ii)->OutEdges.begin(); oo != (*ii)->OutEdges.end(); oo++)
-                    if (*oo == elem)
-                        break;
-                if (oo == (*ii)->OutEdges.end()) {
+            for (BasicBlock *elem_inedge : elem->InEdges) {
+                auto oo = std::find(elem_inedge->OutEdges.begin(),elem_inedge->OutEdges.end(),elem);
+                if (oo == elem_inedge->OutEdges.end()) {
                     std::cerr << "WellFormCfg: No out edge to BB at " << std::hex << (elem)->getLowAddr()
                               << " from predecessor BB at " << (*ii)->getLowAddr() << std::endl;
-                    m_bWellFormed = false; // At least one problem
+                    WellFormed = false; // At least one problem
                 }
             }
         }
     }
-    return m_bWellFormed;
+    return WellFormed;
 }
 
 /***************************************************************************/ /**
@@ -749,7 +742,7 @@ bool Cfg::wellFormCfg() {
 bool Cfg::mergeBBs(BasicBlock *pb1, BasicBlock *pb2) {
     // Can only merge if pb1 has only one outedge to pb2, and pb2 has only one in-edge, from pb1. This can only be done
     // after the in-edges are done, which can only be done on a well formed CFG.
-    if (!m_bWellFormed)
+    if (!WellFormed)
         return false;
     if (pb1->OutEdges.size() != 1)
         return false;
@@ -799,6 +792,9 @@ void Cfg::completeMerge(BasicBlock *pb1, BasicBlock *pb2, bool bDelete) {
         for (BB_IT it = m_listBB.begin(); it != m_listBB.end(); it++) {
             if (*it == pb1) {
                 m_listBB.erase(it);
+                if((*it)->getLowAddr()!=ADDRESS::g(0)) {
+                    m_mapBB.erase((*it)->getLowAddr());
+                }
                 break;
             }
         }
@@ -834,6 +830,9 @@ bool Cfg::joinBB(BasicBlock *pb1, BasicBlock *pb2) {
     // pb1 no longer needed. Remove it from the list of BBs.  This will also delete *pb1. It will be a shallow delete,
     // but that's good because we only did shallow copies to *pb2
     BB_IT bbit = std::find(m_listBB.begin(), m_listBB.end(), pb1);
+    if((*bbit)->getLowAddr()!=ADDRESS::g(0)) {
+        m_mapBB.erase((*bbit)->getLowAddr());
+    }
     m_listBB.erase(bbit);
     return true;
 }
@@ -844,6 +843,9 @@ bool Cfg::joinBB(BasicBlock *pb1, BasicBlock *pb2) {
   ******************************************************************************/
 void Cfg::removeBB(BasicBlock *bb) {
     BB_IT bbit = std::find(m_listBB.begin(), m_listBB.end(), bb);
+    if((*bbit)->getLowAddr()!=ADDRESS::g(0)) {
+        m_mapBB.erase((*bbit)->getLowAddr());
+    }
     m_listBB.erase(bbit);
 }
 
@@ -860,7 +862,7 @@ void Cfg::removeBB(BasicBlock *bb) {
   ******************************************************************************/
 bool Cfg::compressCfg() {
     // must be well formed
-    if (!m_bWellFormed)
+    if (!WellFormed)
         return false;
 
     // FIXME: The below was working while we still had reaching definitions.  It seems to me that it would be easy to
@@ -905,6 +907,9 @@ bool Cfg::compressCfg() {
                 if (pSucc->InEdges.empty()) {
                     for (BB_IT it3 = m_listBB.begin(); it3 != m_listBB.end(); it3++) {
                         if (*it3 == pSucc) {
+                            if((*it3)->getLowAddr()!=ADDRESS::g(0)) {
+                                m_mapBB.erase((*it3)->getLowAddr());
+                            }
                             m_listBB.erase(it3);
                             // And delete the BB
                             delete pSucc;
@@ -916,6 +921,28 @@ bool Cfg::compressCfg() {
         }
     }
     return true;
+}
+bool Cfg::removeOrphanBBs() {
+    std::deque<BasicBlock *> orphans;
+    for (BB_IT it = m_listBB.begin(); it != m_listBB.end(); it++) {
+        if(*it==this->entryBB) // don't remove entry BasicBlock
+            continue;
+        BasicBlock *b = *it;
+        if(b->InEdges.empty())
+            orphans.push_back(b);
+    }
+    bool res = !orphans.empty();
+    while(!orphans.empty()) {
+        BasicBlock *b = orphans.front();
+        orphans.pop_front();
+        for(BasicBlock *child : b->OutEdges) {
+            child->deleteInEdge(b);
+            if(child->InEdges.empty())
+                orphans.push_back(child);
+        }
+        removeBB(b);
+    }
+    return res;
 }
 
 /***************************************************************************/ /**
@@ -946,7 +973,7 @@ void Cfg::unTraverse() {
   ******************************************************************************/
 bool Cfg::establishDFTOrder() {
     // Must be well formed.
-    if (!m_bWellFormed)
+    if (!WellFormed)
         return false;
 
     // Reset all the traversed flags
@@ -987,7 +1014,7 @@ BasicBlock *Cfg::findRetNode() {
   ******************************************************************************/
 bool Cfg::establishRevDFTOrder() {
     // Must be well formed.
-    if (!m_bWellFormed)
+    if (!WellFormed)
         return false;
 
     // WAS: sort by last dfs and grab the exit node
@@ -1015,7 +1042,7 @@ bool Cfg::establishRevDFTOrder() {
   * \brief Query the wellformed'ness status
   * \returns m_bWellFormed
   ******************************************************************************/
-bool Cfg::isWellFormed() { return m_bWellFormed; }
+bool Cfg::isWellFormed() { return WellFormed; }
 
 /***************************************************************************/ /**
   *

@@ -50,9 +50,8 @@ void Instruction::setProc(UserProc *p) {
     LocationSet::iterator ll;
     for (ll = exps.begin(); ll != exps.end(); ll++) {
         Location *l = dynamic_cast<Location *>(*ll);
-        if (l) {
+        if (l)
             l->setProc(p);
-        }
     }
 }
 
@@ -836,7 +835,8 @@ bool Instruction::propagateTo(bool &convert, std::map<Exp *, int, lessExpStar> *
 // heuristic
 bool Instruction::propagateFlagsTo() {
     // FIXME: convert is uninitialized ?
-    bool change = false, convert;
+    bool change = false;
+    bool convert = false;
     int changes = 0;
     do {
         LocationSet exps;
