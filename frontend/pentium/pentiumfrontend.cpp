@@ -43,7 +43,7 @@
 #define AH 12
 
 /***************************************************************************/ /**
-  * FUNCTION:      isStoreFsw
+  * \fn      isStoreFsw
   * \brief      Return true if the given Statement is an assignment that stores the FSW (Floating point Status Word)
   *                    reg
   * \param      s - Ptr to the given Statement
@@ -76,7 +76,7 @@ bool PentiumFrontEnd::isDecAh(RTL *r) {
     return *rhs == ahm1;
 }
 /***************************************************************************/ /**
-  * FUNCTION:      isSetX
+  * \fn      isSetX
   * \brief      Return true if the given Statement is a setX instruction
   * \param      s - Ptr to the given Statement
   * \returns           True if it is
@@ -101,7 +101,7 @@ bool PentiumFrontEnd::isSetX(Instruction *s) {
     return ((Const *)s2)->getInt() == 1 && ((Const *)s3)->getInt() == 0;
 }
 /***************************************************************************/ /**
-  * FUNCTION:      isAssignFromTern
+  * \fn      isAssignFromTern
   * \brief      Return true if the given Statement is an expression whose RHS is a ?: ternary
   * \param      e - Ptr to the given Statement
   * \returns           True if it is
@@ -114,7 +114,7 @@ bool PentiumFrontEnd::isAssignFromTern(Instruction *s) {
     return rhs->getOper() == opTern;
 }
 /***************************************************************************/ /**
-  * FUNCTION:        PentiumFrontEnd::bumpRegisterAll
+  * \fn        PentiumFrontEnd::bumpRegisterAll
   * \brief        Finds a subexpression within this expression of the form
   *                      r[ int x] where min <= x <= max, and replaces it with
   *                      r[ int y] where y = min + (x - min + delta & mask)
@@ -145,7 +145,7 @@ void PentiumFrontEnd::bumpRegisterAll(Exp *e, int min, int max, int delta, int m
     }
 }
 /***************************************************************************/ /**
-  * FUNCTION:      PentiumFrontEnd::processProc
+  * \fn      PentiumFrontEnd::processProc
   * \brief      Process a procedure, given a native (source machine) address.
   * \param  address - the address at which the procedure starts
   * \param  pProc - the procedure object
@@ -453,7 +453,7 @@ bool PentiumFrontEnd::helperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL *> *l
 }
 
     /***************************************************************************/ /**
-      * FUNCTION:      construct
+      * \fn      construct
       * \brief      Construct a new instance of PentiumFrontEnd
       * \param      Same as the FrontEnd constructor, except decoder is **
       *

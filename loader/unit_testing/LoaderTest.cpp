@@ -39,7 +39,7 @@
 #include <sstream>
 #include "../microX86dis.c"
 /***************************************************************************/ /**
-  * FUNCTION:        LoaderTest::testSparcLoad
+  * \fn        LoaderTest::testSparcLoad
   * OVERVIEW:        Test loading the sparc hello world program
   ******************************************************************************/
 void LoaderTest::testSparcLoad() {
@@ -69,7 +69,7 @@ void LoaderTest::testSparcLoad() {
 }
 
 /***************************************************************************/ /**
-  * FUNCTION:        LoaderTest::testPentiumLoad
+  * \fn        LoaderTest::testPentiumLoad
   * OVERVIEW:        Test loading the pentium (Solaris) hello world program
   ******************************************************************************/
 void LoaderTest::testPentiumLoad() {
@@ -99,7 +99,7 @@ void LoaderTest::testPentiumLoad() {
 }
 
 /***************************************************************************/ /**
-  * FUNCTION:        LoaderTest::testHppaLoad
+  * \fn        LoaderTest::testHppaLoad
   * OVERVIEW:        Test loading the sparc hello world program
   ******************************************************************************/
 void LoaderTest::testHppaLoad() {
@@ -127,7 +127,7 @@ void LoaderTest::testHppaLoad() {
 }
 
 /***************************************************************************/ /**
-  * FUNCTION:        LoaderTest::testPalmLoad
+  * \fn        LoaderTest::testPalmLoad
   * OVERVIEW:        Test loading the Palm 68328 Starter.prc program
   ******************************************************************************/
 void LoaderTest::testPalmLoad() {
@@ -157,7 +157,7 @@ void LoaderTest::testPalmLoad() {
 }
 
 /***************************************************************************/ /**
-  * FUNCTION:        LoaderTest::testWinLoad
+  * \fn        LoaderTest::testWinLoad
   * OVERVIEW:        Test loading Windows programs
   ******************************************************************************/
 void LoaderTest::testWinLoad() {
@@ -254,7 +254,7 @@ void LoaderTest::testWinLoad() {
 }
 
 /***************************************************************************/ /**
-  * FUNCTION:        LoaderTest::testMicroDis
+  * \fn        LoaderTest::testMicroDis
   * OVERVIEW:        Test the micro disassembler
   ******************************************************************************/
 

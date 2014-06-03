@@ -168,7 +168,7 @@ class NJMCDecoder {
 
 /*
  * Does the instruction at the given offset correspond to a caller prologue?
- * NOTE: Implemented in the decoder.m files
+ * \note Implemented in the decoder.m files
  */
 bool isFuncPrologue(ADDRESS hostPC);
 

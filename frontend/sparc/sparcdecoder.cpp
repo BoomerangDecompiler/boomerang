@@ -52,7 +52,7 @@
 #define DIS_FS2Q (machine->dis_RegRhs((fs2q >> 2) + 80))
 
 /***************************************************************************/ /**
-  * FUNCTION:       unused
+  * \fn       unused
   * \brief       A dummy function to suppress "unused local variable" messages
   * \param       x: integer variable to be "used"
   *
@@ -60,7 +60,7 @@
 void SparcDecoder::unused(int /*x*/) {}
 
 /***************************************************************************/ /**
-  * FUNCTION:       createBranchRtl
+  * \fn       createBranchRtl
   * \brief       Create an RTL for a Bx instruction
   * \param       pc - the location counter
   *                   stmts - ptr to list of Statement pointers
@@ -175,7 +175,7 @@ RTL *SparcDecoder::createBranchRtl(ADDRESS pc, std::list<Instruction *> *stmts, 
 }
 
 /***************************************************************************/ /**
-  * FUNCTION:       SparcDecoder::decodeInstruction
+  * \fn       SparcDecoder::decodeInstruction
   * \brief       Attempt to decode the high level instruction at a given address and return the corresponding HL type
   *                    (e.g. CallStatement, GotoStatement etc). If no high level instruction exists at the given
   *address,
@@ -2097,16 +2097,16 @@ Exp *SparcDecoder::dis_RegLhs(unsigned r) { return Location::regOf(r); }
 
 /***************************************************************************/ /**
   * \fn     SparcMachine::dis_RegRhs
-  * \brief        Decode the register on the RHS
-  * \note            Replaces r[0] with const 0
-  * \note            Not used by DIS_RD since don't want 0 on LHS
+  * \brief   Decode the register on the RHS
+  * \note    Replaces r[0] with const 0
+  * \note    Not used by DIS_RD since don't want 0 on LHS
   * \param        r - register (0-31)
   * \returns        the expression representing the register
   ******************************************************************************/
-Exp *SparcMachine::dis_RegRhs(uint8_t r) {
-    if (r == 0)
+Exp *SparcMachine::dis_RegRhs(uint8_t reg_no) {
+    if (reg_no == 0)
         return new Const(0);
-    return Location::regOf(r);
+    return Location::regOf(reg_no);
 }
 
 /***************************************************************************/ /**
@@ -2187,7 +2187,7 @@ Exp *SparcDecoder::dis_Eaddr(ADDRESS pc, int ignore /* = 0 */) {
 }
 
 /***************************************************************************/ /**
-  * FUNCTION:      isFuncPrologue()
+  * \fn      isFuncPrologue()
   * \brief      Check to see if the instructions at the given offset match any callee prologue, i.e. does it look
   *                    like this offset is a pointer to a function?
   * \param      hostPC - pointer to the code in question (host address)
@@ -2222,22 +2222,16 @@ bool SparcDecoder::isRestore(ADDRESS hostPC) {
  **********************************/
 
 /***************************************************************************/ /**
-  * FUNCTION:        getDword
-  * \brief        Returns the double starting at the given address.
-  * \param        lc - address at which to decode the double
-  * \returns             the decoded double
+  * \fn        SparcDecoder::getDword
+  * \brief     Returns the double starting at the given address.
+  * \param     lc - address at which to decode the double
+  * \returns   the decoded double
   ******************************************************************************/
 DWord SparcDecoder::getDword(ADDRESS lc) {
     Byte *p = (Byte *)lc.m_value;
     return (p[0] << 24) + (p[1] << 16) + (p[2] << 8) + p[3];
 }
 
-/***************************************************************************/ /**
-  * FUNCTION:       SparcDecoder::SparcDecoder
-  * \brief
-  * \param       None
-  *
-  ******************************************************************************/
 SparcDecoder::SparcDecoder(Prog *prog) : NJMCDecoder(prog) {
     machine = new SparcMachine;
     QString file = Boomerang::get()->getProgPath() + "frontend/machine/sparc/sparc.ssl";

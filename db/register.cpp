@@ -11,8 +11,9 @@
 
 /***************************************************************************/ /**
   * \file register.cpp
-  * Desc: Register class descriptions.  Holds detailed information about
-  *         a single register.
+  * \brief Register class descriptions
+  *
+  * Holds detailed information about a single register.
   ******************************************************************************/
 
 #include <cassert>
@@ -25,7 +26,7 @@ Register::Register() : address(nullptr), mappedIndex(-1), mappedOffset(-1), flt(
 
 /***************************************************************************/ /**
   * \brief      Copy constructor.
-  * \param      Reference to another Register object to construct from
+  * \param      r - Reference to another Register object to construct from
   ******************************************************************************/
 Register::Register(const Register &r)
     : size(r.size), address(r.address), mappedIndex(r.mappedIndex), mappedOffset(r.mappedOffset), flt(r.flt) {
@@ -35,8 +36,8 @@ Register::Register(const Register &r)
 
 /***************************************************************************/ /**
   * \brief      Copy operator
-  * \param      Reference to another Register object (to be copied)
-  * \returns           This object
+  * \param      r2 - Reference to another Register object (to be copied)
+  * \returns    This object
   ******************************************************************************/
 Register &Register::operator=(const Register &r2) {
     // copy operator
@@ -55,7 +56,7 @@ Register &Register::operator=(const Register &r2) {
 
 /***************************************************************************/ /**
   * \brief   Equality operator
-  * \param   Reference to another Register object
+  * \param   r2 - Reference to another Register object
   * \returns True if the same
   ******************************************************************************/
 bool Register::operator==(const Register &r2) const {
@@ -66,7 +67,7 @@ bool Register::operator==(const Register &r2) const {
 
 /***************************************************************************/ /**
   * \brief   Comparison operator (to establish an ordering)
-  * \param   Reference to another Register object
+  * \param   r2 - Reference to another Register object
   * \returns true if this name is less than the given Register's name
   ******************************************************************************/
 bool Register::operator<(const Register &r2) const {
@@ -80,7 +81,7 @@ bool Register::operator<(const Register &r2) const {
 
 /***************************************************************************/ /**
   * \brief      Set the name for this register
-  * \param      s: name to set it to
+  * \param      s - name to set it to
   *
   ******************************************************************************/
 void Register::s_name(const char *s) {
@@ -89,8 +90,8 @@ void Register::s_name(const char *s) {
 }
 
 /***************************************************************************/ /**
-  * \brief      Get the name for this register
-  * \returns           The name as a character string
+  * \brief    Get the name for this register
+  * \returns  The name as a character string
   ******************************************************************************/
 std::string Register::g_name() const { return name; }
 

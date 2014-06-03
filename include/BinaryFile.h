@@ -90,13 +90,6 @@ class ObjcModule {
     std::map<std::string, ObjcClass> classes;
 };
 
-/*
- * callback function, which when given the name of a library, should return
- * a pointer to an opened BinaryFile, or nullptr if the name cannot be resolved.
- */
-class BinaryFile;
-typedef BinaryFile *(*get_library_callback_t)(char *name);
-
 // This enum allows a sort of run time type identification, without using
 // compiler specific features
 enum LOAD_FMT {

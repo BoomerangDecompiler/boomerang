@@ -21,7 +21,7 @@
 #define SWITCH_PENT "test/pentium/switch_cc"
 
 /***************************************************************************/ /**
-  * FUNCTION:        RtlTest::testAppend
+  * \fn        RtlTest::testAppend
   * OVERVIEW:        Test appendExp and printing of RTLs
   ******************************************************************************/
 void RtlTest::testAppend() {
@@ -40,7 +40,7 @@ void RtlTest::testAppend() {
 }
 
 /***************************************************************************/ /**
-  * FUNCTION:        RtlTest::testClone
+  * \fn        RtlTest::testClone
   * OVERVIEW:        Test constructor from list of expressions; cloning of RTLs
   ******************************************************************************/
 void RtlTest::testClone() {
@@ -67,7 +67,7 @@ void RtlTest::testClone() {
 }
 
 /***************************************************************************/ /**
-  * FUNCTION:        RtlTest::testVisitor
+  * \fn        RtlTest::testVisitor
   * OVERVIEW:        Test the accept function for correct visiting behaviour.
   * NOTES:            Stub class to test.
   ******************************************************************************/
@@ -175,7 +175,7 @@ void RtlTest::testVisitor() {
 }
 
 /***************************************************************************/ /**
-  * FUNCTION:        RtlTest::testIsCompare
+  * \fn        RtlTest::testIsCompare
   * OVERVIEW:        Test the isCompare function
   ******************************************************************************/
 // void RtlTest::testIsCompare() {

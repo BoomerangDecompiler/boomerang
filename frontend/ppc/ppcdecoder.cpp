@@ -76,7 +76,7 @@ Exp *crBit(int bitNum); // Get an expression for a CR bit access
     SHOW_ASM(name << " " << BIcr << ", 0x" << std::hex << relocd - delta)
 
 /***************************************************************************/ /**
-  * FUNCTION:       unused
+  * \fn       unused
   * \brief       A dummy function to suppress "unused local variable" messages
   * \param       x: integer variable to be "used"
   *
@@ -85,19 +85,19 @@ void PPCDecoder::unused(int /*x*/) {}
 void unused(const char *x) {}
 
 /***************************************************************************/ /**
-  * FUNCTION:       PPCDecoder::decodeInstruction
-  * \brief       Attempt to decode the high level instruction at a given
-  *                   address and return the corresponding HL type (e.g. CallStatement,
-  *                   GotoStatement etc). If no high level instruction exists at the
-  *                   given address, then simply return the RTL for the low level
-  *                   instruction at this address. There is an option to also
-  *                   include the low level statements for a HL instruction.
-  * \param       pc - the native address of the pc
-  *                   delta - the difference between the above address and the
-  *                     host address of the pc (i.e. the address that the pc is at
-  *                     in the loaded object file)
-  *                   proc - the enclosing procedure. This can be nullptr for
-  *                     those of us who are using this method in an interpreter
+  * \fn       PPCDecoder::decodeInstruction
+  * \brief       Attempt to decode the high level instruction at a given address.
+  *
+  * Will return the corresponding HL type (e.g. CallStatement,
+  * GotoStatement etc). If no high level instruction exists at the
+  * given address, then simply return the RTL for the low level
+  * instruction at this address. There is an option to also
+  * include the low level statements for a HL instruction.
+  *
+  * \param  pc - the native address of the pc
+  * \param  delta - the difference between the above address and the
+  *                 host address of the pc (i.e. the address that the pc is at
+  *                 in the loaded object file)
   * \returns            a DecodeResult structure containing all the information
   *                     gathered during decoding
   ******************************************************************************/
@@ -8949,7 +8949,7 @@ DecodeResult &PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta) {
  **********************************************************************/
 
 /***************************************************************************/ /**
-  * FUNCTION:        PPCDecoder::dis_Reg
+  * \fn        PPCDecoder::dis_Reg
   * \brief        Decode the register
   * \param        r - register (0-31)
   * \returns             the expression representing the register
@@ -8957,7 +8957,7 @@ DecodeResult &PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta) {
 Exp *PPCDecoder::dis_Reg(unsigned r) { return Location::regOf(r); }
 
 /***************************************************************************/ /**
-  * FUNCTION:        PPCDecoder::dis_RAmbz
+  * \fn        PPCDecoder::dis_RAmbz
   * \brief        Decode the register rA when rA represents constant 0 if r == 0
   * \param        r - register (0-31)
   * \returns             the expression representing the register
@@ -8969,7 +8969,7 @@ Exp *PPCDecoder::dis_RAmbz(unsigned r) {
 }
 
 /***************************************************************************/ /**
-  * FUNCTION:      isFuncPrologue()
+  * \fn      isFuncPrologue()
   * \brief      Check to see if the instructions at the given offset match
   *                    any callee prologue, i.e. does it look like this offset
   *                    is a pointer to a function?
@@ -8983,7 +8983,7 @@ bool PPCDecoder::isFuncPrologue(ADDRESS /*hostPC*/) { return false; }
  **********************************/
 
 /***************************************************************************/ /**
-  * FUNCTION:        getDword
+  * \fn        getDword
   * \brief        Returns the double starting at the given address.
   * \param        lc - address at which to decode the double
   * \returns             the decoded double
@@ -8994,9 +8994,8 @@ DWord PPCDecoder::getDword(ADDRESS lc) {
 }
 
 /***************************************************************************/ /**
-  * FUNCTION:       PPCDecoder::PPCDecoder
+  * \fn       PPCDecoder::PPCDecoder
   * \brief
-  * \param       None
   *
   ******************************************************************************/
 PPCDecoder::PPCDecoder(Prog *prog) : NJMCDecoder(prog) {

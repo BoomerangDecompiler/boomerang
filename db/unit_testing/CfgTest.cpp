@@ -42,7 +42,7 @@ void CfgTest::initTestCase() {
 }
 
     /***************************************************************************/ /**
-      * FUNCTION:        CfgTest::testDominators
+      * \fn        CfgTest::testDominators
       * OVERVIEW:        Test the dominator frontier code
       ******************************************************************************/
 #define FRONTIER_FOUR 0x08048347
@@ -94,7 +94,7 @@ void CfgTest::testDominators() {
 }
 
     /***************************************************************************/ /**
-      * FUNCTION:        CfgTest::testSemiDominators
+      * \fn        CfgTest::testSemiDominators
       * OVERVIEW:        Test a case where semi dominators are different to dominators
       ******************************************************************************/
 #define SEMI_L ADDRESS::g(0x80483b0)
@@ -151,7 +151,7 @@ void CfgTest::testSemiDominators() {
 }
 
 /***************************************************************************/ /**
-  * FUNCTION:        CfgTest::testPlacePhi
+  * \fn        CfgTest::testPlacePhi
   * OVERVIEW:        Test the placing of phi functions
   ******************************************************************************/
 void CfgTest::testPlacePhi() {
@@ -193,7 +193,7 @@ void CfgTest::testPlacePhi() {
 }
 
 /***************************************************************************/ /**
-  * FUNCTION:        CfgTest::testPlacePhi2
+  * \fn        CfgTest::testPlacePhi2
   * OVERVIEW:        Test a case where a phi function is not needed
   ******************************************************************************/
 void CfgTest::testPlacePhi2() {
@@ -247,7 +247,7 @@ void CfgTest::testPlacePhi2() {
 }
 
 /***************************************************************************/ /**
-  * FUNCTION:        CfgTest::testRenameVars
+  * \fn        CfgTest::testRenameVars
   * OVERVIEW:        Test the renaming of variables
   ******************************************************************************/
 void CfgTest::testRenameVars() {

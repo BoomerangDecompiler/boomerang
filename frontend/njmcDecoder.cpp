@@ -32,7 +32,7 @@
  **********************************/
 
 /***************************************************************************/ /**
-  * FUNCTION:       NJMCDecoder::NJMCDecoder
+  * \fn       NJMCDecoder::NJMCDecoder
   * \brief
   * \param       prog: Pointer to the Prog object
   *
@@ -171,7 +171,7 @@ void DecodeResult::reset() {
 
 /***************************************************************************/ /**
   * \brief   Converts a numbered register to a suitable expression.
-  * \param   reg - the register number, e.g. 0 for eax
+  * \param   regNum - the register number, e.g. 0 for eax
   * \returns the Exp* for the register NUMBER (e.g. "int 36" for %f4)
   ******************************************************************************/
 Exp *NJMCDecoder::dis_Reg(int regNum) {
@@ -194,6 +194,8 @@ Exp *NJMCDecoder::dis_Num(unsigned num) {
   *              Also check if the destination is a label (MVE: is this done?)
   * \param   name name of instruction (for debugging)
   * \param   size size of instruction in bytes
+  * \param   relocd
+  * \param   delta
   * \param   pc native pc
   * \param   stmts list of statements (?)
   * \param   result ref to decoder result object

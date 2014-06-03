@@ -23,7 +23,7 @@ void DfaTest::SetUp() {}
 void DfaTest::TearDown() {}
 
 /***************************************************************************/ /**
-  * FUNCTION:        DfaTest::testMeetInt
+  * \fn        DfaTest::testMeetInt
   * OVERVIEW:        Test meeting IntegerTypes with various other types
   ******************************************************************************/
 void DfaTest::testMeetInt() {
@@ -113,7 +113,7 @@ void DfaTest::testMeetInt() {
 }
 
 /***************************************************************************/ /**
-  * FUNCTION:        DfaTest::testMeetSize
+  * \fn        DfaTest::testMeetSize
   * OVERVIEW:        Test meeting IntegerTypes with various other types
   ******************************************************************************/
 void DfaTest::testMeetSize() {
@@ -158,7 +158,7 @@ void DfaTest::testMeetSize() {
 }
 
 /***************************************************************************/ /**
-  * FUNCTION:        DfaTest::testMeetPointer
+  * \fn        DfaTest::testMeetPointer
   * OVERVIEW:        Test meeting IntegerTypes with various other types
   ******************************************************************************/
 void DfaTest::testMeetPointer() {
@@ -196,7 +196,7 @@ void DfaTest::testMeetPointer() {
 }
 
 /***************************************************************************/ /**
-  * FUNCTION:        DfaTest::testMeetUnion
+  * \fn        DfaTest::testMeetUnion
   * OVERVIEW:        Test meeting IntegerTypes with various other types
   ******************************************************************************/
 void DfaTest::testMeetUnion() {

@@ -37,7 +37,7 @@ void ST20Decoder::unused(int /*x*/) {}
 
 static DecodeResult result;
 /***************************************************************************/ /**
-  * FUNCTION:       ST20Decoder::decodeInstruction
+  * \fn       ST20Decoder::decodeInstruction
   * \brief       Decodes a machine instruction and returns an RTL instance. In all cases a single instruction is
   decoded.
   * \param       pc - the native address of the pc
@@ -883,7 +883,7 @@ DecodeResult &ST20Decoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta) {
  **********************************/
 
 /***************************************************************************/ /**
-  * FUNCTION:        getWord
+  * \fn        getWord
   * \brief        Returns the word starting at the given address.
   * \param        lc - address at which to decode the double
   * \returns             the decoded double
@@ -895,7 +895,7 @@ Byte ST20Decoder::getByte(intptr_t lc)
 }
 
 /***************************************************************************/ /**
-  * FUNCTION:        getWord
+  * \fn        getWord
   * \brief        Returns the word starting at the given address.
   * \param        lc - address at which to decode the double
   * \returns             the decoded double
@@ -907,7 +907,7 @@ SWord ST20Decoder::getWord(intptr_t lc)
 }
 
 /***************************************************************************/ /**
-  * FUNCTION:        getDword
+  * \fn        getDword
   * \brief        Returns the double starting at the given address.
   * \param        lc - address at which to decode the double
   * \returns             the decoded double
@@ -919,9 +919,8 @@ DWord ST20Decoder::getDword(intptr_t lc)
 }
 
 /***************************************************************************/ /**
-  * FUNCTION:       ST20Decoder::ST20Decoder
+  * \fn       ST20Decoder::ST20Decoder
   * \brief       Constructor. The code won't work without this (not sure why the default constructor won't do...)
-  * \param       None
   *
   ******************************************************************************/
 ST20Decoder::ST20Decoder() : NJMCDecoder(prog) {

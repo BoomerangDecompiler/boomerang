@@ -11,7 +11,7 @@
 #define SPARC_SSL Boomerang::get()->getProgPath() + "frontend/machine/sparc/sparc.ssl"
 
 /***************************************************************************/ /**
-  * FUNCTION:        ParserTest::testRead
+  * \fn        ParserTest::testRead
   * OVERVIEW:        Test reading the SSL file
   ******************************************************************************/
 void ParserTest::testRead() {
@@ -20,7 +20,7 @@ void ParserTest::testRead() {
 }
 
 /***************************************************************************/ /**
-  * FUNCTION:        ParserTest::testExp
+  * \fn        ParserTest::testExp
   * OVERVIEW:        Test parsing an expression
   ******************************************************************************/
 void ParserTest::testExp() {

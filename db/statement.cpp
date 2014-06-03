@@ -990,7 +990,7 @@ GotoStatement::GotoStatement(ADDRESS uDest) : m_isComputed(false) {
 }
 
 /***************************************************************************/ /**
-  * FUNCTION:        GotoStatement::~GotoStatement
+  * \fn        GotoStatement::~GotoStatement
   * \brief        Destructor
   *
   ******************************************************************************/
@@ -1064,7 +1064,7 @@ bool GotoStatement::search(const Exp &search, Exp *&result) {
 }
 
 /***************************************************************************/ /**
-  * FUNCTION:        GotoStatement::searchAndReplace
+  * \fn        GotoStatement::searchAndReplace
   * \brief        Replace all instances of search with replace.
   * \param search - a location to search for
   * \param replace - the expression with which to replace it
@@ -1080,7 +1080,7 @@ bool GotoStatement::searchAndReplace(const Exp &search, Exp *replace, bool /*cc*
 }
 
 /***************************************************************************/ /**
-  * FUNCTION:        GotoStatement::searchAll
+  * \fn        GotoStatement::searchAll
   * \brief        Find all instances of the search expression
   * \param search - a location to search for
   * \param result - a list which will have any matching exprs
@@ -1094,9 +1094,9 @@ bool GotoStatement::searchAll(const Exp &search, std::list<Exp *> &result) {
 }
 
 /***************************************************************************/ /**
-  * FUNCTION:        GotoStatement::print
+  * \fn        GotoStatement::print
   * \brief        Display a text reprentation of this RTL to the given stream
-  * NOTE:            Usually called from RTL::print, in which case the first 9
+  * \note            Usually called from RTL::print, in which case the first 9
   *                      chars of the print have already been output to os
   * \param        os: stream to write to
   *
@@ -1171,9 +1171,8 @@ void GotoStatement::simplify() {
  **********************************/
 
 /***************************************************************************/ /**
-  * FUNCTION:        BranchStatement::BranchStatement
+  * \fn        BranchStatement::BranchStatement
   * \brief        Constructor.
-  * \param        None
   *
   ******************************************************************************/
 BranchStatement::BranchStatement() : jtCond((BRANCH_TYPE)0), pCond(nullptr), bFloat(false), size(0) {
@@ -1183,7 +1182,6 @@ BranchStatement::BranchStatement() : jtCond((BRANCH_TYPE)0), pCond(nullptr), bFl
 /***************************************************************************/ /**
   * \fn        BranchStatement::~BranchStatement
   * \brief        Destructor
-  * \param        None
   *
   ******************************************************************************/
 BranchStatement::~BranchStatement() {
@@ -1193,7 +1191,7 @@ BranchStatement::~BranchStatement() {
 }
 
 /***************************************************************************/ /**
-  * FUNCTION:        BranchStatement::setCondType
+  * \fn        BranchStatement::setCondType
   * \brief        Sets the BRANCH_TYPE of this jcond as well as the flag
   *                    indicating whether or not the floating point condition codes
   *                    are used.
@@ -1293,7 +1291,7 @@ void BranchStatement::makeSigned() {
 }
 
 /***************************************************************************/ /**
-  * FUNCTION:        BranchStatement::getCondExpr
+  * \fn        BranchStatement::getCondExpr
   * \brief        Return the SemStr expression containing the HL condition.
   * \returns             ptr to an expression
   ******************************************************************************/
@@ -1385,7 +1383,7 @@ bool BranchStatement::search(const Exp &search, Exp *&result) {
 }
 
 /***************************************************************************/ /**
-  * FUNCTION:        BranchStatement::searchAndReplace
+  * \fn        BranchStatement::searchAndReplace
   * \brief        Replace all instances of search with replace.
   * \param        search - a location to search for
   *                    replace - the expression with which to replace it
@@ -1414,7 +1412,7 @@ bool BranchStatement::searchAll(const Exp &search, std::list<Exp *> &result) {
 }
 
 /***************************************************************************/ /**
-  * FUNCTION:        BranchStatement::print
+  * \fn        BranchStatement::print
   * \brief        Write a text representation to the given stream
   * \param        os: stream
   *
@@ -1865,18 +1863,16 @@ void BranchStatement::simplify() {
  * CaseStatement methods
  **********************************/
 /***************************************************************************/ /**
-  * FUNCTION:        CaseStatement::CaseStatement
+  * \fn        CaseStatement::CaseStatement
   * \brief        Constructor.
-  * \param        None
   *
   ******************************************************************************/
 CaseStatement::CaseStatement() : pSwitchInfo(nullptr) { Kind = STMT_CASE; }
 
 /***************************************************************************/ /**
-  * FUNCTION:        CaseStatement::~CaseStatement
+  * \fn        CaseStatement::~CaseStatement
   * \brief        Destructor
-  * NOTE:            Don't delete the pSwitchVar; it's always a copy of something else (so don't delete twice)
-  * \param        None
+  * \note            Don't delete the pSwitchVar; it's always a copy of something else (so don't delete twice)
   *
   ******************************************************************************/
 CaseStatement::~CaseStatement() {
@@ -1893,7 +1889,7 @@ CaseStatement::~CaseStatement() {
 SWITCH_INFO *CaseStatement::getSwitchInfo() { return pSwitchInfo; }
 
 /***************************************************************************/ /**
-  * FUNCTION:        CaseStatement::setSwitchInfo
+  * \fn        CaseStatement::setSwitchInfo
   * \brief        Set a pointer to a SWITCH_INFO struct
   * \param        Pointer to SWITCH_INFO struct
   *
@@ -1901,7 +1897,7 @@ SWITCH_INFO *CaseStatement::getSwitchInfo() { return pSwitchInfo; }
 void CaseStatement::setSwitchInfo(SWITCH_INFO * psi) { pSwitchInfo = psi; }
 
 /***************************************************************************/ /**
-  * FUNCTION:        CaseStatement::searchAndReplace
+  * \fn        CaseStatement::searchAndReplace
   * \brief        Replace all instances of search with replace.
   * \param        search - a location to search for
   *                    replace - the expression with which to replace it
@@ -1917,7 +1913,7 @@ bool CaseStatement::searchAndReplace(const Exp &search, Exp *replace, bool cc) {
 }
 
 /***************************************************************************/ /**
-  * FUNCTION:        CaseStatement::searchAll
+  * \fn        CaseStatement::searchAll
   * \brief        Find all instances of the search expression
   * \param        search - a location to search for
   *                    result - a list which will have any matching exprs appended to it
@@ -1930,7 +1926,7 @@ bool CaseStatement::searchAll(const Exp &search, std::list<Exp *> &result) {
 }
 
 /***************************************************************************/ /**
-  * FUNCTION:        CaseStatement::print
+  * \fn        CaseStatement::print
   * \brief        Write a text representation to the given stream
   * \param        os: stream
   *                    indent: number of columns to skip
@@ -2003,9 +1999,8 @@ void CaseStatement::simplify() {
  **********************************/
 
 /***************************************************************************/ /**
-  * FUNCTION:         CallStatement::CallStatement
+  * \fn         CallStatement::CallStatement
   * \brief         Constructor for a call
-  * \param         None
   *
   ******************************************************************************/
 CallStatement::CallStatement() : returnAfterCall(false), calleeReturn(nullptr) {
@@ -2015,7 +2010,7 @@ CallStatement::CallStatement() : returnAfterCall(false), calleeReturn(nullptr) {
 }
 
 /***************************************************************************/ /**
-  * FUNCTION:      CallStatement::~CallStatement
+  * \fn      CallStatement::~CallStatement
   * \brief      Destructor
   * \param      BB - the enclosing basic block of this call
   *
@@ -2076,7 +2071,7 @@ void CallStatement::setArgumentType(int i, Type *ty) {
     ((Assign *)(*aa))->setType(ty);
 }
 /***************************************************************************/ /**
-  * FUNCTION:      CallStatement::setArguments
+  * \fn      CallStatement::setArguments
   * \brief      Set the arguments of this call.
   * \param      arguments - the list of locations to set the arguments to (for testing)
   *
@@ -2092,7 +2087,7 @@ void CallStatement::setArguments(StatementList & args) {
 }
 
 /***************************************************************************/ /**
-  * FUNCTION:      CallStatement::setSigArguments
+  * \fn      CallStatement::setSigArguments
   * \brief      Set the arguments of this call based on signature info
   * \note Should only be called for calls to library functions
   *
@@ -2149,7 +2144,7 @@ bool CallStatement::search(const Exp &search, Exp *&result) {
 }
 
 /***************************************************************************/ /**
-  * FUNCTION:        CallStatement::searchAndReplace
+  * \fn        CallStatement::searchAndReplace
   * \brief        Replace all instances of search with replace.
   * \param        search - a location to search for
   *                    replace - the expression with which to replace it
@@ -2173,7 +2168,7 @@ bool CallStatement::searchAndReplace(const Exp &search, Exp *replace, bool cc) {
 }
 
 /***************************************************************************/ /**
-  * FUNCTION:        CallStatement::searchAll
+  * \fn        CallStatement::searchAll
   * \brief        Find all instances of the search expression
   * \param        search - a location to search for
   *                    result - a list which will have any matching exprs appended to it
@@ -2194,7 +2189,7 @@ bool CallStatement::searchAll(const Exp &search, std::list<Exp *> &result) {
 }
 
 /***************************************************************************/ /**
-  * FUNCTION:        CallStatement::print
+  * \fn        CallStatement::print
   * \brief        Write a text representation of this RTL to the given stream
   * \param        os: stream to write to
   *
@@ -2282,7 +2277,7 @@ void CallStatement::print(std::ostream & os, bool html) const {
 }
 
 /***************************************************************************/ /**
-  * FUNCTION:         CallStatement::setReturnAfterCall
+  * \fn         CallStatement::setReturnAfterCall
   * \brief         Sets a bit that says that this call is effectively followed by a return. This happens e.g. on
   *                        Sparc when there is a restore in the delay slot of the call
   * \param         b: true if this is to be set; false to clear the bit
@@ -2291,7 +2286,7 @@ void CallStatement::print(std::ostream & os, bool html) const {
 void CallStatement::setReturnAfterCall(bool b) { returnAfterCall = b; }
 
 /***************************************************************************/ /**
-  * FUNCTION:         CallStatement::isReturnAfterCall
+  * \fn         CallStatement::isReturnAfterCall
   * \brief         Tests a bit that says that this call is effectively followed by a return. This happens e.g. on
   *                        Sparc when there is a restore in the delay slot of the call
   * \param         none
@@ -3030,7 +3025,7 @@ bool ReturnStatement::usesExp(const Exp &e) {
  **********************************************************************/
 
 /***************************************************************************/ /**
-  * FUNCTION:         BoolAssign::BoolAssign
+  * \fn         BoolAssign::BoolAssign
   * \brief         Constructor.
   * \param         sz: size of the assignment
   * \returns              <N/a>
@@ -3103,7 +3098,7 @@ void BoolAssign::setCondExpr(Exp * pss) {
 }
 
 /***************************************************************************/ /**
-  * FUNCTION:        BoolAssign::print
+  * \fn        BoolAssign::print
   * \brief        Write a text representation to the given stream
   * \param        os: stream
   *
@@ -4241,15 +4236,18 @@ void Instruction::bypass() {
 
 //! Find the locations used by expressions in this Statement.
 //! Use the StmtExpVisitor and UsedLocsFinder visitor classes
-//! \param cc count collectors
 //! Adds (inserts) all locations (registers or memory etc) used by this statement
 //! Set \a cc to true to count the uses in collectors
+//! \param used set of used locations
+//! \param cc count collectors
+//! \param memOnly - only add memory references.
 void Instruction::addUsedLocs(LocationSet & used, bool cc /* = false */, bool memOnly /*= false */) {
     UsedLocsFinder ulf(used, memOnly);
     UsedLocsVisitor ulv(&ulf, cc);
     accept(&ulv);
 }
-//! Special version of Statement::addUsedLocs for finding used locations. Returns true if defineAll was found
+//! Special version of Statement::addUsedLocs for finding used locations.
+//! \return true if defineAll was found
 bool Instruction::addUsedLocals(LocationSet & used) {
     UsedLocalFinder ulf(used, proc);
     UsedLocsVisitor ulv(&ulf, false);

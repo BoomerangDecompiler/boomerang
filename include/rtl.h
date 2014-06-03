@@ -51,7 +51,7 @@ enum STMT_KIND : uint8_t;
 
 /***************************************************************************/ /**
   * Class RTL: describes low level register transfer lists (actually lists of statements).
-  * NOTE: when time permits, this class could be removed, replaced with new Statements that mark the current native
+  * \note when time permits, this class could be removed, replaced with new Statements that mark the current native
   * address
   ******************************************************************************/
 class RTL : public std::list<Instruction *> {

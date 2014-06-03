@@ -570,8 +570,7 @@ std::pair<ADDRESS, unsigned> HpSomBinaryFile::GetGlobalPointerInfo() {
   *                (if any) which are shared with dynamically linked libraries.
   *                Example: __iob (basis for stdout). The ADDRESS is the native
   *                address of a pointer to the real dynamic data object.
-  * NOTE:        The caller should delete the returned map.
-  * \param  None
+  * \note        The caller should delete the returned map.
   * \returns     Pointer to a new map with the info
   ******************************************************************************/
 std::map<ADDRESS, const char *> *HpSomBinaryFile::GetDynamicGlobalMap() {

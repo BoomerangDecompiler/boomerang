@@ -21,7 +21,7 @@
 class SSLScanner;
 
 /***************************************************************************/ /**
-  * FUNCTION:        SSLParser::SSLParser
+  * \fn        SSLParser::SSLParser
   * \brief        Constructor for an existing stream.
   * \param        The stream, whether or not to debug
   *
@@ -35,7 +35,7 @@ SSLParser::SSLParser(std::istream &in, bool trace) : sslFile("input"), bFloat(fa
 }
 
 /***************************************************************************/ /**
-  * FUNCTION:        SSLParser::parseExp
+  * \fn        SSLParser::parseExp
   * \brief        Parses an assignment from a string.
   * \param        the string
   * \returns             an Assignment or nullptr.
@@ -49,7 +49,7 @@ Instruction *SSLParser::parseExp(const char *str) {
 }
 
 /***************************************************************************/ /**
-  * FUNCTION:        SSLParser::~SSLParser
+  * \fn        SSLParser::~SSLParser
   * \brief        Destructor.
   *
   ******************************************************************************/
@@ -80,11 +80,11 @@ int SSLParser::yylex() {
 }
 
 /***************************************************************************/ /**
-  * FUNCTION:        SSLParser::strToOper
+  * \fn        SSLParser::strToOper
   * \brief        Convert a string operator (e.g. "+f") to an OPER (opFPlus)
-  * NOTE:            An attempt is made to make this moderately efficient, else we might have a skip chain of string
+  * \note            An attempt is made to make this moderately efficient, else we might have a skip chain of string
   *                    comparisons
-  * NOTE:            This is a member of SSLParser so we can call yyyerror and have line number etc printed out
+  * \note            This is a member of SSLParser so we can call yyyerror and have line number etc printed out
   * \param        s: pointer to the operator C string
   * \returns             An OPER, or -1 if not found (enum opWild)
   ******************************************************************************/

@@ -856,7 +856,7 @@ void Type::dumpNames() {
 /***************************************************************************/ /**
   *
   * \brief    Given the name of a temporary variable, return its Type
-  * NOTE:        Caller must delete result
+  * \note        Caller must delete result
   * \param    name: reference to a string (e.g. "tmp", "tmpd")
   * \returns        Ptr to a new Type object
   ******************************************************************************/

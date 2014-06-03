@@ -36,7 +36,7 @@
 #include <iostream>
 
 /********************************************************************************
- * FUNCTION:       unused
+ * \fn       unused
  * \brief       A dummy function to suppress "unused local variable" messages
  * \param       x: integer variable to be "used"
  ********************************************************************************/
@@ -61,8 +61,6 @@ int MIPSDecoder::decodeAssemblyInstruction(ADDRESS, ptrdiff_t) { return 0; }
   * \param   pc - the native address of the pc
   * \param   delta - the difference between the above address and the
   *              host address of the pc (i.e. the address that the pc is at in the loaded object file)
-  * \param   proc - the enclosing procedure. This can be nullptr for
-  *              those of us who are using this method in an interpreter
   * \returns a DecodeResult structure containing all the information
   *              gathered during decoding
   *********************************************************************************/

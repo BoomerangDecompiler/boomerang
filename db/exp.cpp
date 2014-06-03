@@ -115,6 +115,8 @@ TypeVal::TypeVal(Type *ty) : Terminal(opTypeVal), val(ty) {}
 /**
  * Create a new Location expression.
  * \param op Should be opRegOf, opMemOf, opLocal, opGlobal, opParam or opTemp.
+ * \param exp - child expression
+ * \param p - enclosing procedure, if null this constructor will try to find it.
  */
 Location::Location(OPER op, Exp *exp, UserProc *p) : Unary(op, exp), proc(p) {
     assert(op == opRegOf || op == opMemOf || op == opLocal || op == opGlobal || op == opParam || op == opTemp);
@@ -316,7 +318,7 @@ Exp *Location::clone() const {
   *
   * \brief        Virtual function to compare myself for equality with
   *                    another Exp
-  * \param        Ref to other Exp
+  * \param  o - Ref to other Exp
   * \returns            True if equal
   ******************************************************************************/
 bool Const::operator==(const Exp &o) const {
@@ -435,9 +437,9 @@ bool TypeVal::operator==(const Exp &o) const {
 /***************************************************************************/ /**
   *
   * \brief        Virtual function to compare myself with another Exp
-  * NOTE:            The test for a wildcard is only with this object, not the other object (o).
+  * \note            The test for a wildcard is only with this object, not the other object (o).
   *                    So when searching and there could be wildcards, use search == *this not *this == search
-  * \param        Ref to other Exp
+  * \param        o - Ref to other Exp
   * \returns            True if equal
   ******************************************************************************/
 bool Const::operator<(const Exp &o) const {
@@ -552,7 +554,7 @@ bool TypeVal::operator<(const Exp &o) const {
 /***************************************************************************/ /**
   *
   * \brief        Virtual function to compare myself for equality with another Exp, *ignoring subscripts*
-  * \param        Ref to other Exp
+  * \param        o - Ref to other Exp
   * \returns            True if equal
   ******************************************************************************/
 bool Const::operator*=(Exp &o) {
@@ -2038,13 +2040,12 @@ bool Exp::searchAll(const Exp &search, std::list<Exp *> &result) {
   *                       positives = { %sp, n }
   *                       negatives = { %sp }
   *                       integers     = { 108, -92 }
-  * NOTE:            integers is a vector so we can use the accumulate func
-  * NOTE:            Expressions are NOT cloned. Therefore, do not delete the expressions in positives or negatives
-  * \param        positives - the list of positive terms
-  *                    negatives - the list of negative terms
-  *                    integers - the vector of integer terms
-  *                    negate - determines whether or not to negate the whole expression, i.e. we are on the RHS of an
-  *                    opMinus
+  * \note            integers is a vector so we can use the accumulate func
+  * \note            Expressions are NOT cloned. Therefore, do not delete the expressions in positives or negatives
+  * \param positives - the list of positive terms
+  * \param negatives - the list of negative terms
+  * \param integers - the vector of integer terms
+  * \param negate - determines whether or not to negate the whole expression, i.e. we are on the RHS of an opMinus
   *
   ******************************************************************************/
 void Exp::partitionTerms(std::list<Exp *> &positives, std::list<Exp *> &negatives, std::vector<int> &integers,
@@ -2189,8 +2190,8 @@ Exp *Binary::simplifyArith() {
   *
   * \brief        This method creates an expression that is the sum of all expressions in a list.
   *                    E.g. given the list <4,r[8],m[14]> the resulting expression is 4+r[8]+m[14].
-  * NOTE:            static (non instance) function
-  * NOTE:            Exps ARE cloned
+  * \note            static (non instance) function
+  * \note            Exps ARE cloned
   * \param        exprs - a list of expressions
   * \returns            a new Exp with the accumulation
   ******************************************************************************/
@@ -2213,8 +2214,8 @@ Exp *Exp::Accumulate(std::list<Exp *> exprs) {
       * \brief        Apply various simplifications such as constant folding. Also canonicalise by putting iteger
       *                    constants on the right hand side of sums, adding of negative constants changed to subtracting
       *                    positive constants, etc.  Changes << k to a multiply
-      * NOTE:            User must ;//delete result
-      * NOTE:            Address simplification (a[ m[ x ]] == x) is done separately
+      * \note            User must ;//delete result
+      * \note            Address simplification (a[ m[ x ]] == x) is done separately
       * \returns            Ptr to the simplified expression
       *
       * This code is so big, so weird and so lame it's not funny.  What this boils down to is the process of

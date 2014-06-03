@@ -25,9 +25,9 @@
 #define HELLO_WINDOWS "test/windows/hello.exe"
 
 /***************************************************************************/ /**
-  * FUNCTION:        TypeTest::setUp
+  * \fn        TypeTest::setUp
   * OVERVIEW:        Set up anything needed before all tests
-  * NOTE:            Called before any tests
+  * \note            Called before any tests
   *
   ******************************************************************************/
 static bool logset = false;
@@ -39,15 +39,15 @@ void TypeTest::setUp() {
 }
 
 /***************************************************************************/ /**
-  * FUNCTION:        TypeTest::tearDown
+  * \fn        TypeTest::tearDown
   * OVERVIEW:        Delete objects created in setUp
-  * NOTE:            Called after all tests
+  * \note            Called after all tests
   *
   ******************************************************************************/
 void TypeTest::tearDown() {}
 
 /***************************************************************************/ /**
-  * FUNCTION:        TypeTest::testTypeLong
+  * \fn        TypeTest::testTypeLong
   * OVERVIEW:        Test type unsigned long
   ******************************************************************************/
 void TypeTest::testTypeLong() {
@@ -60,7 +60,7 @@ void TypeTest::testTypeLong() {
 }
 
 /***************************************************************************/ /**
-  * FUNCTION:        TypeTest::testNotEqual
+  * \fn        TypeTest::testNotEqual
   * OVERVIEW:        Test type inequality
   ******************************************************************************/
 void TypeTest::testNotEqual() {
@@ -73,7 +73,7 @@ void TypeTest::testNotEqual() {
 }
 
 /***************************************************************************/ /**
-  * FUNCTION:        TypeTest::testNotEqual
+  * \fn        TypeTest::testNotEqual
   * OVERVIEW:        Test type inequality
   ******************************************************************************/
 void TypeTest::testCompound() {
@@ -135,7 +135,7 @@ void TypeTest::testCompound() {
 }
 
 /***************************************************************************/ /**
-  * FUNCTION:        TypeTest::testDataInterval
+  * \fn        TypeTest::testDataInterval
   * OVERVIEW:        Test the DataIntervalMap class
   ******************************************************************************/
 void TypeTest::testDataInterval() {
@@ -220,7 +220,7 @@ void TypeTest::testDataInterval() {
 }
 
 /***************************************************************************/ /**
-  * FUNCTION:        TypeTest::testDataIntervalOverlaps
+  * \fn        TypeTest::testDataIntervalOverlaps
   * OVERVIEW:        Test the DataIntervalMap class with overlapping addItems
   ******************************************************************************/
 void TypeTest::testDataIntervalOverlaps() {

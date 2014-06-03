@@ -524,6 +524,7 @@ UserProc::UserProc()
 /***************************************************************************/ /**
   *
   * \brief        Constructor with name, native address.
+  * \param prog - Program to which this function belongs
   * \param name - Name of procedure
   * \param uNative - Native address of entry point of procedure
   *
@@ -4815,7 +4816,6 @@ bool UserProc::isLocalOrParamPattern(Exp *e) {
 /***************************************************************************/ /**
   *
   * \brief Used for checking for unused parameters
-  * \param visited - a set of procs already visited, to prevent infinite recursion
   *
   * Remove the unused parameters. Check for uses for each parameter as param{0}.
   * Some parameters are apparently used when in fact they are only used as parameters to calls to procedures in the
@@ -4827,7 +4827,9 @@ bool UserProc::isLocalOrParamPattern(Exp *e) {
   * referenced from a return of the current procedure, and has an implicit operand, and all the others satisfy a call
   * to doesReturnChainToCall(param, this proc).
   * but not including removing unused statements.
-  *
+  * \param param - Exp to check
+  * \param p - our caller?
+  * \param visited - a set of procs already visited, to prevent infinite recursion
   * \returns true/false :P
   *
   ******************************************************************************/

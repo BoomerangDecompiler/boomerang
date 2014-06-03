@@ -441,6 +441,7 @@ class transPost {
   * number of temporaries. This is recommended for fully expanded expressions (ie within uqbt), but unsafe
   * otherwise.
   * \param rts the list of statements
+  * \param optimise - try to remove temporary registers
   ******************************************************************************/
 
 void RTLInstDict::transformPostVars(std::list<Instruction *> &rts, bool optimise) {

@@ -54,7 +54,7 @@ void genBSFR(ADDRESS pc, Exp *reg, Exp *modrm, int init, int size, OPER incdec, 
  * PentiumDecoder methods.
  **********************************/
 /***************************************************************************/ /**
-  * FUNCTION:       unused
+  * \fn       unused
   * \brief       A dummy function to suppress "unused local variable" messages
   * \param       x: integer variable to be "used"
   *
@@ -69,9 +69,6 @@ static DecodeResult result;
   * \param   pc - the native address of the pc
   * \param   delta - the difference between the above address and the host address of the pc (i.e. the address
   *              that the pc is at in the loaded object file)
-  * \param   RTLDict - the dictionary of RTL templates used to instantiate the RTL for the instruction being
-  *              decoded
-  * \param   proc - the enclosing procedure
   * \returns a DecodeResult structure containing all the information gathered during decoding
   ******************************************************************************/
 DecodeResult &PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta) {
@@ -40470,7 +40467,7 @@ DecodeResult &PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta) {
   * Exps.
   ******************************************************************************/
 /***************************************************************************/ /**
-  * FUNCTION:        dis_Mem
+  * \fn        dis_Mem
   * \brief        Converts a dynamic address to a Exp* expression.
   *                    E.g. [1000] --> m[, 1000
   * \param        pc - the address of the Eaddr part of the instr
@@ -40652,7 +40649,7 @@ Exp *PentiumDecoder::dis_Mem(ADDRESS pc) {
     //#line 2217 "frontend/machine/pentium/decoder.m"
     return expr;
 }
-/***************************************************************************/ /** * FUNCTION:        dis_Eaddr
+/***************************************************************************/ /** * \fn        dis_Eaddr
   * \brief        Converts a dynamic address to a Exp* expression.
   *                    E.g. %ecx --> r[ 25 ]
   * CALLED FROM:        Macros DIS_EADDR32, DIS_EADDR16 and DIS_EADDR8
@@ -40706,7 +40703,7 @@ Exp *PentiumDecoder::dis_Eaddr(ADDRESS pc, int size) {
     }
     //#line 2245 "frontend/machine/pentium/decoder.m"
 }
-/***************************************************************************/ /** * FUNCTION:      isFuncPrologue()
+/***************************************************************************/ /** * \fn      isFuncPrologue()
   * \brief      Check to see if the instructions at the given offset match
   *                    any callee prologue, i.e. does it look like this offset
   *                    is a pointer to a function?
@@ -40731,7 +40728,7 @@ bool PentiumDecoder::isFuncPrologue(ADDRESS hostPC) {
 /**********************************
  * These are the fetch routines.
  **********************************/
-/***************************************************************************/ /** * FUNCTION:        getWord
+/***************************************************************************/ /** * \fn        getWord
   * \brief        Returns the word starting at the given address.
   * \param        lc - address at which to decode the double
   * \returns             the decoded double
@@ -40779,7 +40776,7 @@ PentiumDecoder::PentiumDecoder(Prog *prog) : NJMCDecoder(prog) {
  */
 
 int PentiumDecoder::decodeAssemblyInstruction(ADDRESS, ptrdiff_t) { return 0; }
-/***************************************************************************/ /** * FUNCTION:       genBSFR
+/***************************************************************************/ /** * \fn       genBSFR
   * \brief       Generate statements for the BSF and BSR series (Bit Scan Forward/Reverse)
   * \param       pc: native PC address (start of the BSF/BSR instruction)
   *                   reg: an expression for the destination register

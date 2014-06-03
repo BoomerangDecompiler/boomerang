@@ -126,9 +126,9 @@ void RTL::appendStmt(Instruction *s) {
 }
 
 /***************************************************************************/ /**
-  * \brief        Append a given list of Statements to this RTL
-  * \note            A copy of the Statements in le are appended
-  * \param        rtl list of Statements to insert
+  * \brief  Append a given list of Statements to this RTL
+  * \note   A copy of the Statements in le are appended
+  * \param  le - list of Statements to insert
   ******************************************************************************/
 void RTL::appendListStmt(std::list<Instruction *> &le) {
     for (Instruction *it : le) {

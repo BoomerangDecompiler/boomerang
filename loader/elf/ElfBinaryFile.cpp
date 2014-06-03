@@ -857,8 +857,7 @@ ADDRESS *ElfBinaryFile::GetImportStubs(int &numImports) {
   *                    linked libraries.
   *                    Example: __iob (basis for stdout). The ADDRESS is the native address of a pointer
   *                    to the real dynamic data object.
-  * NOTE:        The caller should delete the returned map.
-  * \param    None
+  * \note        The caller should delete the returned map.
   * \returns        Pointer to a new map with the info, or 0 if none
   ******************************************************************************/
 std::map<ADDRESS, const char *> *ElfBinaryFile::GetDynamicGlobalMap() {
@@ -901,7 +900,7 @@ std::map<ADDRESS, const char *> *ElfBinaryFile::GetDynamicGlobalMap() {
 /***************************************************************************/ /**
   *
   * \brief    Read a 2 or 4 byte quantity from host address (C pointer) p
-  * NOTE:        Takes care of reading the correct endianness, set early on into m_elfEndianness
+  * \note        Takes care of reading the correct endianness, set early on into m_elfEndianness
   * \param    ps or pi: host pointer to the data
   * \returns        An integer representing the data
   ******************************************************************************/
