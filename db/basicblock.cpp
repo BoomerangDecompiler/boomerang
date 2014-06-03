@@ -78,14 +78,14 @@ BasicBlock::~BasicBlock() {
   * \param bb - the BB to copy from
   ******************************************************************************/
 BasicBlock::BasicBlock(const BasicBlock &bb)
-    : StructType(bb.StructType), LoopCondType(bb.LoopCondType),
-      NodeType(bb.NodeType),
+    : NodeType(bb.NodeType),
       LabelNum(bb.LabelNum), // m_labelneeded is initialized to false, not copied
       Incomplete(bb.Incomplete), JumpReqd(bb.JumpReqd), InEdges(bb.InEdges), OutEdges(bb.OutEdges),
       TargetOutEdges(bb.TargetOutEdges),
       // From Doug's code
       Ord(bb.Ord), RevOrd(bb.RevOrd), InEdgesVisited(bb.InEdgesVisited), NumForwardInEdges(bb.NumForwardInEdges),
-      Traversed(bb.Traversed), HllLabel(bb.HllLabel), IndentLevel(bb.IndentLevel), ImmPDom(bb.ImmPDom),
+      Traversed(bb.Traversed), HllLabel(bb.HllLabel), IndentLevel(bb.IndentLevel),
+      LoopCondType(bb.LoopCondType), StructType(bb.StructType), ImmPDom(bb.ImmPDom),
       LoopHead(bb.LoopHead), CaseHead(bb.CaseHead), CondFollow(bb.CondFollow), LoopFollow(bb.LoopFollow),
       LatchNode(bb.LatchNode), StructuringType(bb.StructuringType), UnstructuredType(bb.UnstructuredType) {
     setRTLs(bb.ListOfRTLs);
