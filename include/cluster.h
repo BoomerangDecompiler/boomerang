@@ -34,32 +34,32 @@ class Cluster;
 
 class Cluster {
   protected:
-    std::string name = "";
-    std::vector<Cluster *> children;
-    Cluster *parent = nullptr;
+    QString Name;
+    std::vector<Cluster *> Children;
+    Cluster *Parent = nullptr;
     QFile out;
     QTextStream strm;
     std::string stream_ext;
 
   public:
     Cluster();
-    Cluster(const std::string &_name);
+    Cluster(const QString &_name);
     virtual ~Cluster() {}
-    const char *getName() { return name.c_str(); }
-    void setName(const std::string &nam) { name = nam; }
-    size_t getNumChildren() { return children.size(); }
-    Cluster *getChild(size_t n) { return children[n]; }
+    QString getName() { return Name; }
+    void setName(const QString &nam) { Name = nam; }
+    size_t getNumChildren() { return Children.size(); }
+    Cluster *getChild(size_t n) { return Children[n]; }
     void addChild(Cluster *n);
     void removeChild(Cluster *n);
-    Cluster *getParent() { return parent; }
-    bool hasChildren() { return children.size() > 0; }
+    Cluster *getParent() { return Parent; }
+    bool hasChildren() { return Children.size() > 0; }
     void openStream(const char *ext);
     void openStreams(const char *ext);
     void closeStreams();
     QTextStream &getStream() { return strm; }
     QString makeDirs();
     QString getOutPath(const char *ext);
-    Cluster *find(const std::string &nam);
+    Cluster *find(const QString &nam);
     virtual bool isAggregate() { return false; }
     void printTree(std::ostream &out);
 
@@ -74,10 +74,10 @@ class Module : public Cluster {
 
 class Class : public Cluster {
   protected:
-    CompoundType *type;
+    CompoundType *Type;
 
   public:
-    Class(const char *name) : Cluster(name) { type = new CompoundType(); }
+    Class(const char *name) : Cluster(name) { Type = new CompoundType(); }
 
     // A Class tends to be aggregated into the parent Module,
     // this isn't the case with Java, but hey, we're not doing that yet.

@@ -83,7 +83,7 @@ class ExeBinaryFile : public QObject, public LoaderInterface, public BinaryData,
     size_t getImageSize() override;
 
     // const char* SymbolByAddress(ADDRESS a) override;
-    char readNative1(ADDRESS a) override;        // Read 1 bytes from native addr
+    char readNative1(ADDRESS) override;        // Read 1 bytes from native addr
     int readNative2(ADDRESS a) override;         // Read 2 bytes from native addr
     int readNative4(ADDRESS a) override;         // Read 4 bytes from native addr
     QWord readNative8(ADDRESS a) override;       // Read 8 bytes from native addr

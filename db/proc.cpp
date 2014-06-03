@@ -752,7 +752,7 @@ void UserProc::print(std::ostream &out, bool html) const {
     signature->print(out, html);
     if (html)
         out << "<br>";
-    out << "in cluster " << cluster->getName() << "\n";
+    out << "in cluster " << cluster->getName().toStdString() << "\n";
     if (html)
         out << "<br>";
     std::ostringstream ost;
@@ -783,7 +783,7 @@ void UserProc::print(QTextStream &out, bool html) const {
 
 void UserProc::setStatus(ProcStatus s) {
     status = s;
-    Boomerang::get()->alert_proc_status_change(this);
+    Boomerang::get()->alertProcStatusChange(this);
 }
 
 void UserProc::printParams(std::ostream &out, bool html /*= false*/) const {
@@ -1064,7 +1064,7 @@ void UserProc::insertStatementAfter(Instruction *s, Instruction *a) {
   *
   ******************************************************************************/
 ProcSet *UserProc::decompile(ProcList *path, int &indent) {
-    Boomerang::get()->alert_considering(path->empty() ? nullptr : path->back(), this);
+    Boomerang::get()->alertConsidering(path->empty() ? nullptr : path->back(), this);
     std::cout << std::setw(++indent) << " " << (status >= PROC_VISITED ? "re" : "") << "considering "
               << getName().toStdString() << "\n";
     if (VERBOSE)
@@ -1175,7 +1175,7 @@ ProcSet *UserProc::decompile(ProcList *path, int &indent) {
 
     // if child is empty, i.e. no child involved in recursion
     if (child->size() == 0) {
-        Boomerang::get()->alert_decompiling(this);
+        Boomerang::get()->alertDecompiling(this);
         std::cout << std::setw(indent) << " "
                   << "decompiling " << getName().toStdString() << "\n";
         initialiseDecompile(); // Sort the CFG, number statements, etc
@@ -1190,7 +1190,7 @@ ProcSet *UserProc::decompile(ProcList *path, int &indent) {
     if (child->size() == 0) {
         remUnusedStmtEtc(); // Do the whole works
         setStatus(PROC_FINAL);
-        Boomerang::get()->alert_end_decompile(this);
+        Boomerang::get()->alertEndDecompile(this);
     } else {
         // this proc's children, and hence this proc, is/are involved in recursion
         // find first element f in path that is also in cycleGrp
@@ -1203,7 +1203,7 @@ ProcSet *UserProc::decompile(ProcList *path, int &indent) {
             // Yes, process these procs as a group
             recursionGroupAnalysis(path, indent); // Includes remUnusedStmtEtc on all procs in cycleGrp
             setStatus(PROC_FINAL);
-            Boomerang::get()->alert_end_decompile(this);
+            Boomerang::get()->alertEndDecompile(this);
             delete child;
             child = new ProcSet;
         }
@@ -1242,9 +1242,9 @@ void UserProc::debugPrintAll(const char *step_name) {
 
 void UserProc::initialiseDecompile() {
 
-    Boomerang::get()->alert_start_decompile(this);
+    Boomerang::get()->alertStartDecompile(this);
 
-    Boomerang::get()->alert_decompile_debug_point(this, "before initialise");
+    Boomerang::get()->alertDecompileDebugPoint(this, "before initialise");
 
     if (VERBOSE)
         LOG << "initialise decompile for " << getName() << "\n";
@@ -1272,7 +1272,7 @@ void UserProc::initialiseDecompile() {
         return;
     }
     debugPrintAll("after decoding");
-    Boomerang::get()->alert_decompile_debug_point(this, "after initialise");
+    Boomerang::get()->alertDecompileDebugPoint(this, "after initialise");
 }
 /***************************************************************************/ /**
   *
@@ -1285,7 +1285,7 @@ void UserProc::earlyDecompile() {
     if (status >= PROC_EARLYDONE)
         return;
 
-    Boomerang::get()->alert_decompile_debug_point(this, "before early");
+    Boomerang::get()->alertDecompileDebugPoint(this, "before early");
     LOG_VERBOSE(1) << "early decompile for " << getName() << "\n";
 
     // Update the defines in the calls. Will redo if involved in recursion
@@ -1318,7 +1318,7 @@ void UserProc::earlyDecompile() {
 
     debugPrintAll("after propagation (1)");
 
-    Boomerang::get()->alert_decompile_debug_point(this, "after early");
+    Boomerang::get()->alertDecompileDebugPoint(this, "after early");
 }
 /***************************************************************************/ /**
   *
@@ -1329,7 +1329,7 @@ void UserProc::earlyDecompile() {
   ******************************************************************************/
 ProcSet *UserProc::middleDecompile(ProcList *path, int indent) {
 
-    Boomerang::get()->alert_decompile_debug_point(this, "before middle");
+    Boomerang::get()->alertDecompileDebugPoint(this, "before middle");
 
     // The call bypass logic should be staged as well. For example, consider m[r1{11}]{11} where 11 is a call.
     // The first stage bypass yields m[r1{2}]{11}, which needs another round of propagation to yield m[r1{-}-32]{11}
@@ -1415,7 +1415,7 @@ ProcSet *UserProc::middleDecompile(ProcList *path, int indent) {
 
         if (!Boomerang::get()->dotFile.empty()) // Require -gd now (though doesn't listen to file name)
             printDFG();
-        Boomerang::get()->alert_decompile_SSADepth(this, pass); // FIXME: need depth -> pass in GUI code
+        Boomerang::get()->alertDecompileSSADepth(this, pass); // FIXME: need depth -> pass in GUI code
 
 // (* Was: mapping expressions to Parameters as we go *)
 
@@ -1449,8 +1449,8 @@ ProcSet *UserProc::middleDecompile(ProcList *path, int indent) {
                                     << getName() << " at pass " << pass << " ===\n\n";
         }
 
-        Boomerang::get()->alert_decompile_beforePropagate(this, pass);
-        Boomerang::get()->alert_decompile_debug_point(this, "before propagating statements");
+        Boomerang::get()->alertDecompileBeforePropagate(this, pass);
+        Boomerang::get()->alertDecompileDebugPoint(this, "before propagating statements");
 
         // Propagate
         bool convert; // True when indirect call converted to direct
@@ -1481,8 +1481,8 @@ ProcSet *UserProc::middleDecompile(ProcList *path, int indent) {
                                     << " ===\n\n";
         }
 
-        Boomerang::get()->alert_decompile_afterPropagate(this, pass);
-        Boomerang::get()->alert_decompile_debug_point(this, "after propagating statements");
+        Boomerang::get()->alertDecompileAfterPropagate(this, pass);
+        Boomerang::get()->alertDecompileDebugPoint(this, "after propagating statements");
 
         // this is just to make it readable, do NOT rely on these statements being removed
         removeSpAssignsIfPossible();
@@ -1545,7 +1545,7 @@ ProcSet *UserProc::middleDecompile(ProcList *path, int indent) {
         // Code pointed to by the switch table entries has merely had FrontEnd::processFragment() called on it
         LOG << "=== about to restart decompilation of " << getName()
             << " because indirect jumps or calls have been analysed\n\n";
-        Boomerang::get()->alert_decompile_debug_point(
+        Boomerang::get()->alertDecompileDebugPoint(
             this, "before restarting decompilation because indirect jumps or calls have been analysed");
 
         // First copy any new indirect jumps or calls that were decoded this time around. Just copy them all, the map
@@ -1583,7 +1583,7 @@ ProcSet *UserProc::middleDecompile(ProcList *path, int indent) {
         LOG << "===== end early decompile for " << getName() << " =====\n\n";
     setStatus(PROC_EARLYDONE);
 
-    Boomerang::get()->alert_decompile_debug_point(this, "after middle");
+    Boomerang::get()->alertDecompileDebugPoint(this, "after middle");
 
     return new ProcSet;
 }
@@ -1603,8 +1603,8 @@ void UserProc::remUnusedStmtEtc() {
     // if (status >= PROC_FINAL)
     //    return;
 
-    Boomerang::get()->alert_decompiling(this);
-    Boomerang::get()->alert_decompile_debug_point(this, "before final");
+    Boomerang::get()->alertDecompiling(this);
+    Boomerang::get()->alertDecompileDebugPoint(this, "before final");
 
     if (VERBOSE)
         LOG << "--- remove unused statements for " << getName() << " ---\n";
@@ -1653,7 +1653,7 @@ void UserProc::remUnusedStmtEtc() {
     if (!Boomerang::get()->noRemoveNull) {
         debugPrintAll("after removing unused and null statements pass 1");
     }
-    Boomerang::get()->alert_decompile_afterRemoveStmts(this, 1);
+    Boomerang::get()->alertDecompileAfterRemoveStmts(this, 1);
 
     findFinalParameters();
     if (!Boomerang::get()->noParameterNames) {
@@ -1680,12 +1680,12 @@ void UserProc::remUnusedStmtEtc() {
 
     debugPrintAll("after remove unused statements etc");
 
-    Boomerang::get()->alert_decompile_debug_point(this, "after final");
+    Boomerang::get()->alertDecompileDebugPoint(this, "after final");
 }
 
 void UserProc::remUnusedStmtEtc(RefCounter &refCounts) {
 
-    Boomerang::get()->alert_decompile_debug_point(this, "before remUnusedStmtEtc");
+    Boomerang::get()->alertDecompileDebugPoint(this, "before remUnusedStmtEtc");
 
     StatementList stmts;
     getStatements(stmts);
@@ -1761,7 +1761,7 @@ void UserProc::remUnusedStmtEtc(RefCounter &refCounts) {
     doRenameBlockVars(-2); // Recalculate new livenesses
     setStatus(PROC_FINAL); // Now fully decompiled (apart from one final pass, and transforming out of SSA form)
 
-    Boomerang::get()->alert_decompile_debug_point(this, "after remUnusedStmtEtc");
+    Boomerang::get()->alertDecompileDebugPoint(this, "after remUnusedStmtEtc");
 }
 /// Analyse the whole group of procedures for conditional preserveds, and update till no change.
 /// Also finalise the whole group.
@@ -1799,7 +1799,7 @@ void UserProc::recursionGroupAnalysis(ProcList *path, int indent) {
     ProcSet::iterator curp;
     for (curp = cycleGrp->begin(); curp != cycleGrp->end(); ++curp) {
         (*curp)->setStatus(PROC_INCYCLE); // So the calls are treated as childless
-        Boomerang::get()->alert_decompiling(*curp);
+        Boomerang::get()->alertDecompiling(*curp);
         (*curp)->initialiseDecompile(); // Sort the CFG, number statements, etc
         (*curp)->earlyDecompile();
     }
@@ -1836,7 +1836,7 @@ void UserProc::recursionGroupAnalysis(ProcList *path, int indent) {
     }
     if (VERBOSE)
         LOG << "=== end recursion group analysis ===\n";
-    Boomerang::get()->alert_end_decompile(this);
+    Boomerang::get()->alertEndDecompile(this);
 }
 
 /***************************************************************************/ /**
@@ -1858,7 +1858,7 @@ void UserProc::updateCalls() {
   *
   ******************************************************************************/
 void UserProc::branchAnalysis() {
-    Boomerang::get()->alert_decompile_debug_point(this, "before branch analysis.");
+    Boomerang::get()->alertDecompileDebugPoint(this, "before branch analysis.");
 
     StatementList stmts;
     getStatements(stmts);
@@ -1914,7 +1914,7 @@ void UserProc::branchAnalysis() {
         }
     }
 
-    Boomerang::get()->alert_decompile_debug_point(this, "after branch analysis.");
+    Boomerang::get()->alertDecompileDebugPoint(this, "after branch analysis.");
 }
 
 /***************************************************************************/ /**
@@ -2014,12 +2014,12 @@ void UserProc::findPreserveds() {
     if (VERBOSE)
         LOG << "finding preserveds for " << getName() << "\n";
 
-    Boomerang::get()->alert_decompile_debug_point(this, "before finding preserveds");
+    Boomerang::get()->alertDecompileDebugPoint(this, "before finding preserveds");
 
     if (theReturnStatement == nullptr) {
         if (DEBUG_PROOF)
             LOG << "can't find preservations as there is no return statement!\n";
-        Boomerang::get()->alert_decompile_debug_point(this, "after finding preserveds (no return)");
+        Boomerang::get()->alertDecompileDebugPoint(this, "after finding preserveds (no return)");
         return;
     }
 
@@ -2060,7 +2060,7 @@ void UserProc::findPreserveds() {
         theReturnStatement->removeModified(lhs);
     }
 
-    Boomerang::get()->alert_decompile_debug_point(this, "after finding preserveds");
+    Boomerang::get()->alertDecompileDebugPoint(this, "after finding preserveds");
 }
 
 void UserProc::removeSpAssignsIfPossible() {
@@ -2091,7 +2091,7 @@ void UserProc::removeSpAssignsIfPossible() {
     if (!foundone)
         return;
 
-    Boomerang::get()->alert_decompile_debug_point(this, "before removing stack pointer assigns.");
+    Boomerang::get()->alertDecompileDebugPoint(this, "before removing stack pointer assigns.");
 
     for (auto &stmt : stmts)
         if ((stmt)->isAssign()) {
@@ -2101,7 +2101,7 @@ void UserProc::removeSpAssignsIfPossible() {
             }
         }
 
-    Boomerang::get()->alert_decompile_debug_point(this, "after removing stack pointer assigns.");
+    Boomerang::get()->alertDecompileDebugPoint(this, "after removing stack pointer assigns.");
 }
 
 void UserProc::removeMatchingAssignsIfPossible(Exp *e) {
@@ -2138,7 +2138,7 @@ void UserProc::removeMatchingAssignsIfPossible(Exp *e) {
 
     std::ostringstream str;
     str << "before removing matching assigns (" << e << ").";
-    Boomerang::get()->alert_decompile_debug_point(this, str.str().c_str());
+    Boomerang::get()->alertDecompileDebugPoint(this, str.str().c_str());
     if (VERBOSE)
         LOG << str.str().c_str() << "\n";
 
@@ -2155,7 +2155,7 @@ void UserProc::removeMatchingAssignsIfPossible(Exp *e) {
 
     str.str("");
     str << "after removing matching assigns (" << e << ").";
-    Boomerang::get()->alert_decompile_debug_point(this, str.str().c_str());
+    Boomerang::get()->alertDecompileDebugPoint(this, str.str().c_str());
     LOG << str.str().c_str() << "\n";
 }
 
@@ -2232,7 +2232,7 @@ static Exp *regOfWild = RefExp::get(Location::regOf(new Terminal(opWildIntConst)
 #define DEBUG_PARAMS 1
 void UserProc::findFinalParameters() {
 
-    Boomerang::get()->alert_decompile_debug_point(this, "before find final parameters.");
+    Boomerang::get()->alertDecompileDebugPoint(this, "before find final parameters.");
 
     parameters.clear();
 
@@ -2345,7 +2345,7 @@ void UserProc::findFinalParameters() {
         }
     }
 
-    Boomerang::get()->alert_decompile_debug_point(this, "after find final parameters.");
+    Boomerang::get()->alertDecompileDebugPoint(this, "after find final parameters.");
 }
 
 #if 0 // FIXME: not currently used; do we want this any more?
@@ -2596,7 +2596,7 @@ void UserProc::mapExpressionsToLocals(bool lastPass) {
     StatementList stmts;
     getStatements(stmts);
 
-    Boomerang::get()->alert_decompile_debug_point(this, "before mapping expressions to locals");
+    Boomerang::get()->alertDecompileDebugPoint(this, "before mapping expressions to locals");
 
     if (VERBOSE) {
         LOG << "mapping expressions to locals for " << getName();
@@ -2651,7 +2651,7 @@ void UserProc::mapExpressionsToLocals(bool lastPass) {
         }
     }
 
-    Boomerang::get()->alert_decompile_debug_point(this, "after processing locals in calls");
+    Boomerang::get()->alertDecompileDebugPoint(this, "after processing locals in calls");
 
     // normalise sp usage (turn WILD + sp{0} into sp{0} + WILD)
     static_cast<Const *>(sp_location->getSubExp1())->setInt(sp); // set to search sp value
@@ -2706,7 +2706,7 @@ void UserProc::mapExpressionsToLocals(bool lastPass) {
         }
     }
 
-    Boomerang::get()->alert_decompile_debug_point(this, "after processing array locals");
+    Boomerang::get()->alertDecompileDebugPoint(this, "after processing array locals");
 
     // Stack offsets for local variables could be negative (most machines), positive (PA/RISC), or both (SPARC)
     if (signature->isLocalOffsetNegative())
@@ -2717,7 +2717,7 @@ void UserProc::mapExpressionsToLocals(bool lastPass) {
     if (signature->isLocalOffsetPositive() && signature->isLocalOffsetNegative())
         searchRegularLocals(opWild, lastPass, sp, stmts);
 
-    Boomerang::get()->alert_decompile_debug_point(this, "after mapping expressions to locals");
+    Boomerang::get()->alertDecompileDebugPoint(this, "after mapping expressions to locals");
 }
 
 void UserProc::searchRegularLocals(OPER minusOrPlus, bool lastPass, int sp, StatementList &stmts) {
@@ -3036,7 +3036,7 @@ void UserProc::countRefs(RefCounter &refCounts) {
 // Note: call the below after translating from SSA form
 // FIXME: this can be done before transforming out of SSA form now, surely...
 void UserProc::removeUnusedLocals() {
-    Boomerang::get()->alert_decompile_debug_point(this, "before removing unused locals");
+    Boomerang::get()->alertDecompileDebugPoint(this, "before removing unused locals");
     if (VERBOSE)
         LOG << "removing unused locals (final) for " << getName() << "\n";
 
@@ -3130,7 +3130,7 @@ void UserProc::removeUnusedLocals() {
         }
         ++sm; // sm is itcremented with the erase, or here
     }
-    Boomerang::get()->alert_decompile_debug_point(this, "after removing unused locals");
+    Boomerang::get()->alertDecompileDebugPoint(this, "after removing unused locals");
 }
 
 //
@@ -3138,12 +3138,12 @@ void UserProc::removeUnusedLocals() {
 //
 
 void UserProc::fromSSAform() {
-    Boomerang::get()->alert_decompiling(this);
+    Boomerang::get()->alertDecompiling(this);
 
     if (VERBOSE)
         LOG << "transforming " << getName() << " from SSA\n";
 
-    Boomerang::get()->alert_decompile_debug_point(this, "before transforming from SSA form");
+    Boomerang::get()->alertDecompileDebugPoint(this, "before transforming from SSA form");
 
     if (cfg->getNumBBs() >= 100) // Only for the larger procs
         // Note: emit newline at end of this proc, so we can distinguish getting stuck in this proc with doing a lot of
@@ -3432,7 +3432,7 @@ void UserProc::fromSSAform() {
     if (cfg->getNumBBs() >= 100) // Only for the larger procs
         std::cout << "\n";
 
-    Boomerang::get()->alert_decompile_debug_point(this, "after transforming from SSA form");
+    Boomerang::get()->alertDecompileDebugPoint(this, "after transforming from SSA form");
 }
 
 void UserProc::mapParameters() {
@@ -4030,7 +4030,7 @@ bool UserProc::ellipsisProcessing() {
   * pieces of code add r28{0}
   ******************************************************************************/
 void UserProc::addImplicitAssigns() {
-    Boomerang::get()->alert_decompile_debug_point(this, "before adding implicit assigns");
+    Boomerang::get()->alertDecompileDebugPoint(this, "before adding implicit assigns");
 
     StatementList stmts;
     getStatements(stmts);
@@ -4045,7 +4045,7 @@ void UserProc::addImplicitAssigns() {
     makeSymbolsImplicit();
     // makeParamsImplicit();            // Not necessary yet, since registers are not yet mapped
 
-    Boomerang::get()->alert_decompile_debug_point(this, "after adding implicit assigns");
+    Boomerang::get()->alertDecompileDebugPoint(this, "after adding implicit assigns");
 }
 
 // e is a parameter location, e.g. r8 or m[r28{0}+8]. Lookup a symbol for it
@@ -4194,9 +4194,9 @@ void UserProc::dumpLocals() {
 }
 //! Update the arguments in calls
 void UserProc::updateArguments() {
-    Boomerang::get()->alert_decompiling(this);
+    Boomerang::get()->alertDecompiling(this);
     LOG_VERBOSE(1) << "### update arguments for " << getName() << " ###\n";
-    Boomerang::get()->alert_decompile_debug_point(this, "before updating arguments");
+    Boomerang::get()->alertDecompileDebugPoint(this, "before updating arguments");
     BasicBlock::rtlrit rrit;
     StatementList::reverse_iterator srit;
     for (BasicBlock *it : *cfg) {
@@ -4213,7 +4213,7 @@ void UserProc::updateArguments() {
         }
     }
     LOG_VERBOSE(1) << "=== end update arguments for " << getName() << "\n";
-    Boomerang::get()->alert_decompile_debug_point(this, "after updating arguments");
+    Boomerang::get()->alertDecompileDebugPoint(this, "after updating arguments");
 }
 //! Update the defines in calls
 void UserProc::updateCallDefines() {
@@ -4273,7 +4273,7 @@ void UserProc::replaceSimpleGlobalConstants() {
     }
 }
 void UserProc::reverseStrengthReduction() {
-    Boomerang::get()->alert_decompile_debug_point(this, "before reversing strength reduction");
+    Boomerang::get()->alertDecompileDebugPoint(this, "before reversing strength reduction");
 
     StatementList stmts;
     getStatements(stmts);
@@ -4316,7 +4316,7 @@ void UserProc::reverseStrengthReduction() {
                 }
             }
         }
-    Boomerang::get()->alert_decompile_debug_point(this, "after reversing strength reduction");
+    Boomerang::get()->alertDecompileDebugPoint(this, "after reversing strength reduction");
 }
 /***************************************************************************/ /**
   *
@@ -4518,7 +4518,7 @@ void UserProc::fixCallAndPhiRefs() {
     if (VERBOSE)
         LOG << "### start fix call and phi bypass analysis for " << getName() << " ###\n";
 
-    Boomerang::get()->alert_decompile_debug_point(this, "before fixing call and phi refs");
+    Boomerang::get()->alertDecompileDebugPoint(this, "before fixing call and phi refs");
 
     std::map<Exp *, int, lessExpStar> destCounts;
     StatementList::iterator it;
@@ -4673,7 +4673,7 @@ void UserProc::fixCallAndPhiRefs() {
     if (VERBOSE)
         LOG << "### end fix call and phi bypass analysis for " << getName() << " ###\n";
 
-    Boomerang::get()->alert_decompile_debug_point(this, "after fixing call and phi refs");
+    Boomerang::get()->alertDecompileDebugPoint(this, "after fixing call and phi refs");
 }
 
 // Not sure that this is needed...
@@ -5009,7 +5009,7 @@ bool UserProc::removeRedundantParameters() {
     bool ret = false;
     StatementList newParameters;
 
-    Boomerang::get()->alert_decompile_debug_point(this, "before removing redundant parameters");
+    Boomerang::get()->alertDecompileDebugPoint(this, "before removing redundant parameters");
 
     if (DEBUG_UNUSED)
         LOG << "%%% removing unused parameters for " << getName() << "\n";
@@ -5046,7 +5046,7 @@ bool UserProc::removeRedundantParameters() {
     if (DEBUG_UNUSED)
         LOG << "%%% end removing unused parameters for " << getName() << "\n";
 
-    Boomerang::get()->alert_decompile_debug_point(this, "after removing redundant parameters");
+    Boomerang::get()->alertDecompileDebugPoint(this, "after removing redundant parameters");
 
     return ret;
 }
@@ -5076,8 +5076,8 @@ bool UserProc::removeRedundantParameters() {
   ******************************************************************************/
 
 bool UserProc::removeRedundantReturns(std::set<UserProc *> &removeRetSet) {
-    Boomerang::get()->alert_decompiling(this);
-    Boomerang::get()->alert_decompile_debug_point(this, "before removing unused returns");
+    Boomerang::get()->alertDecompiling(this);
+    Boomerang::get()->alertDecompileDebugPoint(this, "before removing unused returns");
     // First remove the unused parameters
     bool removedParams = removeRedundantParameters();
     if (theReturnStatement == nullptr)
@@ -5187,7 +5187,7 @@ bool UserProc::removeRedundantReturns(std::set<UserProc *> &removeRetSet) {
         signature->setRetType(a->getType());
     }
 
-    Boomerang::get()->alert_decompile_debug_point(this, "after removing unused and redundant returns");
+    Boomerang::get()->alertDecompileDebugPoint(this, "after removing unused and redundant returns");
     return removedRets || removedParams;
 }
 
@@ -5600,7 +5600,7 @@ void Function::setProvenTrue(Exp *fact) {
 
 //! Map expressions to locals and initial parameters
 void UserProc::mapLocalsAndParams() {
-    Boomerang::get()->alert_decompile_debug_point(this, "before mapping locals from dfa type analysis");
+    Boomerang::get()->alertDecompileDebugPoint(this, "before mapping locals from dfa type analysis");
     if (DEBUG_TA)
         LOG << " ### mapping expressions to local variables for " << getName() << " ###\n";
     StatementList stmts;

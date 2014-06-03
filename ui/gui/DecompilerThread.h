@@ -19,14 +19,14 @@ class Decompiler : public QObject, public Watcher {
     Q_OBJECT
 
   public:
-    Decompiler() : QObject(), debugging(false), waiting(false) {}
+    Decompiler() : QObject(), Debugging(false), Waiting(false) {}
 
-    virtual void alert_decompile_debug_point(UserProc *p, const char *description) override;
-    virtual void alert_considering(Function *parent, Function *p) override;
-    virtual void alert_decompiling(UserProc *p) override;
-    virtual void alert_new(Function *p) override;
+    virtual void alertDecompileDebugPoint(UserProc *p, const char *description) override;
+    virtual void alertConsidering(Function *parent, Function *p) override;
+    virtual void alertDecompiling(UserProc *p) override;
+    virtual void alertNew(Function *p) override;
     virtual void alertRemove(Function *p) override;
-    virtual void alert_update_signature(Function *p) override;
+    virtual void alertUpdateSignature(Function *p) override;
 
     bool getRtlForProc(const QString &name, QString &rtl);
     const char *getSigFile(const QString &name);
@@ -35,7 +35,7 @@ class Decompiler : public QObject, public Watcher {
     void rereadLibSignatures();
     void getCompoundMembers(const QString &name, QTableWidget *tbl);
 
-    void setDebugging(bool d) { debugging = d; }
+    void setDebugging(bool d) { Debugging = d; }
     void setUseDFTA(bool d);
     void setNoDecodeChildren(bool d);
 
@@ -51,7 +51,7 @@ class Decompiler : public QObject, public Watcher {
     void generateCode();
     void stopWaiting();
 
-signals:
+  signals:
     void loading();
     void decoding();
     void decompiling();
@@ -77,7 +77,7 @@ signals:
     void debuggingPoint(const QString &name, const QString &description);
 
   protected:
-    bool debugging, waiting;
+    bool Debugging, Waiting;
 
     FrontEnd *fe;
     Prog *prog;
@@ -94,12 +94,12 @@ class DecompilerThread : public QThread {
     Q_OBJECT
 
   public:
-    DecompilerThread() : QThread(), decompiler(NULL) {}
+    DecompilerThread() : QThread(), Parent(nullptr) {}
 
     Decompiler *getDecompiler();
 
   protected:
     void run();
 
-    Decompiler *decompiler;
+    Decompiler *Parent;
 };

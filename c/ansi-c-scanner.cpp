@@ -726,7 +726,7 @@ YY_AnsiCScanner_LEX_RETURN YY_AnsiCScanner_CLASS::YY_AnsiCScanner_LEX(yy_AnsiCPa
             YY_BREAK
         case 55: {
             count();
-            sscanf(yytext, "0x%p", &yylval.ival);
+            sscanf(yytext, "0x%p", (void *)&yylval.ival);
             return AnsiCParser::CONSTANT;
         }
             YY_BREAK

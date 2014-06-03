@@ -275,7 +275,7 @@ void FrontEnd::decode(Prog *prg, bool decodeMain, const char *pname) {
         return;
     SectionInterface *sym_iface = qobject_cast<SectionInterface *>(pLoader);
 
-    Boomerang::get()->alert_start_decode(sym_iface->getLimitTextLow(),
+    Boomerang::get()->alertStartDecode(sym_iface->getLimitTextLow(),
                                          (sym_iface->getLimitTextHigh() - sym_iface->getLimitTextLow()).m_value);
 
     bool gotMain;
@@ -503,7 +503,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, std::ofstream &os, bo
     BasicBlock *pBB; // Pointer to the current basic block
 
     // just in case you missed it
-    Boomerang::get()->alert_new(pProc);
+    Boomerang::get()->alertNew(pProc);
 
     // We have a set of CallStatement pointers. These may be disregarded if this is a speculative decode
     // that fails (i.e. an illegal instruction is found). If not, this set will be used to add to the set of calls
@@ -564,7 +564,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, std::ofstream &os, bo
             RTL *pRtl = inst.rtl;
             if (inst.valid == false) {
                 // Alert the watchers to the problem
-                Boomerang::get()->alert_baddecode(uAddr);
+                Boomerang::get()->alertBadDecode(uAddr);
 
                 // An invalid instruction. Most likely because a call did not return (e.g. call _exit()), etc.
                 // Best thing is to emit a INVALID BB, and continue with valid instructions
@@ -584,7 +584,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, std::ofstream &os, bo
             }
 
             // alert the watchers that we have decoded an instruction
-            Boomerang::get()->alert_decode(uAddr, inst.numBytes);
+            Boomerang::get()->alertDecode(uAddr, inst.numBytes);
             nTotalBytes += inst.numBytes;
 
             // Check if this is an already decoded jump instruction (from a previous pass with propagation etc)
@@ -721,7 +721,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, std::ofstream &os, bo
                             func = std::string("__imp_") + func;
                             pProc->setName(func.c_str());
                             // lp->setName(func.c_str());
-                            Boomerang::get()->alert_update_signature(pProc);
+                            Boomerang::get()->alertUpdateSignature(pProc);
                         }
                         callList.push_back(call);
                         ss = sl.end();
@@ -1034,7 +1034,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, std::ofstream &os, bo
         }
     }
 
-    Boomerang::get()->alert_decode(pProc, startAddr, lastAddr, nTotalBytes);
+    Boomerang::get()->alertDecode(pProc, startAddr, lastAddr, nTotalBytes);
 
     if (VERBOSE)
         LOG << "finished processing proc " << pProc->getName() << " at address " << pProc->getNativeAddress() << "\n";

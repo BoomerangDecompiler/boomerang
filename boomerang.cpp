@@ -131,40 +131,54 @@ bool createDirectory(const QString &dir) {
  * Prints a tree graph.
  */
 void Cluster::printTree(std::ostream &ostr) {
-    ostr << "\t\t" << name << "\n";
-    for (auto &elem : children)
+    ostr << "\t\t" << Name.toStdString() << "\n";
+    for (auto &elem : Children)
         elem->printTree(ostr);
 }
-
-static int commandNameToID(const std::string &_cmd) {
-    const char *cmd = _cmd.c_str();
-    if (!strcmp(cmd, "decode"))
-        return 1;
-    if (!strcmp(cmd, "load"))
-        return 2;
-    if (!strcmp(cmd, "save"))
-        return 3;
-    if (!strcmp(cmd, "decompile"))
-        return 4;
-    if (!strcmp(cmd, "codegen"))
-        return 5;
-    if (!strcmp(cmd, "move"))
-        return 6;
-    if (!strcmp(cmd, "add"))
-        return 7;
-    if (!strcmp(cmd, "delete"))
-        return 8;
-    if (!strcmp(cmd, "rename"))
-        return 9;
-    if (!strcmp(cmd, "info"))
-        return 10;
-    if (!strcmp(cmd, "print"))
-        return 11;
-    if (!strcmp(cmd, "exit") || !strcmp(cmd, "quit"))
-        return 12;
-    if (!strcmp(cmd, "help"))
-        return 13;
-    return -1;
+enum CommandType {
+    CT_unknown=-1,
+    CT_decode=1,
+    CT_load=2,
+    CT_save=3,
+    CT_decompile=4,
+    CT_codegen=5,
+    CT_move=6,
+    CT_add=7,
+    CT_delete=8,
+    CT_rename=9,
+    CT_info=10,
+    CT_print=11,
+    CT_exit=12,
+    CT_help=13
+};
+static CommandType commandNameToID(const QString &_cmd) {
+    if (_cmd=="decode")
+        return CT_decode;
+    if (_cmd == "load")
+        return CT_load;
+    if (_cmd == "save")
+        return CT_save;
+    if (_cmd == "decompile")
+        return CT_decompile;
+    if (_cmd == "codegen")
+        return CT_codegen;
+    if (_cmd == "move")
+        return CT_move;
+    if (_cmd == "add")
+        return CT_add;
+    if (_cmd == "delete")
+        return CT_delete;
+    if (_cmd == "rename")
+        return CT_rename;
+    if (_cmd == "info")
+        return CT_info;
+    if (_cmd == "print")
+        return CT_print;
+    if ((_cmd == "exit") || _cmd == "quit")
+        return CT_exit;
+    if (_cmd == "help")
+        return CT_help;
+    return CT_unknown;
 }
 /**
  * Parse and execute a command supplied in interactive mode.
@@ -177,70 +191,72 @@ static int commandNameToID(const std::string &_cmd) {
  * \retval 1 Failure
  * \retval 2 The user exited with \a quit or \a exit
  */
-int Boomerang::processCommand(std::vector<std::string> &args) {
+int Boomerang::processCommand(QStringList &args) {
     static Prog *prog = nullptr;
-    if (args.empty()) {
-        std::cerr << "not arguments\n";
+    QTextStream err_stream(stderr);
+    QTextStream out_stream(stdout);
+    if (args.isEmpty()) {
+        err_stream << "not enough arguments\n";
         return 1;
     }
 
-    int command = commandNameToID(args[0]);
+    CommandType command = commandNameToID(args[0]);
     switch (command) {
-    case 1: {
+    case CT_decode: {
         if (args.size() < 2) {
-            std::cerr << "not enough arguments for cmd\n";
+            err_stream << "not enough arguments for cmd\n";
             return 1;
         }
-        Prog *p = loadAndDecode(args[1].c_str());
+        Prog *p = loadAndDecode(args[1]);
         if (p == nullptr) {
-            std::cerr << "failed to load " << args[1] << "\n";
+            err_stream << "failed to load " << args[1] << "\n";
             return 1;
         }
         prog = p;
         break;
     }
-    case 2: {
+    case CT_load: {
         if (args.size() < 2) {
-            std::cerr << "not enough arguments for cmd\n";
+            err_stream << "not enough arguments for cmd\n";
             return 1;
         }
-        QString fname = args[1].c_str();
+        QString fname = args[1];
         XMLProgParser *p = new XMLProgParser();
         Prog *pr = p->parse(fname);
         if (pr == nullptr) {
             // try guessing
             pr = p->parse(outputPath + fname + "/" + fname + ".xml");
             if (pr == nullptr) {
-                qCritical() << "failed to read xml " << fname << "\n";
+                err_stream << "failed to read xml " << fname << "\n";
                 return 1;
             }
         }
         prog = pr;
         break;
     }
-    case 3: {
+    case CT_save: {
         if (prog == nullptr) {
-            std::cerr << "need to load or decode before save!\n";
+            err_stream << "need to load or decode before save!\n";
             return 1;
         }
         XMLProgParser *p = new XMLProgParser();
         p->persistToXML(prog);
         break;
     }
-    case 4: {
+    case CT_decompile: {
         if (prog == nullptr) {
-            std::cerr << "no valid Prog object !\n";
+            err_stream << "no valid Prog object !\n";
             return 1;
         }
 
         if (args.size() > 1) {
-            Function *proc = prog->findProc(args[1].c_str());
+            Function *proc = prog->findProc(args[1]);
             if (proc == nullptr) {
-                std::cerr << "cannot find proc " << args[1] << "\n";
+                err_stream << "cannot find proc " << args[1] << "\n";
                 return 1;
             }
             if (proc->isLib()) {
-                std::cerr << "cannot decompile a lib proc\n";
+                err_stream << "cannot decompile a lib proc\n";
                 return 1;
             }
             int indent = 0;
@@ -250,15 +266,15 @@ int Boomerang::processCommand(std::vector<std::string> &args) {
             prog->decompile();
         }
     }
-    case 5: {
+    case CT_codegen: {
         if (prog == nullptr) {
-            std::cerr << "no valid Prog object !\n";
+            err_stream << "no valid Prog object !\n";
             return 1;
         }
         if (args.size() > 1) {
             Cluster *cluster = prog->findCluster(args[1]);
             if (cluster == nullptr) {
-                std::cerr << "cannot find cluster " << args[1] << "\n";
+                err_stream << "cannot find cluster " << args[1] << "\n";
                 return 1;
             }
             prog->generateCode(cluster);
@@ -266,75 +282,75 @@ int Boomerang::processCommand(std::vector<std::string> &args) {
             prog->generateCode();
         }
     }
-    case 6: {
+    case CT_move: {
         if (prog == nullptr) {
-            std::cerr << "no valid Prog object !\n";
+            err_stream << "no valid Prog object !\n";
             return 1;
         }
         if (args.size() <= 1) {
-            std::cerr << "not enough arguments for cmd\n";
+            err_stream << "not enough arguments for cmd\n";
             return 1;
         }
-        if (!strcmp(args[1].c_str(), "proc")) {
+        if (args[1]=="proc") {
             if (args.size() < 4) {
-                std::cerr << "not enough arguments for cmd\n";
+                err_stream << "not enough arguments for cmd\n";
                 return 1;
             }
 
-            Function *proc = prog->findProc(args[2].c_str());
+            Function *proc = prog->findProc(args[2]);
             if (proc == nullptr) {
-                std::cerr << "cannot find proc " << args[2] << "\n";
+                err_stream << "cannot find proc " << args[2] << "\n";
                 return 1;
             }
 
             Cluster *cluster = prog->findCluster(args[3]);
             if (cluster == nullptr) {
-                std::cerr << "cannot find cluster " << args[3] << "\n";
+                err_stream << "cannot find cluster " << args[3] << "\n";
                 return 1;
             }
             proc->setCluster(cluster);
         } else if (!args[1].compare("cluster")) {
             if (args.size() <= 3) {
-                std::cerr << "not enough arguments for cmd\n";
+                err_stream << "not enough arguments for cmd\n";
                 return 1;
             }
 
             Cluster *cluster = prog->findCluster(args[2]);
             if (cluster == nullptr) {
-                std::cerr << "cannot find cluster " << args[2] << "\n";
+                err_stream << "cannot find cluster " << args[2] << "\n";
                 return 1;
             }
 
             Cluster *parent = prog->findCluster(args[3]);
             if (parent == nullptr) {
-                std::cerr << "cannot find cluster " << args[3] << "\n";
+                err_stream << "cannot find cluster " << args[3] << "\n";
                 return 1;
             }
 
             parent->addChild(cluster);
         } else {
-            std::cerr << "don't know how to move a " << args[1] << "\n";
+            err_stream << "don't know how to move a " << args[1] << "\n";
             return 1;
         }
     }
-    case 7: {
+    case CT_add: {
         if (prog == nullptr) {
-            std::cerr << "no valid Prog object !\n";
+            err_stream << "no valid Prog object !\n";
             return 1;
         }
         if (args.size() <= 1) {
-            std::cerr << "not enough arguments for cmd\n";
+            err_stream << "not enough arguments for cmd\n";
             return 1;
         }
         if (args[1] == "cluster") {
             if (args.size() <= 2) {
-                std::cerr << "not enough arguments for cmd\n";
+                err_stream << "not enough arguments for cmd\n";
                 return 1;
             }
 
             Cluster *cluster = new Cluster(args[2]);
             if (cluster == nullptr) {
-                std::cerr << "cannot create cluster " << args[2] << "\n";
+                err_stream << "cannot create cluster " << args[2] << "\n";
                 return 1;
             }
 
@@ -342,45 +358,45 @@ int Boomerang::processCommand(std::vector<std::string> &args) {
             if (args.size() > 3) {
                 parent = prog->findCluster(args[3]);
                 if (cluster == nullptr) {
-                    std::cerr << "cannot find cluster " << args[3] << "\n";
+                    err_stream << "cannot find cluster " << args[3] << "\n";
                     return 1;
                 }
             }
 
             parent->addChild(cluster);
         } else {
-            std::cerr << "don't know how to add a " << args[1] << "\n";
+            err_stream << "don't know how to add a " << args[1] << "\n";
             return 1;
         }
     }
-    case 8: {
+    case CT_delete: {
         if (prog == nullptr) {
-            std::cerr << "no valid Prog object !\n";
+            err_stream << "no valid Prog object !\n";
             return 1;
         }
         if (args.size() <= 1) {
-            std::cerr << "not enough arguments for cmd\n";
+            err_stream << "not enough arguments for cmd\n";
             return 1;
         }
         if (!args[1].compare("cluster")) {
             if (args.size() <= 2) {
-                std::cerr << "not enough arguments for cmd\n";
+                err_stream << "not enough arguments for cmd\n";
                 return 1;
             }
 
             Cluster *cluster = prog->findCluster(args[2]);
             if (cluster == nullptr) {
-                std::cerr << "cannot find cluster " << args[2] << "\n";
+                err_stream << "cannot find cluster " << args[2] << "\n";
                 return 1;
             }
 
             if (cluster->hasChildren() || cluster == prog->getRootCluster()) {
-                std::cerr << "cluster " << args[2] << " is not empty\n";
+                err_stream << "cluster " << args[2] << " is not empty\n";
                 return 1;
             }
 
             if (prog->clusterUsed(cluster)) {
-                std::cerr << "cluster " << args[2] << " is not empty\n";
+                err_stream << "cluster " << args[2] << " is not empty\n";
                 return 1;
             }
             QFile::remove(cluster->getOutPath("xml"));
@@ -388,179 +404,179 @@ int Boomerang::processCommand(std::vector<std::string> &args) {
             assert(cluster->getParent());
             cluster->getParent()->removeChild(cluster);
         } else {
-            std::cerr << "don't know how to delete a " << args[1] << "\n";
+            err_stream << "don't know how to delete a " << args[1] << "\n";
             return 1;
         }
     }
-    case 9: {
+    case CT_rename: {
         if (prog == nullptr) {
-            std::cerr << "no valid Prog object !\n";
+            err_stream << "no valid Prog object !\n";
             return 1;
         }
         if (args.size() <= 1) {
-            std::cerr << "not enough arguments for cmd\n";
+            err_stream << "not enough arguments for cmd\n";
             return 1;
         }
         if (args[1] == "proc") {
             if (args.size() <= 3) {
-                std::cerr << "not enough arguments for cmd\n";
+                err_stream << "not enough arguments for cmd\n";
                 return 1;
             }
 
-            Function *proc = prog->findProc(args[2].c_str());
+            Function *proc = prog->findProc(args[2]);
             if (proc == nullptr) {
-                std::cerr << "cannot find proc " << args[2] << "\n";
+                err_stream << "cannot find proc " << args[2] << "\n";
                 return 1;
             }
 
-            Function *nproc = prog->findProc(args[3].c_str());
+            Function *nproc = prog->findProc(args[3]);
             if (nproc != nullptr) {
-                std::cerr << "proc " << args[3] << " already exists\n";
+                err_stream << "proc " << args[3] << " already exists\n";
                 return 1;
             }
 
-            proc->setName(args[3].c_str());
+            proc->setName(args[3]);
         } else if (args[1] == "cluster") {
             if (args.size() <= 3) {
-                std::cerr << "not enough arguments for cmd\n";
+                err_stream << "not enough arguments for cmd\n";
                 return 1;
             }
 
             Cluster *cluster = prog->findCluster(args[2]);
             if (cluster == nullptr) {
-                std::cerr << "cannot find cluster " << args[2] << "\n";
+                err_stream << "cannot find cluster " << args[2] << "\n";
                 return 1;
             }
 
             Cluster *ncluster = prog->findCluster(args[3]);
             if (ncluster == nullptr) {
-                std::cerr << "cluster " << args[3] << " already exists\n";
+                err_stream << "cluster " << args[3] << " already exists\n";
                 return 1;
             }
 
             cluster->setName(args[3]);
         } else {
-            std::cerr << "don't know how to rename a " << args[1] << "\n";
+            err_stream << "don't know how to rename a " << args[1] << "\n";
             return 1;
         }
     }
-    case 10: {
+    case CT_info: {
         if (prog == nullptr) {
-            std::cerr << "no valid Prog object !\n";
+            err_stream << "no valid Prog object !\n";
             return 1;
         }
         if (args.size() <= 1) {
-            std::cerr << "not enough arguments for cmd\n";
+            err_stream << "not enough arguments for cmd\n";
             return 1;
         }
         if (args[1] == "prog") {
 
-            std::cout << "prog " << prog->getName().toStdString() << ":\n";
-            std::cout << "\tclusters:\n";
+            out_stream << "prog " << prog->getName() << ":\n";
+            out_stream << "\tclusters:\n";
             prog->getRootCluster()->printTree(std::cout);
-            std::cout << "\n\tlibprocs:\n";
+            out_stream << "\n\tlibprocs:\n";
             PROGMAP::const_iterator it;
             for (Function *p = prog->getFirstProc(it); p; p = prog->getNextProc(it))
                 if (p->isLib())
-                    std::cout << "\t\t" << p->getName().toStdString() << "\n";
-            std::cout << "\n\tuserprocs:\n";
+                    out_stream << "\t\t" << p->getName() << "\n";
+            out_stream << "\n\tuserprocs:\n";
             for (Function *p = prog->getFirstProc(it); p; p = prog->getNextProc(it))
                 if (!p->isLib())
-                    std::cout << "\t\t" << p->getName().toStdString() << "\n";
-            std::cout << "\n";
+                    out_stream << "\t\t" << p->getName() << "\n";
+            out_stream << "\n";
 
             return 0;
         } else if (args[1] == "cluster") {
             if (args.size() <= 2) {
-                std::cerr << "not enough arguments for cmd\n";
+                err_stream << "not enough arguments for cmd\n";
                 return 1;
             }
 
             Cluster *cluster = prog->findCluster(args[2]);
             if (cluster == nullptr) {
-                std::cerr << "cannot find cluster " << args[2] << "\n";
+                err_stream << "cannot find cluster " << args[2] << "\n";
                 return 1;
             }
 
-            std::cout << "cluster " << cluster->getName() << ":\n";
+            out_stream << "cluster " << cluster->getName() << ":\n";
             if (cluster->getParent())
-                std::cout << "\tparent = " << cluster->getParent()->getName() << "\n";
+                out_stream << "\tparent = " << cluster->getParent()->getName() << "\n";
             else
-                std::cout << "\troot cluster.\n";
-            std::cout << "\tprocs:\n";
+                out_stream << "\troot cluster.\n";
+            out_stream << "\tprocs:\n";
             PROGMAP::const_iterator it;
             for (Function *p = prog->getFirstProc(it); p; p = prog->getNextProc(it))
                 if (p->getCluster() == cluster)
-                    std::cout << "\t\t" << p->getName().toStdString() << "\n";
-            std::cout << "\n";
+                    out_stream << "\t\t" << p->getName() << "\n";
+            out_stream << "\n";
 
             return 0;
         } else if (args[1] == "proc") {
             if (args.size() <= 2) {
-                std::cerr << "not enough arguments for cmd\n";
+                err_stream << "not enough arguments for cmd\n";
                 return 1;
             }
 
-            Function *proc = prog->findProc(args[2].c_str());
+            Function *proc = prog->findProc(args[2]);
             if (proc == nullptr) {
-                std::cerr << "cannot find proc " << args[2] << "\n";
+                err_stream << "cannot find proc " << args[2] << "\n";
                 return 1;
             }
 
-            std::cout << "proc " << proc->getName().toStdString() << ":\n";
-            std::cout << "\tbelongs to cluster " << proc->getCluster()->getName() << "\n";
-            std::cout << "\tnative address " << proc->getNativeAddress() << "\n";
+            out_stream << "proc " << proc->getName() << ":\n";
+            out_stream << "\tbelongs to cluster " << proc->getCluster()->getName() << "\n";
+            out_stream << "\tnative address " << proc->getNativeAddress() << "\n";
             if (proc->isLib())
-                std::cout << "\tis a library proc.\n";
+                out_stream << "\tis a library proc.\n";
             else {
-                std::cout << "\tis a user proc.\n";
+                out_stream << "\tis a user proc.\n";
                 UserProc *p = (UserProc *)proc;
                 if (p->isDecoded())
-                    std::cout << "\thas been decoded.\n";
+                    out_stream << "\thas been decoded.\n";
                 // if (p->isAnalysed())
-                //    std::cout << "\thas been analysed.\n";
+                //    out_stream << "\thas been analysed.\n";
             }
-            std::cout << "\n";
+            out_stream << "\n";
 
             return 0;
         } else {
-            std::cerr << "don't know how to print info about a " << args[1] << "\n";
+            err_stream << "don't know how to print info about a " << args[1] << "\n";
             return 1;
         }
     }
-    case 11: {
+    case CT_print: {
         if (prog == nullptr) {
-            std::cerr << "no valid Prog object !\n";
+            err_stream << "no valid Prog object !\n";
             return 1;
         }
         if (args.size() < 2) {
-            std::cerr << "not enough arguments for cmd\n";
+            err_stream << "not enough arguments for cmd\n";
             return 1;
         }
 
-        Function *proc = prog->findProc(args[1].c_str());
+        Function *proc = prog->findProc(args[1]);
         if (proc == nullptr) {
-            std::cerr << "cannot find proc " << args[1] << "\n";
+            err_stream << "cannot find proc " << args[1] << "\n";
             return 1;
         }
         if (proc->isLib()) {
-            std::cerr << "cannot print a libproc.\n";
+            err_stream << "cannot print a libproc.\n";
             return 1;
         }
 
-        ((UserProc *)proc)->print(std::cout);
-        std::cout << "\n";
+        ((UserProc *)proc)->print(out_stream);
+        out_stream << "\n";
         return 0;
     }
-    case 12: {
+    case CT_exit: {
         return 2;
     }
-    case 13: {
+    case CT_help: {
         helpcmd();
         return 0;
     }
     default:
-        std::cerr << "unknown cmd " << args[0] << ".\n";
+        err_stream << "unknown cmd " << args[0] << ".\n";
         return 1;
     }
     return 0;
@@ -688,7 +704,7 @@ Prog *Boomerang::loadAndDecode(const QString &fname, const char *pname) {
     std::cout << "finishing decode...\n";
     prog->finishDecode();
 
-    Boomerang::get()->alert_end_decode();
+    Boomerang::get()->alertEndDecode();
 
     std::cout << "found " << std::dec << prog->getNumUserProcs() << " procs\n";
 
@@ -811,7 +827,7 @@ Prog *Boomerang::loadFromXML(const char *fname) {
  */
 void Boomerang::logTail() { logger->tail(); }
 
-void Boomerang::alert_decompile_debug_point(UserProc *p, const char *description) {
+void Boomerang::alertDecompileDebugPoint(UserProc *p, const char *description) {
     if (stopAtDebugPoints) {
         std::cout << "decompiling " << p->getName().toStdString() << ": " << description << "\n";
         static char *stopAt = nullptr;
@@ -855,8 +871,8 @@ void Boomerang::alert_decompile_debug_point(UserProc *p, const char *description
             }
         }
     }
-    for (auto const &elem : watchers)
-        (elem)->alert_decompile_debug_point(p, description);
+    for (Watcher *elem : watchers)
+        elem->alertDecompileDebugPoint(p, description);
 }
 
 const char *Boomerang::getVersionStr() { return VERSION; }

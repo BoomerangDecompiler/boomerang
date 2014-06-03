@@ -4,9 +4,12 @@
  */
 #ifndef __TYPES_H__
 #define __TYPES_H__
+
+
+#include <QtCore/QObject>
 #include <iosfwd>
 #include <stdint.h>
-
+class QTextStream;
 // Machine types
 typedef uint8_t Byte;   /* 8 bits */
 typedef uint16_t SWord; /* 16 bits */
@@ -66,11 +69,13 @@ struct ADDRESS {        /* pointer. size depends on platform */
     }
     ADDRESS operator-(intptr_t other) const { return ADDRESS::g(m_value - other); }
     friend std::ostream &operator<<(std::ostream &stream, const ADDRESS &addr);
+    friend QTextStream& operator<< (QTextStream& os, const ADDRESS& mdv);
     // operator intptr_t() const {return int(m_value);}
 };
 template <class T, class U> bool IN_RANGE(const T &val, const U &range_start, const U &range_end) {
     return ((val >= range_start) && (val < range_end));
 }
+Q_DECLARE_METATYPE(ADDRESS);
 
 #define STD_SIZE 32 // Standard size
 // Note: there is a known name collision with NO_ADDRESS in WinSock.h

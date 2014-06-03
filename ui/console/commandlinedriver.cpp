@@ -369,10 +369,7 @@ int CommandlineDriver::console() {
         if (line.isNull())
             break;
         QStringList sl = line.split(" \r\n");
-        std::vector<std::string> args;
-        args.resize(sl.size());
-        std::transform(sl.begin(), sl.end(), args.begin(), [](QString v) -> std::string { return v.toStdString(); });
-        if (boom.processCommand(args) == 2)
+        if (boom.processCommand(sl) == 2)
             return 2;
         printf("boomerang: ");
         fflush(stdout);

@@ -268,7 +268,7 @@ void XMLProgParser::addToContext_prog(Context *c, int e) {
         switch (e) {
         case e_libproc:
         case e_userproc:
-            Boomerang::get()->alert_load(ctx->proc);
+            Boomerang::get()->alertLoad(ctx->proc);
             break;
         }
         return;
@@ -288,7 +288,7 @@ void XMLProgParser::addToContext_prog(Context *c, int e) {
         for (auto &elem : ctx->procs) {
             c->prog->m_procs.push_back(elem);
             c->prog->m_procLabels[(elem)->getNativeAddress()] = elem;
-            Boomerang::get()->alert_load(elem);
+            Boomerang::get()->alertLoad(elem);
         }
         break;
     case e_cluster:
@@ -375,7 +375,7 @@ void XMLProgParser::start_cluster(const QXmlStreamAttributes &attr) {
     addId(attr, ctx->cluster);
     QStringRef name = attr.value(QLatin1Literal("name"));
     if (!name.isEmpty())
-        ctx->cluster->setName(name.toString().toStdString());
+        ctx->cluster->setName(name.toString());
 }
 
 void XMLProgParser::addToContext_cluster(Context *c, int e) {
@@ -1958,7 +1958,7 @@ void XMLProgParser::parseFile(const QString &filename) {
 
 void XMLProgParser::parseChildren(Cluster *c) {
     QString path = c->makeDirs();
-    for (auto &elem : c->children) {
+    for (auto &elem : c->Children) {
         QString d = path + "/" + elem->getName() + ".xml";
         parseFile(d);
         parseChildren(elem);
@@ -1980,8 +1980,8 @@ int XMLProgParser::operFromString(const QStringRef &s) {
 void XMLProgParser::persistToXML(QXmlStreamWriter &out, Cluster *c) {
     out.writeStartElement("cluster");
     out.writeAttribute("id", QString::number(ADDRESS::host_ptr(c).m_value));
-    out.writeAttribute("name", c->name.c_str());
-    for (auto &elem : c->children) {
+    out.writeAttribute("name", c->Name);
+    for (auto &elem : c->Children) {
         persistToXML(out, elem);
     }
     out.writeEndElement();

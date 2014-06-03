@@ -114,6 +114,12 @@ std::ostream &operator<<(std::ostream &stream, const ADDRESS &addr) {
     stream << std::hex << addr.m_value << std::dec;
     return stream;
 }
+#include <QtCore/QTextStream>
+QTextStream& operator<<(QTextStream& os, const ADDRESS& mdv) {
+    //TODO: properly format ADDRESS : 0-fill to max width.
+    os << "0x" << QString::number(mdv.m_value,16);
+}
+
 #ifdef __MINGW32__
 #include <cstdlib>
 char *strdup(const char *s) {

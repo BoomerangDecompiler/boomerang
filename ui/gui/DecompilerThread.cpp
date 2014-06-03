@@ -47,10 +47,10 @@ void DecompilerThread::run() {
     // Boomerang::get()->vFlag = true;
     // Boomerang::get()->traceDecoder = true;
 
-    decompiler = new Decompiler();
-    decompiler->moveToThread(this);
+    Parent = new Decompiler();
+    Parent->moveToThread(this);
 
-    Boomerang::get()->addWatcher(decompiler);
+    Boomerang::get()->addWatcher(Parent);
 
     this->setPriority(QThread::LowPriority);
 
@@ -58,9 +58,9 @@ void DecompilerThread::run() {
 }
 
 Decompiler *DecompilerThread::getDecompiler() {
-    while (decompiler == NULL)
+    while (Parent == nullptr)
         msleep(10);
-    return decompiler;
+    return Parent;
 }
 
 void Decompiler::setUseDFTA(bool d) { Boomerang::get()->dfaTypeAnalysis = d; }
@@ -172,7 +172,7 @@ void Decompiler::decompile() {
 }
 
 void Decompiler::emitClusterAndChildren(Cluster *root) {
-    emit newCluster(QString(root->getName()));
+    emit newCluster(root->getName());
     for (unsigned int i = 0; i < root->getNumChildren(); i++)
         emitClusterAndChildren(root->getChild(i));
 }
@@ -187,7 +187,7 @@ void Decompiler::generateCode() {
         emitClusterAndChildren(root);
     std::list<Function *>::iterator it;
     for (UserProc *p = prog->getFirstUserProc(it); p; p = prog->getNextUserProc(it)) {
-        emit newProcInCluster(QString(p->getName()), QString(p->getCluster()->getName()));
+        emit newProcInCluster(p->getName(), p->getCluster()->getName());
     }
 
     emit generateCodeCompleted();
@@ -217,13 +217,13 @@ const char *Decompiler::procStatus(UserProc *p) {
     return "unknown";
 }
 
-void Decompiler::alert_considering(Function *parent, Function *p) {
+void Decompiler::alertConsidering(Function *parent, Function *p) {
     emit consideringProc(QString(parent ? parent->getName() : ""), QString(p->getName()));
 }
 
-void Decompiler::alert_decompiling(UserProc *p) { emit decompilingProc(QString(p->getName())); }
+void Decompiler::alertDecompiling(UserProc *p) { emit decompilingProc(QString(p->getName())); }
 
-void Decompiler::alert_new(Function *p) {
+void Decompiler::alertNew(Function *p) {
     if (p->isLib()) {
         QString params;
         if (p->getSignature() == NULL || p->getSignature()->isUnknown())
@@ -252,7 +252,7 @@ void Decompiler::alertRemove(Function *p) {
     }
 }
 
-void Decompiler::alert_update_signature(Function *p) { alert_new(p); }
+void Decompiler::alertUpdateSignature(Function *p) { alertNew(p); }
 
 bool Decompiler::getRtlForProc(const QString &name, QString &rtl) {
     Function *p = prog->findProc(name);
@@ -265,18 +265,18 @@ bool Decompiler::getRtlForProc(const QString &name, QString &rtl) {
     return true;
 }
 
-void Decompiler::alert_decompile_debug_point(UserProc *p, const char *description) {
+void Decompiler::alertDecompileDebugPoint(UserProc *p, const char *description) {
     LOG << p->getName() << ": " << description << "\n";
-    if (debugging) {
-        waiting = true;
+    if (Debugging) {
+        Waiting = true;
         emit debuggingPoint(QString(p->getName()), QString(description));
-        while (waiting) {
+        while (Waiting) {
             thread()->wait(10);
         }
     }
 }
 
-void Decompiler::stopWaiting() { waiting = false; }
+void Decompiler::stopWaiting() { Waiting = false; }
 
 const char *Decompiler::getSigFile(const QString &name) {
     Function *p = prog->findProc(name);
@@ -286,7 +286,7 @@ const char *Decompiler::getSigFile(const QString &name) {
 }
 
 QString Decompiler::getClusterFile(const QString &name) {
-    Cluster *c = prog->findCluster(name.toStdString());
+    Cluster *c = prog->findCluster(name);
     if (c == NULL)
         return "";
     return c->getOutPath("c");

@@ -191,7 +191,7 @@ class Prog {
     void printCallGraphXML();
 
     Cluster *getRootCluster() { return m_rootCluster; }
-    Cluster *findCluster(const std::string &name) { return m_rootCluster->find(name); }
+    Cluster *findCluster(const QString &name) { return m_rootCluster->find(name); }
     Cluster *getDefaultCluster(const QString &name);
     bool clusterUsed(Cluster *c);
 

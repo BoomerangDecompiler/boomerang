@@ -292,41 +292,41 @@ Instruction *Prog::getStmtAtLex(Cluster *cluster, unsigned int begin, unsigned i
 
 QString Cluster::makeDirs() {
     QString path;
-    if (parent)
-        path = parent->makeDirs();
+    if (Parent)
+        path = Parent->makeDirs();
     else
         path = Boomerang::get()->getOutputPath();
     QDir dr(path);
-    if (getNumChildren() > 0 || parent == nullptr) {
-        dr.mkpath(name.c_str());
-        dr.cd(name.c_str());
+    if (getNumChildren() > 0 || Parent == nullptr) {
+        dr.mkpath(Name);
+        dr.cd(Name);
     }
     return dr.absolutePath();
 }
 
 void Cluster::removeChild(Cluster *n) {
-    auto it = children.begin();
-    for (; it != children.end(); it++)
+    auto it = Children.begin();
+    for (; it != Children.end(); it++)
         if (*it == n)
             break;
-    assert(it != children.end());
-    children.erase(it);
+    assert(it != Children.end());
+    Children.erase(it);
 }
 
 Cluster::Cluster() { strm.setDevice(&out); }
-Cluster::Cluster(const std::string &_name) : name(_name) { strm.setDevice(&out); }
+Cluster::Cluster(const QString &_name) : Name(_name) { strm.setDevice(&out); }
 
 void Cluster::addChild(Cluster *n) {
-    if (n->parent)
-        n->parent->removeChild(n);
-    children.push_back(n);
-    n->parent = this;
+    if (n->Parent)
+        n->Parent->removeChild(n);
+    Children.push_back(n);
+    n->Parent = this;
 }
 
-Cluster *Cluster::find(const std::string &nam) {
-    if (name == nam)
+Cluster *Cluster::find(const QString &nam) {
+    if (Name == nam)
         return this;
-    for (Cluster *child : children) {
+    for (Cluster *child : Children) {
         Cluster *c = child->find(nam);
         if (c)
             return c;
@@ -337,7 +337,7 @@ Cluster *Cluster::find(const std::string &nam) {
 QString Cluster::getOutPath(const char *ext) {
     QString basedir = makeDirs();
     QDir dr(basedir);
-    return dr.absoluteFilePath(QString(name.c_str()) + "." + ext);
+    return dr.absoluteFilePath(Name + "." + ext);
 }
 
 void Cluster::openStream(const char *ext) {
@@ -350,7 +350,7 @@ void Cluster::openStream(const char *ext) {
 
 void Cluster::openStreams(const char *ext) {
     openStream(ext);
-    for (Cluster *child : children)
+    for (Cluster *child : Children)
         child->openStreams(ext);
 }
 
@@ -358,7 +358,7 @@ void Cluster::closeStreams() {
     if (out.isOpen()) {
         out.close();
     }
-    for (Cluster *child : children)
+    for (Cluster *child : Children)
         child->closeStreams();
 }
 
@@ -684,7 +684,7 @@ Function *Prog::newProc(const char *name, ADDRESS uNative, bool bLib /*= false*/
     m_procs.push_back(pProc); // Append this to list of procs
     m_procLabels[uNative] = pProc;
     // alert the watchers of a new proc
-    Boomerang::get()->alert_new(pProc);
+    Boomerang::get()->alertNew(pProc);
     return pProc;
 }
 
@@ -800,7 +800,7 @@ void Prog::rereadLibSignatures() {
             pProc->setSignature(getLibSignature(pProc->getName().toStdString()));
             for (CallStatement *call_stmt : pProc->getCallers())
                 call_stmt->setSigArguments();
-            Boomerang::get()->alert_update_signature(pProc);
+            Boomerang::get()->alertUpdateSignature(pProc);
         }
     }
 }
