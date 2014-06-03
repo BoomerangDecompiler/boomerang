@@ -21,9 +21,6 @@
   * Dependencies.
   ******************************************************************************/
 
-#include <cassert>
-#include <cstring>
-#include <algorithm> // For remove()
 #include "types.h"
 #include "statement.h"
 #include "exp.h"
@@ -36,6 +33,10 @@
 #include "sslparser.h"
 #include "boomerang.h"
 #include "util.h"
+
+#include <cassert>
+#include <cstring>
+#include <algorithm> // For remove()
 
 //#define DEBUG_SSLPARSER 1
 
@@ -308,22 +309,16 @@ void RTLInstDict::fixupParamsSub(std::string s, std::list<std::string> &funcPara
   ******************************************************************************/
 std::pair<std::string, unsigned> RTLInstDict::getSignature(const char *name) {
     // Take the argument, convert it to upper case and remove any _'s and .'s
-    char *opcode = new char[strlen(name) + 1];
-    upperStr(name, opcode);
-    //    std::remove(opcode,opcode+strlen(opcode)+1,'_');
-    std::remove(opcode, opcode + strlen(opcode) + 1, '.');
-
+    QString hlpr(name);
+    hlpr = hlpr.left(hlpr.indexOf('.')).toUpper();
     // Look up the dictionary
-    std::map<std::string, TableEntry>::iterator it = idict.find(opcode);
+    std::map<std::string, TableEntry>::iterator it = idict.find(hlpr.toStdString());
     if (it == idict.end()) {
         std::cerr << "Error: no entry for `" << name << "' in RTL dictionary\n";
         it = idict.find("NOP"); // At least, don't cause segfault
     }
 
-    std::pair<std::string, unsigned> ret;
-    ret = std::pair<std::string, unsigned>(opcode, (it->second).params.size());
-    // delete [] opcode;
-    return ret;
+    return {hlpr.toStdString(), (it->second).params.size()};
 }
 
 /***************************************************************************/ /**
@@ -353,23 +348,25 @@ bool RTLInstDict::partialType(Exp *exp, Type &ty) {
   * \param actuals - the actual values
   * \returns   the instantiated list of Exps
   ******************************************************************************/
-std::list<Instruction *> *RTLInstDict::instantiateRTL(std::string &name, ADDRESS natPC,
+std::list<Instruction *> *RTLInstDict::instantiateRTL(const QString &name, ADDRESS natPC,
                                                     const std::vector<Exp *> &actuals) {
+    QTextStream q_cerr(stderr);
     // If -f is in force, use the fast (but not as precise) name instead
-    const std::string *lname = &name;
+    QString lname = name;
     // FIXME: settings
     //      if (progOptions.fastInstr) {
     if (0) {
-        auto itf = fastMap.find(name);
+        auto itf = fastMap.find(name.toStdString());
         if (itf != fastMap.end())
-            lname = &itf->second;
+            lname = itf->second.c_str();
     }
     // Retrieve the dictionary entry for the named instruction
-    if (idict.find(*lname) == idict.end()) { /* lname is not in dictionary */
-        std::cerr << "ERROR: unknown instruction " << *lname << " at 0x" << std::hex << natPC << ", ignoring.\n";
+    auto dict_entry = idict.find(lname.toStdString());
+    if (dict_entry == idict.end()) { /* lname is not in dictionary */
+        q_cerr << "ERROR: unknown instruction " << lname << " at " << natPC << ", ignoring.\n";
         return nullptr;
     }
-    TableEntry &entry = idict[*lname];
+    TableEntry &entry(dict_entry->second);
 
     return instantiateRTL(entry.rtl, natPC, entry.params, actuals);
 }
