@@ -4,7 +4,7 @@
 /***************************************************************************/ /**
   * \file       generic.h
   * \brief   Provides the definition for the generic exp tranformer.
-  *============================================================================*/
+  ******************************************************************************/
 
 #ifndef GENERIC_EXP_TRANSFORMER_H
 #define GENERIC_EXP_TRANSFORMER_H

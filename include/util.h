@@ -2,7 +2,7 @@
   * \file       util.h
   * OVERVIEW:   Provides the definition for the miscellaneous bits and pieces
   *                 implemented in the util.so library
-  *============================================================================*/
+  ******************************************************************************/
 #ifndef __UTIL_H__
 #define __UTIL_H__
 

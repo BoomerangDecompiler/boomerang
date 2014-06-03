@@ -21,34 +21,34 @@
 /***************************************************************************/ /**
   * \class Proc
   *
-  * \var Proc::visited
+  * \var Function::Visited
   * \brief For printCallGraphXML
-  * \var Proc::prog
+  * \var Function::prog
   * \brief Program containing this procedure.
-  * \var Proc::signature
+  * \var Function::signature
   * \brief The formal signature of this procedure.
   * This information is determined
   * either by the common.hs file (for a library function) or by analysis.
   * \note This belongs in the CALL, because the same procedure can have different
   * signatures if it happens to have varargs. Temporarily here till it can be permanently
   * moved.
-  * \var Proc::address
+  * \var Function::address
   * Procedure's address.
-  * \var Proc::m_firstCaller
+  * \var Function::m_firstCaller
   * first procedure to call this procedure.
-  * \var Proc::m_firstCallerAddr
+  * \var Function::m_firstCallerAddr
   * can only be used once.
-  * \var Proc::provenTrue
+  * \var Function::provenTrue
   * All the expressions that have been proven true.
   * (Could perhaps do with a list of some that are proven false)
   * Proof the form r28 = r28 + 4 is stored as map from "r28" to "r28+4" (NOTE: no subscripts)
-  * \var Proc::recurPremises
+  * \var Function::recurPremises
   * Premises for recursion group analysis. This is a preservation
   * that is assumed true only for definitions by calls reached in the proof. It also
   * prevents infinite looping of this proof logic.
-  * \var Proc::callerSet
+  * \var Function::callerSet
   * Set of callers (CallStatements that call this procedure).
-  * \var Proc::cluster
+  * \var Function::cluster
   * Cluster this procedure is contained within.
   ******************************************************************************/
 /******************************************************************************
@@ -124,7 +124,6 @@ Function::Function(Prog *prg, ADDRESS uNative, Signature *sig)
 /***************************************************************************/ /**
   *
   * \brief        Returns the name of this procedure
-  * PARAMETERS:        <none>
   * \returns            the name of this procedure
   ******************************************************************************/
 QString Function::getName() const {
@@ -135,7 +134,7 @@ QString Function::getName() const {
 /***************************************************************************/ /**
   *
   * \brief        Sets the name of this procedure
-  * PARAMETERS:        new name
+  * \param        nam - new name
   *
   ******************************************************************************/
 void Function::setName(const QString &nam) {
@@ -312,7 +311,7 @@ bool UserProc::searchAll(const Exp &search, std::list<Exp *> &result) { return c
 void Function::printCallGraphXML(std::ostream &os, int depth, bool /*recurse*/) {
     if (!DUMP_XML)
         return;
-    visited = true;
+    Visited = true;
     for (int i = 0; i < depth; i++)
         os << "      ";
     os << "<proc name=\"" << getName().toStdString() << "\"/>\n";
@@ -321,8 +320,8 @@ void Function::printCallGraphXML(std::ostream &os, int depth, bool /*recurse*/) 
 void UserProc::printCallGraphXML(std::ostream &os, int depth, bool recurse) {
     if (!DUMP_XML)
         return;
-    bool wasVisited = visited;
-    visited = true;
+    bool wasVisited = Visited;
+    Visited = true;
     int i;
     for (i = 0; i < depth; i++)
         os << "      ";
@@ -495,7 +494,7 @@ LibProc::~LibProc() {}
 /***************************************************************************/ /**
   *
   * \brief        Display on os.
-  * PARAMETERS:        os -
+  * \param        os -
   * \returns            os
   ******************************************************************************/
 // std::ostream& LibProc::put(std::ostream& os) {

@@ -13,7 +13,7 @@
   * \file       proc.h
   * OVERVIEW:   Interface for the procedure classes, which are used to store information about variables in the
   *                procedure such as parameters and locals.
-  *============================================================================*/
+  ******************************************************************************/
 
 #ifndef _PROC_H_
 #define _PROC_H_
@@ -50,7 +50,7 @@ class XMLProgParser;
 class QTextStream;
 /***************************************************************************/ /**
   * Procedure class.
-  *============================================================================*/
+  ******************************************************************************/
 /// Interface for the procedure classes, which are used to store information about variables in the
 /// procedure such as parameters and locals.
 class Function {
@@ -113,15 +113,15 @@ class Function {
 
     virtual void printCallGraphXML(std::ostream &os, int depth, bool = true);
     void printDetailsXML();
-    void clearVisited() { visited = false; }
-    bool isVisited() { return visited; }
+    void clearVisited() { Visited = false; }
+    bool isVisited() { return Visited; }
 
     Cluster *getCluster() { return cluster; }
     void setCluster(Cluster *c) { cluster = c; }
 
   protected:
     typedef std::map<Exp *, Exp *, lessExpStar> mExpExp;
-    bool visited;
+    bool Visited;
     Prog *prog;
     Signature *signature;
     ///////////////////////////////////////////////////
@@ -140,13 +140,13 @@ class Function {
     Cluster *cluster;
 
     Function()
-        : visited(false), prog(nullptr), signature(nullptr), address(ADDRESS::g(0L)), m_firstCaller(nullptr),
+        : Visited(false), prog(nullptr), signature(nullptr), address(ADDRESS::g(0L)), m_firstCaller(nullptr),
           m_firstCallerAddr(ADDRESS::g(0L)), cluster(nullptr) {}
 }; // class Proc
 
 /***************************************************************************/ /**
   * LibProc class.
-  *============================================================================*/
+  ******************************************************************************/
 class LibProc : public Function {
   protected:
     friend class XMLProgParser;
@@ -184,7 +184,7 @@ typedef std::list<UserProc *> ProcList;
 
 /***************************************************************************/ /**
   * UserProc class.
-  *============================================================================*/
+  ******************************************************************************/
 
 class UserProc : public Function {
   protected:
@@ -398,12 +398,12 @@ class UserProc : public Function {
 
     // For the final pass of removing returns that are never used
     // typedef    std::map<UserProc*, std::set<Exp*, lessExpStar> > ReturnCounter;
-    bool doesParamChainToCall(Exp *param, UserProc *p, ProcSet *visited);
-    bool isRetNonFakeUsed(CallStatement *c, Exp *loc, UserProc *p, ProcSet *visited);
+    bool doesParamChainToCall(Exp *param, UserProc *p, ProcSet *Visited);
+    bool isRetNonFakeUsed(CallStatement *c, Exp *loc, UserProc *p, ProcSet *Visited);
 
     bool removeRedundantParameters();
     bool removeRedundantReturns(std::set<UserProc *> &removeRetSet);
-    bool checkForGainfulUse(Exp *e, ProcSet &visited);
+    bool checkForGainfulUse(Exp *e, ProcSet &Visited);
     void updateForUseChange(std::set<UserProc *> &removeRetSet);
     bool prove(Exp *query, bool conditional = false);
 

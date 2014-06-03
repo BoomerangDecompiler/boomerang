@@ -1057,11 +1057,11 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, std::ofstream &os, bo
 /***************************************************************************/ /**
   *
   * \brief      Decode the RTL at the given address
-  * PARAMETERS:      address - native address of the instruction
-  *                  delta - difference between host and native addresses
-  *                  decoder - decoder object
-  * NOTE:          Only called from findCoverage()
-  * \returns          a pointer to the decoded RTL
+  * \param      address - native address of the instruction
+  * \param      delta - difference between host and native addresses
+  * \param      decoder - decoder object
+  * \note       Only called from findCoverage()
+  * \returns    a pointer to the decoded RTL
   ******************************************************************************/
 RTL *decodeRtl(ADDRESS address, int delta, NJMCDecoder *decoder) {
     DecodeResult inst = decoder->decodeInstruction(address, delta);
@@ -1072,7 +1072,6 @@ RTL *decodeRtl(ADDRESS address, int delta, NJMCDecoder *decoder) {
 /***************************************************************************/ /**
   *
   * \brief    Get a Prog object (mainly for testing and not decoding)
-  * PARAMETERS:    None
   * \returns        Pointer to a Prog object (with pFE and pBF filled in)
   ******************************************************************************/
 Prog *FrontEnd::getProg() { return Program; }
@@ -1080,11 +1079,11 @@ Prog *FrontEnd::getProg() { return Program; }
 /***************************************************************************/ /**
   *
   * \brief    Create a Return or a Oneway BB if a return statement already exists
-  * PARAMETERS:    pProc: pointer to enclosing UserProc
-  *                BB_rtls: list of RTLs for the current BB (not including pRtl)
-  *                pRtl: pointer to the current RTL with the semantics for the return statement (including a
-  *                    ReturnStatement as the last statement)
-  * \returns        Pointer to the newly created BB
+  * \param    pProc: pointer to enclosing UserProc
+  * \param    BB_rtls: list of RTLs for the current BB (not including pRtl)
+  * \param    pRtl: pointer to the current RTL with the semantics for the return statement (including a
+  *           ReturnStatement as the last statement)
+  * \returns  Pointer to the newly created BB
   ******************************************************************************/
 BasicBlock *FrontEnd::createReturnBlock(UserProc *pProc, std::list<RTL *> *BB_rtls, RTL *pRtl) {
     Cfg *pCfg = pProc->getCFG();

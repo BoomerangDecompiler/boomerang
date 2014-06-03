@@ -15,7 +15,7 @@
   * \brief    This file contains the definition for the FrontEnd class, which implements the source indendent parts of
   *           the front end: decoding machine instructions into a control flow graph populated with low and high level
   *           RTLs.
-  *============================================================================*/
+  ******************************************************************************/
 #ifndef __FRONTEND_H__
 #define __FRONTEND_H__
 
@@ -207,7 +207,7 @@ class FrontEnd {
   * the program being translated.
   * These functions are implemented in the files front<XXX> where XXX is a
   * platform name such as sparc or pentium.
-  *============================================================================*/
+  ******************************************************************************/
 
 /*
  * Intialise the procedure decoder and analyser.

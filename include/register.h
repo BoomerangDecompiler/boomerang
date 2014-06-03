@@ -12,21 +12,22 @@
 /***************************************************************************/ /**
   * \file        register.h
   * OVERVIEW:    Header information for the Register class.
-  *============================================================================*/
+  ******************************************************************************/
 
 #include <string>
 #include <stdint.h>
 class Type;
 
 /***************************************************************************/ /**
-  \class  Register summarises one line of the \@REGISTERS section of an SSL
+  \class  Register
+   Summarises one line of the \@REGISTERS section of an SSL
    file. This class is used extensively in sslparser.y, and there is a public
    member of RTLInstDict called DetRegMap which gives a Register object from
    a register index (register indices may not always be sequential, hence it's
    not just an array of Register objects).
    This class plays a more active role in the Interpreter, which is not yet
    integrated into uqbt
-  *============================================================================*/
+  ******************************************************************************/
 class Register {
   public:
     Register(); // needed for use in stl classes.

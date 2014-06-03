@@ -7,22 +7,6 @@ class CfgTest : public QObject {
 
   public:
     CfgTest();
-    /***************************************************************************/ /**
-      * FUNCTION:        RtlTest::setUp
-      * OVERVIEW:        Set up some expressions for use with all the tests
-      * NOTE:            Called before any tests
-      * PARAMETERS:        <none>
-      *
-      *============================================================================*/
-    virtual void SetUp();
-    /***************************************************************************/ /**
-      * FUNCTION:        RtlTest::tearDown
-      * OVERVIEW:        Delete expressions created in setUp
-      * NOTE:            Called after all tests
-      * PARAMETERS:        <none>
-      *
-      *============================================================================*/
-    virtual void TearDown();
   private slots:
     void initTestCase();
     void testDominators();

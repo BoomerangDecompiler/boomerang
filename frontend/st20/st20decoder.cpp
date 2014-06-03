@@ -40,7 +40,7 @@ static DecodeResult result;
   * FUNCTION:       ST20Decoder::decodeInstruction
   * \brief       Decodes a machine instruction and returns an RTL instance. In all cases a single instruction is
   decoded.
-  * PARAMETERS:       pc - the native address of the pc
+  * \param       pc - the native address of the pc
   *                   delta - the difference between the above address and the host address of the pc (i.e. the address
   that
                                          the pc is at in the loaded object file)
@@ -885,7 +885,7 @@ DecodeResult &ST20Decoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta) {
 /***************************************************************************/ /**
   * FUNCTION:        getWord
   * \brief        Returns the word starting at the given address.
-  * PARAMETERS:        lc - address at which to decode the double
+  * \param        lc - address at which to decode the double
   * \returns             the decoded double
   ******************************************************************************/
 Byte ST20Decoder::getByte(intptr_t lc)
@@ -897,7 +897,7 @@ Byte ST20Decoder::getByte(intptr_t lc)
 /***************************************************************************/ /**
   * FUNCTION:        getWord
   * \brief        Returns the word starting at the given address.
-  * PARAMETERS:        lc - address at which to decode the double
+  * \param        lc - address at which to decode the double
   * \returns             the decoded double
   ******************************************************************************/
 SWord ST20Decoder::getWord(intptr_t lc)
@@ -909,7 +909,7 @@ SWord ST20Decoder::getWord(intptr_t lc)
 /***************************************************************************/ /**
   * FUNCTION:        getDword
   * \brief        Returns the double starting at the given address.
-  * PARAMETERS:        lc - address at which to decode the double
+  * \param        lc - address at which to decode the double
   * \returns             the decoded double
   ******************************************************************************/
 DWord ST20Decoder::getDword(intptr_t lc)
@@ -921,7 +921,7 @@ DWord ST20Decoder::getDword(intptr_t lc)
 /***************************************************************************/ /**
   * FUNCTION:       ST20Decoder::ST20Decoder
   * \brief       Constructor. The code won't work without this (not sure why the default constructor won't do...)
-  * PARAMETERS:       None
+  * \param       None
   *
   ******************************************************************************/
 ST20Decoder::ST20Decoder() : NJMCDecoder(prog) {

@@ -13,7 +13,7 @@
   * of functions irrespective of relationship.  For example, the
   * Object Oriented Programming concept of a Class is a Cluster.
   * Clusters can contain other Clusters to form a tree.
-  *============================================================================*/
+  ******************************************************************************/
 
 #ifndef __CLUSTER_H__
 #define __CLUSTER_H__

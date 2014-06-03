@@ -10,7 +10,7 @@
 /***************************************************************************/ /**
   * \file       statement.h
   * OVERVIEW:   The Statement and related classes (was dataflow.h)
-  *============================================================================*/
+  ******************************************************************************/
 
 #ifndef _STATEMENT_H_
 #define _STATEMENT_H_
@@ -66,7 +66,7 @@ typedef std::set<UserProc *> CycleSet;
 /***************************************************************************/ /**
   * Kinds of Statements, or high-level register transfer lists.
   * changing the order of these will result in save files not working - trent
-  *============================================================================*/
+  ******************************************************************************/
 enum STMT_KIND : uint8_t { // ' : uint8_t' so that it can be forward declared in rtl.h
     STMT_ASSIGN = 0,
     STMT_PHIASSIGN,
@@ -85,7 +85,7 @@ enum STMT_KIND : uint8_t { // ' : uint8_t' so that it can be forward declared in
   * BRANCH_TYPE: These values indicate what kind of conditional jump or
   * conditonal assign is being performed.
   * Changing the order of these will result in save files not working - trent
-  *============================================================================*/
+  ******************************************************************************/
 enum BRANCH_TYPE {
     BRANCH_JE = 0, // Jump if equals
     BRANCH_JNE,    // Jump if not equals
@@ -519,16 +519,16 @@ struct PhiInfo {
     Instruction *m_def; // The defining statement
 };
 /***************************************************************************/ /**
-  * \class PhiAssign is a subclass of Assignment, having a left hand side, and a StatementVec with the references.
-  * \example
-  * m[1000] := phi{3 7 10}    m[1000] is defined at statements 3, 7, and 10
-  * m[r28{3}+4] := phi{2 8}    the memof is defined at 2 and 8, and
-  * the r28 is defined at 3. The integers are really pointers to statements,
-  * printed as the statement number for compactness
+  * PhiAssign is a subclass of Assignment, having a left hand side, and a StatementVec with the references.
+  * \code
+  * m[1000] := phi{3 7 10}    // m[1000] is defined at statements 3, 7, and 10
+  * m[r28{3}+4] := phi{2 8}   // the memof is defined at 2 and 8, and the r28 is defined at 3.
+  * \endcode
+  * The integers are really pointers to statements,printed as the statement number for compactness
   *
   * \note Although the left hand side is nearly always redundant, it is essential in at least one circumstance: when
   * finding locations used by some statement, and the reference is to a CallStatement returning multiple locations.
-  *============================================================================*/
+  ******************************************************************************/
 class PhiAssign : public Assignment {
   public:
     typedef std::map<BasicBlock *, PhiInfo> Definitions;
@@ -924,7 +924,7 @@ class BranchStatement : public GotoStatement {
 /***************************************************************************/ /**
   * CaseStatement is derived from GotoStatement. In addition to the destination
   * of the jump, it has a switch variable Exp.
-  *============================================================================*/
+  ******************************************************************************/
 struct SWITCH_INFO {
     Exp *pSwitchVar; // Ptr to Exp repres switch var, e.g. v[7]
     char chForm;     // Switch form: 'A', 'O', 'R', 'H', or 'F' etc
@@ -979,7 +979,7 @@ class CaseStatement : public GotoStatement {
 
 /***************************************************************************/ /**
   * CallStatement: represents a high level call. Information about parameters and the like are stored here.
-  *============================================================================*/
+  ******************************************************************************/
 class CallStatement : public GotoStatement {
     bool returnAfterCall; // True if call is effectively followed by a return.
 

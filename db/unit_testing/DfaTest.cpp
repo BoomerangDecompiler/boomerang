@@ -2,7 +2,7 @@
   * \file       DfaTest.cc
   * OVERVIEW:   Provides the implementation for the DfaTest class, which
   *                tests the data flow based type analysis code
-  *============================================================================*/
+  */
 #include "DfaTest.h"
 
 #include "boomerang.h"
@@ -25,7 +25,7 @@ void DfaTest::TearDown() {}
 /***************************************************************************/ /**
   * FUNCTION:        DfaTest::testMeetInt
   * OVERVIEW:        Test meeting IntegerTypes with various other types
-  *============================================================================*/
+  ******************************************************************************/
 void DfaTest::testMeetInt() {
     IntegerType *i32 = IntegerType::get(32, 1);
     IntegerType *j32 = IntegerType::get(32, 0);
@@ -115,7 +115,7 @@ void DfaTest::testMeetInt() {
 /***************************************************************************/ /**
   * FUNCTION:        DfaTest::testMeetSize
   * OVERVIEW:        Test meeting IntegerTypes with various other types
-  *============================================================================*/
+  ******************************************************************************/
 void DfaTest::testMeetSize() {
     IntegerType *i32 = IntegerType::get(32, 1);
     SizeType s32(32);
@@ -160,7 +160,7 @@ void DfaTest::testMeetSize() {
 /***************************************************************************/ /**
   * FUNCTION:        DfaTest::testMeetPointer
   * OVERVIEW:        Test meeting IntegerTypes with various other types
-  *============================================================================*/
+  ******************************************************************************/
 void DfaTest::testMeetPointer() {
     IntegerType *i32 = IntegerType::get(32, 1);
     IntegerType *u32 = IntegerType::get(32, -1);
@@ -198,7 +198,7 @@ void DfaTest::testMeetPointer() {
 /***************************************************************************/ /**
   * FUNCTION:        DfaTest::testMeetUnion
   * OVERVIEW:        Test meeting IntegerTypes with various other types
-  *============================================================================*/
+  ******************************************************************************/
 void DfaTest::testMeetUnion() {
     UnionType u1;
     IntegerType *i32 = IntegerType::get(32, 1);

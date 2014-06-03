@@ -4,7 +4,7 @@
 /***************************************************************************/ /**
   * \file       exp.h
   * \brief   Provides the definition for the Exp class and its subclasses.
-  *============================================================================*/
+  ******************************************************************************/
 
 #pragma once
 
@@ -57,7 +57,7 @@ typedef std::unique_ptr<Exp> UniqExp;
   * It is a standard tree representation. Exp itself is abstract. A special class Const is used for constants. Unary,
   * Binary, and Ternary hold 1, 2, and 3 subexpressions respectively. For efficiency of representation, these have to be
   * separate classes, derived from Exp.
-  *============================================================================*/
+  ******************************************************************************/
 
 //! class Exp is abstract. However, the constructor can be called from the constructors of derived classes, and virtual
 //! functions not overridden by derived classes can be called
@@ -360,7 +360,7 @@ std::ostream &operator<<(std::ostream &os, const Exp *p); // Print the Exp poite
 
 /***************************************************************************/ /**
   * Const is a subclass of Exp, and holds either an integer, floating point, string, or address constant
-  *============================================================================*/
+  ******************************************************************************/
 class Const : public Exp {
     union {
         int i;         // Integer
@@ -445,7 +445,7 @@ class Const : public Exp {
 
 /***************************************************************************/ /**
   * Terminal is a subclass of Exp, and holds special zero arity items such as opFlags (abstract flags register)
-  *============================================================================*/
+  ******************************************************************************/
 class Terminal : public Exp {
   public:
     // Constructors
@@ -480,7 +480,7 @@ class Terminal : public Exp {
 
 /***************************************************************************/ /**
   * Unary is a subclass of Exp, holding one subexpression
-  *============================================================================*/
+  ******************************************************************************/
 class Unary : public Exp {
   protected:
     Exp *subExp1; // One subexpression pointer
@@ -549,9 +549,9 @@ class Unary : public Exp {
     friend class XMLProgParser;
 }; // class Unary
 
-/***************************************************************************/ /**
-  * Binary is a subclass of Unary, holding two subexpressions
-  *============================================================================*/
+/**
+ * Binary is a subclass of Unary, holding two subexpressions
+ */
 class Binary : public Unary {
   protected:
     Exp *subExp2; // Second subexpression pointer
@@ -625,7 +625,7 @@ class Binary : public Unary {
 
 /***************************************************************************/ /**
   * Ternary is a subclass of Binary, holding three subexpressions
-  *============================================================================*/
+  ******************************************************************************/
 class Ternary : public Binary {
     Exp *subExp3; // Third subexpression pointer
 
@@ -691,7 +691,7 @@ class Ternary : public Binary {
 
 /***************************************************************************/ /**
   * TypedExp is a subclass of Unary, holding one subexpression and a Type
-  *============================================================================*/
+  ******************************************************************************/
 class TypedExp : public Unary {
     Type *type;
 
@@ -741,7 +741,7 @@ class TypedExp : public Unary {
 
 /***************************************************************************/ /**
   * FlagDef is a subclass of Unary, and holds a list of parameters (in the subexpression), and a pointer to an RTL
-  *============================================================================*/
+  ******************************************************************************/
 class FlagDef : public Unary {
     RTL *rtl;
 
@@ -765,7 +765,7 @@ class FlagDef : public Unary {
   * phi assignment).  This is used for subscripting SSA variables. Example:
   *   m[1000] becomes m[1000]{3} if defined at statement 3
   * The integer is really a pointer to the definig statement, printed as the statement number for compactness.
-  *============================================================================*/
+  ******************************************************************************/
 class RefExp : public Unary {
     Instruction *def; // The defining statement
 

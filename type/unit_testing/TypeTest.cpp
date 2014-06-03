@@ -2,7 +2,7 @@
   * \file       TypeTest.cc
   * OVERVIEW:   Provides the implementation for the TypeTest class, which tests the Type class and some utility
   *functions
-  *============================================================================*/
+  ******************************************************************************/
 /*
  * $Revision$
  *
@@ -28,9 +28,8 @@
   * FUNCTION:        TypeTest::setUp
   * OVERVIEW:        Set up anything needed before all tests
   * NOTE:            Called before any tests
-  * PARAMETERS:        <none>
   *
-  *============================================================================*/
+  ******************************************************************************/
 static bool logset = false;
 void TypeTest::setUp() {
     if (!logset) {
@@ -43,15 +42,14 @@ void TypeTest::setUp() {
   * FUNCTION:        TypeTest::tearDown
   * OVERVIEW:        Delete objects created in setUp
   * NOTE:            Called after all tests
-  * PARAMETERS:        <none>
   *
-  *============================================================================*/
+  ******************************************************************************/
 void TypeTest::tearDown() {}
 
 /***************************************************************************/ /**
   * FUNCTION:        TypeTest::testTypeLong
   * OVERVIEW:        Test type unsigned long
-  *============================================================================*/
+  ******************************************************************************/
 void TypeTest::testTypeLong() {
 
     QString expected("unsigned long long");
@@ -64,7 +62,7 @@ void TypeTest::testTypeLong() {
 /***************************************************************************/ /**
   * FUNCTION:        TypeTest::testNotEqual
   * OVERVIEW:        Test type inequality
-  *============================================================================*/
+  ******************************************************************************/
 void TypeTest::testNotEqual() {
 
     IntegerType *t1(IntegerType::get(32, -1));
@@ -77,7 +75,7 @@ void TypeTest::testNotEqual() {
 /***************************************************************************/ /**
   * FUNCTION:        TypeTest::testNotEqual
   * OVERVIEW:        Test type inequality
-  *============================================================================*/
+  ******************************************************************************/
 void TypeTest::testCompound() {
     BinaryFileFactory bff;
     QObject *pBF = bff.Load(HELLO_WINDOWS);
@@ -139,7 +137,7 @@ void TypeTest::testCompound() {
 /***************************************************************************/ /**
   * FUNCTION:        TypeTest::testDataInterval
   * OVERVIEW:        Test the DataIntervalMap class
-  *============================================================================*/
+  ******************************************************************************/
 void TypeTest::testDataInterval() {
     DataIntervalMap dim;
 
@@ -224,7 +222,7 @@ void TypeTest::testDataInterval() {
 /***************************************************************************/ /**
   * FUNCTION:        TypeTest::testDataIntervalOverlaps
   * OVERVIEW:        Test the DataIntervalMap class with overlapping addItems
-  *============================================================================*/
+  ******************************************************************************/
 void TypeTest::testDataIntervalOverlaps() {
     DataIntervalMap dim;
 

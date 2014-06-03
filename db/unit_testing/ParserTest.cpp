@@ -2,7 +2,7 @@
   * \file       ParserTest.cc
   * OVERVIEW:   Provides the implementation for the ParserTest class, which
   *                tests the sslparser.y etc
-  *============================================================================*/
+  ******************************************************************************/
 #include "ParserTest.h"
 #include "sslparser.h"
 
@@ -13,7 +13,7 @@
 /***************************************************************************/ /**
   * FUNCTION:        ParserTest::testRead
   * OVERVIEW:        Test reading the SSL file
-  *============================================================================*/
+  ******************************************************************************/
 void ParserTest::testRead() {
     RTLInstDict d;
     QVERIFY(d.readSSLFile(SPARC_SSL));
@@ -22,7 +22,7 @@ void ParserTest::testRead() {
 /***************************************************************************/ /**
   * FUNCTION:        ParserTest::testExp
   * OVERVIEW:        Test parsing an expression
-  *============================================================================*/
+  ******************************************************************************/
 void ParserTest::testExp() {
     std::string s("*i32* r0 := 5 + 6");
     Instruction *a = SSLParser::parseExp(s.c_str());

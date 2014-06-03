@@ -602,7 +602,7 @@ Instruction *Instruction::getNextStatementInBB() {
 /***************************************************************************/ /**
   * \brief        Output operator for Statement*
   *                    Just makes it easier to use e.g. std::cerr << myStmtStar
-  * PARAMETERS:        os: output stream to send to
+  * \param        os: output stream to send to
   *                    p: ptr to Statement to print to the stream
   * \returns             copy of os (for concatenation)
   ******************************************************************************/
@@ -1098,7 +1098,7 @@ bool GotoStatement::searchAll(const Exp &search, std::list<Exp *> &result) {
   * \brief        Display a text reprentation of this RTL to the given stream
   * NOTE:            Usually called from RTL::print, in which case the first 9
   *                      chars of the print have already been output to os
-  * PARAMETERS:        os: stream to write to
+  * \param        os: stream to write to
   *
   ******************************************************************************/
 void GotoStatement::print(std::ostream & os, bool html) const {
@@ -1119,7 +1119,7 @@ void GotoStatement::print(std::ostream & os, bool html) const {
 }
 
 /***************************************************************************/ /**
-  * FUNCTION:      GotoStatement::setIsComputed
+  * \fn      GotoStatement::setIsComputed
   * \brief      Sets the fact that this call is computed.
   * \note This should really be removed, once CaseStatement and
   *                    HLNwayCall are implemented properly
@@ -1128,19 +1128,17 @@ void GotoStatement::print(std::ostream & os, bool html) const {
 void GotoStatement::setIsComputed(bool b) { m_isComputed = b; }
 
 /***************************************************************************/ /**
-  * FUNCTION:      GotoStatement::isComputed
+  * \fn      GotoStatement::isComputed
   * \brief      Returns whether or not this call is computed.
-  * NOTE:          This should really be removed, once CaseStatement and HLNwayCall
+  * \note          This should really be removed, once CaseStatement and HLNwayCall
   *                    are implemented properly
-  * PARAMETERS:      <none>
   * \returns           this call is computed
   ******************************************************************************/
 bool GotoStatement::isComputed() { return m_isComputed; }
 
 /***************************************************************************/ /**
-  * FUNCTION:        GotoStatement::clone
+  * \fn        GotoStatement::clone
   * \brief        Deep copy clone
-  * PARAMETERS:        <none>
   * \returns             Pointer to a new Statement, a clone of this GotoStatement
   ******************************************************************************/
 Instruction *GotoStatement::clone() const {
@@ -1175,7 +1173,7 @@ void GotoStatement::simplify() {
 /***************************************************************************/ /**
   * FUNCTION:        BranchStatement::BranchStatement
   * \brief        Constructor.
-  * PARAMETERS:        None
+  * \param        None
   *
   ******************************************************************************/
 BranchStatement::BranchStatement() : jtCond((BRANCH_TYPE)0), pCond(nullptr), bFloat(false), size(0) {
@@ -1183,9 +1181,9 @@ BranchStatement::BranchStatement() : jtCond((BRANCH_TYPE)0), pCond(nullptr), bFl
 }
 
 /***************************************************************************/ /**
-  * \function        BranchStatement::~BranchStatement
+  * \fn        BranchStatement::~BranchStatement
   * \brief        Destructor
-  * PARAMETERS:        None
+  * \param        None
   *
   ******************************************************************************/
 BranchStatement::~BranchStatement() {
@@ -1199,7 +1197,7 @@ BranchStatement::~BranchStatement() {
   * \brief        Sets the BRANCH_TYPE of this jcond as well as the flag
   *                    indicating whether or not the floating point condition codes
   *                    are used.
-  * PARAMETERS:        cond - the BRANCH_TYPE
+  * \param        cond - the BRANCH_TYPE
   *                    usesFloat - this condional jump checks the floating point
   *                      condition codes
   * \returns             a semantic string
@@ -1269,9 +1267,8 @@ void BranchStatement::setCondType(BRANCH_TYPE cond, bool usesFloat /*= false*/) 
 }
 
 /***************************************************************************/ /**
-  * FUNCTION:        BranchStatement::makeSigned
+  * \fn        BranchStatement::makeSigned
   * \brief        Change this from an unsigned to a signed branch
-  * PARAMETERS:        <none>
   *
   ******************************************************************************/
 void BranchStatement::makeSigned() {
@@ -1390,7 +1387,7 @@ bool BranchStatement::search(const Exp &search, Exp *&result) {
 /***************************************************************************/ /**
   * FUNCTION:        BranchStatement::searchAndReplace
   * \brief        Replace all instances of search with replace.
-  * PARAMETERS:        search - a location to search for
+  * \param        search - a location to search for
   *                    replace - the expression with which to replace it
   *                    cc - ignored
   * \returns             True if any change
@@ -1419,7 +1416,7 @@ bool BranchStatement::searchAll(const Exp &search, std::list<Exp *> &result) {
 /***************************************************************************/ /**
   * FUNCTION:        BranchStatement::print
   * \brief        Write a text representation to the given stream
-  * PARAMETERS:        os: stream
+  * \param        os: stream
   *
   ******************************************************************************/
 void BranchStatement::print(std::ostream & os, bool html) const {
@@ -1499,9 +1496,8 @@ void BranchStatement::print(std::ostream & os, bool html) const {
 }
 
 /***************************************************************************/ /**
-  * FUNCTION:        BranchStatement::clone
+  * \fn        BranchStatement::clone
   * \brief        Deep copy clone
-  * PARAMETERS:        <none>
   * \returns             Pointer to a new Statement, a clone of this BranchStatement
   ******************************************************************************/
 Instruction *BranchStatement::clone() const {
@@ -1871,7 +1867,7 @@ void BranchStatement::simplify() {
 /***************************************************************************/ /**
   * FUNCTION:        CaseStatement::CaseStatement
   * \brief        Constructor.
-  * PARAMETERS:        None
+  * \param        None
   *
   ******************************************************************************/
 CaseStatement::CaseStatement() : pSwitchInfo(nullptr) { Kind = STMT_CASE; }
@@ -1880,7 +1876,7 @@ CaseStatement::CaseStatement() : pSwitchInfo(nullptr) { Kind = STMT_CASE; }
   * FUNCTION:        CaseStatement::~CaseStatement
   * \brief        Destructor
   * NOTE:            Don't delete the pSwitchVar; it's always a copy of something else (so don't delete twice)
-  * PARAMETERS:        None
+  * \param        None
   *
   ******************************************************************************/
 CaseStatement::~CaseStatement() {
@@ -1890,9 +1886,8 @@ CaseStatement::~CaseStatement() {
 }
 
 /***************************************************************************/ /**
-  * FUNCTION:        CaseStatement::getSwitchInfo
+  * \fn        CaseStatement::getSwitchInfo
   * \brief        Return a pointer to a struct with switch information in it
-  * PARAMETERS:        <none>
   * \returns             a semantic string
   ******************************************************************************/
 SWITCH_INFO *CaseStatement::getSwitchInfo() { return pSwitchInfo; }
@@ -1900,7 +1895,7 @@ SWITCH_INFO *CaseStatement::getSwitchInfo() { return pSwitchInfo; }
 /***************************************************************************/ /**
   * FUNCTION:        CaseStatement::setSwitchInfo
   * \brief        Set a pointer to a SWITCH_INFO struct
-  * PARAMETERS:        Pointer to SWITCH_INFO struct
+  * \param        Pointer to SWITCH_INFO struct
   *
   ******************************************************************************/
 void CaseStatement::setSwitchInfo(SWITCH_INFO * psi) { pSwitchInfo = psi; }
@@ -1908,7 +1903,7 @@ void CaseStatement::setSwitchInfo(SWITCH_INFO * psi) { pSwitchInfo = psi; }
 /***************************************************************************/ /**
   * FUNCTION:        CaseStatement::searchAndReplace
   * \brief        Replace all instances of search with replace.
-  * PARAMETERS:        search - a location to search for
+  * \param        search - a location to search for
   *                    replace - the expression with which to replace it
   *                    cc - ignored
   * \returns             True if any change
@@ -1924,7 +1919,7 @@ bool CaseStatement::searchAndReplace(const Exp &search, Exp *replace, bool cc) {
 /***************************************************************************/ /**
   * FUNCTION:        CaseStatement::searchAll
   * \brief        Find all instances of the search expression
-  * PARAMETERS:        search - a location to search for
+  * \param        search - a location to search for
   *                    result - a list which will have any matching exprs appended to it
   * NOTES:            search can't easily be made const
   * \returns             true if there were any matches
@@ -1937,7 +1932,7 @@ bool CaseStatement::searchAll(const Exp &search, std::list<Exp *> &result) {
 /***************************************************************************/ /**
   * FUNCTION:        CaseStatement::print
   * \brief        Write a text representation to the given stream
-  * PARAMETERS:        os: stream
+  * \param        os: stream
   *                    indent: number of columns to skip
   *
   ******************************************************************************/
@@ -1961,9 +1956,8 @@ void CaseStatement::print(std::ostream & os, bool html) const {
 }
 
 /***************************************************************************/ /**
-  * FUNCTION:        CaseStatement::clone
+  * \fn        CaseStatement::clone
   * \brief        Deep copy clone
-  * PARAMETERS:        <none>
   * \returns             Pointer to a new Statement that is a clone of this one
   ******************************************************************************/
 Instruction *CaseStatement::clone() const {
@@ -2011,7 +2005,7 @@ void CaseStatement::simplify() {
 /***************************************************************************/ /**
   * FUNCTION:         CallStatement::CallStatement
   * \brief         Constructor for a call
-  * PARAMETERS:         None
+  * \param         None
   *
   ******************************************************************************/
 CallStatement::CallStatement() : returnAfterCall(false), calleeReturn(nullptr) {
@@ -2023,7 +2017,7 @@ CallStatement::CallStatement() : returnAfterCall(false), calleeReturn(nullptr) {
 /***************************************************************************/ /**
   * FUNCTION:      CallStatement::~CallStatement
   * \brief      Destructor
-  * PARAMETERS:      BB - the enclosing basic block of this call
+  * \param      BB - the enclosing basic block of this call
   *
   ******************************************************************************/
 CallStatement::~CallStatement() {}
@@ -2084,7 +2078,7 @@ void CallStatement::setArgumentType(int i, Type *ty) {
 /***************************************************************************/ /**
   * FUNCTION:      CallStatement::setArguments
   * \brief      Set the arguments of this call.
-  * PARAMETERS:      arguments - the list of locations to set the arguments to (for testing)
+  * \param      arguments - the list of locations to set the arguments to (for testing)
   *
   ******************************************************************************/
 void CallStatement::setArguments(StatementList & args) {
@@ -2157,7 +2151,7 @@ bool CallStatement::search(const Exp &search, Exp *&result) {
 /***************************************************************************/ /**
   * FUNCTION:        CallStatement::searchAndReplace
   * \brief        Replace all instances of search with replace.
-  * PARAMETERS:        search - a location to search for
+  * \param        search - a location to search for
   *                    replace - the expression with which to replace it
   *                    cc - true to replace in collectors
   * \returns             True if any change
@@ -2181,7 +2175,7 @@ bool CallStatement::searchAndReplace(const Exp &search, Exp *replace, bool cc) {
 /***************************************************************************/ /**
   * FUNCTION:        CallStatement::searchAll
   * \brief        Find all instances of the search expression
-  * PARAMETERS:        search - a location to search for
+  * \param        search - a location to search for
   *                    result - a list which will have any matching exprs appended to it
   * \returns             true if there were any matches
   ******************************************************************************/
@@ -2202,7 +2196,7 @@ bool CallStatement::searchAll(const Exp &search, std::list<Exp *> &result) {
 /***************************************************************************/ /**
   * FUNCTION:        CallStatement::print
   * \brief        Write a text representation of this RTL to the given stream
-  * PARAMETERS:        os: stream to write to
+  * \param        os: stream to write to
   *
   ******************************************************************************/
 void CallStatement::print(std::ostream & os, bool html) const {
@@ -2291,7 +2285,7 @@ void CallStatement::print(std::ostream & os, bool html) const {
   * FUNCTION:         CallStatement::setReturnAfterCall
   * \brief         Sets a bit that says that this call is effectively followed by a return. This happens e.g. on
   *                        Sparc when there is a restore in the delay slot of the call
-  * PARAMETERS:         b: true if this is to be set; false to clear the bit
+  * \param         b: true if this is to be set; false to clear the bit
   *
   ******************************************************************************/
 void CallStatement::setReturnAfterCall(bool b) { returnAfterCall = b; }
@@ -2300,15 +2294,14 @@ void CallStatement::setReturnAfterCall(bool b) { returnAfterCall = b; }
   * FUNCTION:         CallStatement::isReturnAfterCall
   * \brief         Tests a bit that says that this call is effectively followed by a return. This happens e.g. on
   *                        Sparc when there is a restore in the delay slot of the call
-  * PARAMETERS:         none
+  * \param         none
   * \returns              True if this call is effectively followed by a return
   ******************************************************************************/
 bool CallStatement::isReturnAfterCall() { return returnAfterCall; }
 
 /***************************************************************************/ /**
-  * FUNCTION:        CallStatement::clone
+  * \fn        CallStatement::clone
   * \brief        Deep copy clone
-  * PARAMETERS:        <none>
   * \returns             Pointer to a new Statement, a clone of this CallStatement
   ******************************************************************************/
 Instruction *CallStatement::clone() const {
@@ -3039,7 +3032,7 @@ bool ReturnStatement::usesExp(const Exp &e) {
 /***************************************************************************/ /**
   * FUNCTION:         BoolAssign::BoolAssign
   * \brief         Constructor.
-  * PARAMETERS:         sz: size of the assignment
+  * \param         sz: size of the assignment
   * \returns              <N/a>
   ******************************************************************************/
 BoolAssign::BoolAssign(int sz)
@@ -3112,7 +3105,7 @@ void BoolAssign::setCondExpr(Exp * pss) {
 /***************************************************************************/ /**
   * FUNCTION:        BoolAssign::print
   * \brief        Write a text representation to the given stream
-  * PARAMETERS:        os: stream
+  * \param        os: stream
   *
   ******************************************************************************/
 void BoolAssign::printCompact(std::ostream & os /*= cout*/, bool html) const {
@@ -3182,9 +3175,8 @@ void BoolAssign::printCompact(std::ostream & os /*= cout*/, bool html) const {
 }
 
 /***************************************************************************/ /**
-  * FUNCTION:        BoolAssign::clone
+  * \fn        BoolAssign::clone
   * \brief        Deep copy clone
-  * PARAMETERS:        <none>
   * \returns             Pointer to a new Statement, a clone of this BoolAssign
   ******************************************************************************/
 Instruction *BoolAssign::clone() const {

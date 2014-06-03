@@ -78,7 +78,7 @@ Exp *crBit(int bitNum); // Get an expression for a CR bit access
 /***************************************************************************/ /**
   * FUNCTION:       unused
   * \brief       A dummy function to suppress "unused local variable" messages
-  * PARAMETERS:       x: integer variable to be "used"
+  * \param       x: integer variable to be "used"
   *
   ******************************************************************************/
 void PPCDecoder::unused(int /*x*/) {}
@@ -92,7 +92,7 @@ void unused(const char *x) {}
   *                   given address, then simply return the RTL for the low level
   *                   instruction at this address. There is an option to also
   *                   include the low level statements for a HL instruction.
-  * PARAMETERS:       pc - the native address of the pc
+  * \param       pc - the native address of the pc
   *                   delta - the difference between the above address and the
   *                     host address of the pc (i.e. the address that the pc is at
   *                     in the loaded object file)
@@ -8951,7 +8951,7 @@ DecodeResult &PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta) {
 /***************************************************************************/ /**
   * FUNCTION:        PPCDecoder::dis_Reg
   * \brief        Decode the register
-  * PARAMETERS:        r - register (0-31)
+  * \param        r - register (0-31)
   * \returns             the expression representing the register
   ******************************************************************************/
 Exp *PPCDecoder::dis_Reg(unsigned r) { return Location::regOf(r); }
@@ -8959,7 +8959,7 @@ Exp *PPCDecoder::dis_Reg(unsigned r) { return Location::regOf(r); }
 /***************************************************************************/ /**
   * FUNCTION:        PPCDecoder::dis_RAmbz
   * \brief        Decode the register rA when rA represents constant 0 if r == 0
-  * PARAMETERS:        r - register (0-31)
+  * \param        r - register (0-31)
   * \returns             the expression representing the register
   ******************************************************************************/
 Exp *PPCDecoder::dis_RAmbz(unsigned r) {
@@ -8973,7 +8973,7 @@ Exp *PPCDecoder::dis_RAmbz(unsigned r) {
   * \brief      Check to see if the instructions at the given offset match
   *                    any callee prologue, i.e. does it look like this offset
   *                    is a pointer to a function?
-  * PARAMETERS:      hostPC - pointer to the code in question (host address)
+  * \param      hostPC - pointer to the code in question (host address)
   * \returns           True if a match found
   ******************************************************************************/
 bool PPCDecoder::isFuncPrologue(ADDRESS /*hostPC*/) { return false; }
@@ -8985,7 +8985,7 @@ bool PPCDecoder::isFuncPrologue(ADDRESS /*hostPC*/) { return false; }
 /***************************************************************************/ /**
   * FUNCTION:        getDword
   * \brief        Returns the double starting at the given address.
-  * PARAMETERS:        lc - address at which to decode the double
+  * \param        lc - address at which to decode the double
   * \returns             the decoded double
   ******************************************************************************/
 DWord PPCDecoder::getDword(ADDRESS lc) {
@@ -8996,7 +8996,7 @@ DWord PPCDecoder::getDword(ADDRESS lc) {
 /***************************************************************************/ /**
   * FUNCTION:       PPCDecoder::PPCDecoder
   * \brief
-  * PARAMETERS:       None
+  * \param       None
   *
   ******************************************************************************/
 PPCDecoder::PPCDecoder(Prog *prog) : NJMCDecoder(prog) {

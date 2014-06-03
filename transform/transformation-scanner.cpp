@@ -158,7 +158,7 @@
 /***************************************************************************//**
  * \file       transformation.l
  * OVERVIEW:   Scanner for transformation language.
- *============================================================================*/
+ ******************************************************************************/
 
 /* ALlow ? and @ in identifiers, so we can use mangled names */
 #include "transformation-scanner.h"

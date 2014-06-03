@@ -38,7 +38,7 @@
 /********************************************************************************
  * FUNCTION:       unused
  * \brief       A dummy function to suppress "unused local variable" messages
- * PARAMETERS:       x: integer variable to be "used"
+ * \param       x: integer variable to be "used"
  ********************************************************************************/
 void MIPSDecoder::unused(int /*x*/) {}
 

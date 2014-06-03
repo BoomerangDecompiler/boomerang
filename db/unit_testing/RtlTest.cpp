@@ -2,7 +2,7 @@
   * \file       RtlTest.cc
   * OVERVIEW:   Provides the implementation for the RtlTest class, which
   *                tests the RTL and derived classes
-  *============================================================================*/
+  ******************************************************************************/
 #include "RtlTest.h"
 #include "statement.h"
 #include "exp.h"
@@ -23,7 +23,7 @@
 /***************************************************************************/ /**
   * FUNCTION:        RtlTest::testAppend
   * OVERVIEW:        Test appendExp and printing of RTLs
-  *============================================================================*/
+  ******************************************************************************/
 void RtlTest::testAppend() {
     Assign *a = new Assign(Location::regOf(8), new Binary(opPlus, Location::regOf(9), new Const(99)));
     RTL r;
@@ -42,7 +42,7 @@ void RtlTest::testAppend() {
 /***************************************************************************/ /**
   * FUNCTION:        RtlTest::testClone
   * OVERVIEW:        Test constructor from list of expressions; cloning of RTLs
-  *============================================================================*/
+  ******************************************************************************/
 void RtlTest::testClone() {
     Assign *a1 = new Assign(Location::regOf(8), new Binary(opPlus, Location::regOf(9), new Const(99)));
     Assign *a2 = new Assign(IntegerType::get(16), new Location(opParam, new Const("x"), nullptr),
@@ -70,7 +70,7 @@ void RtlTest::testClone() {
   * FUNCTION:        RtlTest::testVisitor
   * OVERVIEW:        Test the accept function for correct visiting behaviour.
   * NOTES:            Stub class to test.
-  *============================================================================*/
+  ******************************************************************************/
 
 class StmtVisitorStub : public StmtVisitor {
   public:
@@ -79,35 +79,35 @@ class StmtVisitorStub : public StmtVisitor {
     void clear() { a = b = c = d = e = f = g = h = false; }
     StmtVisitorStub() { clear(); }
     virtual ~StmtVisitorStub() {}
-    virtual bool visit(RTL *s) {
+    virtual bool visit(RTL */*s*/) {
         a = true;
         return false;
     }
-    virtual bool visit(GotoStatement *s) {
+    virtual bool visit(GotoStatement */*s*/) {
         b = true;
         return false;
     }
-    virtual bool visit(BranchStatement *s) {
+    virtual bool visit(BranchStatement */*s*/) {
         c = true;
         return false;
     }
-    virtual bool visit(CaseStatement *s) {
+    virtual bool visit(CaseStatement */*s*/) {
         d = true;
         return false;
     }
-    virtual bool visit(CallStatement *s) {
+    virtual bool visit(CallStatement */*s*/) {
         e = true;
         return false;
     }
-    virtual bool visit(ReturnStatement *s) {
+    virtual bool visit(ReturnStatement */*s*/) {
         f = true;
         return false;
     }
-    virtual bool visit(BoolAssign *s) {
+    virtual bool visit(BoolAssign */*s*/) {
         g = true;
         return false;
     }
-    virtual bool visit(Assign *s) {
+    virtual bool visit(Assign */*s*/) {
         h = true;
         return false;
     }
@@ -177,7 +177,7 @@ void RtlTest::testVisitor() {
 /***************************************************************************/ /**
   * FUNCTION:        RtlTest::testIsCompare
   * OVERVIEW:        Test the isCompare function
-  *============================================================================*/
+  ******************************************************************************/
 // void RtlTest::testIsCompare() {
 //    BinaryFileFactory bff;
 //    BinaryFile *pBF = bff.Load(SWITCH_SPARC);

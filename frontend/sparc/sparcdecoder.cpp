@@ -54,7 +54,7 @@
 /***************************************************************************/ /**
   * FUNCTION:       unused
   * \brief       A dummy function to suppress "unused local variable" messages
-  * PARAMETERS:       x: integer variable to be "used"
+  * \param       x: integer variable to be "used"
   *
   ******************************************************************************/
 void SparcDecoder::unused(int /*x*/) {}
@@ -62,7 +62,7 @@ void SparcDecoder::unused(int /*x*/) {}
 /***************************************************************************/ /**
   * FUNCTION:       createBranchRtl
   * \brief       Create an RTL for a Bx instruction
-  * PARAMETERS:       pc - the location counter
+  * \param       pc - the location counter
   *                   stmts - ptr to list of Statement pointers
   *                   name - instruction name (e.g. "BNE,a", or "BPNE")
   * \returns            Pointer to newly created RTL, or nullptr if invalid
@@ -182,7 +182,7 @@ RTL *SparcDecoder::createBranchRtl(ADDRESS pc, std::list<Instruction *> *stmts, 
   *                    then simply return the RTL for the low level instruction at this address. There is an option to
   *also
   *                   include the low level statements for a HL instruction.
-  * PARAMETERS:       pc - the native address of the pc
+  * \param       pc - the native address of the pc
   *                   delta - the difference between the above address and the host address of the pc (i.e. the address
   *                    that the pc is at in the loaded object file)
   *                   proc - the enclosing procedure. This can be nullptr for those of us who are using this method in
@@ -2088,19 +2088,19 @@ DecodeResult &SparcDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta) {
  **********************************************************************/
 
 /***************************************************************************/ /**
-  * \function     SparcDecoder::dis_RegLhs
+  * \fn     SparcDecoder::dis_RegLhs
   * \brief        Decode the register on the LHS
-  * \arg          r - register (0-31)
+  * \param          r - register (0-31)
   * \returns      the expression representing the register
   ******************************************************************************/
 Exp *SparcDecoder::dis_RegLhs(unsigned r) { return Location::regOf(r); }
 
 /***************************************************************************/ /**
-  * \function     SparcMachine::dis_RegRhs
+  * \fn     SparcMachine::dis_RegRhs
   * \brief        Decode the register on the RHS
   * \note            Replaces r[0] with const 0
   * \note            Not used by DIS_RD since don't want 0 on LHS
-  * \arg        r - register (0-31)
+  * \param        r - register (0-31)
   * \returns        the expression representing the register
   ******************************************************************************/
 Exp *SparcMachine::dis_RegRhs(uint8_t r) {
@@ -2110,7 +2110,7 @@ Exp *SparcMachine::dis_RegRhs(uint8_t r) {
 }
 
 /***************************************************************************/ /**
-  * \function     SparcDecoder::dis_RegImm
+  * \fn     SparcDecoder::dis_RegImm
   * \brief        Decode the register or immediate at the given address.
   * \note         Used via macro DIS_ROI
   * \param        pc - an address in the instruction stream
@@ -2133,8 +2133,8 @@ Exp *SparcDecoder::dis_RegImm(ADDRESS pc) {
   * \fn         SparcDecoder::dis_Eaddr
   * \brief      Converts a dynamic address to a Exp* expression.
   *             E.g. %o7 --> r[ 15 ]
-  * \arg        pc - the instruction stream address of the dynamic address
-  * \arg        ignore - redundant parameter on SPARC
+  * \param        pc - the instruction stream address of the dynamic address
+  * \param        ignore - redundant parameter on SPARC
   * \returns    the Exp* representation of the given address
   ******************************************************************************/
 Exp *SparcDecoder::dis_Eaddr(ADDRESS pc, int ignore /* = 0 */) {
@@ -2190,7 +2190,7 @@ Exp *SparcDecoder::dis_Eaddr(ADDRESS pc, int ignore /* = 0 */) {
   * FUNCTION:      isFuncPrologue()
   * \brief      Check to see if the instructions at the given offset match any callee prologue, i.e. does it look
   *                    like this offset is a pointer to a function?
-  * PARAMETERS:      hostPC - pointer to the code in question (host address)
+  * \param      hostPC - pointer to the code in question (host address)
   * \returns           True if a match found
   ******************************************************************************/
 bool SparcDecoder::isFuncPrologue(ADDRESS hostPC) { return false; }
@@ -2224,7 +2224,7 @@ bool SparcDecoder::isRestore(ADDRESS hostPC) {
 /***************************************************************************/ /**
   * FUNCTION:        getDword
   * \brief        Returns the double starting at the given address.
-  * PARAMETERS:        lc - address at which to decode the double
+  * \param        lc - address at which to decode the double
   * \returns             the decoded double
   ******************************************************************************/
 DWord SparcDecoder::getDword(ADDRESS lc) {
@@ -2235,7 +2235,7 @@ DWord SparcDecoder::getDword(ADDRESS lc) {
 /***************************************************************************/ /**
   * FUNCTION:       SparcDecoder::SparcDecoder
   * \brief
-  * PARAMETERS:       None
+  * \param       None
   *
   ******************************************************************************/
 SparcDecoder::SparcDecoder(Prog *prog) : NJMCDecoder(prog) {

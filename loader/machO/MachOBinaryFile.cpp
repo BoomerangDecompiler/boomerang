@@ -9,7 +9,7 @@
  *
  */
 
-/** \file MachOBinaryFile.cc
+/** \file MachOBinaryFile.cpp
  * \brief This file contains the implementation of the class MachOBinaryFile.
  *
  *    This file implements the class MachOBinaryFile, derived from class
@@ -476,7 +476,7 @@ int32_t MachOBinaryFile::BMMH(int32_t x) {
         return x;
 }
 
-unsigned int MachOBinaryFile::BMMH(unsigned int x) {
+uint32_t MachOBinaryFile::BMMH(uint32_t x) {
     if (swap_bytes)
         return _BMMH(x);
     else

@@ -204,12 +204,6 @@ Type *LowerType::clone() const {
     return t;
 }
 
-/***************************************************************************/ /**
-  *
-  * \brief        Get the size of this type
-  * PARAMETERS:        <none>
-  * \returns            Size of the type (in bits)
-  ******************************************************************************/
 size_t IntegerType::getSize() const { return size; }
 size_t FloatType::getSize() const { return size; }
 size_t BooleanType::getSize() const { return 1; }
@@ -344,7 +338,7 @@ unsigned CompoundType::getOffsetRemainder(unsigned n) {
 /***************************************************************************/ /**
   *
   * \brief        static Constructor from string
-  * PARAMETERS:        str: string to parse
+  * \param        str: string to parse
   * \returns       constructed type.
   ******************************************************************************/
 Type *Type::parseType(const char */*str*/) {
@@ -355,7 +349,7 @@ Type *Type::parseType(const char */*str*/) {
 /***************************************************************************/ /**
   *
   * \brief        Equality comparsion.
-  * PARAMETERS:        other - Type being compared to
+  * \param        other - Type being compared to
   * \returns            this == other
   ******************************************************************************/
 bool IntegerType::operator==(const Type &other) const {
@@ -442,7 +436,7 @@ bool LowerType::operator==(const Type &other) const {
 /***************************************************************************/ /**
   *
   * \brief        Inequality comparsion.
-  * PARAMETERS:        other - Type being compared to
+  * \param        other - Type being compared to
   * \returns            this == other
   ******************************************************************************/
 bool Type::operator!=(const Type &other) const { return !(*this == other); }
@@ -452,9 +446,9 @@ bool Type::operator!=(const Type &other) const { return !(*this == other); }
   * \brief        Equality operator, ignoring sign. True if equal in broad
   *                      type and size, but not necessarily sign
   *                      Considers all float types > 64 bits to be the same
-  * PARAMETERS:        other - Type being compared to
+  * \param        other - Type being compared to
   * \returns            this == other (ignoring sign)
-  *============================================================================*/
+  ******************************************************************************/
 // bool IntegerType::operator-=(const Type& other) const {
 //        if (!other.isInteger()) return false;
 //        return size == ((IntegerType&)other).size;
@@ -471,7 +465,7 @@ bool Type::operator!=(const Type &other) const { return !(*this == other); }
   *
   * \brief        Defines an ordering between Type's
   *                      (and hence sets etc of Exp* using lessExpStar).
-  * PARAMETERS:        other - Type being compared to
+  * \param        other - Type being compared to
   * \returns            this is less than other
   ******************************************************************************/
 bool IntegerType::operator<(const Type &other) const {
@@ -582,7 +576,7 @@ bool LowerType::operator<(const Type &other) const {
 /***************************************************************************/ /**
   *
   * \brief        Match operation.
-  * PARAMETERS:        pattern - Type to match
+  * \param        pattern - Type to match
   * \returns            Exp list of bindings if match or nullptr
   ******************************************************************************/
 Exp *Type::match(Type *pattern) {
@@ -630,7 +624,7 @@ Exp *UnionType::match(Type *pattern) { return Type::match(pattern); }
 /***************************************************************************/ /**
   *
   * \brief        Return a string representing this type
-  * PARAMETERS:        final: if true, this is final output
+  * \param        final: if true, this is final output
   * \returns            Pointer to a constant string of char
   ******************************************************************************/
 QString VoidType::getCtype(bool /*final*/) const { return "void"; }
@@ -863,7 +857,7 @@ void Type::dumpNames() {
   *
   * \brief    Given the name of a temporary variable, return its Type
   * NOTE:        Caller must delete result
-  * PARAMETERS:    name: reference to a string (e.g. "tmp", "tmpd")
+  * \param    name: reference to a string (e.g. "tmp", "tmpd")
   * \returns        Ptr to a new Type object
   ******************************************************************************/
 Type *Type::getTempType(const std::string &name) {
@@ -907,7 +901,7 @@ Type *Type::getTempType(const std::string &name) {
   *                nicer to return a unique name, but we don't know scope at
   *                this point, and even so we could still clash with a user-defined
   *                name later on :(
-  * PARAMETERS:
+  * \param
   * \returns        a string
   ******************************************************************************/
 std::string IntegerType::getTempName() const {

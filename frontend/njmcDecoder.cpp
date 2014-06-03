@@ -34,7 +34,7 @@
 /***************************************************************************/ /**
   * FUNCTION:       NJMCDecoder::NJMCDecoder
   * \brief
-  * PARAMETERS:       prog: Pointer to the Prog object
+  * \param       prog: Pointer to the Prog object
   *
   ******************************************************************************/
 NJMCDecoder::NJMCDecoder(Prog *prg) : prog(prg) {}
@@ -181,7 +181,7 @@ Exp *NJMCDecoder::dis_Reg(int regNum) {
 
 /***************************************************************************/ /**
   * \brief        Converts a number to a Exp* expression.
-  * PARAMETERS:        num - a number
+  * \param        num - a number
   * \returns             the Exp* representation of the given number
   ******************************************************************************/
 Exp *NJMCDecoder::dis_Num(unsigned num) {
@@ -216,7 +216,6 @@ void NJMCDecoder::unconditionalJump(const char *name, int size, ADDRESS relocd, 
   * \param   pc native pc
   * \param   stmts list of statements (?)
   * \param   result ref to decoder result object
-  * \returns <none>
   ******************************************************************************/
 void NJMCDecoder::computedJump(const char *name, int size, Exp *dest, ADDRESS pc, std::list<Instruction *> *stmts,
                                DecodeResult &result) {

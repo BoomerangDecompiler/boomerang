@@ -18,7 +18,7 @@
   *       analysis code adds information to existing higher-level
   *       RTLs and sometimes creates new higher-level RTLs (e.g., for
   *       switch statements).
-  *============================================================================*/
+  ******************************************************************************/
 
 #ifndef __RTL_H__
 #define __RTL_H__
@@ -53,7 +53,7 @@ enum STMT_KIND : uint8_t;
   * Class RTL: describes low level register transfer lists (actually lists of statements).
   * NOTE: when time permits, this class could be removed, replaced with new Statements that mark the current native
   * address
-  *============================================================================*/
+  ******************************************************************************/
 class RTL : public std::list<Instruction *> {
     ADDRESS nativeAddr; // RTL's source program instruction address
   public:
@@ -93,7 +93,7 @@ class RTL : public std::list<Instruction *> {
   *
   * This class plus ParamEntry and RTLInstDict should be moved to a separate
   * header file...
-  *============================================================================*/
+  ******************************************************************************/
 class TableEntry {
   public:
     TableEntry();
@@ -117,7 +117,7 @@ class TableEntry {
 
 /***************************************************************************/ /**
   * The ParamEntry class represents the details of a single parameter.
-  *============================================================================*/
+  ******************************************************************************/
 typedef enum { PARAM_SIMPLE, PARAM_ASGN, PARAM_LAMBDA, PARAM_VARIANT } ParamKind;
 
 class ParamEntry {
@@ -153,7 +153,7 @@ class ParamEntry {
   * semantics. It handles both the parsing of the SSL file that fills in
   * the dictionary entries as well as instantiation of an Exp list for a given
   * instruction name and list of actual parameters.
-  *============================================================================*/
+  ******************************************************************************/
 
 class RTLInstDict {
   public:

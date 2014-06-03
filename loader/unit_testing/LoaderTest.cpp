@@ -2,7 +2,7 @@
   * \file       LoaderTest.cc
   * OVERVIEW:   Provides the implementation for the LoaderTest class, which
   *              tests the BinaryFile and derived classes
-  *============================================================================*/
+  ******************************************************************************/
 /*
  * $Revision$
  *
@@ -41,7 +41,7 @@
 /***************************************************************************/ /**
   * FUNCTION:        LoaderTest::testSparcLoad
   * OVERVIEW:        Test loading the sparc hello world program
-  *============================================================================*/
+  ******************************************************************************/
 void LoaderTest::testSparcLoad() {
     std::ostringstream ost;
 
@@ -71,7 +71,7 @@ void LoaderTest::testSparcLoad() {
 /***************************************************************************/ /**
   * FUNCTION:        LoaderTest::testPentiumLoad
   * OVERVIEW:        Test loading the pentium (Solaris) hello world program
-  *============================================================================*/
+  ******************************************************************************/
 void LoaderTest::testPentiumLoad() {
     std::ostringstream ost;
 
@@ -101,7 +101,7 @@ void LoaderTest::testPentiumLoad() {
 /***************************************************************************/ /**
   * FUNCTION:        LoaderTest::testHppaLoad
   * OVERVIEW:        Test loading the sparc hello world program
-  *============================================================================*/
+  ******************************************************************************/
 void LoaderTest::testHppaLoad() {
     std::ostringstream ost;
 
@@ -129,7 +129,7 @@ void LoaderTest::testHppaLoad() {
 /***************************************************************************/ /**
   * FUNCTION:        LoaderTest::testPalmLoad
   * OVERVIEW:        Test loading the Palm 68328 Starter.prc program
-  *============================================================================*/
+  ******************************************************************************/
 void LoaderTest::testPalmLoad() {
     std::ostringstream ost;
 
@@ -159,7 +159,7 @@ void LoaderTest::testPalmLoad() {
 /***************************************************************************/ /**
   * FUNCTION:        LoaderTest::testWinLoad
   * OVERVIEW:        Test loading Windows programs
-  *============================================================================*/
+  ******************************************************************************/
 void LoaderTest::testWinLoad() {
     std::ostringstream ost;
 
@@ -256,7 +256,7 @@ void LoaderTest::testWinLoad() {
 /***************************************************************************/ /**
   * FUNCTION:        LoaderTest::testMicroDis
   * OVERVIEW:        Test the micro disassembler
-  *============================================================================*/
+  ******************************************************************************/
 
 
 // The below lengths were derived from a quick and dirty program (called

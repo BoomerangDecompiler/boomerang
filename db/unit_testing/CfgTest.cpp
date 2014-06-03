@@ -2,7 +2,7 @@
   * \file       CfgTest.cc
   * OVERVIEW:   Provides the implementation for the CfgTest class, which
   *                tests the Exp and derived classes
-  *============================================================================*/
+  ******************************************************************************/
 
 #include "CfgTest.h"
 #include "BinaryFile.h"
@@ -40,13 +40,11 @@ void CfgTest::initTestCase() {
         Boomerang::get()->setLogger(new NullLogger());
     }
 }
-void CfgTest::SetUp() {}
-void CfgTest::TearDown() {}
 
     /***************************************************************************/ /**
       * FUNCTION:        CfgTest::testDominators
       * OVERVIEW:        Test the dominator frontier code
-      *============================================================================*/
+      ******************************************************************************/
 #define FRONTIER_FOUR 0x08048347
 #define FRONTIER_FIVE ADDRESS::g(0x08048351)
 #define FRONTIER_TWELVE 0x080483b2
@@ -98,7 +96,7 @@ void CfgTest::testDominators() {
     /***************************************************************************/ /**
       * FUNCTION:        CfgTest::testSemiDominators
       * OVERVIEW:        Test a case where semi dominators are different to dominators
-      *============================================================================*/
+      ******************************************************************************/
 #define SEMI_L ADDRESS::g(0x80483b0)
 #define SEMI_M ADDRESS::g(0x80483e2)
 #define SEMI_B ADDRESS::g(0x8048345)
@@ -155,7 +153,7 @@ void CfgTest::testSemiDominators() {
 /***************************************************************************/ /**
   * FUNCTION:        CfgTest::testPlacePhi
   * OVERVIEW:        Test the placing of phi functions
-  *============================================================================*/
+  ******************************************************************************/
 void CfgTest::testPlacePhi() {
     BinaryFileFactory bff;
     QObject *pBF = bff.Load(baseDir.absoluteFilePath(FRONTIER_PENTIUM));
@@ -197,7 +195,7 @@ void CfgTest::testPlacePhi() {
 /***************************************************************************/ /**
   * FUNCTION:        CfgTest::testPlacePhi2
   * OVERVIEW:        Test a case where a phi function is not needed
-  *============================================================================*/
+  ******************************************************************************/
 void CfgTest::testPlacePhi2() {
     BinaryFileFactory bff;
     QObject *pBF = bff.Load(baseDir.absoluteFilePath(IFTHEN_PENTIUM));
@@ -251,7 +249,7 @@ void CfgTest::testPlacePhi2() {
 /***************************************************************************/ /**
   * FUNCTION:        CfgTest::testRenameVars
   * OVERVIEW:        Test the renaming of variables
-  *============================================================================*/
+  ******************************************************************************/
 void CfgTest::testRenameVars() {
     BinaryFileFactory bff;
     QObject *pBF = bff.Load(baseDir.absoluteFilePath(FRONTIER_PENTIUM));

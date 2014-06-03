@@ -33,19 +33,17 @@
   * The CFG entry BasicBlock.
   * \var Cfg::exitBB
   * The CFG exit BasicBlock.
-  * \var Cfg::m_bWellFormed
+  * \var Cfg::WellFormed
   * \var Cfg::structured
-  * \var Cfg::callSites
+  * \var Cfg::CallSites
   * Set of the call instructions in this procedure.
   * \var Cfg::lastLabel
   * Last label (positive integer) used by any BB this Cfg
   * \var Cfg::implicitMap
   * Map from expression to implicit assignment. The purpose is to prevent multiple implicit assignments
   * for the same location.
-  * \var Cfg::bImplicitsDone
+  * \var Cfg::ImplicitsDone
   * True when the implicits are done; they can cause problems (e.g. with ad-hoc global assignment)
-  * \var Cfg::m_vectorBB
-  * faster access
   ******************************************************************************/
 
 /***************************************************************************/ /**
@@ -81,7 +79,7 @@ void erase_lrtls(std::list<RTL *> &pLrtl, std::list<RTL *>::iterator begin, std:
  **********************************/
 
 Cfg::Cfg()
-    : WellFormed(false), structured(false), bImplicitsDone(false), lastLabel(0), entryBB(nullptr), exitBB(nullptr) {}
+    : WellFormed(false), structured(false), ImplicitsDone(false), lastLabel(0), entryBB(nullptr), exitBB(nullptr) {}
 
 /***************************************************************************/ /**
   *
@@ -117,7 +115,7 @@ void Cfg::clear() {
     entryBB = nullptr;
     exitBB = nullptr;
     WellFormed = false;
-    callSites.clear();
+    CallSites.clear();
     lastLabel = 0;
 }
 
@@ -947,7 +945,7 @@ bool Cfg::removeOrphanBBs() {
 
 /***************************************************************************/ /**
   *
-  * \breif   Reset all the traversed flags.
+  * \brief   Reset all the traversed flags.
   *
   * Reset all the traversed flags.
   * To make this a useful public function, we need access to the traversed flag with other public functions.
@@ -1040,7 +1038,7 @@ bool Cfg::establishRevDFTOrder() {
 /***************************************************************************/ /**
   *
   * \brief Query the wellformed'ness status
-  * \returns m_bWellFormed
+  * \returns WellFormed
   ******************************************************************************/
 bool Cfg::isWellFormed() { return WellFormed; }
 
@@ -1090,7 +1088,7 @@ int Cfg::pbbToIndex(BasicBlock *pBB) {
   * \param call - a call instruction
   *
   ******************************************************************************/
-void Cfg::addCall(CallStatement *call) { callSites.insert(call); }
+void Cfg::addCall(CallStatement *call) { CallSites.insert(call); }
 
 /***************************************************************************/ /**
   *
@@ -1098,7 +1096,7 @@ void Cfg::addCall(CallStatement *call) { callSites.insert(call); }
   *
   * \returns            the set of calls within this procedure
   ******************************************************************************/
-Cfg::sCallStatement &Cfg::getCalls() { return callSites; }
+Cfg::sCallStatement &Cfg::getCalls() { return CallSites; }
 /***************************************************************************/ /**
   * \brief Replace all instances of \a search with \a replace in all BasicBlock's
   * belonging to this Cfg. Can be type sensitive if reqd

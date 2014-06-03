@@ -23,7 +23,7 @@ class SSLScanner;
 /***************************************************************************/ /**
   * FUNCTION:        SSLParser::SSLParser
   * \brief        Constructor for an existing stream.
-  * PARAMETERS:        The stream, whether or not to debug
+  * \param        The stream, whether or not to debug
   *
   ******************************************************************************/
 SSLParser::SSLParser(std::istream &in, bool trace) : sslFile("input"), bFloat(false) {
@@ -37,7 +37,7 @@ SSLParser::SSLParser(std::istream &in, bool trace) : sslFile("input"), bFloat(fa
 /***************************************************************************/ /**
   * FUNCTION:        SSLParser::parseExp
   * \brief        Parses an assignment from a string.
-  * PARAMETERS:        the string
+  * \param        the string
   * \returns             an Assignment or nullptr.
   ******************************************************************************/
 Instruction *SSLParser::parseExp(const char *str) {
@@ -51,7 +51,6 @@ Instruction *SSLParser::parseExp(const char *str) {
 /***************************************************************************/ /**
   * FUNCTION:        SSLParser::~SSLParser
   * \brief        Destructor.
-  * PARAMETERS:        <none>
   *
   ******************************************************************************/
 SSLParser::~SSLParser() {
@@ -63,9 +62,8 @@ SSLParser::~SSLParser() {
 }
 
 /***************************************************************************/ /**
-  * FUNCTION:        SSLParser::yyyerror
   * \brief        Display an error message and exit.
-  * PARAMETERS:        msg - an error message
+  * \param        msg - an error message
   *
   ******************************************************************************/
 void SSLParser::yyerror(const char *msg) {
@@ -73,9 +71,7 @@ void SSLParser::yyerror(const char *msg) {
 }
 
 /***************************************************************************/ /**
-  * FUNCTION:        SSLParser::yylex
   * \brief        The scanner driver than returns the next token.
-  * PARAMETERS:        <none>
   * \returns             the next token
   ******************************************************************************/
 int SSLParser::yylex() {
@@ -89,7 +85,7 @@ int SSLParser::yylex() {
   * NOTE:            An attempt is made to make this moderately efficient, else we might have a skip chain of string
   *                    comparisons
   * NOTE:            This is a member of SSLParser so we can call yyyerror and have line number etc printed out
-  * PARAMETERS:        s: pointer to the operator C string
+  * \param        s: pointer to the operator C string
   * \returns             An OPER, or -1 if not found (enum opWild)
   ******************************************************************************/
 OPER SSLParser::strToOper(const char *s) {

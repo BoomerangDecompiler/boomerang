@@ -459,8 +459,10 @@ void BasicBlock::addInEdge(BasicBlock *pNewInEdge) {
   *  Needed for example when duplicating BBs
   * \param   it iterator to BB that will no longer be a parent
   * \note    Side effects: The iterator argument is incremented.
-  * \example It should be used like this:
-  *                        if (pred) deleteInEdge(it) else it++;
+  * It should be used like this:
+  * \code{.cpp}
+  *     if (pred) deleteInEdge(it) else it++;
+  * \endcode
   ******************************************************************************/
 void BasicBlock::deleteInEdge(std::vector<BasicBlock *>::iterator &it) {
     it = InEdges.erase(it);

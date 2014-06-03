@@ -12,7 +12,7 @@
 /***************************************************************************/ /**
   * \file    cfg.h
   * \brief   Interface for a control flow graph, based on basic block nodes.
-  *============================================================================*/
+  ******************************************************************************/
 
 #ifndef _CFG_H_
 #define _CFG_H_
@@ -58,7 +58,7 @@ class Cfg {
     typedef std::map<Exp *, Instruction *, lessExpStar> mExpStatement;
     mutable bool WellFormed;
     bool structured;
-    bool bImplicitsDone;
+    bool ImplicitsDone;
     int lastLabel;
     UserProc *myProc;
     std::list<BasicBlock *> m_listBB;
@@ -67,7 +67,7 @@ class Cfg {
     MAPBB m_mapBB;
     BasicBlock *entryBB;
     BasicBlock *exitBB;
-    sCallStatement callSites;
+    sCallStatement CallSites;
     mExpStatement implicitMap;
 
   public:
@@ -188,8 +188,8 @@ class Cfg {
     Instruction *findTheImplicitAssign(Exp *x);
     Instruction *findImplicitParamAssign(Parameter *p);
     void removeImplicitAssign(Exp *x);
-    bool implicitsDone() { return bImplicitsDone; }    //!<  True if implicits have been created
-    void setImplicitsDone() { bImplicitsDone = true; } //!< Call when implicits have been created
+    bool implicitsDone() { return ImplicitsDone; }    //!<  True if implicits have been created
+    void setImplicitsDone() { ImplicitsDone = true; } //!< Call when implicits have been created
     void findInterferences(ConnectionGraph &ig);
     void appendBBs(std::list<BasicBlock *> &worklist, std::set<BasicBlock *> &workset);
     void removeUsedGlobals(std::set<Global *> &unusedGlobals);

@@ -34,7 +34,7 @@ static const char *tlstrchr(const char *str, char ch);
 /***************************************************************************/ /**
   *
   * \brief        Constructors
-  * PARAMETERS:        As required
+  * \param        As required
   ******************************************************************************/
 
 // Derived class constructors
@@ -114,7 +114,7 @@ TypeVal::TypeVal(Type *ty) : Terminal(opTypeVal), val(ty) {}
 
 /**
  * Create a new Location expression.
- * \param op Should be \opRegOf, opMemOf, opLocal, opGlobal, opParam or opTemp.
+ * \param op Should be opRegOf, opMemOf, opLocal, opGlobal, opParam or opTemp.
  */
 Location::Location(OPER op, Exp *exp, UserProc *p) : Unary(op, exp), proc(p) {
     assert(op == opRegOf || op == opMemOf || op == opLocal || op == opGlobal || op == opParam || op == opTemp);
@@ -250,14 +250,11 @@ Exp *&Exp::refSubExp3() { return dummy; }
 /***************************************************************************/ /**
   *
   * \brief        Swap the two subexpressions
-  * PARAMETERS:        <none>
   *
   ******************************************************************************/
 /// Swap the two subexpressions.
 void Binary::commute() {
-    Exp *t = subExp1;
-    subExp1 = subExp2;
-    subExp2 = t;
+    std::swap(subExp1,subExp2);
     assert(subExp1 && subExp2);
 }
 
@@ -267,7 +264,6 @@ void Binary::commute() {
   *                     a new Exp with the same contents as myself, but not sharing
   *                     any memory. Deleting the clone will not affect this object.
   *                     Pointers to subexpressions are not copied, but also cloned.
-  * PARAMETERS:        <none>
   * \returns            Pointer to cloned object
   ******************************************************************************/
 Exp *Const::clone() const {
@@ -320,7 +316,7 @@ Exp *Location::clone() const {
   *
   * \brief        Virtual function to compare myself for equality with
   *                    another Exp
-  * PARAMETERS:        Ref to other Exp
+  * \param        Ref to other Exp
   * \returns            True if equal
   ******************************************************************************/
 bool Const::operator==(const Exp &o) const {
@@ -441,7 +437,7 @@ bool TypeVal::operator==(const Exp &o) const {
   * \brief        Virtual function to compare myself with another Exp
   * NOTE:            The test for a wildcard is only with this object, not the other object (o).
   *                    So when searching and there could be wildcards, use search == *this not *this == search
-  * PARAMETERS:        Ref to other Exp
+  * \param        Ref to other Exp
   * \returns            True if equal
   ******************************************************************************/
 bool Const::operator<(const Exp &o) const {
@@ -556,7 +552,7 @@ bool TypeVal::operator<(const Exp &o) const {
 /***************************************************************************/ /**
   *
   * \brief        Virtual function to compare myself for equality with another Exp, *ignoring subscripts*
-  * PARAMETERS:        Ref to other Exp
+  * \param        Ref to other Exp
   * \returns            True if equal
   ******************************************************************************/
 bool Const::operator*=(Exp &o) {
@@ -1388,7 +1384,6 @@ void TypeVal::print(std::ostream &os, bool /*html*/) const {
 /***************************************************************************/ /**
   *
   * \brief        Print to a static string (for debugging)
-  * PARAMETERS:        <none>
   * \returns            Address of the static buffer
   ******************************************************************************/
 char *Exp::prints() {
@@ -1405,7 +1400,7 @@ void Exp::dump() { print(std::cerr); }
   *
   * \brief        Create a dotty file (use dotty to display the file; search the web for "graphviz").
   *                    Mainly for debugging
-  * PARAMETERS:        Name of the file to create
+  * \param        Name of the file to create
   *
   ******************************************************************************/
 void Exp::createDotFile(char *name) {
@@ -1591,7 +1586,6 @@ bool Exp::isAfpTerm() {
 /***************************************************************************/ /**
   *
   * \brief        Returns the index for this var, e.g. if v[2], return 2
-  * PARAMETERS:        <none>
   * \returns            The index
   ******************************************************************************/
 int Exp::getVarIndex() {
@@ -1603,7 +1597,6 @@ int Exp::getVarIndex() {
 /***************************************************************************/ /**
   *
   * \brief        Returns a ptr to the guard exression, or 0 if none
-  * PARAMETERS:        <none>
   * \returns            Ptr to the guard, or 0
   ******************************************************************************/
 Exp *Exp::getGuard() {
@@ -1615,7 +1608,7 @@ Exp *Exp::getGuard() {
 /***************************************************************************/ /**
   *
   * \brief        Matches this expression to the given patten
-  * PARAMETERS:        pattern to match
+  * \param        pattern to match
   * \returns            list of variable bindings, or nullptr if matching fails
   ******************************************************************************/
 Exp *Exp::match(Exp *pattern) {
@@ -1875,14 +1868,14 @@ bool Location::match(const std::string &pattern, std::map<std::string, Exp *> &b
 /***************************************************************************/ /**
   *
   * \brief        Search for the given subexpression
-  * \note            Caller must free the list li after use, but not the Exp objects that they point to
-  * \note            If the top level expression matches, li will contain search
-  * \note            Now a static function. Searches pSrc, not this
-  * \PARAMETERS:        search: ptr to Exp we are searching for
-  *                    pSrc: ref to ptr to Exp to search. Reason is that we can then overwrite that pointer
-  *                    to effect a replacement. So we need to append &pSrc in the list. Can't append &this!
-  *                    li: list of Exp** where pointers to the matches are found once: true if not all occurrences to be
-  *                      found, false for all
+  * \note         Caller must free the list li after use, but not the Exp objects that they point to
+  * \note         If the top level expression matches, li will contain search
+  * \note         Now a static function. Searches pSrc, not this
+  * \param        search: ptr to Exp we are searching for
+  * \param        pSrc: ref to ptr to Exp to search. Reason is that we can then overwrite that pointer
+  *                         to effect a replacement. So we need to append &pSrc in the list. Can't append &this!
+  * \param        li:   list of Exp** where pointers to the matches are found once: true if not all occurrences to be
+  *                         found, false for all
   *
   ******************************************************************************/
 void Exp::doSearch(const Exp &search, Exp *&pSrc, std::list<Exp **> &li, bool once) {
@@ -1900,7 +1893,7 @@ void Exp::doSearch(const Exp &search, Exp *&pSrc, std::list<Exp **> &li, bool on
 }
 
 /***************************************************************************/ /**
-  *
+  * \fn Exp::doSearchChildren
   * \brief       Search for the given subexpression in all children
   * \note        Virtual function; different implementation for each subclass of Exp
   * \note            Will recurse via doSearch
@@ -1909,6 +1902,7 @@ void Exp::doSearch(const Exp &search, Exp *&pSrc, std::list<Exp **> &li, bool on
   * \param       once - true if not all occurrences to be found, false for all
   *
   ******************************************************************************/
+
 void Exp::doSearchChildren(const Exp & /*search*/, std::list<Exp **> & /*li*/, bool /*once*/) {
     return; // Const and Terminal do not override this
 }
@@ -2046,7 +2040,7 @@ bool Exp::searchAll(const Exp &search, std::list<Exp *> &result) {
   *                       integers     = { 108, -92 }
   * NOTE:            integers is a vector so we can use the accumulate func
   * NOTE:            Expressions are NOT cloned. Therefore, do not delete the expressions in positives or negatives
-  * PARAMETERS:        positives - the list of positive terms
+  * \param        positives - the list of positive terms
   *                    negatives - the list of negative terms
   *                    integers - the vector of integer terms
   *                    negate - determines whether or not to negate the whole expression, i.e. we are on the RHS of an
@@ -2096,7 +2090,6 @@ void Exp::partitionTerms(std::list<Exp *> &positives, std::list<Exp *> &negative
   *                    (%sp + 100) - (%sp + 92) will be simplified to 8.
   * \note            Any expression can be so simplified
   * \note            User must ;//delete result
-  * PARAMETERS:        <none>
   * \returns            Ptr to the simplified expression
   ******************************************************************************/
 Exp *Unary::simplifyArith() {
@@ -2198,7 +2191,7 @@ Exp *Binary::simplifyArith() {
   *                    E.g. given the list <4,r[8],m[14]> the resulting expression is 4+r[8]+m[14].
   * NOTE:            static (non instance) function
   * NOTE:            Exps ARE cloned
-  * PARAMETERS:        exprs - a list of expressions
+  * \param        exprs - a list of expressions
   * \returns            a new Exp with the accumulation
   ******************************************************************************/
 Exp *Exp::Accumulate(std::list<Exp *> exprs) {
@@ -2222,7 +2215,6 @@ Exp *Exp::Accumulate(std::list<Exp *> exprs) {
       *                    positive constants, etc.  Changes << k to a multiply
       * NOTE:            User must ;//delete result
       * NOTE:            Address simplification (a[ m[ x ]] == x) is done separately
-      * PARAMETERS:        <none>
       * \returns            Ptr to the simplified expression
       *
       * This code is so big, so weird and so lame it's not funny.  What this boils down to is the process of
@@ -2266,9 +2258,8 @@ Exp *Exp::simplify() {
 /***************************************************************************/ /**
   *
   * \brief        Do the work of simplification
-  * NOTE:            User must ;//delete result
-  * NOTE:            Address simplification (a[ m[ x ]] == x) is done separately
-  * PARAMETERS:        <none>
+  * \note            User must ;//delete result
+  * \note            Address simplification (a[ m[ x ]] == x) is done separately
   * \returns            Ptr to the simplified expression
   ******************************************************************************/
 Exp *Unary::polySimplify(bool &bMod) {
@@ -3252,9 +3243,8 @@ Exp *RefExp::polySimplify(bool &bMod) {
 /***************************************************************************/ /**
   *
   * \brief        Just do addressof simplification: a[ m[ any ]] == any, m[ a[ any ]] = any, and also
-  *                      a[ size m[ any ]] == any
-  * TODO:            Replace with a visitor some day
-  * PARAMETERS:        <none>
+  *               a[ size m[ any ]] == any
+  * \todo            Replace with a visitor some day
   * \returns            Ptr to the simplified expression
   ******************************************************************************/
 Exp *Unary::simplifyAddr() {
@@ -3308,8 +3298,8 @@ const char *Exp::getOperName() const { return operStrings[op]; }
 
 /***************************************************************************/ /**
   *
-  * \brief        Print an infix representation of the object to the given file stream, with its type in <angle
-  *                      brackets>.
+  * \brief  Print an infix representation of the object to the given file stream, with its type in \<angle
+  *         brackets\>.
   * \param os Output stream to send the output to
   ******************************************************************************/
 void Exp::printt(std::ostream &os /*= cout*/) const {

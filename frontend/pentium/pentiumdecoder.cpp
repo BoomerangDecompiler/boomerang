@@ -56,7 +56,7 @@ void genBSFR(ADDRESS pc, Exp *reg, Exp *modrm, int init, int size, OPER incdec, 
 /***************************************************************************/ /**
   * FUNCTION:       unused
   * \brief       A dummy function to suppress "unused local variable" messages
-  * PARAMETERS:       x: integer variable to be "used"
+  * \param       x: integer variable to be "used"
   *
   ******************************************************************************/
 void PentiumDecoder::unused(int x) {}
@@ -40461,7 +40461,7 @@ DecodeResult &PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta) {
     //#line 2125 "frontend/machine/pentium/decoder.m"
     if (result.rtl == 0)
         result.rtl = new RTL(pc, stmts);
-    assert((nextPC - hostPC).m_value >= 0);
+    assert(nextPC >= hostPC);
     result.numBytes = int((nextPC - hostPC).m_value);
     return result;
 }
@@ -40473,7 +40473,7 @@ DecodeResult &PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta) {
   * FUNCTION:        dis_Mem
   * \brief        Converts a dynamic address to a Exp* expression.
   *                    E.g. [1000] --> m[, 1000
-  * PARAMETERS:        pc - the address of the Eaddr part of the instr
+  * \param        pc - the address of the Eaddr part of the instr
   *                    expr - the expression that will be built
   * \returns             the Exp* representation of the given Eaddr
   ******************************************************************************/
@@ -40656,7 +40656,7 @@ Exp *PentiumDecoder::dis_Mem(ADDRESS pc) {
   * \brief        Converts a dynamic address to a Exp* expression.
   *                    E.g. %ecx --> r[ 25 ]
   * CALLED FROM:        Macros DIS_EADDR32, DIS_EADDR16 and DIS_EADDR8
-  * PARAMETERS:        pc - the instruction stream address of the dynamic
+  * \param        pc - the instruction stream address of the dynamic
   *                      address
   *                    size - size of the operand (important if a register)
   * \returns             the Exp* representation of the given Eaddr
@@ -40710,7 +40710,7 @@ Exp *PentiumDecoder::dis_Eaddr(ADDRESS pc, int size) {
   * \brief      Check to see if the instructions at the given offset match
   *                    any callee prologue, i.e. does it look like this offset
   *                    is a pointer to a function?
-  * PARAMETERS:      hostPC - pointer to the code in question (native address)
+  * \param      hostPC - pointer to the code in question (native address)
   * \returns           True if a match found
   ******************************************************************************/
 bool PentiumDecoder::isFuncPrologue(ADDRESS hostPC) {
@@ -40733,7 +40733,7 @@ bool PentiumDecoder::isFuncPrologue(ADDRESS hostPC) {
  **********************************/
 /***************************************************************************/ /** * FUNCTION:        getWord
   * \brief        Returns the word starting at the given address.
-  * PARAMETERS:        lc - address at which to decode the double
+  * \param        lc - address at which to decode the double
   * \returns             the decoded double
   ******************************************************************************/
 Byte PentiumDecoder::getByte(intptr_t lc)
@@ -40743,7 +40743,7 @@ Byte PentiumDecoder::getByte(intptr_t lc)
 }
 /***************************************************************************/ /**
   * \brief        Returns the word starting at the given address.
-  * PARAMETERS:        lc - address at which to decode the double
+  * \param        lc - address at which to decode the double
   * \returns             the decoded double
   ******************************************************************************/
 SWord PentiumDecoder::getWord(intptr_t lc)
@@ -40781,7 +40781,7 @@ PentiumDecoder::PentiumDecoder(Prog *prog) : NJMCDecoder(prog) {
 int PentiumDecoder::decodeAssemblyInstruction(ADDRESS, ptrdiff_t) { return 0; }
 /***************************************************************************/ /** * FUNCTION:       genBSFR
   * \brief       Generate statements for the BSF and BSR series (Bit Scan Forward/Reverse)
-  * PARAMETERS:       pc: native PC address (start of the BSF/BSR instruction)
+  * \param       pc: native PC address (start of the BSF/BSR instruction)
   *                   reg: an expression for the destination register
   *                   modrm: an expression for the operand being scanned
   *                   init: initial value for the dest register

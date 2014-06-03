@@ -19,7 +19,7 @@
 
 /***************************************************************************/ /**
   * Dependencies.
-  *============================================================================*/
+  ******************************************************************************/
 
 #include "types.h"
 //#include "SymTab.h"    // Was used for relocaton stuff
@@ -166,7 +166,7 @@ class SymbolTableInterface {
       *
       * \brief Get an array of addresses of imported function stubs
       * Set number of these to numImports
-      * \param numExports size of returned array
+      * \param numImports size of returned array
       * \returns  array of stubs
       ******************************************************************************/
     virtual ADDRESS *GetImportStubs(int &numImports) = 0;

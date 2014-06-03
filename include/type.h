@@ -12,7 +12,7 @@
   * OVERVIEW:   Definition of the Type class: low level type information
   *               Note that we may have a compeltely different system for
   *                recording high level types
-  *============================================================================*/
+  ******************************************************************************/
 
 #ifndef __TYPE_H__
 #define __TYPE_H__
@@ -180,6 +180,10 @@ class Type {
     }
 
     // Acccess functions
+    /**
+      * \brief      Get the size of this type
+      * \returns    Size of the type (in bits)
+      */
     virtual size_t getSize() const = 0;
     size_t getBytes() const { return (getSize() + 7) / 8; }
     virtual void setSize(size_t /*sz*/) { assert(0); }

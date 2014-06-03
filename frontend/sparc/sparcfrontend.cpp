@@ -45,7 +45,7 @@
 /***************************************************************************/ /**
   * FUNCTION:         warnDCTcouple
   * \brief         Emit a warning when encountering a DCTI couple.
-  * PARAMETERS:         uAt - the address of the couple
+  * \param         uAt - the address of the couple
   *                     uDest - the address of the first DCTI in the couple
   *
   ******************************************************************************/
@@ -59,7 +59,7 @@ void SparcFrontEnd::warnDCTcouple(ADDRESS uAt, ADDRESS uDest) {
   * \brief        Determines if a delay instruction is exactly the same as the instruction immediately preceding the
   *                    destination of a CTI; i.e. has been copied from the real destination to the delay slot as an
   *                    optimisation
-  * PARAMETERS:        src - the logical source address of a CTI
+  * \param        src - the logical source address of a CTI
   *                    dest - the logical destination address of the CTI
   *                    delta - used to convert logical to real addresses
   *                    uUpper - first address past the end of the main text section
@@ -77,30 +77,30 @@ bool SparcFrontEnd::optimise_DelayCopy(ADDRESS src, ADDRESS dest, ptrdiff_t delt
 }
 
 /***************************************************************************/ /**
-  * \function     SparcFrontEnd::optimise_CallReturn
-  * \brief        Determines if the given call and delay instruction consitute a call where callee returns to
+  * \fn     SparcFrontEnd::optimise_CallReturn
+  * \brief      Determines if the given call and delay instruction consitute a call where callee returns to
   *                    the caller's caller. That is:
-  *                        ProcA:                 ProcB:                   ProcC:
-  *                         ...                  ...                    ...
-  *                         call ProcB              call ProcC            ret
-  *                         ...                  restore                ...
+  *   ProcA      |  ProcB:       |         ProcC:
+  * -------------|---------------|---------------
+  * ...          | ...           |        ...
+  * call ProcB   | call ProcC    |        ret
+  * ...          | restore       |        ...
   *
-  *                    The restore instruction in ProcB will effectively set %o7 to be %i7, the address to which ProcB
-  *will
-  *                    return. So in effect ProcC will return to ProcA at the position just after the call to ProcB.
-  *This
-  *                    is equivalent to ProcC returning to ProcB which then immediately returns to ProcA.
-  * NOTE:            We don't set a label at the return, because we also have to force a jump at the call BB,
-  *                    and in some cases we don't have the call BB as yet. So these two are up to the caller
-  * NOTE ALSO:        The name of this function is now somewhat irrelevant. The whole function is somewhat irrelevant;
-  *                     it dates from the times when you would always find an actual restore in the delay slot.
-  *                    With some patterns, this is no longer true.
-  * PARAMETERS:        call - the RTL for the caller (e.g. "call ProcC" above)
-  *                    rtl - pointer to the RTL for the call instruction
-  *                    delay - the RTL for the delay instruction (e.g. "restore")
-  *                    cfg - the CFG of the procedure
-  * \returns             The basic block containing the single return instruction if this optimisation applies, nullptr
-  *                    otherwise.
+  *             The restore instruction in ProcB will effectively set %o7 to be %i7, the address to which ProcB will
+  *             return. So in effect ProcC will return to ProcA at the position just after the call to ProcB. This
+  *             is equivalent to ProcC returning to ProcB which then immediately returns to ProcA.
+  *
+  * \note               We don't set a label at the return, because we also have to force a jump at the call BB,
+  *                 and in some cases we don't have the call BB as yet. So these two are up to the caller
+  * \note               The name of this function is now somewhat irrelevant. The whole function is somewhat irrelevant;
+  *                 it dates from the times when you would always find an actual restore in the delay slot.
+  *                 With some patterns, this is no longer true.
+  * \param          call - the RTL for the caller (e.g. "call ProcC" above)
+  * \param          rtl - pointer to the RTL for the call instruction
+  * \param          delay - the RTL for the delay instruction (e.g. "restore")
+  * \param          cfg - the CFG of the procedure
+  * \returns        The basic block containing the single return instruction if this optimisation applies, nullptr
+  *                 otherwise.
   ******************************************************************************/
 BasicBlock *SparcFrontEnd::optimise_CallReturn(CallStatement *call, RTL *rtl, RTL *delay, UserProc *pProc) {
 
@@ -130,7 +130,7 @@ BasicBlock *SparcFrontEnd::optimise_CallReturn(CallStatement *call, RTL *rtl, RT
   * FUNCTION:        handleBranch
   * \brief        Adds the destination of a branch to the queue of address that must be decoded (if this destination
   *                    has not already been visited).
-  * PARAMETERS:        newBB - the new basic block delimited by the branch instruction. May be nullptr if this block has
+  * \param        newBB - the new basic block delimited by the branch instruction. May be nullptr if this block has
   *been
   *                    built before.
   *                    dest - the destination being branched to
@@ -157,7 +157,7 @@ void SparcFrontEnd::handleBranch(ADDRESS dest, ADDRESS hiAddress, BasicBlock *&n
   *                        lexical successor of the call site (taking into consideration the delay slot and possible
   *UNIMP
   *                        instruction).
-  * PARAMETERS:          dest - the address of the callee
+  * \param          dest - the address of the callee
   *                      callBB - the basic block delimited by the call
   *                      cfg - CFG of the enclosing procedure
   *                      address - the address of the call instruction
@@ -188,7 +188,7 @@ void SparcFrontEnd::handleCall(UserProc *proc, ADDRESS dest, BasicBlock *callBB,
   * FUNCTION:         case_unhandled_stub
   * \brief         This is the stub for cases of DCTI couples that we haven't written analysis code for yet. It simply
   *                        displays an informative warning and returns.
-  * PARAMETERS:         addr - the address of the first CTI in the couple
+  * \param         addr - the address of the first CTI in the couple
   *
   ******************************************************************************/
 void SparcFrontEnd::case_unhandled_stub(ADDRESS addr) {
@@ -198,7 +198,7 @@ void SparcFrontEnd::case_unhandled_stub(ADDRESS addr) {
 /***************************************************************************/ /**
   * FUNCTION:         case_CALL
   * \brief         Handles a call instruction
-  * PARAMETERS:         address - the native address of the call instruction
+  * \param         address - the native address of the call instruction
   *                     inst - the info summaries when decoding the call instruction
   *                     delay_inst - the info summaries when decoding the delay instruction
   *                     BB_rtls - the list of RTLs currently built for the BB under construction
@@ -326,7 +326,7 @@ bool SparcFrontEnd::case_CALL(ADDRESS &address, DecodeResult &inst, DecodeResult
 /***************************************************************************/ /**
   * FUNCTION:         case_SD
   * \brief         Handles a non-call, static delayed (SD) instruction
-  * PARAMETERS:         address - the native address of the SD
+  * \param         address - the native address of the SD
   *                     delta - the offset of the above address from the logical address at which the procedure starts
   *                        (i.e. the one given by dis)
   *                     inst - the info summaries when decoding the SD instruction
@@ -384,7 +384,7 @@ void SparcFrontEnd::case_SD(ADDRESS &address, ptrdiff_t delta, ADDRESS hiAddress
 /***************************************************************************/ /**
   * FUNCTION:         case_DD
   * \brief         Handles all dynamic delayed jumps (jmpl, also dynamic calls)
-  * PARAMETERS:         address - the native address of the DD
+  * \param         address - the native address of the DD
   *                     delta - the offset of the above address from the logical address at which the procedure
   *                        starts (i.e. the one given by dis)
   *                     inst - the info summaries when decoding the SD instruction
@@ -601,7 +601,7 @@ bool SparcFrontEnd::case_SCD(ADDRESS &address, ptrdiff_t delta, ADDRESS hiAddres
   * FUNCTION:        case_SCDAN
   * \brief        Handles all static conditional delayed anulled branches followed by an NCT (but not NOP)
   *                    instruction.
-  * PARAMETERS:        address - the native address of the DD
+  * \param        address - the native address of the DD
   *                    delta - the offset of the above address from the logical
   *                       address at which the procedure starts (i.e. the one given by dis)
                                          hiAddress - first address outside this code section
@@ -705,7 +705,7 @@ std::vector<Exp *> &SparcFrontEnd::getDefaultReturns() {
   *                       the same name in class FrontEnd. The required actions
   *                       are so different that the base class implementation
   *                       can't be re-used
-  * PARAMETERS:         address - the native address at which the procedure starts
+  * \param         address - the native address at which the procedure starts
   *                     proc - the procedure object
   *                     os - output stream for rtl output
   *                     spec - if true, this is a speculative decode
@@ -1197,7 +1197,7 @@ void SparcFrontEnd::emitNop(std::list<RTL *> *pRtls, ADDRESS uAddr) {
   *                    since the delay slot instruction may use %o7. Example:
   *                    CALL $+8            ! This code is common in startup code
   *                    ADD     %o7, 20, %o0
-  * PARAMETERS:      pRtls - list of RTLs to append to
+  * \param      pRtls - list of RTLs to append to
   *                  uAddr - native address for the RTL
   *
   ******************************************************************************/
@@ -1216,7 +1216,7 @@ void SparcFrontEnd::emitCopyPC(std::list<RTL *> *pRtls, ADDRESS uAddr) {
   * FUNCTION:        helperFunc
   * \brief        Checks for sparc specific helper functions like .urem, which have specific sematics.
   * NOTE:            This needs to be handled in a resourcable way.
-  * PARAMETERS:        dest: destination of the call (native address)
+  * \param        dest: destination of the call (native address)
   *                    addr: address of current instruction (native addr)
   *                    lrtl: list of RTL* for current BB
   * \returns             True if a helper function was found and handled; false
@@ -1408,7 +1408,7 @@ bool SparcFrontEnd::helperFuncLong(ADDRESS dest, ADDRESS addr, std::list<RTL *> 
     /***************************************************************************/ /**
       * FUNCTION:      construct
       * \brief      Construct a new instance of SparcFrontEnd
-      * PARAMETERS:      Same as the FrontEnd constructor, except decoder is **
+      * \param      Same as the FrontEnd constructor, except decoder is **
       *
       ******************************************************************************/
 #ifdef DYNAMIC
@@ -1424,7 +1424,7 @@ SparcFrontEnd *construct(Prog *prog, NJMCDecoder **decoder) {
 /***************************************************************************/ /**
   * FUNCTION:      SparcFrontEnd::SparcFrontEnd
   * \brief      SparcFrontEnd constructor
-  * PARAMETERS:      Same as the FrontEnd constructor
+  * \param      Same as the FrontEnd constructor
   * \returns           <N/A>
   ******************************************************************************/
 SparcFrontEnd::SparcFrontEnd(QObject *pBF, Prog *prog, BinaryFileFactory *pbff) : FrontEnd(pBF, prog, pbff) {
@@ -1441,7 +1441,7 @@ SparcFrontEnd::~SparcFrontEnd() {}
 /***************************************************************************/ /**
   * FUNCTION:    GetMainEntryPoint
   * \brief    Locate the starting address of "main" in the code section
-  * PARAMETERS:    None
+  * \param    None
   * \returns         Native pointer if found; NO_ADDRESS if not
   ******************************************************************************/
 ADDRESS SparcFrontEnd::getMainEntryPoint(bool &gotMain) {

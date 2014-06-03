@@ -10,7 +10,7 @@
 /***************************************************************************/ /**
   * \file       constraint.h
   * OVERVIEW:   Definition of objects related to type constraints
-  *============================================================================*/
+  ******************************************************************************/
 
 #include "statement.h"
 #include "exphelp.h"
@@ -55,13 +55,16 @@ class ConstraintMap {
     //! Substitute the given constraints into this map
     void substitute(ConstraintMap &other);
     //! For this solution, we need to find disjunctions of the form
+    //! \code
     //! <alphaN> = <type>      or
     //! <type>    = <alphaN>
+    //! \endcode
     //! and substitute these into each part of the solution
     void substAlpha();
 };
 
 //! A class used for fast location of a constraint
+//!
 //! An equation like Ta = Tb is inserted into this class twice (i.e. as
 //! Ta = Tb and also as Tb = Ta. So to find out if Ta is involved in an
 //! equate, only have to look up Ta in the map (on the LHS, which is fast)

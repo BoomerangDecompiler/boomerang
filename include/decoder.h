@@ -12,7 +12,7 @@
 /***************************************************************************/ /**
   * \file       decoder.h
   * OVERVIEW:   The interface to the instruction decoder.
-  *============================================================================*/
+  ******************************************************************************/
 
 #ifndef _DECODER_H_
 #define _DECODER_H_
@@ -48,7 +48,7 @@ enum ICLASS {
   * The DecodeResult struct contains all the information that results from
   * calling the decoder. This prevents excessive use of confusing
   * reference parameters.
-  *============================================================================*/
+  ******************************************************************************/
 struct DecodeResult {
     /*
      * Resets all the fields to their default values.
@@ -93,7 +93,7 @@ struct DecodeResult {
 
 /***************************************************************************/ /**
   * The NJMCDecoder class is a class that contains NJMC generated decoding methods.
-  *============================================================================*/
+  ******************************************************************************/
 class NJMCDecoder {
   protected:
     Prog *prog;
@@ -174,7 +174,7 @@ bool isFuncPrologue(ADDRESS hostPC);
 
 /***************************************************************************/ /**
   * These are the macros that each of the .m files depend upon.
-  *============================================================================*/
+  ******************************************************************************/
 #define DEBUG_DECODER (Boomerang::get()->debugDecoder)
 #define SHOW_ASM(output)                                                                                               \
     if (DEBUG_DECODER)                                                                                                 \
@@ -217,7 +217,7 @@ bool isFuncPrologue(ADDRESS hostPC);
 
 /***************************************************************************/ /**
   * These are arrays used to map register numbers to their names.
-  *============================================================================*/
+  ******************************************************************************/
 extern char *r32_names[];
 extern char *sr16_names[];
 extern char *r8_names[];
@@ -227,7 +227,7 @@ extern char *fp_names[];
 /***************************************************************************/ /**
   * This array decodes scale field values in an index memory expression
   * to the scale factor they represent.
-  *============================================================================*/
+  ******************************************************************************/
 extern int scale[];
 
 // General purpose

@@ -15,7 +15,7 @@
   * is the follow and goto sets which are used during code generation.
   * Concrete implementations of this class provide specific language
   * bindings for a single procedure in the program.
-  *============================================================================*/
+  ******************************************************************************/
 
 #ifndef _HLLCODE_H_
 #define _HLLCODE_H_

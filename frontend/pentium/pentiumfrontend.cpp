@@ -46,7 +46,7 @@
   * FUNCTION:      isStoreFsw
   * \brief      Return true if the given Statement is an assignment that stores the FSW (Floating point Status Word)
   *                    reg
-  * PARAMETERS:      s - Ptr to the given Statement
+  * \param      s - Ptr to the given Statement
   * \returns           True if it is
   ******************************************************************************/
 bool PentiumFrontEnd::isStoreFsw(Instruction *s) {
@@ -118,7 +118,7 @@ bool PentiumFrontEnd::isAssignFromTern(Instruction *s) {
   * \brief        Finds a subexpression within this expression of the form
   *                      r[ int x] where min <= x <= max, and replaces it with
   *                      r[ int y] where y = min + (x - min + delta & mask)
-  * PARAMETERS:        e: Expression to modify
+  * \param        e: Expression to modify
   *                    min, max: minimum and maximum register numbers before any change is considered
   *                    delta: amount to bump up the register number by
   *                    mask: see above
@@ -455,7 +455,7 @@ bool PentiumFrontEnd::helperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL *> *l
     /***************************************************************************/ /**
       * FUNCTION:      construct
       * \brief      Construct a new instance of PentiumFrontEnd
-      * PARAMETERS:      Same as the FrontEnd constructor, except decoder is **
+      * \param      Same as the FrontEnd constructor, except decoder is **
       *
       ******************************************************************************/
 #ifdef DYNAMIC
@@ -472,7 +472,7 @@ PentiumFrontEnd *construct(Prog *prog, NJMCDecoder **decoder) {
   * \brief      PentiumFrontEnd constructor
   * \note          Seems to be necessary to put this here; forces the vtable
   *                    entries to point to this dynamic linked library
-  * PARAMETERS:      Same as the FrontEnd constructor
+  * \param      Same as the FrontEnd constructor
   * \returns           <N/A>
   ******************************************************************************/
 PentiumFrontEnd::PentiumFrontEnd(QObject *pBF, Prog *prog, BinaryFileFactory *pbff)
