@@ -62,9 +62,10 @@ Log &Log::operator<<(const RTL *r) {
 }
 
 Log &Log::operator<<(const LocationSet *l) {
-    std::ostringstream st;
+    QString tgt;
+    QTextStream st(&tgt);
     st << l;
-    *this << st.str().c_str();
+    *this << tgt;
     return *this;
 }
 
@@ -89,8 +90,6 @@ Log &Log::operator<<(double d) {
 }
 
 Log &Log::operator<<(ADDRESS a) {
-    std::ostringstream st;
-    st << "0x" << std::hex << a;
     *this << "0x" << QString::number(a.m_value, 16);
     return *this;
 }
@@ -99,9 +98,9 @@ void Log::tail() {}
 
 void FileLogger::tail() {
     out.seekp(-200, std::ios::end);
-    std::cerr << out;
+    LOG_STREAM() << out;
 }
 void SeparateLogger::tail() {
     out->seekp(-200, std::ios::end);
-    std::cerr << out;
+    LOG_STREAM() << out;
 }

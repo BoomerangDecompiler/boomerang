@@ -143,7 +143,7 @@ class FrontEnd {
      * (e.g. each arm of a switch statement is decoded). If spec is set, this is a speculative decode.
      * Returns true on a good decode
      */
-    virtual bool processProc(ADDRESS uAddr, UserProc *pProc, std::ofstream &os, bool frag = false, bool spec = false);
+    virtual bool processProc(ADDRESS uAddr, UserProc *pProc, QTextStream &os, bool frag = false, bool spec = false);
 
     /**
      * Given the dest of a call, determine if this is a machine specific helper function with special semantics.

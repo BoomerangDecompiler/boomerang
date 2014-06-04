@@ -199,7 +199,7 @@ void XMLProgParser::handleElementStart(QXmlStreamReader &strm) {
     QXmlStreamAttributes attrs = strm.attributes();
     for (int i = 0; tags[i].tag; i++)
         if (name == tags[i].tag) {
-            // std::cerr << "got tag: " << tags[i].tag << "\n";
+            // LOG_STREAM() << "got tag: " << tags[i].tag << "\n";
             stack.push_front(new Context(i));
             (this->*tags[i].start_proc)(attrs);
             return;
@@ -209,13 +209,13 @@ void XMLProgParser::handleElementStart(QXmlStreamReader &strm) {
 }
 
 void XMLProgParser::handleElementEnd(const QXmlStreamReader & /*el*/) {
-    // std::cerr << "end tag: " << el << " tos: " << stack.front()->tag << "\n";
+    // LOG_STREAM() << "end tag: " << el << " tos: " << stack.front()->tag << "\n";
     std::list<Context *>::iterator it = stack.begin();
     if (it != stack.end()) {
         it++;
         if (it != stack.end()) {
             if ((*it)->tag != e_unknown) {
-                // std::cerr << " second: " << (*it)->tag << "\n";
+                // LOG_STREAM() << " second: " << (*it)->tag << "\n";
                 (this->*tags[(*it)->tag].end_proc)(*it, stack.front()->tag);
             }
             stack.erase(stack.begin());
@@ -226,7 +226,7 @@ void XMLProgParser::handleElementEnd(const QXmlStreamReader & /*el*/) {
 void XMLProgParser::addId(const QXmlStreamAttributes &attr, void *x) {
     QStringRef val = attr.value(QLatin1Literal("id"));
     if (!val.isEmpty()) {
-        // std::cerr << "map id " << val << " to " << std::hex << (int)x << std::dec << "\n";
+        // LOG_STREAM() << "map id " << val << " to " << std::hex << (int)x << std::dec << "\n";
         idToX[val.toInt()] = x;
     }
 }
@@ -299,9 +299,9 @@ void XMLProgParser::addToContext_prog(Context *c, int e) {
         break;
     default:
         if (e == e_unknown)
-            std::cerr << "unknown tag " << e << " in context prog\n";
+            LOG_STREAM() << "unknown tag " << e << " in context prog\n";
         else
-            std::cerr << "need to handle tag " << tags[e].tag << " in context prog\n";
+            LOG_STREAM() << "need to handle tag " << tags[e].tag << " in context prog\n";
         break;
     }
 }
@@ -326,9 +326,9 @@ void XMLProgParser::addToContext_procs(Context *c, int e) {
         break;
     default:
         if (e == e_unknown)
-            std::cerr << "unknown tag " << e << " in context procs\n";
+            LOG_STREAM() << "unknown tag " << e << " in context procs\n";
         else
-            std::cerr << "need to handle tag " << tags[e].tag << " in context procs\n";
+            LOG_STREAM() << "need to handle tag " << tags[e].tag << " in context procs\n";
         break;
     }
 }
@@ -342,7 +342,7 @@ void XMLProgParser::start_global(const QXmlStreamAttributes &attr) {
     addId(attr, ctx->global);
     QStringRef name = attr.value(QLatin1Literal("name"));
     if (!name.isEmpty())
-        ctx->global->nam = name.toString().toStdString();
+        ctx->global->nam = name.toString();
     QStringRef uaddr = attr.value(QLatin1Literal("uaddr"));
     if (!uaddr.isEmpty())
         ctx->global->uaddr = ADDRESS::g(uaddr.toInt(nullptr, 16));
@@ -358,9 +358,9 @@ void XMLProgParser::addToContext_global(Context *c, int e) {
         break;
     default:
         if (e == e_unknown)
-            std::cerr << "unknown tag " << e << " in context global\n";
+            LOG_STREAM() << "unknown tag " << e << " in context global\n";
         else
-            std::cerr << "need to handle tag " << tags[e].tag << " in context global\n";
+            LOG_STREAM() << "need to handle tag " << tags[e].tag << " in context global\n";
         break;
     }
 }
@@ -388,9 +388,9 @@ void XMLProgParser::addToContext_cluster(Context *c, int e) {
         break;
     default:
         if (e == e_unknown)
-            std::cerr << "unknown tag " << e << " in context cluster\n";
+            LOG_STREAM() << "unknown tag " << e << " in context cluster\n";
         else
-            std::cerr << "need to handle tag " << tags[e].tag << " in context cluster\n";
+            LOG_STREAM() << "need to handle tag " << tags[e].tag << " in context cluster\n";
         break;
     }
 }
@@ -438,9 +438,9 @@ void XMLProgParser::addToContext_libproc(Context *c, int e) {
         break;
     default:
         if (e == e_unknown)
-            std::cerr << "unknown tag " << e << " in context libproc\n";
+            LOG_STREAM() << "unknown tag " << e << " in context libproc\n";
         else
-            std::cerr << "need to handle tag " << tags[e].tag << " in context libproc\n";
+            LOG_STREAM() << "need to handle tag " << tags[e].tag << " in context libproc\n";
         break;
     }
 }
@@ -515,9 +515,9 @@ void XMLProgParser::addToContext_userproc(Context *c, int e) {
         break;
     default:
         if (e == e_unknown)
-            std::cerr << "unknown tag " << e << " in context userproc\n";
+            LOG_STREAM() << "unknown tag " << e << " in context userproc\n";
         else
-            std::cerr << "need to handle tag " << tags[e].tag << " in context userproc\n";
+            LOG_STREAM() << "need to handle tag " << tags[e].tag << " in context userproc\n";
         break;
     }
 }
@@ -539,9 +539,9 @@ void XMLProgParser::addToContext_local(Context *c, int e) {
         break;
     default:
         if (e == e_unknown)
-            std::cerr << "unknown tag " << e << " in context local\n";
+            LOG_STREAM() << "unknown tag " << e << " in context local\n";
         else
-            std::cerr << "need to handle tag " << tags[e].tag << " in context local\n";
+            LOG_STREAM() << "need to handle tag " << tags[e].tag << " in context local\n";
         break;
     }
 }
@@ -565,9 +565,9 @@ void XMLProgParser::addToContext_symbol(Context *c, int e) {
         break;
     default:
         if (e == e_unknown)
-            std::cerr << "unknown tag " << e << " in context local\n";
+            LOG_STREAM() << "unknown tag " << e << " in context local\n";
         else
-            std::cerr << "need to handle tag " << tags[e].tag << " in context local\n";
+            LOG_STREAM() << "need to handle tag " << tags[e].tag << " in context local\n";
         break;
     }
 }
@@ -668,9 +668,9 @@ void XMLProgParser::addToContext_signature(Context *c, int e) {
         break;
     default:
         if (e == e_unknown)
-            std::cerr << "unknown tag " << e << " in context signature\n";
+            LOG_STREAM() << "unknown tag " << e << " in context signature\n";
         else
-            std::cerr << "need to handle tag " << tags[e].tag << " in context signature\n";
+            LOG_STREAM() << "need to handle tag " << tags[e].tag << " in context signature\n";
         break;
     }
 }
@@ -701,9 +701,9 @@ void XMLProgParser::addToContext_param(Context *c, int e) {
         break;
     default:
         if (e == e_unknown)
-            std::cerr << "unknown tag " << e << " in context param\n";
+            LOG_STREAM() << "unknown tag " << e << " in context param\n";
         else
-            std::cerr << "need to handle tag " << tags[e].tag << " in context param\n";
+            LOG_STREAM() << "need to handle tag " << tags[e].tag << " in context param\n";
         break;
     }
 }
@@ -737,9 +737,9 @@ void XMLProgParser::addToContext_prefparam(Context * /*c*/, int e) {
     //      switch(e) {
     //    default:
     if (e == e_unknown)
-        std::cerr << "unknown tag " << e << " in context prefparam\n";
+        LOG_STREAM() << "unknown tag " << e << " in context prefparam\n";
     else
-        std::cerr << "need to handle tag " << tags[e].tag << " in context prefparam\n";
+        LOG_STREAM() << "need to handle tag " << tags[e].tag << " in context prefparam\n";
     //    break;
     //      }
 }
@@ -766,9 +766,9 @@ void XMLProgParser::addToContext_return(Context *c, int e) {
         break;
     default:
         if (e == e_unknown)
-            std::cerr << "unknown tag " << e << " in context return\n";
+            LOG_STREAM() << "unknown tag " << e << " in context return\n";
         else
-            std::cerr << "need to handle tag " << tags[e].tag << " in context return\n";
+            LOG_STREAM() << "need to handle tag " << tags[e].tag << " in context return\n";
         break;
     }
 }
@@ -822,9 +822,9 @@ void XMLProgParser::addToContext_cfg(Context *c, int e) {
         break;
     default:
         if (e == e_unknown)
-            std::cerr << "unknown tag " << e << " in context cfg\n";
+            LOG_STREAM() << "unknown tag " << e << " in context cfg\n";
         else
-            std::cerr << "need to handle tag " << tags[e].tag << " in context cfg\n";
+            LOG_STREAM() << "need to handle tag " << tags[e].tag << " in context cfg\n";
         break;
     }
 }
@@ -969,9 +969,9 @@ void XMLProgParser::addToContext_bb(Context *c, int e) {
         break;
     default:
         if (e == e_unknown)
-            std::cerr << "unknown tag " << e << " in context bb\n";
+            LOG_STREAM() << "unknown tag " << e << " in context bb\n";
         else
-            std::cerr << "need to handle tag " << tags[e].tag << " in context bb\n";
+            LOG_STREAM() << "need to handle tag " << tags[e].tag << " in context bb\n";
         break;
     }
 }
@@ -987,9 +987,9 @@ void XMLProgParser::addToContext_inedge(Context * /*c*/, int e) {
     //      switch(e) {
     //    default:
     if (e == e_unknown)
-        std::cerr << "unknown tag " << e << " in context inedge\n";
+        LOG_STREAM() << "unknown tag " << e << " in context inedge\n";
     else
-        std::cerr << "need to handle tag " << tags[e].tag << " in context inedge\n";
+        LOG_STREAM() << "need to handle tag " << tags[e].tag << " in context inedge\n";
     //    break;
     //      }
 }
@@ -1005,9 +1005,9 @@ void XMLProgParser::addToContext_outedge(Context * /*c*/, int e) {
     //      switch(e) {
     //    default:
     if (e == e_unknown)
-        std::cerr << "unknown tag " << e << " in context outedge\n";
+        LOG_STREAM() << "unknown tag " << e << " in context outedge\n";
     else
-        std::cerr << "need to handle tag " << tags[e].tag << " in context outedge\n";
+        LOG_STREAM() << "need to handle tag " << tags[e].tag << " in context outedge\n";
     //    break;
     //      }
 }
@@ -1027,9 +1027,9 @@ void XMLProgParser::addToContext_order(Context * /*c*/, int e) {
     //      switch(e) {
     //    default:
     if (e == e_unknown)
-        std::cerr << "unknown tag " << e << " in context order\n";
+        LOG_STREAM() << "unknown tag " << e << " in context order\n";
     else
-        std::cerr << "need to handle tag " << tags[e].tag << " in context order\n";
+        LOG_STREAM() << "need to handle tag " << tags[e].tag << " in context order\n";
     //    break;
     //      }
 }
@@ -1045,9 +1045,9 @@ void XMLProgParser::addToContext_revorder(Context * /*c*/, int e) {
     //      switch(e) {
     //    default:
     if (e == e_unknown)
-        std::cerr << "unknown tag " << e << " in context revOrder\n";
+        LOG_STREAM() << "unknown tag " << e << " in context revOrder\n";
     else
-        std::cerr << "need to handle tag " << tags[e].tag << " in context order\n";
+        LOG_STREAM() << "need to handle tag " << tags[e].tag << " in context order\n";
     //    break;
     //      }
 }
@@ -1074,9 +1074,9 @@ void XMLProgParser::addToContext_rtl(Context *c, int e) {
         break;
     default:
         if (e == e_unknown)
-            std::cerr << "unknown tag " << e << " in context rtl\n";
+            LOG_STREAM() << "unknown tag " << e << " in context rtl\n";
         else
-            std::cerr << "need to handle tag " << tags[e].tag << " in context rtl\n";
+            LOG_STREAM() << "need to handle tag " << tags[e].tag << " in context rtl\n";
         break;
     }
 }
@@ -1128,9 +1128,9 @@ void XMLProgParser::addToContext_assign(Context *c, int e) {
         break;
     default:
         if (e == e_unknown)
-            std::cerr << "unknown tag " << e << " in context assign\n";
+            LOG_STREAM() << "unknown tag " << e << " in context assign\n";
         else
-            std::cerr << "need to handle tag " << tags[e].tag << " in context assign\n";
+            LOG_STREAM() << "need to handle tag " << tags[e].tag << " in context assign\n";
         break;
     }
 }
@@ -1187,9 +1187,9 @@ void XMLProgParser::addToContext_callstmt(Context *c, int e) {
         break;
     default:
         if (e == e_unknown)
-            std::cerr << "unknown tag " << e << " in context callstmt\n";
+            LOG_STREAM() << "unknown tag " << e << " in context callstmt\n";
         else
-            std::cerr << "need to handle tag " << tags[e].tag << " in context callstmt\n";
+            LOG_STREAM() << "need to handle tag " << tags[e].tag << " in context callstmt\n";
         break;
     }
 }
@@ -1242,9 +1242,9 @@ void XMLProgParser::addToContext_returnstmt(Context *c, int e) {
         break;
     default:
         if (e == e_unknown)
-            std::cerr << "unknown tag " << e << " in context returnstmt\n";
+            LOG_STREAM() << "unknown tag " << e << " in context returnstmt\n";
         else
-            std::cerr << "need to handle tag " << tags[e].tag << " in context returnstmt\n";
+            LOG_STREAM() << "need to handle tag " << tags[e].tag << " in context returnstmt\n";
         break;
     }
 }
@@ -1291,9 +1291,9 @@ void XMLProgParser::addToContext_gotostmt(Context *c, int e) {
         break;
     default:
         if (e == e_unknown)
-            std::cerr << "unknown tag " << e << " in context gotostmt\n";
+            LOG_STREAM() << "unknown tag " << e << " in context gotostmt\n";
         else
-            std::cerr << "need to handle tag " << tags[e].tag << " in context gotostmt\n";
+            LOG_STREAM() << "need to handle tag " << tags[e].tag << " in context gotostmt\n";
         break;
     }
 }
@@ -1338,9 +1338,9 @@ void XMLProgParser::addToContext_branchstmt(Context *c, int e) {
         break;
     default:
         if (e == e_unknown)
-            std::cerr << "unknown tag " << e << " in context branchstmt\n";
+            LOG_STREAM() << "unknown tag " << e << " in context branchstmt\n";
         else
-            std::cerr << "need to handle tag " << tags[e].tag << " in context branchstmt\n";
+            LOG_STREAM() << "need to handle tag " << tags[e].tag << " in context branchstmt\n";
         break;
     }
 }
@@ -1376,9 +1376,9 @@ void XMLProgParser::addToContext_casestmt(Context *c, int e) {
         break;
     default:
         if (e == e_unknown)
-            std::cerr << "unknown tag " << e << " in context casestmt\n";
+            LOG_STREAM() << "unknown tag " << e << " in context casestmt\n";
         else
-            std::cerr << "need to handle tag " << tags[e].tag << " in context casestmt\n";
+            LOG_STREAM() << "need to handle tag " << tags[e].tag << " in context casestmt\n";
         break;
     }
 }
@@ -1422,9 +1422,9 @@ void XMLProgParser::addToContext_boolasgn(Context *c, int e) {
         break;
     default:
         if (e == e_unknown)
-            std::cerr << "unknown tag " << e << " in context boolasgn\n";
+            LOG_STREAM() << "unknown tag " << e << " in context boolasgn\n";
         else
-            std::cerr << "need to handle tag " << tags[e].tag << " in context boolasgn\n";
+            LOG_STREAM() << "need to handle tag " << tags[e].tag << " in context boolasgn\n";
         break;
     }
 }
@@ -1454,9 +1454,9 @@ void XMLProgParser::addToContext_sizetype(Context * /*c*/, int e) {
     //      switch(e) {
     //    default:
     if (e == e_unknown)
-        std::cerr << "unknown tag " << e << " in context SizeType\n";
+        LOG_STREAM() << "unknown tag " << e << " in context SizeType\n";
     else
-        std::cerr << "need to handle tag " << tags[e].tag << " in context SizeType\n";
+        LOG_STREAM() << "need to handle tag " << tags[e].tag << " in context SizeType\n";
     //    break;
     //      }
 }
@@ -1522,9 +1522,9 @@ void XMLProgParser::addToContext_voidtype(Context * /*c*/, int e) {
     //      switch(e) {
     //    default:
     if (e == e_unknown)
-        std::cerr << "unknown tag " << e << " in context voidType\n";
+        LOG_STREAM() << "unknown tag " << e << " in context voidType\n";
     else
-        std::cerr << "need to handle tag " << tags[e].tag << " in context voidType\n";
+        LOG_STREAM() << "need to handle tag " << tags[e].tag << " in context voidType\n";
     //    break;
     //      }
 }
@@ -1549,9 +1549,9 @@ void XMLProgParser::addToContext_integertype(Context * /*c*/, int e) {
     //      switch(e) {
     //    default:
     if (e == e_unknown)
-        std::cerr << "unknown tag " << e << " in context integerType\n";
+        LOG_STREAM() << "unknown tag " << e << " in context integerType\n";
     else
-        std::cerr << "need to handle tag " << tags[e].tag << " in context integerType\n";
+        LOG_STREAM() << "need to handle tag " << tags[e].tag << " in context integerType\n";
     //    break;
     //      }
 }
@@ -1587,9 +1587,9 @@ void XMLProgParser::addToContext_chartype(Context * /*c*/, int e) {
     //      switch(e) {
     //    default:
     if (e == e_unknown)
-        std::cerr << "unknown tag " << e << " in context charType\n";
+        LOG_STREAM() << "unknown tag " << e << " in context charType\n";
     else
-        std::cerr << "need to handle tag " << tags[e].tag << " in context charType\n";
+        LOG_STREAM() << "need to handle tag " << tags[e].tag << " in context charType\n";
     //    break;
     //      }
 }
@@ -1607,9 +1607,9 @@ void XMLProgParser::addToContext_namedtype(Context * /*c*/, int e) {
     //      switch(e) {
     //    default:
     if (e == e_unknown)
-        std::cerr << "unknown tag " << e << " in context namedType\n";
+        LOG_STREAM() << "unknown tag " << e << " in context namedType\n";
     else
-        std::cerr << "need to handle tag " << tags[e].tag << " in context namedType\n";
+        LOG_STREAM() << "need to handle tag " << tags[e].tag << " in context namedType\n";
     //    break;
     //      }
 }
@@ -1636,9 +1636,9 @@ void XMLProgParser::addToContext_arraytype(Context *c, int e) {
         break;
     default:
         if (e == e_unknown)
-            std::cerr << "unknown tag " << e << " in context arrayType\n";
+            LOG_STREAM() << "unknown tag " << e << " in context arrayType\n";
         else
-            std::cerr << "need to handle tag " << tags[e].tag << " in context arrayType\n";
+            LOG_STREAM() << "need to handle tag " << tags[e].tag << " in context arrayType\n";
         break;
     }
 }
@@ -1669,9 +1669,9 @@ void XMLProgParser::addToContext_location(Context *c, int e) {
         break;
     default:
         if (e == e_unknown)
-            std::cerr << "unknown tag " << e << " in context unary\n";
+            LOG_STREAM() << "unknown tag " << e << " in context unary\n";
         else
-            std::cerr << "need to handle tag " << tags[e].tag << " in context location\n";
+            LOG_STREAM() << "need to handle tag " << tags[e].tag << " in context location\n";
         break;
     }
 }
@@ -1697,9 +1697,9 @@ void XMLProgParser::addToContext_unary(Context *c, int e) {
         break;
     default:
         if (e == e_unknown)
-            std::cerr << "unknown tag " << e << " in context unary\n";
+            LOG_STREAM() << "unknown tag " << e << " in context unary\n";
         else
-            std::cerr << "need to handle tag " << tags[e].tag << " in context unary\n";
+            LOG_STREAM() << "need to handle tag " << tags[e].tag << " in context unary\n";
         break;
     }
 }
@@ -1728,9 +1728,9 @@ void XMLProgParser::addToContext_binary(Context *c, int e) {
         break;
     default:
         if (e == e_unknown)
-            std::cerr << "unknown tag " << e << " in context binary\n";
+            LOG_STREAM() << "unknown tag " << e << " in context binary\n";
         else
-            std::cerr << "need to handle tag " << tags[e].tag << " in context binary\n";
+            LOG_STREAM() << "need to handle tag " << tags[e].tag << " in context binary\n";
         break;
     }
 }
@@ -1762,9 +1762,9 @@ void XMLProgParser::addToContext_ternary(Context *c, int e) {
         break;
     default:
         if (e == e_unknown)
-            std::cerr << "unknown tag " << e << " in context ternary\n";
+            LOG_STREAM() << "unknown tag " << e << " in context ternary\n";
         else
-            std::cerr << "need to handle tag " << tags[e].tag << " in context ternary\n";
+            LOG_STREAM() << "need to handle tag " << tags[e].tag << " in context ternary\n";
         break;
     }
 }
@@ -1780,7 +1780,7 @@ void XMLProgParser::start_const(const QXmlStreamAttributes &attr) {
     QStringRef opstring = attr.value(QLatin1Literal("op"));
     assert(!value.isEmpty());
     assert(!opstring.isEmpty());
-    // std::cerr << "got value=" << value << " opstring=" << opstring << "\n";
+    // LOG_STREAM() << "got value=" << value << " opstring=" << opstring << "\n";
     OPER op = (OPER)operFromString(opstring);
     assert(op != -1);
     switch (op) {
@@ -1800,16 +1800,16 @@ void XMLProgParser::start_const(const QXmlStreamAttributes &attr) {
         LOG << "unknown Const op " << op << "\n";
         assert(false);
     }
-    // std::cerr << "end of start const\n";
+    // LOG_STREAM() << "end of start const\n";
 }
 
 void XMLProgParser::addToContext_const(Context * /*c*/, int e) {
     //      switch(e) {
     //    default:
     if (e == e_unknown)
-        std::cerr << "unknown tag " << e << " in context const\n";
+        LOG_STREAM() << "unknown tag " << e << " in context const\n";
     else
-        std::cerr << "need to handle tag " << tags[e].tag << " in context const\n";
+        LOG_STREAM() << "need to handle tag " << tags[e].tag << " in context const\n";
     //    break;
     //      }
 }
@@ -1829,9 +1829,9 @@ void XMLProgParser::addToContext_terminal(Context * /*c*/, int e) {
     //      switch(e) {
     //    default:
     if (e == e_unknown)
-        std::cerr << "unknown tag " << e << " in context terminal\n";
+        LOG_STREAM() << "unknown tag " << e << " in context terminal\n";
     else
-        std::cerr << "need to handle tag " << tags[e].tag << " in context terminal\n";
+        LOG_STREAM() << "need to handle tag " << tags[e].tag << " in context terminal\n";
     //    break;
     //      }
 }
@@ -1857,9 +1857,9 @@ void XMLProgParser::addToContext_typedexp(Context *c, int e) {
         break;
     default:
         if (e == e_unknown)
-            std::cerr << "unknown tag " << e << " in context typedexp\n";
+            LOG_STREAM() << "unknown tag " << e << " in context typedexp\n";
         else
-            std::cerr << "need to handle tag " << tags[e].tag << " in context typedexp\n";
+            LOG_STREAM() << "need to handle tag " << tags[e].tag << " in context typedexp\n";
         break;
     }
 }
@@ -1883,9 +1883,9 @@ void XMLProgParser::addToContext_refexp(Context *c, int e) {
         break;
     default:
         if (e == e_unknown)
-            std::cerr << "unknown tag " << e << " in context refexp\n";
+            LOG_STREAM() << "unknown tag " << e << " in context refexp\n";
         else
-            std::cerr << "need to handle tag " << tags[e].tag << " in context refexp\n";
+            LOG_STREAM() << "need to handle tag " << tags[e].tag << " in context refexp\n";
         break;
     }
 }
@@ -1901,9 +1901,9 @@ void XMLProgParser::addToContext_def(Context * /*c*/, int e) {
     //      switch(e) {
     //    default:
     if (e == e_unknown)
-        std::cerr << "unknown tag " << e << " in context def\n";
+        LOG_STREAM() << "unknown tag " << e << " in context def\n";
     else
-        std::cerr << "need to handle tag " << tags[e].tag << " in context def\n";
+        LOG_STREAM() << "need to handle tag " << tags[e].tag << " in context def\n";
     //        break;
     //      }
 }
@@ -1989,7 +1989,7 @@ void XMLProgParser::persistToXML(QXmlStreamWriter &out, Cluster *c) {
 
 void XMLProgParser::persistToXML(QXmlStreamWriter &out, Global *g) {
     out.writeStartElement("global");
-    out.writeAttribute("name", g->nam.c_str());
+    out.writeAttribute("name", g->nam);
     out.writeAttribute("uaddr", QString::number(g->uaddr.m_value, 16));
     out.writeStartElement("type");
     persistToXML(out, g->type);
@@ -2267,7 +2267,7 @@ void XMLProgParser::persistToXML(QXmlStreamWriter &out, const Type *ty) {
         out.writeEndElement();
         return;
     }
-    std::cerr << "unknown type in persistToXML\n";
+    LOG_STREAM() << "unknown type in persistToXML\n";
     assert(false);
 }
 
@@ -2410,7 +2410,7 @@ void XMLProgParser::persistToXML(QXmlStreamWriter &out, const Exp *e) {
         out.writeEndElement();
         return;
     }
-    std::cerr << "unknown exp in persistToXML\n";
+    LOG_STREAM() << "unknown exp in persistToXML\n";
     assert(false);
 }
 
@@ -2730,7 +2730,7 @@ void XMLProgParser::persistToXML(QXmlStreamWriter &out, const Instruction *stmt)
         out.writeEndElement();
         return;
     }
-    std::cerr << "unknown stmt in persistToXML\n";
+    LOG_STREAM() << "unknown stmt in persistToXML\n";
     assert(false);
 }
 
@@ -2749,9 +2749,9 @@ void XMLProgParser::addToContext_phiassign(Context *c, int e) {
     // FIXME: More required
     default:
         if (e == e_unknown)
-            std::cerr << "unknown tag " << e << " in context assign\n";
+            LOG_STREAM() << "unknown tag " << e << " in context assign\n";
         else
-            std::cerr << "need to handle tag " << tags[e].tag << " in context assign\n";
+            LOG_STREAM() << "need to handle tag " << tags[e].tag << " in context assign\n";
         break;
     }
 }

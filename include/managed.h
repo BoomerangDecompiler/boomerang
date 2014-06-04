@@ -169,7 +169,7 @@ class LocationSet {
     void print(QTextStream &os) const;          // Print to os
     char *prints();                              // Print to string for debugging
     void dump();
-    void diff(LocationSet *o);   // Diff 2 location sets to std::cerr
+    void diff(LocationSet *o);   // Diff 2 location sets to LOG_STREAM()
     bool exists(Exp *e);         // Return true if the location exists in the set
     Exp *findNS(Exp *e);         // Find location e (no subscripts); nullptr if not found
     bool existsImplicit(Exp *e); // Search for location e{-} or e{0} (e has no subscripts)

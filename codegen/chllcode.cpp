@@ -66,7 +66,8 @@ static int progress = 0;
  */
 void CHLLCode::appendExp(QTextStream &str, const Exp &exp, PREC curPrec, bool uns /* = false */) {
     if (++progress > 500) {
-        std::cerr << 'g' << std::flush;
+        LOG_STREAM() << 'g';
+        LOG_STREAM().flush();
         progress = 0;
     }
 
@@ -1577,7 +1578,7 @@ void CHLLCode::AddLocal(const char *name, Type *type, bool last) {
  * Add the declaration for a global.
  * \param init    The initial value of the global.
  */
-void CHLLCode::AddGlobal(const char *name, Type *type, Exp *init) {
+void CHLLCode::AddGlobal(const QString &name, Type *type, Exp *init) {
     QString tgt;
     QTextStream s(&tgt);
     // Check for array types. These are declared differently in C than

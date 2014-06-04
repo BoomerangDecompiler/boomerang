@@ -67,7 +67,7 @@ SSLParser::~SSLParser() {
   *
   ******************************************************************************/
 void SSLParser::yyerror(const char *msg) {
-    std::cerr << sslFile << ":" << theScanner->theLine << ": " << msg << '\n';
+    LOG_STREAM() << sslFile << ":" << theScanner->theLine << ": " << msg << '\n';
 }
 
 /***************************************************************************/ /**

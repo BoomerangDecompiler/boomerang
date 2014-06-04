@@ -49,7 +49,7 @@ class ConstraintMap {
     //! Union with another constraint map
     void makeUnion(ConstraintMap &o);
     //! Print to the given stream
-    void print(std::ostream &os);
+    void print(QTextStream &os);
     //! Print to the debug buffer, and return that buffer
     char *prints();
     //! Substitute the given constraints into this map
@@ -83,7 +83,7 @@ class EquateMap {
         emap[b].insert(a);
     }
     iterator find(Exp *e) { return emap.find(e); }
-    void print(std::ostream &os);
+    void print(QTextStream &os);
     char *prints();
 }; // class EquateMap
 
@@ -99,7 +99,7 @@ class Constraints {
     Constraints() {}
     ~Constraints();
 
-    void print(std::ostream &os);
+    void print(QTextStream &os);
     char *prints();
 
     LocationSet &getConstraints() { return conSet; }

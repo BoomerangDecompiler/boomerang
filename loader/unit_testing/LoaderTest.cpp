@@ -28,6 +28,7 @@
 #define SWITCH_BORLAND "test/windows/switch_borland.exe"
 #define ELFBINFILE "lib/libElfBinaryFile.so"
 
+#include "../microX86dis.c"
 #include "string"
 #include "LoaderTest.h"
 //#include "util.h"           // For str()
@@ -36,8 +37,8 @@
 #include <dlfcn.h> // dlopen, dlsym
 #endif
 #include <QLibrary>
+#include <QtCore/QTextStream>
 #include <sstream>
-#include "../microX86dis.c"
 /***************************************************************************/ /**
   * \fn        LoaderTest::testSparcLoad
   * OVERVIEW:        Test loading the sparc hello world program
@@ -245,10 +246,10 @@ void LoaderTest::testWinLoad() {
     LoaderInterface *ldr_iface = qobject_cast<LoaderInterface *>(pBF);
     QVERIFY(ldr_iface!=nullptr);
     ADDRESS addr = ldr_iface->GetMainEntryPoint();
-    std::ostringstream ost4;
-    ost4 << std::hex << addr;
-    std::string actual(ost4.str());
-    std::string expected("401150");
+    QString actual;
+    QTextStream ost4(&actual);
+    ost4 << addr;
+    QString expected("401150");
     QCOMPARE(expected, actual);
     bff.UnLoad();
 }
@@ -477,7 +478,7 @@ static unsigned char pent_hello_text[] = {
     0xfc, 0xc9,  0xc3};
 
 void LoaderTest::testMicroDis1() {
-    std::ostringstream ost;
+    QTextStream q_cout(stdout);
 
     int i;
     unsigned int n = sizeof(pent_hello_text);
@@ -487,17 +488,17 @@ void LoaderTest::testMicroDis1() {
     while (totalSize < (int)n) {
         int size = microX86Dis(pent_hello_text);
         if (size >= 0x40) {
-            std::cout << "Not handled instruction at offset 0x" << std::hex << ADDRESS::host_ptr(p) - ADDRESS::host_ptr(pent_hello_text)
-                      << std::endl;
+            q_cout << "Not handled instruction at offset 0x"
+                   << ADDRESS::host_ptr(p) - ADDRESS::host_ptr(pent_hello_text) << '\n';
             QVERIFY(size != 0x40);
             return;
         }
         int expected = lengths[i++];
         if (expected != size) {
-            std::cout << "At offset 0x" << std::hex << ADDRESS::host_ptr(p) - ADDRESS::host_ptr(pent_hello_text) << " ("
+            q_cout << "At offset 0x" << ADDRESS::host_ptr(p) - ADDRESS::host_ptr(pent_hello_text) << " ("
                       << (int)*((unsigned char *)p) << " " << (int)*((unsigned char *)p + 1) << " "
                       << (int)*((unsigned char *)p + 2) << " " << (int)*((unsigned char *)p + 3) << " "
-                      << ") expected " << std::dec << expected << ", actual " << size << std::endl;
+                      << ") expected " << expected << ", actual " << size << '\n';
             QCOMPARE(expected, size);
         }
         p = (void *)((char *)p + size);

@@ -243,5 +243,4 @@ class Win32BinaryFile : public QObject,
     const char *SymbolByAddress(ADDRESS dwAddr) override;                        // Get sym from addr
     ADDRESS GetAddressByName(const char *name, bool bNoTypeOK = false) override; // Find addr given name
     void AddSymbol(ADDRESS uNative, const char *pName) override;
-    void dumpSymbols(); // For debugging
 };

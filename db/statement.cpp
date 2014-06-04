@@ -34,6 +34,7 @@
 #include "hllcode.h"
 
 extern char debug_buffer[]; // For prints functions
+extern QTextStream &alignStream(QTextStream &str,int align);
 
 void Instruction::setProc(UserProc *p) {
     proc = p;
@@ -596,7 +597,7 @@ Instruction *Instruction::getNextStatementInBB() {
 
 /***************************************************************************/ /**
   * \brief        Output operator for Statement*
-  *                    Just makes it easier to use e.g. std::cerr << myStmtStar
+  *                    Just makes it easier to use e.g. LOG_STREAM() << myStmtStar
   * \param        os: output stream to send to
   *                    p: ptr to Statement to print to the stream
   * \returns             copy of os (for concatenation)
@@ -651,7 +652,7 @@ bool hasSetFlags(Exp *e) {
     if (!right->isIntConst())
         return false;
     if (left->isFlagCall()) {
-        std::cerr << "hasSetFlags returns true with " << e << "\n";
+        LOG_STREAM() << "hasSetFlags returns true with " << e << "\n";
         return true;
     }
     op = left->getOper();
@@ -663,7 +664,7 @@ bool hasSetFlags(Exp *e) {
         return false;
     bool ret = left->isFlagCall();
     if (ret)
-        std::cerr << "hasSetFlags returns true with " << e << "\n";
+        LOG_STREAM() << "hasSetFlags returns true with " << e << "\n";
     return ret;
 }
 
@@ -708,7 +709,8 @@ static int progress = 0;
 bool Instruction::propagateTo(bool &convert, std::map<Exp *, int, lessExpStar> *destCounts /* = nullptr */,
                               LocationSet *usedByDomPhi /* = nullptr */, bool force /* = false */) {
     if (++progress > 1000) {
-        std::cerr << 'p' << std::flush;
+        LOG_STREAM() << 'p';
+        LOG_STREAM().flush();
         progress = 0;
     }
     bool change;
@@ -795,7 +797,7 @@ bool Instruction::propagateTo(bool &convert, std::map<Exp *, int, lessExpStar> *
                                 break;
                             }
                             if (OW)
-                                std::cerr << "Ow is " << OW << "\n";
+                                LOG_STREAM() << "Ow is " << OW << "\n";
                         }
                     }
                     if (doNotPropagate) {
@@ -1829,12 +1831,12 @@ bool condToRelational(Exp * &pCond, BRANCH_TYPE jtCond) {
                                 op = opNotEqual;
                             break;
                         default:
-                            std::cerr << "BranchStatement::simplify: k is " << std::hex << k << "\n";
+                            LOG_STREAM() << "BranchStatement::simplify: k is " << QString::number(k,16) << "\n";
                             assert(0);
                         }
                         break;
                     default:
-                        std::cerr << "BranchStatement::simplify: Mask is " << std::hex << mask << "\n";
+                        LOG_STREAM() << "BranchStatement::simplify: Mask is " << QString::number(mask,16) << "\n";
                         assert(0);
                     }
                 }
@@ -2441,7 +2443,7 @@ bool CallStatement::convertToDirect() {
             // m[K]: convert it to a global right here
             ADDRESS u = ADDRESS::g(((Const *)sub)->getInt());
             proc->getProg()->globalUsed(u);
-            const char *nam = proc->getProg()->newGlobalName(u);
+            QString nam = proc->getProg()->newGlobalName(u);
             e = Location::global(nam, proc);
             pDest = new RefExp(e, nullptr);
         }
@@ -2493,10 +2495,10 @@ bool CallStatement::convertToDirect() {
         as->setBB(Parent);
         arguments.append(as);
     }
-    // std::cerr << "Step 3a: arguments now: ";
+    // LOG_STREAM() << "Step 3a: arguments now: ";
     // StatementList::iterator xx; for (xx = arguments.begin(); xx != arguments.end(); ++xx) {
-    //        ((Assignment*)*xx)->printCompact(std::cerr); std::cerr << ", ";
-    // } std::cerr << "\n";
+    //        ((Assignment*)*xx)->printCompact(LOG_STREAM()); LOG_STREAM() << ", ";
+    // } LOG_STREAM() << "\n";
     // implicitArguments = newimpargs;
     // assert((int)implicitArguments.size() == sig->getNumImplicitParams());
 
@@ -2588,13 +2590,13 @@ Exp *processConstant(Exp * e, Type * t, Prog * prog, UserProc * proc, ADDRESS st
                     if (str) {
                         e = Const::get(str);
                         // Check if we may have guessed this global incorrectly (usually as an array of char)
-                        const char *nam = prog->getGlobalName(u);
-                        if (nam)
+                        QString nam = prog->getGlobalName(u);
+                        if (!nam.isEmpty())
                             prog->setGlobalType(nam, new PointerType(new CharType()));
                     } else {
                         proc->getProg()->globalUsed(u);
-                        const char *nam = proc->getProg()->getGlobalName(u);
-                        if (nam)
+                        QString nam = proc->getProg()->getGlobalName(u);
+                        if (!nam.isEmpty())
                             e = Location::global(nam, proc);
                     }
                 }
@@ -5167,7 +5169,7 @@ void PhiAssign::enumerateParams(std::list<Exp *> & le) {
 void dumpDestCounts(std::map<Exp *, int, lessExpStar> * destCounts) {
     std::map<Exp *, int, lessExpStar>::iterator it;
     for (it = destCounts->begin(); it != destCounts->end(); ++it) {
-        std::cerr << std::setw(4) << std::dec << it->second << " " << it->first << "\n";
+        alignStream(LOG_STREAM(),4) << it->second << " " << it->first << "\n";
     }
 }
 

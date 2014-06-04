@@ -1038,11 +1038,3 @@ DWord Win32BinaryFile::getDelta() {
     //    return (DWord)base - LMMH(m_pPEHeader->Imagebase);
     return DWord(intptr_t(base)) - (DWord)m_pPEHeader->Imagebase;
 }
-
-void Win32BinaryFile::dumpSymbols() {
-    std::map<ADDRESS, std::string>::iterator it;
-    std::cerr << std::hex;
-    for (it = dlprocptrs.begin(); it != dlprocptrs.end(); ++it)
-        std::cerr << "0x" << it->first << " " << it->second << "        ";
-    std::cerr << std::dec << "\n";
-}

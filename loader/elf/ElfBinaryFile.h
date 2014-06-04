@@ -192,7 +192,6 @@ class ElfBinaryFile : public QObject,
     int GetDistanceByName(const char *pName, const char *pSectName);
     // Add an extra symbol
     void AddSymbol(ADDRESS uNative, const char *pName);
-    void dumpSymbols(); // For debugging
 
     virtual ADDRESS *GetImportStubs(int &numImports);
     virtual std::vector<ADDRESS> GetExportedAddresses(bool funcsOnly = true);

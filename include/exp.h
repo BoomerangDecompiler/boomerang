@@ -25,8 +25,6 @@
 //#include "memo.h"
 
 #include <QtCore/QString>
-#include <iostream>
-#include <fstream> // For ostream, cout etc
 #include <cstdio>  // For sprintf
 #include <list>
 #include <vector>
@@ -86,7 +84,7 @@ class Exp {
     //! Print the expression to the given stream
     virtual void print(QTextStream &os, bool html = false) const = 0;
     void printt(QTextStream &os) const;
-    void printAsHL(std::ostream &os = std::cout); //!< Print with v[5] as v5
+    void printAsHL(QTextStream &os); //!< Print with v[5] as v5
     char *prints();                               // Print to string (for debugging and logging)
     void dump();                                  // Print to standard error (for debugging)
     //! Recursive print: don't want parens at the top level
@@ -97,7 +95,7 @@ class Exp {
 
     //! Display as a dotty graph
     void createDotFile(char *name);
-    virtual void appendDotFile(std::ofstream &os) = 0;
+    virtual void appendDotFile(QTextStream &os) = 0;
 
     //! Clone (make copy of self that can be deleted without affecting self)
     virtual Exp *clone() const = 0;
@@ -424,7 +422,7 @@ class Const : public Exp {
     void printNoQuotes(QTextStream &os);
     virtual void printx(int ind) const;
 
-    virtual void appendDotFile(std::ofstream &of);
+    virtual void appendDotFile(QTextStream &of);
     virtual Exp *genConstraints(Exp *restrictTo);
 
     // Visitation
@@ -461,7 +459,7 @@ class Terminal : public Exp {
     virtual bool operator<(const Exp &o) const;
     virtual bool operator*=(Exp &o);
     virtual void print(QTextStream &os, bool = false) const override;
-    virtual void appendDotFile(std::ofstream &of);
+    virtual void appendDotFile(QTextStream &of);
     virtual void printx(int ind) const;
     virtual bool isTerminal() { return true; }
 
@@ -511,7 +509,7 @@ class Unary : public Exp {
 
     // Print
     virtual void print(QTextStream &os, bool html = false) const override;
-    virtual void appendDotFile(std::ofstream &of);
+    virtual void appendDotFile(QTextStream &of);
     virtual void printx(int ind) const;
 
     // Set first subexpression
@@ -583,7 +581,7 @@ class Binary : public Unary {
     // Print
     virtual void print(QTextStream &os, bool html = false) const override;
     virtual void printr(QTextStream &os, bool html = false) const;
-    virtual void appendDotFile(std::ofstream &of);
+    virtual void appendDotFile(QTextStream &of);
     virtual void printx(int ind) const;
 
     // Set second subexpression
@@ -655,7 +653,7 @@ class Ternary : public Binary {
     // Print
     virtual void print(QTextStream &os, bool html = false) const override;
     virtual void printr(QTextStream &os, bool = false) const override;
-    virtual void appendDotFile(std::ofstream &of);
+    virtual void appendDotFile(QTextStream &of);
     virtual void printx(int ind) const;
 
     // Set third subexpression
@@ -717,7 +715,7 @@ class TypedExp : public Unary {
     virtual bool operator*=(Exp &o);
 
     virtual void print(QTextStream &os, bool html = false) const override;
-    virtual void appendDotFile(std::ofstream &of);
+    virtual void appendDotFile(QTextStream &of);
     virtual void printx(int ind) const;
 
     // Get and set the type
@@ -748,7 +746,7 @@ class FlagDef : public Unary {
   public:
     FlagDef(Exp *params, RTL *rtl); // Constructor
     virtual ~FlagDef();             // Destructor
-    virtual void appendDotFile(std::ofstream &of);
+    virtual void appendDotFile(QTextStream &of);
     RTL *getRtl() { return rtl; }
     void setRtl(RTL *r) { rtl = r; }
 
@@ -862,6 +860,7 @@ class Location : public Unary {
     static Exp *memOf(Exp *e, UserProc *p = nullptr) { return get(opMemOf, e, p); }
     static Location *tempOf(Exp *e) { return new Location(opTemp, e, nullptr); }
     static Exp *global(const char *nam, UserProc *p) { return get(opGlobal, Const::get(nam), p); }
+    static Exp *global(const QString &nam, UserProc *p) { return get(opGlobal, Const::get(strdup(qPrintable(nam))), p); }
     static Location *local(const char *nam, UserProc *p);
     static Exp *param(const char *nam, UserProc *p = nullptr) { return get(opParam, Const::get(nam), p); }
     // Clone

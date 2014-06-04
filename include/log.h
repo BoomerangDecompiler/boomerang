@@ -67,7 +67,7 @@ class SeparateLogger : public Log {
 class NullLogger : public Log {
   public:
     virtual Log &operator<<(const QString & /*str*/) {
-        // std::cerr << str;
+        // LOG_STREAM() << str;
         return *this;
     }
 };

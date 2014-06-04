@@ -32,7 +32,7 @@
 
 #include <cassert>
 #include <cstring>
-#include <iostream>
+
 
 Exp *crBit(int bitNum); // Get an expression for a CR bit access
 
@@ -73,7 +73,7 @@ Exp *crBit(int bitNum); // Get an expression for a CR bit access
     result.numBytes = size;                                                                                            \
     jump->setDest(relocd - delta);                                                                                     \
     jump->setCondType(cond);                                                                                           \
-    SHOW_ASM(name << " " << BIcr << ", 0x" << std::hex << relocd - delta)
+    SHOW_ASM(name << " " << BIcr << ", 0x" << relocd - delta)
 
 /***************************************************************************/ /**
   * \fn       unused
@@ -8810,7 +8810,7 @@ DecodeResult &PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta) {
 
             default:
 
-                std::cerr << "ERROR: MTSPR instruction with invalid S field: " << uimm << "\n";
+                LOG_STREAM(2) << "ERROR: MTSPR instruction with invalid S field: " << uimm << "\n";
             }
 
             ::unused(name);

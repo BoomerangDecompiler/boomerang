@@ -39,7 +39,7 @@ class SparcFrontEnd : public FrontEnd {
          * instruction)
          * Returns true on a good decode
          */
-    virtual bool processProc(ADDRESS uAddr, UserProc *pProc, std::ofstream &os, bool frag = false, bool spec = false);
+    virtual bool processProc(ADDRESS uAddr, UserProc *pProc, QTextStream &os, bool frag = false, bool spec = false);
 
     virtual std::vector<Exp *> &getDefaultParams();
     virtual std::vector<Exp *> &getDefaultReturns();
@@ -57,10 +57,10 @@ class SparcFrontEnd : public FrontEnd {
     void case_unhandled_stub(ADDRESS addr);
 
     bool case_CALL(ADDRESS &address, DecodeResult &inst, DecodeResult &delay_inst, std::list<RTL *> *&BB_rtls,
-                   UserProc *proc, std::list<CallStatement *> &callList, std::ofstream &os, bool isPattern = false);
+                   UserProc *proc, std::list<CallStatement *> &callList, QTextStream &os, bool isPattern = false);
 
     void case_SD(ADDRESS &address, ptrdiff_t delta, ADDRESS hiAddress, DecodeResult &inst, DecodeResult &delay_inst,
-                 std::list<RTL *> *&BB_rtls, Cfg *cfg, TargetQueue &tq, std::ofstream &os);
+                 std::list<RTL *> *&BB_rtls, Cfg *cfg, TargetQueue &tq, QTextStream &os);
 
     bool case_DD(ADDRESS &address, ptrdiff_t delta, DecodeResult &inst, DecodeResult &delay_inst,
                  std::list<RTL *> *&BB_rtls, TargetQueue &tq, UserProc *proc, std::list<CallStatement *> &callList);

@@ -27,7 +27,6 @@
 #include <vector>
 #include <set>
 #include <map>
-#include <iostream>
 #include <string>
 #define DEBUG_LIVENESS (Boomerang::get()->debugLiveness)
 
@@ -177,8 +176,8 @@ class Cfg {
     /////////////////////////////////////////////////////////////////////////
     void print(QTextStream &out, bool html = false);
     void printToLog();
-    void dump();            // Dump to std::cerr
-    void dumpImplicitMap(); // Dump the implicit map to std::cerr
+    void dump();            // Dump to LOG_STREAM()
+    void dumpImplicitMap(); // Dump the implicit map to LOG_STREAM()
     bool decodeIndirectJmp(UserProc *proc);
 
     /////////////////////////////////////////////////////////////////////////

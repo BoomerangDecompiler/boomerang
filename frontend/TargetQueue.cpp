@@ -65,7 +65,7 @@ void TargetQueue::dump() {
     while (!copy.empty()) {
         ADDRESS a = copy.front();
         copy.pop();
-        std::cerr << std::hex << a << ", ";
+        LOG_STREAM() << a << ", ";
     }
-    std::cerr << std::dec << "\n";
+    LOG_STREAM() << "\n";
 }

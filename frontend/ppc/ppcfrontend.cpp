@@ -81,7 +81,7 @@ ADDRESS PPCFrontEnd::getMainEntryPoint(bool &gotMain) {
     return start;
 }
 
-bool PPCFrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, std::ofstream &os, bool frag /* = false */,
+bool PPCFrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream &os, bool frag /* = false */,
                               bool spec /* = false */) {
 
     // Call the base class to do most of the work

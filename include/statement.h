@@ -37,8 +37,6 @@
 #include <set>
 #include <list>
 #include <map>
-#include <ostream>
-#include <iostream> // For std::cerr
 #include <cassert>
 
 class BasicBlock;
@@ -328,9 +326,9 @@ class Instruction {
 }; // class Statement
 
 // Print the Statement (etc) poited to by p
-std::ostream &operator<<(std::ostream &os, const Instruction *p);
-std::ostream &operator<<(std::ostream &os, const StatementSet *p);
-std::ostream &operator<<(std::ostream &os, const LocationSet *p);
+QTextStream &operator<<(QTextStream &os, const Instruction *p);
+QTextStream &operator<<(QTextStream &os, const StatementSet *p);
+QTextStream &operator<<(QTextStream &os, const LocationSet *p);
 
 /***************************************************************************/ /**
  * TypingStatement is an abstract subclass of Statement. It has a type, representing the type of a reference or an

@@ -166,7 +166,7 @@ class CHLLCode : public HLLCode {
     virtual void AddProcStart(UserProc *proc);
     virtual void AddProcEnd();
     virtual void AddLocal(const char *name, Type *type, bool last = false);
-    virtual void AddGlobal(const char *name, Type *type, Exp *init = nullptr);
+    virtual void AddGlobal(const QString &name, Type *type, Exp *init = nullptr);
     virtual void AddPrototype(UserProc *proc);
 
   private:

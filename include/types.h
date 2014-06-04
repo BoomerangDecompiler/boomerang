@@ -68,7 +68,6 @@ struct ADDRESS {        /* pointer. size depends on platform */
         return *this;
     }
     ADDRESS operator-(intptr_t other) const { return ADDRESS::g(m_value - other); }
-    friend std::ostream &operator<<(std::ostream &stream, const ADDRESS &addr);
     friend QTextStream& operator<< (QTextStream& os, const ADDRESS& mdv);
     // operator intptr_t() const {return int(m_value);}
 };

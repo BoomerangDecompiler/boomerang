@@ -178,13 +178,7 @@ bool isFuncPrologue(ADDRESS hostPC);
 #define DEBUG_DECODER (Boomerang::get()->debugDecoder)
 #define SHOW_ASM(output)                                                                                               \
     if (DEBUG_DECODER)                                                                                                 \
-        std::cout << std::hex << pc << std::dec << ": " << output << '\n';
-#define DEBUG_STMTS                                                                                                    \
-    if (DEBUG_DECODER) {                                                                                               \
-        std::list<Instruction *>::iterator ii;                                                                           \
-        for (ii = result.rtl->begin(); ii != result.rtl->end(); ii++)                                                  \
-            std::cout << "            " << *ii << "\n";                                                                \
-    }
+        LOG_STREAM() << pc << ": " << output << '\n';
 
 /*
  * addresstoPC returns the raw number as the address.  PC could be an

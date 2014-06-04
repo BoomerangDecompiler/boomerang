@@ -1,11 +1,9 @@
 #pragma once
-#include <list>
-#include <vector>
-#include <map>
-#include <queue>
-#include <fstream>
+
 #include "types.h"
 #include "sigenum.h" // For enums platform and cc
+
+#include <queue>
 class Cfg;
 class BasicBlock;
 //! Put the target queue logic into this small class

@@ -98,6 +98,7 @@ namespace dbghelp {
 typedef std::map<Instruction *, int> RefCounter;
 
 extern char debug_buffer[]; // Defined in basicblock.cpp, size DEBUG_BUFSIZE
+extern QTextStream &alignStream(QTextStream &str,int align);
 
 /************************
  * Proc methods.
@@ -308,16 +309,16 @@ void UserProc::renameLocal(const char *oldName, const char *newName) {
 
 bool UserProc::searchAll(const Exp &search, std::list<Exp *> &result) { return cfg->searchAll(search, result); }
 
-void Function::printCallGraphXML(std::ostream &os, int depth, bool /*recurse*/) {
+void Function::printCallGraphXML(QTextStream &os, int depth, bool /*recurse*/) {
     if (!DUMP_XML)
         return;
     Visited = true;
     for (int i = 0; i < depth; i++)
         os << "      ";
-    os << "<proc name=\"" << getName().toStdString() << "\"/>\n";
+    os << "<proc name=\"" << getName() << "\"/>\n";
 }
 
-void UserProc::printCallGraphXML(std::ostream &os, int depth, bool recurse) {
+void UserProc::printCallGraphXML(QTextStream &os, int depth, bool recurse) {
     if (!DUMP_XML)
         return;
     bool wasVisited = Visited;
@@ -325,7 +326,7 @@ void UserProc::printCallGraphXML(std::ostream &os, int depth, bool recurse) {
     int i;
     for (i = 0; i < depth; i++)
         os << "      ";
-    os << "<proc name=\"" << getName().toStdString() << "\">\n";
+    os << "<proc name=\"" << getName() << "\">\n";
     if (recurse) {
         for (auto &elem : calleeList)
             (elem)->printCallGraphXML(os, depth + 1, !wasVisited && !(elem)->isVisited());
@@ -451,17 +452,6 @@ void UserProc::printUseGraph() {
     out << "}\n";
 }
 
-/***************************************************************************/ /**
-  *
-  * \brief        Output operator for a Proc object.
-  * \param        os - output stream
-  * \param        proc -
-  * \returns      os
-  ******************************************************************************/
-// std::ostream& operator<<(std::ostream& os, Proc& proc) {
-//    return proc.put(os);
-//}
-
 //! Get the first procedure that calls this procedure (or null for main/start).
 Function *Function::getFirstCaller() {
     if (m_firstCaller == nullptr && m_firstCallerAddr != NO_ADDRESS) {
@@ -487,17 +477,6 @@ LibProc::LibProc(Prog *prog, std::string &name, ADDRESS uNative) : Function(prog
 }
 
 LibProc::~LibProc() {}
-
-/***************************************************************************/ /**
-  *
-  * \brief        Display on os.
-  * \param        os -
-  * \returns            os
-  ******************************************************************************/
-// std::ostream& LibProc::put(std::ostream& os) {
-//    os << "library procedure `" << signature->getName() << "' resides at 0x";
-//    return os << std::hex << address << '\n';
-//}
 
 //! Get the RHS that is proven for left
 Exp *LibProc::getProven(Exp *left) {
@@ -1064,14 +1043,13 @@ void UserProc::insertStatementAfter(Instruction *s, Instruction *a) {
   ******************************************************************************/
 ProcSet *UserProc::decompile(ProcList *path, int &indent) {
     Boomerang::get()->alertConsidering(path->empty() ? nullptr : path->back(), this);
-    std::cout << std::setw(++indent) << " " << (status >= PROC_VISITED ? "re" : "") << "considering "
-              << getName().toStdString() << "\n";
-    if (VERBOSE)
-        LOG << "begin decompile(" << getName() << ")\n";
+    alignStream(LOG_STREAM(),++indent) << (status >= PROC_VISITED ? "re" : "") << "considering "
+              << getName() << "\n";
+    LOG_VERBOSE(1) << "begin decompile(" << getName() << ")\n";
 
     // Prevent infinite loops when there are cycles in the call graph (should never happen now)
     if (status >= PROC_FINAL) {
-        std::cerr << "Error: " << getName().toStdString() << " already has status PROC_FINAL\n";
+        LOG_STREAM() << "Error: " << getName() << " already has status PROC_FINAL\n";
         return nullptr; // Already decompiled
     }
     if (status < PROC_DECODED)
@@ -1175,8 +1153,7 @@ ProcSet *UserProc::decompile(ProcList *path, int &indent) {
     // if child is empty, i.e. no child involved in recursion
     if (child->size() == 0) {
         Boomerang::get()->alertDecompiling(this);
-        std::cout << std::setw(indent) << " "
-                  << "decompiling " << getName().toStdString() << "\n";
+        alignStream(LOG_STREAM(1),indent) << "decompiling " << getName() << "\n";
         initialiseDecompile(); // Sort the CFG, number statements, etc
         earlyDecompile();
         child = middleDecompile(path, indent);
@@ -1266,7 +1243,7 @@ void UserProc::initialiseDecompile() {
     printXML();
 
     if (Boomerang::get()->noDecompile) {
-        std::cout << "not decompiling.\n";
+        LOG_STREAM() << "not decompiling.\n";
         setStatus(PROC_FINAL); // ??!
         return;
     }
@@ -1553,7 +1530,6 @@ ProcSet *UserProc::middleDecompile(ProcList *path, int indent) {
         // Now, decode from scratch
         theReturnStatement = nullptr;
         cfg->clear();
-        std::ofstream os;
         prog->reDecode(this);
         df.setRenameLocalsParams(false);        // Start again with memofs
         setStatus(PROC_VISITED);                // Back to only visited progress
@@ -2180,7 +2156,7 @@ void UserProc::assignProcsToCalls() {
             if (call->getDestProc() == nullptr && !call->isComputed()) {
                 Function *p = prog->findProc(call->getFixedDest());
                 if (p == nullptr) {
-                    std::cerr << "Cannot find proc for dest " << call->getFixedDest() << " in call at "
+                    LOG_STREAM() << "Cannot find proc for dest " << call->getFixedDest() << " in call at "
                               << (rtl)->getAddress() << "\n";
                     assert(p);
                 }
@@ -2872,7 +2848,7 @@ Exp *UserProc::newLocal(Type *ty, Exp *e, char *nam /* = nullptr */) {
         name = nam; // Use provided name
     locals[name.toStdString()] = ty;
     if (ty == nullptr) {
-        std::cerr << "null type passed to newLocal\n";
+        LOG_STREAM() << "null type passed to newLocal\n";
         assert(false);
     }
     if (VERBOSE)
@@ -3149,8 +3125,7 @@ void UserProc::fromSSAform() {
     if (cfg->getNumBBs() >= 100) // Only for the larger procs
         // Note: emit newline at end of this proc, so we can distinguish getting stuck in this proc with doing a lot of
         // little procs that don't get messages. Also, looks better with progress dots
-        std::cout << " transforming out of SSA form " << getName().toStdString() << " with " << cfg->getNumBBs()
-                  << " BBs";
+        LOG_STREAM() << " transforming out of SSA form " << getName() << " with " << cfg->getNumBBs() << " BBs";
 
     StatementList stmts;
     getStatements(stmts);
@@ -3188,7 +3163,8 @@ void UserProc::fromSSAform() {
     int progress = 0;
     for (it = stmts.begin(); it != stmts.end(); it++) {
         if (++progress > 2000) {
-            std::cout << "." << std::flush;
+            LOG_STREAM() << ".";
+            LOG_STREAM().flush();
             progress = 0;
         }
         Instruction *s = *it;
@@ -3431,7 +3407,7 @@ void UserProc::fromSSAform() {
     }
 
     if (cfg->getNumBBs() >= 100) // Only for the larger procs
-        std::cout << "\n";
+        LOG_STREAM() << "\n";
 
     Boomerang::get()->alertDecompileDebugPoint(this, "after transforming from SSA form");
 }
@@ -4151,7 +4127,7 @@ void UserProc::dumpSymbolMap() {
     SymbolMap::iterator it;
     for (it = symbolMap.begin(); it != symbolMap.end(); it++) {
         Type *ty = getTypeForLocation(it->second);
-        std::cerr << "  " << it->first << " maps to " << it->second << " type " << (ty ? qPrintable(ty->getCtype()) : "NULL")
+        LOG_STREAM() << "  " << it->first << " maps to " << it->second << " type " << (ty ? qPrintable(ty->getCtype()) : "NULL")
                   << "\n";
     }
 }
@@ -4161,7 +4137,7 @@ void UserProc::dumpSymbolMapx() {
     SymbolMap::iterator it;
     for (it = symbolMap.begin(); it != symbolMap.end(); it++) {
         Type *ty = getTypeForLocation(it->second);
-        std::cerr << "  " << it->first << " maps to " << it->second << " type " << (ty ? qPrintable(ty->getCtype()) : "NULL")
+        LOG_STREAM() << "  " << it->first << " maps to " << it->second << " type " << (ty ? qPrintable(ty->getCtype()) : "NULL")
                   << "\n";
         it->first->printx(2);
     }
@@ -4178,14 +4154,14 @@ void UserProc::testSymbolMap() {
         while (it2 != symbolMap.end()) {
             if (*it2->first < *it1->first) { // Compare keys
                 OK = false;
-                std::cerr << "*it2->first < *it1->first: " << it2->first << " < " << it1->first << "!\n";
+                LOG_STREAM() << "*it2->first < *it1->first: " << it2->first << " < " << it1->first << "!\n";
                 // it2->first->printx(0); it1->first->printx(5);
             }
             ++it1;
             ++it2;
         }
     }
-    std::cerr << "Symbolmap is " << (OK ? "OK" : "NOT OK!!!!!") << "\n";
+    LOG_STREAM() << "Symbolmap is " << (OK ? "OK" : "NOT OK!!!!!") << "\n";
 }
 
 void UserProc::dumpLocals() {
@@ -5349,7 +5325,7 @@ void UserProc::clearRanges() {
   *
   ******************************************************************************/
 void UserProc::rangeAnalysis() {
-    std::cout << "performing range analysis on " << getName().toStdString() << "\n";
+    LOG_STREAM() << "performing range analysis on " << getName() << "\n";
 
     // this helps
     cfg->sortByAddress();
@@ -5584,15 +5560,15 @@ void UserProc::mapTempsToLocals() {
 void dumpProcList(ProcList *pc) {
     ProcList::iterator pi;
     for (pi = pc->begin(); pi != pc->end(); ++pi)
-        std::cerr << (*pi)->getName().toStdString() << ", ";
-    std::cerr << "\n";
+        LOG_STREAM() << (*pi)->getName() << ", ";
+    LOG_STREAM() << "\n";
 }
 
 void dumpProcSet(ProcSet *pc) {
     ProcSet::iterator pi;
     for (pi = pc->begin(); pi != pc->end(); ++pi)
-        std::cerr << (*pi)->getName().toStdString() << ", ";
-    std::cerr << "\n";
+        LOG_STREAM() << (*pi)->getName() << ", ";
+    LOG_STREAM() << "\n";
 }
 /// Set an equation as proven. Useful for some sorts of testing
 void Function::setProvenTrue(Exp *fact) {
@@ -5854,7 +5830,6 @@ scaledArrayPat(opMemOf, Binary::get(opPlus, Binary::get(opMult, Terminal::get(op
 void UserProc::dfa_analyze_scaled_array_ref(Instruction *s, Prog *prog) {
     Exp *arr;
     std::list<Exp *> result;
-    const char *nam;
     s->searchAll(scaledArrayPat, result);
     // query: (memOf (opPlus (opMult ? ?:IntConst) ?:IntConst))
     // rewrite_as (opArrayIndex (global `(getOrCreateGlobalName arg3) ) arg2 ) assert (= (typeSize
@@ -5871,10 +5846,10 @@ void UserProc::dfa_analyze_scaled_array_ref(Instruction *s, Prog *prog) {
         Exp *idx = ((Binary *)l)->getSubExp1();
 
         // Replace with the array expression
-        nam = prog->getGlobalName(K2);
-        if (nam == nullptr)
+        QString nam = prog->getGlobalName(K2);
+        if (nam.isEmpty())
             nam = prog->newGlobalName(K2);
-        arr = Binary::get(opArrayIndex, Location::global(nam, this), idx);
+        arr = Binary::get(opArrayIndex, Location::global(strdup(qPrintable(nam)), this), idx);
         if (s->searchAndReplace(scaledArrayPat, arr)) {
             if (s->isImplicit())
                 // Register an array of appropriate type

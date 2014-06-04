@@ -194,7 +194,7 @@ char *RTL::prints() const {
 
 /***************************************************************************/ /**
   * \brief   Output operator for RTL*
-  *          Just makes it easier to use e.g. std::cerr << myRTLptr
+  *          Just makes it easier to use e.g. LOG_STREAM() << myRTLptr
   * \param   os output stream to send to
   * \param   r ptr to RTL to print to the stream
   * \returns os (for concatenation)

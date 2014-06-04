@@ -79,7 +79,7 @@ ADDRESS MIPSFrontEnd::getMainEntryPoint(bool &gotMain) {
     return start;
 }
 
-bool MIPSFrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, std::ofstream &os, bool frag /* = false */,
+bool MIPSFrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream &os, bool frag /* = false */,
                                bool spec /* = false */) {
 
     // Call the base class to do most of the work

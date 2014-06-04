@@ -81,16 +81,16 @@ FrontEnd *FrontEnd::instantiate(QObject *pBF, Prog *prog, BinaryFileFactory *pbf
     case MACHINE_ST20:
         return new ST20FrontEnd(pBF, prog, pbff);
     case MACHINE_HPRISC:
-        std::cerr << "No frontend for Hp Risc\n";
+        LOG_STREAM() << "No frontend for Hp Risc\n";
         break;
     case MACHINE_PALM:
-        std::cerr << "No frontend for PALM\n";
+        LOG_STREAM() << "No frontend for PALM\n";
         break;
     case MACHINE_68K:
-        std::cerr << "No frontend for M68K\n";
+        LOG_STREAM() << "No frontend for M68K\n";
         break;
     default:
-        std::cerr << "Machine architecture not supported!\n";
+        LOG_STREAM() << "Machine architecture not supported!\n";
     }
     return nullptr;
 }
@@ -323,7 +323,7 @@ void FrontEnd::decode(Prog *prg, ADDRESS a) {
             LOG << "NOT decoding library proc at address 0x" << a << "\n";
             return;
         }
-        std::ofstream os;
+        QTextStream os(stderr); // rtl output target
         processProc(a, p, os);
         p->setDecoded();
 
@@ -341,7 +341,7 @@ void FrontEnd::decode(Prog *prg, ADDRESS a) {
 
                 // undecoded userproc.. decode it
                 change = true;
-                std::ofstream os;
+                QTextStream os(stderr); // rtl output target
                 int res = processProc(p->getNativeAddress(), p, os);
                 if (res != 1)
                     break;
@@ -362,7 +362,7 @@ void FrontEnd::decodeOnly(Prog *prg, ADDRESS a) {
     assert(Program == prg);
     UserProc *p = (UserProc *)Program->setNewProc(a);
     assert(!p->isLib());
-    std::ofstream os;
+    QTextStream os(stderr); // rtl output target
     if (processProc(p->getNativeAddress(), p, os))
         p->setDecoded();
     Program->wellForm();
@@ -371,7 +371,7 @@ void FrontEnd::decodeOnly(Prog *prg, ADDRESS a) {
 void FrontEnd::decodeFragment(UserProc *proc, ADDRESS a) {
     if (Boomerang::get()->traceDecoder)
         LOG << "decoding fragment at 0x" << a << "\n";
-    std::ofstream os;
+    QTextStream os(stderr); // rtl output target
     processProc(a, proc, os, true);
 }
 
@@ -399,7 +399,7 @@ void FrontEnd::readLibrarySignatures(const char *sPath, callconv cc) {
     ifs.open(sPath);
 
     if (!ifs.good()) {
-        std::cerr << "can't open `" << sPath << "'\n";
+        LOG_STREAM() << "can't open `" << sPath << "'\n";
         exit(1);
     }
 
@@ -410,7 +410,7 @@ void FrontEnd::readLibrarySignatures(const char *sPath, callconv cc) {
 
     for (auto &elem : p->signatures) {
 #if 0
-        std::cerr << "readLibrarySignatures from " << sPath << ": " << (*it)->getName() << "\n";
+        LOG_STREAM() << "readLibrarySignatures from " << sPath << ": " << (*it)->getName() << "\n";
 #endif
         LibrarySignatures[(elem)->getName().toStdString()] = elem;
         (elem)->setSigFile(sPath);
@@ -483,7 +483,7 @@ void FrontEnd::preprocessProcGoto(std::list<Instruction *>::iterator ss, ADDRESS
   *  in the FrontEnd derived class, sometimes calling this function to do most of the work.
   * \returns          true for a good decode (no illegal instructions)
   ******************************************************************************/
-bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, std::ofstream &os, bool frag /* = false */,
+bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream &os, bool frag /* = false */,
                            bool spec /* = false */) {
     BasicBlock *pBB; // Pointer to the current basic block
 
@@ -589,9 +589,10 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, std::ofstream &os, bo
 
             // Display RTL representation if asked
             if (Boomerang::get()->printRtl) {
-                std::ostringstream st;
+                QString tgt;
+                QTextStream st(&tgt);
                 pRtl->print(st);
-                LOG << st.str().c_str();
+                LOG << tgt;
             }
 
             ADDRESS uDest;

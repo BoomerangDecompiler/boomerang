@@ -350,13 +350,13 @@ void LocationSet::remove(Exp *given) {
     std::set<Exp *, lessExpStar>::iterator it = lset.find(given);
     if (it == lset.end())
         return;
-    // std::cerr << "LocationSet::remove at " << std::hex << (unsigned)this << " of " << *it << "\n";
-    // std::cerr << "before: "; print();
+    // LOG_STREAM() << "LocationSet::remove at " << std::hex << (unsigned)this << " of " << *it << "\n";
+    // LOG_STREAM() << "before: "; print();
     // NOTE: if the below uncommented, things go crazy. Valgrind says that
     // the deleted value gets used next in LocationSet::operator== ?!
     // delete *it;          // These expressions were cloned when created
     lset.erase(it);
-    // std::cerr << "after : "; print();
+    // LOG_STREAM() << "after : "; print();
 }
 
 // Remove locations defined by any of the given set of statements
@@ -668,26 +668,26 @@ void LocationSet::diff(LocationSet *o) {
         if (lset.find(oe) == lset.end()) {
             if (!printed2not1) {
                 printed2not1 = true;
-                std::cerr << "In set 2 but not set 1:\n";
+                LOG_STREAM() << "In set 2 but not set 1:\n";
             }
-            std::cerr << oe << "\t";
+            LOG_STREAM() << oe << "\t";
         }
     }
     if (printed2not1)
-        std::cerr << "\n";
+        LOG_STREAM() << "\n";
     bool printed1not2 = false;
     for (it = lset.begin(); it != lset.end(); it++) {
         Exp *e = *it;
         if (o->lset.find(e) == o->lset.end()) {
             if (!printed1not2) {
                 printed1not2 = true;
-                std::cerr << "In set 1 but not set 2:\n";
+                LOG_STREAM() << "In set 1 but not set 2:\n";
             }
-            std::cerr << e << "\t";
+            LOG_STREAM() << e << "\t";
         }
     }
     if (printed1not2)
-        std::cerr << "\n";
+        LOG_STREAM() << "\n";
 }
 Range::Range() : stride(1), lowerBound(MIN), upperBound(MAX) { base = Const::get(0); }
 
@@ -991,10 +991,10 @@ ConnectionGraph::iterator ConnectionGraph::remove(iterator aa) {
 void dumpConnectionGraph(const ConnectionGraph *cg) {
     ConnectionGraph::const_iterator cc;
     for (cc = cg->begin(); cc != cg->end(); ++cc)
-        std::cerr << cc->first << " <-> " << cc->second << "\n";
+        LOG_STREAM() << cc->first << " <-> " << cc->second << "\n";
 }
 
 void ConnectionGraph::dump() const {
     for (auto iter : *this)
-        std::cerr << iter.first << " <-> " << iter.second << "\n";
+        LOG_STREAM() << iter.first << " <-> " << iter.second << "\n";
 }

@@ -544,14 +544,14 @@ bool CallingConvention::StdC::PentiumSignature::qualified(UserProc *p, Signature
         if (e->getLeft()->getOper() == opPC) {
             if (e->getRight()->isMemOf() && e->getRight()->getSubExp1()->isRegOfN(28)) {
                 if (VERBOSE)
-                    std::cerr << "got pc = m[r[28]]" << '\n';
+                    LOG_STREAM() << "got pc = m[r[28]]" << '\n';
                 gotcorrectret1 = true;
             }
         } else if (e->getLeft()->isRegOfK() && ((Const *)e->getLeft()->getSubExp1())->getInt() == 28) {
             if (e->getRight()->getOper() == opPlus && e->getRight()->getSubExp1()->isRegOfN(28) &&
                 e->getRight()->getSubExp2()->isIntConst() && ((Const *)e->getRight()->getSubExp2())->getInt() == 4) {
                 if (VERBOSE)
-                    std::cerr << "got r[28] = r[28] + 4" << '\n';
+                    LOG_STREAM() << "got r[28] = r[28] + 4" << '\n';
                 gotcorrectret2 = true;
             }
         }
@@ -1155,16 +1155,16 @@ void Signature::addParameter(Exp *e, Type *ty) { addParameter(ty, nullptr, e); }
 void Signature::addParameter(Type *type, const char *nam /*= nullptr*/, Exp *e /*= nullptr*/,
                              const char *boundMax /*= ""*/) {
     if (e == nullptr) {
-        std::cerr << "No expression for parameter ";
+        LOG_STREAM() << "No expression for parameter ";
         if (type == nullptr)
-            std::cerr << "<notype> ";
+            LOG_STREAM() << "<notype> ";
         else
-            std::cerr << type->getCtype().toStdString() << " ";
+            LOG_STREAM() << type->getCtype() << " ";
         if (nam == nullptr)
-            std::cerr << "<noname>";
+            LOG_STREAM() << "<noname>";
         else
-            std::cerr << nam;
-        std::cerr << "\n";
+            LOG_STREAM() << nam;
+        LOG_STREAM() << "\n";
         assert(e); // Else get infinite mutual recursion with the below proc
     }
 
@@ -1496,7 +1496,7 @@ Exp *Signature::getFirstArgLoc(Prog *prog) {
         // return Location::regOf(0);
     }
     default:
-        std::cerr << "Signature::getFirstArgLoc: machine not handled\n";
+        LOG_STREAM() << "Signature::getFirstArgLoc: machine not handled\n";
         assert(0);
     }
     return nullptr;
@@ -1514,7 +1514,7 @@ Exp *Signature::getFirstArgLoc(Prog *prog) {
     case MACHINE_ST20:
         return Location::regOf(0);
     default:
-        std::cerr << "getReturnExp2: machine not handled\n";
+        LOG_STREAM() << "getReturnExp2: machine not handled\n";
         return nullptr;
     }
     return nullptr;

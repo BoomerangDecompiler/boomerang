@@ -40849,7 +40849,7 @@ void genBSFR(ADDRESS pc, Exp *dest, Exp *modrm, int init, int size, OPER incdec,
         result.reDecode = false;
     }
     if (DEBUG_DECODER)
-        std::cout << std::hex << pc + BSFRstate << std::dec << ": "
+        LOG_STREAM() << pc + BSFRstate << ": "
                   << "BS" << (init == -1 ? "F" : "R") << (size == 32 ? ".od" : ".ow") << BSFRstate + 1 << "\n";
     if (++BSFRstate == 3)
         BSFRstate = 0; // Ready for next time

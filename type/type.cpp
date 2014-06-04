@@ -387,7 +387,7 @@ bool PointerType::operator==(const Type &other) const {
     if (!other.isPointer())
         return false;
     if (++pointerCompareNest >= 20) {
-        std::cerr << "PointerType operator== nesting depth exceeded!\n";
+        LOG_STREAM() << "PointerType operator== nesting depth exceeded!\n";
         return true;
     }
     bool ret = (*points_to == *((PointerType &)other).points_to);
@@ -810,7 +810,7 @@ QString Type::prints() {
 }
 
 void Type::dump() {
-    std::cerr << getCtype(false).toStdString(); // For debugging
+    LOG_STREAM() << getCtype(false); // For debugging
 }
 
 std::map<QString, Type *> Type::namedTypes;
@@ -1061,7 +1061,7 @@ bool Type::isPointerToAlpha() { return isPointer() && asPointer()->pointsToAlpha
 void Type::starPrint(QTextStream &os) { os << "*" << this << "*"; }
 
 // A crude shortcut representation of a type
-std::ostream &operator<<(std::ostream &os, const Type *t) {
+QTextStream &operator<<(QTextStream &os, const Type *t) {
     if (t == nullptr)
         return os << '0';
     switch (t->getId()) {
@@ -1069,18 +1069,18 @@ std::ostream &operator<<(std::ostream &os, const Type *t) {
         int sg = ((IntegerType *)t)->getSignedness();
         // 'j' for either i or u, don't know which
         os << (sg == 0 ? 'j' : sg > 0 ? 'i' : 'u');
-        os << std::dec << t->asInteger()->getSize();
+        os << t->asInteger()->getSize();
         break;
     }
     case eFloat:
         os << 'f';
-        os << std::dec << t->asFloat()->getSize();
+        os << t->asFloat()->getSize();
         break;
     case ePointer:
         os << t->asPointer()->getPointsTo() << '*';
         break;
     case eSize:
-        os << std::dec << t->getSize();
+        os << t->getSize();
         break;
     case eChar:
         os << 'c';
@@ -1108,7 +1108,7 @@ std::ostream &operator<<(std::ostream &os, const Type *t) {
         os << ']';
         break;
     case eNamed:
-        os << t->asNamed()->getName().toStdString();
+        os << t->asNamed()->getName();
         break;
     case eUpper:
         os << "U(" << t->asUpper()->getBaseType() << ')';
@@ -1436,12 +1436,11 @@ void DataIntervalMap::deleteItem(ADDRESS addr) {
     dimap.erase(it);
 }
 
-void DataIntervalMap::dump() { std::cerr << prints(); }
+void DataIntervalMap::dump() { LOG_STREAM() << prints(); }
 
 char *DataIntervalMap::prints() {
     QString tgt;
     QTextStream ost(&tgt);
-    std::set<Instruction *>::iterator it;
     iterator it;
     for (it = dimap.begin(); it != dimap.end(); ++it)
         ost << "0x" << it->first << " " << it->second.name << " " << it->second.type->getCtype()

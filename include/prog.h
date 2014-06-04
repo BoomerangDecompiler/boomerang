@@ -38,10 +38,10 @@ class Global {
   private:
     Type *type;
     ADDRESS uaddr;
-    std::string nam;
+    QString nam;
 
   public:
-    Global(Type *_type, ADDRESS _uaddr, const std::string &_nam) : type(_type), uaddr(_uaddr), nam(_nam) {}
+    Global(Type *_type, ADDRESS _uaddr, const QString &_nam) : type(_type), uaddr(_uaddr), nam(_nam) {}
     virtual ~Global();
 
     Type *getType() { return type; }
@@ -54,12 +54,12 @@ class Global {
             return true;
         return (addr > uaddr) && addr <= (uaddr + (getType()->getSize() / 8));
     }
-    const char *getName() { return nam.c_str(); }
+    const QString &getName() { return nam; }
     Exp *getInitialValue(Prog *prog);
-    void print(std::ostream &os, Prog *prog); // Print to stream os
+    void print(QTextStream &os, Prog *prog); // Print to stream os
 
   protected:
-    Global() : type(nullptr), uaddr(ADDRESS::g(0L)), nam("") {}
+    Global() : type(nullptr), uaddr(ADDRESS::g(0L)) {}
     friend class XMLProgParser;
 }; // class Global
 
@@ -135,15 +135,15 @@ class Prog {
     std::vector<Exp *> &getDefaultParams();
     std::vector<Exp *> &getDefaultReturns();
     bool isWin32();
-    const char *getGlobalName(ADDRESS uaddr);
-    ADDRESS getGlobalAddr(const char *nam);
-    Global *getGlobal(const char *nam);
-    const char *newGlobalName(ADDRESS uaddr);
-    Type *guessGlobalType(const char *nam, ADDRESS u);
+    QString getGlobalName(ADDRESS uaddr);
+    ADDRESS getGlobalAddr(const QString &nam);
+    Global *getGlobal(const QString &nam);
+    QString newGlobalName(ADDRESS uaddr);
+    Type *guessGlobalType(const QString &nam, ADDRESS u);
     ArrayType *makeArrayType(ADDRESS u, Type *t);
     bool globalUsed(ADDRESS uaddr, Type *knownType = nullptr);
-    Type *getGlobalType(const char *nam);
-    void setGlobalType(const char *name, Type *ty);
+    Type *getGlobalType(const QString &nam);
+    void setGlobalType(const QString &name, Type *ty);
     void dumpGlobals();
     const char *getStringConstant(ADDRESS uaddr, bool knownString = false);
     double getFloatConstant(ADDRESS uaddr, bool &ok, int bits = 64);
@@ -180,7 +180,7 @@ class Prog {
     const char *GetDynamicProcName(ADDRESS uNative) { return pLoaderIface->GetDynamicProcName(uNative); }
 
     bool processProc(ADDRESS addr, UserProc *proc) { // Decode a proc
-        std::ofstream os;
+        QTextStream os(stderr); // rtl output target
         return pFE->processProc(addr, proc, os);
     }
     void readSymbolFile(const QString &fname);

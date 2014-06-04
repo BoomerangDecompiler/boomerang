@@ -20,7 +20,7 @@
 #include <sstream>
 #include <cstring>
 
-void ConstraintMap::print(std::ostream &os) {
+void ConstraintMap::print(QTextStream &os) {
     iterator kk;
     bool first = true;
     for (kk = cmap.begin(); kk != cmap.end(); kk++) {
@@ -52,7 +52,7 @@ void ConstraintMap::makeUnion(ConstraintMap &o) {
         // If an insertion occured, ret will be std::pair<where, true>
         // If no insertion occured, ret will be std::pair<where, false>
         if (ret.second == false) {
-            // std::cerr << "ConstraintMap::makeUnion: want to overwrite " << ret.first->first
+            // LOG_STREAM() << "ConstraintMap::makeUnion: want to overwrite " << ret.first->first
             // << " -> " << ret.first->second << " with " << it->first << " -> " << it->second << "\n";
             TypeVal *Tret = (TypeVal *)ret.first->second;
             Type *ty1 = Tret->getType();
@@ -60,7 +60,7 @@ void ConstraintMap::makeUnion(ConstraintMap &o) {
             Type *ty2 = Toth->getType();
             if (ty1 && ty2 && *ty1 != *ty2) {
                 Tret->setType(ty1->mergeWith(ty2));
-                // std::cerr << "Now " << ret.first->first << " -> " << ret.first->second << "\n";
+                // LOG_STREAM() << "Now " << ret.first->first << " -> " << ret.first->second << "\n";
             }
         }
     }
@@ -82,7 +82,7 @@ void ConstraintMap::insert(Exp *term) {
     cmap[lhs] = rhs;
 }
 
-void EquateMap::print(std::ostream &os) {
+void EquateMap::print(QTextStream &os) {
     iterator ee;
     for (ee = emap.begin(); ee != emap.end(); ee++) {
         os << "     " << ee->first << " = " << ee->second.prints();
@@ -591,8 +591,8 @@ void Constraints::alphaSubst() {
     }
 }
 
-void Constraints::print(std::ostream &os) {
-    os << "\n" << std::dec << (int)disjunctions.size() << " disjunctions: ";
+void Constraints::print(QTextStream &os) {
+    os << "\n" << (int)disjunctions.size() << " disjunctions: ";
     std::list<Exp *>::iterator dd;
     for (dd = disjunctions.begin(); dd != disjunctions.end(); dd++)
         os << *dd << ",\n";

@@ -1264,11 +1264,3 @@ const char *ElfBinaryFile::getFilenameSymbolFor(const char *sym) {
 
 // A map for extra symbols, those not in the usual Elf symbol tables
 void ElfBinaryFile::AddSymbol(ADDRESS uNative, const char *pName) { m_SymTab[uNative] = pName; }
-
-void ElfBinaryFile::dumpSymbols() {
-    std::map<ADDRESS, std::string>::iterator it;
-    std::cerr << std::hex;
-    for (it = m_SymTab.begin(); it != m_SymTab.end(); ++it)
-        std::cerr << "0x" << it->first << " " << it->second << "        ";
-    std::cerr << std::dec << "\n";
-}

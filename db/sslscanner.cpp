@@ -1276,7 +1276,7 @@ YY_SSLScanner_LEX_RETURN YY_SSLScanner_CLASS::YY_SSLScanner_LEX(YY_SSLScanner_LE
 #line 306 "db/sslscanner.l"
         { // funky print-next-line-for-debug token
             if (yyleng > MAX_LINE) {
-                std::cerr << theLine + 1 << ": line too long.\n";
+                LOG_STREAM() << theLine + 1 << ": line too long.\n";
                 exit(1);
             }
             // saves the next line
@@ -1288,7 +1288,7 @@ YY_SSLScanner_LEX_RETURN YY_SSLScanner_CLASS::YY_SSLScanner_LEX(YY_SSLScanner_LE
 
             // echo the line if line tracing is turned on
             if (traceLines)
-                std::cerr << lineBuf << '\n';
+                LOG_STREAM() << lineBuf << '\n';
 
             // Quell a warning
             yy_last_accepting_state = 0;

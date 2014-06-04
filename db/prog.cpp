@@ -161,12 +161,13 @@ void Prog::generateDotFile() {
 void Prog::generateCode(Cluster *cluster, UserProc *proc, bool /*intermixRTL*/) {
     // std::string basedir = m_rootCluster->makeDirs();
     QTextStream os;
+    QFile tgt;
     if (cluster) {
         cluster->openStream("c");
         cluster->closeStreams();
     }
     if (cluster == nullptr || cluster == m_rootCluster) {
-        QFile tgt(m_rootCluster->getOutPath("c"));
+        tgt.setFileName(m_rootCluster->getOutPath("c"));
         if(!tgt.open(QFile::WriteOnly)) {
             qDebug() << "Can't open " << m_rootCluster->getOutPath("c");
             return;
@@ -579,12 +580,12 @@ Type *typeFromDebugInfo(int index, DWORD64 ModBase) {
         case 10:
             return new BooleanType();
         default:
-            std::cerr << "unhandled base type " << d << "\n";
+            LOG_STREAM() << "unhandled base type " << d << "\n";
             assert(false);
         }
         break;
     default:
-        std::cerr << "unhandled symtag " << d << "\n";
+        LOG_STREAM() << "unhandled symtag " << d << "\n";
         assert(false);
     }
     return nullptr;
@@ -829,7 +830,7 @@ bool Prog::isWin32() {
     return pFE->isWin32();
 }
 //! Get a global variable if possible, looking up the loader's symbol table if necessary
-const char *Prog::getGlobalName(ADDRESS uaddr) {
+QString Prog::getGlobalName(ADDRESS uaddr) {
     // FIXME: inefficient
     for (Global *glob : globals) {
         if (glob->addressWithinGlobal(uaddr))
@@ -838,27 +839,27 @@ const char *Prog::getGlobalName(ADDRESS uaddr) {
     SymbolTableInterface *sym_iface = getBinarySymbolTable();
     if (sym_iface)
         return sym_iface->SymbolByAddress(uaddr);
-    return nullptr;
+    return "";
 }
 //! Dump the globals to stderr for debugging
 void Prog::dumpGlobals() {
     for (Global *glob : globals) {
-        glob->print(std::cerr, this);
-        std::cerr << "\n";
+        glob->print(LOG_STREAM(), this);
+        LOG_STREAM() << "\n";
     }
 }
 //! Get a named global variable if possible, looking up the loader's symbol table if necessary
-ADDRESS Prog::getGlobalAddr(const char *nam) {
+ADDRESS Prog::getGlobalAddr(const QString &nam) {
     Global *glob = getGlobal(nam);
     if (glob)
         return glob->getAddress();
     SymbolTableInterface *iface = getBinarySymbolTable();
-    return iface ? iface->GetAddressByName(nam) : NO_ADDRESS;
+    return iface ? iface->GetAddressByName(qPrintable(nam)) : NO_ADDRESS;
 }
 
-Global *Prog::getGlobal(const char *nam) {
+Global *Prog::getGlobal(const QString &nam) {
     auto iter =
-        std::find_if(globals.begin(), globals.end(), [nam](Global *g) -> bool { return !strcmp(g->getName(), nam); });
+        std::find_if(globals.begin(), globals.end(), [nam](Global *g) -> bool { return g->getName()==nam; });
     if (iter == globals.end())
         return nullptr;
     return *iter;
@@ -874,13 +875,12 @@ bool Prog::globalUsed(ADDRESS uaddr, Type *knownType) {
     }
 
     if (pSections->GetSectionInfoByAddr(uaddr) == nullptr) {
-        if (VERBOSE)
-            LOG << "refusing to create a global at address that is in no known section of the binary: " << uaddr
+        LOG_VERBOSE(1) << "refusing to create a global at address that is in no known section of the binary: " << uaddr
                 << "\n";
         return false;
     }
 
-    const char *nam = newGlobalName(uaddr);
+    QString nam = newGlobalName(uaddr);
     Type *ty;
     if (knownType) {
         ty = knownType;
@@ -890,7 +890,7 @@ bool Prog::globalUsed(ADDRESS uaddr, Type *knownType) {
             if (baseType)
                 baseSize = baseType->getSize() / 8; // TODO: use baseType->getBytes()
             SymbolTableInterface *iface = getBinarySymbolTable();
-            int sz = iface ? iface->GetSizeByName(nam) : 0; // TODO: fix the case of missing symbol table interface
+            int sz = iface ? iface->GetSizeByName(qPrintable(nam)) : 0; // TODO: fix the case of missing symbol table interface
             if (sz && baseSize)
                 // Note: since ty is a pointer and has not been cloned, this will also set the type for knownType
                 ty->asArray()->setLength(sz / baseSize);
@@ -914,10 +914,10 @@ bool Prog::globalUsed(ADDRESS uaddr, Type *knownType) {
 Prog::mAddressString &Prog::getSymbols() { return pLoaderIface->getSymbols(); }
 //! Make an array type for the global array at u. Mainly, set the length sensibly
 ArrayType *Prog::makeArrayType(ADDRESS u, Type *t) {
-    const char *nam = newGlobalName(u);
+    QString nam = newGlobalName(u);
     assert(pLoaderIface);
-    unsigned int sz =
-        pSymbols ? pSymbols->GetSizeByName(nam) : 0; // TODO: fix the case of missing symbol table interface
+    // TODO: fix the case of missing symbol table interface
+    unsigned int sz = pSymbols ? pSymbols->GetSizeByName(qPrintable(nam)) : 0;
     if (sz == 0)
         return new ArrayType(t); // An "unbounded" array
     int n = t->getSize() / 8;    // TODO: use baseType->getBytes()
@@ -926,7 +926,7 @@ ArrayType *Prog::makeArrayType(ADDRESS u, Type *t) {
     return new ArrayType(t, sz / n);
 }
 //! Guess a global's type based on its name and address
-Type *Prog::guessGlobalType(const char *nam, ADDRESS u) {
+Type *Prog::guessGlobalType(const QString &nam, ADDRESS u) {
 #if defined(_WIN32) && !defined(__MINGW32__)
     HANDLE hProcess = GetCurrentProcess();
     dbghelp::SYMBOL_INFO *sym = (dbghelp::SYMBOL_INFO *)malloc(sizeof(dbghelp::SYMBOL_INFO) + 1000);
@@ -940,7 +940,7 @@ Type *Prog::guessGlobalType(const char *nam, ADDRESS u) {
     }
 #endif
     SymbolTableInterface *iface = getBinarySymbolTable();
-    int sz = iface ? iface->GetSizeByName(nam) : 0; // TODO: fix the case of missing symbol table interface
+    int sz = iface ? iface->GetSizeByName(qPrintable(nam)) : 0; // TODO: fix the case of missing symbol table interface
     if (sz == 0) {
         // Check if it might be a string
         const char *str = getStringConstant(u);
@@ -962,29 +962,26 @@ Type *Prog::guessGlobalType(const char *nam, ADDRESS u) {
     return ty;
 }
 //! Make up a name for a new global at address \a uaddr (or return an existing name if address already used)
-const char *Prog::newGlobalName(ADDRESS uaddr) {
-    const char *nam = getGlobalName(uaddr);
-    if (nam == nullptr) {
-        std::ostringstream os;
-        os << "global" << globals.size();
-        nam = strdup(os.str().c_str());
-        if (VERBOSE)
-            LOG << "naming new global: " << nam << " at address " << uaddr << "\n";
-    }
+QString Prog::newGlobalName(ADDRESS uaddr) {
+    QString nam = getGlobalName(uaddr);
+    if (!nam.isEmpty())
+        return nam;
+    nam = QString("global%1").arg(globals.size());
+    LOG_VERBOSE(1) << "naming new global: " << nam << " at address " << uaddr << "\n";
     return nam;
 }
 //! Get the type of a global variable
-Type *Prog::getGlobalType(const char *nam) {
+Type *Prog::getGlobalType(const QString &nam) {
     for (Global *gl : globals)
-        if (!strcmp(gl->getName(), nam))
+        if (gl->getName()==nam)
             return gl->getType();
     return nullptr;
 }
 //! Set the type of a global variable
-void Prog::setGlobalType(const char *nam, Type *ty) {
+void Prog::setGlobalType(const QString &nam, Type *ty) {
     // FIXME: inefficient
     for (Global *gl : globals) {
-        if (strcmp(gl->getName(), nam))
+        if (gl->getName()!=nam)
             continue;
         gl->setType(ty);
         return;
@@ -1187,7 +1184,7 @@ void Prog::decodeEntryPoint(ADDRESS a) {
     Function *p = (UserProc *)findProc(a);
     if (p == nullptr || (!p->isLib() && !((UserProc *)p)->isDecoded())) {
         if (a < pSections->getLimitTextLow() || a >= pSections->getLimitTextHigh()) {
-            std::cerr << "attempt to decode entrypoint at address outside text area, addr=" << a << "\n";
+            LOG_STREAM() << "attempt to decode entrypoint at address outside text area, addr=" << a << "\n";
             if (VERBOSE)
                 LOG << "attempt to decode entrypoint at address outside text area, addr=" << a << "\n";
             return;
@@ -1258,7 +1255,7 @@ void Prog::decompile() {
 
     // Type analysis, if requested
     if (Boomerang::get()->conTypeAnalysis && Boomerang::get()->dfaTypeAnalysis) {
-        std::cerr << "can't use two types of type analysis at once!\n";
+        LOG_STREAM() << "can't use two types of type analysis at once!\n";
         Boomerang::get()->conTypeAnalysis = false;
     }
     globalTypeAnalysis();
@@ -1316,7 +1313,7 @@ void Prog::removeUnusedGlobals() {
     }
 
     // make a map to find a global by its name (could be a global var too)
-    std::map<std::string, Global *> namedGlobals;
+    QMap<QString, Global *> namedGlobals;
     for (Global *g : globals)
         namedGlobals[g->getName()] = g;
 
@@ -1424,7 +1421,7 @@ void Prog::globalTypeAnalysis() {
             continue;
         // FIXME: this just does local TA again. Need to meet types for all parameter/arguments, and return/results!
         // This will require a repeat until no change loop
-        std::cout << "global type analysis for " << proc->getName().toStdString() << "\n";
+        LOG_STREAM() << "global type analysis for " << proc->getName() << "\n";
         proc->typeAnalysis();
     }
     if (VERBOSE || DEBUG_TA)
@@ -1446,8 +1443,14 @@ void Prog::printCallGraph() {
     QString fname2 = Boomerang::get()->getOutputPath() + "callgraph.dot";
     int fd1 = lockFileWrite(qPrintable(fname1));
     int fd2 = lockFileWrite(qPrintable(fname2));
-    std::ofstream f1(fname1.toStdString());
-    std::ofstream f2(fname2.toStdString());
+    QFile file1(fname1);
+    QFile file2(fname2);
+    if( !(file1.open(QFile::WriteOnly) && file1.open(QFile::WriteOnly)) ) {
+        LOG_STREAM() << "Cannot open output files for callgraph output";
+        return;
+    }
+    QTextStream f1(&file1);
+    QTextStream f2(&file2);
     std::set<Function *> seen;
     std::map<Function *, int> spaces;
     std::map<Function *, Function *> parent;
@@ -1467,9 +1470,9 @@ void Prog::printCallGraph() {
         int n = spaces[p];
         for (int i = 0; i < n; i++)
             f1 << "     ";
-        f1 << p->getName().toStdString() << " @ " << std::hex << p->getNativeAddress();
+        f1 << p->getName() << " @ " << p->getNativeAddress();
         if (parent.find(p) != parent.end())
-            f1 << " [parent=" << parent[p]->getName().toStdString() << "]";
+            f1 << " [parent=" << parent[p]->getName() << "]";
         f1 << '\n';
         if (!p->isLib()) {
             n++;
@@ -1479,18 +1482,18 @@ void Prog::printCallGraph() {
                 procList.push_front(*it1);
                 spaces[*it1] = n;
                 parent[*it1] = p;
-                f2 << p->getName().toStdString() << " -> " << (*it1)->getName().toStdString() << ";\n";
+                f2 << p->getName() << " -> " << (*it1)->getName() << ";\n";
             }
         }
     }
     f2 << "}\n";
-    f1.close();
-    f2.close();
+    f1.flush();
+    f2.flush();
     unlockFile(fd1);
     unlockFile(fd2);
 }
 
-void printProcsRecursive(Function *proc, int indent, std::ofstream &f, std::set<Function *> &seen) {
+void printProcsRecursive(Function *proc, int indent, QTextStream &f, std::set<Function *> &seen) {
     bool fisttime = false;
     if (seen.find(proc) == seen.end()) {
         seen.insert(proc);
@@ -1501,7 +1504,7 @@ void printProcsRecursive(Function *proc, int indent, std::ofstream &f, std::set<
 
     if (!proc->isLib() && fisttime) { // seen lib proc
         f << proc->getNativeAddress();
-        f << " __nodecode __incomplete void " << proc->getName().toStdString() << "();\n";
+        f << " __nodecode __incomplete void " << proc->getName() << "();\n";
 
         UserProc *u = (UserProc *)proc;
         for (Function *callee : u->getCallees()) {
@@ -1509,17 +1512,22 @@ void printProcsRecursive(Function *proc, int indent, std::ofstream &f, std::set<
         }
         for (int i = 0; i < indent; i++)
             f << "     ";
-        f << "// End of " << proc->getName().toStdString() << "\n";
+        f << "// End of " << proc->getName() << "\n";
     } else {
-        f << "// " << proc->getName().toStdString() << "();\n";
+        f << "// " << proc->getName() << "();\n";
     }
 }
 
 void Prog::printSymbolsToFile() {
-    std::cerr << "entering Prog::printSymbolsToFile\n";
+    LOG_STREAM() << "entering Prog::printSymbolsToFile\n";
     QString fname = Boomerang::get()->getOutputPath() + "symbols.h";
     int fd = lockFileWrite(qPrintable(fname));
-    std::ofstream f(fname.toStdString());
+    QFile tgt(fname);
+    if(!tgt.open(QFile::WriteOnly)) {
+        LOG_STREAM() << " Cannot open " << fname << " for writing\n";
+        return;
+    }
+    QTextStream f(&tgt);
 
     /* Print procs */
     f << "/* Functions: */\n";
@@ -1535,9 +1543,9 @@ void Prog::printSymbolsToFile() {
         }
     }
 
-    f.close();
+    f.flush();
     unlockFile(fd);
-    std::cerr << "leaving Prog::printSymbolsToFile\n";
+    LOG_STREAM() << "leaving Prog::printSymbolsToFile\n";
 }
 
 void Prog::printCallGraphXML() {
@@ -1548,8 +1556,9 @@ void Prog::printCallGraphXML() {
         (*it)->clearVisited();
     QString fname = Boomerang::get()->getOutputPath() + "callgraph.xml";
     int fd = lockFileWrite(qPrintable(fname));
-    std::ofstream f(fname.toStdString());
-    f << "<prog name=\"" << getName().toStdString() << "\">\n";
+    QFile CallGraphFile(fname);
+    QTextStream f(&CallGraphFile);
+    f << "<prog name=\"" << getName() << "\">\n";
     f << "     <callgraph>\n";
     std::list<UserProc *>::iterator pp;
     for (UserProc *up : entryProcs)
@@ -1561,7 +1570,7 @@ void Prog::printCallGraphXML() {
     }
     f << "     </callgraph>\n";
     f << "</prog>\n";
-    f.close();
+    f.flush();
     unlockFile(fd);
 }
 
@@ -1594,8 +1603,8 @@ void Prog::readSymbolFile(const QString &fname) {
                 p->getSignature()->setForced(true);
             }
         } else {
-            const char *nam = sym->nam.c_str();
-            if (strlen(nam) == 0) {
+            QString nam = sym->nam.c_str();
+            if (nam.isEmpty()) {
                 nam = newGlobalName(sym->addr);
             }
             Type *ty = sym->ty;
@@ -1630,9 +1639,9 @@ Exp *Global::getInitialValue(Prog *prog) {
     return prog->readNativeAs(uaddr, type);
 }
 
-void Global::print(std::ostream &os, Prog *prog) {
+void Global::print(QTextStream &os, Prog *prog) {
     Exp *init = getInitialValue(prog);
-    os << type << " " << nam << " at " << std::hex << uaddr << std::dec << " initial value "
+    os << type << " " << nam << " at " << uaddr << " initial value "
        << (init ? init->prints() : "<none>");
 }
 Exp *Prog::readNativeAs(ADDRESS uaddr, Type *type) {
@@ -1644,8 +1653,8 @@ Exp *Prog::readNativeAs(ADDRESS uaddr, Type *type) {
         ADDRESS init = ADDRESS::g(readNative4(uaddr));
         if (init.isZero())
             return new Const(0);
-        const char *nam = getGlobalName(init);
-        if (nam != nullptr)
+        QString nam = getGlobalName(init);
+        if (!nam.isEmpty())
             // TODO: typecast?
             return Location::global(nam, nullptr);
         if (type->asPointer()->getPointsTo()->resolvesToChar()) {
@@ -1685,11 +1694,11 @@ Exp *Prog::readNativeAs(ADDRESS uaddr, Type *type) {
     }
     if (type->resolvesToArray()) {
         int nelems = -1;
-        const char *nam = getGlobalName(uaddr);
+        QString nam = getGlobalName(uaddr);
         int base_sz = type->asArray()->getBaseType()->getSize() / 8;
-        if (nam != nullptr) {
+        if (!nam.isEmpty()) {
             SymbolTableInterface *iface = getBinarySymbolTable();
-            nelems = iface ? iface->GetSizeByName(nam) : 0; // TODO: fix the case of missing symbol table interface
+            nelems = iface ? iface->GetSizeByName(qPrintable(nam)) : 0; // TODO: fix the case of missing symbol table interface
             nelems /= base_sz;
         }
         Exp *n = e = new Terminal(opNil);
@@ -1751,7 +1760,7 @@ void Global::meetType(Type *ty) {
 }
 //! Re-decode this proc from scratch
 void Prog::reDecode(UserProc *proc) {
-    std::ofstream os;
+    QTextStream os(stderr); // rtl output target
     pFE->processProc(proc->getNativeAddress(), proc, os);
 }
 
@@ -1759,7 +1768,7 @@ void Prog::decodeFragment(UserProc *proc, ADDRESS a) {
     if (a >= pSections->getLimitTextLow() && a < pSections->getLimitTextHigh())
         pFE->decodeFragment(proc, a);
     else {
-        std::cerr << "attempt to decode fragment outside text area, addr=" << a << "\n";
+        LOG_STREAM() << "attempt to decode fragment outside text area, addr=" << a << "\n";
         if (VERBOSE)
             LOG << "attempt to decode fragment outside text area, addr=" << a << "\n";
     }

@@ -256,7 +256,7 @@ void RTLInstDict::fixupParamsSub(std::string s, std::list<std::string> &funcPara
     ParamEntry &param = DetParamMap[s];
 
     if (param.params.size() == 0) {
-        std::cerr << "Error in SSL File: Variant operand " << s << " has no branches. Well that's really useful...\n";
+        LOG_STREAM() << "Error in SSL File: Variant operand " << s.c_str() << " has no branches. Well that's really useful...\n";
         return;
     }
     if (param.mark == mark)
@@ -281,10 +281,10 @@ void RTLInstDict::fixupParamsSub(std::string s, std::list<std::string> &funcPara
         }
 
         if (funcParams.size() != sub.funcParams.size()) {
-            std::cerr << "Error in SSL File: Variant operand " << s << " does not have a fixed number of functional "
-                                                                       "parameters:\n"
-                      << "Expected " << funcParams.size() << ", but branch " << name << " has " << sub.funcParams.size()
-                      << ".\n";
+            LOG_STREAM() << "Error in SSL File: Variant operand " << s.c_str()
+                         << " does not have a fixed number of functional parameters:\n"
+                         << "Expected " << funcParams.size() << ", but branch " << name.c_str()
+                         << " has " << sub.funcParams.size() << ".\n";
         } else if (funcParams != sub.funcParams && sub.asgn != nullptr) {
             /* Rename so all the parameter names match */
             std::list<std::string>::iterator i, j;
@@ -315,7 +315,7 @@ std::pair<std::string, unsigned> RTLInstDict::getSignature(const char *name) {
     // Look up the dictionary
     std::map<std::string, TableEntry>::iterator it = idict.find(hlpr.toStdString());
     if (it == idict.end()) {
-        std::cerr << "Error: no entry for `" << name << "' in RTL dictionary\n";
+        LOG_STREAM() << "Error: no entry for `" << name << "' in RTL dictionary\n";
         it = idict.find("NOP"); // At least, don't cause segfault
     }
 
@@ -401,8 +401,10 @@ std::list<Instruction *> *RTLInstDict::instantiateRTL(RTL &rtl, ADDRESS /*natPC*
             // delete formal;
         }
         ss->fixSuccessor();
-        if (Boomerang::get()->debugDecoder)
-            std::cout << "            " << ss << "\n";
+        if (Boomerang::get()->debugDecoder) {
+            QTextStream q_cout(stdout);
+            q_cout << "            " << ss << "\n";
+        }
     }
 
     transformPostVars(*newList, true);

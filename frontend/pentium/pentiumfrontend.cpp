@@ -154,7 +154,7 @@ void PentiumFrontEnd::bumpRegisterAll(Exp *e, int min, int max, int delta, int m
   * \param  spec - true if a speculative decode
   * \returns           True if successful decode
   ******************************************************************************/
-bool PentiumFrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, std::ofstream &os, bool frag /* = false */,
+bool PentiumFrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream &os, bool frag /* = false */,
                                   bool spec /* = false */) {
 
     // Call the base class to do most of the work
@@ -580,7 +580,7 @@ ADDRESS PentiumFrontEnd::getMainEntryPoint(bool &gotMain) {
         return umain;
 
     // Not ideal; we must return start
-    std::cerr << "main function not found\n";
+    LOG_STREAM(2) << "main function not found\n";
 
     this->AddSymbol(start, "_start");
 

@@ -97,13 +97,13 @@ std::list<Instruction *> *NJMCDecoder::instantiate(ADDRESS pc, const char *name,
   ******************************************************************************/
 Exp *NJMCDecoder::instantiateNamedParam(char *name, ...) {
     if (RTLDict.ParamSet.find(name) == RTLDict.ParamSet.end()) {
-        std::cerr << "No entry for named parameter '" << name << "'\n";
+        LOG_STREAM() << "No entry for named parameter '" << name << "'\n";
         return nullptr;
     }
     assert(RTLDict.DetParamMap.find(name) != RTLDict.DetParamMap.end());
     ParamEntry &ent = RTLDict.DetParamMap[name];
     if (ent.kind != PARAM_ASGN && ent.kind != PARAM_LAMBDA) {
-        std::cerr << "Attempt to instantiate expressionless parameter '" << name << "'\n";
+        LOG_STREAM() << "Attempt to instantiate expressionless parameter '" << name << "'\n";
         return nullptr;
     }
     // Start with the RHS
@@ -134,12 +134,12 @@ Exp *NJMCDecoder::instantiateNamedParam(char *name, ...) {
   ******************************************************************************/
 void NJMCDecoder::substituteCallArgs(char *name, Exp *&exp, ...) {
     if (RTLDict.ParamSet.find(name) == RTLDict.ParamSet.end()) {
-        std::cerr << "No entry for named parameter '" << name << "'\n";
+        LOG_STREAM() << "No entry for named parameter '" << name << "'\n";
         return;
     }
     ParamEntry &ent = RTLDict.DetParamMap[name];
     /*if (ent.kind != PARAM_ASGN && ent.kind != PARAM_LAMBDA) {
-                std::cerr << "Attempt to instantiate expressionless parameter '" << name << "'\n";
+                LOG_STREAM() << "Attempt to instantiate expressionless parameter '" << name << "'\n";
                 return;
         }*/
 
@@ -208,7 +208,7 @@ void NJMCDecoder::unconditionalJump(const char *name, int size, ADDRESS relocd, 
     GotoStatement *jump = new GotoStatement();
     jump->setDest((relocd - delta).native());
     result.rtl->appendStmt(jump);
-    SHOW_ASM(name << " 0x" << std::hex << relocd - delta)
+    SHOW_ASM(name << " 0x" << relocd - delta)
 }
 
 /***************************************************************************/ /**

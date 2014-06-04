@@ -1,6 +1,4 @@
 #include <QtCore>
-#include <iostream>
-#include <fstream>
 #include <cstdio>
 
 #include "config.h"
@@ -22,76 +20,78 @@ CommandlineDriver::CommandlineDriver(QObject *parent) : QObject(parent), m_kill_
  * Prints help about the command line switches.
  */
 static void help() {
-    std::cout << "Symbols\n";
-    std::cout << "  -s <addr> <name> : Define a symbol\n";
-    std::cout << "  -sf <filename>   : Read a symbol/signature file\n";
-    std::cout << "Decoding/decompilation options\n";
-    std::cout << "  -e <addr>        : Decode the procedure beginning at addr, and callees\n";
-    std::cout << "  -E <addr>        : Decode the procedure at addr, no callees\n";
-    std::cout << "                     Use -e and -E repeatedly for multiple entry points\n";
-    std::cout << "  -ic              : Decode through type 0 Indirect Calls\n";
-    std::cout << "  -S <min>         : Stop decompilation after specified number of minutes\n";
-    std::cout << "  -t               : Trace (print address of) every instruction decoded\n";
-    std::cout << "  -Tc              : Use old constraint-based type analysis\n";
-    std::cout << "  -Td              : Use data-flow-based type analysis\n";
-    std::cout << "  -LD              : Load before decompile (<program> becomes xml input file)\n";
-    std::cout << "  -SD              : Save before decompile\n";
-    std::cout << "  -a               : Assume ABI compliance\n";
-    std::cout << "  -W               : Windows specific decompilation mode (requires pdb information)\n";
-    //    std::cout << "  -pa              : only propagate if can propagate to all\n";
-    std::cout << "Output\n";
-    std::cout << "  -v               : Verbose\n";
-    std::cout << "  -h               : This help\n";
-    std::cout << "  -o <output path> : Where to generate output (defaults to ./output/)\n";
-    std::cout << "  -x               : Dump XML files\n";
-    std::cout << "  -r               : Print RTL for each proc to log before code generation\n";
-    std::cout << "  -gd <dot file>   : Generate a dotty graph of the program's CFG and DFG\n";
-    std::cout << "  -gc              : Generate a call graph (callgraph.out and callgraph.dot)\n";
-    std::cout << "  -gs              : Generate a symbol file (symbols.h)\n";
-    std::cout << "  -iw              : Write indirect call report to output/indirect.txt\n";
-    std::cout << "Misc.\n";
-    std::cout << "  -k               : Command mode, for available commands see -h cmd\n";
-    std::cout << "  -P <path>        : Path to Boomerang files, defaults to where you run\n";
-    std::cout << "                     Boomerang from\n";
-    std::cout << "  -X               : activate eXperimental code; errors likely\n";
-    std::cout << "  --               : No effect (used for testing)\n";
-    std::cout << "Debug\n";
-    std::cout << "  -da              : Print AST before code generation\n";
-    std::cout << "  -dc              : Debug switch (Case) analysis\n";
-    std::cout << "  -dd              : Debug decoder to stdout\n";
-    std::cout << "  -dg              : Debug code Generation\n";
-    std::cout << "  -dl              : Debug liveness (from SSA) code\n";
-    std::cout << "  -dp              : Debug proof engine\n";
-    std::cout << "  -ds              : Stop at debug points for keypress\n";
-    std::cout << "  -dt              : Debug type analysis\n";
-    std::cout << "  -du              : Debug removing unused statements etc\n";
-    std::cout << "Restrictions\n";
-    std::cout << "  -nb              : No simplifications for branches\n";
-    std::cout << "  -nc              : No decode children in the call graph (callees)\n";
-    std::cout << "  -nd              : No (reduced) dataflow analysis\n";
-    std::cout << "  -nD              : No decompilation (at all!)\n";
-    std::cout << "  -nl              : No creation of local variables\n";
-    //    std::cout << "  -nm              : No decoding of the 'main' procedure\n";
-    std::cout << "  -ng              : No replacement of expressions with Globals\n";
+    QTextStream q_cout(stdout);
+    q_cout << "Symbols\n";
+    q_cout << "  -s <addr> <name> : Define a symbol\n";
+    q_cout << "  -sf <filename>   : Read a symbol/signature file\n";
+    q_cout << "Decoding/decompilation options\n";
+    q_cout << "  -e <addr>        : Decode the procedure beginning at addr, and callees\n";
+    q_cout << "  -E <addr>        : Decode the procedure at addr, no callees\n";
+    q_cout << "                     Use -e and -E repeatedly for multiple entry points\n";
+    q_cout << "  -ic              : Decode through type 0 Indirect Calls\n";
+    q_cout << "  -S <min>         : Stop decompilation after specified number of minutes\n";
+    q_cout << "  -t               : Trace (print address of) every instruction decoded\n";
+    q_cout << "  -Tc              : Use old constraint-based type analysis\n";
+    q_cout << "  -Td              : Use data-flow-based type analysis\n";
+    q_cout << "  -LD              : Load before decompile (<program> becomes xml input file)\n";
+    q_cout << "  -SD              : Save before decompile\n";
+    q_cout << "  -a               : Assume ABI compliance\n";
+    q_cout << "  -W               : Windows specific decompilation mode (requires pdb information)\n";
+    //    q_cout << "  -pa              : only propagate if can propagate to all\n";
+    q_cout << "Output\n";
+    q_cout << "  -v               : Verbose\n";
+    q_cout << "  -h               : This help\n";
+    q_cout << "  -o <output path> : Where to generate output (defaults to ./output/)\n";
+    q_cout << "  -x               : Dump XML files\n";
+    q_cout << "  -r               : Print RTL for each proc to log before code generation\n";
+    q_cout << "  -gd <dot file>   : Generate a dotty graph of the program's CFG and DFG\n";
+    q_cout << "  -gc              : Generate a call graph (callgraph.out and callgraph.dot)\n";
+    q_cout << "  -gs              : Generate a symbol file (symbols.h)\n";
+    q_cout << "  -iw              : Write indirect call report to output/indirect.txt\n";
+    q_cout << "Misc.\n";
+    q_cout << "  -k               : Command mode, for available commands see -h cmd\n";
+    q_cout << "  -P <path>        : Path to Boomerang files, defaults to where you run\n";
+    q_cout << "                     Boomerang from\n";
+    q_cout << "  -X               : activate eXperimental code; errors likely\n";
+    q_cout << "  --               : No effect (used for testing)\n";
+    q_cout << "Debug\n";
+    q_cout << "  -da              : Print AST before code generation\n";
+    q_cout << "  -dc              : Debug switch (Case) analysis\n";
+    q_cout << "  -dd              : Debug decoder to stdout\n";
+    q_cout << "  -dg              : Debug code Generation\n";
+    q_cout << "  -dl              : Debug liveness (from SSA) code\n";
+    q_cout << "  -dp              : Debug proof engine\n";
+    q_cout << "  -ds              : Stop at debug points for keypress\n";
+    q_cout << "  -dt              : Debug type analysis\n";
+    q_cout << "  -du              : Debug removing unused statements etc\n";
+    q_cout << "Restrictions\n";
+    q_cout << "  -nb              : No simplifications for branches\n";
+    q_cout << "  -nc              : No decode children in the call graph (callees)\n";
+    q_cout << "  -nd              : No (reduced) dataflow analysis\n";
+    q_cout << "  -nD              : No decompilation (at all!)\n";
+    q_cout << "  -nl              : No creation of local variables\n";
+    //    q_cout << "  -nm              : No decoding of the 'main' procedure\n";
+    q_cout << "  -ng              : No replacement of expressions with Globals\n";
 #ifdef HAVE_LIBGC
-    std::cout << "  -nG              : No garbage collection\n";
+    q_cout << "  -nG              : No garbage collection\n";
 #endif
-    std::cout << "  -nn              : No removal of nullptr and unused statements\n";
-    std::cout << "  -np              : No replacement of expressions with Parameter names\n";
-    std::cout << "  -nP              : No promotion of signatures (other than main/WinMain/\n";
-    std::cout << "                     DriverMain)\n";
-    std::cout << "  -nr              : No removal of unneeded labels\n";
-    std::cout << "  -nR              : No removal of unused Returns\n";
-    std::cout << "  -l <depth>       : Limit multi-propagations to expressions with depth <depth>\n";
-    std::cout << "  -p <num>         : Only do num propagations\n";
-    std::cout << "  -m <num>         : Max memory depth\n";
+    q_cout << "  -nn              : No removal of nullptr and unused statements\n";
+    q_cout << "  -np              : No replacement of expressions with Parameter names\n";
+    q_cout << "  -nP              : No promotion of signatures (other than main/WinMain/\n";
+    q_cout << "                     DriverMain)\n";
+    q_cout << "  -nr              : No removal of unneeded labels\n";
+    q_cout << "  -nR              : No removal of unused Returns\n";
+    q_cout << "  -l <depth>       : Limit multi-propagations to expressions with depth <depth>\n";
+    q_cout << "  -p <num>         : Only do num propagations\n";
+    q_cout << "  -m <num>         : Max memory depth\n";
 }
 /**
  * Prints a short usage statement.
  */
 static void usage() {
-    std::cout << "Usage: boomerang [ switches ] <program>" << '\n';
-    std::cout << "boomerang -h for switch help" << '\n';
+    QTextStream q_cout(stdout);
+    q_cout << "Usage: boomerang [ switches ] <program>" << '\n';
+    q_cout << "boomerang -h for switch help" << '\n';
 }
 int CommandlineDriver::applyCommandline() {
     printf("Boomerang %s\n", VERSION); // Display a version and date (mainly for release versions)
@@ -131,7 +131,7 @@ int CommandlineDriver::applyCommandline() {
             bool converted = false;
             addr.m_value = args[i].toLongLong(&converted, 0);
             if (not converted) {
-                std::cerr << "bad address: " << args[i].toStdString() << '\n';
+                LOG_STREAM() << "bad address: " << args[i] << '\n';
                 exit(1);
             }
             boom.entrypoints.push_back(addr);
@@ -147,7 +147,7 @@ int CommandlineDriver::applyCommandline() {
             break;
         case 'X':
             boom.experimental = true;
-            std::cout << "Warning: experimental code active!\n";
+            LOG_STREAM(LL_Warn) << "Warning: experimental code active!\n";
             break;
         case 'r':
             boom.printRtl = true;
@@ -164,7 +164,7 @@ int CommandlineDriver::applyCommandline() {
             break;
         case 'g':
             if (arg[2] == 'd')
-                boom.dotFile = args[++i].toStdString();
+                boom.dotFile = args[++i];
             else if (arg[2] == 'c')
                 boom.generateCallGraph = true;
             else if (arg[2] == 's') {
@@ -182,11 +182,6 @@ int CommandlineDriver::applyCommandline() {
         case 'i':
             if (arg[2] == 'c')
                 boom.decodeThruIndCall = true; // -ic;
-            if (arg[2] == 'w')                 // -iw
-                if (boom.ofsIndCallReport) {
-                    QString fname = boom.getOutputPath() + "indirect.txt";
-                    boom.ofsIndCallReport = new std::ofstream(fname.toStdString());
-                }
             break;
         case '-':
             break; // No effect: ignored
@@ -251,7 +246,7 @@ int CommandlineDriver::applyCommandline() {
         case 'p':
             if (arg[2] == 'a') {
                 boom.propOnlyToAll = true;
-                std::cerr << " * * Warning! -pa is not implemented yet!\n";
+                LOG_STREAM() << " * * Warning! -pa is not implemented yet!\n";
             } else {
                 if (++i == args.size()) {
                     usage();
@@ -262,7 +257,7 @@ int CommandlineDriver::applyCommandline() {
             break;
         case 's': {
             if (arg[2] == 'f') {
-                boom.symbolFiles.push_back(args[i + 1].toStdString());
+                boom.symbolFiles.push_back(args[i + 1]);
                 i++;
                 break;
             }
@@ -274,7 +269,7 @@ int CommandlineDriver::applyCommandline() {
             bool converted = false;
             addr.m_value = args[i].toLongLong(&converted, 0);
             if (not converted) {
-                std::cerr << "bad address: " << args[i + 1].toStdString() << '\n';
+                LOG_STREAM() << "bad address: " << args[i + 1] << '\n';
                 exit(1);
             }
             boom.symbols[addr] = args[++i].toStdString();
@@ -344,7 +339,7 @@ int CommandlineDriver::applyCommandline() {
         return console();
 
     if (minsToStopAfter) {
-        std::cout << "stopping decompile after " << minsToStopAfter << " minutes.\n";
+        LOG_STREAM(LL_Error) << "stopping decompile after " << minsToStopAfter << " minutes.\n";
         m_kill_timer.setSingleShot(true);
         m_kill_timer.start(1000 * 60 * minsToStopAfter);
     }
@@ -380,7 +375,7 @@ int CommandlineDriver::decompile() {
     return 0;
 }
 void CommandlineDriver::onCompilationTimeout() {
-    std::cerr << "Compilation timed out";
+    LOG_STREAM() << "Compilation timed out";
     exit(1);
 }
 

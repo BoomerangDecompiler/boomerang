@@ -228,16 +228,16 @@ bool DataFlow::canRename(Exp *e, UserProc *proc) {
 // For debugging
 void DataFlow::dumpA_phi() {
     std::map<Exp *, std::set<int>, lessExpStar>::iterator zz;
-    std::cerr << "A_phi:\n";
+    LOG_STREAM() << "A_phi:\n";
     for (zz = A_phi.begin(); zz != A_phi.end(); ++zz) {
-        std::cerr << zz->first << " -> ";
+        LOG_STREAM() << zz->first << " -> ";
         std::set<int> &si = zz->second;
         std::set<int>::iterator qq;
         for (qq = si.begin(); qq != si.end(); ++qq)
-            std::cerr << *qq << ", ";
-        std::cerr << "\n";
+            LOG_STREAM() << *qq << ", ";
+        LOG_STREAM() << "\n";
     }
-    std::cerr << "end A_phi\n";
+    LOG_STREAM() << "end A_phi\n";
 }
 
 bool DataFlow::placePhiFunctions(UserProc *proc) {
@@ -355,7 +355,9 @@ static Exp *defineAll = new Terminal(opDefineAll); // An expression representing
 static int progress = 0;
 bool DataFlow::renameBlockVars(UserProc *proc, int n, bool clearStacks /* = false */) {
     if (++progress > 200) {
-        std::cerr << 'r' << std::flush;
+        LOG_STREAM() << 'r';
+        LOG_STREAM().flush();
+
         progress = 0;
     }
     bool changed = false;
@@ -544,7 +546,7 @@ bool DataFlow::renameBlockVars(UserProc *proc, int n, bool clearStacks /* = fals
             // if ((*dd)->getMemDepth() == memDepth)
             auto ss = Stacks.find(*dd);
             if (ss == Stacks.end()) {
-                std::cerr << "Tried to pop " << *dd << " from Stacks; does not exist\n";
+                LOG_STREAM() << "Tried to pop " << *dd << " from Stacks; does not exist\n";
                 assert(0);
             }
             ss->second.pop_back();
@@ -562,37 +564,37 @@ bool DataFlow::renameBlockVars(UserProc *proc, int n, bool clearStacks /* = fals
 }
 
 void DataFlow::dumpStacks() {
-    std::cerr << "Stacks: " << Stacks.size() << " entries\n";
+    LOG_STREAM() << "Stacks: " << Stacks.size() << " entries\n";
     for (auto zz = Stacks.begin(); zz != Stacks.end(); zz++) {
-        std::cerr << "Var " << zz->first << " [ ";
+        LOG_STREAM() << "Var " << zz->first << " [ ";
         std::deque<Instruction *> tt = zz->second; // Copy the stack!
         while (!tt.empty()) {
-            std::cerr << tt.back()->getNumber() << " ";
+            LOG_STREAM() << tt.back()->getNumber() << " ";
             tt.pop_back();
         }
-        std::cerr << "]\n";
+        LOG_STREAM() << "]\n";
     }
 }
 
 void DataFlow::dumpDefsites() {
     std::map<Exp *, std::set<int>, lessExpStar>::iterator dd;
     for (dd = defsites.begin(); dd != defsites.end(); ++dd) {
-        std::cerr << dd->first;
+        LOG_STREAM() << dd->first;
         std::set<int>::iterator ii;
         std::set<int> &si = dd->second;
         for (ii = si.begin(); ii != si.end(); ++ii)
-            std::cerr << " " << *ii;
-        std::cerr << "\n";
+            LOG_STREAM() << " " << *ii;
+        LOG_STREAM() << "\n";
     }
 }
 
 void DataFlow::dumpA_orig() {
     int n = A_orig.size();
     for (int i = 0; i < n; ++i) {
-        std::cerr << i;
+        LOG_STREAM() << i;
         for (Exp *ee : A_orig[i])
-            std::cerr << " " << ee;
-        std::cerr << "\n";
+            LOG_STREAM() << " " << ee;
+        LOG_STREAM() << "\n";
     }
 }
 

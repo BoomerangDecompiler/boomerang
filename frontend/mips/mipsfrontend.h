@@ -41,7 +41,7 @@ class MIPSFrontEnd : public FrontEnd {
 
     virtual platform getFrontEndId() { return PLAT_MIPS; }
 
-    virtual bool processProc(ADDRESS uAddr, UserProc *pProc, std::ofstream &os, bool frag = false, bool spec = false);
+    virtual bool processProc(ADDRESS uAddr, UserProc *pProc, QTextStream &os, bool frag = false, bool spec = false);
 
     virtual std::vector<Exp *> &getDefaultParams();
     virtual std::vector<Exp *> &getDefaultReturns();

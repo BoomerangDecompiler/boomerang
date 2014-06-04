@@ -28,11 +28,11 @@ void RtlTest::testAppend() {
     Assign *a = new Assign(Location::regOf(8), new Binary(opPlus, Location::regOf(9), new Const(99)));
     RTL r;
     r.appendStmt(a);
-    std::ostringstream ost;
+    QString res;
+    QTextStream ost(&res);
     r.print(ost);
-    std::string actual(ost.str());
-    std::string expected("00000000    0 *v* r8 := r9 + 99\n");
-    QCOMPARE(expected, actual);
+    QString expected("00000000    0 *v* r8 := r9 + 99\n");
+    QCOMPARE(expected, res);
     // No! appendExp does not copy the expression, so deleting the RTL will
     // delete the expression(s) in it.
     // Not sure if that's what we want...
@@ -52,16 +52,15 @@ void RtlTest::testClone() {
     ls.push_back(a2);
     RTL *r = new RTL(ADDRESS::g(0x1234), &ls);
     RTL *r2 = r->clone();
-    std::ostringstream o1, o2;
+    QString act1,act2;
+    QTextStream o1(&act1),o2(&act2);
     r->print(o1);
     delete r; // And r2 should still stand!
     r2->print(o2);
     delete r2;
-    std::string expected("00001234    0 *v* r8 := r9 + 99\n"
+    QString expected("00001234    0 *v* r8 := r9 + 99\n"
                          "            0 *j16* x := y\n");
 
-    std::string act1(o1.str());
-    std::string act2(o2.str());
     QCOMPARE(expected, act1);
     QCOMPARE(expected, act2);
 }
@@ -259,7 +258,7 @@ void RtlTest::testSetConscripts() {
     for (Instruction *s : *rtl) {
         s->accept(&sc);
     }
-    std::string expected("00001000    0 *v* m[1000\\1\\] := m[1000\\2\\] + 1000\\3\\\n"
+    QString expected("00001000    0 *v* m[1000\\1\\] := m[1000\\2\\] + 1000\\3\\\n"
                          "            0 CALL printf(\n"
                          "                *v* r8 := \"max is %d\"\\4\\\n"
                          "                *v* r9 := (local0 > 0\\5\\) ? local0 : global1\n"
@@ -267,9 +266,9 @@ void RtlTest::testSetConscripts() {
                          "              Reaching definitions: \n"
                          "              Live variables: \n");
 
-    std::ostringstream ost;
+    QString actual;
+    QTextStream ost(&actual);
     rtl->print(ost);
-    std::string actual = ost.str();
     QCOMPARE(expected, actual);
 }
 

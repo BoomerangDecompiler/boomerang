@@ -29,7 +29,7 @@ class PentiumFrontEnd : public FrontEnd {
          * If spec is true, this is a speculative decode (so give up on any invalid instruction)
          * Returns true on a good decode
          */
-    virtual bool processProc(ADDRESS uAddr, UserProc *pProc, std::ofstream &os, bool frag = false, bool spec = false);
+    virtual bool processProc(ADDRESS uAddr, UserProc *pProc, QTextStream &os, bool frag = false, bool spec = false);
 
     virtual std::vector<Exp *> &getDefaultParams();
     virtual std::vector<Exp *> &getDefaultReturns();

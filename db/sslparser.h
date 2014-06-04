@@ -135,7 +135,7 @@ class SSLParser {
     int YY_SSLParser_DEBUG_FLAG; /*  nonzero means print parse trace    */
 #endif
   public:
-    SSLParser(const std::string &sslFile, bool trace);
+    SSLParser(const QString &sslFile, bool trace);
 
   public:
     SSLParser(std::istream &in, bool trace);
@@ -155,7 +155,7 @@ class SSLParser {
     /*
     * The file from which the SSL spec is read.
     */
-    std::string sslFile;
+    QString sslFile;
 
     /*
     * Result for parsing an assignment.

@@ -259,9 +259,8 @@ bool Decompiler::getRtlForProc(const QString &name, QString &rtl) {
     if (p->isLib())
         return false;
     UserProc *up = (UserProc *)p;
-    std::ostringstream os;
+    QTextStream os(&rtl);
     up->print(os, true);
-    rtl = os.str().c_str();
     return true;
 }
 

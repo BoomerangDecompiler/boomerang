@@ -1409,28 +1409,27 @@ void Exp::dump() {
   *
   ******************************************************************************/
 void Exp::createDotFile(char *name) {
-    std::ofstream of;
-    of.open(name);
-    if (!of) {
+    QFile fl(name);
+    if(!fl.open(QFile::WriteOnly)) {
         LOG << "Could not open " << name << " to write dotty file\n";
         return;
     }
+    QTextStream of(&fl);
     of << "digraph Exp {\n";
     appendDotFile(of);
     of << "}";
-    of.close();
 }
 
 //    //    //    //
 //    Const    //
 //    //    //    //
-void Const::appendDotFile(std::ofstream &of) {
+void Const::appendDotFile(QTextStream &of) {
     // We define a unique name for each node as "e123456" if the address of "this" == 0x123456
     of << "e" << ADDRESS::host_ptr(this) << " [shape=record,label=\"{";
     of << operStrings[op] << "\\n" << ADDRESS::host_ptr(this) << " | ";
     switch (op) {
     case opIntConst:
-        of << std::dec << u.i;
+        of << u.i;
         break;
     case opFltConst:
         of << u.d;
@@ -1440,7 +1439,7 @@ void Const::appendDotFile(std::ofstream &of) {
         break;
     // Might want to distinguish this better, e.g. "(func*)myProc"
     case opFuncConst:
-        of << u.pp->getName().toStdString();
+        of << u.pp->getName();
         break;
     default:
         break;
@@ -1451,7 +1450,7 @@ void Const::appendDotFile(std::ofstream &of) {
 //    //    //    //
 // Terminal //
 //    //    //    //
-void Terminal::appendDotFile(std::ofstream &of) {
+void Terminal::appendDotFile(QTextStream &of) {
     of << "e" << ADDRESS::host_ptr(this) << " [shape=parallelogram,label=\"";
     if (op == opWild)
         // Note: value is -1, so can't index array
@@ -1465,7 +1464,7 @@ void Terminal::appendDotFile(std::ofstream &of) {
 //    //    //    //
 //    Unary    //
 //    //    //    //
-void Unary::appendDotFile(std::ofstream &of) {
+void Unary::appendDotFile(QTextStream &of) {
     // First a node for this Unary object
     of << "e" << ADDRESS::host_ptr(this) << " [shape=record,label=\"{";
     // The (int) cast is to print the address, not the expression!
@@ -1483,7 +1482,7 @@ void Unary::appendDotFile(std::ofstream &of) {
 //    //    //    //
 //    Binary    //
 //    //    //    //
-void Binary::appendDotFile(std::ofstream &of) {
+void Binary::appendDotFile(QTextStream &of) {
     // First a node for this Binary object
     of << "e" << ADDRESS::host_ptr(this) << " [shape=record,label=\"{";
     of << operStrings[op] << "\\n" << ADDRESS::host_ptr(this) << " | ";
@@ -1499,10 +1498,10 @@ void Binary::appendDotFile(std::ofstream &of) {
 //    //    //    //
 //    Ternary //
 //    //    //    //
-void Ternary::appendDotFile(std::ofstream &of) {
+void Ternary::appendDotFile(QTextStream &of) {
     // First a node for this Ternary object
     of << "e" << ADDRESS::host_ptr(this) << " [shape=record,label=\"{";
-    of << operStrings[op] << "\\n0x" << std::hex << ADDRESS::host_ptr(this) << " | ";
+    of << operStrings[op] << "\\n0x" << ADDRESS::host_ptr(this) << " | ";
     of << "{<p1> | <p2> | <p3>}";
     of << " }\"];\n";
     subExp1->appendDotFile(of);
@@ -1516,11 +1515,11 @@ void Ternary::appendDotFile(std::ofstream &of) {
 //    //    //    //
 // TypedExp //
 //    //    //    //
-void TypedExp::appendDotFile(std::ofstream &of) {
+void TypedExp::appendDotFile(QTextStream &of) {
     of << "e" << ADDRESS::host_ptr(this) << " [shape=record,label=\"{";
     of << "opTypedExp\\n" << ADDRESS::host_ptr(this) << " | ";
     // Just display the C type for now
-    of << type->getCtype().toStdString() << " | <p1>";
+    of << type->getCtype() << " | <p1>";
     of << " }\"];\n";
     subExp1->appendDotFile(of);
     of << "e" << ADDRESS::host_ptr(this) << ":p1->e" << ADDRESS::host_ptr(subExp1) << ";\n";
@@ -1529,14 +1528,14 @@ void TypedExp::appendDotFile(std::ofstream &of) {
 //    //    //    //
 //    FlagDef //
 //    //    //    //
-void FlagDef::appendDotFile(std::ofstream &of) {
+void FlagDef::appendDotFile(QTextStream &of) {
     of << "e" << ADDRESS::host_ptr(this) << " [shape=record,label=\"{";
     of << "opFlagDef \\n" << ADDRESS::host_ptr(this) << "| ";
     // Display the RTL as "RTL <r1> <r2>..." vertically (curly brackets)
     of << "{ RTL ";
     int n = rtl->size();
     for (int i = 0; i < n; i++)
-        of << "| <r" << std::dec << i << "> ";
+        of << "| <r" << i << "> ";
     of << "} | <p1> }\"];\n";
     subExp1->appendDotFile(of);
     of << "e" << ADDRESS::host_ptr(this) << ":p1->e" << ADDRESS::host_ptr(subExp1) << ";\n";
@@ -3338,16 +3337,16 @@ void Exp::printt(QTextStream &os /*= cout*/) const {
   *                      correct C.  If debugging is desired, use operator<<
   * \param os Output stream to send the output to
   ******************************************************************************/
-void Exp::printAsHL(std::ostream &os /*= cout*/) {
-    std::ostringstream ost;
+void Exp::printAsHL(QTextStream &os /*= cout*/) {
+    QString tgt;
+    QTextStream ost(&tgt);
     ost << this; // Print to the string stream
-    std::string s(ost.str());
-    if ((s.length() >= 4) && (s[1] == '[')) {
+    if ((tgt.length() >= 4) && (tgt[1] == '[')) {
         // r[nn]; change to rnn
-        s.erase(1, 1);           // '['
-        s.erase(s.length() - 1); // ']'
+        tgt.remove(1, 1);           // '['
+        tgt.remove(tgt.length() - 1); // ']'
     }
-    os << s; // Print to the output stream
+    os << tgt; // Print to the output stream
 }
 
 /***************************************************************************/ /**
@@ -4058,86 +4057,97 @@ Exp *Terminal::accept(ExpModifier *v) {
 Exp *Const::accept(ExpModifier *v) { return v->postVisit((Const *)v->preVisit(this)); }
 
 Exp *TypeVal::accept(ExpModifier *v) { return v->postVisit((TypeVal *)v->preVisit(this)); }
-
+QTextStream &alignStream(QTextStream &str,int align) {
+    str << qSetFieldWidth(align) << " " << qSetFieldWidth(0);
+    return str;
+}
 void child(Exp *e, int ind) {
     if (e == nullptr) {
-        std::cerr << std::setw(ind + 4) << " "
-                  << "<nullptr>\n" << std::flush;
+        alignStream(LOG_STREAM(),ind+4) << "<nullptr>\n";
+        LOG_STREAM().flush();
         return;
     }
     void *vt = *(void **)e;
     if (vt == nullptr) {
-        std::cerr << std::setw(ind + 4) << " "
-                  << "<nullptr VT>\n" << std::flush;
+        alignStream(LOG_STREAM(),ind+4) << "<nullptr VT>\n";
+        LOG_STREAM().flush();
         return;
     }
     e->printx(ind + 4);
 }
 
 void Unary::printx(int ind) const {
-    std::cerr << std::setw(ind) << " " << operStrings[op] << "\n" << std::flush;
+    alignStream(LOG_STREAM(),ind) << operStrings[op] << "\n";
+    LOG_STREAM().flush();
     child(subExp1, ind);
 }
 
 void Binary::printx(int ind) const {
     assert(subExp1 && subExp2);
-
-    std::cerr << std::setw(ind) << " " << operStrings[op] << "\n" << std::flush;
+    alignStream(LOG_STREAM(),ind) << operStrings[op] << "\n";
+    LOG_STREAM().flush();
     child(subExp1, ind);
     child(subExp2, ind);
 }
 
 void Ternary::printx(int ind) const {
-    std::cerr << std::setw(ind) << " " << operStrings[op] << "\n" << std::flush;
+    alignStream(LOG_STREAM(),ind) << operStrings[op] << "\n";
     child(subExp1, ind);
     child(subExp2, ind);
     child(subExp3, ind);
 }
 
 void Const::printx(int ind) const {
-    std::cerr << std::setw(ind) << " " << operStrings[op] << " ";
+    alignStream(LOG_STREAM(),ind) << operStrings[op] << "\n";
     switch (op) {
     case opIntConst:
-        std::cerr << std::dec << u.i;
+        LOG_STREAM() << u.i;
         break;
     case opStrConst:
-        std::cerr << "\"" << u.p << "\"";
+        LOG_STREAM() << "\"" << u.p << "\"";
         break;
     case opFltConst:
-        std::cerr << u.d;
+        LOG_STREAM() << u.d;
         break;
     case opFuncConst:
-        std::cerr << qPrintable(u.pp->getName());
+        LOG_STREAM() << qPrintable(u.pp->getName());
         break;
     default:
-        std::cerr << std::hex << "?" << (int)op << "?";
+        LOG_STREAM() << "?" << (int)op << "?";
     }
     if (conscript)
-        std::cerr << " \\" << std::dec << conscript << "\\";
-    std::cerr << std::flush << "\n";
+        LOG_STREAM() << " \\" << conscript << "\\";
+    LOG_STREAM() << '\n';
+    LOG_STREAM().flush();
 }
 
 void TypeVal::printx(int ind) const {
-    std::cerr << std::setw(ind) << " " << operStrings[op] << " ";
-    std::cerr << val->getCtype().toStdString() << std::flush << "\n";
+    alignStream(LOG_STREAM(),ind) << operStrings[op] << " ";
+    LOG_STREAM() << val->getCtype() << "\n";
+    LOG_STREAM().flush();
 }
 
 void TypedExp::printx(int ind) const {
-    std::cerr << std::setw(ind) << " " << operStrings[op] << " ";
-    std::cerr << type->getCtype().toStdString() << std::flush << "\n";
+    alignStream(LOG_STREAM(),ind) << operStrings[op] << " ";
+    LOG_STREAM() << type->getCtype() << "\n";
+    LOG_STREAM().flush();
     child(subExp1, ind);
 }
 
-void Terminal::printx(int ind) const { std::cerr << std::setw(ind) << " " << operStrings[op] << "\n" << std::flush; }
+void Terminal::printx(int ind) const {
+    alignStream(LOG_STREAM(),ind) << operStrings[op] << "\n";
+    LOG_STREAM().flush();
+}
 
 void RefExp::printx(int ind) const {
-    std::cerr << std::setw(ind) << " " << operStrings[op] << " ";
-    std::cerr << "{";
+    alignStream(LOG_STREAM(),ind) << operStrings[op] << "\n";
+    LOG_STREAM() << "{";
     if (def == nullptr)
-        std::cerr << "nullptr";
+        LOG_STREAM() << "nullptr";
     else
-        std::cerr << ADDRESS::host_ptr(def) << "=" << def->getNumber();
-    std::cerr << "}\n" << std::flush;
+        LOG_STREAM() << ADDRESS::host_ptr(def) << "=" << def->getNumber();
+    LOG_STREAM() << "}\n";
+    LOG_STREAM().flush();
     child(subExp1, ind);
 }
 

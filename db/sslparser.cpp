@@ -82,14 +82,14 @@ Exp *listExpToExp(std::list<Exp *> *le);       // Convert a STL list of Exp* to 
 Exp *listStrToExp(std::list<std::string> *ls); // Convert a STL list of strings to opList
 
 /*apres const  */
-SSLParser::SSLParser(const std::string &sslFile, bool trace) : sslFile(sslFile), bFloat(false) {
+SSLParser::SSLParser(const QString &sslFile, bool trace) : sslFile(sslFile), bFloat(false) {
 #if YY_SSLParser_DEBUG != 0
     YY_SSLParser_DEBUG_FLAG = 0;
 #endif
-    std::fstream *fin = new std::fstream(sslFile.c_str(), std::ios::in);
+    std::fstream *fin = new std::fstream(sslFile.toStdString(), std::ios::in);
     theScanner = nullptr;
     if (!*fin) {
-        std::cerr << "can't open `" << sslFile << "' for reading\n";
+        LOG_STREAM() << "can't open `" << sslFile << "' for reading\n";
         return;
     }
     theScanner = new SSLScanner(*fin, trace);
@@ -862,7 +862,7 @@ SSLParser::
     }
     case 31: {
         if ((int)yyvsp[-8].strlist->size() != (yyvsp[0].num - yyvsp[-2].num + 1)) {
-            std::cerr << "size of register array does not match mapping to r[" << yyvsp[-2].num << ".." << yyvsp[0].num
+            LOG_STREAM() << "size of register array does not match mapping to r[" << yyvsp[-2].num << ".." << yyvsp[0].num
                       << "]\n";
             exit(1);
         } else {
@@ -1658,7 +1658,7 @@ SSLParser::
                 yyval.typ = new CharType;
                 break;
             default:
-                std::cerr << "Unexpected char " << c << " in assign type\n";
+                LOG_STREAM() << "Unexpected char " << c << " in assign type\n";
                 yyval.typ = IntegerType::get(32);
             }
         };

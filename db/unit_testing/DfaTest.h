@@ -1,8 +1,7 @@
 #include "log.h"
 
-#include <iostream> // For std::cerr
 #include <QtTest/QTest>
-
+#include <iostream>
 class ErrLogger : public Log {
   public:
     virtual Log &operator<<(const QString &s) {

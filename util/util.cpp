@@ -19,9 +19,6 @@
 
 #include <cassert>
 #include <string>
-#include <sstream>
-#include <iostream>
-#include <fstream>
 #include <cstdio>
 #include <cstring>
 #include <unistd.h>
@@ -109,11 +106,6 @@ char *escapeStr(const char *str) {
     return ret;
 }
 #include "types.h"
-#include <iomanip>
-std::ostream &operator<<(std::ostream &stream, const ADDRESS &addr) {
-    stream << std::hex << addr.m_value << std::dec;
-    return stream;
-}
 #include <QtCore/QTextStream>
 QTextStream& operator<<(QTextStream& os, const ADDRESS& mdv) {
     //TODO: properly format ADDRESS : 0-fill to max width.

@@ -24,19 +24,20 @@ void ParserTest::testRead() {
   * OVERVIEW:        Test parsing an expression
   ******************************************************************************/
 void ParserTest::testExp() {
-    std::string s("*i32* r0 := 5 + 6");
-    Instruction *a = SSLParser::parseExp(s.c_str());
+    QString s("*i32* r0 := 5 + 6");
+    Instruction *a = SSLParser::parseExp(qPrintable(s));
     QVERIFY(a);
-    std::ostringstream ost;
+    QString res;
+    QTextStream ost(&res);
     a->print(ost);
-    QCOMPARE("   0 " + s, std::string(ost.str()));
+    QCOMPARE("   0 " + s, res);
     std::string s2 = "*i32* r[0] := 5 + 6";
     a = SSLParser::parseExp(s2.c_str());
     QVERIFY(a);
-    std::ostringstream ost2;
-    a->print(ost2);
+    res.clear();
+    a->print(ost);
     // Still should print to string s, not s2
-    QCOMPARE("   0 " + s, ost2.str());
+    QCOMPARE("   0 " + s, res);
 }
 
 QTEST_MAIN(ParserTest)

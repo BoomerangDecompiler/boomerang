@@ -78,8 +78,6 @@ class Function {
 
     virtual void renameParam(const char *oldName, const char *newName);
 
-    // virtual std::ostream& put(std::ostream& os) = 0;
-
     void matchParams(std::list<Exp *> &, UserProc &);
 
     std::list<Type> *getParamTypeList(const std::list<Exp *> &);
@@ -89,7 +87,7 @@ class Function {
     /**
      * OutPut operator for a Proc object.
      */
-    friend std::ostream &operator<<(std::ostream &os, const Function &proc);
+    friend QTextStream &operator<<(QTextStream &os, const Function &proc);
 
     virtual Exp *getProven(Exp *left) = 0;   //!< Get the RHS, if any, that is proven for left
     virtual Exp *getPremised(Exp *left) = 0; //!< Get the RHS, if any, that is premised for left
@@ -111,7 +109,7 @@ class Function {
     // virtual void        addReturn(Exp *e);
     //        void        sortParameters();
 
-    virtual void printCallGraphXML(std::ostream &os, int depth, bool = true);
+    virtual void printCallGraphXML(QTextStream &os, int depth, bool = true);
     void printDetailsXML();
     void clearVisited() { Visited = false; }
     bool isVisited() { return Visited; }
@@ -159,7 +157,6 @@ class LibProc : public Function {
     virtual Exp *getProven(Exp *left);
     virtual Exp *getPremised(Exp * /*left*/) { return nullptr; } //!< Get the RHS that is premised for left
     virtual bool isPreserved(Exp *e);                            //!< Return whether e is preserved by this proc
-    // std::ostream& put(std::ostream& os); //!< Prints this procedure to an output stream.
     void getInternalStatements(StatementList &internal);
 
   protected:
@@ -472,7 +469,7 @@ class UserProc : public Function {
     void killPremise(Exp *e) { recurPremises.erase(e); }
     virtual bool isPreserved(Exp *e);
 
-    virtual void printCallGraphXML(std::ostream &os, int depth, bool recurse = true);
+    virtual void printCallGraphXML(QTextStream &os, int depth, bool recurse = true);
     void printDecodedXML();
     void printAnalysedXML();
     void printSSAXML();

@@ -45,8 +45,11 @@ Boomerang *Boomerang::boomerang = nullptr;
  * - A maximum memory depth of 99
  * - The path to the executable is "./"
  * - The output directory is "./output/"
+ * - Main log stream is output on stderr
  */
-Boomerang::Boomerang() : progPath("./"), outputPath("./output/"), logger(nullptr) {}
+Boomerang::Boomerang() : progPath("./"), outputPath("./output/"), logger(nullptr),LogStream(stdout),ErrStream(stderr) {
+
+}
 
 /**
  * \returns the Log object associated with the object.
@@ -88,28 +91,29 @@ HLLCode *Boomerang::getHLLCode(UserProc *p) { return new CHLLCode(p); }
  * Prints help for the interactive mode.
  */
 void Boomerang::helpcmd() const {
+    QTextStream c_out(stdout);
     // Column 98 of this source file is column 80 of output (don't use tabs)
     //            ____.____1____.____2____.____3____.____4____.____5____.____6____.____7____.____8
-    std::cout << "Available commands (for use with -k):\n";
-    std::cout << "  decode                             : Loads and decodes the specified binary.\n";
-    std::cout << "  decompile [proc]                   : Decompiles the program or specified proc.\n";
-    std::cout << "  codegen [cluster]                  : Generates code for the program or a\n";
-    std::cout << "                                       specified cluster.\n";
-    std::cout << "  move proc <proc> <cluster>         : Moves the specified proc to the specified\n";
-    std::cout << "                                       cluster.\n";
-    std::cout << "  move cluster <cluster> <parent>    : Moves the specified cluster to the\n";
-    std::cout << "                                       specified parent cluster.\n";
-    std::cout << "  add cluster <cluster> [parent]     : Adds a new cluster to the root/specified\n";
-    std::cout << "                                       cluster.\n";
-    std::cout << "  delete cluster <cluster>           : Deletes an empty cluster.\n";
-    std::cout << "  rename proc <proc> <newname>       : Renames the specified proc.\n";
-    std::cout << "  rename cluster <cluster> <newname> : Renames the specified cluster.\n";
-    std::cout << "  info prog                          : Print info about the program.\n";
-    std::cout << "  info cluster <cluster>             : Print info about a cluster.\n";
-    std::cout << "  info proc <proc>                   : Print info about a proc.\n";
-    std::cout << "  print <proc>                       : Print the RTL for a proc.\n";
-    std::cout << "  help                               : This help.\n";
-    std::cout << "  exit                               : Quit the shell.\n";
+    c_out << "Available commands (for use with -k):\n";
+    c_out << "  decode                             : Loads and decodes the specified binary.\n";
+    c_out << "  decompile [proc]                   : Decompiles the program or specified proc.\n";
+    c_out << "  codegen [cluster]                  : Generates code for the program or a\n";
+    c_out << "                                       specified cluster.\n";
+    c_out << "  move proc <proc> <cluster>         : Moves the specified proc to the specified\n";
+    c_out << "                                       cluster.\n";
+    c_out << "  move cluster <cluster> <parent>    : Moves the specified cluster to the\n";
+    c_out << "                                       specified parent cluster.\n";
+    c_out << "  add cluster <cluster> [parent]     : Adds a new cluster to the root/specified\n";
+    c_out << "                                       cluster.\n";
+    c_out << "  delete cluster <cluster>           : Deletes an empty cluster.\n";
+    c_out << "  rename proc <proc> <newname>       : Renames the specified proc.\n";
+    c_out << "  rename cluster <cluster> <newname> : Renames the specified cluster.\n";
+    c_out << "  info prog                          : Print info about the program.\n";
+    c_out << "  info cluster <cluster>             : Print info about a cluster.\n";
+    c_out << "  info proc <proc>                   : Print info about a proc.\n";
+    c_out << "  print <proc>                       : Print the RTL for a proc.\n";
+    c_out << "  help                               : This help.\n";
+    c_out << "  exit                               : Quit the shell.\n";
 }
 
 /**
@@ -129,8 +133,8 @@ bool createDirectory(const QString &dir) {
 /**
  * Prints a tree graph.
  */
-void Cluster::printTree(std::ostream &ostr) {
-    ostr << "\t\t" << Name.toStdString() << "\n";
+void Cluster::printTree(QTextStream &ostr) {
+    ostr << "\t\t" << Name << "\n";
     for (auto &elem : Children)
         elem->printTree(ostr);
 }
@@ -472,7 +476,7 @@ int Boomerang::processCommand(QStringList &args) {
 
             out_stream << "prog " << prog->getName() << ":\n";
             out_stream << "\tclusters:\n";
-            prog->getRootCluster()->printTree(std::cout);
+            prog->getRootCluster()->printTree(out_stream);
             out_stream << "\n\tlibprocs:\n";
             PROGMAP::const_iterator it;
             for (Function *p = prog->getFirstProc(it); p; p = prog->getNextProc(it))
@@ -662,7 +666,7 @@ Prog *Boomerang::loadAndDecode(const QString &fname, const char *pname) {
     Prog *prog = new Prog();
     FrontEnd *fe = FrontEnd::Load(fname, prog);
     if (fe == nullptr) {
-        std::cerr << "failed.\n";
+        LOG_STREAM() << "failed.\n";
         return nullptr;
     }
     prog->setFrontEnd(fe);
@@ -725,7 +729,7 @@ Prog *Boomerang::loadAndDecode(const QString &fname, const char *pname) {
 
 /**
  * The program will be subsequently be loaded, decoded, decompiled and written to a source file.
- * After decompilation the elapsed time is printed to std::cerr.
+ * After decompilation the elapsed time is printed to LOG_STREAM().
  *
  * \param fname The name of the file to load.
  * \param pname The name that will be given to the Proc.
@@ -738,12 +742,13 @@ int Boomerang::decompile(const QString &fname, const char *pname) {
     time(&start);
     if (logger == nullptr)
         setLogger(new FileLogger());
+    QTextStream q_cout(stdout);
 
 //    std::cout << "setting up transformers...\n";
 //    ExpTransformer::loadAll();
 
     if (loadBeforeDecompile) {
-        std::cout << "loading persisted state...\n";
+        LOG_STREAM() << "loading persisted state...\n";
         XMLProgParser *p = new XMLProgParser();
         prog = p->parse(fname);
     } else
@@ -754,7 +759,7 @@ int Boomerang::decompile(const QString &fname, const char *pname) {
     }
 
     if (saveBeforeDecompile) {
-        std::cout << "saving persistable state...\n";
+        LOG_STREAM() << "saving persistable state...\n";
         XMLProgParser *p = new XMLProgParser();
         p->persistToXML(prog);
     }
@@ -762,14 +767,14 @@ int Boomerang::decompile(const QString &fname, const char *pname) {
     if (stopBeforeDecompile)
         return 0;
 
-    std::cout << "decompiling...\n";
+    LOG_STREAM() << "decompiling...\n";
     prog->decompile();
 
     if (!dotFile.isEmpty())
         prog->generateDotFile();
 
     if (printAST) {
-        std::cout << "printing AST...\n";
+        LOG_STREAM() << "printing AST...\n";
         PROGMAP::const_iterator it;
         for (Function *p = prog->getFirstProc(it); p; p = prog->getNextProc(it))
             if (!p->isLib()) {
@@ -778,26 +783,22 @@ int Boomerang::decompile(const QString &fname, const char *pname) {
                 u->printAST();
             }
     }
-    QTextStream cout(stdout);
-    cout << "generating code...\n";
+    q_cout << "generating code...\n";
     prog->generateCode();
 
-    cout << "output written to " << outputPath << prog->getRootCluster()->getName() << "\n";
-
-    if (Boomerang::get()->ofsIndCallReport)
-        ofsIndCallReport->close();
+    q_cout << "output written to " << outputPath << prog->getRootCluster()->getName() << "\n";
 
     time_t end;
     time(&end);
     int hours = (int)((end - start) / 60 / 60);
     int mins = (int)((end - start) / 60 - hours * 60);
     int secs = (int)((end - start) - (hours * 60 * 60) - (mins * 60));
-    std::cout << "completed in " << std::dec;
+    q_cout << "completed in ";
     if (hours)
-        std::cout << hours << " hours ";
+        q_cout << hours << " hours ";
     if (hours || mins)
-        std::cout << mins << " mins ";
-    std::cout << secs << " sec" << (secs == 1 ? "" : "s") << ".\n";
+        q_cout << mins << " mins ";
+    q_cout << secs << " sec" << (secs == 1 ? "" : "s") << ".\n";
 
     return 0;
 }
@@ -884,6 +885,14 @@ void Boomerang::alertDecompileDebugPoint(UserProc *p, const char *description) {
     }
     for (Watcher *elem : watchers)
         elem->alertDecompileDebugPoint(p, description);
+}
+//! Return TextStream to which given \a level of messages shoudl be directed
+//! \param level - describes the message level TODO: describe message levels
+QTextStream &Boomerang::getLogStream(int level)
+{
+    if(level>=LL_Error)
+        return ErrStream;
+    return LogStream;
 }
 
 const char *Boomerang::getVersionStr() { return VERSION; }

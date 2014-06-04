@@ -76,18 +76,18 @@ void CfgTest::testDominators() {
         bb = cfg->getNextBB(it);
     }
     QVERIFY(bb);
-
-    std::ostringstream expected, actual;
+    QString expect_st,actual_st;
+    QTextStream expected(&expect_st), actual(&actual_st);
     // expected << std::hex << FRONTIER_FIVE << " " << FRONTIER_THIRTEEN << " " << FRONTIER_TWELVE << " " <<
     //    FRONTIER_FOUR << " ";
-    expected << std::hex << FRONTIER_THIRTEEN << " " << FRONTIER_FOUR << " " << FRONTIER_TWELVE << " " << FRONTIER_FIVE
+    expected << FRONTIER_THIRTEEN << " " << FRONTIER_FOUR << " " << FRONTIER_TWELVE << " " << FRONTIER_FIVE
              << " ";
     int n5 = df->pbbToNode(bb);
     std::set<int>::iterator ii;
     std::set<int> &DFset = df->getDF(n5);
     for (ii = DFset.begin(); ii != DFset.end(); ii++)
-        actual << std::hex << df->nodeToBB(*ii)->getLowAddr() << " ";
-    QCOMPARE(expected.str(), actual.str());
+        actual << df->nodeToBB(*ii)->getLowAddr() << " ";
+    QCOMPARE(expect_st, actual_st);
 
     pBF->deleteLater();
     delete pFE;
@@ -139,14 +139,15 @@ void CfgTest::testSemiDominators() {
     QCOMPARE(SEMI_B, actual_dom);
     QCOMPARE(SEMI_D, actual_semi);
     // Check the final dominator frontier as well; should be M and B
-    std::ostringstream expected, actual;
+    QString expected_st,actual_st;
+    QTextStream expected(&expected_st), actual(&actual_st);
     // expected << std::hex << SEMI_M << " " << SEMI_B << " ";
-    expected << std::hex << SEMI_B << " " << SEMI_M << " ";
+    expected << SEMI_B << " " << SEMI_M << " ";
     std::set<int>::iterator ii;
     std::set<int> &DFset = df->getDF(nL);
     for (ii = DFset.begin(); ii != DFset.end(); ii++)
-        actual << std::hex << df->nodeToBB(*ii)->getLowAddr() << " ";
-    QCOMPARE(expected.str(), actual.str());
+        actual << df->nodeToBB(*ii)->getLowAddr() << " ";
+    QCOMPARE(expected_st, actual_st);
     delete pFE;
 }
 
@@ -181,14 +182,13 @@ void CfgTest::testPlacePhi() {
     df->dumpA_orig();
     df->dumpDefsites();
     // A_phi[x] should be the set {7 8 10 15 20 21} (all the join points)
-    std::ostringstream ost;
+    QString actual_st;
+    QTextStream actual(&actual_st);
     std::set<int>::iterator ii;
     std::set<int> &A_phi = df->getA_phi(e);
     for (ii = A_phi.begin(); ii != A_phi.end(); ++ii)
-        ost << *ii << " ";
-    std::string expected("7 8 10 15 20 21 ");
-    std::string actual(ost.str());
-    QCOMPARE(expected, actual);
+        actual << *ii << " ";
+    QCOMPARE(QString("7 8 10 15 20 21 "), actual_st);
     delete pFE;
 }
 
@@ -222,26 +222,28 @@ void CfgTest::testPlacePhi2() {
     // A_phi A_phi[ m[ebp-8] ] is null
     // (block 4 comes out with n=4)
 
-    std::string expected = "4 ";
-    std::ostringstream actual;
+    QString expected = "4 ";
+    QString actual_st;
+    QTextStream actual(&actual_st);
     // m[r29 - 8]
     Exp *e = new Unary(opMemOf, new Binary(opMinus, Location::regOf(29), new Const(8)));
     std::set<int> &s = df->getA_phi(e);
     std::set<int>::iterator pp;
     for (pp = s.begin(); pp != s.end(); pp++)
         actual << *pp << " ";
-    QCOMPARE(expected, actual.str());
+    QCOMPARE(expected, actual_st);
     delete e;
 
     expected = "";
-    std::ostringstream actual2;
+    QString actual_st2;
+    QTextStream actual2(&actual_st2);
     // m[r29 - 12]
     e = new Unary(opMemOf, new Binary(opMinus, Location::regOf(29), new Const(12)));
 
     std::set<int> &s2 = df->getA_phi(e);
     for (pp = s2.begin(); pp != s2.end(); pp++)
         actual2 << *pp << " ";
-    QCOMPARE(expected, actual2.str());
+    QCOMPARE(expected, actual_st2);
     delete e;
     delete pFE;
 }

@@ -32,13 +32,13 @@
 #define USE_DOMINANCE_NUMS 1 // Set true to store a statement number that has dominance properties
 #include "types.h"
 
-#include <iostream>
+#include <QtCore/QObject>
+#include <QtCore/QDir>
+#include <QtCore/QTextStream>
 #include <string>
 #include <set>
 #include <vector>
 #include <map>
-#include <QtCore/QObject>
-#include <QtCore/QDir>
 
 class QString;
 class SeparateLogger;
@@ -49,10 +49,16 @@ class UserProc;
 class HLLCode;
 class ObjcModule;
 
+enum LogLevel {
+    LL_Default=0,
+    LL_Warn = 1,
+    LL_Error= 2,
+};
 #define LOG Boomerang::get()->log()
 #define LOG_SEPARATE(x) Boomerang::get()->separate_log(x)
 #define LOG_VERBOSE(x) Boomerang::get()->if_verbose_log(x)
 #define LOGTAIL Boomerang::get()->logTail()
+#define LOG_STREAM Boomerang::get()->getLogStream
 
 #define DEBUG_RANGE_ANALYSIS Boomerang::get()->debugRangeAnalysis
 
@@ -134,7 +140,6 @@ class Boomerang : public QObject {
     void setOutputPath(const QString &p) { outputPath = p; }
     /// Returns the path to where the output files are saved.
     const QString &getOutputPath() { return outputPath; }
-
     Prog *loadAndDecode(const QString &fname, const char *pname = nullptr);
     int decompile(const QString &fname, const char *pname = nullptr);
     /// Add a Watcher to the set of Watchers for this Boomerang object.
@@ -231,6 +236,8 @@ class Boomerang : public QObject {
     }
     virtual void alertDecompileDebugPoint(UserProc *p, const char *description);
 
+    QTextStream &getLogStream(int level=LL_Default); //!< Return overall logging target
+
     void logTail();
 
     // Command line flags
@@ -264,7 +271,6 @@ class Boomerang : public QObject {
     bool noRemoveReturns = false;
     bool debugDecoder = false;
     bool decodeThruIndCall = false;
-    std::ofstream *ofsIndCallReport = nullptr;
     bool noDecodeChildren = false;
     bool debugProof = false;
     bool debugUnused = false;
@@ -281,6 +287,8 @@ class Boomerang : public QObject {
     bool assumeABI = false;    ///< Assume ABI compliance
     bool experimental = false; ///< Activate experimental code. Caution!
     bool debugRangeAnalysis = false;
+    QTextStream LogStream;
+    QTextStream ErrStream;
     std::vector<ADDRESS> entrypoints;       /// A vector which contains all know entrypoints for the Prog.
     std::vector<QString> symbolFiles;   /// A vector containing the names off all symbolfiles to load.
     std::map<ADDRESS, std::string> symbols; /// A map to find a name by a given address.

@@ -67,8 +67,6 @@
 #include <QtCore/QDebug>
 #include <cassert>
 #include <algorithm> // For find()
-#include <fstream>
-#include <sstream>
 #include <cstring>
 
 void delete_lrtls(std::list<RTL *> &pLrtl);
@@ -407,8 +405,7 @@ BasicBlock *Cfg::splitBB(BasicBlock *pBB, ADDRESS uNativeAddr, BasicBlock *pNewB
             break;
     }
     if (ri == pBB->ListOfRTLs->end()) {
-        std::cerr << "could not split BB at " << std::hex << pBB->getLowAddr() << " at split address " << uNativeAddr
-                  << '\n';
+        LOG_STREAM() << "could not split BB at " << pBB->getLowAddr() << " at split address " << uNativeAddr;
         return pBB;
     }
 
@@ -669,6 +666,7 @@ void Cfg::sortByLastDFT() { m_listBB.sort(BasicBlock::lessLastDFT); }
   * \returns True if transformation was successful
   ******************************************************************************/
 bool Cfg::wellFormCfg() const {
+    QTextStream q_cerr(stderr);
     WellFormed = true;
     for (const BasicBlock *elem : m_listBB) {
         // it iterates through all BBs in the list
@@ -681,10 +679,9 @@ bool Cfg::wellFormCfg() const {
                 if ((*itm).second == elem)
                     break;
             if (itm == m_mapBB.end())
-                std::cerr << "WellFormCfg: incomplete BB not even in map!\n";
+                q_cerr << "WellFormCfg: incomplete BB not even in map!\n";
             else {
-                std::cerr << "WellFormCfg: BB with native address ";
-                std::cerr << std::hex << (*itm).first << " is incomplete\n";
+                q_cerr << "WellFormCfg: BB with native address " << (*itm).first << " is incomplete\n";
             }
         } else {
             // Complete. Test the out edges
@@ -700,13 +697,12 @@ bool Cfg::wellFormCfg() const {
                     if (pBB == nullptr) {
                         WellFormed = false; // At least one problem
                         ADDRESS addr = current->getLowAddr();
-                        std::cerr << "WellFormCfg: BB with native address " << std::hex << addr
-                                  << " is missing outedge " << i << '\n';
+                        q_cerr << "WellFormCfg: BB with native address " << addr << " is missing outedge " << i << '\n';
                     } else {
                         // Check that there is a corresponding in edge from the child to here
                         auto ii = std::find(pBB->InEdges.begin(),pBB->InEdges.end(),elem);
                         if (ii == pBB->InEdges.end()) {
-                            std::cerr << "WellFormCfg: No in edge to BB at " << std::hex << (elem)->getLowAddr()
+                            q_cerr << "WellFormCfg: No in edge to BB at " << (elem)->getLowAddr()
                                       << " from successor BB at " << pBB->getLowAddr() << '\n';
                             WellFormed = false; // At least one problem
                         }
@@ -719,7 +715,7 @@ bool Cfg::wellFormCfg() const {
             for (BasicBlock *elem_inedge : elem->InEdges) {
                 auto oo = std::find(elem_inedge->OutEdges.begin(),elem_inedge->OutEdges.end(),elem);
                 if (oo == elem_inedge->OutEdges.end()) {
-                    std::cerr << "WellFormCfg: No out edge to BB at " << std::hex << (elem)->getLowAddr()
+                    q_cerr << "WellFormCfg: No out edge to BB at " << (elem)->getLowAddr()
                               << " from predecessor BB at " << (*ii)->getLowAddr() << '\n';
                     WellFormed = false; // At least one problem
                 }
@@ -1203,8 +1199,9 @@ void Cfg::dump() {
 }
 
 void Cfg::dumpImplicitMap() {
+    QTextStream q_cerr(stderr);
     for (auto it : implicitMap) {
-        std::cerr << it.first << " -> " << it.second << "\n";
+        q_cerr << it.first << " -> " << it.second << "\n";
     }
 }
 
@@ -1793,7 +1790,8 @@ void Cfg::findInterferences(ConnectionGraph &cg) {
     while (workList.size() && count < 100000) {
         count++; // prevent infinite loop
         if (++progress > 20) {
-            std::cout << "i" << std::flush;
+            LOG_STREAM() << "i";
+            LOG_STREAM().flush();
             progress = 0;
         }
         BasicBlock *currBB = workList.back();
@@ -1829,17 +1827,17 @@ void Cfg::appendBBs(std::list<BasicBlock *> &worklist, std::set<BasicBlock *> &w
 }
 
 void dumpBB(BasicBlock *bb) {
-    std::cerr << "For BB at " << std::hex << bb << ":\nIn edges: ";
+    LOG_STREAM() << "For BB at " << bb << ":\nIn edges: ";
     std::vector<BasicBlock *> ins = bb->getInEdges();
     std::vector<BasicBlock *> outs = bb->getOutEdges();
     size_t i, n = ins.size();
     for (i = 0; i < n; i++)
-        std::cerr << ins[i] << " ";
-    std::cerr << "\nOut Edges: ";
+        LOG_STREAM() << ins[i] << " ";
+    LOG_STREAM() << "\nOut Edges: ";
     n = outs.size();
     for (i = 0; i < n; i++)
-        std::cerr << outs[i] << " ";
-    std::cerr << "\n";
+        LOG_STREAM() << outs[i] << " ";
+    LOG_STREAM() << "\n";
 }
 
 /*    pBB-> +----+    +----+ <-pBB
@@ -1870,8 +1868,8 @@ void dumpBB(BasicBlock *bb) {
  */
 BasicBlock *Cfg::splitForBranch(BasicBlock *pBB, RTL *rtl, BranchStatement *br1, BranchStatement *br2, BB_IT &it) {
 #if 0
-    std::cerr << "splitForBranch before:\n";
-    std::cerr << pBB->prints() << "\n";
+    LOG_STREAM() << "splitForBranch before:\n";
+    LOG_STREAM() << pBB->prints() << "\n";
 #endif
     std::list<RTL *>::iterator ri;
     // First find which RTL has the split address
@@ -1992,7 +1990,7 @@ BasicBlock *Cfg::splitForBranch(BasicBlock *pBB, RTL *rtl, BranchStatement *br1,
         }
 
 #if DEBUG_SPLIT_FOR_BRANCH
-        std::cerr << "About to delete pBB: " << std::hex << pBB << "\n";
+        LOG_STREAM() << "About to delete pBB: " << std::hex << pBB << "\n";
         dumpBB(pBB);
         dumpBB(skipBB);
         dumpBB(rptBB);
@@ -2006,11 +2004,11 @@ BasicBlock *Cfg::splitForBranch(BasicBlock *pBB, RTL *rtl, BranchStatement *br1,
         it++;
 
 #if 0
-    std::cerr << "splitForBranch after:\n";
-    if (pBB) std::cerr << pBB->prints(); else std::cerr << "<null>\n";
-    std::cerr << skipBB->prints();
-    std::cerr << rptBB->prints();
-    std::cerr << newBb->prints() << "\n";
+    LOG_STREAM() << "splitForBranch after:\n";
+    if (pBB) LOG_STREAM() << pBB->prints(); else LOG_STREAM() << "<null>\n";
+    LOG_STREAM() << skipBB->prints();
+    LOG_STREAM() << rptBB->prints();
+    LOG_STREAM() << newBb->prints() << "\n";
 #endif
     return newBb;
 }

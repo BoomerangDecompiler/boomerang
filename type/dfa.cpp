@@ -70,7 +70,8 @@ void UserProc::dfaTypeAnalysis() {
         for (it = stmts.begin(); it != stmts.end(); ++it) {
             if (++progress >= 2000) {
                 progress = 0;
-                std::cerr << "t" << std::flush;
+                LOG_STREAM() << "t";
+                LOG_STREAM().flush();
             }
             bool thisCh = false;
             (*it)->dfaTypeAnalysis(thisCh);
@@ -173,12 +174,12 @@ void UserProc::dfaTypeAnalysis() {
                 } else if (baseType->resolvesToInteger() || baseType->resolvesToFloat() || baseType->resolvesToSize()) {
                     ADDRESS addr = ADDRESS::g(con->getInt()); // TODO: use getAddr
                     _prog->globalUsed(addr, baseType);
-                    const char *gloName = _prog->getGlobalName(addr);
-                    if (gloName) {
+                    QString gloName = _prog->getGlobalName(addr);
+                    if (!gloName.isEmpty()) {
                         ADDRESS r = addr - _prog->getGlobalAddr(gloName);
                         Exp *ne;
                         if (!r.isZero()) { // TODO: what if r is NO_ADDR ?
-                            Exp *g = Location::global(strdup(gloName), this);
+                            Exp *g = Location::global(strdup(qPrintable(gloName)), this);
                             ne = Location::memOf(Binary::get(opPlus, new Unary(opAddrOf, g), new Const(r)), this);
                         } else {
                             Type *ty = _prog->getGlobalType(gloName);
@@ -188,7 +189,7 @@ void UserProc::dfaTypeAnalysis() {
                                 if (ty == nullptr || ty->getSize() == 0)
                                     _prog->setGlobalType(gloName, IntegerType::get(bits));
                             }
-                            Exp *g = Location::global(strdup(gloName), this);
+                            Exp *g = Location::global(strdup(qPrintable(gloName)), this);
                             if (ty && ty->resolvesToArray())
                                 ne = Binary::get(opArrayIndex, g, new Const(0));
                             else
@@ -432,9 +433,9 @@ Type *PointerType::meetWith(Type *other, bool &ch, bool bHighestPtr) const {
             // See if the base types will meet
             if (otherBase->resolvesToPointer()) {
                 if (thisBase->resolvesToPointer() && thisBase->asPointer()->getPointsTo() == thisBase)
-                    std::cerr << "HACK! BAD POINTER 1\n";
+                    LOG_STREAM() << "HACK! BAD POINTER 1\n";
                 if (otherBase->resolvesToPointer() && otherBase->asPointer()->getPointsTo() == otherBase)
-                    std::cerr << "HACK! BAD POINTER 2\n";
+                    LOG_STREAM() << "HACK! BAD POINTER 2\n";
                 if (thisBase == otherBase) // Note: compare pointers
                     return (Type *)this;   // Crude attempt to prevent stack overflow
                 if (*thisBase == *otherBase)
@@ -567,13 +568,13 @@ Type *UnionType::meetWith(Type *other, bool &ch, bool bHighestPtr) const {
     char name[20];
 #if PRINT_UNION                                   // Set above
     if (unionCount == 999)                        // Adjust the count to catch the one you want
-        std::cerr << "createUnion breakpokint\n"; // Note: you need two breakpoints (also in Type::createUnion)
-    std::cerr << "  " << ++unionCount << " Created union from " << getCtype() << " and " << other->getCtype();
+        LOG_STREAM() << "createUnion breakpokint\n"; // Note: you need two breakpoints (also in Type::createUnion)
+    LOG_STREAM() << "  " << ++unionCount << " Created union from " << getCtype() << " and " << other->getCtype();
 #endif
     sprintf(name, "x%d", ++nextUnionNumber);
     ((UnionType *)this)->addType(other->clone(), name);
 #if PRINT_UNION
-    std::cerr << ", result is " << getCtype() << "\n";
+    LOG_STREAM() << ", result is " << getCtype() << "\n";
 #endif
     ch = true;
     return (Type *)this;
@@ -673,7 +674,7 @@ Type *Type::createUnion(Type *other, bool &ch, bool bHighestPtr /* = false */) c
     char name[20];
 #if PRINT_UNION
     if (unionCount == 999)                        // Adjust the count to catch the one you want
-        std::cerr << "createUnion breakpokint\n"; // Note: you need two breakpoints (also in UnionType::meetWith)
+        LOG_STREAM() << "createUnion breakpokint\n"; // Note: you need two breakpoints (also in UnionType::meetWith)
 #endif
     sprintf(name, "x%d", ++nextUnionNumber);
     UnionType *u = new UnionType;
@@ -682,7 +683,7 @@ Type *Type::createUnion(Type *other, bool &ch, bool bHighestPtr /* = false */) c
     u->addType(other->clone(), name);
     ch = true;
 #if PRINT_UNION
-    std::cerr << "  " << ++unionCount << " Created union from " << getCtype() << " and " << other->getCtype()
+    LOG_STREAM() << "  " << ++unionCount << " Created union from " << getCtype() << " and " << other->getCtype()
               << ", result is " << u->getCtype() << "\n";
 #endif
     return u;
@@ -965,7 +966,7 @@ Type *Binary::ascendType() {
 // Constants and subscripted locations are at the leaves of the expression tree. Just return their stored types.
 Type *RefExp::ascendType() {
     if (def == nullptr) {
-        std::cerr << "Warning! Null reference in " << this << "\n";
+        LOG_STREAM() << "Warning! Null reference in " << this << "\n";
         return new VoidType;
     }
     return def->getTypeFor(subExp1);
@@ -1014,7 +1015,7 @@ Type *Terminal::ascendType() {
     case opFlags:
         return IntegerType::get(STD_SIZE, -1);
     default:
-        std::cerr << "ascendType() for terminal " << this << " not implemented!\n";
+        LOG_STREAM() << "ascendType() for terminal " << this << " not implemented!\n";
         return new VoidType;
     }
 }

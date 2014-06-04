@@ -309,7 +309,7 @@ bool BasicBlock::isBackEdge(size_t inEdge) const {
 
 // Another attempt at printing BBs that gdb doesn't like to print
 // void printBB(BasicBlock * bb) {
-//    bb->print(std::cerr);
+//    bb->print(LOG_STREAM());
 //}
 
 /***************************************************************************/ /**
@@ -1305,7 +1305,7 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, BasicBlock *latch, std
         }
         break;
     default:
-        std::cerr << "unhandled sType " << (int)StructuringType << "\n";
+        LOG_STREAM() << "unhandled sType " << (int)StructuringType << "\n";
     }
 }
 /**
@@ -1318,7 +1318,7 @@ Function *BasicBlock::getDestProc() {
     assert(call->getKind() == STMT_CALL);
     Function *proc = call->getDestProc();
     if (proc == nullptr) {
-        std::cerr << "Indirect calls not handled yet\n";
+        LOG_STREAM() << "Indirect calls not handled yet\n";
         assert(0);
     }
     return proc;
@@ -1915,7 +1915,7 @@ bool BasicBlock::decodeIndirectJmp(UserProc *proc) {
                 if (!it->def->isPhi())
                     continue;
                 if (seenSet.exists(it->def)) {
-                    std::cerr << "Real phi loop involving statements " << originalPhi->getNumber() << " and "
+                    LOG_STREAM() << "Real phi loop involving statements " << originalPhi->getNumber() << " and "
                               << pi->getNumber() << "\n";
                     break;
                 } else {

@@ -61,7 +61,7 @@ class Cluster {
     QString getOutPath(const char *ext);
     Cluster *find(const QString &nam);
     virtual bool isAggregate() { return false; }
-    void printTree(std::ostream &out);
+    void printTree(QTextStream &out);
 
   protected:
     friend class XMLProgParser;

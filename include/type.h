@@ -755,6 +755,6 @@ class DataIntervalMap {
 };
 
 // Not part of the Type class, but logically belongs with it:
-std::ostream &operator<<(std::ostream &os, const Type *t); // Print the Type pointed to by t
+QTextStream &operator<<(QTextStream &os, const Type *t); // Print the Type pointed to by t
 
 #endif // __TYPE_H__

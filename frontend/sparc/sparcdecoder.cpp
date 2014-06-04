@@ -51,6 +51,15 @@
 #define DIS_FS1Q (machine->dis_RegRhs((fs1q >> 2) + 80))
 #define DIS_FS2Q (machine->dis_RegRhs((fs2q >> 2) + 80))
 
+void DEBUG_STMTS(DecodeResult &result) {
+    if (DEBUG_DECODER) {
+        QTextStream q_cout(stdout);
+        std::list<Instruction *>::iterator ii;
+        for (ii = result.rtl->begin(); ii != result.rtl->end(); ii++)
+            q_cout << "            " << *ii << "\n";
+    }
+}
+
 /***************************************************************************/ /**
   * \fn       unused
   * \brief       A dummy function to suppress "unused local variable" messages
@@ -101,7 +110,7 @@ RTL *SparcDecoder::createBranchRtl(ADDRESS pc, std::list<Instruction *> *stmts, 
             // Else it's FBN!
             break;
         default:
-            std::cerr << "unknown float branch " << name << '\n';
+            LOG_STREAM(2) << "unknown float branch " << name << '\n';
             delete res;
             res = nullptr;
         }
@@ -141,9 +150,9 @@ RTL *SparcDecoder::createBranchRtl(ADDRESS pc, std::list<Instruction *> *stmts, 
     case 'V':
         // BVC, BVS; should never see these now
         if (name[2] == 'C')
-            std::cerr << "Decoded BVC instruction\n"; // BVC
+            LOG_STREAM(2) << "Decoded BVC instruction\n"; // BVC
         else
-            std::cerr << "Decoded BVS instruction\n"; // BVS
+            LOG_STREAM(2) << "Decoded BVS instruction\n"; // BVS
         break;
     case 'G':
         // BGE, BG, BGU
@@ -169,7 +178,7 @@ RTL *SparcDecoder::createBranchRtl(ADDRESS pc, std::list<Instruction *> *stmts, 
         delete res;
         return createBranchRtl(pc, stmts, temp);
     default:
-        std::cerr << "unknown non-float branch " << name << '\n';
+        LOG_STREAM(2) << "unknown non-float branch " << name << '\n';
     }
     return res;
 }
@@ -363,9 +372,9 @@ DecodeResult &SparcDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta) {
                         result.rtl = new RTL(pc, stmts);
                         result.rtl->appendStmt(jump);
                         jump->setDest(tgt - delta);
-                        SHOW_ASM("BPA " << std::hex << tgt - delta)
+                        SHOW_ASM("BPA " << tgt - delta)
 
-                        DEBUG_STMTS
+                        DEBUG_STMTS(result);
 
                     } /*opt-block*/ /*opt-block+*/
                     else {
@@ -422,8 +431,8 @@ DecodeResult &SparcDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta) {
                                 result.type = NCT;
                             result.rtl = rtl;
                             jump->setDest(tgt - delta);
-                            SHOW_ASM(name << " " << std::hex << tgt - delta)
-                            DEBUG_STMTS
+                            SHOW_ASM(name << " " <<  tgt - delta)
+                            DEBUG_STMTS(result);
                         }
 
                     } /*opt-block*/ /*opt-block+*/
@@ -532,9 +541,9 @@ DecodeResult &SparcDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta) {
                 result.rtl = new RTL(pc, stmts);
                 result.rtl->appendStmt(newCall);
                 result.type = SD;
-                SHOW_ASM("call__ " << std::hex << (nativeDest))
+                SHOW_ASM("call__ " <<  (nativeDest))
 
-                DEBUG_STMTS
+                DEBUG_STMTS(result);
             } break;
             case 2:
                 switch ((MATCH_w_32_0 >> 19 & 0x3f) /* op3 at 0 */) {
@@ -1207,7 +1216,7 @@ DecodeResult &SparcDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta) {
                                     result.type = DD;
                                     SHOW_ASM("retl_")
 
-                                    DEBUG_STMTS
+                                    DEBUG_STMTS(result);
 
                                 } /*opt-block*/ /*opt-block+*/
                                 else
@@ -1231,7 +1240,7 @@ DecodeResult &SparcDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta) {
                                     result.type = DD;
                                     SHOW_ASM("ret_")
 
-                                    DEBUG_STMTS
+                                    DEBUG_STMTS(result);
 
                                 } /*opt-block*/ /*opt-block+*/
                                 else
@@ -1637,9 +1646,9 @@ DecodeResult &SparcDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta) {
 
             result.rtl = rtl;
             jump->setDest(tgt - delta);
-            SHOW_ASM(name << " " << std::hex << tgt - delta)
+            SHOW_ASM(name << " " <<  tgt - delta)
 
-            DEBUG_STMTS
+            DEBUG_STMTS(result);
         }
         goto MATCH_finished_d;
     MATCH_label_d1:
@@ -1706,9 +1715,9 @@ DecodeResult &SparcDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta) {
                 result.type = NCT;
             result.rtl = rtl;
             jump->setDest(tgt - delta);
-            SHOW_ASM(name << " " << std::hex << tgt - delta)
+            SHOW_ASM(name << " " <<  tgt - delta)
 
-            DEBUG_STMTS
+            DEBUG_STMTS(result);
         }
         goto MATCH_finished_d;
     MATCH_label_d2:
@@ -1777,9 +1786,9 @@ DecodeResult &SparcDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta) {
 
             result.rtl = rtl;
             jump->setDest(tgt - delta);
-            SHOW_ASM(name << " " << std::hex << tgt - delta)
+            SHOW_ASM(name << " " <<  tgt - delta)
 
-            DEBUG_STMTS
+            DEBUG_STMTS(result);
         }
         goto MATCH_finished_d;
     MATCH_label_d3:
@@ -1847,7 +1856,7 @@ DecodeResult &SparcDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta) {
             unused(rd);
             SHOW_ASM("JMPL ")
 
-            DEBUG_STMTS
+            DEBUG_STMTS(result);
 
             //    //    //    //    //    //    //    //
 
@@ -1885,7 +1894,7 @@ DecodeResult &SparcDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta) {
             result.type = DD;
             SHOW_ASM("call_ " << dis_Eaddr(addr))
 
-            DEBUG_STMTS
+            DEBUG_STMTS(result);
         }
         goto MATCH_finished_d;
     MATCH_label_d8:
