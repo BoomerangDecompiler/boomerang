@@ -90,8 +90,8 @@ static void help() {
  * Prints a short usage statement.
  */
 static void usage() {
-    std::cout << "Usage: boomerang [ switches ] <program>" << std::endl;
-    std::cout << "boomerang -h for switch help" << std::endl;
+    std::cout << "Usage: boomerang [ switches ] <program>" << '\n';
+    std::cout << "boomerang -h for switch help" << '\n';
 }
 int CommandlineDriver::applyCommandline() {
     printf("Boomerang %s\n", VERSION); // Display a version and date (mainly for release versions)
@@ -131,7 +131,7 @@ int CommandlineDriver::applyCommandline() {
             bool converted = false;
             addr.m_value = args[i].toLongLong(&converted, 0);
             if (not converted) {
-                std::cerr << "bad address: " << args[i].toStdString() << std::endl;
+                std::cerr << "bad address: " << args[i].toStdString() << '\n';
                 exit(1);
             }
             boom.entrypoints.push_back(addr);
@@ -274,7 +274,7 @@ int CommandlineDriver::applyCommandline() {
             bool converted = false;
             addr.m_value = args[i].toLongLong(&converted, 0);
             if (not converted) {
-                std::cerr << "bad address: " << args[i + 1].toStdString() << std::endl;
+                std::cerr << "bad address: " << args[i + 1].toStdString() << '\n';
                 exit(1);
             }
             boom.symbols[addr] = args[++i].toStdString();

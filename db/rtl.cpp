@@ -140,13 +140,12 @@ void RTL::appendListStmt(std::list<Instruction *> &le) {
   * \brief   Prints this object to a stream in text form.
   * \param   os - stream to output to (often cout or cerr)
   ******************************************************************************/
-void RTL::print(std::ostream &os /*= cout*/, bool html /*=false*/) const {
+void RTL::print(QTextStream &os /*= cout*/, bool html /*=false*/) const {
 
     if (html)
         os << "<tr><td>";
     // print out the instruction address of this RTL
-    os << std::hex << std::setfill('0') << std::setw(8) << nativeAddr;
-    os << std::dec << std::setfill(' '); // Ugh - why is this needed?
+    os << QString("%1").arg(nativeAddr.m_value,8,16,QChar('0'));
     if (html)
         os << "</td>";
 
@@ -162,7 +161,7 @@ void RTL::print(std::ostream &os /*= cout*/, bool html /*=false*/) const {
             if (bFirst)
                 os << " ";
             else
-                os << std::setw(9) << " ";
+                os << qSetFieldWidth(9) << " " << qSetFieldWidth(0);
         }
         if (stmt)
             stmt->print(os, html);
@@ -174,17 +173,21 @@ void RTL::print(std::ostream &os /*= cout*/, bool html /*=false*/) const {
         bFirst = false;
     }
     if (empty())
-        os << std::endl; // New line for NOP
+        os << '\n'; // New line for NOP
 }
 
-void RTL::dump() { print(std::cerr); }
+void RTL::dump() {
+    QTextStream q_cerr(stderr);
+    print(q_cerr);
+}
 
 extern char debug_buffer[];
 
 char *RTL::prints() const {
-    std::ostringstream ost;
+    QString tgt;
+    QTextStream ost(&tgt);
     print(ost);
-    strncpy(debug_buffer, ost.str().c_str(), DEBUG_BUFSIZE - 1);
+    strncpy(debug_buffer, qPrintable(tgt), DEBUG_BUFSIZE - 1);
     debug_buffer[DEBUG_BUFSIZE - 1] = '\0';
     return debug_buffer;
 }
@@ -196,7 +199,7 @@ char *RTL::prints() const {
   * \param   r ptr to RTL to print to the stream
   * \returns os (for concatenation)
   ******************************************************************************/
-std::ostream &operator<<(std::ostream &os, const RTL *r) {
+QTextStream &operator<<(QTextStream &os, const RTL *r) {
     if (r == nullptr) {
         os << "nullptr ";
         return os;

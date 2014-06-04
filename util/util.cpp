@@ -117,7 +117,7 @@ std::ostream &operator<<(std::ostream &stream, const ADDRESS &addr) {
 #include <QtCore/QTextStream>
 QTextStream& operator<<(QTextStream& os, const ADDRESS& mdv) {
     //TODO: properly format ADDRESS : 0-fill to max width.
-    os << "0x" << QString::number(mdv.m_value,16);
+    os << QString::number(mdv.m_value,16);
     return os;
 }
 

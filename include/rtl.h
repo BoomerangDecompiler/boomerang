@@ -76,7 +76,7 @@ class RTL : public std::list<Instruction *> {
     void deepCopyList(std::list<Instruction *> &dest) const;
 
     // Print RTL to a stream.
-    void print(std::ostream &os, bool html = false) const;
+    void print(QTextStream &os, bool html = false) const;
     void dump();
 
     bool isCall(); // Is this RTL a call instruction?
@@ -171,7 +171,7 @@ class RTLInstDict {
                                            const std::vector<Exp *> &actuals);
 
     void transformPostVars(std::list<Instruction *> &rts, bool optimise);
-    void print(std::ostream &os);
+    void print(QTextStream &os);
     void addRegister(const char *name, int id, int size, bool flt);
     bool partialType(Exp *exp, Type &ty);
     void fixupParams();

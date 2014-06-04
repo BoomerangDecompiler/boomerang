@@ -118,10 +118,10 @@ class Prog {
     void dfaTypeAnalysis();
     void rangeAnalysis();
     void generateDotFile();
-    void generateCode(std::ostream &os);
+    void generateCode(QTextStream &os);
     void generateCode(Cluster *cluster = nullptr, UserProc *proc = nullptr, bool intermixRTL = false);
     void generateRTL(Cluster *cluster = nullptr, UserProc *proc = nullptr);
-    void print(std::ostream &out);
+    void print(QTextStream &out);
     LibProc *getLibraryProc(const char *nam);
     Signature *getLibSignature(const std::string &name);
     void rereadLibSignatures();
@@ -183,7 +183,7 @@ class Prog {
         std::ofstream os;
         return pFE->processProc(addr, proc, os);
     }
-    void readSymbolFile(const char *fname);
+    void readSymbolFile(const QString &fname);
     size_t getImageSize() { return pLoaderIface->getImageSize(); }
     ADDRESS getImageBase() { return pLoaderIface->getImageBase(); }
     void printSymbolsToFile();

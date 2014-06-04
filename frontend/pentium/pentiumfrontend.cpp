@@ -392,7 +392,7 @@ void PentiumFrontEnd::emitSet(std::list<RTL *> *BB_rtls, std::list<RTL *>::itera
     Instruction *asgn = new Assign(lhs, new Ternary(opTern, cond, Const::get(1), Const::get(0)));
     RTL *pRtl = new RTL(uAddr);
     pRtl->appendStmt(asgn);
-    //    std::cout << "Emit "; pRtl->print(); std::cout << std::endl;
+    //    std::cout << "Emit "; pRtl->print(); std::cout << '\n';
     // Insert the new RTL before rit
     BB_rtls->insert(rit, pRtl);
 }
@@ -522,7 +522,7 @@ ADDRESS PentiumFrontEnd::getMainEntryPoint(bool &gotMain) {
                     "GetModuleHandleA")) {
 #if 0
             std::cerr << "consider " << std::hex << addr << " " <<
-                         pBF->GetDynamicProcName(((Const*)cs->getDest()->getSubExp1())->getAddr()) << std::endl;
+                         pBF->GetDynamicProcName(((Const*)cs->getDest()->getSubExp1())->getAddr()) << '\n';
 #endif
             int oNumBytes = inst.numBytes;
             inst = decodeInstruction(addr + oNumBytes);
@@ -530,7 +530,7 @@ ADDRESS PentiumFrontEnd::getMainEntryPoint(bool &gotMain) {
                 Assign *a = dynamic_cast<Assign *>(inst.rtl->back()); // using back instead of rtl[1], since size()==2
                 if (a && *a->getRight() == *Location::regOf(24)) {
 #if 0
-                    std::cerr << "is followed by push eax.. " << "good" << std::endl;
+                    std::cerr << "is followed by push eax.. " << "good" << '\n';
 #endif
                     inst = decodeInstruction(addr + oNumBytes + inst.numBytes);
                     if (not inst.rtl->empty()) {

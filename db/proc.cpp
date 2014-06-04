@@ -367,11 +367,10 @@ void UserProc::printDecodedXML() {
     QTextStream out(&file);
     out << "<proc name=\"" << getName() << "\">\n";
     out << "    <decoded>\n";
-    std::ostringstream os;
+    QString enc;
+    QTextStream os(&enc);
     print(os);
-    std::string s = os.str();
-    escapeXMLChars(s);
-    out << s.c_str();
+    out << enc.toHtmlEscaped();
     out << "    </decoded>\n";
     out << "</proc>\n";
 }
@@ -387,11 +386,10 @@ void UserProc::printAnalysedXML() {
     QTextStream out(&file);
     out << "<proc name=\"" << getName() << "\">\n";
     out << "    <analysed>\n";
-    std::ostringstream os;
+    QString enc;
+    QTextStream os(&enc);
     print(os);
-    std::string s = os.str();
-    escapeXMLChars(s);
-    out << s.c_str();
+    out << enc.toHtmlEscaped();
     out << "    </analysed>\n";
     out << "</proc>\n";
 }
@@ -407,11 +405,10 @@ void UserProc::printSSAXML() {
     QTextStream out(&file);
     out << "<proc name=\"" << getName() << "\">\n";
     out << "    <ssa>\n";
-    std::ostringstream os;
+    QString enc;
+    QTextStream os(&enc);
     print(os);
-    std::string s = os.str();
-    escapeXMLChars(s);
-    out << s.c_str();
+    out << enc.toHtmlEscaped();
     out << "    </ssa>\n";
     out << "</proc>\n";
 }
@@ -499,7 +496,7 @@ LibProc::~LibProc() {}
   ******************************************************************************/
 // std::ostream& LibProc::put(std::ostream& os) {
 //    os << "library procedure `" << signature->getName() << "' resides at 0x";
-//    return os << std::hex << address << std::endl;
+//    return os << std::hex << address << '\n';
 //}
 
 //! Get the RHS that is proven for left
@@ -633,12 +630,15 @@ void UserProc::printAST(SyntaxNode *a) {
     if (a == nullptr)
         a = getAST();
     sprintf(s, "ast%i-%s.dot", count++, qPrintable(getName()));
-    std::ofstream of(s);
-    of << "digraph " << getName().toStdString() << " {" << std::endl;
-    of << "     label=\"score: " << a->evaluate(a) << "\";" << std::endl;
+    QFile tgt(s);
+    if(!tgt.open(QFile::WriteOnly)){
+        return; //TODO: report error ?
+    }
+    QTextStream of(&tgt);
+    of << "digraph " << getName() << " {" << '\n';
+    of << "     label=\"score: " << a->evaluate(a) << "\";" << '\n';
     a->printAST(a, of);
-    of << "}" << std::endl;
-    of.close();
+    of << "}" << '\n';
 }
 
 /***************************************************************************/ /**
@@ -748,37 +748,32 @@ void UserProc::generateCode(HLLCode *hll) {
 }
 
 /// print this proc, mainly for debugging
-void UserProc::print(std::ostream &out, bool html) const {
+void UserProc::print(QTextStream &out, bool html) const {
+    QString tgt1;
+    QString tgt2;
+    QString tgt3;
+    QTextStream ost1(&tgt1);
+    QTextStream ost2(&tgt2);
+    QTextStream ost3(&tgt3);
+    printParams(ost1, html);
+    dumpLocals(ost1, html);
+    col.print(ost2);
+    cfg->print(ost3, html);
+
     signature->print(out, html);
     if (html)
         out << "<br>";
-    out << "in cluster " << cluster->getName().toStdString() << "\n";
+    out << "in cluster " << cluster->getName() << "\n";
     if (html)
         out << "<br>";
-    std::ostringstream ost;
-    printParams(ost, html);
-    dumpLocals(ost, html);
-    out << ost.str().c_str();
+    out << tgt1;
     printSymbolMap(out, html);
     if (html)
         out << "<br>";
-    out << "live variables: ";
-    std::ostringstream ost2;
-    col.print(ost2);
-    out << ost2.str().c_str() << "\n";
+    out << "live variables: " << tgt2 << "\n";
     if (html)
         out << "<br>";
-    out << "end live variables\n";
-    std::ostringstream ost3;
-    cfg->print(ost3, html);
-    out << ost3.str().c_str();
-    out << "\n";
-}
-
-void UserProc::print(QTextStream &out, bool html) const {
-    std::ostringstream ostr;
-    print(ostr, html);
-    out << ostr.str().c_str();
+    out << "end live variables\n" << tgt3 << "\n";
 }
 
 void UserProc::setStatus(ProcStatus s) {
@@ -786,7 +781,7 @@ void UserProc::setStatus(ProcStatus s) {
     Boomerang::get()->alertProcStatusChange(this);
 }
 
-void UserProc::printParams(std::ostream &out, bool html /*= false*/) const {
+void UserProc::printParams(QTextStream &out, bool html /*= false*/) const {
     if (html)
         out << "<br>";
     out << "parameters: ";
@@ -805,14 +800,18 @@ void UserProc::printParams(std::ostream &out, bool html /*= false*/) const {
 }
 
 char *UserProc::prints() {
-    std::ostringstream ost;
+    QString tgt;
+    QTextStream ost(&tgt);
     print(ost);
-    strncpy(debug_buffer, ost.str().c_str(), DEBUG_BUFSIZE);
+    strncpy(debug_buffer, qPrintable(tgt), DEBUG_BUFSIZE - 1);
     debug_buffer[DEBUG_BUFSIZE - 1] = '\0';
     return debug_buffer;
 }
 
-void UserProc::dump() { print(std::cerr); }
+void UserProc::dump() {
+    QTextStream q_cerr(stderr);
+    print(q_cerr);
+}
 
 void UserProc::printDFG() const {
     QString fname =
@@ -1413,7 +1412,7 @@ ProcSet *UserProc::middleDecompile(ProcList *path, int indent) {
                                     << getName() << " pass " << pass << " (no propagations) ===\n\n";
         }
 
-        if (!Boomerang::get()->dotFile.empty()) // Require -gd now (though doesn't listen to file name)
+        if (!Boomerang::get()->dotFile.isEmpty()) // Require -gd now (though doesn't listen to file name)
             printDFG();
         Boomerang::get()->alertDecompileSSADepth(this, pass); // FIXME: need depth -> pass in GUI code
 
@@ -2844,50 +2843,52 @@ Instruction *UserProc::getStmtAtLex(unsigned int begin, unsigned int end) {
 void UserProc::promoteSignature() { signature = signature->promote(this); }
 
 /// Return a string for a new local suitable for \a e
-const char *UserProc::newLocalName(Exp *e) {
-    std::ostringstream ost;
+QString UserProc::newLocalName(Exp *e) {
+    QString tgt;
+    QTextStream ost(&tgt);
     if (e->isSubscript() && ((RefExp *)e)->getSubExp1()->isRegOf()) {
         // Assume that it's better to know what register this location was created from
-        const char *regName = getRegName(((RefExp *)e)->getSubExp1());
+        QString regName = getRegName(((RefExp *)e)->getSubExp1());
         int tag = 0;
         do {
-            ost.str("");
+            ost.flush();
+            tgt.clear();
             ost << regName << "_" << ++tag;
-        } while (locals.find(ost.str()) != locals.end());
-        return strdup(ost.str().c_str());
+        } while (locals.find(tgt.toStdString()) != locals.end());
+        return tgt;
     }
     ost << "local" << nextLocal++;
-    return strdup(ost.str().c_str());
+    return tgt;
 }
 /**
  * Return the next available local variable; make it the given type. Note: was returning TypedExp*.
  * If nam is non null, use that name
  */
 Exp *UserProc::newLocal(Type *ty, Exp *e, char *nam /* = nullptr */) {
-    std::string name;
+    QString name;
     if (nam == nullptr)
         name = newLocalName(e);
     else
         name = nam; // Use provided name
-    locals[name] = ty;
+    locals[name.toStdString()] = ty;
     if (ty == nullptr) {
         std::cerr << "null type passed to newLocal\n";
         assert(false);
     }
     if (VERBOSE)
-        LOG << "assigning type " << ty->getCtype() << " to new " << name.c_str() << "\n";
-    return Location::local(strdup(name.c_str()), this);
+        LOG << "assigning type " << ty->getCtype() << " to new " << name << "\n";
+    return Location::local(strdup(qPrintable(name)), this);
 }
 
 /**
  * Add a new local supplying all needed information.
  */
-void UserProc::addLocal(Type *ty, const char *nam, Exp *e) {
+void UserProc::addLocal(Type *ty, const QString &nam, Exp *e) {
     // symbolMap is a multimap now; you might have r8->o0 for integers and r8->o0_1 for char*
     // assert(symbolMap.find(e) == symbolMap.end());
-    mapSymbolTo(e, Location::local(strdup(nam), this));
+    mapSymbolTo(e, Location::local(strdup(qPrintable(nam)), this));
     // assert(locals.find(nam) == locals.end());        // Could be r10{20} -> o2, r10{30}->o2 now
-    locals[nam] = ty;
+    locals[nam.toStdString()] = ty;
 }
 
 /// return a local's type
@@ -4113,7 +4114,7 @@ const char *UserProc::lookupSym(const Exp *e, Type *ty) {
     return nullptr;
 }
 //! Print just the symbol map
-void UserProc::printSymbolMap(std::ostream &out, bool html /*= false*/) const {
+void UserProc::printSymbolMap(QTextStream &out, bool html /*= false*/) const {
     if (html)
         out << "<br>";
     out << "symbols:\n";
@@ -4128,12 +4129,12 @@ void UserProc::printSymbolMap(std::ostream &out, bool html /*= false*/) const {
     out << "end symbols\n";
 }
 
-void UserProc::dumpLocals(std::ostream &os, bool html) const {
+void UserProc::dumpLocals(QTextStream &os, bool html) const {
     if (html)
         os << "<br>";
     os << "locals:\n";
     for (const std::pair<std::string, Type *> &it : locals) {
-        os << it.second->getCtype().toStdString() << " " << it.first.c_str() << " ";
+        os << it.second->getCtype() << " " << it.first.c_str() << " ";
         const Exp *e = expFromSymbol(it.first.c_str());
         // Beware: for some locals, expFromSymbol() returns nullptr (? No longer?)
         if (e)
@@ -4188,9 +4189,8 @@ void UserProc::testSymbolMap() {
 }
 
 void UserProc::dumpLocals() {
-    std::stringstream ost;
-    dumpLocals(ost);
-    std::cerr << ost.str();
+    QTextStream q_cerr(stderr);
+    dumpLocals(q_cerr);
 }
 //! Update the arguments in calls
 void UserProc::updateArguments() {
@@ -4207,9 +4207,10 @@ void UserProc::updateArguments() {
         c->updateArguments();
         // c->bypass();
         if (VERBOSE) {
-            std::ostringstream ost;
+            QString tgt;
+            QTextStream ost(&tgt);
             c->print(ost);
-            LOG << ost.str().c_str() << "\n";
+            LOG << tgt << "\n";
         }
     }
     LOG_VERBOSE(1) << "=== end update arguments for " << getName() << "\n";
@@ -4529,23 +4530,23 @@ void UserProc::fixCallAndPhiRefs() {
     // a[m[]] hack, aint nothing better.
     bool found = true;
     for (it = stmts.begin(); it != stmts.end(); it++) {
-        if ((*it)->isCall()) {
-            CallStatement *call = (CallStatement *)*it;
-            for (auto &elem : call->getArguments()) {
-                Assign *a = (Assign *)elem;
-                if (a->getType()->resolvesToPointer()) {
-                    Exp *e = a->getRight();
-                    if (e->getOper() == opPlus || e->getOper() == opMinus)
-                        if (e->getSubExp2()->isIntConst())
-                            if (e->getSubExp1()->isSubscript() &&
-                                e->getSubExp1()->getSubExp1()->isRegN(signature->getStackRegister()) &&
-                                (((RefExp *)e->getSubExp1())->getDef() == nullptr ||
-                                 ((RefExp *)e->getSubExp1())->getDef()->isImplicit())) {
-                                a->setRight(new Unary(opAddrOf, Location::memOf(e->clone())));
-                                found = true;
-                            }
-                }
-            }
+        if (!(*it)->isCall())
+            continue;
+        CallStatement *call = (CallStatement *)*it;
+        for (auto &elem : call->getArguments()) {
+            Assign *a = (Assign *)elem;
+            if (!a->getType()->resolvesToPointer())
+                continue;
+            Exp *e = a->getRight();
+            if (e->getOper() == opPlus || e->getOper() == opMinus)
+                if (e->getSubExp2()->isIntConst())
+                    if (e->getSubExp1()->isSubscript() &&
+                        e->getSubExp1()->getSubExp1()->isRegN(signature->getStackRegister()) &&
+                        (((RefExp *)e->getSubExp1())->getDef() == nullptr ||
+                         ((RefExp *)e->getSubExp1())->getDef()->isImplicit())) {
+                        a->setRight(new Unary(opAddrOf, Location::memOf(e->clone())));
+                        found = true;
+                    }
         }
     }
     if (found)
@@ -4748,9 +4749,10 @@ void UserProc::initialParameters() {
     for (Exp *v : col)
         parameters.append(new ImplicitAssign(v->clone()));
     if (VERBOSE) {
-        std::ostringstream ost;
+        QString tgt;
+        QTextStream ost(&tgt);
         printParams(ost);
-        LOG << ost.str().c_str();
+        LOG << tgt;
     }
 }
 
@@ -5151,9 +5153,10 @@ bool UserProc::removeRedundantReturns(std::set<UserProc *> &removeRetSet) {
     }
 
     if (DEBUG_UNUSED) {
-        std::ostringstream ost;
+        QString tgt;
+        QTextStream ost(&tgt);
         unionOfCallerLiveLocs.print(ost);
-        LOG << "%%%  union of caller live locations for " << getName() << ": " << ost.str().c_str() << "\n";
+        LOG << "%%%  union of caller live locations for " << getName() << ": " << tgt << "\n";
         LOG << "%%%  final returns for " << getName() << ": " << theReturnStatement->getReturns().prints() << "\n";
     }
 
@@ -5682,7 +5685,7 @@ void UserProc::findPhiUnites(ConnectionGraph &pu) {
 }
 // WARN: write tests for getRegName in all combinations of r[1] r[tmp+1] etc.
 /// Get a name like eax or o2 from r24 or r8
-const char *UserProc::getRegName(Exp *r) {
+QString UserProc::getRegName(Exp *r) {
     assert(r->isRegOf());
 
     // assert(r->getSubExp1()->isConst());
@@ -5698,11 +5701,12 @@ const char *UserProc::getRegName(Exp *r) {
     // in some cases the form might be r[tmp+value]
     // just return this expression :(
     // WARN: this is a hack to prevent crashing when r->subExp1 is not const
-    std::ostringstream ostr;
+    QString tgt;
+    QTextStream ostr(&tgt);
 
     r->getSubExp1()->print(ostr);
 
-    return strdup(ostr.str().c_str());
+    return tgt;
 }
 //! Find the type of the local or parameter \a e
 Type *UserProc::getTypeForLocation(const Exp *e) {
@@ -5780,9 +5784,8 @@ void UserProc::nameParameterPhis() {
     }
 }
 //! True if a local exists with name \a name
-bool UserProc::existsLocal(const char *name) {
-    std::string s(name);
-    return locals.find(s) != locals.end();
+bool UserProc::existsLocal(const QString &name) {
+    return locals.find(name.toStdString()) != locals.end();
 }
 //! Check if \a r is already mapped to a local, else add one
 void UserProc::checkLocalFor(RefExp *r) {
@@ -5794,7 +5797,7 @@ void UserProc::checkLocalFor(RefExp *r) {
     Exp *base = r->getSubExp1();
     Type *ty = def->getTypeFor(base);
     // No, get its name from the front end
-    const char *locName = nullptr;
+    QString locName = nullptr;
     if (base->isRegOf()) {
         locName = getRegName(base);
         // Create a new local, for the base name if it doesn't exist yet, so we don't need several names for the
@@ -5880,8 +5883,9 @@ void UserProc::dfa_analyze_scaled_array_ref(Instruction *s, Prog *prog) {
     }
 }
 Log &operator<<(Log &out, const UserProc &c) {
-    std::ostringstream ost;
+    QString tgt;
+    QTextStream ost(&tgt);
     c.print(ost);
-    out << ost.str().c_str();
+    out << tgt;
     return out;
 }

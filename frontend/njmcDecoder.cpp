@@ -64,21 +64,22 @@ std::list<Instruction *> *NJMCDecoder::instantiate(ADDRESS pc, const char *name,
     va_end(args);
 
     if (DEBUG_DECODER) {
+        QTextStream q_cout(stdout);
         // Display a disassembly of this instruction if requested
-        std::cout << std::hex << pc << std::dec << ": " << name << " ";
+        q_cout << pc << ": " << name << " ";
         for (std::vector<Exp *>::iterator itd = actuals.begin(); itd != actuals.end(); itd++) {
             if ((*itd)->isIntConst()) {
                 int val = ((Const *)(*itd))->getInt();
                 if (val > 100 || val < -100)
-                    std::cout << std::hex << "0x" << val << std::dec;
+                    q_cout << "0x" << QString::number(val,16);
                 else
-                    std::cout << val;
+                    q_cout << val;
             } else
-                (*itd)->print(std::cout);
+                (*itd)->print(q_cout);
             if (itd != actuals.end() - 1)
-                std::cout << ", ";
+                q_cout << ", ";
         }
-        std::cout << std::endl;
+        q_cout << '\n';
     }
 
     std::list<Instruction *> *instance = RTLDict.instantiateRTL(opcode.c_str(), pc, actuals);

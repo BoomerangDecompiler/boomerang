@@ -24,14 +24,6 @@
  CallStatement_/  /   /    \ \________
        PhiAssign_/ Assign  BoolAssign \_ImplicitAssign
 */
-
-#include <vector>
-#include <set>
-#include <list>
-#include <map>
-#include <ostream>
-#include <iostream> // For std::cerr
-#include <cassert>
 //#include "exp.h"        // No! This is (almost) the bottom of the #include hierarchy
 #include "memo.h"
 #include "exphelp.h" // For lessExpStar, lessAssignment etc
@@ -39,6 +31,15 @@
 #include "managed.h"
 #include "dataflow.h"  // For embedded objects DefCollector and UseCollector
 #include "boomerang.h" // For USE_DOMINANCE_NUMS etc
+
+#include <QtCore/QTextStream>
+#include <vector>
+#include <set>
+#include <list>
+#include <map>
+#include <ostream>
+#include <iostream> // For std::cerr
+#include <cassert>
 
 class BasicBlock;
 class Prog;
@@ -223,10 +224,10 @@ class Instruction {
     virtual bool usesExp(const Exp &) = 0;
 
     // statements should be printable (for debugging)
-    virtual void print(std::ostream &os, bool html = false) const = 0;
-    void printAsUse(std::ostream &os) { os << std::dec << Number; }
-    void printAsUseBy(std::ostream &os) { os << std::dec << Number; }
-    void printNum(std::ostream &os) { os << std::dec << Number; }
+    virtual void print(QTextStream &os, bool html = false) const = 0;
+    void printAsUse(QTextStream &os) { os <<  Number; }
+    void printAsUseBy(QTextStream &os) { os <<  Number; }
+    void printNum(QTextStream &os) { os << Number; }
     char *prints(); // For logging, was also for debugging
     void dump();    // For debugging
 
@@ -377,8 +378,8 @@ class Assignment : public TypingStatement {
     virtual bool accept(StmtModifier *visitor) = 0;
     virtual bool accept(StmtPartModifier *visitor) = 0;
 
-    virtual void print(std::ostream &os, bool html = false) const;
-    virtual void printCompact(std::ostream &os, bool html = false) const = 0; // Without statement number
+    virtual void print(QTextStream &os, bool html = false) const;
+    virtual void printCompact(QTextStream &os, bool html = false) const = 0; // Without statement number
 
     virtual Type *getTypeFor(Exp *e);          // Get the type for this assignment. It should define e
     virtual void setTypeFor(Exp *e, Type *ty); // Set the type for this assignment. It should define e
@@ -457,7 +458,7 @@ class Assign : public Assignment {
     virtual bool accept(StmtModifier *visitor);
     virtual bool accept(StmtPartModifier *visitor);
 
-    virtual void printCompact(std::ostream &os, bool html = false) const; // Without statement number
+    virtual void printCompact(QTextStream &os, bool html = false) const; // Without statement number
 
     // Guard
     void setGuard(Exp *g) { guard = g; }
@@ -556,7 +557,7 @@ class PhiAssign : public Assignment {
     virtual bool accept(StmtModifier *visitor);
     virtual bool accept(StmtPartModifier *visitor);
 
-    virtual void printCompact(std::ostream &os, bool html = false) const;
+    virtual void printCompact(QTextStream &os, bool html = false) const;
 
     // general search
     virtual bool search(const Exp &search, Exp *&result);
@@ -630,7 +631,7 @@ class ImplicitAssign : public Assignment {
     // general search and replace
     virtual bool searchAndReplace(const Exp &search, Exp *replace, bool cc = false);
 
-    virtual void printCompact(std::ostream &os, bool html = false) const;
+    virtual void printCompact(QTextStream &os, bool html = false) const;
 
     // Statement and Assignment functions
     virtual Exp *getRight() { return nullptr; }
@@ -682,7 +683,7 @@ class BoolAssign : public Assignment {
     int getSize() { return size; } // Return the size of the assignment
     void makeSigned();
 
-    virtual void printCompact(std::ostream &os = std::cout, bool html = false) const;
+    virtual void printCompact(QTextStream &os, bool html = false) const;
     virtual void generateCode(HLLCode *hll, BasicBlock *, int indLevel);
     virtual void simplify();
 
@@ -727,7 +728,7 @@ class ImpRefStatement : public TypingStatement {
     virtual bool searchAndReplace(const Exp &, Exp *, bool cc = false);
     virtual void generateCode(HLLCode *, BasicBlock *, int) {}
     virtual void simplify();
-    virtual void print(std::ostream &os, bool html = false) const;
+    virtual void print(QTextStream &os, bool html = false) const override;
 
 }; // class ImpRefStatement
 
@@ -777,7 +778,7 @@ class GotoStatement : public Instruction {
     void setIsComputed(bool b = true);
     bool isComputed();
 
-    virtual void print(std::ostream &os = std::cout, bool html = false) const;
+    virtual void print(QTextStream &os, bool html = false) const;
 
     // general search
     virtual bool search(const Exp &, Exp *&);
@@ -819,7 +820,7 @@ class JunctionStatement : public Instruction {
 
     bool usesExp(const Exp &) { return false; }
 
-    void print(std::ostream &os, bool html = false) const;
+    void print(QTextStream &os, bool html = false) const;
 
     // general search
     bool search(const Exp & /*search*/, Exp *& /*result*/) { return false; }
@@ -884,7 +885,7 @@ class BranchStatement : public GotoStatement {
     // signed conditional branch
     void makeSigned();
 
-    virtual void print(std::ostream &os = std::cout, bool html = false) const;
+    virtual void print(QTextStream &os, bool html = false) const;
 
     // general search
     virtual bool search(const Exp &search, Exp *&result);
@@ -955,7 +956,7 @@ class CaseStatement : public GotoStatement {
     SWITCH_INFO *getSwitchInfo();
     void setSwitchInfo(SWITCH_INFO *pss);
 
-    virtual void print(std::ostream &os = std::cout, bool html = false) const;
+    virtual void print(QTextStream &os, bool html = false) const;
 
     // Replace all instances of "search" with "replace".
     virtual bool searchAndReplace(const Exp &search, Exp *replace, bool cc = false);
@@ -1073,7 +1074,7 @@ class CallStatement : public GotoStatement {
     // Range analysis
     void rangeAnalysis(std::list<Instruction *> &execution_paths);
 
-    virtual void print(std::ostream &os = std::cout, bool html = false) const;
+    virtual void print(QTextStream &os, bool html = false) const;
 
     // general search
     virtual bool search(const Exp &search, Exp *&result);
@@ -1206,7 +1207,7 @@ class ReturnStatement : public Instruction {
     void updateModifieds(); // Update modifieds from the collector
     void updateReturns();   // Update returns from the modifieds
 
-    virtual void print(std::ostream &os = std::cout, bool html = false) const;
+    virtual void print(QTextStream &os, bool html = false) const;
 
     // general search
     virtual bool search(const Exp &, Exp *&);

@@ -193,7 +193,7 @@ class Type {
     // When final, choose a signedness etc
     virtual QString getCtype(bool final = false) const = 0;
 
-    void starPrint(std::ostream &os);
+    void starPrint(QTextStream &os);
     QString prints();    // For debugging
     void dump();             // For debugging
     static void dumpNames(); // For debugging

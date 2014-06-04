@@ -41,6 +41,7 @@
 #include "log.h"
 
 #include <QtCore/QFileInfo>
+#include <QtCore/QDebug>
 #include <QtCore/QXmlStreamWriter>
 #include <QtCore/QDir>
 #include <QtCore/QString>
@@ -134,9 +135,13 @@ void Prog::finishDecode() {
 }
 //! Generate dotty file
 void Prog::generateDotFile() {
-    assert(!Boomerang::get()->dotFile.empty());
-    std::ofstream of(Boomerang::get()->dotFile);
-    of << "digraph Cfg {" << std::endl;
+    assert(!Boomerang::get()->dotFile.isEmpty());
+    QFile tgt(Boomerang::get()->dotFile);
+    if(!tgt.open(QFile::WriteOnly|QFile::Text))
+        return;
+
+    QTextStream of(&tgt);
+    of << "digraph Cfg {\n";
 
     for (Function *pProc : m_procs) {
         if (pProc->isLib())
@@ -145,24 +150,28 @@ void Prog::generateDotFile() {
         if (!p->isDecoded())
             continue;
         // Subgraph for the proc name
-        of << "\nsubgraph cluster_" << p->getName().toStdString() << " {\n"
-           << "       color=gray;\n    label=" << p->getName().toStdString() << ";\n";
+        of << "\nsubgraph cluster_" << p->getName() << " {\n"
+           << "       color=gray;\n    label=" << p->getName() << ";\n";
         // Generate dotty CFG for this proc
         p->getCFG()->generateDotFile(of);
     }
     of << "}";
-    of.close();
 }
 
 void Prog::generateCode(Cluster *cluster, UserProc *proc, bool /*intermixRTL*/) {
     // std::string basedir = m_rootCluster->makeDirs();
-    std::ofstream os;
+    QTextStream os;
     if (cluster) {
         cluster->openStream("c");
         cluster->closeStreams();
     }
     if (cluster == nullptr || cluster == m_rootCluster) {
-        os.open(m_rootCluster->getOutPath("c").toStdString());
+        QFile tgt(m_rootCluster->getOutPath("c"));
+        if(!tgt.open(QFile::WriteOnly)) {
+            qDebug() << "Can't open " << m_rootCluster->getOutPath("c");
+            return;
+        }
+        os.setDevice(&tgt);
         if (proc == nullptr) {
             HLLCode *code = Boomerang::get()->getHLLCode();
             bool global = false;
@@ -251,7 +260,6 @@ void Prog::generateCode(Cluster *cluster, UserProc *proc, bool /*intermixRTL*/) 
             }
         }
     }
-    os.close();
     m_rootCluster->closeStreams();
 }
 
@@ -390,7 +398,7 @@ Cluster *Prog::getDefaultCluster(const QString &name) {
     return c;
 }
 
-void Prog::generateCode(std::ostream &os) {
+void Prog::generateCode(QTextStream &os) {
     HLLCode *code = Boomerang::get()->getHLLCode();
     for (Global *glob : globals) {
         // Check for an initial value
@@ -416,7 +424,7 @@ void Prog::generateCode(std::ostream &os) {
 }
 
 //! Print this program (primarily for debugging)
-void Prog::print(std::ostream &out) {
+void Prog::print(QTextStream &out) {
     for (Function *pProc : m_procs) {
         if (pProc->isLib())
             continue;
@@ -1383,7 +1391,7 @@ void Prog::fromSSAform() {
         if (VERBOSE) {
             LOG << "===== before transformation from SSA form for " << proc->getName() << " =====\n" << *proc
                 << "===== end before transformation from SSA for " << proc->getName() << " =====\n\n";
-            if (!Boomerang::get()->dotFile.empty())
+            if (!Boomerang::get()->dotFile.isEmpty())
                 proc->printDFG();
         }
         proc->fromSSAform();
@@ -1462,7 +1470,7 @@ void Prog::printCallGraph() {
         f1 << p->getName().toStdString() << " @ " << std::hex << p->getNativeAddress();
         if (parent.find(p) != parent.end())
             f1 << " [parent=" << parent[p]->getName().toStdString() << "]";
-        f1 << std::endl;
+        f1 << '\n';
         if (!p->isLib()) {
             n++;
             UserProc *u = (UserProc *)p;
@@ -1557,10 +1565,10 @@ void Prog::printCallGraphXML() {
     unlockFile(fd);
 }
 
-void Prog::readSymbolFile(const char *fname) {
+void Prog::readSymbolFile(const QString &fname) {
     std::ifstream ifs;
 
-    ifs.open(fname);
+    ifs.open(fname.toStdString());
 
     if (!ifs.good()) {
         LOG << "can't open `" << fname << "'\n";

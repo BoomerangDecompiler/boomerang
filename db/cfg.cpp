@@ -408,7 +408,7 @@ BasicBlock *Cfg::splitBB(BasicBlock *pBB, ADDRESS uNativeAddr, BasicBlock *pNewB
     }
     if (ri == pBB->ListOfRTLs->end()) {
         std::cerr << "could not split BB at " << std::hex << pBB->getLowAddr() << " at split address " << uNativeAddr
-                  << std::endl;
+                  << '\n';
         return pBB;
     }
 
@@ -701,13 +701,13 @@ bool Cfg::wellFormCfg() const {
                         WellFormed = false; // At least one problem
                         ADDRESS addr = current->getLowAddr();
                         std::cerr << "WellFormCfg: BB with native address " << std::hex << addr
-                                  << " is missing outedge " << i << std::endl;
+                                  << " is missing outedge " << i << '\n';
                     } else {
                         // Check that there is a corresponding in edge from the child to here
                         auto ii = std::find(pBB->InEdges.begin(),pBB->InEdges.end(),elem);
                         if (ii == pBB->InEdges.end()) {
                             std::cerr << "WellFormCfg: No in edge to BB at " << std::hex << (elem)->getLowAddr()
-                                      << " from successor BB at " << pBB->getLowAddr() << std::endl;
+                                      << " from successor BB at " << pBB->getLowAddr() << '\n';
                             WellFormed = false; // At least one problem
                         }
                     }
@@ -720,7 +720,7 @@ bool Cfg::wellFormCfg() const {
                 auto oo = std::find(elem_inedge->OutEdges.begin(),elem_inedge->OutEdges.end(),elem);
                 if (oo == elem_inedge->OutEdges.end()) {
                     std::cerr << "WellFormCfg: No out edge to BB at " << std::hex << (elem)->getLowAddr()
-                              << " from predecessor BB at " << (*ii)->getLowAddr() << std::endl;
+                              << " from predecessor BB at " << (*ii)->getLowAddr() << '\n';
                     WellFormed = false; // At least one problem
                 }
             }
@@ -881,7 +881,7 @@ bool Cfg::compressCfg() {
                 /* std::cout << "outedge to jump detected at " << std::hex << bb->getLowAddr() << " to ";
                                         std::cout << pSucc->getLowAddr() << " to " <<
                    pSucc->m_OutEdges.front()->getLowAddr() << std::dec <<
-                                        std::endl; */
+                                        '\n'; */
                 // Point this outedge of A to the dest of the jump (B)
                 *it1 = pSucc->OutEdges.front();
                 // Now pSucc still points to J; *it1 points to B.  Almost certainly, we will need a jump in the low
@@ -1191,13 +1191,16 @@ void Cfg::simplify() {
 }
 
 // print this cfg, mainly for debugging
-void Cfg::print(std::ostream &out, bool html) {
+void Cfg::print(QTextStream &out, bool html) {
     for (BasicBlock *it : m_listBB)
         it->print(out, html);
-    out << std::endl;
+    out << '\n';
 }
 
-void Cfg::dump() { print(std::cerr); }
+void Cfg::dump() {
+    QTextStream q_cerr(stderr);
+    print(q_cerr);
+}
 
 void Cfg::dumpImplicitMap() {
     for (auto it : implicitMap) {
@@ -1206,9 +1209,10 @@ void Cfg::dumpImplicitMap() {
 }
 
 void Cfg::printToLog() {
-    std::ostringstream ost;
+    QString tgt;
+    QTextStream ost(&tgt);
     print(ost);
-    LOG << ost.str().c_str();
+    LOG << tgt;
 }
 
 void Cfg::setTimeStamps() {
@@ -1656,13 +1660,13 @@ void Cfg::removeUnneededLabels(HLLCode *hll) { hll->RemoveUnusedLabels(Ordering.
 
 #define BBINDEX 0    // Non zero to print <index>: before <statement number>
 #define BACK_EDGES 0 // Non zero to generate green back edges
-void Cfg::generateDotFile(std::ofstream &of) {
+void Cfg::generateDotFile(QTextStream &of) {
     ADDRESS aret = NO_ADDRESS;
     // The nodes
     // std::list<PBB>::iterator it;
     for (BasicBlock *pbb : m_listBB) {
         of << "       "
-           << "bb" << std::hex << pbb->getLowAddr() << " ["
+           << "bb" << pbb->getLowAddr() << " ["
            << "label=\"";
         char *p = pbb->getStmtNumber();
 #if BBINDEX
@@ -1699,7 +1703,7 @@ void Cfg::generateDotFile(std::ofstream &of) {
             of << "call";
             Function *dest = pbb->getDestProc();
             if (dest)
-                of << "\\n" << dest->getName().toStdString();
+                of << "\\n" << dest->getName();
             break;
         }
         case RET: {
@@ -1727,7 +1731,7 @@ void Cfg::generateDotFile(std::ofstream &of) {
     // Force the one return node to be at the bottom (max rank). Otherwise, with all its in-edges, it will end up in the
     // middle
     if (!aret.isZero())
-        of << "{rank=max; bb" << std::hex << aret << "}\n";
+        of << "{rank=max; bb" << aret << "}\n";
 
     // Close the subgraph
     of << "}\n";
@@ -1736,9 +1740,8 @@ void Cfg::generateDotFile(std::ofstream &of) {
     for (BasicBlock *pbb : m_listBB) {
         const std::vector<BasicBlock *> &outEdges = pbb->getOutEdges();
         for (unsigned int j = 0; j < outEdges.size(); j++) {
-            of << "       "
-               << "bb" << std::hex << pbb->getLowAddr() << " -> ";
-            of << "bb" << std::hex << outEdges[j]->getLowAddr();
+            of << "       bb" << pbb->getLowAddr() << " -> ";
+            of << "bb" << outEdges[j]->getLowAddr();
             if (pbb->getType() == TWOWAY) {
                 if (j == 0)
                     of << " [label=\"true\"]";

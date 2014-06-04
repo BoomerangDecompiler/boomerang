@@ -277,18 +277,17 @@ class UserProc : public Function {
     void setStatus(ProcStatus s);
     void generateCode(HLLCode *hll);
 
-    void print(std::ostream &out, bool html = false) const;
     void print(QTextStream &out, bool html = false) const;
-    void printParams(std::ostream &out, bool html = false) const;
+    void printParams(QTextStream &out, bool html = false) const;
     char *prints();
     void dump();
 
     void printDFG() const;
-    void printSymbolMap(std::ostream &out, bool html = false) const;
+    void printSymbolMap(QTextStream &out, bool html = false) const;
     void dumpSymbolMap();
     void dumpSymbolMapx();
     void testSymbolMap();
-    void dumpLocals(std::ostream &os, bool html = false) const;
+    void dumpLocals(QTextStream &os, bool html = false) const;
     void dumpLocals();
     //! simplify the statements in this proc
     void simplify() { cfg->simplify(); }
@@ -346,7 +345,7 @@ class UserProc : public Function {
     bool isLocal(Exp *e);
     bool isLocalOrParam(Exp *e);
     bool isLocalOrParamPattern(Exp *e);
-    bool existsLocal(const char *name);
+    bool existsLocal(const QString &name);
     bool isAddressEscapedVar(Exp *e) { return addressEscapedVars.exists(e); }
     bool isPropagatable(Exp *e);
     void assignProcsToCalls();
@@ -355,7 +354,7 @@ class UserProc : public Function {
 
   private:
     void searchRegularLocals(OPER minusOrPlus, bool lastPass, int sp, StatementList &stmts);
-    const char *newLocalName(Exp *e);
+    QString newLocalName(Exp *e);
 
   public:
     bool removeNullStatements();
@@ -425,7 +424,7 @@ class UserProc : public Function {
   public:
     Exp *getSymbolExp(Exp *le, Type *ty = nullptr, bool lastPass = false);
     Exp *newLocal(Type *ty, Exp *e, char *nam = nullptr);
-    void addLocal(Type *ty, const char *nam, Exp *e);
+    void addLocal(Type *ty, const QString &nam, Exp *e);
     Type *getLocalType(const char *nam);
     void setLocalType(const char *nam, Type *ty);
     Type *getParamType(const char *nam);
@@ -450,7 +449,7 @@ class UserProc : public Function {
     void renameLocal(const char *oldName, const char *newName);
     virtual void renameParam(const char *oldName, const char *newName);
 
-    const char *getRegName(Exp *r);
+    QString getRegName(Exp *r);
     void setParamType(const char *nam, Type *ty);
     void setParamType(int idx, Type *ty);
 

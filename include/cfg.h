@@ -156,7 +156,7 @@ class Cfg {
     void tagNodesInLoop(BasicBlock *header, bool *&loopNodes);
 
     void removeUnneededLabels(HLLCode *hll);
-    void generateDotFile(std::ofstream &of);
+    void generateDotFile(QTextStream &of);
 
     /////////////////////////////////////////////////////////////////////////
     // Get the entry-point or exit BB
@@ -175,7 +175,7 @@ class Cfg {
     /////////////////////////////////////////////////////////////////////////
     // print this cfg, mainly for debugging
     /////////////////////////////////////////////////////////////////////////
-    void print(std::ostream &out, bool html = false);
+    void print(QTextStream &out, bool html = false);
     void printToLog();
     void dump();            // Dump to std::cerr
     void dumpImplicitMap(); // Dump the implicit map to std::cerr

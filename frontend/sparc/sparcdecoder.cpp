@@ -101,7 +101,7 @@ RTL *SparcDecoder::createBranchRtl(ADDRESS pc, std::list<Instruction *> *stmts, 
             // Else it's FBN!
             break;
         default:
-            std::cerr << "unknown float branch " << name << std::endl;
+            std::cerr << "unknown float branch " << name << '\n';
             delete res;
             res = nullptr;
         }
@@ -169,7 +169,7 @@ RTL *SparcDecoder::createBranchRtl(ADDRESS pc, std::list<Instruction *> *stmts, 
         delete res;
         return createBranchRtl(pc, stmts, temp);
     default:
-        std::cerr << "unknown non-float branch " << name << std::endl;
+        std::cerr << "unknown non-float branch " << name << '\n';
     }
     return res;
 }

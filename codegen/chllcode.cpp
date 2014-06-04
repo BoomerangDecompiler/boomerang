@@ -34,11 +34,6 @@
 #include <cstdlib>
 #include <memory>
 using namespace std;
-void HLLCode::print(QTextStream &qf) {
-    std::ostringstream ostr;
-    print(ostr);
-    qf << ostr.str().c_str();
-}
 static bool isBareMemof(const Exp &e, UserProc *proc);
 // extern char *operStrings[];
 
@@ -52,7 +47,7 @@ CHLLCode::CHLLCode(UserProc *p) : HLLCode(p) {}
 CHLLCode::~CHLLCode() {}
 
 /// Output 4 * \a indLevel spaces to \a str
-void CHLLCode::indent(std::ostringstream &str, int indLevel) {
+void CHLLCode::indent(QTextStream &str, int indLevel) {
     // Can probably do more efficiently
     for (int i = 0; i < indLevel; i++)
         str << "    ";
@@ -69,7 +64,7 @@ static int progress = 0;
  *
  * \todo This function is 800+ lines, and should possibly be split up.
  */
-void CHLLCode::appendExp(std::ostringstream &str, const Exp &exp, PREC curPrec, bool uns /* = false */) {
+void CHLLCode::appendExp(QTextStream &str, const Exp &exp, PREC curPrec, bool uns /* = false */) {
     if (++progress > 500) {
         std::cerr << 'g' << std::flush;
         progress = 0;
@@ -106,7 +101,7 @@ void CHLLCode::appendExp(std::ostringstream &str, const Exp &exp, PREC curPrec, 
                 str << num << "U";
             } else {
                 // Output it in 0xF0000000 style
-                str << "0x" << std::hex << K;
+                str << "0x" << QString::number(K,16);
             }
         } else {
             if (c.getType() && c.getType()->isChar()) {
@@ -151,9 +146,9 @@ void CHLLCode::appendExp(std::ostringstream &str, const Exp &exp, PREC curPrec, 
             } else {
                 // More heuristics
                 if (-2048 < K && K < 2048)
-                    str << std::dec << K; // Just a plain vanilla int
+                    str << K; // Just a plain vanilla int
                 else
-                    str << "0x" << std::hex << K; // 0x2000 style
+                    str << "0x" << QString::number(K,16); // 0x2000 style
             }
         }
         break;
@@ -161,18 +156,13 @@ void CHLLCode::appendExp(std::ostringstream &str, const Exp &exp, PREC curPrec, 
     case opLongConst:
         // str << std::dec << c->getLong() << "LL"; break;
         if ((long long)c.getLong() < -1000LL || (long long)c.getLong() > 1000LL)
-            str << "0x" << std::hex << c.getLong() << std::dec << "LL";
+            str << "0x" << QString::number(c.getLong(),16) << "LL";
         else
-            str << std::dec << c.getLong() << "LL";
+            str << c.getLong() << "LL";
         break;
     case opFltConst: {
         // str.precision(4);     // What to do with precision here? Would be nice to avoid 1.00000 or 0.99999
-        std::ostringstream ost;
-        ost << c.getFlt();
-        std::string s = ost.str();
-        str << s;
-        if (s.find('.') == std::string::npos)
-            str << "."; // Show that it is a float
+        str << QString::number(c.getFlt(),'g',8);
         break;
     }
     case opStrConst:
@@ -180,7 +170,7 @@ void CHLLCode::appendExp(std::ostringstream &str, const Exp &exp, PREC curPrec, 
         str << "\"" << escapeStr(c.getStr()) << "\"";
         break;
     case opFuncConst:
-        str << c.getFuncName().toStdString();
+        str << c.getFuncName();
         break;
     case opAddrOf: {
         const Exp *sub = u.getSubExp1();
@@ -296,7 +286,7 @@ void CHLLCode::appendExp(std::ostringstream &str, const Exp &exp, PREC curPrec, 
         str << " & ";
         if (b.getSubExp2()->getOper() == opIntConst) {
             // print it 0x2000 style
-            str << "0x" << std::hex << ((Const *)b.getSubExp2())->getInt();
+            str << "0x" << QString::number(((Const *)b.getSubExp2())->getInt(),16);
         } else {
             appendExp(str, *b.getSubExp2(), PREC_BIT_AND);
         }
@@ -351,7 +341,7 @@ void CHLLCode::appendExp(std::ostringstream &str, const Exp &exp, PREC curPrec, 
         if (mask < 10)
             str << mask;
         else {
-            str << "0x" << std::hex << mask;
+            str << "0x" << QString::number(mask,16);
         }
         closeParen(str, curPrec, PREC_BIT_AND);
         break;
@@ -848,7 +838,7 @@ void CHLLCode::appendExp(std::ostringstream &str, const Exp &exp, PREC curPrec, 
         appendExp(str, *u.getSubExp1(), curPrec);
         if (VERBOSE)
             LOG << "ERROR: CHLLCode::appendExp: subscript in code generation of proc " << m_proc->getName()
-                << " exp (without subscript): " << str.str().c_str() << "\n";
+                << " exp (without subscript): " << str.readAll() << "\n";
         // assert(false);
         break;
     case opMemberAccess: {
@@ -917,7 +907,7 @@ void CHLLCode::appendExp(std::ostringstream &str, const Exp &exp, PREC curPrec, 
 }
 
 /// Print the type represented by \a typ to \a str.
-void CHLLCode::appendType(std::ostringstream &str, Type *typ) {
+void CHLLCode::appendType(QTextStream &str, Type *typ) {
     if (typ == nullptr) {
         str << "int"; // Default type for C
         return;
@@ -928,13 +918,13 @@ void CHLLCode::appendType(std::ostringstream &str, Type *typ) {
         // sugar to access a pointer as if it were an array.
         typ = new PointerType(typ->asPointer()->getPointsTo()->asArray()->getBaseType());
     }
-    str << typ->getCtype(true).toStdString();
+    str << typ->getCtype(true);
 }
 
 /**
  * Print the indented type to \a str.
  */
-void CHLLCode::appendTypeIdent(std::ostringstream &str, Type *typ, const char *ident) {
+void CHLLCode::appendTypeIdent(QTextStream &str, Type *typ, const char *ident) {
     if (typ == nullptr)
         return;
     if (typ->isPointer() && typ->asPointer()->getPointsTo()->isArray()) {
@@ -971,7 +961,8 @@ void CHLLCode::reset() { lines.clear(); }
 
 /// Adds: while( \a cond) {
 void CHLLCode::AddPretestedLoopHeader(int indLevel, Exp *cond) {
-    std::ostringstream s;
+    QString tgt;
+    QTextStream s(&tgt);
     indent(s, indLevel);
     s << "while (";
     appendExp(s, *cond, PREC_NONE);
@@ -979,145 +970,163 @@ void CHLLCode::AddPretestedLoopHeader(int indLevel, Exp *cond) {
     // Note: removing the strdup() causes weird problems.
     // Looks to me that it should work (with no real operator delete(),
     // and garbage collecting...
-    appendLine(s);
+    appendLine(tgt);
 }
 
 /// Adds: }
 void CHLLCode::AddPretestedLoopEnd(int indLevel) {
-    std::ostringstream s;
+    QString tgt;
+    QTextStream s(&tgt);
     indent(s, indLevel);
     s << "}";
-    appendLine(s);
+    appendLine(tgt);
 }
 
 /// Adds: for(;;) {
 void CHLLCode::AddEndlessLoopHeader(int indLevel) {
-    std::ostringstream s;
+    QString tgt;
+    QTextStream s(&tgt);
     indent(s, indLevel);
     s << "for(;;) {";
-    appendLine(s);
+    appendLine(tgt);
 }
 
 /// Adds: }
 void CHLLCode::AddEndlessLoopEnd(int indLevel) {
-    std::ostringstream s;
+    QString tgt;
+    QTextStream s(&tgt);
     indent(s, indLevel);
     s << "}";
-    appendLine(s);
+    appendLine(tgt);
 }
 
 /// Adds: do {
 void CHLLCode::AddPosttestedLoopHeader(int indLevel) {
-    std::ostringstream s;
+    QString tgt;
+    QTextStream s(&tgt);
     indent(s, indLevel);
     s << "do {";
-    appendLine(s);
+    appendLine(tgt);
 }
 
 /// Adds: } while (\a cond);
 void CHLLCode::AddPosttestedLoopEnd(int indLevel, Exp *cond) {
-    std::ostringstream s;
+    QString tgt;
+    QTextStream s(&tgt);
     indent(s, indLevel);
     s << "} while (";
     appendExp(s, *cond, PREC_NONE);
     s << ");";
-    appendLine(s);
+    appendLine(tgt);
 }
 
 /// Adds: switch(\a cond) {
 void CHLLCode::AddCaseCondHeader(int indLevel, Exp *cond) {
-    std::ostringstream s;
+    QString tgt;
+    QTextStream s(&tgt);
     indent(s, indLevel);
     s << "switch(";
     appendExp(s, *cond, PREC_NONE);
     s << ") {";
-    appendLine(s);
+    appendLine(tgt);
 }
 
 /// Adds: case \a opt :
 void CHLLCode::AddCaseCondOption(int indLevel, Exp &opt) {
-    std::ostringstream s;
+    QString tgt;
+    QTextStream s(&tgt);
     indent(s, indLevel);
     s << "case ";
     appendExp(s, opt, PREC_NONE);
     s << ":";
-    appendLine(s);
+    appendLine(tgt);
 }
 
 /// Adds: break;
 void CHLLCode::AddCaseCondOptionEnd(int indLevel) {
-    std::ostringstream s;
+    QString tgt;
+    QTextStream s(&tgt);
     indent(s, indLevel);
     s << "break;";
-    appendLine(s);
+    appendLine(tgt);
 }
 
 /// Adds: default:
 void CHLLCode::AddCaseCondElse(int indLevel) {
-    std::ostringstream s;
+    QString tgt;
+    QTextStream s(&tgt);
     indent(s, indLevel);
     s << "default:";
-    appendLine(s);
+    appendLine(tgt);
 }
 
 /// Adds: }
 void CHLLCode::AddCaseCondEnd(int indLevel) {
-    std::ostringstream s;
+    QString tgt;
+    QTextStream s(&tgt);
     indent(s, indLevel);
     s << "}";
-    appendLine(s);
+    appendLine(tgt);
 }
 
 /// Adds: if(\a cond) {
 void CHLLCode::AddIfCondHeader(int indLevel, Exp *cond) {
-    std::ostringstream s;
+    QString tgt;
+    QTextStream s(&tgt);
     indent(s, indLevel);
     s << "if (";
     appendExp(s, *cond, PREC_NONE);
     s << ") {";
-    appendLine(s);
+    appendLine(tgt);
 }
 
 /// Adds: }
 void CHLLCode::AddIfCondEnd(int indLevel) {
-    std::ostringstream s;
+    QString tgt;
+    QTextStream s(&tgt);
     indent(s, indLevel);
     s << "}";
-    appendLine(s);
+    appendLine(tgt);
 }
 
 /// Adds: if(\a cond) {
 void CHLLCode::AddIfElseCondHeader(int indLevel, Exp *cond) {
-    std::ostringstream s;
+    QString tgt;
+    QTextStream s(&tgt);
     indent(s, indLevel);
     s << "if (";
     appendExp(s, *cond, PREC_NONE);
     s << ") {";
-    appendLine(s);
+    appendLine(tgt);
 }
 
 /// Adds: } else {
 void CHLLCode::AddIfElseCondOption(int indLevel) {
-    std::ostringstream s;
+    QString tgt;
+
+    QTextStream s(&tgt);
+
     indent(s, indLevel);
     s << "} else {";
-    appendLine(s);
+    appendLine(tgt);
 }
 
 /// Adds: }
 void CHLLCode::AddIfElseCondEnd(int indLevel) {
-    std::ostringstream s;
+    QString tgt;
+    QTextStream s(&tgt);
     indent(s, indLevel);
     s << "}";
-    appendLine(s);
+    appendLine(tgt);
 }
 
 /// Adds: goto L \em ord
 void CHLLCode::AddGoto(int indLevel, int ord) {
-    std::ostringstream s;
+    QString tgt;
+    QTextStream s(&tgt);
     indent(s, indLevel);
-    s << "goto L" << std::dec << ord << ";";
-    appendLine(s);
+    s << "goto L" << ord << ";";
+    appendLine(tgt);
     usedLabels.insert(ord);
 }
 
@@ -1126,11 +1135,10 @@ void CHLLCode::AddGoto(int indLevel, int ord) {
  * maxOrd UNUSED
  */
 void CHLLCode::RemoveUnusedLabels(int /*maxOrd*/) {
-    for (std::list<char *>::iterator it = lines.begin(); it != lines.end();) {
-        if ((*it)[0] == 'L' && strchr(*it, ':')) {
-            std::string sx = *it;
-            sx.resize(sx.find_first_of(':'));
-            int n = atoi(sx.c_str() + 1);
+    for (QStringList::iterator it = lines.begin(); it != lines.end();) {
+        if (it->startsWith('L') && it->contains(':')) {
+            QStringRef sxr = it->leftRef(it->indexOf(':'));
+            int n = sxr.toInt();
             if (usedLabels.find(n) == usedLabels.end()) {
                 it = lines.erase(it);
                 continue;
@@ -1142,37 +1150,36 @@ void CHLLCode::RemoveUnusedLabels(int /*maxOrd*/) {
 
 /// Adds: continue;
 void CHLLCode::AddContinue(int indLevel) {
-    std::ostringstream s;
+    QString tgt;
+    QTextStream s(&tgt);
     indent(s, indLevel);
     s << "continue;";
-    appendLine(s);
+    appendLine(tgt);
 }
 
 /// Adds: break;
 void CHLLCode::AddBreak(int indLevel) {
-    std::ostringstream s;
+    QString tgt;
+    QTextStream s(&tgt);
     indent(s, indLevel);
     s << "break;";
-    appendLine(s);
+    appendLine(tgt);
 }
 
 /// Adds: L \a ord :
 void CHLLCode::AddLabel(int /*indLevel*/, int ord) {
-    std::ostringstream s;
-    s << "L" << std::dec << ord << ":";
-    appendLine(s);
+    QString tgt;
+    QTextStream s(&tgt);
+    s << "L" << ord << ":";
+    appendLine(tgt);
 }
 
 /// Search for the label L \a ord and remove it from the generated code.
 void CHLLCode::RemoveLabel(int ord) {
-    std::ostringstream s;
-    s << "L" << std::dec << ord << ":";
-    for (std::list<char *>::iterator it = lines.begin(); it != lines.end(); it++) {
-        if (!strcmp(*it, s.str().c_str())) {
-            lines.erase(it);
-            break;
-        }
-    }
+    QString tgt;
+    QTextStream s(&tgt);
+    s << "L" << ord << ":";
+    lines.removeAll(tgt);
 }
 
 bool isBareMemof(const Exp &e, UserProc * /*proc*/) {
@@ -1201,7 +1208,8 @@ void CHLLCode::AddAssignmentStatement(int indLevel, Assign *asgn) {
     // if (asgn->getLeft()->isFlags())
     //    return;
 
-    std::ostringstream s;
+    QString tgt;
+    QTextStream s(&tgt);
     indent(s, indLevel);
     Type *asgnType = asgn->getType();
     Exp *lhs = asgn->getLeft();
@@ -1244,7 +1252,7 @@ void CHLLCode::AddAssignmentStatement(int indLevel, Assign *asgn) {
         s << ", ";
         appendExp(s, *rhs, PREC_UNARY);
         s << ");";
-        appendLine(s);
+        appendLine(tgt);
         return;
     }
 
@@ -1266,7 +1274,7 @@ void CHLLCode::AddAssignmentStatement(int indLevel, Assign *asgn) {
         rhs = rhs->simplify();
         appendExp(s, *rhs, PREC_ASSIGN);
         s << ";";
-        appendLine(s);
+        appendLine(tgt);
         return;
     } else
         appendExp(s, *lhs, PREC_ASSIGN); // Ordinary LHS
@@ -1287,7 +1295,7 @@ void CHLLCode::AddAssignmentStatement(int indLevel, Assign *asgn) {
         appendExp(s, *rhs, PREC_ASSIGN);
     }
     s << ";";
-    appendLine(s);
+    appendLine(tgt);
 }
 
 /**
@@ -1304,7 +1312,8 @@ void CHLLCode::AddAssignmentStatement(int indLevel, Assign *asgn) {
  */
 void CHLLCode::AddCallStatement(int indLevel, Function *proc, const char *name, StatementList &args,
                                 StatementList *results) {
-    std::ostringstream s;
+    QString tgt;
+    QTextStream s(&tgt);
     indent(s, indLevel);
     if (not results->empty()) {
         // FIXME: Needs changing if more than one real result (return a struct)
@@ -1327,7 +1336,7 @@ void CHLLCode::AddCallStatement(int indLevel, Function *proc, const char *name, 
         if (t && t->isPointer() && ((PointerType *)t)->getPointsTo()->isFunc() && const_arg->isIntConst()) {
             Function *p = proc->getProg()->findProc((const_arg)->getAddr());
             if (p) {
-                s << p->getName().toStdString();
+                s << p->getName();
                 ok = false;
             }
         }
@@ -1357,7 +1366,7 @@ void CHLLCode::AddCallStatement(int indLevel, Function *proc, const char *name, 
         s << " */";
     }
 
-    appendLine(s);
+    appendLine(tgt);
 }
 
 /**
@@ -1369,23 +1378,23 @@ void CHLLCode::AddCallStatement(int indLevel, Function *proc, const char *name, 
 // Ugh - almost the same as the above, but it needs to take an expression, // not a Proc*
 void CHLLCode::AddIndCallStatement(int indLevel, Exp *exp, StatementList &args, StatementList * /*results*/) {
     //    FIXME: Need to use 'results', since we can infer some defines...
-    std::ostringstream s;
+    QString tgt;
+    QTextStream s(&tgt);
     indent(s, indLevel);
     s << "(*";
     appendExp(s, *exp, PREC_NONE);
     s << ")(";
-    StatementList::iterator ss;
-    bool first = true;
-    for (ss = args.begin(); ss != args.end(); ++ss) {
-        if (first)
-            first = false;
-        else
-            s << ", ";
-        Exp *arg = ((Assign *)*ss)->getRight();
-        appendExp(s, *arg, PREC_COMMA);
+    QStringList arg_strings;
+    QString arg_tgt;
+    for (Instruction * ss : args) {
+        QTextStream arg_str(&arg_tgt);
+        Exp *arg = ((Assign *)ss)->getRight();
+        appendExp(arg_str, *arg, PREC_COMMA);
+        arg_strings<<arg_tgt;
+        arg_tgt.clear();
     }
-    s << ");";
-    appendLine(s);
+    s << arg_strings.join(", ") << ");";
+    appendLine(tgt);
 }
 
 /**
@@ -1396,7 +1405,8 @@ void CHLLCode::AddReturnStatement(int indLevel, StatementList *rets) {
     // FIXME: should be returning a struct of more than one real return */
     // The stack pointer is wanted as a define in calls, and so appears in returns, but needs to be removed here
     StatementList::iterator rr;
-    std::ostringstream s;
+    QString tgt;
+    QTextStream s(&tgt);
     indent(s, indLevel);
     s << "return";
     size_t n = rets->size();
@@ -1426,16 +1436,17 @@ void CHLLCode::AddReturnStatement(int indLevel, StatementList *rets) {
         if (n > 1)
             s << " */";
     }
-    appendLine(s);
+    appendLine(tgt);
 }
 
 /**
  * Print the start of a function, and also as a comment its address.
  */
 void CHLLCode::AddProcStart(UserProc *proc) {
-    std::ostringstream s;
+    QString tgt;
+    QTextStream s(&tgt);
     s << "// address: " << proc->getNativeAddress();
-    appendLine(s);
+    appendLine(tgt);
     AddProcDec(proc, true);
 }
 
@@ -1447,7 +1458,8 @@ void CHLLCode::AddPrototype(UserProc *proc) { AddProcDec(proc, false); }
  * \param open    False if this is just a prototype and ";" should be printed instead of "{"
  */
 void CHLLCode::AddProcDec(UserProc *proc, bool open) {
-    std::ostringstream s;
+    QString tgt;
+    QTextStream s(&tgt);
     ReturnStatement *returns = proc->getTheReturnStatement();
     Type *retType = nullptr;
     if (proc->getSignature()->isForced()) {
@@ -1477,7 +1489,7 @@ void CHLLCode::AddProcDec(UserProc *proc, bool open) {
         if (!retType->isPointer()) // NOTE: assumes type *proc( style
             s << " ";
     }
-    s << proc->getName().toStdString() << "(";
+    s << proc->getName() << "(";
     StatementList &parameters = proc->getParameters();
     StatementList::iterator pp;
 
@@ -1523,7 +1535,7 @@ void CHLLCode::AddProcDec(UserProc *proc, bool open) {
         s << " {";
     else
         s << ";";
-    appendLine(s);
+    appendLine(tgt);
 }
 
 /// Adds: }
@@ -1537,7 +1549,8 @@ void CHLLCode::AddProcEnd() {
  * \param last    true if an empty line should be added.
  */
 void CHLLCode::AddLocal(const char *name, Type *type, bool last) {
-    std::ostringstream s;
+    QString tgt;
+    QTextStream s(&tgt);
     indent(s, 1);
     appendTypeIdent(s, type, name);
     const Exp *e = m_proc->expFromSymbol(name);
@@ -1554,7 +1567,7 @@ void CHLLCode::AddLocal(const char *name, Type *type, bool last) {
         }
     } else
         s << ";";
-    appendLine(s);
+    appendLine(tgt);
     locals[name] = type->clone();
     if (last)
         appendLine("");
@@ -1565,14 +1578,15 @@ void CHLLCode::AddLocal(const char *name, Type *type, bool last) {
  * \param init    The initial value of the global.
  */
 void CHLLCode::AddGlobal(const char *name, Type *type, Exp *init) {
-    std::ostringstream s;
+    QString tgt;
+    QTextStream s(&tgt);
     // Check for array types. These are declared differently in C than
     // they are printed
     if (type->isArray()) {
         // Get the component type
         Type *base = ((ArrayType *)type)->getBaseType();
         appendType(s, base);
-        s << " " << name << "[" << std::dec << ((ArrayType *)type)->getLength() << "]";
+        s << " " << name << "[" << ((ArrayType *)type)->getLength() << "]";
     } else if (type->isPointer() && ((PointerType *)type)->getPointsTo()->resolvesToFunc()) {
         // These are even more different to declare than to print. Example:
         // void (void)* global0 = foo__1B;     ->
@@ -1581,7 +1595,7 @@ void CHLLCode::AddGlobal(const char *name, Type *type, Exp *init) {
         FuncType *ft = (FuncType *)pt->getPointsTo();
         QString ret, param;
         ft->getReturnAndParam(ret, param);
-        s << ret.toStdString() << "(*" << name << ")" << param.toStdString();
+        s << ret << "(*" << name << ")" << param;
     } else {
         appendType(s, type);
         s << " " << name;
@@ -1594,26 +1608,21 @@ void CHLLCode::AddGlobal(const char *name, Type *type, Exp *init) {
     s << ";";
     if (type->isSize())
         s << "// " << type->getSize() / 8 << " bytes";
-    appendLine(s);
+    appendLine(tgt);
 }
 
 /// Dump all generated code to \a os.
-void CHLLCode::print(std::ostream &os) {
-    for (auto &elem : lines)
-        os << elem << std::endl;
+void CHLLCode::print(QTextStream &os) {
+    os << lines.join('\n');
     if (m_proc == nullptr)
-        os << std::endl;
+        os << '\n';
 }
 
 /// Adds one line of comment to the code.
-void CHLLCode::AddLineComment(const std::string &cmt) {
-    std::ostringstream s;
-    s << "/* " << cmt << "*/";
-    appendLine(s);
+void CHLLCode::AddLineComment(const QString &cmt) {
+    appendLine(QString("/* %1*/").arg(cmt));
 }
 
 // Private helper functions, to reduce redundant code, and
 // have a single place to put a breakpoint on.
-void CHLLCode::appendLine(const std::ostringstream &ostr) { appendLine(ostr.str()); }
-
-void CHLLCode::appendLine(const std::string &s) { lines.push_back(strdup(s.c_str())); }
+void CHLLCode::appendLine(const QString &s) { lines.push_back(s); }

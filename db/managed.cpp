@@ -25,17 +25,17 @@
 
 extern char debug_buffer[]; // For prints functions
 
-std::ostream &operator<<(std::ostream &os, const StatementSet *ss) {
+QTextStream &operator<<(QTextStream &os, const StatementSet *ss) {
     ss->print(os);
     return os;
 }
 
-std::ostream &operator<<(std::ostream &os, const AssignSet *as) {
+QTextStream &operator<<(QTextStream &os, const AssignSet *as) {
     as->print(os);
     return os;
 }
 
-std::ostream &operator<<(std::ostream &os, const LocationSet *ls) {
+QTextStream &operator<<(QTextStream &os, const LocationSet *ls) {
     ls->print(os);
     return os;
 }
@@ -108,8 +108,9 @@ bool StatementSet::definesLoc(Exp *loc) {
 }
 
 // Print to a string, for debugging
-char *StatementSet::prints() {
-    std::ostringstream ost;
+const char *StatementSet::prints() {
+    QString tgt;
+    QTextStream ost(&tgt);
     std::set<Instruction *>::iterator it;
     for (it = begin(); it != end(); it++) {
         if (it != begin())
@@ -117,14 +118,17 @@ char *StatementSet::prints() {
         ost << *it;
     }
     ost << "\n";
-    strncpy(debug_buffer, ost.str().c_str(), DEBUG_BUFSIZE - 1);
+    strncpy(debug_buffer, qPrintable(tgt), DEBUG_BUFSIZE - 1);
     debug_buffer[DEBUG_BUFSIZE - 1] = '\0';
     return debug_buffer;
 }
 
-void StatementSet::dump() { print(std::cerr); }
+void StatementSet::dump() {
+    QTextStream q_cerr(stderr);
+    print(q_cerr);
+}
 
-void StatementSet::print(std::ostream &os) const {
+void StatementSet::print(QTextStream &os) const {
     std::set<Instruction *>::iterator it;
     for (it = begin(); it != end(); it++) {
         if (it != begin())
@@ -135,8 +139,7 @@ void StatementSet::print(std::ostream &os) const {
 }
 
 // Print just the numbers to stream os
-void StatementSet::printNums(std::ostream &os) {
-    os << std::dec;
+void StatementSet::printNums(QTextStream &os) {
     for (iterator it = begin(); it != end();) {
         if (*it)
             (*it)->printNum(os);
@@ -238,7 +241,8 @@ Assign *AssignSet::lookupLoc(Exp *loc) {
 
 // Print to a string, for debugging
 char *AssignSet::prints() {
-    std::ostringstream ost;
+    QString tgt;
+    QTextStream ost(&tgt);
     iterator it;
     for (it = begin(); it != end(); it++) {
         if (it != begin())
@@ -246,14 +250,17 @@ char *AssignSet::prints() {
         ost << *it;
     }
     ost << "\n";
-    strncpy(debug_buffer, ost.str().c_str(), DEBUG_BUFSIZE - 1);
+    strncpy(debug_buffer, qPrintable(tgt), DEBUG_BUFSIZE - 1);
     debug_buffer[DEBUG_BUFSIZE - 1] = '\0';
     return debug_buffer;
 }
 
-void AssignSet::dump() { print(std::cerr); }
+void AssignSet::dump() {
+    QTextStream q_cerr(stderr);
+    print(q_cerr);
+}
 
-void AssignSet::print(std::ostream &os) const {
+void AssignSet::print(QTextStream &os) const {
     iterator it;
     for (it = begin(); it != end(); it++) {
         if (it != begin())
@@ -264,8 +271,7 @@ void AssignSet::print(std::ostream &os) const {
 }
 
 // Print just the numbers to stream os
-void AssignSet::printNums(std::ostream &os) {
-    os << std::dec;
+void AssignSet::printNums(QTextStream &os) {
     for (iterator it = begin(); it != end();) {
         if (*it)
             (*it)->printNum(os);
@@ -313,21 +319,25 @@ LocationSet::LocationSet(const LocationSet &o) {
 }
 
 char *LocationSet::prints() {
-    std::ostringstream ost;
+    QString tgt;
+    QTextStream ost(&tgt);
     std::set<Exp *, lessExpStar>::iterator it;
     for (it = lset.begin(); it != lset.end(); it++) {
         if (it != lset.begin())
             ost << ",\t";
         ost << *it;
     }
-    strncpy(debug_buffer, ost.str().c_str(), DEBUG_BUFSIZE - 1);
+    strncpy(debug_buffer, qPrintable(tgt), DEBUG_BUFSIZE - 1);
     debug_buffer[DEBUG_BUFSIZE - 1] = '\0';
     return debug_buffer;
 }
 
-void LocationSet::dump() { print(std::cerr); }
+void LocationSet::dump() {
+    QTextStream ost(stderr);
+    print(ost);
+}
 
-void LocationSet::print(std::ostream &os) const {
+void LocationSet::print(QTextStream &os) const {
     std::set<Exp *, lessExpStar>::iterator it;
     for (it = lset.begin(); it != lset.end(); it++) {
         if (it != lset.begin())
@@ -538,11 +548,12 @@ void StatementList::append(StatementList &sl) { insert(end(), sl.begin(), sl.end
 void StatementList::append(StatementSet &ss) { insert(end(), ss.begin(), ss.end()); }
 
 char *StatementList::prints() {
-    std::ostringstream ost;
+    QString tgt;
+    QTextStream ost(&tgt);
     for (auto &elem : *this) {
         ost << elem << ",\t";
     }
-    strncpy(debug_buffer, ost.str().c_str(), DEBUG_BUFSIZE - 1);
+    strncpy(debug_buffer, qPrintable(tgt), DEBUG_BUFSIZE - 1);
     debug_buffer[DEBUG_BUFSIZE - 1] = '\0';
     return debug_buffer;
 }
@@ -570,21 +581,20 @@ StatementVec::iterator StatementVec::remove(iterator it) {
 }
 
 char *StatementVec::prints() {
-    std::ostringstream ost;
-    iterator it;
-    for (it = svec.begin(); it != svec.end(); it++) {
-        ost << *it << ",\t";
+
+    QString tgt;
+    QTextStream ost(&tgt);
+    for (Instruction *it : svec) {
+        ost << it << ",\t";
     }
-    strncpy(debug_buffer, ost.str().c_str(), DEBUG_BUFSIZE - 1);
+    strncpy(debug_buffer, qPrintable(tgt), DEBUG_BUFSIZE - 1);
     debug_buffer[DEBUG_BUFSIZE - 1] = '\0';
     return debug_buffer;
 }
 
 // Print just the numbers to stream os
-void StatementVec::printNums(std::ostream &os) {
-    iterator it;
-    os << std::dec;
-    for (it = svec.begin(); it != svec.end();) {
+void StatementVec::printNums(QTextStream &os) {
+    for (iterator it = svec.begin(); it != svec.end();) {
         if (*it)
             (*it)->printNum(os);
         else
@@ -701,7 +711,7 @@ Range::Range(int stride, int lowerBound, int upperBound, Exp *base)
     }
 }
 
-void Range::print(std::ostream &os) const {
+void Range::print(QTextStream &os) const {
     assert(lowerBound <= upperBound);
     if (base->isIntConst() && ((Const *)base)->getInt() == 0 && lowerBound == MIN && upperBound == MAX) {
         os << "T";
@@ -826,7 +836,7 @@ void RangeMap::widenwith(RangeMap &other) {
     }
 }
 
-void RangeMap::print(std::ostream &os) const {
+void RangeMap::print(QTextStream &os) const {
     for (auto it = ranges.begin(); it != ranges.end(); it++) {
         if (it != ranges.begin())
             os << ", ";

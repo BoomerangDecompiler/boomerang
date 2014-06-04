@@ -77,25 +77,24 @@ enum PREC {
 class CHLLCode : public HLLCode {
   private:
     /// The generated code.
-    std::list<char *> lines;
+    QStringList lines;
 
-    void indent(std::ostringstream &str, int indLevel);
-    void appendExp(std::ostringstream &str, const Exp &exp, PREC curPrec, bool uns = false);
-    void appendType(std::ostringstream &str, Type *typ);
-    void appendTypeIdent(std::ostringstream &str, Type *typ, const char *ident);
+    void indent(QTextStream &str, int indLevel);
+    void appendExp(QTextStream &str, const Exp &exp, PREC curPrec, bool uns = false);
+    void appendType(QTextStream &str, Type *typ);
+    void appendTypeIdent(QTextStream &str, Type *typ, const char *ident);
     /// Adds: (
-    void openParen(std::ostringstream &str, PREC outer, PREC inner) {
+    void openParen(QTextStream &str, PREC outer, PREC inner) {
         if (inner < outer)
             str << "(";
     }
     /// Adds: )
-    void closeParen(std::ostringstream &str, PREC outer, PREC inner) {
+    void closeParen(QTextStream &str, PREC outer, PREC inner) {
         if (inner < outer)
             str << ")";
     }
 
-    void appendLine(const std::ostringstream &ostr);
-    void appendLine(const std::string &s);
+    void appendLine(const QString &s);
 
     /// All locals in a Proc
     std::map<std::string, Type *> locals;
@@ -174,12 +173,12 @@ class CHLLCode : public HLLCode {
     void AddProcDec(UserProc *proc, bool open); // Implement AddProcStart and AddPrototype
   public:
     // comments
-    virtual void AddLineComment(const std::string &cmt);
+    virtual void AddLineComment(const QString &cmt);
 
     /*
                  * output functions
                  */
-    virtual void print(std::ostream &os);
+    virtual void print(QTextStream &os);
 };
 
 #endif

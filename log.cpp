@@ -1,21 +1,24 @@
 #include "log.h"
-#include <sstream>
 #include "statement.h"
 #include "rtl.h"
 #include "exp.h"
 #include "managed.h"
 
+#include <QTextStream>
+#include <sstream>
 Log &Log::operator<<(const Instruction *s) {
-    std::ostringstream st;
+    QString tgt;
+    QTextStream st(&tgt);
     s->print(st);
-    *this << st.str().c_str();
+    *this << tgt;
     return *this;
 }
 
 Log &Log::operator<<(const Exp *e) {
-    std::ostringstream st;
+    QString tgt;
+    QTextStream st(&tgt);
     e->print(st);
-    *this << st.str().c_str();
+    *this << tgt;
     return *this;
 }
 
@@ -27,30 +30,34 @@ Log &Log::operator<<(const Type *ty) {
 }
 
 Log &Log::operator<<(const Range *r) {
-    std::ostringstream st;
+    QString tgt;
+    QTextStream st(&tgt);
     r->print(st);
-    *this << st.str().c_str();
+    *this << tgt;
     return *this;
 }
 
 Log &Log::operator<<(const Range &r) {
-    std::ostringstream st;
+    QString tgt;
+    QTextStream st(&tgt);
     r.print(st);
-    *this << st.str().c_str();
+    *this << tgt;
     return *this;
 }
 
 Log &Log::operator<<(const RangeMap &r) {
-    std::ostringstream st;
+    QString tgt;
+    QTextStream st(&tgt);
     r.print(st);
-    *this << st.str().c_str();
+    *this << tgt;
     return *this;
 }
 
 Log &Log::operator<<(const RTL *r) {
-    std::ostringstream st;
+    QString tgt;
+    QTextStream st(&tgt);
     r->print(st);
-    *this << st.str().c_str();
+    *this << tgt;
     return *this;
 }
 

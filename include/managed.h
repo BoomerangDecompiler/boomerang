@@ -34,6 +34,7 @@ class Exp;
 class RefExp;
 class Cfg;
 class LocationSet;
+class QTextStream;
 
 // A class to implement sets of statements
 class StatementSet : public std::set<Instruction *> {
@@ -52,9 +53,9 @@ class StatementSet : public std::set<Instruction *> {
     bool definesLoc(Exp *loc);                   // Search; returns true if any
                                                  // statement defines loc
     bool operator<(const StatementSet &o) const; // Compare if less
-    void print(std::ostream &os) const;          // Print to os
-    void printNums(std::ostream &os);            // Print statements as numbers
-    char *prints();                              // Print to string (for debug)
+    void print(QTextStream &os) const;          // Print to os
+    void printNums(QTextStream &os);            // Print statements as numbers
+    const char *prints();                              // Print to string (for debug)
     void dump();                                 // Print to standard error for debugging
 };                                               // class StatementSet
 
@@ -74,8 +75,8 @@ class AssignSet : public std::set<Assign *, lessAssign> {
     Assign *lookupLoc(Exp *loc);            // Search for loc on LHS, return ptr to Assign if found
 
     bool operator<(const AssignSet &o) const; // Compare if less
-    void print(std::ostream &os) const;       // Print to os
-    void printNums(std::ostream &os);         // Print statements as numbers
+    void print(QTextStream &os) const;       // Print to os
+    void printNums(QTextStream &os);         // Print statements as numbers
     char *prints();                           // Print to string (for debug)
     void dump();                              // Print to standard error for debugging
 };                                            // class AssignSet
@@ -122,7 +123,7 @@ class StatementVec {
     iterator remove(iterator it);
     char *prints(); // Print to string (for debugging)
     void dump();    // Print to standard error for debugging
-    void printNums(std::ostream &os);
+    void printNums(QTextStream &os);
     void clear() { svec.clear(); }
     bool operator==(const StatementVec &o) const // Compare if equal
     {
@@ -165,7 +166,7 @@ class LocationSet {
     size_t size() const { return lset.size(); }  // Number of elements
     bool operator==(const LocationSet &o) const; // Compare
     void substitute(Assign &a);                  // Substitute the given assignment to all
-    void print(std::ostream &os) const;          // Print to os
+    void print(QTextStream &os) const;          // Print to os
     char *prints();                              // Print to string for debugging
     void dump();
     void diff(LocationSet *o);   // Diff 2 location sets to std::cerr
@@ -195,7 +196,7 @@ class Range {
     int getUpperBound() { return upperBound; }
     void unionWith(Range &r);
     void widenWith(Range &r);
-    void print(std::ostream &os) const;
+    void print(QTextStream &os) const;
     bool operator==(Range &other);
 
     static const int MAX = 2147483647;
@@ -213,7 +214,7 @@ class RangeMap {
     Range &getRange(Exp *loc);
     void unionwith(RangeMap &other);
     void widenwith(RangeMap &other);
-    void print(std::ostream &os) const;
+    void print(QTextStream &os) const;
     Exp *substInto(Exp *e, std::set<Exp *, lessExpStar> *only = nullptr);
     void killAllMemOfs();
     void clear() { ranges.clear(); }

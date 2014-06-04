@@ -1288,7 +1288,7 @@ YY_SSLScanner_LEX_RETURN YY_SSLScanner_CLASS::YY_SSLScanner_LEX(YY_SSLScanner_LE
 
             // echo the line if line tracing is turned on
             if (traceLines)
-                std::cerr << lineBuf << std::endl;
+                std::cerr << lineBuf << '\n';
 
             // Quell a warning
             yy_last_accepting_state = 0;

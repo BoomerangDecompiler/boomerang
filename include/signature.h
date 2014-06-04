@@ -178,7 +178,7 @@ class Signature {
     // virtual void analyse(UserProc *p);
     bool dfaTypeAnalysis(Cfg *cfg);
     virtual Signature *promote(UserProc *p);
-    void print(std::ostream &out, bool = false) const;
+    void print(QTextStream &out, bool = false) const;
     char *prints(); // For debugging
     void printToLog();
 

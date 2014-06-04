@@ -29,7 +29,6 @@
 #endif
 
 #include <inttypes.h>
-#include <iostream>
 #include <cstring>
 #include <cstdlib>
 #include <fstream>
@@ -658,7 +657,8 @@ void Boomerang::objcDecode(std::map<std::string, ObjcModule> &modules, Prog *pro
  * \returns A Prog object.
  */
 Prog *Boomerang::loadAndDecode(const QString &fname, const char *pname) {
-    std::cout << "loading...\n";
+    QTextStream q_cout(stdout);
+    q_cout << "loading...\n";
     Prog *prog = new Prog();
     FrontEnd *fe = FrontEnd::Load(fname, prog);
     if (fe == nullptr) {
@@ -674,8 +674,8 @@ Prog *Boomerang::loadAndDecode(const QString &fname, const char *pname) {
     fe->readLibraryCatalog(); // Needed before readSymbolFile()
 
     for (auto &elem : symbolFiles) {
-        std::cout << "reading symbol file " << elem.c_str() << "\n";
-        prog->readSymbolFile(elem.c_str());
+        q_cout << "reading symbol file " << elem << "\n";
+        prog->readSymbolFile(elem);
     }
     ObjcAccessInterface *objc = qobject_cast<ObjcAccessInterface *>(fe->getBinaryFile());
     if (objc) {
@@ -685,28 +685,28 @@ Prog *Boomerang::loadAndDecode(const QString &fname, const char *pname) {
     }
     // Entry points from -e (and -E) switch(es)
     for (auto &elem : entrypoints) {
-        std::cout << "decoding specified entrypoint " << elem << "\n";
+        q_cout << "decoding specified entrypoint " << elem << "\n";
         prog->decodeEntryPoint(elem);
     }
 
     if (entrypoints.size() == 0) { // no -e or -E given
         if (decodeMain)
-            std::cout << "decoding entry point...\n";
+            q_cout << "decoding entry point...\n";
         fe->decode(prog, decodeMain, pname);
 
         if (!noDecodeChildren) {
             // this causes any undecoded userprocs to be decoded
-            std::cout << "decoding anything undecoded...\n";
+            q_cout << "decoding anything undecoded...\n";
             fe->decode(prog, NO_ADDRESS);
         }
     }
 
-    std::cout << "finishing decode...\n";
+    q_cout << "finishing decode...\n";
     prog->finishDecode();
 
     Boomerang::get()->alertEndDecode();
 
-    std::cout << "found " << std::dec << prog->getNumUserProcs() << " procs\n";
+    q_cout << "found " << prog->getNumUserProcs() << " procs\n";
 
     // GK: The analysis which was performed was not exactly very "analysing", and so it has been moved to
     // prog::finishDecode, UserProc::assignProcsToCalls and UserProc::finalSimplify
@@ -765,7 +765,7 @@ int Boomerang::decompile(const QString &fname, const char *pname) {
     std::cout << "decompiling...\n";
     prog->decompile();
 
-    if (!dotFile.empty())
+    if (!dotFile.isEmpty())
         prog->generateDotFile();
 
     if (printAST) {
@@ -827,49 +827,60 @@ Prog *Boomerang::loadFromXML(const char *fname) {
  */
 void Boomerang::logTail() { logger->tail(); }
 
-void Boomerang::alertDecompileDebugPoint(UserProc *p, const char *description) {
-    if (stopAtDebugPoints) {
-        std::cout << "decompiling " << p->getName().toStdString() << ": " << description << "\n";
-        static char *stopAt = nullptr;
-        static std::set<Instruction *> watches;
-        if (stopAt == nullptr || !p->getName().compare(stopAt)) {
-            // This is a mini command line debugger.  Feel free to expand it.
-            for (auto const &watche : watches) {
-                (watche)->print(std::cout);
-                std::cout << "\n";
-            }
-            std::cout << " <press enter to continue> \n";
-            char line[1024];
-            while (1) {
-                *line = 0;
-                fgets(line, 1024, stdin);
-                if (!strncmp(line, "print", 5))
-                    p->print(std::cout);
-                else if (!strncmp(line, "fprint", 6)) {
-                    std::ofstream of("out.proc");
+void Boomerang::miniDebugger(UserProc *p, const char *description)
+{
+    QTextStream q_cout(stdout);
+    QTextStream q_cin(stdin);
+    q_cout << "decompiling " << p->getName() << ": " << description << "\n";
+    QString stopAt;
+    static std::set<Instruction *> watches;
+    if (stopAt.isEmpty() || !p->getName().compare(stopAt)) {
+        // This is a mini command line debugger.  Feel free to expand it.
+        for (auto const &watche : watches) {
+            (watche)->print(q_cout);
+            q_cout << "\n";
+        }
+        q_cout << " <press enter to continue> \n";
+        QString line;
+        while (1) {
+            line.clear();
+            q_cin >> line;
+            if (line.startsWith("print"))
+                p->print(q_cout);
+            else if (line.startsWith("fprint")) {
+                QFile tgt("out.proc");
+                if(tgt.open(QFile::WriteOnly)) {
+                    QTextStream of(&tgt);
                     p->print(of);
-                    of.close();
-                } else if (!strncmp(line, "run ", 4)) {
-                    stopAt = strdup(line + 4);
-                    if (strchr(stopAt, '\n'))
-                        *strchr(stopAt, '\n') = 0;
-                    if (strchr(stopAt, ' '))
-                        *strchr(stopAt, ' ') = 0;
-                    break;
-                } else if (!strncmp(line, "watch ", 6)) {
-                    int n = atoi(line + 6);
+                }
+            } else if (line.startsWith("run ")) {
+                QStringList parts = line.trimmed().split(" ",QString::SkipEmptyParts);
+                if(parts.size()>1)
+                    stopAt = parts[1];
+                break;
+            } else if (line.startsWith("watch ")) {
+                QStringList parts = line.trimmed().split(" ",QString::SkipEmptyParts);
+                if(parts.size()>1) {
+                    int n = parts[1].toInt();
                     StatementList stmts;
                     p->getStatements(stmts);
                     StatementList::iterator it;
                     for (it = stmts.begin(); it != stmts.end(); it++)
                         if ((*it)->getNumber() == n) {
                             watches.insert(*it);
-                            std::cout << "watching " << *it << "\n";
+                            q_cout << "watching " << *it << "\n";
                         }
-                } else
-                    break;
-            }
+
+                }
+            } else
+                break;
         }
+    }
+}
+
+void Boomerang::alertDecompileDebugPoint(UserProc *p, const char *description) {
+    if (stopAtDebugPoints) {
+        miniDebugger(p,description);
     }
     for (Watcher *elem : watchers)
         elem->alertDecompileDebugPoint(p, description);

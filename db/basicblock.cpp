@@ -207,17 +207,19 @@ char debug_buffer[DEBUG_BUFSIZE];
   * \returns     Address of the static buffer
   *
   ******************************************************************************/
-char *BasicBlock::prints() {
-    std::ostringstream ost;
+const char *BasicBlock::prints() {
+    QString tgt;
+    QTextStream ost(&tgt);
     print(ost);
-    // Static buffer might have overflowed if we used it directly, hence we just copy and print the first
-    // DEBUG_BUFSIZE-1 bytes
-    strncpy(debug_buffer, ost.str().c_str(), DEBUG_BUFSIZE - 1);
+    strncpy(debug_buffer, qPrintable(tgt), DEBUG_BUFSIZE - 1);
     debug_buffer[DEBUG_BUFSIZE - 1] = '\0';
     return debug_buffer;
 }
 
-void BasicBlock::dump() { print(std::cerr); }
+void BasicBlock::dump() {
+    QTextStream ost(stderr);
+    print(ost);
+}
 
 /***************************************************************************/ /**
   *
@@ -227,11 +229,11 @@ void BasicBlock::dump() { print(std::cerr); }
   * \param html - print in html mode
   *
   ******************************************************************************/
-void BasicBlock::print(std::ostream &os, bool html) {
+void BasicBlock::print(QTextStream &os, bool html) {
     if (html)
         os << "<br>";
     if (LabelNum)
-        os << "L" << std::dec << LabelNum << ": ";
+        os << "L" << LabelNum << ": ";
     switch (NodeType) {
     case ONEWAY:
         os << "Oneway BB";
@@ -265,11 +267,11 @@ void BasicBlock::print(std::ostream &os, bool html) {
     os << "in edges: ";
     for (BasicBlock *bb : InEdges)
         os << bb->getHiAddr() << "(" << bb->getLowAddr() << ") ";
-    os << std::dec << "\n";
+    os << "\n";
     os << "out edges: ";
     for (BasicBlock *bb : OutEdges)
         os << bb->getLowAddr() << " ";
-    os << std::dec << "\n";
+    os << "\n";
     if (ListOfRTLs) { // Can be zero if e.g. INVALID
         if (html)
             os << "<table>\n";
@@ -287,16 +289,17 @@ void BasicBlock::print(std::ostream &os, bool html) {
         //assert(TargetOutEdges == OutEdges.size());
         for (BasicBlock *outEdge : OutEdges) {
             if (outEdge && outEdge->LabelNum)
-                os << "L" << std::dec << outEdge->LabelNum << " ";
+                os << "L" << outEdge->LabelNum << " ";
         }
-        os << std::endl;
+        os << '\n';
     }
 }
 
 void BasicBlock::printToLog() {
-    std::ostringstream ost;
+    QString tgt;
+    QTextStream ost(&tgt);
     print(ost);
-    LOG << ost.str().c_str();
+    LOG << tgt;
 }
 
 bool BasicBlock::isBackEdge(size_t inEdge) const {
@@ -1246,9 +1249,10 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, BasicBlock *latch, std
 
         // return if this doesn't have any out edges (emit a warning)
         if (OutEdges.empty()) {
-            qWarning() << "WARNING: no out edge for this BB in " << proc->getName() << ":\n";
-            this->print(std::cerr);
-            std::cerr << std::endl;
+            QTextStream q_cerr(stderr);
+            q_cerr << "WARNING: no out edge for this BB in " << proc->getName() << ":\n";
+            this->print(q_cerr);
+            q_cerr << '\n';
             if (NodeType == COMPJUMP) {
                 std::ostringstream ost;
                 assert(ListOfRTLs->size());
@@ -1256,7 +1260,7 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, BasicBlock *latch, std
                 assert(!lastRTL->empty());
                 GotoStatement *gs = (GotoStatement *)lastRTL->back();
                 ost << "goto " << gs->getDest();
-                hll->AddLineComment(ost.str());
+                hll->AddLineComment(ost.str().c_str());
             }
             return;
         }

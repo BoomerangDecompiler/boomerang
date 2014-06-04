@@ -20,7 +20,6 @@
 #ifndef _HLLCODE_H_
 #define _HLLCODE_H_
 
-#include <iostream>
 #include <vector>
 #include <cassert>
 #include "statement.h" // For CallStatement::RetLocs
@@ -114,13 +113,13 @@ class HLLCode {
     virtual void AddPrototype(UserProc *proc) = 0;
 
     // comments
-    virtual void AddLineComment(const std::string &cmt) = 0;
+    virtual void AddLineComment(const QString &cmt) = 0;
 
     /*
      * output functions, pure virtual.
      */
-    virtual void print(std::ostream &os) = 0;
-    void print(QTextStream &qf);
+    virtual void print(QTextStream &os) = 0;
+
 }; // class HLLCode
 
 class SyntaxNode {
@@ -164,7 +163,7 @@ class SyntaxNode {
     SyntaxNode *getCorrespond() { return correspond; }
 
     virtual SyntaxNode *findNodeFor(BasicBlock *bb) = 0;
-    virtual void printAST(SyntaxNode *root, std::ostream &os) = 0;
+    virtual void printAST(SyntaxNode *root, QTextStream &os) = 0;
     virtual int evaluate(SyntaxNode *root) = 0;
     virtual void addSuccessors(SyntaxNode * /*root*/, std::vector<SyntaxNode *> & /*successors*/) {}
 }; // class SyntaxNode
@@ -235,7 +234,7 @@ class BlockSyntaxNode : public SyntaxNode {
     virtual SyntaxNode *replace(SyntaxNode *from, SyntaxNode *to);
 
     virtual SyntaxNode *findNodeFor(BasicBlock *bb);
-    virtual void printAST(SyntaxNode *root, std::ostream &os);
+    virtual void printAST(SyntaxNode *root, QTextStream &os);
     virtual int evaluate(SyntaxNode *root);
     virtual void addSuccessors(SyntaxNode *root, std::vector<SyntaxNode *> &successors);
 }; // class BlockSyntaxNode
@@ -270,7 +269,7 @@ class IfThenSyntaxNode : public SyntaxNode {
     void setThen(SyntaxNode *n) { pThen = n; }
 
     virtual SyntaxNode *findNodeFor(BasicBlock *bb);
-    virtual void printAST(SyntaxNode *root, std::ostream &os);
+    virtual void printAST(SyntaxNode *root, QTextStream &os);
     virtual int evaluate(SyntaxNode *root);
     virtual void addSuccessors(SyntaxNode *root, std::vector<SyntaxNode *> &successors);
 }; // class IfThenSyntaxNode
@@ -312,7 +311,7 @@ class IfThenElseSyntaxNode : public SyntaxNode {
     void setElse(SyntaxNode *n) { pElse = n; }
 
     virtual SyntaxNode *findNodeFor(BasicBlock *bb);
-    virtual void printAST(SyntaxNode *root, std::ostream &os);
+    virtual void printAST(SyntaxNode *root, QTextStream &os);
     virtual int evaluate(SyntaxNode *root);
     virtual void addSuccessors(SyntaxNode *root, std::vector<SyntaxNode *> &successors);
 }; // class IfThenElseSyntaxNode
@@ -344,7 +343,7 @@ class PretestedLoopSyntaxNode : public SyntaxNode {
     void setBody(SyntaxNode *n) { pBody = n; }
 
     virtual SyntaxNode *findNodeFor(BasicBlock *bb);
-    virtual void printAST(SyntaxNode *root, std::ostream &os);
+    virtual void printAST(SyntaxNode *root, QTextStream &os);
     virtual int evaluate(SyntaxNode *root);
     virtual void addSuccessors(SyntaxNode *root, std::vector<SyntaxNode *> &successors);
 }; // class PretestedLoopSyntaxNode
@@ -376,7 +375,7 @@ class PostTestedLoopSyntaxNode : public SyntaxNode {
     void setBody(SyntaxNode *n) { pBody = n; }
 
     virtual SyntaxNode *findNodeFor(BasicBlock *bb);
-    virtual void printAST(SyntaxNode *root, std::ostream &os);
+    virtual void printAST(SyntaxNode *root, QTextStream &os);
     virtual int evaluate(SyntaxNode *root);
     virtual void addSuccessors(SyntaxNode *root, std::vector<SyntaxNode *> &successors);
 }; // class PostTestedLoopSyntaxNode
@@ -406,7 +405,7 @@ class InfiniteLoopSyntaxNode : public SyntaxNode {
     void setBody(SyntaxNode *n) { pBody = n; }
 
     virtual SyntaxNode *findNodeFor(BasicBlock *bb);
-    virtual void printAST(SyntaxNode *root, std::ostream &os);
+    virtual void printAST(SyntaxNode *root, QTextStream &os);
     virtual int evaluate(SyntaxNode *root);
     virtual void addSuccessors(SyntaxNode *root, std::vector<SyntaxNode *> &successors);
 }; // class InfiniteLoopSyntaxNode

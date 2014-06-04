@@ -103,6 +103,7 @@ class Boomerang : public QObject {
     void helpcmd() const;
     Boomerang();
     virtual ~Boomerang() {}
+    void miniDebugger(UserProc *p, const char *description);
 
   public:
     /**
@@ -244,7 +245,7 @@ class Boomerang : public QObject {
     bool stopBeforeDecompile = false;
     bool traceDecoder = false;
     /// The file in which the dotty graph is saved
-    std::string dotFile = "";
+    QString dotFile;
     int numToPropagate = -1;
     bool noPromote = false;
     bool propOnlyToAll = false;
@@ -281,7 +282,7 @@ class Boomerang : public QObject {
     bool experimental = false; ///< Activate experimental code. Caution!
     bool debugRangeAnalysis = false;
     std::vector<ADDRESS> entrypoints;       /// A vector which contains all know entrypoints for the Prog.
-    std::vector<std::string> symbolFiles;   /// A vector containing the names off all symbolfiles to load.
+    std::vector<QString> symbolFiles;   /// A vector containing the names off all symbolfiles to load.
     std::map<ADDRESS, std::string> symbols; /// A map to find a name by a given address.
 };
 

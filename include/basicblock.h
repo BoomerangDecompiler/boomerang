@@ -201,9 +201,9 @@ class BasicBlock {
     bool isCaseOption();
     bool isTraversed();
     void setTraversed(bool bTraversed);
-    void print(std::ostream &os, bool html = false);
+    void print(QTextStream &os, bool html = false);
     void printToLog();
-    char *prints(); // For debugging
+    const char *prints(); // For debugging
     void dump();
     void updateType(BBTYPE bbType, uint32_t iNumOutEdges);
     void setJumpReqd();

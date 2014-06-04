@@ -140,21 +140,6 @@ bool FrontEnd::noReturnCallDest(const QString &name) {
             (name == "_assert"));
 }
 
-// FIXME: Is this ever used? Need to pass a real pbff?
-FrontEnd *FrontEnd::createById(std::string &str, QObject *pBF, Prog *prog) {
-    if (str == "pentium")
-        return new PentiumFrontEnd(pBF, prog, nullptr);
-    if (str == "sparc")
-        return new SparcFrontEnd(pBF, prog, nullptr);
-    if (str == "ppc")
-        return new PPCFrontEnd(pBF, prog, nullptr);
-    if (str == "mips")
-        return new MIPSFrontEnd(pBF, prog, nullptr);
-    if (str == "st20")
-        return new ST20FrontEnd(pBF, prog, nullptr);
-    return nullptr;
-}
-
 void FrontEnd::readLibraryCatalog(const QString &sPath) {
     // TODO: this is a work for generic semantics provider plugin : HeaderReader
     QFile file(sPath);

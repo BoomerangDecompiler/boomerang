@@ -157,9 +157,10 @@ bool RTLInstDict::readSSLFile(const QString &SSLFileName) {
     fixupParams();
 
     if (Boomerang::get()->debugDecoder) {
-        std::cout << "\n=======Expanded RTL template dictionary=======\n";
-        print(std::cout);
-        std::cout << "\n==============================================\n\n";
+        QTextStream q_cout(stdout);
+        q_cout << "\n=======Expanded RTL template dictionary=======\n";
+        print(q_cout);
+        q_cout << "\n==============================================\n\n";
     }
 
     return true;
@@ -196,16 +197,16 @@ void RTLInstDict::addRegister(const char *name, int id, int size, bool flt) {
   * \param        os - stream used for printing
   *
   ******************************************************************************/
-void RTLInstDict::print(std::ostream &os /*= std::cout*/) {
+void RTLInstDict::print(QTextStream &os /*= std::cout*/) {
     for (auto &elem : idict) {
         // print the instruction name
-        os << (elem).first << "  ";
+        os << (elem).first.c_str() << "  ";
 
         // print the parameters
         const std::list<std::string> &params((elem).second.params);
         int i = params.size();
         for (auto s = params.begin(); s != params.end(); s++, i--)
-            os << *s << (i != 1 ? "," : "");
+            os << s->c_str() << (i != 1 ? "," : "");
         os << "\n";
 
         // print the RTL

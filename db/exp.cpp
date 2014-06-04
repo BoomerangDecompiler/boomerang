@@ -650,20 +650,20 @@ bool TypeVal::operator*=(Exp &o) {
   *                  Mainly for debugging, or maybe some low level windows
   * \param       os  - Ref to an output stream
   ******************************************************************************/
-void Const::print(std::ostream &os, bool /*html*/) const {
-    setLexBegin(os.tellp());
+void Const::print(QTextStream &os, bool /*html*/) const {
+    setLexBegin(os.pos());
     switch (op) {
     case opIntConst:
         if (u.i < -1000 || u.i > 1000)
-            os << "0x" << std::hex << u.i << std::dec;
+            os << "0x" << QString::number(u.i,16);
         else
-            os << std::dec << u.i;
+            os << u.i;
         break;
     case opLongConst:
         if ((long long)u.ll < -1000LL || (long long)u.ll > 1000LL)
-            os << "0x" << std::hex << u.ll << std::dec << "LL";
+            os << "0x" << QString::number(u.ll,16) << "LL";
         else
-            os << std::dec << u.ll << "LL";
+            os << u.ll << "LL";
         break;
     case opFltConst:
         char buf[64];
@@ -678,11 +678,11 @@ void Const::print(std::ostream &os, bool /*html*/) const {
         assert(0);
     }
     if (conscript)
-        os << "\\" << std::dec << conscript << "\\";
-    setLexEnd(os.tellp());
+        os << "\\" << conscript << "\\";
+    setLexEnd(os.pos());
 }
 
-void Const::printNoQuotes(std::ostream &os) {
+void Const::printNoQuotes(QTextStream &os) {
     if (op == opStrConst)
         os << u.p;
     else
@@ -692,7 +692,7 @@ void Const::printNoQuotes(std::ostream &os) {
 //    //    //    //
 //    Binary    //
 //    //    //    //
-void Binary::printr(std::ostream &os, bool html) const {
+void Binary::printr(QTextStream &os, bool html) const {
     assert(subExp1 && subExp2);
     // The "r" is for recursive: the idea is that we don't want parentheses at the outer level, but a subexpression
     // (recursed from a higher level), we want the parens (at least for standard infix operators)
@@ -713,7 +713,7 @@ void Binary::printr(std::ostream &os, bool html) const {
     os << ")";
 }
 
-void Binary::print(std::ostream &os, bool html) const {
+void Binary::print(QTextStream &os, bool html) const {
     assert(subExp1 && subExp2);
     Exp *p1 = ((Binary *)this)->getSubExp1();
     Exp *p2 = ((Binary *)this)->getSubExp2();
@@ -935,7 +935,7 @@ void Binary::print(std::ostream &os, bool html) const {
 //    //    //    //    //
 //     Terminal    //
 //    //    //    //    //
-void Terminal::print(std::ostream &os, bool /*html*/) const {
+void Terminal::print(QTextStream &os, bool /*html*/) const {
     switch (op) {
     case opPC:
         os << "%pc";
@@ -1014,7 +1014,7 @@ void Terminal::print(std::ostream &os, bool /*html*/) const {
 //    //    //    //
 //     Unary    //
 //    //    //    //
-void Unary::print(std::ostream &os, bool html) const {
+void Unary::print(QTextStream &os, bool html) const {
     Exp *p1 = ((Unary *)this)->getSubExp1();
     switch (op) {
     //    //    //    //    //    //    //
@@ -1023,7 +1023,7 @@ void Unary::print(std::ostream &os, bool html) const {
     case opRegOf:
         // Make a special case for the very common case of r[intConst]
         if (p1->isIntConst()) {
-            os << "r" << std::dec << ((Const *)p1)->getInt();
+            os << "r" << ((Const *)p1)->getInt();
             break;
         } else if (p1->isTemp()) {
             // Just print the temp {   // balance }s
@@ -1207,7 +1207,7 @@ void Unary::print(std::ostream &os, bool html) const {
 //    //    //    //
 //    Ternary //
 //    //    //    //
-void Ternary::printr(std::ostream &os, bool /*html*/) const {
+void Ternary::printr(QTextStream &os, bool /*html*/) const {
     // The function-like operators don't need parentheses
     switch (op) {
     // The "function-like" ternaries
@@ -1231,7 +1231,7 @@ void Ternary::printr(std::ostream &os, bool /*html*/) const {
     os << "(" << this << ")";
 }
 
-void Ternary::print(std::ostream &os, bool html) const {
+void Ternary::print(QTextStream &os, bool html) const {
     Exp *p1 = ((Ternary *)this)->getSubExp1();
     Exp *p2 = ((Ternary *)this)->getSubExp2();
     Exp *p3 = ((Ternary *)this)->getSubExp3();
@@ -1338,7 +1338,7 @@ void Ternary::print(std::ostream &os, bool html) const {
 //    //    //    //
 // TypedExp //
 //    //    //    //
-void TypedExp::print(std::ostream &os, bool html) const {
+void TypedExp::print(QTextStream &os, bool html) const {
     os << " ";
     type->starPrint(os);
     Exp *p1 = ((Ternary *)this)->getSubExp1();
@@ -1348,7 +1348,7 @@ void TypedExp::print(std::ostream &os, bool html) const {
 //    //    //    //
 //    RefExp    //
 //    //    //    //
-void RefExp::print(std::ostream &os, bool html) const {
+void RefExp::print(QTextStream &os, bool html) const {
     if (subExp1)
         subExp1->print(os, html);
     else
@@ -1361,7 +1361,7 @@ void RefExp::print(std::ostream &os, bool html) const {
         os << "WILD";
     else if (def) {
         if (html)
-            os << "<a href=\"#stmt" << std::dec << def->getNumber() << "\">";
+            os << "<a href=\"#stmt" << def->getNumber() << "\">";
         def->printNum(os);
         if (html)
             os << "</a>";
@@ -1376,9 +1376,9 @@ void RefExp::print(std::ostream &os, bool html) const {
 //    //    //    //
 // TypeVal    //
 //    //    //    //
-void TypeVal::print(std::ostream &os, bool /*html*/) const {
+void TypeVal::print(QTextStream &os, bool /*html*/) const {
     if (val)
-        os << "<" << val->getCtype().toStdString() << ">";
+        os << "<" << val->getCtype() << ">";
     else
         os << "<nullptr>";
 }
@@ -1389,14 +1389,17 @@ void TypeVal::print(std::ostream &os, bool /*html*/) const {
   * \returns            Address of the static buffer
   ******************************************************************************/
 char *Exp::prints() {
-    std::ostringstream ost;
+    QString tgt;
+    QTextStream ost(&tgt);
     print(ost);
-    strncpy(debug_buffer, ost.str().c_str(), DEBUG_BUFSIZE - 1);
+    strncpy(debug_buffer, qPrintable(tgt), DEBUG_BUFSIZE - 1);
     debug_buffer[DEBUG_BUFSIZE - 1] = '\0';
-    return debug_buffer;
 }
 
-void Exp::dump() { print(std::cerr); }
+void Exp::dump() {
+    QTextStream ost(stderr);
+    print(ost);
+}
 
 /***************************************************************************/ /**
   *
@@ -1717,9 +1720,10 @@ static const char *tlstrchr(const char *str, char ch) {
   ******************************************************************************/
 bool Exp::match(const std::string &pattern, std::map<std::string, Exp *> &bindings) {
     // most obvious
-    std::ostringstream ostr;
-    this->print(ostr);
-    if (ostr.str() == pattern)
+    QString tgt;
+    QTextStream ostr(&tgt);
+    print(ostr);
+    if (tgt.toStdString() == pattern)
         return true;
 
     // alright, is pattern an acceptable variable?
@@ -3303,12 +3307,12 @@ const char *Exp::getOperName() const { return operStrings[op]; }
   *         brackets\>.
   * \param os Output stream to send the output to
   ******************************************************************************/
-void Exp::printt(std::ostream &os /*= cout*/) const {
+void Exp::printt(QTextStream &os /*= cout*/) const {
     print(os);
     if (op != opTypedExp)
         return;
     Type *t = ((TypedExp *)this)->getType();
-    os << "<" << std::dec << t->getSize();
+    os << "<" << t->getSize();
     /*      switch (t->getType()) {
                 case INTEGER:
                         if (t->getSigned())
@@ -3353,7 +3357,7 @@ void Exp::printAsHL(std::ostream &os /*= cout*/) {
   * \param p ptr to Exp to print to the stream
   * \returns copy of os (for concatenation)
   ******************************************************************************/
-std::ostream &operator<<(std::ostream &os, const Exp *p) {
+QTextStream &operator<<(QTextStream &os, const Exp *p) {
 #if 1
     // Useful for debugging, but can clutter the output
     p->printt(os);
@@ -3456,6 +3460,9 @@ Exp *Exp::fromSSAleft(UserProc *proc, Instruction *d) {
 
 // A helper class for comparing Exp*'s sensibly
 bool lessExpStar::operator()(const Exp *x, const Exp *y) const {
+    return (*x < *y); // Compare the actual Exps
+}
+bool lessExpShared::operator()(const std::shared_ptr<Exp> &x, const std::shared_ptr<Exp> &y) const {
     return (*x < *y); // Compare the actual Exps
 }
 

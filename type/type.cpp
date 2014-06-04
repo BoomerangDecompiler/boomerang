@@ -1058,7 +1058,7 @@ RESOLVES_TO_TYPE(Lower)
 
 bool Type::isPointerToAlpha() { return isPointer() && asPointer()->pointsToAlpha(); }
 //! Print in *i32* format
-void Type::starPrint(std::ostream &os) { os << "*" << this << "*"; }
+void Type::starPrint(QTextStream &os) { os << "*" << this << "*"; }
 
 // A crude shortcut representation of a type
 std::ostream &operator<<(std::ostream &os, const Type *t) {
@@ -1439,12 +1439,14 @@ void DataIntervalMap::deleteItem(ADDRESS addr) {
 void DataIntervalMap::dump() { std::cerr << prints(); }
 
 char *DataIntervalMap::prints() {
+    QString tgt;
+    QTextStream ost(&tgt);
+    std::set<Instruction *>::iterator it;
     iterator it;
-    std::ostringstream ost;
     for (it = dimap.begin(); it != dimap.end(); ++it)
-        ost << std::hex << "0x" << it->first << std::dec << " " << it->second.name.toStdString() << " " << it->second.type->getCtype().toStdString()
+        ost << "0x" << it->first << " " << it->second.name << " " << it->second.type->getCtype()
             << "\n";
-    strncpy(debug_buffer, ost.str().c_str(), DEBUG_BUFSIZE - 1);
+    strncpy(debug_buffer, qPrintable(tgt), DEBUG_BUFSIZE - 1);
     debug_buffer[DEBUG_BUFSIZE - 1] = '\0';
     return debug_buffer;
 }

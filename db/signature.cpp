@@ -544,14 +544,14 @@ bool CallingConvention::StdC::PentiumSignature::qualified(UserProc *p, Signature
         if (e->getLeft()->getOper() == opPC) {
             if (e->getRight()->isMemOf() && e->getRight()->getSubExp1()->isRegOfN(28)) {
                 if (VERBOSE)
-                    std::cerr << "got pc = m[r[28]]" << std::endl;
+                    std::cerr << "got pc = m[r[28]]" << '\n';
                 gotcorrectret1 = true;
             }
         } else if (e->getLeft()->isRegOfK() && ((Const *)e->getLeft()->getSubExp1())->getInt() == 28) {
             if (e->getRight()->getOper() == opPlus && e->getRight()->getSubExp1()->isRegOfN(28) &&
                 e->getRight()->getSubExp2()->isIntConst() && ((Const *)e->getRight()->getSubExp2())->getInt() == 4) {
                 if (VERBOSE)
-                    std::cerr << "got r[28] = r[28] + 4" << std::endl;
+                    std::cerr << "got r[28] = r[28] + 4" << '\n';
                 gotcorrectret2 = true;
             }
         }
@@ -1399,14 +1399,14 @@ Signature *Signature::instantiate(platform plat, callconv cc, const char *nam) {
     return nullptr;
 }
 
-void Signature::print(std::ostream &out, bool /*html*/) const {
+void Signature::print(QTextStream &out, bool /*html*/) const {
     if (isForced())
         out << "*forced* ";
     if (returns.size() > 0) {
         out << "{ ";
         unsigned n = 0;
         for (const Return *rr : returns) {
-            out << rr->type->getCtype().toStdString() << " " << rr->exp;
+            out << rr->type->getCtype() << " " << rr->exp;
             if (n != returns.size() - 1)
                 out << ",";
             out << " ";
@@ -1415,10 +1415,10 @@ void Signature::print(std::ostream &out, bool /*html*/) const {
         out << "} ";
     } else
         out << "void ";
-    out << name.toStdString() << "(";
+    out << name << "(";
     unsigned int i;
     for (i = 0; i < params.size(); i++) {
-        out << params[i]->getType()->getCtype().toStdString() << " " << params[i]->name() << " " << params[i]->getExp();
+        out << params[i]->getType()->getCtype() << " " << params[i]->name() << " " << params[i]->getExp();
         if (i != params.size() - 1)
             out << ", ";
     }
@@ -1426,25 +1426,28 @@ void Signature::print(std::ostream &out, bool /*html*/) const {
 }
 
 char *Signature::prints() {
-    std::ostringstream ost;
+    QString tgt;
+    QTextStream ost(&tgt);
     print(ost);
-    strncpy(debug_buffer, ost.str().c_str(), DEBUG_BUFSIZE - 1);
+    strncpy(debug_buffer, qPrintable(tgt), DEBUG_BUFSIZE - 1);
     debug_buffer[DEBUG_BUFSIZE - 1] = '\0';
     return debug_buffer;
 }
 
 void Signature::printToLog() {
-    std::ostringstream os;
+    QString tgt;
+    QTextStream os(&tgt);
     print(os);
-    LOG << os.str().c_str();
+    LOG << tgt;
 }
 
 bool Signature::usesNewParam(UserProc * /*p*/, Instruction *stmt, bool checkreach, int &n) {
+    QTextStream q_cerr(stderr);
     n = getNumParams() - 1;
     if (VERBOSE) {
-        std::cerr << "searching ";
-        stmt->printAsUse(std::cerr);
-        std::cerr << std::endl;
+        q_cerr << "searching ";
+        stmt->printAsUse(q_cerr);
+        q_cerr << '\n';
     }
     StatementSet reachin;
 

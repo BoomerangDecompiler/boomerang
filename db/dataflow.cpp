@@ -91,8 +91,10 @@ void DataFlow::dominators(Cfg *cfg) {
         std::vector<BasicBlock *>::iterator it;
         for (it = inEdges.begin(); it != inEdges.end(); it++) {
             if (indices.find(*it) == indices.end()) {
-                std::cerr << "BB not in indices: ";
-                (*it)->print(std::cerr);
+                QTextStream q_cerr(stderr);
+
+                q_cerr << "BB not in indices: ";
+                (*it)->print(q_cerr);
                 assert(false);
             }
             int v = indices[*it];
@@ -621,7 +623,7 @@ Exp *DefCollector::findDefFor(Exp *e) {
 /*
  * Print the collected locations to stream os
  */
-void UseCollector::print(std::ostream &os, bool html) const {
+void UseCollector::print(QTextStream &os, bool html) const {
     bool first = true;
     for (auto const &elem : locs) {
         if (first)
@@ -634,16 +636,17 @@ void UseCollector::print(std::ostream &os, bool html) const {
 
 #define DEFCOL_COLS 120
 //! Print the collected locations to stream os
-void DefCollector::print(std::ostream &os, bool html) const {
+void DefCollector::print(QTextStream &os, bool html) const {
     iterator it;
     unsigned col = 36;
     bool first = true;
     for (it = defs.begin(); it != defs.end(); ++it) {
-        std::ostringstream ost;
+        QString tgt;
+        QTextStream ost(&tgt);
         (*it)->getLeft()->print(ost, html);
         ost << "=";
         (*it)->getRight()->print(ost, html);
-        size_t len = ost.str().length();
+        size_t len = tgt.length();
         if (first)
             first = false;
         else if (col + 4 + len >= DEFCOL_COLS) { // 4 for a comma and three spaces
@@ -655,7 +658,7 @@ void DefCollector::print(std::ostream &os, bool html) const {
             os << ",   ";
             col += 4;
         }
-        os << ost.str().c_str();
+        os << tgt;
         col += len;
     }
 }
@@ -664,31 +667,31 @@ void DefCollector::print(std::ostream &os, bool html) const {
  * Print to string or stderr (for debugging)
  */
 char *UseCollector::prints() const {
-    std::ostringstream ost;
+    QString tgt;
+    QTextStream ost(&tgt);
     print(ost);
-    strncpy(debug_buffer, ost.str().c_str(), DEBUG_BUFSIZE - 1);
+    strncpy(debug_buffer, qPrintable(tgt), DEBUG_BUFSIZE - 1);
     debug_buffer[DEBUG_BUFSIZE - 1] = '\0';
     return debug_buffer;
 }
 //!Print to string or stdout (for debugging)
 char *DefCollector::prints() const {
-    std::ostringstream ost;
+    QString tgt;
+    QTextStream ost(&tgt);
     print(ost);
-    strncpy(debug_buffer, ost.str().c_str(), DEBUG_BUFSIZE - 1);
+    strncpy(debug_buffer, qPrintable(tgt), DEBUG_BUFSIZE - 1);
     debug_buffer[DEBUG_BUFSIZE - 1] = '\0';
     return debug_buffer;
 }
 
 void UseCollector::dump() {
-    std::ostringstream ost;
+    QTextStream ost(stderr);
     print(ost);
-    std::cerr << ost.str();
 }
 
 void DefCollector::dump() {
-    std::ostringstream ost;
+    QTextStream ost(stderr);
     print(ost);
-    std::cerr << ost.str();
 }
 
 void UseCollector::makeCloneOf(UseCollector &other) {

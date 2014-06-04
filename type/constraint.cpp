@@ -35,9 +35,10 @@ void ConstraintMap::print(std::ostream &os) {
 
 extern char debug_buffer[];
 char *ConstraintMap::prints() {
-    std::ostringstream ost;
+    QString tgt;
+    QTextStream ost(&tgt);
     print(ost);
-    strncpy(debug_buffer, ost.str().c_str(), DEBUG_BUFSIZE - 1);
+    strncpy(debug_buffer, qPrintable(tgt), DEBUG_BUFSIZE - 1);
     debug_buffer[DEBUG_BUFSIZE - 1] = '\0';
     return debug_buffer;
 }
@@ -90,9 +91,10 @@ void EquateMap::print(std::ostream &os) {
 }
 
 char *EquateMap::prints() {
-    std::ostringstream ost;
+    QString tgt;
+    QTextStream ost(&tgt);
     print(ost);
-    strncpy(debug_buffer, ost.str().c_str(), DEBUG_BUFSIZE - 1);
+    strncpy(debug_buffer, qPrintable(tgt), DEBUG_BUFSIZE - 1);
     debug_buffer[DEBUG_BUFSIZE - 1] = '\0';
     return debug_buffer;
 }
@@ -273,9 +275,10 @@ Exp *nextConjunct(Exp *&remainder) {
 
 bool Constraints::solve(std::list<ConstraintMap> &solns) {
     LOG << conSet.size() << " constraints:";
-    std::ostringstream os;
+    QString tgt_s;
+    QTextStream os(&tgt_s);
     conSet.print(os);
-    LOG << os.str().c_str();
+    LOG << tgt_s;
     // Replace Ta[loc] = ptr(alpha) with
     //           Tloc = alpha
     LocationSet::iterator cc;
@@ -601,9 +604,10 @@ void Constraints::print(std::ostream &os) {
 }
 
 char *Constraints::prints() {
-    std::ostringstream ost;
+    QString tgt;
+    QTextStream ost(&tgt);
     print(ost);
-    strncpy(debug_buffer, ost.str().c_str(), DEBUG_BUFSIZE - 1);
+    strncpy(debug_buffer, qPrintable(tgt), DEBUG_BUFSIZE - 1);
     debug_buffer[DEBUG_BUFSIZE - 1] = '\0';
     return debug_buffer;
 }

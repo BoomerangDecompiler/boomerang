@@ -14,11 +14,6 @@
   *               ExprTable
   ******************************************************************************/
 
-/*
- * 25 Feb 01 - Simon: sorted out dependancies
- * 01 May 02 - Mike: mods for boomerang
- */
-
 #include "table.h"
 #include "types.h"
 #include "statement.h"

@@ -84,13 +84,13 @@ class Exp {
     unsigned getLexEnd() const { return lexEnd; }
 
     //! Print the expression to the given stream
-    virtual void print(std::ostream &os, bool html = false) const = 0;
-    void printt(std::ostream &os = std::cout) const;
+    virtual void print(QTextStream &os, bool html = false) const = 0;
+    void printt(QTextStream &os) const;
     void printAsHL(std::ostream &os = std::cout); //!< Print with v[5] as v5
     char *prints();                               // Print to string (for debugging and logging)
     void dump();                                  // Print to standard error (for debugging)
-                                                  // Recursive print: don't want parens at the top level
-    virtual void printr(std::ostream &os, bool html = false) const { print(os, html); }
+    //! Recursive print: don't want parens at the top level
+    virtual void printr(QTextStream &os, bool html = false) const { print(os, html); }
     // But most classes want standard
     // For debugging: print in indented hex. In gdb: "p x->printx(0)"
     virtual void printx(int ind) const = 0;
@@ -356,7 +356,7 @@ class Exp {
 }; // class Exp
 
 // Not part of the Exp class, but logically belongs with it:
-std::ostream &operator<<(std::ostream &os, const Exp *p); // Print the Exp poited to by p
+QTextStream &operator<<(QTextStream &os, const Exp *p); // Print the Exp poited to by p
 
 /***************************************************************************/ /**
   * Const is a subclass of Exp, and holds either an integer, floating point, string, or address constant
@@ -419,9 +419,9 @@ class Const : public Exp {
     const Type *getType() const { return type; }
     void setType(Type *ty) { type = ty; }
 
-    virtual void print(std::ostream &os, bool = false) const;
+    virtual void print(QTextStream &os, bool = false) const;
     // Print "recursive" (extra parens not wanted at outer levels)
-    void printNoQuotes(std::ostream &os);
+    void printNoQuotes(QTextStream &os);
     virtual void printx(int ind) const;
 
     virtual void appendDotFile(std::ofstream &of);
@@ -460,7 +460,7 @@ class Terminal : public Exp {
     virtual bool operator==(const Exp &o) const;
     virtual bool operator<(const Exp &o) const;
     virtual bool operator*=(Exp &o);
-    virtual void print(std::ostream &os, bool = false) const;
+    virtual void print(QTextStream &os, bool = false) const override;
     virtual void appendDotFile(std::ofstream &of);
     virtual void printx(int ind) const;
     virtual bool isTerminal() { return true; }
@@ -510,7 +510,7 @@ class Unary : public Exp {
     virtual int getArity() const { return 1; }
 
     // Print
-    virtual void print(std::ostream &os, bool html = false) const;
+    virtual void print(QTextStream &os, bool html = false) const override;
     virtual void appendDotFile(std::ofstream &of);
     virtual void printx(int ind) const;
 
@@ -581,8 +581,8 @@ class Binary : public Unary {
     int getArity() const { return 2; }
 
     // Print
-    virtual void print(std::ostream &os, bool html = false) const;
-    virtual void printr(std::ostream &os, bool html = false) const;
+    virtual void print(QTextStream &os, bool html = false) const override;
+    virtual void printr(QTextStream &os, bool html = false) const;
     virtual void appendDotFile(std::ofstream &of);
     virtual void printx(int ind) const;
 
@@ -653,8 +653,8 @@ class Ternary : public Binary {
     int getArity() const { return 3; }
 
     // Print
-    virtual void print(std::ostream &os, bool html = false) const;
-    virtual void printr(std::ostream &os, bool = false) const;
+    virtual void print(QTextStream &os, bool html = false) const override;
+    virtual void printr(QTextStream &os, bool = false) const override;
     virtual void appendDotFile(std::ofstream &of);
     virtual void printx(int ind) const;
 
@@ -716,7 +716,7 @@ class TypedExp : public Unary {
     virtual bool operator<<(const Exp &o) const;
     virtual bool operator*=(Exp &o);
 
-    virtual void print(std::ostream &os, bool html = false) const;
+    virtual void print(QTextStream &os, bool html = false) const override;
     virtual void appendDotFile(std::ofstream &of);
     virtual void printx(int ind) const;
 
@@ -781,7 +781,7 @@ class RefExp : public Unary {
     virtual bool operator<(const Exp &o) const;
     virtual bool operator*=(Exp &o);
 
-    virtual void print(std::ostream &os, bool html = false) const;
+    virtual void print(QTextStream &os, bool html = false) const override;
     virtual void printx(int ind) const;
     // virtual int        getNumRefs() {return 1;}
     Instruction *getDef() { return def; } // Ugh was called getRef()
@@ -830,7 +830,7 @@ class TypeVal : public Terminal {
     virtual bool operator==(const Exp &o) const;
     virtual bool operator<(const Exp &o) const;
     virtual bool operator*=(Exp &o);
-    virtual void print(std::ostream &os, bool = false) const;
+    virtual void print(QTextStream &os, bool = false) const override;
     virtual void printx(int ind) const;
     virtual Exp *genConstraints(Exp * /*restrictTo*/) {
         assert(0);

@@ -31,6 +31,7 @@ class Instruction;
 class UserProc;
 class PhiAssign;
 class Type;
+class QTextStream;
 
 class DataFlow {
     /******************** Dominance Frontier Data *******************/
@@ -158,7 +159,7 @@ class DefCollector {
      * Insert a new member (make sure none exists yet)
      */
     void insert(Assign *a);
-    void print(std::ostream &os, bool html = false) const;
+    void print(QTextStream &os, bool html = false) const;
     char *prints() const;
     void dump();
     Assign *dumpAddrOfFourth();
@@ -235,7 +236,7 @@ class UseCollector {
      * Insert a new member
      */
     void insert(Exp *e) { locs.insert(e); }
-    void print(std::ostream &os, bool html = false) const;
+    void print(QTextStream &os, bool html = false) const;
     char *prints() const;
     void dump();
 

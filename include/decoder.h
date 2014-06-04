@@ -178,7 +178,7 @@ bool isFuncPrologue(ADDRESS hostPC);
 #define DEBUG_DECODER (Boomerang::get()->debugDecoder)
 #define SHOW_ASM(output)                                                                                               \
     if (DEBUG_DECODER)                                                                                                 \
-        std::cout << std::hex << pc << std::dec << ": " << output << std::endl;
+        std::cout << std::hex << pc << std::dec << ": " << output << '\n';
 #define DEBUG_STMTS                                                                                                    \
     if (DEBUG_DECODER) {                                                                                               \
         std::list<Instruction *>::iterator ii;                                                                           \

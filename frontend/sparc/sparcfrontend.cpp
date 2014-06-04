@@ -192,7 +192,7 @@ void SparcFrontEnd::handleCall(UserProc *proc, ADDRESS dest, BasicBlock *callBB,
   *
   ******************************************************************************/
 void SparcFrontEnd::case_unhandled_stub(ADDRESS addr) {
-    std::cerr << "Error: DCTI couple at " << std::hex << addr << std::endl;
+    std::cerr << "Error: DCTI couple at " << std::hex << addr << '\n';
 }
 
 /***************************************************************************/ /**
@@ -824,7 +824,7 @@ bool SparcFrontEnd::processProc(ADDRESS address, UserProc *proc, std::ofstream &
                          (bits29_25 != 0x18))) { // Branch, but not (f)ba,a
                         // The above test includes floating point branches
                         std::cerr << "Target of branch at " << std::hex << rtl->getAddress()
-                                  << " is delay slot of CTI at " << dest - 4 << std::endl;
+                                  << " is delay slot of CTI at " << dest - 4 << '\n';
                     }
                 }
             }
@@ -1248,7 +1248,7 @@ bool SparcFrontEnd::helperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL *> *lrt
         return false;
     const char *p = Program->symbolByAddress(dest);
     if (p == nullptr) {
-        std::cerr << "Error: Can't find symbol for PLT address " << std::hex << dest << std::endl;
+        std::cerr << "Error: Can't find symbol for PLT address " << std::hex << dest << '\n';
         return false;
     }
     std::string name(p);

@@ -12,11 +12,6 @@
   * \brief   Implementation of the Statement and related classes.
   *               (Was dataflow.cpp a long time ago)
   ******************************************************************************/
-
-/***************************************************************************/ /**
-  * Dependencies.
-  ******************************************************************************/
-
 #include <cassert>
 #include <cstring>
 #include <iomanip> // For setfill etc
@@ -606,7 +601,7 @@ Instruction *Instruction::getNextStatementInBB() {
   *                    p: ptr to Statement to print to the stream
   * \returns             copy of os (for concatenation)
   ******************************************************************************/
-std::ostream &operator<<(std::ostream &os, const Instruction *s) {
+QTextStream &operator<<(QTextStream &os, const Instruction *s) {
     if (s == nullptr) {
         os << "nullptr ";
         return os;
@@ -623,17 +618,19 @@ bool Instruction::isFlagAssgn() {
 }
 
 char *Instruction::prints() {
-    std::ostringstream ost;
+    QString tgt;
+    QTextStream ost(&tgt);
     print(ost);
-    strncpy(debug_buffer, ost.str().c_str(), DEBUG_BUFSIZE - 1);
+    strncpy(debug_buffer, qPrintable(tgt), DEBUG_BUFSIZE - 1);
     debug_buffer[DEBUG_BUFSIZE - 1] = '\0';
     return debug_buffer;
 }
 
 // This version prints much better in gdb
 void Instruction::dump() {
-    print(std::cerr);
-    std::cerr << "\n";
+    QTextStream q_cerr(stderr);
+    print(q_cerr);
+    q_cerr << "\n";
 }
 
 /* This function is designed to find basic flag calls, plus in addition two variations seen with Pentium FP code.
@@ -1101,11 +1098,11 @@ bool GotoStatement::searchAll(const Exp &search, std::list<Exp *> &result) {
   * \param        os: stream to write to
   *
   ******************************************************************************/
-void GotoStatement::print(std::ostream & os, bool html) const {
-    os << std::setw(4) << std::dec << Number << " ";
+void GotoStatement::print(QTextStream & os, bool html) const {
+    os << qSetFieldWidth(4) << Number << qSetFieldWidth(0) << " " ;
     if (html) {
         os << "</td><td>";
-        os << "<a name=\"stmt" << std::dec << Number << "\">";
+        os << "<a name=\"stmt" << Number << "\">";
     }
     os << "GOTO ";
     if (pDest == nullptr)
@@ -1113,7 +1110,7 @@ void GotoStatement::print(std::ostream & os, bool html) const {
     else if (pDest->getOper() != opIntConst)
         pDest->print(os);
     else
-        os << "0x" << std::hex << getFixedDest();
+        os << "0x" << getFixedDest();
     if (html)
         os << "</a></td>";
 }
@@ -1417,11 +1414,11 @@ bool BranchStatement::searchAll(const Exp &search, std::list<Exp *> &result) {
   * \param        os: stream
   *
   ******************************************************************************/
-void BranchStatement::print(std::ostream & os, bool html) const {
-    os << std::setw(4) << std::dec << Number << " ";
+void BranchStatement::print(QTextStream & os, bool html) const {
+    os << qSetFieldWidth(4) <<Number << qSetFieldWidth(0) <<" ";
     if (html) {
         os << "</td><td>";
-        os << "<a name=\"stmt" << std::dec << Number << "\">";
+        os << "<a name=\"stmt" << Number << "\">";
     }
     os << "BRANCH ";
     if (pDest == nullptr)
@@ -1430,7 +1427,7 @@ void BranchStatement::print(std::ostream & os, bool html) const {
         os << pDest;
     else {
         // Really we'd like to display the destination label here...
-        os << "0x" << std::hex << getFixedDest();
+        os << "0x" << getFixedDest();
     }
     os << ", condition ";
     switch (jtCond) {
@@ -1482,7 +1479,7 @@ void BranchStatement::print(std::ostream & os, bool html) const {
     }
     if (bFloat)
         os << " float";
-    os << std::endl;
+    os << '\n';
     if (pCond) {
         if (html)
             os << "<br>";
@@ -1532,9 +1529,9 @@ bool BranchStatement::usesExp(const Exp &e) {
 bool condToRelational(Exp * &pCond, BRANCH_TYPE jtCond) {
     pCond = pCond->simplifyArith()->simplify();
 
-    std::stringstream os;
+    QString tgt;
+    QTextStream os(&tgt);
     pCond->print(os);
-    std::string s = os.str();
 
     OPER condOp = pCond->getOper();
     if (condOp == opFlagCall && strncmp(((Const *)pCond->getSubExp1())->getStr(), "SUBFLAGS", 8) == 0) {
@@ -1932,11 +1929,11 @@ bool CaseStatement::searchAll(const Exp &search, std::list<Exp *> &result) {
   *                    indent: number of columns to skip
   *
   ******************************************************************************/
-void CaseStatement::print(std::ostream & os, bool html) const {
-    os << std::setw(4) << std::dec << Number << " ";
+void CaseStatement::print(QTextStream  & os, bool html) const {
+    os << qSetFieldWidth(4) << Number << qSetFieldWidth(0) << " ";
     if (html) {
         os << "</td><td>";
-        os << "<a name=\"stmt" << std::dec << Number << "\">";
+        os << "<a name=\"stmt" << Number << "\">";
     }
     if (pSwitchInfo == nullptr) {
         os << "CASE [";
@@ -2194,11 +2191,11 @@ bool CallStatement::searchAll(const Exp &search, std::list<Exp *> &result) {
   * \param        os: stream to write to
   *
   ******************************************************************************/
-void CallStatement::print(std::ostream & os, bool html) const {
-    os << std::setw(4) << std::dec << Number << " ";
+void CallStatement::print(QTextStream & os, bool html) const {
+    os << qSetFieldWidth(4) << Number << qSetFieldWidth(0) <<" ";
     if (html) {
         os << "</td><td>";
-        os << "<a name=\"stmt" << std::dec << Number << "\">";
+        os << "<a name=\"stmt" << Number << "\">";
     }
 
     // Define(s), if any
@@ -2230,12 +2227,12 @@ void CallStatement::print(std::ostream & os, bool html) const {
 
     os << "CALL ";
     if (procDest)
-        os << procDest->getName().toStdString();
+        os << procDest->getName();
     else if (pDest == nullptr)
         os << "*no dest*";
     else {
         if (pDest->isIntConst())
-            os << "0x" << std::hex << ((Const *)pDest)->getInt();
+            os << "0x" << QString::number(((Const *)pDest)->getInt(),16);
         else
             pDest->print(os, html); // Could still be an expression
     }
@@ -2719,7 +2716,6 @@ bool CallStatement::objcSpecificProcessing(const char *formatStr) {
             return change;
         }
     }
-
     return false;
 }
 
@@ -3103,7 +3099,7 @@ void BoolAssign::setCondExpr(Exp * pss) {
   * \param        os: stream
   *
   ******************************************************************************/
-void BoolAssign::printCompact(std::ostream & os /*= cout*/, bool html) const {
+void BoolAssign::printCompact(QTextStream & os /*= cout*/, bool html) const {
     os << "BOOL ";
     lhs->print(os);
     os << " := CC(";
@@ -3159,7 +3155,7 @@ void BoolAssign::printCompact(std::ostream & os /*= cout*/, bool html) const {
         os << ", float";
     if (html)
         os << "<br>";
-    os << std::endl;
+    os << '\n';
     if (pCond) {
         os << "High level: ";
         pCond->print(os, html);
@@ -3414,11 +3410,11 @@ void Assign::fixSuccessor() {
     rhs = rhs->fixSuccessor();
 }
 
-void Assignment::print(std::ostream & os, bool html) const {
-    os << std::setw(4) << std::dec << Number << " ";
+void Assignment::print(QTextStream &os, bool html) const {
+    os << qSetFieldWidth(4) << Number << qSetFieldWidth(0) << " ";
     if (html) {
         os << "</td><td>";
-        os << "<a name=\"stmt" << std::dec << Number << "\">";
+        os << "<a name=\"stmt" << Number << "\">";
     }
     printCompact(os, html);
     if (html)
@@ -3428,7 +3424,7 @@ void Assignment::print(std::ostream & os, bool html) const {
         Ranges.print(os);
     }
 }
-void Assign::printCompact(std::ostream & os, bool html) const {
+void Assign::printCompact(QTextStream & os, bool html) const {
     os << "*" << type << "* ";
     if (guard)
         os << guard << " => ";
@@ -3438,7 +3434,7 @@ void Assign::printCompact(std::ostream & os, bool html) const {
     if (rhs)
         rhs->print(os, html);
 }
-void PhiAssign::printCompact(std::ostream & os, bool html) const {
+void PhiAssign::printCompact(QTextStream & os, bool html) const {
     os << "*" << type << "* ";
     if (lhs)
         lhs->print(os, html);
@@ -3456,11 +3452,11 @@ void PhiAssign::printCompact(std::ostream & os, bool html) const {
         }
     }
     if (simple) {
-        os << "{" << std::dec;
+        os << "{" ;
         for (auto it = DefVec.begin(); it != DefVec.end(); /* no increment */) {
             if (it->second.def()) {
                 if (html)
-                    os << "<a href=\"#stmt" << std::dec << it->second.def()->getNumber() << "\">";
+                    os << "<a href=\"#stmt" << it->second.def()->getNumber() << "\">";
                 os << it->second.def()->getNumber();
                 if (html)
                     os << "</a>";
@@ -3479,7 +3475,7 @@ void PhiAssign::printCompact(std::ostream & os, bool html) const {
             else
                 os << e << "{";
             if (it->second.def())
-                os << std::dec << it->second.def()->getNumber();
+                os << it->second.def()->getNumber();
             else
                 os << "-";
             os << "}";
@@ -3489,7 +3485,7 @@ void PhiAssign::printCompact(std::ostream & os, bool html) const {
         os << ")";
     }
 }
-void ImplicitAssign::printCompact(std::ostream & os, bool html) const {
+void ImplicitAssign::printCompact(QTextStream & os, bool html) const {
     os << "*" << type << "* ";
     if (lhs)
         lhs->print(os, html);
@@ -4403,19 +4399,20 @@ void ReturnStatement::setTypeFor(Exp * e, Type * ty) {
 }
 
 #define RETSTMT_COLS 120
-void ReturnStatement::print(std::ostream & os, bool html) const {
-    os << std::setw(4) << std::dec << Number << " ";
+void ReturnStatement::print(QTextStream & os, bool html) const {
+    os << qSetFieldWidth(4) << Number << qSetFieldWidth(0) <<" ";
     if (html) {
         os << "</td><td>";
-        os << "<a name=\"stmt" << std::dec << Number << "\">";
+        os << "<a name=\"stmt" << Number << "\">";
     }
     os << "RET";
     bool first = true;
     unsigned column = 19;
     for (auto const &elem : returns) {
-        std::ostringstream ost;
+        QString tgt;
+        QTextStream ost(&tgt);
         ((const Assignment *)elem)->printCompact(ost, html);
-        unsigned len = ost.str().length();
+        unsigned len = tgt.length();
         if (first) {
             first = false;
             os << " ";
@@ -4428,7 +4425,7 @@ void ReturnStatement::print(std::ostream & os, bool html) const {
             os << ",   ";
             column += 4;
         }
-        os << ost.str();
+        os << tgt;
         column += len;
     }
     if (html)
@@ -4439,13 +4436,14 @@ void ReturnStatement::print(std::ostream & os, bool html) const {
     first = true;
     column = 25;
     for (auto const &elem : modifieds) {
-        std::ostringstream ost;
+        QString tgt2;
+        QTextStream ost(&tgt2);
         const Assign *as = (const Assign *)elem;
         const Type *ty = as->getType();
         if (ty)
             ost << "*" << ty << "* ";
         ost << as->getLeft();
-        unsigned len = ost.str().length();
+        unsigned len = tgt2.length();
         if (first)
             first = false;
         else if (column + 3 + len > RETSTMT_COLS) { // 3 for comma and 2 spaces
@@ -4457,7 +4455,7 @@ void ReturnStatement::print(std::ostream & os, bool html) const {
             os << ",  ";
             column += 3;
         }
-        os << ost.str();
+        os << tgt2;
         column += len;
     }
 #if 1
@@ -5084,11 +5082,11 @@ void CallStatement::addDefine(ImplicitAssign * as) { defines.append(as); }
 TypingStatement::TypingStatement(Type * ty) : type(ty) {}
 
 // NOTE: ImpRefStatement not yet used
-void ImpRefStatement::print(std::ostream & os, bool html) const {
+void ImpRefStatement::print(QTextStream & os, bool html) const {
     os << "     *"; // No statement number
     if (html) {
         os << "</td><td>";
-        os << "<a name=\"stmt" << std::dec << Number << "\">";
+        os << "<a name=\"stmt" << Number << "\">";
     }
     os << type << "* IMP REF " << addressExp;
     if (html)
@@ -5181,15 +5179,15 @@ bool JunctionStatement::accept(StmtModifier * /*visitor*/) { return true; }
 
 bool JunctionStatement::accept(StmtPartModifier * /*visitor*/) { return true; }
 
-void JunctionStatement::print(std::ostream & os, bool html) const {
-    os << std::setw(4) << std::dec << Number << " ";
+void JunctionStatement::print(QTextStream & os, bool html) const {
+    os << qSetFieldWidth(4) << Number << qSetFieldWidth(0) <<" ";
     if (html) {
         os << "</td><td>";
-        os << "<a name=\"stmt" << std::dec << Number << "\">";
+        os << "<a name=\"stmt" << Number << "\">";
     }
     os << "JUNCTION ";
     for (size_t i = 0; i < Parent->getNumInEdges(); i++) {
-        os << std::hex << Parent->getInEdges()[i]->getHiAddr() << std::dec;
+        os << Parent->getInEdges()[i]->getHiAddr();
         if (Parent->isBackEdge(i))
             os << "*";
         os << " ";
