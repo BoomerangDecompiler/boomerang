@@ -7,14 +7,16 @@
 */
 
 #include "BinaryFile.h"
+#include "boomerang.h"
 #include "config.h" // For HOST_OSX_10_2 etc
 
-#include <iostream>
+
 #include <QDir>
 #include <QtCore/QPluginLoader>
 #include <QtCore/QCoreApplication>
 #include <QtCore/QString>
 #include <QtCore/QDebug>
+#include <cstdio>
 
 #define LMMH(x)                                                                                                        \
     ((unsigned)((Byte *)(&x))[0] + ((unsigned)((Byte *)(&x))[1] << 8) + ((unsigned)((Byte *)(&x))[2] << 16) +          \
@@ -27,7 +29,7 @@ QObject *BinaryFileFactory::Load(const QString &sName) {
     QObject *pBF = getInstanceFor(sName);
     LoaderInterface *ldr_iface = qobject_cast<LoaderInterface *>(pBF);
     if (ldr_iface == nullptr) {
-        std::cerr << "unrecognised binary file format.\n";
+        fprintf(stderr, "unrecognised binary file format.\n");
         return nullptr;
     }
     if (ldr_iface->RealLoad(sName) == 0) {

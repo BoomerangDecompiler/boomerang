@@ -29,13 +29,7 @@
 #define ELFBINFILE "lib/libElfBinaryFile.so"
 
 #include "../microX86dis.c"
-#include "string"
 #include "LoaderTest.h"
-//#include "util.h"           // For str()
-#include <iostream> // For cout
-#ifndef _WIN32
-#include <dlfcn.h> // dlopen, dlsym
-#endif
 #include <QLibrary>
 #include <QtCore/QTextStream>
 #include <sstream>

@@ -24,8 +24,6 @@
 #include "BinaryFile.h"
 #include "config.h"
 
-#include <iostream>
-#include <sstream>
 #include <cassert>
 #include <cstring>
 #include <cstdlib>

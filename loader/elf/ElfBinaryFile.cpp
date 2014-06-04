@@ -26,7 +26,6 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <cstddef>
-#include <iostream>
 #include <cassert>
 #include <cstring>
 #include <inttypes.h>
@@ -172,12 +171,12 @@ bool ElfBinaryFile::RealLoad(const QString &sName) {
         // Get section information.
         Elf32_Shdr *pShdr = m_pShdrs + i;
         if ((char *)pShdr > m_pImage + m_lImageSize) {
-            std::cerr << "section " << i << " header is outside the image size\n";
+            fprintf(stderr,"section %d header is outside the image size\n",i);
             return false;
         }
         pName = m_pStrings + elfRead4(&pShdr->sh_name);
         if (pName > m_pImage + m_lImageSize) {
-            std::cerr << "name for section " << i << " is outside the image size\n";
+            fprintf(stderr,"name for section %d is outside the image size\n",i);
             return false;
         }
         m_pSections[i].pSectionName = pName;
@@ -759,13 +758,12 @@ MACHINE ElfBinaryFile::GetMachine() const {
     else if (machine == EM_MIPS)
         return MACHINE_MIPS;
     else if (machine == EM_X86_64) {
-        std::cerr << "Error: ElfBinaryFile::GetMachine: The AMD x86-64 architecture is not supported yet\n";
+        fprintf(stderr,"Error: ElfBinaryFile::GetMachine: The AMD x86-64 architecture is not supported yet\n");
         return (MACHINE)-1;
     }
     // An unknown machine type
-    std::cerr << "Error: ElfBinaryFile::GetMachine: Unsupported machine type: " << machine << " (0x" << std::hex
-              << machine << ")\n";
-    std::cerr << "(Please add a description for this type, thanks!)\n";
+    fprintf(stderr,"Error: ElfBinaryFile::GetMachine: Unsupported machine type: %d (0x%x)\n",machine,machine);
+    fprintf(stderr,"(Please add a description for this type, thanks!)\n");
     return (MACHINE)-1;
 }
 

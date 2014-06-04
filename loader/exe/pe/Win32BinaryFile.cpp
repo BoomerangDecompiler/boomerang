@@ -37,8 +37,6 @@ namespace dbghelp {
 #include "BinaryFile.h"
 #include "Win32BinaryFile.h"
 #include "config.h"
-#include <iostream>
-#include <sstream>
 #include <cstring>
 #include <cstdlib>
 #include <cassert>
@@ -468,14 +466,9 @@ bool Win32BinaryFile::RealLoad(const QString &sName) {
             while (iatEntry) {
                 if (iatEntry >> 31) {
                     // This is an ordinal number (stupid idea)
-                    std::ostringstream ost;
-                    std::string nodots(dllName);
-                    int len = nodots.size();
-                    for (int j = 0; j < len; j++)
-                        if (nodots[j] == '.')
-                            nodots[j] = '_'; // Dots can't be in identifiers
-                    ost << nodots << "_" << (iatEntry & 0x7FFFFFFF);
-                    dlprocptrs[paddr] = ost.str();
+                    QString nodots = QString(dllName).replace(".","_"); // Dots can't be in identifiers
+                    nodots = QString("%1_%2").arg(nodots).arg(iatEntry & 0x7FFFFFFF);
+                    dlprocptrs[paddr] = nodots.toStdString();
                     // printf("Added symbol %s value %x\n", ost.str().c_str(), paddr);
                 } else {
                     // Normal case (IMAGE_IMPORT_BY_NAME). Skip the useless hint (2 bytes)

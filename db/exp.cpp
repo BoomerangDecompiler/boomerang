@@ -707,7 +707,6 @@ void Binary::printr(QTextStream &os, bool html) const {
         break;
     }
     // Normal case: we want the parens
-    // std::ostream::operator<< uses print(), which does not have the parens
     os << "(";
     this->print(os, html);
     os << ")";

@@ -10,18 +10,11 @@
  */
 
 /** \file BinaryFile.cpp
- * This file contains the implementation of the class BinaryFile
+ * \brief This file contains the implementation of the class BinaryFile
  *
  * This file implements the abstract BinaryFile class.
  * All classes derived from this class must implement the Load()
  * function.
-*/
-
-/*
- *    MVE 30/9/97 Created
- * 21 Apr 02 - Mike: mods for boomerang
- * 03 Jun 02 - Trent: if WIN32, no dynamic linking
- * 14 Jun 02 - Mike: Fixed a bug where Windows programs chose the Exe loader
 */
 
 /***************************************************************************/ /**
@@ -30,7 +23,6 @@
 
 #include "BinaryFile.h"
 
-#include <iostream>
 #include <cstring>
 #include <cstdio>
 #include <cstddef>
@@ -71,7 +63,7 @@ void LoaderCommon::getTextLimits() {
             textDelta = host_native_diff;
         else {
             if (textDelta != host_native_diff)
-                std::cerr << "warning: textDelta different for section " << pSect->pSectionName << " (ignoring).\n";
+                fprintf(stderr,"warning: textDelta different for section %s (ignoring).\n",pSect->pSectionName);
         }
     }
 }
