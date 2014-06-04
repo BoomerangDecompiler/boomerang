@@ -71,9 +71,9 @@ void SparcDecoder::unused(int /*x*/) {}
 /***************************************************************************/ /**
   * \fn       createBranchRtl
   * \brief       Create an RTL for a Bx instruction
-  * \param       pc - the location counter
-  *                   stmts - ptr to list of Statement pointers
-  *                   name - instruction name (e.g. "BNE,a", or "BPNE")
+  * \param pc - the location counter
+  * \param stmts - ptr to list of Statement pointers
+  * \param name - instruction name (e.g. "BNE,a", or "BPNE")
   * \returns            Pointer to newly created RTL, or nullptr if invalid
   ******************************************************************************/
 RTL *SparcDecoder::createBranchRtl(ADDRESS pc, std::list<Instruction *> *stmts, const char *name) {
@@ -184,19 +184,16 @@ RTL *SparcDecoder::createBranchRtl(ADDRESS pc, std::list<Instruction *> *stmts, 
 }
 
 /***************************************************************************/ /**
-  * \fn       SparcDecoder::decodeInstruction
-  * \brief       Attempt to decode the high level instruction at a given address and return the corresponding HL type
-  *                    (e.g. CallStatement, GotoStatement etc). If no high level instruction exists at the given
-  *address,
-  *                    then simply return the RTL for the low level instruction at this address. There is an option to
-  *also
-  *                   include the low level statements for a HL instruction.
-  * \param       pc - the native address of the pc
-  *                   delta - the difference between the above address and the host address of the pc (i.e. the address
-  *                    that the pc is at in the loaded object file)
-  *                   proc - the enclosing procedure. This can be nullptr for those of us who are using this method in
-  *an
-  *                    interpreter
+  * \fn     SparcDecoder::decodeInstruction
+  * \brief  Attempt to decode the high level instruction at a given address.
+  *
+  * Return the corresponding HL type (e.g. CallStatement, GotoStatement etc). If no high level instruction exists at
+  * the given address,then simply return the RTL for the low level instruction at this address. There is an option
+  * to also include the low level statements for a HL instruction.
+  *
+  * \param pc - the native address of the pc
+  * \param delta - the difference between the above address and the host address of the pc (i.e. the address
+  *        that the pc is at in the loaded object file)
   * \returns            a DecodeResult structure containing all the information gathered during decoding
   ******************************************************************************/
 DecodeResult &SparcDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta) {
@@ -2098,9 +2095,9 @@ DecodeResult &SparcDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta) {
 
 /***************************************************************************/ /**
   * \fn     SparcDecoder::dis_RegLhs
-  * \brief        Decode the register on the LHS
-  * \param          r - register (0-31)
-  * \returns      the expression representing the register
+  * \brief   Decode the register on the LHS
+  * \param   r - register (0-31)
+  * \returns the expression representing the register
   ******************************************************************************/
 Exp *SparcDecoder::dis_RegLhs(unsigned r) { return Location::regOf(r); }
 
@@ -2109,7 +2106,7 @@ Exp *SparcDecoder::dis_RegLhs(unsigned r) { return Location::regOf(r); }
   * \brief   Decode the register on the RHS
   * \note    Replaces r[0] with const 0
   * \note    Not used by DIS_RD since don't want 0 on LHS
-  * \param        r - register (0-31)
+  * \param   reg_no - register (0-31)
   * \returns        the expression representing the register
   ******************************************************************************/
 Exp *SparcMachine::dis_RegRhs(uint8_t reg_no) {
@@ -2146,7 +2143,8 @@ Exp *SparcDecoder::dis_RegImm(ADDRESS pc) {
   * \param        ignore - redundant parameter on SPARC
   * \returns    the Exp* representation of the given address
   ******************************************************************************/
-Exp *SparcDecoder::dis_Eaddr(ADDRESS pc, int ignore /* = 0 */) {
+Exp *SparcDecoder::dis_Eaddr(ADDRESS pc, int ignore) {
+    Q_UNUSED(ignore);
     Exp *expr;
     //#line 715 "frontend/machine/sparc/decoder.m"
     {

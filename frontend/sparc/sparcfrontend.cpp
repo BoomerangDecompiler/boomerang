@@ -43,10 +43,10 @@
 #include <sstream>
 
 /***************************************************************************/ /**
-  * \fn         warnDCTcouple
-  * \brief         Emit a warning when encountering a DCTI couple.
-  * \param         uAt - the address of the couple
-  *                     uDest - the address of the first DCTI in the couple
+  * \fn    SparcFrontEnd::warnDCTcouple
+  * \brief Emit a warning when encountering a DCTI couple.
+  * \param uAt - the address of the couple
+  * \param uDest - the address of the first DCTI in the couple
   *
   ******************************************************************************/
 void SparcFrontEnd::warnDCTcouple(ADDRESS uAt, ADDRESS uDest) {
@@ -56,16 +56,19 @@ void SparcFrontEnd::warnDCTcouple(ADDRESS uAt, ADDRESS uDest) {
 
 /***************************************************************************/ /**
   * \fn        optimise_DelayCopy
-  * \brief        Determines if a delay instruction is exactly the same as the instruction immediately preceding the
-  *                    destination of a CTI; i.e. has been copied from the real destination to the delay slot as an
-  *                    optimisation
-  * \param        src - the logical source address of a CTI
-  *                    dest - the logical destination address of the CTI
-  *                    delta - used to convert logical to real addresses
-  *                    uUpper - first address past the end of the main text section
+  * \brief  Check if delay instruction can be optimized
+  *
+  * Determines if a delay instruction is exactly the same as the instruction immediately preceding the
+  * destination of a CTI; i.e. has been copied from the real destination to the delay slot as an
+  * optimisation
+  *
+  * \param src - the logical source address of a CTI
+  * \param dest - the logical destination address of the CTI
+  * \param delta - used to convert logical to real addresses
+  * \param uUpper - first address past the end of the main text section
   * SIDE EFFECT:        Optionally displays an error message if the target of the branch is the delay slot of another
   *                    delayed CTI
-  * \returns             can optimise away the delay instruction
+  * \returns true if delay instruction can be optimized away
   ******************************************************************************/
 bool SparcFrontEnd::optimise_DelayCopy(ADDRESS src, ADDRESS dest, ptrdiff_t delta, ADDRESS uUpper) {
     // Check that the destination is within the main test section; may not be when we speculatively decode junk
@@ -127,18 +130,17 @@ BasicBlock *SparcFrontEnd::optimise_CallReturn(CallStatement *call, RTL *rtl, RT
 }
 
 /***************************************************************************/ /**
-  * \fn        handleBranch
+  * \fn       SparcFrontEnd::handleBranch
   * \brief        Adds the destination of a branch to the queue of address that must be decoded (if this destination
   *                    has not already been visited).
-  * \param        newBB - the new basic block delimited by the branch instruction. May be nullptr if this block has
-  *been
-  *                    built before.
-  *                    dest - the destination being branched to
-  *                    hiAddress - the last address in the current procedure
-  *                    cfg - the CFG of the current procedure
-  *                    tq: Object managing the target queue
   *, but newBB may be changed if the destination of the branch is in the middle of an existing
   *                    BB. It will then be changed to point to a new BB beginning with the dest
+  * \param newBB - the new basic block delimited by the branch instruction. May be nullptr if this block has been
+  *                    built before.
+  * \param dest - the destination being branched to
+  * \param hiAddress - the last address in the current procedure
+  * \param cfg - the CFG of the current procedure
+  * \param tq: Object managing the target queue
   ******************************************************************************/
 void SparcFrontEnd::handleBranch(ADDRESS dest, ADDRESS hiAddress, BasicBlock *&newBB, Cfg *cfg, TargetQueue &tq) {
     if (newBB == nullptr)
@@ -152,17 +154,16 @@ void SparcFrontEnd::handleBranch(ADDRESS dest, ADDRESS hiAddress, BasicBlock *&n
 }
 
 /***************************************************************************/ /**
-  * \fn          handleCall
-  * \brief          Records the fact that there is a procedure at a given address. Also adds the out edge to the
-  *                        lexical successor of the call site (taking into consideration the delay slot and possible
-  *UNIMP
-  *                        instruction).
-  * \param          dest - the address of the callee
-  *                      callBB - the basic block delimited by the call
-  *                      cfg - CFG of the enclosing procedure
-  *                      address - the address of the call instruction
-  *                      offset - the offset from the call instruction to which an outedge must be added. A value of 0
-  *                        means no edge is to be added.
+  * \fn     SparcFrontEnd::handleCall
+  * \brief  Records the fact that there is a procedure at a given address. Also adds the out edge to the
+  *         lexical successor of the call site (taking into consideration the delay slot and possible UNIMP
+  *         instruction).
+  * \param  dest - the address of the callee
+  * \param  callBB - the basic block delimited by the call
+  * \param  cfg - CFG of the enclosing procedure
+  * \param  address - the address of the call instruction
+  * \param  offset - the offset from the call instruction to which an outedge must be added. A value of 0
+  *         means no edge is to be added.
   *
   ******************************************************************************/
 void SparcFrontEnd::handleCall(UserProc *proc, ADDRESS dest, BasicBlock *callBB, Cfg *cfg, ADDRESS address,
@@ -185,7 +186,7 @@ void SparcFrontEnd::handleCall(UserProc *proc, ADDRESS dest, BasicBlock *callBB,
 }
 
 /***************************************************************************/ /**
-  * \fn         case_unhandled_stub
+  * \fn         SparcFrontEnd::case_unhandled_stub
   * \brief         This is the stub for cases of DCTI couples that we haven't written analysis code for yet. It simply
   *                        displays an informative warning and returns.
   * \param         addr - the address of the first CTI in the couple
@@ -196,16 +197,16 @@ void SparcFrontEnd::case_unhandled_stub(ADDRESS addr) {
 }
 
 /***************************************************************************/ /**
-  * \fn         case_CALL
+  * \fn         SparcFrontEnd::case_CALL
   * \brief         Handles a call instruction
   * \param         address - the native address of the call instruction
-  *                     inst - the info summaries when decoding the call instruction
-  *                     delay_inst - the info summaries when decoding the delay instruction
-  *                     BB_rtls - the list of RTLs currently built for the BB under construction
-  *                     proc - the enclosing procedure
-  *                     callList - a list of pointers to CallStatements for procs yet to be processed
-  *                     os - output stream for rtls
-  *                     isPattern - true if the call is an idiomatic pattern (e.g. a move_call_move pattern)
+  * \param inst - the info summaries when decoding the call instruction
+  * \param delay_inst - the info summaries when decoding the delay instruction
+  * \param BB_rtls - the list of RTLs currently built for the BB under construction
+  * \param proc - the enclosing procedure
+  * \param callList - a list of pointers to CallStatements for procs yet to be processed
+  * \param os - output stream for rtls
+  * \param isPattern - true if the call is an idiomatic pattern (e.g. a move_call_move pattern)
   * SIDE EFFECTS:     address may change; BB_rtls may be appended to or set nullptr
   * \returns              true if next instruction is to be fetched sequentially from this one
   ******************************************************************************/
@@ -324,17 +325,17 @@ bool SparcFrontEnd::case_CALL(ADDRESS &address, DecodeResult &inst, DecodeResult
 }
 
 /***************************************************************************/ /**
-  * \fn         case_SD
+  * \fn         SparcFrontEnd::case_SD
   * \brief         Handles a non-call, static delayed (SD) instruction
   * \param         address - the native address of the SD
-  *                     delta - the offset of the above address from the logical address at which the procedure starts
+  * \param delta - the offset of the above address from the logical address at which the procedure starts
   *                        (i.e. the one given by dis)
-  *                     inst - the info summaries when decoding the SD instruction
-  *                     delay_inst - the info summaries when decoding the delay instruction
-  *                     BB_rtls - the list of RTLs currently built for the BB under construction
-  *                     cfg - the CFG of the enclosing procedure
-  *                     tq: Object managing the target queue
-  *                     os - output stream for rtls
+  * \param inst - the info summaries when decoding the SD instruction
+  * \param delay_inst - the info summaries when decoding the delay instruction
+  * \param BB_rtls - the list of RTLs currently built for the BB under construction
+  * \param cfg - the CFG of the enclosing procedure
+  * \param tq: Object managing the target queue
+  * \param os - output stream for rtls
   * SIDE EFFECTS:     address may change; BB_rtls may be appended to or set nullptr
   *
   ******************************************************************************/
@@ -382,17 +383,17 @@ void SparcFrontEnd::case_SD(ADDRESS &address, ptrdiff_t delta, ADDRESS hiAddress
 }
 
 /***************************************************************************/ /**
-  * \fn         case_DD
+  * \fn         SparcFrontEnd::case_DD
   * \brief         Handles all dynamic delayed jumps (jmpl, also dynamic calls)
-  * \param         address - the native address of the DD
-  *                     delta - the offset of the above address from the logical address at which the procedure
-  *                        starts (i.e. the one given by dis)
-  *                     inst - the info summaries when decoding the SD instruction
-  *                     delay_inst - the info summaries when decoding the delay instruction
-  *                     BB_rtls - the list of RTLs currently built for the BB under construction
-  *                     tq: Object managing the target queue
-  *                     proc: pointer to the current Proc object
-  *                     callSet - a set of pointers to CallStatements for procs yet to be processed
+  * \param address - the native address of the DD
+  * \param delta - the offset of the above address from the logical address at which the procedure
+  *                starts (i.e. the one given by dis)
+  * \param inst - the info summaries when decoding the SD instruction
+  * \param delay_inst - the info summaries when decoding the delay instruction
+  * \param BB_rtls - the list of RTLs currently built for the BB under construction
+  * \param tq: Object managing the target queue
+  * \param proc: pointer to the current Proc object
+  * \param callList - a set of pointers to CallStatements for procs yet to be processed
   * SIDE EFFECTS:     address may change; BB_rtls may be appended to or set nullptr
   * \returns              true if next instruction is to be fetched sequentially from this one
   ******************************************************************************/
@@ -597,18 +598,18 @@ bool SparcFrontEnd::case_SCD(ADDRESS &address, ptrdiff_t delta, ADDRESS hiAddres
 }
 
 /***************************************************************************/ /**
-  * \fn        case_SCDAN
+  * \fn        SparcFrontEnd::case_SCDAN
   * \brief        Handles all static conditional delayed anulled branches followed by an NCT (but not NOP)
   *                    instruction.
   * \param        address - the native address of the DD
-  *                    delta - the offset of the above address from the logical
-  *                       address at which the procedure starts (i.e. the one given by dis)
-                                         hiAddress - first address outside this code section
-  *                    inst - the info summaries when decoding the SD instruction
-  *                    delay_inst - the info summaries when decoding the delay instruction
-  *                    BB_rtls - the list of RTLs currently built for the BB under construction
-  *                    cfg - the CFG of the enclosing procedure
-  *                    tq: Object managing the target queue
+  * \param delta - the offset of the above address from the logical
+  *                address at which the procedure starts (i.e. the one given by dis)
+  * \param hiAddress - first address outside this code section
+  * \param  inst - the info summaries when decoding the SD instruction
+  * \param delay_inst - the info summaries when decoding the delay instruction
+  * \param BB_rtls - the list of RTLs currently built for the BB under construction
+  * \param cfg - the CFG of the enclosing procedure
+  * \param tq: Object managing the target queue
   * SIDE EFFECTS:    address may change; BB_rtls may be appended to or set nullptr
   * \returns             true if next instruction is to be fetched sequentially from this one
   ******************************************************************************/
@@ -1189,14 +1190,14 @@ void SparcFrontEnd::emitNop(std::list<RTL *> *pRtls, ADDRESS uAddr) {
 }
 
 /***************************************************************************/ /**
-  * \fn      emitCopyPC
-  * \brief      Emit the RTL for a call $+8 instruction, which is merely %o7 = %pc
-  * \note          Assumes that the delay slot RTL has already been pushed; we must push the semantics BEFORE that RTL,
-  *                    since the delay slot instruction may use %o7. Example:
-  *                    CALL $+8            ! This code is common in startup code
-  *                    ADD     %o7, 20, %o0
-  * \param      pRtls - list of RTLs to append to
-  *                  uAddr - native address for the RTL
+  * \fn      SparcFrontEnd::emitCopyPC
+  * \brief  Emit the RTL for a call $+8 instruction, which is merely %o7 = %pc
+  * \note   Assumes that the delay slot RTL has already been pushed; we must push the semantics BEFORE that RTL,
+  *         since the delay slot instruction may use %o7. Example:
+  *         CALL $+8            ! This code is common in startup code
+  *         ADD     %o7, 20, %o0
+  * \param pRtls - list of RTLs to append to
+  * \param uAddr - native address for the RTL
   *
   ******************************************************************************/
 void SparcFrontEnd::emitCopyPC(std::list<RTL *> *pRtls, ADDRESS uAddr) {
@@ -1210,16 +1211,6 @@ void SparcFrontEnd::emitCopyPC(std::list<RTL *> *pRtls, ADDRESS uAddr) {
     pRtls->insert(--pRtls->end(), pRtl);
 }
 
-/***************************************************************************/ /**
-  * \fn        helperFunc
-  * \brief        Checks for sparc specific helper functions like .urem, which have specific sematics.
-  * \note            This needs to be handled in a resourcable way.
-  * \param        dest: destination of the call (native address)
-  *                    addr: address of current instruction (native addr)
-  *                    lrtl: list of RTL* for current BB
-  * \returns             True if a helper function was found and handled; false
-  *                        otherwise
-  ******************************************************************************/
 // Append one assignment to a list of RTLs
 void SparcFrontEnd::appendAssignment(Exp *lhs, Exp *rhs, Type *type, ADDRESS addr, std::list<RTL *> *lrtl) {
     Assign *a = new Assign(type, lhs, rhs);
@@ -1239,7 +1230,16 @@ void SparcFrontEnd::quadOperation(ADDRESS addr, std::list<RTL *> *lrtl, OPER op)
     appendAssignment(lhs, rhs, FloatType::get(128), addr, lrtl);
 }
 
-// Determine if this is a helper function, e.g. .mul. If so, append the appropriate RTLs to lrtl, and return true
+/***************************************************************************/ /**
+  * \fn     SparcFrontEnd::helperFunc
+  * \brief  Checks for sparc specific helper functions like .urem, which have specific sematics.
+  * Determine if this is a helper function, e.g. .mul. If so, append the appropriate RTLs to lrtl, and return true
+  * \note   This needs to be handled in a resourcable way.
+  * \param  dest: destination of the call (native address)
+  * \param  addr: address of current instruction (native addr)
+  * \param  lrtl: list of RTL* for current BB
+  * \returns True if a helper function was found and handled; false otherwise
+  ******************************************************************************/
 bool SparcFrontEnd::helperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL *> *lrtl) {
     if (!ldrIface->IsDynamicLinkedProc(dest))
         return false;
@@ -1354,7 +1354,7 @@ void SparcFrontEnd::gen32op32gives64(OPER op, std::list<RTL *> *lrtl, ADDRESS ad
     delete ls;
 }
 
-// This is the long version of helperFunc (i.e. -f not used). This does the complete 64 bit semantics
+//! This is the long version of helperFunc (i.e. -f not used). This does the complete 64 bit semantics
 bool SparcFrontEnd::helperFuncLong(ADDRESS dest, ADDRESS addr, std::list<RTL *> *lrtl, std::string &name) {
     Exp *rhs;
     Exp *lhs;
@@ -1403,27 +1403,10 @@ bool SparcFrontEnd::helperFuncLong(ADDRESS dest, ADDRESS addr, std::list<RTL *> 
     return true;
 }
 
-    /***************************************************************************/ /**
-      * \fn      construct
-      * \brief      Construct a new instance of SparcFrontEnd
-      * \param      Same as the FrontEnd constructor, except decoder is **
-      *
-      ******************************************************************************/
-#ifdef DYNAMIC
-extern "C" {
-SparcFrontEnd *construct(Prog *prog, NJMCDecoder **decoder) {
-    SparcFrontEnd *fe = new SparcFrontEnd(prog);
-    *decoder = fe->getDecoder();
-    return fe;
-}
-}
-#endif
-
 /***************************************************************************/ /**
-  * \fn      SparcFrontEnd::SparcFrontEnd
-  * \brief      SparcFrontEnd constructor
-  * \param      Same as the FrontEnd constructor
-  * \returns           <N/A>
+  * \fn     SparcFrontEnd::SparcFrontEnd
+  * \brief  SparcFrontEnd constructor
+  * \param  Same as the FrontEnd constructor
   ******************************************************************************/
 SparcFrontEnd::SparcFrontEnd(QObject *pBF, Prog *prog, BinaryFileFactory *pbff) : FrontEnd(pBF, prog, pbff) {
     decoder = new SparcDecoder(prog);
@@ -1437,9 +1420,9 @@ SparcFrontEnd::SparcFrontEnd(QObject *pBF, Prog *prog, BinaryFileFactory *pbff) 
 SparcFrontEnd::~SparcFrontEnd() {}
 
 /***************************************************************************/ /**
-  * \fn    SparcFrontEnd::GetMainEntryPoint
-  * \brief    Locate the starting address of "main" in the code section
-  * \returns         Native pointer if found; NO_ADDRESS if not
+  * \fn      SparcFrontEnd::GetMainEntryPoint
+  * \brief   Locate the starting address of "main" in the code section
+  * \returns Native pointer if found; NO_ADDRESS if not
   ******************************************************************************/
 ADDRESS SparcFrontEnd::getMainEntryPoint(bool &gotMain) {
     gotMain = true;
