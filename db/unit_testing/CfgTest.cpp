@@ -16,7 +16,6 @@
 #include <QtCore/QDir>
 #include <QtCore/QProcessEnvironment>
 #include <QtCore/QDebug>
-#include <sstream>
 
 #define FRONTIER_PENTIUM "tests/inputs/pentium/frontier"
 #define SEMI_PENTIUM "tests/inputs/pentium/semi"
@@ -24,7 +23,6 @@
 static bool logset = false;
 QString TEST_BASE;
 QDir baseDir;
-CfgTest::CfgTest() {}
 void CfgTest::initTestCase() {
     if (!logset) {
         TEST_BASE = QProcessEnvironment::systemEnvironment().value("BOOMERANG_TEST_BASE", "");
@@ -45,10 +43,10 @@ void CfgTest::initTestCase() {
       * \fn        CfgTest::testDominators
       * OVERVIEW:        Test the dominator frontier code
       ******************************************************************************/
-#define FRONTIER_FOUR 0x08048347
+#define FRONTIER_FOUR ADDRESS::g(0x08048347)
 #define FRONTIER_FIVE ADDRESS::g(0x08048351)
-#define FRONTIER_TWELVE 0x080483b2
-#define FRONTIER_THIRTEEN 0x080483b9
+#define FRONTIER_TWELVE ADDRESS::g(0x080483b2)
+#define FRONTIER_THIRTEEN ADDRESS::g(0x080483b9)
 
 void CfgTest::testDominators() {
     BinaryFileFactory bff;

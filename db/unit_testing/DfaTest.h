@@ -12,13 +12,10 @@ class ErrLogger : public Log {
 };
 class DfaTest : public QObject {
     Q_OBJECT
-  public:
-    DfaTest();
-    virtual void SetUp();
-    virtual void TearDown();
   private slots:
     void testMeetInt();
     void testMeetSize();
     void testMeetPointer();
     void testMeetUnion();
+    void initTestCase();
 };

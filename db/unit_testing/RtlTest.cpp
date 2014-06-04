@@ -14,11 +14,30 @@
 #include "proc.h"
 #include "prog.h"
 #include "visitor.h"
+#include "log.h"
 
 #include <sstream>
 
 #define SWITCH_SPARC "test/sparc/switch_cc"
 #define SWITCH_PENT "test/pentium/switch_cc"
+static bool logset = false;
+QString TEST_BASE;
+QDir baseDir;
+void RtlTest::initTestCase() {
+    if (!logset) {
+        TEST_BASE = QProcessEnvironment::systemEnvironment().value("BOOMERANG_TEST_BASE", "");
+        baseDir = QDir(TEST_BASE);
+        if (TEST_BASE.isEmpty()) {
+            qWarning() << "BOOMERANG_TEST_BASE environment variable not set, will assume '..', many test may fail";
+            TEST_BASE = "..";
+            baseDir = QDir("..");
+        }
+        logset = true;
+        Boomerang::get()->setProgPath(TEST_BASE);
+        Boomerang::get()->setPluginPath(TEST_BASE + "/out");
+        Boomerang::get()->setLogger(new NullLogger());
+    }
+}
 
 /***************************************************************************/ /**
   * \fn        RtlTest::testAppend

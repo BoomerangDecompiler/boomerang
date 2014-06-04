@@ -5,10 +5,33 @@
   ******************************************************************************/
 #include "ParserTest.h"
 #include "sslparser.h"
+#include "log.h"
 
-#include <sstream>
+#include <QtCore/QDir>
+#include <QtCore/QProcessEnvironment>
+#include <QtCore/QDebug>
+
 
 #define SPARC_SSL Boomerang::get()->getProgPath() + "frontend/machine/sparc/sparc.ssl"
+static bool logset = false;
+QString TEST_BASE;
+QDir baseDir;
+
+void ParserTest::initTestCase() {
+    if (!logset) {
+        TEST_BASE = QProcessEnvironment::systemEnvironment().value("BOOMERANG_TEST_BASE", "");
+        baseDir = QDir(TEST_BASE);
+        if (TEST_BASE.isEmpty()) {
+            qWarning() << "BOOMERANG_TEST_BASE environment variable not set, will assume '..', many test may fail";
+            TEST_BASE = "..";
+            baseDir = QDir("..");
+        }
+        logset = true;
+        Boomerang::get()->setProgPath(TEST_BASE);
+        Boomerang::get()->setPluginPath(TEST_BASE + "/out");
+        Boomerang::get()->setLogger(new NullLogger());
+    }
+}
 
 /***************************************************************************/ /**
   * \fn        ParserTest::testRead

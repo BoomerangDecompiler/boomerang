@@ -6,4 +6,5 @@ class RtlTest : public QObject {
     void testClone();
     void testVisitor();
     void testSetConscripts();
+    void initTestCase();
 };

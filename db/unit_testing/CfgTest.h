@@ -5,8 +5,6 @@ class CfgTest : public QObject {
   protected:
     Cfg *m_prog;
 
-  public:
-    CfgTest();
   private slots:
     void initTestCase();
     void testDominators();
