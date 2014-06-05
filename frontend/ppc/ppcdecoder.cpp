@@ -76,15 +76,6 @@ Exp *crBit(int bitNum); // Get an expression for a CR bit access
     SHOW_ASM(name << " " << BIcr << ", 0x" << relocd - delta)
 
 /***************************************************************************/ /**
-  * \fn       unused
-  * \brief       A dummy function to suppress "unused local variable" messages
-  * \param       x: integer variable to be "used"
-  *
-  ******************************************************************************/
-void PPCDecoder::unused(int /*x*/) {}
-void unused(const char *x) {}
-
-/***************************************************************************/ /**
   * \fn       PPCDecoder::decodeInstruction
   * \brief       Attempt to decode the high level instruction at a given address.
   *
@@ -643,7 +634,7 @@ DecodeResult &PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta) {
 
                         stmts = instantiate(pc, name, DIS_CRFD, DIS_NZRA, DIS_UIMM);
 
-                        unused(l);
+                        Q_UNUSED(l);
                     }
 
                 } /*opt-block*/
@@ -666,7 +657,7 @@ DecodeResult &PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta) {
 
                         stmts = instantiate(pc, name, DIS_CRFD, DIS_NZRA, DIS_SIMM);
 
-                        unused(l);
+                        Q_UNUSED(l);
                     }
 
                 } /*opt-block*/
@@ -724,7 +715,7 @@ DecodeResult &PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta) {
                                 result.rtl->appendStmt(newCall);
                             }
 
-                            unused(BIcr);
+                            Q_UNUSED(BIcr);
                         }
 
                     } /*opt-block*/
@@ -1539,7 +1530,7 @@ DecodeResult &PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta) {
                                         computedCall(name, 4, new Unary(opMachFtr, new Const("%CTR")), pc, stmts,
                                                      result);
 
-                                        unused(BIcr);
+                                        Q_UNUSED(BIcr);
                                     }
 
                                 } /*opt-block*/
@@ -1555,7 +1546,7 @@ DecodeResult &PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta) {
                                         computedJump(name, 4, new Unary(opMachFtr, new Const("%CTR")), pc, stmts,
                                                      result);
 
-                                        unused(BIcr);
+                                        Q_UNUSED(BIcr);
                                     }
 
                                 } /*opt-block*/ /*opt-block+*/
@@ -8608,7 +8599,7 @@ DecodeResult &PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta) {
 
             unconditionalJump("bal", 4, reladdr, delta, pc, stmts, result);
 
-            unused(BIcr);
+            Q_UNUSED(BIcr);
 
             // b<cond>lr: Branch conditionally to the link register. Model this as a conditional branch around a return
 
@@ -8631,7 +8622,7 @@ DecodeResult &PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta) {
 
             SHOW_ASM(name << "\n");
 
-            unused(BIcr);
+            Q_UNUSED(BIcr);
 
             // Shift right arithmetic
         }
@@ -8683,7 +8674,7 @@ DecodeResult &PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta) {
 
             stmts = instantiate(pc, name, DIS_CRFD, DIS_NZRA, DIS_NZRB);
 
-            unused(l);
+            Q_UNUSED(l);
         }
         goto MATCH_finished_a;
 
@@ -8813,7 +8804,7 @@ DecodeResult &PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta) {
                 LOG_STREAM(2) << "ERROR: MTSPR instruction with invalid S field: " << uimm << "\n";
             }
 
-            ::unused(name);
+            Q_UNUSED(name);
         }
         goto MATCH_finished_a;
 

@@ -1393,6 +1393,7 @@ char *Exp::prints() {
     print(ost);
     strncpy(debug_buffer, qPrintable(tgt), DEBUG_BUFSIZE - 1);
     debug_buffer[DEBUG_BUFSIZE - 1] = '\0';
+    return debug_buffer;
 }
 
 void Exp::dump() {

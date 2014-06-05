@@ -65,6 +65,8 @@ int MIPSDecoder::decodeAssemblyInstruction(ADDRESS, ptrdiff_t) { return 0; }
   *              gathered during decoding
   *********************************************************************************/
 DecodeResult &MIPSDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta) {
+    Q_UNUSED(pc);
+    Q_UNUSED(delta);
     static DecodeResult result;
     // ADDRESS hostPC = pc+delta;
 

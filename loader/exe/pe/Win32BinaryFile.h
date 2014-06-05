@@ -233,6 +233,8 @@ class Win32BinaryFile : public QObject,
     // SymbolTableInterface interface
   public:
     int GetSizeByName(const char *pName, bool bTypeOK) {
+        Q_UNUSED(pName);
+        Q_UNUSED(bTypeOK);
         return 4; // TODO: Fake!
     }
     ADDRESS *GetImportStubs(int &numImports) {

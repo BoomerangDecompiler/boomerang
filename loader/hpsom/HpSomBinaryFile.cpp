@@ -473,6 +473,7 @@ ADDRESS HpSomBinaryFile::GetEntryPoint() {
 // This is provided for completeness only...
 std::list<SectionInfo *> &HpSomBinaryFile::GetEntryPoints(const char *pEntry
                                                           /* = "main" */) {
+    Q_UNUSED(pEntry);
     std::list<SectionInfo *> *ret = new std::list<SectionInfo *>;
     SectionInfo *pSect = GetSectionInfoByName("code1");
     if (pSect == 0)
@@ -482,6 +483,7 @@ std::list<SectionInfo *> &HpSomBinaryFile::GetEntryPoints(const char *pEntry
 }
 
 bool HpSomBinaryFile::Open(const char *sName) {
+    Q_UNUSED(sName);
     // Not implemented yet
     return false;
 }
@@ -490,6 +492,7 @@ void HpSomBinaryFile::Close() {
     return;
 }
 bool HpSomBinaryFile::PostLoad(void *handle) {
+    Q_UNUSED(handle);
     // Not needed: for archives only
     return false;
 }
@@ -513,6 +516,7 @@ size_t HpSomBinaryFile::getImageSize() { return UINT4(m_pImage + 0x24); }
 const char *HpSomBinaryFile::SymbolByAddress(ADDRESS a) { return symbols.find(a); }
 
 ADDRESS HpSomBinaryFile::GetAddressByName(const char *pName, bool bNoTypeOK /* = false */) {
+    Q_UNUSED(bNoTypeOK);
     // For now, we ignore the symbol table and do a linear search of our
     // SymTab table
     ADDRESS res = symbols.find(pName);

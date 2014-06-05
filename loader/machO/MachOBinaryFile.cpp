@@ -48,6 +48,7 @@ MachOBinaryFile::~MachOBinaryFile() {
 }
 
 bool MachOBinaryFile::Open(const char *sName) {
+    Q_UNUSED(sName);
     // return Load(sName) != 0;
     return false;
 }
@@ -55,6 +56,7 @@ bool MachOBinaryFile::Open(const char *sName) {
 void MachOBinaryFile::Close() { UnLoad(); }
 
 std::list<SectionInfo *> &MachOBinaryFile::GetEntryPoints(const char *pEntry) {
+    Q_UNUSED(pEntry);
     fprintf(stderr, "really don't know how to implement GetEntryPoints\n");
     exit(0);
     static std::list<SectionInfo *> l;
@@ -398,7 +400,10 @@ bool MachOBinaryFile::RealLoad(const QString &sName) {
 // Clean up and unload the binary image
 void MachOBinaryFile::UnLoad() {}
 
-bool MachOBinaryFile::PostLoad(void *handle) { return false; }
+bool MachOBinaryFile::PostLoad(void *handle) {
+    Q_UNUSED(handle);
+    return false;
+}
 
 const char *MachOBinaryFile::SymbolByAddress(ADDRESS dwAddr) {
     std::map<ADDRESS, std::string>::iterator it = m_SymA.find(dwAddr);
@@ -408,6 +413,7 @@ const char *MachOBinaryFile::SymbolByAddress(ADDRESS dwAddr) {
 }
 
 ADDRESS MachOBinaryFile::GetAddressByName(const char *pName, bool bNoTypeOK /* = false */) {
+    Q_UNUSED(bNoTypeOK);
     // This is "looking up the wrong way" and hopefully is uncommon
     // Use linear search
     std::map<ADDRESS, std::string>::iterator it = m_SymA.begin();
@@ -438,6 +444,8 @@ const char *MachOBinaryFile::getFilenameSymbolFor(const char *) { return nullptr
 
 bool MachOBinaryFile::DisplayDetails(const char *fileName, FILE *f
                                      /* = stdout */) {
+    Q_UNUSED(fileName);
+    Q_UNUSED(f);
     return false;
 }
 

@@ -112,6 +112,7 @@ Win32BinaryFile::~Win32BinaryFile() {
 }
 
 bool Win32BinaryFile::Open(const char *sName) {
+    Q_UNUSED(sName);
     // return Load(sName) != 0;
     return false;
 }
@@ -119,6 +120,7 @@ bool Win32BinaryFile::Open(const char *sName) {
 void Win32BinaryFile::Close() { UnLoad(); }
 
 std::list<SectionInfo *> &Win32BinaryFile::GetEntryPoints(const char *pEntry) {
+    Q_UNUSED(pEntry);
     fprintf(stderr, "really don't know how to implement GetEntryPoints\n");
     exit(0);
     static std::list<SectionInfo *> l;
@@ -584,7 +586,10 @@ void Win32BinaryFile::findJumps(ADDRESS curr) {
 // Clean up and unload the binary image
 void Win32BinaryFile::UnLoad() {}
 
-bool Win32BinaryFile::PostLoad(void *handle) { return false; }
+bool Win32BinaryFile::PostLoad(void *handle) {
+    Q_UNUSED(handle);
+    return false;
+}
 
 #if defined(_WIN32) && !defined(__MINGW32__)
 
@@ -787,6 +792,7 @@ const char *Win32BinaryFile::SymbolByAddress(ADDRESS dwAddr) {
 }
 
 ADDRESS Win32BinaryFile::GetAddressByName(const char *pName, bool bNoTypeOK /* = false */) {
+    Q_UNUSED(bNoTypeOK);
     // This is "looking up the wrong way" and hopefully is uncommon.  Use linear search
     std::map<ADDRESS, std::string>::iterator it = dlprocptrs.begin();
     while (it != dlprocptrs.end()) {
@@ -800,7 +806,11 @@ ADDRESS Win32BinaryFile::GetAddressByName(const char *pName, bool bNoTypeOK /* =
 
 void Win32BinaryFile::AddSymbol(ADDRESS uNative, const char *pName) { dlprocptrs[uNative] = pName; }
 
-bool Win32BinaryFile::DisplayDetails(const char *fileName, FILE *f /* = stdout */) { return false; }
+bool Win32BinaryFile::DisplayDetails(const char *fileName, FILE *f /* = stdout */) {
+    Q_UNUSED(fileName);
+    Q_UNUSED(f);
+    return false;
+}
 
 int Win32BinaryFile::win32Read2(short *ps) const {
     unsigned char *p = (unsigned char *)ps;

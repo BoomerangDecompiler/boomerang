@@ -443,6 +443,7 @@ void MainWindow::showNewLibProc(const QString &name, const QString &params) {
 }
 
 void MainWindow::showRemoveUserProc(const QString &name, ADDRESS addr) {
+    Q_UNUSED(name);
     QString s = tr("%1").arg(addr.m_value, 8, 16, QChar('0'));
     int nrows = ui->userProcs->rowCount();
     for (int i = 0; i < nrows; i++)
@@ -532,6 +533,7 @@ void MainWindow::showRTLEditor(const QString &name) {
 }
 
 void MainWindow::on_userProcs_cellDoubleClicked(int row, int column) {
+    Q_UNUSED(column);
     showRTLEditor(ui->userProcs->item(row, 1)->text());
 }
 
@@ -547,6 +549,7 @@ void MainWindow::on_userProcs_cellChanged(int row, int column) {
 }
 
 void MainWindow::on_clusters_itemDoubleClicked(QTreeWidgetItem *item, int column) {
+    Q_UNUSED(column);
     QTreeWidgetItem *top = item;
     while (top->parent())
         top = top->parent();
@@ -576,6 +579,7 @@ void MainWindow::on_clusters_itemDoubleClicked(QTreeWidgetItem *item, int column
 }
 
 void MainWindow::on_decompileProcsTreeWidget_itemDoubleClicked(QTreeWidgetItem *item, int column) {
+    Q_UNUSED(column);
     showRTLEditor(item->text(0));
 }
 
@@ -616,6 +620,7 @@ void MainWindow::on_userProcs_horizontalHeader_sectionClicked(int logicalIndex) 
 }
 
 void MainWindow::on_libProcs_cellDoubleClicked(int row, int column) {
+    Q_UNUSED(column);
     QString name = "";
     QString sigFile;
     QString params = ui->libProcs->item(row, 1)->text();
@@ -766,6 +771,8 @@ void MainWindow::on_enableNoDecodeChildren_toggled(bool b) {
 }
 
 void MainWindow::on_entrypoints_currentItemChanged(QTableWidgetItem *current, QTableWidgetItem *previous) {
+    Q_UNUSED(current);
+    Q_UNUSED(previous);
     ui->removeButton->setEnabled(true);
 }
 

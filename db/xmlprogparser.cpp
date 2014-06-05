@@ -1775,7 +1775,6 @@ void XMLProgParser::start_const(const QXmlStreamAttributes &attr) {
         ctx->exp = (Exp *)findId(attr.value(QLatin1Literal("id")));
         return;
     }
-    double d;
     QStringRef value = attr.value(QLatin1Literal("value"));
     QStringRef opstring = attr.value(QLatin1Literal("op"));
     assert(!value.isEmpty());
@@ -1947,6 +1946,8 @@ void XMLProgParser::parseFile(const QString &filename) {
             break;
         case QXmlStreamReader::EndElement:
             handleElementEnd(xml_stream);
+            break;
+        default:
             break;
         }
     }

@@ -720,11 +720,13 @@ ADDRESS ElfBinaryFile::NativeToHostAddress(ADDRESS uNative) {
 }
 
 ADDRESS ElfBinaryFile::GetRelocatedAddress(ADDRESS uNative) {
+    Q_UNUSED(uNative);
     // Not implemented yet. But we need the function to make it all link
     return ADDRESS::g(0L);
 }
 
 bool ElfBinaryFile::PostLoad(void *handle) {
+    Q_UNUSED(handle);
     // This function is called after an archive member has been loaded by ElfArchiveFile
 
     // Save the elf pointer
@@ -735,7 +737,10 @@ bool ElfBinaryFile::PostLoad(void *handle) {
 }
 
 // Open this binaryfile for reading AND writing
-bool ElfBinaryFile::Open(const char *sName) { return false; }
+bool ElfBinaryFile::Open(const char *sName) {
+    Q_UNUSED(sName);
+    return false;
+}
 
 void ElfBinaryFile::Close() { UnLoad(); }
 

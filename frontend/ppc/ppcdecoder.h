@@ -49,7 +49,6 @@ class PPCDecoder : public NJMCDecoder {
     Exp *dis_Reg(unsigned r);
     Exp *dis_RAmbz(unsigned r); // Special for rA of certain instructions
 
-    void unused(int);
     RTL *createBranchRtl(ADDRESS pc, std::list<Instruction *> *stmts, const char *name);
     bool isFuncPrologue(ADDRESS);
     DWord getDword(ADDRESS lc);

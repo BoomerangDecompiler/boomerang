@@ -55,7 +55,7 @@ void SparcFrontEnd::warnDCTcouple(ADDRESS uAt, ADDRESS uDest) {
 }
 
 /***************************************************************************/ /**
-  * \fn        optimise_DelayCopy
+  * \fn        SparcFrontEnd::optimise_DelayCopy
   * \brief  Check if delay instruction can be optimized
   *
   * Determines if a delay instruction is exactly the same as the instruction immediately preceding the
@@ -401,6 +401,8 @@ bool SparcFrontEnd::case_DD(ADDRESS &address, ptrdiff_t delta, DecodeResult &ins
                             std::list<RTL *> *&BB_rtls, TargetQueue &tq, UserProc *proc,
                             std::list<CallStatement *> &callList) {
 
+    Q_UNUSED(tq);
+    Q_UNUSED(delta);
     Cfg *cfg = proc->getCFG();
 
     if (delay_inst.type != NOP) {
@@ -714,6 +716,7 @@ std::vector<Exp *> &SparcFrontEnd::getDefaultReturns() {
   ******************************************************************************/
 bool SparcFrontEnd::processProc(ADDRESS address, UserProc *proc, QTextStream &os, bool fragment /* = false */,
                                 bool spec /* = false */) {
+    Q_UNUSED(fragment);
     SectionInterface *sec_iface = qobject_cast<SectionInterface *>(pLoader);
 
     // Declare an object to manage the queue of targets not yet processed yet.
@@ -1356,6 +1359,7 @@ void SparcFrontEnd::gen32op32gives64(OPER op, std::list<RTL *> *lrtl, ADDRESS ad
 
 //! This is the long version of helperFunc (i.e. -f not used). This does the complete 64 bit semantics
 bool SparcFrontEnd::helperFuncLong(ADDRESS dest, ADDRESS addr, std::list<RTL *> *lrtl, std::string &name) {
+    Q_UNUSED(dest);
     Exp *rhs;
     Exp *lhs;
     if (name == ".umul") {

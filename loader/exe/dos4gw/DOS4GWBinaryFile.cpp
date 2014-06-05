@@ -42,6 +42,7 @@ DOS4GWBinaryFile::~DOS4GWBinaryFile() {
 }
 
 bool DOS4GWBinaryFile::Open(const char *sName) {
+    Q_UNUSED(sName);
     // return Load(sName) != 0;
     return false;
 }
@@ -49,6 +50,7 @@ bool DOS4GWBinaryFile::Open(const char *sName) {
 void DOS4GWBinaryFile::Close() { UnLoad(); }
 
 std::list<SectionInfo *> &DOS4GWBinaryFile::GetEntryPoints(const char *pEntry) {
+    Q_UNUSED(pEntry);
     fprintf(stderr, "really don't know how to implement GetEntryPoints\n");
     exit(0);
     static std::list<SectionInfo *> l;
@@ -358,7 +360,10 @@ bool DOS4GWBinaryFile::IsDynamicLinkedProc(ADDRESS uNative) {
 // Clean up and unload the binary image
 void DOS4GWBinaryFile::UnLoad() {}
 
-bool DOS4GWBinaryFile::PostLoad(void *handle) { return false; }
+bool DOS4GWBinaryFile::PostLoad(void *handle) {
+    Q_UNUSED(handle);
+    return false;
+}
 
 const char *DOS4GWBinaryFile::SymbolByAddress(ADDRESS dwAddr) {
     std::map<ADDRESS, std::string>::iterator it = dlprocptrs.find(dwAddr);
@@ -368,6 +373,8 @@ const char *DOS4GWBinaryFile::SymbolByAddress(ADDRESS dwAddr) {
 }
 
 ADDRESS DOS4GWBinaryFile::GetAddressByName(const char *pName, bool bNoTypeOK /* = false */) {
+    Q_UNUSED(bNoTypeOK);
+
     // This is "looking up the wrong way" and hopefully is uncommon
     // Use linear search
     std::map<ADDRESS, std::string>::iterator it = dlprocptrs.begin();
@@ -384,6 +391,8 @@ void DOS4GWBinaryFile::AddSymbol(ADDRESS uNative, const char *pName) { dlprocptr
 
 bool DOS4GWBinaryFile::DisplayDetails(const char *fileName, FILE *f
                                       /* = stdout */) {
+    Q_UNUSED(fileName);
+    Q_UNUSED(f);
     return false;
 }
 

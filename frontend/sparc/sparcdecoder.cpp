@@ -2200,7 +2200,10 @@ Exp *SparcDecoder::dis_Eaddr(ADDRESS pc, int ignore) {
   * \param      hostPC - pointer to the code in question (host address)
   * \returns           True if a match found
   ******************************************************************************/
-bool SparcDecoder::isFuncPrologue(ADDRESS hostPC) { return false; }
+bool SparcDecoder::isFuncPrologue(ADDRESS hostPC) {
+    Q_UNUSED(hostPC);
+    return false;
+}
 
 /***************************************************************************/ /**
   *

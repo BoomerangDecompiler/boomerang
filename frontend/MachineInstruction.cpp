@@ -13,6 +13,7 @@ public:
 
 Exp *MachineSemanticsSSLBased::convertOperand(MachineOperand *Operand)
 {
+    Q_UNUSED(Operand);
     return nullptr;
 }
 

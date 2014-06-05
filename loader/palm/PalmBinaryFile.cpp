@@ -418,6 +418,9 @@ ADDRESS PalmBinaryFile::GetAddressByName(const char *pName, bool bNoTypeOK) {
 void PalmBinaryFile::AddSymbol(ADDRESS addr, const char *name) { m_symTable[addr] = name; }
 
 int PalmBinaryFile::GetSizeByName(const char *pName, bool bTypeOK) {
+    Q_UNUSED(pName);
+    Q_UNUSED(bTypeOK);
+
     // TODO: not implemented
     return 0;
 }

@@ -195,37 +195,46 @@ void ExeBinaryFile::UnLoad() {
 //}
 
 char ExeBinaryFile::readNative1(ADDRESS a) {
+    Q_UNUSED(a);
     assert(!"not implemented");
     return 0;
 }
 
 int ExeBinaryFile::readNative2(ADDRESS a) {
+    Q_UNUSED(a);
     assert(!"not implemented");
     return 0;
 }
 
 int ExeBinaryFile::readNative4(ADDRESS a) {
+    Q_UNUSED(a);
     assert(!"not implemented");
     return 0;
 }
 
 QWord ExeBinaryFile::readNative8(ADDRESS a) {
+    Q_UNUSED(a);
     assert(!"not implemented");
     return 0;
 }
 
 float ExeBinaryFile::readNativeFloat4(ADDRESS a) {
+    Q_UNUSED(a);
     assert(!"not implemented");
     return 0;
 }
 
 double ExeBinaryFile::readNativeFloat8(ADDRESS a) {
+    Q_UNUSED(a);
     assert(!"not implemented");
     return 0;
 }
 
 bool ExeBinaryFile::DisplayDetails(const char *fileName, FILE *f
                                    /* = stdout */) {
+    Q_UNUSED(fileName);
+    Q_UNUSED(f);
+
     return false;
 }
 
@@ -234,6 +243,7 @@ LOAD_FMT ExeBinaryFile::GetFormat() const { return LOADFMT_EXE; }
 MACHINE ExeBinaryFile::GetMachine() const { return MACHINE_PENTIUM; }
 
 bool ExeBinaryFile::Open(const char *sName) {
+    Q_UNUSED(sName);
     // Not implemented yet
     return false;
 }
@@ -242,6 +252,7 @@ void ExeBinaryFile::Close() {
     return;
 }
 bool ExeBinaryFile::PostLoad(void *handle) {
+    Q_UNUSED(handle);
     // Not needed: for archives only
     return false;
 }
@@ -270,6 +281,7 @@ LoaderInterface::tMapAddrToString &ExeBinaryFile::getSymbols() {
 // This is provided for completeness only...
 std::list<SectionInfo *> &ExeBinaryFile::GetEntryPoints(const char *pEntry
                                                         /* = "main"*/) {
+    Q_UNUSED(pEntry);
     std::list<SectionInfo *> *ret = new std::list<SectionInfo *>;
 #if 0 // Copied from PalmBinaryFile.cc
     SectionInfo* pSect = GetSectionInfoByName("code1");

@@ -2725,7 +2725,7 @@ bool CallStatement::objcSpecificProcessing(const char *formatStr) {
 // The second is to add parameter types to the signature.
 // If -Td is used, type analysis will be rerun with these changes.
 bool CallStatement::ellipsisProcessing(Prog * prog) {
-
+    Q_UNUSED(prog);
     // if (getDestProc() == nullptr || !getDestProc()->getSignature()->hasEllipsis())
     if (getDestProc() == nullptr || !signature->hasEllipsis())
         return objcSpecificProcessing(nullptr);
@@ -2942,6 +2942,7 @@ Instruction *ReturnStatement::clone() const {
 bool ReturnStatement::accept(StmtVisitor * visitor) { return visitor->visit(this); }
 
 void ReturnStatement::generateCode(HLLCode * hll, BasicBlock * pbb, int indLevel) {
+    Q_UNUSED(pbb);
     hll->AddReturnStatement(indLevel, &getReturns());
 }
 
@@ -3230,6 +3231,7 @@ bool BoolAssign::searchAll(const Exp &search, std::list<Exp *> &result) {
 }
 
 bool BoolAssign::searchAndReplace(const Exp &search, Exp *replace, bool cc) {
+    Q_UNUSED(cc);
     bool chl, chr;
     assert(pCond);
     assert(lhs);
@@ -3284,7 +3286,7 @@ Assign::Assign(Assign & o) : Assignment(lhs->clone()) {
 ImplicitAssign::ImplicitAssign(Exp * lhs) : Assignment(lhs) { Kind = STMT_IMPASSIGN; }
 //! Constructor, type, and subexpression
 ImplicitAssign::ImplicitAssign(Type * ty, Exp * lhs) : Assignment(ty, lhs) { Kind = STMT_IMPASSIGN; }
-ImplicitAssign::ImplicitAssign(ImplicitAssign & o) : Assignment(type ? type->clone() : nullptr, lhs->clone()) {
+ImplicitAssign::ImplicitAssign(ImplicitAssign & o) : Assignment(o.type ? o.type->clone() : nullptr, o.lhs->clone()) {
     Kind = STMT_IMPASSIGN;
 }
 // The first virtual function (here the destructor) can't be in statement.h file for gcc
@@ -3567,12 +3569,14 @@ bool PhiAssign::searchAndReplace(const Exp &search, Exp *replace, bool /*cc*/) {
     return change;
 }
 bool ImplicitAssign::searchAndReplace(const Exp &search, Exp *replace, bool cc) {
+    Q_UNUSED(cc);
     bool change;
     lhs = lhs->searchReplaceAll(search, replace, change);
     return change;
 }
 
 void Assign::generateCode(HLLCode * hll, BasicBlock * pbb, int indLevel) {
+    Q_UNUSED(pbb);
     hll->AddAssignmentStatement(indLevel, this);
 }
 
@@ -4795,6 +4799,7 @@ Exp *ArgSourceProvider::localise(Exp * e) {
 }
 
 Type *ArgSourceProvider::curType(Exp * e) {
+    Q_UNUSED(e);
     switch (src) {
     case SRC_LIB:
         return callSig->getParamType(i - 1);
