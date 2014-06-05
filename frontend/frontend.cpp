@@ -483,7 +483,7 @@ void FrontEnd::preprocessProcGoto(std::list<Instruction *>::iterator ss, ADDRESS
   *  in the FrontEnd derived class, sometimes calling this function to do most of the work.
   * \returns          true for a good decode (no illegal instructions)
   ******************************************************************************/
-bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream &os, bool frag /* = false */,
+bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream &/*os*/, bool /*frag*/ /* = false */,
                            bool spec /* = false */) {
     BasicBlock *pBB; // Pointer to the current basic block
 

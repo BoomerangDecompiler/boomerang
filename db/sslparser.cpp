@@ -1009,7 +1009,7 @@ SSLParser::
         // expand $2 from table of names
         if (TableDict.find(yyvsp[0].str) != TableDict.end())
             if (TableDict[yyvsp[0].str]->getType() == NAMETABLE)
-                yyval.namelist = new std::deque<std::string>(TableDict[yyvsp[0].str]->records);
+                yyval.namelist = new std::deque<std::string>(TableDict[yyvsp[0].str]->Records);
             else {
                 o << "name " << yyvsp[0].str << " is not a NAMETABLE.\n";
                 yyerror(STR(o));
@@ -1024,7 +1024,7 @@ SSLParser::
         // try and expand $1 from table of names. if fail, expand using '"' NAME '"' rule
         if (TableDict.find(yyvsp[0].str) != TableDict.end())
             if (TableDict[yyvsp[0].str]->getType() == NAMETABLE)
-                yyval.namelist = new std::deque<std::string>(TableDict[yyvsp[0].str]->records);
+                yyval.namelist = new std::deque<std::string>(TableDict[yyvsp[0].str]->Records);
             else {
                 std::ostringstream o;
                 o << "name " << yyvsp[0].str << " is not a NAMETABLE.\n";
@@ -1151,11 +1151,11 @@ SSLParser::
         if (TableDict.find(yyvsp[-2].str) == TableDict.end()) {
             o << "Table " << yyvsp[-2].str << " has not been declared.\n";
             yyerror(STR(o));
-        } else if ((yyvsp[-1].num < 0) || (yyvsp[-1].num >= (int)TableDict[yyvsp[-2].str]->records.size())) {
+        } else if ((yyvsp[-1].num < 0) || (yyvsp[-1].num >= (int)TableDict[yyvsp[-2].str]->Records.size())) {
             o << "Can't get element " << yyvsp[-1].num << " of table " << yyvsp[-2].str << ".\n";
             yyerror(STR(o));
         } else
-            yyval.insel = new InsNameElem(TableDict[yyvsp[-2].str]->records[yyvsp[-1].num].c_str());
+            yyval.insel = new InsNameElem(TableDict[yyvsp[-2].str]->Records[yyvsp[-1].num].c_str());
         ;
         break;
     }
@@ -1174,11 +1174,11 @@ SSLParser::
         if (TableDict.find(yyvsp[-2].str) == TableDict.end()) {
             o << "Table " << yyvsp[-2].str << " has not been declared.\n";
             yyerror(STR(o));
-        } else if ((yyvsp[-1].num < 0) || (yyvsp[-1].num >= (int)TableDict[yyvsp[-2].str]->records.size())) {
+        } else if ((yyvsp[-1].num < 0) || (yyvsp[-1].num >= (int)TableDict[yyvsp[-2].str]->Records.size())) {
             o << "Can't get element " << yyvsp[-1].num << " of table " << yyvsp[-2].str << ".\n";
             yyerror(STR(o));
         } else
-            yyval.insel = new InsNameElem(TableDict[yyvsp[-2].str]->records[yyvsp[-1].num].c_str());
+            yyval.insel = new InsNameElem(TableDict[yyvsp[-2].str]->Records[yyvsp[-1].num].c_str());
         ;
         break;
     }
@@ -1514,7 +1514,7 @@ SSLParser::
         } else if (TableDict[yyvsp[-3].str]->getType() != OPTABLE) {
             o << "table " << yyvsp[-3].str << " is not an operator table but appears to be used as one.\n";
             yyerror(STR(o));
-        } else if ((int)TableDict[yyvsp[-3].str]->records.size() < indexrefmap[yyvsp[-2].str]->ntokens()) {
+        } else if ((int)TableDict[yyvsp[-3].str]->Records.size() < indexrefmap[yyvsp[-2].str]->ntokens()) {
             o << "table " << yyvsp[-3].str << " is too small to use with " << yyvsp[-2].str << " as an index.\n";
             yyerror(STR(o));
         }

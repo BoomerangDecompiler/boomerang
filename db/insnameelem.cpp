@@ -102,11 +102,11 @@ InsListElem::InsListElem(const char *name, Table *t, const char *idx) : InsNameE
     thetable = t;
 }
 
-int InsListElem::ntokens(void) { return thetable->records.size(); }
+int InsListElem::ntokens(void) { return thetable->Records.size(); }
 
 std::string InsListElem::getinstruction(void) {
-    return (nextelem != nullptr) ? (thetable->records[getvalue()] + nextelem->getinstruction())
-                                 : thetable->records[getvalue()];
+    return (nextelem != nullptr) ? (thetable->Records[getvalue()] + nextelem->getinstruction())
+                                 : thetable->Records[getvalue()];
 }
 
 std::string InsListElem::getinspattern(void) {

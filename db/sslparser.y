@@ -533,7 +533,7 @@ name_expand:
                         // expand $2 from table of names
                         if (TableDict.find($2) != TableDict.end())
                                 if (TableDict[$2]->getType() == NAMETABLE)
-                                        $$ = new std::deque<std::string>(TableDict[$2]->records);
+                                        $$ = new std::deque<std::string>(TableDict[$2]->Records);
                                 else {
                                         o << "name " << $2 << " is not a NAMETABLE.\n";
                                         yyerror(STR(o));
@@ -547,7 +547,7 @@ name_expand:
                         // try and expand $1 from table of names. if fail, expand using '"' NAME '"' rule
                         if (TableDict.find($1) != TableDict.end())
                                 if (TableDict[$1]->getType() == NAMETABLE)
-                                        $$ = new std::deque<std::string>(TableDict[$1]->records);
+                                        $$ = new std::deque<std::string>(TableDict[$1]->Records);
                                 else {
                                         std::ostringstream o;
                                         o << "name " << $1 << " is not a NAMETABLE.\n";
@@ -672,11 +672,11 @@ name_contract:
                         if (TableDict.find($1) == TableDict.end()) {
                                 o << "Table " << $1 << " has not been declared.\n";
                                 yyerror(STR(o));
-                        } else if (($2 < 0) || ($2 >= (int)TableDict[$1]->records.size())) {
+                        } else if (($2 < 0) || ($2 >= (int)TableDict[$1]->Records.size())) {
                                 o << "Can't get element " << $2 << " of table " << $1 << ".\n";
                                 yyerror(STR(o));
                         } else
-                                $$ = new InsNameElem(TableDict[$1]->records[$2].c_str());
+                                $$ = new InsNameElem(TableDict[$1]->Records[$2].c_str());
                 }
 
                 // Example: ARITH[IDX]	where ARITH := { "ADD", "SUB", ...};
@@ -694,11 +694,11 @@ name_contract:
                         if (TableDict.find($2) == TableDict.end()) {
                                 o << "Table " << $2 << " has not been declared.\n";
                                 yyerror(STR(o));
-                        } else if (($3 < 0) || ($3 >= (int)TableDict[$2]->records.size())) {
+                        } else if (($3 < 0) || ($3 >= (int)TableDict[$2]->Records.size())) {
                                 o << "Can't get element " << $3 << " of table " << $2 << ".\n";
                                 yyerror(STR(o));
                         } else
-                                $$ = new InsNameElem(TableDict[$2]->records[$3].c_str());
+                                $$ = new InsNameElem(TableDict[$2]->Records[$3].c_str());
                 }
         |	'$' NAME_LOOKUP NAME ']' {
                         std::ostringstream o;
@@ -1026,7 +1026,7 @@ exp:
                         } else if (TableDict[$2]->getType() != OPTABLE) {
                                 o << "table " << $2 << " is not an operator table but appears to be used as one.\n";
                                 yyerror(STR(o));
-                        } else if ((int)TableDict[$2]->records.size() < indexrefmap[$3]->ntokens()) {
+                        } else if ((int)TableDict[$2]->Records.size() < indexrefmap[$3]->ntokens()) {
                                 o << "table " << $2 << " is too small to use with " << $3 << " as an index.\n";
                                 yyerror(STR(o));
                         }

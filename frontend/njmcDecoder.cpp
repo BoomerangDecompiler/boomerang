@@ -88,8 +88,8 @@ std::list<Instruction *> *NJMCDecoder::instantiate(ADDRESS pc, const char *name,
 }
 
 /***************************************************************************/ /**
-  * \brief   Similarly to the above, given a parameter name and a list of Exp*'s representing sub-parameters,
-  *              return a fully substituted Exp for the whole expression
+  * \brief   Similarly to NJMCDecoder::instantiate, given a parameter name and a list of Exp*'s representing
+  * sub-parameters, return a fully substituted Exp for the whole expression
   * \note    Caller must delete result
   * \param   name - parameter name
   *          ... - Exp* representing actual operands

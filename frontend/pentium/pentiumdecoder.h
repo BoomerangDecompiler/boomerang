@@ -37,7 +37,6 @@ class PentiumDecoder : public NJMCDecoder {
     Exp *dis_Mem(ADDRESS ps);
     Exp *addReloc(Exp *e);
 
-    void unused(int x);
     bool isFuncPrologue(ADDRESS hostPC);
 
     Byte getByte(intptr_t lc); // TODO: switch to using ADDRESS objects

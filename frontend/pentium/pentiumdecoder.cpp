@@ -53,13 +53,6 @@ void genBSFR(ADDRESS pc, Exp *reg, Exp *modrm, int init, int size, OPER incdec, 
 /**********************************
  * PentiumDecoder methods.
  **********************************/
-/***************************************************************************/ /**
-  * \fn       unused
-  * \brief       A dummy function to suppress "unused local variable" messages
-  * \param       x: integer variable to be "used"
-  *
-  ******************************************************************************/
-void PentiumDecoder::unused(int x) {}
 static DecodeResult result;
 /***************************************************************************/ /**
   * \brief   Decodes a machine instruction and returns an RTL instance. In most cases a single instruction is
@@ -121,7 +114,7 @@ DecodeResult &PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta) {
             "REP.CMPSvod", "REP.STOSB",
         };
         const char *MATCH_name_col_59[] = {
-            (const char *)0, "JMP.Jvod", (const char *)0, "JMP.Jb",
+            nullptr, "JMP.Jvod", nullptr, "JMP.Jb",
         };
         unsigned /* [0..255] */ MATCH_w_8_0;
         unsigned /* [0..255] */ MATCH_w_8_8;
@@ -6386,8 +6379,8 @@ DecodeResult &PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta) {
                             unsigned seg = (MATCH_w_16_40 & 0xffff) /* i16 at 40 */;
                             nextPC = MATCH_p + 7;
                             //#line 1279 "frontend/machine/pentium/decoder.m"
-                            unused(seg);
-                            unused(off);
+                            Q_UNUSED(seg);
+                            Q_UNUSED(off);
                             stmts = instantiate(pc, "NOP");
                         }
                         break;
@@ -14431,7 +14424,7 @@ DecodeResult &PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta) {
                                                         //        stmts = instantiate(pc,     "BOUNDow", DIS_REG16,
                                                         //        DIS_MEM);
                                                         //      | ARPL(Eaddr, reg ) =>
-                                                        //          unused(Eaddr); unused(reg);
+                                                        //          Q_UNUSED(Eaddr); Q_UNUSED(reg);
                                                         //          stmts = instantiate(pc,  "UNIMP");
                                                         //      | AAS() =>
                                                         //          stmts = instantiate(pc,  "AAS");
@@ -22941,16 +22934,16 @@ DecodeResult &PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta) {
                         //#line 961 "frontend/machine/pentium/decoder.m"
                         stmts = instantiate(pc, "MOVSB");
                         //      | MOV.Rd.Dd(reg, dr) =>
-                        //          unused(reg); unused(dr);
+                        //          Q_UNUSED(reg); Q_UNUSED(dr);
                         //          stmts = instantiate(pc,  "UNIMP");
                         //      | MOV.Dd.Rd(dr, reg) =>
-                        //          unused(reg); unused(dr);
+                        //          Q_UNUSED(reg); Q_UNUSED(dr);
                         //          stmts = instantiate(pc,  "UNIMP");
                         //      | MOV.Rd.Cd(reg, cr) =>
-                        //          unused(reg); unused(cr);
+                        //          Q_UNUSED(reg); Q_UNUSED(cr);
                         //          stmts = instantiate(pc,  "UNIMP");
                         //      | MOV.Cd.Rd(cr, reg) =>
-                        //          unused(reg); unused(cr);
+                        //          Q_UNUSED(reg); Q_UNUSED(cr);
                         //          stmts = instantiate(pc,  "UNIMP");
                         break;
                     case 5:
@@ -29167,7 +29160,7 @@ DecodeResult &PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta) {
             //    | BOUNDow(reg, Mem) =>
             //        stmts = instantiate(pc,     "BOUNDow", DIS_REG16, DIS_MEM);
             //      | ARPL(Eaddr, reg ) =>
-            //          unused(Eaddr); unused(reg);
+            //          Q_UNUSED(Eaddr); Q_UNUSED(reg);
             //          stmts = instantiate(pc,  "UNIMP");
             //      | AAS() =>
             //          stmts = instantiate(pc,  "AAS");
@@ -29194,7 +29187,7 @@ DecodeResult &PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta) {
             //    | BOUNDow(reg, Mem) =>
             //        stmts = instantiate(pc,     "BOUNDow", DIS_REG16, DIS_MEM);
             //      | ARPL(Eaddr, reg ) =>
-            //          unused(Eaddr); unused(reg);
+            //          Q_UNUSED(Eaddr); Q_UNUSED(reg);
             //          stmts = instantiate(pc,  "UNIMP");
             //      | AAS() =>
             //          stmts = instantiate(pc,  "AAS");
@@ -29221,7 +29214,7 @@ DecodeResult &PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta) {
             //    | BOUNDow(reg, Mem) =>
             //        stmts = instantiate(pc,     "BOUNDow", DIS_REG16, DIS_MEM);
             //      | ARPL(Eaddr, reg ) =>
-            //          unused(Eaddr); unused(reg);
+            //          Q_UNUSED(Eaddr); Q_UNUSED(reg);
             //          stmts = instantiate(pc,  "UNIMP");
             //      | AAS() =>
             //          stmts = instantiate(pc,  "AAS");
@@ -29248,7 +29241,7 @@ DecodeResult &PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta) {
             //    | BOUNDow(reg, Mem) =>
             //        stmts = instantiate(pc,     "BOUNDow", DIS_REG16, DIS_MEM);
             //      | ARPL(Eaddr, reg ) =>
-            //          unused(Eaddr); unused(reg);
+            //          Q_UNUSED(Eaddr); Q_UNUSED(reg);
             //          stmts = instantiate(pc,  "UNIMP");
             //      | AAS() =>
             //          stmts = instantiate(pc,  "AAS");
@@ -40703,7 +40696,8 @@ Exp *PentiumDecoder::dis_Eaddr(ADDRESS pc, int size) {
     }
     //#line 2245 "frontend/machine/pentium/decoder.m"
 }
-/***************************************************************************/ /** * \fn      isFuncPrologue()
+/***************************************************************************/ /**
+  * \fn      PentiumDecoder::isFuncPrologue()
   * \brief      Check to see if the instructions at the given offset match
   *                    any callee prologue, i.e. does it look like this offset
   *                    is a pointer to a function?
@@ -40711,6 +40705,7 @@ Exp *PentiumDecoder::dis_Eaddr(ADDRESS pc, int size) {
   * \returns           True if a match found
   ******************************************************************************/
 bool PentiumDecoder::isFuncPrologue(ADDRESS hostPC) {
+    Q_UNUSED(hostPC);
 #if 0
     int locals, regs;
     if ((InstructionPatterns::frameless_pro(prog.csrSrc, hostPC, locals, regs))
@@ -40728,17 +40723,18 @@ bool PentiumDecoder::isFuncPrologue(ADDRESS hostPC) {
 /**********************************
  * These are the fetch routines.
  **********************************/
-/***************************************************************************/ /** * \fn        getWord
-  * \brief        Returns the word starting at the given address.
+/***************************************************************************/ /**
+  * \fn        PentiumDecoder::getByte
+  * \brief        getByte - returns next byte from image pointed to by \a lc.
   * \param        lc - address at which to decode the double
   * \returns             the decoded double
   ******************************************************************************/
 Byte PentiumDecoder::getByte(intptr_t lc)
-/* getByte - returns next byte from image pointed to by lc.     */
 {
     return *(Byte *)lc;
 }
 /***************************************************************************/ /**
+  * \fn        PentiumDecoder::getWord
   * \brief        Returns the word starting at the given address.
   * \param        lc - address at which to decode the double
   * \returns             the decoded double
@@ -40776,16 +40772,17 @@ PentiumDecoder::PentiumDecoder(Prog *prog) : NJMCDecoder(prog) {
  */
 
 int PentiumDecoder::decodeAssemblyInstruction(ADDRESS, ptrdiff_t) { return 0; }
-/***************************************************************************/ /** * \fn       genBSFR
-  * \brief       Generate statements for the BSF and BSR series (Bit Scan Forward/Reverse)
-  * \param       pc: native PC address (start of the BSF/BSR instruction)
-  *                   reg: an expression for the destination register
-  *                   modrm: an expression for the operand being scanned
-  *                   init: initial value for the dest register
-  *                   size: sizeof(modrm) (in bits)
-  *                   incdec: either opPlus for Forward scans, or opMinus for Reverse scans
-  *                   numBytes: number of bytes this instruction
-  * \returns            true if have to exit early (not in last state)
+/***************************************************************************/ /**
+  * \fn    PentiumDecoder::genBSFR
+  * \brief Generate statements for the BSF and BSR series (Bit Scan Forward/Reverse)
+  * \param pc: native PC address (start of the BSF/BSR instruction)
+  * \param reg: an expression for the destination register
+  * \param modrm: an expression for the operand being scanned
+  * \param init: initial value for the dest register
+  * \param size: sizeof(modrm) (in bits)
+  * \param incdec: either opPlus for Forward scans, or opMinus for Reverse scans
+  * \param numBytes: number of bytes this instruction
+  * \returns true if have to exit early (not in last state)
   ******************************************************************************/
 static int BSFRstate = 0;                                                     // State number for this state machine
 void genBSFR(ADDRESS pc, Exp *dest, Exp *modrm, int init, int size, OPER incdec, int numBytes) {

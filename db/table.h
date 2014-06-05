@@ -12,12 +12,6 @@
   * \brief   Provides the definition of class Table and children used by
   *               the SSL parser
   ******************************************************************************/
-
-/*
- * 25 Feb 01 - Simon: updated post creation
- * 10 May 02 - Mike: Mods for boomerang
- */
-
 #ifndef TABLE_H
 #define TABLE_H
 
@@ -35,10 +29,10 @@ class Table {
     Table(TABLE_TYPE t);
     virtual ~Table() {}
     TABLE_TYPE getType() const;
-    tRecords records;
+    tRecords Records;
 
   private:
-    TABLE_TYPE type;
+    TABLE_TYPE TableType;
 };
 
 class OpTable : public Table {
