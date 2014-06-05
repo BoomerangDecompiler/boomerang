@@ -1,3 +1,5 @@
+# Welcome to boomerang decompiler
+
 This repository is now connected to continous integration server:
 http://boomerang.nemerle.eu
 Generated documentation is available at http://boomerang.nemerle.eu/job/Boomerang-next/doxygen/
@@ -13,13 +15,15 @@ Considering pt. 3, the target compilers are gcc >=4.6 family (mingw on windows),
 For full ( and slightly stale :) ) build instructions please see
 
         http://boomerang.sourceforge.net/making.html
+--------------------------------------
+#  Compiling the 'next' branch
 
 Note that on a debian system you can usually get away with:
 ```bash
   sudo apt-get install libgc-dev
-  sudo apt-get install libexpat-dev
   sudo apt-get install git
   sudo apt-get install cmake
+  sudo apt-get install qt5-default
   cd YOUR_FAVOURITE_DEVELOPMENT_DIRECTORY
   git clone git://github.com/nemerle/boomerang.git
   cd boomerang
@@ -27,10 +31,12 @@ Note that on a debian system you can usually get away with:
   cmake ..
   make
 ```
-To compile the qt5_and_boost branch on windows, it should be enough to have:
+To compile on windows, it should be enough to have:
 * cmake 2.8.12 or newer from http://www.cmake.org/cmake/resources/software.html
 * Qt5 mingw package ( version 5.3 or newer ) available from http://www.cmake.org/cmake/resources/software.html
+* QtCreator - installed as a part of the Qt5.
 
+# Testing
 
 After building boomerang You can run the test suite, to do that you will need ruby interpeter and a bash compatible shell.
 ```
@@ -39,5 +45,11 @@ After building boomerang You can run the test suite, to do that you will need ru
 After running full_regression, the tool will report tests on which boomerang crashed.
 You can also check if Your changes to boomerang, produced any changes in the quality of decompiled code by running
   YOUR_FAVOURITE_DIFF_GUI ./tests/outputs ./tests/baseline
+
+Additionally, if You enable the test suite option in ( cmake option ), boomerang unit-test can be run by
+```
+make test
+```
+
 Thanks.
 
