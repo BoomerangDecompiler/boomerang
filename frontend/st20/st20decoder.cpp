@@ -37,16 +37,11 @@ void ST20Decoder::unused(int /*x*/) {}
 
 static DecodeResult result;
 /***************************************************************************/ /**
-  * \fn       ST20Decoder::decodeInstruction
-  * \brief       Decodes a machine instruction and returns an RTL instance. In all cases a single instruction is
-  decoded.
-  * \param       pc - the native address of the pc
-  *                   delta - the difference between the above address and the host address of the pc (i.e. the address
-  that
-                                         the pc is at in the loaded object file)
-  *                   RTLDict - the dictionary of RTL templates used to instantiate the RTL for the instruction being
-  decoded
-  *                   proc - the enclosing procedure
+  * \fn    ST20Decoder::decodeInstruction
+  * \brief Decodes a machine instruction and returns an RTL instance. In all cases a single instruction is decoded.
+  * \param pc - the native address of the pc
+  * \param delta - the difference between the above address and the host address of the pc (i.e. the address that
+           the pc is at in the loaded object file)
   * \returns            a DecodeResult structure containing all the information gathered during decoding
   ******************************************************************************/
 DecodeResult &ST20Decoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta) {
@@ -59,14 +54,11 @@ DecodeResult &ST20Decoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta) {
 
         //#line 60 "frontend/machine/st20/decoder.m"
         {
-            ADDRESS MATCH_p =
-
-                //#line 60 "frontend/machine/st20/decoder.m"
-                hostPC + result.numBytes++;
+            ADDRESS MATCH_p = hostPC + result.numBytes++;
             const char *MATCH_name;
             static const char *MATCH_name_fc_0[] = {
-                nullptr, "ldlp",          (char *)0, "ldnl", "ldc", "ldnlp", (char *)0, "ldl",
-                "adc",           nullptr, (char *)0, "ajw",  "eqc", "stl",   "stnl",
+                nullptr, "ldlp",  nullptr, "ldnl", "ldc", "ldnlp", nullptr, "ldl",
+                "adc"  , nullptr, nullptr, "ajw",  "eqc", "stl",   "stnl",
             };
             unsigned /* [0..255] */ MATCH_w_8_0;
             {
@@ -883,7 +875,7 @@ DecodeResult &ST20Decoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta) {
  **********************************/
 
 /***************************************************************************/ /**
-  * \fn        getWord
+  * \fn        ST20Decoder::getByte
   * \brief        Returns the word starting at the given address.
   * \param        lc - address at which to decode the double
   * \returns             the decoded double
@@ -895,7 +887,7 @@ Byte ST20Decoder::getByte(intptr_t lc)
 }
 
 /***************************************************************************/ /**
-  * \fn        getWord
+  * \fn        ST20Decoder::getWord
   * \brief        Returns the word starting at the given address.
   * \param        lc - address at which to decode the double
   * \returns             the decoded double
@@ -907,7 +899,7 @@ SWord ST20Decoder::getWord(intptr_t lc)
 }
 
 /***************************************************************************/ /**
-  * \fn        getDword
+  * \fn        ST20Decoder::getDword
   * \brief        Returns the double starting at the given address.
   * \param        lc - address at which to decode the double
   * \returns             the decoded double

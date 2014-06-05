@@ -50,7 +50,7 @@ Const::Const(const QString &p) : Exp(opStrConst), conscript(0), type(new VoidTyp
 Const::Const(Function *p) : Exp(opFuncConst), conscript(0), type(new VoidType) { u.pp = p; }
 /// \remark This is bad. We need a way of constructing true unsigned constants
 Const::Const(ADDRESS a) : Exp(opIntConst), conscript(0), type(new VoidType) {
-    assert(sizeof(a.m_value) == 4 || (a.m_value >> 32) == 0);
+    assert(a.isSource());
     u.a = a;
 }
 

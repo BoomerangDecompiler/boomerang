@@ -266,7 +266,7 @@ DecodeResult &SparcDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta) {
             nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
             nullptr, nullptr, nullptr, nullptr, nullptr, "FADDs",
             "FADDd",         "FADDq",         nullptr, "FSUBs",         "FSUBd",         "FSUBq",
-            (char *)0,       "FMULs",         "FMULd",         "FMULq",         nullptr, "FDIVs",
+            nullptr,       "FMULs",         "FMULd",         "FMULq",         nullptr, "FDIVs",
             "FDIVd",         "FDIVq",         nullptr, "FCMPs",         "FCMPd",         "FCMPq",
             nullptr, "FCMPEs",        "FCMPEd",        "FCMPEq",        nullptr, nullptr,
             nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,

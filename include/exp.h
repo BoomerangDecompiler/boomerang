@@ -681,7 +681,7 @@ class Ternary : public Binary {
     virtual bool match(const std::string &pattern, std::map<std::string, Exp *> &bindings);
 
     virtual Type *ascendType();
-    virtual void descendType(Type *parentType, bool &ch, Instruction *s);
+    virtual void descendType(Type */*parentType*/, bool &ch, Instruction *s);
 
   protected:
     friend class XMLProgParser;
@@ -731,7 +731,7 @@ class TypedExp : public Unary {
     virtual Exp *accept(ExpModifier *v);
 
     virtual Type *ascendType();
-    virtual void descendType(Type *parentType, bool &ch, Instruction *s);
+    virtual void descendType(Type *, bool &, Instruction *);
 
   protected:
     friend class XMLProgParser;

@@ -29,6 +29,8 @@ struct ADDRESS {        /* pointer. size depends on platform */
         z.m_value = x;
         return z.native();
     }
+    //! query if the ADDRESS is the source, if it's host address returns false
+    bool isSource() { return sizeof(m_value) == 4 || (uint64_t(m_value) >> 32) == 0; }
     ADDRESS native() const { return ADDRESS::g(m_value & 0xFFFFFFFF); }
     static ADDRESS host_ptr(const void *x) {
         ADDRESS z;

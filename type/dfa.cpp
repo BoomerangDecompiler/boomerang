@@ -1269,7 +1269,7 @@ void Unary::descendType(Type *parentType, bool &ch, Instruction *s) {
     }
 }
 
-void Ternary::descendType(Type *parentType, bool &ch, Instruction *s) {
+void Ternary::descendType(Type */*parentType*/, bool &ch, Instruction *s) {
     switch (op) {
     case opFsize:
         subExp3->descendType(FloatType::get(((Const *)subExp1)->getInt()), ch, s);
@@ -1288,10 +1288,12 @@ void Ternary::descendType(Type *parentType, bool &ch, Instruction *s) {
     }
 }
 
-void TypedExp::descendType(Type *parentType, bool &ch, Instruction *s) {}
+void TypedExp::descendType(Type */*parentType*/, bool &/*ch*/, Instruction */*s*/) {}
 
-void Terminal::descendType(Type *parentType, bool &ch, Instruction *s) {}
-//! Data flow based type analysis. Meet the parameters with their current types.  Returns true if a change
+void Terminal::descendType(Type */*parentType*/, bool &/*ch*/, Instruction */*s*/) {}
+//! Data flow based type analysis.
+//! Meet the parameters with their current types.
+//! \returns true if a change
 bool Signature::dfaTypeAnalysis(Cfg *cfg) {
     bool ch = false;
     std::vector<Parameter *>::iterator it;
@@ -1319,7 +1321,7 @@ bool Type::isCompatibleWith(const Type *other, bool all /* = false */) const {
     return isCompatible(other, all);
 }
 
-bool VoidType::isCompatible(const Type *other, bool /*all*/) const {
+bool VoidType::isCompatible(const Type */*other*/, bool /*all*/) const {
     return true; // Void is compatible with any type
 }
 

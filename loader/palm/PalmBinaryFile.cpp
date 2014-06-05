@@ -337,7 +337,7 @@ void PalmBinaryFile::UnLoad() {
 }
 
 // This is provided for completeness only...
-std::list<SectionInfo *> &PalmBinaryFile::GetEntryPoints(const char *pEntry
+std::list<SectionInfo *> &PalmBinaryFile::GetEntryPoints(const char */*pEntry*/
                                                          /* = "main" */) {
     std::list<SectionInfo *> *ret = new std::list<SectionInfo *>;
     SectionInfo *pSect = GetSectionInfoByName("code1");
@@ -352,7 +352,7 @@ ADDRESS PalmBinaryFile::GetEntryPoint() {
     return ADDRESS::g(0L);
 }
 
-bool PalmBinaryFile::Open(const char *sName) {
+bool PalmBinaryFile::Open(const char */*sName*/) {
     // Not implemented yet
     return false;
 }
@@ -360,7 +360,7 @@ void PalmBinaryFile::Close() {
     // Not implemented yet
     return;
 }
-bool PalmBinaryFile::PostLoad(void *handle) {
+bool PalmBinaryFile::PostLoad(void */*handle*/) {
     // Not needed: for archives only
     return false;
 }

@@ -900,18 +900,18 @@ bool Instruction::replaceRef(Exp * e, Assign * def, bool &convert) {
         const char *str = ((Const *)((Binary *)rhs)->getSubExp1())->getStr();
         if (strncmp("SUBFLAGS", str, 8) == 0) {
             /* When the carry flag is used bare, and was defined in a subtract of the form lhs - rhs, then CF has
-                           the value (lhs <u rhs).  lhs and rhs are the first and second parameters of the flagcall.
-                           Note: the flagcall is a binary, with a Const (the name) and a list of expressions:
-                                 defRhs
-                                 /      \
-                        Const       opList
-                        "SUBFLAGS"    /    \
-                                           P1    opList
-                                                         /     \
-                                                        P2    opList
-                                                                 /     \
-                                                                P3     opNil
-                        */
+               the value (lhs <u rhs).  lhs and rhs are the first and second parameters of the flagcall.
+               Note: the flagcall is a binary, with a Const (the name) and a list of expressions:
+                     defRhs
+                    /      \
+              Const       opList
+            "SUBFLAGS"    /    \
+                         P1    opList
+                       /     \
+                     P2    opList
+                  /     \
+                P3     opNil
+            */
             Exp *relExp = Binary::get(opLessUns, ((Binary *)rhs)->getSubExp2()->getSubExp1(),
                                       ((Binary *)rhs)->getSubExp2()->getSubExp2()->getSubExp1());
             searchAndReplace(RefExp(Terminal::get(opCF), def), relExp, true);
@@ -2633,12 +2633,12 @@ Exp *processConstant(Exp * e, Type * t, Prog * prog, UserProc * proc, ADDRESS st
     return e;
 }
 
-Type *Assignment::getTypeFor(Exp * e) {
+Type *Assignment::getTypeFor(Exp * /*e*/) {
     // assert(*lhs == *e);            // No: local vs base expression
     return type;
 }
 
-void Assignment::setTypeFor(Exp * e, Type * ty) {
+void Assignment::setTypeFor(Exp * /*e*/, Type * ty) {
     // assert(*lhs == *e);
     Type *oldType = type;
     type = ty;
@@ -5135,7 +5135,7 @@ bool ImpRefStatement::search(const Exp &search, Exp *&result) {
 bool ImpRefStatement::searchAll(const Exp &search, std::list<Exp *, std::allocator<Exp *>> &result) {
     return addressExp->searchAll(search, result);
 }
-bool ImpRefStatement::searchAndReplace(const Exp &search, Exp *replace, bool cc) {
+bool ImpRefStatement::searchAndReplace(const Exp &search, Exp *replace, bool /*cc*/) {
     bool change;
     addressExp = addressExp->searchReplaceAll(search, replace, change);
     return change;

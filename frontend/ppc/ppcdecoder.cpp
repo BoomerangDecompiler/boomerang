@@ -8969,7 +8969,7 @@ Exp *PPCDecoder::dis_RAmbz(unsigned r) {
 }
 
 /***************************************************************************/ /**
-  * \fn      isFuncPrologue()
+  * \fn      PPCDecoder::isFuncPrologue()
   * \brief      Check to see if the instructions at the given offset match
   *                    any callee prologue, i.e. does it look like this offset
   *                    is a pointer to a function?
@@ -8983,7 +8983,7 @@ bool PPCDecoder::isFuncPrologue(ADDRESS /*hostPC*/) { return false; }
  **********************************/
 
 /***************************************************************************/ /**
-  * \fn        getDword
+  * \fn        PPCDecoder::getDword
   * \brief        Returns the double starting at the given address.
   * \param        lc - address at which to decode the double
   * \returns             the decoded double
