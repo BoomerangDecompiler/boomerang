@@ -186,7 +186,7 @@ bool Cfg::checkEntryBB() {
   * \param   iNumOutEdges number of out edges this BB will eventually have
   * \returns Pointer to the newly created BB, or 0 if there is already an incomplete BB with the same address
   ******************************************************************************/
-BasicBlock *Cfg::newBB(std::list<RTL *> *pRtls, BBTYPE bbType, uint32_t iNumOutEdges) throw(BBAlreadyExistsError) {
+BasicBlock *Cfg::newBB(std::list<RTL *> *pRtls, BBTYPE bbType, uint32_t iNumOutEdges) {
     MAPBB::iterator mi;
     BasicBlock *pBB;
 

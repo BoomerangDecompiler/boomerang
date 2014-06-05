@@ -225,7 +225,7 @@ class BasicBlock {
     void clearOutEdges() { OutEdges.clear(); } //!<called when noreturn call is found
     void setInEdge(size_t i, BasicBlock *newIn);
     void setOutEdge(size_t i, BasicBlock *newInEdge);
-    BasicBlock *getOutEdge(unsigned int i);
+    BasicBlock *getOutEdge(size_t i);
     size_t getNumOutEdges() { return OutEdges.size(); }
     int whichPred(BasicBlock *pred);
     void addInEdge(BasicBlock *newInEdge);
@@ -254,9 +254,9 @@ class BasicBlock {
         LastStatementNotAGotoError(Instruction *_stmt) : stmt(_stmt) {}
     };
 
-    Exp *getCond() throw(LastStatementNotABranchError);
-    void setCond(Exp *e) throw(LastStatementNotABranchError);
-    Exp *getDest() throw(LastStatementNotAGotoError);
+    Exp *getCond() noexcept(false);
+    void setCond(Exp *e) noexcept(false);
+    Exp *getDest() noexcept(false);
     bool isJmpZ(BasicBlock *dest);
     BasicBlock *getLoopBody();
     void simplify();

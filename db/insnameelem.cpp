@@ -36,7 +36,7 @@ InsNameElem::~InsNameElem(void) {
     //      delete nextelem;
 }
 
-int InsNameElem::ntokens(void) { return 1; }
+size_t InsNameElem::ntokens(void) { return 1; }
 
 std::string InsNameElem::getinstruction(void) {
     return (nextelem != nullptr) ? (elemname + nextelem->getinstruction()) : elemname;
@@ -84,7 +84,7 @@ int InsNameElem::getvalue(void) const { return value; }
 
 InsOptionElem::InsOptionElem(const char *name) : InsNameElem(name) {}
 
-int InsOptionElem::ntokens(void) { return 2; }
+size_t InsOptionElem::ntokens(void) { return 2; }
 
 std::string InsOptionElem::getinstruction(void) {
     std::string s = (nextelem != nullptr)
@@ -102,7 +102,7 @@ InsListElem::InsListElem(const char *name, Table *t, const char *idx) : InsNameE
     thetable = t;
 }
 
-int InsListElem::ntokens(void) { return thetable->Records.size(); }
+size_t InsListElem::ntokens(void) { return thetable->Records.size(); }
 
 std::string InsListElem::getinstruction(void) {
     return (nextelem != nullptr) ? (thetable->Records[getvalue()] + nextelem->getinstruction())

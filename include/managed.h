@@ -247,5 +247,7 @@ class ConnectionGraph {
     iterator remove(iterator aa); // Remove the mapping at *aa
     void dump() const;            // Dump for debugging
 };
-
+QTextStream &operator<<(QTextStream &os, const AssignSet *as);
+QTextStream &operator<<(QTextStream &os, const StatementSet *ss);
+QTextStream &operator<<(QTextStream &os, const LocationSet *ls);
 #endif // #ifdef __MANAGED_H__

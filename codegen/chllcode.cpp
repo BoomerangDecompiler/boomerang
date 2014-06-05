@@ -1373,11 +1373,15 @@ void CHLLCode::AddCallStatement(int indLevel, Function *proc, const char *name, 
 /**
  * Adds an indirect call to \a exp.
  * \see AddCallStatement
+ * \param indLevel
+ * \param exp
+ * \param args
  * \param results UNUSED
  * \todo Add the use of \a results like AddCallStatement.
  */
 // Ugh - almost the same as the above, but it needs to take an expression, // not a Proc*
-void CHLLCode::AddIndCallStatement(int indLevel, Exp *exp, StatementList &args, StatementList * /*results*/) {
+void CHLLCode::AddIndCallStatement(int indLevel, Exp *exp, StatementList &args, StatementList * results) {
+    Q_UNUSED(results);
     //    FIXME: Need to use 'results', since we can infer some defines...
     QString tgt;
     QTextStream s(&tgt);
@@ -1456,7 +1460,8 @@ void CHLLCode::AddPrototype(UserProc *proc) { AddProcDec(proc, false); }
 
 /**
  * Print the declaration of a function.
- * \param open    False if this is just a prototype and ";" should be printed instead of "{"
+ * \param proc to print
+ * \param open False if this is just a prototype and ";" should be printed instead of "{"
  */
 void CHLLCode::AddProcDec(UserProc *proc, bool open) {
     QString tgt;
@@ -1547,7 +1552,9 @@ void CHLLCode::AddProcEnd() {
 
 /**
  * Declare a local variable.
- * \param last    true if an empty line should be added.
+ * \param name given to the new local
+ * \param type of this local variable
+ * \param last true if an empty line should be added.
  */
 void CHLLCode::AddLocal(const char *name, Type *type, bool last) {
     QString tgt;
@@ -1576,7 +1583,9 @@ void CHLLCode::AddLocal(const char *name, Type *type, bool last) {
 
 /**
  * Add the declaration for a global.
- * \param init    The initial value of the global.
+ * \param name given name for the global
+ * \param type The type of the global
+ * \param init The initial value of the global.
  */
 void CHLLCode::AddGlobal(const QString &name, Type *type, Exp *init) {
     QString tgt;

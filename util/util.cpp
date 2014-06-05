@@ -28,8 +28,8 @@
 /***************************************************************************/ /**
   * \name string::operator+(string, int)
   * \brief      Append an int to a string
-  * \param s: the string to append to
-  * \param i: the integer whose ascii representation is to be appended
+  * \param s - the string to append to
+  * \param i - the integer whose ascii representation is to be appended
   * \returns        A copy of the modified string
   ******************************************************************************/
 std::string operator+(const std::string &s, int i) {
@@ -38,19 +38,6 @@ std::string operator+(const std::string &s, int i) {
 
     sprintf(buf, "%d", i);
     return ret.append(buf);
-}
-
-/***************************************************************************/ /**
-  * \brief      Uppercase a C string
-  * Returns nothing; the string is modified as a side effect
-  * \param   s the string (char*) to start with
-  * \param   d the string (char*) to write to (can be the same string)
-  ******************************************************************************/
-void upperStr(const char *s, char *d) {
-    size_t len = strlen(s);
-    for (size_t i = 0; i < len; i++)
-        d[i] = toupper(s[i]);
-    d[len] = '\0';
 }
 
 int lockFileWrite(const char *fname) {

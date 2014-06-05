@@ -82,7 +82,7 @@ class Cfg {
     size_t getNumBBs() { return m_listBB.size(); } //!<Get the number of BBs
     const Cfg &operator=(const Cfg &other);        /* Copy constructor */
 
-    BasicBlock *newBB(std::list<RTL *> *pRtls, BBTYPE bbType, uint32_t iNumOutEdges) throw(BBAlreadyExistsError);
+    BasicBlock *newBB(std::list<RTL *> *pRtls, BBTYPE bbType, uint32_t iNumOutEdges) noexcept(false);
     BasicBlock *newIncompleteBB(ADDRESS addr);
     void addOutEdge(BasicBlock *pBB, ADDRESS adr, bool bSetLabel = false);
     void addOutEdge(BasicBlock *pBB, BasicBlock *pDestBB, bool bSetLabel = false);

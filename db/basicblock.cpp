@@ -419,7 +419,7 @@ void BasicBlock::setOutEdge(size_t i, BasicBlock *pNewOutEdge) {
   * \param i - index (0 based) of the desired out edge
   * \returns            the i-th out edge; 0 if there is no such out edge
   ******************************************************************************/
-BasicBlock *BasicBlock::getOutEdge(unsigned int i) {
+BasicBlock *BasicBlock::getOutEdge(size_t i) {
     if (i < OutEdges.size())
         return OutEdges[i];
     else
@@ -706,7 +706,7 @@ void BasicBlock::getStatements(StatementList &stmts) const {
  */
 
 /*! Get the condition */
-Exp *BasicBlock::getCond() throw(LastStatementNotABranchError) {
+Exp *BasicBlock::getCond() {
     // the condition will be in the last rtl
     assert(ListOfRTLs);
     RTL *last = ListOfRTLs->back();
@@ -719,7 +719,7 @@ Exp *BasicBlock::getCond() throw(LastStatementNotABranchError) {
 }
 
 /*! Get the destiantion, if any */
-Exp *BasicBlock::getDest() throw(LastStatementNotAGotoError) {
+Exp *BasicBlock::getDest() noexcept(false) {
     // The destianation will be in the last rtl
     assert(ListOfRTLs);
     RTL *lastRtl = ListOfRTLs->back();
@@ -741,7 +741,7 @@ Exp *BasicBlock::getDest() throw(LastStatementNotAGotoError) {
     throw LastStatementNotAGotoError(lastStmt);
 }
 /*! set the condition */
-void BasicBlock::setCond(Exp *e) throw(LastStatementNotABranchError) {
+void BasicBlock::setCond(Exp *e) noexcept(false) {
     // the condition will be in the last rtl
     assert(ListOfRTLs);
     RTL *last = ListOfRTLs->back();

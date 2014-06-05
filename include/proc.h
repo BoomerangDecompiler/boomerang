@@ -37,7 +37,7 @@ class Cfg;
 class BasicBlock;
 class Exp;
 class TypedExp;
-class lessTI;
+struct lessTI;
 class Type;
 class RTL;
 class HLLCode;

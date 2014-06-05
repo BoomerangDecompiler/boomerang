@@ -146,7 +146,7 @@ class SyntaxNode {
     BasicBlock *getBB() { return pbb; }
     void setBB(BasicBlock *bb) { pbb = bb; }
 
-    virtual int getNumOutEdges() = 0;
+    virtual size_t getNumOutEdges() = 0;
     virtual SyntaxNode *getOutEdge(SyntaxNode *root, size_t n) = 0;
     virtual bool endsWithGoto() = 0;
     virtual bool startsWith(SyntaxNode *node) { return this == node; }
@@ -206,7 +206,7 @@ class BlockSyntaxNode : public SyntaxNode {
         statements[i] = n;
     }
 
-    virtual int getNumOutEdges();
+    virtual size_t getNumOutEdges() override;
     virtual SyntaxNode *getOutEdge(SyntaxNode *root, size_t n);
     virtual bool endsWithGoto() {
         if (pbb)
@@ -251,7 +251,7 @@ class IfThenSyntaxNode : public SyntaxNode {
     virtual bool isGoto() { return false; }
     virtual bool isBranch() { return false; }
 
-    virtual int getNumOutEdges() { return 1; }
+    virtual size_t getNumOutEdges() override { return 1; }
     virtual SyntaxNode *getOutEdge(SyntaxNode *root, size_t);
     virtual bool endsWithGoto() { return false; }
 
@@ -286,7 +286,7 @@ class IfThenElseSyntaxNode : public SyntaxNode {
     virtual bool isGoto() { return false; }
     virtual bool isBranch() { return false; }
 
-    virtual int getNumOutEdges() { return 1; }
+    virtual size_t getNumOutEdges() override { return 1; }
     virtual SyntaxNode *getOutEdge(SyntaxNode *root, size_t /*n*/) {
         SyntaxNode *o = pThen->getOutEdge(root, 0);
         assert(o == pElse->getOutEdge(root, 0));
@@ -327,7 +327,7 @@ class PretestedLoopSyntaxNode : public SyntaxNode {
     virtual bool isGoto() { return false; }
     virtual bool isBranch() { return false; }
 
-    virtual int getNumOutEdges() { return 1; }
+    virtual size_t getNumOutEdges() override { return 1; }
     virtual SyntaxNode *getOutEdge(SyntaxNode *root, size_t n);
     virtual bool endsWithGoto() { return false; }
     virtual SyntaxNode *getEnclosingLoop(SyntaxNode *pFor, SyntaxNode *cur = nullptr) {
@@ -359,7 +359,7 @@ class PostTestedLoopSyntaxNode : public SyntaxNode {
     virtual bool isGoto() { return false; }
     virtual bool isBranch() { return false; }
 
-    virtual int getNumOutEdges() { return 1; }
+    virtual size_t getNumOutEdges() override { return 1; }
     virtual SyntaxNode *getOutEdge(SyntaxNode *root, size_t);
     virtual bool endsWithGoto() { return false; }
     virtual SyntaxNode *getEnclosingLoop(SyntaxNode *pFor, SyntaxNode *cur = nullptr) {
@@ -390,7 +390,7 @@ class InfiniteLoopSyntaxNode : public SyntaxNode {
     virtual bool isGoto() { return false; }
     virtual bool isBranch() { return false; }
 
-    virtual int getNumOutEdges() { return 0; }
+    virtual size_t getNumOutEdges() override { return 0; }
     virtual SyntaxNode *getOutEdge(SyntaxNode * /*root*/, size_t /*n*/) { return nullptr; }
     virtual bool endsWithGoto() { return false; }
     virtual SyntaxNode *getEnclosingLoop(SyntaxNode *pFor, SyntaxNode *cur = nullptr) {

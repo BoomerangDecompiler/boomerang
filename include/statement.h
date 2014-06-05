@@ -211,7 +211,7 @@ class Instruction {
     bool isFpop();
 
     //! Classes with no definitions (e.g. GotoStatement and children) don't override this
-    //! \return a set of locations defined by this statement
+    //! returns a set of locations defined by this statement in a LocationSet argument.
     virtual void getDefinitions(LocationSet & /*def*/) {}
 
     // set the left for forExp to newExp

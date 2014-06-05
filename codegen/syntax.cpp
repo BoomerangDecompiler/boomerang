@@ -51,7 +51,7 @@ BlockSyntaxNode::~BlockSyntaxNode() {
         delete elem;
 }
 
-int BlockSyntaxNode::getNumOutEdges() {
+size_t BlockSyntaxNode::getNumOutEdges() {
     if (pbb)
         return pbb->getNumOutEdges();
     if (statements.size() == 0)

@@ -196,8 +196,8 @@ class Signature {
       public:
         StackRegisterNotDefinedException() {}
     };
-    virtual int getStackRegister() throw(StackRegisterNotDefinedException);
-    static int getStackRegister(Prog *prog) throw(StackRegisterNotDefinedException);
+    virtual int getStackRegister() noexcept(false);
+    static int getStackRegister(Prog *prog) noexcept(false);
     bool isStackLocal(Prog *prog, Exp *e);
     // Similar to the above, but checks for address of a local (i.e. sp{0} -/+ K)
     virtual bool isAddrOfStackLocal(Prog *prog, Exp *e);
@@ -261,7 +261,7 @@ class CustomSignature : public Signature {
     virtual bool isPromoted() { return true; }
     virtual Signature *clone();
     void setSP(int nsp);
-    virtual int getStackRegister() throw(StackRegisterNotDefinedException) { return sp; }
+    virtual int getStackRegister() noexcept(false) override { return sp; }
 };
 
 #endif
