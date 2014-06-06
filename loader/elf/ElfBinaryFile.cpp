@@ -63,6 +63,7 @@ void ElfBinaryFile::Init() {
 
 // Hand decompiled from sparc library function
 extern "C" { // So we can call this with dlopen()
+Q_DECL_EXPORT
 unsigned elf_hash(const char *o0) {
     int o3 = *o0;
     const char *g1 = o0;
