@@ -105,8 +105,13 @@ void TypeTest::testCompound() {
 
     // Offset 8 should have a RECT
     Type *subTy = ty->asCompound()->getTypeAtOffset(8 * 8);
-    p = subTy->getCtype();
-    expected = "RECT";
+    p = subTy->getCtype(true);
+    expected = "struct { "
+                    "int left; "
+                    "int top; "
+                    "int right; "
+                    "int bottom; "
+                "}";
     actual = p;
     QCOMPARE(actual,expected);
 
