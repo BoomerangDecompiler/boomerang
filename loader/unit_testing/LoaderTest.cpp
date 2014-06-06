@@ -27,7 +27,7 @@
 #endif
 #define SWITCH_BORLAND baseDir.absoluteFilePath("tests/inputs/windows/switch_borland.exe")
 #ifdef _WIN32
-#define ELFBINFILE baseDir.absoluteFilePath("out/lib/libElfBinaryFile.dll")
+#define ELFBINFILE baseDir.absoluteFilePath("out/lib/ElfBinaryFile.dll")
 #else
 #define ELFBINFILE baseDir.absoluteFilePath("out/lib/libElfBinaryFile.so")
 #endif
