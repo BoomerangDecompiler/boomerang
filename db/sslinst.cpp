@@ -346,6 +346,7 @@ bool RTLInstDict::partialType(Exp *exp, Type &ty) {
   * \brief         Returns an instance of a register transfer list for the instruction named 'name' with the actuals
   *                     given as the second parameter.
   * \param name - the name of the instruction (must correspond to one defined in the SSL file).
+  * \param natPC - address at which the named instruction is located
   * \param actuals - the actual values
   * \returns   the instantiated list of Exps
   ******************************************************************************/
@@ -376,12 +377,14 @@ std::list<Instruction *> *RTLInstDict::instantiateRTL(const QString &name, ADDRE
   * \brief         Returns an instance of a register transfer list for the parameterized rtlist with the given formals
   *      replaced with the actuals given as the third parameter.
   * \param   rtl - a register transfer list
+  * \param   natPC - address at which the named instruction is located
   * \param   params - a list of formal parameters
   * \param   actuals - the actual parameter values
   * \returns the instantiated list of Exps
   ******************************************************************************/
-std::list<Instruction *> *RTLInstDict::instantiateRTL(RTL &rtl, ADDRESS /*natPC*/, std::list<std::string> &params,
+std::list<Instruction *> *RTLInstDict::instantiateRTL(RTL &rtl, ADDRESS natPC, std::list<std::string> &params,
                                                     const std::vector<Exp *> &actuals) {
+    Q_UNUSED(natPC);
     assert(params.size() == actuals.size());
 
     // Get a deep copy of the template RTL
