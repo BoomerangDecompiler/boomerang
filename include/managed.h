@@ -7,10 +7,10 @@
  *
  */
 
-/***************************************************************************/ /**=================
+/***************************************************************************/ /**
   * \file       managed.h
-  * OVERVIEW:   Definition of "managed" classes such as StatementSet, which feature makeUnion etc
-  * CLASSES:        StatementSet
+  * \brief   Definition of "managed" classes such as InstructionSet, which feature makeUnion etc
+  * CLASSES:        InstructionSet
   *                AssignSet
   *                StatementList
   *                StatementVec
@@ -21,12 +21,11 @@
 
 #ifndef __MANAGED_H__
 #define __MANAGED_H__
+#include "exphelp.h" // For lessExpStar
 
 #include <list>
 #include <set>
 #include <vector>
-
-#include "exphelp.h" // For lessExpStar
 
 class Instruction;
 class Assign;
@@ -37,27 +36,27 @@ class LocationSet;
 class QTextStream;
 
 // A class to implement sets of statements
-class StatementSet : public std::set<Instruction *> {
+class InstructionSet : public std::set<Instruction *> {
 
   public:
-    ~StatementSet() {}
-    void makeUnion(StatementSet &other);  // Set union
-    void makeDiff(StatementSet &other);   // Set difference
-    void makeIsect(StatementSet &other);  // Set intersection
-    bool isSubSetOf(StatementSet &other); // Subset relation
+    ~InstructionSet() {}
+    void makeUnion(InstructionSet &other);  // Set union
+    void makeDiff(InstructionSet &other);   // Set difference
+    void makeIsect(InstructionSet &other);  // Set intersection
+    bool isSubSetOf(InstructionSet &other); // Subset relation
 
     bool remove(Instruction *s);                   // Removal; rets false if not found
     bool removeIfDefines(Exp *given);            // Remove if given exp is defined
-    bool removeIfDefines(StatementSet &given);   // Remove if any given is def'd
+    bool removeIfDefines(InstructionSet &given);   // Remove if any given is def'd
     bool exists(Instruction *s);                   // Search; returns false if !found
     bool definesLoc(Exp *loc);                   // Search; returns true if any
                                                  // statement defines loc
-    bool operator<(const StatementSet &o) const; // Compare if less
+    bool operator<(const InstructionSet &o) const; // Compare if less
     void print(QTextStream &os) const;          // Print to os
     void printNums(QTextStream &os);            // Print statements as numbers
     const char *prints();                              // Print to string (for debug)
     void dump();                                 // Print to standard error for debugging
-};                                               // class StatementSet
+};                                               // class InstructionSet
 
 // As above, but the Statements are known to be Assigns, and are sorted sensibly
 class AssignSet : public std::set<Assign *, lessAssign> {
@@ -93,7 +92,7 @@ class StatementList : public std::list<Instruction *> {
 
     void append(Instruction *s) { push_back(s); } // Insert at end
     void append(StatementList &sl);             // Append whole StatementList
-    void append(StatementSet &sl);              // Append whole StatementSet
+    void append(InstructionSet &sl);              // Append whole InstructionSet
     bool remove(Instruction *s);                  // Removal; rets false if not found
     void removeDefOf(Exp *loc);                 // Remove definitions of loc
     // This one is needed where you remove in the middle of a loop
@@ -162,7 +161,7 @@ class LocationSet {
     void insert(Exp *loc) { lset.insert(loc); }  // Insert the given location
     void remove(Exp *loc);                       // Remove the given location
     void remove(iterator ll) { lset.erase(ll); } // Remove location, given iterator
-    void removeIfDefines(StatementSet &given);   // Remove locs defined in given
+    void removeIfDefines(InstructionSet &given);   // Remove locs defined in given
     size_t size() const { return lset.size(); }  // Number of elements
     bool operator==(const LocationSet &o) const; // Compare
     void substitute(Assign &a);                  // Substitute the given assignment to all
@@ -248,6 +247,6 @@ class ConnectionGraph {
     void dump() const;            // Dump for debugging
 };
 QTextStream &operator<<(QTextStream &os, const AssignSet *as);
-QTextStream &operator<<(QTextStream &os, const StatementSet *ss);
+QTextStream &operator<<(QTextStream &os, const InstructionSet *ss);
 QTextStream &operator<<(QTextStream &os, const LocationSet *ls);
 #endif // #ifdef __MANAGED_H__

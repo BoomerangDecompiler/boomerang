@@ -25,7 +25,7 @@ class Function;
 class UserProc;
 class LibProc;
 class Signature;
-class StatementSet;
+class InstructionSet;
 class Cluster;
 class Context;
 class Type;

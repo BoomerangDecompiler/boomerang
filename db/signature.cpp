@@ -1449,7 +1449,7 @@ bool Signature::usesNewParam(UserProc * /*p*/, Instruction *stmt, bool checkreac
         stmt->printAsUse(q_cerr);
         q_cerr << '\n';
     }
-    StatementSet reachin;
+    InstructionSet reachin;
 
     // stmt->getReachIn(reachin, 2);
     for (int i = getNumParams(); i < 10; i++)
@@ -1457,7 +1457,7 @@ bool Signature::usesNewParam(UserProc * /*p*/, Instruction *stmt, bool checkreac
             bool ok = true;
             if (checkreach) {
                 bool hasDef = false;
-                StatementSet::iterator it1;
+                InstructionSet::iterator it1;
                 for (it1 = reachin.begin(); it1 != reachin.end(); it1++) {
                     Assignment *as = (Assignment *)*it1;
                     if (as->isAssignment() && *as->getLeft() == *getParamExp(i)) {

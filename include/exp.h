@@ -38,7 +38,7 @@ class RTL; // For class FlagDef
 class Instruction;
 class BasicBlock;
 class LocationSet;
-class StatementSet;
+class InstructionSet;
 class TypeVal;
 class ExpVisitor;
 class ExpModifier;
@@ -49,13 +49,15 @@ class Exp;
 #define DEBUG_BUFSIZE 5000 // Size of the debug print buffer
 
 typedef std::unique_ptr<Exp> UniqExp;
-/***************************************************************************/ /**
-  * Exp is an expression class, though it will probably be used to hold many other things (e.g. perhaps
-  *transformations).
+typedef std::shared_ptr<Exp> SharedExp;
+
+/**
+  * \class Exp is an expression class, though it will probably be used to hold many other things (e.g. perhaps
+  * transformations).
   * It is a standard tree representation. Exp itself is abstract. A special class Const is used for constants. Unary,
   * Binary, and Ternary hold 1, 2, and 3 subexpressions respectively. For efficiency of representation, these have to be
   * separate classes, derived from Exp.
-  ******************************************************************************/
+  */
 
 //! class Exp is abstract. However, the constructor can be called from the constructors of derived classes, and virtual
 //! functions not overridden by derived classes can be called

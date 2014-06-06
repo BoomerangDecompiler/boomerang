@@ -262,7 +262,7 @@ class BasicBlock {
     void simplify();
     BasicBlock *getCorrectOutEdge(ADDRESS a);
     bool isPostCall();
-    static void doAvail(StatementSet &s, BasicBlock *inEdge);
+    static void doAvail(InstructionSet &s, BasicBlock *inEdge);
     Function *getDestProc();
 
     /**

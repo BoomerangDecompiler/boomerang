@@ -28,7 +28,7 @@ class UserProc;
 class LibProc;
 class Signature;
 class Instruction;
-class StatementSet;
+class InstructionSet;
 class Cluster;
 class XMLProgParser;
 
@@ -110,7 +110,7 @@ class Prog {
     void finishDecode();
     void decompile();
     void removeUnusedGlobals();
-    void removeRestoreStmts(StatementSet &rs);
+    void removeRestoreStmts(InstructionSet &rs);
     void globalTypeAnalysis();
     bool removeUnusedReturns();
     void fromSSAform();
