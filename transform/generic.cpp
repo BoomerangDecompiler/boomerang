@@ -35,10 +35,10 @@ Exp *GenericExpTransformer::applyFuncs(Exp *rhs) {
         assert(p1->getOper() == opTypeVal);
         assert(p2->getOper() == opIntConst);
 #if 0
-        Type *ty = p1->getType();
+        SharedType ty = p1->getType();
         assert(ty && ty->resolvesToCompound());
 #else
-        Type *ty = nullptr; // Note: will cause a segfault
+        SharedType ty = nullptr; // Note: will cause a segfault
 #endif
         // probably need to make this func take bits in future
         int offset = ((Const *)p2)->getInt() * 8;
@@ -59,10 +59,10 @@ Exp *GenericExpTransformer::applyFuncs(Exp *rhs) {
         assert(p1->getOper() == opTypeVal);
         assert(p2->getOper() == opStrConst);
 #if 0 // ADHOC TA
-        Type *ty = p1->getType();
+        SharedType ty = p1->getType();
         assert(ty && ty->resolvesToCompound());
 #else
-        Type *ty = nullptr; // Note: will cause a segfault
+        SharedType ty = nullptr; // Note: will cause a segfault
 #endif
         const char *member = ((Const *)p2)->getStr();
         int offset = ty->asCompound()->getOffsetTo(member) / 8;
@@ -130,9 +130,9 @@ bool GenericExpTransformer::checkCond(Exp *cond, Exp *bindings) {
         }
         if (lhs->getOper() == opTypeOf) {
 #if 0 // ADHOC TA
-                    Type *ty = lhs->getSubExp1()->getType();
+                    SharedType ty = lhs->getSubExp1()->getType();
 #else
-            Type *ty = nullptr;
+            SharedType ty = nullptr;
 #endif
             if (ty == nullptr) {
 #if 0

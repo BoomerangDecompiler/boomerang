@@ -18,6 +18,7 @@
 #include "proc.h"
 #include "exp.h"
 #include "boomerang.h"
+#include "statement.h"
 #include "visitor.h"
 #include "log.h"
 #include "frontend.h"

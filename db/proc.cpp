@@ -281,9 +281,9 @@ void UserProc::renameParam(const char *oldName, const char *newName) {
     // cfg->searchAndReplace(Location::param(strdup(oldName), this), Location::param(strdup(newName), this));
 }
 
-void UserProc::setParamType(const char *nam, Type *ty) { signature->setParamType(nam, ty); }
+void UserProc::setParamType(const char *nam, SharedType ty) { signature->setParamType(nam, ty); }
 
-void UserProc::setParamType(int idx, Type *ty) {
+void UserProc::setParamType(int idx, SharedType ty) {
     int n = 0;
     StatementList::iterator it;
     for (it = parameters.begin(); n != idx && it != parameters.end(); it++, n++) // find n-th parameter it
@@ -297,7 +297,7 @@ void UserProc::setParamType(int idx, Type *ty) {
 }
 
 void UserProc::renameLocal(const char *oldName, const char *newName) {
-    Type *ty = locals[oldName];
+    SharedType ty = locals[oldName];
     const Exp *oldExp = expFromSymbol(oldName);
     locals.erase(oldName);
     Exp *oldLoc = getSymbolFor(oldExp, ty);
@@ -697,11 +697,11 @@ void UserProc::generateCode(HLLCode *hll) {
     hll->AddProcStart(this);
 
     // Local variables; print everything in the locals map
-    std::map<std::string, Type *>::iterator last = locals.end();
+    std::map<std::string, SharedType >::iterator last = locals.end();
     if (locals.size())
         last--;
-    for (std::map<std::string, Type *>::iterator it = locals.begin(); it != locals.end(); it++) {
-        Type *locType = it->second;
+    for (std::map<std::string, SharedType >::iterator it = locals.begin(); it != locals.end(); it++) {
+        SharedType locType = it->second;
         if (locType == nullptr || locType->isVoid())
             locType = IntegerType::get(STD_SIZE);
         hll->AddLocal(it->first.c_str(), locType, it == last);
@@ -2312,7 +2312,7 @@ void UserProc::findFinalParameters() {
             if (VERBOSE || DEBUG_PARAMS)
                 LOG << "found new parameter " << e << "\n";
 
-            Type *ty = ((ImplicitAssign *)s)->getType();
+            SharedType ty = ((ImplicitAssign *)s)->getType();
             // Add this parameter to the signature (for now; creates parameter names)
             addParameter(e, ty);
             // Insert it into the parameters StatementList, in sensible order
@@ -2425,7 +2425,7 @@ void Function::removeParameter(Exp *e) {
 void Function::removeReturn(Exp *e) { signature->removeReturn(e); }
 
 //! Add the parameter to the signature
-void UserProc::addParameter(Exp *e, Type *ty) {
+void UserProc::addParameter(Exp *e, SharedType ty) {
     // In case it's already an implicit argument:
     removeParameter(e);
 
@@ -2479,7 +2479,7 @@ void UserProc::addParameterSymbols() {
 /**
  * Return an expression that is equivilent to e in terms of local variables.  Creates new locals as needed.
  */
-Exp *UserProc::getSymbolExp(Exp *le, Type *ty, bool lastPass) {
+Exp *UserProc::getSymbolExp(Exp *le, SharedType ty, bool lastPass) {
     Exp *e = nullptr;
 
     // check for references to the middle of a local
@@ -2490,7 +2490,7 @@ Exp *UserProc::getSymbolExp(Exp *le, Type *ty, bool lastPass) {
             if ((elem).second->isLocal()) {
                 const char *nam = ((Const *)(elem).second->getSubExp1())->getStr();
                 if (locals.find(nam) != locals.end()) {
-                    Type *lty = locals[nam];
+                    SharedType lty = locals[nam];
                     const Exp *loc = (elem).first;
                     if (loc->isMemOf() && loc->getSubExp1()->getOper() == opMinus &&
                         loc->getSubExp1()->getSubExp1()->isSubscript() &&
@@ -2516,7 +2516,7 @@ Exp *UserProc::getSymbolExp(Exp *le, Type *ty, bool lastPass) {
             if (lastPass)
                 ty = IntegerType::get(STD_SIZE);
             else
-                ty = new VoidType(); // HACK MVE
+                ty = VoidType::get(); // HACK MVE
         }
 
         // the default of just assigning an int type is bad..  if the locals is not an int then assigning it this
@@ -2537,8 +2537,8 @@ Exp *UserProc::getSymbolExp(Exp *le, Type *ty, bool lastPass) {
         e = symbolMap[le]->clone();
         if (e->getOper() == opLocal && e->getSubExp1()->getOper() == opStrConst) {
             std::string name = ((Const*)e->getSubExp1())->getStr();
-            Type *nty = ty;
-            Type *ty = locals[name];
+            SharedType nty = ty;
+            SharedType ty = locals[name];
             assert(ty);
             if (nty && !(*ty == *nty) && nty->getSize() > ty->getSize()) {
                 // FIXME: should this be a type meeting?
@@ -2548,7 +2548,7 @@ Exp *UserProc::getSymbolExp(Exp *le, Type *ty, bool lastPass) {
                 locals[name] = ty;
             }
             if (ty->resolvesToCompound()) {
-                CompoundType *compound = ty->asCompound();
+                CompoundSharedType compound = ty->asCompound();
                 if (VERBOSE)
                     LOG << "found reference to first member of compound " << name.c_str() << ": " << le << "\n";
                 char* nam = (char*)compound->getName(0);
@@ -2593,23 +2593,23 @@ void UserProc::mapExpressionsToLocals(bool lastPass) {
         if ((*it)->isCall()) {
             CallStatement *call = (CallStatement *)*it;
             for (int i = 0; i < call->getNumArguments(); i++) {
-                Type *ty = call->getArgumentType(i);
+                SharedType ty = call->getArgumentType(i);
                 Exp *e = call->getArgumentExp(i);
                 // If a pointer type and e is of the form m[sp{0} - K]:
                 if (ty && ty->resolvesToPointer() && signature->isAddrOfStackLocal(prog, e)) {
                     LOG << "argument " << e << " is an addr of stack local and the type resolves to a pointer\n";
                     Exp *olde = e->clone();
-                    Type *pty = ty->asPointer()->getPointsTo();
+                    SharedType pty = ty->asPointer()->getPointsTo();
                     if (e->isAddrOf() && e->getSubExp1()->isSubscript() && e->getSubExp1()->getSubExp1()->isMemOf())
                         e = e->getSubExp1()->getSubExp1()->getSubExp1();
                     if (pty->resolvesToArray() && pty->asArray()->isUnbounded()) {
-                        ArrayType *a = (ArrayType *)pty->asArray()->clone();
+                        auto a = std::static_pointer_cast<ArrayType>(pty->asArray()->clone());
                         pty = a;
                         a->setLength(1024); // just something arbitrary
                         if (i + 1 < call->getNumArguments()) {
-                            Type *nt = call->getArgumentType(i + 1);
+                            SharedType nt = call->getArgumentType(i + 1);
                             if (nt->isNamed())
-                                nt = ((NamedType *)nt)->resolvesTo();
+                                nt = std::static_pointer_cast<NamedType>(nt)->resolvesTo();
                             if (nt->isInteger() && call->getArgumentExp(i + 1)->isIntConst())
                                 a->setLength(((Const *)call->getArgumentExp(i + 1))->getInt());
                         }
@@ -2661,20 +2661,20 @@ void UserProc::mapExpressionsToLocals(bool lastPass) {
                                                    result->getSubExp1()->getSubExp2()->clone()),
                                        this);
             int n = ((Const *)result->getSubExp1()->getSubExp2())->getInt();
-            Type *base = IntegerType::get(STD_SIZE);
+            SharedType base = IntegerType::get(STD_SIZE);
             if (s->isAssign() && ((Assign *)s)->getLeft() == result) {
-                Type *at = ((Assign *)s)->getType();
+                SharedType at = ((Assign *)s)->getType();
                 if (at && at->getSize() != 0)
                     base = ((Assign *)s)->getType()->clone();
             }
-            // arr->setType(new ArrayType(base, n / (base->getSize() / 8))); //TODO: why is this commented out ?
+            // arr->setType(ArrayType::get(base, n / (base->getSize() / 8))); //TODO: why is this commented out ?
             LOG_VERBOSE(1) << "found a local array using " << n << " bytes\n";
             Exp *replace = Location::memOf(Binary::get(opPlus, new Unary(opAddrOf, arr),
                                                        result->getSubExp1()->getSubExp1()->getSubExp2()->clone()),
                                            this);
             // TODO: the change from de8c876e9ca33e6f5aab39191204e80b81048d67 doesn't change anything, but 'looks'
             // better
-            TypedExp *actual_replacer = new TypedExp(new ArrayType(base, n / (base->getSize() / 8)), replace);
+            TypedExp *actual_replacer = new TypedExp(ArrayType::get(base, n / (base->getSize() / 8)), replace);
             if (VERBOSE)
                 LOG << "replacing " << result << " with " << actual_replacer << " in " << s << "\n";
             s->searchAndReplace(*result, actual_replacer);
@@ -2712,7 +2712,7 @@ void UserProc::searchRegularLocals(OPER minusOrPlus, bool lastPass, int sp, Stat
         s->searchAll(*l, results);
         for (auto result : results) {
 
-            Type *ty = s->getTypeFor(result);
+            SharedType ty = s->getTypeFor(result);
             Exp *e = getSymbolExp(result, ty, lastPass);
             if (e) {
                 Exp *search = result->clone();
@@ -2840,7 +2840,7 @@ QString UserProc::newLocalName(Exp *e) {
  * Return the next available local variable; make it the given type. Note: was returning TypedExp*.
  * If nam is non null, use that name
  */
-Exp *UserProc::newLocal(Type *ty, Exp *e, char *nam /* = nullptr */) {
+Exp *UserProc::newLocal(SharedType ty, Exp *e, char *nam /* = nullptr */) {
     QString name;
     if (nam == nullptr)
         name = newLocalName(e);
@@ -2859,7 +2859,7 @@ Exp *UserProc::newLocal(Type *ty, Exp *e, char *nam /* = nullptr */) {
 /**
  * Add a new local supplying all needed information.
  */
-void UserProc::addLocal(Type *ty, const QString &nam, Exp *e) {
+void UserProc::addLocal(SharedType ty, const QString &nam, Exp *e) {
     // symbolMap is a multimap now; you might have r8->o0 for integers and r8->o0_1 for char*
     // assert(symbolMap.find(e) == symbolMap.end());
     mapSymbolTo(e, Location::local(strdup(qPrintable(nam)), this));
@@ -2868,20 +2868,20 @@ void UserProc::addLocal(Type *ty, const QString &nam, Exp *e) {
 }
 
 /// return a local's type
-Type *UserProc::getLocalType(const char *nam) {
+SharedType UserProc::getLocalType(const char *nam) {
     if (locals.find(nam) == locals.end())
         return nullptr;
-    Type *ty = locals[nam];
+    SharedType ty = locals[nam];
     return ty;
 }
 
-void UserProc::setLocalType(const char *nam, Type *ty) {
+void UserProc::setLocalType(const char *nam, SharedType ty) {
     locals[nam] = ty;
     if (VERBOSE)
         LOG << "setLocalType: updating type of " << nam << " to " << ty->getCtype() << "\n";
 }
 
-Type *UserProc::getParamType(const char *nam) {
+SharedType UserProc::getParamType(const char *nam) {
     for (unsigned int i = 0; i < signature->getNumParams(); i++)
         if (std::string(nam) == signature->getParamName(i))
             return signature->getParamType(i);
@@ -2914,16 +2914,16 @@ void UserProc::mapSymbolTo(const Exp *from, Exp *to) {
 /// \brief Lookup the symbol map considering type
 /// Lookup the expression in the symbol map. Return nullptr or a C string with the symbol. Use the Type* ty to
 /// select from several names in the multimap; the name corresponding to the first compatible type is returned
-Exp *UserProc::getSymbolFor(const Exp *from, Type *ty) {
+Exp *UserProc::getSymbolFor(const Exp *from, SharedType ty) {
     SymbolMap::iterator ff = symbolMap.find(from);
     while (ff != symbolMap.end() && *ff->first == *from) {
         Exp *currTo = ff->second;
         assert(currTo->isLocal() || currTo->isParam());
         const char *name = ((Const *)((Location *)currTo)->getSubExp1())->getStr();
-        Type *currTy = getLocalType(name);
+        SharedType currTy = getLocalType(name);
         if (currTy == nullptr)
             currTy = getParamType(name);
-        if (currTy && currTy->isCompatibleWith(ty))
+        if (currTy && currTy->isCompatibleWith(*ty))
             return currTo;
         ++ff;
     }
@@ -2954,7 +2954,7 @@ const Exp *UserProc::expFromSymbol(const char *nam) const {
 
 const char *UserProc::getLocalName(int n) {
     int i = 0;
-    for (std::map<std::string, Type *>::iterator it = locals.begin(); it != locals.end(); it++, i++)
+    for (std::map<std::string, SharedType >::iterator it = locals.begin(); it != locals.end(); it++, i++)
         if (i == n)
             return it->first.c_str();
     return nullptr;
@@ -3054,7 +3054,7 @@ void UserProc::removeUnusedLocals() {
         }
     }
     // Now record the unused ones in set removes
-    std::map<std::string, Type *>::iterator it;
+    std::map<std::string, SharedType >::iterator it;
     std::set<std::string> removes;
     for (it = locals.begin(); it != locals.end(); it++) {
         std::string &name = const_cast<std::string &>(it->first);
@@ -3075,7 +3075,7 @@ void UserProc::removeUnusedLocals() {
         LocationSet::iterator ll;
         s->getDefinitions(ls);
         for (ll = ls.begin(); ll != ls.end(); ++ll) {
-            Type *ty = s->getTypeFor(*ll);
+            SharedType ty = s->getTypeFor(*ll);
             const char *name = findLocal(*ll, ty);
             if (name == nullptr)
                 continue;
@@ -3141,7 +3141,7 @@ void UserProc::fromSSAform() {
     // First split the live ranges where needed by reason of type incompatibility, i.e. when the type of a subscripted
     // variable is different to its previous type. Start at the top, because we don't want to rename parameters (e.g.
     // argc)
-    typedef std::pair<Type *, Exp *> FirstTypeEnt;
+    typedef std::pair<SharedType , Exp *> FirstTypeEnt;
     typedef std::map<Exp *, FirstTypeEnt, lessExpStar> FirstTypesMap;
     FirstTypesMap firstTypes;
     FirstTypesMap::iterator ff;
@@ -3173,10 +3173,10 @@ void UserProc::fromSSAform() {
         LocationSet::iterator dd;
         for (dd = defs.begin(); dd != defs.end(); dd++) {
             Exp *base = *dd;
-            Type *ty = s->getTypeFor(base);
+            SharedType ty = s->getTypeFor(base);
             LOG_VERBOSE(1) << "got type " << ty << " for " << base << " from " << s << "\n";
             if (ty == nullptr) // Can happen e.g. when getting the type for %flags
-                ty = new VoidType();
+                ty = VoidType::get();
             ff = firstTypes.find(base);
             Exp *ref = RefExp::get(base, s);
             if (ff == firstTypes.end()) {
@@ -3185,7 +3185,7 @@ void UserProc::fromSSAform() {
                 fte.first = ty;
                 fte.second = ref;
                 firstTypes[base] = fte;
-            } else if (ff->second.first && !ty->isCompatibleWith(ff->second.first)) {
+            } else if (ff->second.first && !ty->isCompatibleWith(*ff->second.first)) {
                 if (DEBUG_LIVENESS)
                     LOG << "def of " << base << " at " << s->getNumber() << " type " << ty
                         << " is not compatible with first type " << ff->second.first << ".\n";
@@ -3247,7 +3247,7 @@ void UserProc::fromSSAform() {
             rename = r2;
             else rename = r1;
         }
-        Type *ty = rename->getDef()->getTypeFor(rename->getSubExp1());
+        SharedType ty = rename->getDef()->getTypeFor(rename->getSubExp1());
         Exp *local = newLocal(ty, rename);
         if (DEBUG_LIVENESS)
             LOG << "renaming " << rename << " to " << local << "\n";
@@ -3885,7 +3885,7 @@ void UserProc::conTypeAnalysis() {
                 continue;
             Exp *loc = ((Unary *)cc->first)->getSubExp1();
             assert(cc->second->isTypeVal());
-            Type *ty = ((TypeVal *)cc->second)->getType();
+            SharedType ty = ((TypeVal *)cc->second)->getType();
             if (loc->isSubscript())
                 loc = ((RefExp *)loc)->getSubExp1();
             if (loc->isGlobal()) {
@@ -3965,7 +3965,7 @@ Exp *UserProc::getPremised(Exp *left) {
 bool UserProc::isPreserved(Exp *e) { return provenTrue.find(e) != provenTrue.end() && *provenTrue[e] == *e; }
 
 /// Cast the constant whose conscript is num to be type ty
-void UserProc::castConst(int num, Type *ty) {
+void UserProc::castConst(int num, SharedType ty) {
     StatementList stmts;
     getStatements(stmts);
     StatementList::iterator it;
@@ -4035,7 +4035,7 @@ const char *UserProc::lookupParam(Exp *e) {
         return nullptr;
     }
     RefExp *re = RefExp::get(e, def);
-    Type *ty = def->getTypeFor(e);
+    SharedType ty = def->getTypeFor(e);
     return lookupSym(re, ty);
 }
 //! Lookup a specific symbol for the given ref
@@ -4046,7 +4046,7 @@ const char *UserProc::lookupSymFromRef(RefExp *r) {
         return nullptr;
     }
     Exp *base = r->getSubExp1();
-    Type *ty = def->getTypeFor(base);
+    SharedType ty = def->getTypeFor(base);
     return lookupSym(r, ty);
 }
 //! Lookup a specific symbol if any, else the general one if any
@@ -4057,14 +4057,14 @@ const char *UserProc::lookupSymFromRefAny(RefExp *r) {
         return nullptr;
     }
     Exp *base = r->getSubExp1();
-    Type *ty = def->getTypeFor(base);
+    SharedType ty = def->getTypeFor(base);
     const char *ret = lookupSym(r, ty);
     if (ret)
         return ret;             // Found a specific symbol
     return lookupSym(base, ty); // Check for a general symbol
 }
 
-const char *UserProc::lookupSym(const Exp *e, Type *ty) {
+const char *UserProc::lookupSym(const Exp *e, SharedType ty) {
     if (e->isTypedExp())
         e = ((const TypedExp *)e)->getSubExp1();
     SymbolMap::iterator it;
@@ -4073,10 +4073,10 @@ const char *UserProc::lookupSym(const Exp *e, Type *ty) {
         Exp *sym = it->second;
         assert(sym->isLocal() || sym->isParam());
         const char *name = ((Const *)((Location *)sym)->getSubExp1())->getStr();
-        Type *type = getLocalType(name);
+        SharedType type = getLocalType(name);
         if (type == nullptr)
             type = getParamType(name); // Ick currently linear search
-        if (type && type->isCompatibleWith(ty))
+        if (type && type->isCompatibleWith(*ty))
             return name;
         ++it;
     }
@@ -4095,7 +4095,7 @@ void UserProc::printSymbolMap(QTextStream &out, bool html /*= false*/) const {
         out << "<br>";
     out << "symbols:\n";
     for (const std::pair<const Exp *, Exp *> &it : symbolMap) {
-        const Type *ty = getTypeForLocation(it.second);
+        const SharedType ty = getTypeForLocation(it.second);
         out << "  " << it.first << " maps to " << it.second << " type " << (ty ? qPrintable(ty->getCtype()) : "nullptr") << "\n";
         if (html)
             out << "<br>";
@@ -4109,7 +4109,7 @@ void UserProc::dumpLocals(QTextStream &os, bool html) const {
     if (html)
         os << "<br>";
     os << "locals:\n";
-    for (const std::pair<std::string, Type *> &it : locals) {
+    for (const std::pair<std::string, SharedType > &it : locals) {
         os << it.second->getCtype() << " " << it.first.c_str() << " ";
         const Exp *e = expFromSymbol(it.first.c_str());
         // Beware: for some locals, expFromSymbol() returns nullptr (? No longer?)
@@ -4126,7 +4126,7 @@ void UserProc::dumpLocals(QTextStream &os, bool html) const {
 void UserProc::dumpSymbolMap() {
     SymbolMap::iterator it;
     for (it = symbolMap.begin(); it != symbolMap.end(); it++) {
-        Type *ty = getTypeForLocation(it->second);
+        SharedType ty = getTypeForLocation(it->second);
         LOG_STREAM() << "  " << it->first << " maps to " << it->second << " type " << (ty ? qPrintable(ty->getCtype()) : "NULL")
                   << "\n";
     }
@@ -4136,7 +4136,7 @@ void UserProc::dumpSymbolMap() {
 void UserProc::dumpSymbolMapx() {
     SymbolMap::iterator it;
     for (it = symbolMap.begin(); it != symbolMap.end(); it++) {
-        Type *ty = getTypeForLocation(it->second);
+        SharedType ty = getTypeForLocation(it->second);
         LOG_STREAM() << "  " << it->first << " maps to " << it->second << " type " << (ty ? qPrintable(ty->getCtype()) : "NULL")
                   << "\n";
         it->first->printx(2);
@@ -4303,7 +4303,7 @@ void UserProc::reverseStrengthReduction() {
   * collector have changed
   *
   ******************************************************************************/
-void UserProc::insertParameter(Exp *e, Type *ty) {
+void UserProc::insertParameter(Exp *e, SharedType ty) {
 
     if (filterParams(e))
         return; // Filtered out
@@ -4422,7 +4422,7 @@ bool UserProc::filterParams(Exp *e) {
 }
 /// Determine whether e is a local, either as a true opLocal (e.g. generated by fromSSA), or if it is in the
 /// symbol map and the name is in the locals map. If it is a local, return its name, else nullptr
-const char *UserProc::findLocal(Exp *e, Type *ty) {
+const char *UserProc::findLocal(Exp *e, SharedType ty) {
     if (e->isLocal())
         return ((Const *)((Unary *)e)->getSubExp1())->getStr();
     // Look it up in the symbol map
@@ -4439,7 +4439,7 @@ const char *UserProc::findLocal(Exp *e, Type *ty) {
 const char *UserProc::findLocalFromRef(RefExp *r) {
     Instruction *def = r->getDef();
     Exp *base = r->getSubExp1();
-    Type *ty = def->getTypeFor(base);
+    SharedType ty = def->getTypeFor(base);
     const char *name = lookupSym(r, ty);
     if (name == nullptr)
         return nullptr;
@@ -5452,7 +5452,7 @@ void UserProc::processDecodedICTs() {
 // Find or insert a new implicit reference just before statement s, for address expression a with type t.
 // Meet types if necessary
 /// Find and if necessary insert an implicit reference before s whose address expression is a and type is t.
-void UserProc::setImplicitRef(Instruction *s, Exp *a, Type *ty) {
+void UserProc::setImplicitRef(Instruction *s, Exp *a, SharedType ty) {
     BasicBlock *bb = s->getBB(); // Get s' enclosing BB
     std::list<RTL *> *rtls = bb->getRTLs();
     for (std::list<RTL *>::iterator rit = rtls->begin(); rit != rtls->end(); rit++) {
@@ -5685,7 +5685,7 @@ QString UserProc::getRegName(Exp *r) {
     return tgt;
 }
 //! Find the type of the local or parameter \a e
-Type *UserProc::getTypeForLocation(const Exp *e) {
+SharedType UserProc::getTypeForLocation(const Exp *e) {
     const char *name = ((const Const *)((const Unary *)e)->getSubExp1())->getStr();
     if (e->isLocal()) {
         if (locals.find(name) != locals.end())
@@ -5694,7 +5694,7 @@ Type *UserProc::getTypeForLocation(const Exp *e) {
     // Sometimes parameters use opLocal, so fall through
     return getParamType(name);
 }
-const Type *UserProc::getTypeForLocation(const Exp *e) const {
+const SharedType UserProc::getTypeForLocation(const Exp *e) const {
     return const_cast<UserProc *>(this)->getTypeForLocation(e);
 }
 void UserProc::verifyPHIs() {
@@ -5739,7 +5739,7 @@ void UserProc::nameParameterPhis() {
             continue;                    // Already mapped to something
         bool multiple = false;           // True if find more than one unique parameter
         const char *firstName = nullptr; // The name for the first parameter found
-        Type *ty = pi->getType();
+        SharedType ty = pi->getType();
 
         for (const auto &v : *pi) {
             if (v.second.def()->isImplicit()) {
@@ -5771,7 +5771,7 @@ void UserProc::checkLocalFor(RefExp *r) {
     if (!def)
         return; // TODO: should this be logged ?
     Exp *base = r->getSubExp1();
-    Type *ty = def->getTypeFor(base);
+    SharedType ty = def->getTypeFor(base);
     // No, get its name from the front end
     QString locName = nullptr;
     if (base->isRegOf()) {
@@ -5794,7 +5794,7 @@ void UserProc::dfa_analyze_implict_assigns(Instruction *s, Prog *prog) {
     bool allZero;
     Exp *lhs;
     Exp *slhs;
-    Type *iType;
+    SharedType iType;
     int i;
 
     if (!s->isImplicit())
@@ -5853,7 +5853,7 @@ void UserProc::dfa_analyze_scaled_array_ref(Instruction *s, Prog *prog) {
         if (s->searchAndReplace(scaledArrayPat, arr)) {
             if (s->isImplicit())
                 // Register an array of appropriate type
-                prog->globalUsed(K2, new ArrayType(((ImplicitAssign *)s)->getType()));
+                prog->globalUsed(K2, ArrayType::get(((ImplicitAssign *)s)->getType()));
         }
     }
 }

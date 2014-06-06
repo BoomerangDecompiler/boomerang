@@ -28,8 +28,7 @@
 #ifndef BOOMERANG_H
 #define BOOMERANG_H
 
-// Defines to control experimental features
-#define USE_DOMINANCE_NUMS 1 // Set true to store a statement number that has dominance properties
+#include "config.h"
 #include "types.h"
 
 #include <QObject>
@@ -126,7 +125,7 @@ class Boomerang : public QObject {
     Log &log();
     SeparateLogger separate_log(const QString &);
     Log &if_verbose_log(int verbosity_level);
-    void setLogger(Log *l) { logger = l; }
+    void setLogger(Log *l);
     bool setOutputDirectory(const QString &path);
 
     HLLCode *getHLLCode(UserProc *p = nullptr);

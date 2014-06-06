@@ -38,16 +38,16 @@ void DfaTest::initTestCase() {
   * OVERVIEW:        Test meeting IntegerTypes with various other types
   ******************************************************************************/
 void DfaTest::testMeetInt() {
-    IntegerType *i32 = IntegerType::get(32, 1);
-    IntegerType *j32 = IntegerType::get(32, 0);
-    IntegerType *u32 = IntegerType::get(32, -1);
-    IntegerType *xint = IntegerType::get(0);
-    IntegerType *j16 = IntegerType::get(16, 0);
-    SizeType s32(32);
-    SizeType s64(64);
-    FloatType *flt = FloatType::get(32);
-    PointerType pt(flt);
-    VoidType v;
+    auto i32 = IntegerType::get(32, 1);
+    auto j32 = IntegerType::get(32, 0);
+    auto u32 = IntegerType::get(32, -1);
+    auto xint = IntegerType::get(0);
+    auto j16 = IntegerType::get(16, 0);
+    auto s32 = SizeType::get(32);
+    auto  s64 = SizeType::get(64);
+    auto flt = FloatType::get(32);
+    auto  pt = PointerType::get(flt);
+    auto  v = VoidType::get();
 
     bool ch = false;
     i32->meetWith(i32, ch, false);
@@ -70,7 +70,7 @@ void DfaTest::testMeetInt() {
 
     ch = false;
     j32->setSigned(0);
-    j32->meetWith(&v, ch, false);
+    j32->meetWith(v, ch, false);
     QVERIFY(ch == false);
 
     ost1 << j32;
@@ -86,14 +86,14 @@ void DfaTest::testMeetInt() {
     actual.clear();
 
     ch = false;
-    u32->meetWith(&s32, ch, false);
+    u32->meetWith(s32, ch, false);
     QVERIFY(ch == false);
 
     ost1 << u32;
     QCOMPARE(actual,QString("u32"));
     actual.clear();
 
-    u32->meetWith(&s64, ch, false);
+    u32->meetWith(s64, ch, false);
     QVERIFY(ch == true);
 
     ost1 << u32;
@@ -101,7 +101,7 @@ void DfaTest::testMeetInt() {
     actual.clear();
 
     ch = false;
-    Type *res = i32->meetWith(flt, ch, false);
+    auto res = i32->meetWith(flt, ch, false);
     QVERIFY(ch == true);
 
     ost1 << res;
@@ -109,7 +109,7 @@ void DfaTest::testMeetInt() {
     actual.clear();
 
     ch = false;
-    res = i32->meetWith(&pt, ch, false);
+    res = i32->meetWith(pt, ch, false);
     QVERIFY(ch == true);
 
     ost1 << res;
@@ -124,14 +124,14 @@ void DfaTest::testMeetInt() {
 void DfaTest::testMeetSize() {
     QString actual;
     QTextStream ost1(&actual);
-    IntegerType *i32 = IntegerType::get(32, 1);
-    SizeType s32(32);
-    SizeType s16(16);
-    FloatType *flt = FloatType::get(32);
-    VoidType v;
+    auto i32 = IntegerType::get(32, 1);
+    auto s32 = SizeType::get(32);
+    auto s16 = SizeType::get(16);
+    auto flt = FloatType::get(32);
+    auto v = VoidType::get();
 
     bool ch = false;
-    Type *res = s32.meetWith(i32, ch, false);
+    auto res = s32->meetWith(i32, ch, false);
     QVERIFY(ch == true);
 
     ost1 << res;
@@ -139,13 +139,13 @@ void DfaTest::testMeetSize() {
     actual.clear();
 
     ch = false;
-    res = s32.meetWith(&s16, ch, false);
+    res = s32->meetWith(s16, ch, false);
     QVERIFY(ch == false);
 
     // There is a known failure here; to show the warning, use ErrLogger
     Boomerang::get()->setLogger(new ErrLogger);
 
-    res = s16.meetWith(flt, ch, false);
+    res = s16->meetWith(flt, ch, false);
     QVERIFY(ch == true);
 
     ost1 << res;
@@ -153,7 +153,7 @@ void DfaTest::testMeetSize() {
     actual.clear();
 
     ch = false;
-    res = s16.meetWith(&v, ch, false);
+    res = s16->meetWith(v, ch, false);
     QVERIFY(ch == false);
 
     ost1 << res;
@@ -166,31 +166,25 @@ void DfaTest::testMeetSize() {
   * OVERVIEW:        Test meeting IntegerTypes with various other types
   ******************************************************************************/
 void DfaTest::testMeetPointer() {
-    IntegerType *i32 = IntegerType::get(32, 1);
-    IntegerType *u32 = IntegerType::get(32, -1);
-    PointerType pi32(i32);
-    PointerType pu32(u32);
-    VoidType v;
-    QString actual;
-    QTextStream ost1(&actual);
+    auto i32 = IntegerType::get(32, 1);
+    auto u32 = IntegerType::get(32, -1);
+    auto pi32= PointerType::get(i32);
+    auto pu32= PointerType::get(u32);
+    auto v = VoidType::get();
 
-    ost1 << pu32.getCtype();
-    QCOMPARE(actual,QString("unsigned int *"));
-    actual.clear();
+    QCOMPARE(pu32->getCtype(),QString("unsigned int *"));
 
     bool ch = false;
-    Type *res = pi32.meetWith(&pu32, ch, false);
+    auto res = pi32->meetWith(pu32, ch, false);
     QVERIFY(ch == true);
 
-    ost1 << res->getCtype();
-    QCOMPARE(actual,QString("/*signed?*/int *"));
-    actual.clear();
+    QCOMPARE(res->getCtype(),QString("/*signed?*/int *"));
 
     ch = false;
-    res = pi32.meetWith(&v, ch, false);
+    res = pi32->meetWith(v, ch, false);
     QVERIFY(ch == false);
 
-    res = pi32.meetWith(i32, ch, false);
+    res = pi32->meetWith(i32, ch, false);
     QVERIFY(res->isUnion());
 }
 
@@ -199,44 +193,28 @@ void DfaTest::testMeetPointer() {
   * OVERVIEW:        Test meeting IntegerTypes with various other types
   ******************************************************************************/
 void DfaTest::testMeetUnion() {
-    UnionType u1;
-    IntegerType *i32 = IntegerType::get(32, 1);
-    IntegerType *j32 = IntegerType::get(32, 0);
-    IntegerType *u32 = IntegerType::get(32, -1);
-    FloatType *flt = FloatType::get(32);
-    u1.addType(i32, "bow");
-    u1.addType(flt, "wow");
+    auto i32 = IntegerType::get(32, 1);
+    auto j32 = IntegerType::get(32, 0);
+    auto u32 = IntegerType::get(32, -1);
+    auto u1 = UnionType::get();
+    auto flt = FloatType::get(32);
+    u1->addType(i32, "bow");
+    u1->addType(flt, "wow");
 
-    std::ostringstream ost1;
-    ost1 << u1.getCtype().toStdString();
-    std::string actual(ost1.str());
-    std::string expected("union { int bow; float wow; }");
-    QCOMPARE(actual,expected);
+    QCOMPARE(u1->getCtype(),QString("union { int bow; float wow; }"));
 
     bool ch = false;
-    Type *res = u1.meetWith(j32, ch, false);
+    auto res = u1->meetWith(j32, ch, false);
     QVERIFY(ch == false);
-    std::ostringstream ost2;
-    ost2 << res->getCtype().toStdString();
-    actual = ost2.str();
-    expected = "union { int bow; float wow; }";
-    QCOMPARE(actual,expected);
+    QCOMPARE(res->getCtype(),QString("union { int bow; float wow; }"));
 
-    res = u1.meetWith(j32, ch, false);
+    res = u1->meetWith(j32, ch, false);
     QVERIFY(ch == false);
-    std::ostringstream ost3;
-    ost3 << u1.getCtype().toStdString();
-    actual = ost3.str();
-    expected = "union { int bow; float wow; }";
-    QCOMPARE(actual,expected);
+    QCOMPARE(u1->getCtype(),QString("union { int bow; float wow; }"));
 
     // Note: this test relies on the int in the union having signedness 1
-    res = u1.meetWith(u32, ch, false);
+    res = u1->meetWith(u32, ch, false);
     QVERIFY(ch == true);
-    std::ostringstream ost4;
-    ost4 << u1.getCtype().toStdString();
-    actual = ost4.str();
-    expected = "union { /*signed?*/int bow; float wow; }";
-    QCOMPARE(actual,expected);
+    QCOMPARE(u1->getCtype(),QString("union { /*signed?*/int bow; float wow; }"));
 }
 QTEST_MAIN(DfaTest)

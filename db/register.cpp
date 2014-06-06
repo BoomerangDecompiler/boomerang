@@ -99,7 +99,7 @@ std::string Register::g_name() const { return name; }
   * \brief   Get the type for this register
   * \returns The type as a pointer to a Type object
   ******************************************************************************/
-Type *Register::g_type() const {
+SharedType Register::g_type() const {
     if (flt)
         return FloatType::get(size);
     return IntegerType::get(size);

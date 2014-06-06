@@ -10,8 +10,6 @@
 #else
 #define NO_GARBAGE_COLLECTOR
 #endif
-#include <cassert>
-#include <sstream>
 #include "types.h"
 #include "rtl.h"
 #include "table.h"
@@ -19,18 +17,22 @@
 #include "util.h" // E.g. str()
 #include "statement.h"
 
+#include <cassert>
+#include <sstream>
+#include <memory>
+
 class SSLScanner;
 
-union yy_SSLParser_stype {
+struct yy_SSLParser_stype {
     Exp *exp;
     char *str;
     int32_t num;
     double dbl;
     Instruction *regtransfer;
-    Type *typ;
+    SharedType typ;
 
     Table *tab;
-    InsNameElem *insel;
+    std::shared_ptr<InsNameElem> insel;
     std::list<std::string> *parmlist;
     std::list<std::string> *strlist;
     std::deque<Exp *> *exprlist;
@@ -143,7 +145,7 @@ class SSLParser {
     OPER strToOper(const char *s);               /* Convert string to an operator */
     static Instruction *parseExp(const char *str); /* Parse an expression or assignment from a string */
     /* The code for expanding tables and saving to the dictionary */
-    void expandTables(InsNameElem *iname, std::list<std::string> *params, RTL *o_rtlist, RTLInstDict &Dict);
+    void expandTables(const std::shared_ptr<InsNameElem> &iname, std::list<std::string> *params, RTL *o_rtlist, RTLInstDict &Dict);
     Exp *makeSuccessor(Exp *e); /* Get successor (of register expression) */
 
     /*

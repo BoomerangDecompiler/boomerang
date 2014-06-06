@@ -185,13 +185,13 @@ class Context {
     Parameter *param;
     // ImplicitParameter *implicitParam;
     Return *ret;
-    Type *type;
+    SharedType type;
     Exp *exp, *symbol;
     std::list<Function *> procs;
 
     Context(int tag)
         : tag(tag), prog(nullptr), proc(nullptr), signature(nullptr), cfg(nullptr), bb(nullptr), rtl(nullptr),
-          stmt(nullptr), param(nullptr), /*implicitParam(nullptr),*/ ret(nullptr), type(nullptr), exp(nullptr) {}
+          stmt(nullptr), param(nullptr), /*implicitParam(nullptr),*/ ret(nullptr), exp(nullptr) {}
 };
 
 void XMLProgParser::handleElementStart(QXmlStreamReader &strm) {
@@ -230,6 +230,13 @@ void XMLProgParser::addId(const QXmlStreamAttributes &attr, void *x) {
         idToX[val.toInt()] = x;
     }
 }
+void XMLProgParser::addType(const QXmlStreamAttributes &attr, SharedType x) {
+    QStringRef val = attr.value(QLatin1Literal("id"));
+    if (!val.isEmpty()) {
+        // LOG_STREAM() << "map id " << val << " to " << std::hex << (int)x << std::dec << "\n";
+        idToType[val.toInt()] = x;
+    }
+}
 
 void *XMLProgParser::findId(const QStringRef &id) {
     if (id.isNull() || id.isEmpty())
@@ -240,6 +247,20 @@ void *XMLProgParser::findId(const QStringRef &id) {
     auto it = idToX.find(n);
     if (it == idToX.end()) {
         qCritical() << "findId could not find \"" << id << "\"\n";
+        assert(false);
+        return nullptr;
+    }
+    return it->second;
+}
+SharedType XMLProgParser::findType(const QStringRef &id) {
+    if (id.isNull() || id.isEmpty())
+        return nullptr;
+    int n = id.toInt();
+    if (n == 0)
+        return nullptr;
+    auto it = idToType.find(n);
+    if (it == idToType.end()) {
+        qCritical() << "findId could not find type for \"" << id << "\"\n";
         assert(false);
         return nullptr;
     }
@@ -1439,12 +1460,12 @@ void XMLProgParser::addToContext_basetype(Context *c, int /*e*/) { c->type = sta
 
 void XMLProgParser::start_sizetype(const QXmlStreamAttributes &attr) {
     if (phase == 1) {
-        stack.front()->type = (Type *)findId(attr.value(QLatin1Literal("id")));
+        stack.front()->type = findType(attr.value(QLatin1Literal("id")));
         return;
     }
-    SizeType *ty = new SizeType();
+    auto ty = SizeType::get();
     stack.front()->type = ty;
-    addId(attr, ty);
+    addType(attr, ty);
     QStringRef n = attr.value(QLatin1Literal("size"));
     if (!n.isEmpty())
         ty->size = n.toInt();
@@ -1511,11 +1532,11 @@ void XMLProgParser::addToContext_subexp3(Context *c, int /*e*/) { c->exp = stack
 
 void XMLProgParser::start_voidtype(const QXmlStreamAttributes &attr) {
     if (phase == 1) {
-        stack.front()->type = (Type *)findId(attr.value(QLatin1Literal("id")));
+        stack.front()->type = findType(attr.value(QLatin1Literal("id")));
         return;
     }
-    stack.front()->type = new VoidType();
-    addId(attr, stack.front()->type);
+    stack.front()->type = VoidType::get();
+    addType(attr, stack.front()->type);
 }
 
 void XMLProgParser::addToContext_voidtype(Context * /*c*/, int e) {
@@ -1531,12 +1552,12 @@ void XMLProgParser::addToContext_voidtype(Context * /*c*/, int e) {
 
 void XMLProgParser::start_integertype(const QXmlStreamAttributes &attr) {
     if (phase == 1) {
-        stack.front()->type = (Type *)findId(attr.value(QLatin1Literal("id")));
+        stack.front()->type = findType(attr.value(QLatin1Literal("id")));
         return;
     }
-    IntegerType *ty = IntegerType::get(STD_SIZE);
+    auto ty = IntegerType::get(STD_SIZE);
     stack.front()->type = ty;
-    addId(attr, ty);
+    addType(attr, ty);
     QStringRef n = attr.value(QLatin1Literal("size"));
     if (!n.isEmpty())
         ty->size = n.toInt();
@@ -1558,15 +1579,15 @@ void XMLProgParser::addToContext_integertype(Context * /*c*/, int e) {
 
 void XMLProgParser::start_pointertype(const QXmlStreamAttributes &attr) {
     if (phase == 1) {
-        stack.front()->type = (Type *)findId(attr.value(QLatin1Literal("id")));
+        stack.front()->type = findType(attr.value(QLatin1Literal("id")));
         return;
     }
-    stack.front()->type = new PointerType(nullptr);
-    addId(attr, stack.front()->type);
+    stack.front()->type = PointerType::get(nullptr);
+    addType(attr, stack.front()->type);
 }
 
 void XMLProgParser::addToContext_pointertype(Context *c, int /*e*/) {
-    PointerType *p = dynamic_cast<PointerType *>(c->type);
+    auto p = std::dynamic_pointer_cast<PointerType>(c->type);
     assert(p);
     if (phase == 1) {
         return;
@@ -1576,11 +1597,11 @@ void XMLProgParser::addToContext_pointertype(Context *c, int /*e*/) {
 
 void XMLProgParser::start_chartype(const QXmlStreamAttributes &attr) {
     if (phase == 1) {
-        stack.front()->type = (Type *)findId(attr.value(QLatin1Literal("id")));
+        stack.front()->type = findType(attr.value(QLatin1Literal("id")));
         return;
     }
-    stack.front()->type = new CharType();
-    addId(attr, stack.front()->type);
+    stack.front()->type = CharType::get();
+    addType(attr, stack.front()->type);
 }
 
 void XMLProgParser::addToContext_chartype(Context * /*c*/, int e) {
@@ -1596,11 +1617,11 @@ void XMLProgParser::addToContext_chartype(Context * /*c*/, int e) {
 
 void XMLProgParser::start_namedtype(const QXmlStreamAttributes &attr) {
     if (phase == 1) {
-        stack.front()->type = (Type *)findId(attr.value(QLatin1Literal("id")));
+        stack.front()->type = findType(attr.value(QLatin1Literal("id")));
         return;
     }
-    stack.front()->type = new NamedType(attr.value(QLatin1Literal("name")).toString());
-    addId(attr, stack.front()->type);
+    stack.front()->type = NamedType::get(attr.value(QLatin1Literal("name")).toString());
+    addType(attr, stack.front()->type);
 }
 
 void XMLProgParser::addToContext_namedtype(Context * /*c*/, int e) {
@@ -1616,19 +1637,19 @@ void XMLProgParser::addToContext_namedtype(Context * /*c*/, int e) {
 
 void XMLProgParser::start_arraytype(const QXmlStreamAttributes &attr) {
     if (phase == 1) {
-        stack.front()->type = (Type *)findId(attr.value(QLatin1Literal("id")));
+        stack.front()->type = findType(attr.value(QLatin1Literal("id")));
         return;
     }
-    ArrayType *a = new ArrayType();
+    auto a = ArrayType::get(VoidType::get());
     stack.front()->type = a;
-    addId(attr, a);
+    addType(attr, a);
     QStringRef len = attr.value(QLatin1Literal("length"));
     if (!len.isEmpty())
         a->Length = len.toInt();
 }
 
 void XMLProgParser::addToContext_arraytype(Context *c, int e) {
-    ArrayType *a = dynamic_cast<ArrayType *>(c->type);
+    auto a = std::dynamic_pointer_cast<ArrayType>(c->type);
     assert(a);
     switch (e) {
     case e_basetype:
@@ -2173,65 +2194,65 @@ void XMLProgParser::persistToXML(QXmlStreamWriter &out, Signature *sig) {
     out.writeEndElement();
 }
 
-void XMLProgParser::persistToXML(QXmlStreamWriter &out, const Type *ty) {
-    const VoidType *v = dynamic_cast<const VoidType *>(ty);
+void XMLProgParser::persistToXML(QXmlStreamWriter &out, const SharedType &ty) {
+    auto v = ty->as<VoidType>();
     if (v) {
         out.writeStartElement("voidtype");
-        out.writeAttribute("index", QString::number(ADDRESS::host_ptr(ty).m_value));
+        out.writeAttribute("index", QString::number(ADDRESS::host_ptr(ty.get()).m_value));
         out.writeEndElement();
         return;
     }
-    const FuncType *f = dynamic_cast<const FuncType *>(ty);
+    auto f = ty->as<FuncType>();
     if (f) {
         out.writeStartElement("functype");
-        out.writeAttribute("id", QString::number(ADDRESS::host_ptr(ty).m_value));
+        out.writeAttribute("id", QString::number(ADDRESS::host_ptr(ty.get()).m_value));
         persistToXML(out, f->signature);
         out.writeEndElement();
         return;
     }
-    const IntegerType *i = dynamic_cast<const IntegerType *>(ty);
+    auto i = ty->as<IntegerType>();
     if (i) {
         out.writeStartElement("integertype");
-        out.writeAttribute("id", QString::number(ADDRESS::host_ptr(ty).m_value));
+        out.writeAttribute("id", QString::number(ADDRESS::host_ptr(ty.get()).m_value));
         out.writeAttribute("size", QString::number(i->size));
         out.writeAttribute("signedness", QString::number(i->signedness));
         out.writeEndElement();
         return;
     }
-    const FloatType *fl = dynamic_cast<const FloatType *>(ty);
+    auto fl = ty->as<FloatType>();
     if (fl) {
         out.writeStartElement("floattype");
-        out.writeAttribute("id", QString::number(ADDRESS::host_ptr(ty).m_value));
+        out.writeAttribute("id", QString::number(ADDRESS::host_ptr(ty.get()).m_value));
         out.writeAttribute("size", QString::number(fl->size));
         out.writeEndElement();
         return;
     }
-    const BooleanType *b = dynamic_cast<const BooleanType *>(ty);
+    auto b = ty->as<BooleanType>();
     if (b) {
         out.writeStartElement("booleantype");
-        out.writeAttribute("id", QString::number(ADDRESS::host_ptr(ty).m_value));
+        out.writeAttribute("id", QString::number(ADDRESS::host_ptr(ty.get()).m_value));
         out.writeEndElement();
         return;
     }
-    const CharType *c = dynamic_cast<const CharType *>(ty);
+    auto c = ty->as<CharType>();
     if (c) {
         out.writeStartElement("chartype");
-        out.writeAttribute("id", QString::number(ADDRESS::host_ptr(ty).m_value));
+        out.writeAttribute("id", QString::number(ADDRESS::host_ptr(ty.get()).m_value));
         out.writeEndElement();
         return;
     }
-    const PointerType *p = dynamic_cast<const PointerType *>(ty);
+    const PointerType *p = dynamic_cast<const PointerType *>(ty.get());
     if (p) {
         out.writeStartElement("pointertype");
-        out.writeAttribute("id", QString::number(ADDRESS::host_ptr(ty).m_value));
+        out.writeAttribute("id", QString::number(ADDRESS::host_ptr(ty.get()).m_value));
         persistToXML(out, p->points_to);
         out.writeEndElement();
         return;
     }
-    const ArrayType *a = dynamic_cast<const ArrayType *>(ty);
+    auto a = ty->as<ArrayType>();
     if (a) {
         out.writeStartElement("arraytype");
-        out.writeAttribute("id", QString::number(ADDRESS::host_ptr(ty).m_value));
+        out.writeAttribute("id", QString::number(ADDRESS::host_ptr(ty.get()).m_value));
         out.writeAttribute("length", QString::number((int)a->Length));
         out.writeStartElement("basetype");
         persistToXML(out, a->BaseType);
@@ -2239,18 +2260,18 @@ void XMLProgParser::persistToXML(QXmlStreamWriter &out, const Type *ty) {
         out.writeEndElement();
         return;
     }
-    const NamedType *n = dynamic_cast<const NamedType *>(ty);
+    auto n = ty->asNamed();
     if (n) {
         out.writeStartElement("namedtype");
-        out.writeAttribute("id", QString::number(ADDRESS::host_ptr(ty).m_value));
+        out.writeAttribute("id", QString::number(ADDRESS::host_ptr(ty.get()).m_value));
         out.writeAttribute("name", n->name);
         out.writeEndElement();
         return;
     }
-    const CompoundType *co = dynamic_cast<const CompoundType *>(ty);
+    auto co = ty->as<CompoundType>();
     if (co) {
         out.writeStartElement("compoundtype");
-        out.writeAttribute("id", QString::number(ADDRESS::host_ptr(ty).m_value));
+        out.writeAttribute("id", QString::number(ADDRESS::host_ptr(ty.get()).m_value));
         for (unsigned i = 0; i < co->names.size(); i++) {
             out.writeStartElement("member");
             out.writeAttribute("name", co->names[i].c_str());
@@ -2260,10 +2281,10 @@ void XMLProgParser::persistToXML(QXmlStreamWriter &out, const Type *ty) {
         out.writeEndElement();
         return;
     }
-    const SizeType *sz = dynamic_cast<const SizeType *>(ty);
+    auto sz = ty->as<SizeType>();
     if (sz) {
         out.writeStartElement("sizetype");
-        out.writeAttribute("id", QString::number(ADDRESS::host_ptr(ty).m_value));
+        out.writeAttribute("id", QString::number(ADDRESS::host_ptr(ty.get()).m_value));
         out.writeAttribute("size", QString::number(sz->getSize()));
         out.writeEndElement();
         return;

@@ -539,11 +539,11 @@ class SizeStripper : public ExpModifier {
 
 class ExpConstCaster : public ExpModifier {
     int num;
-    Type *ty;
+    SharedType ty;
     bool changed;
 
   public:
-    ExpConstCaster(int _num, Type *_ty) : num(_num), ty(_ty), changed(false) {}
+    ExpConstCaster(int _num, SharedType _ty) : num(_num), ty(_ty), changed(false) {}
     virtual ~ExpConstCaster() {}
     bool isChanged() { return changed; }
 
@@ -775,7 +775,7 @@ class ExpCastInserter : public ExpModifier {
     UserProc *proc; // The enclising UserProc
   public:
     ExpCastInserter(UserProc *p) : proc(p) {}
-    static void checkMemofType(Exp *memof, Type *memofType);
+    static void checkMemofType(Exp *memof, SharedType memofType);
     virtual Exp *postVisit(RefExp *e);
     virtual Exp *postVisit(Binary *e);
     virtual Exp *postVisit(Const *e);

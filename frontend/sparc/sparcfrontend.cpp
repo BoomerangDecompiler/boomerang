@@ -1215,7 +1215,7 @@ void SparcFrontEnd::emitCopyPC(std::list<RTL *> *pRtls, ADDRESS uAddr) {
 }
 
 // Append one assignment to a list of RTLs
-void SparcFrontEnd::appendAssignment(Exp *lhs, Exp *rhs, Type *type, ADDRESS addr, std::list<RTL *> *lrtl) {
+void SparcFrontEnd::appendAssignment(Exp *lhs, Exp *rhs, SharedType type, ADDRESS addr, std::list<RTL *> *lrtl) {
     Assign *a = new Assign(type, lhs, rhs);
     // Create an RTL with this one Statement
     std::list<Instruction *> *lrt = new std::list<Instruction *>;

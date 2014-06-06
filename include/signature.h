@@ -35,20 +35,20 @@ class Exp;
 
 class Parameter {
   private:
-    Type *type = nullptr;
+    SharedType type;
     std::string m_name = "";
     Exp *exp = nullptr;
     std::string boundMax;
 
   public:
-    Parameter(Type *_type, const char *_name, Exp *_exp = nullptr, const char *_boundMax = "")
+    Parameter(SharedType _type, const char *_name, Exp *_exp = nullptr, const char *_boundMax = "")
         : type(_type), m_name(_name), exp(_exp), boundMax(_boundMax) {}
     virtual ~Parameter();
     bool operator==(Parameter &other);
     Parameter *clone();
 
-    Type *getType() { return type; }
-    void setType(Type *ty) { type = ty; }
+    SharedType getType() { return type; }
+    void setType(SharedType ty) { type = ty; }
     const char *name() { return m_name.c_str(); }
     void name(const std::string &nam) { m_name = nam; }
     Exp *getExp() { return exp; }
@@ -65,15 +65,15 @@ class Parameter {
 
 class Return {
   public:
-    Type *type;
+    SharedType type;
     Exp *exp;
 
-    Return(Type *_type, Exp *_exp) : type(_type), exp(_exp) {}
+    Return(SharedType _type, Exp *_exp) : type(_type), exp(_exp) {}
     virtual ~Return() {}
     bool operator==(Return &other);
     Return *clone();
 
-    Return() : type(nullptr), exp(nullptr) {}
+    Return() : exp(nullptr) {}
     friend class XMLProgParser;
 }; // class Return
 
@@ -86,13 +86,13 @@ class Signature {
     std::vector<Parameter *> params;
     // std::vector<ImplicitParameter*> implicitParams;
     Returns returns;
-    Type *rettype;
+    SharedType rettype;
     bool ellipsis;
     bool unknown;
     // bool        bFullSig;            // True if have a full signature from a signature file etc
     // True if the signature is forced with a -sf entry, or is otherwise known, e.g. WinMain
     bool forced;
-    Type *preferedReturn;
+    SharedType preferedReturn;
     std::string preferedName;
     std::vector<int> preferedParams;
 
@@ -100,7 +100,7 @@ class Signature {
     bool usesNewParam(UserProc *, Instruction *stmt, bool checkreach, int &n);
 
     // void        addImplicitParametersFor(Parameter *p);
-    // void        addImplicitParameter(Type *type, const char *name, Exp *e, Parameter *parent);
+    // void        addImplicitParameter(SharedType type, const char *name, Exp *e, Parameter *parent);
 
   public:
     Signature(const QString &nam);
@@ -121,20 +121,20 @@ class Signature {
     void setForced(bool f) { forced = f; }
 
     // get the return location
-    virtual void addReturn(Type *type, Exp *e = nullptr);
+    virtual void addReturn(SharedType type, Exp *e = nullptr);
     virtual void addReturn(Exp *e);
     virtual void addReturn(Return *ret) { returns.push_back(ret); }
     virtual void removeReturn(Exp *e);
     virtual size_t getNumReturns() { return returns.size(); }
     virtual Exp *getReturnExp(size_t n) { return returns[n]->exp; }
     void setReturnExp(size_t n, Exp *e) { returns[n]->exp = e; }
-    virtual Type *getReturnType(size_t n) { return returns[n]->type; }
-    virtual void setReturnType(size_t n, Type *ty);
+    virtual SharedType getReturnType(size_t n) { return returns[n]->type; }
+    virtual void setReturnType(size_t n, SharedType ty);
     int findReturn(Exp *e);
     //      void        fixReturnsWithParameters();            // Needs description
-    void setRetType(Type *t) { rettype = t; }
+    void setRetType(SharedType t) { rettype = t; }
     Returns &getReturns() { return returns; }
-    Type *getTypeFor(Exp *e);
+    SharedType getTypeFor(Exp *e);
 
     // get/set the name
     virtual QString getName();
@@ -145,8 +145,8 @@ class Signature {
 
     // add a new parameter to this signature
     virtual void addParameter(const char *nam = nullptr);
-    virtual void addParameter(Type *type, const char *nam = nullptr, Exp *e = nullptr, const char *boundMax = "");
-    virtual void addParameter(Exp *e, Type *ty);
+    virtual void addParameter(SharedType type, const char *nam = nullptr, Exp *e = nullptr, const char *boundMax = "");
+    virtual void addParameter(Exp *e, SharedType ty);
     virtual void addParameter(Parameter *param);
     void addEllipsis() { ellipsis = true; }
     void killEllipsis() { ellipsis = false; }
@@ -159,11 +159,11 @@ class Signature {
     virtual size_t getNumParams() { return params.size(); }
     virtual const char *getParamName(size_t n);
     virtual Exp *getParamExp(int n);
-    virtual Type *getParamType(int n);
+    virtual SharedType getParamType(int n);
     virtual const char *getParamBoundMax(int n);
-    virtual void setParamType(int n, Type *ty);
-    virtual void setParamType(const char *nam, Type *ty);
-    virtual void setParamType(Exp *e, Type *ty);
+    virtual void setParamType(int n, SharedType ty);
+    virtual void setParamType(const char *nam, SharedType ty);
+    virtual void setParamType(Exp *e, SharedType ty);
     virtual void setParamName(int n, const char *nam);
     virtual void setParamExp(int n, Exp *e);
     virtual int findParam(Exp *e);
@@ -231,10 +231,10 @@ class Signature {
     virtual callconv getConvention() { return CONV_NONE; }
 
     // prefered format
-    void setPreferedReturn(Type *ty) { preferedReturn = ty; }
+    void setPreferedReturn(SharedType ty) { preferedReturn = ty; }
     void setPreferedName(const char *nam) { preferedName = nam; }
     void addPreferedParameter(int n) { preferedParams.push_back(n); }
-    Type *getPreferedReturn() { return preferedReturn; }
+    SharedType getPreferedReturn() { return preferedReturn; }
     const char *getPreferedName() { return preferedName.c_str(); }
     size_t getNumPreferedParams() { return preferedParams.size(); }
     int getPreferedParam(size_t n) { return preferedParams[n]; }

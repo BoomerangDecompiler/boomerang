@@ -17,6 +17,7 @@
 #include <string>
 #include <list>
 #include <map>
+#include <memory>
 
 class Global;
 class Cluster;
@@ -41,6 +42,7 @@ class QXmlStreamAttributes;
 class QXmlStreamReader;
 class QXmlStreamWriter;
 class QStringRef;
+typedef std::shared_ptr<Type> SharedType;
 #define MAX_STACK 1024
 
 typedef struct {
@@ -140,7 +142,7 @@ class XMLProgParser {
     void persistToXML(QXmlStreamWriter &out, LibProc *proc);
     void persistToXML(QXmlStreamWriter &out, UserProc *proc);
     void persistToXML(QXmlStreamWriter &out, Signature *sig);
-    void persistToXML(QXmlStreamWriter &out, const Type *ty);
+    void persistToXML(QXmlStreamWriter &out, const SharedType &ty);
     void persistToXML(QXmlStreamWriter &out, const Exp *e);
     void persistToXML(QXmlStreamWriter &out, Cfg *cfg);
     void persistToXML(QXmlStreamWriter &out, const BasicBlock *bb);
@@ -154,11 +156,14 @@ class XMLProgParser {
 
     std::list<Context *> stack;
     std::map<int, void *> idToX;
+    std::map<int, SharedType> idToType;
     int phase;
 
     void addId(const QXmlStreamAttributes &attr, void *x);
+    void addType(const QXmlStreamAttributes &attr, SharedType x);
     void *findId(const QStringRef &id);
     void *findId(const char *id);
+    SharedType findType(const QStringRef &id);
 };
 
 #endif

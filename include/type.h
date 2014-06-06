@@ -75,13 +75,15 @@ struct ComplexTypeComp {
     } u;
 };
 typedef std::list<ComplexTypeComp> ComplexTypeCompList;
+class Type;
+typedef std::shared_ptr<Type> SharedType;
 
-class Type {
+class Type : public std::enable_shared_from_this<Type> {
   protected:
     eType id;
 
   private:
-    static std::map<QString, Type *> namedTypes;
+    static std::map<QString, SharedType > namedTypes;
 
   public:
     // Constructors
@@ -89,12 +91,12 @@ class Type {
     virtual ~Type();
     eType getId() const { return id; }
 
-    static void addNamedType(const char *name, Type *type);
-    static Type *getNamedType(const QString &name);
+    static void addNamedType(const char *name, SharedType type);
+    static SharedType getNamedType(const QString &name);
 
     // Return type for given temporary variable name
-    static Type *getTempType(const std::string &name);
-    static Type *parseType(const char *str); // parse a C type
+    static SharedType getTempType(const std::string &name);
+    static SharedType parseType(const char *str); // parse a C type
 
     bool isCString();
 
@@ -117,35 +119,38 @@ class Type {
     // Return false if some info is missing, e.g. unknown sign, size or basic type
     virtual bool isComplete() { return true; }
 
+    template <class T>
+    std::shared_ptr<T> as();
+
     // These replace type casts
-    VoidType *asVoid();
-    const VoidType *asVoid() const;
-    FuncType *asFunc();
-    const FuncType *asFunc() const;
-    BooleanType *asBoolean();
-    const BooleanType *asBoolean() const;
-    CharType *asChar();
-    const CharType *asChar() const;
-    IntegerType *asInteger();
-    const IntegerType *asInteger() const;
-    FloatType *asFloat();
-    const FloatType *asFloat() const;
-    NamedType *asNamed();
-    const NamedType *asNamed() const;
-    PointerType *asPointer();
-    const PointerType *asPointer() const;
-    ArrayType *asArray();
-    const ArrayType *asArray() const;
-    CompoundType *asCompound();
-    const CompoundType *asCompound() const;
-    UnionType *asUnion();
-    const UnionType *asUnion() const;
-    SizeType *asSize();
-    const SizeType *asSize() const;
-    UpperType *asUpper();
-    const UpperType *asUpper() const;
-    LowerType *asLower();
-    const LowerType *asLower() const;
+    std::shared_ptr<VoidType> asVoid();
+    std::shared_ptr<const VoidType> asVoid() const;
+    std::shared_ptr<FuncType> asFunc();
+    std::shared_ptr<const FuncType> asFunc() const;
+    std::shared_ptr<BooleanType> asBoolean();
+    std::shared_ptr<const BooleanType> asBoolean() const;
+    std::shared_ptr<CharType> asChar();
+    std::shared_ptr<const CharType> asChar() const;
+    std::shared_ptr<IntegerType> asInteger();
+    std::shared_ptr<const IntegerType> asInteger() const;
+    std::shared_ptr<FloatType> asFloat();
+    std::shared_ptr<const FloatType> asFloat() const;
+    std::shared_ptr<NamedType> asNamed();
+    std::shared_ptr<const NamedType> asNamed() const;
+    std::shared_ptr<PointerType> asPointer();
+    std::shared_ptr<const PointerType> asPointer() const;
+    std::shared_ptr<ArrayType> asArray();
+    std::shared_ptr<const ArrayType> asArray() const;
+    std::shared_ptr<CompoundType> asCompound();
+    std::shared_ptr<const CompoundType> asCompound() const;
+    std::shared_ptr<UnionType> asUnion();
+    std::shared_ptr<const UnionType> asUnion() const;
+    std::shared_ptr<SizeType> asSize();
+    std::shared_ptr<const SizeType> asSize() const;
+    std::shared_ptr<UpperType> asUpper();
+    std::shared_ptr<const UpperType> asUpper() const;
+    std::shared_ptr<LowerType> asLower();
+    std::shared_ptr<const LowerType> asLower() const;
 
     // These replace calls to isNamed() and resolvesTo()
     bool resolvesToVoid() const;
@@ -163,7 +168,7 @@ class Type {
     bool resolvesToLower() const;
 
     // cloning
-    virtual Type *clone() const = 0;
+    virtual SharedType clone() const = 0;
 
     // Comparisons
     virtual bool operator==(const Type &other) const = 0; // Considers sign
@@ -173,9 +178,9 @@ class Type {
     bool operator*=(const Type &other) const {           // Consider only
         return id == other.id;
     } // broad type
-    virtual Exp *match(Type *pattern);
+    virtual Exp *match(SharedType pattern);
     // Constraint-based TA: merge one type with another, e.g. size16 with integer-of-size-0 -> int16
-    virtual Type *mergeWith(Type * /*other*/) const {
+    virtual SharedType mergeWith(SharedType  /*other*/) const {
         assert(false);
         return nullptr;
     }
@@ -211,26 +216,26 @@ class Type {
     // For data-flow-based type analysis only: implement the meet operator. Set ch true if any change
     // If bHighestPtr is true, then if this and other are non void* pointers, set the result to the
     // *highest* possible type compatible with both (i.e. this JOIN other)
-    virtual Type *meetWith(Type *other, bool &ch, bool bHighestPtr = false) const = 0;
+    virtual SharedType meetWith(SharedType other, bool &ch, bool bHighestPtr = false) const = 0;
     // When all=false (default), return true if can use this and other interchangeably; in particular,
     // if at most one of the types is compound and the first element is compatible with the other, then
     // the types are considered compatible. With all set to true, if one or both types is compound, all
     // corresponding elements must be compatible
-    virtual bool isCompatibleWith(const Type *other, bool all = false) const;
+    virtual bool isCompatibleWith(const Type &other, bool all = false) const;
     // isCompatible does most of the work; isCompatibleWith looks for complex types in other, and if so
     // reverses the parameters (this and other) to prevent many tedious repetitions
-    virtual bool isCompatible(const Type *other, bool all) const = 0;
+    virtual bool isCompatible(const Type &other, bool all) const = 0;
     // Return true if this is a subset or equal to other
-    bool isSubTypeOrEqual(Type *other);
+    bool isSubTypeOrEqual(SharedType other);
     // Create a union of this Type and other. Set ch true if any change
-    Type *createUnion(Type *other, bool &ch, bool bHighestPtr = false) const;
-    static Type *newIntegerLikeType(int size, int signedness); // Return a new Bool/Char/Int
+    SharedType createUnion(SharedType other, bool &ch, bool bHighestPtr = false) const;
+    static SharedType newIntegerLikeType(int size, int signedness); // Return a new Bool/Char/Int
     // From a complex type like an array of structs with a float, return a list of components so you
     // can construct e.g. myarray1[8].mystruct2.myfloat7
     ComplexTypeCompList &compForAddress(ADDRESS addr, DataIntervalMap &dim);
     // Dereference this type. For most cases, return null unless you are a pointer type. But for a
     // union of pointers, return a new union with the dereference of all members. In dfa.cpp
-    Type *dereference();
+    SharedType dereference();
 
   protected:
     friend class XMLProgParser;
@@ -242,19 +247,20 @@ class VoidType : public Type {
     virtual ~VoidType();
     virtual bool isVoid() const { return true; }
 
-    virtual Type *clone() const;
+    virtual SharedType clone() const;
+    static std::shared_ptr<VoidType> get() { return std::make_shared<VoidType>(); }
 
     virtual bool operator==(const Type &other) const;
     // virtual bool          operator-=(const Type& other) const;
     virtual bool operator<(const Type &other) const;
-    virtual Exp *match(Type *pattern);
+    virtual Exp *match(SharedType pattern);
 
     virtual size_t getSize() const;
 
     virtual QString getCtype(bool final = false) const;
 
-    virtual Type *meetWith(Type *other, bool &ch, bool bHighestPtr) const;
-    virtual bool isCompatible(const Type *other, bool all) const;
+    virtual SharedType meetWith(SharedType other, bool &ch, bool bHighestPtr) const;
+    virtual bool isCompatible(const Type &other, bool all) const;
 
   protected:
     friend class XMLProgParser;
@@ -269,15 +275,15 @@ class FuncType : public Type {
     virtual ~FuncType();
     virtual bool isFunc() const { return true; }
 
-    virtual Type *clone() const;
+    virtual SharedType clone() const;
 
     Signature *getSignature() { return signature; }
     void setSignature(Signature *sig) { signature = sig; }
-
+    static std::shared_ptr<FuncType> get(Signature *sig = nullptr) { return std::make_shared<FuncType>(sig);}
     virtual bool operator==(const Type &other) const;
     // virtual bool          operator-=(const Type& other) const;
     virtual bool operator<(const Type &other) const;
-    virtual Exp *match(Type *pattern);
+    virtual Exp *match(SharedType pattern);
 
     virtual size_t getSize() const;
 
@@ -286,8 +292,8 @@ class FuncType : public Type {
     // Split the C type into return and parameter parts
     void getReturnAndParam(QString &ret, QString &param);
 
-    virtual Type *meetWith(Type *other, bool &ch, bool bHighestPtr) const;
-    virtual bool isCompatible(const Type *other, bool all) const;
+    virtual SharedType meetWith(SharedType other, bool &ch, bool bHighestPtr) const;
+    virtual bool isCompatible(const Type &other, bool all) const;
 
   protected:
     friend class XMLProgParser;
@@ -297,25 +303,23 @@ class IntegerType : public Type {
   private:
     mutable size_t size;    // Size in bits, e.g. 16
     mutable int signedness; // pos=signed, neg=unsigned, 0=unknown or evenly matched
-  protected:
+  public:
     explicit IntegerType(unsigned NumBits, int sign = 0) : Type(eInteger) {
         size = NumBits;
         signedness = sign;
         // setSubclassData(NumBits);
     }
-
-  public:
-    static IntegerType *get(unsigned NumBits, int sign = 0);
+    static std::shared_ptr<IntegerType> get(unsigned NumBits, int sign = 0);
     virtual bool isInteger() const { return true; }
     virtual bool isComplete() { return signedness != 0 && size != 0; }
 
-    virtual Type *clone() const;
+    virtual SharedType clone() const;
 
     virtual bool operator==(const Type &other) const;
     // virtual bool          operator-=(const Type& other) const;
     virtual bool operator<(const Type &other) const;
-    virtual Type *mergeWith(Type *other) const;
-    virtual Exp *match(Type *pattern);
+    virtual SharedType mergeWith(SharedType other) const;
+    virtual Exp *match(SharedType pattern);
 
     virtual size_t getSize() const; // Get size in bits
     virtual void setSize(size_t sz) { size = sz; }
@@ -334,8 +338,8 @@ class IntegerType : public Type {
 
     virtual std::string getTempName() const;
 
-    virtual Type *meetWith(Type *other, bool &ch, bool bHighestPtr) const;
-    virtual bool isCompatible(const Type *other, bool all) const;
+    virtual SharedType meetWith(SharedType other, bool &ch, bool bHighestPtr) const;
+    virtual bool isCompatible(const Type &other, bool all) const;
 
   protected:
     friend class XMLProgParser;
@@ -344,19 +348,19 @@ class IntegerType : public Type {
 class FloatType : public Type {
   private:
     mutable size_t size; // Size in bits, e.g. 64
-    explicit FloatType(int sz = 64);
 
   public:
-    static FloatType *get(int sz = 64);
+    explicit FloatType(int sz = 64);
+    static std::shared_ptr<FloatType> get(int sz = 64);
     virtual ~FloatType();
     virtual bool isFloat() const { return true; }
 
-    virtual Type *clone() const;
+    virtual SharedType clone() const;
 
     virtual bool operator==(const Type &other) const;
     // virtual bool          operator-=(const Type& other) const;
     virtual bool operator<(const Type &other) const;
-    virtual Exp *match(Type *pattern);
+    virtual Exp *match(SharedType pattern);
 
     virtual size_t getSize() const;
     virtual void setSize(size_t sz) { size = sz; }
@@ -365,8 +369,8 @@ class FloatType : public Type {
 
     virtual std::string getTempName() const;
 
-    virtual Type *meetWith(Type *other, bool &ch, bool bHighestPtr) const;
-    virtual bool isCompatible(const Type *other, bool all) const;
+    virtual SharedType meetWith(SharedType other, bool &ch, bool bHighestPtr) const;
+    virtual bool isCompatible(const Type &other, bool all) const;
 
   protected:
     friend class XMLProgParser;
@@ -377,20 +381,20 @@ class BooleanType : public Type {
     BooleanType();
     virtual ~BooleanType();
     virtual bool isBoolean() const { return true; }
-
-    virtual Type *clone() const;
+    static std::shared_ptr<BooleanType> get() { return std::make_shared<BooleanType>(); }
+    virtual SharedType clone() const;
 
     virtual bool operator==(const Type &other) const;
     // virtual bool        operator-=(const Type& other) const;
     virtual bool operator<(const Type &other) const;
-    virtual Exp *match(Type *pattern);
+    virtual Exp *match(SharedType pattern);
 
     virtual size_t getSize() const;
 
     virtual QString getCtype(bool final = false) const;
 
-    virtual Type *meetWith(Type *other, bool &ch, bool bHighestPtr) const;
-    virtual bool isCompatible(const Type *other, bool all) const;
+    virtual SharedType meetWith(SharedType other, bool &ch, bool bHighestPtr) const;
+    virtual bool isCompatible(const Type &other, bool all) const;
 
   protected:
     friend class XMLProgParser;
@@ -402,19 +406,19 @@ class CharType : public Type {
     virtual ~CharType();
     virtual bool isChar() const { return true; }
 
-    virtual Type *clone() const;
-
+    virtual SharedType clone() const;
+    static std::shared_ptr<CharType> get() {return std::make_shared<CharType>();}
     virtual bool operator==(const Type &other) const;
     // virtual bool        operator-=(const Type& other) const;
     virtual bool operator<(const Type &other) const;
-    virtual Exp *match(Type *pattern);
+    virtual Exp *match(SharedType pattern);
 
     virtual size_t getSize() const;
 
     virtual QString getCtype(bool final = false) const;
 
-    virtual Type *meetWith(Type *other, bool &ch, bool bHighestPtr) const;
-    virtual bool isCompatible(const Type *other, bool all) const;
+    virtual SharedType meetWith(SharedType other, bool &ch, bool bHighestPtr) const;
+    virtual bool isCompatible(const Type &other, bool all) const;
 
   protected:
     friend class XMLProgParser;
@@ -422,34 +426,35 @@ class CharType : public Type {
 
 class PointerType : public Type {
   private:
-    mutable Type *points_to;
+    mutable SharedType points_to;
 
   public:
-    PointerType(Type *p);
+    PointerType(SharedType p);
     virtual ~PointerType();
     virtual bool isPointer() const { return true; }
-    void setPointsTo(Type *p);
-    Type *getPointsTo() { return points_to; }
-    const Type *getPointsTo() const { return points_to; }
-    static PointerType *newPtrAlpha();
+    void setPointsTo(SharedType p);
+    SharedType getPointsTo() { return points_to; }
+    const SharedType getPointsTo() const { return points_to; }
+    static std::shared_ptr<PointerType> get(SharedType t) { return std::make_shared<PointerType>(t); }
+    static std::shared_ptr<PointerType> newPtrAlpha();
     bool pointsToAlpha() const;
     int pointerDepth() const;       // Return 2 for **x
-    Type *getFinalPointsTo() const; // Return x for **x
+    SharedType getFinalPointsTo() const; // Return x for **x
 
-    virtual Type *clone() const;
+    virtual SharedType clone() const;
 
     virtual bool operator==(const Type &other) const;
     // virtual bool        operator-=(const Type& other) const;
     virtual bool operator<(const Type &other) const;
-    virtual Exp *match(Type *pattern);
+    virtual Exp *match(SharedType pattern);
 
     virtual size_t getSize() const;
     virtual void setSize(size_t sz) { assert(sz == STD_SIZE); }
 
     virtual QString getCtype(bool final = false) const;
 
-    virtual Type *meetWith(Type *other, bool &ch, bool bHighestPtr) const;
-    virtual bool isCompatible(const Type *other, bool all) const;
+    virtual SharedType meetWith(SharedType other, bool &ch, bool bHighestPtr) const;
+    virtual bool isCompatible(const Type &other, bool all) const;
 
   protected:
     friend class XMLProgParser;
@@ -457,38 +462,39 @@ class PointerType : public Type {
 
 class ArrayType : public Type {
   private:
-    mutable Type *BaseType;
+    mutable SharedType BaseType;
     mutable size_t Length;
 
   public:
-    ArrayType(Type *p, unsigned Length);
-    ArrayType(Type *p);
+    ArrayType(SharedType p, unsigned _length);
+    ArrayType(SharedType p);
     virtual ~ArrayType();
     virtual bool isArray() const { return true; }
-    Type *getBaseType() { return BaseType; }
-    const Type *getBaseType() const { return BaseType; }
-    void setBaseType(Type *b);
-    void fixBaseType(Type *b);
+    SharedType getBaseType() { return BaseType; }
+    const SharedType getBaseType() const { return BaseType; }
+    void setBaseType(SharedType b);
+    void fixBaseType(SharedType b);
     size_t getLength() const { return Length; }
     void setLength(unsigned n) { Length = n; }
     bool isUnbounded() const;
 
-    virtual Type *clone() const;
-
+    virtual SharedType clone() const;
+    static std::shared_ptr<ArrayType> get(SharedType p, unsigned _length) { return std::make_shared<ArrayType>(p,_length);}
+    static std::shared_ptr<ArrayType> get(SharedType p) { return std::make_shared<ArrayType>(p);}
     virtual bool operator==(const Type &other) const;
     // virtual bool        operator-=(const Type& other) const;
     virtual bool operator<(const Type &other) const;
-    virtual Exp *match(Type *pattern);
+    virtual Exp *match(SharedType pattern);
 
     virtual size_t getSize() const;
 
     virtual QString getCtype(bool final = false) const;
 
-    virtual Type *meetWith(Type *other, bool &ch, bool bHighestPtr) const;
-    virtual bool isCompatibleWith(const Type *other, bool all = false) const { return isCompatible(other, all); }
-    virtual bool isCompatible(const Type *other, bool all) const;
+    virtual SharedType meetWith(SharedType other, bool &ch, bool bHighestPtr) const;
+    virtual bool isCompatibleWith(const Type &other, bool all = false) const { return isCompatible(other, all); }
+    virtual bool isCompatible(const Type &other, bool all) const;
 
-    size_t convertLength(Type *b) const;
+    size_t convertLength(SharedType b) const;
 
   protected:
     friend class XMLProgParser;
@@ -505,23 +511,24 @@ class NamedType : public Type {
     virtual ~NamedType();
     virtual bool isNamed() const { return true; }
     QString getName() const { return name; }
-    Type *resolvesTo() const;
+    SharedType resolvesTo() const;
     // Get a new type variable, e.g. alpha0, alpha55
-    static NamedType *getAlpha();
+    static std::shared_ptr<NamedType> get(const QString &_name) { return std::make_shared<NamedType>(_name); }
+    static std::shared_ptr<NamedType> getAlpha();
 
-    virtual Type *clone() const;
+    virtual SharedType clone() const;
 
     virtual bool operator==(const Type &other) const;
     // virtual bool        operator-=(const Type& other) const;
     virtual bool operator<(const Type &other) const;
-    virtual Exp *match(Type *pattern);
+    virtual Exp *match(SharedType pattern);
 
     virtual size_t getSize() const;
 
     virtual QString getCtype(bool final = false) const;
 
-    virtual Type *meetWith(Type *other, bool &ch, bool bHighestPtr) const;
-    virtual bool isCompatible(const Type *other, bool all) const;
+    virtual SharedType meetWith(SharedType other, bool &ch, bool bHighestPtr) const;
+    virtual bool isCompatible(const Type &other, bool all) const;
 
   protected:
     friend class XMLProgParser;
@@ -530,7 +537,7 @@ class NamedType : public Type {
 // The compound type represents structures, not unions
 class CompoundType : public Type {
   private:
-    std::vector<Type *> types;
+    std::vector<SharedType > types;
     std::vector<std::string> names;
     int nextGenericMemberNum;
     bool generic;
@@ -540,51 +547,51 @@ class CompoundType : public Type {
     virtual ~CompoundType();
     virtual bool isCompound() const { return true; }
 
-    void addType(Type *n, const char *str) {
+    void addType(SharedType n, const char *str) {
         // check if it is a user defined type (typedef)
-        Type *t = getNamedType(n->getCtype());
+        SharedType t = getNamedType(n->getCtype());
         if (t)
             n = t;
         types.push_back(n);
         names.push_back(str);
     }
     size_t getNumTypes() const { return types.size(); }
-    Type *getType(unsigned n) {
+    SharedType getType(unsigned n) {
         assert(n < getNumTypes());
         return types[n];
     }
-    Type *getType(const char *nam);
+    SharedType getType(const char *nam);
     const char *getName(unsigned n) {
         assert(n < getNumTypes());
         return names[n].c_str();
     }
-    void setTypeAtOffset(unsigned n, Type *ty);
-    Type *getTypeAtOffset(unsigned n);
+    void setTypeAtOffset(unsigned n, SharedType ty);
+    SharedType getTypeAtOffset(unsigned n);
     void setNameAtOffset(unsigned n, const char *nam);
     const char *getNameAtOffset(size_t n);
     bool isGeneric() { return generic; }
-    void updateGenericMember(int off, Type *ty, bool &ch); // Add a new generic member if necessary
+    void updateGenericMember(int off, SharedType ty, bool &ch); // Add a new generic member if necessary
     unsigned getOffsetTo(unsigned n);
     unsigned getOffsetTo(const char *member);
     unsigned getOffsetRemainder(unsigned n);
 
-    virtual Type *clone() const;
-
+    virtual SharedType clone() const;
+    static std::shared_ptr<CompoundType> get(bool generic=false) { return std::make_shared<CompoundType>(generic);}
     virtual bool operator==(const Type &other) const;
     // virtual bool        operator-=(const Type& other) const;
     virtual bool operator<(const Type &other) const;
-    virtual Exp *match(Type *pattern);
+    virtual Exp *match(SharedType pattern);
 
     virtual size_t getSize() const;
 
     virtual QString getCtype(bool final = false) const;
 
-    bool isSuperStructOf(const Type *other); // True if this is is a superstructure of other
-    bool isSubStructOf(Type *other) const;   // True if this is is a substructure of other
+    bool isSuperStructOf(const SharedType &other); // True if this is is a superstructure of other
+    bool isSubStructOf(SharedType other) const;   // True if this is is a substructure of other
 
-    virtual Type *meetWith(Type *other, bool &ch, bool bHighestPtr) const;
-    virtual bool isCompatibleWith(const Type *other, bool all = false) const { return isCompatible(other, all); }
-    virtual bool isCompatible(const Type *other, bool all) const;
+    virtual SharedType meetWith(SharedType other, bool &ch, bool bHighestPtr) const;
+    virtual bool isCompatibleWith(const Type &other, bool all = false) const { return isCompatible(other, all); }
+    virtual bool isCompatible(const Type &other, bool all) const;
 
   protected:
     friend class XMLProgParser;
@@ -592,7 +599,7 @@ class CompoundType : public Type {
 
 // The union type represents the union of any number of any other types
 struct UnionElement {
-    Type *type;
+    SharedType type;
     std::string name;
 };
 class UnionType : public Type {
@@ -605,30 +612,30 @@ class UnionType : public Type {
     UnionType();
     virtual ~UnionType();
     virtual bool isUnion() const { return true; }
-
-    void addType(Type *n, const char *str);
+    static std::shared_ptr<UnionType> get() { return std::make_shared<UnionType>();}
+    void addType(SharedType n, const char *str);
     size_t getNumTypes() const { return li.size(); }
-    bool findType(Type *ty); // Return true if ty is already in the union
+    bool findType(SharedType ty); // Return true if ty is already in the union
     // Type        *getType(int n) { assert(n < getNumTypes()); return types[n]; }
     // Type        *getType(const char *nam);
     // const        char *getName(int n) { assert(n < getNumTypes()); return names[n].c_str(); }
 
-    virtual Type *clone() const;
+    virtual SharedType clone() const;
 
     virtual bool operator==(const Type &other) const;
     // virtual bool        operator-=(const Type& other) const;
     virtual bool operator<(const Type &other) const;
-    virtual Exp *match(Type *pattern);
+    virtual Exp *match(SharedType pattern);
 
     virtual size_t getSize() const;
 
     virtual QString getCtype(bool final = false) const;
 
-    virtual Type *meetWith(Type *other, bool &ch, bool bHighestPtr) const;
-    virtual bool isCompatibleWith(const Type *other, bool all) const { return isCompatible(other, all); }
-    virtual bool isCompatible(const Type *other, bool all) const;
+    virtual SharedType meetWith(SharedType other, bool &ch, bool bHighestPtr) const;
+    virtual bool isCompatibleWith(const Type &other, bool all) const { return isCompatible(other, all); }
+    virtual bool isCompatible(const Type &other, bool all) const;
     // if this is a union of pointer types, get the union of things they point to. In dfa.cpp
-    Type *dereferenceUnion();
+    SharedType dereferenceUnion();
 
   protected:
     friend class XMLProgParser;
@@ -643,19 +650,21 @@ class SizeType : public Type {
     SizeType() : Type(eSize) {}
     SizeType(unsigned sz) : Type(eSize), size(sz) {}
     virtual ~SizeType() {}
-    virtual Type *clone() const;
+    virtual SharedType clone() const;
+    static std::shared_ptr<SizeType> get(unsigned sz) { return std::make_shared<SizeType>(sz); }
+    static std::shared_ptr<SizeType> get() { return std::make_shared<SizeType>(); }
     virtual bool operator==(const Type &other) const;
     virtual bool operator<(const Type &other) const;
-    // virtual Exp          *match(Type *pattern);
-    virtual Type *mergeWith(Type *other) const;
+    // virtual Exp          *match(SharedType pattern);
+    virtual SharedType mergeWith(SharedType other) const;
 
     virtual size_t getSize() const;
     virtual void setSize(size_t sz) { size = sz; }
     virtual bool isSize() const { return true; }
     virtual bool isComplete() { return false; } // Basic type is unknown
     virtual QString getCtype(bool final = false) const;
-    virtual Type *meetWith(Type *other, bool &ch, bool bHighestPtr) const;
-    virtual bool isCompatible(const Type *other, bool) const;
+    virtual SharedType meetWith(SharedType other, bool &ch, bool bHighestPtr) const;
+    virtual bool isCompatible(const Type &other, bool) const;
 
     friend class XMLProgParser;
 }; // class SizeType
@@ -663,53 +672,53 @@ class SizeType : public Type {
 // This class represents the upper half of its base type
 // Mainly needed to represent the upper and lower half for type double
 class UpperType : public Type {
-    mutable Type *base_type;
+    mutable SharedType base_type;
 
   public:
-    UpperType(Type *base) : Type(eUpper), base_type(base) {}
+    UpperType(SharedType base) : Type(eUpper), base_type(base) {}
     virtual ~UpperType() {}
-    virtual Type *clone() const;
+    virtual SharedType clone() const;
     virtual bool operator==(const Type &other) const;
     virtual bool operator<(const Type &other) const;
-    // virtual Exp         *match(Type *pattern);
-    virtual Type *mergeWith(Type *other) const;
-    Type *getBaseType() { return base_type; }
-    const Type *getBaseType() const { return base_type; }
-    void setBaseType(Type *b) { base_type = b; }
+    // virtual Exp         *match(SharedType pattern);
+    virtual SharedType mergeWith(SharedType other) const;
+    SharedType getBaseType() { return base_type; }
+    const SharedType getBaseType() const { return base_type; }
+    void setBaseType(SharedType b) { base_type = b; }
 
     virtual size_t getSize() const { return base_type->getSize() / 2; }
     virtual void setSize(size_t sz); // Does this make sense?
     virtual bool isUpper() const { return true; }
     virtual bool isComplete() { return base_type->isComplete(); }
     virtual QString getCtype(bool final = false) const;
-    virtual Type *meetWith(Type *other, bool &ch, bool bHighestPtr) const;
-    virtual bool isCompatible(const Type *other, bool all) const;
+    virtual SharedType meetWith(SharedType other, bool &ch, bool bHighestPtr) const;
+    virtual bool isCompatible(const Type &other, bool all) const;
 
 }; // class UpperType
 
 // As above, but stores the lower half
 class LowerType : public Type {
-    mutable Type *base_type;
+    mutable SharedType base_type;
 
   public:
-    LowerType(Type *base) : Type(eUpper), base_type(base) {}
+    LowerType(SharedType base) : Type(eUpper), base_type(base) {}
     virtual ~LowerType() {}
-    virtual Type *clone() const;
+    virtual SharedType clone() const;
     virtual bool operator==(const Type &other) const;
     virtual bool operator<(const Type &other) const;
-    // virtual Exp         *match(Type *pattern);
-    virtual Type *mergeWith(Type *other) const;
-    Type *getBaseType() { return base_type; }
-    const Type *getBaseType() const { return base_type; }
-    void setBaseType(Type *b) { base_type = b; }
+    // virtual Exp         *match(SharedType pattern);
+    virtual SharedType mergeWith(SharedType other) const;
+    SharedType getBaseType() { return base_type; }
+    const SharedType getBaseType() const { return base_type; }
+    void setBaseType(SharedType b) { base_type = b; }
 
     virtual size_t getSize() const { return base_type->getSize() / 2; }
     virtual void setSize(size_t sz); // Does this make sense?
     virtual bool isLower() const { return true; }
     virtual bool isComplete() { return base_type->isComplete(); }
     virtual QString getCtype(bool final = false) const;
-    virtual Type *meetWith(Type *other, bool &ch, bool bHighestPtr) const;
-    virtual bool isCompatible(const Type *other, bool all) const;
+    virtual SharedType meetWith(SharedType other, bool &ch, bool bHighestPtr) const;
+    virtual bool isCompatible(const Type &other, bool all) const;
 
 }; // class LowerType
 
@@ -728,7 +737,7 @@ class LowerType : public Type {
 struct DataInterval {
     size_t size;      //!< The size of this type in bytes
     QString name; //!< The name of the variable
-    Type *type;       //!< The type of the variable
+    SharedType type;       //!< The type of the variable
 };
 
 typedef std::pair<const ADDRESS, DataInterval> DataIntervalEntry; // For result of find() below
@@ -743,19 +752,30 @@ class DataIntervalMap {
     DataIntervalEntry *find(ADDRESS addr);     //!< Find the DataInterval at address addr, or nullptr if none
     iterator find_it(ADDRESS addr);            //!< Return an iterator to the entry for it, or end() if none
     bool isClear(ADDRESS addr, unsigned size); //!< True if from addr for size bytes is clear
-    void addItem(ADDRESS addr, const char *name, Type *ty, bool forced = false);
+    void addItem(ADDRESS addr, const char *name, SharedType ty, bool forced = false);
     void deleteItem(ADDRESS addr); // Mainly for testing?
     void expandItem(ADDRESS addr, unsigned size);
     char *prints(); // For test and debug
     void dump();    // For debug
 
   private:
-    void enterComponent(DataIntervalEntry *pdie, ADDRESS addr, const char *, Type *ty, bool);
-    void replaceComponents(ADDRESS addr, const char *name, Type *ty, bool);
-    void checkMatching(DataIntervalEntry *pdie, ADDRESS addr, const char *, Type *ty, bool);
+    void enterComponent(DataIntervalEntry *pdie, ADDRESS addr, const char *, SharedType ty, bool);
+    void replaceComponents(ADDRESS addr, const char *name, SharedType ty, bool);
+    void checkMatching(DataIntervalEntry *pdie, ADDRESS addr, const char *, SharedType ty, bool);
 };
 
 // Not part of the Type class, but logically belongs with it:
-QTextStream &operator<<(QTextStream &os, const Type *t); // Print the Type pointed to by t
+QTextStream &operator<<(QTextStream &os, const SharedType t); // Print the Type pointed to by t
+
+
+template <class T>
+std::shared_ptr<T> Type::as() {
+    SharedType ty = shared_from_this();
+    if (isNamed())
+        ty = std::static_pointer_cast<NamedType>(ty)->resolvesTo();
+    auto res = std::dynamic_pointer_cast<T>(ty);
+    assert(res);
+    return res;
+}
 
 #endif // __TYPE_H__

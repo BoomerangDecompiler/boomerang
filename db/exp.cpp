@@ -27,6 +27,7 @@
 //#include "transformer.h"
 #include "visitor.h"
 #include "log.h"
+#include <QRegularExpression>
 #include <iomanip> // For std::setw etc
 
 extern char debug_buffer[]; ///< For prints functions
@@ -34,17 +35,17 @@ static const char *tlstrchr(const char *str, char ch);
 
 // Derived class constructors
 
-Const::Const(uint32_t i) : Exp(opIntConst), conscript(0), type(new VoidType) { u.i = i; }
-Const::Const(int i) : Exp(opIntConst), conscript(0), type(new VoidType) { u.i = i; }
-Const::Const(QWord ll) : Exp(opLongConst), conscript(0), type(new VoidType) { u.ll = ll; }
-Const::Const(double d) : Exp(opFltConst), conscript(0), type(new VoidType) { u.d = d; }
-Const::Const(const char *p) : Exp(opStrConst), conscript(0), type(new VoidType) { u.p = p; }
-Const::Const(const QString &p) : Exp(opStrConst), conscript(0), type(new VoidType) {
+Const::Const(uint32_t i) : Exp(opIntConst), conscript(0), type(VoidType::get()) { u.i = i; }
+Const::Const(int i) : Exp(opIntConst), conscript(0), type(VoidType::get()) { u.i = i; }
+Const::Const(QWord ll) : Exp(opLongConst), conscript(0), type(VoidType::get()) { u.ll = ll; }
+Const::Const(double d) : Exp(opFltConst), conscript(0), type(VoidType::get()) { u.d = d; }
+Const::Const(const char *p) : Exp(opStrConst), conscript(0), type(VoidType::get()) { u.p = p; }
+Const::Const(const QString &p) : Exp(opStrConst), conscript(0), type(VoidType::get()) {
     u.p = strdup(qPrintable(p));
 }
-Const::Const(Function *p) : Exp(opFuncConst), conscript(0), type(new VoidType) { u.pp = p; }
+Const::Const(Function *p) : Exp(opFuncConst), conscript(0), type(VoidType::get()) { u.pp = p; }
 /// \remark This is bad. We need a way of constructing true unsigned constants
-Const::Const(ADDRESS a) : Exp(opIntConst), conscript(0), type(new VoidType) {
+Const::Const(ADDRESS a) : Exp(opIntConst), conscript(0), type(VoidType::get()) {
     assert(a.isSource());
     u.a = a;
 }
@@ -95,7 +96,7 @@ Ternary::Ternary(const Ternary &o) : Binary(o.op) {
 
 TypedExp::TypedExp() : Unary(opTypedExp), type(nullptr) {}
 TypedExp::TypedExp(Exp *e1) : Unary(opTypedExp, e1), type(nullptr) {}
-TypedExp::TypedExp(Type *ty, Exp *e1) : Unary(opTypedExp, e1), type(ty) {}
+TypedExp::TypedExp(SharedType ty, Exp *e1) : Unary(opTypedExp, e1), type(ty) {}
 TypedExp::TypedExp(TypedExp &o) : Unary(opTypedExp) {
     subExp1 = o.subExp1->clone();
     type = o.type->clone();
@@ -105,7 +106,7 @@ FlagDef::FlagDef(Exp *params, RTL *rtl) : Unary(opFlagDef, params), rtl(rtl) {}
 
 RefExp::RefExp(Exp *e, Instruction *d) : Unary(opSubscript, e), def(d) { assert(e); }
 
-TypeVal::TypeVal(Type *ty) : Terminal(opTypeVal), val(ty) {}
+TypeVal::TypeVal(SharedType ty) : Terminal(opTypeVal), val(ty) {}
 
 /**
  * Create a new Location expression.
@@ -1682,7 +1683,6 @@ Exp* TypeVal::match(Exp *pattern) {
 }
 #endif
 // TODO use regexp ?
-#define ISVARIABLE(x) (strspn((x), "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789") == strlen((x)))
 #define ISVARIABLE_S(x)                                                                                                \
     (strspn((x.c_str()), "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789") == (x).length())
 //#define DEBUG_MATCH
@@ -1721,8 +1721,11 @@ bool Exp::match(const std::string &pattern, std::map<std::string, Exp *> &bindin
     if (tgt.toStdString() == pattern)
         return true;
 
+    QRegularExpression re("[a-zA-Z0-9]+");
+    QString patterns(pattern.c_str());
+    assert((patterns.lastIndexOf(re)==0) == ISVARIABLE_S(pattern));
     // alright, is pattern an acceptable variable?
-    if (ISVARIABLE_S(pattern)) {
+    if (patterns.lastIndexOf(re)==0) {
         bindings[pattern] = this;
         return true;
     }
@@ -2424,7 +2427,10 @@ Exp *Binary::polySimplify(bool &bMod) {
             k1 = k1 * k2;
             break;
         case opShiftL:
-            k1 = k1 << k2;
+            if(k2>=32)
+                k1 = 0;
+            else
+                k1 = k1 << k2;
             break;
         case opShiftR:
             k1 = k1 >> k2;
@@ -2885,7 +2891,7 @@ Exp *Binary::polySimplify(bool &bMod) {
             subExp1->getOper() == opPlus &&
             subExp1->getSubExp1()->getType() &&
             subExp2->getOper() == opIntConst) {
-        Type *ty = subExp1->getSubExp1()->getType();
+        SharedType ty = subExp1->getSubExp1()->getType();
         if (ty->resolvesToPointer() &&
                 ty->asPointer()->getPointsTo()->resolvesToCompound()) {
             res = Binary::get(opPlus, subExp1->getSubExp1(), subExp2);
@@ -2899,7 +2905,7 @@ Exp *Binary::polySimplify(bool &bMod) {
     // FIXME: suspect this was only needed for ADHOC TA
     // check for exp + n where exp is a pointer to a compound type
     // becomes &m[exp].m + r where m is the member at offset n and r is n - the offset to member m
-    Type *ty = nullptr; // Type of subExp1
+    SharedType ty = nullptr; // Type of subExp1
     if (subExp1->isSubscript()) {
         Instruction *def = ((RefExp *)subExp1)->getDef();
         if (def)
@@ -2908,7 +2914,7 @@ Exp *Binary::polySimplify(bool &bMod) {
     if (op == opPlus && ty && ty->resolvesToPointer() && ty->asPointer()->getPointsTo()->resolvesToCompound() &&
         opSub2 == opIntConst) {
         unsigned n = (unsigned)((Const *)subExp2)->getInt();
-        CompoundType *c = ty->asPointer()->getPointsTo()->asCompound();
+        std::shared_ptr<CompoundType> c = ty->asPointer()->getPointsTo()->asCompound();
         if (n * 8 < c->getSize()) {
             unsigned r = c->getOffsetRemainder(n * 8);
             assert((r % 8) == 0);
@@ -2933,10 +2939,10 @@ Exp *Binary::polySimplify(bool &bMod) {
             subExp1->getType()) {
         Exp *x = subExp2;
         Exp *l = subExp1;
-        Type *ty = l->getType();
+        SharedType ty = l->getType();
         if (    ty && ty->resolvesToPointer() &&
                 ty->asPointer()->getPointsTo()->resolvesToArray()) {
-            ArrayType *a = ty->asPointer()->getPointsTo()->asArray();
+            auto a = ty->asPointer()->getPointsTo()->asArray();
             int b = a->getBaseType()->getSize() / 8;
             int br = a->getBaseType()->getSize() % 8;
             assert(br == 0);
@@ -3062,9 +3068,9 @@ Exp *Binary::polySimplify(bool &bMod) {
 #if 0 // FIXME: ADHOC TA assumed here
         Location *loc = (Location*)subExp2;
         unsigned n = (unsigned)((Const*)subExp1)->getInt();
-        Type *ty = loc->getType();
+        SharedType ty = loc->getType();
         if (ty == nullptr)
-            loc->setType(new SizeType(n));
+            loc->setType(SizeType::get(n));
         else if (ty->getSize() != n)
             ty->setSize(n);
 #endif
@@ -3306,7 +3312,7 @@ void Exp::printt(QTextStream &os /*= cout*/) const {
     print(os);
     if (op != opTypedExp)
         return;
-    Type *t = ((TypedExp *)this)->getType();
+    SharedType t = ((TypedExp *)this)->getType();
     os << "<" << t->getSize();
     /*      switch (t->getType()) {
                 case INTEGER:
@@ -3477,7 +3483,7 @@ Exp *Exp::genConstraints(Exp * /*result*/) {
 Exp *Const::genConstraints(Exp *result) {
     if (result->isTypeVal()) {
         // result is a constant type, or possibly a partial type such as ptr(alpha)
-        Type *t = ((TypeVal *)result)->getType();
+        SharedType t = ((TypeVal *)result)->getType();
         bool match = false;
         switch (op) {
         case opLongConst:
@@ -3493,9 +3499,12 @@ Exp *Const::genConstraints(Exp *result) {
             match |= t->isFloat();
             break;
         case opStrConst:
-            match = (t->isPointer()) && (((PointerType *)t)->getPointsTo()->isChar() ||
-                                         (((PointerType *)t)->getPointsTo()->isArray() &&
-                                          ((ArrayType *)((PointerType *)t)->getPointsTo())->getBaseType()->isChar()));
+            if(t->isPointer()) {
+                auto ptr_type = std::static_pointer_cast<PointerType>(t);
+                match = ptr_type->getPointsTo()->isChar() ||
+                        (ptr_type->getPointsTo()->isArray() &&
+                         std::static_pointer_cast<ArrayType>((ptr_type)->getPointsTo())->getBaseType()->isChar());
+            }
             break;
         case opFltConst:
             match = t->isFloat();
@@ -3512,12 +3521,12 @@ Exp *Const::genConstraints(Exp *result) {
             return new Terminal(opFalse);
     }
     // result is a type variable, which is constrained by this constant
-    Type *t;
+    SharedType t;
     switch (op) {
     case opIntConst: {
         // We have something like local1 = 1234.  Either they are both integer, or both pointer
-        Type *intt = IntegerType::get(0);
-        Type *alph = PointerType::newPtrAlpha();
+        SharedType intt = IntegerType::get(0);
+        SharedType alph = PointerType::newPtrAlpha();
         return Binary::get(
             opOr, Binary::get(
                       opAnd, Binary::get(opEquals, result->clone(), new TypeVal(intt)),
@@ -3533,7 +3542,7 @@ Exp *Const::genConstraints(Exp *result) {
         t = IntegerType::get(64);
         break;
     case opStrConst:
-        t = new PointerType(new CharType());
+        t = PointerType::get(CharType::get());
         break;
     case opFltConst:
         t = FloatType::get(64); // size is not known. Assume double for now
@@ -3565,8 +3574,8 @@ Exp *Unary::genConstraints(Exp *result) {
 }
 
 Exp *Ternary::genConstraints(Exp *result) {
-    Type *argHasToBe = nullptr;
-    Type *retHasToBe = nullptr;
+    SharedType argHasToBe = nullptr;
+    SharedType retHasToBe = nullptr;
     switch (op) {
     case opFsize:
     case opItof:
@@ -3606,7 +3615,7 @@ Exp *Ternary::genConstraints(Exp *result) {
         if (result->isTypeVal()) {
             // result is a constant type, or possibly a partial type such as
             // ptr(alpha)
-            Type *t = ((TypeVal *)result)->getType();
+            SharedType t = ((TypeVal *)result)->getType();
             // Compare broad types
             if (!(*retHasToBe *= *t))
                 return new Terminal(opFalse);
@@ -3655,11 +3664,11 @@ Exp *Binary::constrainSub(TypeVal *typeVal1, TypeVal *typeVal2) {
 Exp *Binary::genConstraints(Exp *result) {
     assert(subExp1 && subExp2);
 
-    Type *restrictTo = nullptr;
+    SharedType restrictTo = nullptr;
     if (result->isTypeVal())
         restrictTo = ((TypeVal *)result)->getType();
     Exp *res = nullptr;
-    IntegerType *intType = IntegerType::get(0); // Wild size (=0)
+    auto intType = IntegerType::get(0); // Wild size (=0)
     TypeVal intVal(intType);
     switch (op) {
     case opFPlus:
@@ -3671,7 +3680,7 @@ Exp *Binary::genConstraints(Exp *result) {
             return new Terminal(opFalse);
 
         // MVE: what about sizes?
-        FloatType *ft = FloatType::get();
+        auto ft = FloatType::get();
         TypeVal *ftv = new TypeVal(ft);
         res = constrainSub(ftv, ftv);
         if (!restrictTo)
@@ -3689,7 +3698,7 @@ Exp *Binary::genConstraints(Exp *result) {
             return new Terminal(opFalse);
 
         // MVE: What about sizes?
-        IntegerType *it = IntegerType::get(STD_SIZE, 0);
+        auto it = IntegerType::get(STD_SIZE, 0);
         TypeVal *itv = new TypeVal(it);
         res = constrainSub(itv, itv);
         if (!restrictTo)
@@ -3701,7 +3710,7 @@ Exp *Binary::genConstraints(Exp *result) {
 
     case opPlus: {
         // A pointer to anything
-        Type *ptrType = PointerType::newPtrAlpha();
+        SharedType ptrType = PointerType::newPtrAlpha();
         TypeVal ptrVal(ptrType); // Type value of ptr to anything
         if (!restrictTo || restrictTo->isInteger()) {
             // int + int -> int
@@ -3737,7 +3746,7 @@ Exp *Binary::genConstraints(Exp *result) {
     }
 
     case opMinus: {
-        Type *ptrType = PointerType::newPtrAlpha();
+        SharedType ptrType = PointerType::newPtrAlpha();
         TypeVal ptrVal(ptrType);
         if (!restrictTo || restrictTo->isInteger()) {
             // int - int -> int
@@ -3782,14 +3791,14 @@ Exp *Binary::genConstraints(Exp *result) {
             if (rsz == 0) {
                 // This is now restricted to the current restrictTo, but
                 // with a known size
-                Type *it = restrictTo->clone();
+                SharedType it = restrictTo->clone();
                 it->setSize(sz);
                 return Binary::get(opEquals, new Unary(opTypeOf, subExp2), new TypeVal(it));
             }
             return new Terminal((rsz == sz) ? opTrue : opFalse);
         }
         // We constrain the size but not the basic type
-        return Binary::get(opEquals, result->clone(), new TypeVal(new SizeType(sz)));
+        return Binary::get(opEquals, result->clone(), new TypeVal(SizeType::get(sz)));
     }
 
     default:
@@ -3844,8 +3853,8 @@ Exp *Binary::simplifyConstraint() {
     case opEquals: {
         if (subExp1->isTypeVal() && subExp2->isTypeVal()) {
             // FIXME: ADHOC TA assumed
-            Type *t1 = ((TypeVal *)subExp1)->getType();
-            Type *t2 = ((TypeVal *)subExp2)->getType();
+            SharedType t1 = ((TypeVal *)subExp1)->getType();
+            SharedType t2 = ((TypeVal *)subExp2)->getType();
             if (!t1->isPointerToAlpha() && !t2->isPointerToAlpha()) {
                 delete this;
                 if (*t1 == *t2)

@@ -15,6 +15,7 @@
 #include "prog.h"
 #include "visitor.h"
 #include "log.h"
+#include "boomerang.h"
 
 #include <sstream>
 

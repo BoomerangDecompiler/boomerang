@@ -33,7 +33,7 @@ extern char debug_buffer[]; // For prints functions
 bool Type::isCString() {
     if (!resolvesToPointer())
         return false;
-    Type *p = asPointer()->getPointsTo();
+    SharedType p = asPointer()->getPointsTo();
     if (p->resolvesToChar())
         return true;
     if (!p->resolvesToArray())
@@ -49,34 +49,34 @@ VoidType::VoidType() : Type(eVoid) {}
 FuncType::FuncType(Signature *sig) : Type(eFunc), signature(sig) {}
 
 FloatType::FloatType(int sz) : Type(eFloat), size(sz) {}
-FloatType *FloatType::get(int sz) { return new FloatType(sz); }
+std::shared_ptr<FloatType> FloatType::get(int sz) { return std::make_shared<FloatType>(sz); }
 
 BooleanType::BooleanType() : Type(eBoolean) {}
 
 CharType::CharType() : Type(eChar) {}
 
-void PointerType::setPointsTo(Type *p) {
-    if (p == this) {                // Note: comparing pointers
-        points_to = new VoidType(); // Can't point to self; impossible to compare, print, etc
+void PointerType::setPointsTo(SharedType p) {
+    if (p.get() == this) {                // Note: comparing pointers
+        points_to = VoidType::get(); // Can't point to self; impossible to compare, print, etc
         if (VERBOSE)
             LOG << "Warning: attempted to create pointer to self: " << ADDRESS::host_ptr(this) << "\n";
     } else
         points_to = p;
 }
 
-PointerType::PointerType(Type *p) : Type(ePointer) { setPointsTo(p); }
-ArrayType::ArrayType(Type *p, unsigned _length) : Type(eArray), BaseType(p), Length(_length) {}
+PointerType::PointerType(SharedType p) : Type(ePointer) { setPointsTo(p); }
+ArrayType::ArrayType(SharedType p, unsigned _length) : Type(eArray), BaseType(p), Length(_length) {}
 
 // we actually want unbounded arrays to still work correctly when
 // computing aliases.. as such, we give them a very large bound
 // and hope that no-one tries to alias beyond them
 #define NO_BOUND 9999999
 
-ArrayType::ArrayType(Type *p) : Type(eArray), BaseType(p), Length(NO_BOUND) {}
+ArrayType::ArrayType(SharedType p) : Type(eArray), BaseType(p), Length(NO_BOUND) {}
 
 bool ArrayType::isUnbounded() const { return Length == NO_BOUND; }
 
-size_t ArrayType::convertLength(Type *b) const {
+size_t ArrayType::convertLength(SharedType b) const {
     // MVE: not sure if this is always the right thing to do
     if (Length != NO_BOUND) {
         size_t baseSize = BaseType->getSize() / 8; // Old base size (one element) in bytes
@@ -90,7 +90,7 @@ size_t ArrayType::convertLength(Type *b) const {
     }
     return NO_BOUND;
 }
-void ArrayType::setBaseType(Type *b) {
+void ArrayType::setBaseType(SharedType b) {
     // MVE: not sure if this is always the right thing to do
     if (Length != NO_BOUND) {
         size_t baseSize = BaseType->getSize() / 8; // Old base size (one element) in bytes
@@ -129,79 +129,69 @@ NamedType::~NamedType() {}
 CompoundType::~CompoundType() {}
 UnionType::~UnionType() {}
 
-IntegerType *IntegerType::get(unsigned NumBits, int sign) { return new IntegerType(NumBits, sign); }
+std::shared_ptr<IntegerType> IntegerType::get(unsigned NumBits, int sign) { return std::make_shared<IntegerType>(NumBits, sign); }
 /***************************************************************************/ /**
   *
   * \brief        Deep copy of this type
   * \returns            Copy of the type
   ******************************************************************************/
-Type *IntegerType::clone() const { return IntegerType::get(size, signedness); }
+SharedType IntegerType::clone() const { return IntegerType::get(size, signedness); }
 
-Type *FloatType::clone() const { return new FloatType(size); }
+SharedType FloatType::clone() const { return FloatType::get(size); }
 
-Type *BooleanType::clone() const {
-    BooleanType *t = new BooleanType();
-    return t;
+SharedType BooleanType::clone() const {
+    return std::make_shared<BooleanType>();
 }
 
-Type *CharType::clone() const {
-    CharType *t = new CharType();
-    return t;
+SharedType CharType::clone() const {
+    return CharType::get();
 }
 
-Type *VoidType::clone() const {
-    VoidType *t = new VoidType();
-    return t;
+SharedType VoidType::clone() const {
+    return VoidType::get();
 }
 
-Type *FuncType::clone() const {
-    FuncType *t = new FuncType(signature);
-    return t;
+SharedType FuncType::clone() const {
+    return FuncType::get(signature);
 }
 
-Type *PointerType::clone() const {
-    PointerType *t = new PointerType(points_to->clone());
-    return t;
+SharedType PointerType::clone() const {
+    return PointerType::get(points_to->clone());
 }
 
-Type *ArrayType::clone() const {
-    ArrayType *t = new ArrayType(BaseType->clone(), Length);
-    return t;
+SharedType ArrayType::clone() const {
+    return ArrayType::get(BaseType->clone(), Length);
 }
 
-Type *NamedType::clone() const {
-    NamedType *t = new NamedType(name);
-    return t;
+SharedType NamedType::clone() const {
+    return NamedType::get(name);
 }
 
-Type *CompoundType::clone() const {
-    CompoundType *t = new CompoundType();
+SharedType CompoundType::clone() const {
+    auto t = CompoundType::get();
     for (unsigned i = 0; i < types.size(); i++)
         t->addType(types[i]->clone(), names[i].c_str());
     return t;
 }
 
-Type *UnionType::clone() const {
-    UnionType *u = new UnionType();
+SharedType UnionType::clone() const {
+    auto u = std::make_shared<UnionType>();
     std::list<UnionElement>::const_iterator it;
     for (it = li.begin(); it != li.end(); it++)
         u->addType(it->type, it->name.c_str());
     return u;
 }
 
-Type *SizeType::clone() const {
-    SizeType *t = new SizeType(size);
-    return t;
+SharedType SizeType::clone() const {
+    return SizeType::get(size);
 }
 
-Type *UpperType::clone() const {
-    UpperType *t = new UpperType(base_type->clone());
-    return t;
+SharedType UpperType::clone() const {
+    return std::make_shared<UpperType>(base_type->clone());
 }
 
-Type *LowerType::clone() const {
-    LowerType *t = new LowerType(base_type->clone());
-    return t;
+SharedType LowerType::clone() const {
+    return std::make_shared<LowerType>(base_type->clone());
 }
 
 size_t IntegerType::getSize() const { return size; }
@@ -216,7 +206,7 @@ size_t PointerType::getSize() const {
 }
 size_t ArrayType::getSize() const { return BaseType->getSize() * Length; }
 size_t NamedType::getSize() const {
-    Type *ty = resolvesTo();
+    SharedType ty = resolvesTo();
     if (ty)
         return ty->getSize();
     LOG_VERBOSE(1) << "WARNING: Unknown size for named type " << name << "\n";
@@ -241,7 +231,7 @@ size_t UnionType::getSize() const {
 }
 size_t SizeType::getSize() const { return size; }
 
-Type *CompoundType::getType(const char *nam) {
+SharedType CompoundType::getType(const char *nam) {
     for (unsigned i = 0; i < types.size(); i++)
         if (names[i] == nam)
             return types[i];
@@ -249,7 +239,7 @@ Type *CompoundType::getType(const char *nam) {
 }
 
 // Note: n is a BIT offset
-Type *CompoundType::getTypeAtOffset(unsigned n) {
+SharedType CompoundType::getTypeAtOffset(unsigned n) {
     unsigned offset = 0;
     for (auto &elem : types) {
         if (offset <= n && n < offset + elem->getSize())
@@ -260,7 +250,7 @@ Type *CompoundType::getTypeAtOffset(unsigned n) {
 }
 
 // Note: n is a BIT offset
-void CompoundType::setTypeAtOffset(unsigned n, Type *ty) {
+void CompoundType::setTypeAtOffset(unsigned n, SharedType ty) {
     unsigned offset = 0;
     for (unsigned i = 0; i < types.size(); i++) {
         if (offset <= n && n < offset + types[i]->getSize()) {
@@ -273,7 +263,7 @@ void CompoundType::setTypeAtOffset(unsigned n, Type *ty) {
                     types[_n] = types[_n - 1];
                     names[_n] = names[_n - 1];
                 }
-                types[i + 1] = new SizeType(oldsz - ty->getSize());
+                types[i + 1] = SizeType::get(oldsz - ty->getSize());
                 names[i + 1] = "pad";
             }
             return;
@@ -341,7 +331,7 @@ unsigned CompoundType::getOffsetRemainder(unsigned n) {
   * \param        str: string to parse
   * \returns       constructed type.
   ******************************************************************************/
-Type *Type::parseType(const char */*str*/) {
+SharedType Type::parseType(const char */*str*/) {
     assert(!"Not implemented");
     return nullptr;
 }
@@ -579,7 +569,7 @@ bool LowerType::operator<(const Type &other) const {
   * \param        pattern - Type to match
   * \returns            Exp list of bindings if match or nullptr
   ******************************************************************************/
-Exp *Type::match(Type *pattern) {
+Exp *Type::match(SharedType pattern) {
     if (pattern->isNamed()) {
         LOG << "type match: " << this->getCtype() << " to " << pattern->getCtype() << "\n";
         return Binary::get(opList, Binary::get(opEquals, new Unary(opVar, new Const(pattern->asNamed()->getName())),
@@ -589,19 +579,19 @@ Exp *Type::match(Type *pattern) {
     return nullptr;
 }
 
-Exp *IntegerType::match(Type *pattern) { return Type::match(pattern); }
+Exp *IntegerType::match(SharedType pattern) { return Type::match(pattern); }
 
-Exp *FloatType::match(Type *pattern) { return Type::match(pattern); }
+Exp *FloatType::match(SharedType pattern) { return Type::match(pattern); }
 
-Exp *BooleanType::match(Type *pattern) { return Type::match(pattern); }
+Exp *BooleanType::match(SharedType pattern) { return Type::match(pattern); }
 
-Exp *CharType::match(Type *pattern) { return Type::match(pattern); }
+Exp *CharType::match(SharedType pattern) { return Type::match(pattern); }
 
-Exp *VoidType::match(Type *pattern) { return Type::match(pattern); }
+Exp *VoidType::match(SharedType pattern) { return Type::match(pattern); }
 
-Exp *FuncType::match(Type *pattern) { return Type::match(pattern); }
+Exp *FuncType::match(SharedType pattern) { return Type::match(pattern); }
 
-Exp *PointerType::match(Type *pattern) {
+Exp *PointerType::match(SharedType pattern) {
     if (pattern->isPointer()) {
         LOG << "got pointer match: " << this->getCtype() << " to " << pattern->getCtype() << "\n";
         return points_to->match(pattern->asPointer()->getPointsTo());
@@ -609,17 +599,17 @@ Exp *PointerType::match(Type *pattern) {
     return Type::match(pattern);
 }
 
-Exp *ArrayType::match(Type *pattern) {
+Exp *ArrayType::match(SharedType pattern) {
     if (pattern->isArray())
         return BaseType->match(pattern);
     return Type::match(pattern);
 }
 
-Exp *NamedType::match(Type *pattern) { return Type::match(pattern); }
+Exp *NamedType::match(SharedType pattern) { return Type::match(pattern); }
 
-Exp *CompoundType::match(Type *pattern) { return Type::match(pattern); }
+Exp *CompoundType::match(SharedType pattern) { return Type::match(pattern); }
 
-Exp *UnionType::match(Type *pattern) { return Type::match(pattern); }
+Exp *UnionType::match(SharedType pattern) { return Type::match(pattern); }
 
 /***************************************************************************/ /**
   *
@@ -695,7 +685,7 @@ QString IntegerType::getCtype(bool final) const {
                 s += "?"; // To indicate invalid/unknown size
             s += "int";
         }
-        return strdup(s.c_str());
+        return s.c_str();
     } else {
         switch (size) {
         case 32:
@@ -805,10 +795,10 @@ void Type::dump() {
     LOG_STREAM() << getCtype(false); // For debugging
 }
 
-std::map<QString, Type *> Type::namedTypes;
+std::map<QString, SharedType > Type::namedTypes;
 
 // named type accessors
-void Type::addNamedType(const char *name, Type *type) {
+void Type::addNamedType(const char *name, SharedType type) {
     if (namedTypes.find(name) != namedTypes.end()) {
         if (!(*type == *namedTypes[name])) {
             // LOG << "addNamedType: name " << name << " type " << type->getCtype() << " != " <<
@@ -833,14 +823,14 @@ void Type::addNamedType(const char *name, Type *type) {
     }
 }
 
-Type *Type::getNamedType(const QString &name) {
+SharedType Type::getNamedType(const QString &name) {
     if (namedTypes.find(name) != namedTypes.end())
         return namedTypes[name];
     return nullptr;
 }
 
 void Type::dumpNames() {
-    std::map<QString, Type *>::iterator it;
+    std::map<QString, SharedType >::iterator it;
     for (it = namedTypes.begin(); it != namedTypes.end(); ++it)
         qDebug() << it->first << " -> " << it->second->getCtype() << "\n";
 }
@@ -852,8 +842,8 @@ void Type::dumpNames() {
   * \param   name reference to a string (e.g. "tmp", "tmpd")
   * \returns       Ptr to a new Type object
   ******************************************************************************/
-Type *Type::getTempType(const std::string &name) {
-    Type *ty;
+SharedType Type::getTempType(const std::string &name) {
+    SharedType ty;
     char ctype = ' ';
     if (name.size() > 3)
         ctype = name[3];
@@ -930,11 +920,11 @@ std::string Type::getTempName() const {
 }
 
 int NamedType::nextAlpha = 0;
-NamedType *NamedType::getAlpha() {
-    return new NamedType(QString("alpha%1").arg(nextAlpha++));
+std::shared_ptr<NamedType> NamedType::getAlpha() {
+    return NamedType::get(QString("alpha%1").arg(nextAlpha++));
 }
 
-PointerType *PointerType::newPtrAlpha() { return new PointerType(NamedType::getAlpha()); }
+std::shared_ptr<PointerType> PointerType::newPtrAlpha() { return PointerType::get(NamedType::getAlpha()); }
 
 // Note: alpha is therefore a "reserved name" for types
 bool PointerType::pointsToAlpha() const {
@@ -943,12 +933,12 @@ bool PointerType::pointsToAlpha() const {
         return true;
     if (!points_to->isNamed())
         return false;
-    return ((NamedType *)points_to)->getName().startsWith("alpha");
+    return points_to->asNamed()->getName().startsWith("alpha");
 }
 
 int PointerType::pointerDepth() const {
     int d = 1;
-    const Type *pt = points_to;
+    auto pt = points_to;
     while (pt->isPointer()) {
         pt = pt->asPointer()->getPointsTo();
         d++;
@@ -956,22 +946,22 @@ int PointerType::pointerDepth() const {
     return d;
 }
 
-Type *PointerType::getFinalPointsTo() const {
-    Type *pt = points_to;
+SharedType PointerType::getFinalPointsTo() const {
+    SharedType pt = points_to;
     while (pt->isPointer()) {
         pt = pt->asPointer()->getPointsTo();
     }
     return pt;
 }
 
-Type *NamedType::resolvesTo() const {
-    Type *ty = getNamedType(name);
+SharedType NamedType::resolvesTo() const {
+    SharedType ty = getNamedType(name);
     if (ty && ty->isNamed())
-        return ((NamedType *)ty)->resolvesTo();
+        return std::static_pointer_cast<NamedType>(ty)->resolvesTo();
     return ty;
 }
 
-void ArrayType::fixBaseType(Type *b) {
+void ArrayType::fixBaseType(SharedType b) {
     if (BaseType == nullptr)
         BaseType = b;
     else {
@@ -981,19 +971,19 @@ void ArrayType::fixBaseType(Type *b) {
 }
 
 #define AS_TYPE(x)                                                                                                     \
-    x##Type *Type::as##x() {                                                                                           \
-        Type *ty = this;                                                                                               \
+    std::shared_ptr<x##Type> Type::as##x() {                                                                                           \
+        SharedType ty = shared_from_this();                                                                                               \
         if (isNamed())                                                                                                 \
-            ty = ((NamedType *)ty)->resolvesTo();                                                                      \
-        x##Type *res = dynamic_cast<x##Type *>(ty);                                                                    \
+            ty = std::static_pointer_cast<NamedType>(ty)->resolvesTo();                                                                      \
+        auto res = std::dynamic_pointer_cast<x##Type>(ty);                                                         \
         assert(res);                                                                                                   \
         return res;                                                                                                    \
     }                                                                                                                  \
-    const x##Type *Type::as##x() const {                                                                               \
-        const Type *ty = this;                                                                                         \
+    std::shared_ptr<const x##Type> Type::as##x() const {                                                                               \
+        auto ty = shared_from_this();                                                                                         \
         if (isNamed())                                                                                                 \
-            ty = ((const NamedType *)ty)->resolvesTo();                                                                \
-        const x##Type *res = dynamic_cast<const x##Type *>(ty);                                                        \
+            ty = std::static_pointer_cast<const NamedType>(ty)->resolvesTo();                                                               \
+        auto res = std::dynamic_pointer_cast<const x##Type>(ty);                                             \
         assert(res);                                                                                                   \
         return res;                                                                                                    \
     }
@@ -1013,24 +1003,24 @@ AS_TYPE(Upper)
 AS_TYPE(Lower)
 // Note: don't want to call this->resolve() for this case, since then we (probably) won't have a NamedType and the
 // assert will fail
-NamedType *Type::asNamed() {
-    Type *ty = this;
-    NamedType *res = dynamic_cast<NamedType *>(ty);
+std::shared_ptr<NamedType> Type::asNamed() {
+    SharedType ty = shared_from_this();
+    auto res = std::dynamic_pointer_cast<NamedType>(ty);
     assert(res);
     return res;
 }
-const NamedType *Type::asNamed() const {
-    const Type *ty = this;
-    const NamedType *res = dynamic_cast<const NamedType *>(ty);
+std::shared_ptr<const NamedType> Type::asNamed() const {
+    auto ty = shared_from_this();
+    auto res = std::dynamic_pointer_cast<const NamedType>(ty);
     assert(res);
     return res;
 }
 
 #define RESOLVES_TO_TYPE(x)                                                                                            \
     bool Type::resolvesTo##x() const {                                                                                 \
-        const Type *ty = this;                                                                                         \
+        auto ty = shared_from_this();                                                                                         \
         if (ty->isNamed())                                                                                             \
-            ty = ((NamedType *)ty)->resolvesTo();                                                                      \
+            ty = std::static_pointer_cast<const NamedType>(ty)->resolvesTo();                                                                      \
         return ty && ty->is##x();                                                                                      \
     }
 
@@ -1053,12 +1043,12 @@ bool Type::isPointerToAlpha() { return isPointer() && asPointer()->pointsToAlpha
 void Type::starPrint(QTextStream &os) { os << "*" << this << "*"; }
 
 // A crude shortcut representation of a type
-QTextStream &operator<<(QTextStream &os, const Type *t) {
+QTextStream &operator<<(QTextStream &os, const SharedType t) {
     if (t == nullptr)
         return os << '0';
     switch (t->getId()) {
     case eInteger: {
-        int sg = ((IntegerType *)t)->getSignedness();
+        int sg = t->as<IntegerType>()->getSignedness();
         // 'j' for either i or u, don't know which
         os << (sg == 0 ? 'j' : sg > 0 ? 'i' : 'u');
         os << t->asInteger()->getSize();
@@ -1114,13 +1104,13 @@ QTextStream &operator<<(QTextStream &os, const Type *t) {
 
 // FIXME: aren't mergeWith and meetWith really the same thing?
 // Merge this IntegerType with another
-Type *IntegerType::mergeWith(Type *other) const {
+SharedType IntegerType::mergeWith(SharedType other) const {
     if (*this == *other)
-        return (Type *)this;
+        return ((IntegerType *)this)->shared_from_this();
     if (!other->isInteger())
         return nullptr; // Can you merge with a pointer?
-    IntegerType *oth = (IntegerType *)other;
-    IntegerType *ret = (IntegerType *)this->clone();
+    auto oth = std::static_pointer_cast<IntegerType>(other);
+    auto ret = std::static_pointer_cast<IntegerType>(this->clone());
     if (size == 0)
         ret->setSize(oth->getSize());
     if (signedness == 0)
@@ -1129,27 +1119,27 @@ Type *IntegerType::mergeWith(Type *other) const {
 }
 
 // Merge this SizeType with another type
-Type *SizeType::mergeWith(Type *other) const {
-    Type *ret = other->clone();
+SharedType SizeType::mergeWith(SharedType other) const {
+    SharedType ret = other->clone();
     ret->setSize(size);
     return ret;
 }
 
-Type *UpperType::mergeWith(Type */*other*/) const {
+SharedType UpperType::mergeWith(SharedType /*other*/) const {
     // FIXME: TBC
-    return (Type *)this;
+    return ((UpperType *)this)->shared_from_this();
 }
 
-Type *LowerType::mergeWith(Type */*other*/) const {
+SharedType LowerType::mergeWith(SharedType /*other*/) const {
     // FIXME: TBC
-    return (Type *)this;
+    return ((LowerType *)this)->shared_from_this();
 }
 
 // Return true if this is a superstructure of other, i.e. we have the same types at the same offsets as other
-bool CompoundType::isSuperStructOf(const Type *other) {
+bool CompoundType::isSuperStructOf(const SharedType &other) {
     if (!other->isCompound())
         return false;
-    const CompoundType *otherCmp = other->asCompound();
+    auto otherCmp = other->asCompound();
     size_t n = otherCmp->types.size();
     if (n > types.size())
         return false;
@@ -1160,10 +1150,10 @@ bool CompoundType::isSuperStructOf(const Type *other) {
 }
 
 // Return true if this is a substructure of other, i.e. other has the same types at the same offsets as this
-bool CompoundType::isSubStructOf(Type *other) const {
+bool CompoundType::isSubStructOf(SharedType other) const {
     if (!other->isCompound())
         return false;
-    const CompoundType *otherCmp = other->asCompound();
+    auto otherCmp = other->asCompound();
     unsigned n = types.size();
     if (n > otherCmp->types.size())
         return false;
@@ -1174,7 +1164,7 @@ bool CompoundType::isSubStructOf(Type *other) const {
 }
 
 // Return true if this type is already in the union. Note: linear search, but number of types is usually small
-bool UnionType::findType(Type *ty) {
+bool UnionType::findType(SharedType ty) {
     std::list<UnionElement>::iterator it;
     for (it = li.begin(); it != li.end(); it++) {
         if (*it->type == *ty)
@@ -1193,11 +1183,11 @@ void LowerType::setSize(size_t /*size*/) {
     assert(0);
 }
 
-Type *Type::newIntegerLikeType(int size, int signedness) {
+SharedType Type::newIntegerLikeType(int size, int signedness) {
     if (size == 1)
-        return new BooleanType();
+        return BooleanType::get();
     if (size == 8 && signedness >= 0)
-        return new CharType();
+        return CharType::get();
     return IntegerType::get(size, signedness);
 }
 
@@ -1245,7 +1235,7 @@ bool DataIntervalMap::isClear(ADDRESS addr, unsigned size) {
 
 // With the forced parameter: are we forcing the name, the type, or always both?
 //! Add a new data item
-void DataIntervalMap::addItem(ADDRESS addr, const char *name, Type *ty, bool forced /* = false */) {
+void DataIntervalMap::addItem(ADDRESS addr, const char *name, SharedType ty, bool forced /* = false */) {
     if (name == nullptr)
         name = "<noname>";
     DataIntervalEntry *pdie = find(addr);
@@ -1287,12 +1277,12 @@ void DataIntervalMap::addItem(ADDRESS addr, const char *name, Type *ty, bool for
 }
 
 // We are entering an item that already exists in a larger type. Check for compatibility, meet if necessary.
-void DataIntervalMap::enterComponent(DataIntervalEntry *pdie, ADDRESS addr, const char * /*name*/, Type *ty,
+void DataIntervalMap::enterComponent(DataIntervalEntry *pdie, ADDRESS addr, const char * /*name*/, SharedType ty,
                                      bool /*forced*/) {
     if (pdie->second.type->resolvesToCompound()) {
         unsigned bitOffset = (addr - pdie->first).m_value * 8;
-        Type *memberType = pdie->second.type->asCompound()->getTypeAtOffset(bitOffset);
-        if (memberType->isCompatibleWith(ty)) {
+        SharedType memberType = pdie->second.type->asCompound()->getTypeAtOffset(bitOffset);
+        if (memberType->isCompatibleWith(*ty)) {
             bool ch;
             memberType = memberType->meetWith(ty, ch);
             pdie->second.type->asCompound()->setTypeAtOffset(bitOffset, memberType);
@@ -1301,8 +1291,8 @@ void DataIntervalMap::enterComponent(DataIntervalEntry *pdie, ADDRESS addr, cons
                                                                                       "existing structure member type "
                 << memberType->getCtype() << "\n";
     } else if (pdie->second.type->resolvesToArray()) {
-        Type *memberType = pdie->second.type->asArray()->getBaseType();
-        if (memberType->isCompatibleWith(ty)) {
+        SharedType memberType = pdie->second.type->asArray()->getBaseType();
+        if (memberType->isCompatibleWith(*ty)) {
             bool ch;
             memberType = memberType->meetWith(ty, ch);
             pdie->second.type->asArray()->setBaseType(memberType);
@@ -1316,7 +1306,7 @@ void DataIntervalMap::enterComponent(DataIntervalEntry *pdie, ADDRESS addr, cons
 
 // We are entering a struct or array that overlaps existing components. Check for compatibility, and move the
 // components out of the way, meeting if necessary
-void DataIntervalMap::replaceComponents(ADDRESS addr, const char *name, Type *ty, bool /*forced*/) {
+void DataIntervalMap::replaceComponents(ADDRESS addr, const char *name, SharedType ty, bool /*forced*/) {
     iterator it;
     ADDRESS pastLast = addr + ty->getSize() / 8; // This is the byte address just past the type to be inserted
     // First check that the new entry will be compatible with everything it will overlap
@@ -1326,8 +1316,8 @@ void DataIntervalMap::replaceComponents(ADDRESS addr, const char *name, Type *ty
         iterator it2 = dimap.upper_bound(pastLast - 1); // Iterator to the first item that starts too late
         for (it = it1; it != it2; ++it) {
             unsigned bitOffset = (it->first - addr).m_value * 8;
-            Type *memberType = ty->asCompound()->getTypeAtOffset(bitOffset);
-            if (memberType->isCompatibleWith(it->second.type, true)) {
+            SharedType memberType = ty->asCompound()->getTypeAtOffset(bitOffset);
+            if (memberType->isCompatibleWith(*it->second.type, true)) {
                 bool ch;
                 memberType = it->second.type->meetWith(memberType, ch);
                 ty->asCompound()->setTypeAtOffset(bitOffset, memberType);
@@ -1339,11 +1329,11 @@ void DataIntervalMap::replaceComponents(ADDRESS addr, const char *name, Type *ty
             }
         }
     } else if (ty->resolvesToArray()) {
-        Type *memberType = ty->asArray()->getBaseType();
+        SharedType memberType = ty->asArray()->getBaseType();
         iterator it1 = dimap.lower_bound(addr);
         iterator it2 = dimap.upper_bound(pastLast - 1);
         for (it = it1; it != it2; ++it) {
-            if (memberType->isCompatibleWith(it->second.type, true)) {
+            if (memberType->isCompatibleWith(*it->second.type, true)) {
                 bool ch;
                 memberType = memberType->meetWith(it->second.type, ch);
                 ty->asArray()->setBaseType(memberType);
@@ -1376,7 +1366,7 @@ void DataIntervalMap::replaceComponents(ADDRESS addr, const char *name, Type *ty
             // Check if there is an existing local here
             Exp *locl = Location::memOf(Binary::get(opPlus, rsp0->clone(), new Const(it->first.native())));
             locl->simplifyArith(); // Convert m[sp{0} + -4] to m[sp{0} - 4]
-            Type *elemTy;
+            SharedType elemTy;
             int bitOffset = (it->first - addr).m_value / 8;
             if (ty->resolvesToCompound())
                 elemTy = ty->asCompound()->getTypeAtOffset(bitOffset);
@@ -1384,7 +1374,7 @@ void DataIntervalMap::replaceComponents(ADDRESS addr, const char *name, Type *ty
                 elemTy = ty->asArray()->getBaseType();
             const char *locName = proc->findLocal(locl, elemTy);
             if (locName && ty->resolvesToCompound()) {
-                CompoundType *c = ty->asCompound();
+                auto c = ty->asCompound();
                 // want s.m where s is the new compound object and m is the member at offset bitOffset
                 const char *memName = c->getNameAtOffset(bitOffset);
                 Exp *s = Location::memOf(Binary::get(opPlus, rsp0->clone(), new Const(addr)));
@@ -1409,9 +1399,9 @@ void DataIntervalMap::replaceComponents(ADDRESS addr, const char *name, Type *ty
     pdi->type = ty;
 }
 
-void DataIntervalMap::checkMatching(DataIntervalEntry *pdie, ADDRESS addr, const char * /*name*/, Type *ty,
+void DataIntervalMap::checkMatching(DataIntervalEntry *pdie, ADDRESS addr, const char * /*name*/, SharedType ty,
                                     bool /*forced*/) {
-    if (pdie->second.type->isCompatibleWith(ty)) {
+    if (pdie->second.type->isCompatibleWith(*ty)) {
         // Just merge the types and exit
         bool ch;
         pdie->second.type = pdie->second.type->meetWith(ty, ch);
@@ -1448,11 +1438,11 @@ ComplexTypeCompList &Type::compForAddress(ADDRESS addr, DataIntervalMap &dim) {
     if (pdie == nullptr)
         return *res;
     ADDRESS startCurrent = pdie->first;
-    Type *curType = pdie->second.type;
+    SharedType curType = pdie->second.type;
     while (startCurrent < addr) {
         size_t bitOffset = (addr - startCurrent).m_value * 8;
         if (curType->isCompound()) {
-            CompoundType *compCurType = curType->asCompound();
+            auto compCurType = curType->asCompound();
             unsigned rem = compCurType->getOffsetRemainder(bitOffset);
             startCurrent = addr - (rem / 8);
             ComplexTypeComp ctc;
@@ -1477,16 +1467,15 @@ ComplexTypeCompList &Type::compForAddress(ADDRESS addr, DataIntervalMap &dim) {
     return *res;
 }
 
-void UnionType::addType(Type *n, const char *str) {
+void UnionType::addType(SharedType n, const char *str) {
     if (n->isUnion()) {
-        UnionType *utp = (UnionType *)n;
+        auto utp = std::static_pointer_cast<UnionType>(n);
         // Note: need to check for name clashes eventually
         li.insert(li.end(), utp->li.begin(), utp->li.end());
     } else {
-        if (n->isPointer() && n->asPointer()->getPointsTo() == this) { // Note: pointer comparison
-            n = new PointerType(new VoidType);
-            if (VERBOSE)
-                LOG << "Warning: attempt to union with pointer to self!\n";
+        if (n->isPointer() && n->asPointer()->getPointsTo().get() == this) { // Note: pointer comparison
+            n = PointerType::get(VoidType::get());
+            LOG_VERBOSE(1) << "Warning: attempt to union with pointer to self!\n";
         }
         UnionElement ue;
         ue.type = n;
@@ -1496,10 +1485,10 @@ void UnionType::addType(Type *n, const char *str) {
 }
 
 // Update this compound to use the fact that offset off has type ty
-void CompoundType::updateGenericMember(int off, Type *ty, bool &ch) {
+void CompoundType::updateGenericMember(int off, SharedType ty, bool &ch) {
     assert(generic);
     int bit_offset = off * 8;
-    Type *existingType = getTypeAtOffset(bit_offset);
+    SharedType existingType = getTypeAtOffset(bit_offset);
     if (existingType) {
         existingType = existingType->meetWith(ty, ch);
         setTypeAtOffset(bit_offset, existingType);

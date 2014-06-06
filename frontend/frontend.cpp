@@ -192,7 +192,7 @@ void FrontEnd::readLibraryCatalog() {
 }
 
 void FrontEnd::checkEntryPoint(std::vector<ADDRESS> &entrypoints, ADDRESS addr, const char *type) {
-    Type *ty = NamedType::getNamedType(type);
+    SharedType ty = NamedType::getNamedType(type);
     assert(ty->isFunc());
     UserProc *proc = (UserProc *)Program->setNewProc(addr);
     assert(proc);
@@ -291,8 +291,8 @@ void FrontEnd::decode(Prog *prg, bool decodeMain, const char *pname) {
                     LOG << "no proc found for address " << a << "\n";
                 return;
             }
-            FuncType *fty = dynamic_cast<FuncType *>(Type::getNamedType(name));
-            if (fty == nullptr)
+            auto fty = std::dynamic_pointer_cast<FuncType>(Type::getNamedType(name));
+            if (!fty)
                 LOG << "unable to find signature for known entrypoint " << name << "\n";
             else {
                 proc->setSignature(fty->getSignature()->clone());

@@ -19,6 +19,7 @@
 #define __CLUSTER_H__
 
 #include "memo.h"
+#include "type.h"
 
 #include <list>
 #include <vector>
@@ -74,10 +75,10 @@ class Module : public Cluster {
 
 class Class : public Cluster {
   protected:
-    CompoundType *Type;
+    std::shared_ptr<CompoundType> Type;
 
   public:
-    Class(const char *name) : Cluster(name) { Type = new CompoundType(); }
+    Class(const char *name) : Cluster(name) { Type = CompoundType::get(); }
 
     // A Class tends to be aggregated into the parent Module,
     // this isn't the case with Java, but hey, we're not doing that yet.

@@ -336,8 +336,10 @@ int AnsiCParser::yyparse(platform plat, callconv cc) {
         yyss = (short *)__ALLOCA_alloca(yystacksize * sizeof(*yyssp));
         __yy_bcopy((char *)yyss1, (char *)yyss, size * sizeof(*yyssp));
         __ALLOCA_free(yyss1, yyssa);
-        yyvs = (yy_AnsiCParser_stype *)__ALLOCA_alloca(yystacksize * sizeof(*yyvsp));
-        __yy_bcopy((char *)yyvs1, (char *)yyvs, size * sizeof(*yyvsp));
+        yyvs = new (__ALLOCA_alloca(yystacksize * sizeof(*yyvsp))) yy_AnsiCParser_stype[yystacksize];
+        for(int i=0; i<size; ++i) {
+            yyvs[i] = yyvs1[i];
+        }
         __ALLOCA_free(yyvs1, yyvsa);
 
         yyssp = yyss + size - 1;
@@ -585,8 +587,8 @@ int AnsiCParser::yyparse(platform plat, callconv cc) {
     }
     case 27: {
         if (yyvsp[-1].type_ident->ty->isArray() ||
-            (yyvsp[-1].type_ident->ty->isNamed() && ((NamedType *)yyvsp[-1].type_ident->ty)->resolvesTo() &&
-             ((NamedType *)yyvsp[-1].type_ident->ty)->resolvesTo()->isArray())) {
+            (yyvsp[-1].type_ident->ty->isNamed() && std::static_pointer_cast<NamedType>(yyvsp[-1].type_ident->ty)->resolvesTo() &&
+             std::static_pointer_cast<NamedType>(yyvsp[-1].type_ident->ty)->resolvesTo()->isArray())) {
             /* C has complex semantics for passing arrays.. seeing as
                      * we're supposedly parsing C, then we should deal with this.
                      * When you pass an array in C it is understood that you are
@@ -594,7 +596,7 @@ int AnsiCParser::yyparse(platform plat, callconv cc) {
                      * our internal representation are passed "by value", we alter
                      * the type here to be a pointer to an array.
                      */
-            yyvsp[-1].type_ident->ty = new PointerType(yyvsp[-1].type_ident->ty);
+            yyvsp[-1].type_ident->ty = PointerType::get(yyvsp[-1].type_ident->ty);
         }
         yyval.param = new Parameter(yyvsp[-1].type_ident->ty, yyvsp[-1].type_ident->nam.c_str());
         if (yyvsp[0].bound) {
@@ -617,12 +619,12 @@ int AnsiCParser::yyparse(platform plat, callconv cc) {
                 delete elem;
             }
         delete yyvsp[-1].param_list;
-        yyval.param = new Parameter(new PointerType(new FuncType(sig)), yyvsp[-4].str);
+        yyval.param = new Parameter(PointerType::get(FuncType::get(sig)), yyvsp[-4].str);
 
         break;
     }
     case 29: {
-        yyval.param = new Parameter(new VoidType, "...");
+        yyval.param = new Parameter(std::make_shared<VoidType>(), "...");
         break;
     }
     case 30: {
@@ -640,7 +642,7 @@ int AnsiCParser::yyparse(platform plat, callconv cc) {
                 delete elem;
             }
         delete yyvsp[-2].param_list;
-        Type::addNamedType(yyvsp[-5].str, new PointerType(new FuncType(sig)));
+        Type::addNamedType(yyvsp[-5].str, PointerType::get(FuncType::get(sig)));
 
         break;
     }
@@ -655,12 +657,12 @@ int AnsiCParser::yyparse(platform plat, callconv cc) {
                 delete elem;
             }
         delete yyvsp[-2].param_list;
-        Type::addNamedType(yyvsp[-4].type_ident->nam.c_str(), new FuncType(sig));
+        Type::addNamedType(yyvsp[-4].type_ident->nam.c_str(), FuncType::get(sig));
 
         break;
     }
     case 33: {
-        CompoundType *t = new CompoundType();
+        auto t = CompoundType::get();
         for (auto &elem : *yyvsp[-2].type_ident_list) {
             t->addType((elem)->ty, (elem)->nam.c_str());
         }
@@ -788,22 +790,22 @@ int AnsiCParser::yyparse(platform plat, callconv cc) {
         break;
     }
     case 48: {
-        yyval.type = new ArrayType(nullptr, yyvsp[-1].ival);
+        yyval.type = ArrayType::get(nullptr, yyvsp[-1].ival);
 
         break;
     }
     case 49: {
-        yyval.type = new ArrayType(nullptr);
+        yyval.type = ArrayType::get(nullptr);
 
         break;
     }
     case 50: {
-        yyval.type = new ArrayType(yyvsp[-3].type, yyvsp[-1].ival);
+        yyval.type = ArrayType::get(yyvsp[-3].type, yyvsp[-1].ival);
 
         break;
     }
     case 51: {
-        yyval.type = new ArrayType(yyvsp[-2].type);
+        yyval.type = ArrayType::get(yyvsp[-2].type);
 
         break;
     }
@@ -816,7 +818,7 @@ int AnsiCParser::yyparse(platform plat, callconv cc) {
     }
     case 53: {
         yyval.type_ident = new TypeIdent();
-        ((ArrayType *)yyvsp[0].type)->fixBaseType(yyvsp[-2].type);
+        std::static_pointer_cast<ArrayType>(yyvsp[0].type)->fixBaseType(yyvsp[-2].type);
         yyval.type_ident->ty = yyvsp[0].type;
         yyval.type_ident->nam = yyvsp[-1].str;
 
@@ -835,7 +837,7 @@ int AnsiCParser::yyparse(platform plat, callconv cc) {
         break;
     }
     case 56: {
-        yyval.type = new CharType();
+        yyval.type = CharType::get();
         break;
     }
     case 57: {
@@ -887,26 +889,26 @@ int AnsiCParser::yyparse(platform plat, callconv cc) {
         break;
     }
     case 69: {
-        yyval.type = new VoidType();
+        yyval.type = VoidType::get();
         break;
     }
     case 70: {
-        yyval.type = new PointerType(yyvsp[-1].type);
+        yyval.type = PointerType::get(yyvsp[-1].type);
         break;
     }
     case 71: { // This isn't C, but it makes defining pointers to arrays easier
-        yyval.type = new ArrayType(yyvsp[-3].type, yyvsp[-1].ival);
+        yyval.type = ArrayType::get(yyvsp[-3].type, yyvsp[-1].ival);
 
         break;
     }
     case 72: { // This isn't C, but it makes defining pointers to arrays easier
-        yyval.type = new ArrayType(yyvsp[-2].type);
+        yyval.type = ArrayType::get(yyvsp[-2].type);
 
         break;
     }
     case 73: { //$$ = Type::getNamedType($1);
         // if ($$ == nullptr)
-        yyval.type = new NamedType(yyvsp[0].str);
+        yyval.type = NamedType::get(yyvsp[0].str);
 
         break;
     }
@@ -917,12 +919,12 @@ int AnsiCParser::yyparse(platform plat, callconv cc) {
     case 75: {
         char tmp[1024];
         sprintf(tmp, "struct %s", yyvsp[0].str);
-        yyval.type = new NamedType(tmp);
+        yyval.type = NamedType::get(tmp);
 
         break;
     }
     case 76: {
-        CompoundType *t = new CompoundType();
+        auto t = CompoundType::get();
         for (auto &elem : *yyvsp[-1].type_ident_list) {
             t->addType((elem)->ty, (elem)->nam.c_str());
         }

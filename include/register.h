@@ -16,8 +16,9 @@
 
 #include <string>
 #include <stdint.h>
+#include <memory>
 class Type;
-
+typedef std::shared_ptr<Type> SharedType;
 /***************************************************************************/ /**
   \class  Register
    Summarises one line of the \@REGISTERS section of an SSL
@@ -50,7 +51,7 @@ class Register {
     void *g_address() const { return address; }
 
     int g_size() const { return size; }
-    Type *g_type() const;
+    SharedType g_type() const;
 
     /** Set the mapped index. For COVERS registers, this is the lower register
     * of the set that this register covers. For example, if the current register

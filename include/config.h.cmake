@@ -80,3 +80,7 @@
    first (like Motorola and SPARC, unlike Intel and VAX). */
 #cmakedefine WORDS_BIGENDIAN @WORDS_BIGENDIAN@
 
+
+
+// Defines to control experimental features
+#define USE_DOMINANCE_NUMS 1 // Set true to store a statement number that has dominance properties

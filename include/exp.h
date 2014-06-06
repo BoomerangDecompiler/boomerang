@@ -344,12 +344,12 @@ class Exp {
 
     // Data flow based type analysis (implemented in type/dfa.cpp)
     // Pull type information up the expression tree
-    virtual Type *ascendType() {
+    virtual SharedType ascendType() {
         assert(0);
         return 0;
     }
     //! Push type information down the expression tree
-    virtual void descendType(Type * /*parentType*/, bool & /*ch*/, Instruction * /*s*/) { assert(0); }
+    virtual void descendType(SharedType  /*parentType*/, bool & /*ch*/, Instruction * /*s*/) { assert(0); }
 
   protected:
     friend class XMLProgParser;
@@ -374,7 +374,7 @@ class Const : public Exp {
         Function *pp;      // Pointer to function
     } u;
     int conscript; // like a subscript for constants
-    Type *type;    // Constants need types during type analysis
+    SharedType type;    // Constants need types during type analysis
   public:
     // Special constructors overloaded for the various constants
     Const(uint32_t i);
@@ -415,9 +415,9 @@ class Const : public Exp {
     void setAddr(ADDRESS a) { u.a = a; }
 
     // Get and set the type
-    Type *getType() { return type; }
-    const Type *getType() const { return type; }
-    void setType(Type *ty) { type = ty; }
+    SharedType getType() { return type; }
+    const SharedType getType() const { return type; }
+    void setType(SharedType ty) { type = ty; }
 
     virtual void print(QTextStream &os, bool = false) const;
     // Print "recursive" (extra parens not wanted at outer levels)
@@ -436,8 +436,8 @@ class Const : public Exp {
     int getConscript() { return conscript; }
     void setConscript(int cs) { conscript = cs; }
 
-    virtual Type *ascendType();
-    virtual void descendType(Type *parentType, bool &ch, Instruction *s);
+    virtual SharedType ascendType();
+    virtual void descendType(SharedType parentType, bool &ch, Instruction *s);
 
   protected:
     friend class XMLProgParser;
@@ -469,8 +469,8 @@ class Terminal : public Exp {
     virtual bool accept(ExpVisitor *v);
     virtual Exp *accept(ExpModifier *v);
 
-    virtual Type *ascendType();
-    virtual void descendType(Type *parentType, bool &ch, Instruction *s);
+    virtual SharedType ascendType();
+    virtual void descendType(SharedType parentType, bool &ch, Instruction *s);
 
     virtual bool match(const std::string &pattern, std::map<std::string, Exp *> &bindings);
 
@@ -542,8 +542,8 @@ class Unary : public Exp {
     virtual bool accept(ExpVisitor *v);
     virtual Exp *accept(ExpModifier *v);
 
-    virtual Type *ascendType();
-    virtual void descendType(Type *parentType, bool &ch, Instruction *s);
+    virtual SharedType ascendType();
+    virtual void descendType(SharedType parentType, bool &ch, Instruction *s);
 
   protected:
     friend class XMLProgParser;
@@ -613,8 +613,8 @@ class Binary : public Unary {
     virtual bool accept(ExpVisitor *v);
     virtual Exp *accept(ExpModifier *v);
 
-    virtual Type *ascendType();
-    virtual void descendType(Type *parentType, bool &ch, Instruction *s);
+    virtual SharedType ascendType();
+    virtual void descendType(SharedType parentType, bool &ch, Instruction *s);
 
   private:
     Exp *constrainSub(TypeVal *typeVal1, TypeVal *typeVal2);
@@ -682,8 +682,8 @@ class Ternary : public Binary {
 
     virtual bool match(const std::string &pattern, std::map<std::string, Exp *> &bindings);
 
-    virtual Type *ascendType();
-    virtual void descendType(Type */*parentType*/, bool &ch, Instruction *s);
+    virtual SharedType ascendType();
+    virtual void descendType(SharedType /*parentType*/, bool &ch, Instruction *s);
 
   protected:
     friend class XMLProgParser;
@@ -693,7 +693,7 @@ class Ternary : public Binary {
   * TypedExp is a subclass of Unary, holding one subexpression and a Type
   ******************************************************************************/
 class TypedExp : public Unary {
-    Type *type;
+    SharedType type;
 
   public:
     // Constructor
@@ -703,7 +703,7 @@ class TypedExp : public Unary {
     // Constructor, type, and subexpression.
     // A rare const parameter allows the common case of providing a temporary,
     // e.g. foo = new TypedExp(Type(INTEGER), ...);
-    TypedExp(Type *ty, Exp *e1);
+    TypedExp(SharedType ty, Exp *e1);
     // Copy constructor
     TypedExp(TypedExp &o);
 
@@ -721,9 +721,9 @@ class TypedExp : public Unary {
     virtual void printx(int ind) const;
 
     // Get and set the type
-    virtual Type *getType() { return type; }
-    virtual const Type *getType() const { return type; }
-    virtual void setType(Type *ty) { type = ty; }
+    virtual SharedType getType() { return type; }
+    virtual const SharedType &getType() const { return type; }
+    virtual void setType(SharedType ty) { type = ty; }
 
     // polySimplify
     virtual Exp *polySimplify(bool &bMod);
@@ -732,8 +732,8 @@ class TypedExp : public Unary {
     virtual bool accept(ExpVisitor *v);
     virtual Exp *accept(ExpModifier *v);
 
-    virtual Type *ascendType();
-    virtual void descendType(Type *, bool &, Instruction *);
+    virtual SharedType ascendType();
+    virtual void descendType(SharedType , bool &, Instruction *);
 
   protected:
     friend class XMLProgParser;
@@ -806,8 +806,8 @@ class RefExp : public Unary {
     virtual bool accept(ExpVisitor *v);
     virtual Exp *accept(ExpModifier *v);
 
-    virtual Type *ascendType();
-    virtual void descendType(Type *parentType, bool &ch, Instruction *s);
+    virtual SharedType ascendType();
+    virtual void descendType(SharedType parentType, bool &ch, Instruction *s);
 
   protected:
     RefExp() : Unary(opSubscript), def(nullptr) {}
@@ -818,14 +818,14 @@ class RefExp : public Unary {
  class TypeVal. Just a Terminal with a Type. Used for type values in constraints
  ==============================================================================*/
 class TypeVal : public Terminal {
-    Type *val;
+    SharedType val;
 
   public:
-    TypeVal(Type *ty);
+    TypeVal(SharedType ty);
     ~TypeVal();
 
-    virtual Type *getType() { return val; }
-    virtual void setType(Type *t) { val = t; }
+    virtual SharedType getType() { return val; }
+    virtual void setType(SharedType t) { val = t; }
     virtual Exp *clone() const;
     virtual bool operator==(const Exp &o) const;
     virtual bool operator<(const Exp &o) const;

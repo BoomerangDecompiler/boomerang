@@ -324,7 +324,7 @@ bool UsedLocalFinder::visit(Location *e, bool &override) {
 
 bool UsedLocalFinder::visit(TypedExp *e, bool &override) {
     override = false;
-    Type *ty = e->getType();
+    SharedType ty = e->getType();
     // Assumption: (cast)exp where cast is of pointer type means that exp is the address of a local
     if (ty->resolvesToPointer()) {
         Exp *sub = e->getSubExp1();
@@ -785,7 +785,7 @@ bool TempToLocalMapper::visit(Location *e, bool &override) {
     if (e->isTemp()) {
         // We have a temp subexpression; get its name
         const char *tempName = ((Const *)e->getSubExp1())->getStr();
-        Type *ty = Type::getTempType(tempName); // Types for temps strictly depend on the name
+        SharedType ty = Type::getTempType(tempName); // Types for temps strictly depend on the name
         // This call will do the mapping from the temp to a new local:
         proc->getSymbolExp(e, ty, true);
     }
@@ -845,9 +845,9 @@ Exp *ConstGlobalConverter::preVisit(RefExp *e, bool &recur) {
             int K = ((Const *)idx)->getInt();
             const char *gname = ((Const *)(glo->getSubExp1()))->getStr();
             ADDRESS gloValue = prog->getGlobalAddr(gname);
-            Type *gloType = prog->getGlobal(gname)->getType();
+            SharedType gloType = prog->getGlobal(gname)->getType();
             assert(gloType->isArray());
-            Type *componentType = gloType->asArray()->getBaseType();
+            SharedType componentType = gloType->asArray()->getBaseType();
             int value = prog->readNative4(gloValue + K * (componentType->getSize() / 8));
             recur = false;
             return new Const(value);
@@ -913,13 +913,13 @@ bool BadMemofFinder::visit(RefExp *e, bool &override) {
 
 // Check the type of the address expression of memof to make sure it is compatible with the given memofType.
 // memof may be changed internally to include a TypedExp, which will emit as a cast
-void ExpCastInserter::checkMemofType(Exp *memof, Type *memofType) {
+void ExpCastInserter::checkMemofType(Exp *memof, SharedType memofType) {
     Exp *addr = ((Unary *)memof)->getSubExp1();
     if (addr->isSubscript()) {
         Exp *addrBase = ((RefExp *)addr)->getSubExp1();
-        Type *actType = ((RefExp *)addr)->getDef()->getTypeFor(addrBase);
-        Type *expectedType = new PointerType(memofType);
-        if (!actType->isCompatibleWith(expectedType)) {
+        SharedType actType = ((RefExp *)addr)->getDef()->getTypeFor(addrBase);
+        SharedType expectedType = PointerType::get(memofType);
+        if (!actType->isCompatibleWith(*expectedType)) {
             ((Unary *)memof)->setSubExp1(new TypedExp(expectedType, addrBase));
         }
     }
@@ -934,14 +934,14 @@ Exp *ExpCastInserter::postVisit(RefExp *e) {
             qDebug() << "ExpCastInserter::postVisit RefExp def is null";
             return e;
         }
-        Type *memofType = def->getTypeFor(base);
+        SharedType memofType = def->getTypeFor(base);
         checkMemofType(base, memofType);
     }
     return e;
 }
 
 static Exp *checkSignedness(Exp *e, int reqSignedness) {
-    Type *ty = e->ascendType();
+    SharedType ty = e->ascendType();
     int currSignedness = 0;
     bool isInt = ty->resolvesToInteger();
     if (isInt) {
@@ -951,11 +951,11 @@ static Exp *checkSignedness(Exp *e, int reqSignedness) {
     // if (!isInt || currSignedness != reqSignedness) { // }
     // Don't want to cast e.g. floats to integer
     if (isInt && currSignedness != reqSignedness) {
-        IntegerType *newtype;
+        std::shared_ptr<IntegerType> newtype;
         if (!isInt)
             newtype = IntegerType::get(STD_SIZE, reqSignedness);
         else
-            newtype = IntegerType::get(((IntegerType *)ty)->getSize(), reqSignedness); // Transfer size
+            newtype = IntegerType::get(std::static_pointer_cast<IntegerType>(ty)->getSize(), reqSignedness); // Transfer size
         newtype->setSigned(reqSignedness);
         return new TypedExp(newtype, e);
     }
@@ -994,7 +994,7 @@ Exp *ExpCastInserter::postVisit(Binary *e) {
 Exp *ExpCastInserter::postVisit(Const *e) {
     if (e->isIntConst()) {
         bool naturallySigned = e->getInt() < 0;
-        Type *ty = e->getType();
+        SharedType ty = e->getType();
         if (naturallySigned && ty->isInteger() && !ty->asInteger()->isSigned()) {
             return new TypedExp(IntegerType::get(ty->asInteger()->getSize(), -1), e);
         }
@@ -1009,7 +1009,7 @@ bool StmtCastInserter::visit(BoolAssign *s) { return common(s); }
 bool StmtCastInserter::common(Assignment *s) {
     Exp *lhs = s->getLeft();
     if (lhs->isMemOf()) {
-        Type *memofType = s->getType();
+        SharedType memofType = s->getType();
         ExpCastInserter::checkMemofType(lhs, memofType);
     }
     return true;
@@ -1091,8 +1091,8 @@ void StmtSsaXformer::visit(CallStatement *s, bool &recur) {
         Function *procDest = s->getDestProc();
         if (procDest && procDest->isLib() && e->isLocal()) {
             UserProc *proc = s->getProc(); // Enclosing proc
-            Type *lty = proc->getLocalType(((Const *)e->getSubExp1())->getStr());
-            Type *ty = as->getType();
+            SharedType lty = proc->getLocalType(((Const *)e->getSubExp1())->getStr());
+            SharedType ty = as->getType();
             if (ty && lty && *ty != *lty) {
                 LOG << "local " << e << " has type " << lty->getCtype() << " that doesn't agree with type of define "
                     << ty->getCtype() << " of a library, why?\n";
@@ -1128,7 +1128,7 @@ bool DfaLocalMapper::processExp(Exp *e) {
             change = true; // We've made a mapping
             // We have probably not even run TA yet, so doing a full descendtype here would be silly
             // Note also that void is compatible with all types, so the symbol effectively covers all types
-            proc->getSymbolExp(e, new VoidType(), true);
+            proc->getSymbolExp(e, VoidType::get(), true);
 #if 0
         } else {
             std::ostringstream ost;

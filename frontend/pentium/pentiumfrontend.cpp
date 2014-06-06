@@ -910,16 +910,16 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, std::list<RTL *> *BB
     Signature *calledSig = call->getDestProc()->getSignature();
     for (unsigned int i = 0; i < calledSig->getNumParams(); i++) {
         // check param type
-        Type *paramType = calledSig->getParamType(i);
-        Type *points_to;
-        CompoundType *compound = nullptr;
+        SharedType paramType = calledSig->getParamType(i);
+        SharedType points_to;
+        std::shared_ptr<CompoundType> compound;
         bool paramIsFuncPointer = false, paramIsCompoundWithFuncPointers = false;
         if (paramType->resolvesToPointer()) {
             points_to = paramType->asPointer()->getPointsTo();
             if (points_to->resolvesToFunc())
                 paramIsFuncPointer = true;
             else if (points_to->resolvesToCompound()) {
-                compound = points_to->asCompound();
+                compound = points_to->as<CompoundType>();
                 for (unsigned int n = 0; n < compound->getNumTypes(); n++) {
                     if (compound->getType(n)->resolvesToPointer() &&
                         compound->getType(n)->asPointer()->getPointsTo()->resolvesToFunc())

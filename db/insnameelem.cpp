@@ -57,7 +57,7 @@ int InsNameElem::ninstructions(void) {
     return (nextelem != nullptr) ? (nextelem->ninstructions() * ntokens()) : ntokens();
 }
 
-void InsNameElem::append(InsNameElem *next) {
+void InsNameElem::append(std::shared_ptr<InsNameElem> next) {
     if (nextelem == nullptr)
         nextelem = next;
     else

@@ -39,8 +39,8 @@ class ConstraintMap {
     iterator begin() { return cmap.begin(); }
     iterator end() { return cmap.end(); }
     void constrain(Exp *loc1, Exp *loc2);
-    void constrain(Exp *loc, Type *t);
-    void constrain(Type *t1, Type *t2);
+    void constrain(Exp *loc, SharedType t);
+    void constrain(SharedType t1, SharedType t2);
     //! Insert a constraint given an equality expression
     //! e.g. Tlocal1 = <char*>
     void insert(Exp *term);
