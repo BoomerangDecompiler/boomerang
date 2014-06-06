@@ -132,6 +132,7 @@ class BinaryFileFactory {
 // TODO: create a default implmentation for this interface that will notify the user about the missing functionality ?
 class BinaryData {
   public:
+    virtual ~BinaryData() {}
     virtual char readNative1(ADDRESS a) = 0;
     // Read 2 bytes from given native address a; considers endianness
     virtual int readNative2(ADDRESS a) = 0; // {return 0;}
@@ -148,6 +149,8 @@ Q_DECLARE_INTERFACE(BinaryData, BinaryInterface_iid)
 
 class SymbolTableInterface {
   public:
+    virtual ~SymbolTableInterface() {}
+
     //! Lookup the address, return the name, or 0 if not found
     virtual const char *SymbolByAddress(ADDRESS uNative) = 0;
     //! Lookup the name, return the address. If not found, return NO_ADDRESS
@@ -170,6 +173,8 @@ Q_DECLARE_INTERFACE(SymbolTableInterface, SymTableInterface_iid)
 
 class ObjcAccessInterface {
   public:
+    virtual ~ObjcAccessInterface() {}
+
     virtual std::map<std::string, ObjcModule> &getObjcModules() = 0;
 };
 Q_DECLARE_INTERFACE(ObjcAccessInterface, ObjcInterface_iid)
@@ -179,6 +184,8 @@ class LoaderInterface {
     typedef std::map<ADDRESS, std::string> tMapAddrToString;
 
   public:
+    virtual ~LoaderInterface() {}
+
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // General loader functions
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -262,6 +269,8 @@ class LoaderInterface {
 Q_DECLARE_INTERFACE(LoaderInterface, LoaderInterface_iid)
 class SectionInterface {
   public:
+    virtual ~SectionInterface() {}
+
     virtual int GetNumSections() const = 0;                 // Return number of sections
     virtual SectionInfo *GetSectionInfo(int idx) const = 0; // Return section struct
     virtual SectionInfo *GetSectionInfoByName(const char *sName) = 0;
@@ -281,60 +290,13 @@ struct LoaderPluginWrapper {
     QObject *plugin;
     template <class T> T *iface() { return plugin ? qobject_cast<T *>(plugin) : nullptr; }
 };
-#if 0
-class BinaryFile : public QObject, public LoaderInterface {
 
-    Q_OBJECT
-    friend class ArchiveFile;       // So can use the protected Load()
-    friend class BinaryFileFactory; // So can use getTextLimits
-  public:
-    BinaryFile(bool bArchive = false);
-    virtual ~BinaryFile() {}
-
-    virtual bool isStringConstant(ADDRESS /*uEntry*/) {
-        return false;
-    } //! returns true if the given address is in a "strings" section
-    virtual bool isCFStringConstant(ADDRESS /*uEntry*/) { return false; }
-
-    // Symbol table functions
-    // virtual const char*     SymbolByAddress(ADDRESS uNative);
-
-    virtual void AddSymbol(ADDRESS /*uNative*/, const char * /*pName*/) {}
-
-    virtual ADDRESS *GetImportStubs(int &numImports);
-    virtual const char *getFilenameSymbolFor(const char * /*sym*/) { return nullptr; }
-
-    // Relocation table functions
-    // virtual bool    IsAddressRelocatable(ADDRESS uNative);
-    // virtual ADDRESS GetRelocatedAddress(ADDRESS uNative);
-    // virtual    ADDRESS    ApplyRelocation(ADDRESS uNative, ADDRESS uWord);
-    // Get symbol associated with relocation at address, if any
-    // virtual const char* GetRelocSym(ADDRESS uNative, ADDRESS *a = nullptr, unsigned int *sz = nullptr) { return
-    // nullptr; }
-
-    virtual std::pair<ADDRESS, unsigned> GetGlobalPointerInfo();
-
-    virtual std::map<ADDRESS, const char *> *GetDynamicGlobalMap();
-
-    // Analysis functions
-    int GetSectionIndexByName(const char *sName);
-
-    virtual tMapAddrToString &getFuncSymbols() {
-        static tMapAddrToString def;
-        return def;
-    }
-    virtual tMapAddrToString &getSymbols() override {
-        static tMapAddrToString def;
-        return def;
-    }
-
-    virtual bool hasDebugInfo() override { return false; }
-
-    ///////////////////////////////////////////////////////////////////////////////
-};
-#endif
 class LoaderCommon : public SectionInterface {
   public:
+    virtual ~LoaderCommon() {
+        delete [] m_pSections;
+    }
+
     LoaderCommon(bool bArch = false) {
         m_bArchive = bArch;    // Remember whether an archive member
         m_iNumSections = 0;    // No sections yet

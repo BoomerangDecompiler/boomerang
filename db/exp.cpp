@@ -31,11 +31,6 @@
 
 extern char debug_buffer[]; ///< For prints functions
 static const char *tlstrchr(const char *str, char ch);
-/***************************************************************************/ /**
-  *
-  * \brief        Constructors
-  * \param        As required
-  ******************************************************************************/
 
 // Derived class constructors
 
@@ -1029,6 +1024,7 @@ void Unary::print(QTextStream &os, bool html) const {
             p1->print(os, html);
             break;
         }
+        [[clang::fallthrough]];
     // Else fall through
     case opMemOf:
     case opAddrOf:
@@ -1876,11 +1872,11 @@ bool Location::match(const std::string &pattern, std::map<std::string, Exp *> &b
   * \note         Caller must free the list li after use, but not the Exp objects that they point to
   * \note         If the top level expression matches, li will contain search
   * \note         Now a static function. Searches pSrc, not this
-  * \param        search: ptr to Exp we are searching for
-  * \param        pSrc: ref to ptr to Exp to search. Reason is that we can then overwrite that pointer
-  *                         to effect a replacement. So we need to append &pSrc in the list. Can't append &this!
-  * \param        li:   list of Exp** where pointers to the matches are found once: true if not all occurrences to be
-  *                         found, false for all
+  * \param        search ptr to Exp we are searching for
+  * \param        pSrc ref to ptr to Exp to search. Reason is that we can then overwrite that pointer
+  *                    to effect a replacement. So we need to append &pSrc in the list. Can't append &this!
+  * \param        li   list of Exp** where pointers to the matches are found once: true if not all occurrences to be
+  *                    found, false for all
   *
   ******************************************************************************/
 void Exp::doSearch(const Exp &search, Exp *&pSrc, std::list<Exp **> &li, bool once) {
@@ -3532,7 +3528,6 @@ Exp *Const::genConstraints(Exp *result) {
                                   new TypeVal(intt))),
             Binary::get(opAnd, Binary::get(opEquals, result->clone(), new TypeVal(alph)),
                         Binary::get(opEquals, new Unary(opTypeOf, this), new TypeVal(alph))));
-        break;
     }
     case opLongConst:
         t = IntegerType::get(64);

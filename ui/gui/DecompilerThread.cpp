@@ -1,11 +1,5 @@
 #include "DecompilerThread.h"
 
-#ifdef HAVE_LIBGC
-#include "gc.h"
-#else
-#define NO_GARBAGE_COLLECTOR
-#endif
-
 #include "boomerang.h"
 #include "log.h"
 #include "prog.h"

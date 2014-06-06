@@ -889,8 +889,8 @@ std::map<ADDRESS, const char *> *ElfBinaryFile::GetDynamicGlobalMap() {
     ADDRESS p = pSect->uHostAddr;
     for (int i = 0; i < numEnt; i++) {
         // The ugly p[1] below is because it p might point to an Elf32_Rela struct, or an Elf32_Rel struct
-        int sym = ELF32_R_SYM(((int *)p.m_value)[1]);
-        int name = pSym[sym].st_name; // Index into string table
+        int sym2 = ELF32_R_SYM(((int *)p.m_value)[1]);
+        int name = pSym[sym2].st_name; // Index into string table
         const char *s = GetStrPtr(idxStr, name);
         ADDRESS val = ADDRESS::g(((int *)p.m_value)[0]);
         (*ret)[val] = s; // Add the (val, s) mapping to ret

@@ -1624,7 +1624,7 @@ void XMLProgParser::start_arraytype(const QXmlStreamAttributes &attr) {
     addId(attr, a);
     QStringRef len = attr.value(QLatin1Literal("length"));
     if (!len.isEmpty())
-        a->length = len.toInt();
+        a->Length = len.toInt();
 }
 
 void XMLProgParser::addToContext_arraytype(Context *c, int e) {
@@ -1632,7 +1632,7 @@ void XMLProgParser::addToContext_arraytype(Context *c, int e) {
     assert(a);
     switch (e) {
     case e_basetype:
-        a->base_type = stack.front()->type;
+        a->BaseType = stack.front()->type;
         break;
     default:
         if (e == e_unknown)
@@ -2232,9 +2232,9 @@ void XMLProgParser::persistToXML(QXmlStreamWriter &out, const Type *ty) {
     if (a) {
         out.writeStartElement("arraytype");
         out.writeAttribute("id", QString::number(ADDRESS::host_ptr(ty).m_value));
-        out.writeAttribute("length", QString::number((int)a->length));
+        out.writeAttribute("length", QString::number((int)a->Length));
         out.writeStartElement("basetype");
-        persistToXML(out, a->base_type);
+        persistToXML(out, a->BaseType);
         out.writeEndElement();
         out.writeEndElement();
         return;

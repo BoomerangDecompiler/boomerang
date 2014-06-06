@@ -12,10 +12,10 @@
 
 
 #include <QDir>
-#include <QtCore/QPluginLoader>
-#include <QtCore/QCoreApplication>
-#include <QtCore/QString>
-#include <QtCore/QDebug>
+#include <QPluginLoader>
+#include <QCoreApplication>
+#include <QString>
+#include <QDebug>
 #include <cstdio>
 
 #define LMMH(x)                                                                                                        \

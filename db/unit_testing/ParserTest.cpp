@@ -14,8 +14,8 @@
 
 #define SPARC_SSL Boomerang::get()->getProgPath() + "frontend/machine/sparc/sparc.ssl"
 static bool logset = false;
-QString TEST_BASE;
-QDir baseDir;
+static QString TEST_BASE;
+static QDir baseDir;
 
 void ParserTest::initTestCase() {
     if (!logset) {

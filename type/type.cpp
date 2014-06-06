@@ -65,24 +65,24 @@ void PointerType::setPointsTo(Type *p) {
 }
 
 PointerType::PointerType(Type *p) : Type(ePointer) { setPointsTo(p); }
-ArrayType::ArrayType(Type *p, unsigned length) : Type(eArray), base_type(p), length(length) {}
+ArrayType::ArrayType(Type *p, unsigned _length) : Type(eArray), BaseType(p), Length(_length) {}
 
 // we actually want unbounded arrays to still work correctly when
 // computing aliases.. as such, we give them a very large bound
 // and hope that no-one tries to alias beyond them
 #define NO_BOUND 9999999
 
-ArrayType::ArrayType(Type *p) : Type(eArray), base_type(p), length(NO_BOUND) {}
+ArrayType::ArrayType(Type *p) : Type(eArray), BaseType(p), Length(NO_BOUND) {}
 
-bool ArrayType::isUnbounded() const { return length == NO_BOUND; }
+bool ArrayType::isUnbounded() const { return Length == NO_BOUND; }
 
 size_t ArrayType::convertLength(Type *b) const {
     // MVE: not sure if this is always the right thing to do
-    if (length != NO_BOUND) {
-        size_t baseSize = base_type->getSize() / 8; // Old base size (one element) in bytes
+    if (Length != NO_BOUND) {
+        size_t baseSize = BaseType->getSize() / 8; // Old base size (one element) in bytes
         if (baseSize == 0)
             baseSize = 1;   // Count void as size 1
-        baseSize *= length; // Old base size (length elements) in bytes
+        baseSize *= Length; // Old base size (length elements) in bytes
         size_t newSize = b->getSize() / 8;
         if (newSize == 0)
             newSize = 1;
@@ -92,17 +92,17 @@ size_t ArrayType::convertLength(Type *b) const {
 }
 void ArrayType::setBaseType(Type *b) {
     // MVE: not sure if this is always the right thing to do
-    if (length != NO_BOUND) {
-        size_t baseSize = base_type->getSize() / 8; // Old base size (one element) in bytes
+    if (Length != NO_BOUND) {
+        size_t baseSize = BaseType->getSize() / 8; // Old base size (one element) in bytes
         if (baseSize == 0)
             baseSize = 1;   // Count void as size 1
-        baseSize *= length; // Old base size (length elements) in bytes
+        baseSize *= Length; // Old base size (length elements) in bytes
         size_t newSize = b->getSize() / 8;
         if (newSize == 0)
             newSize = 1;
-        length = baseSize / newSize; // Preserve same byte size for array
+        Length = baseSize / newSize; // Preserve same byte size for array
     }
-    base_type = b;
+    BaseType = b;
 }
 
 NamedType::NamedType(const QString &_name) : Type(eNamed), name(_name) {}
@@ -165,7 +165,7 @@ Type *PointerType::clone() const {
 }
 
 Type *ArrayType::clone() const {
-    ArrayType *t = new ArrayType(base_type->clone(), length);
+    ArrayType *t = new ArrayType(BaseType->clone(), Length);
     return t;
 }
 
@@ -214,7 +214,7 @@ size_t PointerType::getSize() const {
     // points_to->getSize(); // yes, it was a good idea at the time
     return STD_SIZE;
 }
-size_t ArrayType::getSize() const { return base_type->getSize() * length; }
+size_t ArrayType::getSize() const { return BaseType->getSize() * Length; }
 size_t NamedType::getSize() const {
     Type *ty = resolvesTo();
     if (ty)
@@ -396,7 +396,7 @@ bool PointerType::operator==(const Type &other) const {
 }
 
 bool ArrayType::operator==(const Type &other) const {
-    return other.isArray() && *base_type == *((ArrayType &)other).base_type && ((ArrayType &)other).length == length;
+    return other.isArray() && *BaseType == *((ArrayType &)other).BaseType && ((ArrayType &)other).Length == Length;
 }
 
 bool NamedType::operator==(const Type &other) const { return other.isNamed() && (name == ((NamedType &)other).name); }
@@ -522,7 +522,7 @@ bool ArrayType::operator<(const Type &other) const {
         return true;
     if (id > other.getId())
         return false;
-    return (*base_type < *((ArrayType &)other).base_type);
+    return (*BaseType < *((ArrayType &)other).BaseType);
 }
 
 bool NamedType::operator<(const Type &other) const {
@@ -611,7 +611,7 @@ Exp *PointerType::match(Type *pattern) {
 
 Exp *ArrayType::match(Type *pattern) {
     if (pattern->isArray())
-        return base_type->match(pattern);
+        return BaseType->match(pattern);
     return Type::match(pattern);
 }
 
@@ -700,19 +700,14 @@ QString IntegerType::getCtype(bool final) const {
         switch (size) {
         case 32:
             return "unsigned int";
-            break;
         case 16:
             return "unsigned short";
-            break;
         case 8:
             return "unsigned char";
-            break;
         case 1:
             return "bool";
-            break;
         case 64:
             return "unsigned long long";
-            break;
         default:
             if (final)
                 return "unsigned int";
@@ -726,13 +721,10 @@ QString FloatType::getCtype(bool /*final*/) const {
     switch (size) {
     case 32:
         return "float";
-        break;
     case 64:
         return "double";
-        break;
     default:
         return "double";
-        break;
     }
 }
 
@@ -750,10 +742,10 @@ QString PointerType::getCtype(bool final) const {
 }
 
 QString ArrayType::getCtype(bool final) const {
-    QString s = base_type->getCtype(final);
+    QString s = BaseType->getCtype(final);
     if (isUnbounded())
         return s + "[]";
-    return s + "[" + QString::number(length) + "]";
+    return s + "[" + QString::number(Length) + "]";
 }
 
 QString NamedType::getCtype(bool /*final*/) const { return name; }
@@ -855,10 +847,10 @@ void Type::dumpNames() {
 
 /***************************************************************************/ /**
   *
-  * \brief    Given the name of a temporary variable, return its Type
-  * \note        Caller must delete result
-  * \param    name: reference to a string (e.g. "tmp", "tmpd")
-  * \returns        Ptr to a new Type object
+  * \brief   Given the name of a temporary variable, return its Type
+  * \note    Caller must delete result
+  * \param   name reference to a string (e.g. "tmp", "tmpd")
+  * \returns       Ptr to a new Type object
   ******************************************************************************/
 Type *Type::getTempType(const std::string &name) {
     Type *ty;
@@ -980,11 +972,11 @@ Type *NamedType::resolvesTo() const {
 }
 
 void ArrayType::fixBaseType(Type *b) {
-    if (base_type == nullptr)
-        base_type = b;
+    if (BaseType == nullptr)
+        BaseType = b;
     else {
-        assert(base_type->isArray());
-        base_type->asArray()->fixBaseType(b);
+        assert(BaseType->isArray());
+        BaseType->asArray()->fixBaseType(b);
     }
 }
 

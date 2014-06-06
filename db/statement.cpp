@@ -596,11 +596,11 @@ Instruction *Instruction::getNextStatementInBB() {
 }
 
 /***************************************************************************/ /**
-  * \brief        Output operator for Statement*
-  *                    Just makes it easier to use e.g. LOG_STREAM() << myStmtStar
-  * \param        os: output stream to send to
-  *                    p: ptr to Statement to print to the stream
-  * \returns             copy of os (for concatenation)
+  * \brief Output operator for Instruction*
+  *        Just makes it easier to use e.g. LOG_STREAM() << myStmtStar
+  * \param os output stream to send to
+  * \param s  ptr to Statement to print to the stream
+  * \returns copy of os (for concatenation)
   ******************************************************************************/
 QTextStream &operator<<(QTextStream &os, const Instruction *s) {
     if (s == nullptr) {
@@ -1093,11 +1093,12 @@ bool GotoStatement::searchAll(const Exp &search, std::list<Exp *> &result) {
 }
 
 /***************************************************************************/ /**
-  * \fn        GotoStatement::print
-  * \brief        Display a text reprentation of this RTL to the given stream
-  * \note            Usually called from RTL::print, in which case the first 9
+  * \fn     GotoStatement::print
+  * \brief  Display a text reprentation of this RTL to the given stream
+  * \note   Usually called from RTL::print, in which case the first 9
   *                      chars of the print have already been output to os
-  * \param        os: stream to write to
+  * \param  os - stream to write to
+  * \param  html - print in html
   *
   ******************************************************************************/
 void GotoStatement::print(QTextStream & os, bool html) const {
@@ -2188,9 +2189,9 @@ bool CallStatement::searchAll(const Exp &search, std::list<Exp *> &result) {
 }
 
 /***************************************************************************/ /**
-  * \fn        CallStatement::print
-  * \brief        Write a text representation of this RTL to the given stream
-  * \param        os: stream to write to
+  * \fn    CallStatement::print
+  * \brief Write a text representation of this RTL to the given stream
+  * \param os - stream to write to
   *
   ******************************************************************************/
 void CallStatement::print(QTextStream & os, bool html) const {
@@ -4731,7 +4732,7 @@ class ArgSourceProvider {
     Exp *localise(Exp *e); // Localise to this call if necessary
 };
 
-ArgSourceProvider::ArgSourceProvider(CallStatement * call) : call(call) {
+ArgSourceProvider::ArgSourceProvider(CallStatement * _call) : call(_call) {
     Function *procDest = call->getDestProc();
     if (procDest && procDest->isLib()) {
         src = SRC_LIB;
@@ -4947,8 +4948,8 @@ StatementList *CallStatement::calcResults() {
     if (procDest) {
         Signature *sig = procDest->getSignature();
         if (procDest && procDest->isLib()) {
-            int n = sig->getNumReturns();
-            for (int i = 0; i < n; i++) { // Ignore first (stack pointer) return
+            size_t n = sig->getNumReturns();
+            for (size_t i = 0; i < n; i++) { // Ignore first (stack pointer) return
                 Exp *sigReturn = sig->getReturnExp(i);
                 if (sigReturn->isRegN(sig->getStackRegister(proc->getProg())))
                     continue; // ignore stack reg

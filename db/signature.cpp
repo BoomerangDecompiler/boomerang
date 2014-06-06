@@ -87,7 +87,7 @@ class Win32Signature : public Signature {
 
     virtual Signature *promote(UserProc *) override;
     virtual Exp *getStackWildcard() override;
-    virtual int getStackRegister() throw(StackRegisterNotDefinedException) override { return 28; }
+    virtual int getStackRegister() noexcept(false) override { return 28; }
     virtual Exp *getProven(Exp *left) override;
     virtual bool isPreserved(Exp *e) override;                    // Return whether e is preserved by this proc
     virtual void setLibraryDefines(StatementList *defs) override; // Set list of locations def'd by library calls
@@ -127,7 +127,7 @@ class PentiumSignature : public Signature {
 
     virtual Signature *promote(UserProc *) override;
     virtual Exp *getStackWildcard() override;
-    virtual int getStackRegister() throw(StackRegisterNotDefinedException) override { return 28; }
+    virtual int getStackRegister() noexcept(false) override { return 28; }
     virtual Exp *getProven(Exp *left) override;
     virtual bool isPreserved(Exp *e) override;                    // Return whether e is preserved by this proc
     virtual void setLibraryDefines(StatementList *defs) override; // Set list of locations def'd by library calls
@@ -154,7 +154,7 @@ class SparcSignature : public Signature {
 
     virtual Signature *promote(UserProc *) override;
     virtual Exp *getStackWildcard() override;
-    virtual int getStackRegister() throw(StackRegisterNotDefinedException) override { return 14; }
+    virtual int getStackRegister() noexcept(false) override { return 14; }
     virtual Exp *getProven(Exp *left) override;
     virtual bool isPreserved(Exp *e) override;                    // Return whether e is preserved by this proc
     virtual void setLibraryDefines(StatementList *defs) override; // Set list of locations def'd by library calls
@@ -189,7 +189,7 @@ class PPCSignature : public Signature {
     virtual void addParameter(Type *type, const char *nam /*= nullptr*/, Exp *e /*= nullptr*/,
                               const char *boundMax /*= ""*/) override;
     virtual Exp *getStackWildcard() override;
-    virtual int getStackRegister() throw(StackRegisterNotDefinedException) override { return 1; }
+    virtual int getStackRegister() noexcept(false) override { return 1; }
     virtual Exp *getProven(Exp *left) override;
     virtual bool isPreserved(Exp *e) override;                    // Return whether e is preserved by this proc
     virtual void setLibraryDefines(StatementList *defs) override; // Set list of locations def'd by library calls
@@ -214,7 +214,7 @@ class MIPSSignature : public Signature {
     virtual void addParameter(Type *type, const char *nam /*= nullptr*/, Exp *e /*= nullptr*/,
                               const char *boundMax /*= ""*/) override;
     virtual Exp *getStackWildcard() override;
-    virtual int getStackRegister() throw(StackRegisterNotDefinedException) override { return 1; }
+    virtual int getStackRegister() noexcept(false) override { return 1; }
     virtual Exp *getProven(Exp *left) override;
     virtual bool isPreserved(Exp *e) override;                    // Return whether e is preserved by this proc
     virtual void setLibraryDefines(StatementList *defs) override; // Set list of locations def'd by library calls
@@ -239,7 +239,7 @@ class ST20Signature : public Signature {
 
     virtual Signature *promote(UserProc *) override;
     virtual Exp *getStackWildcard() override;
-    virtual int getStackRegister() throw(StackRegisterNotDefinedException) override { return 3; }
+    virtual int getStackRegister() noexcept(false) override { return 3; }
     virtual Exp *getProven(Exp *left) override;
     virtual bool isPromoted() override { return true; }
     // virtual bool isLocalOffsetPositive() {return true;}
@@ -1532,20 +1532,24 @@ void Signature::setABIdefines(Prog *prog, StatementList *defs) {
         defs->append(new ImplicitAssign(Location::regOf(24))); // eax
         defs->append(new ImplicitAssign(Location::regOf(25))); // ecx
         defs->append(new ImplicitAssign(Location::regOf(26))); // edx
+        break;
     }
     case MACHINE_SPARC: {
         for (int r = 8; r <= 13; ++r)
             defs->append(new ImplicitAssign(Location::regOf(r))); // %o0-o5
         defs->append(new ImplicitAssign(Location::regOf(1)));     // %g1
+        break;
     }
     case MACHINE_PPC: {
         for (int r = 3; r <= 12; ++r)
             defs->append(new ImplicitAssign(Location::regOf(r))); // r3-r12
+        break;
     }
     case MACHINE_ST20: {
         defs->append(new ImplicitAssign(Location::regOf(0))); // A
         defs->append(new ImplicitAssign(Location::regOf(1))); // B
         defs->append(new ImplicitAssign(Location::regOf(2))); // C
+        break;
     }
     default:
         break;

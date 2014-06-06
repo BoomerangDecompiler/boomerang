@@ -389,7 +389,6 @@ std::list<Instruction *> *RTLInstDict::instantiateRTL(RTL &rtl, ADDRESS /*natPC*
     rtl.deepCopyList(*newList);
 
     // Iterate through each Statement of the new list of stmts
-    std::list<Instruction *>::iterator ss;
     for (Instruction *ss : *newList) {
         // Search for the formals and replace them with the actuals
         auto param = params.begin();
@@ -410,8 +409,9 @@ std::list<Instruction *> *RTLInstDict::instantiateRTL(RTL &rtl, ADDRESS /*natPC*
     transformPostVars(*newList, true);
 
     // Perform simplifications, e.g. *1 in Pentium addressing modes
-    for (ss = newList->begin(); ss != newList->end(); ss++) {
-        (*ss)->simplify();
+    std::list<Instruction *>::iterator iter;
+    for (iter = newList->begin(); iter != newList->end(); iter++) {
+        (*iter)->simplify();
     }
 
     return newList;

@@ -32,9 +32,9 @@
 #define USE_DOMINANCE_NUMS 1 // Set true to store a statement number that has dominance properties
 #include "types.h"
 
-#include <QtCore/QObject>
-#include <QtCore/QDir>
-#include <QtCore/QTextStream>
+#include <QObject>
+#include <QDir>
+#include <QTextStream>
 #include <string>
 #include <set>
 #include <vector>

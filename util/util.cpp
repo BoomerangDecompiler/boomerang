@@ -93,7 +93,7 @@ char *escapeStr(const char *str) {
     return ret;
 }
 #include "types.h"
-#include <QtCore/QTextStream>
+#include <QTextStream>
 QTextStream& operator<<(QTextStream& os, const ADDRESS& mdv) {
     //TODO: properly format ADDRESS : 0-fill to max width.
     os << QString::number(mdv.m_value,16);

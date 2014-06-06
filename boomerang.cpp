@@ -28,12 +28,12 @@
 #define NO_GARBAGE_COLLECTOR
 #endif
 
+#include <QDebug>
 #include <inttypes.h>
 #include <cstring>
 #include <cstdlib>
 #include <fstream>
 #include <ctime>
-#include <QtCore>
 
 Boomerang *Boomerang::boomerang = nullptr;
 
@@ -268,6 +268,7 @@ int Boomerang::processCommand(QStringList &args) {
         } else {
             prog->decompile();
         }
+        break;
     }
     case CT_codegen: {
         if (prog == nullptr) {
@@ -284,6 +285,7 @@ int Boomerang::processCommand(QStringList &args) {
         } else {
             prog->generateCode();
         }
+        break;
     }
     case CT_move: {
         if (prog == nullptr) {
@@ -335,6 +337,7 @@ int Boomerang::processCommand(QStringList &args) {
             err_stream << "don't know how to move a " << args[1] << "\n";
             return 1;
         }
+        break;
     }
     case CT_add: {
         if (prog == nullptr) {
@@ -371,6 +374,7 @@ int Boomerang::processCommand(QStringList &args) {
             err_stream << "don't know how to add a " << args[1] << "\n";
             return 1;
         }
+        break;
     }
     case CT_delete: {
         if (prog == nullptr) {
@@ -410,6 +414,7 @@ int Boomerang::processCommand(QStringList &args) {
             err_stream << "don't know how to delete a " << args[1] << "\n";
             return 1;
         }
+        break;
     }
     case CT_rename: {
         if (prog == nullptr) {
@@ -462,6 +467,7 @@ int Boomerang::processCommand(QStringList &args) {
             err_stream << "don't know how to rename a " << args[1] << "\n";
             return 1;
         }
+        break;
     }
     case CT_info: {
         if (prog == nullptr) {
@@ -546,6 +552,7 @@ int Boomerang::processCommand(QStringList &args) {
             err_stream << "don't know how to print info about a " << args[1] << "\n";
             return 1;
         }
+        // no break needed all branches return
     }
     case CT_print: {
         if (prog == nullptr) {

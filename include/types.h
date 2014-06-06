@@ -6,7 +6,7 @@
 #define __TYPES_H__
 
 
-#include <QtCore/QObject>
+#include <QObject>
 #include <iosfwd>
 #include <stdint.h>
 class QTextStream;

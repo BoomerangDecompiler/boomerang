@@ -12,8 +12,6 @@
   *                manner
   ******************************************************************************/
 
-#include <sstream>
-#include <cstring>
 #include "config.h"
 #ifdef HAVE_LIBGC
 #include "gc.h"
@@ -30,13 +28,11 @@
 #include "proc.h"
 #include "util.h"
 
-static int nextUnionNumber = 0;
+#include <sstream>
+#include <cstring>
+#include <utility>
 
-#ifndef max
-int max(int a, int b) { // Faster to write than to find the #include for
-    return a > b ? a : b;
-}
-#endif
+static int nextUnionNumber = 0;
 
 #define DFA_ITER_LIMIT 20
 
@@ -342,7 +338,7 @@ Type *IntegerType::meetWith(Type *other, bool &ch, bool bHighestPtr) const {
         ch |= ((signedness < 0) != (oldSignedness < 0)); // Changed from unsigned to not necessarily unsigned
         // Size. Assume 0 indicates unknown size
         unsigned oldSize = size;
-        size = max(size, otherInt->size);
+        size = std::max(size, otherInt->size);
         ch |= (size != oldSize);
         return (Type *)this;
     }
@@ -355,7 +351,7 @@ Type *IntegerType::meetWith(Type *other, bool &ch, bool bHighestPtr) const {
             return (Type *)this;
         LOG << "integer size " << size << " meet with SizeType size " << ((SizeType *)other)->getSize() << "!\n";
         unsigned oldSize = size;
-        size = max(size, ((SizeType *)other)->getSize());
+        size = std::max(size, ((SizeType *)other)->getSize());
         ch = size != oldSize;
         return (Type *)this;
     }
@@ -367,15 +363,15 @@ Type *FloatType::meetWith(Type *other, bool &ch, bool bHighestPtr) const {
         return (Type *)this;
     if (other->resolvesToFloat()) {
         FloatType *otherFlt = other->asFloat();
-        unsigned oldSize = size;
-        size = max(size, otherFlt->size);
+        size_t oldSize = size;
+        size = std::max(size, otherFlt->size);
         ch |= size != oldSize;
         return (Type *)this;
     }
     if (other->resolvesToSize()) {
-        unsigned otherSize = other->getSize();
+        size_t otherSize = other->getSize();
         ch |= size != otherSize;
-        size = max(size, otherSize);
+        size = std::max(size, otherSize);
         return (Type *)this;
     }
     return createUnion(other, ch, bHighestPtr);
@@ -469,18 +465,18 @@ Type *ArrayType::meetWith(Type *other, bool &ch, bool bHighestPtr) const {
         return (Type *)this;
     if (other->resolvesToArray()) {
         ArrayType *otherArr = other->asArray();
-        Type *newBase = base_type->clone()->meetWith(otherArr->base_type, ch, bHighestPtr);
-        if (*newBase != *base_type) {
+        Type *newBase = BaseType->clone()->meetWith(otherArr->BaseType, ch, bHighestPtr);
+        if (*newBase != *BaseType) {
             ch = true;
-            length = convertLength(newBase);
-            base_type = newBase; // No: call setBaseType to adjust length
+            Length = convertLength(newBase);
+            BaseType = newBase; // No: call setBaseType to adjust length
         }
         if (other->asArray()->getLength() < getLength()) {
-            length = other->asArray()->getLength();
+            Length = other->asArray()->getLength();
         }
         return (Type *)this;
     }
-    if (*base_type == *other)
+    if (*BaseType == *other)
         return (Type *)this;
     // Needs work?
     return createUnion(other, ch, bHighestPtr);
@@ -587,7 +583,7 @@ Type *SizeType::meetWith(Type *other, bool &ch, bool bHighestPtr) const {
         if (((SizeType *)other)->size != size) {
             LOG << "size " << size << " meet with size " << ((SizeType *)other)->size << "!\n";
             unsigned oldSize = size;
-            size = max(size, ((SizeType *)other)->size);
+            size = std::max(size, ((SizeType *)other)->size);
             ch = size != oldSize;
         }
         return (Type *)this;
@@ -1443,11 +1439,11 @@ bool NamedType::isCompatible(const Type *other, bool /*all*/) const {
 bool ArrayType::isCompatible(const Type *other, bool all) const {
     if (other->resolvesToVoid())
         return true;
-    if (other->resolvesToArray() && base_type->isCompatibleWith(other->asArray()->base_type))
+    if (other->resolvesToArray() && BaseType->isCompatibleWith(other->asArray()->BaseType))
         return true;
     if (other->resolvesToUnion())
         return other->isCompatibleWith(this);
-    if (!all && base_type->isCompatibleWith(other))
+    if (!all && BaseType->isCompatibleWith(other))
         return true; // An array of x is compatible with x
     return false;
 }

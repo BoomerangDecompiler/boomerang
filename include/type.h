@@ -16,17 +16,18 @@
 
 #ifndef __TYPE_H__
 #define __TYPE_H__
+#include "memo.h"
+#include "types.h" // For STD_SIZE
 
 #include <string>
 #include <map>
+#include <memory>
 #include <functional> // For binary_function
 #include <vector>
 #include <cassert>
 #include <list>
 #include <fstream>
 #include <QString>
-#include "memo.h"
-#include "types.h" // For STD_SIZE
 
 class Signature;
 class UserProc;
@@ -456,20 +457,20 @@ class PointerType : public Type {
 
 class ArrayType : public Type {
   private:
-    mutable Type *base_type;
-    mutable unsigned length;
+    mutable Type *BaseType;
+    mutable size_t Length;
 
   public:
-    ArrayType(Type *p, unsigned length);
+    ArrayType(Type *p, unsigned Length);
     ArrayType(Type *p);
     virtual ~ArrayType();
     virtual bool isArray() const { return true; }
-    Type *getBaseType() { return base_type; }
-    const Type *getBaseType() const { return base_type; }
+    Type *getBaseType() { return BaseType; }
+    const Type *getBaseType() const { return BaseType; }
     void setBaseType(Type *b);
     void fixBaseType(Type *b);
-    unsigned getLength() const { return length; }
-    void setLength(unsigned n) { length = n; }
+    size_t getLength() const { return Length; }
+    void setLength(unsigned n) { Length = n; }
     bool isUnbounded() const;
 
     virtual Type *clone() const;
@@ -491,7 +492,7 @@ class ArrayType : public Type {
 
   protected:
     friend class XMLProgParser;
-    ArrayType() : Type(eArray), base_type(nullptr), length(0) {}
+    ArrayType() : Type(eArray), BaseType(nullptr), Length(0) {}
 }; // class ArrayType
 
 class NamedType : public Type {
