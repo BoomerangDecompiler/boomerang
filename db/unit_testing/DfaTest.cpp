@@ -191,10 +191,7 @@ void DfaTest::testMeetPointer() {
     QVERIFY(ch == false);
 
     res = pi32.meetWith(i32, ch, false);
-
-    ost1 << res->getCtype();
-    QCOMPARE(actual,QString("union"));
-    actual.clear();
+    QVERIFY(res->isUnion());
 }
 
 /***************************************************************************/ /**
