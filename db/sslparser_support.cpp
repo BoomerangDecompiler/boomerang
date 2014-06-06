@@ -13,6 +13,7 @@
 #include "util.h" // E.g. str()
 #include "statement.h"
 #include "exp.h"
+#include "boomerang.h"
 
 #include <cassert>
 #include <sstream>
@@ -386,7 +387,7 @@ void init_sslparser() {
   * \param   o_rtlist Original rtlist object (before expanding)
   * \param   Dict Ref to the dictionary that will contain the results of the parse
   ******************************************************************************/
-void SSLParser::expandTables(InsNameElem *iname, std::list<std::string> *params, RTL *o_rtlist, RTLInstDict &Dict) {
+void SSLParser::expandTables(const std::shared_ptr<InsNameElem> &iname, std::list<std::string> *params, RTL *o_rtlist, RTLInstDict &Dict) {
     int i, m;
     std::string nam;
     std::ostringstream o;

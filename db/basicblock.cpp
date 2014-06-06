@@ -2086,9 +2086,9 @@ bool BasicBlock::decodeIndirectJmp(UserProc *proc) {
             Global *glo = prog->getGlobal(con->getStr());
             assert(glo);
             // Set the type to pointer to function, if not already
-            Type *ty = glo->getType();
-            if (!ty->isPointer() && !((PointerType *)ty)->getPointsTo()->isFunc())
-                glo->setType(new PointerType(new FuncType()));
+            SharedType ty = glo->getType();
+            if (!ty->isPointer() && !std::static_pointer_cast<PointerType>(ty)->getPointsTo()->isFunc())
+                glo->setType(PointerType::get(FuncType::get()));
             ADDRESS addr = glo->getAddress();
             // FIXME: not sure how to find K1 from here. I think we need to find the earliest(?) entry in the data
             // map that overlaps with addr

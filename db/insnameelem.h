@@ -12,6 +12,7 @@
 #include "table.h"
 
 #include <map>
+#include <memory>
 
 class InsNameElem {
 
@@ -24,13 +25,13 @@ public:
     virtual void getrefmap(std::map<std::string, InsNameElem *> &m);
 
     int ninstructions(void);
-    void append(InsNameElem *next);
+    void append(std::shared_ptr<InsNameElem> next);
     bool increment(void);
     void reset(void);
     int getvalue(void) const;
 
 protected:
-    InsNameElem *nextelem;
+    std::shared_ptr<InsNameElem> nextelem;
     std::string elemname;
     size_t value;
 };

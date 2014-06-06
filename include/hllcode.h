@@ -108,8 +108,8 @@ class HLLCode {
     // procedure related
     virtual void AddProcStart(UserProc *proc) = 0;
     virtual void AddProcEnd() = 0;
-    virtual void AddLocal(const char *name, Type *type, bool last = false) = 0;
-    virtual void AddGlobal(const QString &name, Type *type, Exp *init = nullptr) = 0;
+    virtual void AddLocal(const char *name, SharedType type, bool last = false) = 0;
+    virtual void AddGlobal(const QString &name, SharedType type, Exp *init = nullptr) = 0;
     virtual void AddPrototype(UserProc *proc) = 0;
 
     // comments

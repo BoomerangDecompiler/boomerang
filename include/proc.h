@@ -18,18 +18,19 @@
 #ifndef _PROC_H_
 #define _PROC_H_
 
-#include <list>
-#include <vector>
-#include <map>
-#include <set>
-#include <string>
-#include <cassert>
 #include "exp.h" // For lessExpStar
 #include "cfg.h" // For cfg->simplify()
 //#include "hllcode.h"
 #include "memo.h"
 #include "dataflow.h"  // For class UseCollector
 #include "statement.h" // For embedded ReturnStatement pointer, etc
+
+#include <list>
+#include <vector>
+#include <map>
+#include <set>
+#include <string>
+#include <cassert>
 
 class Prog;
 class UserProc;
@@ -48,6 +49,7 @@ class Signature;
 class Cluster;
 class XMLProgParser;
 class QTextStream;
+class Log;
 /***************************************************************************/ /**
   * Procedure class.
   ******************************************************************************/
@@ -202,7 +204,7 @@ class UserProc : public Function {
      * conversion from SSA form, since it is then difficult to access the definitions of locations.
      * This map could be combined with symbolMap below, but beware of parameters (in symbols but not locals)
      */
-    std::map<std::string, Type *> locals;
+    std::map<std::string, SharedType > locals;
 
     int nextLocal = 0; //!< Number of the next local. Can't use locals.size() because some get deleted
     int nextParam = 0; //!< Number for param1, param2, etc
@@ -326,8 +328,8 @@ class UserProc : public Function {
     void mapLocalsAndParams();
     void findFinalParameters();
     int nextParamNum() { return ++nextParam; }
-    void addParameter(Exp *e, Type *ty);
-    void insertParameter(Exp *e, Type *ty);
+    void addParameter(Exp *e, SharedType ty);
+    void insertParameter(Exp *e, SharedType ty);
     //        void        addNewReturns(int depth);
     void updateArguments();
     void updateCallDefines();
@@ -419,25 +421,25 @@ class UserProc : public Function {
     StatementList &getModifieds() { return theReturnStatement->getModifieds(); }
 
   public:
-    Exp *getSymbolExp(Exp *le, Type *ty = nullptr, bool lastPass = false);
-    Exp *newLocal(Type *ty, Exp *e, char *nam = nullptr);
-    void addLocal(Type *ty, const QString &nam, Exp *e);
-    Type *getLocalType(const char *nam);
-    void setLocalType(const char *nam, Type *ty);
-    Type *getParamType(const char *nam);
+    Exp *getSymbolExp(Exp *le, SharedType ty = nullptr, bool lastPass = false);
+    Exp *newLocal(SharedType ty, Exp *e, char *nam = nullptr);
+    void addLocal(SharedType ty, const QString &nam, Exp *e);
+    SharedType getLocalType(const char *nam);
+    void setLocalType(const char *nam, SharedType ty);
+    SharedType getParamType(const char *nam);
     const Exp *expFromSymbol(const char *nam) const;
     void mapSymbolTo(const Exp *from, Exp *to);
     void mapSymbolToRepl(const Exp *from, Exp *oldTo, Exp *newTo);
     void removeSymbolMapping(const Exp *from, Exp *to);
-    Exp *getSymbolFor(const Exp *e, Type *ty);
-    const char *lookupSym(const Exp *e, Type *ty);
+    Exp *getSymbolFor(const Exp *e, SharedType ty);
+    const char *lookupSym(const Exp *e, SharedType ty);
     const char *lookupSymFromRef(RefExp *r);
     const char *lookupSymFromRefAny(RefExp *r);
     const char *lookupParam(Exp *e);
     void checkLocalFor(RefExp *r);
-    Type *getTypeForLocation(const Exp *e);
-    const Type *getTypeForLocation(const Exp *e) const;
-    const char *findLocal(Exp *e, Type *ty);
+    SharedType getTypeForLocation(const Exp *e);
+    const SharedType getTypeForLocation(const Exp *e) const;
+    const char *findLocal(Exp *e, SharedType ty);
     const char *findLocalFromRef(RefExp *r);
     const char *findFirstSymbol(Exp *e);
     int getNumLocals() { return (int)locals.size(); }
@@ -447,8 +449,8 @@ class UserProc : public Function {
     virtual void renameParam(const char *oldName, const char *newName);
 
     QString getRegName(Exp *r);
-    void setParamType(const char *nam, Type *ty);
-    void setParamType(int idx, Type *ty);
+    void setParamType(const char *nam, SharedType ty);
+    void setParamType(int idx, SharedType ty);
 
     BasicBlock *getEntryBB();
     void setEntryBB();
@@ -477,7 +479,7 @@ class UserProc : public Function {
     void printUseGraph();
 
     bool searchAndReplace(const Exp &search, Exp *replace);
-    void castConst(int num, Type *ty);
+    void castConst(int num, SharedType ty);
     /// Add a location to the UseCollector; this means this location is used before defined,
     /// and hence is an *initial* parameter.
     /// \note final parameters don't use this information; it's only for handling recursion.
@@ -497,7 +499,7 @@ class UserProc : public Function {
     ReturnStatement *getTheReturnStatement() { return theReturnStatement; }
     bool filterReturns(Exp *e);
     bool filterParams(Exp *e);
-    void setImplicitRef(Instruction *s, Exp *a, Type *ty);
+    void setImplicitRef(Instruction *s, Exp *a, SharedType ty);
 
     void verifyPHIs();
     void debugPrintAll(const char *c);

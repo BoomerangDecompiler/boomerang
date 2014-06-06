@@ -197,7 +197,7 @@ void Prog::generateCode(Cluster *cluster, UserProc *proc, bool /*intermixRTL*/) 
                             n = 256 + n;
                         l = Binary::get(opList, new Const(n), l);
                     }
-                    code->AddGlobal(sections[j], new ArrayType(IntegerType::get(8, -1), info ? info->uSectionSize : 0),
+                    code->AddGlobal(sections[j], ArrayType::get(IntegerType::get(8, -1), info ? info->uSectionSize : 0),
                                     l);
                 }
                 code->AddGlobal("source_endianness", IntegerType::get(STD_SIZE),
@@ -493,9 +493,9 @@ Function *Prog::setNewProc(ADDRESS uAddr) {
 
 #if defined(_WIN32) && !defined(__MINGW32__)
 
-Type *typeFromDebugInfo(int index, DWORD64 ModBase);
+SharedType typeFromDebugInfo(int index, DWORD64 ModBase);
 
-Type *makeUDT(int index, DWORD64 ModBase) {
+SharedType makeUDT(int index, DWORD64 ModBase) {
     HANDLE hProcess = GetCurrentProcess();
     int got;
     WCHAR *name;
@@ -504,10 +504,10 @@ Type *makeUDT(int index, DWORD64 ModBase) {
     if (got) {
         char nameA[1024];
         WideCharToMultiByte(CP_ACP, 0, name, -1, nameA, sizeof(nameA), 0, nullptr);
-        Type *ty = Type::getNamedType(nameA);
+        SharedType ty = Type::getNamedType(nameA);
         if (ty)
-            return new NamedType(nameA);
-        CompoundType *cty = new CompoundType();
+            return NamedType::get(nameA);
+        CompoundSharedType cty = CompoundType::get();
         DWORD count = 0;
         got = dbghelp::SymGetTypeInfo(hProcess, ModBase, index, dbghelp::TI_GET_CHILDRENCOUNT, &count);
         int FindChildrenSize = sizeof(dbghelp::TI_FINDCHILDREN_PARAMS) + count * sizeof(ULONG);
@@ -526,12 +526,12 @@ Type *makeUDT(int index, DWORD64 ModBase) {
         Type::addNamedType(nameA, cty);
         ty = Type::getNamedType(nameA);
         assert(ty);
-        return new NamedType(nameA);
+        return NamedType::get(nameA);
     }
     return nullptr;
 }
 
-Type *typeFromDebugInfo(int index, DWORD64 ModBase) {
+SharedType typeFromDebugInfo(int index, DWORD64 ModBase) {
     HANDLE hProcess = GetCurrentProcess();
 
     int got;
@@ -547,28 +547,28 @@ Type *typeFromDebugInfo(int index, DWORD64 ModBase) {
         return makeUDT(index, ModBase);
     case 13:
         // TODO: signature
-        return new FuncType();
+        return FuncType::get();
     case 14:
         got = dbghelp::SymGetTypeInfo(hProcess, ModBase, index, dbghelp::TI_GET_TYPE, &d);
         assert(got);
-        return new PointerType(typeFromDebugInfo(d, ModBase));
+        return PointerType::get(typeFromDebugInfo(d, ModBase));
     case 15:
         got = dbghelp::SymGetTypeInfo(hProcess, ModBase, index, dbghelp::TI_GET_TYPE, &d);
         assert(got);
         got = dbghelp::SymGetTypeInfo(hProcess, ModBase, index, dbghelp::TI_GET_LENGTH, &lsz);
         assert(got);
-        return new ArrayType(typeFromDebugInfo(d, ModBase), (unsigned)lsz);
+        return ArrayType::get(typeFromDebugInfo(d, ModBase), (unsigned)lsz);
         break;
     case 16:
         got = dbghelp::SymGetTypeInfo(hProcess, ModBase, index, dbghelp::TI_GET_BASETYPE, &d);
         assert(got);
         switch (d) {
         case 1:
-            return new VoidType();
+            return VoidType::get();
         case 2:
-            return new CharType();
+            return CharType::get();
         case 3:
-            return new CharType();
+            return CharType::get();
         case 6:  // int
         case 13: // long
             return IntegerType::get(sz, 1);
@@ -608,7 +608,7 @@ BOOL CALLBACK addSymbol(dbghelp::PSYMBOL_INFO pSymInfo, ULONG SymbolSize, PVOID 
     Proc *proc = (Proc *)UserContext;
     const char *name = proc->getName();
     if (pSymInfo->Flags & SYMFLAG_PARAMETER) {
-        Type *ty = typeFromDebugInfo(pSymInfo->TypeIndex, pSymInfo->ModBase);
+        SharedType ty = typeFromDebugInfo(pSymInfo->TypeIndex, pSymInfo->ModBase);
         if (pSymInfo->Flags & SYMFLAG_REGREL) {
             assert(pSymInfo->Register == 8); // ebp
             proc->getSignature()->addParameter(
@@ -623,7 +623,7 @@ BOOL CALLBACK addSymbol(dbghelp::PSYMBOL_INFO pSymInfo, ULONG SymbolSize, PVOID 
         assert(pSymInfo->Register == 8);
         Exp *memref =
             Location::memOf(Binary::get(opMinus, Location::regOf(28), new Const(-((int)pSymInfo->Address - 4))));
-        Type *ty = typeFromDebugInfo(pSymInfo->TypeIndex, pSymInfo->ModBase);
+        SharedType ty = typeFromDebugInfo(pSymInfo->TypeIndex, pSymInfo->ModBase);
         u->addLocal(ty, pSymInfo->Name, memref);
     }
     return TRUE;
@@ -675,7 +675,7 @@ Function *Prog::newProc(const char *name, ADDRESS uNative, bool bLib /*= false*/
             }
 
             // get a return type
-            Type *rtype = typeFromDebugInfo(retType, sym->ModBase);
+            SharedType rtype = typeFromDebugInfo(retType, sym->ModBase);
             if (!rtype->isVoid()) {
                 pProc->getSignature()->addReturn(rtype, Location::regOf(24));
             }
@@ -865,7 +865,7 @@ Global *Prog::getGlobal(const QString &nam) {
     return *iter;
 }
 //! Indicate that a given global has been seen used in the program.
-bool Prog::globalUsed(ADDRESS uaddr, Type *knownType) {
+bool Prog::globalUsed(ADDRESS uaddr, SharedType knownType) {
     for (Global *glob : globals) {
         if (glob->addressWithinGlobal(uaddr)) {
             if (knownType)
@@ -881,11 +881,11 @@ bool Prog::globalUsed(ADDRESS uaddr, Type *knownType) {
     }
 
     QString nam = newGlobalName(uaddr);
-    Type *ty;
+    SharedType ty;
     if (knownType) {
         ty = knownType;
         if (ty->resolvesToArray() && ty->asArray()->isUnbounded()) {
-            Type *baseType = ty->asArray()->getBaseType();
+            SharedType baseType = ty->asArray()->getBaseType();
             int baseSize = 0;
             if (baseType)
                 baseSize = baseType->getSize() / 8; // TODO: use baseType->getBytes()
@@ -913,20 +913,20 @@ bool Prog::globalUsed(ADDRESS uaddr, Type *knownType) {
 
 Prog::mAddressString &Prog::getSymbols() { return pLoaderIface->getSymbols(); }
 //! Make an array type for the global array at u. Mainly, set the length sensibly
-ArrayType *Prog::makeArrayType(ADDRESS u, Type *t) {
+std::shared_ptr<ArrayType> Prog::makeArrayType(ADDRESS u, SharedType t) {
     QString nam = newGlobalName(u);
     assert(pLoaderIface);
     // TODO: fix the case of missing symbol table interface
     unsigned int sz = pSymbols ? pSymbols->GetSizeByName(qPrintable(nam)) : 0;
     if (sz == 0)
-        return new ArrayType(t); // An "unbounded" array
+        return ArrayType::get(t); // An "unbounded" array
     int n = t->getSize() / 8;    // TODO: use baseType->getBytes()
     if (n == 0)
         n = 1;
-    return new ArrayType(t, sz / n);
+    return ArrayType::get(t, sz / n);
 }
 //! Guess a global's type based on its name and address
-Type *Prog::guessGlobalType(const QString &nam, ADDRESS u) {
+SharedType Prog::guessGlobalType(const QString &nam, ADDRESS u) {
 #if defined(_WIN32) && !defined(__MINGW32__)
     HANDLE hProcess = GetCurrentProcess();
     dbghelp::SYMBOL_INFO *sym = (dbghelp::SYMBOL_INFO *)malloc(sizeof(dbghelp::SYMBOL_INFO) + 1000);
@@ -946,9 +946,9 @@ Type *Prog::guessGlobalType(const QString &nam, ADDRESS u) {
         const char *str = getStringConstant(u);
         if (str)
             // return char* and hope it is dealt with properly
-            return new PointerType(new CharType());
+            return PointerType::get(CharType::get());
     }
-    Type *ty;
+    SharedType ty;
     switch (sz) {
     case 1:
     case 2:
@@ -957,7 +957,7 @@ Type *Prog::guessGlobalType(const QString &nam, ADDRESS u) {
         ty = IntegerType::get(sz * 8);
         break;
     default:
-        ty = new ArrayType(new CharType(), sz);
+        ty = std::make_shared<ArrayType>(std::make_shared<CharType>(), sz);
     }
     return ty;
 }
@@ -971,14 +971,14 @@ QString Prog::newGlobalName(ADDRESS uaddr) {
     return nam;
 }
 //! Get the type of a global variable
-Type *Prog::getGlobalType(const QString &nam) {
+SharedType Prog::getGlobalType(const QString &nam) {
     for (Global *gl : globals)
         if (gl->getName()==nam)
             return gl->getType();
     return nullptr;
 }
 //! Set the type of a global variable
-void Prog::setGlobalType(const QString &nam, Type *ty) {
+void Prog::setGlobalType(const QString &nam, SharedType ty) {
     // FIXME: inefficient
     for (Global *gl : globals) {
         if (gl->getName()!=nam)
@@ -1607,7 +1607,7 @@ void Prog::readSymbolFile(const QString &fname) {
             if (nam.isEmpty()) {
                 nam = newGlobalName(sym->addr);
             }
-            Type *ty = sym->ty;
+            SharedType ty = sym->ty;
             if (ty == nullptr) {
                 ty = guessGlobalType(nam, sym->addr);
             }
@@ -1644,7 +1644,7 @@ void Global::print(QTextStream &os, Prog *prog) {
     os << type << " " << nam << " at " << uaddr << " initial value "
        << (init ? init->prints() : "<none>");
 }
-Exp *Prog::readNativeAs(ADDRESS uaddr, Type *type) {
+Exp *Prog::readNativeAs(ADDRESS uaddr, SharedType type) {
     Exp *e = nullptr;
     SectionInfo *si = getSectionInfoByAddr(uaddr);
     if (si == nullptr)
@@ -1664,11 +1664,11 @@ Exp *Prog::readNativeAs(ADDRESS uaddr, Type *type) {
         }
     }
     if (type->resolvesToCompound()) {
-        CompoundType *c = type->asCompound();
+        std::shared_ptr<CompoundType> c = type->asCompound();
         Exp *n = e = new Terminal(opNil);
         for (unsigned int i = 0; i < c->getNumTypes(); i++) {
             ADDRESS addr = uaddr + c->getOffsetTo(i) / 8;
-            Type *t = c->getType(i);
+            SharedType t = c->getType(i);
             Exp *v = readNativeAs(addr, t);
             if (v == nullptr) {
                 LOG << "unable to read native address " << addr << " as type " << t->getCtype() << "\n";
@@ -1754,7 +1754,7 @@ Exp *Prog::readNativeAs(ADDRESS uaddr, Type *type) {
     return e;
 }
 
-void Global::meetType(Type *ty) {
+void Global::meetType(SharedType ty) {
     bool ch=false;
     type = type->meetWith(ty, ch);
 }
@@ -1802,7 +1802,7 @@ Exp *Prog::addReloc(Exp *e, ADDRESS lc) {
         SymbolTableInterface *iface = getBinarySymbolTable();
         unsigned int sz = iface ? iface->GetSizeByName(n) : 0; // TODO: fix the case of missing symbol table interface
         if (getGlobal(n) == nullptr) {
-            Global *global = new Global(new SizeType(sz * 8), c_addr, n);
+            Global *global = new Global(SizeType::get(sz * 8), c_addr, n);
             globals.insert(global);
         }
         return new Unary(opAddrOf, Location::global(n, nullptr));

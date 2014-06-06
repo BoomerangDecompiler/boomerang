@@ -25,12 +25,14 @@
        PhiAssign_/ Assign  BoolAssign \_ImplicitAssign
 */
 //#include "exp.h"        // No! This is (almost) the bottom of the #include hierarchy
+#include "config.h"
+
 #include "memo.h"
 #include "exphelp.h" // For lessExpStar, lessAssignment etc
 #include "types.h"
 #include "managed.h"
 #include "dataflow.h"  // For embedded objects DefCollector and UseCollector
-#include "boomerang.h" // For USE_DOMINANCE_NUMS etc
+//#include "boomerang.h" // For USE_DOMINANCE_NUMS etc
 
 #include <QtCore/QTextStream>
 #include <vector>
@@ -65,6 +67,7 @@ class ReturnStatement;
 typedef std::set<UserProc *> CycleSet;
 typedef std::shared_ptr<Exp> SharedExp;
 typedef std::unique_ptr<Instruction> UniqInstruction;
+typedef std::shared_ptr<Type> SharedType;
 /***************************************************************************/ /**
   * Kinds of Statements, or high-level register transfer lists.
   * changing the order of these will result in save files not working - trent
@@ -271,7 +274,7 @@ class Instruction {
 
     // Data flow based type analysis
     virtual void dfaTypeAnalysis(bool & /*ch*/) {} // Use the type information in this Statement
-    Type *meetWithFor(Type *ty, Exp *e, bool &ch); // Meet the type associated with e with ty
+    SharedType meetWithFor(SharedType ty, Exp *e, bool &ch); // Meet the type associated with e with ty
 
     // Range analysis
   protected:
@@ -305,7 +308,7 @@ class Instruction {
     void subscriptVar(Exp *e, Instruction *def /*, Cfg* cfg */);
 
     // Cast the constant num to type ty. If a change was made, return true
-    bool castConst(int num, Type *ty);
+    bool castConst(int num, SharedType ty);
 
     // Map expressions to locals
     void dfaMapLocals();
@@ -314,9 +317,9 @@ class Instruction {
 
     //! Get the type for the definition, if any, for expression e in this statement
     //! Overridden only by Assignment and CallStatement, and ReturnStatement.
-    virtual Type *getTypeFor(Exp *) { return nullptr; }
+    virtual SharedType getTypeFor(Exp *) { return nullptr; }
     //! Set the type for the definition of e in this Statement
-    virtual void setTypeFor(Exp *, Type *) { assert(0); }
+    virtual void setTypeFor(Exp *, SharedType ) { assert(0); }
 
     // virtual    Type*    getType() {return nullptr;}            // Assignment, ReturnStatement and
     // virtual    void    setType(Type* t) {assert(0);}        // CallStatement override
@@ -339,14 +342,14 @@ QTextStream &operator<<(QTextStream &os, const LocationSet *p);
  ****************************************************************************/
 class TypingStatement : public Instruction {
   protected:
-    Type *type; // The type for this assignment or reference
+    SharedType type; // The type for this assignment or reference
   public:
-    TypingStatement(Type *ty); // Constructor
+    TypingStatement(SharedType ty); // Constructor
 
     // Get and set the type.
-    Type *getType() { return type; }
-    const Type *getType() const { return type; }
-    void setType(Type *ty) { type = ty; }
+    SharedType getType() { return type; }
+    const SharedType &getType() const { return type; }
+    void setType(SharedType ty) { type = ty; }
 
     virtual bool isTyping() { return true; }
 };
@@ -361,7 +364,7 @@ class Assignment : public TypingStatement {
     // Constructor, subexpression
     Assignment(Exp *lhs);
     // Constructor, type, and subexpression
-    Assignment(Type *ty, Exp *lhs);
+    Assignment(SharedType ty, Exp *lhs);
     // Destructor
     virtual ~Assignment();
 
@@ -382,8 +385,8 @@ class Assignment : public TypingStatement {
     virtual void print(QTextStream &os, bool html = false) const;
     virtual void printCompact(QTextStream &os, bool html = false) const = 0; // Without statement number
 
-    virtual Type *getTypeFor(Exp *e);          // Get the type for this assignment. It should define e
-    virtual void setTypeFor(Exp *e, Type *ty); // Set the type for this assignment. It should define e
+    virtual SharedType getTypeFor(Exp *e);          // Get the type for this assignment. It should define e
+    virtual void setTypeFor(Exp *e, SharedType ty); // Set the type for this assignment. It should define e
 
     virtual bool usesExp(const Exp &e); // PhiAssign and ImplicitAssign don't override
 
@@ -435,7 +438,7 @@ class Assign : public Assignment {
     // Constructor, subexpressions
     Assign(Exp *lhs, Exp *r, Exp *guard = nullptr);
     // Constructor, type and subexpressions
-    Assign(Type *ty, Exp *lhs, Exp *r, Exp *guard = nullptr);
+    Assign(SharedType ty, Exp *lhs, Exp *r, Exp *guard = nullptr);
     // Default constructor, for XML parser
     Assign() : Assignment(nullptr), rhs(nullptr), guard(nullptr) {}
     // Copy constructor
@@ -541,7 +544,7 @@ class PhiAssign : public Assignment {
     Definitions DefVec; // A vector of information about definitions
   public:
     PhiAssign(Exp *lhs) : Assignment(lhs) { Kind = STMT_PHIASSIGN; }
-    PhiAssign(Type *ty, Exp *lhs) : Assignment(ty, lhs) { Kind = STMT_PHIASSIGN; }
+    PhiAssign(SharedType ty, Exp *lhs) : Assignment(ty, lhs) { Kind = STMT_PHIASSIGN; }
     // Copy constructor (not currently used or implemented)
     PhiAssign(Assign &o);
     virtual ~PhiAssign() {}
@@ -618,7 +621,7 @@ class PhiAssign : public Assignment {
 class ImplicitAssign : public Assignment {
   public:
     ImplicitAssign(Exp *lhs);
-    ImplicitAssign(Type *ty, Exp *lhs);
+    ImplicitAssign(SharedType ty, Exp *lhs);
     ImplicitAssign(ImplicitAssign &o);
     virtual ~ImplicitAssign();
 
@@ -711,10 +714,10 @@ class ImpRefStatement : public TypingStatement {
     Exp *addressExp; // The expression representing the address of the location referenced
   public:
     // Constructor, subexpression
-    ImpRefStatement(Type *ty, Exp *a) : TypingStatement(ty), addressExp(a) { Kind = STMT_IMPREF; }
+    ImpRefStatement(SharedType ty, Exp *a) : TypingStatement(ty), addressExp(a) { Kind = STMT_IMPREF; }
     Exp *getAddressExp() { return addressExp; }
-    Type *getType() { return type; }
-    void meetWith(Type *ty, bool &ch); // Meet the internal type with ty. Set ch if a change
+    SharedType getType() { return type; }
+    void meetWith(SharedType ty, bool &ch); // Meet the internal type with ty. Set ch if a change
 
     // Virtuals
     virtual Instruction * clone() const;
@@ -1064,8 +1067,8 @@ class CallStatement : public GotoStatement {
     void setNumArguments(int i);
     int getNumArguments();
     void removeArgument(int i);
-    Type *getArgumentType(int i);
-    void setArgumentType(int i, Type *ty);
+    SharedType getArgumentType(int i);
+    void setArgumentType(int i, SharedType ty);
     void truncateArguments();
     void clearLiveEntry();
     void eliminateDuplicateArgs();
@@ -1130,8 +1133,8 @@ class CallStatement : public GotoStatement {
     // Insert actual arguments to match formal parameters
     // void        insertArguments(InstructionSet& rs);
 
-    virtual Type *getTypeFor(Exp *e);                   // Get the type defined by this Statement for this location
-    virtual void setTypeFor(Exp *e, Type *ty);          // Set the type for this location, defined in this statement
+    virtual SharedType getTypeFor(Exp *e);                   // Get the type defined by this Statement for this location
+    virtual void setTypeFor(Exp *e, SharedType ty);          // Set the type for this location, defined in this statement
     DefCollector *getDefCollector() { return &defCol; } // Return pointer to the def collector object
     UseCollector *getUseCollector() { return &useCol; } // Return pointer to the use collector object
     void useBeforeDefine(Exp *x) { useCol.insert(x); }  // Add x to the UseCollector for this call
@@ -1148,8 +1151,8 @@ class CallStatement : public GotoStatement {
 
   private:
     // Private helper functions for the above
-    void addSigParam(Type *ty, bool isScanf);
-    Assign *makeArgAssign(Type *ty, Exp *e);
+    void addSigParam(SharedType ty, bool isScanf);
+    Assign *makeArgAssign(SharedType ty, Exp *e);
     bool objcSpecificProcessing(const char *formatStr);
 
   protected:
@@ -1226,8 +1229,8 @@ class ReturnStatement : public Instruction {
     void removeReturn(Exp *loc);   // Remove from returns only
     void addReturn(Assignment *a);
 
-    Type *getTypeFor(Exp *e);
-    void setTypeFor(Exp *e, Type *ty);
+    SharedType getTypeFor(Exp *e);
+    void setTypeFor(Exp *e, SharedType ty);
 
     // simplify all the uses/defs in this Statement
     virtual void simplify();

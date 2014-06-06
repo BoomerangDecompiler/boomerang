@@ -74,7 +74,7 @@ class SparcFrontEnd : public FrontEnd {
     void emitNop(std::list<RTL *> *pRtls, ADDRESS uAddr);
     void emitCopyPC(std::list<RTL *> *pRtls, ADDRESS uAddr);
     unsigned fetch4(unsigned char *ptr);
-    void appendAssignment(Exp *lhs, Exp *rhs, Type *type, ADDRESS addr, std::list<RTL *> *lrtl);
+    void appendAssignment(Exp *lhs, Exp *rhs, SharedType type, ADDRESS addr, std::list<RTL *> *lrtl);
     void quadOperation(ADDRESS addr, std::list<RTL *> *lrtl, OPER op);
 
     bool helperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL *> *lrtl);

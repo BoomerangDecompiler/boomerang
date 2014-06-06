@@ -77,6 +77,8 @@ void *alloca();
 
 #include "sslscanner.h"
 #include "operator.h"
+#include "boomerang.h"
+
 OPER strToTerm(char *s);                       // Convert string to a Terminal (if possible)
 Exp *listExpToExp(std::list<Exp *> *le);       // Convert a STL list of Exp* to opList
 Exp *listStrToExp(std::list<std::string> *ls); // Convert a STL list of strings to opList
@@ -1104,7 +1106,6 @@ SSLParser::
     }
     case 65: {
         std::string::size_type i;
-        InsNameElem *temp;
         std::string nm = yyvsp[0].str;
 
         if (nm[0] == '^')
@@ -1119,14 +1120,13 @@ SSLParser::
         while ((i = nm.find("_")) != nm.npos)
             nm.replace(i, 1, "");
 
-        temp = new InsNameElem(nm.c_str());
         yyval.insel = yyvsp[-1].insel;
-        yyval.insel->append(temp);
+        yyval.insel->append(std::make_shared<InsNameElem>(nm.c_str()));
         ;
         break;
     }
     case 66: {
-        yyval.insel = new InsNameElem(yyvsp[0].str);
+        yyval.insel = std::make_shared<InsNameElem>(yyvsp[0].str);
         ;
         break;
     }
@@ -1142,7 +1142,7 @@ SSLParser::
         break;
     }
     case 69: {
-        yyval.insel = new InsOptionElem(yyvsp[-1].str);
+        yyval.insel = std::make_shared<InsOptionElem>(yyvsp[-1].str);
         ;
         break;
     }
@@ -1155,7 +1155,7 @@ SSLParser::
             o << "Can't get element " << yyvsp[-1].num << " of table " << yyvsp[-2].str << ".\n";
             yyerror(STR(o));
         } else
-            yyval.insel = new InsNameElem(TableDict[yyvsp[-2].str]->Records[yyvsp[-1].num].c_str());
+            yyval.insel = std::make_shared<InsNameElem>(TableDict[yyvsp[-2].str]->Records[yyvsp[-1].num].c_str());
         ;
         break;
     }
@@ -1165,7 +1165,7 @@ SSLParser::
             o << "Table " << yyvsp[-2].str << " has not been declared.\n";
             yyerror(STR(o));
         } else
-            yyval.insel = new InsListElem(yyvsp[-2].str, TableDict[yyvsp[-2].str], yyvsp[-1].str);
+            yyval.insel = std::make_shared<InsListElem>(yyvsp[-2].str, TableDict[yyvsp[-2].str], yyvsp[-1].str);
         ;
         break;
     }
@@ -1178,7 +1178,7 @@ SSLParser::
             o << "Can't get element " << yyvsp[-1].num << " of table " << yyvsp[-2].str << ".\n";
             yyerror(STR(o));
         } else
-            yyval.insel = new InsNameElem(TableDict[yyvsp[-2].str]->Records[yyvsp[-1].num].c_str());
+            yyval.insel = std::make_shared<InsNameElem>(TableDict[yyvsp[-2].str]->Records[yyvsp[-1].num].c_str());
         ;
         break;
     }
@@ -1188,12 +1188,12 @@ SSLParser::
             o << "Table " << yyvsp[-2].str << " has not been declared.\n";
             yyerror(STR(o));
         } else
-            yyval.insel = new InsListElem(yyvsp[-2].str, TableDict[yyvsp[-2].str], yyvsp[-1].str);
+            yyval.insel = std::make_shared<InsListElem>(yyvsp[-2].str, TableDict[yyvsp[-2].str], yyvsp[-1].str);
         ;
         break;
     }
     case 74: {
-        yyval.insel = new InsNameElem(yyvsp[-1].str);
+        yyval.insel = std::make_shared<InsNameElem>(yyvsp[-1].str);
         ;
         break;
     }
@@ -1629,12 +1629,12 @@ SSLParser::
     case 136: {
         char c = yyvsp[0].str[1];
         if (c == '*')
-            yyval.typ = new SizeType(0); // MVE: should remove these
+            yyval.typ = SizeType::get(0); // MVE: should remove these
         else if (isdigit(c)) {
             int size;
             // Skip star (hence +1)
             sscanf(yyvsp[0].str + 1, "%d", &size);
-            yyval.typ = new SizeType(size);
+            yyval.typ = SizeType::get(size);
         } else {
             int size;
             // Skip star and letter
@@ -1655,7 +1655,7 @@ SSLParser::
                 yyval.typ = FloatType::get(size);
                 break;
             case 'c':
-                yyval.typ = new CharType;
+                yyval.typ = CharType::get();
                 break;
             default:
                 LOG_STREAM() << "Unexpected char " << c << " in assign type\n";

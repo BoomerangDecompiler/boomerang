@@ -55,9 +55,9 @@ void ConstraintMap::makeUnion(ConstraintMap &o) {
             // LOG_STREAM() << "ConstraintMap::makeUnion: want to overwrite " << ret.first->first
             // << " -> " << ret.first->second << " with " << it->first << " -> " << it->second << "\n";
             TypeVal *Tret = (TypeVal *)ret.first->second;
-            Type *ty1 = Tret->getType();
+            SharedType ty1 = Tret->getType();
             TypeVal *Toth = (TypeVal *)it->second;
-            Type *ty2 = Toth->getType();
+            SharedType ty2 = Toth->getType();
             if (ty1 && ty2 && *ty1 != *ty2) {
                 Tret->setType(ty1->mergeWith(ty2));
                 // LOG_STREAM() << "Now " << ret.first->first << " -> " << ret.first->second << "\n";
@@ -68,9 +68,9 @@ void ConstraintMap::makeUnion(ConstraintMap &o) {
 
 void ConstraintMap::constrain(Exp *loc1, Exp *loc2) { cmap[new Unary(opTypeOf, loc1)] = new Unary(opTypeOf, loc2); }
 //! Insert a constraint given a location and a Type
-void ConstraintMap::constrain(Exp *loc, Type *t) { cmap[new Unary(opTypeOf, loc)] = new TypeVal(t); }
+void ConstraintMap::constrain(Exp *loc, SharedType t) { cmap[new Unary(opTypeOf, loc)] = new TypeVal(t); }
 //! Insert a constraint given two Types (at least one variable)
-void ConstraintMap::constrain(Type *t1, Type *t2) { // Example: alpha1 = alpha2
+void ConstraintMap::constrain(SharedType t1, SharedType t2) { // Example: alpha1 = alpha2
     cmap[new TypeVal(t1)] = new TypeVal(t2);
 }
 
@@ -133,9 +133,8 @@ void ConstraintMap::substAlpha() {
         // Looking for entries with two TypeVals, where exactly one is an alpha
         if (!cc->first->isTypeVal() || !cc->second->isTypeVal())
             continue;
-        Type *t1, *t2;
-        t1 = ((TypeVal *)cc->first)->getType();
-        t2 = ((TypeVal *)cc->second)->getType();
+        SharedType t1 = ((TypeVal *)cc->first)->getType();
+        SharedType t2 = ((TypeVal *)cc->second)->getType();
         int numAlpha = 0;
         if (t1->isPointerToAlpha())
             numAlpha++;
@@ -295,7 +294,7 @@ bool Constraints::solve(std::list<ConstraintMap> &solns) {
         Exp *right = ((Binary *)c)->getSubExp2();
         if (!right->isTypeVal())
             continue;
-        Type *t = ((TypeVal *)right)->getType();
+        SharedType t = ((TypeVal *)right)->getType();
         if (!t->isPointer())
             continue;
         // Don't modify a key in a map
@@ -310,8 +309,7 @@ bool Constraints::solve(std::list<ConstraintMap> &solns) {
         // right is <alpha*> -> <alpha>
         right = ((Binary *)clone)->getSubExp2();
         t = ((TypeVal *)right)->getType();
-        ((TypeVal *)right)->setType(((PointerType *)t)->getPointsTo()->clone());
-        delete t;
+        ((TypeVal *)right)->setType(t->asPointer()->getPointsTo()->clone());
         conSet.remove(c);
         conSet.insert(clone);
         delete c;
@@ -494,15 +492,15 @@ bool Constraints::unify(Exp *x, Exp *y, ConstraintMap &extra) {
     LOG << "Unifying " << x << " with " << y << " result ";
     assert(x->isTypeVal());
     assert(y->isTypeVal());
-    Type *xtype = ((TypeVal *)x)->getType();
-    Type *ytype = ((TypeVal *)y)->getType();
+    SharedType xtype = ((TypeVal *)x)->getType();
+    SharedType ytype = ((TypeVal *)y)->getType();
     if (xtype->isPointer() && ytype->isPointer()) {
-        Type *xPointsTo = ((PointerType *)xtype)->getPointsTo();
-        Type *yPointsTo = ((PointerType *)ytype)->getPointsTo();
-        if (((PointerType *)xtype)->pointsToAlpha() || ((PointerType *)ytype)->pointsToAlpha()) {
+        auto xPointsTo = xtype->as<PointerType>()->getPointsTo();
+        auto yPointsTo = ytype->as<PointerType>()->getPointsTo();
+        if (xtype->as<PointerType>()->pointsToAlpha() || ytype->as<PointerType>()->pointsToAlpha()) {
             // A new constraint: xtype must be equal to ytype; at least
             // one of these is a variable type
-            if (((PointerType *)xtype)->pointsToAlpha())
+            if (xtype->as<PointerType>()->pointsToAlpha())
                 extra.constrain(xPointsTo, yPointsTo);
             else
                 extra.constrain(yPointsTo, xPointsTo);
@@ -550,7 +548,7 @@ void Constraints::alphaSubst() {
         bool found = false;
         Exp *trm1 = nullptr;
         Exp *trm2 = nullptr;
-        Type *t1 = nullptr, *t2;
+        SharedType t1 = nullptr, t2;
         while ((term = nextConjunct(temp)) != nullptr) {
             if (!term->isEquality())
                 continue;

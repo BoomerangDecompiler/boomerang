@@ -12,6 +12,7 @@
 #include "dataflow.h"
 #include "pentiumfrontend.h"
 #include "log.h"
+#include "boomerang.h"
 
 #include <QDir>
 #include <QProcessEnvironment>

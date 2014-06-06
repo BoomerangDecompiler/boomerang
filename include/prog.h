@@ -36,17 +36,17 @@ typedef std::map<ADDRESS, Function *, std::less<ADDRESS>> PROGMAP;
 
 class Global {
   private:
-    Type *type;
+    SharedType type;
     ADDRESS uaddr;
     QString nam;
 
   public:
-    Global(Type *_type, ADDRESS _uaddr, const QString &_nam) : type(_type), uaddr(_uaddr), nam(_nam) {}
+    Global(SharedType _type, ADDRESS _uaddr, const QString &_nam) : type(_type), uaddr(_uaddr), nam(_nam) {}
     virtual ~Global();
 
-    Type *getType() { return type; }
-    void setType(Type *ty) { type = ty; }
-    void meetType(Type *ty);
+    SharedType getType() { return type; }
+    void setType(SharedType ty) { type = ty; }
+    void meetType(SharedType ty);
     ADDRESS getAddress() { return uaddr; }
     bool addressWithinGlobal(ADDRESS addr) {
         // TODO: use getType()->getBytes()
@@ -139,11 +139,11 @@ class Prog {
     ADDRESS getGlobalAddr(const QString &nam);
     Global *getGlobal(const QString &nam);
     QString newGlobalName(ADDRESS uaddr);
-    Type *guessGlobalType(const QString &nam, ADDRESS u);
-    ArrayType *makeArrayType(ADDRESS u, Type *t);
-    bool globalUsed(ADDRESS uaddr, Type *knownType = nullptr);
-    Type *getGlobalType(const QString &nam);
-    void setGlobalType(const QString &name, Type *ty);
+    SharedType guessGlobalType(const QString &nam, ADDRESS u);
+    std::shared_ptr<ArrayType> makeArrayType(ADDRESS u, SharedType t);
+    bool globalUsed(ADDRESS uaddr, SharedType knownType = nullptr);
+    SharedType getGlobalType(const QString &nam);
+    void setGlobalType(const QString &name, SharedType ty);
     void dumpGlobals();
     const char *getStringConstant(ADDRESS uaddr, bool knownString = false);
     double getFloatConstant(ADDRESS uaddr, bool &ok, int bits = 64);
@@ -173,7 +173,7 @@ class Prog {
     float readNativeFloat4(ADDRESS a) { return pBinaryData->readNativeFloat4(a); }
     double readNativeFloat8(ADDRESS a) { return pBinaryData->readNativeFloat8(a); }
     QWord readNative8(ADDRESS a) { return pBinaryData->readNative8(a); }
-    Exp *readNativeAs(ADDRESS uaddr, Type *type);
+    Exp *readNativeAs(ADDRESS uaddr, SharedType type);
     ptrdiff_t getTextDelta() { return pSections->getTextDelta(); }
 
     bool isDynamicLinkedProcPointer(ADDRESS dest) { return pLoaderIface->IsDynamicLinkedProcPointer(dest); }

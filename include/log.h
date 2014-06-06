@@ -3,8 +3,10 @@
 #define LOG_H
 
 #include "types.h"
-#include <fstream>
+
 #include <QtCore/QString>
+#include <memory>
+#include <fstream>
 
 class Instruction;
 class Exp;
@@ -13,14 +15,14 @@ class RTL;
 class Range;
 class RangeMap;
 class Type;
-
+typedef std::shared_ptr<Type> SharedType;
 class Log {
   public:
     Log() {}
     virtual Log &operator<<(const QString &s) = 0;
     virtual Log &operator<<(const Instruction *s);
     virtual Log &operator<<(const Exp *e);
-    virtual Log &operator<<(const Type *ty);
+    virtual Log &operator<<(const SharedType &ty);
     virtual Log &operator<<(const RTL *r);
     virtual Log &operator<<(const Range *r);
     virtual Log &operator<<(const Range &r);

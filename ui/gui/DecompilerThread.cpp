@@ -224,7 +224,7 @@ void Decompiler::alertNew(Function *p) {
             params = "<unknown>";
         else {
             for (unsigned int i = 0; i < p->getSignature()->getNumParams(); i++) {
-                Type *ty = p->getSignature()->getParamType(i);
+                auto ty = p->getSignature()->getParamType(i);
                 params.append(ty->getCtype());
                 params.append(" ");
                 params.append(p->getSignature()->getParamName(i));
@@ -294,11 +294,11 @@ void Decompiler::renameProc(const QString &oldName, const QString &newName) {
 }
 
 void Decompiler::getCompoundMembers(const QString &name, QTableWidget *tbl) {
-    Type *ty = NamedType::getNamedType(name);
+    auto ty = NamedType::getNamedType(name);
     tbl->setRowCount(0);
-    if (ty == NULL || !ty->resolvesToCompound())
+    if (ty == nullptr || !ty->resolvesToCompound())
         return;
-    CompoundType *c = ty->asCompound();
+    std::shared_ptr<CompoundType> c = ty->asCompound();
     for (unsigned int i = 0; i < c->getNumTypes(); i++) {
         tbl->setRowCount(tbl->rowCount() + 1);
         tbl->setItem(tbl->rowCount() - 1, 0, new QTableWidgetItem(tr("%1").arg(c->getOffsetTo(i))));

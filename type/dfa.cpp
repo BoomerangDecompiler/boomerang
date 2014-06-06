@@ -153,11 +153,11 @@ void UserProc::dfaTypeAnalysis() {
         std::list<Const *>::iterator cc;
         for (cc = lc.begin(); cc != lc.end(); ++cc) {
             Const *con = (Const *)*cc;
-            Type *t = con->getType();
+            SharedType t = con->getType();
             int val = con->getInt();
             if (t && t->resolvesToPointer()) {
-                PointerType *pt = t->asPointer();
-                Type *baseType = pt->getPointsTo();
+                auto pt = t->as<PointerType>();
+                SharedType baseType = pt->getPointsTo();
                 if (baseType->resolvesToChar()) {
                     // Convert to a string    MVE: check for read-only?
                     // Also, distinguish between pointer to one char, and ptr to many?
@@ -178,7 +178,7 @@ void UserProc::dfaTypeAnalysis() {
                             Exp *g = Location::global(strdup(qPrintable(gloName)), this);
                             ne = Location::memOf(Binary::get(opPlus, new Unary(opAddrOf, g), new Const(r)), this);
                         } else {
-                            Type *ty = _prog->getGlobalType(gloName);
+                            SharedType ty = _prog->getGlobalType(gloName);
                             Assign *assgn = dynamic_cast<Assign *>(s);
                             if (s->isAssign() && assgn && assgn->getType()) {
                                 int bits = assgn->getType()->getSize();
@@ -253,7 +253,7 @@ void UserProc::dfaTypeAnalysis() {
         // 4) Add the locals (soon globals as well) to the localTable, to sort out the overlaps
         if (s->isTyping()) {
             Exp *addrExp = nullptr;
-            Type *typeExp = nullptr;
+            SharedType typeExp = nullptr;
             if (s->isAssignment()) {
                 Exp *lhs = ((Assignment *)s)->getLeft();
                 if (lhs->isMemOf()) {
@@ -285,7 +285,7 @@ void UserProc::dfaTypeAnalysis() {
                     }
                 }
                 LOG << "in proc " << getName() << " adding addrExp " << addrExp << " to local table\n";
-                Type *ty = ((TypingStatement *)s)->getType();
+                SharedType ty = ((TypingStatement *)s)->getType();
                 localTable.addItem(ADDRESS::g(addr), lookupSym(Location::memOf(addrExp), ty), typeExp);
             }
         }
@@ -309,25 +309,26 @@ void UserProc::dfaTypeAnalysis() {
 
 // ch set true if any change
 
-Type *VoidType::meetWith(Type *other, bool &ch, bool /*bHighestPtr*/) const {
+SharedType VoidType::meetWith(SharedType other, bool &ch, bool /*bHighestPtr*/) const {
     // void meet x = x
     ch |= !other->resolvesToVoid();
     return other->clone();
 }
 
-Type *FuncType::meetWith(Type *other, bool &ch, bool bHighestPtr) const {
+SharedType FuncType::meetWith(SharedType other, bool &ch, bool bHighestPtr) const {
     if (other->resolvesToVoid())
-        return (Type *)this;
+        return ((FuncType *)this)->shared_from_this();
+    // NOTE: at present, compares names as well as types and num parameters
     if (*this == *other)
-        return (Type *)this; // NOTE: at present, compares names as well as types and num parameters
+        return ((FuncType *)this)->shared_from_this();
     return createUnion(other, ch, bHighestPtr);
 }
 
-Type *IntegerType::meetWith(Type *other, bool &ch, bool bHighestPtr) const {
+SharedType IntegerType::meetWith(SharedType other, bool &ch, bool bHighestPtr) const {
     if (other->resolvesToVoid())
-        return (Type *)this;
+        return ((IntegerType *)this)->shared_from_this();
     if (other->resolvesToInteger()) {
-        IntegerType *otherInt = other->asInteger();
+        std::shared_ptr<IntegerType> otherInt = other->as<IntegerType>();
         // Signedness
         int oldSignedness = signedness;
         if (otherInt->signedness > 0)
@@ -340,91 +341,89 @@ Type *IntegerType::meetWith(Type *other, bool &ch, bool bHighestPtr) const {
         unsigned oldSize = size;
         size = std::max(size, otherInt->size);
         ch |= (size != oldSize);
-        return (Type *)this;
+        return ((IntegerType *)this)->shared_from_this();
     }
     if (other->resolvesToSize()) {
+        std::shared_ptr<SizeType> other_sz=other->as<SizeType>();
         if (size == 0) { // Doubt this will ever happen
-            size = ((SizeType *)other)->getSize();
-            return (Type *)this;
+            size = other_sz->getSize();
+            return ((IntegerType *)this)->shared_from_this();
         }
-        if (size == ((SizeType *)other)->getSize())
-            return (Type *)this;
-        LOG << "integer size " << size << " meet with SizeType size " << ((SizeType *)other)->getSize() << "!\n";
+        if (size == other_sz->getSize())
+            return ((IntegerType *)this)->shared_from_this();
+        LOG << "integer size " << size << " meet with SizeType size " << other->as<SizeType>()->getSize() << "!\n";
         unsigned oldSize = size;
-        size = std::max(size, ((SizeType *)other)->getSize());
+        size = std::max(size, other_sz->getSize());
         ch = size != oldSize;
-        return (Type *)this;
+        return ((IntegerType *)this)->shared_from_this();
     }
     return createUnion(other, ch, bHighestPtr);
 }
 
-Type *FloatType::meetWith(Type *other, bool &ch, bool bHighestPtr) const {
+SharedType FloatType::meetWith(SharedType other, bool &ch, bool bHighestPtr) const {
     if (other->resolvesToVoid())
-        return (Type *)this;
+        return ((FloatType *)this)->shared_from_this();
     if (other->resolvesToFloat()) {
-        FloatType *otherFlt = other->asFloat();
+        std::shared_ptr<FloatType> otherFlt(other->as<FloatType>());
         size_t oldSize = size;
         size = std::max(size, otherFlt->size);
         ch |= size != oldSize;
-        return (Type *)this;
+        return ((FloatType *)this)->shared_from_this();
     }
     if (other->resolvesToSize()) {
         size_t otherSize = other->getSize();
         ch |= size != otherSize;
         size = std::max(size, otherSize);
-        return (Type *)this;
+        return ((FloatType *)this)->shared_from_this();
     }
     return createUnion(other, ch, bHighestPtr);
 }
 
-Type *BooleanType::meetWith(Type *other, bool &ch, bool bHighestPtr) const {
-    if (other->resolvesToVoid())
-        return (Type *)this;
-    if (other->resolvesToBoolean())
-        return (Type *)this;
+SharedType BooleanType::meetWith(SharedType other, bool &ch, bool bHighestPtr) const {
+    if (other->resolvesToVoid() || other->resolvesToBoolean())
+        return ((BooleanType *)this)->shared_from_this();
     return createUnion(other, ch, bHighestPtr);
 }
 
-Type *CharType::meetWith(Type *other, bool &ch, bool bHighestPtr) const {
-    if (other->resolvesToVoid())
-        return (Type *)this;
-    if (other->resolvesToChar())
-        return (Type *)this;
+SharedType CharType::meetWith(SharedType other, bool &ch, bool bHighestPtr) const {
+    if (other->resolvesToVoid() || other->resolvesToChar())
+        return ((CharType *)this)->shared_from_this();
     // Also allow char to merge with integer
     if (other->resolvesToInteger()) {
         ch = true;
         return other->clone();
     }
-    if (other->resolvesToSize() && ((SizeType *)other)->getSize() == 8)
-        return (Type *)this;
+    if (other->resolvesToSize() && other->as<SizeType>()->getSize() == 8)
+        return ((CharType *)this)->shared_from_this();
     return createUnion(other, ch, bHighestPtr);
 }
 
-Type *PointerType::meetWith(Type *other, bool &ch, bool bHighestPtr) const {
+SharedType PointerType::meetWith(SharedType other, bool &ch, bool bHighestPtr) const {
     if (other->resolvesToVoid())
-        return (Type *)this;
-    if (other->resolvesToSize() && ((SizeType *)other)->getSize() == STD_SIZE)
-        return (Type *)this;
+        return ((PointerType *)this)->shared_from_this();
+    if (other->resolvesToSize() && other->asSize()->getSize() == STD_SIZE)
+        return ((PointerType *)this)->shared_from_this();
     if (other->resolvesToPointer()) {
-        PointerType *otherPtr = other->asPointer();
+        auto otherPtr = other->asPointer();
         if (pointsToAlpha() && !otherPtr->pointsToAlpha()) {
             ch = true;
-            if (otherPtr->getPointsTo() == this) // Can't point to self; impossible to compare, print, etc
-                return new VoidType(); // TODO: pointer to void at least ?
+            // Can't point to self; impossible to compare, print, etc
+            if (otherPtr->getPointsTo() == shared_from_this())
+                return VoidType::get(); // TODO: pointer to void at least ?
             points_to = otherPtr->getPointsTo();
-            return (Type *)this;
+            return ((PointerType *)this)->shared_from_this();
         } else {
             // We have a meeting of two pointers.
-            Type *thisBase = points_to;
-            Type *otherBase = otherPtr->points_to;
+            SharedType thisBase = points_to;
+            SharedType otherBase = otherPtr->points_to;
             if (bHighestPtr) {
                 // We want the greatest type of thisBase and otherBase
                 if (thisBase->isSubTypeOrEqual(otherBase))
                     return other->clone();
                 if (otherBase->isSubTypeOrEqual(thisBase))
-                    return (Type *)this;
+                    return ((PointerType *)this)->shared_from_this();
                 // There may be another type that is a superset of this and other; for now return void*
-                return new PointerType(new VoidType);
+                return PointerType::get(VoidType::get());
             }
             // See if the base types will meet
             if (otherBase->resolvesToPointer()) {
@@ -433,39 +432,39 @@ Type *PointerType::meetWith(Type *other, bool &ch, bool bHighestPtr) const {
                 if (otherBase->resolvesToPointer() && otherBase->asPointer()->getPointsTo() == otherBase)
                     LOG_STREAM() << "HACK! BAD POINTER 2\n";
                 if (thisBase == otherBase) // Note: compare pointers
-                    return (Type *)this;   // Crude attempt to prevent stack overflow
+                    return ((PointerType *)this)->shared_from_this(); // Crude attempt to prevent stack overflow
                 if (*thisBase == *otherBase)
-                    return (Type *)this;
+                    return ((PointerType *)this)->shared_from_this();
                 if (pointerDepth() == otherPtr->pointerDepth()) {
-                    Type *fType = getFinalPointsTo();
+                    SharedType fType = getFinalPointsTo();
                     if (fType->resolvesToVoid())
                         return other->clone();
-                    Type *ofType = otherPtr->getFinalPointsTo();
+                    SharedType ofType = otherPtr->getFinalPointsTo();
                     if (ofType->resolvesToVoid())
-                        return (Type *)this;
+                        return ((PointerType *)this)->shared_from_this();
                     if (*fType == *ofType)
-                        return (Type *)this;
+                        return ((PointerType *)this)->shared_from_this();
                 }
             }
-            if (thisBase->isCompatibleWith(otherBase)) {
+            if (thisBase->isCompatibleWith(*otherBase)) {
                 points_to = points_to->meetWith(otherBase, ch, bHighestPtr);
-                return (Type *)this;
+                return ((PointerType *)this)->shared_from_this();
             }
             // The bases did not meet successfully. Union the pointers.
             return createUnion(other, ch, bHighestPtr);
         }
-        return (Type *)this;
+        return ((PointerType *)this)->shared_from_this();
     }
     // Would be good to understand class hierarchys, so we know if a* is the same as b* when b is a subclass of a
     return createUnion(other, ch, bHighestPtr);
 }
 
-Type *ArrayType::meetWith(Type *other, bool &ch, bool bHighestPtr) const {
+SharedType ArrayType::meetWith(SharedType other, bool &ch, bool bHighestPtr) const {
     if (other->resolvesToVoid())
-        return (Type *)this;
+        return ((ArrayType *)this)->shared_from_this();
     if (other->resolvesToArray()) {
-        ArrayType *otherArr = other->asArray();
-        Type *newBase = BaseType->clone()->meetWith(otherArr->BaseType, ch, bHighestPtr);
+        auto otherArr = other->asArray();
+        SharedType newBase = BaseType->clone()->meetWith(otherArr->BaseType, ch, bHighestPtr);
         if (*newBase != *BaseType) {
             ch = true;
             Length = convertLength(newBase);
@@ -474,40 +473,40 @@ Type *ArrayType::meetWith(Type *other, bool &ch, bool bHighestPtr) const {
         if (other->asArray()->getLength() < getLength()) {
             Length = other->asArray()->getLength();
         }
-        return (Type *)this;
+        return ((ArrayType *)this)->shared_from_this();
     }
     if (*BaseType == *other)
-        return (Type *)this;
+        return ((ArrayType *)this)->shared_from_this();
     // Needs work?
     return createUnion(other, ch, bHighestPtr);
 }
 
-Type *NamedType::meetWith(Type *other, bool &ch, bool bHighestPtr) const {
-    Type *rt = resolvesTo();
+SharedType NamedType::meetWith(SharedType other, bool &ch, bool bHighestPtr) const {
+    SharedType rt = resolvesTo();
     if (rt) {
-        Type *ret = rt->meetWith(other, ch, bHighestPtr);
-        if (ret == rt)
-            return (Type *)this; // Retain the named type, much better than some compound type
+        SharedType ret = rt->meetWith(other, ch, bHighestPtr);
+        if (ret == rt) // Retain the named type, much better than some compound type
+            return ((NamedType *)this)->shared_from_this();
         return ret;              // Otherwise, whatever the result is
     }
     if (other->resolvesToVoid())
-        return (Type *)this;
+        return ((NamedType *)this)->shared_from_this();
     if (*this == *other)
-        return (Type *)this;
+        return ((NamedType *)this)->shared_from_this();
     return createUnion(other, ch, bHighestPtr);
 }
 
-Type *CompoundType::meetWith(Type *other, bool &ch, bool bHighestPtr) const {
+SharedType CompoundType::meetWith(SharedType other, bool &ch, bool bHighestPtr) const {
     if (other->resolvesToVoid())
-        return (Type *)this;
+        return ((CompoundType *)this)->shared_from_this();
     if (!other->resolvesToCompound()) {
-        if (types[0]->isCompatibleWith(other))
+        if (types[0]->isCompatibleWith(*other))
             // struct meet first element = struct
-            return (Type *)this;
+            return ((CompoundType *)this)->shared_from_this();
         return createUnion(other, ch, bHighestPtr);
     }
-    CompoundType *otherCmp = other->asCompound();
-    if (otherCmp->isSuperStructOf(this)) {
+    auto otherCmp = other->asCompound();
+    if (otherCmp->isSuperStructOf(((CompoundType *)this)->shared_from_this())) {
         // The other structure has a superset of my struct's offsets. Preserve the names etc of the bigger struct.
         ch = true;
         return other;
@@ -515,10 +514,10 @@ Type *CompoundType::meetWith(Type *other, bool &ch, bool bHighestPtr) const {
     if (isSubStructOf(otherCmp)) {
         // This is a superstruct of other
         ch = true;
-        return (Type *)this;
+        return ((CompoundType *)this)->shared_from_this();
     }
     if (*this == *other)
-        return (Type *)this;
+        return ((CompoundType *)this)->shared_from_this();
     // Not compatible structs. Create a union of both complete structs.
     // NOTE: may be possible to take advantage of some overlaps of the two structures some day.
     return createUnion(other, ch, bHighestPtr);
@@ -529,34 +528,34 @@ Type *CompoundType::meetWith(Type *other, bool &ch, bool bHighestPtr) const {
 unsigned unionCount = 0;
 #endif
 
-Type *UnionType::meetWith(Type *other, bool &ch, bool bHighestPtr) const {
+SharedType UnionType::meetWith(SharedType other, bool &ch, bool bHighestPtr) const {
     if (other->resolvesToVoid())
-        return (Type *)this;
+        return ((UnionType *)this)->shared_from_this();
     if (other->resolvesToUnion()) {
-        if (this == other)       // Note: pointer comparison
-            return (Type *)this; // Avoid infinite recursion
+        if (this == other.get())       // Note: pointer comparison
+            return ((UnionType *)this)->shared_from_this(); // Avoid infinite recursion
         ch = true;
-        UnionType *otherUnion = (UnionType *)other;
+        auto otherUnion = other->as<UnionType>();
         // Always return this, never other, (even if other is larger than this) because otherwise iterators can become
         // invalid below
         std::list<UnionElement>::iterator it;
         for (it = otherUnion->li.begin(); it != otherUnion->li.end(); ++it) {
             meetWith(it->type, ch, bHighestPtr);
-            return (Type *)this;
+            return ((UnionType *)this)->shared_from_this();
         }
     }
 
     // Other is a non union type
-    if (other->resolvesToPointer() && other->asPointer()->getPointsTo() == this) {
+    if (other->resolvesToPointer() && other->asPointer()->getPointsTo().get() == this) {
         LOG << "WARNING! attempt to union " << getCtype() << " with pointer to self!\n";
-        return (Type *)this;
+        return ((UnionType *)this)->shared_from_this();
     }
     std::list<UnionElement>::iterator it;
     for (it = li.begin(); it != li.end(); ++it) {
-        Type *curr = it->type->clone();
-        if (curr->isCompatibleWith(other)) {
+        SharedType curr = it->type->clone();
+        if (curr->isCompatibleWith(*other)) {
             it->type = curr->meetWith(other, ch, bHighestPtr);
-            return (Type *)this;
+            return ((UnionType *)this)->shared_from_this();
         }
     }
 
@@ -573,20 +572,20 @@ Type *UnionType::meetWith(Type *other, bool &ch, bool bHighestPtr) const {
     LOG_STREAM() << ", result is " << getCtype() << "\n";
 #endif
     ch = true;
-    return (Type *)this;
+    return ((UnionType *)this)->shared_from_this();
 }
 
-Type *SizeType::meetWith(Type *other, bool &ch, bool bHighestPtr) const {
+SharedType SizeType::meetWith(SharedType other, bool &ch, bool bHighestPtr) const {
     if (other->resolvesToVoid())
-        return (Type *)this;
+        return ((SizeType *)this)->shared_from_this();
     if (other->resolvesToSize()) {
-        if (((SizeType *)other)->size != size) {
-            LOG << "size " << size << " meet with size " << ((SizeType *)other)->size << "!\n";
+        if (other->asSize()->size != size) {
+            LOG << "size " << size << " meet with size " << other->asSize()->size << "!\n";
             unsigned oldSize = size;
-            size = std::max(size, ((SizeType *)other)->size);
+            size = std::max(size, other->asSize()->size);
             ch = size != oldSize;
         }
-        return (Type *)this;
+        return ((SizeType *)this)->shared_from_this();
     }
     ch = true;
     if (other->resolvesToInteger() || other->resolvesToFloat() || other->resolvesToPointer()) {
@@ -601,43 +600,43 @@ Type *SizeType::meetWith(Type *other, bool &ch, bool bHighestPtr) const {
     return createUnion(other, ch, bHighestPtr);
 }
 
-Type *UpperType::meetWith(Type *other, bool &ch, bool bHighestPtr) const {
+SharedType UpperType::meetWith(SharedType other, bool &ch, bool bHighestPtr) const {
     if (other->resolvesToVoid())
-        return (Type *)this;
+        return ((UpperType *)this)->shared_from_this();
     if (other->resolvesToUpper()) {
-        UpperType *otherUpp = other->asUpper();
-        Type *newBase = base_type->clone()->meetWith(otherUpp->base_type, ch, bHighestPtr);
+        auto otherUpp = other->asUpper();
+        auto newBase = base_type->clone()->meetWith(otherUpp->base_type, ch, bHighestPtr);
         if (*newBase != *base_type) {
             ch = true;
             base_type = newBase;
         }
-        return (Type *)this;
+        return ((UpperType *)this)->shared_from_this();
     }
     // Needs work?
     return createUnion(other, ch, bHighestPtr);
 }
 
-Type *LowerType::meetWith(Type *other, bool &ch, bool bHighestPtr) const {
+SharedType LowerType::meetWith(SharedType other, bool &ch, bool bHighestPtr) const {
     if (other->resolvesToVoid())
-        return (Type *)this;
+        return ((LowerType *)this)->shared_from_this();
     if (other->resolvesToUpper()) {
-        LowerType *otherLow = other->asLower();
-        Type *newBase = base_type->clone()->meetWith(otherLow->base_type, ch, bHighestPtr);
+        std::shared_ptr<LowerType> otherLow = other->asLower();
+        SharedType newBase = base_type->clone()->meetWith(otherLow->base_type, ch, bHighestPtr);
         if (*newBase != *base_type) {
             ch = true;
             base_type = newBase;
         }
-        return (Type *)this;
+        return ((LowerType *)this)->shared_from_this();
     }
     // Needs work?
     return createUnion(other, ch, bHighestPtr);
 }
 
-Type *Instruction::meetWithFor(Type *ty, Exp *e, bool &ch) {
+SharedType Instruction::meetWithFor(SharedType ty, Exp *e, bool &ch) {
     bool thisCh = false;
-    Type *typeFor = getTypeFor(e);
+    SharedType typeFor = getTypeFor(e);
     assert(typeFor);
-    Type *newType = typeFor->meetWith(ty, thisCh);
+    SharedType newType = typeFor->meetWith(ty, thisCh);
     if (thisCh) {
         ch = true;
         setTypeFor(e, newType->clone());
@@ -645,24 +644,24 @@ Type *Instruction::meetWithFor(Type *ty, Exp *e, bool &ch) {
     return newType;
 }
 
-Type *Type::createUnion(Type *other, bool &ch, bool bHighestPtr /* = false */) const {
+SharedType Type::createUnion(SharedType other, bool &ch, bool bHighestPtr /* = false */) const {
 
     assert(!resolvesToUnion()); // `this' should not be a UnionType
-    if (other->resolvesToUnion())
-        return other->meetWith((Type *)this, ch, bHighestPtr)->clone(); // Put all the hard union logic in one place
+    if (other->resolvesToUnion()) // Put all the hard union logic in one place
+        return other->meetWith(((Type *)this)->shared_from_this(), ch, bHighestPtr)->clone();
     // Check for anytype meet compound with anytype as first element
     if (other->resolvesToCompound()) {
-        CompoundType *otherComp = other->asCompound();
-        Type *firstType = otherComp->getType((unsigned)0);
-        if (firstType->isCompatibleWith(this))
+        auto otherComp = other->asCompound();
+        SharedType firstType = otherComp->getType((unsigned)0);
+        if (firstType->isCompatibleWith(*this))
             // struct meet first element = struct
             return other->clone();
     }
     // Check for anytype meet array of anytype
     if (other->resolvesToArray()) {
-        ArrayType *otherArr = other->asArray();
-        Type *elemTy = otherArr->getBaseType();
-        if (elemTy->isCompatibleWith(this))
+        auto otherArr = other->asArray();
+        SharedType elemTy = otherArr->getBaseType();
+        if (elemTy->isCompatibleWith(*this))
             // array meet element = array
             return other->clone();
     }
@@ -673,7 +672,7 @@ Type *Type::createUnion(Type *other, bool &ch, bool bHighestPtr /* = false */) c
         LOG_STREAM() << "createUnion breakpokint\n"; // Note: you need two breakpoints (also in UnionType::meetWith)
 #endif
     sprintf(name, "x%d", ++nextUnionNumber);
-    UnionType *u = new UnionType;
+    auto u = std::make_shared<UnionType>();
     u->addType(this->clone(), name);
     sprintf(name, "x%d", ++nextUnionNumber);
     u->addType(other->clone(), name);
@@ -698,7 +697,7 @@ void CallStatement::dfaTypeAnalysis(bool &ch) {
             int nt = 0;
             for (aat = arguments.begin(); aat != arguments.end(); ++aat, ++nt)
                 if (boundmax == procDest->getSignature()->getParamName(nt)) {
-                    Type *tyt = ((Assign *)*aat)->getType();
+                    SharedType tyt = ((Assign *)*aat)->getType();
                     if (tyt->resolvesToPointer() && tyt->asPointer()->getPointsTo()->resolvesToArray() &&
                         tyt->asPointer()->getPointsTo()->asArray()->isUnbounded())
                         tyt->asPointer()->getPointsTo()->asArray()->setLength(((Const *)a->getRight())->getInt());
@@ -712,9 +711,9 @@ void CallStatement::dfaTypeAnalysis(bool &ch) {
     // The destination is a pointer to a function with this function's signature (if any)
     if (pDest) {
         if (signature)
-            pDest->descendType(new FuncType(signature), ch, this);
+            pDest->descendType(FuncType::get(signature), ch, this);
         else if (procDest)
-            pDest->descendType(new FuncType(procDest->getSignature()), ch, this);
+            pDest->descendType(FuncType::get(procDest->getSignature()), ch, this);
     }
 }
 
@@ -738,13 +737,13 @@ void PhiAssign::dfaTypeAnalysis(bool &ch) {
     while (it->second.e == nullptr && it != DefVec.end())
         ++it;
     assert(it != DefVec.end());
-    Type *meetOfArgs = it->second.def()->getTypeFor(lhs);
+    SharedType meetOfArgs = it->second.def()->getTypeFor(lhs);
     for (++it; it != DefVec.end(); ++it) {
         PhiInfo &phinf(it->second);
         if (phinf.e == nullptr)
             continue;
         assert(phinf.def());
-        Type *typeOfDef = phinf.def()->getTypeFor(phinf.e);
+        SharedType typeOfDef = phinf.def()->getTypeFor(phinf.e);
         meetOfArgs = meetOfArgs->meetWith(typeOfDef, ch);
     }
     type = type->meetWith(meetOfArgs, ch);
@@ -757,7 +756,7 @@ void PhiAssign::dfaTypeAnalysis(bool &ch) {
 }
 
 void Assign::dfaTypeAnalysis(bool &ch) {
-    Type *tr = rhs->ascendType();
+    SharedType tr = rhs->ascendType();
     type = type->meetWith(tr, ch, true); // Note: bHighestPtr is set true, since the lhs could have a greater type
     // (more possibilities) than the rhs. Example: pEmployee = pManager.
     rhs->descendType(type, ch, this); // This will effect rhs = rhs MEET lhs
@@ -771,22 +770,22 @@ void Assignment::dfaTypeAnalysis(bool &ch) {
     if (lhs->isMemOf() && !sig->isStackLocal(proc->getProg(), lhs)) {
         Exp *addr = ((Unary *)lhs)->getSubExp1();
         // Meet the assignment type with *(type of the address)
-        Type *addrType = addr->ascendType();
-        Type *memofType;
+        SharedType addrType = addr->ascendType();
+        SharedType memofType;
         if (addrType->resolvesToPointer())
             memofType = addrType->asPointer()->getPointsTo();
         else
-            memofType = new VoidType;
+            memofType = VoidType::get();
         type = type->meetWith(memofType, ch);
         // Push down the fact that the memof operand is a pointer to the assignment type
-        addrType = new PointerType(type);
+        addrType = PointerType::get(type);
         addr->descendType(addrType, ch, this);
     }
 }
 
 void BranchStatement::dfaTypeAnalysis(bool &ch) {
     if (pCond)
-        pCond->descendType(new BooleanType(), ch, this);
+        pCond->descendType(BooleanType::get(), ch, this);
     // Not fully implemented yet?
 }
 //! Data flow based type analysis
@@ -803,20 +802,20 @@ void BoolAssign::dfaTypeAnalysis(bool &ch) {
 //  beta*     bottom    void*    void*
 //  int        void*     int      pi
 //  pi         void*     pi       pi
-Type *sigmaSum(Type *ta, Type *tb) {
+SharedType sigmaSum(SharedType ta, SharedType tb) {
     bool ch;
     if (ta->resolvesToPointer()) {
         if (tb->resolvesToPointer())
             return ta->createUnion(tb, ch);
-        return new PointerType(new VoidType);
+        return PointerType::get(VoidType::get());
     }
     if (ta->resolvesToInteger()) {
         if (tb->resolvesToPointer())
-            return new PointerType(new VoidType);
+            return PointerType::get(VoidType::get());
         return tb->clone();
     }
     if (tb->resolvesToPointer())
-        return new PointerType(new VoidType);
+        return PointerType::get(VoidType::get());
     return ta->clone();
 }
 
@@ -825,13 +824,13 @@ Type *sigmaSum(Type *ta, Type *tb) {
 // alpha*    int        bottom    int
 // int        void*    int        pi
 // pi        pi        pi        pi
-Type *sigmaAddend(Type *tc, Type *to) {
+SharedType sigmaAddend(SharedType tc, SharedType to) {
     bool ch;
     if (tc->resolvesToPointer()) {
         if (to->resolvesToPointer())
             return IntegerType::get(STD_SIZE, 0);
         if (to->resolvesToInteger())
-            return new PointerType(new VoidType);
+            return PointerType::get(VoidType::get());
         return to->clone();
     }
     if (tc->resolvesToInteger()) {
@@ -849,20 +848,20 @@ Type *sigmaAddend(Type *tc, Type *to) {
 // alpha*    bottom    void*    void*
 // int        void*    int        pi
 // pi        void*    int        pi
-Type *deltaMinuend(Type *tc, Type *tb) {
+SharedType deltaMinuend(SharedType tc, SharedType tb) {
     bool ch;
     if (tc->resolvesToPointer()) {
         if (tb->resolvesToPointer())
             return tc->createUnion(tb, ch);
-        return new PointerType(new VoidType);
+        return PointerType::get(VoidType::get());
     }
     if (tc->resolvesToInteger()) {
         if (tb->resolvesToPointer())
-            return new PointerType(new VoidType);
+            return PointerType::get(VoidType::get());
         return tc->clone();
     }
     if (tb->resolvesToPointer())
-        return new PointerType(new VoidType);
+        return PointerType::get(VoidType::get());
     return tc->clone();
 }
 
@@ -871,7 +870,7 @@ Type *deltaMinuend(Type *tc, Type *tb) {
 // alpha*    int        void*    pi
 // int        bottom    int        int
 // pi        int        pi        pi
-Type *deltaSubtrahend(Type *tc, Type *ta) {
+SharedType deltaSubtrahend(SharedType tc, SharedType ta) {
     bool ch;
     if (tc->resolvesToPointer()) {
         if (ta->resolvesToPointer())
@@ -882,7 +881,7 @@ Type *deltaSubtrahend(Type *tc, Type *ta) {
     }
     if (tc->resolvesToInteger())
         if (ta->resolvesToPointer())
-            return new PointerType(new VoidType);
+            return PointerType::get(VoidType::get());
     return ta->clone();
     if (ta->resolvesToPointer())
         return tc->clone();
@@ -894,13 +893,13 @@ Type *deltaSubtrahend(Type *tc, Type *ta) {
 // beta*    int        bottom    int
 // int        void*    int        pi
 // pi        pi        int        pi
-Type *deltaDifference(Type *ta, Type *tb) {
+SharedType deltaDifference(SharedType ta, SharedType tb) {
     bool ch;
     if (ta->resolvesToPointer()) {
         if (tb->resolvesToPointer())
             return IntegerType::get(STD_SIZE, 0);
         if (tb->resolvesToInteger())
-            return new PointerType(new VoidType);
+            return PointerType::get(VoidType::get());
         return tb->clone();
     }
     if (ta->resolvesToInteger()) {
@@ -920,11 +919,11 @@ Type *deltaDifference(Type *ta, Type *tb) {
 //                                        //
 //    //    //    //    //    //    //    //    //    //    //
 
-Type *Binary::ascendType() {
+SharedType Binary::ascendType() {
     if (op == opFlagCall)
-        return new VoidType;
-    Type *ta = subExp1->ascendType();
-    Type *tb = subExp2->ascendType();
+        return VoidType::get();
+    SharedType ta = subExp1->ascendType();
+    SharedType tb = subExp2->ascendType();
     switch (op) {
     case opPlus:
         return sigmaSum(ta, tb);
@@ -952,22 +951,22 @@ Type *Binary::ascendType() {
     case opGtrUns:
     case opLessEqUns:
     case opGtrEqUns:
-        return new BooleanType();
+        return BooleanType::get();
     default:
         // Many more cases to implement
-        return new VoidType;
+        return VoidType::get();
     }
 }
 
 // Constants and subscripted locations are at the leaves of the expression tree. Just return their stored types.
-Type *RefExp::ascendType() {
+SharedType RefExp::ascendType() {
     if (def == nullptr) {
         LOG_STREAM() << "Warning! Null reference in " << this << "\n";
-        return new VoidType;
+        return VoidType::get();
     }
     return def->getTypeFor(subExp1);
 }
-Type *Const::ascendType() {
+SharedType Const::ascendType() {
     if (type->resolvesToVoid()) {
         switch (op) {
         case opIntConst:
@@ -987,10 +986,10 @@ Type *Const::ascendType() {
             type = FloatType::get(64);
             break;
         case opStrConst:
-            type = new PointerType(new CharType);
+            type = PointerType::get(CharType::get());
             break;
         case opFuncConst:
-            type = new FuncType; // More needed here?
+            type = FuncType::get(); // More needed here?
             break;
         default:
             assert(0); // Bad Const
@@ -999,42 +998,42 @@ Type *Const::ascendType() {
     return type;
 }
 // Can also find various terminals at the leaves of an expression tree
-Type *Terminal::ascendType() {
+SharedType Terminal::ascendType() {
     switch (op) {
     case opPC:
         return IntegerType::get(STD_SIZE, -1);
     case opCF:
     case opZF:
-        return new BooleanType;
+        return BooleanType::get();
     case opDefineAll:
-        return new VoidType;
+        return VoidType::get();
     case opFlags:
         return IntegerType::get(STD_SIZE, -1);
     default:
         LOG_STREAM() << "ascendType() for terminal " << this << " not implemented!\n";
-        return new VoidType;
+        return VoidType::get();
     }
 }
 
-Type *Unary::ascendType() {
-    Type *ta = subExp1->ascendType();
+SharedType Unary::ascendType() {
+    SharedType ta = subExp1->ascendType();
     switch (op) {
     case opMemOf:
         if (ta->resolvesToPointer())
             return ta->asPointer()->getPointsTo();
         else
-            return new VoidType(); // NOT SURE! Really should be bottom
+            return VoidType::get(); // NOT SURE! Really should be bottom
         break;
     case opAddrOf:
-        return new PointerType(ta);
+        return PointerType::get(ta);
         break;
     default:
         break;
     }
-    return new VoidType;
+    return VoidType::get();
 }
 
-Type *Ternary::ascendType() {
+SharedType Ternary::ascendType() {
     switch (op) {
     case opFsize:
         return FloatType::get(((Const *)subExp2)->getInt());
@@ -1047,10 +1046,10 @@ Type *Ternary::ascendType() {
     default:
         break;
     }
-    return new VoidType;
+    return VoidType::get();
 }
 
-Type *TypedExp::ascendType() { return type; }
+SharedType TypedExp::ascendType() { return type; }
 
 //    //    //    //    //    //    //    //    //    //    //
 //                                        //
@@ -1059,12 +1058,12 @@ Type *TypedExp::ascendType() { return type; }
 //                                        //
 //    //    //    //    //    //    //    //    //    //    //
 
-void Binary::descendType(Type *parentType, bool &ch, Instruction *s) {
+void Binary::descendType(SharedType parentType, bool &ch, Instruction *s) {
     if (op == opFlagCall)
         return;
-    Type *ta = subExp1->ascendType();
-    Type *tb = subExp2->ascendType();
-    Type *nt; // "New" type for certain operators
+    SharedType ta = subExp1->ascendType();
+    SharedType tb = subExp2->ascendType();
+    SharedType nt; // "New" type for certain operators
 // The following is an idea of Mike's that is not yet implemented well. It is designed to handle the situation
 // where the only reference to a local is where its address is taken. In the current implementation, it incorrectly
 // triggers with every ordinary local reference, causing esp to appear used in the final program
@@ -1165,13 +1164,13 @@ void Binary::descendType(Type *parentType, bool &ch, Instruction *s) {
     }
 }
 
-void RefExp::descendType(Type *parentType, bool &ch, Instruction *s) {
-    Type *newType = def->meetWithFor(parentType, subExp1, ch);
+void RefExp::descendType(SharedType parentType, bool &ch, Instruction *s) {
+    SharedType newType = def->meetWithFor(parentType, subExp1, ch);
     // In case subExp1 is a m[...]
     subExp1->descendType(newType, ch, s);
 }
 
-void Const::descendType(Type *parentType, bool &ch, Instruction */*s*/) {
+void Const::descendType(SharedType parentType, bool &ch, Instruction */*s*/) {
     bool thisCh = false;
     type = type->meetWith(parentType, thisCh);
     ch |= thisCh;
@@ -1194,7 +1193,7 @@ void Const::descendType(Type *parentType, bool &ch, Instruction */*s*/) {
     }
 }
 
-void Unary::descendType(Type *parentType, bool &ch, Instruction *s) {
+void Unary::descendType(SharedType parentType, bool &ch, Instruction *s) {
     Binary *as_bin = dynamic_cast<Binary *>(subExp1);
     switch (op) {
     case opMemOf:
@@ -1220,13 +1219,13 @@ void Unary::descendType(Type *parentType, bool &ch, Instruction *s) {
                    ((RefExp *)as_bin->getSubExp1())->isLocation() && as_bin->getSubExp2()->isIntConst()) {
             // m[l1 + K]
             Location *l1 = (Location *)((RefExp *)((Binary *)subExp1)->getSubExp1());
-            Type *l1Type = l1->ascendType();
+            SharedType l1Type = l1->ascendType();
             int K = ((Const *)as_bin->getSubExp2())->getInt();
             if (l1Type->resolvesToPointer()) {
                 // This is a struct reference m[ptr + K]; ptr points to the struct and K is an offset into it
                 // First find out if we already have struct information
                 if (l1Type->asPointer()->resolvesToCompound()) {
-                    CompoundType *ct = l1Type->asPointer()->asCompound();
+                    auto ct = l1Type->asPointer()->asCompound();
                     if (ct->isGeneric())
                         ct->updateGenericMember(K, parentType, ch);
                     else {
@@ -1235,7 +1234,7 @@ void Unary::descendType(Type *parentType, bool &ch, Instruction *s) {
                     }
                 } else {
                     // Need to create a generic stuct with a least one member at offset K
-                    CompoundType *ct = new CompoundType(true);
+                    auto ct = CompoundType::get(true);
                     ct->updateGenericMember(K, parentType, ch);
                 }
             } else {
@@ -1244,7 +1243,7 @@ void Unary::descendType(Type *parentType, bool &ch, Instruction *s) {
             }
             // FIXME: many other cases
         } else
-            subExp1->descendType(new PointerType(parentType), ch, s);
+            subExp1->descendType(PointerType::get(parentType), ch, s);
         break;
     case opAddrOf:
         if (parentType->resolvesToPointer())
@@ -1253,7 +1252,7 @@ void Unary::descendType(Type *parentType, bool &ch, Instruction *s) {
     case opGlobal: {
         Prog *prog = s->getProc()->getProg();
         const char *name = ((Const *)subExp1)->getStr();
-        Type *ty = prog->getGlobalType(name);
+        SharedType ty = prog->getGlobalType(name);
         if (ty) {
             ty = ty->meetWith(parentType, ch);
             prog->setGlobalType(name, ty);
@@ -1265,7 +1264,7 @@ void Unary::descendType(Type *parentType, bool &ch, Instruction *s) {
     }
 }
 
-void Ternary::descendType(Type */*parentType*/, bool &ch, Instruction *s) {
+void Ternary::descendType(SharedType /*parentType*/, bool &ch, Instruction *s) {
     switch (op) {
     case opFsize:
         subExp3->descendType(FloatType::get(((Const *)subExp1)->getInt()), ch, s);
@@ -1273,7 +1272,7 @@ void Ternary::descendType(Type */*parentType*/, bool &ch, Instruction *s) {
     case opZfill:
     case opSgnEx: {
         int fromSize = ((Const *)subExp1)->getInt();
-        Type *fromType;
+        SharedType fromType;
         fromType = Type::newIntegerLikeType(fromSize, op == opZfill ? -1 : 1);
         subExp3->descendType(fromType, ch, s);
         break;
@@ -1284,9 +1283,9 @@ void Ternary::descendType(Type */*parentType*/, bool &ch, Instruction *s) {
     }
 }
 
-void TypedExp::descendType(Type */*parentType*/, bool &/*ch*/, Instruction */*s*/) {}
+void TypedExp::descendType(SharedType /*parentType*/, bool &/*ch*/, Instruction */*s*/) {}
 
-void Terminal::descendType(Type */*parentType*/, bool &/*ch*/, Instruction */*s*/) {}
+void Terminal::descendType(SharedType /*parentType*/, bool &/*ch*/, Instruction */*s*/) {}
 //! Data flow based type analysis.
 //! Meet the parameters with their current types.
 //! \returns true if a change
@@ -1311,209 +1310,209 @@ bool Signature::dfaTypeAnalysis(Cfg *cfg) {
 
 // Note: to prevent infinite recursion, CompoundType, ArrayType, and UnionType implement this function as a delegation
 // to isCompatible()
-bool Type::isCompatibleWith(const Type *other, bool all /* = false */) const {
-    if (other->resolvesToCompound() || other->resolvesToArray() || other->resolvesToUnion())
-        return other->isCompatible(this, all);
+bool Type::isCompatibleWith(const Type &other, bool all /* = false */) const {
+    if (other.resolvesToCompound() || other.resolvesToArray() || other.resolvesToUnion())
+        return other.isCompatible(*this, all);
     return isCompatible(other, all);
 }
 
-bool VoidType::isCompatible(const Type */*other*/, bool /*all*/) const {
+bool VoidType::isCompatible(const Type &/*other*/, bool /*all*/) const {
     return true; // Void is compatible with any type
 }
 
-bool SizeType::isCompatible(const Type *other, bool /*all*/) const {
-    if (other->resolvesToVoid())
+bool SizeType::isCompatible(const Type &other, bool /*all*/) const {
+    if (other.resolvesToVoid())
         return true;
-    size_t otherSize = other->getSize();
-    if (other->resolvesToFunc())
+    size_t otherSize = other.getSize();
+    if (other.resolvesToFunc())
         return false;
     // FIXME: why is there a test for size 0 here?
     if (otherSize == size || otherSize == 0)
         return true;
-    if (other->resolvesToUnion())
-        return other->isCompatibleWith(this);
-    if (other->resolvesToArray())
-        return isCompatibleWith(((ArrayType *)other)->getBaseType());
+    if (other.resolvesToUnion())
+        return other.isCompatibleWith(*this);
+    if (other.resolvesToArray())
+        return isCompatibleWith(*((const ArrayType &)other).getBaseType());
     // return false;
     // For now, size32 and double will be considered compatible (helps test/pentium/global2)
     return true;
 }
 
-bool IntegerType::isCompatible(const Type *other, bool /*all*/) const {
-    if (other->resolvesToVoid())
+bool IntegerType::isCompatible(const Type &other, bool /*all*/) const {
+    if (other.resolvesToVoid())
         return true;
-    if (other->resolvesToInteger())
+    if (other.resolvesToInteger())
         return true;
-    if (other->resolvesToChar())
+    if (other.resolvesToChar())
         return true;
-    if (other->resolvesToUnion())
-        return other->isCompatibleWith(this);
-    if (other->resolvesToSize() && ((SizeType *)other)->getSize() == size)
-        return true;
-    return false;
-}
-
-bool FloatType::isCompatible(const Type *other, bool /*all*/) const {
-    if (other->resolvesToVoid())
-        return true;
-    if (other->resolvesToFloat())
-        return true;
-    if (other->resolvesToUnion())
-        return other->isCompatibleWith(this);
-    if (other->resolvesToArray())
-        return isCompatibleWith(((ArrayType *)other)->getBaseType());
-    if (other->resolvesToSize() && ((SizeType *)other)->getSize() == size)
+    if (other.resolvesToUnion())
+        return other.isCompatibleWith(*this);
+    if (other.resolvesToSize() && ((const SizeType &)other).getSize() == size)
         return true;
     return false;
 }
 
-bool CharType::isCompatible(const Type *other, bool /*all*/) const {
-    if (other->resolvesToVoid())
+bool FloatType::isCompatible(const Type &other, bool /*all*/) const {
+    if (other.resolvesToVoid())
         return true;
-    if (other->resolvesToChar())
+    if (other.resolvesToFloat())
         return true;
-    if (other->resolvesToInteger())
-        return true;
-    if (other->resolvesToSize() && ((SizeType *)other)->getSize() == 8)
-        return true;
-    if (other->resolvesToUnion())
-        return other->isCompatibleWith(this);
-    if (other->resolvesToArray())
-        return isCompatibleWith(((ArrayType *)other)->getBaseType());
-    return false;
-}
-
-bool BooleanType::isCompatible(const Type *other, bool /*all*/) const {
-    if (other->resolvesToVoid())
-        return true;
-    if (other->resolvesToBoolean())
-        return true;
-    if (other->resolvesToUnion())
-        return other->isCompatibleWith(this);
-    if (other->resolvesToSize() && ((SizeType *)other)->getSize() == 1)
+    if (other.resolvesToUnion())
+        return other.isCompatibleWith(*this);
+    if (other.resolvesToArray())
+        return isCompatibleWith(*((const ArrayType &)other).getBaseType());
+    if (other.resolvesToSize() && ((const SizeType &)other).getSize() == size)
         return true;
     return false;
 }
 
-bool FuncType::isCompatible(const Type *other, bool /*all*/) const {
+bool CharType::isCompatible(const Type &other, bool /*all*/) const {
+    if (other.resolvesToVoid())
+        return true;
+    if (other.resolvesToChar())
+        return true;
+    if (other.resolvesToInteger())
+        return true;
+    if (other.resolvesToSize() && ((const SizeType &)other).getSize() == 8)
+        return true;
+    if (other.resolvesToUnion())
+        return other.isCompatibleWith(*this);
+    if (other.resolvesToArray())
+        return isCompatibleWith(*((const ArrayType &)other).getBaseType());
+    return false;
+}
+
+bool BooleanType::isCompatible(const Type &other, bool /*all*/) const {
+    if (other.resolvesToVoid())
+        return true;
+    if (other.resolvesToBoolean())
+        return true;
+    if (other.resolvesToUnion())
+        return other.isCompatibleWith(*this);
+    if (other.resolvesToSize() && ((const SizeType &)other).getSize() == 1)
+        return true;
+    return false;
+}
+
+bool FuncType::isCompatible(const Type &other, bool /*all*/) const {
     assert(signature);
-    if (other->resolvesToVoid())
+    if (other.resolvesToVoid())
         return true;
-    if (*this == *other)
+    if (*this == other)
         return true; // MVE: should not compare names!
-    if (other->resolvesToUnion())
-        return other->isCompatibleWith(this);
-    if (other->resolvesToSize() && ((SizeType *)other)->getSize() == STD_SIZE)
+    if (other.resolvesToUnion())
+        return other.isCompatibleWith(*this);
+    if (other.resolvesToSize() && ((const SizeType &)other).getSize() == STD_SIZE)
         return true;
-    if (other->resolvesToFunc()) {
-        assert(other->asFunc()->signature);
-        if (*other->asFunc()->signature == *signature)
+    if (other.resolvesToFunc()) {
+        assert(other.asFunc()->signature);
+        if (*other.asFunc()->signature == *signature)
             return true;
     }
     return false;
 }
 
-bool PointerType::isCompatible(const Type *other, bool /*all*/) const {
-    if (other->resolvesToVoid())
+bool PointerType::isCompatible(const Type &other, bool /*all*/) const {
+    if (other.resolvesToVoid())
         return true;
-    if (other->resolvesToUnion())
-        return other->isCompatibleWith(this);
-    if (other->resolvesToSize() && ((SizeType *)other)->getSize() == STD_SIZE)
+    if (other.resolvesToUnion())
+        return other.isCompatibleWith(*this);
+    if (other.resolvesToSize() && ((const SizeType &)other).getSize() == STD_SIZE)
         return true;
-    if (!other->resolvesToPointer())
+    if (!other.resolvesToPointer())
         return false;
-    return points_to->isCompatibleWith(other->asPointer()->points_to);
+    return points_to->isCompatibleWith(*other.asPointer()->points_to);
 }
 
-bool NamedType::isCompatible(const Type *other, bool /*all*/) const {
-    if (other->isNamed() && name == ((NamedType *)other)->getName())
+bool NamedType::isCompatible(const Type &other, bool /*all*/) const {
+    if (other.isNamed() && name == ((const NamedType &)other).getName())
         return true;
-    Type *resTo = resolvesTo();
+    SharedType resTo = resolvesTo();
     if (resTo)
         return resolvesTo()->isCompatibleWith(other);
-    if (other->resolvesToVoid())
+    if (other.resolvesToVoid())
         return true;
-    return (*this == *other);
+    return (*this == other);
 }
 
-bool ArrayType::isCompatible(const Type *other, bool all) const {
-    if (other->resolvesToVoid())
+bool ArrayType::isCompatible(const Type &other, bool all) const {
+    if (other.resolvesToVoid())
         return true;
-    if (other->resolvesToArray() && BaseType->isCompatibleWith(other->asArray()->BaseType))
+    if (other.resolvesToArray() && BaseType->isCompatibleWith(*other.asArray()->BaseType))
         return true;
-    if (other->resolvesToUnion())
-        return other->isCompatibleWith(this);
+    if (other.resolvesToUnion())
+        return other.isCompatibleWith(*this);
     if (!all && BaseType->isCompatibleWith(other))
         return true; // An array of x is compatible with x
     return false;
 }
 
-bool UnionType::isCompatible(const Type *other, bool all) const {
-    if (other->resolvesToVoid())
+bool UnionType::isCompatible(const Type &other, bool all) const {
+    if (other.resolvesToVoid())
         return true;
     std::list<UnionElement>::const_iterator it;
-    if (other->resolvesToUnion()) {
-        if (this == other) // Note: pointer comparison
+    if (other.resolvesToUnion()) {
+        if (this == &other) // Note: pointer comparison
             return true;   // Avoid infinite recursion
-        UnionType *otherUnion = (UnionType *)other;
+        const UnionType &otherUnion((const UnionType &)other);
         // Unions are compatible if one is a subset of the other
-        if (li.size() < otherUnion->li.size()) {
+        if (li.size() < otherUnion.li.size()) {
             for (it = li.begin(); it != li.end(); ++it)
-                if (!otherUnion->isCompatible(it->type, all))
+                if (!otherUnion.isCompatible(*it->type, all))
                     return false;
         } else {
-            for (it = otherUnion->li.begin(); it != otherUnion->li.end(); ++it)
-                if (!isCompatible(it->type, all))
+            for (it = otherUnion.li.begin(); it != otherUnion.li.end(); ++it)
+                if (!isCompatible(*it->type, all))
                     return false;
         }
         return true;
     }
     // Other is not a UnionType
     for (it = li.begin(); it != li.end(); ++it)
-        if (other->isCompatibleWith(it->type, all))
+        if (other.isCompatibleWith(*it->type, all))
             return true;
     return false;
 }
 
-bool CompoundType::isCompatible(const Type *other, bool all) const {
-    if (other->resolvesToVoid())
+bool CompoundType::isCompatible(const Type &other, bool all) const {
+    if (other.resolvesToVoid())
         return true;
-    if (other->resolvesToUnion())
-        return other->isCompatibleWith(this);
-    if (!other->resolvesToCompound())
+    if (other.resolvesToUnion())
+        return other.isCompatibleWith(*this);
+    if (!other.resolvesToCompound())
         // Used to always return false here. But in fact, a struct is compatible with its first member (if all is false)
         return !all && types[0]->isCompatibleWith(other);
-    const CompoundType *otherComp = other->asCompound();
+    auto otherComp = other.asCompound();
     int n = otherComp->getNumTypes();
     if (n != (int)types.size())
         return false; // Is a subcompound compatible with a supercompound?
     for (int i = 0; i < n; i++)
-        if (!types[i]->isCompatibleWith(otherComp->types[i]))
+        if (!types[i]->isCompatibleWith(*otherComp->types[i]))
             return false;
     return true;
 }
 
-bool UpperType::isCompatible(const Type *other, bool /*all*/) const {
-    if (other->resolvesToVoid())
+bool UpperType::isCompatible(const Type &other, bool /*all*/) const {
+    if (other.resolvesToVoid())
         return true;
-    if (other->resolvesToUpper() && base_type->isCompatibleWith(other->asUpper()->base_type))
+    if (other.resolvesToUpper() && base_type->isCompatibleWith(*other.asUpper()->base_type))
         return true;
-    if (other->resolvesToUnion())
-        return other->isCompatibleWith(this);
+    if (other.resolvesToUnion())
+        return other.isCompatibleWith(*this);
     return false;
 }
 
-bool LowerType::isCompatible(const Type *other, bool /*all*/) const {
-    if (other->resolvesToVoid())
+bool LowerType::isCompatible(const Type &other, bool /*all*/) const {
+    if (other.resolvesToVoid())
         return true;
-    if (other->resolvesToLower() && base_type->isCompatibleWith(other->asLower()->base_type))
+    if (other.resolvesToLower() && base_type->isCompatibleWith(*other.asLower()->base_type))
         return true;
-    if (other->resolvesToUnion())
-        return other->isCompatibleWith(this);
+    if (other.resolvesToUnion())
+        return other.isCompatibleWith(*this);
     return false;
 }
 
-bool Type::isSubTypeOrEqual(Type *other) {
+bool Type::isSubTypeOrEqual(SharedType other) {
     if (resolvesToVoid())
         return true;
     if (*this == *other)
@@ -1524,22 +1523,22 @@ bool Type::isSubTypeOrEqual(Type *other) {
     return false;
 }
 
-Type *Type::dereference() {
+SharedType Type::dereference() {
     if (resolvesToPointer())
         return asPointer()->getPointsTo();
     if (resolvesToUnion())
         return asUnion()->dereferenceUnion();
-    return new VoidType(); // Can't dereference this type. Note: should probably be bottom
+    return VoidType::get(); // Can't dereference this type. Note: should probably be bottom
 }
 
 // Dereference this union. If it is a union of pointers, return a union of the dereferenced items. Else return VoidType
 // (note: should probably be bottom)
-Type *UnionType::dereferenceUnion() {
-    UnionType *ret = new UnionType;
+SharedType UnionType::dereferenceUnion() {
+    auto ret = UnionType::get();
     char name[20];
     std::list<UnionElement>::iterator it;
     for (it = li.begin(); it != li.end(); ++it) {
-        Type *elem = it->type->dereference();
+        SharedType elem = it->type->dereference();
         if (elem->resolvesToVoid())
             return elem; // Return void for the whole thing
         sprintf(name, "x%d", ++nextUnionNumber);

@@ -441,7 +441,7 @@ void CallStatement::rangeAnalysis(std::list<Instruction *> &execution_paths) {
                 arguments.clear();
                 for (size_t i = 0; i < sig->getNumParams(); i++) {
                     Exp *a = sig->getParamExp(i);
-                    Assign *as = new Assign(new VoidType(), a->clone(), a->clone());
+                    Assign *as = new Assign(VoidType::get(), a->clone(), a->clone());
                     as->setProc(proc);
                     as->setBB(Parent);
                     arguments.append(as);
@@ -2053,13 +2053,13 @@ Exp *CallStatement::localiseExp(Exp * e) {
 // Note: must only operator on unsubscripted locations, otherwise it is invalid
 Exp *CallStatement::findDefFor(Exp * e) { return defCol.findDefFor(e); }
 
-Type *CallStatement::getArgumentType(int i) {
+SharedType CallStatement::getArgumentType(int i) {
     assert(i < (int)arguments.size());
     StatementList::iterator aa = arguments.begin();
     std::advance(aa, i);
     return ((Assign *)(*aa))->getType();
 }
-void CallStatement::setArgumentType(int i, Type *ty) {
+void CallStatement::setArgumentType(int i, SharedType ty) {
     assert(i < (int)arguments.size());
     StatementList::iterator aa = arguments.begin();
     std::advance(aa, i);
@@ -2486,7 +2486,7 @@ bool CallStatement::convertToDirect() {
     arguments.clear();
     for (unsigned i = 0; i < sig->getNumParams(); i++) {
         Exp *a = sig->getParamExp(i);
-        Assign *as = new Assign(new VoidType(), a->clone(), a->clone());
+        Assign *as = new Assign(VoidType::get(), a->clone(), a->clone());
         as->setProc(proc);
         as->setBB(Parent);
         arguments.append(as);
@@ -2540,11 +2540,11 @@ void CallStatement::setNumArguments(int n) {
     // MVE: check if these need extra propagation
     for (int i = oldSize; i < n; i++) {
         Exp *a = procDest->getSignature()->getArgumentExp(i);
-        Type *ty = procDest->getSignature()->getParamType(i);
+        SharedType ty = procDest->getSignature()->getParamType(i);
         if (ty == nullptr && oldSize)
             ty = procDest->getSignature()->getParamType(oldSize - 1);
         if (ty == nullptr)
-            ty = new VoidType();
+            ty = VoidType::get();
         Assign *as = new Assign(ty, a->clone(), a->clone());
         as->setProc(proc);
         as->setBB(Parent);
@@ -2559,13 +2559,13 @@ void CallStatement::removeArgument(int i) {
 }
 
 // Processes each argument of a CallStatement, and the RHS of an Assign. Ad-hoc type analysis only.
-Exp *processConstant(Exp * e, Type * t, Prog * prog, UserProc * proc, ADDRESS stmt) {
+Exp *processConstant(Exp * e, SharedType  t, Prog * prog, UserProc * proc, ADDRESS stmt) {
     if (t == nullptr)
         return e;
-    NamedType *nt = nullptr;
+    std::shared_ptr<NamedType> nt;
     if (t->isNamed()) {
-        nt = (NamedType *)t;
-        t = ((NamedType *)t)->resolvesTo();
+        nt = std::static_pointer_cast<NamedType>(t);
+        t = nt->resolvesTo();
     }
     if (t == nullptr)
         return e;
@@ -2577,8 +2577,8 @@ Exp *processConstant(Exp * e, Type * t, Prog * prog, UserProc * proc, ADDRESS st
             LOG << "possible wide char string at " << u << "\n";
         }
         if (t->resolvesToPointer()) {
-            PointerType *pt = t->asPointer();
-            Type *points_to = pt->getPointsTo();
+            auto pt = t->as<PointerType>();
+            SharedType points_to = pt->getPointsTo();
             if (t->isCString()) {
                 ADDRESS u = ((Const *)e)->getAddr();
                 if (!u.isZero()) { // can't do anything with nullptr
@@ -2588,7 +2588,7 @@ Exp *processConstant(Exp * e, Type * t, Prog * prog, UserProc * proc, ADDRESS st
                         // Check if we may have guessed this global incorrectly (usually as an array of char)
                         QString nam = prog->getGlobalName(u);
                         if (!nam.isEmpty())
-                            prog->setGlobalType(nam, new PointerType(new CharType()));
+                            prog->setGlobalType(nam, PointerType::get(CharType::get()));
                     } else {
                         proc->getProg()->globalUsed(u);
                         QString nam = proc->getProg()->getGlobalName(u);
@@ -2629,32 +2629,32 @@ Exp *processConstant(Exp * e, Type * t, Prog * prog, UserProc * proc, ADDRESS st
     return e;
 }
 
-Type *Assignment::getTypeFor(Exp * /*e*/) {
+SharedType Assignment::getTypeFor(Exp * /*e*/) {
     // assert(*lhs == *e);            // No: local vs base expression
     return type;
 }
 
-void Assignment::setTypeFor(Exp * /*e*/, Type * ty) {
+void Assignment::setTypeFor(Exp * /*e*/, SharedType ty) {
     // assert(*lhs == *e);
-    Type *oldType = type;
+    SharedType oldType = type;
     type = ty;
     if (DEBUG_TA && oldType != ty)
         LOG << "    changed type of " << this << "  (type was " << oldType->getCtype() << ")\n";
 }
 
 // Scan the returns for e. If found, return the type associated with that return
-Type *CallStatement::getTypeFor(Exp * e) {
+SharedType CallStatement::getTypeFor(Exp * e) {
     // The defines "cache" what the destination proc is defining
     Assignment *as = defines.findOnLeft(e);
     if (as != nullptr)
         return as->getType();
     if (e->isPC())
         // Special case: just return void*
-        return new PointerType(new VoidType);
-    return new VoidType;
+        return PointerType::get(VoidType::get());
+    return VoidType::get();
 }
 
-void CallStatement::setTypeFor(Exp * e, Type * ty) {
+void CallStatement::setTypeFor(Exp * e, SharedType ty) {
     Assignment *as = defines.findOnLeft(e);
     if (as != nullptr)
         return as->setType(ty);
@@ -2682,7 +2682,7 @@ bool CallStatement::objcSpecificProcessing(const char *formatStr) {
             while ((p = strchr(p, ':'))) {
                 p++; // Point past the :
                 n++;
-                addSigParam(new PointerType(new VoidType()), false);
+                addSigParam(PointerType::get(VoidType::get()), false);
             }
             setNumArguments(format + n);
             signature->killEllipsis(); // So we don't do this again
@@ -2692,19 +2692,19 @@ bool CallStatement::objcSpecificProcessing(const char *formatStr) {
             LOG << this << "\n";
             for (int i = 0; i < getNumArguments(); i++) {
                 Exp *e = getArgumentExp(i);
-                Type *ty = getArgumentType(i);
+                SharedType ty = getArgumentType(i);
                 LOG << "arg " << i << " e: " << e << " ty: " << ty << "\n";
-                if (!(ty->isPointer() && ((PointerType *)ty)->getPointsTo()->isChar()) && e->isIntConst()) {
+                if (!(ty->isPointer() && (std::static_pointer_cast<PointerType>(ty)->getPointsTo()->isChar()) && e->isIntConst())) {
                     ADDRESS addr = ADDRESS::g(((Const *)e)->getInt());
                     LOG << "addr: " << addr << "\n";
                     if (proc->getProg()->isStringConstant(addr)) {
                         LOG << "making arg " << i << " of call c*\n";
-                        setArgumentType(i, new PointerType(new CharType()));
+                        setArgumentType(i, PointerType::get(CharType::get()));
                         change = true;
                     } else if (proc->getProg()->isCFStringConstant(addr)) {
                         ADDRESS addr2 = ADDRESS::g(proc->getProg()->readNative4(addr + 8));
                         LOG << "arg " << i << " of call is a cfstring\n";
-                        setArgumentType(i, new PointerType(new CharType()));
+                        setArgumentType(i, PointerType::get(CharType::get()));
                         // TODO: we'd really like to change this to CFSTR(addr)
                         setArgumentExp(i, Const::get(addr2));
                         change = true;
@@ -2859,10 +2859,10 @@ bool CallStatement::ellipsisProcessing(Prog * prog) {
             // for some archs
             break;
         case 's': // String
-            addSigParam(new PointerType(new ArrayType(new CharType)), isScanf);
+            addSigParam(PointerType::get(ArrayType::get(CharType::get())), isScanf);
             break;
         case 'c': // Char
-            addSigParam(new CharType, isScanf);
+            addSigParam(CharType::get(), isScanf);
             break;
         case '%':
             break; // Ignore %% (emits 1 percent char)
@@ -2876,7 +2876,7 @@ bool CallStatement::ellipsisProcessing(Prog * prog) {
 }
 
 // Make an assign suitable for use as an argument from a callee context expression
-Assign *CallStatement::makeArgAssign(Type * ty, Exp * e) {
+Assign *CallStatement::makeArgAssign(SharedType ty, Exp * e) {
     Exp *lhs = e->clone();
     localiseComp(lhs); // Localise the components of lhs (if needed)
     Exp *rhs = localiseExp(e->clone());
@@ -2894,9 +2894,9 @@ Assign *CallStatement::makeArgAssign(Type * ty, Exp * e) {
 }
 
 // Helper function for the above
-void CallStatement::addSigParam(Type * ty, bool isScanf) {
+void CallStatement::addSigParam(SharedType ty, bool isScanf) {
     if (isScanf)
-        ty = new PointerType(ty);
+        ty = PointerType::get(ty);
     signature->addParameter(ty);
     Exp *paramExp = signature->getParamExp(signature->getNumParams() - 1);
     if (VERBOSE)
@@ -3248,20 +3248,20 @@ void BoolAssign::setLeftFromList(std::list<Instruction *> * stmts) {
 // Assign //
 //    //    //    //
 
-Assignment::Assignment(Exp * lhs) : TypingStatement(new VoidType), lhs(lhs) {
+Assignment::Assignment(Exp * lhs) : TypingStatement(VoidType::get()), lhs(lhs) {
     if (lhs && lhs->isRegOf()) {
         int n = ((Const *)lhs->getSubExp1())->getInt();
         if (((Location *)lhs)->getProc()) {
-            type = new SizeType(((Location *)lhs)->getProc()->getProg()->getRegSize(n));
+            type = SizeType::get(((Location *)lhs)->getProc()->getProg()->getRegSize(n));
         }
     }
 }
-Assignment::Assignment(Type * ty, Exp * lhs) : TypingStatement(ty), lhs(lhs) {}
+Assignment::Assignment(SharedType ty, Exp * lhs) : TypingStatement(ty), lhs(lhs) {}
 Assignment::~Assignment() {}
 
 Assign::Assign(Exp * lhs, Exp * r, Exp * guard) : Assignment(lhs), rhs(r), guard(guard) { Kind = STMT_ASSIGN; }
 
-Assign::Assign(Type * ty, Exp * lhs, Exp * r, Exp * guard) : Assignment(ty, lhs), rhs(r), guard(guard) {
+Assign::Assign(SharedType ty, Exp * lhs, Exp * r, Exp * guard) : Assignment(ty, lhs), rhs(r), guard(guard) {
     Kind = STMT_ASSIGN;
 }
 Assign::Assign(Assign & o) : Assignment(lhs->clone()) {
@@ -3281,7 +3281,7 @@ Assign::Assign(Assign & o) : Assignment(lhs->clone()) {
 //! Constructor and subexpression
 ImplicitAssign::ImplicitAssign(Exp * lhs) : Assignment(lhs) { Kind = STMT_IMPASSIGN; }
 //! Constructor, type, and subexpression
-ImplicitAssign::ImplicitAssign(Type * ty, Exp * lhs) : Assignment(ty, lhs) { Kind = STMT_IMPASSIGN; }
+ImplicitAssign::ImplicitAssign(SharedType ty, Exp * lhs) : Assignment(ty, lhs) { Kind = STMT_IMPASSIGN; }
 ImplicitAssign::ImplicitAssign(ImplicitAssign & o) : Assignment(o.type ? o.type->clone() : nullptr, o.lhs->clone()) {
     Kind = STMT_IMPASSIGN;
 }
@@ -3377,12 +3377,12 @@ if (lhs->getOper() == opMemOf && lhs->getSubExp1()->getOper() == opSubscript) {
                     // MVE: opPhi!!
                     rhs->getOper() != opPhi && rhs->getOper() != opItof &&
                     rhs->getOper() != opFltConst) {
-                Type *ty = proc->getProg()->getGlobalType(
+                SharedType ty = proc->getProg()->getGlobalType(
                             ((Const*)def->rhs->getSubExp1()->
                              getSubExp1()->
                              getSubExp1())->getStr());
                 if (ty && ty->isArray()) {
-                    Type *bty = ((ArrayType*)ty)->getBaseType();
+                    SharedType bty = ((ArrayType*)ty)->getBaseType();
                     if (bty->isFloat()) {
                         if (VERBOSE)
                             LOG << "replacing " << rhs << " with ";
@@ -3713,7 +3713,7 @@ void CallStatement::genConstraints(LocationSet & cons) {
             const char *p = str;
             while ((p = strchr(p, '%'))) {
                 p++;
-                Type *t = nullptr;
+                SharedType t = nullptr;
                 int longness = 0;
                 bool sign = true;
                 bool cont;
@@ -3741,7 +3741,7 @@ void CallStatement::genConstraints(LocationSet & cons) {
                         t = FloatType::get(64);
                         break;
                     case 's':
-                        t = new PointerType(new CharType());
+                        t = PointerType::get(CharType::get());
                         break;
                     case 'l':
                         longness++;
@@ -3762,7 +3762,7 @@ void CallStatement::genConstraints(LocationSet & cons) {
                 if (t) {
                     // scanf takes addresses of these
                     if (name == "scanf")
-                        t = new PointerType(t);
+                        t = PointerType::get(t);
                     // Generate a constraint for the parameter
                     TypeVal *tv = new TypeVal(t);
                     StatementList::iterator aa = arguments.begin();
@@ -3783,17 +3783,17 @@ void BranchStatement::genConstraints(LocationSet & cons) {
             LOG << "Warning: BranchStatment " << Number << " has no condition expression!\n";
         return;
     }
-    Type *opsType;
+    SharedType opsType;
     if (bFloat)
         opsType = FloatType::get(0);
     else
         opsType = IntegerType::get(0);
     if (jtCond == BRANCH_JUGE || jtCond == BRANCH_JULE || jtCond == BRANCH_JUG || jtCond == BRANCH_JUL) {
         assert(!bFloat);
-        ((IntegerType *)opsType)->bumpSigned(-1);
+        opsType->asInteger()->bumpSigned(-1);
     } else if (jtCond == BRANCH_JSGE || jtCond == BRANCH_JSLE || jtCond == BRANCH_JSG || jtCond == BRANCH_JSL) {
         assert(!bFloat);
-        ((IntegerType *)opsType)->bumpSigned(+1);
+        opsType->asInteger()->bumpSigned(+1);
     }
 
     // Constraints leading from the condition
@@ -3833,7 +3833,7 @@ void Instruction::clearConscripts() {
 }
 
 // Cast the constant num to be of type ty. Return true if a change made
-bool Instruction::castConst(int num, Type *ty) {
+bool Instruction::castConst(int num, SharedType ty) {
     ExpConstCaster ecc(num, ty);
     StmtModifier scc(&ecc);
     accept(&scc);
@@ -4281,7 +4281,7 @@ void PhiAssign::convertToAssign(Exp * rhs) {
     UserProc *p = proc;
     Exp *lhs_ = lhs;
     Exp *rhs_ = rhs;
-    Type *type_ = type;
+    SharedType type_ = type;
     this->~PhiAssign();                               // Explicitly destroy this, but keep the memory allocated.
     Assign *a = new (this) Assign(type_, lhs_, rhs_); // construct in-place. Note that 'a' == 'this'
     a->setNumber(n);
@@ -4377,7 +4377,7 @@ void ReturnStatement::getDefinitions(LocationSet & ls) {
         (elem)->getDefinitions(ls);
 }
 
-Type *ReturnStatement::getTypeFor(Exp * e) {
+SharedType ReturnStatement::getTypeFor(Exp * e) {
     for (auto &elem : modifieds) {
         if (*((Assignment *)elem)->getLeft() == *e)
             return ((Assignment *)elem)->getType();
@@ -4385,7 +4385,7 @@ Type *ReturnStatement::getTypeFor(Exp * e) {
     return nullptr;
 }
 
-void ReturnStatement::setTypeFor(Exp * e, Type * ty) {
+void ReturnStatement::setTypeFor(Exp * e, SharedType ty) {
     for (auto &elem : modifieds) {
         if (*((Assignment *)elem)->getLeft() == *e) {
             ((Assignment *)elem)->setType(ty);
@@ -4441,7 +4441,7 @@ void ReturnStatement::print(QTextStream & os, bool html) const {
         QString tgt2;
         QTextStream ost(&tgt2);
         const Assign *as = (const Assign *)elem;
-        const Type *ty = as->getType();
+        const SharedType ty = as->getType();
         if (ty)
             ost << "*" << ty << "* ";
         ost << as->getLeft();
@@ -4655,7 +4655,7 @@ void CallStatement::updateDefines() {
             Exp *loc = as->getLeft();
             if (proc->filterReturns(loc))
                 continue;
-            Type *ty = as->getType();
+            SharedType ty = as->getType();
             if (!oldDefines.existsOnLeft(loc))
                 oldDefines.append(new ImplicitAssign(ty, loc));
         }
@@ -4722,7 +4722,7 @@ class ArgSourceProvider {
   public:
     ArgSourceProvider(CallStatement *call);
     Exp *nextArgLoc();     // Get the next location (not subscripted)
-    Type *curType(Exp *e); // Get the current location's type
+    SharedType curType(Exp *e); // Get the current location's type
     bool exists(Exp *loc); // True if the given location (not subscripted) exists as a source
     Exp *localise(Exp *e); // Localise to this call if necessary
 };
@@ -4794,19 +4794,19 @@ Exp *ArgSourceProvider::localise(Exp * e) {
     return call->localiseExp(e);
 }
 
-Type *ArgSourceProvider::curType(Exp * e) {
+SharedType ArgSourceProvider::curType(Exp * e) {
     Q_UNUSED(e);
     switch (src) {
     case SRC_LIB:
         return callSig->getParamType(i - 1);
     case SRC_CALLEE: {
-        Type *ty = ((Assignment *)*--pp)->getType();
+        SharedType ty = ((Assignment *)*--pp)->getType();
         pp++;
         return ty;
     }
     case SRC_COL: {
         // Mostly, there won't be a type here, I would think...
-        Type *ty = (*--cc)->getType();
+        SharedType ty = (*--cc)->getType();
         ++cc;
         return ty;
     }
@@ -4899,7 +4899,7 @@ void CallStatement::updateArguments() {
                 rhs = asp.localise(loc->clone());
             else
                 rhs = loc->clone();
-            Type *ty = asp.curType(loc);
+            SharedType ty = asp.curType(loc);
             Assign *as = new Assign(ty, loc->clone(), rhs);
             as->setNumber(Number); // Give the assign the same statement number as the call (for now)
             // as->setParent(this);
@@ -5082,7 +5082,7 @@ void ReturnStatement::removeModified(Exp * loc) {
 
 void CallStatement::addDefine(ImplicitAssign * as) { defines.append(as); }
 
-TypingStatement::TypingStatement(Type * ty) : type(ty) {}
+TypingStatement::TypingStatement(SharedType ty) : type(ty) {}
 
 // NOTE: ImpRefStatement not yet used
 void ImpRefStatement::print(QTextStream & os, bool html) const {
@@ -5096,7 +5096,7 @@ void ImpRefStatement::print(QTextStream & os, bool html) const {
         os << "</a></td>";
 }
 
-void ImpRefStatement::meetWith(Type * ty, bool &ch) { type = type->meetWith(ty, ch); }
+void ImpRefStatement::meetWith(SharedType ty, bool &ch) { type = type->meetWith(ty, ch); }
 
 Instruction * ImpRefStatement::clone() const { return new ImpRefStatement(type->clone(), addressExp->clone()); }
 bool ImpRefStatement::accept(StmtVisitor * visitor) { return visitor->visit(this); }

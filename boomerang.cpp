@@ -24,8 +24,6 @@
 #include "config.h"
 #ifdef HAVE_LIBGC
 #include "gc.h"
-#else
-#define NO_GARBAGE_COLLECTOR
 #endif
 
 #include <QDebug>
@@ -65,6 +63,11 @@ Log &Boomerang::if_verbose_log(int verbosity_level) {
         return *logger;
     else
         return null_log;
+}
+
+void Boomerang::setLogger(Log *l) {
+    delete logger;
+    logger = l;
 }
 
 /**

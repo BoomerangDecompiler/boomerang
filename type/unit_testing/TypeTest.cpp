@@ -57,11 +57,8 @@ void TypeTest::initTestCase() {
   * OVERVIEW:        Test type unsigned long
   ******************************************************************************/
 void TypeTest::testTypeLong() {
-
-    QString expected("unsigned long long");
-    IntegerType *t = IntegerType::get(64, -1);
-    QString actual(t->getCtype());
-    QCOMPARE(actual,expected);
+    auto t = IntegerType::get(64, -1);
+    QCOMPARE(t->getCtype(),QString("unsigned long long"));
 
 }
 
@@ -71,9 +68,9 @@ void TypeTest::testTypeLong() {
   ******************************************************************************/
 void TypeTest::testNotEqual() {
 
-    IntegerType *t1(IntegerType::get(32, -1));
-    IntegerType *t2(IntegerType::get(32, -1));
-    IntegerType *t3(IntegerType::get(16, -1));
+    auto t1(IntegerType::get(32, -1));
+    auto t2(IntegerType::get(32, -1));
+    auto t3(IntegerType::get(16, -1));
     QVERIFY(!(*t1 != *t2));
     QVERIFY(*t2 != *t3);
 }
@@ -90,7 +87,7 @@ void TypeTest::testCompound() {
 
     Signature *paintSig = pFE->getLibSignature("BeginPaint");
     // Second argument should be an LPPAINTSTRUCT
-    Type *ty = paintSig->getParamType(1);
+    auto ty = paintSig->getParamType(1);
     QString p = ty->getCtype();
     QString expected("LPPAINTSTRUCT");
     QString actual(p);
@@ -98,49 +95,32 @@ void TypeTest::testCompound() {
 
     // Get the type pointed to
     ty = ty->asPointer()->getPointsTo();
-    p = ty->getCtype();
-    expected = "PAINTSTRUCT";
-    actual = p;
-    QCOMPARE(actual,expected);
+    QCOMPARE(ty->getCtype(),QString("PAINTSTRUCT"));
 
     // Offset 8 should have a RECT
-    Type *subTy = ty->asCompound()->getTypeAtOffset(8 * 8);
-    p = subTy->getCtype(true);
+    auto subTy = ty->asCompound()->getTypeAtOffset(8 * 8);
     expected = "struct { "
                     "int left; "
                     "int top; "
                     "int right; "
                     "int bottom; "
                 "}";
-    actual = p;
-    QCOMPARE(actual,expected);
+    QCOMPARE(subTy->getCtype(true),expected);
 
     // Name at offset C should be bottom
-    p = subTy->asCompound()->getNameAtOffset(0x0C * 8);
-    expected = "bottom";
-    actual = p;
-    QCOMPARE(actual,expected);
+    QCOMPARE(subTy->asCompound()->getNameAtOffset(0x0C * 8),"bottom");
 
     // Now figure out the name at offset 8+C
-    p = ty->asCompound()->getNameAtOffset((8 + 0x0C) * 8);
-    expected = "rcPaint";
-    actual = p;
-    QCOMPARE(actual,expected);
+    QCOMPARE(ty->asCompound()->getNameAtOffset((8 + 0x0C) * 8),"rcPaint");
 
     // Also at offset 8
-    p = ty->asCompound()->getNameAtOffset((8 + 0) * 8);
-    actual = p;
-    QCOMPARE(actual,expected);
+    QCOMPARE(ty->asCompound()->getNameAtOffset((8 + 0) * 8),"rcPaint");
 
     // Also at offset 8+4
-    p = ty->asCompound()->getNameAtOffset((8 + 4) * 8);
-    actual = p;
-    QCOMPARE(actual,expected);
+    QCOMPARE(ty->asCompound()->getNameAtOffset((8 + 4) * 8),"rcPaint");
 
     // And at offset 8+8
-    p = ty->asCompound()->getNameAtOffset((8 + 8) * 8);
-    actual = p;
-    QCOMPARE(actual,expected);
+    QCOMPARE(ty->asCompound()->getNameAtOffset((8 + 8) * 8),"rcPaint");
 
     delete pFE;
 }
@@ -187,14 +167,14 @@ void TypeTest::testDataInterval() {
     actual = pdie->second.name;
     QCOMPARE(actual,expected);
 
-    CompoundType ct;
-    ct.addType(IntegerType::get(16, 1), "short1");
-    ct.addType(IntegerType::get(16, 1), "short2");
-    ct.addType(IntegerType::get(32, 1), "int1");
-    ct.addType(FloatType::get(32), "float1");
-    dim.addItem(ADDRESS::g(0x1010), "struct1", &ct);
+    auto ct(CompoundType::get());
+    ct->addType(IntegerType::get(16, 1), "short1");
+    ct->addType(IntegerType::get(16, 1), "short2");
+    ct->addType(IntegerType::get(32, 1), "int1");
+    ct->addType(FloatType::get(32), "float1");
+    dim.addItem(ADDRESS::g(0x1010), "struct1", ct);
 
-    ComplexTypeCompList &ctcl = ct.compForAddress(ADDRESS::g(0x1012), dim);
+    ComplexTypeCompList &ctcl = ct->compForAddress(ADDRESS::g(0x1012), dim);
     unsigned ua = ctcl.size();
     unsigned ue = 1;
     QCOMPARE(ua,ue);
@@ -207,27 +187,19 @@ void TypeTest::testDataInterval() {
     QCOMPARE(actual,expected);
 
     // An array of 10 struct1's
-    ArrayType at(&ct, 10);
-    dim.addItem(ADDRESS::g(0x1020), "array1", &at);
-    ComplexTypeCompList &ctcl2 = at.compForAddress(ADDRESS::g(0x1020 + 0x3C + 8), dim);
+    auto at=ArrayType::get(ct, 10);
+    dim.addItem(ADDRESS::g(0x1020), "array1", at);
+    ComplexTypeCompList &ctcl2 = at->compForAddress(ADDRESS::g(0x1020 + 0x3C + 8), dim);
     // Should be 2 components: [5] and .float1
     ue = 2;
     ua = ctcl2.size();
     QCOMPARE(ua,ue);
     ComplexTypeComp &ctc0 = ctcl2.front();
     ComplexTypeComp &ctc1 = ctcl2.back();
-    ue = 1;
-    ua = ctc0.isArray;
-    QCOMPARE(ua,ue);
-    ue = 5;
-    ua = ctc0.u.index;
-    QCOMPARE(ua,ue);
-    ue = 0;
-    ua = ctc1.isArray;
-    QCOMPARE(ua,ue);
-    expected = "float1";
-    actual = ctc1.u.memberName;
-    QCOMPARE(actual,expected);
+    QCOMPARE(ctc0.isArray,1);
+    QCOMPARE(ctc0.u.index,5U);
+    QCOMPARE(ctc1.isArray,0);
+    QCOMPARE(ctc1.u.memberName,"float1");
 }
 
 /***************************************************************************/ /**
@@ -247,44 +219,37 @@ void TypeTest::testDataIntervalOverlaps() {
     dim.addItem(ADDRESS::g(0x1004), "firstFloat", FloatType::get(32));
     dim.addItem(ADDRESS::g(0x1008), "secondInt", IntegerType::get(32, 1));
     dim.addItem(ADDRESS::g(0x100C), "secondFloat", FloatType::get(32));
-    CompoundType ct;
-    ct.addType(IntegerType::get(32, 1), "int3");
-    ct.addType(FloatType::get(32), "float3");
-    dim.addItem(ADDRESS::g(0x1010), "existingStruct", &ct);
+    auto ct = CompoundType::get();
+    ct->addType(IntegerType::get(32, 1), "int3");
+    ct->addType(FloatType::get(32), "float3");
+    dim.addItem(ADDRESS::g(0x1010), "existingStruct", ct);
 
     // First insert a new struct over the top of the existing middle pair
-    CompoundType ctu;
-    ctu.addType(IntegerType::get(32, 0), "newInt"); // This int has UNKNOWN sign
-    ctu.addType(FloatType::get(32), "newFloat");
-    dim.addItem(ADDRESS::g(0x1008), "replacementStruct", &ctu);
+    auto ctu = CompoundType::get();
+    ctu->addType(IntegerType::get(32, 0), "newInt"); // This int has UNKNOWN sign
+    ctu->addType(FloatType::get(32), "newFloat");
+    dim.addItem(ADDRESS::g(0x1008), "replacementStruct", ctu);
 
     DataIntervalEntry *pdie = dim.find(ADDRESS::g(0x1008));
-    QString expected = "struct { int newInt; float newFloat; }";
     QString actual = pdie->second.type->getCtype();
-    QCOMPARE(actual,expected);
+    QCOMPARE(actual,QString("struct { int newInt; float newFloat; }"));
 
     // Attempt a weave; should fail
-    CompoundType ct3;
-    ct3.addType(FloatType::get(32), "newFloat3");
-    ct3.addType(IntegerType::get(32, 0), "newInt3");
-    dim.addItem(ADDRESS::g(0x1004), "weaveStruct1", &ct3);
+    auto ct3 = CompoundType::get();
+    ct3->addType(FloatType::get(32), "newFloat3");
+    ct3->addType(IntegerType::get(32, 0), "newInt3");
+    dim.addItem(ADDRESS::g(0x1004), "weaveStruct1", ct3);
     pdie = dim.find(ADDRESS::g(0x1004));
-    expected = "firstFloat";
-    actual = pdie->second.name;
-    QCOMPARE(actual,expected);
+    QCOMPARE(pdie->second.name,QString("firstFloat"));
 
     // Totally unaligned
-    dim.addItem(ADDRESS::g(0x1001), "weaveStruct2", &ct3);
+    dim.addItem(ADDRESS::g(0x1001), "weaveStruct2", ct3);
     pdie = dim.find(ADDRESS::g(0x1001));
-    expected = "firstInt";
-    actual = pdie->second.name;
-    QCOMPARE(actual,expected);
+    QCOMPARE(pdie->second.name,QString("firstInt"));
 
     dim.addItem(ADDRESS::g(0x1004), "firstInt", IntegerType::get(32, 1)); // Should fail
     pdie = dim.find(ADDRESS::g(0x1004));
-    expected = "firstFloat";
-    actual = pdie->second.name;
-    QCOMPARE(actual,expected);
+    QCOMPARE(pdie->second.name,QString("firstFloat"));
 
     // Set up three ints
     dim.deleteItem(ADDRESS::g(0x1004));
@@ -292,31 +257,25 @@ void TypeTest::testDataIntervalOverlaps() {
     dim.deleteItem(ADDRESS::g(0x1008));
     dim.addItem(ADDRESS::g(0x1008), "firstInt", IntegerType::get(32, 0)); // Unknown signedess
     // then, add an array over the three integers
-    ArrayType at(IntegerType::get(32, 0), 3);
-    dim.addItem(ADDRESS::g(0x1000), "newArray", &at);
+    auto at=ArrayType::get(IntegerType::get(32, 0), 3);
+    dim.addItem(ADDRESS::g(0x1000), "newArray", at);
+
     pdie = dim.find(ADDRESS::g(0x1005)); // Check middle element
-    expected = "newArray";
-    actual = pdie->second.name;
-    QCOMPARE(actual,expected);
+    QCOMPARE(pdie->second.name,QString("newArray"));
     pdie = dim.find(ADDRESS::g(0x1000)); // Check first
-    actual = pdie->second.name;
-    QCOMPARE(actual,expected);
+    QCOMPARE(pdie->second.name,QString("newArray"));
     pdie = dim.find(ADDRESS::g(0x100B)); // Check last
-    actual = pdie->second.name;
-    QCOMPARE(actual,expected);
+    QCOMPARE(pdie->second.name,QString("newArray"));
 
     // Already have an array of 3 ints at 0x1000. Put a new array completely before, then with only one word overlap
-    dim.addItem(ADDRESS::g(0xF00), "newArray2", &at);
+    dim.addItem(ADDRESS::g(0xF00), "newArray2", at);
     pdie = dim.find(ADDRESS::g(0x1000)); // Should still be newArray at 0x1000
-    actual = pdie->second.name;
-    QCOMPARE(actual,expected);
+    QCOMPARE(pdie->second.name,QString("newArray"));
 
     pdie = dim.find(ADDRESS::g(0xF00));
-    expected = "newArray2";
-    actual = pdie->second.name;
-    QCOMPARE(actual,expected);
+    QCOMPARE(pdie->second.name,QString("newArray2"));
 
-    dim.addItem(ADDRESS::g(0xFF8), "newArray3", &at); // Should fail
+    dim.addItem(ADDRESS::g(0xFF8), "newArray3", at); // Should fail
     pdie = dim.find(ADDRESS::g(0xFF8));
     QVERIFY(nullptr==(void *)pdie); // Expect nullptr
 }

@@ -179,7 +179,7 @@ void CHLLCode::appendExp(QTextStream &str, const Exp &exp, PREC curPrec, bool un
             Prog *prog = m_proc->getProg();
 
             auto con = static_cast<const Const *>(sub->getSubExp1());
-            Type *gt = prog->getGlobalType(con->getStr());
+            SharedType gt = prog->getGlobalType(con->getStr());
             if (gt && (gt->isArray() || (gt->isPointer() && gt->asPointer()->getPointsTo()->isChar()))) {
                 // Special C requirement: don't emit "&" for address of an array or char*
                 appendExp(str, *sub, curPrec);
@@ -214,7 +214,7 @@ void CHLLCode::appendExp(QTextStream &str, const Exp &exp, PREC curPrec, bool un
         appendExp(str, *b.getSubExp1(), PREC_EQUAL);
         str << " == ";
 #if 0 // Suspect only for ADHOC TA
-            Type *ty = b.getSubExp1()->getType();
+            SharedType ty = b.getSubExp1()->getType();
             if (ty && ty->isPointer() && b.getSubExp2()->isIntConst() && ((Const*)b.getSubExp2())->getInt() == 0)
                 str << "nullptr";
             else
@@ -227,7 +227,7 @@ void CHLLCode::appendExp(QTextStream &str, const Exp &exp, PREC curPrec, bool un
         appendExp(str, *b.getSubExp1(), PREC_EQUAL);
         str << " != ";
 #if 0 // Suspect only for ADHOC_TA
-            Type *ty = b.getSubExp1()->getType();
+            SharedType ty = b.getSubExp1()->getType();
             if (ty && ty->isPointer() && b.getSubExp2()->isIntConst() && ((Const*)b.getSubExp2())->getInt() == 0)
                 str << "nullptr";
             else
@@ -553,7 +553,7 @@ void CHLLCode::appendExp(QTextStream &str, const Exp &exp, PREC curPrec, bool un
         str << ")";
         break;
     case opSize: {
-        /*Type *ty = new IntegerType(((Const*)b.getSubExp1())->getInt(), 1);
+        /*SharedType ty = new IntegerType(((Const*)b.getSubExp1())->getInt(), 1);
                             str << "*(" << ty->getCtype(true) << " *)";
                             appendExp(str, new Unary(opAddrOf, b.getSubExp2()), PREC_UNARY);*/
         appendExp(str, *b.getSubExp2(), PREC_UNARY);
@@ -638,7 +638,7 @@ void CHLLCode::appendExp(QTextStream &str, const Exp &exp, PREC curPrec, bool un
                 bool close = false;
                 str << "*";
 #if 0 // Suspect ADHOC TA only
-                    Type *ty = t.getSubExp3()->getSubExp1()->getType();
+                    SharedType ty = t.getSubExp3()->getSubExp1()->getType();
                     if (ty == nullptr || !ty->isPointer() ||
                             !ty->asPointer()->getPointsTo()->isInteger() ||
                             ty->asPointer()->getPointsTo()->asInteger()->getSize() != sz) {
@@ -690,7 +690,7 @@ void CHLLCode::appendExp(QTextStream &str, const Exp &exp, PREC curPrec, bool un
             PointerType *pty = nullptr;
 #endif
             // pty = T(x)
-            Type *tt = ((TypedExp &)u).getType();
+            SharedType tt = ((TypedExp &)u).getType();
             if (pty != nullptr &&
                 (*pty->getPointsTo() == *tt || (tt->isSize() && pty->getPointsTo()->getSize() == tt->getSize())))
                 str << "*";
@@ -716,8 +716,8 @@ void CHLLCode::appendExp(QTextStream &str, const Exp &exp, PREC curPrec, bool un
             closeParen(str, curPrec, PREC_UNARY);
         } else {
             // Check for (tt)b where tt is a pointer; could be &local
-            Type *tt = ((TypedExp &)u).getType();
-            if (dynamic_cast<PointerType *>(tt)) {
+            SharedType tt = ((TypedExp &)u).getType();
+            if (dynamic_pointer_cast<PointerType>(tt)) {
 #ifdef SYMS_IN_BACK_END
                 const char *sym = m_proc->lookupSym(Location::memOf(b));
                 if (sym) {
@@ -844,9 +844,9 @@ void CHLLCode::appendExp(QTextStream &str, const Exp &exp, PREC curPrec, bool un
         break;
     case opMemberAccess: {
 #if 0 // ADHOC TA
-            Type *ty = b.getSubExp1()->getType();
+            SharedType ty = b.getSubExp1()->getType();
 #else
-        Type *ty = nullptr;
+        SharedType ty = nullptr;
 #endif
         if (ty == nullptr) {
             LOG << "type failure: no type for subexp1 of " << &b << "\n";
@@ -872,9 +872,9 @@ void CHLLCode::appendExp(QTextStream &str, const Exp &exp, PREC curPrec, bool un
         openParen(str, curPrec, PREC_PRIM);
         if (b.getSubExp1()->isMemOf()) {
 #if 0 // ADHOC TA
-                Type *ty = b.getSubExp1()->getSubExp1()->getType();
+                SharedType ty = b.getSubExp1()->getSubExp1()->getType();
 #else
-            Type *ty = nullptr;
+            SharedType ty = nullptr;
 #endif
             if (ty && ty->resolvesToPointer() && ty->asPointer()->getPointsTo()->resolvesToArray()) {
                 // a pointer to an array is automatically dereferenced in C
@@ -908,8 +908,8 @@ void CHLLCode::appendExp(QTextStream &str, const Exp &exp, PREC curPrec, bool un
 }
 
 /// Print the type represented by \a typ to \a str.
-void CHLLCode::appendType(QTextStream &str, Type *typ) {
-    if (typ == nullptr) {
+void CHLLCode::appendType(QTextStream &str, SharedType typ) {
+    if (!typ) {
         str << "int"; // Default type for C
         return;
     }
@@ -917,7 +917,7 @@ void CHLLCode::appendType(QTextStream &str, Type *typ) {
         // C programmers prefer to see pointers to arrays as pointers
         // to the first element of the array.  They then use syntactic
         // sugar to access a pointer as if it were an array.
-        typ = new PointerType(typ->asPointer()->getPointsTo()->asArray()->getBaseType());
+        typ = PointerType::get(typ->asPointer()->getPointsTo()->asArray()->getBaseType());
     }
     str << typ->getCtype(true);
 }
@@ -925,7 +925,7 @@ void CHLLCode::appendType(QTextStream &str, Type *typ) {
 /**
  * Print the indented type to \a str.
  */
-void CHLLCode::appendTypeIdent(QTextStream &str, Type *typ, const char *ident) {
+void CHLLCode::appendTypeIdent(QTextStream &str, SharedType typ, const char *ident) {
     if (typ == nullptr)
         return;
     if (typ->isPointer() && typ->asPointer()->getPointsTo()->isArray()) {
@@ -935,7 +935,7 @@ void CHLLCode::appendTypeIdent(QTextStream &str, Type *typ, const char *ident) {
         appendType(str, typ);
         str << ident;
     } else if (typ->isArray()) {
-        ArrayType *a = typ->asArray();
+        auto a = typ->asArray();
         appendTypeIdent(str, a->getBaseType(), ident);
         str << "[";
         if (!a->isUnbounded())
@@ -1212,7 +1212,7 @@ void CHLLCode::AddAssignmentStatement(int indLevel, Assign *asgn) {
     QString tgt;
     QTextStream s(&tgt);
     indent(s, indLevel);
-    Type *asgnType = asgn->getType();
+    SharedType asgnType = asgn->getType();
     Exp *lhs = asgn->getLeft();
     Exp *rhs = asgn->getRight();
     UserProc *proc = asgn->getProc();
@@ -1331,10 +1331,10 @@ void CHLLCode::AddCallStatement(int indLevel, Function *proc, const char *name, 
             first = false;
         else
             s << ", ";
-        Type *t = ((Assign *)*ss)->getType();
+        SharedType t = ((Assign *)*ss)->getType();
         auto const_arg = static_cast<const Const *>(((Assign *)*ss)->getRight());
         bool ok = true;
-        if (t && t->isPointer() && ((PointerType *)t)->getPointsTo()->isFunc() && const_arg->isIntConst()) {
+        if (t && t->isPointer() && std::static_pointer_cast<PointerType>(t)->getPointsTo()->isFunc() && const_arg->isIntConst()) {
             Function *p = proc->getProg()->findProc((const_arg)->getAddr());
             if (p) {
                 s << p->getName();
@@ -1467,7 +1467,7 @@ void CHLLCode::AddProcDec(UserProc *proc, bool open) {
     QString tgt;
     QTextStream s(&tgt);
     ReturnStatement *returns = proc->getTheReturnStatement();
-    Type *retType = nullptr;
+    SharedType retType;
     if (proc->getSignature()->isForced()) {
         if (proc->getSignature()->getNumReturns() == 0)
             s << "void ";
@@ -1512,7 +1512,7 @@ void CHLLCode::AddProcDec(UserProc *proc, bool open) {
             s << ", ";
         Assign *as = (Assign *)*pp;
         Exp *left = as->getLeft();
-        Type *ty = as->getType();
+        SharedType ty = as->getType();
         if (ty == nullptr) {
             if (VERBOSE)
                 LOG << "ERROR in CHLLCode::AddProcDec: no type for parameter " << left << "!\n";
@@ -1525,10 +1525,10 @@ void CHLLCode::AddProcDec(UserProc *proc, bool open) {
             LOG << "ERROR: parameter " << left << " is not opParam!\n";
             name = "??";
         }
-        if (ty->isPointer() && ((PointerType *)ty)->getPointsTo()->isArray()) {
+        if (ty->isPointer() && std::static_pointer_cast<PointerType>(ty)->getPointsTo()->isArray()) {
             // C does this by default when you pass an array, i.e. you pass &array meaning array
             // Replace all m[param] with foo, param with foo, then foo with param
-            ty = ((PointerType *)ty)->getPointsTo();
+            ty = std::static_pointer_cast<PointerType>(ty)->getPointsTo();
             Exp *foo = new Const("foo123412341234");
             m_proc->searchAndReplace(*Location::memOf(left, nullptr), foo);
             m_proc->searchAndReplace(*left, foo);
@@ -1556,7 +1556,7 @@ void CHLLCode::AddProcEnd() {
  * \param type of this local variable
  * \param last true if an empty line should be added.
  */
-void CHLLCode::AddLocal(const char *name, Type *type, bool last) {
+void CHLLCode::AddLocal(const char *name, SharedType type, bool last) {
     QString tgt;
     QTextStream s(&tgt);
     indent(s, 1);
@@ -1587,22 +1587,22 @@ void CHLLCode::AddLocal(const char *name, Type *type, bool last) {
  * \param type The type of the global
  * \param init The initial value of the global.
  */
-void CHLLCode::AddGlobal(const QString &name, Type *type, Exp *init) {
+void CHLLCode::AddGlobal(const QString &name, SharedType type, Exp *init) {
     QString tgt;
     QTextStream s(&tgt);
     // Check for array types. These are declared differently in C than
     // they are printed
     if (type->isArray()) {
         // Get the component type
-        Type *base = ((ArrayType *)type)->getBaseType();
+        SharedType base = std::static_pointer_cast<ArrayType>(type)->getBaseType();
         appendType(s, base);
-        s << " " << name << "[" << ((ArrayType *)type)->getLength() << "]";
-    } else if (type->isPointer() && ((PointerType *)type)->getPointsTo()->resolvesToFunc()) {
+        s << " " << name << "[" << std::static_pointer_cast<ArrayType>(type)->getLength() << "]";
+    } else if (type->isPointer() && std::static_pointer_cast<PointerType>(type)->getPointsTo()->resolvesToFunc()) {
         // These are even more different to declare than to print. Example:
         // void (void)* global0 = foo__1B;     ->
         // void (*global0)(void) = foo__1B;
-        PointerType *pt = (PointerType *)type;
-        FuncType *ft = (FuncType *)pt->getPointsTo();
+        auto pt = std::static_pointer_cast<PointerType>(type);
+        std::shared_ptr<FuncType> ft = std::static_pointer_cast<FuncType>(pt->getPointsTo());
         QString ret, param;
         ft->getReturnAndParam(ret, param);
         s << ret << "(*" << name << ")" << param;
@@ -1612,7 +1612,7 @@ void CHLLCode::AddGlobal(const QString &name, Type *type, Exp *init) {
     }
     if (init && !init->isNil()) {
         s << " = ";
-        Type *base_type = type->isArray() ? type->asArray()->getBaseType() : type;
+        SharedType base_type = type->isArray() ? type->asArray()->getBaseType() : type;
         appendExp(s, *init, PREC_ASSIGN, base_type->isInteger() ? !base_type->asInteger()->isSigned() : false);
     }
     s << ";";

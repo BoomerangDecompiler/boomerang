@@ -430,7 +430,7 @@ class transPost {
     Exp *tmp;   // The temp to replace r[0]' with
     Exp *post;  // The whole postvar expression. e.g. r[0]'
     Exp *base;  // The base expression (e.g. r[0])
-    Type *type; // The type of the temporary (needed for the final assign)
+    SharedType type; // The type of the temporary (needed for the final assign)
 };
 
 /***************************************************************************/ /**

@@ -3,6 +3,7 @@
 #include "rtl.h"
 #include "exp.h"
 #include "managed.h"
+#include "boomerang.h"
 
 #include <QTextStream>
 #include <sstream>
@@ -22,7 +23,7 @@ Log &Log::operator<<(const Exp *e) {
     return *this;
 }
 
-Log &Log::operator<<(const Type *ty) {
+Log &Log::operator<<(const SharedType &ty) {
     std::ostringstream st;
     st << ty;
     *this << st.str().c_str();

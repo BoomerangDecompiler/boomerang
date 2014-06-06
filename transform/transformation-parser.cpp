@@ -114,10 +114,10 @@ void *alloca ();
 class TransformationScanner;
 
 
-typedef union {
+typedef struct {
     int ival;
     char *str;
-    Type *type;
+    SharedType type;
     Exp *exp;
 } yy_TransformationParser_stype;
 #define YY_TransformationParser_STYPE yy_TransformationParser_stype
@@ -1281,17 +1281,17 @@ YY_TransformationParser_PARSE_PARAM_DEF
             break;}
         case 33:
 
-        { yyval.type = new PointerType(yyvsp[-1].type);
+        { yyval.type = PointerType::get(yyvsp[-1].type);
             ;
             break;}
         case 34:
 
-        { yyval.type = new CompoundType();
+        { yyval.type = CompoundType::get();
             ;
             break;}
         case 35:
 
-        { yyval.type = new NamedType(yyvsp[0].str);
+        { yyval.type = NamedType::get(yyvsp[0].str);
             ;
             break;}
     }

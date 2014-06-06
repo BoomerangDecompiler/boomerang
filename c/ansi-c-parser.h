@@ -18,7 +18,7 @@ class AnsiCScanner;
 
 class TypeIdent {
   public:
-    Type *ty;
+    SharedType ty;
     std::string nam;
 };
 
@@ -28,11 +28,11 @@ class Symbol {
   public:
     ADDRESS addr;
     std::string nam;
-    Type *ty;
+    SharedType ty;
     Signature *sig;
     SymbolMods *mods;
 
-    Symbol(ADDRESS a) : addr(a), nam(""), ty(nullptr), sig(nullptr), mods(nullptr) {}
+    Symbol(ADDRESS a) : addr(a), nam(""), sig(nullptr), mods(nullptr) {}
 };
 
 class SymbolMods {
@@ -67,21 +67,21 @@ class Bound {
     Bound(int _kind, const char *_nam) : kind(_kind), nam(_nam) {}
 };
 
-typedef union {
-    int ival;
-    char *str;
-    Type *type;
-    std::list<Parameter *> *param_list;
-    std::list<int> *num_list;
-    Parameter *param;
-    Exp *exp;
-    Signature *sig;
-    TypeIdent *type_ident;
-    Bound *bound;
-    std::list<TypeIdent *> *type_ident_list;
-    SymbolMods *mods;
-    CustomOptions *custom_options;
-    callconv cc;
+typedef struct {
+    int ival=0;
+    char *str=nullptr;
+    std::shared_ptr<Type> type=nullptr;
+    std::list<Parameter *> *param_list=nullptr;
+    std::list<int> *num_list=nullptr;
+    Parameter *param=nullptr;
+    Exp *exp=nullptr;
+    Signature *sig=nullptr;
+    TypeIdent *type_ident=nullptr;
+    Bound *bound = nullptr;
+    std::list<TypeIdent *> *type_ident_list=nullptr;
+    SymbolMods *mods=nullptr;
+    CustomOptions *custom_options=nullptr;
+    callconv cc =CONV_C ;
 } yy_AnsiCParser_stype;
 
 /* prefix */
