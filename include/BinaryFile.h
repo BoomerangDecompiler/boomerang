@@ -352,7 +352,7 @@ class LoaderCommon : public SectionInterface {
     ADDRESS m_uInitPC;        //!< Initial program counter
     ADDRESS m_uInitSP;        //!< Initial stack pointer
     ADDRESS limitTextLow;     //!< Public addresses being the lowest used native address (inclusive)
-    ADDRESS limitTextHigh;    //!< the highest used address (not inclusive) in the text segment
+    ADDRESS limitTextHigh;    //!< the highest used address (not inclusive) in the text section
     // Also the difference between the host and native addresses (host - native)
     // At this stage, we are assuming that the difference is the same for all
     // text sections of the BinaryFile image

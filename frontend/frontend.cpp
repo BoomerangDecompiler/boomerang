@@ -378,7 +378,7 @@ void FrontEnd::decodeFragment(UserProc *proc, ADDRESS a) {
 DecodeResult &FrontEnd::decodeInstruction(ADDRESS pc) {
     SectionInterface *sect_iface = qobject_cast<SectionInterface *>(pLoader);
     if (!sect_iface || sect_iface->GetSectionInfoByAddr(pc) == nullptr) {
-        LOG << "ERROR: attempted to decode outside any known segment " << pc << "\n";
+        LOG << "ERROR: attempted to decode outside any known section " << pc << "\n";
         static DecodeResult invalid;
         invalid.reset();
         invalid.valid = false;

@@ -113,7 +113,7 @@ private: \
 
 {L}({L}|{D})*		{ count(); yylval.str = strdup(yytext); return check_type(); }
 
-0[xX]{H}+{IS}?		{ count(); sscanf(yytext, "0x%x", &yylval.ival); return AnsiCParser::CONSTANT; }
+0[xX]{H}+{IS}?		{ count(); sscanf(yytext, "0x%p", &yylval.ival); return AnsiCParser::CONSTANT; }
 0{D}+{IS}?		{ count(); return AnsiCParser::CONSTANT; }
 {D}+{IS}?		{ count(); sscanf(yytext, "%d", &yylval.ival); return AnsiCParser::CONSTANT; }
 L?'(\\.|[^\\'])+'	{ count(); return AnsiCParser::CONSTANT; }
@@ -178,20 +178,20 @@ L?\"(\\.|[^\\"])*\"	{ count(); yylval.str = strdup(yytext); return AnsiCParser::
 
 void AnsiCScanner::comment()
 {
-	char c, c1;
+        char c, c1;
 
 loop:
-	while ((c = input()) != '*' && c != 0)
-		/*putchar(c)*/;
+        while ((c = input()) != '*' && c != 0)
+                /*putchar(c)*/;
 
-	if ((c1 = input()) != '/' && c != 0)
-	{
-		/*unput(c1);*/
-		goto loop;
-	}
+        if ((c1 = input()) != '/' && c != 0)
+        {
+                /*unput(c1);*/
+                goto loop;
+        }
 
-	if (c != 0)
-		/*putchar(c1)*/;
+        if (c != 0)
+                /*putchar(c1)*/;
 }
 
 void AnsiCScanner::commentEOL()
@@ -199,19 +199,19 @@ void AnsiCScanner::commentEOL()
     char c;
     while ((c = input()) != '\n')
         ;
-} 
+}
 
 void AnsiCScanner::count()
 {
-	int i;
+        int i;
 
-	for (i = 0; yytext[i] != '\0'; i++)
-		if (yytext[i] == '\n')
-			column = 0;
-		else if (yytext[i] == '\t')
-			column += 8 - (column % 8);
-		else
-			column++;
+        for (i = 0; yytext[i] != '\0'; i++)
+                if (yytext[i] == '\n')
+                        column = 0;
+                else if (yytext[i] == '\t')
+                        column += 8 - (column % 8);
+                else
+                        column++;
 
         strcat(lineBuf, yytext);
         if (strchr(lineBuf, '\n')) {
@@ -237,7 +237,7 @@ int AnsiCScanner::check_type()
 /*
 *	it actually will only return IDENTIFIER
 */
-	return AnsiCParser::IDENTIFIER;
+        return AnsiCParser::IDENTIFIER;
 }
 
 

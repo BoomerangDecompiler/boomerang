@@ -724,7 +724,7 @@ do_action:      /* this label is used only to access EOF actions */
                 YY_BREAK
                     case 17:
                     //#line 75 "transformation.l"
-                { count(); sscanf(yytext, "0x%x", &yylval.ival); return TransformationParser::CONSTANT; }
+                { count(); sscanf(yytext, "0x%x", (uint32_t *)&yylval.ival); return TransformationParser::CONSTANT; }
                 YY_BREAK
                     case 18:
                     //#line 76 "transformation.l"

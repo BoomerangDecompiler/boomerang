@@ -37,7 +37,7 @@ SectionInfo::SectionInfo()
 // Trivial functions //
 // Overridden if reqd//
 ///////////////////////
-//! Get the lower and upper limits of the text segment
+//! Get the lower and upper limits of the text section
 void LoaderCommon::getTextLimits() {
     int n = GetNumSections();
     limitTextLow = ADDRESS::g(0xFFFFFFFF);
@@ -49,7 +49,7 @@ void LoaderCommon::getTextLimits() {
             continue;
         // The .plt section is an anomaly. It's code, but we never want to
         // decode it, and in Sparc ELF files, it's actually in the data
-        // segment (so it can be modified). For now, we make this ugly
+        // section (so it can be modified). For now, we make this ugly
         // exception
         if (strcmp(".plt", pSect->pSectionName) == 0)
             continue;
