@@ -508,7 +508,7 @@ void LoaderTest::testMicroDis1() {
     void *p = pent_hello_text;
     int i = 0;
     while (totalSize < (int)n) {
-        int size = microX86Dis(pent_hello_text);
+        int size = microX86Dis((uint8_t*)p);
         if (size >= 0x40) {
             deb_str << "Not handled instruction at offset 0x"
                    << ADDRESS::host_ptr(p) - ADDRESS::host_ptr(pent_hello_text) << '\n';
