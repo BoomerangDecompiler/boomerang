@@ -48,19 +48,19 @@ QObject *BinaryFileFactory::Load(const QString &sName) {
 static QString selectPluginForFile(const QString &sName) {
     QString libName;
     unsigned char buf[64];
-    FILE *f = fopen(qPrintable(sName), "rb");
-    if (f == nullptr) {
+    QFile f(sName);
+    if(!f.open(QFile::ReadOnly)) {
         fprintf(stderr, "Unable to open binary file: %s\n", qPrintable(sName));
         return nullptr;
     }
-    fread(buf, sizeof(buf), 1, f);
+    f.read((char *)buf,sizeof(buf));
     if (TESTMAGIC4(buf, 0, '\177', 'E', 'L', 'F')) {
         /* ELF Binary */
         libName = "ElfBinaryFile";
     } else if (TESTMAGIC2(buf, 0, 'M', 'Z')) { /* DOS-based file */
         int peoff = LMMH(buf[0x3C]);
-        if (peoff != 0 && fseek(f, peoff, SEEK_SET) != -1) {
-            fread(buf, 4, 1, f);
+        if (peoff != 0 && f.seek(peoff) != -1) {
+            f.read((char *)buf,4);
             if (TESTMAGIC4(buf, 0, 'P', 'E', 0, 0)) {
                 /* Win32 Binary */
                 libName = "Win32BinaryFile";
@@ -92,7 +92,6 @@ static QString selectPluginForFile(const QString &sName) {
         libName = "IntelCoffFile";
     } else {
         fprintf(stderr, "Unrecognised binary file\n");
-        fclose(f);
         return "";
     }
     return libName;

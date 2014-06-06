@@ -43,8 +43,6 @@ MachOBinaryFile::~MachOBinaryFile() {
         if (m_pSections[i].pSectionName)
             delete[] m_pSections[i].pSectionName;
     }
-    if (m_pSections)
-        delete[] m_pSections;
 }
 
 bool MachOBinaryFile::Open(const char *sName) {

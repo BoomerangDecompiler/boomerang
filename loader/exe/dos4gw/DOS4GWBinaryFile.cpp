@@ -38,7 +38,6 @@ DOS4GWBinaryFile::~DOS4GWBinaryFile() {
             ; // delete [] m_pSections[i].pSectionName;
         }
     }
-    // if (m_pSections) delete [] m_pSections;
 }
 
 bool DOS4GWBinaryFile::Open(const char *sName) {
