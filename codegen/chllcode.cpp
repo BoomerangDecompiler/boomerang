@@ -1540,7 +1540,7 @@ void CHLLCode::AddProcDec(UserProc *proc, bool open) {
     if (open)
         s << " {";
     else
-        s << ";";
+        s << ";\n";
     appendLine(tgt);
 }
 
