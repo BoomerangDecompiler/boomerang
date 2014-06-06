@@ -107,8 +107,6 @@ Win32BinaryFile::~Win32BinaryFile() {
         if (m_pSections[i].pSectionName)
             delete[] m_pSections[i].pSectionName;
     }
-    if (m_pSections)
-        delete[] m_pSections;
 }
 
 bool Win32BinaryFile::Open(const char *sName) {
