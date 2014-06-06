@@ -501,27 +501,28 @@ static unsigned char pent_hello_text[] = {
     0xfc, 0xc9,  0xc3};
 
 void LoaderTest::testMicroDis1() {
-    QTextStream q_cout(stdout);
-
-    int i;
+    QString deb;
+    QTextStream deb_str(&deb);
     unsigned int n = sizeof(pent_hello_text);
     int totalSize = 0;
     void *p = pent_hello_text;
-    i = 0;
+    int i = 0;
     while (totalSize < (int)n) {
         int size = microX86Dis(pent_hello_text);
         if (size >= 0x40) {
-            q_cout << "Not handled instruction at offset 0x"
+            deb_str << "Not handled instruction at offset 0x"
                    << ADDRESS::host_ptr(p) - ADDRESS::host_ptr(pent_hello_text) << '\n';
+            qDebug() << deb;
             QVERIFY(size != 0x40);
             return;
         }
         int expected = lengths[i++];
         if (expected != size) {
-            q_cout << "At offset 0x" << ADDRESS::host_ptr(p) - ADDRESS::host_ptr(pent_hello_text) << " ("
+            deb_str << "At offset 0x" << ADDRESS::host_ptr(p) - ADDRESS::host_ptr(pent_hello_text) << " ("
                       << (int)*((unsigned char *)p) << " " << (int)*((unsigned char *)p + 1) << " "
                       << (int)*((unsigned char *)p + 2) << " " << (int)*((unsigned char *)p + 3) << " "
                       << ") expected " << expected << ", actual " << size << '\n';
+            qDebug() << deb;
             QCOMPARE(size,expected);
         }
         p = (void *)((char *)p + size);
