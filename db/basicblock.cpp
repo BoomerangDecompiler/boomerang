@@ -1902,7 +1902,7 @@ bool BasicBlock::decodeIndirectJmp(UserProc *proc) {
         if (!s->isPhi())
             continue;
         Statement *originalPhi = s;
-        StatementSet workSet, seenSet;
+        InstructionSet workSet, seenSet;
         workSet.insert(s);
         seenSet.insert(s);
         do {

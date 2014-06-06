@@ -14,4 +14,5 @@ class LoaderTest : public QObject {
     void testMicroDis2();
 
     void testElfHash();
+    void initTestCase();
 };

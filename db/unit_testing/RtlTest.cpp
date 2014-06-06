@@ -51,7 +51,7 @@ void RtlTest::testAppend() {
     QTextStream ost(&res);
     r.print(ost);
     QString expected("00000000    0 *v* r8 := r9 + 99\n");
-    QCOMPARE(expected, res);
+    QCOMPARE(res,expected);
     // No! appendExp does not copy the expression, so deleting the RTL will
     // delete the expression(s) in it.
     // Not sure if that's what we want...
@@ -80,8 +80,8 @@ void RtlTest::testClone() {
     QString expected("00001234    0 *v* r8 := r9 + 99\n"
                          "            0 *j16* x := y\n");
 
-    QCOMPARE(expected, act1);
-    QCOMPARE(expected, act2);
+    QCOMPARE(act1,expected);
+    QCOMPARE(act2,expected);
 }
 
 /***************************************************************************/ /**
@@ -216,12 +216,12 @@ void RtlTest::testVisitor() {
 //    inst = pFE->decodeInstruction(0x1091c);
 //    QVERIFY(inst.rtl != nullptr);
 //    QVERIFY(inst.rtl->isCompare(iReg, eOperand) == true);
-//    QCOMPARE(9, iReg);
+//    QCOMPARE(iReg,9);
 //    std::string expected("5");
 //    std::ostringstream ost1;
 //    eOperand->print(ost1);
 //    std::string actual(ost1.str());
-//    QCOMPARE(expected, actual);
+//    QCOMPARE(actual,expected);
 
 //    pBF->UnLoad();
 //    delete pBF;
@@ -236,11 +236,11 @@ void RtlTest::testVisitor() {
 //    inst = pFE->decodeInstruction(0x80488fb);
 //    QVERIFY(inst.rtl != nullptr);
 //    QVERIFY(inst.rtl->isCompare(iReg, eOperand) == true);
-//    QCOMPARE(24, iReg);
+//    QCOMPARE(iReg,24);
 //    std::ostringstream ost2;
 //    eOperand->print(ost2);
 //    actual = ost2.str();
-//    QCOMPARE(expected, actual);
+//    QCOMPARE(actual,expected);
 
 //    // Decode instruction: "add        $0x4,%esp"
 //    inst = pFE->decodeInstruction(0x804890c);
@@ -288,7 +288,7 @@ void RtlTest::testSetConscripts() {
     QString actual;
     QTextStream ost(&actual);
     rtl->print(ost);
-    QCOMPARE(expected, actual);
+    QCOMPARE(actual,expected);
 }
 
 QTEST_MAIN(RtlTest)

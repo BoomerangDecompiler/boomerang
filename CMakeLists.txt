@@ -22,7 +22,7 @@ ENDIF()
 ###############################################################################
 # Options section
 ###############################################################################
-OPTION(BUILD_TESTING "Build the testing tree." OFF)
+OPTION(BUILD_TESTING "Build the testing tree." ON)
 # help the cmake find 3rd_party compiled/installed packages
 set(CMAKE_PREFIX_PATH  "${CMAKE_PREFIX_PATH};${PROJECT_SOURCE_DIR}/3rd_party")
 
@@ -67,22 +67,7 @@ MACRO(SET_01 A B)
     ENDIF(${B})
 ENDMACRO(SET_01 A B)
 
-MACRO(SET_01_2 A B C)
-    IF(${B} AND ${C})
-        SET(${A} 1)
-    ELSE(${B} AND ${C})
-        SET(${A} 0)
-    ENDIF(${B} AND ${C})
-ENDMACRO(SET_01_2 A B C)
-
-# GC
-#CHECK_INCLUDE_FILES(gc.h               GC_H)
-#CHECK_LIBRARY_EXISTS(gc GC_malloc ""   GC_L)
-#SET_01_2(GC_FOUND GC_H GC_L)
-#IF(GC_FOUND)
-#    SET(GC_LIBS -lgc)
-#ENDIF()
-FIND_PACKAGE(Boost REQUIRED)
+find_package(Boost REQUIRED)
 find_package(Qt5Core REQUIRED)
 find_package(Qt5Xml REQUIRED)
 

@@ -53,14 +53,14 @@ void ParserTest::testExp() {
     QString res;
     QTextStream ost(&res);
     a->print(ost);
-    QCOMPARE("   0 " + s, res);
+    QCOMPARE(res,"   0 " + s);
     std::string s2 = "*i32* r[0] := 5 + 6";
     a = SSLParser::parseExp(s2.c_str());
     QVERIFY(a);
     res.clear();
     a->print(ost);
     // Still should print to string s, not s2
-    QCOMPARE("   0 " + s, res);
+    QCOMPARE(res,"   0 " + s);
 }
 
 QTEST_MAIN(ParserTest)

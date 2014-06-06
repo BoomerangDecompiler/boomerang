@@ -3630,7 +3630,7 @@ if (!stmts.exists(copy)) {
 }
 }
 
-void addPhiReferences(StatementSet &stmts, Statement *def) {
+void addPhiReferences(InstructionSet &stmts, Statement *def) {
 PhiAssign *p = (PhiAssign*)def;
 for (PhiAssign::iterator it = p->begin(); it != p->end(); it++) {
     if ((*it).def->isPhi() && !stmts.exists((*it).def)) {

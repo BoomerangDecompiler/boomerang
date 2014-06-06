@@ -15,30 +15,57 @@
  * 05 Aug 05 - Mike: added borland test; check address of main (not just != NO_ADDRESS)
  */
 
-#define HELLO_SPARC "test/sparc/hello"
-#define HELLO_PENTIUM "test/pentium/hello"
-#define HELLO_HPPA "test/hppa/hello"
-#define STARTER_PALM "test/mc68328/Starter.prc"
+#define HELLO_SPARC baseDir.absoluteFilePath("tests/inputs/sparc/hello")
+#define HELLO_PENTIUM baseDir.absoluteFilePath("tests/inputs/pentium/hello")
+#define HELLO_HPPA baseDir.absoluteFilePath("tests/inputs/hppa/hello")
+#define STARTER_PALM baseDir.absoluteFilePath("tests/inputs/mc68328/Starter.prc")
 #if 0 /* FIXME: these programs are proprietary */
 #define CALC_WINDOWS "test/windows/calc.exe"
 #define CALC_WINXP "test/windows/calcXP.exe"
 #define CALC_WIN2000 "test/windows/calc2000.exe"
 #define LPQ_WINDOWS "test/windows/lpq.exe"
 #endif
-#define SWITCH_BORLAND "test/windows/switch_borland.exe"
-#define ELFBINFILE "lib/libElfBinaryFile.so"
+#define SWITCH_BORLAND baseDir.absoluteFilePath("tests/inputs/windows/switch_borland.exe")
+#define ELFBINFILE baseDir.absoluteFilePath("out/lib/libElfBinaryFile.so")
 
 #include "../microX86dis.c"
 #include "LoaderTest.h"
+#include "boomerang.h"
+#include "log.h"
+
 #include <QLibrary>
-#include <QtCore/QTextStream>
+#include <QTextStream>
+#include <QDir>
+#include <QProcessEnvironment>
+#include <QDebug>
 #include <sstream>
+
+static bool logset = false;
+static QString TEST_BASE;
+static QDir baseDir;
+void LoaderTest::initTestCase() {
+    if (!logset) {
+        TEST_BASE = QProcessEnvironment::systemEnvironment().value("BOOMERANG_TEST_BASE", "");
+        baseDir = QDir(TEST_BASE);
+        if (TEST_BASE.isEmpty()) {
+            qWarning() << "BOOMERANG_TEST_BASE environment variable not set, will assume '..', many test may fail";
+            TEST_BASE = "..";
+            baseDir = QDir("..");
+        }
+        logset = true;
+        Boomerang::get()->setProgPath(TEST_BASE);
+        Boomerang::get()->setPluginPath(TEST_BASE + "/out");
+        Boomerang::get()->setLogger(new NullLogger());
+    }
+}
+
 /***************************************************************************/ /**
   * \fn        LoaderTest::testSparcLoad
   * OVERVIEW:        Test loading the sparc hello world program
   ******************************************************************************/
 void LoaderTest::testSparcLoad() {
-    std::ostringstream ost;
+    QString actual;
+    QTextStream ost(&actual);
 
     // Load SPARC hello world
     BinaryFileFactory bff;
@@ -50,16 +77,16 @@ void LoaderTest::testSparcLoad() {
     QVERIFY(sect_iface!=nullptr);
 
     n = sect_iface->GetNumSections();
-    ost << "Number of sections = " << std::dec << n << "\r\n\t";
+    ost << "Number of sections = " << n << "\r\n\t";
     // Just use the first (real one) and last sections
     si = sect_iface->GetSectionInfo(1);
     ost << si->pSectionName << "\t";
     si = sect_iface->GetSectionInfo(n - 1);
     ost << si->pSectionName;
     // Note: the string below needs to have embedded tabs. Edit with caution!
-    std::string expected("Number of sections = 29\r\n\t"
-                         ".interp    .stab.indexstr");
-    QCOMPARE(expected, ost.str());
+    QString expected("Number of sections = 29\r\n\t"
+                         ".interp\t.stab.indexstr");
+    QCOMPARE(actual,expected);
     bff.UnLoad();
 }
 
@@ -68,7 +95,8 @@ void LoaderTest::testSparcLoad() {
   * OVERVIEW:        Test loading the pentium (Solaris) hello world program
   ******************************************************************************/
 void LoaderTest::testPentiumLoad() {
-    std::ostringstream ost;
+    QString actual;
+    QTextStream ost(&actual);
 
     // Load Pentium hello world
     BinaryFileFactory bff;
@@ -79,17 +107,17 @@ void LoaderTest::testPentiumLoad() {
     int n;
     SectionInfo *si;
     n = sect_iface->GetNumSections();
-    ost << "Number of sections = " << std::dec << n << "\r\n\t";
+    ost << "Number of sections = " << n << "\r\n\t";
     si = sect_iface->GetSectionInfo(1);
     ost << si->pSectionName << "\t";
     si = sect_iface->GetSectionInfo(n - 1);
     ost << si->pSectionName;
     // Note: the string below needs to have embedded tabs. Edit with caution!
     // (And slightly different string to the sparc test, e.g. rel vs rela)
-    std::string expected("Number of sections = 34\r\n\t"
-                         ".interp    .strtab");
+    QString expected("Number of sections = 34\r\n\t"
+                         ".interp\t.strtab");
 
-    QCOMPARE(expected, ost.str());
+    QCOMPARE(actual,expected);
     bff.UnLoad();
 }
 
@@ -98,7 +126,8 @@ void LoaderTest::testPentiumLoad() {
   * OVERVIEW:        Test loading the sparc hello world program
   ******************************************************************************/
 void LoaderTest::testHppaLoad() {
-    std::ostringstream ost;
+    QString actual;
+    QTextStream ost(&actual);
 
     // Load HPPA hello world
     BinaryFileFactory bff;
@@ -109,15 +138,15 @@ void LoaderTest::testHppaLoad() {
     int n;
     SectionInfo *si;
     n = sect_iface->GetNumSections();
-    ost << "Number of sections = " << std::dec << n << "\r\n";
+    ost << "Number of sections = " << n << "\r\n";
     for (int i = 0; i < n; i++) {
         si = sect_iface->GetSectionInfo(i);
         ost << si->pSectionName << "\t";
     }
     // Note: the string below needs to have embedded tabs. Edit with caution!
-    std::string expected("Number of sections = 4\r\n"
-                         "$HEADER$    $TEXT$    $DATA$    $BSS$    ");
-    QCOMPARE(expected, ost.str());
+    QString expected("Number of sections = 4\r\n"
+                         "$HEADER$\t$TEXT$\t$DATA$\t$BSS$\t");
+    QCOMPARE(actual,expected);
     bff.UnLoad();
 }
 
@@ -126,7 +155,8 @@ void LoaderTest::testHppaLoad() {
   * OVERVIEW:        Test loading the Palm 68328 Starter.prc program
   ******************************************************************************/
 void LoaderTest::testPalmLoad() {
-    std::ostringstream ost;
+    QString actual;
+    QTextStream ost(&actual);
 
     // Load Palm Starter.prc
     BinaryFileFactory bff;
@@ -137,17 +167,17 @@ void LoaderTest::testPalmLoad() {
     int n;
     SectionInfo *si;
     n = sect_iface->GetNumSections();
-    ost << "Number of sections = " << std::dec << n << "\r\n";
+    ost << "Number of sections = " << n << "\r\n";
     for (int i = 0; i < n; i++) {
         si = sect_iface->GetSectionInfo(i);
         ost << si->pSectionName << "\t";
     }
 
     // Note: the string below needs to have embedded tabs. Edit with caution!
-    std::string expected("Number of sections = 8\r\n"
-                         "code1    MBAR1000    tFRM1000    Talt1001    "
-                         "data0    code0    tAIN1000    tver1000    ");
-    QCOMPARE(expected, ost.str());
+    QString expected("Number of sections = 8\r\n"
+                         "code1\tMBAR1000\ttFRM1000\tTalt1001\t"
+                         "data0\tcode0\ttAIN1000\ttver1000\t");
+    QCOMPARE(actual,expected);
     bff.UnLoad();
 }
 
@@ -156,7 +186,6 @@ void LoaderTest::testPalmLoad() {
   * OVERVIEW:        Test loading Windows programs
   ******************************************************************************/
 void LoaderTest::testWinLoad() {
-    std::ostringstream ost;
 
 #if 0 /* FIXME: these tests should use non-proprietary programs */
     // Load Windows program calc.exe
@@ -176,7 +205,7 @@ void LoaderTest::testWinLoad() {
     std::string expected("Number of sections = 5\r\n"
         ".text    .rdata    .data    .rsrc    .reloc    ");
     std::string actual(ost.str());
-    QCOMPARE(expected, actual);
+    QCOMPARE(actual,expected);
 
     ADDRESS addr = pBF->GetMainEntryPoint();
     QVERIFY(addr != NO_ADDRESS);
@@ -188,11 +217,11 @@ void LoaderTest::testWinLoad() {
     else
         actual = std::string(s);
     expected = std::string("SetEvent");
-    QCOMPARE(expected, actual);
+    QCOMPARE(actual,expected);
 
     ADDRESS a = pBF->GetAddressByName("SetEvent");
     ADDRESS expectedAddr = 0x1292060;
-    QCOMPARE(expectedAddr, a);
+    QCOMPARE(a,expectedAddr);
     pBF->UnLoad();
     bff.UnLoad();
 
@@ -204,7 +233,7 @@ void LoaderTest::testWinLoad() {
     ost1 << std::hex << addr;
     actual = ost1.str();
     expected = "1001f51";
-    QCOMPARE(expected, actual);
+    QCOMPARE(actual,expected);
     pBF->UnLoad();
     bff.UnLoad();
 
@@ -216,7 +245,7 @@ void LoaderTest::testWinLoad() {
     std::ostringstream ost2;
     ost2 << std::hex << addr;
     actual = ost2.str();
-    QCOMPARE(expected, actual);
+    QCOMPARE(actual,expected);
     pBF->UnLoad();
     bff.UnLoad();
 
@@ -228,7 +257,7 @@ void LoaderTest::testWinLoad() {
     ost3 << std::hex << addr;
     actual = ost3.str();
     expected = "18c1000";
-    QCOMPARE(expected, actual);
+    QCOMPARE(actual,expected);
     pBF->UnLoad();
     bff.UnLoad();
 #endif
@@ -244,7 +273,7 @@ void LoaderTest::testWinLoad() {
     QTextStream ost4(&actual);
     ost4 << addr;
     QString expected("401150");
-    QCOMPARE(expected, actual);
+    QCOMPARE(actual,expected);
     bff.UnLoad();
 }
 
@@ -493,12 +522,12 @@ void LoaderTest::testMicroDis1() {
                       << (int)*((unsigned char *)p) << " " << (int)*((unsigned char *)p + 1) << " "
                       << (int)*((unsigned char *)p + 2) << " " << (int)*((unsigned char *)p + 3) << " "
                       << ") expected " << expected << ", actual " << size << '\n';
-            QCOMPARE(expected, size);
+            QCOMPARE(size,expected);
         }
         p = (void *)((char *)p + size);
         totalSize += size;
     }
-    QCOMPARE((int)n, totalSize);
+    QCOMPARE(totalSize,(int)n);
 }
 
 void LoaderTest::testMicroDis2() {
@@ -510,9 +539,9 @@ void LoaderTest::testMicroDis2() {
     unsigned char movsbl[3] = {0x0f, 0xbe, 0x00};
     unsigned char movswl[3] = {0x0f, 0xbf, 0x00};
     int size = microX86Dis(movsbl);
-    QCOMPARE(3, size);
+    QCOMPARE(size,3);
     size = microX86Dis(movswl);
-    QCOMPARE(3, size);
+    QCOMPARE(size,3);
 }
 
 typedef unsigned (*elfHashFcn)(const char *);
@@ -527,6 +556,6 @@ void LoaderTest::testElfHash() {
     // Call the function with the string "main
     unsigned act = (*pFcn)("main");
     unsigned exp = 0x737fe;
-    QCOMPARE(exp, act);
+    QCOMPARE(act,exp);
 }
 QTEST_MAIN(LoaderTest)

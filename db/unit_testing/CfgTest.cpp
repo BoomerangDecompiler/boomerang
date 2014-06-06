@@ -13,16 +13,16 @@
 #include "pentiumfrontend.h"
 #include "log.h"
 
-#include <QtCore/QDir>
-#include <QtCore/QProcessEnvironment>
-#include <QtCore/QDebug>
+#include <QDir>
+#include <QProcessEnvironment>
+#include <QDebug>
 
 #define FRONTIER_PENTIUM "tests/inputs/pentium/frontier"
 #define SEMI_PENTIUM "tests/inputs/pentium/semi"
 #define IFTHEN_PENTIUM "tests/inputs/pentium/ifthen"
 static bool logset = false;
-QString TEST_BASE;
-QDir baseDir;
+static QString TEST_BASE;
+static QDir baseDir;
 void CfgTest::initTestCase() {
     if (!logset) {
         TEST_BASE = QProcessEnvironment::systemEnvironment().value("BOOMERANG_TEST_BASE", "");
@@ -85,7 +85,7 @@ void CfgTest::testDominators() {
     std::set<int> &DFset = df->getDF(n5);
     for (ii = DFset.begin(); ii != DFset.end(); ii++)
         actual << df->nodeToBB(*ii)->getLowAddr() << " ";
-    QCOMPARE(expect_st, actual_st);
+    QCOMPARE(actual_st,expect_st);
 
     pBF->deleteLater();
     delete pFE;
@@ -134,8 +134,8 @@ void CfgTest::testSemiDominators() {
     // (book says F)
     ADDRESS actual_dom = df->nodeToBB(df->getIdom(nL))->getLowAddr();
     ADDRESS actual_semi = df->nodeToBB(df->getSemi(nL))->getLowAddr();
-    QCOMPARE(SEMI_B, actual_dom);
-    QCOMPARE(SEMI_D, actual_semi);
+    QCOMPARE(actual_dom,SEMI_B);
+    QCOMPARE(actual_semi,SEMI_D);
     // Check the final dominator frontier as well; should be M and B
     QString expected_st,actual_st;
     QTextStream expected(&expected_st), actual(&actual_st);
@@ -145,7 +145,7 @@ void CfgTest::testSemiDominators() {
     std::set<int> &DFset = df->getDF(nL);
     for (ii = DFset.begin(); ii != DFset.end(); ii++)
         actual << df->nodeToBB(*ii)->getLowAddr() << " ";
-    QCOMPARE(expected_st, actual_st);
+    QCOMPARE(actual_st,expected_st);
     delete pFE;
 }
 
@@ -186,7 +186,7 @@ void CfgTest::testPlacePhi() {
     std::set<int> &A_phi = df->getA_phi(e);
     for (ii = A_phi.begin(); ii != A_phi.end(); ++ii)
         actual << *ii << " ";
-    QCOMPARE(QString("7 8 10 15 20 21 "), actual_st);
+    QCOMPARE(actual_st,QString("7 8 10 15 20 21 "));
     delete pFE;
 }
 
@@ -229,7 +229,7 @@ void CfgTest::testPlacePhi2() {
     std::set<int>::iterator pp;
     for (pp = s.begin(); pp != s.end(); pp++)
         actual << *pp << " ";
-    QCOMPARE(expected, actual_st);
+    QCOMPARE(actual_st,expected);
     delete e;
 
     expected = "";
@@ -241,7 +241,7 @@ void CfgTest::testPlacePhi2() {
     std::set<int> &s2 = df->getA_phi(e);
     for (pp = s2.begin(); pp != s2.end(); pp++)
         actual2 << *pp << " ";
-    QCOMPARE(expected, actual_st2);
+    QCOMPARE(actual_st2,expected);
     delete e;
     delete pFE;
 }

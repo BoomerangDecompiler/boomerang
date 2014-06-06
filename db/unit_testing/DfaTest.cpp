@@ -56,7 +56,7 @@ void DfaTest::testMeetInt() {
     QTextStream ost1(&actual);
     ost1 << i32;
     QString expected("i32");
-    QCOMPARE(expected, actual);
+    QCOMPARE(actual,expected);
     actual.clear();
 
     i32->meetWith(j32, ch, false);
@@ -65,7 +65,7 @@ void DfaTest::testMeetInt() {
     QVERIFY(ch == true);
 
     ost1 << i32;
-    QCOMPARE(QString("i32"), actual);
+    QCOMPARE(actual,QString("i32"));
     actual.clear();
 
     ch = false;
@@ -74,7 +74,7 @@ void DfaTest::testMeetInt() {
     QVERIFY(ch == false);
 
     ost1 << j32;
-    QCOMPARE(QString("j32"), actual);
+    QCOMPARE(actual,QString("j32"));
     actual.clear();
 
     ch = false;
@@ -82,7 +82,7 @@ void DfaTest::testMeetInt() {
     QVERIFY(ch == true);
 
     ost1 << j32;
-    QCOMPARE(QString("u32"), actual);
+    QCOMPARE(actual,QString("u32"));
     actual.clear();
 
     ch = false;
@@ -90,14 +90,14 @@ void DfaTest::testMeetInt() {
     QVERIFY(ch == false);
 
     ost1 << u32;
-    QCOMPARE(QString("u32"), actual);
+    QCOMPARE(actual,QString("u32"));
     actual.clear();
 
     u32->meetWith(&s64, ch, false);
     QVERIFY(ch == true);
 
     ost1 << u32;
-    QCOMPARE(QString("u64"), actual);
+    QCOMPARE(actual,QString("u64"));
     actual.clear();
 
     ch = false;
@@ -105,7 +105,7 @@ void DfaTest::testMeetInt() {
     QVERIFY(ch == true);
 
     ost1 << res;
-    QCOMPARE(QString("union"), actual);
+    QCOMPARE(actual,QString("union"));
     actual.clear();
 
     ch = false;
@@ -113,7 +113,7 @@ void DfaTest::testMeetInt() {
     QVERIFY(ch == true);
 
     ost1 << res;
-    QCOMPARE(QString("union"), actual);
+    QCOMPARE(actual,QString("union"));
     actual.clear();
 }
 
@@ -135,7 +135,7 @@ void DfaTest::testMeetSize() {
     QVERIFY(ch == true);
 
     ost1 << res;
-    QCOMPARE(QString("i32"), actual);
+    QCOMPARE(actual,QString("i32"));
     actual.clear();
 
     ch = false;
@@ -149,7 +149,7 @@ void DfaTest::testMeetSize() {
     QVERIFY(ch == true);
 
     ost1 << res;
-    QCOMPARE(QString("union"), actual);
+    QCOMPARE(actual,QString("union"));
     actual.clear();
 
     ch = false;
@@ -157,7 +157,7 @@ void DfaTest::testMeetSize() {
     QVERIFY(ch == false);
 
     ost1 << res;
-    QCOMPARE(QString("16"), actual);
+    QCOMPARE(actual,QString("16"));
     actual.clear();
 }
 
@@ -175,7 +175,7 @@ void DfaTest::testMeetPointer() {
     QTextStream ost1(&actual);
 
     ost1 << pu32.getCtype();
-    QCOMPARE(QString("unsigned int *"), actual);
+    QCOMPARE(actual,QString("unsigned int *"));
     actual.clear();
 
     bool ch = false;
@@ -183,7 +183,7 @@ void DfaTest::testMeetPointer() {
     QVERIFY(ch == true);
 
     ost1 << res->getCtype();
-    QCOMPARE(QString("/*signed?*/int *"), actual);
+    QCOMPARE(actual,QString("/*signed?*/int *"));
     actual.clear();
 
     ch = false;
@@ -193,7 +193,7 @@ void DfaTest::testMeetPointer() {
     res = pi32.meetWith(i32, ch, false);
 
     ost1 << res->getCtype();
-    QCOMPARE(QString("union"), actual);
+    QCOMPARE(actual,QString("union"));
     actual.clear();
 }
 
@@ -214,7 +214,7 @@ void DfaTest::testMeetUnion() {
     ost1 << u1.getCtype().toStdString();
     std::string actual(ost1.str());
     std::string expected("union { int bow; float wow; }");
-    QCOMPARE(expected, actual);
+    QCOMPARE(actual,expected);
 
     bool ch = false;
     Type *res = u1.meetWith(j32, ch, false);
@@ -223,7 +223,7 @@ void DfaTest::testMeetUnion() {
     ost2 << res->getCtype().toStdString();
     actual = ost2.str();
     expected = "union { int bow; float wow; }";
-    QCOMPARE(expected, actual);
+    QCOMPARE(actual,expected);
 
     res = u1.meetWith(j32, ch, false);
     QVERIFY(ch == false);
@@ -231,7 +231,7 @@ void DfaTest::testMeetUnion() {
     ost3 << u1.getCtype().toStdString();
     actual = ost3.str();
     expected = "union { int bow; float wow; }";
-    QCOMPARE(expected, actual);
+    QCOMPARE(actual,expected);
 
     // Note: this test relies on the int in the union having signedness 1
     res = u1.meetWith(u32, ch, false);
@@ -240,6 +240,6 @@ void DfaTest::testMeetUnion() {
     ost4 << u1.getCtype().toStdString();
     actual = ost4.str();
     expected = "union { /*signed?*/int bow; float wow; }";
-    QCOMPARE(expected, actual);
+    QCOMPARE(actual,expected);
 }
 QTEST_MAIN(DfaTest)

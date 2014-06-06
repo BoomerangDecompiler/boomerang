@@ -20,9 +20,12 @@
 #include "prog.h"
 #include "proc.h"
 
+#include <QTextStream>
+#include <QDir>
+#include <QProcessEnvironment>
+#include <QDebug>
 
-
-#define HELLO_WINDOWS "test/windows/hello.exe"
+#define HELLO_WINDOWS baseDir.absoluteFilePath("tests/inputs/windows/hello.exe")
 
 /***************************************************************************/ /**
   * \fn        TypeTest::setUp
@@ -31,20 +34,23 @@
   *
   ******************************************************************************/
 static bool logset = false;
-void TypeTest::setUp() {
+static QString TEST_BASE;
+static QDir baseDir;
+void TypeTest::initTestCase() {
     if (!logset) {
+        TEST_BASE = QProcessEnvironment::systemEnvironment().value("BOOMERANG_TEST_BASE", "");
+        baseDir = QDir(TEST_BASE);
+        if (TEST_BASE.isEmpty()) {
+            qWarning() << "BOOMERANG_TEST_BASE environment variable not set, will assume '..', many test may fail";
+            TEST_BASE = "..";
+            baseDir = QDir("..");
+        }
         logset = true;
+        Boomerang::get()->setProgPath(TEST_BASE);
+        Boomerang::get()->setPluginPath(TEST_BASE + "/out");
         Boomerang::get()->setLogger(new NullLogger());
     }
 }
-
-/***************************************************************************/ /**
-  * \fn        TypeTest::tearDown
-  * OVERVIEW:        Delete objects created in setUp
-  * \note            Called after all tests
-  *
-  ******************************************************************************/
-void TypeTest::tearDown() {}
 
 /***************************************************************************/ /**
   * \fn        TypeTest::testTypeLong
@@ -55,7 +61,7 @@ void TypeTest::testTypeLong() {
     QString expected("unsigned long long");
     IntegerType *t = IntegerType::get(64, -1);
     QString actual(t->getCtype());
-    QCOMPARE(expected, actual);
+    QCOMPARE(actual,expected);
 
 }
 
@@ -88,48 +94,48 @@ void TypeTest::testCompound() {
     QString p = ty->getCtype();
     QString expected("LPPAINTSTRUCT");
     QString actual(p);
-    QCOMPARE(expected, actual);
+    QCOMPARE(actual,expected);
 
     // Get the type pointed to
     ty = ty->asPointer()->getPointsTo();
     p = ty->getCtype();
     expected = "PAINTSTRUCT";
     actual = p;
-    QCOMPARE(expected, actual);
+    QCOMPARE(actual,expected);
 
     // Offset 8 should have a RECT
     Type *subTy = ty->asCompound()->getTypeAtOffset(8 * 8);
     p = subTy->getCtype();
     expected = "RECT";
     actual = p;
-    QCOMPARE(expected, actual);
+    QCOMPARE(actual,expected);
 
     // Name at offset C should be bottom
     p = subTy->asCompound()->getNameAtOffset(0x0C * 8);
     expected = "bottom";
     actual = p;
-    QCOMPARE(expected, actual);
+    QCOMPARE(actual,expected);
 
     // Now figure out the name at offset 8+C
     p = ty->asCompound()->getNameAtOffset((8 + 0x0C) * 8);
     expected = "rcPaint";
     actual = p;
-    QCOMPARE(expected, actual);
+    QCOMPARE(actual,expected);
 
     // Also at offset 8
     p = ty->asCompound()->getNameAtOffset((8 + 0) * 8);
     actual = p;
-    QCOMPARE(expected, actual);
+    QCOMPARE(actual,expected);
 
     // Also at offset 8+4
     p = ty->asCompound()->getNameAtOffset((8 + 4) * 8);
     actual = p;
-    QCOMPARE(expected, actual);
+    QCOMPARE(actual,expected);
 
     // And at offset 8+8
     p = ty->asCompound()->getNameAtOffset((8 + 8) * 8);
     actual = p;
-    QCOMPARE(expected, actual);
+    QCOMPARE(actual,expected);
 
     delete pFE;
 }
@@ -152,29 +158,29 @@ void TypeTest::testDataInterval() {
     QString actual(dim.prints());
     QString expected("0x1000 first int\n"
                          "0x1004 second double\n");
-    QCOMPARE(expected, actual);
+    QCOMPARE(actual,expected);
 
     DataIntervalEntry *pdie = dim.find(ADDRESS::g(0x1000));
     expected = "first";
     QVERIFY(pdie);
     actual = pdie->second.name;
-    QCOMPARE(expected, actual);
+    QCOMPARE(actual,expected);
 
     pdie = dim.find(ADDRESS::g(0x1003));
     QVERIFY(pdie);
     actual = pdie->second.name;
-    QCOMPARE(expected, actual);
+    QCOMPARE(actual,expected);
 
     pdie = dim.find(ADDRESS::g(0x1004));
     QVERIFY(pdie);
     expected = "second";
     actual = pdie->second.name;
-    QCOMPARE(expected, actual);
+    QCOMPARE(actual,expected);
 
     pdie = dim.find(ADDRESS::g(0x1007));
     QVERIFY(pdie);
     actual = pdie->second.name;
-    QCOMPARE(expected, actual);
+    QCOMPARE(actual,expected);
 
     CompoundType ct;
     ct.addType(IntegerType::get(16, 1), "short1");
@@ -186,14 +192,14 @@ void TypeTest::testDataInterval() {
     ComplexTypeCompList &ctcl = ct.compForAddress(ADDRESS::g(0x1012), dim);
     unsigned ua = ctcl.size();
     unsigned ue = 1;
-    QCOMPARE(ue, ua);
+    QCOMPARE(ua,ue);
     ComplexTypeComp &ctc = ctcl.front();
     ue = 0;
     ua = ctc.isArray;
-    QCOMPARE(ue, ua);
+    QCOMPARE(ua,ue);
     expected = "short2";
     actual = ctc.u.memberName;
-    QCOMPARE(expected, actual);
+    QCOMPARE(actual,expected);
 
     // An array of 10 struct1's
     ArrayType at(&ct, 10);
@@ -202,21 +208,21 @@ void TypeTest::testDataInterval() {
     // Should be 2 components: [5] and .float1
     ue = 2;
     ua = ctcl2.size();
-    QCOMPARE(ue, ua);
+    QCOMPARE(ua,ue);
     ComplexTypeComp &ctc0 = ctcl2.front();
     ComplexTypeComp &ctc1 = ctcl2.back();
     ue = 1;
     ua = ctc0.isArray;
-    QCOMPARE(ue, ua);
+    QCOMPARE(ua,ue);
     ue = 5;
     ua = ctc0.u.index;
-    QCOMPARE(ue, ua);
+    QCOMPARE(ua,ue);
     ue = 0;
     ua = ctc1.isArray;
-    QCOMPARE(ue, ua);
+    QCOMPARE(ua,ue);
     expected = "float1";
     actual = ctc1.u.memberName;
-    QCOMPARE(expected, actual);
+    QCOMPARE(actual,expected);
 }
 
 /***************************************************************************/ /**
@@ -250,7 +256,7 @@ void TypeTest::testDataIntervalOverlaps() {
     DataIntervalEntry *pdie = dim.find(ADDRESS::g(0x1008));
     QString expected = "struct { int newInt; float newFloat; }";
     QString actual = pdie->second.type->getCtype();
-    QCOMPARE(expected, actual);
+    QCOMPARE(actual,expected);
 
     // Attempt a weave; should fail
     CompoundType ct3;
@@ -260,20 +266,20 @@ void TypeTest::testDataIntervalOverlaps() {
     pdie = dim.find(ADDRESS::g(0x1004));
     expected = "firstFloat";
     actual = pdie->second.name;
-    QCOMPARE(expected, actual);
+    QCOMPARE(actual,expected);
 
     // Totally unaligned
     dim.addItem(ADDRESS::g(0x1001), "weaveStruct2", &ct3);
     pdie = dim.find(ADDRESS::g(0x1001));
     expected = "firstInt";
     actual = pdie->second.name;
-    QCOMPARE(expected, actual);
+    QCOMPARE(actual,expected);
 
     dim.addItem(ADDRESS::g(0x1004), "firstInt", IntegerType::get(32, 1)); // Should fail
     pdie = dim.find(ADDRESS::g(0x1004));
     expected = "firstFloat";
     actual = pdie->second.name;
-    QCOMPARE(expected, actual);
+    QCOMPARE(actual,expected);
 
     // Set up three ints
     dim.deleteItem(ADDRESS::g(0x1004));
@@ -286,24 +292,24 @@ void TypeTest::testDataIntervalOverlaps() {
     pdie = dim.find(ADDRESS::g(0x1005)); // Check middle element
     expected = "newArray";
     actual = pdie->second.name;
-    QCOMPARE(expected, actual);
+    QCOMPARE(actual,expected);
     pdie = dim.find(ADDRESS::g(0x1000)); // Check first
     actual = pdie->second.name;
-    QCOMPARE(expected, actual);
+    QCOMPARE(actual,expected);
     pdie = dim.find(ADDRESS::g(0x100B)); // Check last
     actual = pdie->second.name;
-    QCOMPARE(expected, actual);
+    QCOMPARE(actual,expected);
 
     // Already have an array of 3 ints at 0x1000. Put a new array completely before, then with only one word overlap
     dim.addItem(ADDRESS::g(0xF00), "newArray2", &at);
     pdie = dim.find(ADDRESS::g(0x1000)); // Should still be newArray at 0x1000
     actual = pdie->second.name;
-    QCOMPARE(expected, actual);
+    QCOMPARE(actual,expected);
 
     pdie = dim.find(ADDRESS::g(0xF00));
     expected = "newArray2";
     actual = pdie->second.name;
-    QCOMPARE(expected, actual);
+    QCOMPARE(actual,expected);
 
     dim.addItem(ADDRESS::g(0xFF8), "newArray3", &at); // Should fail
     pdie = dim.find(ADDRESS::g(0xFF8));

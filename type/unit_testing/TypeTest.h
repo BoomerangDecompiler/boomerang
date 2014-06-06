@@ -9,6 +9,5 @@ private slots:
 
     void testDataInterval();
     void testDataIntervalOverlaps();
-    void setUp();
-    void tearDown();
+    void initTestCase();
 };
