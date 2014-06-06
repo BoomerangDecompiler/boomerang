@@ -700,7 +700,7 @@ static int progress = 0;
 /***************************************************************************/ /**
   * \brief Propagate to this statement
   * \param destCounts is a map that indicates how may times a statement's definition is used
-  * \param dnp is a StatementSet with statements that should not be propagated
+  * \param dnp is a InstructionSet with statements that should not be propagated
   * \param convert set true if an indirect call is changed to direct (otherwise, no change)
   * \param force set to true to propagate even memofs (for switch analysis)
   * \param usedByDomPhi is a set of subscripted locations used in phi statements
@@ -1141,7 +1141,7 @@ bool GotoStatement::isComputed() { return m_isComputed; }
   * \brief        Deep copy clone
   * \returns             Pointer to a new Statement, a clone of this GotoStatement
   ******************************************************************************/
-Instruction *GotoStatement::clone() const {
+Instruction * GotoStatement::clone() const {
     GotoStatement *ret = new GotoStatement();
     ret->pDest = pDest->clone();
     ret->m_isComputed = m_isComputed;
@@ -1191,14 +1191,12 @@ BranchStatement::~BranchStatement() {
 }
 
 /***************************************************************************/ /**
-  * \fn        BranchStatement::setCondType
-  * \brief        Sets the BRANCH_TYPE of this jcond as well as the flag
-  *                    indicating whether or not the floating point condition codes
-  *                    are used.
-  * \param        cond - the BRANCH_TYPE
-  *                    usesFloat - this condional jump checks the floating point
-  *                      condition codes
-  * \returns             a semantic string
+  * \fn    BranchStatement::setCondType
+  * \brief Sets the BRANCH_TYPE of this jcond as well as the flag
+  *        indicating whether or not the floating point condition codes
+  *        are used.
+  * \param cond - the BRANCH_TYPE
+  * \param usesFloat - this condional jump checks the floating point condition codes
   ******************************************************************************/
 void BranchStatement::setCondType(BRANCH_TYPE cond, bool usesFloat /*= false*/) {
     jtCond = cond;
@@ -1291,23 +1289,23 @@ void BranchStatement::makeSigned() {
 }
 
 /***************************************************************************/ /**
-  * \fn        BranchStatement::getCondExpr
-  * \brief        Return the SemStr expression containing the HL condition.
-  * \returns             ptr to an expression
+  * \fn      BranchStatement::getCondExpr
+  * \brief   Return the SemStr expression containing the HL condition.
+  * \returns ptr to an expression
   ******************************************************************************/
 Exp *BranchStatement::getCondExpr() { return pCond; }
 
 /***************************************************************************/ /**
   * \fn          BranchStatement::setCondExpr
   * \brief       Set the SemStr expression containing the HL condition.
-  * \param       e - Pointer to Exp to set
+  * \param       pe - Pointer to Exp to set
   *
   ******************************************************************************/
-void BranchStatement::setCondExpr(Exp * e) {
+void BranchStatement::setCondExpr(Exp * pe) {
     if (pCond) {
         ; // delete pCond;
     }
-    pCond = e;
+    pCond = pe;
 }
 
 BasicBlock *BranchStatement::getFallBB() {
@@ -1496,17 +1494,14 @@ void BranchStatement::print(QTextStream & os, bool html) const {
 /***************************************************************************/ /**
   * \fn        BranchStatement::clone
   * \brief        Deep copy clone
-  * \returns             Pointer to a new Statement, a clone of this BranchStatement
+  * \returns             Pointer to a new Instruction, a clone of this BranchStatement
   ******************************************************************************/
-Instruction *BranchStatement::clone() const {
+Instruction * BranchStatement::clone() const {
     BranchStatement *ret = new BranchStatement();
     ret->pDest = pDest->clone();
     ret->m_isComputed = m_isComputed;
     ret->jtCond = jtCond;
-    if (pCond)
-        ret->pCond = pCond->clone();
-    else
-        ret->pCond = nullptr;
+    ret->pCond = pCond ? pCond->clone() : nullptr;
     ret->bFloat = bFloat;
     // Statement members
     ret->Parent = Parent;
@@ -1952,11 +1947,11 @@ void CaseStatement::print(QTextStream  & os, bool html) const {
 }
 
 /***************************************************************************/ /**
-  * \fn        CaseStatement::clone
-  * \brief        Deep copy clone
-  * \returns             Pointer to a new Statement that is a clone of this one
+  * \fn      CaseStatement::clone
+  * \brief   Deep copy clone
+  * \returns Pointer to a new Instruction that is a clone of this one
   ******************************************************************************/
-Instruction *CaseStatement::clone() const {
+Instruction * CaseStatement::clone() const {
     CaseStatement *ret = new CaseStatement();
     ret->pDest = pDest->clone();
     ret->m_isComputed = m_isComputed;
@@ -2299,7 +2294,7 @@ bool CallStatement::isReturnAfterCall() { return returnAfterCall; }
   * \brief        Deep copy clone
   * \returns             Pointer to a new Statement, a clone of this CallStatement
   ******************************************************************************/
-Instruction *CallStatement::clone() const {
+Instruction * CallStatement::clone() const {
     CallStatement *ret = new CallStatement();
     ret->pDest = pDest->clone();
     ret->m_isComputed = m_isComputed;
@@ -2924,7 +2919,7 @@ ReturnStatement::~ReturnStatement() {}
   * \brief        Deep copy clone
   * \returns             Pointer to a new Statement, a clone of this ReturnStatement
   ******************************************************************************/
-Instruction *ReturnStatement::clone() const {
+Instruction * ReturnStatement::clone() const {
     ReturnStatement *ret = new ReturnStatement();
     for (auto const &elem : modifieds)
         ret->modifieds.append((ImplicitAssign *)(elem)->clone());
@@ -3174,7 +3169,7 @@ void BoolAssign::printCompact(QTextStream & os /*= cout*/, bool html) const {
   * \brief        Deep copy clone
   * \returns             Pointer to a new Statement, a clone of this BoolAssign
   ******************************************************************************/
-Instruction *BoolAssign::clone() const {
+Instruction * BoolAssign::clone() const {
     BoolAssign *ret = new BoolAssign(size);
     ret->jtCond = jtCond;
     if (pCond)
@@ -3293,7 +3288,7 @@ ImplicitAssign::ImplicitAssign(ImplicitAssign & o) : Assignment(o.type ? o.type-
 // The first virtual function (here the destructor) can't be in statement.h file for gcc
 ImplicitAssign::~ImplicitAssign() {}
 
-Instruction *Assign::clone() const {
+Instruction * Assign::clone() const {
     Assign *a = new Assign(type == nullptr ? nullptr : type->clone(), lhs->clone(), rhs->clone(),
                            guard == nullptr ? nullptr : guard->clone());
     // Statement members
@@ -3303,7 +3298,7 @@ Instruction *Assign::clone() const {
     return a;
 }
 
-Instruction *PhiAssign::clone() const {
+Instruction * PhiAssign::clone() const {
     PhiAssign *pa = new PhiAssign(type, lhs);
     Definitions::const_iterator dd;
     for (dd = DefVec.begin(); dd != DefVec.end(); dd++) {
@@ -3316,7 +3311,7 @@ Instruction *PhiAssign::clone() const {
     return pa;
 }
 
-Instruction *ImplicitAssign::clone() const {
+Instruction * ImplicitAssign::clone() const {
     ImplicitAssign *ia = new ImplicitAssign(type, lhs);
     return ia;
 }
@@ -3620,9 +3615,9 @@ while (*endleft == ' ') {
 return lhs->match(left, bindings) && rhs->match(right, bindings);
 }
 
-void addPhiReferences(StatementSet &stmts, Statement *def);
+void addPhiReferences(InstructionSet &stmts, Statement *def);
 
-void addSimpleCopyReferences(StatementSet &stmts, Statement *def) {
+void addSimpleCopyReferences(InstructionSet &stmts, Statement *def) {
 if (!(*((Assign*)def)->getLeft() == *((Assign*)def)->getRight()->getSubExp1()))
     return;
 Statement *copy = ((RefExp*)((Assign*)def)->getRight())->getDef();
@@ -5103,7 +5098,7 @@ void ImpRefStatement::print(QTextStream & os, bool html) const {
 
 void ImpRefStatement::meetWith(Type * ty, bool &ch) { type = type->meetWith(ty, ch); }
 
-Instruction *ImpRefStatement::clone() const { return new ImpRefStatement(type->clone(), addressExp->clone()); }
+Instruction * ImpRefStatement::clone() const { return new ImpRefStatement(type->clone(), addressExp->clone()); }
 bool ImpRefStatement::accept(StmtVisitor * visitor) { return visitor->visit(this); }
 bool ImpRefStatement::accept(StmtExpVisitor * v) {
     bool override;

@@ -32,7 +32,7 @@ public:
 protected:
     InsNameElem *nextelem;
     std::string elemname;
-    int value;
+    size_t value;
 };
 
 class InsOptionElem : public InsNameElem {

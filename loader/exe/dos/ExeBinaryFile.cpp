@@ -81,13 +81,13 @@ bool ExeBinaryFile::RealLoad(const QString &sName) {
         }
 
         /* We quietly ignore minAlloc and maxAlloc since for our
-                 * purposes it doesn't really matter where in real memory
-                 * the m_am would end up.  EXE m_ams can't really rely on
-                 * their load location so setting the PSP segment to 0 is fine.
-                 * Certainly m_ams that prod around in DOS or BIOS are going
-                 * to have to load DS from a constant so it'll be pretty
-                 * obvious.
-                */
+         * purposes it doesn't really matter where in real memory
+         * the m_am would end up.  EXE m_ams can't really rely on
+         * their load location so setting the PSP segment to 0 is fine.
+         * Certainly m_ams that prod around in DOS or BIOS are going
+         * to have to load DS from a constant so it'll be pretty
+         * obvious.
+        */
         m_cReloc = (SWord)LH(&m_pHeader->numReloc);
 
         /* Allocate the relocation table */

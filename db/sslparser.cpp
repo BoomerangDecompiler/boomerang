@@ -1407,7 +1407,7 @@ SSLParser::
         } else if (TableDict[yyvsp[-2].str]->getType() != EXPRTABLE) {
             o << "table " << yyvsp[-2].str << " is not an expression table but appears to be used as one.\n";
             yyerror(STR(o));
-        } else if ((int)((ExprTable *)TableDict[yyvsp[-2].str])->expressions.size() <
+        } else if (((ExprTable *)TableDict[yyvsp[-2].str])->expressions.size() <
                    indexrefmap[yyvsp[-1].str]->ntokens()) {
             o << "table " << yyvsp[-2].str << " (" << ((ExprTable *)TableDict[yyvsp[-2].str])->expressions.size()
               << ") is too small to use " << yyvsp[-1].str << " (" << indexrefmap[yyvsp[-1].str]->ntokens()
@@ -1514,7 +1514,7 @@ SSLParser::
         } else if (TableDict[yyvsp[-3].str]->getType() != OPTABLE) {
             o << "table " << yyvsp[-3].str << " is not an operator table but appears to be used as one.\n";
             yyerror(STR(o));
-        } else if ((int)TableDict[yyvsp[-3].str]->Records.size() < indexrefmap[yyvsp[-2].str]->ntokens()) {
+        } else if (TableDict[yyvsp[-3].str]->Records.size() < indexrefmap[yyvsp[-2].str]->ntokens()) {
             o << "table " << yyvsp[-3].str << " is too small to use with " << yyvsp[-2].str << " as an index.\n";
             yyerror(STR(o));
         }

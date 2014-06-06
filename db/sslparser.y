@@ -920,7 +920,7 @@ exp_term:
                         } else if (TableDict[$1]->getType() != EXPRTABLE) {
                                 o << "table " << $1 << " is not an expression table but appears to be used as one.\n";
                                 yyerror(STR(o));
-                        } else if ((int)((ExprTable*)TableDict[$1])->expressions.size() < indexrefmap[$2]->ntokens()) {
+                        } else if (((ExprTable*)TableDict[$1])->expressions.size() < indexrefmap[$2]->ntokens()) {
                                 o << "table " << $1 << " (" << ((ExprTable*)TableDict[$1])->expressions.size() <<
                                         ") is too small to use " << $2 << " (" << indexrefmap[$2]->ntokens() << ") as an index.\n";
                                 yyerror(STR(o));
@@ -1026,7 +1026,7 @@ exp:
                         } else if (TableDict[$2]->getType() != OPTABLE) {
                                 o << "table " << $2 << " is not an operator table but appears to be used as one.\n";
                                 yyerror(STR(o));
-                        } else if ((int)TableDict[$2]->Records.size() < indexrefmap[$3]->ntokens()) {
+                        } else if (TableDict[$2]->Records.size() < indexrefmap[$3]->ntokens()) {
                                 o << "table " << $2 << " is too small to use with " << $3 << " as an index.\n";
                                 yyerror(STR(o));
                         }

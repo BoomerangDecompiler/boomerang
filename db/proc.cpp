@@ -1702,7 +1702,7 @@ void UserProc::remUnusedStmtEtc(RefCounter &refCounts) {
                 // First adjust the counts, due to statements only referenced by statements that are themselves unused.
                 // Need to be careful not to count two refs to the same def as two; refCounts is a count of the number
                 // of statements that use a definition, not the total number of refs
-                StatementSet stmtsRefdByUnused;
+                InstructionSet stmtsRefdByUnused;
                 LocationSet components;
                 s->addUsedLocs(components, false); // Second parameter false to ignore uses in collectors
                 LocationSet::iterator cc;
@@ -1711,7 +1711,7 @@ void UserProc::remUnusedStmtEtc(RefCounter &refCounts) {
                         stmtsRefdByUnused.insert(((RefExp *)*cc)->getDef());
                     }
                 }
-                StatementSet::iterator dd;
+                InstructionSet::iterator dd;
                 for (dd = stmtsRefdByUnused.begin(); dd != stmtsRefdByUnused.end(); dd++) {
                     if (*dd == nullptr)
                         continue;

@@ -37,6 +37,7 @@
 #include <set>
 #include <list>
 #include <map>
+#include <memory>
 #include <cassert>
 
 class BasicBlock;
@@ -57,11 +58,13 @@ class StmtPartModifier;
 class HLLCode;
 class Assign;
 class RTL;
+class InstructionSet;
 class XMLProgParser;
 class ReturnStatement;
 
 typedef std::set<UserProc *> CycleSet;
-
+typedef std::shared_ptr<Exp> SharedExp;
+typedef std::unique_ptr<Instruction> UniqInstruction;
 /***************************************************************************/ /**
   * Kinds of Statements, or high-level register transfer lists.
   * changing the order of these will result in save files not working - trent
@@ -156,7 +159,7 @@ class Instruction {
     RangeMap &getRanges() { return Ranges; }
     void clearRanges() { Ranges.clear(); }
 
-    virtual Instruction *clone() const = 0; // Make copy of self
+    virtual Instruction * clone() const = 0; // Make copy of self
 
     // Accept a visitor (of various kinds) to this Statement. Return true to continue visiting
     virtual bool accept(StmtVisitor *visitor) = 0;
@@ -327,7 +330,7 @@ class Instruction {
 
 // Print the Statement (etc) poited to by p
 QTextStream &operator<<(QTextStream &os, const Instruction *p);
-QTextStream &operator<<(QTextStream &os, const StatementSet *p);
+QTextStream &operator<<(QTextStream &os, const InstructionSet *p);
 QTextStream &operator<<(QTextStream &os, const LocationSet *p);
 
 /***************************************************************************/ /**
@@ -363,7 +366,7 @@ class Assignment : public TypingStatement {
     virtual ~Assignment();
 
     // Clone
-    virtual Instruction *clone() const = 0;
+    virtual Instruction * clone() const = 0;
 
     // We also want operator< for assignments. For example, we want ReturnStatement to contain a set of (pointers
     // to) Assignments, so we can automatically make sure that existing assignments are not duplicated
@@ -441,7 +444,7 @@ class Assign : public Assignment {
     ~Assign() {}
 
     // Clone
-    virtual Instruction *clone() const;
+    virtual Instruction * clone() const;
 
     // get how to replace this statement in a use
     virtual Exp *getRight() { return rhs; }
@@ -544,7 +547,7 @@ class PhiAssign : public Assignment {
     virtual ~PhiAssign() {}
 
     // Clone
-    virtual Instruction *clone() const;
+    virtual Instruction * clone() const;
 
     // get how to replace this statement in a use
     virtual Exp *getRight() { return nullptr; }
@@ -619,7 +622,7 @@ class ImplicitAssign : public Assignment {
     ImplicitAssign(ImplicitAssign &o);
     virtual ~ImplicitAssign();
 
-    virtual Instruction *clone() const;
+    virtual Instruction * clone() const;
     void dfaTypeAnalysis(bool &ch);
 
     // general search
@@ -658,7 +661,7 @@ class BoolAssign : public Assignment {
     virtual ~BoolAssign();
 
     // Make a deep copy, and make the copy a derived object if needed.
-    virtual Instruction *clone() const;
+    virtual Instruction * clone() const;
 
     // Accept a visitor to this Statement
     virtual bool accept(StmtVisitor *visitor);
@@ -714,7 +717,7 @@ class ImpRefStatement : public TypingStatement {
     void meetWith(Type *ty, bool &ch); // Meet the internal type with ty. Set ch if a change
 
     // Virtuals
-    virtual Instruction *clone() const;
+    virtual Instruction * clone() const;
     virtual bool accept(StmtVisitor *);
     virtual bool accept(StmtExpVisitor *);
     virtual bool accept(StmtModifier *);
@@ -754,7 +757,7 @@ class GotoStatement : public Instruction {
     GotoStatement(ADDRESS jumpDest);
     virtual ~GotoStatement();
 
-    virtual Instruction *clone() const; //!< Make a deep copy, and make the copy a derived object if needed.
+    virtual Instruction * clone() const; //!< Make a deep copy, and make the copy a derived object if needed.
 
     // Accept a visitor to this Statement
     virtual bool accept(StmtVisitor *visitor);
@@ -805,7 +808,7 @@ class JunctionStatement : public Instruction {
   public:
     JunctionStatement() { Kind = STMT_JUNCTION; }
 
-    Instruction *clone() const { return new JunctionStatement(); }
+    Instruction * clone() const override { return new JunctionStatement(); }
 
     // Accept a visitor (of various kinds) to this Statement. Return true to continue visiting
     bool accept(StmtVisitor *visitor);
@@ -841,7 +844,7 @@ class JunctionStatement : public Instruction {
   *==============================================================================*/
 class BranchStatement : public GotoStatement {
     BRANCH_TYPE jtCond; // The condition for jumping
-    Exp *pCond;         // The Exp representation of the high level condition: e.g., r[8] == 5
+    Exp * pCond;         // The Exp representation of the high level condition: e.g., r[8] == 5
     bool bFloat;        // True if uses floating point CC
     // jtCond seems to be mainly needed for the Pentium weirdness.
     // Perhaps bFloat, jtCond, and size could one day be merged into a type
@@ -853,7 +856,7 @@ class BranchStatement : public GotoStatement {
     virtual ~BranchStatement();
 
     // Make a deep copy, and make the copy a derived object if needed.
-    virtual Instruction *clone() const;
+    virtual Instruction * clone() const;
 
     // Accept a visitor to this Statement
     virtual bool accept(StmtVisitor *visitor);
@@ -871,8 +874,6 @@ class BranchStatement : public GotoStatement {
     // Set and return the Exp representing the HL condition
     Exp *getCondExpr();
     void setCondExpr(Exp *pe);
-    // As above, no delete (for subscripting)
-    void setCondExprND(Exp *e) { pCond = e; }
 
     BasicBlock *getFallBB();
     BasicBlock *getTakenBB();
@@ -942,7 +943,7 @@ class CaseStatement : public GotoStatement {
     virtual ~CaseStatement();
 
     // Make a deep copy, and make the copy a derived object if needed.
-    virtual Instruction *clone() const;
+    virtual Instruction * clone() const;
 
     // Accept a visitor to this Statememt
     virtual bool accept(StmtVisitor *visitor);
@@ -1018,7 +1019,7 @@ class CallStatement : public GotoStatement {
 
     virtual void setNumber(int num);
     // Make a deep copy, and make the copy a derived object if needed.
-    virtual Instruction *clone() const;
+    virtual Instruction * clone() const;
 
     // Accept a visitor to this stmt
     virtual bool accept(StmtVisitor *visitor);
@@ -1127,7 +1128,7 @@ class CallStatement : public GotoStatement {
     void decompile();
 
     // Insert actual arguments to match formal parameters
-    // void        insertArguments(StatementSet& rs);
+    // void        insertArguments(InstructionSet& rs);
 
     virtual Type *getTypeFor(Exp *e);                   // Get the type defined by this Statement for this location
     virtual void setTypeFor(Exp *e, Type *ty);          // Set the type for this location, defined in this statement
@@ -1237,7 +1238,7 @@ class ReturnStatement : public Instruction {
     Exp *subscriptWithDef(Exp *e);
 
     // Make a deep copy, and make the copy a derived object if needed.
-    virtual Instruction *clone() const;
+    virtual Instruction * clone() const;
 
     // Accept a visitor to this Statement
     virtual bool accept(StmtVisitor *visitor);

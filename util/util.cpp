@@ -17,6 +17,7 @@
 
 #include "util.h"
 
+#include <QString>
 #include <cassert>
 #include <string>
 #include <cstdio>

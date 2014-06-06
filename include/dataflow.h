@@ -8,20 +8,20 @@
  */
 
 /***************************************************************************/ /**
-  * \file       dataflow.h
-  * OVERVIEW:   Interface for SSA based data flow analysis
+  * \file  dataflow.h
+  * \brief Interface for SSA based data flow analysis
   ******************************************************************************/
 
 #ifndef _DATAFLOW_H_
 #define _DATAFLOW_H_
 
+#include "exphelp.h" // For lessExpStar, etc
+#include "managed.h" // For LocationSet
+
 #include <vector>
 #include <map>
 #include <set>
 #include <stack>
-
-#include "exphelp.h" // For lessExpStar, etc
-#include "managed.h" // For LocationSet
 
 class Cfg;
 class BasicBlock;

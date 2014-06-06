@@ -9,7 +9,7 @@
 
 /***************************************************************************/ /**
   * \file       managed.cpp
-  * \brief   Implementation of "managed" classes such as StatementSet, which feature makeUnion etc
+  * \brief   Implementation of "managed" classes such as InstructionSet, which feature makeUnion etc
   ******************************************************************************/
 
 #include <sstream>
@@ -25,7 +25,7 @@
 
 extern char debug_buffer[]; // For prints functions
 
-QTextStream &operator<<(QTextStream &os, const StatementSet *ss) {
+QTextStream &operator<<(QTextStream &os, const InstructionSet *ss) {
     ss->print(os);
     return os;
 }
@@ -41,27 +41,27 @@ QTextStream &operator<<(QTextStream &os, const LocationSet *ls) {
 }
 
 //
-// StatementSet methods
+// InstructionSet methods
 //
 
-// Make this set the union of itself and other
-void StatementSet::makeUnion(StatementSet &other) {
+//! Make this set the union of itself and other
+void InstructionSet::makeUnion(InstructionSet &other) {
     std::set<Instruction *>::iterator it;
     for (it = other.begin(); it != other.end(); it++) {
         insert(*it);
     }
 }
 
-// Make this set the difference of itself and other
-void StatementSet::makeDiff(StatementSet &other) {
+//! Make this set the difference of itself and other
+void InstructionSet::makeDiff(InstructionSet &other) {
     std::set<Instruction *>::iterator it;
     for (it = other.begin(); it != other.end(); it++) {
         erase(*it);
     }
 }
 
-// Make this set the intersection of itself and other
-void StatementSet::makeIsect(StatementSet &other) {
+//! Make this set the intersection of itself and other
+void InstructionSet::makeIsect(InstructionSet &other) {
     std::set<Instruction *>::iterator it, ff;
     for (it = begin(); it != end(); it++) {
         ff = other.find(*it);
@@ -71,9 +71,9 @@ void StatementSet::makeIsect(StatementSet &other) {
     }
 }
 
-// Check for the subset relation, i.e. are all my elements also in the set
-// other. Effectively (this intersect other) == this
-bool StatementSet::isSubSetOf(StatementSet &other) {
+//! Check for the subset relation, i.e. are all my elements also in the set
+//! other. Effectively (this intersect other) == this
+bool InstructionSet::isSubSetOf(InstructionSet &other) {
     std::set<Instruction *>::iterator it, ff;
     for (it = begin(); it != end(); it++) {
         ff = other.find(*it);
@@ -84,7 +84,7 @@ bool StatementSet::isSubSetOf(StatementSet &other) {
 }
 
 // Remove this Statement. Return false if it was not found
-bool StatementSet::remove(Instruction *s) {
+bool InstructionSet::remove(Instruction *s) {
     if (find(s) != end()) {
         erase(s);
         return true;
@@ -93,13 +93,13 @@ bool StatementSet::remove(Instruction *s) {
 }
 
 // Search for s in this Statement set. Return true if found
-bool StatementSet::exists(Instruction *s) {
+bool InstructionSet::exists(Instruction *s) {
     iterator it = find(s);
     return (it != end());
 }
 
 // Find a definition for loc in this Statement set. Return true if found
-bool StatementSet::definesLoc(Exp *loc) {
+bool InstructionSet::definesLoc(Exp *loc) {
     for (auto const &elem : *this) {
         if ((elem)->definesLoc(loc))
             return true;
@@ -108,7 +108,7 @@ bool StatementSet::definesLoc(Exp *loc) {
 }
 
 // Print to a string, for debugging
-const char *StatementSet::prints() {
+const char *InstructionSet::prints() {
     QString tgt;
     QTextStream ost(&tgt);
     std::set<Instruction *>::iterator it;
@@ -123,12 +123,12 @@ const char *StatementSet::prints() {
     return debug_buffer;
 }
 
-void StatementSet::dump() {
+void InstructionSet::dump() {
     QTextStream q_cerr(stderr);
     print(q_cerr);
 }
 
-void StatementSet::print(QTextStream &os) const {
+void InstructionSet::print(QTextStream &os) const {
     std::set<Instruction *>::iterator it;
     for (it = begin(); it != end(); it++) {
         if (it != begin())
@@ -139,7 +139,7 @@ void StatementSet::print(QTextStream &os) const {
 }
 
 // Print just the numbers to stream os
-void StatementSet::printNums(QTextStream &os) {
+void InstructionSet::printNums(QTextStream &os) {
     for (iterator it = begin(); it != end();) {
         if (*it)
             (*it)->printNum(os);
@@ -150,7 +150,7 @@ void StatementSet::printNums(QTextStream &os) {
     }
 }
 
-bool StatementSet::operator<(const StatementSet &o) const {
+bool InstructionSet::operator<(const InstructionSet &o) const {
     if (size() < o.size())
         return true;
     if (size() > o.size())
@@ -361,8 +361,8 @@ void LocationSet::remove(Exp *given) {
 
 // Remove locations defined by any of the given set of statements
 // Used for killing in liveness sets
-void LocationSet::removeIfDefines(StatementSet &given) {
-    StatementSet::iterator it;
+void LocationSet::removeIfDefines(InstructionSet &given) {
+    InstructionSet::iterator it;
     for (it = given.begin(); it != given.end(); ++it) {
         Instruction *s = (Instruction *)*it;
         LocationSet defs;
@@ -545,7 +545,7 @@ bool StatementList::remove(Instruction *s) {
 
 void StatementList::append(StatementList &sl) { insert(end(), sl.begin(), sl.end()); }
 
-void StatementList::append(StatementSet &ss) { insert(end(), ss.begin(), ss.end()); }
+void StatementList::append(InstructionSet &ss) { insert(end(), ss.begin(), ss.end()); }
 
 char *StatementList::prints() {
     QString tgt;
