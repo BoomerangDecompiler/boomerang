@@ -139,6 +139,7 @@ void RTL::appendListStmt(std::list<Instruction *> &le) {
 /***************************************************************************/ /**
   * \brief   Prints this object to a stream in text form.
   * \param   os - stream to output to (often cout or cerr)
+  * \param   html - if true output is in html
   ******************************************************************************/
 void RTL::print(QTextStream &os /*= cout*/, bool html /*=false*/) const {
 

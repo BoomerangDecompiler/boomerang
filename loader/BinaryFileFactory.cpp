@@ -111,10 +111,6 @@ QObject *BinaryFileFactory::getInstanceFor(const QString &sName) {
     if (libName.isEmpty())
         return nullptr;
 
-#if defined(Q_OS_WIN) && defined(__MINGW32__)
-    libName = "lib" + libName;
-#endif
-
     QPluginLoader plugin_loader(libName);
     if (!plugin_loader.load()) {
         qDebug() << plugin_loader.errorString();
