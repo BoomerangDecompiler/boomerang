@@ -155,7 +155,7 @@ class Exp {
     //! True if is string const
     bool isStrConst() const { return op == opStrConst; }
     //! Get string constant even if mangled
-    const char *getAnyStrConst();
+    QString getAnyStrConst();
     //! True if is flt point const
     bool isFltConst() const { return op == opFltConst; }
     //! True if inteter or string constant
@@ -213,7 +213,7 @@ class Exp {
     virtual Exp *match(Exp *pattern);
 
     //! match a string pattern
-    virtual bool match(const std::string &pattern, std::map<std::string, Exp *> &bindings);
+    virtual bool match(const QString &pattern, std::map<QString, Exp *> &bindings);
 
     //    //    //    //    //    //    //
     //    Search and Replace    //
@@ -369,10 +369,11 @@ class Const : public Exp {
         ADDRESS a;     // void* conflated with unsigned int: needs fixing
         QWord ll;      // 64 bit integer
         double d;      // Double precision float
-        const char *p; // Pointer to string
+//        const char *p; // Pointer to string
                        // Don't store string: function could be renamed
         Function *pp;      // Pointer to function
     } u;
+    QString strin;
     int conscript; // like a subscript for constants
     SharedType type;    // Constants need types during type analysis
   public:
@@ -382,7 +383,7 @@ class Const : public Exp {
     Const(QWord ll);
     Const(ADDRESS a);
     Const(double d);
-    Const(const char *p);
+//    Const(const char *p);
     Const(const QString &p);
     Const(Function *p);
     // Copy constructor
@@ -403,7 +404,7 @@ class Const : public Exp {
     int getInt() const { return u.i; }
     QWord getLong() const { return u.ll; }
     double getFlt() const { return u.d; }
-    const char *getStr() const { return u.p; }
+    QString getStr() const { return strin; }
     ADDRESS getAddr() const { return u.a; }
     QString getFuncName() const;
 
@@ -411,7 +412,7 @@ class Const : public Exp {
     void setInt(int i) { u.i = i; }
     void setLong(QWord ll) { u.ll = ll; }
     void setFlt(double d) { u.d = d; }
-    void setStr(const char *p) { u.p = p; }
+    void setStr(const QString &p) { strin = p; }
     void setAddr(ADDRESS a) { u.a = a; }
 
     // Get and set the type
@@ -431,7 +432,7 @@ class Const : public Exp {
     virtual bool accept(ExpVisitor *v);
     virtual Exp *accept(ExpModifier *v);
 
-    virtual bool match(const std::string &pattern, std::map<std::string, Exp *> &bindings);
+    virtual bool match(const QString &pattern, std::map<QString, Exp *> &bindings);
 
     int getConscript() { return conscript; }
     void setConscript(int cs) { conscript = cs; }
@@ -472,7 +473,7 @@ class Terminal : public Exp {
     virtual SharedType ascendType();
     virtual void descendType(SharedType parentType, bool &ch, Instruction *s);
 
-    virtual bool match(const std::string &pattern, std::map<std::string, Exp *> &bindings);
+    virtual bool match(const QString &pattern, std::map<QString, Exp *> &bindings);
 
   protected:
     friend class XMLProgParser;
@@ -524,7 +525,7 @@ class Unary : public Exp {
     Exp *&refSubExp1();
 
     virtual Exp *match(Exp *pattern);
-    virtual bool match(const std::string &pattern, std::map<std::string, Exp *> &bindings);
+    virtual bool match(const QString &pattern, std::map<QString, Exp *> &bindings);
 
     // Search children
     void doSearchChildren(const Exp &search, std::list<Exp **> &li, bool once);
@@ -595,7 +596,7 @@ class Binary : public Unary {
     Exp *&refSubExp2(); //!< Get a reference to subexpression 2
 
     virtual Exp *match(Exp *pattern);
-    virtual bool match(const std::string &pattern, std::map<std::string, Exp *> &bindings);
+    virtual bool match(const QString &pattern, std::map<QString, Exp *> &bindings);
 
     // Search children
     void doSearchChildren(const Exp &search, std::list<Exp **> &li, bool once);
@@ -680,7 +681,7 @@ class Ternary : public Binary {
     virtual bool accept(ExpVisitor *v);
     virtual Exp *accept(ExpModifier *v);
 
-    virtual bool match(const std::string &pattern, std::map<std::string, Exp *> &bindings);
+    virtual bool match(const QString &pattern, std::map<QString, Exp *> &bindings);
 
     virtual SharedType ascendType();
     virtual void descendType(SharedType /*parentType*/, bool &ch, Instruction *s);
@@ -764,7 +765,7 @@ class FlagDef : public Unary {
   * RefExp is a subclass of Unary, holding an ordinary Exp pointer, and a pointer to a defining statement (could be a
   * phi assignment).  This is used for subscripting SSA variables. Example:
   *   m[1000] becomes m[1000]{3} if defined at statement 3
-  * The integer is really a pointer to the definig statement, printed as the statement number for compactness.
+  * The integer is really a pointer to the defining statement, printed as the statement number for compactness.
   ******************************************************************************/
 class RefExp : public Unary {
     Instruction *def; // The defining statement
@@ -796,7 +797,7 @@ class RefExp : public Unary {
     bool references(Instruction *s) { return def == s; }
     virtual Exp *polySimplify(bool &bMod);
     virtual Exp *match(Exp *pattern);
-    virtual bool match(const std::string &pattern, std::map<std::string, Exp *> &bindings);
+    virtual bool match(const QString &pattern, std::map<QString, Exp *> &bindings);
 
     // Before type analysis, implicit definitions are nullptr.  During and after TA, they point to an implicit
     // assignment statement.  Don't implement here, since it would require #including of statement.h
@@ -862,9 +863,10 @@ class Location : public Unary {
     static Exp *memOf(Exp *e, UserProc *p = nullptr) { return get(opMemOf, e, p); }
     static Location *tempOf(Exp *e) { return new Location(opTemp, e, nullptr); }
     static Exp *global(const char *nam, UserProc *p) { return get(opGlobal, Const::get(nam), p); }
-    static Exp *global(const QString &nam, UserProc *p) { return get(opGlobal, Const::get(strdup(qPrintable(nam))), p); }
-    static Location *local(const char *nam, UserProc *p);
+    static Exp *global(const QString &nam, UserProc *p) { return get(opGlobal, Const::get(nam), p); }
+    static Location *local(const QString &nam, UserProc *p);
     static Exp *param(const char *nam, UserProc *p = nullptr) { return get(opParam, Const::get(nam), p); }
+    static Exp *param(const QString &nam, UserProc *p = nullptr) { return get(opParam, Const::get(nam), p); }
     // Clone
     virtual Exp *clone() const;
 
@@ -877,7 +879,7 @@ class Location : public Unary {
     // Visitation
     virtual bool accept(ExpVisitor *v);
     virtual Exp *accept(ExpModifier *v);
-    virtual bool match(const std::string &pattern, std::map<std::string, Exp *> &bindings);
+    virtual bool match(const QString &pattern, std::map<QString, Exp *> &bindings);
 
   protected:
     friend class XMLProgParser;

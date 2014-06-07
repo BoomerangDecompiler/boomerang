@@ -897,8 +897,8 @@ bool Instruction::replaceRef(Exp * e, Assign * def, bool &convert) {
     if (base->getOper() == opCF && lhs->isFlags()) {
         if (!rhs->isFlagCall())
             return false;
-        const char *str = ((Const *)((Binary *)rhs)->getSubExp1())->getStr();
-        if (strncmp("SUBFLAGS", str, 8) == 0) {
+        QString str = ((Const *)((Binary *)rhs)->getSubExp1())->getStr();
+        if (str.startsWith("SUBFLAGS")) {
             /* When the carry flag is used bare, and was defined in a subtract of the form lhs - rhs, then CF has
                the value (lhs <u rhs).  lhs and rhs are the first and second parameters of the flagcall.
                Note: the flagcall is a binary, with a Const (the name) and a list of expressions:
@@ -922,8 +922,8 @@ bool Instruction::replaceRef(Exp * e, Assign * def, bool &convert) {
     if (base->getOper() == opZF && lhs->isFlags()) {
         if (!rhs->isFlagCall())
             return false;
-        const char *str = ((Const *)((Binary *)rhs)->getSubExp1())->getStr();
-        if (strncmp("SUBFLAGS", str, 8) == 0) {
+        QString str = ((Const *)((Binary *)rhs)->getSubExp1())->getStr();
+        if (str.startsWith("SUBFLAGS")) {
             // for zf we're only interested in if the result part of the subflags is equal to zero
             Exp *relExp = Binary::get(
                 opEquals, ((Binary *)rhs)->getSubExp2()->getSubExp2()->getSubExp2()->getSubExp1(), Const::get(0));
@@ -1532,10 +1532,10 @@ bool condToRelational(Exp * &pCond, BRANCH_TYPE jtCond) {
     pCond->print(os);
 
     OPER condOp = pCond->getOper();
-    if (condOp == opFlagCall && strncmp(((Const *)pCond->getSubExp1())->getStr(), "SUBFLAGS", 8) == 0) {
+    if (condOp == opFlagCall && ((Const *)pCond->getSubExp1())->getStr().startsWith("SUBFLAGS")) {
         OPER op = opWild;
         // Special for PPC unsigned compares; may be other cases in the future
-        bool makeUns = strncmp(((Const *)pCond->getSubExp1())->getStr(), "SUBFLAGSNL", 10) == 0;
+        bool makeUns = ((Const *)pCond->getSubExp1())->getStr().startsWith("SUBFLAGSNL");
         switch (jtCond) {
         case BRANCH_JE:
             op = opEquals;
@@ -1608,7 +1608,7 @@ bool condToRelational(Exp * &pCond, BRANCH_TYPE jtCond) {
                                 pCond->getSubExp2()->getSubExp1()->clone(),                // P1
                                 pCond->getSubExp2()->getSubExp2()->getSubExp1()->clone()); // P2
         }
-    } else if (condOp == opFlagCall && strncmp(((Const *)pCond->getSubExp1())->getStr(), "LOGICALFLAGS", 12) == 0) {
+    } else if (condOp == opFlagCall && ((Const *)pCond->getSubExp1())->getStr().startsWith("LOGICALFLAGS")) {
         // Exp *e = pCond;
         OPER op = opWild;
         switch (jtCond) {
@@ -1716,7 +1716,7 @@ bool condToRelational(Exp * &pCond, BRANCH_TYPE jtCond) {
         if (op != opWild) {
             pCond = Binary::get(op, pCond->getSubExp2()->getSubExp1()->clone(), Const::get(0));
         }
-    } else if (condOp == opFlagCall && strncmp(((Const *)pCond->getSubExp1())->getStr(), "SETFFLAGS", 9) == 0) {
+    } else if (condOp == opFlagCall && ((Const *)pCond->getSubExp1())->getStr().startsWith("SETFFLAGS")) {
         // Exp *e = pCond;
         OPER op = opWild;
         switch (jtCond) {
@@ -1953,11 +1953,13 @@ void CaseStatement::print(QTextStream  & os, bool html) const {
   ******************************************************************************/
 Instruction * CaseStatement::clone() const {
     CaseStatement *ret = new CaseStatement();
-    ret->pDest = pDest->clone();
+    ret->pDest = pDest ? pDest->clone() : nullptr;
     ret->m_isComputed = m_isComputed;
-    ret->pSwitchInfo = new SWITCH_INFO;
-    *ret->pSwitchInfo = *pSwitchInfo;
-    ret->pSwitchInfo->pSwitchVar = pSwitchInfo->pSwitchVar->clone();
+    if(pSwitchInfo) {
+        ret->pSwitchInfo = new SWITCH_INFO;
+        *ret->pSwitchInfo = *pSwitchInfo;
+        ret->pSwitchInfo->pSwitchVar = pSwitchInfo->pSwitchVar->clone();
+    }
     // Statement members
     ret->Parent = Parent;
     ret->proc = proc;
@@ -2447,7 +2449,7 @@ bool CallStatement::convertToDirect() {
     if (!e->isGlobal()) {
         return false;
     }
-    const char *nam = ((Const *)e->getSubExp1())->getStr();
+    QString nam = ((Const *)e->getSubExp1())->getStr();
     Prog *prog = proc->getProg();
     ADDRESS gloAddr = prog->getGlobalAddr(nam);
     ADDRESS dest = ADDRESS::g(prog->readNative4(gloAddr));
@@ -2460,9 +2462,8 @@ bool CallStatement::convertToDirect() {
     bool bNewProc = p == nullptr;
     if (bNewProc)
         p = prog->setNewProc(dest);
-    if (VERBOSE)
-        LOG << (bNewProc ? "new" : "existing") << " procedure for call to global '" << nam << " is " << p->getName()
-            << "\n";
+    LOG_VERBOSE(1) << (bNewProc ? "new" : "existing") << " procedure for call to global '" << nam << " is "
+                   << p->getName() << "\n";
     // we need to:
     // 1) replace the current return set with the return set of the new procDest
     // 2) call fixCallBypass (now fixCallAndPhiRefs) on the enclosing procedure
@@ -2668,18 +2669,18 @@ void CallStatement::setTypeFor(Exp * e, SharedType ty) {
     def->setTypeFor(e, ty);
 }
 
-bool CallStatement::objcSpecificProcessing(const char *formatStr) {
+bool CallStatement::objcSpecificProcessing(const QString &formatStr) {
     Function *proc = getDestProc();
     if (!proc)
         return false;
 
     QString name(proc->getName());
     if (name == "objc_msgSend") {
-        if (formatStr) {
+        if (!formatStr.isNull()) {
             int format = getNumArguments() - 1;
             int n = 1;
-            const char *p = formatStr;
-            while ((p = strchr(p, ':'))) {
+            int p =0;
+            while ((p = formatStr.indexOf(':',p))!=-1) {
                 p++; // Point past the :
                 n++;
                 addSigParam(PointerType::get(VoidType::get()), false);
@@ -2738,7 +2739,7 @@ bool CallStatement::ellipsisProcessing(Prog * prog) {
         return false;
     if (VERBOSE)
         LOG << "ellipsis processing for " << name << "\n";
-    const char *formatStr = nullptr;
+    QString formatStr=QString::null;
     Exp *formatExp = getArgumentExp(format);
     // We sometimes see a[m[blah{...}]]
     if (formatExp->isAddrOf()) {
@@ -2772,7 +2773,7 @@ bool CallStatement::ellipsisProcessing(Prog * prog) {
                 formatStr = ((Const *)rhs)->getStr();
                 break;
             }
-            if (formatStr == nullptr)
+            if (formatStr.isNull())
                 return false;
         } else
             return false;
@@ -2789,12 +2790,13 @@ bool CallStatement::ellipsisProcessing(Prog * prog) {
     char ch;
     // Set a flag if the name of the function is scanf/sscanf/fscanf
     bool isScanf = name.contains("scanf");
-    const char *p = formatStr;
-    while ((p = strchr(p, '%'))) {
-        p++;                   // Point past the %
+    int p_idx = 0;
+    //TODO: use qregularexpression to match scanf arguments
+    while ((p_idx = formatStr.indexOf('%',p_idx))!=-1) {
+        p_idx++;                   // Point past the %
         bool veryLong = false; // %lld or %L
         do {
-            ch = *p++; // Skip size and precisionA
+            ch = formatStr[p_idx++].toLatin1(); // Skip size and precisionA
             switch (ch) {
             case '*':
                 // Example: printf("Val: %*.*f\n", width, precision, val);
@@ -2817,9 +2819,9 @@ bool CallStatement::ellipsisProcessing(Prog * prog) {
                 // Exception: %llx
                 // TODO: handle architectures where l implies two words
                 // TODO: at least h has implications for scanf
-                if (*p == 'l') {
+                if (formatStr[p_idx] == 'l') {
                     // %llx
-                    p++; // Skip second l
+                    p_idx++; // Skip second l
                     veryLong = true;
                 }
                 continue;
@@ -3705,21 +3707,22 @@ void CallStatement::genConstraints(LocationSet & cons) {
         QString name = dest->getName();
         // Note: might have to chase back via a phi statement to get a sample
         // string
-        const char *str;
+        QString str;
         Exp *arg0 = ((Assign *)*arguments.begin())->getRight();
-        if ((name == "printf" || name == "scanf") && (str = arg0->getAnyStrConst()) != nullptr) {
+        if ((name == "printf" || name == "scanf") && !(str = arg0->getAnyStrConst()).isNull()) {
             // actually have to parse it
             int n = 1; // Number of %s plus 1 = number of args
-            const char *p = str;
-            while ((p = strchr(p, '%'))) {
-                p++;
+            QString p = str;
+            int percent_idx=0;
+            while ((percent_idx = str.indexOf('%',percent_idx))!=-1) {
+                percent_idx++;
                 SharedType t = nullptr;
                 int longness = 0;
                 bool sign = true;
                 bool cont;
                 do {
                     cont = false;
-                    switch (*p) {
+                    switch (str[percent_idx].toLatin1()) {
                     case 'u':
                         sign = false;
                         cont = true;
@@ -3753,11 +3756,11 @@ void CallStatement::genConstraints(LocationSet & cons) {
                     case '*':
                         assert(0); // Star format not handled yet
                     default:
-                        if (*p >= '0' && *p <= '9')
+                        if (str[percent_idx] >= '0' && str[percent_idx] <= '9')
                             cont = true;
                         break;
                     }
-                    p++;
+                    percent_idx++;
                 } while (cont);
                 if (t) {
                     // scanf takes addresses of these

@@ -82,7 +82,7 @@ class CHLLCode : public HLLCode {
     void indent(QTextStream &str, int indLevel);
     void appendExp(QTextStream &str, const Exp &exp, PREC curPrec, bool uns = false);
     void appendType(QTextStream &str, SharedType typ);
-    void appendTypeIdent(QTextStream &str, SharedType typ, const char *ident);
+    void appendTypeIdent(QTextStream &str, SharedType typ, QString ident);
     /// Adds: (
     void openParen(QTextStream &str, PREC outer, PREC inner) {
         if (inner < outer)
@@ -97,7 +97,7 @@ class CHLLCode : public HLLCode {
     void appendLine(const QString &s);
 
     /// All locals in a Proc
-    std::map<std::string, SharedType > locals;
+    std::map<QString, SharedType > locals;
 
     /// All used goto labels.
     std::set<int> usedLabels;
@@ -165,7 +165,7 @@ class CHLLCode : public HLLCode {
     // proc related
     virtual void AddProcStart(UserProc *proc);
     virtual void AddProcEnd();
-    virtual void AddLocal(const char *name, SharedType type, bool last = false);
+    virtual void AddLocal(const QString &name, SharedType type, bool last = false);
     virtual void AddGlobal(const QString &name, SharedType type, Exp *init = nullptr);
     virtual void AddPrototype(UserProc *proc);
 

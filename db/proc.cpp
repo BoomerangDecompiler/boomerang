@@ -278,7 +278,7 @@ std::list<Type> *Function::getParamTypeList(const std::list<Exp *> & /*actuals*/
 
 void UserProc::renameParam(const char *oldName, const char *newName) {
     Function::renameParam(oldName, newName);
-    // cfg->searchAndReplace(Location::param(strdup(oldName), this), Location::param(strdup(newName), this));
+    // cfg->searchAndReplace(Location::param(oldName, this), Location::param(newName, this));
 }
 
 void UserProc::setParamType(const char *nam, SharedType ty) { signature->setParamType(nam, ty); }
@@ -301,7 +301,7 @@ void UserProc::renameLocal(const char *oldName, const char *newName) {
     const Exp *oldExp = expFromSymbol(oldName);
     locals.erase(oldName);
     Exp *oldLoc = getSymbolFor(oldExp, ty);
-    Exp *newLoc = Location::local(strdup(newName), this);
+    Exp *newLoc = Location::local(newName, this);
     mapSymbolToRepl(oldExp, oldLoc, newLoc);
     locals[newName] = ty;
     cfg->searchAndReplace(*oldLoc, newLoc);
@@ -697,14 +697,14 @@ void UserProc::generateCode(HLLCode *hll) {
     hll->AddProcStart(this);
 
     // Local variables; print everything in the locals map
-    std::map<std::string, SharedType >::iterator last = locals.end();
+    std::map<QString, SharedType >::iterator last = locals.end();
     if (locals.size())
         last--;
-    for (std::map<std::string, SharedType >::iterator it = locals.begin(); it != locals.end(); it++) {
+    for (std::map<QString, SharedType >::iterator it = locals.begin(); it != locals.end(); it++) {
         SharedType locType = it->second;
         if (locType == nullptr || locType->isVoid())
             locType = IntegerType::get(STD_SIZE);
-        hll->AddLocal(it->first.c_str(), locType, it == last);
+        hll->AddLocal(it->first, locType, it == last);
     }
 
     if (Boomerang::get()->noDecompile && getName() == "main") {
@@ -2110,12 +2110,11 @@ void UserProc::removeMatchingAssignsIfPossible(Exp *e) {
 
     if (!foundone)
         return;
-
-    std::ostringstream str;
+    QString res_str;
+    QTextStream str(&res_str);
     str << "before removing matching assigns (" << e << ").";
-    Boomerang::get()->alertDecompileDebugPoint(this, str.str().c_str());
-    if (VERBOSE)
-        LOG << str.str().c_str() << "\n";
+    Boomerang::get()->alertDecompileDebugPoint(this, qPrintable(res_str));
+    LOG_VERBOSE(1) << res_str << "\n";
 
     for (auto &stmt : stmts)
         if ((stmt)->isAssign()) {
@@ -2127,11 +2126,10 @@ void UserProc::removeMatchingAssignsIfPossible(Exp *e) {
             if (*a->getLeft() == *e)
                 removeStatement(a);
         }
-
-    str.str("");
+    res_str.clear();
     str << "after removing matching assigns (" << e << ").";
-    Boomerang::get()->alertDecompileDebugPoint(this, str.str().c_str());
-    LOG << str.str().c_str() << "\n";
+    Boomerang::get()->alertDecompileDebugPoint(this, qPrintable(res_str));
+    LOG << res_str << "\n";
 }
 
 /*
@@ -2228,7 +2226,7 @@ void UserProc::findFinalParameters() {
             }
             ImplicitAssign *ia = new ImplicitAssign(signature->getParamType(i), paramLoc);
             parameters.append(ia);
-            const char *name = signature->getParamName(i);
+            QString name = signature->getParamName(i);
             Exp *param = Location::param(name, this);
             Exp *reParamLoc = RefExp::get(paramLoc, cfg->findImplicitAssign(paramLoc));
             mapSymbolTo(reParamLoc, param); // Update name map
@@ -2470,7 +2468,7 @@ void UserProc::addParameterSymbols() {
         Exp *lhs = ((Assignment *)*it)->getLeft();
         lhs = lhs->expSubscriptAllNull();
         lhs = lhs->accept(&ic);
-        Exp *to = Location::param(strdup(signature->getParamName(i)), this);
+        Exp *to = Location::param(signature->getParamName(i), this);
         mapSymbolTo(lhs, to);
     }
 }
@@ -2487,25 +2485,24 @@ Exp *UserProc::getSymbolExp(Exp *le, SharedType ty, bool lastPass) {
         le->getSubExp1()->getSubExp1()->getSubExp1()->isRegN(signature->getStackRegister()) &&
         le->getSubExp1()->getSubExp2()->isIntConst()) {
         for (auto &elem : symbolMap) {
-            if ((elem).second->isLocal()) {
-                const char *nam = ((Const *)(elem).second->getSubExp1())->getStr();
-                if (locals.find(nam) != locals.end()) {
-                    SharedType lty = locals[nam];
-                    const Exp *loc = (elem).first;
-                    if (loc->isMemOf() && loc->getSubExp1()->getOper() == opMinus &&
-                        loc->getSubExp1()->getSubExp1()->isSubscript() &&
-                        loc->getSubExp1()->getSubExp1()->getSubExp1()->isRegN(signature->getStackRegister()) &&
-                        loc->getSubExp1()->getSubExp2()->isIntConst()) {
-                        int n = -((const Const *)loc->getSubExp1()->getSubExp2())->getInt();
-                        int m = -((Const *)le->getSubExp1()->getSubExp2())->getInt();
-                        if (m > n && m < n + (int)(lty->getSize() / 8)) {
-                            e = Location::memOf(
+            if (!(elem).second->isLocal())
+                continue;
+            QString nam = ((Const *)(elem).second->getSubExp1())->getStr();
+            if (locals.find(nam) == locals.end())
+                continue;
+            SharedType lty = locals[nam];
+            const Exp *loc = (elem).first;
+            if (loc->isMemOf() && loc->getSubExp1()->getOper() == opMinus &&
+                    loc->getSubExp1()->getSubExp1()->isSubscript() &&
+                    loc->getSubExp1()->getSubExp1()->getSubExp1()->isRegN(signature->getStackRegister()) &&
+                    loc->getSubExp1()->getSubExp2()->isIntConst()) {
+                int n = -((const Const *)loc->getSubExp1()->getSubExp2())->getInt();
+                int m = -((Const *)le->getSubExp1()->getSubExp2())->getInt();
+                if (m > n && m < n + (int)(lty->getSize() / 8)) {
+                    e = Location::memOf(
                                 Binary::get(opPlus, new Unary(opAddrOf, (elem).second->clone()), new Const(m - n)));
-                            if (VERBOSE)
-                                LOG << "seems " << le << " is in the middle of " << loc << " returning " << e << "\n";
-                            return e;
-                        }
-                    }
+                    LOG_VERBOSE(1) << "seems " << le << " is in the middle of " << loc << " returning " << e << "\n";
+                    return e;
                 }
             }
         }
@@ -2830,7 +2827,7 @@ QString UserProc::newLocalName(Exp *e) {
             ost.flush();
             tgt.clear();
             ost << regName << "_" << ++tag;
-        } while (locals.find(tgt.toStdString()) != locals.end());
+        } while (locals.find(tgt) != locals.end());
         return tgt;
     }
     ost << "local" << nextLocal++;
@@ -2846,14 +2843,14 @@ Exp *UserProc::newLocal(SharedType ty, Exp *e, char *nam /* = nullptr */) {
         name = newLocalName(e);
     else
         name = nam; // Use provided name
-    locals[name.toStdString()] = ty;
+    locals[name] = ty;
     if (ty == nullptr) {
         LOG_STREAM() << "null type passed to newLocal\n";
         assert(false);
     }
     if (VERBOSE)
         LOG << "assigning type " << ty->getCtype() << " to new " << name << "\n";
-    return Location::local(strdup(qPrintable(name)), this);
+    return Location::local(name, this);
 }
 
 /**
@@ -2862,34 +2859,34 @@ Exp *UserProc::newLocal(SharedType ty, Exp *e, char *nam /* = nullptr */) {
 void UserProc::addLocal(SharedType ty, const QString &nam, Exp *e) {
     // symbolMap is a multimap now; you might have r8->o0 for integers and r8->o0_1 for char*
     // assert(symbolMap.find(e) == symbolMap.end());
-    mapSymbolTo(e, Location::local(strdup(qPrintable(nam)), this));
+    mapSymbolTo(e, Location::local(nam, this));
     // assert(locals.find(nam) == locals.end());        // Could be r10{20} -> o2, r10{30}->o2 now
-    locals[nam.toStdString()] = ty;
+    locals[nam] = ty;
 }
 
 /// return a local's type
-SharedType UserProc::getLocalType(const char *nam) {
+SharedType UserProc::getLocalType(const QString &nam) {
     if (locals.find(nam) == locals.end())
         return nullptr;
     SharedType ty = locals[nam];
     return ty;
 }
 
-void UserProc::setLocalType(const char *nam, SharedType ty) {
+void UserProc::setLocalType(const QString &nam, SharedType ty) {
     locals[nam] = ty;
-    if (VERBOSE)
-        LOG << "setLocalType: updating type of " << nam << " to " << ty->getCtype() << "\n";
+
+    LOG_VERBOSE(1) << "setLocalType: updating type of " << nam << " to " << ty->getCtype() << "\n";
 }
 
-SharedType UserProc::getParamType(const char *nam) {
+SharedType UserProc::getParamType(const QString &nam) {
     for (unsigned int i = 0; i < signature->getNumParams(); i++)
-        if (std::string(nam) == signature->getParamName(i))
+        if (nam == signature->getParamName(i))
             return signature->getParamType(i);
     return nullptr;
 }
 
 // void UserProc::setExpSymbol(const char *nam, Exp *e, Type* ty) {
-//    TypedExp *te = new TypedExp(ty, Location::local(strdup(nam), this));
+//    TypedExp *te = new TypedExp(ty, Location::local(nam, this));
 //    mapSymbolTo(e, te);
 //}
 
@@ -2919,7 +2916,7 @@ Exp *UserProc::getSymbolFor(const Exp *from, SharedType ty) {
     while (ff != symbolMap.end() && *ff->first == *from) {
         Exp *currTo = ff->second;
         assert(currTo->isLocal() || currTo->isParam());
-        const char *name = ((Const *)((Location *)currTo)->getSubExp1())->getStr();
+        QString name = ((Const *)((Location *)currTo)->getSubExp1())->getStr();
         SharedType currTy = getLocalType(name);
         if (currTy == nullptr)
             currTy = getParamType(name);
@@ -2943,30 +2940,30 @@ void UserProc::removeSymbolMapping(const Exp *from, Exp *to) {
 
 /// return a symbol's exp (note: the original exp, like r24, not local1)
 /// \note linear search!!
-const Exp *UserProc::expFromSymbol(const char *nam) const {
+const Exp *UserProc::expFromSymbol(const QString &nam) const {
     for (const std::pair<const Exp *, Exp *> &it : symbolMap) {
         const Exp *e = it.second;
-        if (e->isLocal() && !strcmp(((const Const *)((const Location *)e)->getSubExp1())->getStr(), nam))
+        if (e->isLocal() && ((const Const *)((const Location *)e)->getSubExp1())->getStr()==nam)
             return it.first;
     }
     return nullptr;
 }
 
-const char *UserProc::getLocalName(int n) {
+QString UserProc::getLocalName(int n) {
     int i = 0;
-    for (std::map<std::string, SharedType >::iterator it = locals.begin(); it != locals.end(); it++, i++)
+    for (std::map<QString, SharedType >::iterator it = locals.begin(); it != locals.end(); it++, i++)
         if (i == n)
-            return it->first.c_str();
+            return it->first;
     return nullptr;
 }
 //! As getLocalName, but look for expression \a e
-const char *UserProc::getSymbolName(Exp *e) {
+QString UserProc::getSymbolName(Exp *e) {
     SymbolMap::iterator it = symbolMap.find(e);
     if (it == symbolMap.end())
-        return nullptr;
+        return "";
     Exp *loc = it->second;
     if (!loc->isLocal() && !loc->isParam())
-        return nullptr;
+        return "";
     return ((Const *)loc->getSubExp1())->getStr();
 }
 
@@ -3017,7 +3014,7 @@ void UserProc::removeUnusedLocals() {
     if (VERBOSE)
         LOG << "removing unused locals (final) for " << getName() << "\n";
 
-    std::set<std::string> usedLocals;
+    QSet<QString> usedLocals;
     StatementList stmts;
     getStatements(stmts);
     // First count any uses of the locals
@@ -3038,33 +3035,33 @@ void UserProc::removeUnusedLocals() {
             if ((s->isReturn() || s->isCall() || !s->definesLoc(u))) {
                 if (!u->isLocal())
                     continue;
-                std::string name(((Const *)((Location *)u)->getSubExp1())->getStr());
+                QString name(((Const *)((Location *)u)->getSubExp1())->getStr());
                 usedLocals.insert(name);
                 if (DEBUG_UNUSED)
-                    LOG << "counted local " << name.c_str() << " in " << s << "\n";
+                    LOG << "counted local " << name << " in " << s << "\n";
             }
         }
         if (s->isAssignment() && !s->isImplicit() && ((Assignment *)s)->getLeft()->isLocal()) {
             Assignment *as = (Assignment *)s;
             Const *c = (Const *)((Unary *)as->getLeft())->getSubExp1();
-            std::string name(c->getStr());
+            QString name(c->getStr());
             usedLocals.insert(name);
             if (DEBUG_UNUSED)
-                LOG << "counted local " << name.c_str() << " on left of " << s << "\n";
+                LOG << "counted local " << name << " on left of " << s << "\n";
         }
     }
     // Now record the unused ones in set removes
-    std::map<std::string, SharedType >::iterator it;
-    std::set<std::string> removes;
+    std::map<QString, SharedType >::iterator it;
+    QSet<QString> removes;
     for (it = locals.begin(); it != locals.end(); it++) {
-        std::string &name = const_cast<std::string &>(it->first);
+        const QString &name(it->first);
         // LOG << "Considering local " << name << "\n";
         if (VERBOSE && all && removes.size())
-            LOG << "WARNING: defineall seen in procedure " << name.c_str() << " so not removing " << (int)removes.size()
+            LOG << "WARNING: defineall seen in procedure " << name << " so not removing " << (int)removes.size()
                 << " locals\n";
         if (usedLocals.find(name) == usedLocals.end() && !all) {
             if (VERBOSE)
-                LOG << "removed unused local " << name.c_str() << "\n";
+                LOG << "removed unused local " << name << "\n";
             removes.insert(name);
         }
     }
@@ -3076,11 +3073,10 @@ void UserProc::removeUnusedLocals() {
         s->getDefinitions(ls);
         for (ll = ls.begin(); ll != ls.end(); ++ll) {
             SharedType ty = s->getTypeFor(*ll);
-            const char *name = findLocal(*ll, ty);
-            if (name == nullptr)
+            QString name = findLocal(*ll, ty);
+            if (name.isNull())
                 continue;
-            std::string str(name);
-            if (removes.find(str) != removes.end()) {
+            if (removes.find(name) != removes.end()) {
                 // Remove it. If an assign, delete it; otherwise (call), remove the define
                 if (s->isAssignment()) {
                     removeStatement(s);
@@ -3093,13 +3089,13 @@ void UserProc::removeUnusedLocals() {
         }
     }
     // Finally, remove them from locals, so they don't get declared
-    for (std::set<std::string>::iterator it1 = removes.begin(); it1 != removes.end();)
-        locals.erase(*it1++);
+    for (QString str : removes)
+        locals.erase(str);
     // Also remove them from the symbols, since symbols are a superset of locals at present
     for (SymbolMap::iterator sm = symbolMap.begin(); sm != symbolMap.end();) {
         Exp *mapsTo = sm->second;
         if (mapsTo->isLocal()) {
-            const char *tmpName = ((Const *)((Location *)mapsTo)->getSubExp1())->getStr();
+            QString tmpName = ((Const *)((Location *)mapsTo)->getSubExp1())->getStr();
             if (removes.find(tmpName) != removes.end()) {
                 symbolMap.erase(sm++);
                 continue;
@@ -3220,9 +3216,9 @@ void UserProc::fromSSAform() {
         RefExp *r1, *r2;
         r1 = (RefExp *)ii->first;
         r2 = (RefExp *)ii->second; // r1 -> r2 and vice versa
-        const char *name1 = lookupSymFromRefAny(r1);
-        const char *name2 = lookupSymFromRefAny(r2);
-        if (name1 && name2 && strcmp(name1, name2) != 0)
+        QString name1 = lookupSymFromRefAny(r1);
+        QString name2 = lookupSymFromRefAny(r2);
+        if (!name1.isNull() && !name2.isNull() && name1!=name2)
             continue; // Already different names, probably because of the redundant mapping
         RefExp *rename = nullptr;
         if (r1->isImplicitDef())
@@ -3262,9 +3258,9 @@ void UserProc::fromSSAform() {
     for (ii = pu.begin(); ii != pu.end(); ++ii) {
         RefExp *r1 = (RefExp *)ii->first;
         RefExp *r2 = (RefExp *)ii->second;
-        const char *name1 = lookupSymFromRef(r1);
-        const char *name2 = lookupSymFromRef(r2);
-        if (name1 && !name2 && !ig.isConnected(r1, *r2)) {
+        QString name1 = lookupSymFromRef(r1);
+        QString name2 = lookupSymFromRef(r2);
+        if (!name1.isNull() && !name2.isNull() && !ig.isConnected(r1, *r2)) {
             // There is a case where this is unhelpful, and it happen in test/pentium/fromssa2. We have renamed the
             // destination of the phi to ebx_1, and that leaves the two phi operands as ebx. However, we attempt to
             // unite them here, which will cause one of the operands to become ebx_1, so the neat oprimisation of
@@ -3275,18 +3271,18 @@ void UserProc::fromSSAform() {
             if (def1->isPhi()) {
                 bool allSame = true;
                 bool r2IsOperand = false;
-                const char *firstName = nullptr;
+                QString firstName = QString::null;
                 PhiAssign::iterator rr;
                 PhiAssign *pi = (PhiAssign *)def1;
                 for (rr = pi->begin(); rr != pi->end(); ++rr) {
                     RefExp *re = (RefExp *)RefExp::get(rr->second.e, rr->second.def());
                     if (*re == *r2)
                         r2IsOperand = true;
-                    if (firstName == nullptr)
+                    if (firstName.isNull())
                         firstName = lookupSymFromRefAny(re);
                     else {
-                        const char *tmp = lookupSymFromRefAny(re);
-                        if (!tmp || strcmp(firstName, tmp) != 0) {
+                        QString tmp = lookupSymFromRefAny(re);
+                        if (tmp.isNull() || firstName!=tmp) {
                             allSame = false;
                             break;
                         }
@@ -3417,8 +3413,8 @@ void UserProc::mapParameters() {
     StatementList::iterator pp;
     for (pp = parameters.begin(); pp != parameters.end(); ++pp) {
         Exp *lhs = ((Assignment *)*pp)->getLeft();
-        const char *mappedName = lookupParam(lhs);
-        if (mappedName == nullptr) {
+        QString mappedName = lookupParam(lhs);
+        if (mappedName.isNull()) {
             LOG << "WARNING! No symbol mapping for parameter " << lhs << "\n";
             bool allZero;
             Exp *clean = lhs->clone()->removeSubscripts(allZero);
@@ -3889,11 +3885,11 @@ void UserProc::conTypeAnalysis() {
             if (loc->isSubscript())
                 loc = ((RefExp *)loc)->getSubExp1();
             if (loc->isGlobal()) {
-                const char *nam = ((Const *)((Unary *)loc)->getSubExp1())->getStr();
+                QString nam = ((Const *)((Unary *)loc)->getSubExp1())->getStr();
                 if (!ty->resolvesToVoid())
                     prog->setGlobalType(nam, ty->clone());
             } else if (loc->isLocal()) {
-                const char *nam = ((Const *)((Unary *)loc)->getSubExp1())->getStr();
+                QString nam = ((Const *)((Unary *)loc)->getSubExp1())->getStr();
                 setLocalType(nam, ty);
             } else if (loc->isIntConst()) {
                 Const *con = (Const *)loc;
@@ -4027,44 +4023,44 @@ void UserProc::addImplicitAssigns() {
 
 // e is a parameter location, e.g. r8 or m[r28{0}+8]. Lookup a symbol for it
 //! Find the implicit definition for \a e and lookup a symbol
-const char *UserProc::lookupParam(Exp *e) {
+QString UserProc::lookupParam(Exp *e) {
     // Originally e.g. m[esp+K]
     Instruction *def = cfg->findTheImplicitAssign(e);
     if (def == nullptr) {
         LOG << "ERROR: no implicit definition for parameter " << e << " !\n";
-        return nullptr;
+        return QString::null;
     }
     RefExp *re = RefExp::get(e, def);
     SharedType ty = def->getTypeFor(e);
     return lookupSym(re, ty);
 }
 //! Lookup a specific symbol for the given ref
-const char *UserProc::lookupSymFromRef(RefExp *r) {
+QString UserProc::lookupSymFromRef(RefExp *r) {
     Instruction *def = r->getDef();
     if (!def) {
         qDebug() << "UserProc::lookupSymFromRefAny null def";
-        return nullptr;
+        return QString::null;
     }
     Exp *base = r->getSubExp1();
     SharedType ty = def->getTypeFor(base);
     return lookupSym(r, ty);
 }
 //! Lookup a specific symbol if any, else the general one if any
-const char *UserProc::lookupSymFromRefAny(RefExp *r) {
+QString UserProc::lookupSymFromRefAny(RefExp *r) {
     Instruction *def = r->getDef();
     if (!def) {
         qDebug() << "UserProc::lookupSymFromRefAny null def";
-        return nullptr;
+        return QString::null;
     }
     Exp *base = r->getSubExp1();
     SharedType ty = def->getTypeFor(base);
-    const char *ret = lookupSym(r, ty);
-    if (ret)
+    QString  ret = lookupSym(r, ty);
+    if (!ret.isNull())
         return ret;             // Found a specific symbol
     return lookupSym(base, ty); // Check for a general symbol
 }
 
-const char *UserProc::lookupSym(const Exp *e, SharedType ty) {
+QString UserProc::lookupSym(const Exp *e, SharedType ty) {
     if (e->isTypedExp())
         e = ((const TypedExp *)e)->getSubExp1();
     SymbolMap::iterator it;
@@ -4072,7 +4068,7 @@ const char *UserProc::lookupSym(const Exp *e, SharedType ty) {
     while (it != symbolMap.end() && *it->first == *e) {
         Exp *sym = it->second;
         assert(sym->isLocal() || sym->isParam());
-        const char *name = ((Const *)((Location *)sym)->getSubExp1())->getStr();
+        QString name = ((Const *)((Location *)sym)->getSubExp1())->getStr();
         SharedType type = getLocalType(name);
         if (type == nullptr)
             type = getParamType(name); // Ick currently linear search
@@ -4087,7 +4083,7 @@ const char *UserProc::lookupSym(const Exp *e, SharedType ty) {
         return lookupSym(((RefExp*)e)->getSubExp1(), ty);
 #endif
     // Else there is no symbol
-    return nullptr;
+    return QString::null;
 }
 //! Print just the symbol map
 void UserProc::printSymbolMap(QTextStream &out, bool html /*= false*/) const {
@@ -4109,9 +4105,9 @@ void UserProc::dumpLocals(QTextStream &os, bool html) const {
     if (html)
         os << "<br>";
     os << "locals:\n";
-    for (const std::pair<std::string, SharedType > &it : locals) {
-        os << it.second->getCtype() << " " << it.first.c_str() << " ";
-        const Exp *e = expFromSymbol(it.first.c_str());
+    for (const std::pair<QString, SharedType > &local_entry : locals) {
+        os << local_entry.second->getCtype() << " " << local_entry.first << " ";
+        const Exp *e = expFromSymbol(local_entry.first);
         // Beware: for some locals, expFromSymbol() returns nullptr (? No longer?)
         if (e)
             os << e << "\n";
@@ -4214,8 +4210,7 @@ void UserProc::updateCallDefines() {
 //!     $tmp_val  = prog->readNative($tmp_addr,statement.type.bitwidth/8);
 //!     statement.rhs.replace_with(Const($tmp_val))
 void UserProc::replaceSimpleGlobalConstants() {
-    if (VERBOSE)
-        LOG << "### replace simple global constants for " << getName() << " ###\n";
+    LOG_VERBOSE(1) << "### replace simple global constants for " << getName() << " ###\n";
     StatementList stmts;
     getStatements(stmts);
     StatementList::iterator it;
@@ -4422,38 +4417,36 @@ bool UserProc::filterParams(Exp *e) {
 }
 /// Determine whether e is a local, either as a true opLocal (e.g. generated by fromSSA), or if it is in the
 /// symbol map and the name is in the locals map. If it is a local, return its name, else nullptr
-const char *UserProc::findLocal(Exp *e, SharedType ty) {
+QString UserProc::findLocal(Exp *e, SharedType ty) {
     if (e->isLocal())
         return ((Const *)((Unary *)e)->getSubExp1())->getStr();
     // Look it up in the symbol map
-    const char *name = lookupSym(e, ty);
-    if (name == nullptr)
-        return nullptr;
-    // Now make sure it is a local; some symbols (e.g. parameters) are in the symbol map but not locals
-    std::string str(name);
-    if (locals.find(str) != locals.end())
+    QString name = lookupSym(e, ty);
+    if (name.isNull())
         return name;
-    return nullptr;
+    // Now make sure it is a local; some symbols (e.g. parameters) are in the symbol map but not locals
+    if (locals.find(name) != locals.end())
+        return name;
+    return QString::null;
 }
 
-const char *UserProc::findLocalFromRef(RefExp *r) {
+QString UserProc::findLocalFromRef(RefExp *r) {
     Instruction *def = r->getDef();
     Exp *base = r->getSubExp1();
     SharedType ty = def->getTypeFor(base);
-    const char *name = lookupSym(r, ty);
-    if (name == nullptr)
-        return nullptr;
-    // Now make sure it is a local; some symbols (e.g. parameters) are in the symbol map but not locals
-    std::string str(name);
-    if (locals.find(str) != locals.end())
+    QString name = lookupSym(r, ty);
+    if (name.isNull())
         return name;
-    return nullptr;
+    // Now make sure it is a local; some symbols (e.g. parameters) are in the symbol map but not locals
+    if (locals.find(name) != locals.end())
+        return name;
+    return QString::null;
 }
 
-const char *UserProc::findFirstSymbol(Exp *e) {
+QString UserProc::findFirstSymbol(Exp *e) {
     SymbolMap::iterator ff = symbolMap.find(e);
     if (ff == symbolMap.end())
-        return nullptr;
+        return QString::null;
     return ((Const *)((Location *)ff->second)->getSubExp1())->getStr();
 }
 
@@ -5686,7 +5679,7 @@ QString UserProc::getRegName(Exp *r) {
 }
 //! Find the type of the local or parameter \a e
 SharedType UserProc::getTypeForLocation(const Exp *e) {
-    const char *name = ((const Const *)((const Unary *)e)->getSubExp1())->getStr();
+    QString name = ((const Const *)((const Unary *)e)->getSubExp1())->getStr();
     if (e->isLocal()) {
         if (locals.find(name) != locals.end())
             return locals[name];
@@ -5738,15 +5731,15 @@ void UserProc::nameParameterPhis() {
         if (findFirstSymbol(lhsRef) != nullptr)
             continue;                    // Already mapped to something
         bool multiple = false;           // True if find more than one unique parameter
-        const char *firstName = nullptr; // The name for the first parameter found
+        QString firstName = QString::null; // The name for the first parameter found
         SharedType ty = pi->getType();
 
         for (const auto &v : *pi) {
             if (v.second.def()->isImplicit()) {
                 RefExp *phiArg = RefExp::get(v.second.e, (Instruction *)v.second.def());
-                const char *name = lookupSym(phiArg, ty);
-                if (name != nullptr) {
-                    if (firstName != nullptr && strcmp(firstName, name) != 0) {
+                QString name = lookupSym(phiArg, ty);
+                if (!name.isNull()) {
+                    if (!firstName.isNull() && firstName!=name) {
                         multiple = true;
                         break;
                     }
@@ -5754,18 +5747,18 @@ void UserProc::nameParameterPhis() {
                 }
             }
         }
-        if (multiple || firstName == nullptr)
+        if (multiple || firstName.isNull())
             continue;
         mapSymbolTo(lhsRef, Location::param(firstName, this));
     }
 }
 //! True if a local exists with name \a name
 bool UserProc::existsLocal(const QString &name) {
-    return locals.find(name.toStdString()) != locals.end();
+    return locals.find(name) != locals.end();
 }
 //! Check if \a r is already mapped to a local, else add one
 void UserProc::checkLocalFor(RefExp *r) {
-    if (lookupSymFromRefAny(r))
+    if (!lookupSymFromRefAny(r).isNull())
         return; // Already have a symbol for r
     Instruction *def = r->getDef();
     if (!def)
@@ -5817,7 +5810,7 @@ void UserProc::dfa_analyze_implict_assigns(Instruction *s, Prog *prog) {
         }
     } else if (lhs->isGlobal()) {
         assert(dynamic_cast<Location *>(lhs) != nullptr);
-        const char *gname = ((Const *)lhs->getSubExp1())->getStr();
+        QString gname = ((Const *)lhs->getSubExp1())->getStr();
         prog->setGlobalType(gname, iType);
     }
 }
@@ -5849,7 +5842,7 @@ void UserProc::dfa_analyze_scaled_array_ref(Instruction *s, Prog *prog) {
         QString nam = prog->getGlobalName(K2);
         if (nam.isEmpty())
             nam = prog->newGlobalName(K2);
-        arr = Binary::get(opArrayIndex, Location::global(strdup(qPrintable(nam)), this), idx);
+        arr = Binary::get(opArrayIndex, Location::global(nam, this), idx);
         if (s->searchAndReplace(scaledArrayPat, arr)) {
             if (s->isImplicit())
                 // Register an array of appropriate type

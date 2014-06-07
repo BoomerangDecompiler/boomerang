@@ -170,7 +170,7 @@ SharedType NamedType::clone() const {
 SharedType CompoundType::clone() const {
     auto t = CompoundType::get();
     for (unsigned i = 0; i < types.size(); i++)
-        t->addType(types[i]->clone(), names[i].c_str());
+        t->addType(types[i]->clone(), names[i]);
     return t;
 }
 
@@ -231,7 +231,7 @@ size_t UnionType::getSize() const {
 }
 size_t SizeType::getSize() const { return size; }
 
-SharedType CompoundType::getType(const char *nam) {
+SharedType CompoundType::getType(const QString &nam) {
     for (unsigned i = 0; i < types.size(); i++)
         if (names[i] == nam)
             return types[i];
@@ -272,7 +272,7 @@ void CompoundType::setTypeAtOffset(unsigned n, SharedType ty) {
     }
 }
 
-void CompoundType::setNameAtOffset(unsigned n, const char *nam) {
+void CompoundType::setNameAtOffset(unsigned n, const QString &nam) {
     unsigned offset = 0;
     for (unsigned i = 0; i < types.size(); i++) {
         if (offset <= n && n < offset + types[i]->getSize()) {
@@ -283,13 +283,13 @@ void CompoundType::setNameAtOffset(unsigned n, const char *nam) {
     }
 }
 
-const char *CompoundType::getNameAtOffset(size_t n) {
+QString CompoundType::getNameAtOffset(size_t n) {
     unsigned offset = 0;
     for (unsigned i = 0; i < types.size(); i++) {
         // if (offset >= n && n < offset + types[i]->getSize())
         if (offset <= n && n < offset + types[i]->getSize())
             // return getName(offset == n ? i : i - 1);
-            return names[i].c_str();
+            return names[i];
         offset += types[i]->getSize();
     }
     return nullptr;
@@ -303,7 +303,7 @@ unsigned CompoundType::getOffsetTo(unsigned n) {
     return offset;
 }
 
-unsigned CompoundType::getOffsetTo(const char *member) {
+unsigned CompoundType::getOffsetTo(const QString &member) {
     unsigned offset = 0;
     for (unsigned i = 0; i < types.size(); i++) {
         if (names[i] == member)
@@ -746,7 +746,7 @@ QString CompoundType::getCtype(bool final) const {
         tmp += types[i]->getCtype(final);
         if (names[i] != "") {
             tmp += " ";
-            tmp += names[i].c_str();
+            tmp += names[i];
         }
         tmp += "; ";
     }
@@ -771,20 +771,23 @@ QString UnionType::getCtype(bool final) const {
 
 QString SizeType::getCtype(bool /*final*/) const {
     // Emit a comment and the size
-    std::ostringstream ost;
-    ost << "__size" << std::dec << size;
-    return strdup(ost.str().c_str());
+    QString res;
+    QTextStream ost(&res);
+    ost << "__size" << size;
+    return res;
 }
 
 QString UpperType::getCtype(bool /*final*/) const {
-    std::ostringstream ost;
+    QString res;
+    QTextStream ost(&res);
     ost << "/*upper*/(" << base_type << ")";
-    return strdup(ost.str().c_str());
+    return res;
 }
 QString LowerType::getCtype(bool /*final*/) const {
-    std::ostringstream ost;
+    QString res;
+    QTextStream ost(&res);
     ost << "/*lower*/(" << base_type << ")";
-    return strdup(ost.str().c_str());
+    return res;
 }
 
 QString Type::prints() {
@@ -838,16 +841,15 @@ void Type::dumpNames() {
 /***************************************************************************/ /**
   *
   * \brief   Given the name of a temporary variable, return its Type
-  * \note    Caller must delete result
   * \param   name reference to a string (e.g. "tmp", "tmpd")
   * \returns       Ptr to a new Type object
   ******************************************************************************/
-SharedType Type::getTempType(const std::string &name) {
+SharedType Type::getTempType(const QString &name) {
     SharedType ty;
-    char ctype = ' ';
+    QChar ctype = ' ';
     if (name.size() > 3)
         ctype = name[3];
-    switch (ctype) {
+    switch (ctype.toLatin1()) {
     // They are all int32, except for a few specials
     case 'f':
         ty = FloatType::get(32);
@@ -1235,8 +1237,8 @@ bool DataIntervalMap::isClear(ADDRESS addr, unsigned size) {
 
 // With the forced parameter: are we forcing the name, the type, or always both?
 //! Add a new data item
-void DataIntervalMap::addItem(ADDRESS addr, const char *name, SharedType ty, bool forced /* = false */) {
-    if (name == nullptr)
+void DataIntervalMap::addItem(ADDRESS addr, QString name, SharedType ty, bool forced /* = false */) {
+    if (name.isNull())
         name = "<noname>";
     DataIntervalEntry *pdie = find(addr);
     if (pdie == nullptr) {
@@ -1277,7 +1279,7 @@ void DataIntervalMap::addItem(ADDRESS addr, const char *name, SharedType ty, boo
 }
 
 // We are entering an item that already exists in a larger type. Check for compatibility, meet if necessary.
-void DataIntervalMap::enterComponent(DataIntervalEntry *pdie, ADDRESS addr, const char * /*name*/, SharedType ty,
+void DataIntervalMap::enterComponent(DataIntervalEntry *pdie, ADDRESS addr, const QString & /*name*/, SharedType ty,
                                      bool /*forced*/) {
     if (pdie->second.type->resolvesToCompound()) {
         unsigned bitOffset = (addr - pdie->first).m_value * 8;
@@ -1306,7 +1308,7 @@ void DataIntervalMap::enterComponent(DataIntervalEntry *pdie, ADDRESS addr, cons
 
 // We are entering a struct or array that overlaps existing components. Check for compatibility, and move the
 // components out of the way, meeting if necessary
-void DataIntervalMap::replaceComponents(ADDRESS addr, const char *name, SharedType ty, bool /*forced*/) {
+void DataIntervalMap::replaceComponents(ADDRESS addr, const QString &name, SharedType ty, bool /*forced*/) {
     iterator it;
     ADDRESS pastLast = addr + ty->getSize() / 8; // This is the byte address just past the type to be inserted
     // First check that the new entry will be compatible with everything it will overlap
@@ -1372,11 +1374,11 @@ void DataIntervalMap::replaceComponents(ADDRESS addr, const char *name, SharedTy
                 elemTy = ty->asCompound()->getTypeAtOffset(bitOffset);
             else
                 elemTy = ty->asArray()->getBaseType();
-            const char *locName = proc->findLocal(locl, elemTy);
-            if (locName && ty->resolvesToCompound()) {
+            QString locName = proc->findLocal(locl, elemTy);
+            if (!locName.isNull() && ty->resolvesToCompound()) {
                 auto c = ty->asCompound();
                 // want s.m where s is the new compound object and m is the member at offset bitOffset
-                const char *memName = c->getNameAtOffset(bitOffset);
+                QString memName = c->getNameAtOffset(bitOffset);
                 Exp *s = Location::memOf(Binary::get(opPlus, rsp0->clone(), new Const(addr)));
                 s->simplifyArith();
                 Exp *memberExp = Binary::get(opMemberAccess, s, new Const(memName));
@@ -1399,7 +1401,7 @@ void DataIntervalMap::replaceComponents(ADDRESS addr, const char *name, SharedTy
     pdi->type = ty;
 }
 
-void DataIntervalMap::checkMatching(DataIntervalEntry *pdie, ADDRESS addr, const char * /*name*/, SharedType ty,
+void DataIntervalMap::checkMatching(DataIntervalEntry *pdie, ADDRESS addr, const QString &/*name*/, SharedType ty,
                                     bool /*forced*/) {
     if (pdie->second.type->isCompatibleWith(*ty)) {
         // Just merge the types and exit
@@ -1447,7 +1449,7 @@ ComplexTypeCompList &Type::compForAddress(ADDRESS addr, DataIntervalMap &dim) {
             startCurrent = addr - (rem / 8);
             ComplexTypeComp ctc;
             ctc.isArray = false;
-            ctc.u.memberName = strdup(compCurType->getNameAtOffset(bitOffset));
+            ctc.u.memberName = compCurType->getNameAtOffset(bitOffset);
             res->push_back(ctc);
             curType = compCurType->getTypeAtOffset(bitOffset);
         } else if (curType->isArray()) {

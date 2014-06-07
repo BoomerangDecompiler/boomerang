@@ -23,11 +23,11 @@
 
 Table::Table(TABLE_TYPE t) : TableType(t) {}
 
-Table::Table(const std::deque<std::string> &recs, TABLE_TYPE t /* = NAMETABLE */) : Records(recs), TableType(t) {}
+Table::Table(const std::deque<QString> &recs, TABLE_TYPE t /* = NAMETABLE */) : Records(recs), TableType(t) {}
 
 TABLE_TYPE Table::getType() const { return TableType; }
 
-OpTable::OpTable(const std::deque<std::string> &ops) : Table(ops, OPTABLE) {}
+OpTable::OpTable(const std::deque<QString> &ops) : Table(ops, OPTABLE) {}
 
 ExprTable::ExprTable(const std::deque<Exp *> &exprs) : Table(EXPRTABLE), expressions(exprs) {}
 

@@ -631,8 +631,8 @@ void PentiumFrontEnd::processStringInst(UserProc *proc) {
                     Exp *lhs = ((Assign *)firstStmt)->getLeft();
                     if (lhs->isMachFtr()) {
                         Const *sub = (Const *)((Unary *)lhs)->getSubExp1();
-                        const char *str = sub->getStr();
-                        if (strncmp(str, "%SKIP", 5) == 0) {
+                        QString str = sub->getStr();
+                        if (str.startsWith("%SKIP")) {
                             toBranches(addr, lastRtl, cfg, rtl, bb, it);
                             noinc = true; // toBranches inc's it
                             // Abandon this BB; if there are other string instr this BB, they will appear in new BBs
@@ -959,7 +959,7 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, std::list<RTL *> *BB
         if (found->isIntConst())
             a = ((Const *)found)->getInt();
         else if (found->isAddrOf() && found->getSubExp1()->isGlobal()) {
-            const char *name = ((Const *)found->getSubExp1()->getSubExp1())->getStr();
+            QString name = ((Const *)found->getSubExp1()->getSubExp1())->getStr();
             if (Program->getGlobal(name) == nullptr)
                 continue;
             a = Program->getGlobalAddr(name);

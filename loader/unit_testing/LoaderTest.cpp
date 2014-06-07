@@ -29,7 +29,7 @@
 #ifdef _WIN32
 #define ELFBINFILE baseDir.absoluteFilePath("out/lib/ElfBinaryFile.dll")
 #else
-#define ELFBINFILE baseDir.absoluteFilePath("out/lib/libElfBinaryFile.so")
+#define ELFBINFILE baseDir.absoluteFilePath("out/lib/ElfBinaryFile.so")
 #endif
 
 #include "../microX86dis.c"

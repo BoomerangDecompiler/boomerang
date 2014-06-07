@@ -102,7 +102,7 @@ void CHLLCode::appendExp(QTextStream &str, const Exp &exp, PREC curPrec, bool un
                 str << num << "U";
             } else {
                 // Output it in 0xF0000000 style
-                str << "0x" << QString::number(K,16);
+                str << "0x" << QString::number(uint32_t(K),16);
             }
         } else {
             if (c.getType() && c.getType()->isChar()) {
@@ -149,7 +149,7 @@ void CHLLCode::appendExp(QTextStream &str, const Exp &exp, PREC curPrec, bool un
                 if (-2048 < K && K < 2048)
                     str << K; // Just a plain vanilla int
                 else
-                    str << "0x" << QString::number(K,16); // 0x2000 style
+                    str << "0x" << QString::number(uint32_t(K),16); // 0x2000 style
             }
         }
         break;
@@ -163,7 +163,10 @@ void CHLLCode::appendExp(QTextStream &str, const Exp &exp, PREC curPrec, bool un
         break;
     case opFltConst: {
         // str.precision(4);     // What to do with precision here? Would be nice to avoid 1.00000 or 0.99999
-        str << QString::number(c.getFlt(),'g',8);
+        QString flt_val = QString::number(c.getFlt(),'g',8);
+        if(!flt_val.contains('.'))
+            flt_val+='.';
+        str << flt_val;
         break;
     }
     case opStrConst:
@@ -287,7 +290,13 @@ void CHLLCode::appendExp(QTextStream &str, const Exp &exp, PREC curPrec, bool un
         str << " & ";
         if (b.getSubExp2()->getOper() == opIntConst) {
             // print it 0x2000 style
-            str << "0x" << QString::number(((Const *)b.getSubExp2())->getInt(),16);
+            uint32_t val = uint32_t(((Const *)b.getSubExp2())->getInt());
+            QString vanilla = QString("0x")+QString::number(val,16);
+            QString negated = QString("~0x")+QString::number(~val,16);
+            if(negated.size()<vanilla.size())
+                str << negated;
+            else
+                str << vanilla;
         } else {
             appendExp(str, *b.getSubExp2(), PREC_BIT_AND);
         }
@@ -783,9 +792,9 @@ void CHLLCode::appendExp(QTextStream &str, const Exp &exp, PREC curPrec, bool un
         str << "/* machine specific */ (int) ";
         const Exp *sub = u.getSubExp1();
         assert(sub->isStrConst());
-        const char *s = ((const Const *)sub)->getStr();
+        QString s = ((const Const *)sub)->getStr();
         if (s[0] == '%')  // e.g. %Y
-            str << s + 1; // Just use Y
+            str << s.mid(1); // Just use Y
         else
             str << s;
         break;
@@ -925,7 +934,7 @@ void CHLLCode::appendType(QTextStream &str, SharedType typ) {
 /**
  * Print the indented type to \a str.
  */
-void CHLLCode::appendTypeIdent(QTextStream &str, SharedType typ, const char *ident) {
+void CHLLCode::appendTypeIdent(QTextStream &str, SharedType typ, QString ident) {
     if (typ == nullptr)
         return;
     if (typ->isPointer() && typ->asPointer()->getPointsTo()->isArray()) {
@@ -944,16 +953,15 @@ void CHLLCode::appendTypeIdent(QTextStream &str, SharedType typ, const char *ide
     } else if (typ->isVoid()) {
 // Can happen in e.g. twoproc, where really need global parameter and return analysis
 #if 1 // TMN: Stop crashes by this workaround
-        if (ident == nullptr) {
-            static const char szFoo[] = "unknownVoidType";
-            ident = szFoo;
+        if (ident.isEmpty()) {
+            ident = "unknownVoidType";
         }
 #endif
         LOG << "WARNING: CHLLCode::appendTypeIdent: declaring type void as int for " << ident << "\n";
         str << "int " << ident;
     } else {
         appendType(str, typ);
-        str << " " << (ident ? ident : "<null>");
+        str << " " << (!ident.isEmpty() ? ident : "<null>");
     }
 }
 
@@ -968,9 +976,6 @@ void CHLLCode::AddPretestedLoopHeader(int indLevel, Exp *cond) {
     s << "while (";
     appendExp(s, *cond, PREC_NONE);
     s << ") {";
-    // Note: removing the strdup() causes weird problems.
-    // Looks to me that it should work (with no real operator delete(),
-    // and garbage collecting...
     appendLine(tgt);
 }
 
@@ -1138,7 +1143,7 @@ void CHLLCode::AddGoto(int indLevel, int ord) {
 void CHLLCode::RemoveUnusedLabels(int /*maxOrd*/) {
     for (QStringList::iterator it = lines.begin(); it != lines.end();) {
         if (it->startsWith('L') && it->contains(':')) {
-            QStringRef sxr = it->leftRef(it->indexOf(':'));
+            QStringRef sxr = it->midRef(1,it->indexOf(':')-1);
             int n = sxr.toInt();
             if (usedLabels.find(n) == usedLabels.end()) {
                 it = lines.erase(it);
@@ -1518,7 +1523,7 @@ void CHLLCode::AddProcDec(UserProc *proc, bool open) {
                 LOG << "ERROR in CHLLCode::AddProcDec: no type for parameter " << left << "!\n";
             ty = IntegerType::get(STD_SIZE, 0);
         }
-        const char *name;
+        QString name;
         if (left->isParam())
             name = ((Const *)((Location *)left)->getSubExp1())->getStr();
         else {
@@ -1529,7 +1534,7 @@ void CHLLCode::AddProcDec(UserProc *proc, bool open) {
             // C does this by default when you pass an array, i.e. you pass &array meaning array
             // Replace all m[param] with foo, param with foo, then foo with param
             ty = std::static_pointer_cast<PointerType>(ty)->getPointsTo();
-            Exp *foo = new Const("foo123412341234");
+            Exp *foo = Const::get("foo123412341234");
             m_proc->searchAndReplace(*Location::memOf(left, nullptr), foo);
             m_proc->searchAndReplace(*left, foo);
             m_proc->searchAndReplace(*foo, left);
@@ -1556,7 +1561,7 @@ void CHLLCode::AddProcEnd() {
  * \param type of this local variable
  * \param last true if an empty line should be added.
  */
-void CHLLCode::AddLocal(const char *name, SharedType type, bool last) {
+void CHLLCode::AddLocal(const QString &name, SharedType type, bool last) {
     QString tgt;
     QTextStream s(&tgt);
     indent(s, 1);

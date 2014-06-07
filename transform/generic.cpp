@@ -42,8 +42,8 @@ Exp *GenericExpTransformer::applyFuncs(Exp *rhs) {
 #endif
         // probably need to make this func take bits in future
         int offset = ((Const *)p2)->getInt() * 8;
-        const char *member = ty->asCompound()->getNameAtOffset(offset);
-        Exp *result = Const::get((char *)member);
+        QString member = ty->asCompound()->getNameAtOffset(offset);
+        Exp *result = Const::get(member);
         bool change;
         rhs = rhs->searchReplace(*callw, result->clone(), change);
         assert(change);
@@ -64,7 +64,7 @@ Exp *GenericExpTransformer::applyFuncs(Exp *rhs) {
 #else
         SharedType ty = nullptr; // Note: will cause a segfault
 #endif
-        const char *member = ((Const *)p2)->getStr();
+        QString member = ((Const *)p2)->getStr();
         int offset = ty->asCompound()->getOffsetTo(member) / 8;
         Exp *result = new Const(offset);
         bool change;

@@ -36,7 +36,7 @@ struct yy_SSLParser_stype {
     std::list<std::string> *parmlist;
     std::list<std::string> *strlist;
     std::deque<Exp *> *exprlist;
-    std::deque<std::string> *namelist;
+    std::deque<QString> *namelist;
     std::list<Exp *> *explist;
     RTL *rtlist;
 };
@@ -142,7 +142,7 @@ class SSLParser {
   public:
     SSLParser(std::istream &in, bool trace);
     virtual ~SSLParser();
-    OPER strToOper(const char *s);               /* Convert string to an operator */
+    OPER strToOper(const QString &s);               /* Convert string to an operator */
     static Instruction *parseExp(const char *str); /* Parse an expression or assignment from a string */
     /* The code for expanding tables and saving to the dictionary */
     void expandTables(const std::shared_ptr<InsNameElem> &iname, std::list<std::string> *params, RTL *o_rtlist, RTLInstDict &Dict);
@@ -172,12 +172,12 @@ class SSLParser {
     /*
     * maps index names to instruction name-elements
     */
-    std::map<std::string, InsNameElem *> indexrefmap;
+    std::map<QString, InsNameElem *> indexrefmap;
 
     /*
     * Maps table names to Table's.
     */
-    std::map<std::string, Table *> TableDict;
+    std::map<QString, Table *> TableDict;
 
     /*
     * True when FLOAT keyword seen; false when INTEGER keyword seen

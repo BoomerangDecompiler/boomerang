@@ -18,6 +18,7 @@
 #include "util.h"
 
 #include <QString>
+#include <QMap>
 #include <cassert>
 #include <string>
 #include <cstdio>
@@ -58,7 +59,25 @@ void escapeXMLChars(std::string &s) {
         }
     }
 }
+QString escapeStr(const QString &inp) {
+    QMap<char,QString> replacements {
+        {'\n',"\\n"}, {'\t',"\\t"}, {'\v',"\\v"}, {'\b',"\\b"}, {'\r',"\\r"}, {'\f',"\\f"}, {'\a',"\\a"}
+    };
 
+    QString res;
+    for( char c : inp.toLocal8Bit()) {
+        if(isprint(c) && c!='\"') {
+            res += c;
+            continue;
+        }
+        if(replacements.contains(c)) {
+            res += replacements[c];
+        }
+        else
+            res += "\\" +QString::number(c,16);
+    }
+    return res;
+}
 // Turn things like newline, return, tab into \n, \r, \t etc
 // Note: assumes a C or C++ back end...
 char *escapeStr(const char *str) {

@@ -122,7 +122,7 @@ class Prog {
     void generateCode(Cluster *cluster = nullptr, UserProc *proc = nullptr, bool intermixRTL = false);
     void generateRTL(Cluster *cluster = nullptr, UserProc *proc = nullptr);
     void print(QTextStream &out);
-    LibProc *getLibraryProc(const char *nam);
+    LibProc *getLibraryProc(const QString &nam);
     Signature *getLibSignature(const std::string &name);
     void rereadLibSignatures();
     Instruction *getStmtAtLex(Cluster *cluster, unsigned int begin, unsigned int end);

@@ -1153,7 +1153,7 @@ class CallStatement : public GotoStatement {
     // Private helper functions for the above
     void addSigParam(SharedType ty, bool isScanf);
     Assign *makeArgAssign(SharedType ty, Exp *e);
-    bool objcSpecificProcessing(const char *formatStr);
+    bool objcSpecificProcessing(const QString &formatStr);
 
   protected:
     void updateDefineWithType(int n);

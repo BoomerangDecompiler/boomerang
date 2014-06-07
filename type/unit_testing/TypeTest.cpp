@@ -108,19 +108,19 @@ void TypeTest::testCompound() {
     QCOMPARE(subTy->getCtype(true),expected);
 
     // Name at offset C should be bottom
-    QCOMPARE(subTy->asCompound()->getNameAtOffset(0x0C * 8),"bottom");
+    QCOMPARE(subTy->asCompound()->getNameAtOffset(0x0C * 8),QString("bottom"));
 
     // Now figure out the name at offset 8+C
-    QCOMPARE(ty->asCompound()->getNameAtOffset((8 + 0x0C) * 8),"rcPaint");
+    QCOMPARE(ty->asCompound()->getNameAtOffset((8 + 0x0C) * 8),QString("rcPaint"));
 
     // Also at offset 8
-    QCOMPARE(ty->asCompound()->getNameAtOffset((8 + 0) * 8),"rcPaint");
+    QCOMPARE(ty->asCompound()->getNameAtOffset((8 + 0) * 8),QString("rcPaint"));
 
     // Also at offset 8+4
-    QCOMPARE(ty->asCompound()->getNameAtOffset((8 + 4) * 8),"rcPaint");
+    QCOMPARE(ty->asCompound()->getNameAtOffset((8 + 4) * 8),QString("rcPaint"));
 
     // And at offset 8+8
-    QCOMPARE(ty->asCompound()->getNameAtOffset((8 + 8) * 8),"rcPaint");
+    QCOMPARE(ty->asCompound()->getNameAtOffset((8 + 8) * 8),QString("rcPaint"));
 
     delete pFE;
 }
@@ -199,7 +199,7 @@ void TypeTest::testDataInterval() {
     QCOMPARE(ctc0.isArray,1);
     QCOMPARE(ctc0.u.index,5U);
     QCOMPARE(ctc1.isArray,0);
-    QCOMPARE(ctc1.u.memberName,"float1");
+    QCOMPARE(ctc1.u.memberName,QString("float1"));
 }
 
 /***************************************************************************/ /**

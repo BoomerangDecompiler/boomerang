@@ -204,7 +204,7 @@ class UserProc : public Function {
      * conversion from SSA form, since it is then difficult to access the definitions of locations.
      * This map could be combined with symbolMap below, but beware of parameters (in symbols but not locals)
      */
-    std::map<std::string, SharedType > locals;
+    std::map<QString, SharedType > locals;
 
     int nextLocal = 0; //!< Number of the next local. Can't use locals.size() because some get deleted
     int nextParam = 0; //!< Number for param1, param2, etc
@@ -424,27 +424,27 @@ class UserProc : public Function {
     Exp *getSymbolExp(Exp *le, SharedType ty = nullptr, bool lastPass = false);
     Exp *newLocal(SharedType ty, Exp *e, char *nam = nullptr);
     void addLocal(SharedType ty, const QString &nam, Exp *e);
-    SharedType getLocalType(const char *nam);
-    void setLocalType(const char *nam, SharedType ty);
-    SharedType getParamType(const char *nam);
-    const Exp *expFromSymbol(const char *nam) const;
+    SharedType getLocalType(const QString &nam);
+    void setLocalType(const QString &nam, SharedType ty);
+    SharedType getParamType(const QString &nam);
+    const Exp *expFromSymbol(const QString &nam) const;
     void mapSymbolTo(const Exp *from, Exp *to);
     void mapSymbolToRepl(const Exp *from, Exp *oldTo, Exp *newTo);
     void removeSymbolMapping(const Exp *from, Exp *to);
     Exp *getSymbolFor(const Exp *e, SharedType ty);
-    const char *lookupSym(const Exp *e, SharedType ty);
-    const char *lookupSymFromRef(RefExp *r);
-    const char *lookupSymFromRefAny(RefExp *r);
-    const char *lookupParam(Exp *e);
+    QString lookupSym(const Exp *e, SharedType ty);
+    QString lookupSymFromRef(RefExp *r);
+    QString lookupSymFromRefAny(RefExp *r);
+    QString lookupParam(Exp *e);
     void checkLocalFor(RefExp *r);
     SharedType getTypeForLocation(const Exp *e);
     const SharedType getTypeForLocation(const Exp *e) const;
-    const char *findLocal(Exp *e, SharedType ty);
-    const char *findLocalFromRef(RefExp *r);
-    const char *findFirstSymbol(Exp *e);
+    QString findLocal(Exp *e, SharedType ty);
+    QString findLocalFromRef(RefExp *r);
+    QString findFirstSymbol(Exp *e);
     int getNumLocals() { return (int)locals.size(); }
-    const char *getLocalName(int n);
-    const char *getSymbolName(Exp *e);
+    QString getLocalName(int n);
+    QString getSymbolName(Exp *e);
     void renameLocal(const char *oldName, const char *newName);
     virtual void renameParam(const char *oldName, const char *newName);
 

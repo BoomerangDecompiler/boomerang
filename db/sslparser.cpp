@@ -950,8 +950,8 @@ SSLParser::
     }
     case 42: {
         // cross-product of two str_expr's
-        std::deque<std::string>::iterator i, j;
-        yyval.namelist = new std::deque<std::string>;
+        std::deque<QString>::iterator i, j;
+        yyval.namelist = new std::deque<QString>;
         for (i = yyvsp[-1].namelist->begin(); i != yyvsp[-1].namelist->end(); i++)
             for (j = yyvsp[0].namelist->begin(); j != yyvsp[0].namelist->end(); j++)
                 yyval.namelist->push_back((*i) + (*j));
@@ -995,14 +995,14 @@ SSLParser::
         break;
     }
     case 49: {
-        yyval.namelist = new std::deque<std::string>;
+        yyval.namelist = new std::deque<QString>;
         yyval.namelist->push_back("");
         yyval.namelist->push_back(yyvsp[-1].str);
         ;
         break;
     }
     case 50: {
-        yyval.namelist = new std::deque<std::string>(1, yyvsp[-1].str);
+        yyval.namelist = new std::deque<QString>(1, yyvsp[-1].str);
         ;
         break;
     }
@@ -1011,7 +1011,7 @@ SSLParser::
         // expand $2 from table of names
         if (TableDict.find(yyvsp[0].str) != TableDict.end())
             if (TableDict[yyvsp[0].str]->getType() == NAMETABLE)
-                yyval.namelist = new std::deque<std::string>(TableDict[yyvsp[0].str]->Records);
+                yyval.namelist = new std::deque<QString>(TableDict[yyvsp[0].str]->Records);
             else {
                 o << "name " << yyvsp[0].str << " is not a NAMETABLE.\n";
                 yyerror(STR(o));
@@ -1026,14 +1026,14 @@ SSLParser::
         // try and expand $1 from table of names. if fail, expand using '"' NAME '"' rule
         if (TableDict.find(yyvsp[0].str) != TableDict.end())
             if (TableDict[yyvsp[0].str]->getType() == NAMETABLE)
-                yyval.namelist = new std::deque<std::string>(TableDict[yyvsp[0].str]->Records);
+                yyval.namelist = new std::deque<QString>(TableDict[yyvsp[0].str]->Records);
             else {
                 std::ostringstream o;
                 o << "name " << yyvsp[0].str << " is not a NAMETABLE.\n";
                 yyerror(STR(o));
             }
         else {
-            yyval.namelist = new std::deque<std::string>;
+            yyval.namelist = new std::deque<QString>;
             yyval.namelist->push_back(yyvsp[0].str);
         };
         break;
@@ -1065,7 +1065,7 @@ SSLParser::
         break;
     }
     case 58: {
-        yyval.namelist = new std::deque<std::string>;
+        yyval.namelist = new std::deque<QString>;
         yyval.namelist->push_back(yyvsp[-1].str);
         ;
         break;
@@ -1155,7 +1155,7 @@ SSLParser::
             o << "Can't get element " << yyvsp[-1].num << " of table " << yyvsp[-2].str << ".\n";
             yyerror(STR(o));
         } else
-            yyval.insel = std::make_shared<InsNameElem>(TableDict[yyvsp[-2].str]->Records[yyvsp[-1].num].c_str());
+            yyval.insel = std::make_shared<InsNameElem>(TableDict[yyvsp[-2].str]->Records[yyvsp[-1].num]);
         ;
         break;
     }
@@ -1178,7 +1178,7 @@ SSLParser::
             o << "Can't get element " << yyvsp[-1].num << " of table " << yyvsp[-2].str << ".\n";
             yyerror(STR(o));
         } else
-            yyval.insel = std::make_shared<InsNameElem>(TableDict[yyvsp[-2].str]->Records[yyvsp[-1].num].c_str());
+            yyval.insel = std::make_shared<InsNameElem>(TableDict[yyvsp[-2].str]->Records[yyvsp[-1].num]);
         ;
         break;
     }
@@ -1227,7 +1227,7 @@ SSLParser::
             bool bFloat = strcmp(yyvsp[-2].str, "SETFFLAGS") == 0;
             OPER op = bFloat ? opFflags : opFlags;
             yyval.regtransfer = new Assign(
-                new Terminal(op), Binary::get(opFlagCall, new Const(yyvsp[-2].str), listExpToExp(yyvsp[-1].explist)));
+                new Terminal(op), Binary::get(opFlagCall, Const::get(yyvsp[-2].str), listExpToExp(yyvsp[-1].explist)));
         } else {
             o << yyvsp[-2].str << " is not declared as a flag function.\n";
             yyerror(STR(o));
@@ -1415,7 +1415,7 @@ SSLParser::
             yyerror(STR(o));
         }
         // $1 is a map from string to Table*; $2 is a map from string to InsNameElem*
-        yyval.exp = Binary::get(opExpTable, new Const(yyvsp[-2].str), new Const(yyvsp[-1].str));
+        yyval.exp = Binary::get(opExpTable, Const::get(yyvsp[-2].str), Const::get(yyvsp[-1].str));
         ;
         break;
     }
@@ -1431,7 +1431,7 @@ SSLParser::
                 } else {
                     // Everything checks out. *phew*
                     // Note: the below may not be right! (MVE)
-                    yyval.exp = Binary::get(opFlagDef, new Const(yyvsp[-2].str), listExpToExp(yyvsp[-1].explist));
+                    yyval.exp = Binary::get(opFlagDef, Const::get(yyvsp[-2].str), listExpToExp(yyvsp[-1].explist));
                     // delete $2;            // Delete the list of char*s
                 }
             } else {
@@ -1519,7 +1519,7 @@ SSLParser::
             yyerror(STR(o));
         }
         yyval.exp =
-            new Ternary(opOpTable, new Const(yyvsp[-3].str), new Const(yyvsp[-2].str),
+            new Ternary(opOpTable, Const::get(yyvsp[-3].str), Const::get(yyvsp[-2].str),
                         Binary::get(opList, yyvsp[-4].exp, Binary::get(opList, yyvsp[0].exp, new Terminal(opNil))));
         ;
         break;
@@ -1542,8 +1542,9 @@ SSLParser::
             if (op) {
                 yyval.exp = new Terminal(op);
             } else {
-                yyval.exp = new Unary(opMachFtr, // Machine specific feature
-                                      new Const(yyvsp[0].str));
+                yyval.exp = new Unary(
+                            opMachFtr, // Machine specific feature
+                                      Const::get(yyvsp[0].str));
             }
         } else {
             // A register with a constant reg nmber, e.g. %g2.  In this case, we want to return r[const 2]
@@ -1573,7 +1574,7 @@ SSLParser::
         Exp *s;
         std::set<std::string>::iterator it = Dict.ParamSet.find(yyvsp[0].str);
         if (it != Dict.ParamSet.end()) {
-            s = new Location(opParam, new Const(yyvsp[0].str), nullptr);
+            s = new Location(opParam, Const::get(yyvsp[0].str), nullptr);
         } else if (ConstTable.find(yyvsp[0].str) != ConstTable.end()) {
             s = new Const(ConstTable[yyvsp[0].str]);
         } else {

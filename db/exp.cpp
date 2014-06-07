@@ -31,7 +31,7 @@
 #include <iomanip> // For std::setw etc
 
 extern char debug_buffer[]; ///< For prints functions
-static const char *tlstrchr(const char *str, char ch);
+static int tlstrchr(const QString &str, char ch);
 
 // Derived class constructors
 
@@ -39,9 +39,9 @@ Const::Const(uint32_t i) : Exp(opIntConst), conscript(0), type(VoidType::get()) 
 Const::Const(int i) : Exp(opIntConst), conscript(0), type(VoidType::get()) { u.i = i; }
 Const::Const(QWord ll) : Exp(opLongConst), conscript(0), type(VoidType::get()) { u.ll = ll; }
 Const::Const(double d) : Exp(opFltConst), conscript(0), type(VoidType::get()) { u.d = d; }
-Const::Const(const char *p) : Exp(opStrConst), conscript(0), type(VoidType::get()) { u.p = p; }
+//Const::Const(const char *p) : Exp(opStrConst), conscript(0), type(VoidType::get()) { u.p = p; }
 Const::Const(const QString &p) : Exp(opStrConst), conscript(0), type(VoidType::get()) {
-    u.p = strdup(qPrintable(p));
+    strin = p;
 }
 Const::Const(Function *p) : Exp(opFuncConst), conscript(0), type(VoidType::get()) { u.pp = p; }
 /// \remark This is bad. We need a way of constructing true unsigned constants
@@ -55,6 +55,7 @@ Const::Const(const Const &o) : Exp(o.op) {
     u = o.u;
     conscript = o.conscript;
     type = o.type;
+    strin = o.strin;
 }
 
 Terminal::Terminal(OPER op) : Exp(op) {}
@@ -335,7 +336,7 @@ bool Const::operator==(const Exp &o) const {
     case opFltConst:
         return u.d == ((Const &)o).u.d;
     case opStrConst:
-        return (strcmp(u.p, ((Const &)o).u.p) == 0);
+        return strin == ((Const &)o).strin;
     default:
         LOG << "Operator== invalid operator " << operStrings[op] << "\n";
         assert(0);
@@ -456,7 +457,7 @@ bool Const::operator<(const Exp &o) const {
     case opFltConst:
         return u.d < ((Const &)o).u.d;
     case opStrConst:
-        return strcmp(u.p, ((Const &)o).u.p) < 0;
+        return strin < ((Const &)o).strin;
     default:
         LOG << "Operator< invalid operator " << operStrings[op] << "\n";
         assert(0);
@@ -667,7 +668,7 @@ void Const::print(QTextStream &os, bool /*html*/) const {
         os << buf;
         break;
     case opStrConst:
-        os << "\"" << u.p << "\"";
+        os << "\"" << strin << "\"";
         break;
     default:
         LOG << "Const::print invalid operator " << operStrings[op] << "\n";
@@ -675,12 +676,16 @@ void Const::print(QTextStream &os, bool /*html*/) const {
     }
     if (conscript)
         os << "\\" << conscript << "\\";
+#ifdef DUMP_TYPES
+        if(type)
+            os << "T("<<type->prints() << ")";
+#endif
     setLexEnd(os.pos());
 }
 
 void Const::printNoQuotes(QTextStream &os) {
     if (op == opStrConst)
-        os << u.p;
+        os << strin;
     else
         print(os);
 }
@@ -1019,6 +1024,9 @@ void Unary::print(QTextStream &os, bool html) const {
         // Make a special case for the very common case of r[intConst]
         if (p1->isIntConst()) {
             os << "r" << ((Const *)p1)->getInt();
+#ifdef DUMP_TYPES
+        os << "T("<<((Const *)p1)->getType()<<")";
+#endif
             break;
         } else if (p1->isTemp()) {
             // Just print the temp {   // balance }s
@@ -1062,6 +1070,9 @@ void Unary::print(QTextStream &os, bool html) const {
             p1->print(os, html);
         }
         os << "]";
+#ifdef DUMP_TYPES
+        os << "T("<<((Const *)p1)->getType()<<")";
+#endif
         break;
 
     //    //    //    //    //    //    //
@@ -1432,7 +1443,7 @@ void Const::appendDotFile(QTextStream &of) {
         of << u.d;
         break;
     case opStrConst:
-        of << "\\\"" << u.p << "\\\"";
+        of << "\\\"" << strin << "\\\"";
         break;
     // Might want to distinguish this better, e.g. "(func*)myProc"
     case opFuncConst:
@@ -1682,28 +1693,30 @@ Exp* TypeVal::match(Exp *pattern) {
     return Exp::match(pattern);
 }
 #endif
+static QRegularExpression variableRegexp("[a-zA-Z0-9]+");
+
 // TODO use regexp ?
 #define ISVARIABLE_S(x)                                                                                                \
     (strspn((x.c_str()), "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789") == (x).length())
 //#define DEBUG_MATCH
 
-static const char *tlstrchr(const char *str, char ch) {
-    while (str && *str) {
-        if (*str == ch)
-            return str;
-        if (*str == '[' || *str == '{' || *str == '(') {
-            char close = ']';
-            if (*str == '{')
-                close = '}';
-            if (*str == '(')
-                close = ')';
-            while (*str && *str != close)
-                str++;
+int tlstrchr(const QString &str, char ch) {
+    static QMap<QChar,QChar> braces { {'[',']'},{'{','}'},{'(',')'} };
+    int i=0,e=str.length();
+    for(; i<e; ++i) {
+        if(str[i].toLatin1()==ch)
+            return i;
+        if(braces.contains(str[i])) {
+            QChar end_brace = braces[str[i]];
+            ++i; //from next char
+            for(; i<e; ++i)
+                if(str[i]==end_brace)
+                    break;
         }
-        if (*str)
-            str++;
     }
-    return "";
+    if(i==e)
+        return -1;
+    return i;
 }
 
 /***************************************************************************/ /**
@@ -1713,94 +1726,80 @@ static const char *tlstrchr(const char *str, char ch) {
   * \param bindings a map
   * \returns            true if match, false otherwise
   ******************************************************************************/
-bool Exp::match(const std::string &pattern, std::map<std::string, Exp *> &bindings) {
+bool Exp::match(const QString &patterns, std::map<QString, Exp *> &bindings) {
     // most obvious
     QString tgt;
     QTextStream ostr(&tgt);
     print(ostr);
-    if (tgt.toStdString() == pattern)
+    if (tgt == patterns)
         return true;
 
-    QRegularExpression re("[a-zA-Z0-9]+");
-    QString patterns(pattern.c_str());
-    assert((patterns.lastIndexOf(re)==0) == ISVARIABLE_S(pattern));
+    assert((patterns.lastIndexOf(variableRegexp)==0) == ISVARIABLE_S(patterns.toStdString()));
     // alright, is pattern an acceptable variable?
-    if (patterns.lastIndexOf(re)==0) {
-        bindings[pattern] = this;
+    if (patterns.lastIndexOf(variableRegexp)==0) {
+        bindings[patterns] = this;
         return true;
     }
     // no, fail
     return false;
 }
-bool Unary::match(const std::string &pattern, std::map<std::string, Exp *> &bindings) {
+bool Unary::match(const QString &pattern, std::map<QString, Exp *> &bindings) {
     if (Exp::match(pattern, bindings))
         return true;
 #ifdef DEBUG_MATCH
     LOG << "unary::match " << this << " to " << pattern << ".\n";
 #endif
-    if (op == opAddrOf && pattern[0] == 'a' && pattern[1] == '[' && pattern.back() == ']') {
-        std::string sub1(pattern.substr(2, pattern.size() - 1)); // eliminate 'a[' and ']'
-        return subExp1->match(sub1, bindings);
+    if (op == opAddrOf && pattern.startsWith("a[") && pattern.endsWith(']')) {
+        return subExp1->match(pattern.mid(2,pattern.size() - 1), bindings); // eliminate 'a[' and ']'
     }
     return false;
 }
-bool Binary::match(const std::string &pattern, std::map<std::string, Exp *> &bindings) {
+bool Binary::match(const QString &pattern, std::map<QString, Exp *> &bindings) {
     if (Exp::match(pattern, bindings))
         return true;
 #ifdef DEBUG_MATCH
     LOG << "binary::match " << this << " to " << pattern << ".\n";
 #endif
-    if (op == opMemberAccess && tlstrchr(pattern.c_str(), '.')) {
-        std::string sub1 = pattern;
-        const char *sub2 = tlstrchr(sub1.c_str(), '.');
-        int split_point = sub2 - sub1.c_str();
-        std::string follow = sub1.substr(split_point + 1);
-        sub1.resize(split_point);
+    if (op == opMemberAccess && -1!=tlstrchr(pattern, '.')) {
+        QString sub1 = pattern;
+        int split_point = tlstrchr(sub1, '.');
+        QString follow = sub1.right(sub1.length()-split_point);
+        sub1 = sub1.left(split_point);
         if (subExp1->match(sub1, bindings)) {
             assert(subExp2->isStrConst());
             if (follow == ((Const *)subExp2)->getStr())
                 return true;
-            if (ISVARIABLE_S(follow)) {
+            if ((follow.lastIndexOf(variableRegexp)==0)) {
                 bindings[follow] = subExp2;
                 return true;
             }
         }
     }
     if (op == opArrayIndex) {
-        if (pattern.back() != ']')
+        if (!pattern.endsWith(']'))
             return false;
-        char *sub1 = strdup(pattern.c_str());
-        char *sub2 = strrchr(sub1, '[');
-        *sub2++ = 0;
-        sub2[strlen(sub2) - 1] = 0;
+        QString sub1 = pattern;
+        QString sub2 = sub2.mid(sub1.lastIndexOf('[')+1);
         if (subExp1->match(sub1, bindings) && subExp2->match(sub2, bindings))
             return true;
     }
-    if (op == opPlus && tlstrchr(pattern.c_str(), '+')) {
-        char *sub1 = strdup(pattern.c_str());
-        char *sub2 = (char *)tlstrchr(sub1, '+');
-        *sub2++ = 0;
-        while (*sub2 == ' ')
-            sub2++;
-        while (sub1[strlen(sub1) - 1] == ' ')
-            sub1[strlen(sub1) - 1] = 0;
+    if (op == opPlus && -1!=tlstrchr(pattern, '+')) {
+        int splitpoint = tlstrchr(pattern, '+');
+        QString sub1 = pattern.left(splitpoint);
+        QString sub2 = pattern.mid(splitpoint+1).trimmed();
         if (subExp1->match(sub1, bindings) && subExp2->match(sub2, bindings))
             return true;
     }
-    if (op == opMinus && tlstrchr(pattern.c_str(), '-')) {
-        char *sub1 = strdup(pattern.c_str());
-        char *sub2 = (char *)tlstrchr(sub1, '-');
-        *sub2++ = 0;
-        while (*sub2 == ' ')
-            sub2++;
-        while (sub1[strlen(sub1) - 1] == ' ')
-            sub1[strlen(sub1) - 1] = 0;
+    if (op == opMinus && -1!=tlstrchr(pattern, '-')) {
+        int splitpoint = tlstrchr(pattern, '-');
+        QString sub1 = pattern.left(splitpoint);
+        QString sub2 = pattern.mid(splitpoint+1).trimmed();
         if (subExp1->match(sub1, bindings) && subExp2->match(sub2, bindings))
             return true;
     }
     return false;
 }
-bool Ternary::match(const std::string &pattern, std::map<std::string, Exp *> &bindings) {
+bool Ternary::match(const QString &pattern, std::map<QString, Exp *> &bindings) {
     if (Exp::match(pattern, bindings))
         return true;
 #ifdef DEBUG_MATCH
@@ -1808,32 +1807,28 @@ bool Ternary::match(const std::string &pattern, std::map<std::string, Exp *> &bi
 #endif
     return false;
 }
-bool RefExp::match(const std::string &pattern, std::map<std::string, Exp *> &bindings) {
+bool RefExp::match(const QString &pattern, std::map<QString, Exp *> &bindings) {
     if (Exp::match(pattern, bindings))
         return true;
 #ifdef DEBUG_MATCH
     LOG << "refexp::match " << this << " to " << pattern << ".\n";
 #endif
-    const char *end = pattern.c_str() + pattern.size() - 1;
-    if (end > pattern && *end == '}') {
-        end--;
-        if (*end == '-' && def == nullptr) {
-            char *sub = strdup(pattern.c_str());
-            *(sub + (end - 1 - pattern.c_str())) = 0;
-            return subExp1->match(sub, bindings);
+    if (pattern.endsWith('}')) {
+        if (pattern[pattern.size()-2] == '-' && def == nullptr) {
+            return subExp1->match(pattern.left(pattern.size()-3), bindings); // remove {-}
         }
-        end = strrchr(end, '{');
-        if (end) {
-            if (atoi(end + 1) == def->getNumber()) {
-                char *sub = strdup(pattern.c_str());
-                *(sub + (end - pattern.c_str())) = 0;
-                return subExp1->match(sub, bindings);
+        int end = pattern.lastIndexOf('{');
+        if (end!=-1) {
+            // "prefix {number ...}" -> number matches first def ?
+            if(pattern.midRef(end+1).toInt()==def->getNumber()) {
+                // match "prefix"
+                return subExp1->match(pattern.left(end-1),bindings);
             }
         }
     }
     return false;
 }
-bool Const::match(const std::string &pattern, std::map<std::string, Exp *> &bindings) {
+bool Const::match(const QString &pattern, std::map<QString, Exp *> &bindings) {
     if (Exp::match(pattern, bindings))
         return true;
 #ifdef DEBUG_MATCH
@@ -1841,7 +1836,7 @@ bool Const::match(const std::string &pattern, std::map<std::string, Exp *> &bind
 #endif
     return false;
 }
-bool Terminal::match(const std::string &pattern, std::map<std::string, Exp *> &bindings) {
+bool Terminal::match(const QString &pattern, std::map<QString, Exp *> &bindings) {
     if (Exp::match(pattern, bindings))
         return true;
 #ifdef DEBUG_MATCH
@@ -1849,22 +1844,20 @@ bool Terminal::match(const std::string &pattern, std::map<std::string, Exp *> &b
 #endif
     return false;
 }
-bool Location::match(const std::string &pattern, std::map<std::string, Exp *> &bindings) {
+bool Location::match(const QString &pattern, std::map<QString, Exp *> &bindings) {
     if (Exp::match(pattern, bindings))
         return true;
 #ifdef DEBUG_MATCH
     LOG << "location::match " << this << " to " << pattern << ".\n";
 #endif
     if (op == opMemOf || op == opRegOf) {
-        char ch = 'm';
-        if (op == opRegOf)
-            ch = 'r';
-        if (pattern[0] != ch || pattern[1] != '[')
+        if (op == opRegOf && !pattern.startsWith("r["))
             return false;
-        if (pattern.back() != ']')
+        if (op == opMemOf && !pattern.startsWith("m["))
             return false;
-        std::string sub = pattern.substr(2);
-        return subExp1->match(sub, bindings);
+        if (!pattern.endsWith(']'))
+            return false;
+        return subExp1->match(pattern.mid(2), bindings); // shouldn't this cut the last ']' ??
     }
     return false;
 }
@@ -2918,14 +2911,13 @@ Exp *Binary::polySimplify(bool &bMod) {
         if (n * 8 < c->getSize()) {
             unsigned r = c->getOffsetRemainder(n * 8);
             assert((r % 8) == 0);
-            const char *nam = c->getNameAtOffset(n * 8);
-            if (nam != nullptr && std::string("pad") != nam) {
+            QString nam = c->getNameAtOffset(n * 8);
+            if ( !nam.isNull() && nam != "pad") {
                 Exp *l = Location::memOf(subExp1);
                 // l->setType(c);
-                res = Binary::get(opPlus, new Unary(opAddrOf, Binary::get(opMemberAccess, l, new Const(strdup(nam)))),
+                res = Binary::get(opPlus, new Unary(opAddrOf, Binary::get(opMemberAccess, l, Const::get(nam))),
                                   new Const((int)r / 8));
-                if (VERBOSE)
-                    LOG << "(trans1) replacing " << this << " with " << res << "\n";
+                LOG_VERBOSE(1) << "(trans1) replacing " << this << " with " << res << "\n";
                 bMod = true;
                 return res;
             }
@@ -4108,7 +4100,7 @@ void Const::printx(int ind) const {
         LOG_STREAM() << u.i;
         break;
     case opStrConst:
-        LOG_STREAM() << "\"" << u.p << "\"";
+        LOG_STREAM() << "\"" << strin << "\"";
         break;
     case opFltConst:
         LOG_STREAM() << u.d;
@@ -4155,7 +4147,7 @@ void RefExp::printx(int ind) const {
     child(subExp1, ind);
 }
 
-const char *Exp::getAnyStrConst() {
+QString Exp::getAnyStrConst() {
     Exp *e = this;
     if (op == opAddrOf) {
         e = ((Location *)this)->getSubExp1();
@@ -4165,7 +4157,7 @@ const char *Exp::getAnyStrConst() {
             e = ((Location *)e)->getSubExp1();
     }
     if (e->op != opStrConst)
-        return nullptr;
+        return QString::null;
     return ((Const *)e)->getStr();
 }
 
@@ -4191,7 +4183,7 @@ Exp *Exp::expSubscriptAllNull(/*Cfg* cfg*/) {
     return expSubscriptVar(new Terminal(opWild), nullptr /* was nullptr, nullptr, cfg */);
 }
 
-Location *Location::local(const char *nam, UserProc *p) { return new Location(opLocal, new Const(nam), p); }
+Location *Location::local(const QString &nam, UserProc *p) { return new Location(opLocal, new Const(nam), p); }
 
 // Don't put in exp.h, as this would require statement.h including before exp.h
 bool RefExp::isImplicitDef() { return def == nullptr || def->getKind() == STMT_IMPASSIGN; }

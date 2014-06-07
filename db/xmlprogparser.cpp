@@ -529,7 +529,7 @@ void XMLProgParser::addToContext_userproc(Context *c, int e) {
         userproc->setCFG(stack.front()->cfg);
         break;
     case e_local:
-        userproc->locals[stack.front()->str.toStdString()] = stack.front()->type;
+        userproc->locals[stack.front()->str] = stack.front()->type;
         break;
     case e_symbol:
         userproc->mapSymbolTo(stack.front()->exp, stack.front()->symbol);
@@ -706,7 +706,7 @@ void XMLProgParser::start_param(const QXmlStreamAttributes &attr) {
     addId(attr, ctx->param);
     QStringRef n = attr.value(QLatin1Literal("name"));
     if (!n.isEmpty())
-        ctx->param->name(n.toString().toStdString());
+        ctx->param->name(n.toString());
 }
 
 void XMLProgParser::addToContext_param(Context *c, int e) {
@@ -1809,7 +1809,7 @@ void XMLProgParser::start_const(const QXmlStreamAttributes &attr) {
         addId(attr, stack.front()->exp);
         break;
     case opStrConst:
-        ctx->exp = new Const(strdup(value.toString().toLocal8Bit().data()));
+        ctx->exp = Const::get(value.toString());
         addId(attr, stack.front()->exp);
         break;
     case opFltConst:
@@ -2107,7 +2107,7 @@ void XMLProgParser::persistToXML(QXmlStreamWriter &out, UserProc *proc) {
 
     for (auto &elem : proc->locals) {
         out.writeStartElement("local");
-        out.writeAttribute("name", (elem).first.c_str());
+        out.writeAttribute("name", (elem).first);
         out.writeStartElement("type");
         persistToXML(out, (elem).second);
         out.writeEndElement();
@@ -2274,7 +2274,7 @@ void XMLProgParser::persistToXML(QXmlStreamWriter &out, const SharedType &ty) {
         out.writeAttribute("id", QString::number(ADDRESS::host_ptr(ty.get()).m_value));
         for (unsigned i = 0; i < co->names.size(); i++) {
             out.writeStartElement("member");
-            out.writeAttribute("name", co->names[i].c_str());
+            out.writeAttribute("name", co->names[i]);
             persistToXML(out, co->types[i]);
             out.writeEndElement();
         }
@@ -2327,7 +2327,7 @@ void XMLProgParser::persistToXML(QXmlStreamWriter &out, const Exp *e) {
         else if (c->op == opFltConst)
             out.writeAttribute("value", QString::number(c->u.d));
         else if (c->op == opStrConst)
-            out.writeAttribute("value", c->u.p);
+            out.writeAttribute("value", c->strin);
         else {
             // TODO
             // QWord ll;
