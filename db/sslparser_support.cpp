@@ -55,7 +55,7 @@ Instruction *SSLParser::parseExp(const char *str) {
   *
   ******************************************************************************/
 SSLParser::~SSLParser() {
-    std::map<std::string, Table *>::iterator loc;
+    std::map<QString, Table *>::iterator loc;
     if (theScanner != nullptr)
         delete theScanner;
     for (loc = TableDict.begin(); loc != TableDict.end(); loc++)
@@ -89,78 +89,30 @@ int SSLParser::yylex() {
   * \param        s: pointer to the operator C string
   * \returns             An OPER, or -1 if not found (enum opWild)
   ******************************************************************************/
-OPER SSLParser::strToOper(const char *s) {
-    switch (s[0]) {
-    case '*':
+OPER SSLParser::strToOper(const QString &s) {
+    static QMap<QString,OPER> opMap {
+        {"*",opMult},{"*!",opMults} , {"*f",opFMult},{"*fsd",opFMultsd},{"*fdq",opFMultdq},
+        {"/",opDiv},{"/!",opDivs} , {"/f",opFDiv},{"/fs",opFDiv},{"/fd",opFDivd},{"/fq",opFDivq},
+        {"%",opMod},{"%!",opMods}, // no FMod ?
+        {"+",opPlus},{"+f",opFPlus} , {"+fs",opFPlus},{"+fd",opFPlusd},{"+fq",opFPlusq},
+        {"-",opMinus},{"-f",opFMinus} , {"-fs",opFMinus},{"-fd",opFMinusd},{"-fq",opFMinusq},
+        {"<",opLess},{"<u",opLessUns} , {"<=",opLessEq},{"<=u",opLessEqUns},{"<<",opShiftL},
+        {">",opGtr}, {">u",opGtrUns}, {">=",opGtrEq},{">=u",opGtrEqUns},
+        {">>",opShiftR},{">>A",opShiftRA},
+        {"rlc",opRotateLC},{"rrc",opRotateRC},{"rl",opRotateL},{"rr",opRotateR}
+    };
         // Could be *, *!, *f, *fsd, *fdq, *f[sdq]
-        switch (s[1]) {
-        case '\0':
-            return opMult;
-        case '!':
-            return opMults;
-        case 'f':
-            if ((s[2] == 's') && (s[3] == 'd'))
-                return opFMultsd;
-            if ((s[2] == 'd') && (s[3] == 'q'))
-                return opFMultdq;
-            return opFMult;
-        default:
-            break;
-        }
-        break;
-    case '/':
-        // Could be /, /!, /f, /f[sdq]
-        switch (s[1]) {
-        case '\0':
-            return opDiv;
-        case '!':
-            return opDivs;
-        case 'f':
-            return opFDiv;
-        default:
-            break;
-        }
-        break;
-    case '%':
-        // Could be %, %!
-        switch (s[1]) {
-        case '\0':
-            return opMod;
-        case '!':
-            return opMods;
-        default:
-            break;
-        }
-        break;
-    case '+':
-        // Could be +, +f, +f[sdq]
-        switch (s[1]) {
-        case '\0':
-            return opPlus;
-        case 'f':
-            return opFPlus;
-        default:
-            break;
-        }
-        break;
-    case '-':
-        // Could be -, -f, -f[sdq]
-        switch (s[1]) {
-        case '\0':
-            return opMinus;
-        case 'f':
-            return opFMinus;
-        default:
-            break;
-        }
-        break;
+    if(opMap.contains(s))
+        return opMap[s];
+    //
+    switch (s[0].toLatin1()) {
     case 'a':
         // and, arctan, addr
-        if (s[1] == 'n')
+        if (s[1].toLatin1() == 'n')
             return opAnd;
-        if (s[1] == 'r')
+        if (s[1].toLatin1() == 'r')
             return opArcTan;
-        if (s[1] == 'd')
+        if (s[1].toLatin1() == 'd')
             return opAddrOf;
         break;
     case 'c':
@@ -171,11 +123,11 @@ OPER SSLParser::strToOper(const char *s) {
         return opExecute;
     case 'f':
         // fsize, ftoi, fround NOTE: ftrunc handled separately because it is a unary
-        if (s[1] == 's')
+        if (s[1].toLatin1() == 's')
             return opFsize;
-        if (s[1] == 't')
+        if (s[1].toLatin1() == 't')
             return opFtoi;
-        if (s[1] == 'r')
+        if (s[1].toLatin1() == 'r')
             return opFround;
         break;
     case 'i':
@@ -183,11 +135,11 @@ OPER SSLParser::strToOper(const char *s) {
         return opItof;
     case 'l':
         // log2, log10, loge
-        if (s[3] == '2')
+        if (s[3].toLatin1() == '2')
             return opLog2;
-        if (s[3] == '1')
+        if (s[3].toLatin1() == '1')
             return opLog10;
-        if (s[3] == 'e')
+        if (s[3].toLatin1() == 'e')
             return opLoge;
         break;
     case 'o':
@@ -196,77 +148,28 @@ OPER SSLParser::strToOper(const char *s) {
     case 'p':
         // pow
         return opPow;
-    case 'r':
-        // rlc, rrc, rl, rr
-        if (s[1] == 'l') {
-            if (s[2] == 'c')
-                return opRotateLC;
-            return opRotateL;
-        } else if (s[1] == 'r') {
-            if (s[2] == 'c')
-                return opRotateRC;
-            return opRotateR;
-        }
-        break;
     case 's':
         // sgnex, sin, sqrt
-        if (s[1] == 'g')
+        if (s[1].toLatin1() == 'g')
             return opSgnEx;
-        if (s[1] == 'i')
+        if (s[1].toLatin1() == 'i')
             return opSin;
-        if (s[1] == 'q')
+        if (s[1].toLatin1() == 'q')
             return opSqrt;
         break;
     case 't':
         // truncu, truncs, tan
         // 012345
-        if (s[1] == 'a')
+        if (s[1].toLatin1() == 'a')
             return opTan;
-        if (s[5] == 'u')
+        if (s[5].toLatin1() == 'u')
             return opTruncu;
-        if (s[5] == 's')
+        if (s[5].toLatin1() == 's')
             return opTruncs;
         break;
     case 'z':
         // zfill
         return opZfill;
-
-    case '>':
-        // >, >u, >=, >=u, >>, >>A
-        switch (s[1]) {
-        case '\0':
-            return opGtr;
-        case 'u':
-            return opGtrUns;
-        case '=':
-            if (s[2] == '\0')
-                return opGtrEq;
-            return opGtrEqUns;
-        case '>':
-            if (s[2] == '\0')
-                return opShiftR;
-            return opShiftRA;
-        default:
-            break;
-        }
-        break;
-    case '<':
-        // <, <u, <=, <=u, <<
-        switch (s[1]) {
-        case '\0':
-            return opLess;
-        case 'u':
-            return opLessUns;
-        case '=':
-            if (s[2] == '\0')
-                return opLessEq;
-            return opLessEqUns;
-        case '<':
-            return opShiftL;
-        default:
-            break;
-        }
-        break;
     case '=':
         // =
         return opEquals;
@@ -276,7 +179,7 @@ OPER SSLParser::strToOper(const char *s) {
         break;
     case '~':
         // ~=, ~
-        if (s[1] == '=')
+        if (s[1].toLatin1() == '=')
             return opNotEqual;
         return opNot; // Bit inversion
     case '@':
@@ -291,9 +194,7 @@ OPER SSLParser::strToOper(const char *s) {
     default:
         break;
     }
-    std::ostringstream ost;
-    ost << "Unknown operator " << s << '\n';
-    yyerror(STR(ost));
+    yyerror(qPrintable(QString("Unknown operator %1\n").arg(s)));
     return opWild;
 }
 
@@ -361,7 +262,7 @@ Exp *listStrToExp(std::list<std::string> *ls) {
     Exp **cur = &e;
     Exp *end = new Terminal(opNil); // Terminate the chain
     for (auto &l : *ls) {
-        *cur = Binary::get(opList, new Location(opParam, new Const(strdup((l).c_str())), nullptr), end);
+        *cur = Binary::get(opList, new Location(opParam, Const::get(l.c_str()), nullptr), end);
         cur = &(*cur)->refSubExp2();
     }
     *cur = new Terminal(opNil); // Terminate the chain
@@ -389,8 +290,7 @@ void init_sslparser() {
   ******************************************************************************/
 void SSLParser::expandTables(const std::shared_ptr<InsNameElem> &iname, std::list<std::string> *params, RTL *o_rtlist, RTLInstDict &Dict) {
     int i, m;
-    std::string nam;
-    std::ostringstream o;
+    QString nam;
     m = iname->ninstructions();
     // Expand the tables (if any) in this instruction
     for (i = 0, iname->reset(); i < m; i++, iname->increment()) {
@@ -404,8 +304,8 @@ void SSLParser::expandTables(const std::shared_ptr<InsNameElem> &iname, std::lis
             if (((Assign *)s)->searchAll(srchExpr, le)) {
                 std::list<Exp *>::iterator it;
                 for (it = le.begin(); it != le.end(); it++) {
-                    const char *tbl = ((Const *)((Binary *)*it)->getSubExp1())->getStr();
-                    const char *idx = ((Const *)((Binary *)*it)->getSubExp2())->getStr();
+                    QString tbl = ((Const *)((Binary *)*it)->getSubExp1())->getStr();
+                    QString idx = ((Const *)((Binary *)*it)->getSubExp2())->getStr();
                     Exp *repl = ((ExprTable *)(TableDict[tbl]))->expressions[indexrefmap[idx]->getvalue()];
                     s->searchAndReplace(**it, repl);
                 }
@@ -421,8 +321,8 @@ void SSLParser::expandTables(const std::shared_ptr<InsNameElem> &iname, std::lis
                 assert(t->getOper() == opOpTable);
                 // The ternary opOpTable has a table and index name as strings, then a list of 2 expressions
                 // (and we want to replace it with e1 OP e2)
-                const char *tbl = ((Const *)t->getSubExp1())->getStr();
-                const char *idx = ((Const *)t->getSubExp2())->getStr();
+                QString tbl = ((Const *)t->getSubExp1())->getStr();
+                QString idx = ((Const *)t->getSubExp2())->getStr();
                 // The expressions to operate on are in the list
                 Binary *b = (Binary *)t->getSubExp3();
                 assert(b->getOper() == opList);
@@ -430,15 +330,17 @@ void SSLParser::expandTables(const std::shared_ptr<InsNameElem> &iname, std::lis
                 Exp *e2 = b->getSubExp2(); // This should be an opList too
                 assert(b->getOper() == opList);
                 e2 = ((Binary *)e2)->getSubExp1();
-                const char *ops = ((OpTable *)(TableDict[tbl]))->Records[indexrefmap[idx]->getvalue()].c_str();
+                QString ops = ((OpTable *)(TableDict[tbl]))->Records[indexrefmap[idx]->getvalue()];
                 Exp *repl = Binary::get(strToOper(ops), e1->clone(), e2->clone()); // FIXME!
                 s->searchAndReplace(*res, repl);
             }
         }
 
         if (Dict.appendToDict(nam, *params, rtl) != 0) {
+            QString errmsg;
+            QTextStream o(&errmsg);
             o << "Pattern " << iname->getinspattern() << " conflicts with an earlier declaration of " << nam << ".\n";
-            yyerror(STR(o));
+            yyerror(qPrintable(errmsg));
         }
     }
     indexrefmap.erase(indexrefmap.begin(), indexrefmap.end());

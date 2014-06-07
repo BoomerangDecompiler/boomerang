@@ -11,18 +11,19 @@
 
 #include "table.h"
 
+#include <QString>
 #include <map>
 #include <memory>
 
 class InsNameElem {
 
 public:
-    InsNameElem(const char *name);
+    InsNameElem(const QString &name);
     virtual ~InsNameElem(void);
     virtual size_t ntokens(void);
-    virtual std::string getinstruction(void);
-    virtual std::string getinspattern(void);
-    virtual void getrefmap(std::map<std::string, InsNameElem *> &m);
+    virtual QString getinstruction(void);
+    virtual QString getinspattern(void);
+    virtual void getrefmap(std::map<QString, InsNameElem *> &m);
 
     int ninstructions(void);
     void append(std::shared_ptr<InsNameElem> next);
@@ -32,7 +33,7 @@ public:
 
 protected:
     std::shared_ptr<InsNameElem> nextelem;
-    std::string elemname;
+    QString elemname;
     size_t value;
 };
 
@@ -41,8 +42,8 @@ class InsOptionElem : public InsNameElem {
 public:
     InsOptionElem(const char *name);
     virtual size_t ntokens(void) override;
-    virtual std::string getinstruction(void);
-    virtual std::string getinspattern(void);
+    virtual QString getinstruction(void);
+    virtual QString getinspattern(void);
 };
 
 class InsListElem : public InsNameElem {
@@ -50,14 +51,14 @@ class InsListElem : public InsNameElem {
 public:
     InsListElem(const char *name, Table *t, const char *idx);
     virtual size_t ntokens(void) override;
-    virtual std::string getinstruction(void);
-    virtual std::string getinspattern(void);
-    virtual void getrefmap(std::map<std::string, InsNameElem *> &m);
+    virtual QString getinstruction(void);
+    virtual QString getinspattern(void);
+    virtual void getrefmap(std::map<QString, InsNameElem *> &m);
 
-    std::string getindex(void) const;
+    QString getindex(void) const;
 
 protected:
-    std::string indexname;
+    QString indexname;
     Table *thetable;
 };
 

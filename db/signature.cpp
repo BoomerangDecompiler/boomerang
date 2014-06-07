@@ -81,8 +81,8 @@ class Win32Signature : public Signature {
     static bool qualified(UserProc *p, Signature &candidate);
 
     virtual void addReturn(SharedType type, Exp *e = nullptr) override;
-    virtual void addParameter(SharedType type, const char *nam = nullptr, Exp *e = nullptr,
-                              const char *boundMax = "") override;
+    virtual void addParameter(SharedType type, const QString &nam = QString::null, Exp *e = nullptr,
+                              const QString &boundMax = "") override;
     virtual Exp *getArgumentExp(int n) override;
 
     virtual Signature *promote(UserProc *) override;
@@ -121,8 +121,8 @@ class PentiumSignature : public Signature {
     static bool qualified(UserProc *p, Signature &);
 
     virtual void addReturn(SharedType type, Exp *e = nullptr) override;
-    virtual void addParameter(SharedType type, const char *nam = nullptr, Exp *e = nullptr,
-                              const char *boundMax = "") override;
+    virtual void addParameter(SharedType type, const QString &nam = QString::null, Exp *e = nullptr,
+                              const QString &boundMax = "") override;
     virtual Exp *getArgumentExp(int n) override;
 
     virtual Signature *promote(UserProc *) override;
@@ -148,8 +148,8 @@ class SparcSignature : public Signature {
     static bool qualified(UserProc *p, Signature &);
 
     virtual void addReturn(SharedType type, Exp *e = nullptr) override;
-    virtual void addParameter(SharedType type, const char *nam = nullptr, Exp *e = nullptr,
-                              const char *boundMax = "") override;
+    virtual void addParameter(SharedType type, const QString &nam = QString::null, Exp *e = nullptr,
+                              const QString &boundMax = "") override;
     virtual Exp *getArgumentExp(int n) override;
 
     virtual Signature *promote(UserProc *) override;
@@ -186,8 +186,8 @@ class PPCSignature : public Signature {
     static bool qualified(UserProc *p, Signature &);
     virtual void addReturn(SharedType type, Exp *e = nullptr) override;
     virtual Exp *getArgumentExp(int n) override;
-    virtual void addParameter(SharedType type, const char *nam /*= nullptr*/, Exp *e /*= nullptr*/,
-                              const char *boundMax /*= ""*/) override;
+    virtual void addParameter(SharedType type, const QString &nam = QString::null, Exp *e = nullptr,
+                              const QString &boundMax = "") override;
     virtual Exp *getStackWildcard() override;
     virtual int getStackRegister() noexcept(false) override { return 1; }
     virtual Exp *getProven(Exp *left) override;
@@ -211,8 +211,8 @@ class MIPSSignature : public Signature {
     static bool qualified(UserProc *p, Signature &);
     virtual void addReturn(SharedType type, Exp *e = nullptr) override;
     virtual Exp *getArgumentExp(int n) override;
-    virtual void addParameter(SharedType type, const char *nam /*= nullptr*/, Exp *e /*= nullptr*/,
-                              const char *boundMax /*= ""*/) override;
+    virtual void addParameter(SharedType type, const QString &nam = QString::null, Exp *e = nullptr,
+                              const QString &boundMax = "") override;
     virtual Exp *getStackWildcard() override;
     virtual int getStackRegister() noexcept(false) override { return 1; }
     virtual Exp *getProven(Exp *left) override;
@@ -233,8 +233,8 @@ class ST20Signature : public Signature {
     static bool qualified(UserProc *p, Signature &);
 
     virtual void addReturn(SharedType type, Exp *e = nullptr) override;
-    void addParameter(SharedType type, const char *nam /*= nullptr*/, Exp *e /*= nullptr*/,
-                      const char *boundMax /*= ""*/) override;
+    void addParameter(SharedType type, const QString &nam = QString::null, Exp *e = nullptr,
+                      const QString &boundMax = "") override;
     Exp *getArgumentExp(int n) override;
 
     virtual Signature *promote(UserProc *) override;
@@ -279,14 +279,12 @@ static void cloneVec(Returns &from, Returns &to) {
         to[i] = from[i]->clone();
 }
 
-Parameter *hack;
 Parameter::~Parameter() {
     delete exp;
 }
-Parameter *Parameter::clone() { return new Parameter(type->clone(), m_name.c_str(), exp->clone(), boundMax.c_str()); }
+Parameter *Parameter::clone() { return new Parameter(type->clone(), m_name, exp->clone(), boundMax); }
 
-void Parameter::setBoundMax(const char *nam) {
-    hack = this;
+void Parameter::setBoundMax(const QString &nam) {
     boundMax = nam;
 }
 
@@ -363,8 +361,8 @@ void CallingConvention::Win32Signature::addReturn(SharedType type, Exp *e) {
     Signature::addReturn(type, e);
 }
 
-void CallingConvention::Win32Signature::addParameter(SharedType type, const char *nam /*= nullptr*/, Exp *e /*= nullptr*/,
-                                                     const char *boundMax /*= ""*/) {
+void CallingConvention::Win32Signature::addParameter(SharedType type, const QString &nam, Exp *e,
+                                                     const QString &boundMax) {
     if (e == nullptr) {
         e = getArgumentExp(params.size());
     }
@@ -573,8 +571,8 @@ void CallingConvention::StdC::PentiumSignature::addReturn(SharedType type, Exp *
     Signature::addReturn(type, e);
 }
 
-void CallingConvention::StdC::PentiumSignature::addParameter(SharedType type, const char *nam /*= nullptr*/,
-                                                             Exp *e /*= nullptr*/, const char *boundMax /*= ""*/) {
+void CallingConvention::StdC::PentiumSignature::addParameter(SharedType type, const QString &nam, Exp *e,
+                                                             const QString &boundMax) {
     if (e == nullptr) {
         e = getArgumentExp(params.size());
     }
@@ -708,8 +706,8 @@ void CallingConvention::StdC::PPCSignature::addReturn(SharedType type, Exp *e) {
     Signature::addReturn(type, e);
 }
 
-void CallingConvention::StdC::PPCSignature::addParameter(SharedType type, const char *nam /*= nullptr*/,
-                                                         Exp *e /*= nullptr*/, const char *boundMax /*= ""*/) {
+void CallingConvention::StdC::PPCSignature::addParameter(SharedType type, const QString &nam,
+                                                         Exp *e, const QString &boundMax) {
     if (e == nullptr) {
         e = getArgumentExp(params.size());
     }
@@ -798,8 +796,8 @@ Signature *CallingConvention::StdC::ST20Signature::promote(UserProc * /*p*/) {
     return this;
 }
 
-void CallingConvention::StdC::ST20Signature::addParameter(SharedType type, const char *nam /*= nullptr*/,
-                                                          Exp *e /*= nullptr*/, const char *boundMax /*= ""*/) {
+void CallingConvention::StdC::ST20Signature::addParameter(SharedType type, const QString &nam,
+                                                          Exp *e, const QString &boundMax) {
     if (e == nullptr) {
         e = getArgumentExp(params.size());
     }
@@ -959,8 +957,8 @@ void CallingConvention::StdC::SparcSignature::addReturn(SharedType type, Exp *e)
     Signature::addReturn(type, e);
 }
 
-void CallingConvention::StdC::SparcSignature::addParameter(SharedType type, const char *nam /*= nullptr*/,
-                                                           Exp *e /*= nullptr*/, const char *boundMax /*= ""*/) {
+void CallingConvention::StdC::SparcSignature::addParameter(SharedType type, const QString &nam,
+                                                           Exp *e, const QString &boundMax) {
     if (e == nullptr) {
         e = getArgumentExp(params.size());
     }
@@ -1151,15 +1149,15 @@ void Signature::addParameter(const char *nam /*= nullptr*/) { addParameter(VoidT
 
 void Signature::addParameter(Exp *e, SharedType ty) { addParameter(ty, nullptr, e); }
 
-void Signature::addParameter(SharedType type, const char *nam /*= nullptr*/, Exp *e /*= nullptr*/,
-                             const char *boundMax /*= ""*/) {
+void Signature::addParameter(SharedType type, const QString &nam /*= nullptr*/, Exp *e /*= nullptr*/,
+                             const QString &boundMax /*= ""*/) {
     if (e == nullptr) {
         LOG_STREAM() << "No expression for parameter ";
         if (type == nullptr)
             LOG_STREAM() << "<notype> ";
         else
             LOG_STREAM() << type->getCtype() << " ";
-        if (nam == nullptr)
+        if (nam.isNull())
             LOG_STREAM() << "<noname>";
         else
             LOG_STREAM() << nam;
@@ -1167,36 +1165,37 @@ void Signature::addParameter(SharedType type, const char *nam /*= nullptr*/, Exp
         assert(e); // Else get infinite mutual recursion with the below proc
     }
 
-    std::string s;
-    if (nam == nullptr) {
+    QString s;
+    QString new_name=nam;
+    if (nam.isNull()) {
         size_t n = params.size() + 1;
         bool ok = false;
         while (!ok) {
-            std::stringstream os;
-            os << "param" << n << std::ends;
-            s = os.str();
+            s = QString("param%1").arg(n);
             ok = true;
             for (auto &elem : params)
-                if (!strcmp(s.c_str(), elem->name()))
+                if (s == elem->name()) {
                     ok = false;
+                    break;
+                }
             n++;
         }
-        nam = s.c_str();
+        new_name = s;
     }
-    Parameter *p = new Parameter(type, nam, e, boundMax);
+    Parameter *p = new Parameter(type, new_name, e, boundMax);
     addParameter(p);
     // addImplicitParametersFor(p);
 }
 
 void Signature::addParameter(Parameter *param) {
     SharedType ty = param->getType();
-    const char *nam = param->name();
+    QString nam = param->name();
     Exp *e = param->getExp();
 
-    if (strlen(nam) == 0)
-        nam = nullptr;
+    if (nam.isEmpty())
+        nam = QString::null;
 
-    if (ty == nullptr || e == nullptr || nam == nullptr) {
+    if (ty == nullptr || e == nullptr || nam.isNull()) {
         addParameter(ty, nam, e, param->getBoundMax());
     } else
         params.push_back(param);
@@ -1224,7 +1223,7 @@ void Signature::setNumParams(size_t n) {
     }
 }
 
-const char *Signature::getParamName(size_t n) {
+const QString &Signature::getParamName(size_t n) {
     assert(n < params.size());
     return params[n]->name();
 }
@@ -1242,12 +1241,12 @@ SharedType Signature::getParamType(int n) {
     return params[n]->getType();
 }
 
-const char *Signature::getParamBoundMax(int n) {
+QString Signature::getParamBoundMax(int n) {
     if (n >= (int)params.size())
-        return nullptr;
-    const char *s = params[n]->getBoundMax();
-    if (strlen(s) == 0)
-        return nullptr;
+        return QString::null;
+    QString s = params[n]->getBoundMax();
+    if (s.isEmpty())
+        return QString::null;
     return s;
 }
 
@@ -1283,17 +1282,17 @@ int Signature::findParam(Exp *e) {
     return -1;
 }
 
-void Signature::renameParam(const char *oldName, const char *newName) {
+void Signature::renameParam(const QString &oldName, const char *newName) {
     for (unsigned i = 0; i < getNumParams(); i++)
-        if (!strcmp(params[i]->name(), oldName)) {
+        if (params[i]->name() ==oldName) {
             params[i]->name(newName);
             break;
         }
 }
 
-int Signature::findParam(const char *nam) {
+int Signature::findParam(const QString &nam) {
     for (unsigned i = 0; i < getNumParams(); i++)
-        if (!strcmp(getParamName(i), nam))
+        if (getParamName(i)==nam)
             return i;
     return -1;
 }

@@ -59,6 +59,7 @@ void UserProc::dfaTypeAnalysis() {
     bool ch = signature->dfaTypeAnalysis(cfg);
     StatementList stmts;
     getStatements(stmts);
+
     StatementList::iterator it;
     int iter;
     for (iter = 1; iter <= DFA_ITER_LIMIT; ++iter) {
@@ -70,12 +71,14 @@ void UserProc::dfaTypeAnalysis() {
                 LOG_STREAM().flush();
             }
             bool thisCh = false;
+            //auto before = (*it)->clone();
             (*it)->dfaTypeAnalysis(thisCh);
             if (thisCh) {
                 ch = true;
                 if (DEBUG_TA)
-                    LOG << " caused change: " << *it << "\n";
+                    LOG << " caused change: " << *it << "\n"; //<< before << " TO: "
             }
+            //delete before;
         }
         if (!ch)
             // No more changes: round robin algorithm terminates
@@ -142,6 +145,7 @@ void UserProc::dfaTypeAnalysis() {
 #endif
 
     Boomerang::get()->alertDecompileDebugPoint(this, "before other uses of dfa type analysis");
+    debugPrintAll("before other uses of dfa type analysis");
 
     Prog *_prog = getProg();
     for (it = stmts.begin(); it != stmts.end(); ++it) {
@@ -153,6 +157,8 @@ void UserProc::dfaTypeAnalysis() {
         std::list<Const *>::iterator cc;
         for (cc = lc.begin(); cc != lc.end(); ++cc) {
             Const *con = (Const *)*cc;
+            if(con->getOper()==opStrConst)
+                continue;
             SharedType t = con->getType();
             int val = con->getInt();
             if (t && t->resolvesToPointer()) {
@@ -175,7 +181,7 @@ void UserProc::dfaTypeAnalysis() {
                         ADDRESS r = addr - _prog->getGlobalAddr(gloName);
                         Exp *ne;
                         if (!r.isZero()) { // TODO: what if r is NO_ADDR ?
-                            Exp *g = Location::global(strdup(qPrintable(gloName)), this);
+                            Exp *g = Location::global(gloName, this);
                             ne = Location::memOf(Binary::get(opPlus, new Unary(opAddrOf, g), new Const(r)), this);
                         } else {
                             SharedType ty = _prog->getGlobalType(gloName);
@@ -185,7 +191,7 @@ void UserProc::dfaTypeAnalysis() {
                                 if (ty == nullptr || ty->getSize() == 0)
                                     _prog->setGlobalType(gloName, IntegerType::get(bits));
                             }
-                            Exp *g = Location::global(strdup(qPrintable(gloName)), this);
+                            Exp *g = Location::global(gloName, this);
                             if (ty && ty->resolvesToArray())
                                 ne = Binary::get(opArrayIndex, g, new Const(0));
                             else
@@ -689,9 +695,9 @@ void CallStatement::dfaTypeAnalysis(bool &ch) {
     StatementList::iterator aa;
     int n = 0;
     for (aa = arguments.begin(); aa != arguments.end(); ++aa, ++n) {
-        if (procDest && procDest->getSignature()->getParamBoundMax(n) && ((Assign *)*aa)->getRight()->isIntConst()) {
+        if (procDest && !procDest->getSignature()->getParamBoundMax(n).isNull() && ((Assign *)*aa)->getRight()->isIntConst()) {
             Assign *a = (Assign *)*aa;
-            std::string boundmax = procDest->getSignature()->getParamBoundMax(n);
+            QString boundmax = procDest->getSignature()->getParamBoundMax(n);
             assert(a->getType()->resolvesToInteger());
             StatementList::iterator aat;
             int nt = 0;
@@ -1251,7 +1257,7 @@ void Unary::descendType(SharedType parentType, bool &ch, Instruction *s) {
         break;
     case opGlobal: {
         Prog *prog = s->getProc()->getProg();
-        const char *name = ((Const *)subExp1)->getStr();
+        QString name = ((Const *)subExp1)->getStr();
         SharedType ty = prog->getGlobalType(name);
         if (ty) {
             ty = ty->meetWith(parentType, ch);

@@ -164,7 +164,7 @@ class RTLInstDict {
     void reset();
     std::pair<std::string, unsigned> getSignature(const char *name);
 
-    int appendToDict(std::string &n, std::list<std::string> &p, RTL &rtl);
+    int appendToDict(const QString &n, std::list<std::string> &p, RTL &rtl);
 
     std::list<Instruction *> *instantiateRTL(const QString &name, ADDRESS natPC, const std::vector<Exp *> &actuals);
     std::list<Instruction *> *instantiateRTL(RTL &rtls, ADDRESS, std::list<std::string> &params,
@@ -204,7 +204,7 @@ class RTLInstDict {
     bool bigEndian; // True if this source is big endian
 
     //! The actual dictionary.
-    std::map<std::string, TableEntry, std::less<std::string>> idict;
+    std::map<QString, TableEntry, std::less<QString>> idict;
 
     //! An RTL describing the machine's basic fetch-execute cycle
     std::list<Instruction *> *fetchExecCycle;

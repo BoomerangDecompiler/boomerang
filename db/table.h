@@ -15,17 +15,17 @@
 #ifndef TABLE_H
 #define TABLE_H
 
-#include <string>
+#include <QString>
 #include <deque>
 
 // Kinds of SSL specification tables
 enum TABLE_TYPE { NAMETABLE, OPTABLE, EXPRTABLE };
 
 class Table {
-    typedef std::deque<std::string> tRecords;
+    typedef std::deque<QString> tRecords;
 
   public:
-    Table(const std::deque<std::string> &recs, TABLE_TYPE t = NAMETABLE);
+    Table(const std::deque<QString> &recs, TABLE_TYPE t = NAMETABLE);
     Table(TABLE_TYPE t);
     virtual ~Table() {}
     TABLE_TYPE getType() const;
@@ -37,7 +37,7 @@ class Table {
 
 class OpTable : public Table {
   public:
-    OpTable(const std::deque<std::string> &ops);
+    OpTable(const std::deque<QString> &ops);
 };
 
 class Exp;

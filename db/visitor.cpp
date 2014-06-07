@@ -329,7 +329,7 @@ bool UsedLocalFinder::visit(TypedExp *e, bool &override) {
     if (ty->resolvesToPointer()) {
         Exp *sub = e->getSubExp1();
         auto mof = Location::memOf(sub);
-        if (proc->findLocal(mof, ty)) {
+        if (!proc->findLocal(mof, ty).isNull()) {
             used->insert(mof);
             override = true;
         }
@@ -340,8 +340,8 @@ bool UsedLocalFinder::visit(TypedExp *e, bool &override) {
 bool UsedLocalFinder::visit(Terminal *e) {
     if (e->getOper() == opDefineAll)
         all = true;
-    const char *sym = proc->findFirstSymbol(e);
-    if (sym)
+    QString sym = proc->findFirstSymbol(e);
+    if (!sym.isNull())
         used->insert(e);
     return true; // Always continue recursion
 }
@@ -784,7 +784,7 @@ bool ExpHasMemofTester::visit(Location *e, bool &override) {
 bool TempToLocalMapper::visit(Location *e, bool &override) {
     if (e->isTemp()) {
         // We have a temp subexpression; get its name
-        const char *tempName = ((Const *)e->getSubExp1())->getStr();
+        QString tempName = ((Const *)e->getSubExp1())->getStr();
         SharedType ty = Type::getTempType(tempName); // Types for temps strictly depend on the name
         // This call will do the mapping from the temp to a new local:
         proc->getSymbolExp(e, ty, true);
@@ -834,7 +834,7 @@ Exp *ConstGlobalConverter::preVisit(RefExp *e, bool &recur) {
             return new Const(value);
         } else if (base->isGlobal()) {
             // We have a glo{-}
-            const char *gname = ((Const *)(base->getSubExp1()))->getStr();
+            QString gname = ((Const *)(base->getSubExp1()))->getStr();
             ADDRESS gloValue = prog->getGlobalAddr(gname);
             int value = prog->readNative4(gloValue);
             recur = false;
@@ -843,7 +843,7 @@ Exp *ConstGlobalConverter::preVisit(RefExp *e, bool &recur) {
                    (glo = ((Binary *)base)->getSubExp1(), glo->isGlobal())) {
             // We have a glo[K]{-}
             int K = ((Const *)idx)->getInt();
-            const char *gname = ((Const *)(glo->getSubExp1()))->getStr();
+            QString gname = ((Const *)(glo->getSubExp1()))->getStr();
             ADDRESS gloValue = prog->getGlobalAddr(gname);
             SharedType gloType = prog->getGlobal(gname)->getType();
             assert(gloType->isArray());
@@ -1016,8 +1016,8 @@ bool StmtCastInserter::common(Assignment *s) {
 }
 
 Exp *ExpSsaXformer::postVisit(RefExp *e) {
-    const char *sym = proc->lookupSymFromRefAny(e);
-    if (sym != nullptr)
+    QString sym = proc->lookupSymFromRefAny(e);
+    if (!sym.isNull())
         return Location::local(sym, proc);
     // We should not get here: all locations should be replaced with Locals or Parameters
     // LOG << "ERROR! Could not find local or parameter for " << e << " !!\n";
@@ -1029,8 +1029,8 @@ void StmtSsaXformer::commonLhs(Assignment *as) {
     Exp *lhs = as->getLeft();
     lhs = lhs->accept((ExpSsaXformer *)mod); // In case the LHS has say m[r28{0}+8] -> m[esp+8]
     RefExp *re = new RefExp(lhs, as);
-    const char *sym = proc->lookupSymFromRefAny(re);
-    if (sym)
+    QString sym = proc->lookupSymFromRefAny(re);
+    if (!sym.isNull())
         as->setLeft(Location::local(sym, proc));
 }
 
@@ -1062,8 +1062,8 @@ void StmtSsaXformer::visit(PhiAssign *s, bool &recur) {
     for (auto &v : *s) {
         assert(v.second.e != nullptr);
         RefExp r(v.second.e, v.second.def());
-        const char *sym = proc->lookupSymFromRefAny(&r);
-        if (sym != nullptr)
+        QString sym = proc->lookupSymFromRefAny(&r);
+        if (!sym.isNull())
             v.second.e = Location::local(sym, proc); // Some may be parameters, but hopefully it won't matter
     }
     recur = false; // TODO: verify recur setting

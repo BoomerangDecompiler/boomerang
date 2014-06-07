@@ -795,7 +795,7 @@ Function *Prog::findProc(const QString &name) const {
 }
 
 //! lookup a library procedure by name; create if does not exist
-LibProc *Prog::getLibraryProc(const char *nam) {
+LibProc *Prog::getLibraryProc(const QString &nam) {
     Function *p = findProc(nam);
     if (p && p->isLib())
         return (LibProc *)p;
@@ -1318,14 +1318,13 @@ void Prog::removeUnusedGlobals() {
         namedGlobals[g->getName()] = g;
 
     // rebuild the globals vector
-    const char *name;
     Global *usedGlobal;
 
     globals.clear();
     for (Exp *e : usedGlobals) {
         if (DEBUG_UNUSED)
             LOG << " " << e << " is used\n";
-        name = ((Const *)e->getSubExp1())->getStr();
+        QString name(((Const *)e->getSubExp1())->getStr());
         usedGlobal = namedGlobals[name];
         if (usedGlobal) {
             globals.insert(usedGlobal);

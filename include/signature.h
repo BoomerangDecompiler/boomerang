@@ -36,12 +36,12 @@ class Exp;
 class Parameter {
   private:
     SharedType type;
-    std::string m_name = "";
+    QString m_name = "";
     Exp *exp = nullptr;
-    std::string boundMax;
+    QString boundMax;
 
   public:
-    Parameter(SharedType _type, const char *_name, Exp *_exp = nullptr, const char *_boundMax = "")
+    Parameter(SharedType _type, const QString &_name, Exp *_exp = nullptr, const QString &_boundMax = "")
         : type(_type), m_name(_name), exp(_exp), boundMax(_boundMax) {}
     virtual ~Parameter();
     bool operator==(Parameter &other);
@@ -49,14 +49,14 @@ class Parameter {
 
     SharedType getType() { return type; }
     void setType(SharedType ty) { type = ty; }
-    const char *name() { return m_name.c_str(); }
-    void name(const std::string &nam) { m_name = nam; }
+    const QString &name() { return m_name; }
+    void name(const QString &nam) { m_name = nam; }
     Exp *getExp() { return exp; }
     void setExp(Exp *e) { exp = e; }
 
     // this parameter is the bound of another parameter with name nam
-    const char *getBoundMax() { return boundMax.c_str(); }
-    void setBoundMax(const char *nam);
+    QString getBoundMax() { return boundMax; }
+    void setBoundMax(const QString &nam);
 
   protected:
     friend class XMLProgParser;
@@ -145,7 +145,8 @@ class Signature {
 
     // add a new parameter to this signature
     virtual void addParameter(const char *nam = nullptr);
-    virtual void addParameter(SharedType type, const char *nam = nullptr, Exp *e = nullptr, const char *boundMax = "");
+    virtual void addParameter(SharedType type, const QString &nam = QString::null, Exp *e = nullptr,
+                              const QString &boundMax = "");
     virtual void addParameter(Exp *e, SharedType ty);
     virtual void addParameter(Parameter *param);
     void addEllipsis() { ellipsis = true; }
@@ -157,22 +158,22 @@ class Signature {
 
     // accessors for parameters
     virtual size_t getNumParams() { return params.size(); }
-    virtual const char *getParamName(size_t n);
+    virtual const QString &getParamName(size_t n);
     virtual Exp *getParamExp(int n);
     virtual SharedType getParamType(int n);
-    virtual const char *getParamBoundMax(int n);
+    virtual QString getParamBoundMax(int n);
     virtual void setParamType(int n, SharedType ty);
     virtual void setParamType(const char *nam, SharedType ty);
     virtual void setParamType(Exp *e, SharedType ty);
     virtual void setParamName(int n, const char *nam);
     virtual void setParamExp(int n, Exp *e);
     virtual int findParam(Exp *e);
-    virtual int findParam(const char *nam);
+    virtual int findParam(const QString &nam);
     // accessor for argument expressions
     virtual Exp *getArgumentExp(int n);
     virtual bool hasEllipsis() { return ellipsis; }
 
-    void renameParam(const char *oldName, const char *newName);
+    void renameParam(const QString &oldName, const char *newName);
 
     // analysis determines parameters / return type
     // virtual void analyse(UserProc *p);

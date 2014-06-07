@@ -26,7 +26,7 @@
 #include <string>
 #include <map>
 
-InsNameElem::InsNameElem(const char *name) {
+InsNameElem::InsNameElem(const QString &name) {
     elemname = name;
     value = 0;
     nextelem = nullptr;
@@ -38,15 +38,15 @@ InsNameElem::~InsNameElem(void) {
 
 size_t InsNameElem::ntokens(void) { return 1; }
 
-std::string InsNameElem::getinstruction(void) {
+QString InsNameElem::getinstruction(void) {
     return (nextelem != nullptr) ? (elemname + nextelem->getinstruction()) : elemname;
 }
 
-std::string InsNameElem::getinspattern(void) {
+QString InsNameElem::getinspattern(void) {
     return (nextelem != nullptr) ? (elemname + nextelem->getinspattern()) : elemname;
 }
 
-void InsNameElem::getrefmap(std::map<std::string, InsNameElem *> &m) {
+void InsNameElem::getrefmap(std::map<QString, InsNameElem *> &m) {
     if (nextelem != nullptr)
         nextelem->getrefmap(m);
     else
@@ -86,14 +86,14 @@ InsOptionElem::InsOptionElem(const char *name) : InsNameElem(name) {}
 
 size_t InsOptionElem::ntokens(void) { return 2; }
 
-std::string InsOptionElem::getinstruction(void) {
-    std::string s = (nextelem != nullptr)
+QString InsOptionElem::getinstruction(void) {
+    QString s = (nextelem != nullptr)
                         ? ((getvalue() == 0) ? (elemname + nextelem->getinstruction()) : nextelem->getinstruction())
                         : ((getvalue() == 0) ? elemname : "");
     return s;
 }
 
-std::string InsOptionElem::getinspattern(void) {
+QString InsOptionElem::getinspattern(void) {
     return (nextelem != nullptr) ? ('\'' + elemname + '\'' + nextelem->getinspattern()) : ('\'' + elemname + '\'');
 }
 
@@ -104,17 +104,17 @@ InsListElem::InsListElem(const char *name, Table *t, const char *idx) : InsNameE
 
 size_t InsListElem::ntokens(void) { return thetable->Records.size(); }
 
-std::string InsListElem::getinstruction(void) {
+QString InsListElem::getinstruction(void) {
     return (nextelem != nullptr) ? (thetable->Records[getvalue()] + nextelem->getinstruction())
                                  : thetable->Records[getvalue()];
 }
 
-std::string InsListElem::getinspattern(void) {
+QString InsListElem::getinspattern(void) {
     return (nextelem != nullptr) ? (elemname + '[' + indexname + ']' + nextelem->getinspattern())
                                  : (elemname + '[' + indexname + ']');
 }
 
-void InsListElem::getrefmap(std::map<std::string, InsNameElem *> &m) {
+void InsListElem::getrefmap(std::map<QString, InsNameElem *> &m) {
     if (nextelem != nullptr)
         nextelem->getrefmap(m);
     else
@@ -124,4 +124,4 @@ void InsListElem::getrefmap(std::map<std::string, InsNameElem *> &m) {
     // that indexname hasn't been used more than once on this line ..
 }
 
-std::string InsListElem::getindex(void) const { return indexname; }
+QString InsListElem::getindex(void) const { return indexname; }

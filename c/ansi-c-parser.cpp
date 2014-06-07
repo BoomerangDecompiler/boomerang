@@ -612,7 +612,7 @@ int AnsiCParser::yyparse(platform plat, callconv cc) {
         Signature *sig = Signature::instantiate(plat, cc, nullptr);
         sig->addReturn(yyvsp[-7].type);
         for (auto &elem : *yyvsp[-1].param_list)
-            if (std::string((elem)->name()) != "...")
+            if (elem->name() != "...")
                 sig->addParameter(elem);
             else {
                 sig->addEllipsis();
@@ -635,7 +635,7 @@ int AnsiCParser::yyparse(platform plat, callconv cc) {
         Signature *sig = Signature::instantiate(plat, cc, nullptr);
         sig->addReturn(yyvsp[-8].type);
         for (auto &elem : *yyvsp[-2].param_list)
-            if (std::string((elem)->name()) != "...")
+            if (elem->name() != "...")
                 sig->addParameter(elem);
             else {
                 sig->addEllipsis();
@@ -650,7 +650,7 @@ int AnsiCParser::yyparse(platform plat, callconv cc) {
         Signature *sig = Signature::instantiate(plat, cc, yyvsp[-4].type_ident->nam.c_str());
         sig->addReturn(yyvsp[-4].type_ident->ty);
         for (auto &elem : *yyvsp[-2].param_list)
-            if (std::string((elem)->name()) != "...")
+            if (elem->name() != "...")
                 sig->addParameter(elem);
             else {
                 sig->addEllipsis();
@@ -692,7 +692,7 @@ int AnsiCParser::yyparse(platform plat, callconv cc) {
         Signature *sig = Signature::instantiate(plat, cc, yyvsp[-3].type_ident->nam.c_str());
         sig->addReturn(yyvsp[-3].type_ident->ty);
         for (auto &elem : *yyvsp[-1].param_list)
-            if (std::string((elem)->name()) != "...")
+            if (elem->name() != "...")
                 sig->addParameter(elem);
             else {
                 sig->addEllipsis();
@@ -707,7 +707,7 @@ int AnsiCParser::yyparse(platform plat, callconv cc) {
         Signature *sig = Signature::instantiate(plat, yyvsp[-4].cc, yyvsp[-3].type_ident->nam.c_str());
         sig->addReturn(yyvsp[-3].type_ident->ty);
         for (auto &elem : *yyvsp[-1].param_list)
-            if (std::string((elem)->name()) != "...")
+            if (elem->name() != "...")
                 sig->addParameter(elem);
             else {
                 sig->addEllipsis();
@@ -725,7 +725,7 @@ int AnsiCParser::yyparse(platform plat, callconv cc) {
         if (yyvsp[-4].custom_options->sp)
             sig->setSP(yyvsp[-4].custom_options->sp);
         for (Parameter *it : *yyvsp[-1].param_list)
-            if (std::string(it->name()) != "...") {
+            if (it->name() != "...") {
                 sig->addParameter(it);
             } else {
                 sig->addEllipsis();

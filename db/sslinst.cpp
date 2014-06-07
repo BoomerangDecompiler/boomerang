@@ -109,17 +109,14 @@ int TableEntry::appendRTL(std::list<std::string> &p, RTL &r) {
   * \param r reference to the RTL to add
   * \returns 0 for success
   ******************************************************************************/
-int RTLInstDict::appendToDict(std::string &n, std::list<std::string> &p, RTL &r) {
-    std::string opcode = n;
-    std::transform(opcode.begin(), opcode.end(), opcode.begin(), ::toupper);
-    auto new_end = std::remove(opcode.begin(), opcode.end(), '.');
-    opcode.resize(new_end - opcode.begin());
-    std::string s(opcode);
+int RTLInstDict::appendToDict(const QString &n, std::list<std::string> &p, RTL &r) {
+    QString opcode = n.toUpper();
+    opcode.remove(".");
 
-    if (idict.find(s) == idict.end()) {
-        idict[s] = TableEntry(p, r);
+    if (idict.find(opcode) == idict.end()) {
+        idict[opcode] = TableEntry(p, r);
     } else {
-        return idict[s].appendRTL(p, r);
+        return idict[opcode].appendRTL(p, r);
     }
     return 0;
 }
@@ -200,7 +197,7 @@ void RTLInstDict::addRegister(const char *name, int id, int size, bool flt) {
 void RTLInstDict::print(QTextStream &os /*= std::cout*/) {
     for (auto &elem : idict) {
         // print the instruction name
-        os << (elem).first.c_str() << "  ";
+        os << (elem).first << "  ";
 
         // print the parameters
         const std::list<std::string> &params((elem).second.params);
@@ -313,7 +310,7 @@ std::pair<std::string, unsigned> RTLInstDict::getSignature(const char *name) {
     QString hlpr(name);
     hlpr = hlpr.replace(".","").toUpper();
     // Look up the dictionary
-    std::map<std::string, TableEntry>::iterator it = idict.find(hlpr.toStdString());
+    std::map<QString, TableEntry>::iterator it = idict.find(hlpr);
     if (it == idict.end()) {
         LOG_STREAM() << "Error: no entry for `" << name << "' in RTL dictionary\n";
         it = idict.find("NOP"); // At least, don't cause segfault
@@ -363,7 +360,7 @@ std::list<Instruction *> *RTLInstDict::instantiateRTL(const QString &name, ADDRE
             lname = itf->second.c_str();
     }
     // Retrieve the dictionary entry for the named instruction
-    auto dict_entry = idict.find(lname.toStdString());
+    auto dict_entry = idict.find(lname);
     if (dict_entry == idict.end()) { /* lname is not in dictionary */
         q_cerr << "ERROR: unknown instruction " << lname << " at " << natPC << ", ignoring.\n";
         return nullptr;
@@ -488,7 +485,7 @@ void RTLInstDict::transformPostVars(std::list<Instruction *> &rts, bool optimise
                     // Constuct a temporary. We should probably be smarter and actually check that it's not otherwise
                     // used here.
                     std::string tmpname = el.type->getTempName() + (tmpcount++) + "post";
-                    el.tmp = Location::tempOf(new Const(strdup(tmpname.c_str())));
+                    el.tmp = Location::tempOf(Const::get(tmpname.c_str()));
 
                     // Keep a copy of the referrent. For example, if the lhs is r[0]', base is r[0]
                     el.base = lhs->getSubExp1();

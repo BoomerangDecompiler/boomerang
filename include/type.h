@@ -69,8 +69,8 @@ enum eType {
 // The following two are for Type::compForAddress()
 struct ComplexTypeComp {
     bool isArray;
-    union {
-        char *memberName; // Member name if offset
+    struct {
+        QString memberName; // Member name if offset
         unsigned index;   // Constant index if array
     } u;
 };
@@ -95,7 +95,7 @@ class Type : public std::enable_shared_from_this<Type> {
     static SharedType getNamedType(const QString &name);
 
     // Return type for given temporary variable name
-    static SharedType getTempType(const std::string &name);
+    static SharedType getTempType(const QString &name);
     static SharedType parseType(const char *str); // parse a C type
 
     bool isCString();
@@ -538,7 +538,7 @@ class NamedType : public Type {
 class CompoundType : public Type {
   private:
     std::vector<SharedType > types;
-    std::vector<std::string> names;
+    std::vector<QString> names;
     int nextGenericMemberNum;
     bool generic;
 
@@ -547,7 +547,7 @@ class CompoundType : public Type {
     virtual ~CompoundType();
     virtual bool isCompound() const { return true; }
 
-    void addType(SharedType n, const char *str) {
+    void addType(SharedType n, const QString &str) {
         // check if it is a user defined type (typedef)
         SharedType t = getNamedType(n->getCtype());
         if (t)
@@ -560,19 +560,19 @@ class CompoundType : public Type {
         assert(n < getNumTypes());
         return types[n];
     }
-    SharedType getType(const char *nam);
-    const char *getName(unsigned n) {
+    SharedType getType(const QString &nam);
+    QString getName(unsigned n) {
         assert(n < getNumTypes());
-        return names[n].c_str();
+        return names[n];
     }
     void setTypeAtOffset(unsigned n, SharedType ty);
     SharedType getTypeAtOffset(unsigned n);
-    void setNameAtOffset(unsigned n, const char *nam);
-    const char *getNameAtOffset(size_t n);
+    void setNameAtOffset(unsigned n, const QString &nam);
+    QString getNameAtOffset(size_t n);
     bool isGeneric() { return generic; }
     void updateGenericMember(int off, SharedType ty, bool &ch); // Add a new generic member if necessary
     unsigned getOffsetTo(unsigned n);
-    unsigned getOffsetTo(const char *member);
+    unsigned getOffsetTo(const QString &member);
     unsigned getOffsetRemainder(unsigned n);
 
     virtual SharedType clone() const;
@@ -752,16 +752,16 @@ class DataIntervalMap {
     DataIntervalEntry *find(ADDRESS addr);     //!< Find the DataInterval at address addr, or nullptr if none
     iterator find_it(ADDRESS addr);            //!< Return an iterator to the entry for it, or end() if none
     bool isClear(ADDRESS addr, unsigned size); //!< True if from addr for size bytes is clear
-    void addItem(ADDRESS addr, const char *name, SharedType ty, bool forced = false);
+    void addItem(ADDRESS addr, QString name, SharedType ty, bool forced = false);
     void deleteItem(ADDRESS addr); // Mainly for testing?
     void expandItem(ADDRESS addr, unsigned size);
     char *prints(); // For test and debug
     void dump();    // For debug
 
   private:
-    void enterComponent(DataIntervalEntry *pdie, ADDRESS addr, const char *, SharedType ty, bool);
-    void replaceComponents(ADDRESS addr, const char *name, SharedType ty, bool);
-    void checkMatching(DataIntervalEntry *pdie, ADDRESS addr, const char *, SharedType ty, bool);
+    void enterComponent(DataIntervalEntry *pdie, ADDRESS addr, const QString &, SharedType ty, bool);
+    void replaceComponents(ADDRESS addr, const QString &name, SharedType ty, bool);
+    void checkMatching(DataIntervalEntry *pdie, ADDRESS addr, const QString &, SharedType ty, bool);
 };
 
 // Not part of the Type class, but logically belongs with it:

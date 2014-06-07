@@ -736,8 +736,7 @@ Exp *BasicBlock::getDest() noexcept(false) {
         if (gs)
             return gs->getDest();
     }
-    if (VERBOSE)
-        LOG << "throwing LastStatementNotAGotoError\n";
+    LOG_VERBOSE(1) << "throwing LastStatementNotAGotoError\n";
     throw LastStatementNotAGotoError(lastStmt);
 }
 /*! set the condition */
@@ -1254,13 +1253,14 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, BasicBlock *latch, std
             this->print(q_cerr);
             q_cerr << '\n';
             if (NodeType == COMPJUMP) {
-                std::ostringstream ost;
+                QString dat;
+                QTextStream ost(&dat);
                 assert(ListOfRTLs->size());
                 RTL *lastRTL = ListOfRTLs->back();
                 assert(!lastRTL->empty());
                 GotoStatement *gs = (GotoStatement *)lastRTL->back();
                 ost << "goto " << gs->getDest();
-                hll->AddLineComment(ost.str().c_str());
+                hll->AddLineComment(dat);
             }
             return;
         }
@@ -1761,7 +1761,7 @@ void findSwParams(char form, Exp *e, Exp *&expr, ADDRESS &T) {
         if (base->isSubscript())
             base = base->getSubExp1();
         auto con = static_cast<Const *>(base->getSubExp1());
-        const char *gloName = con->getStr();
+        QString gloName = con->getStr();
         UserProc *p = static_cast<Location *>(base)->getProc();
         Prog *prog = p->getProg();
         T = (ADDRESS)prog->getGlobalAddr(gloName);
