@@ -56,13 +56,14 @@ class Log;
 /// Interface for the procedure classes, which are used to store information about variables in the
 /// procedure such as parameters and locals.
 class Function {
-  protected:
+protected:
     friend class XMLProgParser;
 
-  public:
-    Function(Prog *prog, ADDRESS uNative, Signature *sig);
+public:
+    Function(ADDRESS uNative, Signature *sig, Prog *prog);
     virtual ~Function();
 
+    void eraseFromParent();
     QString getName() const;
     void setName(const QString &nam);
     ADDRESS getNativeAddress() const;
@@ -116,10 +117,11 @@ class Function {
     void clearVisited() { Visited = false; }
     bool isVisited() { return Visited; }
 
-    Module *getCluster() { return cluster; }
-    void setCluster(Module *c) { cluster = c; }
-
-  protected:
+    Module *getParent() { return Parent; }
+    void setParent(Module *c) { Parent = c; }
+private:
+    virtual void deleteCFG() {}
+protected:
     typedef std::map<Exp *, Exp *, lessExpStar> mExpExp;
     bool Visited;
     Prog *prog;
@@ -137,21 +139,21 @@ class Function {
     // mExpExp provenFalse;
     mExpExp recurPremises;
     std::set<CallStatement *> callerSet;
-    Module *cluster;
+    Module *Parent;
 
     Function()
         : Visited(false), prog(nullptr), signature(nullptr), address(ADDRESS::g(0L)), m_firstCaller(nullptr),
-          m_firstCallerAddr(ADDRESS::g(0L)), cluster(nullptr) {}
+          m_firstCallerAddr(ADDRESS::g(0L)), Parent(nullptr) {}
 }; // class Proc
 
 /***************************************************************************/ /**
   * LibProc class.
   ******************************************************************************/
 class LibProc : public Function {
-  protected:
+protected:
     friend class XMLProgParser;
 
-  public:
+public:
     LibProc(Prog *prog, std::string &name, ADDRESS address);
     virtual ~LibProc();
     bool isLib() { return true; } //!< Return true, since is a library proc
@@ -161,7 +163,7 @@ class LibProc : public Function {
     virtual bool isPreserved(Exp *e);                            //!< Return whether e is preserved by this proc
     void getInternalStatements(StatementList &internal);
 
-  protected:
+protected:
     LibProc() : Function() {}
 };
 
@@ -186,7 +188,7 @@ typedef std::list<UserProc *> ProcList;
   ******************************************************************************/
 
 class UserProc : public Function {
-  protected:
+protected:
     friend class XMLProgParser;
     Cfg *cfg; //!< The control flow graph.
 
@@ -209,7 +211,7 @@ class UserProc : public Function {
     int nextLocal = 0; //!< Number of the next local. Can't use locals.size() because some get deleted
     int nextParam = 0; //!< Number for param1, param2, etc
 
-  public:
+public:
     /**
      * A map between machine dependent locations and their corresponding symbolic, machine independent
      * representations.  Example: m[r28{0} - 8] -> local5; this means that *after* transforming out of SSA
@@ -220,7 +222,7 @@ class UserProc : public Function {
      */
     typedef std::multimap<const Exp *, Exp *, lessExpStar> SymbolMap;
 
-  private:
+private:
     SymbolMap symbolMap;
     /**
      * The local "symbol table", which is aware of overlaps
@@ -248,7 +250,7 @@ class UserProc : public Function {
     int stmtNumber;
     ProcSet *cycleGrp;
 
-  public:
+public:
     UserProc(Prog *prog,const std::string &name, ADDRESS address);
     virtual ~UserProc();
     void setDecoded();
@@ -257,7 +259,7 @@ class UserProc : public Function {
     Cfg *getCFG() { return cfg; }
     //! Returns a pointer to the DataFlow object.
     DataFlow *getDataFlow() { return &df; }
-    void deleteCFG();
+    void deleteCFG() override;
     virtual bool isNoReturn();
 
     SyntaxNode *getAST();
@@ -351,11 +353,11 @@ class UserProc : public Function {
     void finalSimplify();
     void eliminateDuplicateArgs();
 
-  private:
+private:
     void searchRegularLocals(OPER minusOrPlus, bool lastPass, int sp, StatementList &stmts);
-    QString newLocalName(Exp *e);
+    QString newLocalName(Exp &e);
 
-  public:
+public:
     bool removeNullStatements();
     bool removeDeadStatements();
     typedef std::map<Instruction *, int> RefCounter;
@@ -420,9 +422,9 @@ class UserProc : public Function {
     StatementList &getParameters() { return parameters; }
     StatementList &getModifieds() { return theReturnStatement->getModifieds(); }
 
-  public:
+public:
     Exp *getSymbolExp(Exp *le, SharedType ty = nullptr, bool lastPass = false);
-    Exp *newLocal(SharedType ty, Exp *e, char *nam = nullptr);
+    Exp *newLocal(SharedType ty, Exp &e, char *nam = nullptr);
     void addLocal(SharedType ty, const QString &nam, Exp *e);
     SharedType getLocalType(const QString &nam);
     void setLocalType(const QString &nam, SharedType ty);
@@ -432,15 +434,15 @@ class UserProc : public Function {
     void mapSymbolToRepl(const Exp *from, Exp *oldTo, Exp *newTo);
     void removeSymbolMapping(const Exp *from, Exp *to);
     Exp *getSymbolFor(const Exp *e, SharedType ty);
-    QString lookupSym(const Exp *e, SharedType ty);
-    QString lookupSymFromRef(RefExp *r);
-    QString lookupSymFromRefAny(RefExp *r);
+    QString lookupSym(const Exp &e, SharedType ty);
+    QString lookupSymFromRef(RefExp &r);
+    QString lookupSymFromRefAny(RefExp &r);
     QString lookupParam(Exp *e);
-    void checkLocalFor(RefExp *r);
+    void checkLocalFor(RefExp &r);
     SharedType getTypeForLocation(const Exp *e);
     const SharedType getTypeForLocation(const Exp *e) const;
-    QString findLocal(Exp *e, SharedType ty);
-    QString findLocalFromRef(RefExp *r);
+    QString findLocal(Exp &e, SharedType ty);
+    QString findLocalFromRef(RefExp &r);
     QString findFirstSymbol(Exp *e);
     int getNumLocals() { return (int)locals.size(); }
     QString getLocalName(int n);
@@ -486,10 +488,10 @@ class UserProc : public Function {
     void useBeforeDefine(Exp *loc) { col.insert(loc); }
     void processDecodedICTs();
 
-  private:
+private:
     ReturnStatement *theReturnStatement;
     mutable int DFGcount; //!< used in dotty output
-  public:
+public:
     ADDRESS getTheReturnAddr() { return theReturnStatement == nullptr ? NO_ADDRESS : theReturnStatement->getRetAddr(); }
     void setTheReturnAddr(ReturnStatement *s, ADDRESS r) {
         assert(theReturnStatement == nullptr);
@@ -504,7 +506,7 @@ class UserProc : public Function {
     void verifyPHIs();
     void debugPrintAll(const char *c);
 
-  protected:
+protected:
     UserProc();
     void setCFG(Cfg *c) { cfg = c; }
 }; // class UserProc

@@ -292,7 +292,9 @@ void UserProc::dfaTypeAnalysis() {
                 }
                 LOG << "in proc " << getName() << " adding addrExp " << addrExp << " to local table\n";
                 SharedType ty = ((TypingStatement *)s)->getType();
-                localTable.addItem(ADDRESS::g(addr), lookupSym(Location::memOf(addrExp), ty), typeExp);
+                Exp * loc_mem = Location::memOf(addrExp);
+                localTable.addItem(ADDRESS::g(addr), lookupSym(*loc_mem, ty), typeExp);
+                delete loc_mem;
             }
         }
     }

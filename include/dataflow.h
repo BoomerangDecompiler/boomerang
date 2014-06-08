@@ -87,6 +87,7 @@ class DataFlow {
                                                  /*
                                                    * Dominance frontier and SSA code
                                                    */
+    ~DataFlow();
     void DFS(int p, size_t n);
     void dominators(Cfg *cfg);
     int ancestorWithLowestSemi(int v);

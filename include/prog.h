@@ -35,12 +35,12 @@ class XMLProgParser;
 typedef std::map<ADDRESS, Function *, std::less<ADDRESS>> PROGMAP;
 
 class Global {
-  private:
+private:
     SharedType type;
     ADDRESS uaddr;
     QString nam;
 
-  public:
+public:
     Global(SharedType _type, ADDRESS _uaddr, const QString &_nam) : type(_type), uaddr(_uaddr), nam(_nam) {}
     virtual ~Global();
 
@@ -58,13 +58,21 @@ class Global {
     Exp *getInitialValue(Prog *prog);
     void print(QTextStream &os, Prog *prog); // Print to stream os
 
-  protected:
+protected:
     Global() : type(nullptr), uaddr(ADDRESS::g(0L)) {}
     friend class XMLProgParser;
 }; // class Global
 
 class Prog {
-  public:
+public:
+    /// The type for the list of functions.
+    typedef std::list<Module *>               ModuleListType;
+    typedef ModuleListType::iterator                iterator;
+    typedef ModuleListType::const_iterator    const_iterator;
+private:
+    ModuleListType ModuleList;  ///< The Modules that make up this program
+
+public:
     typedef std::map<ADDRESS, std::string> mAddressString;
     Prog();
     virtual ~Prog();
@@ -90,7 +98,7 @@ class Prog {
     Function *findContainingProc(ADDRESS uAddr) const;
     bool isProcLabel(ADDRESS addr);
     std::string getNameNoPath() const;
-    std::string getNameNoPathNoExt() const;
+    QString getNameNoPathNoExt() const;
     Function *getFirstProc(PROGMAP::const_iterator &it);
     Function *getNextProc(PROGMAP::const_iterator &it);
     UserProc *getFirstUserProc(std::list<Function *>::iterator &it);
@@ -207,7 +215,17 @@ class Prog {
     // list of UserProcs for entry point(s)
     std::list<UserProc *> entryProcs;
 
-  protected:
+    const ModuleListType &  getFunctionList() const { return ModuleList; }
+    ModuleListType       &  getFunctionList()       { return ModuleList; }
+
+    iterator                begin()       { return ModuleList.begin(); }
+    const_iterator          begin() const { return ModuleList.begin(); }
+    iterator                end  ()       { return ModuleList.end();   }
+    const_iterator          end  () const { return ModuleList.end();   }
+    size_t                  size()  const { return ModuleList.size(); }
+    bool                    empty() const { return ModuleList.empty(); }
+
+protected:
     QObject *pLoaderPlugin; //!< Pointer to the instance returned by loader plugin
     LoaderInterface *pLoaderIface = nullptr;
     BinaryData *pBinaryData = nullptr; //!< Stored BinaryData interface for faster access.

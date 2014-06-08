@@ -3928,7 +3928,7 @@ bool FlagDef::accept(ExpVisitor *v) {
 }
 bool RefExp::accept(ExpVisitor *v) {
     bool override;
-    bool ret = v->visit(this, override);
+    bool ret = v->visit(*this, override);
     if (override)
         return ret;
     if (ret)

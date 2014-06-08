@@ -181,7 +181,7 @@ void Decompiler::generateCode() {
         emitClusterAndChildren(root);
     std::list<Function *>::iterator it;
     for (UserProc *p = prog->getFirstUserProc(it); p; p = prog->getNextUserProc(it)) {
-        emit newProcInCluster(p->getName(), p->getCluster()->getName());
+        emit newProcInCluster(p->getName(), p->getParent()->getName());
     }
 
     emit generateCodeCompleted();

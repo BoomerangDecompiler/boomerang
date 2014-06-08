@@ -68,7 +68,9 @@ namespace dbghelp {
 #include <sys/stat.h>
 #include <sys/types.h>
 
-Prog::Prog() : pLoaderPlugin(nullptr), pFE(nullptr), m_iNumberedProc(1), m_rootCluster(new Module("prog")) {
+Prog::Prog() : pLoaderPlugin(nullptr), pFE(nullptr), m_iNumberedProc(1) {
+    m_rootCluster = new Module("prog",this);
+    ModuleList.push_back(m_rootCluster);
     // Default constructor
 }
 
@@ -79,16 +81,20 @@ void Prog::setFrontEnd(FrontEnd *pFE) {
     pSections = qobject_cast<SectionInterface *>(pLoaderPlugin);
     pSymbols = qobject_cast<SymbolTableInterface *>(pLoaderPlugin);
     this->pFE = pFE;
+    for(Module *m : ModuleList)
+        delete m;
+    m_rootCluster = nullptr;
     if (pLoaderIface && !pLoaderIface->getFilename().isEmpty()) {
         m_name = pLoaderIface->getFilename();
-        delete m_rootCluster;
-        m_rootCluster = new Module(getNameNoPathNoExt().c_str());
+
+        m_rootCluster = new Module(getNameNoPathNoExt(),this);
+        ModuleList.push_back(m_rootCluster);
     }
 }
 
 Prog::Prog(const char *name)
     : pLoaderPlugin(nullptr), pFE(nullptr), m_name(name), m_iNumberedProc(1),
-      m_rootCluster(new Module(getNameNoPathNoExt().c_str())) {
+      m_rootCluster(new Module(getNameNoPathNoExt(),this)) {
     // Constructor taking a name. Technically, the allocation of the space for the name could fail, but this is unlikely
     m_path = m_name;
 }
@@ -96,6 +102,9 @@ Prog::Prog(const char *name)
 Prog::~Prog() {
     pLoaderPlugin->deleteLater();
     delete pFE;
+    for (Module *m : ModuleList) {
+        delete m;
+    }
     for (Function *proc : m_procs) {
         delete proc;
     }
@@ -252,13 +261,13 @@ void Prog::generateCode(Module *cluster, UserProc *proc, bool /*intermixRTL*/) {
 
         HLLCode *code = Boomerang::get()->getHLLCode(up);
         up->generateCode(code);
-        if (up->getCluster() == m_rootCluster) {
+        if (up->getParent() == m_rootCluster) {
             if (cluster == nullptr || cluster == m_rootCluster)
                 code->print(os);
         } else {
-            if (cluster == nullptr || cluster == up->getCluster()) {
-                up->getCluster()->openStream("c");
-                code->print(up->getCluster()->getStream());
+            if (cluster == nullptr || cluster == up->getParent()) {
+                up->getParent()->openStream("c");
+                code->print(up->getParent()->getStream());
             }
         }
     }
@@ -274,11 +283,11 @@ void Prog::generateRTL(Module *cluster, UserProc *proc) {
             continue;
         if (proc != nullptr && p != proc)
             continue;
-        if (cluster != nullptr && p->getCluster() != cluster)
+        if (cluster != nullptr && p->getParent() != cluster)
             continue;
 
-        p->getCluster()->openStream("rtl");
-        p->print(p->getCluster()->getStream());
+        p->getParent()->openStream("rtl");
+        p->print(p->getParent()->getStream());
     }
     m_rootCluster->closeStreams();
 }
@@ -290,10 +299,10 @@ Instruction *Prog::getStmtAtLex(Module *cluster, unsigned int begin, unsigned in
         UserProc *p = (UserProc *)pProc;
         if (!p->isDecoded())
             continue;
-        if (cluster != nullptr && p->getCluster() != cluster)
+        if (cluster != nullptr && p->getParent() != cluster)
             continue;
 
-        if (p->getCluster() == cluster) {
+        if (p->getParent() == cluster) {
             Instruction *s = p->getStmtAtLex(begin, end);
             if (s)
                 return s;
@@ -304,7 +313,7 @@ Instruction *Prog::getStmtAtLex(Module *cluster, unsigned int begin, unsigned in
 
 bool Prog::clusterUsed(Module *c) {
     for (Function *pProc : m_procs)
-        if (pProc->getCluster() == c)
+        if (pProc->getParent() == c)
             return true;
     return false;
 }
@@ -322,7 +331,7 @@ Module *Prog::getDefaultCluster(const QString &name) {
     fname[strlen(fname) - 2] = 0;
     Module *c = findCluster(fname);
     if (c == nullptr) {
-        c = new Module(fname);
+        c = new Module(fname,this);
         m_rootCluster->addChild(c);
     }
     return c;
@@ -639,14 +648,7 @@ void Prog::remProc(UserProc *uProc) {
 
     // Replace the entry in the procedure map with -1 as a warning not to decode that address ever again
     m_procLabels[uProc->getNativeAddress()] = (Function *)-1;
-
-    for (std::list<Function *>::iterator it = m_procs.begin(); it != m_procs.end(); it++) {
-        if (*it == uProc) {
-            m_procs.erase(it);
-            break;
-        }
-    }
-
+    m_procs.remove(uProc);
     // Delete the UserProc object as well
     delete uProc;
 }
@@ -1006,7 +1008,7 @@ std::string Prog::getNameNoPath() const { return QFileInfo(m_name).fileName().to
   * \sa Prog::getNameNoPath
   * \returns A string with the name
   ******************************************************************************/
-std::string Prog::getNameNoPathNoExt() const { return QFileInfo(m_name).baseName().toStdString(); }
+QString Prog::getNameNoPathNoExt() const { return QFileInfo(m_name).baseName(); }
 
 /***************************************************************************/ /**
   *

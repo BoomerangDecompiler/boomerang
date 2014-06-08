@@ -33,6 +33,11 @@ extern char debug_buffer[]; // For prints functions
  * Dominator frontier code largely as per Appel 2002 ("Modern Compiler Implementation in Java")
  */
 
+DataFlow::~DataFlow()
+{
+
+}
+
 void DataFlow::DFS(int p, size_t n) {
     if (dfnum[n] == 0) {
         dfnum[n] = N;
@@ -253,6 +258,12 @@ bool DataFlow::placePhiFunctions(UserProc *proc) {
     bucket.resize(0);
     defsites.clear(); // Clear defsites map,
     defallsites.clear();
+    for(std::set<Exp *, lessExpStar> &se : A_orig) {
+        for(Exp * e : se) {
+            if(A_phi.find(e)==A_phi.end())
+                delete e;
+        }
+    }
     A_orig.clear();   // and A_orig,
     defStmts.clear(); // and the map from variable to defining Stmt
 
@@ -468,7 +479,10 @@ bool DataFlow::renameBlockVars(UserProc *proc, int n, bool clearStacks /* = fals
                 // Note: we clone a because otherwise it could be an expression that gets deleted through various
                 // modifications. This is necessary because we do several passes of this algorithm to sort out the
                 // memory expressions
-                Stacks[a->clone()].push_back(S);
+                if(Stacks.find(a)!=Stacks.end()) // expression exists, no need for clone ?
+                    Stacks[a].push_back(S);
+                else
+                    Stacks[a->clone()].push_back(S);
                 // Replace definition of 'a' with definition of a_i in S (we don't do this)
             }
             // FIXME: MVE: do we need this awful hack?
@@ -838,12 +852,12 @@ void DataFlow::findLiveAtDomPhi(int n, LocationSet &usedByDomPhi, LocationSet &u
         ls.clear();
         S->getDefinitions(ls);
         for (Exp *it : ls) {
-            RefExp *wrappedDef = new RefExp(it, S);
+            RefExp wrappedDef(it, S);
             // If this definition is in the usedByDomPhi0 set, then it is in fact dominated by a phi use, so move it to
             // the final usedByDomPhi set
-            if (usedByDomPhi0.find(wrappedDef) != usedByDomPhi0.end()) {
-                usedByDomPhi0.remove(wrappedDef);
-                usedByDomPhi.insert(wrappedDef);
+            if (usedByDomPhi0.find(&wrappedDef) != usedByDomPhi0.end()) {
+                usedByDomPhi0.remove(&wrappedDef);
+                usedByDomPhi.insert(new RefExp(it,S));
             }
         }
     }

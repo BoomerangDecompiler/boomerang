@@ -672,13 +672,13 @@ bool hasSetFlags(Exp *e) {
 // Note: does not consider whether e is able to be renamed (from a memory Primitive point of view), only if the
 // definition can be propagated TO this stmt
 // Note: static member function
-bool Instruction::canPropagateToExp(Exp *e) {
-    if (!e->isSubscript())
+bool Instruction::canPropagateToExp(Exp &e) {
+    if (!e.isSubscript())
         return false;
-    if (((RefExp *)e)->isImplicitDef())
+    if (((RefExp &)e).isImplicitDef())
         // Can't propagate statement "-" or "0" (implicit assignments)
         return false;
-    Instruction *def = ((RefExp *)e)->getDef();
+    Instruction *def = ((RefExp &)e).getDef();
     //    if (def == this)
     // Don't propagate to self! Can happen with %pc's (?!)
     //        return false;
@@ -729,7 +729,7 @@ bool Instruction::propagateTo(bool &convert, std::map<Exp *, int, lessExpStar> *
         // exps has r24{10}, r25{30}, m[r26{30}], r26{30}
         for (ll = exps.begin(); ll != exps.end(); ll++) {
             Exp *e = *ll;
-            if (!canPropagateToExp(e))
+            if (!canPropagateToExp(*e))
                 continue;
             Assign *def = (Assign *)((RefExp *)e)->getDef();
             Exp *rhs = def->getRight();
@@ -3876,8 +3876,9 @@ bool PhiAssign::accept(StmtExpVisitor * visitor) {
 
     for (auto &v : DefVec) {
         assert(v.second.e != nullptr);
-        RefExp *re = new RefExp(v.second.e, v.second.def());
-        ret = re->accept(visitor->ev);
+        //RefExp *re = new RefExp(v.second.e, v.second.def());
+        RefExp re(v.second.e, v.second.def());
+        ret = re.accept(visitor->ev);
         if (ret == false)
             return false;
     }

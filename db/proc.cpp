@@ -106,6 +106,16 @@ extern QTextStream &alignStream(QTextStream &str,int align);
 
 Function::~Function() {}
 
+void Function::eraseFromParent()
+{
+    // Replace the entry in the procedure map with -1 as a warning not to decode that address ever again
+    Parent->setLocationMap(getNativeAddress(),(Function *)-1);
+    // Delete the cfg etc.
+    Parent->getFunctionList().remove(this);
+    this->deleteCFG();
+    delete this;  //Delete ourselves
+}
+
 /***************************************************************************/ /**
   *
   * \brief        Constructor with name, native address.
@@ -114,12 +124,12 @@ Function::~Function() {}
   * \param        sig - the Signature for this Proc
   *
   ******************************************************************************/
-Function::Function(Prog *prg, ADDRESS uNative, Signature *sig)
+Function::Function(ADDRESS uNative, Signature *sig,Prog *prg)
     : prog(prg), signature(sig), address(uNative), m_firstCaller(nullptr) {
     if (sig)
-        cluster = prg->getDefaultCluster(sig->getName());
+        Parent = prg->getDefaultCluster(sig->getName());
     else
-        cluster = prg->getRootCluster();
+        Parent = prg->getRootCluster();
 }
 
 /***************************************************************************/ /**
@@ -471,7 +481,7 @@ Function *Function::getFirstCaller() {
   * \param        name - Name of procedure
   * \param        uNative - Native address of entry point of procedure
   ******************************************************************************/
-LibProc::LibProc(Prog *prog, std::string &name, ADDRESS uNative) : Function(prog, uNative, nullptr) {
+LibProc::LibProc(Prog *prog, std::string &name, ADDRESS uNative) : Function(uNative, nullptr,prog) {
     Signature *sig = prog->getLibSignature(name.c_str());
     signature = sig;
 }
@@ -508,7 +518,7 @@ UserProc::UserProc()
 UserProc::UserProc(Prog *prog,const std::string &name, ADDRESS uNative)
     : // Not quite ready for the below fix:
       // Proc(prog, uNative, prog->getDefaultSignature(name.c_str())),
-      Function(prog, uNative, new Signature(name.c_str())),
+      Function(uNative, new Signature(name.c_str()),prog),
       cfg(new Cfg()), status(PROC_UNDECODED), cycleGrp(nullptr), theReturnStatement(nullptr), DFGcount(0) {
     cfg->setProc(this); // Initialise cfg.myProc
     localTable.setProc(this);
@@ -742,7 +752,7 @@ void UserProc::print(QTextStream &out, bool html) const {
     signature->print(out, html);
     if (html)
         out << "<br>";
-    out << "in cluster " << cluster->getName() << "\n";
+    out << "in cluster " << Parent->getName() << "\n";
     if (html)
         out << "<br>";
     out << tgt1;
@@ -2523,7 +2533,7 @@ Exp *UserProc::getSymbolExp(Exp *le, SharedType ty, bool lastPass) {
             //            if (le->isSubscript())
             //                base = ((RefExp*)le)->getSubExp1();
             // NOTE: using base below instead of le does not enhance anything, but causes us to lose def information
-            e = newLocal(ty->clone(), le);
+            e = newLocal(ty->clone(), *le);
             mapSymbolTo(le->clone(), e);
             e = e->clone();
         }
@@ -2816,12 +2826,12 @@ Instruction *UserProc::getStmtAtLex(unsigned int begin, unsigned int end) {
 void UserProc::promoteSignature() { signature = signature->promote(this); }
 
 /// Return a string for a new local suitable for \a e
-QString UserProc::newLocalName(Exp *e) {
+QString UserProc::newLocalName(Exp &e) {
     QString tgt;
     QTextStream ost(&tgt);
-    if (e->isSubscript() && ((RefExp *)e)->getSubExp1()->isRegOf()) {
+    if (e.isSubscript() && ((RefExp &)e).getSubExp1()->isRegOf()) {
         // Assume that it's better to know what register this location was created from
-        QString regName = getRegName(((RefExp *)e)->getSubExp1());
+        QString regName = getRegName(((RefExp &)e).getSubExp1());
         int tag = 0;
         do {
             ost.flush();
@@ -2837,7 +2847,7 @@ QString UserProc::newLocalName(Exp *e) {
  * Return the next available local variable; make it the given type. Note: was returning TypedExp*.
  * If nam is non null, use that name
  */
-Exp *UserProc::newLocal(SharedType ty, Exp *e, char *nam /* = nullptr */) {
+Exp *UserProc::newLocal(SharedType ty, Exp &e, char *nam /* = nullptr */) {
     QString name;
     if (nam == nullptr)
         name = newLocalName(e);
@@ -3073,7 +3083,7 @@ void UserProc::removeUnusedLocals() {
         s->getDefinitions(ls);
         for (ll = ls.begin(); ll != ls.end(); ++ll) {
             SharedType ty = s->getTypeFor(*ll);
-            QString name = findLocal(*ll, ty);
+            QString name = findLocal(**ll, ty);
             if (name.isNull())
                 continue;
             if (removes.find(name) != removes.end()) {
@@ -3216,8 +3226,8 @@ void UserProc::fromSSAform() {
         RefExp *r1, *r2;
         r1 = (RefExp *)ii->first;
         r2 = (RefExp *)ii->second; // r1 -> r2 and vice versa
-        QString name1 = lookupSymFromRefAny(r1);
-        QString name2 = lookupSymFromRefAny(r2);
+        QString name1 = lookupSymFromRefAny(*r1);
+        QString name2 = lookupSymFromRefAny(*r2);
         if (!name1.isNull() && !name2.isNull() && name1!=name2)
             continue; // Already different names, probably because of the redundant mapping
         RefExp *rename = nullptr;
@@ -3244,7 +3254,7 @@ void UserProc::fromSSAform() {
             else rename = r1;
         }
         SharedType ty = rename->getDef()->getTypeFor(rename->getSubExp1());
-        Exp *local = newLocal(ty, rename);
+        Exp *local = newLocal(ty, *rename);
         if (DEBUG_LIVENESS)
             LOG << "renaming " << rename << " to " << local << "\n";
         mapSymbolTo(rename, local);
@@ -3258,8 +3268,8 @@ void UserProc::fromSSAform() {
     for (ii = pu.begin(); ii != pu.end(); ++ii) {
         RefExp *r1 = (RefExp *)ii->first;
         RefExp *r2 = (RefExp *)ii->second;
-        QString name1 = lookupSymFromRef(r1);
-        QString name2 = lookupSymFromRef(r2);
+        QString name1 = lookupSymFromRef(*r1);
+        QString name2 = lookupSymFromRef(*r2);
         if (!name1.isNull() && !name2.isNull() && !ig.isConnected(r1, *r2)) {
             // There is a case where this is unhelpful, and it happen in test/pentium/fromssa2. We have renamed the
             // destination of the phi to ebx_1, and that leaves the two phi operands as ebx. However, we attempt to
@@ -3275,8 +3285,8 @@ void UserProc::fromSSAform() {
                 PhiAssign::iterator rr;
                 PhiAssign *pi = (PhiAssign *)def1;
                 for (rr = pi->begin(); rr != pi->end(); ++rr) {
-                    RefExp *re = (RefExp *)RefExp::get(rr->second.e, rr->second.def());
-                    if (*re == *r2)
+                    RefExp re(rr->second.e, rr->second.def());
+                    if (re == *r2)
                         r2IsOperand = true;
                     if (firstName.isNull())
                         firstName = lookupSymFromRefAny(re);
@@ -4030,38 +4040,39 @@ QString UserProc::lookupParam(Exp *e) {
         LOG << "ERROR: no implicit definition for parameter " << e << " !\n";
         return QString::null;
     }
-    RefExp *re = RefExp::get(e, def);
+    RefExp re(e, def);
     SharedType ty = def->getTypeFor(e);
     return lookupSym(re, ty);
 }
 //! Lookup a specific symbol for the given ref
-QString UserProc::lookupSymFromRef(RefExp *r) {
-    Instruction *def = r->getDef();
+QString UserProc::lookupSymFromRef(RefExp &r) {
+    Instruction *def = r.getDef();
     if (!def) {
         qDebug() << "UserProc::lookupSymFromRefAny null def";
         return QString::null;
     }
-    Exp *base = r->getSubExp1();
+    Exp *base = r.getSubExp1();
     SharedType ty = def->getTypeFor(base);
     return lookupSym(r, ty);
 }
 //! Lookup a specific symbol if any, else the general one if any
-QString UserProc::lookupSymFromRefAny(RefExp *r) {
-    Instruction *def = r->getDef();
+QString UserProc::lookupSymFromRefAny(RefExp &r) {
+    Instruction *def = r.getDef();
     if (!def) {
         qDebug() << "UserProc::lookupSymFromRefAny null def";
         return QString::null;
     }
-    Exp *base = r->getSubExp1();
+    Exp *base = r.getSubExp1();
     SharedType ty = def->getTypeFor(base);
     QString  ret = lookupSym(r, ty);
     if (!ret.isNull())
         return ret;             // Found a specific symbol
-    return lookupSym(base, ty); // Check for a general symbol
+    return lookupSym(*base, ty); // Check for a general symbol
 }
 
-QString UserProc::lookupSym(const Exp *e, SharedType ty) {
-    if (e->isTypedExp())
+QString UserProc::lookupSym(const Exp &arg, SharedType ty) {
+    const Exp *e = &arg;
+    if (arg.isTypedExp())
         e = ((const TypedExp *)e)->getSubExp1();
     SymbolMap::iterator it;
     it = symbolMap.find(e);
@@ -4417,9 +4428,9 @@ bool UserProc::filterParams(Exp *e) {
 }
 /// Determine whether e is a local, either as a true opLocal (e.g. generated by fromSSA), or if it is in the
 /// symbol map and the name is in the locals map. If it is a local, return its name, else nullptr
-QString UserProc::findLocal(Exp *e, SharedType ty) {
-    if (e->isLocal())
-        return ((Const *)((Unary *)e)->getSubExp1())->getStr();
+QString UserProc::findLocal(Exp &e, SharedType ty) {
+    if (e.isLocal())
+        return ((Const *)e.getSubExp1())->getStr();
     // Look it up in the symbol map
     QString name = lookupSym(e, ty);
     if (name.isNull())
@@ -4430,9 +4441,9 @@ QString UserProc::findLocal(Exp *e, SharedType ty) {
     return QString::null;
 }
 
-QString UserProc::findLocalFromRef(RefExp *r) {
-    Instruction *def = r->getDef();
-    Exp *base = r->getSubExp1();
+QString UserProc::findLocalFromRef(RefExp &r) {
+    Instruction *def = r.getDef();
+    Exp *base = r.getSubExp1();
     SharedType ty = def->getTypeFor(base);
     QString name = lookupSym(r, ty);
     if (name.isNull())
@@ -5736,7 +5747,7 @@ void UserProc::nameParameterPhis() {
 
         for (const auto &v : *pi) {
             if (v.second.def()->isImplicit()) {
-                RefExp *phiArg = RefExp::get(v.second.e, (Instruction *)v.second.def());
+                RefExp phiArg(v.second.e, (Instruction *)v.second.def());
                 QString name = lookupSym(phiArg, ty);
                 if (!name.isNull()) {
                     if (!firstName.isNull() && firstName!=name) {
@@ -5757,13 +5768,13 @@ bool UserProc::existsLocal(const QString &name) {
     return locals.find(name) != locals.end();
 }
 //! Check if \a r is already mapped to a local, else add one
-void UserProc::checkLocalFor(RefExp *r) {
+void UserProc::checkLocalFor(RefExp &r) {
     if (!lookupSymFromRefAny(r).isNull())
         return; // Already have a symbol for r
-    Instruction *def = r->getDef();
+    Instruction *def = r.getDef();
     if (!def)
         return; // TODO: should this be logged ?
-    Exp *base = r->getSubExp1();
+    Exp *base = r.getSubExp1();
     SharedType ty = def->getTypeFor(base);
     // No, get its name from the front end
     QString locName = nullptr;

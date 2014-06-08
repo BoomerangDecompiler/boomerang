@@ -1374,7 +1374,7 @@ void DataIntervalMap::replaceComponents(ADDRESS addr, const QString &name, Share
                 elemTy = ty->asCompound()->getTypeAtOffset(bitOffset);
             else
                 elemTy = ty->asArray()->getBaseType();
-            QString locName = proc->findLocal(locl, elemTy);
+            QString locName = proc->findLocal(*locl, elemTy);
             if (!locName.isNull() && ty->resolvesToCompound()) {
                 auto c = ty->asCompound();
                 // want s.m where s is the new compound object and m is the member at offset bitOffset

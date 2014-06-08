@@ -243,7 +243,7 @@ class Instruction {
     virtual bool searchAndReplace(const Exp &search, Exp *replace, bool cc = false) = 0; // TODO: consider constness
 
     // True if can propagate to expression e in this Statement.
-    static bool canPropagateToExp(Exp *e);
+    static bool canPropagateToExp(Exp &e);
     bool propagateTo(bool &convert, mExpInt *destCounts = nullptr, LocationSet *usedByDomPhi = nullptr,
                      bool force = false);
     bool propagateFlagsTo();

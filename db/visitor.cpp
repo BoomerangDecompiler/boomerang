@@ -283,12 +283,16 @@ bool UsedLocsFinder::visit(Terminal *e) {
     return true; // Always continue recursion
 }
 
-bool UsedLocsFinder::visit(RefExp *e, bool &override) {
+bool UsedLocsFinder::visit(RefExp &arg, bool &override) {
     if (memOnly) {
         override = false; // Look inside the ref for m[...]
         return true;      // Don't count this reference
     }
-    used->insert(e); // This location is used
+    RefExp *e = &arg;
+    if(used->find(e)==used->end()) {
+        e = (RefExp *)arg.clone();
+        used->insert(e); // This location is used
+    }
     // However, e's subexpression is NOT used ...
     override = true;
     // ... unless that is a m[x], array[x] or .x, in which case x (not m[x]/array[x]/refd.x) is used
@@ -328,11 +332,13 @@ bool UsedLocalFinder::visit(TypedExp *e, bool &override) {
     // Assumption: (cast)exp where cast is of pointer type means that exp is the address of a local
     if (ty->resolvesToPointer()) {
         Exp *sub = e->getSubExp1();
-        auto mof = Location::memOf(sub);
-        if (!proc->findLocal(mof, ty).isNull()) {
+        Exp *mof = Location::memOf(sub);
+        if (!proc->findLocal(*mof, ty).isNull()) {
             used->insert(mof);
             override = true;
         }
+        else
+            delete mof;
     }
     return true;
 }
@@ -722,7 +728,7 @@ bool MemDepthFinder::visit(Location *e, bool &override) {
 Exp *ExpPropagator::postVisit(RefExp *e) {
     // No need to call e->canRename() here, because if e's base expression is not suitable for renaming, it will never
     // have been renamed, and we never would get here
-    if (!Instruction::canPropagateToExp(e)) // Check of the definition statement is suitable for propagating
+    if (!Instruction::canPropagateToExp(*e)) // Check of the definition statement is suitable for propagating
         return e;
     Instruction *def = e->getDef();
     Exp *res = e;
@@ -755,10 +761,10 @@ bool PrimitiveTester::visit(Location * /*e*/, bool &override) {
     return false; // No need to continue searching
 }
 
-bool PrimitiveTester::visit(RefExp *e, bool &override) {
-    Instruction *def = e->getDef();
+bool PrimitiveTester::visit(RefExp &e, bool &override) {
+    Instruction *def = e.getDef();
     // If defined by a call, e had better not be a memory location (crude approximation for now)
-    if (def == nullptr || def->getNumber() == 0 || (def->isCall() && !e->getSubExp1()->isMemOf())) {
+    if (def == nullptr || def->getNumber() == 0 || (def->isCall() && !e.getSubExp1()->isMemOf())) {
         // Implicit definitions are always primitive
         // The results of calls are always primitive
         override = true; // Don't recurse into the reference
@@ -797,8 +803,8 @@ ExpRegMapper::ExpRegMapper(UserProc *p) : proc(p) { prog = proc->getProg(); }
 
 // The idea here is to map the default of a register to a symbol with the type of that first use. If the register is
 // not involved in any conflicts, it will use this name by default
-bool ExpRegMapper::visit(RefExp *e, bool &override) {
-    Exp *base = e->getSubExp1();
+bool ExpRegMapper::visit(RefExp &e, bool &override) {
+    Exp *base = e.getSubExp1();
     if (base->isRegOf() || proc->isLocalOrParamPattern(base)) // Don't convert if e.g. a global
         proc->checkLocalFor(e);
     override = true; // Don't examine the r[] inside
@@ -857,9 +863,9 @@ Exp *ConstGlobalConverter::preVisit(RefExp *e, bool &recur) {
     return e;
 }
 
-bool ExpDestCounter::visit(RefExp *e, bool &override) {
+bool ExpDestCounter::visit(RefExp &e, bool &override) {
     if (Instruction::canPropagateToExp(e))
-        destCounts[e]++;
+        destCounts[e.clone()]++;
     override = false; // Continue searching my children
     return true;      // Continue visiting the rest of Exp* e
 }
@@ -888,8 +894,8 @@ bool BadMemofFinder::visit(Location *e, bool &override) {
     return true; // Continue searching
 }
 
-bool BadMemofFinder::visit(RefExp *e, bool &override) {
-    Exp *base = e->getSubExp1();
+bool BadMemofFinder::visit(RefExp &e, bool &override) {
+    Exp *base = e.getSubExp1();
     if (base->isMemOf()) {
         // Beware: it may be possible to have a bad memof inside a subscripted one
         Exp *addr = ((Location *)base)->getSubExp1();
@@ -1016,7 +1022,7 @@ bool StmtCastInserter::common(Assignment *s) {
 }
 
 Exp *ExpSsaXformer::postVisit(RefExp *e) {
-    QString sym = proc->lookupSymFromRefAny(e);
+    QString sym = proc->lookupSymFromRefAny(*e);
     if (!sym.isNull())
         return Location::local(sym, proc);
     // We should not get here: all locations should be replaced with Locals or Parameters
@@ -1028,7 +1034,7 @@ Exp *ExpSsaXformer::postVisit(RefExp *e) {
 void StmtSsaXformer::commonLhs(Assignment *as) {
     Exp *lhs = as->getLeft();
     lhs = lhs->accept((ExpSsaXformer *)mod); // In case the LHS has say m[r28{0}+8] -> m[esp+8]
-    RefExp *re = new RefExp(lhs, as);
+    RefExp re(lhs, as);
     QString sym = proc->lookupSymFromRefAny(re);
     if (!sym.isNull())
         as->setLeft(Location::local(sym, proc));
@@ -1062,7 +1068,7 @@ void StmtSsaXformer::visit(PhiAssign *s, bool &recur) {
     for (auto &v : *s) {
         assert(v.second.e != nullptr);
         RefExp r(v.second.e, v.second.def());
-        QString sym = proc->lookupSymFromRefAny(&r);
+        QString sym = proc->lookupSymFromRefAny(r);
         if (!sym.isNull())
             v.second.e = Location::local(sym, proc); // Some may be parameters, but hopefully it won't matter
     }

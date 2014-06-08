@@ -1,23 +1,32 @@
 #include "module.h"
 
 #include "boomerang.h"
+#include "proc.h"
+#include "prog.h"
 
 #include <QDir>
 #include <QString>
 
 Module::Module() { strm.setDevice(&out); }
 
-Module::Module(const QString &_name) : Name(_name) { strm.setDevice(&out); }
+Module::Module(const QString &_name, Prog *_parent) : Name(_name) { strm.setDevice(&out); }
+
+Module::~Module()
+{
+    for (Function *proc : FunctionList) {
+        delete proc;
+    }
+}
 
 size_t Module::getNumChildren() { return Children.size(); }
 
 Module *Module::getChild(size_t n) { return Children[n]; }
 
 void Module::addChild(Module *n) {
-    if (n->Parent)
-        n->Parent->removeChild(n);
+    if (n->Upstream)
+        n->Upstream->removeChild(n);
     Children.push_back(n);
-    n->Parent = this;
+    n->Upstream = this;
 }
 
 void Module::removeChild(Module *n) {
@@ -29,7 +38,7 @@ void Module::removeChild(Module *n) {
     Children.erase(it);
 }
 
-Module *Module::getParent() { return Parent; }
+Module *Module::getUpstream() { return Upstream; }
 
 bool Module::hasChildren() { return Children.size() > 0; }
 
@@ -57,12 +66,12 @@ void Module::closeStreams() {
 
 QString Module::makeDirs() {
     QString path;
-    if (Parent)
-        path = Parent->makeDirs();
+    if (Upstream)
+        path = Upstream->makeDirs();
     else
         path = Boomerang::get()->getOutputPath();
     QDir dr(path);
-    if (getNumChildren() > 0 || Parent == nullptr) {
+    if (getNumChildren() > 0 || Upstream == nullptr) {
         dr.mkpath(Name);
         dr.cd(Name);
     }
@@ -92,4 +101,10 @@ void Module::printTree(QTextStream &ostr) {
     ostr << "\t\t" << Name << "\n";
     for (Module *elem : Children)
         elem->printTree(ostr);
+}
+
+void Module::setLocationMap(ADDRESS loc, Function *fnc)
+{
+    //    m_procLabels[loc] = fnc;
+    assert(false);
 }

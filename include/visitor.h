@@ -90,7 +90,7 @@ class ExpVisitor {
         override = false;
         return true;
     }
-    virtual bool visit(RefExp * /*e*/, bool &override) {
+    virtual bool visit(RefExp & /*e*/, bool &override) {
         override = false;
         return true;
     }
@@ -460,7 +460,7 @@ class UsedLocsFinder : public ExpVisitor {
     void setMemOnly(bool b) { memOnly = b; }
     bool isMemOnly() { return memOnly; }
 
-    virtual bool visit(RefExp *e, bool &override);
+    virtual bool visit(RefExp &e, bool &override);
     virtual bool visit(Location *e, bool &override);
     virtual bool visit(Terminal *e);
 };
@@ -678,7 +678,7 @@ class PrimitiveTester : public ExpVisitor {
     PrimitiveTester() : result(true) {} // Initialise result true: need AND of all components
     bool getResult() { return result; }
     bool visit(Location *, bool &override);
-    bool visit(RefExp *e, bool &override);
+    bool visit(RefExp &e, bool &override);
 };
 
 // Test if an expression (usually the RHS on an assignment) contains memory expressions. If so, it may not be safe to
@@ -707,7 +707,7 @@ class ExpRegMapper : public ExpVisitor {
 
   public:
     ExpRegMapper(UserProc *proc);
-    bool visit(RefExp *e, bool &override);
+    bool visit(RefExp &e, bool &override);
 };
 
 class StmtRegMapper : public StmtExpVisitor {
@@ -734,7 +734,7 @@ class ExpDestCounter : public ExpVisitor {
 
   public:
     ExpDestCounter(std::map<Exp *, int, lessExpStar> &dc) : destCounts(dc) {}
-    bool visit(RefExp *e, bool &override);
+    bool visit(RefExp &e, bool &override) override;
 };
 
 // FIXME: do I need to count collectors? All the visitors and modifiers should be refactored to conditionally visit
@@ -768,7 +768,7 @@ class BadMemofFinder : public ExpVisitor {
 
   private:
     virtual bool visit(Location *e, bool &override);
-    virtual bool visit(RefExp *e, bool &override);
+    virtual bool visit(RefExp &e, bool &override);
 };
 
 class ExpCastInserter : public ExpModifier {

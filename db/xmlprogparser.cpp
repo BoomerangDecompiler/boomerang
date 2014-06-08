@@ -424,7 +424,7 @@ void XMLProgParser::start_libproc(const QXmlStreamAttributes &attr) {
             stack.front()->proc->m_firstCaller = p;
         Module *c = (Module *)findId(attr.value(QLatin1Literal("cluster")));
         if (c)
-            stack.front()->proc->cluster = c;
+            stack.front()->proc->Parent = c;
         return;
     }
     stack.front()->proc = new LibProc();
@@ -476,7 +476,7 @@ void XMLProgParser::start_userproc(const QXmlStreamAttributes &attr) {
             u->m_firstCaller = p;
         Module *c = (Module *)findId(attr.value(QLatin1Literal("cluster")));
         if (c)
-            u->cluster = c;
+            u->Parent = c;
         ReturnStatement *r = (ReturnStatement *)findId(attr.value(QLatin1Literal("retstmt")));
         if (r)
             u->theReturnStatement = r;
@@ -2000,7 +2000,7 @@ int XMLProgParser::operFromString(const QStringRef &s) {
 // out.writeAttribute("\1",\2);
 
 void XMLProgParser::persistToXML(QXmlStreamWriter &out, Module *c) {
-    out.writeStartElement("cluster");
+    out.writeStartElement("module");
     out.writeAttribute("id", QString::number(ADDRESS::host_ptr(c).m_value));
     out.writeAttribute("name", c->Name);
     for (auto &elem : c->Children) {
@@ -2024,7 +2024,7 @@ void XMLProgParser::persistToXML(Prog *prog) {
     QTextStream &os = prog->m_rootCluster->getStream();
     QXmlStreamWriter wrt(os.device());
     wrt.writeStartDocument();
-    if (prog->m_rootCluster->getParent())
+    if (prog->m_rootCluster->getUpstream())
         wrt.writeStartElement("procs");
 
     wrt.writeStartElement("prog");
@@ -2036,9 +2036,9 @@ void XMLProgParser::persistToXML(Prog *prog) {
         persistToXML(wrt, elem);
     persistToXML(wrt, prog->m_rootCluster);
     for (auto p : prog->m_procs) {
-        QXmlStreamWriter wrt(p->getCluster()->getStream().device());
+        QXmlStreamWriter wrt(p->getParent()->getStream().device());
         wrt.writeStartDocument();
-        bool has_parent = p->getCluster()->getParent() != nullptr;
+        bool has_parent = p->getParent()->getUpstream() != nullptr;
         if (has_parent)
             wrt.writeStartElement("procs");
         persistToXML(wrt, p);
@@ -2046,7 +2046,7 @@ void XMLProgParser::persistToXML(Prog *prog) {
             wrt.writeEndElement();
         wrt.writeEndElement();
     }
-    if (prog->m_rootCluster->getParent())
+    if (prog->m_rootCluster->getUpstream())
         wrt.writeEndElement();
     wrt.writeEndElement();
     prog->m_rootCluster->closeStreams();
@@ -2059,8 +2059,8 @@ void XMLProgParser::persistToXML(QXmlStreamWriter &out, LibProc *proc) {
     out.writeAttribute("firstCallerAddress", QString::number(proc->m_firstCallerAddr.m_value));
     if (proc->m_firstCaller)
         out.writeAttribute("firstCaller", QString::number(ADDRESS::host_ptr(proc->m_firstCaller).m_value));
-    if (proc->cluster)
-        out.writeAttribute("cluster", QString::number(ADDRESS::host_ptr(proc->cluster).m_value));
+    if (proc->Parent)
+        out.writeAttribute("cluster", QString::number(ADDRESS::host_ptr(proc->Parent).m_value));
 
     persistToXML(out, proc->signature);
 
@@ -2086,8 +2086,8 @@ void XMLProgParser::persistToXML(QXmlStreamWriter &out, UserProc *proc) {
     out.writeAttribute("firstCallerAddress", QString::number(proc->m_firstCallerAddr.m_value));
     if (proc->m_firstCaller)
         out.writeAttribute("firstCaller", QString::number(ADDRESS::host_ptr(proc->m_firstCaller).m_value));
-    if (proc->cluster)
-        out.writeAttribute("cluster", QString::number(ADDRESS::host_ptr(proc->cluster).m_value));
+    if (proc->Parent)
+        out.writeAttribute("cluster", QString::number(ADDRESS::host_ptr(proc->Parent).m_value));
     if (proc->theReturnStatement)
         out.writeAttribute("retstmt", QString::number(ADDRESS::host_ptr(proc->theReturnStatement).m_value));
 

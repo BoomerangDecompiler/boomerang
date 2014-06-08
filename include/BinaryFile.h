@@ -73,20 +73,20 @@ class ObjcIvar {
 
 class ObjcMethod {
   public:
-    std::string name, types;
+    QString name, types;
     ADDRESS addr;
 };
 
 class ObjcClass {
   public:
-    std::string name;
+    QString name;
     std::map<std::string, ObjcIvar> ivars;
     std::map<std::string, ObjcMethod> methods;
 };
 
 class ObjcModule {
   public:
-    std::string name;
+    QString name;
     std::map<std::string, ObjcClass> classes;
 };
 

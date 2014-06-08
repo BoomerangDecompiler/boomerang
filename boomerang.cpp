@@ -308,7 +308,7 @@ int Boomerang::processCommand(QStringList &args) {
                 err_stream << "cannot find cluster " << args[3] << "\n";
                 return 1;
             }
-            proc->setCluster(cluster);
+            proc->setParent(cluster);
         } else if (!args[1].compare("cluster")) {
             if (args.size() <= 3) {
                 err_stream << "not enough arguments for cmd\n";
@@ -349,7 +349,7 @@ int Boomerang::processCommand(QStringList &args) {
                 return 1;
             }
 
-            Module *cluster = new Module(args[2]);
+            Module *cluster = new Module(args[2],prog);
             if (cluster == nullptr) {
                 err_stream << "cannot create cluster " << args[2] << "\n";
                 return 1;
@@ -403,8 +403,8 @@ int Boomerang::processCommand(QStringList &args) {
             }
             QFile::remove(cluster->getOutPath("xml"));
             QFile::remove(cluster->getOutPath("c"));
-            assert(cluster->getParent());
-            cluster->getParent()->removeChild(cluster);
+            assert(cluster->getUpstream());
+            cluster->getUpstream()->removeChild(cluster);
         } else {
             err_stream << "don't know how to delete a " << args[1] << "\n";
             return 1;
@@ -503,14 +503,14 @@ int Boomerang::processCommand(QStringList &args) {
             }
 
             out_stream << "cluster " << cluster->getName() << ":\n";
-            if (cluster->getParent())
-                out_stream << "\tparent = " << cluster->getParent()->getName() << "\n";
+            if (cluster->getUpstream())
+                out_stream << "\tparent = " << cluster->getUpstream()->getName() << "\n";
             else
                 out_stream << "\troot cluster.\n";
             out_stream << "\tprocs:\n";
             PROGMAP::const_iterator it;
             for (Function *p = prog->getFirstProc(it); p; p = prog->getNextProc(it))
-                if (p->getCluster() == cluster)
+                if (p->getParent() == cluster)
                     out_stream << "\t\t" << p->getName() << "\n";
             out_stream << "\n";
 
@@ -528,7 +528,7 @@ int Boomerang::processCommand(QStringList &args) {
             }
 
             out_stream << "proc " << proc->getName() << ":\n";
-            out_stream << "\tbelongs to cluster " << proc->getCluster()->getName() << "\n";
+            out_stream << "\tbelongs to cluster " << proc->getParent()->getName() << "\n";
             out_stream << "\tnative address " << proc->getNativeAddress() << "\n";
             if (proc->isLib())
                 out_stream << "\tis a library proc.\n";
@@ -633,21 +633,21 @@ void Boomerang::objcDecode(std::map<std::string, ObjcModule> &modules, Prog *pro
     Module *root = prog->getRootCluster();
     for (auto &modules_it : modules) {
         ObjcModule &mod = (modules_it).second;
-        Module *module = new Module(mod.name.c_str());
+        Module *module = new Module(mod.name,prog);
         root->addChild(module);
-        LOG_VERBOSE(1) << "\tModule: " << mod.name.c_str() << "\n";
+        LOG_VERBOSE(1) << "\tModule: " << mod.name << "\n";
         for (auto &elem : mod.classes) {
             ObjcClass &c = (elem).second;
-            Class *cl = new Class(c.name.c_str());
+            Class *cl = new Class(c.name,prog);
             root->addChild(cl);
-            LOG_VERBOSE(1) << "\t\tClass: " << c.name.c_str() << "\n";
+            LOG_VERBOSE(1) << "\t\tClass: " << c.name << "\n";
             for (auto &_it2 : c.methods) {
                 ObjcMethod &m = (_it2).second;
                 // TODO: parse :'s in names
-                Function *p = prog->newProc(m.name.c_str(), m.addr);
-                p->setCluster(cl);
+                Function *p = prog->newProc(m.name, m.addr);
+                p->setParent(cl);
                 // TODO: decode types in m.types
-                LOG_VERBOSE(1) << "\t\t\tMethod: " << m.name.c_str() << "\n";
+                LOG_VERBOSE(1) << "\t\t\tMethod: " << m.name << "\n";
             }
         }
     }

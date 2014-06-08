@@ -31,8 +31,8 @@
 #include <QtCore/QFile>
 
 class XMLProgParser;
-class Module;
 class Function;
+class Prog;
 
 class Module {
 public:
@@ -48,22 +48,23 @@ private:
 protected:
     QString Name;
     std::vector<Module *> Children;
-    Module *Parent = nullptr;
+    Prog *Parent = nullptr;
+    Module *Upstream = nullptr;
     QFile out;
     QTextStream strm;
     std::string stream_ext;
 
 public:
     Module();
-    Module(const QString &_name);
-    virtual ~Module() {}
+    Module(const QString &_name,Prog *_parent);
+    virtual ~Module();
     QString getName() { return Name; }
     void setName(const QString &nam) { Name = nam; }
     size_t getNumChildren();
     Module *getChild(size_t n);
     void addChild(Module *n);
     void removeChild(Module *n);
-    Module *getParent();
+    Module *getUpstream();
     bool hasChildren();
     void openStream(const char *ext);
     void openStreams(const char *ext);
@@ -74,6 +75,8 @@ public:
     Module *find(const QString &nam);
     virtual bool isAggregate() { return false; }
     void printTree(QTextStream &out);
+    void setLocationMap(ADDRESS loc, Function *fnc);
+
     const FunctionListType &getFunctionList() const { return FunctionList; }
     FunctionListType       &getFunctionList()       { return FunctionList; }
 
@@ -84,6 +87,7 @@ public:
     size_t                  size()  const { return FunctionList.size(); }
     bool                    empty() const { return FunctionList.empty(); }
 
+
 protected:
     friend class XMLProgParser;
 };
@@ -93,7 +97,9 @@ protected:
     std::shared_ptr<CompoundType> Type;
 
 public:
-    Class(const char *name) : Module(name) { Type = CompoundType::get(); }
+    Class(const QString &name,Prog *_parent) : Module(name,_parent) {
+        Type = CompoundType::get();
+    }
 
     // A Class tends to be aggregated into the parent Module,
     // this isn't the case with Java, but hey, we're not doing that yet.
