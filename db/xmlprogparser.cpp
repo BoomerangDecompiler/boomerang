@@ -1161,7 +1161,7 @@ void XMLProgParser::start_callstmt(const QXmlStreamAttributes &attr) {
         stack.front()->stmt = (Instruction *)findId(attr.value(QLatin1Literal("id")));
         UserProc *p = (UserProc *)findId(attr.value(QLatin1Literal("proc")));
         if (p)
-            ((Instruction *)stack.front()->stmt)->setProc(p);
+            stack.front()->stmt->setProc(p);
         //        Statement *s = (Statement*)findId(attr.value(QLatin1Literal("parent")));
         //        if (s)
         //            ((Statement*)stack.front()->stmt)->parent = s;
@@ -1231,7 +1231,7 @@ void XMLProgParser::start_returnstmt(const QXmlStreamAttributes &attr) {
         stack.front()->stmt = (Instruction *)findId(attr.value(QLatin1Literal("id")));
         UserProc *p = (UserProc *)findId(attr.value(QLatin1Literal("proc")));
         if (p)
-            ((Instruction *)stack.front()->stmt)->setProc(p);
+            stack.front()->stmt->setProc(p);
         //      Statement *s = (Statement*)findId(attr.value(QLatin1Literal("parent")));
         //        if (s)
         //            ((Statement*)stack.front()->stmt)->parent = s;
@@ -1283,7 +1283,7 @@ void XMLProgParser::start_gotostmt(const QXmlStreamAttributes &attr) {
         stack.front()->stmt = (Instruction *)findId(attr.value(QLatin1Literal("id")));
         UserProc *p = (UserProc *)findId(attr.value(QLatin1Literal("proc")));
         if (p)
-            ((Instruction *)stack.front()->stmt)->setProc(p);
+            stack.front()->stmt->setProc(p);
         //        Statement *s = (Statement*)findId(attr.value(QLatin1Literal("parent")));
         //        if (s)
         //            ((Statement*)stack.front()->stmt)->parent = s;
@@ -1324,7 +1324,7 @@ void XMLProgParser::start_branchstmt(const QXmlStreamAttributes &attr) {
         stack.front()->stmt = (Instruction *)findId(attr.value(QLatin1Literal("id")));
         UserProc *p = (UserProc *)findId(attr.value(QLatin1Literal("proc")));
         if (p)
-            ((Instruction *)stack.front()->stmt)->setProc(p);
+            stack.front()->stmt->setProc(p);
         return;
     }
     BranchStatement *branch = new BranchStatement();
@@ -1371,7 +1371,7 @@ void XMLProgParser::start_casestmt(const QXmlStreamAttributes &attr) {
         stack.front()->stmt = (Instruction *)findId(attr.value(QLatin1Literal("id")));
         UserProc *p = (UserProc *)findId(attr.value(QLatin1Literal("proc")));
         if (p)
-            ((Instruction *)stack.front()->stmt)->setProc(p);
+            stack.front()->stmt->setProc(p);
         return;
     }
     CaseStatement *cas = new CaseStatement();
@@ -1409,7 +1409,7 @@ void XMLProgParser::start_boolasgn(const QXmlStreamAttributes &attr) {
         stack.front()->stmt = (Instruction *)findId(attr.value(QLatin1Literal("id")));
         UserProc *p = (UserProc *)findId(attr.value(QLatin1Literal("proc")));
         if (p)
-            ((Instruction *)stack.front()->stmt)->setProc(p);
+            stack.front()->stmt->setProc(p);
         return;
     }
     QStringRef n = attr.value(QLatin1Literal("size"));

@@ -1764,7 +1764,7 @@ void findSwParams(char form, Exp *e, Exp *&expr, ADDRESS &T) {
         QString gloName = con->getStr();
         UserProc *p = static_cast<Location *>(base)->getProc();
         Prog *prog = p->getProg();
-        T = (ADDRESS)prog->getGlobalAddr(gloName);
+        T = prog->getGlobalAddr(gloName);
         expr = e->getSubExp2();
         break;
     }

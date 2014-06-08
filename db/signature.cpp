@@ -693,7 +693,7 @@ Exp *CallingConvention::StdC::PPCSignature::getArgumentExp(int n) {
         // m[%r1+12], etc.
         e = Location::memOf(Binary::get(opPlus, Location::regOf(1), new Const(8 + (n - 8) * 4)));
     } else
-        e = Location::regOf((int)(3 + n));
+        e = Location::regOf(3 + n);
     return e;
 }
 
@@ -1075,7 +1075,7 @@ Exp *CallingConvention::StdC::SparcSignature::getArgumentExp(int n) {
                                         Location::regOf(14), // %o6 == %sp
                                         new Const(92 + (n - 6) * 4)));
     } else
-        e = Location::regOf((int)(8 + n));
+        e = Location::regOf(8 + n);
     return e;
 }
 

@@ -212,10 +212,10 @@ const char *Decompiler::procStatus(UserProc *p) {
 }
 
 void Decompiler::alertConsidering(Function *parent, Function *p) {
-    emit consideringProc(QString(parent ? parent->getName() : ""), QString(p->getName()));
+    emit consideringProc(parent ? parent->getName() : "", p->getName());
 }
 
-void Decompiler::alertDecompiling(UserProc *p) { emit decompilingProc(QString(p->getName())); }
+void Decompiler::alertDecompiling(UserProc *p) { emit decompilingProc(p->getName()); }
 
 void Decompiler::alertNew(Function *p) {
     if (p->isLib()) {
@@ -232,17 +232,17 @@ void Decompiler::alertNew(Function *p) {
                     params.append(", ");
             }
         }
-        emit newLibProc(QString(p->getName()), params);
+        emit newLibProc(p->getName(), params);
     } else {
-        emit newUserProc(QString(p->getName()), p->getNativeAddress());
+        emit newUserProc(p->getName(), p->getNativeAddress());
     }
 }
 
 void Decompiler::alertRemove(Function *p) {
     if (p->isLib()) {
-        emit removeLibProc(QString(p->getName()));
+        emit removeLibProc(p->getName());
     } else {
-        emit removeUserProc(QString(p->getName()), p->getNativeAddress());
+        emit removeUserProc(p->getName(), p->getNativeAddress());
     }
 }
 
@@ -262,7 +262,7 @@ void Decompiler::alertDecompileDebugPoint(UserProc *p, const char *description) 
     LOG << p->getName() << ": " << description << "\n";
     if (Debugging) {
         Waiting = true;
-        emit debuggingPoint(QString(p->getName()), QString(description));
+        emit debuggingPoint(p->getName(), description);
         while (Waiting) {
             thread()->wait(10);
         }
@@ -303,7 +303,7 @@ void Decompiler::getCompoundMembers(const QString &name, QTableWidget *tbl) {
         tbl->setRowCount(tbl->rowCount() + 1);
         tbl->setItem(tbl->rowCount() - 1, 0, new QTableWidgetItem(tr("%1").arg(c->getOffsetTo(i))));
         tbl->setItem(tbl->rowCount() - 1, 1, new QTableWidgetItem(tr("%1").arg(c->getOffsetTo(i) / 8)));
-        tbl->setItem(tbl->rowCount() - 1, 2, new QTableWidgetItem(QString(c->getName(i))));
+        tbl->setItem(tbl->rowCount() - 1, 2, new QTableWidgetItem(c->getName(i)));
         tbl->setItem(tbl->rowCount() - 1, 3, new QTableWidgetItem(tr("%1").arg(c->getType(i)->getSize())));
     }
 }

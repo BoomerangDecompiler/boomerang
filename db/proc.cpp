@@ -3067,7 +3067,7 @@ void UserProc::removeUnusedLocals() {
         const QString &name(it->first);
         // LOG << "Considering local " << name << "\n";
         if (VERBOSE && all && removes.size())
-            LOG << "WARNING: defineall seen in procedure " << name << " so not removing " << (int)removes.size()
+            LOG << "WARNING: defineall seen in procedure " << name << " so not removing " << removes.size()
                 << " locals\n";
         if (usedLocals.find(name) == usedLocals.end() && !all) {
             if (VERBOSE)
@@ -3616,8 +3616,8 @@ bool UserProc::prover(Exp *query, std::set<PhiAssign *> &lastPhis, std::map<PhiA
                     // See if we can prove something about this register.
                     UserProc *destProc = (UserProc *)call->getDestProc();
                     Exp *base = r->getSubExp1();
-                    if (destProc && !destProc->isLib() && ((UserProc *)destProc)->cycleGrp != nullptr &&
-                        ((UserProc *)destProc)->cycleGrp->find(this) != ((UserProc *)destProc)->cycleGrp->end()) {
+                    if (destProc && !destProc->isLib() && destProc->cycleGrp != nullptr &&
+                        destProc->cycleGrp->find(this) != destProc->cycleGrp->end()) {
                         // The destination procedure may not have preservation proved as yet, because it is involved
                         // in our recursion group. Use the conditional preservation logic to determine whether query is
                         // true for this procedure
