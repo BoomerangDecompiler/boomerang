@@ -27,5 +27,5 @@ ADD_LIBRARY(frontend STATIC ${SRC})
 qt5_use_modules(frontend Core)
 
 IF(BUILD_TESTING)
-#ADD_SUBDIRECTORY(unit_testing)
+ADD_SUBDIRECTORY(unit_testing)
 ENDIF()

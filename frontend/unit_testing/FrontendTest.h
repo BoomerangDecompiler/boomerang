@@ -1,6 +1,6 @@
-#include "gtest/gtest.h"
-class FrontendTest : public ::testing::Test {
-  public:
-    virtual void SetUp();
-    virtual void TearDown();
+#include <QtTest/QTest>
+class FrontendTest : public QObject {
+    Q_OBJECT
+private slots:
+    void test1();
 };

@@ -505,7 +505,7 @@ UserProc::UserProc()
   * \param uNative - Native address of entry point of procedure
   *
   ******************************************************************************/
-UserProc::UserProc(Prog *prog, std::string &name, ADDRESS uNative)
+UserProc::UserProc(Prog *prog,const std::string &name, ADDRESS uNative)
     : // Not quite ready for the below fix:
       // Proc(prog, uNative, prog->getDefaultSignature(name.c_str())),
       Function(prog, uNative, new Signature(name.c_str())),

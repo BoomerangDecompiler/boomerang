@@ -1,0 +1,79 @@
+Authors of bsd-games and bsd-games-non-free
+===========================================
+
+The bsd-games package was originally created by Curt Olson
+<curt@me.umn.edu> and Andy Tefft <teffta@engr.dnet.ge.com>.  The games
+themselves were written by many contributers to *BSD over the past
+twenty years or so.  Maintenance of the package was passed to me in
+1997; I divided it into bsd-games and bsd-games-non-free according to
+the established (DFSG/OSD) definition, following the division used for
+the Debian package of 1.3.  Much of the packaging has been written or
+extensively modified by myself.  Joey Hess <joeyh@debian.org>
+wrote the manpages for wargames and paranoia.
+
+Based on the source and manpages, here are the details of the people
+who originally wrote the games over more than 20 years.  Many of the
+email addresses below are probably no longer valid.  Please send any
+further information you have to help improve this list.
+
+adventure:	Will Crowther, Don Woods; C port by Jim Gilloghy
+arithmetic:	Eamonn McManus <emcmanus@cs.tcd.ie>
+atc:		Ed James <edjames@berkeley.edu>
+backgammon:	Alan Char
+banner:		Mark Horton
+battlestar:	David Riggle <riggle.pa@xerox.arpa>, with acknowledgements to
+		Chris Guthrie <chris%ucbcory@berkeley.arpa>, Peter Da Silva,
+		Kevin Brown, Edward Wang <edward%ucbarpa@berkeley.arpa>,
+		Ken Arnold & Company
+bcd:		Steve Hayman <sahayman@iuvax.cs.indiana.edu>
+boggle:		Barry Brachman <brachman@cs.ubc.ca>
+caesar:		Rick Adams, Stan King, John Eldridge, based on algorithm
+		suggested by Bob Morris
+canfield:	Steve Levine; further random hacking by Steve Feldman,
+		Kirk McKusick, Mikey Olson, Eric Allman
+countmail:	Charles M. Hannum <mycroft@netbsd.org>
+cribbage:	Earl T. Cohen, Ken Arnold
+dm:		(unknown)
+factor:		Landon Curt Noll <chongo@toad.com>
+fish:		Muffy Barkocy
+fortune:	Ken Arnold (fortunes from many sources)
+gomoku:		Ralph Campbell (with acknowledgement to Peter Langston)
+hack:		Originally Jay Fenlason, with help from Kenny
+		Woodland, Mike Thome and Jon Payne; this version
+		almost entirely rewritten by Andries Brouwer <aeb@cwi.nl>.
+hangman:	Ken Arnold
+hunt:		Conrad Huang <conrad@cgl.ucsf.edu>,
+		Greg Couch <gregc@cgl.ucsf.edu>
+mille:		Ken Arnold
+monop:		Ken Arnold
+morse:		(unknown)
+number:		(unknown)
+phantasia:	Edward Estes <ihnp4!ttrde!estes>, with thanks to
+		Chris Robertson
+pig:		(unknown)
+pom:		Keith E. Brandt
+ppt:		(unknown)
+primes:		Landon Curt Noll <chongo@toad.com>
+quiz:		Jim R. Oldroyd
+rain:		Eric P. Scott
+random:		Guy Harris
+robots:		Ken Arnold, Christos Zoulas <christos@zoulas.com>
+rogue:		Timothy Stoehr, Michael C. Toy, Kenneth C. R. C. Arnold,
+		Glenn Wichman
+sail:		Dave Riggle <riggle@ernie.berkeley.edu>,
+		Ed Wang <edward@ucbarpa.berkeley.edu>; Craig Leres,
+		Chris Guthrie
+snake:		(unknown)
+tetris:		Nancy L. Tinkham, Darren F. Provine, Chris Torek
+trek:		Eric Allman
+wargames:	(unknown)
+worm:		Michael Toy
+worms:		Eric P. Scott
+wtf:		Allen Briggs
+wump:		Dave Taylor
+
+
+
+Local Variables:
+mode: text
+End:

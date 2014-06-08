@@ -1,6 +1,11 @@
-#include "gtest/gtest.h"
-class FrontPentTest : public ::testing::Test {
-  public:
-    virtual void SetUp();
-    virtual void TearDown();
+#include <QtTest/QTest>
+class FrontPentTest : public QObject {
+    Q_OBJECT
+  private slots:
+    void initTestCase();
+    void test1();
+    void test2();
+    void test3();
+    void testFindMain();
+    void testBranch();
 };

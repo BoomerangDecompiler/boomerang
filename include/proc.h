@@ -249,7 +249,7 @@ class UserProc : public Function {
     ProcSet *cycleGrp;
 
   public:
-    UserProc(Prog *prog, std::string &name, ADDRESS address);
+    UserProc(Prog *prog,const std::string &name, ADDRESS address);
     virtual ~UserProc();
     void setDecoded();
     void unDecode();

@@ -81,6 +81,7 @@ void Prog::setFrontEnd(FrontEnd *pFE) {
     this->pFE = pFE;
     if (pLoaderIface && !pLoaderIface->getFilename().isEmpty()) {
         m_name = pLoaderIface->getFilename();
+        delete m_rootCluster;
         m_rootCluster = new Module(getNameNoPathNoExt().c_str());
     }
 }

@@ -204,7 +204,7 @@ class PPCSignature : public Signature {
 };
 class MIPSSignature : public Signature {
   public:
-    MIPSSignature(const char *name);
+    MIPSSignature(const QString &name);
     MIPSSignature(Signature &old);
     virtual ~MIPSSignature() {}
     virtual Signature *clone() override;
@@ -214,7 +214,7 @@ class MIPSSignature : public Signature {
     virtual void addParameter(SharedType type, const QString &nam = QString::null, Exp *e = nullptr,
                               const QString &boundMax = "") override;
     virtual Exp *getStackWildcard() override;
-    virtual int getStackRegister() noexcept(false) override { return 1; }
+    virtual int getStackRegister() noexcept(false) override { return 29; }
     virtual Exp *getProven(Exp *left) override;
     virtual bool isPreserved(Exp *e) override;                    // Return whether e is preserved by this proc
     virtual void setLibraryDefines(StatementList *defs) override; // Set list of locations def'd by library calls
@@ -934,6 +934,28 @@ bool CallingConvention::StdC::PPCSignature::qualified(UserProc *p, Signature & /
     return true;
 }
 
+CallingConvention::StdC::MIPSSignature::MIPSSignature(const QString &name) : Signature(name) {
+    Signature::addReturn(Location::regOf(2));
+}
+
+Signature *CallingConvention::StdC::MIPSSignature::clone()
+{
+    MIPSSignature *n = new MIPSSignature(name);
+    cloneVec(params, n->params);
+    // cloneVec(implicitParams, n->implicitParams);
+    cloneVec(returns, n->returns);
+    n->ellipsis = ellipsis;
+    n->rettype = rettype->clone();
+    n->preferedName = preferedName;
+    if (preferedReturn)
+        n->preferedReturn = preferedReturn->clone();
+    else
+        n->preferedReturn = nullptr;
+    n->preferedParams = preferedParams;
+    n->unknown = unknown;
+    return n;
+}
+
 bool CallingConvention::StdC::MIPSSignature::qualified(UserProc *p, Signature & /*candidate*/) {
     if (VERBOSE)
         LOG << "consider promotion to stdc MIPS signature for " << p->getName() << "\n";
@@ -946,6 +968,83 @@ bool CallingConvention::StdC::MIPSSignature::qualified(UserProc *p, Signature & 
         LOG << "Promoted to StdC::MIPSSignature (always qualifies)\n";
 
     return true;
+}
+
+void CallingConvention::StdC::MIPSSignature::addReturn(SharedType type, Exp *e)
+{
+    if (type->isVoid())
+        return;
+    if (e == nullptr) {
+        if(type->isInteger() || type->isPointer())
+            e = Location::regOf(2); // register $2
+        else if (type->isFloat())
+            e = Location::regOf(32); // register $f0
+        else
+            e = Location::regOf(2); // register $2
+    }
+    Signature::addReturn(type, e);
+}
+
+Exp *CallingConvention::StdC::MIPSSignature::getArgumentExp(int n)
+{
+    if (n < (int)params.size())
+        return Signature::getArgumentExp(n);
+    Exp *e;
+    if (n >= 4) {
+        // MIPS abi - pass the 4th and subsequent parameters at m[%sp+home_locations],
+        // theo sp +0 .. home_locations contains a 'shadow' set of locations for first parameters
+        // m[%esp+home_locations], etc.
+        //
+        e = Location::memOf(Binary::get(opPlus,
+                                        Location::regOf(29), // %o6 == %sp
+                                        new Const(4*4 + (n - 4) * 4)));
+    } else
+        e = Location::regOf((int)(8 + n));
+    return e;
+
+}
+
+void CallingConvention::StdC::MIPSSignature::addParameter(SharedType type, const QString &nam, Exp *e, const QString &boundMax)
+{
+    if (e == nullptr) {
+        e = getArgumentExp(params.size());
+    }
+    Signature::addParameter(type, nam, e, boundMax);
+}
+
+Exp *CallingConvention::StdC::MIPSSignature::getStackWildcard()
+{
+    // m[%sp - WILD]
+    return Location::memOf(Binary::get(opMinus, Location::regOf(getStackRegister()), new Terminal(opWild)));
+}
+
+Exp *CallingConvention::StdC::MIPSSignature::getProven(Exp *left)
+{
+    if (left->isRegOfK()) {
+        int r = ((Const *)((Location *)left)->getSubExp1())->getInt();
+        if(r==getStackRegister())
+            return left;
+    }
+    return nullptr;
+}
+
+bool CallingConvention::StdC::MIPSSignature::isPreserved(Exp *e)
+{
+    if (e->isRegOfK()) {
+        int r = ((Const *)e->getSubExp1())->getInt();
+        return r == getStackRegister();
+    }
+    return false;
+}
+
+    // Return a list of locations defined by library calls
+void CallingConvention::StdC::MIPSSignature::setLibraryDefines(StatementList *defs)
+{
+    if (defs->size())
+        return; // Do only once
+    for (int r = 16; r <= 23; ++r)
+        defs->append(new ImplicitAssign(Location::regOf(r))); // Registers 16-23 are volatile (caller save)
+    defs->append(new ImplicitAssign(Location::regOf(30)));
 }
 
 void CallingConvention::StdC::SparcSignature::addReturn(SharedType type, Exp *e) {
@@ -1389,10 +1488,12 @@ Signature *Signature::instantiate(platform plat, callconv cc, const char *nam) {
         return new CallingConvention::StdC::PPCSignature(nam);
     case PLAT_ST20:
         return new CallingConvention::StdC::ST20Signature(nam);
+    case PLAT_MIPS:
+        return new CallingConvention::StdC::MIPSSignature(nam);
     // insert other conventions here
     default:
         qCritical() << "unknown signature: " << conventionName(cc) << " " << platformName(plat) << "\n";
-        assert(false);
+        return nullptr;
     }
     return nullptr;
 }

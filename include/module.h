@@ -29,7 +29,7 @@
 #include <fstream>
 #include <QtCore/QTextStream>
 #include <QtCore/QFile>
-#include <llvm/IR/Module.h>
+
 class XMLProgParser;
 class Module;
 class Function;
@@ -74,13 +74,14 @@ public:
     Module *find(const QString &nam);
     virtual bool isAggregate() { return false; }
     void printTree(QTextStream &out);
-    const FunctionListType &getFunctionList() const     { return FunctionList; }
-    FunctionListType       &getFunctionList()           { return FunctionList; }
+    const FunctionListType &getFunctionList() const { return FunctionList; }
+    FunctionListType       &getFunctionList()       { return FunctionList; }
+
     iterator                begin()       { return FunctionList.begin(); }
     const_iterator          begin() const { return FunctionList.begin(); }
     iterator                end  ()       { return FunctionList.end();   }
     const_iterator          end  () const { return FunctionList.end();   }
-    size_t                  size() const  { return FunctionList.size(); }
+    size_t                  size()  const { return FunctionList.size(); }
     bool                    empty() const { return FunctionList.empty(); }
 
 protected:
