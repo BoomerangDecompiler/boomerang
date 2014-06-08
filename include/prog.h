@@ -29,7 +29,7 @@ class LibProc;
 class Signature;
 class Instruction;
 class InstructionSet;
-class Cluster;
+class Module;
 class XMLProgParser;
 
 typedef std::map<ADDRESS, Function *, std::less<ADDRESS>> PROGMAP;
@@ -119,13 +119,13 @@ class Prog {
     void rangeAnalysis();
     void generateDotFile();
     void generateCode(QTextStream &os);
-    void generateCode(Cluster *cluster = nullptr, UserProc *proc = nullptr, bool intermixRTL = false);
-    void generateRTL(Cluster *cluster = nullptr, UserProc *proc = nullptr);
+    void generateCode(Module *cluster = nullptr, UserProc *proc = nullptr, bool intermixRTL = false);
+    void generateRTL(Module *cluster = nullptr, UserProc *proc = nullptr);
     void print(QTextStream &out);
     LibProc *getLibraryProc(const QString &nam);
     Signature *getLibSignature(const std::string &name);
     void rereadLibSignatures();
-    Instruction *getStmtAtLex(Cluster *cluster, unsigned int begin, unsigned int end);
+    Instruction *getStmtAtLex(Module *cluster, unsigned int begin, unsigned int end);
     platform getFrontEndId();
 
     mAddressString &getSymbols();
@@ -190,10 +190,10 @@ class Prog {
     void printCallGraph();
     void printCallGraphXML();
 
-    Cluster *getRootCluster() { return m_rootCluster; }
-    Cluster *findCluster(const QString &name) { return m_rootCluster->find(name); }
-    Cluster *getDefaultCluster(const QString &name);
-    bool clusterUsed(Cluster *c);
+    Module *getRootCluster() { return m_rootCluster; }
+    Module *findCluster(const QString &name) { return m_rootCluster->find(name); }
+    Module *getDefaultCluster(const QString &name);
+    bool clusterUsed(Module *c);
 
     //! Add the given RTL to the front end's map from address to aldready-decoded-RTL
     void addDecodedRtl(ADDRESS a, RTL *rtl) { pFE->addDecodedRtl(a, rtl); }
@@ -224,7 +224,7 @@ class Prog {
     std::set<Global *> globals; //!< globals to print at code generation time
     DataIntervalMap globalMap;  //!< Map from address to DataInterval (has size, name, type)
     int m_iNumberedProc;        //!< Next numbered proc will use this
-    Cluster *m_rootCluster;     //!< Root of the cluster tree
+    Module *m_rootCluster;     //!< Root of the cluster tree
 
     friend class XMLProgParser;
 }; // class Prog

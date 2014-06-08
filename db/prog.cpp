@@ -68,7 +68,7 @@ namespace dbghelp {
 #include <sys/stat.h>
 #include <sys/types.h>
 
-Prog::Prog() : pLoaderPlugin(nullptr), pFE(nullptr), m_iNumberedProc(1), m_rootCluster(new Cluster("prog")) {
+Prog::Prog() : pLoaderPlugin(nullptr), pFE(nullptr), m_iNumberedProc(1), m_rootCluster(new Module("prog")) {
     // Default constructor
 }
 
@@ -81,13 +81,13 @@ void Prog::setFrontEnd(FrontEnd *pFE) {
     this->pFE = pFE;
     if (pLoaderIface && !pLoaderIface->getFilename().isEmpty()) {
         m_name = pLoaderIface->getFilename();
-        m_rootCluster = new Cluster(getNameNoPathNoExt().c_str());
+        m_rootCluster = new Module(getNameNoPathNoExt().c_str());
     }
 }
 
 Prog::Prog(const char *name)
     : pLoaderPlugin(nullptr), pFE(nullptr), m_name(name), m_iNumberedProc(1),
-      m_rootCluster(new Cluster(getNameNoPathNoExt().c_str())) {
+      m_rootCluster(new Module(getNameNoPathNoExt().c_str())) {
     // Constructor taking a name. Technically, the allocation of the space for the name could fail, but this is unlikely
     m_path = m_name;
 }
@@ -158,7 +158,7 @@ void Prog::generateDotFile() {
     of << "}";
 }
 
-void Prog::generateCode(Cluster *cluster, UserProc *proc, bool /*intermixRTL*/) {
+void Prog::generateCode(Module *cluster, UserProc *proc, bool /*intermixRTL*/) {
     // std::string basedir = m_rootCluster->makeDirs();
     QTextStream os;
     QFile tgt;
@@ -264,7 +264,7 @@ void Prog::generateCode(Cluster *cluster, UserProc *proc, bool /*intermixRTL*/) 
     m_rootCluster->closeStreams();
 }
 
-void Prog::generateRTL(Cluster *cluster, UserProc *proc) {
+void Prog::generateRTL(Module *cluster, UserProc *proc) {
     for (Function *pProc : m_procs) {
         if (pProc->isLib())
             continue;
@@ -282,7 +282,7 @@ void Prog::generateRTL(Cluster *cluster, UserProc *proc) {
     m_rootCluster->closeStreams();
 }
 
-Instruction *Prog::getStmtAtLex(Cluster *cluster, unsigned int begin, unsigned int end) {
+Instruction *Prog::getStmtAtLex(Module *cluster, unsigned int begin, unsigned int end) {
     for (Function *pProc : m_procs) {
         if (pProc->isLib())
             continue;
@@ -301,7 +301,7 @@ Instruction *Prog::getStmtAtLex(Cluster *cluster, unsigned int begin, unsigned i
     return nullptr;
 }
 
-QString Cluster::makeDirs() {
+QString Module::makeDirs() {
     QString path;
     if (Parent)
         path = Parent->makeDirs();
@@ -315,7 +315,7 @@ QString Cluster::makeDirs() {
     return dr.absolutePath();
 }
 
-void Cluster::removeChild(Cluster *n) {
+void Module::removeChild(Module *n) {
     auto it = Children.begin();
     for (; it != Children.end(); it++)
         if (*it == n)
@@ -324,34 +324,34 @@ void Cluster::removeChild(Cluster *n) {
     Children.erase(it);
 }
 
-Cluster::Cluster() { strm.setDevice(&out); }
-Cluster::Cluster(const QString &_name) : Name(_name) { strm.setDevice(&out); }
+Module::Module() { strm.setDevice(&out); }
+Module::Module(const QString &_name) : Name(_name) { strm.setDevice(&out); }
 
-void Cluster::addChild(Cluster *n) {
+void Module::addChild(Module *n) {
     if (n->Parent)
         n->Parent->removeChild(n);
     Children.push_back(n);
     n->Parent = this;
 }
 
-Cluster *Cluster::find(const QString &nam) {
+Module *Module::find(const QString &nam) {
     if (Name == nam)
         return this;
-    for (Cluster *child : Children) {
-        Cluster *c = child->find(nam);
+    for (Module *child : Children) {
+        Module *c = child->find(nam);
         if (c)
             return c;
     }
     return nullptr;
 }
 
-QString Cluster::getOutPath(const char *ext) {
+QString Module::getOutPath(const char *ext) {
     QString basedir = makeDirs();
     QDir dr(basedir);
     return dr.absoluteFilePath(Name + "." + ext);
 }
 
-void Cluster::openStream(const char *ext) {
+void Module::openStream(const char *ext) {
     if (out.isOpen())
         return;
     out.setFileName(getOutPath(ext));
@@ -359,28 +359,28 @@ void Cluster::openStream(const char *ext) {
     stream_ext = ext;
 }
 
-void Cluster::openStreams(const char *ext) {
+void Module::openStreams(const char *ext) {
     openStream(ext);
-    for (Cluster *child : Children)
+    for (Module *child : Children)
         child->openStreams(ext);
 }
 
-void Cluster::closeStreams() {
+void Module::closeStreams() {
     if (out.isOpen()) {
         out.close();
     }
-    for (Cluster *child : Children)
+    for (Module *child : Children)
         child->closeStreams();
 }
 
-bool Prog::clusterUsed(Cluster *c) {
+bool Prog::clusterUsed(Module *c) {
     for (Function *pProc : m_procs)
         if (pProc->getCluster() == c)
             return true;
     return false;
 }
 
-Cluster *Prog::getDefaultCluster(const QString &name) {
+Module *Prog::getDefaultCluster(const QString &name) {
     const char *cfname = nullptr;
     if (pSymbols)
         cfname = pSymbols->getFilenameSymbolFor(qPrintable(name));
@@ -391,9 +391,9 @@ Cluster *Prog::getDefaultCluster(const QString &name) {
     LOG << "got filename " << cfname << " for " << name << "\n";
     char *fname = strdup(cfname);
     fname[strlen(fname) - 2] = 0;
-    Cluster *c = findCluster(fname);
+    Module *c = findCluster(fname);
     if (c == nullptr) {
-        c = new Cluster(fname);
+        c = new Module(fname);
         m_rootCluster->addChild(c);
     }
     return c;

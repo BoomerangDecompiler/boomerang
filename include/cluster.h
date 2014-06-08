@@ -31,28 +31,28 @@
 #include <QtCore/QFile>
 
 class XMLProgParser;
-class Cluster;
+class Module;
 
-class Cluster {
+class Module {
   protected:
     QString Name;
-    std::vector<Cluster *> Children;
-    Cluster *Parent = nullptr;
+    std::vector<Module *> Children;
+    Module *Parent = nullptr;
     QFile out;
     QTextStream strm;
     std::string stream_ext;
 
   public:
-    Cluster();
-    Cluster(const QString &_name);
-    virtual ~Cluster() {}
+    Module();
+    Module(const QString &_name);
+    virtual ~Module() {}
     QString getName() { return Name; }
     void setName(const QString &nam) { Name = nam; }
     size_t getNumChildren() { return Children.size(); }
-    Cluster *getChild(size_t n) { return Children[n]; }
-    void addChild(Cluster *n);
-    void removeChild(Cluster *n);
-    Cluster *getParent() { return Parent; }
+    Module *getChild(size_t n) { return Children[n]; }
+    void addChild(Module *n);
+    void removeChild(Module *n);
+    Module *getParent() { return Parent; }
     bool hasChildren() { return Children.size() > 0; }
     void openStream(const char *ext);
     void openStreams(const char *ext);
@@ -60,7 +60,7 @@ class Cluster {
     QTextStream &getStream() { return strm; }
     QString makeDirs();
     QString getOutPath(const char *ext);
-    Cluster *find(const QString &nam);
+    Module *find(const QString &nam);
     virtual bool isAggregate() { return false; }
     void printTree(QTextStream &out);
 
@@ -68,12 +68,12 @@ class Cluster {
     friend class XMLProgParser;
 };
 
-class Class : public Cluster {
+class Class : public Module {
   protected:
     std::shared_ptr<CompoundType> Type;
 
   public:
-    Class(const char *name) : Cluster(name) { Type = CompoundType::get(); }
+    Class(const char *name) : Module(name) { Type = CompoundType::get(); }
 
     // A Class tends to be aggregated into the parent Module,
     // this isn't the case with Java, but hey, we're not doing that yet.

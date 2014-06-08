@@ -175,7 +175,7 @@ class Context {
     QString str;
     Prog *prog;
     Global *global;
-    Cluster *cluster;
+    Module *cluster;
     Function *proc;
     Signature *signature;
     Cfg *cfg;
@@ -389,10 +389,10 @@ void XMLProgParser::addToContext_global(Context *c, int e) {
 void XMLProgParser::start_cluster(const QXmlStreamAttributes &attr) {
     Context *ctx = stack.front();
     if (phase == 1) {
-        ctx->cluster = (Cluster *)findId(attr.value(QLatin1Literal("id")));
+        ctx->cluster = (Module *)findId(attr.value(QLatin1Literal("id")));
         return;
     }
-    ctx->cluster = new Cluster();
+    ctx->cluster = new Module();
     addId(attr, ctx->cluster);
     QStringRef name = attr.value(QLatin1Literal("name"));
     if (!name.isEmpty())
@@ -422,7 +422,7 @@ void XMLProgParser::start_libproc(const QXmlStreamAttributes &attr) {
         Function *p = (Function *)findId(attr.value(QLatin1Literal("firstCaller")));
         if (p)
             stack.front()->proc->m_firstCaller = p;
-        Cluster *c = (Cluster *)findId(attr.value(QLatin1Literal("cluster")));
+        Module *c = (Module *)findId(attr.value(QLatin1Literal("cluster")));
         if (c)
             stack.front()->proc->cluster = c;
         return;
@@ -474,7 +474,7 @@ void XMLProgParser::start_userproc(const QXmlStreamAttributes &attr) {
         Function *p = (Function *)findId(attr.value(QLatin1Literal("firstCaller")));
         if (p)
             u->m_firstCaller = p;
-        Cluster *c = (Cluster *)findId(attr.value(QLatin1Literal("cluster")));
+        Module *c = (Module *)findId(attr.value(QLatin1Literal("cluster")));
         if (c)
             u->cluster = c;
         ReturnStatement *r = (ReturnStatement *)findId(attr.value(QLatin1Literal("retstmt")));
@@ -1978,7 +1978,7 @@ void XMLProgParser::parseFile(const QString &filename) {
     }
 }
 
-void XMLProgParser::parseChildren(Cluster *c) {
+void XMLProgParser::parseChildren(Module *c) {
     QString path = c->makeDirs();
     for (auto &elem : c->Children) {
         QString d = path + "/" + elem->getName() + ".xml";
@@ -1999,7 +1999,7 @@ int XMLProgParser::operFromString(const QStringRef &s) {
 // out << \" *(\w+) *= *\\"" *<< *(.*) *<< *"\\"";
 // out.writeAttribute("\1",\2);
 
-void XMLProgParser::persistToXML(QXmlStreamWriter &out, Cluster *c) {
+void XMLProgParser::persistToXML(QXmlStreamWriter &out, Module *c) {
     out.writeStartElement("cluster");
     out.writeAttribute("id", QString::number(ADDRESS::host_ptr(c).m_value));
     out.writeAttribute("name", c->Name);

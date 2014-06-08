@@ -46,7 +46,7 @@ class SyntaxNode;
 class Parameter;
 class Argument;
 class Signature;
-class Cluster;
+class Module;
 class XMLProgParser;
 class QTextStream;
 class Log;
@@ -116,8 +116,8 @@ class Function {
     void clearVisited() { Visited = false; }
     bool isVisited() { return Visited; }
 
-    Cluster *getCluster() { return cluster; }
-    void setCluster(Cluster *c) { cluster = c; }
+    Module *getCluster() { return cluster; }
+    void setCluster(Module *c) { cluster = c; }
 
   protected:
     typedef std::map<Exp *, Exp *, lessExpStar> mExpExp;
@@ -137,7 +137,7 @@ class Function {
     // mExpExp provenFalse;
     mExpExp recurPremises;
     std::set<CallStatement *> callerSet;
-    Cluster *cluster;
+    Module *cluster;
 
     Function()
         : Visited(false), prog(nullptr), signature(nullptr), address(ADDRESS::g(0L)), m_firstCaller(nullptr),

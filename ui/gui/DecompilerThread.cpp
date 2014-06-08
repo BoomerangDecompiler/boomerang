@@ -165,7 +165,7 @@ void Decompiler::decompile() {
     emit decompileCompleted();
 }
 
-void Decompiler::emitClusterAndChildren(Cluster *root) {
+void Decompiler::emitClusterAndChildren(Module *root) {
     emit newCluster(root->getName());
     for (unsigned int i = 0; i < root->getNumChildren(); i++)
         emitClusterAndChildren(root->getChild(i));
@@ -176,7 +176,7 @@ void Decompiler::generateCode() {
 
     prog->generateCode();
 
-    Cluster *root = prog->getRootCluster();
+    Module *root = prog->getRootCluster();
     if (root)
         emitClusterAndChildren(root);
     std::list<Function *>::iterator it;
@@ -279,7 +279,7 @@ const char *Decompiler::getSigFile(const QString &name) {
 }
 
 QString Decompiler::getClusterFile(const QString &name) {
-    Cluster *c = prog->findCluster(name);
+    Module *c = prog->findCluster(name);
     if (c == NULL)
         return "";
     return c->getOutPath("c");

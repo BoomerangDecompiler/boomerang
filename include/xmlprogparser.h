@@ -20,14 +20,14 @@
 #include <memory>
 
 class Global;
-class Cluster;
+class Module;
 class Prog;
 class Function;
 class UserProc;
 class LibProc;
 class Signature;
 class InstructionSet;
-class Cluster;
+class Module;
 class Context;
 class Type;
 class Exp;
@@ -61,7 +61,7 @@ class XMLProgParser {
 
   protected:
     void parseFile(const QString &filename);
-    void parseChildren(Cluster *c);
+    void parseChildren(Module *c);
 
 #define TAGD(x)                                                                                                        \
     void start_##x(const QXmlStreamAttributes &attr);                                                                  \
@@ -137,7 +137,7 @@ class XMLProgParser {
     TAGD(subexp3)
 
     void persistToXML(QXmlStreamWriter &out, Global *g);
-    void persistToXML(QXmlStreamWriter &out, Cluster *c);
+    void persistToXML(QXmlStreamWriter &out, Module *c);
     void persistToXML(QXmlStreamWriter &out, Function *proc);
     void persistToXML(QXmlStreamWriter &out, LibProc *proc);
     void persistToXML(QXmlStreamWriter &out, UserProc *proc);

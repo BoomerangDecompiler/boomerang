@@ -136,7 +136,7 @@ bool createDirectory(const QString &dir) {
 /**
  * Prints a tree graph.
  */
-void Cluster::printTree(QTextStream &ostr) {
+void Module::printTree(QTextStream &ostr) {
     ostr << "\t\t" << Name << "\n";
     for (auto &elem : Children)
         elem->printTree(ostr);
@@ -279,7 +279,7 @@ int Boomerang::processCommand(QStringList &args) {
             return 1;
         }
         if (args.size() > 1) {
-            Cluster *cluster = prog->findCluster(args[1]);
+            Module *cluster = prog->findCluster(args[1]);
             if (cluster == nullptr) {
                 err_stream << "cannot find cluster " << args[1] << "\n";
                 return 1;
@@ -311,7 +311,7 @@ int Boomerang::processCommand(QStringList &args) {
                 return 1;
             }
 
-            Cluster *cluster = prog->findCluster(args[3]);
+            Module *cluster = prog->findCluster(args[3]);
             if (cluster == nullptr) {
                 err_stream << "cannot find cluster " << args[3] << "\n";
                 return 1;
@@ -323,13 +323,13 @@ int Boomerang::processCommand(QStringList &args) {
                 return 1;
             }
 
-            Cluster *cluster = prog->findCluster(args[2]);
+            Module *cluster = prog->findCluster(args[2]);
             if (cluster == nullptr) {
                 err_stream << "cannot find cluster " << args[2] << "\n";
                 return 1;
             }
 
-            Cluster *parent = prog->findCluster(args[3]);
+            Module *parent = prog->findCluster(args[3]);
             if (parent == nullptr) {
                 err_stream << "cannot find cluster " << args[3] << "\n";
                 return 1;
@@ -357,13 +357,13 @@ int Boomerang::processCommand(QStringList &args) {
                 return 1;
             }
 
-            Cluster *cluster = new Cluster(args[2]);
+            Module *cluster = new Module(args[2]);
             if (cluster == nullptr) {
                 err_stream << "cannot create cluster " << args[2] << "\n";
                 return 1;
             }
 
-            Cluster *parent = prog->getRootCluster();
+            Module *parent = prog->getRootCluster();
             if (args.size() > 3) {
                 parent = prog->findCluster(args[3]);
                 if (cluster == nullptr) {
@@ -394,7 +394,7 @@ int Boomerang::processCommand(QStringList &args) {
                 return 1;
             }
 
-            Cluster *cluster = prog->findCluster(args[2]);
+            Module *cluster = prog->findCluster(args[2]);
             if (cluster == nullptr) {
                 err_stream << "cannot find cluster " << args[2] << "\n";
                 return 1;
@@ -453,13 +453,13 @@ int Boomerang::processCommand(QStringList &args) {
                 return 1;
             }
 
-            Cluster *cluster = prog->findCluster(args[2]);
+            Module *cluster = prog->findCluster(args[2]);
             if (cluster == nullptr) {
                 err_stream << "cannot find cluster " << args[2] << "\n";
                 return 1;
             }
 
-            Cluster *ncluster = prog->findCluster(args[3]);
+            Module *ncluster = prog->findCluster(args[3]);
             if (ncluster == nullptr) {
                 err_stream << "cluster " << args[3] << " already exists\n";
                 return 1;
@@ -504,7 +504,7 @@ int Boomerang::processCommand(QStringList &args) {
                 return 1;
             }
 
-            Cluster *cluster = prog->findCluster(args[2]);
+            Module *cluster = prog->findCluster(args[2]);
             if (cluster == nullptr) {
                 err_stream << "cannot find cluster " << args[2] << "\n";
                 return 1;
@@ -638,10 +638,10 @@ bool Boomerang::setOutputDirectory(const QString &path) {
  */
 void Boomerang::objcDecode(std::map<std::string, ObjcModule> &modules, Prog *prog) {
     LOG_VERBOSE(1) << "Adding Objective-C information to Prog.\n";
-    Cluster *root = prog->getRootCluster();
+    Module *root = prog->getRootCluster();
     for (auto &modules_it : modules) {
         ObjcModule &mod = (modules_it).second;
-        Cluster *module = new Cluster(mod.name.c_str());
+        Module *module = new Module(mod.name.c_str());
         root->addChild(module);
         LOG_VERBOSE(1) << "\tModule: " << mod.name.c_str() << "\n";
         for (auto &elem : mod.classes) {

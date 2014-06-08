@@ -11,7 +11,7 @@ class FrontEnd;
 class Function;
 class UserProc;
 class Prog;
-class Cluster;
+class Module;
 class QTableWidget;
 class QObject;
 
@@ -85,7 +85,7 @@ class Decompiler : public QObject, public Watcher {
     QString filename;
 
     const char *procStatus(UserProc *p);
-    void emitClusterAndChildren(Cluster *root);
+    void emitClusterAndChildren(Module *root);
 
     std::vector<ADDRESS> user_entrypoints;
 };
