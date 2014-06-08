@@ -704,7 +704,7 @@ static int progress = 0;
   * \param convert set true if an indirect call is changed to direct (otherwise, no change)
   * \param force set to true to propagate even memofs (for switch analysis)
   * \param usedByDomPhi is a set of subscripted locations used in phi statements
-  * \returns             true if a change
+  * \returns true if a change
   ******************************************************************************/
 bool Instruction::propagateTo(bool &convert, std::map<Exp *, int, lessExpStar> *destCounts /* = nullptr */,
                               LocationSet *usedByDomPhi /* = nullptr */, bool force /* = false */) {
@@ -1000,12 +1000,12 @@ GotoStatement::~GotoStatement() {
 }
 //!< Return the fixed destination of this CTI.
 /***************************************************************************/ /**
-  * \brief        Get the fixed destination of this CTI. Assumes destination
-  *                    simplication has already been done so that a fixed dest will
-  *                    be of the Exp form:
-  *                       opIntConst dest
-  * \returns             Fixed dest or NO_ADDRESS if there isn't one, For dynamic CTIs,
-  *                     returns NO_ADDRESS.
+  * \brief Get the fixed destination of this CTI. Assumes destination
+  *        simplication has already been done so that a fixed dest will
+  *        be of the Exp form:
+  *        opIntConst dest
+  * \returns Fixed dest or NO_ADDRESS if there isn't one, For dynamic CTIs,
+  *          returns NO_ADDRESS.
   ******************************************************************************/
 ADDRESS GotoStatement::getFixedDest() const {
     if (pDest->getOper() != opIntConst)
@@ -1083,7 +1083,7 @@ bool GotoStatement::searchAndReplace(const Exp &search, Exp *replace, bool /*cc*
   * \brief        Find all instances of the search expression
   * \param search - a location to search for
   * \param result - a list which will have any matching exprs
-  *                  appended to it
+  *                 appended to it
   * \returns true if there were any matches
   ******************************************************************************/
 bool GotoStatement::searchAll(const Exp &search, std::list<Exp *> &result) {
@@ -1096,7 +1096,7 @@ bool GotoStatement::searchAll(const Exp &search, std::list<Exp *> &result) {
   * \fn     GotoStatement::print
   * \brief  Display a text reprentation of this RTL to the given stream
   * \note   Usually called from RTL::print, in which case the first 9
-  *                      chars of the print have already been output to os
+  *         chars of the print have already been output to os
   * \param  os - stream to write to
   * \param  html - print in html
   *

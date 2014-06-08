@@ -29,11 +29,22 @@
 #include <fstream>
 #include <QtCore/QTextStream>
 #include <QtCore/QFile>
-
+#include <llvm/IR/Module.h>
 class XMLProgParser;
 class Module;
+class Function;
 
 class Module {
+public:
+    /// The type for the list of functions.
+    typedef std::list<Function *>             FunctionListType;
+    typedef FunctionListType::iterator                iterator;
+    typedef FunctionListType::const_iterator    const_iterator;
+
+private:
+    FunctionListType FunctionList;  ///< The Functions in the module
+    QString Target;           ///< Target platform Module was compiled on
+
 protected:
     QString Name;
     std::vector<Module *> Children;
@@ -63,6 +74,14 @@ public:
     Module *find(const QString &nam);
     virtual bool isAggregate() { return false; }
     void printTree(QTextStream &out);
+    const FunctionListType &getFunctionList() const     { return FunctionList; }
+    FunctionListType       &getFunctionList()           { return FunctionList; }
+    iterator                begin()       { return FunctionList.begin(); }
+    const_iterator          begin() const { return FunctionList.begin(); }
+    iterator                end  ()       { return FunctionList.end();   }
+    const_iterator          end  () const { return FunctionList.end();   }
+    size_t                  size() const  { return FunctionList.size(); }
+    bool                    empty() const { return FunctionList.empty(); }
 
 protected:
     friend class XMLProgParser;

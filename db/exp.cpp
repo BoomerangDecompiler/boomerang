@@ -1726,18 +1726,18 @@ int tlstrchr(const QString &str, char ch) {
   * \param bindings a map
   * \returns            true if match, false otherwise
   ******************************************************************************/
-bool Exp::match(const QString &patterns, std::map<QString, Exp *> &bindings) {
+bool Exp::match(const QString &pattern, std::map<QString, Exp *> &bindings) {
     // most obvious
     QString tgt;
     QTextStream ostr(&tgt);
     print(ostr);
-    if (tgt == patterns)
+    if (tgt == pattern)
         return true;
 
-    assert((patterns.lastIndexOf(variableRegexp)==0) == ISVARIABLE_S(patterns.toStdString()));
+    assert((pattern.lastIndexOf(variableRegexp)==0) == ISVARIABLE_S(pattern.toStdString()));
     // alright, is pattern an acceptable variable?
-    if (patterns.lastIndexOf(variableRegexp)==0) {
-        bindings[patterns] = this;
+    if (pattern.lastIndexOf(variableRegexp)==0) {
+        bindings[pattern] = this;
         return true;
     }
     // no, fail
