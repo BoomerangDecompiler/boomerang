@@ -7,7 +7,7 @@
   ******************************************************************************/
 #include "xmlprogparser.h"
 #include "type.h"
-#include "cluster.h"
+#include "module.h"
 #include "prog.h"
 #include "proc.h"
 #include "rtl.h"

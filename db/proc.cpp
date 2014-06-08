@@ -59,7 +59,7 @@
 
 #include "types.h"
 #include "type.h"
-#include "cluster.h"
+#include "module.h"
 #include "statement.h"
 #include "register.h"
 #include "rtl.h"

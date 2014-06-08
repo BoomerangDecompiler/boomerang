@@ -133,14 +133,6 @@ bool createDirectory(const QString &dir) {
     return QDir::root().mkpath(abspath);
 }
 
-/**
- * Prints a tree graph.
- */
-void Module::printTree(QTextStream &ostr) {
-    ostr << "\t\t" << Name << "\n";
-    for (auto &elem : Children)
-        elem->printTree(ostr);
-}
 enum CommandType {
     CT_unknown=-1,
     CT_decode=1,

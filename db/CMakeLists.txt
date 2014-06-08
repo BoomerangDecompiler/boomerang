@@ -23,7 +23,7 @@ SET(INCLUDES
 ../include/types.h
 ../include/xmlprogparser.h
 ../include/BinaryFileStub.h
-../include/cluster.h
+../include/module.h
 ../include/decoder.h
 ../include/frontend.h
 ../include/managed.h
@@ -42,6 +42,7 @@ SET(SRC
         managed.cpp
         proc.cpp
         prog.cpp #-Icodegen -Ic
+        module.cpp
         register.cpp
         rtl.cpp
         signature.cpp

@@ -34,7 +34,7 @@ class XMLProgParser;
 class Module;
 
 class Module {
-  protected:
+protected:
     QString Name;
     std::vector<Module *> Children;
     Module *Parent = nullptr;
@@ -42,18 +42,18 @@ class Module {
     QTextStream strm;
     std::string stream_ext;
 
-  public:
+public:
     Module();
     Module(const QString &_name);
     virtual ~Module() {}
     QString getName() { return Name; }
     void setName(const QString &nam) { Name = nam; }
-    size_t getNumChildren() { return Children.size(); }
-    Module *getChild(size_t n) { return Children[n]; }
+    size_t getNumChildren();
+    Module *getChild(size_t n);
     void addChild(Module *n);
     void removeChild(Module *n);
-    Module *getParent() { return Parent; }
-    bool hasChildren() { return Children.size() > 0; }
+    Module *getParent();
+    bool hasChildren();
     void openStream(const char *ext);
     void openStreams(const char *ext);
     void closeStreams();
@@ -64,15 +64,15 @@ class Module {
     virtual bool isAggregate() { return false; }
     void printTree(QTextStream &out);
 
-  protected:
+protected:
     friend class XMLProgParser;
 };
 
 class Class : public Module {
-  protected:
+protected:
     std::shared_ptr<CompoundType> Type;
 
-  public:
+public:
     Class(const char *name) : Module(name) { Type = CompoundType::get(); }
 
     // A Class tends to be aggregated into the parent Module,

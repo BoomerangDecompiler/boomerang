@@ -21,7 +21,7 @@
 #include "prog.h"
 
 #include "type.h"
-#include "cluster.h"
+#include "module.h"
 #include "types.h"
 #include "statement.h"
 #include "hllcode.h"
@@ -299,78 +299,6 @@ Instruction *Prog::getStmtAtLex(Module *cluster, unsigned int begin, unsigned in
         }
     }
     return nullptr;
-}
-
-QString Module::makeDirs() {
-    QString path;
-    if (Parent)
-        path = Parent->makeDirs();
-    else
-        path = Boomerang::get()->getOutputPath();
-    QDir dr(path);
-    if (getNumChildren() > 0 || Parent == nullptr) {
-        dr.mkpath(Name);
-        dr.cd(Name);
-    }
-    return dr.absolutePath();
-}
-
-void Module::removeChild(Module *n) {
-    auto it = Children.begin();
-    for (; it != Children.end(); it++)
-        if (*it == n)
-            break;
-    assert(it != Children.end());
-    Children.erase(it);
-}
-
-Module::Module() { strm.setDevice(&out); }
-Module::Module(const QString &_name) : Name(_name) { strm.setDevice(&out); }
-
-void Module::addChild(Module *n) {
-    if (n->Parent)
-        n->Parent->removeChild(n);
-    Children.push_back(n);
-    n->Parent = this;
-}
-
-Module *Module::find(const QString &nam) {
-    if (Name == nam)
-        return this;
-    for (Module *child : Children) {
-        Module *c = child->find(nam);
-        if (c)
-            return c;
-    }
-    return nullptr;
-}
-
-QString Module::getOutPath(const char *ext) {
-    QString basedir = makeDirs();
-    QDir dr(basedir);
-    return dr.absoluteFilePath(Name + "." + ext);
-}
-
-void Module::openStream(const char *ext) {
-    if (out.isOpen())
-        return;
-    out.setFileName(getOutPath(ext));
-    out.open(QFile::WriteOnly | QFile::Text);
-    stream_ext = ext;
-}
-
-void Module::openStreams(const char *ext) {
-    openStream(ext);
-    for (Module *child : Children)
-        child->openStreams(ext);
-}
-
-void Module::closeStreams() {
-    if (out.isOpen()) {
-        out.close();
-    }
-    for (Module *child : Children)
-        child->closeStreams();
 }
 
 bool Prog::clusterUsed(Module *c) {

@@ -20,7 +20,7 @@
 #include "BinaryFile.h"
 #include "frontend.h"
 #include "type.h"
-#include "cluster.h"
+#include "module.h"
 // TODO: refactor Prog Global handling into separate class
 class RTLInstDict;
 class Function;

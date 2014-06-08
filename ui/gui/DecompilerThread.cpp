@@ -6,7 +6,7 @@
 #include "frontend.h"
 #include "proc.h"
 #include "signature.h"
-#include "cluster.h"
+#include "module.h"
 
 #include <QtWidgets>
 #include <QtCore>
