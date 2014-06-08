@@ -68,11 +68,6 @@ class Cluster {
     friend class XMLProgParser;
 };
 
-class Module : public Cluster {
-  public:
-    Module(const char *name) : Cluster(name) {}
-};
-
 class Class : public Cluster {
   protected:
     std::shared_ptr<CompoundType> Type;

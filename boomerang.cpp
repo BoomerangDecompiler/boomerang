@@ -641,7 +641,7 @@ void Boomerang::objcDecode(std::map<std::string, ObjcModule> &modules, Prog *pro
     Cluster *root = prog->getRootCluster();
     for (auto &modules_it : modules) {
         ObjcModule &mod = (modules_it).second;
-        Module *module = new Module(mod.name.c_str());
+        Cluster *module = new Cluster(mod.name.c_str());
         root->addChild(module);
         LOG_VERBOSE(1) << "\tModule: " << mod.name.c_str() << "\n";
         for (auto &elem : mod.classes) {
