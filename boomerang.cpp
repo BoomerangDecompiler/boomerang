@@ -13,6 +13,7 @@
 #include "proc.h"
 #include "BinaryFile.h"
 #include "frontend.h"
+#include "signature.h"
 //#include "transformer.h"
 #include "log.h"
 #include "xmlprogparser.h"
@@ -637,8 +638,16 @@ void Boomerang::objcDecode(std::map<std::string, ObjcModule> &modules, Prog *pro
             for (auto &_it2 : c.methods) {
                 ObjcMethod &m = (_it2).second;
                 // TODO: parse :'s in names
-                Function *p = prog->newProc(m.name, m.addr);
+                QString method_name = m.name+"_"+m.types;
+                Function *existing = prog->findProc(method_name);
+                if(existing) {
+                    assert(!"Name clash in objc processor ?");
+                    continue;
+                }
+
+                Function *p = prog->newProc(method_name, m.addr);
                 p->setParent(cl);
+                p->setSignature(Signature::instantiate(prog->getFrontEndId(),CONV_C,method_name));
                 // TODO: decode types in m.types
                 LOG_VERBOSE(1) << "\t\t\tMethod: " << m.name << "\n";
             }
