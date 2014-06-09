@@ -23,6 +23,8 @@
 
 #include "types.h"
 //#include "SymTab.h"    // Was used for relocaton stuff
+#include <QStringList>
+#include <QString>
 #include <cassert>
 #include <list>
 #include <cstddef>
@@ -30,7 +32,6 @@
 #include <string>
 #include <vector>
 #include <cstdio> // For FILE
-#include <QtCore/QStringList>
 // Note: #including windows.h causes problems later in the objective C code.
 
 // Given a pointer p, returns the 16 bits (halfword) in the two bytes

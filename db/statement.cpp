@@ -12,18 +12,13 @@
   * \brief   Implementation of the Statement and related classes.
   *               (Was dataflow.cpp a long time ago)
   ******************************************************************************/
-#include <cassert>
-#include <cstring>
-#include <iomanip> // For setfill etc
-
-#include <sstream>
-#include <cstddef>
-#include <algorithm>
 #include "statement.h"
+
 #include "exp.h"
 #include "cfg.h"
 #include "proc.h"
 #include "prog.h"
+#include "basicblock.h"
 #include "boomerang.h"
 #include "rtl.h" // For debugging code
 #include "util.h"
@@ -32,6 +27,12 @@
 #include "dataflow.h"
 #include "log.h"
 #include "hllcode.h"
+
+#include <cassert>
+#include <cstring>
+#include <sstream>
+#include <cstddef>
+#include <algorithm>
 
 extern char debug_buffer[]; // For prints functions
 extern QTextStream &alignStream(QTextStream &str,int align);

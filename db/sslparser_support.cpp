@@ -257,12 +257,12 @@ Exp *listExpToExp(std::list<Exp *> *le) {
   * \param        ls - the list of strings
   * \returns             The opList expression
   ******************************************************************************/
-Exp *listStrToExp(std::list<std::string> *ls) {
+Exp *listStrToExp(std::list<QString> *ls) {
     Exp *e;
     Exp **cur = &e;
     Exp *end = new Terminal(opNil); // Terminate the chain
     for (auto &l : *ls) {
-        *cur = Binary::get(opList, new Location(opParam, Const::get(l.c_str()), nullptr), end);
+        *cur = Binary::get(opList, new Location(opParam, Const::get(l), nullptr), end);
         cur = &(*cur)->refSubExp2();
     }
     *cur = new Terminal(opNil); // Terminate the chain
@@ -288,7 +288,7 @@ void init_sslparser() {
   * \param   o_rtlist Original rtlist object (before expanding)
   * \param   Dict Ref to the dictionary that will contain the results of the parse
   ******************************************************************************/
-void SSLParser::expandTables(const std::shared_ptr<InsNameElem> &iname, std::list<std::string> *params, RTL *o_rtlist, RTLInstDict &Dict) {
+void SSLParser::expandTables(const std::shared_ptr<InsNameElem> &iname, std::list<QString> *params, RTL *o_rtlist, RTLInstDict &Dict) {
     int i, m;
     QString nam;
     m = iname->ninstructions();

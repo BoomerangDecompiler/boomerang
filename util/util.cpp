@@ -23,11 +23,8 @@
 #include <QTextStream>
 #include <cassert>
 #include <string>
-#include <cstdio>
-#include <cstring>
 #include <unistd.h>
 #include <fcntl.h>
-#include <iomanip> // For setw
 
 int lockFileWrite(const char *fname) {
     int fd = open(fname, O_WRONLY); /* get the file descriptor */

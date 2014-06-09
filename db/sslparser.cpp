@@ -81,7 +81,7 @@ void *alloca();
 
 OPER strToTerm(char *s);                       // Convert string to a Terminal (if possible)
 Exp *listExpToExp(std::list<Exp *> *le);       // Convert a STL list of Exp* to opList
-Exp *listStrToExp(std::list<std::string> *ls); // Convert a STL list of strings to opList
+Exp *listStrToExp(std::list<QString> *ls); // Convert a STL list of strings to opList
 
 /*apres const  */
 SSLParser::SSLParser(const QString &sslFile, bool trace) : sslFile(sslFile), bFloat(false) {
@@ -564,8 +564,10 @@ SSLParser::
         yyss = (short *)__ALLOCA_alloca(yystacksize * sizeof(*yyssp));
         __yy_bcopy((char *)yyss1, (char *)yyss, size * sizeof(*yyssp));
         __ALLOCA_free(yyss1, yyssa);
-        yyvs = (yy_SSLParser_stype *)__ALLOCA_alloca(yystacksize * sizeof(*yyvsp));
-        __yy_bcopy((char *)yyvs1, (char *)yyvs, size * sizeof(*yyvsp));
+        yyvs = new (__ALLOCA_alloca(yystacksize * sizeof(*yyvsp))) yy_SSLParser_stype[yystacksize];
+        for(int i=0; i<size; ++i) {
+            yyvs[i] = yyvs1[i];
+        }
         __ALLOCA_free(yyvs1, yyvsa);
 #ifdef YY_SSLParser_LSP_NEEDED
         yyls = (YY_SSLParser_LTYPE *)__ALLOCA_alloca(yystacksize * sizeof(*yylsp));
@@ -773,7 +775,7 @@ SSLParser::
         break;
     }
     case 20: {
-        yyval.parmlist = new std::list<std::string>();
+        yyval.parmlist = new std::list<QString>();
         ;
         break;
     }
@@ -1275,13 +1277,17 @@ SSLParser::
         break;
     }
     case 85: {
-        yyval.parmlist = new std::list<std::string>;
+        yyval.parmlist = new std::list<QString>;
         yyval.parmlist->push_back(yyvsp[0].str);
         ;
         break;
     }
     case 86: {
-        yyval.parmlist = new std::list<std::string>;
+        if(yyval.parmlist) {
+            delete yyval.parmlist;
+            yyval.parmlist = nullptr;
+        }
+        yyval.parmlist = new std::list<QString>;
         ;
         break;
     }

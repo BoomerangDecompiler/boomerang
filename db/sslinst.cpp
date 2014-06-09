@@ -51,7 +51,7 @@ TableEntry::TableEntry() { flags = 0; }
   * \param r - reference to a RTL
   *
   ******************************************************************************/
-TableEntry::TableEntry(std::list<std::string> &p, RTL &r) : rtl(r) {
+TableEntry::TableEntry(std::list<QString> &p, RTL &r) : rtl(r) {
     std::copy(p.begin(), p.end(), std::back_inserter(params));
     flags = 0;
 }
@@ -60,7 +60,7 @@ TableEntry::TableEntry(std::list<std::string> &p, RTL &r) : rtl(r) {
   * \brief        Set the parameter list.
   * \param        p - a list of strings
   ******************************************************************************/
-void TableEntry::setParam(std::list<std::string> &p) { params = p; }
+void TableEntry::setParam(std::list<QString> &p) { params = p; }
 
 /***************************************************************************/ /**
   * \brief        Set the RTL.
@@ -87,9 +87,9 @@ const TableEntry &TableEntry::operator=(const TableEntry &other) {
   * \param        r reference to RTL with list of Exps to append
   * \returns             0 for success
   ******************************************************************************/
-int TableEntry::appendRTL(std::list<std::string> &p, RTL &r) {
+int TableEntry::appendRTL(std::list<QString> &p, RTL &r) {
     bool match = (p.size() == params.size());
-    std::list<std::string>::iterator a, b;
+    std::list<QString>::iterator a, b;
     for (a = params.begin(), b = p.begin(); match && (a != params.end()) && (b != p.end());
          match = (*a == *b), a++, b++)
         ;
@@ -109,7 +109,7 @@ int TableEntry::appendRTL(std::list<std::string> &p, RTL &r) {
   * \param r reference to the RTL to add
   * \returns 0 for success
   ******************************************************************************/
-int RTLInstDict::appendToDict(const QString &n, std::list<std::string> &p, RTL &r) {
+int RTLInstDict::appendToDict(const QString &n, std::list<QString> &p, RTL &r) {
     QString opcode = n.toUpper();
     opcode.remove(".");
 
@@ -200,10 +200,10 @@ void RTLInstDict::print(QTextStream &os /*= std::cout*/) {
         os << (elem).first << "  ";
 
         // print the parameters
-        const std::list<std::string> &params((elem).second.params);
+        const std::list<QString> &params((elem).second.params);
         int i = params.size();
         for (auto s = params.begin(); s != params.end(); s++, i--)
-            os << s->c_str() << (i != 1 ? "," : "");
+            os << *s << (i != 1 ? "," : "");
         os << "\n";
 
         // print the RTL
@@ -241,7 +241,7 @@ void RTLInstDict::fixupParams() {
     }
     int mark = 1;
     for (auto param : DetParamMap) {
-        std::list<std::string> funcParams;
+        std::list<QString> funcParams;
         bool haveCount = false;
         if (param.second.kind == PARAM_VARIANT) {
             fixupParamsSub(param.first, funcParams, haveCount, mark++);
@@ -249,11 +249,11 @@ void RTLInstDict::fixupParams() {
     }
 }
 
-void RTLInstDict::fixupParamsSub(std::string s, std::list<std::string> &funcParams, bool &haveCount, int mark) {
+void RTLInstDict::fixupParamsSub(const QString &s, std::list<QString> &funcParams, bool &haveCount, int mark) {
     ParamEntry &param = DetParamMap[s];
 
     if (param.params.size() == 0) {
-        LOG_STREAM() << "Error in SSL File: Variant operand " << s.c_str() << " has no branches. Well that's really useful...\n";
+        LOG_STREAM() << "Error in SSL File: Variant operand " << s << " has no branches. Well that's really useful...\n";
         return;
     }
     if (param.mark == mark)
@@ -261,7 +261,7 @@ void RTLInstDict::fixupParamsSub(std::string s, std::list<std::string> &funcPara
 
     param.mark = mark;
 
-    for (const std::string &name : param.params) {
+    for (const QString &name : param.params) {
         ParamEntry &sub = DetParamMap[name];
         if (sub.kind == PARAM_VARIANT) {
             fixupParamsSub(name, funcParams, haveCount, mark);
@@ -278,16 +278,16 @@ void RTLInstDict::fixupParamsSub(std::string s, std::list<std::string> &funcPara
         }
 
         if (funcParams.size() != sub.funcParams.size()) {
-            LOG_STREAM() << "Error in SSL File: Variant operand " << s.c_str()
+            LOG_STREAM() << "Error in SSL File: Variant operand " << s
                          << " does not have a fixed number of functional parameters:\n"
-                         << "Expected " << funcParams.size() << ", but branch " << name.c_str()
+                         << "Expected " << funcParams.size() << ", but branch " << name
                          << " has " << sub.funcParams.size() << ".\n";
         } else if (funcParams != sub.funcParams && sub.asgn != nullptr) {
             /* Rename so all the parameter names match */
-            std::list<std::string>::iterator i, j;
+            std::list<QString>::iterator i, j;
             for (i = funcParams.begin(), j = sub.funcParams.begin(); i != funcParams.end(); i++, j++) {
-                Location param(opParam, Const::get(j->c_str()), nullptr); // Location::param(j->c_str())
-                Exp *replace = Location::param(i->c_str());
+                Location param(opParam, Const::get(*j), nullptr); // Location::param(j->c_str())
+                Exp *replace = Location::param(*i);
                 sub.asgn->searchAndReplace(param, replace);
             }
             sub.funcParams = funcParams;
@@ -379,7 +379,7 @@ std::list<Instruction *> *RTLInstDict::instantiateRTL(const QString &name, ADDRE
   * \param   actuals - the actual parameter values
   * \returns the instantiated list of Exps
   ******************************************************************************/
-std::list<Instruction *> *RTLInstDict::instantiateRTL(RTL &rtl, ADDRESS natPC, std::list<std::string> &params,
+std::list<Instruction *> *RTLInstDict::instantiateRTL(RTL &rtl, ADDRESS natPC, std::list<QString> &params,
                                                     const std::vector<Exp *> &actuals) {
     Q_UNUSED(natPC);
     assert(params.size() == actuals.size());
@@ -395,7 +395,7 @@ std::list<Instruction *> *RTLInstDict::instantiateRTL(RTL &rtl, ADDRESS natPC, s
         std::vector<Exp *>::const_iterator actual = actuals.begin();
         for (; param != params.end(); param++, actual++) {
             /* Simple parameter - just construct the formal to search for */
-            Location formal(opParam, Const::get(param->c_str()), nullptr); // Location::param(param->c_str());
+            Location formal(opParam, Const::get(*param), nullptr); // Location::param(param->c_str());
             ss->searchAndReplace(formal, *actual);
             // delete formal;
         }

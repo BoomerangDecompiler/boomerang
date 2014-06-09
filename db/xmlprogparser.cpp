@@ -16,6 +16,7 @@
 #include "signature.h"
 #include "boomerang.h"
 #include "log.h"
+#include "basicblock.h"
 #include "frontend.h"
 
 #include <QtCore/QFile>
@@ -2471,7 +2472,7 @@ void XMLProgParser::persistToXML(QXmlStreamWriter &out, Cfg *cfg) {
 void XMLProgParser::persistToXML(QXmlStreamWriter &out, const BasicBlock *bb) {
     out.writeStartElement("order");
     out.writeAttribute("id", QString::number(ADDRESS::host_ptr(bb).m_value));
-    out.writeAttribute("nodeType", QString::number(bb->NodeType));
+    out.writeAttribute("nodeType", QString::number((int)bb->NodeType));
     out.writeAttribute("labelNum", QString::number(bb->LabelNum));
     out.writeAttribute("labelneeded", QString::number(bb->LabelNeeded));
     out.writeAttribute("incomplete", QString::number(bb->Incomplete));

@@ -5,6 +5,7 @@
   ******************************************************************************/
 
 #include "CfgTest.h"
+
 #include "BinaryFile.h"
 #include "frontend.h"
 #include "proc.h"
@@ -13,14 +14,15 @@
 #include "pentiumfrontend.h"
 #include "log.h"
 #include "boomerang.h"
+#include "basicblock.h"
 
 #include <QDir>
 #include <QProcessEnvironment>
 #include <QDebug>
 
-#define FRONTIER_PENTIUM "tests/inputs/pentium/frontier"
-#define SEMI_PENTIUM "tests/inputs/pentium/semi"
-#define IFTHEN_PENTIUM "tests/inputs/pentium/ifthen"
+#define FRONTIER_PENTIUM baseDir.absoluteFilePath("tests/inputs/pentium/frontier")
+#define SEMI_PENTIUM baseDir.absoluteFilePath("tests/inputs/pentium/semi")
+#define IFTHEN_PENTIUM baseDir.absoluteFilePath("tests/inputs/pentium/ifthen")
 static bool logset = false;
 static QString TEST_BASE;
 static QDir baseDir;
@@ -44,14 +46,14 @@ void CfgTest::initTestCase() {
       * \fn        CfgTest::testDominators
       * OVERVIEW:        Test the dominator frontier code
       ******************************************************************************/
-#define FRONTIER_FOUR ADDRESS::g(0x08048347)
-#define FRONTIER_FIVE ADDRESS::g(0x08048351)
-#define FRONTIER_TWELVE ADDRESS::g(0x080483b2)
-#define FRONTIER_THIRTEEN ADDRESS::g(0x080483b9)
+#define FRONTIER_FOUR ADDRESS::n(0x08048347)
+#define FRONTIER_FIVE ADDRESS::n(0x08048351)
+#define FRONTIER_TWELVE ADDRESS::n(0x080483b2)
+#define FRONTIER_THIRTEEN ADDRESS::n(0x080483b9)
 
 void CfgTest::testDominators() {
     BinaryFileFactory bff;
-    QObject *pBF = bff.Load(baseDir.absoluteFilePath(FRONTIER_PENTIUM));
+    QObject *pBF = bff.Load(FRONTIER_PENTIUM);
     QVERIFY(pBF != 0);
     Prog *prog = new Prog;
     FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
@@ -104,7 +106,7 @@ void CfgTest::testDominators() {
 
 void CfgTest::testSemiDominators() {
     BinaryFileFactory bff;
-    QObject *pBF = bff.Load(baseDir.absoluteFilePath(SEMI_PENTIUM));
+    QObject *pBF = bff.Load(SEMI_PENTIUM);
     QVERIFY(pBF != 0);
     Prog *prog = new Prog;
     FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
@@ -156,7 +158,7 @@ void CfgTest::testSemiDominators() {
   ******************************************************************************/
 void CfgTest::testPlacePhi() {
     BinaryFileFactory bff;
-    QObject *pBF = bff.Load(baseDir.absoluteFilePath(FRONTIER_PENTIUM));
+    QObject *pBF = bff.Load(FRONTIER_PENTIUM);
     QVERIFY(pBF != 0);
     Prog *prog = new Prog;
     FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
@@ -197,7 +199,7 @@ void CfgTest::testPlacePhi() {
   ******************************************************************************/
 void CfgTest::testPlacePhi2() {
     BinaryFileFactory bff;
-    QObject *pBF = bff.Load(baseDir.absoluteFilePath(IFTHEN_PENTIUM));
+    QObject *pBF = bff.Load(IFTHEN_PENTIUM);
     QVERIFY(pBF != 0);
     Prog *prog = new Prog;
     FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
@@ -251,7 +253,7 @@ void CfgTest::testPlacePhi2() {
     if (s.size() > 0)
     {
         BBTYPE actualType = df->nodeToBB(*s.begin())->getType();
-        BBTYPE expectedType = CALL;
+        BBTYPE expectedType = BBTYPE::CALL;
         QCOMPARE(actualType, expectedType);
     }
     delete e;
@@ -276,7 +278,7 @@ void CfgTest::testPlacePhi2() {
   ******************************************************************************/
 void CfgTest::testRenameVars() {
     BinaryFileFactory bff;
-    QObject *pBF = bff.Load(baseDir.absoluteFilePath(FRONTIER_PENTIUM));
+    QObject *pBF = bff.Load(FRONTIER_PENTIUM);
     QVERIFY(pBF != 0);
     Prog *prog = new Prog;
     FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);

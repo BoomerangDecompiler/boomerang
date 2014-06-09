@@ -79,7 +79,7 @@ enum LoopType {
 
 // Kinds of basic block nodes
 // reordering these will break the save files - trent
-enum BBTYPE {
+enum class BBTYPE {
     ONEWAY,   // unconditional branch
     TWOWAY,   // conditional branch
     NWAY,     // case branch
@@ -126,7 +126,7 @@ class BasicBlock {
   protected:
     Function *Parent;
     /* general basic block information */
-    BBTYPE NodeType = INVALID;         //!< type of basic block
+    BBTYPE NodeType = BBTYPE::INVALID;         //!< type of basic block
     std::list<RTL *> *ListOfRTLs = nullptr; //!< Ptr to list of RTLs
     int LabelNum = 0;                 //!< Nonzero if start of BB needs label
     bool LabelNeeded = false;

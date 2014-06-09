@@ -89,18 +89,18 @@ class RTL : public std::list<Instruction *> {
 class TableEntry {
   public:
     TableEntry();
-    TableEntry(std::list<std::string> &p, RTL &rtl);
+    TableEntry(std::list<QString> &p, RTL &rtl);
 
     const TableEntry &operator=(const TableEntry &other);
 
-    void setParam(std::list<std::string> &p);
+    void setParam(std::list<QString> &p);
     void setRTL(RTL &rtl);
 
     // non-zero return indicates failure
-    int appendRTL(std::list<std::string> &p, RTL &rtl);
+    int appendRTL(std::list<QString> &p, RTL &rtl);
 
   public:
-    std::list<std::string> params;
+    std::list<QString> params;
     RTL rtl;
 
 #define TEF_NEXTPC 1
@@ -117,26 +117,19 @@ class ParamEntry {
     ParamEntry() {
         asgn = nullptr;
         kind = PARAM_SIMPLE;
-        m_type = nullptr;
-        regType = nullptr;
         lhs = false;
         mark = 0;
     }
-    ~ParamEntry() {
-        delete m_type;
-        delete regType;
-    }
-
-    std::list<std::string> params;     //!< PARAM_VARIANT & PARAM_ASGN only */
-    std::list<std::string> funcParams; //!< PARAM_LAMBDA - late bound params */
+    std::list<QString> params;     //!< PARAM_VARIANT & PARAM_ASGN only */
+    std::list<QString> funcParams; //!< PARAM_LAMBDA - late bound params */
     Instruction *asgn;                   //!< PARAM_ASGN only */
     bool lhs;                          //!< True if this param ever appears on the LHS of an expression */
     ParamKind kind;
-    Type *regType;        //!< Type of r[this], if any (void otherwise)
+    SharedType regType;        //!< Type of r[this], if any (void otherwise)
     std::set<int> regIdx; //!< Values this param can take as an r[param]
     int mark;             //!< Traversal mark. (free temporary use, basically)
   protected:
-    Type *m_type;
+    SharedType m_type;
 };
 
 /***************************************************************************/ /**
@@ -156,10 +149,10 @@ class RTLInstDict {
     void reset();
     std::pair<std::string, unsigned> getSignature(const char *name);
 
-    int appendToDict(const QString &n, std::list<std::string> &p, RTL &rtl);
+    int appendToDict(const QString &n, std::list<QString> &p, RTL &rtl);
 
     std::list<Instruction *> *instantiateRTL(const QString &name, ADDRESS natPC, const std::vector<Exp *> &actuals);
-    std::list<Instruction *> *instantiateRTL(RTL &rtls, ADDRESS, std::list<std::string> &params,
+    std::list<Instruction *> *instantiateRTL(RTL &rtls, ADDRESS, std::list<QString> &params,
                                            const std::vector<Exp *> &actuals);
 
     void transformPostVars(std::list<Instruction *> &rts, bool optimise);
@@ -183,7 +176,7 @@ class RTLInstDict {
     std::set<std::string> ParamSet;
 
     //! Parameter (instruction operand, more like addressing mode) details (where given)
-    std::map<std::string, ParamEntry> DetParamMap;
+    std::map<QString, ParamEntry> DetParamMap;
 
     //! The maps which summarise the semantics (.ssl) file
     std::map<std::string, Exp *> FlagFuncs;
@@ -201,7 +194,7 @@ class RTLInstDict {
     //! An RTL describing the machine's basic fetch-execute cycle
     std::list<Instruction *> *fetchExecCycle;
 
-    void fixupParamsSub(std::string s, std::list<std::string> &funcParams, bool &haveCount, int mark);
+    void fixupParamsSub(const QString &s, std::list<QString> &funcParams, bool &haveCount, int mark);
 };
 
 #endif /*__RTL_H__*/

@@ -17,6 +17,7 @@
 /***************************************************************************/ /**
   * Dependencies.
   ******************************************************************************/
+#include "basicblock.h"
 
 #include "config.h"
 #ifdef HAVE_LIBGC
@@ -107,7 +108,7 @@ BasicBlock::BasicBlock(Function *parent, std::list<RTL *> *pRtls, BBTYPE bbType,
       LatchNode(nullptr), StructuringType(Seq), UnstructuredType(Structured),
       // Others
       overlappedRegProcessingDone(false) {
-    if(bbType==TWOWAY)
+    if(bbType==BBTYPE::TWOWAY)
         assert(iNumOutEdges>=2);
     OutEdges.reserve(iNumOutEdges); // Reserve the space; values added with AddOutEdge()
     Parent = parent;
@@ -235,31 +236,31 @@ void BasicBlock::print(QTextStream &os, bool html) {
     if (LabelNum)
         os << "L" << LabelNum << ": ";
     switch (NodeType) {
-    case ONEWAY:
+    case BBTYPE::ONEWAY:
         os << "Oneway BB";
         break;
-    case TWOWAY:
+    case BBTYPE::TWOWAY:
         os << "Twoway BB";
         break;
-    case NWAY:
+    case BBTYPE::NWAY:
         os << "Nway BB";
         break;
-    case CALL:
+    case BBTYPE::CALL:
         os << "Call BB";
         break;
-    case RET:
+    case BBTYPE::RET:
         os << "Ret BB";
         break;
-    case FALL:
+    case BBTYPE::FALL:
         os << "Fall BB";
         break;
-    case COMPJUMP:
+    case BBTYPE::COMPJUMP:
         os << "Computed jump BB";
         break;
-    case COMPCALL:
+    case BBTYPE::COMPCALL:
         os << "Computed call BB";
         break;
-    case INVALID:
+    case BBTYPE::INVALID:
         os << "Invalid BB";
         break;
     }
@@ -580,7 +581,7 @@ bool BasicBlock::lessLastDFT(BasicBlock *bb1, BasicBlock *bb2) { return bb1->DFT
   * \returns     Native destination of the call, or -1
   ******************************************************************************/
 ADDRESS BasicBlock::getCallDest() {
-    if (NodeType != CALL)
+    if (NodeType != BBTYPE::CALL)
         return NO_ADDRESS;
     if (ListOfRTLs->size() == 0)
         return NO_ADDRESS;
@@ -593,7 +594,7 @@ ADDRESS BasicBlock::getCallDest() {
 }
 
 Function *BasicBlock::getCallDestProc() {
-    if (NodeType != CALL)
+    if (NodeType != BBTYPE::CALL)
         return nullptr;
     if (ListOfRTLs->size() == 0)
         return nullptr;
@@ -802,21 +803,21 @@ void BasicBlock::simplify() {
     if (ListOfRTLs)
         for (auto &elem : *ListOfRTLs)
             (elem)->simplify();
-    if (NodeType == TWOWAY) {
+    if (NodeType == BBTYPE::TWOWAY) {
         assert(OutEdges.size()>1);
         if (ListOfRTLs == nullptr || ListOfRTLs->empty()) {
-            NodeType = FALL;
+            NodeType = BBTYPE::FALL;
         } else {
             RTL *last = ListOfRTLs->back();
             if (last->size() == 0) {
-                NodeType = FALL;
+                NodeType = BBTYPE::FALL;
             } else if (last->back()->isGoto()) {
-                NodeType = ONEWAY;
+                NodeType = BBTYPE::ONEWAY;
             } else if (!last->back()->isBranch()) {
-                NodeType = FALL;
+                NodeType = BBTYPE::FALL;
             }
         }
-        if (NodeType == FALL) {
+        if (NodeType == BBTYPE::FALL) {
             // set out edges to be the second one
             if (VERBOSE) {
                 LOG << "turning TWOWAY into FALL: " << OutEdges[0]->getLowAddr() << " " << OutEdges[1]->getLowAddr()
@@ -841,7 +842,7 @@ void BasicBlock::simplify() {
             // redundant->m_iNumInEdges = redundant->m_InEdges.size();
             LOG_VERBOSE(1) << "   after: " << OutEdges[0]->getLowAddr() << "\n";
         }
-        if (NodeType == ONEWAY) {
+        if (NodeType == BBTYPE::ONEWAY) {
             // set out edges to be the first one
             LOG_VERBOSE(1) << "turning TWOWAY into ONEWAY: " << OutEdges[0]->getLowAddr() << " "
                            << OutEdges[1]->getLowAddr() << "\n";
@@ -1240,7 +1241,7 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, BasicBlock *latch, std
         WriteBB(hll, indLevel);
 
         // return if this is the 'return' block (i.e. has no out edges) after emmitting a 'return' statement
-        if (getType() == RET) {
+        if (getType() == BBTYPE::RET) {
             // This should be emited now, like a normal statement
             // hll->AddReturnStatement(indLevel, getReturnVal());
             return;
@@ -1252,7 +1253,7 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, BasicBlock *latch, std
             q_cerr << "WARNING: no out edge for this BB in " << proc->getName() << ":\n";
             this->print(q_cerr);
             q_cerr << '\n';
-            if (NodeType == COMPJUMP) {
+            if (NodeType == BBTYPE::COMPJUMP) {
                 QString dat;
                 QTextStream ost(&dat);
                 assert(ListOfRTLs->size());
@@ -1391,7 +1392,7 @@ void BasicBlock::setCaseHead(BasicBlock *head, BasicBlock *follow) {
 
     // if this is a nested case header, then it's member nodes will already have been tagged so skip straight to its
     // follow
-    if (getType() == NWAY && this != head) {
+    if (getType() == BBTYPE::NWAY && this != head) {
         if (CondFollow && CondFollow->Traversed != DFS_CASE && CondFollow != follow)
             CondFollow->setCaseHead(head, follow);
     } else
@@ -1408,7 +1409,7 @@ void BasicBlock::setStructType(structType s) {
     // if this is a conditional header, determine exactly which type of conditional header it is (i.e. switch, if-then,
     // if-then-else etc.)
     if (s == Cond) {
-        if (getType() == NWAY)
+        if (getType() == BBTYPE::NWAY)
             ConditionHeaderType = Case;
         else if (OutEdges[BELSE] == CondFollow)
             ConditionHeaderType = IfThen;
@@ -1849,7 +1850,7 @@ void findSwParams(char form, Exp *e, Exp *&expr, ADDRESS &T) {
 int BasicBlock::findNumCases() {
     // should actually search from the statement to i
     for (BasicBlock *in : InEdges) { // For each in-edge
-        if (in->NodeType != TWOWAY)  // look for a two-way BB
+        if (in->NodeType != BBTYPE::TWOWAY)  // look for a two-way BB
             continue;                  // Ignore all others
         assert(in->ListOfRTLs && in->ListOfRTLs->size());
         RTL *lastRtl = in->ListOfRTLs->back();
@@ -1927,7 +1928,7 @@ bool BasicBlock::decodeIndirectJmp(UserProc *proc) {
     }
 #endif
 
-    if (NodeType == COMPJUMP) {
+    if (NodeType == BBTYPE::COMPJUMP) {
         assert(ListOfRTLs->size());
         RTL *lastRtl = ListOfRTLs->back();
         if (DEBUG_SWITCH)
@@ -2027,7 +2028,7 @@ bool BasicBlock::decodeIndirectJmp(UserProc *proc) {
             }
         }
         return false;
-    } else if (NodeType == COMPCALL) {
+    } else if (NodeType == BBTYPE::COMPCALL) {
         assert(ListOfRTLs->size());
         RTL *lastRtl = ListOfRTLs->back();
         if (DEBUG_SWITCH)
@@ -2215,7 +2216,7 @@ void BasicBlock::processSwitch(UserProc *proc) {
     iNumOut = si->iUpper - si->iLower + 1;
     iNum = iNumOut;
     // Emit an NWAY BB instead of the COMPJUMP. Also update the number of out edges.
-    updateType(NWAY, iNumOut);
+    updateType(BBTYPE::NWAY, iNumOut);
 
     Prog *prog(proc->getProg());
     Cfg *cfg(proc->getCFG());
@@ -2295,7 +2296,7 @@ bool BasicBlock::undoComputedBB(Instruction *stmt) {
     RTL *last = ListOfRTLs->back();
     for (auto rr = last->rbegin(); rr != last->rend(); rr++) {
         if (*rr == stmt) {
-            NodeType = CALL;
+            NodeType = BBTYPE::CALL;
             LOG << "undoComputedBB for statement " << stmt << "\n";
             return true;
         }

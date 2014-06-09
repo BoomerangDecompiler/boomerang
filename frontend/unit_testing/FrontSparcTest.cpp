@@ -15,13 +15,14 @@
 #include "BinaryFile.h"
 #include "BinaryFileStub.h"
 #include "boomerang.h"
+#include "basicblock.h"
 #include "log.h"
 
 #include <QDir>
 #include <QProcessEnvironment>
 #include <QDebug>
 
-#define HELLO_SPARC "test/sparc/hello"
+#define HELLO_SPARC baseDir.absoluteFilePath("test/sparc/hello")
 #define BRANCH_SPARC baseDir.absoluteFilePath("test/sparc/branch")
 static bool logset = false;
 static QString TEST_BASE;

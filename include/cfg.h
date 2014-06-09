@@ -19,8 +19,6 @@
 
 #include "types.h"
 #include "exphelp.h"    // For lessExpStar
-#include "basicblock.h" // For the BB nodes
-#include "dataflow.h"   // For embedded class DataFlow
 
 #include <cstdio> // For FILE
 #include <list>
@@ -45,12 +43,16 @@ struct DOM;
 class XMLProgParser;
 class Global;
 class Parameter;
-
+class ConnectionGraph;
+class Instruction;
+enum class BBTYPE;
 #define BTHEN 0
 #define BELSE 1
 
 // A type for the ADDRESS to BB map
 typedef std::map<ADDRESS, BasicBlock *, std::less<ADDRESS>> MAPBB;
+typedef std::list<BasicBlock *>::iterator BB_IT;
+typedef std::list<BasicBlock *>::const_iterator BBC_IT;
 
 class Cfg {
     typedef std::set<CallStatement *> sCallStatement;

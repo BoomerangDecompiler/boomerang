@@ -73,14 +73,13 @@
 #include "constraint.h"
 #include "visitor.h"
 #include "log.h"
+#include "basicblock.h"
 
 #include <QtCore/QDebug>
 #include <QtCore/QFile>
 #include <QtCore/QTextStream>
 #include <sstream>
 #include <algorithm> // For find()
-#include <iomanip>   // For std::setw etc
-#include <sstream>
 #include <cstring>
 
 #ifdef _WIN32
@@ -1082,79 +1081,79 @@ ProcSet *UserProc::decompile(ProcList *path, int &indent) {
         BB_IT it;
         // Look at each call, to do the DFS
         for (BasicBlock *bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it)) {
-            if (bb->getType() == CALL) {
-                // The call Statement will be in the last RTL in this BB
-                CallStatement *call = (CallStatement *)bb->getRTLs()->back()->getHlStmt();
-                if (!call->isCall()) {
-                    LOG << "bb at " << bb->getLowAddr() << " is a CALL but last stmt is not a call: " << call << "\n";
+            if (bb->getType() != BBTYPE::CALL)
+                continue;
+            // The call Statement will be in the last RTL in this BB
+            CallStatement *call = (CallStatement *)bb->getRTLs()->back()->getHlStmt();
+            if (!call->isCall()) {
+                LOG << "bb at " << bb->getLowAddr() << " is a CALL but last stmt is not a call: " << call << "\n";
+            }
+            assert(call->isCall());
+            UserProc *c = (UserProc *)call->getDestProc();
+            if (c == nullptr || c->isLib())
+                continue;
+            if (c->status == PROC_FINAL) {
+                // Already decompiled, but the return statement still needs to be set for this call
+                call->setCalleeReturn(c->getTheReturnStatement());
+                continue;
+            }
+            // if c has already been visited but not done (apart from global analyses, i.e. we have a new cycle)
+            if (c->status >= PROC_VISITED && c->status <= PROC_EARLYDONE) {
+                // if c is in path
+                ProcList::iterator pi;
+                bool inPath = false;
+                for (pi = path->begin(); pi != path->end(); ++pi) {
+                    if (*pi == c) {
+                        inPath = true;
+                        break;
+                    }
                 }
-                assert(call->isCall());
-                UserProc *c = (UserProc *)call->getDestProc();
-                if (c == nullptr || c->isLib())
-                    continue;
-                if (c->status == PROC_FINAL) {
-                    // Already decompiled, but the return statement still needs to be set for this call
-                    call->setCalleeReturn(c->getTheReturnStatement());
-                    continue;
-                }
-                // if c has already been visited but not done (apart from global analyses, i.e. we have a new cycle)
-                if (c->status >= PROC_VISITED && c->status <= PROC_EARLYDONE) {
-                    // if c is in path
+                if (inPath) {
+                    // This is a completely new cycle
+                    // Insert every proc from c to the end of path into child
+                    do {
+                        child->insert(*pi);
+                        ++pi;
+                    } while (pi != path->end());
+                } else {
+                    // This is new branch of an existing cycle
+                    child = c->cycleGrp;
+                    // Find first element f of path that is in c->cycleGrp
                     ProcList::iterator pi;
-                    bool inPath = false;
+                    Function *f = nullptr;
                     for (pi = path->begin(); pi != path->end(); ++pi) {
-                        if (*pi == c) {
-                            inPath = true;
+                        if (c->cycleGrp->find(*pi) != c->cycleGrp->end()) {
+                            f = *pi;
                             break;
                         }
                     }
-                    if (inPath) {
-                        // This is a completely new cycle
-                        // Insert every proc from c to the end of path into child
-                        do {
-                            child->insert(*pi);
-                            ++pi;
-                        } while (pi != path->end());
-                    } else {
-                        // This is new branch of an existing cycle
-                        child = c->cycleGrp;
-                        // Find first element f of path that is in c->cycleGrp
-                        ProcList::iterator pi;
-                        Function *f = nullptr;
-                        for (pi = path->begin(); pi != path->end(); ++pi) {
-                            if (c->cycleGrp->find(*pi) != c->cycleGrp->end()) {
-                                f = *pi;
-                                break;
-                            }
-                        }
-                        assert(f);
-                        // Insert every proc after f to the end of path into child
-                        // There must be at least one element in the list (this proc), so the ++pi should be safe
-                        while (++pi != path->end()) {
-                            child->insert(*pi);
-                        }
+                    assert(f);
+                    // Insert every proc after f to the end of path into child
+                    // There must be at least one element in the list (this proc), so the ++pi should be safe
+                    while (++pi != path->end()) {
+                        child->insert(*pi);
                     }
-                    // point cycleGrp for each element of child to child, unioning in each element's cycleGrp
-                    ProcSet::iterator cc;
-                    for (cc = child->begin(); cc != child->end(); ++cc) {
-                        ProcSet *&cg = (*cc)->cycleGrp;
-                        if (cg)
-                            child->insert(cg->begin(), cg->end());
-                        cg = child;
-                    }
+                }
+                // point cycleGrp for each element of child to child, unioning in each element's cycleGrp
+                ProcSet::iterator cc;
+                for (cc = child->begin(); cc != child->end(); ++cc) {
+                    ProcSet *&cg = (*cc)->cycleGrp;
+                    if (cg)
+                        child->insert(cg->begin(), cg->end());
+                    cg = child;
+                }
+                setStatus(PROC_INCYCLE);
+            } else {
+                // No new cycle
+                LOG_VERBOSE(1) << "visiting on the way down child " << c->getName() << " from " << getName()
+                               << "\n";
+                c->promoteSignature();
+                ProcSet *tmp = c->decompile(path, indent);
+                child->insert(tmp->begin(), tmp->end());
+                // Child has at least done middleDecompile(), possibly more
+                call->setCalleeReturn(c->getTheReturnStatement());
+                if (tmp->size() > 0) {
                     setStatus(PROC_INCYCLE);
-                } else {
-                    // No new cycle
-                    LOG_VERBOSE(1) << "visiting on the way down child " << c->getName() << " from " << getName()
-                                   << "\n";
-                    c->promoteSignature();
-                    ProcSet *tmp = c->decompile(path, indent);
-                    child->insert(tmp->begin(), tmp->end());
-                    // Child has at least done middleDecompile(), possibly more
-                    call->setCalleeReturn(c->getTheReturnStatement());
-                    if (tmp->size() > 0) {
-                        setStatus(PROC_INCYCLE);
-                    }
                 }
             }
         }

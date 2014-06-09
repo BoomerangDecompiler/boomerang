@@ -13,24 +13,17 @@
 #include "proc.h"
 #include "BinaryFile.h"
 #include "frontend.h"
-#include "hllcode.h"
-#include "codegen/chllcode.h"
 //#include "transformer.h"
-#include "util.h"
 #include "log.h"
 #include "xmlprogparser.h"
+#include "codegen/chllcode.h"
 
 // For the -nG switch to disable the garbage collector
-#include "config.h"
 #ifdef HAVE_LIBGC
 #include "gc.h"
 #endif
 
 #include <QDebug>
-#include <inttypes.h>
-#include <cstring>
-#include <cstdlib>
-#include <fstream>
 #include <ctime>
 
 Boomerang *Boomerang::boomerang = nullptr;

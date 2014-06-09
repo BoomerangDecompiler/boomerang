@@ -30,6 +30,7 @@
 #include "prog.h"       // For findProc()
 #include "BinaryFile.h" // For SymbolByAddress()
 #include "boomerang.h"
+#include "basicblock.h"
 #include "log.h"
 
 #include <cassert>

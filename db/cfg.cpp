@@ -56,6 +56,7 @@
 #include "signature.h"
 #include "exp.h"
 #include "register.h"
+#include "basicblock.h"
 #include "rtl.h"
 #include "proc.h" // For Proc::setTailCaller()
 #include "prog.h" // For findProc()
@@ -139,7 +140,7 @@ const Cfg &Cfg::operator=(const Cfg &other) {
 void Cfg::setEntryBB(BasicBlock *bb) {
     entryBB = bb;
     for (BasicBlock *it : m_listBB) {
-        if (it->getType() == RET) {
+        if (it->getType() == BBTYPE::RET) {
             exitBB = it;
             return;
         }
@@ -441,7 +442,7 @@ BasicBlock *Cfg::splitBB(BasicBlock *pBB, ADDRESS uNativeAddr, BasicBlock *pNewB
     }
     // else pNewBB exists and is complete. We don't want to change the complete
     // BB in any way, except to later add one in-edge
-    pBB->NodeType = FALL; // Update original ("top") basic block's info and make it a fall-through
+    pBB->NodeType = BBTYPE::FALL; // Update original ("top") basic block's info and make it a fall-through
                             // Fix the in-edges of pBB's descendants. They are now pNewBB
                             // Note: you can't believe m_iNumOutEdges at the time that this function may
                             // get called
@@ -988,9 +989,9 @@ bool Cfg::establishDFTOrder() {
 BasicBlock *Cfg::findRetNode() {
     BasicBlock *retNode = nullptr;
     for (BasicBlock *bb : m_listBB) {
-        if (bb->getType() == RET) {
+        if (bb->getType() == BBTYPE::RET) {
             return bb;
-        } else if (bb->getType() == CALL) {
+        } else if (bb->getType() == BBTYPE::CALL) {
             Function *p = bb->getCallDestProc();
             if (p && !p->getName().compare("exit")) // TODO: move this into check Proc::noReturn();
                 retNode = bb;
@@ -1318,7 +1319,7 @@ void Cfg::structConds() {
         // does the current node have more than one out edge?
         if (curNode->getOutEdges().size() > 1) {
             // if the current conditional header is a two way node and has a back edge, then it won't have a follow
-            if (curNode->hasBackEdge() && curNode->getType() == TWOWAY) {
+            if (curNode->hasBackEdge() && curNode->getType() == BBTYPE::TWOWAY) {
                 curNode->setStructType(Cond);
                 continue;
             }
@@ -1342,17 +1343,17 @@ void Cfg::determineLoopType(BasicBlock *header, bool *&loopNodes) {
     assert(header->getLatchNode());
 
     // if the latch node is a two way node then this must be a post tested loop
-    if (header->getLatchNode()->getType() == TWOWAY) {
+    if (header->getLatchNode()->getType() == BBTYPE::TWOWAY) {
         header->setLoopType(PostTested);
 
         // if the head of the loop is a two way node and the loop spans more than one block  then it must also be a
         // conditional header
-        if (header->getType() == TWOWAY && header != header->getLatchNode())
+        if (header->getType() == BBTYPE::TWOWAY && header != header->getLatchNode())
             header->setStructType(LoopCond);
     }
 
     // otherwise it is either a pretested or endless loop
-    else if (header->getType() == TWOWAY) {
+    else if (header->getType() == BBTYPE::TWOWAY) {
         // if the header is a two way node then it must have a conditional follow (since it can't have any backedges
         // leading from it). If this follow is within the loop then this must be an endless loop
         if (header->getCondFollow() && loopNodes[header->getCondFollow()->Ord]) {
@@ -1674,10 +1675,10 @@ void Cfg::generateDotFile(QTextStream &of) {
 #endif
         of << p << " ";
         switch (pbb->getType()) {
-        case ONEWAY:
+        case BBTYPE::ONEWAY:
             of << "oneway";
             break;
-        case TWOWAY:
+        case BBTYPE::TWOWAY:
             if (pbb->getCond()) {
                 of << "\\n";
                 pbb->getCond()->print(of);
@@ -1686,7 +1687,7 @@ void Cfg::generateDotFile(QTextStream &of) {
             } else
                 of << "twoway";
             break;
-        case NWAY: {
+        case BBTYPE::NWAY: {
             of << "nway";
             Exp *de = pbb->getDest();
             if (de) {
@@ -1696,29 +1697,29 @@ void Cfg::generateDotFile(QTextStream &of) {
             of << "\" shape=trapezium];\n";
             continue;
         }
-        case CALL: {
+        case BBTYPE::CALL: {
             of << "call";
             Function *dest = pbb->getDestProc();
             if (dest)
                 of << "\\n" << dest->getName();
             break;
         }
-        case RET: {
+        case BBTYPE::RET: {
             of << "ret\" shape=triangle];\n";
             // Remember the (unbique) return BB's address
             aret = pbb->getLowAddr();
             continue;
         }
-        case FALL:
+        case BBTYPE::FALL:
             of << "fall";
             break;
-        case COMPJUMP:
+        case BBTYPE::COMPJUMP:
             of << "compjump";
             break;
-        case COMPCALL:
+        case BBTYPE::COMPCALL:
             of << "compcall";
             break;
-        case INVALID:
+        case BBTYPE::INVALID:
             of << "invalid";
             break;
         }
@@ -1739,7 +1740,7 @@ void Cfg::generateDotFile(QTextStream &of) {
         for (unsigned int j = 0; j < outEdges.size(); j++) {
             of << "       bb" << pbb->getLowAddr() << " -> ";
             of << "bb" << outEdges[j]->getLowAddr();
-            if (pbb->getType() == TWOWAY) {
+            if (pbb->getType() == BBTYPE::TWOWAY) {
                 if (j == 0)
                     of << " [label=\"true\"]";
                 else
@@ -1889,7 +1890,7 @@ BasicBlock *Cfg::splitForBranch(BasicBlock *pBB, RTL *rtl, BranchStatement *br1,
     // creating the rptBB). Or if there is no A, temporarily use 0
     ADDRESS a = (haveA) ? addr : ADDRESS::g(0L);
     RTL *skipRtl = new RTL(a, new std::list<Instruction *>{br1}); // list initializer in braces
-    BasicBlock *skipBB = newBB(new std::list<RTL *>{skipRtl}, TWOWAY, 2);
+    BasicBlock *skipBB = newBB(new std::list<RTL *>{skipRtl}, BBTYPE::TWOWAY, 2);
     rtl->setAddress(addr + 1);
     if (!haveA) {
         skipRtl->setAddress(addr);
@@ -1916,7 +1917,7 @@ BasicBlock *Cfg::splitForBranch(BasicBlock *pBB, RTL *rtl, BranchStatement *br1,
     rtl->back() = br2;
 
     // Move the remainder of the string RTL into a new BB
-    BasicBlock *rptBB = newBB(new std::list<RTL *>{*ri}, TWOWAY, 2);
+    BasicBlock *rptBB = newBB(new std::list<RTL *>{*ri}, BBTYPE::TWOWAY, 2);
     ri = pBB->ListOfRTLs->erase(ri);
 
     // Move the remaining RTLs (if any) to a new list of RTLs
@@ -1944,7 +1945,7 @@ BasicBlock *Cfg::splitForBranch(BasicBlock *pBB, RTL *rtl, BranchStatement *br1,
     }
 
     // Change pBB to a FALL bb
-    pBB->updateType(FALL, 1);
+    pBB->updateType(BBTYPE::FALL, 1);
     // Set the first out-edge to be skipBB
     pBB->OutEdges.erase(pBB->OutEdges.begin(), pBB->OutEdges.end());
     addOutEdge(pBB, skipBB);

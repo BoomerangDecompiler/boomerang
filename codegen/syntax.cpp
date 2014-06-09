@@ -3,6 +3,7 @@
 #include "prog.h"
 #include "exp.h"
 #include "cfg.h"
+#include "basicblock.h"
 #include "statement.h"
 #include "boomerang.h"
 
@@ -42,9 +43,9 @@ int SyntaxNode::getScore() {
     return score;
 }
 
-bool SyntaxNode::isGoto() { return pbb && pbb->getType() == ONEWAY && !notGoto; }
+bool SyntaxNode::isGoto() { return pbb && pbb->getType() == BBTYPE::ONEWAY && !notGoto; }
 
-bool SyntaxNode::isBranch() { return pbb && pbb->getType() == TWOWAY; }
+bool SyntaxNode::isBranch() { return pbb && pbb->getType() == BBTYPE::TWOWAY; }
 
 BlockSyntaxNode::BlockSyntaxNode() {}
 
@@ -90,33 +91,33 @@ void BlockSyntaxNode::printAST(SyntaxNode *root, QTextStream &os) {
     os << "[label=\"";
     if (pbb) {
         switch (pbb->getType()) {
-        case ONEWAY:
+        case BBTYPE::ONEWAY:
             os << "Oneway";
             if (notGoto)
                 os << " (ignored)";
             break;
-        case TWOWAY:
+        case BBTYPE::TWOWAY:
             os << "Twoway";
             break;
-        case NWAY:
+        case BBTYPE::NWAY:
             os << "Nway";
             break;
-        case CALL:
+        case BBTYPE::CALL:
             os << "Call";
             break;
-        case RET:
+        case BBTYPE::RET:
             os << "Ret";
             break;
-        case FALL:
+        case BBTYPE::FALL:
             os << "Fall";
             break;
-        case COMPJUMP:
+        case BBTYPE::COMPJUMP:
             os << "Computed jump";
             break;
-        case COMPCALL:
+        case BBTYPE::COMPCALL:
             os << "Computed call";
             break;
-        case INVALID:
+        case BBTYPE::INVALID:
             os << "Invalid";
             break;
         }
