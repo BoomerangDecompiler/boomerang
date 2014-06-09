@@ -206,12 +206,14 @@ void CfgTest::testPlacePhi2() {
     pFE->decode(prog);
 
     UserProc *pProc = (UserProc *)prog->getProc(0);
-    Cfg *cfg = pProc->getCFG();
-    DataFlow *df = pProc->getDataFlow();
 
     // Simplify expressions (e.g. m[ebp + -8] -> m[ebp - 8]
     prog->finishDecode();
 
+    Cfg *cfg = pProc->getCFG();
+    cfg->sortByAddress();
+
+    DataFlow *df = pProc->getDataFlow();
     df->dominators(cfg);
     df->placePhiFunctions(pProc);
 
@@ -220,6 +222,21 @@ void CfgTest::testPlacePhi2() {
     // We check that A_phi[ m[ebp-8] ] is 4, and that
     // A_phi A_phi[ m[ebp-8] ] is null
     // (block 4 comes out with n=4)
+
+    /*
+     Call (0)
+      |
+      V
+     Call (1)
+      |
+      V
+   Twoway (2) if (b < 4 )
+      |
+      |-T-> Fall (3)
+      |		 |
+      |		 V
+      |-F-> Call (4) ----> Ret (5)
+    */
 
     QString expected = "4 ";
     QString actual_st;
@@ -231,6 +248,12 @@ void CfgTest::testPlacePhi2() {
     for (pp = s.begin(); pp != s.end(); pp++)
         actual << *pp << " ";
     QCOMPARE(actual_st,expected);
+    if (s.size() > 0)
+    {
+        BBTYPE actualType = df->nodeToBB(*s.begin())->getType();
+        BBTYPE expectedType = CALL;
+        QCOMPARE(actualType, expectedType);
+    }
     delete e;
 
     expected = "";
