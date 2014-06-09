@@ -477,6 +477,7 @@ Function *Function::getFirstCaller() {
 /***************************************************************************/ /**
   *
   * \brief        Constructor with name, native address.
+  * \param        prog - a program to which this procedure belongs to
   * \param        name - Name of procedure
   * \param        uNative - Native address of entry point of procedure
   ******************************************************************************/

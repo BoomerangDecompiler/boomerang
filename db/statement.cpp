@@ -701,7 +701,6 @@ static int progress = 0;
 /***************************************************************************/ /**
   * \brief Propagate to this statement
   * \param destCounts is a map that indicates how may times a statement's definition is used
-  * \param dnp is a InstructionSet with statements that should not be propagated
   * \param convert set true if an indirect call is changed to direct (otherwise, no change)
   * \param force set to true to propagate even memofs (for switch analysis)
   * \param usedByDomPhi is a set of subscripted locations used in phi statements

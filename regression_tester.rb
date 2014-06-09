@@ -19,10 +19,13 @@ def perform_test(exepath,machine,test,args)
         test_file = File.join(TEST_INPUT,machine,test)
         log_name = File.join(output_path,test)
         joined_args = args.join(' ')
+        file_size = File.size?(test_file)
         cmdline = "-P #{Dir.pwd} -o #{output_path} #{joined_args} #{test_file}\n"
+        start_t = Time.now
         result = `#{exepath} -P #{Dir.pwd} -o #{output_path} #{joined_args} #{test_file} >#{log_name+".stdout"} 2>#{log_name+".stderr"}`
+        end_t = Time.now
         STDOUT << ($?.success?() ? '.' : '!')
-        return [$?.success?,cmdline]
+        return [$?.success?,cmdline,test_file,file_size.to_f()/(end_t-start_t)]
 end
 if(File.exists?(File.join(TESTS_DIR,"outputs_prev")))
     FileUtils.rm_r(File.join(TESTS_DIR,"outputs_prev"),{:force=>true,:secure=>true})
@@ -33,28 +36,31 @@ end
 #exit(1)
 #sh -c "./boomerang -o functest $4 test/$1/$2 2>/dev/null >/dev/null"
 crashes = {}
+times = {}
 Dir.open(TEST_INPUT).each() {|f|
-        next if f=="." or f==".."
-        machine_dir = File.join(TEST_INPUT,f)
-        next if not File::directory?(machine_dir)
-        machine = f
-        Dir.open(machine_dir).each() {|test|
-            next if test=="." or test==".."
-            test_path = File.join(machine_dir,test)
-            FileUtils.mkdir_p(File.join(TESTS_DIR,"outputs",machine,test))
-            test_res = nil
-            if(!test.index("hello.exe").nil?)
-              p "skipping hello.exe - it causes memory exhaustion"
-              test_res = [false,"skipped windows/hello.exe"]
-            else
-              test_res = perform_test(ARGV[0],machine,test,ARGV[1..-1])
-              FileUtils.mv(File.join(TESTS_DIR,"outputs",machine,"log"),File.join(TESTS_DIR,"outputs",machine,test+".log"))
-            end
-            if( not test_res[0])
-                crashes[machine] ||= []
-                crashes[machine] << [test,test_res[1]]
-            end
-        }
+    next if f=="." or f==".."
+    machine_dir = File.join(TEST_INPUT,f)
+    next if not File::directory?(machine_dir)
+    machine = f
+    Dir.open(machine_dir).each() {|test|
+      next if test=="." or test==".."
+      test_path = File.join(machine_dir,test)
+      FileUtils.mkdir_p(File.join(TESTS_DIR,"outputs",machine,test))
+      test_res = nil
+      if(!test.index("hello.exe").nil?)
+        p "skipping hello.exe - it causes memory exhaustion"
+        test_res = [false,"skipped windows/hello.exe"]
+      else
+        test_res = perform_test(ARGV[0],machine,test,ARGV[1..-1])
+        FileUtils.mv(File.join(TESTS_DIR,"outputs",machine,"log"),File.join(TESTS_DIR,"outputs",machine,test+".log"))
+      end
+      if( not test_res[0])
+        crashes[machine] ||= []
+        crashes[machine] << [test,test_res[1]]
+      else
+        times[test_res[2]] = test_res[3] if test_res[3]!=nil
+      end
+    }
 }
 crashes.each {|machine,crash_list|
         puts "\nEncountered #{crash_list.size} program failures for #{machine}\n"        
@@ -62,6 +68,8 @@ crashes.each {|machine,crash_list|
 		puts("Decompiler failed on #{machine}/#{test[0]} - #{test[1]}\n")
 	}
 }
+sorted_times = times.to_a.sort {|a,b| a[1] <=> b[1] }
+puts "Slowest run in bytes/sec #{sorted_times.first[0]} - #{sorted_times.first[1]} bytes/sec"
 #Dir.open(TESTS_DIR+"/inputs").each() {|f|
 #        next if f=="." or f==".."
 #        FileUtils.mv(TESTS_DIR+"/inputs/"+f,TESTS_DIR+"/outputs/"+f) if f.end_with?(".b")
