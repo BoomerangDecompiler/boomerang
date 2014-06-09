@@ -15,12 +15,14 @@
   *
   * Holds detailed information about a single register.
   ******************************************************************************/
+#include "register.h"
+
+#include "type.h"
 
 #include <cassert>
 #include <cstring>
-#include "register.h"
-#include "type.h"
-#include "util.h"
+#include <string>
+
 
 Register::Register() : address(nullptr), mappedIndex(-1), mappedOffset(-1), flt(false) {}
 

@@ -7,9 +7,6 @@
 */
 
 #include "BinaryFile.h"
-#include "boomerang.h"
-#include "config.h" // For HOST_OSX_10_2 etc
-
 
 #include <QDir>
 #include <QPluginLoader>
@@ -59,7 +56,7 @@ static QString selectPluginForFile(const QString &sName) {
         libName = "ElfBinaryFile";
     } else if (TESTMAGIC2(buf, 0, 'M', 'Z')) { /* DOS-based file */
         int peoff = LMMH(buf[0x3C]);
-        if (peoff != 0 && f.seek(peoff) != -1) {
+        if (peoff != 0 && f.seek(peoff) ) {
             f.read((char *)buf,4);
             if (TESTMAGIC4(buf, 0, 'P', 'E', 0, 0)) {
                 /* Win32 Binary */

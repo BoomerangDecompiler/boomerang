@@ -1,7 +1,6 @@
 #pragma once
 
 #include "types.h"
-#include "sigenum.h" // For enums platform and cc
 
 #include <queue>
 class Cfg;

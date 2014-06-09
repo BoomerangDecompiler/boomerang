@@ -412,7 +412,7 @@ void FrontEnd::readLibrarySignatures(const char *sPath, callconv cc) {
 #if 0
         LOG_STREAM() << "readLibrarySignatures from " << sPath << ": " << (*it)->getName() << "\n";
 #endif
-        LibrarySignatures[(elem)->getName().toStdString()] = elem;
+        LibrarySignatures[(elem)->getName()] = elem;
         (elem)->setSigFile(sPath);
     }
 
@@ -420,29 +420,28 @@ void FrontEnd::readLibrarySignatures(const char *sPath, callconv cc) {
     ifs.close();
 }
 
-Signature *FrontEnd::getDefaultSignature(const std::string &name) {
+Signature *FrontEnd::getDefaultSignature(const QString &name) {
     Signature *signature = nullptr;
     // Get a default library signature
     if (isWin32())
-        signature = Signature::instantiate(PLAT_PENTIUM, CONV_PASCAL, name.c_str());
+        signature = Signature::instantiate(PLAT_PENTIUM, CONV_PASCAL, name);
     else {
-        signature = Signature::instantiate(getFrontEndId(), CONV_C, name.c_str());
+        signature = Signature::instantiate(getFrontEndId(), CONV_C, name);
     }
     return signature;
 }
 
 // get a library signature by name
-Signature *FrontEnd::getLibSignature(const std::string &name) {
+Signature *FrontEnd::getLibSignature(const QString &name) {
     Signature *signature;
     // Look up the name in the librarySignatures map
-    std::map<std::string, Signature *>::iterator it;
-    it = LibrarySignatures.find(name);
+    auto it = LibrarySignatures.find(name);
     if (it == LibrarySignatures.end()) {
-        LOG << "Unknown library function " << name.c_str() << "\n";
+        LOG << "Unknown library function " << name << "\n";
         signature = getDefaultSignature(name);
     } else {
         // Don't clone here; cloned in CallStatement::setSigArguments
-        signature = (*it).second;
+        signature = *it;
         signature->setUnknown(false);
     }
     return signature;

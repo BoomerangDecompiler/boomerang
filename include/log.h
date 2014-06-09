@@ -2,9 +2,7 @@
 #ifndef LOG_H
 #define LOG_H
 
-#include "types.h"
-
-#include <QtCore/QString>
+#include <QString>
 #include <memory>
 #include <fstream>
 
@@ -15,9 +13,11 @@ class RTL;
 class Range;
 class RangeMap;
 class Type;
+struct ADDRESS;
+
 typedef std::shared_ptr<Type> SharedType;
 class Log {
-  public:
+public:
     Log() {}
     virtual Log &operator<<(const QString &s) = 0;
     virtual Log &operator<<(const Instruction *s);
@@ -38,38 +38,27 @@ class Log {
 };
 
 class FileLogger : public Log {
-  protected:
+protected:
     std::ofstream out;
-
-  public:
+public:
     FileLogger(); // Implemented in boomerang.cpp
-    void tail();
-    virtual Log &operator<<(const QString &str) {
-        out << str.toStdString() << std::flush;
-        return *this;
-    }
     virtual ~FileLogger() {}
+    void tail()  override;
+    Log &operator<<(const QString &str)  override;
 };
 class SeparateLogger : public Log {
-  protected:
+protected:
     std::ofstream *out;
 
-  public:
+public:
     SeparateLogger(const QString &); // Implemented in boomerang.cpp
-    void tail();
-    virtual Log &operator<<(const QString &str) {
-        (*out) << str.toStdString() << std::flush;
-        return *this;
-    }
-    virtual ~SeparateLogger() {
-        out->close();
-        out = nullptr;
-    }
+    virtual ~SeparateLogger();
+    Log &operator<<(const QString &str) override;
+    void tail() override;
 };
 class NullLogger : public Log {
-  public:
+public:
     virtual Log &operator<<(const QString & /*str*/) {
-        // LOG_STREAM() << str;
         return *this;
     }
 };

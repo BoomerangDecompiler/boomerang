@@ -881,44 +881,43 @@ SharedType Type::getTempType(const QString &name) {
 
 /***************************************************************************/ /**
   *
-  * \brief    Return a minimal temporary name for this type. It'd be even
-  *                nicer to return a unique name, but we don't know scope at
-  *                this point, and even so we could still clash with a user-defined
-  *                name later on :(
-  * \param
+  * \brief   Return a minimal temporary name for this type. It'd be even
+  *          nicer to return a unique name, but we don't know scope at
+  *          this point, and even so we could still clash with a user-defined
+  *          name later on :(
   * \returns        a string
   ******************************************************************************/
-std::string IntegerType::getTempName() const {
+QString IntegerType::getTempName() const {
     switch (size) {
     case 1: /* Treat as a tmpb */
     case 8:
-        return std::string("tmpb");
+        return "tmpb";
     case 16:
-        return std::string("tmph");
+        return "tmph";
     case 32:
-        return std::string("tmpi");
+        return "tmpi";
     case 64:
-        return std::string("tmpl");
+        return "tmpl";
     }
-    return std::string("tmp");
+    return "tmp";
 }
 
-std::string FloatType::getTempName() const {
+QString FloatType::getTempName() const {
     switch (size) {
     case 32:
-        return std::string("tmpf");
+        return "tmpf";
     case 64:
-        return std::string("tmpd");
+        return "tmpd";
     case 80:
-        return std::string("tmpF");
+        return "tmpF";
     case 128:
-        return std::string("tmpD");
+        return "tmpD";
     }
-    return std::string("tmp");
+    return "tmp";
 }
 
-std::string Type::getTempName() const {
-    return std::string("tmp"); // what else can we do? (besides panic)
+QString Type::getTempName() const {
+    return "tmp"; // what else can we do? (besides panic)
 }
 
 int NamedType::nextAlpha = 0;
@@ -1495,9 +1494,8 @@ void CompoundType::updateGenericMember(int off, SharedType ty, bool &ch) {
         existingType = existingType->meetWith(ty, ch);
         setTypeAtOffset(bit_offset, existingType);
     } else {
-        std::ostringstream ost;
-        ost << "member" << std::dec << nextGenericMemberNum++;
+        QString nam = QString("member")+ QString::number(nextGenericMemberNum++);
         setTypeAtOffset(bit_offset, ty);
-        setNameAtOffset(bit_offset, ost.str().c_str());
+        setNameAtOffset(bit_offset, nam);
     }
 }

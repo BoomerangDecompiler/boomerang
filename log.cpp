@@ -101,7 +101,20 @@ void FileLogger::tail() {
     out.seekp(-200, std::ios::end);
     LOG_STREAM() << out;
 }
+Log &FileLogger::operator<<(const QString &str) {
+    out << str.toStdString() << std::flush;
+    return *this;
+}
+
 void SeparateLogger::tail() {
     out->seekp(-200, std::ios::end);
     LOG_STREAM() << out;
+}
+Log &SeparateLogger::operator<<(const QString &str) {
+    (*out) << str.toStdString() << std::flush;
+    return *this;
+}
+SeparateLogger::~SeparateLogger() {
+    out->close();
+    out = nullptr;
 }

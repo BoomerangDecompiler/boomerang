@@ -15,25 +15,21 @@
   *               register transfer list)
   ******************************************************************************/
 
-#include "rtl.h"
-#include "types.h"
-#include "statement.h"
-#include "exp.h"
-#include "type.h"
-#include "register.h"
-#include "cfg.h"
-#include "proc.h" // For printing proc names
-#include "prog.h"
-#include "hllcode.h"
-#include "util.h"
-#include "boomerang.h"
-#include "visitor.h"
-#include "log.h"
 
-#include <cassert>
-#include <iomanip> // For setfill
-#include <sstream>
-#include <cstring>
+#include "rtl.h"
+
+#include "boomerang.h"                  // for LOG_VERBOSE
+#include "exp.h"                        // for Const, Exp, DEBUG_BUFSIZE
+#include "log.h"                        // for Log
+#include "operator.h"                   // for OPER::opIntConst
+#include "statement.h"                  // for Instruction, etc
+#include "types.h"                      // for ADDRESS
+
+#include <QString>
+#include <QTextStream>
+#include <stdio.h>                      // for stderr
+#include <cassert>                      // for assert
+#include <cstring>                      // for strncpy
 
 /******************************************************************************
  * RTL methods.

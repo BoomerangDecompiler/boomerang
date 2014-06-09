@@ -578,13 +578,12 @@ BOOL CALLBACK addSymbol(dbghelp::PSYMBOL_INFO pSymInfo, ULONG SymbolSize, PVOID 
   * \param bLib - If true, this will be a libProc; else a UserProc
   * \returns        A pointer to the new Proc object
   ******************************************************************************/
-Function *Prog::newProc(const char *name, ADDRESS uNative, bool bLib /*= false*/) {
+Function *Prog::newProc(const QString &name, ADDRESS uNative, bool bLib /*= false*/) {
     Function *pProc;
-    std::string sname(name);
     if (bLib)
-        pProc = new LibProc(this, sname, uNative);
+        pProc = new LibProc(this, name, uNative);
     else
-        pProc = new UserProc(this, sname, uNative);
+        pProc = new UserProc(this, name, uNative);
 // TODO: add platform agnostic way of using debug information, should be moved to Loaders, Prog should just collect info
 // from Loader
 
@@ -733,13 +732,13 @@ LibProc *Prog::getLibraryProc(const QString &nam) {
     return (LibProc *)newProc(nam, NO_ADDRESS, true);
 }
 //! Get a library signature for a given name (used when creating a new library proc).
-Signature *Prog::getLibSignature(const std::string &nam) { return pFE->getLibSignature(nam); }
+Signature *Prog::getLibSignature(const QString &nam) { return pFE->getLibSignature(nam); }
 
 void Prog::rereadLibSignatures() {
     pFE->readLibraryCatalog();
     for (Function *pProc : m_procs) {
         if (pProc->isLib()) {
-            pProc->setSignature(getLibSignature(pProc->getName().toStdString()));
+            pProc->setSignature(getLibSignature(pProc->getName()));
             for (CallStatement *call_stmt : pProc->getCallers())
                 call_stmt->setSigArguments();
             Boomerang::get()->alertUpdateSignature(pProc);

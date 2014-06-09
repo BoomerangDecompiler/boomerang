@@ -19,14 +19,16 @@
 #ifndef __FRONTEND_H__
 #define __FRONTEND_H__
 
-#include <list>
-#include <map>
-#include <queue>
-#include <fstream>
 #include "types.h"
 #include "sigenum.h" // For enums platform and cc
 #include "BinaryFile.h"
 #include "TargetQueue.h"
+
+#include <list>
+#include <map>
+#include <queue>
+#include <fstream>
+#include <QMap>
 class UserProc;
 class Function;
 class RTL;
@@ -73,7 +75,7 @@ class FrontEnd {
     // The queue of addresses still to be processed
     TargetQueue targetQueue;
     // Public map from function name (string) to signature.
-    std::map<std::string, Signature *> LibrarySignatures;
+    QMap<QString, Signature *> LibrarySignatures;
     // Map from address to meaningful name
     std::map<ADDRESS, std::string> refHints;
     // Map from address to previously decoded RTLs for decoded indirect control transfer instructions
@@ -118,10 +120,10 @@ class FrontEnd {
     void readLibraryCatalog();                                  //!< read from default catalog
 
     // lookup a library signature by name
-    Signature *getLibSignature(const std::string &name);
+    Signature *getLibSignature(const QString &name);
 
     // return a signature that matches the architecture best
-    Signature *getDefaultSignature(const std::string &name);
+    Signature *getDefaultSignature(const QString &name);
 
     virtual std::vector<Exp *> &getDefaultParams() = 0;
     virtual std::vector<Exp *> &getDefaultReturns() = 0;

@@ -204,7 +204,7 @@ class Type : public std::enable_shared_from_this<Type> {
     void dump();             // For debugging
     static void dumpNames(); // For debugging
 
-    virtual std::string getTempName() const; // Get a temporary name for the type
+    virtual QString getTempName() const; // Get a temporary name for the type
 
     // Clear the named type map. This is necessary when testing; the
     // type for the first parameter to 'main' is different for sparc and pentium
@@ -336,7 +336,7 @@ class IntegerType : public Type {
     // Get the C type as a string. If full, output comments re the lack of sign information (in IntegerTypes).
     virtual QString getCtype(bool final = false) const;
 
-    virtual std::string getTempName() const;
+    virtual QString getTempName() const override;
 
     virtual SharedType meetWith(SharedType other, bool &ch, bool bHighestPtr) const;
     virtual bool isCompatible(const Type &other, bool all) const;
@@ -367,7 +367,7 @@ class FloatType : public Type {
 
     virtual QString getCtype(bool final = false) const;
 
-    virtual std::string getTempName() const;
+    virtual QString getTempName() const override;
 
     virtual SharedType meetWith(SharedType other, bool &ch, bool bHighestPtr) const;
     virtual bool isCompatible(const Type &other, bool all) const;

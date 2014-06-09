@@ -23,28 +23,20 @@
 #ifndef __RTL_H__
 #define __RTL_H__
 
-#include <list>
-#include <vector>
-#include <map>
-#include <set>
-#include <memory>
-#include <iosfwd>
-#include "type.h"
-//#include "exp.h"
-#include "register.h"
+#include "register.h"                   // for Register
+#include "type.h"                       // for Type
+#include "types.h"                      // for ADDRESS
 
-class BasicBlock;
-class HLLCode;
-class Exp;
-class TypedExp;
-class DefSet;
-class UseSet;
-class Type;
-class Register;
-class Function;
-class XMLProgParser;
-class StmtVisitor;
-class Instruction;
+#include <functional>                   // for less
+#include <list>                         // for list
+#include <map>                          // for map
+#include <set>                          // for set
+#include <string>                       // for string
+#include <utility>                      // for pair
+#include <vector>                       // for vector
+class Exp;  // lines 38-38
+class Instruction;  // lines 47-47
+class QTextStream;
 class QString;
 
 enum STMT_KIND : uint8_t;

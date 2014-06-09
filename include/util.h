@@ -7,16 +7,12 @@
 #define __UTIL_H__
 
 #include <QString>
-#include <sstream>
 #include <string>
 
 // was a workaround
 #define STR(x) (char *)(x.str().c_str())
-// Add string and integer
-std::string operator+(const std::string &s, int i);
 
 void escapeXMLChars(std::string &s);
-char *escapeStr(const char *str);
 QString escapeStr(const QString &str);
 int lockFileWrite(const char *fname);
 void unlockFile(int n);

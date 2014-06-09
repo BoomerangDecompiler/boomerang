@@ -106,7 +106,7 @@ class Signature {
     Signature(const QString &nam);
     // Platform plat, calling convention cc (both enums)
     // nam is name of the procedure (no longer stored in the Proc)
-    static Signature *instantiate(platform plat, callconv cc, const char *nam);
+    static Signature *instantiate(platform plat, callconv cc, const QString &nam);
     virtual ~Signature() {}
 
     virtual bool operator==(Signature &other);

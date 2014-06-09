@@ -1,8 +1,9 @@
 #include "TargetQueue.h"
+
 #include "boomerang.h"
 #include "log.h"
-#include "basicblock.h"
 #include "cfg.h"
+
 /***************************************************************************/ /**
   *
   * \brief   Visit a destination as a label, i.e. check whether we need to queue it as a new BB to create later.

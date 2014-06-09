@@ -154,7 +154,7 @@ protected:
     friend class XMLProgParser;
 
 public:
-    LibProc(Prog *prog, std::string &name, ADDRESS address);
+    LibProc(Prog *prog, const QString &name, ADDRESS address);
     virtual ~LibProc();
     bool isLib() { return true; } //!< Return true, since is a library proc
     virtual bool isNoReturn();
@@ -251,7 +251,7 @@ private:
     ProcSet *cycleGrp;
 
 public:
-    UserProc(Prog *prog,const std::string &name, ADDRESS address);
+    UserProc(Prog *prog,const QString &name, ADDRESS address);
     virtual ~UserProc();
     void setDecoded();
     void unDecode();

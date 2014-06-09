@@ -15,11 +15,7 @@
   ******************************************************************************/
 
 #include "table.h"
-#include "types.h"
-#include "statement.h"
 #include "exp.h"
-
-#include <cassert>
 
 Table::Table(TABLE_TYPE t) : TableType(t) {}
 

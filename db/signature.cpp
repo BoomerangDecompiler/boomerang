@@ -1471,7 +1471,7 @@ Signature *Signature::promote(UserProc *p) {
     return this;
 }
 
-Signature *Signature::instantiate(platform plat, callconv cc, const char *nam) {
+Signature *Signature::instantiate(platform plat, callconv cc, const QString &nam) {
     switch (plat) {
     case PLAT_PENTIUM:
         if (cc == CONV_PASCAL)

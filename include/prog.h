@@ -80,10 +80,7 @@ public:
     void setFrontEnd(FrontEnd *fe);
     void setName(const char *name);
     Function *setNewProc(ADDRESS uNative);
-    Function *newProc(const char *name, ADDRESS uNative, bool bLib = false);
-    Function *newProc(const QString &name, ADDRESS uNative, bool bLib = false) {
-        return newProc(qPrintable(name), uNative, bLib);
-    }
+    Function *newProc(const QString &name, ADDRESS uNative, bool bLib = false);
 
     void remProc(UserProc *proc);
     void removeProc(const QString &name);
@@ -131,7 +128,7 @@ public:
     void generateRTL(Module *cluster = nullptr, UserProc *proc = nullptr);
     void print(QTextStream &out);
     LibProc *getLibraryProc(const QString &nam);
-    Signature *getLibSignature(const std::string &name);
+    Signature *getLibSignature(const QString &name);
     void rereadLibSignatures();
     Instruction *getStmtAtLex(Module *cluster, unsigned int begin, unsigned int end);
     platform getFrontEndId();

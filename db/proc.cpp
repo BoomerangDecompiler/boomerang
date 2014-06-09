@@ -481,8 +481,8 @@ Function *Function::getFirstCaller() {
   * \param        name - Name of procedure
   * \param        uNative - Native address of entry point of procedure
   ******************************************************************************/
-LibProc::LibProc(Prog *prog, std::string &name, ADDRESS uNative) : Function(uNative, nullptr,prog) {
-    Signature *sig = prog->getLibSignature(name.c_str());
+LibProc::LibProc(Prog *prog, const QString &name, ADDRESS uNative) : Function(uNative, nullptr,prog) {
+    Signature *sig = prog->getLibSignature(name);
     signature = sig;
 }
 
@@ -515,10 +515,10 @@ UserProc::UserProc()
   * \param uNative - Native address of entry point of procedure
   *
   ******************************************************************************/
-UserProc::UserProc(Prog *prog,const std::string &name, ADDRESS uNative)
+UserProc::UserProc(Prog *prog, const QString &name, ADDRESS uNative)
     : // Not quite ready for the below fix:
       // Proc(prog, uNative, prog->getDefaultSignature(name.c_str())),
-      Function(uNative, new Signature(name.c_str()),prog),
+      Function(uNative, new Signature(name),prog),
       cfg(new Cfg()), status(PROC_UNDECODED), cycleGrp(nullptr), theReturnStatement(nullptr), DFGcount(0) {
     cfg->setProc(this); // Initialise cfg.myProc
     localTable.setProc(this);
