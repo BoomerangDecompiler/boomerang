@@ -31,6 +31,7 @@
 #include <sstream>
 #include <cstring>
 #include <utility>
+#include <QDebug>
 
 static int nextUnionNumber = 0;
 
@@ -481,10 +482,43 @@ SharedType ArrayType::meetWith(SharedType other, bool &ch, bool bHighestPtr) con
         if (other->asArray()->getLength() < getLength()) {
             Length = other->asArray()->getLength();
         }
-        return ((ArrayType *)this)->shared_from_this();
+        return std::const_pointer_cast<Type>(this->shared_from_this());
     }
     if (*BaseType == *other)
         return ((ArrayType *)this)->shared_from_this();
+    /*
+    * checks if 'other' is compatible with the ArrayType, if it is
+    * checks if other's 'completeness' is less then current BaseType, if it is, unchanged type is returned.
+    * checks if sizes of BaseType and other match, if they do, checks if other is less complete ( SizeType vs NonSize type ),
+        if that happens unchanged type is returned
+    * then it clones the BaseType and tries to 'meetWith' with other, if this results in unchanged type, unchanged type is returned
+    * otherwise a new ArrayType is returned, with it's size recalculated based on new BaseType
+    */
+    if(isCompatible(*other,false)) { // compatible with all ?
+        size_t bitsize = BaseType->getSize();
+        size_t new_size = other->getSize();
+        if(BaseType->isComplete() && !other->isComplete()) {
+            // complete types win
+            return std::const_pointer_cast<Type>(this->shared_from_this());
+        }
+        if(bitsize==new_size) {
+            //same size, prefer Int/Float over SizeType
+            if(!BaseType->isSize() && other->isSize()) {
+                return std::const_pointer_cast<Type>(this->shared_from_this());
+            }
+
+        }
+        auto bt = BaseType->clone();
+        bool base_changed;
+        auto res = bt->meetWith(other,base_changed);
+        if(res==bt)
+            return std::const_pointer_cast<Type>(this->shared_from_this());
+        size_t new_length = Length;
+        if(Length!=NO_BOUND) {
+            new_length = (Length * bitsize ) / new_size;
+        }
+        return ArrayType::get(res,new_length);
+    }
     // Needs work?
     return createUnion(other, ch, bHighestPtr);
 }
@@ -542,15 +576,16 @@ SharedType UnionType::meetWith(SharedType other, bool &ch, bool bHighestPtr) con
     if (other->resolvesToUnion()) {
         if (this == other.get())       // Note: pointer comparison
             return ((UnionType *)this)->shared_from_this(); // Avoid infinite recursion
-        ch = true;
+
         auto otherUnion = other->as<UnionType>();
         // Always return this, never other, (even if other is larger than this) because otherwise iterators can become
         // invalid below
         std::list<UnionElement>::iterator it;
+        // TODO: verify the below, before the return was done after single meetWith on first file of other union
         for (it = otherUnion->li.begin(); it != otherUnion->li.end(); ++it) {
             meetWith(it->type, ch, bHighestPtr);
-            return ((UnionType *)this)->shared_from_this();
         }
+        return ((UnionType *)this)->shared_from_this();
     }
 
     // Other is a non union type
@@ -559,23 +594,62 @@ SharedType UnionType::meetWith(SharedType other, bool &ch, bool bHighestPtr) con
         return ((UnionType *)this)->shared_from_this();
     }
     std::list<UnionElement>::iterator it;
+//    int subtypes_count = 0;
+//    for (it = li.begin(); it != li.end(); ++it) {
+//        Type &v(*it->type);
+//        if(v.isCompound()) {
+//            subtypes_count += ((CompoundType &)v).getNumTypes();
+//        }
+//        else if(v.isUnion()) {
+//            subtypes_count += ((UnionType &)v).getNumTypes();
+//        }
+//        else
+//            subtypes_count+=1;
+//    }
+//    if(subtypes_count>9) {
+//        qDebug() << getCtype();
+//        qDebug() << other->getCtype();
+//        qDebug() << "*****";
+//    }
+
+    // Match 'other' agains all fields of 'this' UnionType
+    // if a field is found that requires no change to 'meet', this type is returned unchanged
+    // if a new meetWith result is 'better' given simplistic type description length heuristic measure
+    // then the meetWith result, and this types field iterator are stored.
+    int best_meet_quality=INT_MAX;
+    SharedType best_so_far;
+    std::list<UnionElement>::iterator location_of_meet=li.end();
     for (it = li.begin(); it != li.end(); ++it) {
-        SharedType curr = it->type->clone();
-        if (curr->isCompatibleWith(*other)) {
-            it->type = curr->meetWith(other, ch, bHighestPtr);
+        Type &v(*it->type);
+        if (!v.isCompatibleWith(*other))
+            continue;
+        SharedType curr = v.clone();
+        auto meet_res = curr->meetWith(other, ch, bHighestPtr);
+        if(!ch) { // no change necessary for meet, perfect
+//            qDebug() << getCtype();
             return ((UnionType *)this)->shared_from_this();
         }
+        int quality = meet_res->getCtype().size();
+        if(quality<best_meet_quality) {
+//            qDebug() << "Found better match:" << meet_res->getCtype();
+            best_so_far = meet_res;
+            best_meet_quality = quality;
+            location_of_meet = it;
+        }
+    }
+    if(best_meet_quality!=INT_MAX) {
+        location_of_meet->type = best_so_far;
+//        qDebug() << getCtype();
+        return ((UnionType *)this)->shared_from_this();
     }
 
     // Other is not compatible with any of my component types. Add a new type
-    char name[20];
 #if PRINT_UNION                                   // Set above
     if (unionCount == 999)                        // Adjust the count to catch the one you want
         LOG_STREAM() << "createUnion breakpokint\n"; // Note: you need two breakpoints (also in Type::createUnion)
     LOG_STREAM() << "  " << ++unionCount << " Created union from " << getCtype() << " and " << other->getCtype();
 #endif
-    sprintf(name, "x%d", ++nextUnionNumber);
-    ((UnionType *)this)->addType(other->clone(), name);
+    ((UnionType *)this)->addType(other->clone(), QString("x%1").arg(++nextUnionNumber));
 #if PRINT_UNION
     LOG_STREAM() << ", result is " << getCtype() << "\n";
 #endif
@@ -1335,7 +1409,8 @@ bool SizeType::isCompatible(const Type &other, bool /*all*/) const {
     if (other.resolvesToFunc())
         return false;
     // FIXME: why is there a test for size 0 here?
-    if (otherSize == size || otherSize == 0)
+    // This is because some signatures leave us with 0-sized NamedType -> using GLEnum when it was not defined.
+    if (otherSize == size)
         return true;
     if (other.resolvesToUnion())
         return other.isCompatibleWith(*this);
@@ -1343,7 +1418,7 @@ bool SizeType::isCompatible(const Type &other, bool /*all*/) const {
         return isCompatibleWith(*((const ArrayType &)other).getBaseType());
     // return false;
     // For now, size32 and double will be considered compatible (helps test/pentium/global2)
-    return true;
+    return false;
 }
 
 bool IntegerType::isCompatible(const Type &other, bool /*all*/) const {

@@ -67,11 +67,6 @@ void PointerType::setPointsTo(SharedType p) {
 PointerType::PointerType(SharedType p) : Type(ePointer) { setPointsTo(p); }
 ArrayType::ArrayType(SharedType p, unsigned _length) : Type(eArray), BaseType(p), Length(_length) {}
 
-// we actually want unbounded arrays to still work correctly when
-// computing aliases.. as such, we give them a very large bound
-// and hope that no-one tries to alias beyond them
-#define NO_BOUND 9999999
-
 ArrayType::ArrayType(SharedType p) : Type(eArray), BaseType(p), Length(NO_BOUND) {}
 
 bool ArrayType::isUnbounded() const { return Length == NO_BOUND; }
@@ -178,7 +173,7 @@ SharedType UnionType::clone() const {
     auto u = std::make_shared<UnionType>();
     std::list<UnionElement>::const_iterator it;
     for (it = li.begin(); it != li.end(); it++)
-        u->addType(it->type, it->name.c_str());
+        u->addType(it->type, it->name);
     return u;
 }
 
@@ -761,7 +756,7 @@ QString UnionType::getCtype(bool final) const {
         tmp += el.type->getCtype(final);
         if (el.name != "") {
             tmp += " ";
-            tmp += el.name.c_str();
+            tmp += el.name;
         }
         tmp += "; ";
     }
@@ -1044,26 +1039,24 @@ bool Type::isPointerToAlpha() { return isPointer() && asPointer()->pointsToAlpha
 void Type::starPrint(QTextStream &os) { os << "*" << this << "*"; }
 
 // A crude shortcut representation of a type
-QTextStream &operator<<(QTextStream &os, const SharedType t) {
-    if (t == nullptr)
-        return os << '0';
-    switch (t->getId()) {
+QTextStream &operator<<(QTextStream &os, const Type &t) {
+    switch (t.getId()) {
     case eInteger: {
-        int sg = t->as<IntegerType>()->getSignedness();
+        int sg = t.as<IntegerType>()->getSignedness();
         // 'j' for either i or u, don't know which
         os << (sg == 0 ? 'j' : sg > 0 ? 'i' : 'u');
-        os << t->asInteger()->getSize();
+        os << t.asInteger()->getSize();
         break;
     }
     case eFloat:
         os << 'f';
-        os << t->asFloat()->getSize();
+        os << t.asFloat()->getSize();
         break;
     case ePointer:
-        os << t->asPointer()->getPointsTo() << '*';
+        os << t.asPointer()->getPointsTo() << '*';
         break;
     case eSize:
-        os << t->getSize();
+        os << t.getSize();
         break;
     case eChar:
         os << 'c';
@@ -1080,27 +1073,33 @@ QTextStream &operator<<(QTextStream &os, const SharedType t) {
     case eUnion:
         os << "union";
         break;
-    // case eUnion:    os << t->getCtype(); break;
+    // case eUnion:    os << t.getCtype(); break;
     case eFunc:
         os << "func";
         break;
     case eArray:
-        os << '[' << t->asArray()->getBaseType();
-        if (!t->asArray()->isUnbounded())
-            os << ", " << t->asArray()->getLength();
+        os << '[' << t.asArray()->getBaseType();
+        if (!t.asArray()->isUnbounded())
+            os << ", " << t.asArray()->getLength();
         os << ']';
         break;
     case eNamed:
-        os << t->asNamed()->getName();
+        os << t.asNamed()->getName();
         break;
     case eUpper:
-        os << "U(" << t->asUpper()->getBaseType() << ')';
+        os << "U(" << t.asUpper()->getBaseType() << ')';
         break;
     case eLower:
-        os << "L(" << t->asLower()->getBaseType() << ')';
+        os << "L(" << t.asLower()->getBaseType() << ')';
         break;
     }
     return os;
+}
+
+QTextStream &operator<<(QTextStream &os, const SharedConstType &t) {
+    if (t == nullptr)
+        return os << '0';
+    return os << *t;
 }
 
 // FIXME: aren't mergeWith and meetWith really the same thing?
@@ -1468,7 +1467,7 @@ ComplexTypeCompList &Type::compForAddress(ADDRESS addr, DataIntervalMap &dim) {
     return *res;
 }
 
-void UnionType::addType(SharedType n, const char *str) {
+void UnionType::addType(SharedType n, const QString &str) {
     if (n->isUnion()) {
         auto utp = std::static_pointer_cast<UnionType>(n);
         // Note: need to check for name clashes eventually

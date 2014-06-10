@@ -197,10 +197,12 @@ void DfaTest::testMeetUnion() {
     auto j32 = IntegerType::get(32, 0);
     auto u32 = IntegerType::get(32, -1);
     auto u1 = UnionType::get();
+    auto u2 = UnionType::get();
     auto flt = FloatType::get(32);
+    auto flt2 = FloatType::get(32);
     u1->addType(i32, "bow");
     u1->addType(flt, "wow");
-
+    u2->addType(flt2,"gorm");
     QCOMPARE(u1->getCtype(),QString("union { int bow; float wow; }"));
 
     bool ch = false;
@@ -208,7 +210,12 @@ void DfaTest::testMeetUnion() {
     QVERIFY(ch == false);
     QCOMPARE(res->getCtype(),QString("union { int bow; float wow; }"));
 
-    res = u1->meetWith(j32, ch, false);
+    ch = false;
+    res = u1->meetWith(flt, ch, false);
+    QVERIFY(ch == false);
+    QCOMPARE(res->getCtype(),QString("union { int bow; float wow; }"));
+
+    res = u1->meetWith(u2, ch, false);
     QVERIFY(ch == false);
     QCOMPARE(u1->getCtype(),QString("union { int bow; float wow; }"));
 
