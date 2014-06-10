@@ -5856,7 +5856,7 @@ void UserProc::dfa_analyze_scaled_array_ref(Instruction *s, Prog *prog) {
         Exp *t = rr->getSubExp1();            // idx*K1 + K2
         Exp *l = ((Binary *)t)->getSubExp1(); // idx*K1
         Exp *r = ((Binary *)t)->getSubExp2(); // K2
-        ADDRESS K2 = ((Const *)r)->getAddr();
+        ADDRESS K2 = ((Const *)r)->getAddr().native();
         Exp *idx = ((Binary *)l)->getSubExp1();
 
         // Replace with the array expression

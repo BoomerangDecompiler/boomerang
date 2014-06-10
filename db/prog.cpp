@@ -186,8 +186,7 @@ void Prog::generateDotFile() {
 
 void Prog::generateCode(Module *cluster, UserProc *proc, bool /*intermixRTL*/) {
     // std::string basedir = m_rootCluster->makeDirs();
-    QTextStream os;
-    QFile tgt;
+    QTextStream *os;
     if (cluster) {
         cluster->openStream("c");
         cluster->closeStreams();
@@ -195,12 +194,8 @@ void Prog::generateCode(Module *cluster, UserProc *proc, bool /*intermixRTL*/) {
     bool generate_all = cluster == nullptr || cluster == m_rootCluster;
     bool all_procedures = proc==nullptr;
     if (generate_all) {
-        tgt.setFileName(m_rootCluster->getOutPath("c"));
-        if(!tgt.open(QFile::WriteOnly)) {
-            qDebug() << "Can't open " << m_rootCluster->getOutPath("c");
-            return;
-        }
-        os.setDevice(&tgt);
+        m_rootCluster->openStream("c");
+        os = &m_rootCluster->getStream();
         if (proc == nullptr) {
             HLLCode *code = Boomerang::get()->getHLLCode();
             bool global = false;
@@ -230,7 +225,7 @@ void Prog::generateCode(Module *cluster, UserProc *proc, bool /*intermixRTL*/) {
                 }
                 code->AddGlobal("source_endianness", IntegerType::get(STD_SIZE),
                                 new Const(getFrontEndId() != PLAT_PENTIUM));
-                os << "#include \"boomerang.h\"\n\n";
+                (*os) << "#include \"boomerang.h\"\n\n";
                 global = true;
             }
             for (auto const &elem : globals) {
@@ -242,7 +237,7 @@ void Prog::generateCode(Module *cluster, UserProc *proc, bool /*intermixRTL*/) {
                 //                }
             }
             if (global)
-                code->print(os); // Avoid blank line if no globals
+                code->print(*os); // Avoid blank line if no globals
         }
     }
 
@@ -261,12 +256,12 @@ void Prog::generateCode(Module *cluster, UserProc *proc, bool /*intermixRTL*/) {
             HLLCode *code = Boomerang::get()->getHLLCode(up);
             code->AddPrototype(up); // May be the wrong signature if up has ellipsis
             if (generate_all)
-                code->print(os);
+                code->print(*os);
             delete code;
         }
     }
     if (proto && generate_all)
-        os << "\n"; // Separate prototype(s) from first proc
+        *os << "\n"; // Separate prototype(s) from first proc
 
     for ( Module *module : ModuleList) {
         if(!generate_all && cluster!=module) {
@@ -816,7 +811,7 @@ QString Prog::newGlobalName(ADDRESS uaddr) {
     QString nam = getGlobalName(uaddr);
     if (!nam.isEmpty())
         return nam;
-    nam = QString("global%1").arg(globals.size());
+    nam = QString("global%1_%2").arg(globals.size()).arg(uaddr.m_value,0,16);
     LOG_VERBOSE(1) << "naming new global: " << nam << " at address " << uaddr << "\n";
     return nam;
 }

@@ -1404,7 +1404,7 @@ void DataIntervalMap::checkMatching(DataIntervalEntry *pdie, ADDRESS addr, const
                                     bool /*forced*/) {
     if (pdie->second.type->isCompatibleWith(*ty)) {
         // Just merge the types and exit
-        bool ch;
+        bool ch=false;
         pdie->second.type = pdie->second.type->meetWith(ty, ch);
         return;
     }

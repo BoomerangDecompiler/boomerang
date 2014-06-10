@@ -73,6 +73,7 @@ void Module::openStreams(const char *ext) {
 
 void Module::closeStreams() {
     if (out.isOpen()) {
+        strm.flush();
         out.close();
     }
     for (Module *child : Children)
