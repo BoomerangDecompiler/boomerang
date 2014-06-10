@@ -180,10 +180,13 @@ void Decompiler::generateCode() {
     if (root)
         emitClusterAndChildren(root);
     std::list<Function *>::iterator it;
-    for (UserProc *p = prog->getFirstUserProc(it); p; p = prog->getNextUserProc(it)) {
-        emit newProcInCluster(p->getName(), p->getParent()->getName());
+    for(Module *module : prog->getModuleList()) {
+        for (Function *p : *module) {
+            if(p->isLib())
+                continue;
+            emit newProcInCluster(p->getName(), module->getName());
+        }
     }
-
     emit generateCodeCompleted();
 }
 
@@ -271,7 +274,7 @@ void Decompiler::alertDecompileDebugPoint(UserProc *p, const char *description) 
 
 void Decompiler::stopWaiting() { Waiting = false; }
 
-const char *Decompiler::getSigFile(const QString &name) {
+const QString &Decompiler::getSigFile(const QString &name) {
     Function *p = prog->findProc(name);
     if (p == NULL || !p->isLib() || p->getSignature() == NULL)
         return NULL;
@@ -279,7 +282,7 @@ const char *Decompiler::getSigFile(const QString &name) {
 }
 
 QString Decompiler::getClusterFile(const QString &name) {
-    Module *c = prog->findCluster(name);
+    Module *c = prog->findModule(name);
     if (c == NULL)
         return "";
     return c->getOutPath("c");

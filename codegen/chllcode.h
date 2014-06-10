@@ -157,7 +157,7 @@ class CHLLCode : public HLLCode {
 
     // sequential statements
     virtual void AddAssignmentStatement(int indLevel, Assign *asgn);
-    virtual void AddCallStatement(int indLevel, Function *proc, const char *name, StatementList &args,
+    virtual void AddCallStatement(int indLevel, Function *proc, const QString &name, StatementList &args,
                                   StatementList *results);
     virtual void AddIndCallStatement(int indLevel, Exp *exp, StatementList &args, StatementList *results);
     virtual void AddReturnStatement(int indLevel, StatementList *rets);

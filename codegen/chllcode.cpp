@@ -1316,7 +1316,7 @@ void CHLLCode::AddAssignmentStatement(int indLevel, Assign *asgn) {
  * \todo                Remove the \a name parameter and use Proc::getName()
  * \todo                Add assingment for when the function returns a struct.
  */
-void CHLLCode::AddCallStatement(int indLevel, Function *proc, const char *name, StatementList &args,
+void CHLLCode::AddCallStatement(int indLevel, Function *proc, const QString &name, StatementList &args,
                                 StatementList *results) {
     QString tgt;
     QTextStream s(&tgt);

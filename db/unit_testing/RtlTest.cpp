@@ -258,7 +258,9 @@ void RtlTest::testSetConscripts() {
 
     // "printf("max is %d", (local0 > 0) ? local0 : global1)
     CallStatement *s2 = new CallStatement();
-    Function *proc = new UserProc(new Prog(), "printf", ADDRESS::g(0x2000)); // Making a true LibProc is problematic
+    Prog *p = new Prog();
+    Module *m = p->getOrInsertModule("test");
+    Function *proc = new UserProc(m, "printf", ADDRESS::g(0x2000)); // Making a true LibProc is problematic
     s2->setDestProc(proc);
     s2->setCalleeReturn(new ReturnStatement); // So it's not a childless call
     Exp *e1 = new Const("max is %d");

@@ -64,8 +64,11 @@ void CfgTest::testDominators() {
     bool gotMain;
     ADDRESS addr = pFE->getMainEntryPoint(gotMain);
     QVERIFY(addr != NO_ADDRESS);
+    Module *m = *prog->begin();
+    QVERIFY(m!=nullptr);
+    QVERIFY(m->size()>0);
 
-    UserProc *pProc = (UserProc *)prog->getProc(0);
+    UserProc *pProc = (UserProc *)*(m->begin());
     Cfg *cfg = pProc->getCFG();
     DataFlow *df = pProc->getDataFlow();
     df->dominators(cfg);
@@ -118,7 +121,11 @@ void CfgTest::testSemiDominators() {
     ADDRESS addr = pFE->getMainEntryPoint(gotMain);
     QVERIFY(addr != NO_ADDRESS);
 
-    UserProc *pProc = (UserProc *)prog->getProc(0);
+    Module *m = *prog->begin();
+    QVERIFY(m!=nullptr);
+    QVERIFY(m->size()>0);
+
+    UserProc *pProc = (UserProc *)(*m->begin());
     Cfg *cfg = pProc->getCFG();
 
     DataFlow *df = pProc->getDataFlow();
@@ -166,7 +173,11 @@ void CfgTest::testPlacePhi() {
     prog->setFrontEnd(pFE);
     pFE->decode(prog);
 
-    UserProc *pProc = (UserProc *)prog->getProc(0);
+    Module *m = *prog->begin();
+    QVERIFY(m!=nullptr);
+    QVERIFY(m->size()>0);
+
+    UserProc *pProc = (UserProc *)(*m->begin());
     Cfg *cfg = pProc->getCFG();
 
     // Simplify expressions (e.g. m[ebp + -8] -> m[ebp - 8]
@@ -207,7 +218,11 @@ void CfgTest::testPlacePhi2() {
     prog->setFrontEnd(pFE);
     pFE->decode(prog);
 
-    UserProc *pProc = (UserProc *)prog->getProc(0);
+    Module *m = *prog->begin();
+    QVERIFY(m!=nullptr);
+    QVERIFY(m->size()>0);
+
+    UserProc *pProc = (UserProc *)(*m->begin());
 
     // Simplify expressions (e.g. m[ebp + -8] -> m[ebp - 8]
     prog->finishDecode();
@@ -286,7 +301,11 @@ void CfgTest::testRenameVars() {
     prog->setFrontEnd(pFE);
     pFE->decode(prog);
 
-    UserProc *pProc = (UserProc *)prog->getProc(0);
+    Module *m = *prog->begin();
+    QVERIFY(m!=nullptr);
+    QVERIFY(m->size()>0);
+
+    UserProc *pProc = (UserProc *)(*m->begin());
     Cfg *cfg = pProc->getCFG();
     DataFlow *df = pProc->getDataFlow();
 

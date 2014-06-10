@@ -51,10 +51,10 @@ using namespace std;
   *
   * \brief      Construct the FrontEnd object
   * \param p_BF pointer to the BinaryFile object (loader)
-  * \param p program being decoded
+  * \param prog program being decoded
   * \param bff pointer to a BinaryFileFactory object (so the library can be unloaded)
   ******************************************************************************/
-FrontEnd::FrontEnd(QObject *p_BF, Prog *p, BinaryFileFactory *bff) : pLoader(p_BF), pbff(bff), Program(p) {
+FrontEnd::FrontEnd(QObject *p_BF, Prog *prog, BinaryFileFactory *bff) : pLoader(p_BF), pbff(bff), Program(prog) {
     ldrIface = qobject_cast<LoaderInterface *>(pLoader);
     symIface = qobject_cast<SymbolTableInterface *>(pLoader);
     sectIface = qobject_cast<SectionInterface *>(pLoader);
@@ -312,12 +312,10 @@ void FrontEnd::decode(Prog *prg, ADDRESS a) {
     assert(Program == prg);
     if (a != NO_ADDRESS) {
         Program->setNewProc(a);
-        if (VERBOSE)
-            LOG << "starting decode at address " << a << "\n";
+        LOG_VERBOSE(1) << "starting decode at address " << a << "\n";
         UserProc *p = (UserProc *)Program->findProc(a);
         if (p == nullptr) {
-            if (VERBOSE)
-                LOG << "no proc found at address " << a << "\n";
+            LOG_VERBOSE(1) << "no proc found at address " << a << "\n";
             return;
         }
         if (p->isLib()) {
@@ -332,24 +330,25 @@ void FrontEnd::decode(Prog *prg, ADDRESS a) {
         bool change = true;
         while (change) {
             change = false;
-            PROGMAP::const_iterator it;
-            for (Function *pProc = Program->getFirstProc(it); pProc != nullptr; pProc = Program->getNextProc(it)) {
-                if (pProc->isLib())
-                    continue;
-                UserProc *p = (UserProc *)pProc;
-                if (p->isDecoded())
-                    continue;
 
-                // undecoded userproc.. decode it
-                change = true;
-                QTextStream os(stderr); // rtl output target
-                int res = processProc(p->getNativeAddress(), p, os);
-                if (res != 1)
-                    break;
-                p->setDecoded();
-                // Break out of the loops if not decoding children
-                if (Boomerang::get()->noDecodeChildren)
-                    break;
+            for ( Module *m : *Program) {
+                for (Function *pProc : *m) {
+                    if (pProc->isLib())
+                        continue;
+                    UserProc *p = (UserProc *)pProc;
+                    if (p->isDecoded())
+                        continue;
+                    // undecoded userproc.. decode it
+                    change = true;
+                    QTextStream os(stderr); // rtl output target
+                    int res = processProc(p->getNativeAddress(), p, os);
+                    if (res != 1)
+                        break;
+                    p->setDecoded();
+                    // Break out of the loops if not decoding children
+                    if (Boomerang::get()->noDecodeChildren)
+                        break;
+                }
             }
             if (Boomerang::get()->noDecodeChildren)
                 break;

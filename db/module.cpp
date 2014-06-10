@@ -7,9 +7,24 @@
 #include <QDir>
 #include <QString>
 
+void Module::onLibrarySignaturesChanged()
+{
+    CurrentFrontend->readLibraryCatalog();
+    for (Function *pProc : FunctionList) {
+        if (pProc->isLib()) {
+            pProc->setSignature(getLibSignature(pProc->getName()));
+            for (CallStatement *call_stmt : pProc->getCallers())
+                call_stmt->setSigArguments();
+            Boomerang::get()->alertUpdateSignature(pProc);
+        }
+    }
+}
+
 Module::Module() { strm.setDevice(&out); }
 
-Module::Module(const QString &_name, Prog *_parent) : Name(_name) { strm.setDevice(&out); }
+Module::Module(const QString &_name, Prog *_parent, FrontEnd *fe) : CurrentFrontend(fe),Name(_name),Parent(_parent) {
+    strm.setDevice(&out);
+}
 
 Module::~Module()
 {
@@ -102,9 +117,111 @@ void Module::printTree(QTextStream &ostr) {
     for (Module *elem : Children)
         elem->printTree(ostr);
 }
-
+/// Record the \a fnc location in the ADDRESS->Function map
+/// If \a fnc is nullptr - remove given function from the map.
 void Module::setLocationMap(ADDRESS loc, Function *fnc)
 {
-    //    m_procLabels[loc] = fnc;
-    assert(false);
+    if(fnc==nullptr) {
+        size_t count = LabelsToProcs.erase(loc);
+        assert(count==1);
+    }
+    else
+        LabelsToProcs[loc] = fnc;
+}
+
+void Module::eraseFromParent()
+{
+    Parent->getModuleList().remove(this);
+    delete this;
+}
+/***************************************************************************/ /**
+  *
+  * \brief    Creates a new Function object, adds it to the list of procs in this Module, and adds the address to
+  * the list
+  * \param name - Name for the proc
+  * \param uNative - Native address of the entry point of the proc
+  * \param bLib - If true, this will be a libProc; else a UserProc
+  * \returns        A pointer to the new Function object
+  ******************************************************************************/
+Function *Module::getOrInsertFunction(const QString &name, ADDRESS uNative, bool bLib)
+{
+    Function *pProc;
+    if (bLib)
+        pProc = new LibProc(this, name, uNative);
+    else
+        pProc = new UserProc(this, name, uNative);
+    FunctionList.push_back(pProc); // Append this to list of procs
+    LabelsToProcs[uNative] = pProc;
+    // alert the watchers of a new proc
+    emit newFunction(pProc);
+    Boomerang::get()->alertNew(pProc);
+    // TODO: add platform agnostic way of using debug information, should be moved to Loaders, Prog should just collect info
+    // from Loader
+
+#if defined(_WIN32) && !defined(__MINGW32__)
+    if (isWin32()) {
+        // use debugging information
+        HANDLE hProcess = GetCurrentProcess();
+        dbghelp::SYMBOL_INFO *sym = (dbghelp::SYMBOL_INFO *)malloc(sizeof(dbghelp::SYMBOL_INFO) + 1000);
+        sym->SizeOfStruct = sizeof(*sym);
+        sym->MaxNameLen = 1000;
+        sym->Name[0] = 0;
+        BOOL got = dbghelp::SymFromAddr(hProcess, uNative.m_value, 0, sym);
+        DWORD retType;
+        if (got && *sym->Name &&
+                dbghelp::SymGetTypeInfo(hProcess, sym->ModBase, sym->TypeIndex, dbghelp::TI_GET_TYPE, &retType)) {
+            DWORD d;
+            // get a calling convention
+            got =
+                    dbghelp::SymGetTypeInfo(hProcess, sym->ModBase, sym->TypeIndex, dbghelp::TI_GET_CALLING_CONVENTION, &d);
+            if (got) {
+                std::cout << "calling convention: " << d << "\n";
+                // TODO: use it
+            } else {
+                // assume we're stdc calling convention, remove r28, r24 returns
+                pProc->setSignature(Signature::instantiate(PLAT_PENTIUM, CONV_C, sname.c_str()));
+            }
+
+            // get a return type
+            SharedType rtype = typeFromDebugInfo(retType, sym->ModBase);
+            if (!rtype->isVoid()) {
+                pProc->getSignature()->addReturn(rtype, Location::regOf(24));
+            }
+
+            // find params and locals
+            dbghelp::IMAGEHLP_STACK_FRAME stack;
+            stack.InstructionOffset = uNative.m_value;
+            dbghelp::SymSetContext(hProcess, &stack, 0);
+            dbghelp::SymEnumSymbols(hProcess, 0, nullptr, addSymbol, pProc);
+
+            LOG << "final signature: ";
+            pProc->getSignature()->printToLog();
+            LOG << "\n";
+        }
+    }
+#endif
+
+    return pProc;
+}
+
+Function *Module::getFunction(const QString &name)
+{
+    for(Function *f : FunctionList) {
+        if ( f->getName()==name)
+            return f;
+    }
+    return nullptr;
+}
+
+Function *Module::getFunction(ADDRESS loc)
+{
+    auto iter = LabelsToProcs.find(loc);
+    if( iter == LabelsToProcs.end() )
+        return nullptr;
+    return iter->second;
+}
+
+//! Get a library signature for a given name (used when creating a new library proc).
+Signature *Module::getLibSignature(const QString &name) {
+    return CurrentFrontend->getLibSignature(name);
 }

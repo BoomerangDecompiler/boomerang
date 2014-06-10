@@ -65,50 +65,59 @@ namespace dbghelp {
 #define NO_ADDRESS (ADDRESS::g(-1))
 #endif
 
-#include <sys/stat.h>
 #include <sys/types.h>
 
-Prog::Prog() : pLoaderPlugin(nullptr), pFE(nullptr), m_iNumberedProc(1) {
-    m_rootCluster = new Module("prog",this);
-    ModuleList.push_back(m_rootCluster);
+Prog::Prog() : pLoaderPlugin(nullptr), DefaultFrontend(nullptr), m_iNumberedProc(1) {
+    m_rootCluster = getOrInsertModule("prog");
     // Default constructor
 }
+/// Create or retrieve existing module
+/// \param frontend for the module, if nullptr set it to program's default frontend.
+/// \param fact abstract factory object that creates Module instance
+/// \param name retrieve/create module with this name.
+Module *Prog::getOrInsertModule(const QString &name,const ModuleFactory &fact,FrontEnd *frontend) {
+    for(Module *m : ModuleList) {
+        if(m->getName()==name)
+            return m;
+    }
+    Module *m = fact.create(name,this,frontend ? frontend : DefaultFrontend);
+    ModuleList.push_back(m);
+    connect(this,SIGNAL(rereadLibSignatures()),m,SLOT(onLibrarySignaturesChanged()));
+    return m;
+}
 
-void Prog::setFrontEnd(FrontEnd *pFE) {
-    pLoaderPlugin = pFE->getBinaryFile();
+void Prog::setFrontEnd(FrontEnd *_pFE) {
+    pLoaderPlugin = _pFE->getBinaryFile();
     pBinaryData = qobject_cast<BinaryData *>(pLoaderPlugin);
     pLoaderIface = qobject_cast<LoaderInterface *>(pLoaderPlugin);
     pSections = qobject_cast<SectionInterface *>(pLoaderPlugin);
     pSymbols = qobject_cast<SymbolTableInterface *>(pLoaderPlugin);
-    this->pFE = pFE;
+    DefaultFrontend = _pFE;
     for(Module *m : ModuleList)
         delete m;
+    ModuleList.clear();
     m_rootCluster = nullptr;
     if (pLoaderIface && !pLoaderIface->getFilename().isEmpty()) {
+        if(m_rootCluster)
+            m_rootCluster->eraseFromParent();
         m_name = pLoaderIface->getFilename();
-
-        m_rootCluster = new Module(getNameNoPathNoExt(),this);
-        ModuleList.push_back(m_rootCluster);
+        m_rootCluster = this->getOrInsertModule(getNameNoPathNoExt());
     }
 }
 
 Prog::Prog(const char *name)
-    : pLoaderPlugin(nullptr), pFE(nullptr), m_name(name), m_iNumberedProc(1),
-      m_rootCluster(new Module(getNameNoPathNoExt(),this)) {
+    : pLoaderPlugin(nullptr), DefaultFrontend(nullptr), m_name(name), m_iNumberedProc(1) {
+    m_rootCluster = getOrInsertModule(getNameNoPathNoExt());
     // Constructor taking a name. Technically, the allocation of the space for the name could fail, but this is unlikely
     m_path = m_name;
 }
 
 Prog::~Prog() {
     pLoaderPlugin->deleteLater();
-    delete pFE;
+    delete DefaultFrontend;
     for (Module *m : ModuleList) {
         delete m;
     }
-    for (Function *proc : m_procs) {
-        delete proc;
-    }
-    m_procs.clear();
 }
 //! Assign a name to this program
 void Prog::setName(const char *name) {
@@ -121,26 +130,31 @@ QString Prog::getName() { return m_name; }
 //! Well form all the procedures/cfgs in this program
 bool Prog::wellForm() {
     bool wellformed = true;
-
-    for (Function *proc : m_procs)
-        if (!proc->isLib()) {
-            UserProc *u = (UserProc *)proc;
-            wellformed &= u->getCFG()->wellFormCfg();
+    for (Module *module : ModuleList) {
+        for (Function *func : *module) {
+            if (!func->isLib()) {
+                UserProc *u = (UserProc *)func;
+                wellformed &= u->getCFG()->wellFormCfg();
+            }
         }
+    }
+
     return wellformed;
 }
 
 // was in analysis.cpp
 //! last fixes after decoding everything
 void Prog::finishDecode() {
-    for (Function *pProc : m_procs) {
-        if (pProc->isLib())
-            continue;
-        UserProc *p = (UserProc *)pProc;
-        if (!p->isDecoded())
-            continue;
-        p->assignProcsToCalls();
-        p->finalSimplify();
+    for (Module *module : ModuleList) {
+        for (Function *func : *module) {
+            if (func->isLib())
+                continue;
+            UserProc *p = (UserProc *)func;
+            if (!p->isDecoded())
+                continue;
+            p->assignProcsToCalls();
+            p->finalSimplify();
+        }
     }
 }
 //! Generate dotty file
@@ -153,17 +167,19 @@ void Prog::generateDotFile() {
     QTextStream of(&tgt);
     of << "digraph Cfg {\n";
 
-    for (Function *pProc : m_procs) {
-        if (pProc->isLib())
-            continue;
-        UserProc *p = (UserProc *)pProc;
-        if (!p->isDecoded())
-            continue;
-        // Subgraph for the proc name
-        of << "\nsubgraph cluster_" << p->getName() << " {\n"
-           << "       color=gray;\n    label=" << p->getName() << ";\n";
-        // Generate dotty CFG for this proc
-        p->getCFG()->generateDotFile(of);
+    for (Module *module : ModuleList) {
+        for (Function *func : *module) {
+            if (func->isLib())
+                continue;
+            UserProc *p = (UserProc *)func;
+            if (!p->isDecoded())
+                continue;
+            // Subgraph for the proc name
+            of << "\nsubgraph cluster_" << p->getName() << " {\n"
+               << "       color=gray;\n    label=" << p->getName() << ";\n";
+            // Generate dotty CFG for this proc
+            p->getCFG()->generateDotFile(of);
+        }
     }
     of << "}";
 }
@@ -176,7 +192,9 @@ void Prog::generateCode(Module *cluster, UserProc *proc, bool /*intermixRTL*/) {
         cluster->openStream("c");
         cluster->closeStreams();
     }
-    if (cluster == nullptr || cluster == m_rootCluster) {
+    bool generate_all = cluster == nullptr || cluster == m_rootCluster;
+    bool all_procedures = proc==nullptr;
+    if (generate_all) {
         tgt.setFileName(m_rootCluster->getOutPath("c"));
         if(!tgt.open(QFile::WriteOnly)) {
             qDebug() << "Can't open " << m_rootCluster->getOutPath("c");
@@ -229,80 +247,86 @@ void Prog::generateCode(Module *cluster, UserProc *proc, bool /*intermixRTL*/) {
     }
 
     // First declare prototypes for all but the first proc
-    // std::list<Proc*>::iterator it = m_procs.begin();
     bool first = true, proto = false;
-    for (Function *pProc : m_procs) {
-        if (pProc->isLib())
-            continue;
-        if (first) {
-            first = false;
-            continue;
+    for ( Module *module : ModuleList) {
+        for (Function *func : *module) {
+            if (func->isLib())
+                continue;
+            if (first) {
+                first = false;
+                continue;
+            }
+            proto = true;
+            UserProc *up = (UserProc *)func;
+            HLLCode *code = Boomerang::get()->getHLLCode(up);
+            code->AddPrototype(up); // May be the wrong signature if up has ellipsis
+            if (generate_all)
+                code->print(os);
+            delete code;
         }
-        proto = true;
-        UserProc *up = (UserProc *)pProc;
-        HLLCode *code = Boomerang::get()->getHLLCode(up);
-        code->AddPrototype(up); // May be the wrong signature if up has ellipsis
-        if (cluster == nullptr || cluster == m_rootCluster)
-            code->print(os);
     }
-    if ((proto && cluster == nullptr) || cluster == m_rootCluster)
+    if (proto && generate_all)
         os << "\n"; // Separate prototype(s) from first proc
 
-    for (Function *pProc : m_procs) {
-        if (pProc->isLib())
+    for ( Module *module : ModuleList) {
+        if(!generate_all && cluster!=module) {
             continue;
-        UserProc *up = (UserProc *)pProc;
-        if (!up->isDecoded())
-            continue;
-        if (proc != nullptr && up != proc)
-            continue;
-        up->getCFG()->compressCfg();
-        up->getCFG()->removeOrphanBBs();
+        }
+        module->openStream("c");
+        for (Function *func : *module) {
+            if (func->isLib())
+                continue;
+            UserProc *up = (UserProc *)func;
+            if (!up->isDecoded())
+                continue;
+            if (!all_procedures && up != proc)
+                continue;
+            up->getCFG()->compressCfg();
+            up->getCFG()->removeOrphanBBs();
 
-        HLLCode *code = Boomerang::get()->getHLLCode(up);
-        up->generateCode(code);
-        if (up->getParent() == m_rootCluster) {
-            if (cluster == nullptr || cluster == m_rootCluster)
-                code->print(os);
-        } else {
-            if (cluster == nullptr || cluster == up->getParent()) {
-                up->getParent()->openStream("c");
-                code->print(up->getParent()->getStream());
-            }
+            HLLCode *code = Boomerang::get()->getHLLCode(up);
+            up->generateCode(code);
+            code->print(module->getStream());
+            delete code;
         }
     }
-    m_rootCluster->closeStreams();
+    for ( Module *module : ModuleList)
+        module->closeStreams();
 }
 
 void Prog::generateRTL(Module *cluster, UserProc *proc) {
-    for (Function *pProc : m_procs) {
-        if (pProc->isLib())
+    bool generate_all = cluster==nullptr;
+    bool all_procedures = proc==nullptr;
+    for(Module *module : ModuleList) {
+        if(!generate_all && module!=cluster)
             continue;
-        UserProc *p = (UserProc *)pProc;
-        if (!p->isDecoded())
-            continue;
-        if (proc != nullptr && p != proc)
-            continue;
-        if (cluster != nullptr && p->getParent() != cluster)
-            continue;
-
-        p->getParent()->openStream("rtl");
-        p->print(p->getParent()->getStream());
+        cluster->openStream("rtl");
+        for (Function *func : *module) {
+            if (!all_procedures && func != proc)
+                continue;
+            if (func->isLib())
+                continue;
+            UserProc *p = (UserProc *)func;
+            if (!p->isDecoded())
+                continue;
+            p->print(module->getStream());
+        }
     }
-    m_rootCluster->closeStreams();
+    for ( Module *module : ModuleList)
+        module->closeStreams();
 }
 
 Instruction *Prog::getStmtAtLex(Module *cluster, unsigned int begin, unsigned int end) {
-    for (Function *pProc : m_procs) {
-        if (pProc->isLib())
+    bool search_all = cluster==nullptr;
+    for(Module *m : ModuleList) {
+        if(!search_all && m!=cluster)
             continue;
-        UserProc *p = (UserProc *)pProc;
-        if (!p->isDecoded())
-            continue;
-        if (cluster != nullptr && p->getParent() != cluster)
-            continue;
-
-        if (p->getParent() == cluster) {
+        for (Function *pProc : *m) {
+            if (pProc->isLib())
+                continue;
+            UserProc *p = (UserProc *)pProc;
+            if (!p->isDecoded())
+                continue;
             Instruction *s = p->getStmtAtLex(begin, end);
             if (s)
                 return s;
@@ -311,27 +335,23 @@ Instruction *Prog::getStmtAtLex(Module *cluster, unsigned int begin, unsigned in
     return nullptr;
 }
 
-bool Prog::clusterUsed(Module *c) {
-    for (Function *pProc : m_procs)
-        if (pProc->getParent() == c)
-            return true;
-    return false;
+bool Prog::moduleUsed(Module *c) {
+    return !c->empty(); // TODO: maybe module can have no procedures and still be used ?
 }
 
-Module *Prog::getDefaultCluster(const QString &name) {
-    const char *cfname = nullptr;
+Module *Prog::getDefaultModule(const QString &name) {
+    QString cfname;
     if (pSymbols)
         cfname = pSymbols->getFilenameSymbolFor(qPrintable(name));
-    if (cfname == nullptr)
+    if (cfname.isEmpty())
         return m_rootCluster;
-    if (strcmp(cfname + strlen(cfname) - 2, ".c"))
+    if (!cfname.endsWith(".c"))
         return m_rootCluster;
     LOG << "got filename " << cfname << " for " << name << "\n";
-    char *fname = strdup(cfname);
-    fname[strlen(fname) - 2] = 0;
-    Module *c = findCluster(fname);
+    cfname.chop(2); // remove .c
+    Module *c = findModule(cfname);
     if (c == nullptr) {
-        c = new Module(fname,this);
+        c = getOrInsertModule(cfname);
         m_rootCluster->addChild(c);
     }
     return c;
@@ -348,45 +368,48 @@ void Prog::generateCode(QTextStream &os) {
     }
     code->print(os);
     delete code;
-    for (Function *pProc : m_procs) {
-        if (pProc->isLib())
-            continue;
-        UserProc *p = (UserProc *)pProc;
-        if (!p->isDecoded())
-            continue;
-        p->getCFG()->compressCfg();
-        code = Boomerang::get()->getHLLCode(p);
-        p->generateCode(code);
-        code->print(os);
-        delete code;
+    for (Module * module : ModuleList) {
+        for (Function *pProc : *module) {
+            if (pProc->isLib())
+                continue;
+            UserProc *p = (UserProc *)pProc;
+            if (!p->isDecoded())
+                continue;
+            p->getCFG()->compressCfg();
+            code = Boomerang::get()->getHLLCode(p);
+            p->generateCode(code);
+            code->print(os);
+            delete code;
+        }
     }
 }
 
 //! Print this program (primarily for debugging)
 void Prog::print(QTextStream &out) {
-    for (Function *pProc : m_procs) {
-        if (pProc->isLib())
-            continue;
-        UserProc *p = (UserProc *)pProc;
-        if (!p->isDecoded())
-            continue;
+    for (Module * module : ModuleList) {
+        for (Function *pProc : *module) {
+            if (pProc->isLib())
+                continue;
+            UserProc *p = (UserProc *)pProc;
+            if (!p->isDecoded())
+                continue;
 
-        // decoded userproc.. print it
-        p->print(out);
+            // decoded userproc.. print it
+            p->print(out);
+        }
     }
 }
 
 //! clear the prog object \note deletes everything!
 void Prog::clear() {
     m_name = "";
-    for (Function *pProc : m_procs)
-        delete pProc;
-    m_procs.clear();
-    m_procLabels.clear();
+    for (Module * module : ModuleList)
+        delete module;
+    ModuleList.clear();
     pLoaderPlugin->deleteLater();
     pLoaderPlugin = nullptr;
-    delete pFE;
-    pFE = nullptr;
+    delete DefaultFrontend;
+    DefaultFrontend = nullptr;
 }
 
 /***************************************************************************/ /**
@@ -408,9 +431,8 @@ Function *Prog::setNewProc(ADDRESS uAddr) {
     Function *pProc = findProc(uAddr);
     if (pProc == (Function *)-1) // Already decoded and deleted?
         return nullptr;      // Yes, exit with 0
-    if (pProc)
-        // Yes, we are done
-        return pProc;
+    if (pProc) // Exists already ?
+        return pProc; // Yes, we are done
     ADDRESS other = pLoaderIface->IsJumpToAnotherAddr(uAddr);
     if (other != NO_ADDRESS)
         uAddr = other;
@@ -422,10 +444,9 @@ Function *Prog::setNewProc(ADDRESS uAddr) {
         std::ostringstream ost;
         ost << "proc" << m_iNumberedProc++;
         pName = strdup(ost.str().c_str());
-        if (VERBOSE)
-            LOG << "assigning name " << pName << " to addr " << uAddr << "\n";
+        LOG_VERBOSE(1) << "assigning name " << pName << " to addr " << uAddr << "\n";
     }
-    pProc = newProc(pName, uAddr, bLib);
+    pProc = m_rootCluster->getOrInsertFunction(pName,uAddr, bLib);
     return pProc;
 }
 
@@ -550,8 +571,8 @@ BOOL CALLBACK addSymbol(dbghelp::PSYMBOL_INFO pSymInfo, ULONG SymbolSize, PVOID 
         if (pSymInfo->Flags & SYMFLAG_REGREL) {
             assert(pSymInfo->Register == 8); // ebp
             proc->getSignature()->addParameter(
-                ty, pSymInfo->Name,
-                Location::memOf(Binary::get(opPlus, Location::regOf(28), new Const((int)pSymInfo->Address - 4))));
+                        ty, pSymInfo->Name,
+                        Location::memOf(Binary::get(opPlus, Location::regOf(28), new Const((int)pSymInfo->Address - 4))));
         } else if (pSymInfo->Flags & SYMFLAG_REGISTER) {
             proc->getSignature()->addParameter(ty, pSymInfo->Name, Location::regOf(debugRegister(pSymInfo->Register)));
         }
@@ -560,7 +581,7 @@ BOOL CALLBACK addSymbol(dbghelp::PSYMBOL_INFO pSymInfo, ULONG SymbolSize, PVOID 
         assert(pSymInfo->Flags & SYMFLAG_REGREL);
         assert(pSymInfo->Register == 8);
         Exp *memref =
-            Location::memOf(Binary::get(opMinus, Location::regOf(28), new Const(-((int)pSymInfo->Address - 4))));
+                Location::memOf(Binary::get(opMinus, Location::regOf(28), new Const(-((int)pSymInfo->Address - 4))));
         SharedType ty = typeFromDebugInfo(pSymInfo->TypeIndex, pSymInfo->ModBase);
         u->addLocal(ty, pSymInfo->Name, memref);
     }
@@ -571,129 +592,38 @@ BOOL CALLBACK addSymbol(dbghelp::PSYMBOL_INFO pSymInfo, ULONG SymbolSize, PVOID 
 
 /***************************************************************************/ /**
   *
-  * \brief    Creates a new Proc object, adds it to the list of procs in this Prog object, and adds the address to
-  * the list
-  * \param name - Name for the proc
-  * \param uNative - Native address of the entry point of the proc
-  * \param bLib - If true, this will be a libProc; else a UserProc
-  * \returns        A pointer to the new Proc object
+  * \brief Removes the named Function
+  * \param name - is the function's name
+  * \note this does not destroy the removed function.
   ******************************************************************************/
-Function *Prog::newProc(const QString &name, ADDRESS uNative, bool bLib /*= false*/) {
-    Function *pProc;
-    if (bLib)
-        pProc = new LibProc(this, name, uNative);
-    else
-        pProc = new UserProc(this, name, uNative);
-// TODO: add platform agnostic way of using debug information, should be moved to Loaders, Prog should just collect info
-// from Loader
-
-#if defined(_WIN32) && !defined(__MINGW32__)
-    if (isWin32()) {
-        // use debugging information
-        HANDLE hProcess = GetCurrentProcess();
-        dbghelp::SYMBOL_INFO *sym = (dbghelp::SYMBOL_INFO *)malloc(sizeof(dbghelp::SYMBOL_INFO) + 1000);
-        sym->SizeOfStruct = sizeof(*sym);
-        sym->MaxNameLen = 1000;
-        sym->Name[0] = 0;
-        BOOL got = dbghelp::SymFromAddr(hProcess, uNative.m_value, 0, sym);
-        DWORD retType;
-        if (got && *sym->Name &&
-            dbghelp::SymGetTypeInfo(hProcess, sym->ModBase, sym->TypeIndex, dbghelp::TI_GET_TYPE, &retType)) {
-            DWORD d;
-            // get a calling convention
-            got =
-                dbghelp::SymGetTypeInfo(hProcess, sym->ModBase, sym->TypeIndex, dbghelp::TI_GET_CALLING_CONVENTION, &d);
-            if (got) {
-                std::cout << "calling convention: " << d << "\n";
-                // TODO: use it
-            } else {
-                // assume we're stdc calling convention, remove r28, r24 returns
-                pProc->setSignature(Signature::instantiate(PLAT_PENTIUM, CONV_C, sname.c_str()));
-            }
-
-            // get a return type
-            SharedType rtype = typeFromDebugInfo(retType, sym->ModBase);
-            if (!rtype->isVoid()) {
-                pProc->getSignature()->addReturn(rtype, Location::regOf(24));
-            }
-
-            // find params and locals
-            dbghelp::IMAGEHLP_STACK_FRAME stack;
-            stack.InstructionOffset = uNative.m_value;
-            dbghelp::SymSetContext(hProcess, &stack, 0);
-            dbghelp::SymEnumSymbols(hProcess, 0, nullptr, addSymbol, pProc);
-
-            LOG << "final signature: ";
-            pProc->getSignature()->printToLog();
-            LOG << "\n";
-        }
-    }
-#endif
-    m_procs.push_back(pProc); // Append this to list of procs
-    m_procLabels[uNative] = pProc;
-    // alert the watchers of a new proc
-    Boomerang::get()->alertNew(pProc);
-    return pProc;
-}
-
-/***************************************************************************/ /**
-  *
-  * \brief Removes the UserProc from this Prog object's list, and deletes as much as possible of the Proc
-  * \param uProc - pointer to the UserProc object to be removed
-  ******************************************************************************/
-void Prog::remProc(UserProc *uProc) {
-    // Delete the cfg etc.
-    uProc->deleteCFG();
-
-    // Replace the entry in the procedure map with -1 as a warning not to decode that address ever again
-    m_procLabels[uProc->getNativeAddress()] = (Function *)-1;
-    m_procs.remove(uProc);
-    // Delete the UserProc object as well
-    delete uProc;
-}
-
 void Prog::removeProc(const QString &name) {
-    for (std::list<Function *>::iterator it = m_procs.begin(); it != m_procs.end(); it++)
-        if (name == (*it)->getName()) {
-            Boomerang::get()->alertRemove(*it);
-            m_procs.erase(it);
-            break;
-        }
+    Function *f = findProc(name);
+    if(f && f!=(Function *)-1) {
+        f->removeFromParent();
+        Boomerang::get()->alertRemove(f);
+        //FIXME: this function removes the function from module, but it leaks it
+    }
 }
 
-/***************************************************************************/ /**
-  *
-  * \brief    Return the number of real (non deleted) procedures
-  * \returns        The number of procedures
-  ******************************************************************************/
-int Prog::getNumProcs() { return m_procs.size(); }
 /***************************************************************************/ /**
   *
   * \brief    Return the number of user (non deleted, non library) procedures
   * \returns  The number of procedures
   ******************************************************************************/
-int Prog::getNumUserProcs() {
+int Prog::getNumProcs(bool user_only) {
     int n = 0;
-    for (Function *pProc : m_procs)
-        if (!pProc->isLib())
-            n++;
-    return n;
-}
+    if(user_only) {
+        for(Module *m : ModuleList)
+            for (Function *pProc : *m)
+                if (!pProc->isLib())
+                    n++;
+    }
+    else {
+        for(Module *m : ModuleList)
+            n += m->size();
 
-/***************************************************************************/ /**
-  *
-  * \brief Return a pointer to the indexed Proc object
-  * \param idx - Index of the proc
-  * \returns Pointer to the Proc object, or 0 if index invalid
-  ******************************************************************************/
-Function *Prog::getProc(int idx) const {
-    // Return the indexed procedure. If this is used often, we should use a vector instead of a list
-    // If index is invalid, result will be 0
-    if ((idx < 0) || (idx >= (int)m_procs.size()))
-        return nullptr;
-    std::list<Function *>::const_iterator it = m_procs.begin();
-    std::advance(it, idx);
-    return (*it);
+    }
+    return n;
 }
 
 /***************************************************************************/ /**
@@ -704,11 +634,13 @@ Function *Prog::getProc(int idx) const {
   * \returns Pointer to the Proc object, or 0 if none, or -1 if deleted
   ******************************************************************************/
 Function *Prog::findProc(ADDRESS uAddr) const {
-    PROGMAP::const_iterator it;
-    it = m_procLabels.find(uAddr);
-    if (it == m_procLabels.end())
-        return nullptr;
-    return (*it).second;
+    for(Module *m : ModuleList)
+    {
+        Function *r = m->getFunction(uAddr);
+        if(r!=nullptr)
+            return r;
+    }
+    return nullptr;
 }
 /***************************************************************************/ /**
   * \brief    Return a pointer to the associated Proc object, or nullptr if none
@@ -717,11 +649,12 @@ Function *Prog::findProc(ADDRESS uAddr) const {
   * \returns Pointer to the Proc object, or 0 if none, or -1 if deleted
   ******************************************************************************/
 Function *Prog::findProc(const QString &name) const {
-    std::list<Function *>::const_iterator it;
-    it = std::find_if(m_procs.begin(), m_procs.end(), [name](Function *p) -> bool { return !name.compare(p->getName()); });
-    if (it == m_procs.end())
-        return nullptr;
-    return *it;
+    for(Module *m : ModuleList) {
+        Function *f = m->getFunction(name);
+        if(f)
+            return f;
+    }
+    return nullptr;
 }
 
 //! lookup a library procedure by name; create if does not exist
@@ -729,35 +662,22 @@ LibProc *Prog::getLibraryProc(const QString &nam) {
     Function *p = findProc(nam);
     if (p && p->isLib())
         return (LibProc *)p;
-    return (LibProc *)newProc(nam, NO_ADDRESS, true);
+    return (LibProc *)m_rootCluster->getOrInsertFunction(nam,NO_ADDRESS,true);
 }
-//! Get a library signature for a given name (used when creating a new library proc).
-Signature *Prog::getLibSignature(const QString &nam) { return pFE->getLibSignature(nam); }
 
-void Prog::rereadLibSignatures() {
-    pFE->readLibraryCatalog();
-    for (Function *pProc : m_procs) {
-        if (pProc->isLib()) {
-            pProc->setSignature(getLibSignature(pProc->getName()));
-            for (CallStatement *call_stmt : pProc->getCallers())
-                call_stmt->setSigArguments();
-            Boomerang::get()->alertUpdateSignature(pProc);
-        }
-    }
-}
 //! Get the front end id used to make this prog
-platform Prog::getFrontEndId() { return pFE->getFrontEndId(); }
+platform Prog::getFrontEndId() { return DefaultFrontend->getFrontEndId(); }
 
-Signature *Prog::getDefaultSignature(const char *name) { return pFE->getDefaultSignature(name); }
+Signature *Prog::getDefaultSignature(const char *name) { return DefaultFrontend->getDefaultSignature(name); }
 
-std::vector<Exp *> &Prog::getDefaultParams() { return pFE->getDefaultParams(); }
+std::vector<Exp *> &Prog::getDefaultParams() { return DefaultFrontend->getDefaultParams(); }
 
-std::vector<Exp *> &Prog::getDefaultReturns() { return pFE->getDefaultReturns(); }
+std::vector<Exp *> &Prog::getDefaultReturns() { return DefaultFrontend->getDefaultReturns(); }
 //! Returns true if this is a win32 program
 bool Prog::isWin32() {
-    if (!pFE)
+    if (!DefaultFrontend)
         return false;
-    return pFE->isWin32();
+    return DefaultFrontend->isWin32();
 }
 //! Get a global variable if possible, looking up the loader's symbol table if necessary
 QString Prog::getGlobalName(ADDRESS uaddr) {
@@ -789,7 +709,7 @@ ADDRESS Prog::getGlobalAddr(const QString &nam) {
 
 Global *Prog::getGlobal(const QString &nam) {
     auto iter =
-        std::find_if(globals.begin(), globals.end(), [nam](Global *g) -> bool { return g->getName()==nam; });
+            std::find_if(globals.begin(), globals.end(), [nam](Global *g) -> bool { return g->getName()==nam; });
     if (iter == globals.end())
         return nullptr;
     return *iter;
@@ -806,7 +726,7 @@ bool Prog::globalUsed(ADDRESS uaddr, SharedType knownType) {
 
     if (pSections->GetSectionInfoByAddr(uaddr) == nullptr) {
         LOG_VERBOSE(1) << "refusing to create a global at address that is in no known section of the binary: " << uaddr
-                << "\n";
+                       << "\n";
         return false;
     }
 
@@ -974,14 +894,16 @@ double Prog::getFloatConstant(ADDRESS uaddr, bool &ok, int bits) {
   * \returns        Pointer to the Proc object, or 0 if none, or -1 if deleted
   ******************************************************************************/
 Function *Prog::findContainingProc(ADDRESS uAddr) const {
-    for (Function *p : m_procs) {
-        if (p->getNativeAddress() == uAddr)
-            return p;
-        if (p->isLib())
-            continue;
-        UserProc *u = (UserProc *)p;
-        if (u->containsAddr(uAddr))
-            return p;
+    for(Module *module : ModuleList) {
+        for (Function *p : *module) {
+            if (p->getNativeAddress() == uAddr)
+                return p;
+            if (p->isLib())
+                continue;
+            UserProc *u = (UserProc *)p;
+            if (u->containsAddr(uAddr))
+                return p;
+        }
     }
     return nullptr;
 }
@@ -992,7 +914,14 @@ Function *Prog::findContainingProc(ADDRESS uAddr) const {
   * \param addr   Native address of the procedure entry point
   * \returns        True if a real (non deleted) proc
   ******************************************************************************/
-bool Prog::isProcLabel(ADDRESS addr) { return m_procLabels[addr] != nullptr; }
+bool Prog::isProcLabel(ADDRESS addr) {
+
+    for(Module *m : ModuleList) {
+        if(m->getFunction(addr))
+            return true;
+    }
+    return false;
+}
 
 /***************************************************************************/ /**
   *
@@ -1008,71 +937,6 @@ std::string Prog::getNameNoPath() const { return QFileInfo(m_name).fileName().to
   * \returns A string with the name
   ******************************************************************************/
 QString Prog::getNameNoPathNoExt() const { return QFileInfo(m_name).baseName(); }
-
-/***************************************************************************/ /**
-  *
-  * \brief    Return a pointer to the first Proc object for this program
-  * \note    The \a it parameter must be passed to getNextProc
-  * \param    it An uninitialised PROGMAP::const_iterator
-  * \returns        A pointer to the first Proc object; could be 0 if none
-  ******************************************************************************/
-Function *Prog::getFirstProc(PROGMAP::const_iterator &it) {
-    it = m_procLabels.begin();
-    while (it != m_procLabels.end() && (it->second == (Function *)-1))
-        it++;
-    if (it == m_procLabels.end())
-        return nullptr;
-    return it->second;
-}
-
-/***************************************************************************/ /**
-  *
-  * \brief    Return a pointer to the next Proc object for this program
-  * \note       The \a it parameter must be from a previous call to getFirstProc or getNextProc
-  * \param    it A PROGMAP::const_iterator as above
-  * \returns        A pointer to the next Proc object; could be 0 if no more
-  ******************************************************************************/
-Function *Prog::getNextProc(PROGMAP::const_iterator &it) {
-    it++;
-    while (it != m_procLabels.end() && (it->second == (Function *)-1))
-        it++;
-    if (it == m_procLabels.end())
-        return nullptr;
-    return it->second;
-}
-
-/***************************************************************************/ /**
-  *
-  * \brief    Return a pointer to the first UserProc object for this program
-  * \note    The \a it parameter must be passed to getNextUserProc
-  * \param    it An uninitialised std::list<Proc*>::iterator
-  * \returns A pointer to the first UserProc object; could be 0 if none
-  ******************************************************************************/
-UserProc *Prog::getFirstUserProc(std::list<Function *>::iterator &it) {
-    it = m_procs.begin();
-    while (it != m_procs.end() && (*it)->isLib())
-        it++;
-    if (it == m_procs.end())
-        return nullptr;
-    return (UserProc *)*it;
-}
-
-/***************************************************************************/ /**
-  *
-  * \brief    Return a pointer to the next UserProc object for this program
-  * \note     The it parameter must be from a previous call to
-  *                  getFirstUserProc or getNextUserProc
-  * \param   it A reference to std::list<Proc*>::iterator
-  * \returns A pointer to the next UserProc object; could be 0 if no more
-  ******************************************************************************/
-UserProc *Prog::getNextUserProc(std::list<Function *>::iterator &it) {
-    it++;
-    while (it != m_procs.end() && (*it)->isLib())
-        it++;
-    if (it == m_procs.end())
-        return nullptr;
-    return (UserProc *)*it;
-}
 
 /***************************************************************************/ /**
   *
@@ -1119,7 +983,7 @@ void Prog::decodeEntryPoint(ADDRESS a) {
                 LOG << "attempt to decode entrypoint at address outside text area, addr=" << a << "\n";
             return;
         }
-        pFE->decode(this, a);
+        DefaultFrontend->decode(this, a);
         finishDecode();
     }
     if (p == nullptr)
@@ -1141,44 +1005,49 @@ void Prog::setEntryPoint(ADDRESS a) {
 }
 
 void Prog::decodeEverythingUndecoded() {
-    for (Function *pp : m_procs) {
-        UserProc *up = (UserProc *)pp;
-        if (!pp || pp->isLib())
-            continue;
-        if (up->isDecoded())
-            continue;
-        pFE->decode(this, pp->getNativeAddress());
+    for(Module *module : ModuleList) {
+        for (Function *pp : *module) {
+            UserProc *up = (UserProc *)pp;
+            if (!pp || pp->isLib())
+                continue;
+            if (up->isDecoded())
+                continue;
+            DefaultFrontend->decode(this, pp->getNativeAddress());
+        }
     }
     finishDecode();
 }
 //! Do the main non-global decompilation steps
 void Prog::decompile() {
-    assert(m_procs.size());
-
-    LOG_VERBOSE(1) << (int)m_procs.size() << " procedures\n";
+    assert(!ModuleList.empty());
+    getNumProcs();
+    LOG_VERBOSE(1) << getNumProcs(false) << " procedures\n";
 
     // Start decompiling each entry point
     for (UserProc *up : entryProcs) {
+        ProcList call_path;
         LOG_VERBOSE(1) << "decompiling entry point " << up->getName() << "\n";
         int indent = 0;
-        up->decompile(new ProcList, indent);
+        up->decompile(&call_path, indent);
     }
 
     // Just in case there are any Procs not in the call graph.
-    std::list<Function *>::iterator pp;
+
     if (Boomerang::get()->decodeMain && !Boomerang::get()->noDecodeChildren) {
         bool foundone = true;
         while (foundone) {
             foundone = false;
-            for (Function *pp : m_procs) {
-                UserProc *proc = (UserProc *)pp;
-                if (proc->isLib())
-                    continue;
-                if (proc->isDecompiled())
-                    continue;
-                int indent = 0;
-                proc->decompile(new ProcList, indent);
-                foundone = true;
+            for(Module *module : ModuleList) {
+                for (Function *pp : *module) {
+                    UserProc *proc = (UserProc *)pp;
+                    if (proc->isLib())
+                        continue;
+                    if (proc->isDecompiled())
+                        continue;
+                    int indent = 0;
+                    proc->decompile(new ProcList, indent);
+                    foundone = true;
+                }
             }
         }
     }
@@ -1193,19 +1062,20 @@ void Prog::decompile() {
     if (!Boomerang::get()->noDecompile) {
         if (!Boomerang::get()->noRemoveReturns) {
             // A final pass to remove returns not used by any caller
-            if (VERBOSE)
-                LOG << "prog: global removing unused returns\n";
+            LOG_VERBOSE(1) << "prog: global removing unused returns\n";
             // Repeat until no change. Note 100% sure if needed.
             while (removeUnusedReturns())
                 ;
         }
 
         // print XML after removing returns
-        for (Function *pp : m_procs) {
-            UserProc *proc = (UserProc *)pp;
-            if (proc->isLib())
-                continue;
-            proc->printXML();
+        for(Module *m :ModuleList) {
+            for (Function *pp : *m) {
+                UserProc *proc = (UserProc *)pp;
+                if (proc->isLib())
+                    continue;
+                proc->printXML();
+            }
         }
     }
     LOG_VERBOSE(1) << "transforming from SSA\n";
@@ -1223,25 +1093,26 @@ void Prog::removeUnusedGlobals() {
 
     // seach for used globals
     std::list<Exp *> usedGlobals;
-    for (Function *pp : m_procs) {
-        if (pp->isLib())
-            continue;
-        UserProc *u = (UserProc *)pp;
-        Location search(opGlobal, Terminal::get(opWild), u);
-        // Search each statement in u, excepting implicit assignments (their uses don't count, since they don't really
-        // exist in the program representation)
-        StatementList stmts;
-        StatementList::iterator ss;
-        u->getStatements(stmts);
-        for (Instruction *s : stmts) {
-            if (s->isImplicit())
-                continue; // Ignore the uses in ImplicitAssigns
-            bool found = s->searchAll(search, usedGlobals);
-            if (found && DEBUG_UNUSED)
-                LOG << " a global is used by stmt " << s->getNumber() << "\n";
+    for(Module *module : ModuleList) {
+        for (Function *pp : *module) {
+            if (pp->isLib())
+                continue;
+            UserProc *u = (UserProc *)pp;
+            Location search(opGlobal, Terminal::get(opWild), u);
+            // Search each statement in u, excepting implicit assignments (their uses don't count, since they don't really
+            // exist in the program representation)
+            StatementList stmts;
+            StatementList::iterator ss;
+            u->getStatements(stmts);
+            for (Instruction *s : stmts) {
+                if (s->isImplicit())
+                    continue; // Ignore the uses in ImplicitAssigns
+                bool found = s->searchAll(search, usedGlobals);
+                if (found && DEBUG_UNUSED)
+                    LOG << " a global is used by stmt " << s->getNumber() << "\n";
+            }
         }
     }
-
     // make a map to find a global by its name (could be a global var too)
     QMap<QString, Global *> namedGlobals;
     for (Global *g : globals)
@@ -1288,11 +1159,13 @@ bool Prog::removeUnusedReturns() {
     std::set<UserProc *> removeRetSet;
     std::list<Function *>::iterator pp;
     bool change = false;
-    for (Function *pp : m_procs) {
-        UserProc *proc = (UserProc *)pp;
-        if (proc->isLib() || !proc->isDecoded())
-            continue; // e.g. use -sf file to just prototype the proc
-        removeRetSet.insert(proc);
+    for(Module *module : ModuleList) {
+        for (Function *pp : *module) {
+            UserProc *proc = (UserProc *)pp;
+            if (proc->isLib() || !proc->isDecoded())
+                continue; // e.g. use -sf file to just prototype the proc
+            removeRetSet.insert(proc);
+        }
     }
     // The workset is processed in arbitrary order. May be able to do better, but note that sometimes changes propagate
     // down the call tree (no caller uses potential returns for child), and sometimes up the call tree (removal of
@@ -1310,19 +1183,21 @@ bool Prog::removeUnusedReturns() {
 // Have to transform out of SSA form after the above final pass
 //! Convert from SSA form
 void Prog::fromSSAform() {
-    for (Function *pp : m_procs) {
-        UserProc *proc = (UserProc *)pp;
-        if (proc->isLib())
-            continue;
-        if (VERBOSE) {
-            LOG << "===== before transformation from SSA form for " << proc->getName() << " =====\n" << *proc
-                << "===== end before transformation from SSA for " << proc->getName() << " =====\n\n";
-            if (!Boomerang::get()->dotFile.isEmpty())
-                proc->printDFG();
+    for(Module *module : ModuleList) {
+        for (Function *pp : *module) {
+            UserProc *proc = (UserProc *)pp;
+            if (proc->isLib())
+                continue;
+            if (VERBOSE) {
+                LOG << "===== before transformation from SSA form for " << proc->getName() << " =====\n" << *proc
+                    << "===== end before transformation from SSA for " << proc->getName() << " =====\n\n";
+                if (!Boomerang::get()->dotFile.isEmpty())
+                    proc->printDFG();
+            }
+            proc->fromSSAform();
+            LOG_VERBOSE(1) << "===== after transformation from SSA form for " << proc->getName() << " =====\n" << *proc
+                           << "===== end after transformation from SSA for " << proc->getName() << " =====\n\n";
         }
-        proc->fromSSAform();
-        LOG_VERBOSE(1) << "===== after transformation from SSA form for " << proc->getName() << " =====\n" << *proc
-                       << "===== end after transformation from SSA for " << proc->getName() << " =====\n\n";
     }
 }
 //! Constraint based type analysis
@@ -1331,11 +1206,13 @@ void Prog::conTypeAnalysis() {
         LOG << "=== start constraint-based type analysis ===\n";
     // FIXME: This needs to be done bottom of the call-tree first, with repeat until no change for cycles
     // in the call graph
-    for (Function *pp : m_procs) {
-        UserProc *proc = (UserProc *)pp;
-        if (proc->isLib() || !proc->isDecoded())
-            continue;
-        proc->conTypeAnalysis();
+    for(Module *module : ModuleList) {
+        for (Function *pp : *module) {
+            UserProc *proc = (UserProc *)pp;
+            if (proc->isLib() || !proc->isDecoded())
+                continue;
+            proc->conTypeAnalysis();
+        }
     }
     if (VERBOSE || DEBUG_TA)
         LOG << "=== end type analysis ===\n";
@@ -1344,26 +1221,30 @@ void Prog::conTypeAnalysis() {
 void Prog::globalTypeAnalysis() {
     if (VERBOSE || DEBUG_TA)
         LOG << "### start global data-flow-based type analysis ###\n";
-    for (Function *pp : m_procs) {
-        UserProc *proc = (UserProc *)pp;
-        if (proc->isLib() || !proc->isDecoded())
-            continue;
-        // FIXME: this just does local TA again. Need to meet types for all parameter/arguments, and return/results!
-        // This will require a repeat until no change loop
-        LOG_STREAM() << "global type analysis for " << proc->getName() << "\n";
-        proc->typeAnalysis();
+    for(Module *module : ModuleList) {
+        for (Function *pp : *module) {
+            UserProc *proc = (UserProc *)pp;
+            if (proc->isLib() || !proc->isDecoded())
+                continue;
+            // FIXME: this just does local TA again. Need to meet types for all parameter/arguments, and return/results!
+            // This will require a repeat until no change loop
+            LOG_STREAM() << "global type analysis for " << proc->getName() << "\n";
+            proc->typeAnalysis();
+        }
     }
     if (VERBOSE || DEBUG_TA)
         LOG << "### end type analysis ###\n";
 }
 
 void Prog::rangeAnalysis() {
-    for (Function *pp : m_procs) {
-        UserProc *proc = (UserProc *)pp;
-        if (proc->isLib() || !proc->isDecoded())
-            continue;
-        proc->rangeAnalysis();
-        proc->logSuspectMemoryDefs();
+    for(Module *module : ModuleList) {
+        for (Function *pp : *module) {
+            UserProc *proc = (UserProc *)pp;
+            if (proc->isLib() || !proc->isDecoded())
+                continue;
+            proc->rangeAnalysis();
+            proc->logSuspectMemoryDefs();
+        }
     }
 }
 
@@ -1465,13 +1346,13 @@ void Prog::printSymbolsToFile() {
         printProcsRecursive(up, 0, f, seen);
 
     f << "/* Leftovers: */\n";
-    std::list<Function *>::iterator it; // don't forget the rest
-    for (Function *pp : m_procs) {
-        if (!pp->isLib() && seen.find(pp) == seen.end()) {
-            printProcsRecursive(*it, 0, f, seen);
+    for(Module *m : ModuleList) {
+        for (Function *pp : *m) {
+            if (!pp->isLib() && seen.find(pp) == seen.end()) {
+                printProcsRecursive(pp, 0, f, seen);
+            }
         }
     }
-
     f.flush();
     unlockFile(fd);
     LOG_STREAM() << "leaving Prog::printSymbolsToFile\n";
@@ -1481,8 +1362,10 @@ void Prog::printCallGraphXML() {
     if (!Boomerang::get()->dumpXML)
         return;
     std::list<Function *>::iterator it;
-    for (it = m_procs.begin(); it != m_procs.end(); it++)
-        (*it)->clearVisited();
+    for(Module *m : ModuleList) {
+        for (Function *it : *m)
+            it->clearVisited();
+    }
     QString fname = Boomerang::get()->getOutputPath() + "callgraph.xml";
     int fd = lockFileWrite(qPrintable(fname));
     QFile CallGraphFile(fname);
@@ -1492,15 +1375,24 @@ void Prog::printCallGraphXML() {
     std::list<UserProc *>::iterator pp;
     for (UserProc *up : entryProcs)
         up->printCallGraphXML(f, 2);
-    for (Function *pp : m_procs) {
-        if (!pp->isVisited() && !pp->isLib()) {
-            pp->printCallGraphXML(f, 2);
+    for(Module *m : ModuleList) {
+        for (Function *pp : *m) {
+            if (!pp->isVisited() && !pp->isLib()) {
+                pp->printCallGraphXML(f, 2);
+            }
         }
     }
     f << "     </callgraph>\n";
     f << "</prog>\n";
     f.flush();
     unlockFile(fd);
+}
+
+Module *Prog::findModule(const QString &name) {
+    for(Module *m : ModuleList)
+        if(m->getName()==name)
+            return m;
+    return nullptr;
 }
 
 void Prog::readSymbolFile(const QString &fname) {
@@ -1519,21 +1411,23 @@ void Prog::readSymbolFile(const QString &fname) {
     if (isWin32())
         cc = CONV_PASCAL;
     par->yyparse(plat, cc);
+    Module *tgt_mod = getRootCluster();
 
     for (Symbol *sym : par->symbols) {
         if (sym->sig) {
-            Function *p = newProc(sym->sig->getName(), sym->addr,
-                              pLoaderIface->IsDynamicLinkedProcPointer(sym->addr) ||
-                                  // NODECODE isn't really the right modifier; perhaps we should have a LIB modifier,
-                                  // to specifically specify that this function obeys library calling conventions
-                                  sym->mods->noDecode);
+            tgt_mod = getDefaultModule(sym->sig->getName());
+            bool do_not_decode = pLoaderIface->IsDynamicLinkedProcPointer(sym->addr) ||
+                    // NODECODE isn't really the right modifier; perhaps we should have a LIB modifier,
+                    // to specifically specify that this function obeys library calling conventions
+                    sym->mods->noDecode;
+            Function *p = tgt_mod->getOrInsertFunction(sym->sig->getName(), sym->addr,do_not_decode);
             if (!sym->mods->incomplete) {
                 p->setSignature(sym->sig->clone());
                 p->getSignature()->setForced(true);
             }
         } else {
-            QString nam = sym->nam.c_str();
-            if (nam.isEmpty()) {
+            QString nam=sym->nam;
+            if (sym->nam.isEmpty()) {
                 nam = newGlobalName(sym->addr);
             }
             SharedType ty = sym->ty;
@@ -1545,7 +1439,7 @@ void Prog::readSymbolFile(const QString &fname) {
     }
 
     for (SymbolRef *ref : par->refs) {
-        pFE->addRefHint(ref->addr, ref->nam.c_str());
+        DefaultFrontend->addRefHint(ref->addr, ref->nam.c_str());
     }
 
     delete par;
@@ -1690,12 +1584,12 @@ void Global::meetType(SharedType ty) {
 //! Re-decode this proc from scratch
 void Prog::reDecode(UserProc *proc) {
     QTextStream os(stderr); // rtl output target
-    pFE->processProc(proc->getNativeAddress(), proc, os);
+    DefaultFrontend->processProc(proc->getNativeAddress(), proc, os);
 }
 
 void Prog::decodeFragment(UserProc *proc, ADDRESS a) {
     if (a >= pSections->getLimitTextLow() && a < pSections->getLimitTextHigh())
-        pFE->decodeFragment(proc, a);
+        DefaultFrontend->decodeFragment(proc, a);
     else {
         LOG_STREAM() << "attempt to decode fragment outside text area, addr=" << a << "\n";
         if (VERBOSE)

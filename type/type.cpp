@@ -801,7 +801,7 @@ void Type::dump() {
 std::map<QString, SharedType > Type::namedTypes;
 
 // named type accessors
-void Type::addNamedType(const char *name, SharedType type) {
+void Type::addNamedType(const QString &name, SharedType type) {
     if (namedTypes.find(name) != namedTypes.end()) {
         if (!(*type == *namedTypes[name])) {
             // LOG << "addNamedType: name " << name << " type " << type->getCtype() << " != " <<

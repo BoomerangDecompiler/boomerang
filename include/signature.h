@@ -82,7 +82,7 @@ typedef std::vector<Return *> Returns;
 class Signature {
   protected:
     QString name;        // name of procedure
-    std::string sigFile; // signature file this signature was read from (for libprocs)
+    QString sigFile; // signature file this signature was read from (for libprocs)
     std::vector<Parameter *> params;
     // std::vector<ImplicitParameter*> implicitParams;
     Returns returns;
@@ -93,7 +93,7 @@ class Signature {
     // True if the signature is forced with a -sf entry, or is otherwise known, e.g. WinMain
     bool forced;
     SharedType preferedReturn;
-    std::string preferedName;
+    QString preferedName;
     std::vector<int> preferedParams;
 
     //        void        updateParams(UserProc *p, Statement *stmt, bool checkreach = true);
@@ -140,8 +140,8 @@ class Signature {
     virtual QString getName();
     virtual void setName(const QString &nam);
     // get/set the signature file
-    const char *getSigFile() { return sigFile.c_str(); }
-    void setSigFile(const char *nam) { sigFile = nam; }
+    const QString &getSigFile() const { return sigFile; }
+    void setSigFile(const QString &nam) { sigFile = nam; }
 
     // add a new parameter to this signature
     virtual void addParameter(const char *nam = nullptr);
@@ -233,10 +233,10 @@ class Signature {
 
     // prefered format
     void setPreferedReturn(SharedType ty) { preferedReturn = ty; }
-    void setPreferedName(const char *nam) { preferedName = nam; }
+    void setPreferedName(const QString &nam) { preferedName = nam; }
     void addPreferedParameter(int n) { preferedParams.push_back(n); }
     SharedType getPreferedReturn() { return preferedReturn; }
-    const char *getPreferedName() { return preferedName.c_str(); }
+    const QString &getPreferedName() { return preferedName; }
     size_t getNumPreferedParams() { return preferedParams.size(); }
     int getPreferedParam(size_t n) { return preferedParams[n]; }
 

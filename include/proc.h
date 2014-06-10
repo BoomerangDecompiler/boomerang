@@ -60,7 +60,7 @@ protected:
     friend class XMLProgParser;
 
 public:
-    Function(ADDRESS uNative, Signature *sig, Prog *prog);
+    Function(ADDRESS uNative, Signature *sig, Module *mod);
     virtual ~Function();
 
     void eraseFromParent();
@@ -118,7 +118,8 @@ public:
     bool isVisited() { return Visited; }
 
     Module *getParent() { return Parent; }
-    void setParent(Module *c) { Parent = c; }
+    void setParent(Module *c);
+    void removeFromParent();
 private:
     virtual void deleteCFG() {}
 protected:
@@ -141,9 +142,7 @@ protected:
     std::set<CallStatement *> callerSet;
     Module *Parent;
 
-    Function()
-        : Visited(false), prog(nullptr), signature(nullptr), address(ADDRESS::g(0L)), m_firstCaller(nullptr),
-          m_firstCallerAddr(ADDRESS::g(0L)), Parent(nullptr) {}
+    Function();
 }; // class Proc
 
 /***************************************************************************/ /**
@@ -154,7 +153,7 @@ protected:
     friend class XMLProgParser;
 
 public:
-    LibProc(Prog *prog, const QString &name, ADDRESS address);
+    LibProc(Module *mod, const QString &name, ADDRESS address);
     virtual ~LibProc();
     bool isLib() { return true; } //!< Return true, since is a library proc
     virtual bool isNoReturn();
@@ -251,7 +250,7 @@ private:
     ProcSet *cycleGrp;
 
 public:
-    UserProc(Prog *prog,const QString &name, ADDRESS address);
+    UserProc(Module *prog,const QString &name, ADDRESS address);
     virtual ~UserProc();
     void setDecoded();
     void unDecode();

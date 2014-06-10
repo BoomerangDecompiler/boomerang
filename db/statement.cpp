@@ -2366,7 +2366,7 @@ for (StatementList::iterator it = results->begin(); it != results->end(); it++)
             }
         }
     }
-    if (p->isLib() && *p->getSignature()->getPreferedName()) {
+    if (p->isLib() && !p->getSignature()->getPreferedName().isEmpty()) {
         hll->AddCallStatement(indLevel, p, p->getSignature()->getPreferedName(), arguments, results);
     } else
         hll->AddCallStatement(indLevel, p, qPrintable(p->getName()), arguments, results);
