@@ -25,7 +25,7 @@
 #include <cstdio>
 #include <cstring>
 
-typedef enum {
+enum xmlElement {
     e_prog,
     e_procs,
     e_global,
@@ -95,7 +95,7 @@ typedef enum {
     e_subexp2,
     e_subexp3,
     e_unknown = -1
-} xmlElement;
+};
 
 #define TAG(x) &XMLProgParser::start_##x, &XMLProgParser::addToContext_##x
 
@@ -298,20 +298,22 @@ void XMLProgParser::addToContext_prog(Context *c, int e) {
     switch (e) {
     case e_libproc:
         ctx->proc->setProg(c->prog);
-        c->prog->m_procs.push_back(ctx->proc);
-        c->prog->m_procLabels[ctx->proc->getNativeAddress()] = ctx->proc;
+        ctx->proc->setParent(ctx->cluster);
         break;
     case e_userproc:
         ctx->proc->setProg(c->prog);
-        c->prog->m_procs.push_back(ctx->proc);
-        c->prog->m_procLabels[ctx->proc->getNativeAddress()] = stack.front()->proc;
+        ctx->cluster->getFunctionList().push_back(ctx->proc);
+        ctx->cluster->setLocationMap(ctx->proc->getNativeAddress(),stack.front()->proc);
         break;
-    case e_procs:
+    case e_procs: {
+        Module * current_m = ctx->cluster;
+        auto func_list(current_m->getFunctionList());
         for (auto &elem : ctx->procs) {
-            c->prog->m_procs.push_back(elem);
-            c->prog->m_procLabels[(elem)->getNativeAddress()] = elem;
+            func_list.push_back(elem);
+            current_m->setLocationMap(elem->getNativeAddress(),elem);
             Boomerang::get()->alertLoad(elem);
         }
+    }
         break;
     case e_cluster:
         c->prog->m_rootCluster = ctx->cluster;
@@ -665,7 +667,7 @@ void XMLProgParser::start_signature(const QXmlStreamAttributes &attr) {
         sig->ellipsis = n.toInt() > 0;
     n = attr.value(QLatin1Literal("preferedName"));
     if (!n.isEmpty())
-        sig->preferedName = n.toString().toStdString();
+        sig->preferedName = n.toString();
 }
 
 void XMLProgParser::addToContext_signature(Context *c, int e) {
@@ -2004,6 +2006,14 @@ void XMLProgParser::persistToXML(QXmlStreamWriter &out, Module *c) {
     out.writeStartElement("module");
     out.writeAttribute("id", QString::number(ADDRESS::host_ptr(c).m_value));
     out.writeAttribute("name", c->Name);
+    for (auto p : *c) {
+        QXmlStreamWriter wrt(c->getStream().device());
+        wrt.writeStartDocument();
+        wrt.writeStartElement("procs");
+        persistToXML(wrt, p);
+        wrt.writeEndElement();
+        wrt.writeEndElement();
+    }
     for (auto &elem : c->Children) {
         persistToXML(out, elem);
     }
@@ -2036,17 +2046,6 @@ void XMLProgParser::persistToXML(Prog *prog) {
     for (auto const &elem : prog->globals)
         persistToXML(wrt, elem);
     persistToXML(wrt, prog->m_rootCluster);
-    for (auto p : prog->m_procs) {
-        QXmlStreamWriter wrt(p->getParent()->getStream().device());
-        wrt.writeStartDocument();
-        bool has_parent = p->getParent()->getUpstream() != nullptr;
-        if (has_parent)
-            wrt.writeStartElement("procs");
-        persistToXML(wrt, p);
-        if (has_parent)
-            wrt.writeEndElement();
-        wrt.writeEndElement();
-    }
     if (prog->m_rootCluster->getUpstream())
         wrt.writeEndElement();
     wrt.writeEndElement();
@@ -2149,7 +2148,7 @@ void XMLProgParser::persistToXML(QXmlStreamWriter &out, Signature *sig) {
     out.writeAttribute("id", QString::number(ADDRESS::host_ptr(sig).m_value));
     out.writeAttribute("name", sig->name);
     out.writeAttribute("ellipsis", QString::number((int)sig->ellipsis));
-    out.writeAttribute("preferedName", sig->preferedName.c_str());
+    out.writeAttribute("preferedName", sig->preferedName);
     if (sig->getPlatform() != PLAT_GENERIC)
         out.writeAttribute("platform", sig->platformName(sig->getPlatform()));
     if (sig->getConvention() != CONV_NONE)

@@ -287,7 +287,9 @@ void FrontSparcTest::testDelaySlot() {
     QVERIFY(addr != NO_ADDRESS);
     QString actual;
     QTextStream strm(&actual);
-    UserProc *pProc = new UserProc(prog, "testDelaySlot", addr);
+    Module *m = prog->getOrInsertModule("test");
+
+    UserProc *pProc = new UserProc(m, "testDelaySlot", addr);
     QString dum;
     QTextStream dummy(&dum);
     bool res = pFE->processProc(addr, pProc, dummy, false);

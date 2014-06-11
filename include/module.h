@@ -15,8 +15,8 @@
   * Clusters can contain other Clusters to form a tree.
   ******************************************************************************/
 
-#ifndef __CLUSTER_H__
-#define __CLUSTER_H__
+#ifndef __MODULE_H__
+#define __MODULE_H__
 
 #include "memo.h"
 #include "type.h"
@@ -33,8 +33,9 @@
 class XMLProgParser;
 class Function;
 class Prog;
-
-class Module {
+class FrontEnd;
+class Module : public QObject {
+    Q_OBJECT
 public:
     /// The type for the list of functions.
     typedef std::list<Function *>             FunctionListType;
@@ -44,7 +45,8 @@ public:
 private:
     FunctionListType FunctionList;  ///< The Functions in the module
     QString Target;           ///< Target platform Module was compiled on
-
+    FrontEnd * CurrentFrontend;
+    std::map<ADDRESS,Function *> LabelsToProcs;
 protected:
     QString Name;
     std::vector<Module *> Children;
@@ -53,10 +55,13 @@ protected:
     QFile out;
     QTextStream strm;
     std::string stream_ext;
-
+public slots:
+    void onLibrarySignaturesChanged();
+signals:
+    void newFunction(Function *);
 public:
     Module();
-    Module(const QString &_name,Prog *_parent);
+    Module(const QString &_name,Prog *_parent,FrontEnd *fe);
     virtual ~Module();
     QString getName() { return Name; }
     void setName(const QString &nam) { Name = nam; }
@@ -66,17 +71,22 @@ public:
     void removeChild(Module *n);
     Module *getUpstream();
     bool hasChildren();
+    Module *find(const QString &nam);
+    virtual bool isAggregate() { return false; }
+
     void openStream(const char *ext);
     void openStreams(const char *ext);
     void closeStreams();
     QTextStream &getStream() { return strm; }
     QString makeDirs();
     QString getOutPath(const char *ext);
-    Module *find(const QString &nam);
-    virtual bool isAggregate() { return false; }
+
     void printTree(QTextStream &out);
     void setLocationMap(ADDRESS loc, Function *fnc);
 
+    Prog * getParent() { return Parent; }
+    void eraseFromParent();
+    // Function list management
     const FunctionListType &getFunctionList() const { return FunctionList; }
     FunctionListType       &getFunctionList()       { return FunctionList; }
 
@@ -86,8 +96,11 @@ public:
     const_iterator          end  () const { return FunctionList.end();   }
     size_t                  size()  const { return FunctionList.size(); }
     bool                    empty() const { return FunctionList.empty(); }
+    Function *              getOrInsertFunction(const QString &name, ADDRESS uNative, bool bLib = false);
+    Function *              getFunction(const QString &name);
+    Function *              getFunction(ADDRESS loc);
 
-
+    Signature *             getLibSignature(const QString &name);
 protected:
     friend class XMLProgParser;
 };
@@ -97,7 +110,7 @@ protected:
     std::shared_ptr<CompoundType> Type;
 
 public:
-    Class(const QString &name,Prog *_parent) : Module(name,_parent) {
+    Class(const QString &name,Prog *_parent,FrontEnd *fe) : Module(name,_parent,fe) {
         Type = CompoundType::get();
     }
 
@@ -106,4 +119,17 @@ public:
     virtual bool isAggregate() { return true; }
 };
 
-#endif /*__CLUSTER_H__*/
+struct ModuleFactory {
+    virtual Module *create(const QString &name,Prog *_parent,FrontEnd *fe) const =0;
+};
+struct DefaultModFactory : public ModuleFactory {
+    Module *create(const QString &name,Prog *_parent,FrontEnd *fe) const {
+        return new Module(name,_parent,fe);
+    }
+};
+struct ClassModFactory : public ModuleFactory {
+    Module *create(const QString &name,Prog *_parent,FrontEnd *fe) const {
+        return new Class(name,_parent,fe);
+    }
+};
+#endif /*__MODULE_H__*/

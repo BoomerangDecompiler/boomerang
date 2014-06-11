@@ -19,7 +19,7 @@ class AnsiCScanner;
 class TypeIdent {
   public:
     SharedType ty;
-    std::string nam;
+    QString nam;
 };
 
 class SymbolMods;
@@ -27,7 +27,7 @@ class SymbolMods;
 class Symbol {
   public:
     ADDRESS addr;
-    std::string nam;
+    QString nam;
     SharedType ty;
     Signature *sig;
     SymbolMods *mods;

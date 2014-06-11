@@ -32,8 +32,6 @@ class InstructionSet;
 class Module;
 class XMLProgParser;
 
-typedef std::map<ADDRESS, Function *, std::less<ADDRESS>> PROGMAP;
-
 class Global {
 private:
     SharedType type;
@@ -63,7 +61,8 @@ protected:
     friend class XMLProgParser;
 }; // class Global
 
-class Prog {
+class Prog : public QObject {
+    Q_OBJECT
 public:
     /// The type for the list of functions.
     typedef std::list<Module *>               ModuleListType;
@@ -77,34 +76,30 @@ public:
     Prog();
     virtual ~Prog();
     Prog(const char *name);
-    void setFrontEnd(FrontEnd *fe);
+    void setFrontEnd(FrontEnd *_pFE);
+    FrontEnd *getFrontEnd() { return DefaultFrontend; }
     void setName(const char *name);
     Function *setNewProc(ADDRESS uNative);
-    Function *newProc(const QString &name, ADDRESS uNative, bool bLib = false);
 
-    void remProc(UserProc *proc);
     void removeProc(const QString &name);
     QString getName(); // Get the name of this program
     QString getPath() { return m_path; }
     QString getPathAndName() { return (m_path + m_name); }
-    int getNumProcs();
-    int getNumUserProcs();
-    Function *getProc(int i) const;
+    int getNumProcs(bool user_only=true);
+
     Function *findProc(ADDRESS uAddr) const;
     Function *findProc(const QString &name) const;
     Function *findContainingProc(ADDRESS uAddr) const;
     bool isProcLabel(ADDRESS addr);
     std::string getNameNoPath() const;
     QString getNameNoPathNoExt() const;
-    Function *getFirstProc(PROGMAP::const_iterator &it);
-    Function *getNextProc(PROGMAP::const_iterator &it);
     UserProc *getFirstUserProc(std::list<Function *>::iterator &it);
     UserProc *getNextUserProc(std::list<Function *>::iterator &it);
 
     void clear();
     const void *getCodeInfo(ADDRESS uAddr, const char *&last, int &delta);
-    const char *getRegName(int idx) { return pFE->getRegName(idx); }
-    int getRegSize(int idx) { return pFE->getRegSize(idx); }
+    const char *getRegName(int idx) { return DefaultFrontend->getRegName(idx); }
+    int getRegSize(int idx) { return DefaultFrontend->getRegSize(idx); }
 
     void decodeEntryPoint(ADDRESS a);
     void setEntryPoint(ADDRESS a);
@@ -129,7 +124,6 @@ public:
     void print(QTextStream &out);
     LibProc *getLibraryProc(const QString &nam);
     Signature *getLibSignature(const QString &name);
-    void rereadLibSignatures();
     Instruction *getStmtAtLex(Module *cluster, unsigned int begin, unsigned int end);
     platform getFrontEndId();
 
@@ -186,7 +180,7 @@ public:
 
     bool processProc(ADDRESS addr, UserProc *proc) { // Decode a proc
         QTextStream os(stderr); // rtl output target
-        return pFE->processProc(addr, proc, os);
+        return DefaultFrontend->processProc(addr, proc, os);
     }
     void readSymbolFile(const QString &fname);
     size_t getImageSize() { return pLoaderIface->getImageSize(); }
@@ -196,12 +190,12 @@ public:
     void printCallGraphXML();
 
     Module *getRootCluster() { return m_rootCluster; }
-    Module *findCluster(const QString &name) { return m_rootCluster->find(name); }
-    Module *getDefaultCluster(const QString &name);
-    bool clusterUsed(Module *c);
+    Module *findModule(const QString &name);
+    Module *getDefaultModule(const QString &name);
+    bool moduleUsed(Module *c);
 
     //! Add the given RTL to the front end's map from address to aldready-decoded-RTL
-    void addDecodedRtl(ADDRESS a, RTL *rtl) { pFE->addDecodedRtl(a, rtl); }
+    void addDecodedRtl(ADDRESS a, RTL *rtl) { DefaultFrontend->addDecodedRtl(a, rtl); }
 
     Exp *addReloc(Exp *e, ADDRESS lc);
 
@@ -212,8 +206,10 @@ public:
     // list of UserProcs for entry point(s)
     std::list<UserProc *> entryProcs;
 
-    const ModuleListType &  getFunctionList() const { return ModuleList; }
-    ModuleListType       &  getFunctionList()       { return ModuleList; }
+    Module *getOrInsertModule(const QString &name, const ModuleFactory &fact=DefaultModFactory(), FrontEnd *frontend=nullptr);
+
+    const ModuleListType &  getModuleList() const { return ModuleList; }
+    ModuleListType       &  getModuleList()       { return ModuleList; }
 
     iterator                begin()       { return ModuleList.begin(); }
     const_iterator          begin() const { return ModuleList.begin(); }
@@ -221,6 +217,8 @@ public:
     const_iterator          end  () const { return ModuleList.end();   }
     size_t                  size()  const { return ModuleList.size(); }
     bool                    empty() const { return ModuleList.empty(); }
+signals:
+    void rereadLibSignatures();
 
 protected:
     QObject *pLoaderPlugin; //!< Pointer to the instance returned by loader plugin
@@ -228,13 +226,13 @@ protected:
     BinaryData *pBinaryData = nullptr; //!< Stored BinaryData interface for faster access.
     SectionInterface *pSections = nullptr;
     SymbolTableInterface *pSymbols = nullptr;
-    FrontEnd *pFE; //!< Pointer to the FrontEnd object for the project
+    FrontEnd *DefaultFrontend; //!< Pointer to the FrontEnd object for the project
 
     /* Persistent state */
     QString m_name;            // name of the program
     QString m_path;            // its full path
-    std::list<Function *> m_procs; //!< list of procedures
-    PROGMAP m_procLabels;      //!< map from address to Proc*
+    //std::list<Function *> m_procs; //!< list of procedures
+    //PROGMAP m_procLabels;      //!< map from address to Proc*
     // FIXME: is a set of Globals the most appropriate data structure? Surely not.
     std::set<Global *> globals; //!< globals to print at code generation time
     DataIntervalMap globalMap;  //!< Map from address to DataInterval (has size, name, type)

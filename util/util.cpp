@@ -46,14 +46,15 @@ void escapeXMLChars(std::string &s) {
 // Turn things like newline, return, tab into \n, \r, \t etc
 // Note: assumes a C or C++ back end...
 QString escapeStr(const QString &inp) {
-    QMap<char,QString> replacements {
-        {'\n',"\\n"}, {'\t',"\\t"}, {'\v',"\\v"}, {'\b',"\\b"}, {'\r',"\\r"}, {'\f',"\\f"}, {'\a',"\\a"}
+    static QMap<char,QString> replacements {
+        {'\n',"\\n"}, {'\t',"\\t"}, {'\v',"\\v"}, {'\b',"\\b"}, {'\r',"\\r"}, {'\f',"\\f"}, {'\a',"\\a"},
+        {'"',"\\\""}
     };
 
     QString res;
     for( char c : inp.toLocal8Bit()) {
         if(isprint(c) && c!='\"') {
-            res += c;
+            res += QChar(c);
             continue;
         }
         if(replacements.contains(c)) {

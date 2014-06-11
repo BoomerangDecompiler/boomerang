@@ -473,11 +473,11 @@ PentiumFrontEnd *construct(Prog *prog, NJMCDecoder **decoder) {
   * \brief      PentiumFrontEnd constructor
   * \note          Seems to be necessary to put this here; forces the vtable
   *                    entries to point to this dynamic linked library
-  * \param      Same as the FrontEnd constructor
+  * \copydetails FrontEnd::FrontEnd
   * \returns           <N/A>
   ******************************************************************************/
-PentiumFrontEnd::PentiumFrontEnd(QObject *pBF, Prog *prog, BinaryFileFactory *pbff)
-    : FrontEnd(pBF, prog, pbff), idPF(-1) {
+PentiumFrontEnd::PentiumFrontEnd(QObject *p_BF, Prog *prog, BinaryFileFactory *bff)
+    : FrontEnd(p_BF, prog, bff), idPF(-1) {
     decoder = new PentiumDecoder(prog);
 }
 

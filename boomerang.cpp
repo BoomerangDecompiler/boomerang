@@ -265,7 +265,7 @@ int Boomerang::processCommand(QStringList &args) {
             return 1;
         }
         if (args.size() > 1) {
-            Module *cluster = prog->findCluster(args[1]);
+            Module *cluster = prog->findModule(args[1]);
             if (cluster == nullptr) {
                 err_stream << "cannot find cluster " << args[1] << "\n";
                 return 1;
@@ -297,7 +297,7 @@ int Boomerang::processCommand(QStringList &args) {
                 return 1;
             }
 
-            Module *cluster = prog->findCluster(args[3]);
+            Module *cluster = prog->findModule(args[3]);
             if (cluster == nullptr) {
                 err_stream << "cannot find cluster " << args[3] << "\n";
                 return 1;
@@ -309,13 +309,13 @@ int Boomerang::processCommand(QStringList &args) {
                 return 1;
             }
 
-            Module *cluster = prog->findCluster(args[2]);
+            Module *cluster = prog->findModule(args[2]);
             if (cluster == nullptr) {
                 err_stream << "cannot find cluster " << args[2] << "\n";
                 return 1;
             }
 
-            Module *parent = prog->findCluster(args[3]);
+            Module *parent = prog->findModule(args[3]);
             if (parent == nullptr) {
                 err_stream << "cannot find cluster " << args[3] << "\n";
                 return 1;
@@ -343,7 +343,7 @@ int Boomerang::processCommand(QStringList &args) {
                 return 1;
             }
 
-            Module *cluster = new Module(args[2],prog);
+            Module *cluster = new Module(args[2],prog,prog->getFrontEnd());
             if (cluster == nullptr) {
                 err_stream << "cannot create cluster " << args[2] << "\n";
                 return 1;
@@ -351,7 +351,7 @@ int Boomerang::processCommand(QStringList &args) {
 
             Module *parent = prog->getRootCluster();
             if (args.size() > 3) {
-                parent = prog->findCluster(args[3]);
+                parent = prog->findModule(args[3]);
                 if (cluster == nullptr) {
                     err_stream << "cannot find cluster " << args[3] << "\n";
                     return 1;
@@ -380,7 +380,7 @@ int Boomerang::processCommand(QStringList &args) {
                 return 1;
             }
 
-            Module *cluster = prog->findCluster(args[2]);
+            Module *cluster = prog->findModule(args[2]);
             if (cluster == nullptr) {
                 err_stream << "cannot find cluster " << args[2] << "\n";
                 return 1;
@@ -391,7 +391,7 @@ int Boomerang::processCommand(QStringList &args) {
                 return 1;
             }
 
-            if (prog->clusterUsed(cluster)) {
+            if (prog->moduleUsed(cluster)) {
                 err_stream << "cluster " << args[2] << " is not empty\n";
                 return 1;
             }
@@ -439,13 +439,13 @@ int Boomerang::processCommand(QStringList &args) {
                 return 1;
             }
 
-            Module *cluster = prog->findCluster(args[2]);
+            Module *cluster = prog->findModule(args[2]);
             if (cluster == nullptr) {
                 err_stream << "cannot find cluster " << args[2] << "\n";
                 return 1;
             }
 
-            Module *ncluster = prog->findCluster(args[3]);
+            Module *ncluster = prog->findModule(args[3]);
             if (ncluster == nullptr) {
                 err_stream << "cluster " << args[3] << " already exists\n";
                 return 1;
@@ -473,14 +473,20 @@ int Boomerang::processCommand(QStringList &args) {
             out_stream << "\tclusters:\n";
             prog->getRootCluster()->printTree(out_stream);
             out_stream << "\n\tlibprocs:\n";
-            PROGMAP::const_iterator it;
-            for (Function *p = prog->getFirstProc(it); p; p = prog->getNextProc(it))
-                if (p->isLib())
-                    out_stream << "\t\t" << p->getName() << "\n";
+            //TODO: print module name before function's ?
+            for(const Module *module : *prog) {
+                for(Function *func : *module) {
+                    if (func->isLib())
+                        out_stream << "\t\t" << func->getName() << "\n";
+                }
+            }
             out_stream << "\n\tuserprocs:\n";
-            for (Function *p = prog->getFirstProc(it); p; p = prog->getNextProc(it))
-                if (!p->isLib())
-                    out_stream << "\t\t" << p->getName() << "\n";
+            for(const Module *module : *prog) {
+                for(Function *func : *module) {
+                        if (!func->isLib())
+                            out_stream << "\t\t" << func->getName() << "\n";
+                }
+            }
             out_stream << "\n";
 
             return 0;
@@ -490,7 +496,7 @@ int Boomerang::processCommand(QStringList &args) {
                 return 1;
             }
 
-            Module *cluster = prog->findCluster(args[2]);
+            Module *cluster = prog->findModule(args[2]);
             if (cluster == nullptr) {
                 err_stream << "cannot find cluster " << args[2] << "\n";
                 return 1;
@@ -502,10 +508,9 @@ int Boomerang::processCommand(QStringList &args) {
             else
                 out_stream << "\troot cluster.\n";
             out_stream << "\tprocs:\n";
-            PROGMAP::const_iterator it;
-            for (Function *p = prog->getFirstProc(it); p; p = prog->getNextProc(it))
-                if (p->getParent() == cluster)
-                    out_stream << "\t\t" << p->getName() << "\n";
+            for(Function *f : *cluster ) {
+                out_stream << "\t\t" << f->getName() << "\n";
+            }
             out_stream << "\n";
 
             return 0;
@@ -627,12 +632,13 @@ void Boomerang::objcDecode(std::map<std::string, ObjcModule> &modules, Prog *pro
     Module *root = prog->getRootCluster();
     for (auto &modules_it : modules) {
         ObjcModule &mod = (modules_it).second;
-        Module *module = new Module(mod.name,prog);
+        Module *module = prog->getOrInsertModule(mod.name);
         root->addChild(module);
         LOG_VERBOSE(1) << "\tModule: " << mod.name << "\n";
+        ClassModFactory class_fact;
         for (auto &elem : mod.classes) {
             ObjcClass &c = (elem).second;
-            Class *cl = new Class(c.name,prog);
+            Module *cl = prog->getOrInsertModule(mod.name,class_fact);
             root->addChild(cl);
             LOG_VERBOSE(1) << "\t\tClass: " << c.name << "\n";
             for (auto &_it2 : c.methods) {
@@ -644,9 +650,7 @@ void Boomerang::objcDecode(std::map<std::string, ObjcModule> &modules, Prog *pro
                     assert(!"Name clash in objc processor ?");
                     continue;
                 }
-
-                Function *p = prog->newProc(method_name, m.addr);
-                p->setParent(cl);
+                Function *p = cl->getOrInsertFunction(method_name, m.addr);
                 p->setSignature(Signature::instantiate(prog->getFrontEndId(),CONV_C,method_name));
                 // TODO: decode types in m.types
                 LOG_VERBOSE(1) << "\t\t\tMethod: " << m.name << "\n";
@@ -714,7 +718,7 @@ Prog *Boomerang::loadAndDecode(const QString &fname, const char *pname) {
 
     Boomerang::get()->alertEndDecode();
 
-    q_cout << "found " << prog->getNumUserProcs() << " procs\n";
+    q_cout << "found " << prog->getNumProcs() << " procs\n";
 
     // GK: The analysis which was performed was not exactly very "analysing", and so it has been moved to
     // prog::finishDecode, UserProc::assignProcsToCalls and UserProc::finalSimplify
@@ -779,13 +783,15 @@ int Boomerang::decompile(const QString &fname, const char *pname) {
 
     if (printAST) {
         LOG_STREAM() << "printing AST...\n";
-        PROGMAP::const_iterator it;
-        for (Function *p = prog->getFirstProc(it); p; p = prog->getNextProc(it))
-            if (!p->isLib()) {
-                UserProc *u = (UserProc *)p;
-                u->getCFG()->compressCfg();
-                u->printAST();
+        for(const Module *module : *prog) {
+            for(Function *func : *module) {
+                if (!func->isLib()) {
+                    UserProc *u = (UserProc *)func;
+                    u->getCFG()->compressCfg();
+                    u->printAST();
+                }
             }
+        }
     }
     q_cout << "generating code...\n";
     prog->generateCode();

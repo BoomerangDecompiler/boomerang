@@ -123,12 +123,10 @@ void Function::eraseFromParent()
   * \param        sig - the Signature for this Proc
   *
   ******************************************************************************/
-Function::Function(ADDRESS uNative, Signature *sig,Prog *prg)
-    : prog(prg), signature(sig), address(uNative), m_firstCaller(nullptr) {
-    if (sig)
-        Parent = prg->getDefaultCluster(sig->getName());
-    else
-        Parent = prg->getRootCluster();
+Function::Function(ADDRESS uNative, Signature *sig, Module *mod)
+    : signature(sig), address(uNative), m_firstCaller(nullptr),Parent(mod) {
+    assert(mod);
+    prog = mod->getParent();
 }
 
 /***************************************************************************/ /**
@@ -365,6 +363,25 @@ void Function::printDetailsXML() {
             << "type=\"" << signature->getReturnType(i)->getCtype() << "\"/>\n";
     out << "</proc>\n";
 }
+void Function::removeFromParent() {
+    assert(Parent);
+    Parent->getFunctionList().remove(this);
+    Parent->setLocationMap(address,nullptr);
+}
+
+Function::Function()
+    : Visited(false), prog(nullptr), signature(nullptr), address(ADDRESS::g(0L)), m_firstCaller(nullptr),
+      m_firstCallerAddr(ADDRESS::g(0L)), Parent(nullptr) {
+
+}
+void Function::setParent(Module *c) {
+    if(c==Parent)
+        return;
+    removeFromParent();
+    Parent = c;
+    c->getFunctionList().push_back(this);
+    c->setLocationMap(address,this);
+}
 
 void UserProc::printDecodedXML() {
     if (!DUMP_XML)
@@ -481,8 +498,8 @@ Function *Function::getFirstCaller() {
   * \param        name - Name of procedure
   * \param        uNative - Native address of entry point of procedure
   ******************************************************************************/
-LibProc::LibProc(Prog *prog, const QString &name, ADDRESS uNative) : Function(uNative, nullptr,prog) {
-    Signature *sig = prog->getLibSignature(name);
+LibProc::LibProc(Module *mod, const QString &name, ADDRESS uNative) : Function(uNative, nullptr,mod) {
+    Signature *sig = mod->getLibSignature(name);
     signature = sig;
 }
 
@@ -515,7 +532,7 @@ UserProc::UserProc()
   * \param uNative - Native address of entry point of procedure
   *
   ******************************************************************************/
-UserProc::UserProc(Prog *prog, const QString &name, ADDRESS uNative)
+UserProc::UserProc(Module *prog, const QString &name, ADDRESS uNative)
     : // Not quite ready for the below fix:
       // Proc(prog, uNative, prog->getDefaultSignature(name.c_str())),
       Function(uNative, new Signature(name),prog),
@@ -2801,13 +2818,6 @@ bool UserProc::propagateStatements(bool &convert, int pass) {
     return change;
 } // propagateStatements
 
-/***************************************************************************/ /**
-  *
-  * \brief Middle decompile: All the decompilation from preservation up to
-  * but not including removing unused statements.
-  * \returns the cycle set from the recursive call to decompile()
-  *
-  ******************************************************************************/
 Instruction *UserProc::getStmtAtLex(unsigned int begin, unsigned int end) {
     StatementList stmts;
     getStatements(stmts);
@@ -5846,7 +5856,7 @@ void UserProc::dfa_analyze_scaled_array_ref(Instruction *s, Prog *prog) {
         Exp *t = rr->getSubExp1();            // idx*K1 + K2
         Exp *l = ((Binary *)t)->getSubExp1(); // idx*K1
         Exp *r = ((Binary *)t)->getSubExp2(); // K2
-        ADDRESS K2 = ((Const *)r)->getAddr();
+        ADDRESS K2 = ((Const *)r)->getAddr().native();
         Exp *idx = ((Binary *)l)->getSubExp1();
 
         // Replace with the array expression

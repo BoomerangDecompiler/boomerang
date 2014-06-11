@@ -91,7 +91,7 @@ class Type : public std::enable_shared_from_this<Type> {
     virtual ~Type();
     eType getId() const { return id; }
 
-    static void addNamedType(const char *name, SharedType type);
+    static void addNamedType(const QString &name, SharedType type);
     static SharedType getNamedType(const QString &name);
 
     // Return type for given temporary variable name

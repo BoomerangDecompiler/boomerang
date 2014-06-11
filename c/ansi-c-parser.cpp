@@ -598,7 +598,7 @@ int AnsiCParser::yyparse(platform plat, callconv cc) {
                      */
             yyvsp[-1].type_ident->ty = PointerType::get(yyvsp[-1].type_ident->ty);
         }
-        yyval.param = new Parameter(yyvsp[-1].type_ident->ty, yyvsp[-1].type_ident->nam.c_str());
+        yyval.param = new Parameter(yyvsp[-1].type_ident->ty, yyvsp[-1].type_ident->nam);
         if (yyvsp[0].bound) {
             switch (yyvsp[0].bound->kind) {
             case 0:
@@ -628,7 +628,7 @@ int AnsiCParser::yyparse(platform plat, callconv cc) {
         break;
     }
     case 30: {
-        Type::addNamedType(yyvsp[-1].type_ident->nam.c_str(), yyvsp[-1].type_ident->ty);
+        Type::addNamedType(yyvsp[-1].type_ident->nam, yyvsp[-1].type_ident->ty);
         break;
     }
     case 31: {
@@ -647,7 +647,7 @@ int AnsiCParser::yyparse(platform plat, callconv cc) {
         break;
     }
     case 32: {
-        Signature *sig = Signature::instantiate(plat, cc, yyvsp[-4].type_ident->nam.c_str());
+        Signature *sig = Signature::instantiate(plat, cc, yyvsp[-4].type_ident->nam);
         sig->addReturn(yyvsp[-4].type_ident->ty);
         for (auto &elem : *yyvsp[-2].param_list)
             if (elem->name() != "...")
@@ -657,14 +657,14 @@ int AnsiCParser::yyparse(platform plat, callconv cc) {
                 delete elem;
             }
         delete yyvsp[-2].param_list;
-        Type::addNamedType(yyvsp[-4].type_ident->nam.c_str(), FuncType::get(sig));
+        Type::addNamedType(yyvsp[-4].type_ident->nam, FuncType::get(sig));
 
         break;
     }
     case 33: {
         auto t = CompoundType::get();
         for (auto &elem : *yyvsp[-2].type_ident_list) {
-            t->addType((elem)->ty, (elem)->nam.c_str());
+            t->addType((elem)->ty, (elem)->nam);
         }
         char tmp[1024];
         sprintf(tmp, "struct %s", yyvsp[-4].str);
@@ -679,7 +679,7 @@ int AnsiCParser::yyparse(platform plat, callconv cc) {
     }
     case 35: {
         yyvsp[-6].sig->setPreferedReturn(yyvsp[-4].type_ident->ty);
-        yyvsp[-6].sig->setPreferedName(yyvsp[-4].type_ident->nam.c_str());
+        yyvsp[-6].sig->setPreferedName(yyvsp[-4].type_ident->nam);
         for (std::list<int>::iterator it = yyvsp[-2].num_list->begin(); it != yyvsp[-2].num_list->end(); it++)
             yyvsp[-6].sig->addPreferedParameter(*it - 1);
         delete yyvsp[-2].num_list;
@@ -689,7 +689,7 @@ int AnsiCParser::yyparse(platform plat, callconv cc) {
     }
     case 36: {
         /* Use the passed calling convention (cc) */
-        Signature *sig = Signature::instantiate(plat, cc, yyvsp[-3].type_ident->nam.c_str());
+        Signature *sig = Signature::instantiate(plat, cc, yyvsp[-3].type_ident->nam);
         sig->addReturn(yyvsp[-3].type_ident->ty);
         for (auto &elem : *yyvsp[-1].param_list)
             if (elem->name() != "...")
@@ -704,7 +704,7 @@ int AnsiCParser::yyparse(platform plat, callconv cc) {
         break;
     }
     case 37: {
-        Signature *sig = Signature::instantiate(plat, yyvsp[-4].cc, yyvsp[-3].type_ident->nam.c_str());
+        Signature *sig = Signature::instantiate(plat, yyvsp[-4].cc, yyvsp[-3].type_ident->nam);
         sig->addReturn(yyvsp[-3].type_ident->ty);
         for (auto &elem : *yyvsp[-1].param_list)
             if (elem->name() != "...")
@@ -719,7 +719,7 @@ int AnsiCParser::yyparse(platform plat, callconv cc) {
         break;
     }
     case 38: {
-        CustomSignature *sig = new CustomSignature(yyvsp[-3].type_ident->nam.c_str());
+        CustomSignature *sig = new CustomSignature(yyvsp[-3].type_ident->nam);
         if (yyvsp[-4].custom_options->exp)
             sig->addReturn(yyvsp[-3].type_ident->ty, yyvsp[-4].custom_options->exp);
         if (yyvsp[-4].custom_options->sp)
@@ -926,7 +926,7 @@ int AnsiCParser::yyparse(platform plat, callconv cc) {
     case 76: {
         auto t = CompoundType::get();
         for (auto &elem : *yyvsp[-1].type_ident_list) {
-            t->addType((elem)->ty, (elem)->nam.c_str());
+            t->addType((elem)->ty, elem->nam);
         }
         yyval.type = t;
 

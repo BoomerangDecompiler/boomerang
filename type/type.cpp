@@ -801,7 +801,7 @@ void Type::dump() {
 std::map<QString, SharedType > Type::namedTypes;
 
 // named type accessors
-void Type::addNamedType(const char *name, SharedType type) {
+void Type::addNamedType(const QString &name, SharedType type) {
     if (namedTypes.find(name) != namedTypes.end()) {
         if (!(*type == *namedTypes[name])) {
             // LOG << "addNamedType: name " << name << " type " << type->getCtype() << " != " <<
@@ -1404,7 +1404,7 @@ void DataIntervalMap::checkMatching(DataIntervalEntry *pdie, ADDRESS addr, const
                                     bool /*forced*/) {
     if (pdie->second.type->isCompatibleWith(*ty)) {
         // Just merge the types and exit
-        bool ch;
+        bool ch=false;
         pdie->second.type = pdie->second.type->meetWith(ty, ch);
         return;
     }
