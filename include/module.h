@@ -110,8 +110,8 @@ protected:
     std::shared_ptr<CompoundType> Type;
 
 public:
-    Class(const QString &name,Prog *_parent,FrontEnd *fe) : Module(name,_parent,fe) {
-        Type = CompoundType::get();
+    Class(const QString &name,Prog *_parent,FrontEnd *fe) :
+        Module(name,_parent,fe), Type(CompoundType::get()){
     }
 
     // A Class tends to be aggregated into the parent Module,

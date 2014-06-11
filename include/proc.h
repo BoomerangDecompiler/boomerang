@@ -298,8 +298,7 @@ public:
     void recursionGroupAnalysis(ProcList *path, int indent);
 
     void typeAnalysis();
-    void rangeAnalysis();
-    void logSuspectMemoryDefs();
+
     // Split the set of cycle-associated procs into individual subcycles.
     // void        findSubCycles(CycleList& path, CycleSet& cs, CycleSetSet& sset);
 
@@ -375,7 +374,7 @@ public:
 #endif
     void propagateToCollector();
     void clearUses();
-    void clearRanges();
+
     // int        findMaxDepth();                    ///< Find max memory nesting depth.
 
     void fromSSAform();

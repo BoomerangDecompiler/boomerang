@@ -75,7 +75,7 @@ void TableEntry::setRTL(RTL &r) { rtl = r; }
   * \param other - the object to copy
   * \returns a reference to this object
   ******************************************************************************/
-const TableEntry &TableEntry::operator=(const TableEntry &other) {
+TableEntry &TableEntry::operator=(const TableEntry &other) {
     params = other.params;
     rtl = other.rtl;
     return *this;
@@ -448,7 +448,6 @@ class transPost {
   ******************************************************************************/
 
 void RTLInstDict::transformPostVars(std::list<Instruction *> &rts, bool optimise) {
-    std::list<Instruction *>::iterator rt;
 
     // Map from var (could be any expression really) to details
     std::map<Exp *, transPost, lessExpStar> vars;
@@ -468,7 +467,7 @@ void RTLInstDict::transformPostVars(std::list<Instruction *> &rts, bool optimise
     for (Instruction *rt : rts) {
         // ss appears to be a list of expressions to be searched
         // It is either the LHS and RHS of an assignment, or it's the parameters of a flag call
-        Exp *ss;
+        Exp *ss = nullptr;
         if (rt->isAssign()) {
             Assign *rt_asgn((Assign *)rt);
             Exp *lhs = rt_asgn->getLeft();
@@ -508,8 +507,7 @@ void RTLInstDict::transformPostVars(std::list<Instruction *> &rts, bool optimise
         } else if (rt->isFlagAssgn()) {
             // An opFlagCall is assumed to be a Binary with a string and an opList of parameters
             ss = (Binary *)((Binary *)rt)->getSubExp2();
-        } else
-            ss = nullptr;
+        }
 
         /* Look for usages of post-variables' referents
          * Trickier than you'd think, as we need to make sure to skip over the post-variables themselves. ie match

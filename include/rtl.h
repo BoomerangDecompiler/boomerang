@@ -91,7 +91,7 @@ class TableEntry {
     TableEntry();
     TableEntry(std::list<QString> &p, RTL &rtl);
 
-    const TableEntry &operator=(const TableEntry &other);
+    TableEntry &operator=(const TableEntry &other);
 
     void setParam(std::list<QString> &p);
     void setRTL(RTL &rtl);

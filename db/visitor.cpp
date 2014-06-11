@@ -410,7 +410,7 @@ bool UsedLocsVisitor::visit(PhiAssign *s, bool &override) {
         // Also note that it's possible for uu->e to be nullptr. Suppose variable a can be assigned to along in-edges
         // 0, 1, and 3; inserting the phi parameter at index 3 will cause a null entry at 2
         assert(v.second.e);
-        Exp *temp = RefExp::get(v.second.e, (Instruction *)v.second.def());
+        RefExp *temp = RefExp::get(v.second.e, (Instruction *)v.second.def());
         temp->accept(ev);
     }
 

@@ -1640,38 +1640,41 @@ Exp *Unary::match(Exp *pattern) {
 }
 Exp *Binary::match(Exp *pattern) {
     assert(subExp1 && subExp2);
-    if (op == pattern->getOper()) {
-        Exp *b_lhs = subExp1->match(pattern->getSubExp1());
-        if (b_lhs == nullptr)
-            return nullptr;
-        Exp *b_rhs = subExp2->match(pattern->getSubExp2());
-        if (b_rhs == nullptr)
-            return nullptr;
-        if (b_lhs->getOper() == opNil)
-            return b_rhs;
-        if (b_rhs->getOper() == opNil)
-            return b_lhs;
-#if 0
-        LOG << "got lhs list " << b_lhs << " and rhs list " << b_rhs << "\n";
-#endif
-        Exp *result = new Terminal(opNil);
-        // TODO: verify that adding (l &&) is not violating unwritten validity assertion
-        for (Exp *l = b_lhs; l && (l->getOper() != opNil); l = l->getSubExp2())
-            for (Exp *r = b_rhs; r && r->getOper() != opNil; r = r->getSubExp2())
-                if ((*l->getSubExp1()->getSubExp1() == *r->getSubExp1()->getSubExp1()) &&
-                    !(*l->getSubExp1()->getSubExp2() == *r->getSubExp1()->getSubExp2())) {
-#if 0
-                    LOG << "disagreement in match: " << l->getSubExp1()->getSubExp2() << " != " <<
-                           r->getSubExp1()->getSubExp2() << "\n";
-#endif
-                    return nullptr; // must be agreement between LHS and RHS
-                } else
-                    result = Binary::get(opList, l->getSubExp1()->clone(), result);
-        for (Exp *r = b_rhs; r->getOper() != opNil; r = r->getSubExp2())
-            result = Binary::get(opList, r->getSubExp1()->clone(), result);
-        return result;
+    if (op != pattern->getOper())
+        return Exp::match(pattern);
+    Exp *b_lhs = subExp1->match(pattern->getSubExp1());
+    if (b_lhs == nullptr)
+        return nullptr;
+    Exp *b_rhs = subExp2->match(pattern->getSubExp2());
+    if (b_rhs == nullptr)
+        return nullptr;
+    if (b_lhs->getOper() == opNil) {
+        delete b_lhs;
+        return b_rhs;
     }
-    return Exp::match(pattern);
+    if (b_rhs->getOper() == opNil) {
+        delete b_rhs;
+        return b_lhs;
+    }
+#if 0
+    LOG << "got lhs list " << b_lhs << " and rhs list " << b_rhs << "\n";
+#endif
+    Exp *result = new Terminal(opNil);
+    // TODO: verify that adding (l &&) is not violating unwritten validity assertion
+    for (Exp *l = b_lhs; l && (l->getOper() != opNil); l = l->getSubExp2())
+        for (Exp *r = b_rhs; r && r->getOper() != opNil; r = r->getSubExp2())
+            if ((*l->getSubExp1()->getSubExp1() == *r->getSubExp1()->getSubExp1()) &&
+                !(*l->getSubExp1()->getSubExp2() == *r->getSubExp1()->getSubExp2())) {
+#if 0
+                LOG << "disagreement in match: " << l->getSubExp1()->getSubExp2() << " != " <<
+                       r->getSubExp1()->getSubExp2() << "\n";
+#endif
+                return nullptr; // must be agreement between LHS and RHS
+            } else
+                result = Binary::get(opList, l->getSubExp1()->clone(), result);
+    for (Exp *r = b_rhs; r->getOper() != opNil; r = r->getSubExp2())
+        result = Binary::get(opList, r->getSubExp1()->clone(), result);
+    return result;
 }
 Exp *RefExp::match(Exp *pattern) {
     Exp *r = Unary::match(pattern);
@@ -3679,7 +3682,6 @@ Exp *Binary::genConstraints(Exp *result) {
             // Also constrain the result
             res = Binary::get(opAnd, res, Binary::get(opEquals, result->clone(), ftv));
         return res;
-        break;
     }
 
     case opBitAnd:
@@ -3697,7 +3699,6 @@ Exp *Binary::genConstraints(Exp *result) {
             // Also constrain the result
             res = Binary::get(opAnd, res, Binary::get(opEquals, result->clone(), itv));
         return res;
-        break;
     }
 
     case opPlus: {
@@ -3733,8 +3734,7 @@ Exp *Binary::genConstraints(Exp *result) {
 
         if (res)
             return res->simplify();
-        else
-            return new Terminal(opFalse);
+        return new Terminal(opFalse);
     }
 
     case opMinus: {
@@ -3769,8 +3769,7 @@ Exp *Binary::genConstraints(Exp *result) {
 
         if (res)
             return res->simplify();
-        else
-            return new Terminal(opFalse);
+        return new Terminal(opFalse);
     }
 
     case opSize: {

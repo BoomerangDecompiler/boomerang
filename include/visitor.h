@@ -49,6 +49,7 @@ class ReturnStatement;
 class GotoStatement;
 class BranchStatement;
 class ImpRefStatement;
+class JunctionStatement;
 
 class RTL;
 class UserProc;
@@ -225,6 +226,7 @@ class StmtVisitor {
     virtual bool visit(CallStatement * /*stmt*/) { return true; }
     virtual bool visit(ReturnStatement * /*stmt*/) { return true; }
     virtual bool visit(ImpRefStatement * /*stmt*/) { return true; }
+    virtual bool visit(JunctionStatement * /*stmt*/) { return true; }
 };
 
 class StmtConscriptSetter : public StmtVisitor {
