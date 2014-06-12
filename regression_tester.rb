@@ -14,15 +14,14 @@ TEST_INPUT=File.join(TESTS_DIR,"inputs")
 
 print("Regression tester 0.0.1\n")
 FAILED_COMMANDLINES=""
-def perform_test(exepath,machine,test,args)
-        output_path=File.join(TESTS_DIR,"outputs",machine)
-        test_file = File.join(TEST_INPUT,machine,test)
-        log_name = File.join(output_path,test)
+def perform_test(exepath,test_file,output_path,args)
+        log_name = output_path
         joined_args = args.join(' ')
         file_size = File.size?(test_file)
-        cmdline = "-P #{Dir.pwd} -o #{output_path} #{joined_args} #{test_file}\n"
+	upper_dir = output_path.split(File::SEPARATOR)[0..-2].join(File::SEPARATOR)
+        cmdline = "-P #{Dir.pwd} -o #{upper_dir} #{joined_args} #{test_file}\n"
         start_t = Time.now
-        result = `#{exepath} -P #{Dir.pwd} -o #{output_path} #{joined_args} #{test_file} >#{log_name+".stdout"} 2>#{log_name+".stderr"}`
+        result = `#{exepath} -P #{Dir.pwd} -o #{upper_dir} #{joined_args} #{test_file} >#{log_name+".stdout"} 2>#{log_name+".stderr"}`
         end_t = Time.now
         STDOUT << ($?.success?() ? '.' : '!')
         return [$?.success?,cmdline,test_file,file_size.to_f()/(end_t-start_t)]
@@ -35,40 +34,53 @@ if(File.exists?(File.join(TESTS_DIR,"outputs")))
 end
 #exit(1)
 #sh -c "./boomerang -o functest $4 test/$1/$2 2>/dev/null >/dev/null"
-crashes = {}
-times = {}
-Dir.open(TEST_INPUT).each() {|f|
+$crashes = {}
+$times = {}
+
+def test_all_inputs_in(base_dir,dirname="")
+  STDOUT << "\nTesting in #{File.join(base_dir,"inputs",dirname)}:" if dirname!=""
+  current_dir = File.join(base_dir,dirname)
+  input_dir = File.join(base_dir,"inputs",dirname)
+  output_dir = File.join(base_dir,"outputs",dirname)
+  machine = ""
+  if(dirname!="")
+    machine = dirname.split(File::SEPARATOR)[1] # assumption here is that inputs are always in /inputs/<machine_name>
+  end
+  Dir.open(input_dir).each() {|f|
     next if f=="." or f==".."
-    machine_dir = File.join(TEST_INPUT,f)
-    next if not File::directory?(machine_dir)
-    machine = f
-    Dir.open(machine_dir).each() {|test|
-      next if test=="." or test==".."
-      test_path = File.join(machine_dir,test)
-      FileUtils.mkdir_p(File.join(TESTS_DIR,"outputs",machine,test))
+    source = File.join(base_dir,"inputs",dirname,f)
+    if File::directory?(source)
+      test_all_inputs_in(base_dir,File.join(dirname,f)) # recurse
+    else
+      test_path = source
+      result_path = File.join(base_dir,"outputs",dirname,f)
+      FileUtils.mkdir_p(result_path)
       test_res = nil
-      if(!test.index("hello.exe").nil?)
-        p "skipping hello.exe - it causes memory exhaustion"
-        test_res = [false,"skipped windows/hello.exe"]
+      if(!f.index("hello.exe").nil?)
+	p "skipping hello.exe - it causes memory exhaustion"
+	test_res = [false,"skipped windows/hello.exe"]
       else
-        test_res = perform_test(ARGV[0],machine,test,ARGV[1..-1])
-        FileUtils.mv(File.join(TESTS_DIR,"outputs",machine,"log"),File.join(TESTS_DIR,"outputs",machine,test+".log"))
+	test_res = perform_test(ARGV[0],source,result_path,ARGV[1..-1])
+	FileUtils.mv(File.join(output_dir,"log"),File.join(output_dir,f+".log"))
       end
       if( not test_res[0])
-        crashes[machine] ||= []
-        crashes[machine] << [test,test_res[1]]
+      $crashes[machine] ||= []
+      $crashes[machine] << [source,test_res[1]]
       else
-        times[test_res[2]] = test_res[3] if test_res[3]!=nil
+      $times[test_res[2]] = test_res[3] if test_res[3]!=nil
       end
-    }
+    end
+  }
+end
+
+test_all_inputs_in(TESTS_DIR)
+$crashes.each {|machine,crash_list|
+        puts "\nEncountered #{crash_list.size} program failures for #{machine}"
+        crash_list.each {|test|
+                puts("Decompiler failed on #{test[0]} - #{test[1]}\n")
+        }
 }
-crashes.each {|machine,crash_list|
-        puts "\nEncountered #{crash_list.size} program failures for #{machine}\n"        
-	crash_list.each {|test|
-		puts("Decompiler failed on #{machine}/#{test[0]} - #{test[1]}\n")
-	}
-}
-sorted_times = times.to_a.sort {|a,b| a[1] <=> b[1] }
+sorted_times = $times.to_a.sort {|a,b| a[1] <=> b[1] }
 puts "Slowest run in bytes/sec #{sorted_times.first[0]} - #{sorted_times.first[1]} bytes/sec"
 #Dir.open(TESTS_DIR+"/inputs").each() {|f|
 #        next if f=="." or f==".."
