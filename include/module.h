@@ -8,11 +8,11 @@
  */
 
 /***************************************************************************/ /**
-  * \file       cluster.h
-  *    Definition of the classes that describe a Cluster, a grouping
+  * \file       module.h
+  *    Definition of the classes that describe a Module, a grouping
   * of functions irrespective of relationship.  For example, the
-  * Object Oriented Programming concept of a Class is a Cluster.
-  * Clusters can contain other Clusters to form a tree.
+  * Object Oriented Programming concept of a Class is a Module.
+  * Modules can contain other Modules to form a tree.
   ******************************************************************************/
 
 #ifndef __MODULE_H__

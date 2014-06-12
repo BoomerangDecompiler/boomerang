@@ -183,8 +183,9 @@ bool Cfg::checkEntryBB() {
   * Returns nullptr if not successful, or if there already exists a completed BB at this address (this can happen
   * with certain kinds of forward branches).
   *
-  * \param   pRtls list of pointers to RTLs to initialise the BB with bbType: the type of the BB (e.g. TWOWAY)
-  * \param   iNumOutEdges number of out edges this BB will eventually have
+  * \param pRtls list of pointers to RTLs to initialise the BB with bbType: the type of the BB (e.g. TWOWAY)
+  * \param bbType - type of new BasicBlock
+  * \param iNumOutEdges number of out edges this BB will eventually have
   * \returns Pointer to the newly created BB, or 0 if there is already an incomplete BB with the same address
   ******************************************************************************/
 BasicBlock *Cfg::newBB(std::list<RTL *> *pRtls, BBTYPE bbType, uint32_t iNumOutEdges) {

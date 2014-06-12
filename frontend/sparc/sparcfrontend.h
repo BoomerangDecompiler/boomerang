@@ -39,7 +39,7 @@ class SparcFrontEnd : public FrontEnd {
          * instruction)
          * Returns true on a good decode
          */
-    virtual bool processProc(ADDRESS uAddr, UserProc *pProc, QTextStream &os, bool frag = false, bool spec = false);
+    virtual bool processProc(ADDRESS uAddr, UserProc *proc, QTextStream &os, bool fragment = false, bool spec = false);
 
     virtual std::vector<Exp *> &getDefaultParams();
     virtual std::vector<Exp *> &getDefaultReturns();

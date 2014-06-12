@@ -109,7 +109,7 @@ typedef std::list<BasicBlock *>::iterator BB_IT;
 typedef std::list<BasicBlock *>::const_iterator BBC_IT;
 
 /***************************************************************************/ /**
-  * BasicBlock class. <more comments>
+  * BasicBlock class.
   ******************************************************************************/
 class BasicBlock {
     /*

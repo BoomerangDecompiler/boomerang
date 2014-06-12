@@ -104,7 +104,7 @@ bool PentiumFrontEnd::isSetX(Instruction *s) {
 /***************************************************************************/ /**
   * \fn      isAssignFromTern
   * \brief      Return true if the given Statement is an expression whose RHS is a ?: ternary
-  * \param      e - Ptr to the given Statement
+  * \param      s - Ptr to the given Statement
   * \returns           True if it is
   ******************************************************************************/
 bool PentiumFrontEnd::isAssignFromTern(Instruction *s) {
@@ -119,10 +119,11 @@ bool PentiumFrontEnd::isAssignFromTern(Instruction *s) {
   * \brief        Finds a subexpression within this expression of the form
   *                      r[ int x] where min <= x <= max, and replaces it with
   *                      r[ int y] where y = min + (x - min + delta & mask)
-  * \param        e: Expression to modify
-  *                    min, max: minimum and maximum register numbers before any change is considered
-  *                    delta: amount to bump up the register number by
-  *                    mask: see above
+  * \param e - Expression to modify
+  * \param min - minimum register numbers before any change is considered
+  * \param max - maximum register numbers before any change is considered
+  * \param delta: amount to bump up the register number by
+  * \param mask: see above
   * APPLICATION:        Used to "flatten" stack floating point arithmetic (e.g. Pentium floating point code)
   *                      If registers are not replaced "all at once" like this, there can be subtle errors from
   *                      re-replacing already replaced registers
@@ -148,11 +149,14 @@ void PentiumFrontEnd::bumpRegisterAll(Exp *e, int min, int max, int delta, int m
 /***************************************************************************/ /**
   * \fn      PentiumFrontEnd::processProc
   * \brief      Process a procedure, given a native (source machine) address.
-  * \param  address - the address at which the procedure starts
+  * This is the main function for decoding a procedure.
+  * This overrides the base class processProc to do source machine specific things (but often calls the base
+  * class to do most of the work. Sparc is an exception)
+  * \param  uAddr - the address at which the procedure starts
   * \param  pProc - the procedure object
   * \param  os - output stream for rtl output
   * \param  frag - true if decoding only a fragment of the proc
-  * \param  spec - true if a speculative decode
+  * \param  spec - true if this is a speculative decode (so give up on any invalid instruction)
   * \returns           True if successful decode
   ******************************************************************************/
 bool PentiumFrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream &os, bool frag /* = false */,
@@ -283,12 +287,14 @@ void PentiumFrontEnd::processFloatCode(Cfg *pCfg) {
 /***************************************************************************/ /**
   * \brief Process a basic block, and all its successors, for floating point code.
   *  Remove FPUSH/FPOP, instead decrementing or incrementing respectively the tos value to be used from
-  *  here down. Note: tos has to be a parameter, not a global, to get the right value at any point in
+  *  here down.
+  * \note tos has to be a parameter, not a global, to get the right value at any point in
   *  the call tree
   * \param pBB: pointer to the current BB
   * \param tos reference to the value of the "top of stack" pointer currently. Starts at zero, and is
   *        decremented to 7 with the first load, so r[39] should be used first, then r[38] etc. However, it is
   *        reset to 0 for calls, so that if a function returns a float, then it will always appear in r[32]
+  * \param pCfg passed to processFloatCode
   *
   ******************************************************************************/
 void PentiumFrontEnd::processFloatCode(BasicBlock *pBB, int &tos, Cfg *pCfg) {
@@ -403,7 +409,7 @@ void PentiumFrontEnd::emitSet(std::list<RTL *> *BB_rtls, std::list<RTL *>::itera
   * \note This needs to be handled in a resourcable way.
   * \param dest - the native destination of this call
   * \param addr - the native address of this call instruction
-  *        lrtl - pointer to a list of RTL pointers for this BB
+  * \param lrtl - pointer to a list of RTL pointers for this BB
   * \returns true if a helper function is converted; false otherwise
   ******************************************************************************/
 bool PentiumFrontEnd::helperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL *> *lrtl) {
@@ -452,22 +458,6 @@ bool PentiumFrontEnd::helperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL *> *l
     }
     return false;
 }
-
-    /***************************************************************************/ /**
-      * \fn      construct
-      * \brief      Construct a new instance of PentiumFrontEnd
-      * \param      Same as the FrontEnd constructor, except decoder is **
-      *
-      ******************************************************************************/
-#ifdef DYNAMIC
-extern "C" {
-PentiumFrontEnd *construct(Prog *prog, NJMCDecoder **decoder) {
-    PentiumFrontEnd *fe = new PentiumFrontEnd(prog);
-    *decoder = fe->getDecoder();
-    return fe;
-}
-}
-#endif
 
 /***************************************************************************/ /**
   * \brief      PentiumFrontEnd constructor

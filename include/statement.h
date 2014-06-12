@@ -930,7 +930,7 @@ public:
 
     // Set and return the Exp representing the switch variable
     SWITCH_INFO *getSwitchInfo();
-    void setSwitchInfo(SWITCH_INFO *pss);
+    void setSwitchInfo(SWITCH_INFO *psi);
 
     virtual void print(QTextStream &os, bool html = false) const;
 

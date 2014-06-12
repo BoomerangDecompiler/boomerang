@@ -59,8 +59,6 @@ public:
     Exp *dis_RegImm(ADDRESS pc);
     Exp *dis_RegLhs(unsigned r);
 
-
-    void unused(int);
     RTL *createBranchRtl(ADDRESS pc, std::list<Instruction *> *stmts, const char *name);
     bool isFuncPrologue(ADDRESS hostPC);
     DWord getDword(ADDRESS lc);

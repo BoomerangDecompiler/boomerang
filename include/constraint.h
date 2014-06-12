@@ -111,7 +111,7 @@ class Constraints {
     void alphaSubst();
 
     //! Solve the constraints. If they can be solved, return true and put
-    //! a copy of the solution (in the form of a set of T<location> = <type>)
+    //! a copy of the solution (in the form of a set of T\<location\> = \<type\>)
     //! into solns
     bool solve(std::list<ConstraintMap> &solns);
 

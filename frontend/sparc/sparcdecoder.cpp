@@ -61,16 +61,8 @@ void DEBUG_STMTS(DecodeResult &result) {
 }
 
 /***************************************************************************/ /**
-  * \fn       unused
-  * \brief       A dummy function to suppress "unused local variable" messages
-  * \param       x: integer variable to be "used"
-  *
-  ******************************************************************************/
-void SparcDecoder::unused(int /*x*/) {}
-
-/***************************************************************************/ /**
-  * \fn       createBranchRtl
-  * \brief       Create an RTL for a Bx instruction
+  * \fn    SparcDecoder::createBranchRtl
+  * \brief Create an RTL for a Bx instruction
   * \param pc - the location counter
   * \param stmts - ptr to list of Statement pointers
   * \param name - instruction name (e.g. "BNE,a", or "BPNE")
@@ -336,7 +328,7 @@ DecodeResult &SparcDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta) {
                     nextPC = MATCH_p + 4;
                     //#line 629 "frontend/machine/sparc/decoder.m"
 
-                    unused(n);
+                    Q_UNUSED(n);
                     stmts = nullptr;
                     result.valid = false;
                 } break;
@@ -362,7 +354,7 @@ DecodeResult &SparcDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta) {
                         //#line 400 "frontend/machine/sparc/decoder.m"
                         /* Can see bpa xcc,tgt in 32 bit code */
 
-                        unused(cc01); // Does not matter because is unconditional
+                        Q_UNUSED(cc01); // Does not matter because is unconditional
 
                         GotoStatement *jump = new GotoStatement;
                         result.type = SD;
@@ -1797,7 +1789,7 @@ DecodeResult &SparcDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta) {
 
             // What does this mean?
 
-            unused(n);
+            Q_UNUSED(n);
             result.valid = false;
             stmts = nullptr;
         }
@@ -1850,7 +1842,7 @@ DecodeResult &SparcDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta) {
             result.rtl->appendStmt(jump);
             result.type = DD;
             jump->setDest(dis_Eaddr(addr));
-            unused(rd);
+            Q_UNUSED(rd);
             SHOW_ASM("JMPL ")
 
             DEBUG_STMTS(result);
@@ -1941,7 +1933,7 @@ DecodeResult &SparcDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta) {
             nextPC = MATCH_p + 4;
             //#line 497 "frontend/machine/sparc/decoder.m"
 
-            unused(asi); // Note: this could be serious!
+            Q_UNUSED(asi); // Note: this could be serious!
 
             stmts = instantiate(pc, name, DIS_RD, DIS_ADDR);
         }
@@ -1956,7 +1948,7 @@ DecodeResult &SparcDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta) {
             nextPC = MATCH_p + 4;
             //#line 511 "frontend/machine/sparc/decoder.m"
 
-            unused(asi); // Note: this could be serious!
+            Q_UNUSED(asi); // Note: this could be serious!
 
             stmts = instantiate(pc, name, DIS_RDR, DIS_ADDR);
         }
@@ -2140,11 +2132,11 @@ Exp *SparcDecoder::dis_RegImm(ADDRESS pc) {
   * \brief      Converts a dynamic address to a Exp* expression.
   *             E.g. %o7 --> r[ 15 ]
   * \param        pc - the instruction stream address of the dynamic address
-  * \param        ignore - redundant parameter on SPARC
+  * \param        size - redundant parameter on SPARC
   * \returns    the Exp* representation of the given address
   ******************************************************************************/
-Exp *SparcDecoder::dis_Eaddr(ADDRESS pc, int ignore) {
-    Q_UNUSED(ignore);
+Exp *SparcDecoder::dis_Eaddr(ADDRESS pc, int size) {
+    Q_UNUSED(size);
     Exp *expr;
     //#line 715 "frontend/machine/sparc/decoder.m"
     {
@@ -2219,9 +2211,9 @@ bool SparcDecoder::isRestore(ADDRESS hostPC) {
         unsigned a = (MATCH_w_32_0 >> 14 & 0x1f) /* rs1 at 0 */;
         ADDRESS b = addressToPC(MATCH_p);
         unsigned c = (MATCH_w_32_0 >> 25 & 0x1f) /* rd at 0 */;
-        unused(a); // Suppress warning messages
+        Q_UNUSED(a); // Suppress warning messages
         (void)b;
-        unused(c);
+        Q_UNUSED(c);
         return true;
     } /*opt-block*/ /*opt-block+*/
     return false;

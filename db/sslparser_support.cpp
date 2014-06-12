@@ -22,9 +22,10 @@
 class SSLScanner;
 
 /***************************************************************************/ /**
-  * \fn        SSLParser::SSLParser
-  * \brief        Constructor for an existing stream.
-  * \param        The stream, whether or not to debug
+  * \fn    SSLParser::SSLParser
+  * \brief Constructor for an existing stream.
+  * \param in - the input stream
+  * \param trace - whether or not to debug
   *
   ******************************************************************************/
 SSLParser::SSLParser(std::istream &in, bool trace) : sslFile("input"), bFloat(false) {
@@ -36,10 +37,10 @@ SSLParser::SSLParser(std::istream &in, bool trace) : sslFile("input"), bFloat(fa
 }
 
 /***************************************************************************/ /**
-  * \fn        SSLParser::parseExp
-  * \brief        Parses an assignment from a string.
-  * \param        the string
-  * \returns             an Assignment or nullptr.
+  * \fn     SSLParser::parseExp
+  * \brief  Parses an assignment from a string.
+  * \param  str - the string
+  * \returns an Assignment or nullptr.
   ******************************************************************************/
 Instruction *SSLParser::parseExp(const char *str) {
     std::istringstream ss(str);
@@ -81,13 +82,13 @@ int SSLParser::yylex() {
 }
 
 /***************************************************************************/ /**
-  * \fn        SSLParser::strToOper
-  * \brief        Convert a string operator (e.g. "+f") to an OPER (opFPlus)
-  * \note            An attempt is made to make this moderately efficient, else we might have a skip chain of string
-  *                    comparisons
-  * \note            This is a member of SSLParser so we can call yyyerror and have line number etc printed out
-  * \param        s: pointer to the operator C string
-  * \returns             An OPER, or -1 if not found (enum opWild)
+  * \fn      SSLParser::strToOper
+  * \brief   Convert a string operator (e.g. "+f") to an OPER (opFPlus)
+  * \note    An attempt is made to make this moderately efficient, else we might have a skip chain of string
+  *          comparisons
+  * \note    This is a member of SSLParser so we can call yyyerror and have line number etc printed out
+  * \param   s - pointer to the operator C string
+  * \returns An OPER, or -1 if not found (enum opWild)
   ******************************************************************************/
 OPER SSLParser::strToOper(const QString &s) {
     static QMap<QString,OPER> opMap {
@@ -252,10 +253,10 @@ Exp *listExpToExp(std::list<Exp *> *le) {
 
 /***************************************************************************/ /**
   *
-  * \brief        Convert a list of formal parameters in the form of a STL list of strings into one expression
-  *                      (using opList)
-  * \param        ls - the list of strings
-  * \returns             The opList expression
+  * \brief   Convert a list of formal parameters in the form of a STL list of strings into one expression
+  *          (using opList)
+  * \param   ls - the list of strings
+  * \returns The opList expression
   ******************************************************************************/
 Exp *listStrToExp(std::list<QString> *ls) {
     Exp *e;

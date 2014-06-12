@@ -528,7 +528,6 @@ UserProc::UserProc()
   *
   * \brief        Constructor with name, native address.
   * \param mod - Module that contains this Function
-  * \param prog - Program to which this function belongs
   * \param name - Name of procedure
   * \param uNative - Native address of entry point of procedure
   *

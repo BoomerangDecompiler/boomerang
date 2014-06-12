@@ -1029,18 +1029,6 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream &/*os*/, 
 
 /***************************************************************************/ /**
   *
-  * \brief    Fetch the smallest (nop-sized) instruction, in an endianness independent manner
-  * \note        Frequently overridden
-  * \param    addr - host address to getch from
-  * \returns        An integer with the instruction in it
-  ******************************************************************************/
-// int FrontEnd::getInst(int addr)
-//{
-//    return (int)(*(unsigned char*)addr);
-//}
-
-/***************************************************************************/ /**
-  *
   * \brief      Decode the RTL at the given address
   * \param      address - native address of the instruction
   * \param      delta - difference between host and native addresses

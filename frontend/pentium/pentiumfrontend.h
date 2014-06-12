@@ -21,14 +21,6 @@ class PentiumFrontEnd : public FrontEnd {
 
     virtual platform getFrontEndId() { return PLAT_PENTIUM; }
 
-    /*
-         * processProc. This is the main function for decoding a procedure.
-         * This overrides the base class processProc to do source machine specific things (but often calls the base
-     * class
-         * to do most of the work. Sparc is an exception)
-         * If spec is true, this is a speculative decode (so give up on any invalid instruction)
-         * Returns true on a good decode
-         */
     virtual bool processProc(ADDRESS uAddr, UserProc *pProc, QTextStream &os, bool frag = false, bool spec = false);
 
     virtual std::vector<Exp *> &getDefaultParams();
@@ -68,7 +60,7 @@ class PentiumFrontEnd : public FrontEnd {
 
     bool isStoreFsw(Instruction *s);
     bool isDecAh(RTL *r);
-    bool isSetX(Instruction *e);
+    bool isSetX(Instruction *s);
     bool isAssignFromTern(Instruction *s);
     void bumpRegisterAll(Exp *e, int min, int max, int delta, int mask);
     unsigned fetch4(unsigned char *ptr);
