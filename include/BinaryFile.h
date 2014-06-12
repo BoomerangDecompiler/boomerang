@@ -32,7 +32,6 @@
 #include <string>
 #include <vector>
 #include <cstdio> // For FILE
-// Note: #including windows.h causes problems later in the objective C code.
 
 // Given a pointer p, returns the 16 bits (halfword) in the two bytes
 // starting at p.

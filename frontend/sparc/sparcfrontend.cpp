@@ -1414,7 +1414,7 @@ bool SparcFrontEnd::helperFuncLong(ADDRESS dest, ADDRESS addr, std::list<RTL *> 
   * \brief  SparcFrontEnd constructor
   * \copydoc FrontEnd::FrontEnd(QObject *,Prog *,BinaryFileFactory *)
   ******************************************************************************/
-SparcFrontEnd::SparcFrontEnd(QObject *pBF, Prog *prog, BinaryFileFactory *pbff) : FrontEnd(pBF, prog, pbff) {
+SparcFrontEnd::SparcFrontEnd(QObject *p_BF, Prog *prog, BinaryFileFactory *bff) : FrontEnd(p_BF, prog, bff) {
     decoder = new SparcDecoder(prog);
     nop_inst.numBytes = 0; // So won't disturb coverage
     nop_inst.type = NOP;

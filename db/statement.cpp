@@ -948,12 +948,12 @@ bool BranchStatement::search(const Exp &search, Exp *&result) {
 }
 
 /***************************************************************************/ /**
-  * \fn        BranchStatement::searchAndReplace
-  * \brief        Replace all instances of search with replace.
-  * \param        search - a location to search for
-  *                    replace - the expression with which to replace it
-  *                    cc - ignored
-  * \returns             True if any change
+  * \fn    BranchStatement::searchAndReplace
+  * \brief Replace all instances of search with replace.
+  * \param search - a location to search for
+  * \param replace - the expression with which to replace it
+  * \param cc - ignored
+  * \returns True if any change
   ******************************************************************************/
 bool BranchStatement::searchAndReplace(const Exp &search, Exp *replace, bool cc) {
     GotoStatement::searchAndReplace(search, replace, cc);

@@ -485,10 +485,10 @@ static SWord GccCallMain[] = {0x3F04,             // movew d4, -(a7)
 /***************************************************************************/ /**
   *
   * \brief      Try to find a pattern
-  * \param    start - pointer to code to start searching
-  *                patt - pattern to look for
-  *                pattSize - size of the pattern (in SWords)
-  *                max - max number of SWords to search
+  * \param start - pointer to code to start searching
+  * \param patt - pattern to look for
+  * \param pattSize - size of the pattern (in SWords)
+  * \param max - max number of SWords to search
   * \returns       0 if no match; pointer to start of match if found
   ******************************************************************************/
 SWord *findPattern(SWord *start, const SWord *patt, int pattSize, int max) {
