@@ -124,7 +124,7 @@ void Cfg::clear() {
   * \param other - rhs
   *
   ******************************************************************************/
-const Cfg &Cfg::operator=(const Cfg &other) {
+Cfg &Cfg::operator=(const Cfg &other) {
     m_listBB = other.m_listBB;
     m_mapBB = other.m_mapBB;
     WellFormed = other.WellFormed;
@@ -716,8 +716,8 @@ bool Cfg::wellFormCfg() const {
             for (BasicBlock *elem_inedge : elem->InEdges) {
                 auto oo = std::find(elem_inedge->OutEdges.begin(),elem_inedge->OutEdges.end(),elem);
                 if (oo == elem_inedge->OutEdges.end()) {
-                    q_cerr << "WellFormCfg: No out edge to BB at " << (elem)->getLowAddr()
-                              << " from predecessor BB at " << (*ii)->getLowAddr() << '\n';
+                    q_cerr << "WellFormCfg: No out edge to BB at " << elem->getLowAddr()
+                              << " from predecessor BB at " << elem_inedge->getLowAddr() << '\n';
                     WellFormed = false; // At least one problem
                 }
             }
@@ -780,19 +780,19 @@ void Cfg::completeMerge(BasicBlock *pb1, BasicBlock *pb2, bool bDelete) {
     // Now we replace pb2's in edges by pb1's inedges
     pb2->InEdges = pb1->InEdges;
 
-    if (bDelete) {
-        // Finally, we delete pb1 from the BB list. Note: remove(pb1) should also work, but it would involve member
-        // comparison (not implemented), and also would attempt to remove ALL elements of the list with this value (so
-        // it has to search the whole list, instead of an average of half the list as we have here).
-        for (BB_IT it = m_listBB.begin(); it != m_listBB.end(); it++) {
-            if (*it == pb1) {
-                m_listBB.erase(it);
-                if((*it)->getLowAddr()!=ADDRESS::g(0)) {
-                    m_mapBB.erase((*it)->getLowAddr());
-                }
-                break;
-            }
+    if (!bDelete)
+        return;
+    // Finally, we delete pb1 from the BB list. Note: remove(pb1) should also work, but it would involve member
+    // comparison (not implemented), and also would attempt to remove ALL elements of the list with this value (so
+    // it has to search the whole list, instead of an average of half the list as we have here).
+    for (BB_IT it = m_listBB.begin(); it != m_listBB.end(); it++) {
+        if (*it != pb1)
+            continue;
+        if((*it)->getLowAddr()!=ADDRESS::g(0)) {
+            m_mapBB.erase((*it)->getLowAddr());
         }
+        m_listBB.erase(it);
+        break;
     }
 }
 
@@ -957,13 +957,13 @@ void Cfg::unTraverse() {
 
 /***************************************************************************/ /**
   *
-  * \brief        Given a well-formed cfg graph, a partial ordering is established between the nodes. The ordering is
-  *                    based on the final visit to each node during a depth first traversal such that if node n1 was
-  *                    visited for the last time before node n2 was visited for the last time, n1 will be less than n2.
-  *                    The return value indicates if all nodes where ordered. This will not be the case for incomplete
-  *CFGs
-  *                    (e.g. switch table not completely recognised) or where there are nodes unreachable from the entry
-  *                    node.
+  * \brief        Given a well-formed cfg graph, a partial ordering is established between the nodes.
+  *
+  *   The ordering is based on the final visit to each node during a depth first traversal such that if node n1 was
+  * visited for the last time before node n2 was visited for the last time, n1 will be less than n2.
+  * The return value indicates if all nodes where ordered. This will not be the case for incomplete CFGs
+  * (e.g. switch table not completely recognised) or where there are nodes unreachable from the entry
+  * node.
   * \returns            all nodes where ordered
   ******************************************************************************/
 bool Cfg::establishDFTOrder() {
@@ -1630,20 +1630,6 @@ void Cfg::structure() {
  */
 
 /***************************************************************************/ /**
-  * \brief Add Junction statements
-  *******************************************************************************/
-void Cfg::addJunctionStatements() {
-    for (BasicBlock *pbb : m_listBB) {
-        if (pbb->getNumInEdges() > 1 && (pbb->getFirstStmt() == nullptr || !pbb->getFirstStmt()->isJunction())) {
-            assert(pbb->getRTLs());
-            JunctionStatement *j = new JunctionStatement();
-            j->setBB(pbb);
-            pbb->getRTLs()->front()->push_front(j);
-        }
-    }
-}
-
-/***************************************************************************/ /**
   * \brief Remove Junction statements
   *******************************************************************************/
 void Cfg::removeJunctionStatements() {
@@ -1778,7 +1764,7 @@ void updateWorkListRev(BasicBlock *currBB, std::list<BasicBlock *> &workList, st
 
 static int progress = 0;
 void Cfg::findInterferences(ConnectionGraph &cg) {
-    if (m_listBB.size() == 0)
+    if (m_listBB.empty())
         return;
 
     std::list<BasicBlock *> workList; // List of BBs still to be processed
@@ -1786,7 +1772,6 @@ void Cfg::findInterferences(ConnectionGraph &cg) {
     std::set<BasicBlock *> workSet;
     appendBBs(workList, workSet);
 
-    bool change;
     int count = 0;
     while (workList.size() && count < 100000) {
         count++; // prevent infinite loop
@@ -1799,7 +1784,7 @@ void Cfg::findInterferences(ConnectionGraph &cg) {
         workList.erase(--workList.end());
         workSet.erase(currBB);
         // Calculate live locations and interferences
-        change = currBB->calcLiveness(cg, myProc);
+        bool change = currBB->calcLiveness(cg, myProc);
         if (!change)
             continue;
         if (DEBUG_LIVENESS) {

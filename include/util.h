@@ -8,7 +8,9 @@
 
 #include <QString>
 #include <string>
-
+struct Printable {
+    virtual QString toString() const = 0;
+};
 // was a workaround
 #define STR(x) (char *)(x.str().c_str())
 

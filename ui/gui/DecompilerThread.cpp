@@ -274,10 +274,10 @@ void Decompiler::alertDecompileDebugPoint(UserProc *p, const char *description) 
 
 void Decompiler::stopWaiting() { Waiting = false; }
 
-const QString &Decompiler::getSigFile(const QString &name) {
+QString Decompiler::getSigFile(const QString &name) {
     Function *p = prog->findProc(name);
-    if (p == NULL || !p->isLib() || p->getSignature() == NULL)
-        return NULL;
+    if (p == nullptr || !p->isLib() || p->getSignature() == nullptr)
+        return "";
     return p->getSignature()->getSigFile();
 }
 

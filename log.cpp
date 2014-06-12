@@ -29,28 +29,8 @@ Log &Log::operator<<(const SharedType &ty) {
     *this << st.str().c_str();
     return *this;
 }
-
-Log &Log::operator<<(const Range *r) {
-    QString tgt;
-    QTextStream st(&tgt);
-    r->print(st);
-    *this << tgt;
-    return *this;
-}
-
-Log &Log::operator<<(const Range &r) {
-    QString tgt;
-    QTextStream st(&tgt);
-    r.print(st);
-    *this << tgt;
-    return *this;
-}
-
-Log &Log::operator<<(const RangeMap &r) {
-    QString tgt;
-    QTextStream st(&tgt);
-    r.print(st);
-    *this << tgt;
+Log &Log::operator<<(const Printable &p) {
+    *this << p.toString();
     return *this;
 }
 

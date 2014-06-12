@@ -14,7 +14,7 @@ ${GC_LIBS}
 ${DEBUG_LIB}
 boom_base frontend db type boomerang_DSLs codegen util BinaryFile
 boom_base frontend db codegen
-pthread
+pthread boomerang_passes
 )
 set(TESTS
     LoaderTest

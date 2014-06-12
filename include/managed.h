@@ -180,47 +180,6 @@ class LocationSet {
     void addSubscript(Instruction *def /* , Cfg* cfg */); // Add a subscript to all elements
 };                                                      // class LocationSet
 
-class Range {
-  protected:
-    int stride, lowerBound, upperBound;
-    Exp *base;
-
-  public:
-    Range();
-    Range(int stride, int lowerBound, int upperBound, Exp *base);
-
-    Exp *getBase() { return base; }
-    int getStride() { return stride; }
-    int getLowerBound() { return lowerBound; }
-    int getUpperBound() { return upperBound; }
-    void unionWith(Range &r);
-    void widenWith(Range &r);
-    void print(QTextStream &os) const;
-    bool operator==(Range &other);
-
-    static const int MAX = 2147483647;
-    static const int MIN = -2147483647;
-};
-
-class RangeMap {
-  protected:
-    std::map<Exp *, Range, lessExpStar> ranges;
-
-  public:
-    RangeMap() {}
-    void addRange(Exp *loc, Range &r) { ranges[loc] = r; }
-    bool hasRange(Exp *loc) { return ranges.find(loc) != ranges.end(); }
-    Range &getRange(Exp *loc);
-    void unionwith(RangeMap &other);
-    void widenwith(RangeMap &other);
-    void print(QTextStream &os) const;
-    Exp *substInto(Exp *e, std::set<Exp *, lessExpStar> *only = nullptr);
-    void killAllMemOfs();
-    void clear() { ranges.clear(); }
-    bool isSubset(RangeMap &other);
-    bool empty() const { return ranges.empty(); }
-};
-
 /// A class to store connections in a graph, e.g. for interferences of types or live ranges, or the phi_unite relation
 /// that phi statements imply
 /// If a is connected to b, then b is automatically connected to a

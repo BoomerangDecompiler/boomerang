@@ -276,9 +276,8 @@ void BasicBlock::print(QTextStream &os, bool html) {
     if (ListOfRTLs) { // Can be zero if e.g. INVALID
         if (html)
             os << "<table>\n";
-        std::list<RTL *>::iterator rit;
-        for (rit = ListOfRTLs->begin(); rit != ListOfRTLs->end(); rit++) {
-            (*rit)->print(os, html);
+        for(RTL * r : *ListOfRTLs) {
+            r->print(os, html);
         }
         if (html)
             os << "</table>\n";
@@ -326,7 +325,7 @@ bool BasicBlock::isBackEdge(size_t inEdge) const {
   * \returns            the lowest real address associated with this BB
   ******************************************************************************/
 ADDRESS BasicBlock::getLowAddr() const {
-    if (ListOfRTLs == nullptr || ListOfRTLs->size() == 0)
+    if (ListOfRTLs == nullptr || ListOfRTLs->empty() )
         return ADDRESS::g(0L);
     ADDRESS a = ListOfRTLs->front()->getAddress();
 
@@ -583,7 +582,7 @@ bool BasicBlock::lessLastDFT(BasicBlock *bb1, BasicBlock *bb2) { return bb1->DFT
 ADDRESS BasicBlock::getCallDest() {
     if (NodeType != BBTYPE::CALL)
         return NO_ADDRESS;
-    if (ListOfRTLs->size() == 0)
+    if (ListOfRTLs->empty())
         return NO_ADDRESS;
     RTL *lastRtl = ListOfRTLs->back();
     for (auto rit = lastRtl->rbegin(); rit != lastRtl->rend(); rit++) {
@@ -1545,10 +1544,10 @@ bool BasicBlock::calcLiveness(ConnectionGraph &ig, UserProc *myProc) {
     // For each RTL in this BB
     std::list<RTL *>::reverse_iterator rit;
     if (ListOfRTLs) // this can be nullptr
-        for (rit = ListOfRTLs->rbegin(); rit != ListOfRTLs->rend(); rit++) {
+        for (rit = ListOfRTLs->rbegin(); rit != ListOfRTLs->rend(); ++rit) {
             std::list<Instruction *>::reverse_iterator sit;
             // For each statement this RTL
-            for (sit = (*rit)->rbegin(); sit != (*rit)->rend(); sit++) {
+            for (sit = (*rit)->rbegin(); sit != (*rit)->rend(); ++sit) {
                 Instruction *s = *sit;
                 LocationSet defs;
                 s->getDefinitions(defs);

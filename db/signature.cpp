@@ -383,11 +383,13 @@ Exp *CallingConvention::Win32TcSignature::getArgumentExp(int n) {
     if (n < (int)params.size())
         return Signature::getArgumentExp(n);
     Exp *esp = Location::regOf(28);
-    if (params.size() != 0 && *params[0]->getExp() == *esp)
+    if (!params.empty() && *params[0]->getExp() == *esp)
         n--;
-    if (n == 0)
+    if (n == 0) {
+        delete esp;
         // It's the first parameter, register ecx
         return Location::regOf(25);
+    }
     // Else, it is m[esp+4n)]
     Exp *e = Location::memOf(Binary::get(opPlus, esp, new Const(n * 4)));
     return e;

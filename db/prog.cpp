@@ -1152,7 +1152,6 @@ bool Prog::removeUnusedReturns() {
     // Define a workset for the procedures who have to have their returns checked
     // This will be all user procs, except those undecoded (-sf says just trust the given signature)
     std::set<UserProc *> removeRetSet;
-    std::list<Function *>::iterator pp;
     bool change = false;
     for(Module *module : ModuleList) {
         for (Function *pp : *module) {
@@ -1230,15 +1229,15 @@ void Prog::globalTypeAnalysis() {
     if (VERBOSE || DEBUG_TA)
         LOG << "### end type analysis ###\n";
 }
-
+#include "passes/RangeAnalysis.h"
 void Prog::rangeAnalysis() {
     for(Module *module : ModuleList) {
+        RangeAnalysis ra;
         for (Function *pp : *module) {
             UserProc *proc = (UserProc *)pp;
             if (proc->isLib() || !proc->isDecoded())
                 continue;
-            proc->rangeAnalysis();
-            proc->logSuspectMemoryDefs();
+            ra.runOnFunction(*proc);
         }
     }
 }
@@ -1250,7 +1249,7 @@ void Prog::printCallGraph() {
     int fd2 = lockFileWrite(qPrintable(fname2));
     QFile file1(fname1);
     QFile file2(fname2);
-    if( !(file1.open(QFile::WriteOnly) && file1.open(QFile::WriteOnly)) ) {
+    if( !(file1.open(QFile::WriteOnly) && file2.open(QFile::WriteOnly)) ) {
         LOG_STREAM() << "Cannot open output files for callgraph output";
         return;
     }
@@ -1356,7 +1355,7 @@ void Prog::printSymbolsToFile() {
 void Prog::printCallGraphXML() {
     if (!Boomerang::get()->dumpXML)
         return;
-    std::list<Function *>::iterator it;
+
     for(Module *m : ModuleList) {
         for (Function *it : *m)
             it->clearVisited();
@@ -1367,7 +1366,7 @@ void Prog::printCallGraphXML() {
     QTextStream f(&CallGraphFile);
     f << "<prog name=\"" << getName() << "\">\n";
     f << "     <callgraph>\n";
-    std::list<UserProc *>::iterator pp;
+
     for (UserProc *up : entryProcs)
         up->printCallGraphXML(f, 2);
     for(Module *m : ModuleList) {
@@ -1461,6 +1460,7 @@ void Global::print(QTextStream &os, Prog *prog) {
     Exp *init = getInitialValue(prog);
     os << type << " " << nam << " at " << uaddr << " initial value "
        << (init ? init->prints() : "<none>");
+    delete init;
 }
 Exp *Prog::readNativeAs(ADDRESS uaddr, SharedType type) {
     Exp *e = nullptr;
@@ -1545,29 +1545,23 @@ Exp *Prog::readNativeAs(ADDRESS uaddr, SharedType type) {
             size = type->asSize()->getSize();
         switch (size) {
         case 8:
-            e = new Const(readNative1(uaddr));
-            break;
+            return new Const(readNative1(uaddr));
         case 16:
             // Note: must respect endianness
-            e = new Const(readNative2(uaddr));
-            break;
+            return new Const(readNative2(uaddr));
         case 32:
-            e = new Const(readNative4(uaddr));
-            break;
+            return new Const(readNative4(uaddr));
         case 64:
-            e = new Const(readNative8(uaddr));
-            break;
+            return new Const(readNative8(uaddr));
         }
     }
-    if (type->resolvesToFloat()) {
-        switch (type->asFloat()->getSize()) {
-        case 32:
-            e = new Const(readNativeFloat4(uaddr));
-            break;
-        case 64:
-            e = new Const(readNativeFloat8(uaddr));
-            break;
-        }
+    if (!type->resolvesToFloat())
+        return e;
+    switch (type->asFloat()->getSize()) {
+    case 32:
+        return new Const(readNativeFloat4(uaddr));
+    case 64:
+        return new Const(readNativeFloat8(uaddr));
     }
     return e;
 }

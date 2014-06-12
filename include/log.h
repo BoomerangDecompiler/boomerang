@@ -10,11 +10,9 @@ class Instruction;
 class Exp;
 class LocationSet;
 class RTL;
-class Range;
-class RangeMap;
 class Type;
 struct ADDRESS;
-
+class Printable;
 typedef std::shared_ptr<Type> SharedType;
 class Log {
 public:
@@ -23,10 +21,8 @@ public:
     virtual Log &operator<<(const Instruction *s);
     virtual Log &operator<<(const Exp *e);
     virtual Log &operator<<(const SharedType &ty);
+    virtual Log &operator<<(const Printable &ty);
     virtual Log &operator<<(const RTL *r);
-    virtual Log &operator<<(const Range *r);
-    virtual Log &operator<<(const Range &r);
-    virtual Log &operator<<(const RangeMap &r);
     virtual Log &operator<<(int i);
     virtual Log &operator<<(size_t i);
     virtual Log &operator<<(char c);

@@ -29,7 +29,7 @@ class Decompiler : public QObject, public Watcher {
     virtual void alertUpdateSignature(Function *p) override;
 
     bool getRtlForProc(const QString &name, QString &rtl);
-    const QString &getSigFile(const QString &name);
+    QString getSigFile(const QString &name);
     QString getClusterFile(const QString &name);
     void renameProc(const QString &oldName, const QString &newName);
     void rereadLibSignatures();

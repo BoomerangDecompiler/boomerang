@@ -316,10 +316,9 @@ class LoaderCommon : public SectionInterface {
     }
     //! Find the end of a section, given an address in the section
     SectionInfo *GetSectionInfoByAddr(ADDRESS uEntry) const override {
-        PSectionInfo pSect;
         assert(uEntry==uEntry.native());
         for (int i = 0; i < m_iNumSections; i++) {
-            pSect = &m_pSections[i];
+            PSectionInfo pSect(&m_pSections[i]);
             if ((uEntry >= pSect->uNativeAddr) && (uEntry < pSect->uNativeAddr + pSect->uSectionSize)) {
                 // We have the right section
                 return pSect;

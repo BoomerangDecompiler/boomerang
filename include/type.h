@@ -77,6 +77,7 @@ struct ComplexTypeComp {
 typedef std::list<ComplexTypeComp> ComplexTypeCompList;
 class Type;
 typedef std::shared_ptr<Type> SharedType;
+typedef std::shared_ptr<const Type> SharedConstType;
 
 class Type : public std::enable_shared_from_this<Type> {
   protected:
@@ -121,6 +122,8 @@ class Type : public std::enable_shared_from_this<Type> {
 
     template <class T>
     std::shared_ptr<T> as();
+    template <class T>
+    std::shared_ptr<const T> as() const;
 
     // These replace type casts
     std::shared_ptr<VoidType> asVoid();
@@ -331,7 +334,7 @@ class IntegerType : public Type {
     // Set absolute signedness
     void setSigned(int sg) { signedness = sg; }
     // Get the signedness
-    int getSignedness() { return signedness; }
+    int getSignedness() const { return signedness; }
 
     // Get the C type as a string. If full, output comments re the lack of sign information (in IntegerTypes).
     virtual QString getCtype(bool final = false) const;
@@ -459,6 +462,11 @@ class PointerType : public Type {
   protected:
     friend class XMLProgParser;
 }; // class PointerType
+
+// we actually want unbounded arrays to still work correctly when
+// computing aliases.. as such, we give them a very large bound
+// and hope that no-one tries to alias beyond them
+#define NO_BOUND 9999999
 
 class ArrayType : public Type {
   private:
@@ -600,7 +608,7 @@ class CompoundType : public Type {
 // The union type represents the union of any number of any other types
 struct UnionElement {
     SharedType type;
-    std::string name;
+    QString name;
 };
 class UnionType : public Type {
   private:
@@ -613,7 +621,7 @@ class UnionType : public Type {
     virtual ~UnionType();
     virtual bool isUnion() const { return true; }
     static std::shared_ptr<UnionType> get() { return std::make_shared<UnionType>();}
-    void addType(SharedType n, const char *str);
+    void addType(SharedType n, const QString &str);
     size_t getNumTypes() const { return li.size(); }
     bool findType(SharedType ty); // Return true if ty is already in the union
     // Type        *getType(int n) { assert(n < getNumTypes()); return types[n]; }
@@ -765,7 +773,9 @@ class DataIntervalMap {
 };
 
 // Not part of the Type class, but logically belongs with it:
-QTextStream &operator<<(QTextStream &os, const SharedType t); // Print the Type pointed to by t
+
+QTextStream &operator<<(QTextStream &os, const SharedConstType &t); // Print the Type pointed to by t
+QTextStream &operator<<(QTextStream &os, const Type &t); // Print the Type pointed to by t
 
 
 template <class T>
@@ -774,6 +784,15 @@ std::shared_ptr<T> Type::as() {
     if (isNamed())
         ty = std::static_pointer_cast<NamedType>(ty)->resolvesTo();
     auto res = std::dynamic_pointer_cast<T>(ty);
+    assert(res);
+    return res;
+}
+template <class T>
+std::shared_ptr<const T> Type::as() const {
+    SharedConstType ty = shared_from_this();
+    if (isNamed())
+        ty = std::static_pointer_cast<const NamedType>(ty)->resolvesTo();
+    auto res = std::dynamic_pointer_cast<const T>(ty);
     assert(res);
     return res;
 }

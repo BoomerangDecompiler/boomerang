@@ -582,7 +582,7 @@ SyntaxNode *UserProc::getAST() {
     SyntaxNode *best = init;
     int best_score = init->getScore();
     int count = 0;
-    while (ASTs.size()) {
+    while (!ASTs.empty()) {
         if (best_score < numBBs * 2) {
             LOG << "exit early: " << best_score << "\n";
             break;
@@ -619,7 +619,7 @@ SyntaxNode *UserProc::getAST() {
     }
 
     // clean up memory
-    while (ASTs.size()) {
+    while (!ASTs.empty()) {
         SyntaxNode *top = ASTs.top();
         ASTs.pop();
         if (top != best)
@@ -725,7 +725,7 @@ void UserProc::generateCode(HLLCode *hll) {
 
     // Local variables; print everything in the locals map
     std::map<QString, SharedType >::iterator last = locals.end();
-    if (locals.size())
+    if (!locals.empty())
         last--;
     for (std::map<QString, SharedType >::iterator it = locals.begin(); it != locals.end(); it++) {
         SharedType locType = it->second;
@@ -1178,7 +1178,7 @@ ProcSet *UserProc::decompile(ProcList *path, int &indent) {
     }
 
     // if child is empty, i.e. no child involved in recursion
-    if (child->size() == 0) {
+    if (child->empty()) {
         Boomerang::get()->alertDecompiling(this);
         alignStream(LOG_STREAM(1),indent) << "decompiling " << getName() << "\n";
         initialiseDecompile(); // Sort the CFG, number statements, etc
@@ -1190,7 +1190,7 @@ ProcSet *UserProc::decompile(ProcList *path, int &indent) {
             // We've just come back out of decompile(), so we've lost the current proc from the path.
             path->push_back(this);
     }
-    if (child->size() == 0) {
+    if (child->empty()) {
         remUnusedStmtEtc(); // Do the whole works
         setStatus(PROC_FINAL);
         Boomerang::get()->alertEndDecompile(this);
@@ -1214,8 +1214,12 @@ ProcSet *UserProc::decompile(ProcList *path, int &indent) {
 
     // Remove last element (= this) from path
     // The if should not be neccesary, but nestedswitch needs it
-    if (path->size())
-        path->erase(--path->end());
+    if (!path->empty()) {
+        assert(std::find(path->begin(),path->end(),this)!=path->end());
+        if(path->back()!=this)
+            qDebug() << "Last UserProc in UserProc::decompile/path is not this!";
+        path->remove(this);
+    }
     else
         LOG << "WARNING: UserProc::decompile: empty path when trying to remove last proc\n";
 
@@ -2070,7 +2074,7 @@ void UserProc::removeSpAssignsIfPossible() {
     // we can safely remove all assignments to sp, this will make the output
     // more readable for human eyes.
 
-    Exp *sp = Location::regOf(signature->getStackRegister(prog));
+    std::unique_ptr<Exp> sp(Location::regOf(signature->getStackRegister(prog)));
     bool foundone = false;
 
     StatementList stmts;
@@ -3892,7 +3896,7 @@ void UserProc::conTypeAnalysis() {
 
     // Just use the first solution, if there is one
     Prog *prog = getProg();
-    if (solns.size()) {
+    if (!solns.empty()) {
         ConstraintMap &cm = *solns.begin();
         for (cc = cm.begin(); cc != cm.end(); cc++) {
             // Ick. A workaround for now (see test/pentium/sumarray-O4)
@@ -4552,20 +4556,20 @@ void UserProc::fixCallAndPhiRefs() {
         if (!s->isPhi())
             continue;
         PhiAssign *ps = (PhiAssign *)s;
-        RefExp *r = RefExp::get(ps->getLeft(), ps);
+        RefExp r(ps->getLeft(), ps);
         for (PhiAssign::iterator pi = ps->begin(); pi != ps->end();) {
             const PhiInfo &p(pi->second);
             assert(p.e);
             Instruction *def = (Instruction *)p.def();
-            Exp *current = RefExp::get(p.e, def);
-            if (*current == *r) {   // Will we ever see this?
+            RefExp current(p.e, def);
+            if (current == r) {   // Will we ever see this?
                 pi = ps->erase(pi); // Erase this phi parameter
                 continue;
             }
             // Chase the definition
             if (def && def->isAssign()) {
                 Exp *rhs = ((Assign *)def)->getRight();
-                if (*rhs == *r) {       // Check if RHS is a single reference to ps
+                if (*rhs == r) {       // Check if RHS is a single reference to ps
                     pi = ps->erase(pi); // Yes, erase this phi parameter
                     continue;
                 }
@@ -4788,8 +4792,8 @@ bool UserProc::isLocalOrParamPattern(Exp *e) {
     if (!signature->isPromoted())
         return false; // Prevent an assert failure if using -E
     int sp = signature->getStackRegister();
-    Exp *initSp = RefExp::get(Location::regOf(sp), nullptr); // sp{-}
-    if (*addr == *initSp)
+    RefExp initSp(Location::regOf(sp), nullptr); // sp{-}
+    if (*addr == initSp)
         return true; // Accept m[sp{-}]
     if (addr->getArity() != 2)
         return false; // Require sp +/- K
@@ -4797,7 +4801,7 @@ bool UserProc::isLocalOrParamPattern(Exp *e) {
     if (op != opPlus && op != opMinus)
         return false;
     Exp *left = ((Binary *)addr)->getSubExp1();
-    if (!(*left == *initSp))
+    if (!(*left == initSp))
         return false;
     Exp *right = ((Binary *)addr)->getSubExp2();
     return right->isIntConst();
@@ -5323,111 +5327,6 @@ void UserProc::typeAnalysis() {
     }
 
     printXML();
-}
-
-void UserProc::clearRanges() {
-    StatementList stmts;
-    getStatements(stmts);
-    StatementList::iterator it;
-    for (it = stmts.begin(); it != stmts.end(); it++)
-        (*it)->clearRanges();
-}
-
-/***************************************************************************/ /**
-  *
-  * \brief Range analysis (for this procedure).
-  *
-  ******************************************************************************/
-void UserProc::rangeAnalysis() {
-    LOG_STREAM() << "performing range analysis on " << getName() << "\n";
-
-    // this helps
-    cfg->sortByAddress();
-
-    cfg->addJunctionStatements();
-    cfg->establishDFTOrder();
-
-    clearRanges();
-
-    debugPrintAll("Before performing range analysis");
-
-    std::list<Instruction *> execution_paths;
-    std::list<Instruction *> junctions;
-
-    assert(cfg->getEntryBB());
-    assert(cfg->getEntryBB()->getFirstStmt());
-    execution_paths.push_back(cfg->getEntryBB()->getFirstStmt());
-
-    int watchdog = 0;
-
-    while (execution_paths.size()) {
-        while (execution_paths.size()) {
-            Instruction *stmt = execution_paths.front();
-            execution_paths.pop_front();
-            if (stmt == nullptr)
-                continue; // ??
-            if (stmt->isJunction())
-                junctions.push_back(stmt);
-            else
-                stmt->rangeAnalysis(execution_paths);
-        }
-        if (watchdog > 45)
-            LOG << "processing execution paths resulted in " << (int)junctions.size() << " junctions to process\n";
-        while (junctions.size()) {
-            Instruction *junction = junctions.front();
-            junctions.pop_front();
-            if (watchdog > 45)
-                LOG << "processing junction " << junction << "\n";
-            assert(junction->isJunction());
-            junction->rangeAnalysis(execution_paths);
-        }
-
-        watchdog++;
-        if (watchdog > 10) {
-            LOG << "  watchdog " << watchdog << "\n";
-            if (watchdog > 45) {
-                LOG << (int)execution_paths.size() << " execution paths remaining.\n";
-                LOG_SEPARATE(getName()) << "=== After range analysis watchdog " << watchdog << " for " << getName()
-                                        << " ===\n" << *this << "=== end after range analysis watchdog " << watchdog
-                                        << " for " << getName() << " ===\n\n";
-            }
-        }
-        if (watchdog > 50) {
-            LOG << "  watchdog expired\n";
-            break;
-        }
-    }
-    debugPrintAll("After range analysis");
-
-    cfg->removeJunctionStatements();
-}
-
-/***************************************************************************/ /**
-  *
-  * \brief Detect and log possible buffer overflows
-  *
-  ******************************************************************************/
-void UserProc::logSuspectMemoryDefs() {
-    StatementList stmts;
-    getStatements(stmts);
-    for (Instruction *st : stmts) {
-        if (!st->isAssign())
-            continue;
-        Assign *a = (Assign *)st;
-        if (!a->getLeft()->isMemOf())
-            continue;
-        RangeMap &rm = a->getRanges();
-        Exp *p = rm.substInto(a->getLeft()->getSubExp1()->clone());
-        if (rm.hasRange(p)) {
-            Range &r = rm.getRange(p);
-            LOG << "got p " << p << " with range " << r << "\n";
-            if (r.getBase()->getOper() == opInitValueOf && r.getBase()->getSubExp1()->isRegOfK() &&
-                ((Const *)r.getBase()->getSubExp1()->getSubExp1())->getInt() == 28) {
-                RTL *rtl = a->getBB()->getRTLWithStatement(a);
-                LOG << "interesting stack reference at " << rtl->getAddress() << " " << a << "\n";
-            }
-        }
-    }
 }
 
 RTL *globalRtl = nullptr;

@@ -8,7 +8,7 @@ ${PROTOBUF_LIBRARIES}
 ${GC_LIBS}
 ${DEBUG_LIB}
 boom_base frontend db type boomerang_DSLs codegen util BinaryFile
-boom_base frontend db codegen
+boom_base frontend db codegen boomerang_passes
 pthread
 )
 
