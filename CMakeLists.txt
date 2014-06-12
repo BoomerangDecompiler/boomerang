@@ -50,41 +50,37 @@ ELSE()
     SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra" )
     add_definitions(-D__STDC_FORMAT_MACROS) #-D_GLIBCXX_DEBUG
 ENDIF()
+
+INCLUDE(TestBigEndian)
+find_package(Boost REQUIRED)
+find_package(Qt5Core REQUIRED)
+find_package(Qt5Xml REQUIRED)
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+set(CMAKE_AUTOMOC ON)
+TEST_BIG_ENDIAN(WORDS_BIGENDIAN)
+
 ###############################################################################
 # Defines section
 ###############################################################################
 SET(VERSION "alpha 0.3.99 xx/xxx/2014")
 SET(MAIN_INCLUDE_DIRECTORY ${PROJECT_SOURCE_DIR}/include)
-
-INCLUDE(TestBigEndian)
-
-find_package(Boost REQUIRED)
-find_package(Qt5Core REQUIRED)
-find_package(Qt5Xml REQUIRED)
-
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
-set(CMAKE_AUTOMOC ON)
-
-INCLUDE_DIRECTORIES(
-    .
-    ${Boost_INCLUDE_DIR}
-    ${PROJECT_SOURCE_DIR}/3rd_party/include
-)
-
 SET(PACKAGE_BUGREPORT "http://github.com/nemerle/boomerang")
 SET(PACKAGE_NAME      "boomerang")
 SET(PACKAGE_STRING    "boomerang")
 SET(PACKAGE_TARNAME   "boomerang")
 SET(PACKAGE_VERSION   "0.3.99")
 
-TEST_BIG_ENDIAN(WORDS_BIGENDIAN)
 
 # generate config.h
 CONFIGURE_FILE(include/config.h.cmake include/config.h)
 
-INCLUDE_DIRECTORIES("${CMAKE_CURRENT_SOURCE_DIR}/include"
-        "${CMAKE_CURRENT_BINARY_DIR}/include"
-        ${Qt5Core_INCLUDE_DIRS}
+INCLUDE_DIRECTORIES(
+    .
+    "${CMAKE_CURRENT_SOURCE_DIR}/include"
+    "${CMAKE_CURRENT_BINARY_DIR}/include"
+    ${Qt5Core_INCLUDE_DIRS}
+    ${Boost_INCLUDE_DIR}
+    ${PROJECT_SOURCE_DIR}/3rd_party/include
 )
 link_directories(
     ${PROJECT_SOURCE_DIR}/3rd_party/lib
@@ -102,6 +98,7 @@ ADD_SUBDIRECTORY(passes)
 IF(BUILD_TESTING)
   ADD_SUBDIRECTORY(unit_testing)
 ENDIF()
+
 SET(boom_base_SRC
         loader/BinaryFileFactory.cpp
         boomerang.cpp
