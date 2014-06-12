@@ -1902,8 +1902,10 @@ void Exp::doSearch(const Exp &search, Exp *&pSrc, std::list<Exp **> &li, bool on
   * \param       once - true if not all occurrences to be found, false for all
   *
   ******************************************************************************/
-
-void Exp::doSearchChildren(const Exp & /*search*/, std::list<Exp **> & /*li*/, bool /*once*/) {
+void Exp::doSearchChildren(const Exp & search, std::list<Exp **> & li, bool once) {
+    Q_UNUSED(search);
+    Q_UNUSED(li);
+    Q_UNUSED(once);
     return; // Const and Terminal do not override this
 }
 void Unary::doSearchChildren(const Exp &search, std::list<Exp **> &li, bool once) {

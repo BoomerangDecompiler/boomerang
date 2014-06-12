@@ -660,12 +660,12 @@ bool GotoStatement::searchAll(const Exp &search, std::list<Exp *> &result) {
 }
 
 /***************************************************************************/ /**
-  * \fn     GotoStatement::print
-  * \brief  Display a text reprentation of this RTL to the given stream
-  * \note   Usually called from RTL::print, in which case the first 9
-  *         chars of the print have already been output to os
-  * \param  os - stream to write to
-  * \param  html - print in html
+  * \fn    GotoStatement::print
+  * \brief Display a text reprentation of this RTL to the given stream
+  * \note  Usually called from RTL::print, in which case the first 9
+  *        chars of the print have already been output to os
+  * \param os - stream to write to
+  * \param html - produce html encoded representation
   *
   ******************************************************************************/
 void GotoStatement::print(QTextStream & os, bool html) const {
@@ -980,7 +980,7 @@ bool BranchStatement::searchAll(const Exp &search, std::list<Exp *> &result) {
   * \fn        BranchStatement::print
   * \brief        Write a text representation to the given stream
   * \param        os: stream
-  *
+  * \param html - produce html encoded representation
   ******************************************************************************/
 void BranchStatement::print(QTextStream & os, bool html) const {
     os << qSetFieldWidth(4) <<Number << qSetFieldWidth(0) <<" ";
@@ -1488,11 +1488,10 @@ bool CaseStatement::searchAll(const Exp &search, std::list<Exp *> &result) {
 }
 
 /***************************************************************************/ /**
-  * \fn        CaseStatement::print
-  * \brief        Write a text representation to the given stream
-  * \param        os: stream
-  *                    indent: number of columns to skip
-  *
+  * \fn    CaseStatement::print
+  * \brief Write a text representation to the given stream
+  * \param os - target stream
+  * \param html - produce html encoded representation
   ******************************************************************************/
 void CaseStatement::print(QTextStream  & os, bool html) const {
     os << qSetFieldWidth(4) << Number << qSetFieldWidth(0) << " ";
@@ -1756,6 +1755,7 @@ bool CallStatement::searchAll(const Exp &search, std::list<Exp *> &result) {
   * \fn    CallStatement::print
   * \brief Write a text representation of this RTL to the given stream
   * \param os - stream to write to
+  * \param html - produce html encoded representation
   *
   ******************************************************************************/
 void CallStatement::print(QTextStream & os, bool html) const {
@@ -2662,10 +2662,10 @@ void BoolAssign::setCondExpr(Exp * pss) {
 }
 
 /***************************************************************************/ /**
-  * \fn        BoolAssign::print
-  * \brief        Write a text representation to the given stream
-  * \param        os: stream
-  *
+  * \fn    BoolAssign::print
+  * \brief Write a text representation to the given stream
+  * \param os: stream
+  * \param html - produce html encoded representation
   ******************************************************************************/
 void BoolAssign::printCompact(QTextStream & os /*= cout*/, bool html) const {
     os << "BOOL ";
