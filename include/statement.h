@@ -641,7 +641,7 @@ class BoolAssign : public Assignment {
     Exp *pCond;         // Exp representation of the high level
     // condition: e.g. r[8] == 5
     bool bFloat;        // True if condition uses floating point CC
-    int size;           // The size of the dest
+    int Size;           // The size of the dest
 public:
     BoolAssign(int size);
     virtual ~BoolAssign();
@@ -667,7 +667,7 @@ public:
     void setCondExpr(Exp *pss);
     // As above, no delete (for subscripting)
     void setCondExprND(Exp *e) { pCond = e; }
-    int getSize() { return size; } // Return the size of the assignment
+    int getSize() { return Size; } // Return the size of the assignment
     void makeSigned();
 
     virtual void printCompact(QTextStream &os, bool html = false) const;

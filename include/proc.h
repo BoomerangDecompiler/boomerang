@@ -250,7 +250,7 @@ private:
     ProcSet *cycleGrp;
 
 public:
-    UserProc(Module *prog,const QString &name, ADDRESS address);
+    UserProc(Module *mod, const QString &name, ADDRESS address);
     virtual ~UserProc();
     void setDecoded();
     void unDecode();
