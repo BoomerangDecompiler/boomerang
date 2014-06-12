@@ -80,11 +80,11 @@ class MachOBinaryFile : public QObject,
     DWord getDelta();
     QString symbolByAddress(ADDRESS dwAddr) override;                        // Get sym from addr
     ADDRESS GetAddressByName(const QString &name, bool bNoTypeOK = false) override; // Find addr given name
-    void AddSymbol(ADDRESS uNative, const char *pName) override;
+    void AddSymbol(ADDRESS uNative, const QString &pName) override;
     //! Lookup the name, return the size
     int GetSizeByName(const QString &pName, bool bTypeOK = false) override;
     ADDRESS *GetImportStubs(int &numImports) override;
-    const char *getFilenameSymbolFor(const char *) override;
+    QString getFilenameSymbolFor(const char *) override;
 
     //
     //        --        --        --        --        --        --        --        --        --
@@ -120,7 +120,7 @@ class MachOBinaryFile : public QObject,
     virtual const QString &GetDynamicProcName(ADDRESS uNative);
 
     virtual tMapAddrToString &getSymbols() { return m_SymA; }
-    virtual std::map<std::string, ObjcModule> &getObjcModules() { return modules; }
+    virtual std::map<QString, ObjcModule> &getObjcModules() { return modules; }
 
   protected:
     bool RealLoad(const QString &sName) override; // Load the file; pure virtual
@@ -137,7 +137,7 @@ class MachOBinaryFile : public QObject,
     MACHINE machine;
     bool swap_bytes;
     tMapAddrToString m_SymA, dlprocs;
-    std::map<std::string, ObjcModule> modules;
+    std::map<QString, ObjcModule> modules;
     std::vector<struct section> sections;
 };
 #endif // ifndef __MACHOBINARYFILE_H__

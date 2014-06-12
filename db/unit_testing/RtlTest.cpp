@@ -218,10 +218,10 @@ void RtlTest::testVisitor() {
 //    QVERIFY(inst.rtl != nullptr);
 //    QVERIFY(inst.rtl->isCompare(iReg, eOperand) == true);
 //    QCOMPARE(iReg,9);
-//    std::string expected("5");
+//    QString expected("5");
 //    std::ostringstream ost1;
 //    eOperand->print(ost1);
-//    std::string actual(ost1.str());
+//    QString actual(ost1.str());
 //    QCOMPARE(actual,expected);
 
 //    pBF->UnLoad();

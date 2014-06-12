@@ -154,14 +154,14 @@ bool ExeBinaryFile::RealLoad(const QString &sName) {
 
     fclose(fp);
 
-    m_pSections[0].pSectionName = const_cast<char *>("$HEADER"); // Special header section
+    m_pSections[0].pSectionName = "$HEADER"; // Special header section
     //    m_pSections[0].fSectionFlags = ST_HEADER;
     m_pSections[0].uNativeAddr = 0; // Not applicable
     m_pSections[0].uHostAddr = ADDRESS::host_ptr(m_pHeader);
     m_pSections[0].uSectionSize = sizeof(exeHeader);
     m_pSections[0].uSectionEntrySize = 1; // Not applicable
 
-    m_pSections[1].pSectionName = const_cast<char *>(".text"); // The text and data section
+    m_pSections[1].pSectionName = ".text"; // The text and data section
     m_pSections[1].bCode = true;
     m_pSections[1].bData = true;
     m_pSections[1].uNativeAddr = 0;
@@ -169,7 +169,7 @@ bool ExeBinaryFile::RealLoad(const QString &sName) {
     m_pSections[1].uSectionSize = m_cbImage;
     m_pSections[1].uSectionEntrySize = 1; // Not applicable
 
-    m_pSections[2].pSectionName = const_cast<char *>("$RELOC"); // Special relocation section
+    m_pSections[2].pSectionName = "$RELOC"; // Special relocation section
     //    m_pSections[2].fSectionFlags = ST_RELOC;    // Give it a special flag
     m_pSections[2].uNativeAddr = 0; // Not applicable
     m_pSections[2].uHostAddr = ADDRESS::host_ptr(m_pRelocTable);

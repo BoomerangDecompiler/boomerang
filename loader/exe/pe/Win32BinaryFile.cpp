@@ -103,10 +103,6 @@ typedef char ct_failure[sizeof(SectionInfo) == sizeof(PESectionInfo)];
 Win32BinaryFile::Win32BinaryFile() : mingw_main(false) {}
 
 Win32BinaryFile::~Win32BinaryFile() {
-    for (int i = 0; i < m_iNumSections; i++) {
-        if (m_pSections[i].pSectionName)
-            delete[] m_pSections[i].pSectionName;
-    }
 }
 
 bool Win32BinaryFile::Open(const char *sName) {
@@ -435,8 +431,7 @@ bool Win32BinaryFile::RealLoad(const QString &sName) {
         //    printf("%.8s RVA=%08X Offset=%08X size=%08X\n", (char*)o->ObjectName, LMMH(o->RVA),
         //    LMMH(o->PhysicalOffset),
         //      LMMH(o->VirtualSize));
-        sect.pSectionName = new char[9];
-        strncpy(sect.pSectionName, o->ObjectName, 8);
+        sect.pSectionName = o->ObjectName;
         //        if (!strcmp(sect.pSectionName, ".reloc"))
         //            reloc = &sect;
         sect.uNativeAddr = ADDRESS::g(LMMH(o->RVA) + LMMH(m_pPEHeader->Imagebase));
@@ -735,7 +730,7 @@ QString Win32BinaryFile::symbolByAddress(ADDRESS dwAddr) {
     sym->Name[0] = 0;
     BOOL got = dbghelp::SymFromAddr(hProcess, dwAddr.m_value, 0, sym);
     if (*sym->Name) {
-        char *n = strdup(sym->Name);
+        QString n = sym->Name;
 #if 0
         std::cout << "found symbol " << n << " for address " << dwAddr << "\n";
         std::cout << "typeindex: " << sym->TypeIndex << "\n";
@@ -802,7 +797,7 @@ ADDRESS Win32BinaryFile::GetAddressByName(const QString &pName, bool bNoTypeOK /
     return NO_ADDRESS;
 }
 
-void Win32BinaryFile::AddSymbol(ADDRESS uNative, const char *pName) { dlprocptrs[uNative] = pName; }
+void Win32BinaryFile::AddSymbol(ADDRESS uNative, const QString &pName) { dlprocptrs[uNative] = pName; }
 
 bool Win32BinaryFile::DisplayDetails(const char *fileName, FILE *f /* = stdout */) {
     Q_UNUSED(fileName);

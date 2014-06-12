@@ -50,7 +50,7 @@ struct SectionInfo {
     // the behaviour of (at least) the question "Is this address in BSS".
     virtual bool isAddressBss(ADDRESS /*a*/) const { return bBss != 0; }
 
-    char *pSectionName;         // Name of section
+    QString pSectionName;         // Name of section
     ADDRESS uNativeAddr;        // Logical or native load address
     ADDRESS uHostAddr;          // Host or actual address of data
     uint32_t uSectionSize;      // Size of section in bytes
@@ -67,7 +67,7 @@ typedef SectionInfo *PSectionInfo;
 // Objective-C stuff
 class ObjcIvar {
   public:
-    std::string name, type;
+    QString name, type;
     unsigned offset;
 };
 
@@ -80,14 +80,14 @@ class ObjcMethod {
 class ObjcClass {
   public:
     QString name;
-    std::map<std::string, ObjcIvar> ivars;
-    std::map<std::string, ObjcMethod> methods;
+    std::map<QString, ObjcIvar> ivars;
+    std::map<QString, ObjcMethod> methods;
 };
 
 class ObjcModule {
   public:
     QString name;
-    std::map<std::string, ObjcClass> classes;
+    std::map<QString, ObjcClass> classes;
 };
 
 // This enum allows a sort of run time type identification, without using
@@ -155,7 +155,7 @@ class SymbolTableInterface {
     virtual QString symbolByAddress(ADDRESS uNative) = 0;
     //! Lookup the name, return the address. If not found, return NO_ADDRESS
     virtual ADDRESS GetAddressByName(const QString &pName, bool bNoTypeOK = false) = 0;
-    virtual void AddSymbol(ADDRESS /*uNative*/, const char * /*pName*/) = 0;
+    virtual void AddSymbol(ADDRESS /*uNative*/, const QString & /*pName*/) = 0;
     //! Lookup the name, return the size
     virtual int GetSizeByName(const QString &pName, bool bTypeOK = false) = 0;
     /***************************************************************************/ /**
@@ -167,7 +167,7 @@ class SymbolTableInterface {
       ******************************************************************************/
     virtual ADDRESS *GetImportStubs(int &numImports) = 0;
     //! \return a filename for given symbol
-    virtual const char *getFilenameSymbolFor(const char * /*sym*/) = 0;
+    virtual QString getFilenameSymbolFor(const char * /*sym*/) = 0;
 };
 Q_DECLARE_INTERFACE(SymbolTableInterface, SymTableInterface_iid)
 
@@ -175,7 +175,7 @@ class ObjcAccessInterface {
   public:
     virtual ~ObjcAccessInterface() {}
 
-    virtual std::map<std::string, ObjcModule> &getObjcModules() = 0;
+    virtual std::map<QString, ObjcModule> &getObjcModules() = 0;
 };
 Q_DECLARE_INTERFACE(ObjcAccessInterface, ObjcInterface_iid)
 
@@ -276,10 +276,10 @@ class SectionInterface {
 
     virtual int GetNumSections() const = 0;                 // Return number of sections
     virtual SectionInfo *GetSectionInfo(int idx) const = 0; // Return section struct
-    virtual SectionInfo *GetSectionInfoByName(const char *sName) = 0;
+    virtual SectionInfo *GetSectionInfoByName(const QString &sName) = 0;
     virtual SectionInfo *getSectionInfoByAddr(ADDRESS uEntry) const = 0;
     virtual bool isReadOnly(ADDRESS uEntry) = 0; //!< returns true if the given address is in a read only section
-    virtual int GetSectionIndexByName(const char *sName) = 0;
+    virtual int GetSectionIndexByName(const QString &sName) = 0;
     virtual bool isStringConstant(ADDRESS /*uEntry*/) { return false; }
     //! returns true if the given address is in a "strings" section
     virtual bool isCFStringConstant(ADDRESS /*uEntry*/) { return false; }
@@ -308,9 +308,9 @@ class LoaderCommon : public SectionInterface {
     int GetNumSections() const override { return m_iNumSections; } // Return number of sections
     SectionInfo *GetSectionInfo(int idx) const override { return m_pSections + idx; }
     //! Find section index given name, or -1 if not found
-    int GetSectionIndexByName(const char *sName) override {
+    int GetSectionIndexByName(const QString &sName) override {
         for (int i = 0; i < m_iNumSections; i++) {
-            if (strcmp(m_pSections[i].pSectionName, sName) == 0) {
+            if (m_pSections[i].pSectionName == sName) {
                 return i;
             }
         }
@@ -335,7 +335,7 @@ class LoaderCommon : public SectionInterface {
         return p && p->bReadOnly;
     }
     //! Find section info given name, or 0 if not found
-    SectionInfo *GetSectionInfoByName(const char *sName) override {
+    SectionInfo *GetSectionInfoByName(const QString &sName) override {
         int i = GetSectionIndexByName(sName);
         if (i == -1)
             return nullptr;

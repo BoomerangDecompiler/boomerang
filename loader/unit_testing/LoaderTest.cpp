@@ -206,9 +206,9 @@ void LoaderTest::testWinLoad() {
     }
 
     // Note: the string below needs to have embedded tabs. Edit with caution!
-    std::string expected("Number of sections = 5\r\n"
+    QString expected("Number of sections = 5\r\n"
         ".text    .rdata    .data    .rsrc    .reloc    ");
-    std::string actual(ost.str());
+    QString actual(ost.str());
     QCOMPARE(actual,expected);
 
     ADDRESS addr = pBF->GetMainEntryPoint();
@@ -219,8 +219,8 @@ void LoaderTest::testWinLoad() {
     if (s == 0)
         actual = "<not found>";
     else
-        actual = std::string(s);
-    expected = std::string("SetEvent");
+        actual = s;
+    expected = "SetEvent";
     QCOMPARE(actual,expected);
 
     ADDRESS a = pBF->GetAddressByName("SetEvent");

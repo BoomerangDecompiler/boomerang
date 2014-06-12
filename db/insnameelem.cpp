@@ -82,7 +82,7 @@ void InsNameElem::reset(void) {
 
 int InsNameElem::getvalue(void) const { return value; }
 
-InsOptionElem::InsOptionElem(const char *name) : InsNameElem(name) {}
+InsOptionElem::InsOptionElem(const QString &name) : InsNameElem(name) {}
 
 size_t InsOptionElem::ntokens(void) { return 2; }
 
@@ -97,7 +97,7 @@ QString InsOptionElem::getinspattern(void) {
     return (nextelem != nullptr) ? ('\'' + elemname + '\'' + nextelem->getinspattern()) : ('\'' + elemname + '\'');
 }
 
-InsListElem::InsListElem(const char *name, Table *t, const char *idx) : InsNameElem(name) {
+InsListElem::InsListElem(const QString &name, Table *t, const QString &idx) : InsNameElem(name) {
     indexname = idx;
     thetable = t;
 }

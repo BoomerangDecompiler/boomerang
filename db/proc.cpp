@@ -2564,7 +2564,7 @@ Exp *UserProc::getSymbolExp(Exp *le, SharedType ty, bool lastPass) {
         // Let type analysis sort out which live ranges have which type
         e = symbolMap[le]->clone();
         if (e->getOper() == opLocal && e->getSubExp1()->getOper() == opStrConst) {
-            std::string name = ((Const*)e->getSubExp1())->getStr();
+            QString name = ((Const*)e->getSubExp1())->getStr();
             SharedType nty = ty;
             SharedType ty = locals[name];
             assert(ty);
@@ -5580,9 +5580,10 @@ QString UserProc::getRegName(Exp *r) {
     // assert(r->getSubExp1()->isConst());
     if (r->getSubExp1()->isConst()) {
         int regNum = ((Const *)r->getSubExp1())->getInt();
-        const char *regName = prog->getRegName(regNum);
+        const QString &regName(prog->getRegName(regNum));
+        assert(!regName.isEmpty());
         if (regName[0] == '%')
-            regName++; // Skip % if %eax
+            return regName.mid(1); // Skip % if %eax
         return regName;
     }
     LOG_VERBOSE(2) << "warning - UserProc::getRegName(Exp* r) will try to build register name from [tmp+X] !";

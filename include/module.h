@@ -54,7 +54,7 @@ protected:
     Module *Upstream = nullptr;
     QFile out;
     QTextStream strm;
-    std::string stream_ext;
+    QString stream_ext;
 public slots:
     void onLibrarySignaturesChanged();
 signals:

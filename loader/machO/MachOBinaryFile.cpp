@@ -39,10 +39,6 @@ MachOBinaryFile::MachOBinaryFile() {
 }
 
 MachOBinaryFile::~MachOBinaryFile() {
-    for (int i = 0; i < m_iNumSections; i++) {
-        if (m_pSections[i].pSectionName)
-            delete[] m_pSections[i].pSectionName;
-    }
 }
 
 bool MachOBinaryFile::Open(const char *sName) {
@@ -280,9 +276,7 @@ bool MachOBinaryFile::RealLoad(const QString &sName) {
         fprintf(stderr, "loaded segment %x %i in mem %i in file\n", a, sz, fsz);
 #endif
 
-        m_pSections[i].pSectionName = new char[17];
-        strncpy(m_pSections[i].pSectionName, segments[i].segname, 16);
-        m_pSections[i].pSectionName[16] = 0;
+        m_pSections[i].pSectionName = QString(QByteArray(segments[i].segname,17));
         m_pSections[i].uNativeAddr = BMMH(segments[i].vmaddr);
         m_pSections[i].uHostAddr = ADDRESS::value_type(base) + BMMH(segments[i].vmaddr) - loaded_addr.m_value;
         m_pSections[i].uSectionSize = BMMH(segments[i].vmsize);
@@ -424,7 +418,7 @@ ADDRESS MachOBinaryFile::GetAddressByName(const QString &pName, bool bNoTypeOK /
     return NO_ADDRESS;
 }
 
-void MachOBinaryFile::AddSymbol(ADDRESS uNative, const char *pName) { m_SymA[uNative] = pName; }
+void MachOBinaryFile::AddSymbol(ADDRESS uNative, const QString &pName) { m_SymA[uNative] = pName; }
 
 int MachOBinaryFile::GetSizeByName(const QString &pName, bool bTypeOK) {
     if (GetAddressByName(pName, bTypeOK) != NO_ADDRESS) {
@@ -438,7 +432,7 @@ ADDRESS *MachOBinaryFile::GetImportStubs(int &numImports) {
     return nullptr;
 }
 
-const char *MachOBinaryFile::getFilenameSymbolFor(const char *) { return nullptr; }
+QString MachOBinaryFile::getFilenameSymbolFor(const char *) { return ""; }
 
 bool MachOBinaryFile::DisplayDetails(const char *fileName, FILE *f
                                      /* = stdout */) {

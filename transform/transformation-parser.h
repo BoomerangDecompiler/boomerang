@@ -19,10 +19,10 @@
 /* #line 14 "/usr/local/lib/bison.h" */
 //#line 21 "transformation-parser.h"
 #define YY_TransformationParser_DEBUG  1
-#define YY_TransformationParser_PARSE_PARAM 
+#define YY_TransformationParser_PARSE_PARAM
 #define YY_TransformationParser_CONSTRUCTOR_PARAM  \
     std::istream &in, bool trace
-#define YY_TransformationParser_CONSTRUCTOR_INIT 
+#define YY_TransformationParser_CONSTRUCTOR_INIT
 #define YY_TransformationParser_CONSTRUCTOR_CODE  \
     theScanner = new TransformationScanner(in, trace); \
     if (trace) yydebug = 1; else yydebug = 0;
@@ -39,12 +39,12 @@
 
   class TransformationScanner;
 
-typedef union {
+struct yy_TransformationParser_stype{
    int ival;
-   char *str;
+   QString str;
    Type *type;
    Exp *exp;
-} yy_TransformationParser_stype;
+};
 #define YY_TransformationParser_STYPE yy_TransformationParser_stype
 
 //#line 14 "/usr/local/lib/bison.h"
@@ -128,13 +128,13 @@ typedef
 #else
 
 #ifndef YY_TransformationParser_MEMBERS
-#define YY_TransformationParser_MEMBERS 
+#define YY_TransformationParser_MEMBERS
 #endif
 #ifndef YY_TransformationParser_LEX_BODY
-#define YY_TransformationParser_LEX_BODY  
+#define YY_TransformationParser_LEX_BODY
 #endif
 #ifndef YY_TransformationParser_ERROR_BODY
-#define YY_TransformationParser_ERROR_BODY  
+#define YY_TransformationParser_ERROR_BODY
 #endif
 #ifndef YY_TransformationParser_CONSTRUCTOR_PARAM
 #define YY_TransformationParser_CONSTRUCTOR_PARAM
@@ -143,7 +143,7 @@ typedef
 #ifndef YY_TransformationParser_USE_CONST_TOKEN
 #define YY_TransformationParser_USE_CONST_TOKEN 0
 /* yes enum is more compatible with flex,  */
-/* so by default we use it */ 
+/* so by default we use it */
 #endif
 #if YY_TransformationParser_USE_CONST_TOKEN != 0
 #ifndef YY_TransformationParser_ENUM_TOKEN
@@ -153,7 +153,7 @@ typedef
 
 class TransformationParser
 {
-public: 
+public:
 enum YY_TransformationParser_ENUM_TOKEN { YY_TransformationParser_NULL_TOKEN=0
 
 /* #line 185 "/usr/local/lib/bison.h" */
@@ -250,7 +250,7 @@ public:
 #define YYLTYPE YY_TransformationParser_LTYPE
 #endif
 #ifndef YYDEBUG
-#ifdef YY_TransformationParser_DEBUG 
+#ifdef YY_TransformationParser_DEBUG
 #define YYDEBUG YY_TransformationParser_DEBUG
 #endif
 #endif

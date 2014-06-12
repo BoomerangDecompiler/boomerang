@@ -32,7 +32,7 @@ Register::Register() : address(nullptr), mappedIndex(-1), mappedOffset(-1), flt(
   ******************************************************************************/
 Register::Register(const Register &r)
     : size(r.size), address(r.address), mappedIndex(r.mappedIndex), mappedOffset(r.mappedOffset), flt(r.flt) {
-    if (!r.name.empty())
+    if (!r.name.isEmpty())
         name = r.name;
 }
 
@@ -63,8 +63,8 @@ Register &Register::operator=(const Register &r2) {
   ******************************************************************************/
 bool Register::operator==(const Register &r2) const {
     // compare on name
-    assert(!name.empty() && !r2.name.empty());
-    return strcmp(name.c_str(), r2.name.c_str()) == 0;
+    assert(!name.isEmpty() && !r2.name.isEmpty());
+    return name==r2.name;
 }
 
 /***************************************************************************/ /**
@@ -73,12 +73,9 @@ bool Register::operator==(const Register &r2) const {
   * \returns true if this name is less than the given Register's name
   ******************************************************************************/
 bool Register::operator<(const Register &r2) const {
-    assert(!name.empty() && !r2.name.empty());
-
+    assert(!name.isEmpty() && !r2.name.isEmpty());
     // compare on name
-    if (strcmp(name.c_str(), r2.name.c_str()) < 0)
-        return true;
-    return false;
+    return (name<r2.name);
 }
 
 /***************************************************************************/ /**
@@ -86,8 +83,8 @@ bool Register::operator<(const Register &r2) const {
   * \param      s - name to set it to
   *
   ******************************************************************************/
-void Register::s_name(const char *s) {
-    assert(s != nullptr);
+void Register::s_name(const QString &s) {
+    assert(!s.isEmpty());
     name = s;
 }
 
@@ -95,7 +92,7 @@ void Register::s_name(const char *s) {
   * \brief    Get the name for this register
   * \returns  The name as a character string
   ******************************************************************************/
-std::string Register::g_name() const { return name; }
+const QString &Register::g_name() const { return name; }
 
 /***************************************************************************/ /**
   * \brief   Get the type for this register

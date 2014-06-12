@@ -51,10 +51,10 @@ class PalmBinaryFile : public QObject,
     // Get a symbol given an address
     QString symbolByAddress(ADDRESS dwAddr) override;
     ADDRESS GetAddressByName(const QString &pName, bool bNoTypeOK = false) override;
-    void AddSymbol(ADDRESS /*uNative*/, const char * /*pName*/) override;
+    void AddSymbol(ADDRESS /*uNative*/, const QString & /*pName*/) override;
     int GetSizeByName(const QString &pName, bool bTypeOK = false) override;
     ADDRESS *GetImportStubs(int &numImports) override;
-    const char *getFilenameSymbolFor(const char * /*sym*/) override;
+    QString getFilenameSymbolFor(const char * /*sym*/) override;
     tMapAddrToString &getSymbols() override;
 
     // Return true if the address matches the convention for A-line system calls
@@ -71,7 +71,7 @@ class PalmBinaryFile : public QObject,
     int GetAppID() const;
 
     // Generate binary files for non code and data sections
-    void GenerateBinFiles(const std::string &path) const;
+    void GenerateBinFiles(const QString &path) const;
 
     //
     //  --  --  --  --  --  --  --  --  --  --  --

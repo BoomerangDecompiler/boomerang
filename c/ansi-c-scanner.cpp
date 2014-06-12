@@ -720,7 +720,7 @@ YY_AnsiCScanner_LEX_RETURN YY_AnsiCScanner_CLASS::YY_AnsiCScanner_LEX(yy_AnsiCPa
             YY_BREAK
         case 54: {
             count();
-            yylval.str = strdup(yytext);
+            yylval.str = yytext;
             return check_type();
         }
             YY_BREAK
@@ -763,7 +763,7 @@ YY_AnsiCScanner_LEX_RETURN YY_AnsiCScanner_CLASS::YY_AnsiCScanner_LEX(yy_AnsiCPa
             YY_BREAK
         case 62: {
             count();
-            yylval.str = strdup(yytext);
+            yylval.str = yytext;
             return AnsiCParser::STRING_LITERAL;
         }
             YY_BREAK

@@ -33,16 +33,6 @@ int lockFileWrite(const char *fname) {
 
 void unlockFile(int fd) { close(fd); }
 
-void escapeXMLChars(std::string &s) {
-    std::string bad = "<>&";
-    const char *replace[] = {"&lt;", "&gt;", "&amp;"};
-    for (unsigned i = 0; i < s.size(); i++) {
-        std::string::size_type n = bad.find(s[i]);
-        if (n != std::string::npos) {
-            s.replace(i, 1, replace[n]);
-        }
-    }
-}
 // Turn things like newline, return, tab into \n, \r, \t etc
 // Note: assumes a C or C++ back end...
 QString escapeStr(const QString &inp) {
@@ -70,12 +60,3 @@ QTextStream& operator<<(QTextStream& os, const ADDRESS& mdv) {
     os << QString::number(mdv.m_value,16);
     return os;
 }
-
-#ifdef __MINGW32__
-#include <cstdlib>
-char *strdup(const char *s) {
-    char *res = (char *)malloc(strlen(s)+1);
-    strcpy(res, s);
-    return res;
-}
-#endif

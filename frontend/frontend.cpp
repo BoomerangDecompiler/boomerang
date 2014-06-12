@@ -120,12 +120,12 @@ FrontEnd::~FrontEnd() {
         pbff->UnLoad(); // Unload the BinaryFile library with dlclose() or FreeLibrary()
 }
 
-const char *FrontEnd::getRegName(int idx) {
-    std::map<std::string, int, std::less<std::string>>::iterator it;
-    for (it = decoder->getRTLDict().RegMap.begin(); it != decoder->getRTLDict().RegMap.end(); it++)
-        if ((*it).second == idx)
-            return (*it).first.c_str();
-    return nullptr;
+QString FrontEnd::getRegName(int idx) const {
+    static QString nullres;
+    for (const std::pair<QString,int> &elem : decoder->getRTLDict().RegMap)
+        if (elem.second == idx)
+            return elem.first;
+    return nullres;
 }
 
 int FrontEnd::getRegSize(int idx) {
@@ -616,7 +616,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream &/*os*/, 
                 Instruction *s = *ss;
                 s->setProc(pProc); // let's do this really early!
                 if (refHints.find(pRtl->getAddress()) != refHints.end()) {
-                    const char *nam = refHints[pRtl->getAddress()].c_str();
+                    const QString &nam(refHints[pRtl->getAddress()]);
                     ADDRESS gu = Program->getGlobalAddr(nam);
                     if (gu != NO_ADDRESS) {
                         s->searchAndReplace(Const(gu), new Unary(opAddrOf, Location::global(nam, pProc)));

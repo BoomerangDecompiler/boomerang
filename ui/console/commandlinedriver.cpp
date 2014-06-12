@@ -272,7 +272,7 @@ int CommandlineDriver::applyCommandline() {
                 LOG_STREAM() << "bad address: " << args[i + 1] << '\n';
                 exit(1);
             }
-            boom.symbols[addr] = args[++i].toStdString();
+            boom.symbols[addr] = args[++i];
         } break;
         case 'd':
             switch (arg[2].toLatin1()) {

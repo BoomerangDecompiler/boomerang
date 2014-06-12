@@ -630,22 +630,22 @@ bool Boomerang::setOutputDirectory(const QString &path) {
  * \param modules A map from name to the Objective-C modules.
  * \param prog The Prog object to add the information to.
  */
-void Boomerang::objcDecode(std::map<std::string, ObjcModule> &modules, Prog *prog) {
+void Boomerang::objcDecode(const std::map<QString, ObjcModule> &modules, Prog *prog) {
     LOG_VERBOSE(1) << "Adding Objective-C information to Prog.\n";
     Module *root = prog->getRootCluster();
     for (auto &modules_it : modules) {
-        ObjcModule &mod = (modules_it).second;
+        const ObjcModule &mod = (modules_it).second;
         Module *module = prog->getOrInsertModule(mod.name);
         root->addChild(module);
         LOG_VERBOSE(1) << "\tModule: " << mod.name << "\n";
         ClassModFactory class_fact;
         for (auto &elem : mod.classes) {
-            ObjcClass &c = (elem).second;
+            const ObjcClass &c = (elem).second;
             Module *cl = prog->getOrInsertModule(mod.name,class_fact);
             root->addChild(cl);
             LOG_VERBOSE(1) << "\t\tClass: " << c.name << "\n";
             for (auto &_it2 : c.methods) {
-                ObjcMethod &m = (_it2).second;
+                const ObjcMethod &m = (_it2).second;
                 // TODO: parse :'s in names
                 QString method_name = m.name+"_"+m.types;
                 Function *existing = prog->findProc(method_name);
@@ -683,8 +683,8 @@ Prog *Boomerang::loadAndDecode(const QString &fname, const char *pname) {
     prog->setFrontEnd(fe);
 
     // Add symbols from -s switch(es)
-    for (auto &elem : symbols) {
-        fe->AddSymbol((elem).first, (elem).second.c_str());
+    for (const std::pair<ADDRESS,QString > &elem : symbols) {
+        fe->AddSymbol(elem.first, elem.second);
     }
     fe->readLibraryCatalog(); // Needed before readSymbolFile()
 
@@ -694,7 +694,7 @@ Prog *Boomerang::loadAndDecode(const QString &fname, const char *pname) {
     }
     ObjcAccessInterface *objc = qobject_cast<ObjcAccessInterface *>(fe->getBinaryFile());
     if (objc) {
-        std::map<std::string, ObjcModule> &objcmodules = objc->getObjcModules();
+        std::map<QString, ObjcModule> &objcmodules(objc->getObjcModules());
         if (objcmodules.size())
             objcDecode(objcmodules, prog);
     }

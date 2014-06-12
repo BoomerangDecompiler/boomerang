@@ -656,7 +656,7 @@ void FuncType::getReturnAndParam(QString &ret, QString &param) {
 
 QString IntegerType::getCtype(bool final) const {
     if (signedness >= 0) {
-        std::string s;
+        QString s;
         if (!final && signedness == 0)
             s = "/*signed?*/";
         switch (size) {
@@ -680,7 +680,7 @@ QString IntegerType::getCtype(bool final) const {
                 s += "?"; // To indicate invalid/unknown size
             s += "int";
         }
-        return s.c_str();
+        return s;
     } else {
         switch (size) {
         case 32:

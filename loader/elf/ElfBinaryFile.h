@@ -20,7 +20,7 @@
 
 #include "BinaryFile.h"
 //#include "../SymTab.h"                    // For SymTab (probably unused)
-typedef std::map<ADDRESS, std::string, std::less<ADDRESS>> RelocMap;
+typedef std::map<ADDRESS, QString, std::less<ADDRESS>> RelocMap;
 
 typedef struct {
     ADDRESS uSymAddr; // Symbol native address
@@ -191,7 +191,7 @@ class ElfBinaryFile : public QObject,
     int GetDistanceByName(const char *pName);
     int GetDistanceByName(const char *pName, const char *pSectName);
     // Add an extra symbol
-    void AddSymbol(ADDRESS uNative, const char *pName);
+    void AddSymbol(ADDRESS uNative, const QString &pName);
 
     virtual ADDRESS *GetImportStubs(int &numImports);
     virtual std::vector<ADDRESS> GetExportedAddresses(bool funcsOnly = true);
@@ -203,10 +203,10 @@ class ElfBinaryFile : public QObject,
     // Get symbol associated with relocation at address, if any
     // const char* GetRelocSym(ADDRESS uNative, ADDRESS *a = nullptr, unsigned int *sz = nullptr);
     virtual bool IsRelocationAt(ADDRESS uNative);
-    virtual const char *getFilenameSymbolFor(const char *sym);
+    virtual QString getFilenameSymbolFor(const char *sym);
 
     // Write an ELF object file for a given procedure
-    void writeObjectFile(std::string &path, const char *name, void *ptxt, int txtsz, RelocMap &reloc);
+    void writeObjectFile(QString &path, const char *name, void *ptxt, int txtsz, RelocMap &reloc);
     // Apply relocations; important when compiled without -fPIC
     void applyRelocations();
 

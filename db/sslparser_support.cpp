@@ -199,34 +199,14 @@ OPER SSLParser::strToOper(const QString &s) {
     return opWild;
 }
 
-OPER strToTerm(char *s) {
-    // s could be %pc, %afp, %agp, %CF, %ZF, %OF, %NF, %DF, %flags, %fflags
-    if (s[2] == 'F') {
-        if (s[1] <= 'N') {
-            if (s[1] == 'C')
-                return opCF;
-            if (s[1] == 'N')
-                return opNF;
-            return opDF;
-        } else {
-            if (s[1] == 'O')
-                return opOF;
-            return opZF;
-        }
-    }
-    if (s[1] == 'p')
-        return opPC;
-    if (s[1] == 'a') {
-        if (s[2] == 'f')
-            return opAFP;
-        if (s[2] == 'g')
-            return opAGP;
-    } else if (s[1] == 'f') {
-        if (s[2] == 'l')
-            return opFlags;
-        if (s[2] == 'f')
-            return opFflags;
-    }
+OPER strToTerm(const QString &s) {
+    static QMap<QString,OPER> mapping = {
+        {"%pc",opPC},{"%afp",opAFP},{"%agp",opAGP},{"%CF",opCF},
+        {"%ZF",opZF},{"%OF",opOF},{"%NF",opNF},{"%DF",opDF},{"%flags",opFlags},
+        {"%fflags",opFflags},
+    };
+    if(mapping.contains(s))
+        return mapping[s];
     return (OPER)0;
 }
 

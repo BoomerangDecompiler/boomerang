@@ -463,7 +463,7 @@ bool SparcFrontEnd::case_DD(ADDRESS &address, ptrdiff_t delta, DecodeResult &ins
 
             // We have to set the epilogue for the enclosing procedure (all proc's must have an
             // epilogue) and remove the RESTORE in the delay slot that has just been pushed to the list of RTLs
-            // proc->setEpilogue(new CalleeEpilogue("__dummy",std::list<std::string>()));
+            // proc->setEpilogue(new CalleeEpilogue("__dummy",std::list<QString>()));
             // Set the return location; this is now always %o0
             // setReturnLocations(proc->getEpilogue(), 8 /* %o0 */);
             newBB->getRTLs()->remove(delay_inst.rtl);

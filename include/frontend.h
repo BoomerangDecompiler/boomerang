@@ -77,7 +77,7 @@ class FrontEnd {
     // Public map from function name (string) to signature.
     QMap<QString, Signature *> LibrarySignatures;
     // Map from address to meaningful name
-    std::map<ADDRESS, std::string> refHints;
+    std::map<ADDRESS, QString> refHints;
     // Map from address to previously decoded RTLs for decoded indirect control transfer instructions
     std::map<ADDRESS, RTL *> previouslyDecoded;
 
@@ -89,13 +89,13 @@ class FrontEnd {
     static FrontEnd *instantiate(QObject *pLoader, Prog *prog, BinaryFileFactory *pbff);
     static FrontEnd *Load(const QString &fname, Prog *prog); //!< Load a binary
                                                              //! Add a symbol to the loader
-    void AddSymbol(ADDRESS addr, const char *nam) { symIface->AddSymbol(addr, nam); }
+    void AddSymbol(ADDRESS addr, const QString &nam) { symIface->AddSymbol(addr, nam); }
     // Add a "hint" that an instruction at the given address references a named global
-    void addRefHint(ADDRESS addr, const char *nam) { refHints[addr] = nam; }
+    void addRefHint(ADDRESS addr, const QString &nam) { refHints[addr] = nam; }
     virtual ~FrontEnd(); //!<Destructor. Virtual to mute a warning
 
     // returns a symbolic name for a register index
-    const char *getRegName(int idx);
+    QString getRegName(int idx) const;
     int getRegSize(int idx);
     // returns an enum identifer for this frontend's platform
     virtual platform getFrontEndId() = 0;

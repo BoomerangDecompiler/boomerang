@@ -55,8 +55,8 @@ void ParserTest::testExp() {
     QTextStream ost(&res);
     a->print(ost);
     QCOMPARE(res,"   0 " + s);
-    std::string s2 = "*i32* r[0] := 5 + 6";
-    a = SSLParser::parseExp(s2.c_str());
+    QString s2 = "*i32* r[0] := 5 + 6";
+    a = SSLParser::parseExp(qPrintable(s2));
     QVERIFY(a);
     res.clear();
     a->print(ost);

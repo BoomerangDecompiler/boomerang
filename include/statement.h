@@ -487,7 +487,7 @@ public:
     void dfaTypeAnalysis(bool &ch);
 
     // FIXME: I suspect that this was only used by adhoc TA, and can be deleted
-    bool match(const char *pattern, std::map<std::string, Exp *> &bindings);
+    bool match(const char *pattern, std::map<QString, Exp *> &bindings);
 
     friend class XMLProgParser;
 }; // class Assign

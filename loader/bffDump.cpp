@@ -88,7 +88,7 @@ int main(int argc, char *argv[]) {
     for (int i = 0; i < sect_iface->GetNumSections(); i++) {
         SectionInfo *pSect = sect_iface->GetSectionInfo(i);
         if (pSect->bData) {
-            printf("  Data section: %s\n", pSect->pSectionName);
+            printf("  Data section: %s\n", qPrintable(pSect->pSectionName));
             ADDRESS a = pSect->uNativeAddr;
             unsigned char *p = (unsigned char *)pSect->uHostAddr.m_value;
             for (unsigned off = 0; off < pSect->uSectionSize;) {

@@ -30,7 +30,7 @@
 // This struct used to be initialised with a memset, but now that overwrites the virtual table (if compiled under gcc
 // and possibly others)
 SectionInfo::SectionInfo()
-    : pSectionName(nullptr), uNativeAddr(ADDRESS::g(0L)), uHostAddr(ADDRESS::g(0L)), uSectionSize(0),
+    : uNativeAddr(ADDRESS::g(0L)), uHostAddr(ADDRESS::g(0L)), uSectionSize(0),
       uSectionEntrySize(0), uType(0), bCode(false), bData(false), bBss(0), bReadOnly(0) {}
 
 ///////////////////////
@@ -51,7 +51,7 @@ void LoaderCommon::getTextLimits() {
         // decode it, and in Sparc ELF files, it's actually in the data
         // section (so it can be modified). For now, we make this ugly
         // exception
-        if (strcmp(".plt", pSect->pSectionName) == 0)
+        if (".plt"==pSect->pSectionName)
             continue;
         if (pSect->uNativeAddr < limitTextLow)
             limitTextLow = pSect->uNativeAddr;
@@ -63,7 +63,7 @@ void LoaderCommon::getTextLimits() {
             textDelta = host_native_diff;
         else {
             if (textDelta != host_native_diff)
-                fprintf(stderr,"warning: textDelta different for section %s (ignoring).\n",pSect->pSectionName);
+                fprintf(stderr,"warning: textDelta different for section %s (ignoring).\n",qPrintable(pSect->pSectionName));
         }
     }
 }

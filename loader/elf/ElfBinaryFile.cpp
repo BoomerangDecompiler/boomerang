@@ -30,7 +30,7 @@
 #include <cstring>
 #include <inttypes.h>
 
-typedef std::map<std::string, int, std::less<std::string>> StrIntMap;
+typedef std::map<QString, int, std::less<QString>> StrIntMap;
 
 ElfBinaryFile::ElfBinaryFile(bool bArchive /* = false */)
     : LoaderCommon(bArchive), // Initialise base class
@@ -227,7 +227,7 @@ bool ElfBinaryFile::RealLoad(const QString &sName) {
 
     // assign arbitary addresses to .rel.* sections too
     for (i = 0; i < m_iNumSections; i++)
-        if (m_pSections[i].uNativeAddr.isZero() && !strncmp(m_pSections[i].pSectionName, ".rel", 4)) {
+        if (m_pSections[i].uNativeAddr.isZero() && m_pSections[i].pSectionName.startsWith(".rel")) {
             m_pSections[i].uNativeAddr = arbitaryLoadAddr;
             arbitaryLoadAddr += m_pSections[i].uSectionSize;
         }
@@ -412,11 +412,10 @@ std::vector<ADDRESS> ElfBinaryFile::GetExportedAddresses(bool funcsOnly) {
         int name = elfRead4(&m_pSym[i].st_name);
         if (name == 0) /* Silly symbols with no names */
             continue;
-        std::string str(GetStrPtr(strIdx, name));
+        QString str(GetStrPtr(strIdx, name));
+        str = str.left(str.indexOf("@@"));
         // Hack off the "@@GLIBC_2.0" of Linux, if present
-        std::string::size_type pos;
-        if ((pos = str.find("@@")) != std::string::npos)
-            str.erase(pos);
+
         if (ELF32_ST_BIND(m_pSym[i].st_info) == STB_GLOBAL || ELF32_ST_BIND(m_pSym[i].st_info) == STB_WEAK) {
             if (funcsOnly == false || ELF32_ST_TYPE(m_pSym[i].st_info) == STT_FUNC) {
                 if (e_type == E_REL) {
@@ -1217,7 +1216,7 @@ bool ElfBinaryFile::IsRelocationAt(ADDRESS uNative) {
     return false;
 }
 
-const char *ElfBinaryFile::getFilenameSymbolFor(const char *sym) {
+QString ElfBinaryFile::getFilenameSymbolFor(const char *sym) {
     int i;
     int secIndex = 0;
     for (i = 1; i < m_iNumSections; ++i) {
@@ -1237,7 +1236,7 @@ const char *ElfBinaryFile::getFilenameSymbolFor(const char *sym) {
     m_pSym = (Elf32_Sym *)pSect->uHostAddr.m_value; // Pointer to symbols
     int strIdx = m_sh_link[secIndex];               // sh_link points to the string table
 
-    std::string filename;
+    QString filename;
 
     // Index 0 is a dummy entry
     for (int i = 1; i < nSyms; i++) {
@@ -1245,23 +1244,21 @@ const char *ElfBinaryFile::getFilenameSymbolFor(const char *sym) {
         int name = elfRead4(&m_pSym[i].st_name);
         if (name == 0) /* Silly symbols with no names */
             continue;
-        std::string str(GetStrPtr(strIdx, name));
-        // Hack off the "@@GLIBC_2.0" of Linux, if present
-        std::string::size_type pos;
-        if ((pos = str.find("@@")) != std::string::npos)
-            str.erase(pos);
+        QString str(GetStrPtr(strIdx, name));
+        str = str.left(str.indexOf("@@")); // Hack off the "@@GLIBC_2.0" of Linux, if present
+
         if (ELF32_ST_TYPE(m_pSym[i].st_info) == STT_FILE) {
             filename = str;
             continue;
         }
         if (str == sym) {
-            if (filename.length())
-                return strdup(filename.c_str());
-            return nullptr;
+            if (!filename.isEmpty())
+                return filename;
+            return "";
         }
     }
-    return nullptr;
+    return "";
 }
 
 // A map for extra symbols, those not in the usual Elf symbol tables
-void ElfBinaryFile::AddSymbol(ADDRESS uNative, const char *pName) { m_SymTab[uNative] = pName; }
+void ElfBinaryFile::AddSymbol(ADDRESS uNative, const QString &pName) { m_SymTab[uNative] = pName; }

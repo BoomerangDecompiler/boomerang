@@ -952,8 +952,10 @@ YY_TransformationParser_PARSE_PARAM_DEF
         yyss = (short *) __ALLOCA_alloca (yystacksize * sizeof (*yyssp));
         __yy_bcopy ((char *)yyss1, (char *)yyss, size * sizeof (*yyssp));
         __ALLOCA_free(yyss1,yyssa);
-        yyvs = (YY_TransformationParser_STYPE *) __ALLOCA_alloca (yystacksize * sizeof (*yyvsp));
-        __yy_bcopy ((char *)yyvs1, (char *)yyvs, size * sizeof (*yyvsp));
+        yyvs = new (__ALLOCA_alloca(yystacksize * sizeof(*yyvsp))) YY_TransformationParser_STYPE[yystacksize];
+        for(size_t i=0; i<size; ++i) {
+            yyvs[i] = yyvs1[i];
+        }
         __ALLOCA_free(yyvs1,yyvsa);
 #ifdef YY_TransformationParser_LSP_NEEDED
         yyls = (YY_TransformationParser_LTYPE *) __ALLOCA_alloca (yystacksize * sizeof (*yylsp));

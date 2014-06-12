@@ -1,3 +1,4 @@
+#include <QDebug>
 #include "sslparser.h"
 /*  A Bison++ parser, made from sslparser.y  */
 /* with Bison++ version bison++ Version 1.21-8, adapted from GNU bison by coetmeur@icdc.fr
@@ -79,7 +80,7 @@ void *alloca();
 #include "operator.h"
 #include "boomerang.h"
 
-OPER strToTerm(char *s);                       // Convert string to a Terminal (if possible)
+OPER strToTerm(const QString &s);                       // Convert string to a Terminal (if possible)
 Exp *listExpToExp(std::list<Exp *> *le);       // Convert a STL list of Exp* to opList
 Exp *listStrToExp(std::list<QString> *ls); // Convert a STL list of strings to opList
 
@@ -753,7 +754,7 @@ SSLParser::
         break;
     }
     case 18: {
-        std::map<std::string, InsNameElem *> m;
+        std::map<QString, InsNameElem *> m;
         ParamEntry &param = Dict.DetParamMap[yyvsp[-4].str];
         Instruction *asgn = new Assign(yyvsp[-1].typ, new Terminal(opNil), yyvsp[0].exp);
         // Note: The below 2 copy lists of strings (to be deleted below!)
@@ -870,22 +871,22 @@ SSLParser::
                       << "]\n";
             exit(1);
         } else {
-            std::list<std::string>::iterator loc = yyvsp[-8].strlist->begin();
+            std::list<QString>::iterator loc = yyvsp[-8].strlist->begin();
             for (int x = yyvsp[-2].num; x <= yyvsp[0].num; x++, loc++) {
                 if (Dict.RegMap.find(*loc) != Dict.RegMap.end())
                     yyerror("Name reglist declared twice\n");
-                Dict.addRegister(loc->c_str(), x, yyvsp[-5].num, bFloat);
+                Dict.addRegister(*loc, x, yyvsp[-5].num, bFloat);
             }
             // delete $2;
         };
         break;
     }
     case 32: {
-        std::list<std::string>::iterator loc = yyvsp[-6].strlist->begin();
+        std::list<QString>::iterator loc = yyvsp[-6].strlist->begin();
         for (; loc != yyvsp[-6].strlist->end(); loc++) {
             if (Dict.RegMap.find(*loc) != Dict.RegMap.end())
                 yyerror("Name reglist declared twice\n");
-            Dict.addRegister(loc->c_str(), yyvsp[0].num, yyvsp[-3].num, bFloat);
+            Dict.addRegister(*loc, yyvsp[0].num, yyvsp[-3].num, bFloat);
         }
         // delete $2;
         ;
@@ -897,8 +898,9 @@ SSLParser::
         break;
     }
     case 34: {
-        yyval.strlist = new std::list<std::string>;
-        yyval.strlist->push_back(yyvsp[0].str);
+        if(yyval.strlist)
+            yyval.strlist->clear();
+        yyval.strlist = new std::list<QString> {yyvsp[0].str};
         ;
         break;
     }
@@ -911,17 +913,17 @@ SSLParser::
     case 36: {
         if (ConstTable.find(yyvsp[-2].str) != ConstTable.end())
             yyerror("Constant declared twice");
-        ConstTable[std::string(yyvsp[-2].str)] = yyvsp[0].num;
+        ConstTable[yyvsp[-2].str] = yyvsp[0].num;
         ;
         break;
     }
     case 37: {
         if (ConstTable.find(yyvsp[-4].str) != ConstTable.end())
             yyerror("Constant declared twice");
-        else if (yyvsp[-1].str == std::string("-"))
-            ConstTable[std::string(yyvsp[-4].str)] = yyvsp[-2].num - yyvsp[0].num;
-        else if (yyvsp[-1].str == std::string("+"))
-            ConstTable[std::string(yyvsp[-4].str)] = yyvsp[-2].num + yyvsp[0].num;
+        else if (yyvsp[-1].str == "-")
+            ConstTable[yyvsp[-4].str] = yyvsp[-2].num - yyvsp[0].num;
+        else if (yyvsp[-1].str == "+")
+            ConstTable[yyvsp[-4].str] = yyvsp[-2].num + yyvsp[0].num;
         else
             yyerror("Constant expression must be NUM + NUM or NUM - NUM");
         ;
@@ -1015,12 +1017,10 @@ SSLParser::
             if (TableDict[yyvsp[0].str]->getType() == NAMETABLE)
                 yyval.namelist = new std::deque<QString>(TableDict[yyvsp[0].str]->Records);
             else {
-                o << "name " << yyvsp[0].str << " is not a NAMETABLE.\n";
-                yyerror(STR(o));
+                yyerror(qPrintable(QString("name %1  is not a NAMETABLE.\n").arg(yyvsp[0].str)));
             }
         else {
-            o << "could not dereference name " << yyvsp[0].str << "\n";
-            yyerror(STR(o));
+            yyerror(qPrintable(QString("could not dereference name %1\n").arg(yyvsp[0].str)));
         };
         break;
     }
@@ -1030,9 +1030,7 @@ SSLParser::
             if (TableDict[yyvsp[0].str]->getType() == NAMETABLE)
                 yyval.namelist = new std::deque<QString>(TableDict[yyvsp[0].str]->Records);
             else {
-                std::ostringstream o;
-                o << "name " << yyvsp[0].str << " is not a NAMETABLE.\n";
-                yyerror(STR(o));
+                yyerror(qPrintable(QString("name %1  is not a NAMETABLE.\n").arg(yyvsp[0].str)));
             }
         else {
             yyval.namelist = new std::deque<QString>;
@@ -1107,23 +1105,16 @@ SSLParser::
         break;
     }
     case 65: {
-        std::string::size_type i;
-        std::string nm = yyvsp[0].str;
+        QString nm = yyvsp[0].str;
 
-        if (nm[0] == '^')
-            nm.replace(0, 1, "");
+        if (nm.startsWith('^'))
+            nm = nm.mid(1);
 
         // remove all " and _, from the decoration
-        while ((i = nm.find("\"")) != nm.npos)
-            nm.replace(i, 1, "");
-        // replace all '.' with '_'s from the decoration
-        while ((i = nm.find(".")) != nm.npos)
-            nm.replace(i, 1, "_");
-        while ((i = nm.find("_")) != nm.npos)
-            nm.replace(i, 1, "");
+        nm = nm.replace("\"","").replace(".","").replace("_","");
 
         yyval.insel = yyvsp[-1].insel;
-        yyval.insel->append(std::make_shared<InsNameElem>(nm.c_str()));
+        yyval.insel->append(std::make_shared<InsNameElem>(nm));
         ;
         break;
     }
@@ -1149,46 +1140,36 @@ SSLParser::
         break;
     }
     case 70: {
-        std::ostringstream o;
         if (TableDict.find(yyvsp[-2].str) == TableDict.end()) {
-            o << "Table " << yyvsp[-2].str << " has not been declared.\n";
-            yyerror(STR(o));
+            yyerror(qPrintable(QString("Table %1 has not been declared.\n").arg(yyvsp[-2].str)));
         } else if ((yyvsp[-1].num < 0) || (yyvsp[-1].num >= (int)TableDict[yyvsp[-2].str]->Records.size())) {
-            o << "Can't get element " << yyvsp[-1].num << " of table " << yyvsp[-2].str << ".\n";
-            yyerror(STR(o));
+            yyerror(qPrintable(QString("Can't get element %1  of table %2\n").arg(yyvsp[-1].num).arg(yyvsp[-2].str)));
         } else
             yyval.insel = std::make_shared<InsNameElem>(TableDict[yyvsp[-2].str]->Records[yyvsp[-1].num]);
         ;
         break;
     }
     case 71: {
-        std::ostringstream o;
         if (TableDict.find(yyvsp[-2].str) == TableDict.end()) {
-            o << "Table " << yyvsp[-2].str << " has not been declared.\n";
-            yyerror(STR(o));
+            yyerror(qPrintable(QString("Table %1 has not been declared.\n").arg(yyvsp[-2].str)));
         } else
             yyval.insel = std::make_shared<InsListElem>(yyvsp[-2].str, TableDict[yyvsp[-2].str], yyvsp[-1].str);
         ;
         break;
     }
     case 72: {
-        std::ostringstream o;
         if (TableDict.find(yyvsp[-2].str) == TableDict.end()) {
-            o << "Table " << yyvsp[-2].str << " has not been declared.\n";
-            yyerror(STR(o));
+            yyerror(qPrintable(QString("Table %1 has not been declared.\n").arg(yyvsp[-2].str)));
         } else if ((yyvsp[-1].num < 0) || (yyvsp[-1].num >= (int)TableDict[yyvsp[-2].str]->Records.size())) {
-            o << "Can't get element " << yyvsp[-1].num << " of table " << yyvsp[-2].str << ".\n";
-            yyerror(STR(o));
+            yyerror(qPrintable(QString("Can't get element %1  of table %2\n").arg(yyvsp[-1].num).arg(yyvsp[-2].str)));
         } else
             yyval.insel = std::make_shared<InsNameElem>(TableDict[yyvsp[-2].str]->Records[yyvsp[-1].num]);
         ;
         break;
     }
     case 73: {
-        std::ostringstream o;
         if (TableDict.find(yyvsp[-2].str) == TableDict.end()) {
-            o << "Table " << yyvsp[-2].str << " has not been declared.\n";
-            yyerror(STR(o));
+            yyerror(qPrintable(QString("Table %1 has not been declared.\n").arg(yyvsp[-2].str)));
         } else
             yyval.insel = std::make_shared<InsListElem>(yyvsp[-2].str, TableDict[yyvsp[-2].str], yyvsp[-1].str);
         ;
@@ -1226,13 +1207,12 @@ SSLParser::
         std::ostringstream o;
         if (Dict.FlagFuncs.find(yyvsp[-2].str) != Dict.FlagFuncs.end()) {
             // Note: SETFFLAGS assigns to the floating point flags. All others to the integer flags
-            bool bFloat = strcmp(yyvsp[-2].str, "SETFFLAGS") == 0;
+            bool bFloat = yyvsp[-2].str=="SETFFLAGS";
             OPER op = bFloat ? opFflags : opFlags;
             yyval.regtransfer = new Assign(
                 new Terminal(op), Binary::get(opFlagCall, Const::get(yyvsp[-2].str), listExpToExp(yyvsp[-1].explist)));
         } else {
-            o << yyvsp[-2].str << " is not declared as a flag function.\n";
-            yyerror(STR(o));
+            yyerror(qPrintable(yyvsp[-2].str+" is not declared as a flag function.\n"));
         };
         break;
     }
@@ -1405,20 +1385,20 @@ SSLParser::
     case 108: {
         std::ostringstream o;
         if (indexrefmap.find(yyvsp[-1].str) == indexrefmap.end()) {
-            o << "index " << yyvsp[-1].str << " not declared for use.\n";
-            yyerror(STR(o));
+            yyerror(qPrintable(QString("index  %1 not declared for use.\n").arg(yyvsp[-1].str)));
         } else if (TableDict.find(yyvsp[-2].str) == TableDict.end()) {
-            o << "table " << yyvsp[-2].str << " not declared for use.\n";
-            yyerror(STR(o));
+            yyerror(qPrintable(QString("table  %1 not declared for use.\n").arg(yyvsp[-2].str)));
         } else if (TableDict[yyvsp[-2].str]->getType() != EXPRTABLE) {
-            o << "table " << yyvsp[-2].str << " is not an expression table but appears to be used as one.\n";
-            yyerror(STR(o));
+            yyerror(qPrintable(QString("table  %1  is not an expression table but appears to be used as one.\n").
+                               arg(yyvsp[-2].str)));
         } else if (((ExprTable *)TableDict[yyvsp[-2].str])->expressions.size() <
                    indexrefmap[yyvsp[-1].str]->ntokens()) {
-            o << "table " << yyvsp[-2].str << " (" << ((ExprTable *)TableDict[yyvsp[-2].str])->expressions.size()
-              << ") is too small to use " << yyvsp[-1].str << " (" << indexrefmap[yyvsp[-1].str]->ntokens()
-              << ") as an index.\n";
-            yyerror(STR(o));
+            yyerror(qPrintable(QString("table %1  (%2) is too small to use %3 (%4) as an index.\n").
+                               arg(yyvsp[-2].str).
+                    arg(((ExprTable *)TableDict[yyvsp[-2].str])->expressions.size()).
+                    arg(yyvsp[-1].str).
+                    arg(indexrefmap[yyvsp[-1].str]->ntokens())
+                    ));
         }
         // $1 is a map from string to Table*; $2 is a map from string to InsNameElem*
         yyval.exp = Binary::get(opExpTable, Const::get(yyvsp[-2].str), Const::get(yyvsp[-1].str));
@@ -1431,9 +1411,11 @@ SSLParser::
             if (Dict.DetParamMap.find(yyvsp[-2].str) != Dict.DetParamMap.end()) {
                 ParamEntry &param = Dict.DetParamMap[yyvsp[-2].str];
                 if (yyvsp[-1].explist->size() != param.funcParams.size()) {
-                    o << yyvsp[-2].str << " requires " << param.funcParams.size() << " parameters, but received "
-                      << yyvsp[-1].explist->size() << ".\n";
-                    yyerror(STR(o));
+                    yyerror(qPrintable(QString("%1 requires %2  parameters, but received %3\n")
+                                       .arg(yyvsp[-2].str)
+                                    .arg(param.funcParams.size())
+                            .arg(yyvsp[-1].explist->size())
+                            ));
                 } else {
                     // Everything checks out. *phew*
                     // Note: the below may not be right! (MVE)
@@ -1441,11 +1423,10 @@ SSLParser::
                     // delete $2;            // Delete the list of char*s
                 }
             } else {
-                o << yyvsp[-2].str << " is not defined as a OPERAND function.\n";
-                yyerror(STR(o));
+                yyerror(qPrintable(QString("%1 is not defined as a OPERAND function.\n").arg(yyvsp[-2].str)));
             }
         } else {
-            o << "Unrecognized name " << yyvsp[-2].str << " in lambda call.\n";
+            yyerror(qPrintable(QString("Unrecognized name %1 in lambda call.\n").arg(yyvsp[-2].str)));
         };
         break;
     }
@@ -1512,17 +1493,15 @@ SSLParser::
     case 121: {
         std::ostringstream o;
         if (indexrefmap.find(yyvsp[-2].str) == indexrefmap.end()) {
-            o << "index " << yyvsp[-2].str << " not declared for use.\n";
-            yyerror(STR(o));
+            yyerror(qPrintable(QString("table %1 not declared for use.\n").arg(yyvsp[-2].str)));
         } else if (TableDict.find(yyvsp[-3].str) == TableDict.end()) {
-            o << "table " << yyvsp[-3].str << " not declared for use.\n";
-            yyerror(STR(o));
+            yyerror(qPrintable(QString("table %1 not declared for use.\n").arg(yyvsp[-3].str)));
         } else if (TableDict[yyvsp[-3].str]->getType() != OPTABLE) {
-            o << "table " << yyvsp[-3].str << " is not an operator table but appears to be used as one.\n";
-            yyerror(STR(o));
+            yyerror(qPrintable(QString("table %1 is not an operator table but appears to be used as one.\n")
+                               .arg(yyvsp[-3].str)));
         } else if (TableDict[yyvsp[-3].str]->Records.size() < indexrefmap[yyvsp[-2].str]->ntokens()) {
-            o << "table " << yyvsp[-3].str << " is too small to use with " << yyvsp[-2].str << " as an index.\n";
-            yyerror(STR(o));
+            yyerror(qPrintable(QString("table %1 is too small to use with %2 as an index.\n")
+                               .arg(yyvsp[-2].str)));
         }
         yyval.exp =
             new Ternary(opOpTable, Const::get(yyvsp[-3].str), Const::get(yyvsp[-2].str),
@@ -1536,12 +1515,11 @@ SSLParser::
         break;
     }
     case 123: {
-        bool isFlag = strstr(yyvsp[0].str, "flags") != 0;
-        std::map<std::string, int>::const_iterator it = Dict.RegMap.find(yyvsp[0].str);
+        bool isFlag = yyvsp[0].str.contains("flags");
+        std::map<QString, int>::const_iterator it = Dict.RegMap.find(yyvsp[0].str);
         if (it == Dict.RegMap.end() && !isFlag) {
             std::ostringstream ost;
-            ost << "register `" << yyvsp[0].str << "' is undefined";
-            yyerror(STR(ost));
+            yyerror(qPrintable(QString("register `%1' is undefined\n").arg(yyvsp[0].str)));
         } else if (isFlag || it->second == -1) {
             // A special register, e.g. %npc or %CF. Return a Terminal for it
             OPER op = strToTerm(yyvsp[0].str);
@@ -1564,8 +1542,9 @@ SSLParser::
         break;
     }
     case 125: {
-        int regNum;
-        sscanf(yyvsp[0].str, "r%d", &regNum);
+        bool ok=false;
+        int regNum = yyvsp[0].str.midRef(1).toInt(&ok);
+        assert(ok);
         yyval.exp = Location::regOf(regNum);
         ;
         break;
@@ -1578,16 +1557,16 @@ SSLParser::
     case 127: {
         // This is a mixture of the param: PARM {} match and the value_op: NAME {} match
         Exp *s;
-        std::set<std::string>::iterator it = Dict.ParamSet.find(yyvsp[0].str);
+        std::set<QString>::iterator it = Dict.ParamSet.find(yyvsp[0].str);
         if (it != Dict.ParamSet.end()) {
             s = new Location(opParam, Const::get(yyvsp[0].str), nullptr);
         } else if (ConstTable.find(yyvsp[0].str) != ConstTable.end()) {
             s = new Const(ConstTable[yyvsp[0].str]);
         } else {
-            std::ostringstream ost;
-            ost << "`" << yyvsp[0].str << "' is not a constant, definition or a parameter of this instruction\n";
-            yyerror(STR(ost));
-            s = new Const(0);
+            yyerror(qPrintable(QString("`%1' is not a constant, definition or a parameter of this instruction\n")
+                               .arg(yyvsp[0].str)));
+
+            s = Const::get(0);
         }
         yyval.exp = s;
         ;
@@ -1619,7 +1598,7 @@ SSLParser::
         break;
     }
     case 133: {
-        Dict.bigEndian = (strcmp(yyvsp[0].str, "BIG") == 0);
+        Dict.bigEndian = yyvsp[0].str=="BIG";
         ;
         break;
     }
@@ -1634,18 +1613,16 @@ SSLParser::
         break;
     }
     case 136: {
-        char c = yyvsp[0].str[1];
+        char c = yyvsp[0].str[1].toLatin1();
         if (c == '*')
             yyval.typ = SizeType::get(0); // MVE: should remove these
         else if (isdigit(c)) {
-            int size;
-            // Skip star (hence +1)
-            sscanf(yyvsp[0].str + 1, "%d", &size);
-            yyval.typ = SizeType::get(size);
+            // Skip star (hence midRef)
+            yyval.typ = SizeType::get(atoi(qPrintable(yyvsp[0].str.mid(1))));
         } else {
             int size;
             // Skip star and letter
-            sscanf(yyvsp[0].str + 2, "%d", &size);
+            size = atoi(qPrintable(yyvsp[0].str.mid(2)));
             if (size == 0)
                 size = STD_SIZE;
             switch (c) {
@@ -1672,7 +1649,7 @@ SSLParser::
         break;
     }
     case 140: {
-        Dict.fastMap[std::string(yyvsp[-2].str)] = std::string(yyvsp[0].str);
+        Dict.fastMap[yyvsp[-2].str] = QString(yyvsp[0].str);
         ;
         break;
     }

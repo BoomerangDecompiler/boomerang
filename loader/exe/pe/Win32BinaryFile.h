@@ -241,8 +241,8 @@ class Win32BinaryFile : public QObject,
         numImports = 0;
         return nullptr;
     }
-    const char *getFilenameSymbolFor(const char *) { return nullptr; }
+    QString getFilenameSymbolFor(const char *) { return ""; }
     QString symbolByAddress(ADDRESS dwAddr) override;                        // Get sym from addr
     ADDRESS GetAddressByName(const QString &name, bool bNoTypeOK = false) override; // Find addr given name
-    void AddSymbol(ADDRESS uNative, const char *pName) override;
+    void AddSymbol(ADDRESS uNative, const QString &pName) override;
 };

@@ -1133,9 +1133,7 @@ bool DfaLocalMapper::processExp(Exp *e) {
             proc->getSymbolExp(e, VoidType::get(), true);
 #if 0
         } else {
-            std::ostringstream ost;
-            ost << "tparam" << proc->nextParamNum();
-            const char* name = strdup(ost.str().c_str());
+            QString name = QString("tparam%1").arg(proc->nextParamNum());
             proc->mapSymbolTo(e, Location::param(name, proc));
 #endif
         }

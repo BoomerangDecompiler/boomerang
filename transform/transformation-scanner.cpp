@@ -716,11 +716,11 @@ do_action:      /* this label is used only to access EOF actions */
                 YY_BREAK
                     case 15:
                     //#line 71 "transformation.l"
-                { count(); yylval.str = strdup(yytext); yylval.str[strlen(yylval.str)-1] = 0; return TransformationParser::FUNC; }
+                { count(); yylval.str = yytext; yylval.str.chop(1); return TransformationParser::FUNC; }
                 YY_BREAK
                     case 16:
                     //#line 73 "transformation.l"
-                { count(); yylval.str = strdup(yytext); return TransformationParser::IDENTIFIER; }
+                { count(); yylval.str = yytext;  return TransformationParser::IDENTIFIER; }
                 YY_BREAK
                     case 17:
                     //#line 75 "transformation.l"
@@ -752,7 +752,7 @@ do_action:      /* this label is used only to access EOF actions */
                 YY_BREAK
                     case 24:
                     //#line 84 "transformation.l"
-                { count(); yylval.str = strdup(yytext); return TransformationParser::STRING_LITERAL; }
+                { count(); yylval.str = yytext; return TransformationParser::STRING_LITERAL; }
                 YY_BREAK
                     case 25:
                     //#line 86 "transformation.l"

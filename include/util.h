@@ -14,11 +14,7 @@ struct Printable {
 // was a workaround
 #define STR(x) (char *)(x.str().c_str())
 
-void escapeXMLChars(std::string &s);
 QString escapeStr(const QString &str);
 int lockFileWrite(const char *fname);
 void unlockFile(int n);
-#ifdef __MINGW32__
-extern "C" { extern char *strdup(const char *__s); }
-#endif
 #endif

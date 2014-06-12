@@ -51,8 +51,8 @@ NJMCDecoder::NJMCDecoder(Prog *prg) : prog(prg) {}
   ******************************************************************************/
 std::list<Instruction *> *NJMCDecoder::instantiate(ADDRESS pc, const char *name, ...) {
     // Get the signature of the instruction and extract its parts
-    std::pair<std::string, unsigned> sig = RTLDict.getSignature(name);
-    std::string opcode = sig.first;
+    std::pair<QString, unsigned> sig = RTLDict.getSignature(name);
+    QString opcode = sig.first;
     unsigned numOperands = sig.second;
 
     // Put the operands into a vector
@@ -82,7 +82,7 @@ std::list<Instruction *> *NJMCDecoder::instantiate(ADDRESS pc, const char *name,
         q_cout << '\n';
     }
 
-    std::list<Instruction *> *instance = RTLDict.instantiateRTL(opcode.c_str(), pc, actuals);
+    std::list<Instruction *> *instance = RTLDict.instantiateRTL(opcode, pc, actuals);
 
     return instance;
 }

@@ -17,6 +17,8 @@
 #include <string>
 #include <stdint.h>
 #include <memory>
+#include <QString>
+
 class Type;
 typedef std::shared_ptr<Type> SharedType;
 /***************************************************************************/ /**
@@ -41,13 +43,13 @@ class Register {
     // access and set functions
     ///////////////////////////////////////////////////////////////////////////////
 
-    void s_name(const char *);
+    void s_name(const QString &);
     void s_size(uint16_t s) { size = s; }
     void s_float(bool f) { flt = f; }
     void s_address(void *p) { address = p; }
 
     /* These are only used in the interpreter */
-    std::string g_name() const;
+    const QString &g_name() const;
     void *g_address() const { return address; }
 
     int g_size() const { return size; }
@@ -71,7 +73,7 @@ class Register {
     bool isFloat() const { return flt; }
 
   private:
-    std::string name;
+    QString name;
     uint16_t size;
     void *address;
     int mappedIndex;

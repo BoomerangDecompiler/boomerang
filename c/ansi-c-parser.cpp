@@ -602,7 +602,7 @@ int AnsiCParser::yyparse(platform plat, callconv cc) {
         if (yyvsp[0].bound) {
             switch (yyvsp[0].bound->kind) {
             case 0:
-                yyval.param->setBoundMax(yyvsp[0].bound->nam.c_str());
+                yyval.param->setBoundMax(yyvsp[0].bound->nam);
             }
         }
 
@@ -666,10 +666,7 @@ int AnsiCParser::yyparse(platform plat, callconv cc) {
         for (auto &elem : *yyvsp[-2].type_ident_list) {
             t->addType((elem)->ty, (elem)->nam);
         }
-        char tmp[1024];
-        sprintf(tmp, "struct %s", yyvsp[-4].str);
-        Type::addNamedType(tmp, t);
-
+        Type::addNamedType(QString("struct %1").arg(yyvsp[-4].str), t);
         break;
     }
     case 34: {
@@ -917,10 +914,7 @@ int AnsiCParser::yyparse(platform plat, callconv cc) {
         break;
     }
     case 75: {
-        char tmp[1024];
-        sprintf(tmp, "struct %s", yyvsp[0].str);
-        yyval.type = NamedType::get(tmp);
-
+        yyval.type = NamedType::get(QString("struct %1").arg(yyvsp[0].str));
         break;
     }
     case 76: {

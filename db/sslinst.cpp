@@ -170,7 +170,7 @@ bool RTLInstDict::readSSLFile(const QString &SSLFileName) {
   * \param size - register size in bits
   * \param flt - is float ?
   ******************************************************************************/
-void RTLInstDict::addRegister(const char *name, int id, int size, bool flt) {
+void RTLInstDict::addRegister(const QString &name, int id, int size, bool flt) {
     RegMap[name] = id;
     if (id == -1) {
         SpecialRegMap[name].s_name(name);
@@ -236,15 +236,15 @@ void RTLInstDict::print(QTextStream &os /*= std::cout*/) {
   * Go through the params and fixup any lambda functions
   ******************************************************************************/
 void RTLInstDict::fixupParams() {
-    for (auto param : DetParamMap) {
-        param.second.mark = 0;
+    for (ParamEntry &param : DetParamMap) {
+        param.mark = 0;
     }
     int mark = 1;
-    for (auto param : DetParamMap) {
+    for (auto iter =DetParamMap.begin(); iter!=DetParamMap.end(); ++iter) {
         std::list<QString> funcParams;
         bool haveCount = false;
-        if (param.second.kind == PARAM_VARIANT) {
-            fixupParamsSub(param.first, funcParams, haveCount, mark++);
+        if (iter.value().kind == PARAM_VARIANT) {
+            fixupParamsSub(iter.key(), funcParams, haveCount, mark++);
         }
     }
 }
@@ -284,8 +284,7 @@ void RTLInstDict::fixupParamsSub(const QString &s, std::list<QString> &funcParam
                          << " has " << sub.funcParams.size() << ".\n";
         } else if (funcParams != sub.funcParams && sub.asgn != nullptr) {
             /* Rename so all the parameter names match */
-            std::list<QString>::iterator i, j;
-            for (i = funcParams.begin(), j = sub.funcParams.begin(); i != funcParams.end(); i++, j++) {
+            for (auto i = funcParams.begin(), j = sub.funcParams.begin(); i != funcParams.end(); i++, j++) {
                 Location param(opParam, Const::get(*j), nullptr); // Location::param(j->c_str())
                 Exp *replace = Location::param(*i);
                 sub.asgn->searchAndReplace(param, replace);
@@ -305,7 +304,7 @@ void RTLInstDict::fixupParamsSub(const QString &s, std::list<QString> &funcParam
   * \param name - instruction name
   * \returns              the signature (name + number of operands)
   ******************************************************************************/
-std::pair<std::string, unsigned> RTLInstDict::getSignature(const char *name) {
+std::pair<QString, unsigned> RTLInstDict::getSignature(const char *name) {
     // Take the argument, convert it to upper case and remove any _'s and .'s
     QString hlpr(name);
     hlpr = hlpr.replace(".","").toUpper();
@@ -316,7 +315,7 @@ std::pair<std::string, unsigned> RTLInstDict::getSignature(const char *name) {
         it = idict.find("NOP"); // At least, don't cause segfault
     }
 
-    return {hlpr.toStdString(), (it->second).params.size()};
+    return {hlpr, (it->second).params.size()};
 }
 
 /***************************************************************************/ /**
@@ -355,9 +354,9 @@ std::list<Instruction *> *RTLInstDict::instantiateRTL(const QString &name, ADDRE
     // FIXME: settings
     //      if (progOptions.fastInstr) {
     if (0) {
-        auto itf = fastMap.find(name.toStdString());
+        auto itf = fastMap.find(name);
         if (itf != fastMap.end())
-            lname = itf->second.c_str();
+            lname = itf->second;
     }
     // Retrieve the dictionary entry for the named instruction
     auto dict_entry = idict.find(lname);
@@ -505,8 +504,12 @@ void RTLInstDict::transformPostVars(std::list<Instruction *> &rts, bool optimise
             assert(rhs!=nullptr);
             ss = Binary::get(opList, lhs->clone(), Binary::get(opList, rhs->clone(), new Terminal(opNil)));
         } else if (rt->isFlagAssgn()) {
+            Assign *rt_asgn = (Assign *)rt;
+            Exp *lhs = rt_asgn->getLeft();
+            Exp *rhs = rt_asgn->getRight();
             // An opFlagCall is assumed to be a Binary with a string and an opList of parameters
-            ss = (Binary *)((Binary *)rt)->getSubExp2();
+            ss = rhs->getSubExp2();
+            assert(false); // was ss = (Binary *)((Binary *)rt)->getSubExp2();
         }
 
         /* Look for usages of post-variables' referents

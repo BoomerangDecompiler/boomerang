@@ -34,6 +34,8 @@
 #include <string>                       // for string
 #include <utility>                      // for pair
 #include <vector>                       // for vector
+#include <QMap>
+
 class Exp;  // lines 38-38
 class Instruction;  // lines 47-47
 class QTextStream;
@@ -147,7 +149,7 @@ class RTLInstDict {
 
     bool readSSLFile(const QString &SSLFileName);
     void reset();
-    std::pair<std::string, unsigned> getSignature(const char *name);
+    std::pair<QString, unsigned> getSignature(const char *name);
 
     int appendToDict(const QString &n, std::list<QString> &p, RTL &rtl);
 
@@ -157,34 +159,34 @@ class RTLInstDict {
 
     void transformPostVars(std::list<Instruction *> &rts, bool optimise);
     void print(QTextStream &os);
-    void addRegister(const char *name, int id, int size, bool flt);
+    void addRegister(const QString &name, int id, int size, bool flt);
     bool partialType(Exp *exp, Type &ty);
     void fixupParams();
 
   public:
     //! A map from the symbolic representation of a register (e.g. "%g0") to its index within an array of registers.
-    std::map<std::string, int, std::less<std::string>> RegMap;
+    std::map<QString, int, std::less<QString>> RegMap;
 
     //! Similar to r_map but stores more info about a register such as its size, its addresss etc (see register.h).
     std::map<int, Register, std::less<int>> DetRegMap;
 
     //! A map from symbolic representation of a special (non-addressable) register to a Register object
-    std::map<std::string, Register, std::less<std::string>> SpecialRegMap;
+    std::map<QString, Register, std::less<QString>> SpecialRegMap;
 
     //! A set of parameter names, to make sure they are declared (?).
     //! Was map from string to SemTable index
-    std::set<std::string> ParamSet;
+    std::set<QString> ParamSet;
 
     //! Parameter (instruction operand, more like addressing mode) details (where given)
-    std::map<QString, ParamEntry> DetParamMap;
+    QMap<QString, ParamEntry> DetParamMap;
 
     //! The maps which summarise the semantics (.ssl) file
-    std::map<std::string, Exp *> FlagFuncs;
-    std::map<std::string, std::pair<int, void *> *> DefMap;
+    std::map<QString, Exp *> FlagFuncs;
+    std::map<QString, std::pair<int, void *> *> DefMap;
     std::map<int, Exp *> AliasMap;
 
     //! Map from ordinary instruction to fast pseudo instruction, for use with -f (fast but not as exact) switch
-    std::map<std::string, std::string> fastMap;
+    std::map<QString, QString> fastMap;
 
     bool bigEndian; // True if this source is big endian
 

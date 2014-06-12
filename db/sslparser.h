@@ -25,7 +25,7 @@ class SSLScanner;
 
 struct yy_SSLParser_stype {
     Exp *exp;
-    char *str;
+    QString str;
     int32_t num;
     double dbl;
     Instruction *regtransfer;
@@ -34,9 +34,9 @@ struct yy_SSLParser_stype {
     Table *tab;
     std::shared_ptr<InsNameElem> insel;
     std::list<QString> *parmlist=nullptr;
-    std::list<std::string> *strlist;
+    std::list<QString> *strlist=nullptr;
     std::deque<Exp *> *exprlist;
-    std::deque<QString> *namelist;
+    std::deque<QString> *namelist=nullptr;
     std::list<Exp *> *explist;
     RTL *rtlist;
 };
@@ -167,7 +167,7 @@ class SSLParser {
     /*
     * Maps SSL constants to their values.
     */
-    std::map<std::string, int> ConstTable;
+    std::map<QString, int> ConstTable;
 
     /*
     * maps index names to instruction name-elements

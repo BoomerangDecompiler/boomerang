@@ -146,7 +146,7 @@ class Boomerang : public QObject {
     void addWatcher(Watcher *watcher) { watchers.insert(watcher); }
     void persistToXML(Prog *prog);
     Prog *loadFromXML(const char *fname);
-    void objcDecode(std::map<std::string, ObjcModule> &modules, Prog *prog);
+    void objcDecode(const std::map<QString, ObjcModule> &modules, Prog *prog);
 
     /// Alert the watchers that decompilation has completed.
     void alert_complete() {
@@ -291,7 +291,7 @@ class Boomerang : public QObject {
     QTextStream ErrStream;
     std::vector<ADDRESS> entrypoints;       /// A vector which contains all know entrypoints for the Prog.
     std::vector<QString> symbolFiles;   /// A vector containing the names off all symbolfiles to load.
-    std::map<ADDRESS, std::string> symbols; /// A map to find a name by a given address.
+    std::map<ADDRESS, QString> symbols; /// A map to find a name by a given address.
 };
 
 #define VERBOSE (Boomerang::get()->vFlag)

@@ -33,11 +33,6 @@ int microX86Dis(void *p); // From microX86dis.c
 }
 
 DOS4GWBinaryFile::~DOS4GWBinaryFile() {
-    for (int i = 0; i < m_iNumSections; i++) {
-        if (m_pSections[i].pSectionName) {
-            ; // delete [] m_pSections[i].pSectionName;
-        }
-    }
 }
 
 bool DOS4GWBinaryFile::Open(const char *sName) {
@@ -196,8 +191,7 @@ bool DOS4GWBinaryFile::RealLoad(const QString &sName) {
                    LMMH(m_pLXObjects[n].RelocBaseAddr), LMMH(m_pLXObjects[n].ObjectFlags),
                    LMMH(m_pLXObjects[n].PageTblIdx), LMMH(m_pLXObjects[n].NumPageTblEntries));
 
-            m_pSections[n].pSectionName = new char[9];
-            sprintf(m_pSections[n].pSectionName, "seg%i", n); // no section names in LX
+            m_pSections[n].pSectionName = QString("seg%i").arg(n); // no section names in LX
             m_pSections[n].uNativeAddr = LMMH(m_pLXObjects[n].RelocBaseAddr);
             m_pSections[n].uHostAddr =
                 ADDRESS::host_ptr(base + (m_pSections[n].uNativeAddr - m_pSections[0].uNativeAddr).m_value);

@@ -54,22 +54,22 @@ class CustomOptions {
 class SymbolRef {
   public:
     ADDRESS addr;
-    std::string nam;
+    QString nam;
 
-    SymbolRef(ADDRESS a, const char *_nam) : addr(a), nam(_nam) {}
+    SymbolRef(ADDRESS a, const QString &_nam) : addr(a), nam(_nam) {}
 };
 
 class Bound {
   public:
     int kind;
-    std::string nam;
+    QString nam;
 
-    Bound(int _kind, const char *_nam) : kind(_kind), nam(_nam) {}
+    Bound(int _kind, const QString &_nam) : kind(_kind), nam(_nam) {}
 };
 
 typedef struct {
     int ival=0;
-    char *str=nullptr;
+    QString str;
     std::shared_ptr<Type> type=nullptr;
     std::list<Parameter *> *param_list=nullptr;
     std::list<int> *num_list=nullptr;

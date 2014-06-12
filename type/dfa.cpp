@@ -1337,7 +1337,8 @@ void Unary::descendType(SharedType parentType, bool &ch, Instruction *s) {
         SharedType ty = prog->getGlobalType(name);
         if (ty) {
             ty = ty->meetWith(parentType, ch);
-            prog->setGlobalType(name, ty);
+            if(ch)
+                prog->setGlobalType(name, ty);
         }
         break;
     }

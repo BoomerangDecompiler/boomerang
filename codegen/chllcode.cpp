@@ -393,8 +393,8 @@ void CHLLCode::appendExp(QTextStream &str, const Exp &exp, PREC curPrec, bool un
             break;
         }
         assert(u.getSubExp1()->getOper() == opIntConst);
-        const char *n = m_proc->getProg()->getRegName(((Const *)u.getSubExp1())->getInt());
-        if (n) {
+        QString n(m_proc->getProg()->getRegName(((Const *)u.getSubExp1())->getInt()));
+        if (n.isEmpty()) {
             if (n[0] == '%')
                 str << n + 1;
             else

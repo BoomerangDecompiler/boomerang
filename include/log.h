@@ -12,7 +12,7 @@ class LocationSet;
 class RTL;
 class Type;
 struct ADDRESS;
-class Printable;
+struct Printable;
 typedef std::shared_ptr<Type> SharedType;
 class Log {
 public:

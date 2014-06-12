@@ -36,9 +36,6 @@
 PalmBinaryFile::PalmBinaryFile() : m_pImage(nullptr), m_pData(nullptr) {}
 
 PalmBinaryFile::~PalmBinaryFile() {
-    for (int i = 0; i < m_iNumSections; i++)
-        if (m_pSections[i].pSectionName != nullptr)
-            delete[] m_pSections[i].pSectionName;
     if (m_pImage) {
         delete[] m_pImage;
     }
@@ -179,17 +176,14 @@ bool PalmBinaryFile::RealLoad(const QString &sName) {
     unsigned char *p = m_pImage + 0x4E; // First resource header
     unsigned off = 0;
     for (int i = 0; i < m_iNumSections; i++) {
-        // First get the name (4 alpha)
-        strncpy(buf, (char *)p, 4);
-        buf[4] = '\0';
-        std::string name(buf);
         // Now get the identifier (2 byte binary)
         unsigned id = (p[4] << 8) + p[5];
-        sprintf(buf, "%d", id);
+        QByteArray qba((char *)p,4);
+        // First the name (4 alphanumeric characters from p to p+3)
         // Join the id to the name, e.g. code0, data12
-        name += buf;
-        m_pSections[i].pSectionName = new char[name.size() + 1];
-        strcpy(m_pSections[i].pSectionName, name.c_str());
+        QString name = QString("%1%2").arg(QString(qba)).arg(id);
+        m_pSections[i].pSectionName = name;
+
         p += 4 + 2;
         off = UINT4(p);
         p += 4;
@@ -203,8 +197,8 @@ bool PalmBinaryFile::RealLoad(const QString &sName) {
         }
 
         // Decide if code or data; note that code0 is a special case (not code)
-        m_pSections[i].bCode = (name != "code0") && (name.substr(0, 4) == "code");
-        m_pSections[i].bData = name.substr(0, 4) == "data";
+        m_pSections[i].bCode = (name != "code0") && (name.startsWith("code"));
+        m_pSections[i].bData = name.startsWith("data");
     }
 
     // Set the length for the last section
@@ -413,7 +407,7 @@ ADDRESS PalmBinaryFile::GetAddressByName(const QString &pName, bool bNoTypeOK) {
     return NO_ADDRESS;
 }
 
-void PalmBinaryFile::AddSymbol(ADDRESS addr, const char *name) { m_symTable[addr] = name; }
+void PalmBinaryFile::AddSymbol(ADDRESS addr, const QString &name) { m_symTable[addr] = name; }
 
 int PalmBinaryFile::GetSizeByName(const QString &pName, bool bTypeOK) {
     Q_UNUSED(pName);
@@ -428,7 +422,7 @@ ADDRESS *PalmBinaryFile::GetImportStubs(int &numImports) {
     return nullptr;
 }
 
-const char *PalmBinaryFile::getFilenameSymbolFor(const char *) { return nullptr; }
+QString PalmBinaryFile::getFilenameSymbolFor(const char *) { return ""; }
 
 LoaderInterface::tMapAddrToString &PalmBinaryFile::getSymbols() { return m_symTable; }
 
@@ -548,38 +542,24 @@ ADDRESS PalmBinaryFile::GetMainEntryPoint() {
     return ADDRESS::g(0L);
 }
 
-void PalmBinaryFile::GenerateBinFiles(const std::string &path) const {
+void PalmBinaryFile::GenerateBinFiles(const QString &path) const {
     for (int i = 0; i < m_iNumSections; i++) {
         SectionInfo *pSect = m_pSections + i;
-        if ((strncmp(pSect->pSectionName, "code", 4) != 0) && (strncmp(pSect->pSectionName, "data", 4) != 0)) {
+        if (!pSect->pSectionName.startsWith("code") && !pSect->pSectionName.startsWith("data")) {
             // Save this section in a file
             // First construct the file name
-            char name[20];
-            strncpy(name, pSect->pSectionName, 4);
-            sprintf(name + 4, "%04x.bin", atoi(pSect->pSectionName + 4));
-            std::string fullName(path);
+            int sect_num = pSect->pSectionName.mid(4).toInt();
+            QString name = QString("%1%2.bin").arg(pSect->pSectionName.left(4)).arg(sect_num,4,16,QChar('0'));
+            QString fullName(path);
             fullName += name;
             // Create the file
-            FILE *f = fopen(fullName.c_str(), "w");
+            FILE *f = fopen(qPrintable(fullName), "w");
             if (f == nullptr) {
-                fprintf(stderr, "Could not open %s for writing binary file\n", fullName.c_str());
+                fprintf(stderr, "Could not open %s for writing binary file\n", qPrintable(fullName));
                 return;
             }
             fwrite((void *)pSect->uHostAddr.m_value, pSect->uSectionSize, 1, f);
             fclose(f);
         }
     }
-}
-
-// This function is called via dlopen/dlsym; it returns a Binary::getFile
-// derived concrete object. After this object is returned, the virtual function
-// call mechanism will call the rest of the code in this library
-// It needs to be C linkage so that it its name is not mangled
-extern "C" {
-#ifdef _WIN32
-__declspec(dllexport)
-#endif
-    QObject *construct() {
-    return new PalmBinaryFile;
-}
 }

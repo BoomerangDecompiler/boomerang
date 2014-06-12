@@ -3161,10 +3161,10 @@ bool Assign::usesExp(const Exp &e) {
 }
 
 #if 0
-bool Assign::match(const char *pattern, std::map<std::string, Exp*> &bindings) {
+bool Assign::match(const QString &pattern, std::map<QString, Exp*> &bindings) {
 if (strstr(pattern, ":=") == nullptr)
     return false;
-char *left = strdup(pattern);
+QString left = pattern;
 char *right = strstr(left, ":=");
 *right++ = 0;
 right++;

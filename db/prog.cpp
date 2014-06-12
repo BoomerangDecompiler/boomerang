@@ -185,7 +185,7 @@ void Prog::generateDotFile() {
 }
 
 void Prog::generateCode(Module *cluster, UserProc *proc, bool /*intermixRTL*/) {
-    // std::string basedir = m_rootCluster->makeDirs();
+    // QString basedir = m_rootCluster->makeDirs();
     QTextStream *os;
     if (cluster) {
         cluster->openStream("c");
@@ -202,16 +202,16 @@ void Prog::generateCode(Module *cluster, UserProc *proc, bool /*intermixRTL*/) {
             if (Boomerang::get()->noDecompile) {
                 const char *sections[] = {"rodata", "data", "data1", nullptr};
                 for (int j = 0; sections[j]; j++) {
-                    std::string str = ".";
+                    QString str = ".";
                     str += sections[j];
-                    PSectionInfo info = pSections->GetSectionInfoByName(str.c_str());
+                    PSectionInfo info = pSections->GetSectionInfoByName(str);
                     str = "start_";
                     str += sections[j];
-                    code->AddGlobal(str.c_str(), IntegerType::get(32, -1),
+                    code->AddGlobal(str, IntegerType::get(32, -1),
                                     new Const(info ? info->uNativeAddr : NO_ADDRESS));
                     str = sections[j];
                     str += "_size";
-                    code->AddGlobal(str.c_str(), IntegerType::get(32, -1),
+                    code->AddGlobal(str, IntegerType::get(32, -1),
                                     new Const(info ? info->uSectionSize : (unsigned int)-1));
                     Exp *l = new Terminal(opNil);
                     for (unsigned int i = 0; info && i < info->uSectionSize; i++) {
@@ -920,7 +920,7 @@ bool Prog::isProcLabel(ADDRESS addr) {
   * \brief Get the name for the progam, without any path at the front
   * \returns A string with the name
   ******************************************************************************/
-std::string Prog::getNameNoPath() const { return QFileInfo(m_name).fileName().toStdString(); }
+QString Prog::getNameNoPath() const { return QFileInfo(m_name).fileName(); }
 
 /***************************************************************************/ /**
   *
@@ -1430,7 +1430,7 @@ void Prog::readSymbolFile(const QString &fname) {
     }
 
     for (SymbolRef *ref : par->refs) {
-        DefaultFrontend->addRefHint(ref->addr, ref->nam.c_str());
+        DefaultFrontend->addRefHint(ref->addr, ref->nam);
     }
 
     delete par;
@@ -1518,6 +1518,7 @@ Exp *Prog::readNativeAs(ADDRESS uaddr, SharedType type) {
         if (!nam.isEmpty()) {
             SymbolTableInterface *iface = getBinarySymbolTable();
             nelems = iface ? iface->GetSizeByName(qPrintable(nam)) : 0; // TODO: fix the case of missing symbol table interface
+            assert(base_sz);
             nelems /= base_sz;
         }
         Exp *n = e = new Terminal(opNil);

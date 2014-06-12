@@ -40,7 +40,7 @@ protected:
 class InsOptionElem : public InsNameElem {
 
 public:
-    InsOptionElem(const char *name);
+    InsOptionElem(const QString &name);
     virtual size_t ntokens(void) override;
     virtual QString getinstruction(void);
     virtual QString getinspattern(void);
@@ -49,7 +49,7 @@ public:
 class InsListElem : public InsNameElem {
 
 public:
-    InsListElem(const char *name, Table *t, const char *idx);
+    InsListElem(const QString &name, Table *t, const QString &idx);
     virtual size_t ntokens(void) override;
     virtual QString getinstruction(void);
     virtual QString getinspattern(void);

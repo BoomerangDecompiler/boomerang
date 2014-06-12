@@ -92,14 +92,14 @@ public:
     Function *findProc(const QString &name) const;
     Function *findContainingProc(ADDRESS uAddr) const;
     bool isProcLabel(ADDRESS addr);
-    std::string getNameNoPath() const;
+    QString getNameNoPath() const;
     QString getNameNoPathNoExt() const;
     UserProc *getFirstUserProc(std::list<Function *>::iterator &it);
     UserProc *getNextUserProc(std::list<Function *>::iterator &it);
 
     void clear();
     const void *getCodeInfo(ADDRESS uAddr, const char *&last, int &delta);
-    const char *getRegName(int idx) { return DefaultFrontend->getRegName(idx); }
+    QString getRegName(int idx) const { return DefaultFrontend->getRegName(idx); }
     int getRegSize(int idx) { return DefaultFrontend->getRegSize(idx); }
 
     void decodeEntryPoint(ADDRESS a);
