@@ -1411,12 +1411,12 @@ void Exp::dump() {
 
 /***************************************************************************/ /**
   *
-  * \brief        Create a dotty file (use dotty to display the file; search the web for "graphviz").
-  *                    Mainly for debugging
-  * \param        Name of the file to create
+  * \brief Create a dotty file (use dotty to display the file; search the web for "graphviz").
+  *        Mainly for debugging
+  * \param name - Name of the file to create
   *
   ******************************************************************************/
-void Exp::createDotFile(char *name) {
+void Exp::createDotFile(const char *name) {
     QFile fl(name);
     if(!fl.open(QFile::WriteOnly)) {
         LOG << "Could not open " << name << " to write dotty file\n";
@@ -1867,15 +1867,16 @@ bool Location::match(const QString &pattern, std::map<QString, Exp *> &bindings)
 
 /***************************************************************************/ /**
   *
-  * \brief        Search for the given subexpression
-  * \note         Caller must free the list li after use, but not the Exp objects that they point to
-  * \note         If the top level expression matches, li will contain search
-  * \note         Now a static function. Searches pSrc, not this
-  * \param        search ptr to Exp we are searching for
-  * \param        pSrc ref to ptr to Exp to search. Reason is that we can then overwrite that pointer
-  *                    to effect a replacement. So we need to append &pSrc in the list. Can't append &this!
-  * \param        li   list of Exp** where pointers to the matches are found once: true if not all occurrences to be
+  * \brief   Search for the given subexpression
+  * \note    Caller must free the list li after use, but not the Exp objects that they point to
+  * \note    If the top level expression matches, li will contain search
+  * \note    Now a static function. Searches pSrc, not this
+  * \param   search ptr to Exp we are searching for
+  * \param   pSrc ref to ptr to Exp to search. Reason is that we can then overwrite that pointer
+  *               to effect a replacement. So we need to append &pSrc in the list. Can't append &this!
+  * \param   li   list of Exp** where pointers to the matches are found once: true if not all occurrences to be
   *                    found, false for all
+  * \param   once if set to true only the first possible replacement will be made
   *
   ******************************************************************************/
 void Exp::doSearch(const Exp &search, Exp *&pSrc, std::list<Exp **> &li, bool once) {
@@ -1953,6 +1954,7 @@ Exp *Exp::searchReplace(const Exp &search, Exp *replace, bool &change) {
   * \param   search     reference to Exp we are searching for
   * \param   replace ptr to Exp to replace it with
   * \param   change set true if a change made; cleared otherwise
+  * \param   once - if set to true only the first possible replacement will be made
   * \note    \a change is ALWAYS assigned. No need to clear beforehand.
   * \returns the result (often this, but possibly changed)
   ******************************************************************************/

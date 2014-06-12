@@ -311,25 +311,22 @@ BasicBlock *Cfg::newIncompleteBB(ADDRESS addr) {
 /***************************************************************************/ /**
   *
   * \brief Add an out edge to this BB (and the in-edge to the dest BB)
-  *                  May also set a label
+  *        May also set a label
   *
   * Adds an out-edge to the basic block pBB by filling in the first slot that is empty.
   * \note  a pointer to a BB is given here.
   *
   * \note    Overloaded with address as 2nd argument (calls this proc in the end)
-  * \note    Does not increment m_iNumOutEdges; this is supposed to be constant for a BB.
-  *                      (But see BasicBlock::addNewOutEdge())
   * \param   pBB source BB (to have the out edge added to)
   * \param   pDestBB destination BB (to have the out edge point to)
+  * \param   bSetLabel - indicates that label is required in \a pDestBB
   *
   ******************************************************************************/
 void Cfg::addOutEdge(BasicBlock *pBB, BasicBlock *pDestBB, bool bSetLabel /* = false */) {
     // Add the given BB pointer to the list of out edges
     pBB->OutEdges.push_back(pDestBB);
-    // Note that the number of out edges is set at constructor time, not incremented here.
     // Add the in edge to the destination BB
     pDestBB->InEdges.push_back(pBB);
-    // pDestBB->m_iNumInEdges++;            // Inc the count
     if (bSetLabel)
         setLabel(pDestBB); // Indicate "label required"
 }

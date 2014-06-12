@@ -96,9 +96,10 @@ BasicBlock::BasicBlock(const BasicBlock &bb)
 /***************************************************************************/ /**
   *
   * \brief        Private constructor.
+  * \param parent - Function this BasicBlock belongs to.
   * \param pRtls - rtl statements that will be contained in this BasicBlock
-  * \param bbType -
-  * \param iNumOutEdges -
+  * \param bbType - type of BasicBlock
+  * \param iNumOutEdges - expected number of out edges from this BasicBlock
   ******************************************************************************/
 BasicBlock::BasicBlock(Function *parent, std::list<RTL *> *pRtls, BBTYPE bbType, uint32_t iNumOutEdges)
     : NodeType(bbType), Incomplete(false),

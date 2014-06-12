@@ -118,9 +118,9 @@ void Function::eraseFromParent()
 /***************************************************************************/ /**
   *
   * \brief        Constructor with name, native address.
-  * \param        prg - the program this procedure belongs to
   * \param        uNative - Native address of entry point of procedure
   * \param        sig - the Signature for this Proc
+  * \param        mod - the Module this procedure belongs to
   *
   ******************************************************************************/
 Function::Function(ADDRESS uNative, Signature *sig, Module *mod)
@@ -494,7 +494,7 @@ Function *Function::getFirstCaller() {
 /***************************************************************************/ /**
   *
   * \brief        Constructor with name, native address.
-  * \param        prog - a program to which this procedure belongs to
+  * \param        mod - Module that contains this Function
   * \param        name - Name of procedure
   * \param        uNative - Native address of entry point of procedure
   ******************************************************************************/
@@ -527,15 +527,16 @@ UserProc::UserProc()
 /***************************************************************************/ /**
   *
   * \brief        Constructor with name, native address.
+  * \param mod - Module that contains this Function
   * \param prog - Program to which this function belongs
   * \param name - Name of procedure
   * \param uNative - Native address of entry point of procedure
   *
   ******************************************************************************/
-UserProc::UserProc(Module *prog, const QString &name, ADDRESS uNative)
+UserProc::UserProc(Module *mod, const QString &name, ADDRESS uNative)
     : // Not quite ready for the below fix:
       // Proc(prog, uNative, prog->getDefaultSignature(name.c_str())),
-      Function(uNative, new Signature(name),prog),
+      Function(uNative, new Signature(name),mod),
       cfg(new Cfg()), status(PROC_UNDECODED), cycleGrp(nullptr), theReturnStatement(nullptr), DFGcount(0) {
     cfg->setProc(this); // Initialise cfg.myProc
     localTable.setProc(this);

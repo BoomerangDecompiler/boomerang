@@ -1432,9 +1432,9 @@ void BranchStatement::simplify() {
 CaseStatement::CaseStatement() : pSwitchInfo(nullptr) { Kind = STMT_CASE; }
 
 /***************************************************************************/ /**
-  * \fn        CaseStatement::~CaseStatement
-  * \brief        Destructor
-  * \note            Don't delete the pSwitchVar; it's always a copy of something else (so don't delete twice)
+  * \fn    CaseStatement::~CaseStatement
+  * \brief Destructor
+  * \note  Don't delete the pSwitchVar; it's always a copy of something else (so don't delete twice)
   *
   ******************************************************************************/
 CaseStatement::~CaseStatement() {
@@ -1444,26 +1444,26 @@ CaseStatement::~CaseStatement() {
 }
 
 /***************************************************************************/ /**
-  * \fn        CaseStatement::getSwitchInfo
-  * \brief        Return a pointer to a struct with switch information in it
-  * \returns             a semantic string
+  * \fn      CaseStatement::getSwitchInfo
+  * \brief   Return a pointer to a struct with switch information in it
+  * \returns SWITCH_INFO struct
   ******************************************************************************/
 SWITCH_INFO *CaseStatement::getSwitchInfo() { return pSwitchInfo; }
 
 /***************************************************************************/ /**
-  * \fn        CaseStatement::setSwitchInfo
-  * \brief        Set a pointer to a SWITCH_INFO struct
-  * \param        Pointer to SWITCH_INFO struct
+  * \fn    CaseStatement::setSwitchInfo
+  * \brief Set a pointer to a SWITCH_INFO struct
+  * \param psi Pointer to SWITCH_INFO struct
   *
   ******************************************************************************/
 void CaseStatement::setSwitchInfo(SWITCH_INFO * psi) { pSwitchInfo = psi; }
 
 /***************************************************************************/ /**
-  * \fn        CaseStatement::searchAndReplace
-  * \brief        Replace all instances of search with replace.
-  * \param        search - a location to search for
-  *                    replace - the expression with which to replace it
-  *                    cc - ignored
+  * \fn    CaseStatement::searchAndReplace
+  * \brief Replace all instances of search with replace.
+  * \param search - a location to search for
+  * \param replace - the expression with which to replace it
+  * \param cc - ignored
   * \returns             True if any change
   ******************************************************************************/
 bool CaseStatement::searchAndReplace(const Exp &search, Exp *replace, bool cc) {
@@ -1475,12 +1475,11 @@ bool CaseStatement::searchAndReplace(const Exp &search, Exp *replace, bool cc) {
 }
 
 /***************************************************************************/ /**
-  * \fn        CaseStatement::searchAll
-  * \brief        Find all instances of the search expression
-  * \param        search - a location to search for
-  *                    result - a list which will have any matching exprs appended to it
-  * NOTES:            search can't easily be made const
-  * \returns             true if there were any matches
+  * \fn    CaseStatement::searchAll
+  * \brief Find all instances of the search expression
+  * \param search - a location to search for
+  * \param result - a list which will have any matching exprs appended to it
+  * \returns true if there were any matches
   ******************************************************************************/
 bool CaseStatement::searchAll(const Exp &search, std::list<Exp *> &result) {
     return GotoStatement::searchAll(search, result) ||
@@ -1575,8 +1574,6 @@ CallStatement::CallStatement() : returnAfterCall(false), calleeReturn(nullptr) {
 /***************************************************************************/ /**
   * \fn      CallStatement::~CallStatement
   * \brief      Destructor
-  * \param      BB - the enclosing basic block of this call
-  *
   ******************************************************************************/
 CallStatement::~CallStatement() {}
 
@@ -1598,15 +1595,15 @@ Exp *CallStatement::getProven(Exp * e) {
     return nullptr;
 }
 
-// Localise only components of e, i.e. xxx if e is m[xxx]
+//! Localise only components of e, i.e. xxx if e is m[xxx]
 void CallStatement::localiseComp(Exp * e) {
     if (e->isMemOf()) {
         ((Location *)e)->setSubExp1(localiseExp(((Location *)e)->getSubExp1()));
     }
 }
-// Substitute the various components of expression e with the appropriate reaching definitions.
-// Used in e.g. fixCallBypass (via the CallBypasser). Locations defined in this call are replaced with their proven
-// values, which are in terms of the initial values at the start of the call (reaching definitions at the call)
+//! Substitute the various components of expression e with the appropriate reaching definitions.
+//! Used in e.g. fixCallBypass (via the CallBypasser). Locations defined in this call are replaced with their proven
+//! values, which are in terms of the initial values at the start of the call (reaching definitions at the call)
 Exp *CallStatement::localiseExp(Exp * e) {
     if (!defCol.isInitialised())
         return e; // Don't attempt to subscript if the data flow not started yet
@@ -1616,9 +1613,9 @@ Exp *CallStatement::localiseExp(Exp * e) {
     return e;
 }
 
-// Find the definition for the given expression, using the embedded Collector object
-// Was called findArgument(), and used implicit arguments and signature parameters
-// Note: must only operator on unsubscripted locations, otherwise it is invalid
+//! Find the definition for the given expression, using the embedded Collector object
+//! Was called findArgument(), and used implicit arguments and signature parameters
+//! \note must only operator on unsubscripted locations, otherwise it is invalid
 Exp *CallStatement::findDefFor(Exp * e) { return defCol.findDefFor(e); }
 
 SharedType CallStatement::getArgumentType(int i) {
@@ -1636,7 +1633,7 @@ void CallStatement::setArgumentType(int i, SharedType ty) {
 /***************************************************************************/ /**
   * \fn      CallStatement::setArguments
   * \brief      Set the arguments of this call.
-  * \param      arguments - the list of locations to set the arguments to (for testing)
+  * \param      args - the list of locations to set the arguments to (for testing)
   *
   ******************************************************************************/
 void CallStatement::setArguments(StatementList & args) {
@@ -1653,7 +1650,6 @@ void CallStatement::setArguments(StatementList & args) {
   * \fn      CallStatement::setSigArguments
   * \brief      Set the arguments of this call based on signature info
   * \note Should only be called for calls to library functions
-  *
   *
   ******************************************************************************/
 void CallStatement::setSigArguments() {
@@ -1709,9 +1705,9 @@ bool CallStatement::search(const Exp &search, Exp *&result) {
 /***************************************************************************/ /**
   * \fn        CallStatement::searchAndReplace
   * \brief        Replace all instances of search with replace.
-  * \param        search - a location to search for
-  *                    replace - the expression with which to replace it
-  *                    cc - true to replace in collectors
+  * \param search - a location to search for
+  * \param replace - the expression with which to replace it
+  * \param cc - true to replace in collectors
   * \returns             True if any change
   ******************************************************************************/
 bool CallStatement::searchAndReplace(const Exp &search, Exp *replace, bool cc) {
@@ -1731,11 +1727,11 @@ bool CallStatement::searchAndReplace(const Exp &search, Exp *replace, bool cc) {
 }
 
 /***************************************************************************/ /**
-  * \fn        CallStatement::searchAll
-  * \brief        Find all instances of the search expression
-  * \param        search - a location to search for
-  *                    result - a list which will have any matching exprs appended to it
-  * \returns             true if there were any matches
+  * \fn    CallStatement::searchAll
+  * \brief Find all instances of the search expression
+  * \param search - a location to search for
+  * \param result - a list which will have any matching exprs appended to it
+  * \returns true if there were any matches
   ******************************************************************************/
 bool CallStatement::searchAll(const Exp &search, std::list<Exp *> &result) {
     bool found = GotoStatement::searchAll(search, result);
@@ -1841,20 +1837,19 @@ void CallStatement::print(QTextStream & os, bool html) const {
 }
 
 /***************************************************************************/ /**
-  * \fn         CallStatement::setReturnAfterCall
-  * \brief         Sets a bit that says that this call is effectively followed by a return. This happens e.g. on
-  *                        Sparc when there is a restore in the delay slot of the call
-  * \param         b: true if this is to be set; false to clear the bit
+  * \fn    CallStatement::setReturnAfterCall
+  * \brief Sets a bit that says that this call is effectively followed by a return. This happens e.g. on
+  *        Sparc when there is a restore in the delay slot of the call
+  * \param b: true if this is to be set; false to clear the bit
   *
   ******************************************************************************/
 void CallStatement::setReturnAfterCall(bool b) { returnAfterCall = b; }
 
 /***************************************************************************/ /**
-  * \fn         CallStatement::isReturnAfterCall
-  * \brief         Tests a bit that says that this call is effectively followed by a return. This happens e.g. on
-  *                        Sparc when there is a restore in the delay slot of the call
-  * \param         none
-  * \returns              True if this call is effectively followed by a return
+  * \fn    CallStatement::isReturnAfterCall
+  * \brief Tests a bit that says that this call is effectively followed by a return. This happens e.g. on
+  *        Sparc when there is a restore in the delay slot of the call
+  * \returns True if this call is effectively followed by a return
   ******************************************************************************/
 bool CallStatement::isReturnAfterCall() { return returnAfterCall; }
 
@@ -2591,11 +2586,10 @@ bool ReturnStatement::usesExp(const Exp &e) {
 /***************************************************************************/ /**
   * \fn         BoolAssign::BoolAssign
   * \brief         Constructor.
-  * \param         sz: size of the assignment
-  * \returns              <N/a>
+  * \param         size - the size of the assignment
   ******************************************************************************/
-BoolAssign::BoolAssign(int sz)
-    : Assignment(nullptr), jtCond((BRANCH_TYPE)0), pCond(nullptr), bFloat(false), size(sz) {
+BoolAssign::BoolAssign(int size)
+    : Assignment(nullptr), jtCond((BRANCH_TYPE)0), pCond(nullptr), bFloat(false), Size(size) {
     Kind = STMT_BOOLASSIGN;
 }
 
@@ -2662,7 +2656,7 @@ void BoolAssign::setCondExpr(Exp * pss) {
 }
 
 /***************************************************************************/ /**
-  * \fn    BoolAssign::print
+  * \fn    BoolAssign::printCompact
   * \brief Write a text representation to the given stream
   * \param os: stream
   * \param html - produce html encoded representation
@@ -2739,14 +2733,14 @@ void BoolAssign::printCompact(QTextStream & os /*= cout*/, bool html) const {
   * \returns             Pointer to a new Statement, a clone of this BoolAssign
   ******************************************************************************/
 Instruction * BoolAssign::clone() const {
-    BoolAssign *ret = new BoolAssign(size);
+    BoolAssign *ret = new BoolAssign(Size);
     ret->jtCond = jtCond;
     if (pCond)
         ret->pCond = pCond->clone();
     else
         ret->pCond = nullptr;
     ret->bFloat = bFloat;
-    ret->size = size;
+    ret->Size = Size;
     // Statement members
     ret->Parent = Parent;
     ret->proc = proc;
