@@ -290,24 +290,20 @@ bool UsedLocsFinder::visit(RefExp &arg, bool &override) {
     }
     RefExp *e = &arg;
     if(used->find(e)==used->end()) {
-        e = (RefExp *)arg.clone();
-        used->insert(e); // This location is used
+        //e = (RefExp *)arg.clone();
+        used->insert(&arg); // This location is used
     }
     // However, e's subexpression is NOT used ...
     override = true;
     // ... unless that is a m[x], array[x] or .x, in which case x (not m[x]/array[x]/refd.x) is used
     Exp *refd = e->getSubExp1();
     if (refd->isMemOf()) {
-        Exp *x = ((Location *)refd)->getSubExp1();
-        x->accept(this);
+        refd->getSubExp1()->accept(this);
     } else if (refd->isArrayIndex()) {
-        Exp *x1 = ((Binary *)refd)->getSubExp1();
-        x1->accept(this);
-        Exp *x2 = ((Binary *)refd)->getSubExp2();
-        x2->accept(this);
+        refd->getSubExp1()->accept(this);
+        refd->getSubExp2()->accept(this);
     } else if (refd->isMemberOf()) {
-        Exp *x = ((Binary *)refd)->getSubExp1();
-        x->accept(this);
+        refd->getSubExp1()->accept(this);
     }
     return true;
 }

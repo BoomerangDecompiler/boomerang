@@ -29,6 +29,10 @@ Log &Log::operator<<(const SharedType &ty) {
     *this << st.str().c_str();
     return *this;
 }
+Log &Log::operator<<(const Printable &p) {
+    *this << p.toString();
+    return *this;
+}
 
 Log &Log::operator<<(const RTL *r) {
     QString tgt;

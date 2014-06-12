@@ -3,6 +3,7 @@
 #include "proc.h"
 #include "boomerang.h"
 #include "log.h"
+#include "util.h"
 #include "cfg.h"
 #include "basicblock.h"
 #include "rtl.h"
@@ -14,40 +15,41 @@
 #include "exp.h"
 #include "exphelp.h"
 
-class Range {
-  protected:
+class Range : public Printable {
+protected:
     int stride, lowerBound, upperBound;
     Exp *base;
 
-  public:
+public:
     Range();
     Range(int stride, int lowerBound, int upperBound, Exp *base);
 
-    Exp *getBase() { return base; }
-    int getStride() { return stride; }
-    int getLowerBound() { return lowerBound; }
-    int getUpperBound() { return upperBound; }
+    Exp *getBase() const { return base; }
+    int getStride() const { return stride; }
+    int getLowerBound() const { return lowerBound; }
+    int getUpperBound() const { return upperBound; }
     void unionWith(Range &r);
     void widenWith(Range &r);
-    void print(QTextStream &os) const;
+    QString toString() const;
     bool operator==(Range &other);
 
     static const int MAX = 2147483647;
     static const int MIN = -2147483647;
 };
-class RangeMap {
-  protected:
+class RangeMap : public Printable {
+protected:
     std::map<Exp *, Range, lessExpStar> ranges;
 
-  public:
+public:
     RangeMap() {}
     void addRange(Exp *loc, Range &r) { ranges[loc] = r; }
     bool hasRange(Exp *loc) { return ranges.find(loc) != ranges.end(); }
     Range &getRange(Exp *loc);
     void unionwith(RangeMap &other);
     void widenwith(RangeMap &other);
-    void print(QTextStream &os) const;
-    Exp *substInto(Exp *e, std::set<Exp *, lessExpStar> *only = nullptr);
+    QString toString() const;
+    void print() const;
+    Exp *substInto(Exp *e, std::set<Exp *, lessExpStar> *only = nullptr) const;
     void killAllMemOfs();
     void clear() { ranges.clear(); }
     bool isSubset(RangeMap &other);
@@ -57,8 +59,12 @@ struct RangePrivateData {
     std::map<Instruction *,RangeMap> SavedInputRanges; //!< overestimation of ranges of locations
     std::map<Instruction *,RangeMap> Ranges;           //!< saved overestimation of ranges of locations
     std::map<BranchStatement *,RangeMap> BranchRanges;
-    RangeMap &getRanges(Instruction *insn);
-    void setRanges(Instruction *insn,RangeMap r);
+    RangeMap &getRanges(Instruction *insn) {
+        return Ranges[insn];
+    }
+    void setRanges(Instruction *insn,RangeMap r) {
+        Ranges[insn] = r;
+    }
     void clearRanges() {
         SavedInputRanges.clear();
     }
@@ -91,9 +97,13 @@ void RangeAnalysis::addJunctionStatements(Cfg &cfg) {
 void RangeAnalysis::clearRanges() {
     RangeData->clearRanges();
 }
-struct rangeVisitor : public StmtVisitor {
+struct RangeVisitor : public StmtVisitor {
     RangePrivateData *tgt;
     std::list<Instruction *> &execution_paths;
+    RangeVisitor(RangePrivateData *t,std::list<Instruction *> & ex_paths) :
+        tgt(t),execution_paths(ex_paths) {
+
+    }
     void processRange(Instruction *i) {
         RangeMap output = getInputRanges(i);
         updateRanges(i,output);
@@ -186,11 +196,11 @@ struct rangeVisitor : public StmtVisitor {
             Exp *a_rhs = insn->getRight()->clone();
             if (a_rhs->getSubExp2()->getSubExp1()->isMemOf())
                 a_rhs->getSubExp2()->getSubExp1()->setSubExp1(
-                    output.substInto(a_rhs->getSubExp2()->getSubExp1()->getSubExp1()));
+                            output.substInto(a_rhs->getSubExp2()->getSubExp1()->getSubExp1()));
             if (!a_rhs->getSubExp2()->getSubExp2()->isTerminal() &&
-                a_rhs->getSubExp2()->getSubExp2()->getSubExp1()->isMemOf())
+                    a_rhs->getSubExp2()->getSubExp2()->getSubExp1()->isMemOf())
                 a_rhs->getSubExp2()->getSubExp2()->getSubExp1()->setSubExp1(
-                    output.substInto(a_rhs->getSubExp2()->getSubExp2()->getSubExp1()->getSubExp1()));
+                            output.substInto(a_rhs->getSubExp2()->getSubExp2()->getSubExp1()->getSubExp1()));
             Range ra(1, 0, 0, a_rhs);
             output.addRange(a_lhs, ra);
         } else {
@@ -198,8 +208,8 @@ struct rangeVisitor : public StmtVisitor {
                 a_lhs->setSubExp1(output.substInto(a_lhs->getSubExp1()->clone()));
             Exp *a_rhs = output.substInto(insn->getRight()->clone());
             if (a_rhs->isMemOf() && a_rhs->getSubExp1()->getOper() == opInitValueOf &&
-                a_rhs->getSubExp1()->getSubExp1()->isRegOfK() &&
-                ((Const *)a_rhs->getSubExp1()->getSubExp1()->getSubExp1())->getInt() == 28)
+                    a_rhs->getSubExp1()->getSubExp1()->isRegOfK() &&
+                    ((Const *)a_rhs->getSubExp1()->getSubExp1()->getSubExp1())->getInt() == 28)
                 a_rhs = new Unary(opInitValueOf, Terminal::get(opPC)); // nice hack
             if (VERBOSE && DEBUG_RANGE_ANALYSIS)
                 LOG << "a_rhs is " << a_rhs << "\n";
@@ -230,7 +240,7 @@ struct rangeVisitor : public StmtVisitor {
                     LOG << c << " is not dynamically linked proc pointer or in read only memory\n";
             }
             if ((a_rhs->getOper() == opPlus || a_rhs->getOper() == opMinus) && a_rhs->getSubExp2()->isIntConst() &&
-                output.hasRange(a_rhs->getSubExp1())) {
+                    output.hasRange(a_rhs->getSubExp1())) {
                 Range &r = output.getRange(a_rhs->getSubExp1());
                 int c = ((Const *)a_rhs->getSubExp2())->getInt();
                 if (a_rhs->getOper() == opPlus) {
@@ -248,7 +258,7 @@ struct rangeVisitor : public StmtVisitor {
                 } else {
                     Exp *result;
                     if (a_rhs->getMemDepth() == 0 && !a_rhs->search(search_regof, result) &&
-                        !a_rhs->search(search_term, result)) {
+                            !a_rhs->search(search_term, result)) {
                         if (a_rhs->isIntConst()) {
                             Range ra(1, ((Const *)a_rhs)->getInt(), ((Const *)a_rhs)->getInt(), Const::get(0));
                             output.addRange(a_lhs, ra);
@@ -263,9 +273,10 @@ struct rangeVisitor : public StmtVisitor {
                 }
             }
         }
-        if (DEBUG_RANGE_ANALYSIS)
-            LOG_VERBOSE(1) << "added " << a_lhs << " -> " << output.getRange(a_lhs) << "\n";
-        updateRanges(output, execution_paths);
+        if (DEBUG_RANGE_ANALYSIS) {
+            LOG_VERBOSE(1) << "added " << a_lhs << " -> " << output.getRange(a_lhs).toString() << "\n";
+        }
+        updateRanges(insn,output);
         if (DEBUG_RANGE_ANALYSIS)
             LOG_VERBOSE(1) << insn << "\n";
         return true;
@@ -282,11 +293,11 @@ struct rangeVisitor : public StmtVisitor {
         // try to hack up a useful expression for this branch
         OPER op = stmt->getCondExpr()->getOper();
         if (op == opLess || op == opLessEq || op == opGtr || op == opGtrEq || op == opLessUns || op == opLessEqUns ||
-            op == opGtrUns || op == opGtrEqUns || op == opEquals || op == opNotEqual) {
-            if (stmt->pCond->getSubExp1()->isFlags() && output.hasRange(stmt->getCondExpr()->getSubExp1())) {
+                op == opGtrUns || op == opGtrEqUns || op == opEquals || op == opNotEqual) {
+            if (stmt->getCondExpr()->getSubExp1()->isFlags() && output.hasRange(stmt->getCondExpr()->getSubExp1())) {
                 Range &r = output.getRange(stmt->getCondExpr()->getSubExp1());
                 if (r.getBase()->isFlagCall() && r.getBase()->getSubExp2()->getOper() == opList &&
-                    r.getBase()->getSubExp2()->getSubExp2()->getOper() == opList) {
+                        r.getBase()->getSubExp2()->getSubExp2()->getOper() == opList) {
                     e = Binary::get(op, r.getBase()->getSubExp2()->getSubExp1()->clone(),
                                     r.getBase()->getSubExp2()->getSubExp2()->getSubExp1()->clone());
                     if (VERBOSE && DEBUG_RANGE_ANALYSIS)
@@ -297,14 +308,15 @@ struct rangeVisitor : public StmtVisitor {
 
         if (e)
             limitOutputWithCondition(stmt,output, e);
-        updateRanges(output, execution_paths);
-        output = getInputRanges();
+        updateRanges(stmt,output);
+        output = getInputRanges(stmt);
         if (e)
             limitOutputWithCondition(stmt,output, (new Unary(opNot, e))->simplify());
-        updateRanges(output, execution_paths, true);
+        updateRanges(stmt,output, true);
 
         if (VERBOSE && DEBUG_RANGE_ANALYSIS)
             LOG << stmt << "\n";
+        return true;
     }
     bool visit(CaseStatement * stmt) {processRange(stmt); return true; }
     bool visit(CallStatement * stmt) {
@@ -316,26 +328,26 @@ struct rangeVisitor : public StmtVisitor {
             if (d->isIntConst() || d->isStrConst()) {
                 if (d->isIntConst()) {
                     ADDRESS dest = ((Const *)d)->getAddr();
-                    stmt->procDest = stmt->proc->getProg()->setNewProc(dest);
+                    stmt->setDestProc(stmt->getProc()->getProg()->setNewProc(dest));
                 } else {
-                    stmt->procDest = stmt->proc->getProg()->getLibraryProc(((Const *)d)->getStr());
+                    stmt->setDestProc(stmt->getProc()->getProg()->getLibraryProc(((Const *)d)->getStr()));
                 }
-                if (stmt->procDest) {
-                    Signature *sig = stmt->procDest->getSignature();
-                    stmt->pDest = d;
-                    stmt->arguments.clear();
+                if (stmt->getDestProc()) {
+                    Signature *sig = stmt->getDestProc()->getSignature();
+                    stmt->setDest(d);
+                    stmt->getArguments().clear();
                     for (size_t i = 0; i < sig->getNumParams(); i++) {
                         Exp *a = sig->getParamExp(i);
                         Assign *as = new Assign(VoidType::get(), a->clone(), a->clone());
-                        as->setProc(stmt->proc);
-                        as->setBB(stmt->Parent);
-                        stmt->arguments.append(as);
+                        as->setProc(stmt->getProc());
+                        as->setBB(stmt->getBB());
+                        stmt->getArguments().append(as);
                     }
-                    stmt->signature = stmt->procDest->getSignature()->clone();
-                    stmt->m_isComputed = false;
-                    stmt->proc->undoComputedBB(this);
-                    stmt->proc->addCallee(stmt->procDest);
-                    LOG << "replaced indirect call with call to " << stmt->procDest->getName() << "\n";
+                    stmt->setSignature(stmt->getDestProc()->getSignature()->clone());
+                    stmt->setIsComputed(false);
+                    stmt->getProc()->undoComputedBB(stmt);
+                    stmt->getProc()->addCallee(stmt->getDestProc());
+                    LOG << "replaced indirect call with call to " << stmt->getProc()->getName() << "\n";
                 }
             }
         }
@@ -343,14 +355,14 @@ struct rangeVisitor : public StmtVisitor {
         if (output.hasRange(Location::regOf(28))) {
             Range &r = output.getRange(Location::regOf(28));
             int c = 4;
-            if (stmt->procDest == nullptr) {
+            if (stmt->getDestProc() == nullptr) {
                 LOG << "using push count hack to guess number of params\n";
                 Instruction *prev = stmt->getPreviousStatementInBB();
                 while (prev) {
                     if (prev->isAssign() && ((Assign *)prev)->getLeft()->isMemOf() &&
-                        ((Assign *)prev)->getLeft()->getSubExp1()->isRegOfK() &&
-                        ((Const *)((Assign *)prev)->getLeft()->getSubExp1()->getSubExp1())->getInt() == 28 &&
-                        ((Assign *)prev)->getRight()->getOper() != opPC) {
+                            ((Assign *)prev)->getLeft()->getSubExp1()->isRegOfK() &&
+                            ((Const *)((Assign *)prev)->getLeft()->getSubExp1()->getSubExp1())->getInt() == 28 &&
+                            ((Assign *)prev)->getRight()->getOper() != opPC) {
                         c += 4;
                     }
                     prev = prev->getPreviousStatementInBB();
@@ -370,7 +382,7 @@ struct rangeVisitor : public StmtVisitor {
                 if (eq) {
                     LOG_VERBOSE(1) << "found proven " << eq << "\n";
                     if (eq->getOper() == opPlus && *eq->getSubExp1() == *Location::regOf(28) &&
-                        eq->getSubExp2()->isIntConst()) {
+                            eq->getSubExp2()->isIntConst()) {
                         c = ((Const *)eq->getSubExp2())->getInt();
                     } else
                         eq = nullptr;
@@ -413,7 +425,7 @@ struct rangeVisitor : public StmtVisitor {
                      r.getUpperBound() == Range::MAX ? Range::MAX : r.getUpperBound() + c, r.getBase());
             output.addRange(Location::regOf(28), ra);
         }
-        updateRanges(stmt,output, execution_paths);
+        updateRanges(stmt,output);
         return true;
     }
 
@@ -423,12 +435,12 @@ struct rangeVisitor : public StmtVisitor {
         RangeMap input;
         if (DEBUG_RANGE_ANALYSIS)
             LOG_VERBOSE(1) << "unioning {\n";
-        for (size_t i = 0; i < stmt->Parent->getNumInEdges(); i++) {
-            Instruction *last = stmt->Parent->getInEdges()[i]->getLastStmt();
+        for (size_t i = 0; i < stmt->getBB()->getNumInEdges(); i++) {
+            Instruction *last = stmt->getBB()->getInEdges()[i]->getLastStmt();
             if (DEBUG_RANGE_ANALYSIS)
-                LOG_VERBOSE(1) << "  in BB: " << stmt->Parent->getInEdges()[i]->getLowAddr() << " " << last << "\n";
+                LOG_VERBOSE(1) << "  in BB: " << stmt->getBB()->getInEdges()[i]->getLowAddr() << " " << last << "\n";
             if (last->isBranch()) {
-                input.unionwith(getRangesForOutEdgeTo((BranchStatement *)last,stmt->Parent));
+                input.unionwith(getRangesForOutEdgeTo((BranchStatement *)last,stmt->getBB()));
             } else {
                 if (last->isCall()) {
                     Function *d = ((CallStatement *)last)->getDestProc();
@@ -450,9 +462,11 @@ struct rangeVisitor : public StmtVisitor {
             if (output.hasRange(Location::regOf(28))) {
                 Range &r = output.getRange(Location::regOf(28));
                 if (r.getLowerBound() != r.getUpperBound() && r.getLowerBound() != Range::MIN) {
-                    LOG_VERBOSE(1) << "stack height assumption violated " << r << " my bb: " << Parent->getLowAddr()
-                                   << "\n";
-                    LOG << *proc;
+                    if(VERBOSE) {
+                        LOG_STREAM(LL_Debug) << "stack height assumption violated " << r.toString();
+                        LOG_STREAM(LL_Debug) << " my bb: " << stmt->getBB()->getLowAddr() << "\n";
+                        stmt->getProc()->print(LOG_STREAM(LL_Debug));
+                    }
                     assert(false);
                 }
             }
@@ -462,7 +476,7 @@ struct rangeVisitor : public StmtVisitor {
                 output.widenwith(input);
             }
 
-            updateRanges(stmt,output, execution_paths);
+            updateRanges(stmt,output);
         }
 
         if (DEBUG_RANGE_ANALYSIS)
@@ -539,13 +553,14 @@ bool RangeAnalysis::runOnFunction(Function &F)
 {
     if(F.isLib())
         return false;
-    LOG_STREAM() << "performing range analysis on " << getName() << "\n";
-    UserProc &UF(F);
+    LOG_STREAM() << "performing range analysis on " << F.getName() << "\n";
+    UserProc &UF((UserProc &)F);
+    assert(UF.getCFG());
     // this helps
-    UF.cfg->sortByAddress();
+    UF.getCFG()->sortByAddress();
 
-    addJunctionStatements(UF.cfg);
-    UF.cfg->establishDFTOrder();
+    addJunctionStatements(*UF.getCFG());
+    UF.getCFG()->establishDFTOrder();
 
     clearRanges();
 
@@ -554,14 +569,14 @@ bool RangeAnalysis::runOnFunction(Function &F)
     std::list<Instruction *> execution_paths;
     std::list<Instruction *> junctions;
 
-    assert(UF.cfg->getEntryBB());
-    assert(UF.cfg->getEntryBB()->getFirstStmt());
-    execution_paths.push_back(UF.cfg->getEntryBB()->getFirstStmt());
+    assert(UF.getCFG()->getEntryBB());
+    assert(UF.getCFG()->getEntryBB()->getFirstStmt());
+    execution_paths.push_back(UF.getCFG()->getEntryBB()->getFirstStmt());
 
     int watchdog = 0;
-
-    while (execution_paths.size()) {
-        while (execution_paths.size()) {
+    RangeVisitor rv(this->RangeData,execution_paths);
+    while (!execution_paths.empty()) {
+        while (!execution_paths.empty()) {
             Instruction *stmt = execution_paths.front();
             execution_paths.pop_front();
             if (stmt == nullptr)
@@ -569,17 +584,17 @@ bool RangeAnalysis::runOnFunction(Function &F)
             if (stmt->isJunction())
                 junctions.push_back(stmt);
             else
-                stmt->rangeAnalysis(execution_paths);
+                stmt->accept(&rv);
         }
         if (watchdog > 45)
             LOG << "processing execution paths resulted in " << (int)junctions.size() << " junctions to process\n";
-        while (junctions.size()) {
+        while (!junctions.empty()) {
             Instruction *junction = junctions.front();
             junctions.pop_front();
             if (watchdog > 45)
                 LOG << "processing junction " << junction << "\n";
             assert(junction->isJunction());
-            junction->rangeAnalysis(execution_paths);
+            junction->accept(&rv);
         }
 
         watchdog++;
@@ -588,8 +603,8 @@ bool RangeAnalysis::runOnFunction(Function &F)
             if (watchdog > 45) {
                 LOG << (int)execution_paths.size() << " execution paths remaining.\n";
                 LOG_SEPARATE(UF.getName()) << "=== After range analysis watchdog " << watchdog << " for " << UF.getName()
-                                        << " ===\n" << *this << "=== end after range analysis watchdog " << watchdog
-                                        << " for " << UF.getName() << " ===\n\n";
+                                           << " ===\n" << UF << "=== end after range analysis watchdog " << watchdog
+                                           << " for " << UF.getName() << " ===\n\n";
             }
         }
         if (watchdog > 50) {
@@ -599,7 +614,7 @@ bool RangeAnalysis::runOnFunction(Function &F)
     }
     UF.debugPrintAll("After range analysis");
 
-    UF.cfg->removeJunctionStatements();
+    UF.getCFG()->removeJunctionStatements();
     logSuspectMemoryDefs(UF);
 
 }
@@ -627,9 +642,11 @@ void RangeAnalysis::logSuspectMemoryDefs(UserProc &UF) {
         Exp *p = rm.substInto(a->getLeft()->getSubExp1()->clone());
         if (rm.hasRange(p)) {
             Range &r = rm.getRange(p);
-            LOG << "got p " << p << " with range " << r << "\n";
+            LOG_STREAM(LL_Default) << "got p " << p << " with range ";
+            LOG_STREAM(LL_Default) << r.toString();
+            LOG_STREAM(LL_Default) << "\n";
             if (r.getBase()->getOper() == opInitValueOf && r.getBase()->getSubExp1()->isRegOfK() &&
-                ((Const *)r.getBase()->getSubExp1()->getSubExp1())->getInt() == 28) {
+                    ((Const *)r.getBase()->getSubExp1()->getSubExp1())->getInt() == 28) {
                 RTL *rtl = a->getBB()->getRTLWithStatement(a);
                 LOG << "interesting stack reference at " << rtl->getAddress() << " " << a << "\n";
             }
@@ -644,7 +661,7 @@ Range::Range() : stride(1), lowerBound(MIN), upperBound(MAX) { base = Const::get
 Range::Range(int stride, int lowerBound, int upperBound, Exp *base)
     : stride(stride), lowerBound(lowerBound), upperBound(upperBound), base(base) {
     if (lowerBound == upperBound && lowerBound == 0 && (base->getOper() == opMinus || base->getOper() == opPlus) &&
-        base->getSubExp2()->isIntConst()) {
+            base->getSubExp2()->isIntConst()) {
         this->lowerBound = ((Const *)base->getSubExp2())->getInt();
         if (base->getOper() == opMinus)
             this->lowerBound = -this->lowerBound;
@@ -661,11 +678,13 @@ Range::Range(int stride, int lowerBound, int upperBound, Exp *base)
     }
 }
 
-void Range::print(QTextStream &os) const {
+QString Range::toString() const {
+    QString res;
+    QTextStream os(&res);
     assert(lowerBound <= upperBound);
     if (base->isIntConst() && ((Const *)base)->getInt() == 0 && lowerBound == MIN && upperBound == MAX) {
         os << "T";
-        return;
+        return res;
     }
     bool needPlus = false;
     if (lowerBound == upperBound) {
@@ -699,14 +718,15 @@ void Range::print(QTextStream &os) const {
             os << " + ";
         base->print(os);
     }
+    return res;
 }
 
 void Range::unionWith(Range &r) {
     if (VERBOSE && DEBUG_RANGE_ANALYSIS)
-        LOG << "unioning " << this << " with " << r << " got ";
+        LOG << "unioning " << toString() << " with " << r << " got ";
     assert(base && r.base);
     if (base->getOper() == opMinus && r.base->getOper() == opMinus && *base->getSubExp1() == *r.base->getSubExp1() &&
-        base->getSubExp2()->isIntConst() && r.base->getSubExp2()->isIntConst()) {
+            base->getSubExp2()->isIntConst() && r.base->getSubExp2()->isIntConst()) {
         int c1 = ((Const *)base->getSubExp2())->getInt();
         int c2 = ((Const *)r.base->getSubExp2())->getInt();
         if (c1 != c2) {
@@ -715,7 +735,7 @@ void Range::unionWith(Range &r) {
                 upperBound = std::max(-c1, -c2);
                 base = base->getSubExp1();
                 if (VERBOSE && DEBUG_RANGE_ANALYSIS)
-                    LOG << this << "\n";
+                    LOG << toString() << "\n";
                 return;
             }
         }
@@ -726,8 +746,8 @@ void Range::unionWith(Range &r) {
         upperBound = MAX;
         base = Const::get(0);
         if (VERBOSE && DEBUG_RANGE_ANALYSIS)
-            LOG << this << "\n";
-        return;
+            LOG_STREAM(LL_Default) << toString();
+                    return;
     }
     if (stride != r.stride)
         stride = std::min(stride, r.stride);
@@ -736,20 +756,20 @@ void Range::unionWith(Range &r) {
     if (upperBound != r.upperBound)
         upperBound = std::max(upperBound, r.upperBound);
     if (VERBOSE && DEBUG_RANGE_ANALYSIS)
-        LOG << this << "\n";
+        LOG_STREAM(LL_Default) << toString();
 }
 
 void Range::widenWith(Range &r) {
     if (VERBOSE && DEBUG_RANGE_ANALYSIS)
-        LOG << "widening " << this << " with " << r << " got ";
+        LOG << "widening " << toString() << " with " << r << " got ";
     if (!(*base == *r.base)) {
         stride = 1;
         lowerBound = MIN;
         upperBound = MAX;
         base = Const::get(0);
         if (VERBOSE && DEBUG_RANGE_ANALYSIS)
-            LOG << this << "\n";
-        return;
+            LOG_STREAM(LL_Default) << toString();
+                    return;
     }
     // ignore stride for now
     if (r.getLowerBound() < lowerBound)
@@ -757,7 +777,7 @@ void Range::widenWith(Range &r) {
     if (r.getUpperBound() > upperBound)
         upperBound = MAX;
     if (VERBOSE && DEBUG_RANGE_ANALYSIS)
-        LOG << this << "\n";
+        LOG_STREAM(LL_Default) << toString();
 }
 Range &RangeMap::getRange(Exp *loc) {
     if (ranges.find(loc) == ranges.end()) {
@@ -786,14 +806,12 @@ void RangeMap::widenwith(RangeMap &other) {
     }
 }
 
-void RangeMap::print(QTextStream &os) const {
-    for (auto it = ranges.begin(); it != ranges.end(); it++) {
-        if (it != ranges.begin())
-            os << ", ";
-        (*it).first->print(os);
-        os << " -> ";
-        (*it).second.print(os);
+QString RangeMap::toString() const {
+    QStringList res;
+    for (const std::pair<Exp *,Range> & elem : ranges) {
+        res += QString("%1 -> %2").arg(elem.first->toString()).arg(elem.second.toString());
     }
+    return res.join(", ");
 }
 
 Exp *RangeMap::substInto(Exp *e, std::set<Exp *, lessExpStar> *only) const {
@@ -801,23 +819,25 @@ Exp *RangeMap::substInto(Exp *e, std::set<Exp *, lessExpStar> *only) const {
     int count = 0;
     do {
         changes = false;
-        for (auto &elem : ranges) {
-            if (only && only->find((elem).first) == only->end())
+        for (const std::pair<Exp *,Range> & elem : ranges) {
+            if (only && only->find(elem.first) == only->end())
                 continue;
             bool change = false;
             Exp *eold = nullptr;
             if (DEBUG_RANGE_ANALYSIS)
                 eold = e->clone();
-            if ((elem).second.getLowerBound() == (elem).second.getUpperBound()) {
-                e = e->searchReplaceAll(*(elem).first,
-                                        (Binary::get(opPlus, (elem).second.getBase(),
-                                                     new Const((elem).second.getLowerBound())))->simplify(),
+            if (elem.second.getLowerBound() == elem.second.getUpperBound()) {
+                // The following likely contains a bug, the replace argument is using direct pointer to
+                // elem.second.getBase() instead of a clone.
+                e = e->searchReplaceAll(*elem.first,
+                                        (Binary::get(opPlus, elem.second.getBase(),
+                                                     new Const(elem.second.getLowerBound())))->simplify(),
                                         change);
             }
             if (change) {
                 e = e->simplify()->simplifyArith();
                 if (VERBOSE && DEBUG_RANGE_ANALYSIS)
-                    LOG << "applied " << (elem).first << " to " << eold << " to get " << e << "\n";
+                    LOG << "applied " << elem.first << " to " << eold << " to get " << e << "\n";
                 changes = true;
             }
         }
@@ -838,7 +858,7 @@ void RangeMap::killAllMemOfs() {
 
 bool Range::operator==(Range &other) {
     return stride == other.stride && lowerBound == other.lowerBound && upperBound == other.upperBound &&
-           *base == *other.base;
+            *base == *other.base;
 }
 
 // return true if this range map is a subset of the other range map

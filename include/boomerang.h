@@ -49,9 +49,10 @@ class HLLCode;
 class ObjcModule;
 
 enum LogLevel {
-    LL_Default=0,
-    LL_Warn = 1,
-    LL_Error= 2,
+    LL_Debug = 0,
+    LL_Default=1,
+    LL_Warn = 2,
+    LL_Error= 3,
 };
 #define LOG Boomerang::get()->log()
 #define LOG_SEPARATE(x) Boomerang::get()->separate_log(x)

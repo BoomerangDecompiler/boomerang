@@ -20,6 +20,7 @@
 #include "operator.h" // Declares the OPER enum
 #include "types.h"    // For ADDRESS, etc
 #include "type.h"     // The Type class for typed expressions
+#include "util.h"
 //#include "statement.h"    // For StmtSet etc
 #include "exphelp.h"
 //#include "memo.h"
@@ -61,7 +62,7 @@ typedef std::shared_ptr<Exp> SharedExp;
 
 //! class Exp is abstract. However, the constructor can be called from the constructors of derived classes, and virtual
 //! functions not overridden by derived classes can be called
-class Exp {
+class Exp : public Printable {
   protected:
     OPER op; // The operator (e.g. opPlus)
     mutable unsigned lexBegin = 0, lexEnd = 0;
@@ -82,7 +83,7 @@ class Exp {
     void setLexEnd(unsigned int n) const { lexEnd = n; }
     unsigned getLexBegin() const { return lexBegin; }
     unsigned getLexEnd() const { return lexEnd; }
-
+    QString toString() const override;
     //! Print the expression to the given stream
     virtual void print(QTextStream &os, bool html = false) const = 0;
     void printt(QTextStream &os) const;

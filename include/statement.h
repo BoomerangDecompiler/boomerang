@@ -1025,6 +1025,7 @@ public:
     bool isChildless() const;
     Exp *getProven(Exp *e);
     Signature *getSignature() { return signature; }
+    void setSignature(Signature *sig) { signature = sig;} ///< Only used by range analysis
     // Localise the various components of expression e with reaching definitions to this call
     // Note: can change e so usually need to clone the argument
     // Was called substituteParams

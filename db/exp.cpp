@@ -3297,6 +3297,13 @@ Exp *Ternary::simplifyAddr() {
 
 const char *Exp::getOperName() const { return operStrings[op]; }
 
+QString Exp::toString() const {
+    QString res;
+    QTextStream os(&res);
+    this->print(os);
+    return res;
+}
+
 /***************************************************************************/ /**
   *
   * \brief  Print an infix representation of the object to the given file stream, with its type in \<angle
