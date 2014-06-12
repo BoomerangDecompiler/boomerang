@@ -86,7 +86,7 @@ class HpSomBinaryFile : public QObject, public BinaryData, public LoaderInterfac
     void Close() override;                 // Close file opened with Open()
     bool PostLoad(void *handle) override;  // For archive files only
     virtual LOAD_FMT GetFormat() const;    // Get format i.e. LOADFMT_PALM
-    virtual MACHINE GetMachine() const;    // Get format i.e. MACHINE_HPRISC
+    virtual MACHINE getMachine() const;    // Get format i.e. MACHINE_HPRISC
     QString getFilename() const override { return m_pFileName; }
 
     virtual bool isLibrary() const;
@@ -95,9 +95,9 @@ class HpSomBinaryFile : public QObject, public BinaryData, public LoaderInterfac
     virtual size_t getImageSize();
 
     // Get a symbol given an address
-    virtual const char *SymbolByAddress(ADDRESS dwAddr);
+    virtual QString SymbolByAddress(ADDRESS dwAddr);
     // Lookup the name, return the address
-    virtual ADDRESS GetAddressByName(const char *pName, bool bNoTypeOK = false);
+    virtual ADDRESS GetAddressByName(const QString &pName, bool bNoTypeOK = false);
     // Return true if the address matches the convention for A-line system calls
     bool IsDynamicLinkedProc(ADDRESS uNative);
 

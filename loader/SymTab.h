@@ -27,22 +27,22 @@
 
 class SymTab {
     // The map indexed by address.
-    std::map<ADDRESS, std::string> amap;
+    std::map<ADDRESS, QString> amap;
     // The map indexed by string. Note that the strings are stored twice.
-    std::map<std::string, ADDRESS> smap;
+    std::map<QString, ADDRESS> smap;
 
   public:
     SymTab();                     // Constructor
     ~SymTab();                    // Destructor
-    void Add(ADDRESS a, char *s); // Add a new entry
-    const char *find(ADDRESS a);  // Find an entry by address; nullptr if none
-    ADDRESS find(const char *s);  // Find an entry by name; NO_ADDRESS if none
+    void Add(ADDRESS a, const QString &s); // Add a new entry
+    const QString &find(ADDRESS a);  // Find an entry by address; nullptr if none
+    ADDRESS find(const QString &s);  // Find an entry by name; NO_ADDRESS if none
 #if 0
         char*       FindAfter(ADDRESS& dwAddr);     // Find entry with >= given value
         char*       FindNext(ADDRESS& dwAddr);      // Find next entry (after a Find())
         int         FindIndex(ADDRESS dwAddr);      // Find index for entry
         ADDRESS     FindSym(char* pName);           // Linear search for addr from name
 #endif
-    std::map<ADDRESS, std::string> &getAll() { return amap; }
+    std::map<ADDRESS, QString> &getAll() { return amap; }
 };
 #endif // __SYMTAB_H__

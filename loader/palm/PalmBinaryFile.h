@@ -40,7 +40,7 @@ class PalmBinaryFile : public QObject,
     void Close() override;                 // Close file opened with Open()
     bool PostLoad(void *handle) override;  // For archive files only
     LOAD_FMT GetFormat() const override;   // Get format i.e. LOADFMT_PALM
-    MACHINE GetMachine() const override;   // Get machine i.e. MACHINE_PALM
+    MACHINE getMachine() const override;   // Get machine i.e. MACHINE_PALM
     QString getFilename() const override { return m_pFileName; }
 
     bool isLibrary() const override;
@@ -49,10 +49,10 @@ class PalmBinaryFile : public QObject,
     size_t getImageSize() override;
 
     // Get a symbol given an address
-    const char *SymbolByAddress(ADDRESS dwAddr) override;
-    ADDRESS GetAddressByName(const char *pName, bool bNoTypeOK = false) override;
+    QString symbolByAddress(ADDRESS dwAddr) override;
+    ADDRESS GetAddressByName(const QString &pName, bool bNoTypeOK = false) override;
     void AddSymbol(ADDRESS /*uNative*/, const char * /*pName*/) override;
-    int GetSizeByName(const char *pName, bool bTypeOK = false) override;
+    int GetSizeByName(const QString &pName, bool bTypeOK = false) override;
     ADDRESS *GetImportStubs(int &numImports) override;
     const char *getFilenameSymbolFor(const char * /*sym*/) override;
     tMapAddrToString &getSymbols() override;
@@ -99,7 +99,7 @@ class PalmBinaryFile : public QObject,
     bool RealLoad(const QString &sName) override; // Load the file; pure virtual
 
   private:
-    std::map<ADDRESS, std::string> m_symTable;
+    tMapAddrToString m_symTable;
     unsigned char *m_pImage; //!< Points to loaded image
     unsigned char *m_pData;  //!< Points to data
     // Offset from start of data to where register a5 should be initialised to

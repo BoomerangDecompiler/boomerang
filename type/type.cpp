@@ -1038,6 +1038,13 @@ bool Type::isPointerToAlpha() { return isPointer() && asPointer()->pointsToAlpha
 //! Print in *i32* format
 void Type::starPrint(QTextStream &os) { os << "*" << this << "*"; }
 
+QString Type::toString() const {
+    QString res;
+    QTextStream tgt(&res);
+    tgt << *this;
+    return res;
+}
+
 // A crude shortcut representation of a type
 QTextStream &operator<<(QTextStream &os, const Type &t) {
     switch (t.getId()) {
@@ -1498,3 +1505,4 @@ void CompoundType::updateGenericMember(int off, SharedType ty, bool &ch) {
         setNameAtOffset(bit_offset, nam);
     }
 }
+

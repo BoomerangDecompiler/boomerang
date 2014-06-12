@@ -364,19 +364,19 @@ bool DOS4GWBinaryFile::PostLoad(void *handle) {
     return false;
 }
 
-const char *DOS4GWBinaryFile::SymbolByAddress(ADDRESS dwAddr) {
-    std::map<ADDRESS, std::string>::iterator it = dlprocptrs.find(dwAddr);
+QString DOS4GWBinaryFile::SymbolByAddress(ADDRESS dwAddr) {
+    std::map<ADDRESS, QString>::iterator it = dlprocptrs.find(dwAddr);
     if (it == dlprocptrs.end())
         return 0;
-    return (char *)it->second.c_str();
+    return it->second;
 }
 
-ADDRESS DOS4GWBinaryFile::GetAddressByName(const char *pName, bool bNoTypeOK /* = false */) {
+ADDRESS DOS4GWBinaryFile::GetAddressByName(const QString &pName, bool bNoTypeOK /* = false */) {
     Q_UNUSED(bNoTypeOK);
 
     // This is "looking up the wrong way" and hopefully is uncommon
     // Use linear search
-    std::map<ADDRESS, std::string>::iterator it = dlprocptrs.begin();
+    std::map<ADDRESS, QString>::iterator it = dlprocptrs.begin();
     while (it != dlprocptrs.end()) {
         // std::cerr << "Symbol: " << it->second.c_str() << " at 0x" << std::hex << it->first << "\n";
         if (it->second == pName)
@@ -412,7 +412,7 @@ int DOS4GWBinaryFile::dos4gwRead4(int *pi) const {
 
 // Read 1 byte from given native address
 char DOS4GWBinaryFile::readNative1(ADDRESS nat) {
-    PSectionInfo si = GetSectionInfoByAddr(nat);
+    PSectionInfo si = getSectionInfoByAddr(nat);
     if (si == 0)
         si = GetSectionInfo(0);
     char *host = (char *)(si->uHostAddr - si->uNativeAddr + nat).m_value;
@@ -421,7 +421,7 @@ char DOS4GWBinaryFile::readNative1(ADDRESS nat) {
 
 // Read 2 bytes from given native address
 int DOS4GWBinaryFile::readNative2(ADDRESS nat) {
-    PSectionInfo si = GetSectionInfoByAddr(nat);
+    PSectionInfo si = getSectionInfoByAddr(nat);
     if (si == 0)
         return 0;
     ADDRESS host = si->uHostAddr - si->uNativeAddr + nat;
@@ -431,7 +431,7 @@ int DOS4GWBinaryFile::readNative2(ADDRESS nat) {
 
 // Read 4 bytes from given native address
 int DOS4GWBinaryFile::readNative4(ADDRESS nat) {
-    PSectionInfo si = GetSectionInfoByAddr(nat);
+    PSectionInfo si = getSectionInfoByAddr(nat);
     if (si == 0)
         return 0;
     ADDRESS host = si->uHostAddr - si->uNativeAddr + nat;
@@ -484,11 +484,11 @@ bool DOS4GWBinaryFile::IsDynamicLinkedProcPointer(ADDRESS uNative) {
     return false;
 }
 
-const char *DOS4GWBinaryFile::GetDynamicProcName(ADDRESS uNative) { return dlprocptrs[uNative].c_str(); }
+const QString &DOS4GWBinaryFile::GetDynamicProcName(ADDRESS uNative) { return dlprocptrs[uNative]; }
 
 LOAD_FMT DOS4GWBinaryFile::GetFormat() const { return LOADFMT_LX; }
 
-MACHINE DOS4GWBinaryFile::GetMachine() const { return MACHINE_PENTIUM; }
+MACHINE DOS4GWBinaryFile::getMachine() const { return MACHINE_PENTIUM; }
 
 bool DOS4GWBinaryFile::isLibrary() const {
     return false; // TODO

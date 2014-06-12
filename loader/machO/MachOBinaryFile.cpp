@@ -403,18 +403,18 @@ bool MachOBinaryFile::PostLoad(void *handle) {
     return false;
 }
 
-const char *MachOBinaryFile::SymbolByAddress(ADDRESS dwAddr) {
-    std::map<ADDRESS, std::string>::iterator it = m_SymA.find(dwAddr);
+QString MachOBinaryFile::symbolByAddress(ADDRESS dwAddr) {
+    tMapAddrToString::iterator it = m_SymA.find(dwAddr);
     if (it == m_SymA.end())
         return 0;
-    return (char *)it->second.c_str();
+    return it->second;
 }
 
-ADDRESS MachOBinaryFile::GetAddressByName(const char *pName, bool bNoTypeOK /* = false */) {
+ADDRESS MachOBinaryFile::GetAddressByName(const QString &pName, bool bNoTypeOK /* = false */) {
     Q_UNUSED(bNoTypeOK);
     // This is "looking up the wrong way" and hopefully is uncommon
     // Use linear search
-    std::map<ADDRESS, std::string>::iterator it = m_SymA.begin();
+    tMapAddrToString::iterator it = m_SymA.begin();
     while (it != m_SymA.end()) {
         // std::cerr << "Symbol: " << it->second.c_str() << " at 0x" << std::hex << it->first << "\n";
         if (it->second == pName)
@@ -426,7 +426,7 @@ ADDRESS MachOBinaryFile::GetAddressByName(const char *pName, bool bNoTypeOK /* =
 
 void MachOBinaryFile::AddSymbol(ADDRESS uNative, const char *pName) { m_SymA[uNative] = pName; }
 
-int MachOBinaryFile::GetSizeByName(const char *pName, bool bTypeOK) {
+int MachOBinaryFile::GetSizeByName(const QString &pName, bool bTypeOK) {
     if (GetAddressByName(pName, bTypeOK) != NO_ADDRESS) {
         return 4; // TODO: HACK
     }
@@ -530,7 +530,7 @@ bool MachOBinaryFile::isCFStringConstant(ADDRESS uEntry) {
 
 // Read 2 bytes from given native address
 char MachOBinaryFile::readNative1(ADDRESS nat) {
-    PSectionInfo si = GetSectionInfoByAddr(nat);
+    PSectionInfo si = getSectionInfoByAddr(nat);
     if (si == 0)
         si = GetSectionInfo(0);
     ADDRESS host = si->uHostAddr - si->uNativeAddr + nat;
@@ -539,7 +539,7 @@ char MachOBinaryFile::readNative1(ADDRESS nat) {
 
 // Read 2 bytes from given native address
 int MachOBinaryFile::readNative2(ADDRESS nat) {
-    PSectionInfo si = GetSectionInfoByAddr(nat);
+    PSectionInfo si = getSectionInfoByAddr(nat);
     if (si == 0)
         return 0;
     ADDRESS host = si->uHostAddr - si->uNativeAddr + nat;
@@ -549,7 +549,7 @@ int MachOBinaryFile::readNative2(ADDRESS nat) {
 
 // Read 4 bytes from given native address
 int MachOBinaryFile::readNative4(ADDRESS nat) {
-    PSectionInfo si = GetSectionInfoByAddr(nat);
+    PSectionInfo si = getSectionInfoByAddr(nat);
     if (si == 0)
         return 0;
     ADDRESS host = si->uHostAddr - si->uNativeAddr + nat;
@@ -596,11 +596,11 @@ double MachOBinaryFile::readNativeFloat8(ADDRESS nat) {
     return *(double *)raw;
 }
 
-const char *MachOBinaryFile::GetDynamicProcName(ADDRESS uNative) { return dlprocs[uNative].c_str(); }
+const QString &MachOBinaryFile::GetDynamicProcName(ADDRESS uNative) { return dlprocs[uNative]; }
 
 LOAD_FMT MachOBinaryFile::GetFormat() const { return LOADFMT_MACHO; }
 
-MACHINE MachOBinaryFile::GetMachine() const { return machine; }
+MACHINE MachOBinaryFile::getMachine() const { return machine; }
 
 bool MachOBinaryFile::isLibrary() const { return false; }
 

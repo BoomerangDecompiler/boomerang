@@ -9,6 +9,7 @@
 #include <QObject>
 #include <iosfwd>
 #include <stdint.h>
+#include "util.h"
 class QTextStream;
 // Machine types
 typedef uint8_t Byte;   /* 8 bits */
@@ -70,7 +71,10 @@ struct ADDRESS {        /* pointer. size depends on platform */
         return *this;
     }
     ADDRESS operator-(intptr_t other) const { return ADDRESS::g(m_value - other); }
-    friend QTextStream& operator<< (QTextStream& os, const ADDRESS& mdv);
+    friend QTextStream& operator<< (QTextStream& os, const ADDRESS& mdv);\
+    QString toString() const {
+        return QString::number(m_value,16);
+    }
     // operator intptr_t() const {return int(m_value);}
 };
 template <class T, class U> bool IN_RANGE(const T &val, const U &range_start, const U &range_end) {

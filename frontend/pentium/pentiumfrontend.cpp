@@ -416,10 +416,9 @@ bool PentiumFrontEnd::helperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL *> *l
     if (dest == NO_ADDRESS)
         return false;
 
-    const char *p = Program->symbolByAddress(dest);
-    if (p == nullptr)
+    QString name = Program->symbolByAddress(dest);
+    if (name.isEmpty())
         return false;
-    QString name(p);
     // I believe that __xtol is for gcc, _ftol for earlier MSVC compilers, _ftol2 for MSVC V7
     if (name == "__xtol" || name == "_ftol" || name == "_ftol2") {
         // This appears to pop the top of stack, and converts the result to a 64 bit integer in edx:eax.
@@ -509,8 +508,7 @@ ADDRESS PentiumFrontEnd::getMainEntryPoint(bool &gotMain) {
         if (cs && cs->getKind() == STMT_CALL && cs->getDest()->getOper() == opMemOf &&
             cs->getDest()->getSubExp1()->getOper() == opIntConst &&
             ldrIface->IsDynamicLinkedProcPointer(((Const *)cs->getDest()->getSubExp1())->getAddr()) &&
-            !strcmp(ldrIface->GetDynamicProcName(((Const *)cs->getDest()->getSubExp1())->getAddr()),
-                    "GetModuleHandleA")) {
+            ldrIface->GetDynamicProcName(((Const *)cs->getDest()->getSubExp1())->getAddr())=="GetModuleHandleA") {
 #if 0
             std::cerr << "consider " << std::hex << addr << " " <<
                          pBF->GetDynamicProcName(((Const*)cs->getDest()->getSubExp1())->getAddr()) << '\n';
@@ -541,7 +539,8 @@ ADDRESS PentiumFrontEnd::getMainEntryPoint(bool &gotMain) {
                 gotMain = true;
                 return cs->getFixedDest();
             }
-            if (Program->symbolByAddress(dest) && strcmp(Program->symbolByAddress(dest), "__libc_start_main") == 0) {
+            QString dest_sym = Program->symbolByAddress(dest);
+            if (dest_sym=="__libc_start_main") {
                 // This is a gcc 3 pattern. The first parameter will be a pointer to main.
                 // Assume it's the 5 byte push immediately preceeding this instruction
                 // Note: the RTL changed recently from esp = esp-4; m[esp] = K tp m[esp-4] = K; esp = esp-4

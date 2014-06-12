@@ -58,7 +58,7 @@ void FrontPentTest::test1() {
     QVERIFY(pBF != 0);
     Prog *prog = new Prog;
     LoaderInterface *iface = qobject_cast<LoaderInterface *>(pBF);
-    QVERIFY(iface->GetMachine() == MACHINE_PENTIUM);
+    QVERIFY(iface->getMachine() == MACHINE_PENTIUM);
     FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
     prog->setFrontEnd(pFE);
 
@@ -104,7 +104,7 @@ void FrontPentTest::test2() {
     QVERIFY(pBF != 0);
     Prog *prog = new Prog;
     LoaderInterface *iface = qobject_cast<LoaderInterface *>(pBF);
-    QVERIFY(iface->GetMachine() == MACHINE_PENTIUM);
+    QVERIFY(iface->getMachine() == MACHINE_PENTIUM);
     FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
     prog->setFrontEnd(pFE);
 
@@ -142,7 +142,7 @@ void FrontPentTest::test3() {
     QVERIFY(pBF != 0);
     Prog *prog = new Prog;
     LoaderInterface *iface = qobject_cast<LoaderInterface *>(pBF);
-    QVERIFY(iface->GetMachine() == MACHINE_PENTIUM);
+    QVERIFY(iface->getMachine() == MACHINE_PENTIUM);
     FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
     prog->setFrontEnd(pFE);
 
@@ -179,7 +179,7 @@ void FrontPentTest::testBranch() {
     QVERIFY(pBF != 0);
     Prog *prog = new Prog;
     LoaderInterface *iface = qobject_cast<LoaderInterface *>(pBF);
-    QVERIFY(iface->GetMachine() == MACHINE_PENTIUM);
+    QVERIFY(iface->getMachine() == MACHINE_PENTIUM);
     FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
     prog->setFrontEnd(pFE);
 
@@ -220,7 +220,7 @@ void FrontPentTest::testFindMain() {
     QVERIFY(pBF != 0);
     Prog *prog = new Prog;
     LoaderInterface *iface = qobject_cast<LoaderInterface *>(pBF);
-    QVERIFY(iface->GetMachine() == MACHINE_PENTIUM);
+    QVERIFY(iface->getMachine() == MACHINE_PENTIUM);
     FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
     prog->setFrontEnd(pFE);
 

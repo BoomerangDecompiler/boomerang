@@ -70,7 +70,7 @@ FrontEnd::FrontEnd(QObject *p_BF, Prog *prog, BinaryFileFactory *bff) : pLoader(
   ******************************************************************************/
 FrontEnd *FrontEnd::instantiate(QObject *pBF, Prog *prog, BinaryFileFactory *pbff) {
     LoaderInterface *ldr = qobject_cast<LoaderInterface *>(pBF);
-    switch (ldr->GetMachine()) {
+    switch (ldr->getMachine()) {
     case MACHINE_PENTIUM:
         return new PentiumFrontEnd(pBF, prog, pbff);
     case MACHINE_SPARC:
@@ -198,8 +198,8 @@ void FrontEnd::checkEntryPoint(std::vector<ADDRESS> &entrypoints, ADDRESS addr, 
     UserProc *proc = (UserProc *)Program->setNewProc(addr);
     assert(proc);
     Signature *sig = ty->asFunc()->getSignature()->clone();
-    const char *sym = symIface ? symIface->SymbolByAddress(addr) : nullptr;
-    if (sym)
+    QString sym = symIface ? symIface->symbolByAddress(addr) : QString("");
+    if (!sym.isEmpty())
         sig->setName(sym);
     sig->setForced(true);
     proc->setSignature(sig);
@@ -281,30 +281,28 @@ void FrontEnd::decode(Prog *prg, bool decodeMain, const char *pname) {
     if (not gotMain)
         return;
     static const char *mainName[] = {"main", "WinMain", "DriverEntry"};
-    const char *name = Program->symbolByAddress(a);
+    QString name = Program->symbolByAddress(a);
     if (name == nullptr)
         name = mainName[0];
     for (auto &elem : mainName) {
-        if (!strcmp(name, elem)) {
-            Function *proc = Program->findProc(a);
-            if (proc == nullptr) {
-                if (VERBOSE)
-                    LOG << "no proc found for address " << a << "\n";
-                return;
-            }
-            auto fty = std::dynamic_pointer_cast<FuncType>(Type::getNamedType(name));
-            if (!fty)
-                LOG << "unable to find signature for known entrypoint " << name << "\n";
-            else {
-                proc->setSignature(fty->getSignature()->clone());
-                proc->getSignature()->setName(name);
-                // proc->getSignature()->setFullSig(true);        // Don't add or remove parameters
-                proc->getSignature()->setForced(true); // Don't add or remove parameters
-            }
-            break;
+        if (name!=elem)
+            continue;
+        Function *proc = Program->findProc(a);
+        if (proc == nullptr) {
+            LOG_VERBOSE(1) << "no proc found for address " << a << "\n";
+            return;
         }
+        auto fty = std::dynamic_pointer_cast<FuncType>(Type::getNamedType(name));
+        if (!fty)
+            LOG << "unable to find signature for known entrypoint " << name << "\n";
+        else {
+            proc->setSignature(fty->getSignature()->clone());
+            proc->getSignature()->setName(name);
+            // proc->getSignature()->setFullSig(true);        // Don't add or remove parameters
+            proc->getSignature()->setForced(true); // Don't add or remove parameters
+        }
+        break;
     }
-    return;
 }
 
 // Somehow, a == NO_ADDRESS has come to mean decode anything not already decoded
@@ -377,7 +375,7 @@ void FrontEnd::decodeFragment(UserProc *proc, ADDRESS a) {
 
 DecodeResult &FrontEnd::decodeInstruction(ADDRESS pc) {
     SectionInterface *sect_iface = qobject_cast<SectionInterface *>(pLoader);
-    if (!sect_iface || sect_iface->GetSectionInfoByAddr(pc) == nullptr) {
+    if (!sect_iface || sect_iface->getSectionInfoByAddr(pc) == nullptr) {
         LOG << "ERROR: attempted to decode outside any known section " << pc << "\n";
         static DecodeResult invalid;
         invalid.reset();
@@ -684,11 +682,11 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream &/*os*/, 
                             LOG << "jump to a library function: " << stmt_jump << ", replacing with a call/ret.\n";
                         // jump to a library function
                         // replace with a call ret
-                        std::string func =
+                        QString func =
                             ldrIface->GetDynamicProcName(((Const *)stmt_jump->getDest()->getSubExp1())->getAddr());
                         CallStatement *call = new CallStatement;
                         call->setDest(stmt_jump->getDest()->clone());
-                        LibProc *lp = pProc->getProg()->getLibraryProc(func.c_str());
+                        LibProc *lp = pProc->getProg()->getLibraryProc(func);
                         if (lp == nullptr)
                             LOG << "getLibraryProc returned nullptr, aborting\n";
                         assert(lp);
@@ -703,8 +701,8 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream &/*os*/, 
                         if (pRtl->getAddress() == pProc->getNativeAddress()) {
                             // it's a thunk
                             // Proc *lp = prog->findProc(func.c_str());
-                            func = std::string("__imp_") + func;
-                            pProc->setName(func.c_str());
+                            func = "__imp_" + func;
+                            pProc->setName(func);
                             // lp->setName(func.c_str());
                             Boomerang::get()->alertUpdateSignature(pProc);
                         }
@@ -777,7 +775,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream &/*os*/, 
                         call->getDest()->getSubExp1()->getOper() == opIntConst &&
                         ldrIface->IsDynamicLinkedProcPointer(((Const *)call->getDest()->getSubExp1())->getAddr())) {
                         // Dynamic linked proc pointers are treated as static.
-                        const char *nam =
+                        QString nam =
                             ldrIface->GetDynamicProcName(((Const *)call->getDest()->getSubExp1())->getAddr());
                         Function *p = pProc->getProg()->getLibraryProc(nam);
                         call->setDestProc(p);
@@ -811,7 +809,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream &/*os*/, 
                                                 ->getAddr())) { // Is it an "DynamicLinkedProcPointer"?
                                         // Yes, it's a library function. Look up it's name.
                                         ADDRESS a = ((Const *)stmt_jump->getDest()->getSubExp1())->getAddr();
-                                        const char *nam = ldrIface->GetDynamicProcName(a);
+                                        QString nam = ldrIface->GetDynamicProcName(a);
                                         // Assign the proc to the call
                                         Function *p = pProc->getProg()->getLibraryProc(nam);
                                         if (call->getDestProc()) {
@@ -875,14 +873,14 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream &/*os*/, 
 
                         // Check if this is the _exit or exit function. May prevent us from attempting to decode
                         // invalid instructions, and getting invalid stack height errors
-                        const char *name = Program->symbolByAddress(uNewAddr);
-                        if (name == nullptr && call->getDest()->isMemOf() &&
+                        QString name = Program->symbolByAddress(uNewAddr);
+                        if (name.isEmpty() && call->getDest()->isMemOf() &&
                             call->getDest()->getSubExp1()->isIntConst()) {
                             ADDRESS a = ((Const *)call->getDest()->getSubExp1())->getAddr();
                             if (ldrIface->IsDynamicLinkedProcPointer(a))
                                 name = ldrIface->GetDynamicProcName(a);
                         }
-                        if (name && noReturnCallDest(name)) {
+                        if (!name.isEmpty() && noReturnCallDest(name)) {
                             // Make sure it has a return appended (so there is only one exit from the function)
                             // call->setReturnAfterCall(true);        // I think only the Sparc frontend cares
                             // Create the new basic block

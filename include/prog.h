@@ -21,6 +21,7 @@
 #include "frontend.h"
 #include "type.h"
 #include "module.h"
+#include "util.h"
 // TODO: refactor Prog Global handling into separate class
 class RTLInstDict;
 class Function;
@@ -32,14 +33,14 @@ class InstructionSet;
 class Module;
 class XMLProgParser;
 
-class Global {
+class Global : public Printable {
 private:
     SharedType type;
     ADDRESS uaddr;
     QString nam;
-
+    Prog *Parent;
 public:
-    Global(SharedType _type, ADDRESS _uaddr, const QString &_nam) : type(_type), uaddr(_uaddr), nam(_nam) {}
+    Global(SharedType _type, ADDRESS _uaddr, const QString &_nam,Prog *_p) : type(_type), uaddr(_uaddr), nam(_nam),Parent(_p) {}
     virtual ~Global();
 
     SharedType getType() { return type; }
@@ -50,11 +51,11 @@ public:
         // TODO: use getType()->getBytes()
         if (addr == uaddr)
             return true;
-        return (addr > uaddr) && addr <= (uaddr + (getType()->getSize() / 8));
+        return (addr > uaddr) && (addr <= (uaddr + getType()->getBytes()));
     }
     const QString &getName() { return nam; }
-    Exp *getInitialValue(Prog *prog);
-    void print(QTextStream &os, Prog *prog); // Print to stream os
+    Exp *getInitialValue(Prog *prog) const;
+    QString toString() const;
 
 protected:
     Global() : type(nullptr), uaddr(ADDRESS::g(0L)) {}
@@ -72,7 +73,7 @@ private:
     ModuleListType ModuleList;  ///< The Modules that make up this program
 
 public:
-    typedef std::map<ADDRESS, std::string> mAddressString;
+    typedef std::map<ADDRESS, QString> mAddressToString;
     Prog();
     virtual ~Prog();
     Prog(const char *name);
@@ -127,7 +128,7 @@ public:
     Instruction *getStmtAtLex(Module *cluster, unsigned int begin, unsigned int end);
     platform getFrontEndId();
 
-    mAddressString &getSymbols();
+    mAddressToString &getSymbols();
 
     Signature *getDefaultSignature(const char *name);
 
@@ -149,16 +150,16 @@ public:
 
     // Hacks for Mike
     //! Get a code for the machine e.g. MACHINE_SPARC
-    MACHINE getMachine() { return pLoaderIface->GetMachine(); }
+    MACHINE getMachine() { return pLoaderIface->getMachine(); }
     SymbolTableInterface *getBinarySymbolTable() {
         return pLoaderPlugin ? qobject_cast<SymbolTableInterface *>(pLoaderPlugin) : nullptr;
     }
     //! Get a symbol from an address
-    const char *symbolByAddress(ADDRESS dest) {
-        return getBinarySymbolTable() ? getBinarySymbolTable()->SymbolByAddress(dest) : nullptr;
+    QString symbolByAddress(ADDRESS dest) {
+        return getBinarySymbolTable() ? getBinarySymbolTable()->symbolByAddress(dest) : nullptr;
     }
 
-    SectionInfo *getSectionInfoByAddr(ADDRESS a) { return pSections->GetSectionInfoByAddr(a); }
+    SectionInfo *getSectionInfoByAddr(ADDRESS a) { return pSections->getSectionInfoByAddr(a); }
     ADDRESS getLimitTextLow() { return pSections->getLimitTextLow(); }
     ADDRESS getLimitTextHigh() { return pSections->getLimitTextHigh(); }
     bool isReadOnly(ADDRESS a) { return pSections->isReadOnly(a); }
@@ -176,7 +177,7 @@ public:
     ptrdiff_t getTextDelta() { return pSections->getTextDelta(); }
 
     bool isDynamicLinkedProcPointer(ADDRESS dest) { return pLoaderIface->IsDynamicLinkedProcPointer(dest); }
-    const char *GetDynamicProcName(ADDRESS uNative) { return pLoaderIface->GetDynamicProcName(uNative); }
+    const QString &GetDynamicProcName(ADDRESS uNative) { return pLoaderIface->GetDynamicProcName(uNative); }
 
     bool processProc(ADDRESS addr, UserProc *proc) { // Decode a proc
         QTextStream os(stderr); // rtl output target

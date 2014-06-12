@@ -137,7 +137,7 @@ class DOS4GWBinaryFile : public QObject, public LoaderInterface, public BinaryDa
     virtual void UnLoad();                // Unload the image
     virtual LOAD_FMT GetFormat() const;   // Get format (i.e.
     // LOADFMT_DOS4GW)
-    virtual MACHINE GetMachine() const; // Get machine (i.e.
+    virtual MACHINE getMachine() const; // Get machine (i.e.
     // MACHINE_Pentium)
     QString getFilename() const override { return m_pFileName; }
     virtual bool isLibrary() const;
@@ -149,8 +149,8 @@ class DOS4GWBinaryFile : public QObject, public LoaderInterface, public BinaryDa
     virtual ADDRESS GetMainEntryPoint();
     virtual ADDRESS GetEntryPoint();
     DWord getDelta();
-    virtual const char *SymbolByAddress(ADDRESS dwAddr);                        // Get sym from addr
-    virtual ADDRESS GetAddressByName(const char *name, bool bNoTypeOK = false); // Find addr given name
+    virtual QString SymbolByAddress(ADDRESS dwAddr);                        // Get sym from addr
+    virtual ADDRESS GetAddressByName(const QString &name, bool bNoTypeOK = false); // Find addr given name
     virtual void AddSymbol(ADDRESS uNative, const char *pName);
 
     //
@@ -174,9 +174,9 @@ class DOS4GWBinaryFile : public QObject, public LoaderInterface, public BinaryDa
 
     virtual bool IsDynamicLinkedProcPointer(ADDRESS uNative);
     virtual bool IsDynamicLinkedProc(ADDRESS uNative);
-    virtual const char *GetDynamicProcName(ADDRESS uNative);
+    virtual const QString &GetDynamicProcName(ADDRESS uNative);
 
-    virtual std::map<ADDRESS, std::string> &getSymbols() { return dlprocptrs; }
+    virtual tMapAddrToString &getSymbols() { return dlprocptrs; }
 
   protected:
     bool RealLoad(const QString &sName) override; // Load the file; pure virtual
@@ -193,6 +193,6 @@ class DOS4GWBinaryFile : public QObject, public LoaderInterface, public BinaryDa
     // DWord*    m_pRelocTable;            // The relocation table
     char *base; // Beginning of the loaded image
     // Map from address of dynamic pointers to library procedure names:
-    std::map<ADDRESS, std::string> dlprocptrs;
+    tMapAddrToString dlprocptrs;
     QString m_pFileName;
 };

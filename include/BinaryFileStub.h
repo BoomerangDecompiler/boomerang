@@ -9,7 +9,7 @@ class BinaryFileStub : public LoaderInterface {
     virtual bool Open(const char *sName) { return false; } // Open for r/w; pv
     virtual void Close() {}                                // Close file opened with Open()
     virtual LOAD_FMT GetFormat() const;                    // Get format (e.g. LOADFMT_ELF)
-    virtual MACHINE GetMachine() const;                    // Get machine (e.g. MACHINE_SPARC)
+    virtual MACHINE getMachine() const;                    // Get machine (e.g. MACHINE_SPARC)
     virtual QString getFilename() const { return m_pFileName; }
     virtual bool isLibrary() const;
     virtual QStringList getDependencyList();

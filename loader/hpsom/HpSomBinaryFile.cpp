@@ -48,7 +48,7 @@ int Read4(int *pi) {
 }
 // Read 1 byte from given native address
 char HpSomBinaryFile::readNative1(ADDRESS nat) {
-    SectionInfo *si = GetSectionInfoByAddr(nat);
+    SectionInfo *si = getSectionInfoByAddr(nat);
     if (si == 0)
         si = GetSectionInfo(0);
     char *host = (char *)(si->uHostAddr - si->uNativeAddr + nat).m_value;
@@ -57,7 +57,7 @@ char HpSomBinaryFile::readNative1(ADDRESS nat) {
 
 // Read 2 bytes from given native address
 int HpSomBinaryFile::readNative2(ADDRESS nat) {
-    SectionInfo *si = GetSectionInfoByAddr(nat);
+    SectionInfo *si = getSectionInfoByAddr(nat);
     if (si == 0)
         return 0;
     ADDRESS host = si->uHostAddr - si->uNativeAddr + nat;
@@ -67,7 +67,7 @@ int HpSomBinaryFile::readNative2(ADDRESS nat) {
 
 // Read 4 bytes from given native address
 int HpSomBinaryFile::readNative4(ADDRESS nat) {
-    SectionInfo *si = GetSectionInfoByAddr(nat);
+    SectionInfo *si = getSectionInfoByAddr(nat);
     if (si == 0)
         return 0;
     ADDRESS host = si->uHostAddr - si->uNativeAddr + nat;
@@ -499,7 +499,7 @@ bool HpSomBinaryFile::PostLoad(void *handle) {
 
 LOAD_FMT HpSomBinaryFile::GetFormat() const { return LOADFMT_PAR; }
 
-MACHINE HpSomBinaryFile::GetMachine() const { return MACHINE_HPRISC; }
+MACHINE HpSomBinaryFile::getMachine() const { return MACHINE_HPRISC; }
 
 bool HpSomBinaryFile::isLibrary() const {
     int type = UINT4(m_pImage) & 0xFFFF;
@@ -513,9 +513,9 @@ ADDRESS HpSomBinaryFile::getImageBase() { return ADDRESS::g(0L); /* FIXME */ }
 size_t HpSomBinaryFile::getImageSize() { return UINT4(m_pImage + 0x24); }
 
 // We at least need to be able to name the main function and system calls
-const char *HpSomBinaryFile::SymbolByAddress(ADDRESS a) { return symbols.find(a); }
+QString HpSomBinaryFile::SymbolByAddress(ADDRESS a) { return symbols.find(a); }
 
-ADDRESS HpSomBinaryFile::GetAddressByName(const char *pName, bool bNoTypeOK /* = false */) {
+ADDRESS HpSomBinaryFile::GetAddressByName(const QString &pName, bool bNoTypeOK /* = false */) {
     Q_UNUSED(bNoTypeOK);
     // For now, we ignore the symbol table and do a linear search of our
     // SymTab table

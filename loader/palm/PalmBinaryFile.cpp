@@ -62,7 +62,7 @@ int Read4(int *pi) {
 }
 // Read 1 byte from given native address
 char PalmBinaryFile::readNative1(ADDRESS nat) {
-    SectionInfo *si = GetSectionInfoByAddr(nat);
+    SectionInfo *si = getSectionInfoByAddr(nat);
     if (si == nullptr)
         si = GetSectionInfo(0);
     char *host = (char *)(si->uHostAddr - si->uNativeAddr + nat).m_value;
@@ -71,7 +71,7 @@ char PalmBinaryFile::readNative1(ADDRESS nat) {
 
 // Read 2 bytes from given native address
 int PalmBinaryFile::readNative2(ADDRESS nat) {
-    SectionInfo *si = GetSectionInfoByAddr(nat);
+    SectionInfo *si = getSectionInfoByAddr(nat);
     if (si == nullptr)
         return 0;
     ADDRESS host = si->uHostAddr - si->uNativeAddr + nat;
@@ -81,7 +81,7 @@ int PalmBinaryFile::readNative2(ADDRESS nat) {
 
 // Read 4 bytes from given native address
 int PalmBinaryFile::readNative4(ADDRESS nat) {
-    SectionInfo *si = GetSectionInfoByAddr(nat);
+    SectionInfo *si = getSectionInfoByAddr(nat);
     if (si == nullptr)
         return 0;
     ADDRESS host = si->uHostAddr - si->uNativeAddr + nat;
@@ -367,7 +367,7 @@ bool PalmBinaryFile::PostLoad(void */*handle*/) {
 
 LOAD_FMT PalmBinaryFile::GetFormat() const { return LOADFMT_PALM; }
 
-MACHINE PalmBinaryFile::GetMachine() const { return MACHINE_PALM; }
+MACHINE PalmBinaryFile::getMachine() const { return MACHINE_PALM; }
 
 bool PalmBinaryFile::isLibrary() const { return (strncmp((char *)(m_pImage + 0x3C), "libr", 4) == 0); }
 QStringList PalmBinaryFile::getDependencyList() { return QStringList(); /* doesn't really exist on palm */ }
@@ -377,30 +377,28 @@ ADDRESS PalmBinaryFile::getImageBase() { return ADDRESS::g(0L); /* FIXME */ }
 size_t PalmBinaryFile::getImageSize() { return 0; /* FIXME */ }
 
 // We at least need to be able to name the main function and system calls
-const char *PalmBinaryFile::SymbolByAddress(ADDRESS dwAddr) {
+QString PalmBinaryFile::symbolByAddress(ADDRESS dwAddr) {
     if ((dwAddr.m_value & 0xFFFFF000) == 0xAAAAA000) {
         // This is the convention used to indicate an A-line system call
         unsigned offset = dwAddr.m_value & 0xFFF;
         if (offset < numTrapStrings)
             return trapNames[offset];
-        else
-            return nullptr;
+        return "";
     }
     auto iter = m_symTable.find(dwAddr);
     if (iter != m_symTable.end())
-        return iter->second.c_str();
+        return iter->second;
     if (dwAddr == GetMainEntryPoint())
         return "PilotMain";
-    else
-        return nullptr;
+    return "";
 }
 
-ADDRESS PalmBinaryFile::GetAddressByName(const char *pName, bool bNoTypeOK) {
+ADDRESS PalmBinaryFile::GetAddressByName(const QString &pName, bool bNoTypeOK) {
     if (bNoTypeOK == false) {
         // TODO: report an error ?
         return NO_ADDRESS;
     }
-    if (strcmp(pName, "PilotMain") == 0)
+    if (pName=="PilotMain")
         return GetMainEntryPoint();
     // scan user-provided symbol names
     for (auto kv : m_symTable) {
@@ -408,7 +406,7 @@ ADDRESS PalmBinaryFile::GetAddressByName(const char *pName, bool bNoTypeOK) {
             return kv.first;
     }
     for (size_t i = 0; i < numTrapStrings; ++i) {
-        if (strcmp(trapNames[i], pName) == 0) {
+        if (trapNames[i]==pName) {
             return ADDRESS::g(0xAAAAA000 | i);
         }
     }
@@ -417,7 +415,7 @@ ADDRESS PalmBinaryFile::GetAddressByName(const char *pName, bool bNoTypeOK) {
 
 void PalmBinaryFile::AddSymbol(ADDRESS addr, const char *name) { m_symTable[addr] = name; }
 
-int PalmBinaryFile::GetSizeByName(const char *pName, bool bTypeOK) {
+int PalmBinaryFile::GetSizeByName(const QString &pName, bool bTypeOK) {
     Q_UNUSED(pName);
     Q_UNUSED(bTypeOK);
 

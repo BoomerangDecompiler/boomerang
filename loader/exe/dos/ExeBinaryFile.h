@@ -74,7 +74,7 @@ class ExeBinaryFile : public QObject, public LoaderInterface, public BinaryData,
     void Close() override;                 // Close file opened with Open()
     bool PostLoad(void *handle) override;  // For archive files only
     LOAD_FMT GetFormat() const override;   // Get format (i.e. LOADFMT_EXE)
-    MACHINE GetMachine() const override;   // Get machine (i.e. MACHINE_PENTIUM)
+    MACHINE getMachine() const override;   // Get machine (i.e. MACHINE_PENTIUM)
     QString getFilename() const override { return m_pFileName; }
 
     bool isLibrary() const override;

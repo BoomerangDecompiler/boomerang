@@ -432,13 +432,11 @@ Function *Prog::setNewProc(ADDRESS uAddr) {
     if (other != NO_ADDRESS)
         uAddr = other;
     SymbolTableInterface *sym_iface = getBinarySymbolTable();
-    const char *pName = sym_iface ? sym_iface->SymbolByAddress(uAddr) : nullptr;
+    QString pName = sym_iface ? sym_iface->symbolByAddress(uAddr) : QString("");
     bool bLib = pLoaderIface->IsDynamicLinkedProc(uAddr) | pLoaderIface->IsStaticLinkedLibProc(uAddr);
-    if (pName == nullptr) {
+    if (pName.isEmpty()) {
         // No name. Give it a numbered name
-        std::ostringstream ost;
-        ost << "proc" << m_iNumberedProc++;
-        pName = strdup(ost.str().c_str());
+        pName = QString("proc%1").arg(m_iNumberedProc++);
         LOG_VERBOSE(1) << "assigning name " << pName << " to addr " << uAddr << "\n";
     }
     pProc = m_rootCluster->getOrInsertFunction(pName,uAddr, bLib);
@@ -683,14 +681,13 @@ QString Prog::getGlobalName(ADDRESS uaddr) {
     }
     SymbolTableInterface *sym_iface = getBinarySymbolTable();
     if (sym_iface)
-        return sym_iface->SymbolByAddress(uaddr);
+        return sym_iface->symbolByAddress(uaddr);
     return "";
 }
 //! Dump the globals to stderr for debugging
 void Prog::dumpGlobals() {
     for (Global *glob : globals) {
-        glob->print(LOG_STREAM(), this);
-        LOG_STREAM() << "\n";
+        LOG_STREAM() << glob->toString() << "\n";
     }
 }
 //! Get a named global variable if possible, looking up the loader's symbol table if necessary
@@ -719,7 +716,7 @@ bool Prog::globalUsed(ADDRESS uaddr, SharedType knownType) {
         }
     }
 
-    if (pSections->GetSectionInfoByAddr(uaddr) == nullptr) {
+    if (pSections->getSectionInfoByAddr(uaddr) == nullptr) {
         LOG_VERBOSE(1) << "refusing to create a global at address that is in no known section of the binary: " << uaddr
                        << "\n";
         return false;
@@ -743,7 +740,7 @@ bool Prog::globalUsed(ADDRESS uaddr, SharedType knownType) {
     } else
         ty = guessGlobalType(nam, uaddr);
 
-    Global *global = new Global(ty, uaddr, nam);
+    Global *global = new Global(ty, uaddr, nam,this);
     globals.insert(global);
 
     if (VERBOSE) {
@@ -756,7 +753,7 @@ bool Prog::globalUsed(ADDRESS uaddr, SharedType knownType) {
     return true;
 }
 
-Prog::mAddressString &Prog::getSymbols() { return pLoaderIface->getSymbols(); }
+Prog::mAddressToString &Prog::getSymbols() { return pLoaderIface->getSymbols(); }
 //! Make an array type for the global array at u. Mainly, set the length sensibly
 std::shared_ptr<ArrayType> Prog::makeArrayType(ADDRESS u, SharedType t) {
     QString nam = newGlobalName(u);
@@ -837,7 +834,7 @@ void Prog::setGlobalType(const QString &nam, SharedType ty) {
 // if knownString, it is already known to be a char*
 //! get a string constant at a give address if appropriate
 const char *Prog::getStringConstant(ADDRESS uaddr, bool knownString /* = false */) {
-    const SectionInfo *si = pSections->GetSectionInfoByAddr(uaddr);
+    const SectionInfo *si = pSections->getSectionInfoByAddr(uaddr);
     // Too many compilers put constants, including string constants, into read/write sections
     // if (si && si->bReadOnly)
     if (si && !si->isAddressBss(uaddr)) {
@@ -868,7 +865,7 @@ const char *Prog::getStringConstant(ADDRESS uaddr, bool knownString /* = false *
 
 double Prog::getFloatConstant(ADDRESS uaddr, bool &ok, int bits) {
     ok = true;
-    SectionInfo *si = pSections->GetSectionInfoByAddr(uaddr);
+    SectionInfo *si = pSections->getSectionInfoByAddr(uaddr);
     if (si && si->bReadOnly) {
         if (bits == 64) { // TODO: handle 80bit floats ?
             return pBinaryData->readNativeFloat8(uaddr);
@@ -1428,7 +1425,7 @@ void Prog::readSymbolFile(const QString &fname) {
             if (ty == nullptr) {
                 ty = guessGlobalType(nam, sym->addr);
             }
-            globals.insert(new Global(ty, sym->addr, nam));
+            globals.insert(new Global(ty, sym->addr, nam,this));
         }
     }
 
@@ -1444,7 +1441,7 @@ Global::~Global() {
     // Do-nothing d'tor
 }
 //! Get the initial value as an expression (or nullptr if not initialised)
-Exp *Global::getInitialValue(Prog *prog) {
+Exp *Global::getInitialValue(Prog *prog) const {
     SectionInfo *si = prog->getSectionInfoByAddr(uaddr);
     // TODO: see what happens when we skip Bss check here
     if (si && si->isAddressBss(uaddr))
@@ -1456,11 +1453,15 @@ Exp *Global::getInitialValue(Prog *prog) {
     return prog->readNativeAs(uaddr, type);
 }
 
-void Global::print(QTextStream &os, Prog *prog) {
-    Exp *init = getInitialValue(prog);
-    os << type << " " << nam << " at " << uaddr << " initial value "
-       << (init ? init->prints() : "<none>");
+QString Global::toString() const {
+    Exp *init = getInitialValue(Parent);
+    QString res = QString("%1 %2 at %3 initial value %4")
+            .arg(type->toString())
+            .arg(nam)
+            .arg(uaddr.toString())
+            .arg((init ? init->prints() : "<none>"));
     delete init;
+    return res;
 }
 Exp *Prog::readNativeAs(ADDRESS uaddr, SharedType type) {
     Exp *e = nullptr;
@@ -1606,15 +1607,15 @@ Exp *Prog::addReloc(Exp *e, ADDRESS lc) {
     // relocations have been applied to the constant, so if there is a
     // relocation for this lc then we should be able to replace the constant
     // with a symbol.
-    std::map<ADDRESS, std::string> &symbols = pLoaderIface->getSymbols();
+    mAddressToString &symbols = pLoaderIface->getSymbols();
     ADDRESS c_addr = c->getAddr();
     auto found_at = symbols.find(c_addr);
     if (found_at != symbols.end()) {
-        const char *n = found_at->second.c_str();
+        QString n = found_at->second;
         SymbolTableInterface *iface = getBinarySymbolTable();
         unsigned int sz = iface ? iface->GetSizeByName(n) : 0; // TODO: fix the case of missing symbol table interface
         if (getGlobal(n) == nullptr) {
-            Global *global = new Global(SizeType::get(sz * 8), c_addr, n);
+            Global *global = new Global(SizeType::get(sz * 8), c_addr, n,this);
             globals.insert(global);
         }
         return new Unary(opAddrOf, Location::global(n, nullptr));
@@ -1626,12 +1627,12 @@ Exp *Prog::addReloc(Exp *e, ADDRESS lc) {
             // check for accesses into the middle of symbols
             for (auto it : symbols) {
                 SymbolTableInterface *iface = getBinarySymbolTable();
-                unsigned int sz = iface ? iface->GetSizeByName(it.second.c_str())
+                unsigned int sz = iface ? iface->GetSizeByName(it.second)
                                         : 0; // TODO: fix the case of missing symbol table interface
 
                 if (it.first < c_addr && (it.first + sz) > c_addr) {
                     int off = (c->getAddr() - it.first).m_value;
-                    e = Binary::get(opPlus, new Unary(opAddrOf, Location::global(it.second.c_str(), nullptr)),
+                    e = Binary::get(opPlus, new Unary(opAddrOf, Location::global(it.second, nullptr)),
                                     new Const(off));
                     break;
                 }

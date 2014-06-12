@@ -350,12 +350,11 @@ void ElfBinaryFile::AddSyms(int secIndex) {
         int name = elfRead4(&m_pSym[i].st_name);
         if (name == 0) /* Silly symbols with no names */
             continue;
-        std::string str(GetStrPtr(strIdx, name));
+        QString str(GetStrPtr(strIdx, name));
         // Hack off the "@@GLIBC_2.0" of Linux, if present
-        std::string::size_type pos;
-        if ((pos = str.find("@@")) != std::string::npos)
-            str.erase(pos);
-        std::map<ADDRESS, std::string>::iterator aa = m_SymTab.find(val);
+        int pos=str.indexOf("@@");
+        str = str.left(pos);
+        std::map<ADDRESS, QString>::iterator aa = m_SymTab.find(val);
         // Ensure no overwriting (except functions)
         if (aa == m_SymTab.end() || ELF32_ST_TYPE(m_pSym[i].st_info) == STT_FUNC) {
             if (val.isZero() && siPlt) { //&& i < max_i_for_hack) {
@@ -380,8 +379,7 @@ void ElfBinaryFile::AddSyms(int secIndex) {
     ADDRESS uMain = GetMainEntryPoint();
     if (uMain != NO_ADDRESS && m_SymTab.find(uMain) == m_SymTab.end()) {
         // Ugh - main mustn't have the STT_FUNC attribute. Add it
-        std::string sMain("main");
-        m_SymTab[uMain] = sMain;
+        m_SymTab[uMain] = "main";
     }
     return;
 }
@@ -464,12 +462,11 @@ void ElfBinaryFile::AddRelocsAsSyms(int relSecIdx) {
             continue;
         if (symIndex == 0) /* Silly symbols with no names */
             continue;
-        std::string str(GetStrPtr(strSecIdx, elfRead4(&m_pSym[symIndex].st_name)));
-        // Hack off the "@@GLIBC_2.0" of Linux, if present
-        std::string::size_type pos;
-        if ((pos = str.find("@@")) != std::string::npos)
-            str.erase(pos);
-        std::map<ADDRESS, std::string>::iterator it;
+        QString str(GetStrPtr(strSecIdx, elfRead4(&m_pSym[symIndex].st_name)));
+
+        str = str.left(str.indexOf("@@")); // Hack off the "@@GLIBC_2.0" of Linux, if present
+
+        std::map<ADDRESS, QString>::iterator it;
         // Linear search!
         for (it = m_SymTab.begin(); it != m_SymTab.end(); it++)
             if ((*it).second == str)
@@ -486,14 +483,14 @@ void ElfBinaryFile::AddRelocsAsSyms(int relSecIdx) {
 }
 
 // Note: this function overrides a simple "return 0" function in the base class (i.e. BinaryFile::SymbolByAddress())
-const char *ElfBinaryFile::SymbolByAddress(const ADDRESS dwAddr) {
-    std::map<ADDRESS, std::string>::iterator aa = m_SymTab.find(dwAddr);
+QString ElfBinaryFile::symbolByAddress(const ADDRESS dwAddr) {
+    auto aa = m_SymTab.find(dwAddr);
     if (aa == m_SymTab.end())
-        return nullptr;
-    return (char *)aa->second.c_str();
+        return "";
+    return aa->second;
 }
 
-bool ElfBinaryFile::ValueByName(const char *pName, SymValue *pVal, bool bNoTypeOK /* = false */) {
+bool ElfBinaryFile::ValueByName(const QString &pName, SymValue *pVal, bool bNoTypeOK /* = false */) {
     int hash, numBucket, y; // numChain,
     int *pBuckets, *pChains; // For symbol table work
     int found;
@@ -526,13 +523,13 @@ bool ElfBinaryFile::ValueByName(const char *pName, SymValue *pVal, bool bNoTypeO
     pChains = &pBuckets[numBucket];
 
     // Hash the symbol
-    hash = elf_hash(pName) % numBucket;
+    hash = elf_hash(qPrintable(pName)) % numBucket;
     y = elfRead4(&pBuckets[hash]); // Look it up in the bucket list
     // Beware of symbol tables with 0 in the buckets, e.g. libstdc++.
     // In that case, set found to false.
     found = (y != 0);
     if (y) {
-        while (strcmp(pName, GetStrPtr(iStr, elfRead4(&pSym[y].st_name))) != 0) {
+        while (pName!=GetStrPtr(iStr, elfRead4(&pSym[y].st_name))) {
             y = elfRead4(&pChains[y]);
             if (y == 0) {
                 found = false;
@@ -560,7 +557,7 @@ bool ElfBinaryFile::ValueByName(const char *pName, SymValue *pVal, bool bNoTypeO
 }
 
 // Lookup the symbol table using linear searching. See comments above for why this appears to be needed.
-bool ElfBinaryFile::SearchValueByName(const char *pName, SymValue *pVal, const char *pSectName, const char *pStrName) {
+bool ElfBinaryFile::SearchValueByName(const QString &pName, SymValue *pVal, const char *pSectName, const char *pStrName) {
     // Note: this assumes .symtab. Many files don't have this section!!!
     PSectionInfo pSect, pStrSect;
 
@@ -577,7 +574,7 @@ bool ElfBinaryFile::SearchValueByName(const char *pName, SymValue *pVal, const c
     // Search all the symbols. It may be possible to start later than index 0
     for (int i = 0; i < n; i++) {
         int idx = elfRead4(&pSym[i].st_name);
-        if (strcmp(pName, pStr + idx) == 0) {
+        if (pName == pStr + idx) {
             // We have found the symbol
             pVal->uSymAddr = elfRead4((int *)&pSym[i].st_value);
             int e_type = elfRead2(&((Elf32_Ehdr *)m_pImage)->e_type);
@@ -595,13 +592,13 @@ bool ElfBinaryFile::SearchValueByName(const char *pName, SymValue *pVal, const c
 
 // Search for the given symbol. First search .symtab (if present); if not found or the table has been stripped,
 // search .dynstr
-bool ElfBinaryFile::SearchValueByName(const char *pName, SymValue *pVal) {
+bool ElfBinaryFile::SearchValueByName(const QString &pName, SymValue *pVal) {
     if (SearchValueByName(pName, pVal, ".symtab", ".strtab"))
         return true;
     return SearchValueByName(pName, pVal, ".dynsym", ".dynstr");
 }
 
-ADDRESS ElfBinaryFile::GetAddressByName(const char *pName, bool bNoTypeOK /* = false */) {
+ADDRESS ElfBinaryFile::GetAddressByName(const QString &pName, bool bNoTypeOK /* = false */) {
     SymValue Val;
     bool bSuccess = ValueByName(pName, &Val, bNoTypeOK);
     if (bSuccess) {
@@ -612,7 +609,7 @@ ADDRESS ElfBinaryFile::GetAddressByName(const char *pName, bool bNoTypeOK /* = f
         return NO_ADDRESS;
 }
 
-int ElfBinaryFile::GetSizeByName(const char *pName, bool bNoTypeOK /* = false */) {
+int ElfBinaryFile::GetSizeByName(const QString &pName, bool bNoTypeOK /* = false */) {
     SymValue Val;
     bool bSuccess = ValueByName(pName, &Val, bNoTypeOK);
     if (bSuccess) {
@@ -747,7 +744,7 @@ void ElfBinaryFile::Close() { UnLoad(); }
 
 LOAD_FMT ElfBinaryFile::GetFormat() const { return LOADFMT_ELF; }
 
-MACHINE ElfBinaryFile::GetMachine() const {
+MACHINE ElfBinaryFile::getMachine() const {
     int machine = elfRead2(&((Elf32_Ehdr *)m_pImage)->e_machine);
     if ((machine == EM_SPARC) || (machine == EM_SPARC32PLUS))
         return MACHINE_SPARC;
@@ -822,13 +819,13 @@ size_t ElfBinaryFile::getImageSize() { return m_uImageSize; }
 ADDRESS *ElfBinaryFile::GetImportStubs(int &numImports) {
     ADDRESS a = m_uPltMin;
     int n = 0;
-    std::map<ADDRESS, std::string>::iterator aa = m_SymTab.find(a);
-    std::map<ADDRESS, std::string>::iterator ff = aa;
+    std::map<ADDRESS, QString>::iterator aa = m_SymTab.find(a);
+    std::map<ADDRESS, QString>::iterator ff = aa;
     bool delDummy = false;
     if (aa == m_SymTab.end()) {
         // Need to insert a dummy entry at m_uPltMin
         delDummy = true;
-        m_SymTab[a] = std::string();
+        m_SymTab[a] = "";
         ff = m_SymTab.find(a);
         aa = ff;
         aa++;
@@ -943,7 +940,7 @@ void ElfBinaryFile::elfWrite4(int *pi, int val) {
 }
 
 char ElfBinaryFile::readNative1(ADDRESS nat) {
-    PSectionInfo si = GetSectionInfoByAddr(nat);
+    PSectionInfo si = getSectionInfoByAddr(nat);
     if (si == nullptr) {
         qDebug() << "Target Memory access in unmapped Section " << nat.m_value;
         return -1;
@@ -955,7 +952,7 @@ char ElfBinaryFile::readNative1(ADDRESS nat) {
 
 // Read 2 bytes from given native address
 int ElfBinaryFile::readNative2(ADDRESS nat) {
-    PSectionInfo si = GetSectionInfoByAddr(nat);
+    PSectionInfo si = getSectionInfoByAddr(nat);
     if (si == nullptr)
         return 0;
     ADDRESS host = si->uHostAddr - si->uNativeAddr + nat;
@@ -964,7 +961,7 @@ int ElfBinaryFile::readNative2(ADDRESS nat) {
 
 // Read 4 bytes from given native address
 int ElfBinaryFile::readNative4(ADDRESS nat) {
-    PSectionInfo si = GetSectionInfoByAddr(nat);
+    PSectionInfo si = getSectionInfoByAddr(nat);
     if (si == nullptr)
         return 0;
     ADDRESS host = si->uHostAddr - si->uNativeAddr + nat;
@@ -972,7 +969,7 @@ int ElfBinaryFile::readNative4(ADDRESS nat) {
 }
 
 void ElfBinaryFile::writeNative4(ADDRESS nat, uint32_t n) {
-    PSectionInfo si = GetSectionInfoByAddr(nat);
+    PSectionInfo si = getSectionInfoByAddr(nat);
     if (si == nullptr)
         return;
     ADDRESS host = si->uHostAddr - si->uNativeAddr + nat;
@@ -1094,7 +1091,7 @@ void ElfBinaryFile::applyRelocations() {
                     if (e_type == E_REL)
                         pRelWord = ((int *)(destHostOrigin + r_offset).m_value);
                     else {
-                        SectionInfo *destSec = GetSectionInfoByAddr(ADDRESS::g(r_offset));
+                        SectionInfo *destSec = getSectionInfoByAddr(ADDRESS::g(r_offset));
                         pRelWord = (int *)(destSec->uHostAddr - destSec->uNativeAddr + r_offset).m_value;
                         destNatOrigin = ADDRESS::g(0L);
                     }
@@ -1204,7 +1201,7 @@ bool ElfBinaryFile::IsRelocationAt(ADDRESS uNative) {
                     if (e_type == E_REL)
                         pRelWord = destNatOrigin + r_offset;
                     else {
-                        SectionInfo *destSec = GetSectionInfoByAddr(ADDRESS::g(r_offset));
+                        SectionInfo *destSec = getSectionInfoByAddr(ADDRESS::g(r_offset));
                         pRelWord = destSec->uNativeAddr + r_offset;
                         destNatOrigin = 0;
                     }

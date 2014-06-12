@@ -67,7 +67,7 @@ class MachOBinaryFile : public QObject,
     virtual void Close();                 // Close file opened with Open()
     virtual void UnLoad();                // Unload the image
     virtual LOAD_FMT GetFormat() const;   // Get format (i.e. LOADFMT_MACHO)
-    virtual MACHINE GetMachine() const;   // Get machine (i.e. MACHINE_PPC)
+    virtual MACHINE getMachine() const;   // Get machine (i.e. MACHINE_PPC)
     QString getFilename() const override { return m_pFileName; }
     virtual bool isLibrary() const;
     virtual QStringList getDependencyList();
@@ -78,11 +78,11 @@ class MachOBinaryFile : public QObject,
     virtual ADDRESS GetMainEntryPoint();
     virtual ADDRESS GetEntryPoint();
     DWord getDelta();
-    const char *SymbolByAddress(ADDRESS dwAddr) override;                        // Get sym from addr
-    ADDRESS GetAddressByName(const char *name, bool bNoTypeOK = false) override; // Find addr given name
+    QString symbolByAddress(ADDRESS dwAddr) override;                        // Get sym from addr
+    ADDRESS GetAddressByName(const QString &name, bool bNoTypeOK = false) override; // Find addr given name
     void AddSymbol(ADDRESS uNative, const char *pName) override;
     //! Lookup the name, return the size
-    int GetSizeByName(const char *pName, bool bTypeOK = false) override;
+    int GetSizeByName(const QString &pName, bool bTypeOK = false) override;
     ADDRESS *GetImportStubs(int &numImports) override;
     const char *getFilenameSymbolFor(const char *) override;
 
@@ -117,9 +117,9 @@ class MachOBinaryFile : public QObject,
     double readNativeFloat8(ADDRESS a) override; // Read 8 bytes as float
 
     virtual bool IsDynamicLinkedProc(ADDRESS uNative) { return dlprocs.find(uNative) != dlprocs.end(); }
-    virtual const char *GetDynamicProcName(ADDRESS uNative);
+    virtual const QString &GetDynamicProcName(ADDRESS uNative);
 
-    virtual std::map<ADDRESS, std::string> &getSymbols() { return m_SymA; }
+    virtual tMapAddrToString &getSymbols() { return m_SymA; }
     virtual std::map<std::string, ObjcModule> &getObjcModules() { return modules; }
 
   protected:
@@ -136,7 +136,7 @@ class MachOBinaryFile : public QObject,
     unsigned loaded_size;
     MACHINE machine;
     bool swap_bytes;
-    std::map<ADDRESS, std::string> m_SymA, dlprocs;
+    tMapAddrToString m_SymA, dlprocs;
     std::map<std::string, ObjcModule> modules;
     std::vector<struct section> sections;
 };

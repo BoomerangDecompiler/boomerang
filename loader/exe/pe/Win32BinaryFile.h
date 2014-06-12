@@ -165,7 +165,7 @@ class Win32BinaryFile : public QObject,
     virtual void Close();                 // Close file opened with Open()
     virtual void UnLoad();                // Unload the image
     virtual LOAD_FMT GetFormat() const;   // Get format (i.e.LOADFMT_Win32)
-    virtual MACHINE GetMachine() const;   // Get machine (i.e. MACHINE_Pentium)
+    virtual MACHINE getMachine() const;   // Get machine (i.e. MACHINE_Pentium)
     QString getFilename() const override { return m_pFileName; }
     virtual bool isLibrary() const;
     virtual QStringList getDependencyList();
@@ -199,7 +199,7 @@ class Win32BinaryFile : public QObject,
     bool IsDynamicLinkedProcPointer(ADDRESS uNative);
     bool IsStaticLinkedLibProc(ADDRESS uNative);
     ADDRESS IsJumpToAnotherAddr(ADDRESS uNative);
-    const char *GetDynamicProcName(ADDRESS uNative);
+    const QString &GetDynamicProcName(ADDRESS uNative);
 
     bool IsMinGWsAllocStack(ADDRESS uNative);
     bool IsMinGWsFrameInit(ADDRESS uNative);
@@ -207,7 +207,7 @@ class Win32BinaryFile : public QObject,
     bool IsMinGWsCleanupSetup(ADDRESS uNative);
     bool IsMinGWsMalloc(ADDRESS uNative);
 
-    virtual std::map<ADDRESS, std::string> &getSymbols() { return dlprocptrs; }
+    virtual tMapAddrToString &getSymbols() { return dlprocptrs; }
 
     bool hasDebugInfo() { return haveDebugInfo; }
 
@@ -225,14 +225,14 @@ class Win32BinaryFile : public QObject,
     DWord *m_pRelocTable;  // The relocation table
     char *base;            // Beginning of the loaded image
     // Map from address of dynamic pointers to library procedure names:
-    std::map<ADDRESS, std::string> dlprocptrs;
+    tMapAddrToString dlprocptrs;
     QString m_pFileName;
     bool haveDebugInfo;
     bool mingw_main;
 
     // SymbolTableInterface interface
   public:
-    int GetSizeByName(const char *pName, bool bTypeOK) {
+    int GetSizeByName(const QString &pName, bool bTypeOK) {
         Q_UNUSED(pName);
         Q_UNUSED(bTypeOK);
         return 4; // TODO: Fake!
@@ -242,7 +242,7 @@ class Win32BinaryFile : public QObject,
         return nullptr;
     }
     const char *getFilenameSymbolFor(const char *) { return nullptr; }
-    const char *SymbolByAddress(ADDRESS dwAddr) override;                        // Get sym from addr
-    ADDRESS GetAddressByName(const char *name, bool bNoTypeOK = false) override; // Find addr given name
+    QString symbolByAddress(ADDRESS dwAddr) override;                        // Get sym from addr
+    ADDRESS GetAddressByName(const QString &name, bool bNoTypeOK = false) override; // Find addr given name
     void AddSymbol(ADDRESS uNative, const char *pName) override;
 };

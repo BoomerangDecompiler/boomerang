@@ -216,8 +216,8 @@ struct RangeVisitor : public StmtVisitor {
             if (a_rhs->isMemOf() && a_rhs->getSubExp1()->isIntConst()) {
                 ADDRESS c = ((Const *)a_rhs->getSubExp1())->getAddr();
                 if (insn->getProc()->getProg()->isDynamicLinkedProcPointer(c)) {
-                    const char *nam = insn->getProc()->getProg()->GetDynamicProcName(c);
-                    if (nam) {
+                    const QString &nam(insn->getProc()->getProg()->GetDynamicProcName(c));
+                    if (!nam.isEmpty()) {
                         a_rhs = Const::get(nam);
                         if (VERBOSE && DEBUG_RANGE_ANALYSIS)
                             LOG << "a_rhs is a dynamic proc pointer to " << nam << "\n";

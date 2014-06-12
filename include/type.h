@@ -79,7 +79,7 @@ class Type;
 typedef std::shared_ptr<Type> SharedType;
 typedef std::shared_ptr<const Type> SharedConstType;
 
-class Type : public std::enable_shared_from_this<Type> {
+class Type : public std::enable_shared_from_this<Type>, public Printable {
   protected:
     eType id;
 
@@ -198,6 +198,7 @@ class Type : public std::enable_shared_from_this<Type> {
     virtual void setSize(size_t /*sz*/) { assert(0); }
 
     // Print and format functions
+    QString toString() const override;
     // Get the C type, e.g. "unsigned int". If not final, include comment for lack of sign information.
     // When final, choose a signedness etc
     virtual QString getCtype(bool final = false) const = 0;

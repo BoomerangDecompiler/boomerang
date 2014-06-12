@@ -43,6 +43,9 @@ Boomerang::Boomerang() : progPath("./"), outputPath("./output/"), logger(nullptr
 
 }
 
+Boomerang::~Boomerang() {
+}
+
 /**
  * \returns the Log object associated with the object.
  */
@@ -674,7 +677,7 @@ Prog *Boomerang::loadAndDecode(const QString &fname, const char *pname) {
     Prog *prog = new Prog();
     FrontEnd *fe = FrontEnd::Load(fname, prog);
     if (fe == nullptr) {
-        LOG_STREAM() << "failed.\n";
+        LOG_STREAM(LL_Default) << "failed.\n";
         return nullptr;
     }
     prog->setFrontEnd(fe);

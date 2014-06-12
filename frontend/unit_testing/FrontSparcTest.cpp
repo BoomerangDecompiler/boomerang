@@ -57,7 +57,7 @@ void FrontSparcTest::test1() {
     QVERIFY(pBF != 0);
     Prog *prog = new Prog;
     LoaderInterface *iface = qobject_cast<LoaderInterface *>(pBF);
-    QVERIFY(iface->GetMachine() == MACHINE_SPARC);
+    QVERIFY(iface->getMachine() == MACHINE_SPARC);
     FrontEnd *pFE = new SparcFrontEnd(pBF, prog, &bff);
     prog->setFrontEnd(pFE);
 
@@ -127,7 +127,7 @@ void FrontSparcTest::test2() {
     QVERIFY(pBF != 0);
     Prog *prog = new Prog;
     LoaderInterface *iface = qobject_cast<LoaderInterface *>(pBF);
-    QVERIFY(iface->GetMachine() == MACHINE_SPARC);
+    QVERIFY(iface->getMachine() == MACHINE_SPARC);
     FrontEnd *pFE = new SparcFrontEnd(pBF, prog, &bff);
     prog->setFrontEnd(pFE);
 
@@ -173,7 +173,7 @@ void FrontSparcTest::test3() {
     QVERIFY(pBF != 0);
     Prog *prog = new Prog;
     LoaderInterface *iface = qobject_cast<LoaderInterface *>(pBF);
-    QVERIFY(iface->GetMachine() == MACHINE_SPARC);
+    QVERIFY(iface->getMachine() == MACHINE_SPARC);
     FrontEnd *pFE = new SparcFrontEnd(pBF, prog, &bff);
     prog->setFrontEnd(pFE);
 
@@ -235,7 +235,7 @@ void FrontSparcTest::testBranch() {
     QVERIFY(pBF != 0);
     Prog *prog = new Prog;
     LoaderInterface *iface = qobject_cast<LoaderInterface *>(pBF);
-    QVERIFY(iface->GetMachine() == MACHINE_SPARC);
+    QVERIFY(iface->getMachine() == MACHINE_SPARC);
     FrontEnd *pFE = new SparcFrontEnd(pBF, prog, &bff);
     prog->setFrontEnd(pFE);
 
@@ -275,7 +275,7 @@ void FrontSparcTest::testDelaySlot() {
     QVERIFY(pBF != 0);
     Prog *prog = new Prog;
     LoaderInterface *iface = qobject_cast<LoaderInterface *>(pBF);
-    QVERIFY(iface->GetMachine() == MACHINE_SPARC);
+    QVERIFY(iface->getMachine() == MACHINE_SPARC);
     FrontEnd *pFE = new SparcFrontEnd(pBF, prog, &bff);
     prog->setFrontEnd(pFE);
     // decode calls readLibraryCatalog(), which needs to have definitions for non-sparc architectures cleared

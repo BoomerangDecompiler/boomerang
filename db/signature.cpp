@@ -1607,7 +1607,7 @@ Exp *Signature::getFirstArgLoc(Prog *prog) {
 // happened. For the switch logic, that happens way too late. So for now, we have this cludge.
 // This is very very hacky! (trent)
 /*static*/ Exp *Signature::getReturnExp2(LoaderInterface *pBF) {
-    switch (pBF->GetMachine()) {
+    switch (pBF->getMachine()) {
     case MACHINE_SPARC:
         return Location::regOf(8);
     case MACHINE_PENTIUM:

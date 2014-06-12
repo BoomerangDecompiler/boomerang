@@ -18,22 +18,21 @@ SymTab::SymTab() {}
 
 SymTab::~SymTab() {}
 
-void SymTab::Add(ADDRESS a, char *s) {
+void SymTab::Add(ADDRESS a, const QString &s) {
     amap[a] = s;
     smap[s] = a;
 }
 
-const char *SymTab::find(ADDRESS a) {
-    std::map<ADDRESS, std::string>::iterator ff;
-    ff = amap.find(a);
+const QString &SymTab::find(ADDRESS a) {
+    static QString null_res;
+    auto ff = amap.find(a);
     if (ff == amap.end())
-        return nullptr;
-    return ff->second.c_str();
+        return null_res;
+    return ff->second;
 }
 
-ADDRESS SymTab::find(const char *s) {
-    std::map<std::string, ADDRESS>::iterator ff;
-    ff = smap.find(s);
+ADDRESS SymTab::find(const QString &s) {
+    auto ff = smap.find(s);
     if (ff == smap.end())
         return NO_ADDRESS;
     return ff->second;

@@ -7,7 +7,6 @@
  * WARRANTIES.
  *
  */
-
 /***************************************************************************/ /**
   * \file       palmsystraps.h
   * OVERVIEW:   Enumerated types for system trap names
@@ -16,13 +15,14 @@
 
 #ifndef _SYSTRAPS_H_
 #define _SYSTRAPS_H_
+#include <QString>
 
 #define sysTrapBase 0xA000
 #define numTrapStrings (sizeof(trapNames) / sizeof(char *))
 
 //    "sysTrapMemInit",        // = sysTrapBase
 
-const char *trapNames[] = {
+const QString trapNames[] = {
     "MemInit",                      "MemInitHeapTable",                "MemStoreInit",
     "MemCardFormat",                "MemCardInfo",                     "MemStoreInfo",
     "MemStoreSetInfo",              "MemNumHeaps",                     "MemNumRAMHeaps",
@@ -285,6 +285,7 @@ const char *trapNames[] = {
     "EncDigestMD4",                 "EncDES",                          "LstGetVisibleItems",
     "WinSetWindowBounds",           "CategorySetName",                 "FldSetInsertionPoint",
     "FrmSetObjectBounds",           "WinSetColors",                    "FlpDispatch",
-    "FlpEmDispatch"};
+    "FlpEmDispatch"
+};
 
 #endif

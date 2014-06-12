@@ -79,7 +79,7 @@ class SparcFrontEnd : public FrontEnd {
 
     bool helperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL *> *lrtl);
     void gen32op32gives64(OPER op, std::list<RTL *> *lrtl, ADDRESS addr);
-    bool helperFuncLong(ADDRESS dest, ADDRESS addr, std::list<RTL *> *lrtl, std::string &name);
+    bool helperFuncLong(ADDRESS dest, ADDRESS addr, std::list<RTL *> *lrtl, QString &name);
     // void    setReturnLocations(CalleeEpilogue* epilogue, int iReg);
 
     // This struct represents a single nop instruction. Used as a substitute delay slot instruction

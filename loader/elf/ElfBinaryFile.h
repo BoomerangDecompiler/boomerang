@@ -161,7 +161,7 @@ class ElfBinaryFile : public QObject,
     virtual bool Open(const char *sName); // Open the file for r/w; pv
     virtual void Close();                 // Close file opened with Open()
     virtual LOAD_FMT GetFormat() const;   // Get format (e.g. LOADFMT_ELF)
-    virtual MACHINE GetMachine() const;   // Get machine (e.g. MACHINE_SPARC)
+    virtual MACHINE getMachine() const;   // Get machine (e.g. MACHINE_SPARC)
     virtual QString getFilename() const { return m_pFileName; }
     virtual bool isLibrary() const;
     virtual QStringList getDependencyList();
@@ -182,11 +182,11 @@ class ElfBinaryFile : public QObject,
     void writeNative4(ADDRESS nat, uint32_t n);
 
     // Symbol functions
-    const char *SymbolByAddress(ADDRESS uAddr) override; // Get name of symbol
+    QString symbolByAddress(ADDRESS uAddr) override; // Get name of symbol
     // Get value of symbol, if any
-    ADDRESS GetAddressByName(const char *pName, bool bNoTypeOK = false) override;
+    ADDRESS GetAddressByName(const QString &pName, bool bNoTypeOK = false) override;
     // Get the size associated with the symbol
-    int GetSizeByName(const char *pName, bool bNoTypeOK = false) override;
+    int GetSizeByName(const QString &pName, bool bNoTypeOK = false) override;
     // Get the size associated with the symbol; guess if necessary
     int GetDistanceByName(const char *pName);
     int GetDistanceByName(const char *pName, const char *pSectName);
@@ -222,7 +222,7 @@ class ElfBinaryFile : public QObject,
     // The ADDRESS is the native address of a pointer to the real dynamic data object.
     virtual std::map<ADDRESS, const char *> *GetDynamicGlobalMap();
 
-    virtual std::map<ADDRESS, std::string> &getSymbols() { return m_SymTab; }
+    virtual std::map<ADDRESS, QString> &getSymbols() { return m_SymTab; }
 
     // Not meant to be used externally, but sometimes you just have to have it.
     const char *GetStrPtr(int idx, int offset); // Calc string pointer
@@ -242,9 +242,9 @@ class ElfBinaryFile : public QObject,
     void AddSyms(int secIndex);
     void AddRelocsAsSyms(int secIndex);
     void SetRelocInfo(PSectionInfo pSect);
-    bool ValueByName(const char *pName, SymValue *pVal, bool bNoTypeOK = false);
-    bool SearchValueByName(const char *pName, SymValue *pVal);
-    bool SearchValueByName(const char *pName, SymValue *pVal, const char *pSectName, const char *pStrName);
+    bool ValueByName(const QString &pName, SymValue *pVal, bool bNoTypeOK = false);
+    bool SearchValueByName(const QString &pName, SymValue *pVal);
+    bool SearchValueByName(const QString &pName, SymValue *pVal, const char *pSectName, const char *pStrName);
     bool PostLoad(void *handle); // Called after archive member loaded
     // Search the .rel[a].plt section for an entry with symbol table index i.
     // If found, return the native address of the associated PLT entry.
@@ -255,17 +255,17 @@ class ElfBinaryFile : public QObject,
     int elfRead4(int *pi) const;      // Read an int with endianness care
     void elfWrite4(int *pi, int val); // Write an int with endianness care
 
-    FILE *m_fd;                              // File stream
-    long m_lImageSize;                       // Size of image in bytes
-    char *m_pImage;                          // Pointer to the loaded image
-    Elf32_Phdr *m_pPhdrs;                    // Pointer to program headers
-    Elf32_Shdr *m_pShdrs;                    // Array of section header structs
-    char *m_pStrings;                        // Pointer to the string section
-    char m_elfEndianness;                    // 1 = Big Endian
-    std::map<ADDRESS, std::string> m_SymTab; // Map from address to symbol name; contains symbols from the
-                                             // various elf symbol tables, and possibly some symbols with fake
-                                             // addresses
-    // SymTab      m_Reloc;                        // Object to store the reloc syms
+    FILE *m_fd;                             // File stream
+    long m_lImageSize;                      // Size of image in bytes
+    char *m_pImage;                         // Pointer to the loaded image
+    Elf32_Phdr *m_pPhdrs;                   // Pointer to program headers
+    Elf32_Shdr *m_pShdrs;                   // Array of section header structs
+    char *m_pStrings;                       // Pointer to the string section
+    char m_elfEndianness;                   // 1 = Big Endian
+    std::map<ADDRESS, QString> m_SymTab;    // Map from address to symbol name; contains symbols from the
+                                            // various elf symbol tables, and possibly some symbols with fake
+                                            // addresses
+    // SymTab      m_Reloc;                 // Object to store the reloc syms
     Elf32_Rel *m_pReloc;                   // Pointer to the relocation section
     Elf32_Sym *m_pSym;                     // Pointer to loaded symbol section
     bool m_bAddend;                        // true if reloc table has addend

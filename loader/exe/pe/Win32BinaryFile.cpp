@@ -468,15 +468,15 @@ bool Win32BinaryFile::RealLoad(const QString &sName) {
                     // This is an ordinal number (stupid idea)
                     QString nodots = QString(dllName).replace(".","_"); // Dots can't be in identifiers
                     nodots = QString("%1_%2").arg(nodots).arg(iatEntry & 0x7FFFFFFF);
-                    dlprocptrs[paddr] = nodots.toStdString();
+                    dlprocptrs[paddr] = nodots;
                     // printf("Added symbol %s value %x\n", ost.str().c_str(), paddr);
                 } else {
                     // Normal case (IMAGE_IMPORT_BY_NAME). Skip the useless hint (2 bytes)
-                    std::string name((const char *)(iatEntry + 2 + base));
+                    QString name((const char *)(iatEntry + 2 + base));
                     dlprocptrs[paddr] = name;
                     if (paddr != ADDRESS::host_ptr(iat) - ADDRESS::host_ptr(base) + LMMH(m_pPEHeader->Imagebase))
                         dlprocptrs[ADDRESS::host_ptr(iat) - ADDRESS::host_ptr(base) + LMMH(m_pPEHeader->Imagebase)] =
-                            std::string("old_") + name; // add both possibilities
+                            QString("old_") + name; // add both possibilities
                                                         // printf("Added symbol %s value %x\n", name.c_str(), paddr);
                     // printf("Also added old_%s value %x\n", name.c_str(), (int)iat - (int)base +
                     //         LMMH(m_pPEHeader->Imagebase));
@@ -497,7 +497,7 @@ bool Win32BinaryFile::RealLoad(const QString &sName) {
     // Give the entry point a symbol
     ADDRESS entry = GetMainEntryPoint();
     if (entry != NO_ADDRESS) {
-        std::map<ADDRESS, std::string>::iterator it = dlprocptrs.find(entry);
+        tMapAddrToString::iterator it = dlprocptrs.find(entry);
         if (it == dlprocptrs.end())
             dlprocptrs[entry] = "main";
     }
@@ -568,11 +568,11 @@ void Win32BinaryFile::findJumps(ADDRESS curr) {
         if (LH((curr + delta).m_value) != 0xFF + (0x25 << 8))
             continue;
         ADDRESS operand = ADDRESS::g(LMMH2((curr + delta + 2).m_value));
-        std::map<ADDRESS, std::string>::iterator it;
+        tMapAddrToString::iterator it;
         it = dlprocptrs.find(operand);
         if (it == dlprocptrs.end())
             continue;
-        std::string sym = it->second;
+        QString sym = it->second;
         dlprocptrs[operand] = "__imp_" + sym;
         dlprocptrs[curr] = sym; // Add new entry
         // std::cerr << "Added " << sym << " at 0x" << std::hex << curr << "\n";
@@ -711,7 +711,7 @@ BOOL CALLBACK printem(dbghelp::PSYMBOL_INFO pSymInfo, ULONG SymbolSize, PVOID Us
 }
 #endif
 
-const char *Win32BinaryFile::SymbolByAddress(ADDRESS dwAddr) {
+QString Win32BinaryFile::symbolByAddress(ADDRESS dwAddr) {
     if (m_pPEHeader->Subsystem == 1 && // native
         LMMH(m_pPEHeader->EntrypointRVA) + LMMH(m_pPEHeader->Imagebase) == dwAddr.m_value)
         return "DriverEntry";
@@ -783,16 +783,16 @@ const char *Win32BinaryFile::SymbolByAddress(ADDRESS dwAddr) {
         return SymbolByAddress(IsJumpToAnotherAddr(dwAddr));
 #endif
 
-    std::map<ADDRESS, std::string>::iterator it = dlprocptrs.find(dwAddr);
+    tMapAddrToString::iterator it = dlprocptrs.find(dwAddr);
     if (it == dlprocptrs.end())
-        return 0;
-    return (char *)it->second.c_str();
+        return "";
+    return it->second;
 }
 
-ADDRESS Win32BinaryFile::GetAddressByName(const char *pName, bool bNoTypeOK /* = false */) {
+ADDRESS Win32BinaryFile::GetAddressByName(const QString &pName, bool bNoTypeOK /* = false */) {
     Q_UNUSED(bNoTypeOK);
     // This is "looking up the wrong way" and hopefully is uncommon.  Use linear search
-    std::map<ADDRESS, std::string>::iterator it = dlprocptrs.begin();
+    tMapAddrToString::iterator it = dlprocptrs.begin();
     while (it != dlprocptrs.end()) {
         // std::cerr << "Symbol: " << it->second.c_str() << " at 0x" << std::hex << it->first << "\n";
         if (it->second == pName)
@@ -827,7 +827,7 @@ int Win32BinaryFile::win32Read4(int *pi) const {
 
 // Read 1 byte from given native address
 char Win32BinaryFile::readNative1(ADDRESS nat) {
-    PSectionInfo si = GetSectionInfoByAddr(nat);
+    PSectionInfo si = getSectionInfoByAddr(nat);
     if (si == 0)
         return -1;
     ADDRESS host = si->uHostAddr - si->uNativeAddr + nat;
@@ -836,7 +836,7 @@ char Win32BinaryFile::readNative1(ADDRESS nat) {
 
 // Read 2 bytes from given native address
 int Win32BinaryFile::readNative2(ADDRESS nat) {
-    PSectionInfo si = GetSectionInfoByAddr(nat);
+    PSectionInfo si = getSectionInfoByAddr(nat);
     if (si == 0)
         return 0;
     ADDRESS host = si->uHostAddr - si->uNativeAddr + nat;
@@ -846,7 +846,7 @@ int Win32BinaryFile::readNative2(ADDRESS nat) {
 
 // Read 4 bytes from given native address
 int Win32BinaryFile::readNative4(ADDRESS nat) {
-    SectionInfo *si = GetSectionInfoByAddr(nat);
+    SectionInfo *si = getSectionInfoByAddr(nat);
     if (si == 0)
         return 0;
     ADDRESS host = si->uHostAddr - si->uNativeAddr + nat;
@@ -920,7 +920,7 @@ bool Win32BinaryFile::IsStaticLinkedLibProc(ADDRESS uNative) {
 
 bool Win32BinaryFile::IsMinGWsAllocStack(ADDRESS uNative) {
     if (mingw_main) {
-        PSectionInfo si = GetSectionInfoByAddr(uNative);
+        PSectionInfo si = getSectionInfoByAddr(uNative);
         if (si) {
             ADDRESS host = si->uHostAddr - si->uNativeAddr + uNative;
             unsigned char pat[] = {0x51, 0x89, 0xE1, 0x83, 0xC1, 0x08, 0x3D, 0x00, 0x10, 0x00, 0x00, 0x72,
@@ -937,7 +937,7 @@ bool Win32BinaryFile::IsMinGWsAllocStack(ADDRESS uNative) {
 
 bool Win32BinaryFile::IsMinGWsFrameInit(ADDRESS uNative) {
     if (mingw_main) {
-        PSectionInfo si = GetSectionInfoByAddr(uNative);
+        PSectionInfo si = getSectionInfoByAddr(uNative);
         if (si) {
             ADDRESS host = si->uHostAddr - si->uNativeAddr + uNative;
             unsigned char pat1[] = {0x55, 0x89, 0xE5, 0x83, 0xEC, 0x18, 0x89, 0x7D, 0xFC,
@@ -957,7 +957,7 @@ bool Win32BinaryFile::IsMinGWsFrameInit(ADDRESS uNative) {
 
 bool Win32BinaryFile::IsMinGWsFrameEnd(ADDRESS uNative) {
     if (mingw_main) {
-        PSectionInfo si = GetSectionInfoByAddr(uNative);
+        PSectionInfo si = getSectionInfoByAddr(uNative);
         if (si) {
             ADDRESS host = si->uHostAddr - si->uNativeAddr + uNative;
             unsigned char pat1[] = {0x55, 0x89, 0xE5, 0x53, 0x83, 0xEC, 0x14, 0x8B, 0x45, 0x08, 0x8B, 0x18};
@@ -975,7 +975,7 @@ bool Win32BinaryFile::IsMinGWsFrameEnd(ADDRESS uNative) {
 
 bool Win32BinaryFile::IsMinGWsCleanupSetup(ADDRESS uNative) {
     if (mingw_main) {
-        PSectionInfo si = GetSectionInfoByAddr(uNative);
+        PSectionInfo si = getSectionInfoByAddr(uNative);
         if (si) {
             ADDRESS host = si->uHostAddr - si->uNativeAddr + uNative;
             unsigned char pat1[] = {0x55, 0x89, 0xE5, 0x53, 0x83, 0xEC, 0x04};
@@ -997,7 +997,7 @@ bool Win32BinaryFile::IsMinGWsCleanupSetup(ADDRESS uNative) {
 
 bool Win32BinaryFile::IsMinGWsMalloc(ADDRESS uNative) {
     if (mingw_main) {
-        PSectionInfo si = GetSectionInfoByAddr(uNative);
+        PSectionInfo si = getSectionInfoByAddr(uNative);
         if (si) {
             ADDRESS host = si->uHostAddr - si->uNativeAddr + uNative;
             unsigned char pat1[] = {0x55, 0x89, 0xE5, 0x8D, 0x45, 0xF4, 0x83, 0xEC, 0x58, 0x89, 0x45, 0xE0, 0x8D, 0x45,
@@ -1019,11 +1019,11 @@ ADDRESS Win32BinaryFile::IsJumpToAnotherAddr(ADDRESS uNative) {
     return ADDRESS::g(readNative4(uNative + 1)) + uNative + 5;
 }
 
-const char *Win32BinaryFile::GetDynamicProcName(ADDRESS uNative) { return dlprocptrs[uNative].c_str(); }
+const QString &Win32BinaryFile::GetDynamicProcName(ADDRESS uNative) { return dlprocptrs[uNative]; }
 
 LOAD_FMT Win32BinaryFile::GetFormat() const { return LOADFMT_PE; }
 
-MACHINE Win32BinaryFile::GetMachine() const { return MACHINE_PENTIUM; }
+MACHINE Win32BinaryFile::getMachine() const { return MACHINE_PENTIUM; }
 
 bool Win32BinaryFile::isLibrary() const { return ((m_pPEHeader->Flags & 0x2000) != 0); }
 

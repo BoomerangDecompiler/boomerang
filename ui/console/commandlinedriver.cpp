@@ -383,4 +383,6 @@ void CommandlineDriver::onCompilationTimeout() {
 void DecompilationThread::run() {
     Boomerang &boom(*Boomerang::get());
     Result = boom.decompile(m_decompiled);
+    boom.getLogStream().flush();
+    boom.getLogStream(LL_Error).flush();
 }

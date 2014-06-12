@@ -296,8 +296,8 @@ bool SparcFrontEnd::case_CALL(ADDRESS &address, DecodeResult &inst, DecodeResult
 
             bool ret = true;
             // Check for _exit; probably should check for other "never return" functions
-            const char *name = Program->symbolByAddress(dest);
-            if (name && strcmp(name, "_exit") == 0) {
+            QString name = Program->symbolByAddress(dest);
+            if (name == "_exit") {
                 // Don't keep decoding after this call
                 ret = false;
                 // Also don't add an out-edge; setting offset to 0 will do this
@@ -1248,12 +1248,11 @@ void SparcFrontEnd::quadOperation(ADDRESS addr, std::list<RTL *> *lrtl, OPER op)
 bool SparcFrontEnd::helperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL *> *lrtl) {
     if (!ldrIface->IsDynamicLinkedProc(dest))
         return false;
-    const char *p = Program->symbolByAddress(dest);
-    if (p == nullptr) {
+    QString name = Program->symbolByAddress(dest);
+    if (name.isEmpty()) {
         LOG_STREAM() << "Error: Can't find symbol for PLT address " << dest << '\n';
         return false;
     }
-    std::string name(p);
     // if (progOptions.fastInstr == false)
     if (0) // TODO: SETTINGS!, also this has no influence on tests ?
         return helperFuncLong(dest, addr, lrtl, name);
@@ -1360,7 +1359,7 @@ void SparcFrontEnd::gen32op32gives64(OPER op, std::list<RTL *> *lrtl, ADDRESS ad
 }
 
 //! This is the long version of helperFunc (i.e. -f not used). This does the complete 64 bit semantics
-bool SparcFrontEnd::helperFuncLong(ADDRESS dest, ADDRESS addr, std::list<RTL *> *lrtl, std::string &name) {
+bool SparcFrontEnd::helperFuncLong(ADDRESS dest, ADDRESS addr, std::list<RTL *> *lrtl, QString &name) {
     Q_UNUSED(dest);
     Exp *rhs;
     Exp *lhs;

@@ -108,7 +108,7 @@ class Boomerang : public QObject {
      */
     void helpcmd() const;
     Boomerang();
-    virtual ~Boomerang() {}
+    virtual ~Boomerang();
     void miniDebugger(UserProc *p, const char *description);
 
   public:

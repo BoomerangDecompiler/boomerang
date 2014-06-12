@@ -152,12 +152,12 @@ class SymbolTableInterface {
     virtual ~SymbolTableInterface() {}
 
     //! Lookup the address, return the name, or 0 if not found
-    virtual const char *SymbolByAddress(ADDRESS uNative) = 0;
+    virtual QString symbolByAddress(ADDRESS uNative) = 0;
     //! Lookup the name, return the address. If not found, return NO_ADDRESS
-    virtual ADDRESS GetAddressByName(const char *pName, bool bNoTypeOK = false) = 0;
+    virtual ADDRESS GetAddressByName(const QString &pName, bool bNoTypeOK = false) = 0;
     virtual void AddSymbol(ADDRESS /*uNative*/, const char * /*pName*/) = 0;
     //! Lookup the name, return the size
-    virtual int GetSizeByName(const char *pName, bool bTypeOK = false) = 0;
+    virtual int GetSizeByName(const QString &pName, bool bTypeOK = false) = 0;
     /***************************************************************************/ /**
       *
       * \brief Get an array of addresses of imported function stubs
@@ -181,7 +181,7 @@ Q_DECLARE_INTERFACE(ObjcAccessInterface, ObjcInterface_iid)
 
 class LoaderInterface {
   public:
-    typedef std::map<ADDRESS, std::string> tMapAddrToString;
+    typedef std::map<ADDRESS, QString> tMapAddrToString;
 
   public:
     virtual ~LoaderInterface() {}
@@ -194,7 +194,7 @@ class LoaderInterface {
     virtual bool Open(const char *sName) = 0; //!< Open the file for r/w; pure virt
     virtual void Close() = 0;                 //!< Close file opened with Open()
     virtual LOAD_FMT GetFormat() const = 0;   //!< Get the format (e.g. LOADFMT_ELF)
-    virtual MACHINE GetMachine() const = 0;   //!< Get the expected machine (e.g. MACHINE_PENTIUM)
+    virtual MACHINE getMachine() const = 0;   //!< Get the expected machine (e.g. MACHINE_PENTIUM)
     virtual QString getFilename() const = 0;
     virtual bool RealLoad(const QString &sName) = 0;
 
@@ -220,7 +220,10 @@ class LoaderInterface {
     virtual ADDRESS IsJumpToAnotherAddr(ADDRESS /*uNative*/) { return NO_ADDRESS; }
     virtual tMapAddrToString &getSymbols() = 0;
     virtual bool hasDebugInfo() { return false; }
-    virtual const char *GetDynamicProcName(ADDRESS /*uNative*/) { return "dynamic"; }
+    virtual const QString &GetDynamicProcName(ADDRESS /*uNative*/) {
+        static QString default_val("dynamic");
+        return default_val;
+    }
 
     virtual std::list<SectionInfo *> &GetEntryPoints(const char *pEntry = "main") = 0;
     virtual ADDRESS GetMainEntryPoint() = 0;
@@ -274,7 +277,7 @@ class SectionInterface {
     virtual int GetNumSections() const = 0;                 // Return number of sections
     virtual SectionInfo *GetSectionInfo(int idx) const = 0; // Return section struct
     virtual SectionInfo *GetSectionInfoByName(const char *sName) = 0;
-    virtual SectionInfo *GetSectionInfoByAddr(ADDRESS uEntry) const = 0;
+    virtual SectionInfo *getSectionInfoByAddr(ADDRESS uEntry) const = 0;
     virtual bool isReadOnly(ADDRESS uEntry) = 0; //!< returns true if the given address is in a read only section
     virtual int GetSectionIndexByName(const char *sName) = 0;
     virtual bool isStringConstant(ADDRESS /*uEntry*/) { return false; }
@@ -314,7 +317,7 @@ class LoaderCommon : public SectionInterface {
         return -1;
     }
     //! Find the end of a section, given an address in the section
-    SectionInfo *GetSectionInfoByAddr(ADDRESS uEntry) const override {
+    SectionInfo *getSectionInfoByAddr(ADDRESS uEntry) const override {
         assert(uEntry==uEntry.native());
         for (int i = 0; i < m_iNumSections; i++) {
             PSectionInfo pSect(&m_pSections[i]);
@@ -328,7 +331,7 @@ class LoaderCommon : public SectionInterface {
     }
 
     bool isReadOnly(ADDRESS uEntry) override {
-        PSectionInfo p = GetSectionInfoByAddr(uEntry);
+        PSectionInfo p = getSectionInfoByAddr(uEntry);
         return p && p->bReadOnly;
     }
     //! Find section info given name, or 0 if not found
