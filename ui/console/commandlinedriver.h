@@ -4,10 +4,12 @@
 #include <QThread>
 class DecompilationThread : public QThread {
         Q_OBJECT
-        QString     m_decompiled;
+        QString m_decompiled;
+        int Result = 0;
 public:
         void run();
         void setDecompiled(const QString value) {m_decompiled=value;}
+        int resCode() {return Result; }
 };
 class CommandlineDriver : public QObject
 {

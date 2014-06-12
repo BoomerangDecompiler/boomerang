@@ -11,7 +11,7 @@
 /***************************************************************************/ /**
   * \file        driver.cpp
   * \brief    Important initialisation that has to happen at the start of main()
-  *                Also contains main(), so it can be the only file different between boomerang and bigtest
+  *           Also contains main(), so it can be the only file different between boomerang and bigtest
   ***************************************************************************/
 
 #include <QtCore>
@@ -30,7 +30,6 @@ void init_dfa();        // Prototypes for
 void init_sslparser();  // various initialisation functions
 void init_basicblock(); // for garbage collection safety
 
-#ifndef NO_CMDLINE_MAIN
 int main(int argc, char *argv[]) {
     QCoreApplication app(argc, argv);
     CommandlineDriver driver;
@@ -42,29 +41,5 @@ int main(int argc, char *argv[]) {
     init_sslparser();
     init_basicblock();
     driver.applyCommandline();
-    driver.decompile();
-    // Boomerang::get()->commandLine(argc, argv)
-    return app.exec();
+    return driver.decompile();
 }
-#endif
-
-#ifndef NO_NEW_OR_DELETE_OPERATORS
-#ifndef NO_GARBAGE_COLLECTOR
-/* This makes sure that the garbage collector sees all allocations, even those
-        that we can't be bothered collecting, especially standard STL objects */
-void *operator new(size_t n) {
-#ifdef DONT_COLLECT_STL
-    return GC_malloc_uncollectable(n); // Don't collect, but mark
-#else
-    return GC_malloc(n); // Collect everything
-#endif
-}
-
-void operator delete(void *p) {
-#ifdef DONT_COLLECT_STL
-    GC_free(p); // Important to call this if you call GC_malloc_uncollectable
-                // #else do nothing!
-#endif
-}
-#endif
-#endif

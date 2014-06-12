@@ -372,7 +372,8 @@ int CommandlineDriver::console() {
 }
 int CommandlineDriver::decompile() {
     m_thread.start();
-    return 0;
+    m_thread.wait(50000);
+    return m_thread.resCode();
 }
 void CommandlineDriver::onCompilationTimeout() {
     LOG_STREAM() << "Compilation timed out";
@@ -381,6 +382,5 @@ void CommandlineDriver::onCompilationTimeout() {
 
 void DecompilationThread::run() {
     Boomerang &boom(*Boomerang::get());
-    int res = boom.decompile(m_decompiled);
-    QCoreApplication::exit(res == 0 ? 0 : -1);
+    Result = boom.decompile(m_decompiled);
 }
