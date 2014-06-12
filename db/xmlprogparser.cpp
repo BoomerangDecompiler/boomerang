@@ -2565,7 +2565,7 @@ void XMLProgParser::persistToXML(QXmlStreamWriter &out, const Instruction *stmt)
 
         out.writeAttribute("jtcond", QString::number(b->jtCond));
         out.writeAttribute("float", QString::number((int)b->bFloat));
-        out.writeAttribute("size", QString::number(b->size));
+        out.writeAttribute("size", QString::number(b->Size));
 
         if (b->pCond) {
             out.writeStartElement("cond");
