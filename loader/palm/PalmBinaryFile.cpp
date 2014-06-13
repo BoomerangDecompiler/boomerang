@@ -126,8 +126,6 @@ double PalmBinaryFile::readNativeFloat8(ADDRESS nat) { // TODO: lifted from Win3
 
 bool PalmBinaryFile::RealLoad(const QString &sName) {
     FILE *fp;
-    char buf[32];
-
     m_pFileName = sName;
 
     if ((fp = fopen(qPrintable(sName), "rb")) == nullptr) {

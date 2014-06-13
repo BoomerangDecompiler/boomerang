@@ -616,7 +616,7 @@ bool RangeAnalysis::runOnFunction(Function &F)
 
     UF.getCFG()->removeJunctionStatements();
     logSuspectMemoryDefs(UF);
-
+    return true;
 }
 RangeMap RangePrivateData::getSavedRanges(Instruction *insn) {
     return SavedInputRanges[insn];

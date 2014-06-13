@@ -6,7 +6,7 @@ class BinaryFileStub : public LoaderInterface {
     virtual ~BinaryFileStub() {}
     virtual void UnLoad() {}                               // Unload the image
     bool GetNextMember() { return false; }                 // Load next member of archive
-    virtual bool Open(const char *sName) { return false; } // Open for r/w; pv
+    virtual bool Open(const char */*sName*/) { return false; } // Open for r/w; pv
     virtual void Close() {}                                // Close file opened with Open()
     virtual LOAD_FMT GetFormat() const;                    // Get format (e.g. LOADFMT_ELF)
     virtual MACHINE getMachine() const;                    // Get machine (e.g. MACHINE_SPARC)

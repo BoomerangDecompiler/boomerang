@@ -505,7 +505,7 @@ void RTLInstDict::transformPostVars(std::list<Instruction *> &rts, bool optimise
             ss = Binary::get(opList, lhs->clone(), Binary::get(opList, rhs->clone(), new Terminal(opNil)));
         } else if (rt->isFlagAssgn()) {
             Assign *rt_asgn = (Assign *)rt;
-            Exp *lhs = rt_asgn->getLeft();
+            //Exp *lhs = rt_asgn->getLeft();
             Exp *rhs = rt_asgn->getRight();
             // An opFlagCall is assumed to be a Binary with a string and an opList of parameters
             ss = rhs->getSubExp2();

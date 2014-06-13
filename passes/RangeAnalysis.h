@@ -5,7 +5,7 @@
 class Cfg;
 class Function;
 class Instruction;
-class RangePrivateData;
+struct RangePrivateData;
 class UserProc;
 class RangeAnalysis : public FunctionPass
 {
