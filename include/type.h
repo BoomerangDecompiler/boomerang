@@ -28,6 +28,7 @@
 #include <list>
 #include <fstream>
 #include <QString>
+#include <QMap>
 
 class Signature;
 class UserProc;
@@ -80,13 +81,12 @@ typedef std::shared_ptr<Type> SharedType;
 typedef std::shared_ptr<const Type> SharedConstType;
 
 class Type : public std::enable_shared_from_this<Type>, public Printable {
-  protected:
+protected:
     eType id;
 
-  private:
-    static std::map<QString, SharedType > namedTypes;
-
-  public:
+private:
+    static QMap<QString, SharedType > namedTypes;
+public:
     // Constructors
     Type(eType id);
     virtual ~Type();
@@ -212,7 +212,7 @@ class Type : public std::enable_shared_from_this<Type>, public Printable {
 
     // Clear the named type map. This is necessary when testing; the
     // type for the first parameter to 'main' is different for sparc and pentium
-    static void clearNamedTypes() { namedTypes.clear(); }
+    static void clearNamedTypes();
 
     bool isPointerToAlpha();
 
@@ -241,12 +241,12 @@ class Type : public std::enable_shared_from_this<Type>, public Printable {
     // union of pointers, return a new union with the dereference of all members. In dfa.cpp
     SharedType dereference();
 
-  protected:
+protected:
     friend class XMLProgParser;
 }; // class Type
 
 class VoidType : public Type {
-  public:
+public:
     VoidType();
     virtual ~VoidType();
     virtual bool isVoid() const { return true; }
@@ -266,15 +266,15 @@ class VoidType : public Type {
     virtual SharedType meetWith(SharedType other, bool &ch, bool bHighestPtr) const;
     virtual bool isCompatible(const Type &other, bool all) const;
 
-  protected:
+protected:
     friend class XMLProgParser;
 };
 
 class FuncType : public Type {
-  private:
+private:
     Signature *signature;
 
-  public:
+public:
     FuncType(Signature *sig = nullptr);
     virtual ~FuncType();
     virtual bool isFunc() const { return true; }
@@ -299,15 +299,15 @@ class FuncType : public Type {
     virtual SharedType meetWith(SharedType other, bool &ch, bool bHighestPtr) const;
     virtual bool isCompatible(const Type &other, bool all) const;
 
-  protected:
+protected:
     friend class XMLProgParser;
 };
 
 class IntegerType : public Type {
-  private:
+private:
     mutable size_t size;    // Size in bits, e.g. 16
     mutable int signedness; // pos=signed, neg=unsigned, 0=unknown or evenly matched
-  public:
+public:
     explicit IntegerType(unsigned NumBits, int sign = 0) : Type(eInteger) {
         size = NumBits;
         signedness = sign;
@@ -330,7 +330,7 @@ class IntegerType : public Type {
     // Is it signed? 0=unknown, pos=yes, neg = no
     bool isSigned() { return signedness >= 0; }   // True if not unsigned
     bool isUnsigned() { return signedness <= 0; } // True if not definately signed
-                                                  // A hint for signedness
+    // A hint for signedness
     void bumpSigned(int sg) { signedness += sg; }
     // Set absolute signedness
     void setSigned(int sg) { signedness = sg; }
@@ -345,15 +345,15 @@ class IntegerType : public Type {
     virtual SharedType meetWith(SharedType other, bool &ch, bool bHighestPtr) const;
     virtual bool isCompatible(const Type &other, bool all) const;
 
-  protected:
+protected:
     friend class XMLProgParser;
 }; // class IntegerType
 
 class FloatType : public Type {
-  private:
+private:
     mutable size_t size; // Size in bits, e.g. 64
 
-  public:
+public:
     explicit FloatType(int sz = 64);
     static std::shared_ptr<FloatType> get(int sz = 64);
     virtual ~FloatType();
@@ -376,12 +376,12 @@ class FloatType : public Type {
     virtual SharedType meetWith(SharedType other, bool &ch, bool bHighestPtr) const;
     virtual bool isCompatible(const Type &other, bool all) const;
 
-  protected:
+protected:
     friend class XMLProgParser;
 }; // class FloatType
 
 class BooleanType : public Type {
-  public:
+public:
     BooleanType();
     virtual ~BooleanType();
     virtual bool isBoolean() const { return true; }
@@ -400,12 +400,12 @@ class BooleanType : public Type {
     virtual SharedType meetWith(SharedType other, bool &ch, bool bHighestPtr) const;
     virtual bool isCompatible(const Type &other, bool all) const;
 
-  protected:
+protected:
     friend class XMLProgParser;
 };
 
 class CharType : public Type {
-  public:
+public:
     CharType();
     virtual ~CharType();
     virtual bool isChar() const { return true; }
@@ -424,15 +424,15 @@ class CharType : public Type {
     virtual SharedType meetWith(SharedType other, bool &ch, bool bHighestPtr) const;
     virtual bool isCompatible(const Type &other, bool all) const;
 
-  protected:
+protected:
     friend class XMLProgParser;
 };
 
 class PointerType : public Type {
-  private:
+private:
     mutable SharedType points_to;
 
-  public:
+public:
     PointerType(SharedType p);
     virtual ~PointerType();
     virtual bool isPointer() const { return true; }
@@ -460,7 +460,7 @@ class PointerType : public Type {
     virtual SharedType meetWith(SharedType other, bool &ch, bool bHighestPtr) const;
     virtual bool isCompatible(const Type &other, bool all) const;
 
-  protected:
+protected:
     friend class XMLProgParser;
 }; // class PointerType
 
@@ -470,11 +470,11 @@ class PointerType : public Type {
 #define NO_BOUND 9999999
 
 class ArrayType : public Type {
-  private:
+private:
     mutable SharedType BaseType;
     mutable size_t Length;
 
-  public:
+public:
     ArrayType(SharedType p, unsigned _length);
     ArrayType(SharedType p);
     virtual ~ArrayType();
@@ -505,17 +505,17 @@ class ArrayType : public Type {
 
     size_t convertLength(SharedType b) const;
 
-  protected:
+protected:
     friend class XMLProgParser;
     ArrayType() : Type(eArray), BaseType(nullptr), Length(0) {}
 }; // class ArrayType
 
 class NamedType : public Type {
-  private:
+private:
     QString name;
     static int nextAlpha;
 
-  public:
+public:
     NamedType(const QString &_name);
     virtual ~NamedType();
     virtual bool isNamed() const { return true; }
@@ -539,19 +539,19 @@ class NamedType : public Type {
     virtual SharedType meetWith(SharedType other, bool &ch, bool bHighestPtr) const;
     virtual bool isCompatible(const Type &other, bool all) const;
 
-  protected:
+protected:
     friend class XMLProgParser;
 }; // class NamedType
 
 // The compound type represents structures, not unions
 class CompoundType : public Type {
-  private:
+private:
     std::vector<SharedType > types;
     std::vector<QString> names;
     int nextGenericMemberNum;
     bool generic;
 
-  public:
+public:
     CompoundType(bool generic = false);
     virtual ~CompoundType();
     virtual bool isCompound() const { return true; }
@@ -561,6 +561,7 @@ class CompoundType : public Type {
         SharedType t = getNamedType(n->getCtype());
         if (t)
             n = t;
+
         types.push_back(n);
         names.push_back(str);
     }
@@ -602,7 +603,7 @@ class CompoundType : public Type {
     virtual bool isCompatibleWith(const Type &other, bool all = false) const { return isCompatible(other, all); }
     virtual bool isCompatible(const Type &other, bool all) const;
 
-  protected:
+protected:
     friend class XMLProgParser;
 }; // class CompoundType
 
@@ -612,12 +613,12 @@ struct UnionElement {
     QString name;
 };
 class UnionType : public Type {
-  private:
+private:
     // Note: list, not vector, as it is occasionally desirable to insert elements without affecting iterators
     // (e.g. meetWith(another Union))
     mutable std::list<UnionElement> li;
 
-  public:
+public:
     UnionType();
     virtual ~UnionType();
     virtual bool isUnion() const { return true; }
@@ -646,16 +647,16 @@ class UnionType : public Type {
     // if this is a union of pointer types, get the union of things they point to. In dfa.cpp
     SharedType dereferenceUnion();
 
-  protected:
+protected:
     friend class XMLProgParser;
 }; // class UnionType
 
 // This class is for before type analysis. Typically, you have no info at all, or only know the size (e.g.
 // width of a register or memory transfer)
 class SizeType : public Type {
-  private:
+private:
     mutable size_t size; // Size in bits, e.g. 16
-  public:
+public:
     SizeType() : Type(eSize) {}
     SizeType(unsigned sz) : Type(eSize), size(sz) {}
     virtual ~SizeType() {}
@@ -683,7 +684,7 @@ class SizeType : public Type {
 class UpperType : public Type {
     mutable SharedType base_type;
 
-  public:
+public:
     UpperType(SharedType base) : Type(eUpper), base_type(base) {}
     virtual ~UpperType() {}
     virtual SharedType clone() const;
@@ -709,7 +710,7 @@ class UpperType : public Type {
 class LowerType : public Type {
     mutable SharedType base_type;
 
-  public:
+public:
     LowerType(SharedType base) : Type(eUpper), base_type(base) {}
     virtual ~LowerType() {}
     virtual SharedType clone() const;
@@ -754,7 +755,7 @@ typedef std::pair<const ADDRESS, DataInterval> DataIntervalEntry; // For result 
 class DataIntervalMap {
     std::map<ADDRESS, DataInterval> dimap;
     UserProc *proc; // If used for locals, has ptr to UserProc, else nullptr
-  public:
+public:
     DataIntervalMap() {}
     typedef std::map<ADDRESS, DataInterval>::iterator iterator;
     void setProc(UserProc *p) { proc = p; }    //!< Initialise the proc pointer
@@ -767,7 +768,7 @@ class DataIntervalMap {
     char *prints(); // For test and debug
     void dump();    // For debug
 
-  private:
+private:
     void enterComponent(DataIntervalEntry *pdie, ADDRESS addr, const QString &, SharedType ty, bool);
     void replaceComponents(ADDRESS addr, const QString &name, SharedType ty, bool);
     void checkMatching(DataIntervalEntry *pdie, ADDRESS addr, const QString &, SharedType ty, bool);

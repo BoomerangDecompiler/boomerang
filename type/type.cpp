@@ -29,6 +29,8 @@
 #include <cstring>
 
 extern char debug_buffer[]; // For prints functions
+QMap<QString, SharedType > Type::namedTypes;
+//QMap<QString, SharedType > Type::namedTypes;
 
 bool Type::isCString() {
     if (!resolvesToPointer())
@@ -793,8 +795,6 @@ void Type::dump() {
     LOG_STREAM() << getCtype(false); // For debugging
 }
 
-std::map<QString, SharedType > Type::namedTypes;
-
 // named type accessors
 void Type::addNamedType(const QString &name, SharedType type) {
     if (namedTypes.find(name) != namedTypes.end()) {
@@ -805,7 +805,7 @@ void Type::addNamedType(const QString &name, SharedType type) {
             qWarning() << "Warning: Type::addNamedType: Redefinition of type " << name << "\n";
             qWarning() << " type     = " << type->prints() << "\n";
             qWarning() << " previous = " << namedTypes[name]->prints() << "\n";
-            *type = *namedTypes[name]; // WARN: was *type==*namedTypes[name], verify !
+            namedTypes[name] = type; // WARN: was *type==*namedTypes[name], verify !
         }
     } else {
         // check if it is:
@@ -822,15 +822,15 @@ void Type::addNamedType(const QString &name, SharedType type) {
 }
 
 SharedType Type::getNamedType(const QString &name) {
-    if (namedTypes.find(name) != namedTypes.end())
-        return namedTypes[name];
-    return nullptr;
+    auto iter= namedTypes.find(name);
+    if (iter == namedTypes.end())
+        return nullptr;
+    return *iter;
 }
 
 void Type::dumpNames() {
-    std::map<QString, SharedType >::iterator it;
-    for (it = namedTypes.begin(); it != namedTypes.end(); ++it)
-        qDebug() << it->first << " -> " << it->second->getCtype() << "\n";
+    for (auto it = namedTypes.begin(); it != namedTypes.end(); ++it)
+        qDebug() << it.key() << " -> " << it.value()->getCtype() << "\n";
 }
 
 /***************************************************************************/ /**
@@ -914,6 +914,8 @@ QString FloatType::getTempName() const {
 QString Type::getTempName() const {
     return "tmp"; // what else can we do? (besides panic)
 }
+
+void Type::clearNamedTypes() { namedTypes.clear(); }
 
 int NamedType::nextAlpha = 0;
 std::shared_ptr<NamedType> NamedType::getAlpha() {
@@ -1202,10 +1204,11 @@ SharedType Type::newIntegerLikeType(int size, int signedness) {
 // because we might want an entry that starts earlier than addr yet still overlaps it
 DataIntervalMap::iterator DataIntervalMap::find_it(ADDRESS addr) {
     iterator it = dimap.upper_bound(addr); // Find the first item strictly greater than addr
-    if (it == dimap.begin())
+    if (it == dimap.begin()) {
         return dimap.end(); // None <= this address, so no overlap possible
+    }
     it--;                   // If any item overlaps, it is this one
-    if (it->first <= addr && it->first + it->second.size > addr)
+    if ((addr >= it->first) && (addr - it->first).m_value < it->second.size)
         // This is the one that overlaps with addr
         return it;
     return dimap.end();
@@ -1245,6 +1248,7 @@ bool DataIntervalMap::isClear(ADDRESS addr, unsigned size) {
 void DataIntervalMap::addItem(ADDRESS addr, QString name, SharedType ty, bool forced /* = false */) {
     if (name.isNull())
         name = "<noname>";
+
     DataIntervalEntry *pdie = find(addr);
     if (pdie == nullptr) {
         // Check that this new item is compatible with any items it overlaps with, and insert it
@@ -1323,15 +1327,17 @@ void DataIntervalMap::replaceComponents(ADDRESS addr, const QString &name, Share
         iterator it2 = dimap.upper_bound(pastLast - 1); // Iterator to the first item that starts too late
         for (it = it1; it != it2; ++it) {
             unsigned bitOffset = (it->first - addr).m_value * 8;
+
             SharedType memberType = ty->asCompound()->getTypeAtOffset(bitOffset);
             if (memberType->isCompatibleWith(*it->second.type, true)) {
                 bool ch;
+                qDebug() << prints();
+                qDebug() << memberType->getCtype()<<" "<< it->second.type->getCtype();
                 memberType = it->second.type->meetWith(memberType, ch);
                 ty->asCompound()->setTypeAtOffset(bitOffset, memberType);
             } else {
                 LOG << "TYPE ERROR: At address " << addr << " struct type " << ty->getCtype() << " is not compatible "
-                                                                                                 "with existing type "
-                    << it->second.type->getCtype() << "\n";
+                       "with existing type " << it->second.type->getCtype() << "\n";
                 return;
             }
         }
@@ -1432,7 +1438,7 @@ char *DataIntervalMap::prints() {
     QTextStream ost(&tgt);
     iterator it;
     for (it = dimap.begin(); it != dimap.end(); ++it)
-        ost << "0x" << it->first << " " << it->second.name << " " << it->second.type->getCtype()
+        ost << "0x" << it->first << "-0x" << it->first+it->second.type->getBytes() << " " << it->second.name << " " << it->second.type->getCtype()
             << "\n";
     strncpy(debug_buffer, qPrintable(tgt), DEBUG_BUFSIZE - 1);
     debug_buffer[DEBUG_BUFSIZE - 1] = '\0';
