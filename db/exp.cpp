@@ -1782,7 +1782,7 @@ bool Binary::match(const QString &pattern, std::map<QString, Exp *> &bindings) {
         if (!pattern.endsWith(']'))
             return false;
         QString sub1 = pattern;
-        QString sub2 = sub2.mid(sub1.lastIndexOf('[')+1);
+        QString sub2 = sub1.mid(sub1.lastIndexOf('[')+1);
         if (subExp1->match(sub1, bindings) && subExp2->match(sub2, bindings))
             return true;
     }
