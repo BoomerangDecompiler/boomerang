@@ -1455,7 +1455,7 @@ void CHLLCode::AddReturnStatement(int indLevel, StatementList *rets) {
 void CHLLCode::AddProcStart(UserProc *proc) {
     QString tgt;
     QTextStream s(&tgt);
-    s << "// address: " << proc->getNativeAddress();
+    s << "// address: 0x" << proc->getNativeAddress();
     appendLine(tgt);
     AddProcDec(proc, true);
 }
