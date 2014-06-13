@@ -4508,7 +4508,7 @@ StatementList *CallStatement::calcResults() {
     StatementList *ret = new StatementList;
     if (procDest) {
         Signature *sig = procDest->getSignature();
-        if (procDest && procDest->isLib()) {
+        if (procDest && procDest->isLib() && false) {
             size_t n = sig->getNumReturns();
             for (size_t i = 0; i < n; i++) { // Ignore first (stack pointer) return
                 Exp *sigReturn = sig->getReturnExp(i);
@@ -4518,10 +4518,11 @@ StatementList *CallStatement::calcResults() {
                 // But we have translated out of SSA form, so some registers have had to have been replaced with
                 // locals
                 // So wrap the return register in a ref to this and check the locals
-                RefExp *wrappedRet = new RefExp(sigReturn, this);
-                const char *locName = proc->findLocalFromRef(wrappedRet); // E.g. r24{16}
-                if (locName)
+                RefExp wrappedRet(sigReturn, this);
+                QString locName = proc->findLocalFromRef(wrappedRet); // E.g. r24{16}
+                if (!locName.isEmpty()) {
                     sigReturn = Location::local(locName, proc); // Replace e.g. r24 with local19
+                }
 #endif
                 if (useCol.exists(sigReturn)) {
                     ImplicitAssign *as = new ImplicitAssign(getTypeFor(sigReturn), sigReturn);
