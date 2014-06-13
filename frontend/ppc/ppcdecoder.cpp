@@ -65,7 +65,6 @@ Exp *crBit(int bitNum); // Get an expression for a CR bit access
 #define DIS_FS (dis_Reg(fs + 32))
 #define DIS_FA (dis_Reg(fa + 32))
 #define DIS_FB (dis_Reg(fb + 32))
-
 #define PPC_COND_JUMP(name, size, relocd, cond, BIcr)                                                                  \
     result.rtl = new RTL(pc, stmts);                                                                                   \
     BranchStatement *jump = new BranchStatement;                                                                       \
@@ -752,7 +751,8 @@ DecodeResult &PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta) {
                             {
                                 const char *name = MATCH_name;
                                 unsigned BIcr = (MATCH_w_32_0 >> 18 & 0x7);
-                                ADDRESS reladdr = addressToPC(MATCH_p) + 4 * (MATCH_w_32_0 >> 2 & 0x3fff);
+                                int16_t off = (MATCH_w_32_0 >> 2 & 0x3fff)<<2;
+                                ADDRESS reladdr = addressToPC(MATCH_p) + off;
                                 nextPC = MATCH_p + 4;
 
                                 //#line 275 "frontend/machine/ppc/decoder.m"
@@ -766,7 +766,8 @@ DecodeResult &PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta) {
                             {
                                 const char *name = MATCH_name;
                                 unsigned BIcr = (MATCH_w_32_0 >> 18 & 0x7);
-                                ADDRESS reladdr = addressToPC(MATCH_p) + 4 * (MATCH_w_32_0 >> 2 & 0x3fff);
+                                int16_t off = (MATCH_w_32_0 >> 2 & 0x3fff)<<2;
+                                ADDRESS reladdr = addressToPC(MATCH_p) + off;
                                 nextPC = MATCH_p + 4;
 
                                 //#line 269 "frontend/machine/ppc/decoder.m"
@@ -888,7 +889,8 @@ DecodeResult &PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta) {
                             {
                                 const char *name = MATCH_name;
                                 unsigned BIcr = (MATCH_w_32_0 >> 18 & 0x7);
-                                ADDRESS reladdr = addressToPC(MATCH_p) + 4 * (MATCH_w_32_0 >> 2 & 0x3fff);
+                                int16_t off = (MATCH_w_32_0 >> 2 & 0x3fff)<<2;
+                                ADDRESS reladdr = addressToPC(MATCH_p) + off;
                                 nextPC = MATCH_p + 4;
 
                                 //#line 273 "frontend/machine/ppc/decoder.m"
@@ -929,7 +931,9 @@ DecodeResult &PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta) {
                             {
                                 const char *name = MATCH_name;
                                 unsigned BIcr = (MATCH_w_32_0 >> 18 & 0x7);
-                                ADDRESS reladdr = addressToPC(MATCH_p) + 4 * (MATCH_w_32_0 >> 2 & 0x3fff);
+                                int16_t off = (MATCH_w_32_0 >> 2 & 0x3fff)<<2;
+
+                                ADDRESS reladdr = addressToPC(MATCH_p) + off;
                                 nextPC = MATCH_p + 4;
 
                                 //#line 288 "frontend/machine/ppc/decoder.m"
