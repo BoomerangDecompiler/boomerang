@@ -2645,8 +2645,7 @@ void UserProc::mapExpressionsToLocals(bool lastPass) {
                     e = getSymbolExp(Location::memOf(e->clone(), this), pty);
                     if (e) {
                         Exp *ne = new Unary(opAddrOf, e);
-                        if (VERBOSE)
-                            LOG << "replacing argument " << olde << " with " << ne << " in " << call << "\n";
+                        LOG_VERBOSE(1) << "replacing argument " << olde << " with " << ne << " in " << call << "\n";
                         call->setArgumentExp(i, ne);
                     }
                 }
@@ -3194,9 +3193,9 @@ void UserProc::fromSSAform() {
         for (dd = defs.begin(); dd != defs.end(); dd++) {
             Exp *base = *dd;
             SharedType ty = s->getTypeFor(base);
-            LOG_VERBOSE(1) << "got type " << ty << " for " << base << " from " << s << "\n";
             if (ty == nullptr) // Can happen e.g. when getting the type for %flags
                 ty = VoidType::get();
+            LOG_VERBOSE(1) << "got type " << ty->prints() << " for " << base << " from " << s << "\n";
             ff = firstTypes.find(base);
             Exp *ref = RefExp::get(base, s);
             if (ff == firstTypes.end()) {
@@ -4459,6 +4458,7 @@ QString UserProc::findLocalFromRef(RefExp &r) {
     Instruction *def = r.getDef();
     Exp *base = r.getSubExp1();
     SharedType ty = def->getTypeFor(base);
+    //QString name = lookupSym(*base, ty); ?? this actually worked a bit
     QString name = lookupSym(r, ty);
     if (name.isNull())
         return name;
