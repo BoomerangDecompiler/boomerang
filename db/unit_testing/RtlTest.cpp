@@ -19,8 +19,8 @@
 
 #include <sstream>
 
-#define SWITCH_SPARC "test/sparc/switch_cc"
-#define SWITCH_PENT "test/pentium/switch_cc"
+#define SWITCH_SPARC "tests/inputs/sparc/switch_cc"
+#define SWITCH_PENT "tests/inputs/pentium/switch_cc"
 static bool logset = false;
 QString TEST_BASE;
 QDir baseDir;

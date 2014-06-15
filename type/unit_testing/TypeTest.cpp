@@ -141,8 +141,8 @@ void TypeTest::testDataInterval() {
     dim.addItem(ADDRESS::g(0x1000), "first", IntegerType::get(32, 1));
     dim.addItem(ADDRESS::g(0x1004), "second", FloatType::get(64));
     QString actual(dim.prints());
-    QString expected("0x1000 first int\n"
-                         "0x1004 second double\n");
+    QString expected("0x1000-0x1004 first int\n"
+                         "0x1004-0x100c second double\n");
     QCOMPARE(actual,expected);
 
     DataIntervalEntry *pdie = dim.find(ADDRESS::g(0x1000));

@@ -20,11 +20,11 @@
 #include <QProcessEnvironment>
 #include <QDebug>
 
-#define HELLO_PENT baseDir.absoluteFilePath("test/pentium/hello")
-#define BRANCH_PENT baseDir.absoluteFilePath("test/pentium/branch")
-#define FEDORA2_TRUE baseDir.absoluteFilePath("test/pentium/fedora2_true")
-#define FEDORA3_TRUE baseDir.absoluteFilePath("test/pentium/fedora3_true")
-#define SUSE_TRUE baseDir.absoluteFilePath("test/pentium/suse_true")
+#define HELLO_PENT baseDir.absoluteFilePath("tests/inputs/pentium/hello")
+#define BRANCH_PENT baseDir.absoluteFilePath("tests/inputs/pentium/branch")
+#define FEDORA2_TRUE baseDir.absoluteFilePath("tests/inputs/pentium/fedora2_true")
+#define FEDORA3_TRUE baseDir.absoluteFilePath("tests/inputs/pentium/fedora3_true")
+#define SUSE_TRUE baseDir.absoluteFilePath("tests/inputs/pentium/suse_true")
 
 static bool logset = false;
 static QString TEST_BASE;
