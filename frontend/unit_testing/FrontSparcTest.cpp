@@ -22,8 +22,8 @@
 #include <QProcessEnvironment>
 #include <QDebug>
 
-#define HELLO_SPARC baseDir.absoluteFilePath("test/sparc/hello")
-#define BRANCH_SPARC baseDir.absoluteFilePath("test/sparc/branch")
+#define HELLO_SPARC baseDir.absoluteFilePath("tests/inputs/sparc/hello")
+#define BRANCH_SPARC baseDir.absoluteFilePath("tests/inputs/sparc/branch")
 static bool logset = false;
 static QString TEST_BASE;
 static QDir baseDir;
@@ -345,7 +345,7 @@ void FrontSparcTest::testDelaySlot() {
     QVERIFY(bb);
     bb->print(strm);
     expected = "Call BB:\n"
-               "in edges: 10a90 \n"
+               "in edges: 10a90(10a80) \n"
                "out edges: 10aa4 \n"
                "00010a98    0 *32* r8 := r16\n"
                "00010a9c    0 *32* tmp := r30\n"
@@ -362,7 +362,7 @@ void FrontSparcTest::testDelaySlot() {
     QVERIFY(bb);
     bb->print(strm);
     expected = "Twoway BB:\n"
-               "in edges: 10a9c \n"
+               "in edges: 10a9c(10a98) \n"
                "out edges: 10ac8 10ab8 \n"
                "00010aa4    0 *32* r8 := m[r30 - 20]\n"
                "00010aa8    0 *32* r16 := 5\n"
@@ -379,7 +379,7 @@ void FrontSparcTest::testDelaySlot() {
     QVERIFY(bb);
     bb->print(strm);
     expected = "L1: Twoway BB:\n"
-               "in edges: 10ab0 10ac4 \n"
+               "in edges: 10ab0(10aa4) 10ac4(10ac0) \n"
                "out edges: 10ad8 10ad0 \n"
                "00010ac8    0 *32* r8 := 0x11400\n"
                "00010ac8    0 BRANCH 0x10ad8, condition equals\n"
@@ -391,7 +391,7 @@ void FrontSparcTest::testDelaySlot() {
     QVERIFY(bb);
     bb->print(strm);
     expected = "Call BB:\n"
-               "in edges: 10ab0 \n"
+               "in edges: 10ab0(10aa4) \n"
                "out edges: 10ac0 \n"
                "00010ab8    0 *32* r8 := r8 | 816\n"
                "00010ab8    0 CALL printf(\n"

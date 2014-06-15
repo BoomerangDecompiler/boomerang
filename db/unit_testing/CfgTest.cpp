@@ -181,6 +181,7 @@ void CfgTest::testPlacePhi() {
     Cfg *cfg = pProc->getCFG();
 
     // Simplify expressions (e.g. m[ebp + -8] -> m[ebp - 8]
+    cfg->sortByAddress();
     prog->finishDecode();
     DataFlow *df = pProc->getDataFlow();
     df->dominators(cfg);
@@ -188,11 +189,7 @@ void CfgTest::testPlacePhi() {
 
     // m[r29 - 8] (x for this program)
     Exp *e = new Unary(opMemOf, new Binary(opMinus, Location::regOf(29), new Const(4)));
-    // pProc->dump();
-    cfg->dump();
-    df->dumpA_phi();
-    df->dumpA_orig();
-    df->dumpDefsites();
+
     // A_phi[x] should be the set {7 8 10 15 20 21} (all the join points)
     QString actual_st;
     QTextStream actual(&actual_st);

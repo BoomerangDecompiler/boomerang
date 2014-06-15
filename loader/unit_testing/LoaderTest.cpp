@@ -20,10 +20,10 @@
 #define HELLO_HPPA baseDir.absoluteFilePath("tests/inputs/hppa/hello")
 #define STARTER_PALM baseDir.absoluteFilePath("tests/inputs/mc68328/Starter.prc")
 #if 0 /* FIXME: these programs are proprietary */
-#define CALC_WINDOWS "test/windows/calc.exe"
-#define CALC_WINXP "test/windows/calcXP.exe"
-#define CALC_WIN2000 "test/windows/calc2000.exe"
-#define LPQ_WINDOWS "test/windows/lpq.exe"
+#define CALC_WINDOWS "tests/inputs/windows/calc.exe"
+#define CALC_WINXP "tests/inputs/windows/calcXP.exe"
+#define CALC_WIN2000 "tests/inputs/windows/calc2000.exe"
+#define LPQ_WINDOWS "tests/inputs/windows/lpq.exe"
 #endif
 #define SWITCH_BORLAND baseDir.absoluteFilePath("tests/inputs/windows/switch_borland.exe")
 #ifdef _WIN32
