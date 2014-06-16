@@ -1,9 +1,11 @@
 #include "mainwindow.h"
 #include "DecompilerThread.h"
 #include "rtleditor.h"
+#include "LoggingSettingsDlg.h"
 
 #include <QFileDialog>
 #include <QtWidgets>
+
 
 #include "ui_boomerang.h"
 #include "ui_about.h"
@@ -50,8 +52,8 @@ MainWindow::MainWindow(QWidget *parent)
     // connect(ui->outputPathBrowseButton, SIGNAL(clicked()), this, SLOT(browseForOutputPath()));
 
     ui->userProcs->horizontalHeader()->disconnect(SIGNAL(sectionClicked(int)));
-    connect(ui->userProcs->horizontalHeader(), SIGNAL(sectionClicked(int)), this,
-            SLOT(on_userProcs_horizontalHeader_sectionClicked(int)));
+    connect(ui->userProcs->horizontalHeader(), &QHeaderView::sectionClicked, this,
+            &MainWindow::onUserProcsHorizontalHeaderSectionClicked);
 
     ui->userProcs->verticalHeader()->hide();
     ui->libProcs->verticalHeader()->hide();
@@ -88,7 +90,9 @@ MainWindow::MainWindow(QWidget *parent)
             ui->outputPathComboBox->addItem(outputpaths.at(n));
     }
     i = ui->outputPathComboBox->findText(settings.value("outputpath").toString());
-    ui->outputPathComboBox->setCurrentIndex(i);
+    if(i!=-1) {
+        ui->outputPathComboBox->setCurrentIndex(i);
+    }
     if (!ui->inputFileComboBox->currentText().isEmpty()) {
         d->changeInputFile(ui->inputFileComboBox->currentText());
         ui->toLoadButton->setDisabled(false);
@@ -374,14 +378,14 @@ void MainWindow::generateCodeComplete() {
 
 void MainWindow::showConsideringProc(const QString &parent, const QString &name) {
     QList<QTreeWidgetItem *> foundit =
-        ui->decompileProcsTreeWidget->findItems(name, Qt::MatchExactly | Qt::MatchRecursive);
+            ui->decompileProcsTreeWidget->findItems(name, Qt::MatchExactly | Qt::MatchRecursive);
     if (foundit.isEmpty()) {
         QStringList texts(name);
         if (parent.isEmpty()) {
             ui->decompileProcsTreeWidget->addTopLevelItem(new QTreeWidgetItem(texts));
         } else {
             QList<QTreeWidgetItem *> found =
-                ui->decompileProcsTreeWidget->findItems(parent, Qt::MatchExactly | Qt::MatchRecursive);
+                    ui->decompileProcsTreeWidget->findItems(parent, Qt::MatchExactly | Qt::MatchRecursive);
             if (!found.isEmpty()) {
                 QTreeWidgetItem *n = new QTreeWidgetItem(found.first(), texts);
                 n->setData(0, 1, name);
@@ -395,7 +399,7 @@ void MainWindow::showConsideringProc(const QString &parent, const QString &name)
 
 void MainWindow::showDecompilingProc(const QString &name) {
     QList<QTreeWidgetItem *> foundit =
-        ui->decompileProcsTreeWidget->findItems(name, Qt::MatchExactly | Qt::MatchRecursive);
+            ui->decompileProcsTreeWidget->findItems(name, Qt::MatchExactly | Qt::MatchRecursive);
     if (!foundit.isEmpty()) {
         ui->decompileProcsTreeWidget->setCurrentItem(foundit.first(), 0);
         foundit.first()->setTextColor(0, QColor("blue"));
@@ -588,7 +592,7 @@ void MainWindow::on_actionEnable_toggled(bool b) {
     decompilerThread->getDecompiler()->stopWaiting();
     if (b) {
         statusBar()->show();
-        if (step == NULL) {
+        if (step == nullptr) {
             step = new QToolButton();
             step->setToolButtonStyle(Qt::ToolButtonTextOnly);
             step->setText("Step");
@@ -607,7 +611,7 @@ void MainWindow::on_actionStep_triggered() {
     decompilerThread->getDecompiler()->stopWaiting();
 }
 
-void MainWindow::on_userProcs_horizontalHeader_sectionClicked(int logicalIndex) {
+void MainWindow::onUserProcsHorizontalHeaderSectionClicked(int logicalIndex) {
     if (logicalIndex == 2) {
         for (int i = 0; i < ui->userProcs->rowCount(); i++) {
             if (ui->userProcs->item(i, 2) == NULL) {
@@ -799,4 +803,10 @@ void MainWindow::on_removeButton_pressed() {
         return;
     decompilerThread->getDecompiler()->removeEntryPoint(a);
     ui->entrypoints->removeRow(ui->entrypoints->currentRow());
+}
+
+void MainWindow::on_actionLoggingOptions_triggered()
+{
+    LoggingSettingsDlg dlg;
+    dlg.exec();
 }

@@ -58,7 +58,7 @@ public slots:
     void on_decompileProcsTreeWidget_itemDoubleClicked(QTreeWidgetItem *item, int column);
     void on_actionEnable_toggled(bool b);
     void on_actionStep_triggered();
-    void on_userProcs_horizontalHeader_sectionClicked(int logicalIndex);
+    void onUserProcsHorizontalHeaderSectionClicked(int logicalIndex);
     void on_userProcs_cellDoubleClicked(int row, int column);
     void on_userProcs_cellChanged(int row, int column);
     void on_libProcs_cellDoubleClicked(int row, int column);
@@ -100,6 +100,9 @@ public slots:
 protected:
     void showInitPage();
     void saveSettings();
+
+private slots:
+    void on_actionLoggingOptions_triggered();
 
 private:
     Ui::MainWindow *ui;
