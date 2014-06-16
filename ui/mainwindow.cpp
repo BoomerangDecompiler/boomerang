@@ -129,7 +129,7 @@ void MainWindow::on_inputFileBrowseButton_clicked() {
         openFileDir = fi.absolutePath();
     }
     QString s = QFileDialog::getOpenFileName(this, tr("Select a file to decompile..."), openFileDir,
-                                             "Windows Binaries (*.exe *.dll *.scr *.sys);;Other Binaries (*.*)");
+                                             "Windows Binaries (*.exe *.dll *.scr *.sys);;Other Binaries (*)");
     if (!s.isEmpty()) {
         if (ui->inputFileComboBox->findText(s) == -1) {
             ui->inputFileComboBox->addItem(s);
