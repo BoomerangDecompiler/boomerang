@@ -19,7 +19,7 @@ class CommandlineDriver : public QObject
         int         minsToStopAfter = 0;
 public:
 explicit            CommandlineDriver(QObject *parent = 0);
-        int         applyCommandline();
+        int         applyCommandline(const QStringList &args);
         int         decompile();
         int         console();
 public slots:

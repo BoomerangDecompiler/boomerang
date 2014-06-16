@@ -125,7 +125,7 @@ void Decompiler::load() {
     }
 
     for (int i = 1; i < fe->getSectionIface()->GetNumSections(); i++) {
-        PSectionInfo section = fe->getSectionIface()->GetSectionInfo(i);
+        const SectionInfo * section = fe->getSectionIface()->GetSectionInfo(i);
         emit newSection(section->pSectionName, section->uNativeAddr, section->uNativeAddr + section->uSectionSize);
     }
 

@@ -93,9 +93,8 @@ static void usage() {
     q_cout << "Usage: boomerang [ switches ] <program>" << '\n';
     q_cout << "boomerang -h for switch help" << '\n';
 }
-int CommandlineDriver::applyCommandline() {
+int CommandlineDriver::applyCommandline(const QStringList &args) {
     printf("Boomerang %s\n", VERSION); // Display a version and date (mainly for release versions)
-    QStringList args(qApp->arguments());
     int kmd = 0;
     if (args.size() < 2) {
         usage();
