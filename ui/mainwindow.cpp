@@ -121,7 +121,14 @@ void MainWindow::saveSettings() {
 }
 
 void MainWindow::on_inputFileBrowseButton_clicked() {
-    QString s = QFileDialog::getOpenFileName(this, tr("Select a file to decompile..."), "test",
+    QString openFileDir=".";
+    if(ui->inputFileComboBox->currentIndex()!=-1) {
+        // try to use the last open file's directory as starting directory.
+        QString v = ui->inputFileComboBox->itemText(ui->inputFileComboBox->currentIndex());
+        QFileInfo fi(v);
+        openFileDir = fi.absolutePath();
+    }
+    QString s = QFileDialog::getOpenFileName(this, tr("Select a file to decompile..."), openFileDir,
                                              "Windows Binaries (*.exe *.dll *.scr *.sys);;Other Binaries (*.*)");
     if (!s.isEmpty()) {
         if (ui->inputFileComboBox->findText(s) == -1) {
