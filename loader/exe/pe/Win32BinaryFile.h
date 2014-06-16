@@ -17,14 +17,14 @@
 #include "BinaryFile.h"
 #include <string>
 
-/*
+/**
  * This file contains the definition of the Win32BinaryFile class, and some
  * other definitions specific to the exe version of the BinaryFile object
  * At present, there is no support for a symbol table. Win32 files do
-                not use dynamic linking, but it is possible that some files may
-                have debug symbols (in Microsoft Codeview or Borland formats),
-                and these may be implemented in the future. The debug info may
-                even be exposed as another pseudo section
+ * not use dynamic linking, but it is possible that some files may
+ * have debug symbols (in Microsoft Codeview or Borland formats),
+ * and these may be implemented in the future. The debug info may
+ * even be exposed as another pseudo section
  */
 
 // Given a little endian value x, load its value assuming little endian order
@@ -32,11 +32,11 @@
 // Note: Unlike the LH macro in BinaryFile.h, the parameter is not a pointer
 #define LMMH(x)                                                                                                        \
     ((unsigned)((Byte *)(&x))[0] + ((unsigned)((Byte *)(&x))[1] << 8) + ((unsigned)((Byte *)(&x))[2] << 16) +          \
-     ((unsigned)((Byte *)(&x))[3] << 24))
+    ((unsigned)((Byte *)(&x))[3] << 24))
 // With this one, x is a pointer to unsigned
 #define LMMH2(x)                                                                                                       \
     ((unsigned)((Byte *)(x))[0] + ((unsigned)((Byte *)(x))[1] << 8) + ((unsigned)((Byte *)(x))[2] << 16) +             \
-     ((unsigned)((Byte *)(x))[3] << 24))
+    ((unsigned)((Byte *)(x))[3] << 24))
 
 typedef struct {/* exe file header, just the signature really */
     Byte sigLo; /* .EXE signature: 0x4D 0x5A     */
@@ -148,17 +148,17 @@ typedef struct PACKED {
 } PEExportDtor;
 
 class Win32BinaryFile : public QObject,
-                        public LoaderInterface,
-                        public BinaryData,
-                        public SymbolTableInterface,
-                        public LoaderCommon {
+        public LoaderInterface,
+        public BinaryData,
+        public SymbolTableInterface,
+        public LoaderCommon {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID LoaderInterface_iid)
     Q_INTERFACES(LoaderInterface)
     Q_INTERFACES(BinaryData)
     Q_INTERFACES(SectionInterface)
     Q_INTERFACES(SymbolTableInterface)
-  public:
+public:
     Win32BinaryFile();                    // Default constructor
     virtual ~Win32BinaryFile();           // Destructor
     virtual bool Open(const char *sName); // Open the file for r/w; ???
@@ -184,11 +184,11 @@ class Win32BinaryFile : public QObject,
     // Dump headers, etc
     virtual bool DisplayDetails(const char *fileName, FILE *f = stdout);
 
-  protected:
+protected:
     int win32Read2(short *ps) const; // Read 2 bytes from native addr
     int win32Read4(int *pi) const;   // Read 4 bytes from native addr
 
-  public:
+public:
     char readNative1(ADDRESS a) override;        // Read 1 bytes from native addr
     int readNative2(ADDRESS a) override;         // Read 2 bytes from native addr
     int readNative4(ADDRESS a) override;         // Read 4 bytes from native addr
@@ -211,10 +211,10 @@ class Win32BinaryFile : public QObject,
 
     bool hasDebugInfo() { return haveDebugInfo; }
 
-  protected:
+protected:
     bool RealLoad(const QString &sName) override; // Load the file; pure virtual
 
-  private:
+private:
     bool PostLoad(void *handle);  // Called after archive member loaded
     void findJumps(ADDRESS curr); // Find names for jumps to IATs
 
@@ -231,7 +231,7 @@ class Win32BinaryFile : public QObject,
     bool mingw_main;
 
     // SymbolTableInterface interface
-  public:
+public:
     int GetSizeByName(const QString &pName, bool bTypeOK) {
         Q_UNUSED(pName);
         Q_UNUSED(bTypeOK);
