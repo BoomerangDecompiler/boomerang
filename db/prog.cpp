@@ -91,7 +91,6 @@ Module *Prog::getOrInsertModule(const QString &name,const ModuleFactory &fact,Fr
 void Prog::setFrontEnd(FrontEnd *_pFE) {
     pLoaderPlugin = _pFE->getBinaryFile();
     pLoaderIface = qobject_cast<LoaderInterface *>(pLoaderPlugin);
-    pSections = qobject_cast<SectionInterface *>(pLoaderPlugin);
     pSymbols = qobject_cast<SymbolTableInterface *>(pLoaderPlugin);
     DefaultFrontend = _pFE;
     for(Module *m : ModuleList)
@@ -1670,3 +1669,14 @@ Exp *Prog::addReloc(Exp *e, ADDRESS lc) {
     }
     return e;
 }
+
+
+bool Prog::isStringConstant(ADDRESS a) {
+    const SectionInfo *si = Image->getSectionInfoByAddr(a);
+    if(!si)
+        return false;
+    QVariant qv = si->attributeInRange("StringsSection",a,a+1);
+    return !qv.isNull();
+}
+
+bool Prog::isCFStringConstant(ADDRESS a) { return isStringConstant(a); }

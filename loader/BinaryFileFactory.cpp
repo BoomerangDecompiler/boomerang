@@ -112,7 +112,7 @@ QObject *BinaryFileFactory::getInstanceFor(const QString &sName) {
 
     QPluginLoader plugin_loader(libName);
     if (!plugin_loader.load()) {
-        qDebug() << plugin_loader.errorString();
+        qCritical() << plugin_loader.errorString();
         return nullptr;
     }
     return plugin_loader.instance();

@@ -1990,7 +1990,7 @@ void XMLProgParser::parseChildren(Module *c) {
     }
 }
 
-extern char *operStrings[];
+extern const char *operStrings[];
 
 int XMLProgParser::operFromString(const QStringRef &s) {
     for (int i = 0; i < opNumOf; i++)

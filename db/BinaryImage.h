@@ -6,7 +6,7 @@
 #include <boost/icl/interval_map.hpp>
 
 struct SectionHolder {
-    SectionHolder() {};
+    SectionHolder() : val(nullptr) {}
     SectionHolder(SectionInfo *inf) : val(inf) {}
 
     SectionInfo *operator->() { return val;}
@@ -14,7 +14,7 @@ struct SectionHolder {
     operator SectionInfo *() { return val;}
     operator const SectionInfo *() const { return val;}
     SectionInfo *val;
-    SectionHolder operator+=(const SectionHolder &s) {
+    SectionHolder operator+=(const SectionHolder &/*s*/) {
         throw std::runtime_error("Cannot aggregate SectionInfos !");
     }
 };

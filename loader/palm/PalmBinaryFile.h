@@ -22,12 +22,10 @@
 
 class PalmBinaryFile : public QObject,
                        public LoaderInterface,
-                       public LoaderCommon,
                        public SymbolTableInterface {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID LoaderInterface_iid)
     Q_INTERFACES(LoaderInterface)
-    Q_INTERFACES(SectionInterface)
     Q_INTERFACES(SymbolTableInterface)
 
   public:

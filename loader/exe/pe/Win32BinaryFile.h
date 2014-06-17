@@ -149,12 +149,10 @@ typedef struct PACKED {
 
 class Win32BinaryFile : public QObject,
         public LoaderInterface,
-        public SymbolTableInterface,
-        public LoaderCommon {
+        public SymbolTableInterface {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID LoaderInterface_iid)
     Q_INTERFACES(LoaderInterface)
-    Q_INTERFACES(SectionInterface)
     Q_INTERFACES(SymbolTableInterface)
 public:
     Win32BinaryFile();                    // Default constructor

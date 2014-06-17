@@ -44,7 +44,6 @@
 #include <QProcessEnvironment>
 #include <QDebug>
 #include <sstream>
-#include <IBinaryImage.h>
 
 static bool logset = false;
 static QString TEST_BASE;

@@ -40,8 +40,7 @@ Boomerang *Boomerang::boomerang = nullptr;
  * - The output directory is "./output/"
  * - Main log stream is output on stderr
  */
-Boomerang::Boomerang() : progPath("./"), outputPath("./output/"), logger(nullptr),LogStream(stdout),ErrStream(stderr),
-    Image(nullptr) {
+Boomerang::Boomerang() : progPath("./"), outputPath("./output/"), LogStream(stdout),ErrStream(stderr) {
 }
 
 Boomerang::~Boomerang() {

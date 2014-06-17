@@ -68,7 +68,6 @@ protected:
     /***************************************/
     LoaderInterface *ldrIface;
     SymbolTableInterface *symIface;
-    SectionInterface *sectIface;
     QObject *pLoader; // The binary file
     /***************************************/
 
@@ -105,7 +104,6 @@ public:
     static bool noReturnCallDest(const QString &name);
     QObject *getBinaryFile() { return pLoader; }
     LoaderInterface *getLoaderIface() { return ldrIface; }
-    SectionInterface *getSectionIface() { return sectIface; }
 
     // Function to fetch the smallest machine instruction
     // virtual    int            getInst(int addr);

@@ -51,7 +51,7 @@ void init_dfa() {
 #endif
 }
 
-static int progress = 0;
+static int dfa_progress = 0;
 void UserProc::dfaTypeAnalysis() {
     Boomerang::get()->alertDecompileDebugPoint(this, "before dfa type analysis");
 
@@ -66,8 +66,8 @@ void UserProc::dfaTypeAnalysis() {
     for (iter = 1; iter <= DFA_ITER_LIMIT; ++iter) {
         ch = false;
         for (it = stmts.begin(); it != stmts.end(); ++it) {
-            if (++progress >= 2000) {
-                progress = 0;
+            if (++dfa_progress >= 2000) {
+                dfa_progress = 0;
                 LOG_STREAM() << "t";
                 LOG_STREAM().flush();
             }

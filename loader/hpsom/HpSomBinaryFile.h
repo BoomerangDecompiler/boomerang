@@ -72,11 +72,11 @@ struct symElem {
     ADDRESS value;
 };
 
-class HpSomBinaryFile : public QObject, public LoaderInterface, public LoaderCommon {
+class HpSomBinaryFile : public QObject, public LoaderInterface {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID LoaderInterface_iid)
     Q_INTERFACES(LoaderInterface)
-    Q_INTERFACES(SectionInterface)
+
 public:
     HpSomBinaryFile(); // Constructor
     virtual ~HpSomBinaryFile();

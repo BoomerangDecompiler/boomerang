@@ -157,7 +157,6 @@ void BinaryImage::writeNative4(ADDRESS nat, uint32_t n) {
 }
 
 void BinaryImage::calculateTextLimits() {
-    int n = Sections.size();
     limitTextLow = ADDRESS::g(0xFFFFFFFF);
     limitTextHigh = ADDRESS::g(0L);
     TextDelta = 0;
@@ -213,7 +212,10 @@ SectionInfo *BinaryImage::GetSectionInfoByName(const QString &sName) {
 
 bool BinaryImage::isReadOnly(ADDRESS uEntry) {
     const SectionInfo * p = getSectionInfoByAddr(uEntry);
-    return p && p->bReadOnly;
+    if(p && p->bReadOnly)
+        return true;
+    QVariant v = p->attributeInRange("ReadOnly",uEntry,uEntry+1);
+    return !v.isNull();
 }
 
 

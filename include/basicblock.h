@@ -193,7 +193,6 @@ class BasicBlock {
           Function *getParent()       { return Parent; }
     BBTYPE getType();
 
-    int getLabel();
     QString &getLabelStr() { return LabelStr; }
     void setLabelStr(const QString &s) { LabelStr = s; }
     bool isLabelNeeded() { return LabelNeeded; }

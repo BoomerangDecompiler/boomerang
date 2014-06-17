@@ -34,6 +34,7 @@
 #include <cstdlib>
 #include <memory>
 using namespace std;
+static int codegen_progress = 0;
 static bool isBareMemof(const Exp &e, UserProc *proc);
 // extern char *operStrings[];
 
@@ -52,8 +53,6 @@ void CHLLCode::indent(QTextStream &str, int indLevel) {
     for (int i = 0; i < indLevel; i++)
         str << "    ";
 }
-
-static int progress = 0;
 /**
  * Append code for the given expression \a exp to stream \a str.
  *
@@ -65,10 +64,10 @@ static int progress = 0;
  * \todo This function is 800+ lines, and should possibly be split up.
  */
 void CHLLCode::appendExp(QTextStream &str, const Exp &exp, PREC curPrec, bool uns /* = false */) {
-    if (++progress > 500) {
+    if (++codegen_progress > 500) {
         LOG_STREAM() << 'g';
         LOG_STREAM().flush();
-        progress = 0;
+        codegen_progress = 0;
     }
 
     OPER op = exp.getOper();

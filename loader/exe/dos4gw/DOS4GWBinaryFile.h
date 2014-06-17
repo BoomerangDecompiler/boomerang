@@ -124,11 +124,10 @@ typedef struct PACKED {
 #pragma pack(4)
 //#endif
 
-class DOS4GWBinaryFile : public QObject, public LoaderInterface, public LoaderCommon {
+class DOS4GWBinaryFile : public QObject, public LoaderInterface {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID LoaderInterface_iid)
     Q_INTERFACES(LoaderInterface)
-    Q_INTERFACES(SectionInterface)
   public:
     DOS4GWBinaryFile();
     virtual ~DOS4GWBinaryFile();          // Destructor

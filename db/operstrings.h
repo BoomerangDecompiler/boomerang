@@ -1,3 +1,4 @@
+#pragma once
 // Strings for the OPER enum. Ugh! I wish C could print enums properly.
 // Only needed for the dotty file (a debugging nicety) so don't be
 // surprised if the strings become out of date.

@@ -51,9 +51,7 @@ struct SectionParam {
 
 typedef std::map<QString, int, std::less<QString>> StrIntMap;
 
-ElfBinaryFile::ElfBinaryFile(bool bArchive /* = false */)
-    : LoaderCommon(bArchive), // Initialise base class
-      next_extern(ADDRESS::g(0L)) {
+ElfBinaryFile::ElfBinaryFile() : next_extern(ADDRESS::g(0L)) {
     m_fd = nullptr;
     m_pFileName = nullptr;
     Image = Boomerang::get()->getImage();
@@ -106,10 +104,10 @@ unsigned elf_hash(const char *o0) {
 // Return true for a good load
 bool ElfBinaryFile::RealLoad(const QString &sName) {
     int i;
-    if (m_bArchive) {
-        // This is a member of an archive. Should not be using this function at all
-        return false;
-    }
+//    if (m_bArchive) {
+//        // This is a member of an archive. Should not be using this function at all
+//        return false;
+//    }
 
     m_pFileName = sName;
     m_fd = fopen(qPrintable(sName), "rb");

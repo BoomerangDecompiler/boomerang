@@ -3,7 +3,7 @@
 
 #include "types.h"
 
-class SectionInfo;
+struct SectionInfo;
 class QString;
 
 class IBinaryImage {

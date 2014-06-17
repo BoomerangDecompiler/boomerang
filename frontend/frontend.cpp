@@ -36,7 +36,7 @@
 #include "boomerang.h"
 #include "log.h"
 #include "ansi-c-parser.h"
-#include "db/BinaryImage.h"
+#include "IBinaryImage.h"
 
 #include <QtCore/QDir>
 #include <QtCore/QDebug>
@@ -60,7 +60,6 @@ FrontEnd::FrontEnd(QObject *p_BF, Prog *prog, BinaryFileFactory *bff) : pLoader(
     assert(Image);
     ldrIface = qobject_cast<LoaderInterface *>(pLoader);
     symIface = qobject_cast<SymbolTableInterface *>(pLoader);
-    sectIface = qobject_cast<SectionInterface *>(pLoader);
 }
 
 /***************************************************************************/ /**
@@ -374,7 +373,6 @@ void FrontEnd::decodeFragment(UserProc *proc, ADDRESS a) {
 }
 
 DecodeResult &FrontEnd::decodeInstruction(ADDRESS pc) {
-    SectionInterface *sect_iface = qobject_cast<SectionInterface *>(pLoader);
     if (!Image || Image->getSectionInfoByAddr(pc) == nullptr) {
         LOG << "ERROR: attempted to decode outside any known section " << pc << "\n";
         static DecodeResult invalid;

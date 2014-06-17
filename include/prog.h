@@ -164,8 +164,8 @@ public:
     ADDRESS getLimitTextLow();
     ADDRESS getLimitTextHigh();
     bool isReadOnly(ADDRESS a);
-    bool isStringConstant(ADDRESS a) { return pSections->isStringConstant(a); }
-    bool isCFStringConstant(ADDRESS a) { return pSections->isCFStringConstant(a); }
+    bool isStringConstant(ADDRESS a);
+    bool isCFStringConstant(ADDRESS a);
 
     // Read 1, 2, 4, or 8 bytes given a native address
     int readNative1(ADDRESS a);
@@ -221,7 +221,6 @@ signals:
 protected:
     QObject *pLoaderPlugin; //!< Pointer to the instance returned by loader plugin
     LoaderInterface *pLoaderIface = nullptr;
-    SectionInterface *pSections = nullptr;
     SymbolTableInterface *pSymbols = nullptr;
     FrontEnd *DefaultFrontend; //!< Pointer to the FrontEnd object for the project
 

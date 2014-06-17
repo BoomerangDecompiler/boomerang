@@ -720,8 +720,6 @@ std::vector<Exp *> &SparcFrontEnd::getDefaultReturns() {
 bool SparcFrontEnd::processProc(ADDRESS uAddr, UserProc *proc, QTextStream &os, bool fragment /* = false */,
                                 bool spec /* = false */) {
     Q_UNUSED(fragment);
-    SectionInterface *sec_iface = qobject_cast<SectionInterface *>(pLoader);
-
     // Declare an object to manage the queue of targets not yet processed yet.
     // This has to be individual to the procedure! (so not a global)
     TargetQueue targetQueue;

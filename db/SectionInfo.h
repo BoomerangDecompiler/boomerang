@@ -3,6 +3,7 @@
 #include "types.h"
 
 #include <QString>
+class QVariant;
 struct SectionInfoImpl;
 //! SectionInfo structure - All information about the sections is contained in these
 //! structures.
@@ -29,6 +30,11 @@ public:
     bool anyDefinedValues() const;
     void clearDefinedArea();
     void addDefinedArea(ADDRESS from,ADDRESS to);
+    void setAttribute(const QString &name,const QVariant &val);
+    const QVariant &getAttribute(const QString &name);
+    void setAttributeForRange(const QString &name,const QVariant &val,ADDRESS from,ADDRESS to);
+    QVariantMap getAttributesForRange(ADDRESS from,ADDRESS to);
+    QVariant attributeInRange(const QString &attrib,ADDRESS from,ADDRESS to) const;
 private:
     SectionInfoImpl *Impl;
 };

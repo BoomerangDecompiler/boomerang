@@ -79,6 +79,7 @@ enum LOAD_FMT {
     LOADFMT_COFF
 };
 enum MACHINE {
+    MACHINE_UNKNOWN=0,
     MACHINE_PENTIUM,
     MACHINE_SPARC,
     MACHINE_HPRISC,
@@ -229,31 +230,9 @@ protected:
     virtual bool PostLoad(void *handle) = 0; //!< Called after loading archive member
 };
 Q_DECLARE_INTERFACE(LoaderInterface, LoaderInterface_iid)
-class SectionInterface {
-public:
-    virtual ~SectionInterface() {}
-    virtual bool isStringConstant(ADDRESS /*uEntry*/) { return false; }
-    //! returns true if the given address is in a "strings" section
-    virtual bool isCFStringConstant(ADDRESS /*uEntry*/) { return false; }
-};
-Q_DECLARE_INTERFACE(SectionInterface, SectionsInterface_iid)
 struct LoaderPluginWrapper {
     QObject *plugin;
     template <class T> T *iface() { return plugin ? qobject_cast<T *>(plugin) : nullptr; }
 };
 
-class LoaderCommon : public SectionInterface {
-public:
-    virtual ~LoaderCommon() {
-    }
-    LoaderCommon(bool bArch = false) {
-        m_bArchive = bArch;    // Remember whether an archive member
-    }
-protected:
-    // Data
-    bool m_bArchive;          //!< True if archive member
-    //uint32_t Image->GetNumSections();  //!< Number of sections
-    ADDRESS m_uInitPC;        //!< Initial program counter
-    ADDRESS m_uInitSP;        //!< Initial stack pointer
-};
 #endif // #ifndef __BINARYFILE_H__

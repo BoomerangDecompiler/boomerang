@@ -149,15 +149,13 @@ typedef struct {
 
 class ElfBinaryFile : public QObject,
                       public LoaderInterface,
-                      public SymbolTableInterface,
-                      public LoaderCommon {
+                      public SymbolTableInterface {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID LoaderInterface_iid)
     Q_INTERFACES(LoaderInterface)
     Q_INTERFACES(SymbolTableInterface)
-    Q_INTERFACES(SectionInterface)
   public:
-    ElfBinaryFile(bool bArchive = false); // Constructor
+    ElfBinaryFile(); // Constructor
     virtual void UnLoad();                // Unload the image
     virtual ~ElfBinaryFile();             // Destructor
     bool GetNextMember();                 // Load next member of archive

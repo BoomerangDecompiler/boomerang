@@ -365,13 +365,13 @@ static Exp *defineAll = new Terminal(opDefineAll); // An expression representing
 #define STACKS_EMPTY(q) (Stacks.find(q) == Stacks.end() || Stacks[q].empty())
 
 // Subscript dataflow variables
-static int progress = 0;
+static int dataflow_progress = 0;
 bool DataFlow::renameBlockVars(UserProc *proc, int n, bool clearStacks /* = false */) {
-    if (++progress > 200) {
+    if (++dataflow_progress > 200) {
         LOG_STREAM() << 'r';
         LOG_STREAM().flush();
 
-        progress = 0;
+        dataflow_progress = 0;
     }
     bool changed = false;
 
