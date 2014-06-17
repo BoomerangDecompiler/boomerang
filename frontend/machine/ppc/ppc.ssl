@@ -323,6 +323,8 @@ LBZ		rd, eaddr, ra					*32* rd := zfill(8, 32, m[eaddr]);
 
 LHZ		rd, eaddr, ra                   *32* rd := zfill(16, 32, m[eaddr]);
 
+LHA		rd, eaddr, ra                   *32* rd := sgnex(16, 32, m[eaddr]);
+
 LBZX	rd, eaddr, ra					*32* rd := zfill(8, 32, m[eaddr]);
 
 STWU	rs, eaddr, ra					*32* m[eaddr] := rs
