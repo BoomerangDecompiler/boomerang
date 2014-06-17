@@ -55,9 +55,11 @@ enum INSTTYPE {
 };
 
 typedef bool (*PHELPER)(ADDRESS dest, ADDRESS addr, std::list<RTL *> *lrtl);
-
+class IBinaryImage;
 class FrontEnd {
-  protected:
+
+protected:
+    IBinaryImage *Image;
     //      const int NOP_SIZE;            // Size of a no-op instruction (in bytes)
     //      const int NOP_INST;            // No-op pattern
     NJMCDecoder *decoder; // The decoder
@@ -81,14 +83,14 @@ class FrontEnd {
     // Map from address to previously decoded RTLs for decoded indirect control transfer instructions
     std::map<ADDRESS, RTL *> previouslyDecoded;
 
-  public:
+public:
     /*
      * Constructor. Takes some parameters to save passing these around a lot
      */
     FrontEnd(QObject *pLoader, Prog *prog, BinaryFileFactory *pbff);
     static FrontEnd *instantiate(QObject *pLoader, Prog *prog, BinaryFileFactory *pbff);
     static FrontEnd *Load(const QString &fname, Prog *prog); //!< Load a binary
-                                                             //! Add a symbol to the loader
+    //! Add a symbol to the loader
     void AddSymbol(ADDRESS addr, const QString &nam) { symIface->AddSymbol(addr, nam); }
     // Add a "hint" that an instruction at the given address references a named global
     void addRefHint(ADDRESS addr, const QString &nam) { refHints[addr] = nam; }

@@ -124,13 +124,13 @@ typedef struct PACKED {
 #pragma pack(4)
 //#endif
 
-class DOS4GWBinaryFile : public QObject, public LoaderInterface, public BinaryData, public LoaderCommon {
+class DOS4GWBinaryFile : public QObject, public LoaderInterface, public LoaderCommon {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID LoaderInterface_iid)
     Q_INTERFACES(LoaderInterface)
-    Q_INTERFACES(BinaryData)
     Q_INTERFACES(SectionInterface)
   public:
+    DOS4GWBinaryFile();
     virtual ~DOS4GWBinaryFile();          // Destructor
     virtual bool Open(const char *sName); // Open the file for r/w; ???
     virtual void Close();                 // Close file opened with Open()
@@ -165,12 +165,6 @@ class DOS4GWBinaryFile : public QObject, public LoaderInterface, public BinaryDa
     int dos4gwRead4(int *pi) const;   // Read 4 bytes from native addr
 
   public:
-    char readNative1(ADDRESS a) override;        // Read 1 bytes from native addr
-    int readNative2(ADDRESS a) override;         // Read 2 bytes from native addr
-    int readNative4(ADDRESS a) override;         // Read 4 bytes from native addr
-    QWord readNative8(ADDRESS a) override;       // Read 8 bytes from native addr
-    float readNativeFloat4(ADDRESS a) override;  // Read 4 bytes as float
-    double readNativeFloat8(ADDRESS a) override; // Read 8 bytes as float
 
     virtual bool IsDynamicLinkedProcPointer(ADDRESS uNative);
     virtual bool IsDynamicLinkedProc(ADDRESS uNative);
@@ -195,4 +189,5 @@ class DOS4GWBinaryFile : public QObject, public LoaderInterface, public BinaryDa
     // Map from address of dynamic pointers to library procedure names:
     tMapAddrToString dlprocptrs;
     QString m_pFileName;
+    class IBinaryImage *Image;
 };

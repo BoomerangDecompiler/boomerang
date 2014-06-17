@@ -22,14 +22,12 @@
 
 class PalmBinaryFile : public QObject,
                        public LoaderInterface,
-                       public BinaryData,
                        public LoaderCommon,
                        public SymbolTableInterface {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID LoaderInterface_iid)
     Q_INTERFACES(LoaderInterface)
     Q_INTERFACES(SectionInterface)
-    Q_INTERFACES(BinaryData)
     Q_INTERFACES(SymbolTableInterface)
 
   public:
@@ -88,13 +86,6 @@ class PalmBinaryFile : public QObject,
     //    bool        IsDynamicLinkedProc(ADDRESS wNative);
     //    ADDRESS     NativeToHostAddress(ADDRESS uNative);
 
-    char readNative1(ADDRESS nat) override;
-    int readNative2(ADDRESS nat) override;
-    int readNative4(ADDRESS nat) override;
-    QWord readNative8(ADDRESS nat) override;
-    float readNativeFloat4(ADDRESS nat) override;
-    double readNativeFloat8(ADDRESS nat) override;
-
   protected:
     bool RealLoad(const QString &sName) override; // Load the file; pure virtual
 
@@ -105,6 +96,8 @@ class PalmBinaryFile : public QObject,
     // Offset from start of data to where register a5 should be initialised to
     unsigned int m_SizeBelowA5;
     QString m_pFileName;
+    class IBinaryImage *Image;
+
 };
 
 #endif // #ifndef __PALMBINARYFILE_H__

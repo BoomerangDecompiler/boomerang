@@ -36,6 +36,7 @@
 #include "boomerang.h"
 #include "log.h"
 #include "ansi-c-parser.h"
+#include "db/BinaryImage.h"
 
 #include <QtCore/QDir>
 #include <QtCore/QDebug>
@@ -55,6 +56,8 @@ using namespace std;
   * \param bff pointer to a BinaryFileFactory object (so the library can be unloaded)
   ******************************************************************************/
 FrontEnd::FrontEnd(QObject *p_BF, Prog *prog, BinaryFileFactory *bff) : pLoader(p_BF), pbff(bff), Program(prog) {
+    Image = Boomerang::get()->getImage();
+    assert(Image);
     ldrIface = qobject_cast<LoaderInterface *>(pLoader);
     symIface = qobject_cast<SymbolTableInterface *>(pLoader);
     sectIface = qobject_cast<SectionInterface *>(pLoader);
@@ -211,7 +214,6 @@ std::vector<ADDRESS> FrontEnd::getEntryPoints() {
     bool gotMain = false;
     // AssemblyLayer
     ADDRESS a = getMainEntryPoint(gotMain);
-    BinaryData *bin_iface = qobject_cast<BinaryData *>(pLoader);
     // TODO: find exported functions and add them too ?
     if (a != NO_ADDRESS)
         entrypoints.push_back(a);
@@ -227,9 +229,9 @@ std::vector<ADDRESS> FrontEnd::getEntryPoints() {
                 ADDRESS tmpaddr = symIface ? symIface->GetAddressByName(qPrintable(name), true) : NO_ADDRESS;
                 if (tmpaddr != NO_ADDRESS) {
                     ADDRESS setup, teardown;
-                    /*uint32_t vers = */ bin_iface->readNative4(tmpaddr); // TODO: find use for vers ?
-                    setup = ADDRESS::g(bin_iface->readNative4(tmpaddr + 4));
-                    teardown = ADDRESS::g(bin_iface->readNative4(tmpaddr + 8));
+                    /*uint32_t vers = */ Image->readNative4(tmpaddr); // TODO: find use for vers ?
+                    setup = ADDRESS::g(Image->readNative4(tmpaddr + 4));
+                    teardown = ADDRESS::g(Image->readNative4(tmpaddr + 8));
                     if (!setup.isZero()) {
                         checkEntryPoint(entrypoints, setup, "ModuleSetupProc");
                     }
@@ -259,10 +261,8 @@ void FrontEnd::decode(Prog *prg, bool decodeMain, const char *pname) {
 
     if (!decodeMain)
         return;
-    SectionInterface *sym_iface = qobject_cast<SectionInterface *>(pLoader);
-
-    Boomerang::get()->alertStartDecode(sym_iface->getLimitTextLow(),
-                                         (sym_iface->getLimitTextHigh() - sym_iface->getLimitTextLow()).m_value);
+    Boomerang::get()->alertStartDecode(Image->getLimitTextLow(),
+                                         (Image->getLimitTextHigh() - Image->getLimitTextLow()).m_value);
 
     bool gotMain;
     ADDRESS a = getMainEntryPoint(gotMain);
@@ -375,14 +375,14 @@ void FrontEnd::decodeFragment(UserProc *proc, ADDRESS a) {
 
 DecodeResult &FrontEnd::decodeInstruction(ADDRESS pc) {
     SectionInterface *sect_iface = qobject_cast<SectionInterface *>(pLoader);
-    if (!sect_iface || sect_iface->getSectionInfoByAddr(pc) == nullptr) {
+    if (!Image || Image->getSectionInfoByAddr(pc) == nullptr) {
         LOG << "ERROR: attempted to decode outside any known section " << pc << "\n";
         static DecodeResult invalid;
         invalid.reset();
         invalid.valid = false;
         return invalid;
     }
-    return decoder->decodeInstruction(pc, sect_iface->getTextDelta());
+    return decoder->decodeInstruction(pc, Image->getTextDelta());
 }
 
 /***************************************************************************/ /**
@@ -513,8 +513,6 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream &/*os*/, 
     int nTotalBytes = 0;
     ADDRESS startAddr = uAddr;
     ADDRESS lastAddr = uAddr;
-    BinaryData *bin_data = qobject_cast<BinaryData *>(pLoader);
-    SectionInterface *sec_iface = qobject_cast<SectionInterface *>(pLoader);
     while ((uAddr = targetQueue.nextAddress(*pCfg)) != NO_ADDRESS) {
         // The list of RTLs for the current basic block
         std::list<RTL *> *BB_rtls = new std::list<RTL *>();
@@ -554,7 +552,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream &/*os*/, 
                     LOG << "Warning: invalid instruction at " << uAddr << ": ";
                     // Emit the next 4 bytes for debugging
                     for (int ii = 0; ii < 4; ii++)
-                        LOG << ADDRESS::g(bin_data->readNative1(uAddr + ii) & 0xFF) << " ";
+                        LOG << ADDRESS::g(Image->readNative1(uAddr + ii) & 0xFF) << " ";
                     LOG << "\n";
                 }
                 // Emit the RTL anyway, so we have the address and maybe some other clues
@@ -653,7 +651,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream &/*os*/, 
 
                         // Add the out edge if it is to a destination within the
                         // procedure
-                        if (uDest < sec_iface->getLimitTextHigh()) {
+                        if (uDest < Image->getLimitTextHigh()) {
                             targetQueue.visit(pCfg, uDest, pBB);
                             pCfg->addOutEdge(pBB, uDest, true);
                         } else {
@@ -723,8 +721,8 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream &/*os*/, 
                             ADDRESS jmptbl = ((Const *)pDest->getSubExp1()->getSubExp2())->getAddr();
                             unsigned int i;
                             for (i = 0;; i++) {
-                                ADDRESS uDest = ADDRESS::g(bin_data->readNative4(jmptbl + i * 4));
-                                if (sec_iface->getLimitTextLow() <= uDest && uDest < sec_iface->getLimitTextHigh()) {
+                                ADDRESS uDest = ADDRESS::g(Image->readNative4(jmptbl + i * 4));
+                                if (Image->getLimitTextLow() <= uDest && uDest < Image->getLimitTextHigh()) {
                                     LOG << "  guessed uDest " << uDest << "\n";
                                     targetQueue.visit(pCfg, uDest, pBB);
                                     pCfg->addOutEdge(pBB, uDest, true);
@@ -750,7 +748,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream &/*os*/, 
                     else {
 
                         // Add the out edge if it is to a destination within the procedure
-                        if (uDest < sec_iface->getLimitTextHigh()) {
+                        if (uDest < Image->getLimitTextHigh()) {
                             targetQueue.visit(pCfg, uDest, pBB);
                             pCfg->addOutEdge(pBB, uDest, true);
                         } else {
@@ -788,7 +786,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream &/*os*/, 
                         // Get the address of the called function.
                         ADDRESS callAddr = call->getFixedDest();
                         // It should not be in the PLT either, but getLimitTextHigh() takes this into account
-                        if (callAddr < sec_iface->getLimitTextHigh()) {
+                        if (callAddr < Image->getLimitTextHigh()) {
                             // Decode it.
                             DecodeResult decoded = decodeInstruction(callAddr);
                             if (decoded.valid) { // is the instruction decoded succesfully?
@@ -1002,7 +1000,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream &/*os*/, 
         ADDRESS dest = (*it)->getFixedDest();
         // Don't speculatively decode procs that are outside of the main text section, apart from dynamically
         // linked ones (in the .plt)
-        if (ldrIface->IsDynamicLinkedProc(dest) || !spec || (dest < sec_iface->getLimitTextHigh())) {
+        if (ldrIface->IsDynamicLinkedProc(dest) || !spec || (dest < Image->getLimitTextHigh())) {
             pCfg->addCall(*it);
             // Don't visit the destination of a register call
             Function *np = (*it)->getDestProc();

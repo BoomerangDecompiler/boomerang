@@ -17,6 +17,7 @@
 #include "pentiumfrontend.h"
 #include "types.h"
 #include "BinaryFile.h"
+#include "IBinaryImage.h"
 #include "frontend.h"
 #include "rtl.h"
 #include "decoder.h" // prototype for decodeInstruction()
@@ -856,9 +857,8 @@ bool PentiumFrontEnd::decodeSpecial_out(ADDRESS pc, DecodeResult &r) {
     return true;
 }
 bool PentiumFrontEnd::decodeSpecial_invalid(ADDRESS pc, DecodeResult &r) {
-    BinaryData *bin_data = qobject_cast<BinaryData *>(pLoader);
 
-    int n = bin_data->readNative1(pc + 1);
+    int n = Image->readNative1(pc + 1);
     if (n != (int)(char)0x0b)
         return false;
     r.reset();
@@ -873,8 +873,7 @@ bool PentiumFrontEnd::decodeSpecial_invalid(ADDRESS pc, DecodeResult &r) {
     return true;
 }
 bool PentiumFrontEnd::decodeSpecial(ADDRESS pc, DecodeResult &r) {
-    BinaryData *bin_data = qobject_cast<BinaryData *>(pLoader);
-    int n = bin_data->readNative1(pc);
+    int n = Image->readNative1(pc);
     switch ((int)(char)n) {
     case 0xee:
         return decodeSpecial_out(pc, r);
@@ -894,7 +893,6 @@ DecodeResult &PentiumFrontEnd::decodeInstruction(ADDRESS pc) {
 void PentiumFrontEnd::extraProcessCall(CallStatement *call, std::list<RTL *> *BB_rtls) {
     if (not call->getDestProc())
         return;
-    BinaryData *bin_data = qobject_cast<BinaryData *>(pLoader);
 
     // looking for function pointers
     Signature *calledSig = call->getDestProc()->getSignature();
@@ -976,7 +974,7 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, std::list<RTL *> *BB
         for (unsigned int n = 0; n < compound->getNumTypes(); n++) {
             if (compound->getType(n)->resolvesToPointer() &&
                 compound->getType(n)->asPointer()->getPointsTo()->resolvesToFunc()) {
-                ADDRESS d = ADDRESS::g(bin_data->readNative4(a));
+                ADDRESS d = ADDRESS::g(Image->readNative4(a));
                 if (VERBOSE)
                     LOG << "found a new procedure at address " << d << " from inspecting parameters of call to "
                         << call->getDestProc()->getName() << ".\n";

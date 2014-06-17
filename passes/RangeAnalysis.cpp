@@ -2,6 +2,7 @@
 
 #include "proc.h"
 #include "boomerang.h"
+#include "IBinaryImage.h"
 #include "log.h"
 #include "util.h"
 #include "cfg.h"
@@ -222,16 +223,16 @@ struct RangeVisitor : public StmtVisitor {
                         if (VERBOSE && DEBUG_RANGE_ANALYSIS)
                             LOG << "a_rhs is a dynamic proc pointer to " << nam << "\n";
                     }
-                } else if (insn->getProc()->getProg()->isReadOnly(c)) {
+                } else if (Boomerang::get()->getImage()->isReadOnly(c)) {
                     switch (insn->getType()->getSize()) {
                     case 8:
-                        a_rhs = Const::get(insn->getProc()->getProg()->readNative1(c));
+                        a_rhs = Const::get(Boomerang::get()->getImage()->readNative1(c));
                         break;
                     case 16:
-                        a_rhs = Const::get(insn->getProc()->getProg()->readNative2(c));
+                        a_rhs = Const::get(Boomerang::get()->getImage()->readNative2(c));
                         break;
                     case 32:
-                        a_rhs = Const::get(insn->getProc()->getProg()->readNative4(c));
+                        a_rhs = Const::get(Boomerang::get()->getImage()->readNative4(c));
                         break;
                     default:
                         LOG << "error: unhandled type size " << (int)insn->getType()->getSize() << " for reading native address\n";

@@ -25,6 +25,7 @@
 #include "basicblock.h"
 #include "BinaryFile.h" // E.g. IsDynamicallyLinkedProc
 #include "boomerang.h"
+#include "IBinaryImage.h"
 #include "cfg.h"
 #include "decoder.h"
 #include "exp.h"
@@ -782,7 +783,7 @@ bool SparcFrontEnd::processProc(ADDRESS uAddr, UserProc *proc, QTextStream &os, 
             // Check for invalid instructions
             if (!inst.valid) {
                 LOG_STREAM() << "Invalid instruction at " << uAddr << ": ";
-                ptrdiff_t delta = sec_iface->getTextDelta();
+                ptrdiff_t delta = Image->getTextDelta();
                 for (int j = 0; j < inst.numBytes; j++)
                     LOG_STREAM() << QString("%1").arg((unsigned)*(unsigned char *)(uAddr + delta + j).m_value,2,16,QChar('0')) << " ";
                 LOG_STREAM() << "\n";
@@ -863,7 +864,7 @@ bool SparcFrontEnd::processProc(ADDRESS uAddr, UserProc *proc, QTextStream &os, 
                 // Construct the new basic block and save its destination
                 // address if it hasn't been visited already
                 BasicBlock *pBB = cfg->newBB(BB_rtls, BBTYPE::ONEWAY, 1);
-                handleBranch(uAddr + 8, sec_iface->getLimitTextHigh(), pBB, cfg, targetQueue);
+                handleBranch(uAddr + 8, Image->getLimitTextHigh(), pBB, cfg, targetQueue);
 
                 // There is no fall through branch.
                 sequentialDecode = false;
@@ -876,7 +877,7 @@ bool SparcFrontEnd::processProc(ADDRESS uAddr, UserProc *proc, QTextStream &os, 
                 BB_rtls->push_back(inst.rtl);
 
                 BasicBlock *pBB = cfg->newBB(BB_rtls, BBTYPE::ONEWAY, 1);
-                handleBranch(stmt_jump->getFixedDest(), sec_iface->getLimitTextHigh(), pBB, cfg, targetQueue);
+                handleBranch(stmt_jump->getFixedDest(), Image->getLimitTextHigh(), pBB, cfg, targetQueue);
 
                 // There is no fall through branch.
                 sequentialDecode = false;
@@ -894,7 +895,7 @@ bool SparcFrontEnd::processProc(ADDRESS uAddr, UserProc *proc, QTextStream &os, 
                     // e.g.
                     // 142c8:  40 00 5b 91          call           exit
                     // 142cc:  91 e8 3f ff          restore       %g0, -1, %o0
-                    if (((SparcDecoder *)decoder)->isRestore(uAddr + 4 + sec_iface->getTextDelta())) {
+                    if (((SparcDecoder *)decoder)->isRestore(uAddr + 4 + Image->getTextDelta())) {
                         // Give the address of the call; I think that this is actually important, if faintly annoying
                         delay_inst.rtl->setAddress(uAddr);
                         BB_rtls->push_back(delay_inst.rtl);
@@ -957,7 +958,7 @@ bool SparcFrontEnd::processProc(ADDRESS uAddr, UserProc *proc, QTextStream &os, 
                         sequentialDecode = case_CALL(uAddr, inst, delay_inst, BB_rtls, proc, callList, os);
                     } else {
                         // This is a non-call followed by an NCT/NOP
-                        case_SD(uAddr, sec_iface->getTextDelta(), sec_iface->getLimitTextHigh(), inst, delay_inst,
+                        case_SD(uAddr, Image->getTextDelta(), Image->getLimitTextHigh(), inst, delay_inst,
                                 BB_rtls, cfg, targetQueue, os);
 
                         // There is no fall through branch.
@@ -1003,7 +1004,7 @@ bool SparcFrontEnd::processProc(ADDRESS uAddr, UserProc *proc, QTextStream &os, 
                         callList.push_back((CallStatement *)inst.rtl->back());
                     } else {
                         BasicBlock *pBB = cfg->newBB(BB_rtls, BBTYPE::ONEWAY, 1);
-                        handleBranch(dest, sec_iface->getLimitTextHigh(), pBB, cfg, targetQueue);
+                        handleBranch(dest, Image->getLimitTextHigh(), pBB, cfg, targetQueue);
 
                         // There is no fall through branch.
                         sequentialDecode = false;
@@ -1038,7 +1039,7 @@ bool SparcFrontEnd::processProc(ADDRESS uAddr, UserProc *proc, QTextStream &os, 
                 switch (delay_inst.type) {
                 case NOP:
                 case NCT: {
-                    sequentialDecode = case_DD(uAddr, sec_iface->getTextDelta(), inst, delay_inst, BB_rtls,
+                    sequentialDecode = case_DD(uAddr, Image->getTextDelta(), inst, delay_inst, BB_rtls,
                                                targetQueue, proc, callList);
                     break;
                 }
@@ -1068,14 +1069,14 @@ bool SparcFrontEnd::processProc(ADDRESS uAddr, UserProc *proc, QTextStream &os, 
                 switch (delay_inst.type) {
                 case NOP:
                 case NCT: {
-                    sequentialDecode = case_SCD(uAddr, sec_iface->getTextDelta(), sec_iface->getLimitTextHigh(), inst,
+                    sequentialDecode = case_SCD(uAddr, Image->getTextDelta(), Image->getLimitTextHigh(), inst,
                                                 delay_inst, BB_rtls, cfg, targetQueue);
                     break;
                 }
                 default:
                     if (delay_inst.rtl->back()->getKind() == STMT_CALL) {
                         // Assume it's the move/call/move pattern
-                        sequentialDecode = case_SCD(uAddr, sec_iface->getTextDelta(), sec_iface->getLimitTextHigh(),
+                        sequentialDecode = case_SCD(uAddr, Image->getTextDelta(), Image->getLimitTextHigh(),
                                                     inst, delay_inst, BB_rtls, cfg, targetQueue);
                         break;
                     }
@@ -1107,7 +1108,7 @@ bool SparcFrontEnd::processProc(ADDRESS uAddr, UserProc *proc, QTextStream &os, 
                     }
                     // Visit the destination of the branch; add "true" leg
                     ADDRESS uDest = stmt_jump->getFixedDest();
-                    handleBranch(uDest, sec_iface->getLimitTextHigh(), pBB, cfg, targetQueue);
+                    handleBranch(uDest, Image->getLimitTextHigh(), pBB, cfg, targetQueue);
                     // Add the "false" leg: point past the delay inst
                     cfg->addOutEdge(pBB, uAddr + 8);
                     uAddr += 8;      // Skip branch and delay
@@ -1116,7 +1117,7 @@ bool SparcFrontEnd::processProc(ADDRESS uAddr, UserProc *proc, QTextStream &os, 
                 }
 
                 case NCT: {
-                    sequentialDecode = case_SCDAN(uAddr, sec_iface->getTextDelta(), sec_iface->getLimitTextHigh(),
+                    sequentialDecode = case_SCDAN(uAddr, Image->getTextDelta(), Image->getLimitTextHigh(),
                                                   inst, delay_inst, BB_rtls, cfg, targetQueue);
                     break;
                 }
@@ -1166,7 +1167,7 @@ bool SparcFrontEnd::processProc(ADDRESS uAddr, UserProc *proc, QTextStream &os, 
         ADDRESS dest = (*it)->getFixedDest();
         // Don't speculatively decode procs that are outside of the main text section, apart from dynamically linked
         // ones (in the .plt)
-        if (ldrIface->IsDynamicLinkedProc(dest) || !spec || (dest < sec_iface->getLimitTextHigh())) {
+        if (ldrIface->IsDynamicLinkedProc(dest) || !spec || (dest < Image->getLimitTextHigh())) {
             cfg->addCall(*it);
             // Don't visit the destination of a register call
             // if (dest != NO_ADDRESS) newProc(proc->getProg(), dest);

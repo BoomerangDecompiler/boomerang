@@ -7,6 +7,8 @@
 */
 
 #include "BinaryFile.h"
+#include "boomerang.h"
+#include "IBinaryImage.h"
 
 #include <QDir>
 #include <QPluginLoader>
@@ -23,6 +25,8 @@ using namespace std;
 QString BinaryFileFactory::m_base_path = "";
 
 QObject *BinaryFileFactory::Load(const QString &sName) {
+    IBinaryImage *Image = Boomerang::get()->getImage();
+    Image->reset();
     QObject *pBF = getInstanceFor(sName);
     LoaderInterface *ldr_iface = qobject_cast<LoaderInterface *>(pBF);
     if (ldr_iface == nullptr) {
@@ -34,8 +38,7 @@ QObject *BinaryFileFactory::Load(const QString &sName) {
         delete pBF;
         return nullptr;
     }
-    auto sect_iface = qobject_cast<SectionInterface *>(pBF);
-    sect_iface->getTextLimits();
+    Image->calculateTextLimits();
     return pBF;
 }
 

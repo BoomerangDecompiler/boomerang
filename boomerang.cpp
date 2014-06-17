@@ -8,6 +8,7 @@
 
 #include "boomerang.h"
 
+#include "db/BinaryImage.h"
 #include "config.h"
 #include "prog.h"
 #include "proc.h"
@@ -39,11 +40,12 @@ Boomerang *Boomerang::boomerang = nullptr;
  * - The output directory is "./output/"
  * - Main log stream is output on stderr
  */
-Boomerang::Boomerang() : progPath("./"), outputPath("./output/"), logger(nullptr),LogStream(stdout),ErrStream(stderr) {
-
+Boomerang::Boomerang() : progPath("./"), outputPath("./output/"), logger(nullptr),LogStream(stdout),ErrStream(stderr),
+    Image(nullptr) {
 }
 
 Boomerang::~Boomerang() {
+    delete Image;
 }
 
 /**
@@ -892,6 +894,18 @@ void Boomerang::miniDebugger(UserProc *p, const char *description)
                 break;
         }
     }
+}
+
+Boomerang *Boomerang::get() {
+    if (!boomerang)
+        boomerang = new Boomerang();
+    return boomerang;
+}
+IBinaryImage *Boomerang::getImage()
+{
+    if(!Image)
+        Image = new BinaryImage;
+    return Image;
 }
 
 void Boomerang::alertDecompileDebugPoint(UserProc *p, const char *description) {

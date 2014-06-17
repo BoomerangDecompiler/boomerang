@@ -37,7 +37,7 @@
   * \param       prog: Pointer to the Prog object
   *
   ******************************************************************************/
-NJMCDecoder::NJMCDecoder(Prog *prg) : prog(prg) {}
+NJMCDecoder::NJMCDecoder(Prog *prg) : prog(prg),Image(Boomerang::get()->getImage()) {}
 
 /***************************************************************************/ /**
   * \brief   Given an instruction name and a variable list of expressions representing the actual operands of

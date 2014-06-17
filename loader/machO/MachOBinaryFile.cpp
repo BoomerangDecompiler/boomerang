@@ -17,7 +17,10 @@
  */
 
 #include "MachOBinaryFile.h"
+
 #include "BinaryFile.h"
+#include "boomerang.h"
+#include "IBinaryImage.h"
 #include "config.h"
 #include "nlist.h"
 #include "macho-apple.h"
@@ -30,12 +33,25 @@
 #include <cstring>
 #include <cstdlib>
 
+namespace {
+
+struct SectionParam {
+    QString Name;
+    ADDRESS from;
+    size_t Size;
+    ADDRESS ImageAddress;
+    bool Bss,Code,Data,ReadOnly;
+};
+
+}
+
 //#define DEBUG_MACHO_LOADER
 //#define DEBUG_MACHO_LOADER_OBJC
 
 MachOBinaryFile::MachOBinaryFile() {
     machine = MACHINE_PPC;
     swap_bytes = false;
+    Image = Boomerang::get()->getImage();
 }
 
 MachOBinaryFile::~MachOBinaryFile() {
@@ -262,9 +278,6 @@ bool MachOBinaryFile::RealLoad(const QString &sName) {
         return false;
     }
 
-    m_iNumSections = segments.size();
-    m_pSections = new SectionInfo[m_iNumSections];
-
     for (unsigned i = 0; i < segments.size(); i++) {
         fseek(fp, imgoffs + BMMH(segments[i].fileoff), SEEK_SET);
         ADDRESS a = ADDRESS::g(BMMH(segments[i].vmaddr));
@@ -275,21 +288,22 @@ bool MachOBinaryFile::RealLoad(const QString &sName) {
 #ifdef DEBUG_MACHO_LOADER
         fprintf(stderr, "loaded segment %x %i in mem %i in file\n", a, sz, fsz);
 #endif
-
-        m_pSections[i].pSectionName = QString(QByteArray(segments[i].segname,17));
-        m_pSections[i].uNativeAddr = BMMH(segments[i].vmaddr);
-        m_pSections[i].uHostAddr = ADDRESS::value_type(base) + BMMH(segments[i].vmaddr) - loaded_addr.m_value;
-        m_pSections[i].uSectionSize = BMMH(segments[i].vmsize);
-        assert((m_pSections[i].uHostAddr + m_pSections[i].uSectionSize) <= ADDRESS::host_ptr(base + loaded_size));
+        QString name = QByteArray(segments[i].segname,17);
+        SectionInfo *sect = Image->createSection(name,ADDRESS::n(BMMH(segments[i].vmaddr)),
+                                          ADDRESS::n(BMMH(segments[i].vmaddr)+BMMH(segments[i].vmsize)));
+        assert(sect);
+        sect->uHostAddr = ADDRESS::value_type(base) + BMMH(segments[i].vmaddr) - loaded_addr.m_value;
+        assert((sect->uHostAddr + sect->uSectionSize) <= ADDRESS::host_ptr(base + loaded_size));
 
         unsigned long l = BMMH(segments[i].initprot);
-        m_pSections[i].bBss = false; // TODO
-        m_pSections[i].bCode = l & VM_PROT_EXECUTE ? 1 : 0;
-        m_pSections[i].bData = l & VM_PROT_READ ? 1 : 0;
-        m_pSections[i].bReadOnly = ~(l & VM_PROT_WRITE) ? 0 : 1;
+        sect->bBss = false; // TODO
+        sect->Endiannes = (machine == MACHINE_PPC) ? 1 : 0;
+        sect->bCode = l & VM_PROT_EXECUTE ? 1 : 0;
+        sect->bData = l & VM_PROT_READ ? 1 : 0;
+        sect->bReadOnly = ~(l & VM_PROT_WRITE) ? 0 : 1;
 #ifdef DEBUG_MACHO_LOADER
         fprintf(stderr, "loaded segment %x %i in mem %i in file code=%i data=%i readonly=%i\n", a, sz, fsz,
-                m_pSections[i].bCode, m_pSections[i].bData, m_pSections[i].bReadOnly);
+                sect.bCode, sect.bData, sect.bReadOnly);
 #endif
     }
 
@@ -494,7 +508,7 @@ bool MachOBinaryFile::isReadOnly(ADDRESS uEntry) {
             return (BMMH(sections[i].flags) & VM_PROT_WRITE) ? 0 : 1;
         }
     }
-    return LoaderCommon::isReadOnly(uEntry);
+    return Image->isReadOnly(uEntry);
 }
 
 // constant.. hmm, seems __cstring is writable, what's with that?
@@ -522,74 +536,6 @@ bool MachOBinaryFile::isCFStringConstant(ADDRESS uEntry) {
     return false; // BinaryFile::isCFStringConstant(uEntry)
 }
 
-// Read 2 bytes from given native address
-char MachOBinaryFile::readNative1(ADDRESS nat) {
-    PSectionInfo si = getSectionInfoByAddr(nat);
-    if (si == 0)
-        si = GetSectionInfo(0);
-    ADDRESS host = si->uHostAddr - si->uNativeAddr + nat;
-    return *(char *)host.m_value;
-}
-
-// Read 2 bytes from given native address
-int MachOBinaryFile::readNative2(ADDRESS nat) {
-    PSectionInfo si = getSectionInfoByAddr(nat);
-    if (si == 0)
-        return 0;
-    ADDRESS host = si->uHostAddr - si->uNativeAddr + nat;
-    int n = machORead2((short *)host.m_value);
-    return n;
-}
-
-// Read 4 bytes from given native address
-int MachOBinaryFile::readNative4(ADDRESS nat) {
-    PSectionInfo si = getSectionInfoByAddr(nat);
-    if (si == 0)
-        return 0;
-    ADDRESS host = si->uHostAddr - si->uNativeAddr + nat;
-    int n = machORead4((int *)host.m_value);
-    return n;
-}
-
-// Read 8 bytes from given native address
-QWord MachOBinaryFile::readNative8(ADDRESS nat) {
-    int raw[2];
-#ifdef WORDS_BIGENDIAN // This tests the host machine
-    // Source and host are different endianness
-    raw[1] = readNative4(nat);
-    raw[0] = readNative4(nat + 4);
-#else
-    // Source and host are same endianness
-    raw[0] = readNative4(nat);
-    raw[1] = readNative4(nat + 4);
-#endif
-    return *(QWord *)raw;
-}
-
-// Read 4 bytes as a float
-float MachOBinaryFile::readNativeFloat4(ADDRESS nat) {
-    int raw = readNative4(nat);
-    // Ugh! gcc says that reinterpreting from int to float is invalid!!
-    // return reinterpret_cast<float>(raw);        // Note: cast, not convert!!
-    return *(float *)&raw; // Note: cast, not convert
-}
-
-// Read 8 bytes as a float
-double MachOBinaryFile::readNativeFloat8(ADDRESS nat) {
-    int raw[2];
-#ifdef WORDS_BIGENDIAN // This tests the host machine
-    // Source and host are different endianness
-    raw[1] = readNative4(nat);
-    raw[0] = readNative4(nat + 4);
-#else
-    // Source and host are same endianness
-    raw[0] = readNative4(nat);
-    raw[1] = readNative4(nat + 4);
-#endif
-    // return reinterpret_cast<double>(*raw);    // Note: cast, not convert!!
-    return *(double *)raw;
-}
-
 const QString &MachOBinaryFile::GetDynamicProcName(ADDRESS uNative) { return dlprocs[uNative]; }
 
 LOAD_FMT MachOBinaryFile::GetFormat() const { return LOADFMT_MACHO; }
@@ -609,17 +555,4 @@ DWord MachOBinaryFile::getDelta() {
     // This should work for the header only
     //    return (DWord)base - LMMH(m_pPEHeader->Imagebase);
     return (ADDRESS::host_ptr(base) - loaded_addr).m_value;
-}
-
-// This function is called via dlopen/dlsym; it returns a Binary::getFile
-// derived concrete object. After this object is returned, the virtual function
-// call mechanism will call the rest of the code in this library
-// It needs to be C linkage so that it its name is not mangled
-extern "C" {
-#ifdef _WIN32
-__declspec(dllexport)
-#endif
-    QObject *construct() {
-    return new MachOBinaryFile;
-}
 }

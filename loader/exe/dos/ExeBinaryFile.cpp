@@ -17,10 +17,16 @@
         MVE 08/10/97
  * 21 May 02 - Mike: Slight mod for gcc 3.1
 */
-#include <cassert>
 #include "ExeBinaryFile.h"
 
-ExeBinaryFile::ExeBinaryFile() {}
+#include "boomerang.h"
+#include "IBinaryImage.h"
+
+#include <cassert>
+
+ExeBinaryFile::ExeBinaryFile() {
+    Image = Boomerang::get()->getImage();
+}
 
 bool ExeBinaryFile::RealLoad(const QString &sName) {
     FILE *fp;
@@ -31,12 +37,6 @@ bool ExeBinaryFile::RealLoad(const QString &sName) {
     m_pFileName = sName;
 
     // Always just 3 sections
-    m_pSections = new SectionInfo[3];
-    if (m_pSections == nullptr) {
-        fprintf(stderr, "Could not allocate section information\n");
-        return 0;
-    }
-    m_iNumSections = 3;
     m_pHeader = new exeHeader;
     if (m_pHeader == nullptr) {
         fprintf(stderr, "Could not allocate header memory\n");
@@ -71,10 +71,10 @@ bool ExeBinaryFile::RealLoad(const QString &sName) {
         }
 
         /* Calculate the load module size.
-                 * This is the number of pages in the file
-                 * less the length of the m_pHeader and reloc table
-                 * less the number of bytes unused on last page
-                */
+         * This is the number of pages in the file
+         * less the length of the m_pHeader and reloc table
+         * less the number of bytes unused on last page
+         */
         cb = (DWord)LH(&m_pHeader->numPages) * 512 - (DWord)LH(&m_pHeader->numParaHeader) * 16;
         if (m_pHeader->lastPageSize) {
             cb -= 512 - LH(&m_pHeader->lastPageSize);
@@ -94,9 +94,7 @@ bool ExeBinaryFile::RealLoad(const QString &sName) {
         if (m_cReloc) {
             m_pRelocTable = new DWord[m_cReloc];
             if (m_pRelocTable == nullptr) {
-                fprintf(stderr, "Could not allocate relocation table "
-                                "(%d entries)\n",
-                        m_cReloc);
+                fprintf(stderr, "Could not allocate relocation table (%d entries)\n",m_cReloc);
                 return 0;
             }
             fseek(fp, LH(&m_pHeader->relocTabOffset), SEEK_SET);
@@ -153,29 +151,19 @@ bool ExeBinaryFile::RealLoad(const QString &sName) {
     }
 
     fclose(fp);
-
-    m_pSections[0].pSectionName = "$HEADER"; // Special header section
-    //    m_pSections[0].fSectionFlags = ST_HEADER;
-    m_pSections[0].uNativeAddr = 0; // Not applicable
-    m_pSections[0].uHostAddr = ADDRESS::host_ptr(m_pHeader);
-    m_pSections[0].uSectionSize = sizeof(exeHeader);
-    m_pSections[0].uSectionEntrySize = 1; // Not applicable
-
-    m_pSections[1].pSectionName = ".text"; // The text and data section
-    m_pSections[1].bCode = true;
-    m_pSections[1].bData = true;
-    m_pSections[1].uNativeAddr = 0;
-    m_pSections[1].uHostAddr = ADDRESS::host_ptr(m_pImage);
-    m_pSections[1].uSectionSize = m_cbImage;
-    m_pSections[1].uSectionEntrySize = 1; // Not applicable
-
-    m_pSections[2].pSectionName = "$RELOC"; // Special relocation section
-    //    m_pSections[2].fSectionFlags = ST_RELOC;    // Give it a special flag
-    m_pSections[2].uNativeAddr = 0; // Not applicable
-    m_pSections[2].uHostAddr = ADDRESS::host_ptr(m_pRelocTable);
-    m_pSections[2].uSectionSize = sizeof(DWord) * m_cReloc;
-    m_pSections[2].uSectionEntrySize = sizeof(DWord);
-
+    //TODO: prevent overlapping of those 3 sections
+    SectionInfo *header = Image->createSection("$HEADER",ADDRESS::n(0x4000),ADDRESS::n(0x4000)+sizeof(exeHeader));
+    header->uHostAddr = ADDRESS::host_ptr(m_pHeader);
+    header->uSectionEntrySize = 1; // Not applicable
+    // The text and data section
+    SectionInfo *text = Image->createSection(".text",ADDRESS::n(0x10000),ADDRESS::n(0x10000)+sizeof(m_cbImage));
+    text->bCode = true;
+    text->bData = true;
+    text->uHostAddr = ADDRESS::host_ptr(m_pImage);
+    text->uSectionEntrySize = 1; // Not applicable
+    SectionInfo *reloc = Image->createSection("$RELOC",ADDRESS::n(0x4000)+sizeof(exeHeader),ADDRESS::n(0x4000)+sizeof(exeHeader)+sizeof(DWord) * m_cReloc);
+    reloc->uHostAddr = ADDRESS::host_ptr(m_pRelocTable);
+    reloc->uSectionEntrySize = sizeof(DWord);
     return 1;
 }
 
@@ -193,43 +181,6 @@ void ExeBinaryFile::UnLoad() {
 //    // No symbol table handled at present
 //    return nullptr;
 //}
-
-char ExeBinaryFile::readNative1(ADDRESS a) {
-    Q_UNUSED(a);
-    assert(!"not implemented");
-    return 0;
-}
-
-int ExeBinaryFile::readNative2(ADDRESS a) {
-    Q_UNUSED(a);
-    assert(!"not implemented");
-    return 0;
-}
-
-int ExeBinaryFile::readNative4(ADDRESS a) {
-    Q_UNUSED(a);
-    assert(!"not implemented");
-    return 0;
-}
-
-QWord ExeBinaryFile::readNative8(ADDRESS a) {
-    Q_UNUSED(a);
-    assert(!"not implemented");
-    return 0;
-}
-
-float ExeBinaryFile::readNativeFloat4(ADDRESS a) {
-    Q_UNUSED(a);
-    assert(!"not implemented");
-    return 0;
-}
-
-double ExeBinaryFile::readNativeFloat8(ADDRESS a) {
-    Q_UNUSED(a);
-    assert(!"not implemented");
-    return 0;
-}
-
 bool ExeBinaryFile::DisplayDetails(const char *fileName, FILE *f
                                    /* = stdout */) {
     Q_UNUSED(fileName);
@@ -290,17 +241,4 @@ std::list<SectionInfo *> &ExeBinaryFile::GetEntryPoints(const char *pEntry
     ret->push_back(pSect);
 #endif
     return *ret;
-}
-
-// This function is called via dlopen/dlsym; it returns a Binary::getFile
-// derived concrete object. After this object is returned, the virtual function
-// call mechanism will call the rest of the code in this library
-// It needs to be C linkage so that it its name is not mangled
-extern "C" {
-#ifdef _WIN32
-__declspec(dllexport)
-#endif
-    QObject *construct() {
-    return new ExeBinaryFile;
-}
 }

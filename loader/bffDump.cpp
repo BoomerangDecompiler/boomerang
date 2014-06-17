@@ -65,7 +65,7 @@ int main(int argc, char *argv[]) {
     // In the case of Prc files (Palm), the code section is named "code0".
 
     for (int i = 0; i < sect_iface->GetNumSections(); i++) {
-        SectionInfo *pSect = sect_iface->GetSectionInfo(i);
+        const SectionInfo *pSect = sect_iface->GetSectionInfo(i);
         if (pSect->bCode) {
             printf("  Code section:\n");
             ADDRESS a = pSect->uNativeAddr;
@@ -86,7 +86,7 @@ int main(int argc, char *argv[]) {
     // Display the data section(s) in raw hexadecimal notation
 
     for (int i = 0; i < sect_iface->GetNumSections(); i++) {
-        SectionInfo *pSect = sect_iface->GetSectionInfo(i);
+        const SectionInfo *pSect = sect_iface->GetSectionInfo(i);
         if (pSect->bData) {
             printf("  Data section: %s\n", qPrintable(pSect->pSectionName));
             ADDRESS a = pSect->uNativeAddr;

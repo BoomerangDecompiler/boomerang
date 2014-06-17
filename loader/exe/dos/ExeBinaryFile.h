@@ -61,11 +61,10 @@ typedef struct {/*      EXE file header          */
     SWord overlayNum;     /* Overlay number                */
 } exeHeader;
 
-class ExeBinaryFile : public QObject, public LoaderInterface, public BinaryData, public LoaderCommon {
+class ExeBinaryFile : public QObject, public LoaderInterface, public LoaderCommon {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID LoaderInterface_iid)
     Q_INTERFACES(LoaderInterface)
-    Q_INTERFACES(BinaryData)
     Q_INTERFACES(SectionInterface)
   public:
     ExeBinaryFile();                       // Default constructor
@@ -81,14 +80,6 @@ class ExeBinaryFile : public QObject, public LoaderInterface, public BinaryData,
     QStringList getDependencyList() override;
     ADDRESS getImageBase() override;
     size_t getImageSize() override;
-
-    // const char* SymbolByAddress(ADDRESS a) override;
-    char readNative1(ADDRESS) override;        // Read 1 bytes from native addr
-    int readNative2(ADDRESS a) override;         // Read 2 bytes from native addr
-    int readNative4(ADDRESS a) override;         // Read 4 bytes from native addr
-    QWord readNative8(ADDRESS a) override;       // Read 8 bytes from native addr
-    float readNativeFloat4(ADDRESS a) override;  // Read 4 bytes as float
-    double readNativeFloat8(ADDRESS a) override; // Read 8 bytes as float
 
     // Analysis functions
     std::list<SectionInfo *> &GetEntryPoints(const char *pEntry = "main") override;
@@ -113,6 +104,7 @@ class ExeBinaryFile : public QObject, public LoaderInterface, public BinaryData,
     int m_cReloc;         // Number of relocation entries
     DWord *m_pRelocTable; // The relocation table
     QString m_pFileName;
+    class IBinaryImage *Image;
 };
 
 #endif // ifndef __EXEBINARYFILE_H__

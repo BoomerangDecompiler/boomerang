@@ -22,14 +22,32 @@
 
 #include "DOS4GWBinaryFile.h"
 #include "BinaryFile.h"
+#include "boomerang.h"
+#include "IBinaryImage.h"
+
 #include "config.h"
 
 #include <cassert>
 #include <cstring>
 #include <cstdlib>
+namespace {
 
+struct SectionParam {
+    QString Name;
+    ADDRESS from;
+    size_t Size;
+    ADDRESS ImageAddress;
+    bool Bss,Code,Data,ReadOnly;
+};
+
+}
 extern "C" {
 int microX86Dis(void *p); // From microX86dis.c
+}
+
+DOS4GWBinaryFile::DOS4GWBinaryFile()
+{
+    Image = Boomerang::get()->getImage();
 }
 
 DOS4GWBinaryFile::~DOS4GWBinaryFile() {
@@ -73,11 +91,11 @@ ADDRESS DOS4GWBinaryFile::GetMainEntryPoint() {
     bool gotSubEbp = false;   // True if see sub ebp, ebp
     bool lastWasCall = false; // True if the last instruction was a call
 
-    SectionInfo *si = GetSectionInfoByName("seg0"); // Assume the first section is text
+    SectionInfo *si = Image->GetSectionInfoByName("seg0"); // Assume the first section is text
     if (si == nullptr)
-        si = GetSectionInfoByName(".text");
+        si = Image->GetSectionInfoByName(".text");
     if (si == nullptr)
-        si = GetSectionInfoByName("CODE");
+        si = Image->GetSectionInfoByName("CODE");
     assert(si);
     ADDRESS nativeOrigin = si->uNativeAddr;
     unsigned textSize = si->uSectionSize;
@@ -183,122 +201,42 @@ bool DOS4GWBinaryFile::RealLoad(const QString &sName) {
 
     base = (char *)malloc(m_cbImage);
 
-    m_iNumSections = LMMH(m_pLXHeader->numobjsinmodule);
-    m_pSections = new SectionInfo[m_iNumSections];
-    for (unsigned n = 0; n < LMMH(m_pLXHeader->numobjsinmodule); n++)
+    uint32_t numSections = LMMH(m_pLXHeader->numobjsinmodule);
+    std::vector<SectionParam> params;
+    for (unsigned n = 0; n < numSections; n++) {
         if (LMMH(m_pLXObjects[n].ObjectFlags) & 0x40) {
+
             printf("vsize %x reloc %x flags %x page %i npage %i\n", LMMH(m_pLXObjects[n].VirtualSize),
                    LMMH(m_pLXObjects[n].RelocBaseAddr), LMMH(m_pLXObjects[n].ObjectFlags),
                    LMMH(m_pLXObjects[n].PageTblIdx), LMMH(m_pLXObjects[n].NumPageTblEntries));
-
-            m_pSections[n].pSectionName = QString("seg%i").arg(n); // no section names in LX
-            m_pSections[n].uNativeAddr = LMMH(m_pLXObjects[n].RelocBaseAddr);
-            m_pSections[n].uHostAddr =
-                ADDRESS::host_ptr(base + (m_pSections[n].uNativeAddr - m_pSections[0].uNativeAddr).m_value);
-            m_pSections[n].uSectionSize = LMMH(m_pLXObjects[n].VirtualSize);
+            SectionParam sect;
+            sect.Name = QString("seg%i").arg(n); // no section names in LX
+            sect.from = LMMH(m_pLXObjects[n].RelocBaseAddr);
+            sect.ImageAddress = ADDRESS::host_ptr(base + (sect.from - params.front().from).m_value);
+            sect.Size = LMMH(m_pLXObjects[n].VirtualSize);
             DWord Flags = LMMH(m_pLXObjects[n].ObjectFlags);
-            m_pSections[n].bBss = 0; // TODO
-            m_pSections[n].bCode = Flags & 0x4 ? 1 : 0;
-            m_pSections[n].bData = Flags & 0x4 ? 0 : 1;
-            m_pSections[n].bReadOnly = Flags & 0x1 ? 0 : 1;
-
+            sect.Bss = 0; // TODO
+            sect.Code = Flags & 0x4 ? 1 : 0;
+            sect.Data = Flags & 0x4 ? 0 : 1;
+            sect.ReadOnly = Flags & 0x1 ? 0 : 1;
             fseek(fp,
                   m_pLXHeader->datapagesoffset + (LMMH(m_pLXObjects[n].PageTblIdx) - 1) * LMMH(m_pLXHeader->pagesize),
                   SEEK_SET);
             char *p = base + LMMH(m_pLXObjects[n].RelocBaseAddr) - LMMH(m_pLXObjects[0].RelocBaseAddr);
             fread(p, LMMH(m_pLXObjects[n].NumPageTblEntries), LMMH(m_pLXHeader->pagesize), fp);
         }
-
-// TODO: decode entry tables
-
-#if 0
-    // you probably don't want this, it's a bunch of symbols I pulled out of a disassmbly of a binary I'm working on.
-    dlprocptrs[0x101ac] = "main";
-    dlprocptrs[0x10a24] = "vfprintf";
-    dlprocptrs[0x12d2c] = "atoi";
-    dlprocptrs[0x12d74] = "malloc";
-    dlprocptrs[0x12d84] = "__LastFree";
-    dlprocptrs[0x12eaa] = "__ExpandDGROUP";
-    dlprocptrs[0x130a7] = "free";
-    dlprocptrs[0x130b7] = "_nfree";
-    dlprocptrs[0x130dc] = "start";
-    dlprocptrs[0x132fa] = "__exit_";
-    dlprocptrs[0x132fc] = "__exit_with_msg_";
-    dlprocptrs[0x1332a] = "__GETDS";
-    dlprocptrs[0x13332] = "inp";
-    dlprocptrs[0x1333d] = "outp";
-    dlprocptrs[0x13349] = "_dos_getvect";
-    dlprocptrs[0x13383] = "_dos_setvect";
-    dlprocptrs[0x133ba] = "int386";
-    dlprocptrs[0x133f9] = "sprintf";
-    dlprocptrs[0x13423] = "vsprintf";
-    dlprocptrs[0x13430] = "segread";
-    dlprocptrs[0x1345d] = "int386x";
-    dlprocptrs[0x1347e] = "creat";
-    dlprocptrs[0x13493] = "setmode";
-    dlprocptrs[0x1355f] = "close";
-    dlprocptrs[0x1384a] = "read";
-    dlprocptrs[0x13940] = "write";
-    dlprocptrs[0x13b2e] = "filelength";
-    dlprocptrs[0x13b74] = "printf";
-    dlprocptrs[0x13b94] = "__null_int23_exit";
-    dlprocptrs[0x13b95] = "exit";
-    dlprocptrs[0x13bad] = "_exit";
-    dlprocptrs[0x13bc4] = "tell";
-    dlprocptrs[0x13cba] = "rewind";
-    dlprocptrs[0x13cd3] = "fread";
-    dlprocptrs[0x13fe1] = "strcat";
-    dlprocptrs[0x1401c] = "__open_flags";
-    dlprocptrs[0x141a8] = "fopen";
-    dlprocptrs[0x141d0] = "freopen";
-    dlprocptrs[0x142c4] = "__MemAllocator";
-    dlprocptrs[0x14374] = "__MemFree";
-    dlprocptrs[0x1447f] = "__nmemneed";
-    dlprocptrs[0x14487] = "sbrk";
-    dlprocptrs[0x14524] = "__brk";
-    dlprocptrs[0x145d0] = "__CMain";
-    dlprocptrs[0x145ff] = "_init_files";
-    dlprocptrs[0x1464c] = "__InitRtns";
-    dlprocptrs[0x1468b] = "__FiniRtns";
-    dlprocptrs[0x146ca] = "__prtf";
-    dlprocptrs[0x14f58] = "__int386x_";
-    dlprocptrs[0x14fb3] = "_DoINTR_";
-    dlprocptrs[0x15330] = "__Init_Argv";
-    dlprocptrs[0x15481] = "isatty";
-    dlprocptrs[0x154a1] = "_dosret0";
-    dlprocptrs[0x154bd] = "_dsretax";
-    dlprocptrs[0x154d4] = "_EINVAL";
-    dlprocptrs[0x154e5] = "_set_errno";
-    dlprocptrs[0x15551] = "__CHK";
-    dlprocptrs[0x15561] = "__STK";
-    dlprocptrs[0x15578] = "__STKOVERFLOW";
-    dlprocptrs[0x15588] = "__GRO";
-    dlprocptrs[0x155c2] = "__fprtf";
-    dlprocptrs[0x15640] = "__ioalloc";
-    dlprocptrs[0x156c3] = "__chktty";
-    dlprocptrs[0x156f0] = "__qread";
-    dlprocptrs[0x15721] = "fgetc";
-    dlprocptrs[0x1578f] = "__filbuf";
-    dlprocptrs[0x157b9] = "__fill_buffer";
-    dlprocptrs[0x15864] = "fflush";
-    dlprocptrs[0x1591c] = "ftell";
-    dlprocptrs[0x15957] = "tolower";
-    dlprocptrs[0x159b4] = "remove";
-    dlprocptrs[0x159e9] = "utoa";
-    dlprocptrs[0x15a36] = "itoa";
-    dlprocptrs[0x15a97] = "ultoa";
-    dlprocptrs[0x15ae4] = "ltoa";
-    dlprocptrs[0x15b14] = "toupper";
-    dlprocptrs[0x15b29] = "fputc";
-    dlprocptrs[0x15bca] = "__full_io_exit";
-    dlprocptrs[0x15c0b] = "fcloseall";
-    dlprocptrs[0x15c3e] = "flushall";
-    dlprocptrs[0x15c49] = "__flushall";
-    dlprocptrs[0x15c85] = "getche";
-    dlprocptrs[0x15caa] = "__qwrite";
-    dlprocptrs[0x15d1f] = "unlink";
-    dlprocptrs[0x15d43] = "putch";
-#endif
+    }
+    for(SectionParam par : params) {
+        SectionInfo *sect = Image->createSection(par.Name,par.from,par.from+par.Size);
+        if(sect) {
+            sect->bBss = par.Bss;
+            sect->bCode = par.Code;
+            sect->bData = par.Data;
+            sect->bReadOnly = par.ReadOnly;
+            sect->uHostAddr = par.ImageAddress;
+        }
+    }
+    // TODO: decode entry tables
 
     // fixups
     fseek(fp, LMMH(m_pLXHeader->fixuppagetbloffset) + lxoff, SEEK_SET);
@@ -404,74 +342,6 @@ int DOS4GWBinaryFile::dos4gwRead4(int *pi) const {
     return n;
 }
 
-// Read 1 byte from given native address
-char DOS4GWBinaryFile::readNative1(ADDRESS nat) {
-    PSectionInfo si = getSectionInfoByAddr(nat);
-    if (si == 0)
-        si = GetSectionInfo(0);
-    char *host = (char *)(si->uHostAddr - si->uNativeAddr + nat).m_value;
-    return *host;
-}
-
-// Read 2 bytes from given native address
-int DOS4GWBinaryFile::readNative2(ADDRESS nat) {
-    PSectionInfo si = getSectionInfoByAddr(nat);
-    if (si == 0)
-        return 0;
-    ADDRESS host = si->uHostAddr - si->uNativeAddr + nat;
-    int n = dos4gwRead2((short *)host.m_value);
-    return n;
-}
-
-// Read 4 bytes from given native address
-int DOS4GWBinaryFile::readNative4(ADDRESS nat) {
-    PSectionInfo si = getSectionInfoByAddr(nat);
-    if (si == 0)
-        return 0;
-    ADDRESS host = si->uHostAddr - si->uNativeAddr + nat;
-    int n = dos4gwRead4((int *)host.m_value);
-    return n;
-}
-
-// Read 8 bytes from given native address
-QWord DOS4GWBinaryFile::readNative8(ADDRESS nat) {
-    int raw[2];
-#ifdef WORDS_BIGENDIAN // This tests the host machine
-    // Source and host are different endianness
-    raw[1] = readNative4(nat);
-    raw[0] = readNative4(nat + 4);
-#else
-    // Source and host are same endianness
-    raw[0] = readNative4(nat);
-    raw[1] = readNative4(nat + 4);
-#endif
-    return *(QWord *)raw;
-}
-
-// Read 4 bytes as a float
-float DOS4GWBinaryFile::readNativeFloat4(ADDRESS nat) {
-    int raw = readNative4(nat);
-    // Ugh! gcc says that reinterpreting from int to float is invalid!!
-    // return reinterpret_cast<float>(raw);        // Note: cast, not convert!!
-    return *(float *)&raw; // Note: cast, not convert
-}
-
-// Read 8 bytes as a float
-double DOS4GWBinaryFile::readNativeFloat8(ADDRESS nat) {
-    int raw[2];
-#ifdef WORDS_BIGENDIAN // This tests the host machine
-    // Source and host are different endianness
-    raw[1] = readNative4(nat);
-    raw[0] = readNative4(nat + 4);
-#else
-    // Source and host are same endianness
-    raw[0] = readNative4(nat);
-    raw[1] = readNative4(nat + 4);
-#endif
-    // return reinterpret_cast<double>(*raw);    // Note: cast, not convert!!
-    return *(double *)raw;
-}
-
 bool DOS4GWBinaryFile::IsDynamicLinkedProcPointer(ADDRESS uNative) {
     if (dlprocptrs.find(uNative) != dlprocptrs.end())
         return true;
@@ -501,17 +371,4 @@ DWord DOS4GWBinaryFile::getDelta() {
     // This should work for the header only
     //    return (DWord)base - LMMH(m_pPEHeader->Imagebase);
     return intptr_t(base) - m_pLXObjects[0].RelocBaseAddr;
-}
-
-// This function is called via dlopen/dlsym; it returns a Binary::getFile
-// derived concrete object. After this object is returned, the virtual function
-// call mechanism will call the rest of the code in this library
-// It needs to be C linkage so that it its name is not mangled
-extern "C" {
-#ifdef _WIN32
-__declspec(dllexport)
-#endif
-    QObject *construct() {
-    return new DOS4GWBinaryFile;
-}
 }

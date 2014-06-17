@@ -35,6 +35,7 @@
 #include "../microX86dis.c"
 #include "LoaderTest.h"
 #include "boomerang.h"
+#include "IBinaryImage.h"
 #include "log.h"
 
 #include <QLibrary>
@@ -43,6 +44,7 @@
 #include <QProcessEnvironment>
 #include <QDebug>
 #include <sstream>
+#include <IBinaryImage.h>
 
 static bool logset = false;
 static QString TEST_BASE;
@@ -77,7 +79,7 @@ void LoaderTest::testSparcLoad() {
     QVERIFY(pBF != nullptr);
     int n;
     const SectionInfo *si;
-    SectionInterface *sect_iface = qobject_cast<SectionInterface *>(pBF);
+    IBinaryImage *sect_iface = Boomerang::get()->getImage();
     QVERIFY(sect_iface!=nullptr);
 
     n = sect_iface->GetNumSections();
@@ -106,7 +108,7 @@ void LoaderTest::testPentiumLoad() {
     BinaryFileFactory bff;
     QObject *pBF = bff.Load(HELLO_PENTIUM);
     QVERIFY(pBF != nullptr);
-    SectionInterface *sect_iface = qobject_cast<SectionInterface *>(pBF);
+    IBinaryImage *sect_iface = Boomerang::get()->getImage();
     QVERIFY(sect_iface!=nullptr);
     int n;
     const SectionInfo *si;
@@ -137,7 +139,7 @@ void LoaderTest::testHppaLoad() {
     BinaryFileFactory bff;
     QObject *pBF = bff.Load(HELLO_HPPA);
     QVERIFY(pBF != nullptr);
-    SectionInterface *sect_iface = qobject_cast<SectionInterface *>(pBF);
+    IBinaryImage *sect_iface = Boomerang::get()->getImage();
     QVERIFY(sect_iface!=nullptr);
     int n;
     const SectionInfo *si;
@@ -148,8 +150,8 @@ void LoaderTest::testHppaLoad() {
         ost << si->pSectionName << "\t";
     }
     // Note: the string below needs to have embedded tabs. Edit with caution!
-    QString expected("Number of sections = 4\r\n"
-                         "$HEADER$\t$TEXT$\t$DATA$\t$BSS$\t");
+    QString expected("Number of sections = 3\r\n"
+                         "$TEXT$\t$DATA$\t$BSS$\t");
     QCOMPARE(actual,expected);
     bff.UnLoad();
 }
@@ -166,7 +168,7 @@ void LoaderTest::testPalmLoad() {
     BinaryFileFactory bff;
     QObject *pBF = bff.Load(STARTER_PALM);
     QVERIFY(pBF != nullptr);
-    SectionInterface *sect_iface = qobject_cast<SectionInterface *>(pBF);
+    IBinaryImage *sect_iface = Boomerang::get()->getImage();
     QVERIFY(sect_iface!=nullptr);
     int n;
     const SectionInfo *si;
