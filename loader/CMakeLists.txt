@@ -9,7 +9,7 @@ macro(BOOMERANG_ADD_LOADER name)
     set_target_properties(${target_name} PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/out/lib")
 endmacro()
 
-ADD_LIBRARY(BinaryFile STATIC  SymTab.cpp  BinaryFile.cpp ${PROJECT_SOURCE_DIR}/include/BinaryFile.h)
+ADD_LIBRARY(BinaryFile STATIC  SymTab.cpp ${PROJECT_SOURCE_DIR}/include/BinaryFile.h)
 qt5_use_modules(BinaryFile Core)
 
 BOOMERANG_ADD_LOADER(Elf      elf/ElfBinaryFile.cpp elf/ElfBinaryFile.h)
