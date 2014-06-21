@@ -20,13 +20,13 @@ class MainWindow;
 class MainWindow : public QMainWindow {
     Q_OBJECT
 
-  public:
+public:
     MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
     void errorLoadingFile();
 
-  public slots:
+public slots:
     void loadComplete();
     void decodeComplete();
     void decompileComplete();
@@ -58,7 +58,7 @@ class MainWindow : public QMainWindow {
     void on_decompileProcsTreeWidget_itemDoubleClicked(QTreeWidgetItem *item, int column);
     void on_actionEnable_toggled(bool b);
     void on_actionStep_triggered();
-    void on_userProcs_horizontalHeader_sectionClicked(int logicalIndex);
+    void onUserProcsHorizontalHeaderSectionClicked(int logicalIndex);
     void on_userProcs_cellDoubleClicked(int row, int column);
     void on_userProcs_cellChanged(int row, int column);
     void on_libProcs_cellDoubleClicked(int row, int column);
@@ -97,11 +97,14 @@ class MainWindow : public QMainWindow {
     void closeCurrentTab();
     void currentTabTextChanged();
 
-  protected:
+protected:
     void showInitPage();
     void saveSettings();
 
-  private:
+private slots:
+    void on_actionLoggingOptions_triggered();
+
+private:
     Ui::MainWindow *ui;
     DecompilerThread *decompilerThread;
 

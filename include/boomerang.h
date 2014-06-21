@@ -60,8 +60,6 @@ enum LogLevel {
 #define LOGTAIL Boomerang::get()->logTail()
 #define LOG_STREAM Boomerang::get()->getLogStream
 
-#define DEBUG_RANGE_ANALYSIS Boomerang::get()->debugRangeAnalysis
-
 /// Virtual class to monitor the decompilation.
 class Watcher {
   public:
@@ -242,6 +240,13 @@ class Boomerang : public QObject {
 
     // Command line flags
     bool vFlag = false;
+    bool debugSwitch = false;
+    bool debugLiveness = false;
+    bool debugTA = false;
+    bool debugDecoder = false;
+    bool debugProof = false;
+    bool debugUnused = false;
+    bool debugRangeAnalysis = false;
     bool printRtl = false;
     bool noBranchSimplify = false;
     bool noRemoveNull = false;
@@ -258,22 +263,16 @@ class Boomerang : public QObject {
     bool propOnlyToAll = false;
     bool debugGen = false;
     int maxMemDepth = 99;
-    bool debugSwitch = false;
     bool noParameterNames = false;
-    bool debugLiveness = false;
     bool stopAtDebugPoints = false;
-    bool debugTA = false;
     /// When true, attempt to decode main, all children, and all procs.
     /// \a decodeMain is set when there are no -e or -E switches given
     bool decodeMain = true;
     bool printAST = false;
     bool dumpXML = false;
     bool noRemoveReturns = false;
-    bool debugDecoder = false;
     bool decodeThruIndCall = false;
     bool noDecodeChildren = false;
-    bool debugProof = false;
-    bool debugUnused = false;
     bool loadBeforeDecompile = false;
     bool saveBeforeDecompile = false;
     bool noProve = false;
@@ -286,7 +285,6 @@ class Boomerang : public QObject {
     bool noGlobals = false;
     bool assumeABI = false;    ///< Assume ABI compliance
     bool experimental = false; ///< Activate experimental code. Caution!
-    bool debugRangeAnalysis = false;
     QTextStream LogStream;
     QTextStream ErrStream;
     std::vector<ADDRESS> entrypoints;       /// A vector which contains all know entrypoints for the Prog.
@@ -299,6 +297,7 @@ class Boomerang : public QObject {
 #define DEBUG_PROOF (Boomerang::get()->debugProof)
 #define DEBUG_UNUSED (Boomerang::get()->debugUnused)
 #define DEBUG_LIVENESS (Boomerang::get()->debugLiveness)
+#define DEBUG_RANGE_ANALYSIS Boomerang::get()->debugRangeAnalysis
 #define DFA_TYPE_ANALYSIS (Boomerang::get()->dfaTypeAnalysis)
 #define CON_TYPE_ANALYSIS (Boomerang::get()->conTypeAnalysis)
 #define ADHOC_TYPE_ANALYSIS (!Boomerang::get()->dfaTypeAnalysis && !Boomerang::get()->conTypeAnalysis)

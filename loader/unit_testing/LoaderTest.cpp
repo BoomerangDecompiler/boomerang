@@ -76,7 +76,7 @@ void LoaderTest::testSparcLoad() {
     QObject *pBF = bff.Load(HELLO_SPARC);
     QVERIFY(pBF != nullptr);
     int n;
-    SectionInfo *si;
+    const SectionInfo *si;
     SectionInterface *sect_iface = qobject_cast<SectionInterface *>(pBF);
     QVERIFY(sect_iface!=nullptr);
 
@@ -109,7 +109,7 @@ void LoaderTest::testPentiumLoad() {
     SectionInterface *sect_iface = qobject_cast<SectionInterface *>(pBF);
     QVERIFY(sect_iface!=nullptr);
     int n;
-    SectionInfo *si;
+    const SectionInfo *si;
     n = sect_iface->GetNumSections();
     ost << "Number of sections = " << n << "\r\n\t";
     si = sect_iface->GetSectionInfo(1);
@@ -140,7 +140,7 @@ void LoaderTest::testHppaLoad() {
     SectionInterface *sect_iface = qobject_cast<SectionInterface *>(pBF);
     QVERIFY(sect_iface!=nullptr);
     int n;
-    SectionInfo *si;
+    const SectionInfo *si;
     n = sect_iface->GetNumSections();
     ost << "Number of sections = " << n << "\r\n";
     for (int i = 0; i < n; i++) {
@@ -169,7 +169,7 @@ void LoaderTest::testPalmLoad() {
     SectionInterface *sect_iface = qobject_cast<SectionInterface *>(pBF);
     QVERIFY(sect_iface!=nullptr);
     int n;
-    SectionInfo *si;
+    const SectionInfo *si;
     n = sect_iface->GetNumSections();
     ost << "Number of sections = " << n << "\r\n";
     for (int i = 0; i < n; i++) {

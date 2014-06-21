@@ -37,7 +37,7 @@ Qt::HANDLE threadToCollect = 0;
 void DecompilerThread::run() {
     threadToCollect = QThread::currentThreadId();
 
-    Boomerang::get()->setOutputDirectory(".\\output\\");
+    Boomerang::get()->setOutputDirectory("output");
     // Boomerang::get()->vFlag = true;
     // Boomerang::get()->traceDecoder = true;
 
@@ -125,7 +125,7 @@ void Decompiler::load() {
     }
 
     for (int i = 1; i < fe->getSectionIface()->GetNumSections(); i++) {
-        PSectionInfo section = fe->getSectionIface()->GetSectionInfo(i);
+        const SectionInfo * section = fe->getSectionIface()->GetSectionInfo(i);
         emit newSection(section->pSectionName, section->uNativeAddr, section->uNativeAddr + section->uSectionSize);
     }
 

@@ -614,6 +614,8 @@ void Boomerang::setPluginPath(const QString &p) { BinaryFileFactory::setBasePath
  */
 bool Boomerang::setOutputDirectory(const QString &path) {
     outputPath = path;
+    if(!outputPath.endsWith(QDir::separator()))
+        outputPath+=QDir::separator();
     // Create the output directory, if needed
     if (!createDirectory(path)) {
         qWarning() << "Warning! Could not create path " << outputPath << "!\n";
