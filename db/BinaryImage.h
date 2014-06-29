@@ -19,12 +19,17 @@ struct SectionHolder {
     }
 };
 struct BinaryImage : public IBinaryImage {
+protected:
+    BinaryImage(const BinaryImage &); // prevent copy-construction
+    BinaryImage &operator=(const BinaryImage &); // prevent assignment
 public:
     /// The type for the list of functions.
     typedef boost::icl::interval_map<ADDRESS,SectionHolder> MapAddressRangeToSection;
 
-    // IBinaryImage interface
 public:
+    BinaryImage();
+    ~BinaryImage();
+    // IBinaryImage interface
     void reset() override;
 
     size_t GetNumSections() const override { return Sections.size(); }

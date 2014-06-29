@@ -49,6 +49,13 @@ void Write4(int *pi, int val,bool bigEndian) {
     }
 }
 
+BinaryImage::BinaryImage()
+{
+}
+
+BinaryImage::~BinaryImage()
+{
+}
 void BinaryImage::reset()
 {
     SectionMap.clear();
@@ -185,7 +192,7 @@ void BinaryImage::calculateTextLimits() {
 }
 
 const SectionInfo *BinaryImage::getSectionInfoByAddr(ADDRESS uEntry) const {
-    if(uEntry.isSourceAddr())
+    if(!uEntry.isSourceAddr())
         qDebug()<<"getSectionInfoByAddr with non-Source ADDRESS";
     auto iter = SectionMap.find(uEntry);
     if(iter==SectionMap.end()) {
@@ -212,7 +219,9 @@ SectionInfo *BinaryImage::GetSectionInfoByName(const QString &sName) {
 
 bool BinaryImage::isReadOnly(ADDRESS uEntry) {
     const SectionInfo * p = getSectionInfoByAddr(uEntry);
-    if(p && p->bReadOnly)
+    if(!p)
+        return false;
+    if(p->bReadOnly)
         return true;
     QVariant v = p->attributeInRange("ReadOnly",uEntry,uEntry+1);
     return !v.isNull();

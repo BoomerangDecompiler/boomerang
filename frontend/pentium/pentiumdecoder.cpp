@@ -29304,6 +29304,7 @@ DecodeResult &PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta) {
             nextPC = MATCH_p + 4;
             stmts = instantiate(pc, "MOVZX.Gv.Ebow", DIS_R16, DIS_EADDR8);
         }
+        goto MATCH_finished_c;
     MATCH_label_c154:
         (void)0; /*placeholder for label*/
         {
@@ -29312,6 +29313,7 @@ DecodeResult &PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta) {
             nextPC = MATCH_p + 5;
             stmts = instantiate(pc, "MOVZX.Gv.Ebow", DIS_R16, DIS_EADDR8);
         }
+        goto MATCH_finished_c;
     MATCH_label_c155:
         (void)0; /*placeholder for label*/
         {
