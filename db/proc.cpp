@@ -1010,9 +1010,9 @@ void UserProc::insertStatementAfter(Instruction *s, Instruction *a) {
     assert(false); // Should have found this statement in this BB
 }
 
-/* Cycle detection logic:
+/** Cycle detection logic:
  * *********************
- * cycleGrp is an initially nullptr pointer to a set of procedures, representing the procedures involved in the current
+ * cycleGrp is an initially null pointer to a set of procedures, representing the procedures involved in the current
  * recursion group, if any. These procedures have to be analysed together as a group, after individual pre-group
  * analysis.
  * child is a set of procedures, cleared at the top of decompile(), representing the cycles associated with the
@@ -1052,8 +1052,7 @@ void UserProc::insertStatementAfter(Instruction *s, Instruction *a) {
         else
                 // Is involved in recursion
                 find first element f in path that is also in cycleGrp
-                if (f == this)                        // The big test: have we got the complete strongly connected
- component?
+                if (f == this)          // The big test: have we got the complete strongly connected component?
                         recursionGroupAnalysis()        // Yes, we have
                         child = new ProcSet            // Don't add these processed cycles to the parent
         remove last element (= this) from path
@@ -1068,7 +1067,7 @@ void UserProc::insertStatementAfter(Instruction *s, Instruction *a) {
   * \param indent is the indentation level; pass 0 at the top level
   *
   ******************************************************************************/
-ProcSet *UserProc::decompile(ProcList *path, int &indent) {
+std::shared_ptr<ProcSet> UserProc::decompile(ProcList *path, int &indent) {
     Boomerang::get()->alertConsidering(path->empty() ? nullptr : path->back(), this);
     alignStream(LOG_STREAM(),++indent) << (status >= PROC_VISITED ? "re" : "") << "considering "
               << getName() << "\n";
@@ -1085,7 +1084,7 @@ ProcSet *UserProc::decompile(ProcList *path, int &indent) {
 
     if (status < PROC_VISITED)
         setStatus(PROC_VISITED); // We have at least visited this proc "on the way down"
-    ProcSet *child = new ProcSet;
+    std::shared_ptr<ProcSet> child = std::make_shared<ProcSet>();
     path->push_back(this); // Append this proc to path
 
     /*    *    *    *    *    *    *    *    *    *    *    *
@@ -1153,12 +1152,14 @@ ProcSet *UserProc::decompile(ProcList *path, int &indent) {
                     }
                 }
                 // point cycleGrp for each element of child to child, unioning in each element's cycleGrp
-                ProcSet::iterator cc;
-                for (cc = child->begin(); cc != child->end(); ++cc) {
-                    ProcSet *&cg = (*cc)->cycleGrp;
-                    if (cg)
-                        child->insert(cg->begin(), cg->end());
-                    cg = child;
+				ProcSet entries;
+                for (auto cc : *child) {
+                    if (cc->cycleGrp)
+                        entries.insert(cc->cycleGrp->begin(), cc->cycleGrp->end());
+                }
+				child->insert(entries.begin(),entries.end());
+                for (UserProc * proc : *child) {
+                    proc->cycleGrp = child;
                 }
                 setStatus(PROC_INCYCLE);
             } else {
@@ -1166,11 +1167,11 @@ ProcSet *UserProc::decompile(ProcList *path, int &indent) {
                 LOG_VERBOSE(1) << "visiting on the way down child " << c->getName() << " from " << getName()
                                << "\n";
                 c->promoteSignature();
-                ProcSet *tmp = c->decompile(path, indent);
+                std::shared_ptr<ProcSet> tmp = c->decompile(path, indent);
                 child->insert(tmp->begin(), tmp->end());
                 // Child has at least done middleDecompile(), possibly more
                 call->setCalleeReturn(c->getTheReturnStatement());
-                if (tmp->size() > 0) {
+                if (!tmp->empty()) {
                     setStatus(PROC_INCYCLE);
                 }
             }
@@ -1186,7 +1187,7 @@ ProcSet *UserProc::decompile(ProcList *path, int &indent) {
         child = middleDecompile(path, indent);
         // If there is a switch statement, middleDecompile could contribute some cycles. If so, we need to test for
         // the recursion logic again
-        if (child->size() != 0)
+        if (!child->empty())
             // We've just come back out of decompile(), so we've lost the current proc from the path.
             path->push_back(this);
     }
@@ -1207,8 +1208,8 @@ ProcSet *UserProc::decompile(ProcList *path, int &indent) {
             recursionGroupAnalysis(path, indent); // Includes remUnusedStmtEtc on all procs in cycleGrp
             setStatus(PROC_FINAL);
             Boomerang::get()->alertEndDecompile(this);
-            delete child;
-            child = new ProcSet;
+            child->clear(); //delete child;
+            child = std::make_shared<ProcSet>();
         }
     }
 
@@ -1334,7 +1335,7 @@ void UserProc::earlyDecompile() {
   * \returns the cycle set from the recursive call to decompile()
   *
   ******************************************************************************/
-ProcSet *UserProc::middleDecompile(ProcList *path, int indent) {
+std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path, int indent) {
 
     Boomerang::get()->alertDecompileDebugPoint(this, "before middle");
 
@@ -1566,7 +1567,7 @@ ProcSet *UserProc::middleDecompile(ProcList *path, int indent) {
         setStatus(PROC_VISITED);                // Back to only visited progress
         path->erase(--path->end());             // Remove self from path
         --indent;                               // Because this is not recursion
-        ProcSet *ret = decompile(path, indent); // Restart decompiling this proc
+        std::shared_ptr<ProcSet> ret = decompile(path, indent); // Restart decompiling this proc
         ++indent;                               // Restore indent
         path->push_back(this);                  // Restore self to path
         // It is important to keep the result of this call for the recursion analysis
@@ -1591,7 +1592,7 @@ ProcSet *UserProc::middleDecompile(ProcList *path, int indent) {
 
     Boomerang::get()->alertDecompileDebugPoint(this, "after middle");
 
-    return new ProcSet;
+    return std::make_shared<ProcSet>();
 }
 
 /*    *    *    *    *    *    *    *    *    *    *    *    *    *
@@ -1612,8 +1613,7 @@ void UserProc::remUnusedStmtEtc() {
     Boomerang::get()->alertDecompiling(this);
     Boomerang::get()->alertDecompileDebugPoint(this, "before final");
 
-    if (VERBOSE)
-        LOG << "--- remove unused statements for " << getName() << " ---\n";
+    LOG_VERBOSE(1) << "--- remove unused statements for " << getName() << " ---\n";
     // A temporary hack to remove %CF = %CF{7} when 7 isn't a SUBFLAGS
     //    if (theReturnStatement)
     //        theReturnStatement->specialProcessing();
@@ -1783,7 +1783,7 @@ void UserProc::recursionGroupAnalysis(ProcList *path, int indent) {
         for each proc in the group
                 initialise
                 earlyDecompile
-        for eac proc in the group
+        for each proc in the group
                 middleDecompile
         mark all calls involved in cs as non-childless
         for each proc in cs
@@ -1840,8 +1840,7 @@ void UserProc::recursionGroupAnalysis(ProcList *path, int indent) {
             (*p)->remUnusedStmtEtc(); // Also does final parameters and arguments at present
         }
     }
-    if (VERBOSE)
-        LOG << "=== end recursion group analysis ===\n";
+    LOG_VERBOSE(1) << "=== end recursion group analysis ===\n";
     Boomerang::get()->alertEndDecompile(this);
 }
 
@@ -4677,7 +4676,7 @@ void UserProc::fixCallAndPhiRefs() {
   * (each child has had middleDecompile called on it now).
   *
   ******************************************************************************/
-void UserProc::markAsNonChildless(ProcSet *cs) {
+void UserProc::markAsNonChildless(const std::shared_ptr<ProcSet> &cs) {
     BasicBlock::rtlrit rrit;
     StatementList::reverse_iterator srit;
 
@@ -5300,8 +5299,8 @@ void UserProc::typeAnalysis() {
     // Data flow based type analysis
     // Want to be after all propagation, but before converting expressions to locals etc
     if (DFA_TYPE_ANALYSIS) {
-        if (VERBOSE || DEBUG_TA)
-            LOG << "--- start data flow based type analysis for " << getName() << " ---\n";
+        if (DEBUG_TA)
+            LOG_VERBOSE(1) << "--- start data flow based type analysis for " << getName() << " ---\n";
 
         bool first = true;
         do {
@@ -5319,8 +5318,8 @@ void UserProc::typeAnalysis() {
 
         } while (ellipsisProcessing());
         simplify(); // In case there are new struct members
-        if (VERBOSE || DEBUG_TA)
-            LOG << "=== end type analysis for " << getName() << " ===\n";
+        if (DEBUG_TA)
+            LOG_VERBOSE(1) << "=== end type analysis for " << getName() << " ===\n";
     } else if (CON_TYPE_ANALYSIS) {
         // FIXME: if we want to do comparison
     }

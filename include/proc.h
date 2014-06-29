@@ -247,7 +247,7 @@ private:
      */
     DataFlow df;
     int stmtNumber;
-    ProcSet *cycleGrp;
+    std::shared_ptr<ProcSet> cycleGrp;
 
 public:
     UserProc(Module *mod, const QString &name, ADDRESS address);
@@ -291,10 +291,10 @@ public:
     void dumpLocals();
     //! simplify the statements in this proc
     void simplify() { cfg->simplify(); }
-    ProcSet *decompile(ProcList *path, int &indent);
+    std::shared_ptr<ProcSet> decompile(ProcList *path, int &indent);
     void initialiseDecompile();
     void earlyDecompile();
-    ProcSet *middleDecompile(ProcList *path, int indent);
+    std::shared_ptr<ProcSet> middleDecompile(ProcList *path, int indent);
     void recursionGroupAnalysis(ProcList *path, int indent);
 
     void typeAnalysis();
@@ -303,7 +303,7 @@ public:
     // void        findSubCycles(CycleList& path, CycleSet& cs, CycleSetSet& sset);
 
     bool inductivePreservation(UserProc *);
-    void markAsNonChildless(ProcSet *cs);
+    void markAsNonChildless(const std::shared_ptr<ProcSet> &cs);
 
     void updateCalls();
     void branchAnalysis();
@@ -420,7 +420,6 @@ public:
     StatementList &getParameters() { return parameters; }
     StatementList &getModifieds() { return theReturnStatement->getModifieds(); }
 
-public:
     Exp *getSymbolExp(Exp *le, SharedType ty = nullptr, bool lastPass = false);
     Exp *newLocal(SharedType ty, Exp &e, char *nam = nullptr);
     void addLocal(SharedType ty, const QString &nam, Exp *e);
