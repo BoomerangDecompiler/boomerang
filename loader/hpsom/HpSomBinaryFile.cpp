@@ -17,7 +17,9 @@
 #include "HpSomBinaryFile.h"
 #include "boomerang.h"
 #include "IBinaryImage.h"
+#include "IBinarySymbols.h"
 
+#include <QString>
 #include <cstddef>
 #include <cassert>
 #include <cstring>
@@ -25,11 +27,12 @@
 
 // Macro to convert a pointer to a Big Endian integer into a host integer
 #define UC(p) ((unsigned char *)p)
-#define UINT4(p) ((UC(p)[0] << 24) + (UC(p)[1] << 16) + (UC(p)[2] << 8) + UC(p)[3])
-#define UINT4ADDR(p) (ADDRESS::g((UC(p)[0] << 24) + (UC(p)[1] << 16) + (UC(p)[2] << 8) + UC(p)[3]))
+#define UINT4(p) ((UC(p)[0] << 24) | (UC(p)[1] << 16) | (UC(p)[2] << 8) | UC(p)[3])
+#define UINT4ADDR(p) (ADDRESS::n((UC(p)[0] << 24) + (UC(p)[1] << 16) + (UC(p)[2] << 8) + UC(p)[3]))
 
 HpSomBinaryFile::HpSomBinaryFile() : m_pImage(0) {
     Image = Boomerang::get()->getImage();
+    Symbols = Boomerang::get()->getSymbols();
 }
 
 HpSomBinaryFile::~HpSomBinaryFile() {
@@ -135,31 +138,38 @@ void HpSomBinaryFile::processSymbols()
         // cout << "Symbol " << pNames+SYMBOLNM(u) << ", type " << SYMBOLTY(u) << ", value " << hex << SYMBOLVAL(u)
         // << ", aux " << SYMBOLAUX(u) << endl;
         unsigned symbol_type = SYMBOLTY(u);
+        ADDRESS value = ADDRESS::n(SYMBOLVAL(u));
+        char *pSymName = pNames + SYMBOLNM(u);
+
         // Only interested in type 3 (code), 8 (stub), and 12 (millicode)
-        if ((symbol_type != 3) && (symbol_type != 8) && (symbol_type != 12))
+        if ((symbol_type != 3) && (symbol_type != 8) && (symbol_type != 12)) {
+            // 2 - initialized data
+            // 4 - primary entry point
+            // 5 - secondary entrypoint
+            // 6- any antry code
+            // 7 - uninitialized data blocks
+            // 9 - MODULE name of source module
+            if (Symbols->find(value))
+                continue;
+            if (!Symbols->find(pSymName)) {
+                Symbols->create(value,pSymName);
+            }
             continue;
+        }
         //          if ((symbol_type == 10) || (symbol_type == 11))
         // These are extension entries; not interested
         //              continue;
-        char *pSymName = pNames + SYMBOLNM(u);
         // Ignore symbols starting with one $; for example, there are many
         // $CODE$ (but we want to see helper functions like $$remU)
         if ((pSymName[0] == '$') && (pSymName[1] != '$'))
             continue;
-        //          if ((symbol_type == 6) && (strcmp("main", pSymName) == 0))
-        // Entry point for main. Make sure to ignore this entry, else it
-        // ends up being the main entry point
-        //              continue;
-        ADDRESS value = ADDRESS::g(SYMBOLVAL(u));
         //          if ((symbol_type >= 3) && (symbol_type <= 8))
         // Addresses of code; remove the privilege bits
         value.m_value &= ~3;
-        // if (strcmp("main", pNames+SYMBOLNM(u)) == 0) {    // HACK!
-        //  cout << "main at " << hex << value << " has type " << SYMBOLTY(u) << endl;}
         // HP's symbol table is crazy. It seems that imports like printf have entries of type 3 with the wrong
         // value. So we have to check whether the symbol has already been entered (assume first one is correct).
-        if (symbols.find(pSymName) == NO_ADDRESS)
-            symbols.Add(value, pSymName);
+        if ((Symbols->find(value)==nullptr) && Symbols->find(pSymName)==nullptr)
+            Symbols->create(value,pSymName);
         // cout << "Symbol " << pNames+SYMBOLNM(u) << ", type " << SYMBOLTY(u) << ", value " << hex << value << ",
         // aux " << SYMBOLAUX(u) << endl;  // HACK!
     }
@@ -333,12 +343,12 @@ bool HpSomBinaryFile::RealLoad(const QString &sName) {
     unsigned u = (unsigned)numDLT, v = 0;
     plt_record *PLTs = (plt_record *)(pltStart + deltaData).m_value;
     for (; u < numImports; u++, v++) {
-        // cout << "Importing " << (pDlStrings+import_list[u].name) << endl;
-        symbols.Add(PLTs[v].value, pDlStrings + UINT4(&import_list[u].name));
+        //TODO: this is a mess, needs someone who actually knows how the SOM's PLT contents are structured
+        continue;
+        //TODO: add some type info to the imported symbols
         // Add it to the set of imports; needed by IsDynamicLinkedProc()
-        imports.insert(PLTs[v].value);
-        // cout << "Added import sym " << (import_list[u].name + pDlStrings) << ", value " << hex << PLTs[v].value <<
-        // endl;
+        Symbols->create(ADDRESS::n(UINT4(&PLTs[v].value)),pDlStrings + UINT4(&import_list[u].name))
+                .setAttr("Imported",true).setAttr("Function",true);
     }
     // Work through the exports, and find main. This isn't main itself,
     // but in fact a call to main.
@@ -347,7 +357,7 @@ bool HpSomBinaryFile::RealLoad(const QString &sName) {
         // UINT4(&export_list[u].value) << endl;
         if (strncmp(pDlStrings + UINT4(&export_list[u].name), "main", 4) == 0) {
             // Enter the symbol "_callmain" for this address
-            symbols.Add(UINT4ADDR(&export_list[u].value), const_cast<char *>("_callmain"));
+            Symbols->create(UINT4ADDR(&export_list[u].value),"_callmain");
             // Found call to main. Extract the offset. See assemble_17
             // in pa-risc 1.1 manual page 5-9
             // +--------+--------+--------+----+------------+-+-+
@@ -365,13 +375,14 @@ bool HpSomBinaryFile::RealLoad(const QString &sName) {
                           ((bincall & 4) << 8) |          // w2@10
                           ((bincall & 0x1ff8) >> 3));     // w2@0..9
             // Address of main is st + 8 + offset << 2
-            symbols.Add(UINT4ADDR(&export_list[u].value) + 8 + (offset << 2), const_cast<char *>("main"));
+            Symbols->create(UINT4ADDR(&export_list[u].value) + 8 + (offset << 2),"main")
+                    .setAttr("Export",true);
             break;
         }
     }
 
     processSymbols();
-
+    Symbols->find("main")->setAttr("EntryPoint",true);
     return true;
 }
 
@@ -387,23 +398,6 @@ ADDRESS HpSomBinaryFile::GetEntryPoint() {
     return ADDRESS::g(0L);
 }
 
-// This is provided for completeness only...
-std::list<SectionInfo *> &HpSomBinaryFile::GetEntryPoints(const char *pEntry
-                                                          /* = "main" */) {
-    Q_UNUSED(pEntry);
-    std::list<SectionInfo *> *ret = new std::list<SectionInfo *>;
-    SectionInfo *pSect = Image->GetSectionInfoByName("code1");
-    if (pSect == 0)
-        return *ret; // Failed
-    ret->push_back(pSect);
-    return *ret;
-}
-
-bool HpSomBinaryFile::Open(const char *sName) {
-    Q_UNUSED(sName);
-    // Not implemented yet
-    return false;
-}
 void HpSomBinaryFile::Close() {
     // Not implemented yet
     return;
@@ -429,24 +423,6 @@ ADDRESS HpSomBinaryFile::getImageBase() { return ADDRESS::g(0L); /* FIXME */ }
 
 size_t HpSomBinaryFile::getImageSize() { return UINT4(m_pImage + 0x24); }
 
-// We at least need to be able to name the main function and system calls
-QString HpSomBinaryFile::SymbolByAddress(ADDRESS a) { return symbols.find(a); }
-
-ADDRESS HpSomBinaryFile::GetAddressByName(const QString &pName, bool bNoTypeOK /* = false */) {
-    Q_UNUSED(bNoTypeOK);
-    // For now, we ignore the symbol table and do a linear search of our
-    // SymTab table
-    ADDRESS res = symbols.find(pName);
-    if (res == NO_ADDRESS)
-        return ADDRESS::g(0L); // Till the failure return value is fixed
-    return res;
-}
-
-bool HpSomBinaryFile::IsDynamicLinkedProc(ADDRESS uNative) {
-    // Look up the address in the set of imports
-    return imports.find(uNative) != imports.end();
-}
-
 std::pair<ADDRESS, int> HpSomBinaryFile::getSubspaceInfo(const char *ssname) {
     std::pair<ADDRESS, int> ret(ADDRESS::g(0L), 0);
     // Get the start and length of the subspace with the given name
@@ -454,7 +430,7 @@ std::pair<ADDRESS, int> HpSomBinaryFile::getSubspaceInfo(const char *ssname) {
     unsigned numSubSpaces = UINT4(m_pImage + 0x38);
     const char *spaceStrings = (const char *)(m_pImage + UINT4(m_pImage + 0x44));
     for (unsigned u = 0; u < numSubSpaces; u++) {
-        char *thisName = (char *)(spaceStrings + UINT4(&subSpaces[u].name));
+        const char *thisName = (const char *)(spaceStrings + UINT4(&subSpaces[u].name));
         unsigned thisNameSize = UINT4(spaceStrings + UINT4(&subSpaces[u].name) - 4);
         // cout << "Subspace " << thisName << " starts " << hex << subSpaces[u].subspace_start << " length " <<
         // subSpaces[u].subspace_length << endl;
@@ -522,49 +498,7 @@ std::map<ADDRESS, const char *> *HpSomBinaryFile::GetDynamicGlobalMap() {
     }
     return ret;
 }
-
 ADDRESS HpSomBinaryFile::GetMainEntryPoint() {
-    return symbols.find("main");
-#if 0
-    if (mainExport == 0) {
-        // This means we didn't find an export table entry for main
-        // didn't load the file
-        fprintf(stderr, "Did not find export entry for `main'\n");
-        return 0;
-    }
-    // Expect a bl <main>, rp instruction
-    unsigned instr = UINT4(m_pSections[1].uHostAddr + mainExport -
-                     m_pSections[1].uNativeAddr);
-    int disp;
-    // Standard form: sub-opcode 0, target register = 2
-    if ((instr >> 26 == 0x3A) && (((instr >> 21) & 0x1F) == 2) &&
-            (((instr >> 13) & 0x7) == 0)) {
-        disp = (instr & 1) << 16 |          // w
-                              ((instr >> 16) & 0x1F) << 11 |  // w1
-                              ((instr >> 2) & 1) << 10 |      // w2{10}
-                              ((instr >> 3) & 0x3FF);         // w2{0..9}
-        // Sign extend
-        disp <<= 15; disp >>= 15;
-    }
-    // Alternate (v2 only?) form: sub-opcode 5, t field becomes w3
-    // (extra 5 bits of address range)
-    else if ((instr >> 26 == 0x3A) && (((instr >> 13) & 0x7) == 5)) {
-        disp = (instr & 1) << 21 |          // w
-                              ((instr >> 21) & 0x1F) << 16 |  // w3
-                              ((instr >> 16) & 0x1F) << 11 |  // w1
-                              ((instr >> 2) & 1) << 10 |      // w2{10}
-                              ((instr >> 3) & 0x3FF);         // w2{0..9}
-        // Sign extend
-        disp <<= 10; disp >>= 10;
-    }
-    else {
-        fprintf(stderr, "Error: expected BL instruction at %X, found %X\n",
-                mainExport, instr);
-        return 0;
-    }
-    // Return the effective destination address
-    return mainExport + (disp << 2) + 8;
-#endif
+    auto sym = Symbols->find("main");
+    return sym ? sym->getLocation() : NO_ADDRESS;
 }
-
-LoaderInterface::tMapAddrToString &HpSomBinaryFile::getSymbols() { return symbols.getAll(); }

@@ -42,6 +42,7 @@ struct DecodeResult;
 class Signature;
 class Instruction;
 class CallStatement;
+class SymTab;
 
 // Control flow types
 enum INSTTYPE {
@@ -67,7 +68,6 @@ protected:
     // Loader interfaces
     /***************************************/
     LoaderInterface *ldrIface;
-    SymbolTableInterface *symIface;
     QObject *pLoader; // The binary file
     /***************************************/
 
@@ -90,7 +90,7 @@ public:
     static FrontEnd *instantiate(QObject *pLoader, Prog *prog, BinaryFileFactory *pbff);
     static FrontEnd *Load(const QString &fname, Prog *prog); //!< Load a binary
     //! Add a symbol to the loader
-    void AddSymbol(ADDRESS addr, const QString &nam) { symIface->AddSymbol(addr, nam); }
+    void AddSymbol(ADDRESS addr, const QString &nam);
     // Add a "hint" that an instruction at the given address references a named global
     void addRefHint(ADDRESS addr, const QString &nam) { refHints[addr] = nam; }
     virtual ~FrontEnd(); //!<Destructor. Virtual to mute a warning
@@ -199,6 +199,9 @@ public:
     void preprocessProcGoto(std::list<Instruction *>::iterator ss, ADDRESS dest, const std::list<Instruction *> &sl,
                             RTL *pRtl);
     void checkEntryPoint(std::vector<ADDRESS> &entrypoints, ADDRESS addr, const char *type);
+private:
+    bool refersToImportedFunction(Exp *pDest);
+    SymTab * BinarySymbols;
 }; // class FrontEnd
 
 /***************************************************************************/ /**

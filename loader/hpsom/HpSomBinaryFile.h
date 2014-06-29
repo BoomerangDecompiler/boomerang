@@ -17,7 +17,7 @@
   ******************************************************************************/
 
 #include "BinaryFile.h"
-#include "../SymTab.h"
+#include "IBinarySymbols.h"
 #include <set>
 
 struct import_entry {
@@ -63,8 +63,8 @@ struct subspace_dictionary_record {
 };
 
 struct plt_record {
-    ADDRESS value;    // Address in the library
-    ADDRESS r19value; // r19 value needed
+    uint32_t value;    // Address in the library
+    uint32_t r19value; // r19 value needed
 };
 
 struct symElem {
@@ -81,35 +81,27 @@ public:
     HpSomBinaryFile(); // Constructor
     virtual ~HpSomBinaryFile();
     void UnLoad() override;                // Unload the image
-    bool Open(const char *sName) override; // Open the file for r/w; pv
     void Close() override;                 // Close file opened with Open()
     bool PostLoad(void *handle) override;  // For archive files only
-    virtual LOAD_FMT GetFormat() const;    // Get format i.e. LOADFMT_PALM
-    virtual MACHINE getMachine() const;    // Get format i.e. MACHINE_HPRISC
+    LOAD_FMT GetFormat() const override;   // Get format i.e. LOADFMT_PALM
+    MACHINE getMachine() const override;   // Get format i.e. MACHINE_HPRISC
     QString getFilename() const override { return m_pFileName; }
 
-    virtual bool isLibrary() const;
-    virtual QStringList getDependencyList();
-    virtual ADDRESS getImageBase();
-    virtual size_t getImageSize();
-
-    // Get a symbol given an address
-    virtual QString SymbolByAddress(ADDRESS dwAddr);
-    // Lookup the name, return the address
-    virtual ADDRESS GetAddressByName(const QString &pName, bool bNoTypeOK = false);
-    // Return true if the address matches the convention for A-line system calls
-    bool IsDynamicLinkedProc(ADDRESS uNative);
+    bool isLibrary() const;
+    QStringList getDependencyList() override;
+    ADDRESS getImageBase() override;
+    size_t getImageSize() override;
 
     // Specific to BinaryFile objects that implement a "global pointer"
     // Gets a pair of unsigned integers representing the address of %agp (first)
     // and the value for GLOBALOFFSET (unused for pa-risc)
-    virtual std::pair<ADDRESS, unsigned> GetGlobalPointerInfo();
+    std::pair<ADDRESS, unsigned> GetGlobalPointerInfo();
 
     // Get a map from ADDRESS to const char*. This map contains the native
     // addresses and symbolic names of global data items (if any) which are
     // shared with dynamically linked libraries. Example: __iob (basis for
     // stdout).The ADDRESS is the native address of a pointer to the real dynamic data object.
-    virtual std::map<ADDRESS, const char *> *GetDynamicGlobalMap();
+    std::map<ADDRESS, const char *> *GetDynamicGlobalMap();
 
     //
     //  --  --  --  --  --  --  --  --  --  --  --
@@ -119,9 +111,8 @@ public:
     // virtual bool    DisplayDetails(const char* fileName, FILE* f = stdout);
 
     // Analysis functions
-    virtual std::list<SectionInfo *> &GetEntryPoints(const char *pEntry = "main");
-    virtual ADDRESS GetMainEntryPoint();
-    virtual ADDRESS GetEntryPoint();
+    ADDRESS GetMainEntryPoint() override;
+    ADDRESS GetEntryPoint() override;
 
     //        bool        IsDynamicLinkedProc(ADDRESS wNative);
     //        ADDRESS     NativeToHostAddress(ADDRESS uNative);
@@ -134,14 +125,13 @@ private:
     std::pair<ADDRESS, int> getSubspaceInfo(const char *ssname);
 
     unsigned char *m_pImage; // Points to loaded image
-    SymTab symbols;          // Symbol table object
-    //        ADDRESS        mainExport;                    // Export entry for "main"
+    IBinarySymbolTable * Symbols;          // Symbol table object
     std::set<ADDRESS> imports; // Set of imported proc addr's
     QString m_pFileName;
     class IBinaryImage *Image;
     // LoaderInterface interface
 public:
-    tMapAddrToString &getSymbols();
+
     void processSymbols();
 };
 

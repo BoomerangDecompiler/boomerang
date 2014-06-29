@@ -40,6 +40,7 @@
 #include "managed.h"
 #include "log.h"
 #include "BinaryImage.h"
+#include "db/SymTab.h"
 
 #include <QtCore/QFileInfo>
 #include <QtCore/QDebug>
@@ -71,6 +72,7 @@ namespace dbghelp {
 Prog::Prog() : pLoaderPlugin(nullptr), DefaultFrontend(nullptr), m_iNumberedProc(1) {
     m_rootCluster = getOrInsertModule("prog");
     Image = Boomerang::get()->getImage();
+    BinarySymbols = (SymTab *)Boomerang::get()->getSymbols();
     // Default constructor
 }
 /// Create or retrieve existing module
@@ -91,7 +93,6 @@ Module *Prog::getOrInsertModule(const QString &name,const ModuleFactory &fact,Fr
 void Prog::setFrontEnd(FrontEnd *_pFE) {
     pLoaderPlugin = _pFE->getBinaryFile();
     pLoaderIface = qobject_cast<LoaderInterface *>(pLoaderPlugin);
-    pSymbols = qobject_cast<SymbolTableInterface *>(pLoaderPlugin);
     DefaultFrontend = _pFE;
     for(Module *m : ModuleList)
         delete m;
@@ -337,11 +338,11 @@ bool Prog::moduleUsed(Module *c) {
 
 Module *Prog::getDefaultModule(const QString &name) {
     QString cfname;
-    if (pSymbols)
-        cfname = pSymbols->getFilenameSymbolFor(qPrintable(name));
-    if (cfname.isEmpty())
-        return m_rootCluster;
-    if (!cfname.endsWith(".c"))
+    const IBinarySymbol *bsym = BinarySymbols->find(name);
+    if (bsym)
+        cfname = bsym->belongsToSourceFile();
+
+    if (cfname.isEmpty() || !cfname.endsWith(".c"))
         return m_rootCluster;
     LOG << "got filename " << cfname << " for " << name << "\n";
     cfname.chop(2); // remove .c
@@ -432,9 +433,13 @@ Function *Prog::setNewProc(ADDRESS uAddr) {
     ADDRESS other = pLoaderIface->IsJumpToAnotherAddr(uAddr);
     if (other != NO_ADDRESS)
         uAddr = other;
-    SymbolTableInterface *sym_iface = getBinarySymbolTable();
-    QString pName = sym_iface ? sym_iface->symbolByAddress(uAddr) : QString("");
-    bool bLib = pLoaderIface->IsDynamicLinkedProc(uAddr) | pLoaderIface->IsStaticLinkedLibProc(uAddr);
+    QString pName;
+    const IBinarySymbol *sym = BinarySymbols->find(uAddr);
+    bool bLib = false;
+    if(sym) {
+        bLib = sym->isImportedFunction() || sym->isStaticFunction();
+        pName = sym->getName();
+    }
     if (pName.isEmpty()) {
         // No name. Give it a numbered name
         pName = QString("proc%1").arg(m_iNumberedProc++);
@@ -680,10 +685,7 @@ QString Prog::getGlobalName(ADDRESS uaddr) {
         if (glob->addressWithinGlobal(uaddr))
             return glob->getName();
     }
-    SymbolTableInterface *sym_iface = getBinarySymbolTable();
-    if (sym_iface)
-        return sym_iface->symbolByAddress(uaddr);
-    return "";
+    return symbolByAddress(uaddr);
 }
 //! Dump the globals to stderr for debugging
 void Prog::dumpGlobals() {
@@ -696,8 +698,8 @@ ADDRESS Prog::getGlobalAddr(const QString &nam) {
     Global *glob = getGlobal(nam);
     if (glob)
         return glob->getAddress();
-    SymbolTableInterface *iface = getBinarySymbolTable();
-    return iface ? iface->GetAddressByName(qPrintable(nam)) : NO_ADDRESS;
+    auto symbol = BinarySymbols->find(nam);
+    return symbol ? symbol->getLocation() : NO_ADDRESS;
 }
 
 Global *Prog::getGlobal(const QString &nam) {
@@ -731,9 +733,9 @@ bool Prog::globalUsed(ADDRESS uaddr, SharedType knownType) {
             SharedType baseType = ty->asArray()->getBaseType();
             int baseSize = 0;
             if (baseType)
-                baseSize = baseType->getSize() / 8; // TODO: use baseType->getBytes()
-            SymbolTableInterface *iface = getBinarySymbolTable();
-            int sz = iface ? iface->GetSizeByName(qPrintable(nam)) : 0; // TODO: fix the case of missing symbol table interface
+                baseSize = baseType->getBytes();
+            auto symbol = BinarySymbols->find(nam);
+            int sz = symbol ? symbol->getSize() : 0;
             if (sz && baseSize)
                 // Note: since ty is a pointer and has not been cloned, this will also set the type for knownType
                 ty->asArray()->setLength(sz / baseSize);
@@ -754,16 +756,16 @@ bool Prog::globalUsed(ADDRESS uaddr, SharedType knownType) {
     return true;
 }
 
-Prog::mAddressToString &Prog::getSymbols() { return pLoaderIface->getSymbols(); }
 //! Make an array type for the global array at u. Mainly, set the length sensibly
 std::shared_ptr<ArrayType> Prog::makeArrayType(ADDRESS u, SharedType t) {
     QString nam = newGlobalName(u);
     assert(pLoaderIface);
     // TODO: fix the case of missing symbol table interface
-    unsigned int sz = pSymbols ? pSymbols->GetSizeByName(qPrintable(nam)) : 0;
-    if (sz == 0)
+    auto symbol = BinarySymbols->find(nam);
+    if (!symbol || symbol->getSize()==0)
         return ArrayType::get(t); // An "unbounded" array
-    int n = t->getSize() / 8;    // TODO: use baseType->getBytes()
+    unsigned int sz = symbol->getSize();
+    int n = t->getBytes();    // TODO: use baseType->getBytes()
     if (n == 0)
         n = 1;
     return ArrayType::get(t, sz / n);
@@ -782,8 +784,8 @@ SharedType Prog::guessGlobalType(const QString &nam, ADDRESS u) {
         return typeFromDebugInfo(sym->TypeIndex, sym->ModBase);
     }
 #endif
-    SymbolTableInterface *iface = getBinarySymbolTable();
-    int sz = iface ? iface->GetSizeByName(qPrintable(nam)) : 0; // TODO: fix the case of missing symbol table interface
+    auto symbol = BinarySymbols->find(nam);
+    int sz = symbol ? symbol->getSize() : 0;
     if (sz == 0) {
         // Check if it might be a string
         const char *str = getStringConstant(u);
@@ -879,6 +881,10 @@ double Prog::getFloatConstant(ADDRESS uaddr, bool &ok, int bits) {
     return 0.0;
 }
 
+QString Prog::symbolByAddress(ADDRESS dest) {
+    auto sym = BinarySymbols->find(dest);
+    return sym ? sym->getName() : "";
+}
 const SectionInfo *Prog::getSectionInfoByAddr(ADDRESS a) {
     return Image->getSectionInfoByAddr(a);
 }
@@ -1021,6 +1027,16 @@ void Prog::setEntryPoint(ADDRESS a) {
     Function *p = (UserProc *)findProc(a);
     if (p != nullptr && !p->isLib())
         entryProcs.push_back((UserProc *)p);
+}
+bool Prog::isDynamicLinkedProcPointer(ADDRESS dest) {
+    auto sym = BinarySymbols->find(dest);
+    return sym && sym->isImportedFunction();
+}
+
+const QString &Prog::GetDynamicProcName(ADDRESS uNative) {
+    static QString dyn("dynamic");
+    auto sym = BinarySymbols->find(uNative);
+    return sym ? sym->getName() : dyn;
 }
 
 void Prog::decodeEverythingUndecoded() {
@@ -1188,7 +1204,7 @@ bool Prog::removeUnusedReturns() {
     // The workset is processed in arbitrary order. May be able to do better, but note that sometimes changes propagate
     // down the call tree (no caller uses potential returns for child), and sometimes up the call tree (removal of
     // returns and/or dead code removes parameters, which affects all callers).
-    while (removeRetSet.size()) {
+    while (!removeRetSet.empty()) {
         auto it = removeRetSet.begin(); // Pick the first element of the set
         change |= (*it)->removeRedundantReturns(removeRetSet);
         // Note: removing the currently processed item here should prevent unnecessary reprocessing of self recursive
@@ -1434,7 +1450,8 @@ void Prog::readSymbolFile(const QString &fname) {
     for (Symbol *sym : par->symbols) {
         if (sym->sig) {
             tgt_mod = getDefaultModule(sym->sig->getName());
-            bool do_not_decode = pLoaderIface->IsDynamicLinkedProcPointer(sym->addr) ||
+            auto bin_sym = BinarySymbols->find(sym->addr);
+            bool do_not_decode = (bin_sym && bin_sym->isImportedFunction()) ||
                     // NODECODE isn't really the right modifier; perhaps we should have a LIB modifier,
                     // to specifically specify that this function obeys library calling conventions
                     sym->mods->noDecode;
@@ -1543,8 +1560,8 @@ Exp *Prog::readNativeAs(ADDRESS uaddr, SharedType type) {
         QString nam = getGlobalName(uaddr);
         int base_sz = type->asArray()->getBaseType()->getSize() / 8;
         if (!nam.isEmpty()) {
-            SymbolTableInterface *iface = getBinarySymbolTable();
-            nelems = iface ? iface->GetSizeByName(qPrintable(nam)) : 0; // TODO: fix the case of missing symbol table interface
+            auto symbol = BinarySymbols->find(nam);
+            nelems = symbol ? symbol->getSize() : 0;
             assert(base_sz);
             nelems /= base_sz;
         }
@@ -1635,32 +1652,26 @@ Exp *Prog::addReloc(Exp *e, ADDRESS lc) {
     // relocations have been applied to the constant, so if there is a
     // relocation for this lc then we should be able to replace the constant
     // with a symbol.
-    mAddressToString &symbols = pLoaderIface->getSymbols();
     ADDRESS c_addr = c->getAddr();
-    auto found_at = symbols.find(c_addr);
-    if (found_at != symbols.end()) {
-        QString n = found_at->second;
-        SymbolTableInterface *iface = getBinarySymbolTable();
-        unsigned int sz = iface ? iface->GetSizeByName(n) : 0; // TODO: fix the case of missing symbol table interface
-        if (getGlobal(n) == nullptr) {
-            Global *global = new Global(SizeType::get(sz * 8), c_addr, n,this);
+    const IBinarySymbol *bin_sym = BinarySymbols->find(c_addr);
+    if (bin_sym != nullptr) {
+        unsigned int sz = bin_sym->getSize(); // TODO: fix the case of missing symbol table interface
+        if (getGlobal(bin_sym->getName()) == nullptr) {
+            Global *global = new Global(SizeType::get(sz * 8), c_addr, bin_sym->getName(),this);
             globals.insert(global);
         }
-        return new Unary(opAddrOf, Location::global(n, nullptr));
+        return new Unary(opAddrOf, Location::global(bin_sym->getName(), nullptr));
     } else {
         const char *str = getStringConstant(c_addr);
         if (str)
             e = new Const(str);
         else {
             // check for accesses into the middle of symbols
-            for (auto it : symbols) {
-                SymbolTableInterface *iface = getBinarySymbolTable();
-                unsigned int sz = iface ? iface->GetSizeByName(it.second)
-                                        : 0; // TODO: fix the case of missing symbol table interface
-
-                if (it.first < c_addr && (it.first + sz) > c_addr) {
-                    int off = (c->getAddr() - it.first).m_value;
-                    e = Binary::get(opPlus, new Unary(opAddrOf, Location::global(it.second, nullptr)),
+            for (IBinarySymbol *it : *BinarySymbols) {
+                unsigned int sz = it->getSize();
+                if (it->getLocation() < c_addr && (it->getLocation() + sz) > c_addr) {
+                    int off = (c->getAddr() - it->getLocation()).m_value;
+                    e = Binary::get(opPlus, new Unary(opAddrOf, Location::global(it->getName(), nullptr)),
                                     new Const(off));
                     break;
                 }

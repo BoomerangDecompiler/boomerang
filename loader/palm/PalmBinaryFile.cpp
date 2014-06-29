@@ -12,19 +12,12 @@
  * This class loads a Palm Pilot .prc file. Derived from class BinaryFile
  */
 
-/*
- * 02 Feb 00 - Mike: Initial version
- * 24 Feb 00 - Mike: Support for system trapcalls
- * 17 Apr 00 - Mike: GetAppID(); find PilotMain with patterns
- * 16 Feb 01 - Nathan: removed util references
- * 01 Aug 01 - Mike: Changed GetGlobalPointerInfo to the new definition
- */
-
 #include "PalmBinaryFile.h"
 
 #include "palmsystraps.h"
 #include "boomerang.h"
 #include "IBinaryImage.h"
+#include "IBinarySymbols.h"
 
 #include <cassert>
 #include <cstring>
@@ -38,6 +31,7 @@
 
 PalmBinaryFile::PalmBinaryFile() : m_pImage(nullptr), m_pData(nullptr) {
     Image = Boomerang::get()->getImage();
+    Symbols = Boomerang::get()->getSymbols();
 }
 
 PalmBinaryFile::~PalmBinaryFile() {
@@ -101,7 +95,7 @@ bool PalmBinaryFile::RealLoad(const QString &sName) {
         fprintf(stderr, "%s is not a standard .prc file\n", qPrintable(sName));
         return false;
     }
-
+    addTrapSymbols();
     // Get the number of resource headers (one section per resource)
 
     uint32_t numSections = (m_pImage[0x4C] << 8) + m_pImage[0x4D];
@@ -261,7 +255,7 @@ bool PalmBinaryFile::RealLoad(const QString &sName) {
     // May as well make the native address zero; certainly the offset in the
     // file is no longer appropriate (and is confusing)
     pData->uNativeAddr = 0;
-
+    Symbols->create(GetMainEntryPoint(),"PilotMain").setAttr("EntryPoint",true);
     return true;
 }
 
@@ -272,26 +266,11 @@ void PalmBinaryFile::UnLoad() {
     }
 }
 
-// This is provided for completeness only...
-std::list<SectionInfo *> &PalmBinaryFile::GetEntryPoints(const char */*pEntry*/
-                                                         /* = "main" */) {
-    std::list<SectionInfo *> *ret = new std::list<SectionInfo *>;
-    SectionInfo *pSect = Image->GetSectionInfoByName("code1");
-    if (pSect == nullptr)
-        return *ret; // Failed
-    ret->push_back(pSect);
-    return *ret;
-}
-
 ADDRESS PalmBinaryFile::GetEntryPoint() {
     assert(0); /* FIXME: Need to be implemented */
     return ADDRESS::g(0L);
 }
 
-bool PalmBinaryFile::Open(const char */*sName*/) {
-    // Not implemented yet
-    return false;
-}
 void PalmBinaryFile::Close() {
     // Not implemented yet
     return;
@@ -312,64 +291,16 @@ ADDRESS PalmBinaryFile::getImageBase() { return ADDRESS::g(0L); /* FIXME */ }
 
 size_t PalmBinaryFile::getImageSize() { return 0; /* FIXME */ }
 
-// We at least need to be able to name the main function and system calls
-QString PalmBinaryFile::symbolByAddress(ADDRESS dwAddr) {
-    if ((dwAddr.m_value & 0xFFFFF000) == 0xAAAAA000) {
+void PalmBinaryFile::addTrapSymbols() {
+    for(uint32_t loc = 0xAAAAA000; loc <=0xAAAAAFFF; ++loc ) {
         // This is the convention used to indicate an A-line system call
-        unsigned offset = dwAddr.m_value & 0xFFF;
-        if (offset < numTrapStrings)
-            return trapNames[offset];
-        return "";
-    }
-    auto iter = m_symTable.find(dwAddr);
-    if (iter != m_symTable.end())
-        return iter->second;
-    if (dwAddr == GetMainEntryPoint())
-        return "PilotMain";
-    return "";
-}
-
-ADDRESS PalmBinaryFile::GetAddressByName(const QString &pName, bool bNoTypeOK) {
-    if (bNoTypeOK == false) {
-        // TODO: report an error ?
-        return NO_ADDRESS;
-    }
-    if (pName=="PilotMain")
-        return GetMainEntryPoint();
-    // scan user-provided symbol names
-    for (auto kv : m_symTable) {
-        if (kv.second == "PilotMain")
-            return kv.first;
-    }
-    for (size_t i = 0; i < numTrapStrings; ++i) {
-        if (trapNames[i]==pName) {
-            return ADDRESS::g(0xAAAAA000 | i);
+        unsigned offset = loc & 0xFFF;
+        if (offset < numTrapStrings) {
+            Symbols->create(ADDRESS::n(loc),trapNames[offset]);
         }
     }
-    return NO_ADDRESS;
+
 }
-
-void PalmBinaryFile::AddSymbol(ADDRESS addr, const QString &name) { m_symTable[addr] = name; }
-
-int PalmBinaryFile::GetSizeByName(const QString &pName, bool bTypeOK) {
-    Q_UNUSED(pName);
-    Q_UNUSED(bTypeOK);
-
-    // TODO: not implemented
-    return 0;
-}
-
-ADDRESS *PalmBinaryFile::GetImportStubs(int &numImports) {
-    numImports = 0;
-    return nullptr;
-}
-
-QString PalmBinaryFile::getFilenameSymbolFor(const char *) { return ""; }
-
-LoaderInterface::tMapAddrToString &PalmBinaryFile::getSymbols() { return m_symTable; }
-
-// Not really dynamically linked, but the closest thing
-bool PalmBinaryFile::IsDynamicLinkedProc(ADDRESS uNative) { return ((uNative.m_value & 0xFFFFF000) == 0xAAAAA000); }
 
 // Specific to BinaryFile objects that implement a "global pointer"
 // Gets a pair of unsigned integers representing the address of %agp,

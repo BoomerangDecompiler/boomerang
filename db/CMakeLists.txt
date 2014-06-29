@@ -35,6 +35,7 @@ SET(INCLUDES
 ../include/IBinaryImage.h
 )
 SET(SRC
+    SymTab
   SectionInfo
   BinaryImage
         basicblock.cpp

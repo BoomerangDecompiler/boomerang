@@ -5052,9 +5052,9 @@ bool UserProc::removeRedundantParameters() {
   *
   * Remove unused returns for this procedure, based on the equation:
   * returns = modifieds isect union(live at c) for all c calling this procedure.
-  * The intersection operation will only remove locations. Removing returns can have three effects for each component y
-  * used by that return (e.g. if return r24 := r25{10} + r26{20} is removed, statements 10 and 20 will be affected and
-  * y will take the values r25{10} and r26{20}):
+  * The intersection operation will only remove locations. Removing returns can have three effects for each component
+  * y used by that return (e.g. if return r24 := r25{10} + r26{20} is removed, statements 10 and 20 will be affected
+  * and y will take the values r25{10} and r26{20}):
   * 1) a statement s defining a return becomes unused if the only use of its definition was y
   * 2) a call statement c defining y will no longer have y live if the return was the only use of y. This could cause a
   *    change to the returns of c's destination, so removeRedundantReturns has to be called for c's destination proc (if
@@ -5064,8 +5064,7 @@ bool UserProc::removeRedundantParameters() {
   *    have to have their arguments trimmed, and a similar process has to be applied to all those caller's removed
   *    arguments as is applied here to the removed returns.
   * The \a removeRetSet is the set of procedures to process with this logic; caller in Prog calls all elements in this
-  *set
-  * (only add procs to this set, never remove)
+  * set (only add procs to this set, never remove)
   *
   * \returns true if any change
   ******************************************************************************/
@@ -5119,10 +5118,9 @@ bool UserProc::removeRedundantReturns(std::set<UserProc *> &removeRetSet) {
     else {
         // For each caller
         std::set<CallStatement *> &callers = getCallers();
-        std::set<CallStatement *>::iterator cc;
-        for (cc = callers.begin(); cc != callers.end(); ++cc) {
+        for (CallStatement *cc : callers) {
             // Union in the set of locations live at this call
-            UseCollector *useCol = (*cc)->getUseCollector();
+            UseCollector *useCol = cc->getUseCollector();
             unionOfCallerLiveLocs.makeUnion(useCol->getLocSet());
         }
     }
@@ -5243,12 +5241,10 @@ void UserProc::updateForUseChange(std::set<UserProc *> &removeRetSet) {
             LOG << "%%%  parameters changed for " << getName() << "\n";
         std::set<CallStatement *> &callers = getCallers();
         std::set<CallStatement *>::iterator cc;
-        std::set<UserProc *> callerProcs;
-        std::set<UserProc *>::iterator pp;
-        for (cc = callers.begin(); cc != callers.end(); ++cc) {
-            (*cc)->updateArguments();
+        for (CallStatement *cc : callers) {
+            cc->updateArguments();
             // Schedule the callers for analysis
-            removeRetSet.insert((*cc)->getProc());
+            removeRetSet.insert(cc->getProc());
         }
     }
     // Check if the liveness of any calls has changed

@@ -48,6 +48,7 @@ class UserProc;
 class HLLCode;
 class ObjcModule;
 class IBinaryImage;
+class IBinarySymbolTable;
 enum LogLevel {
     LL_Debug = 0,
     LL_Default=1,
@@ -97,6 +98,7 @@ class Boomerang : public QObject {
   private:
     static Boomerang *boomerang;
     IBinaryImage *Image = nullptr;
+    IBinarySymbolTable *Symbols = nullptr;
     QString progPath;               //!< String with the path to the boomerang executable.
     QString outputPath;             //!< The path where all output files are created.
     Log *logger = nullptr;          //!< Takes care of the log messages.
@@ -116,6 +118,7 @@ class Boomerang : public QObject {
      */
     static Boomerang *get();
     IBinaryImage *getImage();
+    IBinarySymbolTable *getSymbols();
     int processCommand(QStringList &args);
     static const char *getVersionStr();
     Log &log();

@@ -37,6 +37,7 @@
 #include "log.h"
 #include "ansi-c-parser.h"
 #include "IBinaryImage.h"
+#include "db/SymTab.h"
 
 #include <QtCore/QDir>
 #include <QtCore/QDebug>
@@ -58,8 +59,8 @@ using namespace std;
 FrontEnd::FrontEnd(QObject *p_BF, Prog *prog, BinaryFileFactory *bff) : pLoader(p_BF), pbff(bff), Program(prog) {
     Image = Boomerang::get()->getImage();
     assert(Image);
+    BinarySymbols = (SymTab *)Boomerang::get()->getSymbols();
     ldrIface = qobject_cast<LoaderInterface *>(pLoader);
-    symIface = qobject_cast<SymbolTableInterface *>(pLoader);
 }
 
 /***************************************************************************/ /**
@@ -116,6 +117,9 @@ FrontEnd *FrontEnd::Load(const QString &fname, Prog *prog) {
     return fe;
 }
 
+void FrontEnd::AddSymbol(ADDRESS addr, const QString &nam) {
+    BinarySymbols->create(addr,nam);
+}
 // destructor
 FrontEnd::~FrontEnd() {
     if (pbff)
@@ -200,7 +204,8 @@ void FrontEnd::checkEntryPoint(std::vector<ADDRESS> &entrypoints, ADDRESS addr, 
     UserProc *proc = (UserProc *)Program->setNewProc(addr);
     assert(proc);
     Signature *sig = ty->asFunc()->getSignature()->clone();
-    QString sym = symIface ? symIface->symbolByAddress(addr) : QString("");
+    const IBinarySymbol *p_sym  = BinarySymbols->find(addr);
+    QString sym = p_sym ? p_sym->getName() : QString("");
     if (!sym.isEmpty())
         sig->setName(sym);
     sig->setForced(true);
@@ -225,8 +230,9 @@ std::vector<ADDRESS> FrontEnd::getEntryPoints() {
             if (p != fname) {
 
                 QString name = p.mid(0, p.length() - 6) + "ModuleData";
-                ADDRESS tmpaddr = symIface ? symIface->GetAddressByName(qPrintable(name), true) : NO_ADDRESS;
-                if (tmpaddr != NO_ADDRESS) {
+                const IBinarySymbol *p_sym = BinarySymbols->find(name);
+                if (p_sym) {
+                    ADDRESS tmpaddr = p_sym->getLocation();
                     ADDRESS setup, teardown;
                     /*uint32_t vers = */ Image->readNative4(tmpaddr); // TODO: find use for vers ?
                     setup = ADDRESS::g(Image->readNative4(tmpaddr + 4));
@@ -241,13 +247,13 @@ std::vector<ADDRESS> FrontEnd::getEntryPoints() {
             }
         }
         // Linux kernel module
-        if (symIface && fname.endsWith(".ko")) {
-            a = symIface->GetAddressByName("init_module");
-            if (a != NO_ADDRESS)
-                entrypoints.push_back(a);
-            a = symIface->GetAddressByName("cleanup_module");
-            if (a != NO_ADDRESS)
-                entrypoints.push_back(a);
+        if (fname.endsWith(".ko")) {
+            const IBinarySymbol *p_sym =  BinarySymbols->find("init_module");
+            if (p_sym)
+                entrypoints.push_back(p_sym->getLocation());
+            p_sym =  BinarySymbols->find("cleanup_module");
+            if (p_sym)
+                entrypoints.push_back(p_sym->getLocation());
         }
     }
     return entrypoints;
@@ -380,7 +386,9 @@ DecodeResult &FrontEnd::decodeInstruction(ADDRESS pc) {
         invalid.valid = false;
         return invalid;
     }
-    return decoder->decodeInstruction(pc, Image->getTextDelta());
+    const SectionInfo *pSect = Image->getSectionInfoByAddr(pc);
+    ptrdiff_t host_native_diff = (pSect->uHostAddr - pSect->uNativeAddr).m_value;
+    return decoder->decodeInstruction(pc, host_native_diff);
 }
 
 /***************************************************************************/ /**
@@ -449,7 +457,8 @@ void FrontEnd::preprocessProcGoto(std::list<Instruction *>::iterator ss, ADDRESS
         return;
     Function *proc = Program->findProc(dest);
     if (proc == nullptr) {
-        if (ldrIface->IsDynamicLinkedProc(dest))
+        auto symb = BinarySymbols->find(dest);
+        if (symb && symb->isImportedFunction())
             proc = Program->setNewProc(dest);
     }
     if (proc != nullptr && proc != (Function *)-1) {
@@ -465,6 +474,15 @@ void FrontEnd::preprocessProcGoto(std::list<Instruction *>::iterator ss, ADDRESS
         pRtl->back() = call;
         *ss = call;
     }
+}
+bool FrontEnd::refersToImportedFunction(Exp *pDest)
+{
+    if(pDest && pDest->getOper() == opMemOf && pDest->getSubExp1()->getOper() == opIntConst) {
+        auto symbol = BinarySymbols->find(((Const *)pDest->getSubExp1())->getAddr());
+        if(symbol && symbol->isImportedFunction())
+            return true;
+    }
+    return false;
 }
 /***************************************************************************/ /**
   *
@@ -672,16 +690,15 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream &/*os*/, 
                         break;                               // Just leave it alone
                     }
                     // Check for indirect calls to library functions, especially in Win32 programs
-                    if (pDest && pDest->getOper() == opMemOf && pDest->getSubExp1()->getOper() == opIntConst &&
-                        ldrIface->IsDynamicLinkedProcPointer(((Const *)pDest->getSubExp1())->getAddr())) {
-                        if (VERBOSE)
-                            LOG << "jump to a library function: " << stmt_jump << ", replacing with a call/ret.\n";
+                    if (refersToImportedFunction(pDest)) {
+                        LOG_VERBOSE(1) << "jump to a library function: " << stmt_jump << ", replacing with a call/ret.\n";
                         // jump to a library function
                         // replace with a call ret
-                        QString func =
-                            ldrIface->GetDynamicProcName(((Const *)stmt_jump->getDest()->getSubExp1())->getAddr());
+                        auto *sym = BinarySymbols->find(((Const *)pDest->getSubExp1())->getAddr());
+                        assert(sym==nullptr);
+                        QString func = sym->getName();
                         CallStatement *call = new CallStatement;
-                        call->setDest(stmt_jump->getDest()->clone());
+                        call->setDest(pDest->clone());
                         LibProc *lp = pProc->getProg()->getLibraryProc(func);
                         if (lp == nullptr)
                             LOG << "getLibraryProc returned nullptr, aborting\n";
@@ -767,12 +784,10 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream &/*os*/, 
                     CallStatement *call = static_cast<CallStatement *>(s);
 
                     // Check for a dynamic linked library function
-                    if (call->getDest()->getOper() == opMemOf &&
-                        call->getDest()->getSubExp1()->getOper() == opIntConst &&
-                        ldrIface->IsDynamicLinkedProcPointer(((Const *)call->getDest()->getSubExp1())->getAddr())) {
+                    if (refersToImportedFunction(call->getDest())) {
                         // Dynamic linked proc pointers are treated as static.
-                        QString nam =
-                            ldrIface->GetDynamicProcName(((Const *)call->getDest()->getSubExp1())->getAddr());
+                        ADDRESS linked_addr = ((Const *)call->getDest()->getSubExp1())->getAddr();
+                        QString nam = BinarySymbols->find(linked_addr)->getName();
                         Function *p = pProc->getProg()->getLibraryProc(nam);
                         call->setDestProc(p);
                         call->setIsComputed(false);
@@ -798,14 +813,10 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream &/*os*/, 
                                     // In fact it's a computed (looked up) jump, so the jump seems to be a case
                                     // statement.
                                     if (first_statement->getKind() == STMT_CASE &&
-                                        stmt_jump->getDest()->getOper() == opMemOf &&
-                                        stmt_jump->getDest()->getSubExp1()->getOper() == opIntConst &&
-                                        ldrIface->IsDynamicLinkedProcPointer(
-                                            ((Const *)stmt_jump->getDest()->getSubExp1())
-                                                ->getAddr())) { // Is it an "DynamicLinkedProcPointer"?
+                                        refersToImportedFunction(stmt_jump->getDest())) { // Is it an "DynamicLinkedProcPointer"?
                                         // Yes, it's a library function. Look up it's name.
                                         ADDRESS a = ((Const *)stmt_jump->getDest()->getSubExp1())->getAddr();
-                                        QString nam = ldrIface->GetDynamicProcName(a);
+                                        QString nam = BinarySymbols->find(a)->getName();
                                         // Assign the proc to the call
                                         Function *p = pProc->getProg()->getLibraryProc(nam);
                                         if (call->getDestProc()) {
@@ -870,11 +881,9 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream &/*os*/, 
                         // Check if this is the _exit or exit function. May prevent us from attempting to decode
                         // invalid instructions, and getting invalid stack height errors
                         QString name = Program->symbolByAddress(uNewAddr);
-                        if (name.isEmpty() && call->getDest()->isMemOf() &&
-                            call->getDest()->getSubExp1()->isIntConst()) {
+                        if (name.isEmpty() && refersToImportedFunction(call->getDest())) {
                             ADDRESS a = ((Const *)call->getDest()->getSubExp1())->getAddr();
-                            if (ldrIface->IsDynamicLinkedProcPointer(a))
-                                name = ldrIface->GetDynamicProcName(a);
+                            name = BinarySymbols->find(a)->getName();
                         }
                         if (!name.isEmpty() && noReturnCallDest(name)) {
                             // Make sure it has a return appended (so there is only one exit from the function)
@@ -996,9 +1005,10 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream &/*os*/, 
     std::list<CallStatement *>::iterator it;
     for (it = callList.begin(); it != callList.end(); it++) {
         ADDRESS dest = (*it)->getFixedDest();
+        auto symb = BinarySymbols->find(dest);
         // Don't speculatively decode procs that are outside of the main text section, apart from dynamically
         // linked ones (in the .plt)
-        if (ldrIface->IsDynamicLinkedProc(dest) || !spec || (dest < Image->getLimitTextHigh())) {
+        if (symb && symb->isImportedFunction() || !spec || (dest < Image->getLimitTextHigh())) {
             pCfg->addCall(*it);
             // Don't visit the destination of a register call
             Function *np = (*it)->getDestProc();

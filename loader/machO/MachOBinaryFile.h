@@ -42,13 +42,11 @@ struct mach_header;
 
 class MachOBinaryFile : public QObject,
                         public LoaderInterface,
-                        public SymbolTableInterface,
                         public ObjcAccessInterface {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID LoaderInterface_iid)
     Q_INTERFACES(LoaderInterface)
     Q_INTERFACES(ObjcAccessInterface)
-    Q_INTERFACES(SymbolTableInterface)
 
   public:
     MachOBinaryFile();                    // Default constructor
@@ -64,17 +62,9 @@ class MachOBinaryFile : public QObject,
     virtual ADDRESS getImageBase();
     virtual size_t getImageSize();
 
-    virtual std::list<SectionInfo *> &GetEntryPoints(const char *pEntry = "main");
     virtual ADDRESS GetMainEntryPoint();
     virtual ADDRESS GetEntryPoint();
     DWord getDelta();
-    QString symbolByAddress(ADDRESS dwAddr) override;                        // Get sym from addr
-    ADDRESS GetAddressByName(const QString &name, bool bNoTypeOK = false) override; // Find addr given name
-    void AddSymbol(ADDRESS uNative, const QString &pName) override;
-    //! Lookup the name, return the size
-    int GetSizeByName(const QString &pName, bool bTypeOK = false) override;
-    ADDRESS *GetImportStubs(int &numImports) override;
-    QString getFilenameSymbolFor(const char *) override;
 
     //
     //        --        --        --        --        --        --        --        --        --
@@ -96,10 +86,6 @@ class MachOBinaryFile : public QObject,
     unsigned short BMMHW(unsigned short x);
 
   public:
-    bool IsDynamicLinkedProc(ADDRESS uNative) { return dlprocs.find(uNative) != dlprocs.end(); }
-    const QString &GetDynamicProcName(ADDRESS uNative) override;
-
-    tMapAddrToString &getSymbols() override { return m_SymA; }
     std::map<QString, ObjcModule> &getObjcModules() override  { return modules; }
 
   protected:
@@ -116,9 +102,9 @@ class MachOBinaryFile : public QObject,
     unsigned loaded_size;
     MACHINE machine;
     bool swap_bytes;
-    tMapAddrToString m_SymA, dlprocs;
     std::map<QString, ObjcModule> modules;
     std::vector<struct section> sections;
     class IBinaryImage *Image;
+    class IBinarySymbolTable *Symbols;
 };
 #endif // ifndef __MACHOBINARYFILE_H__

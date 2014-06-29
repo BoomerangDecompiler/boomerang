@@ -152,7 +152,7 @@ public:
     int getNumber() const { return Number; }
     virtual void setNumber(int num) { Number = num; } // Overridden for calls (and maybe later returns)
 
-    STMT_KIND getKind() { return Kind; }
+    STMT_KIND getKind() const { return Kind; }
     void setKind(STMT_KIND k) { Kind = k; }
 
     virtual Instruction * clone() const = 0; // Make copy of self
@@ -756,6 +756,7 @@ public:
     void setDest(Exp *pd);
     void setDest(ADDRESS addr);
     virtual Exp *getDest();
+    virtual const Exp *getDest() const;
 
     ADDRESS getFixedDest() const;
     void adjustFixedDest(int delta);
@@ -1121,6 +1122,7 @@ public:
     // direct call
     void useColFromSsaForm(Instruction *s) { useCol.fromSSAform(proc, s); }
 
+    bool isCallToMemOffset() const;
 private:
     // Private helper functions for the above
     void addSigParam(SharedType ty, bool isScanf);

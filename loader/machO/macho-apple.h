@@ -106,59 +106,27 @@ struct mach_header {
 #define MH_DYLIB_STUB 0x9 /* shared library stub for static */
                           /*  linking only, no section contents */
 
+
 /* Constants for the flags field of the mach_header */
-#define MH_NOUNDEFS 0x1 /* the object file has no undefined references */
-#define MH_INCRLINK                                                                                                    \
-    0x2 /* the object file is the output of an                                                                         \
-incremental link against a base file                                                                                   \
-and can't be link edited again */
-#define MH_DYLDLINK                                                                                                    \
-    0x4 /* the object file is input for the                                                                            \
-dynamic linker and can't be staticly                                                                                   \
-link edited again */
-#define MH_BINDATLOAD                                                                                                  \
-    0x8 /* the object file's undefined                                                                                 \
-references are bound by the dynamic                                                                                    \
-linker when loaded. */
-#define MH_PREBOUND                                                                                                    \
-    0x10 /* the file has its dynamic undefined                                                                         \
-references prebound. */
-#define MH_SPLIT_SEGS                                                                                                  \
-    0x20 /* the file has its read-only and                                                                             \
-read-write segments split */
-#define MH_LAZY_INIT                                                                                                   \
-    0x40 /* the shared library init routine is                                                                         \
-to be run lazily via catching memory                                                                                   \
-faults to its writeable segments                                                                                       \
-(obsolete) */
-#define MH_TWOLEVEL                                                                                                    \
-    0x80 /* the image is using two-level name                                                                          \
-space bindings */
-#define MH_FORCE_FLAT                                                                                                  \
-    0x100 /* the executable is forcing all images                                                                      \
-to use flat name space bindings */
-#define MH_NOMULTIDEFS                                                                                                 \
-    0x200 /* this umbrella guarantees no multiple                                                                      \
-defintions of symbols in its                                                                                           \
-sub-images so the two-level namespace                                                                                  \
-hints can always be used. */
-#define MH_NOFIXPREBINDING                                                                                             \
-    0x400 /* do not have dyld notify the                                                                               \
-prebinding agent about this                                                                                            \
-executable */
-#define MH_PREBINDABLE                                                                                                 \
-    0x800 /* the binary is not prebound but can                                                                        \
-have its prebinding redone. only used                                                                                  \
-             when MH_PREBOUND is not set. */
-#define MH_ALLMODSBOUND                                                                                                \
-    0x1000 /* indicates that this binary binds to                                                                      \
-                all two-level namespace modules of                                                                     \
-its dependent libraries. only used                                                                                     \
-when MH_PREBINDABLE and MH_TWOLEVEL                                                                                    \
-are both set. */
-#define MH_CANONICAL                                                                                                   \
-    0x4000 /* the binary has been canonicalized                                                                        \
-via the unprebind operation */
+#define MH_NOUNDEFS 0x1     /* the object file has no undefined references */
+#define MH_INCRLINK 0x2     /* the object file is the output of an incremental link against a base file and can't be link edited again */
+#define MH_DYLDLINK 0x4     /* the object file is input for the dynamic linker and can't be staticly link edited again */
+#define MH_BINDATLOAD 0x8   /* the object file's undefined references are bound by the dynamic linker when loaded. */
+#define MH_PREBOUND 0x10    /* the file has its dynamic undefined references prebound. */
+#define MH_SPLIT_SEGS 0x20  /* the file has its read-only and read-write segments split */
+#define MH_LAZY_INIT 0x40   /* the shared library init routine is to be run lazily via catching memory faults to its writeable segments (obsolete) */
+#define MH_TWOLEVEL 0x80    /* the image is using two-level name space bindings */
+#define MH_FORCE_FLAT 0x100 /* the executable is forcing all images to use flat name space bindings */
+#define MH_NOMULTIDEFS 0x200 /* this umbrella guarantees no multiple defintions of symbols in its sub-images so the two-level namespace
+                                hints can always be used. */
+#define MH_NOFIXPREBINDING 0x400 /* do not have dyld notify the prebinding agent about this executable */
+#define MH_PREBINDABLE 0x800     /* the binary is not prebound but can have its prebinding redone. only used when MH_PREBOUND is not set. */
+#define MH_ALLMODSBOUND 0x1000  /* indicates that this binary binds to all two-level namespace modules of its dependent libraries. only used
+                                   when MH_PREBINDABLE and MH_TWOLEVEL are both set. */
+#define MH_SUBSECTIONS_VIA_SYMBOLS 0x2000 /* safe to divide up the sections into sub-sections via symbols for dead code stripping */
+#define MH_CANONICAL 0x4000  /* the binary has been canonicalized via the unprebind operation */
+#define MH_WEAK_DEFINES 0x8000  /* the final linked image contains external weak symbols */
+#define MH_BINDS_TO_WEAK 0x10000 /* the final linked image uses weak symbols */
 /*
  * The load commands directly follow the mach_header.  The total size of all
  * of the commands is given by the sizeofcmds field in the mach_header.  All
@@ -326,65 +294,63 @@ struct section {
 #define S_4BYTE_LITERALS 0x3   /* section with only 4 byte literals */
 #define S_8BYTE_LITERALS 0x4   /* section with only 8 byte literals */
 #define S_LITERAL_POINTERS 0x5 /* section with only pointers to */
-                               /*  literals */
-                               /*
-                                * For the two types of symbol pointers sections and the symbol stubs section
-                                * they have indirect symbol table entries.  For each of the entries in the
-                                * section the indirect symbol table entries, in corresponding order in the
-                                * indirect symbol table, start at the index stored in the reserved1 field
-                                * of the section structure.  Since the indirect symbol table entries
-                                * correspond to the entries in the section the number of indirect symbol table
-                                * entries is inferred from the size of the section divided by the size of the
-                                * entries in the section.  For symbol pointers sections the size of the entries
-                                * in the section is 4 bytes and for symbol stubs sections the byte size of the
-                                * stubs is stored in the reserved2 field of the section structure.
-                                */
-#define S_NON_LAZY_SYMBOL_POINTERS                                                                                     \
-    0x6 /* section with only non-lazy                                                                                  \
-symbol pointers */
-#define S_LAZY_SYMBOL_POINTERS                                                                                         \
-    0x7 /* section with only lazy symbol                                                                               \
-pointers */
-#define S_SYMBOL_STUBS                                                                                                 \
-    0x8 /* section with only symbol                                                                                    \
-stubs, byte size of stub in                                                                                            \
-the reserved2 field */
-#define S_MOD_INIT_FUNC_POINTERS                                                                                       \
-    0x9 /* section with only function                                                                                  \
-pointers for initialization*/
-#define S_MOD_TERM_FUNC_POINTERS                                                                                       \
-    0xa /* section with only function                                                                                  \
-pointers for termination */
-#define S_COALESCED                                                                                                    \
-    0xb /* section contains symbols that                                                                               \
-are to be coalesced */
+/*  literals */
+/*
+ * For the two types of symbol pointers sections and the symbol stubs section
+ * they have indirect symbol table entries.  For each of the entries in the
+ * section the indirect symbol table entries, in corresponding order in the
+ * indirect symbol table, start at the index stored in the reserved1 field
+ * of the section structure.  Since the indirect symbol table entries
+ * correspond to the entries in the section the number of indirect symbol table
+ * entries is inferred from the size of the section divided by the size of the
+ * entries in the section.  For symbol pointers sections the size of the entries
+ * in the section is 4 bytes and for symbol stubs sections the byte size of the
+ * stubs is stored in the reserved2 field of the section structure.
+ */
+#define S_NON_LAZY_SYMBOL_POINTERS 0x6 /* section with only non-lazy symbol pointers */
+#define S_LAZY_SYMBOL_POINTERS  0x7 /* section with only lazy symbol pointers */
+#define S_SYMBOL_STUBS   0x8 /* section with only symbol stubs, byte size of stub in the reserved2 field */
+#define S_MOD_INIT_FUNC_POINTERS 0x9 /* section with only function pointers for initialization*/
+#define S_MOD_TERM_FUNC_POINTERS 0xa /* section with only function pointers for termination */
+#define S_COALESCED   0xb /* section contains symbols that are to be coalesced */
+#define S_GB_ZEROFILL   0xc /* zero fill on demand section (that can be larger than 4 gigabytes) */
+#define S_INTERPOSING   0xd /* section with only pairs of function pointers for interposing */
+#define S_16BYTE_LITERALS  0xe /* section with only 16 byte literals */
+#define S_DTRACE_DOF   0xf /* section contains DTrace Object Format */
+#define S_LAZY_DYLIB_SYMBOL_POINTERS 0x10 /* section with only lazy symbol pointers to lazy loaded dylibs */
+/*
+ * Section types to support thread local variables
+ */
+#define S_THREAD_LOCAL_REGULAR                   0x11  /* template of initial values for TLVs */
+#define S_THREAD_LOCAL_ZEROFILL                  0x12  /* template of initial values for TLVs */
+#define S_THREAD_LOCAL_VARIABLES                 0x13  /* TLV descriptors */
+#define S_THREAD_LOCAL_VARIABLE_POINTERS         0x14  /* pointers to TLV descriptors */
+#define S_THREAD_LOCAL_INIT_FUNCTION_POINTERS    0x15  /* functions to call to initialize TLV values */
 /*
  * Constants for the section attributes part of the flags field of a section
  * structure.
  */
 #define SECTION_ATTRIBUTES_USR 0xff000000 /* User setable attributes */
-#define S_ATTR_PURE_INSTRUCTIONS                                                                                       \
-    0x80000000 /* section contains only true                                                                           \
-machine instructions */
-#define S_ATTR_NO_TOC                                                                                                  \
-    0x40000000 /* section contains coalesced                                                                           \
-symbols that are not to be                                                                                             \
-in a ranlib table of                                                                                                   \
-contents */
-#define S_ATTR_STRIP_STATIC_SYMS                                                                                       \
-    0x20000000                            /* ok to strip static symbols                                                \
-                      in this section in files                                                                    \
-                      with the MH_DYLDLINK flag */
+#define S_ATTR_PURE_INSTRUCTIONS 0x80000000 /* section contains only true machine instructions */
+#define S_ATTR_NO_TOC 0x40000000 /* section contains coalesced symbols that are not to be in a ranlib table of contents */
+#define S_ATTR_STRIP_STATIC_SYMS 0x20000000 /* ok to strip static symbols in this section in files with the MH_DYLDLINK flag */
+#define S_ATTR_NO_DEAD_STRIP  0x10000000 /* no dead stripping */
+#define S_ATTR_LIVE_SUPPORT  0x08000000 /* blocks are live if they reference live blocks */
+#define S_ATTR_SELF_MODIFYING_CODE 0x04000000 /* Used with i386 code stubs written on by dyld */
+/*
+ * If a segment contains any sections marked with S_ATTR_DEBUG then all
+ * sections in that segment must have this attribute.  No section other than
+ * a section marked with this attribute may reference the contents of this
+ * section.  A section with this attribute may contain no symbols and must have
+ * a section type S_REGULAR.  The static linker will not copy section contents
+ * from sections with this attribute into its output file.  These sections
+ * generally contain DWARF debugging info.
+ */
+#define S_ATTR_DEBUG 0x02000000 /* a debug section */
 #define SECTION_ATTRIBUTES_SYS 0x00ffff00 /* system setable attributes */
-#define S_ATTR_SOME_INSTRUCTIONS                                                                                       \
-    0x00000400 /* section contains some                                                                                \
-machine instructions */
-#define S_ATTR_EXT_RELOC                                                                                               \
-    0x00000200 /* section has external                                                                                 \
-relocation entries */
-#define S_ATTR_LOC_RELOC                                                                                               \
-    0x00000100 /* section has local                                                                                    \
-relocation entries */
+#define S_ATTR_SOME_INSTRUCTIONS 0x00000400 /* section contains some machine instructions */
+#define S_ATTR_EXT_RELOC 0x00000200 /* section has external relocation entries */
+#define S_ATTR_LOC_RELOC 0x00000100 /* section has local relocation entries */
 
 /*
  * The names of segments and sections in them are mostly meaningless to the

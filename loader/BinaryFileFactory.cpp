@@ -9,6 +9,7 @@
 #include "BinaryFile.h"
 #include "boomerang.h"
 #include "IBinaryImage.h"
+#include "IBinarySymbols.h"
 
 #include <QDir>
 #include <QPluginLoader>
@@ -27,12 +28,14 @@ QString BinaryFileFactory::m_base_path = "";
 QObject *BinaryFileFactory::Load(const QString &sName) {
     IBinaryImage *Image = Boomerang::get()->getImage();
     Image->reset();
+    Boomerang::get()->getSymbols()->clear();
     QObject *pBF = getInstanceFor(sName);
     LoaderInterface *ldr_iface = qobject_cast<LoaderInterface *>(pBF);
     if (ldr_iface == nullptr) {
         fprintf(stderr, "unrecognised binary file format.\n");
         return nullptr;
     }
+    ldr_iface->Close();
     if (ldr_iface->RealLoad(sName) == 0) {
         fprintf(stderr, "Loading '%s' failed\n", qPrintable(sName));
         delete pBF;

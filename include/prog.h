@@ -32,6 +32,7 @@ class Instruction;
 class InstructionSet;
 class Module;
 class XMLProgParser;
+class BinarySymbol;
 
 class Global : public Printable {
 private:
@@ -65,6 +66,7 @@ protected:
 class Prog : public QObject {
     Q_OBJECT
     class IBinaryImage *Image;
+    SymTab *BinarySymbols;
 public:
     /// The type for the list of functions.
     typedef std::list<Module *>               ModuleListType;
@@ -74,7 +76,7 @@ private:
     ModuleListType ModuleList;  ///< The Modules that make up this program
 
 public:
-    typedef std::map<ADDRESS, QString> mAddressToString;
+    typedef std::map<ADDRESS, BinarySymbol *> mAddressToSymbol;
     Prog();
     virtual ~Prog();
     Prog(const char *name);
@@ -129,7 +131,6 @@ public:
     Instruction *getStmtAtLex(Module *cluster, unsigned int begin, unsigned int end);
     platform getFrontEndId();
 
-    mAddressToString &getSymbols();
 
     Signature *getDefaultSignature(const char *name);
 
@@ -152,13 +153,8 @@ public:
     // Hacks for Mike
     //! Get a code for the machine e.g. MACHINE_SPARC
     MACHINE getMachine() { return pLoaderIface->getMachine(); }
-    SymbolTableInterface *getBinarySymbolTable() {
-        return pLoaderPlugin ? qobject_cast<SymbolTableInterface *>(pLoaderPlugin) : nullptr;
-    }
     //! Get a symbol from an address
-    QString symbolByAddress(ADDRESS dest) {
-        return getBinarySymbolTable() ? getBinarySymbolTable()->symbolByAddress(dest) : nullptr;
-    }
+    QString symbolByAddress(ADDRESS dest);
 
     const SectionInfo *getSectionInfoByAddr(ADDRESS a);
     ADDRESS getLimitTextLow();
@@ -173,8 +169,8 @@ public:
     int readNative4(ADDRESS a);
     Exp *readNativeAs(ADDRESS uaddr, SharedType type);
 
-    bool isDynamicLinkedProcPointer(ADDRESS dest) { return pLoaderIface->IsDynamicLinkedProcPointer(dest); }
-    const QString &GetDynamicProcName(ADDRESS uNative) { return pLoaderIface->GetDynamicProcName(uNative); }
+    bool isDynamicLinkedProcPointer(ADDRESS dest);
+    const QString &GetDynamicProcName(ADDRESS uNative);
 
     bool processProc(ADDRESS addr, UserProc *proc) { // Decode a proc
         QTextStream os(stderr); // rtl output target
@@ -221,7 +217,6 @@ signals:
 protected:
     QObject *pLoaderPlugin; //!< Pointer to the instance returned by loader plugin
     LoaderInterface *pLoaderIface = nullptr;
-    SymbolTableInterface *pSymbols = nullptr;
     FrontEnd *DefaultFrontend; //!< Pointer to the FrontEnd object for the project
 
     /* Persistent state */

@@ -26,6 +26,7 @@
 #include "BinaryFile.h" // E.g. IsDynamicallyLinkedProc
 #include "boomerang.h"
 #include "IBinaryImage.h"
+#include "IBinarySymbols.h"
 #include "cfg.h"
 #include "decoder.h"
 #include "exp.h"
@@ -248,8 +249,9 @@ bool SparcFrontEnd::case_CALL(ADDRESS &address, DecodeResult &inst, DecodeResult
 
         // First check for helper functions
         ADDRESS dest = call_stmt->getFixedDest();
+        const IBinarySymbol *symb = SymbolTable->find(dest);
         // Special check for calls to weird PLT entries which don't have symbols
-        if ((ldrIface->IsDynamicLinkedProc(dest)) && (Program->symbolByAddress(dest) == nullptr)) {
+        if ((symb && symb->isImportedFunction()) && (Program->symbolByAddress(dest) == nullptr)) {
             // This is one of those. Flag this as an invalid instruction
             inst.valid = false;
         }
@@ -761,6 +763,7 @@ bool SparcFrontEnd::processProc(ADDRESS uAddr, UserProc *proc, QTextStream &os, 
         DecodeResult inst;
         while (sequentialDecode) {
 
+            // Decode and classify the current source instruction
             if (Boomerang::get()->traceDecoder)
                 LOG << "*" << uAddr << "\t";
 
@@ -1163,9 +1166,10 @@ bool SparcFrontEnd::processProc(ADDRESS uAddr, UserProc *proc, QTextStream &os, 
     // Add the callees to the set of CallStatements to proces for parameter recovery, and also to the Prog object
     for (std::list<CallStatement *>::iterator it = callList.begin(); it != callList.end(); it++) {
         ADDRESS dest = (*it)->getFixedDest();
+        const IBinarySymbol *symb = SymbolTable->find(dest);
         // Don't speculatively decode procs that are outside of the main text section, apart from dynamically linked
         // ones (in the .plt)
-        if (ldrIface->IsDynamicLinkedProc(dest) || !spec || (dest < Image->getLimitTextHigh())) {
+        if ((symb && symb->isImportedFunction()) || !spec || (dest < Image->getLimitTextHigh())) {
             cfg->addCall(*it);
             // Don't visit the destination of a register call
             // if (dest != NO_ADDRESS) newProc(proc->getProg(), dest);
@@ -1245,7 +1249,8 @@ void SparcFrontEnd::quadOperation(ADDRESS addr, std::list<RTL *> *lrtl, OPER op)
   * \returns True if a helper function was found and handled; false otherwise
   ******************************************************************************/
 bool SparcFrontEnd::helperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL *> *lrtl) {
-    if (!ldrIface->IsDynamicLinkedProc(dest))
+    const IBinarySymbol *sym = SymbolTable->find(dest);
+    if (! (sym && sym->isImportedFunction()) )
         return false;
     QString name = Program->symbolByAddress(dest);
     if (name.isEmpty()) {
@@ -1414,6 +1419,7 @@ bool SparcFrontEnd::helperFuncLong(ADDRESS dest, ADDRESS addr, std::list<RTL *> 
   ******************************************************************************/
 SparcFrontEnd::SparcFrontEnd(QObject *p_BF, Prog *prog, BinaryFileFactory *bff) : FrontEnd(p_BF, prog, bff) {
     decoder = new SparcDecoder(prog);
+    SymbolTable = Boomerang::get()->getSymbols();
     nop_inst.numBytes = 0; // So won't disturb coverage
     nop_inst.type = NOP;
     nop_inst.valid = true;

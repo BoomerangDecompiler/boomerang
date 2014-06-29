@@ -602,9 +602,10 @@ void GotoStatement::setDest(ADDRESS addr) {
 
 /***************************************************************************/ /**
   * \brief        Returns the destination of this CTI.
-  * \returns             Pointer to the SS representing the dest of this jump
+  * \returns Pointer to the Exp representing the dest of this jump
   ******************************************************************************/
 Exp *GotoStatement::getDest() { return pDest; }
+const Exp *GotoStatement::getDest() const { return pDest; }
 
 /***************************************************************************/ /**
   * \brief        Adjust the destination of this CTI by a given amount. Causes
@@ -2076,6 +2077,11 @@ bool CallStatement::convertToDirect() {
     return convertIndirect;
 }
 
+bool CallStatement::isCallToMemOffset() const
+{
+    return (getKind() == STMT_CALL && getDest()->getOper() == opMemOf &&
+        getDest()->getSubExp1()->getOper() == opIntConst );
+}
 Exp *CallStatement::getArgumentExp(int i) {
     assert(i < (int)arguments.size());
     StatementList::iterator aa = arguments.begin();
@@ -3853,9 +3859,6 @@ void PhiAssign::convertToAssign(Exp * rhs) {
     a->setNumber(n);
     a->setProc(p);
     a->setBB(bb);
-    //    RTL* rtl = bb->getRTLWithStatement(this);
-    //    if (rtl->getAddress() == 0)
-    //        rtl->setAddress(1);                // Strange things happen to real assignments with address 0
 }
 
 void PhiAssign::simplify() {
@@ -4267,7 +4270,7 @@ void CallStatement::updateDefines() {
             }
         }
         if (!inserted)
-            defines.insert(defines.end(), as); // In case larger than all existing elements
+            defines.push_back(as); // In case larger than all existing elements
     }
 }
 

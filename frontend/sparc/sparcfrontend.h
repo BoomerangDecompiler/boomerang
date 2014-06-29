@@ -84,6 +84,7 @@ class SparcFrontEnd : public FrontEnd {
 
     // This struct represents a single nop instruction. Used as a substitute delay slot instruction
     DecodeResult nop_inst;
+    class IBinarySymbolTable *SymbolTable;
 };
 
 #endif

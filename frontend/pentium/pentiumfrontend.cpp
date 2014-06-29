@@ -18,6 +18,7 @@
 #include "types.h"
 #include "BinaryFile.h"
 #include "IBinaryImage.h"
+#include "IBinarySymbols.h"
 #include "frontend.h"
 #include "rtl.h"
 #include "decoder.h" // prototype for decodeInstruction()
@@ -494,6 +495,7 @@ ADDRESS PentiumFrontEnd::getMainEntryPoint(bool &gotMain) {
     int conseq = 0;
     ADDRESS addr = start;
 
+    IBinarySymbolTable *Symbols  = Boomerang::get()->getSymbols();
     // Look for 3 calls in a row in the first 100 instructions, with no other instructions between them.
     // This is the "windows" pattern. Another windows pattern: call to GetModuleHandleA followed by
     // a push of eax and then the call to main.  Or a call to __libc_start_main
@@ -505,28 +507,20 @@ ADDRESS PentiumFrontEnd::getMainEntryPoint(bool &gotMain) {
             break;
         CallStatement *cs = nullptr;
         if (not inst.rtl->empty())
-            cs = (CallStatement *)(inst.rtl->back());
-        if (cs && cs->getKind() == STMT_CALL && cs->getDest()->getOper() == opMemOf &&
-            cs->getDest()->getSubExp1()->getOper() == opIntConst &&
-            ldrIface->IsDynamicLinkedProcPointer(((Const *)cs->getDest()->getSubExp1())->getAddr()) &&
-            ldrIface->GetDynamicProcName(((Const *)cs->getDest()->getSubExp1())->getAddr())=="GetModuleHandleA") {
-#if 0
-            std::cerr << "consider " << std::hex << addr << " " <<
-                         pBF->GetDynamicProcName(((Const*)cs->getDest()->getSubExp1())->getAddr()) << '\n';
-#endif
+            cs = (CallStatement *)((inst.rtl->back()->getKind() == STMT_CALL) ? inst.rtl->back() : nullptr);
+        const IBinarySymbol *sym = (cs && cs->isCallToMemOffset()) ?
+                    Symbols->find(((Const *)cs->getDest()->getSubExp1())->getAddr()) : nullptr;
+        if (sym && sym->isImportedFunction() && sym->getName() == "GetModuleHandleA" ) {
             int oNumBytes = inst.numBytes;
             inst = decodeInstruction(addr + oNumBytes);
             if (inst.valid && inst.rtl->size() == 2) {
                 Assign *a = dynamic_cast<Assign *>(inst.rtl->back()); // using back instead of rtl[1], since size()==2
                 if (a && *a->getRight() == *Location::regOf(24)) {
-#if 0
-                    std::cerr << "is followed by push eax.. " << "good" << '\n';
-#endif
                     inst = decodeInstruction(addr + oNumBytes + inst.numBytes);
                     if (not inst.rtl->empty()) {
                         CallStatement *toMain = dynamic_cast<CallStatement *>(inst.rtl->back());
                         if (toMain && toMain->getFixedDest() != NO_ADDRESS) {
-                            symIface->AddSymbol(toMain->getFixedDest(), "WinMain");
+                            Symbols->create(toMain->getFixedDest(),"WinMain");
                             gotMain = true;
                             return toMain->getFixedDest();
                         }
@@ -534,7 +528,7 @@ ADDRESS PentiumFrontEnd::getMainEntryPoint(bool &gotMain) {
                 }
             }
         }
-        if ((cs && cs->getKind() == STMT_CALL) && ((dest = (cs->getFixedDest())) != NO_ADDRESS)) {
+        if ((cs && (dest = (cs->getFixedDest())) != NO_ADDRESS)) {
             if (++conseq == 3 && 0) { // FIXME: this isn't working!
                 // Success. Return the target of the last call
                 gotMain = true;
@@ -566,9 +560,9 @@ ADDRESS PentiumFrontEnd::getMainEntryPoint(bool &gotMain) {
     } while (--instCount);
 
     // Last chance check: look for _main (e.g. Borland programs)
-    ADDRESS umain = symIface ? symIface->GetAddressByName("_main") : NO_ADDRESS;
-    if (umain != NO_ADDRESS)
-        return umain;
+    const IBinarySymbol *sym = Symbols->find("_main");
+    if (sym)
+        return sym->getLocation();
 
     // Not ideal; we must return start
     LOG_STREAM(2) << "main function not found\n";

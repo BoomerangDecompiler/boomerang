@@ -68,24 +68,19 @@ class ExeBinaryFile : public QObject, public LoaderInterface {
 public:
     ExeBinaryFile();                       // Default constructor
     void UnLoad() override;                // Unload the image
-    bool Open(const char *sName) override; // Open the file for r/w; pv
     void Close() override;                 // Close file opened with Open()
     bool PostLoad(void *handle) override;  // For archive files only
     LOAD_FMT GetFormat() const override;   // Get format (i.e. LOADFMT_EXE)
     MACHINE getMachine() const override;   // Get machine (i.e. MACHINE_PENTIUM)
     QString getFilename() const override { return m_pFileName; }
 
-    bool isLibrary() const override;
     QStringList getDependencyList() override;
     ADDRESS getImageBase() override;
     size_t getImageSize() override;
 
     // Analysis functions
-    std::list<SectionInfo *> &GetEntryPoints(const char *pEntry = "main") override;
     ADDRESS GetMainEntryPoint() override;
     ADDRESS GetEntryPoint() override;
-
-    tMapAddrToString &getSymbols() override;
 
     //
     //  --  --  --  --  --  --  --  --  --  --  --

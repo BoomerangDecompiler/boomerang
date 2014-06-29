@@ -18,7 +18,6 @@ class BinaryFileStub : public LoaderInterface {
 
     // Header functions
     virtual ADDRESS GetFirstHeaderAddress(); // Get ADDRESS of main header
-    virtual ADDRESS *GetImportStubs(int &numImports);
 
     //
     //    --    --    --    --    --    --    --    --    --    --    --

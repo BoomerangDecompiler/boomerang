@@ -32,11 +32,11 @@
 // Note: Unlike the LH macro in BinaryFile.h, the paraeter is not a pointer
 #define LMMH(x)                                                                                                        \
     ((unsigned)((Byte *)(&x))[0] + ((unsigned)((Byte *)(&x))[1] << 8) + ((unsigned)((Byte *)(&x))[2] << 16) +          \
-     ((unsigned)((Byte *)(&x))[3] << 24))
+    ((unsigned)((Byte *)(&x))[3] << 24))
 // With this one, x IS a pounsigneder
 #define LMMH2(x)                                                                                                       \
     ((unsigned)((Byte *)(x))[0] + ((unsigned)((Byte *)(x))[1] << 8) + ((unsigned)((Byte *)(x))[2] << 16) +             \
-     ((unsigned)((Byte *)(x))[3] << 24))
+    ((unsigned)((Byte *)(x))[3] << 24))
 #define LMMHw(x) ((unsigned)((Byte *)(&x))[0] + ((unsigned)((Byte *)(&x))[1] << 8))
 
 #define PACKED __attribute__((packed))
@@ -128,29 +128,23 @@ class DOS4GWBinaryFile : public QObject, public LoaderInterface {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID LoaderInterface_iid)
     Q_INTERFACES(LoaderInterface)
-  public:
+public:
     DOS4GWBinaryFile();
-    virtual ~DOS4GWBinaryFile();          // Destructor
-    virtual bool Open(const char *sName); // Open the file for r/w; ???
-    virtual void Close();                 // Close file opened with Open()
-    virtual void UnLoad();                // Unload the image
-    virtual LOAD_FMT GetFormat() const;   // Get format (i.e.
+    ~DOS4GWBinaryFile();          // Destructor
+    void Close() override;                 // Close file opened with Open()
+    void UnLoad() override;                // Unload the image
+    LOAD_FMT GetFormat() const override;   // Get format (i.e.
     // LOADFMT_DOS4GW)
-    virtual MACHINE getMachine() const; // Get machine (i.e.
+    MACHINE getMachine() const override; // Get machine (i.e.
     // MACHINE_Pentium)
     QString getFilename() const override { return m_pFileName; }
-    virtual bool isLibrary() const;
-    virtual QStringList getDependencyList();
-    virtual ADDRESS getImageBase();
-    virtual size_t getImageSize();
+    QStringList getDependencyList() override;
+    ADDRESS getImageBase() override;
+    size_t getImageSize() override;
 
-    virtual std::list<SectionInfo *> &GetEntryPoints(const char *pEntry = "main");
-    virtual ADDRESS GetMainEntryPoint();
-    virtual ADDRESS GetEntryPoint();
+    ADDRESS GetMainEntryPoint() override;
+    ADDRESS GetEntryPoint() override;
     DWord getDelta();
-    virtual QString SymbolByAddress(ADDRESS dwAddr);                        // Get sym from addr
-    virtual ADDRESS GetAddressByName(const QString &name, bool bNoTypeOK = false); // Find addr given name
-    virtual void AddSymbol(ADDRESS uNative, const char *pName);
 
     //
     //        --        --        --        --        --        --        --        --        --
@@ -159,22 +153,12 @@ class DOS4GWBinaryFile : public QObject, public LoaderInterface {
     // Dump headers, etc
     virtual bool DisplayDetails(const char *fileName, FILE *f = stdout);
 
-  protected:
+protected:
     int dos4gwRead2(short *ps) const; // Read 2 bytes from native addr
     int dos4gwRead4(int *pi) const;   // Read 4 bytes from native addr
 
-  public:
-
-    virtual bool IsDynamicLinkedProcPointer(ADDRESS uNative);
-    virtual bool IsDynamicLinkedProc(ADDRESS uNative);
-    virtual const QString &GetDynamicProcName(ADDRESS uNative);
-
-    virtual tMapAddrToString &getSymbols() { return dlprocptrs; }
-
-  protected:
     bool RealLoad(const QString &sName) override; // Load the file; pure virtual
-
-  private:
+private:
     bool PostLoad(void *handle); // Called after archive member loaded
 
     Header *m_pHeader;      // Pointer to header
@@ -186,7 +170,7 @@ class DOS4GWBinaryFile : public QObject, public LoaderInterface {
     // DWord*    m_pRelocTable;            // The relocation table
     char *base; // Beginning of the loaded image
     // Map from address of dynamic pointers to library procedure names:
-    tMapAddrToString dlprocptrs;
     QString m_pFileName;
+    class IBinarySymbolTable *Symbols;
     class IBinaryImage *Image;
 };

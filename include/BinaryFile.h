@@ -102,34 +102,9 @@ public:
 };
 
 #define LoaderInterface_iid "org.boomerang.LoaderInterface"
-#define SymTableInterface_iid "org.boomerang.LoaderInterface.SymTable"
 #define ObjcInterface_iid "org.boomerang.LoaderInterface.ObjC"
-#define SectionsInterface_iid "org.boomerang.LoaderInterface.Sections"
 // TODO: create a default implmentation for this interface that will notify the user about the missing functionality ?
 
-class SymbolTableInterface {
-public:
-    virtual ~SymbolTableInterface() {}
-
-    //! Lookup the address, return the name, or 0 if not found
-    virtual QString symbolByAddress(ADDRESS uNative) = 0;
-    //! Lookup the name, return the address. If not found, return NO_ADDRESS
-    virtual ADDRESS GetAddressByName(const QString &pName, bool bNoTypeOK = false) = 0;
-    virtual void AddSymbol(ADDRESS /*uNative*/, const QString & /*pName*/) = 0;
-    //! Lookup the name, return the size
-    virtual int GetSizeByName(const QString &pName, bool bTypeOK = false) = 0;
-    /***************************************************************************/ /**
-      *
-      * \brief Get an array of addresses of imported function stubs
-      * Set number of these to numImports
-      * \param numImports size of returned array
-      * \returns  array of stubs
-      ******************************************************************************/
-    virtual ADDRESS *GetImportStubs(int &numImports) = 0;
-    //! \return a filename for given symbol
-    virtual QString getFilenameSymbolFor(const char * /*sym*/) = 0;
-};
-Q_DECLARE_INTERFACE(SymbolTableInterface, SymTableInterface_iid)
 
 class ObjcAccessInterface {
 public:
@@ -141,9 +116,6 @@ Q_DECLARE_INTERFACE(ObjcAccessInterface, ObjcInterface_iid)
 
 class LoaderInterface {
 public:
-    typedef std::map<ADDRESS, QString> tMapAddrToString;
-
-public:
     virtual ~LoaderInterface() {}
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -151,41 +123,24 @@ public:
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     virtual void UnLoad() = 0;                //!< Unload the file. Pure virtual
-    virtual bool Open(const char *sName) = 0; //!< Open the file for r/w; pure virt
     virtual void Close() = 0;                 //!< Close file opened with Open()
     virtual LOAD_FMT GetFormat() const = 0;   //!< Get the format (e.g. LOADFMT_ELF)
     virtual MACHINE getMachine() const = 0;   //!< Get the expected machine (e.g. MACHINE_PENTIUM)
     virtual QString getFilename() const = 0;
     virtual bool RealLoad(const QString &sName) = 0;
 
-    //! Return whether or not the object is a library file.
-    virtual bool isLibrary() const = 0;
-    /// Return whether the object can be relocated if necessary
-    /// (ie if it is not tied to a particular base address). If not, the object
-    /// must be loaded at the address given by getImageBase()
-    virtual bool isRelocatable() const { return isLibrary(); }
     //! Return a list of library names which the binary file depends on
     virtual QStringList getDependencyList() = 0;
     /// Return the virtual address at which the binary expects to be loaded.
     /// For position independent / relocatable code this should be NO_ADDDRESS
     virtual ADDRESS getImageBase() = 0;
     virtual size_t getImageSize() = 0; //!< Return the total size of the loaded image
-    virtual std::vector<ADDRESS> GetExportedAddresses(bool /*funcsOnly*/ = true) { return std::vector<ADDRESS>(); }
 
     virtual bool IsRelocationAt(ADDRESS /*uNative*/) { return false; }
 
-    virtual bool IsDynamicLinkedProc(ADDRESS /*uNative*/) { return false; }
-    virtual bool IsStaticLinkedLibProc(ADDRESS /*uNative*/) { return false; }
-    virtual bool IsDynamicLinkedProcPointer(ADDRESS /*uNative*/) { return false; }
     virtual ADDRESS IsJumpToAnotherAddr(ADDRESS /*uNative*/) { return NO_ADDRESS; }
-    virtual tMapAddrToString &getSymbols() = 0;
     virtual bool hasDebugInfo() { return false; }
-    virtual const QString &GetDynamicProcName(ADDRESS /*uNative*/) {
-        static QString default_val("dynamic");
-        return default_val;
-    }
 
-    virtual std::list<SectionInfo *> &GetEntryPoints(const char *pEntry = "main") = 0;
     virtual ADDRESS GetMainEntryPoint() = 0;
     virtual ADDRESS GetEntryPoint() = 0; //!< Return the "real" entry point, ie where execution of the program begins
     ///////////////////////////////////////////////////////////////////////////////
@@ -197,33 +152,6 @@ public:
         // headers and section headers, as well
         // as contents of each of the sections.
     }
-    /***************************************************************************/ /**
-      *
-      * Specific to BinaryFile objects that implement a "global pointer"
-      * Gets a pair of unsigned integers representing the address of the
-      * abstract global pointer (%agp) (in first) and a constant that will
-      * be available in the csrparser as GLOBALOFFSET (second). At present,
-      * the latter is only used by the Palm machine, to represent the space
-      * allocated below the %a5 register (i.e. the difference between %a5 and
-      * %agp). This value could possibly be used for other purposes.
-      *
-      ******************************************************************************/
-    virtual std::pair<ADDRESS, unsigned> GetGlobalPointerInfo() { return {NO_ADDRESS, 0}; }
-
-    /***************************************************************************/ /**
-      *
-      * \brief Get a map from native addresses to symbolic names of global data items
-      * (if any).
-      *
-      * Those are shared with dynamically linked libraries.
-      * Example: __iob (basis for stdout).
-      * The ADDRESS is the native address of a pointer to the real dynamic data object.
-      * If the derived class doesn't implement this function, return an empty map
-      *
-      * \note Caller should delete the returned map
-      * \returns  map of globals
-      ******************************************************************************/
-    virtual std::map<ADDRESS, const char *> *GetDynamicGlobalMap() { return nullptr; }
 
     // Special load function for archive members
 protected:

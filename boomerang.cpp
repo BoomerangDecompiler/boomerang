@@ -9,6 +9,7 @@
 #include "boomerang.h"
 
 #include "db/BinaryImage.h"
+#include "db/SymTab.h"
 #include "config.h"
 #include "prog.h"
 #include "proc.h"
@@ -905,6 +906,13 @@ IBinaryImage *Boomerang::getImage()
     if(!Image)
         Image = new BinaryImage;
     return Image;
+}
+
+IBinarySymbolTable *Boomerang::getSymbols()
+{
+    if(!Symbols)
+        Symbols = new SymTab;
+    return Symbols;
 }
 
 void Boomerang::alertDecompileDebugPoint(UserProc *p, const char *description) {

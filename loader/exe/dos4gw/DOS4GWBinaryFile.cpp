@@ -24,6 +24,7 @@
 #include "BinaryFile.h"
 #include "boomerang.h"
 #include "IBinaryImage.h"
+#include "IBinarySymbols.h"
 
 #include "config.h"
 
@@ -48,38 +49,25 @@ int microX86Dis(void *p); // From microX86dis.c
 DOS4GWBinaryFile::DOS4GWBinaryFile()
 {
     Image = Boomerang::get()->getImage();
+    Symbols = Boomerang::get()->getSymbols();
 }
 
 DOS4GWBinaryFile::~DOS4GWBinaryFile() {
 }
 
-bool DOS4GWBinaryFile::Open(const char *sName) {
-    Q_UNUSED(sName);
-    // return Load(sName) != 0;
-    return false;
-}
-
 void DOS4GWBinaryFile::Close() { UnLoad(); }
-
-std::list<SectionInfo *> &DOS4GWBinaryFile::GetEntryPoints(const char *pEntry) {
-    Q_UNUSED(pEntry);
-    fprintf(stderr, "really don't know how to implement GetEntryPoints\n");
-    exit(0);
-    static std::list<SectionInfo *> l;
-    return l;
-}
 
 ADDRESS DOS4GWBinaryFile::GetEntryPoint() {
     return ADDRESS::g((LMMH(m_pLXObjects[LMMH(m_pLXHeader->eipobjectnum)].RelocBaseAddr) + LMMH(m_pLXHeader->eip)));
 }
 
 ADDRESS DOS4GWBinaryFile::GetMainEntryPoint() {
-    ADDRESS aMain = GetAddressByName("main", true);
-    if (aMain != NO_ADDRESS)
-        return aMain;
-    aMain = GetAddressByName("__CMain", true);
-    if (aMain != NO_ADDRESS)
-        return aMain;
+    const IBinarySymbol *sym = Symbols->find("main");
+    if (sym)
+        return sym->getLocation();
+    sym = Symbols->find("__CMain");
+    if (sym)
+        return sym->getLocation();
 
     // Search with this crude pattern: call, sub ebp, ebp, call __Cmain in the first 0x300 bytes
     // Start at program entry point
@@ -281,13 +269,6 @@ bool DOS4GWBinaryFile::RealLoad(const QString &sName) {
     return true;
 }
 
-bool DOS4GWBinaryFile::IsDynamicLinkedProc(ADDRESS uNative) {
-    if (dlprocptrs.find(uNative) != dlprocptrs.end() && dlprocptrs[uNative] != "main" &&
-        dlprocptrs[uNative] != "_start")
-        return true;
-    return false;
-}
-
 // Clean up and unload the binary image
 void DOS4GWBinaryFile::UnLoad() {}
 
@@ -295,30 +276,6 @@ bool DOS4GWBinaryFile::PostLoad(void *handle) {
     Q_UNUSED(handle);
     return false;
 }
-
-QString DOS4GWBinaryFile::SymbolByAddress(ADDRESS dwAddr) {
-    std::map<ADDRESS, QString>::iterator it = dlprocptrs.find(dwAddr);
-    if (it == dlprocptrs.end())
-        return 0;
-    return it->second;
-}
-
-ADDRESS DOS4GWBinaryFile::GetAddressByName(const QString &pName, bool bNoTypeOK /* = false */) {
-    Q_UNUSED(bNoTypeOK);
-
-    // This is "looking up the wrong way" and hopefully is uncommon
-    // Use linear search
-    std::map<ADDRESS, QString>::iterator it = dlprocptrs.begin();
-    while (it != dlprocptrs.end()) {
-        // std::cerr << "Symbol: " << it->second.c_str() << " at 0x" << std::hex << it->first << "\n";
-        if (it->second == pName)
-            return it->first;
-        it++;
-    }
-    return NO_ADDRESS;
-}
-
-void DOS4GWBinaryFile::AddSymbol(ADDRESS uNative, const char *pName) { dlprocptrs[uNative] = pName; }
 
 bool DOS4GWBinaryFile::DisplayDetails(const char *fileName, FILE *f
                                       /* = stdout */) {
@@ -342,21 +299,9 @@ int DOS4GWBinaryFile::dos4gwRead4(int *pi) const {
     return n;
 }
 
-bool DOS4GWBinaryFile::IsDynamicLinkedProcPointer(ADDRESS uNative) {
-    if (dlprocptrs.find(uNative) != dlprocptrs.end())
-        return true;
-    return false;
-}
-
-const QString &DOS4GWBinaryFile::GetDynamicProcName(ADDRESS uNative) { return dlprocptrs[uNative]; }
-
 LOAD_FMT DOS4GWBinaryFile::GetFormat() const { return LOADFMT_LX; }
 
 MACHINE DOS4GWBinaryFile::getMachine() const { return MACHINE_PENTIUM; }
-
-bool DOS4GWBinaryFile::isLibrary() const {
-    return false; // TODO
-}
 
 ADDRESS DOS4GWBinaryFile::getImageBase() { return ADDRESS::g(m_pLXObjects[0].RelocBaseAddr); }
 

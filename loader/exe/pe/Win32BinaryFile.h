@@ -147,13 +147,10 @@ typedef struct PACKED {
     DWord otRVA;  // RVA of the OT
 } PEExportDtor;
 
-class Win32BinaryFile : public QObject,
-        public LoaderInterface,
-        public SymbolTableInterface {
+class Win32BinaryFile : public QObject, public LoaderInterface {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID LoaderInterface_iid)
     Q_INTERFACES(LoaderInterface)
-    Q_INTERFACES(SymbolTableInterface)
 public:
     Win32BinaryFile();                    // Default constructor
     virtual ~Win32BinaryFile();           // Destructor
@@ -168,7 +165,6 @@ public:
     virtual ADDRESS getImageBase();
     virtual size_t getImageSize();
 
-    virtual std::list<SectionInfo *> &GetEntryPoints(const char *pEntry = "main");
     virtual ADDRESS GetMainEntryPoint();
     virtual ADDRESS GetEntryPoint();
     DWord getDelta();
@@ -186,10 +182,8 @@ protected:
 
 public:
 
-    bool IsDynamicLinkedProcPointer(ADDRESS uNative);
     bool IsStaticLinkedLibProc(ADDRESS uNative);
     ADDRESS IsJumpToAnotherAddr(ADDRESS uNative);
-    const QString &GetDynamicProcName(ADDRESS uNative);
 
     bool IsMinGWsAllocStack(ADDRESS uNative);
     bool IsMinGWsFrameInit(ADDRESS uNative);
@@ -197,7 +191,6 @@ public:
     bool IsMinGWsCleanupSetup(ADDRESS uNative);
     bool IsMinGWsMalloc(ADDRESS uNative);
 
-    virtual tMapAddrToString &getSymbols() { return dlprocptrs; }
 
     bool hasDebugInfo() { return haveDebugInfo; }
 
@@ -215,25 +208,12 @@ private:
     DWord *m_pRelocTable;  // The relocation table
     char *base;            // Beginning of the loaded image
     // Map from address of dynamic pointers to library procedure names:
-    tMapAddrToString dlprocptrs;
     QString m_pFileName;
     bool haveDebugInfo;
     bool mingw_main;
     class IBinaryImage *Image;
+    class IBinarySymbolTable *Symbols;
     // SymbolTableInterface interface
 public:
-    int GetSizeByName(const QString &pName, bool bTypeOK) {
-        Q_UNUSED(pName);
-        Q_UNUSED(bTypeOK);
-        return 4; // TODO: Fake!
-    }
-    ADDRESS *GetImportStubs(int &numImports) {
-        numImports = 0;
-        return nullptr;
-    }
-    QString getFilenameSymbolFor(const char *) { return ""; }
-    QString symbolByAddress(ADDRESS dwAddr) override;                        // Get sym from addr
-    ADDRESS GetAddressByName(const QString &name, bool bNoTypeOK = false) override; // Find addr given name
-    void AddSymbol(ADDRESS uNative, const QString &pName) override;
     void processIAT();
 };

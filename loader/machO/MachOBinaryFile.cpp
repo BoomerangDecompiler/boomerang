@@ -21,6 +21,7 @@
 #include "BinaryFile.h"
 #include "boomerang.h"
 #include "IBinaryImage.h"
+#include "IBinarySymbols.h"
 #include "config.h"
 #include "nlist.h"
 #include "macho-apple.h"
@@ -32,6 +33,9 @@
 #include <cassert>
 #include <cstring>
 #include <cstdlib>
+#define DEBUG_MACHO_LOADER 0
+#define DEBUG_PRINT(...) \
+            do { if (DEBUG_MACHO_LOADER) fprintf(stderr, __VA_ARGS__); } while (0)
 
 namespace {
 
@@ -52,6 +56,7 @@ MachOBinaryFile::MachOBinaryFile() {
     machine = MACHINE_PPC;
     swap_bytes = false;
     Image = Boomerang::get()->getImage();
+    Symbols = Boomerang::get()->getSymbols();
 }
 
 MachOBinaryFile::~MachOBinaryFile() {
@@ -65,23 +70,16 @@ bool MachOBinaryFile::Open(const char *sName) {
 
 void MachOBinaryFile::Close() { UnLoad(); }
 
-std::list<SectionInfo *> &MachOBinaryFile::GetEntryPoints(const char *pEntry) {
-    Q_UNUSED(pEntry);
-    fprintf(stderr, "really don't know how to implement GetEntryPoints\n");
-    exit(0);
-    static std::list<SectionInfo *> l;
-    return l;
-}
 
 ADDRESS MachOBinaryFile::GetEntryPoint() { return entrypoint; }
 
 ADDRESS MachOBinaryFile::GetMainEntryPoint() {
-    ADDRESS aMain = GetAddressByName("main", true);
-    if (aMain != NO_ADDRESS)
-        return aMain;
-    aMain = GetAddressByName("_main", true);
-    if (aMain != NO_ADDRESS)
-        return aMain;
+    auto symbol = Symbols->find("main");
+    if (symbol)
+        return symbol->getLocation();
+    symbol = Symbols->find("_main");
+    if (symbol)
+        return symbol->getLocation();
 
     return NO_ADDRESS;
 }
@@ -98,23 +96,19 @@ bool MachOBinaryFile::RealLoad(const QString &sName) {
 
     if (magic[0] == 0xca && magic[1] == 0xfe && magic[2] == 0xba && magic[3] == 0xbe) {
         int nimages = BE4(4);
-#ifdef DEBUG_MACHO_LOADER
-        printf("binary is universal with %d images\n", nimages);
-#endif
+        DEBUG_PRINT("binary is universal with %d images\n", nimages);
         for (int i = 0; i < nimages; i++) {
             int fbh = 8 + i * 5 * 4;
             unsigned int cputype = BE4(fbh);
             unsigned int offset = BE4(fbh + 8);
-#ifdef DEBUG_MACHO_LOADER
             unsigned int cpusubtype = BE4(fbh + 4);
             unsigned int size = BE4(fbh + 12);
             unsigned int pad = BE4(fbh + 16);
-            printf("cputype: %08x\n", cputype);
-            printf("cpusubtype: %08x\n", cpusubtype);
-            printf("offset: %08x\n", offset);
-            printf("size: %08x\n", size);
-            printf("pad: %08x\n", pad);
-#endif
+            DEBUG_PRINT("cputype: %08x\n", cputype);
+            DEBUG_PRINT("cpusubtype: %08x\n", cpusubtype);
+            DEBUG_PRINT("offset: %08x\n", offset);
+            DEBUG_PRINT("size: %08x\n", size);
+            DEBUG_PRINT("pad: %08x\n", pad);
 
             if (cputype == 0x7) // i386
                 imgoffs = offset;
@@ -162,24 +156,18 @@ bool MachOBinaryFile::RealLoad(const QString &sName) {
             segment_command seg;
             fread(&seg, 1, sizeof(seg), fp);
             segments.push_back(seg);
-#ifdef DEBUG_MACHO_LOADER
-            fprintf(stdout, "seg addr %x size %i fileoff %x filesize %i flags %x\n", BMMH(seg.vmaddr), BMMH(seg.vmsize),
+            DEBUG_PRINT("seg addr %x size %i fileoff %x filesize %i flags %x\n", BMMH(seg.vmaddr), BMMH(seg.vmsize),
                     BMMH(seg.fileoff), BMMH(seg.filesize), BMMH(seg.flags));
-#endif
             for (unsigned n = 0; n < BMMH(seg.nsects); n++) {
                 section sect;
                 fread(&sect, 1, sizeof(sect), fp);
                 sections.push_back(sect);
-#ifdef DEBUG_MACHO_LOADER
-                fprintf(stdout, "    sectname %s segname %s addr %x size %i flags %x\n", sect.sectname, sect.segname,
+                DEBUG_PRINT("    sectname %s segname %s addr %x size %i flags %x\n", sect.sectname, sect.segname,
                         BMMH(sect.addr), BMMH(sect.size), BMMH(sect.flags));
-#endif
                 if ((BMMH(sect.flags) & SECTION_TYPE) == S_SYMBOL_STUBS) {
                     stubs_sects.push_back(sect);
-#ifdef DEBUG_MACHO_LOADER
-                    fprintf(stdout, "        symbol stubs section, start index %i, stub size %i\n",
+                    DEBUG_PRINT("        symbol stubs section, start index %i, stub size %i\n",
                             BMMH(sect.reserved1), BMMH(sect.reserved2));
-#endif
                 }
                 if (!strcmp(sect.sectname, SECT_OBJC_SYMBOLS)) {
                     assert(objc_symbols == NO_ADDRESS);
@@ -211,22 +199,16 @@ bool MachOBinaryFile::RealLoad(const QString &sName) {
                 struct nlist sym;
                 fread(&sym, 1, sizeof(sym), fp);
                 symbols.push_back(sym);
-#ifdef DEBUG_MACHO_LOADER
-                // fprintf(stdout, "got sym %s flags %x value %x\n", strtbl + BMMH(sym.n_un.n_strx), sym.n_type, BMMH(sym.n_value));
-#endif
+                // DEBUG_PRINT(stdout, "got sym %s flags %x value %x\n", strtbl + BMMH(sym.n_un.n_strx), sym.n_type, BMMH(sym.n_value));
             }
-#ifdef DEBUG_MACHO_LOADER
-            fprintf(stdout, "symtab contains %i symbols\n", BMMH(syms.nsyms));
-#endif
+            DEBUG_PRINT("symtab contains %i symbols\n", BMMH(syms.nsyms));
         } break;
         case LC_DYSYMTAB: {
             struct dysymtab_command syms;
             fread(&syms, 1, sizeof(syms), fp);
-#ifdef DEBUG_MACHO_LOADER
-            fprintf(stdout, "dysymtab local %i %i defext %i %i undef %i %i\n", BMMH(syms.ilocalsym),
+            DEBUG_PRINT("dysymtab local %i %i defext %i %i undef %i %i\n", BMMH(syms.ilocalsym),
                     BMMH(syms.nlocalsym), BMMH(syms.iextdefsym), BMMH(syms.nextdefsym), BMMH(syms.iundefsym),
                     BMMH(syms.nundefsym));
-#endif
             // TODO: find uses for values below
             // startlocal = BMMH(syms.ilocalsym);
             // nlocal = BMMH(syms.nlocalsym);
@@ -235,23 +217,17 @@ bool MachOBinaryFile::RealLoad(const QString &sName) {
             // startundef = BMMH(syms.iundefsym);
             // nundef = BMMH(syms.nundefsym);
 
-#ifdef DEBUG_MACHO_LOADER
-            fprintf(stdout, "dysymtab has %i indirect symbols: ", BMMH(syms.nindirectsyms));
-#endif
+            DEBUG_PRINT("dysymtab has %i indirect symbols: ", BMMH(syms.nindirectsyms));
             indirectsymtbl = new unsigned[BMMH(syms.nindirectsyms)];
             fseek(fp, imgoffs + BMMH(syms.indirectsymoff), SEEK_SET);
             fread(indirectsymtbl, 1, BMMH(syms.nindirectsyms) * sizeof(unsigned), fp);
-#ifdef DEBUG_MACHO_LOADER
             for (unsigned j = 0; j < BMMH(syms.nindirectsyms); j++) {
-                fprintf(stdout, "%i ", BMMH(indirectsymtbl[j]));
+                DEBUG_PRINT("%i ", BMMH(indirectsymtbl[j]));
             }
-            fprintf(stdout, "\n");
-#endif
+            DEBUG_PRINT("\n");
         } break;
         default:
-#ifdef DEBUG_MACHO_LOADER
-            fprintf(stderr, "not handled load command %x\n", BMMH(cmd.cmd));
-#endif
+            DEBUG_PRINT("not handled load command %x\n", BMMH(cmd.cmd));
             // yep, there's lots of em
             break;
         }
@@ -285,9 +261,7 @@ bool MachOBinaryFile::RealLoad(const QString &sName) {
         unsigned fsz = BMMH(segments[i].filesize);
         memset(base + a.m_value - loaded_addr.m_value, 0, sz);
         fread(base + a.m_value - loaded_addr.m_value, 1, fsz, fp);
-#ifdef DEBUG_MACHO_LOADER
-        fprintf(stderr, "loaded segment %x %i in mem %i in file\n", a, sz, fsz);
-#endif
+        DEBUG_PRINT("loaded segment %x %i in mem %i in file\n", a, sz, fsz);
         QString name = QByteArray(segments[i].segname,17);
         SectionInfo *sect = Image->createSection(name,ADDRESS::n(BMMH(segments[i].vmaddr)),
                                                  ADDRESS::n(BMMH(segments[i].vmaddr)+BMMH(segments[i].vmsize)));
@@ -318,10 +292,8 @@ bool MachOBinaryFile::RealLoad(const QString &sName) {
                                        );
         }
 
-#ifdef DEBUG_MACHO_LOADER
-        fprintf(stderr, "loaded segment %x %i in mem %i in file code=%i data=%i readonly=%i\n", a, sz, fsz,
-                sect.bCode, sect.bData, sect.bReadOnly);
-#endif
+        DEBUG_PRINT("loaded segment %x %i in mem %i in file code=%i data=%i readonly=%i\n", a, sz, fsz,
+                sect->bCode, sect->bData, sect->bReadOnly);
     }
 
     // process stubs_sects
@@ -330,14 +302,11 @@ bool MachOBinaryFile::RealLoad(const QString &sName) {
             unsigned startidx = BMMH(stubs_sects[j].reserved1);
             unsigned symbol = BMMH(indirectsymtbl[startidx + i]);
             ADDRESS addr = ADDRESS::g(BMMH(stubs_sects[j].addr) + i * BMMH(stubs_sects[j].reserved2));
-#ifdef DEBUG_MACHO_LOADER
-            fprintf(stdout, "stub for %s at %x\n", strtbl + BMMH(symbols[symbol].n_un.n_strx), addr);
-#endif
+            DEBUG_PRINT("stub for %s at %x\n", strtbl + BMMH(symbols[symbol].n_un.n_strx), addr);
             char *name = strtbl + BMMH(symbols[symbol].n_un.n_strx);
             if (*name == '_') // we want printf not _printf
                 name++;
-            m_SymA[addr] = name;
-            dlprocs[addr] = name;
+            Symbols->create(addr,name).setAttr("Function",true).setAttr("Imported",true);
         }
     }
 
@@ -346,21 +315,20 @@ bool MachOBinaryFile::RealLoad(const QString &sName) {
         char *name = strtbl + BMMH(symbols[i].n_un.n_strx);
         if (BMMH(symbols[i].n_un.n_strx) != 0 && BMMH(symbols[i].n_value) != 0 && *name != 0) {
 
-#ifdef DEBUG_MACHO_LOADER
-            fprintf(stdout, "symbol %s at %x type %x\n", name, BMMH(symbols[i].n_value),
-                    BMMH(symbols[i].n_type) & N_TYPE);
-#endif
+            uint8_t sym_type  = symbols[i].n_type;
+            bool is_stab = (sym_type & N_STAB)!=0;
+            if(is_stab)
+                continue; //TODO: handle stab symbols !
+            DEBUG_PRINT("symbol %s at %x type %x\n", name, BMMH(symbols[i].n_value), sym_type & N_TYPE);
             if (*name == '_') // we want main not _main
                 name++;
-            m_SymA[ADDRESS::g(BMMH(symbols[i].n_value))] = name;
+            Symbols->create(ADDRESS::g(BMMH(symbols[i].n_value)),name);
         }
     }
 
     // process objective-c section
     if (objc_modules != NO_ADDRESS) {
-#ifdef DEBUG_MACHO_LOADER_OBJC
-        fprintf(stdout, "processing objective-c section\n");
-#endif
+        DEBUG_PRINT("processing objective-c section\n");
         for (unsigned i = 0; i < objc_modules_size;) {
             struct objc_module *module =
                     (struct objc_module *)(ADDRESS::host_ptr(base) + objc_modules - loaded_addr + i).m_value;
@@ -428,42 +396,6 @@ bool MachOBinaryFile::PostLoad(void *handle) {
     return false;
 }
 
-QString MachOBinaryFile::symbolByAddress(ADDRESS dwAddr) {
-    tMapAddrToString::iterator it = m_SymA.find(dwAddr);
-    if (it == m_SymA.end())
-        return 0;
-    return it->second;
-}
-
-ADDRESS MachOBinaryFile::GetAddressByName(const QString &pName, bool bNoTypeOK /* = false */) {
-    Q_UNUSED(bNoTypeOK);
-    // This is "looking up the wrong way" and hopefully is uncommon
-    // Use linear search
-    tMapAddrToString::iterator it = m_SymA.begin();
-    while (it != m_SymA.end()) {
-        // std::cerr << "Symbol: " << it->second.c_str() << " at 0x" << std::hex << it->first << "\n";
-        if (it->second == pName)
-            return it->first;
-        it++;
-    }
-    return NO_ADDRESS;
-}
-
-void MachOBinaryFile::AddSymbol(ADDRESS uNative, const QString &pName) { m_SymA[uNative] = pName; }
-
-int MachOBinaryFile::GetSizeByName(const QString &pName, bool bTypeOK) {
-    if (GetAddressByName(pName, bTypeOK) != NO_ADDRESS) {
-        return 4; // TODO: HACK
-    }
-    return 0;
-}
-
-ADDRESS *MachOBinaryFile::GetImportStubs(int &numImports) {
-    numImports = 0;
-    return nullptr;
-}
-
-QString MachOBinaryFile::getFilenameSymbolFor(const char *) { return ""; }
 
 bool MachOBinaryFile::DisplayDetails(const char *fileName, FILE *f
                                      /* = stdout */) {
@@ -519,7 +451,6 @@ unsigned short MachOBinaryFile::BMMHW(unsigned short x) {
         return x;
 }
 
-const QString &MachOBinaryFile::GetDynamicProcName(ADDRESS uNative) { return dlprocs[uNative]; }
 
 LOAD_FMT MachOBinaryFile::GetFormat() const { return LOADFMT_MACHO; }
 

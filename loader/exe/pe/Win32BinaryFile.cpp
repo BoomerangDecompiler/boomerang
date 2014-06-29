@@ -37,6 +37,7 @@ namespace dbghelp {
 
 #include "BinaryFile.h"
 #include "IBinaryImage.h"
+#include "IBinarySymbols.h"
 #include "boomerang.h"
 #include "config.h"
 
@@ -70,6 +71,7 @@ struct SectionParam {
 
 Win32BinaryFile::Win32BinaryFile() : mingw_main(false) {
     Image = Boomerang::get()->getImage();
+    Symbols = Boomerang::get()->getSymbols();
 }
 
 Win32BinaryFile::~Win32BinaryFile() {
@@ -83,14 +85,6 @@ bool Win32BinaryFile::Open(const char *sName) {
 
 void Win32BinaryFile::Close() { UnLoad(); }
 
-std::list<SectionInfo *> &Win32BinaryFile::GetEntryPoints(const char *pEntry) {
-    Q_UNUSED(pEntry);
-    fprintf(stderr, "really don't know how to implement GetEntryPoints\n");
-    exit(0);
-    static std::list<SectionInfo *> l;
-    return l;
-}
-
 ADDRESS Win32BinaryFile::GetEntryPoint() {
     return ADDRESS::g(LMMH(m_pPEHeader->EntrypointRVA) + LMMH(m_pPEHeader->Imagebase));
 }
@@ -99,12 +93,15 @@ ADDRESS Win32BinaryFile::GetEntryPoint() {
 // opcode) to exit; within 10 instructions before that should be the call to WinMain (with no other calls inbetween).
 // This pattern should work for "old style" and "new style" PE executables, as well as console mode PE files.
 ADDRESS Win32BinaryFile::GetMainEntryPoint() {
-    ADDRESS aMain = GetAddressByName("main", true);
-    if (aMain != NO_ADDRESS)
-        return aMain;
-    aMain = GetAddressByName("_main", true); // Example: MinGW
-    if (aMain != NO_ADDRESS)
-        return aMain;
+    auto aMain = Symbols->find("main");
+    if (aMain)
+        return aMain->getLocation();
+    aMain = Symbols->find("_main"); // Example: MinGW
+    if (aMain)
+        return aMain->getLocation();
+    aMain = Symbols->find("WinMain"); // Example: MinGW
+    if (aMain)
+        return aMain->getLocation();
 
     // Start at program entry point
     unsigned p = LMMH(m_pPEHeader->EntrypointRVA);
@@ -149,7 +146,8 @@ ADDRESS Win32BinaryFile::GetMainEntryPoint() {
                 addr = LMMH(*(p + base + 2));
                 //                    const char *c = dlprocptrs[addr].c_str();
                 //                    printf("Checking %x finding %s\n", addr, c);
-                if (dlprocptrs[addr] == "exit") {
+                auto exit_sym = Symbols->find(addr);
+                if (exit_sym && exit_sym->getName() == "exit") {
                     if (gap <= 10) {
                         // This is it. The instruction at lastOrdCall is (win)main
                         addr = LMMH(*(lastOrdCall + base + 1));
@@ -213,10 +211,12 @@ ADDRESS Win32BinaryFile::GetMainEntryPoint() {
     p = LMMH(m_pPEHeader->EntrypointRVA);
     if (*(unsigned char *)(p + base + 0x20) == 0xff && *(unsigned char *)(p + base + 0x21) == 0x15) {
         ADDRESS desti = ADDRESS::g(LMMH(*(p + base + 0x22)));
-        if (dlprocptrs.find(desti) != dlprocptrs.end() && dlprocptrs[desti] == "GetVersionExA") {
+        auto dest_sym = Symbols->find(desti);
+        if (dest_sym && dest_sym->getName() == "GetVersionExA") {
             if (*(unsigned char *)(p + base + 0x6d) == 0xff && *(unsigned char *)(p + base + 0x6e) == 0x15) {
                 desti = LMMH(*(p + base + 0x6f));
-                if (dlprocptrs.find(desti) != dlprocptrs.end() && dlprocptrs[desti] == "GetModuleHandleA") {
+                dest_sym = Symbols->find(desti);
+                if (dest_sym && dest_sym->getName() == "GetModuleHandleA") {
                     if (*(unsigned char *)(p + base + 0x16e) == 0xe8) {
                         ADDRESS dest = ADDRESS::g(p + 0x16e + 5 + LMMH(*(p + base + 0x16f)));
                         return dest + LMMH(m_pPEHeader->Imagebase);
@@ -288,10 +288,12 @@ ADDRESS Win32BinaryFile::GetMainEntryPoint() {
                 ADDRESS desti = ADDRESS::g(LMMH(*(dest + base + 2)));
                 // skip all the call statements until we hit a call to an indirect call to ExitProcess
                 // main is the 2nd call before this one
-                if (op2 == 0xff && op2a == 0x25 && dlprocptrs.find(desti) != dlprocptrs.end() &&
-                    dlprocptrs[desti] == "ExitProcess") {
-                    mingw_main = true;
-                    return lastlastcall + 5 + LMMH(*(lastlastcall.m_value + base + 1)) + LMMH(m_pPEHeader->Imagebase);
+                if (op2 == 0xff && op2a == 0x25) {
+                    auto dest_sym = Symbols->find(desti);
+                    if(dest_sym && dest_sym->getName() == "ExitProcess") {
+                        mingw_main = true;
+                        return lastlastcall + 5 + LMMH(*(lastlastcall.m_value + base + 1)) + LMMH(m_pPEHeader->Imagebase);
+                    }
                 }
                 lastlastcall = lastcall;
                 lastcall = p;
@@ -320,13 +322,14 @@ ADDRESS Win32BinaryFile::GetMainEntryPoint() {
         op2 = *(unsigned char *)(p + base + 1);
         if (op1 == 0xFF && op2 == 0x15) { // indirect CALL opcode
             ADDRESS desti = ADDRESS::g(LMMH(*(p + base + 2)));
-            if (dlprocptrs.find(desti) != dlprocptrs.end() && dlprocptrs[desti] == "GetModuleHandleA") {
+            auto dest_sym = Symbols->find(desti);
+            if (dest_sym && dest_sym->getName() == "GetModuleHandleA") {
                 gotGMHA = true;
             }
         }
         if (op1 == 0xE8 && gotGMHA) { // CALL opcode
             ADDRESS dest = ADDRESS::g(p + 5 + LMMH(*(p + base + 1)));
-            AddSymbol(dest + LMMH(m_pPEHeader->Imagebase), "WinMain");
+            Symbols->create(dest + LMMH(m_pPEHeader->Imagebase),"WinMain");
             return dest + LMMH(m_pPEHeader->Imagebase);
         }
         if (op1 == 0xc3) // ret ends search
@@ -367,18 +370,14 @@ void Win32BinaryFile::processIAT()
                     // This is an ordinal number (stupid idea)
                     QString nodots = QString(dllName).replace(".","_"); // Dots can't be in identifiers
                     nodots = QString("%1_%2").arg(nodots).arg(iatEntry & 0x7FFFFFFF);
-                    dlprocptrs[paddr] = nodots;
-                    // printf("Added symbol %s value %x\n", ost.str().c_str(), paddr);
+                    Symbols->create(paddr,nodots).setAttr("Imported",true).setAttr("Function",true);
                 } else {
                     // Normal case (IMAGE_IMPORT_BY_NAME). Skip the useless hint (2 bytes)
                     QString name((const char *)(iatEntry + 2 + base));
-                    dlprocptrs[paddr] = name;
-                    if (paddr != ADDRESS::host_ptr(iat) - ADDRESS::host_ptr(base) + LMMH(m_pPEHeader->Imagebase))
-                        dlprocptrs[ADDRESS::host_ptr(iat) - ADDRESS::host_ptr(base) + LMMH(m_pPEHeader->Imagebase)] =
-                            QString("old_") + name; // add both possibilities
-                                                        // printf("Added symbol %s value %x\n", name.c_str(), paddr);
-                    // printf("Also added old_%s value %x\n", name.c_str(), (int)iat - (int)base +
-                    //         LMMH(m_pPEHeader->Imagebase));
+                    Symbols->create(paddr,name).setAttr("Imported",true).setAttr("Function",true);
+                    ADDRESS old_loc = ADDRESS::host_ptr(iat) - ADDRESS::host_ptr(base) + LMMH(m_pPEHeader->Imagebase);
+                    if (paddr != old_loc) // add both possibilities
+                        Symbols->create(old_loc,QString("old_") + name).setAttr("Imported",true).setAttr("Function",true);
                 }
                 iat++;
                 iatEntry = LMMH(*iat);
@@ -480,9 +479,8 @@ bool Win32BinaryFile::RealLoad(const QString &sName) {
     // Give the entry point a symbol
     ADDRESS entry = GetMainEntryPoint();
     if (entry != NO_ADDRESS) {
-        tMapAddrToString::iterator it = dlprocptrs.find(entry);
-        if (it == dlprocptrs.end())
-            dlprocptrs[entry] = "main";
+        if (!Symbols->find(entry))
+            Symbols->create(entry,"main").setAttr("Function",true);
     }
 
     // Give a name to any jumps you find to these import entries
@@ -553,14 +551,14 @@ void Win32BinaryFile::findJumps(ADDRESS curr) {
         if (LH((curr + delta).m_value) != 0xFF + (0x25 << 8))
             continue;
         ADDRESS operand = ADDRESS::g(LMMH2((curr + delta + 2).m_value));
-        tMapAddrToString::iterator it;
-        it = dlprocptrs.find(operand);
-        if (it == dlprocptrs.end())
+        auto symbol_it = Symbols->find(operand);
+        if (nullptr == symbol_it)
             continue;
-        QString sym = it->second;
-        dlprocptrs[operand] = "__imp_" + sym;
-        dlprocptrs[curr] = sym; // Add new entry
-        // std::cerr << "Added " << sym << " at 0x" << std::hex << curr << "\n";
+        QString sym_name = symbol_it->getName();
+        if(false == const_cast<IBinarySymbol *>(symbol_it)->rename("__imp_" + sym_name)) {
+            continue;
+        }
+        Symbols->create(curr,sym_name).setAttr("Function",true).setAttr("Imported",true);
         curr -= 4; // Next match is at least 4+2 bytes away
         cnt = 0;
     }
@@ -696,98 +694,6 @@ BOOL CALLBACK printem(dbghelp::PSYMBOL_INFO pSymInfo, ULONG SymbolSize, PVOID Us
 }
 #endif
 
-QString Win32BinaryFile::symbolByAddress(ADDRESS dwAddr) {
-    if (m_pPEHeader->Subsystem == 1 && // native
-        LMMH(m_pPEHeader->EntrypointRVA) + LMMH(m_pPEHeader->Imagebase) == dwAddr.m_value)
-        return "DriverEntry";
-
-    if (IsMinGWsAllocStack(dwAddr))
-        return "__mingw_allocstack";
-    if (IsMinGWsFrameInit(dwAddr))
-        return "__mingw_frame_init";
-    if (IsMinGWsFrameEnd(dwAddr))
-        return "__mingw_frame_end";
-    if (IsMinGWsCleanupSetup(dwAddr))
-        return "__mingw_cleanup_setup";
-    if (IsMinGWsMalloc(dwAddr))
-        return "malloc";
-
-#if defined(_WIN32) && !defined(__MINGW32__)
-    HANDLE hProcess = GetCurrentProcess();
-    dbghelp::SYMBOL_INFO *sym = (dbghelp::SYMBOL_INFO *)malloc(sizeof(dbghelp::SYMBOL_INFO) + 1000);
-    sym->SizeOfStruct = sizeof(*sym);
-    sym->MaxNameLen = 1000;
-    sym->Name[0] = 0;
-    BOOL got = dbghelp::SymFromAddr(hProcess, dwAddr.m_value, 0, sym);
-    if (*sym->Name) {
-        QString n = sym->Name;
-#if 0
-        std::cout << "found symbol " << n << " for address " << dwAddr << "\n";
-        std::cout << "typeindex: " << sym->TypeIndex << "\n";
-        DWORD d = 0;
-        got = dbghelp::SymGetTypeInfo(hProcess, m_pPEHeader->Imagebase, sym->TypeIndex, dbghelp::TI_GET_SYMTAG, &d);
-        std::cout << "symtag: " << d << "\n";
-        got = dbghelp::SymGetTypeInfo(hProcess, m_pPEHeader->Imagebase, sym->TypeIndex, dbghelp::TI_GET_CALLING_CONVENTION, &d);
-        std::cout << "calling convention: " << d << "\n";
-        DWORD my_typeid;
-        got = dbghelp::SymGetTypeInfo(hProcess, m_pPEHeader->Imagebase, sym->TypeIndex, dbghelp::TI_GET_TYPEID, &my_typeid);
-        std::cout << "typeid: " << my_typeid << "\n";
-        got = dbghelp::SymGetTypeInfo(hProcess, m_pPEHeader->Imagebase, my_typeid, dbghelp::TI_GET_SYMTAG, &d);
-        std::cout << "symtag: " << d << " ";
-        got = dbghelp::SymGetTypeInfo(hProcess, m_pPEHeader->Imagebase, my_typeid, dbghelp::TI_GET_BASETYPE, &d);
-        std::cout << "basetype: " << d << " ";
-        got = dbghelp::SymGetTypeInfo(hProcess, m_pPEHeader->Imagebase, my_typeid, dbghelp::TI_GET_TYPE, &d);
-        std::cout << "type: " << d << "\n";
-        DWORD count = 0;
-        got = dbghelp::SymGetTypeInfo(hProcess, m_pPEHeader->Imagebase, sym->TypeIndex, dbghelp::TI_GET_CHILDRENCOUNT, &count);
-        std::cout << "num children: " << count << "\n";
-        int FindChildrenSize = sizeof(dbghelp::TI_FINDCHILDREN_PARAMS) + count*sizeof(ULONG);
-        dbghelp::TI_FINDCHILDREN_PARAMS* pFC = (dbghelp::TI_FINDCHILDREN_PARAMS*)malloc( FindChildrenSize );
-        memset( pFC, 0, FindChildrenSize );
-        pFC->Count = count;
-        got = SymGetTypeInfo( hProcess, m_pPEHeader->Imagebase, sym->TypeIndex, dbghelp::TI_FINDCHILDREN, pFC );
-        for (int i = 0; i < count; i++) {
-            got = dbghelp::SymGetTypeInfo(hProcess, m_pPEHeader->Imagebase, pFC->ChildId[i], dbghelp::TI_GET_TYPEID, &my_typeid);
-            std::cout << "  child: " << pFC->ChildId[i] << " typeid: " << my_typeid << " ";
-            got = dbghelp::SymGetTypeInfo(hProcess, m_pPEHeader->Imagebase, my_typeid, dbghelp::TI_GET_SYMTAG, &d);
-            std::cout << "symtag: " << d << " ";
-            got = dbghelp::SymGetTypeInfo(hProcess, m_pPEHeader->Imagebase, my_typeid, dbghelp::TI_GET_BASETYPE, &d);
-            std::cout << "basetype: " << d << " ";
-            got = dbghelp::SymGetTypeInfo(hProcess, m_pPEHeader->Imagebase, my_typeid, dbghelp::TI_GET_TYPE, &d);
-            std::cout << "type: " << d << "\n";
-        }
-        // locals and params
-        dbghelp::IMAGEHLP_STACK_FRAME stack;
-        stack.InstructionOffset = dwAddr;
-        dbghelp::SymSetContext(hProcess, &stack, 0);
-        dbghelp::SymEnumSymbols(hProcess, 0, nullptr, printem, 0);
-#endif
-        free(sym);
-        return n;
-    } else if (IsJumpToAnotherAddr(dwAddr) != NO_ADDRESS)
-        return SymbolByAddress(IsJumpToAnotherAddr(dwAddr));
-#endif
-
-    tMapAddrToString::iterator it = dlprocptrs.find(dwAddr);
-    if (it == dlprocptrs.end())
-        return "";
-    return it->second;
-}
-
-ADDRESS Win32BinaryFile::GetAddressByName(const QString &pName, bool bNoTypeOK /* = false */) {
-    Q_UNUSED(bNoTypeOK);
-    // This is "looking up the wrong way" and hopefully is uncommon.  Use linear search
-    tMapAddrToString::iterator it = dlprocptrs.begin();
-    while (it != dlprocptrs.end()) {
-        // std::cerr << "Symbol: " << it->second.c_str() << " at 0x" << std::hex << it->first << "\n";
-        if (it->second == pName)
-            return it->first;
-        it++;
-    }
-    return NO_ADDRESS;
-}
-
-void Win32BinaryFile::AddSymbol(ADDRESS uNative, const QString &pName) { dlprocptrs[uNative] = pName; }
 
 bool Win32BinaryFile::DisplayDetails(const char *fileName, FILE *f /* = stdout */) {
     Q_UNUSED(fileName);
@@ -808,12 +714,6 @@ int Win32BinaryFile::win32Read4(int *pi) const {
     int n2 = win32Read2(p + 1);
     int n = (int)(n1 | (n2 << 16));
     return n;
-}
-
-bool Win32BinaryFile::IsDynamicLinkedProcPointer(ADDRESS uNative) {
-    if (dlprocptrs.find(uNative) != dlprocptrs.end())
-        return true;
-    return false;
 }
 
 bool Win32BinaryFile::IsStaticLinkedLibProc(ADDRESS uNative) {
@@ -935,8 +835,6 @@ ADDRESS Win32BinaryFile::IsJumpToAnotherAddr(ADDRESS uNative) {
         return NO_ADDRESS;
     return ADDRESS::g(Image->readNative4(uNative + 1)) + uNative + 5;
 }
-
-const QString &Win32BinaryFile::GetDynamicProcName(ADDRESS uNative) { return dlprocptrs[uNative]; }
 
 LOAD_FMT Win32BinaryFile::GetFormat() const { return LOADFMT_PE; }
 

@@ -193,11 +193,6 @@ LOAD_FMT ExeBinaryFile::GetFormat() const { return LOADFMT_EXE; }
 
 MACHINE ExeBinaryFile::getMachine() const { return MACHINE_PENTIUM; }
 
-bool ExeBinaryFile::Open(const char *sName) {
-    Q_UNUSED(sName);
-    // Not implemented yet
-    return false;
-}
 void ExeBinaryFile::Close() {
     // Not implemented yet
     return;
@@ -208,7 +203,6 @@ bool ExeBinaryFile::PostLoad(void *handle) {
     return false;
 }
 
-bool ExeBinaryFile::isLibrary() const { return false; }
 
 QStringList ExeBinaryFile::getDependencyList() { return QStringList(); /* for now */ }
 
@@ -222,23 +216,4 @@ ADDRESS ExeBinaryFile::GetMainEntryPoint() { return NO_ADDRESS; }
 ADDRESS ExeBinaryFile::GetEntryPoint() {
     // Check this...
     return ADDRESS::g((LH(&m_pHeader->initCS) << 4) + LH(&m_pHeader->initIP));
-}
-
-LoaderInterface::tMapAddrToString &ExeBinaryFile::getSymbols() {
-    static tMapAddrToString empty;
-    return empty;
-}
-
-// This is provided for completeness only...
-std::list<SectionInfo *> &ExeBinaryFile::GetEntryPoints(const char *pEntry
-                                                        /* = "main"*/) {
-    Q_UNUSED(pEntry);
-    std::list<SectionInfo *> *ret = new std::list<SectionInfo *>;
-#if 0 // Copied from PalmBinaryFile.cc
-    SectionInfo* pSect = GetSectionInfoByName("code1");
-    if (pSect == 0)
-        return *ret;               // Failed
-    ret->push_back(pSect);
-#endif
-    return *ret;
 }
