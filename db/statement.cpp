@@ -264,7 +264,7 @@ bool Instruction::canPropagateToExp(Exp &e) {
     return true;
 }
 
-static int progress = 0;
+static int propagate_progress = 0;
 /***************************************************************************/ /**
   * \brief Propagate to this statement
   * \param destCounts is a map that indicates how may times a statement's definition is used
@@ -275,10 +275,10 @@ static int progress = 0;
   ******************************************************************************/
 bool Instruction::propagateTo(bool &convert, std::map<Exp *, int, lessExpStar> *destCounts /* = nullptr */,
                               LocationSet *usedByDomPhi /* = nullptr */, bool force /* = false */) {
-    if (++progress > 1000) {
+    if (++propagate_progress > 1000) {
         LOG_STREAM() << 'p';
         LOG_STREAM().flush();
-        progress = 0;
+        propagate_progress = 0;
     }
     bool change;
     int changes = 0;

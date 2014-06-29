@@ -64,6 +64,7 @@ protected:
 
 class Prog : public QObject {
     Q_OBJECT
+    class IBinaryImage *Image;
 public:
     /// The type for the list of functions.
     typedef std::list<Module *>               ModuleListType;
@@ -159,22 +160,18 @@ public:
         return getBinarySymbolTable() ? getBinarySymbolTable()->symbolByAddress(dest) : nullptr;
     }
 
-    SectionInfo *getSectionInfoByAddr(ADDRESS a) { return pSections->getSectionInfoByAddr(a); }
-    ADDRESS getLimitTextLow() { return pSections->getLimitTextLow(); }
-    ADDRESS getLimitTextHigh() { return pSections->getLimitTextHigh(); }
-    bool isReadOnly(ADDRESS a) { return pSections->isReadOnly(a); }
-    bool isStringConstant(ADDRESS a) { return pSections->isStringConstant(a); }
-    bool isCFStringConstant(ADDRESS a) { return pSections->isCFStringConstant(a); }
+    const SectionInfo *getSectionInfoByAddr(ADDRESS a);
+    ADDRESS getLimitTextLow();
+    ADDRESS getLimitTextHigh();
+    bool isReadOnly(ADDRESS a);
+    bool isStringConstant(ADDRESS a);
+    bool isCFStringConstant(ADDRESS a);
 
     // Read 1, 2, 4, or 8 bytes given a native address
-    int readNative1(ADDRESS a) { return pBinaryData->readNative1(a); }
-    int readNative2(ADDRESS a) { return pBinaryData->readNative2(a); }
-    int readNative4(ADDRESS a) { return pBinaryData->readNative4(a); }
-    float readNativeFloat4(ADDRESS a) { return pBinaryData->readNativeFloat4(a); }
-    double readNativeFloat8(ADDRESS a) { return pBinaryData->readNativeFloat8(a); }
-    QWord readNative8(ADDRESS a) { return pBinaryData->readNative8(a); }
+    int readNative1(ADDRESS a);
+    int readNative2(ADDRESS a);
+    int readNative4(ADDRESS a);
     Exp *readNativeAs(ADDRESS uaddr, SharedType type);
-    ptrdiff_t getTextDelta() { return pSections->getTextDelta(); }
 
     bool isDynamicLinkedProcPointer(ADDRESS dest) { return pLoaderIface->IsDynamicLinkedProcPointer(dest); }
     const QString &GetDynamicProcName(ADDRESS uNative) { return pLoaderIface->GetDynamicProcName(uNative); }
@@ -224,16 +221,12 @@ signals:
 protected:
     QObject *pLoaderPlugin; //!< Pointer to the instance returned by loader plugin
     LoaderInterface *pLoaderIface = nullptr;
-    BinaryData *pBinaryData = nullptr; //!< Stored BinaryData interface for faster access.
-    SectionInterface *pSections = nullptr;
     SymbolTableInterface *pSymbols = nullptr;
     FrontEnd *DefaultFrontend; //!< Pointer to the FrontEnd object for the project
 
     /* Persistent state */
     QString m_name;            // name of the program
     QString m_path;            // its full path
-    //std::list<Function *> m_procs; //!< list of procedures
-    //PROGMAP m_procLabels;      //!< map from address to Proc*
     // FIXME: is a set of Globals the most appropriate data structure? Surely not.
     std::set<Global *> globals; //!< globals to print at code generation time
     DataIntervalMap globalMap;  //!< Map from address to DataInterval (has size, name, type)

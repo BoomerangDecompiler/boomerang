@@ -15,6 +15,7 @@
   ******************************************************************************/
 #include "pentiumdecoder.h"
 #include "rtl.h"
+#include "IBinaryImage.h"
 #include "decoder.h"
 #include "prog.h"
 #include "exp.h"
@@ -40752,8 +40753,8 @@ SWord PentiumDecoder::getWord(intptr_t lc)
 DWord PentiumDecoder::getDword(intptr_t lc)
 /* get4Bytes - returns the next 4-Byte word from image pointed to by lc. */
 {
-    lastDwordLc = lc - prog->getTextDelta();
-    return prog->readNative4(lastDwordLc);
+    lastDwordLc = lc - Image->getTextDelta();
+    return Image->readNative4(lastDwordLc);
     //    assert(lc<prog->getLimitTextHigh().m_value);
     //    return (DWord)(*(Byte *)lc + (*(Byte *)(lc+1) << 8) + (*(Byte *)(lc+2) << 16) + (*(Byte *)(lc+3) << 24));
 }

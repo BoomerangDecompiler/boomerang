@@ -1,11 +1,11 @@
 /* 26 Nov 02 - Mike: Fixed return types to avoid warnings with gcc */
 
-#include <cassert>
 #include "BinaryFileStub.h"
-#include <assert.h>
+#include <cassert>
+#include "boomerang.h"
 
 // text segment of hello pentium
-static char pent_hello_text[] = {
+static unsigned char pent_hello_text[] = {
     0x6a, 0x00,  0x6a, 0x00,  0x8b, 0xec,  0x52, 0xb8,  0x80, 0x87,  0x04, 0x08,  0x85, 0xc0,  0x74, 0x0d,  0x68, 0x80,
     0x87, 0x04,  0x08, 0xe8,  0x66, 0xff,  0xff, 0xff,  0x83, 0xc4,  0x04, 0xb8,  0x44, 0xa4,  0x04, 0x08,  0x85, 0xc0,
     0x74, 0x05,  0xe8, 0x55,  0xff, 0xff,  0xff, 0x68,  0xe0, 0x93,  0x04, 0x08,  0xe8, 0x4b,  0xff, 0xff,  0xff, 0x8b,
@@ -174,20 +174,17 @@ static char pent_hello_text[] = {
     0xfc, 0xc9,  0xc3};
 
 BinaryFileStub::BinaryFileStub() {
-    m_iNumSections = 1;
-    SectionInfo *text = new SectionInfo();
+    auto Image = Boomerang::get()->getImage();
+    SectionInfo *text = Image->createSection(".text",0x8048810,0x8048810+sizeof(pent_hello_text));
     text->pSectionName = ".text";
-    text->uNativeAddr = 0x8048810;
-    text->uHostAddr = (ADDRESS)pent_hello_text;
-    text->uSectionSize = sizeof(pent_hello_text);
+    text->uHostAddr = ADDRESS::host_ptr(pent_hello_text);
     text->uSectionEntrySize = 0;
     text->uType = 0;
     text->bCode = 1;
     text->bData = 0;
     text->bBss = 0;
     text->bReadOnly = 1;
-    m_pSections = text;
-    getTextLimits();
+    Image->getTextLimits();
 }
 
 LOAD_FMT BinaryFileStub::GetFormat() const { return LOADFMT_ELF; }

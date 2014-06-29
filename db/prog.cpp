@@ -39,6 +39,7 @@
 #include "config.h"
 #include "managed.h"
 #include "log.h"
+#include "BinaryImage.h"
 
 #include <QtCore/QFileInfo>
 #include <QtCore/QDebug>
@@ -69,6 +70,7 @@ namespace dbghelp {
 
 Prog::Prog() : pLoaderPlugin(nullptr), DefaultFrontend(nullptr), m_iNumberedProc(1) {
     m_rootCluster = getOrInsertModule("prog");
+    Image = Boomerang::get()->getImage();
     // Default constructor
 }
 /// Create or retrieve existing module
@@ -88,9 +90,7 @@ Module *Prog::getOrInsertModule(const QString &name,const ModuleFactory &fact,Fr
 
 void Prog::setFrontEnd(FrontEnd *_pFE) {
     pLoaderPlugin = _pFE->getBinaryFile();
-    pBinaryData = qobject_cast<BinaryData *>(pLoaderPlugin);
     pLoaderIface = qobject_cast<LoaderInterface *>(pLoaderPlugin);
-    pSections = qobject_cast<SectionInterface *>(pLoaderPlugin);
     pSymbols = qobject_cast<SymbolTableInterface *>(pLoaderPlugin);
     DefaultFrontend = _pFE;
     for(Module *m : ModuleList)
@@ -110,6 +110,7 @@ Prog::Prog(const char *name)
     m_rootCluster = getOrInsertModule(getNameNoPathNoExt());
     // Constructor taking a name. Technically, the allocation of the space for the name could fail, but this is unlikely
     m_path = m_name;
+    Image = Boomerang::get()->getImage();
 }
 
 Prog::~Prog() {
@@ -204,7 +205,7 @@ void Prog::generateCode(Module *cluster, UserProc *proc, bool /*intermixRTL*/) {
                 for (int j = 0; sections[j]; j++) {
                     QString str = ".";
                     str += sections[j];
-                    PSectionInfo info = pSections->GetSectionInfoByName(str);
+                    SectionInfo * info = Image->GetSectionInfoByName(str);
                     str = "start_";
                     str += sections[j];
                     code->AddGlobal(str, IntegerType::get(32, -1),
@@ -215,7 +216,7 @@ void Prog::generateCode(Module *cluster, UserProc *proc, bool /*intermixRTL*/) {
                                     new Const(info ? info->uSectionSize : (unsigned int)-1));
                     Exp *l = new Terminal(opNil);
                     for (unsigned int i = 0; info && i < info->uSectionSize; i++) {
-                        int n = pBinaryData->readNative1(info->uNativeAddr + info->uSectionSize - 1 - i);
+                        int n = Image->readNative1(info->uNativeAddr + info->uSectionSize - 1 - i);
                         if (n < 0)
                             n = 256 + n;
                         l = Binary::get(opList, new Const(n), l);
@@ -716,7 +717,7 @@ bool Prog::globalUsed(ADDRESS uaddr, SharedType knownType) {
         }
     }
 
-    if (pSections->getSectionInfoByAddr(uaddr) == nullptr) {
+    if (Image->getSectionInfoByAddr(uaddr) == nullptr) {
         LOG_VERBOSE(1) << "refusing to create a global at address that is in no known section of the binary: " << uaddr
                        << "\n";
         return false;
@@ -834,7 +835,7 @@ void Prog::setGlobalType(const QString &nam, SharedType ty) {
 // if knownString, it is already known to be a char*
 //! get a string constant at a give address if appropriate
 const char *Prog::getStringConstant(ADDRESS uaddr, bool knownString /* = false */) {
-    const SectionInfo *si = pSections->getSectionInfoByAddr(uaddr);
+    const SectionInfo *si = Image->getSectionInfoByAddr(uaddr);
     // Too many compilers put constants, including string constants, into read/write sections
     // if (si && si->bReadOnly)
     if (si && !si->isAddressBss(uaddr)) {
@@ -865,17 +866,45 @@ const char *Prog::getStringConstant(ADDRESS uaddr, bool knownString /* = false *
 
 double Prog::getFloatConstant(ADDRESS uaddr, bool &ok, int bits) {
     ok = true;
-    SectionInfo *si = pSections->getSectionInfoByAddr(uaddr);
+    const SectionInfo *si = Image->getSectionInfoByAddr(uaddr);
     if (si && si->bReadOnly) {
         if (bits == 64) { // TODO: handle 80bit floats ?
-            return pBinaryData->readNativeFloat8(uaddr);
+            return Image->readNativeFloat8(uaddr);
         } else {
             assert(bits == 32);
-            return pBinaryData->readNativeFloat4(uaddr);
+            return Image->readNativeFloat4(uaddr);
         }
     }
     ok = false;
     return 0.0;
+}
+
+const SectionInfo *Prog::getSectionInfoByAddr(ADDRESS a) {
+    return Image->getSectionInfoByAddr(a);
+}
+
+ADDRESS Prog::getLimitTextLow() {
+    return Boomerang::get()->getImage()->getLimitTextLow();
+}
+
+ADDRESS Prog::getLimitTextHigh() {
+    return Boomerang::get()->getImage()->getLimitTextHigh();
+}
+
+bool Prog::isReadOnly(ADDRESS a) {
+    return Image->isReadOnly(a);
+}
+
+int Prog::readNative1(ADDRESS a) {
+    return Image->readNative1(a);
+}
+
+int Prog::readNative2(ADDRESS a) {
+    return Image->readNative2(a);
+}
+
+int Prog::readNative4(ADDRESS a) {
+    return Image->readNative4(a);
 }
 
 /***************************************************************************/ /**
@@ -943,11 +972,11 @@ QString Prog::getNameNoPathNoExt() const { return QFileInfo(m_name).baseName(); 
 const void *Prog::getCodeInfo(ADDRESS uAddr, const char *&last, int &delta) {
     delta = 0;
     last = nullptr;
-    int n = pSections->GetNumSections();
+    int n = Image->GetNumSections();
     int i;
     // Search all code and read-only sections
     for (i = 0; i < n; i++) {
-        SectionInfo *pSect = pSections->GetSectionInfo(i);
+        const SectionInfo *pSect = Image->GetSectionInfo(i);
         if ((!pSect->bCode) && (!pSect->bReadOnly))
             continue;
         if ((uAddr < pSect->uNativeAddr) || (uAddr >= pSect->uNativeAddr + pSect->uSectionSize))
@@ -969,10 +998,8 @@ const void *Prog::getCodeInfo(ADDRESS uAddr, const char *&last, int &delta) {
 void Prog::decodeEntryPoint(ADDRESS a) {
     Function *p = (UserProc *)findProc(a);
     if (p == nullptr || (!p->isLib() && !((UserProc *)p)->isDecoded())) {
-        if (a < pSections->getLimitTextLow() || a >= pSections->getLimitTextHigh()) {
-            LOG_STREAM() << "attempt to decode entrypoint at address outside text area, addr=" << a << "\n";
-            if (VERBOSE)
-                LOG << "attempt to decode entrypoint at address outside text area, addr=" << a << "\n";
+        if (a < Image->getLimitTextLow() || a >= Image->getLimitTextHigh()) {
+            LOG_STREAM(LL_Warn) << "attempt to decode entrypoint at address outside text area, addr=" << a << "\n";
             return;
         }
         DefaultFrontend->decode(this, a);
@@ -1442,7 +1469,7 @@ Global::~Global() {
 }
 //! Get the initial value as an expression (or nullptr if not initialised)
 Exp *Global::getInitialValue(Prog *prog) const {
-    SectionInfo *si = prog->getSectionInfoByAddr(uaddr);
+    const SectionInfo *si = prog->getSectionInfoByAddr(uaddr);
     // TODO: see what happens when we skip Bss check here
     if (si && si->isAddressBss(uaddr))
         // This global is in the BSS, so it can't be initialised
@@ -1465,7 +1492,7 @@ QString Global::toString() const {
 }
 Exp *Prog::readNativeAs(ADDRESS uaddr, SharedType type) {
     Exp *e = nullptr;
-    SectionInfo *si = getSectionInfoByAddr(uaddr);
+    const SectionInfo *si = getSectionInfoByAddr(uaddr);
     if (si == nullptr)
         return nullptr;
     if (type->resolvesToPointer()) {
@@ -1547,23 +1574,23 @@ Exp *Prog::readNativeAs(ADDRESS uaddr, SharedType type) {
             size = type->asSize()->getSize();
         switch (size) {
         case 8:
-            return new Const(readNative1(uaddr));
+            return new Const(Image->readNative1(uaddr));
         case 16:
             // Note: must respect endianness
-            return new Const(readNative2(uaddr));
+            return new Const(Image->readNative2(uaddr));
         case 32:
-            return new Const(readNative4(uaddr));
+            return new Const(Image->readNative4(uaddr));
         case 64:
-            return new Const(readNative8(uaddr));
+            return new Const(Image->readNative8(uaddr));
         }
     }
     if (!type->resolvesToFloat())
         return e;
     switch (type->asFloat()->getSize()) {
     case 32:
-        return new Const(readNativeFloat4(uaddr));
+        return new Const(Image->readNativeFloat4(uaddr));
     case 64:
-        return new Const(readNativeFloat8(uaddr));
+        return new Const(Image->readNativeFloat8(uaddr));
     }
     return e;
 }
@@ -1579,7 +1606,7 @@ void Prog::reDecode(UserProc *proc) {
 }
 
 void Prog::decodeFragment(UserProc *proc, ADDRESS a) {
-    if (a >= pSections->getLimitTextLow() && a < pSections->getLimitTextHigh())
+    if (a >= Image->getLimitTextLow() && a < Image->getLimitTextHigh())
         DefaultFrontend->decodeFragment(proc, a);
     else {
         LOG_STREAM() << "attempt to decode fragment outside text area, addr=" << a << "\n";
@@ -1642,3 +1669,14 @@ Exp *Prog::addReloc(Exp *e, ADDRESS lc) {
     }
     return e;
 }
+
+
+bool Prog::isStringConstant(ADDRESS a) {
+    const SectionInfo *si = Image->getSectionInfoByAddr(a);
+    if(!si)
+        return false;
+    QVariant qv = si->attributeInRange("StringsSection",a,a+1);
+    return !qv.isNull();
+}
+
+bool Prog::isCFStringConstant(ADDRESS a) { return isStringConstant(a); }

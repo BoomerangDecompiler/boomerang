@@ -22,8 +22,11 @@
   ******************************************************************************/
 
 #include "types.h"
+#include "db/SectionInfo.h"
+
 //#include "SymTab.h"    // Was used for relocaton stuff
 #include <QStringList>
+#include <QDebug>
 #include <QString>
 #include <cassert>
 #include <list>
@@ -32,60 +35,33 @@
 #include <string>
 #include <vector>
 #include <cstdio> // For FILE
-
 // Given a pointer p, returns the 16 bits (halfword) in the two bytes
 // starting at p.
 #define LH(p) ((int)((Byte *)(p))[0] + ((int)((Byte *)(p))[1] << 8))
 
-// SectionInfo structure. GetSectionInfo returns a pointer to an array of
-// these structs. All information about the sections is contained in these
-// structures.
-
-struct SectionInfo {
-    SectionInfo();            // Constructor
-    virtual ~SectionInfo() {} // Quell a warning in gcc
-
-    // Windows's PE file sections can contain any combination of code, data and bss.
-    // As such, it can't be correctly described by SectionInfo, why we need to override
-    // the behaviour of (at least) the question "Is this address in BSS".
-    virtual bool isAddressBss(ADDRESS /*a*/) const { return bBss != 0; }
-
-    QString pSectionName;         // Name of section
-    ADDRESS uNativeAddr;        // Logical or native load address
-    ADDRESS uHostAddr;          // Host or actual address of data
-    uint32_t uSectionSize;      // Size of section in bytes
-    uint32_t uSectionEntrySize; // Size of one section entry (if applic)
-    unsigned uType;             // Type of section (format dependent)
-    unsigned bCode : 1;         // Set if section contains instructions
-    unsigned bData : 1;         // Set if section contains data
-    unsigned bBss : 1;          // Set if section is BSS (allocated only)
-    unsigned bReadOnly : 1;     // Set if this is a read only section
-};
-
-typedef SectionInfo *PSectionInfo;
 
 // Objective-C stuff
 class ObjcIvar {
-  public:
+public:
     QString name, type;
     unsigned offset;
 };
 
 class ObjcMethod {
-  public:
+public:
     QString name, types;
     ADDRESS addr;
 };
 
 class ObjcClass {
-  public:
+public:
     QString name;
     std::map<QString, ObjcIvar> ivars;
     std::map<QString, ObjcMethod> methods;
 };
 
 class ObjcModule {
-  public:
+public:
     QString name;
     std::map<QString, ObjcClass> classes;
 };
@@ -103,6 +79,7 @@ enum LOAD_FMT {
     LOADFMT_COFF
 };
 enum MACHINE {
+    MACHINE_UNKNOWN=0,
     MACHINE_PENTIUM,
     MACHINE_SPARC,
     MACHINE_HPRISC,
@@ -118,7 +95,7 @@ class BinaryFileFactory {
     QObject *getInstanceFor(const QString &sName);
     static QString m_base_path; //!< path from which the executable is being ran, used to find lib/ directory
 
-  public:
+public:
     static void setBasePath(const QString &path) { m_base_path = path; } //!< sets the base directory for plugin search
     QObject *Load(const QString &sName);
     void UnLoad();
@@ -127,28 +104,11 @@ class BinaryFileFactory {
 #define LoaderInterface_iid "org.boomerang.LoaderInterface"
 #define SymTableInterface_iid "org.boomerang.LoaderInterface.SymTable"
 #define ObjcInterface_iid "org.boomerang.LoaderInterface.ObjC"
-#define BinaryInterface_iid "org.boomerang.LoaderInterface.Data"
 #define SectionsInterface_iid "org.boomerang.LoaderInterface.Sections"
 // TODO: create a default implmentation for this interface that will notify the user about the missing functionality ?
-class BinaryData {
-  public:
-    virtual ~BinaryData() {}
-    virtual char readNative1(ADDRESS a) = 0;
-    // Read 2 bytes from given native address a; considers endianness
-    virtual int readNative2(ADDRESS a) = 0; // {return 0;}
-    // Read 4 bytes from given native address a; considers endianness
-    virtual int readNative4(ADDRESS a) = 0; // {return 0;}
-    // Read 8 bytes from given native address a; considers endianness
-    virtual QWord readNative8(ADDRESS a) = 0; // {return 0;}
-    // Read 4 bytes as a float; consider endianness
-    virtual float readNativeFloat4(ADDRESS a) = 0; // {return 0.;}
-    // Read 8 bytes as a float; consider endianness
-    virtual double readNativeFloat8(ADDRESS a) = 0; // {return 0.;}
-};
-Q_DECLARE_INTERFACE(BinaryData, BinaryInterface_iid)
 
 class SymbolTableInterface {
-  public:
+public:
     virtual ~SymbolTableInterface() {}
 
     //! Lookup the address, return the name, or 0 if not found
@@ -172,7 +132,7 @@ class SymbolTableInterface {
 Q_DECLARE_INTERFACE(SymbolTableInterface, SymTableInterface_iid)
 
 class ObjcAccessInterface {
-  public:
+public:
     virtual ~ObjcAccessInterface() {}
 
     virtual std::map<QString, ObjcModule> &getObjcModules() = 0;
@@ -180,10 +140,10 @@ class ObjcAccessInterface {
 Q_DECLARE_INTERFACE(ObjcAccessInterface, ObjcInterface_iid)
 
 class LoaderInterface {
-  public:
+public:
     typedef std::map<ADDRESS, QString> tMapAddrToString;
 
-  public:
+public:
     virtual ~LoaderInterface() {}
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -233,9 +193,9 @@ class LoaderInterface {
     // Dump headers, etc
     virtual bool DisplayDetails(const char * /*fileName*/, FILE * /*f*/ /* = stdout */) {
         return false; // Should always be overridden
-                      // Should display file header, program
-                      // headers and section headers, as well
-                      // as contents of each of the sections.
+        // Should display file header, program
+        // headers and section headers, as well
+        // as contents of each of the sections.
     }
     /***************************************************************************/ /**
       *
@@ -266,98 +226,13 @@ class LoaderInterface {
     virtual std::map<ADDRESS, const char *> *GetDynamicGlobalMap() { return nullptr; }
 
     // Special load function for archive members
-  protected:
+protected:
     virtual bool PostLoad(void *handle) = 0; //!< Called after loading archive member
 };
 Q_DECLARE_INTERFACE(LoaderInterface, LoaderInterface_iid)
-class SectionInterface {
-  public:
-    virtual ~SectionInterface() {}
-
-    virtual int GetNumSections() const = 0;                 // Return number of sections
-    virtual SectionInfo *GetSectionInfo(int idx) const = 0; // Return section struct
-    virtual SectionInfo *GetSectionInfoByName(const QString &sName) = 0;
-    virtual SectionInfo *getSectionInfoByAddr(ADDRESS uEntry) const = 0;
-    virtual bool isReadOnly(ADDRESS uEntry) = 0; //!< returns true if the given address is in a read only section
-    virtual int GetSectionIndexByName(const QString &sName) = 0;
-    virtual bool isStringConstant(ADDRESS /*uEntry*/) { return false; }
-    //! returns true if the given address is in a "strings" section
-    virtual bool isCFStringConstant(ADDRESS /*uEntry*/) { return false; }
-    virtual ADDRESS getLimitTextLow() = 0;
-    virtual ADDRESS getLimitTextHigh() = 0;
-    virtual ptrdiff_t getTextDelta() = 0;
-    virtual void getTextLimits() = 0;
-};
-Q_DECLARE_INTERFACE(SectionInterface, SectionsInterface_iid)
 struct LoaderPluginWrapper {
     QObject *plugin;
     template <class T> T *iface() { return plugin ? qobject_cast<T *>(plugin) : nullptr; }
 };
 
-class LoaderCommon : public SectionInterface {
-  public:
-    virtual ~LoaderCommon() {
-        delete [] m_pSections;
-    }
-
-    LoaderCommon(bool bArch = false) {
-        m_bArchive = bArch;    // Remember whether an archive member
-        m_iNumSections = 0;    // No sections yet
-        m_pSections = nullptr; // No section data yet
-    }
-    int GetNumSections() const override { return m_iNumSections; } // Return number of sections
-    SectionInfo *GetSectionInfo(int idx) const override { return m_pSections + idx; }
-    //! Find section index given name, or -1 if not found
-    int GetSectionIndexByName(const QString &sName) override {
-        for (int i = 0; i < m_iNumSections; i++) {
-            if (m_pSections[i].pSectionName == sName) {
-                return i;
-            }
-        }
-        return -1;
-    }
-    //! Find the end of a section, given an address in the section
-    SectionInfo *getSectionInfoByAddr(ADDRESS uEntry) const override {
-        assert(uEntry==uEntry.native());
-        for (int i = 0; i < m_iNumSections; i++) {
-            PSectionInfo pSect(&m_pSections[i]);
-            if ((uEntry >= pSect->uNativeAddr) && (uEntry < pSect->uNativeAddr + pSect->uSectionSize)) {
-                // We have the right section
-                return pSect;
-            }
-        }
-        // Failed to find the address
-        return nullptr;
-    }
-
-    bool isReadOnly(ADDRESS uEntry) override {
-        PSectionInfo p = getSectionInfoByAddr(uEntry);
-        return p && p->bReadOnly;
-    }
-    //! Find section info given name, or 0 if not found
-    SectionInfo *GetSectionInfoByName(const QString &sName) override {
-        int i = GetSectionIndexByName(sName);
-        if (i == -1)
-            return nullptr;
-        return &m_pSections[i];
-    }
-    ADDRESS getLimitTextLow() override { return limitTextLow; }
-    ADDRESS getLimitTextHigh() override { return limitTextHigh; }
-    ptrdiff_t getTextDelta() override { return textDelta; }
-    void getTextLimits() override;
-
-  protected:
-    // Data
-    bool m_bArchive;          //!< True if archive member
-    int m_iNumSections;       //!< Number of sections
-    SectionInfo *m_pSections; //!< The section info
-    ADDRESS m_uInitPC;        //!< Initial program counter
-    ADDRESS m_uInitSP;        //!< Initial stack pointer
-    ADDRESS limitTextLow;     //!< Public addresses being the lowest used native address (inclusive)
-    ADDRESS limitTextHigh;    //!< the highest used address (not inclusive) in the text section
-    // Also the difference between the host and native addresses (host - native)
-    // At this stage, we are assuming that the difference is the same for all
-    // text sections of the BinaryFile image
-    ptrdiff_t textDelta;
-};
 #endif // #ifndef __BINARYFILE_H__

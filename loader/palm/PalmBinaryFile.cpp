@@ -21,7 +21,10 @@
  */
 
 #include "PalmBinaryFile.h"
+
 #include "palmsystraps.h"
+#include "boomerang.h"
+#include "IBinaryImage.h"
 
 #include <cassert>
 #include <cstring>
@@ -33,7 +36,9 @@
 #define UINT4ADDR(p)                                                                                                   \
     ((UC((p).m_value)[0] << 24) + (UC((p).m_value)[1] << 16) + (UC((p).m_value)[2] << 8) + UC((p).m_value)[3])
 
-PalmBinaryFile::PalmBinaryFile() : m_pImage(nullptr), m_pData(nullptr) {}
+PalmBinaryFile::PalmBinaryFile() : m_pImage(nullptr), m_pData(nullptr) {
+    Image = Boomerang::get()->getImage();
+}
 
 PalmBinaryFile::~PalmBinaryFile() {
     if (m_pImage) {
@@ -57,73 +62,13 @@ int Read4(int *pi) {
     int n = (int)((n1 << 16) | n2);
     return n;
 }
-// Read 1 byte from given native address
-char PalmBinaryFile::readNative1(ADDRESS nat) {
-    SectionInfo *si = getSectionInfoByAddr(nat);
-    if (si == nullptr)
-        si = GetSectionInfo(0);
-    char *host = (char *)(si->uHostAddr - si->uNativeAddr + nat).m_value;
-    return *host;
+namespace {
+struct SectionParams {
+    QString name;
+    ADDRESS from,to;
+    ADDRESS hostAddr;
+};
 }
-
-// Read 2 bytes from given native address
-int PalmBinaryFile::readNative2(ADDRESS nat) {
-    SectionInfo *si = getSectionInfoByAddr(nat);
-    if (si == nullptr)
-        return 0;
-    ADDRESS host = si->uHostAddr - si->uNativeAddr + nat;
-    int n = Read2((short *)host.m_value);
-    return n;
-}
-
-// Read 4 bytes from given native address
-int PalmBinaryFile::readNative4(ADDRESS nat) {
-    SectionInfo *si = getSectionInfoByAddr(nat);
-    if (si == nullptr)
-        return 0;
-    ADDRESS host = si->uHostAddr - si->uNativeAddr + nat;
-    int n = Read4((int *)host.m_value);
-    return n;
-}
-// Read 8 bytes from given native address
-QWord PalmBinaryFile::readNative8(ADDRESS nat) { // TODO: lifted from Win32 loader, likely wrong
-    int raw[2];
-#ifdef WORDS_BIGENDIAN // This tests the host machine
-    // Source and host are different endianness
-    raw[1] = readNative4(nat);
-    raw[0] = readNative4(nat + 4);
-#else
-    // Source and host are same endianness
-    raw[0] = readNative4(nat);
-    raw[1] = readNative4(nat + 4);
-#endif
-    return *(QWord *)raw;
-}
-
-// Read 4 bytes as a float
-float PalmBinaryFile::readNativeFloat4(ADDRESS nat) {
-    int raw = readNative4(nat);
-    // Ugh! gcc says that reinterpreting from int to float is invalid!!
-    // return reinterpret_cast<float>(raw);        // Note: cast, not convert!!
-    return *(float *)&raw; // Note: cast, not convert
-}
-
-// Read 8 bytes as a float
-double PalmBinaryFile::readNativeFloat8(ADDRESS nat) { // TODO: lifted from Win32 loader, likely wrong
-    int raw[2];
-#ifdef WORDS_BIGENDIAN // This tests the host machine
-    // Source and host are different endianness
-    raw[1] = readNative4(nat);
-    raw[0] = readNative4(nat + 4);
-#else
-    // Source and host are same endianness
-    raw[0] = readNative4(nat);
-    raw[1] = readNative4(nat + 4);
-#endif
-    // return reinterpret_cast<double>(*raw);    // Note: cast, not convert!!
-    return *(double *)raw;
-}
-
 bool PalmBinaryFile::RealLoad(const QString &sName) {
     FILE *fp;
     m_pFileName = sName;
@@ -158,58 +103,57 @@ bool PalmBinaryFile::RealLoad(const QString &sName) {
     }
 
     // Get the number of resource headers (one section per resource)
-    m_iNumSections = (m_pImage[0x4C] << 8) + m_pImage[0x4D];
 
-    // Allocate the section information
-    m_pSections = new SectionInfo[m_iNumSections];
-    if (m_pSections == nullptr) {
-        fprintf(stderr, "Could not allocate section info array of %d items\n", m_iNumSections);
-        if (m_pImage) {
-            delete m_pImage;
-            m_pImage = nullptr;
-        }
-    }
+    uint32_t numSections = (m_pImage[0x4C] << 8) + m_pImage[0x4D];
 
     // Iterate through the resource headers (generating section info structs)
     unsigned char *p = m_pImage + 0x4E; // First resource header
     unsigned off = 0;
-    for (int i = 0; i < m_iNumSections; i++) {
+    std::vector<SectionParams> params;
+    for (unsigned i = 0; i < numSections; i++) {
         // Now get the identifier (2 byte binary)
         unsigned id = (p[4] << 8) + p[5];
         QByteArray qba((char *)p,4);
         // First the name (4 alphanumeric characters from p to p+3)
         // Join the id to the name, e.g. code0, data12
         QString name = QString("%1%2").arg(QString(qba)).arg(id);
-        m_pSections[i].pSectionName = name;
 
         p += 4 + 2;
         off = UINT4(p);
         p += 4;
-        m_pSections[i].uNativeAddr = off;
-        m_pSections[i].uHostAddr = ADDRESS::host_ptr(m_pImage + off);
+        ADDRESS start_addr = ADDRESS::n(off);
 
         // Guess the length
         if (i > 0) {
-            m_pSections[i - 1].uSectionSize = off - m_pSections[i - 1].uNativeAddr.m_value;
-            m_pSections[i].uSectionEntrySize = 1; // No info available
+            params.back().to = start_addr;
         }
+        params.push_back({name,start_addr,NO_ADDRESS,ADDRESS::host_ptr(m_pImage + off)}); // NO_ADDRESS will be overwritten
+    }
+    // Set the length for the last section
+    params.back().to = params.back().from + size - off;
 
-        // Decide if code or data; note that code0 is a special case (not code)
-        m_pSections[i].bCode = (name != "code0") && (name.startsWith("code"));
-        m_pSections[i].bData = name.startsWith("data");
+    for(SectionParams param : params) {
+        assert(param.to!=NO_ADDRESS);
+        SectionInfo *sect = Image->createSection(param.name,param.from,param.to);
+        if(sect) {
+            // Decide if code or data; note that code0 is a special case (not code)
+            sect->uHostAddr = param.hostAddr;
+            sect->bCode = (param.name != "code0") && (param.name.startsWith("code"));
+            sect->bData = param.name.startsWith("data");
+            sect->Endiannes = 0; // little endian
+            sect->addDefinedArea(param.from,param.to); // no BSS
+            sect->uSectionEntrySize = 1; // No info available
+        }
     }
 
-    // Set the length for the last section
-    m_pSections[m_iNumSections - 1].uSectionSize = size - off;
-
     // Create a separate, uncompressed, initialised data section
-    SectionInfo *pData = GetSectionInfoByName("data0");
+    SectionInfo *pData = Image->GetSectionInfoByName("data0");
     if (pData == nullptr) {
         fprintf(stderr, "No data section!\n");
         return false;
     }
 
-    SectionInfo *pCode0 = GetSectionInfoByName("code0");
+    SectionInfo *pCode0 = Image->GetSectionInfoByName("code0");
     if (pCode0 == nullptr) {
         fprintf(stderr, "No code 0 section!\n");
         return false;
@@ -332,7 +276,7 @@ void PalmBinaryFile::UnLoad() {
 std::list<SectionInfo *> &PalmBinaryFile::GetEntryPoints(const char */*pEntry*/
                                                          /* = "main" */) {
     std::list<SectionInfo *> *ret = new std::list<SectionInfo *>;
-    SectionInfo *pSect = GetSectionInfoByName("code1");
+    SectionInfo *pSect = Image->GetSectionInfoByName("code1");
     if (pSect == nullptr)
         return *ret; // Failed
     ret->push_back(pSect);
@@ -434,7 +378,7 @@ bool PalmBinaryFile::IsDynamicLinkedProc(ADDRESS uNative) { return ((uNative.m_v
 // (%agp points to the bottom of the global data area).
 std::pair<ADDRESS, unsigned> PalmBinaryFile::GetGlobalPointerInfo() {
     ADDRESS agp = ADDRESS::g(0L);
-    const SectionInfo *ps = GetSectionInfoByName("data0");
+    const SectionInfo *ps = Image->GetSectionInfoByName("data0");
     if (ps)
         agp = ps->uNativeAddr;
     std::pair<ADDRESS, unsigned> ret(agp, m_SizeBelowA5);
@@ -503,12 +447,12 @@ SWord *findPattern(SWord *start, const SWord *patt, int pattSize, int max) {
 // Find the native address for the start of the main entry function.
 // For Palm binaries, this is PilotMain.
 ADDRESS PalmBinaryFile::GetMainEntryPoint() {
-    SectionInfo *pSect = GetSectionInfoByName("code1");
-    if (pSect == nullptr)
+    SectionInfo *psect = Image->GetSectionInfoByName("code1");
+    if (psect == nullptr)
         return ADDRESS::g(0L); // Failed
     // Return the start of the code1 section
-    SWord *startCode = (SWord *)pSect->uHostAddr.m_value;
-    int delta = (pSect->uHostAddr - pSect->uNativeAddr).m_value;
+    SWord *startCode = (SWord *)psect->uHostAddr.m_value;
+    int delta = (psect->uHostAddr - psect->uNativeAddr).m_value;
 
     // First try the CW first jump pattern
     SWord *res = findPattern(startCode, CWFirstJump, sizeof(CWFirstJump) / sizeof(SWord), 1);
@@ -541,23 +485,23 @@ ADDRESS PalmBinaryFile::GetMainEntryPoint() {
 }
 
 void PalmBinaryFile::GenerateBinFiles(const QString &path) const {
-    for (int i = 0; i < m_iNumSections; i++) {
-        SectionInfo *pSect = m_pSections + i;
-        if (!pSect->pSectionName.startsWith("code") && !pSect->pSectionName.startsWith("data")) {
-            // Save this section in a file
-            // First construct the file name
-            int sect_num = pSect->pSectionName.mid(4).toInt();
-            QString name = QString("%1%2.bin").arg(pSect->pSectionName.left(4)).arg(sect_num,4,16,QChar('0'));
-            QString fullName(path);
-            fullName += name;
-            // Create the file
-            FILE *f = fopen(qPrintable(fullName), "w");
-            if (f == nullptr) {
-                fprintf(stderr, "Could not open %s for writing binary file\n", qPrintable(fullName));
-                return;
-            }
-            fwrite((void *)pSect->uHostAddr.m_value, pSect->uSectionSize, 1, f);
-            fclose(f);
+    for (const SectionInfo *si : *Image) {
+        const SectionInfo &psect(*si);
+        if (psect.pSectionName.startsWith("code") || psect.pSectionName.startsWith("data"))
+            continue;
+        // Save this section in a file
+        // First construct the file name
+        int sect_num = psect.pSectionName.mid(4).toInt();
+        QString name = QString("%1%2.bin").arg(psect.pSectionName.left(4)).arg(sect_num,4,16,QChar('0'));
+        QString fullName(path);
+        fullName += name;
+        // Create the file
+        FILE *f = fopen(qPrintable(fullName), "w");
+        if (f == nullptr) {
+            fprintf(stderr, "Could not open %s for writing binary file\n", qPrintable(fullName));
+            return;
         }
+        fwrite((void *)psect.uHostAddr.m_value, psect.uSectionSize, 1, f);
+        fclose(f);
     }
 }

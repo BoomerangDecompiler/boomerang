@@ -114,6 +114,11 @@ typedef struct {
     unsigned r_offset;
     int r_info;
 } Elf32_Rel;
+typedef struct {
+  unsigned    r_offset;
+  int    r_info;
+  int   r_addend;
+} Elf32_Rela;
 
 #define ELF32_R_SYM(info) ((info) >> 8)
 #define ELF32_ST_BIND(i) ((i) >> 4)
@@ -144,17 +149,13 @@ typedef struct {
 
 class ElfBinaryFile : public QObject,
                       public LoaderInterface,
-                      public BinaryData,
-                      public SymbolTableInterface,
-                      public LoaderCommon {
+                      public SymbolTableInterface {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID LoaderInterface_iid)
     Q_INTERFACES(LoaderInterface)
-    Q_INTERFACES(BinaryData)
     Q_INTERFACES(SymbolTableInterface)
-    Q_INTERFACES(SectionInterface)
   public:
-    ElfBinaryFile(bool bArchive = false); // Constructor
+    ElfBinaryFile(); // Constructor
     virtual void UnLoad();                // Unload the image
     virtual ~ElfBinaryFile();             // Destructor
     bool GetNextMember();                 // Load next member of archive
@@ -171,15 +172,6 @@ class ElfBinaryFile : public QObject,
     // Header functions
     // virtual ADDRESS    GetFirstHeaderAddress();        // Get ADDRESS of main header
     //        ADDRESS        GetNextHeaderAddress();            // Get any other headers
-
-    char readNative1(ADDRESS a) override;        // Read 1 bytes from native addr
-    int readNative2(ADDRESS a) override;         // Read 2 bytes from native addr
-    int readNative4(ADDRESS a) override;         // Read 4 bytes from native addr
-    QWord readNative8(ADDRESS a) override;       // Read 8 bytes from native addr
-    float readNativeFloat4(ADDRESS a) override;  // Read 4 bytes as float
-    double readNativeFloat8(ADDRESS a) override; // Read 8 bytes as float
-
-    void writeNative4(ADDRESS nat, uint32_t n);
 
     // Symbol functions
     QString symbolByAddress(ADDRESS uAddr) override; // Get name of symbol
@@ -241,7 +233,7 @@ class ElfBinaryFile : public QObject,
     int ProcessElfFile(); // Does most of the work
     void AddSyms(int secIndex);
     void AddRelocsAsSyms(int secIndex);
-    void SetRelocInfo(PSectionInfo pSect);
+    void SetRelocInfo(SectionInfo * pSect);
     bool ValueByName(const QString &pName, SymValue *pVal, bool bNoTypeOK = false);
     bool SearchValueByName(const QString &pName, SymValue *pVal);
     bool SearchValueByName(const QString &pName, SymValue *pVal, const char *pSectName, const char *pStrName);
@@ -251,8 +243,8 @@ class ElfBinaryFile : public QObject,
     ADDRESS findRelPltOffset(int i, ADDRESS addrRelPlt, int sizeRelPlt, int numRelPlt, ADDRESS addrPlt);
 
     // Internal elf reading methods
-    int elfRead2(short *ps) const;    // Read a short with endianness care
-    int elfRead4(int *pi) const;      // Read an int with endianness care
+    int elfRead2(const short *ps) const;    // Read a short with endianness care
+    int elfRead4(const int *pi) const;      // Read an int with endianness care
     void elfWrite4(int *pi, int val); // Write an int with endianness care
 
     FILE *m_fd;                             // File stream
@@ -266,21 +258,23 @@ class ElfBinaryFile : public QObject,
                                             // various elf symbol tables, and possibly some symbols with fake
                                             // addresses
     // SymTab      m_Reloc;                 // Object to store the reloc syms
-    Elf32_Rel *m_pReloc;                   // Pointer to the relocation section
-    Elf32_Sym *m_pSym;                     // Pointer to loaded symbol section
-    bool m_bAddend;                        // true if reloc table has addend
-    ADDRESS m_uLastAddr;                   // Save last address looked up
-    int m_iLastSize;                       // Size associated with that name
-    ADDRESS m_uPltMin;                     // Min address of PLT table
-    ADDRESS m_uPltMax;                     // Max address (1 past last) of PLT
-    std::list<SectionInfo *> m_EntryPoint; // A list of one entry point
-    ADDRESS *m_pImportStubs;               // An array of import stubs
-    ADDRESS m_uBaseAddr;                   // Base image virtual address
-    size_t m_uImageSize;                   // total image size (bytes)
-    ADDRESS first_extern;                  // where the first extern will be placed
-    ADDRESS next_extern;                   // where the next extern will be placed
-    int *m_sh_link;                        // pointer to array of sh_link values
-    int *m_sh_info;                        // pointer to array of sh_info values
+    const Elf32_Rel *m_pReloc;              // Pointer to the relocation section
+    const Elf32_Sym *m_pSym;                // Pointer to loaded symbol section
+    bool m_bAddend;                         // true if reloc table has addend
+    ADDRESS m_uLastAddr;                    // Save last address looked up
+    int m_iLastSize;                        // Size associated with that name
+    ADDRESS m_uPltMin;                      // Min address of PLT table
+    ADDRESS m_uPltMax;                      // Max address (1 past last) of PLT
+    std::list<SectionInfo *> m_EntryPoint;  // A list of one entry point
+    ADDRESS *m_pImportStubs;                // An array of import stubs
+    ADDRESS m_uBaseAddr;                    // Base image virtual address
+    size_t m_uImageSize;                    // total image size (bytes)
+    ADDRESS first_extern;                   // where the first extern will be placed
+    ADDRESS next_extern;                    // where the next extern will be placed
+    int *m_sh_link;                         // pointer to array of sh_link values
+    int *m_sh_info;                         // pointer to array of sh_info values
+
+    class IBinaryImage *Image;
 };
 
 #endif // #ifndef __ELFBINARYFILE_H__

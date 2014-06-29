@@ -1,6 +1,7 @@
 #include "DecompilerThread.h"
 
 #include "boomerang.h"
+#include "IBinaryImage.h"
 #include "log.h"
 #include "prog.h"
 #include "frontend.h"
@@ -81,6 +82,7 @@ void Decompiler::changeOutputPath(const QString &path) { Boomerang::get()->setOu
 void Decompiler::load() {
     emit loading();
 
+    Image = Boomerang::get()->getImage();
     prog = new Prog();
     fe = FrontEnd::Load(filename, prog);
     if (fe == NULL) {
@@ -124,8 +126,8 @@ void Decompiler::load() {
         emit newEntrypoint(entrypoints[i], prog->symbolByAddress(entrypoints[i]));
     }
 
-    for (int i = 1; i < fe->getSectionIface()->GetNumSections(); i++) {
-        const SectionInfo * section = fe->getSectionIface()->GetSectionInfo(i);
+    for (int i = 1; i < Image->GetNumSections(); i++) {
+        const SectionInfo * section = Image->GetSectionInfo(i);
         emit newSection(section->pSectionName, section->uNativeAddr, section->uNativeAddr + section->uSectionSize);
     }
 

@@ -38,26 +38,16 @@
 
 #define _BMMHW(x) (((unsigned)((Byte *)(&x))[1]) + ((unsigned)((Byte *)(&x))[0] << 8))
 
-#ifndef _MACH_MACHINE_H_        // On OS X, this is already defined
-typedef uint32_t cpu_type_t;    // I guessed
-typedef uint32_t cpu_subtype_t; // I guessed
-typedef uint32_t vm_prot_t;     // I guessed
-#endif
-
 struct mach_header;
 
 class MachOBinaryFile : public QObject,
-                        public BinaryData,
                         public LoaderInterface,
                         public SymbolTableInterface,
-                        public ObjcAccessInterface,
-                        public LoaderCommon {
+                        public ObjcAccessInterface {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID LoaderInterface_iid)
     Q_INTERFACES(LoaderInterface)
-    Q_INTERFACES(BinaryData)
     Q_INTERFACES(ObjcAccessInterface)
-    Q_INTERFACES(SectionInterface)
     Q_INTERFACES(SymbolTableInterface)
 
   public:
@@ -91,7 +81,7 @@ class MachOBinaryFile : public QObject,
     //
     // Internal information
     // Dump headers, etc
-    virtual bool DisplayDetails(const char *fileName, FILE *f = stdout);
+    bool DisplayDetails(const char *fileName, FILE *f = stdout) override ;
 
   protected:
     int machORead2(short *ps) const; // Read 2 bytes from native addr
@@ -106,21 +96,11 @@ class MachOBinaryFile : public QObject,
     unsigned short BMMHW(unsigned short x);
 
   public:
-    virtual bool isReadOnly(ADDRESS uEntry);
-    virtual bool isStringConstant(ADDRESS uEntry);
-    virtual bool isCFStringConstant(ADDRESS uEntry);
-    char readNative1(ADDRESS a) override;        // Read 1 bytes from native addr
-    int readNative2(ADDRESS a) override;         // Read 2 bytes from native addr
-    int readNative4(ADDRESS a) override;         // Read 4 bytes from native addr
-    QWord readNative8(ADDRESS a) override;       // Read 8 bytes from native addr
-    float readNativeFloat4(ADDRESS a) override;  // Read 4 bytes as float
-    double readNativeFloat8(ADDRESS a) override; // Read 8 bytes as float
+    bool IsDynamicLinkedProc(ADDRESS uNative) { return dlprocs.find(uNative) != dlprocs.end(); }
+    const QString &GetDynamicProcName(ADDRESS uNative) override;
 
-    virtual bool IsDynamicLinkedProc(ADDRESS uNative) { return dlprocs.find(uNative) != dlprocs.end(); }
-    virtual const QString &GetDynamicProcName(ADDRESS uNative);
-
-    virtual tMapAddrToString &getSymbols() { return m_SymA; }
-    virtual std::map<QString, ObjcModule> &getObjcModules() { return modules; }
+    tMapAddrToString &getSymbols() override { return m_SymA; }
+    std::map<QString, ObjcModule> &getObjcModules() override  { return modules; }
 
   protected:
     bool RealLoad(const QString &sName) override; // Load the file; pure virtual
@@ -139,5 +119,6 @@ class MachOBinaryFile : public QObject,
     tMapAddrToString m_SymA, dlprocs;
     std::map<QString, ObjcModule> modules;
     std::vector<struct section> sections;
+    class IBinaryImage *Image;
 };
 #endif // ifndef __MACHOBINARYFILE_H__

@@ -32,8 +32,11 @@ SET(INCLUDES
 ../include/signature.h
 ../include/transformer.h
 ../include/util.h
+../include/IBinaryImage.h
 )
 SET(SRC
+  SectionInfo
+  BinaryImage
         basicblock.cpp
         cfg.cpp
         dataflow.cpp

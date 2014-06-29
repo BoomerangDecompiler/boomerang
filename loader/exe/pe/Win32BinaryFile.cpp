@@ -33,18 +33,33 @@ namespace dbghelp {
 };
 #endif
 #endif
+#include "Win32BinaryFile.h"
 
 #include "BinaryFile.h"
-#include "Win32BinaryFile.h"
+#include "IBinaryImage.h"
+#include "boomerang.h"
 #include "config.h"
+
 #include <cstring>
 #include <cstdlib>
 #include <cassert>
+#include <QString>
 
 extern "C" {
 int microX86Dis(void *p); // From microX86dis.c
 }
+namespace {
 
+struct SectionParam {
+    QString Name;
+    ADDRESS From;
+    size_t Size;
+    size_t PhysSize;
+    ADDRESS ImageAddress;
+    bool Bss,Code,Data,ReadOnly;
+};
+
+}
 #ifndef IMAGE_SCN_CNT_CODE // Assume that if one is not defined, the rest isn't either.
 #define IMAGE_SCN_CNT_CODE 0x00000020
 #define IMAGE_SCN_CNT_INITIALIZED_DATA 0x00000040
@@ -53,54 +68,9 @@ int microX86Dis(void *p); // From microX86dis.c
 #define IMAGE_SCN_MEM_WRITE 0x80000000
 #endif
 
-namespace {
-
-// Due to the current rigid design, where BinaryFile holds a C-style array of
-// SectionInfo's, we can't extend a subclass of SectionInfo with the data required
-// to express the semantics of a PE section. We therefore need this external mapping
-// from SectionInfo's to PEObject's, that contain the info we need.
-// TODO: Refactor BinaryFile to not expose its private parts in public. Design both
-// a protected (for subclasses) and public (for users) interface.
-typedef std::map<const class PESectionInfo *, const PEObject *> SectionObjectMap;
-
-SectionObjectMap s_sectionObjects;
-
-// Note that PESectionInfo currently must be the exact same size as
-// SectionInfo due to the already mentioned array held by BinaryFile.
-class PESectionInfo : public SectionInfo {
-    virtual bool isAddressBss(ADDRESS a) const {
-        if (a < uNativeAddr || a >= uNativeAddr + uSectionSize) {
-            return false; // not even within this section
-        }
-        if (bBss) {
-            return true; // obvious
-        }
-        if (bReadOnly) {
-            return false; // R/O BSS makes no sense.
-        }
-        // Don't check for bData here. So long as the section has slack at end, that space can contain BSS.
-        const SectionObjectMap::iterator it = s_sectionObjects.find(this);
-        assert(it != s_sectionObjects.end());
-        assert(it->second);
-        assert(this == it->first);
-        const PEObject *sectionHeader = it->second;
-        const bool has_slack = LMMH(sectionHeader->VirtualSize) > LMMH(sectionHeader->PhysicalSize);
-        if (!has_slack) {
-            return false; // BSS not possible.
-        }
-        if (a >= uNativeAddr + LMMH(sectionHeader->PhysicalSize)) {
-            return true;
-        }
-        return false;
-    }
-};
-
-// attempt at a compile-time assert for the size requirement.
-// If the sizes differs, this statement will try to define a zero-sized array, which is invalid.
-typedef char ct_failure[sizeof(SectionInfo) == sizeof(PESectionInfo)];
+Win32BinaryFile::Win32BinaryFile() : mingw_main(false) {
+    Image = Boomerang::get()->getImage();
 }
-
-Win32BinaryFile::Win32BinaryFile() : mingw_main(false) {}
 
 Win32BinaryFile::~Win32BinaryFile() {
 }
@@ -145,9 +115,9 @@ ADDRESS Win32BinaryFile::GetMainEntryPoint() {
     int gap;              // Number of instructions from the last ordinary call
     int borlandState = 0; // State machine for Borland
 
-    SectionInfo *si = GetSectionInfoByName(".text");
+    SectionInfo *si = Image->GetSectionInfoByName(".text");
     if (si == nullptr)
-        si = GetSectionInfoByName("CODE");
+        si = Image->GetSectionInfoByName("CODE");
     assert(si);
     unsigned textSize = si->uSectionSize;
     if (textSize < 0x200)
@@ -208,7 +178,7 @@ ADDRESS Win32BinaryFile::GetMainEntryPoint() {
                     // Borland pattern succeeds. p-4 has the offset of mainInfo
                     ADDRESS mainInfo = ADDRESS::g(LMMH(*(base + p - 4)));
                     ADDRESS main =
-                        ADDRESS::g(readNative4(mainInfo + ADDRESS::g(0x18))); // Address of main is at mainInfo+18
+                        ADDRESS::g(Image->readNative4(mainInfo + ADDRESS::g(0x18))); // Address of main is at mainInfo+18
                     return main;
                 }
             } else
@@ -382,6 +352,43 @@ BOOL CALLBACK lookforsource(dbghelp::PSOURCEFILE pSourceFile, PVOID UserContext)
 }
 #endif
 
+void Win32BinaryFile::processIAT()
+{
+    PEImportDtor *id = (PEImportDtor *)(LMMH(m_pPEHeader->ImportTableRVA) + base);
+    if (m_pPEHeader->ImportTableRVA) { // If any import table entry exists
+        while (id->name != 0) {
+            char *dllName = LMMH(id->name) + base;
+            unsigned thunk = id->originalFirstThunk ? id->originalFirstThunk : id->firstThunk;
+            unsigned *iat = (unsigned *)(LMMH(thunk) + base);
+            unsigned iatEntry = LMMH(*iat);
+            ADDRESS paddr = ADDRESS::g(LMMH(id->firstThunk) + LMMH(m_pPEHeader->Imagebase));
+            while (iatEntry) {
+                if (iatEntry >> 31) {
+                    // This is an ordinal number (stupid idea)
+                    QString nodots = QString(dllName).replace(".","_"); // Dots can't be in identifiers
+                    nodots = QString("%1_%2").arg(nodots).arg(iatEntry & 0x7FFFFFFF);
+                    dlprocptrs[paddr] = nodots;
+                    // printf("Added symbol %s value %x\n", ost.str().c_str(), paddr);
+                } else {
+                    // Normal case (IMAGE_IMPORT_BY_NAME). Skip the useless hint (2 bytes)
+                    QString name((const char *)(iatEntry + 2 + base));
+                    dlprocptrs[paddr] = name;
+                    if (paddr != ADDRESS::host_ptr(iat) - ADDRESS::host_ptr(base) + LMMH(m_pPEHeader->Imagebase))
+                        dlprocptrs[ADDRESS::host_ptr(iat) - ADDRESS::host_ptr(base) + LMMH(m_pPEHeader->Imagebase)] =
+                            QString("old_") + name; // add both possibilities
+                                                        // printf("Added symbol %s value %x\n", name.c_str(), paddr);
+                    // printf("Also added old_%s value %x\n", name.c_str(), (int)iat - (int)base +
+                    //         LMMH(m_pPEHeader->Imagebase));
+                }
+                iat++;
+                iatEntry = LMMH(*iat);
+                paddr += 4;
+            }
+            id++;
+        }
+    }
+}
+
 bool Win32BinaryFile::RealLoad(const QString &sName) {
     m_pFileName = sName;
     FILE *fp = fopen(qPrintable(sName), "rb");
@@ -423,66 +430,47 @@ bool Win32BinaryFile::RealLoad(const QString &sName) {
     // printf("Image Base %08X, real base %p\n", LMMH(m_pPEHeader->Imagebase), base);
 
     const PEObject *o = (PEObject *)(((char *)m_pPEHeader) + LH(&m_pPEHeader->NtHdrSize) + 24);
-    m_iNumSections = LH(&m_pPEHeader->numObjects);
-    m_pSections = new PESectionInfo[m_iNumSections];
+
+    std::vector<SectionParam> params;
+
+    uint32_t numSections = LH(&m_pPEHeader->numObjects);
     //    SectionInfo *reloc = nullptr;
-    for (int i = 0; i < m_iNumSections; i++, o++) {
-        SectionInfo &sect = m_pSections[i];
-        //    printf("%.8s RVA=%08X Offset=%08X size=%08X\n", (char*)o->ObjectName, LMMH(o->RVA),
-        //    LMMH(o->PhysicalOffset),
-        //      LMMH(o->VirtualSize));
-        sect.pSectionName = o->ObjectName;
-        //        if (!strcmp(sect.pSectionName, ".reloc"))
-        //            reloc = &sect;
-        sect.uNativeAddr = ADDRESS::g(LMMH(o->RVA) + LMMH(m_pPEHeader->Imagebase));
-        sect.uHostAddr = ADDRESS::host_ptr(LMMH(o->RVA) + base);
-        sect.uSectionSize = LMMH(o->VirtualSize);
-        DWord Flags = LMMH(o->Flags);
-        sect.bBss = (Flags & IMAGE_SCN_CNT_UNINITIALIZED_DATA) ? 1 : 0;
-        sect.bCode = (Flags & IMAGE_SCN_CNT_CODE) ? 1 : 0;
-        sect.bData = (Flags & IMAGE_SCN_CNT_INITIALIZED_DATA) ? 1 : 0;
-        sect.bReadOnly = (Flags & IMAGE_SCN_MEM_WRITE) ? 0 : 1;
+    for (unsigned i = 0; i < numSections; i++, o++) {
+        SectionParam sect;
         // TODO: Check for unreadable sections (!IMAGE_SCN_MEM_READ)?
         fseek(fp, LMMH(o->PhysicalOffset), SEEK_SET);
         memset(base + LMMH(o->RVA), 0, LMMH(o->VirtualSize));
         fread(base + LMMH(o->RVA), LMMH(o->PhysicalSize), 1, fp);
-        s_sectionObjects[static_cast<const PESectionInfo *>(&sect)] = o;
+
+        sect.Name = o->ObjectName;
+        sect.From = ADDRESS::g(LMMH(o->RVA) + LMMH(m_pPEHeader->Imagebase));
+        sect.ImageAddress = ADDRESS::host_ptr(LMMH(o->RVA) + base);
+        sect.Size = LMMH(o->VirtualSize);
+        sect.PhysSize = LMMH(o->PhysicalSize);
+        DWord Flags = LMMH(o->Flags);
+        sect.Bss = (Flags & IMAGE_SCN_CNT_UNINITIALIZED_DATA) ? 1 : 0;
+        sect.Code = (Flags & IMAGE_SCN_CNT_CODE) ? 1 : 0;
+        sect.Data = (Flags & IMAGE_SCN_CNT_INITIALIZED_DATA) ? 1 : 0;
+        sect.ReadOnly = (Flags & IMAGE_SCN_MEM_WRITE) ? 0 : 1;
+        params.push_back(sect);
+    }
+    for(SectionParam par : params) {
+        SectionInfo *sect = Image->createSection(par.Name,par.From,par.From+par.Size);
+        if(sect) {
+            sect->bBss = par.Bss;
+            sect->bCode = par.Code;
+            sect->bData = par.Data;
+            sect->bReadOnly = par.ReadOnly;
+            sect->uHostAddr = par.ImageAddress;
+            sect->Endiannes = 0; // little endian
+            if( !(par.Bss || par.From.isZero()) ) {
+                sect->addDefinedArea(par.From,par.From+par.PhysSize);
+            }
+        }
     }
 
     // Add the Import Address Table entries to the symbol table
-    PEImportDtor *id = (PEImportDtor *)(LMMH(m_pPEHeader->ImportTableRVA) + base);
-    if (m_pPEHeader->ImportTableRVA) { // If any import table entry exists
-        while (id->name != 0) {
-            char *dllName = LMMH(id->name) + base;
-            unsigned thunk = id->originalFirstThunk ? id->originalFirstThunk : id->firstThunk;
-            unsigned *iat = (unsigned *)(LMMH(thunk) + base);
-            unsigned iatEntry = LMMH(*iat);
-            ADDRESS paddr = ADDRESS::g(LMMH(id->firstThunk) + LMMH(m_pPEHeader->Imagebase));
-            while (iatEntry) {
-                if (iatEntry >> 31) {
-                    // This is an ordinal number (stupid idea)
-                    QString nodots = QString(dllName).replace(".","_"); // Dots can't be in identifiers
-                    nodots = QString("%1_%2").arg(nodots).arg(iatEntry & 0x7FFFFFFF);
-                    dlprocptrs[paddr] = nodots;
-                    // printf("Added symbol %s value %x\n", ost.str().c_str(), paddr);
-                } else {
-                    // Normal case (IMAGE_IMPORT_BY_NAME). Skip the useless hint (2 bytes)
-                    QString name((const char *)(iatEntry + 2 + base));
-                    dlprocptrs[paddr] = name;
-                    if (paddr != ADDRESS::host_ptr(iat) - ADDRESS::host_ptr(base) + LMMH(m_pPEHeader->Imagebase))
-                        dlprocptrs[ADDRESS::host_ptr(iat) - ADDRESS::host_ptr(base) + LMMH(m_pPEHeader->Imagebase)] =
-                            QString("old_") + name; // add both possibilities
-                                                        // printf("Added symbol %s value %x\n", name.c_str(), paddr);
-                    // printf("Also added old_%s value %x\n", name.c_str(), (int)iat - (int)base +
-                    //         LMMH(m_pPEHeader->Imagebase));
-                }
-                iat++;
-                iatEntry = LMMH(*iat);
-                paddr += 4;
-            }
-            id++;
-        }
-    }
+    processIAT();
 
     // Was hoping that _main or main would turn up here for Borland console mode programs. No such luck.
     // I think IDA Pro must find it by a combination of FLIRT and some pattern matching
@@ -551,15 +539,17 @@ bool Win32BinaryFile::RealLoad(const QString &sName) {
 // Note: slight chance of coming across a misaligned match; probability is about 1/65536 times dozens in 2^32 ~= 10^-13
 void Win32BinaryFile::findJumps(ADDRESS curr) {
     int cnt = 0; // Count of bytes with no match
-    SectionInfo *sec = GetSectionInfoByName(".text");
+    SectionInfo *sec = Image->GetSectionInfoByName(".text");
     if (sec == nullptr)
-        sec = GetSectionInfoByName("CODE");
+        sec = Image->GetSectionInfoByName("CODE");
     assert(sec);
     // Add to native addr to get host:
     ptrdiff_t delta = (sec->uHostAddr - sec->uNativeAddr).m_value;
     while (cnt < 0x60) { // Max of 0x60 bytes without a match
         curr -= 2;       // Has to be on 2-byte boundary
         cnt += 2;
+        if(curr<sec->uNativeAddr)
+            break; // stepped out of section
         if (LH((curr + delta).m_value) != 0xFF + (0x25 << 8))
             continue;
         ADDRESS operand = ADDRESS::g(LMMH2((curr + delta + 2).m_value));
@@ -820,74 +810,6 @@ int Win32BinaryFile::win32Read4(int *pi) const {
     return n;
 }
 
-// Read 1 byte from given native address
-char Win32BinaryFile::readNative1(ADDRESS nat) {
-    PSectionInfo si = getSectionInfoByAddr(nat);
-    if (si == 0)
-        return -1;
-    ADDRESS host = si->uHostAddr - si->uNativeAddr + nat;
-    return *(char *)host.m_value;
-}
-
-// Read 2 bytes from given native address
-int Win32BinaryFile::readNative2(ADDRESS nat) {
-    PSectionInfo si = getSectionInfoByAddr(nat);
-    if (si == 0)
-        return 0;
-    ADDRESS host = si->uHostAddr - si->uNativeAddr + nat;
-    int n = win32Read2((short *)host.m_value);
-    return n;
-}
-
-// Read 4 bytes from given native address
-int Win32BinaryFile::readNative4(ADDRESS nat) {
-    SectionInfo *si = getSectionInfoByAddr(nat);
-    if (si == 0)
-        return 0;
-    ADDRESS host = si->uHostAddr - si->uNativeAddr + nat;
-    int n = win32Read4((int *)host.m_value);
-    return n;
-}
-
-// Read 8 bytes from given native address
-QWord Win32BinaryFile::readNative8(ADDRESS nat) {
-    int raw[2];
-#ifdef WORDS_BIGENDIAN // This tests the host machine
-    // Source and host are different endianness
-    raw[1] = readNative4(nat);
-    raw[0] = readNative4(nat + 4);
-#else
-    // Source and host are same endianness
-    raw[0] = readNative4(nat);
-    raw[1] = readNative4(nat + 4);
-#endif
-    return *(QWord *)raw;
-}
-
-// Read 4 bytes as a float
-float Win32BinaryFile::readNativeFloat4(ADDRESS nat) {
-    int raw = readNative4(nat);
-    // Ugh! gcc says that reinterpreting from int to float is invalid!!
-    // return reinterpret_cast<float>(raw);        // Note: cast, not convert!!
-    return *(float *)&raw; // Note: cast, not convert
-}
-
-// Read 8 bytes as a float
-double Win32BinaryFile::readNativeFloat8(ADDRESS nat) {
-    int raw[2];
-#ifdef WORDS_BIGENDIAN // This tests the host machine
-    // Source and host are different endianness
-    raw[1] = readNative4(nat);
-    raw[0] = readNative4(nat + 4);
-#else
-    // Source and host are same endianness
-    raw[0] = readNative4(nat);
-    raw[1] = readNative4(nat + 4);
-#endif
-    // return reinterpret_cast<double>(*raw);    // Note: cast, not convert!!
-    return *(double *)raw;
-}
-
 bool Win32BinaryFile::IsDynamicLinkedProcPointer(ADDRESS uNative) {
     if (dlprocptrs.find(uNative) != dlprocptrs.end())
         return true;
@@ -915,7 +837,7 @@ bool Win32BinaryFile::IsStaticLinkedLibProc(ADDRESS uNative) {
 
 bool Win32BinaryFile::IsMinGWsAllocStack(ADDRESS uNative) {
     if (mingw_main) {
-        PSectionInfo si = getSectionInfoByAddr(uNative);
+        const SectionInfo * si = Image->getSectionInfoByAddr(uNative);
         if (si) {
             ADDRESS host = si->uHostAddr - si->uNativeAddr + uNative;
             unsigned char pat[] = {0x51, 0x89, 0xE1, 0x83, 0xC1, 0x08, 0x3D, 0x00, 0x10, 0x00, 0x00, 0x72,
@@ -932,7 +854,7 @@ bool Win32BinaryFile::IsMinGWsAllocStack(ADDRESS uNative) {
 
 bool Win32BinaryFile::IsMinGWsFrameInit(ADDRESS uNative) {
     if (mingw_main) {
-        PSectionInfo si = getSectionInfoByAddr(uNative);
+        const SectionInfo * si = Image->getSectionInfoByAddr(uNative);
         if (si) {
             ADDRESS host = si->uHostAddr - si->uNativeAddr + uNative;
             unsigned char pat1[] = {0x55, 0x89, 0xE5, 0x83, 0xEC, 0x18, 0x89, 0x7D, 0xFC,
@@ -952,7 +874,7 @@ bool Win32BinaryFile::IsMinGWsFrameInit(ADDRESS uNative) {
 
 bool Win32BinaryFile::IsMinGWsFrameEnd(ADDRESS uNative) {
     if (mingw_main) {
-        PSectionInfo si = getSectionInfoByAddr(uNative);
+        const SectionInfo * si = Image->getSectionInfoByAddr(uNative);
         if (si) {
             ADDRESS host = si->uHostAddr - si->uNativeAddr + uNative;
             unsigned char pat1[] = {0x55, 0x89, 0xE5, 0x53, 0x83, 0xEC, 0x14, 0x8B, 0x45, 0x08, 0x8B, 0x18};
@@ -970,7 +892,7 @@ bool Win32BinaryFile::IsMinGWsFrameEnd(ADDRESS uNative) {
 
 bool Win32BinaryFile::IsMinGWsCleanupSetup(ADDRESS uNative) {
     if (mingw_main) {
-        PSectionInfo si = getSectionInfoByAddr(uNative);
+        const SectionInfo * si = Image->getSectionInfoByAddr(uNative);
         if (si) {
             ADDRESS host = si->uHostAddr - si->uNativeAddr + uNative;
             unsigned char pat1[] = {0x55, 0x89, 0xE5, 0x53, 0x83, 0xEC, 0x04};
@@ -992,7 +914,7 @@ bool Win32BinaryFile::IsMinGWsCleanupSetup(ADDRESS uNative) {
 
 bool Win32BinaryFile::IsMinGWsMalloc(ADDRESS uNative) {
     if (mingw_main) {
-        PSectionInfo si = getSectionInfoByAddr(uNative);
+        const SectionInfo * si = Image->getSectionInfoByAddr(uNative);
         if (si) {
             ADDRESS host = si->uHostAddr - si->uNativeAddr + uNative;
             unsigned char pat1[] = {0x55, 0x89, 0xE5, 0x8D, 0x45, 0xF4, 0x83, 0xEC, 0x58, 0x89, 0x45, 0xE0, 0x8D, 0x45,
@@ -1009,9 +931,9 @@ bool Win32BinaryFile::IsMinGWsMalloc(ADDRESS uNative) {
 }
 
 ADDRESS Win32BinaryFile::IsJumpToAnotherAddr(ADDRESS uNative) {
-    if ((readNative1(uNative) & 0xff) != 0xe9)
+    if ((Image->readNative1(uNative) & 0xff) != 0xe9)
         return NO_ADDRESS;
-    return ADDRESS::g(readNative4(uNative + 1)) + uNative + 5;
+    return ADDRESS::g(Image->readNative4(uNative + 1)) + uNative + 5;
 }
 
 const QString &Win32BinaryFile::GetDynamicProcName(ADDRESS uNative) { return dlprocptrs[uNative]; }

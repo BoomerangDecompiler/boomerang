@@ -1,4 +1,4 @@
-
+#pragma once
 #include <QThread>
 #include <QString>
 #include <QTableWidget>
@@ -81,7 +81,7 @@ class Decompiler : public QObject, public Watcher {
 
     FrontEnd *fe;
     Prog *prog;
-
+    IBinaryImage *Image;
     QString filename;
 
     const char *procStatus(UserProc *p);

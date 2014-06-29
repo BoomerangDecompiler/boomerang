@@ -22,6 +22,11 @@
  */
 #ifndef _MACHO_LOADER_H_
 #define _MACHO_LOADER_H_
+#ifndef _MACH_MACHINE_H_        // On OS X, this is already defined
+typedef uint32_t cpu_type_t;    // I guessed
+typedef uint32_t cpu_subtype_t; // I guessed
+typedef uint32_t vm_prot_t;     // I guessed
+#endif
 
 /*
  * This file describes the format of mach object files.
@@ -102,9 +107,7 @@ struct mach_header {
                           /*  linking only, no section contents */
 
 /* Constants for the flags field of the mach_header */
-#define MH_NOUNDEFS                                                                                                    \
-    0x1 /* the object file has no undefined                                                                            \
-references */
+#define MH_NOUNDEFS 0x1 /* the object file has no undefined references */
 #define MH_INCRLINK                                                                                                    \
     0x2 /* the object file is the output of an                                                                         \
 incremental link against a base file                                                                                   \
@@ -259,18 +262,14 @@ struct segment_command {
 };
 
 /* Constants for the flags field of the segment_command */
-#define SG_HIGHVM                                                                                                      \
-    0x1 /* the file contents for this segment is for                                                                   \
-the high part of the VM space, the low part                                                                            \
-is zero filled (for stacks in core files) */
-#define SG_FVMLIB                                                                                                      \
-    0x2 /* this segment is the VM that is allocated by                                                                 \
-a fixed VM library, for overlap checking in                                                                            \
-the link editor */
-#define SG_NORELOC                                                                                                     \
-    0x4 /* this segment has nothing that was relocated                                                                 \
-in it and nothing relocated to it, that is                                                                             \
-it maybe safely replaced without relocation*/
+
+/* the file contents for this segment is for the high part of the VM space, the low part is zero filled
+ * (for stacks in core files) */
+#define SG_HIGHVM 0x1
+/* this segment is the VM that is allocated by a fixed VM library, for overlap checking in the link editor */
+#define SG_FVMLIB 0x2
+/* this segment has nothing that was relocated in it and nothing relocated to it, that is it maybe safely replaced without relocation*/
+#define SG_NORELOC 0x4
 
 /*
  * A segment is made up of zero or more sections.  Non-MH_OBJECT files have

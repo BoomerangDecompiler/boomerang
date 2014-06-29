@@ -6,7 +6,7 @@
  * WARRANTIES.
  *
  */
-
+#pragma once
 /***************************************************************************/ /**
   * \file       constraint.h
   * OVERVIEW:   Definition of objects related to type constraints

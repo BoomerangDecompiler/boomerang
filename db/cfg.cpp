@@ -73,6 +73,10 @@
 void delete_lrtls(std::list<RTL *> &pLrtl);
 void erase_lrtls(std::list<RTL *> &pLrtl, std::list<RTL *>::iterator begin, std::list<RTL *>::iterator end);
 
+namespace {
+static int progress = 0;
+}
+
 /**********************************
  * Cfg methods.
  **********************************/
@@ -1759,8 +1763,6 @@ void updateWorkListRev(BasicBlock *currBB, std::list<BasicBlock *> &workList, st
         }
     }
 }
-
-static int progress = 0;
 void Cfg::findInterferences(ConnectionGraph &cg) {
     if (m_listBB.empty())
         return;

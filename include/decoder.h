@@ -38,7 +38,7 @@ enum ICLASS {
     SCDAT, // Static Conditional Delayed, Anulled if Taken
     SU,    // Static Unconditional (not delayed)
     SKIP,  // Skip successor
-           //    TRAP,            // Trap
+    //    TRAP,            // Trap
     NOP,   // No operation (e.g. sparc BN,A)
     // HPPA only
     DU,  // Dynamic Unconditional (not delayed)
@@ -87,10 +87,10 @@ struct DecodeResult {
   * The NJMCDecoder class is a class that contains NJMC generated decoding methods.
   ******************************************************************************/
 class NJMCDecoder {
-  protected:
+protected:
     Prog *prog;
-
-  public:
+    class IBinaryImage *Image;
+public:
     NJMCDecoder(Prog *prog);
     virtual ~NJMCDecoder() {}
 
@@ -109,7 +109,7 @@ class NJMCDecoder {
                       DecodeResult &result);
     Prog *getProg() { return prog; }
 
-  protected:
+protected:
     std::list<Instruction *> *instantiate(ADDRESS pc, const char *name, ...);
 
     Exp *instantiateNamedParam(char *name, ...);
@@ -140,7 +140,7 @@ bool isFuncPrologue(ADDRESS hostPC);
 #define DEBUG_DECODER (Boomerang::get()->debugDecoder)
 #define SHOW_ASM(output)                                                                                               \
     if (DEBUG_DECODER)                                                                                                 \
-        LOG_STREAM() << pc << ": " << output << '\n';
+    LOG_STREAM() << pc << ": " << output << '\n';
 
 /*
  * addresstoPC returns the raw number as the address.  PC could be an

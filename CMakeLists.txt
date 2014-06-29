@@ -52,7 +52,7 @@ ELSE()
 ENDIF()
 
 INCLUDE(TestBigEndian)
-find_package(Boost REQUIRED)
+#find_package(Boost REQUIRED)
 find_package(Qt5Core REQUIRED)
 find_package(Qt5Xml REQUIRED)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)

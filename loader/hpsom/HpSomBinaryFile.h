@@ -72,13 +72,12 @@ struct symElem {
     ADDRESS value;
 };
 
-class HpSomBinaryFile : public QObject, public BinaryData, public LoaderInterface, public LoaderCommon {
+class HpSomBinaryFile : public QObject, public LoaderInterface {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID LoaderInterface_iid)
     Q_INTERFACES(LoaderInterface)
-    Q_INTERFACES(BinaryData)
-    Q_INTERFACES(SectionInterface)
-  public:
+
+public:
     HpSomBinaryFile(); // Constructor
     virtual ~HpSomBinaryFile();
     void UnLoad() override;                // Unload the image
@@ -126,17 +125,11 @@ class HpSomBinaryFile : public QObject, public BinaryData, public LoaderInterfac
 
     //        bool        IsDynamicLinkedProc(ADDRESS wNative);
     //        ADDRESS     NativeToHostAddress(ADDRESS uNative);
-    char readNative1(ADDRESS nat);
-    int readNative2(ADDRESS nat);
-    int readNative4(ADDRESS nat);
-    float readNativeFloat4(ADDRESS nat);
-    double readNativeFloat8(ADDRESS nat);
-    QWord readNative8(ADDRESS nat);
 
-  protected:
+protected:
     bool RealLoad(const QString &sName) override; // Load the file; pure virtual
 
-  private:
+private:
     // Private method to get the start and length of a given subspace
     std::pair<ADDRESS, int> getSubspaceInfo(const char *ssname);
 
@@ -145,10 +138,11 @@ class HpSomBinaryFile : public QObject, public BinaryData, public LoaderInterfac
     //        ADDRESS        mainExport;                    // Export entry for "main"
     std::set<ADDRESS> imports; // Set of imported proc addr's
     QString m_pFileName;
-
+    class IBinaryImage *Image;
     // LoaderInterface interface
-  public:
+public:
     tMapAddrToString &getSymbols();
+    void processSymbols();
 };
 
 #endif // #ifndef __HPSOMBINARYFILE_H__

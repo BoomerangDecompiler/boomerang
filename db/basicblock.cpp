@@ -117,13 +117,6 @@ BasicBlock::BasicBlock(Function *parent, std::list<RTL *> *pRtls, BBTYPE bbType,
     // Set the RTLs
     setRTLs(pRtls);
 }
-/***************************************************************************/ /**
-  *
-  * \brief        Returns nonzero if this BB has a label, in the sense that a label is required in the translated
-  *  source code. \sa Cfg::setLabel()
-  * \returns     An integer unique to this BB, or zero
-  ******************************************************************************/
-int BasicBlock::getLabel() { return LabelNum; }
 
 bool BasicBlock::isCaseOption() {
     if (CaseHead)

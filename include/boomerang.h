@@ -47,7 +47,7 @@ class Function;
 class UserProc;
 class HLLCode;
 class ObjcModule;
-
+class IBinaryImage;
 enum LogLevel {
     LL_Debug = 0,
     LL_Default=1,
@@ -96,10 +96,11 @@ class Boomerang : public QObject {
     Q_OBJECT
   private:
     static Boomerang *boomerang;
-    QString progPath;         //!< String with the path to the boomerang executable.
-    QString outputPath;       //!< The path where all output files are created.
-    Log *logger;                  //!< Takes care of the log messages.
-    std::set<Watcher *> watchers; //!< The watchers which are interested in this decompilation.
+    IBinaryImage *Image = nullptr;
+    QString progPath;               //!< String with the path to the boomerang executable.
+    QString outputPath;             //!< The path where all output files are created.
+    Log *logger = nullptr;          //!< Takes care of the log messages.
+    std::set<Watcher *> watchers;   //!< The watchers which are interested in this decompilation.
 
     /* Documentation about a function should be at one place only
      * So: Document all functions at the point of implementation (in the .c file)
@@ -113,12 +114,8 @@ class Boomerang : public QObject {
     /**
      * \return The global boomerang object. It will be created if it didn't already exist.
      */
-    static Boomerang *get() {
-        if (!boomerang)
-            boomerang = new Boomerang();
-        return boomerang;
-    }
-
+    static Boomerang *get();
+    IBinaryImage *getImage();
     int processCommand(QStringList &args);
     static const char *getVersionStr();
     Log &log();

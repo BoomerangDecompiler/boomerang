@@ -149,14 +149,10 @@ typedef struct PACKED {
 
 class Win32BinaryFile : public QObject,
         public LoaderInterface,
-        public BinaryData,
-        public SymbolTableInterface,
-        public LoaderCommon {
+        public SymbolTableInterface {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID LoaderInterface_iid)
     Q_INTERFACES(LoaderInterface)
-    Q_INTERFACES(BinaryData)
-    Q_INTERFACES(SectionInterface)
     Q_INTERFACES(SymbolTableInterface)
 public:
     Win32BinaryFile();                    // Default constructor
@@ -189,12 +185,6 @@ protected:
     int win32Read4(int *pi) const;   // Read 4 bytes from native addr
 
 public:
-    char readNative1(ADDRESS a) override;        // Read 1 bytes from native addr
-    int readNative2(ADDRESS a) override;         // Read 2 bytes from native addr
-    int readNative4(ADDRESS a) override;         // Read 4 bytes from native addr
-    QWord readNative8(ADDRESS a) override;       // Read 8 bytes from native addr
-    float readNativeFloat4(ADDRESS a) override;  // Read 4 bytes as float
-    double readNativeFloat8(ADDRESS a) override; // Read 8 bytes as float
 
     bool IsDynamicLinkedProcPointer(ADDRESS uNative);
     bool IsStaticLinkedLibProc(ADDRESS uNative);
@@ -229,7 +219,7 @@ private:
     QString m_pFileName;
     bool haveDebugInfo;
     bool mingw_main;
-
+    class IBinaryImage *Image;
     // SymbolTableInterface interface
 public:
     int GetSizeByName(const QString &pName, bool bTypeOK) {
@@ -245,4 +235,5 @@ public:
     QString symbolByAddress(ADDRESS dwAddr) override;                        // Get sym from addr
     ADDRESS GetAddressByName(const QString &name, bool bNoTypeOK = false) override; // Find addr given name
     void AddSymbol(ADDRESS uNative, const QString &pName) override;
+    void processIAT();
 };

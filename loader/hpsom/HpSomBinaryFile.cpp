@@ -15,22 +15,25 @@
   ******************************************************************************/
 
 #include "HpSomBinaryFile.h"
+#include "boomerang.h"
+#include "IBinaryImage.h"
 
 #include <cstddef>
 #include <cassert>
 #include <cstring>
+#include <QFile>
 
 // Macro to convert a pointer to a Big Endian integer into a host integer
 #define UC(p) ((unsigned char *)p)
 #define UINT4(p) ((UC(p)[0] << 24) + (UC(p)[1] << 16) + (UC(p)[2] << 8) + UC(p)[3])
 #define UINT4ADDR(p) (ADDRESS::g((UC(p)[0] << 24) + (UC(p)[1] << 16) + (UC(p)[2] << 8) + UC(p)[3]))
 
-HpSomBinaryFile::HpSomBinaryFile() : m_pImage(0) {}
+HpSomBinaryFile::HpSomBinaryFile() : m_pImage(0) {
+    Image = Boomerang::get()->getImage();
+}
 
 HpSomBinaryFile::~HpSomBinaryFile() {
-    if (m_pImage) {
-        delete m_pImage;
-    }
+    delete [] m_pImage;
 }
 static int Read2(short *ps) {
     unsigned char *p = (unsigned char *)ps;
@@ -45,72 +48,6 @@ int Read4(int *pi) {
     int n2 = Read2(p + 1);
     int n = (int)((n1 << 16) | n2);
     return n;
-}
-// Read 1 byte from given native address
-char HpSomBinaryFile::readNative1(ADDRESS nat) {
-    SectionInfo *si = getSectionInfoByAddr(nat);
-    if (si == 0)
-        si = GetSectionInfo(0);
-    char *host = (char *)(si->uHostAddr - si->uNativeAddr + nat).m_value;
-    return *host;
-}
-
-// Read 2 bytes from given native address
-int HpSomBinaryFile::readNative2(ADDRESS nat) {
-    SectionInfo *si = getSectionInfoByAddr(nat);
-    if (si == 0)
-        return 0;
-    ADDRESS host = si->uHostAddr - si->uNativeAddr + nat;
-    int n = Read2((short *)host.m_value);
-    return n;
-}
-
-// Read 4 bytes from given native address
-int HpSomBinaryFile::readNative4(ADDRESS nat) {
-    SectionInfo *si = getSectionInfoByAddr(nat);
-    if (si == 0)
-        return 0;
-    ADDRESS host = si->uHostAddr - si->uNativeAddr + nat;
-    int n = Read4((int *)host.m_value);
-    return n;
-}
-// Read 8 bytes from given native address
-QWord HpSomBinaryFile::readNative8(ADDRESS nat) { // TODO: lifted from Win32 loader, likely wrong
-    int raw[2];
-#ifdef WORDS_BIGENDIAN // This tests the host machine
-    // Source and host are different endianness
-    raw[1] = readNative4(nat);
-    raw[0] = readNative4(nat + 4);
-#else
-    // Source and host are same endianness
-    raw[0] = readNative4(nat);
-    raw[1] = readNative4(nat + 4);
-#endif
-    return *(QWord *)raw;
-}
-
-// Read 4 bytes as a float
-float HpSomBinaryFile::readNativeFloat4(ADDRESS nat) {
-    int raw = readNative4(nat);
-    // Ugh! gcc says that reinterpreting from int to float is invalid!!
-    // return reinterpret_cast<float>(raw);        // Note: cast, not convert!!
-    return *(float *)&raw; // Note: cast, not convert
-}
-
-// Read 8 bytes as a float
-double HpSomBinaryFile::readNativeFloat8(ADDRESS nat) { // TODO: lifted from Win32 loader, likely wrong
-    int raw[2];
-#ifdef WORDS_BIGENDIAN // This tests the host machine
-    // Source and host are different endianness
-    raw[1] = readNative4(nat);
-    raw[0] = readNative4(nat + 4);
-#else
-    // Source and host are same endianness
-    raw[0] = readNative4(nat);
-    raw[1] = readNative4(nat + 4);
-#endif
-    // return reinterpret_cast<double>(*raw);    // Note: cast, not convert!!
-    return *(double *)raw;
 }
 // Functions to recognise various instruction patterns
 // Note: these are not presently used. May be needed again if it turns out
@@ -179,18 +116,65 @@ bool isStub(ADDRESS hostAddr, int& offset) {
 }
 #endif
 
+// Read the main symbol table, if any
+void HpSomBinaryFile::processSymbols()
+{
+
+    // Find the main symbol table, if it exists
+
+    unsigned numSym = UINT4(m_pImage + 0x60);
+
+    ADDRESS symPtr = ADDRESS::host_ptr(m_pImage) + UINT4(m_pImage + 0x5C);
+    char *pNames = (char *)(m_pImage + (int)UINT4(m_pImage + 0x6C));
+#define SYMSIZE 20 // 5 4-byte words per symbol entry
+#define SYMBOLNM(idx) (UINT4((symPtr + idx * SYMSIZE + 4).m_value))
+#define SYMBOLAUX(idx) (UINT4((symPtr + idx * SYMSIZE + 8).m_value))
+#define SYMBOLVAL(idx) (UINT4((symPtr + idx * SYMSIZE + 16).m_value))
+#define SYMBOLTY(idx) ((UINT4((symPtr + idx * SYMSIZE).m_value) >> 24) & 0x3f)
+    for (unsigned u = 0; u < numSym; u++) {
+        // cout << "Symbol " << pNames+SYMBOLNM(u) << ", type " << SYMBOLTY(u) << ", value " << hex << SYMBOLVAL(u)
+        // << ", aux " << SYMBOLAUX(u) << endl;
+        unsigned symbol_type = SYMBOLTY(u);
+        // Only interested in type 3 (code), 8 (stub), and 12 (millicode)
+        if ((symbol_type != 3) && (symbol_type != 8) && (symbol_type != 12))
+            continue;
+        //          if ((symbol_type == 10) || (symbol_type == 11))
+        // These are extension entries; not interested
+        //              continue;
+        char *pSymName = pNames + SYMBOLNM(u);
+        // Ignore symbols starting with one $; for example, there are many
+        // $CODE$ (but we want to see helper functions like $$remU)
+        if ((pSymName[0] == '$') && (pSymName[1] != '$'))
+            continue;
+        //          if ((symbol_type == 6) && (strcmp("main", pSymName) == 0))
+        // Entry point for main. Make sure to ignore this entry, else it
+        // ends up being the main entry point
+        //              continue;
+        ADDRESS value = ADDRESS::g(SYMBOLVAL(u));
+        //          if ((symbol_type >= 3) && (symbol_type <= 8))
+        // Addresses of code; remove the privilege bits
+        value.m_value &= ~3;
+        // if (strcmp("main", pNames+SYMBOLNM(u)) == 0) {    // HACK!
+        //  cout << "main at " << hex << value << " has type " << SYMBOLTY(u) << endl;}
+        // HP's symbol table is crazy. It seems that imports like printf have entries of type 3 with the wrong
+        // value. So we have to check whether the symbol has already been entered (assume first one is correct).
+        if (symbols.find(pSymName) == NO_ADDRESS)
+            symbols.Add(value, pSymName);
+        // cout << "Symbol " << pNames+SYMBOLNM(u) << ", type " << SYMBOLTY(u) << ", value " << hex << value << ",
+        // aux " << SYMBOLAUX(u) << endl;  // HACK!
+    }
+}
+
 bool HpSomBinaryFile::RealLoad(const QString &sName) {
-    FILE *fp;
+    QFile fp(sName);
 
     m_pFileName = sName;
-
-    if ((fp = fopen(qPrintable(sName), "rb")) == nullptr) {
+    if (!fp.open(QFile::ReadOnly)) {
         fprintf(stderr, "Could not open binary file %s\n", qPrintable(sName));
         return false;
     }
 
-    fseek(fp, 0, SEEK_END);
-    long size = ftell(fp);
+    long size = fp.size();
 
     // Allocate a buffer for the image
     m_pImage = new unsigned char[size];
@@ -200,8 +184,8 @@ bool HpSomBinaryFile::RealLoad(const QString &sName) {
     }
     memset(m_pImage, size, 0);
 
-    fseek(fp, 0, SEEK_SET);
-    if (fread(m_pImage, 1, size, fp) != (unsigned)size) {
+
+    if (fp.read((char *)m_pImage, size) != (unsigned)size) {
         fprintf(stderr, "Error reading binary file %s\n", qPrintable(sName));
         return false;
     }
@@ -213,8 +197,7 @@ bool HpSomBinaryFile::RealLoad(const QString &sName) {
     unsigned a_magic = magic & 0xFFFF;
     if (((system_id != 0x210) && (system_id != 0x20B)) ||
         ((a_magic != 0x107) && (a_magic != 0x108) && (a_magic != 0x10B))) {
-        fprintf(stderr, "%s is not a standard PA/RISC executable file, with "
-                        "system ID %X and magic number %X\n",
+        fprintf(stderr, "%s is not a standard PA/RISC executable file, with system ID %X and magic number %X\n",
                 qPrintable(sName), system_id, a_magic);
         return false;
     }
@@ -245,22 +228,8 @@ bool HpSomBinaryFile::RealLoad(const QString &sName) {
         return false;
     }
 
-    // Allocate the section information. There will be just four entries:
-    // one for the header, one for text, one for initialised data, one for BSS
-    m_pSections = new SectionInfo[4];
-    m_iNumSections = 4;
-    if (m_pSections == 0) {
-        fprintf(stderr, "Could not allocate section info array of 4 items\n");
-        if (m_pImage) {
-            delete m_pImage;
-            m_pImage = 0;
-        }
-        return false;
-    }
-
-    // Find the main symbol table, if it exists
-    ADDRESS symPtr = ADDRESS::host_ptr(m_pImage) + UINT4(m_pImage + 0x5C);
-    unsigned numSym = UINT4(m_pImage + 0x60);
+    // There will be just three sections:
+    // one for text, one for initialised data, one for BSS
 
     // Find the DL Table, if it exists
     // The DL table (Dynamic Link info?) is supposed to be at the start of
@@ -278,60 +247,48 @@ bool HpSomBinaryFile::RealLoad(const QString &sName) {
 // A convenient macro for accessing the fields (0-11) of the auxilliary header
 // Fields 0, 1 are the header (flags, aux header type, and size)
 #define AUXHDR(idx) (UINT4(m_pImage + ADDRESS::value_type(auxHeaders + idx)))
+    // Section 0: text (code)
+    SectionInfo *text = Image->createSection("$TEXT$",ADDRESS::n(AUXHDR(3)),ADDRESS::n(AUXHDR(3)+AUXHDR(2)));
+    assert(text);
+    text->uHostAddr = ADDRESS::host_ptr(m_pImage) + AUXHDR(4);
+    text->uSectionEntrySize = 1; // Not applicable
+    text->bCode = 1;
+    text->bData = 0;
+    text->bBss = 0;
+    text->bReadOnly = 1;
+    text->Endiannes = 0;
+    text->addDefinedArea(ADDRESS::n(AUXHDR(3)),ADDRESS::n(AUXHDR(3)+AUXHDR(2)));
 
-    // Section 0: header
-    m_pSections[0].pSectionName = "$HEADER$";
-    m_pSections[0].uNativeAddr = 0; // Not applicable
-    m_pSections[0].uHostAddr = ADDRESS::host_ptr(m_pImage);
-    //  m_pSections[0].uSectionSize = AUXHDR(4);
-    // There is nothing that appears in memory space here; to give this a size
-    // is to invite GetSectionInfoByAddr to return this section!
-    m_pSections[0].uSectionSize = 0;
-
-    m_pSections[0].uSectionEntrySize = 1; // Not applicable
-    m_pSections[0].bCode = 0;
-    m_pSections[0].bData = 0;
-    m_pSections[0].bBss = 0;
-    m_pSections[0].bReadOnly = 0;
-
-    // Section 1: text (code)
-    m_pSections[1].pSectionName = "$TEXT$";
-    m_pSections[1].uNativeAddr = AUXHDR(3);
-    m_pSections[1].uHostAddr = ADDRESS::host_ptr(m_pImage) + AUXHDR(4);
-    m_pSections[1].uSectionSize = AUXHDR(2);
-    m_pSections[1].uSectionEntrySize = 1; // Not applicable
-    m_pSections[1].bCode = 1;
-    m_pSections[1].bData = 0;
-    m_pSections[1].bBss = 0;
-    m_pSections[1].bReadOnly = 1;
-
-    // Section 2: initialised data
-    m_pSections[2].pSectionName = "$DATA$";
-    m_pSections[2].uNativeAddr = AUXHDR(6);
-    m_pSections[2].uHostAddr = ADDRESS::host_ptr(m_pImage) + AUXHDR(7);
-    m_pSections[2].uSectionSize = AUXHDR(5);
-    m_pSections[2].uSectionEntrySize = 1; // Not applicable
-    m_pSections[2].bCode = 0;
-    m_pSections[2].bData = 1;
-    m_pSections[2].bBss = 0;
-    m_pSections[2].bReadOnly = 0;
-
-    // Section 3: BSS
-    m_pSections[3].pSectionName = "$BSS$";
+    // Section 1: initialised data
+    SectionInfo *data = Image->createSection("$DATA$",ADDRESS::n(AUXHDR(6)),ADDRESS::n(AUXHDR(6)+AUXHDR(5)));
+    assert(data);
+    data->uHostAddr = ADDRESS::host_ptr(m_pImage) + AUXHDR(7);
+    data->uSectionSize = AUXHDR(5);
+    data->uSectionEntrySize = 1; // Not applicable
+    data->bCode = 0;
+    data->bData = 1;
+    data->bBss = 0;
+    data->bReadOnly = 0;
+    data->Endiannes = 0;
+    data->addDefinedArea(ADDRESS::n(AUXHDR(6)),ADDRESS::n(AUXHDR(6)+AUXHDR(5)));
+    // Section 2: BSS
     // For now, assume that BSS starts at the end of the initialised data
-    m_pSections[3].uNativeAddr = AUXHDR(6) + AUXHDR(5);
-    m_pSections[3].uHostAddr = 0; // Not applicable
-    m_pSections[3].uSectionSize = AUXHDR(8);
-    m_pSections[3].uSectionEntrySize = 1; // Not applicable
-    m_pSections[3].bCode = 0;
-    m_pSections[3].bData = 0;
-    m_pSections[3].bBss = 1;
-    m_pSections[3].bReadOnly = 0;
+    SectionInfo *bss = Image->createSection("$BSS$",ADDRESS::n(AUXHDR(6) + AUXHDR(5)),
+                                     ADDRESS::n(AUXHDR(6) + AUXHDR(5)+AUXHDR(8)));
+    assert(bss);
+    bss->uHostAddr = 0; // Not applicable
+    bss->uSectionSize = AUXHDR(8);
+    bss->uSectionEntrySize = 1; // Not applicable
+    bss->bCode = 0;
+    bss->bData = 0;
+    bss->bBss = 1;
+    bss->Endiannes = 0;
+    bss->bReadOnly = 0;
 
     // Work through the imports, and find those for which there are stubs using that import entry.
     // Add the addresses of any such stubs.
-    ptrdiff_t deltaText = (m_pSections[1].uHostAddr - m_pSections[1].uNativeAddr).m_value;
-    ptrdiff_t deltaData = (m_pSections[2].uHostAddr - m_pSections[2].uNativeAddr).m_value;
+    ptrdiff_t deltaText = (text->uHostAddr - text->uNativeAddr).m_value;
+    ptrdiff_t deltaData = (data->uHostAddr - data->uNativeAddr).m_value;
     // The "end of data" where r27 points is not necessarily the same as
     // the end of the $DATA$ space. So we have to call getSubSpaceInfo
     std::pair<ADDRESS, int> pr = getSubspaceInfo("$GLOBAL$");
@@ -413,47 +370,7 @@ bool HpSomBinaryFile::RealLoad(const QString &sName) {
         }
     }
 
-    // Read the main symbol table, if any
-    if (numSym) {
-        char *pNames = (char *)(m_pImage + (int)UINT4(m_pImage + 0x6C));
-#define SYMSIZE 20 // 5 4-byte words per symbol entry
-#define SYMBOLNM(idx) (UINT4((symPtr + idx * SYMSIZE + 4).m_value))
-#define SYMBOLAUX(idx) (UINT4((symPtr + idx * SYMSIZE + 8).m_value))
-#define SYMBOLVAL(idx) (UINT4((symPtr + idx * SYMSIZE + 16).m_value))
-#define SYMBOLTY(idx) ((UINT4((symPtr + idx * SYMSIZE).m_value) >> 24) & 0x3f)
-        for (u = 0; u < numSym; u++) {
-            // cout << "Symbol " << pNames+SYMBOLNM(u) << ", type " << SYMBOLTY(u) << ", value " << hex << SYMBOLVAL(u)
-            // << ", aux " << SYMBOLAUX(u) << endl;
-            unsigned symbol_type = SYMBOLTY(u);
-            // Only interested in type 3 (code), 8 (stub), and 12 (millicode)
-            if ((symbol_type != 3) && (symbol_type != 8) && (symbol_type != 12))
-                continue;
-            //          if ((symbol_type == 10) || (symbol_type == 11))
-            // These are extension entries; not interested
-            //              continue;
-            char *pSymName = pNames + SYMBOLNM(u);
-            // Ignore symbols starting with one $; for example, there are many
-            // $CODE$ (but we want to see helper functions like $$remU)
-            if ((pSymName[0] == '$') && (pSymName[1] != '$'))
-                continue;
-            //          if ((symbol_type == 6) && (strcmp("main", pSymName) == 0))
-            // Entry point for main. Make sure to ignore this entry, else it
-            // ends up being the main entry point
-            //              continue;
-            ADDRESS value = ADDRESS::g(SYMBOLVAL(u));
-            //          if ((symbol_type >= 3) && (symbol_type <= 8))
-            // Addresses of code; remove the privilege bits
-            value.m_value &= ~3;
-            // if (strcmp("main", pNames+SYMBOLNM(u)) == 0) {    // HACK!
-            //  cout << "main at " << hex << value << " has type " << SYMBOLTY(u) << endl;}
-            // HP's symbol table is crazy. It seems that imports like printf have entries of type 3 with the wrong
-            // value. So we have to check whether the symbol has already been entered (assume first one is correct).
-            if (symbols.find(pSymName) == NO_ADDRESS)
-                symbols.Add(value, pSymName);
-            // cout << "Symbol " << pNames+SYMBOLNM(u) << ", type " << SYMBOLTY(u) << ", value " << hex << value << ",
-            // aux " << SYMBOLAUX(u) << endl;  // HACK!
-        }
-    } // if (numSym)
+    processSymbols();
 
     return true;
 }
@@ -475,7 +392,7 @@ std::list<SectionInfo *> &HpSomBinaryFile::GetEntryPoints(const char *pEntry
                                                           /* = "main" */) {
     Q_UNUSED(pEntry);
     std::list<SectionInfo *> *ret = new std::list<SectionInfo *>;
-    SectionInfo *pSect = GetSectionInfoByName("code1");
+    SectionInfo *pSect = Image->GetSectionInfoByName("code1");
     if (pSect == 0)
         return *ret; // Failed
     ret->push_back(pSect);
@@ -533,8 +450,7 @@ bool HpSomBinaryFile::IsDynamicLinkedProc(ADDRESS uNative) {
 std::pair<ADDRESS, int> HpSomBinaryFile::getSubspaceInfo(const char *ssname) {
     std::pair<ADDRESS, int> ret(ADDRESS::g(0L), 0);
     // Get the start and length of the subspace with the given name
-    struct subspace_dictionary_record *subSpaces =
-        (struct subspace_dictionary_record *)(m_pImage + UINT4(m_pImage + 0x34));
+    subspace_dictionary_record *subSpaces = (subspace_dictionary_record *)(m_pImage + UINT4(m_pImage + 0x34));
     unsigned numSubSpaces = UINT4(m_pImage + 0x38);
     const char *spaceStrings = (const char *)(m_pImage + UINT4(m_pImage + 0x44));
     for (unsigned u = 0; u < numSubSpaces; u++) {
@@ -569,11 +485,11 @@ std::pair<ADDRESS, unsigned> HpSomBinaryFile::GetGlobalPointerInfo() {
 
 /***************************************************************************/ /**
   *
-  * \brief    Get a map from ADDRESS to const char*. This map contains the
-  *                native addresses and symbolic names of global data items
-  *                (if any) which are shared with dynamically linked libraries.
-  *                Example: __iob (basis for stdout). The ADDRESS is the native
-  *                address of a pointer to the real dynamic data object.
+  * \brief  Get a map from ADDRESS to const char*. This map contains the
+  *         native addresses and symbolic names of global data items
+  *         (if any) which are shared with dynamically linked libraries.
+  *         Example: __iob (basis for stdout). The ADDRESS is the native
+  *         address of a pointer to the real dynamic data object.
   * \note        The caller should delete the returned map.
   * \returns     Pointer to a new map with the info
   ******************************************************************************/
@@ -588,7 +504,7 @@ std::map<ADDRESS, const char *> *HpSomBinaryFile::GetDynamicGlobalMap() {
 
     unsigned numDLT = UINT4(DLTable + 0x40);
     // Offset 0x38 in the DL table has the offset relative to $DATA$ (section 2)
-    unsigned *p = (unsigned *)(UINT4(DLTable + 0x38) + m_pSections[2].uHostAddr.m_value);
+    unsigned *p = (unsigned *)(UINT4(DLTable + 0x38) + Image->GetSectionInfo(1)->uHostAddr.m_value);
 
     // The DLT is paralelled by the first <numDLT> entries in the import table;
     // the import table has the symbolic names
