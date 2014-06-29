@@ -271,8 +271,7 @@ void FrontEnd::decode(Prog *prg, bool decodeMain, const char *pname) {
 
     bool gotMain;
     ADDRESS a = getMainEntryPoint(gotMain);
-    if (VERBOSE)
-        LOG << "start: " << a << " gotmain: " << (gotMain ? "true" : "false") << "\n";
+    LOG_VERBOSE(1) << "start: " << a << " gotmain: " << (gotMain ? "true" : "false") << "\n";
     if (a == NO_ADDRESS) {
         std::vector<ADDRESS> entrypoints = getEntryPoints();
         for (auto &entrypoint : entrypoints)

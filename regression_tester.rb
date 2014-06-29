@@ -77,7 +77,7 @@ test_all_inputs_in(TESTS_DIR)
 $crashes.each {|machine,crash_list|
         puts "\nEncountered #{crash_list.size} program failures for #{machine}"
         crash_list.each {|test|
-                puts("Decompiler failed on #{test[0]} - #{test[1]}\n")
+                puts("Decompiler failed on #{test[0]} - #{test[1]}")
         }
 }
 sorted_times = $times.to_a.sort {|a,b| a[1] <=> b[1] }
