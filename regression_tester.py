@@ -23,7 +23,7 @@ FAILED_COMMANDLINES=""
 def perform_test(exepath,test_file,output_path,args):
     log_name = output_path
     file_size = os.path.getsize(test_file)
-    upper_dir = os.sep.join(output_path.split(os.sep)[:-2])
+    upper_dir = os.sep.join(output_path.split(os.sep)[:-1])
     cmdline = ['-P',os.getcwd(),'-o',upper_dir] + args + [test_file]
     test_stdout = open(log_name+".stdout", "w")
     test_stderr = open(log_name+".stderr", "w")
@@ -72,9 +72,9 @@ def test_all_inputs_in(base_dir, dirname=""):
                 test_res = [False,"skipped windows/hello.exe",None]
             else:
                 test_res = perform_test(sys.argv[1],source,result_path,sys.argv[2:])
-                assert(not test_res[0] or os.path.isfile(os.path.join(output_dir,"..","log")))
+                assert(not test_res[0] or os.path.isfile(os.path.join(output_dir,"log")))
                 try:
-                    shutil.move(os.path.join(output_dir,"..","log"),os.path.join(output_dir,f+".log"))
+                    shutil.move(os.path.join(output_dir,"log"),os.path.join(output_dir,f+".log"))
                 except:
                     pass
 
