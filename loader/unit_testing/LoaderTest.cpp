@@ -89,8 +89,8 @@ void LoaderTest::testSparcLoad() {
     si = sect_iface->GetSectionInfo(n - 1);
     ost << si->pSectionName;
     // Note: the string below needs to have embedded tabs. Edit with caution!
-    QString expected("Number of sections = 29\r\n\t"
-                         ".interp\t.stab.indexstr");
+    QString expected("Number of sections = 28\r\n\t"
+                         ".hash\t.stab.indexstr");
     QCOMPARE(actual,expected);
     bff.UnLoad();
 }
@@ -119,8 +119,8 @@ void LoaderTest::testPentiumLoad() {
     ost << si->pSectionName;
     // Note: the string below needs to have embedded tabs. Edit with caution!
     // (And slightly different string to the sparc test, e.g. rel vs rela)
-    QString expected("Number of sections = 34\r\n\t"
-                         ".interp\t.strtab");
+    QString expected("Number of sections = 33\r\n\t"
+                         ".note.ABI-tag\t.strtab");
 
     QCOMPARE(actual,expected);
     bff.UnLoad();
