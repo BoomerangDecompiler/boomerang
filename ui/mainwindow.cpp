@@ -418,7 +418,7 @@ void MainWindow::showDecompilingProc(const QString &name) {
 }
 
 void MainWindow::showNewUserProc(const QString &name, ADDRESS addr) {
-    QString s = tr("%1").arg(addr.m_value, 8, 16, QChar('0'));
+    QString s = addr.toString(true);
     int nrows = ui->userProcs->rowCount();
     for (int i = 0; i < nrows; i++)
         if (ui->userProcs->item(i, 1)->text() == name)
@@ -427,7 +427,7 @@ void MainWindow::showNewUserProc(const QString &name, ADDRESS addr) {
         if (ui->userProcs->item(i, 0)->text() == s)
             return;
     ui->userProcs->setRowCount(nrows + 1);
-    ui->userProcs->setItem(nrows, 0, new QTableWidgetItem(tr("%1").arg(addr.m_value, 8, 16, QChar('0'))));
+    ui->userProcs->setItem(nrows, 0, new QTableWidgetItem(addr.toString(true)));
     ui->userProcs->setItem(nrows, 1, new QTableWidgetItem(name));
     ui->userProcs->item(nrows, 1)->setData(1, name);
     if (ui->actionEnable->isChecked()) {
@@ -455,7 +455,7 @@ void MainWindow::showNewLibProc(const QString &name, const QString &params) {
 
 void MainWindow::showRemoveUserProc(const QString &name, ADDRESS addr) {
     Q_UNUSED(name);
-    QString s = tr("%1").arg(addr.m_value, 8, 16, QChar('0'));
+    QString s = addr.toString(true);
     int nrows = ui->userProcs->rowCount();
     for (int i = 0; i < nrows; i++)
         if (ui->userProcs->item(i, 0)->text() == s) {
