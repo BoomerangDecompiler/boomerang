@@ -1,4 +1,4 @@
-// address: 1d34
+// address: 0x1d34
 int main(int argc, char *argv[], char *envp[]) {
     __size32 0 + 30; 		// r[0 + 30]
     __size32 1 + 30; 		// r[1 + 30]

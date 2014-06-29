@@ -1,6 +1,6 @@
 __size32 __sputc(void **param1, unsigned char param2);
 
-// address: 2838
+// address: 0x2838
 int main(int argc, char *argv[], union { char *[] * x41; unsigned char * x42; } envp) {
     unsigned int CR0; 		// r64
     unsigned int CR1; 		// r65
@@ -100,7 +100,7 @@ L21:
     return g0;
 }
 
-// address: 2b10
+// address: 0x2b10
 __size32 __sputc(void **param1, unsigned char param2) {
     int g0; 		// r0
     void *g1; 		// r1

@@ -1,7 +1,7 @@
 __size32 fib1();
 __size32 fib2(int param1);
 
-// address: 1cf0
+// address: 0x1cf0
 int main(int argc, char *argv[], char *envp[]) {
     int g3; 		// r3
 
@@ -13,7 +13,7 @@ int main(int argc, char *argv[], char *envp[]) {
     return 0;
 }
 
-// address: 1c3c
+// address: 0x1c3c
 __size32 fib1() {
     int g3; 		// r3
     __size32 g30; 		// r30
@@ -22,7 +22,7 @@ __size32 fib1() {
     return g30; /* WARNING: Also returning: g30 := g30, g3 := g3, g30 := g30, g30 := g30, g30 := g30, g30 := g30, g30 := g30, g30 := g30, g30 := g30, g30 := g30, g30 := g30, g30 := g30, g30 := g30, g30 := g30, g30 := g30, g30 := g30, g30 := g30, g30 := g30, g30 := g30, g30 := g30, g30 := g30 */
 }
 
-// address: 1c78
+// address: 0x1c78
 __size32 fib2(int param1) {
     __size32 g1; 		// r1
     int g29; 		// r29

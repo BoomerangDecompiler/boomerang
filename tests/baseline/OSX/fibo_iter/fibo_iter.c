@@ -1,6 +1,6 @@
 __size32 fib(int param1);
 
-// address: 1cf0
+// address: 0x1cf0
 int main(int argc, char *argv[], char *envp[]) {
     int g3; 		// r3
     int local0; 		// m[g1 - 32]
@@ -13,7 +13,7 @@ int main(int argc, char *argv[], char *envp[]) {
     return 0;
 }
 
-// address: 1c54
+// address: 0x1c54
 __size32 fib(int param1) {
     void *g1; 		// r1
     __size32 g30; 		// r30
