@@ -5119,6 +5119,11 @@ bool UserProc::removeRedundantReturns(std::set<UserProc *> &removeRetSet) {
         // For each caller
         std::set<CallStatement *> &callers = getCallers();
         for (CallStatement *cc : callers) {
+#ifdef RECURSION_WIP
+//TODO: prevent function from blocking it's own removals, needs more work
+            if(cc->getProc()->doesRecurseTo(this))
+                continue;
+#endif
             // Union in the set of locations live at this call
             UseCollector *useCol = cc->getUseCollector();
             unionOfCallerLiveLocs.makeUnion(useCol->getLocSet());
