@@ -3,6 +3,7 @@
 This repository is now connected to continous integration server:
 http://boomerang.nemerle.eu
 Generated documentation is available at http://boomerang.nemerle.eu/job/Boomerang-next/doxygen/
+The pre-compiled windows version is available at http://nemerle.eu/boomerang.zip
 
 This is an experimental branch of boomerang project, the inital goals are:
 
@@ -20,8 +21,8 @@ For full ( and slightly stale :) ) build instructions please see
 
 Note that on a debian system you can usually get away with:
 ```bash
-  sudo apt-get install libgc-dev
   sudo apt-get install git
+  sudo apt-get install libboost-dev
   sudo apt-get install cmake
   sudo apt-get install qt5-default
   cd YOUR_FAVOURITE_DEVELOPMENT_DIRECTORY
