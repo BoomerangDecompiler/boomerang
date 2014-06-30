@@ -10,7 +10,7 @@ set(test_LIBRARIES
 ${PROTOBUF_LIBRARIES}
 ${GC_LIBS}
 ${DEBUG_LIB}
-boomerang_DSLs BinaryFile
+boomerang_DSLs
 type db codegen boomerang_passes type util boom_base frontend db codegen
 pthread
 )
