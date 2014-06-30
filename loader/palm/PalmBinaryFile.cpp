@@ -133,26 +133,26 @@ bool PalmBinaryFile::RealLoad(const QString &sName) {
 
     for(SectionParams param : params) {
         assert(param.to!=NO_ADDRESS);
-        SectionInfo *sect = Image->createSection(param.name,param.from,param.to);
+        IBinarySection *sect = Image->createSection(param.name,param.from,param.to);
         if(sect) {
             // Decide if code or data; note that code0 is a special case (not code)
-            sect->uHostAddr = param.hostAddr;
-            sect->bCode = (param.name != "code0") && (param.name.startsWith("code"));
-            sect->bData = param.name.startsWith("data");
-            sect->Endiannes = 0; // little endian
-            sect->addDefinedArea(param.from,param.to); // no BSS
-            sect->uSectionEntrySize = 1; // No info available
+            sect->setHostAddr(param.hostAddr)
+            .setCode((param.name != "code0") && (param.name.startsWith("code")))
+            .setData(param.name.startsWith("data"))
+            .setEndian(0) // little endian
+            .setEntrySize(1) // No info available
+            .addDefinedArea(param.from,param.to); // no BSS
         }
     }
 
     // Create a separate, uncompressed, initialised data section
-    SectionInfo *pData = Image->GetSectionInfoByName("data0");
+    IBinarySection *pData = Image->GetSectionInfoByName("data0");
     if (pData == nullptr) {
         fprintf(stderr, "No data section!\n");
         return false;
     }
 
-    SectionInfo *pCode0 = Image->GetSectionInfoByName("code0");
+    IBinarySection *pCode0 = Image->GetSectionInfoByName("code0");
     if (pCode0 == nullptr) {
         fprintf(stderr, "No code 0 section!\n");
         return false;
@@ -161,9 +161,9 @@ bool PalmBinaryFile::RealLoad(const QString &sName) {
     // When the info is all boiled down, the two things we need from the
     // code 0 section are at offset 0, the size of data above a5, and at
     // offset 4, the size below. Save the size below as a member variable
-    m_SizeBelowA5 = UINT4ADDR(pCode0->uHostAddr + 4);
+    m_SizeBelowA5 = UINT4ADDR(pCode0->hostAddr() + 4);
     // Total size is this plus the amount above (>=) a5
-    unsigned sizeData = m_SizeBelowA5 + UINT4ADDR(pCode0->uHostAddr);
+    unsigned sizeData = m_SizeBelowA5 + UINT4ADDR(pCode0->hostAddr());
 
     // Allocate a new data section
     m_pData = new unsigned char[sizeData];
@@ -172,12 +172,12 @@ bool PalmBinaryFile::RealLoad(const QString &sName) {
     }
 
     // Uncompress the data. Skip first long (offset of CODE1 "xrefs")
-    p = (unsigned char *)(pData->uHostAddr + 4).m_value;
+    p = (unsigned char *)(pData->hostAddr() + 4).m_value;
     int start = (int)UINT4(p);
     p += 4;
     unsigned char *q = (m_pData + m_SizeBelowA5 + start);
     bool done = false;
-    while (!done && (p < (unsigned char *)(pData->uHostAddr + pData->uSectionSize).m_value)) {
+    while (!done && (p < (unsigned char *)(pData->hostAddr() + pData->size()).m_value)) {
         unsigned char rle = *p++;
         if (rle == 0) {
             done = true;
@@ -252,14 +252,15 @@ bool PalmBinaryFile::RealLoad(const QString &sName) {
     if (!done)
         fprintf(stderr, "Warning! Compressed data section premature end\n");
     // printf("Used %u bytes of %u in decompressing data section\n",
-    // p-(unsigned char*)pData->uHostAddr, pData->uSectionSize);
+    // p-(unsigned char*)pData->hostAddr(), pData->size());
 
     // Replace the data pointer and size with the uncompressed versions
-    pData->uHostAddr = ADDRESS::host_ptr(m_pData);
-    pData->uSectionSize = sizeData;
+
+    pData->setHostAddr(ADDRESS::host_ptr(m_pData));
+    pData->resize(sizeData);
     // May as well make the native address zero; certainly the offset in the
     // file is no longer appropriate (and is confusing)
-    pData->uNativeAddr = 0;
+    // pData->sourceAddr() = 0;
     Symbols->create(GetMainEntryPoint(),"PilotMain").setAttr("EntryPoint",true);
     return true;
 }
@@ -314,9 +315,9 @@ void PalmBinaryFile::addTrapSymbols() {
 // (%agp points to the bottom of the global data area).
 std::pair<ADDRESS, unsigned> PalmBinaryFile::GetGlobalPointerInfo() {
     ADDRESS agp = ADDRESS::g(0L);
-    const SectionInfo *ps = Image->GetSectionInfoByName("data0");
+    const IBinarySection *ps = Image->GetSectionInfoByName("data0");
     if (ps)
-        agp = ps->uNativeAddr;
+        agp = ps->sourceAddr();
     std::pair<ADDRESS, unsigned> ret(agp, m_SizeBelowA5);
     return ret;
 }
@@ -383,12 +384,12 @@ SWord *findPattern(SWord *start, const SWord *patt, int pattSize, int max) {
 // Find the native address for the start of the main entry function.
 // For Palm binaries, this is PilotMain.
 ADDRESS PalmBinaryFile::GetMainEntryPoint() {
-    SectionInfo *psect = Image->GetSectionInfoByName("code1");
+    IBinarySection *psect = Image->GetSectionInfoByName("code1");
     if (psect == nullptr)
         return ADDRESS::g(0L); // Failed
     // Return the start of the code1 section
-    SWord *startCode = (SWord *)psect->uHostAddr.m_value;
-    int delta = (psect->uHostAddr - psect->uNativeAddr).m_value;
+    SWord *startCode = (SWord *)psect->hostAddr().m_value;
+    int delta = (psect->hostAddr() - psect->sourceAddr()).m_value;
 
     // First try the CW first jump pattern
     SWord *res = findPattern(startCode, CWFirstJump, sizeof(CWFirstJump) / sizeof(SWord), 1);
@@ -421,14 +422,14 @@ ADDRESS PalmBinaryFile::GetMainEntryPoint() {
 }
 
 void PalmBinaryFile::GenerateBinFiles(const QString &path) const {
-    for (const SectionInfo *si : *Image) {
-        const SectionInfo &psect(*si);
-        if (psect.pSectionName.startsWith("code") || psect.pSectionName.startsWith("data"))
+    for (const IBinarySection *si : *Image) {
+        const IBinarySection &psect(*si);
+        if (psect.getName().startsWith("code") || psect.getName().startsWith("data"))
             continue;
         // Save this section in a file
         // First construct the file name
-        int sect_num = psect.pSectionName.mid(4).toInt();
-        QString name = QString("%1%2.bin").arg(psect.pSectionName.left(4)).arg(sect_num,4,16,QChar('0'));
+        int sect_num = psect.getName().mid(4).toInt();
+        QString name = QString("%1%2.bin").arg(psect.getName().left(4)).arg(sect_num,4,16,QChar('0'));
         QString fullName(path);
         fullName += name;
         // Create the file
@@ -437,7 +438,7 @@ void PalmBinaryFile::GenerateBinFiles(const QString &path) const {
             fprintf(stderr, "Could not open %s for writing binary file\n", qPrintable(fullName));
             return;
         }
-        fwrite((void *)psect.uHostAddr.m_value, psect.uSectionSize, 1, f);
+        fwrite((void *)psect.hostAddr().m_value, psect.size(), 1, f);
         fclose(f);
     }
 }

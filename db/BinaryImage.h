@@ -45,11 +45,11 @@ public:
     void writeNative4(ADDRESS nat, uint32_t n) override;
     void calculateTextLimits();
     //! Find the section, given an address in the section
-    const SectionInfo *getSectionInfoByAddr(ADDRESS uEntry) const;
+    const IBinarySection *getSectionInfoByAddr(ADDRESS uEntry) const;
 
     int GetSectionIndexByName(const QString &sName) override;
-    SectionInfo *GetSectionInfoByName(const QString &sName) override;
-    const SectionInfo *GetSectionInfo(int idx) const override { return Sections[idx]; }
+    IBinarySection *GetSectionInfoByName(const QString &sName) override;
+    const IBinarySection *GetSectionInfo(int idx) const override { return Sections[idx]; }
     bool isReadOnly(ADDRESS uEntry) override;
     ADDRESS getLimitTextLow() override;
     ADDRESS getLimitTextHigh() override;

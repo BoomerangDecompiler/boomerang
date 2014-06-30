@@ -81,14 +81,14 @@ ADDRESS DOS4GWBinaryFile::GetMainEntryPoint() {
     bool gotSubEbp = false;   // True if see sub ebp, ebp
     bool lastWasCall = false; // True if the last instruction was a call
 
-    SectionInfo *si = Image->GetSectionInfoByName("seg0"); // Assume the first section is text
+    IBinarySection *si = Image->GetSectionInfoByName("seg0"); // Assume the first section is text
     if (si == nullptr)
         si = Image->GetSectionInfoByName(".text");
     if (si == nullptr)
         si = Image->GetSectionInfoByName("CODE");
     assert(si);
-    ADDRESS nativeOrigin = si->uNativeAddr;
-    unsigned textSize = si->uSectionSize;
+    ADDRESS nativeOrigin = si->sourceAddr();
+    unsigned textSize = si->size();
     if (textSize < 0x300)
         lim = p + textSize;
 
@@ -217,13 +217,13 @@ bool DOS4GWBinaryFile::RealLoad(const QString &sName) {
         }
     }
     for(SectionParam par : params) {
-        SectionInfo *sect = Image->createSection(par.Name,par.from,par.from+par.Size);
+        IBinarySection *sect = Image->createSection(par.Name,par.from,par.from+par.Size);
         if(sect) {
-            sect->bBss = par.Bss;
-            sect->bCode = par.Code;
-            sect->bData = par.Data;
-            sect->bReadOnly = par.ReadOnly;
-            sect->uHostAddr = par.ImageAddress;
+            sect->setBss(par.Bss)
+                    .setCode(par.Code)
+                    .setData(par.Data)
+                    .setReadOnly(par.ReadOnly)
+                    .setHostAddr(par.ImageAddress);
         }
     }
     // TODO: decode entry tables

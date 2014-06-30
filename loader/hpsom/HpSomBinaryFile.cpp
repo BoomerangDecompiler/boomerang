@@ -211,7 +211,7 @@ bool HpSomBinaryFile::RealLoad(const QString &sName) {
     unsigned system_id = magic >> 16;
     unsigned a_magic = magic & 0xFFFF;
     if (((system_id != 0x210) && (system_id != 0x20B)) ||
-        ((a_magic != 0x107) && (a_magic != 0x108) && (a_magic != 0x10B))) {
+            ((a_magic != 0x107) && (a_magic != 0x108) && (a_magic != 0x10B))) {
         fprintf(stderr, "%s is not a standard PA/RISC executable file, with system ID %X and magic number %X\n",
                 qPrintable(sName), system_id, a_magic);
         return false;
@@ -259,51 +259,49 @@ bool HpSomBinaryFile::RealLoad(const QString &sName) {
     unsigned numExports = UINT4(DLTable + 0x24); // Number of export strings
     export_entry *export_list = (export_entry *)(DLTable + UINT4(DLTable + 0x20));
 
-// A convenient macro for accessing the fields (0-11) of the auxilliary header
-// Fields 0, 1 are the header (flags, aux header type, and size)
+    // A convenient macro for accessing the fields (0-11) of the auxilliary header
+    // Fields 0, 1 are the header (flags, aux header type, and size)
 #define AUXHDR(idx) (UINT4(m_pImage + ADDRESS::value_type(auxHeaders + idx)))
     // Section 0: text (code)
-    SectionInfo *text = Image->createSection("$TEXT$",ADDRESS::n(AUXHDR(3)),ADDRESS::n(AUXHDR(3)+AUXHDR(2)));
+    IBinarySection *text = Image->createSection("$TEXT$",ADDRESS::n(AUXHDR(3)),ADDRESS::n(AUXHDR(3)+AUXHDR(2)));
     assert(text);
-    text->uHostAddr = ADDRESS::host_ptr(m_pImage) + AUXHDR(4);
-    text->uSectionEntrySize = 1; // Not applicable
-    text->bCode = 1;
-    text->bData = 0;
-    text->bBss = 0;
-    text->bReadOnly = 1;
-    text->Endiannes = 0;
-    text->addDefinedArea(ADDRESS::n(AUXHDR(3)),ADDRESS::n(AUXHDR(3)+AUXHDR(2)));
+    text->setHostAddr(ADDRESS::host_ptr(m_pImage) + AUXHDR(4))
+            .setEntrySize(1)
+            .setCode(true)
+            .setData(false)
+            .setBss(false)
+            .setReadOnly(true)
+            .setEndian(0)
+            .addDefinedArea(ADDRESS::n(AUXHDR(3)),ADDRESS::n(AUXHDR(3)+AUXHDR(2)));
 
     // Section 1: initialised data
-    SectionInfo *data = Image->createSection("$DATA$",ADDRESS::n(AUXHDR(6)),ADDRESS::n(AUXHDR(6)+AUXHDR(5)));
+    IBinarySection *data = Image->createSection("$DATA$",ADDRESS::n(AUXHDR(6)),ADDRESS::n(AUXHDR(6)+AUXHDR(5)));
     assert(data);
-    data->uHostAddr = ADDRESS::host_ptr(m_pImage) + AUXHDR(7);
-    data->uSectionSize = AUXHDR(5);
-    data->uSectionEntrySize = 1; // Not applicable
-    data->bCode = 0;
-    data->bData = 1;
-    data->bBss = 0;
-    data->bReadOnly = 0;
-    data->Endiannes = 0;
-    data->addDefinedArea(ADDRESS::n(AUXHDR(6)),ADDRESS::n(AUXHDR(6)+AUXHDR(5)));
+    data->setHostAddr(ADDRESS::host_ptr(m_pImage) + AUXHDR(7))
+            .setEntrySize(1)
+            .setCode(false)
+            .setData(true)
+            .setBss(false)
+            .setReadOnly(false)
+            .setEndian(0)
+            .addDefinedArea(ADDRESS::n(AUXHDR(6)),ADDRESS::n(AUXHDR(6)+AUXHDR(5)));
     // Section 2: BSS
     // For now, assume that BSS starts at the end of the initialised data
-    SectionInfo *bss = Image->createSection("$BSS$",ADDRESS::n(AUXHDR(6) + AUXHDR(5)),
-                                     ADDRESS::n(AUXHDR(6) + AUXHDR(5)+AUXHDR(8)));
+    IBinarySection *bss = Image->createSection("$BSS$",ADDRESS::n(AUXHDR(6) + AUXHDR(5)),
+                                               ADDRESS::n(AUXHDR(6) + AUXHDR(5)+AUXHDR(8)));
     assert(bss);
-    bss->uHostAddr = 0; // Not applicable
-    bss->uSectionSize = AUXHDR(8);
-    bss->uSectionEntrySize = 1; // Not applicable
-    bss->bCode = 0;
-    bss->bData = 0;
-    bss->bBss = 1;
-    bss->Endiannes = 0;
-    bss->bReadOnly = 0;
+    bss->setHostAddr(ADDRESS::n(0))
+            .setEntrySize(1)
+            .setCode(false)
+            .setData(false)
+            .setBss(true)
+            .setReadOnly(false)
+            .setEndian(0);
 
     // Work through the imports, and find those for which there are stubs using that import entry.
     // Add the addresses of any such stubs.
-    ptrdiff_t deltaText = (text->uHostAddr - text->uNativeAddr).m_value;
-    ptrdiff_t deltaData = (data->uHostAddr - data->uNativeAddr).m_value;
+    ptrdiff_t deltaText = (text->hostAddr() - text->sourceAddr()).m_value;
+    ptrdiff_t deltaData = (data->hostAddr() - data->sourceAddr()).m_value;
     // The "end of data" where r27 points is not necessarily the same as
     // the end of the $DATA$ space. So we have to call getSubSpaceInfo
     std::pair<ADDRESS, int> pr = getSubspaceInfo("$GLOBAL$");
@@ -318,8 +316,8 @@ bool HpSomBinaryFile::RealLoad(const QString &sName) {
     // subsection in memory.
     int numDLT = UINT4(DLTable + 0x40);
 
-// This code was for pattern patching the BOR (Bind On Reference, or library call stub) routines. It appears to be
-// unnecessary, since as they appear in the file, the PLT entries point to the BORs
+    // This code was for pattern patching the BOR (Bind On Reference, or library call stub) routines. It appears to be
+    // unnecessary, since as they appear in the file, the PLT entries point to the BORs
 #if 0
     ADDRESS startText = m_pSections[1].uHostAddr;
     ADDRESS endText = startText + m_pSections[1].uSectionSize - 0x10;
@@ -485,7 +483,7 @@ std::map<ADDRESS, const char *> *HpSomBinaryFile::GetDynamicGlobalMap() {
 
     unsigned numDLT = UINT4(DLTable + 0x40);
     // Offset 0x38 in the DL table has the offset relative to $DATA$ (section 2)
-    unsigned *p = (unsigned *)(UINT4(DLTable + 0x38) + Image->GetSectionInfo(1)->uHostAddr.m_value);
+    unsigned *p = (unsigned *)(UINT4(DLTable + 0x38) + Image->GetSectionInfo(1)->hostAddr().m_value);
 
     // The DLT is paralelled by the first <numDLT> entries in the import table;
     // the import table has the symbolic names

@@ -33,6 +33,7 @@ class InstructionSet;
 class Module;
 class XMLProgParser;
 class BinarySymbol;
+class HLLCode;
 
 class Global : public Printable {
 private:
@@ -54,7 +55,7 @@ public:
             return true;
         return (addr > uaddr) && (addr <= (uaddr + getType()->getBytes()));
     }
-    const QString &getName() { return nam; }
+    const QString &getName() const { return nam; }
     Exp *getInitialValue(Prog *prog) const;
     QString toString() const;
 
@@ -156,7 +157,7 @@ public:
     //! Get a symbol from an address
     QString symbolByAddress(ADDRESS dest);
 
-    const SectionInfo *getSectionInfoByAddr(ADDRESS a);
+    const IBinarySection *getSectionInfoByAddr(ADDRESS a);
     ADDRESS getLimitTextLow();
     ADDRESS getLimitTextHigh();
     bool isReadOnly(ADDRESS a);
@@ -211,6 +212,7 @@ public:
     const_iterator          end  () const { return ModuleList.end();   }
     size_t                  size()  const { return ModuleList.size(); }
     bool                    empty() const { return ModuleList.empty(); }
+    void generateDataSectionCode(QString section_name, ADDRESS section_start, uint32_t size, HLLCode *code);
 signals:
     void rereadLibSignatures();
 

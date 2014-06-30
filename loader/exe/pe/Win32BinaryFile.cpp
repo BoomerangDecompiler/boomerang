@@ -113,11 +113,11 @@ ADDRESS Win32BinaryFile::GetMainEntryPoint() {
     int gap;              // Number of instructions from the last ordinary call
     int borlandState = 0; // State machine for Borland
 
-    SectionInfo *si = Image->GetSectionInfoByName(".text");
+    IBinarySection *si = Image->GetSectionInfoByName(".text");
     if (si == nullptr)
         si = Image->GetSectionInfoByName("CODE");
     assert(si);
-    unsigned textSize = si->uSectionSize;
+    unsigned textSize = si->size();
     if (textSize < 0x200)
         lim = p + textSize;
 
@@ -177,7 +177,7 @@ ADDRESS Win32BinaryFile::GetMainEntryPoint() {
                     // Borland pattern succeeds. p-4 has the offset of mainInfo
                     ADDRESS mainInfo = ADDRESS::g(LMMH(*(base + p - 4)));
                     ADDRESS main =
-                        ADDRESS::g(Image->readNative4(mainInfo + ADDRESS::g(0x18))); // Address of main is at mainInfo+18
+                            ADDRESS::g(Image->readNative4(mainInfo + ADDRESS::g(0x18))); // Address of main is at mainInfo+18
                     return main;
                 }
             } else
@@ -434,7 +434,7 @@ bool Win32BinaryFile::RealLoad(const QString &sName) {
     std::vector<SectionParam> params;
 
     uint32_t numSections = LH(&m_pPEHeader->numObjects);
-    //    SectionInfo *reloc = nullptr;
+    //    IBinarySection *reloc = nullptr;
     for (unsigned i = 0; i < numSections; i++, o++) {
         SectionParam sect;
         // TODO: Check for unreadable sections (!IMAGE_SCN_MEM_READ)?
@@ -455,17 +455,17 @@ bool Win32BinaryFile::RealLoad(const QString &sName) {
         params.push_back(sect);
     }
     for(SectionParam par : params) {
-        SectionInfo *sect = Image->createSection(par.Name,par.From,par.From+par.Size);
-        if(sect) {
-            sect->bBss = par.Bss;
-            sect->bCode = par.Code;
-            sect->bData = par.Data;
-            sect->bReadOnly = par.ReadOnly;
-            sect->uHostAddr = par.ImageAddress;
-            sect->Endiannes = 0; // little endian
-            if( !(par.Bss || par.From.isZero()) ) {
-                sect->addDefinedArea(par.From,par.From+par.PhysSize);
-            }
+        IBinarySection *sect = Image->createSection(par.Name,par.From,par.From+par.Size);
+        if(!sect)
+            continue;
+        sect->setBss(par.Bss)
+                .setCode(par.Code)
+                .setData(par.Data)
+                .setReadOnly(par.ReadOnly)
+                .setHostAddr(par.ImageAddress)
+                .setEndian(0); // little endian
+        if( !(par.Bss || par.From.isZero()) ) {
+            sect->addDefinedArea(par.From,par.From+par.PhysSize);
         }
     }
 
@@ -538,16 +538,16 @@ bool Win32BinaryFile::RealLoad(const QString &sName) {
 // Note: slight chance of coming across a misaligned match; probability is about 1/65536 times dozens in 2^32 ~= 10^-13
 void Win32BinaryFile::findJumps(ADDRESS curr) {
     int cnt = 0; // Count of bytes with no match
-    SectionInfo *sec = Image->GetSectionInfoByName(".text");
+    IBinarySection *sec = Image->GetSectionInfoByName(".text");
     if (sec == nullptr)
         sec = Image->GetSectionInfoByName("CODE");
     assert(sec);
     // Add to native addr to get host:
-    ptrdiff_t delta = (sec->uHostAddr - sec->uNativeAddr).m_value;
+    ptrdiff_t delta = (sec->hostAddr() - sec->sourceAddr()).m_value;
     while (cnt < 0x60) { // Max of 0x60 bytes without a match
         curr -= 2;       // Has to be on 2-byte boundary
         cnt += 2;
-        if(curr<sec->uNativeAddr)
+        if(curr<sec->sourceAddr())
             break; // stepped out of section
         if (LH((curr + delta).m_value) != 0xFF + (0x25 << 8))
             continue;
@@ -729,7 +729,7 @@ bool Win32BinaryFile::IsStaticLinkedLibProc(ADDRESS uNative) {
 #endif
 
     if (IsMinGWsAllocStack(uNative) || IsMinGWsFrameInit(uNative) || IsMinGWsFrameEnd(uNative) ||
-        IsMinGWsCleanupSetup(uNative) || IsMinGWsMalloc(uNative)) {
+            IsMinGWsCleanupSetup(uNative) || IsMinGWsMalloc(uNative)) {
         return true;
     }
 
@@ -738,9 +738,9 @@ bool Win32BinaryFile::IsStaticLinkedLibProc(ADDRESS uNative) {
 
 bool Win32BinaryFile::IsMinGWsAllocStack(ADDRESS uNative) {
     if (mingw_main) {
-        const SectionInfo * si = Image->getSectionInfoByAddr(uNative);
+        const IBinarySection * si = Image->getSectionInfoByAddr(uNative);
         if (si) {
-            ADDRESS host = si->uHostAddr - si->uNativeAddr + uNative;
+            ADDRESS host = si->hostAddr() - si->sourceAddr() + uNative;
             unsigned char pat[] = {0x51, 0x89, 0xE1, 0x83, 0xC1, 0x08, 0x3D, 0x00, 0x10, 0x00, 0x00, 0x72,
                                    0x10, 0x81, 0xE9, 0x00, 0x10, 0x00, 0x00, 0x83, 0x09, 0x00, 0x2D, 0x00,
                                    0x10, 0x00, 0x00, 0xEB, 0xE9, 0x29, 0xC1, 0x83, 0x09, 0x00, 0x89, 0xE0,
@@ -755,9 +755,9 @@ bool Win32BinaryFile::IsMinGWsAllocStack(ADDRESS uNative) {
 
 bool Win32BinaryFile::IsMinGWsFrameInit(ADDRESS uNative) {
     if (mingw_main) {
-        const SectionInfo * si = Image->getSectionInfoByAddr(uNative);
+        const IBinarySection * si = Image->getSectionInfoByAddr(uNative);
         if (si) {
-            ADDRESS host = si->uHostAddr - si->uNativeAddr + uNative;
+            ADDRESS host = si->hostAddr() - si->sourceAddr() + uNative;
             unsigned char pat1[] = {0x55, 0x89, 0xE5, 0x83, 0xEC, 0x18, 0x89, 0x7D, 0xFC,
                                     0x8B, 0x7D, 0x08, 0x89, 0x5D, 0xF4, 0x89, 0x75, 0xF8};
             if (memcmp((void *)host.m_value, pat1, sizeof(pat1)) == 0) {
@@ -775,9 +775,9 @@ bool Win32BinaryFile::IsMinGWsFrameInit(ADDRESS uNative) {
 
 bool Win32BinaryFile::IsMinGWsFrameEnd(ADDRESS uNative) {
     if (mingw_main) {
-        const SectionInfo * si = Image->getSectionInfoByAddr(uNative);
+        const IBinarySection * si = Image->getSectionInfoByAddr(uNative);
         if (si) {
-            ADDRESS host = si->uHostAddr - si->uNativeAddr + uNative;
+            ADDRESS host = si->hostAddr() - si->sourceAddr() + uNative;
             unsigned char pat1[] = {0x55, 0x89, 0xE5, 0x53, 0x83, 0xEC, 0x14, 0x8B, 0x45, 0x08, 0x8B, 0x18};
             if (memcmp((void *)host.m_value, pat1, sizeof(pat1)) == 0) {
                 unsigned char pat2[] = {0x85, 0xC0, 0x74, 0x1B, 0x8B, 0x48, 0x2C, 0x85, 0xC9, 0x78, 0x34, 0x8B, 0x50,
@@ -793,9 +793,9 @@ bool Win32BinaryFile::IsMinGWsFrameEnd(ADDRESS uNative) {
 
 bool Win32BinaryFile::IsMinGWsCleanupSetup(ADDRESS uNative) {
     if (mingw_main) {
-        const SectionInfo * si = Image->getSectionInfoByAddr(uNative);
+        const IBinarySection * si = Image->getSectionInfoByAddr(uNative);
         if (si) {
-            ADDRESS host = si->uHostAddr - si->uNativeAddr + uNative;
+            ADDRESS host = si->hostAddr() - si->sourceAddr() + uNative;
             unsigned char pat1[] = {0x55, 0x89, 0xE5, 0x53, 0x83, 0xEC, 0x04};
             if (memcmp((void *)host.m_value, pat1, sizeof(pat1)) == 0) {
                 unsigned char pat2[] = {0x85, 0xDB, 0x75, 0x35};
@@ -803,7 +803,7 @@ bool Win32BinaryFile::IsMinGWsCleanupSetup(ADDRESS uNative) {
                     unsigned char pat3[] = {0x83, 0xF8, 0xFF, 0x74, 0x24, 0x85, 0xC0, 0x89,
                                             0xC3, 0x74, 0x0E, 0x8D, 0x74, 0x26, 0x00};
                     if (memcmp((void *)(host.m_value + sizeof(pat1) + 6 + sizeof(pat2) + 16), pat3, sizeof(pat3)) ==
-                        0) {
+                            0) {
                         return true;
                     }
                 }
@@ -815,9 +815,9 @@ bool Win32BinaryFile::IsMinGWsCleanupSetup(ADDRESS uNative) {
 
 bool Win32BinaryFile::IsMinGWsMalloc(ADDRESS uNative) {
     if (mingw_main) {
-        const SectionInfo * si = Image->getSectionInfoByAddr(uNative);
+        const IBinarySection * si = Image->getSectionInfoByAddr(uNative);
         if (si) {
-            ADDRESS host = si->uHostAddr - si->uNativeAddr + uNative;
+            ADDRESS host = si->hostAddr() - si->sourceAddr() + uNative;
             unsigned char pat1[] = {0x55, 0x89, 0xE5, 0x8D, 0x45, 0xF4, 0x83, 0xEC, 0x58, 0x89, 0x45, 0xE0, 0x8D, 0x45,
                                     0xC0, 0x89, 0x04, 0x24, 0x89, 0x5D, 0xF4, 0x89, 0x75, 0xF8, 0x89, 0x7D, 0xFC};
             if (memcmp((void *)host.m_value, pat1, sizeof(pat1)) == 0) {

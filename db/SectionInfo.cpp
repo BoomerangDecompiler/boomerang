@@ -1,5 +1,9 @@
 #include "SectionInfo.h"
+#include "boomerang.h"
+#include "IBinaryImage.h"
+
 #include <QVariantMap>
+#include <QDebug>
 #include <boost/icl/interval_set.hpp>
 #include <boost/icl/interval_map.hpp>
 #include <algorithm>
@@ -53,8 +57,6 @@ struct SectionInfoImpl {
 };
 
 
-// This struct used to be initialised with a memset, but now that overwrites the virtual table (if compiled under gcc
-// and possibly others)
 SectionInfo::SectionInfo(const QString &name)
     : pSectionName(name),uNativeAddr(ADDRESS::g(0L)), uHostAddr(ADDRESS::g(0L)), uSectionSize(0),
       uSectionEntrySize(0), uType(0), bCode(false), bData(false), bBss(0), bReadOnly(0),Impl(new SectionInfoImpl) {}
@@ -87,6 +89,18 @@ bool SectionInfo::isAddressBss(ADDRESS a) const {
 }
 
 bool SectionInfo::anyDefinedValues() const { return !Impl->HasDefinedValue.empty();}
+
+void SectionInfo::resize(uint32_t sz)
+{
+    qDebug() << "SectionInfo::resize not fully implemented yet";
+    uSectionSize = sz;
+//    assert(false && "This function is not implmented yet");
+//    if(sz!=uSectionSize) {
+//        const IBinarySection *sect = Boomerang::get()->getImage()->getSectionInfoByAddr(uNativeAddr+sz);
+//        if(sect==nullptr || sect==this ) {
+//        }
+//    }
+}
 
 void SectionInfo::clearDefinedArea() {
     Impl->clearDefinedArea();

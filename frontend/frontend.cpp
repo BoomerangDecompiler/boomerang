@@ -385,8 +385,8 @@ DecodeResult &FrontEnd::decodeInstruction(ADDRESS pc) {
         invalid.valid = false;
         return invalid;
     }
-    const SectionInfo *pSect = Image->getSectionInfoByAddr(pc);
-    ptrdiff_t host_native_diff = (pSect->uHostAddr - pSect->uNativeAddr).m_value;
+    const IBinarySection *pSect = Image->getSectionInfoByAddr(pc);
+    ptrdiff_t host_native_diff = (pSect->hostAddr() - pSect->sourceAddr()).m_value;
     return decoder->decodeInstruction(pc, host_native_diff);
 }
 

@@ -129,8 +129,8 @@ void Decompiler::load() {
         emit newEntrypoint(entrypoints[i], prog->symbolByAddress(entrypoints[i]));
     }
 
-    for (const SectionInfo * section : *Image) {
-        emit newSection(section->pSectionName, section->uNativeAddr, section->uNativeAddr + section->uSectionSize);
+    for (const IBinarySection * section : *Image) {
+        emit newSection(section->getName(), section->sourceAddr(), section->sourceAddr() + section->size());
     }
 
     emit loadCompleted();

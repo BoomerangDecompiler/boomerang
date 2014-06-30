@@ -3,22 +3,22 @@
 
 #include "types.h"
 
-struct SectionInfo;
+struct IBinarySection;
 class QString;
 
 class IBinaryImage {
 public:
-    typedef std::vector<SectionInfo *>       SectionListType;
+    typedef std::vector<IBinarySection *>    SectionListType;
     typedef SectionListType::iterator               iterator;
     typedef SectionListType::const_iterator   const_iterator;
 
     virtual ~IBinaryImage() {}
     virtual void reset() = 0;
-    virtual SectionInfo *createSection(const QString &name, ADDRESS from, ADDRESS to)=0;
-    virtual const SectionInfo *getSectionInfoByAddr(ADDRESS uEntry) const = 0;
+    virtual IBinarySection *createSection(const QString &name, ADDRESS from, ADDRESS to)=0;
+    virtual const IBinarySection *getSectionInfoByAddr(ADDRESS uEntry) const = 0;
     virtual int GetSectionIndexByName(const QString &sName) = 0;
-    virtual SectionInfo *GetSectionInfoByName(const QString &sName) = 0;
-    virtual const SectionInfo *GetSectionInfo(int idx) const = 0;
+    virtual IBinarySection *GetSectionInfoByName(const QString &sName) = 0;
+    virtual const IBinarySection *GetSectionInfo(int idx) const = 0;
     virtual size_t GetNumSections() const = 0 ;
     virtual void calculateTextLimits() = 0;
     virtual ADDRESS getLimitTextLow() = 0;

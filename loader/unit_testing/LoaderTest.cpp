@@ -77,7 +77,7 @@ void LoaderTest::testSparcLoad() {
     QObject *pBF = bff.Load(HELLO_SPARC);
     QVERIFY(pBF != nullptr);
     int n;
-    const SectionInfo *si;
+    const IBinarySection *si;
     IBinaryImage *sect_iface = Boomerang::get()->getImage();
     QVERIFY(sect_iface!=nullptr);
 
@@ -85,9 +85,9 @@ void LoaderTest::testSparcLoad() {
     ost << "Number of sections = " << n << "\r\n\t";
     // Just use the first (real one) and last sections
     si = sect_iface->GetSectionInfo(1);
-    ost << si->pSectionName << "\t";
+    ost << si->getName() << "\t";
     si = sect_iface->GetSectionInfo(n - 1);
-    ost << si->pSectionName;
+    ost << si->getName();
     // Note: the string below needs to have embedded tabs. Edit with caution!
     QString expected("Number of sections = 28\r\n\t"
                          ".hash\t.stab.indexstr");
@@ -110,13 +110,13 @@ void LoaderTest::testPentiumLoad() {
     IBinaryImage *sect_iface = Boomerang::get()->getImage();
     QVERIFY(sect_iface!=nullptr);
     int n;
-    const SectionInfo *si;
+    const IBinarySection *si;
     n = sect_iface->GetNumSections();
     ost << "Number of sections = " << n << "\r\n\t";
     si = sect_iface->GetSectionInfo(1);
-    ost << si->pSectionName << "\t";
+    ost << si->getName() << "\t";
     si = sect_iface->GetSectionInfo(n - 1);
-    ost << si->pSectionName;
+    ost << si->getName();
     // Note: the string below needs to have embedded tabs. Edit with caution!
     // (And slightly different string to the sparc test, e.g. rel vs rela)
     QString expected("Number of sections = 33\r\n\t"
@@ -141,12 +141,12 @@ void LoaderTest::testHppaLoad() {
     IBinaryImage *sect_iface = Boomerang::get()->getImage();
     QVERIFY(sect_iface!=nullptr);
     int n;
-    const SectionInfo *si;
+    const IBinarySection *si;
     n = sect_iface->GetNumSections();
     ost << "Number of sections = " << n << "\r\n";
     for (int i = 0; i < n; i++) {
         si = sect_iface->GetSectionInfo(i);
-        ost << si->pSectionName << "\t";
+        ost << si->getName() << "\t";
     }
     // Note: the string below needs to have embedded tabs. Edit with caution!
     QString expected("Number of sections = 3\r\n"
@@ -170,12 +170,12 @@ void LoaderTest::testPalmLoad() {
     IBinaryImage *sect_iface = Boomerang::get()->getImage();
     QVERIFY(sect_iface!=nullptr);
     int n;
-    const SectionInfo *si;
+    const IBinarySection *si;
     n = sect_iface->GetNumSections();
     ost << "Number of sections = " << n << "\r\n";
     for (int i = 0; i < n; i++) {
         si = sect_iface->GetSectionInfo(i);
-        ost << si->pSectionName << "\t";
+        ost << si->getName() << "\t";
     }
 
     // Note: the string below needs to have embedded tabs. Edit with caution!
@@ -198,12 +198,12 @@ void LoaderTest::testWinLoad() {
     BinaryFile* pBF = bff.Load(CALC_WINDOWS);
     QVERIFY(pBF != nullptr);
     int n;
-    SectionInfo* si;
+    IBinarySection* si;
     n = pBF->GetNumSections();
     ost << "Number of sections = " << std::dec << n << "\r\n";
     for (int i=0; i < n; i++) {
         si = pBF->GetSectionInfo(i);
-        ost << si->pSectionName << "\t";
+        ost << si->getName() << "\t";
     }
 
     // Note: the string below needs to have embedded tabs. Edit with caution!

@@ -186,6 +186,20 @@ void Prog::generateDotFile() {
     of << "}";
 }
 
+void Prog::generateDataSectionCode(QString section_name, ADDRESS section_start, uint32_t size, HLLCode *code)
+{
+    code->AddGlobal("start_" + section_name, IntegerType::get(32, -1), new Const(section_start));
+    code->AddGlobal(section_name + "_size", IntegerType::get(32, -1), new Const(size ? size : (unsigned int)-1));
+    Exp *l = new Terminal(opNil);
+    for (unsigned int i = 0; i < size; i++) {
+        int n = Image->readNative1(section_start + size - 1 - i);
+        if (n < 0)
+            n = 256 + n;
+        l = Binary::get(opList, new Const(n), l);
+    }
+    code->AddGlobal(section_name, ArrayType::get(IntegerType::get(8, -1), size), l);
+}
+
 void Prog::generateCode(Module *cluster, UserProc *proc, bool /*intermixRTL*/) {
     // QString basedir = m_rootCluster->makeDirs();
     QTextStream *os;
@@ -206,37 +220,24 @@ void Prog::generateCode(Module *cluster, UserProc *proc, bool /*intermixRTL*/) {
                 for (int j = 0; sections[j]; j++) {
                     QString str = ".";
                     str += sections[j];
-                    SectionInfo * info = Image->GetSectionInfoByName(str);
-                    str = "start_";
-                    str += sections[j];
-                    code->AddGlobal(str, IntegerType::get(32, -1),
-                                    new Const(info ? info->uNativeAddr : NO_ADDRESS));
-                    str = sections[j];
-                    str += "_size";
-                    code->AddGlobal(str, IntegerType::get(32, -1),
-                                    new Const(info ? info->uSectionSize : (unsigned int)-1));
-                    Exp *l = new Terminal(opNil);
-                    for (unsigned int i = 0; info && i < info->uSectionSize; i++) {
-                        int n = Image->readNative1(info->uNativeAddr + info->uSectionSize - 1 - i);
-                        if (n < 0)
-                            n = 256 + n;
-                        l = Binary::get(opList, new Const(n), l);
-                    }
-                    code->AddGlobal(sections[j], ArrayType::get(IntegerType::get(8, -1), info ? info->uSectionSize : 0),
-                                    l);
+                    IBinarySection * info = Image->GetSectionInfoByName(str);
+                    if(info)
+                        generateDataSectionCode(sections[j], info->sourceAddr(), info->size(), code);
+                    else
+                        generateDataSectionCode(sections[j], NO_ADDRESS, 0, code);
+
                 }
                 code->AddGlobal("source_endianness", IntegerType::get(STD_SIZE),
                                 new Const(getFrontEndId() != PLAT_PENTIUM));
                 (*os) << "#include \"boomerang.h\"\n\n";
                 global = true;
             }
-            for (auto const &elem : globals) {
+            for (Global *elem : globals) {
                 // Check for an initial value
-                Exp *e = (elem)->getInitialValue(this);
+                Exp *e = elem->getInitialValue(this);
                 //                if (e) {
-                code->AddGlobal((elem)->getName(), (elem)->getType(), e);
+                code->AddGlobal(elem->getName(), elem->getType(), e);
                 global = true;
-                //                }
             }
             if (global)
                 code->print(*os); // Avoid blank line if no globals
@@ -837,13 +838,13 @@ void Prog::setGlobalType(const QString &nam, SharedType ty) {
 // if knownString, it is already known to be a char*
 //! get a string constant at a give address if appropriate
 const char *Prog::getStringConstant(ADDRESS uaddr, bool knownString /* = false */) {
-    const SectionInfo *si = Image->getSectionInfoByAddr(uaddr);
+    const IBinarySection *si = Image->getSectionInfoByAddr(uaddr);
     // Too many compilers put constants, including string constants, into read/write sections
     // if (si && si->bReadOnly)
     if (si && !si->isAddressBss(uaddr)) {
         // At this stage, only support ascii, null terminated, non unicode strings.
         // At least 4 of the first 6 chars should be printable ascii
-        char *p = (char *)(uaddr + si->uHostAddr - si->uNativeAddr).m_value;
+        char *p = (char *)(uaddr + si->hostAddr() - si->sourceAddr()).m_value;
         if (knownString)
             // No need to guess... this is hopefully a known string
             return p;
@@ -868,8 +869,8 @@ const char *Prog::getStringConstant(ADDRESS uaddr, bool knownString /* = false *
 
 double Prog::getFloatConstant(ADDRESS uaddr, bool &ok, int bits) {
     ok = true;
-    const SectionInfo *si = Image->getSectionInfoByAddr(uaddr);
-    if (si && si->bReadOnly) {
+    const IBinarySection *si = Image->getSectionInfoByAddr(uaddr);
+    if (si && si->isReadOnly()) {
         if (bits == 64) { // TODO: handle 80bit floats ?
             return Image->readNativeFloat8(uaddr);
         } else {
@@ -885,7 +886,7 @@ QString Prog::symbolByAddress(ADDRESS dest) {
     auto sym = BinarySymbols->find(dest);
     return sym ? sym->getName() : "";
 }
-const SectionInfo *Prog::getSectionInfoByAddr(ADDRESS a) {
+const IBinarySection *Prog::getSectionInfoByAddr(ADDRESS a) {
     return Image->getSectionInfoByAddr(a);
 }
 
@@ -978,21 +979,16 @@ QString Prog::getNameNoPathNoExt() const { return QFileInfo(m_name).baseName(); 
 const void *Prog::getCodeInfo(ADDRESS uAddr, const char *&last, int &delta) {
     delta = 0;
     last = nullptr;
-    int n = Image->GetNumSections();
-    int i;
+    const IBinarySection *pSect = Image->getSectionInfoByAddr(uAddr);
+    if(!pSect)
+        return nullptr;
+    if ((!pSect->isCode()) && (!pSect->isReadOnly()))
+        return nullptr;
     // Search all code and read-only sections
-    for (i = 0; i < n; i++) {
-        const SectionInfo *pSect = Image->GetSectionInfo(i);
-        if ((!pSect->bCode) && (!pSect->bReadOnly))
-            continue;
-        if ((uAddr < pSect->uNativeAddr) || (uAddr >= pSect->uNativeAddr + pSect->uSectionSize))
-            continue; // Try the next section
-        delta = (pSect->uHostAddr - pSect->uNativeAddr).m_value;
-        last = (const char *)(pSect->uHostAddr + pSect->uSectionSize).m_value;
-        const char *p = (const char *)(uAddr + delta).m_value;
-        return p;
-    }
-    return nullptr;
+    delta = (pSect->hostAddr() - pSect->sourceAddr()).m_value;
+    last = (const char *)(pSect->hostAddr() + pSect->size()).m_value;
+    const char *p = (const char *)(uAddr + delta).m_value;
+    return p;
 }
 
 /***************************************************************************/ /**
@@ -1486,7 +1482,7 @@ Global::~Global() {
 }
 //! Get the initial value as an expression (or nullptr if not initialised)
 Exp *Global::getInitialValue(Prog *prog) const {
-    const SectionInfo *si = prog->getSectionInfoByAddr(uaddr);
+    const IBinarySection *si = prog->getSectionInfoByAddr(uaddr);
     // TODO: see what happens when we skip Bss check here
     if (si && si->isAddressBss(uaddr))
         // This global is in the BSS, so it can't be initialised
@@ -1509,7 +1505,7 @@ QString Global::toString() const {
 }
 Exp *Prog::readNativeAs(ADDRESS uaddr, SharedType type) {
     Exp *e = nullptr;
-    const SectionInfo *si = getSectionInfoByAddr(uaddr);
+    const IBinarySection *si = getSectionInfoByAddr(uaddr);
     if (si == nullptr)
         return nullptr;
     if (type->resolvesToPointer()) {
@@ -1683,7 +1679,7 @@ Exp *Prog::addReloc(Exp *e, ADDRESS lc) {
 
 
 bool Prog::isStringConstant(ADDRESS a) {
-    const SectionInfo *si = Image->getSectionInfoByAddr(a);
+    const SectionInfo *si = static_cast<const SectionInfo *>(Image->getSectionInfoByAddr(a));
     if(!si)
         return false;
     QVariant qv = si->attributeInRange("StringsSection",a,a+1);

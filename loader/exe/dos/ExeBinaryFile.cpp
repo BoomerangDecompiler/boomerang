@@ -155,18 +155,18 @@ bool ExeBinaryFile::RealLoad(const QString &sName) {
 
     fclose(fp);
     //TODO: prevent overlapping of those 3 sections
-    SectionInfo *header = Image->createSection("$HEADER",ADDRESS::n(0x4000),ADDRESS::n(0x4000)+sizeof(exeHeader));
-    header->uHostAddr = ADDRESS::host_ptr(m_pHeader);
-    header->uSectionEntrySize = 1; // Not applicable
+    IBinarySection *header = Image->createSection("$HEADER",ADDRESS::n(0x4000),ADDRESS::n(0x4000)+sizeof(exeHeader));
+    header->setHostAddr(ADDRESS::host_ptr(m_pHeader))
+            .setEntrySize(1);
     // The text and data section
-    SectionInfo *text = Image->createSection(".text",ADDRESS::n(0x10000),ADDRESS::n(0x10000)+sizeof(m_cbImage));
-    text->bCode = true;
-    text->bData = true;
-    text->uHostAddr = ADDRESS::host_ptr(m_pImage);
-    text->uSectionEntrySize = 1; // Not applicable
-    SectionInfo *reloc = Image->createSection("$RELOC",ADDRESS::n(0x4000)+sizeof(exeHeader),ADDRESS::n(0x4000)+sizeof(exeHeader)+sizeof(DWord) * m_cReloc);
-    reloc->uHostAddr = ADDRESS::host_ptr(m_pRelocTable);
-    reloc->uSectionEntrySize = sizeof(DWord);
+    IBinarySection *text = Image->createSection(".text",ADDRESS::n(0x10000),ADDRESS::n(0x10000)+sizeof(m_cbImage));
+    text->setCode(true)
+            .setData(true)
+            .setHostAddr(ADDRESS::host_ptr(m_pImage))
+            .setEntrySize(1);
+    IBinarySection *reloc = Image->createSection("$RELOC",ADDRESS::n(0x4000)+sizeof(exeHeader),ADDRESS::n(0x4000)+sizeof(exeHeader)+sizeof(DWord) * m_cReloc);
+    reloc->setHostAddr(ADDRESS::host_ptr(m_pRelocTable))
+            .setEntrySize(sizeof(DWord));
     return 1;
 }
 

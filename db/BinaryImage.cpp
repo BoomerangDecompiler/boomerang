@@ -59,47 +59,47 @@ BinaryImage::~BinaryImage()
 void BinaryImage::reset()
 {
     SectionMap.clear();
-    for(SectionInfo *si : Sections) {
+    for(IBinarySection *si : Sections) {
         delete si;
     }
     Sections.clear();
 }
 
 char BinaryImage::readNative1(ADDRESS nat) {
-    const SectionInfo * si = getSectionInfoByAddr(nat);
+    const IBinarySection * si = getSectionInfoByAddr(nat);
     if (si == nullptr) {
         qDebug() << "Target Memory access in unmapped Section " << nat.m_value;
         return -1;
     }
-    ADDRESS host = si->uHostAddr - si->uNativeAddr + nat;
+    ADDRESS host = si->hostAddr() - si->sourceAddr() + nat;
     return *(char *)host.m_value;
 }
 
 int BinaryImage::readNative2(ADDRESS nat) {
-    const SectionInfo * si = getSectionInfoByAddr(nat);
+    const IBinarySection * si = getSectionInfoByAddr(nat);
     if (si == nullptr)
         return 0;
-    ADDRESS host = si->uHostAddr - si->uNativeAddr + nat;
-    return Read2((short *)host.m_value,si->Endiannes);
+    ADDRESS host = si->hostAddr() - si->sourceAddr() + nat;
+    return Read2((short *)host.m_value,si->getEndian());
 }
 
 int BinaryImage::readNative4(ADDRESS nat) {
-    const SectionInfo * si = getSectionInfoByAddr(nat);
+    const IBinarySection * si = getSectionInfoByAddr(nat);
     if (si == nullptr)
         return 0;
-    ADDRESS host = si->uHostAddr - si->uNativeAddr + nat;
-    return Read4((int *)host.m_value,si->Endiannes);
+    ADDRESS host = si->hostAddr() - si->sourceAddr() + nat;
+    return Read4((int *)host.m_value,si->getEndian());
 }
 // Read 8 bytes from given native address
 QWord BinaryImage::readNative8(ADDRESS nat) { // TODO: lifted from Win32 loader, likely wrong
-    const SectionInfo * si = getSectionInfoByAddr(nat);
+    const IBinarySection * si = getSectionInfoByAddr(nat);
     if (si == nullptr)
         return 0;
     int raw[2];
 #ifdef WORDS_BIGENDIAN     // This tests the  host     machine
     if (si->Endiannes) { // This tests the source machine
 #else
-    if (!si->Endiannes) {
+    if (si->getEndian()==0) {
 #endif // Balance }
         // Source and host are same endianness
         raw[0] = readNative4(nat);
@@ -122,14 +122,14 @@ float BinaryImage::readNativeFloat4(ADDRESS nat) {
 
 // Read 8 bytes as a float
 double BinaryImage::readNativeFloat8(ADDRESS nat) {
-    const SectionInfo * si = getSectionInfoByAddr(nat);
+    const IBinarySection * si = getSectionInfoByAddr(nat);
     if (si == nullptr)
         return 0;
     int raw[2];
 #ifdef WORDS_BIGENDIAN     // This tests the  host     machine
     if (si->Endiannes) { // This tests the source machine
 #else
-    if (!si->Endiannes) {
+    if (si->getEndian()==0) {
 #endif // Balance }
         // Source and host are same endianness
         raw[0] = readNative4(nat);
@@ -143,14 +143,14 @@ double BinaryImage::readNativeFloat8(ADDRESS nat) {
     return *(double *)raw;
 }
 void BinaryImage::writeNative4(ADDRESS nat, uint32_t n) {
-    const SectionInfo * si = getSectionInfoByAddr(nat);
+    const IBinarySection * si = getSectionInfoByAddr(nat);
     if (si == nullptr) {
         qDebug() << "Write outside section";
         return;
     }
-    ADDRESS host = si->uHostAddr - si->uNativeAddr + nat;
+    ADDRESS host = si->hostAddr() - si->sourceAddr() + nat;
     uint8_t *host_ptr = (unsigned char *)host.m_value;
-    if (si->Endiannes) {
+    if (si->getEndian()==1) {
         host_ptr[0] = (n >> 24) & 0xff;
         host_ptr[1] = (n >> 16) & 0xff;
         host_ptr[2] = (n >> 8) & 0xff;
@@ -167,31 +167,31 @@ void BinaryImage::calculateTextLimits() {
     limitTextLow = ADDRESS::g(0xFFFFFFFF);
     limitTextHigh = ADDRESS::g(0L);
     TextDelta = 0;
-    for (SectionInfo *pSect : Sections) {
-        if (!pSect->bCode)
+    for (IBinarySection *pSect : Sections) {
+        if (!pSect->isCode())
             continue;
         // The .plt section is an anomaly. It's code, but we never want to
         // decode it, and in Sparc ELF files, it's actually in the data
         // section (so it can be modified). For now, we make this ugly
         // exception
-        if (".plt"==pSect->pSectionName)
+        if (".plt"==pSect->getName())
             continue;
-        if (pSect->uNativeAddr < limitTextLow)
-            limitTextLow = pSect->uNativeAddr;
-        ADDRESS hiAddress = pSect->uNativeAddr + pSect->uSectionSize;
+        if (pSect->sourceAddr() < limitTextLow)
+            limitTextLow = pSect->sourceAddr();
+        ADDRESS hiAddress = pSect->sourceAddr() + pSect->size();
         if (hiAddress > limitTextHigh)
             limitTextHigh = hiAddress;
-        ptrdiff_t host_native_diff = (pSect->uHostAddr - pSect->uNativeAddr).m_value;
+        ptrdiff_t host_native_diff = (pSect->hostAddr() - pSect->sourceAddr()).m_value;
         if (TextDelta == 0)
             TextDelta = host_native_diff;
         else {
             if (TextDelta != host_native_diff)
-                fprintf(stderr,"warning: textDelta different for section %s (ignoring).\n",qPrintable(pSect->pSectionName));
+                fprintf(stderr,"warning: textDelta different for section %s (ignoring).\n",qPrintable(pSect->getName()));
         }
     }
 }
 
-const SectionInfo *BinaryImage::getSectionInfoByAddr(ADDRESS uEntry) const {
+const IBinarySection *BinaryImage::getSectionInfoByAddr(ADDRESS uEntry) const {
     if(!uEntry.isSourceAddr())
         qDebug()<<"getSectionInfoByAddr with non-Source ADDRESS";
     auto iter = SectionMap.find(uEntry);
@@ -203,14 +203,14 @@ const SectionInfo *BinaryImage::getSectionInfoByAddr(ADDRESS uEntry) const {
 //! Find section index given name, or -1 if not found
 int BinaryImage::GetSectionIndexByName(const QString &sName) {
     for (int32_t i = Sections.size()-1; i >= 0; --i) {
-        if (Sections[i]->pSectionName == sName) {
+        if (Sections[i]->getName() == sName) {
             return i;
         }
     }
     return -1;
 }
 
-SectionInfo *BinaryImage::GetSectionInfoByName(const QString &sName) {
+IBinarySection *BinaryImage::GetSectionInfoByName(const QString &sName) {
     int i = GetSectionIndexByName(sName);
     if (i == -1)
         return nullptr;
@@ -218,7 +218,7 @@ SectionInfo *BinaryImage::GetSectionInfoByName(const QString &sName) {
 }
 
 bool BinaryImage::isReadOnly(ADDRESS uEntry) {
-    const SectionInfo * p = getSectionInfoByAddr(uEntry);
+    const SectionInfo * p = static_cast<const SectionInfo *>(getSectionInfoByAddr(uEntry));
     if(!p)
         return false;
     if(p->bReadOnly)

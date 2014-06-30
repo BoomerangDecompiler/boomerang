@@ -267,18 +267,18 @@ bool MachOBinaryFile::RealLoad(const QString &sName) {
         fread(base + a.m_value - loaded_addr.m_value, 1, fsz, fp);
         DEBUG_PRINT("loaded segment %x %i in mem %i in file\n", a.m_value, sz, fsz);
         QString name = QByteArray(segments[i].segname,17);
-        SectionInfo *sect = Image->createSection(name,ADDRESS::n(BMMH(segments[i].vmaddr)),
+        IBinarySection *sect = Image->createSection(name,ADDRESS::n(BMMH(segments[i].vmaddr)),
                                                  ADDRESS::n(BMMH(segments[i].vmaddr)+BMMH(segments[i].vmsize)));
         assert(sect);
-        sect->uHostAddr = ADDRESS::value_type(base) + BMMH(segments[i].vmaddr) - loaded_addr.m_value;
-        assert((sect->uHostAddr + sect->uSectionSize) <= ADDRESS::host_ptr(base + loaded_size));
+        sect->setHostAddr(ADDRESS::g(ADDRESS::value_type(base) + BMMH(segments[i].vmaddr) - loaded_addr.m_value));
+        assert((sect->hostAddr() + sect->size()) <= ADDRESS::host_ptr(base + loaded_size));
 
         unsigned long l = BMMH(segments[i].initprot);
-        sect->bBss = false; // TODO
-        sect->Endiannes = (machine == MACHINE_PPC) ? 1 : 0;
-        sect->bCode = l & VM_PROT_EXECUTE ? 1 : 0;
-        sect->bData = l & VM_PROT_READ ? 1 : 0;
-        sect->bReadOnly = ~(l & VM_PROT_WRITE) ? 0 : 1;
+        sect->setBss(false) // TODO
+        .setEndian((machine == MACHINE_PPC) ? 1 : 0)
+        .setCode(l & VM_PROT_EXECUTE ? 1 : 0)
+        .setData(l & VM_PROT_READ ? 1 : 0)
+        .setReadOnly(~(l & VM_PROT_WRITE) ? 0 : 1);
         for (size_t s_idx = 0; s_idx < sections.size(); s_idx++) {
             if(strcmp(sections[s_idx].segname,segments[i].segname)!=0)
                 continue;
@@ -297,7 +297,7 @@ bool MachOBinaryFile::RealLoad(const QString &sName) {
         }
 
         DEBUG_PRINT("loaded segment %x %i in mem %i in file code=%i data=%i readonly=%i\n", a.m_value, sz, fsz,
-                sect->bCode, sect->bData, sect->bReadOnly);
+                sect->isCode(), sect->isData(), sect->isReadOnly());
     }
 
     // process stubs_sects
