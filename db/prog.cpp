@@ -434,6 +434,9 @@ Function *Prog::setNewProc(ADDRESS uAddr) {
     ADDRESS other = pLoaderIface->IsJumpToAnotherAddr(uAddr);
     if (other != NO_ADDRESS)
         uAddr = other;
+    pProc = findProc(uAddr);
+    if (pProc) // Exists already ?
+        return pProc; // Yes, we are done
     QString pName;
     const IBinarySymbol *sym = BinarySymbols->find(uAddr);
     bool bLib = false;

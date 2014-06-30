@@ -66,17 +66,12 @@ def test_all_inputs_in(base_dir, dirname=""):
                 os.makedirs(result_path)
             except:
                 pass
-            test_res = None
-            if "hello.exe" in f:
-                print("skipping hello.exe - it causes memory exhaustion")
-                test_res = [False,"skipped windows/hello.exe",None]
-            else:
-                test_res = perform_test(sys.argv[1],source,result_path,sys.argv[2:])
-                assert(not test_res[0] or os.path.isfile(os.path.join(output_dir,"log")))
-                try:
-                    shutil.move(os.path.join(output_dir,"log"),os.path.join(output_dir,f+".log"))
-                except:
-                    pass
+            test_res = perform_test(sys.argv[1],source,result_path,sys.argv[2:])
+            assert(not test_res[0] or os.path.isfile(os.path.join(output_dir,"log")))
+            try:
+                shutil.move(os.path.join(output_dir,"log"),os.path.join(output_dir,f+".log"))
+            except:
+                pass
 
             if not test_res[0]:
                 crashes[machine].append([source,test_res[1]])

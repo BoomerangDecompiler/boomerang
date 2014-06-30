@@ -371,7 +371,7 @@ int CommandlineDriver::console() {
 }
 int CommandlineDriver::decompile() {
     m_thread.start();
-    m_thread.wait(50000);
+    m_thread.wait(-1);
     return m_thread.resCode();
 }
 void CommandlineDriver::onCompilationTimeout() {

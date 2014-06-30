@@ -55,19 +55,13 @@ def test_all_inputs_in(base_dir,dirname="")
       test_path = source
       result_path = File.join(base_dir,"outputs",dirname,f)
       FileUtils.mkdir_p(result_path)
-      test_res = nil
-      if(!f.index("hello.exe").nil?)
-	p "skipping hello.exe - it causes memory exhaustion"
-	test_res = [false,"skipped windows/hello.exe"]
-      else
-	test_res = perform_test(ARGV[0],source,result_path,ARGV[1..-1])
-	FileUtils.mv(File.join(output_dir,"log"),File.join(output_dir,f+".log"))
-      end
+      test_res = perform_test(ARGV[0],source,result_path,ARGV[1..-1])
+      FileUtils.mv(File.join(output_dir,"log"),File.join(output_dir,f+".log"))
       if( not test_res[0])
-      $crashes[machine] ||= []
-      $crashes[machine] << [source,test_res[1]]
+        $crashes[machine] ||= []
+        $crashes[machine] << [source,test_res[1]]
       else
-      $times[test_res[2]] = test_res[3] if test_res[3]!=nil
+        $times[test_res[2]] = test_res[3] if test_res[3]!=nil
       end
     end
   }

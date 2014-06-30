@@ -151,8 +151,11 @@ Function *Module::getOrInsertFunction(const QString &name, ADDRESS uNative, bool
         pProc = new LibProc(this, name, uNative);
     else
         pProc = new UserProc(this, name, uNative);
+    if(NO_ADDRESS!=uNative) {
+        assert(LabelsToProcs.find(uNative)==LabelsToProcs.end());
+        LabelsToProcs[uNative] = pProc;
+    }
     FunctionList.push_back(pProc); // Append this to list of procs
-    LabelsToProcs[uNative] = pProc;
     // alert the watchers of a new proc
     emit newFunction(pProc);
     Boomerang::get()->alertNew(pProc);
