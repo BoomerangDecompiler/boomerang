@@ -3,6 +3,7 @@
 This repository is now connected to continous integration server:
 http://boomerang.nemerle.eu
 Generated documentation is available at http://boomerang.nemerle.eu/job/Boomerang-next/doxygen/
+
 The pre-compiled windows version is available at http://nemerle.eu/boomerang.zip
 
 This is an experimental branch of boomerang project, the inital goals are:
