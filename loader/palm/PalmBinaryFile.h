@@ -28,6 +28,7 @@ class PalmBinaryFile : public QObject, public LoaderInterface {
   public:
     PalmBinaryFile(); // Constructor
     virtual ~PalmBinaryFile();
+    void initialize(IBoomerang *sys) override;
     void UnLoad() override;                // Unload the image
     void Close() override;                 // Close file opened with Open()
     bool PostLoad(void *handle) override;  // For archive files only

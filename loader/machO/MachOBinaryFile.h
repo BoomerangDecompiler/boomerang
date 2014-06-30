@@ -51,19 +51,20 @@ class MachOBinaryFile : public QObject,
   public:
     MachOBinaryFile();                    // Default constructor
     virtual ~MachOBinaryFile();           // Destructor
-    virtual bool Open(const char *sName); // Open the file for r/w; ???
-    virtual void Close();                 // Close file opened with Open()
-    virtual void UnLoad();                // Unload the image
-    virtual LOAD_FMT GetFormat() const;   // Get format (i.e. LOADFMT_MACHO)
-    virtual MACHINE getMachine() const;   // Get machine (i.e. MACHINE_PPC)
+    void initialize(IBoomerang *sys) override;
+    bool Open(const char *sName); // Open the file for r/w; ???
+    void Close();                 // Close file opened with Open()
+    void UnLoad();                // Unload the image
+    LOAD_FMT GetFormat() const;   // Get format (i.e. LOADFMT_MACHO)
+    MACHINE getMachine() const;   // Get machine (i.e. MACHINE_PPC)
     QString getFilename() const override { return m_pFileName; }
-    virtual bool isLibrary() const;
-    virtual QStringList getDependencyList();
-    virtual ADDRESS getImageBase();
-    virtual size_t getImageSize();
+    bool isLibrary() const;
+    QStringList getDependencyList();
+    ADDRESS getImageBase();
+    size_t getImageSize();
 
-    virtual ADDRESS GetMainEntryPoint();
-    virtual ADDRESS GetEntryPoint();
+    ADDRESS GetMainEntryPoint();
+    ADDRESS GetEntryPoint();
     DWord getDelta();
 
     //

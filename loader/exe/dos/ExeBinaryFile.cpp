@@ -19,13 +19,16 @@
 */
 #include "ExeBinaryFile.h"
 
-#include "boomerang.h"
+#include "IBoomerang.h"
 #include "IBinaryImage.h"
 
 #include <cassert>
 
 ExeBinaryFile::ExeBinaryFile() {
-    Image = Boomerang::get()->getImage();
+}
+void ExeBinaryFile::initialize(IBoomerang *sys) {
+    Image = sys->getImage();
+    Symbols = sys->getSymbols();
 }
 
 bool ExeBinaryFile::RealLoad(const QString &sName) {

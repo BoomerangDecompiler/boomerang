@@ -38,7 +38,7 @@ namespace dbghelp {
 #include "BinaryFile.h"
 #include "IBinaryImage.h"
 #include "IBinarySymbols.h"
-#include "boomerang.h"
+#include "IBoomerang.h"
 #include "config.h"
 
 #include <cstring>
@@ -70,13 +70,14 @@ struct SectionParam {
 #endif
 
 Win32BinaryFile::Win32BinaryFile() : mingw_main(false) {
-    Image = Boomerang::get()->getImage();
-    Symbols = Boomerang::get()->getSymbols();
 }
 
 Win32BinaryFile::~Win32BinaryFile() {
 }
-
+void Win32BinaryFile::initialize(IBoomerang *sys) {
+    Image = sys->getImage();
+    Symbols = sys->getSymbols();
+}
 bool Win32BinaryFile::Open(const char *sName) {
     Q_UNUSED(sName);
     // return Load(sName) != 0;

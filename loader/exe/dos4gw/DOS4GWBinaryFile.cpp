@@ -22,7 +22,7 @@
 
 #include "DOS4GWBinaryFile.h"
 #include "BinaryFile.h"
-#include "boomerang.h"
+#include "IBoomerang.h"
 #include "IBinaryImage.h"
 #include "IBinarySymbols.h"
 
@@ -48,11 +48,13 @@ int microX86Dis(void *p); // From microX86dis.c
 
 DOS4GWBinaryFile::DOS4GWBinaryFile()
 {
-    Image = Boomerang::get()->getImage();
-    Symbols = Boomerang::get()->getSymbols();
 }
 
 DOS4GWBinaryFile::~DOS4GWBinaryFile() {
+}
+void DOS4GWBinaryFile::initialize(IBoomerang *sys) {
+    Image = sys->getImage();
+    Symbols = sys->getSymbols();
 }
 
 void DOS4GWBinaryFile::Close() { UnLoad(); }

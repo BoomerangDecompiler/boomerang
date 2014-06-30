@@ -193,9 +193,11 @@ public:
 
 
     bool hasDebugInfo() { return haveDebugInfo; }
+    void initialize(IBoomerang *sys) override;
 
 protected:
     bool RealLoad(const QString &sName) override; // Load the file; pure virtual
+    void processIAT();
 
 private:
     bool PostLoad(void *handle);  // Called after archive member loaded
@@ -214,6 +216,4 @@ private:
     class IBinaryImage *Image;
     class IBinarySymbolTable *Symbols;
     // SymbolTableInterface interface
-public:
-    void processIAT();
 };

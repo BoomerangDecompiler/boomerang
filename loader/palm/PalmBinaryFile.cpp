@@ -15,7 +15,7 @@
 #include "PalmBinaryFile.h"
 
 #include "palmsystraps.h"
-#include "boomerang.h"
+#include "IBoomerang.h"
 #include "IBinaryImage.h"
 #include "IBinarySymbols.h"
 
@@ -30,8 +30,6 @@
     ((UC((p).m_value)[0] << 24) + (UC((p).m_value)[1] << 16) + (UC((p).m_value)[2] << 8) + UC((p).m_value)[3])
 
 PalmBinaryFile::PalmBinaryFile() : m_pImage(nullptr), m_pData(nullptr) {
-    Image = Boomerang::get()->getImage();
-    Symbols = Boomerang::get()->getSymbols();
 }
 
 PalmBinaryFile::~PalmBinaryFile() {
@@ -41,6 +39,13 @@ PalmBinaryFile::~PalmBinaryFile() {
     if (m_pData) {
         delete[] m_pData;
     }
+}
+
+void PalmBinaryFile::initialize(IBoomerang *sys)
+{
+    Image = sys->getImage();
+    Symbols = sys->getSymbols();
+
 }
 static int Read2(short *ps) {
     unsigned char *p = (unsigned char *)ps;

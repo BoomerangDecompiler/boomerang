@@ -38,7 +38,7 @@
 // Given a pointer p, returns the 16 bits (halfword) in the two bytes
 // starting at p.
 #define LH(p) ((int)((Byte *)(p))[0] + ((int)((Byte *)(p))[1] << 8))
-
+class IBoomerang;
 
 // Objective-C stuff
 class ObjcIvar {
@@ -121,7 +121,7 @@ public:
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // General loader functions
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+    virtual void initialize(IBoomerang *sys) = 0;
     virtual void UnLoad() = 0;                //!< Unload the file. Pure virtual
     virtual void Close() = 0;                 //!< Close file opened with Open()
     virtual LOAD_FMT GetFormat() const = 0;   //!< Get the format (e.g. LOADFMT_ELF)

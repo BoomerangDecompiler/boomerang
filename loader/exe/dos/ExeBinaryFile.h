@@ -89,6 +89,7 @@ public:
     // Dump headers, etc
     bool DisplayDetails(const char *fileName, FILE *f = stdout) override;
 
+    void initialize(IBoomerang *sys) override;
 protected:
     bool RealLoad(const QString &sName) override; // Load the file; pure virtual
 private:
@@ -101,6 +102,7 @@ private:
     ADDRESS m_uInitPC;        //!< Initial program counter
     ADDRESS m_uInitSP;        //!< Initial stack pointer
     class IBinaryImage *Image;
+    class IBinarySymbolTable *Symbols;
 };
 
 #endif // ifndef __EXEBINARYFILE_H__

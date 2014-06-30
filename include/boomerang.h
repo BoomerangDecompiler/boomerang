@@ -30,6 +30,7 @@
 
 #include "config.h"
 #include "types.h"
+#include "IBoomerang.h"
 
 #include <QObject>
 #include <QDir>
@@ -63,7 +64,7 @@ enum LogLevel {
 
 /// Virtual class to monitor the decompilation.
 class Watcher {
-  public:
+public:
     Watcher() {}
     virtual ~Watcher() {} // Prevent gcc4 warning
 
@@ -93,9 +94,9 @@ class Watcher {
  * Controls the loading, decoding, decompilation and code generation for a program.
  * This is the main class of the decompiler.
  */
-class Boomerang : public QObject {
+class Boomerang : public QObject,public IBoomerang {
     Q_OBJECT
-  private:
+private:
     static Boomerang *boomerang;
     IBinaryImage *Image = nullptr;
     IBinarySymbolTable *Symbols = nullptr;
@@ -112,13 +113,13 @@ class Boomerang : public QObject {
     virtual ~Boomerang();
     void miniDebugger(UserProc *p, const char *description);
 
-  public:
+public:
     /**
      * \return The global boomerang object. It will be created if it didn't already exist.
      */
     static Boomerang *get();
-    IBinaryImage *getImage();
-    IBinarySymbolTable *getSymbols();
+    IBinaryImage *getImage() override;
+    IBinarySymbolTable *getSymbols() override;
     int processCommand(QStringList &args);
     static const char *getVersionStr();
     Log &log();

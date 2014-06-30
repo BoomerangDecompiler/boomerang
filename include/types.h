@@ -5,7 +5,6 @@
 #ifndef __TYPES_H__
 #define __TYPES_H__
 
-
 #include <QObject>
 #include <iosfwd>
 #include <stdint.h>

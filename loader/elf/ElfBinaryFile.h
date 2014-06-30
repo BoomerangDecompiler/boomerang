@@ -39,6 +39,7 @@ class ElfBinaryFile : public QObject, public LoaderInterface {
     ElfBinaryFile(); // Constructor
     void UnLoad() override;
     ~ElfBinaryFile() override;
+    void initialize(IBoomerang *sys) override;
     void Close() override;
     LOAD_FMT GetFormat() const override;
     MACHINE getMachine() const override;

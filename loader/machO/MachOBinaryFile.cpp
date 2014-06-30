@@ -19,7 +19,7 @@
 #include "MachOBinaryFile.h"
 
 #include "BinaryFile.h"
-#include "boomerang.h"
+#include "IBoomerang.h"
 #include "IBinaryImage.h"
 #include "IBinarySymbols.h"
 #include "config.h"
@@ -55,11 +55,15 @@ struct SectionParam {
 MachOBinaryFile::MachOBinaryFile() {
     machine = MACHINE_PPC;
     swap_bytes = false;
-    Image = Boomerang::get()->getImage();
-    Symbols = Boomerang::get()->getSymbols();
 }
 
 MachOBinaryFile::~MachOBinaryFile() {
+}
+
+void MachOBinaryFile::initialize(IBoomerang *sys)
+{
+    Image = sys->getImage();
+    Symbols = sys->getSymbols();
 }
 
 bool MachOBinaryFile::Open(const char *sName) {

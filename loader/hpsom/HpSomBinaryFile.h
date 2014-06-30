@@ -80,6 +80,8 @@ class HpSomBinaryFile : public QObject, public LoaderInterface {
 public:
     HpSomBinaryFile(); // Constructor
     virtual ~HpSomBinaryFile();
+    void initialize(IBoomerang *sys) override;
+
     void UnLoad() override;                // Unload the image
     void Close() override;                 // Close file opened with Open()
     bool PostLoad(void *handle) override;  // For archive files only

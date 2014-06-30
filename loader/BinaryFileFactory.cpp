@@ -35,6 +35,7 @@ QObject *BinaryFileFactory::Load(const QString &sName) {
         fprintf(stderr, "unrecognised binary file format.\n");
         return nullptr;
     }
+    ldr_iface->initialize(Boomerang::get());
     ldr_iface->Close();
     if (ldr_iface->RealLoad(sName) == 0) {
         fprintf(stderr, "Loading '%s' failed\n", qPrintable(sName));

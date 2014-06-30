@@ -21,7 +21,7 @@
 #include "ElfTypes.h"
 #include "config.h"
 #include "util.h"
-#include "boomerang.h"
+#include "IBoomerang.h"
 #include "IBinaryImage.h"
 #include "IBinarySymbols.h"
 
@@ -63,8 +63,6 @@ typedef std::map<QString, int, std::less<QString>> StrIntMap;
 ElfBinaryFile::ElfBinaryFile() : next_extern(ADDRESS::g(0L)) {
     m_fd = nullptr;
     m_pFileName = nullptr;
-    Image = Boomerang::get()->getImage();
-    Symbols = Boomerang::get()->getSymbols();
     Init(); // Initialise all the common stuff
 }
 
@@ -72,6 +70,12 @@ ElfBinaryFile::~ElfBinaryFile() {
     if (m_pImportStubs)
         // Delete the array of import stubs
         delete[] m_pImportStubs;
+}
+
+void ElfBinaryFile::initialize(IBoomerang *sys)
+{
+    Image = sys->getImage();
+    Symbols = sys->getSymbols();
 }
 
 // Reset internal state, except for those that keep track of which member

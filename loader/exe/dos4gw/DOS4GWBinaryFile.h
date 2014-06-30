@@ -153,6 +153,7 @@ public:
     // Dump headers, etc
     virtual bool DisplayDetails(const char *fileName, FILE *f = stdout);
 
+    void initialize(IBoomerang *sys) override;
 protected:
     int dos4gwRead2(short *ps) const; // Read 2 bytes from native addr
     int dos4gwRead4(int *pi) const;   // Read 4 bytes from native addr

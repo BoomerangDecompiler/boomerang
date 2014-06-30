@@ -15,7 +15,7 @@
   ******************************************************************************/
 
 #include "HpSomBinaryFile.h"
-#include "boomerang.h"
+#include "IBoomerang.h"
 #include "IBinaryImage.h"
 #include "IBinarySymbols.h"
 
@@ -31,12 +31,17 @@
 #define UINT4ADDR(p) (ADDRESS::n((UC(p)[0] << 24) + (UC(p)[1] << 16) + (UC(p)[2] << 8) + UC(p)[3]))
 
 HpSomBinaryFile::HpSomBinaryFile() : m_pImage(0) {
-    Image = Boomerang::get()->getImage();
-    Symbols = Boomerang::get()->getSymbols();
 }
 
 HpSomBinaryFile::~HpSomBinaryFile() {
     delete [] m_pImage;
+}
+
+void HpSomBinaryFile::initialize(IBoomerang *sys)
+{
+    Image = sys->getImage();
+    Symbols = sys->getSymbols();
+
 }
 static int Read2(short *ps) {
     unsigned char *p = (unsigned char *)ps;
