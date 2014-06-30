@@ -1,6 +1,6 @@
 __size32 proc1(__size32 param1, __size32 param2);
 
-// address: 8048333
+// address: 0x8048333
 int main(int argc, char *argv[], char *envp[]) {
     __size32 eax; 		// r24
 
@@ -11,7 +11,7 @@ int main(int argc, char *argv[], char *envp[]) {
     return eax;
 }
 
-// address: 8048328
+// address: 0x8048328
 __size32 proc1(__size32 param1, __size32 param2) {
     __size32 eax; 		// r24
 

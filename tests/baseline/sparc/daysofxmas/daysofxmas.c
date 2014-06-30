@@ -1,6 +1,6 @@
 int global21;
 
-// address: 106a8
+// address: 0x106a8
 int main(int argc, char *argv[], union { char *[] * x9; char * x10; } envp) {
     int i0; 		// r24
     union { int x13; void * x14; } o0; 		// r8

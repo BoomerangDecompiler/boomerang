@@ -1,6 +1,6 @@
 void proc1(int param1, char param2[], int param3);
 
-// address: 10760
+// address: 0x10760
 int main(int argc, char *argv[], char *envp[]) {
     int local0; 		// m[o6 - 132]
     int o1; 		// r9
@@ -11,7 +11,7 @@ int main(int argc, char *argv[], char *envp[]) {
     return 0;
 }
 
-// address: 106c4
+// address: 0x106c4
 void proc1(int param1, char param2[], int param3) {
     int local0; 		// m[o6 + 68]
     int local1; 		// m[o6 - 20]

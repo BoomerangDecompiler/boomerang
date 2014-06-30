@@ -20,7 +20,7 @@ void g();
 void i();
 __size32 k(__size32 param1, __size32 param2);
 
-// address: 804837c
+// address: 0x804837c
 int main(int argc, char *argv[], char *envp[]) {
     __size32 ecx; 		// r25
     __size32 edx; 		// r26
@@ -31,7 +31,7 @@ int main(int argc, char *argv[], char *envp[]) {
     return 0;
 }
 
-// address: 80483d6
+// address: 0x80483d6
 __size32 b(__size32 param1, __size32 param2) {
     __size32 ecx; 		// r25
     __size32 edx; 		// r26
@@ -55,7 +55,7 @@ __size32 b(__size32 param1, __size32 param2) {
     return param1; /* WARNING: Also returning: edx := param2 */
 }
 
-// address: 8048408
+// address: 0x8048408
 __size32 c(__size32 param1, __size32 param2) {
     __size32 ecx; 		// r25
     __size32 edx; 		// r26
@@ -115,7 +115,7 @@ __size32 c(__size32 param1, __size32 param2) {
     return ecx; /* WARNING: Also returning: edx := edx */
 }
 
-// address: 80484a6
+// address: 0x80484a6
 __size32 d(__size32 param1, __size32 param2) {
     __size32 ecx; 		// r25
     __size32 edx; 		// r26
@@ -139,7 +139,7 @@ __size32 d(__size32 param1, __size32 param2) {
     return param1; /* WARNING: Also returning: edx := param2 */
 }
 
-// address: 804850a
+// address: 0x804850a
 void f() {
     f_g = f_g - 1;
     if (f_g >= 0) {
@@ -149,7 +149,7 @@ void f() {
     return;
 }
 
-// address: 8048566
+// address: 0x8048566
 void h() {
     h_i = h_i - 1;
     if (h_i >= 0) {
@@ -159,7 +159,7 @@ void h() {
     return;
 }
 
-// address: 80485a6
+// address: 0x80485a6
 __size32 j(__size32 param1, __size32 param2) {
     __size32 ecx; 		// r25
     __size32 edx; 		// r26
@@ -183,7 +183,7 @@ __size32 j(__size32 param1, __size32 param2) {
     return param1; /* WARNING: Also returning: edx := param2 */
 }
 
-// address: 804860b
+// address: 0x804860b
 __size32 l(__size32 param1, __size32 param2) {
     __size32 ecx; 		// r25
     __size32 edx; 		// r26
@@ -207,7 +207,7 @@ __size32 l(__size32 param1, __size32 param2) {
     return param1; /* WARNING: Also returning: edx := param2 */
 }
 
-// address: 80484d8
+// address: 0x80484d8
 __size32 e(__size32 param1, __size32 param2) {
     __size32 ecx; 		// r25
     __size32 edx; 		// r26
@@ -231,7 +231,7 @@ __size32 e(__size32 param1, __size32 param2) {
     return param1; /* WARNING: Also returning: edx := param2 */
 }
 
-// address: 8048538
+// address: 0x8048538
 void g() {
     g_f = g_f - 1;
     if (g_f >= 0) {
@@ -241,13 +241,13 @@ void g() {
     return;
 }
 
-// address: 8048594
+// address: 0x8048594
 void i() {
     res += 19;
     return;
 }
 
-// address: 80485d8
+// address: 0x80485d8
 __size32 k(__size32 param1, __size32 param2) {
     __size32 ecx; 		// r25
     __size32 ecx_1; 		// r25{22}

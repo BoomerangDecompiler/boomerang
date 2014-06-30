@@ -12,14 +12,14 @@ int g(int param1);
 __size32 i(int param1);
 void k(int param1);
 
-// address: 107ac
+// address: 0x107ac
 int main(int argc, char *argv[], char *envp[]) {
     printf("a(%d)\n", argc);
     b(argc + argc + argc);
     return 0;
 }
 
-// address: 107f4
+// address: 0x107f4
 __size32 b(int param1) {
     __size32 g1; 		// r1
 
@@ -28,7 +28,7 @@ __size32 b(int param1) {
     return g1;
 }
 
-// address: 10830
+// address: 0x10830
 unsigned int c(unsigned int param1) {
     unsigned int g1; 		// r1
 
@@ -59,7 +59,7 @@ unsigned int c(unsigned int param1) {
     return g1;
 }
 
-// address: 108e0
+// address: 0x108e0
 int d(int param1) {
     int g1; 		// r1
 
@@ -71,7 +71,7 @@ int d(int param1) {
     return g1;
 }
 
-// address: 10968
+// address: 0x10968
 int f(int param1) {
     int g1; 		// r1
 
@@ -83,7 +83,7 @@ int f(int param1) {
     return g1;
 }
 
-// address: 10a00
+// address: 0x10a00
 int h(int param1) {
     int g1; 		// r1
 
@@ -95,7 +95,7 @@ int h(int param1) {
     return g1;
 }
 
-// address: 10a74
+// address: 0x10a74
 int j(int param1) {
     printf("j(%d)\n", param1);
     if (param1 > 1) {
@@ -104,7 +104,7 @@ int j(int param1) {
     return param1;
 }
 
-// address: 10b04
+// address: 0x10b04
 int l(int param1) {
     int g1; 		// r1
 
@@ -116,7 +116,7 @@ int l(int param1) {
     return g1;
 }
 
-// address: 1092c
+// address: 0x1092c
 __size32 e(int param1) {
     __size32 g1; 		// r1
 
@@ -125,7 +125,7 @@ __size32 e(int param1) {
     return g1;
 }
 
-// address: 109b4
+// address: 0x109b4
 int g(int param1) {
     int g1; 		// r1
 
@@ -137,13 +137,13 @@ int g(int param1) {
     return g1;
 }
 
-// address: 10a4c
+// address: 0x10a4c
 __size32 i(int param1) {
     printf("i(%d)\n", param1);
     return 0x10c00;
 }
 
-// address: 10ab8
+// address: 0x10ab8
 void k(int param1) {
     printf("k(%d)\n", param1);
     if (param1 > 1) {

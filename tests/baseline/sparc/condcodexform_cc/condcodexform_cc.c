@@ -1,4 +1,4 @@
-// address: 10b0c
+// address: 0x10b0c
 int main(int argc, char *argv[], char *envp[]) {
     __size32 i1; 		// r25
     __size32 o0; 		// r8

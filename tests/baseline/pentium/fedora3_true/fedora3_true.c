@@ -4,7 +4,7 @@ void proc4(FILE *param1, __size32 param2, __size32 param3);
 void proc5(int param1);
 void proc6(FILE *param1, __size32 param2, __size32 *param3);
 
-// address: 8048c4a
+// address: 0x8048c4a
 int main(int argc, char *argv[], char *envp[]) {
     __size32 eax; 		// r24
     __size32 ebx; 		// r27
@@ -61,14 +61,14 @@ L7:
     return;
 }
 
-// address: 8048d64
+// address: 0x8048d64
 __size32 proc2() {
     __size32 local0; 		// m[esp]
 
     return local0;
 }
 
-// address: 804a0a0
+// address: 0x804a0a0
 void proc3() {
     __size32 edx; 		// r26
 
@@ -78,14 +78,14 @@ void proc3() {
     return;
 }
 
-// address: 8049ccd
+// address: 0x8049ccd
 void proc4(FILE *param1, __size32 param2, __size32 param3) {
     proc2();
     proc6(param1, param2, &param3);
     return;
 }
 
-// address: 8048b68
+// address: 0x8048b68
 void proc5(int param1) {
     __size32 eax; 		// r24
     __size32 ebx; 		// r27
@@ -108,7 +108,7 @@ void proc5(int param1) {
     return;
 }
 
-// address: 8049ac0
+// address: 0x8049ac0
 void proc6(FILE *param1, __size32 param2, __size32 *param3) {
     union { unsigned int x3; __size8 * x4; } eax; 		// r24
     __size32 *eax_1; 		// r24{28}

@@ -1,6 +1,6 @@
 __size32 cparam(int param1, __size32 param2);
 
-// address: 106a0
+// address: 0x106a0
 int main(int argc, char *argv[], char *envp[]) {
     int o0; 		// r8
 
@@ -9,7 +9,7 @@ int main(int argc, char *argv[], char *envp[]) {
     return 0;
 }
 
-// address: 10688
+// address: 0x10688
 __size32 cparam(int param1, __size32 param2) {
     __size32 local0; 		// param2{9}
     __size32 o1; 		// r9

@@ -27,7 +27,7 @@ void proc22();
 __size32 proc23(union { GLfloat x9; __size32 x10; } *param1);
 void proc24(__size32 *param1, __size32 param2, __size32 param3, __size32 param4, __size32 param5, __size32 param6);
 
-// address: 804b320
+// address: 0x804b320
 int main(int argc, char *argv[], char *envp[]) {
     int *local0; 		// m[esp - 28]
 
@@ -44,7 +44,7 @@ int main(int argc, char *argv[], char *envp[]) {
     return 0;
 }
 
-// address: 804a550
+// address: 0x804a550
 void proc2() {
     glClearColor(0, 0x3f000000, 0x3f333333, 0x3f800000);
     glEnable(0xb71);
@@ -53,7 +53,7 @@ void proc2() {
     return;
 }
 
-// address: 804ac50
+// address: 0x804ac50
 void proc3() {
     __size32 eax; 		// r24
     int esp; 		// r28
@@ -79,7 +79,7 @@ void proc3() {
     return;
 }
 
-// address: 804aeec
+// address: 0x804aeec
 void proc4(__size32 ??, int x, int y) {
     unsigned char al; 		// r8
     __size32 eax; 		// r24
@@ -246,7 +246,7 @@ L26:
     return;
 }
 
-// address: 804b098
+// address: 0x804b098
 void proc5(int key, int x, int y) {
     unsigned char al; 		// r8
     __size32 eax; 		// r24
@@ -347,7 +347,7 @@ void proc5(int key, int x, int y) {
     return;
 }
 
-// address: 804ad04
+// address: 0x804ad04
 void proc6(int width, int height) {
     GLdouble local0; 		// m[esp - 64]
     double st; 		// r32
@@ -384,7 +384,7 @@ void proc6(int width, int height) {
     return;
 }
 
-// address: 804ab20
+// address: 0x804ab20
 void proc7() {
     double st; 		// r32
     double st_1; 		// r32{179}
@@ -403,7 +403,7 @@ void proc7() {
     return;
 }
 
-// address: 804aaa0
+// address: 0x804aaa0
 void proc8() {
     __size32 eax; 		// r24
     __size32 *ebp; 		// r29
@@ -430,7 +430,7 @@ L6:
     return;
 }
 
-// address: 804a940
+// address: 0x804a940
 void proc9(char param1[]) {
     glDisable(0xb71);
     sprintf(&param1, 0x804b700);
@@ -460,7 +460,7 @@ void proc9(char param1[]) {
     return;
 }
 
-// address: 804ac08
+// address: 0x804ac08
 void proc10(char param1[]) {
     __size32 eax; 		// r24
 
@@ -475,7 +475,7 @@ void proc10(char param1[]) {
     return;
 }
 
-// address: 804a29c
+// address: 0x804a29c
 __size32 *proc11(double param1, double param2, double param3, double param4, double param5, double param6) {
     long long eax; 		// r24
     __size32 *eax_1; 		// r24
@@ -499,7 +499,7 @@ __size32 *proc11(double param1, double param2, double param3, double param4, dou
     return eax_1;
 }
 
-// address: 804a4e0
+// address: 0x804a4e0
 int proc12(int param1) {
     int local0; 		// m[esp - 8]
 
@@ -518,7 +518,7 @@ int proc12(int param1) {
     return local0;
 }
 
-// address: 804a228
+// address: 0x804a228
 __size32 *proc13(double param1, double param2, double param3, double param4, double param5, double param6) {
     long long eax; 		// r24
     __size32 *eax_1; 		// r24
@@ -540,7 +540,7 @@ __size32 *proc13(double param1, double param2, double param3, double param4, dou
     return eax_1;
 }
 
-// address: 804a330
+// address: 0x804a330
 __size32 *proc14(double param1, double param2, double param3, double param4, double param5, double param6) {
     long long eax; 		// r24
     __size32 *eax_1; 		// r24
@@ -564,7 +564,7 @@ __size32 *proc14(double param1, double param2, double param3, double param4, dou
     return eax_1;
 }
 
-// address: 804a3c4
+// address: 0x804a3c4
 __size32 *proc15(double param1, double param2, double param3, double param4, double param5, double param6) {
     long long eax; 		// r24
     __size32 *eax_1; 		// r24
@@ -586,7 +586,7 @@ __size32 *proc15(double param1, double param2, double param3, double param4, dou
     return eax_1;
 }
 
-// address: 804a1f4
+// address: 0x804a1f4
 double proc16(double param1, double param2, double param3, double param4, double param5, double param6) {
     __size32 eax; 		// r24
     double st; 		// r32
@@ -599,31 +599,31 @@ double proc16(double param1, double param2, double param3, double param4, double
     return st; /* WARNING: Also returning: st1 := param1, st2 := param2, st3 := param3, st4 := param4, st5 := param5, st6 := param6 */
 }
 
-// address: 804a154
+// address: 0x804a154
 void proc17(__size32 *param1, __size32 param2, __size32 param3, __size32 param4, __size32 param5) {
     proc24(param1, param2, param3, param4, param5, 0x8049450);
     return;
 }
 
-// address: 804a17c
+// address: 0x804a17c
 void proc18(__size32 *param1, __size32 param2, __size32 param3, __size32 param4, __size32 param5) {
     proc24(param1, param2, param3, param4, param5, 0x804a138);
     return;
 }
 
-// address: 804a1a4
+// address: 0x804a1a4
 void proc19(__size32 *param1, __size32 param2, __size32 param3, __size32 param4, __size32 param5) {
     proc24(param1, param2, param3, param4, param5, 0x80497dc);
     return;
 }
 
-// address: 804a1cc
+// address: 0x804a1cc
 void proc20(__size32 *param1, __size32 param2, __size32 param3, __size32 param4, __size32 param5) {
     proc24(param1, param2, param3, param4, param5, 0x8049740);
     return;
 }
 
-// address: 804a5ac
+// address: 0x804a5ac
 void proc21(char param1[], union { GLfloat x19; __size32 x20; } param2, union { GLfloat x21; __size32 x22; } param3) {
     __size32 eax; 		// r24
     int eax_1; 		// r24
@@ -645,7 +645,7 @@ void proc21(char param1[], union { GLfloat x19; __size32 x20; } param2, union { 
     return;
 }
 
-// address: 804a610
+// address: 0x804a610
 void proc22() {
     proc21(0x804b4e4, 0x40000000, 0x41100000);
     proc21(0x804b4fa, 0x40000000, 0x41000000);
@@ -681,7 +681,7 @@ void proc22() {
     return;
 }
 
-// address: 804a438
+// address: 0x804a438
 __size32 proc23(union { GLfloat x9; __size32 x10; } *param1) {
     __size32 eax; 		// r24
     __size32 ebp; 		// r29
@@ -706,7 +706,7 @@ __size32 proc23(union { GLfloat x9; __size32 x10; } *param1) {
     return ebp;
 }
 
-// address: 8048ffc
+// address: 0x8048ffc
 void proc24(__size32 *param1, __size32 param2, __size32 param3, __size32 param4, __size32 param5, __size32 param6) {
     *(__size32*)param1 = param2;
     *(__size32*)(param1 + 4) = param3;

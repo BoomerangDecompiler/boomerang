@@ -1,6 +1,6 @@
 int elf_hash(char *param1);
 
-// address: 10678
+// address: 0x10678
 int main(int argc, char *argv[], char *envp[]) {
     unsigned int o0_1; 		// r8
 
@@ -9,7 +9,7 @@ int main(int argc, char *argv[], char *envp[]) {
     return 0;
 }
 
-// address: 106b4
+// address: 0x106b4
 int elf_hash(char *param1) {
     int o3; 		// r11
     int o4; 		// r12

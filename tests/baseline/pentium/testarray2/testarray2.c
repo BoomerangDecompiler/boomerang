@@ -1,7 +1,7 @@
 void mid(__size32 param1);
 void fst(__size32 param1);
 
-// address: 80483ac
+// address: 0x80483ac
 int main(int argc, char *argv[], char *envp[]) {
     __size32 edx; 		// r26
     int local0; 		// m[esp - 12]
@@ -23,7 +23,7 @@ int main(int argc, char *argv[], char *envp[]) {
     return 0;
 }
 
-// address: 8048368
+// address: 0x8048368
 void mid(__size32 param1) {
     __size32 eax; 		// r24
 
@@ -32,7 +32,7 @@ void mid(__size32 param1) {
     return;
 }
 
-// address: 804838a
+// address: 0x804838a
 void fst(__size32 param1) {
     __size32 eax; 		// r24
 

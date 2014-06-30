@@ -1,6 +1,6 @@
 __size32 a[10] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
 
-// address: 8048328
+// address: 0x8048328
 int main(int argc, char *argv[], char *envp[]) {
     __size32 edx; 		// r26
     int local0; 		// m[esp - 8]

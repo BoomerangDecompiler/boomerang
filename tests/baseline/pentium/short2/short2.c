@@ -1,6 +1,6 @@
 __size32 test(int param1, int param2, int param3);
 
-// address: 8048398
+// address: 0x8048398
 int main(int argc, char *argv[], char *envp[]) {
     __size32 eax; 		// r24
 
@@ -15,7 +15,7 @@ int main(int argc, char *argv[], char *envp[]) {
     return 0;
 }
 
-// address: 804837c
+// address: 0x804837c
 __size32 test(int param1, int param2, int param3) {
     __size32 eax; 		// r24
 

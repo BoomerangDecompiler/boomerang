@@ -1,6 +1,6 @@
 void rux_encrypt(__size32 *param1);
 
-// address: 8048460
+// address: 0x8048460
 int main(int argc, char *argv[], char *envp[]) {
     int eax; 		// r24
     int esp; 		// r28
@@ -22,7 +22,7 @@ int main(int argc, char *argv[], char *envp[]) {
     return 0;
 }
 
-// address: 8048504
+// address: 0x8048504
 void rux_encrypt(__size32 *param1) {
     unsigned char bl; 		// r11
     unsigned char bl_1; 		// r11{32}

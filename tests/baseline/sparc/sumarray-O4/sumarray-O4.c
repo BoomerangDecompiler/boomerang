@@ -1,6 +1,6 @@
 __size32 a[10] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
 
-// address: 1069c
+// address: 0x1069c
 int main(int argc, char *argv[], char *envp[]) {
     int o2; 		// r10
     unsigned int o2_1; 		// r10{76}

@@ -1,7 +1,7 @@
 void atexit();
 void MAIN__(__size32 param1);
 
-// address: 8048824
+// address: 0x8048824
 int main(int argc, char *argv[], char *envp[]) {
     __size32 local0; 		// m[esp - 40]
 
@@ -14,7 +14,7 @@ int main(int argc, char *argv[], char *envp[]) {
     return;
 }
 
-// address: 8048904
+// address: 0x8048904
 void atexit() {
     __size32 edx; 		// r26
 
@@ -24,7 +24,7 @@ void atexit() {
     return;
 }
 
-// address: 80486cc
+// address: 0x80486cc
 void MAIN__(__size32 param1) {
     int local0; 		// m[esp - 16]
 

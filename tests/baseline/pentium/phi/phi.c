@@ -1,6 +1,6 @@
 int fib(int param1, __size32 param2, __size32 param3);
 
-// address: 804835c
+// address: 0x804835c
 int main(int argc, char *argv[], char *envp[]) {
     int eax; 		// r24
     int eax_1; 		// r24{39}
@@ -35,7 +35,7 @@ L2:
     return 0;
 }
 
-// address: 80483e0
+// address: 0x80483e0
 int fib(int param1, __size32 param2, __size32 param3) {
     int eax; 		// r24
     int eax_1; 		// r24{33}

@@ -1,4 +1,4 @@
-// address: 106e0
+// address: 0x106e0
 int main(int argc, char *argv[], char *envp[]) {
     void *fp; 		// r30
     __size32 g0; 		// r0

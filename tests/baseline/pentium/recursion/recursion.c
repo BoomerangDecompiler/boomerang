@@ -10,21 +10,21 @@ void g(int param1);
 void i();
 void k(int param1);
 
-// address: 804837c
+// address: 0x804837c
 int main(int argc, char *argv[], char *envp[]) {
     proc1();
     b(argc * 3);
     return 0;
 }
 
-// address: 80483c7
+// address: 0x80483c7
 void b(unsigned int param1) {
     proc1();
     c(param1 - 1);
     return;
 }
 
-// address: 80483f2
+// address: 0x80483f2
 void c(unsigned int param1) {
     proc1();
     if (param1 <= 6) {
@@ -51,7 +51,7 @@ void c(unsigned int param1) {
     return;
 }
 
-// address: 804846a
+// address: 0x804846a
 void d(int param1) {
     proc1();
     if (param1 > 1) {
@@ -60,7 +60,7 @@ void d(int param1) {
     return;
 }
 
-// address: 80484c7
+// address: 0x80484c7
 void f(int param1) {
     int local0; 		// m[esp - 28]
 
@@ -72,7 +72,7 @@ void f(int param1) {
     return;
 }
 
-// address: 8048529
+// address: 0x8048529
 void h(int param1) {
     proc1();
     if (param1 > 0) {
@@ -81,7 +81,7 @@ void h(int param1) {
     return;
 }
 
-// address: 8048575
+// address: 0x8048575
 void j(int param1) {
     proc1();
     if (param1 > 1) {
@@ -90,7 +90,7 @@ void j(int param1) {
     return;
 }
 
-// address: 80485d5
+// address: 0x80485d5
 void l(int param1) {
     proc1();
     if (param1 > 1) {
@@ -99,14 +99,14 @@ void l(int param1) {
     return;
 }
 
-// address: 804849b
+// address: 0x804849b
 void e() {
     proc1();
     proc2();
     return;
 }
 
-// address: 80484f8
+// address: 0x80484f8
 void g(int param1) {
     proc1();
     if (param1 > 1) {
@@ -115,13 +115,13 @@ void g(int param1) {
     return;
 }
 
-// address: 804855a
+// address: 0x804855a
 void i() {
     proc1();
     return;
 }
 
-// address: 80485a4
+// address: 0x80485a4
 void k(int param1) {
     proc1();
     if (param1 > 1) {

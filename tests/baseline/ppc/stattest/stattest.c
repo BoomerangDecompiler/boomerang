@@ -1,6 +1,6 @@
 __size32 stat();
 
-// address: 10000440
+// address: 0x10000440
 int main(int argc, char *argv[], char *envp[]) {
     int g3; 		// r3
     int g3_1; 		// r3
@@ -11,7 +11,7 @@ int main(int argc, char *argv[], char *envp[]) {
     return g3;
 }
 
-// address: 100005d0
+// address: 0x100005d0
 __size32 stat() {
     __size32 g3; 		// r3
 

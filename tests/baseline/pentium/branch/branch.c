@@ -1,4 +1,4 @@
-// address: 8048948
+// address: 0x8048948
 int main(int argc, char *argv[], char *envp[]) {
     int eax; 		// r24
     int local0; 		// m[esp - 8]

@@ -1,6 +1,6 @@
 __size32 interleaved(int param1, __size32 param2, __size32 param3);
 
-// address: 10acc
+// address: 0x10acc
 int main(int argc, char *argv[], char *envp[]) {
     int o0; 		// r8
 
@@ -15,7 +15,7 @@ int main(int argc, char *argv[], char *envp[]) {
     return 0;
 }
 
-// address: 10a80
+// address: 0x10a80
 __size32 interleaved(int param1, __size32 param2, __size32 param3) {
     __size32 o0; 		// r8
 

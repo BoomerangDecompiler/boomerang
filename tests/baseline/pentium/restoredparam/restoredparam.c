@@ -1,6 +1,6 @@
 __size32 twice(__size32 param1);
 
-// address: 804837c
+// address: 0x804837c
 int main(int argc, char *argv[], char *envp[]) {
     __size32 eax; 		// r24
 
@@ -9,7 +9,7 @@ int main(int argc, char *argv[], char *envp[]) {
     return 0;
 }
 
-// address: 8048396
+// address: 0x8048396
 __size32 twice(__size32 param1) {
     return param1 + param1;
 }

@@ -6,7 +6,7 @@ void usage(int param1);
 void version_etc_va(FILE *param1, char param2[], char param3[], char param4[], char **param5);
 __size32 __i686.get_pc_thunk.bx();
 
-// address: 8048b60
+// address: 0x8048b60
 int main(int argc, char *argv[], char *envp[]) {
     __size32 eax; 		// r24
     int ecx; 		// r25
@@ -59,7 +59,7 @@ L7:
     return;
 }
 
-// address: 8049e90
+// address: 0x8049e90
 void atexit() {
     int ebx; 		// r27
     __size32 edx; 		// r26
@@ -72,13 +72,13 @@ void atexit() {
     return;
 }
 
-// address: 8049af0
+// address: 0x8049af0
 void version_etc(FILE *param1, char param2[], char param3[], char param4[], char *param5) {
     version_etc_va(param1, param2, param3, param4, &param5);
     return;
 }
 
-// address: 8048a80
+// address: 0x8048a80
 void usage(int param1) {
     __size32 eax; 		// r24
     int edx; 		// r26
@@ -97,7 +97,7 @@ void usage(int param1) {
     return;
 }
 
-// address: 80498d0
+// address: 0x80498d0
 void version_etc_va(FILE *param1, char param2[], char param3[], char param4[], char **param5) {
     union { unsigned int x3; __size8 * x4; } eax; 		// r24
     __size32 ebx; 		// r27
@@ -170,7 +170,7 @@ L15:
     return;
 }
 
-// address: 8049e88
+// address: 0x8049e88
 __size32 __i686.get_pc_thunk.bx() {
     __size32 local0; 		// m[esp]
 

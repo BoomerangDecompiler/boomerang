@@ -3,7 +3,7 @@ void proc2(__size32 param1);
 void proc3();
 void proc4();
 
-// address: 401150
+// address: 0x401150
 int main(int argc, char *argv[], char *envp[]) {
     if (argc > 7) {
 L2:
@@ -37,13 +37,13 @@ L2:
     return 0;
 }
 
-// address: 4038e4
+// address: 0x4038e4
 __size32 proc1(__size32 param1) {
     proc2(0);
     return param1;
 }
 
-// address: 403ad0
+// address: 0x403ad0
 void proc2(__size32 param1) {
     if (param1 != 0) {
 L26:

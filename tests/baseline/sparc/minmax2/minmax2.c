@@ -1,6 +1,6 @@
 void test(int param1);
 
-// address: 10670
+// address: 0x10670
 int main(int argc, char *argv[], char *envp[]) {
     test(-5);
     test(-2);
@@ -10,7 +10,7 @@ int main(int argc, char *argv[], char *envp[]) {
     return 0;
 }
 
-// address: 1061c
+// address: 0x1061c
 void test(int param1) {
     int g1; 		// r1
 

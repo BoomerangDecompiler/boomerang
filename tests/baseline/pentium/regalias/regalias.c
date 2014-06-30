@@ -1,4 +1,4 @@
-// address: 8048364
+// address: 0x8048364
 int main(int argc, char *argv[], char *envp[]) {
     __size32 eax; 		// r24
 

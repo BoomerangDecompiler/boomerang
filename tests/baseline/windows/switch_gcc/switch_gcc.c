@@ -5,7 +5,7 @@ __size32 proc2(__size32 param1, __size32 *param2, __size32 param3);
 void proc4();
 void proc6(unsigned int param1, unsigned int param2, __size32 param3);
 
-// address: 401000
+// address: 0x401000
 void _start(unsigned short param1) {
     unsigned int eax; 		// r24
     __size32 ebp; 		// r29
@@ -18,7 +18,7 @@ void _start(unsigned short param1) {
     return;
 }
 
-// address: 401470
+// address: 0x401470
 void proc1(__size32 param1) {
     __size32 eax; 		// r24
     void *esp; 		// r28
@@ -60,7 +60,7 @@ L-1:
     goto L-1;
 }
 
-// address: 401530
+// address: 0x401530
 __size32 proc2(__size32 param1, __size32 *param2, __size32 param3) {
     __size32 eax; 		// r24
     __size32 *eax_1; 		// r24{76}
@@ -116,13 +116,13 @@ L6:
     return eax;
 }
 
-// address: 4016b0
+// address: 0x4016b0
 void proc4() {
     proc6(0x403000, 0x403000, 0x400000);
     return;
 }
 
-// address: 401670
+// address: 0x401670
 void proc6(unsigned int param1, unsigned int param2, __size32 param3) {
     __size32 eax; 		// r24
     __size32 eax_1; 		// r24{16}

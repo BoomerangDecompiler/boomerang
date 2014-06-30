@@ -1,6 +1,6 @@
 __size32 test(__size64 param1, int param2);
 
-// address: 1d44
+// address: 0x1d44
 int main(int argc, char *argv[], char *envp[]) {
     __size64 f29; 		// r61
     int g3; 		// r3
@@ -15,7 +15,7 @@ int main(int argc, char *argv[], char *envp[]) {
     return 0;
 }
 
-// address: 1cd0
+// address: 0x1cd0
 __size32 test(__size64 param1, int param2) {
     __size32 g1; 		// r1
     __size32 g30; 		// r30

@@ -1,6 +1,6 @@
 void __thunk_36_foo__1D();
 
-// address: 80487a0
+// address: 0x80487a0
 int main(int argc, char *argv[], char *envp[]) {
     __size8 al; 		// r8
     void **eax; 		// r24
@@ -114,7 +114,7 @@ int main(int argc, char *argv[], char *envp[]) {
     return 0;
 }
 
-// address: 80488d0
+// address: 0x80488d0
 void __thunk_36_foo__1D() {
     __ls__7ostreamPCc();
     hex__FR3ios();

@@ -1,7 +1,7 @@
 __size32 c1(int param1);
 void c2(int param1);
 
-// address: 1062c
+// address: 0x1062c
 int main(int argc, char *argv[], char *envp[]) {
     int o0; 		// r8
 
@@ -10,7 +10,7 @@ int main(int argc, char *argv[], char *envp[]) {
     return 0;
 }
 
-// address: 10650
+// address: 0x10650
 __size32 c1(int param1) {
     __size32 i0_1; 		// r24{28}
     int i0_2; 		// r24{37}
@@ -32,7 +32,7 @@ __size32 c1(int param1) {
     return i0_1;
 }
 
-// address: 1068c
+// address: 0x1068c
 void c2(int param1) {
     if ((param1 & 0x1) != 0) {
         c1(param1);

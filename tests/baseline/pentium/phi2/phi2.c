@@ -1,6 +1,6 @@
 int proc1(int param1, int param2, char param3[]);
 
-// address: 80483cf
+// address: 0x80483cf
 int main(int argc, char *argv[], char *envp[]) {
     __size32 eax; 		// r24
     int local0; 		// m[esp - 40]
@@ -12,7 +12,7 @@ int main(int argc, char *argv[], char *envp[]) {
     return 0;
 }
 
-// address: 804835c
+// address: 0x804835c
 int proc1(int param1, int param2, char param3[]) {
     __size32 eax; 		// r24
     int eax_1; 		// r24{18}

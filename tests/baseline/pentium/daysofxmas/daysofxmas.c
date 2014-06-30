@@ -1,4 +1,4 @@
-// address: 8048350
+// address: 0x8048350
 int main(int argc, char *??[], char *envp[]) {
     union { unsigned int x216; char x217; char x213; char x209; char x205; char x201; char x197; char x193; char x189; char x185; char x181; char x177; char x173; char x169; char x165; char x161; char x157; char x153; char x149; char x145; char x141; char x128; char x126; char x122; char x120; char x116; char x114; char x110; char x108; char x104; char x102; char x98; char x96; char x92; char x90; char x86; char x84; char x80; char x78; char x74; char x72; char x68; char x66; char x62; char x60; char x56; char x54; char x50; char x48; char x44; char x42; char x38; char x36; char x32; char x30; char x26; char x24; char x20; char x18; char x10; char x8; } dl; 		// r10
     int eax; 		// r24

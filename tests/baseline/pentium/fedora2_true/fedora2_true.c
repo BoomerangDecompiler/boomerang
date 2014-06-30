@@ -5,7 +5,7 @@ void proc3(char *param1, FILE *param2, char param3[], char param4[], char param5
 void proc4(int param1);
 void proc5(char *param1, FILE *param2, char param3[], char param4[], char param5[], __size32 *param6);
 
-// address: 8048b10
+// address: 0x8048b10
 int main(int argc, char *argv[], char *envp[]) {
     __size32 eax; 		// r24
     int ecx; 		// r25
@@ -68,13 +68,13 @@ void proc2() {
     return;
 }
 
-// address: 8049ac0
+// address: 0x8049ac0
 void proc3(char *param1, FILE *param2, char param3[], char param4[], char param5[], __size32 param6) {
     proc5(param1, param2, param3, param4, param5, &param6);
     return;
 }
 
-// address: 8048a30
+// address: 0x8048a30
 void proc4(int param1) {
     __size32 eax; 		// r24
     int edx; 		// r26
@@ -93,7 +93,7 @@ void proc4(int param1) {
     return;
 }
 
-// address: 80498b0
+// address: 0x80498b0
 void proc5(char *param1, FILE *param2, char param3[], char param4[], char param5[], __size32 *param6) {
     __size32 eax; 		// r24
     __size32 ebx; 		// r27

@@ -3,7 +3,7 @@ HINSTANCE global3 = 0;
 __size32 proc1(__size32 param1);
 HWND proc2(HINSTANCE param1, int param2);
 
-// address: 401000
+// address: 0x401000
 int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
     __size32 eax; 		// r24
     __size32 eax_1; 		// r24{48}
@@ -174,7 +174,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
     return eax_1;
 }
 
-// address: 4010c0
+// address: 0x4010c0
 __size32 proc1(__size32 param1) {
     __size32 eax; 		// r24
     __size32 ecx; 		// r25
@@ -214,7 +214,7 @@ __size32 proc1(__size32 param1) {
     return esi;
 }
 
-// address: 401150
+// address: 0x401150
 HWND proc2(HINSTANCE param1, int param2) {
     __size32 eax; 		// r24
 

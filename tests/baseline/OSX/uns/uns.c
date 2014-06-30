@@ -1,4 +1,4 @@
-// address: 1c94
+// address: 0x1c94
 int main(int argc, char *argv[], char *envp[]) {
     if ((unsigned int)argc > (unsigned int)0xee6b27ff) {
         printf(/* machine specific */ (int) LR + 764);

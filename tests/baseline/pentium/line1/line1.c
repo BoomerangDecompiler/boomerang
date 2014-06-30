@@ -1,6 +1,6 @@
 union { char[] x1; __size8 x2; } *chomp(char param1[], int param2, FILE *param3);
 
-// address: 80484a3
+// address: 0x80484a3
 int main(int argc, char *argv[], char *envp[]) {
     char *eax; 		// r24
     FILE *eax_1; 		// r24
@@ -26,7 +26,7 @@ int main(int argc, char *argv[], char *envp[]) {
     return local1;
 }
 
-// address: 8048454
+// address: 0x8048454
 union { char[] x1; __size8 x2; } *chomp(char param1[], int param2, FILE *param3) {
     union { char[] x5; __size8 x6; __size8 x4; __size8 x2; } *eax; 		// r24
     union { char[] x1; __size8 x2; } *eax_1; 		// r24{16}

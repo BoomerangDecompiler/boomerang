@@ -1,6 +1,6 @@
 __size32 global4 = 0x21774;// 4 bytes
 
-// address: 10f58
+// address: 0x10f58
 int main(int argc, char *argv[], char *envp[]) {
     __size32 fp; 		// r30
     __size32 g0; 		// r0

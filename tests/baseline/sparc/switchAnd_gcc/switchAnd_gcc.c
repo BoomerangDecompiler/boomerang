@@ -1,4 +1,4 @@
-// address: 1066c
+// address: 0x1066c
 int main(int argc, char *argv[], char *envp[]) {
     char *o0; 		// r8
 

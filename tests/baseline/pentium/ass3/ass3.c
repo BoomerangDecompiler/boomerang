@@ -6,7 +6,7 @@ void proc3();
 void proc4(char param1[]);
 void proc5();
 
-// address: 804dd8c
+// address: 0x804dd8c
 int main(int argc, char *argv[], char *envp[]) {
     int *local0; 		// m[esp - 28]
 
@@ -25,7 +25,7 @@ int main(int argc, char *argv[], char *envp[]) {
     return 0;
 }
 
-// address: 804ce8c
+// address: 0x804ce8c
 void proc2() {
     __size32 eax; 		// r24
     char *local0; 		// m[esp - 28]
@@ -79,7 +79,7 @@ void proc2() {
     return;
 }
 
-// address: 804cd34
+// address: 0x804cd34
 void proc3() {
     __size32 ecx; 		// r25
     __size32 *edi; 		// r31
@@ -164,7 +164,7 @@ void proc3() {
     return;
 }
 
-// address: 804cb98
+// address: 0x804cb98
 void proc4(char param1[]) {
     union { GLenum x1; __size32 x2; } eax; 		// r24
 
@@ -179,7 +179,7 @@ void proc4(char param1[]) {
     return;
 }
 
-// address: 804cb20
+// address: 0x804cb20
 void proc5() {
     memcpy(0x80625cd, 0x804dfa0, 0x8000);
     memcpy(0x806a5cd, 0x80725e0, 0x7fff);

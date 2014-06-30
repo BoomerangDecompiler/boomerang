@@ -1,6 +1,6 @@
 union { float x161; int x162; } global3;
 
-// address: 106d0
+// address: 0x106d0
 int main(int argc, char *argv[], char *envp[]) {
     float local0; 		// m[o6 - 20]
     double local1; 		// m[o6 - 12]
