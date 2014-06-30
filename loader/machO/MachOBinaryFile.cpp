@@ -265,7 +265,7 @@ bool MachOBinaryFile::RealLoad(const QString &sName) {
         unsigned fsz = BMMH(segments[i].filesize);
         memset(base + a.m_value - loaded_addr.m_value, 0, sz);
         fread(base + a.m_value - loaded_addr.m_value, 1, fsz, fp);
-        DEBUG_PRINT("loaded segment %x %i in mem %i in file\n", a, sz, fsz);
+        DEBUG_PRINT("loaded segment %x %i in mem %i in file\n", a.m_value, sz, fsz);
         QString name = QByteArray(segments[i].segname,17);
         SectionInfo *sect = Image->createSection(name,ADDRESS::n(BMMH(segments[i].vmaddr)),
                                                  ADDRESS::n(BMMH(segments[i].vmaddr)+BMMH(segments[i].vmsize)));
@@ -296,7 +296,7 @@ bool MachOBinaryFile::RealLoad(const QString &sName) {
                                        );
         }
 
-        DEBUG_PRINT("loaded segment %x %i in mem %i in file code=%i data=%i readonly=%i\n", a, sz, fsz,
+        DEBUG_PRINT("loaded segment %x %i in mem %i in file code=%i data=%i readonly=%i\n", a.m_value, sz, fsz,
                 sect->bCode, sect->bData, sect->bReadOnly);
     }
 
@@ -306,7 +306,7 @@ bool MachOBinaryFile::RealLoad(const QString &sName) {
             unsigned startidx = BMMH(stubs_sects[j].reserved1);
             unsigned symbol = BMMH(indirectsymtbl[startidx + i]);
             ADDRESS addr = ADDRESS::g(BMMH(stubs_sects[j].addr) + i * BMMH(stubs_sects[j].reserved2));
-            DEBUG_PRINT("stub for %s at %x\n", strtbl + BMMH(symbols[symbol].n_un.n_strx), addr);
+            DEBUG_PRINT("stub for %s at %x\n", strtbl + BMMH(symbols[symbol].n_un.n_strx), addr.m_value);
             char *name = strtbl + BMMH(symbols[symbol].n_un.n_strx);
             if (*name == '_') // we want printf not _printf
                 name++;

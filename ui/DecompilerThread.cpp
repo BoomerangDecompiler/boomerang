@@ -117,6 +117,9 @@ void Decompiler::load() {
     case MACHINE_68K:
         emit machineType(QString("m68k"));
         break;
+    case MACHINE_UNKNOWN:
+        emit machineType(QString("UNKNOWN"));
+        break;
     }
 
     QStringList entrypointStrings;
@@ -126,8 +129,7 @@ void Decompiler::load() {
         emit newEntrypoint(entrypoints[i], prog->symbolByAddress(entrypoints[i]));
     }
 
-    for (int i = 1; i < Image->GetNumSections(); i++) {
-        const SectionInfo * section = Image->GetSectionInfo(i);
+    for (const SectionInfo * section : *Image) {
         emit newSection(section->pSectionName, section->uNativeAddr, section->uNativeAddr + section->uSectionSize);
     }
 

@@ -1007,7 +1007,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream &/*os*/, 
         auto symb = BinarySymbols->find(dest);
         // Don't speculatively decode procs that are outside of the main text section, apart from dynamically
         // linked ones (in the .plt)
-        if (symb && symb->isImportedFunction() || !spec || (dest < Image->getLimitTextHigh())) {
+        if ((symb && symb->isImportedFunction()) || !spec || (dest < Image->getLimitTextHigh())) {
             pCfg->addCall(*it);
             // Don't visit the destination of a register call
             Function *np = (*it)->getDestProc();
