@@ -466,8 +466,6 @@ ADDRESS MachOBinaryFile::getImageBase() { return loaded_addr; }
 
 size_t MachOBinaryFile::getImageSize() { return loaded_size; }
 
-QStringList MachOBinaryFile::getDependencyList() { return QStringList(); /* FIXME */ }
-
 DWord MachOBinaryFile::getDelta() {
     // Stupid function anyway: delta depends on section
     // This should work for the header only

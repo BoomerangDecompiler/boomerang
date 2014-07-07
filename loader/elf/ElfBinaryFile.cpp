@@ -602,7 +602,7 @@ bool ElfBinaryFile::isLibrary() const {
     int type = elfRead2(&((Elf32_Ehdr *)m_pImage)->e_type);
     return (type == ET_DYN);
 }
-
+//! Return a list of library names which the binary file depends on
 QStringList ElfBinaryFile::getDependencyList() {
     QStringList result;
     ADDRESS stringtab = NO_ADDRESS;

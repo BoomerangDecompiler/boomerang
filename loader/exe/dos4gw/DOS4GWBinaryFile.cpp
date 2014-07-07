@@ -311,8 +311,6 @@ size_t DOS4GWBinaryFile::getImageSize() {
     return 0; // TODO
 }
 
-QStringList DOS4GWBinaryFile::getDependencyList() { return QStringList(); /* FIXME */ }
-
 DWord DOS4GWBinaryFile::getDelta() {
     // Stupid function anyway: delta depends on section
     // This should work for the header only

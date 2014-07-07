@@ -154,19 +154,17 @@ class Win32BinaryFile : public QObject, public LoaderInterface {
 public:
     Win32BinaryFile();                    // Default constructor
     virtual ~Win32BinaryFile();           // Destructor
-    virtual bool Open(const char *sName); // Open the file for r/w; ???
-    virtual void Close();                 // Close file opened with Open()
-    virtual void UnLoad();                // Unload the image
-    virtual LOAD_FMT GetFormat() const;   // Get format (i.e.LOADFMT_Win32)
-    virtual MACHINE getMachine() const;   // Get machine (i.e. MACHINE_Pentium)
+    void Close();                 // Close file opened with Open()
+    void UnLoad();                // Unload the image
+    LOAD_FMT GetFormat() const override;   // Get format (i.e.LOADFMT_Win32)
+    MACHINE getMachine() const override;   // Get machine (i.e. MACHINE_Pentium)
     QString getFilename() const override { return m_pFileName; }
-    virtual bool isLibrary() const;
-    virtual QStringList getDependencyList();
-    virtual ADDRESS getImageBase();
-    virtual size_t getImageSize();
+    ADDRESS getImageBase() override;
+    size_t getImageSize() override;
+    bool isLibrary() const;
 
-    virtual ADDRESS GetMainEntryPoint();
-    virtual ADDRESS GetEntryPoint();
+    ADDRESS GetMainEntryPoint() override;
+    ADDRESS GetEntryPoint() override;
     DWord getDelta();
 
     //
@@ -174,7 +172,7 @@ public:
     //
     // Internal information
     // Dump headers, etc
-    virtual bool DisplayDetails(const char *fileName, FILE *f = stdout);
+    bool DisplayDetails(const char *fileName, FILE *f = stdout) override;
 
 protected:
     int win32Read2(short *ps) const; // Read 2 bytes from native addr
@@ -198,7 +196,8 @@ public:
 protected:
     bool RealLoad(const QString &sName) override; // Load the file; pure virtual
     void processIAT();
-
+    void readDebugData();
+    bool LoadFromArray(QByteArray &arr);
 private:
     bool PostLoad(void *handle);  // Called after archive member loaded
     void findJumps(ADDRESS curr); // Find names for jumps to IATs
@@ -215,5 +214,4 @@ private:
     bool mingw_main;
     class IBinaryImage *Image;
     class IBinarySymbolTable *Symbols;
-    // SymbolTableInterface interface
 };

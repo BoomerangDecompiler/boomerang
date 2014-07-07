@@ -420,8 +420,6 @@ bool HpSomBinaryFile::isLibrary() const {
     return (type == 0x0104 || type == 0x010D || type == 0x010E || type == 0x0619);
 }
 
-QStringList HpSomBinaryFile::getDependencyList() { return QStringList(); /* FIXME */ }
-
 ADDRESS HpSomBinaryFile::getImageBase() { return ADDRESS::g(0L); /* FIXME */ }
 
 size_t HpSomBinaryFile::getImageSize() { return UINT4(m_pImage + 0x24); }

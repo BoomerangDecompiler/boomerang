@@ -291,7 +291,6 @@ LOAD_FMT PalmBinaryFile::GetFormat() const { return LOADFMT_PALM; }
 MACHINE PalmBinaryFile::getMachine() const { return MACHINE_PALM; }
 
 bool PalmBinaryFile::isLibrary() const { return (strncmp((char *)(m_pImage + 0x3C), "libr", 4) == 0); }
-QStringList PalmBinaryFile::getDependencyList() { return QStringList(); /* doesn't really exist on palm */ }
 
 ADDRESS PalmBinaryFile::getImageBase() { return ADDRESS::g(0L); /* FIXME */ }
 

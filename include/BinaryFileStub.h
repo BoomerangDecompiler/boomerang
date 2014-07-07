@@ -6,15 +6,14 @@ class BinaryFileStub : public LoaderInterface {
     virtual ~BinaryFileStub() {}
     virtual void UnLoad() {}                               // Unload the image
     bool GetNextMember() { return false; }                 // Load next member of archive
-    virtual bool Open(const char */*sName*/) { return false; } // Open for r/w; pv
-    virtual void Close() {}                                // Close file opened with Open()
-    virtual LOAD_FMT GetFormat() const;                    // Get format (e.g. LOADFMT_ELF)
-    virtual MACHINE getMachine() const;                    // Get machine (e.g. MACHINE_SPARC)
-    virtual QString getFilename() const { return m_pFileName; }
-    virtual bool isLibrary() const;
-    virtual QStringList getDependencyList();
-    virtual ADDRESS getImageBase();
-    virtual size_t getImageSize();
+    bool Open(const char */*sName*/) { return false; } // Open for r/w; pv
+    void Close() {}                                // Close file opened with Open()
+    LOAD_FMT GetFormat() const;                    // Get format (e.g. LOADFMT_ELF)
+    MACHINE getMachine() const;                    // Get machine (e.g. MACHINE_SPARC)
+    QString getFilename() const { return m_pFileName; }
+    bool isLibrary() const;
+    ADDRESS getImageBase();
+    size_t getImageSize();
 
     // Header functions
     virtual ADDRESS GetFirstHeaderAddress(); // Get ADDRESS of main header

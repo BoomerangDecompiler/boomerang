@@ -129,8 +129,6 @@ public:
     virtual QString getFilename() const = 0;
     virtual bool RealLoad(const QString &sName) = 0;
 
-    //! Return a list of library names which the binary file depends on
-    virtual QStringList getDependencyList() = 0;
     /// Return the virtual address at which the binary expects to be loaded.
     /// For position independent / relocatable code this should be NO_ADDDRESS
     virtual ADDRESS getImageBase() = 0;

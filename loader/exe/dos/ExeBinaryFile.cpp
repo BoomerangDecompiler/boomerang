@@ -207,8 +207,6 @@ bool ExeBinaryFile::PostLoad(void *handle) {
 }
 
 
-QStringList ExeBinaryFile::getDependencyList() { return QStringList(); /* for now */ }
-
 ADDRESS ExeBinaryFile::getImageBase() { return ADDRESS::g(0L); /* FIXME */ }
 
 size_t ExeBinaryFile::getImageSize() { return 0; /* FIXME */ }

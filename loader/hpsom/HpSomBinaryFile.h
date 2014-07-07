@@ -90,7 +90,6 @@ public:
     QString getFilename() const override { return m_pFileName; }
 
     bool isLibrary() const;
-    QStringList getDependencyList() override;
     ADDRESS getImageBase() override;
     size_t getImageSize() override;
 

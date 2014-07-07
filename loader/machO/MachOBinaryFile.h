@@ -59,7 +59,6 @@ class MachOBinaryFile : public QObject,
     MACHINE getMachine() const;   // Get machine (i.e. MACHINE_PPC)
     QString getFilename() const override { return m_pFileName; }
     bool isLibrary() const;
-    QStringList getDependencyList();
     ADDRESS getImageBase();
     size_t getImageSize();
 

@@ -74,7 +74,6 @@ public:
     MACHINE getMachine() const override;   // Get machine (i.e. MACHINE_PENTIUM)
     QString getFilename() const override { return m_pFileName; }
 
-    QStringList getDependencyList() override;
     ADDRESS getImageBase() override;
     size_t getImageSize() override;
 

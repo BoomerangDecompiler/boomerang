@@ -45,7 +45,7 @@ class ElfBinaryFile : public QObject, public LoaderInterface {
     MACHINE getMachine() const override;
     QString getFilename() const override { return m_pFileName; }
     bool isLibrary() const;
-    QStringList getDependencyList() override;
+    QStringList getDependencyList();
     ADDRESS getImageBase() override;
     size_t getImageSize() override;
 

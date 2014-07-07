@@ -45,6 +45,7 @@ namespace dbghelp {
 #include <cstdlib>
 #include <cassert>
 #include <QString>
+#include <QFile>
 
 extern "C" {
 int microX86Dis(void *p); // From microX86dis.c
@@ -78,12 +79,6 @@ void Win32BinaryFile::initialize(IBoomerang *sys) {
     Image = sys->getImage();
     Symbols = sys->getSymbols();
 }
-bool Win32BinaryFile::Open(const char *sName) {
-    Q_UNUSED(sName);
-    // return Load(sName) != 0;
-    return false;
-}
-
 void Win32BinaryFile::Close() { UnLoad(); }
 
 ADDRESS Win32BinaryFile::GetEntryPoint() {
@@ -388,42 +383,75 @@ void Win32BinaryFile::processIAT()
         }
     }
 }
+void Win32BinaryFile::readDebugData() {
+#if defined(_WIN32) && !defined(__MINGW32__)
+    // attempt to load symbols for the exe or dll
 
-bool Win32BinaryFile::RealLoad(const QString &sName) {
-    m_pFileName = sName;
-    FILE *fp = fopen(qPrintable(sName), "rb");
+    DWORD error;
+    HANDLE hProcess;
 
+    hProcess = GetCurrentProcess();
+    // hProcess = (HANDLE)processId;
+
+    dbghelp::SymSetOptions(SYMOPT_LOAD_LINES);
+
+    if (dbghelp::SymInitialize(hProcess, nullptr, FALSE)) {
+        // SymInitialize returned success
+    } else {
+        // SymInitialize failed
+        error = GetLastError();
+        printf("SymInitialize returned error : %d\n", error);
+        return true;
+    }
+
+    DWORD64 dwBaseAddr = 0;
+
+    if (dwBaseAddr = dbghelp::SymLoadModule64(hProcess, nullptr, (PSTR)sName, nullptr, dwBaseAddr, 0)) {
+        assert(dwBaseAddr == m_pPEHeader->Imagebase);
+        bool found = false;
+        dbghelp::SymEnumSourceFiles(hProcess, dwBaseAddr, 0, lookforsource, &found);
+        haveDebugInfo = found;
+    } else {
+        // SymLoadModule64 failed
+        error = GetLastError();
+        printf("SymLoadModule64 returned error : %d\n", error);
+        return true;
+    }
+#endif
+}
+bool Win32BinaryFile::LoadFromArray(QByteArray &arr) {
+    const char *data = arr.constData();
+    const char *data_end = arr.constData() + arr.size();
+    if(arr.size()<int(0x40+sizeof(PEHeader)))
+        return false;
     DWord peoffLE, peoff;
-    fseek(fp, 0x3c, SEEK_SET);
-    fread(&peoffLE, 4, 1, fp); // Note: peoffLE will be in Little Endian
+    peoffLE = *(DWord *)(data+0x3C); // Note: peoffLE will be in Little Endian
     peoff = LMMH(peoffLE);
+    if(data+peoff >= data_end)
+        return false;
+    PEHeader *tmphdr = (PEHeader *)(data+peoff);
 
-    PEHeader tmphdr;
-
-    fseek(fp, peoff, SEEK_SET);
-    fread(&tmphdr, sizeof(tmphdr), 1, fp);
     // Note: all tmphdr fields will be little endian
 
-    base = (char *)malloc(LMMH(tmphdr.ImageSize));
+    base = (char *)malloc(LMMH(tmphdr->ImageSize));
 
     if (!base) {
         fprintf(stderr, "Cannot allocate memory for copy of image\n");
         return false;
     }
+    if(data+LMMH(tmphdr->HeaderSize)>=data_end)
+        return false;
 
-    fseek(fp, 0, SEEK_SET);
-
-    fread(base, LMMH(tmphdr.HeaderSize), 1, fp);
-
+    memcpy(base,data,LMMH(tmphdr->HeaderSize));
     m_pHeader = (Header *)base;
     if (m_pHeader->sigLo != 'M' || m_pHeader->sigHi != 'Z') {
-        fprintf(stderr, "error loading file %s, bad magic\n", qPrintable(sName));
+        fprintf(stderr, "error loading file %s, bad magic\n", qPrintable(m_pFileName));
         return false;
     }
 
     m_pPEHeader = (PEHeader *)(base + peoff);
     if (m_pPEHeader->sigLo != 'P' || m_pPEHeader->sigHi != 'E') {
-        fprintf(stderr, "error loading file %s, bad PE magic\n", qPrintable(sName));
+        fprintf(stderr, "error loading file %s, bad PE magic\n", qPrintable(m_pFileName));
         return false;
     }
 
@@ -438,11 +466,10 @@ bool Win32BinaryFile::RealLoad(const QString &sName) {
     for (unsigned i = 0; i < numSections; i++, o++) {
         SectionParam sect;
         // TODO: Check for unreadable sections (!IMAGE_SCN_MEM_READ)?
-        fseek(fp, LMMH(o->PhysicalOffset), SEEK_SET);
         memset(base + LMMH(o->RVA), 0, LMMH(o->VirtualSize));
-        fread(base + LMMH(o->RVA), LMMH(o->PhysicalSize), 1, fp);
+        memcpy(base + LMMH(o->RVA), data+LMMH(o->PhysicalOffset), LMMH(o->PhysicalSize));
 
-        sect.Name = o->ObjectName;
+        sect.Name = QByteArray(o->ObjectName,8);
         sect.From = ADDRESS::g(LMMH(o->RVA) + LMMH(m_pPEHeader->Imagebase));
         sect.ImageAddress = ADDRESS::host_ptr(LMMH(o->RVA) + base);
         sect.Size = LMMH(o->VirtualSize);
@@ -489,44 +516,18 @@ bool Win32BinaryFile::RealLoad(const QString &sName) {
     ADDRESS start = GetEntryPoint();
     findJumps(start);
 
-    fclose(fp);
-
-#if defined(_WIN32) && !defined(__MINGW32__)
-    // attempt to load symbols for the exe or dll
-
-    DWORD error;
-    HANDLE hProcess;
-
-    hProcess = GetCurrentProcess();
-    // hProcess = (HANDLE)processId;
-
-    dbghelp::SymSetOptions(SYMOPT_LOAD_LINES);
-
-    if (dbghelp::SymInitialize(hProcess, nullptr, FALSE)) {
-        // SymInitialize returned success
-    } else {
-        // SymInitialize failed
-        error = GetLastError();
-        printf("SymInitialize returned error : %d\n", error);
-        return true;
-    }
-
-    DWORD64 dwBaseAddr = 0;
-
-    if (dwBaseAddr = dbghelp::SymLoadModule64(hProcess, nullptr, (PSTR)sName, nullptr, dwBaseAddr, 0)) {
-        assert(dwBaseAddr == m_pPEHeader->Imagebase);
-        bool found = false;
-        dbghelp::SymEnumSourceFiles(hProcess, dwBaseAddr, 0, lookforsource, &found);
-        haveDebugInfo = found;
-    } else {
-        // SymLoadModule64 failed
-        error = GetLastError();
-        printf("SymLoadModule64 returned error : %d\n", error);
-        return true;
-    }
-#endif
-
+    readDebugData();
     return true;
+
+}
+bool Win32BinaryFile::RealLoad(const QString &sName) {
+    m_pFileName = sName;
+    QFile fp(sName);
+    if(fp.open(QFile::ReadOnly)) {
+        QByteArray data = fp.readAll();
+        return LoadFromArray(data);
+    }
+    return false;
 }
 
 // Used above for a hack to find jump instructions pointing to IATs.
@@ -846,8 +847,6 @@ bool Win32BinaryFile::isLibrary() const { return ((m_pPEHeader->Flags & 0x2000) 
 ADDRESS Win32BinaryFile::getImageBase() { return ADDRESS::g(m_pPEHeader->Imagebase); }
 
 size_t Win32BinaryFile::getImageSize() { return m_pPEHeader->ImageSize; }
-
-QStringList Win32BinaryFile::getDependencyList() { return QStringList(); /* FIXME */ }
 
 DWord Win32BinaryFile::getDelta() {
     // Stupid function anyway: delta depends on section
