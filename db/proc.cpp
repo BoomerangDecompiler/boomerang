@@ -1152,12 +1152,12 @@ std::shared_ptr<ProcSet> UserProc::decompile(ProcList *path, int &indent) {
                     }
                 }
                 // point cycleGrp for each element of child to child, unioning in each element's cycleGrp
-				ProcSet entries;
+                ProcSet entries;
                 for (auto cc : *child) {
                     if (cc->cycleGrp)
                         entries.insert(cc->cycleGrp->begin(), cc->cycleGrp->end());
                 }
-				child->insert(entries.begin(),entries.end());
+                child->insert(entries.begin(),entries.end());
                 for (UserProc * proc : *child) {
                     proc->cycleGrp = child;
                 }
@@ -5112,9 +5112,15 @@ bool UserProc::removeRedundantReturns(std::set<UserProc *> &removeRetSet) {
     // FIXME: this needs to be more sensible when we don't decompile down from main! Probably should assume just the
     // first return is valid, for example (presently assume none are valid)
     LocationSet unionOfCallerLiveLocs;
-    if (getName() == "main") // Probably not needed: main is forced so handled above
+    if (getName() == "main") { // Probably not needed: main is forced so handled above
         // Just insert one return for main. Note: at present, the first parameter is still the stack pointer
-        unionOfCallerLiveLocs.insert(signature->getReturnExp(1));
+        if(signature->getNumReturns()<=1) {
+            // handle the case of missing main() signature
+            LOG_STREAM(LL_Warn) << "main signature definition is missing assuming void main()";
+        }
+        else
+            unionOfCallerLiveLocs.insert(signature->getReturnExp(1));
+    }
     else {
         // For each caller
         std::set<CallStatement *> &callers = getCallers();

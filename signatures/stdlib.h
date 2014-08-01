@@ -15,6 +15,7 @@ void abort(void);
 
 typedef void atexitfunc(void);
 int atexit(atexitfunc *function);
+int system (const char* command);
 
 typedef void onexitfunc(int a, void *b);
 int on_exit(onexitfunc *function, void *arg);
