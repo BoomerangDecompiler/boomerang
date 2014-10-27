@@ -344,22 +344,24 @@ bool Const::operator==(const Exp &o) const {
     return false;
 }
 bool Unary::operator==(const Exp &o) const {
-    if (((Unary &)o).op == opWild)
+    if (o.getOper() == opWild)
         return true;
-    if (((Unary &)o).op == opWildRegOf && op == opRegOf)
+    if (o.getOper() == opWildRegOf && op == opRegOf)
         return true;
-    if (((Unary &)o).op == opWildMemOf && op == opMemOf)
+    if (o.getOper() == opWildMemOf && op == opMemOf)
         return true;
-    if (((Unary &)o).op == opWildAddrOf && op == opAddrOf)
+    if (o.getOper() == opWildAddrOf && op == opAddrOf)
         return true;
-    if (op != ((Unary &)o).op)
+    if (op != o.getOper())
         return false;
-    return *subExp1 == *((Unary &)o).getSubExp1();
+    return *subExp1 == *o.getSubExp1();
 }
 bool Binary::operator==(const Exp &o) const {
     assert(subExp1 && subExp2);
-    if (((Binary &)o).op == opWild)
+    if (o.getOper() == opWild)
         return true;
+    if(nullptr == dynamic_cast<const Binary *>(&o))
+        return false;
     if (op != ((Binary &)o).op)
         return false;
     if (!(*subExp1 == *((Binary &)o).getSubExp1()))
@@ -368,8 +370,10 @@ bool Binary::operator==(const Exp &o) const {
 }
 
 bool Ternary::operator==(const Exp &o) const {
-    if (((Ternary &)o).op == opWild)
+    if (o.getOper() == opWild)
         return true;
+    if(nullptr == dynamic_cast<const Ternary *>(&o))
+        return false;
     if (op != ((Ternary &)o).op)
         return false;
     if (!(*subExp1 == *((Ternary &)o).getSubExp1()))
@@ -380,17 +384,17 @@ bool Ternary::operator==(const Exp &o) const {
 }
 bool Terminal::operator==(const Exp &o) const {
     if (op == opWildIntConst)
-        return ((Terminal &)o).op == opIntConst;
+        return o.getOper() == opIntConst;
     if (op == opWildStrConst)
-        return ((Terminal &)o).op == opStrConst;
+        return o.getOper() == opStrConst;
     if (op == opWildMemOf)
-        return ((Terminal &)o).op == opMemOf;
+        return o.getOper() == opMemOf;
     if (op == opWildRegOf)
-        return ((Terminal &)o).op == opRegOf;
+        return o.getOper() == opRegOf;
     if (op == opWildAddrOf)
-        return ((Terminal &)o).op == opAddrOf;
+        return o.getOper() == opAddrOf;
     return ((op == opWild) || // Wild matches anything
-            (((Terminal &)o).op == opWild) || (op == ((Terminal &)o).op));
+            (o.getOper() == opWild) || (op == o.getOper()));
 }
 bool TypedExp::operator==(const Exp &o) const {
     if (((TypedExp &)o).op == opWild)
@@ -2825,8 +2829,8 @@ Exp *Binary::polySimplify(bool &bMod) {
         return res;
     }
 
-    Binary *b1 = (Binary *)subExp1;
-    Binary *b2 = (Binary *)subExp2;
+    Binary *b1 = dynamic_cast<Binary *>(subExp1);
+    Binary *b2 = dynamic_cast<Binary *>(subExp2);
     // Check for (x <= y) || (x == y), becomes x <= y
     if (op == opOr && opSub2 == opEquals &&
         (opSub1 == opGtrEq || opSub1 == opLessEq || opSub1 == opGtrEqUns || opSub1 == opLessEqUns) &&

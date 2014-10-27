@@ -636,7 +636,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream &/*os*/, 
                     }
                 }
                 s->simplify();
-                GotoStatement *stmt_jump = static_cast<GotoStatement *>(s);
+                GotoStatement *stmt_jump = dynamic_cast<GotoStatement *>(s);
 
                 // Check for a call to an already existing procedure (including self recursive jumps), or to the PLT
                 // (note that a LibProc entry for the PLT function may not yet exist)

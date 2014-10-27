@@ -350,8 +350,8 @@ void PentiumFrontEnd::processFloatCode(BasicBlock *pBB, int &tos, Cfg *pCfg) {
             } else {
                 // st is a flagcall
                 // We are interested in any register parameters in the range 32 - 39
-                Binary *cur;
-                for (cur = (Binary *)((Assign *)st)->getRight(); !cur->isNil(); cur = (Binary *)cur->getSubExp2()) {
+                Exp *cur;
+                for (cur = ((Assign *)st)->getRight(); !cur->isNil(); cur = cur->getSubExp2()) {
                     // I dont understand why we want typed exps in the flag calls so much. If we're going to replace
                     // opSize with TypedExps
                     // then we need to do it for everything, not just the flag calls.. so that should be in the

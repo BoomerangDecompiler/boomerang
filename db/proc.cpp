@@ -4795,7 +4795,7 @@ bool UserProc::isLocalOrParamPattern(Exp *e) {
         return true; // Accept m[sp{-}]
     if (addr->getArity() != 2)
         return false; // Require sp +/- K
-    OPER op = ((Binary *)addr)->getOper();
+    OPER op = addr->getOper();
     if (op != opPlus && op != opMinus)
         return false;
     Exp *left = ((Binary *)addr)->getSubExp1();
