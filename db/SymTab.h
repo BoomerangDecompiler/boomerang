@@ -54,7 +54,7 @@ struct BinarySymbol : public IBinarySymbol {
     QString belongsToSourceFile() const override;
 };
 class SymTab : public IBinarySymbolTable {
-    friend class BinarySymbol;
+    friend struct BinarySymbol;
 private:
     // The map indexed by address.
     std::map<ADDRESS, BinarySymbol *> amap;

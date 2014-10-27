@@ -32,7 +32,7 @@ class Instruction;
 class InstructionSet;
 class Module;
 class XMLProgParser;
-class BinarySymbol;
+struct BinarySymbol;
 class HLLCode;
 
 class Global : public Printable {

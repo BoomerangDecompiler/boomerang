@@ -176,7 +176,7 @@ void DataFlow::computeDF(int n) {
     // for each node y in succ(n)
     BasicBlock *bb = BBs[n];
     const std::vector<BasicBlock *> &outEdges = bb->getOutEdges();
-    std::vector<BasicBlock *>::iterator it;
+
     for (BasicBlock *b : outEdges) {
         int y = indices[b];
         if (idom[y] != n)
@@ -284,14 +284,13 @@ bool DataFlow::placePhiFunctions(UserProc *proc) {
         BasicBlock *bb = BBs[n];
         for (Instruction *s = bb->getFirstStmt(rit, sit); s; s = bb->getNextStmt(rit, sit)) {
             LocationSet ls;
-            LocationSet::iterator it;
             s->getDefinitions(ls);
             if (s->isCall() && ((CallStatement *)s)->isChildless()) // If this is a childless call
                 defallsites.insert(n);                              // then this block defines every variable
-            for (it = ls.begin(); it != ls.end(); it++) {
-                if (canRename(*it, proc)) {
-                    A_orig[n].insert((*it)->clone());
-                    defStmts[*it] = s;
+            for (Exp *exp : ls) {
+                if (canRename(exp, proc)) {
+                    A_orig[n].insert(exp->clone());
+                    defStmts[exp] = s;
                 }
             }
         }
@@ -300,10 +299,7 @@ bool DataFlow::placePhiFunctions(UserProc *proc) {
     // For each node n
     for (n = 0; n < numBB; n++) {
         // For each variable a in A_orig[n]
-        std::set<Exp *, lessExpStar> &s = A_orig[n];
-        std::set<Exp *, lessExpStar>::iterator aa;
-        for (aa = s.begin(); aa != s.end(); aa++) {
-            Exp *a = *aa;
+        for (Exp *a : A_orig[n]) {
             defsites[a].insert(n);
         }
     }
