@@ -80,10 +80,10 @@ INCLUDE_DIRECTORIES(
     "${CMAKE_CURRENT_BINARY_DIR}/include"
     ${Qt5Core_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIR}
-    ${PROJECT_SOURCE_DIR}/3rd_party/include
+    "${PROJECT_SOURCE_DIR}/3rd_party/include"
 )
 link_directories(
-    ${PROJECT_SOURCE_DIR}/3rd_party/lib
+    "${PROJECT_SOURCE_DIR}/3rd_party/lib"
     "${CMAKE_CURRENT_BINARY_DIR}/loader"
 )
 
