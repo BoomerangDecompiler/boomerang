@@ -36,24 +36,24 @@ public:
     ADDRESS imageToSource(ADDRESS); //! convert image address ( host pointer into image data ) to valid Source machine ADDRESS
     ADDRESS sourceToImage(ADDRESS); //! convert Source machine ADDRESS into valid image ADDRESS
 
-    char readNative1(ADDRESS nat) override;
-    int readNative2(ADDRESS nat) override;
-    int readNative4(ADDRESS nat) override;
-    QWord readNative8(ADDRESS nat) override;
-    float readNativeFloat4(ADDRESS nat) override;
+    char   readNative1(ADDRESS nat) override;
+    int    readNative2(ADDRESS nat) override;
+    int    readNative4(ADDRESS nat) override;
+    QWord  readNative8(ADDRESS nat) override;
+    float  readNativeFloat4(ADDRESS nat) override;
     double readNativeFloat8(ADDRESS nat) override;
-    void writeNative4(ADDRESS nat, uint32_t n) override;
-    void calculateTextLimits();
+    void   writeNative4(ADDRESS nat, uint32_t n) override;
+    void   calculateTextLimits();
     //! Find the section, given an address in the section
     const IBinarySection *getSectionInfoByAddr(ADDRESS uEntry) const;
 
-    int GetSectionIndexByName(const QString &sName) override;
+    int         GetSectionIndexByName(const QString &sName) override;
     IBinarySection *GetSectionInfoByName(const QString &sName) override;
     const IBinarySection *GetSectionInfo(int idx) const override { return Sections[idx]; }
-    bool isReadOnly(ADDRESS uEntry) override;
-    ADDRESS getLimitTextLow() override;
-    ADDRESS getLimitTextHigh() override;
-    ptrdiff_t getTextDelta() override { return TextDelta; }
+    bool        isReadOnly(ADDRESS uEntry) override;
+    ADDRESS     getLimitTextLow() override;
+    ADDRESS     getLimitTextHigh() override;
+    ptrdiff_t   getTextDelta() override { return TextDelta; }
 
     SectionInfo *createSection(const QString &name, ADDRESS from, ADDRESS to);
 
@@ -70,8 +70,6 @@ private:
     ptrdiff_t TextDelta;
     MapAddressRangeToSection SectionMap;
     SectionListType Sections; //!< The section info
-
-
 };
 
 

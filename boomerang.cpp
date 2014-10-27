@@ -26,7 +26,7 @@
 #include "gc.h"
 #endif
 
-#include <QDebug>
+#include <QtCore/QDebug>
 #include <ctime>
 
 Boomerang *Boomerang::boomerang = nullptr;

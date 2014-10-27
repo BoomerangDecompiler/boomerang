@@ -430,8 +430,8 @@ struct RangeVisitor : public StmtVisitor {
         return true;
     }
 
-    bool visit(ReturnStatement * stmt) {processRange(stmt); return true; }
-    bool visit(ImpRefStatement * stmt) {processRange(stmt); return true; }
+    bool visit(ReturnStatement * stmt) { processRange(stmt); return true; }
+    bool visit(ImpRefStatement * stmt) { processRange(stmt); return true; }
     bool visit(JunctionStatement * stmt) {
         RangeMap input;
         if (DEBUG_RANGE_ANALYSIS)
@@ -491,59 +491,58 @@ private:
             return tgt->getRanges(b);
         return tgt->getBranchRange(b);
     }
-    void limitOutputWithCondition(BranchStatement *stmt,RangeMap &output, Exp *e) {
+    void limitOutputWithCondition(BranchStatement */*stmt*/,RangeMap &output, Exp *e) {
         assert(e);
-        if (output.hasRange(e->getSubExp1())) {
-            Range &r = output.getRange(e->getSubExp1());
-            if (e->getSubExp2()->isIntConst() && r.getBase()->isIntConst() && ((Const *)r.getBase())->getInt() == 0) {
-                int c = ((Const *)e->getSubExp2())->getInt();
-                switch (e->getOper()) {
-                case opLess:
-                case opLessUns: {
-                    Range ra(r.getStride(), r.getLowerBound() >= c ? c - 1 : r.getLowerBound(),
-                             r.getUpperBound() >= c ? c - 1 : r.getUpperBound(), r.getBase());
-                    output.addRange(e->getSubExp1(), ra);
-                    break;
-                }
-                case opLessEq:
-                case opLessEqUns: {
-                    Range ra(r.getStride(), r.getLowerBound() > c ? c : r.getLowerBound(),
-                             r.getUpperBound() > c ? c : r.getUpperBound(), r.getBase());
-                    output.addRange(e->getSubExp1(), ra);
-                    break;
-                }
-                case opGtr:
-                case opGtrUns: {
-                    Range ra(r.getStride(), r.getLowerBound() <= c ? c + 1 : r.getLowerBound(),
-                             r.getUpperBound() <= c ? c + 1 : r.getUpperBound(), r.getBase());
-                    output.addRange(e->getSubExp1(), ra);
-                    break;
-                }
-                case opGtrEq:
-                case opGtrEqUns: {
-                    Range ra(r.getStride(), r.getLowerBound() < c ? c : r.getLowerBound(),
-                             r.getUpperBound() < c ? c : r.getUpperBound(), r.getBase());
-                    output.addRange(e->getSubExp1(), ra);
-                    break;
-                }
-                case opEquals: {
-                    Range ra(r.getStride(), c, c, r.getBase());
-                    output.addRange(e->getSubExp1(), ra);
-                    break;
-                }
-                case opNotEqual: {
-                    Range ra(r.getStride(), r.getLowerBound() == c ? c + 1 : r.getLowerBound(),
-                             r.getUpperBound() == c ? c - 1 : r.getUpperBound(), r.getBase());
-                    output.addRange(e->getSubExp1(), ra);
-                    break;
-                }
-                default:
-                    break;
-                }
-            }
+        if (!output.hasRange(e->getSubExp1()))
+            return;
+        Range &r = output.getRange(e->getSubExp1());
+        if (!(e->getSubExp2()->isIntConst() && r.getBase()->isIntConst() && ((Const *)r.getBase())->getInt() == 0))
+            return;
+        int c = ((Const *)e->getSubExp2())->getInt();
+        switch (e->getOper()) {
+        case opLess:
+        case opLessUns: {
+            Range ra(r.getStride(), r.getLowerBound() >= c ? c - 1 : r.getLowerBound(),
+                     r.getUpperBound() >= c ? c - 1 : r.getUpperBound(), r.getBase());
+            output.addRange(e->getSubExp1(), ra);
+            break;
+        }
+        case opLessEq:
+        case opLessEqUns: {
+            Range ra(r.getStride(), r.getLowerBound() > c ? c : r.getLowerBound(),
+                     r.getUpperBound() > c ? c : r.getUpperBound(), r.getBase());
+            output.addRange(e->getSubExp1(), ra);
+            break;
+        }
+        case opGtr:
+        case opGtrUns: {
+            Range ra(r.getStride(), r.getLowerBound() <= c ? c + 1 : r.getLowerBound(),
+                     r.getUpperBound() <= c ? c + 1 : r.getUpperBound(), r.getBase());
+            output.addRange(e->getSubExp1(), ra);
+            break;
+        }
+        case opGtrEq:
+        case opGtrEqUns: {
+            Range ra(r.getStride(), r.getLowerBound() < c ? c : r.getLowerBound(),
+                     r.getUpperBound() < c ? c : r.getUpperBound(), r.getBase());
+            output.addRange(e->getSubExp1(), ra);
+            break;
+        }
+        case opEquals: {
+            Range ra(r.getStride(), c, c, r.getBase());
+            output.addRange(e->getSubExp1(), ra);
+            break;
+        }
+        case opNotEqual: {
+            Range ra(r.getStride(), r.getLowerBound() == c ? c + 1 : r.getLowerBound(),
+                     r.getUpperBound() == c ? c - 1 : r.getUpperBound(), r.getBase());
+            output.addRange(e->getSubExp1(), ra);
+            break;
+        }
+        default:
+            break;
         }
     }
-
 };
 /**
   *
@@ -748,7 +747,7 @@ void Range::unionWith(Range &r) {
         base = Const::get(0);
         if (VERBOSE && DEBUG_RANGE_ANALYSIS)
             LOG_STREAM(LL_Default) << toString();
-                    return;
+        return;
     }
     if (stride != r.stride)
         stride = std::min(stride, r.stride);
@@ -770,7 +769,7 @@ void Range::widenWith(Range &r) {
         base = Const::get(0);
         if (VERBOSE && DEBUG_RANGE_ANALYSIS)
             LOG_STREAM(LL_Default) << toString();
-                    return;
+        return;
     }
     // ignore stride for now
     if (r.getLowerBound() < lowerBound)

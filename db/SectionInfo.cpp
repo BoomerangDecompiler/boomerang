@@ -54,6 +54,16 @@ struct SectionInfoImpl {
             return vals.front();
         return QVariant(vals);
     }
+    QVariantMap getAttributesForRange(ADDRESS from, ADDRESS to) {
+        QVariantMap res;
+        auto v = AttributeMap.equal_range(interval<ADDRESS>::right_open(from,to));
+        if(v.first==AttributeMap.end())
+            return res;
+        for(auto iter=v.first; iter!=v.second; ++iter) {
+            res.unite(iter->second.get());
+        }
+        return res;
+    }
 };
 
 
@@ -113,6 +123,11 @@ void SectionInfo::addDefinedArea(ADDRESS from, ADDRESS to) {
 void SectionInfo::setAttributeForRange(const QString &name, const QVariant &val, ADDRESS from, ADDRESS to)
 {
     Impl->setAttributeForRange(name,val,from,to);
+}
+
+QVariantMap SectionInfo::getAttributesForRange(ADDRESS from, ADDRESS to)
+{
+    return Impl->getAttributesForRange(from,to);
 }
 
 QVariant SectionInfo::attributeInRange(const QString &attrib, ADDRESS from, ADDRESS to) const

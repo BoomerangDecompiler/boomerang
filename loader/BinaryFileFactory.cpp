@@ -32,13 +32,13 @@ QObject *BinaryFileFactory::Load(const QString &sName) {
     QObject *pBF = getInstanceFor(sName);
     LoaderInterface *ldr_iface = qobject_cast<LoaderInterface *>(pBF);
     if (ldr_iface == nullptr) {
-        fprintf(stderr, "unrecognised binary file format.\n");
+        qWarning() << "unrecognised binary file format.";
         return nullptr;
     }
     ldr_iface->initialize(Boomerang::get());
     ldr_iface->Close();
     if (ldr_iface->RealLoad(sName) == 0) {
-        fprintf(stderr, "Loading '%s' failed\n", qPrintable(sName));
+        qWarning() << "Loading '" <<sName<< "' failed";
         delete pBF;
         return nullptr;
     }
